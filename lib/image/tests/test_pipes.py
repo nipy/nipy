@@ -1,16 +1,22 @@
 import unittest, os, shutil
 import neuroimaging.image.pipes as pipes
+import neuroimaging.image as image
 
 class PipeTest(unittest.TestCase):
 
-    def test_analyze(self):
-        p = pipes.URLPipe('http://kff.stanford.edu/~jtaylo/BrainSTAT/avg152T1.img')
+    def setUp(self):
+        self.url = 'http://kff.stanford.edu/~jtaylo/BrainSTAT/avg152T1.img'
 
-    def test_repository(self):
+    def tearDown(self):
         shutil.rmtree('/tmp/blah', ignore_errors=True)
-        os.makedirs('/tmp/blah')
-        self.img = pipes.URLPipe('http://kff.stanford.edu/~jtaylo/BrainSTAT/avg152T1.img', repository='/tmp/blah')
-        shutil.rmtree('/tmp/blah')
+
+    def test_download(self):
+        self.img = image.Image(self.url, repository='/tmp/blah')
+        test = os.path.exists('/tmp/blah/kff.stanford.edu/~jtaylo/BrainSTAT/avg152T1.img')
+        self.assertEqual(test, True)
+        test = os.path.exists('/tmp/blah/kff.stanford.edu/~jtaylo/BrainSTAT/avg152T1.hdr')
+        self.assertEqual(test, True)
+        return 
         
 
 if __name__ == '__main__':

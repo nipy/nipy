@@ -61,7 +61,8 @@ class URLPipe(Pipe,urlhandler.DataFetcher):
         if creator is None:
             raise NotImplementedError, 'file extension %(ext)s not recoginzed, %(exts)s files can be written at this time.' % {'ext':self.fileext, 'exts': extensions}
 
-        image = creator(filename=self.url, mode=self.mode, clobber=self.clobber, grid=self.grid)
+        filename = os.path.join(self.repository, self.urlcompose(type=False))
+        image = creator(filename=filename, mode=self.mode, clobber=self.clobber, grid=self.grid)
         return image
 
 
