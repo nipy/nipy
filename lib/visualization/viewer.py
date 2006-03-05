@@ -9,7 +9,7 @@ import numpy as N
 import matplotlib, sets
 matplotlib.numerix = N
 
-from neuroimaging.image.utils import reduceall
+from neuroimaging.statistics.utils import reduceall
 import pylab
 from matplotlib.patches import Patch
 

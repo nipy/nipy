@@ -3,7 +3,7 @@ import enthought.traits as traits
 import numpy as N
 
 from regressors import Events, SplineConfound
-from formula import Factor, Quantitative, Formula
+from neuroimaging.statistics.formula import Factor, Quantitative, Formula
 
 namespace = {}
 downtime = 'None/downtime'
@@ -32,9 +32,9 @@ class ExperimentalRegressor(traits.HasTraits):
         
         name = []
         for hrfname in IRF.names:
-            for varname in self.names():
-                name.append('(%s**%s)' % (hrfname, varname))
-        return ExperimentalQuantitative(name, _f, varname='(%s**%s)' % (hrfname, self.varname))
+            for termname in self.names():
+                name.append('(%s**%s)' % (hrfname, termname))
+        return ExperimentalQuantitative(name, _f, termname='(%s**%s)' % (hrfname, self.termname))
 
 class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
     """
@@ -42,13 +42,13 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
     based on a function fn.
     """
 
-    def __init__(self, name, fn, varname=None, **keywords):
+    def __init__(self, name, fn, termname=None, **keywords):
 
         self.fn = fn
         self.name = name
-        if varname is None:
-            varname = name
-        namespace[varname] = self
+        if termname is None:
+            termname = name
+        namespace[termname] = self
             
         test = self.fn(N.array([4.0]))
         n = len(test)
@@ -60,10 +60,11 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
                 names = ['(%s:%d)' % (name, i) for i in range(n)]
         else:
             names = name
-        Quantitative.__init__(self, names, _fn=fn, varname=varname, **keywords)
+        Quantitative.__init__(self, names, _fn=fn, termname=termname, **keywords)
         
     def __call__(self, time=None, namespace=namespace, **keywords):
-        return self.fn(time, **keywords)
+        v = self.fn(time=N.arange(20), **keywords)
+        return self.fn(time=time, **keywords)
 
 class ExperimentalStepFunction(ExperimentalQuantitative):
     """
@@ -78,16 +79,18 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
 
         fn = self.fromiterator(iterator)
         ExperimentalQuantitative.__init__(self, name, fn, **keywords)
-        
+  
     def fromiterator(self, iterator, delimiter=','):
         """
-        Determine an ExperimentalFactor which returns rows of the form:
+        Determine an ExperimentalStepFunction from an iterator
+        which returns rows of the form:
 
         (start, stop, height)
 
         Here, Type is a hashable object and Start and Stop are floats.
         The fourth being an optional
-        float for the height during the interval [Start,Stop] which defaults to 1.
+        float for the height during the interval [Start,Stop] which
+        defaults to 1.
         """
 
         if type(iterator) is types.StringType:
@@ -119,31 +122,51 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
     Return a factor that is a function of experimental time.
     """
     
+
     def __init__(self, name, iterator, **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.fromiterator(iterator)
         keys = self.events.keys() + [downtime]
         Factor.__init__(self, name, keys)
         
-    def __call__(self, time=None, namespace=None, **keywords):
+    def __call__(self, time=None, namespace=None, includedown=False, **keywords):
         value = []
         keys = self.events.keys()
         for level in keys:
             value.append(N.squeeze(self.events[level](time,
                                                       namespace=namespace,
                                                       **keywords)))
-        s = N.add.reduce(value)
+        if includedown:
+            s = N.add.reduce(value)
 
-        keys = keys + [None]
-        which = N.argmax(value, axis=0)
-        which = N.where(s, which, keys.index(None))
-        return Factor.__call__(self, namespace={self.varname:[keys[w] for w in which]})
+            keys = keys + [downtime]
+            which = N.argmax(value, axis=0)
+            which = N.where(s, which, keys.index(downtime))
+            return Factor.__call__(self, namespace={self.termname:[keys[w] for w in which]})
+        else:
+            return N.array(value)
+
+    def names(self, keep=False):
+        names = Factor.names(self)
+
+        _keep = []
+        for i in range(len(names)):
+            name = names[i]
+            if name.find(downtime) < 0:
+                _keep.append(i)
+
+        if not keep:
+            return [names[i] for i in _keep]
+        else:
+            return [names[i] for i in _keep], _keep
+
 
     def fromiterator(self, iterator, delimiter=','):
         """
-        Determine an ExperimentalFactor which returns rows of the form:
+        Determine an ExperimentalFactor from an iterator
+        which returns rows of the form:
 
-        Type,Start,Stop
+        Type, Start, Stop
 
         Here, Type is a hashable object and Start and Stop are floats.
         The fourth being an optional
@@ -179,15 +202,15 @@ class ExperimentalFormula(Formula):
     def __add__(self, other):
         return ExperimentalFormula(Formula.__add__(self, other))
 
-    def __call__(self, time=None, namespace=namespace, **keywords):
+    def __call__(self, time, namespace=namespace, **keywords):
 
         allvals = []
 
-        for var in self.variables:
-            if not hasattr(var, 'IRF'):
-                val = var(time=time, namespace=namespace, **keywords)
+        for term in self.terms:
+            if not hasattr(term, 'IRF'):
+                val = term(time=time, namespace=namespace, **keywords)
             else:
-                val = var(time=time, namespace=namespace, convolved=True, **keywords)
+                val = term(time=time, namespace=namespace, convolved=True, **keywords)
                       
             allvals.append(val)
 

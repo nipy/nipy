@@ -29,7 +29,7 @@ class Regressor(traits.HasTraits):
     windowed = traits.false
     window = traits.List([0.,0.])
 
-    def __call__(self, times=times, **extra):
+    def __call__(self, time=None, **extra):
 
         columns = []
         if self.IRF is not None:
@@ -45,13 +45,13 @@ class Regressor(traits.HasTraits):
             self.nout = self.IRF.n
         
         if self.nout == 1:
-            columns.append(self.fn(times))
+            columns.append(self.fn(time=time))
         else:
             for fn in self.fn:
-                columns.append(fn(times))
+                columns.append(fn(time=time))
 
         if self.windowed:
-            _window = greater(times, self.window[0]) * less_equal(times, self.window[1])
+            _window = greater(time, self.window[0]) * less_equal(time, self.window[1])
             columns = [column * _window for column in columns]
                 
         return columns
@@ -182,8 +182,8 @@ class SplineConfound(FunctionConfound):
         self.fn = []
 
         def getpoly(j):
-            def _poly(x):
-                return x**j
+            def _poly(time=None):
+                return time**j
             return _poly
 
         for i in range(min(self.df, 4)):
@@ -194,8 +194,8 @@ class SplineConfound(FunctionConfound):
         self.knots[-1] = inf 
 
         def _getspline(a, b):
-            def _spline(x):
-                return x**3 * greater(x, a) * less_equal(x, b)
+            def _spline(time=None):
+                return time**3 * greater(time, a) * less_equal(time, b)
             return _spline
 
         for i in range(len(self.knots) - 1):

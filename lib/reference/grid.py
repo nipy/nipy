@@ -162,7 +162,8 @@ def fromStartStepLength(names=space, shape=[], start=[], step=[]):
     output_coords = DiagonalCoordinateSystem('world', outdim)
     transform = output_coords.transform()
     _warp = warp.Affine(input_coords, output_coords, transform)
-    return SamplingGrid(warp=_warp, shape=list(shape))
+    g = SamplingGrid(warp=_warp, shape=list(shape))
+    return g
 
 def IdentityGrid(shape=(), names=space):
     """

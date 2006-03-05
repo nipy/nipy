@@ -6,6 +6,7 @@ import neuroimaging.reference.grid as grid
 import neuroimaging.reference.warp as warp
 import neuroimaging.image as image
 import enthought.traits as traits
+from neuroimaging.statistics.utils import reduceall
 
 class LinearFilter(traits.HasTraits):
     '''
@@ -21,7 +22,7 @@ class LinearFilter(traits.HasTraits):
     def setup_kernel(self):
         _normsq = self.normsq() / 2.
         self.kernel = N.exp(-N.minimum(_normsq, 15))
-        norm = image.utils.reduceall(N.add, self.kernel)
+        norm = reduceall(N.add, self.kernel)
         self.kernel = self.kernel / norm
         self.kernel = FFT.real_fftnd(self.kernel)
 

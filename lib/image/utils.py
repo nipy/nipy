@@ -1,15 +1,6 @@
 import sys, struct
 import numpy as N
 
-def reduceall(ufunc, ndarray):
-    value = ndarray
-    while True:
-        try:
-            value = ufunc.reduce(value)
-        except:
-            break
-    return float(value)
-
 def fwhm2sigma(fwhm):
     return fwhm / N.sqrt(8 * N.log(2))
 

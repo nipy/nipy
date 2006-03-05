@@ -74,7 +74,7 @@ class Image(traits.HasTraits):
         """
         iter(self.grid)
 
-        if isinstance(self.grid.iterator, grid.ParcelIterator):
+        if isinstance(self.grid.iterator, grid.ParcelIterator) or isinstance(self.grid.iterator, grid.SliceParcelIterator):
             if hasattr(self.image, 'memmap'):
                 self.buffer = self.image.memmap
             else:
@@ -157,7 +157,6 @@ class Image(traits.HasTraits):
             outimage = iter(outimage)
             for dataslice in tmp:
                 outimage.next(data=dataslice)
-                del(dataslice); gc.collect()
                 
         outimage.close()
         

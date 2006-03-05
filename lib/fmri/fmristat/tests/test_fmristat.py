@@ -2,10 +2,12 @@ import unittest, scipy, sets, os, gc
 import neuroimaging.fmri as fmri
 import neuroimaging.fmri.protocol as protocol
 import neuroimaging.fmri.fmristat as fmristat
+from neuroimaging.statistics import contrast, utils
 import neuroimaging.image as image
 import numpy as N
+import neuroimaging.fmri.hrf as hrf
 
-class fMRITest(unittest.TestCase):
+class fMRIStatTest(unittest.TestCase):
 
     def setup_formula(self):
 
@@ -23,7 +25,13 @@ class fMRITest(unittest.TestCase):
 
         drift_fn = protocol.SplineConfound(window=[0,360], df=7)
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
-        self.formula = pain + drift
+        self.pain = pain
+        self.drift = drift
+
+        self.IRF = hrf.HRF()
+
+        self.painc = self.IRF.convolve(pain)
+        self.formula =  + drift
 
     def setUp(self):
         self.url = 'http://kff.stanford.edu/BrainSTAT/testdata/test_fmri.img'
@@ -31,25 +39,25 @@ class fMRITest(unittest.TestCase):
         frametimes = N.arange(120)*3.
         slicetimes = N.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
         self.img = fmri.fMRIImage(self.url, frametimes=frametimes,
-                                  slicetimes=slicetimes)
+                                  slicetimes=slicetimes, usematfile=False)
         self.setup_formula()
 
-    def test_model_frametimes(self):
-        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
-                                   slicetimes=self.img.slicetimes)
-        OLS.nmax = 75
-        OLS.fit(resid=True)
-        rho = OLS.rho_estimator.img
-        rho.tofile('rho.img')
-        os.remove('rho.img')
-        os.remove('rho.hdr')
+##     def test_model_frametimes(self):
+##         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+##                                    slicetimes=self.img.slicetimes)
+##         OLS.nmax = 75
+##         OLS.fit(resid=True)
+##         rho = OLS.rho_estimator.img
+##         rho.tofile('rho.img')
+##         os.remove('rho.img')
+##         os.remove('rho.hdr')
 
-        AR = fmristat.fMRIStatAR(OLS)
-        AR.fit()
-        del(OLS); del(AR); gc.collect()
+##         AR = fmristat.fMRIStatAR(OLS)
+##         AR.fit()
+##         del(OLS); del(AR); gc.collect()
 
-##     def test_model_noframetimes(self):
-##         self.img.frametimes = None
+##     def test_model_noslicetimes(self):
+##         self.img.slicetimes = None
 ##         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
 ##                                    slicetimes=self.img.slicetimes)
 ##         OLS.fit(resid=True)
@@ -61,6 +69,32 @@ class fMRITest(unittest.TestCase):
 ##         AR = fmristat.fMRIStatAR(OLS)
 ##         AR.fit()
 ##         del(OLS); del(AR); gc.collect()
+
+    def test_contrast(self):
+        pain = contrast.Contrast(self.pain, self.formula, name='pain')
+        main = self.IRF.convolve(self.pain.main_effect(self.formula))
+        self.img.slicetimes = None
+        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+                                   slicetimes=self.img.slicetimes)
+        OLS.fit(resid=True)
+        rho = OLS.rho_estimator.img
+        rho.tofile('rho.img')
+        os.remove('rho.img')
+        os.remove('rho.hdr')
+
+        AR = fmristat.fMRIStatAR(OLS, contrasts=[pain,main])
+        AR.fit()
+        del(OLS); del(AR); gc.collect()
+
+        from neuroimaging.visualization import viewer
+        t = image.Image('contrasts/hot-warm/t.img')
+        x = t.readall()
+        print utils.reduceall(N.maximum, x), utils.reduceall(N.minimum, x)
+
+        v=viewer.Viewer(t)
+        v.show()
+        import pylab
+        pylab.show()
 
 if __name__ == '__main__':
     unittest.main()

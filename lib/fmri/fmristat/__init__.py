@@ -2,9 +2,10 @@ import gc
 import enthought.traits as traits
 from neuroimaging.statistics import iterators 
 from neuroimaging.statistics.regression import OLSModel, ARModel
+from neuroimaging.statistics.contrast import Contrast
 import neuroimaging.fmri as fmri
 import neuroimaging.image.kernel_smooth as kernel_smooth
-from neuroimaging.fmri.regression import AR1Output
+from neuroimaging.fmri.regression import AR1Output, TContrastOutput, FContrastOutput
 import numpy as N
 
 class fMRIStatOLS(iterators.LinearModelIterator):
@@ -25,13 +26,13 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
         self.rho_estimator = AR1Output(self.fmri_image)
         self.outputs.append(self.rho_estimator)
-        self.dmatrix = self.formula.design(self.fmri_image.frametimes)
+        self.dmatrix = self.formula.design(time=self.fmri_image.frametimes)
 
     def model(self, **keywords):
         time = self.fmri_image.frametimes
         if self.slicetimes is not None:
             _slice = self.iterator.grid.itervalue.slice
-            model = OLSModel(design=self.formula.design(time + self.slicetimes[_slice[1]]))
+            model = OLSModel(design=self.formula.design(time=time + self.slicetimes[_slice[1]]))
         else:
             model = OLSModel(design=self.dmatrix)
         return model
@@ -44,7 +45,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         self.getlabels()
 
     def getlabels(self):
-        if self.slicetimes is None:
+        if self.slicetimes == None:
             tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
             tmp.shape = N.product(tmp.shape)
             self.labels = tmp
@@ -70,10 +71,14 @@ class fMRIStatAR(iterators.LinearModelIterator):
     formula = traits.Any()
     slicetimes = traits.Any()
     fwhm = traits.Float(6.0)
+    path = traits.Str('.')
 
-    def __init__(self, OLS, **keywords):
+    def __init__(self, OLS, contrasts=None, **keywords):
         """
         Building on OLS results, fit the AR(1) model.
+
+        Contrasts is a sequence of terms to be tested in the model.
+
         """
         
         traits.HasTraits.__init__(self, **keywords)
@@ -88,20 +93,37 @@ class fMRIStatAR(iterators.LinearModelIterator):
         self.formula = OLS.formula
         if self.slicetimes is None:
             self.dmatrix = OLS.dmatrix
+            self.fmri_image.grid.itertype = 'parcel'
         else:
+            self.fmri_image.grid.itertype = 'slice/parcel'
             self.designs = []
             for i in range(len(self.slicetimes)):
-                self.designs.append(self.formula.design(time + self.slicetimes[i]))
+                self.designs.append(self.formula.design(time=time + self.slicetimes[i]))
 
+        self.contrasts = {}
+        if contrasts is not None:
+            if type(contrasts) not in [type([]), type(())]:
+                contrasts = [contrasts]
+            for i in range(len(contrasts)):
+                contrasts[i].getmatrix(time=self.fmri_image.frametimes)
+                if contrasts[i].rank == 1:
+                    cur = TContrastOutput(self.fmri_image, contrasts[i], path=self.path)
+                else:
+                    cur = FContrastOutput(self.fmri_image, contrasts[i], path=self.path)
+                self.contrasts[contrasts[i].name] = cur
+                
         # setup the iterator
 
-        self.fmri_image.grid.itertype = 'slice/parcel'
         self.fmri_image.grid.labels = OLS.labels
         self.fmri_image.grid.labelset = OLS.labelset
 
         self.iterator = iter(self.fmri_image)
+        self.j = 0
+
+        self.outputs += self.contrasts.values()
 
     def model(self, **keywords):
+        self.j += 1
         time = self.fmri_image.frametimes
         if self.slicetimes is not None:
             rho = self.iterator.grid.itervalue.label

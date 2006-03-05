@@ -92,7 +92,12 @@ class fMRISamplingGrid(grid.SamplingGrid):
                 return fn(_x)
 
             W = warp.Warp(incoords, outcoords, _map)
-        return grid.SamplingGrid(shape=self.shape[1:], warp=W)
+
+        _grid = grid.SamplingGrid(shape=self.shape[1:], warp=W)
+        _grid.itertype = self.itertype
+        _grid.labels = self.labels
+        _grid.labelset = self.labelset
+        return _grid
 
 class fMRIImage(image.Image):
     frametimes = traits.Any()

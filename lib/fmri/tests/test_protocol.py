@@ -6,7 +6,7 @@ from neuroimaging.fmri import hrf, protocol
 
 class ProtocolTest(unittest.TestCase):
 
-    def _setup_pain(self):
+    def setUp(self):
         """
         Setup an iterator corresponding to the following .csv file:
 
@@ -45,8 +45,7 @@ class ProtocolTest(unittest.TestCase):
             all.append([p[i], on[i], off[i]])
         self.all = all
 
-    def _setup(self):
-        self._setup_pain()
+    def setup_terms(self):
         self.p = protocol.ExperimentalFactor('pain', self.all)
         IRF1 = hrf.HRF()
         self.pc1 = self.p.convolve(IRF1)
@@ -57,7 +56,6 @@ class ProtocolTest(unittest.TestCase):
         self.t = N.arange(0,300,1)
 
     def testFromFile(self):
-        self._setup_pain()
         out = file('tmp.csv', 'w')
         writer = csv.writer(out)
         for row in self.all:
@@ -68,7 +66,6 @@ class ProtocolTest(unittest.TestCase):
         os.remove('tmp.csv')
 
     def testFromFileName(self):
-        self._setup_pain()
         out = file('tmp.csv', 'w')
         writer = csv.writer(out)
         for row in self.all:
@@ -79,7 +76,7 @@ class ProtocolTest(unittest.TestCase):
         os.remove('tmp.csv')
 
     def testShape(self):
-        self._setup()
+        self.setup_terms()
         
         for df in range(4, 10):
             drift_fn = protocol.SplineConfound(window=[0,300], df=df)
@@ -101,8 +98,24 @@ class ProtocolTest(unittest.TestCase):
             y = formula(self.t)
             self.assertEquals(y.shape, (2 + df * 2, self.t.shape[0]))
 
+    def testContrast1(self):
+        self.setup_terms()
+        drift_fn = protocol.SplineConfound(window=[0,300], df=4)
+        drift = protocol.ExperimentalQuantitative('drift', drift_fn)
+        formula = self.p + drift
+        scipy.testing.assert_almost_equal(self.p.contrast(formula),
+                                          [0.,0.,0.,0.,-1.,1.])
+
+    def testContrast2(self):
+        self.setup_terms()
+        drift_fn = protocol.SplineConfound(window=[0,300], df=4)
+        drift = protocol.ExperimentalQuantitative('drift', drift_fn)
+        formula = self.p + drift
+        C = self.p.contrast(formula, term=True)
+        self.assertEquals(C(time=self.t).shape, (1,300))
+
     def testDesign(self):
-        self._setup()
+        self.setup_terms()
         
         for df in range(4, 10):
             drift_fn = protocol.SplineConfound(window=[0,300], df=df)
@@ -125,7 +138,7 @@ class ProtocolTest(unittest.TestCase):
             self.assertEquals(y.shape[::-1], (2 + df * 2, self.t.shape[0]))
 
     def testDesign(self):
-        self._setup()
+        self.setup_terms()
         
         for df in range(4, 10):
             drift_fn = protocol.SplineConfound(window=[0,300], df=df)
