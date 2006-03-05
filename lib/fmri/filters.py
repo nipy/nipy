@@ -1,31 +1,30 @@
 from numpy import *
-import options
-from miscutils import ConvolveFunctions, WaveFunction, StepFunction, LinearInterpolant
+from utils import ConvolveFunctions, WaveFunction, StepFunction, LinearInterpolant
 from numpy.linalg import generalized_inverse, singular_value_decomposition
-
-if options.visual:
-    import BrainSTAT.Visualization.Pylab as Pylab
+import enthought.traits as traits
 
 interpolant = LinearInterpolant
 
-class Filter:
-    dt = 0.2
-    tmax = 500.0
-    tplot = 20.0
-    tpad = 20.0
+class Filter(traits.HasTraits):
+    dt = traits.Float(0.2)
+    tmax = traits.Float(500.0)
     delta = arange(-4.2,4.2,0.1)
 
     '''Takes a list of impulse response functions (IRFs): main purpose is to convolve a functions with each IRF for Design. The class assumes the range of the filter is effectively 50 seconds, can be changed by setting tmax -- this is just for the __mul__ method for convolution.'''
 
-    def __init__(self, IRF, tmax=tmax):
+    def __init__(self, IRF, **keywords):
+        traits.HasTraits.__init__(self, **keywords)
         self.IRF = IRF
         try:
             self.n = len(self.IRF)
         except:
             self.n = 1
-        self.tmax = tmax # 
 
     def __add__(self, other):
+        """
+        Take two Filters with the same number of outputs and create a new one
+        whose IRFs are the sum of the two.
+        """
         if self.n != other.n:
             raise ValueError, 'number of dimensions in Filters must agree'
         newIRF = []
@@ -36,16 +35,26 @@ class Filter:
         return Filter(newIRF)
 
     def __mul__(self, other):
+        """
+        Take two Filters with the same number of outputs and create a new one
+        whose IRFs are the convolution of the two.
+        """
         if self.n != other.n:
             raise ValueError, 'number of dimensions in Filters must agree'
         newIRF = []
         interval = (0, self.tmax + other.tmax)
         for i in range(self.n):
-            curfn = ConvolveFunctions(self.IRF[i], other.IRF[i], interval, Filter.dt)
+            curfn = ConvolveFunctions(self.IRF[i], other.IRF[i], interval, self.dt)
             newIRF.append(curfn)
         return Filter(newIRF)
 
-    def convolve(self, fn, interval=None, dt=dt):
+    def convolve(self, fn, interval=None, dt=None):
+        """
+        Take a (possibly vector-valued) function fn of time and return
+        a linearly interpolated function after convolving with the filter.
+        """
+        if dt is None:
+            dt = self.dt
         if interval is None:
             interval = [0, self.tmax]
         if self.n > 1:
@@ -57,7 +66,9 @@ class Filter:
             return ConvolveFunctions(fn, self.IRF, interval, dt)
 
     def __call__(self, time):
-
+        """
+        Return the values of the IRFs of the filter.
+        """
         if self.n > 1:
             value = zeros((self.n,) + time.shape, Float)
             for i in range(self.n):
@@ -66,7 +77,7 @@ class Filter:
             value = self.IRF(time)
         return value
 
-    def deltaPCA(self, delta, fn=None, dt=dt, tmax=50., lower=-15.0):
+    def deltaPCA(self, delta, fn=None, dt=None, tmax=50., lower=-15.0):
         '''Perform an expansion of fn, shifted over the values in delta. Effectively, a Taylor series approximation to fn(t+delta), in delta, with basis given by the filter elements. If fn is None, it assumes fn=IRF[0], that is the first filter.
 
         >>> from numpy.random import *
@@ -99,6 +110,8 @@ class Filter:
 
 
 '''
+        if dt is None:
+            dt = self.dt
         time = arange(lower, tmax, dt)
         ntime = time.shape[0]
 
@@ -139,15 +152,6 @@ class Filter:
             approx.theta, approx.inverse, approx.dinverse, approx.forward, approx.dforward = invertR(delta, approx.coef)
         
         return approx
-
-    if options.visual:
-
-        def plot(self, time=arange(0, tplot, dt), subset=None, **keywords):
-            if subset is not None:
-                fns = filter(lambda x: self.IRF.index(x) in subset, self.IRF)
-            else:
-                fns = self.IRF
-            Pylab.multipleLinePlot(fns, time, **keywords)
 
 class GammaDENS:
     '''A class for a Gamma density -- only used so it knows how to differentiate itself.'''
@@ -253,7 +257,6 @@ class FIR(Filter):
             fns.append(WaveFunction(start, duration, 1.0))
         Filter.__init__(self, fns)
       
-        
 def invertR(delta, IRF, niter=20, verbose=False):
     '''If IRF has 2 components (w0, w1) return an estimate of the inverse of r=w1/w0, as in Liao et al. (2002). Fits a simple arctan model to the ratio w1/w0.?
 
@@ -285,11 +288,16 @@ def invertR(delta, IRF, niter=20, verbose=False):
     else:
         c = -max((delta / (pi/2)).flat) * 1.2
 
-    from BrainSTAT.Modules.LinearModel import NLSModel
+    from neuroimaging.statistics import nlsmodel
     R.shape = (R.shape[0], 1)
-    model = NLSModel(delta, R, f, grad, array([c, 1./(c*delta0), 0.]), niter=niter)
+    model = nlsmodel.NLSModel(Y=delta,
+                              design=R,
+                              f=f,
+                              grad=grad,
+                              theta=array([c, 1./(c*delta0), 0.]),
+                              niter=niter)
 
-    for i in range(model.niter):
+    for iteration in model:
         if verbose:
             print model.theta
         model.next()
@@ -315,7 +323,7 @@ def invertR(delta, IRF, niter=20, verbose=False):
 
     return model.theta, _deltahat, _ddeltahat, _deltahatinv, _ddeltahatinv
 
-def deltaPCAsvd(fn, delta, dt=Filter.dt, tmax=50., lower=-15.0, ncomp=2):
+def deltaPCAsvd(fn, delta, dt=None, tmax=50., lower=-15.0, ncomp=2):
     '''Perform a PCA expansion of fn, shifted over the values in delta. Effectively, a Taylor series approximation to fn(t+delta), in delta, with basis given by the singular value decomposition of the matrix.
 
     >>> from BrainSTAT.fMRIstat.HRF import HRF
@@ -342,6 +350,8 @@ def deltaPCAsvd(fn, delta, dt=Filter.dt, tmax=50., lower=-15.0, ncomp=2):
 
     '''
 
+    if dt is None:
+        dt = self.df
     time = arange(lower, tmax, dt)
     ntime = time.shape[0]
 

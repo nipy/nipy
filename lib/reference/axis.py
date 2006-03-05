@@ -1,10 +1,11 @@
 import numpy as N
 import enthought.traits as traits
 import UserDict
-import tag
+import uuid
 
-valid = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension']
+valid = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension', 'concat']
 space = ['zspace', 'yspace', 'xspace']
+spacetime = ['time', 'zspace', 'yspace', 'xspace']
 
 class Axis(traits.HasTraits):
     """
@@ -13,7 +14,7 @@ class Axis(traits.HasTraits):
     """
     
     name = traits.Str()
-    tag = traits.Int(tag.new())
+    tag = traits.Trait(uuid.Uuid())
 
     def __init__(self, **extra_args):
         traits.HasTraits.__init__(self, **extra_args)

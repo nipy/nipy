@@ -1,6 +1,10 @@
 import warp
+import numpy as N
+from axis import space, RegularAxis, VoxelAxis, Axis
+from coordinate_system import VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
 import enthought.traits as traits
 from slicer import Slicer
+import uuid
 
 class SamplingGrid(traits.HasTraits):
 
@@ -8,11 +12,10 @@ class SamplingGrid(traits.HasTraits):
     shape = traits.ListInt()
     labels = traits.Any()
     itertype = traits.Trait('slice', 'labelled slice', 'voxel list')
+    tag = traits.Trait(uuid.Uuid())
 
     def __init__(self, **keywords):
-        self.args = args
         traits.HasTraits.__init__(self, **keywords)
-        self.build = builder
 
     def range(self):
         """
@@ -29,18 +32,155 @@ class SamplingGrid(traits.HasTraits):
 
     def __iter__(self):
         if self.itertype is 'slice':
-            self.iterator = iter(SliceIterator(self.shape))
+            self.iterator = iter(SliceIterator(shape=self.shape))
         if self.itertype is 'labelled slice':
             self.iterator = iter(LabelledSliceIterator(self.shape, self.labels))
+        return self
 
     def next(self):
         return self.iterator.next()
+
+class ConcatenatedGrids(SamplingGrid):
+    """
+    Return a grid formed by concatenating a sequence of grids. Checks are done
+    to ensure that the coordinate systems are consistent, as is the shape.
+
+    It returns a grid with the proper shape but no inverse.
+
+    This is most likely the kind of grid to be used for fMRI images.
+    """
+    grids = traits.List()
+    concataxis = traits.Str('concat')
+
+    def __init__(self, grids, **keywords):
+
+        traits.HasTraits.__init__(self, grids=grids, **keywords)
+        SamplingGrid.__init__(self, shape=self.shape, warp=self.warp)
+
+    def _grids_changed(self):
+        n = len(self.grids)
+        self.shape = [n] + self.grids[0].shape
+
+        # check shapes are identical
+    
+        s = self.grids[0].shape
+        check = N.sum([self.grids[i].shape == s for i in range(n)])
+        if not check:
+            raise ValueError, 'shape must be the same in ConcatenatedGrids'
+
+        # check input coordinate systems are identical
+    
+        ic = self.grids[0].warp.input_coords
+        check = N.sum([self.grids[i].warp.input_coords == ic for i in range(n)])
+        if not check:
+            raise ValueError, 'input coordinate systems must be the same in ConcatenatedGrids'
+
+        # check output coordinate systems are identical
+    
+        oc = self.grids[0].warp.output_coords
+        check = N.sum([self.grids[i].warp.output_coords == oc for i in range(n)])
+        if not check:
+            raise ValueError, 'output coordinate systems must be the same in concatenate_grids'
+
+        def _warp(x):
+            try:
+                I = x[0].view(N.Int)
+                X = x[1:]
+                v = N.zeros(x.shape[1:], N.Float)
+                for j in I.shape[0]:
+                    v[j] = self.grids[I[j]].warp.map(X[j])
+                return v
+
+            except:
+                i = int(x[0])
+                x = x[1:]
+                return self.grids[i].warp(x)
+            
+        newaxis = Axis(name=self.concataxis)
+        newin = CoordinateSystem('%s:%s' % (ic.name, self.concataxis),
+                                 [newaxis] + ic.axes)
+        newout = CoordinateSystem('%s:%s' % (oc.name, self.concataxis),
+                                 [newaxis] + oc.axes)
+
+        self.warp = warp.Warp(newin, newout, _warp)
+
+    def subgrid(self, i):
+        return self.grids[i]
+                           
+class DuplicatedGrids(ConcatenatedGrids):
+
+    step = traits.Float(1.)
+    start = traits.Float(0.)
+
+    def __init__(self, grid, j, **keywords):
+        ConcatenatedGrids.__init__(self, [grid]*j, **keywords)
+
+    def _grids_changed(self):
+        ConcatenatedGrids._grids_changed(self)
+        ndim = len(self.shape)
+        t = N.zeros((ndim + 1,)*2, N.Float)
+        t[0:(ndim-1),0:(ndim-1)] = self.grids[0].warp.transform[0:(ndim-1),0:(ndim-1)]
+        t[0:(ndim-1),ndim] = self.grids[0].warp.transform[0:(ndim-1),(ndim-1)]
+        t[(ndim-1),(ndim-1)] = self.step
+        t[(ndim-1),ndim] = self.start
+        t[ndim,ndim] = 1.
+        w = warp.Affine(self.warp.input_coords, self.warp.output_coords, t)
+
+def fromStartStepLength(names=space, shape=[], start=[], step=[]):    
+    """
+    Generate a SampingGrid instance from sequences of names, shape, start and step.
+    """
+    indim = []
+    outdim = []
+
+    ndim = len(names)
+
+    # fill in default step size
+    step = N.array(step)
+    step = N.where(step, step, 1.)
+
+    outdim = [RegularAxis(name=names[i], length=shape[i], start=start[i], step=step[i]) for i in range(ndim)]
+    indim = [VoxelAxis(name=names[i], length=shape[i]) for i in range(ndim)]
+    
+    input_coords = VoxelCoordinateSystem('voxel', indim)
+    output_coords = DiagonalCoordinateSystem('world', outdim)
+    transform = output_coords.transform()
+    _warp = warp.Affine(input_coords, output_coords, transform)
+    return SamplingGrid(warp=_warp, shape=list(shape))
+
+def IdentityGrid(shape=(), names=space):
+    """
+    Return the identity SamplingGrid based on a given shape.
+    """
+    
+    ndim = len(shape)
+    w = warp.IdentityWarp(ndim, names=names)
+    return SamplingGrid(shape=list(shape), warp=w)
+    if len(names) != ndim:
+        raise ValueError, 'shape and number of axisnames do not agree'
+
+    return fromStartStepLength(names=names, shape=shape, start=[0]*ndim, step=[1]*ndim)
+
+##     def subgrid(self, i, transform=grid.warp.transform):
+##         ndim = transform.shape[0]-1
+##         t = N.zeros((ndim,)*2, N.Float)
+##         t[0:(ndim-1),:ndim = transform[1:ndim
+## do this in fMRIImage
+
+def matlab2python(grid):
+    shape = grid.shape[::-1]
+    _warp = warp.matlab2python(grid.warp)
+    return SamplingGrid(shape=shape, warp=_warp)
+
+def python2matlab(grid):
+    shape = grid.shape[::-1]
+    _warp = warp.python2matlab(grid.warp)
+    return SamplingGrid(shape=shape, warp=_warp)
 
 class IteratorNext(traits.HasTraits):
     type = traits.Trait('slice', 'labelled slice', 'voxel list')
 
 class SliceIteratorNext(IteratorNext):
-
     slice = traits.Any()
 
 class SliceIterator(Slicer):
@@ -48,51 +188,12 @@ class SliceIterator(Slicer):
     parallel = traits.false
 
     def __init__(self, **keywords):
-        traits.HasTraits.__init__(**keywords)
+        traits.HasTraits.__init__(self, **keywords)
         if self.parallel:
             a, b = prange(self.shape[0])
-        Slicer.__init__(**keywords)
+        Slicer.__init__(self, **keywords)
 
     def next(self):
-        slice, isend = Slicer.next()
+        slice, isend = Slicer.next(self)
         return SliceIteratorNext(slice=slice, type='slice')
 
-class LabelledSliceIteratorNext(SliceIterator):
-
-    labels = traits.Any()
-
-class LabelledSliceIterator(SliceIterator):
-
-    parallel = traits.false
-
-    def __init__(self, labels, **keywords):
-        self.labels = labels
-        SliceIterator.__init__(**keywords)
-
-    def __iter__(self):
-        SliceIterator.__iter__(self)
-        iter(self.labels)
-        self._outshape = self.shape[-self.nslicedim:]
-        self.buffer = zeros(self._outshape, Float).flat
-        self._bufshape = self.buffer.shape
-        self.newslice = True
-        return self
-
-    def next(self):
-        SliceIterator.__next__()
-
-        if self.newslice:
-            self.labelslice = self.labels.next().flat
-            self.newslice = False
-            self._labels = iter(list(sets.Set(self.labelslice)))
-        else:
-            try:
-                label = self._labels.next()
-                keep = N.equal(self.labelslice, label)
-                return LabelledSliceIteratorNext(slice=self.slice, keep=keep,
-                                                 type=self.type, newslice=self.newslice)
-            except StopIteration:
-                self.newslice = True
-                return self.next()
-    
-    

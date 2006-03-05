@@ -1,6 +1,5 @@
 from numpy import *
 from numpy.linalg import generalized_inverse, singular_value_decomposition
-from miscutils import StepFunction
 import filters
 import enthought.traits as traits
 

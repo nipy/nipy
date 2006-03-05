@@ -1,34 +1,33 @@
 from numpy import *
 import hrf, filters
-from miscutils import StepFunction
+from utils import StepFunction
 
 # Use scipy's interpolator
 
 from scipy.interpolate import interp1d
 interpolant = interp1d
 
-
 # Prototypical stimuli: "Event" (on/off) and "Stimuli" (step function)
 # -Event inherits from Stimulus so most functionality is in Stimulus
 # -changes are just in specifying parameters of self.fn
 
-import enthought.traits as TR
+import enthought.traits as traits
 times = arange(0,50,0.1)
 
-class Regressor(TR.HasTraits):
+class Regressor(traits.HasTraits):
 
-    index =TR.Int(0)
-    nout = TR.Int(1)
-    tstat = TR.true
-    fstat = TR.false
-    effect = TR.true
-    sd = TR.true
-    name = TR.Str()
-    fn = TR.Any()
-    IRF = TR.Any()
+    index =traits.Int(0)
+    nout = traits.Int(1)
+    tstat = traits.true
+    fstat = traits.false
+    effect = traits.true
+    sd = traits.true
+    name = traits.Str()
+    fn = traits.Any()
+    IRF = traits.Any()
 
-    windowed = TR.false
-    window = TR.List([0.,0.])
+    windowed = traits.false
+    window = traits.List([0.,0.])
 
     def __call__(self, times=times, **extra):
 
@@ -57,7 +56,7 @@ class Regressor(TR.HasTraits):
                 
         return columns
 
-    def get_name(self, n=0, extra='basis'):
+    def getname(self, n=0, extra='basis'):
         if self.nout == 1:
             return self.name
         else:
@@ -84,23 +83,23 @@ class Regressor(TR.HasTraits):
 
 class Stimulus(Regressor):
 
-    times = TR.Any()
-    values = TR.Any()
+    times = traits.Any()
+    values = traits.Any()
 
     def __init__(self, IRF=None, **keywords):
         Regressor.__init__(self, **keywords)
         self.IRF = IRF
 
 class PeriodicStimulus(Stimulus):
-    n = TR.Int(1)
-    start = TR.Float(0.)
-    duration = TR.Float(3.0)
-    step = TR.Float(6.0) # gap between end of event and next one
-    height = TR.Float(1.0)
+    n = traits.Int(1)
+    start = traits.Float(0.)
+    duration = traits.Float(3.0)
+    step = traits.Float(6.0) # gap between end of event and next one
+    height = traits.Float(1.0)
 
     def __init__(self, IRF=None, **keywords):
 
-        TR.HasTraits.__init__(self, **keywords)
+        traits.HasTraits.__init__(self, **keywords)
         times = [-1.0e-07]
         values = [0.]
 
@@ -139,8 +138,8 @@ class Events(Stimulus):
 
 class InterpolatedConfound(Regressor):
 
-    times = TR.Any()
-    values = TR.Any()
+    times = traits.Any()
+    values = traits.Any()
 
     def __init__(self, **keywords):
         Regressor.__init__(self, **keywords)
@@ -167,9 +166,8 @@ class FunctionConfound(Regressor):
 
 class SplineConfound(FunctionConfound):
 
-    df = TR.Int(4)
-    knots = TR.List()
-    pad = TR.Float(5.0)
+    df = traits.Int(4)
+    knots = traits.List()
 
     def __init__(self, **keywords):
         '''
@@ -193,15 +191,15 @@ class SplineConfound(FunctionConfound):
 
         if self.df >= 4 and not self.knots:
             self.knots = list(trange * arange(1, self.df - 2) / (self.df - 3.0) + tmin)
-        self.knots[-1] = tmax + self.pad # buffer to fix "0 problem" at the end of the spline with slicetimes, will have to be thought out for concatenating runs
+        self.knots[-1] = inf 
 
-        def getspline(a, b):
+        def _getspline(a, b):
             def _spline(x):
                 return x**3 * greater(x, a) * less_equal(x, b)
             return _spline
 
         for i in range(len(self.knots) - 1):
-            self.fn.append(getspline(self.knots[i], self.knots[i+1]))
+            self.fn.append(_getspline(self.knots[i], self.knots[i+1]))
 
         self.nout = self.df
         

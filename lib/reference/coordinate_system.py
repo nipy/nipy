@@ -2,7 +2,7 @@ import numpy as N
 import enthought.traits as traits
 import UserDict
 import axis
-import tag
+import uuid
 
 class CoordinateSystem(traits.HasTraits,UserDict.DictMixin):
     """A simple class to carry around coordinate information in one bundle.
@@ -11,10 +11,10 @@ class CoordinateSystem(traits.HasTraits,UserDict.DictMixin):
 
     name = traits.Str()
     ndim = traits.Int(3)
-    dimnames = traits.ListStr()
     axes = traits.List(axis.generic)
-    tag = traits.Int(tag.new()) 
-
+    tag = traits.Trait(uuid.Uuid())
+    axisnames = traits.ListStr()
+    
     def hasaxis(self, name):
         for axis in self.axes:
             if axis.name == name:
@@ -28,8 +28,8 @@ class CoordinateSystem(traits.HasTraits,UserDict.DictMixin):
                     return axis
         return False
 
-    def __getitem__(self, dimname):
-        if dimname not in self.axisnames:
+    def __getitem__(self, axisname):
+        if axisname not in self.axisnames:
             raise KeyError, 'no such axis'
         else:
             which = self.axisnames.index(dimname)
@@ -114,7 +114,7 @@ class VoxelCoordinateSystem(CoordinateSystem):
                 v = range(self.shape[i])
             self._box.append(min(v), max(v))
 
-class OrthogonalCoordinateSystem(VoxelCoordinateSystem):
+class DiagonalCoordinateSystem(VoxelCoordinateSystem):
 
     axes = traits.List(axis.MNI)
 
@@ -139,4 +139,4 @@ class OrthogonalCoordinateSystem(VoxelCoordinateSystem):
 
 MNI_voxel = VoxelCoordinateSystem('MNI_voxel', axis.generic, [dim.length for dim in axis.MNI])
 
-MNI_world = OrthogonalCoordinateSystem('MNI_world', axis.MNI)
+MNI_world = DiagonalCoordinateSystem('MNI_world', axis.MNI)

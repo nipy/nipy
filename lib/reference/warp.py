@@ -1,7 +1,8 @@
+import csv, string
 import numpy as N
 from numpy.linalg import inverse
 from numpy.random import standard_normal
-import coordinate_system
+import coordinate_system, axis
 import string, sets, StringIO, urllib, re, struct
 import enthought.traits as traits
 
@@ -10,6 +11,71 @@ def _2matvec(transform):
     matrix = transform[0:ndim,0:ndim]
     vector = transform[0:ndim,ndim]
     return matrix, vector
+
+def tofile(warp, filename):
+    if not isinstance(warp, Affine):
+        raise NotImplementedError, 'only Affine transformations can be written out'
+
+    t = warp.transform
+
+    matfile = file(filename, 'w')
+    writer = csv.writer(matfile, delimiter='\t')
+    for row in t:
+        writer.writerow(row)
+    matfile.close()
+    return
+
+def fromfile(filename, names=axis.space, input='voxel', output='world', delimiter='\t'):
+    """
+    Read in an affine transformation matrix and return an instance of Affine
+    with named axes and input and output coordinate systems.
+
+    For now, the format is assumed to be a tab-delimited file.
+    Other formats should be added.
+    """
+    matfile = file(filename)
+    t = []
+    reader = csv.reader(matfile, delimiter=delimiter)
+    for row in reader:
+        t.append(map(string.atof, row))
+    t = N.array(t)
+    matfile.close()
+    return frommatrix(t, names=names, input=input, output=output)
+
+def isdiagonal(matrix, tol=1.0e-7):
+    ndim = matrix.shape[0]
+    D = N.diag(N.diagonal(matrix))
+    dmatrix = matrix - D
+    dmatrix.shape = (ndim,)*2
+    dnorm = N.add.reduce(dmatrix**2)
+    fmatrix = 1. * matrix
+    fmatrix.shape = dmatrix.shape
+    norm = N.add.reduce(fmatrix**2)
+    if N.add.reduce(dnorm / norm) < tol:
+        return True
+    else:
+        return False
+
+def frommatrix(matrix, names=axis.space, input='voxel', output='world'):
+    """
+    Return an Affine instance with named axes and input and output coordinate systems.
+    """
+    ndim = matrix.shape[0] - 1
+
+    inaxes = []
+    outaxes = []
+    for i in range(ndim):
+        inaxes.append(axis.Axis(name=names[i]))
+        outaxes.append(axis.Axis(name=names[i]))
+    incoords = coordinate_system.CoordinateSystem('input', inaxes)
+    outcoords = coordinate_system.CoordinateSystem('input', inaxes)
+    return Affine(incoords, outcoords, matrix)
+
+def IdentityWarp(ndim=3, names=axis.space, input='voxel', output='world'):
+    """
+    Identity Affine transformation.
+    """
+    return frommatrix(N.identity(ndim+1), names=names, input=input, output=output)
 
 class Warp(traits.HasTraits):
     """
@@ -112,7 +178,7 @@ class Warp(traits.HasTraits):
                 _shape = voxel.shape[1:]
             except:
                 _shape = ()
-            _voxel = N.zeros((ndim,) + _shape, Float)
+            _voxel = N.zeros((ndim,) + _shape, N.Float)
             for dimname in which.keys():
                 _voxel[_map[dimname]] = which[dimname]
             for i in range(len(order)):
@@ -129,11 +195,8 @@ class Affine(Warp):
     A class representing an affine transformation in n axes.
     """
 
-    shape = traits.ListInt()
-
-    def __init__(self, input_coords, output_coords, transform, name='transform', shape=[]):
+    def __init__(self, input_coords, output_coords, transform, name='transform'):
         self.name = name
-        self.shape = shape
         self.input_coords = input_coords
         self.output_coords = output_coords
         self.transform = transform
@@ -167,15 +230,13 @@ class Affine(Warp):
         incoords = coordinates_system.CoordinateSystem(inname, indim)
         
         outdim = [self.output_coords.axes[i] for i in order]
-        if hasattr(self, 'shape'):
-            _shape = [self.shape[i] for i in order]
 
         if outname is None:
             outname = 'world'
         outcoords = coordinate_system.CoordinateSystem(outname, outdim)
 
         l = len(order)
-        transform = N.zeros((l+1,)*2, Float)
+        transform = N.zeros((l+1,)*2, N.Float)
         transform[l,l] = 1.0
         for i in range(l):
             for j in range(l):
@@ -197,7 +258,7 @@ class Affine(Warp):
         if not inverse:
             value = N.dot(self.fmatrix, coords)
             if len(value.shape) > 1:
-                value = value + multiply.outer(self.fvector, N.ones(value.shape[1]))
+                value = value + N.multiply.outer(self.fvector, N.ones(value.shape[1]))
             elif alpha != 0.0:
                 value = value + self.fvector * alpha # for derivatives, we don't want translation...
         else:
@@ -264,7 +325,7 @@ def permutation_matrix(order=range(3)[2::-1]):
 def permutation_transform(order=range(3)[2::-1]):
     """Create an (N+1)x(N+1) permutation transformation from a sequence, containing the values 0,...,N-1."""
     ndim = len(order)
-    ptransform = N.zeros((ndim+1,ndim+1),Float)
+    ptransform = N.zeros((ndim+1,ndim+1), N.Float)
     ptransform[0:ndim,0:ndim] = permutation_matrix(order=order)
     ptransform[ndim,ndim] = 1.
 
@@ -279,30 +340,27 @@ def _translation_transform(x, ndim):
 def linearize(warp, seed=None):
     d = warp.ndim
     if seed is None:
-        seed = N.zeros(d, Float)
+        seed = N.zeros(d, N.Float)
     shift = warp(seed)
-    A = N.zeros((d,)*2, Float)
+    A = N.zeros((d,)*2, N.Float)
 
     for i in range(d):
-        dx = N.zeros(d, Float)
+        dx = N.zeros(d, N.Float)
         dx[i] = 1.
         A[i] = warp(seed + dx) - warp(seed)
 
-    transform = N.zeros((warp.ndim+1,)*2, Float)
+    transform = N.zeros((warp.ndim+1,)*2, N.Float)
     transform[0:warp.ndim,0:warp.ndim] = A
     transform[0:warp.ndim,warp.ndim] = shift
     transform[warp.ndim,warp.ndim] = 1.
     w = Affine(warp.input_coords, warp.output_coords, transform)
-    if hasattr(warp, 'shape'):
-        w.shape = list(warp.shape)
     return w
 
 def tovoxel(real, warp):
     """Given a warp and a real coordinate, where warp.input_coords are assumed to be voxels, return the closest voxel for real. Will choke if warp is not invertible."""
     _shape = real.shape
     real.shape = (_shape[0], product(_shape[1:]))
-    voxel = N.around(warp.map(real, inverse=True)).astype(Int)
-    voxel = N.array([clip(voxel[i], 0, warp.shape[i]-1) for i in range(warp.ndim)])
+    voxel = N.around(warp.map(real, inverse=True))
     real.shape = _shape
     voxel.shape = _shape
     return N.array(voxel)
@@ -313,7 +371,7 @@ def matlab2python(warp):
     """
 
     ndim = warp.input_coords.ndim
-    t1 = N.zeros((ndim+1,)*2, Float)
+    t1 = N.zeros((ndim+1,)*2, N.Float)
     t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
     t1[ndim, ndim] = 1.0
 
@@ -322,7 +380,7 @@ def matlab2python(warp):
 
     n = warp.ndim
     d1 = [warp.input_coords.axes[n-1-i] for i in range(n)]
-    in1 = coordinate_system.VoxelCoordinateSystem(warp.input_coords.name, d1)
+    in1 = coordinate_system.CoordinateSystem(warp.input_coords.name, d1)
     w1 = Affine(in1, warp.input_coords, t1)
     
     d2 = [warp.output_coords.axes[n-1-i] for i in range(n)]
@@ -331,6 +389,8 @@ def matlab2python(warp):
 
     w = (w2 * warp) * w1
     return w
+
+fortran2C = matlab2python
 
 def python2matlab(warp):
     """
@@ -338,16 +398,16 @@ def python2matlab(warp):
     """
 
     ndim = warp.input_coords.ndim
-    t1 = N.zeros((ndim+1,)*2, Float)
+    t1 = N.zeros((ndim+1,)*2, N.Float)
     t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
     t1[ndim, ndim] = 1.0
 
     t2 = 1. * t1
-    t2[0:ndim,ndim] = -1.0
+    t1[0:ndim,ndim] = -1.0
 
     n = warp.ndim
     d1 = [warp.input_coords.axes[n-1-i] for i in range(n)]
-    in1 = coordinate_system.VoxelCoordinateSystem(warp.input_coords.name, d1)
+    in1 = coordinate_system.CoordinateSystem(warp.input_coords.name, d1)
     w1 = Affine(in1, warp.input_coords, t1)
     
     d2 = [warp.output_coords.axes[n-1-i] for i in range(n)]
@@ -357,6 +417,8 @@ def python2matlab(warp):
     w = (w2 * warp) * w1
 
     return w
+
+C2fortran = python2matlab
 
 MNI_warp = Affine(coordinate_system.MNI_voxel, coordinate_system.MNI_world, coordinate_system.MNI_world.transform())
 MNI_warp([36,63,45])

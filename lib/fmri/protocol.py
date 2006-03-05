@@ -18,17 +18,23 @@ class ExperimentalRegressor(traits.HasTraits):
         other = ExperimentalFormula(other)
         return other * self
 
-    def convolve(self):
-        _fn = self.IRF.convolve(self)
-        def _f(_fn=_fn, **keywords):
-            
-            return _fn(**keywords)
+    def convolve(self, IRF):
+        _fn = IRF.convolve(self)
+        def _f(time=None, _fn=tuple(_fn), **keywords):
+            v = []
+            for __fn in _fn:
+                try:
+                    v.append(__fn(time, **keywords))
+                except:
+                    for ___fn in __fn:
+                        v.append(___fn(time, **keywords))
+            return N.array(v)
+        
         name = []
-        for hrfname in self.IRF.names:
+        for hrfname in IRF.names:
             for varname in self.names():
-                name.append('%s*%s' % (hrfname, varname))
-        name = name
-        return ExperimentalQuantitative(name, _f, varname='%s*%s' % (hrfname, self.varname))
+                name.append('(%s**%s)' % (hrfname, varname))
+        return ExperimentalQuantitative(name, _f, varname='(%s**%s)' % (hrfname, self.varname))
 
 class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
     """
@@ -36,22 +42,25 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
     based on a function fn.
     """
 
-    def __init__(self, name, fn, **keywords):
+    def __init__(self, name, fn, varname=None, **keywords):
 
         self.fn = fn
         self.name = name
-        if not keywords.has_key('varname'):
-            namespace[name] = self
-        else:
-            namespace[keywords['varname']] = self
+        if varname is None:
+            varname = name
+        namespace[varname] = self
             
         test = self.fn(N.array([4.0]))
         n = len(test)
+
         if n > 1:
-            names = ['%s:%d' % (name, i) for i in range(n)]
+            if type(name) in [type([]), type(())]:
+                names = name
+            else:
+                names = ['(%s:%d)' % (name, i) for i in range(n)]
         else:
             names = name
-        Quantitative.__init__(self, names, fn, **keywords)
+        Quantitative.__init__(self, names, _fn=fn, varname=varname, **keywords)
         
     def __call__(self, time=None, namespace=namespace, **keywords):
         return self.fn(time, **keywords)
@@ -80,6 +89,11 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
         The fourth being an optional
         float for the height during the interval [Start,Stop] which defaults to 1.
         """
+
+        if type(iterator) is types.StringType:
+            iterator = csv.reader(file(iterator))
+        elif type(iterator) is types.FileType:
+            iterator = csv.reader(iterator)
 
         self.event = Events(name=self.name)
 
@@ -136,6 +150,11 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         float for the height during the interval [Start,Stop] which defaults to 1.
         """
 
+        if type(iterator) is types.StringType:
+            iterator = csv.reader(file(iterator))
+        elif type(iterator) is types.FileType:
+            iterator = csv.reader(iterator)
+
         self.events = {}
         for row in iterator:
             eventtype, start, end = row
@@ -174,44 +193,22 @@ class ExperimentalFormula(Formula):
 
         tmp = N.concatenate(allvals)
 
-        names = self.names()
-        keep = []
-        for i in range(len(names)):
-            name = names[i]
-            print name
-            if name.find(downtime) < 0:
-                keep.append(i)
+        names, keep = self.names(keep=True)
 
         return N.array([tmp[i] for i in keep])
 
-if __name__ == '__main__':
+    def names(self, keep=False):
+        names = Formula.names(self)
+        
+        _keep = []
+        for i in range(len(names)):
+            name = names[i]
+            if name.find(downtime) < 0:
+                _keep.append(i)
 
-    import hrf
-     
-    t = N.arange(0,300,1)
+        if not keep:
+            return [names[i] for i in _keep]
+        else:
+            return [names[i] for i in _keep], _keep
 
-    p = ExperimentalFactor('pain', csv.reader(file('pain.csv')))
-    print p.names()
 
-    notconvolved = p(t)
-    print notconvolved.shape
-
-    p.IRF = hrf.HRF(deriv=True)
-    p.convolve()
-
-    pc = convolved = p(t)
-    print convolved.shape
-
-    drift = ExperimentalQuantitative('drift', SplineConfound(window=[0,300]))
-
-    formula = p + drift * pc
-
-    y = formula(t)
-    import pylab
-    for i in range(y.shape[0]):
-        pylab.plot(t, y[i])
-        pylab.figure()
-#    pylab.show()
-
-    d = formula.design(t)
-    print d.shape

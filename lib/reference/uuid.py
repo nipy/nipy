@@ -36,8 +36,10 @@ import struct, random, binascii
 
 #----------------------------------------------------------------------------
 class Uuid:
-  '''An Uuid instance is a universal unique identifier. It is a 128 bits
-  random value.'''
+  '''
+  An Uuid instance is a universal unique identifier. It is a 128 bits
+  random value.
+  '''
   
   def __init__( self, string_uuid=None ):
     if string_uuid is None:
@@ -63,8 +65,11 @@ class Uuid:
     return hash( self.uuid )
   
   def __eq__( self, other ):
-    return self.uuid == other.uuid
-    
+    if hasattr(other, 'uuid'):
+      return self.uuid == other.uuid
+    else:
+      return False
+
 #----------------------------------------------------------------------------
 def getUuid( object ):
   if isinstance( object, Uuid ):

@@ -68,8 +68,8 @@ class Factor(NamedVariable):
     ordinal = traits.false
 
     def __init__(self, name, keys, ordinal=False):
-        self.keys = sets.Set(keys)
-        self.keylist = list(self.keys)
+        self.keys = list(sets.Set(keys))
+        self.keys.sort()
         self._name = name
         self.name = name
         self.ordinal = ordinal
@@ -77,12 +77,11 @@ class Factor(NamedVariable):
         self.variables = {}
 
         if self.ordinal:
-            self.keylist.sort()
             self._sort = True
 
             def _fn(namespace, key=key):
                 v = namespace[self._name]
-                col = [float(self.keylist.index(v[i])) for i in range(n)]
+                col = [float(self.keys.index(v[i])) for i in range(n)]
                 return N.array(col)
             NamedVariable.__init__(self, self.name, _fn=_fn)
 
@@ -90,7 +89,7 @@ class Factor(NamedVariable):
             def _fn(namespace):
                 v = namespace[self._name]
                 value = []
-                for key in keys:
+                for key in self.keys:
                     col = [float((v[i] == key)) for i in range(len(v))]
                     value.append(col)
                 return N.array(value)
@@ -108,7 +107,7 @@ class Factor(NamedVariable):
         if self.ordinal:
             self.name = self._name
             if not hasattr(self, '_sort'):
-                self.keylist.sort()
+                self.keys.sort()
                 self._sort = True
         else:
             self.name = [str(key) for key in self.keys]
