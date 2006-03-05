@@ -37,5 +37,14 @@ class Slicer(TR.HasTraits):
                 self.slice[i-1] = self.slice[i-1] + 1
         value = list(value)
         value[0] = value[0] + self.shift
-        return tuple(value), self.isend
+
+        if len(value) > 1:
+            return tuple(value), self.isend
+        else:
+            if value[0] > 0:
+                value = slice(value[0],value[0]+1)
+            else:
+                value = slice(0,1)
+            return value, self.isend
+
 

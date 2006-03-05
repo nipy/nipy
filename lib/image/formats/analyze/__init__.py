@@ -234,10 +234,10 @@ class ANALYZE(ANALYZEhdr):
     _mode = traits.Trait(['rb', 'wb', 'rb+'])
     clobber = traits.false
 
-    # Reorder flags 
+    # Use mat file if it's there?
+    # This will cause a problem for 4d files occasionally
 
-    reorder_xfm = traits.true
-    reorder_dims = traits.true
+    usematfile = traits.true
 
     # Try to squeeze 3d files?
 
@@ -246,6 +246,16 @@ class ANALYZE(ANALYZEhdr):
     # Vector axis?
 
     nvector = traits.Int(-1)
+
+    # grid
+
+    grid = traits.Any()
+
+    def _grid_changed(self):
+        try:
+            self.ndim = len(self.grid.shape)
+        except:
+            pass
 
     def _datatype_changed(self):
         self.getdtype()
@@ -261,7 +271,6 @@ class ANALYZE(ANALYZEhdr):
         
     def _dimfromgrid(self, grid):
         self.grid = python2matlab(grid)
-        self.ndim = len(self.grid.shape)
             
         if not isinstance(self.grid.warp, Affine):
             raise ValueError, 'error: non-Affine grid in writing out ANALYZE file'
@@ -284,6 +293,9 @@ class ANALYZE(ANALYZEhdr):
                 _pixdim[i+1] = 1.
         self.dim = _dim
         self.pixdim = _pixdim
+        if _diag:
+            origin = self.grid.warp.map([0]*self.ndim, inverse=True)
+            self.origin = list(origin) + [0]*(5-origin.shape[0])
         if not _diag:
             self.origin = [0]*5
         
@@ -298,7 +310,12 @@ class ANALYZE(ANALYZEhdr):
 
             # create empty file
 
-            self.write((0,)*self.ndim, N.zeros(self.grid.shape, N.Float))     
+            utils.writebrick(file(self.imgfilename(), 'w'),
+                             (0,)*self.ndim,
+                             N.zeros(self.grid.shape, N.Float),
+                             self.grid.shape,
+                             byteorder=self.byteorder,
+                             outtype = self.typecode)
 
         self.readheader()
 
@@ -310,7 +327,6 @@ class ANALYZE(ANALYZEhdr):
             step = self.pixdim[1:4]
             shape = self.dim[1:4]
         elif self.ndim == 4 and self.nvector <= 1:
-            self.ndim = 3
             axisnames = space[::-1] + ['time']
             origin = tuple(self.origin[0:3]) + (0,)
             step = tuple(self.pixdim[1:4]) + (self.TR,)
@@ -322,7 +338,6 @@ class ANALYZE(ANALYZEhdr):
                     axisnames = axisnames[0:3]
                     shape = self.dim[1:4]
         elif self.ndim == 4 and self.nvector > 1:
-            self.ndim = 3
             axisnames = ['vector_dimension'] + space[::-1]
             origin = (0,) + self.origin[0:3]
             step = (1,) + tuple(self.pixdim[1:4])  
@@ -341,8 +356,10 @@ class ANALYZE(ANALYZEhdr):
                                         step=step,
                                         start=-N.array(origin)*step)
 
-        mat = self.readmat()
-        self.grid.warp = mat * self.grid.warp
+        if self.usematfile:
+            mat = self.readmat()
+            self.grid.warp = mat * self.grid.warp
+
         self.grid = matlab2python(self.grid) # assumes .mat
                                              # matrix is FORTRAN indexing
 
@@ -394,29 +411,6 @@ class ANALYZE(ANALYZEhdr):
 
         if self.clobber or not os.path.exists(matfile):
             warp.tofile(self.grid.warp, matfile)
-
-
-    def read(self, start, count, offset=0, **keywords):
-
-        return_value = utils.readbrick(file(self.imgfilename()), start, count, self.grid.shape, byteorder=self.byteorder, intype=self.typecode)
-
-        if self.funused1:
-            return_value = self.funused1 * return_value
-
-        return return_value
-
-    def write(self, start, data, offset = 0, mode='r+', **keywords):
-
-        if self.funused1:
-            outdata = data / self.funused1    #funused1 is the scale
-        else:
-            outdata = data
-        if len(start) == 3 and len(self.grid.shape) == 4 and self.grid.shape[0] == 1:
-            newstart = (0,) + tuple(start) # Is the ANALYZE file "really 3d"?
-        else:
-            newstart = start
-        utils.writebrick(file(self.imgfilename(), self._mode), newstart, outdata, self.grid.shape, byteorder = self.byteorder, outtype = self.typecode, offset = offset)
-        return 
 
 def guess_endianness(hdrfile):
     """

@@ -48,9 +48,6 @@ class Image(traits.HasTraits):
         self.shape = list(self.grid.shape)
         self.ndim = len(self.shape)
 
-##         self.spatial_grid = Grid.linearize(self.grid).subset(spacedims)
-##         self.spatial_shape = list(self.spatial_grid.shape)
-
     def __del__(self):
         if self.isfile:
             try:
@@ -76,42 +73,38 @@ class Image(traits.HasTraits):
         Create an iterator over an image based on its grid's iterator.
         """
         iter(self.grid)
+
+        if self.grid.itertype is 'parcel':
+            self.buffer = self.readall()
+            self.buffer.shape = N.product(self.buffer.shape)
         return self
 
     def next(self, data=None, callgrid=True, type=None):
-        if callgrid:
-            self._itervalue = self.grid.next()
 
-        value = self._itervalue
+        value = self.grid.next()
 
         if type is None:
             type = value.type
 
         if type is 'slice':
-            slice = value.slice
             if data is None:
-                return_value = self.getslice(slice)
+                return_value = N.squeeze(self.getslice(value.slice))
                 return return_value
             else:
-                self.writeslice(slice, data)
+                self.writeslice(value.slice, data)
 
-        elif type is 'labelled slice':
-            if value.newslice:
-                if data is None:
-                    self.buffer = self.next(self, type='slice')
-                    self.buffer.shape = self._bufshape
-                else:
-                    self.buffer = self.fill * self.buffer
-            if value.keep:
-                if data is None:
-                    return compress(value.keep, self.buffer)
-                else:
-                    self.buffer[value.keep] = data
+        elif type is 'parcel':
+            if data is None:
+                value.where.shape = N.product(value.where.shape)
+                self.label = value.label
+                return self.buffer.compress(value.where, axis=0)
             else:
-                if data is not None:
-                    self.buffer.shape = self._outshape
-                    self.next(self, type='slice', data=self.buffer, callgrid=False)
-                    self.buffer.shape = self._bufshape
+                indices = N.nonzero(value.where)
+                self.buffer.put(data, indices)
+                try:
+                    self.buffer.sync()
+                except:
+                    pass
 
     def getvoxel(self, voxel):
         if len(voxel) != self.ndim:
@@ -132,6 +125,7 @@ class Image(traits.HasTraits):
         >>> print _test.shape
         (13, 128, 128)
         '''
+
         if self.isfile:
             self.close()
 
@@ -188,41 +182,4 @@ class Image(traits.HasTraits):
 
     def check_grid(self, test):
         return self.grid == test.grid
-
-## class fMRIImage(Image):
-##     TR = traits.Float(2.0)
-
-##     def __iter__(self, mode='r'):
-##         self.nloopdim = self.ndim - 1 - self.nslicedim
-
-## ##        self.slicer = iter(Slicer((b-a,) + tuple(self.shape[2:]), nloopdim = self.nloopdim, shift=a))
-##         return self
-
-##     def next(self, data = None):
-##         self.slice, isend = self.slicer.next()
-##         return_value = N.zeros([self.shape[0]] + self.shape[-self.nslicedim:], N.Float)
-##         if data is None:
-##             for i in range(self.shape[0]):
-##                 return_value[i] = self.getslice((i,) + self.slice)
-##             if isend:
-##                 self.close()
-##             return return_value
-##         else:
-##             for i in range(self.shape[0]):
-##                 self.writeslice((i,) + self.slice, data[i])
-##             if isend:
-##                 self.close()
-##             return None
-
-##     def tofile(self, filename, **keywords):
-##         Image.tofile(self, filename, array=False, **keywords)
-        
-##     def frame(self, i, **keywords):
-##         return self.toarray(slice=(i,))
-
-##     def timeseries(self, voxel, **keywords):
-##         timeseries = N.zeros((self.shape[0],), N.Float)
-##         for i in range(self.shape[0]):
-##             timeseries[i] = float(self.getslice((i,) + tuple(voxel), **keywords))
-##         return timeseries
 

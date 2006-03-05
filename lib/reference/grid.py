@@ -1,17 +1,18 @@
-import warp
+import enthought.traits as traits
 import numpy as N
+
+import warp
 from axis import space, RegularAxis, VoxelAxis, Axis
 from coordinate_system import VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
-import enthought.traits as traits
-from slicer import Slicer
 import uuid
+from grid_iterators import SliceIterator, ParcelIterator
 
 class SamplingGrid(traits.HasTraits):
 
     warp = traits.Any()
     shape = traits.ListInt()
     labels = traits.Any()
-    itertype = traits.Trait('slice', 'labelled slice', 'voxel list')
+    itertype = traits.Trait('slice', 'parcel')
     tag = traits.Trait(uuid.Uuid())
 
     def __init__(self, **keywords):
@@ -32,9 +33,9 @@ class SamplingGrid(traits.HasTraits):
 
     def __iter__(self):
         if self.itertype is 'slice':
-            self.iterator = iter(SliceIterator(shape=self.shape))
-        if self.itertype is 'labelled slice':
-            self.iterator = iter(LabelledSliceIterator(self.shape, self.labels))
+            self.iterator = iter(SliceIterator(self.shape))
+        elif self.itertype is 'parcel':
+            self.iterator = iter(ParcelIterator(self.shape, self.labels))
         return self
 
     def next(self):
@@ -161,12 +162,6 @@ def IdentityGrid(shape=(), names=space):
 
     return fromStartStepLength(names=names, shape=shape, start=[0]*ndim, step=[1]*ndim)
 
-##     def subgrid(self, i, transform=grid.warp.transform):
-##         ndim = transform.shape[0]-1
-##         t = N.zeros((ndim,)*2, N.Float)
-##         t[0:(ndim-1),:ndim = transform[1:ndim
-## do this in fMRIImage
-
 def matlab2python(grid):
     shape = grid.shape[::-1]
     _warp = warp.matlab2python(grid.warp)
@@ -176,24 +171,4 @@ def python2matlab(grid):
     shape = grid.shape[::-1]
     _warp = warp.python2matlab(grid.warp)
     return SamplingGrid(shape=shape, warp=_warp)
-
-class IteratorNext(traits.HasTraits):
-    type = traits.Trait('slice', 'labelled slice', 'voxel list')
-
-class SliceIteratorNext(IteratorNext):
-    slice = traits.Any()
-
-class SliceIterator(Slicer):
-
-    parallel = traits.false
-
-    def __init__(self, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
-        if self.parallel:
-            a, b = prange(self.shape[0])
-        Slicer.__init__(self, **keywords)
-
-    def next(self):
-        slice, isend = Slicer.next(self)
-        return SliceIteratorNext(slice=slice, type='slice')
 

@@ -14,7 +14,7 @@ class DataFetcher(traits.HasTraits):
     urlfile = traits.Str()
     urlbase = traits.Str()
     realm = traits.Str()
-    repository = traits.Trait([None, traits.Str()])#_repository['local'])
+    repository = traits.Str('.')
     chmod = traits.Int(stat.S_IWUSR|stat.S_IROTH|stat.S_IRGRP|stat.S_IRUSR)
     user = traits.Str('anonymous')
     passwd = traits.Str('anonymous@')
@@ -24,6 +24,7 @@ class DataFetcher(traits.HasTraits):
     urlstrip = traits.Str()
     otherexts = traits.ListStr()
     zipexts = traits.ListStr(['.gz'])
+    cached = traits.false()
 
     def urldecompose(self):
         self.urltype, self.urlbase = urllib.splittype(self.url)
@@ -61,11 +62,18 @@ class DataFetcher(traits.HasTraits):
             filebase, ext = os.path.splitext(self.urlfile)
 
         exts = []
-        for zipext in self.zipexts + ['']:
+        for base in [ext] + self.otherexts:
+            exts.append(filebase + base)
+
+        zipexts = []
+        for zipext in self.zipexts:
             for base in [ext] + self.otherexts:
-                exts.append(filebase + base + zipext)
+                zipexts.append(filebase + base + zipext)
+
         exts = list(sets.Set(exts))
-        return exts
+        zipexts = list(sets.Set(zipexts))
+        
+        return exts, zipexts
     
     def geturl(self, url, tryexts=True, force=False):
 
@@ -75,37 +83,36 @@ class DataFetcher(traits.HasTraits):
         if os.path.exists(self.url):
             return self.url
 
+        self.cached = True
         self.urldecompose()
 
-        if self.repository is None:
-            outdir = '.'
-        else:
-            outdir = os.path.join(self.repository, os.path.dirname(self.urlcompose(type=False)))
-            if not os.path.exists(outdir):
-                os.makedirs(outdir)
+        outdir = os.path.join(self.repository, os.path.dirname(self.urlcompose(type=False)))
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
 
         if tryexts:
-            exts = self.getexts()
+            exts, zipexts = self.getexts()
         else:
-            exts = [self.urlfile]
+            exts, zipexts = [self.urlfile]
             
         rmfiles = []
         goodexts = []
-        for ext in exts:
+        for ext in exts + zipexts:
             _url = self.urlcompose(type=False, urlfile=ext)
             url = self.urlcompose(urlfile=ext)
             outname = os.path.join(self.repository, _url)
-            if not os.path.exists(outname) or force:
+            if ext in zipexts:
+                _outname, junk = os.path.splitext(outname)
+                _exists = os.path.exists(_outname)
+            else:
+                _exists = os.path.exists(outname)
+            if not _exists or force:
                 check = self.urlretrieve(url, writer=file(outname, 'w'))
                 if not check:
-                    rmfiles.append(outname)
+                    os.remove(outname)
                 else:
                     goodexts.append(ext)
-                filebase, ext = os.path.splitext(outname)
 
-        for rmfile in rmfiles:
-            os.remove(rmfile)
-            
         for ext in goodexts:
             _url = self.urlcompose(type=False, urlfile=ext)
             outname = os.path.join(self.repository, _url)
