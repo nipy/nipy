@@ -45,18 +45,37 @@ class fMRIParcelIterator(grid.ParcelIterator):
 
     nframe = traits.Int()
 
-    def __init__(self, shape, labels, labelset, **keywords):
-        grid.ParcelIterator.__init__(self, shape, labels, labelset, **keywords)
-        self.nframe = shape[0]
+    def __init__(self, labels, labelset, **keywords):
+        grid.ParcelIterator.__init__(self, labels, labelset, **keywords)
 
 class fMRISamplingGrid(grid.SamplingGrid):
+
+    def __init__(self, **keywords):
+        grid.SamplingGrid.__init__(self, **keywords)
 
     def __iter__(self):
         if self.itertype is 'slice':
             self.iterator = iter(fMRISliceIterator(shape=self.shape))
         if self.itertype is 'parcel':
-            self.iterator = iter(fMRIParcelIterator(self.shape, self.labels, self.labelset))
+            self.iterator = iter(fMRIParcelIterator(self.labels, self.labelset))
         return self
+
+    def isproduct(self, tol = 1.0e-07):
+        """
+        Determine whether the affine transformation is \'diagonal\' in time.
+        """
+
+        if isinstance(self.warp, warp.Affine):
+            n = len(self.shape)
+            t = self.warp.transform
+            offdiag = N.add.reduce(t[1:n,0]**2) + N.add.reduce(t[0,1:n]**2)
+            norm = N.add.reduce(N.add.reduce(t**2))
+            if N.sqrt(offdiag / norm) < tol:
+                return True
+            else:
+                return False
+        else:
+            return False
 
     def subgrid(self, i):
         """
@@ -68,19 +87,6 @@ class fMRISamplingGrid(grid.SamplingGrid):
         map in the original output coordinate system.
         """
 
-        tol = 1.0e-07
-
-        if isinstance(self.warp, warp.Affine):
-            n = len(self.shape)
-            t = self.warp.transform
-            offdiag = N.add.reduce(t[1:n,0]**2) + N.add.reduce(t[0,1:n]**2)
-            norm = N.add.reduce(N.add.reduce(t**2))
-            if N.sqrt(offdiag / norm) < tol:
-                isaffine = True
-            else:
-                isaffine = False
-        else:
-            isaffine = False
 
         inaxes = self.warp.input_coords.axes[1:]
         incoords = coordinate_system.CoordinateSystem(self.warp.input_coords.name+'-subgrid', inaxes)
@@ -90,16 +96,14 @@ class fMRISamplingGrid(grid.SamplingGrid):
             outcoords = coordinate_system.CoordinateSystem(self.warp.output_coords.name, outaxes)        
 
             W = warp.Affine(incoords, outcoords, self._maps[i])
-
-        elif isaffine:
-
+        elif self.isproduct():
             outaxes = self.warp.output_coords.axes[1:]
             outcoords = coordinate_system.CoordinateSystem(self.warp.output_coords.name, outaxes)        
 
+            t = self.warp.transform
             t = t[1:,1:]
             W = warp.Affine(incoords, outcoords, t)
         else:
-
             outaxes = self.warp.output_coords.axes[1:]
             outcoords = coordinate_system.CoordinateSystem(self.warp.output_coords.name, outaxes)        
 
@@ -117,10 +121,18 @@ class fMRISamplingGrid(grid.SamplingGrid):
 class fMRIImage(image.Image):
     frametimes = traits.Any()
     slicetimes = traits.Any()
+    TR = traits.Any()
 
     def __init__(self, _image, **keywords):
         image.Image.__init__(self, _image, **keywords)
         self.grid = fMRISamplingGrid(warp=self.grid.warp, shape=self.grid.shape)
+        if self.grid.isproduct():
+            ndim = len(self.grid.shape)
+            n = [self.grid.warp.input_coords.axisnames[i] for i in range(ndim)]
+            d = n.index('time')
+            self.TR = self.grid.warp.transform[d, d] # 
+            start = self.grid.warp.transform[d, ndim]
+            self.frametimes = start + N.arange(self.grid.shape[d]) * self.TR
 
     def tofile(self, filename, **keywords):
         image.Image.tofile(self, filename, array=False, **keywords)
@@ -128,21 +140,28 @@ class fMRIImage(image.Image):
     def frame(self, i, **keywords):
         return self.toarray(slice=(slice(i)))
 
-    def next(self, data=None, callgrid=True, type=None):
+    def next(self, value=None, data=None):
+        """
+        The value argument here is used when, for instance one wants to
+        iterate over one image with a ParcelIterator and write out data
+        to this image without explicitly setting this image's grid to
+        the original image's grid, i.e. to just take the value the
+        original image's iterator returns and use it here.
+        """
+        if value is None:
+            self.itervalue = self.grid.next()
+            value = self.itervalue
 
-        value = self.grid.next()
+        itertype = value.type
 
-        if type is None:
-            type = value.type
-
-        if type is 'slice':
+        if itertype is 'slice':
             if data is None:
                 return_value = N.squeeze(self.getslice(value.slice))
                 return return_value
             else:
                 self.writeslice(value.slice, data)
 
-        elif type is 'parcel':
+        elif itertype is 'parcel':
             if data is None:
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label

@@ -74,9 +74,7 @@ class AnalyzeImageTest(unittest.TestCase):
     def test_labels1(self):
         rho = Image('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
         labels = (rho.readall() * 100).astype(N.Int)
-        L = Image(labels, grid=rho.grid)
-        test = Image(N.zeros(L.grid.shape), grid=rho.grid)
-
+        test = Image(N.zeros(labels.shape), grid=rho.grid)
         test.grid.itertype = 'parcel'
         test.grid.labels = labels
         labels.shape = N.product(labels.shape)
@@ -105,6 +103,23 @@ class AnalyzeImageTest(unittest.TestCase):
                 v += 1
             except StopIteration:
                 break
+
+    def test_labels3(self):
+        rho = Image('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
+        labels = (rho.readall() * 100).astype(N.Int)
+        shape = labels.shape
+        labels.shape = N.product(labels.shape)
+        labelset = sets.Set(N.unique(labels))
+
+        test = Image(N.zeros(shape), grid=rho.grid)
+        from neuroimaging.reference.grid import ParcelIterator
+        test.grid.iterator = iter(ParcelIterator(labels,
+                                                 labelset))
+        v = 0
+
+        for t in test:
+            v += t.shape[0]
+        self.assertEquals(v, N.product(test.grid.shape))
         
 if __name__ == '__main__':
     unittest.main()

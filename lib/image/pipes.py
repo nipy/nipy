@@ -100,7 +100,7 @@ class ArrayPipe(Pipe):
     def getslice(self, _slice, **keywords):
         return self.data[_slice]
 
-    def writeslice(self, _slice, **keywords):
-        self.data[_slice] = _slice
+    def writeslice(self, _slice, data, **keywords):
+        self.data[_slice] = data
 
     

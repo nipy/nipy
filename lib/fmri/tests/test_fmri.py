@@ -1,4 +1,4 @@
-import unittest, gc, scipy, sets
+import unittest, gc, scipy, sets, os
 import neuroimaging.fmri as fmri
 import neuroimaging.image as image
 import neuroimaging.reference.grid as grid
@@ -9,6 +9,14 @@ class fMRITest(unittest.TestCase):
     def setUp(self):
         self.url = 'http://kff.stanford.edu/BrainSTAT/testdata/test_fmri.img'
         self.img = fmri.fMRIImage(self.url)
+
+    def test_TR(self):
+        x = self.img.frametimes
+
+    def test_write(self):
+        self.img.tofile('tmpfmri.img')
+        os.remove('tmpfmri.img')
+        os.remove('tmpfmri.hdr')
 
     def test_iter(self):
         I = iter(self.img)
@@ -29,6 +37,7 @@ class fMRITest(unittest.TestCase):
     def test_labels1(self):
         rho = image.Image('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
         labels = (rho.readall() * 100).astype(N.Int)
+
         self.img.grid.itertype = 'parcel'
         self.img.grid.labels = labels
         labels.shape = N.product(labels.shape)

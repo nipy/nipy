@@ -26,7 +26,7 @@ class Image(traits.HasTraits):
             self.image = image.image
             self.isfile = image.isfile
         elif not pipe:
-            if isinstance(image, N.ndarray):
+            if isinstance(image, N.ndarray) or isinstance(image, N.core.memmap):
                 self.isfile = False
                 self.image = pipes.ArrayPipe(image, **keywords)
             elif type(image) == types.StringType:
@@ -74,26 +74,35 @@ class Image(traits.HasTraits):
         """
         iter(self.grid)
 
-        if self.grid.itertype is 'parcel':
-            self.buffer = self.readall()
+        if isinstance(self.grid.iterator, grid.ParcelIterator):
+            if hasattr(self.image, 'memmap'):
+                self.buffer = self.image.memmap
+            else:
+                self.buffer = self.readall()
             self.buffer.shape = N.product(self.buffer.shape)
         return self
 
-    def next(self, data=None, callgrid=True, type=None):
+    def next(self, value=None, data=None):
+        """
+        The value argument here is used when, for instance one wants to
+        iterate over one image with a ParcelIterator and write out data
+        to this image without explicitly setting this image\'s grid to
+        the original image\'s grid, i.e. to just take the value the
+        original image\'s iterator returns and use it here.
+        """
+        if value is None:
+            value = self.grid.next()
 
-        value = self.grid.next()
+        itertype = value.type
 
-        if type is None:
-            type = value.type
-
-        if type is 'slice':
+        if itertype is 'slice':
             if data is None:
                 return_value = N.squeeze(self.getslice(value.slice))
                 return return_value
             else:
                 self.writeslice(value.slice, data)
 
-        elif type is 'parcel':
+        elif itertype is 'parcel':
             if data is None:
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
@@ -155,19 +164,12 @@ class Image(traits.HasTraits):
 
     fill = traits.Float(0.0)
     
-    def readall(self, try4d=True, clean=False, **keywords): 
+    def readall(self, clean=False, **keywords): 
         '''
         Read an entire Image object, returning a numpy, not another instance of Image. By default, it does not read 4d images. Missing values are filled in with the value of fill (default=self.fill=0.0).
         '''
 
-        if self.ndim > 3 and not try4d:
-            if not keywords.has_key('slice'):
-                raise ValueError, 'readall expecting 3d image -- set try4d to True for non 3d image, or set slice=slice'
-        if keywords.has_key('slice'):
-            _slice = keywords['slice']
-        else:
-            _slice = slice(0, self.grid.shape[0], 1)
-
+        _slice = slice(0, self.grid.shape[0], 1)
         value = self.image.getslice(_slice)
 
         if clean:

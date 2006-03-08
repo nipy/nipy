@@ -3,7 +3,7 @@ import os, glob, string, shutil
 
 # Packages
 
-packages = ['neuroimaging', 'neuroimaging.statistics', 'neuroimaging.image', 'neuroimaging.reference', 'neuroimaging.data', 'neuroimaging.image.formats', 'neuroimaging.image.formats.analyze', 'neuroimaging.fmri']
+packages = ['neuroimaging', 'neuroimaging.statistics', 'neuroimaging.image', 'neuroimaging.reference', 'neuroimaging.data', 'neuroimaging.image.formats', 'neuroimaging.image.formats.analyze', 'neuroimaging.fmri', 'neuroimaging.fmri.fmristat']
 
 
 def main():

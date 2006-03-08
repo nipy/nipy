@@ -33,14 +33,20 @@ class SamplingGrid(traits.HasTraits):
         return _tmp 
 
     def __iter__(self):
-        if self.itertype is 'slice':
-            self.iterator = iter(SliceIterator(self.shape))
-        elif self.itertype is 'parcel':
-            self.iterator = iter(ParcelIterator(self.shape, self.labels, self.labelset))
+        if not hasattr(self, 'iterator'):
+            if self.itertype is 'slice':
+                self.iterator = iter(SliceIterator(self.shape))
+            elif self.itertype is 'parcel':
+                self.iterator = iter(ParcelIterator(self.labels,
+                                                    self.labelset))
+        else:
+            self.iterator = iter(self.iterator)
+
         return self
 
     def next(self):
-        return self.iterator.next()
+        self.itervalue = self.iterator.next()
+        return self.itervalue
 
 class ConcatenatedGrids(SamplingGrid):
     """
@@ -63,25 +69,31 @@ class ConcatenatedGrids(SamplingGrid):
         n = len(self.grids)
         self.shape = [n] + self.grids[0].shape
 
+        # check warps are affine
+    
+        check = N.sum([not isinstance(self.grids[i].warp, warp.Affine) for i in range(n)])
+        if check:
+            raise ValueError, 'must all be affine warps!'
+
         # check shapes are identical
     
         s = self.grids[0].shape
-        check = N.sum([self.grids[i].shape == s for i in range(n)])
-        if not check:
+        check = N.sum([self.grids[i].shape != s for i in range(n)])
+        if check:
             raise ValueError, 'shape must be the same in ConcatenatedGrids'
 
         # check input coordinate systems are identical
     
         ic = self.grids[0].warp.input_coords
-        check = N.sum([self.grids[i].warp.input_coords == ic for i in range(n)])
-        if not check:
+        check = N.sum([self.grids[i].warp.input_coords != ic for i in range(n)])
+        if check:
             raise ValueError, 'input coordinate systems must be the same in ConcatenatedGrids'
 
         # check output coordinate systems are identical
     
         oc = self.grids[0].warp.output_coords
-        check = N.sum([self.grids[i].warp.output_coords == oc for i in range(n)])
-        if not check:
+        check = N.sum([self.grids[i].warp.output_coords != oc for i in range(n)])
+        if check:
             raise ValueError, 'output coordinate systems must be the same in concatenate_grids'
 
         def _warp(x):

@@ -33,7 +33,7 @@ class ParcelIteratorNext(IteratorNext):
 class ParcelIterator:
     
     labels = traits.Any()
-    def __init__(self, shape, labels, keys, **keywords):
+    def __init__(self, labels, keys, **keywords):
         self.labels = labels
         self.labels.shape = N.product(self.labels.shape)
         self.labelset = sets.Set(keys)

@@ -32,7 +32,7 @@ class CoordinateSystem(traits.HasTraits,UserDict.DictMixin):
         if axisname not in self.axisnames:
             raise KeyError, 'no such axis'
         else:
-            which = self.axisnames.index(dimname)
+            which = self.axisnames.index(axisname)
             return self.axes[which]
         
     def __setitem__(self, any):
