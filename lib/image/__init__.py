@@ -91,7 +91,8 @@ class Image(traits.HasTraits):
         original image\'s iterator returns and use it here.
         """
         if value is None:
-            value = self.grid.next()
+            self.itervalue = self.grid.next()
+            value = self.itervalue
 
         itertype = value.type
 
