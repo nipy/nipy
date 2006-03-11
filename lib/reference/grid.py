@@ -12,6 +12,7 @@ class SamplingGrid(traits.HasTraits):
     warp = traits.Any()
     shape = traits.ListInt()
     labels = traits.Any()
+    labelset = traits.Any()
     itertype = traits.Trait('slice', 'parcel')
     tag = traits.Trait(uuid.Uuid())
 
@@ -35,7 +36,7 @@ class SamplingGrid(traits.HasTraits):
         if self.itertype is 'slice':
             self.iterator = iter(SliceIterator(self.shape))
         elif self.itertype is 'parcel':
-            self.iterator = iter(ParcelIterator(self.shape, self.labels))
+            self.iterator = iter(ParcelIterator(self.shape, self.labels, self.labelset))
         return self
 
     def next(self):

@@ -45,8 +45,8 @@ class fMRIParcelIterator(grid.ParcelIterator):
 
     nframe = traits.Int()
 
-    def __init__(self, shape, labels, **keywords):
-        grid.ParcelIterator.__init__(self, shape, labels, **keywords)
+    def __init__(self, shape, labels, labelset, **keywords):
+        grid.ParcelIterator.__init__(self, shape, labels, labelset, **keywords)
         self.nframe = shape[0]
 
 class fMRISamplingGrid(grid.SamplingGrid):
@@ -55,7 +55,7 @@ class fMRISamplingGrid(grid.SamplingGrid):
         if self.itertype is 'slice':
             self.iterator = iter(fMRISliceIterator(shape=self.shape))
         if self.itertype is 'parcel':
-            self.iterator = iter(fMRIParcelIterator(self.shape, self.labels))
+            self.iterator = iter(fMRIParcelIterator(self.shape, self.labels, self.labelset))
         return self
 
     def subgrid(self, i):

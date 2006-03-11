@@ -1,4 +1,4 @@
-import unittest, gc, scipy
+import unittest, gc, scipy, sets
 import neuroimaging.fmri as fmri
 import neuroimaging.image as image
 import neuroimaging.reference.grid as grid
@@ -29,14 +29,15 @@ class fMRITest(unittest.TestCase):
     def test_labels1(self):
         rho = image.Image('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
         labels = (rho.readall() * 100).astype(N.Int)
-        L = image.Image(labels, grid=rho.grid)
-
         self.img.grid.itertype = 'parcel'
-        self.img.grid.labels = L
+        self.img.grid.labels = labels
+        labels.shape = N.product(labels.shape)
+        self.img.grid.labelset = sets.Set(N.unique(labels))
+
         v = 0
         for t in self.img:
             v += t.shape[1]
-        self.assertEquals(v, N.product(L.grid.shape))
+        self.assertEquals(v, N.product(labels.shape))
 
 
 

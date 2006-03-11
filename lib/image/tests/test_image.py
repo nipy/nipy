@@ -1,4 +1,4 @@
-import unittest, os, scipy, glob
+import unittest, os, scipy, glob, sets
 import numpy as N
 from neuroimaging.image import Image
 
@@ -76,8 +76,12 @@ class AnalyzeImageTest(unittest.TestCase):
         labels = (rho.readall() * 100).astype(N.Int)
         L = Image(labels, grid=rho.grid)
         test = Image(N.zeros(L.grid.shape), grid=rho.grid)
+
         test.grid.itertype = 'parcel'
-        test.grid.labels = L
+        test.grid.labels = labels
+        labels.shape = N.product(labels.shape)
+        test.grid.labelset = sets.Set(N.unique(labels))
+
         v = 0
         for t in test:
             v += t.shape[0]
@@ -86,10 +90,13 @@ class AnalyzeImageTest(unittest.TestCase):
     def test_labels2(self):
         rho = Image('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
         labels = (rho.readall() * 100).astype(N.Int)
-        L = Image(labels, grid=rho.grid)
-        test = Image(N.zeros(L.grid.shape), grid=rho.grid)
+        test = Image(N.zeros(labels.shape), grid=rho.grid)
+
         test.grid.itertype = 'parcel'
-        test.grid.labels = L
+        test.grid.labels = labels
+        labels.shape = N.product(labels.shape)
+        test.grid.labelset = sets.Set(N.unique(labels))
+
         v = 0
         iter(test)
         while True:
