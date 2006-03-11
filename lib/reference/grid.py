@@ -5,7 +5,7 @@ import warp
 from axis import space, RegularAxis, VoxelAxis, Axis
 from coordinate_system import VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
 import uuid
-from grid_iterators import SliceIterator, ParcelIterator
+from grid_iterators import SliceIterator, ParcelIterator, SliceParcelIterator
 
 class SamplingGrid(traits.HasTraits):
 
@@ -13,7 +13,7 @@ class SamplingGrid(traits.HasTraits):
     shape = traits.ListInt()
     labels = traits.Any()
     labelset = traits.Any()
-    itertype = traits.Trait('slice', 'parcel')
+    itertype = traits.Trait('slice', 'parcel', 'slice/parcel')
     tag = traits.Trait(uuid.Uuid())
 
     def __init__(self, **keywords):
@@ -33,14 +33,16 @@ class SamplingGrid(traits.HasTraits):
         return _tmp 
 
     def __iter__(self):
-        if not hasattr(self, 'iterator'):
-            if self.itertype is 'slice':
-                self.iterator = iter(SliceIterator(self.shape))
-            elif self.itertype is 'parcel':
-                self.iterator = iter(ParcelIterator(self.labels,
+
+        if self.itertype is 'slice':
+            self.iterator = iter(SliceIterator(self.shape))
+        elif self.itertype is 'parcel':
+            self.iterator = iter(ParcelIterator(self.labels,
                                                     self.labelset))
-        else:
-            self.iterator = iter(self.iterator)
+        elif self.itertype is 'slice/parcel':
+            print 'huh??'
+            self.iterator = iter(SliceParcelIterator(self.labels,
+                                                     self.labelset))
 
         return self
 

@@ -1,11 +1,11 @@
 import neuroimaging.image as image
 import neuroimaging.reference.grid as grid
-from neuroimaging.reference.grid_iterators import SliceIteratorNext
 
 import neuroimaging.reference.warp as warp
 import neuroimaging.reference.coordinate_system as coordinate_system
 import enthought.traits as traits
 import numpy as N
+from iterators import fMRISliceIterator, fMRIParcelIterator, fMRISliceParcelIterator
 
 class fMRIListWarp(warp.Warp):
 
@@ -21,43 +21,19 @@ class fMRIListWarp(warp.Warp):
         else:
             return self._maps[coords[0]][coords[1:]]
 
-class fMRISliceIterator(grid.SliceIterator):
-    """
-    Instead of iterating over slices of a 4d file -- return slices
-    of timeseries.
-    """
-
-    nframe = traits.Int()
-
-    def __init__(self, shape, **keywords):
-        grid.SliceIterator.__init__(self, shape[1:], **keywords)
-        self.nframe = shape[0]
-
-    def next(self):
-        value = grid.SliceIterator.next(self)
-        _slice = [slice(0,self.nframe,1), value.slice]
-        return SliceIteratorNext(slice=_slice, type='slice')
-
-class fMRIParcelIterator(grid.ParcelIterator):
-    """
-    Return parcels of timeseries.
-    """
-
-    nframe = traits.Int()
-
-    def __init__(self, labels, labelset, **keywords):
-        grid.ParcelIterator.__init__(self, labels, labelset, **keywords)
-
 class fMRISamplingGrid(grid.SamplingGrid):
 
     def __init__(self, **keywords):
         grid.SamplingGrid.__init__(self, **keywords)
 
     def __iter__(self):
-        if self.itertype is 'slice':
+
+        if self.itertype == 'slice':
             self.iterator = iter(fMRISliceIterator(shape=self.shape))
-        if self.itertype is 'parcel':
+        elif self.itertype == 'parcel':
             self.iterator = iter(fMRIParcelIterator(self.labels, self.labelset))
+        elif self.itertype == 'slice/parcel':
+            self.iterator = iter(fMRISliceParcelIterator(self.labels, self.labelset, self.shape))
         return self
 
     def isproduct(self, tol = 1.0e-07):
@@ -154,22 +130,37 @@ class fMRIImage(image.Image):
 
         itertype = value.type
 
-        if itertype is 'slice':
+        if itertype == 'slice':
             if data is None:
                 return_value = N.squeeze(self.getslice(value.slice))
                 return return_value
             else:
                 self.writeslice(value.slice, data)
 
-        elif itertype is 'parcel':
+        elif itertype == 'parcel':
             if data is None:
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
                 return self.buffer.compress(value.where, axis=1)
             else:
-                indices = N.nonzero(value.where)
-                self.buffer.put(data, indices)
-                self.buffer.sync()
+                raise NotImplementedError, 'writing in parcels to fMRIImages not supported yet'
+##                 indices = N.nonzero(value.where)
+##                 self.buffer.put(data, indices)
+##                 self.buffer.sync()
+
+        elif itertype == 'slice/parcel':
+            if data is None:
+                value.where.shape = N.product(value.where.shape)
+                self.label = value.label
+                tmp = self.getslice(value.slice)
+                tmp.shape = (tmp.shape[0], N.product(tmp.shape[1:]))
+                return tmp.compress(value.where, axis=1)
+            else:
+                raise NotImplementedError, 'writing in parcels to fMRIImages not supported yet'
+##                 indices = N.nonzero(value.where)  # what's the problem? the indices are not the right shape!
+##                 self.buffer.put(data, indices)
+##                 self.buffer.sync()
+            
 
     def __iter__(self):
         """

@@ -1,6 +1,21 @@
 import sys, struct
 import numpy as N
 
+def reduceall(ufunc, ndarray):
+    value = ndarray
+    while True:
+        try:
+            value = ufunc.reduce(value)
+        except:
+            break
+    return float(value)
+
+def fwhm2sigma(fwhm):
+    return fwhm / N.sqrt(8 * N.log(2))
+
+def sigma2fwhm(sigma):
+    return sigma * N.sqrt(8 * N.log(2))
+
 def readbrick(infile, start, count, shape, offset=0, intype=N.int32, outtype=N.float64, byteorder=sys.byteorder, return_tell = True, check_nan=True, fill=0.0):
 
     if return_tell:

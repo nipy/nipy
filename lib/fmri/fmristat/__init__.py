@@ -3,7 +3,9 @@ import enthought.traits as traits
 from neuroimaging.statistics import iterators 
 from neuroimaging.statistics.regression import OLSModel, ARModel
 import neuroimaging.fmri as fmri
+import neuroimaging.image.kernel_smooth as kernel_smooth
 from neuroimaging.fmri.regression import AR1Output
+import numpy as N
 
 class fMRIStatOLS(iterators.LinearModelIterator):
 
@@ -13,14 +15,17 @@ class fMRIStatOLS(iterators.LinearModelIterator):
     
     formula = traits.Any()
     slicetimes = traits.Any()
+    fwhm = traits.Float(6.0)
+    nmax = traits.Int(200) # maximum number of rho values
 
-    def __init__(self, fmri_image, outputs=[], **keywords):
-        traits.HasTraits.__init__(self, outputs=outputs, **keywords)
+    def __init__(self, fmri_image, **keywords):
+        traits.HasTraits.__init__(self, **keywords)
         self.fmri_image = fmri.fMRIImage(fmri_image)
         self.iterator = iter(self.fmri_image)
 
         self.rho_estimator = AR1Output(self.fmri_image)
         self.outputs.append(self.rho_estimator)
+        self.dmatrix = self.formula.design(self.fmri_image.frametimes)
 
     def model(self, **keywords):
         time = self.fmri_image.frametimes
@@ -30,6 +35,83 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         else:
             model = OLSModel(design=self.dmatrix)
         return model
+
+    def fit(self, **keywords):
+        iterators.LinearModelIterator.fit(self, **keywords)
+
+        smoother = kernel_smooth.LinearFilter(self.rho_estimator.img.grid, fwhm=self.fwhm)
+        self.rho = smoother.smooth(self.rho_estimator.img)
+        self.getlabels()
+
+    def getlabels(self):
+        if self.slicetimes is None:
+            tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
+            tmp.shape = N.product(tmp.shape)
+            self.labels = tmp
+            self.labelset = list(N.unique(tmp))
+            del(tmp); gc.collect()
+        else:
+            self.labels = []
+            self.labelset = []
+            for i in range(self.rho.grid.shape[0]):
+                tmp = self.rho.getslice(slice(i,i+1))
+                tmp.shape = N.product(tmp.shape)
+                tmp = N.around(tmp * (self.nmax / 2.)) / (self.nmax / 2.)
+                newlabels = list(N.unique(tmp))
+                self.labelset += [newlabels]
+                self.labels += [tmp]
+
+class fMRIStatAR(iterators.LinearModelIterator):
+
+    """
+    AR(1) pass of fMRIstat.
+    """
+    
+    formula = traits.Any()
+    slicetimes = traits.Any()
+    fwhm = traits.Float(6.0)
+
+    def __init__(self, OLS, **keywords):
+        """
+        Building on OLS results, fit the AR(1) model.
+        """
+        
+        traits.HasTraits.__init__(self, **keywords)
+        if not isinstance(OLS, fMRIStatOLS):
+            raise ValueError, 'expecting an fMRIStatOLS object in fMRIStatAR'
+        self.fmri_image = OLS.fmri_image
+        
+        # copy the formula
+        
+        self.slicetimes = OLS.slicetimes
+        time = self.fmri_image.frametimes
+        self.formula = OLS.formula
+        if self.slicetimes is None:
+            self.dmatrix = OLS.dmatrix
+        else:
+            self.designs = []
+            for i in range(len(self.slicetimes)):
+                self.designs.append(self.formula.design(time + self.slicetimes[i]))
+
+        # setup the iterator
+
+        self.fmri_image.grid.itertype = 'slice/parcel'
+        self.fmri_image.grid.labels = OLS.labels
+        self.fmri_image.grid.labelset = OLS.labelset
+
+        self.iterator = iter(self.fmri_image)
+
+    def model(self, **keywords):
+        time = self.fmri_image.frametimes
+        if self.slicetimes is not None:
+            rho = self.iterator.grid.itervalue.label
+            i = self.iterator.grid.itervalue.slice[1]
+            model = ARModel(rho=rho, design=self.designs[i])
+        else:
+            rho = self.iterator.grid.itervalue.label
+            model = ARModel(rho=rho, design=self.dmatrix)
+        return model
+
 
 ## class fMRIStatSession(fMRIStatIterator):
 

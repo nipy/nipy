@@ -33,21 +33,97 @@ class ParcelIteratorNext(IteratorNext):
 class ParcelIterator:
     
     labels = traits.Any()
+    labelset = traits.Any()
+    multilabels = traits.false # are the labels one key or are they a sequence?
+    
     def __init__(self, labels, keys, **keywords):
         self.labels = labels
-        self.labels.shape = N.product(self.labels.shape)
-        self.labelset = sets.Set(keys)
+        if not isinstance(self.labels, N.ndarray):
+            self.labels = N.array(self.labels)
+
+        self.labelset = list(sets.Set(keys))
+
+        try:
+            self.nlabel = len(self.labelset[0])
+            self.multilabels = True
+        except:
+            self.multilabels = False
+            pass
+
+        if not self.multilabels:
+            self.labels.shape = N.product(self.labels.shape)
+        else:
+            self.labels.shape = (self.labels.shape[0],
+                                 N.product(self.labels.shape[1:]))
+
 
     def __iter__(self):
         self.labelset = iter(self.labelset)
         return self
 
-    def next(self, callnext=False):
+    def next(self):
 
         label = self.labelset.next()
-        where = N.equal(self.labels, label)
+        if not self.multilabels:
+            wherelabel = N.equal(self.labels, label)
+        else:
+            wherelabel = 1
+            for i in range(self.nlabel):
+                wherelabel = wherelabel * N.equal(self.labels[i], label[i])
             
         return ParcelIteratorNext(label=label,
-                                  where=where)
+                                  where=wherelabel)
+
+        
+class SliceParcelIteratorNext(IteratorNext):
+    type = traits.Str('slice/parcel')
+    where = traits.Any()
+    label = traits.Any()
+    slice = traits.Any()
+
+class SliceParcelIterator:
+    
+    """
+    This iterator assumes that labels is a list of lists (or an array)
+    and the keys is a sequence of length labels.shape[0] (=len(labels)).
+    It then goes through the each element in the sequence
+    of labels returning where the unique elements are from keys.
+    """
+
+    labelset = traits.Any()
+    labels = traits.Any()
+    
+    def __init__(self, labels, keys, **keywords):
+        self.labels = labels
+        self.labelset = list(keys)
+        if len(self.labels) != len(self.labelset):
+            raise ValueError, 'labels and labelset do not have the same length'
+
+    def __iter__(self):
+        self.curslice = -1
+        self.labelset = iter(self.labelset)
+        return self
+
+    def next(self):
+
+        try:
+            label = self.curlabelset.next()
+        except:
+            self.curlabelset = iter(self.labelset.next())
+            label = self.curlabelset.next()
+            self.curslice += 1
+            pass
+
+        self.curlabels = self.labels[self.curslice]
+
+        if not isinstance(self.curlabels, N.ndarray):
+            self.curlabels = N.array(self.curlabels)
+            
+        self.curlabels.shape = N.product(self.curlabels.shape)
+        wherelabel = N.equal(self.curlabels, label)
+            
+        return SliceParcelIteratorNext(label=label,
+                                       where=wherelabel,
+                                       slice=self.curslice)
 
         

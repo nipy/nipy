@@ -1,4 +1,4 @@
-import unittest, scipy, sets, os
+import unittest, scipy, sets, os, gc
 import neuroimaging.fmri as fmri
 import neuroimaging.fmri.protocol as protocol
 import neuroimaging.fmri.fmristat as fmristat
@@ -30,17 +30,37 @@ class fMRITest(unittest.TestCase):
         
         frametimes = N.arange(120)*3.
         slicetimes = N.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
-
         self.img = fmri.fMRIImage(self.url, frametimes=frametimes,
                                   slicetimes=slicetimes)
         self.setup_formula()
 
-    def test_model(self):
-        model = fmristat.fMRIStatOLS(self.img, formula=self.formula,
-                                     slicetimes=self.img.slicetimes)
-        model.fit(resid=True)
-                                     
+    def test_model_frametimes(self):
+        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+                                   slicetimes=self.img.slicetimes)
+        OLS.nmax = 75
+        OLS.fit(resid=True)
+        rho = OLS.rho_estimator.img
+        rho.tofile('rho.img')
+        os.remove('rho.img')
+        os.remove('rho.hdr')
 
+        AR = fmristat.fMRIStatAR(OLS)
+        AR.fit()
+        del(OLS); del(AR); gc.collect()
+
+##     def test_model_noframetimes(self):
+##         self.img.frametimes = None
+##         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+##                                    slicetimes=self.img.slicetimes)
+##         OLS.fit(resid=True)
+##         rho = OLS.rho_estimator.img
+##         rho.tofile('rho.img')
+##         os.remove('rho.img')
+##         os.remove('rho.hdr')
+
+##         AR = fmristat.fMRIStatAR(OLS)
+##         AR.fit()
+##         del(OLS); del(AR); gc.collect()
 
 if __name__ == '__main__':
     unittest.main()
