@@ -9,7 +9,7 @@ class ROI:
     """
     This is the basic ROI class, which we model as basically
     a function defined on Euclidean space, i.e. R^3. For practical
-    purposes, this function is evaluated on the range of a Warp
+    purposes, this function is evaluated on the range of a Mapping
     instance.
     """
 
@@ -143,12 +143,12 @@ class ROIall(SamplingGridROI):
     An ROI for an entire grid. Save time by avoiding compressing, etc.
     """
 
-    def mask(self, warp, **keywords):
+    def mask(self, mapping, **keywords):
         try:
-            warp = image.spatial_warp
+            mapping = image.spatial_mapping
         except:
-            warp = image # is it a warp?
-        return N.ones(warp.shape)
+            mapping = image # is it a mapping?
+        return N.ones(mapping.shape)
 
     def pool(self, image):
         tmp = image.readall()

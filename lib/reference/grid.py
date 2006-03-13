@@ -1,7 +1,7 @@
 import enthought.traits as traits
 import numpy as N
 
-import warp
+import mapping
 from axis import space, RegularAxis, VoxelAxis, Axis
 from coordinate_system import VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
 import uuid
@@ -9,7 +9,7 @@ from grid_iterators import SliceIterator, ParcelIterator, SliceParcelIterator
 
 class SamplingGrid(traits.HasTraits):
 
-    warp = traits.Any()
+    mapping = traits.Any()
     shape = traits.ListInt()
     labels = traits.Any()
     labelset = traits.Any()
@@ -27,8 +27,8 @@ class SamplingGrid(traits.HasTraits):
        
         tmp = N.indices(self.shape)
         _shape = tmp.shape
-        tmp.shape = (self.warp.input_coords.ndim, N.product(self.shape))
-        _tmp = self.warp.map(tmp)
+        tmp.shape = (self.mapping.input_coords.ndim, N.product(self.shape))
+        _tmp = self.mapping.map(tmp)
         _tmp.shape = _shape
         return _tmp 
 
@@ -65,17 +65,17 @@ class ConcatenatedGrids(SamplingGrid):
     def __init__(self, grids, **keywords):
 
         traits.HasTraits.__init__(self, grids=grids, **keywords)
-        SamplingGrid.__init__(self, shape=self.shape, warp=self.warp)
+        SamplingGrid.__init__(self, shape=self.shape, mapping=self.mapping)
 
     def _grids_changed(self):
         n = len(self.grids)
         self.shape = [n] + self.grids[0].shape
 
-        # check warps are affine
+        # check mappings are affine
     
-        check = N.sum([not isinstance(self.grids[i].warp, warp.Affine) for i in range(n)])
+        check = N.sum([not isinstance(self.grids[i].mapping, mapping.Affine) for i in range(n)])
         if check:
-            raise ValueError, 'must all be affine warps!'
+            raise ValueError, 'must all be affine mappings!'
 
         # check shapes are identical
     
@@ -86,31 +86,31 @@ class ConcatenatedGrids(SamplingGrid):
 
         # check input coordinate systems are identical
     
-        ic = self.grids[0].warp.input_coords
-        check = N.sum([self.grids[i].warp.input_coords != ic for i in range(n)])
+        ic = self.grids[0].mapping.input_coords
+        check = N.sum([self.grids[i].mapping.input_coords != ic for i in range(n)])
         if check:
             raise ValueError, 'input coordinate systems must be the same in ConcatenatedGrids'
 
         # check output coordinate systems are identical
     
-        oc = self.grids[0].warp.output_coords
-        check = N.sum([self.grids[i].warp.output_coords != oc for i in range(n)])
+        oc = self.grids[0].mapping.output_coords
+        check = N.sum([self.grids[i].mapping.output_coords != oc for i in range(n)])
         if check:
             raise ValueError, 'output coordinate systems must be the same in concatenate_grids'
 
-        def _warp(x):
+        def _mapping(x):
             try:
                 I = x[0].view(N.Int)
                 X = x[1:]
                 v = N.zeros(x.shape[1:], N.Float)
                 for j in I.shape[0]:
-                    v[j] = self.grids[I[j]].warp.map(X[j])
+                    v[j] = self.grids[I[j]].mapping.map(X[j])
                 return v
 
             except:
                 i = int(x[0])
                 x = x[1:]
-                return self.grids[i].warp(x)
+                return self.grids[i].mapping(x)
             
         newaxis = Axis(name=self.concataxis)
         newin = CoordinateSystem('%s:%s' % (ic.name, self.concataxis),
@@ -118,7 +118,7 @@ class ConcatenatedGrids(SamplingGrid):
         newout = CoordinateSystem('%s:%s' % (oc.name, self.concataxis),
                                  [newaxis] + oc.axes)
 
-        self.warp = warp.Warp(newin, newout, _warp)
+        self.mapping = mapping.Mapping(newin, newout, _mapping)
 
     def subgrid(self, i):
         return self.grids[i]
@@ -135,12 +135,12 @@ class DuplicatedGrids(ConcatenatedGrids):
         ConcatenatedGrids._grids_changed(self)
         ndim = len(self.shape)
         t = N.zeros((ndim + 1,)*2, N.Float)
-        t[0:(ndim-1),0:(ndim-1)] = self.grids[0].warp.transform[0:(ndim-1),0:(ndim-1)]
-        t[0:(ndim-1),ndim] = self.grids[0].warp.transform[0:(ndim-1),(ndim-1)]
+        t[0:(ndim-1),0:(ndim-1)] = self.grids[0].mapping.transform[0:(ndim-1),0:(ndim-1)]
+        t[0:(ndim-1),ndim] = self.grids[0].mapping.transform[0:(ndim-1),(ndim-1)]
         t[(ndim-1),(ndim-1)] = self.step
         t[(ndim-1),ndim] = self.start
         t[ndim,ndim] = 1.
-        w = warp.Affine(self.warp.input_coords, self.warp.output_coords, t)
+        w = mapping.Affine(self.mapping.input_coords, self.mapping.output_coords, t)
 
 def fromStartStepLength(names=space, shape=[], start=[], step=[]):    
     """
@@ -161,8 +161,8 @@ def fromStartStepLength(names=space, shape=[], start=[], step=[]):
     input_coords = VoxelCoordinateSystem('voxel', indim)
     output_coords = DiagonalCoordinateSystem('world', outdim)
     transform = output_coords.transform()
-    _warp = warp.Affine(input_coords, output_coords, transform)
-    g = SamplingGrid(warp=_warp, shape=list(shape))
+    _mapping = mapping.Affine(input_coords, output_coords, transform)
+    g = SamplingGrid(mapping=_mapping, shape=list(shape))
     return g
 
 def IdentityGrid(shape=(), names=space):
@@ -171,8 +171,8 @@ def IdentityGrid(shape=(), names=space):
     """
     
     ndim = len(shape)
-    w = warp.IdentityWarp(ndim, names=names)
-    return SamplingGrid(shape=list(shape), warp=w)
+    w = mapping.IdentityMapping(ndim, names=names)
+    return SamplingGrid(shape=list(shape), mapping=w)
     if len(names) != ndim:
         raise ValueError, 'shape and number of axisnames do not agree'
 
@@ -180,13 +180,13 @@ def IdentityGrid(shape=(), names=space):
 
 def matlab2python(grid):
     shape = grid.shape[::-1]
-    _warp = warp.matlab2python(grid.warp)
-    return SamplingGrid(shape=shape, warp=_warp)
+    _mapping = mapping.matlab2python(grid.mapping)
+    return SamplingGrid(shape=shape, mapping=_mapping)
 
 def python2matlab(grid):
     shape = grid.shape[::-1]
-    _warp = warp.python2matlab(grid.warp)
-    return SamplingGrid(shape=shape, warp=_warp)
+    _mapping = mapping.python2matlab(grid.mapping)
+    return SamplingGrid(shape=shape, mapping=_mapping)
 
 class SliceGrid(SamplingGrid, traits.HasTraits):
 
@@ -207,8 +207,8 @@ class SliceGrid(SamplingGrid, traits.HasTraits):
         input_coords = coordinate_system.CoordinateSystem('voxel', _axes)
         self.fvector = origin
 
-        warp = warp.DegenerateAffine(input_coords, output_coords, fmatrix, fvector)
-        grid.SamplingGrid.__init__(self, warp=warp, shape=shape)
+        mapping = mapping.DegenerateAffine(input_coords, output_coords, fmatrix, fvector)
+        grid.SamplingGrid.__init__(self, mapping=mapping, shape=shape)
 
         
 

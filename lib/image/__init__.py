@@ -1,6 +1,6 @@
 import os, string, types
 import numpy as N
-from neuroimaging.reference import grid, axis, warp
+from neuroimaging.reference import grid, axis, mapping
 import utils
 import pipes
 import enthought.traits as traits

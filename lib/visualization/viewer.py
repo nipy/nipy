@@ -151,17 +151,17 @@ class BoxViewer(traits.HasTraits):
         if event.inaxes == self.slices['sagittal'].axes:
             vy, vz = event.xdata, event.ydata
             vx = 0
-            world = self.slices['sagittal'].grid.warp([vz,vy,vx])
+            world = self.slices['sagittal'].grid.mapping([vz,vy,vx])
             which = 'sagittal'
         elif event.inaxes == self.slices['transversal'].axes:
             vy, vx = event.xdata, event.ydata
             vz = 0
-            world = self.slices['transversal'].grid.warp([vx,vy,vz])
+            world = self.slices['transversal'].grid.mapping([vx,vy,vz])
             which = 'transversal'
         elif event.inaxes == self.slices['coronal'].axes:
             vx, vz = event.xdata, event.ydata
             vy = 0
-            world = self.slices['coronal'].grid.warp([vz,vx,vy])
+            world = self.slices['coronal'].grid.mapping([vz,vx,vy])
             which = 'coronal'
 
         self.z, self.y, self.x = world

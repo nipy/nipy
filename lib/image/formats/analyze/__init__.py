@@ -4,8 +4,8 @@ import numpy as N
 from neuroimaging.image import utils
 from neuroimaging.reference.axis import VoxelAxis, RegularAxis, space, spacetime
 from neuroimaging.reference.coordinate_system import VoxelCoordinateSystem, DiagonalCoordinateSystem
-from neuroimaging.reference.warp import Affine, IdentityWarp
-import neuroimaging.reference.warp as warp
+from neuroimaging.reference.mapping import Affine, IdentityMapping
+import neuroimaging.reference.mapping as mapping
 from neuroimaging.reference.grid import SamplingGrid, fromStartStepLength, python2matlab, matlab2python
 from neuroimaging.image.formats.validators import BinaryHeaderAtt, BinaryHeaderValidator
 import enthought.traits as traits
@@ -272,10 +272,10 @@ class ANALYZE(ANALYZEhdr):
     def _dimfromgrid(self, grid):
         self.grid = python2matlab(grid)
             
-        if not isinstance(self.grid.warp, Affine):
+        if not isinstance(self.grid.mapping, Affine):
             raise ValueError, 'error: non-Affine grid in writing out ANALYZE file'
 
-        if warp.isdiagonal(self.grid.warp.transform[0:self.ndim,0:self.ndim]):
+        if mapping.isdiagonal(self.grid.mapping.transform[0:self.ndim,0:self.ndim]):
             _diag = True
         else:
             _diag = False
@@ -288,13 +288,13 @@ class ANALYZE(ANALYZEhdr):
         for i in range(self.ndim):
             _dim[i+1] = self.grid.shape[i]
             if _diag:
-                _pixdim[i+1] = self.grid.warp.transform[i,i]
+                _pixdim[i+1] = self.grid.mapping.transform[i,i]
             else:
                 _pixdim[i+1] = 1.
         self.dim = _dim
         self.pixdim = _pixdim
         if _diag:
-            origin = self.grid.warp.map([0]*self.ndim, inverse=True)
+            origin = self.grid.mapping.map([0]*self.ndim, inverse=True)
             self.origin = list(origin) + [0]*(5-origin.shape[0])
         if not _diag:
             self.origin = [0]*5
@@ -358,7 +358,7 @@ class ANALYZE(ANALYZEhdr):
 
         if self.usematfile:
             mat = self.readmat()
-            self.grid.warp = mat * self.grid.warp
+            self.grid.mapping = mat * self.grid.mapping
 
         self.grid = matlab2python(self.grid) # assumes .mat
                                              # matrix is FORTRAN indexing
@@ -392,14 +392,14 @@ class ANALYZE(ANALYZEhdr):
         """
 
         if os.path.exists(self.matfilename()):
-            return warp.fromfile(self.matfilename(), input='world', output='world',
+            return mapping.fromfile(self.matfilename(), input='world', output='world',
                                  delimiter='\t')
         else:
             if self.ndim == 4:
                 names = spacetime[::-1]
             else:
                 names = space[::-1]
-            return IdentityWarp(self.ndim, input='world', output='world', names=names)
+            return IdentityMapping(self.ndim, input='world', output='world', names=names)
 
     def writemat(self, matfile=None):
         """
@@ -410,7 +410,7 @@ class ANALYZE(ANALYZEhdr):
             matfile = self.matfilename()
 
         if self.clobber or not os.path.exists(matfile):
-            warp.tofile(self.grid.warp, matfile)
+            mapping.tofile(self.grid.mapping, matfile)
 
 def guess_endianness(hdrfile):
     """

@@ -1,7 +1,7 @@
 import os, string, re, sys, fpformat, types, tempfile, time, random, csv
 import BrainSTAT.Base.Dimension as Dimension
 import BrainSTAT.Base.Coordinates as Coordinates
-from BrainSTAT.Base import Warp
+from BrainSTAT.Base import Mapping
 from BrainSTAT import Utils
 from numpy import *
 from _afniconstants import *
@@ -191,13 +191,13 @@ class AFNI:
             except:
                 matrix = self.incoords.transform()
 
-        self.warp = Warp.Affine(self.incoords, self.outcoords, matrix)
+        self.mapping = Mapping.Affine(self.incoords, self.outcoords, matrix)
 
     def _transform(self, url=None):
         """Tries to find a '.mat' file for an SPM type 4x4 transformation matrix."""
         if url is None:
             url = self.filebase + '.mat'
-        return Warp.fromurl(url, ndim=self.ndim)
+        return Mapping.fromurl(url, ndim=self.ndim)
 
     def generate_brick_labs(self, base='BRICK '):
         BRICK_LABS = []

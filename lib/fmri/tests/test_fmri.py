@@ -30,7 +30,7 @@ class fMRITest(unittest.TestCase):
     def test_subgrid(self):
         subgrid = self.img.grid.subgrid(3)
         matlabgrid = grid.python2matlab(subgrid)
-        scipy.testing.assert_almost_equal(matlabgrid.warp.transform,
+        scipy.testing.assert_almost_equal(matlabgrid.mapping.transform,
                                           N.diag([2.34375,2.34375,7,1]))
 
 

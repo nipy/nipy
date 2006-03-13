@@ -2,7 +2,7 @@ import unittest
 import numpy as N
 import scipy
 
-from neuroimaging.reference import axis, coordinate_system, warp, roi
+from neuroimaging.reference import axis, coordinate_system, mapping, roi
 
 class AxisTest(unittest.TestCase):
 

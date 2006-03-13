@@ -20,7 +20,7 @@ class AnalyzeTest(unittest.TestCase):
 
     def test_transform(self):
         self._open()
-        t = self.img.grid.warp.transform
+        t = self.img.grid.mapping.transform
         a = N.array([[   2.,    0.,    0.,  -72.],
                      [   0.,    2.,    0., -126.],
                      [   0.,    0.,    2.,  -90.],

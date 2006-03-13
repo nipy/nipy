@@ -51,9 +51,9 @@ class AnalyzeImageTest(unittest.TestCase):
         x = self.img.tofile('tmp.img')
 
     def test_nondiag(self):
-        self.img.grid.warp.transform[0,1] = 3.0
+        self.img.grid.mapping.transform[0,1] = 3.0
         x = self.img.tofile('tmp.img')
-        scipy.testing.assert_almost_equal(x.grid.warp.transform, self.img.grid.warp.transform)
+        scipy.testing.assert_almost_equal(x.grid.mapping.transform, self.img.grid.mapping.transform)
 
     def test_clobber(self):
         x = self.img.tofile('tmp.img', clobber=True)
@@ -62,8 +62,8 @@ class AnalyzeImageTest(unittest.TestCase):
         I = self.img.readall()
         z = N.add.reduce(((A-I)**2).flat)
         self.assertEquals(z, 0.)
-        t = a.grid.warp.transform
-        b = self.img.grid.warp.transform
+        t = a.grid.mapping.transform
+        b = self.img.grid.mapping.transform
         scipy.testing.assert_almost_equal(b, t)
 
     def test_iter(self):

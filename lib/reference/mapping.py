@@ -12,11 +12,11 @@ def _2matvec(transform):
     vector = transform[0:ndim,ndim]
     return matrix, vector
 
-def tofile(warp, filename):
-    if not isinstance(warp, Affine):
+def tofile(mapping, filename):
+    if not isinstance(mapping, Affine):
         raise NotImplementedError, 'only Affine transformations can be written out'
 
-    t = warp.transform
+    t = mapping.transform
 
     matfile = file(filename, 'w')
     writer = csv.writer(matfile, delimiter='\t')
@@ -71,15 +71,15 @@ def frommatrix(matrix, names=axis.space, input='voxel', output='world'):
     outcoords = coordinate_system.CoordinateSystem('input', inaxes)
     return Affine(incoords, outcoords, matrix)
 
-def IdentityWarp(ndim=3, names=axis.space, input='voxel', output='world'):
+def IdentityMapping(ndim=3, names=axis.space, input='voxel', output='world'):
     """
     Identity Affine transformation.
     """
     return frommatrix(N.identity(ndim+1), names=names, input=input, output=output)
 
-class Warp(traits.HasTraits):
+class Mapping(traits.HasTraits):
     """
-    A generic warp class that allows composition, inverses, etc. A warp needs only input and output coordinates and a transform between the two, and an optional inverse.
+    A generic mapping class that allows composition, inverses, etc. A mapping needs only input and output coordinates and a transform between the two, and an optional inverse.
     """
 
     maptype = traits.String('generic')
@@ -113,13 +113,13 @@ class Warp(traits.HasTraits):
 
     def inverse(self):
         """
-        Return the inverse Warp.
+        Return the inverse Mapping.
         """
 
         if hasattr(self, '_inverse'):
-            return Warp(self.output_coords, self.input_coords, self._inverse, self.map, maptype=self.maptype)
+            return Mapping(self.output_coords, self.input_coords, self._inverse, self.map, maptype=self.maptype)
         else:
-            raise ValueError, 'non-invertible warp.'
+            raise ValueError, 'non-invertible mapping.'
    
     def map(self, coords, inverse=False):
         if not inverse:
@@ -143,11 +143,11 @@ class Warp(traits.HasTraits):
                 return self.map(other.map(coords, inverse=True), inverse=True)
         else:
             _inverse = None
-        return Warp(self.input_coords, other.output_coords, _map, _inverse=_inverse
+        return Mapping(self.input_coords, other.output_coords, _map, _inverse=_inverse
 )
     def reslice(self, which, inname=None, outname=None, sort=True):
         """
-        Reorder and/or subset a warp, uses subset of input_coords.axes to determine subset.
+        Reorder and/or subset a mapping, uses subset of input_coords.axes to determine subset.
 
         Warning: this does not know about the \'new\' CoordinateSystem classes.
 
@@ -187,9 +187,9 @@ class Warp(traits.HasTraits):
             _value = array([_value[i] for i in order])
             return _value
 
-        return Warp(incoords, outcoords, _map, _inverse=None) 
+        return Mapping(incoords, outcoords, _map, _inverse=None) 
 
-class Affine(Warp):
+class Affine(Mapping):
     """
     A class representing an affine transformation in n axes.
     """
@@ -206,7 +206,7 @@ class Affine(Warp):
             return N.dot(self.fmatrix, coords) + self.fvector
         def _inverse(coords):
             return N.dot(self.bmatrix, coords) + self.bvector
-        Warp.__init__(self, input_coords, output_coords, _map, _inverse=_inverse, maptype='affine')
+        Mapping.__init__(self, input_coords, output_coords, _map, _inverse=_inverse, maptype='affine')
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -255,7 +255,7 @@ class Affine(Warp):
                 fvector = N.dot(other.fmatrix, self.fvector) + other.fvector
                 return DegenerateAffine(self.input_coords, other.output_coords, fmatrix, fvector)
         else:
-            return Warp.__rmul__(self, other)
+            return Mapping.__rmul__(self, other)
 
     def __str__(self):
         value = '%s:input=%s\n%s:output=%s\n%s:fmatrix=%s\n%s:fvector=%s' % (self.name, self.input_coords.name, self.name, self.output_coords.name, self.name, `self.fmatrix`, self.name, `self.fvector`)
@@ -290,7 +290,7 @@ class DegenerateAffine(Affine):
             x = inverse(t)
             Affine.__init__(self, input_coords, output_coords, t, name=name)
         except:
-            Warp.__init__(self, input_coords, output_coords, _map, maptype='affine')
+            Mapping.__init__(self, input_coords, output_coords, _map, maptype='affine')
 
 
 def permutation_matrix(order=range(3)[2::-1]):
@@ -324,23 +324,23 @@ def _translation_transform(x, ndim):
     _transform[0:ndim,ndim] = _transform[0:ndim,ndim] + x 
     return _transform
 
-def tovoxel(real, warp):
+def tovoxel(real, mapping):
     """
-    Given a warp and a real coordinate, where warp.input_coords are assumed to be voxels, return the closest voxel for real. Will choke if warp is not invertible.
+    Given a mapping and a real coordinate, where mapping.input_coords are assumed to be voxels, return the closest voxel for real. Will choke if mapping is not invertible.
     """
     _shape = real.shape
     real.shape = (_shape[0], product(_shape[1:]))
-    voxel = N.around(warp.map(real, inverse=True))
+    voxel = N.around(mapping.map(real, inverse=True))
     real.shape = _shape
     voxel.shape = _shape
     return N.array(voxel)
 
-def matlab2python(warp):
+def matlab2python(mapping):
     """
-    Take that maps matlab voxels to (matlab-ordered) world coordinates and make it python-oriented. This means that if warp(v_x,v_y,v_z)=(w_x,w_y,w_z) then the return will send (v_z,v_y,v_x) to (w_z,w_y,w_x).
+    Take that maps matlab voxels to (matlab-ordered) world coordinates and make it python-oriented. This means that if mapping(v_x,v_y,v_z)=(w_x,w_y,w_z) then the return will send (v_z,v_y,v_x) to (w_z,w_y,w_x).
     """
 
-    ndim = warp.input_coords.ndim
+    ndim = mapping.input_coords.ndim
     t1 = N.zeros((ndim+1,)*2, N.Float)
     t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
     t1[ndim, ndim] = 1.0
@@ -348,26 +348,26 @@ def matlab2python(warp):
     t2 = 1. * t1
     t1[0:ndim,ndim] = 1.0
 
-    n = warp.ndim
-    d1 = [warp.input_coords.axes[n-1-i] for i in range(n)]
-    in1 = coordinate_system.CoordinateSystem(warp.input_coords.name, d1)
-    w1 = Affine(in1, warp.input_coords, t1)
+    n = mapping.ndim
+    d1 = [mapping.input_coords.axes[n-1-i] for i in range(n)]
+    in1 = coordinate_system.CoordinateSystem(mapping.input_coords.name, d1)
+    w1 = Affine(in1, mapping.input_coords, t1)
     
-    d2 = [warp.output_coords.axes[n-1-i] for i in range(n)]
-    out2 = coordinate_system.CoordinateSystem(warp.output_coords.name, d2)
-    w2 = Affine(warp.output_coords, out2, t2)
+    d2 = [mapping.output_coords.axes[n-1-i] for i in range(n)]
+    out2 = coordinate_system.CoordinateSystem(mapping.output_coords.name, d2)
+    w2 = Affine(mapping.output_coords, out2, t2)
 
-    w = (w2 * warp) * w1
+    w = (w2 * mapping) * w1
     return w
 
 fortran2C = matlab2python
 
-def python2matlab(warp):
+def python2matlab(mapping):
     """
     Inverse of matlab2python -- see this function for help.
     """
 
-    ndim = warp.input_coords.ndim
+    ndim = mapping.input_coords.ndim
     t1 = N.zeros((ndim+1,)*2, N.Float)
     t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
     t1[ndim, ndim] = 1.0
@@ -375,20 +375,20 @@ def python2matlab(warp):
     t2 = 1. * t1
     t1[0:ndim,ndim] = -1.0
 
-    n = warp.ndim
-    d1 = [warp.input_coords.axes[n-1-i] for i in range(n)]
-    in1 = coordinate_system.CoordinateSystem(warp.input_coords.name, d1)
-    w1 = Affine(in1, warp.input_coords, t1)
+    n = mapping.ndim
+    d1 = [mapping.input_coords.axes[n-1-i] for i in range(n)]
+    in1 = coordinate_system.CoordinateSystem(mapping.input_coords.name, d1)
+    w1 = Affine(in1, mapping.input_coords, t1)
     
-    d2 = [warp.output_coords.axes[n-1-i] for i in range(n)]
-    out2 = coordinate_system.CoordinateSystem(warp.output_coords.name, d2)
-    w2 = Affine(warp.output_coords, out2, t2)
+    d2 = [mapping.output_coords.axes[n-1-i] for i in range(n)]
+    out2 = coordinate_system.CoordinateSystem(mapping.output_coords.name, d2)
+    w2 = Affine(mapping.output_coords, out2, t2)
 
-    w = (w2 * warp) * w1
+    w = (w2 * mapping) * w1
 
     return w
 
 C2fortran = python2matlab
 
-MNI_warp = Affine(coordinate_system.MNI_voxel, coordinate_system.MNI_world, coordinate_system.MNI_world.transform())
-MNI_warp([36,63,45])
+MNI_mapping = Affine(coordinate_system.MNI_voxel, coordinate_system.MNI_world, coordinate_system.MNI_world.transform())
+MNI_mapping([36,63,45])

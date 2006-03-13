@@ -1,2 +1,2 @@
-import grid, axis, coordinate_system, warp
+import grid, axis, coordinate_system, mapping
 import slices

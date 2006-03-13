@@ -4,7 +4,7 @@ from _mincconstants import *
 import BrainSTAT.Base.Dimension as Dimension
 import BrainSTAT.Base.Coordinates as Coordinates
 import enthought.traits as traits
-from BrainSTAT.Base import Warp
+from BrainSTAT.Base import Mapping
 
 class MINCvar(traits.HasTraits):
 
@@ -227,7 +227,7 @@ class MINC:
         except:
             matrix = self.incoords.transform()
 
-        self.warp = Warp.Affine(self.incoords, self.outcoords, matrix)
+        self.mapping = Mapping.Affine(self.incoords, self.outcoords, matrix)
 
     def _transform(self):
         """This method, (not yet implemented) determines the 4x4 (or larger) transformation matrix from the dircos attributes of the dimensions. """

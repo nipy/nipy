@@ -3,7 +3,7 @@ import numpy as N
 import numpy.dft as FFT
 import numpy.linalg as NL
 import neuroimaging.reference.grid as grid
-import neuroimaging.reference.warp as warp
+import neuroimaging.reference.mapping as mapping
 import neuroimaging.image as image
 import enthought.traits as traits
 from neuroimaging.statistics.utils import reduceall
@@ -39,7 +39,7 @@ class LinearFilter(traits.HasTraits):
         FFT smoothing. Assumes coordinate system is linear. 
         """
 
-        if not isinstance(self.grid.warp, warp.Affine):
+        if not isinstance(self.grid.mapping, mapping.Affine):
             raise ValueError, 'for FFT smoothing, need a regular (affine) grid'
 
         ndim = len(self.grid.shape)
@@ -51,7 +51,7 @@ class LinearFilter(traits.HasTraits):
             voxels[i] = test * voxels[i] + (1. - test) * (voxels[i] - self.shape[i])
     
         voxels.shape = (voxels.shape[0], N.product(voxels.shape[1:]))
-        X = self.grid.warp.map(voxels)
+        X = self.grid.mapping.map(voxels)
 
         if self.fwhm is not 1.0:
             X = X / image.utils.fwhm2sigma(self.fwhm)

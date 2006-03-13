@@ -2,7 +2,7 @@ import struct, os, sys, numpy, string, types
 from BrainSTAT import Utils
 import BrainSTAT.Base.Dimension as Dimension
 import BrainSTAT.Base.Coordinates as Coordinates
-from BrainSTAT.Base import Warp
+from BrainSTAT.Base import Mapping
 from datatypes import datatypes
 
 _byteorder_dict = {'big':'>', 'little':'<'}
@@ -121,16 +121,16 @@ class NIFTI(NIFTIhdr):
         self.outcoords = Coordinates.OrthogonalCoordinates('world', self.outdim)
 
         matrix = self._transform()
-        self.warp = Warp.Affine(self.incoords, self.outcoords, matrix)
+        self.mapping = Mapping.Affine(self.incoords, self.outcoords, matrix)
         if NIFTI.reorder_xfm:
-            self.warp.reorder(reorder_dims=NIFTI.reorder_dims)
+            self.mapping.reorder(reorder_dims=NIFTI.reorder_dims)
 
-        self.incoords = self.warp.input_coords
-        self.outcoords = self.warp.output_coords
+        self.incoords = self.mapping.input_coords
+        self.outcoords = self.mapping.output_coords
 
-        self.start = self.warp.output_coords.start
-        self.step = self.warp.output_coords.step
-        self.shape = self.warp.output_coords.shape
+        self.start = self.mapping.output_coords.start
+        self.step = self.mapping.output_coords.step
+        self.shape = self.mapping.output_coords.shape
 
     def _transform(self):
         """Return 4x4 transform matrix based on the NIFTI attributes."""
