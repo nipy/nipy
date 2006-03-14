@@ -30,8 +30,8 @@ class fMRIStatTest(unittest.TestCase):
 
         self.IRF = hrf.HRF()
 
-        self.painc = self.IRF.convolve(pain)
-        self.formula =  + drift
+        self.painc = self.pain.convolve(self.IRF)
+        self.formula = self.painc + drift
 
     def setUp(self):
         self.url = 'http://kff.stanford.edu/BrainSTAT/testdata/test_fmri.img'
@@ -71,8 +71,8 @@ class fMRIStatTest(unittest.TestCase):
 ##         del(OLS); del(AR); gc.collect()
 
     def test_contrast(self):
-        pain = contrast.Contrast(self.pain, self.formula, name='pain')
-        main = self.IRF.convolve(self.pain.main_effect(self.formula))
+        pain = contrast.Contrast(self.painc, self.formula, name='pain')
+
         self.img.slicetimes = None
         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
                                    slicetimes=self.img.slicetimes)
@@ -82,12 +82,12 @@ class fMRIStatTest(unittest.TestCase):
         os.remove('rho.img')
         os.remove('rho.hdr')
 
-        AR = fmristat.fMRIStatAR(OLS, contrasts=[pain,main])
+        AR = fmristat.fMRIStatAR(OLS, contrasts=[pain])
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
         from neuroimaging.visualization import viewer
-        t = image.Image('contrasts/hot-warm/t.img')
+        t = image.Image('contrasts/pain/F.img')
         x = t.readall()
         print utils.reduceall(N.maximum, x), utils.reduceall(N.minimum, x)
 

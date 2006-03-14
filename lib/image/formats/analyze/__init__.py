@@ -189,9 +189,9 @@ class ANALYZEhdr(traits.HasTraits):
         if hdrfile is None:
             hdrfilename = self.hdrfilename()
             if self.clobber or not os.path.exists(self.hdrfilename()):
-                hdrfile = file(self.hdrfilename(), 'wb')
+                hdrfile = file(hdrfilename, 'wb')
             else:
-                raise ValueError, 'clobber is False and hdrfile exists'
+                raise ValueError, 'error writing %s: clobber is False and hdrfile exists' % hdrfilename
 
         for traitname in self.hdrattnames:
             trait = self.trait(traitname)

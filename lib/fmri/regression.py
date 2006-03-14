@@ -1,4 +1,4 @@
-import copy, os, csv, string
+import copy, os, csv, string, fpformat
 import numpy as N
 import enthought.traits as traits
 import neuroimaging.image as image
@@ -81,7 +81,7 @@ class TContrastOutput(fMRIRegressionOutput):
 
         outname = os.path.join(self.outdir, 'matrix.csv')
         outfile = file(outname, 'w')
-        outfile.write(string.join([`x` for x in self.contrast.matrix], ',') + '\n')
+        outfile.write(string.join([fpformat.fix(x,4) for x in self.contrast.matrix], ',') + '\n')
         outfile.close()
 
         outname = os.path.join(self.outdir, 'matrix.bin')
@@ -132,7 +132,7 @@ class FContrastOutput(fMRIRegressionOutput):
         outfile = file(outname, 'w')
         writer = csv.writer(outfile)
         for row in self.contrast.matrix:
-            writer.writerow(list(row.flat))
+            writer.writerow([fpformat.fix(x, 4) for x in row])
         outfile.close()
 
         outname = os.path.join(self.outdir, 'matrix.bin')
