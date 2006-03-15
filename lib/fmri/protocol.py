@@ -1,9 +1,9 @@
-import csv, string, types
+import csv, string, types, copy
 import enthought.traits as traits
 import numpy as N
 
-from regressors import Events, SplineConfound
-from neuroimaging.statistics.formula import Factor, Quantitative, Formula
+from functions import Events, SplineConfound, TimeFunction
+from neuroimaging.statistics.formula import Factor, Quantitative, Formula, Term
 
 namespace = {}
 downtime = 'None/downtime'
@@ -14,6 +14,14 @@ class ExperimentalRegressor(traits.HasTraits):
                              # want to think of the factor as convolved or not
                              # i.e. for plotting
 
+    def _convolved_changed(self):
+        if not hasattr(self, '_nameunconv'):
+            self._nameunconv = copy.copy(self.name)
+        if self.convolved:
+            self.name = self._convolved.name
+        else:
+            self.name = self._nameunconv
+
     def __add__(self, other):
         other = ExperimentalFormula(other)
         return other + self
@@ -22,9 +30,22 @@ class ExperimentalRegressor(traits.HasTraits):
         other = ExperimentalFormula(other)
         return other * self
 
+    def names(self):
+        if self.convolved:
+            return self._convolved.names()
+        else:
+            if hasattr(self, '_nameunconv'):
+                return self._nameunconv
+            else:
+                return Term.names(self)
+
     def convolve(self, IRF):
+
         self.IRF = IRF
+        self.convolved = False
+
         _fn = IRF.convolve(self)
+
         def _f(time=None, _fn=tuple(_fn), **keywords):
             v = []
             for __fn in _fn:
@@ -39,7 +60,25 @@ class ExperimentalRegressor(traits.HasTraits):
         for hrfname in IRF.names:
             for termname in self.names():
                 name.append('(%s**%s)' % (hrfname, termname))
-        self._convolved = ExperimentalQuantitative(name, _f, termname='(%s**%s)' % (hrfname, self.termname))
+ 
+        self._convolved = ExperimentalQuantitative(name, _f, termname='(HRF**%s)' % self.termname)
+        self.convolved = True
+
+        return self
+
+    def astimefn(self, namespace=namespace):
+        """
+        Return a TimeFunction object that can be added, subtracted, etc.
+
+        """
+
+        nout = len(self.names())
+
+        def _f(time=None, obj=self):
+            return N.squeeze(obj(time=time, namespace=namespace))
+
+        v = TimeFunction(fn=_f, nout=nout)
+        return v
 
 class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
     """
@@ -56,8 +95,8 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
             termname = name
         namespace[termname] = self
             
-        test = self.fn(N.array([4.0]))
-        n = len(test)
+        test = self.fn(N.array([4.0,5.0,6]))
+        n = N.array(test).shape[0]
 
         if n > 1:
             if type(name) in [type([]), type(())]:
@@ -66,6 +105,7 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
                 names = ['(%s:%d)' % (name, i) for i in range(n)]
         else:
             names = name
+
         Quantitative.__init__(self, names, _fn=fn, termname=termname, **keywords)
         
     def __call__(self, time=None, namespace=namespace, **keywords):
@@ -140,6 +180,19 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         keys = self.events.keys() + [downtime]
         Factor.__init__(self, name, keys)
         
+    def __getitem__(self, key):
+        if self.events.has_key(key) not in self.events.keys():
+            l = self.events.keys()
+            j = l.index(key)
+        else:
+            raise ValueError, 'key not found'            
+        def _fn(namespace=namespace, time=None, j=j, **extra):
+            v = self(namespace=namespace, time=time, **extra)
+            return [N.squeeze(v[j])]
+
+        name = '%s[%s]' % (self.name, `key`)
+        return ExperimentalQuantitative(name, _fn)
+
     def __call__(self, time=None, namespace=None, includedown=False, **keywords):
         if not self.convolved:
             value = []
@@ -198,13 +251,11 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         self.events = {}
         for row in iterator:
             eventtype, start, end = row
-            if not self.events.has_key(row[0]):
+            if not self.events.has_key(eventtype):
                 self.events[eventtype] = Events(name=eventtype)
 
-            if type(end) is type('0.0'):
-                end = string.atof(end)
-            if type(start) is type('0.0'):
-                start = string.atof(start)
+            end = float(end)
+            start = float(start)
             self.events[eventtype].append(start, end-start, height=1.0)
 
 class ExperimentalFormula(Formula):

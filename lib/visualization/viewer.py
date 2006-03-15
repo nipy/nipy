@@ -1,9 +1,12 @@
+import fpformat
 import neuroimaging
 import numpy as N
 import pylab
 import neuroimaging.statistics.utils as utils
+import neuroimaging.reference as reference
 import slices as vizslice
 import enthought.traits as traits
+from cmap import cmap
 
 class BoxViewer(traits.HasTraits):
 
@@ -17,168 +20,215 @@ class BoxViewer(traits.HasTraits):
 
     shape = traits.ListInt([91,109,91])
 
+    slicenames = traits.ListStr(['coronal', 'sagittal', 'transversal'])
+
     # determines layout of slices
 
-    bufferlength = traits.Float(30.)
-    imgheight = traits.Float(200.) # pixel length of z scale
+    buffer_pix = traits.Float(50.) # buffer in pixels
+    z_pix = traits.Float(200.) # pixel length of z scale
     dpi = traits.Float(80.)
 
+    colormap = cmap
+
     """
-    View an image in MNI coordinates, i.e. sampled on the grid of the MNI atlas. 
+    View an image in orthogonal coordinates, i.e. sampled on the grid
+    of the MNI atlas which is the default orthogonal coordinate system.
+
+    If default is False, then a bounding box for image is returned
+    and used for the limits.
     """
+
+    def __init__(self, image, x=None, y=None, z=None,
+                 xlim=[-90.,90.],
+                 ylim=[-126.,90.],
+                 zlim=[-72.,108.],
+                 default=False,
+                 **keywords):
+
+        self.slices = {}
+
+        if image.grid.mapping.output_coords.ndim != 3:
+            raise ValueError, 'only 3d images can be viewed with BoxViewer'
+
+        if default:
+            self.xlim = xlim
+            self.ylim = ylim
+            self.zlim = zlim
+            self.shape = [91,109,91]
+        else:
+            self.zlim, self.ylim, self.xlim = reference.slices.bounding_box(image.grid)
+            self.shape = image.grid.shape
+
+
+        if x is None:
+            x = N.mean(self.xlim)
+        if y is None:
+            y = N.mean(self.ylim)
+        if z is None:
+            z = N.mean(self.zlim)
+
+            
+        if keywords.has_key('z_pix'):
+            self.z_pix = keywords['z_pix']
+        if keywords.has_key('buffer_pix'):
+            self.z_pix = keywords['buffer_pix']
+            
+        figwidth, figheight = self._setup_dims()
+        self.figure = pylab.figure(figsize=(figwidth / self.dpi, figheight / self.dpi))
+
+        _img = image.readall()
+        self.m = float(_img.min())
+        self.M = float(_img.max())
+
+        self.interpolator = neuroimaging.image.interpolation.ImageInterpolator(image)
+        self.cid = pylab.connect('button_press_event', self.on_click)
+        traits.HasTraits.__init__(self, x=x, y=y, z=z, **keywords)
+
+    def _setup_dims(self):
+
+        dx = N.fabs(self.xlim[1] - self.xlim[0])
+        dy = N.fabs(self.ylim[1] - self.ylim[0])
+        dz = N.fabs(self.zlim[1] - self.zlim[0])
+
+        figheight = (3 * self.buffer_pix +
+                     self.z_pix * (dx + dz) / dz)
+
+        figwidth = (3 * self.buffer_pix +
+                    self.z_pix * (dy + dx) / dz)
+
+        xwidth = dx * self.z_pix / (dz * figwidth)
+        xheight = dx * self.z_pix / (dz * figheight)
+
+        ywidth = dy * self.z_pix / (dz * figwidth)
+        yheight = dy * self.z_pix / (dz * figheight)
+
+        zwidth = dz * self.z_pix / (dz * figwidth)
+        zheight = dz * self.z_pix / (dz * figheight)
+
+        bufwidth = self.buffer_pix / figwidth
+        bufheight = self.buffer_pix / figheight
+
+        self.lengths = {}
+
+        self.lengths[self.slicenames[0]] = (xwidth, zheight)
+        self.lengths[self.slicenames[1]] = (ywidth, zheight)
+        self.lengths[self.slicenames[2]] = (ywidth, xheight)
+
+        self.offsets = {}
+        self.offsets[self.slicenames[0]] = (2 * bufwidth + ywidth,
+                                            2 * bufheight + xheight)
+        self.offsets[self.slicenames[1]] = (bufwidth,
+                                             2 * bufheight + xheight)
+
+        self.offsets[self.slicenames[2]] = (bufwidth,
+                                            bufheight)
+
+        self.ticks = {}
+        self.ticks[self.slicenames[0]] = ((0, self.shape[2]-1),
+                                 (0, self.shape[0]-1))
+        self.ticks[self.slicenames[1]] = ((0, self.shape[1]-1),
+                                  (0, self.shape[0]-1))
+        self.ticks[self.slicenames[2]] = ((0, self.shape[1]-1),
+                                     (0, self.shape[2]-1))
+        
+        _str = lambda x: fpformat.fix(x, 0)
+        self.ticklabels = {}
+        self.ticklabels[self.slicenames[0]] = (map(_str, self.xlim),
+                                               map(_str, self.zlim))
+        self.ticklabels[self.slicenames[1]] = (map(_str, self.ylim),
+                                               map(_str, self.zlim))
+        self.ticklabels[self.slicenames[2]] = (map(_str, self.ylim),
+                                               map(_str, self.xlim))
+
+        return figwidth, figheight
 
     def _getslice(self, _slice):
         return vizslice.PylabDataSlice(self.interpolator,
                                        _slice,
                                        vmax=self.M,
                                        vmin=self.m,
-                                       colormap='gray',
-                                       interpolation='bicubic')
+                                       colormap=self.colormap,
+                                       interpolation='nearest')
 
     def _x_changed(self):
-        _slice = neuroimaging.reference.slices.sagittal(x=self.x,
-                                                        xlim=self.xlim,
-                                                        ylim=self.ylim,
-                                                        zlim=self.zlim,
-                                                        shape=self.shape)
+        _slice = neuroimaging.reference.slices.xslice(x=self.x,
+                                                      xlim=self.xlim,
+                                                      ylim=self.ylim,
+                                                      zlim=self.zlim,
+                                                      shape=self.shape)
 
-        self._setup_sagittal(_slice)
-
-    def _setup_sagittal(self, _slice):
-        if not self.slices.has_key('sagittal'):
-            self.slices['sagittal'] = self._getslice(_slice)
-        else:
-            self.slices['sagittal'].grid = _slice
-
-
-        self.slices['sagittal'].width = self.ywidth
-        self.slices['sagittal'].height = self.zheight
-        self.slices['sagittal'].xoffset = self.bufferlength / self.figwidth
-        self.slices['sagittal'].yoffset = (2. * self.bufferlength + (self.imgheight * self.dx / self.dz)) / self.figheight
-        self.slices['sagittal'].getaxes()
+        self._setup_slice(_slice, self.slicenames[1])
 
     def _y_changed(self):
         
-        _slice = neuroimaging.reference.slices.coronal(y=self.y,
-                                                       xlim=self.xlim,
-                                                       ylim=self.ylim,
-                                                       zlim=self.zlim,
-                                                       shape=self.shape)
-        self._setup_coronal(_slice)
+        _slice = neuroimaging.reference.slices.yslice(y=self.y,
+                                                      xlim=self.xlim,
+                                                      ylim=self.ylim,
+                                                      zlim=self.zlim,
+                                                      shape=self.shape)
+        self._setup_slice(_slice, self.slicenames[0])
         
-    def _setup_dims(self):
-
-        self.dx = N.fabs(self.xlim[1] - self.xlim[0])
-        self.dy = N.fabs(self.ylim[1] - self.ylim[0])
-        self.dz = N.fabs(self.zlim[1] - self.zlim[0])
-
-        self.figheight = (3 * self.bufferlength +
-                          self.imgheight * (self.dx + self.dz) / self.dz)
-
-        self.figwidth = (3 * self.bufferlength +
-                         self.imgheight * (self.dy + self.dx) / self.dz)
-
-        self.xwidth = self.dx * self.imgheight / (self.dz * self.figwidth)
-        self.xheight = self.dx * self.imgheight / (self.dz * self.figheight)
-
-        self.ywidth = self.dy * self.imgheight / (self.dz * self.figwidth)
-        self.yheight = self.dy * self.imgheight / (self.dz * self.figheight)
-
-        self.zwidth = self.dz * self.imgheight / (self.dz * self.figwidth)
-        self.zheight = self.dz * self.imgheight / (self.dz * self.figheight)
-
-    def _setup_coronal(self, _slice):
-        if not self.slices.has_key('coronal'):
-            self.slices['coronal'] = self._getslice(_slice)
-        else:
-            self.slices['coronal'].grid = _slice
-
-        self.slices['coronal'].height = self.zheight
-        self.slices['coronal'].width = self.xwidth
-        
-        self.slices['coronal'].xoffset = (2 * self.bufferlength + self.imgheight * self.dy / self.dz) / self.figwidth
-        self.slices['coronal'].yoffset = (2 * self.bufferlength + self.imgheight * self.dx / self.dz) / self.figheight
-
-        self.slices['coronal'].getaxes()
-
     def _z_changed(self):
-        _slice = neuroimaging.reference.slices.transversal(z=self.z,
-                                                           xlim=self.xlim,
-                                                           ylim=self.ylim,
-                                                           zlim=self.zlim,
-                                                           shape=self.shape)
+        _slice = neuroimaging.reference.slices.zslice(z=self.z,
+                                                      xlim=self.xlim,
+                                                      ylim=self.ylim,
+                                                      zlim=self.zlim,
+                                                      shape=self.shape)
 
-#        _slice = neuroimaging.reference.slices.transversal(z=self.z, transpose=True)
+        self._setup_slice(_slice, self.slicenames[2])
 
-        self._setup_transversal(_slice)
-
-    def _setup_transversal(self, _slice):
-        if not self.slices.has_key('transversal'):
-            self.slices['transversal'] = self._getslice(_slice)
+    def _setup_slice(self, _slice, which):
+        if not self.slices.has_key(which):
+            self.slices[which] = self._getslice(_slice)
         else:
-            self.slices['transversal'].grid = _slice
+            self.slices[which].grid = _slice
 
-        self.slices['transversal'].width = self.ywidth
-        self.slices['transversal'].height = self.xheight
-        self.slices['transversal'].xoffset = self.bufferlength / self.figwidth
-        self.slices['transversal'].yoffset = self.bufferlength / self.figheight
-        self.slices['transversal'].getaxes()
+        self.slices[which].width, self.slices[which].height = self.lengths[which]
 
-    def __init__(self, image, x=0, y=0, z=0,
-                 xlim=[-90.,90.],
-                 ylim=[-126.,90.],
-                 zlim=[-72.,108.],
-                 **keywords):
-        self.slices = {}
+        self.slices[which].xoffset, self.slices[which].yoffset = self.offsets[which]
+        self.slices[which].getaxes()
 
-        self.xlim = xlim
-        self.ylim = ylim
-        self.zlim = zlim
+        a = self.slices[which].axes
+        a.set_xticks(self.ticks[which][0])
+        a.set_xticklabels(self.ticklabels[which][0])
 
-        self._setup_dims()
-        self.figure = pylab.figure(figsize=(self.figwidth / self.dpi, self.figheight / self.dpi))
-
-        self.m = utils.reduceall(N.minimum, image.readall())
-        self.M = utils.reduceall(N.maximum, image.readall())
-
-        self.interpolator = neuroimaging.image.interpolation.ImageInterpolator(atlas)
-        traits.HasTraits.__init__(self, x=x, y=y, z=z, **keywords)
-        self.cid = pylab.connect('button_press_event', self.on_click)
+        a.set_yticks(self.ticks[which][1])
+        a.set_yticklabels(self.ticklabels[which][1])
 
     def on_click(self, event):
 
-        print event.xdata, event.ydata, 'event'
-        if event.inaxes == self.slices['sagittal'].axes:
+        if event.inaxes == self.slices[self.slicenames[1]].axes:
             vy, vz = event.xdata, event.ydata
             vx = 0
-            world = self.slices['sagittal'].grid.mapping([vz,vy,vx])
-            which = 'sagittal'
-        elif event.inaxes == self.slices['transversal'].axes:
+            world = self.slices[self.slicenames[1]].grid.mapping([vz,vy,vx])
+            which = self.slicenames[1]
+            self.z, self.y, self.x = world
+        elif event.inaxes == self.slices[self.slicenames[2]].axes:
             vy, vx = event.xdata, event.ydata
             vz = 0
-            world = self.slices['transversal'].grid.mapping([vx,vy,vz])
-            which = 'transversal'
-        elif event.inaxes == self.slices['coronal'].axes:
+            world = self.slices[self.slicenames[2]].grid.mapping([vx,vy,vz])
+            which = self.slicenames[2]
+            self.z, self.y, self.x = world
+        elif event.inaxes == self.slices[self.slicenames[0]].axes:
             vx, vz = event.xdata, event.ydata
             vy = 0
-            world = self.slices['coronal'].grid.mapping([vz,vx,vy])
-            which = 'coronal'
+            world = self.slices[self.slicenames[0]].grid.mapping([vz,vx,vy])
+            which = self.slicenames[0]
+            self.z, self.y, self.x = world
+        else:
+            which = None
 
-        self.z, self.y, self.x = world
+        if which is self.slicenames[0]:
+            self.slices[self.slicenames[2]].draw(redraw=True)
+            self.slices[self.slicenames[1]].draw(redraw=True)
+        elif which is self.slicenames[1]:
+            self.slices[self.slicenames[2]].draw(redraw=True)
+            self.slices[self.slicenames[0]].draw(redraw=True)
+        elif which is self.slicenames[2]:
+            self.slices[self.slicenames[0]].draw(redraw=True)
+            self.slices[self.slicenames[1]].draw(redraw=True)
 
-        if which is 'coronal':
-            self.slices['transversal'].draw(redraw=True)
-            self.slices['sagittal'].draw(redraw=True)
-        elif which is 'sagittal':
-            self.slices['transversal'].draw(redraw=True)
-            self.slices['coronal'].draw(redraw=True)
-        elif which is 'transversal':
-            self.slices['coronal'].draw(redraw=True)
-            self.slices['sagittal'].draw(redraw=True)
-
-        pylab.draw()
-
-#        self.draw(redraw=True)
+        self.draw(redraw=True)
 
 
     def draw(self, redraw=False):
@@ -186,23 +236,3 @@ class BoxViewer(traits.HasTraits):
         for imslice in self.slices.values():
             imslice.draw(redraw=redraw)
         pylab.draw()
-            
-atlas = neuroimaging.image.Image('/home/jtaylo/.BrainSTAT/repository/kff.stanford.edu/~jtaylo/BrainSTAT/avg152T1.img')
-v = BoxViewer(atlas)
-import time
-v.draw()
-
-s = v.slices['sagittal'].axes
-t = v.slices['transversal'].axes
-c = v.slices['coronal'].axes
-
-
-#pylab.savefig('out.png')
-pylab.show()
-
-toc = time.time()
-v.x = 3.0
-v.draw()
-pylab.show()
-tic = time.time()
-print `tic-toc`

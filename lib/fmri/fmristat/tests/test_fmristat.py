@@ -23,7 +23,6 @@ class fMRIStatTest(unittest.TestCase):
         for i in range(10):
             all.append([p[i], on[i], off[i]])
         pain = protocol.ExperimentalFactor('pain', all)
-
         drift_fn = protocol.SplineConfound(window=[0,360], df=7)
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         self.pain = pain
@@ -33,7 +32,7 @@ class fMRIStatTest(unittest.TestCase):
 
         self.pain.convolve(self.IRF)
         self.pain.convolved = True
-        self.formula = self.pain + drift
+        self.formula = self.pain + self.drift
 
     def setUp(self):
         self.url = 'http://kff.stanford.edu/BrainSTAT/testdata/test_fmri.img'
@@ -72,33 +71,69 @@ class fMRIStatTest(unittest.TestCase):
 ##         AR.fit()
 ##         del(OLS); del(AR); gc.collect()
 
-    def test_contrast(self):
-        pain = contrast.Contrast(self.pain, self.formula, name='pain')
+    def test_hrf_deriv(self):
+        self.IRF = hrf.HRF(deriv=True)
 
-        x = N.arange(0,50,0.1)
-        y = self.pain(time=N.arange(0,50,0.1))
+        self.pain.convolve(self.IRF)
+        self.pain.convolved = True
+        print self.pain.names(), 'shaggy'
+        self.formula = self.pain + self.drift
+        print self.formula.names()
 
+        y = self.formula(time=N.arange(0,200,0.1))
+        pylab.figure()
+        pylab.plot(y[-1])
+#        pylab.plot(y[1])
+        pylab.figure()
+        pylab.plot(y[-2])
+#        pylab.plot(y[3])
+        pylab.show()
+        
+        pain = contrast.Contrast(self.pain, self.formula, name='hot-warm')
         self.img.slicetimes = None
         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
                                    slicetimes=self.img.slicetimes)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
         rho.tofile('rho.img')
+        
         os.remove('rho.img')
         os.remove('rho.hdr')
 
         AR = fmristat.fMRIStatAR(OLS, contrasts=[pain])
         AR.fit()
         del(OLS); del(AR); gc.collect()
+        
 
-        from neuroimaging.visualization import viewer
-        t = image.Image('contrasts/pain/F.img')
-        x = t.readall()
-        print utils.reduceall(N.maximum, x), utils.reduceall(N.minimum, x)
+##     def test_contrast(self):
+##         pain = contrast.Contrast(self.pain, self.formula, name='pain')
 
-        v=viewer.Viewer(t)
-        v.show()
-        pylab.show()
+
+##         self.img.slicetimes = None
+##         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+##                                    slicetimes=self.img.slicetimes)
+##         OLS.fit(resid=True)
+##         rho = OLS.rho_estimator.img
+##         rho.tofile('rho.img')
+        
+## ##         from neuroimaging.visualization import viewer
+## ##         v=viewer.BoxViewer(rho)
+## ##         v.draw()
+## ##         pylab.show()
+
+##         os.remove('rho.img')
+##         os.remove('rho.hdr')
+
+##         AR = fmristat.fMRIStatAR(OLS, contrasts=[pain])
+##         AR.fit()
+##         del(OLS); del(AR); gc.collect()
+
+## ##         t = image.Image('contrasts/pain/F.img')
+## ##         v=viewer.BoxViewer(t)
+## ##         v.draw()
+## ##         pylab.show()
+
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -143,6 +143,8 @@ class FContrastOutput(fMRIRegressionOutput):
 
 
     def extract(self, results):
+        F = results.Fcontrast(self.contrast.matrix).F
+        print F.max(), F.min(), F.shape
         return results.Fcontrast(self.contrast.matrix).F
 
 

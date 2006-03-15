@@ -82,7 +82,6 @@ class ANALYZEhdr(traits.HasTraits):
     smax = ANALYZEHeaderAtt('i', seek=340, value=0)
     smin = ANALYZEHeaderAtt('i', seek=344, value=0)
 
-    TR = traits.Float(1.)
     filebase = traits.Str()
     clobber = traits.false
 
@@ -329,7 +328,7 @@ class ANALYZE(ANALYZEhdr):
         elif self.ndim == 4 and self.nvector <= 1:
             axisnames = space[::-1] + ['time']
             origin = tuple(self.origin[0:3]) + (0,)
-            step = tuple(self.pixdim[1:4]) + (self.TR,)
+            step = tuple(self.pixdim[1:5]) 
             shape = self.dim[1:5]
             if self.squeeze:
                 if self.dim[4] == 1:

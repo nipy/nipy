@@ -4,8 +4,9 @@ from neuroimaging.reference import grid, axis, mapping
 import utils
 import pipes
 import enthought.traits as traits
+
+import interpolation
 import scipy.nd_image as nd_image
-import scipy.nd_image.interpolation as interpolation
 
 spaceaxes = axis.space
 
@@ -78,7 +79,9 @@ class Image(traits.HasTraits):
 
         if isinstance(self.grid.iterator, grid.ParcelIterator) or isinstance(self.grid.iterator, grid.SliceParcelIterator):
             if hasattr(self.image, 'memmap'):
-                self.buffer = self.readall()
+                self.buffer = self.image.memmap
+            elif isinstance(self.image.data, N.ndarray):
+                self.buffer = self.image.data
             self.buffer.shape = N.product(self.buffer.shape)
         return self
 
