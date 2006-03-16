@@ -76,19 +76,10 @@ class fMRIStatTest(unittest.TestCase):
 
         self.pain.convolve(self.IRF)
         self.pain.convolved = True
-        print self.pain.names(), 'shaggy'
-        self.formula = self.pain + self.drift
-        print self.formula.names()
 
-        y = self.formula(time=N.arange(0,200,0.1))
-        pylab.figure()
-        pylab.plot(y[-1])
-#        pylab.plot(y[1])
-        pylab.figure()
-        pylab.plot(y[-2])
-#        pylab.plot(y[3])
-        pylab.show()
-        
+        self.formula = self.pain + self.drift
+
+       
         pain = contrast.Contrast(self.pain, self.formula, name='hot-warm')
         self.img.slicetimes = None
         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
@@ -105,33 +96,33 @@ class fMRIStatTest(unittest.TestCase):
         del(OLS); del(AR); gc.collect()
         
 
-##     def test_contrast(self):
-##         pain = contrast.Contrast(self.pain, self.formula, name='pain')
+    def test_contrast(self):
+        pain = contrast.Contrast(self.pain, self.formula, name='pain')
 
 
-##         self.img.slicetimes = None
-##         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
-##                                    slicetimes=self.img.slicetimes)
-##         OLS.fit(resid=True)
-##         rho = OLS.rho_estimator.img
-##         rho.tofile('rho.img')
+        self.img.slicetimes = None
+        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+                                   slicetimes=self.img.slicetimes)
+        OLS.fit(resid=True)
+        rho = OLS.rho_estimator.img
+        rho.tofile('rho.img')
         
-## ##         from neuroimaging.visualization import viewer
-## ##         v=viewer.BoxViewer(rho)
-## ##         v.draw()
-## ##         pylab.show()
+        from neuroimaging.visualization import viewer
+        v=viewer.BoxViewer(rho)
+        v.draw()
+        pylab.show()
 
-##         os.remove('rho.img')
-##         os.remove('rho.hdr')
+        os.remove('rho.img')
+        os.remove('rho.hdr')
 
-##         AR = fmristat.fMRIStatAR(OLS, contrasts=[pain])
-##         AR.fit()
-##         del(OLS); del(AR); gc.collect()
+        AR = fmristat.fMRIStatAR(OLS, contrasts=[pain])
+        AR.fit()
+        del(OLS); del(AR); gc.collect()
 
-## ##         t = image.Image('contrasts/pain/F.img')
-## ##         v=viewer.BoxViewer(t)
-## ##         v.draw()
-## ##         pylab.show()
+        t = image.Image('contrasts/pain/F.img')
+        v=viewer.BoxViewer(t)
+        v.draw()
+        pylab.show()
 
 
 

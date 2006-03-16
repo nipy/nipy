@@ -21,7 +21,7 @@ class LinearFilter(traits.HasTraits):
     def setup_kernel(self):
         _normsq = self.normsq() / 2.
         self.kernel = N.exp(-N.minimum(_normsq, 15))
-        norm = self.kernel.add()
+        norm = self.kernel.sum()
         self.kernel = self.kernel / norm
         self.kernel = FFT.real_fftnd(self.kernel)
 
