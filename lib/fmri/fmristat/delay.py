@@ -18,9 +18,9 @@ from neuroimaging.fmri.protocol import ExperimentalRegressor, ExperimentalQuanti
 from neuroimaging.fmri.regression import fMRIRegressionOutput
 from neuroimaging.statistics.regression import contrastfromcols
 
-## import pylab
-## from neuroimaging.fmri.plotting import MultiPlot
-## canplot = True
+import pylab
+from neuroimaging.fmri.plotting import MultiPlot
+canplot = True
 
 canonical = neuroimaging.fmri.hrf.HRF(deriv=True)
 
@@ -146,19 +146,19 @@ class DelayContrastOutput(TContrastOutput):
             matrix.tofile(outfile)
             outfile.close()
 
-##             if canplot:
+            if canplot:
                 
-##                 ftime = self.fmri_image.frametimes
-##                 def g(time=None, **extra):
-##                     return N.squeeze(N.dot(l, self.contrast.term(time=time, **extra)))
-##                 f = pylab.gcf()
-##                 f.clf()
-##                 pl = MultiPlot(g, tmin=0, tmax=ftime.max(),
-##                                dt = ftime.max() / 2000., title='Magnitude column space for delay: \'%s\'' % rowname)
-##                 pl.draw()
-##                 pylab.savefig(os.path.join(outdir, 'matrix%s.png' % rowname))
-##                 f.clf()
-##                 del(f); del(g)
+                ftime = self.fmri_image.frametimes
+                def g(time=None, **extra):
+                    return N.squeeze(N.dot(l, self.contrast.term(time=time, **extra)))
+                f = pylab.gcf()
+                f.clf()
+                pl = MultiPlot(g, tmin=0, tmax=ftime.max(),
+                               dt = ftime.max() / 2000., title='Magnitude column space for delay: \'%s\'' % rowname)
+                pl.draw()
+                pylab.savefig(os.path.join(outdir, 'matrix%s.png' % rowname))
+                f.clf()
+                del(f); del(g)
                 
     def extract_effect(self, results):
 
@@ -259,20 +259,4 @@ class DelayContrastOutput(TContrastOutput):
                 self.effectimgs[i].next(data=data.effect[i], value=value)
             if self.sd:
                 self.sdimgs[i].next(data=data.effect[i], value=value)
-
-
-##     def next(self, data=None):
-##         print 'here', data.t.max(), data.t.min(), data.t.mean()
-##         if self.fmri_image.itervalue.type is 'slice':
-##             value = copy.copy(self.fmri_image.itervalue)
-##             value.slice = value.slice[1]
-##         else:
-##             value = self.fmri_image.itervalue
-
-##         self.timg.next(data=data.t, value=value)
-##         if self.effect:
-##             self.effectimg.next(data=data.effect, value=value)
-##         if self.sd:
-##             self.sdimg.next(data=data.effect, value=value)
-
 

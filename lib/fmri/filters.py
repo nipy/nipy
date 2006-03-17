@@ -371,7 +371,7 @@ def deltaPCAsvd(fn, delta, dt=None, tmax=50., lower=-15.0, ncomp=2):
         H.append(fn(time - delta[i]))
     H = array(H)
 
-    U, S, V = L.svd(transpose(H))
+    U, S, V = L.svd(transpose(H), full_matrices=0)
     prcnt_var_spectral = sum(S[0:ncomp]**2) / sum(S**2) * 100
 
     sumU = sum(U[:,0])

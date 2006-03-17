@@ -6,9 +6,9 @@ from neuroimaging.reference import grid
 from neuroimaging.statistics.regression import RegressionOutput
 from neuroimaging.statistics import utils
 
-## import pylab
-## from plotting import MultiPlot
-## canplot = True
+import pylab
+from plotting import MultiPlot
+canplot = True
 
 
 class fMRIRegressionOutput(RegressionOutput):
@@ -115,15 +115,15 @@ class TContrastOutput(fMRIRegressionOutput):
         self.contrast.matrix.tofile(outfile)
         outfile.close()
 
-##         if canplot:
-##             ftime = self.fmri_image.frametimes
-##             f = pylab.gcf()
-##             f.clf()
-##             pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
-##                            dt = ftime.max() / 2000., title='Column space for contrast: \'%s\'' % self.contrast.name)
-##             pl.draw()
-##             pylab.savefig(os.path.join(self.outdir, 'matrix.png'))
-##             f.clf()
+        if canplot:
+            ftime = self.fmri_image.frametimes
+            f = pylab.gcf()
+            f.clf()
+            pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
+                           dt = ftime.max() / 2000., title='Column space for contrast: \'%s\'' % self.contrast.name)
+            pl.draw()
+            pylab.savefig(os.path.join(self.outdir, 'matrix.png'))
+            f.clf()
 
     def extract(self, results):
         return results.Tcontrast(self.contrast.matrix, sd=self.sd, t=self.t)
@@ -183,16 +183,16 @@ class FContrastOutput(fMRIRegressionOutput):
         self.contrast.matrix.tofile(outfile)
         outfile.close()
 
-##         if canplot:
-##             ftime = self.fmri_image.frametimes
+        if canplot:
+            ftime = self.fmri_image.frametimes
 
-##             f = pylab.gcf()
-##             f.clf()
-##             pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
-##                            dt = ftime.max() / 2000., title='Column space for contrast: \'%s\'' % self.contrast.name)
-##             pl.draw()
-##             pylab.savefig(os.path.join(self.outdir, 'matrix.png'))
-##             f.clf()
+            f = pylab.gcf()
+            f.clf()
+            pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
+                           dt = ftime.max() / 2000., title='Column space for contrast: \'%s\'' % self.contrast.name)
+            pl.draw()
+            pylab.savefig(os.path.join(self.outdir, 'matrix.png'))
+            f.clf()
 
     def extract(self, results):
         F = results.Fcontrast(self.contrast.matrix).F
