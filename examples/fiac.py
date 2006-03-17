@@ -94,95 +94,103 @@ def FIACmask(subj=3, run=3):
     url = 'http://kff.stanford.edu/FIAC/fiac%(subj)d/fsl%(run)d/mask.img' % {'subj':subj, 'run':run}
     return neuroimaging.image.Image(url)
 
-IRF = HRF(deriv=True)
+if __name__ == '__main__':
 
-f = FIACfmri()
-m = FIACmask()
+    import sys
+    if len(sys.argv) == 3:
+        subj, run = sys.argv[1:]
+    else:
+        subj, run = (3, 3)
 
-p = FIACprotocol()
-p.convolve(IRF)
+    IRF = HRF(deriv=True)
 
-drift_fn = protocol.SplineConfound(window=[0,475], df=10)
-drift = protocol.ExperimentalQuantitative('drift', drift_fn)
+    f = FIACfmri(subj=subj, run=run)
+    m = FIACmask(subj=subj, run=run)
 
-formula = p + drift
+    p = FIACprotocol(subj=subj, run=run)
+    p.convolve(IRF)
 
-# output some contrasts, here is one from the term "p" in "formula"
+    drift_fn = protocol.SplineConfound(window=[0,475], df=10)
+    drift = protocol.ExperimentalQuantitative('drift', drift_fn)
 
-task = contrast.Contrast(p, formula, name='task')
+    formula = p + drift
 
-# another built by linear combinations of functions of (experiment) time
+    # output some contrasts, here is one from the term "p" in "formula"
 
-SSt_SSp = p['SSt_SSp'].astimefn()
-DSt_SSp = p['DSt_SSp'].astimefn()
-SSt_DSp = p['SSt_DSp'].astimefn()
-DSt_DSp = p['DSt_DSp'].astimefn()
+    task = contrast.Contrast(p, formula, name='task')
 
-overall = (SSt_SSp + DSt_SSp + SSt_DSp + DSt_DSp) * 0.25
+    # another built by linear combinations of functions of (experiment) time
 
-# important: overall is NOT convolved with HRF even though p was!!!
-# irf here is the canonical Glover HRF (with no derivative in this case)
+    SSt_SSp = p['SSt_SSp'].astimefn()
+    DSt_SSp = p['DSt_SSp'].astimefn()
+    SSt_DSp = p['SSt_DSp'].astimefn()
+    DSt_DSp = p['DSt_DSp'].astimefn()
 
-irf = HRF(deriv=False)
-overall = irf.convolve(overall)
-overall = contrast.Contrast(overall,
-                            formula,
-                            name='overall')
+    overall = (SSt_SSp + DSt_SSp + SSt_DSp + DSt_DSp) * 0.25
 
-# the "FIAC" contrasts
-# annoying syntax: floats must be on LHS -- have to fix __add__, __mul__ methods of TimeFunction
+    # important: overall is NOT convolved with HRF even though p was!!!
+    # irf here is the canonical Glover HRF (with no derivative in this case)
 
-sentence = (DSt_SSp + DSt_DSp) * 0.5 - (SSt_SSp + SSt_DSp) * 0.5
-sentence = irf.convolve(sentence)
-sentence = contrast.Contrast(sentence, formula, name='sentence')
-
-speaker =  (SSt_DSp + DSt_DSp) / 2. - (SSt_SSp + DSt_SSp) / 2.
-speaker = irf.convolve(speaker)
-speaker = contrast.Contrast(speaker, formula, name='speaker')
-
-interaction = SSt_SSp - SSt_DSp - DSt_SSp + DSt_DSp
-interaction = irf.convolve(interaction)
-interaction = contrast.Contrast(interaction, formula, name='interaction')
-
-# delay
-
-delays = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp],
-                                [[0.5,0.5,-0.5,-0.5],
-                                 [-0.5,0.5,-0.5,0.5],
-                                 [-1,1,1,-1],
-                                 [0.25,0.25,0.25,0.25]],
+    irf = HRF(deriv=False)
+    overall = irf.convolve(overall)
+    overall = contrast.Contrast(overall,
                                 formula,
-                                name='task',
-                                rownames=['speaker', 'sentence', 'interaction', 'overall'])
+                                name='overall')
 
-# OLS pass
+    # the "FIAC" contrasts
+    # annoying syntax: floats must be on LHS -- have to fix __add__, __mul__ methods of TimeFunction
+    
+    sentence = (DSt_SSp + DSt_DSp) * 0.5 - (SSt_SSp + SSt_DSp) * 0.5
+    sentence = irf.convolve(sentence)
+    sentence = contrast.Contrast(sentence, formula, name='sentence')
+    
+    speaker =  (SSt_DSp + DSt_DSp) / 2. - (SSt_SSp + DSt_SSp) / 2.
+    speaker = irf.convolve(speaker)
+    speaker = contrast.Contrast(speaker, formula, name='speaker')
 
-OLS = fmristat.fMRIStatOLS(f, formula=formula, mask=m, resid=True)
+    interaction = SSt_SSp - SSt_DSp - DSt_SSp + DSt_DSp
+    interaction = irf.convolve(interaction)
+    interaction = contrast.Contrast(interaction, formula, name='interaction')
 
-toc = time.time()
-OLS.fit(resid=True)
-tic = time.time()
+    # delay
+    
+    delays = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp],
+                                    [[0.5,0.5,-0.5,-0.5],
+                                     [-0.5,0.5,-0.5,0.5],
+                                     [-1,1,1,-1],
+                                     [0.25,0.25,0.25,0.25]],
+                                    formula,
+                                    name='task',
+                                    rownames=['speaker', 'sentence', 'interaction', 'overall'])
 
-print 'OLS time', `tic-toc`
+    # OLS pass
 
-# maybe you want to save the estimates of the AR(1) parameter
+    OLS = fmristat.fMRIStatOLS(f, formula=formula, mask=m, resid=True)
 
-rho = OLS.rho_estimator.img
-rho.tofile('rho.img')
+    toc = time.time()
+    OLS.fit(resid=True)
+    tic = time.time()
 
-# AR pass
+    print 'OLS time', `tic-toc`
+    
+    # maybe you want to save the estimates of the AR(1) parameter
 
-contrasts = [task, overall, sentence, speaker, interaction, delays]
-toc = time.time()
-AR = fmristat.fMRIStatAR(OLS, contrasts=contrasts, resid=True)
-AR.fit()
-tic = time.time()
-
-print 'AR time', `tic-toc`
-
-t = neuroimaging.image.Image('fmristat_run/delays/speaker/t.img')
-v=viewer.BoxViewer(t, mask=m)
-v.M = 10.
-v.m = -10.
-v.draw()
-pylab.show()
+    rho = OLS.rho_estimator.img
+    rho.tofile('rho.img')
+    
+    # AR pass
+    
+    contrasts = [task, overall, sentence, speaker, interaction, delays]
+    toc = time.time()
+    AR = fmristat.fMRIStatAR(OLS, contrasts=contrasts, resid=True)
+    AR.fit()
+    tic = time.time()
+    
+    print 'AR time', `tic-toc`
+    
+    t = neuroimaging.image.Image('fmristat_run/delays/speaker/t.img')
+    v=viewer.BoxViewer(t, mask=m)
+    v.M = 10.
+    v.m = -10.
+    v.draw()
+    pylab.show()

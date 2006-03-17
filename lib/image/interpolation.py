@@ -2,7 +2,7 @@
 Image interpolators using nd_image.
 """
 
-import scipy.nd_image as nd_image
+import scipy.image as nd_image
 import enthought.traits as traits
 import tempfile, os
 from neuroimaging.reference import grid
