@@ -27,11 +27,13 @@ class URLPipe(Pipe,urlhandler.DataFetcher):
     fileext = traits.Str()
     filename = traits.Str()
     filepath = traits.Str()
-    
+
     clobber = traits.false
 
     def _filename_changed(self):
         self.filebase, self.fileext = os.path.splitext(string.strip(self.filename))
+        if self.fileext in self.zipexts:
+            self.filebase, self.fileext = os.path.splitext(string.strip(self.filebase))
         self.filepath, self.filebase = os.path.split(self.filebase)
 
     def _mode_changed(self):
@@ -60,8 +62,9 @@ class URLPipe(Pipe,urlhandler.DataFetcher):
                 self.otherexts = format.valid
                 if self.mode is not 'w':
                     self.geturl(self.url)
+
         if creator is None:
-            raise NotImplementedError, 'file extension %(ext)s not recoginzed, %(exts)s files can be written at this time.' % {'ext':self.fileext, 'exts': extensions}
+            raise NotImplementedError, 'file extension %(ext)s not recognized, %(exts)s files can be written at this time.' % {'ext':self.fileext, 'exts': extensions}
 
         if self.cached:
             filename = os.path.join(self.repository, self.urlcompose(type=False))

@@ -374,6 +374,8 @@ class ANALYZE(ANALYZEhdr):
         v = self.memmap[slice]
         if self.funused1:
             return v * self.funused1
+        else:
+            return v
 
     def writeslice(self, slice, data):
         if self.funused1:
