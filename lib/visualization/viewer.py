@@ -2,7 +2,7 @@ import neuroimaging
 import numpy as N
 import pylab
 import neuroimaging.statistics.utils as utils
-import neuroimaging.visualization.slices as vizslice
+import slices as vizslice
 import enthought.traits as traits
 
 class BoxViewer(traits.HasTraits):
@@ -51,7 +51,8 @@ class BoxViewer(traits.HasTraits):
             self.slices['sagittal'].grid = _slice
 
 
-        self.slices['sagittal'].width = (self.imgheight * self.dy) / (self.dz * self.figwidth)
+        self.slices['sagittal'].width = self.ywidth
+        self.slices['sagittal'].height = self.zheight
         self.slices['sagittal'].xoffset = self.bufferlength / self.figwidth
         self.slices['sagittal'].yoffset = (2. * self.bufferlength + (self.imgheight * self.dx / self.dz)) / self.figheight
         self.slices['sagittal'].getaxes()
@@ -77,20 +78,27 @@ class BoxViewer(traits.HasTraits):
         self.figwidth = (3 * self.bufferlength +
                          self.imgheight * (self.dy + self.dx) / self.dz)
 
+        self.xwidth = self.dx * self.imgheight / (self.dz * self.figwidth)
+        self.xheight = self.dx * self.imgheight / (self.dz * self.figheight)
+
+        self.ywidth = self.dy * self.imgheight / (self.dz * self.figwidth)
+        self.yheight = self.dy * self.imgheight / (self.dz * self.figheight)
+
+        self.zwidth = self.dz * self.imgheight / (self.dz * self.figwidth)
+        self.zheight = self.dz * self.imgheight / (self.dz * self.figheight)
+
     def _setup_coronal(self, _slice):
         if not self.slices.has_key('coronal'):
             self.slices['coronal'] = self._getslice(_slice)
         else:
             self.slices['coronal'].grid = _slice
 
-        self.slices['coronal'].height = self.imgheight / self.figheight
-        try:
-            print self.slices['coronal'].height, self.slices['transversal'].height
-        except:
-            pass
+        self.slices['coronal'].height = self.zheight
+        self.slices['coronal'].width = self.xwidth
         
         self.slices['coronal'].xoffset = (2 * self.bufferlength + self.imgheight * self.dy / self.dz) / self.figwidth
         self.slices['coronal'].yoffset = (2 * self.bufferlength + self.imgheight * self.dx / self.dz) / self.figheight
+
         self.slices['coronal'].getaxes()
 
     def _z_changed(self):
@@ -110,8 +118,8 @@ class BoxViewer(traits.HasTraits):
         else:
             self.slices['transversal'].grid = _slice
 
-        self.slices['transversal'].width = self.imgheight * self.dy / (self.dz * self.figwidth)
-        self.slices['transversal'].height = self.imgheight * self.dx / (self.dz * self.figheight)
+        self.slices['transversal'].width = self.ywidth
+        self.slices['transversal'].height = self.xheight
         self.slices['transversal'].xoffset = self.bufferlength / self.figwidth
         self.slices['transversal'].yoffset = self.bufferlength / self.figheight
         self.slices['transversal'].getaxes()
