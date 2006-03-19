@@ -116,6 +116,15 @@ class FContrastOutput(fMRIRegressionOutput):
         fMRIRegressionOutput.__init__(self, fmri_image, **keywords)                
         self.grid = self.fmri_image.grid.subgrid(0)
         self.contrast = contrast
+        self.path = path
+        self.outdir = os.path.join(self.path, 'contrasts', self.contrast.name)
+        self.setup_contrast()
+        self.setup_output()
+
+    def setup_contrast(self):
+        self.contrast.getmatrix(time=self.fmri_image.frametimes)
+
+    def setup_output(self, path='.'):
         self.outdir = os.path.join(path, 'contrasts', self.contrast.name)
 
         if not os.path.exists(self.outdir):
@@ -125,9 +134,6 @@ class FContrastOutput(fMRIRegressionOutput):
         self.img = iter(image.Image(outname, mode='w', grid=self.grid))
         self.sync_grid()
 
-
-        if not hasattr(self.contrast, 'matrix'):
-            self.contrast.getmatrix(time=self.fmri_image.frametimes)
         outname = os.path.join(self.outdir, 'matrix.csv')
         outfile = file(outname, 'w')
         writer = csv.writer(outfile)

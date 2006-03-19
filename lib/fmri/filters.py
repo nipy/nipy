@@ -77,8 +77,9 @@ class Filter(traits.HasTraits):
             value = self.IRF(time)
         return value
 
-    def deltaPCA(self, delta, fn=None, dt=None, tmax=50., lower=-15.0):
-        '''Perform an expansion of fn, shifted over the values in delta. Effectively, a Taylor series approximation to fn(t+delta), in delta, with basis given by the filter elements. If fn is None, it assumes fn=IRF[0], that is the first filter.
+    def deltaPCA(self, delta, fn=None, dt=None, tmax=50., lower=-15.0, spectral=False):
+        '''
+        Perform an expansion of fn, shifted over the values in delta. Effectively, a Taylor series approximation to fn(t+delta), in delta, with basis given by the filter elements. If fn is None, it assumes fn=IRF[0], that is the first filter.
 
         >>> from numpy.random import *
         >>> from BrainSTAT.fMRIstat import HRF
@@ -109,49 +110,56 @@ class Filter(traits.HasTraits):
         >>> show()
 
 
-'''
-        if dt is None:
-            dt = self.dt
-        time = arange(lower, tmax, dt)
-        ntime = time.shape[0]
+        '''
+        if self.n != 2:
+            raise ValueError, "Taylor series approximation assumes IRF has two components, IRF[0] -- a canonical IRF and IRF[1], its derivative."
 
-        if fn is None:
-            fn = self.IRF[0]
+        if not spectral: # use Taylor series approximation
+            if dt is None:
+                dt = self.dt
+            time = arange(lower, tmax, dt)
+            ntime = time.shape[0]
 
-        W = []
-        H = []
+            if fn is None:
+                fn = self.IRF[0]
 
-        for i in range(delta.shape[0]):
-            H.append(fn(time - delta[i]))
-        H = array(H)
+            W = []
+            H = []
 
-        if self.n >= 2:
-            for _IRF in self.IRF:
-                W.append(_IRF(time))
-            W = array(W)
-        else:
-            W = self.IRF(time)
-            W.shape = (W.shape[0], 1)
+            for i in range(delta.shape[0]):
+                H.append(fn(time - delta[i]))
+            H = array(H)
 
-        W = transpose(W)
-        WH = dot(generalized_inverse(W), transpose(H))
+            if self.n >= 2:
+                for _IRF in self.IRF:
+                    W.append(_IRF(time))
+                W = array(W)
+            else:
+                W = self.IRF(time)
+                W.shape = (W.shape[0], 1)
 
-        coef = []
-        for i in range(self.n):
-            coef.append(interpolant(delta, WH[i]))
-            
-        def approx(time, delta):
-            value = 0
+            W = transpose(W)
+            WH = dot(generalized_inverse(W), transpose(H))
+
+            coef = []
             for i in range(self.n):
-                value = value + coef[i](delta) * self.IRF[i](time)
-            return value
+                coef.append(interpolant(delta, WH[i]))
+            
+            def approx(time, delta):
+                value = 0
+                for i in range(self.n):
+                    value = value + coef[i](delta) * self.IRF[i](time)
+                return value
 
-        approx.coef = coef
-        approx.components = self.IRF
-        if self.n == 2:
+            approx.coef = coef
+            approx.components = self.IRF
+            
             approx.theta, approx.inverse, approx.dinverse, approx.forward, approx.dforward = invertR(delta, approx.coef)
         
-        return approx
+            return approx
+        else:
+            return deltaPCAsvd(self.IRF[0], delta, dt=dt, tmax=tmax, lower=lower, ncomp=2)
+
 
 class GammaDENS:
     '''A class for a Gamma density -- only used so it knows how to differentiate itself.'''
@@ -324,7 +332,8 @@ def invertR(delta, IRF, niter=20, verbose=False):
     return model.theta, _deltahat, _ddeltahat, _deltahatinv, _ddeltahatinv
 
 def deltaPCAsvd(fn, delta, dt=None, tmax=50., lower=-15.0, ncomp=2):
-    '''Perform a PCA expansion of fn, shifted over the values in delta. Effectively, a Taylor series approximation to fn(t+delta), in delta, with basis given by the singular value decomposition of the matrix.
+    '''
+    Perform a PCA expansion of fn, shifted over the values in delta. Effectively, a Taylor series approximation to fn(t+delta), in delta, with basis given by the singular value decomposition of the matrix.
 
     >>> from BrainSTAT.fMRIstat.HRF import HRF
     >>> from BrainSTAT.Visualization.Pylab import multipleLinePlot

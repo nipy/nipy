@@ -40,7 +40,7 @@ class HRF(filters.Filter,traits.HasTraits):
         if deriv:
             dIRF = IRF.deriv()
             filters.Filter.__init__(self, [IRF, dIRF])
-            self.delay = self.deltaPCA(delta)
+            self.delay = self.deltaPCA(delta, svd=True)
             self.names = ['glover', 'dglover']
         else:
             filters.Filter.__init__(self, IRF)
