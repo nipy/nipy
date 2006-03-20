@@ -2,14 +2,14 @@ import string
 import neuroimaging
 import numpy as N
 import urllib
-import pylab
+#import pylab
 
-from neuroimaging.visualization import viewer
+#from neuroimaging.visualization import viewer
 from neuroimaging.fmri import protocol, fmristat
 from neuroimaging.fmri.hrf import HRF
 from neuroimaging.statistics import contrast
 
-from neuroimaging.fmri.plotting import MultiPlot
+#from neuroimaging.fmri.plotting import MultiPlot
 
 from neuroimaging.fmri.regression import ResidOutput
 
@@ -72,18 +72,18 @@ def FIACevent(subj=3, run=2):
     
     return protocol.ExperimentalFactor('FIAC_design', intervals)
 
-def FIACplot(subj=3, run=3, tmin=0., tmax=475., dt=0.2):
-    experiment = protocol(subj=subj, run=run)
+## def FIACplot(subj=3, run=3, tmin=0., tmax=475., dt=0.2):
+##     experiment = protocol(subj=subj, run=run)
 
-    t = N.arange(tmin,tmax,dt)
+##     t = N.arange(tmin,tmax,dt)
 
-    for event in eventdict.values():
-        l = pylab.plot(t, experiment[event](t), label=event,
-                       linewidth=2, linestyle='steps')
+##     for event in eventdict.values():
+##         l = pylab.plot(t, experiment[event](t), label=event,
+##                        linewidth=2, linestyle='steps')
 
-        gca = pylab.axes()
-        gca.set_ylim([-0.1,1.1])
-    pylab.legend(eventdict.values())
+##         gca = pylab.axes()
+##         gca.set_ylim([-0.1,1.1])
+##     pylab.legend(eventdict.values())
 
 def FIACfmri(subj=3, run=3):
     url = 'http://kff.stanford.edu/FIAC/fiac%(subj)d/fsl%(run)d/filtered_func_data.img' % {'subj':subj, 'run':run}
@@ -188,9 +188,9 @@ if __name__ == '__main__':
     
     print 'AR time', `tic-toc`
     
-    t = neuroimaging.image.Image('fmristat_run/delays/speaker/t.img')
-    v=viewer.BoxViewer(t, mask=m)
-    v.M = 10.
-    v.m = -10.
-    v.draw()
-    pylab.show()
+##     t = neuroimaging.image.Image('fmristat_run/delays/speaker/t.img')
+##     v=viewer.BoxViewer(t, mask=m)
+##     v.M = 10.
+##     v.m = -10.
+##     v.draw()
+##    pylab.show()

@@ -11,13 +11,9 @@ import numpy.random as R
 
 from delay import DelayContrast, DelayContrastOutput
 
-try:
-    import pylab
-    from neuroimaging.fmri.plotting import MultiPlot
-    canplot = True
-except:
-    canplot = False
-    pass
+import pylab
+from neuroimaging.fmri.plotting import MultiPlot
+canplot = True
 
 class fMRIStatOLS(iterators.LinearModelIterator):
 
@@ -137,7 +133,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
         reference.getmatrix(time=self.fmri_image.frametimes)
 
-        x = N.dot(N.transpose(L.generalized_inverse(self.dmatrix)),
+        x = N.dot(N.transpose(L.pinv(self.dmatrix)),
                   reference.matrix)
 
         def aclag(x, j):

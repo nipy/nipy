@@ -15,17 +15,12 @@ from neuroimaging.reference import grid
 from neuroimaging.fmri.regression import TContrastOutput 
 from neuroimaging.statistics import utils, regression, contrast
 from neuroimaging.fmri.protocol import ExperimentalRegressor, ExperimentalQuantitative
-from neuroimaging.fmri.regression import fMRIRegressionOutput, canplot
+from neuroimaging.fmri.regression import fMRIRegressionOutput
 from neuroimaging.statistics.regression import contrastfromcols
 
-
-try:
-    import pylab
-    from neuroimaging.fmri.plotting import MultiPlot
-    canplot = True
-except:
-    canplot = False
-    pass
+## import pylab
+## from neuroimaging.fmri.plotting import MultiPlot
+## canplot = True
 
 canonical = neuroimaging.fmri.hrf.HRF(deriv=True)
 
@@ -151,19 +146,19 @@ class DelayContrastOutput(TContrastOutput):
             matrix.tofile(outfile)
             outfile.close()
 
-            if canplot:
+##             if canplot:
                 
-                ftime = self.fmri_image.frametimes
-                def g(time=None, **extra):
-                    return N.squeeze(N.dot(l, self.contrast.term(time=time, **extra)))
-                f = pylab.gcf()
-                f.clf()
-                pl = MultiPlot(g, tmin=0, tmax=ftime.max(),
-                               dt = ftime.max() / 2000., title='Magnitude column space for delay: \'%s\'' % rowname)
-                pl.draw()
-                pylab.savefig(os.path.join(outdir, 'matrix%s.png' % rowname))
-                f.clf()
-                del(f); del(g)
+##                 ftime = self.fmri_image.frametimes
+##                 def g(time=None, **extra):
+##                     return N.squeeze(N.dot(l, self.contrast.term(time=time, **extra)))
+##                 f = pylab.gcf()
+##                 f.clf()
+##                 pl = MultiPlot(g, tmin=0, tmax=ftime.max(),
+##                                dt = ftime.max() / 2000., title='Magnitude column space for delay: \'%s\'' % rowname)
+##                 pl.draw()
+##                 pylab.savefig(os.path.join(outdir, 'matrix%s.png' % rowname))
+##                 f.clf()
+##                 del(f); del(g)
                 
     def extract_effect(self, results):
 
@@ -279,4 +274,5 @@ class DelayContrastOutput(TContrastOutput):
 ##             self.effectimg.next(data=data.effect, value=value)
 ##         if self.sd:
 ##             self.sdimg.next(data=data.effect, value=value)
+
 
