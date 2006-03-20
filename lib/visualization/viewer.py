@@ -67,7 +67,6 @@ class BoxViewer(traits.HasTraits):
         if z is None:
             z = N.mean(self.zlim)
 
-            
         if keywords.has_key('z_pix'):
             self.z_pix = keywords['z_pix']
         if keywords.has_key('buffer_pix'):
@@ -76,7 +75,7 @@ class BoxViewer(traits.HasTraits):
         figwidth, figheight = self._setup_dims()
         self.figure = pylab.figure(figsize=(figwidth / self.dpi, figheight / self.dpi))
 
-        _img = image.readall()
+        _img = N.nan_to_num(image.readall())
         self.m = float(_img.min())
         self.M = float(_img.max())
 

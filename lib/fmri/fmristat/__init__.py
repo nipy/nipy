@@ -1,11 +1,12 @@
 import gc
 import enthought.traits as traits
-from neuroimaging.statistics import iterators 
+from neuroimaging.statistics import iterators, utils 
 from neuroimaging.statistics.regression import OLSModel, ARModel
 import neuroimaging.fmri as fmri
 import neuroimaging.image.kernel_smooth as kernel_smooth
 from neuroimaging.fmri.regression import AR1Output, TContrastOutput, FContrastOutput
 import numpy as N
+import numpy.linalg as L
 
 class fMRIStatOLS(iterators.LinearModelIterator):
 
@@ -17,6 +18,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
     slicetimes = traits.Any()
     fwhm = traits.Float(6.0)
     nmax = traits.Int(200) # maximum number of rho values
+    mask = traits.Any()
 
     def __init__(self, fmri_image, **keywords):
         traits.HasTraits.__init__(self, **keywords)
@@ -36,7 +38,8 @@ class fMRIStatOLS(iterators.LinearModelIterator):
             model = OLSModel(design=self.dmatrix)
         return model
 
-    def fit(self, **keywords):
+    def fit(self, reference=None, **keywords):
+
         iterators.LinearModelIterator.fit(self, **keywords)
 
         smoother = kernel_smooth.LinearFilter(self.rho_estimator.img.grid, fwhm=self.fwhm)
@@ -44,6 +47,10 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         self.getlabels()
 
     def getlabels(self):
+        if self.mask is not None:
+            _mask = self.mask.readall()
+            self.rho.image.data = N.where(_mask, self.rho.image.data, N.nan)
+
         if self.slicetimes == None:
             tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
             tmp.shape = N.product(tmp.shape)
@@ -60,6 +67,44 @@ class fMRIStatOLS(iterators.LinearModelIterator):
                 newlabels = list(N.unique(tmp))
                 self.labelset += [newlabels]
                 self.labels += [tmp]
+
+        try:
+            self.labelset.pop(self.labelset.index(N.nan))
+        except:
+            pass
+
+    def estimateFWHM_AR(self, reference,
+                        fwhm_data=10., ARorder=1, df_target=100.):
+        """
+        Estimate smoothing of AR coefficient to get
+        a targeted df.
+
+        Worsley, K.J. (2005). \'Spatial smoothing of autocorrelations to control the degrees of freedom in fMRI analysis.\' NeuroImage, 26:635-641.
+
+        """
+
+        reference.getmatrix(time=self.fmri_image.frametimes)
+
+        x = N.dot(N.transpose(L.generalized_inverse(self.dmatrix)),
+                  reference.matrix)
+
+        def aclag(x, j):
+            return N.add.reduce(x[j:] * x[0:-j]) / N.add.reduce(x**2)
+
+        tau = 0.
+        for j in range(ARorder):
+            tau = tau + aclag(x, j+1)**2
+
+        ndim = len(self.fmri_image.shape) - 1
+
+        def df_eff(fwhm_filter):
+            f = N.pow(1 + 2. * (fwhm_filter / fwhm_data)**2, -ndim/2.)
+            return utils.rank(self.dmatrix) / (1 + 2. * f * tau)
+            
+        df_eff_inv = utils.monotone_fn_inverter(df_eff, arange(0, 50, 0.1))
+        self.fwhm = df_eff_inv(self.df_target)
+
+
 
 class fMRIStatAR(iterators.LinearModelIterator):
 
@@ -130,6 +175,7 @@ class fMRIStatAR(iterators.LinearModelIterator):
             model = ARModel(rho=rho, design=self.designs[i])
         else:
             rho = self.iterator.grid.itervalue.label
+            print rho, 'rho' 
             model = ARModel(rho=rho, design=self.dmatrix)
         return model
 

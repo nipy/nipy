@@ -141,7 +141,6 @@ class FContrastOutput(fMRIRegressionOutput):
         contrast.matrix.tofile(outfile)
         outfile.close()
 
-
     def extract(self, results):
         F = results.Fcontrast(self.contrast.matrix).F
         return results.Fcontrast(self.contrast.matrix).F

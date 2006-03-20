@@ -31,7 +31,6 @@ class fMRIStatTest(unittest.TestCase):
         self.IRF = hrf.HRF()
 
         self.pain.convolve(self.IRF)
-        self.pain.convolved = True
         self.formula = self.pain + self.drift
 
     def setUp(self):
@@ -41,6 +40,8 @@ class fMRIStatTest(unittest.TestCase):
         slicetimes = N.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
         self.img = fmri.fMRIImage(self.url, frametimes=frametimes,
                                   slicetimes=slicetimes, usematfile=False)
+        print self.img.grid.shape
+
         self.setup_formula()
 
 ##     def test_model_frametimes(self):

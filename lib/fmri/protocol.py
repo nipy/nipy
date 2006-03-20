@@ -95,7 +95,7 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
             termname = name
         namespace[termname] = self
             
-        test = self.fn(N.array([4.0,5.0,6]))
+        test = self.fn(time=N.array([4.0,5.0,6]))
         n = N.array(test).shape[0]
 
         if n > 1:
@@ -180,6 +180,19 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         keys = self.events.keys() + [downtime]
         Factor.__init__(self, name, keys)
         
+    def main_effect(self):
+        """
+        Return the 'main effect' for an ExperimentalFactor.
+        """
+
+        def fn(namespace=None, time=None, obj=self, **keywords):
+            obj.convolved = False
+            value = N.asarray(obj(namespace=namespace, time=time, **keywords))
+            obj.convolved = True
+            return value
+        
+        return ExperimentalQuantitative('%s:maineffect' % self.termname, fn)
+
     def __getitem__(self, key):
         if self.events.has_key(key) not in self.events.keys():
             l = self.events.keys()
