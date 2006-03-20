@@ -6,7 +6,6 @@ import pipes
 import enthought.traits as traits
 
 import interpolation
-import scipy.nd_image as nd_image
 
 spaceaxes = axis.space
 

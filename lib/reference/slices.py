@@ -19,7 +19,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
         f[0:nout,i] = colvectors[i]
     
     tmp = R.standard_normal((nout, nout-ndim))
-    p = N.identity(nout) - N.dot(f, L.generalized_inverse(f))
+    p = N.identity(nout) - N.dot(f, L.pinv(f))
     tmp = N.dot(p, tmp)
     f[0:nout,ndim:] = N.transpose(tmp)
 

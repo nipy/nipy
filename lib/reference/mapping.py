@@ -1,6 +1,6 @@
 import csv, string
 import numpy as N
-from numpy.linalg import inverse
+from numpy.linalg import inv as inverse
 from numpy.random import standard_normal
 import coordinate_system, axis
 import string, sets, StringIO, urllib, re, struct

@@ -1,5 +1,4 @@
 from numpy import *
-from numpy.linalg import generalized_inverse, singular_value_decomposition
 import filters
 import enthought.traits as traits
 

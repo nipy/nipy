@@ -1,6 +1,6 @@
 from numpy import *
 from utils import ConvolveFunctions, WaveFunction, StepFunction, LinearInterpolant
-from numpy.linalg import generalized_inverse, singular_value_decomposition
+import numpy.linalg as L
 import enthought.traits as traits
 
 interpolant = LinearInterpolant
@@ -139,7 +139,7 @@ class Filter(traits.HasTraits):
                 W.shape = (W.shape[0], 1)
 
             W = transpose(W)
-            WH = dot(generalized_inverse(W), transpose(H))
+            WH = dot(L.pinv(W), transpose(H))
 
             coef = []
             for i in range(self.n):
@@ -371,7 +371,7 @@ def deltaPCAsvd(fn, delta, dt=None, tmax=50., lower=-15.0, ncomp=2):
         H.append(fn(time - delta[i]))
     H = array(H)
 
-    U, S, V = singular_value_decomposition(transpose(H))
+    U, S, V = L.svd(transpose(H))
     prcnt_var_spectral = sum(S[0:ncomp]**2) / sum(S**2) * 100
 
     sumU = sum(U[:,0])

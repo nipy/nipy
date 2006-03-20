@@ -1,5 +1,4 @@
 import struct, os, sys, numpy, string, types
-from numpy.linalg import inverse
 import numpy as N
 from neuroimaging.image import utils
 from neuroimaging.reference.axis import VoxelAxis, RegularAxis, space, spacetime
