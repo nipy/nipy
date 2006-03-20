@@ -10,6 +10,10 @@ downtime = 'None/downtime'
 
 class ExperimentalRegressor(traits.HasTraits):
 
+    convolved = traits.false # a toggle to determine whether we
+                             # want to think of the factor as convolved or not
+                             # i.e. for plotting
+
     def __add__(self, other):
         other = ExperimentalFormula(other)
         return other + self
@@ -19,6 +23,7 @@ class ExperimentalRegressor(traits.HasTraits):
         return other * self
 
     def convolve(self, IRF):
+        self.IRF = IRF
         _fn = IRF.convolve(self)
         def _f(time=None, _fn=tuple(_fn), **keywords):
             v = []
@@ -34,7 +39,7 @@ class ExperimentalRegressor(traits.HasTraits):
         for hrfname in IRF.names:
             for termname in self.names():
                 name.append('(%s**%s)' % (hrfname, termname))
-        return ExperimentalQuantitative(name, _f, termname='(%s**%s)' % (hrfname, self.termname))
+        self._convolved = ExperimentalQuantitative(name, _f, termname='(%s**%s)' % (hrfname, self.termname))
 
 class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
     """
@@ -44,6 +49,7 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
 
     def __init__(self, name, fn, termname=None, **keywords):
 
+        ExperimentalRegressor.__init__(self, **keywords)
         self.fn = fn
         self.name = name
         if termname is None:
@@ -63,9 +69,15 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
         Quantitative.__init__(self, names, _fn=fn, termname=termname, **keywords)
         
     def __call__(self, time=None, namespace=namespace, **keywords):
-        v = self.fn(time=N.arange(20), **keywords)
-        return self.fn(time=time, **keywords)
-
+        if not self.convolved:
+            v = self.fn(time=N.arange(20), **keywords)
+            return self.fn(time=time, **keywords)
+        else:
+            if hasattr(self, '_convolved'):
+                return self._convolved(time=time, namespace=namespace, **keywords)
+            else:
+                raise ValueError, 'term %s has not been convolved with an HRF' % self.name
+            
 class ExperimentalStepFunction(ExperimentalQuantitative):
     """
     Return a step function from an iterator returing tuples
@@ -122,29 +134,34 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
     Return a factor that is a function of experimental time.
     """
     
-
     def __init__(self, name, iterator, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+        ExperimentalRegressor.__init__(self, **keywords)
         self.fromiterator(iterator)
         keys = self.events.keys() + [downtime]
         Factor.__init__(self, name, keys)
         
     def __call__(self, time=None, namespace=None, includedown=False, **keywords):
-        value = []
-        keys = self.events.keys()
-        for level in keys:
-            value.append(N.squeeze(self.events[level](time,
-                                                      namespace=namespace,
-                                                      **keywords)))
-        if includedown:
-            s = N.add.reduce(value)
+        if not self.convolved:
+            value = []
+            keys = self.events.keys()
+            for level in keys:
+                value.append(N.squeeze(self.events[level](time,
+                                                          namespace=namespace,
+                                                          **keywords)))
+            if includedown:
+                s = N.add.reduce(value)
 
-            keys = keys + [downtime]
-            which = N.argmax(value, axis=0)
-            which = N.where(s, which, keys.index(downtime))
-            return Factor.__call__(self, namespace={self.termname:[keys[w] for w in which]})
+                keys = keys + [downtime]
+                which = N.argmax(value, axis=0)
+                which = N.where(s, which, keys.index(downtime))
+                return Factor.__call__(self, namespace={self.termname:[keys[w] for w in which]})
+            else:
+                return N.array(value)
         else:
-            return N.array(value)
+            if hasattr(self, '_convolved'):
+                return self._convolved(time=time, namespace=namespace, **keywords)
+            else:
+                raise ValueError, 'no IRF defined for factor %s' % self.name
 
     def names(self, keep=False):
         names = Factor.names(self)
@@ -210,7 +227,7 @@ class ExperimentalFormula(Formula):
             if not hasattr(term, 'IRF'):
                 val = term(time=time, namespace=namespace, **keywords)
             else:
-                val = term(time=time, namespace=namespace, convolved=True, **keywords)
+                val = term(time=time, namespace=namespace, **keywords)
                       
             allvals.append(val)
 

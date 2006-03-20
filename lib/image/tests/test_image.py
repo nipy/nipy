@@ -121,5 +121,11 @@ class AnalyzeImageTest(unittest.TestCase):
             v += t.shape[0]
         self.assertEquals(v, N.product(test.grid.shape))
         
+    def test_call(self):
+        rho = Image('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
+        x = [0]*3
+        print rho(x)
+        
+
 if __name__ == '__main__':
     unittest.main()

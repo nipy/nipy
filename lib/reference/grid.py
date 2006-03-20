@@ -25,10 +25,10 @@ class SamplingGrid(traits.HasTraits):
 
         """
        
-        tmp = indices(self.shape)
+        tmp = N.indices(self.shape)
         _shape = tmp.shape
-        tmp.shape = (self.warp.input_coords.ndim, product(self.shape))
-        _tmp = self.map(tmp)
+        tmp.shape = (self.warp.input_coords.ndim, N.product(self.shape))
+        _tmp = self.warp.map(tmp)
         _tmp.shape = _shape
         return _tmp 
 
@@ -187,4 +187,28 @@ def python2matlab(grid):
     shape = grid.shape[::-1]
     _warp = warp.python2matlab(grid.warp)
     return SamplingGrid(shape=shape, warp=_warp)
+
+class SliceGrid(SamplingGrid, traits.HasTraits):
+
+    """
+    Return an affine subgrid of a given grid with specified
+    origin and steps.
+    """
+
+    def __init__(self, grid, origin, directions, shape):
+
+        self.fmatrix = N.zeros((self.nout, self.ndim), N.Float)
+    
+        _axes = []
+
+        for i in range(directions.shape[0]):
+            self.fmatrix[i] = directions[i]
+            _axes.append(axis.VoxelAxis(len=shape[i], name=axis.space[i]))
+        input_coords = coordinate_system.CoordinateSystem('voxel', _axes)
+        self.fvector = origin
+
+        warp = warp.DegenerateAffine(input_coords, output_coords, fmatrix, fvector)
+        grid.SamplingGrid.__init__(self, warp=warp, shape=shape)
+
+        
 

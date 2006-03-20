@@ -6,6 +6,7 @@ from neuroimaging.statistics import contrast, utils
 import neuroimaging.image as image
 import numpy as N
 import neuroimaging.fmri.hrf as hrf
+import pylab
 
 class fMRIStatTest(unittest.TestCase):
 
@@ -30,8 +31,9 @@ class fMRIStatTest(unittest.TestCase):
 
         self.IRF = hrf.HRF()
 
-        self.painc = self.pain.convolve(self.IRF)
-        self.formula = self.painc + drift
+        self.pain.convolve(self.IRF)
+        self.pain.convolved = True
+        self.formula = self.pain + drift
 
     def setUp(self):
         self.url = 'http://kff.stanford.edu/BrainSTAT/testdata/test_fmri.img'
@@ -71,7 +73,10 @@ class fMRIStatTest(unittest.TestCase):
 ##         del(OLS); del(AR); gc.collect()
 
     def test_contrast(self):
-        pain = contrast.Contrast(self.painc, self.formula, name='pain')
+        pain = contrast.Contrast(self.pain, self.formula, name='pain')
+
+        x = N.arange(0,50,0.1)
+        y = self.pain(time=N.arange(0,50,0.1))
 
         self.img.slicetimes = None
         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
@@ -93,7 +98,6 @@ class fMRIStatTest(unittest.TestCase):
 
         v=viewer.Viewer(t)
         v.show()
-        import pylab
         pylab.show()
 
 if __name__ == '__main__':

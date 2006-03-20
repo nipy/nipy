@@ -120,7 +120,6 @@ class Warp(traits.HasTraits):
             return Warp(self.output_coords, self.input_coords, self._inverse, self.map, maptype=self.maptype)
         else:
             raise ValueError, 'non-invertible warp.'
-         
    
     def map(self, coords, inverse=False):
         if not inverse:
@@ -212,39 +211,6 @@ class Affine(Warp):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def subset(self, dimnames, inname=None, outname=None, sort=True):
-        """
-        Reorder and/or subset a warp, uses subset of output_coords.axes to determine subset.
-
-        Warning: this does not know about the \'new\' Coordinate classes.
-
-        """
-
-        order = [self.output_coords.dimnames.index(dimname) for dimname in dimnames]
-        if sort:
-            order.sort() # keep order of coordinates: a good idea or not?
-
-        indim = [self.input_coords.axes[i] for i in order]
-        if inname is None:
-            inname = 'voxel'
-        incoords = coordinates_system.CoordinateSystem(inname, indim)
-        
-        outdim = [self.output_coords.axes[i] for i in order]
-
-        if outname is None:
-            outname = 'world'
-        outcoords = coordinate_system.CoordinateSystem(outname, outdim)
-
-        l = len(order)
-        transform = N.zeros((l+1,)*2, N.Float)
-        transform[l,l] = 1.0
-        for i in range(l):
-            for j in range(l):
-                transform[i,j] = self.transform[order[i],order[j]]
-            transform[i,l] = self.transform[order[i],self.ndim]
-                
-        return Affine(incoords, outcoords, transform, shape=_shape)
-
     def __eq__(self, other):
         try:
             if tuple(self.transform.flat) != tuple(other.transform.flat):
@@ -264,7 +230,7 @@ class Affine(Warp):
         else:
             value = N.dot(self.bmatrix, coords)
             if len(value.shape) > 1:
-                value = value + multiply.outer(self.bvector, N.ones(value.shape[1:]))
+                value = value + N.multiply.outer(self.bvector, N.ones(value.shape[1:]))
             elif alpha != 0.0:
                 value = value + self.bvector * alpha # for derivatives, we don't want translation...
         return value
@@ -282,10 +248,12 @@ class Affine(Warp):
 
     def __rmul__(self, other):
         if other.maptype == 'affine':
-##            if self.output_coords.name.strip() != other.input_coords.name.strip():
-##                raise ValueError, 'input and output coordinate names do not match.'
-
-            return Affine(self.input_coords, other.output_coords, N.dot(other.transform, self.transform))
+            try:
+                return Affine(self.input_coords, other.output_coords, N.dot(other.transform, self.transform))
+            except:
+                fmatrix = N.dot(other.fmatrix, self.fmatrix)
+                fvector = N.dot(other.fmatrix, self.fvector) + other.fvector
+                return DegenerateAffine(self.input_coords, other.output_coords, fmatrix, fvector)
         else:
             return Warp.__rmul__(self, other)
 
@@ -293,27 +261,42 @@ class Affine(Warp):
         value = '%s:input=%s\n%s:output=%s\n%s:fmatrix=%s\n%s:fvector=%s' % (self.name, self.input_coords.name, self.name, self.output_coords.name, self.name, `self.fmatrix`, self.name, `self.fvector`)
         return value
     
-    def translate_input(self, x = -N.ones((3,))):
-        """Modify (in place) a affine transform so that its input is translated by x, which defaults to -1 for handling C->matlab indexing."""
-        ndim = self.ndim
-        self.transform = N.dot(self.transform, inverse(_translation_transform(x, self.ndim)))
-        for i in range(ndim):
-            self.input_coords.axes[i].start = self.input_coords.axes[i].start - x[i]
-        self.fmatrix, self.fvector = _2matvec(self.transform)
-        self.bmatrix, self.bvector = _2matvec(inverse(self.transform))
+class DegenerateAffine(Affine):
+    """
+    A subclass of affine with no inverse, i.e. where the map is non-invertible.
+    """
+    
+    nout = traits.Int(3)
+    nin = traits.Int(3)
 
-    def translate_output(self, x = -N.ones((3,))):
-        """Modify (in place) an affine transform so that its output is translated by x, which defaults to -1 for handling C->matlab indexing"""
-        ndim = self.ndim
-        self.transform = N.dot(_translation_transform(x, self.ndim), self.transform)
-        for i in range(ndim):
-            self.output_coords.axes[i].start = self.output_coords.axes[i].start + x[i]
-        self.fmatrix, self.fvector = _2matvec(self.transform)
-        self.bmatrix, self.bvector = _2matvec(inverse(self.transform))
+    def __init__(self, input_coords, output_coords, fmatrix, fvector,
+                 name='transform'):
+        self.name = name
+        self.input_coords = input_coords
+        self.output_coords = output_coords
+        self.fmatrix = fmatrix
+        self.fvector = fvector
+        self.nin = fmatrix.shape[1]
+        self.nout = fmatrix.shape[0]
+
+        def _map(coords):
+            return N.dot(self.fmatrix, coords) + self.fvector
+
+        try:
+            t = N.zeros((self.ndin+1,)*2, N.Float)
+            t[0:self.nin,0:self.nin] = self.fmatrix
+            t[self.nin,self.nin] = 1.
+            t[0:self.nin,self.nin] = self.fvector
+            x = inverse(t)
+            Affine.__init__(self, input_coords, output_coords, t, name=name)
+        except:
+            Warp.__init__(self, input_coords, output_coords, _map, maptype='affine')
 
 
 def permutation_matrix(order=range(3)[2::-1]):
-    """Create an NxN permutation matrix from a sequence, containing the values 0,...,N-1."""
+    """
+    Create an NxN permutation matrix from a sequence, containing the values 0,...,N-1.
+    """
     n = len(order)
     matrix = N.zeros((n,n))
     if sets.Set(order) != sets.Set(range(n)):
@@ -323,7 +306,9 @@ def permutation_matrix(order=range(3)[2::-1]):
     return matrix
 
 def permutation_transform(order=range(3)[2::-1]):
-    """Create an (N+1)x(N+1) permutation transformation from a sequence, containing the values 0,...,N-1."""
+    """
+    Create an (N+1)x(N+1) permutation transformation matrix from a sequence, containing the values 0,...,N-1.
+    """
     ndim = len(order)
     ptransform = N.zeros((ndim+1,ndim+1), N.Float)
     ptransform[0:ndim,0:ndim] = permutation_matrix(order=order)
@@ -332,32 +317,17 @@ def permutation_transform(order=range(3)[2::-1]):
     return ptransform
 
 def _translation_transform(x, ndim):
-    """Create a matrix representing translation by x."""
+    """
+    Create an affine transformation matrix representing translation by x.
+    """
     _transform = N.identity(ndim+1)
     _transform[0:ndim,ndim] = _transform[0:ndim,ndim] + x 
     return _transform
 
-def linearize(warp, seed=None):
-    d = warp.ndim
-    if seed is None:
-        seed = N.zeros(d, N.Float)
-    shift = warp(seed)
-    A = N.zeros((d,)*2, N.Float)
-
-    for i in range(d):
-        dx = N.zeros(d, N.Float)
-        dx[i] = 1.
-        A[i] = warp(seed + dx) - warp(seed)
-
-    transform = N.zeros((warp.ndim+1,)*2, N.Float)
-    transform[0:warp.ndim,0:warp.ndim] = A
-    transform[0:warp.ndim,warp.ndim] = shift
-    transform[warp.ndim,warp.ndim] = 1.
-    w = Affine(warp.input_coords, warp.output_coords, transform)
-    return w
-
 def tovoxel(real, warp):
-    """Given a warp and a real coordinate, where warp.input_coords are assumed to be voxels, return the closest voxel for real. Will choke if warp is not invertible."""
+    """
+    Given a warp and a real coordinate, where warp.input_coords are assumed to be voxels, return the closest voxel for real. Will choke if warp is not invertible.
+    """
     _shape = real.shape
     real.shape = (_shape[0], product(_shape[1:]))
     voxel = N.around(warp.map(real, inverse=True))

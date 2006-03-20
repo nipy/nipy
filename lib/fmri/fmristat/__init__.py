@@ -2,7 +2,6 @@ import gc
 import enthought.traits as traits
 from neuroimaging.statistics import iterators 
 from neuroimaging.statistics.regression import OLSModel, ARModel
-from neuroimaging.statistics.contrast import Contrast
 import neuroimaging.fmri as fmri
 import neuroimaging.image.kernel_smooth as kernel_smooth
 from neuroimaging.fmri.regression import AR1Output, TContrastOutput, FContrastOutput
