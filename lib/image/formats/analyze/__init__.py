@@ -60,7 +60,7 @@ class ANALYZEhdr(traits.HasTraits):
     calmin = ANALYZEHeaderAtt('f', seek=128, value=0.)
     compressed = ANALYZEHeaderAtt('i', seek=132, value=0)
     verified = ANALYZEHeaderAtt('i', seek=136, value=0)
-    glmax = ANALYZEHeaderAtt('i', seek=140, value=255)
+    glmax = ANALYZEHeaderAtt('i', seek=140, value=0)
     glmin = ANALYZEHeaderAtt('i', seek=144, value=0)
     descrip = ANALYZEHeaderAtt('80s', seek=148, value=' '*80)
     auxfile = ANALYZEHeaderAtt('24s', seek=228, value='none' + ' '*20)
@@ -154,6 +154,8 @@ class ANALYZEhdr(traits.HasTraits):
         return '%s.mat' % self.filebase
 
     def _datatype_changed(self):
+        ## TODO / WARNING, datatype is not checked very carefully...
+
         if self.datatype == ANALYZE_Byte:
             self.bitpix = 8
             self.glmin = 0
