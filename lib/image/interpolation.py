@@ -1,8 +1,8 @@
 """
-Image interpolators using nd_image.
+Image interpolators using ndimage.
 """
 
-import scipy.image as nd_image
+import scipy.ndimage as ndimage
 import enthought.traits as traits
 import tempfile, os
 from neuroimaging.reference import grid
@@ -20,7 +20,7 @@ class ImageInterpolator(traits.HasTraits):
 
     def prefilter(self):
         if self.order > 1:
-            data = nd_image.spline_filter(N.nan_to_num(self.image.readall()),
+            data = ndimage.spline_filter(N.nan_to_num(self.image.readall()),
                                           self.order)
         else:
             data = N.nan_to_num(self.image.readall())
@@ -57,7 +57,7 @@ class ImageInterpolator(traits.HasTraits):
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], N.product(output_shape))
         voxels = self.image.grid.mapping.map(points, inverse=True)
-        V = nd_image.map_coordinates(self.data, 
+        V = ndimage.map_coordinates(self.data, 
                                      voxels,
                                      order=self.order,
                                      prefilter=False)
