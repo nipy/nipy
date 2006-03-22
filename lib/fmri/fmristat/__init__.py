@@ -4,7 +4,7 @@ from neuroimaging.statistics import iterators, utils
 from neuroimaging.statistics.regression import OLSModel, ARModel
 import neuroimaging.fmri as fmri
 import neuroimaging.image.kernel_smooth as kernel_smooth
-from neuroimaging.fmri.regression import AR1Output, TContrastOutput, FContrastOutput
+from neuroimaging.fmri.regression import AR1Output, TContrastOutput, FContrastOutput, ResidOutput
 import numpy as N
 import numpy.linalg as L
 import numpy.random as R
@@ -31,15 +31,22 @@ class fMRIStatOLS(iterators.LinearModelIterator):
     nmax = traits.Int(200) # maximum number of rho values
     mask = traits.Any()
     path = traits.String('fmristat_run')
+    resid = traits.false
 
-    def __init__(self, fmri_image, **keywords):
+    def __init__(self, fmri_image, outputs=[], **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.fmri_image = fmri.fMRIImage(fmri_image)
         self.iterator = iter(self.fmri_image)
 
         self.rho_estimator = AR1Output(self.fmri_image)
+        self.outputs += outputs
         self.outputs.append(self.rho_estimator)
         self.dmatrix = self.formula.design(time=self.fmri_image.frametimes)
+
+        if self.resid:
+            self.resid_output = ResidOutput(self.fmri_image, path=self.path, basename='OLSresid')
+            self.outputs.append(self.resid_output)
+            
         self.setup_output()
         
     def model(self, **keywords):
@@ -167,8 +174,9 @@ class fMRIStatAR(iterators.LinearModelIterator):
     slicetimes = traits.Any()
     fwhm = traits.Float(6.0)
     path = traits.Str('.')
-
-    def __init__(self, OLS, contrasts=None, **keywords):
+    resid = traits.false
+    
+    def __init__(self, OLS, contrasts=None, outputs=[], **keywords):
         """
         Building on OLS results, fit the AR(1) model.
 
@@ -177,6 +185,7 @@ class fMRIStatAR(iterators.LinearModelIterator):
         """
         
         traits.HasTraits.__init__(self, **keywords)
+        self.outputs += outputs
         if not isinstance(OLS, fMRIStatOLS):
             raise ValueError, 'expecting an fMRIStatOLS object in fMRIStatAR'
         self.fmri_image = OLS.fmri_image
@@ -222,6 +231,10 @@ class fMRIStatAR(iterators.LinearModelIterator):
         self.j = 0
 
         self.outputs += self.contrasts
+
+        if self.resid:
+            self.resid_output = ResidOutput(self.fmri_image, path=self.path, basename='ARresid')
+            self.outputs.append(self.resid_output)
 
     def model(self, **keywords):
         self.j += 1

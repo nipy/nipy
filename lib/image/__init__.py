@@ -119,6 +119,16 @@ class Image(traits.HasTraits):
                 except:
                     pass
 
+        elif itertype == 'slice/parcel':
+            if data is None:
+#                value.where.shape = N.product(value.where.shape)
+                tmp = self.getslice(value.slice)
+                return tmp.compress(value.where)
+            else:
+                indices = N.nonzero(value.where)
+                self.buffer.put(data, indices)
+                
+
     def getvoxel(self, voxel):
         if len(voxel) != self.ndim:
             raise ValueError, 'expecting a voxel coordinate'

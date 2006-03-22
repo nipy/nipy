@@ -6,12 +6,12 @@ import scipy.nd_image as nd_image
 import enthought.traits as traits
 import tempfile, os
 from neuroimaging.reference import grid
+from neuroimaging.cache import cached
 import numpy as N
 
 class ImageInterpolator(traits.HasTraits):
 
     order = traits.Int(1)
-    cache = traits.Str('/tmp/nipy-cache')
 
     def __init__(self, image, order=1, **keywords):
         traits.HasTraits.__init__(self, **keywords)
@@ -26,9 +26,7 @@ class ImageInterpolator(traits.HasTraits):
             data = N.nan_to_num(self.image.readall())
 
         if not hasattr(self, 'datafile'):
-            if not os.path.exists(self.cache):
-                os.makedirs(self.cache)
-            self.datafile = file(tempfile.mkstemp(dir=self.cache)[1], 'rb+')
+            self.datafile = file(cached(), 'rb+')
         else:
             self.datafile = file(self.datafile.name, 'rb+')
         

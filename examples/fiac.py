@@ -11,6 +11,9 @@ from neuroimaging.statistics import contrast
 
 from neuroimaging.fmri.plotting import MultiPlot
 
+from neuroimaging.fmri.regression import ResidOutput
+
+
 import time, gc
 
 eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
@@ -143,10 +146,14 @@ interaction = contrast.Contrast(interaction, formula, name='interaction')
 
 # delay
 
-speaker_delay = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp], [0.5,0.5,-0.5,-0.5], formula, name='speaker')
-sentence_delay = fmristat.DelayContrast([DSt_SSp, DSt_DSp, SSt_SSp, SSt_DSp], [0.5,0.5,-0.5,-0.5], formula, name='sentence')
-interaction_delay = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp], [-1,1,1,-1], formula, name='interaction')
-overall_delay = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp], [0.25]*4, formula, name='overall')
+delays = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp],
+                                [[0.5,0.5,-0.5,-0.5],
+                                 [-0.5,0.5,-0.5,0.5],
+                                 [-1,1,1,-1],
+                                 [0.25,0.25,0.25,0.25]],
+                                formula,
+                                name='task',
+                                rownames=['speaker', 'sentence', 'interaction', 'overall'])
 
 # OLS pass
 
@@ -165,7 +172,7 @@ rho.tofile('rho.img')
 
 # AR pass
 
-contrasts = [task, overall, sentence, speaker, interaction, speaker_delay, sentence_delay, interaction_delay, overall_delay]
+contrasts = [task, overall, sentence, speaker, interaction, delays]
 toc = time.time()
 AR = fmristat.fMRIStatAR(OLS, contrasts=contrasts)
 AR.fit()

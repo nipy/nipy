@@ -24,6 +24,7 @@ class fMRIRegressionOutput(RegressionOutput):
     """
 
     nout = traits.Int(1)
+    imgarray = traits.false
 
     def __init__(self, fmri_image, **keywords):
         traits.HasTraits.__init__(self, **keywords)
@@ -31,9 +32,13 @@ class fMRIRegressionOutput(RegressionOutput):
         self.grid = self.fmri_image.grid.subgrid(0)
         if self.nout > 1:
             self.grid = grid.DuplicatedGrids([self.grid]*self.nout)
-        self.img = iter(image.Image(N.zeros(self.grid.shape, N.Float), grid=self.grid))
+        if self.imgarray:
+            self.img = iter(image.Image(N.zeros(self.grid.shape, N.Float), grid=self.grid))
 
     def sync_grid(self, img=None):
+        """
+        Synchronize an image's grid iterator to self.grid's iterator.
+        """
         if img is None:
             img = self.img
         img.grid.itertype = self.grid.itertype
@@ -195,12 +200,42 @@ class FContrastOutput(fMRIRegressionOutput):
 
 class AR1Output(fMRIRegressionOutput):
 
+    imgarray = traits.true 
+
     def extract(self, results):
         resid = results.resid
         rho = N.add.reduce(resid[0:-1]*resid[1:] / N.add.reduce(resid[1:-1]**2))
         return rho
 
 
+class ResidOutput(fMRIRegressionOutput):
+
+    outdir = traits.Str()
+    ext = traits.Str('.img')
+    basename = traits.Str('resid')
+
+    def __init__(self, fmri_image, path='.', **keywords):
+        fMRIRegressionOutput.__init__(self, fmri_image, **keywords)                
+        self.grid = self.fmri_image.grid
+        self.outdir = os.path.join(path)
+        self.path = path
+    
+        if not os.path.exists(self.outdir):
+            os.makedirs(self.outdir)
+        outname = os.path.join(self.outdir, '%s%s' % (self.basename, self.ext))
+        self.img = image.Image(outname, mode='w', grid=self.grid)
+        self.nout = self.grid.shape[0]
+        self.sync_grid()
+
+    def extract(self, results):
+        return results.resid
+    
+    def next(self, data=None):
+        value = copy.copy(self.fmri_image.itervalue)
+        self.img.next(data=data, value=value)
+
+
+                 
 
 ## class AROutput(RegressionOutput):
 

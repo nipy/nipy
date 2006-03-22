@@ -15,8 +15,17 @@ from neuroimaging.reference import grid
 from neuroimaging.fmri.regression import TContrastOutput 
 from neuroimaging.statistics import utils, regression, contrast
 from neuroimaging.fmri.protocol import ExperimentalRegressor, ExperimentalQuantitative
-from neuroimaging.fmri.regression import fMRIRegressionOutput
+from neuroimaging.fmri.regression import fMRIRegressionOutput, canplot
+from neuroimaging.statistics.regression import contrastfromcols
 
+
+try:
+    import pylab
+    from neuroimaging.fmri.plotting import MultiPlot
+    canplot = True
+except:
+    canplot = False
+    pass
 
 canonical = neuroimaging.fmri.hrf.HRF(deriv=True)
 
@@ -29,18 +38,13 @@ class DelayContrast(contrast.Contrast):
     NOT already be convolved with any HRF. They will be convolved with self.IRF which is expected
     to be a filter with a canonical HRF and its derivative -- defaults to the Glover model.
 
-    If the contrast is real-valued, representing
-    one column in a Formula object, then the delay for 
-    this particular column is output.
-
-    If the contrast is multi-valued, then a
-    contrast of delays is computed. The contrast is formed
-    by assigning a weight of 1. to each column in the function of time.
-
+    Weights should have the same number of columns as len(fn), with each row specifying
+    a different contrast.
 
     TO DO: check that the convolved term is actually in the design column space.
     """
-    def __init__(self, fn, weights, formula, IRF=canonical, name=''):
+
+    def __init__(self, fn, weights, formula, IRF=canonical, name='', rownames=[]):
         self.IRF = IRF
         self.delayflag = True
 
@@ -55,13 +59,26 @@ class DelayContrast(contrast.Contrast):
         self.fn = f
 
         self.weights = N.asarray(weights)
-        if len(fn) != self.weights.shape[0]:
+        if self.weights.ndim == 1:
+            self.weights.shape = (1, self.weights.shape[0])
+
+        if len(fn) != self.weights.shape[1]:
             raise ValueError, 'length of weights does not match number of terms in DelayContrast'
 
         term = ExperimentalQuantitative('%s_delay' % self.name, self.fn)
         term.convolve(self.IRF)
         
         contrast.Contrast.__init__(self, term, self.formula, name=self.name)
+
+        if rownames == []:
+            if name == '':
+                raise ValueError, 'if rownames are not specified, name must be specified'
+            if self.weights.shape[0] > 1:
+                self.rownames = ['%srow%d' % (name, i) for i in range(self.weights.shape[0])]
+            elif self.weights.shape[0] == 1:
+                self.rownames = ['']
+        else:
+            self.rownames = rownames
 
 class DelayContrastOutput(TContrastOutput):
 
@@ -72,22 +89,79 @@ class DelayContrastOutput(TContrastOutput):
     Tmin = -100.
     subpath = traits.Str('delays')
 
-    def __init__(self, fmri_image, contrast, path='.', **keywords):
-        traits.HasTraits.__init__(self, **keywords)
-        TContrastOutput.__init__(self, fmri_image, contrast, path=path, subpath=self.subpath, **keywords)
-        self.outdir = os.path.join(path, self.subpath, self.contrast.name)
-
     def setup_contrast(self):
         """
-        Setup the contrast to output its convolution with self.IRF -- writes
-        over the previous contrast's term attribute.
+        Setup the contrast for the delay.
         """
 
         self.contrast.getmatrix(time=self.fmri_image.frametimes)
-
         self.effectmatrix = self.contrast.matrix[0::2]
         self.deltamatrix = self.contrast.matrix[1::2]
 
+    def setup_output(self):
+        """
+        Setup the output for contrast, the DelayContrast. One t, sd, and effect img is output for each
+        row of contrast.weights. Further, the \'magnitude\' (canonical HRF) contrast matrix and \'magnitude\'
+        column space are also output to illustrate what contrast this corresponds to.
+        """
+
+        self.timgs = []
+        self.sdimgs = []
+        self.effectimgs = []
+
+        nout = self.contrast.weights.shape[0]
+
+        for i in range(nout):
+            rowname = self.contrast.rownames[i]
+            outdir = os.path.join(self.path, self.subpath, rowname)
+            if not os.path.exists(outdir):
+                os.makedirs(outdir)
+
+            l = N.zeros(self.contrast.matrix.shape[0], N.Float)
+            l[::2] = self.contrast.weights[i]
+
+            outname = os.path.join(outdir, 't%s' % self.ext)
+            timg = image.Image(outname, mode='w', grid=self.grid)
+            self.sync_grid(img=timg)
+            self.timgs.append(timg)
+
+            outname = os.path.join(outdir, 'effect%s' % self.ext)
+            effectimg = image.Image(outname, mode='w', grid=self.grid)
+            self.sync_grid(img=effectimg)
+            self.effectimgs.append(effectimg)
+
+            outname = os.path.join(outdir, 'sd%s' % self.ext)
+            sdimg = iter(image.Image(outname, mode='w', grid=self.grid))
+            self.sync_grid(img=sdimg)
+            self.sdimgs.append(sdimg)
+
+            matrix = N.squeeze(N.dot(l, self.contrast.matrix))
+
+            outname = os.path.join(outdir, 'matrix%s.csv' % rowname)
+            outfile = file(outname, 'w')
+            outfile.write(string.join([fpformat.fix(x,4) for x in matrix], ',') + '\n')
+            outfile.close()
+
+            outname = os.path.join(outdir, 'matrix%s.bin' % rowname)
+            outfile = file(outname, 'w')
+            matrix = matrix.astype('<f8')
+            matrix.tofile(outfile)
+            outfile.close()
+
+            if canplot:
+                
+                ftime = self.fmri_image.frametimes
+                def g(time=None, **extra):
+                    return N.squeeze(N.dot(l, self.contrast.term(time=time, **extra)))
+                f = pylab.gcf()
+                f.clf()
+                pl = MultiPlot(g, tmin=0, tmax=ftime.max(),
+                               dt = ftime.max() / 2000., title='Magnitude column space for delay: \'%s\'' % rowname)
+                pl.draw()
+                pylab.savefig(os.path.join(outdir, 'matrix%s.png' % rowname))
+                f.clf()
+                del(f); del(g)
+                
     def extract_effect(self, results):
 
         delay = self.contrast.IRF.delay
@@ -146,26 +220,48 @@ class DelayContrastOutput(TContrastOutput):
                                                       other=D[j]))
                 cov[j,i] = cov[i,j]
 
-        var = 0
-        for i in range(nrow):
-            for j in range(nrow):
-                var = var + cov[i,j] * self.contrast.weights[i] * self.contrast.weights[j]
+        nout = self.contrast.weights.shape[0]
+        self._sd = N.zeros(self._effect.shape, N.Float)
 
-        self._sd = N.sqrt(var)                
+        for r in range(nout):
+            var = 0
+            for i in range(nrow):
+                for j in range(nrow):
+                    var = var + cov[i,j] * self.contrast.weights[r,i] * self.contrast.weights[r,j]
+
+            self._sd[r] = N.sqrt(var)                
 
     def extract_t(self, results):
-        self._t = self._effect * utils.inv(self._sd)
+        self._t = self._effect * utils.inv(self._sd)        
         self._t = N.clip(self._t, self.Tmin, self.Tmax)
 
     def extract(self, results):
         self.extract_effect(results)
         self.extract_sd(results)
         self.extract_t(results)
+
         results = regression.ContrastResults()
         results.effect = self._effect
         results.sd = self._sd
         results.t = self._t
         return results
+
+    def next(self, data=None):
+        if self.fmri_image.itervalue.type is 'slice':
+            value = copy.copy(self.fmri_image.itervalue)
+            value.slice = value.slice[1]
+        else:
+            value = self.fmri_image.itervalue
+
+        nout = self.contrast.weights.shape[0]
+        
+        for i in range(nout):
+            self.timgs[i].next(data=data.t[i], value=value)
+            if self.effect:
+                self.effectimgs[i].next(data=data.effect[i], value=value)
+            if self.sd:
+                self.sdimgs[i].next(data=data.effect[i], value=value)
+
 
 ##     def next(self, data=None):
 ##         print 'here', data.t.max(), data.t.min(), data.t.mean()

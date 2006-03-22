@@ -150,10 +150,9 @@ class fMRIImage(image.Image):
                 self.label = value.label
                 return self.buffer.compress(value.where, axis=1)
             else:
-                raise NotImplementedError, 'writing in parcels to fMRIImages not supported yet'
-##                 indices = N.nonzero(value.where)
-##                 self.buffer.put(data, indices)
-##                 self.buffer.sync()
+                for i in range(self.grid.shape[0]):
+                    _buffer = self.getslice([slice(i,i+1)])
+                    _buffer.put(data, indices)
 
         elif itertype == 'slice/parcel':
             if data is None:
@@ -163,11 +162,9 @@ class fMRIImage(image.Image):
                 tmp.shape = (tmp.shape[0], N.product(tmp.shape[1:]))
                 return tmp.compress(value.where, axis=1)
             else:
-                raise NotImplementedError, 'writing in parcels to fMRIImages not supported yet'
-##                 indices = N.nonzero(value.where)  # what's the problem? the indices are not the right shape!
-##                 self.buffer.put(data, indices)
-##                 self.buffer.sync()
-            
+                indices = N.nonzero(value.where)
+                _buffer = self.getslice(value.slice)
+                _buffer.put(data, indices)
 
     def __iter__(self):
         """
