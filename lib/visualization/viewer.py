@@ -255,9 +255,9 @@ class BoxViewer(traits.HasTraits):
         else:
             pylab.axes(self.colorbar)
 
-        self.slices[self.slicenames[0]].RGBA(data=v)
         v = N.linspace(0,1.,100) * (self.M - self.m) + self.m
         v.shape = (100,1)
+        v = self.slices[self.slicenames[0]].RGBA(data=v)
         pylab.imshow(v, origin=self.slices[self.slicenames[0]].origin)
         
     def _setup_slice(self, _slice, which):

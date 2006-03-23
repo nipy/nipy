@@ -32,5 +32,9 @@ class GridTest(unittest.TestCase):
         y = i.mapping.map([3,4,5])
         scipy.testing.assert_almost_equal(y, N.array([3,4,5]))
 
+def suite():
+    suite = unittest.makeSuite(GridTest)
+    return suite
+
 if __name__ == '__main__':
     unittest.main()

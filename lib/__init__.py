@@ -3,4 +3,5 @@ import reference
 import fmri
 import statistics
 
-from cache import cached
+import data.cache
+data.cache.suffix = 'nipy'

@@ -25,6 +25,7 @@ class fMRIRegressionOutput(RegressionOutput):
 
     nout = traits.Int(1)
     imgarray = traits.false
+    clobber = traits.false
 
     def __init__(self, fmri_image, **keywords):
         traits.HasTraits.__init__(self, **keywords)
@@ -89,16 +90,19 @@ class TContrastOutput(fMRIRegressionOutput):
             os.makedirs(self.outdir)
 
         outname = os.path.join(self.outdir, 't%s' % self.ext)
-        self.timg = image.Image(outname, mode='w', grid=self.grid)
+        self.timg = image.Image(outname, mode='w', grid=self.grid,
+                                clobber=self.clobber)
         self.sync_grid(img=self.timg)
 
         if self.effect:
             outname = os.path.join(self.outdir, 'effect%s' % self.ext)
-            self.effectimg = image.Image(outname, mode='w', grid=self.grid)
+            self.effectimg = image.Image(outname, mode='w', grid=self.grid,
+                                         clobber=self.clobber)
             self.sync_grid(img=self.effectimg)
         if self.sd:
             outname = os.path.join(self.outdir, 'sd%s' % self.ext)
-            self.sdimg = iter(image.Image(outname, mode='w', grid=self.grid))
+            self.sdimg = iter(image.Image(outname, mode='w', grid=self.grid,
+                                          clobber=self.clobber))
             self.sync_grid(img=self.sdimg)
 
         if not hasattr(self.contrast, 'matrix'):
@@ -166,7 +170,8 @@ class FContrastOutput(fMRIRegressionOutput):
             os.makedirs(self.outdir)
 
         outname = os.path.join(self.outdir, 'F%s' % self.ext)
-        self.img = iter(image.Image(outname, mode='w', grid=self.grid))
+        self.img = iter(image.Image(outname, mode='w', grid=self.grid,
+                                    clobber=self.clobber))
         self.sync_grid()
 
         outname = os.path.join(self.outdir, 'matrix.csv')

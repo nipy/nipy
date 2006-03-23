@@ -42,8 +42,14 @@ class AnalyzeTest(unittest.TestCase):
 
     def test_read(self):
         self._open()
-        data = self.img.read((0,)*3, self.img.grid.shape)
-        self.assertEquals(data.shape, (91,109,91))
+        data = self.img.getslice(slice(4,7))
+        self.assertEquals(data.shape, (3,109,91))
+
+def suite():
+    suite = unittest.makeSuite(AnalyzeTest)
+    return suite
+
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -18,6 +18,9 @@ class PipeTest(unittest.TestCase):
         self.assertEqual(test, True)
         return 
         
+def suite():
+    suite = unittest.makeSuite(PipeTest)
+    return suite
 
 if __name__ == '__main__':
     unittest.main()

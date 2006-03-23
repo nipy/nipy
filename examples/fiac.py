@@ -157,7 +157,7 @@ delays = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp],
 
 # OLS pass
 
-OLS = fmristat.fMRIStatOLS(f, formula=formula, mask=m)
+OLS = fmristat.fMRIStatOLS(f, formula=formula, mask=m, resid=True)
 
 toc = time.time()
 OLS.fit(resid=True)
@@ -174,7 +174,7 @@ rho.tofile('rho.img')
 
 contrasts = [task, overall, sentence, speaker, interaction, delays]
 toc = time.time()
-AR = fmristat.fMRIStatAR(OLS, contrasts=contrasts)
+AR = fmristat.fMRIStatAR(OLS, contrasts=contrasts, resid=True)
 AR.fit()
 tic = time.time()
 

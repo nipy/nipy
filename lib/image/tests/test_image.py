@@ -112,20 +112,20 @@ class AnalyzeImageTest(unittest.TestCase):
         labelset = sets.Set(N.unique(labels))
 
         test = Image(N.zeros(shape), grid=rho.grid)
-        from neuroimaging.reference.grid import ParcelIterator
-        test.grid.iterator = iter(ParcelIterator(labels,
-                                                 labelset))
+        test.grid.itertype = 'parcel'
+        test.grid.labels = labels
+        test.grid.labelset = labelset
+
         v = 0
 
         for t in test:
             v += t.shape[0]
         self.assertEquals(v, N.product(test.grid.shape))
         
-    def test_call(self):
-        rho = Image('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
-        x = [0]*3
-        print rho(x)
-        
+
+def suite():
+    suite = unittest.makeSuite(AnalyzeImageTest)
+    return suite
 
 if __name__ == '__main__':
     unittest.main()

@@ -25,5 +25,10 @@ class AxisTest(unittest.TestCase):
         if not a1 == a2:
             raise ValueError
 
+def suite():
+    suite = unittest.makeSuite(AxisTest)
+    return suite
+
+
 if __name__ == '__main__':
     unittest.main()

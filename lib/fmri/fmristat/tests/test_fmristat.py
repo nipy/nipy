@@ -1,4 +1,4 @@
-import unittest, scipy, sets, os, gc
+import unittest, scipy, sets, os, gc, shutil
 import neuroimaging.fmri as fmri
 import neuroimaging.fmri.protocol as protocol
 import neuroimaging.fmri.fmristat as fmristat
@@ -20,7 +20,7 @@ class fMRIStatTest(unittest.TestCase):
                252.0, 270.0, 288.0, 306.0, 324.0, 342.0, 360.0]
         p = ['hot', 'warm'] * 10
         all = []
-        for i in range(10):
+        for i in range(20):
             all.append([p[i], on[i], off[i]])
         pain = protocol.ExperimentalFactor('pain', all)
         drift_fn = protocol.SplineConfound(window=[0,360], df=7)
@@ -40,37 +40,39 @@ class fMRIStatTest(unittest.TestCase):
         slicetimes = N.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
         self.img = fmri.fMRIImage(self.url, frametimes=frametimes,
                                   slicetimes=slicetimes, usematfile=False)
-        print self.img.grid.shape
 
         self.setup_formula()
 
-##     def test_model_frametimes(self):
-##         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
-##                                    slicetimes=self.img.slicetimes)
-##         OLS.nmax = 75
-##         OLS.fit(resid=True)
-##         rho = OLS.rho_estimator.img
-##         rho.tofile('rho.img')
-##         os.remove('rho.img')
-##         os.remove('rho.hdr')
+    def tearDown(self):
+        shutil.rmtree('fmristat_run', ignore_errors=True)
+                      
+    def test_model_slicetimes(self):
+        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+                                   slicetimes=self.img.slicetimes)
+        OLS.nmax = 75
+        OLS.fit(resid=True)
+        rho = OLS.rho_estimator.img
+        rho.tofile('rho.img')
+        os.remove('rho.img')
+        os.remove('rho.hdr')
 
-##         AR = fmristat.fMRIStatAR(OLS)
-##         AR.fit()
-##         del(OLS); del(AR); gc.collect()
+        AR = fmristat.fMRIStatAR(OLS)
+        AR.fit()
+        del(OLS); del(AR); gc.collect()
 
-##     def test_model_noslicetimes(self):
-##         self.img.slicetimes = None
-##         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
-##                                    slicetimes=self.img.slicetimes)
-##         OLS.fit(resid=True)
-##         rho = OLS.rho_estimator.img
-##         rho.tofile('rho.img')
-##         os.remove('rho.img')
-##         os.remove('rho.hdr')
+    def test_model_noslicetimes(self):
+        self.img.slicetimes = None
+        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+                                   slicetimes=self.img.slicetimes)
+        OLS.fit(resid=True)
+        rho = OLS.rho_estimator.img
+        rho.tofile('rho.img')
+        os.remove('rho.img')
+        os.remove('rho.hdr')
 
-##         AR = fmristat.fMRIStatAR(OLS)
-##         AR.fit()
-##         del(OLS); del(AR); gc.collect()
+        AR = fmristat.fMRIStatAR(OLS)
+        AR.fit()
+        del(OLS); del(AR); gc.collect()
 
     def test_hrf_deriv(self):
         self.IRF = hrf.HRF(deriv=True)
@@ -100,31 +102,34 @@ class fMRIStatTest(unittest.TestCase):
     def test_contrast(self):
         pain = contrast.Contrast(self.pain, self.formula, name='pain')
 
-
         self.img.slicetimes = None
         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
-                                   slicetimes=self.img.slicetimes)
+                                   slicetimes=self.img.slicetimes,
+                                   clobber=True)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
-        rho.tofile('rho.img')
+        rho.tofile('rho.img', clobber=True)
         
         from neuroimaging.visualization import viewer
         v=viewer.BoxViewer(rho)
         v.draw()
-        pylab.show()
+        #pylab.show()
 
         os.remove('rho.img')
         os.remove('rho.hdr')
 
-        AR = fmristat.fMRIStatAR(OLS, contrasts=[pain])
+        AR = fmristat.fMRIStatAR(OLS, contrasts=[pain], clobber=True)
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
-        t = image.Image('contrasts/pain/F.img')
+        t = image.Image('fmristat_run/contrasts/pain/F.img')
         v=viewer.BoxViewer(t)
         v.draw()
-        pylab.show()
+        #pylab.show()
 
+def suite():
+    suite = unittest.makeSuite(fMRIStatTest)
+    return suite
 
 
 if __name__ == '__main__':

@@ -49,6 +49,9 @@ class fMRITest(unittest.TestCase):
         self.assertEquals(v, N.product(labels.shape))
 
 
+def suite():
+    suite = unittest.makeSuite(fMRITest)
+    return suite
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,5 +1,6 @@
-import urllib, stat, string, sets, os, urllib2, gzip
+import urllib, stat, string, sets, os, urllib2, gzip, atexit
 import enthought.traits as traits
+import cache
 
 class DataFetcher(traits.HasTraits):
     """
@@ -100,21 +101,21 @@ class DataFetcher(traits.HasTraits):
             
         rmfiles = []
         goodexts = []
+        found = []
         for ext in exts + zipexts:
             _url = self.urlcompose(type=False, urlfile=ext)
             url = self.urlcompose(urlfile=ext)
             outname = os.path.join(self.repository, _url)
-            if ext in zipexts:
-                _outname, junk = os.path.splitext(outname)
-                _exists = os.path.exists(_outname)
-            else:
-                _exists = os.path.exists(outname)
+
+            _exists = os.path.exists(outname)
             if not _exists or force:
                 check = self.urlretrieve(url, writer=file(outname, 'w'))
                 if not check:
                     os.remove(outname)
                 else:
                     goodexts.append(ext)
+            else:
+                goodexts.append(ext)
 
         for ext in goodexts:
             _url = self.urlcompose(type=False, urlfile=ext)
@@ -122,7 +123,11 @@ class DataFetcher(traits.HasTraits):
             _ext = os.path.splitext(ext)[1]
             if _ext in self.zipexts:
                 if _ext == '.gz':
-                    ungzip(outname, rm=True)
+                    if not hasattr(self, 'cache'):
+                        self.cache = cache.cachedir()
+                    _ungzip(outname, rm=False)
+
+        ## TODO: have gzip uncompress into neuroimaging.cache.dirname
 
     def urlretrieve(self, url, writer=None):
 
@@ -156,7 +161,7 @@ class DataFetcher(traits.HasTraits):
 
         try:
             _url = urllib2.urlopen(url)
-            _data = _url.read(100000)
+            _data = _url.read(10000)
             if writer is not None:
                 while _data:
                     writer.write(_data)
@@ -171,13 +176,68 @@ class DataFetcher(traits.HasTraits):
     
         return True
 
-def ungzip(outfile, clobber=True, rm=True):
+_gzipfiles = []
+_rmfiles = []
+
+def _ungzip(outfile, clobber=True, rm=False, dir=None):
     _outfile = outfile[0:-3]
+
+    if dir is not None:
+        _outfile = os.path.join(dir, os.path.split(_outfile)[1])
+
     if clobber or not os.path.exists(_outfile):
         __outfile = file(_outfile, 'wb')
         gzfile = gzip.open(outfile, 'rb')
-        __outfile.write(gzfile.read())
-        __outfile.flush()
+        while True:
+            _data = gzfile.read(100000)
+            if _data:
+                __outfile.write(_data)
+                __outfile.flush()
+            else:
+                break
+            
         __outfile.close()
+
         if rm:
             os.remove(outfile)
+            _gzipfiles.append(_outfile)
+        else:
+            _rmfiles.append(_outfile)
+
+def _gzip(infile, clobber=True, rm=True):
+    outfile = '%s.gz' % infile
+    if clobber or not os.path.exists(outfile):
+        _outfile = gzip.open(outfile, 'wb')
+        infile = file(infile, 'rb')
+
+        while True:
+            _data = infile.read(100000)
+            if _data:
+                _outfile.write(_data)
+            else:
+                break
+
+        _outfile.close()
+        if rm:
+            os.remove(infile)
+
+def _gzipcleanup():
+    """
+    Gzip all uncompressed files and delete files whose gzipped versions
+    were not deleted.
+    """
+
+    for f in _gzipfiles:
+        try:
+            _gzip(f, rm=True)
+            print "Recompressing file: %s" % f
+        except:
+            pass
+    for f in _rmfiles:
+        try:
+            os.remove(f)
+            print "Removed file: %s" % f
+        except:
+            pass
+
+atexit.register(_gzipcleanup)

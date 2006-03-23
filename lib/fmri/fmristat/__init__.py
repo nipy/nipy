@@ -32,19 +32,20 @@ class fMRIStatOLS(iterators.LinearModelIterator):
     mask = traits.Any()
     path = traits.String('fmristat_run')
     resid = traits.false
-
+    clobber = traits.false
+    
     def __init__(self, fmri_image, outputs=[], **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.fmri_image = fmri.fMRIImage(fmri_image)
         self.iterator = iter(self.fmri_image)
 
-        self.rho_estimator = AR1Output(self.fmri_image)
+        self.rho_estimator = AR1Output(self.fmri_image, clobber=self.clobber)
         self.outputs += outputs
         self.outputs.append(self.rho_estimator)
         self.dmatrix = self.formula.design(time=self.fmri_image.frametimes)
 
         if self.resid:
-            self.resid_output = ResidOutput(self.fmri_image, path=self.path, basename='OLSresid')
+            self.resid_output = ResidOutput(self.fmri_image, path=self.path, basename='OLSresid', clobber=self.clobber)
             self.outputs.append(self.resid_output)
             
         self.setup_output()
@@ -68,16 +69,15 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
     def getlabels(self):
 
-        val = R.standard_normal() # I take almost surely seriously....
-
         if self.mask is not None:
             _mask = self.mask.readall()
-            self.rho.image.data = N.where(_mask, self.rho.image.data, val)
+            self.rho.image.data = N.where(_mask, self.rho.image.data, N.nan)
 
         if self.slicetimes == None:
             tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
             tmp.shape = N.product(tmp.shape)
             self.labels = tmp
+            tmp = N.compress(1 - N.isnan(tmp), tmp)
             self.labelset = list(N.unique(tmp))
             del(tmp); gc.collect()
         else:
@@ -90,12 +90,6 @@ class fMRIStatOLS(iterators.LinearModelIterator):
                 newlabels = list(N.unique(tmp))
                 self.labelset += [newlabels]
                 self.labels += [tmp]
-
-        rval = N.around(val * (self.nmax / 2.)) / (self.nmax / 2.)
-        try:
-            self.labelset.pop(self.labelset.index(rval))
-        except:
-            pass
 
     def setup_output(self):
 
@@ -175,7 +169,8 @@ class fMRIStatAR(iterators.LinearModelIterator):
     fwhm = traits.Float(6.0)
     path = traits.Str('.')
     resid = traits.false
-    
+    clobber = traits.false
+
     def __init__(self, OLS, contrasts=None, outputs=[], **keywords):
         """
         Building on OLS results, fit the AR(1) model.
@@ -215,11 +210,11 @@ class fMRIStatAR(iterators.LinearModelIterator):
             for i in range(len(contrasts)):
                 contrasts[i].getmatrix(time=self.fmri_image.frametimes)
                 if isinstance(contrasts[i], DelayContrast):
-                    cur = DelayContrastOutput(self.fmri_image, contrasts[i], path=self.path)
+                    cur = DelayContrastOutput(self.fmri_image, contrasts[i], path=self.path, clobber=self.clobber)
                 elif contrasts[i].rank == 1:
-                    cur = TContrastOutput(self.fmri_image, contrasts[i], path=self.path)
+                    cur = TContrastOutput(self.fmri_image, contrasts[i], path=self.path, clobber=self.clobber)
                 else:
-                    cur = FContrastOutput(self.fmri_image, contrasts[i], path=self.path)
+                    cur = FContrastOutput(self.fmri_image, contrasts[i], path=self.path, clobber=self.clobber)
                 self.contrasts.append(cur)
                 
         # setup the iterator
