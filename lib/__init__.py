@@ -1,4 +1,4 @@
 import image
-import fmri
 import reference
+import fmri
 import statistics

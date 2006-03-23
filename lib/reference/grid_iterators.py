@@ -1,6 +1,11 @@
-import enthought.traits as traits
+# Standard imports
 import sets
+
+# External imports
 import numpy as N
+import enthought.traits as traits
+
+# Package imports
 from slicer import Slicer
 
 class IteratorNext(traits.HasTraits):

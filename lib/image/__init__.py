@@ -4,8 +4,8 @@ from neuroimaging.reference import grid, axis, mapping
 import utils
 import pipes
 import enthought.traits as traits
-import scipy.sandbox.nd_image as nd_image
-import interpolation
+import scipy.nd_image as nd_image
+import scipy.nd_image.interpolation as interpolation
 
 spaceaxes = axis.space
 
