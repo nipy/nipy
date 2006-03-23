@@ -169,7 +169,7 @@ def ROIellipsefn(center, form, a = 1.0):
     Form must be positive definite.
     """
     from BrainSTAT.Modules.KernelSmooth import normsq
-    from numpy.linalg import cholesky_decomposition, inverse
+    from numpy.linalg import cholesky, inv
     _cholinv = cholesky_decomposition(inverse(form))
     ndim = array(center).shape[0]
 

@@ -4,7 +4,7 @@ import scipy
 
 from neuroimaging.fmri import hrf, protocol
 from neuroimaging.statistics import contrast
-from neuroimaging.statistics.utils import inv0
+from neuroimaging.statistics.utils import recipr0
 
 class ProtocolTest(unittest.TestCase):
 
@@ -212,7 +212,7 @@ class ProtocolTest(unittest.TestCase):
         scipy.testing.assert_almost_equal(D(t), N.array(drift_fn(t))**2)
 
         D = d / d
-        scipy.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * inv0(drift_fn(t)))
+        scipy.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * recipr0(drift_fn(t)))
 
         D = d - d
         scipy.testing.assert_almost_equal(D(t), N.zeros(D(t).shape, N.Float))
@@ -237,7 +237,7 @@ class ProtocolTest(unittest.TestCase):
 
         i = N.random.random_integers(0, n-1)
         D = d / c
-        scipy.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] * inv0(c)[i])
+        scipy.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] * recipr0(c)[i])
 
         i = N.random.random_integers(0, n-1)
         D = d - c

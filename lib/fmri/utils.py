@@ -88,9 +88,9 @@ class CutPoly:
             else:
                 test = N.greater_equal(time, self.trange[0]) * N.less_equal(time, self.trange[1])
         if test is None:
-            return N.pow(time, self.power)
+            return N.power(time, self.power)
         else:
-            return N.pow(time, self.power) * test
+            return N.power(time, self.power) * test
         
 def _test():
     import doctest

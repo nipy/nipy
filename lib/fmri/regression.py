@@ -224,7 +224,8 @@ class ResidOutput(fMRIRegressionOutput):
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
         outname = os.path.join(self.outdir, '%s%s' % (self.basename, self.ext))
-        self.img = image.Image(outname, mode='w', grid=self.grid)
+        self.img = image.Image(outname, mode='w', grid=self.grid,
+                               clobber=self.clobber)
         self.nout = self.grid.shape[0]
         self.sync_grid()
 

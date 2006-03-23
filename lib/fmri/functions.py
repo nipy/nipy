@@ -13,7 +13,7 @@ import numpy as N
 from utils import StepFunction
 import fpformat, types
 
-from neuroimaging.statistics.utils import inv0
+from neuroimaging.statistics.utils import recipr0
 
 # Use scipy's interpolator
 
@@ -145,12 +145,12 @@ class TimeFunction(traits.HasTraits):
         if isinstance(other, TimeFunction):
             if other.nout == self.nout:
                 def _f(time=None, _self=self, _other=other, **extra):
-                    return N.squeeze(_self(time=time, **extra) * inv0(_other(time=time, **extra)))
+                    return N.squeeze(_self(time=time, **extra) * recipr0(_other(time=time, **extra)))
             else:
                 raise ValueError, 'number of outputs of regressors do not match'
         elif type(other) in [types.FloatType, types.IntType]:
             def _f(time=None, _self=self, _other=other, **extra):
-                return N.squeeze(_self(time=time, **extra) * inv0(other))
+                return N.squeeze(_self(time=time, **extra) * recipr0(other))
         elif type(other) in [types.ListType, types.TupleType, N.ndarray]:
             if type(other) is N.ndarray:
                 if other.shape != (self.nout,):
@@ -160,7 +160,7 @@ class TimeFunction(traits.HasTraits):
             def _f(time=None, _self=self, _other=N.array(other), **extra):
                 v = _self(time=time, **extra) 
                 for i in range(_other.shape[0]):
-                    v[i] *= inv0(_other[i])
+                    v[i] *= recipr0(_other[i])
                 return N.squeeze(v)
         else:
             raise ValueError, 'unrecognized type'

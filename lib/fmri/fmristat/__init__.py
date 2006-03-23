@@ -224,7 +224,7 @@ class fMRIStatAR(iterators.LinearModelIterator):
         self.outputs += self.contrasts
 
         if self.resid:
-            self.resid_output = ResidOutput(self.fmri_image, path=self.path, basename='ARresid')
+            self.resid_output = ResidOutput(self.fmri_image, path=self.path, basename='ARresid', clobber=self.clobber)
             self.outputs.append(self.resid_output)
 
     def model(self, **keywords):

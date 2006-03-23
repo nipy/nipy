@@ -40,7 +40,6 @@ class SamplingGrid(traits.HasTraits):
             self.iterator = iter(ParcelIterator(self.labels,
                                                     self.labelset))
         elif self.itertype is 'slice/parcel':
-            print 'huh??'
             self.iterator = iter(SliceParcelIterator(self.labels,
                                                      self.labelset))
 
@@ -197,8 +196,8 @@ def python2matlab(grid):
 class SliceGrid(SamplingGrid, traits.HasTraits):
 
     """
-    Return an affine subgrid of a given grid with specified
-    origin and steps.
+    Return an affine slice of a given grid with specified
+    origin, steps and shape.
     """
 
     def __init__(self, grid, origin, directions, shape):

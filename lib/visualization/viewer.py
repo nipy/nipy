@@ -49,14 +49,14 @@ class BoxViewer(traits.HasTraits):
     def _m_changed(self):
         try:
             for i in range(3):
-                self.slices[i].norm.vmin = self.m
+                self.slices[self.slicenames[i]].norm.vmin = self.m
         except:
             pass
 
     def _M_changed(self):
         try:
             for i in range(3):
-                self.slices[i].norm.vmax = self.M
+                self.slices[self.slicenames[i]].norm.vmax = self.M
         except:
             pass
 
@@ -68,6 +68,8 @@ class BoxViewer(traits.HasTraits):
                  default=False,
                  interpolation='bicubic',
                  mask=None,
+                 m=None,
+                 M=None,
                  **keywords):
 
         self.mask = mask
@@ -98,6 +100,7 @@ class BoxViewer(traits.HasTraits):
             self.z_pix = keywords['buffer_pix']
             
         _img = N.nan_to_num(image.readall())
+
         self.m = float(_img.min())
         self.M = float(_img.max())
 

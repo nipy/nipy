@@ -172,9 +172,9 @@ class DelayContrastOutput(TContrastOutput):
         
         for i in range(nrow):
             self.T0sq[i] = (self.gamma0[i]**2 *
-                            utils.inv(results.cov_beta(matrix=self.effectmatrix[i])))
+                            utils.recipr(results.cov_beta(matrix=self.effectmatrix[i])))
 
-        self.r = self.gamma1 * utils.inv0(self.gamma0)
+        self.r = self.gamma1 * utils.recipr0(self.gamma0)
         self.rC = self.r * self.T0sq / (1. + self.T0sq)
         self.deltahat = delay.inverse(self.rC)
 
@@ -188,13 +188,13 @@ class DelayContrastOutput(TContrastOutput):
 
         nrow = self.gamma0.shape[0]
         for i in range(nrow):
-            self.T1[i] = self.gamma1[i] * utils.inv(N.sqrt(results.cov_beta(matrix=self.deltamatrix[i])))
+            self.T1[i] = self.gamma1[i] * utils.recipr(N.sqrt(results.cov_beta(matrix=self.deltamatrix[i])))
 
-        a1 = 1 + 1. * utils.inv(self.T0sq)
+        a1 = 1 + 1. * utils.recipr(self.T0sq)
 
-        gdot = N.array(([self.r * (a1 - 2.) * utils.inv0(self.gamma0 * a1**2),
-                         utils.inv0(self.gamma0 * a1)] *
-                        utils.inv0(delay.dforward(self.deltahat))))
+        gdot = N.array(([self.r * (a1 - 2.) * utils.recipr0(self.gamma0 * a1**2),
+                         utils.recipr0(self.gamma0 * a1)] *
+                        utils.recipr0(delay.dforward(self.deltahat))))
 
         tmpcov = N.zeros((2*nrow,)*2 + self.T0sq.shape[1:], N.Float)
 
@@ -230,7 +230,7 @@ class DelayContrastOutput(TContrastOutput):
             self._sd[r] = N.sqrt(var)                
 
     def extract_t(self, results):
-        self._t = self._effect * utils.inv(self._sd)        
+        self._t = self._effect * utils.recipr(self._sd)        
         self._t = N.clip(self._t, self.Tmin, self.Tmax)
 
     def extract(self, results):

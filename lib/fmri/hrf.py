@@ -3,8 +3,8 @@ import filters
 import enthought.traits as traits
 
 def glover2GammaDENS(peak_hrf, fwhm_hrf):
-    alpha = pow(peak_hrf / fwhm_hrf, 2) * 8 * log(2.0)
-    beta = pow(fwhm_hrf, 2) / peak_hrf / 8 / log(2.0)
+    alpha = power(peak_hrf / fwhm_hrf, 2) * 8 * log(2.0)
+    beta = power(fwhm_hrf, 2) / peak_hrf / 8 / log(2.0)
     coef = peak_hrf**(-alpha) * exp(peak_hrf / beta)
     return filters.GammaDENS(alpha + 1., 1. / beta) * coef
 
