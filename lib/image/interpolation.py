@@ -6,7 +6,7 @@ import scipy.image as nd_image
 import enthought.traits as traits
 import tempfile, os
 from neuroimaging.reference import grid
-from neuroimaging.cache import cached
+from neuroimaging.data.cache import cached
 import numpy as N
 
 class ImageInterpolator(traits.HasTraits):
