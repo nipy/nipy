@@ -301,6 +301,7 @@ class ANALYZE(ANALYZEhdr):
     def __init__(self, **keywords):
 
         ANALYZEhdr.__init__(self, **keywords)
+        traits.HasTraits.__init__(self, **keywords)
 
         if self.mode is 'w':
             self._dimfromgrid(keywords['grid'])

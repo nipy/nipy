@@ -35,7 +35,7 @@ class Image(traits.HasTraits):
             elif type(image) == types.StringType:
                 self.isfile = True
                 pipe = pipes.URLPipe(image, **keywords)
-                self.image = pipe.getimage()
+                self.image = pipe.getimage(**keywords)
 ##             elif type(image) in [types.ListType, types.TupleType]:
 ##                 self.image = pipes.ListPipe(image, **keywords)
 ##                 self.isfile = True # just in case any are files, we should try to open/close them

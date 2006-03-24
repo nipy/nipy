@@ -59,6 +59,7 @@ class ConcatenatedGrids(SamplingGrid):
 
     This is most likely the kind of grid to be used for fMRI images.
     """
+
     grids = traits.List()
     concataxis = traits.Str('concat')
 
@@ -124,6 +125,11 @@ class ConcatenatedGrids(SamplingGrid):
         return self.grids[i]
                            
 class DuplicatedGrids(ConcatenatedGrids):
+
+    """
+    Take a given SamplingGrid and duplicate it j times, returning a
+    SamplingGrid with shape=(j,)+grid.shape.
+    """
 
     step = traits.Float(1.)
     start = traits.Float(0.)

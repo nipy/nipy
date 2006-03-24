@@ -1,6 +1,6 @@
 '''This module contains the pipes used for the Image class to read and write data.'''
 
-import os, string, urllib, stat, ftplib, gzip, urllib2
+import os, string, urllib, stat, ftplib, gzip, urllib2, copy
 import formats
 import neuroimaging as ni
 import numpy as N
@@ -48,7 +48,7 @@ class URLPipe(Pipe,urlhandler.DataFetcher):
         self.filename = url
         self.url = url
 
-    def getimage(self):
+    def getimage(self, **keywords):
 
         if self.grid is None and self.mode == 'w':
             raise ValueError, 'must have a template to create BrainSTAT file'
@@ -70,7 +70,14 @@ class URLPipe(Pipe,urlhandler.DataFetcher):
             filename = os.path.join(self.repository, self.urlcompose(type=False))
         else:
             filename = self.url
-        image = creator(filename=filename, mode=self.mode, clobber=self.clobber, grid=self.grid)
+
+        _keywords = copy.copy(keywords)
+        _keywords['filename'] = filename
+        _keywords['mode'] = self.mode
+        _keywords['clobber'] = self.clobber
+        _keywords['grid'] = self.grid
+        
+        image = creator(**_keywords)
         return image
 
 
