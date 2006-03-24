@@ -47,6 +47,7 @@ class BoxViewer(traits.HasTraits):
                  interpolation='nearest',
                  **keywords):
 
+        self.interpolation = interpolation
         self.slices = {}
 
         if image.grid.mapping.output_coords.ndim != 3:

@@ -143,6 +143,10 @@ interaction = contrast.Contrast(interaction, formula, name='interaction')
 
 contrasts = [task, overall, sentence, speaker, interaction]
 
+# delay
+
+speaker_delay = fmristat.DelayContrast(f, [SSt_DSp / 2., DSt_DSp / 2., SSt_SSp * (-0.5), DSt_SSp * (-0.5)], 'speaker', formula)
+
 # OLS pass
 
 OLS = fmristat.fMRIStatOLS(f, formula=formula, mask=m)
@@ -168,7 +172,7 @@ tic = time.time()
 
 print 'AR time', `tic-toc`
 
-t = neuroimaging.image.Image('fmristat_run/contrasts/speaker/t.img')
+t = neuroimaging.image.Image('delays/speaker/t.img')
 v=viewer.BoxViewer(t)
 v.draw()
 pylab.show()
