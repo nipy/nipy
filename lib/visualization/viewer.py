@@ -6,7 +6,7 @@ import neuroimaging.statistics.utils as utils
 import neuroimaging.reference as reference
 import slices as vizslice
 import enthought.traits as traits
-from cmap import cmap
+from cmap import cmap, interpolation
 
 class BoxViewer(traits.HasTraits):
 
@@ -28,6 +28,7 @@ class BoxViewer(traits.HasTraits):
     z_pix = traits.Float(200.) # pixel length of z scale
     dpi = traits.Float(80.)
 
+    interpolation = interpolation
     colormap = cmap
 
     """
@@ -43,6 +44,7 @@ class BoxViewer(traits.HasTraits):
                  ylim=[-126.,90.],
                  zlim=[-72.,108.],
                  default=False,
+                 interpolation='nearest',
                  **keywords):
 
         self.slices = {}
@@ -72,12 +74,12 @@ class BoxViewer(traits.HasTraits):
         if keywords.has_key('buffer_pix'):
             self.z_pix = keywords['buffer_pix']
             
-        figwidth, figheight = self._setup_dims()
-        self.figure = pylab.figure(figsize=(figwidth / self.dpi, figheight / self.dpi))
-
         _img = N.nan_to_num(image.readall())
         self.m = float(_img.min())
         self.M = float(_img.max())
+
+        figwidth, figheight = self._setup_dims()
+        self.figure = pylab.figure(figsize=(figwidth / self.dpi, figheight / self.dpi))
 
         self.interpolator = neuroimaging.image.interpolation.ImageInterpolator(image)
         self.cid = pylab.connect('button_press_event', self.on_click)
@@ -112,6 +114,7 @@ class BoxViewer(traits.HasTraits):
         self.lengths[self.slicenames[0]] = (xwidth, zheight)
         self.lengths[self.slicenames[1]] = (ywidth, zheight)
         self.lengths[self.slicenames[2]] = (ywidth, xheight)
+        self.lengths['color'] = (0.1, xheight)
 
         self.offsets = {}
         self.offsets[self.slicenames[0]] = (2 * bufwidth + ywidth,
@@ -121,6 +124,8 @@ class BoxViewer(traits.HasTraits):
 
         self.offsets[self.slicenames[2]] = (bufwidth,
                                             bufheight)
+        self.offsets['color'] = (2 * bufwidth + ywidth,
+                                 bufheight)
 
         self.ticks = {}
         self.ticks[self.slicenames[0]] = ((0, self.shape[2]-1),
@@ -129,7 +134,8 @@ class BoxViewer(traits.HasTraits):
                                   (0, self.shape[0]-1))
         self.ticks[self.slicenames[2]] = ((0, self.shape[1]-1),
                                      (0, self.shape[2]-1))
-        
+        self.ticks['color'] = ([], N.linspace(0,100,10).astype(N.Int))
+
         _str = lambda x: fpformat.fix(x, 0)
         self.ticklabels = {}
         self.ticklabels[self.slicenames[0]] = (map(_str, self.xlim),
@@ -147,7 +153,7 @@ class BoxViewer(traits.HasTraits):
                                        vmax=self.M,
                                        vmin=self.m,
                                        colormap=self.colormap,
-                                       interpolation='nearest')
+                                       interpolation=self.interpolation)
 
     def _x_changed(self):
         _slice = neuroimaging.reference.slices.xslice(x=self.x,
@@ -176,6 +182,25 @@ class BoxViewer(traits.HasTraits):
 
         self._setup_slice(_slice, self.slicenames[2])
 
+    def draw_colorbar(self):
+        width, height = self.lengths['color']
+        xoffset, yoffset = self.offsets['color']
+        v = N.linspace(0,1.,100) * (self.M - self.m) + self.m
+
+        if not hasattr(self, 'colorbar'):
+            self.colorbar = pylab.axes([xoffset, yoffset, width, height])
+            self.colorbar.set_xticks([])
+            self.colorbar.set_yticks(N.linspace(0,100,11).astype(N.Int))
+            v = N.linspace(0,1.,11) * (self.M - self.m) + self.m
+            self.colorbar.set_yticklabels([fpformat.fix(v[i], 1) for i in range(v.shape[0])])
+        else:
+            pylab.axes(self.colorbar)
+
+        self.slices[self.slicenames[0]].RGBA(data=v)
+        v = N.linspace(0,1.,100) * (self.M - self.m) + self.m
+        v.shape = (100,1)
+        pylab.imshow(v, origin=self.slices[self.slicenames[0]].origin)
+        
     def _setup_slice(self, _slice, which):
         if not self.slices.has_key(which):
             self.slices[which] = self._getslice(_slice)
@@ -234,4 +259,5 @@ class BoxViewer(traits.HasTraits):
         pylab.figure(num=self.figure.number)
         for imslice in self.slices.values():
             imslice.draw(redraw=redraw)
+        self.draw_colorbar()
         pylab.draw()

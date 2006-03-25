@@ -11,24 +11,24 @@ import numpy as N
 class ImageInterpolator(traits.HasTraits):
 
     order = traits.Int(1)
+    cache = traits.Str('/tmp/nipy-cache')
 
-    def _order_changed(self):
-        self.prefilter()
-
-    def __init__(self, image, **keywords):
+    def __init__(self, image, order=1, **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.image = image
         self.prefilter()
 
     def prefilter(self):
         if self.order > 1:
-            data = nd_image.spline_filter(self.image.readall(),
+            data = nd_image.spline_filter(N.nan_to_num(self.image.readall()),
                                           self.order)
         else:
-            data = self.image.readall()
+            data = N.nan_to_num(self.image.readall())
 
         if not hasattr(self, 'datafile'):
-            self.datafile = file(tempfile.mkstemp()[1], 'rb+')
+            if not os.path.exists(self.cache):
+                os.makedirs(self.cache)
+            self.datafile = file(tempfile.mkstemp(dir=self.cache)[1], 'rb+')
         else:
             self.datafile = file(self.datafile.name, 'rb+')
         
@@ -59,8 +59,9 @@ class ImageInterpolator(traits.HasTraits):
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], N.product(output_shape))
         voxels = self.image.grid.mapping.map(points, inverse=True)
-        V = nd_image.map_coordinates(self.data,
-                                     voxels)
+        V = nd_image.map_coordinates(self.data, 
+                                     voxels,
+                                     order=self.order)
                                      
         V.shape = output_shape
         return V

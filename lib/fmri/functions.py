@@ -60,7 +60,7 @@ class TimeFunction(traits.HasTraits):
             _window = N.greater(time, self.window[0]) * N.less_equal(time, self.window[1])
             columns = [column * _window for column in columns]
                 
-        return N.array(columns)
+        return N.squeeze(N.array(columns))
 
     def __mul__(self, other):
         if isinstance(other, TimeFunction):

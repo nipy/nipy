@@ -82,6 +82,9 @@ class DataFetcher(traits.HasTraits):
 
         if os.path.exists(self.url):
             return self.url
+        else:
+            if self.urlhost is None:
+                raise IOError, 'file %s not found' % url
 
         self.cached = True
         self.urldecompose()

@@ -6,6 +6,15 @@ from neuroimaging.reference import grid
 from neuroimaging.statistics.regression import RegressionOutput
 from neuroimaging.statistics import utils
 
+try:
+    import pylab
+    from plotting import MultiPlot
+    canplot = True
+except:
+    canplot = False
+    pass
+
+
 class fMRIRegressionOutput(RegressionOutput):
     """
     A class to output things in GLM passes through fMRI data. It
@@ -57,8 +66,17 @@ class TContrastOutput(fMRIRegressionOutput):
 
     def __init__(self, fmri_image, contrast, path='.', **keywords):
         fMRIRegressionOutput.__init__(self, fmri_image, **keywords)                
+        self.grid = self.fmri_image.grid.subgrid(0)
         self.contrast = contrast
         self.outdir = os.path.join(path, 'contrasts', self.contrast.name)
+        self.path = path
+        self.setup_contrast()
+        self.setup_output()
+
+    def setup_contrast(self):
+        self.contrast.getmatrix(time=self.fmri_image.frametimes)
+
+    def setup_output(self):
 
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
@@ -86,9 +104,19 @@ class TContrastOutput(fMRIRegressionOutput):
 
         outname = os.path.join(self.outdir, 'matrix.bin')
         outfile = file(outname, 'w')
-        contrast.matrix = contrast.matrix.astype('<f8')
-        contrast.matrix.tofile(outfile)
+        self.contrast.matrix = self.contrast.matrix.astype('<f8')
+        self.contrast.matrix.tofile(outfile)
         outfile.close()
+
+        if canplot:
+            ftime = self.fmri_image.frametimes
+            f = pylab.gcf()
+            f.clf()
+            pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
+                           dt = ftime.max() / 2000., title='Column space for contrast: \'%s\'' % self.contrast.name)
+            pl.draw()
+            pylab.savefig(os.path.join(self.outdir, 'matrix.png'))
+            f.clf()
 
     def extract(self, results):
         return results.Tcontrast(self.contrast.matrix, sd=self.sd, t=self.t)
@@ -124,8 +152,8 @@ class FContrastOutput(fMRIRegressionOutput):
     def setup_contrast(self):
         self.contrast.getmatrix(time=self.fmri_image.frametimes)
 
-    def setup_output(self, path='.'):
-        self.outdir = os.path.join(path, 'contrasts', self.contrast.name)
+    def setup_output(self):
+        self.outdir = os.path.join(self.path, 'contrasts', self.contrast.name)
 
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
@@ -143,9 +171,20 @@ class FContrastOutput(fMRIRegressionOutput):
 
         outname = os.path.join(self.outdir, 'matrix.bin')
         outfile = file(outname, 'w')
-        contrast.matrix = contrast.matrix.astype('<f8')
-        contrast.matrix.tofile(outfile)
+        self.contrast.matrix = self.contrast.matrix.astype('<f8')
+        self.contrast.matrix.tofile(outfile)
         outfile.close()
+
+        if canplot:
+            ftime = self.fmri_image.frametimes
+
+            f = pylab.gcf()
+            f.clf()
+            pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
+                           dt = ftime.max() / 2000., title='Column space for contrast: \'%s\'' % self.contrast.name)
+            pl.draw()
+            pylab.savefig(os.path.join(self.outdir, 'matrix.png'))
+            f.clf()
 
     def extract(self, results):
         F = results.Fcontrast(self.contrast.matrix).F

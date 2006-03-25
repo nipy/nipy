@@ -4,9 +4,9 @@ import pylab
 
 # Interpolation schemes
 
-interpolation = traits.Trait('nearest', 'bilinear', 'blackman100',
-                             'blackman256', 'blackman64', 'bicubic',
-                             'sinc144', 'sinc256', 'sinc64',
+interpolation = traits.Trait('bilinear', 'nearest', 'blackman100',
+                             'blackman256', 'blackman64',
+                             'sinc144', 'sinc256', 'sinc64', 'bicubic'
                              'spline16', 'spline36')
 
 # Color mappings available

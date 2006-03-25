@@ -1,7 +1,9 @@
 import csv, string, types, copy
 import enthought.traits as traits
 import numpy as N
+import scipy.interpolate
 
+from utils import LinearInterpolant
 from functions import Events, SplineConfound, TimeFunction
 from neuroimaging.statistics.formula import Factor, Quantitative, Formula, Term
 
@@ -66,17 +68,20 @@ class ExperimentalRegressor(traits.HasTraits):
 
         return self
 
-    def astimefn(self, namespace=namespace):
+    def astimefn(self, namespace=namespace, tmax=1000., tmin=0., dt=0.1):
         """
         Return a TimeFunction object that can be added, subtracted, etc.
+
+        The values of the time function are determined by a linear
+        interpolator based on self when astimefn is called.
 
         """
 
         nout = len(self.names())
 
-        def _f(time=None, obj=self):
-            return N.squeeze(obj(time=time, namespace=namespace))
-
+        time = N.arange(tmin, tmax, dt)
+        y = N.array(self(time=time, namespace=namespace))
+        _f = LinearInterpolant(time, y)
         v = TimeFunction(fn=_f, nout=nout)
         return v
 
@@ -185,25 +190,28 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         Return the 'main effect' for an ExperimentalFactor.
         """
 
-        def fn(namespace=None, time=None, obj=self, **keywords):
-            obj.convolved = False
-            value = N.asarray(obj(namespace=namespace, time=time, **keywords))
-            obj.convolved = True
-            return value
-        
-        return ExperimentalQuantitative('%s:maineffect' % self.termname, fn)
+        _c = self.convolved
+        self.convolved = False
+        f = self.astimefn()
+        self.convolved = _c
+        return ExperimentalQuantitative('%s:maineffect' % self.termname, f)
 
     def __getitem__(self, key):
+        _c = self.convolved
+        self.convolved = False
+        f = self.astimefn()
+
         if self.events.has_key(key) not in self.events.keys():
             l = self.events.keys()
             j = l.index(key)
         else:
             raise ValueError, 'key not found'            
-        def _fn(namespace=namespace, time=None, j=j, **extra):
-            v = self(namespace=namespace, time=time, **extra)
+        def _fn(namespace=namespace, time=None, j=j, f=f, **extra):
+            v = f(time=time)
             return [N.squeeze(v[j])]
+        name = '%s[%s]' % (self.termname, `key`)
+        self.convolved = _c
 
-        name = '%s[%s]' % (self.name, `key`)
         return ExperimentalQuantitative(name, _fn)
 
     def __call__(self, time=None, namespace=None, includedown=False, **keywords):

@@ -360,7 +360,7 @@ def deltaPCAsvd(fn, delta, dt=None, tmax=50., lower=-15.0, ncomp=2):
     '''
 
     if dt is None:
-        dt = self.df
+        dt = 0.01
     time = arange(lower, tmax, dt)
     ntime = time.shape[0]
 

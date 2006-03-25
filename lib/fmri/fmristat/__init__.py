@@ -1,13 +1,4 @@
-import copy, os, csv, string, fpformat
-import numpy as N
-import enthought.traits as traits
-import neuroimaging.image as image
-from neuroimaging.reference import grid
-from neuroimaging.statistics.regression import RegressionOutput
-from neuroimaging.statistics import utils
-
-class fMRIRegressionOutput(RegressionOutput):
-import gc
+import gc, os, string, fpformat
 import enthought.traits as traits
 from neuroimaging.statistics import iterators, utils 
 from neuroimaging.statistics.regression import OLSModel, ARModel
@@ -16,6 +7,15 @@ import neuroimaging.image.kernel_smooth as kernel_smooth
 from neuroimaging.fmri.regression import AR1Output, TContrastOutput, FContrastOutput
 import numpy as N
 import numpy.linalg as L
+import numpy.random as R
+
+try:
+    import pylab
+    from neuroimaging.fmri.plotting import MultiPlot
+    canplot = True
+except:
+    canplot = False
+    pass
 
 class fMRIStatOLS(iterators.LinearModelIterator):
 
@@ -28,6 +28,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
     fwhm = traits.Float(6.0)
     nmax = traits.Int(200) # maximum number of rho values
     mask = traits.Any()
+    path = traits.String('fmristat_run')
 
     def __init__(self, fmri_image, **keywords):
         traits.HasTraits.__init__(self, **keywords)
@@ -37,7 +38,8 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         self.rho_estimator = AR1Output(self.fmri_image)
         self.outputs.append(self.rho_estimator)
         self.dmatrix = self.formula.design(time=self.fmri_image.frametimes)
-
+        self.setup_output()
+        
     def model(self, **keywords):
         time = self.fmri_image.frametimes
         if self.slicetimes is not None:
@@ -56,9 +58,12 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         self.getlabels()
 
     def getlabels(self):
+
+        val = R.standard_normal() # I take almost surely seriously....
+
         if self.mask is not None:
             _mask = self.mask.readall()
-            self.rho.image.data = N.where(_mask, self.rho.image.data, N.nan)
+            self.rho.image.data = N.where(_mask, self.rho.image.data, val)
 
         if self.slicetimes == None:
             tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
@@ -77,10 +82,45 @@ class fMRIStatOLS(iterators.LinearModelIterator):
                 self.labelset += [newlabels]
                 self.labels += [tmp]
 
+        rval = N.around(val * (self.nmax / 2.)) / (self.nmax / 2.)
         try:
-            self.labelset.pop(self.labelset.index(N.nan))
+            self.labelset.pop(self.labelset.index(rval))
         except:
             pass
+
+    def setup_output(self):
+
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+
+        ftime = self.fmri_image.frametimes
+        dmatrix = self.dmatrix.astype('<f8')
+        ftime.shape = (ftime.shape[0],1)
+        dmatrix = N.hstack([ftime, dmatrix])
+        ftime.shape = (ftime.shape[0],)
+
+        outname = os.path.join(self.path, 'matrix.csv')
+        outfile = file(outname, 'w')
+        outfile.write(string.join([fpformat.fix(x,4) for x in dmatrix], ',') + '\n')
+        outfile.close()
+
+        outname = os.path.join(self.path, 'matrix.bin')
+        outfile = file(outname, 'w')
+        dmatrix = self.dmatrix.astype('<f8')
+        dmatrix.tofile(outfile)
+        outfile.close()
+
+        if canplot:
+            ftime = self.fmri_image.frametimes
+
+            f = pylab.gcf()
+            f.clf()
+            pl = MultiPlot(self.formula, tmin=0, tmax=ftime.max(),
+                           dt = ftime.max() / 2000., title='Column space for design matrix')
+            pl.draw()
+            pylab.savefig(os.path.join(self.path, 'matrix.png'))
+            f.clf()
+
 
     def estimateFWHM_AR(self, reference,
                         fwhm_data=10., ARorder=1, df_target=100.):
@@ -138,7 +178,11 @@ class fMRIStatAR(iterators.LinearModelIterator):
         if not isinstance(OLS, fMRIStatOLS):
             raise ValueError, 'expecting an fMRIStatOLS object in fMRIStatAR'
         self.fmri_image = OLS.fmri_image
+
+        # output path
         
+        self.path = OLS.path
+
         # copy the formula
         
         self.slicetimes = OLS.slicetimes
@@ -184,7 +228,6 @@ class fMRIStatAR(iterators.LinearModelIterator):
             model = ARModel(rho=rho, design=self.designs[i])
         else:
             rho = self.iterator.grid.itervalue.label
-            print rho, 'rho' 
             model = ARModel(rho=rho, design=self.dmatrix)
         return model
 

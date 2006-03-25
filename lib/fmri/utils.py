@@ -87,8 +87,17 @@ def gradient2d(X, axis=0):
 
     return value
 
-def LinearInterpolant(x, y):
-    return scipy.interpolate.InterpolatedUnivariateSpline(x,y,k=1)
+class LinearInterpolant:
+    """
+    A little wrapper around scipy.interpolate call to force
+    the interpolant to take a keywords argument \'time=\'.
+    """
+
+    def __init__(self, x, y, k=1):
+        self.f = scipy.interpolate.interp1d(x, y)
+
+    def __call__(self, time=None, **keywords):
+        return self.f(time)
 
 class WaveFunction:
     def __init__(self, start, duration, height):

@@ -1,10 +1,18 @@
+"""
+This module defines a class to output estimates
+of delays and contrasts of delays.
+
+Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H., Evans, A.C. (2002). \'Estimating the delay of the response in fMRI data.\' NeuroImage, 16:593-606.
+
+"""
+
 import copy, os, csv, string, fpformat
 import numpy as N
 import enthought.traits as traits
 import neuroimaging.image as image
 from neuroimaging.reference import grid
 from neuroimaging.fmri.regression import TContrastOutput 
-from neuroimaging.fmri. import TContrastOutput
+from neuroimaging.fmri import FContrastOutput
 from neuroimaging.statistics import utils
 from neuroimaging.fmri.protocol import ExperimentalQuantitative
 
