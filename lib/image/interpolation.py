@@ -61,7 +61,8 @@ class ImageInterpolator(traits.HasTraits):
         voxels = self.image.grid.mapping.map(points, inverse=True)
         V = nd_image.map_coordinates(self.data, 
                                      voxels,
-                                     order=self.order)
+                                     order=self.order,
+                                     prefilter=False)
                                      
         V.shape = output_shape
         return V

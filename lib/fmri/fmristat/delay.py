@@ -17,19 +17,16 @@ from neuroimaging.statistics import utils, regression, contrast
 from neuroimaging.fmri.protocol import ExperimentalRegressor, ExperimentalQuantitative
 from neuroimaging.fmri.regression import fMRIRegressionOutput
 
-class DelayContrast(TContrastOutput):
 
-    IRF = traits.Any()
-    dt = traits.Float(0.01)
-    delta = traits.ListFloat(N.linspace(-4.5,4.5,91))
-    Tmax = 100.
-    Tmin = 100.
+canonical = neuroimaging.fmri.hrf.HRF(deriv=True)
+
+class DelayContrast(contrast.Contrast):
 
     """
-    Output a delay contrast.
+    Specify a delay contrast.
 
-    Delay contrasts are specified by a contrast whose (design space) columns are expected to
-    NOT be convolved with any HRF. They will be convolved with self.IRF which is expected
+    Delay contrasts are specified by a sequence of functions and weights, the functions should
+    NOT already be convolved with any HRF. They will be convolved with self.IRF which is expected
     to be a filter with a canonical HRF and its derivative -- defaults to the Glover model.
 
     If the contrast is real-valued, representing
@@ -42,22 +39,43 @@ class DelayContrast(TContrastOutput):
 
 
     TO DO: check that the convolved term is actually in the design column space.
-
     """
-
-    def __init__(self, fmri_image, fn, name, formula, path='.',
-                 IRF=neuroimaging.fmri.hrf.HRF(deriv=True), **keywords):
-        fMRIRegressionOutput.__init__(self, fmri_image, **keywords)                
-        self.formula = formula
-        self.grid = self.fmri_image.grid.subgrid(0)
-        self.fn = fn
-        self.outdir = os.path.join(path, 'delays', name)
-        self.name = name
-        self.path = path
+    def __init__(self, fn, weights, formula, IRF=canonical, name=''):
         self.IRF = IRF
-        self.setup_contrast()
-        self.setup_output()
+        self.delayflag = True
 
+        self.name = name
+        self.formula = formula
+        
+        def f(namespace=None, fn=fn, time=None, n=len(fn), **extras):
+            v = []
+            for i in range(n):
+                v.append(fn[i](namespace=namespace, time=time))
+            return N.array(v)
+        self.fn = f
+
+        self.weights = N.asarray(weights)
+        if len(fn) != self.weights.shape[0]:
+            raise ValueError, 'length of weights does not match number of terms in DelayContrast'
+
+        term = ExperimentalQuantitative('%s_delay' % self.name, self.fn)
+        term.convolve(self.IRF)
+        
+        contrast.Contrast.__init__(self, term, self.formula, name=self.name)
+
+class DelayContrastOutput(TContrastOutput):
+
+    IRF = traits.Any()
+    dt = traits.Float(0.01)
+    delta = traits.ListFloat(N.linspace(-4.5,4.5,91))
+    Tmax = 100.
+    Tmin = -100.
+    subpath = traits.Str('delays')
+
+    def __init__(self, fmri_image, contrast, path='.', **keywords):
+        traits.HasTraits.__init__(self, **keywords)
+        TContrastOutput.__init__(self, fmri_image, contrast, path=path, subpath=self.subpath, **keywords)
+        self.outdir = os.path.join(path, self.subpath, self.contrast.name)
 
     def setup_contrast(self):
         """
@@ -65,101 +83,101 @@ class DelayContrast(TContrastOutput):
         over the previous contrast's term attribute.
         """
 
-        if type(self.fn) in [types.ListType, types.TupleType]:
-            def f(namespace=None, fn=self.fn, time=None, n=len(self.fn), **extras):
-                v = []
-                for i in range(n):
-                    v.append(fn[i](namespace=namespace, time=time))
-                return N.array(v)
-            self.fn = f
-        elif isinstance(self.fn, protocol.ExperimentalRegressor):
-            self.fn = self.fn.astimefn()
-
-        term = ExperimentalQuantitative('%s_delay' % self.name, self.fn)
-        term.convolve(self.IRF)
-        
-        self.contrast = contrast.Contrast(term, self.formula, 'bla')
         self.contrast.getmatrix(time=self.fmri_image.frametimes)
 
         self.effectmatrix = self.contrast.matrix[0::2]
         self.deltamatrix = self.contrast.matrix[1::2]
 
-    def effect(self, results):
+    def extract_effect(self, results):
 
-        delay = self.delayapprox
+        delay = self.contrast.IRF.delay
 
         self.gamma0 = N.dot(self.effectmatrix, results.beta)
         self.gamma1 = N.dot(self.deltamatrix, results.beta)
 
         nrow = self.gamma0.shape[0]
-        self.T0sq = N.zeros(gamma0.shape, N.Float)
+        self.T0sq = N.zeros(self.gamma0.shape, N.Float)
         
         for i in range(nrow):
-            sefl.T0sq[i] = (self.gamma0[i]**2 *
+            self.T0sq[i] = (self.gamma0[i]**2 *
                             utils.inv(results.cov_beta(matrix=self.effectmatrix[i])))
 
-        self.r = self.gamma1 * utils.inv2(self.gamma0)
+        self.r = self.gamma1 * utils.inv0(self.gamma0)
         self.rC = self.r * self.T0sq / (1. + self.T0sq)
         self.deltahat = delay.inverse(self.rC)
-        self._effect = N.add.reduce(deltahat, axis=0)
 
-    def sd(self, results):
+        self._effect = N.dot(self.contrast.weights, self.deltahat)
 
-        delay = self.delayapprox
+    def extract_sd(self, results):
 
-        self.T1 = N.zeros(gamma0.shape, N.Float)
+        delay = self.contrast.IRF.delay
 
+        self.T1 = N.zeros(self.gamma0.shape, N.Float)
+
+        nrow = self.gamma0.shape[0]
         for i in range(nrow):
             self.T1[i] = self.gamma1[i] * utils.inv(N.sqrt(results.cov_beta(matrix=self.deltamatrix[i])))
 
         a1 = 1 + 1. * utils.inv(self.T0sq)
 
-        gdot = N.array(([self.r * (a1 - 2.) * utils.inv2(self.gamma0 * a1**2),
-                              utils.inv2(self.gamma0 * a1)] *
-                             utils.inv2(delay.dforward(self.deltahat))))
+        gdot = N.array(([self.r * (a1 - 2.) * utils.inv0(self.gamma0 * a1**2),
+                         utils.inv0(self.gamma0 * a1)] *
+                        utils.inv0(delay.dforward(self.deltahat))))
 
-        tmpcov = N.zeros((2*nrow,)*2 + self.TOsq.shape[1:], N.Float)
+        tmpcov = N.zeros((2*nrow,)*2 + self.T0sq.shape[1:], N.Float)
+
+        Cov = results.cov_beta
+        E = self.effectmatrix
+        D = self.deltamatrix
 
         nrow = self.effectmatrix.shape[0]
-        for i in range(nrow):
-            for j in range(i+1):
-                tmpcov[i,j] = results.cov_beta(matrix=self.effectmatrix[i],
-                                                other=self.effectmatrix[j])
-                tmpcov[nrow+i,j] = results.cov_beta(matrix=self.deltamatrix[i],
-                                                     other=self.effectmatrix[j])
-                tmpcov[nrow+i,nrow+j] = results.cov_beta(matrix=self.deltamatrix[i],
-                                                          other=self.deltamatrix[j])
-                tmpcov[j,i] = tmpcov[i,j]
-                tmpcov[j,nrow+i] = tmpcov[nrow+i,j]
-                tmpcov[nrow+i,nrow+j] = tmpcov[nrow+j,nrow+i]
             
         cov = N.zeros((nrow,)*2 + self.T0sq.shape[1:], N.Float)
 
-        for i in range(nevents):
-            gdoti = gdot[:,i]
+        for i in range(nrow):
             for j in range(i + 1):
-                gdotj = gdot[:,j]
-                cov[i,j] = (gdoti[0] * gdotj[0] * results.cov_beta(matrix=self.effectmatrix[i],
-                                                                   other=self.effectmatrix[j]) +  
-                            gdoti[0] * gdotj[1] * results.cov_beta(matrix=self.effectmatrix[i],
-                                                                   other=self.deltamatrix[j]) +
-                            gdoti[1] * gdotj[0] * results.cov_beta(matrix=self.deltamatrix[i],
-                                                                   other=self.effectmatrix[j]) +
-                            gdoti[1] * gdotj[1] * results.cov_beta(matrix=self.deltamatrix[i],
-                                                                   other=self.deltamatrix[j]))
+                cov[i,j] = (gdot[0,i] * gdot[0,j] * Cov(matrix=E[i],
+                                                      other=E[j]) +  
+                            gdot[0,i] * gdot[1,j] * Cov(matrix=E[i],
+                                                      other=D[j]) +
+                            gdot[1,i] * gdot[0,j] * Cov(matrix=D[i],
+                                                      other=E[j]) +
+                            gdot[1,i] * gdot[1,j] * Cov(matrix=D[i],
+                                                      other=D[j]))
                 cov[j,i] = cov[i,j]
 
-            var = N.add.reduce(N.add.reduce(cov, axis=0), axis=0)
-            self._sd = N.sqrt(var)                
+        var = 0
+        for i in range(nrow):
+            for j in range(nrow):
+                var = var + cov[i,j] * self.contrast.weights[i] * self.contrast.weights[j]
 
-    def t(self, results):
-        self._t = self.effect * utils.inv(self.sd)
-        print self._t.max(), 'here'
-        self._t = clip(self.t, self.Tmin, self.Tmax)
+        self._sd = N.sqrt(var)                
+
+    def extract_t(self, results):
+        self._t = self._effect * utils.inv(self._sd)
+        self._t = N.clip(self._t, self.Tmin, self.Tmax)
 
     def extract(self, results):
-        self.effect(results)
-        self.sd(results)
-        self.t(results)
-        return regression.ContrastResults(effect=self._effect, sd=self._sd, t=self._t)
+        self.extract_effect(results)
+        self.extract_sd(results)
+        self.extract_t(results)
+        results = regression.ContrastResults()
+        results.effect = self._effect
+        results.sd = self._sd
+        results.t = self._t
+        return results
+
+##     def next(self, data=None):
+##         print 'here', data.t.max(), data.t.min(), data.t.mean()
+##         if self.fmri_image.itervalue.type is 'slice':
+##             value = copy.copy(self.fmri_image.itervalue)
+##             value.slice = value.slice[1]
+##         else:
+##             value = self.fmri_image.itervalue
+
+##         self.timg.next(data=data.t, value=value)
+##         if self.effect:
+##             self.effectimg.next(data=data.effect, value=value)
+##         if self.sd:
+##             self.sdimg.next(data=data.effect, value=value)
 

@@ -6,7 +6,7 @@ import pylab
 
 interpolation = traits.Trait('bilinear', 'nearest', 'blackman100',
                              'blackman256', 'blackman64',
-                             'sinc144', 'sinc256', 'sinc64', 'bicubic'
+                             'sinc144', 'sinc256', 'sinc64', 'bicubic',
                              'spline16', 'spline36')
 
 # Color mappings available

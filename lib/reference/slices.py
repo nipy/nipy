@@ -39,7 +39,6 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
 
     w = mapping.Affine(input_coords, output_coords, t)
     g = grid.SamplingGrid(mapping=w, shape=list(shape + (1,) * (nout-ndim)))
-    g.squeezeshape = shape
     return g
 
 # MNI default
@@ -166,3 +165,9 @@ def bounding_box(grid):
         M.append(r[i].max())
 
     return [[m[i], M[i]] for i in range(ndim)]
+
+def squeezeshape(shape):
+    s = N.array(shape)
+    keep = N.not_equal(s, 1)
+    return tuple(s[keep])
+    

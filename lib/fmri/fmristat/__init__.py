@@ -9,7 +9,7 @@ import numpy as N
 import numpy.linalg as L
 import numpy.random as R
 
-from delay import DelayContrast
+from delay import DelayContrast, DelayContrastOutput
 
 try:
     import pylab
@@ -199,17 +199,19 @@ class fMRIStatAR(iterators.LinearModelIterator):
             for i in range(len(self.slicetimes)):
                 self.designs.append(self.formula.design(time=time + self.slicetimes[i]))
 
-        self.contrasts = {}
+        self.contrasts = []
         if contrasts is not None:
             if type(contrasts) not in [type([]), type(())]:
                 contrasts = [contrasts]
             for i in range(len(contrasts)):
                 contrasts[i].getmatrix(time=self.fmri_image.frametimes)
-                if contrasts[i].rank == 1:
+                if isinstance(contrasts[i], DelayContrast):
+                    cur = DelayContrastOutput(self.fmri_image, contrasts[i], path=self.path)
+                elif contrasts[i].rank == 1:
                     cur = TContrastOutput(self.fmri_image, contrasts[i], path=self.path)
                 else:
                     cur = FContrastOutput(self.fmri_image, contrasts[i], path=self.path)
-                self.contrasts[contrasts[i].name] = cur
+                self.contrasts.append(cur)
                 
         # setup the iterator
 
@@ -219,7 +221,7 @@ class fMRIStatAR(iterators.LinearModelIterator):
         self.iterator = iter(self.fmri_image)
         self.j = 0
 
-        self.outputs += self.contrasts.values()
+        self.outputs += self.contrasts
 
     def model(self, **keywords):
         self.j += 1

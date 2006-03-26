@@ -22,6 +22,11 @@ class BoxViewer(traits.HasTraits):
 
     slicenames = traits.ListStr(['coronal', 'sagittal', 'transversal'])
 
+    # min and max
+
+    m = traits.Float()
+    M = traits.Float()
+
     # determines layout of slices
 
     buffer_pix = traits.Float(50.) # buffer in pixels
@@ -31,6 +36,8 @@ class BoxViewer(traits.HasTraits):
     interpolation = interpolation
     colormap = cmap
 
+    mask = traits.Any()
+    
     """
     View an image in orthogonal coordinates, i.e. sampled on the grid
     of the MNI atlas which is the default orthogonal coordinate system.
@@ -39,14 +46,31 @@ class BoxViewer(traits.HasTraits):
     and used for the limits.
     """
 
+    def _m_changed(self):
+        try:
+            for i in range(3):
+                self.slices[i].norm.vmin = self.m
+        except:
+            pass
+
+    def _M_changed(self):
+        try:
+            for i in range(3):
+                self.slices[i].norm.vmax = self.M
+        except:
+            pass
+
     def __init__(self, image, x=None, y=None, z=None,
                  xlim=[-90.,90.],
                  ylim=[-126.,90.],
                  zlim=[-72.,108.],
+                 shape = (128,)*3,
                  default=False,
-                 interpolation='nearest',
+                 interpolation='bicubic',
+                 mask=None,
                  **keywords):
 
+        self.mask = mask
         self.interpolation = interpolation
         self.slices = {}
 
@@ -57,10 +81,8 @@ class BoxViewer(traits.HasTraits):
             self.xlim = xlim
             self.ylim = ylim
             self.zlim = zlim
-            self.shape = [91,109,91]
         else:
             self.zlim, self.ylim, self.xlim = reference.slices.bounding_box(image.grid)
-            self.shape = image.grid.shape
 
 
         if x is None:
@@ -83,8 +105,35 @@ class BoxViewer(traits.HasTraits):
         self.figure = pylab.figure(figsize=(figwidth / self.dpi, figheight / self.dpi))
 
         self.interpolator = neuroimaging.image.interpolation.ImageInterpolator(image)
+        self._kind_of_data()
+
+        if self.mask is not None:
+            self.maskinterp = neuroimaging.image.interpolation.ImageInterpolator(self.mask, order=1)
+        else:
+            self.maskinterp = None
+
         self.cid = pylab.connect('button_press_event', self.on_click)
         traits.HasTraits.__init__(self, x=x, y=y, z=z, **keywords)
+        
+    def _kind_of_data(self):
+        _slice = neuroimaging.reference.slices.xslice(x=0,
+                                                      xlim=self.xlim,
+                                                      ylim=self.ylim,
+                                                      zlim=self.zlim,
+                                                      shape=self.shape)
+        s = tuple(_slice.shape)
+        v = self.interpolator(_slice.range())
+        if v.shape == s:
+            self.slice_drawer = vizslice.PylabDataSlice
+            self._datatype = 'data'
+        elif v.shape == s + (3,):
+            self.slice_drawer = vizslice.PylabRGBSlice
+            self._datatype = 'RGB'
+        elif v.shape == s + (4,):
+            self.slice_drawer = vizslice.PylabRGBASlice
+            self._datatype = 'RGBA'
+        else:
+            raise ValueError, 'interpolator datatype not recoginzed as either data, RGB or RGBA'
 
     def _setup_dims(self):
 
@@ -115,7 +164,7 @@ class BoxViewer(traits.HasTraits):
         self.lengths[self.slicenames[0]] = (xwidth, zheight)
         self.lengths[self.slicenames[1]] = (ywidth, zheight)
         self.lengths[self.slicenames[2]] = (ywidth, xheight)
-        self.lengths['color'] = (0.1, xheight)
+        self.lengths['color'] = (0.03, xheight)
 
         self.offsets = {}
         self.offsets[self.slicenames[0]] = (2 * bufwidth + ywidth,
@@ -149,12 +198,21 @@ class BoxViewer(traits.HasTraits):
         return figwidth, figheight
 
     def _getslice(self, _slice):
-        return vizslice.PylabDataSlice(self.interpolator,
-                                       _slice,
-                                       vmax=self.M,
-                                       vmin=self.m,
-                                       colormap=self.colormap,
-                                       interpolation=self.interpolation)
+        if self._datatype == 'data':
+            v = self.slice_drawer(self.interpolator,
+                                  _slice,
+                                  vmax=self.M,
+                                  vmin=self.m,
+                                  colormap=self.colormap,
+                                  interpolation=self.interpolation)
+        else:
+            v = self.slice_drawer(self.interpolator,
+                                  _slice,
+                                  interpolation=self.interpolation)
+
+        if self.mask is not None:
+            v.mask = self.maskinterp
+        return v
 
     def _x_changed(self):
         _slice = neuroimaging.reference.slices.xslice(x=self.x,

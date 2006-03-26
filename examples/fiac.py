@@ -141,11 +141,12 @@ interaction = SSt_SSp - SSt_DSp - DSt_SSp + DSt_DSp
 interaction = irf.convolve(interaction)
 interaction = contrast.Contrast(interaction, formula, name='interaction')
 
-contrasts = [task, overall, sentence, speaker, interaction]
-
 # delay
 
-speaker_delay = fmristat.DelayContrast(f, [SSt_DSp / 2., DSt_DSp / 2., SSt_SSp * (-0.5), DSt_SSp * (-0.5)], 'speaker', formula)
+speaker_delay = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp], [0.5,0.5,-0.5,-0.5], formula, name='speaker')
+sentence_delay = fmristat.DelayContrast([DSt_SSp, DSt_DSp, SSt_SSp, SSt_DSp], [0.5,0.5,-0.5,-0.5], formula, name='sentence')
+interaction_delay = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp], [-1,1,1,-1], formula, name='interaction')
+overall_delay = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp], [0.25]*4, formula, name='overall')
 
 # OLS pass
 
@@ -157,14 +158,14 @@ tic = time.time()
 
 print 'OLS time', `tic-toc`
 
+# maybe you want to save the estimates of the AR(1) parameter
+
 rho = OLS.rho_estimator.img
 rho.tofile('rho.img')
 
-v=viewer.BoxViewer(rho)
-v.draw()
-
 # AR pass
 
+contrasts = [task, overall, sentence, speaker, interaction, speaker_delay, sentence_delay, interaction_delay, overall_delay]
 toc = time.time()
 AR = fmristat.fMRIStatAR(OLS, contrasts=contrasts)
 AR.fit()
@@ -172,7 +173,9 @@ tic = time.time()
 
 print 'AR time', `tic-toc`
 
-t = neuroimaging.image.Image('delays/speaker/t.img')
-v=viewer.BoxViewer(t)
+t = neuroimaging.image.Image('fmristat_run/delays/speaker/t.img')
+v=viewer.BoxViewer(t, mask=m)
+v.M = 10.
+v.m = -10.
 v.draw()
 pylab.show()

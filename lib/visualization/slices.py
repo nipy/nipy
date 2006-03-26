@@ -122,9 +122,19 @@ class PylabRGBASlice(Slice):
     xoffset = traits.Float(0.1)
     yoffset = traits.Float(0.1)
 
+    mask = traits.Any()
+    maskthresh = traits.Float(0.1)
+    maskcolor = traits.ListFloat([0,0,0])
+
     def draw(self, data=None, redraw=False, *args, **keywords):
         if data is None:
             data = self.RGBA(data=data)
+
+        if self.mask is not None:
+            alpha = N.greater_equal(N.squeeze(self.mask(self.grid.range())), 0.1)
+            for i in range(3):
+                data[:,:,i] = data[:,:,i] * alpha + (1 - alpha) * self.maskcolor[i]
+            
         pylab.axes(self.axes)
         if not redraw:
             self.imshow = pylab.imshow(data,
@@ -176,17 +186,7 @@ class PylabRGBSlice(PylabRGBASlice):
             return V
 
     def draw(self, data=None, redraw=False, *args, **keywords):
-        if data is None:
-            data = N.squeeze(self.interpolator(self.grid.range()))
-        pylab.axes(self.axes)
-        if not redraw:
-            self.imshow = pylab.imshow(data,
-                                       interpolation=self.interpolation,
-                                       aspect='free',
-                                       origin=self.origin,
-                                       alpha=self.alpha)
-        else:
-            self.imshow.set_data(data)
+        PylabRGBASlice.draw(self, data=self.RGBA(data=data), redraw=redraw)
             
 class PylabDataSlice(PylabRGBSlice):
 

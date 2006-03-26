@@ -63,12 +63,14 @@ class TContrastOutput(fMRIRegressionOutput):
     t = traits.true
     outdir = traits.Str()
     ext = traits.Str('.img')
+    subpath = traits.Str('contrasts')
 
     def __init__(self, fmri_image, contrast, path='.', **keywords):
         fMRIRegressionOutput.__init__(self, fmri_image, **keywords)                
         self.grid = self.fmri_image.grid.subgrid(0)
         self.contrast = contrast
-        self.outdir = os.path.join(path, 'contrasts', self.contrast.name)
+
+        self.outdir = os.path.join(path, self.subpath, self.contrast.name)
         self.path = path
         self.setup_contrast()
         self.setup_output()
@@ -139,13 +141,14 @@ class FContrastOutput(fMRIRegressionOutput):
     contrast = traits.Any() # should really start specifying classes with traits, too
     outdir = traits.Str()
     ext = traits.Str('.img')
+    subpath = traits.Str('contrasts')
 
     def __init__(self, fmri_image, contrast, path='.', **keywords):
         fMRIRegressionOutput.__init__(self, fmri_image, **keywords)                
         self.grid = self.fmri_image.grid.subgrid(0)
         self.contrast = contrast
         self.path = path
-        self.outdir = os.path.join(self.path, 'contrasts', self.contrast.name)
+        self.outdir = os.path.join(self.path, self.subpath, self.contrast.name)
         self.setup_contrast()
         self.setup_output()
 
@@ -153,7 +156,6 @@ class FContrastOutput(fMRIRegressionOutput):
         self.contrast.getmatrix(time=self.fmri_image.frametimes)
 
     def setup_output(self):
-        self.outdir = os.path.join(self.path, 'contrasts', self.contrast.name)
 
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
