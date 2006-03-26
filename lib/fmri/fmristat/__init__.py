@@ -9,6 +9,8 @@ import numpy as N
 import numpy.linalg as L
 import numpy.random as R
 
+from delay import DelayContrast
+
 try:
     import pylab
     from neuroimaging.fmri.plotting import MultiPlot

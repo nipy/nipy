@@ -6,21 +6,22 @@ Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H., Evans, A.C
 
 """
 
-import copy, os, csv, string, fpformat
+import neuroimaging
+import copy, os, csv, string, fpformat, types
 import numpy as N
 import enthought.traits as traits
 import neuroimaging.image as image
 from neuroimaging.reference import grid
 from neuroimaging.fmri.regression import TContrastOutput 
-from neuroimaging.fmri import FContrastOutput
-from neuroimaging.statistics import utils
-from neuroimaging.fmri.protocol import ExperimentalQuantitative
+from neuroimaging.statistics import utils, regression, contrast
+from neuroimaging.fmri.protocol import ExperimentalRegressor, ExperimentalQuantitative
+from neuroimaging.fmri.regression import fMRIRegressionOutput
 
-class DelayContrast(FContrastOutput):
+class DelayContrast(TContrastOutput):
 
     IRF = traits.Any()
     dt = traits.Float(0.01)
-    delta = traits.Array(N.linspace(-4.5,4.5,91))
+    delta = traits.ListFloat(N.linspace(-4.5,4.5,91))
     Tmax = 100.
     Tmin = 100.
 
@@ -44,30 +45,40 @@ class DelayContrast(FContrastOutput):
 
     """
 
-    def __init__(self, fmri_image, contrast, path='.',
-                 IRF=hrf.HRF(deriv=True), **keywords):
-        FContrastOutput.__init__(self, fmri_image, contrast, path=path, **keywords)
-        self.delayapprox = self.IRF.deltaPCA(self.delta, dt=self.dt,
-                                             tmax=50., lower=-15.0, spectral=True)
-
+    def __init__(self, fmri_image, fn, name, formula, path='.',
+                 IRF=neuroimaging.fmri.hrf.HRF(deriv=True), **keywords):
+        fMRIRegressionOutput.__init__(self, fmri_image, **keywords)                
+        self.formula = formula
+        self.grid = self.fmri_image.grid.subgrid(0)
+        self.fn = fn
+        self.outdir = os.path.join(path, 'delays', name)
+        self.name = name
+        self.path = path
+        self.IRF = IRF
         self.setup_contrast()
-        
+        self.setup_output()
+
+
     def setup_contrast(self):
         """
         Setup the contrast to output its convolution with self.IRF -- writes
         over the previous contrast's term attribute.
         """
 
-        t = N.arange(0, max(self.fmri_image.frametimes), self.dt)
-        v = N.asarray(self.contrast.term(time=t))
-        fns = []
+        if type(self.fn) in [types.ListType, types.TupleType]:
+            def f(namespace=None, fn=self.fn, time=None, n=len(self.fn), **extras):
+                v = []
+                for i in range(n):
+                    v.append(fn[i](namespace=namespace, time=time))
+                return N.array(v)
+            self.fn = f
+        elif isinstance(self.fn, protocol.ExperimentalRegressor):
+            self.fn = self.fn.astimefn()
 
-        for i in range(v.shape[0]): # check this order here!
-            fn = scipy.interpolate.interp1d(t, v[i])
-            fns.append(fn)
-
-        self.contrast.term = ExperimentalQuantitative(self.contrast.term.termname, fns)
-        self.contrast.term.convolve(self.IRF)
+        term = ExperimentalQuantitative('%s_delay' % self.name, self.fn)
+        term.convolve(self.IRF)
+        
+        self.contrast = contrast.Contrast(term, self.formula, 'bla')
         self.contrast.getmatrix(time=self.fmri_image.frametimes)
 
         self.effectmatrix = self.contrast.matrix[0::2]
@@ -90,7 +101,7 @@ class DelayContrast(FContrastOutput):
         self.r = self.gamma1 * utils.inv2(self.gamma0)
         self.rC = self.r * self.T0sq / (1. + self.T0sq)
         self.deltahat = delay.inverse(self.rC)
-        self.effect = N.add.reduce(deltahat, axis=0)
+        self._effect = N.add.reduce(deltahat, axis=0)
 
     def sd(self, results):
 
@@ -118,9 +129,9 @@ class DelayContrast(FContrastOutput):
                                                      other=self.effectmatrix[j])
                 tmpcov[nrow+i,nrow+j] = results.cov_beta(matrix=self.deltamatrix[i],
                                                           other=self.deltamatrix[j])
-            tmpcov[j,i] = tmpcov[i,j]
-            tmpcov[j,nrow+i] = tmpcov[nrow+i,j]
-            tmpcov[nrow+i,nrow+j] = tmpcov[nrow+j,nrow+i]
+                tmpcov[j,i] = tmpcov[i,j]
+                tmpcov[j,nrow+i] = tmpcov[nrow+i,j]
+                tmpcov[nrow+i,nrow+j] = tmpcov[nrow+j,nrow+i]
             
         cov = N.zeros((nrow,)*2 + self.T0sq.shape[1:], N.Float)
 
@@ -136,12 +147,19 @@ class DelayContrast(FContrastOutput):
                                                                    other=self.effectmatrix[j]) +
                             gdoti[1] * gdotj[1] * results.cov_beta(matrix=self.deltamatrix[i],
                                                                    other=self.deltamatrix[j]))
-            cov[j,i] = cov[i,j]
+                cov[j,i] = cov[i,j]
 
             var = N.add.reduce(N.add.reduce(cov, axis=0), axis=0)
-            self.sd = N.sqrt(var)                
+            self._sd = N.sqrt(var)                
 
-    def t(results):
-        self.t = self.effect * utils.inv(self.sd)
-        self.t = clip(self.t, self.Tmin, self.Tmax)
+    def t(self, results):
+        self._t = self.effect * utils.inv(self.sd)
+        print self._t.max(), 'here'
+        self._t = clip(self.t, self.Tmin, self.Tmax)
+
+    def extract(self, results):
+        self.effect(results)
+        self.sd(results)
+        self.t(results)
+        return regression.ContrastResults(effect=self._effect, sd=self._sd, t=self._t)
 

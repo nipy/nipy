@@ -7,6 +7,8 @@ import enthought.traits as traits
 import numpy as N
 from iterators import fMRISliceIterator, fMRIParcelIterator, fMRISliceParcelIterator
 
+import hrf, filters
+
 class fMRIListMapping(mapping.Mapping):
 
     def __init__(self, input_coords, output_coords, maps, **keywords):
