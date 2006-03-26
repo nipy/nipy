@@ -15,11 +15,39 @@ import pylab
 from neuroimaging.fmri.plotting import MultiPlot
 canplot = True
 
+class WholeBrainNormalize(traits.HasTraits):
+
+    mask = traits.Any()
+
+    def __init__(self, fmri_image, **keywords):
+        traits.HasTraits.__init__(self, **keywords)
+        if self.mask is not None:
+            self._mask = self.mask.readall()
+            self._mask.shape = N.product(self._mask.shape)
+            
+        self.n = fmri_image.grid.shape[0]
+        self.avg = N.zeros((self.n,), N.Float)
+
+        for i in range(self.n):
+            d = fmri_image.getslice(slice(i,i+1))
+            if hasattr(self, '_mask'):
+                d.shape = N.product(d.shape)
+                d = N.compress(self._mask, d)
+            self.avg[i] = d.mean()
+
+    def __call__(self, fmri_data):
+        out = N.zeros(fmri_data.shape, N.Float)
+        for i in range(self.n):
+            out[i] = fmri_data[i] * 100. / self.avg[i]
+        return out
+
 class fMRIStatOLS(iterators.LinearModelIterator):
 
     """
     OLS pass of fMRIstat.
     """
+    
+    normalize = traits.Any()
     
     formula = traits.Any()
     slicetimes = traits.Any()
@@ -33,6 +61,9 @@ class fMRIStatOLS(iterators.LinearModelIterator):
     def __init__(self, fmri_image, outputs=[], **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.fmri_image = fmri.fMRIImage(fmri_image)
+        if self.normalize is not None:
+            self.fmri_image.postread = self.normalize
+
         self.iterator = iter(self.fmri_image)
 
         self.rho_estimator = AR1Output(self.fmri_image.grid, clobber=self.clobber)
@@ -60,9 +91,10 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         iterators.LinearModelIterator.fit(self, **keywords)
 
         sgrid = self.fmri_image.grid.subgrid(0)
-        smoother = kernel_smooth.LinearFilter(sgrid, fwhm=self.fwhm)
-        self.rho_estimator.img.grid = sgrid
-        self.rho = smoother.smooth(self.rho_estimator.img)
+##         smoother = kernel_smooth.LinearFilter(sgrid, fwhm=self.fwhm)
+##         self.rho_estimator.img.grid = sgrid
+##         self.rho = smoother.smooth(self.rho_estimator.img)
+        self.rho = self.rho_estimator.img
         self.getlabels()
 
     def getlabels(self):

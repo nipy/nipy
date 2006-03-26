@@ -31,6 +31,7 @@ class MultiPlot(traits.HasTraits):
         v = self.fn(time=t, **keywords)
         if v.ndim == 1:
             v.shape = (1, v.shape[0])
+        v = v[::-1]
             
         n = v.shape[0]
         dy = 0.9 / n
@@ -39,9 +40,9 @@ class MultiPlot(traits.HasTraits):
             a.set_xticklabels([])
             a.set_yticks([])
             a.set_yticklabels([])
+            m = N.nanmin(v[i])
+            M = N.nanmax(v[i])
             pylab.plot(t, v[i])
-            m = v[i].min()
-            M = v[i].max()
             r = M - m
             l = m - 0.2 * r
             u = M + 0.2 * r

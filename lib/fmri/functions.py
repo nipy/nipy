@@ -18,7 +18,6 @@ from neuroimaging.statistics.utils import recipr0
 # Use scipy's interpolator
 
 from scipy.interpolate import interp1d
-interpolant = interp1d
 
 # Prototypical stimuli: "Event" (on/off) and "Stimuli" (step function)
 # -Event inherits from Stimulus so most functionality is in Stimulus
@@ -166,8 +165,6 @@ class TimeFunction(traits.HasTraits):
             raise ValueError, 'unrecognized type'
         return TimeFunction(fn=_f, nout=self.nout)
 
-
-
 class Stimulus(TimeFunction):
 
     times = traits.Any()
@@ -228,13 +225,38 @@ class InterpolatedConfound(TimeFunction):
 
     def __init__(self, **keywords):
         TimeFunction.__init__(self, **keywords)
-        if len(array(self.values).shape) == 1:
-            self.fn = N.interpolant(self.times, self.values)
+        if len(N.asarray(self.values).shape) == 1:
+            self.fn = interp1d(self.times, self.values, bounds_error=0)
+            self.nout = 1
         else:
             self.fn = []
-            values = N.array(self.values)
+            values = N.asarray(self.values)
             for i in range(values.shape[0]):
-                self.fn.append(self.times, values[:,i])
+                fn = interp1d(self.times, self.values[:,i], bounds_error=0)
+                self.fn.append(fn)
+            self.nout = values.shape[0]
+            
+    def __call__(self, time=None, **extra):
+
+        lt = len(N.array(time).shape)
+
+        columns = []
+
+        if self.nout == 1:
+            columns.append(self.fn(time))
+        else:
+            if type(self.fn) in [types.ListType, types.TupleType]:
+                for fn in self.fn:
+                    columns.append(fn(time))
+            else:
+                columns = self.fn(time)
+
+        if self.windowed:
+            _window = N.greater(time, self.window[0]) * N.less_equal(time, self.window[1])
+            columns = [column * _window for column in columns]
+                
+        return N.squeeze(N.array(columns))
+
 
 class FunctionConfound(TimeFunction):
 

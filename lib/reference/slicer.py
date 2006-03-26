@@ -8,6 +8,7 @@ class Slicer(TR.HasTraits):
     nloopdim = TR.Int(1)
     shift = TR.Int()
     ndim = TR.Int()
+
     type = TR.String('slice')
 
     def _shape_changed(self):

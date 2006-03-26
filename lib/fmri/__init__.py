@@ -140,7 +140,10 @@ class fMRIImage(image.Image):
         if itertype == 'slice':
             if data is None:
                 return_value = N.squeeze(self.getslice(value.slice))
-                return return_value
+                if hasattr(self, 'postread'):
+                    return self.postread(return_value)
+                else:
+                    return return_value
             else:
                 self.writeslice(value.slice, data)
 
@@ -148,7 +151,11 @@ class fMRIImage(image.Image):
             if data is None:
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
-                return self.buffer.compress(value.where, axis=1)
+                return_value = self.buffer.compress(value.where, axis=1)
+                if hasattr(self, 'postread'):
+                    return self.postread(return_value)
+                else:
+                    return return_value
             else:
                 for i in range(self.grid.shape[0]):
                     _buffer = self.getslice([slice(i,i+1)])
@@ -160,7 +167,11 @@ class fMRIImage(image.Image):
                 self.label = value.label
                 tmp = self.getslice(value.slice)
                 tmp.shape = (tmp.shape[0], N.product(tmp.shape[1:]))
-                return tmp.compress(value.where, axis=1)
+                return_value = tmp.compress(value.where, axis=1)
+                if hasattr(self, 'postread'):
+                    return self.postread(return_value)
+                else:
+                    return return_value
             else:
                 indices = N.nonzero(value.where)
                 _buffer = self.getslice(value.slice)

@@ -4,7 +4,7 @@ import numpy as N
 import scipy.interpolate
 
 from utils import LinearInterpolant
-from functions import Events, SplineConfound, TimeFunction
+from functions import Events, SplineConfound, TimeFunction, InterpolatedConfound
 from neuroimaging.statistics.formula import Factor, Quantitative, Formula, Term
 
 namespace = {}
@@ -100,9 +100,11 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
             termname = name
         namespace[termname] = self
             
-        test = self.fn(time=N.array([4.0,5.0,6]))
-        n = N.array(test).shape[0]
-
+        test = N.array(self.fn(time=N.array([4.0,5.0,6])))
+        if test.ndim > 1:
+            n = test.shape[0]
+        else:
+            n = 1
         if n > 1:
             if type(name) in [type([]), type(())]:
                 names = name
@@ -115,7 +117,6 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
         
     def __call__(self, time=None, namespace=namespace, **keywords):
         if not self.convolved:
-            v = self.fn(time=N.arange(20), **keywords)
             return self.fn(time=time, **keywords)
         else:
             if hasattr(self, '_convolved'):
@@ -301,10 +302,11 @@ class ExperimentalFormula(Formula):
             else:
                 val = term(time=time, namespace=namespace, **keywords)
                       
+            if val.ndim == 1:
+                val.shape = (1, val.shape[0])
             allvals.append(val)
 
         tmp = N.concatenate(allvals)
-
         names, keep = self.names(keep=True)
 
         return N.array([tmp[i] for i in keep])
