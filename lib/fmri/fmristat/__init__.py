@@ -11,9 +11,9 @@ import numpy.random as R
 
 from delay import DelayContrast, DelayContrastOutput
 
-import pylab
-from neuroimaging.fmri.plotting import MultiPlot
-canplot = True
+## import pylab
+## from neuroimaging.fmri.plotting import MultiPlot
+## canplot = True
 
 class fMRIStatOLS(iterators.LinearModelIterator):
 
@@ -109,16 +109,16 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         dmatrix.tofile(outfile)
         outfile.close()
 
-        if canplot:
-            ftime = self.fmri_image.frametimes
+##         if canplot:
+##             ftime = self.fmri_image.frametimes
 
-            f = pylab.gcf()
-            f.clf()
-            pl = MultiPlot(self.formula, tmin=0, tmax=ftime.max(),
-                           dt = ftime.max() / 2000., title='Column space for design matrix')
-            pl.draw()
-            pylab.savefig(os.path.join(self.path, 'matrix.png'))
-            f.clf()
+##             f = pylab.gcf()
+##             f.clf()
+##             pl = MultiPlot(self.formula, tmin=0, tmax=ftime.max(),
+##                            dt = ftime.max() / 2000., title='Column space for design matrix')
+##             pl.draw()
+##             pylab.savefig(os.path.join(self.path, 'matrix.png'))
+##             f.clf()
 
 
     def estimateFWHM_AR(self, reference,
