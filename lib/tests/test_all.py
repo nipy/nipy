@@ -25,4 +25,4 @@ if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=2).run(suite)
 
     os.chdir(curdir)
-#    shutil.rmtree(tmpdir, ignore_errors=False)
+    shutil.rmtree(tmpdir, ignore_errors=False)
