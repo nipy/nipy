@@ -35,13 +35,13 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         self.fmri_image = fmri.fMRIImage(fmri_image)
         self.iterator = iter(self.fmri_image)
 
-        self.rho_estimator = AR1Output(self.fmri_image, clobber=self.clobber)
+        self.rho_estimator = AR1Output(self.fmri_image.grid, clobber=self.clobber)
         self.outputs += outputs
         self.outputs.append(self.rho_estimator)
         self.dmatrix = self.formula.design(time=self.fmri_image.frametimes)
 
         if self.resid:
-            self.resid_output = ResidOutput(self.fmri_image, path=self.path, basename='OLSresid', clobber=self.clobber)
+            self.resid_output = ResidOutput(self.fmri_image.grid, path=self.path, basename='OLSresid', clobber=self.clobber)
             self.outputs.append(self.resid_output)
             
         self.setup_output()
@@ -206,11 +206,11 @@ class fMRIStatAR(iterators.LinearModelIterator):
             for i in range(len(contrasts)):
                 contrasts[i].getmatrix(time=self.fmri_image.frametimes)
                 if isinstance(contrasts[i], DelayContrast):
-                    cur = DelayContrastOutput(self.fmri_image, contrasts[i], path=self.path, clobber=self.clobber)
+                    cur = DelayContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path, clobber=self.clobber)
                 elif contrasts[i].rank == 1:
-                    cur = TContrastOutput(self.fmri_image, contrasts[i], path=self.path, clobber=self.clobber)
+                    cur = TContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path, clobber=self.clobber)
                 else:
-                    cur = FContrastOutput(self.fmri_image, contrasts[i], path=self.path, clobber=self.clobber)
+                    cur = FContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path, clobber=self.clobber)
                 self.contrasts.append(cur)
                 
         # setup the iterator
@@ -224,7 +224,7 @@ class fMRIStatAR(iterators.LinearModelIterator):
         self.outputs += self.contrasts
 
         if self.resid:
-            self.resid_output = ResidOutput(self.fmri_image, path=self.path, basename='ARresid', clobber=self.clobber)
+            self.resid_output = ResidOutput(self.fmri_image.grid, path=self.path, basename='ARresid', clobber=self.clobber)
             self.outputs.append(self.resid_output)
 
     def model(self, **keywords):

@@ -16,7 +16,9 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     A class to output things in GLM passes through fMRI data. It
     uses the fmri_image\'s iterator values to output to an image.
 
-    It can output 
+    The difference between this class and ImageRegressionOutput is the
+    iterator that drives everything: here it the iterator of an fMRIImage,
+    in the former it is of an Image.
     """
 
     nout = traits.Int(1)
@@ -25,21 +27,47 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
 
     def __init__(self, grid, **keywords):
         imreg.ImageRegressionOutput.__init__(self, grid, **keywords)
-        self.grid = self.fmri_image.grid.subgrid(0)
 
     def __iter__(self):
         return self
 
     def next(self, data=None):
-        if self.fmri_image.itervalue.type is 'slice':
-            value = copy.copy(self.fmri_image.itervalue)
+        if self.grid.itervalue.type is 'slice':
+            value = copy.copy(self.grid.itervalue)
             value.slice = value.slice[1]
         else:
-            value = self.fmri_image.itervalue
+            value = self.grid.itervalue
         self.img.next(data=data, value=value)
 
     def extract(self, results):
         return 0.
+
+class ResidOutput(fMRIRegressionOutput):
+
+    outdir = traits.Str()
+    ext = traits.Str('.img')
+    basename = traits.Str('resid')
+
+    def __init__(self, grid, path='.', **keywords):
+        fMRIRegressionOutput.__init__(self, grid, **keywords)                
+        self.outdir = os.path.join(path)
+        
+        if not os.path.exists(self.outdir):
+            os.makedirs(self.outdir)
+
+        outname = os.path.join(self.outdir, '%s%s' % (self.basename, self.ext))
+        self.img = image.Image(outname, mode='w', grid=self.grid,
+                               clobber=self.clobber)
+        self.nout = self.grid.shape[0]
+        self.sync_grid()
+
+    def extract(self, results):
+        return results.resid
+    
+    def next(self, data=None):
+        value = self.grid.next()
+        self.img.next(data=data, value=value)
+
 
 class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 

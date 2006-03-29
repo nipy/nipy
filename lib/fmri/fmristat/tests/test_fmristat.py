@@ -46,24 +46,24 @@ class fMRIStatTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree('fmristat_run', ignore_errors=True)
                       
-    def test_model_slicetimes(self):
-        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
-                                   slicetimes=self.img.slicetimes)
-        OLS.nmax = 75
-        OLS.fit(resid=True)
-        rho = OLS.rho_estimator.img
-        rho.tofile('rho.img')
-        os.remove('rho.img')
-        os.remove('rho.hdr')
+##     def test_model_slicetimes(self):
+##         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+##                                    slicetimes=self.img.slicetimes)
+##         OLS.nmax = 75
+##         OLS.fit(resid=True)
+##         rho = OLS.rho_estimator.img
+##         rho.tofile('rho.img')
+##         os.remove('rho.img')
+##         os.remove('rho.hdr')
 
-        AR = fmristat.fMRIStatAR(OLS)
-        AR.fit()
-        del(OLS); del(AR); gc.collect()
+##         AR = fmristat.fMRIStatAR(OLS)
+##         AR.fit()
+##         del(OLS); del(AR); gc.collect()
 
-    def test_model_noslicetimes(self):
+    def test_model_resid1(self):
         self.img.slicetimes = None
         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
-                                   slicetimes=self.img.slicetimes)
+                                   slicetimes=self.img.slicetimes, resid=True)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
         rho.tofile('rho.img')
@@ -74,58 +74,72 @@ class fMRIStatTest(unittest.TestCase):
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
-    def test_hrf_deriv(self):
-        self.IRF = hrf.HRF(deriv=True)
+##     def test_model_resid2(self):
+##         self.img.slicetimes = None
+##         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+##                                    slicetimes=self.img.slicetimes)
+##         OLS.fit(resid=True)
+##         rho = OLS.rho_estimator.img
+##         rho.tofile('rho.img')
+##         os.remove('rho.img')
+##         os.remove('rho.hdr')
 
-        self.pain.convolve(self.IRF)
-        self.pain.convolved = True
+##         AR = fmristat.fMRIStatAR(OLS, resid=True)
+##         AR.fit()
+##         del(OLS); del(AR); gc.collect()
 
-        self.formula = self.pain + self.drift
+##     def test_hrf_deriv(self):
+##         self.IRF = hrf.HRF(deriv=True)
+
+##         self.pain.convolve(self.IRF)
+##         self.pain.convolved = True
+
+##         self.formula = self.pain + self.drift
 
        
-        pain = contrast.Contrast(self.pain, self.formula, name='hot-warm')
-        self.img.slicetimes = None
-        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
-                                   slicetimes=self.img.slicetimes)
-        OLS.fit(resid=True)
-        rho = OLS.rho_estimator.img
-        rho.tofile('rho.img')
+##         pain = contrast.Contrast(self.pain, self.formula, name='hot-warm')
+##         self.img.slicetimes = None
+##         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+##                                    slicetimes=self.img.slicetimes)
+##         OLS.fit(resid=True)
+##         rho = OLS.rho_estimator.img
+##         rho.tofile('rho.img')
         
-        os.remove('rho.img')
-        os.remove('rho.hdr')
+##         os.remove('rho.img')
+##         os.remove('rho.hdr')
 
-        AR = fmristat.fMRIStatAR(OLS, contrasts=[pain])
-        AR.fit()
-        del(OLS); del(AR); gc.collect()
+##         AR = fmristat.fMRIStatAR(OLS, contrasts=[pain])
+##         AR.fit()
+##         del(OLS); del(AR); gc.collect()
         
 
-    def test_contrast(self):
-        pain = contrast.Contrast(self.pain, self.formula, name='pain')
+##     def test_contrast(self):
+##         pain = contrast.Contrast(self.pain, self.formula, name='pain')
 
-        self.img.slicetimes = None
-        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
-                                   slicetimes=self.img.slicetimes,
-                                   clobber=True)
-        OLS.fit(resid=True)
-        rho = OLS.rho_estimator.img
-        rho.tofile('rho.img', clobber=True)
+##         self.img.slicetimes = None
+##         OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+##                                    slicetimes=self.img.slicetimes,
+##                                    clobber=True)
+##         OLS.fit(resid=True)
+##         rho = OLS.rho_estimator.img
+##         rho.tofile('rho.img', clobber=True)
         
-        from neuroimaging.visualization import viewer
-        v=viewer.BoxViewer(rho)
-        v.draw()
-        #pylab.show()
+##         from neuroimaging.visualization import viewer
+##         v=viewer.BoxViewer(rho)
+##         v.draw()
+##         #pylab.show()
 
-        os.remove('rho.img')
-        os.remove('rho.hdr')
+##         os.remove('rho.img')
+##         os.remove('rho.hdr')
 
-        AR = fmristat.fMRIStatAR(OLS, contrasts=[pain], clobber=True)
-        AR.fit()
-        del(OLS); del(AR); gc.collect()
+##         AR = fmristat.fMRIStatAR(OLS, contrasts=[pain], clobber=True)
+##         AR.fit()
+##         del(OLS); del(AR); gc.collect()
 
-        t = image.Image('fmristat_run/contrasts/pain/F.img')
-        v=viewer.BoxViewer(t)
-        v.draw()
-        #pylab.show()
+##         t = image.Image('fmristat_run/contrasts/pain/F.img')
+##         v=viewer.BoxViewer(t)
+##         v.draw()
+##         #pylab.show()
 
 def suite():
     suite = unittest.makeSuite(fMRIStatTest)
