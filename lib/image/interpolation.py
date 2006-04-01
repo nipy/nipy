@@ -45,7 +45,10 @@ class ImageInterpolator(traits.HasTraits):
     def __del__(self):
         if hasattr(self, 'datafile'):
             self.datafile.close()
-            os.remove(self.datafile.name)
+            try:
+                os.remove(self.datafile.name)
+            except:
+                pass
 
     def __call__(self, points):
         return self.evaluate(points)
@@ -64,3 +67,16 @@ class ImageInterpolator(traits.HasTraits):
                                      
         V.shape = output_shape
         return V
+
+    def resample(self, grid, mapping=None, **keywords):
+        """
+        Using an ImageInterpolator, resample an Image on the range
+        of a grid, applying an optional mapping (taking
+        keywords arguments **keywords) between the output
+        coordinates of grid and self.image.grid.
+        """
+
+        points = grid.range()
+        if mapping is not None:
+            points = mapping(points, **keywords)
+        return self.evaluate(points)

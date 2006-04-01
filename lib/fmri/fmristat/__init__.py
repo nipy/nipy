@@ -11,9 +11,9 @@ import numpy.random as R
 
 from delay import DelayContrast, DelayContrastOutput
 
-## import pylab
-## from neuroimaging.fmri.plotting import MultiPlot
-## canplot = True
+import pylab
+from neuroimaging.fmri.plotting import MultiPlot
+canplot = True
 
 class fMRIStatOLS(iterators.LinearModelIterator):
 
@@ -59,7 +59,9 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
         iterators.LinearModelIterator.fit(self, **keywords)
 
-        smoother = kernel_smooth.LinearFilter(self.rho_estimator.img.grid, fwhm=self.fwhm)
+        sgrid = self.fmri_image.grid.subgrid(0)
+        smoother = kernel_smooth.LinearFilter(sgrid, fwhm=self.fwhm)
+        self.rho_estimator.img.grid = sgrid
         self.rho = smoother.smooth(self.rho_estimator.img)
         self.getlabels()
 
@@ -109,16 +111,15 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         dmatrix.tofile(outfile)
         outfile.close()
 
-##         if canplot:
-##             ftime = self.fmri_image.frametimes
+        if canplot:
 
-##             f = pylab.gcf()
-##             f.clf()
-##             pl = MultiPlot(self.formula, tmin=0, tmax=ftime.max(),
-##                            dt = ftime.max() / 2000., title='Column space for design matrix')
-##             pl.draw()
-##             pylab.savefig(os.path.join(self.path, 'matrix.png'))
-##             f.clf()
+            f = pylab.gcf()
+            f.clf()
+            pl = MultiPlot(self.formula, tmin=0, tmax=ftime.max(),
+                           dt = ftime.max() / 2000., title='Column space for design matrix')
+            pl.draw()
+            pylab.savefig(os.path.join(self.path, 'matrix.png'))
+            f.clf()
 
 
     def estimateFWHM_AR(self, reference,
@@ -188,7 +189,7 @@ class fMRIStatAR(iterators.LinearModelIterator):
         # copy the formula
         
         self.slicetimes = OLS.slicetimes
-        time = self.fmri_image.frametimes
+        ftime = self.fmri_image.frametimes
         self.formula = OLS.formula
         if self.slicetimes is None:
             self.dmatrix = OLS.dmatrix
@@ -204,13 +205,16 @@ class fMRIStatAR(iterators.LinearModelIterator):
             if type(contrasts) not in [type([]), type(())]:
                 contrasts = [contrasts]
             for i in range(len(contrasts)):
-                contrasts[i].getmatrix(time=self.fmri_image.frametimes)
+                contrasts[i].getmatrix(time=ftime)
                 if isinstance(contrasts[i], DelayContrast):
-                    cur = DelayContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path, clobber=self.clobber)
+                    cur = DelayContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path,
+                                              clobber=self.clobber, frametimes=ftime)
                 elif contrasts[i].rank == 1:
-                    cur = TContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path, clobber=self.clobber)
+                    cur = TContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path,
+                                          clobber=self.clobber, frametimes=ftime)
                 else:
-                    cur = FContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path, clobber=self.clobber)
+                    cur = FContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path,
+                                          clobber=self.clobber, frametimes=ftime)
                 self.contrasts.append(cur)
                 
         # setup the iterator

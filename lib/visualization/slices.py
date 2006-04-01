@@ -139,7 +139,7 @@ class PylabRGBASlice(Slice):
         if not redraw:
             self.imshow = pylab.imshow(data,
                                        interpolation=self.interpolation,
-                                       aspect='free',
+                                       aspect='auto',
                                        origin=self.origin)
         else:
             self.imshow.set_data(data)

@@ -42,6 +42,62 @@ def fromfile(filename, names=axis.space, input='voxel', output='world', delimite
     matfile.close()
     return frommatrix(t, names=names, input=input, output=output)
 
+def matfromstr(tstr, ndim=3, delimiter=None):
+    """Read a (ndim+1)x(ndim+1) transform matrix from a string."""
+
+    if tstr[0:24] == "mat file created by perl":
+        return frombin(tstr)
+    else:
+        if delimiter is None:
+            transform  = N.array(map(string.atof, string.split(tstr)))
+        else:
+            transform  = N.array(map(string.atof, string.split(tstr, delimiter)))
+        transform.shape = (ndim+1,)*2
+        return transform
+
+def xfmfromstr(tstr, ndim=3):
+    """Read a (ndim+1)x(ndim+1) transform matrix from a string."""
+
+    tstr = tstr.split('\n')
+    more = True
+    data = []
+    outdata = []
+    for i in range(len(tstr)):
+
+        if tstr[i].find('/matrix') >= 0:
+            for j in range((ndim+1)**2):
+                data.append(string.atof(tstr[i+j+1]))
+
+        if tstr[i].find('/outputusermatrix') >= 0:
+            for j in range((ndim+1)**2):
+                outdata.append(string.atof(tstr[i+j+1]))
+
+    data = N.array(data)
+    data.shape = (ndim+1,)*2
+
+    outdata = N.array(outdata)
+    outdata.shape = (ndim+1,)*2
+    
+    return data, outdata
+
+
+def fromurl(turl, ndim=3):
+    """Read a (ndim+1)x(ndim+1) transform matrix from a URL -- tries to autodetect '.mat' and '.xfm'.
+
+    >>> from numarray import *
+    >>> x = fromurl('http://kff.stanford.edu/BrainSTAT/fiac3_fonc1.txt')
+    >>> y = fromurl('http://kff.stanford.edu/BrainSTAT/fiac3_fonc1_0089.mat')
+    >>> print bool(max(abs((x - y).flat) < 1.0e-05))
+    True
+"""
+    
+    urlpipe = urllib.urlopen(turl)
+    data = urlpipe.read()
+    if turl[-3:] == 'mat':
+        return matfromstr(data, ndim=ndim)
+    elif turl[-3:] == 'xfm':
+        return xfmfromstr(data, ndim=ndim)
+
 def isdiagonal(matrix, tol=1.0e-7):
     ndim = matrix.shape[0]
     D = N.diag(N.diagonal(matrix))

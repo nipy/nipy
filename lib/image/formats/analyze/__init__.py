@@ -237,7 +237,16 @@ class ANALYZE(ANALYZEhdr):
     # Use mat file if it's there?
     # This will cause a problem for 4d files occasionally
 
-    usematfile = traits.true
+    usematfile = traits.false
+
+    # Ignore the origin as FSL does
+    # This is __EQUIVALENT_TO__ setting origin=(1,)*5
+    
+    ignore_origin = traits.false
+
+    # Use abs(pixdim)?
+    
+    abs_pixdim = traits.false
 
     # Try to squeeze 3d files?
 
@@ -297,7 +306,7 @@ class ANALYZE(ANALYZEhdr):
             origin = self.grid.mapping.map([0]*self.ndim, inverse=True)
             self.origin = list(origin) + [0]*(5-origin.shape[0])
         if not _diag:
-            self.origin = [0]*5
+            self.origin = [1]*5
         
     def __init__(self, **keywords):
 
@@ -322,6 +331,12 @@ class ANALYZE(ANALYZEhdr):
 
         self.ndim = self.dim[0]
         
+        if self.ignore_origin:
+            self.origin = [1]*5
+
+        if self.abs_pixdim:
+            self.pixdim = [N.fabs(pixd) for pixd in self.pixdim]
+
         if self.ndim == 3:
             axisnames = space[::-1]
             origin = self.origin[0:3]

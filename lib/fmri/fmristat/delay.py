@@ -21,6 +21,7 @@ from neuroimaging.statistics.regression import contrastfromcols
 import pylab
 from neuroimaging.fmri.plotting import MultiPlot
 canplot = True
+import enthought.traits as traits
 
 canonical = neuroimaging.fmri.hrf.HRF(deriv=True)
 
@@ -83,13 +84,14 @@ class DelayContrastOutput(TContrastOutput):
     Tmax = 100.
     Tmin = -100.
     subpath = traits.Str('delays')
+    frametimes = traits.Any()
 
-    def setup_contrast(self):
+    def setup_contrast(self, time=None):
         """
         Setup the contrast for the delay.
         """
 
-        self.contrast.getmatrix(time=self.fmri_image.frametimes)
+        self.contrast.getmatrix(time=self.frametimes)
         self.effectmatrix = self.contrast.matrix[0::2]
         self.deltamatrix = self.contrast.matrix[1::2]
 
@@ -116,19 +118,19 @@ class DelayContrastOutput(TContrastOutput):
             l[::2] = self.contrast.weights[i]
 
             outname = os.path.join(outdir, 't%s' % self.ext)
-            timg = image.Image(outname, mode='w', grid=self.grid,
+            timg = image.Image(outname, mode='w', grid=self.outgrid,
                                clobber=self.clobber)
             self.sync_grid(img=timg)
             self.timgs.append(timg)
 
             outname = os.path.join(outdir, 'effect%s' % self.ext)
-            effectimg = image.Image(outname, mode='w', grid=self.grid,
+            effectimg = image.Image(outname, mode='w', grid=self.outgrid,
                                clobber=self.clobber)
             self.sync_grid(img=effectimg)
             self.effectimgs.append(effectimg)
 
             outname = os.path.join(outdir, 'sd%s' % self.ext)
-            sdimg = iter(image.Image(outname, mode='w', grid=self.grid,
+            sdimg = iter(image.Image(outname, mode='w', grid=self.outgrid,
                                clobber=self.clobber))
             self.sync_grid(img=sdimg)
             self.sdimgs.append(sdimg)
@@ -148,7 +150,7 @@ class DelayContrastOutput(TContrastOutput):
 
             if canplot:
                 
-                ftime = self.fmri_image.frametimes
+                ftime = self.frametimes
                 def g(time=None, **extra):
                     return N.squeeze(N.dot(l, self.contrast.term(time=time, **extra)))
                 f = pylab.gcf()
@@ -245,11 +247,11 @@ class DelayContrastOutput(TContrastOutput):
         return results
 
     def next(self, data=None):
-        if self.fmri_image.itervalue.type is 'slice':
-            value = copy.copy(self.fmri_image.itervalue)
+        if self.grid.itervalue.type is 'slice':
+            value = copy.copy(self.grid.itervalue)
             value.slice = value.slice[1]
         else:
-            value = self.fmri_image.itervalue
+            value = self.grid.itervalue
 
         nout = self.contrast.weights.shape[0]
         

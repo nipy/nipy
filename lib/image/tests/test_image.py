@@ -1,6 +1,7 @@
 import unittest, os, scipy, glob, sets
 import numpy as N
 from neuroimaging.image import Image
+import neuroimaging.image as image
 
 class AnalyzeImageTest(unittest.TestCase):
 
@@ -122,6 +123,12 @@ class AnalyzeImageTest(unittest.TestCase):
             v += t.shape[0]
         self.assertEquals(v, N.product(test.grid.shape))
         
+    def test_onesample1(self):
+        im1 = Image('http://kff.stanford.edu/FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.img')
+        im2 = Image('http://kff.stanford.edu/FIAC/fiac4/fonc3/fsl/fmristat_run/contrasts/speaker/effect.img')
+        im3 = Image('http://kff.stanford.edu/FIAC/fiac5/fonc2/fsl/fmristat_run/contrasts/speaker/effect.img')
+        x = image.onesample.ImageOneSample([im1,im2,im3])
+        x.fit()
 
 def suite():
     suite = unittest.makeSuite(AnalyzeImageTest)

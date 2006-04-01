@@ -70,8 +70,10 @@ class BoxViewer(traits.HasTraits):
                  mask=None,
                  m=None,
                  M=None,
+                 colormap='spectral',
                  **keywords):
 
+        self.colormap = colormap
         self.mask = mask
         self.interpolation = interpolation
         self.slices = {}

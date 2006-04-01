@@ -10,7 +10,6 @@ import pylab
 from plotting import MultiPlot
 canplot = True
 
-
 class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     """
     A class to output things in GLM passes through fMRI data. It
@@ -26,7 +25,7 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     clobber = traits.false
 
     def __init__(self, grid, **keywords):
-        imreg.ImageRegressionOutput.__init__(self, grid, **keywords)
+        imreg.ImageRegressionOutput.__init__(self, grid, outgrid=grid.subgrid(0), **keywords)
 
     def __iter__(self):
         return self
@@ -65,7 +64,7 @@ class ResidOutput(fMRIRegressionOutput):
         return results.resid
     
     def next(self, data=None):
-        value = self.grid.next()
+        value = self.grid.itervalue
         self.img.next(data=data, value=value)
 
 
@@ -84,7 +83,6 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
         fMRIRegressionOutput.__init__(self, grid, **keywords)                
         self.contrast = contrast
 
-        self.frametimes = frametimes
         self.outdir = os.path.join(path, self.subpath, self.contrast.name)
         self.path = path
         self.setup_contrast(time=self.frametimes)
@@ -92,10 +90,10 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 
     def setup_output(self):
 
-        imreg.TContrastOutputs.setup_output(self)
+        imreg.TContrastOutput.setup_output(self)
 
         if canplot:
-            ftime = self.fmri_image.frametimes
+            ftime = self.frametimes
             f = pylab.gcf()
             f.clf()
             pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
@@ -106,7 +104,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 
     def next(self, data=None):
         if self.grid.itervalue.type is 'slice':
-            value = copy.copy(self.fmri_image.itervalue)
+            value = copy.copy(self.grid.itervalue)
             value.slice = value.slice[1]
         else:
             value = self.grid.itervalue
@@ -117,7 +115,10 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
         if self.sd:
             self.sdimg.next(data=data.effect, value=value)
 
-class FContrastOutput(fMRIRegressionOutput):
+    def extract(self, results):
+        return imreg.TContrastOutput.extract(self, results)
+
+class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
 
     contrast = traits.Any() 
     outdir = traits.Str()
@@ -138,7 +139,7 @@ class FContrastOutput(fMRIRegressionOutput):
         imreg.FContrastOutput.setup_output(self)
 
         if canplot:
-            ftime = self.fmri_image.frametimes
+            ftime = self.frametimes
 
             f = pylab.gcf()
             f.clf()
@@ -149,13 +150,13 @@ class FContrastOutput(fMRIRegressionOutput):
             f.clf()
 
     def extract(self, results):
-        F = results.Fcontrast(self.contrast.matrix).F
-        return results.Fcontrast(self.contrast.matrix).F
-
+        return imreg.FContrastOutput.extract(self, results)
 
 class AR1Output(fMRIRegressionOutput):
 
-    imgarray = traits.true 
+    def __init__(self, grid, **keywords):
+        arraygrid = grid.subgrid(0)
+        fMRIRegressionOutput.__init__(self, grid, arraygrid=arraygrid, **keywords)
 
     def extract(self, results):
         resid = results.resid

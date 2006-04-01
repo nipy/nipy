@@ -51,7 +51,7 @@ class URLPipe(Pipe,urlhandler.DataFetcher):
     def getimage(self, **keywords):
 
         if self.grid is None and self.mode == 'w':
-            raise ValueError, 'must have a template to create BrainSTAT file'
+            raise ValueError, 'must have a grid to create Image'
 
         creator = None
         extensions = []
