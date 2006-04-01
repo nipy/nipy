@@ -1,0 +1,180 @@
+import copy, os, csv, string, fpformat, types
+import numpy as N
+import enthought.traits as traits
+import image
+from neuroimaging.reference import grid
+import neuroimaging.statistics.onesample as onesample
+from neuroimaging.statistics import utils
+
+class ImageOneSample(onesample.OneSampleIterator):
+    
+    """
+    Fit a one sample t to a sequence of images. Input should be either a sequence of images (in which
+    case variances are treated as equal) or a sequence of pairs of images and weights (in which case
+    the variance of each image is a function of the \'weight\' image). The \'weight\' image
+    can be a 'std', 'var', or 'weight' -- the appropriate transform will be applied.
+    """
+
+    all = traits.false
+    haveW = traits.false
+    t = traits.true
+    sd = traits.true
+    mean = traits.true
+    clobber = traits.false
+    path = traits.Str('onesample')
+    basename = traits.Str()
+    ext = traits.Str('.img')
+    varatioimg = traits.Any()
+    est_varatio = traits.true
+    varfiximg = traits.Any()
+    est_varfix = traits.true
+    which = traits.Trait('mean', 'varatio')
+
+    def weights(self):
+        if self.haveW:
+            w = self.witerator.next(value=self.iterator.grid.itervalue)
+        else:
+            return 1.
+
+        if self.weight_type == 'sd':
+            w = 1. / N.power(w, 2)
+        elif self.weight_type == 'var':
+            w = 1. / w
+
+        if self.varatioimg is not None:
+            value = self.iterator.grid.itervalue
+            self.varatio = self.varatioimg.next(value=value)
+        else:
+            self.varatio = 1.
+        
+        if self.varfiximg is not None:
+            value = self.iterator.grid.itervalue
+            self.varfix = self.varfiximg.next(value=value)
+        else:
+            self.varfix = 0.
+            
+        return w
+
+    def __init__(self, input, outputs=[], **keywords):
+
+        traits.HasTraits.__init__(self, **keywords)
+
+        if type(input[0]) in [types.ListType, types.TupleType]:
+            self.haveW = True
+            imgs = [val[0] for val in input]
+            wimgs = [val[1] for val in input]
+            self.iterator = image.ImageSequenceIterator(imgs)
+
+            ## don't know if this should go here....
+
+            if self.all:
+                self.iterator.grid.itertype = 'all'
+                self.iterator.grid = iter(self.iterator.grid)
+
+            self.witerator = image.ImageSequenceIterator(wimgs, grid=self.iterator.grid)
+        else:
+            self.iterator = image.ImageSequenceIterator(input)
+
+        onesample.OneSampleIterator.__init__(self, self.iterator, outputs=outputs, **keywords)
+
+        self.outputs = outputs
+        if self.which == 'mean':
+            if self.t:
+                self.outputs.append(TOutput(self.iterator.grid, path=self.path, clobber=self.clobber,
+                                            ext=self.ext))
+            if self.sd:
+                self.outputs.append(SdOutput(self.iterator.grid, path=self.path, clobber=self.clobber,
+                                             ext=self.ext))
+            if self.mean:
+                self.outputs.append(MeanOutput(self.iterator.grid, path=self.path, clobber=self.clobber,
+                                               ext=self.ext))
+        else:
+            if self.est_varatio:
+                self.outputs.append(VaratioOutput(self.iterator.grid, path=self.path, clobber=self.clobber,
+                                                  ext=self.ext))
+
+            if self.est_varfix:
+                self.outputs.append(VarfixOutput(self.iterator.grid, path=self.path, clobber=self.clobber,
+                                                 ext=self.ext))
+
+    def fit(self):
+        onesample.OneSampleIterator.fit(self, which=self.which)
+
+class ImageOneSampleOutput(onesample.OneSampleOutput):
+    """
+    A class to output things a one sapmle T passes through data. It
+    uses the image\'s iterator values to output to an image.
+
+    """
+
+    nout = traits.Int(1)
+    clobber = traits.false
+    path = traits.Str('onesample')
+    basename = traits.Str()
+    ext = traits.Str('.img')
+
+    def __init__(self, grid, **keywords):
+        traits.HasTraits.__init__(self, **keywords)
+        self.grid = grid
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+        self.img = iter(image.Image('%s/%s%s' % (self.path, self.basename, self.ext),
+                                    mode='w', clobber=self.clobber, grid=grid))
+
+    def sync_grid(self, img=None):
+        """
+        Synchronize an image's grid iterator to self.grid's iterator.
+        """
+        if img is None:
+            img = self.img
+        img.grid.itertype = self.grid.itertype
+        img.grid.labels = self.grid.labels
+        img.grid.labelset = self.grid.labelset
+        iter(img)
+        
+    def __iter__(self):
+        return self
+
+    def next(self, data=None):
+        value = self.grid.itervalue
+        self.img.next(data=data, value=value)
+
+    def extract(self, results):
+        return 0.
+
+class TOutput(ImageOneSampleOutput):
+
+    Tmax = 100.
+    Tmin = -100.
+    basename = traits.Str('t')
+
+    def extract(self, results):
+        return N.clip(results.t, self.Tmin, self.Tmax)
+
+class SdOutput(ImageOneSampleOutput):
+
+    basename = traits.Str('sd')
+
+    def extract(self, results):
+        return results.sd
+
+class MeanOutput(ImageOneSampleOutput):
+
+    basename = traits.Str('effect')
+
+    def extract(self, results):
+        return results.mu
+
+class VaratioOutput(ImageOneSampleOutput):
+
+    basename = traits.Str('varatio')
+
+    def extract(self, results):
+        return results.varatio
+
+class VarfixOutput(ImageOneSampleOutput):
+
+    basename = traits.Str('varfix')
+
+    def extract(self, results):
+        return results.varfix
