@@ -1,7 +1,7 @@
 import unittest, os, scipy, glob, sets
 import numpy as N
 from neuroimaging.image import Image, interpolation
-from neuroimaging.visualization import viewer, slices
+from neuroimaging.visualization import viewer, slices, arrayview
 from neuroimaging.reference import slices as rslices
 import pylab
 
@@ -49,6 +49,13 @@ class VisualizationTest(unittest.TestCase):
 
         pylab.imshow(x.RGBA(), origin=x.origin)
         pylab.show()
+
+class ArrayviewTest(unittest.TestCase):
+
+    def test_arrayview(self):
+        from pylab import randn
+        arrayview.arrayview(randn(20,20))
+
 
 def suite():
     return unittest.makeSuite(VisualizationTest)
