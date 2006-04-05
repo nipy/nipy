@@ -387,6 +387,12 @@ class ANALYZE(ANALYZEhdr):
                 self.memmap = N.memmap(self.imgfilename(), dtype=self.dtype,
                                        shape=tuple(self.grid.shape), mode='r+')
 
+    def __del__(self):
+
+        if self.memmapped:
+            self.memmap.sync()
+        del(self.memmap)
+        
     def getslice(self, slice):
         v = self.memmap[slice]
         if self.funused1:

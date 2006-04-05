@@ -89,6 +89,7 @@ class TContrastOutput(ImageRegressionOutput):
             outname = os.path.join(self.outdir, 'effect%s' % self.ext)
             self.effectimg = image.Image(outname, mode='w', grid=self.outgrid,
                                          clobber=self.clobber)
+
             self.sync_grid(img=self.effectimg)
         if self.sd:
             outname = os.path.join(self.outdir, 'sd%s' % self.ext)

@@ -1,23 +1,28 @@
-from numpy import *
+import numpy as N
 import filters
 import enthought.traits as traits
 
 def glover2GammaDENS(peak_hrf, fwhm_hrf):
-    alpha = power(peak_hrf / fwhm_hrf, 2) * 8 * log(2.0)
-    beta = power(fwhm_hrf, 2) / peak_hrf / 8 / log(2.0)
-    coef = peak_hrf**(-alpha) * exp(peak_hrf / beta)
-    return filters.GammaDENS(alpha + 1., 1. / beta) * coef
+    alpha = N.power(peak_hrf / fwhm_hrf, 2) * 8 * N.log(2.0)
+    beta = N.power(fwhm_hrf, 2) / peak_hrf / 8 / N.log(2.0)
+    coef = peak_hrf**(-alpha) * N.exp(peak_hrf / beta)
+    return coef, filters.GammaDENS(alpha + 1., 1. / beta)
 
 def _glover(peak_hrf=[5.4, 10.8], fwhm_hrf=[5.2, 7.35], dip=0.35):
-    gamma1 = glover2GammaDENS(peak_hrf[0], fwhm_hrf[0])
-    gamma2 = glover2GammaDENS(peak_hrf[1], fwhm_hrf[1])
-    return filters.GammaCOMB([[1.0,gamma1],[-dip, gamma2]])
+    coef1, gamma1 = glover2GammaDENS(peak_hrf[0], fwhm_hrf[0])
+    coef2, gamma2 = glover2GammaDENS(peak_hrf[1], fwhm_hrf[1])
+    f = filters.GammaCOMB([[coef1,gamma1],[-dip*coef2, gamma2]])
+    dt = 0.02
+    t = N.arange(0, 50 + dt, dt)
+    c = (f(t) * dt).sum()
+    return filters.GammaCOMB([[coef1/c,gamma1],[-dip*coef2/c, gamma2]])
 
 glover = _glover()
 afni = filters.GammaDENS(9.6, 1.0/0.547)
 
 class HRF(filters.Filter,traits.HasTraits):
-    '''Use canonical Glover HRF as a filter.
+    """
+    Use canonical Glover HRF as a filter.
 
     >>> from BrainSTAT.fMRIstat.HRF import HRF
     >>> from pylab import *
@@ -31,7 +36,7 @@ class HRF(filters.Filter,traits.HasTraits):
     >>> xlab = xlabel('Time (s)')
     >>> show()
 
-    '''
+    """
 
     names = traits.ListStr(['glover'])
     

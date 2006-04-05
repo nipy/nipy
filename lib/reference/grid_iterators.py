@@ -9,7 +9,7 @@ import enthought.traits as traits
 from slicer import Slicer
 
 class IteratorNext(traits.HasTraits):
-    type = traits.Trait('slice', 'parcel')
+    type = traits.Trait('slice', 'parcel', 'slice/parcel', 'all')
 
 class SliceIteratorNext(IteratorNext):
     slice = traits.Any()
@@ -28,6 +28,31 @@ class SliceIterator(Slicer):
 
     def next(self):
         _slice, isend = Slicer.next(self)
+        return SliceIteratorNext(slice=_slice, type='slice')
+
+class AllSliceIterator(Slicer):
+
+    type = traits.Str('all')
+    parallel = traits.false
+
+    def __iter__(self):
+        self.end = False
+        return self
+
+    def _parallel_changed(self):
+        if self.parallel:
+            a, b = prange(self.shape[0])
+
+    def __init__(self, shape, **keywords):
+        traits.HasTraits.__init__(self, **keywords)
+        self.shape = shape
+        self.end = False
+
+    def next(self):
+        if self.end:
+            raise StopIteration
+        _slice = slice(0, self.shape[0], 1)
+        self.end = True
         return SliceIteratorNext(slice=_slice, type='slice')
 
 class ParcelIteratorNext(IteratorNext):

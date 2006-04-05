@@ -120,18 +120,21 @@ class DelayContrastOutput(TContrastOutput):
             outname = os.path.join(outdir, 't%s' % self.ext)
             timg = image.Image(outname, mode='w', grid=self.outgrid,
                                clobber=self.clobber)
+
             self.sync_grid(img=timg)
             self.timgs.append(timg)
 
             outname = os.path.join(outdir, 'effect%s' % self.ext)
             effectimg = image.Image(outname, mode='w', grid=self.outgrid,
-                               clobber=self.clobber)
+                                    clobber=self.clobber)
+
             self.sync_grid(img=effectimg)
             self.effectimgs.append(effectimg)
 
             outname = os.path.join(outdir, 'sd%s' % self.ext)
             sdimg = iter(image.Image(outname, mode='w', grid=self.outgrid,
-                               clobber=self.clobber))
+                                     clobber=self.clobber))
+
             self.sync_grid(img=sdimg)
             self.sdimgs.append(sdimg)
 

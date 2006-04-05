@@ -1,14 +1,15 @@
-from numpy import *
+import numpy as N
 from utils import ConvolveFunctions, WaveFunction, StepFunction, LinearInterpolant
 import numpy.linalg as L
 import enthought.traits as traits
+## import scipy.special
 
 interpolant = LinearInterpolant
 
 class Filter(traits.HasTraits):
     dt = traits.Float(0.2)
     tmax = traits.Float(500.0)
-    delta = arange(-4.2,4.2,0.1)
+    delta = N.arange(-4.2,4.2,0.1)
 
     '''Takes a list of impulse response functions (IRFs): main purpose is to convolve a functions with each IRF for Design. The class assumes the range of the filter is effectively 50 seconds, can be changed by setting tmax -- this is just for the __mul__ method for convolution.'''
 
@@ -70,7 +71,7 @@ class Filter(traits.HasTraits):
         Return the values of the IRFs of the filter.
         """
         if self.n > 1:
-            value = zeros((self.n,) + time.shape, Float)
+            value = N.zeros((self.n,) + time.shape, N.Float)
             for i in range(self.n):
                 value[i] = self.IRF[i](time)
         else:
@@ -87,8 +88,8 @@ class Filter(traits.HasTraits):
         >>> from numpy import *
         >>>
         >>> ddelta = 0.25
-        >>> delta = arange(-4.5,4.5+ddelta, ddelta)
-        >>> time = arange(0,20,0.2)
+        >>> delta = N.arange(-4.5,4.5+ddelta, ddelta)
+        >>> time = N.arange(0,20,0.2)
         >>>
         >>> hrf = HRF.HRF(deriv=True)
         >>>
@@ -117,7 +118,7 @@ class Filter(traits.HasTraits):
         if not spectral: # use Taylor series approximation
             if dt is None:
                 dt = self.dt
-            time = arange(lower, tmax, dt)
+            time = N.arange(lower, tmax, dt)
             ntime = time.shape[0]
 
             if fn is None:
@@ -128,18 +129,18 @@ class Filter(traits.HasTraits):
 
             for i in range(delta.shape[0]):
                 H.append(fn(time - delta[i]))
-            H = array(H)
+            H = N.array(H)
 
             if self.n >= 2:
                 for _IRF in self.IRF:
                     W.append(_IRF(time))
-                W = array(W)
+                W = N.array(W)
             else:
                 W = self.IRF(time)
                 W.shape = (W.shape[0], 1)
 
-            W = transpose(W)
-            WH = dot(L.pinv(W), transpose(H))
+            W = N.transpose(W)
+            WH = dot(L.pinv(W), N.transpose(H))
 
             coef = []
             for i in range(self.n):
@@ -162,30 +163,40 @@ class Filter(traits.HasTraits):
 
 
 class GammaDENS:
-    '''A class for a Gamma density -- only used so it knows how to differentiate itself.'''
+    """
+    A class for a Gamma density which knows how to differentiate itself.
+
+    By default, normalized to integrate to 1.
+    """
     def __init__(self, alpha, nu, coef=1.0):
         self.alpha = alpha
         self.nu = nu
+##        self.coef = nu**alpha / scipy.special.gamma(alpha)
         self.coef = 1.0
 
     def __str__(self):
-        return 'GammaDENS:alpha:%f,nu:%f,coef:%f' % (self.alpha, self.nu, self.coef)
+        return '<GammaDENS:alpha:%03f, nu:%03f, coef:%03f>' % (self.alpha, self.nu, self.coef)
 
     def __repr__(self):
         return self.__str__()
 
-    def __mul__(self, const):
-        self.coef = self.coef * const
-        return self
+##     def __mul__(self, const):
+##         self.coef = self.coef * const
+##         return self
     
     def __call__(self, x):
         '''Evaluate the Gamma density.'''
-        _x = x * greater_equal(x, 0)
-        return self.coef * _x**(self.alpha-1.) * exp(-self.nu*_x)
+        _x = x * N.greater_equal(x, 0)
+        return self.coef * N.power(_x, self.alpha-1.) * N.exp(-self.nu*_x)
 
     def deriv(self):
-        '''Differentiate a Gamma density. Returns a GammaCOMB that can evaluate the derivative.'''
-        return GammaCOMB([[self.coef*(self.alpha-1), GammaDENS(self.alpha-1., self.nu)], [-self.coef*self.nu, GammaDENS(self.alpha, self.nu)]])
+        '''
+        Differentiate a Gamma density. Returns a GammaCOMB that can evaluate the derivative.
+        '''
+        return GammaCOMB([[self.coef*(self.alpha-1),
+                           GammaDENS(self.alpha-1., self.nu)],
+                          [-self.coef*self.nu,
+                           GammaDENS(self.alpha, self.nu)]])
 
 class GammaCOMB:
     def __init__(self, fns):
@@ -194,8 +205,7 @@ class GammaCOMB:
     def __mul__(self, const):
         fns = []
         for fn in self.fns:
-            fn[1] = fn[1] * const
-            fns.append(fn)
+            fns.append([fn[0] * const, fn[1]])
         return GammaCOMB(fns)
 
     def __add__(self, other):
@@ -218,20 +228,9 @@ class GammaCOMB:
         return GammaCOMB(fns)
     
 class GammaHRF(Filter):
-    '''A class that represents the Gamma basis in SPM: i.e. the filter is a collection of a certain number of Gamma densities. Parameters are specified as a kx2 matrix for k Gamma functions.
-
-    >>> from BrainSTAT.fMRIstat import Filter
-    >>> from pylab import *
-    >>> from numpy import *
-    >>> time = arange(0,50,0.2)
-    >>> parameters = array([[9.6, 0.5], [5.0, 0.4], [10.0, 1.0]])
-    >>> IRF = Filter.GammaHRF(parameters)
-    >>> IRF.plot(time=time)
-    >>> ylab = ylabel('Filters')
-    >>> xlab = xlabel('Time (s)')
-    >>> show()
-
-    '''
+    """
+    A class that represents the Gamma basis in SPM: i.e. the filter is a collection of a certain number of Gamma densities. Parameters are specified as a kx2 matrix for k Gamma functions.
+    """
 
     def __init__(self, parameters):
         fns = []
@@ -246,7 +245,9 @@ class GammaHRF(Filter):
         return fns
     
 class FIR(Filter):
-    '''A class for FIR filters: i.e. the filter is a collection of square waves. Parameters (start and duration) are specified as a kx2 matrix for k square waves.
+    """
+    A class for FIR filters: i.e. the filter is a collection of square waves. Parameters (start and duration) are specified as a kx2 matrix for k square waves.
+    
     >>> from BrainSTAT.fMRIstat import Filter
     >>> from pylab import *
     >>> from numpy import *
@@ -257,7 +258,7 @@ class FIR(Filter):
     >>> xlab = xlabel('Time (s)')
     >>> show()
 
-    '''
+    """
 
     def __init__(self, parameters):
         fns = []
@@ -266,35 +267,36 @@ class FIR(Filter):
         Filter.__init__(self, fns)
       
 def invertR(delta, IRF, niter=20, verbose=False):
-    '''If IRF has 2 components (w0, w1) return an estimate of the inverse of r=w1/w0, as in Liao et al. (2002). Fits a simple arctan model to the ratio w1/w0.?
+    """
+    If IRF has 2 components (w0, w1) return an estimate of the inverse of r=w1/w0, as in Liao et al. (2002). Fits a simple arctan model to the ratio w1/w0.?
 
     
 
-    '''
+    """
 
     R = IRF[1](delta) / IRF[0](delta)
 
     def f(x, theta):
         a, b, c = theta
         _x = x[:,0]
-        return a * arctan(b * _x) + c
+        return a * N.arctan(b * _x) + c
 
     def grad(x, theta):
         a, b, c = theta
-        value = zeros((3, x.shape[0]), Float)
+        value = N.zeros((3, x.shape[0]), N.Float)
         _x = x[:,0]
-        value[0] = arctan(b * _x)
+        value[0] = N.arctan(b * _x)
         value[1] = a / (1. + (b * _x) ** 2) * _x
         value[2] = 1.
-        return transpose(value)
+        return N.transpose(value)
 
-    c = max((delta / (pi/2)).flat)
+    c = delta.max() / (N.pi/2)
     n = delta.shape[0]
     delta0 = (delta[n/2] - delta[n/2-1])/(R[n/2] - R[n/2-1])
     if delta0 < 0:
-        c = max((delta / (pi/2)).flat) * 1.2
+        c = (delta.max() / (N.pi/2)) * 1.2
     else:
-        c = -max((delta / (pi/2)).flat) * 1.2
+        c = -(delta.max() / (N.pi/2)) * 1.2
 
     from neuroimaging.statistics import nlsmodel
     R.shape = (R.shape[0], 1)
@@ -302,7 +304,7 @@ def invertR(delta, IRF, niter=20, verbose=False):
                               design=R,
                               f=f,
                               grad=grad,
-                              theta=array([c, 1./(c*delta0), 0.]),
+                              theta=N.array([c, 1./(c*delta0), 0.]),
                               niter=niter)
 
     for iteration in model:
@@ -313,16 +315,16 @@ def invertR(delta, IRF, niter=20, verbose=False):
     a, b, c = model.theta
 
     def _deltahat(r):
-        return a * arctan(b * r) + c
+        return a * N.arctan(b * r) + c
 
     def _ddeltahat(r):
         return a * b / (1 + (b * r)**2) 
 
     def _deltahatinv(d):
-        return tan((d - c) / a) / b
+        return N.tan((d - c) / a) / b
 
     def _ddeltahatinv(d):
-        return 1. / (a * b * cos((d - c) / a)**2)
+        return 1. / (a * b * N.cos((d - c) / a)**2)
 
     for fn in [_deltahat, _ddeltahat, _deltahatinv, _ddeltahatinv]:
         setattr(fn, 'a', a)
@@ -339,8 +341,8 @@ def deltaPCAsvd(fn, delta, dt=None, tmax=50., lower=-15.0, ncomp=2):
     >>> from BrainSTAT.Visualization.Pylab import multipleLinePlot
     >>> from pylab import *
     >>> from numpy import *
-    >>> time = arange(0,24,0.2)
-    >>> delta = arange(-4.,4.,0.1)
+    >>> time = N.arange(0,24,0.2)
+    >>> delta = N.arange(-4.,4.,0.1)
     >>>
     >>> IRF = HRF()
     >>> spectral = deltaPCAsvd(IRF.IRF, delta, ncomp=2)
@@ -361,7 +363,7 @@ def deltaPCAsvd(fn, delta, dt=None, tmax=50., lower=-15.0, ncomp=2):
 
     if dt is None:
         dt = 0.01
-    time = arange(lower, tmax, dt)
+    time = N.arange(lower, tmax, dt)
     ntime = time.shape[0]
 
     W = []
@@ -369,12 +371,12 @@ def deltaPCAsvd(fn, delta, dt=None, tmax=50., lower=-15.0, ncomp=2):
 
     for i in range(delta.shape[0]):
         H.append(fn(time - delta[i]))
-    H = array(H)
+    H = N.array(H)
 
-    U, S, V = L.svd(transpose(H), full_matrices=0)
-    prcnt_var_spectral = sum(S[0:ncomp]**2) / sum(S**2) * 100
+    U, S, V = L.svd(N.transpose(H), full_matrices=0)
+    prcnt_var_spectral = N.sum(S[0:ncomp]**2) / N.sum(S**2) * 100
 
-    sumU = sum(U[:,0])
+    sumU = N.sum(U[:,0])
     
     US = U[:,0:ncomp] / sumU
     WS = V[0:ncomp] * sumU
@@ -390,7 +392,7 @@ def deltaPCAsvd(fn, delta, dt=None, tmax=50., lower=-15.0, ncomp=2):
         value = 0
         for i in range(ncomp):
             value = value + coef[i](delta) * basis[i](time)
-        return array(value)
+        return N.array(value)
 
     approx.coef = coef
     approx.components = basis

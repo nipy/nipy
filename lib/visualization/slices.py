@@ -136,6 +136,7 @@ class PylabRGBASlice(Slice):
                 data[:,:,i] = data[:,:,i] * alpha + (1 - alpha) * self.maskcolor[i]
             
         pylab.axes(self.axes)
+
         if not redraw:
             self.imshow = pylab.imshow(data,
                                        interpolation=self.interpolation,

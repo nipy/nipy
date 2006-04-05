@@ -5,7 +5,7 @@ import mapping
 from axis import space, RegularAxis, VoxelAxis, Axis
 from coordinate_system import VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
 import uuid
-from grid_iterators import SliceIterator, ParcelIterator, SliceParcelIterator
+from grid_iterators import SliceIterator, ParcelIterator, SliceParcelIterator, AllSliceIterator
 
 class SamplingGrid(traits.HasTraits):
 
@@ -13,7 +13,7 @@ class SamplingGrid(traits.HasTraits):
     shape = traits.ListInt()
     labels = traits.Any()
     labelset = traits.Any()
-    itertype = traits.Trait('slice', 'parcel', 'slice/parcel')
+    itertype = traits.Trait('slice', 'parcel', 'slice/parcel', 'all')
     tag = traits.Trait(uuid.Uuid())
 
     def __init__(self, **keywords):
@@ -36,6 +36,8 @@ class SamplingGrid(traits.HasTraits):
 
         if self.itertype is 'slice':
             self.iterator = iter(SliceIterator(self.shape))
+        if self.itertype is 'all':
+            self.iterator = iter(AllSliceIterator(self.shape))
         elif self.itertype is 'parcel':
             self.iterator = iter(ParcelIterator(self.labels,
                                                     self.labelset))

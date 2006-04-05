@@ -1,6 +1,7 @@
 import gc, os, string, fpformat
 import enthought.traits as traits
 from neuroimaging.statistics import iterators, utils 
+from neuroimaging.image import utils as imutils
 from neuroimaging.statistics.regression import OLSModel, ARModel
 import neuroimaging.fmri as fmri
 import neuroimaging.image.kernel_smooth as kernel_smooth
@@ -8,6 +9,7 @@ from neuroimaging.fmri.regression import AR1Output, TContrastOutput, FContrastOu
 import numpy as N
 import numpy.linalg as L
 import numpy.random as R
+import scipy.ndimage
 
 from delay import DelayContrast, DelayContrastOutput
 
@@ -91,9 +93,15 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         iterators.LinearModelIterator.fit(self, **keywords)
 
         sgrid = self.fmri_image.grid.subgrid(0)
+##      this will fail in general!
+        sigma = imutils.fwhm2sigma(self.fwhm / N.array(self.fmri_image.image.pixdim[1:4][::-1]))
+
 ##         smoother = kernel_smooth.LinearFilter(sgrid, fwhm=self.fwhm)
 ##         self.rho_estimator.img.grid = sgrid
 ##         self.rho = smoother.smooth(self.rho_estimator.img)
+
+        srho = scipy.ndimage.gaussian_filter(self.rho_estimator.img.readall(), sigma)
+        self.rho_estimator.img.writeslice(slice(0, self.rho_estimator.img.grid.shape[0], 1), srho)
         self.rho = self.rho_estimator.img
         self.getlabels()
 

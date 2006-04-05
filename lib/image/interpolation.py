@@ -13,8 +13,12 @@ class ImageInterpolator(traits.HasTraits):
 
     order = traits.Int(1)
 
-    def __init__(self, image, order=1, **keywords):
+    def __init__(self, image, order=1, grid=None, **keywords):
         traits.HasTraits.__init__(self, **keywords)
+        if grid is None:
+            self.grid = image.grid
+        else:
+            self.grid = grid
         self.image = image
         self.prefilter()
 
@@ -59,7 +63,7 @@ class ImageInterpolator(traits.HasTraits):
         points = N.array(points, N.Float)
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], N.product(output_shape))
-        voxels = self.image.grid.mapping.map(points, inverse=True)
+        voxels = self.grid.mapping.map(points, inverse=True)
         V = ndimage.map_coordinates(self.data, 
                                      voxels,
                                      order=self.order,
