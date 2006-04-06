@@ -49,7 +49,7 @@ class RFXMean(traits.HasTraits):
             self.input.append(iter(image.Image(input_files[subject], **keywords)))
             if sd_files:
                 self.sd.append(iter(image.Image(sd_files[subject], **keywords)))
-	    
+    
         resid_files = {}
 
     def _df(self):
@@ -73,7 +73,7 @@ class RFXMean(traits.HasTraits):
                 self.input_df = N.inf * N.ones((len(input_files),))
 
         self.df_fixed = N.add.reduce(self.input_df)
-	    
+    
         self.df_target = df_target
         if not fixed:
             if fwhm:
@@ -86,17 +86,15 @@ class RFXMean(traits.HasTraits):
 
     def estimate_varatio(self, Y, S=None, df=None):
 
-	self.Y = N.zeros((self.nsubject, self.npixel), N.Float)
-	self.S = N.ones((self.nsubject, self.npixel), N.Float)
-
-        if not fixed:
+        self.Y = N.zeros((self.nsubject, self.npixel), N.Float)
+        self.S = N.ones((self.nsubject, self.npixel), N.Float)
 
     def fit(self, Y, S=None, df=None):
 
         if not self.fixed and self.varatio is None:
             self.estimate_varatio(Y, S, df)
             
-	effect = N.zeros(Y.shape[1:], N.Float)
+        effect = N.zeros(Y.shape[1:], N.Float)
         sdeffect = N.zeros(Y.shape[1:], N.Float)
 
         ncpinvX = N.sqrt(N.add.reduce(N.power(N.squeeze(self.pinvX), 2)))
