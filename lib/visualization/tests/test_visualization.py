@@ -49,7 +49,9 @@ class VisualizationTest(unittest.TestCase):
 
         pylab.imshow(x.RGBA(), origin=x.origin)
         pylab.show()
-      
+
+def suite():
+    return unittest.makeSuite(VisualizationTest)
 
 
 if __name__ == '__main__':
