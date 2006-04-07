@@ -70,20 +70,21 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, shape, dim_names=[], iscomplex=False, *args):
-        LayoutWidgetMixin.__init__(self, QVBoxLayout, (), QGroupBox, parent, *args)
+        LayoutWidgetMixin.__init__(self, QVBoxLayout, (10,), QGroupBox, parent, *args)
         self._init_dimensions(shape, dim_names)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setMargin(50)
 
         # spinner for row dimension
         #spinner_box = gtk.HBox()
-        self.row_spinner = DimSpinner(
-            self, "row", len(shape)-2, 0, len(shape)-2, self.spinnerHandler, self)
+        #self.row_spinner = DimSpinner(
+        #    self, "row", len(shape)-2, 0, len(shape)-2, self.spinnerHandler, self)
         #spinner_box.add(gtk.Label("Row:"))
         #spinner_box.add(self.row_spinner)
 
         # spinner for column dimension
-        self.col_spinner = DimSpinner(
-            self, "col", len(shape)-1, 1, len(shape)-1, self.spinnerHandler, self)
+        #self.col_spinner = DimSpinner(
+        #    self, "col", len(shape)-1, 1, len(shape)-1, self.spinnerHandler, self)
         #spinner_box.add(gtk.Label("Col:"))
         #spinner_box.add(self.col_spinner)
         #main_vbox.add(spinner_box)
@@ -128,6 +129,7 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
     #-------------------------------------------------------------------------
     def _add_slider(self, slider, label):
         box = HBox(self)
+        box.setMargin(0)
         slider.reparent(box, QPoint(0,0))
         box.addWidget(slider)
         readout = slider.makeReadout(box)
@@ -461,7 +463,7 @@ class ArrayView (QWidget, LayoutWidgetMixin):
             self.radioHandler,
             self.sliderHandler,
             self.contrastHandler)
-        self.control_panel.setMinimumSize(200, 200)
+        #self.control_panel.setMinimumSize(200, 200)
         self.addWidget(self.control_panel, 0, 0)
 
         # row plot
