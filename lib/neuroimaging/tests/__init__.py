@@ -3,18 +3,7 @@ from unittest import TestSuite, makeSuite, TestCase, TextTestRunner
 from glob import glob
 from os.path import join, dirname, basename
 
-packages = (
-    'neuroimaging',
-    'neuroimaging.statistics',
-    'neuroimaging.image',
-    'neuroimaging.reference',
-    'neuroimaging.data',
-    'neuroimaging.image.formats',
-    'neuroimaging.image.formats.analyze',
-    'neuroimaging.fmri',
-    'neuroimaging.fmri.fmristat',
-    'neuroimaging.visualization',
-    'neuroimaging.visualization.cmap')
+from neuroimaging import nontest_packages
 
 #-----------------------------------------------------------------------------
 def import_from(modulename, objectname):
@@ -69,5 +58,5 @@ def test_package(packname, testname=None):
 
 #-----------------------------------------------------------------------------
 def test_all():
-    for packname in packages: test_package(packname)
+    for packname in nontest_packages: test_package(packname)
 
