@@ -113,7 +113,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
         if self.effect:
             self.effectimg.next(data=data.effect, value=value)
         if self.sd:
-            self.sdimg.next(data=data.effect, value=value)
+            self.sdimg.next(data=data.sd, value=value)
 
     def extract(self, results):
         return imreg.TContrastOutput.extract(self, results)
