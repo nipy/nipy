@@ -1,6 +1,8 @@
 import numpy as N
+import numpy.linalg as L
 import filters
 import enthought.traits as traits
+from neuroimaging.fmri.utils import LinearInterpolant as interpolant
 
 def glover2GammaDENS(peak_hrf, fwhm_hrf):
     alpha = N.power(peak_hrf / fwhm_hrf, 2) * 8 * N.log(2.0)
@@ -31,6 +33,7 @@ class SpectralHRF(filters.Filter):
     dt = traits.Float(0.02)
     tmax = traits.Float(500.0)
     ncomp = traits.Int(2)
+    names = traits.ListStr(['glover'])
 
     '''
     Delay filter with spectral or Taylor series decomposition
@@ -42,7 +45,7 @@ class SpectralHRF(filters.Filter):
     spectral = traits.true
 
     def __init__(self, input_hrf=canonical, **keywords):
-        filters.Filter.__init__(self, input_hrf)
+        filters.Filter.__init__(self, input_hrf, **keywords)
         if self.n != 1:
             raise ValueError, 'expecting one HRF for spectral decomposition'
         self.deltaPCA()
@@ -84,11 +87,11 @@ class SpectralHRF(filters.Filter):
 
         time = N.arange(lower, tmax, self.dt)
         ntime = time.shape[0]
-        glover, dglover = self.IRF
+        irf = self.IRF
 
         H = []
         for i in range(self.delta.shape[0]):
-            H.append(glover(time - self.delta[i]))
+            H.append(irf(time - self.delta[i]))
         H = N.array(H)
 
             
@@ -98,8 +101,12 @@ class SpectralHRF(filters.Filter):
         basis = []
         for i in range(self.ncomp):
             b = interpolant(N.hstack([time, N.inf]), N.hstack([U[:,i], 0]))
-            b_int = (f(time) * self.dt).sum()
-            b.f.y /= N.fabs(b_int)
+            if i == 0:
+                b_int = (b(time) * self.dt).sum()
+                b.f.y /= N.fabs(b_int)
+            else:
+                b_int = (N.fabs(b(time)) * self.dt).sum()
+                b.f.y /= b_int
             basis.append(b)
 
         W = []
@@ -128,3 +135,8 @@ class SpectralHRF(filters.Filter):
 
         self.approx = approx
         self.IRF = approx.components
+        self.n = len(approx.components)
+        self.names = ['%s_%d' % (self.names[0], i) for i in range(self.n)]
+
+        if self.n == 1:
+            self.IRF = self.IRF[0]

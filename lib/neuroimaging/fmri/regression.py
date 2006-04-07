@@ -1,10 +1,13 @@
 import copy, os, csv, string, fpformat
 import numpy as N
+import numpy.linalg as L
 import enthought.traits as traits
 import neuroimaging.image as image
 from neuroimaging.reference import grid
 import neuroimaging.image.regression as imreg
 from neuroimaging.statistics import utils
+
+from scipy.linalg import toeplitz
 
 import pylab
 from plotting import MultiPlot
@@ -164,61 +167,43 @@ class AR1Output(fMRIRegressionOutput):
         return rho
                 
 
-## class AROutput(RegressionOutput):
+class AROutput(fMRIRegressionOutput):
 
-##     order = traits.Int(1)
-    
-##     def extract(self, results):
-##         resid = results.resid
-##         ntime = resid.shape[0]
+    order = traits.Int(1)
+    def __init__(self, grid, **keywords):
+        arraygrid = grid.subgrid(0)
+        fMRIRegressionOutput.__init__(self, grid, arraygrid=arraygrid, **keywords)
+        self.invM = N.identity(self.order + 1)
 
-##         # A simple function def to look more like Keith's code
-##         # should probably be called mktoeplitz!
+    def setup_bias_correct(self, model):
 
-##         def mkdiag(values, offset):
-##             matrix = N.zeros((values.shape[0] + offset,)*2, N.Float)
-##             for i in range(values.shape[0]):
-##                 matrix[i+offset,i] = values[i]
-##                 matrix[i,i+offset] = values[i]
-##             return matrix
-        
-##         D1 = mkdiag(N.ones(ntime-1, Float), 1)
-##         sigma_sq = N.add.reduce(resid**2, 0)
+        R = N.identity(model.design.shape[0]) - N.dot(model.design, model.calc_beta)
+        M = N.zeros((self.order+1,)*2, N.Float)
+        I = N.identity(R.shape[0])
 
-##         R = identity(model.design.shape[0]) - dot(model.design, model.calc_beta)
-##         if ARorder == 1:
-##             M11 = trace(R)
-##             M12 = trace(dot(R, D1))
-##             M21 = M12 / 2.
-##             tmp = dot(R, D1)
-##             M22 = trace(dot(tmp, tmp)) / 2.
-##             M = array([[M11, M12], [M21, M22]])
-##         else: 
-##             M = zeros((ARorder+1,), Float)
-            
-##             for i in range(ARorder+1):
-##                 for j in range(ARorder+1):
-##                     Di = dot(R, mkdiag(ones((ntime-i+1,), Float), i-1))/(1.+(i==1))
-##                     Dj = dot(R, mkdiag(ones((ntime-j+1,), Float), j-1))/(1.+(j==1))
-##                     M[i,j] = trace(dot(Di, Dj))/(1.+(i>1))
+        for i in range(self.order+1):
+            Di = N.dot(R, toeplitz(I[i]))
+            for j in range(self.order+1):
+                Dj = N.dot(R, toeplitz(I[j]))
+                M[i,j] = N.diagonal((N.dot(Di, Dj))/(1.+(i>0))).sum()
                     
-##         invM = inverse(M)
+        self.invM = L.inv(M)
 
-##         if ARorder == 1:
-##             Cov = array([sigma_sq, sigma_sq])
-##             Cov[1] = add.reduce(resid[1:,] * resid[0:-1], 0)
-##             Cov = dot(invM, Cov)
-##             test = less_equal(Cov[0], 0).astype(Int)
-##             output = Cov[1] * (1. - test) / (Cov[0] + test)
-##             output.shape = slice_shape
-##         else:
-##             Cov = zeros((ARorder + 1, sigma_sq.shape), Float)
-##             for i in range(ARorder+1):
-##                 Cov[i] = add.reduce(resid[i:,] * resid[0:-i], 0)
-##             Cov = dot(invM, Cov)
-##             test = less_equal(Cov[0], 0).astype(Int)
-##             output = Cov[1:] * (1 - test) / (Cov[0] + test)
-##         return output
+        return
+    
+    def extract(self, results):
+        resid = results.resid
+        ntime = resid.shape[0]
+
+        sigma_sq = N.add.reduce(resid**2, 0)
+
+        Cov = N.zeros((self.order + 1, sigma_sq.shape), N.Float)
+        for i in range(self.order+1):
+            Cov[i] = N.add.reduce(resid[i:,] * resid[0:-i], 0)
+        Cov = N.dot(invM, Cov)
+        test = N.less_equal(Cov[0], 0).astype(N.Int)
+        output = Cov[1:] * utils.recipr(Cov[0])
+        return N.squeeze(output)
 
 
 ## this makes sense only if the labels are [slice, other] labels...

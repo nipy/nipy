@@ -18,8 +18,8 @@ from neuroimaging.statistics import utils, regression, contrast
 from neuroimaging.fmri.protocol import ExperimentalRegressor, ExperimentalQuantitative
 from neuroimaging.fmri.regression import fMRIRegressionOutput
 from neuroimaging.statistics.regression import contrastfromcols
-from neuroimaging.fmri.utils import LinearInterpolant
-from neuroimaging.fmri import hrf
+from neuroimaging.fmri.utils import LinearInterpolant as interpolant
+from neuroimaging.fmri import hrf, filters
 
 import pylab
 from neuroimaging.fmri.plotting import MultiPlot
@@ -271,12 +271,7 @@ class DelayContrastOutput(TContrastOutput):
             if self.sd:
                 self.sdimgs[i].next(data=data.sd[i], value=value)
 
-interpolant = LinearInterpolant
-
 class DelayHRF(hrf.SpectralHRF):
-    dt = traits.Float(0.02)
-    tmax = traits.Float(500.0)
-    delta = N.arange(-4.5,4.6,0.1)
 
     '''
     Delay filter with spectral or Taylor series decomposition
@@ -287,9 +282,11 @@ class DelayHRF(hrf.SpectralHRF):
 
     spectral = traits.true
 
-    def __init__(self, **keywords):
+    def __init__(self, input_hrf=hrf.canonical, **keywords):
         traits.HasTraits.__init__(self, **keywords)
-        hrf.SpectralHRF.__init__(self, **keywords)
+        filters.Filter.__init__(self, input_hrf)
+        if self.n != 1:
+            raise ValueError, 'expecting one HRF for spectral decomposition'
         self.deltaPCA()
 
     def deltaPCA(self, tmax=50., lower=-15.0):
@@ -329,18 +326,20 @@ class DelayHRF(hrf.SpectralHRF):
 
         time = N.arange(lower, tmax, self.dt)
         ntime = time.shape[0]
-        glover, dglover = self.IRF
-
-        H = []
-        for i in range(self.delta.shape[0]):
-            H.append(glover(time - self.delta[i]))
-        H = N.array(H)
+        irf = self.IRF
 
         if not self.spectral: # use Taylor series approximation
 
+            dirf = interpolant(time, -N.gradient(irf(time), self.dt))
+
+            H = []
+            for i in range(self.delta.shape[0]):
+                H.append(irf(time - self.delta[i]))
+            H = N.array(H)
+
             W = []
 
-            W = N.array([glover(time), dglover(time)])
+            W = N.array([irf(time), dirf(time)])
             W = N.transpose(W)
 
             WH = N.dot(L.pinv(W), N.transpose(H))
@@ -350,12 +349,14 @@ class DelayHRF(hrf.SpectralHRF):
                 coef.append(interpolant(self.delta, WH[i]))
             
             def approx(time, delta):
-                value = (coef[0](delta) * glover(time)
-                         + coef[1](delta) * dglover(time))
+                value = (coef[0](delta) * irf(time)
+                         + coef[1](delta) * dirf(time))
                 return value
 
             approx.coef = coef
-            approx.components = [glover, dglover]
+            approx.components = [irf, dirf]
+            self.n = len(approx.components)
+            self.names = [self.names[0], 'd%s' % self.names[0]]
 
         else:
             hrf.SpectralHRF.deltaPCA(self)

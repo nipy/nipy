@@ -5,7 +5,7 @@ from neuroimaging.image import utils as imutils
 from neuroimaging.statistics.regression import OLSModel, ARModel
 import neuroimaging.fmri as fmri
 import neuroimaging.image.kernel_smooth as kernel_smooth
-from neuroimaging.fmri.regression import AR1Output, TContrastOutput, FContrastOutput, ResidOutput
+from neuroimaging.fmri.regression import AROutput, TContrastOutput, FContrastOutput, ResidOutput
 import numpy as N
 import numpy.linalg as L
 import numpy.random as R
@@ -75,15 +75,17 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
         self.iterator = iter(self.fmri_image)
 
-        self.rho_estimator = AR1Output(self.fmri_image.grid, clobber=self.clobber)
         self.outputs += outputs
-        self.outputs.append(self.rho_estimator)
 
         self.dmatrix = self.formula.design(time=self.fmri_image.frametimes + self.tshift)
 
         if self.resid or self.output_fwhm:
             self.resid_output = ResidOutput(self.fmri_image.grid, path=self.path, basename='OLSresid', clobber=self.clobber)
             self.outputs.append(self.resid_output)
+
+        self.rho_estimator = AROutput(self.fmri_image.grid, clobber=self.clobber)
+        self.rho_estimator.setup_bias_correct(OLSModel(design=self.dmatrix))
+        self.outputs.append(self.rho_estimator)
 
         self.setup_output()
         
