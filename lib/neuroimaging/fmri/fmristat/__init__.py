@@ -54,8 +54,6 @@ class fMRIStatOLS(iterators.LinearModelIterator):
     
     formula = traits.Any()
     slicetimes = traits.Any()
-    tshift = traits.Float(0.)
-
     fwhm_rho = traits.Float(6.)
     fwhm_data = traits.Float(6.)
     target_df = traits.Float(100.)
@@ -69,7 +67,6 @@ class fMRIStatOLS(iterators.LinearModelIterator):
     def __init__(self, fmri_image, outputs=[], **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.fmri_image = fmri.fMRIImage(fmri_image)
-
         if self.normalize is not None:
             self.fmri_image.postread = self.normalize
 
@@ -78,8 +75,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         self.rho_estimator = AR1Output(self.fmri_image.grid, clobber=self.clobber)
         self.outputs += outputs
         self.outputs.append(self.rho_estimator)
-
-        self.dmatrix = self.formula.design(time=self.fmri_image.frametimes + self.tshift)
+        self.dmatrix = self.formula.design(time=self.fmri_image.frametimes)
 
         if self.resid or self.output_fwhm:
             self.resid_output = ResidOutput(self.fmri_image.grid, path=self.path, basename='OLSresid', clobber=self.clobber)
@@ -88,7 +84,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         self.setup_output()
         
     def model(self, **keywords):
-        time = self.fmri_image.frametimes + self.tshift
+        time = self.fmri_image.frametimes
         if self.slicetimes is not None:
             _slice = self.iterator.grid.itervalue.slice
             model = OLSModel(design=self.formula.design(time=time + self.slicetimes[_slice[1]]))
@@ -193,7 +189,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
         """
 
-        reference.getmatrix(time=self.fmri_image.frametimes + self.tshift)
+        reference.getmatrix(time=self.fmri_image.frametimes)
 
         x = N.dot(N.transpose(L.pinv(self.dmatrix)),
                   reference.matrix)
@@ -232,8 +228,6 @@ class fMRIStatAR(iterators.LinearModelIterator):
     
     formula = traits.Any()
     slicetimes = traits.Any()
-    tshift = traits.Float(0.)
-
     fwhm = traits.Float(6.0)
     path = traits.Str('.')
     resid = traits.false
@@ -260,8 +254,7 @@ class fMRIStatAR(iterators.LinearModelIterator):
         # copy the formula
         
         self.slicetimes = OLS.slicetimes
-        ftime = self.fmri_image.frametimes + self.tshift
-
+        ftime = self.fmri_image.frametimes
         self.formula = OLS.formula
         if self.slicetimes is None:
             self.dmatrix = OLS.dmatrix
@@ -270,7 +263,7 @@ class fMRIStatAR(iterators.LinearModelIterator):
             self.fmri_image.grid.itertype = 'slice/parcel'
             self.designs = []
             for i in range(len(self.slicetimes)):
-                self.designs.append(self.formula.design(time=ftime + self.slicetimes[i]))
+                self.designs.append(self.formula.design(time=time + self.slicetimes[i]))
 
         self.contrasts = []
         if contrasts is not None:
@@ -279,10 +272,8 @@ class fMRIStatAR(iterators.LinearModelIterator):
             for i in range(len(contrasts)):
                 contrasts[i].getmatrix(time=ftime)
                 if isinstance(contrasts[i], DelayContrast):
-                    cur = DelayContrastOutput(self.fmri_image.grid,
-                                              contrasts[i], path=self.path,
-                                              clobber=self.clobber,
-                                              frametimes=ftime)
+                    cur = DelayContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path,
+                                              clobber=self.clobber, frametimes=ftime)
                 elif contrasts[i].rank == 1:
                     cur = TContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path,
                                           clobber=self.clobber, frametimes=ftime)
