@@ -75,10 +75,10 @@ class RangeSlider (QSlider):
     @param upper:  float upper bound.
     @param stepsize:  distance between float steps.
     """
-
     class Readout (QLabel):
+        formatter=str
         def setText(self, slider):
-            QLabel.setText(self, str(slider.getRangeValue()))
+            QLabel.setText(self, self.formatter(slider.getRangeValue()))
             self.show()
 
     def __init__(self, parent, value, lower, upper, stepsize, orientation, *args):
@@ -91,8 +91,9 @@ class RangeSlider (QSlider):
         self.connect(self, SIGNAL("valueChanged(int)"), self.rangeValueChanged)
         self.connect(self, SIGNAL("sliderMoved(int)"), self.rangeValueChanged)
 
-    def makeReadout(self, parent):
+    def makeReadout(self, parent, formatter=None):
         readout = self.Readout(str(self.getRangeValue()), parent)
+        if formatter: readout.formatter = formatter
         self.connect(self, PYSIGNAL("range-value-changed"), readout.setText)
         return readout
 
@@ -107,6 +108,14 @@ class RangeSlider (QSlider):
 
     def rangeValueChanged(self, tick):
         self.emit(PYSIGNAL("range-value-changed"), (self,))
+
+
+##############################################################################
+class RadioButton (QRadioButton):
+    def __init__(self, *args):
+        QRadioButton.__init__(self, *args)
+        self.connect(self, SIGNAL("toggled(bool)"), self.toggled)
+    def toggled(self, checked): self.emit(PYSIGNAL("toggled"), (self,))
 
 
 #-----------------------------------------------------------------------------

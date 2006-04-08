@@ -8,7 +8,7 @@ from matplotlib.image import AxesImage
 from matplotlib.backends.backend_qtagg import \
   FigureCanvasQTAgg as FigureCanvas
 
-from qtutils import LayoutWidgetMixin, RangeSlider, HBox
+from qtutils import LayoutWidgetMixin, RangeSlider, HBox, RadioButton
 
 def iscomplex(a): return hasattr(a, "imag")
 
@@ -19,6 +19,7 @@ def phs_xform(data): return angle(data)
 def real_xform(data): return data.real
 def imag_xform(data): return data.imag
 
+def rectstr(r): return "(left=%s, top=%s, width=%s, height=%s)"%(r.left(),r.top(),r.width(),r.height())
 
 ##############################################################################
 class Dimension (object):
@@ -60,9 +61,21 @@ class DimSlider (RangeSlider):
 ##############################################################################
 class ContrastSlider (RangeSlider):
     def __init__(self, parent, *args):
-        RangeSlider.__init__(self, parent, 1.0, 0.05, 2.0, 0.05,
+        RangeSlider.__init__(self, parent, 1.0, 0, 2.0, 0.05,
             RangeSlider.Horizontal, *args)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+
+##############################################################################
+class SliderReadoutBox (HBox):
+    def __init__(self, parent, slider, formatter=None):
+        HBox.__init__(self, parent)
+        self.layout.setSpacing(3)
+        slider.reparent(self, QPoint(0,0))
+        slider.setMaximumHeight(18)
+        self.addWidget(slider)
+        readout = slider.makeReadout(self, formatter)
+        self.addWidget(readout)
 
 
 ##############################################################################
@@ -70,10 +83,10 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, shape, dim_names=[], iscomplex=False, *args):
-        LayoutWidgetMixin.__init__(self, QVBoxLayout, (10,), QGroupBox, parent, *args)
+        LayoutWidgetMixin.__init__(self, QVBoxLayout, (5,), QGroupBox, parent, *args)
         self._init_dimensions(shape, dim_names)
+        self.layout.setSpacing(0)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setMargin(50)
 
         # spinner for row dimension
         #spinner_box = gtk.HBox()
@@ -89,6 +102,24 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
         #spinner_box.add(self.col_spinner)
         #main_vbox.add(spinner_box)
 
+        # slider for each data dimension
+        self.sliders = [DimSlider(None, dim) for dim in self.dimensions]
+        intformatter = lambda x: str(int(x))
+        for slider, dim in zip(self.sliders, self.dimensions):
+            self._add_slider(slider, "%s:"%dim.name, formatter=intformatter)
+
+        # start with the center row and column
+        rowdim = self.getRowDim()
+        self.sliders[rowdim.index].setValue(rowdim.size/2)
+        coldim = self.getColDim()
+        self.sliders[coldim.index].setValue(coldim.size/2)
+
+        # slider for contrast adjustment
+        self.contrast_slider = ContrastSlider(self)
+        self._add_slider(self.contrast_slider, "Contrast:")
+
+        self.layout.addStretch()
+
         # radio buttons for different aspects of complex data
         xform_map = {
           "ident": ident_xform,
@@ -97,45 +128,23 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
           "real": real_xform,
           "imag": imag_xform}
         self.radios = []
-        #radio_box = gtk.HBox()
-        #prev_button = None
-        #for name in ("abs","phs","real","imag"):
-        #    button = prev_button = QRadioButton(prev_button, name)
-        #    button.transform = xform_map[name]
-        #    if name=="abs": button.set_active(True)
-        #    self.radios.append(button)
-        #    radio_box.add(button)
-        #if iscomplex:
-        #    main_vbox.pack_end(radio_box, False, False, 0)
-        #    main_vbox.pack_end(gtk.HSeparator(), False, False, 0)
-
-        # slider for each data dimension
-        self.sliders = [DimSlider(None, dim) for dim in self.dimensions]
-        for slider, dim in zip(self.sliders, self.dimensions):
-            self._add_slider(slider, "%s:"%dim.name)
-
-        # start with the center row and column
-        rowdim = self.getRowDim()
-        self.sliders[rowdim.index].setValue(rowdim.size/2)
-        coldim = self.getColDim()
-        self.sliders[coldim.index].setValue(coldim.size/2)
-
-        self.layout.addStretch()
-
-        # slider for contrast adjustment
-        self.contrast_slider = ContrastSlider(self)
-        self._add_slider(self.contrast_slider, "Contrast:")
+        self.radiobox = QButtonGroup(1, QGroupBox.Vertical, "", self)
+        for name in ("abs","phs","real","imag"):
+            button = RadioButton(name, self.radiobox)
+            button.transform = xform_map[name]
+            if name=="abs": button.setChecked(True)
+            self.radios.append(button)
+        self.radiobox.setInsideMargin(3)
+        self.radiobox.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
+        self.addWidget(self.radiobox)
+        if not iscomplex: self.radiobox.hide()
 
     #-------------------------------------------------------------------------
-    def _add_slider(self, slider, label):
-        box = HBox(self)
-        box.setMargin(0)
-        slider.reparent(box, QPoint(0,0))
-        box.addWidget(slider)
-        readout = slider.makeReadout(box)
-        box.addWidget(readout)
-        self.addWidget(QLabel(label, self))
-        self.addWidget(box)
+    def _add_slider(self, slider, label, formatter=None):
+        sliderbox = SliderReadoutBox(self, slider, formatter=formatter)
+        label = QLabel(label, self)
+        self.addWidget(label)
+        self.addWidget(sliderbox)
 
     #-------------------------------------------------------------------------
     def _init_dimensions(self, dim_sizes, dim_names):
@@ -161,7 +170,7 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
         #  "value-changed", spinner_handler)
 
         # connect radio buttons
-        #for r in self.radios: r.connect("toggled", radio_handler, r.transform)
+        for r in self.radios: r.connect(r, PYSIGNAL("toggled"), radio_handler)
 
         # connect slice position sliders
         for s in self.sliders:
@@ -361,8 +370,7 @@ class ColorBar (ViewerCanvas):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, range, cmap=cm.bone, norm=None):
-        #fig = Figure(figsize = (5,0.5))
-        fig = Figure(figsize = (100,5))
+        fig = Figure(figsize = (5,0.5))
         fig.add_axes((0.05, 0.55, 0.9, 0.3))
         ViewerCanvas.__init__(self, parent, fig)
         self.figure.axes[0].yaxis.set_visible(False)
@@ -413,22 +421,22 @@ class ColorBar (ViewerCanvas):
 
 
 ##############################################################################
-class StatusBar (QFrame, LayoutWidgetMixin):
+class StatusBar (QGroupBox, LayoutWidgetMixin):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, range, cmap, *args):
-        LayoutWidgetMixin.__init__(self, QHBoxLayout, (), QFrame, parent, *args)
+        LayoutWidgetMixin.__init__(self, QHBoxLayout, (), QGroupBox, parent, *args)
         self.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
+        self.layout.addStretch()
 
         # colorbar
         self.colorbar = ColorBar(self, range, cmap=cmap)
-        self.colorbar.setFixedSize(400,20)
         self.addWidget(self.colorbar)
  
         # pixel value
         self.label = QLabel(self)
-        #self.label.set_alignment(2, 0.5)
-        self.label.setFixedSize(140,20)
+        self.label.setFixedSize(120, 16)
+        self.label.setAlignment(QLabel.AlignRight)
         #self.label.set_line_wrap(True)
         self.addWidget(self.label)
 
@@ -448,6 +456,8 @@ class ArrayView (QWidget, LayoutWidgetMixin):
     def __init__(self, data, dim_names=[], title="sliceview", cmap=cm.bone):
         LayoutWidgetMixin.__init__(self, QGridLayout, (3,2,5), QWidget)
         self.setCaption("Array Viewer")
+        self.layout.setMargin(2)
+        self.layout.setSpacing(2)
         self.layout.setRowStretch(1,1)
         self.layout.setColStretch(1,1)
         self.data = asarray(data)
@@ -500,7 +510,7 @@ class ArrayView (QWidget, LayoutWidgetMixin):
 
         # status
         self.status = StatusBar(self, self.sliceDataRange(), cmap)
-        self.status.setMinimumSize(600,25)
+        self.status.setFixedHeight(20)
         self.addWidget(self.status, 2, 2, 0, 1)
 
         self.updateDataRange()
@@ -565,13 +575,6 @@ class ArrayView (QWidget, LayoutWidgetMixin):
                self.control_panel.slice_dims
 
     #-------------------------------------------------------------------------
-    def radioHandler(self, button, transform):
-        if not button.get_active(): return
-        self.transform = transform
-        self.updateDataRange()
-        self.updateSlice()
-
-    #-------------------------------------------------------------------------
     def sliderHandler(self, slider):
         row_dim, col_dim= self.control_panel.slice_dims
         if slider.dim.index == row_dim: self.updateRow()
@@ -581,6 +584,13 @@ class ArrayView (QWidget, LayoutWidgetMixin):
     #-------------------------------------------------------------------------
     def contrastHandler(self, slider):
         self.conLevel = self.control_panel.getContrastLevel()
+        self.updateSlice()
+
+    #-------------------------------------------------------------------------
+    def radioHandler(self, button):
+        if not button.isChecked(): return
+        self.transform = button.transform
+        self.updateDataRange()
         self.updateSlice()
 
     #-------------------------------------------------------------------------
@@ -663,4 +673,4 @@ def arrayview(data):
 ##############################################################################
 if __name__ == "__main__":
     from pylab import randn
-    arrayview(randn(20,20))
+    arrayview(randn(20,20) + randn(20,20)*1.j)
