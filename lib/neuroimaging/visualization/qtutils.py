@@ -25,6 +25,18 @@ class LayoutWidgetMixin (object):
 
 
 ##############################################################################
+class HBox (QFrame, LayoutWidgetMixin):
+    def __init__(self, *args):
+        LayoutWidgetMixin.__init__(self, QHBoxLayout, (), QFrame, *args)
+
+
+##############################################################################
+class VBox (QFrame, LayoutWidgetMixin):
+    def __init__(self, *args):
+        LayoutWidgetMixin.__init__(self, QVBoxLayout, (), QFrame, *args)
+
+
+##############################################################################
 class RangeTransform (object):
     """
     Converts (from/to) a discrete range of floats (to/from) the integer tick
@@ -45,13 +57,11 @@ class RangeTransform (object):
         self.upper = float(upper)
         self.stepsize = float(stepsize)
 
-    def getValue(self, tick):
-        print "lower, stepsize, tick =",self.lower,self.stepsize,tick
-        return self.lower + self.stepsize*tick
+    def getValue(self, tick): return self.lower + self.stepsize*tick
 
     def getTick(self, value): return int((value - self.lower)/self.stepsize)
 
-    def numTicks(self): return int((self.lower-self.upper)/self.stepsize)
+    def numTicks(self): return int((self.upper-self.lower)/self.stepsize)
 
 
 ##############################################################################
@@ -69,16 +79,20 @@ class RangeSlider (QSlider):
         self.transform = RangeTransform(lower, upper, stepsize)
         upper_tick = self.transform.numTicks()
         page_tick = int(upper_tick/6.)
+        tick_value = self.transform.getTick(value)
         QSlider.__init__(self, 0, upper_tick, page_tick,
-          self.transform.getTick(value), orientation, parent, *args)
+            tick_value, orientation, parent, *args)
         self.connect(self, SIGNAL("valueChanged(int)"), self.rangeValueChanged)
         self.connect(self, SIGNAL("sliderMoved(int)"), self.rangeValueChanged)
 
     def getRangeValue(self): 
         return self.transform.getValue(self.value())
 
-    def setRangeValue(self, value):
-        self.directSetValue(self.transform.getTick(value))
+    def setRangeValue(self, value, direct=False):
+        if direct:
+            self.directSetValue(self.transform.getTick(value))
+        else:
+            self.setValue(self.transform.getTick(value))
 
     def rangeValueChanged(self, tick):
         self.emit(PYSIGNAL("range-value-changed"), (self,))

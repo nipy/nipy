@@ -8,7 +8,7 @@ from matplotlib.image import AxesImage
 from matplotlib.backends.backend_qtagg import \
   FigureCanvasQTAgg as FigureCanvas
 
-from qtutils import LayoutWidgetMixin, RangeSlider
+from qtutils import LayoutWidgetMixin, RangeSlider, HBox
 
 def iscomplex(a): return hasattr(a, "imag")
 
@@ -51,9 +51,9 @@ class DimSpinner (QSpinBox):
 ##############################################################################
 class DimSlider (RangeSlider):
     def __init__(self, parent, dim, *args):
-        RangeSlider.__init__(self, parent, 0, 0, 0, dim.size-1,
+        RangeSlider.__init__(self, parent, 0, 0, dim.size-1, 1,
             RangeSlider.Horizontal, *args)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.dim = dim
 
 
@@ -62,8 +62,7 @@ class ContrastSlider (RangeSlider):
     def __init__(self, parent, *args):
         RangeSlider.__init__(self, parent, 1.0, 0.05, 2.0, 0.05,
             RangeSlider.Horizontal, *args)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        #self.setValue(1.0)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
 
 
 ##############################################################################
@@ -110,7 +109,7 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
         #    main_vbox.pack_end(gtk.HSeparator(), False, False, 0)
 
         # slider for each data dimension
-        self.sliders = [DimSlider(self, dim) for dim in self.dimensions]
+        self.sliders = [DimSlider(None, dim) for dim in self.dimensions]
         for slider, dim in zip(self.sliders, self.dimensions):
             self._add_slider(slider, "%s:"%dim.name)
 
@@ -120,17 +119,23 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
         coldim = self.getColDim()
         self.sliders[coldim.index].setValue(coldim.size/2)
 
+        self.layout.addStretch()
+
         # slider for contrast adjustment
         self.contrast_slider = ContrastSlider(self)
         self._add_slider(self.contrast_slider, "Contrast:")
 
     #-------------------------------------------------------------------------
     def _add_slider(self, slider, label):
-        #label = gtk.Label(label)
-        #label.set_alignment(0, 0.5)
-        #self.layout.addWidget(label)
-        self.addWidget(slider)
-        slider.setMinimumSize(200,20)
+        box = HBox(self)
+        slider.reparent(box, QPoint(0,0))
+        box.addWidget(slider)
+        readout = QLabel(str(slider.getRangeValue()), box)
+        slider.connect(slider, PYSIGNAL("range-value-changed"),
+          lambda: readout.setText(str(slider.getRangeValue)))
+        box.addWidget(readout)
+        self.addWidget(QLabel(label, self))
+        self.addWidget(box)
 
     #-------------------------------------------------------------------------
     def _init_dimensions(self, dim_sizes, dim_names):
