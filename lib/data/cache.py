@@ -4,7 +4,7 @@ Create and destroy a per-process cache.
 
 import tempfile, atexit, shutil
 
-suffix = ''
+suffix = 'nipy'
 dirname = tempfile.mkdtemp(suffix=suffix)
 
 def cleanup():
