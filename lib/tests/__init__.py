@@ -19,11 +19,9 @@ packages = (
 #-----------------------------------------------------------------------------
 def import_from(modulename, objectname):
     "Import and return objectname from modulename."
-    try:
-        module = __import__(modulename, globals(), locals(), (objectname,))
-        return getattr(module, objectname)
-    except (ImportError, AttributeError):
-        return None
+    module = __import__(modulename, globals(), locals(), (objectname,))
+    try: return getattr(module, objectname)
+    except AttributeError: return None
 
 #-----------------------------------------------------------------------------
 def run_suite(suite):
