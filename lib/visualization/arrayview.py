@@ -25,6 +25,19 @@ class Dimension (object):
         self.size = size
         self.name = name
 
+##############################################################################
+class LayoutWidget (QWidget):
+
+    def __init__(self, layout_class, layout_args, *args):
+        QWidget.__init__(self, *args)
+        self.layout = layout_class(self, *layout_args)
+
+    def addWidget(self, widget, *args):
+        if isinstance(self.layout, QGridLayout) and len(args)==4:
+            self.layout.addMultiCellWidget(widget, *args)
+        else:
+            self.layout.addWidget(widget, *args)
+
 
 ##############################################################################
 class ViewerCanvas (FigureCanvas):
@@ -39,29 +52,34 @@ class ViewerCanvas (FigureCanvas):
  
 
 ##############################################################################
-class SliderTransform (object):
-    def __init__(self, lower, stepsize):
-        self.lower, self.stepsize = lower, stepsize
+class RangeTransform (object):
+    def __init__(self, lower, upper, stepsize):
+        self.lower = float(lower)
+        self.upper = float(upper)
+        self.stepsize = float(stepsize)
     def getValue(self, tick): return self.lower + self.stepsize*tick
     def getTick(self, value): return int((value - self.lower)/self.stepsize)
+    def numTicks(self): return int((self.lower-self.upper)/self.stepsize)
 
 
 ##############################################################################
-class Slider (QSlider):
+class TransformedSlider (QSlider):
     def __init__(self, parent, value, lower, upper, stepsize, pagesize, *args):
         QSlider.__init__(self, parent, *args)
         self.setOrientation(QSlider.Horizontal)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.transform = SliderTransform(lower, stepsize)
+        self.transform = RangeTransform(lower, upper, stepsize)
+        self.setMinValue(0); self.setMaxValue(self.transform.numTicks())
         self.setValue(value)
         self.connect(self, SIGNAL("valueChanged(int)"), self.valueChanged)
+        self.connect(self, SIGNAL("sliderMoved(int)"), self.valueChanged)
     def getValue(self): 
         return self.transform.getValue(self.sliderPosition)
     def setValue(self, value):
         self.sliderPosition = self.transform.getTick(value)
     def valueChanged(self, tick):
-        print "Slider.valueChanged called"
-        self.emit(PYSIGNAL("valueChanged"), (self,))
+        print "TransformedSlider: value =",self.getValue()
+        self.emit(PYSIGNAL("value-changed"), (self,))
 
 
 ##############################################################################
@@ -73,16 +91,17 @@ class DimSpinner (QSpinBox):
 
 
 ##############################################################################
-class DimSlider (Slider):
+class DimSlider (TransformedSlider):
     def __init__(self, parent, dim, *args):
-        Slider.__init__(self, parent, 0, 0, dim.size-1, 1, 8, *args)
+        TransformedSlider.__init__(self, parent, 0, 0, dim.size-1, 1, 8, *args)
         self.dim = dim
 
 
 ##############################################################################
-class ContrastSlider (Slider):
+class ContrastSlider (TransformedSlider):
     def __init__(self, parent, *args):
-        Slider.__init__(self, parent, 1.0, 0.05, 2.0, 0.05, 0.4, *args)
+        TransformedSlider.__init__(self,
+          parent, 1.0, 0.05, 2.0, 0.05, 0.4, *args)
         self.setValue(1.0)
 
 
@@ -171,21 +190,24 @@ class ControlPanel (QGroupBox):
         "Connect control elements to the given handler functions."
 
         # connect slice orientation spinners
-        self.row_spinner.get_adjustment().connect(
-          "value-changed", spinner_handler)
-        self.col_spinner.get_adjustment().connect(
-          "value-changed", spinner_handler)
+        #self.row_spinner.get_adjustment().connect(
+        #  "value-changed", spinner_handler)
+        #self.col_spinner.get_adjustment().connect(
+        #  "value-changed", spinner_handler)
 
         # connect radio buttons
-        for r in self.radios: r.connect("toggled", radio_handler, r.transform)
+        #for r in self.radios: r.connect("toggled", radio_handler, r.transform)
 
         # connect slice position sliders
         for s in self.sliders:
-            s.get_adjustment().connect("value_changed", slider_handler)
+            #s.get_adjustment().connect("value_changed", slider_handler)
+            s.connect(s, PYSIGNAL("value-changed"), slider_handler)
 
         # connect contrast slider
-        self.contrast_slider.get_adjustment().connect(
-          "value_changed", contrast_handler)
+        self.contrast_slider.connect(self.contrast_slider,
+          PYSIGNAL("value-changed"), contrast_handler)
+        #self.contrast_slider.get_adjustment().connect(
+        #  "value_changed", contrast_handler)
 
     #-------------------------------------------------------------------------
     def getContrastLevel(self):
@@ -377,8 +399,8 @@ class ColorBar (ViewerCanvas):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, range, cmap=cm.bone, norm=None):
-        self.parent = parent
-        fig = Figure(figsize = (5,0.5))
+        #fig = Figure(figsize = (5,0.5))
+        fig = Figure(figsize = (100,5))
         fig.add_axes((0.05, 0.55, 0.9, 0.3))
         ViewerCanvas.__init__(self, parent, fig)
         self.figure.axes[0].yaxis.set_visible(False)
@@ -455,7 +477,7 @@ class StatusBar (QFrame):
 
 
 ##############################################################################
-class ArrayView (QWidget):
+class ArrayView (LayoutWidget):
     #mag_norm = normalize()
     #phs_norm = normalize(-pi, pi)
     _mouse_x = _mouse_y = None
@@ -463,9 +485,9 @@ class ArrayView (QWidget):
 
     #-------------------------------------------------------------------------
     def __init__(self, data, dim_names=[], title="sliceview", cmap=cm.bone):
-        QWidget.__init__(self)
+        LayoutWidget.__init__(self, QGridLayout, (3,2,5))
         self.setCaption("Array Viewer")
-        self.layout = QGridLayout(self, 3, 2, 5)
+        self.layout.setRowStretch(1,1)
         self.layout.setColStretch(1,1)
         self.data = asarray(data)
 
@@ -475,23 +497,23 @@ class ArrayView (QWidget):
         # control panel
         self.control_panel = \
           ControlPanel(self, data.shape, dim_names, iscomplex(data))
-        #self.control_panel.connect(
-        #    self.spinnerHandler,
-        #    self.radioHandler,
-        #    self.sliderHandler,
-        #    self.contrastHandler)
-        self.control_panel.setFixedSize(200, 200)
-        self.layout.addWidget(self.control_panel, 0, 0)
+        self.control_panel.connect(
+            self.spinnerHandler,
+            self.radioHandler,
+            self.sliderHandler,
+            self.contrastHandler)
+        self.control_panel.setMinimumSize(200, 200)
+        self.addWidget(self.control_panel, 0, 0)
 
         # row plot
         self.rowplot = RowPlot(self, self.getRow())
         self.rowplot.setMinimumSize(400, 200)
-        self.layout.addWidget(self.rowplot, 0, 1)
+        self.addWidget(self.rowplot, 0, 1)
 
         # column plot
         self.colplot = ColPlot(self, self.getCol())
-        self.colplot.setFixedSize(200, 400)
-        self.layout.addWidget(self.colplot, 1, 0)
+        self.colplot.setMinimumSize(200, 400)
+        self.addWidget(self.colplot, 1, 0)
         
         # Set up normalization BEFORE plotting images.
         # Contrast level of 1.0 gives default normalization (changed by
@@ -505,7 +527,7 @@ class ArrayView (QWidget):
           self.control_panel.getRowIndex(),
           self.control_panel.getColIndex(),
           cmap=cmap, norm=self.norm)
-        self.colplot.setMinimumSize(400, 400)
+        self.sliceplot.setMinimumSize(400, 400)
         #self.sliceplot.set_size_request(400, 400)
         self.sliceplot.mpl_connect(
           'motion_notify_event', self.sliceMouseMotionHandler)
@@ -513,12 +535,12 @@ class ArrayView (QWidget):
           'button_press_event', self.sliceMouseDownHandler)
         self.sliceplot.mpl_connect(
           'button_release_event', self.sliceMouseUpHandler)
-        self.layout.addWidget(self.sliceplot, 1, 1)
+        self.addWidget(self.sliceplot, 1, 1)
 
         # status
         self.status = StatusBar(self, self.sliceDataRange(), cmap)
-        self.status.setFixedSize(600,30)
-        self.layout.addMultiCellWidget(self.status, 2, 2, 0, 2)
+        self.status.setMinimumSize(600,25)
+        self.addWidget(self.status, 2, 2, 0, 1)
 
         self.updateDataRange()
 
@@ -589,14 +611,14 @@ class ArrayView (QWidget):
         self.updateSlice()
 
     #-------------------------------------------------------------------------
-    def sliderHandler(self, adj):
+    def sliderHandler(self, slider):
         row_dim, col_dim= self.control_panel.slice_dims
-        if adj.dim.index == row_dim: self.updateRow()
-        elif adj.dim.index == col_dim: self.updateCol()
+        if slider.dim.index == row_dim: self.updateRow()
+        elif slider.dim.index == col_dim: self.updateCol()
         else: self.updateSlice()
 
     #-------------------------------------------------------------------------
-    def contrastHandler(self, adj):
+    def contrastHandler(self, slider):
         self.conLevel = self.control_panel.getContrastLevel()
         self.updateSlice()
 
@@ -680,4 +702,4 @@ def arrayview(data):
 ##############################################################################
 if __name__ == "__main__":
     from pylab import randn
-    arrayview(randn(6,6))
+    arrayview(randn(20,20))
