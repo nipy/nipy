@@ -26,19 +26,6 @@ def import_from(modulename, objectname):
         return None
 
 #-----------------------------------------------------------------------------
-def get_package_suite(packname):
-    """
-    Retrieve the test suite for the named package.  Expects to find under the
-    named package another package or module named 'tests', containing a
-    a callable called 'suite' returning a unittest.TestSuite object.
-    """
-    packname = packname + ".tests"
-    try:
-        return import_from(packname, "suite")()
-    except ImportError:
-        raise ValueError("Could not find expected test package '%s'."%packname)
-
-#-----------------------------------------------------------------------------
 def run_suite(suite):
     tmpdir = tempfile.mkdtemp(suffix='nipy_unittest')
     curdir = os.path.abspath(os.curdir)
@@ -69,7 +56,9 @@ def get_package_tests(packname):
     tests = []
     for module in modules:
         tests += [(key,val) for key,val in module.__dict__.items() \
-                  if type(val)==types.TypeType and issubclass(val, TestCase)]
+                  if type(val)==types.TypeType and \
+                     issubclass(val, TestCase) and \
+                     val != TestCase]
     return dict(tests)
     
 #-----------------------------------------------------------------------------
@@ -83,3 +72,4 @@ def test_package(packname, testname=None):
 #-----------------------------------------------------------------------------
 def test_all():
     for packname in packages: test_package(packname)
+
