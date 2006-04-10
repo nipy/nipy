@@ -1,8 +1,3 @@
-import image
-import reference
-import fmri
-import statistics
-import visualization
-
-import data.cache
-data.cache.suffix = 'nipy'
+import matplotlib
+# ensure that matplotlib is using numpy for its numeric backend
+matplotlib.rcParams['numerix'] = 'numpy'
