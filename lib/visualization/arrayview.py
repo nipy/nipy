@@ -68,9 +68,7 @@ class Slider (QSlider):
 class DimSpinner (QSpinBox):
     def __init__(self, parent, name, value, start, end, handler, *args):
         QSpinBox.__init__(self, *args)
-        #adj = gtk.Adjustment(0, start, end, 1, 1)
-        #adj.name = name
-        #gtk.SpinButton.__init__(self, adj, 0, 0)
+        self.name = name
         #adj.connect("value-changed", handler)
 
 
@@ -79,20 +77,13 @@ class DimSlider (Slider):
     def __init__(self, parent, dim, *args):
         Slider.__init__(self, parent, 0, 0, dim.size-1, 1, 8, *args)
         self.dim = dim
-        #adj = gtk.Adjustment(0, 0, dim.size-1, 1, 1)
-        #adj.dim = dim
-        #gtk.HScale.__init__(self, adj)
-        #self.set_digits(0)
-        #self.set_value_pos(gtk.POS_RIGHT)
 
 
 ##############################################################################
 class ContrastSlider (Slider):
     def __init__(self, parent, *args):
         Slider.__init__(self, parent, 1.0, 0.05, 2.0, 0.05, 0.4, *args)
-        #gtk.HScale.__init__(self, gtk.Adjustment(1.0, 0.05, 2.0, 0.05, 1))
-        #self.set_digits(2)
-        #self.set_value_pos(gtk.POS_RIGHT)
+        self.setValue(1.0)
 
 
 ##############################################################################
@@ -140,7 +131,7 @@ class ControlPanel (QGroupBox):
         #    main_vbox.pack_end(gtk.HSeparator(), False, False, 0)
 
         # slider for each data dimension
-        self.sliders = [DimSlider(self, dim) for dim in self.dimensions]
+        self.sliders = [DimSlider(None, dim) for dim in self.dimensions]
         for slider, dim in zip(self.sliders, self.dimensions):
             self._add_slider(slider, "%s:"%dim.name)
 
@@ -382,14 +373,14 @@ class SlicePlot (ViewerCanvas):
 
 
 ##############################################################################
-class ColorBar (FigureCanvas):
+class ColorBar (ViewerCanvas):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, range, cmap=cm.bone, norm=None):
         self.parent = parent
         fig = Figure(figsize = (5,0.5))
         fig.add_axes((0.05, 0.55, 0.9, 0.3))
-        FigureCanvas.__init__(self, fig)
+        ViewerCanvas.__init__(self, parent, fig)
         self.figure.axes[0].yaxis.set_visible(False)
         self.cmap = cmap
         self.draw()
@@ -443,99 +434,24 @@ class StatusBar (QFrame):
     #-------------------------------------------------------------------------
     def __init__(self, parent, range, cmap, *args):
         QFrame.__init__(self, parent, *args)
-        self.setFixedSize(600, 30)
-        #main_hbox = gtk.HBox()
-        #main_hbox.set_border_width(0)
-
-        # neighborhood size selection (eg '5x5', '3x4')
-        # these numbers refer to "radii", not box size
-        #self.entry = gtk.Entry(3)
-        #self.entry.set_size_request(40,25)
-
-        # pixel value
-        #self.px_stat = gtk.Statusbar()
-        #self.px_stat.set_has_resize_grip(False)
-        #self.px_stat.set_size_request(160,25)
-
-        # neighborhood avg
-        #self.av_stat = gtk.Statusbar()
-        #self.av_stat.set_has_resize_grip(False)
-        #self.av_stat.set_size_request(160,25)
-
-        # try to label entry box
-        #label = gtk.Label("Radius")
-        #label.set_alignment(0, 0.2)
-        #label.set_size_request(10,25)
-        #label.set_line_wrap(True)
+        self.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
+        self.layout = QHBoxLayout()
 
         # colorbar
-        self.cbar = ColorBar(self, range, cmap=cmap)
-        #self.cbar.set_size_request(400,20)
-        #main_hbox.add(self.cbar)
+        self.colorbar = ColorBar(self, range, cmap=cmap)
+        self.colorbar.setFixedSize(400,20)
+        self.layout.addWidget(self.colorbar)
  
         # pixel value
-        #self.label = gtk.Label()
+        self.label = QLabel(self)
         #self.label.set_alignment(2, 0.5)
-        #self.label.set_size_request(140,20)
+        self.label.setFixedSize(140,20)
         #self.label.set_line_wrap(True)
-        #main_hbox.add(self.label)
-       
-        #self.px_context = self.px_stat.get_context_id("Pixel Value")
-        #self.av_context = self.av_stat.get_context_id("Neighborhood Avg")
-        # default area to average
-        #self.entry.set_text('3x3')
-        #self.add(main_hbox)
-        #self.show_all()
-
-    #-------------------------------------------------------------------------
-    def report(self, event, data):
-        if not (event.xdata and event.ydata):
-            avbuf = pxbuf = "  clicked outside axes"
-        else:
-            y, x = int(event.ydata), int(event.xdata)
-            pxbuf = "  pix val: %f"%data[y, x]
-            avbuf = "  %ix%i avg: %s"%self.squareAvg(y, x, data)
-        
-        self.pop_items()
-        self.push_items(pxbuf, avbuf)
-
-    #-------------------------------------------------------------------------
-    def squareAvg(self, y, x, data):
-        areaStr = self.getText()
-        #box is defined +/-yLim rows and +/-xLim cols
-        #if for some reason areaStr was entered wrong, default to (1, 1)
-        yLim, xLim = len(areaStr)==3 and\
-                     (int(areaStr[0]), int(areaStr[2])) or (1, 1)
-        if y < yLim or x < xLim or\
-           y+yLim >= data.shape[0] or\
-           x+xLim >= data.shape[1]:
-            return (yLim, xLim, "outOfRange")
-
-        indices = fromfunction(lambda yi,xi: y+yi-yLim + 1.0j*(x + xi-xLim),
-                               (yLim*2+1, xLim*2+1))
-        scale = indices.shape[0]*indices.shape[1]
-        av = sum(map(lambda zi: data[int(zi.real), int(zi.imag)]/scale,
-                     indices.flat))
-        
-        #return box dimensions and 7 significant digits of average
-        return (yLim, xLim, str(av)[0:8])
-
-    #-------------------------------------------------------------------------
-    def getText(self): return self.entry.get_text()
+        self.layout.addWidget(self.label)
 
     #-------------------------------------------------------------------------
     def setLabel(self, text):
-        self.label.set_text(text)
-
-    #-------------------------------------------------------------------------    
-    def pop_items(self):
-        self.av_stat.pop(self.av_context)
-        self.px_stat.pop(self.px_context)
-
-    #-------------------------------------------------------------------------
-    def push_items(self, pxbuf, avbuf):
-        self.av_stat.push(self.av_context, avbuf)
-        self.px_stat.push(self.px_context, pxbuf)
+        self.label.setText(text)
 
 
 ##############################################################################
@@ -549,7 +465,8 @@ class ArrayView (QWidget):
     def __init__(self, data, dim_names=[], title="sliceview", cmap=cm.bone):
         QWidget.__init__(self)
         self.setCaption("Array Viewer")
-        self.layout = QGridLayout(self, 2, 2, 5)
+        self.layout = QGridLayout(self, 3, 2, 5)
+        self.layout.setColStretch(1,1)
         self.data = asarray(data)
 
         # if data is complex, show the magnitude by default
@@ -563,7 +480,7 @@ class ArrayView (QWidget):
         #    self.radioHandler,
         #    self.sliderHandler,
         #    self.contrastHandler)
-        self.control_panel.setMinimumSize(200, 200)
+        self.control_panel.setFixedSize(200, 200)
         self.layout.addWidget(self.control_panel, 0, 0)
 
         # row plot
@@ -573,7 +490,7 @@ class ArrayView (QWidget):
 
         # column plot
         self.colplot = ColPlot(self, self.getCol())
-        self.colplot.setMinimumSize(200, 400)
+        self.colplot.setFixedSize(200, 400)
         self.layout.addWidget(self.colplot, 1, 0)
         
         # Set up normalization BEFORE plotting images.
@@ -599,8 +516,9 @@ class ArrayView (QWidget):
         self.layout.addWidget(self.sliceplot, 1, 1)
 
         # status
-        #self.status = StatusBar(main_vbox, self.sliceDataRange(), cmap)
-        #self.status.set_size_request(200,30)
+        self.status = StatusBar(self, self.sliceDataRange(), cmap)
+        self.status.setFixedSize(600,30)
+        self.layout.addMultiCellWidget(self.status, 2, 2, 0, 2)
 
         self.updateDataRange()
 
@@ -643,7 +561,7 @@ class ArrayView (QWidget):
         self.sliceplot.setData(self.getSlice(), norm=self.norm)
         self.rowplot.setData(self.getRow())
         self.colplot.setData(self.getCol())
-        self.status.cbar.setRange(self.sliceDataRange(), norm=self.norm)
+        self.status.colorbar.setRange(self.sliceDataRange(), norm=self.norm)
 
     #-------------------------------------------------------------------------
     def sliceDataRange(self):
