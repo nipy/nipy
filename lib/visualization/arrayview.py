@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import qt
+from qt import *
 from pylab import Figure, figaspect, gci, show, amax, amin, squeeze, asarray,\
     cm, angle, normalize, pi, arange, ravel, ones, outerproduct, floor,\
     fromfunction, zeros
@@ -27,6 +27,18 @@ class Dimension (object):
 
 
 ##############################################################################
+class ViewerCanvas (FigureCanvas):
+    """
+    Handles common logic needed to get an mpl FigureCanvas to play nicely in
+    a QT environment.
+    """
+    def __init__(self, parent, fig):
+        FigureCanvas.__init__(self, fig)
+        self.reparent(parent, QPoint(0,0))
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+ 
+
+##############################################################################
 class SliderTransform (object):
     def __init__(self, lower, stepsize):
         self.lower, self.stepsize = lower, stepsize
@@ -35,25 +47,27 @@ class SliderTransform (object):
 
 
 ##############################################################################
-class Slider (qt.QSlider):
+class Slider (QSlider):
     def __init__(self, parent, value, lower, upper, stepsize, pagesize, *args):
-        qt.QSlider.__init__(self, parent, *args)
-        self.xform = SliderTransform(lower, stepsize)
+        QSlider.__init__(self, parent, *args)
+        self.setOrientation(QSlider.Horizontal)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.transform = SliderTransform(lower, stepsize)
         self.setValue(value)
-        self.connect(self, qt.SIGNAL("valueChanged(int)"), self.valueChanged)
+        self.connect(self, SIGNAL("valueChanged(int)"), self.valueChanged)
     def getValue(self): 
-        return self.xform.getValue(self.sliderPosition)
+        return self.transform.getValue(self.sliderPosition)
     def setValue(self, value):
-        self.sliderPosition = self.xform.getTick(value)
+        self.sliderPosition = self.transform.getTick(value)
     def valueChanged(self, tick):
         print "Slider.valueChanged called"
-        self.emit(qt.PYSIGNAL("valueChanged"), (self,))
+        self.emit(PYSIGNAL("valueChanged"), (self,))
 
 
 ##############################################################################
-class DimSpinner (qt.QSpinBox):
+class DimSpinner (QSpinBox):
     def __init__(self, parent, name, value, start, end, handler, *args):
-        qt.QSpinBox.__init__(self, *args)
+        QSpinBox.__init__(self, *args)
         #adj = gtk.Adjustment(0, start, end, 1, 1)
         #adj.name = name
         #gtk.SpinButton.__init__(self, adj, 0, 0)
@@ -82,15 +96,14 @@ class ContrastSlider (Slider):
 
 
 ##############################################################################
-class ControlPanel (qt.QWidget):
+class ControlPanel (QGroupBox):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, shape, dim_names=[], iscomplex=False, *args):
-        qt.QWidget.__init__(self, parent, *args)
+        QWidget.__init__(self, parent, *args)
         self._init_dimensions(shape, dim_names)
-        #gtk.Frame.__init__(self)
-        #main_vbox = gtk.VBox()
-        #main_vbox.set_border_width(2)
+        self.layout = QVBoxLayout()
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # spinner for row dimension
         #spinner_box = gtk.HBox()
@@ -117,7 +130,7 @@ class ControlPanel (qt.QWidget):
         #radio_box = gtk.HBox()
         #prev_button = None
         #for name in ("abs","phs","real","imag"):
-        #    button = prev_button = qt.QRadioButton(prev_button, name)
+        #    button = prev_button = QRadioButton(prev_button, name)
         #    button.transform = xform_map[name]
         #    if name=="abs": button.set_active(True)
         #    self.radios.append(button)
@@ -128,27 +141,26 @@ class ControlPanel (qt.QWidget):
 
         # slider for each data dimension
         self.sliders = [DimSlider(self, dim) for dim in self.dimensions]
-        #for slider, dim in zip(self.sliders, self.dimensions):
-        #    self._add_slider(slider, "%s:"%dim.name, main_vbox)
+        for slider, dim in zip(self.sliders, self.dimensions):
+            self._add_slider(slider, "%s:"%dim.name)
 
         # start with the center row and column
         rowdim = self.getRowDim()
-        #self.sliders[rowdim.index].set_value(rowdim.size/2)
+        self.sliders[rowdim.index].setValue(rowdim.size/2)
         coldim = self.getColDim()
-        #self.sliders[coldim.index].set_value(coldim.size/2)
+        self.sliders[coldim.index].setValue(coldim.size/2)
 
         # slider for contrast adjustment
         self.contrast_slider = ContrastSlider(self)
-        #self._add_slider(self.contrast_slider, "Contrast:", main_vbox)
-
-        #self.add(main_vbox)
+        self._add_slider(self.contrast_slider, "Contrast:")
 
     #-------------------------------------------------------------------------
-    def _add_slider(self, slider, label, vbox):pass
+    def _add_slider(self, slider, label):
         #label = gtk.Label(label)
         #label.set_alignment(0, 0.5)
-        #vbox.pack_start(label, False, False, 0)
-        #vbox.pack_start(slider, False, False, 0)
+        #self.layout.addWidget(label)
+        self.layout.addWidget(slider)
+        slider.setMinimumSize(200,20)
 
     #-------------------------------------------------------------------------
     def _init_dimensions(self, dim_sizes, dim_names):
@@ -237,16 +249,15 @@ class ControlPanel (qt.QWidget):
 
 
 ##############################################################################
-class RowPlot (FigureCanvas):
+class RowPlot (ViewerCanvas):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, data):
-        self.parent = parent
         fig = Figure(figsize=(3., 6.))
         ax  = fig.add_axes([0.05, 0.05, 0.85, 0.85])
         ax.xaxis.tick_top()
         ax.yaxis.tick_right()
-        FigureCanvas.__init__(self, fig)
+        ViewerCanvas.__init__(self, parent, fig)
         self.setData(data)
 
     #-------------------------------------------------------------------------
@@ -265,14 +276,13 @@ class RowPlot (FigureCanvas):
 
 
 ##############################################################################
-class ColPlot (FigureCanvas):
+class ColPlot (ViewerCanvas):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, data):
-        self.parent = parent
         fig = Figure(figsize=(6., 3.))
         fig.add_axes([0.1, 0.1, 0.85, 0.85])
-        FigureCanvas.__init__(self, fig)
+        ViewerCanvas.__init__(self, parent, fig)
         self.setData(data)
 
     #-------------------------------------------------------------------------
@@ -291,17 +301,16 @@ class ColPlot (FigureCanvas):
 
 
 ##############################################################################
-class SlicePlot (FigureCanvas):
+class SlicePlot (ViewerCanvas):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, data, x, y, cmap=cm.bone, norm=None):
-        self.parent = parent
         self.norm = None
         fig = Figure(figsize=figaspect(data))
         ax  = fig.add_axes([0.05, 0.1, 0.85, 0.85])
         ax.yaxis.tick_right()
         ax.title.set_y(1.05) 
-        FigureCanvas.__init__(self, fig)
+        ViewerCanvas.__init__(self, parent, fig)
         self.cmap = cmap
         self.setData(data, norm=norm)
         self._init_crosshairs(x, y)
@@ -429,11 +438,12 @@ class ColorBar (FigureCanvas):
 
 
 ##############################################################################
-class StatusBar (qt.QWidget):
+class StatusBar (QFrame):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, range, cmap, *args):
-        qt.QWidget.__init__(self, parent, *args)
+        QFrame.__init__(self, parent, *args)
+        self.setFixedSize(600, 30)
         #main_hbox = gtk.HBox()
         #main_hbox.set_border_width(0)
 
@@ -529,8 +539,7 @@ class StatusBar (qt.QWidget):
 
 
 ##############################################################################
-#class arrayview (gtk.Window):
-class ArrayView (qt.QMainWindow):
+class ArrayView (QWidget):
     #mag_norm = normalize()
     #phs_norm = normalize(-pi, pi)
     _mouse_x = _mouse_y = None
@@ -538,16 +547,13 @@ class ArrayView (qt.QMainWindow):
 
     #-------------------------------------------------------------------------
     def __init__(self, data, dim_names=[], title="sliceview", cmap=cm.bone):
-        qt.QMainWindow.__init__(self)
+        QWidget.__init__(self)
+        self.setCaption("Array Viewer")
+        self.layout = QGridLayout(self, 2, 2, 5)
         self.data = asarray(data)
 
         # if data is complex, show the magnitude by default
         self.transform = iscomplex(data) and abs_xform or ident_xform
-
-        # widget layout table
-        #table = gtk.Table(3, 2)
-        table = qt.QGridLayout()
-        #self.setLayout(table)
 
         # control panel
         self.control_panel = \
@@ -557,18 +563,18 @@ class ArrayView (qt.QMainWindow):
         #    self.radioHandler,
         #    self.sliderHandler,
         #    self.contrastHandler)
-        #self.control_panel.set_size_request(200, 200)
-        #table.attach(self.control_panel, 0, 1, 0, 1)
+        self.control_panel.setMinimumSize(200, 200)
+        self.layout.addWidget(self.control_panel, 0, 0)
 
         # row plot
         self.rowplot = RowPlot(self, self.getRow())
-        #self.rowplot.set_size_request(400, 200)
-        #table.attach(self.rowplot, 1, 2, 0, 1)
+        self.rowplot.setMinimumSize(400, 200)
+        self.layout.addWidget(self.rowplot, 0, 1)
 
         # column plot
         self.colplot = ColPlot(self, self.getCol())
-        #self.colplot.set_size_request(200, 400)
-        #table.attach(self.colplot, 0, 1, 1, 2)
+        self.colplot.setMinimumSize(200, 400)
+        self.layout.addWidget(self.colplot, 1, 0)
         
         # Set up normalization BEFORE plotting images.
         # Contrast level of 1.0 gives default normalization (changed by
@@ -582,6 +588,7 @@ class ArrayView (qt.QMainWindow):
           self.control_panel.getRowIndex(),
           self.control_panel.getColIndex(),
           cmap=cmap, norm=self.norm)
+        self.colplot.setMinimumSize(400, 400)
         #self.sliceplot.set_size_request(400, 400)
         self.sliceplot.mpl_connect(
           'motion_notify_event', self.sliceMouseMotionHandler)
@@ -589,13 +596,11 @@ class ArrayView (qt.QMainWindow):
           'button_press_event', self.sliceMouseDownHandler)
         self.sliceplot.mpl_connect(
           'button_release_event', self.sliceMouseUpHandler)
-        #table.attach(self.sliceplot, 1, 2, 1, 2)
-        #table.addWidget(self.sliceplot)
+        self.layout.addWidget(self.sliceplot, 1, 1)
 
         # status
-        self.status = StatusBar(self, self.sliceDataRange(), cmap)
+        #self.status = StatusBar(main_vbox, self.sliceDataRange(), cmap)
         #self.status.set_size_request(200,30)
-        #table.attach(self.status, 0, 2, 2, 3)
 
         self.updateDataRange()
 
@@ -748,10 +753,10 @@ class ArrayView (qt.QMainWindow):
 
 #----------------------------------------------------------------------------- 
 def arrayview(data):
-    main_win = ArrayView(data)
-    qt.qApp.setMainWidget(main_win)
-    main_win.show()
-    qt.qApp.exec_loop()
+    viewer = ArrayView(data)
+    viewer.show()
+    qApp.setMainWidget(viewer)
+    qApp.exec_loop()
 
 
 ##############################################################################
