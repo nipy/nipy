@@ -9,7 +9,10 @@ import enthought.traits as traits
 from cmap import cmap, interpolation
 
 class BoxViewer(traits.HasTraits):
-
+    """
+    View an image in orthogonal coordinates, i.e. sampled on the grid
+    of the MNI atlas which is the default orthogonal coordinate system.
+    """
     x = traits.Float(N.inf)
     y = traits.Float(N.inf)
     z = traits.Float(N.inf)
@@ -37,14 +40,6 @@ class BoxViewer(traits.HasTraits):
     colormap = cmap
 
     mask = traits.Any()
-    
-    """
-    View an image in orthogonal coordinates, i.e. sampled on the grid
-    of the MNI atlas which is the default orthogonal coordinate system.
-
-    If default is False, then a bounding box for image is returned
-    and used for the limits.
-    """
 
     def _m_changed(self):
         try:
@@ -72,6 +67,10 @@ class BoxViewer(traits.HasTraits):
                  M=None,
                  colormap='spectral',
                  **keywords):
+        """
+        If default is False, then a bounding box for image is returned
+        and used for the limits.
+        """
 
         self.colormap = colormap
         self.mask = mask
