@@ -15,6 +15,10 @@ suite = unittest.TestSuite((suite, neuroimaging.image.tests.suite()))
 import neuroimaging.fmri.tests 
 suite = unittest.TestSuite((suite, neuroimaging.fmri.tests.suite()))
 
+import neuroimaging.visualization.tests
+suite = unittest.TestSuite((suite, neuroimaging.visualization.tests.suite()))
+
+
 if __name__ == '__main__':
     import shutil, tempfile, os
     tmpdir = tempfile.mkdtemp(suffix='nipy_unittest')
