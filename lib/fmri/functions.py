@@ -226,14 +226,14 @@ class InterpolatedConfound(TimeFunction):
     def __init__(self, **keywords):
         TimeFunction.__init__(self, **keywords)
         if len(N.asarray(self.values).shape) == 1:
-            self.fn = interp1d(self.times, self.values, bounds_error=0)
+            self.f = interp1d(self.times, self.values, bounds_error=0)
             self.nout = 1
         else:
-            self.fn = []
+            self.f = []
             values = N.asarray(self.values)
             for i in range(values.shape[0]):
-                fn = interp1d(self.times, self.values[:,i], bounds_error=0)
-                self.fn.append(fn)
+                f = interp1d(self.times, self.values[:,i], bounds_error=0)
+                self.f.append(f)
             self.nout = values.shape[0]
             
     def __call__(self, time=None, **extra):
@@ -243,13 +243,13 @@ class InterpolatedConfound(TimeFunction):
         columns = []
 
         if self.nout == 1:
-            columns.append(self.fn(time))
+            columns.append(self.f(time))
         else:
-            if type(self.fn) in [types.ListType, types.TupleType]:
-                for fn in self.fn:
-                    columns.append(fn(time))
+            if type(self.f) in [types.ListType, types.TupleType]:
+                for f in self.f:
+                    columns.append(f(time))
             else:
-                columns = self.fn(time)
+                columns = self.f(time)
 
         if self.windowed:
             _window = N.greater(time, self.window[0]) * N.less_equal(time, self.window[1])

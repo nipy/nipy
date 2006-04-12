@@ -1,15 +1,12 @@
 import numpy as N
-from utils import ConvolveFunctions, WaveFunction, StepFunction, LinearInterpolant
+from utils import ConvolveFunctions, WaveFunction, StepFunction
 import numpy.linalg as L
 import enthought.traits as traits
-## import scipy.special
-
-interpolant = LinearInterpolant
 
 class Filter(traits.HasTraits):
     dt = traits.Float(0.2)
     tmax = traits.Float(500.0)
-    delta = N.arange(-4.2,4.2,0.1)
+    delta = N.arange(-4.5,4.6,0.1)
 
     '''Takes a list of impulse response functions (IRFs): main purpose is to convolve a functions with each IRF for Design. The class assumes the range of the filter is effectively 50 seconds, can be changed by setting tmax -- this is just for the __mul__ method for convolution.'''
 
@@ -77,90 +74,6 @@ class Filter(traits.HasTraits):
         else:
             value = self.IRF(time)
         return value
-
-    def deltaPCA(self, delta, fn=None, dt=None, tmax=50., lower=-15.0, spectral=False):
-        '''
-        Perform an expansion of fn, shifted over the values in delta. Effectively, a Taylor series approximation to fn(t+delta), in delta, with basis given by the filter elements. If fn is None, it assumes fn=IRF[0], that is the first filter.
-
-        >>> from numpy.random import *
-        >>> from BrainSTAT.fMRIstat import HRF
-        >>> from pylab import *
-        >>> from numpy import *
-        >>>
-        >>> ddelta = 0.25
-        >>> delta = N.arange(-4.5,4.5+ddelta, ddelta)
-        >>> time = N.arange(0,20,0.2)
-        >>>
-        >>> hrf = HRF.HRF(deriv=True)
-        >>>
-        >>> canonical = HRF.canonical
-        >>> taylor = hrf.deltaPCA(delta)
-        >>> curplot = plot(time, taylor.components[1](time))
-        >>> curplot = plot(time, taylor.components[0](time))
-        >>> curtitle=title('Shift using Taylor series -- components')
-        >>> show()
-        >>>
-        >>> curplot = plot(delta, taylor.coef[1](delta))
-        >>> curplot = plot(delta, taylor.coef[0](delta))
-        >>> curtitle = title('Shift using Taylor series -- coefficients')
-        >>> show()
-        >>>
-        >>> curplot = plot(delta, taylor.inverse(delta))
-        >>> curplot = plot(taylor.coef[1](delta) / taylor.coef[0](delta), delta)
-        >>> curtitle = title('Shift using Taylor series -- inverting w1/w0')
-        >>> show()
-
-
-        '''
-        if self.n != 2:
-            raise ValueError, "Taylor series approximation assumes IRF has two components, IRF[0] -- a canonical IRF and IRF[1], its derivative."
-
-        if not spectral: # use Taylor series approximation
-            if dt is None:
-                dt = self.dt
-            time = N.arange(lower, tmax, dt)
-            ntime = time.shape[0]
-
-            if fn is None:
-                fn = self.IRF[0]
-
-            W = []
-            H = []
-
-            for i in range(delta.shape[0]):
-                H.append(fn(time - delta[i]))
-            H = N.array(H)
-
-            if self.n >= 2:
-                for _IRF in self.IRF:
-                    W.append(_IRF(time))
-                W = N.array(W)
-            else:
-                W = self.IRF(time)
-                W.shape = (W.shape[0], 1)
-
-            W = N.transpose(W)
-            WH = dot(L.pinv(W), N.transpose(H))
-
-            coef = []
-            for i in range(self.n):
-                coef.append(interpolant(delta, WH[i]))
-            
-            def approx(time, delta):
-                value = 0
-                for i in range(self.n):
-                    value = value + coef[i](delta) * self.IRF[i](time)
-                return value
-
-            approx.coef = coef
-            approx.components = self.IRF
-            
-            approx.theta, approx.inverse, approx.dinverse, approx.forward, approx.dforward = invertR(delta, approx.coef)
-        
-            return approx
-        else:
-            return deltaPCAsvd(self.IRF[0], delta, dt=dt, tmax=tmax, lower=lower, ncomp=2)
-
 
 class GammaDENS:
     """
@@ -265,141 +178,6 @@ class FIR(Filter):
         for start, duration in parameters:
             fns.append(WaveFunction(start, duration, 1.0))
         Filter.__init__(self, fns)
-      
-def invertR(delta, IRF, niter=20, verbose=False):
-    """
-    If IRF has 2 components (w0, w1) return an estimate of the inverse of r=w1/w0, as in Liao et al. (2002). Fits a simple arctan model to the ratio w1/w0.?
-
-    
-
-    """
-
-    R = IRF[1](delta) / IRF[0](delta)
-
-    def f(x, theta):
-        a, b, c = theta
-        _x = x[:,0]
-        return a * N.arctan(b * _x) + c
-
-    def grad(x, theta):
-        a, b, c = theta
-        value = N.zeros((3, x.shape[0]), N.Float)
-        _x = x[:,0]
-        value[0] = N.arctan(b * _x)
-        value[1] = a / (1. + (b * _x) ** 2) * _x
-        value[2] = 1.
-        return N.transpose(value)
-
-    c = delta.max() / (N.pi/2)
-    n = delta.shape[0]
-    delta0 = (delta[n/2] - delta[n/2-1])/(R[n/2] - R[n/2-1])
-    if delta0 < 0:
-        c = (delta.max() / (N.pi/2)) * 1.2
-    else:
-        c = -(delta.max() / (N.pi/2)) * 1.2
-
-    from neuroimaging.statistics import nlsmodel
-    R.shape = (R.shape[0], 1)
-    model = nlsmodel.NLSModel(Y=delta,
-                              design=R,
-                              f=f,
-                              grad=grad,
-                              theta=N.array([c, 1./(c*delta0), 0.]),
-                              niter=niter)
-
-    for iteration in model:
-        if verbose:
-            print model.theta
-        model.next()
-
-    a, b, c = model.theta
-
-    def _deltahat(r):
-        return a * N.arctan(b * r) + c
-
-    def _ddeltahat(r):
-        return a * b / (1 + (b * r)**2) 
-
-    def _deltahatinv(d):
-        return N.tan((d - c) / a) / b
-
-    def _ddeltahatinv(d):
-        return 1. / (a * b * N.cos((d - c) / a)**2)
-
-    for fn in [_deltahat, _ddeltahat, _deltahatinv, _ddeltahatinv]:
-        setattr(fn, 'a', a)
-        setattr(fn, 'b', b)
-        setattr(fn, 'c', c)
-
-    return model.theta, _deltahat, _ddeltahat, _deltahatinv, _ddeltahatinv
-
-def deltaPCAsvd(fn, delta, dt=None, tmax=50., lower=-15.0, ncomp=2):
-    '''
-    Perform a PCA expansion of fn, shifted over the values in delta. Effectively, a Taylor series approximation to fn(t+delta), in delta, with basis given by the singular value decomposition of the matrix.
-
-    >>> from BrainSTAT.fMRIstat.HRF import HRF
-    >>> from BrainSTAT.Visualization.Pylab import multipleLinePlot
-    >>> from pylab import *
-    >>> from numpy import *
-    >>> time = N.arange(0,24,0.2)
-    >>> delta = N.arange(-4.,4.,0.1)
-    >>>
-    >>> IRF = HRF()
-    >>> spectral = deltaPCAsvd(IRF.IRF, delta, ncomp=2)
-    >>> multipleLinePlot(spectral.components, time)
-    >>> curtitle = title('Shift using SVD -- components')
-    >>> show()
-    >>>
-    >>> multipleLinePlot(spectral.coef, delta)
-    >>> curtitle = title('Shift using SVD -- cooefficients')
-    >>> show()
-    >>>
-    >>> curplot = plot(delta, spectral.inverse(delta))
-    >>> curplot = plot(spectral.coef[1](delta) / spectral.coef[0](delta), delta)
-    >>> curtitle = title('Shift using SVD -- inverting w1/w0')
-    >>> show()
-
-    '''
-
-    if dt is None:
-        dt = 0.01
-    time = N.arange(lower, tmax, dt)
-    ntime = time.shape[0]
-
-    W = []
-    H = []
-
-    for i in range(delta.shape[0]):
-        H.append(fn(time - delta[i]))
-    H = N.array(H)
-
-    U, S, V = L.svd(N.transpose(H), full_matrices=0)
-    prcnt_var_spectral = N.sum(S[0:ncomp]**2) / N.sum(S**2) * 100
-
-    sumU = N.sum(U[:,0])
-    
-    US = U[:,0:ncomp] / sumU
-    WS = V[0:ncomp] * sumU
-
-    coef = []
-    basis = []
-    for i in range(ncomp):
-        WS[i] = WS[i] * S[i]
-        coef.append(interpolant(delta, WS[i]))
-        basis.append(interpolant(time, US[:,i]))
-
-    def approx(time, delta):
-        value = 0
-        for i in range(ncomp):
-            value = value + coef[i](delta) * basis[i](time)
-        return N.array(value)
-
-    approx.coef = coef
-    approx.components = basis
-    if ncomp == 2:
-        approx.theta, approx.inverse, approx.dinverse, approx.forward, approx.dforward = invertR(delta, approx.coef)
-
-    return approx
 
 def _test():
     import doctest
