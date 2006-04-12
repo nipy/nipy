@@ -33,10 +33,10 @@ def ANALYZEHeaderAtt(packstr, value=None, **keywords):
     validator = ANALYZEHeaderValidator(packstr, value=value, **keywords)
     return traits.Trait(value, validator)
 
+
+##############################################################################
 class ANALYZEhdr(traits.HasTraits):
-
-    # SPM header definition
-
+    "SPM header definition"
     sizeof_hdr = ANALYZEHeaderAtt('i', seek=0, value=348)
     data_type = ANALYZEHeaderAtt('10s', seek=4, value=' '*10)
     db_name = ANALYZEHeaderAtt('18s', seek=14, value=' '*18)
@@ -105,20 +105,11 @@ class ANALYZEhdr(traits.HasTraits):
             pass
     
     def __init__(self, filename=None, **keywords):
-
-        if filename is not None:
-            self.filebase = os.path.splitext(filename)[0]
-
+        if filename is not None: self.filebase = os.path.splitext(filename)[0]
         traits.HasTraits.__init__(self ,**keywords)
-        self.hdrattnames = []
-        for name in self.trait_names():
-            trait = self.trait(name)
-            if isinstance(trait.handler, ANALYZEHeaderValidator):
-                self.hdrattnames.append(name)
-
-        if self.filebase:
-            if self.mode in ['r', 'r+']:
-                self.readheader()
+        self.hdrattnames = [name for name in self.trait_names() \
+          if isinstance(self.trait(name).handler, ANALYZEHeaderValidator)]
+        if self.filebase and self.mode in ['r', 'r+']: self.readheader()
 
     def __str__(self):
         value = ''
@@ -202,8 +193,8 @@ class ANALYZEhdr(traits.HasTraits):
 
         hdrfile.close()
 
+##############################################################################
 class ANALYZE(ANALYZEhdr):
-
     """
     A class to read and write ANALYZE format images. 
 
@@ -223,11 +214,8 @@ class ANALYZE(ANALYZEhdr):
     >>> print new.ndim
     3
     >>> new.view()
-
     """
-
     # file, mode, datatype
-    
     memmapped = traits.true
     filename = traits.Str()
     mode = traits.Trait('r', 'w', 'r+')
@@ -236,78 +224,24 @@ class ANALYZE(ANALYZEhdr):
 
     # Use mat file if it's there?
     # This will cause a problem for 4d files occasionally
-
     usematfile = traits.true
 
     # Ignore the origin as FSL does
     # This is __EQUIVALENT_TO__ setting origin=(1,)*5
-    
     ignore_origin = traits.false
 
     # Use abs(pixdim)?
-    
     abs_pixdim = traits.false
 
     # Try to squeeze 3d files?
-
     squeeze = traits.true
 
     # Vector axis?
-
     nvector = traits.Int(-1)
 
     # grid
-
     grid = traits.Any()
 
-    def _grid_changed(self):
-        try:
-            self.ndim = len(self.grid.shape)
-        except:
-            pass
-
-    def _datatype_changed(self):
-        self.getdtype()
-        
-    def getdtype(self):
-        self.typecode, self.byte = datatypes[self.datatype]
-        self.dtype = N.dtype(self.typecode)
-        self.dtype = self.dtype.newbyteorder(self.byteorder)
-
-    def _mode_changed(self):
-        _modemap = {'r':'rb', 'w':'wb', 'r+': 'rb+'}
-        self._mode = _modemap[self.mode]
-        
-    def _dimfromgrid(self, grid):
-        self.grid = python2matlab(grid)
-            
-        if not isinstance(self.grid.mapping, Affine):
-            raise ValueError, 'error: non-Affine grid in writing out ANALYZE file'
-
-        if mapping.isdiagonal(self.grid.mapping.transform[0:self.ndim,0:self.ndim]):
-            _diag = True
-        else:
-            _diag = False
-            self.writemat()
-
-        _dim = [0]*8
-        _pixdim = [0.] * 8
-        _dim[0] = self.ndim
-
-        for i in range(self.ndim):
-            _dim[i+1] = self.grid.shape[i]
-            if _diag:
-                _pixdim[i+1] = self.grid.mapping.transform[i,i]
-            else:
-                _pixdim[i+1] = 1.
-        self.dim = _dim
-        self.pixdim = _pixdim
-        if _diag:
-            origin = self.grid.mapping.map([0]*self.ndim, inverse=True)
-            self.origin = list(origin) + [0]*(5-origin.shape[0])
-        if not _diag:
-            self.origin = [0]*5
-        
     def __init__(self, **keywords):
 
         ANALYZEhdr.__init__(self, **keywords)
@@ -383,9 +317,58 @@ class ANALYZE(ANALYZEhdr):
             if self.mode is 'r':
                 self.memmap = N.memmap(self.imgfilename(), dtype=self.dtype,
                                        shape=tuple(self.grid.shape), mode='r')
-            elif self.mode in ['r+', 'w']:
+            elif self.mode in ('r+', 'w'):
                 self.memmap = N.memmap(self.imgfilename(), dtype=self.dtype,
                                        shape=tuple(self.grid.shape), mode='r+')
+
+    def _grid_changed(self):
+        try:
+            self.ndim = len(self.grid.shape)
+        except:
+            pass
+
+    def _datatype_changed(self):
+        self.getdtype()
+        
+    def getdtype(self):
+        self.typecode, self.byte = datatypes[self.datatype]
+        self.dtype = N.dtype(self.typecode)
+        self.dtype = self.dtype.newbyteorder(self.byteorder)
+
+    def _mode_changed(self):
+        _modemap = {'r':'rb', 'w':'wb', 'r+': 'rb+'}
+        self._mode = _modemap[self.mode]
+        
+    def _dimfromgrid(self, grid):
+        self.grid = python2matlab(grid)
+            
+        if not isinstance(self.grid.mapping, Affine):
+            raise ValueError, 'error: non-Affine grid in writing out ANALYZE file'
+
+        if mapping.isdiagonal(self.grid.mapping.transform[0:self.ndim,0:self.ndim]):
+            _diag = True
+        else:
+            _diag = False
+            self.writemat()
+
+        _dim = [0]*8
+        _pixdim = [0.] * 8
+        _dim[0] = self.ndim
+
+        for i in range(self.ndim):
+            _dim[i+1] = self.grid.shape[i]
+            if _diag:
+                _pixdim[i+1] = self.grid.mapping.transform[i,i]
+            else:
+                _pixdim[i+1] = 1.
+        self.dim = _dim
+        self.pixdim = _pixdim
+        if _diag:
+            origin = self.grid.mapping.map([0]*self.ndim, inverse=True)
+            self.origin = list(origin) + [0]*(5-origin.shape[0])
+        if not _diag:
+            self.origin = [0]*5
+        
 
     def __del__(self):
         if self.memmapped and hasattr(self, "memmap"):
@@ -442,7 +425,6 @@ def guess_endianness(hdrfile):
     """
     Try to guess big/little endianness of an ANALYZE file based on dim[0].
     """
-
     for order, sign in {'big':'>', 'little':'<', 'net':'!'}.items():
         hdrfile.seek(40)
         x = hdrfile.read(2)
@@ -455,9 +437,6 @@ def guess_endianness(hdrfile):
     raise ValueError, 'file format not recognized: endianness test failed'
 
 
-"""
-URLPipe class expects this.
-"""
-
+# URLPipe class expects this:
 creator = ANALYZE
 valid = ANALYZE_exts
