@@ -8,6 +8,8 @@ from matplotlib.image import AxesImage
 from matplotlib.backends.backend_qtagg import \
   FigureCanvasQTAgg as FigureCanvas
 
+from neuroimaging.visualization.qtutils import LayoutWidget, TransformedSlider
+
 def iscomplex(a): return hasattr(a, "imag")
 
 # Transforms for viewing different aspects of complex data
@@ -26,20 +28,6 @@ class Dimension (object):
         self.name = name
 
 ##############################################################################
-class LayoutWidget (QWidget):
-
-    def __init__(self, layout_class, layout_args, *args):
-        QWidget.__init__(self, *args)
-        self.layout = layout_class(self, *layout_args)
-
-    def addWidget(self, widget, *args):
-        if isinstance(self.layout, QGridLayout) and len(args)==4:
-            self.layout.addMultiCellWidget(widget, *args)
-        else:
-            self.layout.addWidget(widget, *args)
-
-
-##############################################################################
 class ViewerCanvas (FigureCanvas):
     """
     Handles common logic needed to get an mpl FigureCanvas to play nicely in
@@ -50,37 +38,6 @@ class ViewerCanvas (FigureCanvas):
         self.reparent(parent, QPoint(0,0))
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
  
-
-##############################################################################
-class RangeTransform (object):
-    def __init__(self, lower, upper, stepsize):
-        self.lower = float(lower)
-        self.upper = float(upper)
-        self.stepsize = float(stepsize)
-    def getValue(self, tick): return self.lower + self.stepsize*tick
-    def getTick(self, value): return int((value - self.lower)/self.stepsize)
-    def numTicks(self): return int((self.lower-self.upper)/self.stepsize)
-
-
-##############################################################################
-class TransformedSlider (QSlider):
-    def __init__(self, parent, value, lower, upper, stepsize, pagesize, *args):
-        QSlider.__init__(self, parent, *args)
-        self.setOrientation(QSlider.Horizontal)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.transform = RangeTransform(lower, upper, stepsize)
-        self.setMinValue(0); self.setMaxValue(self.transform.numTicks())
-        self.setValue(value)
-        self.connect(self, SIGNAL("valueChanged(int)"), self.valueChanged)
-        self.connect(self, SIGNAL("sliderMoved(int)"), self.valueChanged)
-    def getValue(self): 
-        return self.transform.getValue(self.sliderPosition)
-    def setValue(self, value):
-        self.sliderPosition = self.transform.getTick(value)
-    def valueChanged(self, tick):
-        print "TransformedSlider: value =",self.getValue()
-        self.emit(PYSIGNAL("value-changed"), (self,))
-
 
 ##############################################################################
 class DimSpinner (QSpinBox):
