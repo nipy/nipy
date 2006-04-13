@@ -130,9 +130,7 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
         box = HBox(self)
         slider.reparent(box, QPoint(0,0))
         box.addWidget(slider)
-        readout = QLabel(str(slider.getRangeValue()), box)
-        slider.connect(slider, PYSIGNAL("range-value-changed"),
-          lambda: readout.setText(str(slider.getRangeValue)))
+        readout = slider.makeReadout(box)
         box.addWidget(readout)
         self.addWidget(QLabel(label, self))
         self.addWidget(box)
@@ -165,14 +163,11 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
 
         # connect slice position sliders
         for s in self.sliders:
-            #s.get_adjustment().connect("value_changed", slider_handler)
             s.connect(s, PYSIGNAL("range-value-changed"), slider_handler)
 
         # connect contrast slider
         self.contrast_slider.connect(self.contrast_slider,
           PYSIGNAL("range-value-changed"), contrast_handler)
-        #self.contrast_slider.get_adjustment().connect(
-        #  "value_changed", contrast_handler)
 
     #-------------------------------------------------------------------------
     def getContrastLevel(self):

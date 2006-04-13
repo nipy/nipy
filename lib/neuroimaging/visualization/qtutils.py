@@ -75,6 +75,12 @@ class RangeSlider (QSlider):
     @param upper:  float upper bound.
     @param stepsize:  distance between float steps.
     """
+
+    class Readout (QLabel):
+        def setText(self, slider):
+            QLabel.setText(self, str(slider.getRangeValue()))
+            self.show()
+
     def __init__(self, parent, value, lower, upper, stepsize, orientation, *args):
         self.transform = RangeTransform(lower, upper, stepsize)
         upper_tick = self.transform.numTicks()
@@ -84,6 +90,11 @@ class RangeSlider (QSlider):
             tick_value, orientation, parent, *args)
         self.connect(self, SIGNAL("valueChanged(int)"), self.rangeValueChanged)
         self.connect(self, SIGNAL("sliderMoved(int)"), self.rangeValueChanged)
+
+    def makeReadout(self, parent):
+        readout = self.Readout(str(self.getRangeValue()), parent)
+        self.connect(self, PYSIGNAL("range-value-changed"), readout.setText)
+        return readout
 
     def getRangeValue(self): 
         return self.transform.getValue(self.value())
