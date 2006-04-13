@@ -38,11 +38,11 @@ class Resels(traits.HasTraits):
             _mask = self.mask
         if _mask is not None:
             _mask = _mask.readall().astype(N.Int)
-            nvoxel = _mask.add()
+            nvoxel = _mask.sum()
         else:
             _mask = 1.
             nvoxel = N.product(_resels.shape)
-        _resels = (_resels * _mask).add()
+        _resels = (_resels * _mask).sum()
         _fwhm = self.resel2fwhm(_resels / nvoxel)
         return _resels, _fwhm, nvoxel
 

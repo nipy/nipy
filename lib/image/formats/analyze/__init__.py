@@ -237,7 +237,7 @@ class ANALYZE(ANALYZEhdr):
     # Use mat file if it's there?
     # This will cause a problem for 4d files occasionally
 
-    usematfile = traits.false
+    usematfile = traits.true
 
     # Ignore the origin as FSL does
     # This is __EQUIVALENT_TO__ setting origin=(1,)*5
@@ -306,7 +306,7 @@ class ANALYZE(ANALYZEhdr):
             origin = self.grid.mapping.map([0]*self.ndim, inverse=True)
             self.origin = list(origin) + [0]*(5-origin.shape[0])
         if not _diag:
-            self.origin = [1]*5
+            self.origin = [0]*5
         
     def __init__(self, **keywords):
 
@@ -344,7 +344,7 @@ class ANALYZE(ANALYZEhdr):
             shape = self.dim[1:4]
         elif self.ndim == 4 and self.nvector <= 1:
             axisnames = space[::-1] + ['time']
-            origin = tuple(self.origin[0:3]) + (0,)
+            origin = tuple(self.origin[0:3]) + (1,)
             step = tuple(self.pixdim[1:5]) 
             shape = self.dim[1:5]
             if self.squeeze:
@@ -355,7 +355,7 @@ class ANALYZE(ANALYZEhdr):
                     shape = self.dim[1:4]
         elif self.ndim == 4 and self.nvector > 1:
             axisnames = ['vector_dimension'] + space[::-1]
-            origin = (0,) + self.origin[0:3]
+            origin = (1,) + self.origin[0:3]
             step = (1,) + tuple(self.pixdim[1:4])  
             shape = self.dim[1:5]
             if self.squeeze:
@@ -416,8 +416,11 @@ class ANALYZE(ANALYZEhdr):
         """
 
         if os.path.exists(self.matfilename()):
-            return mapping.fromfile(self.matfilename(), input='world', output='world',
+            m = mapping.fromfile(self.matfilename(),
+                                 input='world',
+                                 output='world',
                                  delimiter='\t')
+            return m
         else:
             if self.ndim == 4:
                 names = spacetime[::-1]

@@ -42,7 +42,7 @@ class HRF(filters.Filter,traits.HasTraits):
     
     def __init__(self, IRF=glover, deriv=False, delta=filters.Filter.delta):
         if deriv:
-            dIRF = IRF.deriv()
+            dIRF = IRF.deriv(const=-1.)
             filters.Filter.__init__(self, [IRF, dIRF])
             self.delay = self.deltaPCA(delta, spectral=True)
             self.names = ['glover', 'dglover']

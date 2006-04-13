@@ -163,6 +163,9 @@ class Image(traits.HasTraits):
             _data = _clean(self.readall(**keywords))
         else:
             _data = self.readall(**keywords)
+
+        if hasattr(self, 'postread'):
+            _data = self.postread(_data)
         return Image(_data, grid=self.grid, **keywords)
 
     def tofile(self, filename, array=True, **keywords):
@@ -188,7 +191,10 @@ class Image(traits.HasTraits):
         Read an entire Image object, returning a numpy, not another instance of Image. By default, it does not read 4d images. Missing values are filled in with the value of fill (default=self.fill=0.0).
         '''
 
-        _slice = slice(0, self.grid.shape[0], 1)
+        try:
+            _slice = self.grid.iterator.allslice
+        except:
+            _slice = slice(0, self.shape[0], 1)
         value = self.image.getslice(_slice)
 
         if clean:

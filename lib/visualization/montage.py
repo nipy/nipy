@@ -76,9 +76,7 @@ class Montage(traits.HasTraits):
                 self.axes[ij] = pylab.axes([self.xlbuf + j * dx, 
                                             self.ybuf + i * dy,
                                             dx, dy])
-                print ij, [self.xlbuf + j * dx, 
-                                            self.ybuf + i * dy,
-                                            dx, dy]
+
                 self.axes[ij].set_xticklabels([])
                 self.axes[ij].set_yticks([])
                 

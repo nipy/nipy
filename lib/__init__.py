@@ -1,3 +1,7 @@
-import matplotlib
-# ensure that matplotlib is using numpy for its numeric backend
-matplotlib.rcParams['numerix'] = 'numpy'
+import image
+import reference
+import fmri
+import statistics
+import visualization
+
+

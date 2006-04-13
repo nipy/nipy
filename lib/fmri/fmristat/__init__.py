@@ -10,6 +10,7 @@ import numpy as N
 import numpy.linalg as L
 import numpy.random as R
 import scipy.ndimage
+from neuroimaging.image.fwhm import fastFWHM
 
 from delay import DelayContrast, DelayContrastOutput
 
@@ -53,13 +54,16 @@ class fMRIStatOLS(iterators.LinearModelIterator):
     
     formula = traits.Any()
     slicetimes = traits.Any()
-    fwhm = traits.Float(6.0)
+    fwhm_rho = traits.Float(6.)
+    fwhm_data = traits.Float(6.)
+    target_df = traits.Float(100.)
     nmax = traits.Int(200) # maximum number of rho values
     mask = traits.Any()
     path = traits.String('fmristat_run')
     resid = traits.false
     clobber = traits.false
-    
+    output_fwhm = traits.false
+
     def __init__(self, fmri_image, outputs=[], **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.fmri_image = fmri.fMRIImage(fmri_image)
@@ -73,10 +77,10 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         self.outputs.append(self.rho_estimator)
         self.dmatrix = self.formula.design(time=self.fmri_image.frametimes)
 
-        if self.resid:
+        if self.resid or self.output_fwhm:
             self.resid_output = ResidOutput(self.fmri_image.grid, path=self.path, basename='OLSresid', clobber=self.clobber)
             self.outputs.append(self.resid_output)
-            
+
         self.setup_output()
         
     def model(self, **keywords):
@@ -93,10 +97,23 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         iterators.LinearModelIterator.fit(self, **keywords)
 
         sgrid = self.fmri_image.grid.subgrid(0)
-##      this will fail in general!
-        sigma = imutils.fwhm2sigma(self.fwhm / N.array(self.fmri_image.image.pixdim[1:4][::-1]))
 
-##         smoother = kernel_smooth.LinearFilter(sgrid, fwhm=self.fwhm)
+        if self.output_fwhm:
+            resid = fmri.fMRIImage(self.resid_output.img)
+            fwhmest = fastFWHM(resid, fwhm=os.path.join(self.path, 'fwhmOLS.img'), clobber=self.clobber)
+            fwhmest()
+            self.fwhm_data = fwhmest.integrate(mask=self.mask)[1]
+            print 'FWHM for data estimated as: %02f' % self.fwhm_data
+
+        if self.reference is not None:
+            self.estimateFWHM_AR(self.reference)
+            
+##      this will fail for non-affine grids, or grids
+##      whose axes are not aligned in the standard way            
+
+        sigma = imutils.fwhm2sigma(self.fwhm_rho / N.array(self.fmri_image.image.pixdim[1:4][::-1]))
+
+##         smoother = kernel_smooth.LinearFilter(sgrid, fwhm=self.fwhm_rho)
 ##         self.rho_estimator.img.grid = sgrid
 ##         self.rho = smoother.smooth(self.rho_estimator.img)
 
@@ -163,7 +180,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
 
     def estimateFWHM_AR(self, reference,
-                        fwhm_data=10., ARorder=1, df_target=100.):
+                        ARorder=1, df_target=100.):
         """
         Estimate smoothing of AR coefficient to get
         a targeted df.
@@ -186,13 +203,21 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
         ndim = len(self.fmri_image.shape) - 1
 
-        def df_eff(fwhm_filter):
-            f = N.pow(1 + 2. * (fwhm_filter / fwhm_data)**2, -ndim/2.)
-            return utils.rank(self.dmatrix) / (1 + 2. * f * tau)
-            
-        df_eff_inv = utils.monotone_fn_inverter(df_eff, arange(0, 50, 0.1))
-        self.fwhm = df_eff_inv(self.df_target)
+        dfresid = self.fmri_image.shape[0] - utils.rank(self.dmatrix)
 
+        def df_eff(fwhm_filter):
+            f = N.power(1 + 2. * (fwhm_filter / self.fwhm_data)**2, -ndim/2.)
+            return dfresid / (1 + 2. * f * tau)
+            
+        df_eff_inv = utils.monotone_fn_inverter(df_eff, N.linspace(0, 50, 500))
+        if df_eff(0) > df_target:
+            self.fwhm_rho = 0.
+        else:
+            try:
+                self.fwhm_rho = df_eff_inv(df_target)[0]
+            except:
+                self.fwhm_rho = 0.
+        print 'FWHM for AR estimated as: %02f' % self.fwhm_rho
 
 
 class fMRIStatAR(iterators.LinearModelIterator):

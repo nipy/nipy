@@ -25,6 +25,9 @@ class SliceIterator(Slicer):
     def __init__(self, shape, **keywords):
         traits.HasTraits.__init__(self, **keywords)
         Slicer.__init__(self, shape, **keywords)
+        self.allslice = [slice(self.start[i],
+                               self.end[i],
+                               self.step[i]) for i in range(self.nslicedim)]
 
     def next(self):
         _slice, isend = Slicer.next(self)
@@ -36,7 +39,7 @@ class AllSliceIterator(Slicer):
     parallel = traits.false
 
     def __iter__(self):
-        self.end = False
+        self.isend = False
         return self
 
     def _parallel_changed(self):
@@ -46,13 +49,13 @@ class AllSliceIterator(Slicer):
     def __init__(self, shape, **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.shape = shape
-        self.end = False
+        self.isend = False
 
     def next(self):
-        if self.end:
+        if self.isend:
             raise StopIteration
         _slice = slice(0, self.shape[0], 1)
-        self.end = True
+        self.isend = True
         return SliceIteratorNext(slice=_slice, type='slice')
 
 class ParcelIteratorNext(IteratorNext):
@@ -85,6 +88,7 @@ class ParcelIterator:
         else:
             self.labels.shape = (self.labels.shape[0],
                                  N.product(self.labels.shape[1:]))
+
 
 
     def __iter__(self):
@@ -126,6 +130,7 @@ class SliceParcelIterator:
     def __init__(self, labels, keys, **keywords):
         self.labels = labels
         self.labelset = list(keys)
+
         if len(self.labels) != len(self.labelset):
             raise ValueError, 'labels and labelset do not have the same length'
 

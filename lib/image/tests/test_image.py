@@ -53,7 +53,7 @@ class AnalyzeImageTest(unittest.TestCase):
 
     def test_nondiag(self):
         self.img.grid.mapping.transform[0,1] = 3.0
-        x = self.img.tofile('tmp.img')
+        x = self.img.tofile('tmp.img', usematfile=True)
         scipy.testing.assert_almost_equal(x.grid.mapping.transform, self.img.grid.mapping.transform)
 
     def test_clobber(self):
@@ -127,7 +127,7 @@ class AnalyzeImageTest(unittest.TestCase):
         im1 = Image('http://kff.stanford.edu/FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.img')
         im2 = Image('http://kff.stanford.edu/FIAC/fiac4/fonc3/fsl/fmristat_run/contrasts/speaker/effect.img')
         im3 = Image('http://kff.stanford.edu/FIAC/fiac5/fonc2/fsl/fmristat_run/contrasts/speaker/effect.img')
-        x = image.onesample.ImageOneSample([im1,im2,im3])
+        x = image.onesample.ImageOneSample([im1,im2,im3], clobber=True)
         x.fit()
 
 def suite():

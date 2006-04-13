@@ -1,51 +1,69 @@
-import enthought.traits as TR
-from numpy import *
+import enthought.traits as traits
+import numpy as N
 
-class Slicer(TR.HasTraits):
-    ''' This class is an iterator that steps through the slices of a N-dimensional image, with slices of size N-nloopdim.'''
+class Slicer(traits.HasTraits):
+    '''
+    This class is an iterator that steps through the slices
+    of a N-dimensional array of shape shape, along a particular axis, with a
+    given step and an optional start.
 
-    shape = TR.ListInt()
-    nloopdim = TR.Int(1)
-    shift = TR.Int()
-    ndim = TR.Int()
+    The attribute nslicedim determines how long a slice is returned, only
+    step[0:nslicedim] and start[0:nslicedim] is used, where self.step
+    defaults to [1]*(nslicedim).
 
-    type = TR.String('slice')
+    More than one slice can be output at a time, using nslice.
+    '''
 
-    def _shape_changed(self):
-        self.ndim = len(self.shape)
+    axis = traits.Int(0)
+    end = traits.List()
+    step = traits.Any()
+    start = traits.Any()
+    ndim = traits.Int()
+    nslicedim = traits.Int()
+    nslice = traits.Int(1)
+    
+    type = traits.String('slice')
 
-    def __init__(self, shape, **keywords):
-        TR.HasTraits.__init__(self, **keywords)
-        self.shape = list(shape)
+    def _end_changed(self):
+        self.ndim = len(self.end)
+
+    def __init__(self, end, **keywords):
+        traits.HasTraits.__init__(self, **keywords)
+        self.end = list(end)
+
+        if self.nslicedim < self.axis + 1:
+            self.nslicedim = self.axis + 1
+
+        if self.step is None:
+            self.step = N.array([1]*self.nslicedim)
+
+        if self.start is None:
+            self.start = N.array([0]*self.nslicedim)
 
     def __iter__(self):
         self.isend = False
-        self.slice = [0]*self.nloopdim
-        self.end = tuple(array(self.shape[0:self.nloopdim]) - 1)
+        self.slice = self.start[self.axis]
+        self.last = self.end[self.axis]
         return self
 
     def next(self):
         if self.isend:
             raise StopIteration
-        value = tuple(self.slice)
-        if value == self.end:
+        _slices = []
+        for i in range(self.nslicedim):
+            if self.axis != i:
+                _slice = slice(self.start[i], self.end[i], self.step[i])
+                _slices.append(_slice)
+            else:
+                _slice = slice(self.slice,
+                               self.slice + self.nslice * self.step[i],
+                               self.step[i])
+                self.slice += self.nslice * self.step[i]
+                _slices.append(_slice)
+
+        if self.slice >= self.last:
             self.isend = True
 
-        self.slice[-1] = self.slice[-1] + 1
-        for i in range(self.nloopdim-1,0,-1):
-            if self.slice[i] == self.shape[i]:
-                self.slice[i] = 0
-                self.slice[i-1] = self.slice[i-1] + 1
-        value = list(value)
-        value[0] = value[0] + self.shift
-
-        if len(value) > 1:
-            return tuple(value), self.isend
-        else:
-            if value[0] > 0:
-                value = slice(value[0],value[0]+1)
-            else:
-                value = slice(0,1)
-            return value, self.isend
+        return _slices, self.isend
 
 

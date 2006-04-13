@@ -11,10 +11,20 @@ class SamplingGrid(traits.HasTraits):
 
     mapping = traits.Any()
     shape = traits.ListInt()
-    labels = traits.Any()
-    labelset = traits.Any()
     itertype = traits.Trait('slice', 'parcel', 'slice/parcel', 'all')
     tag = traits.Trait(uuid.Uuid())
+
+    # for parcel iterators
+
+    labels = traits.Any()
+    labelset = traits.Any()
+
+    # for slice iterators
+
+    end = traits.Any()
+    start = traits.Any()
+    step = traits.Any()
+    axis = traits.Int(0)
 
     def __init__(self, **keywords):
         traits.HasTraits.__init__(self, **keywords)
@@ -35,7 +45,16 @@ class SamplingGrid(traits.HasTraits):
     def __iter__(self):
 
         if self.itertype is 'slice':
-            self.iterator = iter(SliceIterator(self.shape))
+            if self.end is None:
+                self.end = self.shape
+            if self.start is None:
+                self.start = [0] * len(self.shape)
+            if self.step is None:
+                self.step = [1] * len(self.shape)
+            self.iterator = iter(SliceIterator(self.end,
+                                               start=self.start,
+                                               step=self.step,
+                                               axis=self.axis))
         if self.itertype is 'all':
             self.iterator = iter(AllSliceIterator(self.shape))
         elif self.itertype is 'parcel':
@@ -44,12 +63,52 @@ class SamplingGrid(traits.HasTraits):
         elif self.itertype is 'slice/parcel':
             self.iterator = iter(SliceParcelIterator(self.labels,
                                                      self.labelset))
-
         return self
 
     def next(self):
         self.itervalue = self.iterator.next()
         return self.itervalue
+
+    def slab(self, start, step, count, axis=0):
+        """
+
+        A sampling grid for a hyperslab of data from an array, i.e.
+        what would be output from a subsampling of every 2nd voxel or so.
+
+        By default, the iterator of the slab is a SliceIterator
+        with the same start, step, count and iterating over the
+        specified axis with nslicedim=1.
+
+        """
+
+        if isinstance(self.mapping, mapping.Affine):
+            ndim = len(self.shape)
+            T = 0 * self.mapping.transform
+            T[0:ndim] = self.mapping(start)
+            T[ndim, ndim] = 1.
+            for i in range(ndim):
+                v = N.zeros((ndim,))
+                w = 1 * v
+                v[i] = step[i]
+                T[0:ndim,i] = self.mapping(v) - self.mapping(w)
+            _map = mapping.Affine(self.mapping.input_coords,
+                                  self.mapping.output_coords,
+                                  T)
+        else:
+            def __map(x, start=start, step=step, _f=self.mapping):
+                v = start + step * x
+                return _f(v)
+            _map = mapping.Mapping(self.mapping.input_coords,
+                                   self.mapping.output_coords,
+                                   __map)
+
+        g = SamplingGrid(shape=count, mapping=_map)
+        g.end = N.array(start) + N.array(count) * N.array(step)
+        g.start = start
+        g.step = step
+        g.axis = axis
+        g.itertype = 'slice'
+        return iter(g)
 
 class ConcatenatedGrids(SamplingGrid):
     """

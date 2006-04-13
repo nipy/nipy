@@ -189,13 +189,13 @@ class GammaDENS:
         _x = x * N.greater_equal(x, 0)
         return self.coef * N.power(_x, self.alpha-1.) * N.exp(-self.nu*_x)
 
-    def deriv(self):
+    def deriv(self, const=1.):
         '''
         Differentiate a Gamma density. Returns a GammaCOMB that can evaluate the derivative.
         '''
-        return GammaCOMB([[self.coef*(self.alpha-1),
+        return GammaCOMB([[const*self.coef*(self.alpha-1),
                            GammaDENS(self.alpha-1., self.nu)],
-                          [-self.coef*self.nu,
+                          [-const*self.coef*self.nu,
                            GammaDENS(self.alpha, self.nu)]])
 
 class GammaCOMB:
@@ -218,10 +218,10 @@ class GammaCOMB:
             value = value + coef * fn(x)
         return value
 
-    def deriv(self):
+    def deriv(self, const=1.):
         fns = []
         for coef, fn in self.fns:
-            comb = fn.deriv()
+            comb = fn.deriv(const=const)
             comb.fns[0][0] = comb.fns[0][0] * coef
             comb.fns[1][0] = comb.fns[1][0] * coef
             fns = fns + comb.fns
@@ -238,10 +238,10 @@ class GammaHRF(Filter):
             fns.append(GammaDENS(alpha, nu))
         Filter.__init__(self, fns)
 
-    def deriv(self):
+    def deriv(self, const=1.):
         fns = []
         for fn in self.IRF:
-            fns.append(fn.deriv())
+            fns.append(fn.deriv(const=const))
         return fns
     
 class FIR(Filter):
