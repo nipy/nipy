@@ -88,6 +88,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         self.outputs.append(self.rho_estimator)
 
         self.setup_output()
+        self.dmodel = OLSModel(design=self.dmatrix)
         
     def model(self, **keywords):
         time = self.fmri_image.frametimes + self.tshift
@@ -157,7 +158,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         if not os.path.exists(self.path):
             os.makedirs(self.path)
 
-        ftime = self.fmri_image.frametimes
+        ftime = self.fmri_image.frametimes + self.tshift
         dmatrix = self.dmatrix.astype('<f8')
         ftime.shape = (ftime.shape[0],1)
         dmatrix = N.hstack([ftime, dmatrix])
@@ -165,7 +166,8 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
         outname = os.path.join(self.path, 'matrix.csv')
         outfile = file(outname, 'w')
-        outfile.write(string.join([fpformat.fix(x,4) for x in dmatrix], ',') + '\n')
+        tmatrix = [[fpformat.fix(dmatrix[i][j], 4) for j in range(dmatrix.shape[1])] for i in range(dmatrix.shape[0])]
+        outfile.write(string.join([string.join(tmatrix[i], ',') for i in range(dmatrix.shape[0])], '\n'))
         outfile.close()
 
         outname = os.path.join(self.path, 'matrix.bin')
@@ -178,7 +180,8 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
             f = pylab.gcf()
             f.clf()
-            pl = MultiPlot(self.formula, tmin=0, tmax=ftime.max(),
+
+            pl = MultiPlot(self.formula, tmin=ftime.min(), tmax=ftime.max(),
                            dt = ftime.max() / 2000., title='Column space for design matrix')
             pl.draw()
             pylab.savefig(os.path.join(self.path, 'matrix.png'))
@@ -322,5 +325,6 @@ class fMRIStatAR(iterators.LinearModelIterator):
             model = ARModel(rho=rho, design=self.designs[i])
         else:
             rho = self.iterator.grid.itervalue.label
-            model = ARModel(rho=rho, design=self.dmatrix)
+#            model = ARModel(rho=rho, design=self.dmatrix)
+            model = ARModel(rho=0., design=self.dmatrix)
         return model

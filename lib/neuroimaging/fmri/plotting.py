@@ -28,9 +28,14 @@ class MultiPlot(traits.HasTraits):
         if t is None:
             t = self.t
         self.lines = []
-        v = self.fn(time=t, **keywords)
+        if callable(self.fn):
+            v = self.fn(time=t, **keywords)
+        else:
+            v = self.fn
         if v.ndim == 1:
             v.shape = (1, v.shape[0])
+        if not callable(self.fn):
+            t = N.arange(v.shape[1])
         v = v[::-1]
             
         n = v.shape[0]

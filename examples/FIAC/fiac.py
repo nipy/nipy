@@ -115,13 +115,12 @@ def FIACevent(subj=3, run=2):
 
     return p
 
-def FIACplot(subj=3, run=3, tmin=0., tmax=476.25, dt=0.2):
+def FIACplot(subj=3, run=3, tmin=1.0, tmax=476.25, dt=0.2):
     experiment = FIACprotocol(subj=subj, run=run)
 
     t = N.arange(tmin,tmax,dt)
 
     for event in eventdict.values():
-#        print N.array(experiment[event](t)).shape, 'now'
         l = pylab.plot(t, experiment[event](t), label=event,
                        linewidth=2, linestyle='steps')
 

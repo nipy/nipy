@@ -192,13 +192,14 @@ class AROutput(fMRIRegressionOutput):
         return
     
     def extract(self, results):
-        resid = results.resid
+        resid = results.resid.reshape((results.resid.shape[0],
+                                       N.product(results.resid.shape[1:])))
         ntime = resid.shape[0]
 
-        sigma_sq = N.add.reduce(resid**2, 0)
+        sum_sq = results.scale.reshape(resid.shape[1:]) * results.df_resid()
 
-        Cov = N.zeros((self.order + 1,) + sigma_sq.shape, N.Float)
-        Cov[0] = sigma_sq
+        Cov = N.zeros((self.order + 1,) + sum_sq.shape, N.Float)
+        Cov[0] = sum_sq
         for i in range(1, self.order+1):
             Cov[i] = N.add.reduce(resid[i:] * resid[0:-i], 0)
         Cov = N.dot(self.invM, Cov)

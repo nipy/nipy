@@ -86,7 +86,7 @@ class ExperimentalRegressor(traits.HasTraits):
             v = self(time=time, namespace=namespace)
             if index is not None:
                 v = v[index]
-            return N.squeeze(v)
+            return N.squeeze(v) * 1.
 
 ##         time = N.arange(tmin, tmax, dt)
 ##         y = N.asarray(self(time=time, namespace=namespace))
@@ -227,7 +227,7 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
             obj.convolved = False
             v = obj(time=time, namespace=namespace)[j]
             obj.convolved = _c
-            return [N.squeeze(v)]
+            return [N.squeeze(v) * 1.]
 
         name = '%s[%s]' % (self.termname, `key`)
         return ExperimentalQuantitative(name, _fn)

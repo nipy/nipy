@@ -368,8 +368,6 @@ class DelayHRF(hrf.SpectralHRF):
         self.approx.theta, self.approx.inverse, self.approx.dinverse, self.approx.forward, self.approx.dforward = invertR(self.delta, self.approx.coef)
         
         self.delay = self.approx
-        self.main = self.IRF[0]
-        self.deriv = self.IRF[1]
 
 def invertR(delta, IRF, niter=20, verbose=False):
     """

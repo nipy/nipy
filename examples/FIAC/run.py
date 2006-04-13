@@ -14,7 +14,7 @@ def FIACrun(subj=3, run=3, df=5, output_fwhm=False, normalize=True):
 
     delay_irf = DelayHRF()
     irf = delay_irf[0]
-    
+
     p = FIACprotocol(subj=subj, run=run)
 
     if p:
@@ -59,13 +59,13 @@ def FIACrun(subj=3, run=3, df=5, output_fwhm=False, normalize=True):
         SSt_DSp = p['SSt_DSp'].astimefn()
         DSt_DSp = p['DSt_DSp'].astimefn()
 
-
         overall = (SSt_SSp + DSt_SSp + SSt_DSp + DSt_DSp) * 0.25
 
         # important: overall is NOT convolved with HRF even though p was!!!
-        # irf here is the canonical Glover HRF (with no derivative in this case)
+        # irf here is the first PC of the shifted Glover HRF
 
         overall = irf.convolve(overall)
+
         overall = contrast.Contrast(overall,
                                     formula,
                                     name='overall')
@@ -85,24 +85,28 @@ def FIACrun(subj=3, run=3, df=5, output_fwhm=False, normalize=True):
         interaction = irf.convolve(interaction)
         interaction = contrast.Contrast(interaction, formula, name='interaction')
         
-##         # delay
+        # delay
     
-##         delays = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp],
-##                                         [[0.5,0.5,-0.5,-0.5],
-##                                          [-0.5,0.5,-0.5,0.5],
-##                                          [-1,1,1,-1],
-##                                          [0.25,0.25,0.25,0.25]],
-##                                         formula,
-##                                         name='task',
-##                                         rownames=['speaker', 'sentence', 'interaction', 'overall'],
-##                                         IRF=delay_irf)
+        delays = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp],
+                                        [[0.5,0.5,-0.5,-0.5],
+                                         [-0.5,0.5,-0.5,0.5],
+                                         [-1,1,1,-1],
+                                         [0.25,0.25,0.25,0.25]],
+                                        formula,
+                                        name='task',
+                                        rownames=['speaker',
+                                                  'sentence',
+                                                  'interaction',
+                                                  'overall'],
+                                        IRF=delay_irf)
 
         # OLS pass
         
         OLS = fmristat.fMRIStatOLS(f, formula=formula, mask=m,
-                                   tshift=tshift,
+                                   tshift=tshift, 
                                    **OLSopts)
         OLS.reference = overall
+        model = OLS.dmodel
         
         toc = time.time()
         OLS.fit()
@@ -117,7 +121,7 @@ def FIACrun(subj=3, run=3, df=5, output_fwhm=False, normalize=True):
         
         # AR pass
         
-        contrasts = [task, overall, sentence, speaker, interaction]#, delays]
+        contrasts = [task, overall, sentence, speaker, interaction, delays]
         toc = time.time()
         AR = fmristat.fMRIStatAR(OLS, contrasts=contrasts, tshift=tshift, **ARopts)
         AR.fit()
@@ -134,7 +138,7 @@ def FIACrun(subj=3, run=3, df=5, output_fwhm=False, normalize=True):
             fwhmest()
 
         del(OLS); del(AR); gc.collect()
-    return p, formula, contrasts, delays
+    return p, formula, contrasts, delays, model
 
 
 if __name__ == '__main__':
@@ -145,4 +149,4 @@ if __name__ == '__main__':
     else:
         subj, run = (3, 3)
 
-    p, formula, contrasts, delays = FIACrun(subj=subj, run=run)
+    p, formula, contrasts, delays, model = FIACrun(subj=subj, run=run)
