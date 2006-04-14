@@ -23,5 +23,10 @@ for d in f:
     print d.shape
     means[f.label] = N.mean(d, axis=1)
 
+f.grid.labelset = [0, 2] # changing the labelset to select "regions"
+for d in f:
+    print d.shape
+
+
 pylab.plot(means[1], means[2], 'bo')
 pylab.show()
