@@ -4,7 +4,7 @@ General helper classes for handling some QT boilerplate.
 from qt import *
 
 ##############################################################################
-class LayoutWidget (QWidget):
+class LayoutWidgetMixin (object):
     """
     A QWidget that has a layout.  Child widgets may be added directly instead
     of referring to the layout.  Layout instantiation is handled internally.
@@ -13,8 +13,8 @@ class LayoutWidget (QWidget):
       instantiating the layout class.
     """
 
-    def __init__(self, layout_class, layout_args, *args):
-        QWidget.__init__(self, *args)
+    def __init__(self, layout_class, layout_args, widget_class, *args):
+        widget_class.__init__(self, *args)
         self.layout = layout_class(self, *layout_args)
 
     def addWidget(self, widget, *args):
@@ -44,13 +44,18 @@ class RangeTransform (object):
         self.lower = float(lower)
         self.upper = float(upper)
         self.stepsize = float(stepsize)
-    def getValue(self, tick): return self.lower + self.stepsize*tick
+
+    def getValue(self, tick):
+        print "lower, stepsize, tick =",self.lower,self.stepsize,tick
+        return self.lower + self.stepsize*tick
+
     def getTick(self, value): return int((value - self.lower)/self.stepsize)
+
     def numTicks(self): return int((self.lower-self.upper)/self.stepsize)
 
 
 ##############################################################################
-class TransformedSlider (QSlider):
+class RangeSlider (QSlider):
     """
     A QSlider that reports and receives its values in a discrete float range,
     rather than integer.  Uses a RangeTransform.
@@ -60,23 +65,26 @@ class TransformedSlider (QSlider):
     @param upper:  float upper bound.
     @param stepsize:  distance between float steps.
     """
-    def __init__(self, parent, value, lower, upper, stepsize, pagesize, *args):
-        QSlider.__init__(self, parent, *args)
-        self.setOrientation(QSlider.Horizontal)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+    def __init__(self, parent, value, lower, upper, stepsize, orientation, *args):
         self.transform = RangeTransform(lower, upper, stepsize)
-        self.setMinValue(0); self.setMaxValue(self.transform.numTicks())
-        self.setValue(value)
-        self.connect(self, SIGNAL("valueChanged(int)"), self.valueChanged)
-        self.connect(self, SIGNAL("sliderMoved(int)"), self.valueChanged)
-    def getValue(self): 
-        return self.transform.getValue(self.sliderPosition)
-    def setValue(self, value):
-        self.sliderPosition = self.transform.getTick(value)
-    def valueChanged(self, tick):
-        print "TransformedSlider: value =",self.getValue()
-        self.emit(PYSIGNAL("value-changed"), (self,))
+        upper_tick = self.transform.numTicks()
+        page_tick = int(upper_tick/6.)
+        QSlider.__init__(self, 0, upper_tick, page_tick,
+          self.transform.getTick(value), orientation, parent, *args)
+        self.connect(self, SIGNAL("valueChanged(int)"), self.rangeValueChanged)
+        self.connect(self, SIGNAL("sliderMoved(int)"), self.rangeValueChanged)
 
+    def getRangeValue(self): 
+        return self.transform.getValue(self.value())
+
+    def setRangeValue(self, value):
+        self.directSetValue(self.transform.getTick(value))
+
+    def rangeValueChanged(self, tick):
+        self.emit(PYSIGNAL("range-value-changed"), (self,))
+
+
+#-----------------------------------------------------------------------------
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

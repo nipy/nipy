@@ -8,7 +8,7 @@ from matplotlib.image import AxesImage
 from matplotlib.backends.backend_qtagg import \
   FigureCanvasQTAgg as FigureCanvas
 
-from neuroimaging.visualization.qtutils import LayoutWidget, TransformedSlider
+from qtutils import LayoutWidgetMixin, RangeSlider
 
 def iscomplex(a): return hasattr(a, "imag")
 
@@ -26,6 +26,7 @@ class Dimension (object):
         self.index = index
         self.size = size
         self.name = name
+
 
 ##############################################################################
 class ViewerCanvas (FigureCanvas):
@@ -48,28 +49,30 @@ class DimSpinner (QSpinBox):
 
 
 ##############################################################################
-class DimSlider (TransformedSlider):
+class DimSlider (RangeSlider):
     def __init__(self, parent, dim, *args):
-        TransformedSlider.__init__(self, parent, 0, 0, dim.size-1, 1, 8, *args)
+        RangeSlider.__init__(self, parent, 0, 0, 0, dim.size-1,
+            RangeSlider.Horizontal, *args)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.dim = dim
 
 
 ##############################################################################
-class ContrastSlider (TransformedSlider):
+class ContrastSlider (RangeSlider):
     def __init__(self, parent, *args):
-        TransformedSlider.__init__(self,
-          parent, 1.0, 0.05, 2.0, 0.05, 0.4, *args)
-        self.setValue(1.0)
+        RangeSlider.__init__(self, parent, 1.0, 0.05, 2.0, 0.05,
+            RangeSlider.Horizontal, *args)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        #self.setValue(1.0)
 
 
 ##############################################################################
-class ControlPanel (QGroupBox):
+class ControlPanel (QGroupBox, LayoutWidgetMixin):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, shape, dim_names=[], iscomplex=False, *args):
-        QWidget.__init__(self, parent, *args)
+        LayoutWidgetMixin.__init__(self, QVBoxLayout, (), QGroupBox, parent, *args)
         self._init_dimensions(shape, dim_names)
-        self.layout = QVBoxLayout()
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # spinner for row dimension
@@ -107,7 +110,7 @@ class ControlPanel (QGroupBox):
         #    main_vbox.pack_end(gtk.HSeparator(), False, False, 0)
 
         # slider for each data dimension
-        self.sliders = [DimSlider(None, dim) for dim in self.dimensions]
+        self.sliders = [DimSlider(self, dim) for dim in self.dimensions]
         for slider, dim in zip(self.sliders, self.dimensions):
             self._add_slider(slider, "%s:"%dim.name)
 
@@ -126,7 +129,7 @@ class ControlPanel (QGroupBox):
         #label = gtk.Label(label)
         #label.set_alignment(0, 0.5)
         #self.layout.addWidget(label)
-        self.layout.addWidget(slider)
+        self.addWidget(slider)
         slider.setMinimumSize(200,20)
 
     #-------------------------------------------------------------------------
@@ -158,25 +161,25 @@ class ControlPanel (QGroupBox):
         # connect slice position sliders
         for s in self.sliders:
             #s.get_adjustment().connect("value_changed", slider_handler)
-            s.connect(s, PYSIGNAL("value-changed"), slider_handler)
+            s.connect(s, PYSIGNAL("range-value-changed"), slider_handler)
 
         # connect contrast slider
         self.contrast_slider.connect(self.contrast_slider,
-          PYSIGNAL("value-changed"), contrast_handler)
+          PYSIGNAL("range-value-changed"), contrast_handler)
         #self.contrast_slider.get_adjustment().connect(
         #  "value_changed", contrast_handler)
 
     #-------------------------------------------------------------------------
     def getContrastLevel(self):
-        return self.contrast_slider.getValue()
+        return self.contrast_slider.getRangeValue()
 
     #-------------------------------------------------------------------------
     def getDimPosition(self, dnum):
-        return int(self.sliders[dnum].getValue())
+        return int(self.sliders[dnum].getRangeValue())
 
     #-------------------------------------------------------------------------
     def setDimPosition(self, dnum, index):
-        return self.sliders[dnum].setValue(int(index))
+        return self.sliders[dnum].setRangeValue(int(index))
 
     #-------------------------------------------------------------------------
     def getRowIndex(self): return self.getDimPosition(self.slice_dims[0])
@@ -408,25 +411,24 @@ class ColorBar (ViewerCanvas):
 
 
 ##############################################################################
-class StatusBar (QFrame):
+class StatusBar (QFrame, LayoutWidgetMixin):
 
     #-------------------------------------------------------------------------
     def __init__(self, parent, range, cmap, *args):
-        QFrame.__init__(self, parent, *args)
+        LayoutWidgetMixin.__init__(self, QHBoxLayout, (), QFrame, parent, *args)
         self.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
-        self.layout = QHBoxLayout()
 
         # colorbar
         self.colorbar = ColorBar(self, range, cmap=cmap)
         self.colorbar.setFixedSize(400,20)
-        self.layout.addWidget(self.colorbar)
+        self.addWidget(self.colorbar)
  
         # pixel value
         self.label = QLabel(self)
         #self.label.set_alignment(2, 0.5)
         self.label.setFixedSize(140,20)
         #self.label.set_line_wrap(True)
-        self.layout.addWidget(self.label)
+        self.addWidget(self.label)
 
     #-------------------------------------------------------------------------
     def setLabel(self, text):
@@ -434,7 +436,7 @@ class StatusBar (QFrame):
 
 
 ##############################################################################
-class ArrayView (LayoutWidget):
+class ArrayView (QWidget, LayoutWidgetMixin):
     #mag_norm = normalize()
     #phs_norm = normalize(-pi, pi)
     _mouse_x = _mouse_y = None
@@ -442,7 +444,7 @@ class ArrayView (LayoutWidget):
 
     #-------------------------------------------------------------------------
     def __init__(self, data, dim_names=[], title="sliceview", cmap=cm.bone):
-        LayoutWidget.__init__(self, QGridLayout, (3,2,5))
+        LayoutWidgetMixin.__init__(self, QGridLayout, (3,2,5), QWidget)
         self.setCaption("Array Viewer")
         self.layout.setRowStretch(1,1)
         self.layout.setColStretch(1,1)
