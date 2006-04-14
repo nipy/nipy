@@ -31,15 +31,11 @@ class ImageOneSample(onesample.OneSampleIterator):
     which = traits.Trait('mean', 'varatio')
 
     def weights(self):
+        ## TO DO: rename this methods, something like "getinput"
         if self.haveW:
             w = self.witerator.next(value=self.iterator.grid.itervalue)
         else:
             return 1.
-
-        if self.weight_type == 'sd':
-            w = 1. / N.power(w, 2)
-        elif self.weight_type == 'var':
-            w = 1. / w
 
         if self.varatioimg is not None:
             value = self.iterator.grid.itervalue
