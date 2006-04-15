@@ -90,3 +90,6 @@ tsdiag = TSDiagnostics(sample)
 tsdiag.compute()
 
         
+tsdiag.sd_image.tofile('diag_sd.img')
+tsdiag.mean_image.tofile('diag_mean.img')
+tsdiag.mse_image.tofile('diag_mse.img')
