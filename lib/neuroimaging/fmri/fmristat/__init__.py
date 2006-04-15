@@ -325,6 +325,5 @@ class fMRIStatAR(iterators.LinearModelIterator):
             model = ARModel(rho=rho, design=self.designs[i])
         else:
             rho = self.iterator.grid.itervalue.label
-#            model = ARModel(rho=rho, design=self.dmatrix)
-            model = ARModel(rho=0., design=self.dmatrix)
+            model = ARModel(rho=rho, design=self.dmatrix)
         return model
