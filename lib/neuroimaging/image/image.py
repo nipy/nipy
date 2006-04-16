@@ -13,11 +13,7 @@ spaceaxes = axis.space
 
 class Image(traits.HasTraits):
 
-    nslicedim = traits.Int(2)
     shape = traits.ListInt()
-    spatial_shape = traits.ListInt()
-    start = traits.ListFloat()
-    step = traits.ListFloat()
 
     def __init__(self, image, **keywords):
         '''
