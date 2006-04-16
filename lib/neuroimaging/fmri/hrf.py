@@ -21,8 +21,9 @@ def _glover(peak_hrf=[5.4, 10.8], fwhm_hrf=[5.2, 7.35], dip=0.35):
 
 # Glover, 'canonical HRF'
 
-glover = filters.Filter(_glover())
-glover_deriv = filters.Filter([_glover(), _glover().deriv(const=-1.)])
+glover = filters.Filter(_glover(), names=['glover'])
+glover_deriv = filters.Filter([_glover(), _glover().deriv(const=-1.)],
+                              names=['glover', 'dglover'])
 canonical = glover
 
 # AFNI's default HRF (at least at some point in the past)
@@ -100,7 +101,8 @@ class SpectralHRF(filters.Filter):
 
         basis = []
         for i in range(self.ncomp):
-            b = interpolant(N.hstack([time, N.inf]), N.hstack([U[:,i], 0]))
+            b = interpolant(time, U[:,i])
+            
             if i == 0:
                 b_int = (b(time) * self.dt).sum()
                 b.f.y /= N.fabs(b_int)

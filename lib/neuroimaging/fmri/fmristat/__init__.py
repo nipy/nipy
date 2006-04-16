@@ -286,11 +286,15 @@ class fMRIStatAR(iterators.LinearModelIterator):
                                               clobber=self.clobber,
                                               frametimes=ftime)
                 elif contrasts[i].rank == 1:
-                    cur = TContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path,
-                                          clobber=self.clobber, frametimes=ftime)
+                    cur = TContrastOutput(self.fmri_image.grid, contrasts[i],
+                                          path=self.path,
+                                          clobber=self.clobber,
+                                          frametimes=ftime)
                 else:
-                    cur = FContrastOutput(self.fmri_image.grid, contrasts[i], path=self.path,
-                                          clobber=self.clobber, frametimes=ftime)
+                    cur = FContrastOutput(self.fmri_image.grid, contrasts[i],
+                                          path=self.path,
+                                          clobber=self.clobber,
+                                          frametimes=ftime)
                 self.contrasts.append(cur)
                 
         # setup the iterator
@@ -304,12 +308,14 @@ class fMRIStatAR(iterators.LinearModelIterator):
         self.outputs += self.contrasts
 
         if self.resid:
-            self.resid_output = ResidOutput(self.fmri_image.grid, path=self.path, basename='ARresid', clobber=self.clobber)
+            self.resid_output = ResidOutput(self.fmri_image.grid,
+                                            path=self.path,
+                                            basename='ARresid',
+                                            clobber=self.clobber)
             self.outputs.append(self.resid_output)
 
     def model(self, **keywords):
         self.j += 1
-        time = self.fmri_image.frametimes
         if self.slicetimes is not None:
             rho = self.iterator.grid.itervalue.label
             i = self.iterator.grid.itervalue.slice[1]
@@ -318,31 +324,3 @@ class fMRIStatAR(iterators.LinearModelIterator):
             rho = self.iterator.grid.itervalue.label
             model = ARModel(rho=rho, design=self.dmatrix)
         return model
-
-
-## class fMRIStatSession(fMRIStatIterator):
-
-##     def firstpass(self, fwhm=8.0):
-
-##         if self.slicetimes is None:
-##             self.dmatrix = self.formula(self.img.frametimes)
-##         rhoout = AROutput()
-##         fwhmout = FWHMOutput(self.fmri)
-
-##         glm = SessionGLM(self.fmri, self.design, outputs=[rhoout])#, fwhmout])
-##         glm.fit(resid=True, norm_resid=True)
-
-## #        kernel = LinearFilter3d(rhoout.image, fwhm=fwhm)
-##         self.rho = rhoout.image
-##         self.rho.tofile('rho.img')
-##         self.fwhm = fwhmout.fwhmest.fwhm
-
-##     def secondpass(self):
-
-##         self.labels = floor(self.rho * 100.) / 100.
-##         self.fmri = LabelledfMRIImage(self.fmri, self.labels)
-        
-##         glm = SessionGLM(self.fmri, self.design)
-##         glm.fit(resid=True, norm_resid=True)
-
-

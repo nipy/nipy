@@ -86,12 +86,10 @@ class ImageOneSample(onesample.OneSampleIterator):
                                                ext=self.ext))
         else:
             if self.est_varatio:
-                self.outputs.append(VaratioOutput(self.iterator.grid, path=self.path, clobber=self.clobber,
-                                                  ext=self.ext))
+                self.outputs.append(VaratioOutput(self.iterator.grid, path=self.path, clobber=self.clobber, ext=self.ext))
 
             if self.est_varfix:
-                self.outputs.append(VarfixOutput(self.iterator.grid, path=self.path, clobber=self.clobber,
-                                                 ext=self.ext))
+                self.outputs.append(VarfixOutput(self.iterator.grid, path=self.path, clobber=self.clobber, ext=self.ext))
 
     def fit(self):
         onesample.OneSampleIterator.fit(self, which=self.which)

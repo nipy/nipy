@@ -68,7 +68,8 @@ class ExperimentalRegressor(traits.HasTraits):
 
         return self
 
-    def astimefn(self, namespace=namespace, tmax=1000., tmin=0., dt=0.1):
+    def astimefn(self, namespace=namespace,
+                 index=None):
         """
         Return a TimeFunction object that can be added, subtracted, etc.
 
@@ -78,10 +79,24 @@ class ExperimentalRegressor(traits.HasTraits):
         """
 
         nout = len(self.names())
+        if index is not None:
+            nout = 1
 
-        time = N.arange(tmin, tmax, dt)
-        y = N.array(self(time=time, namespace=namespace))
-        _f = LinearInterpolant(time, y)
+        def _f(time, index=index, namespace=namespace):
+            v = self(time=time, namespace=namespace)
+            if index is not None:
+                v = v[index]
+            return N.squeeze(v)
+
+##         time = N.arange(tmin, tmax, dt)
+##         y = N.asarray(self(time=time, namespace=namespace))
+##         if index is not None:
+##             Y = y[index]
+##         elif y.shape[0] == 1:
+##             Y = y[0]
+##         else:
+##             Y = y
+##         _f = LinearInterpolant(time, Y)
         v = TimeFunction(fn=_f, nout=nout)
         return v
 
@@ -198,21 +213,23 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         return ExperimentalQuantitative('%s:maineffect' % self.termname, f)
 
     def __getitem__(self, key):
-        _c = self.convolved
-        self.convolved = False
-        f = self.astimefn()
 
         if self.events.has_key(key) not in self.events.keys():
             l = self.events.keys()
             j = l.index(key)
         else:
             raise ValueError, 'key not found'            
-        def _fn(namespace=namespace, time=None, j=j, f=f, **extra):
-            v = f(time=time)
-            return [N.squeeze(v[j])]
-        name = '%s[%s]' % (self.termname, `key`)
-        self.convolved = _c
 
+        def _fn(namespace=namespace, time=None, j=j,
+                obj=self, 
+                **extra):
+            _c = obj.convolved
+            obj.convolved = False
+            v = obj(time=time, namespace=namespace)[j]
+            obj.convolved = _c
+            return [N.squeeze(v)]
+
+        name = '%s[%s]' % (self.termname, `key`)
         return ExperimentalQuantitative(name, _fn)
 
     def __call__(self, time=None, namespace=None, includedown=False, **keywords):

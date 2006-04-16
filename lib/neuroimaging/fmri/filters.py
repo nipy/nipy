@@ -2,13 +2,29 @@ import numpy as N
 from utils import ConvolveFunctions, WaveFunction, StepFunction
 import numpy.linalg as L
 import enthought.traits as traits
+import types
 
 class Filter(traits.HasTraits):
-    dt = traits.Float(0.2)
+    dt = traits.Float(0.02)
     tmax = traits.Float(500.0)
     delta = N.arange(-4.5,4.6,0.1)
+    tmin = traits.Float(-10.)
 
     '''Takes a list of impulse response functions (IRFs): main purpose is to convolve a functions with each IRF for Design. The class assumes the range of the filter is effectively 50 seconds, can be changed by setting tmax -- this is just for the __mul__ method for convolution.'''
+
+    def __getitem__(self, i):
+        if type(i) is not types.IntType:
+            raise ValueError, 'integer needed'
+        if self.n == 1:
+            if i != 0:
+                raise IndexError, 'invalid index'
+            try:
+                IRF = self.IRF[0]
+            except:
+                IRF = self.IRF
+            return Filter(IRF, names=[self.names[0]])
+        else:
+            return Filter(self.IRF[i], names=[self.names[i]])
 
     def __init__(self, IRF, **keywords):
         traits.HasTraits.__init__(self, **keywords)
@@ -40,7 +56,7 @@ class Filter(traits.HasTraits):
         if self.n != other.n:
             raise ValueError, 'number of dimensions in Filters must agree'
         newIRF = []
-        interval = (0, self.tmax + other.tmax)
+        interval = (self.tmin, self.tmax + other.tmax)
         for i in range(self.n):
             curfn = ConvolveFunctions(self.IRF[i], other.IRF[i], interval, self.dt)
             newIRF.append(curfn)
@@ -54,7 +70,7 @@ class Filter(traits.HasTraits):
         if dt is None:
             dt = self.dt
         if interval is None:
-            interval = [0, self.tmax]
+            interval = [self.tmin, self.tmax]
         if self.n > 1:
             value = []
             for _IRF in self.IRF:

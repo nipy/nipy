@@ -46,6 +46,7 @@ class DelayContrast(contrast.Contrast):
             self.IRF = canonical
         else:
             self.IRF = IRF
+
         self.delayflag = True
 
         self.name = name
@@ -96,8 +97,10 @@ class DelayContrastOutput(TContrastOutput):
         """
 
         self.contrast.getmatrix(time=self.frametimes)
-        self.effectmatrix = self.contrast.matrix[0::2]
-        self.deltamatrix = self.contrast.matrix[1::2]
+
+        cnrow = self.contrast.matrix.shape[0] / 2
+        self.effectmatrix = self.contrast.matrix[0:cnrow]
+        self.deltamatrix = self.contrast.matrix[cnrow:]
 
     def setup_output(self):
         """
@@ -118,8 +121,9 @@ class DelayContrastOutput(TContrastOutput):
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
 
+            cnrow = self.contrast.matrix.shape[0] / 2
             l = N.zeros(self.contrast.matrix.shape[0], N.Float)
-            l[::2] = self.contrast.weights[i]
+            l[0:cnrow] = self.contrast.weights[i]
 
             outname = os.path.join(outdir, 't%s' % self.ext)
             timg = image.Image(outname, mode='w', grid=self.outgrid,
@@ -364,6 +368,8 @@ class DelayHRF(hrf.SpectralHRF):
         self.approx.theta, self.approx.inverse, self.approx.dinverse, self.approx.forward, self.approx.dforward = invertR(self.delta, self.approx.coef)
         
         self.delay = self.approx
+        self.main = self.IRF[0]
+        self.deriv = self.IRF[1]
 
 def invertR(delta, IRF, niter=20, verbose=False):
     """
@@ -405,8 +411,6 @@ def invertR(delta, IRF, niter=20, verbose=False):
                               niter=niter)
 
     for iteration in model:
-        if verbose:
-            print model.theta
         model.next()
 
     a, b, c = model.theta

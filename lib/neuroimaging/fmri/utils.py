@@ -22,8 +22,8 @@ class LinearInterpolant:
     the interpolant to take a keywords argument \'time=\'.
     """
 
-    def __init__(self, x, y, k=1):
-        self.f = scipy.interpolate.interp1d(x, y)
+    def __init__(self, x, y, k=1, fill_value=0.):
+        self.f = scipy.interpolate.interp1d(x, y, bounds_error=0, fill_value=0.)
 
     def __call__(self, time=None, **keywords):
         return self.f(time)
@@ -40,7 +40,7 @@ class WaveFunction:
 # return the convolution (as a StepFunction) of two functions over interval,
 # with grid size dt
 
-def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, offset1=0, offset2=0, normalize=[0,1]):
+def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, normalize=[0,1]):
     """
     Convolve fn1 with fn2 -- where fn1 may return a multidimensional output.
     """
@@ -48,8 +48,8 @@ def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, offset1=0, offset2=
     ltime = max(interval) - min(interval)
     time = N.arange(min(interval), max(interval) + padding_f * ltime, dt)
 
-    _fn1 = N.array(fn1(time  + offset1))
-    _fn2 = N.array(fn2(time + offset2))
+    _fn1 = N.array(fn1(time))
+    _fn2 = N.array(fn2(time))
 
     if normalize[0]:
         _fn1 = _fn1 / N.sqrt(N.add.reduce(_fn1**2))

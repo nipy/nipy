@@ -197,11 +197,11 @@ class AROutput(fMRIRegressionOutput):
 
         sigma_sq = N.add.reduce(resid**2, 0)
 
-        Cov = N.zeros((self.order + 1, sigma_sq.shape), N.Float)
-        for i in range(self.order+1):
-            Cov[i] = N.add.reduce(resid[i:,] * resid[0:-i], 0)
-        Cov = N.dot(invM, Cov)
-        test = N.less_equal(Cov[0], 0).astype(N.Int)
+        Cov = N.zeros((self.order + 1,) + sigma_sq.shape, N.Float)
+        Cov[0] = sigma_sq
+        for i in range(1, self.order+1):
+            Cov[i] = N.add.reduce(resid[i:] * resid[0:-i], 0)
+        Cov = N.dot(self.invM, Cov)
         output = Cov[1:] * utils.recipr(Cov[0])
         return N.squeeze(output)
 
