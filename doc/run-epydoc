@@ -1,0 +1,12 @@
+#!/bin/sh
+PYTHON_PATH=../lib
+output_dir=api
+mkdir -p ${output_dir}
+epydoc -qqqq \
+  --output ${output_dir} \
+  --name nipy \
+  --css grayscale \
+  --no-private \
+  --inheritance=listed \
+  --ignore-param-mismatch \
+  $PYTHON_PATH/*.py $PYTHON_PATH/neuroimaging
