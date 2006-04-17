@@ -3,14 +3,7 @@ from unittest import TestSuite, makeSuite, TestCase, TextTestRunner
 from glob import glob
 from os.path import join, dirname, basename
 
-from neuroimaging import nontest_packages
-
-#-----------------------------------------------------------------------------
-def import_from(modulename, objectname):
-    "Import and return objectname from modulename."
-    module = __import__(modulename, globals(), locals(), (objectname,))
-    try: return getattr(module, objectname)
-    except AttributeError: return None
+from neuroimaging import nontest_packages, import_from
 
 #-----------------------------------------------------------------------------
 def run_suite(suite):
