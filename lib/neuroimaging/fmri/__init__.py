@@ -151,7 +151,7 @@ class fMRIImage(image.Image):
             if data is None:
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
-                return_value = self.buffer.compress(value.where, axis=1)
+                return_value = self.compress(value.where, axis=1)
                 if hasattr(self, 'postread'):
                     return self.postread(return_value)
                 else:

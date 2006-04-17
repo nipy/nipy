@@ -44,6 +44,12 @@ class Image(traits.HasTraits):
         self.shape = list(self.grid.shape)
         self.ndim = len(self.shape)
 
+    def __getitem__(self, slices):
+        return self.getslice(slices)
+
+    def __setitem__(self, slices, data):
+        self.writeslice(slices, data)
+
     def __del__(self):
         if self.isfile:
             try:
@@ -74,9 +80,21 @@ class Image(traits.HasTraits):
             if hasattr(self.image, 'memmap'):
                 self.buffer = self.image.memmap
             elif isinstance(self.image.data, N.ndarray):
-                self.buffer = self.image.data
+                self.buffer = self.image.data          
             self.buffer.shape = N.product(self.buffer.shape)
         return self
+
+    def compress(self, where, axis=0):
+        if hasattr(self, 'buffer'):
+            return self.buffer.compress(where, axis=axis)
+        else:
+            raise ValueError, 'no buffer: compress not supported'
+
+    def put(self, data, indices):
+        if hasattr(self, 'buffer'):
+            return self.put.compress(data, indices)
+        else:
+            raise ValueError, 'no buffer: put not supported'
 
     def next(self, value=None, data=None):
         """
@@ -107,14 +125,14 @@ class Image(traits.HasTraits):
             if data is None:
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
-                return_value = self.buffer.compress(value.where, axis=0)
+                return_value = self.compress(value.where, axis=0)
                 if hasattr(self, 'postread'):
                     return self.postread(return_value)
                 else:
                     return return_value
             else:
                 indices = N.nonzero(value.where)
-                self.buffer.put(data, indices)
+                self.put(data, indices)
 
         elif itertype == 'slice/parcel':
             if data is None:

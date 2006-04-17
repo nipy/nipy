@@ -87,7 +87,7 @@ class ArrayPipe(Pipe):
         traits.HasTraits.__init__(self, **keywords)
         self.data = data.astype(N.Float)
 
-        if self.grid is None and self.shape is []:
+        if self.grid is None and self.shape == []:
             raise ValueError, 'need grid or shape for ArrayPipe'
 
         if self.grid is None:
