@@ -7,7 +7,7 @@ def mask_and_func(subject=0, run=1, offset=5):
     m = N.zeros(M.grid.shape)
     middle = [slice(i/2-offset, i/2+offset, 1) for i in m.shape]
     m[middle] = 1
-    other = [slice(i/2-offset+1, i/2+offset+1, 1) for i in m.shape]
+    other = [slice(i/2-2*offset, i/2-offset, 1) for i in m.shape]
     m[other] = 2
     mm = ni.image.Image(m, grid=M.grid)
     f = ni.fmri.fMRIImage('http://kff.stanford.edu/FIAC/fiac%d/fonc%d/fsl/filtered_func_data.img' % (subject, run))
@@ -20,6 +20,7 @@ f.grid.labelset = [1, 2]
 
 means = {}
 for d in f:
+    print d.shape
     means[f.label] = N.mean(d, axis=1)
 
 pylab.plot(means[1], means[2], 'bo')
