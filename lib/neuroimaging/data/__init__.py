@@ -1,7 +1,17 @@
 import os
 from path import path
-from urllib import urlopen
+#from urllib import urlopen
+from urllib2 import urlopen
 from urlparse import urlparse
+
+from neuroimaging import ensuredirs
+
+#-----------------------------------------------------------------------------
+def urlexists(url):
+    try:
+        urlopen(url)
+    except: return False
+    return True
 
 
 ##############################################################################
@@ -9,42 +19,37 @@ class Cache (object):
     def __init__(self, cachepath):
         self.path = path(cachepath)
         self.setup()
-    def _uripath(self, uri):
+    def uripath(self, uri):
         (scheme, netloc, upath, params, query, fragment) = urlparse(uri)
         return self.path.joinpath(netloc, upath[1:])
     def setup(self):
-        if not self.path.exists(): self.path.makedirs()
-    def cache(self, uri, data):
-        upath = self._uripath(uri)
-        upath.dirname().makedirs()
-        file(upath, 'w').write(data)
+        if not self.path.exists(): ensuredirs(self.path)
+    def cache(self, uri):
+        if self.contains(uri): return
+        upath = self.uripath(uri)
+        ensuredirs(upath.dirname())
+        if not urlexists(uri): return
+        file(upath, 'w').write(urlopen(uri).read())
     def clear(self):
         for f in self.path.files(): f.rm()
     def contains(self, uri):
-        return self._uripath(uri).exists()
+        return self.uripath(uri).exists()
     def retrieve(self, uri):
-        return file(self._uripath(uri))
+        self.cache(uri)
+        return file(self.uripath(uri))
 
 # default global cache singleton
-cache = Cache(os.environ["HOME"]+"/.nipy/repository")
+dcache = Cache(os.environ["HOME"]+"/.nipy/repository")
 
-
-##############################################################################
-class Repository (object):
-    def __init__(self, cache=cache): self.cache = cache
-    def retrieve(self, uri):
-        if not self.cache.contains(uri):
-            self.cache.cache(uri, urlopen(uri).read())
-        return self.cache.retrieve(uri)
 
 #-----------------------------------------------------------------------------
-def retrieve(uri):
+def retrieve(uri, cache=dcache):
     """
     >>> f = retrieve('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
     >>> len(f.read())
     851968
     """
-    return Repository().retrieve(uri)
+    return cache.retrieve(uri)
 
 if __name__ == "__main__":
     import doctest
