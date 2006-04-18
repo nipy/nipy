@@ -5,6 +5,8 @@ import utils
 import pipes
 import enthought.traits as traits
 
+import neuroimaging.data
+from neuroimaging.image import formats
 from neuroimaging.reference import grid, axis, mapping
 spaceaxes = axis.space
 
@@ -17,35 +19,35 @@ class Image(traits.HasTraits):
     start = traits.ListFloat()
     step = traits.ListFloat()
 
-    def __init__(self, image, pipe=None, **keywords):
+    def __init__(self, image, **keywords):
         '''
-        Create a Image (volumetric image) object from either a file, an existing Image object, or an array.
+        Create a Image (volumetric image) object from either a file, an
+        existing Image object, or an array.
         '''
-
         traits.HasTraits.__init__(self, **keywords)
-
+        
+        # from existing Image
         if isinstance(image, Image):
             self.image = image.image
             self.isfile = image.isfile
-        elif not pipe:
-            if isinstance(image, N.ndarray) or isinstance(image, N.core.memmap):
-                self.isfile = False
-                self.image = pipes.ArrayPipe(image, **keywords)
-            elif type(image) == types.StringType:
-                self.isfile = True
-                pipe = pipes.URLPipe(image, **keywords)
-                self.image = pipe.getimage(**keywords)
-##             elif type(image) in [types.ListType, types.TupleType]:
-##                 self.image = pipes.ListPipe(image, **keywords)
-##                 self.isfile = True # just in case any are files, we should try to open/close them
-        else:
-            self.image = pipe(image, **keywords)
-            self.isfile = image.isfile
+
+        # from array
+        elif isinstance(image, N.ndarray) or isinstance(image, N.core.memmap):
+            self.isfile = False
+            self.image = pipes.ArrayPipe(image, **keywords)
+
+        # from filename or url
+        elif type(image) == types.StringType:
+            self.isfile = True
+            self.image = pipes.URLPipe(image).getimage()
+            #creator = formats.get_creator(image)
+            #print "Image: Calling Analyze wit filename=",image
+            #self.image = creator(
+            #  filename=image, datasource=neuroimaging.data.retrieve, **keywords)
             
         self.type = type(self.image)
 
         # Find spatial grid -- this is the one that will be used generally
-
         self.grid = self.image.grid
         self.shape = list(self.grid.shape)
         self.ndim = len(self.shape)

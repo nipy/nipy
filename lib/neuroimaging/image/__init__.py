@@ -1,2 +1,2 @@
 from image import Image
-import interpolation, regression, onesample
+#import interpolation, regression, onesample
