@@ -388,10 +388,9 @@ class ANALYZE(ANALYZEhdr):
                                        shape=tuple(self.grid.shape), mode='r+')
 
     def __del__(self):
-
-        if self.memmapped:
+        if self.memmapped and hasattr(self, "memmap"):
             self.memmap.sync()
-        del(self.memmap)
+            del(self.memmap)
         
     def getslice(self, slice):
         v = self.memmap[slice]
