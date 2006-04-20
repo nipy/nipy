@@ -2,6 +2,7 @@
 Insert long description here.
 """
 import re
+from path import path
 
 __version__ = "0.01a"
 
@@ -48,6 +49,11 @@ _preload_modules = (
   'neuroimaging.statistics.contrast',
   'neuroimaging.statistics.utils',
   'neuroimaging.visualization.viewer',)
+
+#-----------------------------------------------------------------------------
+def ensuredirs(dir):
+    if not isinstance(dir, path): dir= path(dir)
+    if not dir.exists(): dir.makedirs()
 
 #-----------------------------------------------------------------------------
 def preload(packages=nontest_packages):
