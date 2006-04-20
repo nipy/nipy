@@ -42,7 +42,6 @@ _preload_modules = (
   'neuroimaging.reference.grid_iterators',
   'neuroimaging.reference.mapping',
   'neuroimaging.reference.slices',
-  'neuroimaging.statistics.model',
   'neuroimaging.statistics.regression',
   'neuroimaging.statistics.classification',
   'neuroimaging.statistics.iterators',
