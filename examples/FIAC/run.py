@@ -106,7 +106,6 @@ def FIACrun(subj=3, run=3, df=5, output_fwhm=False, normalize=True):
                                    tshift=tshift, 
                                    **OLSopts)
         OLS.reference = overall
-        model = OLS.dmodel
         
         toc = time.time()
         OLS.fit()
@@ -138,7 +137,6 @@ def FIACrun(subj=3, run=3, df=5, output_fwhm=False, normalize=True):
             fwhmest()
 
         del(OLS); del(AR); gc.collect()
-    return p, formula, contrasts, delays, model
 
 
 if __name__ == '__main__':
@@ -149,4 +147,4 @@ if __name__ == '__main__':
     else:
         subj, run = (3, 3)
 
-    p, formula, contrasts, delays, model = FIACrun(subj=subj, run=run)
+    FIACrun(subj=subj, run=run)
