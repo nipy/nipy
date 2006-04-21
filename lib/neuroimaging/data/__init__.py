@@ -7,11 +7,21 @@ from urlparse import urlparse
 from neuroimaging import ensuredirs
 
 #-----------------------------------------------------------------------------
+def bool(obj):
+    if obj: return True
+    else: return False
+
+#-----------------------------------------------------------------------------
 def urlexists(url):
     try:
         urlopen(url)
     except: return False
     return True
+
+#-----------------------------------------------------------------------------
+def isurl(pathstr):
+    scheme, netloc, _,_,_,_ = urlparse(pathstr)
+    return bool(scheme and netloc)
 
 
 ##############################################################################
@@ -40,6 +50,27 @@ class Cache (object):
 
 # default global cache singleton
 dcache = Cache(os.environ["HOME"]+"/.nipy/repository")
+
+
+##############################################################################
+class Repository (object):
+    "Remote repository data source."
+    def __init__(self, baseurl, cache=dcache):
+        self._baseurl = baseurl
+        self._cache = cache
+    def _fullurl(pathstr):
+        path(self._baseurl).joinpath(pathstr)
+    def exists(self, pathstr):
+        return self._cache.contains(self._fullurl(pathstr))
+    def get(self, pathstr):
+        return self._cache.retrieve(self._fullurl(pathstr))
+
+
+##############################################################################
+class FileSystem (object):
+    "File system data source."
+    def exists(self, pathstr): return path(pathstr).exists()
+    def get(self, pathstr): return file(pathstr)
 
 
 #-----------------------------------------------------------------------------
