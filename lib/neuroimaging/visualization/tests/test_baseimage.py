@@ -14,16 +14,16 @@ class BaseImageTest(unittest.TestCase):
 
     def setUp(self):
         imgpath = neuroimaging.tests.data.datapath.joinpath("rho.img")
-        self.image = baseimage.BaseImage(str(imgpath))
+        self.image = baseimage.image_factory(str(imgpath))
         #self.interpolator = interpolation.ImageInterpolator(self.image)
         #self.m = float(self.image.readall().min())
         #self.M = float(self.image.readall().max())
 
     def test_array(self):
-        self.image.array
+        self.image.raw_array
 
     def test_arrayview(self):
-        arrayview(self.image.array)
+        arrayview(self.image.raw_array)
 
 if __name__ == '__main__':
     unittest.main()
