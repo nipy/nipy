@@ -10,12 +10,12 @@ class BaseImage(object):
     def __init__(self, pathname, datasource=FileSystem(), reader=Image):
         self.pathname = pathname
         self.datasource = datasource
-        self._image = Image(pathname, datasource=datasource)
+        self._image = reader(pathname, datasource=datasource)
 
     def _get_array(self):
         return self._image.readall()
 
-    array = property(self._get_array)
+    array = property(_get_array)
 
     def _get_grid(self):
         """ Gets the grid from the image
@@ -27,15 +27,15 @@ class BaseImage(object):
         
         return self._image.grid
 
-    grid = property(self._get_grid)
+    grid = property(_get_grid)
 
     def _get_shape(self):
         return self.grid.shape
 
-    shape = property(self._get_shape)
+    shape = property(_get_shape)
     
     def _get_ndim(self):
         return len(self.grid.shape)
 
-    shape = property(self.get_ndim)
+    shape = property(_get_ndim)
 
