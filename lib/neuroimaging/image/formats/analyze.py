@@ -200,12 +200,11 @@ class ANALYZE(traits.HasTraits):
                                              # matrix is FORTRAN indexing
 
         if self.memmapped:
-            if self.mode is 'r':
-                self.memmap = N.memmap(self.datasource.filename(self.imgfilename()), dtype=self.dtype,
-                                       shape=tuple(self.grid.shape), mode='r')
-            elif self.mode in ('r+', 'w'):
-                self.memmap = N.memmap(self.datasource.filename(self.imgfilename()), dtype=self.dtype,
-                                       shape=tuple(self.grid.shape), mode='r+')
+            self.datasource.open(self.imgfilename())
+            imgfilename = self.datasource.filename(self.imgfilename())
+            mode = self.mode in ('r+', 'w') and "r+" or self.mode
+            self.memmap = N.memmap(imgfilename, dtype=self.dtype,
+                shape=tuple(self.grid.shape), mode=mode)
 
     #-------------------------------------------------------------------------
     def __str__(self):
