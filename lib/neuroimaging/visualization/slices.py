@@ -104,19 +104,17 @@ interpolation = traits.Trait('nearest', 'bilinear', 'blackman100',
 origin = traits.Trait('lower', 'upper')
 
 class PylabRGBASlice(Slice):
-
     """
-    A class that draws a slice of RGBA data. The grid instance is assumed to have
-    a squeezeshape attribute representing the \'squeezed\' shape of the data.
+    A class that draws a slice of RGBA data. The grid instance is assumed to
+    have a squeezeshape attribute representing the 'squeezed' shape of the
+    data.
     """
-
     axes = traits.Any()
     figure = traits.Any()
     interpolation = interpolation
     origin = origin
 
     # traits to determine pylab axes instance
-
     height = traits.Trait(traits.Float())
     width = traits.Trait(traits.Float())
     xoffset = traits.Float(0.1)
@@ -127,47 +125,30 @@ class PylabRGBASlice(Slice):
     maskcolor = traits.ListFloat([0,0,0])
 
     def draw(self, data=None, redraw=False, *args, **keywords):
-        if data is None:
-            data = self.RGBA(data=data)
+        if data is None: data = self.RGBA(data=data)
 
         if self.mask is not None:
             alpha = N.greater_equal(N.squeeze(self.mask(self.grid.range())), 0.1)
             for i in range(3):
-                data[:,:,i] = data[:,:,i] * alpha + (1 - alpha) * self.maskcolor[i]
+                data[:,:,i] = data[:,:,i]*alpha + (1 - alpha)*self.maskcolor[i]
             
         pylab.axes(self.axes)
 
         if not redraw:
-            self.imshow = pylab.imshow(data,
-                                       interpolation=self.interpolation,
-                                       aspect='auto',
-                                       origin=self.origin)
+            self.imshow = pylab.imshow(data, interpolation=self.interpolation,
+              aspect='auto', origin=self.origin)
         else:
             self.imshow.set_data(data)
             
     def getaxes(self):
-        
-        if self.height:
-            height = self.height 
-        else:
-            height = self.grid.squeezeshape[0]
-
-        if self.width:
-            width = self.width
-        else:
-            width = self.grid.squeezeshape[1]
-
+        height = self.height and self.height or self.grid.squeezeshape[0]
+        width = self.width and self.width or self.grid.squeezeshape[1]
         self.axes = pylab.axes([self.xoffset, self.yoffset, width, height])
         
     def RGBA(self, data=None):
-        """
-        Return the RGBA values for the interpolator over the slice\'s grid.
-        """
-        if data is None:
-            data = N.squeeze(self.interpolator(self.grid.range()))
-        else:
-            data = data
-        return data
+        "Return the RGBA values for the interpolator over the slice's grid."
+        return data or N.squeeze(self.interpolator(self.grid.range()))
+
 
 class PylabRGBSlice(PylabRGBASlice):
 

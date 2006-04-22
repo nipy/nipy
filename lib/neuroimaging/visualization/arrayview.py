@@ -19,7 +19,6 @@ def phs_xform(data): return angle(data)
 def real_xform(data): return data.real
 def imag_xform(data): return data.imag
 
-def rectstr(r): return "(left=%s, top=%s, width=%s, height=%s)"%(r.left(),r.top(),r.width(),r.height())
 
 ##############################################################################
 class Dimension (object):

@@ -1,10 +1,9 @@
 import fpformat
-import neuroimaging
+from neuroimaging.image.interpolation import ImageInterpolator
+from neuroimaging.reference.slices import xslice, yslice, zslice, bounding_box
 import numpy as N
 import pylab
-import neuroimaging.statistics.utils as utils
-import neuroimaging.reference as reference
-import slices as vizslice
+from slices import PylabDataSlice, PylabRGBSlice, PylabRGBASlice
 import enthought.traits as traits
 from cmap import cmap, interpolation
 
@@ -26,7 +25,6 @@ class BoxViewer(traits.HasTraits):
     slicenames = traits.ListStr(['coronal', 'sagittal', 'transversal'])
 
     # min and max
-
     m = traits.Float()
     M = traits.Float()
 
@@ -65,7 +63,7 @@ class BoxViewer(traits.HasTraits):
                  mask=None,
                  m=None,
                  M=None,
-                 colormap='spectral',
+                 colormap='bone',
                  **keywords):
         """
         If default is False, then a bounding box for image is returned
@@ -85,8 +83,7 @@ class BoxViewer(traits.HasTraits):
             self.ylim = ylim
             self.zlim = zlim
         else:
-            self.zlim, self.ylim, self.xlim = reference.slices.bounding_box(image.grid)
-
+            self.zlim, self.ylim, self.xlim = bounding_box(image.grid)
 
         if x is None:
             x = N.mean(self.xlim)
@@ -106,13 +103,14 @@ class BoxViewer(traits.HasTraits):
         self.M = float(_img.max())
 
         figwidth, figheight = self._setup_dims()
-        self.figure = pylab.figure(figsize=(figwidth / self.dpi, figheight / self.dpi))
+        self.figure = pylab.figure(
+          figsize=(figwidth/self.dpi, figheight/self.dpi))
 
-        self.interpolator = neuroimaging.image.interpolation.ImageInterpolator(image)
+        self.interpolator = ImageInterpolator(image)
         self._kind_of_data()
 
         if self.mask is not None:
-            self.maskinterp = neuroimaging.image.interpolation.ImageInterpolator(self.mask, order=1)
+            self.maskinterp = ImageInterpolator(self.mask, order=1)
         else:
             self.maskinterp = None
 
@@ -120,21 +118,18 @@ class BoxViewer(traits.HasTraits):
         traits.HasTraits.__init__(self, x=x, y=y, z=z, **keywords)
         
     def _kind_of_data(self):
-        _slice = neuroimaging.reference.slices.xslice(x=0,
-                                                      xlim=self.xlim,
-                                                      ylim=self.ylim,
-                                                      zlim=self.zlim,
-                                                      shape=self.shape)
+        _slice = xslice(x=0, xlim=self.xlim, ylim=self.ylim, zlim=self.zlim,
+                        shape=self.shape)
         s = tuple(_slice.shape)
         v = self.interpolator(_slice.range())
         if v.shape == s:
-            self.slice_drawer = vizslice.PylabDataSlice
+            self.slice_drawer = PylabDataSlice
             self._datatype = 'data'
         elif v.shape == s + (3,):
-            self.slice_drawer = vizslice.PylabRGBSlice
+            self.slice_drawer = PylabRGBSlice
             self._datatype = 'RGB'
         elif v.shape == s + (4,):
-            self.slice_drawer = vizslice.PylabRGBASlice
+            self.slice_drawer = PylabRGBASlice
             self._datatype = 'RGBA'
         else:
             raise ValueError, 'interpolator datatype not recoginzed as either data, RGB or RGBA'
@@ -203,47 +198,28 @@ class BoxViewer(traits.HasTraits):
 
     def _getslice(self, _slice):
         if self._datatype == 'data':
-            v = self.slice_drawer(self.interpolator,
-                                  _slice,
-                                  vmax=self.M,
-                                  vmin=self.m,
-                                  colormap=self.colormap,
-                                  interpolation=self.interpolation)
+            v = self.slice_drawer(self.interpolator, _slice, vmax=self.M,
+              vmin=self.m, colormap=self.colormap,
+              interpolation=self.interpolation)
         else:
-            v = self.slice_drawer(self.interpolator,
-                                  _slice,
-                                  interpolation=self.interpolation)
+            v = self.slice_drawer(self.interpolator, _slice,
+              interpolation=self.interpolation)
 
         if self.mask is not None:
             v.mask = self.maskinterp
         return v
 
     def _x_changed(self):
-        _slice = neuroimaging.reference.slices.xslice(x=self.x,
-                                                      xlim=self.xlim,
-                                                      ylim=self.ylim,
-                                                      zlim=self.zlim,
-                                                      shape=self.shape)
-
-        self._setup_slice(_slice, self.slicenames[1])
+        self._setup_slice(xslice(x=self.x, xlim=self.xlim, ylim=self.ylim,
+          zlim=self.zlim, shape=self.shape), self.slicenames[1])
 
     def _y_changed(self):
-        
-        _slice = neuroimaging.reference.slices.yslice(y=self.y,
-                                                      xlim=self.xlim,
-                                                      ylim=self.ylim,
-                                                      zlim=self.zlim,
-                                                      shape=self.shape)
-        self._setup_slice(_slice, self.slicenames[0])
+        self._setup_slice(yslice(y=self.y, xlim=self.xlim, ylim=self.ylim,
+          zlim=self.zlim, shape=self.shape), self.slicenames[0])
         
     def _z_changed(self):
-        _slice = neuroimaging.reference.slices.zslice(z=self.z,
-                                                      xlim=self.xlim,
-                                                      ylim=self.ylim,
-                                                      zlim=self.zlim,
-                                                      shape=self.shape)
-
-        self._setup_slice(_slice, self.slicenames[2])
+        self._setup_slice(zslice(z=self.z, xlim=self.xlim, ylim=self.ylim,
+          zlim=self.zlim, shape=self.shape), self.slicenames[2])
 
     def draw_colorbar(self):
         width, height = self.lengths['color']
