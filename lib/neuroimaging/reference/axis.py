@@ -1,12 +1,12 @@
 import numpy as N
 import enthought.traits as traits
-import UserDict
 import uuid
 
 valid = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension', 'concat']
 space = ['zspace', 'yspace', 'xspace']
 spacetime = ['time', 'zspace', 'yspace', 'xspace']
 
+##############################################################################
 class Axis(traits.HasTraits):
     """
     This class represents a generic axis. Axes are used
@@ -14,10 +14,11 @@ class Axis(traits.HasTraits):
     """
     
     name = traits.Str()
-    tag = traits.Trait(uuid.Uuid())
 
-    def __init__(self, **extra_args):
-        traits.HasTraits.__init__(self, **extra_args)
+    def __init__(self, name):
+        traits.HasTraits.__init__(self)
+        self.name = name
+        self.tag = uuid.Uuid()
         if self.name not in valid:
             raise ValueError, 'recognized dimension names are ' + `valid`
 
@@ -28,29 +29,38 @@ class Axis(traits.HasTraits):
         return hasattr(self,"tag") and hasattr(dim,"tag") and \
           self.tag == dim.tag
 
+
+##############################################################################
 class VoxelAxis(Axis):
-    """
-    A axis with a length as well.
-    """
-    
+    "A axis with a length as well."
     length = traits.Int(1)
 
-    def values(self):
-        return N.arange(self.length)
+    def __init__(self, name, length=None):
+        Axis.__init__(self, name)
+        if length is not None: self.length = length
 
+    def values(self): return N.arange(self.length)
+
+
+##############################################################################
 class RegularAxis(VoxelAxis):
     """
     This class represents a regularly spaced axis. Axes are used
     in the definition Coordinate system. The attributes step and start
-    are usually
-    ignored if a valid transformation matrix is provided -- otherwise
-    they can be used to create an orthogonal transformation matrix.
+    are usually ignored if a valid transformation matrix is provided --
+    otherwise they can be used to create an orthogonal transformation matrix.
 
-
+    >>> r = RegularAxis(name='xspace',length=10,start=0.25,step=0.3)
+    >>> r.values()
+    array([ 0.25,  0.55,  0.85,  1.15,  1.45,  1.75,  2.05,  2.35,  2.65,  2.95])
     """
-    
     step = traits.Float(1.0)
     start = traits.Float()
+
+    def __init__(self, name, length=None, start=None, step=None):
+        VoxelAxis.__init__(self, name, length=length)
+        if start is not None: self.start = start
+        if step is not None: self.step = step
 
     def __len__(self):
         return self.length
@@ -77,16 +87,18 @@ class RegularAxis(VoxelAxis):
             return False
 
 # Default axes
-
-xspace = Axis(name='xspace')
-yspace = Axis(name='yspace')
-zspace = Axis(name='zspace')
-generic = [zspace, yspace, xspace]
+generic = (
+  Axis(name='zspace'),
+  Axis(name='yspace'),
+  Axis(name='xspace'))
 
 # MNI template axes
-
-xspace = Axis(name='xspace', length=91, start=-90., step=2.0)
-yspace = Axis(name='yspace', length=109, start=-126., step=2.0)
-zspace = Axis(name='zspace', length=109, start=-72., step=2.0)
-MNI = [zspace, yspace, xspace]
+MNI = (
+  RegularAxis(name='zspace', length=109, start=-72., step=2.0),
+  RegularAxis(name='yspace', length=109, start=-126., step=2.0),
+  RegularAxis(name='xspace', length=91, start=-90., step=2.0))
    
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
