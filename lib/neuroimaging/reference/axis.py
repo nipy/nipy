@@ -25,7 +25,8 @@ class Axis(traits.HasTraits):
         """
         Verify if two axes are equal by checking tag.
         """
-        return self.tag == dim.tag
+        return hasattr(self,"tag") and hasattr(dim,"tag") and \
+          self.tag == dim.tag
 
 class VoxelAxis(Axis):
     """
