@@ -8,11 +8,16 @@ from urlparse import urlparse
 class Cache (object):
     def __init__(self, cachepath):
         self.path = path(cachepath)
+        self.setup()
     def _uripath(self, uri):
         (scheme, netloc, upath, params, query, fragment) = urlparse(uri)
-        return self.path/netloc/upath
+        return self.path.joinpath(netloc, upath[1:])
     def setup(self):
         if not self.path.exists(): self.path.makedirs()
+    def cache(self, uri, data):
+        upath = self._uripath(uri)
+        upath.dirname().makedirs()
+        file(upath, 'w').write(data)
     def clear(self):
         for f in self.path.files(): f.rm()
     def contains(self, uri):
@@ -28,8 +33,9 @@ cache = Cache(os.environ["HOME"]+"/.nipy/repository")
 class Repository (object):
     def __init__(self, cache=cache): self.cache = cache
     def retrieve(self, uri):
-        if self.cache.contains(uri): return self.cache.retrieve(uri)
-        else: return urlopen(uri)
+        if not self.cache.contains(uri):
+            self.cache.cache(uri, urlopen(uri).read())
+        return self.cache.retrieve(uri)
 
 #-----------------------------------------------------------------------------
 def retrieve(uri):
