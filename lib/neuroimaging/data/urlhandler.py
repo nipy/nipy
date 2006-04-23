@@ -2,10 +2,12 @@ import urllib, stat, string, sets, os, urllib2, gzip, atexit
 import enthought.traits as traits
 import cache
 
+##############################################################################
 class DataFetcher(traits.HasTraits):
     """
-    Not very sophisticated simple class to check if local file exists, otherwise, try to figure out how to get it with urllib or ftp. There is some checking to see if the http:// request returns a 404 or 403 error.
-    
+    Not very sophisticated simple class to check if local file exists,
+    otherwise, try to figure out how to get it with urllib or ftp. There is
+    some checking to see if the http:// request returns a 404 or 403 error.
     """
 
     url = traits.Str()
@@ -27,14 +29,14 @@ class DataFetcher(traits.HasTraits):
     zipexts = traits.ListStr(['.gz'])
     cached = traits.false()
 
+    #-------------------------------------------------------------------------
     def urldecompose(self):
         self.urltype, self.urlbase = urllib.splittype(self.url)
         self.urlhost, self.urlfile = urllib.splithost(self.urlbase)
 
+    #-------------------------------------------------------------------------
     def urlcompose(self, type=True, urlfile=None):
-
-        if urlfile is None:
-            urlfile = self.urlfile
+        urlfile = urlfile or self.urlfile
 
         if self.urltype is None:
             urltype = ''
@@ -53,9 +55,11 @@ class DataFetcher(traits.HasTraits):
             else:
                 return urlfile
 
-    def __init__(self, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+    #-------------------------------------------------------------------------
+#    def __init__(self, **keywords):
+#        traits.HasTraits.__init__(self, **keywords)
 
+    #-------------------------------------------------------------------------
     def getexts(self):
 
         filebase, ext = os.path.splitext(self.urlfile)
@@ -73,26 +77,24 @@ class DataFetcher(traits.HasTraits):
 
         exts = list(sets.Set(exts))
         zipexts = list(sets.Set(zipexts))
-        
         return exts, zipexts
     
+    #-------------------------------------------------------------------------
     def geturl(self, url, tryexts=True, force=False):
 
         self.url = url
         self.urldecompose()
 
-        if os.path.exists(self.url):
-            return self.url
-        else:
-            if self.urlhost is None:
-                raise IOError, 'file %s not found' % url
+        if os.path.exists(self.url): return self.url
+        elif self.urlhost is None: raise IOError, 'file %s not found'%url
 
         self.cached = True
         self.urldecompose()
 
-        outdir = os.path.join(self.repository, os.path.dirname(self.urlcompose(type=False)))
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
+        outdir = os.path.join(
+          self.repository,
+          os.path.dirname(self.urlcompose(type=False)))
+        if not os.path.exists(outdir): os.makedirs(outdir)
 
         if tryexts:
             exts, zipexts = self.getexts()
@@ -129,33 +131,31 @@ class DataFetcher(traits.HasTraits):
 
         ## TODO: have gzip uncompress into neuroimaging.cache.dirname
 
+    #-------------------------------------------------------------------------
     def urlretrieve(self, url, writer=None):
-
         """
-
         A rudimentary check to see if urlretrieve actually finds a correct URL.
 
-        >>> from BrainSTAT.Base.Pipes import _urlretrieve
+        >>> from neuroimaging.data.urlhandler import DataFetcher
         >>> import StringIO
         >>>
         >>> buffer = StringIO.StringIO()
-        >>> print _urlretrieve('http://kff.stanford.edu/BrainSTAT/fiac3_fonc1.txt', buffer)
+        >>> fetcher = DataFetcher()
+        >>> print fetcher.urlretrieve('http://kff.stanford.edu/BrainSTAT/fiac3_fonc1.txt', buffer)
         True
         >>> print buffer.len
         260
         >>>
         >>> buffer = StringIO.StringIO()
-        >>> print _urlretrieve('http://www.stanford.edu/doyouexist?', buffer)
+        >>> print fetcher.urlretrieve('http://www.stanford.edu/doyouexist?', buffer)
         False
         >>> print buffer.len
         0
-        >>>
-
         """
-
         if self.user or self.passwd:
             authhandler = urllib2.HTTPBasicAuthHandler()
-            authhandler.add_password(self.realm, self.urlhost, self.user, self.passwd)
+            authhandler.add_password(
+              self.realm, self.urlhost, self.user, self.passwd)
             opener = urllib2.build_opener(authhandler)
             urllib2.install_opener(opener)
 
@@ -179,6 +179,7 @@ class DataFetcher(traits.HasTraits):
 _gzipfiles = []
 _rmfiles = []
 
+#-----------------------------------------------------------------------------
 def _ungzip(outfile, clobber=True, rm=False, dir=None):
     _outfile = outfile[0:-3]
 
@@ -204,6 +205,7 @@ def _ungzip(outfile, clobber=True, rm=False, dir=None):
         else:
             _rmfiles.append(_outfile)
 
+#-----------------------------------------------------------------------------
 def _gzip(infile, clobber=True, rm=True):
     outfile = '%s.gz' % infile
     if clobber or not os.path.exists(outfile):
@@ -221,10 +223,11 @@ def _gzip(infile, clobber=True, rm=True):
         if rm:
             os.remove(infile)
 
+#-----------------------------------------------------------------------------
 def _gzipcleanup():
     """
-    Gzip all uncompressed files and delete files whose gzipped versions
-    were not deleted.
+    Gzip all uncompressed files and delete files whose gzipped versions were
+    not deleted.
     """
 
     for f in _gzipfiles:
@@ -241,3 +244,9 @@ def _gzipcleanup():
             pass
 
 atexit.register(_gzipcleanup)
+
+
+#-----------------------------------------------------------------------------
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
