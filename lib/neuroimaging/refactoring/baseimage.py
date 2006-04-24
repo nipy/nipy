@@ -139,6 +139,8 @@ class Image(traits.HasTraits):
         outimage.close()
         return outimage
 
+
+##############################################################################
 class BaseImage(object):
     """ Base class for all image objects
 
@@ -176,32 +178,6 @@ class BaseImage(object):
 
     def write_slice(self, slices, data):
         self.raw_array[slices] = data
-
-
-class ImageSequenceIterator(traits.HasTraits):
-    """
-    Take a sequence of images, and an optional grid (which defaults to
-    imgs[0].grid) and create an iterator whose next method returns array
-    with shapes (len(imgs),) + self.imgs[0].next().shape.  Very useful for
-    voxel-based methods, i.e. regression, one-sample t.
-    """
-    def __init__(self, imgs, grid=None, **keywords):
-        self.imgs = imgs
-        if grid is None:
-            self.grid = iter(self.imgs[0].grid)
-        else:
-            self.grid = iter(grid)
-
-    def __iter__(self):
-        return self
-
-    def next(self, value=None):
-        if value is None:
-            value = self.grid.next()
-        v = []
-        for i in range(len(self.imgs)):
-            v.append(self.imgs[i].next(value=value))
-        return N.array(v, N.Float)
 
 #-----------------------------------------------------------------------------
 def image_factory(input_data):
@@ -270,41 +246,8 @@ class URLPipe(Pipe, urlhandler.DataFetcher):
         return creator(**_keywords)
 
 
-class ArrayPipe(Pipe):
-    '''A simple class to mimic an image file from an array.'''
-
-    data = traits.Any()
-
-    def __init__(self, data, **keywords):
-        '''Create an ArrayPipe instance from an array, by default assumed to be 3d.
-
-        >>> from numpy import *
-        >>> from neuroimaging.image.pipes import ArrayPipe
-        >>> z = ArrayPipe(zeros((10,20,20),Float))
-        >>> print z.ndim
-        3
-        '''
-
-        traits.HasTraits.__init__(self, **keywords)
-        self.data = data.astype(N.Float)
-
-        if self.grid is None and self.shape == []:
-            raise ValueError, 'need grid or shape for ArrayPipe'
-
-        if self.grid is None:
-            self.grid = ni.reference.grid.IdentityGrid(self.shape)
-        else:
-            self.shape = self.grid.shape
-
-    
 """ Utils """
  
-def fwhm2sigma(fwhm):
-    return fwhm / N.sqrt(8 * N.log(2))
-
-def sigma2fwhm(sigma):
-    return sigma * N.sqrt(8 * N.log(2))
-
 def writebrick(outfile, start, data, shape, offset=0, outtype=None, byteorder=sys.byteorder, return_tell = True):
     if return_tell:
         try:
@@ -373,3 +316,32 @@ def writebrick(outfile, start, data, shape, offset=0, outtype=None, byteorder=sy
 
     outfile.flush()
     del(outdata)
+
+
+##############################################################################
+class ImageSequenceIterator(traits.HasTraits):
+    """
+    Take a sequence of images, and an optional grid (which defaults to
+    imgs[0].grid) and create an iterator whose next method returns array
+    with shapes (len(imgs),) + self.imgs[0].next().shape.  Very useful for
+    voxel-based methods, i.e. regression, one-sample t.
+    """
+    def __init__(self, imgs, grid=None, **keywords):
+        self.imgs = imgs
+        if grid is None:
+            self.grid = iter(self.imgs[0].grid)
+        else:
+            self.grid = iter(grid)
+
+    def __iter__(self):
+        return self
+
+    def next(self, value=None):
+        if value is None:
+            value = self.grid.next()
+        v = []
+        for i in range(len(self.imgs)):
+            v.append(self.imgs[i].next(value=value))
+        return N.array(v, N.Float)
+
+
