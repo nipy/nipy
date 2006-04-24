@@ -70,10 +70,7 @@ class ParcelIterator:
     multilabels = traits.false # are the labels one key or are they a sequence?
     
     def __init__(self, labels, keys, **keywords):
-        self.labels = labels
-        if not isinstance(self.labels, N.ndarray):
-            self.labels = N.array(self.labels)
-
+        self.labels = N.asarray(labels)
         self.labelset = list(sets.Set(keys))
 
         try:
