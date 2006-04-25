@@ -1,4 +1,5 @@
 import os
+import re
 from path import path
 #from urllib import urlopen
 from urllib2 import urlopen
@@ -23,54 +24,73 @@ def isurl(pathstr):
     scheme, netloc, _,_,_,_ = urlparse(pathstr)
     return bool(scheme and netloc)
 
+#-----------------------------------------------------------------------------
+def iswritemode(mode):
+    return mode.find("w")>-1 or mode.find("+")>-1
+
 
 ##############################################################################
 class Cache (object):
     def __init__(self, cachepath):
         self.path = path(cachepath)
         self.setup()
-    def uripath(self, uri):
+    def filename(self, uri):
         (scheme, netloc, upath, params, query, fragment) = urlparse(uri)
         return self.path.joinpath(netloc, upath[1:])
     def setup(self):
         if not self.path.exists(): ensuredirs(self.path)
     def cache(self, uri):
         if self.contains(uri): return
-        upath = self.uripath(uri)
+        upath = self.filename(uri)
         ensuredirs(upath.dirname())
         if not urlexists(uri): return
         file(upath, 'w').write(urlopen(uri).read())
     def clear(self):
         for f in self.path.files(): f.rm()
     def contains(self, uri):
-        return self.uripath(uri).exists()
+        return self.filename(uri).exists()
     def retrieve(self, uri):
         self.cache(uri)
-        return file(self.uripath(uri))
+        return file(self.filename(uri))
 
 # default global cache singleton
 dcache = Cache(os.environ["HOME"]+"/.nipy/repository")
 
 
 ##############################################################################
-class Repository (object):
-    "Remote repository data source."
-    def __init__(self, baseurl, cache=dcache):
-        self._baseurl = baseurl
-        self._cache = cache
-    def _fullurl(pathstr):
-        path(self._baseurl).joinpath(pathstr)
+class DataSource (object):
+
+    def __init__(self, cache=dcache): self._cache = cache
+
+    def filename(self, pathstr):
+        if isurl(pathstr): return self._cache.filename(pathstr)
+        else: return pathstr
+
     def exists(self, pathstr):
-        return self._cache.contains(self._fullurl(pathstr))
-    def get(self, pathstr):
-        return self._cache.retrieve(self._fullurl(pathstr))
+        if isurl(pathstr): return self._cache.contains(pathstr)
+        else: return path(pathstr).exists()
+
+    def open(self, pathstr, mode='r'):
+        if isurl(pathstr):
+            if iswritemode(mode): raise ValueError("URLs are not writeable")
+            return self._cache.retrieve(pathstr)
+        else: return file(pathstr, mode=mode)
 
 
 ##############################################################################
-class FileSystem (object):
-    "File system data source."
-    def exists(self, pathstr): return path(pathstr).exists()
-    def get(self, pathstr): return file(pathstr)
+class Repository (DataSource):
+    "DataSource with an implied root."
+    def __init__(self, baseurl, cache=dcache):
+        DataSource.__init__(self, cache=dcache)
+        self._baseurl = baseurl
+    def _fullpath(pathstr):
+        path(self._baseurl).joinpath(pathstr)
+    def filename(self, pathstr):
+        return DataSource.filename(self._fullpath(pathstr))
+    def exists(self, pathstr):
+        return DataSource.exists(self._fullpath(pathstr))
+    def open(self, pathstr):
+        return DataSource.open(self, self._fullpath(pathstr))
 
 
 #-----------------------------------------------------------------------------

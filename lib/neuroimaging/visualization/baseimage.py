@@ -1,4 +1,5 @@
-""" BaseImage class - wrapper for Image class to test changes to Image interface
+"""
+BaseImage class - wrapper for Image class to test changes to Image interface
 """
 
 import os
@@ -14,8 +15,8 @@ from neuroimaging.reference import grid, axis, mapping
 from neuroimaging.reference.grid import IdentityGrid
 from neuroimaging.image import formats
 import neuroimaging.data
-from neuroimaging.data import FileSystem
 import neuroimaging.data.urlhandler as urlhandler
+
 
 class Image(traits.HasTraits):
 
@@ -136,26 +137,7 @@ class Image(traits.HasTraits):
                 outimage.next(data=dataslice)
                 
         outimage.close()
-        
         return outimage
-
-def image_factory(input_data, datasource=FileSystem()):
-    '''
-    Create a Image (volumetric image) object from either a file, an
-    existing Image object, or an array.
-    '''
-    
-    # from array
-    if isinstance(input_data, N.ndarray):
-        image = ArrayPipe(input_data, **keywords)
-        image.isfile = False
-        
-    # from filename or url
-    elif type(input_data) == types.StringType:
-        image = URLPipe(input_data).getimage()
-        image.isfile = True
-            
-    return image
 
 class BaseImage(object):
     """ Base class for all image objects
@@ -164,23 +146,13 @@ class BaseImage(object):
     same interface, such as a memmap array
     """
     
-    def _get_shape(self):
-        return self.grid.shape
-    shape = property(_get_shape)
-    
-    def _get_ndim(self):
-        return len(self.grid.shape)
-    shape = property(_get_ndim)
-
-    def _get_raw_array(self):
-        return self._arr
-    raw_array = property(_get_raw_array)
+    shape = property(lambda self: self.grid.shape)
+    ndim = property(lambda self: len(self.shape))
+    raw_array = property(lambda self: self._array)
 
     def __init__(self, arr, grid=None):
         self._array = arr
-        if grid is not None:
-            grid = IdentityGrid(arr.shape)
-        self.grid = grid
+        self.grid = grid and grid or IdentityGrid(arr.shape)
         
     def __getitem__(self, slices):
         return self.get_slice(slices)
@@ -200,24 +172,19 @@ class BaseImage(object):
         return self.get_slice(slice_obj)
 
     def get_slice(self, slices):
-        return self._arr[slices]
+        return self.raw_array[slices]
 
     def write_slice(self, slices, data):
-        self._arr[slices] = data
+        self.raw_array[slices] = data
 
 
 class ImageSequenceIterator(traits.HasTraits):
-
     """
-    Take a sequence of images, and an optional grid (which defaults to imgs[0].grid) and
-    create an iterator whose next method returns array with shapes
-
-    (len(imgs),) + self.imgs[0].next().shape
-
-    Very useful for voxel-based methods, i.e. regression, one-sample t.
-
+    Take a sequence of images, and an optional grid (which defaults to
+    imgs[0].grid) and create an iterator whose next method returns array
+    with shapes (len(imgs),) + self.imgs[0].next().shape.  Very useful for
+    voxel-based methods, i.e. regression, one-sample t.
     """
-
     def __init__(self, imgs, grid=None, **keywords):
         self.imgs = imgs
         if grid is None:
@@ -236,6 +203,24 @@ class ImageSequenceIterator(traits.HasTraits):
             v.append(self.imgs[i].next(value=value))
         return N.array(v, N.Float)
 
+#-----------------------------------------------------------------------------
+def image_factory(input_data):
+    '''
+    Create a Image (volumetric image) object from either a file, an
+    existing Image object, or an array.
+    '''
+    
+    # from array
+    if isinstance(input_data, N.ndarray):
+        return BaseImage(input_data)
+        
+    # from filename or url
+    elif type(input_data) == types.StringType:
+        image = URLPipe(input_data).getimage()
+        image.isfile = True
+
+    return image
+
 
 """ Pipes """
 
@@ -253,7 +238,6 @@ class URLPipe(Pipe, urlhandler.DataFetcher):
     """
 
     mode = traits.Trait(['r', 'w', 'r+'])
-    create = traits.false
     filebase = traits.Str()
     fileext = traits.Str()
     filename = traits.Str()
@@ -272,28 +256,14 @@ class URLPipe(Pipe, urlhandler.DataFetcher):
                 os.path.splitext(string.strip(self.filebase))
         #self.filepath, self.filebase = os.path.split(self.filebase)
 
-    def _mode_changed(self): self.create = self.mode not in ('r+', 'r')
-
     def getimage(self, **keywords):
         if self.grid is None and self.mode == 'w':
             raise ValueError, 'must have a grid to create Image'
 
         creator = formats.get_creator(self.fileext)
-
-        # determine appropriate data source
-        if neuroimaging.data.isurl(self.filename):
-            datasource = neuroimaging.data.Repository('')
-        else:
-            datasource = neuroimaging.data.FileSystem()
-
-        # cache files locally
-        #for ext in creator.extensions:
-        #    url = self.filebase+ext
-        #    cache.cache(url)
-
         _keywords = copy.copy(keywords)
         _keywords['filename'] = self.filename
-        _keywords['datasource'] = datasource
+        _keywords['datasource'] = neuroimaging.data.DataSource()
         _keywords['mode'] = self.mode
         _keywords['clobber'] = self.clobber
         _keywords['grid'] = self.grid
@@ -403,6 +373,3 @@ def writebrick(outfile, start, data, shape, offset=0, outtype=None, byteorder=sy
 
     outfile.flush()
     del(outdata)
-
-    return 
-

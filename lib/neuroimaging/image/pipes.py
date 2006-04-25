@@ -48,21 +48,9 @@ class URLPipe(Pipe, urlhandler.DataFetcher):
             raise ValueError, 'must have a grid to create Image'
 
         creator = formats.get_creator(self.fileext)
-
-        # determine appropriate data source
-        if neuroimaging.data.isurl(self.filename):
-            datasource = neuroimaging.data.Repository('')
-        else:
-            datasource = neuroimaging.data.FileSystem()
-
-        # cache files locally
-        #for ext in creator.extensions:
-        #    url = self.filebase+ext
-        #    cache.cache(url)
-
         _keywords = copy.copy(keywords)
         _keywords['filename'] = self.filename
-        _keywords['datasource'] = datasource
+        _keywords['datasource'] = neuroimaging.data.DataSource()
         _keywords['mode'] = self.mode
         _keywords['clobber'] = self.clobber
         _keywords['grid'] = self.grid

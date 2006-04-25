@@ -2,7 +2,7 @@ import struct, os, sys, numpy, string, types
 import numpy as N
 from path import path
 from neuroimaging.image import utils
-from neuroimaging.data import FileSystem
+from neuroimaging.data import DataSource
 from neuroimaging.reference.axis import VoxelAxis, RegularAxis, space, spacetime
 from neuroimaging.reference.coordinate_system import VoxelCoordinateSystem, DiagonalCoordinateSystem
 from neuroimaging.reference.mapping import Affine, IdentityMapping
@@ -128,8 +128,8 @@ class ANALYZE(traits.HasTraits):
     clobber = traits.false
 
     #-------------------------------------------------------------------------
-    def __init__(self, filename=None, datasource=FileSystem(), **keywords):
-        self.datasource=datasource
+    def __init__(self, filename=None, **keywords):
+        self.datasource = DataSource()
         self.filebase = filename and os.path.splitext(filename)[0] or None
         self.hdrattnames = [name for name in self.trait_names() \
           if isinstance(self.trait(name).handler, BinaryHeaderValidator)]
@@ -201,10 +201,10 @@ class ANALYZE(traits.HasTraits):
 
         if self.memmapped:
             if self.mode is 'r':
-                self.memmap = N.memmap(self.imgfilename(), dtype=self.dtype,
+                self.memmap = N.memmap(self.datasource.filename(self.imgfilename()), dtype=self.dtype,
                                        shape=tuple(self.grid.shape), mode='r')
             elif self.mode in ('r+', 'w'):
-                self.memmap = N.memmap(self.imgfilename(), dtype=self.dtype,
+                self.memmap = N.memmap(self.datasource.filename(self.imgfilename()), dtype=self.dtype,
                                        shape=tuple(self.grid.shape), mode='r+')
 
     #-------------------------------------------------------------------------
@@ -216,7 +216,7 @@ class ANALYZE(traits.HasTraits):
 
     #-------------------------------------------------------------------------
     def readheader(self, hdrfilename):
-        hdrfile = self.datasource.get(hdrfilename)
+        hdrfile = self.datasource.open(hdrfilename)
 
         for traitname in self.hdrattnames:
             trait = self.trait(traitname)
@@ -290,7 +290,7 @@ class ANALYZE(traits.HasTraits):
     #-------------------------------------------------------------------------
     def _filebase_changed(self):
         try:
-            hdrfile = self.datasource.get(self.hdrfilename())
+            hdrfile = self.datasource.open(self.hdrfilename())
             if self.mode in ['r', 'r+']:
                 self.byteorder, self.bytesign = guess_endianness(hdrfile)
             else:
@@ -397,7 +397,7 @@ class ANALYZE(traits.HasTraits):
         """
 
         if self.datasource.exists(self.matfilename()):
-            m = mapping.fromfile(self.datasource.get(self.matfilename()),
+            m = mapping.fromfile(self.datasource.open(self.matfilename()),
                                  input='world',
                                  output='world',
                                  delimiter='\t')
