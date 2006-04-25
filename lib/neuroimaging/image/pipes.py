@@ -7,7 +7,7 @@ import numpy as N
 import enthought.traits as traits
 import neuroimaging.data
 import neuroimaging.data.urlhandler as urlhandler
-from neuroimaging.data import dcache as cache
+#from neuroimaging.data import dcache as cache
 
 
 class Pipe(traits.HasTraits):
@@ -21,7 +21,6 @@ class URLPipe(Pipe, urlhandler.DataFetcher):
     being establishing a protocol to get data remotely.
     """
 
-    repository = traits.Str(os.path.join(os.environ['HOME'], '.BrainSTAT/repository')) # this should be taken care of by config!
     mode = traits.Trait(['r', 'w', 'r+'])
     create = traits.false
     filebase = traits.Str()
@@ -50,14 +49,20 @@ class URLPipe(Pipe, urlhandler.DataFetcher):
 
         creator = formats.get_creator(self.fileext)
 
+        # determine appropriate data source
+        if neuroimaging.data.isurl(self.filename):
+            datasource = neuroimaging.data.Repository('')
+        else:
+            datasource = neuroimaging.data.FileSystem()
+
         # cache files locally
-        for ext in creator.extensions:
-            
-            url = self.filebase+ext
-            cache.cache(url)
+        #for ext in creator.extensions:
+        #    url = self.filebase+ext
+        #    cache.cache(url)
 
         _keywords = copy.copy(keywords)
-        _keywords['filename'] = cache.uripath(self.filename)
+        _keywords['filename'] = self.filename
+        _keywords['datasource'] = datasource
         _keywords['mode'] = self.mode
         _keywords['clobber'] = self.clobber
         _keywords['grid'] = self.grid

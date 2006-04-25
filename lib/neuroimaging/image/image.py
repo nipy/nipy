@@ -36,10 +36,6 @@ class Image(traits.HasTraits):
         elif type(image) == types.StringType:
             self.isfile = True
             self.image = pipes.URLPipe(image).getimage()
-            #creator = formats.get_creator(image)
-            #print "Image: Calling Analyze wit filename=",image
-            #self.image = creator(
-            #  filename=image, datasource=neuroimaging.data.retrieve, **keywords)
             
         self.type = type(self.image)
 

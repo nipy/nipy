@@ -2,6 +2,7 @@ import struct, os, sys, numpy, string, types
 import numpy as N
 from path import path
 from neuroimaging.image import utils
+from neuroimaging.data import FileSystem
 from neuroimaging.reference.axis import VoxelAxis, RegularAxis, space, spacetime
 from neuroimaging.reference.coordinate_system import VoxelCoordinateSystem, DiagonalCoordinateSystem
 from neuroimaging.reference.mapping import Affine, IdentityMapping
@@ -127,7 +128,8 @@ class ANALYZE(traits.HasTraits):
     clobber = traits.false
 
     #-------------------------------------------------------------------------
-    def __init__(self, filename=None, **keywords):
+    def __init__(self, filename=None, datasource=FileSystem(), **keywords):
+        self.datasource=datasource
         self.filebase = filename and os.path.splitext(filename)[0] or None
         self.hdrattnames = [name for name in self.trait_names() \
           if isinstance(self.trait(name).handler, BinaryHeaderValidator)]
@@ -214,7 +216,7 @@ class ANALYZE(traits.HasTraits):
 
     #-------------------------------------------------------------------------
     def readheader(self, hdrfilename):
-        hdrfile = file(hdrfilename)
+        hdrfile = self.datasource.get(hdrfilename)
 
         for traitname in self.hdrattnames:
             trait = self.trait(traitname)
@@ -288,7 +290,7 @@ class ANALYZE(traits.HasTraits):
     #-------------------------------------------------------------------------
     def _filebase_changed(self):
         try:
-            hdrfile = file(self.hdrfilename())
+            hdrfile = self.datasource.get(self.hdrfilename())
             if self.mode in ['r', 'r+']:
                 self.byteorder, self.bytesign = guess_endianness(hdrfile)
             else:
@@ -394,8 +396,8 @@ class ANALYZE(traits.HasTraits):
         Other formats should be added.
         """
 
-        if os.path.exists(self.matfilename()):
-            m = mapping.fromfile(self.matfilename(),
+        if self.datasource.exists(self.matfilename()):
+            m = mapping.fromfile(self.datasource.get(self.matfilename()),
                                  input='world',
                                  output='world',
                                  delimiter='\t')
