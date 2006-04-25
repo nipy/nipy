@@ -25,7 +25,14 @@ def tofile(mapping, filename):
     matfile.close()
     return
 
-def fromfile(filename, names=axis.space, input='voxel', output='world', delimiter='\t'):
+def matfromfile(infile, delimiter="\t"):
+    "Read in an affine transformation matrix from a csv file."
+    if type(infile)==types.StringType: infile = file(infile)
+    reader = csv.reader(infile, delimiter=delimiter)
+    t = N.array([map(string.atof, row) for row in reader])
+    infile.close()
+
+def fromfile(infile, names=axis.space, input='voxel', output='world', delimiter='\t'):
     """
     Read in an affine transformation matrix and return an instance of Affine
     with named axes and input and output coordinate systems.
@@ -33,13 +40,7 @@ def fromfile(filename, names=axis.space, input='voxel', output='world', delimite
     For now, the format is assumed to be a tab-delimited file.
     Other formats should be added.
     """
-    matfile = file(filename)
-    t = []
-    reader = csv.reader(matfile, delimiter=delimiter)
-    for row in reader:
-        t.append(map(string.atof, row))
-    t = N.array(t)
-    matfile.close()
+    t = matfromfile(infile, delimiter=delimiter)
     return frommatrix(t, names=names, input=input, output=output)
 
 def matfromstr(tstr, ndim=3, delimiter=None):
