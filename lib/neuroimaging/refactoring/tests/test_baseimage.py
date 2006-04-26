@@ -15,9 +15,6 @@ class BaseImageTest(unittest.TestCase):
     def setUp(self):
         imgpath = neuroimaging.tests.data.datapath.joinpath("rho.img")
         self.image = baseimage.image_factory(str(imgpath))
-        #self.interpolator = interpolation.ImageInterpolator(self.image)
-        #self.m = float(self.image.readall().min())
-        #self.M = float(self.image.readall().max())
 
     def test_array(self):
         self.image.raw_array
