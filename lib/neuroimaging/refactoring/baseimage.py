@@ -18,31 +18,11 @@ from neuroimaging.image import formats
 import neuroimaging.data
 import neuroimaging.data.urlhandler as urlhandler
 
+from attributes import *
 
 class Image(traits.HasTraits):
 
-    shape = traits.ListInt()
 
-    def __del__(self):
-        if self.isfile:
-            try:
-                self.image.close()
-            except:
-                pass
-        else:
-            del(self.image)
-
-    def open(self, mode='r'):
-        if self.isfile:
-            self.image.open(mode=mode)
-
-    def close(self):
-        if self.isfile:
-            try:
-                self.image.close()
-            except:
-                pass
-        
     def __iter__(self):
         """
         Create an iterator over an image based on its grid's iterator.
@@ -65,7 +45,7 @@ class Image(traits.HasTraits):
 
     def put(self, data, indices):
         if hasattr(self, 'buffer'):
-            return self.put.compress(data, indices)
+            return self.buffer.put(data, indices)
         else:
             raise ValueError, 'no buffer: put not supported'
 
@@ -73,9 +53,9 @@ class Image(traits.HasTraits):
         """
         The value argument here is used when, for instance one wants to
         iterate over one image with a ParcelIterator and write out data
-        to this image without explicitly setting this image\'s grid to
-        the original image\'s grid, i.e. to just take the value the
-        original image\'s iterator returns and use it here.
+        to this image without explicitly setting this image's grid to
+        the original image's grid, i.e. to just take the value the
+        original image's iterator returns and use it here.
         """
         if value is None:
             self.itervalue = self.grid.next()
@@ -90,9 +70,7 @@ class Image(traits.HasTraits):
                     return self.postread(return_value)
                 else:
                     return return_value
-            else:
-
-                self.writeslice(value.slice, data)
+            else: self.writeslice(value.slice, data)
 
         elif itertype is 'parcel':
             if data is None:
@@ -101,8 +79,7 @@ class Image(traits.HasTraits):
                 return_value = self.compress(value.where, axis=0)
                 if hasattr(self, 'postread'):
                     return self.postread(return_value)
-                else:
-                    return return_value
+                else: return return_value
             else:
                 indices = N.nonzero(value.where)
                 self.put(data, indices)
@@ -113,11 +90,10 @@ class Image(traits.HasTraits):
                 return_value = tmp.compress(value.where)
                 if hasattr(self, 'postread'):
                     return self.postread(return_value)
-                else:
-                    return return_value
+                else: return return_value
             else:
                 indices = N.nonzero(value.where)
-                self.buffer.put(data, indices)
+                self.put(data, indices)
                 
 
     def getvoxel(self, voxel):
@@ -140,7 +116,8 @@ class Image(traits.HasTraits):
         outimage.close()
         return outimage
 
-from attributes import *
+    def __del__(self): del self.image
+
 
 ##############################################################################
 class BaseImage(object):
@@ -149,6 +126,10 @@ class BaseImage(object):
     The base class contructor requires an array, or something with the
     same interface, such as a memmap array
     """
+
+    #---------------------------------------------
+    #   Attributes
+    #---------------------------------------------
     
     class raw_array (attribute):
         "raw unresampled data array"
@@ -166,13 +147,16 @@ class BaseImage(object):
         "number of image dimensions"
         def get(_, self): return len(self.shape)
 
+    class ismemmapped (readonly):
+        "is the raw array a memory map?"
+        def get(_, self): return isinstance(self.raw_array, numpy.memmap)
 
-    #shape = property(lambda self: self.grid.shape)
-    #ndim = property(lambda self: len(self.shape))
-    #raw_array = property(lambda self: self._array)
+    #---------------------------------------------
+    #   Methods
+    #---------------------------------------------
 
     def __init__(self, arr, grid=None):
-        self.ras_array = arr
+        self.raw_array = arr
         self.grid = grid and grid or IdentityGrid(arr.shape)
         
     def __getitem__(self, slices):
