@@ -41,34 +41,37 @@ class Cache (object):
     def setup(self):
         if not self.path.exists(): ensuredirs(self.path)
     def cache(self, uri):
-        if self.contains(uri): return
+        if self.iscached(uri): return
         upath = self.filepath(uri)
         ensuredirs(upath.dirname())
         if not urlexists(uri): return
         file(upath, 'w').write(urlopen(uri).read())
     def clear(self):
         for f in self.path.files(): f.rm()
-    def contains(self, uri):
+    def iscached(self, uri):
         return self.filepath(uri).exists()
     def retrieve(self, uri):
         self.cache(uri)
         return file(self.filepath(uri))
 
 # default global cache singleton
-dcache = Cache(os.environ["HOME"]+"/.nipy/repository")
+default_cache = Cache(os.environ["HOME"]+"/.nipy/cache")
 
 
 ##############################################################################
 class DataSource (object):
 
-    def __init__(self, cache=dcache): self._cache = cache
+    def __init__(self, cache=default_cache): self._cache = cache
 
     def filename(self, pathstr):
         if isurl(pathstr): return self._cache.filename(pathstr)
         else: return pathstr
 
     def exists(self, pathstr):
-        if isurl(pathstr): return self._cache.contains(pathstr)
+        if isurl(pathstr):
+            try: self._cache.cache(pathstr)
+            except: pass
+            return self._cache.iscached(pathstr)
         else: return path(pathstr).exists()
 
     def open(self, pathstr, mode='r'):
@@ -77,15 +80,18 @@ class DataSource (object):
             return self._cache.retrieve(pathstr)
         else: return file(pathstr, mode=mode)
 
+# default global datasource singleton
+default_datasource = DataSource()
+
 
 ##############################################################################
 class Repository (DataSource):
     "DataSource with an implied root."
-    def __init__(self, baseurl, cache=dcache):
-        DataSource.__init__(self, cache=dcache)
+    def __init__(self, baseurl, cache=default_cache):
+        DataSource.__init__(self, cache=cache)
         self._baseurl = baseurl
-    def _fullpath(pathstr):
-        path(self._baseurl).joinpath(pathstr)
+    def _fullpath(self, pathstr):
+        return path(self._baseurl).joinpath(pathstr)
     def filename(self, pathstr):
         return DataSource.filename(self._fullpath(pathstr))
     def exists(self, pathstr):
@@ -93,15 +99,6 @@ class Repository (DataSource):
     def open(self, pathstr):
         return DataSource.open(self, self._fullpath(pathstr))
 
-
-#-----------------------------------------------------------------------------
-def retrieve(uri, cache=dcache):
-    """
-    >>> f = retrieve('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
-    >>> len(f.read())
-    851968
-    """
-    return cache.retrieve(uri)
 
 if __name__ == "__main__":
     import doctest
