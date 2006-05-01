@@ -2,8 +2,9 @@
 BaseImage class - wrapper for Image class to test changes to Image interface
 """
 
-import os
+
 import sys
+import os.path
 import string, urllib, stat, ftplib, gzip, urllib2, copy
 import types
 
@@ -139,6 +140,7 @@ class Image(traits.HasTraits):
         outimage.close()
         return outimage
 
+from attributes import *
 
 ##############################################################################
 class BaseImage(object):
@@ -148,12 +150,29 @@ class BaseImage(object):
     same interface, such as a memmap array
     """
     
-    shape = property(lambda self: self.grid.shape)
-    ndim = property(lambda self: len(self.shape))
-    raw_array = property(lambda self: self._array)
+    class raw_array (attribute):
+        "raw unresampled data array"
+        valtype=N.ndarray
+
+    class grid (attribute):
+        "image resampling grid"
+        valtype=grid.SamplingGrid
+
+    class shape (readonly):
+        "image shape"
+        def get(_, self): return self.grid.shape
+
+    class ndim (readonly):
+        "number of image dimensions"
+        def get(_, self): return len(self.shape)
+
+
+    #shape = property(lambda self: self.grid.shape)
+    #ndim = property(lambda self: len(self.shape))
+    #raw_array = property(lambda self: self._array)
 
     def __init__(self, arr, grid=None):
-        self._array = arr
+        self.ras_array = arr
         self.grid = grid and grid or IdentityGrid(arr.shape)
         
     def __getitem__(self, slices):
