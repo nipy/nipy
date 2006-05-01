@@ -1,9 +1,28 @@
 import types
 from path import path
 from struct import *
+import struct
 import enthought.traits as traits
 from neuroimaging import import_from
 
+# struct byte order constants
+NATIVE = "="
+LITTLE_ENDIAN = "<"
+BIG_ENDIAN = ">"
+
+def struct_format(byte_order, elements):
+    return byte_order+" ".join(elements)
+    
+def struct_unpack(infile, byte_order, elements):
+    format = struct_format(byte_order, elements)
+    return struct.unpack(format, infile.read(struct.calcsize(format)))
+
+def struct_pack(byte_order, elements, values):
+    format = struct_format(byte_order, elements)
+    return struct.pack(format, *values)
+
+
+##############################################################################
 class BinaryHeaderValidator(traits.TraitHandler):
 
     def __init__(self, packstr, value=None, seek=0, bytesign = '>', **keywords):
@@ -23,11 +42,11 @@ class BinaryHeaderValidator(traits.TraitHandler):
         return result
 
     def validate(self, object, name, value):
-        #try:
-        if 1:
+        try:
+        #if 1:
             result = self.write(value)
-        #except:
-        #    self.error(object, name, value)
+        except:
+            self.error(object, name, value)
 
         _value = unpack(self.bytesign + self.packstr, result)
         if is_tupled(self.packstr, _value): return _value
@@ -54,10 +73,6 @@ def isseq(value):
 
 def is_tupled(packstr, value):
     return (packstr[-1] != 's' and len(tuple(value)) > 1)
-
-#class StructField (traits.Trait, BinaryHeaderValidator):
-#    def __init__(self, packstr, value=None, **keywords):
-#        BinaryHeaderValidator.__init__(self, packstr, value=None, **keywords)
 
 def BinaryHeaderAtt(packstr, value=None, **keywords):
     validator = BinaryHeaderValidator(packstr, value=value, **keywords)
