@@ -44,6 +44,13 @@ class Image(traits.HasTraits):
         self.shape = list(self.grid.shape)
         self.ndim = len(self.shape)
 
+        # When possible, attach memory-mapped array or array as buffer attr
+
+        if hasattr(self.image, 'memmap'):
+            self.buffer = self.image.memmap
+        elif isinstance(self.image.data, N.ndarray):
+            self.buffer = self.image.data          
+
     def __getitem__(self, slices):
         return self.getslice(slices)
 
@@ -77,10 +84,6 @@ class Image(traits.HasTraits):
         iter(self.grid)
 
         if isinstance(self.grid.iterator, grid.ParcelIterator) or isinstance(self.grid.iterator, grid.SliceParcelIterator):
-            if hasattr(self.image, 'memmap'):
-                self.buffer = self.image.memmap
-            elif isinstance(self.image.data, N.ndarray):
-                self.buffer = self.image.data          
             self.buffer.shape = N.product(self.buffer.shape)
         return self
 
