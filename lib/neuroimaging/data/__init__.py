@@ -31,8 +31,9 @@ def iswritemode(mode):
 
 ##############################################################################
 class Cache (object):
-    def __init__(self, cachepath):
-        self.path = path(cachepath)
+    cachepath = os.environ["HOME"]+"/.nipy/cache"
+    def __init__(self, cachepath=None):
+        self.path = path(cachepath or self.cachepath)
         self.setup()
     def filepath(self, uri):
         (scheme, netloc, upath, params, query, fragment) = urlparse(uri)
@@ -54,14 +55,11 @@ class Cache (object):
         self.cache(uri)
         return file(self.filepath(uri))
 
-# default global cache singleton
-default_cache = Cache(os.environ["HOME"]+"/.nipy/cache")
-
 
 ##############################################################################
 class DataSource (object):
 
-    def __init__(self, cache=default_cache): self._cache = cache
+    def __init__(self, cache=Cache()): self._cache = cache
 
     def filename(self, pathstr):
         if isurl(pathstr): return self._cache.filename(pathstr)
@@ -80,20 +78,17 @@ class DataSource (object):
             return self._cache.retrieve(pathstr)
         else: return file(pathstr, mode=mode)
 
-# default global datasource singleton
-default_datasource = DataSource()
-
 
 ##############################################################################
 class Repository (DataSource):
     "DataSource with an implied root."
-    def __init__(self, baseurl, cache=default_cache):
+    def __init__(self, baseurl, cache=Cache()):
         DataSource.__init__(self, cache=cache)
         self._baseurl = baseurl
     def _fullpath(self, pathstr):
         return path(self._baseurl).joinpath(pathstr)
     def filename(self, pathstr):
-        return DataSource.filename(self._fullpath(pathstr))
+        return DataSource.filename(self, self._fullpath(pathstr))
     def exists(self, pathstr):
         return DataSource.exists(self._fullpath(pathstr))
     def open(self, pathstr):
