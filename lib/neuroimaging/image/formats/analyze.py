@@ -21,7 +21,7 @@ ANALYZE_Double = 64
 
 datatypes = {
   ANALYZE_Byte:(numpy.UInt8, 1),
-  ANALYZE_Short:(numpy.UInt16, 2),
+  ANALYZE_Short:(numpy.Int16, 2),
   ANALYZE_Int:(numpy.Int32, 4),
   ANALYZE_Float:(numpy.Float32, 4),
   ANALYZE_Double:(numpy.Float64, 8)}
@@ -203,6 +203,8 @@ class ANALYZE(traits.HasTraits):
             self.datasource.open(self.imgfilename())
             imgfilename = self.datasource.filename(self.imgfilename())
             mode = self.mode in ('r+', 'w') and "r+" or self.mode
+            #print "ANALYZE memmap(%s,dtype=%s,shape=%s,mode=%s)"%(imgfilename, self.dtype,
+                tuple(self.grid.shape), mode)
             self.memmap = N.memmap(imgfilename, dtype=self.dtype,
                 shape=tuple(self.grid.shape), mode=mode)
 
@@ -438,5 +440,5 @@ def guess_endianness(hdrfile):
     raise ValueError, 'file format not recognized: endianness test failed'
 
 
-# plug in as a format creator (see formats.get_creator)
-creator = ANALYZE
+# plug in as a format creator (see formats.getreader)
+reader = ANALYZE

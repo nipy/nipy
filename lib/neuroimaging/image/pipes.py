@@ -1,13 +1,12 @@
 '''This module contains the pipes used for the Image class to read and write data.'''
 
 import os, string, urllib, stat, ftplib, gzip, urllib2, copy
-import formats
 import neuroimaging as ni
 import numpy as N
 import enthought.traits as traits
 import neuroimaging.data
 import neuroimaging.data.urlhandler as urlhandler
-#from neuroimaging.data import dcache as cache
+from neuroimaging.image.formats import getreader
 
 
 class Pipe(traits.HasTraits):
@@ -47,7 +46,7 @@ class URLPipe(Pipe, urlhandler.DataFetcher):
         if self.grid is None and self.mode == 'w':
             raise ValueError, 'must have a grid to create Image'
 
-        creator = formats.getreader(self.fileext)
+        creator = getreader(self.fileext)
         _keywords = copy.copy(keywords)
         _keywords['filename'] = self.filename
         _keywords['datasource'] = neuroimaging.data.DataSource()
