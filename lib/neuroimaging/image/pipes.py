@@ -47,7 +47,7 @@ class URLPipe(Pipe, urlhandler.DataFetcher):
         if self.grid is None and self.mode == 'w':
             raise ValueError, 'must have a grid to create Image'
 
-        creator = formats.get_creator(self.fileext)
+        creator = formats.getreader(self.fileext)
         _keywords = copy.copy(keywords)
         _keywords['filename'] = self.filename
         _keywords['datasource'] = neuroimaging.data.DataSource()

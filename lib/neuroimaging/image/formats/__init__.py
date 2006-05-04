@@ -86,8 +86,8 @@ format_modules = (
 )
 
 #-----------------------------------------------------------------------------
-def get_creator(filename):
-    "Return the appropriate image creator for the given file extension."
+def getreader(filename):
+    "Return the appropriate image reader for the given file type."
     extension = path(filename).splitext()[1]
     all_extensions = []
     for modname in format_modules:
@@ -100,13 +100,13 @@ def get_creator(filename):
       "at this time."%(extension, all_extensions)
 
 #-----------------------------------------------------------------------------
-def has_creator(filename):
+def hasreader(filename):
     """
-    Determine if there is an image format creator registered for the given
-    extension.
+    Determine if there is an image format reader registered for the given
+    file type.
     """
     try:
-        get_creator(filename)
+        getreader(filename)
         return True
     except NotImplementedError:
         return False
