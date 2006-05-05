@@ -5,6 +5,7 @@ import numpy as N
 
 import pipes
 from neuroimaging.reference import grid, axis, mapping
+from neuroimaging.data import DataSource
 
 
 ##############################################################################
@@ -13,7 +14,7 @@ class Image(traits.HasTraits):
     shape = traits.ListInt()
 
     #-------------------------------------------------------------------------
-    def __init__(self, image, **keywords):
+    def __init__(self, image, datasource=DataSource(), **keywords):
         '''
         Create a Image (volumetric image) object from either a file, an
         existing Image object, or an array.
@@ -33,7 +34,7 @@ class Image(traits.HasTraits):
         # from filename or url
         elif type(image) == types.StringType:
             self.isfile = True
-            self.image = pipes.URLPipe(image).getimage()
+            self.image = pipes.URLPipe(image, datasource).getimage()
 
         else: raise ValueError("Image input must be a string, array, or another image.")
             

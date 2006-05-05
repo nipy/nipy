@@ -4,7 +4,7 @@ import os, string, urllib, stat, ftplib, gzip, urllib2, copy
 import neuroimaging as ni
 import numpy as N
 import enthought.traits as traits
-import neuroimaging.data
+from neuroimaging.data import DataSource
 import neuroimaging.data.urlhandler as urlhandler
 from neuroimaging.image.formats import getreader
 
@@ -28,8 +28,9 @@ class URLPipe(Pipe, urlhandler.DataFetcher):
     filepath = traits.Str()
     clobber = traits.false
 
-    def __init__(self, url, **keywords):
+    def __init__(self, url, datasource=DataSource(), **keywords):
         traits.HasTraits.__init__(self, **keywords)
+        self.datasource = datasource
         self.filename = self.url = url
 
     def _filename_changed(self):
@@ -49,7 +50,7 @@ class URLPipe(Pipe, urlhandler.DataFetcher):
         creator = getreader(self.fileext)
         _keywords = copy.copy(keywords)
         _keywords['filename'] = self.filename
-        _keywords['datasource'] = neuroimaging.data.DataSource()
+        _keywords['datasource'] = self.datasource
         _keywords['mode'] = self.mode
         _keywords['clobber'] = self.clobber
         _keywords['grid'] = self.grid

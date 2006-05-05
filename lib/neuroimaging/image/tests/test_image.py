@@ -2,12 +2,12 @@ import unittest, os, scipy, glob, sets
 import numpy as N
 from neuroimaging.image import Image
 import neuroimaging.image as image
+from neuroimaging.tests.data import repository
 
-class AnalyzeImageTest(unittest.TestCase):
+class ImageTest(unittest.TestCase):
 
     def setUp(self):
-        imgname = '/usr/share/BrainSTAT/repository/kff.stanford.edu/~jtaylo/BrainSTAT/avg152T1.img'
-        self.img = Image(imgname)
+        self.img = Image("avg152T1.img", repository)
 
     def tearDown(self):
         tmpf = glob.glob('tmp.*')
@@ -73,7 +73,7 @@ class AnalyzeImageTest(unittest.TestCase):
             self.assertEquals(i.shape, (109,91))
 
     def test_labels1(self):
-        rho = Image('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
+        rho = Image("rho", repository)
         labels = (rho.readall() * 100).astype(N.Int)
         test = Image(N.zeros(labels.shape), grid=rho.grid)
         test.grid.itertype = 'parcel'
@@ -87,7 +87,7 @@ class AnalyzeImageTest(unittest.TestCase):
         self.assertEquals(v, N.product(test.grid.shape))
 
     def test_labels2(self):
-        rho = Image('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
+        rho = Image("rho", repository)
         labels = (rho.readall() * 100).astype(N.Int)
         test = Image(N.zeros(labels.shape), grid=rho.grid)
 
@@ -106,7 +106,7 @@ class AnalyzeImageTest(unittest.TestCase):
                 break
 
     def test_labels3(self):
-        rho = Image('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
+        rho = Image("rho", repository)
         labels = (rho.readall() * 100).astype(N.Int)
         shape = labels.shape
         labels.shape = N.product(labels.shape)

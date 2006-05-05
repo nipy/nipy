@@ -128,8 +128,8 @@ class ANALYZE(traits.HasTraits):
     clobber = traits.false
 
     #-------------------------------------------------------------------------
-    def __init__(self, filename=None, **keywords):
-        self.datasource = DataSource()
+    def __init__(self, filename=None, datasource=DataSource(), **keywords):
+        self.datasource = datasource
         self.filebase = filename and os.path.splitext(filename)[0] or None
         self.hdrattnames = [name for name in self.trait_names() \
           if isinstance(self.trait(name).handler, BinaryHeaderValidator)]
@@ -203,8 +203,6 @@ class ANALYZE(traits.HasTraits):
             self.datasource.open(self.imgfilename())
             imgfilename = self.datasource.filename(self.imgfilename())
             mode = self.mode in ('r+', 'w') and "r+" or self.mode
-            #print "ANALYZE memmap(%s,dtype=%s,shape=%s,mode=%s)"%(imgfilename, self.dtype,
-            #    tuple(self.grid.shape), mode)
             self.memmap = N.memmap(imgfilename, dtype=self.dtype,
                 shape=tuple(self.grid.shape), mode=mode)
 
@@ -396,13 +394,11 @@ class ANALYZE(traits.HasTraits):
         For now, the format is assumed to be a tab-delimited 4 line file.
         Other formats should be added.
         """
-
         if self.datasource.exists(self.matfilename()):
-            m = mapping.fromfile(self.datasource.open(self.matfilename()),
+            return mapping.fromfile(self.datasource.open(self.matfilename()),
                                  input='world',
                                  output='world',
                                  delimiter='\t')
-            return m
         else:
             if self.ndim == 4:
                 names = spacetime[::-1]
