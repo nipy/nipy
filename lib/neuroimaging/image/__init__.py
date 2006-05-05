@@ -10,7 +10,6 @@ from neuroimaging.image.formats import getreader
 
 zipexts = (".gz",".bz2")
 
-
 ##############################################################################
 class Image(traits.HasTraits):
     isfile = False
@@ -37,9 +36,9 @@ class Image(traits.HasTraits):
 
     @staticmethod
     def fromurl(url, datasource=DataSource(), mode="r", grid=None, clobber=False, **keywords):
-        filebase, fileext = os.path.splitext(url.strip())
-        if fileext in zipexts: filebase, fileext = os.path.splitext(filebase)
-        return getreader(fileext)(filename=url,
+        base, ext = os.path.splitext(url.strip())
+        if ext in zipexts: url = base
+        return getreader(url)(filename=url,
           datasource=datasource, mode=mode, clobber=clobber, grid=grid, **keywords)
 
     #-------------------------------------------------------------------------

@@ -1,7 +1,6 @@
 import struct, os, sys, numpy, string, types
 import numpy as N
 from path import path
-from neuroimaging.image import utils
 from neuroimaging.data import DataSource
 from neuroimaging.reference.axis import VoxelAxis, RegularAxis, space, spacetime
 from neuroimaging.reference.coordinate_system import VoxelCoordinateSystem, DiagonalCoordinateSystem
@@ -143,6 +142,7 @@ class ANALYZE(traits.HasTraits):
 
             # create empty file
 
+            from neuroimaging.image.utils import writebrick
             utils.writebrick(file(self.imgfilename(), 'w'),
                              (0,)*self.ndim,
                              N.zeros(self.grid.shape, N.Float),
@@ -192,12 +192,10 @@ class ANALYZE(traits.HasTraits):
                                         step=step,
                                         start=-N.array(origin)*step)
 
-        if self.usematfile:
-            mat = self.readmat()
-            self.grid.mapping = mat * self.grid.mapping
+        if self.usematfile: self.grid.transform(self.readmat())
 
-        self.grid = matlab2python(self.grid) # assumes .mat
-                                             # matrix is FORTRAN indexing
+        # assume .mat matrix uses FORTRAN indexing
+        self.grid = matlab2python(self.grid)
 
         if self.memmapped:
             self.datasource.open(self.imgfilename())

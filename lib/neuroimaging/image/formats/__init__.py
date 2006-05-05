@@ -135,13 +135,12 @@ def getreader(filename):
     "Return the appropriate image reader for the given file type."
     extension = path(filename).splitext()[1]
     all_extensions = []
-    #for modname in format_modules:
-    #    reader = import_from(modname, "reader")
-    #    if extension in reader.extensions: return reader
-    #    all_extensions += reader.extensions
-    from neuroimaging.image.formats.analyze import reader
-    return reader
-    
+    for modname in format_modules:
+        reader = import_from(modname, "reader")
+        if extension in reader.extensions: return reader
+        all_extensions += reader.extensions
+
+    # if we made it this far, a reader was not found
     raise NotImplementedError,\
       "file extension %(ext)s not recognized, %(exts)s files can be created "\
       "at this time."%(extension, all_extensions)

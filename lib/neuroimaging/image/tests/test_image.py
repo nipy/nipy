@@ -1,7 +1,7 @@
 import unittest, os, scipy, glob, sets
 import numpy as N
 from neuroimaging.image import Image
-import neuroimaging.image as image
+from neuroimaging.image.onesample import ImageOneSample
 from neuroimaging.tests.data import repository
 
 class ImageTest(unittest.TestCase):
@@ -127,7 +127,7 @@ class ImageTest(unittest.TestCase):
         im1 = Image('http://kff.stanford.edu/FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.img')
         im2 = Image('http://kff.stanford.edu/FIAC/fiac4/fonc3/fsl/fmristat_run/contrasts/speaker/effect.img')
         im3 = Image('http://kff.stanford.edu/FIAC/fiac5/fonc2/fsl/fmristat_run/contrasts/speaker/effect.img')
-        x = image.onesample.ImageOneSample([im1,im2,im3], clobber=True)
+        x = ImageOneSample([im1,im2,im3], clobber=True)
         x.fit()
 
 def suite():
