@@ -45,7 +45,7 @@ class Cache (object):
         if self.iscached(uri): return
         upath = self.filepath(uri)
         ensuredirs(upath.dirname())
-        if not urlexists(uri): return
+        if not urlexists(uri): raise IOError("url not found: "+uri)
         file(upath, 'w').write(urlopen(uri).read())
     def clear(self):
         for f in self.path.files(): f.rm()
@@ -53,7 +53,7 @@ class Cache (object):
         return self.filepath(uri).exists()
     def retrieve(self, uri):
         self.cache(uri)
-        return file(self.filepath(uri))
+        return file(self.filename(uri))
 
 
 ##############################################################################
