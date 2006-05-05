@@ -131,13 +131,13 @@ class BaseImage(object):
     #   Attributes
     #---------------------------------------------
     
-    class raw_array (attribute):
+    class array (attribute):
         "raw unresampled data array"
-        valtype=N.ndarray
+        implements=N.ndarray
 
     class grid (attribute):
         "image resampling grid"
-        valtype=grid.SamplingGrid
+        implements=grid.SamplingGrid
 
     class shape (readonly):
         "image shape"
@@ -148,15 +148,15 @@ class BaseImage(object):
         def get(_, self): return len(self.shape)
 
     class ismemmapped (readonly):
-        "is the raw array a memory map?"
-        def get(_, self): return isinstance(self.raw_array, numpy.memmap)
+        "is the internal array a memory map?"
+        def get(_, self): return isinstance(self.array, numpy.memmap)
 
     #---------------------------------------------
     #   Methods
     #---------------------------------------------
 
     def __init__(self, arr, grid=None):
-        self.raw_array = arr
+        self.array = arr
         self.grid = grid and grid or IdentityGrid(arr.shape)
         
     def __getitem__(self, slices):
@@ -165,7 +165,7 @@ class BaseImage(object):
     def __setitem__(self, slices, data):
         self.write_slice(slices, data)
 
-    def to_grid_array(self): 
+    def grid_array(self): 
         '''
         Read an entire Image object, returning a numpy array. By
         default, it does not read 4d images. 
@@ -176,77 +176,22 @@ class BaseImage(object):
         slice_obj = self.grid.iterator.allslice
         return self.get_slice(slice_obj)
 
-    def get_slice(self, slices):
-        return self.raw_array[slices]
+    def get_slice(self, slices): return self.array[slices]
 
-    def write_slice(self, slices, data):
-        self.raw_array[slices] = data
+    def write_slice(self, slices, data): self.array[slices] = data
 
 #-----------------------------------------------------------------------------
-def image_factory(input_data):
-    '''
+def image(input):
+    """
     Create a Image (volumetric image) object from either a file, an
     existing Image object, or an array.
-    '''
+    """
     
     # from array
-    if isinstance(input_data, N.ndarray):
-        return BaseImage(input_data)
+    if isinstance(input, N.ndarray): return BaseImage(input)
         
     # from filename or url
-    elif type(input_data) == types.StringType:
-        image = URLPipe(input_data).getimage()
-        image.isfile = True
-
-    return image
-
-
-""" Pipes """
-
-'''This module contains the pipes used for the Image class to read and write data.'''
-
-class Pipe(traits.HasTraits):
-    shape = traits.ListInt()
-    grid = traits.Any()
-
-class URLPipe(Pipe, urlhandler.DataFetcher):
-    """
-    This class returns an object image from a file object.
-    Plans to allow the file to be specified as a url with the goal
-    being establishing a protocol to get data remotely.
-    """
-
-    mode = traits.Trait(['r', 'w', 'r+'])
-    filebase = traits.Str()
-    fileext = traits.Str()
-    filename = traits.Str()
-    filepath = traits.Str()
-    clobber = traits.false
-
-    def __init__(self, url, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
-        self.filename = self.url = url
-
-    def _filename_changed(self):
-        self.filebase, self.fileext = \
-          os.path.splitext(string.strip(self.filename))
-        if self.fileext in self.zipexts:
-            self.filebase, self.fileext = \
-                os.path.splitext(string.strip(self.filebase))
-        #self.filepath, self.filebase = os.path.split(self.filebase)
-
-    def getimage(self, **keywords):
-        if self.grid is None and self.mode == 'w':
-            raise ValueError, 'must have a grid to create Image'
-
-        creator = formats.get_creator(self.fileext)
-        _keywords = copy.copy(keywords)
-        _keywords['filename'] = self.filename
-        _keywords['datasource'] = neuroimaging.data.DataSource()
-        _keywords['mode'] = self.mode
-        _keywords['clobber'] = self.clobber
-        _keywords['grid'] = self.grid
-        return creator(**_keywords)
+    elif type(input) == types.StringType: return formats.getreader()
 
 
 """ Utils """

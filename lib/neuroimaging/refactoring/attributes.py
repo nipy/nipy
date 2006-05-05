@@ -138,7 +138,7 @@ class wrapper (attribute):
     attname=None
     def __init__(self, name, delegate, attname=None, readonly=None):
         attribute.__init__(self, name)
-        self.delegate = delegate,
+        self.delegate = delegate
         self.attname = self.attname or attname or name
         if readonly is not None: self.readonly = readonly
     def get(self, host):

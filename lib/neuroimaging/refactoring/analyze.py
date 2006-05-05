@@ -1,29 +1,28 @@
 "This module implements details of the Analyze7.5 file format."
 import struct
 
-from numpy import fromstring, reshape, memmap
-from pylab import randn, amax, Int8, Int16, Int32, Float32, Float64,\
-  Complex32, amin, amax
+from numpy import fromstring, reshape, memmap, UInt8, Int16, Int32, Float32, \
+  Float64, Complex32, amin, amax, dtype
 
 from odict import odict
 from neuroimaging.image.formats import struct_unpack, struct_pack, NATIVE, \
   LITTLE_ENDIAN, BIG_ENDIAN
 from neuroimaging.refactoring.baseimage import BaseImage
-from neuroimaging.refactoring.attributes import attribute, readonly
+from neuroimaging.refactoring.attributes import attribute, readonly, deferto, wrapper
 from neuroimaging.data import DataSource
 
-# datatype is a bit flag into the datatype identification byte of the Analyze
-# header. 
+# datatype is a one bit flag into the datatype identification byte of the
+# Analyze header. 
 BYTE = 2
 SHORT = 4
 INTEGER = 8
 FLOAT = 16
 COMPLEX = 32
-DOUBLE = 64
+DOUBLE = 64 
 
 # map Analyze datatype to Numeric typecode
 datatype2typecode = {
-  BYTE: Int8,
+  BYTE: UInt8,
   SHORT: Int16,
   INTEGER: Int32,
   FLOAT: Float32,
@@ -101,12 +100,49 @@ struct_fields = odict((
 
 field_formats = struct_fields.values()
 
+
 ##############################################################################
 class structfield (attribute):
     classdef=True
+
+    _typemap = (
+      (("l","L","f","d","q","Q"), float),
+      (("h","H","i","I","P"),     int),
+      (("x","c","b","B","s","p"), str))
+
+    @staticmethod
+    def allformats():
+        "All allowed format strings."
+        allformats = []
+        for formats, typ in structfield._typemap:
+            allformats.extend(list(formats))
+        return allformats
+
     def __init__(self, name, format):
-        attribute.__init__(self, name)
         self.format = format
+        self.implements = (self.formattype(),)
+        attribute.__init__(self, name)
+        #if self.default is None: self.default = self._defaults[self.format]
+
+    def fromstring(self, string): return self.formattype()(string)
+
+    def unpack(infile, byteorder=NATIVE):
+        return struct_unpack(infile, byteorder, (self.format,))
+
+    def pack(value, byteorder=NATIVE):
+        return struct_pack(byteorder, (self.format,), value)
+
+    def formattype(self):
+        format = self.format[-1]
+        for formats, typ in self._typemap:
+            if format in formats: return typ
+        raise ValueError("format %s must be one of: %s"%\
+                         (format,self.allformats()))
+
+    def set(self, host, value):
+        if type(value) is type(""): value = self.fromstring(value)
+        attribute.set(self, host, value)
+
 
 headeratts = dict(
   [(name, structfield(name,format)) \
@@ -124,33 +160,66 @@ class AnalyzeHeader (object):
     """
     locals().update(headeratts)
 
+    class byteorder (attribute): "big or little endian"
+
+    @staticmethod
+    def guess_byteorder(hdrfile):
+        """
+        Determine byte order of the header.  The first header element is the
+        header size.  It should always be 384.  If it is not then you know
+        you read it in the wrong byte order.
+        """
+        if type(hdrfile)==type(""): hdrfile=file(hdrfile)
+        byteorder = LITTLE_ENDIAN
+        reported_length = struct_unpack(hdrfile,
+          byteorder, field_formats[0:1])[0]
+        if reported_length != HEADER_SIZE: byteorder = BIG_ENDIAN
+        return byteorder
+
+
     #-------------------------------------------------------------------------
     def __init__(self, filename, opener=file):
 
-        # Determine byte order of the header.  The first header element is the
-        # header size.  It should always be 384.  If it is not then you know
-        # you read it in the wrong byte order.
-        byte_order = LITTLE_ENDIAN
-        reported_length = struct_unpack(opener(filename),
-          byte_order, field_formats[0:1])[0]
-        if reported_length != HEADER_SIZE: byte_order = BIG_ENDIAN
+        self.byteorder = AnalyzeHeader.guess_byteorder(opener(filename))
 
         # unpack all header values
-        values = struct_unpack(opener(filename), byte_order, field_formats)
+        values = struct_unpack(opener(filename), self.byteorder, field_formats)
 
         # now load values into self
         map(self.__setattr__, struct_fields.keys(), values)
 
     #-------------------------------------------------------------------------
     def __str__(self):
-        return "\n".join(["%s = %s"%(att,`getattr(self,att)`) \
+        return "\n".join(["%s\t%s"%(att,`getattr(self,att)`) \
            for att in struct_fields.keys()])
+
+    #-------------------------------------------------------------------------
+    def write(self, outfile): AnalyzeWriter.write_hdr(self, outfile)
 
 
 ##############################################################################
 class AnalyzeImage (BaseImage):
-    class header (readonly): valtype=AnalyzeHeader
-    #deferto(header, readonly=True)
+    class header (readonly): "the analyze header"; implements=AnalyzeHeader
+
+    # delegate attribute access to header
+    deferto(header)
+
+    # overload some header attributes
+    class datatype (readonly):
+        def get(_,self): return typecode2datatype(self.array.dtype.char)
+    class bitpix (readonly):
+        def get(_,self): return 8*self.array.dtype.itemsize
+    class glmin (readonly): get=lambda _,self: self.amin(abs(self.array).flat)
+    class glmax (readonly): get=lambda _,self: self.amax(abs(self.array).flat)
+
+    class numpy_dtype (readonly):
+        def get(_,self):
+            return dtype(datatype2typecode[self.header.datatype])\
+                   .newbyteorder(self.byteorder)
+    class shape (readonly):
+        def get(_,self): return self.tdim and \
+                   (self.tdim, self.zdim, self.ydim, self.xdim)\
+                   or (self.zdim, self.ydim, self.xdim)
 
     #-------------------------------------------------------------------------
     def __init__(self, filestem, datasource=DataSource()):
@@ -160,20 +229,11 @@ class AnalyzeImage (BaseImage):
         BaseImage.__init__(self, arr)
 
     #-------------------------------------------------------------------------
-    def __getattr__(self, attname): return getattr(self.header, attname)
-
-    #-------------------------------------------------------------------------
     def load_image(self, filename):
-        # bytes per pixel
-        #bytepix = self.bitpix/8
-        numtype = datatype2typecode[self.datatype]
-        dims = self.tdim and (self.tdim, self.zdim, self.ydim, self.xdim)\
-                          or (self.zdim, self.ydim, self.xdim)
-        #datasize = bytepix * reduce(lambda x,y: x*y, dims)
-        #arr = fromstring(self._datasource.open(filename).read(), numtype)
-        #return reshape(image, dims)
-        return memmap(
-          self._datasource.filename(filename), dtype=numtype, shape=dims)
+        print "AnalyzeImage memmap(%s,dtype=%s,shape=%s)"%(self._datasource.filename(filename),
+            self.numpy_dtype, self.shape)
+        return  memmap(self._datasource.filename(filename),
+            dtype=self.numpy_dtype, shape=self.shape)
 
 
 ##############################################################################
@@ -181,17 +241,6 @@ class AnalyzeWriter (object):
     """
     Write a given image into a single Analyze7.5 format hdr/img pair.
     """
-
-    # map datatype to number of bits per pixel (or voxel)
-    datatype2bitpix = {
-      BYTE: 8,
-      SHORT: 16,
-      INTEGER: 32,
-      FLOAT: 32,
-      DOUBLE: 64,
-      COMPLEX: 64}
-
-    #[STATIC]
     _defaults_for_fieldname = {
       'sizeof_hdr': HEADER_SIZE,
       'extents': 16384,
@@ -199,13 +248,48 @@ class AnalyzeWriter (object):
       'hkey_un0': ' ',
       'vox_units': 'mm',
       'scale_factor':1.}
-    #[STATIC]
+
     _defaults_for_descriptor = {'i': 0, 'h': 0, 'f': 0., 'c': '\0', 's': ''}
 
     #-------------------------------------------------------------------------
-    def __init__(self, image, datatype=None):
-        self.image = image
-        self.datatype = datatype or typecode2datatype[image.data.typecode()]
+    @staticmethod
+    def write_hdr(image, outfile):
+        """
+        Write ANALYZE format header (.hdr) file.
+        @param image: either an AnalyzeHeader or AnalyzeImage
+        """
+        if type(outfile) == type(""): outfile = file(outfile,'w')
+
+        # calculate min/max differently if header or image is provided
+        if hasattr(image, "raw_array"):
+            data_magnitude = abs(image.data).flat
+            glmin, glmax = amin(data_magnitude), amax(data_magnitude)
+        else: glmin, glmax = image.glmin, image.glmax
+        imagevalues = {
+          'datatype': image.datatype,
+          'bitpix': image.bitpix,
+          'ndim': image.ndim,
+          'xdim': image.xdim,
+          'ydim': image.ydim,
+          'zdim': image.zdim,
+          'tdim': image.tdim,
+          'xsize': image.xsize,
+          'ysize': image.ysize,
+          'zsize': image.zsize,
+          'tsize': image.tsize,
+          'glmin': image.glmin,
+          'glmax': image.glmax,
+          'orient': '\0'}   # kludge alert!  this must be fixed!
+
+        def fieldvalue(fieldname, fieldformat):
+            if imagevalues.has_key(fieldname): return imagevalues[fieldname]
+            if hasattr(image, fieldname): return getattr(image, fieldname)
+            return AnalyzeWriter._default_field_value(fieldname, fieldformat)
+
+        fieldvalues = [fieldvalue(*field) for field in struct_fields.items()]
+        #for f,v in zip(struct_fields.keys(),fieldvalues): print f,"=",`v`
+        header = struct_pack(image.byteorder, field_formats, fieldvalues)
+        outfile.write(header)
 
     #-------------------------------------------------------------------------
     def _default_field_value(self, fieldname, fieldformat):
@@ -219,38 +303,6 @@ class AnalyzeWriter (object):
         headername, imagename = "%s.hdr"%filestem, "%s.img"%filestem
         self.write_hdr(headername)
         self.write_img(imagename)
-
-    #-------------------------------------------------------------------------
-    def write_hdr(self, filename):
-        "Write ANALYZE format header (.hdr) file."
-        image = self.image
-        data_magnitude = abs(image.data)
-        imagevalues = {
-          'datatype': self.datatype,
-          'bitpix': self.datatype2bitpix[self.datatype],
-          'ndim': image.ndim,
-          'xdim': image.xdim,
-          'ydim': image.ydim,
-          'zdim': image.zdim,
-          'tdim': image.tdim,
-          'xsize': image.xsize,
-          'ysize': image.ysize,
-          'zsize': image.zsize,
-          'tsize': image.tsize,
-          'glmin': amin(data_magnitude.flat),
-          'glmax': amax(data_magnitude.flat),
-          'orient': '\0'}   # kludge alert!  this must be fixed!
-
-        def fieldvalue(fieldname, fieldformat):
-            if imagevalues.has_key(fieldname): return imagevalues[fieldname]
-            if hasattr(image, fieldname): return getattr(image, fieldname)
-            return self._default_field_value(fieldname, fieldformat)
-
-        fieldvalues = [fieldvalue(*field) for field in struct_fields.items()]
-        #for f,v in zip(struct_fields.keys(),fieldvalues): print f,"=",`v`
-        header = struct_pack(NATIVE, field_formats, fieldvalues)
-        file(filename,'w').write(header)
-
     #-------------------------------------------------------------------------
     def write_img(self, filename):
         "Write ANALYZE format image (.img) file."

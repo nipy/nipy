@@ -9,10 +9,10 @@ class AnalyzeImageTest(unittest.TestCase):
         self.image = AnalyzeImage("rho", datasource=repository)
 
     def test_header(self):
-        self.image.raw_array
+        self.image.array
 
     def test_arrayview(self):
-        arrayview(self.image.raw_array)
+        arrayview(self.image.array)
 
 
 if __name__ == '__main__': unittest.main()
