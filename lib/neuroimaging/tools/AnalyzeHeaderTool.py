@@ -39,11 +39,11 @@ class AnalyzeHeaderTool (OptionParser):
         attname, value = options.attname, options.value
         if attname is not None:
             if value is not None:
-                print "before: %s = %s"%(attname, getattr(header, attname))
+                print "before: %s\t%s"%(attname, getattr(header, attname))
                 setattr(header, attname, value)
-                print "after: %s = %s"%(attname, getattr(header, attname))
-                #write back out
-            else: print "%s = %s"%(attname, getattr(header, attname))
+                print "after: %s\t%s"%(attname, getattr(header, attname))
+                header.write(filename+".new")
+            else: print "%s\t%s"%(attname, getattr(header, attname))
         elif value is not None:
             self._error("Only provide a value when an attribute is provided")
         else: print header
