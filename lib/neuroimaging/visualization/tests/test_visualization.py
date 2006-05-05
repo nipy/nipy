@@ -1,5 +1,6 @@
 import unittest, os, scipy, glob, sets
 import numpy as N
+from neuroimaging.tests.data import repository
 from neuroimaging.image import Image, interpolation
 from neuroimaging.visualization import viewer, slices
 from neuroimaging.visualization import arrayview
@@ -9,8 +10,7 @@ import pylab
 class VisualizationTest(unittest.TestCase):
 
     def setUp(self):
-        url = 'http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img'
-        self.img = Image(url)
+        self.img = Image(repository.filename("rho.img"))
 
     def test_view(self):
         view = viewer.BoxViewer(self.img, z_pix=80.)
