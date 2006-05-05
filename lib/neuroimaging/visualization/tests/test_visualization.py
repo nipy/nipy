@@ -43,15 +43,6 @@ class VisualizationTest(unittest.TestCase):
         from neuroimaging.visualization import arrayview
         arrayview.arrayview(self.img.buffer)
 
-
-class ArrayviewTest(unittest.TestCase):
-
-    def test_arrayview(self):
-        from neuroimaging.visualization import arrayview
-        from pylab import randn
-        arrayview.arrayview(randn(20,20))
-
-
 def suite():
     return unittest.makeSuite(VisualizationTest)
 

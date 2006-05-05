@@ -1,7 +1,7 @@
 import unittest, os, scipy
 import numpy as N
 from neuroimaging.image.formats import analyze
-from neuroimaging.data import retrieve
+#from neuroimaging.data import retrieve
 
 class AnalyzeTest(unittest.TestCase):
 
