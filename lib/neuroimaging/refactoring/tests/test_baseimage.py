@@ -1,14 +1,6 @@
-import unittest, os, scipy, glob, sets
-import numpy as N
-from path import path
-from neuroimaging.image import Image, interpolation
-from neuroimaging.image.formats.analyze import ANALYZE
-from neuroimaging.tests.data import repository
+import unittest
 from neuroimaging.refactoring import baseimage
 from neuroimaging.visualization.arrayview import arrayview
-from neuroimaging.reference import slices as rslices
-import neuroimaging.tests.data
-import pylab
 
 class BaseImageTest(unittest.TestCase):
 
@@ -22,5 +14,5 @@ class BaseImageTest(unittest.TestCase):
     def test_arrayview(self):
         arrayview(self.image.raw_array)
 
-if __name__ == '__main__':
-    unittest.main()
+
+if __name__ == '__main__': unittest.main()
