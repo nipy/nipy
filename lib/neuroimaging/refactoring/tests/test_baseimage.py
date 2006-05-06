@@ -4,7 +4,7 @@ from path import path
 from neuroimaging.image import Image, interpolation
 from neuroimaging.image.formats.analyze import ANALYZE
 from neuroimaging.tests.data import repository
-from neuroimaging.visualization import baseimage
+from neuroimaging.refactoring import baseimage
 from neuroimaging.visualization.arrayview import arrayview
 from neuroimaging.reference import slices as rslices
 import neuroimaging.tests.data
