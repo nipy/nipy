@@ -1,29 +1,40 @@
+import sets
+
+class InterfaceOmission (Exception): pass
 
 ##############################################################################
 class attribute (property):
     _attvals_name = "__attribute_values__"
     makeclass = False
+    valtype = None
+    implements = ()
 
     #-------------------------------------------------------------------------
     class __metaclass__ (type):
-        def __new__(metaclass, name, bases, dictionary, makeclass=False):
+        def __new__(metaclass, classname, bases, classdict, makeclass=False):
             # return the attribute class
-            if bases == (property,) or dictionary.get("makeclass") or makeclass:
-                return type.__new__(metaclass, name, bases, dictionary)
+            if bases == (property,) or classdict.get("makeclass") or makeclass:
+                return type.__new__(metaclass, classname, bases, classdict)
             # return a attribute instance
-            return metaclass(name, bases, dictionary, makeclass=True)(
-              name, default=dictionary.get('default'),
-              doc=dictionary.get('__doc__'))
+            return metaclass(classname, bases, classdict, makeclass=True)(
+              classname,
+              valtype=classdict.get("valtype"),
+              default=classdict.get("default"),
+              doc=classdict.get("__doc__"))
 
     #-------------------------------------------------------------------------
-    def __init__(self, name, default=None, doc=None):
+    def __init__(self, name, valtype=None, default=None, doc=None):
         self.name = name
+        self.valtype = valtype
         self.default = default
+        if self.valtype is None and default is not None:
+            self.valtype = type(default)
         property.__init__(self,
           fget=self.get, fset=self.set, fdel=self.delete, doc=doc)
 
     #-------------------------------------------------------------------------
-    def super(self): return super(self.__class__.__bases__[0], self)
+    def super(self, base=None):
+        return super(base or self.__class__.__bases__[0], self)
 
     #-------------------------------------------------------------------------
     def isinitialized(self, host):
@@ -36,15 +47,42 @@ class attribute (property):
         return getattr(host, self._attvals_name)
 
     #-------------------------------------------------------------------------
+    def validate(self, host, value):
+        # type check
+        if self.valtype is not None and \
+          not issubclass(type(value), self.valtype):
+            raise TypeError,\
+              "attribute %s value %s must have type %s"% \
+              (self.name,`value`,self.valtype)
+
+        # protocol check
+        defined = sets.Set(dir(value))
+        for protocol in self.implements:
+            required = sets.Set(dir(protocol))
+            if not required.issubset(defined):
+                raise InterfaceOmission, list(required - defined)
+
+    #-------------------------------------------------------------------------
+    def isvalid(self, host, value):
+        try:
+            self.validate(host, value)
+            return True
+        except TypeError, InterfaceOmission:
+            return False
+
+    #-------------------------------------------------------------------------
     def get(self, host):
         attvals = self._get_attvals(host)
         if not attvals.has_key(self.name):
-            if self.default is not None: attvals[self.name] = self.default
+            if self.default is not None:
+                self.set(host, self.default)
             else: raise AttributeError(self.name)
         return attvals[self.name]
 
     #-------------------------------------------------------------------------
-    def set(self, host, value): self._get_attvals(host)[self.name] = value
+    def set(self, host, value):
+        self.validate(host, value)
+        self._get_attvals(host)[self.name] = value
         
     #-------------------------------------------------------------------------
     def delete(self, host):
@@ -68,16 +106,18 @@ class setonce (attribute):
 def _test():
     class Foo (object):
         class x (attribute):
-            "test attribute x"; default=11
+            "test attribute x"; valtype=str; default=11
             def get(self, host):
                 print "Customised getter: getting",self.name,"from",host
                 return attribute.get(self, host)
 
         class y (setonce): "test attribute y";
 
+        class z (readonly): default=10
+
     f = Foo()
     print f.x
-    f.x = 10
+    f.x = "borp"
     print f.x
     f.y = "fnorb"
     print f.y
