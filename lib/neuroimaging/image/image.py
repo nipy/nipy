@@ -13,6 +13,7 @@ spaceaxes = axis.space
 
 class Image(traits.HasTraits):
 
+    isfile = False
     shape = traits.ListInt()
 
     def __init__(self, image, **keywords):
@@ -36,6 +37,8 @@ class Image(traits.HasTraits):
         elif type(image) == types.StringType:
             self.isfile = True
             self.image = pipes.URLPipe(image).getimage()
+
+        else: raise ValueError("Image input must be a string, array, or another image.")
             
         self.type = type(self.image)
 
