@@ -63,8 +63,8 @@ def preload(packages=nontest_packages):
     scripts).  By default, import all non-test packages:\n%s
     and the following modules:\n%s
     """%("\n".join(nontest_packages),"\n".join(_preload_modules))
-    for package in packages: __import__(package, globals(), locals())
-    for module in _preload_modules: __import__(module, globals(), locals())
+    for package in packages: __import__(package, {}, {})
+    for module in _preload_modules: __import__(module, {}, {})
 
 #-----------------------------------------------------------------------------
 def import_from(modulename, objectname):
