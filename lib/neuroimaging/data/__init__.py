@@ -88,7 +88,7 @@ class Repository (DataSource):
     def _fullpath(self, pathstr):
         return path(self._baseurl).joinpath(pathstr)
     def filename(self, pathstr):
-        return DataSource.filename(self, self._fullpath(pathstr))
+        return DataSource.filename(self, str(self._fullpath(pathstr)))
     def exists(self, pathstr):
         return DataSource.exists(self._fullpath(pathstr))
     def open(self, pathstr):
