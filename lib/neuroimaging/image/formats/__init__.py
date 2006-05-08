@@ -13,12 +13,44 @@ NATIVE = "="
 LITTLE_ENDIAN = "<"
 BIG_ENDIAN = ">"
 
+# map format chars to python data types
+_typemap = dict((
+  (("l","L","f","d","q","Q"), float),
+  (("h","H","i","I","P"),     int),
+  (("x","c","b","B","s","p"), str)))
+
+# All allowed format strings.
+allformats = []
+for formats in _typemap.keys(): allformats.extend(formats)
+
+def numvalues(format):
+    numstr, fmtchar = format[:-1], format[-1]
+    return (numstr and fmtchar not in ("s","p")) and int(numstr) or 1
+
+def elemtype(format):
+    fmtchar = format[-1]
+    for formats, typ in _typemap.items():
+        if fmtchar in formats: return typ
+    raise ValueError("format char %s must be one of: %s"%\
+                     (fmtchar, allformats()))
+
+def formattype(format):
+    return numvalues(format) > 1 and list or elemtype(format)
+
+def takeval(numvalues, values):
+    if numvalues==1: return values.pop(0)
+    else: return [values.pop(0) for i in range(numvalues)]
+
 def struct_format(byte_order, elements):
     return byte_order+" ".join(elements)
-    
+   
+def aggregate(formats, values):
+    return [takeval(numvalues(format), values) for format in formats]
+
 def struct_unpack(infile, byte_order, elements):
     format = struct_format(byte_order, elements)
-    return struct.unpack(format, infile.read(struct.calcsize(format)))
+    return aggregate(elements,
+      list(struct.unpack(format, infile.read(struct.calcsize(format)))))
 
 def struct_pack(byte_order, elements, values):
     format = struct_format(byte_order, elements)
@@ -28,19 +60,6 @@ def struct_pack(byte_order, elements, values):
 ##############################################################################
 class structfield (attribute):
     classdef=True
-
-    _typemap = (
-      (("l","L","f","d","q","Q"), float),
-      (("h","H","i","I","P"),     int),
-      (("x","c","b","B","s","p"), str))
-
-    @staticmethod
-    def allformats():
-        "All allowed format strings."
-        allformats = []
-        for formats, typ in structfield._typemap:
-            allformats.extend(list(formats))
-        return allformats
 
     def __init__(self, name, format):
         self.format = format
@@ -56,12 +75,8 @@ class structfield (attribute):
     def pack(value, byteorder=NATIVE):
         return struct_pack(byteorder, (self.format,), value)
 
-    def formattype(self):
-        format = self.format[-1]
-        for formats, typ in self._typemap:
-            if format in formats: return typ
-        raise ValueError("format %s must be one of: %s"%\
-                         (format,self.allformats()))
+    def elemtype(self): return elemtype(self.format)
+    def formattype(self): return formattype(self.format)
 
     def set(self, host, value):
         if type(value) is type(""): value = self.fromstring(value)
