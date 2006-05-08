@@ -64,7 +64,7 @@ class ANALYZE(traits.HasTraits):
     dim_un0 = BinaryHeaderAtt('h', seek=74, value=0)
     pixdim = BinaryHeaderAtt('8f', seek=76, value=(0.,2.,2.,2.,)+(0.,)*4)
     vox_offset = BinaryHeaderAtt('f', seek=108, value=0.)
-    funused1 = BinaryHeaderAtt('f', seek=112, value=1.)
+    scale_factor = BinaryHeaderAtt('f', seek=112, value=1.)
     funused2 = BinaryHeaderAtt('f', seek=116, value=0.)
     funused3 = BinaryHeaderAtt('f', seek=120, value=0.)
     calmax = BinaryHeaderAtt('f', seek=124, value=0.)
@@ -189,8 +189,8 @@ class ANALYZE(traits.HasTraits):
         ## Setup affine transformation
         self.grid = fromStartStepLength(names=axisnames,
                                         shape=shape,
-                                        step=step,
-                                        start=-N.array(origin)*step)
+                                        start=-N.array(origin)*step,
+                                        step=step)
 
         if self.usematfile: self.grid.transform(self.readmat())
 
@@ -233,25 +233,25 @@ class ANALYZE(traits.HasTraits):
             self.bitpix = 8
             self.glmin = 0
             self.glmax = 255
-            self.funused1 = abs(self.calmin) / 255
+            self.scale_factor = abs(self.calmin) / 255
         elif self.datatype == ANALYZE_Short: 
             self.bitpix = 16
-            self.funused1 = max(abs(self.calmin), abs(self.calmax)) / (2.0**15-1)
-            self.glmin = round(self.funused1 * self.calmin)
-            self.glmax = round(self.funused1 * self.calmax)
+            self.scale_factor = max(abs(self.calmin), abs(self.calmax)) / (2.0**15-1)
+            self.glmin = round(self.scale_factor * self.calmin)
+            self.glmax = round(self.scale_factor * self.calmax)
         elif self.datatype == ANALYZE_Int: 
             self.bitpix = 32
-            self.funused1 = max(abs(self.calmin), abs(self.calmax)) / (2.0**31-1)
-            self.glmin = round(self.funused1 * self.calmin)
-            self.glmax = round(self.funused1 * self.calmax)
+            self.scale_factor = max(abs(self.calmin), abs(self.calmax)) / (2.0**31-1)
+            self.glmin = round(self.scale_factor * self.calmin)
+            self.glmax = round(self.scale_factor * self.calmax)
         elif self.datatype == ANALYZE_Float:
             self.bitpix = 32
-            self.funused1 = 1
+            self.scale_factor = 1
             self.glmin = 0
             self.glmax = 0
         elif self.datatype == ANALYZE_Double:
             self.bitpix = 64
-            self.funused1 = 1
+            self.scale_factor = 1
             self.glmin = 0
             self.glmax = 0
         else:
@@ -371,15 +371,15 @@ class ANALYZE(traits.HasTraits):
     #-------------------------------------------------------------------------
     def getslice(self, slice):
         v = self.memmap[slice]
-        if self.funused1:
-            return v * self.funused1
+        if self.scale_factor:
+            return v * self.scale_factor
         else:
             return v
 
     #-------------------------------------------------------------------------
     def writeslice(self, slice, data):
-        if self.funused1:
-            _data = data / self.funused1
+        if self.scale_factor:
+            _data = data / self.scale_factor
         else:
             _data = data
         self.memmap[slice] = _data.astype(self.dtype)
