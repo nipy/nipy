@@ -3,6 +3,9 @@ from copy import copy
 from sets import Set
 from types import TupleType, ListType
 
+class AccessError (Exception):
+    "Indicate that a private attribute was referred to outside its class."
+
 class ProtocolOmission (Exception):
     "Indicate that a value does not support part of its intended protocol."
 
@@ -92,14 +95,9 @@ class attribute (property):
         defined = Set(dir(value))
         for protocol in self.implements:
             required = Set(dir(protocol))
-            if not required.issubset(defined):
-                print "value=",value
-                print "protocol=",protocol
-                print "defined =",defined
-                print "required =",required
-                raise ProtocolOmission(
-                  "attribute %s implements %s, value %s does not implement: %s"%\
-                  (self.name,self.implements,value,tuple(required - defined)))
+            if not required.issubset(defined): raise ProtocolOmission(
+              "attribute %s implements %s, value %s does not implement: %s"%\
+              (self.name,self.implements,value,tuple(required - defined)))
 
     #-------------------------------------------------------------------------
     def isvalid(self, host, value):
@@ -110,7 +108,12 @@ class attribute (property):
             return False
 
     #-------------------------------------------------------------------------
+    def isprivate(self): return self.name[0] == "_"
+
+    #-------------------------------------------------------------------------
     def get(self, host):
+        if self.isprivate() and getframe(1).f_locals.get("self") != host:        
+            raise AccessError("cannot get private attribute %s"%self.name)
         attvals = self._get_attvals(host)
         if not attvals.has_key(self.name):
             if self.default is not None:
@@ -120,6 +123,8 @@ class attribute (property):
 
     #-------------------------------------------------------------------------
     def set(self, host, value):
+        if self.isprivate() and getframe(1).f_locals.get("self") != host:        
+            raise AccessError("cannot set private attribute %s"%self.name)
         if self.readonly and self.isinitialized(host):
             raise AttributeError(
               "attribute %s is read-only has already been set"%self.name)
@@ -168,12 +173,16 @@ class readonly (attribute):
 def _test():
     class Foo (object):
         class x (attribute):
-            "test attribute x"; implements=str; default=11
+            "test attribute x"; implements=str; default="foo"
             def get(self, host):
                 print "Customised getter: getting",self.name,"from",host
                 return attribute.get(self, host)
         class y (readonly): "test attribute y"
         class z (readonly): "test attribute z"; default=10
+        class _a (attribute): "private attribute"
+
+        def get_a(self): return self._a
+        def set_a(self, value): self._a = value
 
     f = Foo()
     print f.x
@@ -181,8 +190,12 @@ def _test():
     print f.x
     f.y = "fnorb"
     print f.y
-    f.y = "fnarb"
-    print f.y
+    #f.y = "fnarb"
+    #print f.y
+    f.set_a(10)
+    print f.get_a()
+    print f._a
+    f._a = 10
 
 if __name__ == "__main__": _test()
 
