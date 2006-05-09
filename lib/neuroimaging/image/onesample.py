@@ -1,7 +1,7 @@
 import copy, os, csv, string, fpformat, types
 import numpy as N
 import enthought.traits as traits
-import image
+from neuroimaging.image import Image, ImageSequenceIterator
 from neuroimaging.reference import grid
 import neuroimaging.statistics.onesample as onesample
 from neuroimaging.statistics import utils
@@ -59,7 +59,7 @@ class ImageOneSample(onesample.OneSampleIterator):
             self.haveW = True
             imgs = [val[0] for val in input]
             wimgs = [val[1] for val in input]
-            self.iterator = image.ImageSequenceIterator(imgs)
+            self.iterator = ImageSequenceIterator(imgs)
 
             ## don't know if this should go here....
 
@@ -67,9 +67,9 @@ class ImageOneSample(onesample.OneSampleIterator):
                 self.iterator.grid.itertype = 'all'
                 self.iterator.grid = iter(self.iterator.grid)
 
-            self.witerator = image.ImageSequenceIterator(wimgs, grid=self.iterator.grid)
+            self.witerator = ImageSequenceIterator(wimgs, grid=self.iterator.grid)
         else:
-            self.iterator = image.ImageSequenceIterator(input)
+            self.iterator = ImageSequenceIterator(input)
 
         onesample.OneSampleIterator.__init__(self, self.iterator, outputs=outputs, **keywords)
 
@@ -112,7 +112,7 @@ class ImageOneSampleOutput(onesample.OneSampleOutput):
         self.grid = grid
         if not os.path.exists(self.path):
             os.makedirs(self.path)
-        self.img = iter(image.Image('%s/%s%s' % (self.path, self.basename, self.ext),
+        self.img = iter(Image('%s/%s%s' % (self.path, self.basename, self.ext),
                                     mode='w', clobber=self.clobber, grid=grid))
 
     def sync_grid(self, img=None):
