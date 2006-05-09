@@ -69,7 +69,8 @@ def preload(packages=nontest_packages):
 #-----------------------------------------------------------------------------
 def import_from(modulename, objectname):
     "Import and return objectname from modulename."
-    module = __import__(modulename, globals(), locals(), (objectname,))
+    print "import_from:",modulename,objectname
+    module = __import__(modulename, {}, {}, (objectname,))
     try: return getattr(module, objectname)
     except AttributeError: return None
 
