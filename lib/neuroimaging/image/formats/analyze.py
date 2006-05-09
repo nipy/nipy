@@ -204,7 +204,7 @@ class ANALYZE(traits.HasTraits):
             imgfilename = self.datasource.filename(self.imgfilename())
             mode = self.mode in ('r+', 'w') and "r+" or self.mode
             #print "ANALYZE memmap(%s,dtype=%s,shape=%s,mode=%s)"%(imgfilename, self.dtype,
-                tuple(self.grid.shape), mode)
+            #    tuple(self.grid.shape), mode)
             self.memmap = N.memmap(imgfilename, dtype=self.dtype,
                 shape=tuple(self.grid.shape), mode=mode)
 
