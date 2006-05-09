@@ -134,12 +134,16 @@ class AccessError (Exception):
 class ProtocolOmission (Exception):
     "Indicate that a value does not support part of its expected protocol."
 
-def protocol(something):
+def protocol(*objects):
     """
-    @return the tuple of names representing the protocol supported by the
-    given object.
+    @return the tuple of names representing the total public protocol
+    supported by the given objects.
     """
-    return tuple([name for name in dir(something) if name[0] != "_"])
+    protocol = Set()
+    for obj in objects:
+        protocol = protocol.union(Set(
+          [name for name in dir(obj) if name[0] != "_"]))
+    return protocol
 
 def scope(num): return getframe(num+1).f_locals
 
@@ -153,12 +157,7 @@ class attribute (property):
     doc = ""
     implements = ()
 
-    def _get_protocol(self):
-        total_proto = Set()
-        for proto in self.implements:
-            total_proto = total_proto.union(Set(protocol(proto)))
-        return total_proto
-    protocol = property(_get_protocol)
+    protocol = property(lambda self: protocol(*self.implements))
 
     #-------------------------------------------------------------------------
     class __metaclass__ (type):
@@ -281,23 +280,31 @@ class wrapper (attribute):
     "Wrap an attribute or method of another attribute."
     classdef=True
     attname=None
+
+    #-------------------------------------------------------------------------
     def __init__(self, name, delegate, attname=None, readonly=None):
         if not isinstance(delegate, attribute):
             raise ValueError("delegate must be an attribute")
-        doc = "[Wrapper for %s.%s] "
+        self.attname = self.attname or attname or name
+        doc = "[Wrapper for %s.%s] "%(delegate.name, self.attname)
         if delegate.__doc__: doc = doc + delegate.__doc__
         attribute.__init__(self, name, doc=doc)
         self.delegate = delegate
-        self.attname = self.attname or attname or name
         if readonly is not None: self.readonly = readonly
+
+    #-------------------------------------------------------------------------
+    def _host_delegate(self, host):return getattr(host, self.delegate.name)
+
+    #-------------------------------------------------------------------------
     def get(self, host):
-        delegate = getattr(host,self.delegate.name)
-        return getattr(delegate, self.attname or self.name)
+        return getattr(self._host_delegate(host), self.attname)
+
+    #-------------------------------------------------------------------------
     def set(self, host, value):
         if self.readonly:
-            raise AttributeError("proxy %s is read-only"%self.name)
+            raise AttributeError("wrapper %s is read-only"%self.name)
         delegate = getattr(host,self.delegate.name)
-        setattr(delegate, self.attname or self.name, value)
+        setattr(self._host_delegate(host), self.attname, value)
 
 #-----------------------------------------------------------------------------
 def deferto(delegate, include=(), exclude=()):
