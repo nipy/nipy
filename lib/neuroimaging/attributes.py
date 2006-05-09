@@ -1,3 +1,55 @@
+"""
+>>> #-----------------------------
+>>> # Using basic attributes
+>>> #-----------------------------
+>>> #-----------------------------
+>>> # Using wrappers and deferto
+>>> #-----------------------------
+>>>
+>>> class Stomach (object):
+...     acid = "hydrochloric acid"
+...     def speak(self): print "I'm hungry!"
+...
+>>> class Mouth (object):
+...     numteeth=28
+...     def speak(self): print "blahblahblah"
+...
+>>> class Brain (object):
+...     def speak(self): print "hmmm"
+...
+>>> class Head (object):
+...     "Flaps at the jaw"
+...     class stomach (attribute): default=Stomach()
+...     class mouth (attribute): default=Mouth()
+...     class brain (attribute): default=Brain()
+...     deferto(mouth)
+...
+>>> h = Head()
+>>> h.numteeth
+28
+>>> h.speak()
+blahblahblah
+>>> class ThoughtfulHead (Head):
+...     "Speaks its mind"
+...     deferto(Head.brain)
+...
+>>> h = ThoughtfulHead()
+>>> h.speak()
+hmmm
+>>> h.numteeth
+28
+>>> class HungryHead (Head):
+...     "Lets the stomach do the talking, but no acid reflux"
+...     deferto(Head.stomach, "speak")
+...
+>>> h = HungryHead()
+>>> h.speak()
+I'm hungry!
+>>> h.acid
+Traceback (most recent call last):
+  File "<stdin>", line 1, in ?
+AttributeError: 'HungryHead' object has no attribute 'acid'
+"""
 from sys import _getframe as getframe
 from copy import copy
 from sets import Set
@@ -15,6 +67,8 @@ def protocol(something):
     given object.
     """
     return tuple([name for name in dir(something) if name[0] != "_"])
+
+def scope(num): return getframe(num+1).f_locals
 
 
 ##############################################################################
@@ -69,11 +123,18 @@ class attribute (property):
             argval = locals()[argname]
             if argval is not None: setattr(self, argname, argval)
 
-        if len(self.implements)==0 and default is not None:
-            self.implements = (default,)
+        # if no protocol is specified, use protocol of the default value
+        if len(self.implements)==0 and self.default is not None:
+            self.implements = (self.default,)
 
         property.__init__(self,
           fget=self.get, fset=self.set, fdel=self.delete, doc=doc)
+
+    #-------------------------------------------------------------------------
+    def _get_attvals(self, host):
+        if not hasattr(host, self._attvals_name):
+            setattr(host, self._attvals_name, {})
+        return getattr(host, self._attvals_name)
 
     #-------------------------------------------------------------------------
     def super(self, base=None):
@@ -82,12 +143,6 @@ class attribute (property):
     #-------------------------------------------------------------------------
     def isinitialized(self, host):
         return self._get_attvals(host).has_key(self.name)
-
-    #-------------------------------------------------------------------------
-    def _get_attvals(self, host):
-        if not hasattr(host, self._attvals_name):
-            setattr(host, self._attvals_name, {})
-        return getattr(host, self._attvals_name)
 
     #-------------------------------------------------------------------------
     def validate(self, host, value):
@@ -111,34 +166,42 @@ class attribute (property):
     def isprivate(self): return self.name[0] == "_"
 
     #-------------------------------------------------------------------------
+    def init(self, host):
+        "Called when attribute value is requested but has not been set yet."
+        if self.default is not None: self.set(host, self.default)
+        else: raise AttributeError("attribute %s is not initialized"%self.name)
+
+    #-------------------------------------------------------------------------
     def get(self, host):
-        if self.isprivate() and getframe(1).f_locals.get("self") != host:        
+        "Return attribute value on host."
+        if self.isprivate() and scope(1).get("self") != host:        
             raise AccessError("cannot get private attribute %s"%self.name)
         attvals = self._get_attvals(host)
-        if not attvals.has_key(self.name):
-            if self.default is not None:
-                self.set(host, self.default)
-            else: raise AttributeError(self.name)
+        if not self.isinitialized(host): self.init(host)
         return attvals[self.name]
 
     #-------------------------------------------------------------------------
     def set(self, host, value):
-        if self.isprivate() and getframe(1).f_locals.get("self") != host:        
+        "Set attribute value on host."
+        if self.isprivate() and scope(1).get("self") != host:        
             raise AccessError("cannot set private attribute %s"%self.name)
         if self.readonly and self.isinitialized(host):
             raise AttributeError(
               "attribute %s is read-only has already been set"%self.name)
         self.validate(host, value)
+        if len(self.implements)==0: self.implements = (value,)
         self._get_attvals(host)[self.name] = value
         
     #-------------------------------------------------------------------------
     def delete(self, host):
+        "Delete attribute from host (attribute will be uninitialized)."
         attvals = self._get_attvals(host)
         if attvals.has_key(self.name): del attvals[self.name]
 
 
 ##############################################################################
 class wrapper (attribute):
+    "Wrap an attribute or method of another attribute."
     classdef=True
     attname=None
     def __init__(self, name, delegate, attname=None, readonly=None):
@@ -156,12 +219,16 @@ class wrapper (attribute):
         setattr(delegate, self.attname or self.name, value)
 
 #-----------------------------------------------------------------------------
-def deferto(delegate):
+def deferto(delegate, include=(), exclude=()):
+    if include and exclude:
+        raise ValueError("please use only include or exclude")
     if not isinstance(delegate, attribute):
         raise ValueError("delegate must be an attribute")
-    getframe(1).f_locals.update(
-      dict([(attname,wrapper(attname,delegate))\
-            for attname in delegate.protocol]))
+    scope(1).update(
+      dict([(name,wrapper(name,delegate))\
+            for name in delegate.protocol\
+            if (not include or name in include) and\
+               (not exclude or name not in exclude)]))
 
 
 ##############################################################################
@@ -197,5 +264,7 @@ def _test():
     print f._a
     f._a = 10
 
-if __name__ == "__main__": _test()
+if __name__ == "__main__":
+    from doctest import testmod
+    testmod()
 
