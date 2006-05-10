@@ -1,7 +1,8 @@
 import unittest, os, scipy, glob, sets
 import numpy as N
 from neuroimaging.tests.data import repository
-from neuroimaging.image import Image, interpolation
+from neuroimaging.image import Image
+from neuroimaging.image.interpolation import ImageInterpolator
 from neuroimaging.visualization import viewer, slices
 from neuroimaging.visualization import arrayview
 from neuroimaging.reference import slices as rslices
@@ -18,12 +19,12 @@ class VisualizationTest(unittest.TestCase):
         pylab.show()
 
     def test_transversal_slice(self):
-        self.interpolator = interpolation.ImageInterpolator(self.img)
+        interpolator = ImageInterpolator(self.img)
         min = float(self.img.readall().min())
         max = float(self.img.readall().max())
         _slice = slices.transversal(self.img, z=0.,
           xlim=[-20,20.], ylim=[0,40.])
-        x = slices.PylabDataSlice(self.interpolator, _slice, vmax=max, vmin=min,
+        x = slices.DataSlicePlot(interpolator, _slice, vmax=max, vmin=min,
           colormap='spectral', interpolation='nearest')
         x.width = 0.8; x.height = 0.8
         pylab.figure(figsize=(3,3))
@@ -32,7 +33,7 @@ class VisualizationTest(unittest.TestCase):
         pylab.show()
       
     def test_transversal_slice2(self):
-        x = slices.PylabTransversal(self.img, y=3., xlim=[-49.,35.])
+        x = slices.TransversalPlot(self.img, y=3., xlim=[-49.,35.])
         x.width = 0.8; x.height = 0.8
         pylab.figure(figsize=(3,3))
         x.getaxes()

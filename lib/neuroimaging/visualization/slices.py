@@ -103,7 +103,7 @@ interpolation = traits.Trait('nearest', 'bilinear', 'blackman100',
 
 origin = traits.Trait('lower', 'upper')
 
-class PylabRGBASlice(Slice):
+class RGBASlicePlot(Slice):
     """
     A class that draws a slice of RGBA data. The grid instance is assumed to
     have a squeezeshape attribute representing the 'squeezed' shape of the
@@ -150,7 +150,7 @@ class PylabRGBASlice(Slice):
         return data or N.squeeze(self.interpolator(self.grid.range()))
 
 
-class PylabRGBSlice(PylabRGBASlice):
+class RGBSlicePlot(RGBASlicePlot):
 
     alpha = traits.Float(1.0)
 
@@ -168,9 +168,9 @@ class PylabRGBSlice(PylabRGBASlice):
             return V
 
     def draw(self, data=None, redraw=False, *args, **keywords):
-        PylabRGBASlice.draw(self, data=self.RGBA(data=data), redraw=redraw)
+        RGBASlicePlot.draw(self, data=self.RGBA(data=data), redraw=redraw)
             
-class PylabDataSlice(PylabRGBSlice):
+class DataSlicePlot(RGBSlicePlot):
 
     colormap = cmap
     vmax = traits.Float(0.0)
@@ -194,9 +194,9 @@ class PylabDataSlice(PylabRGBSlice):
         return N.array(_cmap(v))
 
     def draw(self, data=None, redraw=False, *args, **keywords):
-        PylabRGBASlice.draw(self, data=self.RGBA(data=data), redraw=redraw)
+        RGBASlicePlot.draw(self, data=self.RGBA(data=data), redraw=redraw)
 
-class PylabSagittal(PylabDataSlice):
+class SagittalPlot (DataSlicePlot):
 
     x = traits.Float(0.)
     xlim = traits.ListFloat(xlim)
@@ -212,14 +212,14 @@ class PylabSagittal(PylabDataSlice):
         self.slice = sagittal(self.img, x=self.x, ylim=self.ylim,
                               zlim=self.zlim, shape=self.shape)
     
-        PylabDataSlice.__init__(self, self.interpolator, self.slice,
+        DataSlicePlot.__init__(self, self.interpolator, self.slice,
                                 vmax=self.M,
                                 vmin=self.m,
                                 colormap=self.colormap,
                                 interpolation=self.interpolation)
 
 
-class PylabCoronal(PylabDataSlice):
+class CoronalPlot (DataSlicePlot):
 
     x = traits.Float(0.)
     xlim = traits.ListFloat(xlim)
@@ -235,14 +235,14 @@ class PylabCoronal(PylabDataSlice):
         self.slice = coronal(self.img, x=self.x, xlim=self.xlim,
                               zlim=self.zlim, shape=self.shape)
     
-        PylabDataSlice.__init__(self, self.interpolator, self.slice,
+        DataSlicePlot.__init__(self, self.interpolator, self.slice,
                                 vmax=self.M,
                                 vmin=self.m,
                                 colormap=self.colormap,
                                 interpolation=self.interpolation)
 
 
-class PylabTransversal(PylabDataSlice):
+class TransversalPlot (DataSlicePlot):
 
     z = traits.Float(0.)
     xlim = traits.ListFloat(xlim)
@@ -258,7 +258,7 @@ class PylabTransversal(PylabDataSlice):
         self.slice = transversal(self.img, z=self.z, ylim=self.ylim,
                                  xlim=self.xlim, shape=self.shape)
     
-        PylabDataSlice.__init__(self, self.interpolator, self.slice,
+        DataSlicePlot.__init__(self, self.interpolator, self.slice,
                                 vmax=self.M,
                                 vmin=self.m,
                                 colormap=self.colormap,

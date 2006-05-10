@@ -3,7 +3,7 @@ from neuroimaging.image.interpolation import ImageInterpolator
 from neuroimaging.reference.slices import xslice, yslice, zslice, bounding_box
 import numpy as N
 import pylab
-from slices import PylabDataSlice, PylabRGBSlice, PylabRGBASlice
+from slices import DataSlicePlot, RGBSlicePlot, RGBASlicePlot
 import enthought.traits as traits
 from cmap import cmap, interpolation
 
@@ -123,13 +123,13 @@ class BoxViewer(traits.HasTraits):
         s = tuple(_slice.shape)
         v = self.interpolator(_slice.range())
         if v.shape == s:
-            self.slice_drawer = PylabDataSlice
+            self.slice_drawer = DataSlicePlot
             self._datatype = 'data'
         elif v.shape == s + (3,):
-            self.slice_drawer = PylabRGBSlice
+            self.slice_drawer = RGBSlicePlot
             self._datatype = 'RGB'
         elif v.shape == s + (4,):
-            self.slice_drawer = PylabRGBASlice
+            self.slice_drawer = RGBASlicePlot
             self._datatype = 'RGBA'
         else:
             raise ValueError, 'interpolator datatype not recoginzed as either data, RGB or RGBA'
