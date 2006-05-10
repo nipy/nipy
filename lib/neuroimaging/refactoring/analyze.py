@@ -6,7 +6,7 @@ from numpy import fromstring, reshape, memmap, UInt8, Int16, Int32, Float32, \
 
 from odict import odict
 from neuroimaging.image.formats import struct_unpack, struct_pack, NATIVE, \
-  LITTLE_ENDIAN, BIG_ENDIAN
+  LITTLE_ENDIAN, BIG_ENDIAN, structfield
 from neuroimaging.refactoring.baseimage import BaseImage
 from neuroimaging.attributes import attribute, readonly, deferto, wrapper
 from neuroimaging.data import DataSource
@@ -100,50 +100,6 @@ struct_fields = odict((
 
 field_formats = struct_fields.values()
 
-
-##############################################################################
-class structfield (attribute):
-    classdef=True
-
-    _typemap = (
-      (("l","L","f","d","q","Q"), float),
-      (("h","H","i","I","P"),     int),
-      (("x","c","b","B","s","p"), str))
-
-    @staticmethod
-    def allformats():
-        "All allowed format strings."
-        allformats = []
-        for formats, typ in structfield._typemap:
-            allformats.extend(list(formats))
-        return allformats
-
-    def __init__(self, name, format):
-        self.format = format
-        self.implements = (self.formattype(),)
-        attribute.__init__(self, name)
-        #if self.default is None: self.default = self._defaults[self.format]
-
-    def fromstring(self, string): return self.formattype()(string)
-
-    def unpack(infile, byteorder=NATIVE):
-        return struct_unpack(infile, byteorder, (self.format,))
-
-    def pack(value, byteorder=NATIVE):
-        return struct_pack(byteorder, (self.format,), value)
-
-    def formattype(self):
-        format = self.format[-1]
-        for formats, typ in self._typemap:
-            if format in formats: return typ
-        raise ValueError("format %s must be one of: %s"%\
-                         (format,self.allformats()))
-
-    def set(self, host, value):
-        if type(value) is type(""): value = self.fromstring(value)
-        attribute.set(self, host, value)
-
-
 headeratts = dict(
   [(name, structfield(name,format)) \
   for name,format in struct_fields.items()])
@@ -151,6 +107,7 @@ headeratts = dict(
 ro_headeratts = dict(
   [(name, attribute.clone(att,readonly=True)) \
   for name,att in headeratts.items()])
+
 
 ##############################################################################
 class AnalyzeHeader (object):
@@ -222,6 +179,10 @@ class AnalyzeImage (BaseImage):
                    or (self.zdim, self.ydim, self.xdim)
 
     #-------------------------------------------------------------------------
+    @staticmethod
+    def fromimage(image): pass
+
+    #-------------------------------------------------------------------------
     def __init__(self, filestem, datasource=DataSource()):
         self._datasource = datasource
         self.header = AnalyzeHeader(filestem+".hdr", opener=datasource.open)
@@ -230,10 +191,11 @@ class AnalyzeImage (BaseImage):
 
     #-------------------------------------------------------------------------
     def load_image(self, filename):
-        print "AnalyzeImage memmap(%s,dtype=%s,shape=%s)"%(self._datasource.filename(filename),
-            self.numpy_dtype, self.shape)
         return  memmap(self._datasource.filename(filename),
             dtype=self.numpy_dtype, shape=self.shape)
+
+    #-------------------------------------------------------------------------
+    def write(self, filestem): AnalyzeWriter().write(self, filestem)
 
 
 ##############################################################################
@@ -241,7 +203,7 @@ class AnalyzeWriter (object):
     """
     Write a given image into a single Analyze7.5 format hdr/img pair.
     """
-    _defaults_for_fieldname = {
+    _field_defaults = {
       'sizeof_hdr': HEADER_SIZE,
       'extents': 16384,
       'regular': 'r',
@@ -249,7 +211,7 @@ class AnalyzeWriter (object):
       'vox_units': 'mm',
       'scale_factor':1.}
 
-    _defaults_for_descriptor = {'i': 0, 'h': 0, 'f': 0., 'c': '\0', 's': ''}
+    _format_defaults = {'i': 0, 'h': 0, 'f': 0., 'c': '\0', 's': ''}
 
     #-------------------------------------------------------------------------
     @staticmethod
@@ -271,8 +233,8 @@ class AnalyzeWriter (object):
     #-------------------------------------------------------------------------
     def _default_field_value(self, fieldname, fieldformat):
         "[STATIC] Get the default value for the given field."
-        return self._defaults_for_fieldname.get(fieldname, None) or \
-               self._defaults_for_descriptor[fieldformat[-1]]
+        return self._field_defaults.get(fieldname, None) or \
+               self._format_defaults[fieldformat[-1]]
 
     #-------------------------------------------------------------------------
     def write(self, filestem):
