@@ -1,17 +1,22 @@
-import unittest, scipy
-from neuroimaging.reference import axis, grid, coordinate_system
-from neuroimaging.image.formats import analyze
-from neuroimaging.tests.data import repository
+import unittest
+
+import scipy
 import numpy as N
+
+from neuroimaging.reference.axis import space
+from neuroimaging.reference.grid import SamplingGrid, ConcatenatedGrids,\
+  DuplicatedGrids
+from neuroimaging.image.formats.analyze import ANALYZE
+from neuroimaging.tests.data import repository
 
 class GridTest(unittest.TestCase):
 
     def _open(self):
-        self.img = analyze.ANALYZE("avg152T1", repository)
+        self.img = ANALYZE("avg152T1", repository)
 
     def test_concat(self):
         self._open()
-        grids = grid.ConcatenatedGrids([self.img.grid]*5)
+        grids = ConcatenatedGrids([self.img.grid]*5)
         self.assertEquals(tuple(grids.shape), (5,) + tuple(self.img.grid.shape))
         z = grids.mapping(N.transpose([4,5,6,7]))
         a = grids.subgrid(0)
@@ -19,7 +24,7 @@ class GridTest(unittest.TestCase):
 
     def test_duplicate(self):
         self._open()
-        grids = grid.DuplicatedGrids(self.img.grid,4)
+        grids = DuplicatedGrids(self.img.grid,4)
         self.assertEquals(tuple(grids.shape), (4,) + tuple(self.img.grid.shape))
         z = grids.mapping(N.transpose([2,5,6,7]))
         a = grids.subgrid(0)
@@ -27,14 +32,10 @@ class GridTest(unittest.TestCase):
 
     def test_identity(self):
         shape = (30,40,50)
-        i = grid.IdentityGrid(shape=shape, names=axis.space)
+        i = SamplingGrid.identity(shape=shape, names=space)
         self.assertEquals(tuple(i.shape), shape)
         y = i.mapping.map([3,4,5])
         scipy.testing.assert_almost_equal(y, N.array([3,4,5]))
-
-def suite():
-    suite = unittest.makeSuite(GridTest)
-    return suite
 
 if __name__ == '__main__':
     unittest.main()

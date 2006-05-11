@@ -3,10 +3,10 @@ import types, os
 import enthought.traits as traits
 import numpy as N
 
-from neuroimaging.reference import grid, axis, mapping
-from neuroimaging.reference.grid import IdentityGrid, ParcelIterator, SliceParcelIterator
 from neuroimaging.data import DataSource
 from neuroimaging.image.formats import getreader
+from neuroimaging.reference.grid import SamplingGrid
+from neuroimaging.reference.grid_iterators import ParcelIterator, SliceParcelIterator
 
 zipexts = (".gz",".bz2")
 
@@ -16,6 +16,7 @@ class Image(traits.HasTraits):
     shape = traits.ListInt()
     fill = traits.Float(0.0)
 
+    #-------------------------------------------------------------------------
     class ArrayImage (object):
         "A simple class to mimic an image file from an array."
         def __init__(self, data, grid=None):
@@ -30,12 +31,14 @@ class Image(traits.HasTraits):
             """
             self.data = data
             self.shape = self.data.shape
-            self.grid = grid and grid or IdentityGrid(self.shape)
+            self.grid = grid and grid or SamplingGrid.identity(self.shape)
         def getslice(self, _slice): return self.data[_slice]
         def writeslice(self, _slice, data): self.data[_slice] = data
 
+    #-------------------------------------------------------------------------
     @staticmethod
-    def fromurl(url, datasource=DataSource(), mode="r", grid=None, clobber=False, **keywords):
+    def fromurl(url, datasource=DataSource(), mode="r", grid=None,
+                clobber=False, **keywords):
         base, ext = os.path.splitext(url.strip())
         if ext in zipexts: url = base
         return getreader(url)(filename=url,
@@ -126,9 +129,9 @@ class Image(traits.HasTraits):
         """
         The value argument here is used when, for instance one wants to
         iterate over one image with a ParcelIterator and write out data
-        to this image without explicitly setting this image\'s grid to
-        the original image\'s grid, i.e. to just take the value the
-        original image\'s iterator returns and use it here.
+        to this image without explicitly setting this image's grid to
+        the original image's grid, i.e. to just take the value the
+        original image's iterator returns and use it here.
         """
         if value is None: self.itervalue = value = self.grid.next()
         itertype = value.type
@@ -211,6 +214,7 @@ class Image(traits.HasTraits):
         if clean: value = Image(_clean(value, fill=self.fill))
         return value
 
+    #-------------------------------------------------------------------------
     def getslice(self, slice): return self.image.getslice(slice)
     def writeslice(self, slice, data): return self.image.writeslice(slice, data)
     def check_grid(self, test): return self.grid == test.grid
