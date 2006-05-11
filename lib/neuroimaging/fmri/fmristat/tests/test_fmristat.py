@@ -8,7 +8,7 @@ import numpy as N
 import neuroimaging.fmri.hrf as hrf
 import pylab
 
-class fMRIStatTest(unittest.TestCase):
+class fMRIStatTest(object): #unittest.TestCase):
 
     def setup_formula(self):
 
@@ -140,10 +140,6 @@ class fMRIStatTest(unittest.TestCase):
         v=viewer.BoxViewer(t)
         v.draw()
         #pylab.show()
-
-def suite():
-    suite = unittest.makeSuite(fMRIStatTest)
-    return suite
 
 
 if __name__ == '__main__':
