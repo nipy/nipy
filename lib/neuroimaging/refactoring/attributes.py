@@ -1,17 +1,34 @@
+from sys import _getframe as getframe
 from copy import copy
 from sets import Set
+from types import TupleType, ListType
 
-class ProtocolOmission (Exception): pass
+class ProtocolOmission (Exception):
+    "Indicate that a value does not support part of its intended protocol."
+
+def protocol(something):
+    """
+    @return the tuple of names representing the protocol supported by the
+    given object.
+    """
+    return tuple([name for name in dir(something) if name[0] != "_"])
+
 
 ##############################################################################
 class attribute (property):
     _attvals_name = "__attribute_values__"
     classdef = False
-    valtype = None
     default = None
     readonly = False
     doc = ""
     implements = ()
+
+    def _get_protocol(self):
+        total_proto = Set()
+        for proto in self.implements:
+            total_proto = total_proto.union(Set(protocol(proto)))
+        return total_proto
+    protocol = property(_get_protocol)
 
     #-------------------------------------------------------------------------
     class __metaclass__ (type):
@@ -36,13 +53,22 @@ class attribute (property):
 
     #-------------------------------------------------------------------------
     def __init__(self,
-      name, valtype=None, default=None, readonly=None, doc=None):
-        for argname in ("valtype","default","readonly"):
+      name, implements=None, default=None, readonly=None, doc=None):
+        self.name = name
+
+        # make sure implements is a sequence
+        if implements is not None: self.implements = implements
+        if type(self.implements) not in (TupleType, ListType):
+            self.implements = (self.implements,)
+
+        # use or override the class default for these
+        for argname in ("default","readonly"):
             argval = locals()[argname]
             if argval is not None: setattr(self, argname, argval)
-        self.name = name
-        if self.valtype is None and default is not None:
-            self.valtype = type(default)
+
+        if len(self.implements)==0 and default is not None:
+            self.implements = (default,)
+
         property.__init__(self,
           fget=self.get, fset=self.set, fdel=self.delete, doc=doc)
 
@@ -62,19 +88,18 @@ class attribute (property):
 
     #-------------------------------------------------------------------------
     def validate(self, host, value):
-        # type check
-        if self.valtype is not None and \
-          not issubclass(type(value), self.valtype):
-            raise TypeError,\
-              "attribute %s value %s must have type %s"% \
-              (self.name,`value`,self.valtype)
-
-        # protocol check
+        "Make sure the value satisfies any implemented protocols"
         defined = Set(dir(value))
         for protocol in self.implements:
             required = Set(dir(protocol))
             if not required.issubset(defined):
-                raise ProtocolOmission, list(required - defined)
+                print "value=",value
+                print "protocol=",protocol
+                print "defined =",defined
+                print "required =",required
+                raise ProtocolOmission(
+                  "attribute %s implements %s, value %s does not implement: %s"%\
+                  (self.name,self.implements,value,tuple(required - defined)))
 
     #-------------------------------------------------------------------------
     def isvalid(self, host, value):
@@ -112,7 +137,7 @@ class wrapper (attribute):
     classdef=True
     attname=None
     def __init__(self, name, delegate, attname=None, readonly=None):
-        attribute.__init(self, name)
+        attribute.__init__(self, name)
         self.delegate = delegate,
         self.attname = self.attname or attname or name
         if readonly is not None: self.readonly = readonly
@@ -125,11 +150,14 @@ class wrapper (attribute):
         delegate = getattr(host,self.delegate.name)
         setattr(delegate, self.attname or self.name, value)
 
+#-----------------------------------------------------------------------------
 def deferto(delegate):
-    # note, this won't pull in delegate superclass stuff...
-    framedict(1).update(
+    if not isinstance(delegate, attribute):
+        raise ValueError("delegate must be an attribute")
+    getframe(1).f_locals.update(
       dict([(attname,wrapper(attname,delegate))\
-            for attname in delegate.__dict__.keys()]))
+            for attname in delegate.protocol]))
+
 
 ##############################################################################
 class readonly (attribute):
@@ -140,7 +168,7 @@ class readonly (attribute):
 def _test():
     class Foo (object):
         class x (attribute):
-            "test attribute x"; valtype=str; default=11
+            "test attribute x"; implements=str; default=11
             def get(self, host):
                 print "Customised getter: getting",self.name,"from",host
                 return attribute.get(self, host)
