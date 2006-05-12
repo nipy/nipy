@@ -1,10 +1,83 @@
 """
->>> #-----------------------------
->>> # Using basic attributes
->>> #-----------------------------
->>> #-----------------------------
->>> # Using wrappers and deferto
->>> #-----------------------------
+The attributes module provides a simple yet flexible attribute framework
+for python classes, built on top of the built-in python properties.
+
+>>> ###############################
+>>> # Attribute Basics
+>>> ###############################
+>>>
+>>> #------ typed attributes ------
+>>>
+>>> class PhotoIdentification (object):
+...     photo=None
+...
+>>> class Wallet (object):
+...     class dollars (attribute): default=0
+...     class photoid (attribute): implements=PhotoIdentification
+...
+>>> w = Wallet()
+>>> w.dollars
+0
+>>> w.dollars = 10
+>>> w.dollars
+10
+>>> try: w.dollars = "gazillion"
+... # can't set numeric attribute to a string
+... except ProtocolOmission: print "can't do that" 
+...
+can't do that
+>>> try: w.photoid = "not a photo id"
+... except ProtocolOmission: print "photoid must have a photo"
+...
+photoid must have a photo
+>>> class FakeID (object):
+...     photo = "older brother"
+...
+>>> # photoid doesn't have to subclass PhotoIdentification, but it must
+>>> # support the protocol (ie, must have an attribute called photo).
+>>> w.photoid = FakeID()
+>>> 
+>>> #----- readonly attributes ----
+>>> 
+>>> class Newborn (object):
+...    class name (readonly): pass
+...
+>>> n = Newborn()
+>>> n.name = "Moonbeam"
+>>> # readonly attributes can only be set once, so get it right the first time!
+>>> try:
+...     n.name = "Jenny"
+... except AttributeError: print n.name
+Moonbeam
+>>> 
+>>> #----- private attributes -----
+>>>
+>>> class FederalOfficial (object):
+...     class name (readonly): default="John Doe"
+...     def tell(self): return "secrets revealed"
+...
+... # Journalist reports what his source tells him.  No one can access the
+... # source except the Journalist himself.
+>>> class Journalist (object):
+...     # _source is private because it starts with _
+...     class _source (attribute): default=FederalOfficial()
+...     class isemployed (attribute): default=True
+...     def report(self): print self._source.tell() # self can access _source
+...
+>>> r = Journalist()
+>>> r.report()
+secrets revealed
+>>> # try to find out the source's name
+>>> try: print r._source.name
+... # we can't access the source, so sack the journalist!
+... except AccessError: r.isemployed = False
+...
+>>> r.isemployed
+False
+>>>
+>>> ###############################
+>>> # Delegation
+>>> ###############################
 >>>
 >>> class Stomach (object):
 ...     acid = "hydrochloric acid"
@@ -59,7 +132,7 @@ class AccessError (Exception):
     "Indicate that a private attribute was referred to outside its class."
 
 class ProtocolOmission (Exception):
-    "Indicate that a value does not support part of its intended protocol."
+    "Indicate that a value does not support part of its expected protocol."
 
 def protocol(something):
     """
@@ -172,9 +245,13 @@ class attribute (property):
         else: raise AttributeError("attribute %s is not initialized"%self.name)
 
     #-------------------------------------------------------------------------
+    def _access_ok(self, host):
+        return not self.isprivate() or scope(2).get("self") in (self, host)        
+
+    #-------------------------------------------------------------------------
     def get(self, host):
         "Return attribute value on host."
-        if self.isprivate() and scope(1).get("self") != host:        
+        if not self._access_ok(host):
             raise AccessError("cannot get private attribute %s"%self.name)
         attvals = self._get_attvals(host)
         if not self.isinitialized(host): self.init(host)
@@ -183,11 +260,11 @@ class attribute (property):
     #-------------------------------------------------------------------------
     def set(self, host, value):
         "Set attribute value on host."
-        if self.isprivate() and scope(1).get("self") != host:        
+        if not self._access_ok(host):
             raise AccessError("cannot set private attribute %s"%self.name)
         if self.readonly and self.isinitialized(host):
             raise AttributeError(
-              "attribute %s is read-only has already been set"%self.name)
+              "attribute %s is read-only but has already been set"%self.name)
         self.validate(host, value)
         if len(self.implements)==0: self.implements = (value,)
         self._get_attvals(host)[self.name] = value
@@ -205,7 +282,11 @@ class wrapper (attribute):
     classdef=True
     attname=None
     def __init__(self, name, delegate, attname=None, readonly=None):
-        attribute.__init__(self, name)
+        if not isinstance(delegate, attribute):
+            raise ValueError("delegate must be an attribute")
+        doc = "[Wrapper for %s.%s] "
+        if delegate.__doc__: doc = doc + delegate.__doc__
+        attribute.__init__(self, name, doc=doc)
         self.delegate = delegate
         self.attname = self.attname or attname or name
         if readonly is not None: self.readonly = readonly
@@ -221,9 +302,7 @@ class wrapper (attribute):
 #-----------------------------------------------------------------------------
 def deferto(delegate, include=(), exclude=()):
     if include and exclude:
-        raise ValueError("please use only include or exclude")
-    if not isinstance(delegate, attribute):
-        raise ValueError("delegate must be an attribute")
+        raise ValueError("please use only include or exclude but not both")
     scope(1).update(
       dict([(name,wrapper(name,delegate))\
             for name in delegate.protocol\
@@ -236,7 +315,26 @@ class readonly (attribute):
     "A attribute which cannot be changed after it is initialized."
     classdef = True
     readonly = True
- 
+
+
+##############################################################################
+class objectify (object):
+    "Access a dictionary's key values like object attributes."
+    class _dict (readonly): default={}
+    deferto(_dict)
+
+    def __init__(self, _dict=None):
+        if _dict is not None: self._dict = _dict
+    def __getattr__(self, name):
+        if not self._dict.has_key(name): raise AttributeError(name)
+        return self._dict[name]
+    def __setattr__(self, name, value): self._dict[name] = value
+
+# NOTE: objectify not working yet
+def foo(): print objectify({'x':1,'y':2})
+#foo()
+
+#-----------------------------------------------------------------------------
 def _test():
     class Foo (object):
         class x (attribute):
