@@ -1,10 +1,12 @@
 import types
-from path import path
-from struct import *
 import struct
+from struct import *
+
+from path import path
+from attributes import attribute
 import enthought.traits as traits
+
 from neuroimaging import import_from
-from neuroimaging.attributes import attribute
 
 # struct byte order constants
 NATIVE = "="

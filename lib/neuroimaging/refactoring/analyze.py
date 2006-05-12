@@ -4,11 +4,15 @@ import struct
 from numpy import fromstring, reshape, memmap, UInt8, Int16, Int32, Float32, \
   Float64, Complex32, amin, amax, dtype
 
+from attributes import attribute, readonly, deferto, wrapper
 from odict import odict
-from neuroimaging.image.formats import struct_unpack, struct_pack, NATIVE, \
-  LITTLE_ENDIAN, BIG_ENDIAN, structfield
+from path import path
+
+from neuroimaging.reference.axis import space, spacetime
+from neuroimaging.reference.mapping import IdentityMapping
+from neuroimaging.image.formats import struct_unpack, struct_pack, structfield,\
+  NATIVE, LITTLE_ENDIAN, BIG_ENDIAN
 from neuroimaging.refactoring.baseimage import BaseImage
-from neuroimaging.attributes import attribute, readonly, deferto, wrapper
 from neuroimaging.data import DataSource
 
 # datatype is a one bit flag into the datatype identification byte of the
@@ -154,9 +158,42 @@ class AnalyzeHeader (object):
     def write(self, outfile): AnalyzeWriter.write_hdr(self, outfile)
 
 
+def get_filestem(filename, extensions):
+    filename = path(filename)
+    stem, ext = filename.splitext()
+    if ext in extensions: return stem
+    else: return filename
+
+
 ##############################################################################
 class AnalyzeImage (BaseImage):
-    class header (readonly): "the analyze header"; implements=AnalyzeHeader
+    """
+    >>> from neuroimaging.tests.data import repository
+    >>> image = AnalyzeImage("rho", repository.open)
+    """
+    extensions = (".hdr",".img",".mat")
+
+    class _datasource (readonly): "private datasource"; default=DataSource()
+ 
+    class filestem (readonly):
+        "filename minus extensions"
+        implements=str
+        def set(_,self,value):
+            super(readonly,_).set(self,get_filestem(value, self.extensions))
+    class hdrfile (readonly):
+        "header filename"
+        def get(_,self): return self.filestem+".hdr"
+    class imgfile (readonly):
+        "image filename"
+        def get(_,self): return self.filestem+".img"
+    class matfile (readonly):
+        "matrix filename"
+        def get(_,self): return self.filestem+".mat"
+
+    class header (readonly):
+        "analyze header"
+        implements=AnalyzeHeader
+        def init(_, self): return self.load_header()
 
     # delegate attribute access to header
     deferto(header)
@@ -166,33 +203,48 @@ class AnalyzeImage (BaseImage):
         def get(_,self): return typecode2datatype(self.array.dtype.char)
     class bitpix (readonly):
         def get(_,self): return 8*self.array.dtype.itemsize
-    class glmin (readonly): get=lambda _,self: self.amin(abs(self.array).flat)
-    class glmax (readonly): get=lambda _,self: self.amax(abs(self.array).flat)
+    class glmin (readonly): get=lambda _,self: amin(abs(self.array).flat)
+    class glmax (readonly): get=lambda _,self: amax(abs(self.array).flat)
 
     class numpy_dtype (readonly):
         def get(_,self):
             return dtype(datatype2typecode[self.header.datatype])\
                    .newbyteorder(self.byteorder)
     class shape (readonly):
-        def get(_,self): return self.tdim and \
-                   (self.tdim, self.zdim, self.ydim, self.xdim)\
-                   or (self.zdim, self.ydim, self.xdim)
+        def get(_,self):
+            return self.tdim and \
+              (self.tdim, self.zdim, self.ydim, self.xdim) or\
+              (self.zdim, self.ydim, self.xdim)
 
     #-------------------------------------------------------------------------
     @staticmethod
     def fromimage(image): pass
 
     #-------------------------------------------------------------------------
-    def __init__(self, filestem, datasource=DataSource()):
-        self._datasource = datasource
-        self.header = AnalyzeHeader(filestem+".hdr", opener=datasource.open)
-        arr = self.load_image(filestem+".img")
-        BaseImage.__init__(self, arr)
+    def __init__(self, filename, datasource=None):
+        self.filestem = filename
+        if datasource is not None: self._datasource = datasource
+        self.header = self.load_header()
+        BaseImage.__init__(self, self.load_array(), grid=self.load_grid())
 
     #-------------------------------------------------------------------------
-    def load_image(self, filename):
-        return  memmap(self._datasource.filename(filename),
+    def load_header(self):
+        return AnalyzeHeader(self.hdrfile, opener=self._datasource.open)
+
+    #-------------------------------------------------------------------------
+    def load_array(self):
+        return memmap(self._datasource.filename(self.imgfile),
             dtype=self.numpy_dtype, shape=self.shape)
+
+    #-------------------------------------------------------------------------
+    def load_grid(self):
+        """
+        Return affine transformation matrix, if it exists.  For now, the format
+        is assumed to be a tab-delimited 4 line file.  Other formats should be
+        added.
+        """
+        if self._datasource.exists(self.matfile):
+            return mapping.fromfile(self._datasource.open(self.matfile))
 
     #-------------------------------------------------------------------------
     def write(self, filestem): AnalyzeWriter().write(self, filestem)
