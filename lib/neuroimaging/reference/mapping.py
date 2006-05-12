@@ -2,7 +2,8 @@ import csv, string
 import numpy as N
 from numpy.linalg import inv as inverse
 from numpy.random import standard_normal
-import coordinate_system, axis
+from coordinate_system import CoordinateSystem, MNI_voxel, MNI_world
+from axis import Axis, space
 import string, sets, StringIO, urllib, re, struct
 import enthought.traits as traits
 
@@ -32,7 +33,7 @@ def matfromfile(infile, delimiter="\t"):
     t = N.array([map(string.atof, row) for row in reader])
     infile.close()
 
-def fromfile(infile, names=axis.space, input='voxel', output='world', delimiter='\t'):
+def fromfile(infile, names=space, input='voxel', output='world', delimiter='\t'):
     """
     Read in an affine transformation matrix and return an instance of Affine
     with named axes and input and output coordinate systems.
@@ -113,22 +114,16 @@ def isdiagonal(matrix, tol=1.0e-7):
     else:
         return False
 
-def frommatrix(matrix, names=axis.space, input='voxel', output='world'):
+def frommatrix(matrix, names=space, input='voxel', output='world'):
     """
     Return an Affine instance with named axes and input and output coordinate systems.
     """
-    ndim = matrix.shape[0] - 1
+    axes = [Axis(name=n) for n in names]
+    return Affine(
+      CoordinateSystem(input, axes), CoordinateSystem(output, axes),
+      matrix)
 
-    inaxes = []
-    outaxes = []
-    for i in range(ndim):
-        inaxes.append(axis.Axis(name=names[i]))
-        outaxes.append(axis.Axis(name=names[i]))
-    incoords = coordinate_system.CoordinateSystem('input', inaxes)
-    outcoords = coordinate_system.CoordinateSystem('input', inaxes)
-    return Affine(incoords, outcoords, matrix)
-
-def IdentityMapping(ndim=3, names=axis.space, input='voxel', output='world'):
+def IdentityMapping(ndim=3, names=space, input='voxel', output='world'):
     """
     Identity Affine transformation.
     """
@@ -222,12 +217,12 @@ class Mapping(traits.HasTraits):
         indim = [self.input_coords.axes[i] for i in order]
         if inname is None:
             inname = 'voxel'
-        incoords = coordinate_system.CoordinateSystem(inname, indim)
+        incoords = CoordinateSystem(inname, indim)
         
         outdim = [self.output_coords.axes[i] for i in order]
         if outname is None:
             outname = 'world'
-        outcoords = coordinate_system.CoordinateSystem(outname, outdim)
+        outcoords = CoordinateSystem(outname, outdim)
 
         def _map(voxel, _map=whichmap, which=which, ndim=self.ndim, order=order):
             try:
@@ -407,11 +402,11 @@ def matlab2python(mapping):
 
     n = mapping.ndim
     d1 = [mapping.input_coords.axes[n-1-i] for i in range(n)]
-    in1 = coordinate_system.CoordinateSystem(mapping.input_coords.name, d1)
+    in1 = CoordinateSystem(mapping.input_coords.name, d1)
     w1 = Affine(in1, mapping.input_coords, t1)
     
     d2 = [mapping.output_coords.axes[n-1-i] for i in range(n)]
-    out2 = coordinate_system.CoordinateSystem(mapping.output_coords.name, d2)
+    out2 = CoordinateSystem(mapping.output_coords.name, d2)
     w2 = Affine(mapping.output_coords, out2, t2)
 
     w = (w2 * mapping) * w1
@@ -434,11 +429,11 @@ def python2matlab(mapping):
 
     n = mapping.ndim
     d1 = [mapping.input_coords.axes[n-1-i] for i in range(n)]
-    in1 = coordinate_system.CoordinateSystem(mapping.input_coords.name, d1)
+    in1 = CoordinateSystem(mapping.input_coords.name, d1)
     w1 = Affine(in1, mapping.input_coords, t1)
     
     d2 = [mapping.output_coords.axes[n-1-i] for i in range(n)]
-    out2 = coordinate_system.CoordinateSystem(mapping.output_coords.name, d2)
+    out2 = CoordinateSystem(mapping.output_coords.name, d2)
     w2 = Affine(mapping.output_coords, out2, t2)
 
     w = (w2 * mapping) * w1
@@ -447,5 +442,5 @@ def python2matlab(mapping):
 
 C2fortran = python2matlab
 
-MNI_mapping = Affine(coordinate_system.MNI_voxel, coordinate_system.MNI_world, coordinate_system.MNI_world.transform())
+MNI_mapping = Affine(MNI_voxel, MNI_world, MNI_world.transform())
 MNI_mapping([36,63,45])

@@ -110,6 +110,8 @@ class SamplingGrid(traits.HasTraits):
         g.itertype = 'slice'
         return iter(g)
 
+    def transform(self, matrix): self.mapping = matrix * self.mapping
+
 class ConcatenatedGrids(SamplingGrid):
     """
     Return a grid formed by concatenating a sequence of grids. Checks are done
