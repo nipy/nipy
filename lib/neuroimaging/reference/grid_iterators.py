@@ -7,6 +7,7 @@ import enthought.traits as traits
 from attributes import readonly, constant
 
 # Package imports
+from neuroimaging import haslength
 from neuroimaging.reference.slicer import Slicer
 
 itertypes = ("slice", "parcel", "slice/parcel", "all")
@@ -89,25 +90,14 @@ class ParcelIteratorNext (object):
 class ParcelIterator (traits.HasTraits):
     labels = traits.Any()
     labelset = traits.Any()
-    multilabels = traits.false # are the labels one key or are they a sequence?
 
     #-------------------------------------------------------------------------
     def __init__(self, labels, keys, **keywords):
         self.labels = N.asarray(labels)
         self.labelset = list(sets.Set(keys))
-
-        try:
-            self.nlabel = len(self.labelset[0])
-            self.multilabels = True
-        except:
-            self.multilabels = False
-            pass
-
-        if not self.multilabels:
-            self.labels.shape = N.product(self.labels.shape)
-        else:
-            self.labels.shape = (self.labels.shape[0],
-                                 N.product(self.labels.shape[1:]))
+        self.labels.shape = haslength(self.labelset[0]) and\
+          (self.labels.shape[0], N.product(self.labels.shape[1:])) or\
+          N.product(self.labels.shape)
 
     #-------------------------------------------------------------------------
     def __iter__(self):
@@ -116,14 +106,11 @@ class ParcelIterator (traits.HasTraits):
 
     #-------------------------------------------------------------------------
     def next(self):
-        label = self.labelset.next()
-        if not self.multilabels:
-            wherelabel = N.equal(self.labels, label)
-        else:
-            wherelabel = 1
-            for i in range(self.nlabel):
-                wherelabel = wherelabel * N.equal(self.labels[i], label[i])
-        return ParcelIteratorNext(label, wherelabel)
+        keys = self.labelset.next()
+        if not haslength(keys): keys = (keys,)
+        wherelabel = N.product([N.equal(label, key)\
+          for label,key in zip(self.labels, keys)])
+        return ParcelIteratorNext(keys, wherelabel)
 
  
 ##############################################################################
