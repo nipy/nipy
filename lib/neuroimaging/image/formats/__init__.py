@@ -4,6 +4,7 @@ from struct import *
 import struct
 import enthought.traits as traits
 from neuroimaging import import_from
+from neuroimaging.attributes import attribute
 
 # struct byte order constants
 NATIVE = "="
@@ -20,6 +21,50 @@ def struct_unpack(infile, byte_order, elements):
 def struct_pack(byte_order, elements, values):
     format = struct_format(byte_order, elements)
     return struct.pack(format, *values)
+
+
+##############################################################################
+class structfield (attribute):
+    classdef=True
+
+    _typemap = (
+      (("l","L","f","d","q","Q"), float),
+      (("h","H","i","I","P"),     int),
+      (("x","c","b","B","s","p"), str))
+
+    @staticmethod
+    def allformats():
+        "All allowed format strings."
+        allformats = []
+        for formats, typ in structfield._typemap:
+            allformats.extend(list(formats))
+        return allformats
+
+    def __init__(self, name, format):
+        self.format = format
+        self.implements = (self.formattype(),)
+        attribute.__init__(self, name)
+        #if self.default is None: self.default = self._defaults[self.format]
+
+    def fromstring(self, string): return self.formattype()(string)
+
+    def unpack(infile, byteorder=NATIVE):
+        return struct_unpack(infile, byteorder, (self.format,))
+
+    def pack(value, byteorder=NATIVE):
+        return struct_pack(byteorder, (self.format,), value)
+
+    def formattype(self):
+        format = self.format[-1]
+        for formats, typ in self._typemap:
+            if format in formats: return typ
+        raise ValueError("format %s must be one of: %s"%\
+                         (format,self.allformats()))
+
+    def set(self, host, value):
+        if type(value) is type(""): value = self.fromstring(value)
+        attribute.set(self, host, value)
+
 
 
 ##############################################################################
