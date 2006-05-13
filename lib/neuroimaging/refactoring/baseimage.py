@@ -18,7 +18,7 @@ from neuroimaging.image import formats
 import neuroimaging.data
 import neuroimaging.data.urlhandler as urlhandler
 
-from attributes import *
+from neuroimaging.attributes import *
 
 class Image(traits.HasTraits):
 

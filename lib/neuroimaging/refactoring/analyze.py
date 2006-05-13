@@ -8,7 +8,7 @@ from odict import odict
 from neuroimaging.image.formats import struct_unpack, struct_pack, NATIVE, \
   LITTLE_ENDIAN, BIG_ENDIAN
 from neuroimaging.refactoring.baseimage import BaseImage
-from neuroimaging.refactoring.attributes import attribute, readonly, deferto, wrapper
+from neuroimaging.attributes import attribute, readonly, deferto, wrapper
 from neuroimaging.data import DataSource
 
 # datatype is a one bit flag into the datatype identification byte of the
@@ -260,34 +260,11 @@ class AnalyzeWriter (object):
         """
         if type(outfile) == type(""): outfile = file(outfile,'w')
 
-        # calculate min/max differently if header or image is provided
-        if hasattr(image, "raw_array"):
-            data_magnitude = abs(image.data).flat
-            glmin, glmax = amin(data_magnitude), amax(data_magnitude)
-        else: glmin, glmax = image.glmin, image.glmax
-        imagevalues = {
-          'datatype': image.datatype,
-          'bitpix': image.bitpix,
-          'ndim': image.ndim,
-          'xdim': image.xdim,
-          'ydim': image.ydim,
-          'zdim': image.zdim,
-          'tdim': image.tdim,
-          'xsize': image.xsize,
-          'ysize': image.ysize,
-          'zsize': image.zsize,
-          'tsize': image.tsize,
-          'glmin': image.glmin,
-          'glmax': image.glmax,
-          'orient': '\0'}   # kludge alert!  this must be fixed!
-
         def fieldvalue(fieldname, fieldformat):
-            if imagevalues.has_key(fieldname): return imagevalues[fieldname]
             if hasattr(image, fieldname): return getattr(image, fieldname)
             return AnalyzeWriter._default_field_value(fieldname, fieldformat)
 
         fieldvalues = [fieldvalue(*field) for field in struct_fields.items()]
-        #for f,v in zip(struct_fields.keys(),fieldvalues): print f,"=",`v`
         header = struct_pack(image.byteorder, field_formats, fieldvalues)
         outfile.write(header)
 
@@ -303,6 +280,7 @@ class AnalyzeWriter (object):
         headername, imagename = "%s.hdr"%filestem, "%s.img"%filestem
         self.write_hdr(headername)
         self.write_img(imagename)
+
     #-------------------------------------------------------------------------
     def write_img(self, filename):
         "Write ANALYZE format image (.img) file."
