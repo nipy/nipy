@@ -1,90 +1,92 @@
 import numpy as N
-import enthought.traits as traits
-import uuid
+from attributes import attribute, readonly
+from uuid import  Uuid
 
 valid = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension', 'concat']
 space = ['zspace', 'yspace', 'xspace']
 spacetime = ['time', 'zspace', 'yspace', 'xspace']
 
-##############################################################################
-class Axis(traits.HasTraits):
-    """
-    This class represents a generic axis. Axes are used
-    in the definition Coordinate system.
-    """
-    
-    name = traits.Str()
 
+##############################################################################
+class Axis (object):
+    """
+    This class represents a generic axis. Axes are used in the definition
+    of CoordinateSystem.
+    """
+    class name (readonly): "dimension name"; implements=str
+    class _tag (readonly): "private unique tag"; implements=Uuid
+
+    #-------------------------------------------------------------------------
     def __init__(self, name):
-        traits.HasTraits.__init__(self)
         self.name = name
-        self.tag = uuid.Uuid()
+        self._tag = Uuid()
         if self.name not in valid:
             raise ValueError, 'recognized dimension names are ' + `valid`
 
-    def __eq__(self, dim):
-        """
-        Verify if two axes are equal by checking tag.
-        """
-        return hasattr(self,"tag") and hasattr(dim,"tag") and \
-          self.tag == dim.tag
+    #-------------------------------------------------------------------------
+    def __eq__(self, axis):
+        "Equality is defined by name."
+        return hasattr(axis,"name") and self.name == axis.name
 
 
 ##############################################################################
-class VoxelAxis(Axis):
-    "A axis with a length as well."
-    length = traits.Int(1)
+class VoxelAxis (Axis):
+    "An axis with a length as well."
+    class length (readonly): "number of voxel positions"; default=1
 
     def __init__(self, name, length=None):
         Axis.__init__(self, name)
         if length is not None: self.length = length
 
+    def __len__(self): return self.length
+
+    def __eq__(self, axis):
+        "Equality is defined by name and length."
+        return Axis.__eq__(self, axis) and hasattr(axis,"length") and \
+          self.length == axis.length
+
     def values(self): return N.arange(self.length)
 
 
 ##############################################################################
-class RegularAxis(VoxelAxis):
+class RegularAxis (VoxelAxis):
     """
-    This class represents a regularly spaced axis. Axes are used
-    in the definition Coordinate system. The attributes step and start
-    are usually ignored if a valid transformation matrix is provided --
-    otherwise they can be used to create an orthogonal transformation matrix.
+    This class represents a regularly spaced axis. Axes are used in the
+    definition Coordinate system. The attributes step and start are usually
+    ignored if a valid transformation matrix is provided -- otherwise they
+    can be used to create an orthogonal transformation matrix.
 
-    >>> r = RegularAxis(name='xspace',length=10,start=0.25,step=0.3)
+    >>> r = RegularAxis(name='xspace',length=10, start=0.25, step=0.3)
     >>> r.values()
     array([ 0.25,  0.55,  0.85,  1.15,  1.45,  1.75,  2.05,  2.35,  2.65,  2.95])
     """
-    step = traits.Float(1.0)
-    start = traits.Float()
+    class start (readonly): default=0.
+    class step (readonly): default=1.
 
     def __init__(self, name, length=None, start=None, step=None):
         VoxelAxis.__init__(self, name, length=length)
         if start is not None: self.start = start
         if step is not None: self.step = step
 
-    def __len__(self):
-        return self.length
-    
     def __repr__(self):
-        _dict = {'length':self.length, 'step': self.step, 'start': self.start, 'name': self.name}
-        return `_dict`
+        return "%s('%s', length=%s, start=%s, step=%s)"%(
+          self.name, self.length, self.start, self.step)
 
     def values(self):
         """
-        Return an array of values for the axis, based on step, start, length attributes.
+        Return an array of values for the axis, based on step, start, length
+        attributes.
         """
-        return N.arange(self.start, self.start + self.step * self.length, self.step).astype(N.Float)
+        return N.arange(self.start, self.start + self.step*self.length,
+          self.step).astype(N.Float)
 
-    def __eq__(self, dim, tol=1.0e-07):
-        """
-        Verify if two axes are equal by checking tag.
-        """
+    def __eq__(self, axis, tol=1.0e-07):
+        "Verify if two axes are equal by checking tag."
+        if not hasattr(axis, "values"): return False
         v = self.values()
-        w = dim.values()
-        if N.add.reduce((v-w)**2) / N.sqrt(N.add.reduce((v - N.mean(v))**2) * N.add.reduce((w - N.mean(w))**2)) < tol:
-            return True
-        else:
-            return False
+        w = axis.values()
+        return VoxelAxis.__eq__(self, axis) and ((v-w)**2).sum()\
+               / N.sqrt(((v - v.mean())**2).sum()*((w - w.mean())**2).sum()) < tol
 
 # Default axes
 generic = (
