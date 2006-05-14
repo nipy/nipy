@@ -29,12 +29,6 @@ class SamplingGrid (object):
     class labels (attribute): pass
     class labelset (attribute): pass
 
-    # for slice iterators
-    class end (attribute): pass
-    class start (attribute): pass
-    class step (attribute): pass
-    class axis (attribute): default=0
-
     #-------------------------------------------------------------------------
     @staticmethod
     def from_start_step(names=space, shape=[], start=[], step=[]): 
@@ -87,16 +81,29 @@ class SamplingGrid (object):
 
     #-------------------------------------------------------------------------
     def __iter__(self):
-        if self.itertype is 'slice':
+        if self.itertype is 'all':
+            self.iterator = iter(AllSliceIterator(self.shape))
+        elif self.itertype is 'slice':
             self.iterator = iter(SliceIterator(self.shape,
               start=[0]*self.ndim, step=[1]*self.ndim, axis=self.axis))
-        elif self.itertype is 'all':
-            self.iterator = iter(AllSliceIterator(self.shape))
         elif self.itertype is 'parcel':
             self.iterator = iter(ParcelIterator(self.labels, self.labelset))
         elif self.itertype is 'slice/parcel':
-            self.iterator = iter(SliceParcelIterator(self.labels, self.labelset))
+            self.iterator = iter(SliceParcelIterator(
+              self.labels, self.labelset))
         return self
+    def iterall(self):
+        self.itertype = "all"
+        return iter(self)
+    def iterslices(self):
+        self.itertype = "slice"
+        return iter(self)
+    def iterparcels(self):
+        self.itertype = "parcel"
+        return iter(self)
+    def itersliceparcels(self):
+        self.itertype = "slice/parcel"
+        return iter(self)
 
     #-------------------------------------------------------------------------
     def next(self):
