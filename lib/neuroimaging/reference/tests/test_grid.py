@@ -1,13 +1,13 @@
 import unittest, scipy
 from neuroimaging.reference import axis, grid, coordinate_system
 from neuroimaging.image.formats import analyze
+from neuroimaging.tests.data import repository
 import numpy as N
 
 class GridTest(unittest.TestCase):
 
     def _open(self):
-        imgname = '/usr/share/BrainSTAT/repository/kff.stanford.edu/~jtaylo/BrainSTAT/avg152T1.img'
-        self.img = analyze.ANALYZE(filename=imgname)
+        self.img = analyze.ANALYZE("avg152T1", repository)
 
     def test_concat(self):
         self._open()
