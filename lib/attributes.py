@@ -125,7 +125,6 @@ AttributeError: 'HungryHead' object has no attribute 'acid'
 """
 from sys import _getframe as getframe
 from copy import copy
-from sets import Set
 from types import TupleType, ListType
 
 from protocols import protocol, implements, ProtocolOmission
@@ -304,7 +303,7 @@ def deferto(delegate, include=(), exclude=(), privates=False):
     if include and exclude:
         raise ValueError("please use only include or exclude but not both")
     delegate_proto = delegate.protocol
-    includeset = Set(include)
+    includeset = set(include)
     if not includeset.issubset(delegate_proto):
         raise ValueError("delegate does not implement %s"%\
           tuple(includeset - delegate_proto))

@@ -1,19 +1,21 @@
-from sets import Set
-
-class ProtocolOmission (Exception):
-    "Indicate that a value does not support part of its expected protocol."
+"""
+Very lightweight system for checking protocol implementation on Python objects.
+"""
 
 def protocol(*objects):
     """
     @return the tuple of names representing the complete protocol
     supported by the given objects.
     """
-    protocol = Set()
+    protocol = set()
     for obj in objects:
-        protocol = protocol.union(Set([name for name in dir(obj)]))
+        protocol = protocol.union(set([name for name in dir(obj)]))
     return protocol
 
 def implements(proto, value): return proto.issubset(protocol(value))
+
+class ProtocolOmission (Exception):
+    "Indicate that a value does not support part of its expected protocol."
 
 class Iterable:
     def __iter__(self): pass
@@ -25,4 +27,4 @@ class Sequence (Iterable):
 
 class MutableSequence (Sequence):
     def __setitem__(self, index, value): pass
-    def __setslice__(self, *args): pass
+    def __delitem__(self, index): pass
