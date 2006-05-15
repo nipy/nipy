@@ -7,9 +7,7 @@ from path import path
 
 from neuroimaging.data import DataSource
 from neuroimaging.reference.axis import VoxelAxis, RegularAxis, space, spacetime
-from neuroimaging.reference.coordinate_system import VoxelCoordinateSystem,\
-  DiagonalCoordinateSystem
-from neuroimaging.reference.mapping import Affine, IdentityMapping
+from neuroimaging.reference.mapping import Affine
 import neuroimaging.reference.mapping as mapping
 from neuroimaging.reference.grid import SamplingGrid
 import enthought.traits as traits
@@ -457,27 +455,19 @@ class ANALYZE(traits.HasTraits):
         """
         if self.datasource.exists(self.matfilename()):
             return mapping.fromfile(self.datasource.open(self.matfilename()),
-                                 input='world',
-                                 output='world',
-                                 delimiter='\t')
+                     input='world', output='world', delimiter='\t')
         else:
-            if self.ndim == 4:
-                names = spacetime[::-1]
-            else:
-                names = space[::-1]
-            return IdentityMapping(self.ndim, input='world', output='world', names=names)
+            if self.ndim == 4: names = spacetime[::-1]
+            else: names = space[::-1]
+            return Affine.identity(
+              self.ndim, input='world', output='world', names=names)
 
     #-------------------------------------------------------------------------
     def writemat(self, matfile=None):
-        """
-        Write out the affine transformation matrix.
-        """
-
-        if matfile is None:
-            matfile = self.matfilename()
-
+        "Write out the affine transformation matrix."
+        if matfile is None: matfile = self.matfilename()
         if self.clobber or not path(matfile).exists():
-            mapping.tofile(self.grid.mapping, matfile)
+            self.grid.mapping.tofile(matfile)
 
 
 #-----------------------------------------------------------------------------
