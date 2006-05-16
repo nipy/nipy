@@ -6,7 +6,7 @@ from neuroimaging.reference import mapping
 class MappingTest(unittest.TestCase):
 
     def _init(self):
-        a = mapping.IdentityMapping()
+        a = mapping.Mapping.identity()
         A = N.identity(4, N.Float)
         A[0:3] = R.standard_normal((3,4))
         self.mapping = mapping.Affine(a.input_coords, a.output_coords, A)
@@ -14,9 +14,9 @@ class MappingTest(unittest.TestCase):
     def test_python2matlab1(self):
         self._init()
         v = R.standard_normal((3,))
-        z = self.mapping.map(v)
+        z = self.mapping(v)
         p = self.mapping.python2matlab()
-        z_ = p.map(N.array(v[::-1])+1)[::-1]
+        z_ = p(N.array(v[::-1])+1)[::-1]
         scipy.testing.assert_almost_equal(z, z_)
         
     def test_python2matlab2(self):
