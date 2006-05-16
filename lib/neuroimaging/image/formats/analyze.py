@@ -5,7 +5,7 @@ from struct import pack, unpack, calcsize
 import numpy as N
 from path import path
 
-from neuroimaging.data import DataSource
+from neuroimaging.data import isurl, iszip, unzip, DataSource
 from neuroimaging.reference.axis import VoxelAxis, RegularAxis, space, spacetime
 from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
@@ -259,8 +259,10 @@ class ANALYZE(traits.HasTraits):
         self.grid = self.grid.matlab2python()
 
         if self.memmapped:
-            self.datasource.open(self.imgfilename())
-            imgfilename = self.datasource.filename(self.imgfilename())
+            imgpath = self.imgfilename()
+            if isurl(imgpath): self.datasource.cache(imgpath)
+            imgfilename = self.datasource.filename(imgpath)
+            if iszip(imgfilename): imgfilename = unzip(imgfilename)
             mode = self.mode in ('r+', 'w') and "r+" or self.mode
             self.memmap = N.memmap(imgfilename, dtype=self.dtype,
                 shape=tuple(self.grid.shape), mode=mode)

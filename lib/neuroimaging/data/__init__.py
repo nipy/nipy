@@ -1,11 +1,14 @@
-import os
-import re
+import os, gzip, bz2
 from path import path
-#from urllib import urlopen
 from urllib2 import urlopen
 from urlparse import urlparse
 
+from attributes import readonly, constant
+
 from neuroimaging import ensuredirs
+
+zipexts = (".gz",".bz2")
+file_openers = {".gz":gzip.open, ".bz2":bz2.BZ2File, None:file}
 
 #-----------------------------------------------------------------------------
 def bool(obj):
@@ -13,9 +16,28 @@ def bool(obj):
     else: return False
 
 #-----------------------------------------------------------------------------
+def iszip(filename):
+    filebase, ext = path(filename).splitext()
+    return ext in zipexts
+
+#-----------------------------------------------------------------------------
+def splitzipext(filename):
+    if iszip(filename): return path(filename).splitext()
+    else: return filename,None
+
+#-----------------------------------------------------------------------------
+def unzip(filename):
+    if not iszip(filename): raise ValueError("file %s is not zipped"%filename)
+    unzip_name, zipext = splitzipext(filename)
+    opener = file_openers[zipext]
+    outfile = file(unzip_name,'w')
+    outfile.write(opener(filename).read())
+    outfile.close()
+    return unzip_name
+
+#-----------------------------------------------------------------------------
 def urlexists(url):
-    try:
-        urlopen(url)
+    try: urlopen(url)
     except: return False
     return True
 
@@ -25,15 +47,16 @@ def isurl(pathstr):
     return bool(scheme and netloc)
 
 #-----------------------------------------------------------------------------
-def iswritemode(mode):
-    return mode.find("w")>-1 or mode.find("+")>-1
+def iswritemode(mode): return mode.find("w")>-1 or mode.find("+")>-1
 
 
 ##############################################################################
 class Cache (object):
-    cachepath = os.environ["HOME"]+"/.nipy/cache"
+    class path (readonly):
+        default=path(os.environ["HOME"]).joinpath(".nipy").joinpath("cache")
+
     def __init__(self, cachepath=None):
-        self.path = path(cachepath or self.cachepath)
+        if cachepath is not None: self.path = path(cachepath)
         self.setup()
     def filepath(self, uri):
         (scheme, netloc, upath, params, query, fragment) = urlparse(uri)
@@ -45,8 +68,9 @@ class Cache (object):
         if self.iscached(uri): return
         upath = self.filepath(uri)
         ensuredirs(upath.dirname())
-        if not urlexists(uri): raise IOError("url not found: "+uri)
-        file(upath, 'w').write(urlopen(uri).read())
+        try: openedurl = urlopen(uri)
+        except: raise IOError("url not found: "+str(uri))
+        file(upath, 'w').write(openedurl.read())
     def clear(self):
         for f in self.path.files(): f.rm()
     def iscached(self, uri):
@@ -58,32 +82,49 @@ class Cache (object):
 
 ##############################################################################
 class DataSource (object):
+    class _cache (readonly): default=Cache()
 
-    def __init__(self, cache=Cache()): self._cache = cache
+    def __init__(self, cachepath=None):
+        if cachepath is not None: self._cache = Cache(cachepath)
+
+    def _possible_names(self, filename):
+        names = (filename,)
+        if not iszip(filename):
+            for zipext in zipexts: names += (filename+zipext,)
+        return names
+
+    def cache(self, pathstr):
+        if isurl(pathstr): self._cache.cache(pathstr)
 
     def filename(self, pathstr):
-        if isurl(pathstr): return self._cache.filename(pathstr)
-        else: return pathstr
+        found = None
+        for name in self._possible_names(pathstr):
+            if isurl(name) and urlexists(name):
+                found = self._cache.filename(name)
+            elif path(name).exists(): found = name
+            if found: break
+        if found is None: raise IOError("%s not found"%pathstr)
+        return found
 
     def exists(self, pathstr):
-        if isurl(pathstr):
-            try: self._cache.cache(pathstr)
-            except: pass
-            return self._cache.iscached(pathstr)
-        else: return path(pathstr).exists()
+        try:
+            _ = self.filename(pathstr)
+            return True
+        except IOError: return False
 
     def open(self, pathstr, mode='r'):
-        if isurl(pathstr):
-            if iswritemode(mode): raise ValueError("URLs are not writeable")
-            return self._cache.retrieve(pathstr)
-        else: return file(pathstr, mode=mode)
+        if isurl(pathstr) and iswritemode(mode):
+            raise ValueError("URLs are not writeable")
+        found = self.filename(pathstr)
+        _, ext = splitzipext(found)
+        return file_openers[ext](found, mode=mode)
 
 
 ##############################################################################
 class Repository (DataSource):
     "DataSource with an implied root."
-    def __init__(self, baseurl, cache=Cache()):
-        DataSource.__init__(self, cache=cache)
+    def __init__(self, baseurl, cachepath=None):
+        DataSource.__init__(self, cachepath=cachepath)
         self._baseurl = baseurl
     def _fullpath(self, pathstr):
         return path(self._baseurl).joinpath(pathstr)
