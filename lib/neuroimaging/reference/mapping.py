@@ -129,6 +129,8 @@ def IdentityMapping(ndim=3, names=space, input='voxel', output='world'):
     """
     return frommatrix(N.identity(ndim+1), names=names, input=input, output=output)
 
+
+##############################################################################
 class Mapping(traits.HasTraits):
     """
     A generic mapping class that allows composition, inverses, etc. A mapping needs only input and output coordinates and a transform between the two, and an optional inverse.
@@ -163,22 +165,6 @@ class Mapping(traits.HasTraits):
     def __call__(self, x, inverse=False):
         return self.map(x, inverse=inverse)
 
-    def inverse(self):
-        """
-        Return the inverse Mapping.
-        """
-
-        if hasattr(self, '_inverse'):
-            return Mapping(self.output_coords, self.input_coords, self._inverse, self.map, maptype=self.maptype)
-        else:
-            raise ValueError, 'non-invertible mapping.'
-   
-    def map(self, coords, inverse=False):
-        if not inverse:
-            return self._map(coords)
-        else:
-            return self._inverse(coords)
-
     def __mul__(self, other):
         """
         If this method is not over-written we get complaints about sequences.
@@ -197,6 +183,23 @@ class Mapping(traits.HasTraits):
             _inverse = None
         return Mapping(self.input_coords, other.output_coords, _map, _inverse=_inverse
 )
+
+    def inverse(self):
+        """
+        Return the inverse Mapping.
+        """
+
+        if hasattr(self, '_inverse'):
+            return Mapping(self.output_coords, self.input_coords, self._inverse, self.map, maptype=self.maptype)
+        else:
+            raise ValueError, 'non-invertible mapping.'
+   
+    def map(self, coords, inverse=False):
+        if not inverse:
+            return self._map(coords)
+        else:
+            return self._inverse(coords)
+
     def reslice(self, which, inname=None, outname=None, sort=True):
         """
         Reorder and/or subset a mapping, uses subset of input_coords.axes to determine subset.
@@ -241,6 +244,56 @@ class Mapping(traits.HasTraits):
 
         return Mapping(incoords, outcoords, _map, _inverse=None) 
 
+    def matlab2python(self):
+        """
+        Take that maps matlab voxels to (matlab-ordered) world coordinates and make it python-oriented. This means that if mapping(v_x,v_y,v_z)=(w_x,w_y,w_z) then the return will send (v_z,v_y,v_x) to (w_z,w_y,w_x).
+        """
+
+        ndim = self.input_coords.ndim
+        t1 = N.zeros((ndim+1,)*2, N.Float)
+        t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
+        t1[ndim, ndim] = 1.0
+
+        t2 = 1. * t1
+        t1[0:ndim,ndim] = 1.0
+
+        n = self.ndim
+        d1 = [self.input_coords.axes[n-1-i] for i in range(n)]
+        in1 = CoordinateSystem(self.input_coords.name, d1)
+        w1 = Affine(in1, self.input_coords, t1)
+        
+        d2 = [self.output_coords.axes[n-1-i] for i in range(n)]
+        out2 = CoordinateSystem(self.output_coords.name, d2)
+        w2 = Affine(self.output_coords, out2, t2)
+
+        return (w2 * self) * w1
+
+    def python2matlab(self):
+        """
+        Inverse of matlab2python -- see this function for help.
+        """
+
+        ndim = self.input_coords.ndim
+        t1 = N.zeros((ndim+1,)*2, N.Float)
+        t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
+        t1[ndim, ndim] = 1.0
+
+        t2 = 1. * t1
+        t1[0:ndim,ndim] = -1.0
+
+        n = self.ndim
+        d1 = [self.input_coords.axes[n-1-i] for i in range(n)]
+        in1 = CoordinateSystem(self.input_coords.name, d1)
+        w1 = Affine(in1, self.input_coords, t1)
+        
+        d2 = [self.output_coords.axes[n-1-i] for i in range(n)]
+        out2 = CoordinateSystem(self.output_coords.name, d2)
+        w2 = Affine(self.output_coords, out2, t2)
+
+        return (w2 * self) * w1
+
+
+##############################################################################
 class Affine(Mapping):
     """
     A class representing an affine transformation in n axes.
@@ -313,6 +366,8 @@ class Affine(Mapping):
         value = '%s:input=%s\n%s:output=%s\n%s:fmatrix=%s\n%s:fvector=%s' % (self.name, self.input_coords.name, self.name, self.output_coords.name, self.name, `self.fmatrix`, self.name, `self.fvector`)
         return value
     
+
+##############################################################################
 class DegenerateAffine(Affine):
     """
     A subclass of affine with no inverse, i.e. where the map is non-invertible.
@@ -386,61 +441,6 @@ def tovoxel(real, mapping):
     real.shape = _shape
     voxel.shape = _shape
     return N.array(voxel)
-
-def matlab2python(mapping):
-    """
-    Take that maps matlab voxels to (matlab-ordered) world coordinates and make it python-oriented. This means that if mapping(v_x,v_y,v_z)=(w_x,w_y,w_z) then the return will send (v_z,v_y,v_x) to (w_z,w_y,w_x).
-    """
-
-    ndim = mapping.input_coords.ndim
-    t1 = N.zeros((ndim+1,)*2, N.Float)
-    t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
-    t1[ndim, ndim] = 1.0
-
-    t2 = 1. * t1
-    t1[0:ndim,ndim] = 1.0
-
-    n = mapping.ndim
-    d1 = [mapping.input_coords.axes[n-1-i] for i in range(n)]
-    in1 = CoordinateSystem(mapping.input_coords.name, d1)
-    w1 = Affine(in1, mapping.input_coords, t1)
-    
-    d2 = [mapping.output_coords.axes[n-1-i] for i in range(n)]
-    out2 = CoordinateSystem(mapping.output_coords.name, d2)
-    w2 = Affine(mapping.output_coords, out2, t2)
-
-    w = (w2 * mapping) * w1
-    return w
-
-fortran2C = matlab2python
-
-def python2matlab(mapping):
-    """
-    Inverse of matlab2python -- see this function for help.
-    """
-
-    ndim = mapping.input_coords.ndim
-    t1 = N.zeros((ndim+1,)*2, N.Float)
-    t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
-    t1[ndim, ndim] = 1.0
-
-    t2 = 1. * t1
-    t1[0:ndim,ndim] = -1.0
-
-    n = mapping.ndim
-    d1 = [mapping.input_coords.axes[n-1-i] for i in range(n)]
-    in1 = CoordinateSystem(mapping.input_coords.name, d1)
-    w1 = Affine(in1, mapping.input_coords, t1)
-    
-    d2 = [mapping.output_coords.axes[n-1-i] for i in range(n)]
-    out2 = CoordinateSystem(mapping.output_coords.name, d2)
-    w2 = Affine(mapping.output_coords, out2, t2)
-
-    w = (w2 * mapping) * w1
-
-    return w
-
-C2fortran = python2matlab
 
 MNI_mapping = Affine(MNI_voxel, MNI_world, MNI_world.transform())
 MNI_mapping([36,63,45])

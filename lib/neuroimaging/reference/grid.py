@@ -26,15 +26,15 @@ class SamplingGrid(traits.HasTraits):
     step = traits.Any()
     axis = traits.Int(0)
 
-    def __init__(self, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+    @staticmethod
+    def from_start_step(names=space, shape=[], start=[], step=[]): 
+        return fromStartStepLength(names, shape, start, step)
+
+    def __init__(self, shape, mapping):
+        traits.HasTraits.__init__(self, shape=shape, mapping=mapping)
 
     def range(self):
-        """
-        Return the coordinate values of a SamplingGrid.
-
-        """
-       
+        "Return the coordinate values of a SamplingGrid."
         tmp = N.indices(self.shape)
         _shape = tmp.shape
         tmp.shape = (self.mapping.input_coords.ndim, N.product(self.shape))
@@ -71,14 +71,12 @@ class SamplingGrid(traits.HasTraits):
 
     def slab(self, start, step, count, axis=0):
         """
-
         A sampling grid for a hyperslab of data from an array, i.e.
         what would be output from a subsampling of every 2nd voxel or so.
 
         By default, the iterator of the slab is a SliceIterator
         with the same start, step, count and iterating over the
         specified axis with nslicedim=1.
-
         """
 
         if isinstance(self.mapping, mapping.Affine):
@@ -111,6 +109,15 @@ class SamplingGrid(traits.HasTraits):
         return iter(g)
 
     def transform(self, matrix): self.mapping = matrix * self.mapping
+
+    def matlab2python(self):
+        return SamplingGrid(shape=self.shape[::-1],
+          mapping=self.mapping.matlab2python())
+
+    def python2matlab(self):
+        return SamplingGrid(shape=self.shape[::-1],
+          mapping=self.mapping.python2matlab())
+
 
 class ConcatenatedGrids(SamplingGrid):
     """
@@ -246,18 +253,8 @@ def IdentityGrid(shape=(), names=space):
 
     return fromStartStepLength(names=names, shape=shape, start=[0]*ndim, step=[1]*ndim)
 
-def matlab2python(grid):
-    shape = grid.shape[::-1]
-    _mapping = mapping.matlab2python(grid.mapping)
-    return SamplingGrid(shape=shape, mapping=_mapping)
 
-def python2matlab(grid):
-    shape = grid.shape[::-1]
-    _mapping = mapping.python2matlab(grid.mapping)
-    return SamplingGrid(shape=shape, mapping=_mapping)
-
-class SliceGrid(SamplingGrid, traits.HasTraits):
-
+class SliceGrid(SamplingGrid):
     """
     Return an affine slice of a given grid with specified
     origin, steps and shape.

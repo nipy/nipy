@@ -6,7 +6,7 @@ from neuroimaging.reference.axis import VoxelAxis, RegularAxis, space, spacetime
 from neuroimaging.reference.coordinate_system import VoxelCoordinateSystem, DiagonalCoordinateSystem
 from neuroimaging.reference.mapping import Affine, IdentityMapping
 import neuroimaging.reference.mapping as mapping
-from neuroimaging.reference.grid import SamplingGrid, fromStartStepLength, python2matlab, matlab2python
+from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.image.formats import BinaryHeaderAtt, BinaryHeaderValidator
 import enthought.traits as traits
 
@@ -187,7 +187,7 @@ class ANALYZE(traits.HasTraits):
                     shape = self.dim[2:5]
 
         ## Setup affine transformation
-        self.grid = fromStartStepLength(names=axisnames,
+        self.grid = SamplingGrid.from_start_step(names=axisnames,
                                         shape=shape,
                                         start=-N.array(origin)*step,
                                         step=step)
@@ -195,7 +195,7 @@ class ANALYZE(traits.HasTraits):
         if self.usematfile: self.grid.transform(self.readmat())
 
         # assume .mat matrix uses FORTRAN indexing
-        self.grid = matlab2python(self.grid)
+        self.grid = self.grid.matlab2python()
 
         if self.memmapped:
             self.datasource.open(self.imgfilename())
@@ -332,7 +332,7 @@ class ANALYZE(traits.HasTraits):
         
     #-------------------------------------------------------------------------
     def _dimfromgrid(self, grid):
-        self.grid = python2matlab(grid)
+        self.grid = grid.python2matlab()
             
         if not isinstance(self.grid.mapping, Affine):
             raise ValueError, 'error: non-Affine grid in writing out ANALYZE file'
