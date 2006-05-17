@@ -19,11 +19,9 @@ def _2matvec(transform):
 #-----------------------------------------------------------------------------
 def matfromfile(infile, delimiter="\t"):
     "Read in an affine transformation matrix from a csv file."
-    if type(infile)==types.StringType: infile = file(infile)
+    if type(infile)==type(""): infile = file(infile)
     reader = csv.reader(infile, delimiter=delimiter)
-    t = N.array([map(float, row) for row in reader])
-    infile.close()
-
+    return N.array([map(float, row) for row in reader])
 
 #-----------------------------------------------------------------------------
 def matfromstr(tstr, ndim=3, delimiter=None):
@@ -107,7 +105,7 @@ class Mapping (object):
                 return Mapping(self.output_coords, self.input_coords,
                   self._inverse, self)
             else: raise AttributeError("non-invertible mapping")
-     
+
     #-------------------------------------------------------------------------
     @staticmethod
     def frommatrix(matrix, names=space, input='voxel', output='world'):
@@ -129,7 +127,7 @@ class Mapping (object):
         format is assumed to be a tab-delimited file.  Other formats should be added.
         """
         t = matfromfile(infile, delimiter=delimiter)
-        return Mapping.frommatrix(t, names=names, input=input, output=output)
+        return Affine.frommatrix(t, names=names, input=input, output=output)
 
     #-------------------------------------------------------------------------
     @staticmethod
@@ -146,6 +144,9 @@ class Mapping (object):
         if inverse is not None: self._inverse = inverse
 
     #-------------------------------------------------------------------------
+    def __call__(self, x): return self.map(x)
+
+    #-------------------------------------------------------------------------
     def __str__(self):
         return '%s:input=%s\n'%(self.name, self.input_coords) +\
         '%s:output=%s\n'%(self.name, self.output_coords) +\
@@ -153,14 +154,12 @@ class Mapping (object):
         '%s:inverse=%s\n'%(self.name, self._inverse)
 
     #-------------------------------------------------------------------------
+    def __ne__(self, other): return not self.__eq__(other)
     def __eq__(self, other):
         if not hasattrs(other, "input_coords", "output_coords", "map"):
             return False
         return (self.input_coords, self.output_coords, self.map) == \
                (other.input_coords, other.output_coords, other.map)
-
-    #-------------------------------------------------------------------------
-    def __call__(self, x): return self.map(x)
 
     #-------------------------------------------------------------------------
     def __mul__(self, other):
@@ -266,14 +265,13 @@ class Affine(Mapping):
     "A class representing an affine transformation in n axes."
 
     class transform (readonly): pass
-    class fmatrix (readonly): "forward transform"
-    class fvector (readonly): "forward translation"
-    class bmatrix (readonly): "backward transform"
-    class bvector (readonly): "backward translation"
+    class fmatrix (readonly): "forward transform matrix"
+    class fvector (readonly): "forward translation vector"
+    class bmatrix (readonly): "backward (inverse) transform matrix"
+    class bvector (readonly): "backward (inverse) translation vector"
 
     #-------------------------------------------------------------------------
-    def __init__(self, input_coords, output_coords, transform, name=None):
-        if name is not None: self.name = name
+    def __init__(self, input_coords, output_coords, transform):
         self.transform = transform
         self.fmatrix, self.fvector = _2matvec(transform)
         self.bmatrix, self.bvector = _2matvec(inv(transform))
@@ -285,8 +283,6 @@ class Affine(Mapping):
 
     #-------------------------------------------------------------------------
     def __ne__(self, other): return not self.__eq__(other)
-
-    #-------------------------------------------------------------------------
     def __eq__(self, other):
         if not hasattr(other, "transform"): return False
         return tuple(self.transform.flat) == tuple(other.transform.flat)
@@ -333,6 +329,9 @@ class Affine(Mapping):
     def inverse(self):
         return Affine(self.output_coords, self.input_coords,
                       inverse(self.transform))
+    
+    #-------------------------------------------------------------------------
+    def isdiagonal(self): return isdiagonal(self.transform)
  
     #-------------------------------------------------------------------------
     def tofile(self, filename):

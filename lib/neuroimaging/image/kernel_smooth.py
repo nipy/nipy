@@ -2,9 +2,9 @@ import gc
 import numpy as N
 import numpy.dft as FFT
 import numpy.linalg as NL
-import neuroimaging.reference.grid as grid
-import neuroimaging.reference.mapping as mapping
-import neuroimaging.image as image
+from neuroimaging.reference.mapping import Affine
+from neuroimaging.image import Image
+from neuroimaging.image.utils import fwhm2sigma
 import enthought.traits as traits
 
 class LinearFilter(traits.HasTraits):
@@ -38,7 +38,7 @@ class LinearFilter(traits.HasTraits):
         FFT smoothing. Assumes coordinate system is linear. 
         """
 
-        if not isinstance(self.grid.mapping, mapping.Affine):
+        if not isinstance(self.grid.mapping, Affine):
             raise ValueError, 'for FFT smoothing, need a regular (affine) grid'
 
         ndim = len(self.grid.shape)
@@ -53,7 +53,7 @@ class LinearFilter(traits.HasTraits):
         X = self.grid.mapping.map(voxels)
 
         if self.fwhm is not 1.0:
-            X = X / image.utils.fwhm2sigma(self.fwhm)
+            X = X / fwhm2sigma(self.fwhm)
         if self.cov is not None:
             _chol = NL.cholesky_decomposition(cov)
             X = N.dot(NL.inverse(_chol), X)
@@ -125,9 +125,9 @@ class LinearFilter(traits.HasTraits):
         gc.collect()
 
         if ndim == 3:
-            return image.Image(_out, grid=self.grid)
+            return Image(_out, grid=self.grid)
         else:
-            return image.Image(_out, grid=grid.DuplicatedGrids([self.grid]*inimage.grid.shape[0]))
+            return Image(_out, grid=self.grid.duplicate(inimage.grid.shape[0]))
 
 
     def presmooth(self, indata):

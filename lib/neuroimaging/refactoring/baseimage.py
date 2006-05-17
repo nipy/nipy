@@ -12,7 +12,7 @@ import enthought.traits as traits
 from neuroimaging.data import DataSource
 from neuroimaging.image.formats import getreader
 from neuroimaging.reference import axis, mapping
-from neuroimaging.reference.grid import SamplingGrid, IdentityGrid
+from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.reference.grid_iterators import ParcelIterator, SliceParcelIterator
 
 ##############################################################################
@@ -37,7 +37,7 @@ class BaseImage(object):
     class grid (attribute):
         "image sampling grid"
         implements=SamplingGrid
-        def init(_,self): return IdentityGrid(self.array.shape)
+        def init(_,self): return SamplingGrid.identity(self.array.shape)
 
     class shape (readonly):
         "image shape"
@@ -65,27 +65,14 @@ class BaseImage(object):
     #   Instance Methods
     #---------------------------------------------
 
+    #-------------------------------------------------------------------------
     def __init__(self, arr, grid=None):
         self.array = arr
         if grid is not None: self.grid = grid
+
+    #-------------------------------------------------------------------------
     def __getitem__(self, slices): return self.get_slice(slices)
     def __setitem__(self, slices, data): self.write_slice(slices, data)
-
-    def grid_array(self): 
-        '''
-        Read an entire Image object, returning a numpy array. By
-        default, it does not read 4d images. 
-        '''
-        # NB - this used to be the readall method of the Image class
-        # We may need port old code from this usage in due course
-        # CHECK THAT: all grid iterators should have allslice attribute
-        return self.get_slice(self.grid.iterator.allslice)
-
-    def get_slice(self, slices): return self.array[slices]
-
-    def write_slice(self, slices, data): self.array[slices] = data
-
-    def apply_transform(self, matrix): self.grid.apply_transform
 
     #-------------------------------------------------------------------------
     def __iter__(self):
@@ -95,6 +82,22 @@ class BaseImage(object):
            isinstance(self.grid.iterator, SliceParcelIterator):
             self.array.shape = N.product(self.buffer.shape)
         return self
+
+    #-------------------------------------------------------------------------
+    def get_slice(self, slices): return self.array[slices]
+    def write_slice(self, slices, data): self.array[slices] = data
+    def apply_transform(self, matrix): self.grid.apply_transform(matrix)
+
+    #-------------------------------------------------------------------------
+    def grid_array(self): 
+        '''
+        Read an entire Image object, returning a numpy array. By
+        default, it does not read 4d images. 
+        '''
+        # NB - this used to be the readall method of the Image class
+        # We may need port old code from this usage in due course
+        # CHECK THAT: all grid iterators should have allslice attribute
+        return self.get_slice(self.grid.iterator.allslice)
 
     #-------------------------------------------------------------------------
     def compress(self, where, axis=0):
@@ -169,7 +172,9 @@ def image(input, datasource=DataSource()):
         return BaseImage.fromfile(input, datasource=datasource)
 
 
-def writebrick(outfile, start, data, shape, offset=0, outtype=None, byteorder=sys.byteorder, return_tell = True):
+#-----------------------------------------------------------------------------
+def writebrick(outfile, start, data, shape, offset=0, outtype=None,
+  byteorder=sys.byteorder, return_tell = True):
     """from Utils """
     if return_tell:
         try: startpos = outfile.tell()
@@ -233,20 +238,14 @@ class ImageSequenceIterator(traits.HasTraits):
     """
     def __init__(self, imgs, grid=None, **keywords):
         self.imgs = imgs
-        if grid is None:
-            self.grid = iter(self.imgs[0].grid)
-        else:
-            self.grid = iter(grid)
+        if grid is None: self.grid = iter(self.imgs[0].grid)
+        else: self.grid = iter(grid)
 
-    def __iter__(self):
-        return self
+    def __iter__(self): return self
 
     def next(self, value=None):
-        if value is None:
-            value = self.grid.next()
-        v = []
-        for i in range(len(self.imgs)):
-            v.append(self.imgs[i].next(value=value))
+        if value is None: value = self.grid.next()
+        v = [img.next(value=value) for img in self.imgs]
         return N.array(v, N.Float)
 
 

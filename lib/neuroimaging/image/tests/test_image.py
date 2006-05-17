@@ -73,7 +73,7 @@ class ImageTest(unittest.TestCase):
             self.assertEquals(i.shape, (109,91))
 
     def test_labels1(self):
-        rho = Image("rho", repository)
+        rho = Image("rho.img", repository)
         labels = (rho.readall() * 100).astype(N.Int)
         test = Image(N.zeros(labels.shape), grid=rho.grid)
         test.grid.itertype = 'parcel'
@@ -87,7 +87,7 @@ class ImageTest(unittest.TestCase):
         self.assertEquals(v, N.product(test.grid.shape))
 
     def test_labels2(self):
-        rho = Image("rho", repository)
+        rho = Image("rho.img", repository)
         labels = (rho.readall() * 100).astype(N.Int)
         test = Image(N.zeros(labels.shape), grid=rho.grid)
 

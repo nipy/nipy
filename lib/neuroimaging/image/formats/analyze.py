@@ -7,8 +7,7 @@ from path import path
 
 from neuroimaging.data import DataSource
 from neuroimaging.reference.axis import VoxelAxis, RegularAxis, space, spacetime
-from neuroimaging.reference.mapping import Affine
-import neuroimaging.reference.mapping as mapping
+from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
 import enthought.traits as traits
 
@@ -399,7 +398,7 @@ class ANALYZE(traits.HasTraits):
         if not isinstance(self.grid.mapping, Affine):
             raise ValueError, 'error: non-Affine grid in writing out ANALYZE file'
 
-        if mapping.isdiagonal(self.grid.mapping.transform[0:self.ndim,0:self.ndim]):
+        if self.grid.mapping.isdiagonal():
             _diag = True
         else:
             _diag = False
@@ -455,12 +454,12 @@ class ANALYZE(traits.HasTraits):
         Other formats should be added.
         """
         if self.datasource.exists(self.matfilename()):
-            return mapping.fromfile(self.datasource.open(self.matfilename()),
+            return Mapping.fromfile(self.datasource.open(self.matfilename()),
                      input='world', output='world', delimiter='\t')
         else:
             if self.ndim == 4: names = spacetime[::-1]
             else: names = space[::-1]
-            return Affine.identity(
+            return Mapping.identity(
               self.ndim, input='world', output='world', names=names)
 
     #-------------------------------------------------------------------------
