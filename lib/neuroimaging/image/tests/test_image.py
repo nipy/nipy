@@ -93,7 +93,7 @@ class ImageTest(unittest.TestCase):
         test.grid.itertype = 'parcel'
         test.grid.labels = labels
         labels.shape = N.product(labels.shape)
-        test.grid.labelset = set(N.unique(labels))
+        test.grid.labelset = N.unique(labels)
 
         v = 0
         iter(test)
@@ -105,11 +105,11 @@ class ImageTest(unittest.TestCase):
                 break
 
     def test_labels3(self):
-        rho = Image("rho", repository)
+        rho = Image("rho.img", repository)
         labels = (rho.readall() * 100).astype(N.Int)
         shape = labels.shape
         labels.shape = N.product(labels.shape)
-        labelset = set(N.unique(labels))
+        labelset = N.unique(labels)
 
         test = Image(N.zeros(shape), grid=rho.grid)
         test.grid.itertype = 'parcel'
@@ -123,9 +123,12 @@ class ImageTest(unittest.TestCase):
         self.assertEquals(v, N.product(test.grid.shape))
 
     def test_onesample1(self):
-        im1 = Image('http://kff.stanford.edu/FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.img')
-        im2 = Image('http://kff.stanford.edu/FIAC/fiac4/fonc3/fsl/fmristat_run/contrasts/speaker/effect.img')
-        im3 = Image('http://kff.stanford.edu/FIAC/fiac5/fonc2/fsl/fmristat_run/contrasts/speaker/effect.img')
+        im1 = Image('FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.img',
+            repository)
+        im2 = Image('FIAC/fiac4/fonc3/fsl/fmristat_run/contrasts/speaker/effect.img',
+            repository)
+        im3 = Image('FIAC/fiac5/fonc2/fsl/fmristat_run/contrasts/speaker/effect.img',
+            repository)
         x = ImageOneSample([im1,im2,im3], clobber=True)
         x.fit()
 
