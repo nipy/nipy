@@ -128,23 +128,10 @@ from copy import copy
 from sets import Set
 from types import TupleType, ListType
 
+from protocols import protocol, implements, ProtocolOmission
+
 class AccessError (Exception):
     "Indicate that a private attribute was referred to outside its class."
-
-class ProtocolOmission (Exception):
-    "Indicate that a value does not support part of its expected protocol."
-
-def protocol(*objects):
-    """
-    @return the tuple of names representing the complete protocol
-    supported by the given objects.
-    """
-    protocol = Set()
-    for obj in objects:
-        protocol = protocol.union(Set([name for name in dir(obj)]))
-    return protocol
-
-def implements(proto, value): return proto.issubset(protocol(value))
 
 def scope(num): return getframe(num+1).f_locals
 
