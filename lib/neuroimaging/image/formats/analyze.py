@@ -1,13 +1,17 @@
-import struct, os, sys, numpy, string, types
+import os, sys
+from types import StringType
+from struct import pack, unpack, calcsize
+
 import numpy as N
 from path import path
+
 from neuroimaging.data import DataSource
 from neuroimaging.reference.axis import VoxelAxis, RegularAxis, space, spacetime
-from neuroimaging.reference.coordinate_system import VoxelCoordinateSystem, DiagonalCoordinateSystem
+from neuroimaging.reference.coordinate_system import VoxelCoordinateSystem,\
+  DiagonalCoordinateSystem
 from neuroimaging.reference.mapping import Affine, IdentityMapping
 import neuroimaging.reference.mapping as mapping
 from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging.image.formats import BinaryHeaderAtt, BinaryHeaderValidator
 import enthought.traits as traits
 
 _byteorder_dict = {'big':'>', 'little':'<'}
@@ -19,11 +23,70 @@ ANALYZE_Float = 16
 ANALYZE_Double = 64
 
 datatypes = {
-  ANALYZE_Byte:(numpy.UInt8, 1),
-  ANALYZE_Short:(numpy.Int16, 2),
-  ANALYZE_Int:(numpy.Int32, 4),
-  ANALYZE_Float:(numpy.Float32, 4),
-  ANALYZE_Double:(numpy.Float64, 8)}
+  ANALYZE_Byte:(N.UInt8, 1),
+  ANALYZE_Short:(N.Int16, 2),
+  ANALYZE_Int:(N.Int32, 4),
+  ANALYZE_Float:(N.Float32, 4),
+  ANALYZE_Double:(N.Float64, 8)}
+
+def is_tupled(packstr, value):
+    return (packstr[-1] != 's' and len(tuple(value)) > 1)
+
+def isseq(value):
+    try:
+        len(value)
+        isseq = True
+    except TypeError:
+        isseq = False
+    return type(value) != StringType and isseq
+
+##############################################################################
+class BinaryHeaderValidator(traits.TraitHandler):
+
+    def __init__(self, packstr, value=None, seek=0, bytesign = '>', **keywords):
+        if len(packstr) < 1: raise ValueError("packstr must be nonempty")
+        for key, value in keywords.items(): setattr(self, key, value)
+        self.seek = seek
+        self.packstr = packstr
+        self.bytesign = bytesign
+
+    def write(self, value, outfile=None):
+        if isseq(value): valtup = tuple(value) 
+        else: valtup = (value,)
+        result = pack(self.bytesign+self.packstr, *valtup)
+        if outfile is not None:
+            outfile.seek(self.seek)
+            outfile.write(result)
+        return result
+
+    def validate(self, object, name, value):
+        try:
+        #if 1:
+            result = self.write(value)
+        except:
+            self.error(object, name, value)
+
+        _value = unpack(self.bytesign + self.packstr, result)
+        if is_tupled(self.packstr, _value): return _value
+        else: return _value[0]
+
+    def info(self):
+        return 'an object of type "%s", apply(struct.pack, "%s", object) must make sense' % (self.packstr, self.packstr)
+
+    def read(self, hdrfile):
+        hdrfile.seek(self.seek)
+        value = unpack(self.bytesign + self.packstr,
+                       hdrfile.read(calcsize(self.packstr)))
+        if not is_tupled(self.packstr, value):
+            value = value[0]
+        return value
+
+
+##############################################################################
+def BinaryHeaderAtt(packstr, value=None, **keywords):
+    validator = BinaryHeaderValidator(packstr, value=value, **keywords)
+    return traits.Trait(value, validator)
+
 
 ##############################################################################
 class ANALYZE(traits.HasTraits):
@@ -426,7 +489,7 @@ def guess_endianness(hdrfile):
         hdrfile.seek(40)
         x = hdrfile.read(2)
         try:
-            test = struct.unpack(sign + 'h', x)[0]
+            test = unpack(sign + 'h', x)[0]
             if test in range(1,8):
                 return order, sign
         except:
