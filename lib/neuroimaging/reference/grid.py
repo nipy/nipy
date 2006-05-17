@@ -1,10 +1,11 @@
 import enthought.traits as traits
 import numpy as N
 
+from attributes import readonly
+
 import mapping
 from axis import space, RegularAxis, VoxelAxis, Axis
 from coordinate_system import VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
-import uuid
 from grid_iterators import SliceIterator, ParcelIterator, SliceParcelIterator, AllSliceIterator
 
 class SamplingGrid(traits.HasTraits):
@@ -12,15 +13,12 @@ class SamplingGrid(traits.HasTraits):
     mapping = traits.Any()
     shape = traits.ListInt()
     itertype = traits.Trait('slice', 'parcel', 'slice/parcel', 'all')
-    tag = traits.Trait(uuid.Uuid())
 
     # for parcel iterators
-
     labels = traits.Any()
     labelset = traits.Any()
 
     # for slice iterators
-
     end = traits.Any()
     start = traits.Any()
     step = traits.Any()
@@ -36,11 +34,11 @@ class SamplingGrid(traits.HasTraits):
     def range(self):
         "Return the coordinate values of a SamplingGrid."
         tmp = N.indices(self.shape)
-        _shape = tmp.shape
-        tmp.shape = (self.mapping.input_coords.ndim, N.product(self.shape))
-        _tmp = self.mapping.map(tmp)
-        _tmp.shape = _shape
-        return _tmp 
+        tmp_shape = tmp.shape
+        tmp.shape = (self.mapping.ndim, N.product(self.shape))
+        tmp = self.mapping(tmp)
+        tmp.shape = tmp_shape
+        return tmp 
 
     def __iter__(self):
 
@@ -246,7 +244,7 @@ def IdentityGrid(shape=(), names=space):
     """
     
     ndim = len(shape)
-    w = mapping.IdentityMapping(ndim, names=names)
+    w = mapping.Mapping.identity(ndim, names=names)
     return SamplingGrid(shape=list(shape), mapping=w)
     if len(names) != ndim:
         raise ValueError, 'shape and number of axisnames do not agree'
