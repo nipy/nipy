@@ -260,7 +260,6 @@ class ANALYZE(traits.HasTraits):
 
         if self.memmapped:
             imgpath = self.imgfilename()
-            if isurl(imgpath): self.datasource.cache(imgpath)
             imgfilename = self.datasource.filename(imgpath)
             if iszip(imgfilename): imgfilename = unzip(imgfilename)
             mode = self.mode in ('r+', 'w') and "r+" or self.mode

@@ -27,6 +27,7 @@ def splitzipext(filename):
 
 #-----------------------------------------------------------------------------
 def unzip(filename):
+    "Unzip the given file into another file.  Return the new file's name."
     if not iszip(filename): raise ValueError("file %s is not zipped"%filename)
     unzip_name, zipext = splitzipext(filename)
     opener = file_openers[zipext]
@@ -100,6 +101,7 @@ class DataSource (object):
         found = None
         for name in self._possible_names(pathstr):
             if isurl(name) and urlexists(name):
+                self.cache(name)
                 found = self._cache.filename(name)
             elif path(name).exists(): found = name
             if found: break
