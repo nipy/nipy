@@ -16,11 +16,6 @@ class fMRISliceIterator(SliceIterator):
 
 
 ##############################################################################
-class fMRIParcelIterator(ParcelIterator):
-    "Return parcels of timeseries."
-
-
-##############################################################################
 class fMRISliceParcelIterator(SliceParcelIterator):
     "Return parcels of timeseries within slices."
     class nframe (readonly): implements=int
