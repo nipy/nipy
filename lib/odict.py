@@ -53,9 +53,9 @@ class odict(dict):
         if key not in self._keys: self._keys.append(key)
         return dict.setdefault(self, key, failobj)
 
-    def update(self, dict):
-        dict.update(self, dict)
-        for key in dict.keys():
+    def update(self, other):
+        dict.update(self, other)
+        for key in other.keys():
             if key not in self._keys: self._keys.append(key)
 
     def values(self):
