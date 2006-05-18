@@ -148,6 +148,8 @@ def implements(proto, value): return proto.issubset(protocol(value))
 
 def scope(num): return getframe(num+1).f_locals
 
+# TODO:
+#  special UNSET value for default, to distinguish a legit value of None
 
 ##############################################################################
 class attribute (property):
@@ -236,11 +238,15 @@ class attribute (property):
     def isprivate(self): return self.name[0] == "_"
 
     #-------------------------------------------------------------------------
-    def init(self, host):
-        "Called when attribute value is requested but has not been set yet."
-        if self.default is not None: self.set(host, self.default)
+    def _initialize(self, host):
+        "Called when attribute value is requested and has not yet been set."
+        value = self.init(host)
+        if value is not None: self.set(host, value)
         else: raise AttributeError("attribute %s is not initialized on %s"%\
           (self.name, host))
+
+    #-------------------------------------------------------------------------
+    def init(self, host): return self.default
 
     #-------------------------------------------------------------------------
     def _access_ok(self, host):
@@ -252,7 +258,7 @@ class attribute (property):
         if not self._access_ok(host):
             raise AccessError("cannot get private attribute %s"%self.name)
         attvals = self._get_attvals(host)
-        if not self.isinitialized(host): self.init(host)
+        if not self.isinitialized(host): self._initialize(host)
         return attvals[self.name]
 
     #-------------------------------------------------------------------------
@@ -262,7 +268,7 @@ class attribute (property):
             raise AccessError("cannot set private attribute %s"%self.name)
         if self.readonly and self.isinitialized(host):
             raise AttributeError(
-              "attribute %s is read-only but has already been set"%self.name)
+              "attribute %s is read-only and has already been set"%self.name)
         self.validate(value)
         if len(self.implements)==0: self.implements = (value,)
         self._get_attvals(host)[self.name] = value
@@ -324,9 +330,19 @@ def deferto(delegate, include=(), exclude=(), privates=False):
 
 ##############################################################################
 class readonly (attribute):
-    "A attribute which cannot be changed after it is initialized."
+    "An attribute which cannot be changed after it is initialized."
     classdef = True
     readonly = True
+
+
+##############################################################################
+class constant (attribute):
+    "An attribute which can never be set (must specify a default value)."
+    classdef = True
+    def get(self, host): return self.default
+    def set(self, host, value): raise AttributeError(
+      "attribute %s is constant (value=%s) and cannot be set"%\
+      (self.name, self.default))
 
 
 ##############################################################################
