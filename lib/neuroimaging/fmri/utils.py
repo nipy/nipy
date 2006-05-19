@@ -60,7 +60,7 @@ def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, normalize=[0,0]):
 
     _fft2 = FFT.real_fft(_fn2)
     value = FFT.inverse_real_fft(_fft1 * _fft2)
-    _minshape = time.shape[0]
+    _minshape = min(time.shape[0], value.shape[-1])
     time = time[0:_minshape]
     value = value[0:_minshape]
     

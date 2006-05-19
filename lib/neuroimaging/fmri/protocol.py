@@ -199,6 +199,8 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         self.fromiterator(iterator)
         keys = self.events.keys() + [downtime]
         Factor.__init__(self, name, keys)
+        self._event_keys = self.events.keys()
+        self._event_keys.sort()
         
     def main_effect(self):
         """
@@ -231,12 +233,15 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         name = '%s[%s]' % (self.termname, `key`)
         return ExperimentalQuantitative(name, _fn)
 
-    def __call__(self, time=None, namespace=None, includedown=False, convolved=False, **keywords):
-        __convolved, self.convolved = self.convolved, convolved
+    def __call__(self, time=None, namespace=None, includedown=False, convolved=None, **keywords):
+        if convolved is not None:
+            __convolved, self.convolved = self.convolved, convolved
+        else:
+            __convolved = self.convolved
 
         if not self.convolved:
             value = []
-            keys = self.events.keys()
+            keys = self._event_keys
             for level in keys:
                 value.append(N.squeeze(self.events[level](time,
                                                           namespace=namespace,
@@ -247,15 +252,16 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
                 keys = keys + [downtime]
                 which = N.argmax(value, axis=0)
                 which = N.where(s, which, keys.index(downtime))
-                return Factor.__call__(self, namespace={self.termname:[keys[w] for w in which]})
+                value = Factor.__call__(self, namespace={self.termname:[keys[w] for w in which]})
             else:
-                return N.array(value)
+                value = N.asarray(value)
         else:
             if hasattr(self, '_convolved'):
-                return self._convolved(time=time, namespace=namespace, **keywords)
+                value = self._convolved(time=time, namespace=namespace, **keywords)
             else:
                 raise ValueError, 'no IRF defined for factor %s' % self.name
         self.convolved = __convolved
+        return value
 
     def names(self, keep=False):
         names = Factor.names(self)
