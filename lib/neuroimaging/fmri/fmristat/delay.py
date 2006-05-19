@@ -146,7 +146,7 @@ class DelayContrastOutput(TContrastOutput):
 
             outname = os.path.join(outdir, 'matrix%s.csv' % rowname)
             outfile = file(outname, 'w')
-            outfile.write([fpformat.fix(x,4) for x in matrix].join(',') + '\n')
+            outfile.write(','.join(fpformat.fix(x,4) for x in matrix) + '\n')
             outfile.close()
 
             outname = os.path.join(outdir, 'matrix%s.bin' % rowname)

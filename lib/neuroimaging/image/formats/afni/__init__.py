@@ -319,7 +319,7 @@ class AFNI:
                     headerfile.write(fpformat.fix(value[i], ndecimal) + ' ')
             elif att_type == AFNI_string:
                 if type(value) is types.ListType:
-                    cur_string = map(lambda x: x.__str__(), value).join('~')
+                    cur_string = '~'.join(map(lambda x: x.__str__(), value))
                 else:
                     cur_string = value
                 count = len(cur_string) + 1

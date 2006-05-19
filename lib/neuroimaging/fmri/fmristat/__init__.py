@@ -170,7 +170,7 @@ class fMRIStatOLS(LinearModelIterator):
         outname = os.path.join(self.path, 'matrix.csv')
         outfile = file(outname, 'w')
         tmatrix = [[fpformat.fix(dmatrix[i][j], 4) for j in range(dmatrix.shape[1])] for i in range(dmatrix.shape[0])]
-        outfile.write([tmatrix[i].join(',') for i in range(dmatrix.shape[0])].join('\n'))
+        outfile.write('\n'.join(','.join(tmatrix[i]) for i in range(dmatrix.shape[0])))
         outfile.close()
 
         outname = os.path.join(self.path, 'matrix.bin')

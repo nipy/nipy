@@ -7,7 +7,7 @@ def remove_comment(line):
     uncomment_re = re.compile('(.*)/\*(.*)\*/')
     clean = uncomment_re.match(line)
     if clean:
-        return clean.groups().join('#')
+        return '#'.join(clean.groups())
     else:
         return line
 
@@ -48,12 +48,12 @@ for line in file('nifti1.h').read().split('\n'):
             constants.write(line)
 
 constants.write('\n\n')
-constants.write('DT = [%s]\n\n' % dt_list.join(', '))
-constants.write('NIFTI_TYPE = [%s]\n\n' % nifti_type_list.join(', '))
-constants.write('NIFTI_INTENT = [%s]\n\n' % nifti_intent_list.join(', '))
-constants.write('NIFTI_XFORM = [%s]\n\n' % nifti_xform_list.join(', '))
-constants.write('NIFTI_UNITS = [%s]\n\n' % nifti_units_list.join(', '))
-constants.write('NIFTI_SLICE = [%s]\n\n' % nifti_slice_list.join(', '))
+constants.write('DT = [%s]\n\n' % ', '.join(dt_list)
+constants.write('NIFTI_TYPE = [%s]\n\n' % ', '.join(nifti_type_list)
+constants.write('NIFTI_INTENT = [%s]\n\n' % ', '.join(nifti_intent_list)
+constants.write('NIFTI_XFORM = [%s]\n\n' % ', '.join(nifti_xform_list)
+constants.write('NIFTI_UNITS = [%s]\n\n' % ', '.join(nifti_units_list)
+constants.write('NIFTI_SLICE = [%s]\n\n' % ', '.join(nifti_slice_list)
 
 
 constants.close()

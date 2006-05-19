@@ -98,7 +98,7 @@ class TContrastOutput(ImageRegressionOutput):
 
         outname = os.path.join(self.outdir, 'matrix.csv')
         outfile = file(outname, 'w')
-        outfile.write([fpformat.fix(x,4) for x in self.contrast.matrix].join(',') + '\n')
+        outfile.write(','.join(fpformat.fix(x,4) for x in self.contrast.matrix) + '\n')
         outfile.close()
 
         outname = os.path.join(self.outdir, 'matrix.bin')
