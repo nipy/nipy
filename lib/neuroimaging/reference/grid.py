@@ -1,6 +1,6 @@
 import numpy as N
 
-from attributes import attribute, readonly, deferto, clone
+from attributes import attribute, readonly, deferto
 from protocols import Iterator, Sequence
 
 from neuroimaging import reverse
@@ -25,13 +25,17 @@ class SamplingGrid (object):
             if value not in itertypes: raise ValueError(
               "itertype must be one of %s"%itertypes)
             attribute.set(_, self, value)
-    class axis (attribute): default=0
 
     # for parcel iterators
-    clone(ParcelIterator.labels, readonly=False)
-    clone(ParcelIterator.labelset, readonly=False)
+    class labels (attribute): default=N.asarray(())
+    class labelset (attribute):
+        implements=Sequence
+        default=()
+        def get(att, self):
+            if att.isinitialized(self): return attribute.get(att,self)
+            else: return list(N.unique(N.asarray(self.labels)))
+    class axis (attribute): default=0
 
-    # delegates
     deferto(mapping, ("input_coords", "output_coords"))
 
     #-------------------------------------------------------------------------
