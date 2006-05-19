@@ -35,7 +35,7 @@ class BaseImage(object):
         implements=N.ndarray
 
     class grid (attribute):
-        "image resampling grid"
+        "image sampling grid"
         implements=SamplingGrid
         def init(_,self): return IdentityGrid(self.array.shape)
 

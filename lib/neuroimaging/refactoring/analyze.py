@@ -2,14 +2,14 @@
 import struct
 
 from numpy import fromstring, reshape, memmap, UInt8, Int16, Int32, Float32, \
-  Float64, Complex32, amin, amax, dtype
+  Float64, Complex32, amin, amax, dtype, asarray, ndarray
 
-from attributes import attribute, readonly, deferto, wrapper
+from attributes import attribute, readonly, deferto, wrapper, scope
 from odict import odict
 from path import path
 
+from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.reference.axis import space, spacetime
-from neuroimaging.reference.mapping import IdentityMapping
 from neuroimaging.image.formats import struct_unpack, struct_pack, structfield,\
   NATIVE, LITTLE_ENDIAN, BIG_ENDIAN
 from neuroimaging.refactoring.baseimage import BaseImage
@@ -39,6 +39,40 @@ typecode2datatype = \
 
 HEADER_SIZE = 348
 
+
+##############################################################################
+class ElementWrapper (wrapper):
+    "Wrap a single element of another sequence attribute."
+    classdef=True
+    def __init__(self, name, delegate, index, readonly=None):
+        if not isinstance(delegate, attribute):
+            raise ValueError("delegate must be an attribute")
+        doc = "[Wrapper for element %s of %s] "%(index, delegate.name)
+        if delegate.__doc__: doc = doc + delegate.__doc__
+        attribute.__init__(self, name, doc=doc)
+        self.delegate = delegate
+        self.index = index
+        if readonly is not None: self.readonly = readonly
+    def get(self, host):
+        delegate = getattr(host,self.delegate.name)
+        return delegate[self.index]
+    def set(self, host, value):
+        if self.readonly:
+            raise AttributeError("wrapper %s is read-only"%self.name)
+        delegate = getattr(host,self.delegate.name)
+        delegate[self.index] = value
+
+
+##############################################################################
+class StructFieldElementWrapper (ElementWrapper):
+    classdef=True
+    def __init__(self, name, delegate, index, readonly=None):
+        if not isinstance(delegate, structfield):
+            raise ValueError("delegate must be a structfield")
+        ElementWrapper.__init__(self, name, delegate, index, readonly)
+        self.implements = (delegate.elemtype(),)
+
+
 # ordered dictionary of header field names mapped to struct format
 struct_fields = odict((
     ('sizeof_hdr','i'),
@@ -48,28 +82,14 @@ struct_fields = odict((
     ('session_error','h'),
     ('regular','c'),
     ('hkey_un0','c'),
-    ('ndim','h'),
-    ('xdim','h'),
-    ('ydim','h'),
-    ('zdim','h'),
-    ('tdim','h'),
-    ('dim5','h'),
-    ('dim6','h'),
-    ('dim7','h'),
+    ('dim','8h'),
     ('vox_units','4s'),
     ('cal_units','8s'),
     ('unused1','h'),
     ('datatype','h'),
     ('bitpix','h'),
     ('dim_un0','h'),
-    ('pixdim0','f'),
-    ('xsize','f'),
-    ('ysize','f'),
-    ('zsize','f'),
-    ('tsize','f'),
-    ('pixdim5','f'),
-    ('pixdim6','f'),
-    ('pixdim7','f'),
+    ('pixdim','8f'),
     ('vox_offset','f'),
     ('scale_factor','f'),
     ('funused2','f'),
@@ -83,9 +103,7 @@ struct_fields = odict((
     ('descrip','80s'),
     ('aux_file','24s'),
     ('orient','c'),
-    ('x0','h'),
-    ('y0','h'),
-    ('z0','h'),
+    ('origin','3h'),
     ('sunused','4s'),
     ('generated','10s'),
     ('scannum','10s'),
@@ -104,13 +122,19 @@ struct_fields = odict((
 
 field_formats = struct_fields.values()
 
+#-----------------------------------------------------------------------------
+def wrap_elems(delegate, names, indices=()):
+    if not indices: indices = range(len(names))
+    elif len(names) != len(indices): raise ValueError(
+      "names and indices must have the same number of elements")
+    scope(1).update(
+      dict([(name, ElementWrapper(name,delegate,index))\
+            for name,index in zip(names, indices)]))
+
+
 headeratts = dict(
   [(name, structfield(name,format)) \
   for name,format in struct_fields.items()])
-
-ro_headeratts = dict(
-  [(name, attribute.clone(att,readonly=True)) \
-  for name,att in headeratts.items()])
 
 
 ##############################################################################
@@ -121,14 +145,36 @@ class AnalyzeHeader (object):
     """
     locals().update(headeratts)
 
+    # convenience interpretations of some dim elements
+    wrap_elems(dim, ("ndim","xdim","ydim","zdim","tdim"))
+
+    # convenience interpretations of some pixdim elements
+    wrap_elems(pixdim, ("xsize","ysize","zsize","tsize"), (1,2,3,4))
+
+    # convenience interpretation of origin
+    wrap_elems(origin, ("x0","y0","z0"))
+
     class byteorder (attribute): "big or little endian"
 
+    class numpy_dtype (readonly):
+        "Numpy datatype object corresponding to the header datatype and byteorder"
+        def get(_,self):
+            return dtype(
+              datatype2typecode[self.datatype]).newbyteorder(self.byteorder)
+
+    class shape (readonly):
+        def get(_,self):
+            return self.tdim and \
+              (self.tdim, self.zdim, self.ydim, self.xdim) or\
+              (self.zdim, self.ydim, self.xdim)
+
+    #-------------------------------------------------------------------------
     @staticmethod
     def guess_byteorder(hdrfile):
         """
         Determine byte order of the header.  The first header element is the
-        header size.  It should always be 384.  If it is not then you know
-        you read it in the wrong byte order.
+        header size.  It should always be 384.  If it is not then you know you
+        read it in the wrong byte order.
         """
         if type(hdrfile)==type(""): hdrfile=file(hdrfile)
         byteorder = LITTLE_ENDIAN
@@ -136,7 +182,6 @@ class AnalyzeHeader (object):
           byteorder, field_formats[0:1])[0]
         if reported_length != HEADER_SIZE: byteorder = BIG_ENDIAN
         return byteorder
-
 
     #-------------------------------------------------------------------------
     def __init__(self, filename, opener=file):
@@ -179,7 +224,7 @@ class AnalyzeImage (BaseImage):
         "filename minus extensions"
         implements=str
         def set(_,self,value):
-            super(readonly,_).set(self,get_filestem(value, self.extensions))
+            super(readonly,_).set(self, get_filestem(value, self.extensions))
     class hdrfile (readonly):
         "header filename"
         def get(_,self): return self.filestem+".hdr"
@@ -205,16 +250,6 @@ class AnalyzeImage (BaseImage):
         def get(_,self): return 8*self.array.dtype.itemsize
     class glmin (readonly): get=lambda _,self: amin(abs(self.array).flat)
     class glmax (readonly): get=lambda _,self: amax(abs(self.array).flat)
-
-    class numpy_dtype (readonly):
-        def get(_,self):
-            return dtype(datatype2typecode[self.header.datatype])\
-                   .newbyteorder(self.byteorder)
-    class shape (readonly):
-        def get(_,self):
-            return self.tdim and \
-              (self.tdim, self.zdim, self.ydim, self.xdim) or\
-              (self.zdim, self.ydim, self.xdim)
 
     #-------------------------------------------------------------------------
     @staticmethod
@@ -243,8 +278,32 @@ class AnalyzeImage (BaseImage):
         is assumed to be a tab-delimited 4 line file.  Other formats should be
         added.
         """
+        if self.ndim == 3:
+            axisnames = space[::-1]
+            origin = self.origin[0:3]
+            step = self.pixdim[1:4]
+            shape = self.dim[1:4]
+
+        elif self.ndim == 4:
+            axisnames = space[::-1] + ['time']
+            origin = tuple(self.origin[0:3]) + (1,)
+            step = tuple(self.pixdim[1:5]) 
+            shape = self.dim[1:5]
+            if self.squeeze and self.tdim == 1:
+                    origin = origin[0:3]
+                    step = step[0:3]
+                    axisnames = axisnames[0:3]
+                    shape = self.dim[1:4]
+
+        ## Setup affine transformation
+        self.grid = SamplingGrid.from_start_step(
+          names=axisnames, shape=shape, start=-asarray(origin)*step, step=step)
+
         if self._datasource.exists(self.matfile):
-            return mapping.fromfile(self._datasource.open(self.matfile))
+            self.grid.transform(self.readmat())
+
+        # assume .mat matrix uses FORTRAN indexing
+        self.grid = self.grid.matlab2python()
 
     #-------------------------------------------------------------------------
     def write(self, filestem): AnalyzeWriter().write(self, filestem)
