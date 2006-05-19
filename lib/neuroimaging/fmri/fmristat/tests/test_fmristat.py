@@ -2,13 +2,17 @@ import unittest, os, gc, shutil
 
 import numpy as N
 
-from neuroimaging.fmri import fMRIImage, protocol
+from neuroimaging.tests.data import repository
+from neuroimaging.fmri import fMRIImage
+from neuroimaging.fmri.functions import SplineConfound
+from neuroimaging.fmri.protocol import ExperimentalFactor,\
+  ExperimentalQuantitative
 from neuroimaging.fmri.fmristat import fMRIStatAR, fMRIStatOLS
-from neuroimaging.fmri import hrf
-from neuroimaging.image import Image
-from neuroimaging.statistics import contrast
+from neuroimaging.statistics.contrast import Contrast
+from  neuroimaging.image import Image
+from neuroimaging.fmri.hrf import glover, glover_deriv
 
-class fMRIStatTest(object): #unittest.TestCase):
+class fMRIStatTest(unittest.TestCase):
 
     def setup_formula(self):
 
@@ -22,23 +26,21 @@ class fMRIStatTest(object): #unittest.TestCase):
         all = []
         for i in range(20):
             all.append([p[i], on[i], off[i]])
-        pain = protocol.ExperimentalFactor('pain', all)
-        drift_fn = protocol.SplineConfound(window=[0,360], df=7)
-        drift = protocol.ExperimentalQuantitative('drift', drift_fn)
+        pain = ExperimentalFactor('pain', all)
+        drift_fn = SplineConfound(window=[0,360], df=7)
+        drift = ExperimentalQuantitative('drift', drift_fn)
         self.pain = pain
         self.drift = drift
 
-        self.IRF = hrf.glover
+        self.IRF = glover
 
         self.pain.convolve(self.IRF)
         self.formula = self.pain + self.drift
 
     def setUp(self):
-        self.url = 'http://kff.stanford.edu/BrainSTAT/testdata/test_fmri.img'
-        
         frametimes = N.arange(120)*3.
         slicetimes = N.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
-        self.img = fMRIImage(self.url, frametimes=frametimes,
+        self.img = fMRIImage("test_fmri.img", datasource=repository, frametimes=frametimes,
                                   slicetimes=slicetimes, usematfile=False)
 
         self.setup_formula()
@@ -89,7 +91,7 @@ class fMRIStatTest(object): #unittest.TestCase):
         del(OLS); del(AR); gc.collect()
 
     def test_hrf_deriv(self):
-        self.IRF = hrf.glover_deriv
+        self.IRF = glover_deriv
 
         self.pain.convolve(self.IRF)
         self.pain.convolved = True
@@ -97,7 +99,7 @@ class fMRIStatTest(object): #unittest.TestCase):
         self.formula = self.pain + self.drift
 
        
-        pain = contrast.Contrast(self.pain, self.formula, name='hot-warm')
+        pain = Contrast(self.pain, self.formula, name='hot-warm')
         self.img.slicetimes = None
         OLS = fMRIStatOLS(self.img, formula=self.formula,
                                    slicetimes=self.img.slicetimes)
@@ -114,7 +116,7 @@ class fMRIStatTest(object): #unittest.TestCase):
         
 
     def test_contrast(self):
-        pain = contrast.Contrast(self.pain, self.formula, name='pain')
+        pain = Contrast(self.pain, self.formula, name='pain')
 
         self.img.slicetimes = None
         OLS = fMRIStatOLS(self.img, formula=self.formula,
