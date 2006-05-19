@@ -112,8 +112,8 @@ hmmm
 >>> h.numteeth
 28
 >>> class HungryHead (Head):
-...     "Lets the stomach do the talking, but no acid reflux"
-...     deferto(Head.stomach, "speak")
+...     "Lets the stomach do the talking, but has no acid"
+...     deferto(Head.stomach, ("speak",))
 ...
 >>> h = HungryHead()
 >>> h.speak()
@@ -136,14 +136,15 @@ class ProtocolOmission (Exception):
 
 def protocol(*objects):
     """
-    @return the tuple of names representing the total public protocol
+    @return the tuple of names representing the complete protocol
     supported by the given objects.
     """
     protocol = Set()
     for obj in objects:
-        protocol = protocol.union(Set(
-          [name for name in dir(obj) if name[0] != "_"]))
+        protocol = protocol.union(Set([name for name in dir(obj)]))
     return protocol
+
+def implements(proto, value): return proto.issubset(protocol(value))
 
 def scope(num): return getframe(num+1).f_locals
 
@@ -219,23 +220,17 @@ class attribute (property):
         return self._get_attvals(host).has_key(self.name)
 
     #-------------------------------------------------------------------------
-    def validate(self, host, value):
-        "Make sure the value satisfies any implemented protocols"
-        defined = Set(dir(value))
-        for protocol in self.implements:
-            required = Set(dir(protocol))
-            if not required.issubset(defined): raise ProtocolOmission(
-              "attribute %s implements %s, value %s of type %s does not "\
-              "implement: %s"%(self.name, self.implements, value, type(value),
-                tuple(required - defined)))
+    def validate(self, value):
+        "Raise an exception if the value is not valid."
+        if not self.isvalid(value): raise ProtocolOmission(
+          "attribute %s implements %s, value %s of type %s does not "\
+          "implement: %s"%(self.name, self.implements, value, type(value),
+                tuple(self.protocol - protocol(value))))
 
     #-------------------------------------------------------------------------
-    def isvalid(self, host, value):
-        try:
-            self.validate(host, value)
-            return True
-        except TypeError, ProtocolOmission:
-            return False
+    def isvalid(self, value):
+        "Return whether the value satisfies all implemented protocols"
+        return implements(self.protocol, value)
 
     #-------------------------------------------------------------------------
     def isprivate(self): return self.name[0] == "_"
@@ -268,7 +263,7 @@ class attribute (property):
         if self.readonly and self.isinitialized(host):
             raise AttributeError(
               "attribute %s is read-only but has already been set"%self.name)
-        self.validate(host, value)
+        self.validate(value)
         if len(self.implements)==0: self.implements = (value,)
         self._get_attvals(host)[self.name] = value
         
@@ -312,14 +307,19 @@ class wrapper (attribute):
         setattr(self._host_delegate(host), self.attname, value)
 
 #-----------------------------------------------------------------------------
-def deferto(delegate, include=(), exclude=()):
+def deferto(delegate, include=(), exclude=(), privates=False):
     if include and exclude:
         raise ValueError("please use only include or exclude but not both")
+    delegate_proto = delegate.protocol
+    includeset = Set(include)
+    if not includeset.issubset(delegate_proto):
+        raise ValueError("delegate does not implement %s"%\
+          tuple(includeset - delegate_proto))
     scope(1).update(
       dict([(name,wrapper(name,delegate))\
-            for name in delegate.protocol\
-            if (not include or name in include) and\
-               (not exclude or name not in exclude)]))
+            for name in delegate_proto if (privates or name[0]!="_") and\
+              (not include or name in includeset) and\
+              (not exclude or name not in exclude)]))
 
 
 ##############################################################################
