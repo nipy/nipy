@@ -77,7 +77,8 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
         self.outputs += outputs
 
-        self.dmatrix = self.formula.design(time=self.fmri_image.frametimes + self.tshift)
+        ftime = self.fmri_image.frametimes + self.tshift
+        self.dmatrix = self.formula.design(time=ftime)
 
         if self.resid or self.output_fwhm:
             self.resid_output = ResidOutput(self.fmri_image.grid, path=self.path, basename='OLSresid', clobber=self.clobber)
@@ -88,13 +89,12 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         self.outputs.append(self.rho_estimator)
 
         self.setup_output()
-        self.dmodel = OLSModel(design=self.dmatrix)
         
     def model(self, **keywords):
-        time = self.fmri_image.frametimes + self.tshift
+        ftime = self.fmri_image.frametimes + self.tshift
         if self.slicetimes is not None:
             _slice = self.iterator.grid.itervalue.slice
-            model = OLSModel(design=self.formula.design(time=time + self.slicetimes[_slice[1]]))
+            model = OLSModel(design=self.formula.design(time=ftime + self.slicetimes[_slice[1]]))
         else:
             model = OLSModel(design=self.dmatrix)
         return model

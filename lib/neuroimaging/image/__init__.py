@@ -19,7 +19,7 @@ class Image(traits.HasTraits):
     #-------------------------------------------------------------------------
     class ArrayImage (object):
         "A simple class to mimic an image file from an array."
-        def __init__(self, data, grid=None):
+        def __init__(self, data, grid=None, **extra):
             """
             Create an ArrayPipe instance from an array, by default assumed to be 3d.
 
@@ -32,7 +32,9 @@ class Image(traits.HasTraits):
             self.data = data
             self.shape = self.data.shape
             self.grid = grid and grid or SamplingGrid.identity(self.shape)
+
         def getslice(self, _slice): return self.data[_slice]
+
         def writeslice(self, _slice, data): self.data[_slice] = data
 
     #-------------------------------------------------------------------------
@@ -121,7 +123,7 @@ class Image(traits.HasTraits):
     #-------------------------------------------------------------------------
     def put(self, data, indices):
         if hasattr(self, 'buffer'):
-            return self.put.compress(data, indices)
+            return self.buffer.put(data, indices)
         else: raise ValueError, 'no buffer: put not supported'
 
     #-------------------------------------------------------------------------
@@ -187,8 +189,9 @@ class Image(traits.HasTraits):
         return Image(_data, grid=self.grid, **keywords)
 
     #-------------------------------------------------------------------------
-    def tofile(self, filename, array=True, **keywords):
-        outimage = Image(filename, mode='w', grid=self.grid, **keywords)
+    def tofile(self, filename, array=True, clobber=False, **keywords):
+        outimage = Image(filename, mode='w', grid=self.grid,
+                         clobber=clobber, **keywords)
         if array:
             tmp = self.toarray(**keywords)
             outimage.image.writeslice(slice(0,self.grid.shape[0],1), tmp.image.data)

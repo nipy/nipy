@@ -232,7 +232,9 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         name = '%s[%s]' % (self.termname, `key`)
         return ExperimentalQuantitative(name, _fn)
 
-    def __call__(self, time=None, namespace=None, includedown=False, **keywords):
+    def __call__(self, time=None, namespace=None, includedown=False, convolved=False, **keywords):
+        __convolved, self.convolved = self.convolved, convolved
+
         if not self.convolved:
             value = []
             keys = self.events.keys()
@@ -254,6 +256,7 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
                 return self._convolved(time=time, namespace=namespace, **keywords)
             else:
                 raise ValueError, 'no IRF defined for factor %s' % self.name
+        self.convolved = __convolved
 
     def names(self, keep=False):
         names = Factor.names(self)

@@ -193,23 +193,24 @@ class ANALYZE(traits.HasTraits):
         self.filebase = filename and os.path.splitext(filename)[0] or None
         self.hdrattnames = [name for name in self.trait_names() \
           if isinstance(self.trait(name).handler, BinaryHeaderValidator)]
-        if filename: self.readheader(self.hdrfilename())
         traits.HasTraits.__init__(self, **keywords)
 
         if self.mode is 'w':
             self._dimfromgrid(keywords['grid'])
             self.writeheader()
+            if filename: self.readheader(self.hdrfilename())
             self.getdtype()
 
             # create empty file
 
             from neuroimaging.image.utils import writebrick
-            utils.writebrick(file(self.imgfilename(), 'w'),
-                             (0,)*self.ndim,
-                             N.zeros(self.grid.shape, N.Float),
-                             self.grid.shape,
-                             byteorder=self.byteorder,
-                             outtype = self.typecode)
+            writebrick(file(self.imgfilename(), 'w'),
+                       (0,)*self.ndim,
+                       N.zeros(self.grid.shape, N.Float),
+                       self.grid.shape,
+                       byteorder=self.byteorder,
+                       outtype = self.typecode)
+        elif filename: self.readheader(self.hdrfilename())
 
         self.ndim = self.dim[0]
         

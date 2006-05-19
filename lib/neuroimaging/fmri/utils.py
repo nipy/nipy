@@ -61,7 +61,6 @@ def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, normalize=[0,0]):
     _fft2 = FFT.real_fft(_fn2)
     value = FFT.inverse_real_fft(_fft1 * _fft2)
     _minshape = time.shape[0]
-    t = time * 1.
     time = time[0:_minshape]
     value = value[0:_minshape]
     
@@ -74,6 +73,7 @@ def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, normalize=[0,0]):
     else:
         newf = LinearInterpolant(time + min(interval), value)
         return newf
+
 class CutPoly:
     def __init__(self, trange=None, power=1, range_type='lower'):
         self.power = power

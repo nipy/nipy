@@ -1,7 +1,45 @@
 
 from fiac import *
 
-def FIACrun(subj=3, run=3, df=5, output_fwhm=False, normalize=True):
+def FIACformula(subj=3, run=3, normalize=True, tshift=1.25, df=5):
+    p = FIACprotocol(subj=subj, run=run)
+
+    delay_irf = DelayHRF()
+    irf = delay_irf[0]
+    print delay_irf.spectral 
+    f = FIACfmri(subj=subj, run=run)
+    m = FIACmask(subj=subj, run=run)
+
+    if p:
+        if normalize:
+            brainavg = neuroimaging.fmri.fmristat.WholeBrainNormalize(f, mask=m)
+            
+            brainavg_fn = protocol.InterpolatedConfound(times=f.frametimes + tshift,
+                                                        values=brainavg.avg)
+
+            wholebrain = protocol.ExperimentalQuantitative('whole_brain',
+                                                           brainavg_fn)
+
+        p.convolve(delay_irf)
+
+        drift_fn = protocol.SplineConfound(window=[0,f.frametimes.max()+2.5],
+                                           df=df)
+        drift = protocol.ExperimentalQuantitative('drift', drift_fn)
+
+        formula = p + drift
+
+        if p.design_type == 'block':
+            begin = FIACbegin(subj=subj, run=run)
+            formula += begin
+            begin.convolve(irf)
+            
+        if normalize:
+            formula += wholebrain
+    del(f); del(m); gc.collect()
+    return formula
+
+
+def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
 
     ARopts = {'clobber':True,
               'resid':False}
@@ -18,34 +56,13 @@ def FIACrun(subj=3, run=3, df=5, output_fwhm=False, normalize=True):
     p = FIACprotocol(subj=subj, run=run)
 
     if p:
-        FIACplot(subj=subj, run=run)
+        formula = FIACformula(subj=subj, run=run,
+                              normalize=normalize, tshift=tshift, df=5)
+
         f = FIACfmri(subj=subj, run=run)
         m = FIACmask(subj=subj, run=run)
 
         if normalize:
-            brainavg = neuroimaging.fmri.fmristat.WholeBrainNormalize(f, mask=m)
-            
-            brainavg_fn = protocol.InterpolatedConfound(times=f.frametimes + tshift,
-                                                        values=brainavg.avg)
-
-            wholebrain = protocol.ExperimentalQuantitative('whole_brain',
-                                                           brainavg_fn)
-
-        p.convolve(delay_irf)
-
-        drift_fn = protocol.SplineConfound(window=[0,f.frametimes.max()+tshift],
-                                           df=df)
-        drift = protocol.ExperimentalQuantitative('drift', drift_fn)
-
-        formula = p + drift
-
-        if p.design_type == 'block':
-            begin = FIACbegin(subj=subj, run=run)
-            formula += begin
-            begin.convolve(irf)
-            
-        if normalize:
-            formula += wholebrain
             OLSopts['normalize'] = brainavg
 
         # output some contrasts, here is one from the term "p" in "formula",
@@ -137,7 +154,7 @@ def FIACrun(subj=3, run=3, df=5, output_fwhm=False, normalize=True):
             fwhmest()
 
         del(OLS); del(AR); gc.collect()
-
+        return formula
 
 if __name__ == '__main__':
 
