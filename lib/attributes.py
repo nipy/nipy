@@ -167,7 +167,7 @@ class attribute (property):
                 return type.__new__(metaclass, classname, bases, classdict)
             # return a attribute instance
             return metaclass(classname, bases, classdict, classdef=True)(
-              classname, doc=classdict.get("__doc__"))
+              classname)
 
     #-------------------------------------------------------------------------
     @staticmethod
@@ -199,6 +199,8 @@ class attribute (property):
         if len(self.implements)==0 and self.default is not None:
             self.implements = (self.default,)
 
+        if doc is None: doc = self.__doc__
+
         property.__init__(self,
           fget=self.get, fset=self.set, fdel=self.delete, doc=doc)
 
@@ -223,8 +225,9 @@ class attribute (property):
         for protocol in self.implements:
             required = Set(dir(protocol))
             if not required.issubset(defined): raise ProtocolOmission(
-              "attribute %s implements %s, value %s does not implement: %s"%\
-              (self.name,self.implements,value,tuple(required - defined)))
+              "attribute %s implements %s, value %s of type %s does not "\
+              "implement: %s"%(self.name, self.implements, value, type(value),
+                tuple(required - defined)))
 
     #-------------------------------------------------------------------------
     def isvalid(self, host, value):
@@ -241,7 +244,8 @@ class attribute (property):
     def init(self, host):
         "Called when attribute value is requested but has not been set yet."
         if self.default is not None: self.set(host, self.default)
-        else: raise AttributeError("attribute %s is not initialized"%self.name)
+        else: raise AttributeError("attribute %s is not initialized on %s"%\
+          (self.name, host))
 
     #-------------------------------------------------------------------------
     def _access_ok(self, host):
@@ -282,14 +286,15 @@ class wrapper (attribute):
     attname=None
 
     #-------------------------------------------------------------------------
-    def __init__(self, name, delegate, attname=None, readonly=None):
-        if not isinstance(delegate, attribute):
+    def __init__(self, name, delegate, attname=None, readonly=None, doc=None):
+        if delegate is not None: self.delegate = delegate
+        if not isinstance(self.delegate, attribute):
             raise ValueError("delegate must be an attribute")
         self.attname = self.attname or attname or name
-        doc = "[Wrapper for %s.%s] "%(delegate.name, self.attname)
-        if delegate.__doc__: doc = doc + delegate.__doc__
+        if doc is None:
+            doc = "[Wrapper for %s.%s] "%(delegate.name, self.attname)
+            if delegate.__doc__: doc = doc + delegate.__doc__
         attribute.__init__(self, name, doc=doc)
-        self.delegate = delegate
         if readonly is not None: self.readonly = readonly
 
     #-------------------------------------------------------------------------
@@ -340,34 +345,6 @@ class objectify (object):
 # NOTE: objectify not working yet
 def foo(): print objectify({'x':1,'y':2})
 #foo()
-
-#-----------------------------------------------------------------------------
-def _test():
-    class Foo (object):
-        class x (attribute):
-            "test attribute x"; implements=str; default="foo"
-            def get(self, host):
-                print "Customised getter: getting",self.name,"from",host
-                return attribute.get(self, host)
-        class y (readonly): "test attribute y"
-        class z (readonly): "test attribute z"; default=10
-        class _a (attribute): "private attribute"
-
-        def get_a(self): return self._a
-        def set_a(self, value): self._a = value
-
-    f = Foo()
-    print f.x
-    f.x = "borp"
-    print f.x
-    f.y = "fnorb"
-    print f.y
-    #f.y = "fnarb"
-    #print f.y
-    f.set_a(10)
-    print f.get_a()
-    print f._a
-    f._a = 10
 
 if __name__ == "__main__":
     from doctest import testmod
