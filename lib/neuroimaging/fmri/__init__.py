@@ -1,15 +1,14 @@
-import neuroimaging.image as image
-import neuroimaging.reference.grid as grid
-
-import neuroimaging.reference.mapping as mapping
-import neuroimaging.reference.coordinate_system as coordinate_system
 from enthought import traits
 import numpy as N
-from iterators import fMRISliceIterator, fMRIParcelIterator, fMRISliceParcelIterator
 
-import hrf, filters
+from neuroimaging.fmri.iterators import fMRISliceIterator, fMRISliceParcelIterator
+from neuroimaging.image import Image
+from neuroimaging.reference.coordinate_system import CoordinateSystem
+from neuroimaging.reference.grid import SamplingGrid
+from neuroimaging.reference.iterators import ParcelIterator
+from neuroimaging.reference.mapping import Mapping, Affine
 
-class fMRIListMapping(mapping.Mapping):
+class fMRIListMapping(Mapping):
 
     def __init__(self, input_coords, output_coords, maps, **keywords):
         self._maps = maps
@@ -23,17 +22,16 @@ class fMRIListMapping(mapping.Mapping):
         else:
             return self._maps[coords[0]][coords[1:]]
 
-class fMRISamplingGrid(grid.SamplingGrid):
+class fMRISamplingGrid(SamplingGrid):
 
     def __init__(self, **keywords):
-        grid.SamplingGrid.__init__(self, **keywords)
+        SamplingGrid.__init__(self, **keywords)
 
     def __iter__(self):
-
         if self.itertype == 'slice':
-            self.iterator = iter(fMRISliceIterator(shape=self.shape))
+            self.iterator = iter(fMRISliceIterator(self.shape))
         elif self.itertype == 'parcel':
-            self.iterator = iter(fMRIParcelIterator(self.labels, self.labelset))
+            self.iterator = iter(ParcelIterator(self.labels, self.labelset))
         elif self.itertype == 'slice/parcel':
             self.iterator = iter(fMRISliceParcelIterator(self.labels, self.labelset, self.shape))
         return self
@@ -43,7 +41,7 @@ class fMRISamplingGrid(grid.SamplingGrid):
         Determine whether the affine transformation is \'diagonal\' in time.
         """
 
-        if isinstance(self.mapping, mapping.Affine):
+        if isinstance(self.mapping, Affine):
             n = len(self.shape)
             t = self.mapping.transform
             offdiag = N.add.reduce(t[1:n,0]**2) + N.add.reduce(t[0,1:n]**2)
@@ -67,23 +65,23 @@ class fMRISamplingGrid(grid.SamplingGrid):
 
 
         inaxes = self.mapping.input_coords.axes[1:]
-        incoords = coordinate_system.CoordinateSystem(self.mapping.input_coords.name+'-subgrid', inaxes)
+        incoords = CoordinateSystem(self.mapping.input_coords.name+'-subgrid', inaxes)
 
         if isinstance(self.mapping, fMRIListMapping):
             outaxes = self.mapping.output_coords.axes[1:]
-            outcoords = coordinate_system.CoordinateSystem(self.mapping.output_coords.name, outaxes)        
+            outcoords = CoordinateSystem(self.mapping.output_coords.name, outaxes)        
 
-            W = mapping.Affine(incoords, outcoords, self._maps[i])
+            W = Affine(incoords, outcoords, self._maps[i])
         elif self.isproduct():
             outaxes = self.mapping.output_coords.axes[1:]
-            outcoords = coordinate_system.CoordinateSystem(self.mapping.output_coords.name, outaxes)        
+            outcoords = CoordinateSystem(self.mapping.output_coords.name, outaxes)        
 
             t = self.mapping.transform
             t = t[1:,1:]
-            W = mapping.Affine(incoords, outcoords, t)
+            W = Affine(incoords, outcoords, t)
         else:
             outaxes = self.mapping.output_coords.axes[1:]
-            outcoords = coordinate_system.CoordinateSystem(self.mapping.output_coords.name, outaxes)        
+            outcoords = CoordinateSystem(self.mapping.output_coords.name, outaxes)        
 
             def _map(x, fn=self.mapping.map, **keywords):
                 if len(x.shape) > 1:
@@ -93,21 +91,21 @@ class fMRISamplingGrid(grid.SamplingGrid):
                 _x[0] = i
                 return fn(_x)
 
-            W = mapping.Mapping(incoords, outcoords, _map)
+            W = Mapping(incoords, outcoords, _map)
 
-        _grid = grid.SamplingGrid(shape=self.shape[1:], mapping=W)
+        _grid = SamplingGrid(shape=self.shape[1:], mapping=W)
         _grid.itertype = self.itertype
         _grid.labels = self.labels
         _grid.labelset = self.labelset
         return _grid
 
-class fMRIImage(image.Image):
+class fMRIImage(Image):
     frametimes = traits.Any()
     slicetimes = traits.Any()
     TR = traits.Any()
 
     def __init__(self, _image, **keywords):
-        image.Image.__init__(self, _image, **keywords)
+        Image.__init__(self, _image, **keywords)
         self.grid = fMRISamplingGrid(mapping=self.grid.mapping, shape=self.grid.shape)
         if self.grid.isproduct():
             ndim = len(self.grid.shape)
@@ -118,7 +116,7 @@ class fMRIImage(image.Image):
             self.frametimes = start + N.arange(self.grid.shape[d]) * self.TR
 
     def tofile(self, filename, **keywords):
-        image.Image.tofile(self, filename, array=False, **keywords)
+        Image.tofile(self, filename, array=False, **keywords)
         
     def frame(self, i, **keywords):
         return self.toarray(slice=(slice(i)))
