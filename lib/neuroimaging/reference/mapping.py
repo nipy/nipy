@@ -1,12 +1,14 @@
 import csv, urllib
+
 import numpy as N
 from numpy.linalg import inv
-from numpy.random import standard_normal
 
 from attributes import readonly, deferto
+
 from neuroimaging import hasattrs
-from coordinate_system import CoordinateSystem, MNI_voxel, MNI_world
-from axis import Axis, space
+from neuroimaging.reference.axis import Axis, space
+from neuroimaging.reference.coordinate_system import \
+  CoordinateSystem, MNI_voxel, MNI_world
 
 
 #-----------------------------------------------------------------------------

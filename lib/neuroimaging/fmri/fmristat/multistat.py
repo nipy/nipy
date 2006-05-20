@@ -1,13 +1,9 @@
-import os, tempfile
-
 import numpy as N
 import numpy.linalg as L
 
 from enthought import traits
-from neuroimaging import image
-from neuroimaging.Modules.LinearModel import Tcontrast, Fcontrast
-from neuroimaging.image.kernel_smooth import LinearFilter
-from neuroimaging.Utils.miscutils import recipr, norm, monotone_fn_inverter
+from neuroimaging.image import Image
+from neuroimaging.statistics.utils import recipr
 
 
 class RFXMean(traits.HasTraits):
@@ -46,9 +42,9 @@ class RFXMean(traits.HasTraits):
             self.sd = []
 
         for subject in range(self.nsubject):
-            self.input.append(iter(image.Image(input_files[subject], **keywords)))
+            self.input.append(iter(Image(input_files[subject], **keywords)))
             if sd_files:
-                self.sd.append(iter(image.Image(sd_files[subject], **keywords)))
+                self.sd.append(iter(Image(sd_files[subject], **keywords)))
     
         resid_files = {}
 

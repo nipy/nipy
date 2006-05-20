@@ -1,12 +1,12 @@
-import unittest, scipy, sets, os, gc, shutil
-import neuroimaging.fmri as fmri
-import neuroimaging.fmri.protocol as protocol
-import neuroimaging.fmri.fmristat as fmristat
-from neuroimaging.statistics import contrast, utils
-import neuroimaging.image as image
+import unittest, os, gc, shutil
+
 import numpy as N
-import neuroimaging.fmri.hrf as hrf
-import pylab
+
+from neuroimaging.fmri import fMRIImage, protocol
+from neuroimaging.fmri.fmristat import fMRIStatAR, fMRIStatOLS
+from neuroimaging.fmri import hrf
+from neuroimaging.image import Image
+from neuroimaging.statistics import contrast
 
 class fMRIStatTest(object): #unittest.TestCase):
 
@@ -38,7 +38,7 @@ class fMRIStatTest(object): #unittest.TestCase):
         
         frametimes = N.arange(120)*3.
         slicetimes = N.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
-        self.img = fmri.fMRIImage(self.url, frametimes=frametimes,
+        self.img = fMRIImage(self.url, frametimes=frametimes,
                                   slicetimes=slicetimes, usematfile=False)
 
         self.setup_formula()
@@ -47,7 +47,7 @@ class fMRIStatTest(object): #unittest.TestCase):
         shutil.rmtree('fmristat_run', ignore_errors=True)
                       
     def test_model_slicetimes(self):
-        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+        OLS = fMRIStatOLS(self.img, formula=self.formula,
                                    slicetimes=self.img.slicetimes)
         OLS.nmax = 75
         OLS.fit(resid=True)
@@ -56,13 +56,13 @@ class fMRIStatTest(object): #unittest.TestCase):
         os.remove('rho.img')
         os.remove('rho.hdr')
 
-        AR = fmristat.fMRIStatAR(OLS)
+        AR = fMRIStatAR(OLS)
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
     def test_model_resid1(self):
         self.img.slicetimes = None
-        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+        OLS = fMRIStatOLS(self.img, formula=self.formula,
                                    slicetimes=self.img.slicetimes, resid=True)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
@@ -70,13 +70,13 @@ class fMRIStatTest(object): #unittest.TestCase):
         os.remove('rho.img')
         os.remove('rho.hdr')
 
-        AR = fmristat.fMRIStatAR(OLS)
+        AR = fMRIStatAR(OLS)
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
     def test_model_resid2(self):
         self.img.slicetimes = None
-        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+        OLS = fMRIStatOLS(self.img, formula=self.formula,
                                    slicetimes=self.img.slicetimes)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
@@ -84,7 +84,7 @@ class fMRIStatTest(object): #unittest.TestCase):
         os.remove('rho.img')
         os.remove('rho.hdr')
 
-        AR = fmristat.fMRIStatAR(OLS, resid=True)
+        AR = fMRIStatAR(OLS, resid=True)
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
@@ -99,7 +99,7 @@ class fMRIStatTest(object): #unittest.TestCase):
        
         pain = contrast.Contrast(self.pain, self.formula, name='hot-warm')
         self.img.slicetimes = None
-        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+        OLS = fMRIStatOLS(self.img, formula=self.formula,
                                    slicetimes=self.img.slicetimes)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
@@ -108,7 +108,7 @@ class fMRIStatTest(object): #unittest.TestCase):
         os.remove('rho.img')
         os.remove('rho.hdr')
 
-        AR = fmristat.fMRIStatAR(OLS, contrasts=[pain])
+        AR = fMRIStatAR(OLS, contrasts=[pain])
         AR.fit()
         del(OLS); del(AR); gc.collect()
         
@@ -117,7 +117,7 @@ class fMRIStatTest(object): #unittest.TestCase):
         pain = contrast.Contrast(self.pain, self.formula, name='pain')
 
         self.img.slicetimes = None
-        OLS = fmristat.fMRIStatOLS(self.img, formula=self.formula,
+        OLS = fMRIStatOLS(self.img, formula=self.formula,
                                    slicetimes=self.img.slicetimes,
                                    clobber=True)
         OLS.fit(resid=True)
@@ -127,20 +127,17 @@ class fMRIStatTest(object): #unittest.TestCase):
         from neuroimaging.visualization import viewer
         v=viewer.BoxViewer(rho)
         v.draw()
-        #pylab.show()
 
         os.remove('rho.img')
         os.remove('rho.hdr')
 
-        AR = fmristat.fMRIStatAR(OLS, contrasts=[pain], clobber=True)
+        AR = fMRIStatAR(OLS, contrasts=[pain], clobber=True)
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
-        t = image.Image('fmristat_run/contrasts/pain/F.img')
+        t = Image('fmristat_run/contrasts/pain/F.img')
         v=viewer.BoxViewer(t)
         v.draw()
-        #pylab.show()
-
 
 if __name__ == '__main__':
     unittest.main()

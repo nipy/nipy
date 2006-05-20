@@ -1,5 +1,5 @@
 import numpy as N
-from attributes import attribute, readonly
+from attributes import readonly
 
 valid = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension', 'concat']
 space = ['zspace', 'yspace', 'xspace']

@@ -5,23 +5,20 @@ of delays and contrasts of delays.
 Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H., Evans, A.C. (2002). \'Estimating the delay of the response in fMRI data.\' NeuroImage, 16:593-606.
 
 """
-import copy, os, csv, string, fpformat, types
+import copy, os, string, fpformat
 
 import numpy as N
 import numpy.linalg as L
 from enthought import traits
 import pylab
 
-import neuroimaging.image as image
-from neuroimaging.reference import grid
-from neuroimaging.fmri.regression import TContrastOutput 
-from neuroimaging.statistics import utils, regression, contrast
-from neuroimaging.fmri.protocol import ExperimentalRegressor, ExperimentalQuantitative
-from neuroimaging.fmri.regression import fMRIRegressionOutput
-from neuroimaging.statistics.regression import contrastfromcols
-from neuroimaging.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.fmri import hrf, filters
 from neuroimaging.fmri.plotting import MultiPlot
+from neuroimaging.fmri.protocol import ExperimentalQuantitative
+from neuroimaging.fmri.regression import TContrastOutput 
+from neuroimaging.fmri.utils import LinearInterpolant as interpolant
+from neuroimaging.image import Image
+from neuroimaging.statistics import utils, regression, contrast
 
 canplot = True
 
@@ -125,21 +122,21 @@ class DelayContrastOutput(TContrastOutput):
             l[0:cnrow] = self.contrast.weights[i]
 
             outname = os.path.join(outdir, 't%s' % self.ext)
-            timg = image.Image(outname, mode='w', grid=self.outgrid,
+            timg = Image(outname, mode='w', grid=self.outgrid,
                                clobber=self.clobber)
 
             self.sync_grid(img=timg)
             self.timgs.append(timg)
 
             outname = os.path.join(outdir, 'effect%s' % self.ext)
-            effectimg = image.Image(outname, mode='w', grid=self.outgrid,
+            effectimg = Image(outname, mode='w', grid=self.outgrid,
                                     clobber=self.clobber)
 
             self.sync_grid(img=effectimg)
             self.effectimgs.append(effectimg)
 
             outname = os.path.join(outdir, 'sd%s' % self.ext)
-            sdimg = iter(image.Image(outname, mode='w', grid=self.outgrid,
+            sdimg = iter(Image(outname, mode='w', grid=self.outgrid,
                                      clobber=self.clobber))
 
             self.sync_grid(img=sdimg)

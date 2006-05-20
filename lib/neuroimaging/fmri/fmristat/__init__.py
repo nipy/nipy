@@ -1,20 +1,22 @@
 import gc, os, string, fpformat
 from enthought import traits
+
+import numpy as N
+import numpy.linalg as L
+import numpy.random as R
+import scipy.ndimage
+import pylab
+
 from neuroimaging.statistics import iterators, utils 
 from neuroimaging.image import utils as imutils
 from neuroimaging.statistics.regression import OLSModel, ARModel
 import neuroimaging.fmri as fmri
 import neuroimaging.image.kernel_smooth as kernel_smooth
 from neuroimaging.fmri.regression import AROutput, TContrastOutput, FContrastOutput, ResidOutput
-import numpy as N
-import numpy.linalg as L
-import numpy.random as R
-import scipy.ndimage
 from neuroimaging.image.fwhm import fastFWHM
 
 from delay import DelayContrast, DelayContrastOutput
 
-import pylab
 from neuroimaging.fmri.plotting import MultiPlot
 canplot = True
 

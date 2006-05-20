@@ -1,7 +1,7 @@
 from numpy import zeros, Float
 
 from odict import odict
-from attributes import attribute, readonly
+from attributes import readonly
 
 from neuroimaging import reorder, reverse, hasattrs
 from neuroimaging.reference import axis

@@ -1,6 +1,5 @@
 # External imports
 import numpy as N
-from enthought import traits
 from attributes import attribute, readonly, constant
 from protocols import Sequence
 
