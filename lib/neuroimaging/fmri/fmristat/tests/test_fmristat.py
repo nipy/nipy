@@ -28,7 +28,7 @@ class fMRIStatTest(object): #unittest.TestCase):
         self.pain = pain
         self.drift = drift
 
-        self.IRF = hrf.HRF()
+        self.IRF = hrf.glover
 
         self.pain.convolve(self.IRF)
         self.formula = self.pain + self.drift
@@ -89,7 +89,7 @@ class fMRIStatTest(object): #unittest.TestCase):
         del(OLS); del(AR); gc.collect()
 
     def test_hrf_deriv(self):
-        self.IRF = hrf.HRF(deriv=True)
+        self.IRF = hrf.glover_deriv
 
         self.pain.convolve(self.IRF)
         self.pain.convolved = True

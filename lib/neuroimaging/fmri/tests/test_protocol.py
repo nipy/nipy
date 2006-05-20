@@ -52,9 +52,8 @@ class ProtocolTest(object): #unittest.TestCase):
         self.p = protocol.ExperimentalFactor('pain', self.all)
         self.p.convolved = False
 
-        # TODO: HRF is not defined in the hrf module!
-        self.IRF1 = hrf.HRF()
-        self.IRF2 = hrf.HRF(deriv=True)
+        self.IRF1 = hrf.glover
+        self.IRF2 = hrf.glover_deriv
 
         self.t = N.arange(0,300,1)
 
