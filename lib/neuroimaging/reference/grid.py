@@ -1,7 +1,7 @@
 import numpy as N
 
 from attributes import attribute, readonly, deferto
-from protocols import Iterator
+from protocols import Iterator, Sequence
 
 from neuroimaging import reverse
 from neuroimaging.reference.mapping import Mapping, Affine, DegenerateAffine
@@ -29,6 +29,8 @@ class SamplingGrid (object):
     # for parcel iterators
     class labels (attribute): default=N.asarray(())
     class labelset (attribute):
+        implements=Sequence
+        default=()
         def get(att, self):
             if att.isinitialized(self): return attribute.get(att,self)
             else: return set(self.labels.flat)
