@@ -7,7 +7,7 @@ import sys, os, types
 
 from attributes import *
 import numpy as N
-import enthought.traits as traits
+from enthought import traits
 
 from neuroimaging.data import DataSource
 from neuroimaging.image.formats import getreader

@@ -2,7 +2,7 @@ import numpy as N
 import neuroimaging.image as image
 from neuroimaging.statistics.utils import recipr
 from numpy.linalg import det
-import enthought.traits as traits
+from enthought import traits
 import gc
 
 def fwhm2sigma(fwhm):

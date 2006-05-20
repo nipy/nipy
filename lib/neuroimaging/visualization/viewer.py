@@ -1,11 +1,13 @@
 import fpformat
-from neuroimaging.image.interpolation import ImageInterpolator
-from neuroimaging.reference.slices import xslice, yslice, zslice, bounding_box
+
 import numpy as N
 import pylab
-from slices import DataSlicePlot, RGBSlicePlot, RGBASlicePlot
-import enthought.traits as traits
-from cmap import cmap, interpolation
+from enthought import traits
+
+from neuroimaging.image.interpolation import ImageInterpolator
+from neuroimaging.reference.slices import xslice, yslice, zslice, bounding_box
+from neuroimaging.visualization.cmap import cmap, interpolation
+from neuroimaging.visualization.slices import DataSlicePlot, RGBSlicePlot, RGBASlicePlot
 
 class BoxViewer(traits.HasTraits):
     """

@@ -5,7 +5,7 @@ import numpy.linalg as NL
 from neuroimaging.reference.mapping import Affine
 from neuroimaging.image import Image
 from neuroimaging.image.utils import fwhm2sigma
-import enthought.traits as traits
+from enthought import traits
 
 class LinearFilter(traits.HasTraits):
     '''

@@ -1,7 +1,7 @@
 import numpy as N
 import numpy.linalg as L
 import filters
-import enthought.traits as traits
+from enthought import traits
 from neuroimaging.fmri.utils import LinearInterpolant as interpolant
 
 def glover2GammaDENS(peak_hrf, fwhm_hrf):

@@ -1,4 +1,4 @@
-import enthought.traits as traits
+from enthought import traits
 import numpy as N
 import pylab as P
 from matplotlib.axes import Subplot

@@ -1,5 +1,5 @@
 import gc, os, string, fpformat
-import enthought.traits as traits
+from enthought import traits
 from neuroimaging.statistics import iterators, utils 
 from neuroimaging.image import utils as imutils
 from neuroimaging.statistics.regression import OLSModel, ARModel

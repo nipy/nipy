@@ -1,7 +1,7 @@
 import copy, os, csv, string, fpformat
 import numpy as N
 import numpy.linalg as L
-import enthought.traits as traits
+from enthought import traits
 import neuroimaging.image as image
 from neuroimaging.reference import grid
 import neuroimaging.image.regression as imreg

@@ -2,7 +2,7 @@ import sys
 from optparse import OptionParser, Option
 
 from neuroimaging.data import DataSource
-from neuroimaging.refactoring.analyze import struct_fields, AnalyzeHeader
+from neuroimaging.refactoring.analyze import AnalyzeHeader
 
 
 ##############################################################################

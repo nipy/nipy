@@ -2,12 +2,13 @@
 Image interpolators using ndimage.
 """
 
-import scipy.ndimage as ndimage
-import enthought.traits as traits
-import tempfile, os
-from neuroimaging.reference import grid
-from neuroimaging.data.cache import cached
+import os
+
+from scipy import ndimage
+from enthought import traits
 import numpy as N
+
+from neuroimaging.data.cache import cached
 
 class ImageInterpolator(traits.HasTraits):
 

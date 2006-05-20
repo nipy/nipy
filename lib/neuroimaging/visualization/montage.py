@@ -1,12 +1,10 @@
-import slices
 import fpformat
+
 import numpy as N
 import pylab
-import neuroimaging.statistics.utils as utils
-import neuroimaging.reference as reference
-import slices as vizslice
-import enthought.traits as traits
-from cmap import cmap, interpolation, getcmap
+from enthought import traits
+
+from neuroimaging.visualization.cmap import cmap, interpolation, getcmap
 
 class Montage(traits.HasTraits):
     
@@ -34,7 +32,7 @@ class Montage(traits.HasTraits):
     def __init__(self, **keywords):
 
         traits.HasTraits.__init__(self, **keywords)
-        if slices is None:
+        if self.slices is None:
             raise ValueError, 'need slices for a Montage'
 
         if self.ncol == 0:

@@ -1,4 +1,4 @@
-import sys, struct
+import sys
 import numpy as N
 
 def fwhm2sigma(fwhm):

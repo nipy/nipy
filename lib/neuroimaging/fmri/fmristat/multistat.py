@@ -3,7 +3,7 @@ import os, tempfile
 import numpy as N
 import numpy.linalg as L
 
-import enthought.traits as traits
+from enthought import traits
 from neuroimaging import image
 from neuroimaging.Modules.LinearModel import Tcontrast, Fcontrast
 from neuroimaging.image.kernel_smooth import LinearFilter

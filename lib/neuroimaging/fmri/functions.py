@@ -23,7 +23,7 @@ from scipy.interpolate import interp1d
 # -Event inherits from Stimulus so most functionality is in Stimulus
 # -changes are just in specifying parameters of self.fn
 
-import enthought.traits as traits
+from enthought import traits
 times = N.arange(0,50,0.1)
 
 class TimeFunction(traits.HasTraits):

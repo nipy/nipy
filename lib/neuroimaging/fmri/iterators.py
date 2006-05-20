@@ -1,4 +1,4 @@
-import enthought.traits as traits
+from enthought import traits
 from attributes import readonly
 
 from neuroimaging.reference.iterators import SliceIterator, SliceIteratorNext,\

@@ -1,4 +1,4 @@
-import enthought.traits as traits
+from enthought import traits
 from spectral import spectral
 import pylab
 

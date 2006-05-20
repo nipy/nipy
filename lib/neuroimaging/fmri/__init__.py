@@ -3,7 +3,7 @@ import neuroimaging.reference.grid as grid
 
 import neuroimaging.reference.mapping as mapping
 import neuroimaging.reference.coordinate_system as coordinate_system
-import enthought.traits as traits
+from enthought import traits
 import numpy as N
 from iterators import fMRISliceIterator, fMRIParcelIterator, fMRISliceParcelIterator
 

@@ -1,10 +1,10 @@
-import copy, os, csv, string, fpformat, types
+import os, types
+
 import numpy as N
-import enthought.traits as traits
+from enthought import traits
+
 from neuroimaging.image import Image, ImageSequenceIterator
-from neuroimaging.reference import grid
-import neuroimaging.statistics.onesample as onesample
-from neuroimaging.statistics import utils
+from neuroimaging.statistics import onesample
 
 class ImageOneSample(onesample.OneSampleIterator):
     

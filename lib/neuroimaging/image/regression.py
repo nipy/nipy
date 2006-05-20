@@ -1,13 +1,10 @@
-import copy, os, csv, string, fpformat
+import os, csv, string, fpformat
 
 import numpy as N
-import enthought.traits as traits
+from enthought import traits
 
 from neuroimaging.image import Image
-from neuroimaging.reference import grid
 from neuroimaging.statistics.regression import RegressionOutput
-from neuroimaging.statistics import utils
-
 
 class ImageRegressionOutput(RegressionOutput):
     """

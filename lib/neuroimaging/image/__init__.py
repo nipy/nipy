@@ -1,6 +1,6 @@
 import types, os
 
-import enthought.traits as traits
+from enthought import traits
 import numpy as N
 
 from neuroimaging.data import DataSource

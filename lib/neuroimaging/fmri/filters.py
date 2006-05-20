@@ -1,7 +1,7 @@
 import numpy as N
 from utils import ConvolveFunctions, WaveFunction, StepFunction
 import numpy.linalg as L
-import enthought.traits as traits
+from enthought import traits
 import types
 
 class Filter(traits.HasTraits):

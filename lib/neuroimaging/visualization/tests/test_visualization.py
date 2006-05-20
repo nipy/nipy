@@ -1,12 +1,11 @@
-import unittest, os, scipy, glob, sets
-import numpy as N
+import unittest
+
+import pylab
+
 from neuroimaging.tests.data import repository
 from neuroimaging.image import Image
 from neuroimaging.image.interpolation import ImageInterpolator
 from neuroimaging.visualization import viewer, slices
-from neuroimaging.visualization import arrayview
-from neuroimaging.reference import slices as rslices
-import pylab
 
 class VisualizationTest(unittest.TestCase):
 

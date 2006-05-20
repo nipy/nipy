@@ -1,8 +1,7 @@
-import os
 import sys
 from optparse import OptionParser, Option
 
-from neuroimaging import packages, nontest_packages
+from neuroimaging import nontest_packages
 from neuroimaging.testutils import test_all, test_package, get_package_tests
 
 

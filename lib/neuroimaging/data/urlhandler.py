@@ -1,5 +1,5 @@
 import urllib, stat, string, os, urllib2, gzip, atexit
-import enthought.traits as traits
+from enthought import traits
 import cache
 
 ##############################################################################

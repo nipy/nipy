@@ -1,5 +1,5 @@
 import csv, string, types, copy
-import enthought.traits as traits
+from enthought import traits
 import numpy as N
 import scipy.interpolate
 

@@ -8,7 +8,7 @@ Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H., Evans, A.C
 import copy, os, csv, string, fpformat, types
 import numpy as N
 import numpy.linalg as L
-import enthought.traits as traits
+from enthought import traits
 import neuroimaging.image as image
 from neuroimaging.reference import grid
 from neuroimaging.fmri.regression import TContrastOutput 
@@ -22,7 +22,7 @@ from neuroimaging.fmri import hrf, filters
 import pylab
 from neuroimaging.fmri.plotting import MultiPlot
 canplot = True
-import enthought.traits as traits
+from enthought import traits
 
 class DelayContrast(contrast.Contrast):
 

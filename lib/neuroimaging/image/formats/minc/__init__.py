@@ -3,7 +3,7 @@ import mincutils
 from _mincconstants import *
 import BrainSTAT.Base.Dimension as Dimension
 import BrainSTAT.Base.Coordinates as Coordinates
-import enthought.traits as traits
+from enthought import traits
 from BrainSTAT.Base import Mapping
 
 class MINCvar(traits.HasTraits):
