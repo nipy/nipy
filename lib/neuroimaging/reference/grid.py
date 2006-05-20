@@ -28,7 +28,7 @@ class SamplingGrid (object):
     class axis (attribute): default=0
 
     # for parcel iterators
-    clone(ParcelIterator.labels, readonly=False)
+    clone(ParcelIterator.parcelmap, readonly=False)
     clone(ParcelIterator.labelset, readonly=False)
 
     # delegates
@@ -93,23 +93,25 @@ class SamplingGrid (object):
         elif self.itertype is "slice/parcel": return self.itersliceparcels()
 
     #-------------------------------------------------------------------------
-    # TODO: try returning the iterator instead of self
     def iterall(self):
         self.iterator = iter(AllSliceIterator(self.shape))
         return self
 
-    def iterslices(self):
-        self.iterator = iter(SliceIterator(self.shape,
-          start=[0]*self.ndim, step=[1]*self.ndim, axis=self.axis))
+    #-------------------------------------------------------------------------
+    def iterslices(self, axis=None):
+        if axis is None: axis = self.axis
+        self.iterator = iter(SliceIterator(self.shape, axis=self.axis))
         return self
 
+    #-------------------------------------------------------------------------
     def iterparcels(self, labelset=None):
         if labelset is None: labelset = self.labelset
-        self.iterator = iter(ParcelIterator(self.labels, labelset))
+        self.iterator = iter(ParcelIterator(self.parcelmap, labelset))
         return self
 
+    #-------------------------------------------------------------------------
     def itersliceparcels(self):
-        self.iterator = iter(SliceParcelIterator(self.labels, self.labelset))
+        self.iterator = iter(SliceParcelIterator(self.parcelmap, self.labelset))
         return self
 
     #-------------------------------------------------------------------------

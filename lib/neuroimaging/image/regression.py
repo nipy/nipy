@@ -37,7 +37,7 @@ class ImageRegressionOutput(RegressionOutput):
         if img is None:
             img = self.img
         img.grid.itertype = self.grid.itertype
-        img.grid.labels = self.grid.labels
+        img.grid.parcelmap = self.grid.parcelmap
         img.grid.labelset = self.grid.labelset
         iter(img)
         

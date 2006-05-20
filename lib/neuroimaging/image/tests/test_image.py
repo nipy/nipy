@@ -72,29 +72,27 @@ class ImageTest(unittest.TestCase):
         for i in I:
             self.assertEquals(i.shape, (109,91))
 
-    def test_labels1(self):
+    def test_parcels1(self):
         rho = Image("rho.img", repository)
-        labels = (rho.readall() * 100).astype(N.Int)
-        test = Image(N.zeros(labels.shape), grid=rho.grid)
+        parcelmap = (rho.readall() * 100).astype(N.Int)
+        test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
         test.grid.itertype = 'parcel'
-        test.grid.labels = labels
-        test.grid.labelset = N.unique(labels.flat)
-
+        test.grid.parcelmap = parcelmap
+       
         v = 0
         for t in test:
             v += t.shape[0]
         self.assertEquals(v, N.product(test.grid.shape))
 
-    def test_labels2(self):
+    def test_parcels2(self):
         rho = Image("rho.img", repository)
-        labels = (rho.readall() * 100).astype(N.Int)
-        test = Image(N.zeros(labels.shape), grid=rho.grid)
+        parcelmap = (rho.readall() * 100).astype(N.Int)
+        test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
 
         test.grid.itertype = 'parcel'
-        test.grid.labels = labels
-        labels.shape = N.product(labels.shape)
-        test.grid.labelset = N.unique(labels)
-
+        test.grid.parcelmap = parcelmap
+        parcelmap.shape = N.product(parcelmap.shape)
+       
         v = 0
         iter(test)
         while True:
@@ -104,16 +102,16 @@ class ImageTest(unittest.TestCase):
             except StopIteration:
                 break
 
-    def test_labels3(self):
+    def test_parcels3(self):
         rho = Image("rho.img", repository)
-        labels = (rho.readall() * 100).astype(N.Int)
-        shape = labels.shape
-        labels.shape = N.product(labels.shape)
-        labelset = N.unique(labels)
+        parcelmap = (rho.readall() * 100).astype(N.Int)
+        shape = parcelmap.shape
+        parcelmap.shape = N.product(parcelmap.shape)
+        labelset = N.unique(parcelmap)
 
         test = Image(N.zeros(shape), grid=rho.grid)
         test.grid.itertype = 'parcel'
-        test.grid.labels = labels
+        test.grid.parcelmap = parcelmap
         test.grid.labelset = labelset
 
         v = 0

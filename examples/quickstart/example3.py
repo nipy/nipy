@@ -16,7 +16,7 @@ def mask_and_func(subject=0, run=1, offset=5):
 
 m, f = mask_and_func()
 f.grid.itertype = 'parcel'
-f.grid.labels = m.readall()
+f.grid.parcelmap = m.readall()
 f.grid.labelset = [1, 2]
 
 means = {}

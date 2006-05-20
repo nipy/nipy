@@ -114,30 +114,28 @@ class ParcelIteratorNext (object):
 
 ##############################################################################
 class ParcelIterator (object):
-    class labels (attribute): default=N.asarray(())
+    class parcelmap (attribute): default=N.asarray(())
     class labelset (attribute):
         implements=Sequence
-        default=()
-        def get(att, self):
-            if att.isinitialized(self): return attribute.get(att,self)
-            else: return N.unique(self.labels.flat)
+        def init(att, self):
+            return N.unique(self.parcelmap.flat)
 
     #-------------------------------------------------------------------------
-    def __init__(self, labels, keys=None):
-        self.labels = N.asarray(labels)
+    def __init__(self, parcelmap, keys=None):
+        self.parcelmap = N.asarray(parcelmap)
         if keys is not None: self.labelset = list(set(keys))
-        self.labels.shape = haslength(self.labelset[0]) and\
-          (self.labels.shape[0], N.product(self.labels.shape[1:])) or\
-          N.product(self.labels.shape)
+        self.parcelmap.shape = haslength(self.labelset[0]) and\
+          (self.parcelmap.shape[0], N.product(self.parcelmap.shape[1:])) or\
+          N.product(self.parcelmap.shape)
 
     #-------------------------------------------------------------------------
     def __iter__(self):
         for label in self.labelset:
             if not haslength(label):
-                wherelabel = N.equal(self.labels, label)
+                wherelabel = N.equal(self.parcelmap, label)
             else:
                 wherelabel = N.product([N.equal(labeled, label)\
-                  for labeled,label in zip(self.labels, label)])
+                  for labeled,label in zip(self.parcelmap, label)])
             yield ParcelIteratorNext(label, wherelabel)
 
  
@@ -152,18 +150,18 @@ class SliceParcelIteratorNext (ParcelIteratorNext, SliceIteratorNext):
 ##############################################################################
 class SliceParcelIterator (ParcelIterator):
     """
-    This iterator assumes that labels is a list of lists (or an array)
-    and the keys is a sequence of length labels.shape[0] (=len(labels)).
+    This iterator assumes that parcelmap is a list of lists (or an array)
+    and the keys is a sequence of length parcelmap.shape[0] (=len(parcelmap)).
     It then goes through the each element in the sequence
     of labels returning where the unique elements are from keys.
     """
     #-------------------------------------------------------------------------
-    def __init__(self, labels, keys, **keywords):
-        self.labels = labels
+    def __init__(self, parcelmap, keys, **keywords):
+        self.parcelmap = parcelmap
         self.labelset = iter(keys)
 
-        if len(labels) != len(labelset):
-            raise ValueError, 'labels and labelset do not have the same length'
+        if len(parcelmap) != len(labelset):
+            raise ValueError, 'parcelmap and labelset do not have the same length'
 
     #-------------------------------------------------------------------------
     def __iter__(self):
@@ -180,7 +178,7 @@ class SliceParcelIterator (ParcelIterator):
             self.curslice += 1
             pass
 
-        self.curlabels = self.labels[self.curslice]
+        self.curlabels = self.parcelmap[self.curslice]
 
         if not isinstance(self.curlabels, N.ndarray):
             self.curlabels = N.array(self.curlabels)

@@ -305,7 +305,7 @@ class fMRIStatAR(LinearModelIterator):
                 
         # setup the iterator
 
-        self.fmri_image.grid.labels = OLS.labels
+        self.fmri_image.grid.parcelmap = OLS.parcelmap
         self.fmri_image.grid.labelset = OLS.labelset
 
         self.iterator = iter(self.fmri_image)
