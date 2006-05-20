@@ -1,6 +1,5 @@
 import numpy as N
 from attributes import attribute, readonly
-from uuid import  Uuid
 
 valid = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension', 'concat']
 space = ['zspace', 'yspace', 'xspace']
@@ -14,12 +13,10 @@ class Axis (object):
     of CoordinateSystem.
     """
     class name (readonly): "dimension name"; implements=str
-    class _tag (readonly): "private unique tag"; implements=Uuid
 
     #-------------------------------------------------------------------------
     def __init__(self, name):
         self.name = name
-        self._tag = Uuid()
         if self.name not in valid:
             raise ValueError, 'recognized dimension names are ' + `valid`
 
@@ -32,19 +29,24 @@ class Axis (object):
 ##############################################################################
 class VoxelAxis (Axis):
     "An axis with a length as well."
+
     class length (readonly): "number of voxel positions"; default=1
 
+    #-------------------------------------------------------------------------
     def __init__(self, name, length=None):
         Axis.__init__(self, name)
         if length is not None: self.length = length
 
+    #-------------------------------------------------------------------------
     def __len__(self): return self.length
 
+    #-------------------------------------------------------------------------
     def __eq__(self, axis):
         "Equality is defined by name and length."
         return Axis.__eq__(self, axis) and hasattr(axis,"length") and \
           self.length == axis.length
 
+    #-------------------------------------------------------------------------
     def values(self): return N.arange(self.length)
 
 
@@ -60,18 +62,23 @@ class RegularAxis (VoxelAxis):
     >>> r.values()
     array([ 0.25,  0.55,  0.85,  1.15,  1.45,  1.75,  2.05,  2.35,  2.65,  2.95])
     """
+
     class start (readonly): default=0.
     class step (readonly): default=1.
 
+    #-------------------------------------------------------------------------
     def __init__(self, name, length=None, start=None, step=None):
         VoxelAxis.__init__(self, name, length=length)
         if start is not None: self.start = start
         if step is not None: self.step = step
 
+    #-------------------------------------------------------------------------
     def __repr__(self):
         return "%s('%s', length=%s, start=%s, step=%s)"%(
+          self.__class__.__name__,
           self.name, self.length, self.start, self.step)
 
+    #-------------------------------------------------------------------------
     def values(self):
         """
         Return an array of values for the axis, based on step, start, length
@@ -80,8 +87,9 @@ class RegularAxis (VoxelAxis):
         return N.arange(self.start, self.start + self.step*self.length,
           self.step).astype(N.Float)
 
+    #-------------------------------------------------------------------------
     def __eq__(self, axis, tol=1.0e-07):
-        "Verify if two axes are equal by checking tag."
+        "Test equality of two axes by name, length, and values."
         if not hasattr(axis, "values"): return False
         v = self.values()
         w = axis.values()
