@@ -43,7 +43,7 @@ _preload_modules = (
   'neuroimaging.reference.axis',
   'neuroimaging.reference.coordinate_system',
   'neuroimaging.reference.grid',
-  'neuroimaging.reference.grid_iterators',
+  'neuroimaging.reference.iterators',
   'neuroimaging.reference.mapping',
   'neuroimaging.reference.slices',
   'neuroimaging.statistics.regression',

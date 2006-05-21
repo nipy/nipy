@@ -13,7 +13,7 @@ from neuroimaging.data import DataSource
 from neuroimaging.image.formats import getreader
 from neuroimaging.reference import axis, mapping
 from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging.reference.grid_iterators import ParcelIterator, SliceParcelIterator
+from neuroimaging.reference.iterators import ParcelIterator, SliceParcelIterator
 
 ##############################################################################
 class Image(traits.HasTraits):

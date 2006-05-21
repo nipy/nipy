@@ -6,7 +6,7 @@ import numpy as N
 from neuroimaging.data import DataSource
 from neuroimaging.image.formats import getreader
 from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging.reference.grid_iterators import ParcelIterator, SliceParcelIterator
+from neuroimaging.reference.iterators import ParcelIterator, SliceParcelIterator
 
 zipexts = (".gz",".bz2")
 

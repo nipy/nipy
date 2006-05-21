@@ -1,14 +1,15 @@
 import numpy as N
 
 from attributes import attribute, readonly
+from protocols import Iterator
 
 from neuroimaging import reverse
 from neuroimaging.reference.mapping import Mapping, Affine, DegenerateAffine
 from neuroimaging.reference.axis import space, RegularAxis, VoxelAxis, Axis
 from neuroimaging.reference.coordinate_system import VoxelCoordinateSystem,\
   DiagonalCoordinateSystem, CoordinateSystem
-from neuroimaging.reference.grid_iterators import itertypes, SliceIterator,\
-  ParcelIterator, SliceParcelIterator, AllSliceIterator, Iterator
+from neuroimaging.reference.iterators import itertypes, SliceIterator,\
+  ParcelIterator, SliceParcelIterator, AllSliceIterator
 
 
 ##############################################################################

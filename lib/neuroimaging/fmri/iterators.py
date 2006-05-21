@@ -1,7 +1,8 @@
-import neuroimaging.reference.grid_iterators as iterators
+from neuroimaging.reference.iterators import SliceIterator, SliceIteratorNext,\
+  ParcelIterator, SliceParcelIterator, SliceParcelIteratorNext
 import enthought.traits as traits
 
-class fMRISliceIterator(iterators.SliceIterator):
+class fMRISliceIterator(SliceIterator):
     """
     Instead of iterating over slices of a 4d file -- return slices
     of timeseries.
@@ -9,7 +10,7 @@ class fMRISliceIterator(iterators.SliceIterator):
     nframe = traits.Int()
 
     def __init__(self, shape, **keywords):
-        iterators.SliceIterator.__init__(self, shape, axis=1, **keywords)
+        SliceIterator.__init__(self, shape, axis=1, **keywords)
         self.nframe = shape[0]
 
     def next(self):
