@@ -9,7 +9,7 @@ Python's unit testing framework (the
 U{unittest<http://docs.python.org/lib/module-unittest.html>} module) is used to
 implement project tests. We use the convention that each package contains a
 subpackage called tests which contains modules defining test cases (subclasses
-of U{iunittest.TestCase<http://docs.python.org/lib/testcase-objects.html>})
+of U{unittest.TestCase<http://docs.python.org/lib/testcase-objects.html>})
 for that package. The neuroimaging.tests package contains an example test case
 called L{test_template.TemplateTest} to get you started writing your tests.
 Please try to include working test cases for all functions and classes that
