@@ -1,5 +1,5 @@
 # Standard imports
-import sets
+from sets import Set as set
 
 # External imports
 import numpy as N
@@ -8,14 +8,72 @@ from attributes import readonly, constant
 
 # Package imports
 from neuroimaging import haslength
-from neuroimaging.reference.slicer import Slicer
 
 itertypes = ("slice", "parcel", "slice/parcel", "all")
 
+
 ##############################################################################
-class Iterator (object):
-    "Iterator protocol"
-    def next(self): pass
+class Slicer(traits.HasTraits):
+    '''
+    This class is an iterator that steps through the slices
+    of a N-dimensional array of shape shape, along a particular axis, with a
+    given step and an optional start.
+
+    The attribute nslicedim determines how long a slice is returned, only
+    step[0:nslicedim] and start[0:nslicedim] is used, where self.step
+    defaults to [1]*(nslicedim).
+
+    More than one slice can be output at a time, using nslice.
+    '''
+
+    axis = traits.Int(0)
+    end = traits.List()
+    step = traits.Any()
+    start = traits.Any()
+    ndim = traits.Int()
+    nslicedim = traits.Int()
+    nslice = traits.Int(1)
+    
+    type = traits.String('slice')
+
+    def _end_changed(self):
+        self.ndim = len(self.end)
+
+    def __init__(self, end, **keywords):
+        traits.HasTraits.__init__(self, **keywords)
+        self.end = list(end)
+
+        self.nslicedim = max(self.nslicedim, self.axis+1)
+
+        if self.step is None:
+            self.step = N.array([1]*self.nslicedim)
+
+        if self.start is None:
+            self.start = N.array([0]*self.nslicedim)
+
+    def __iter__(self):
+        self.isend = False
+        self.slice = self.start[self.axis]
+        self.last = self.end[self.axis]
+        return self
+
+    def next(self):
+        if self.isend:
+            raise StopIteration
+        _slices = []
+        for i in range(self.nslicedim):
+            if self.axis != i:
+                _slice = slice(self.start[i], self.end[i], self.step[i])
+                _slices.append(_slice)
+            else:
+                _slice = slice(self.slice,
+                               self.slice + self.nslice * self.step[i],
+                               self.step[i])
+                self.slice += self.nslice * self.step[i]
+                _slices.append(_slice)
+
+        if self.slice >= self.last: self.isend = True
+        return _slices, self.isend
 
 
 ##############################################################################
@@ -27,12 +85,6 @@ class SliceIteratorNext (object):
 
 ##############################################################################
 class SliceIterator(Slicer):
-
-    parallel = traits.false
-
-    #-------------------------------------------------------------------------
-    def _parallel_changed(self):
-        if self.parallel: a, b = prange(self.shape[0])
 
     #-------------------------------------------------------------------------
     def __init__(self, shape, **keywords):
@@ -52,16 +104,11 @@ class SliceIterator(Slicer):
 class AllSliceIterator(Slicer):
 
     type = traits.Str('all')
-    parallel = traits.false
 
     #-------------------------------------------------------------------------
     def __iter__(self):
         self.isend = False
         return self
-
-    #-------------------------------------------------------------------------
-    def _parallel_changed(self):
-        if self.parallel: a, b = prange(self.shape[0])
 
     #-------------------------------------------------------------------------
     def __init__(self, shape, **keywords):
@@ -71,8 +118,7 @@ class AllSliceIterator(Slicer):
 
     #-------------------------------------------------------------------------
     def next(self):
-        if self.isend:
-            raise StopIteration
+        if self.isend: raise StopIteration
         _slice = slice(0, self.shape[0], 1)
         self.isend = True
         return SliceIteratorNext(_slice)
@@ -87,30 +133,32 @@ class ParcelIteratorNext (object):
 
 
 ##############################################################################
-class ParcelIterator (traits.HasTraits):
-    labels = traits.Any()
-    labelset = traits.Any()
+class ParcelIterator (object):
+    class labels (readonly): pass
+    class labelset (readonly): pass
 
     #-------------------------------------------------------------------------
-    def __init__(self, labels, keys, **keywords):
+    def __init__(self, labels, keys):
         self.labels = N.asarray(labels)
-        self.labelset = list(sets.Set(keys))
-        self.labels.shape = haslength(self.labelset[0]) and\
+        if keys == None: labelset = N.unique(self.labels.flat)
+        else: labelset = list(set(keys))
+        self.labelset = iter(labelset)
+        self.labels.shape = haslength(keys[0]) and\
           (self.labels.shape[0], N.product(self.labels.shape[1:])) or\
           N.product(self.labels.shape)
 
     #-------------------------------------------------------------------------
-    def __iter__(self):
-        self.labelset = iter(self.labelset)
-        return self
+    def __iter__(self): return self
 
     #-------------------------------------------------------------------------
     def next(self):
-        keys = self.labelset.next()
-        if not haslength(keys): keys = (keys,)
-        wherelabel = N.product([N.equal(label, key)\
-          for label,key in zip(self.labels, keys)])
-        return ParcelIteratorNext(keys, wherelabel)
+        label = self.labelset.next()
+        if not haslength(label):
+            wherelabel = N.equal(self.labels, label)
+        else:
+            wherelabel = N.product([N.equal(labeled, label)\
+              for labeled,label in zip(self.labels, label)])
+        return ParcelIteratorNext(label, wherelabel)
 
  
 ##############################################################################
@@ -122,28 +170,24 @@ class SliceParcelIteratorNext (ParcelIteratorNext, SliceIteratorNext):
 
        
 ##############################################################################
-class SliceParcelIterator (traits.HasTraits):
+class SliceParcelIterator (ParcelIterator):
     """
     This iterator assumes that labels is a list of lists (or an array)
     and the keys is a sequence of length labels.shape[0] (=len(labels)).
     It then goes through the each element in the sequence
     of labels returning where the unique elements are from keys.
     """
-    labelset = traits.Any()
-    labels = traits.Any()
-            
     #-------------------------------------------------------------------------
     def __init__(self, labels, keys, **keywords):
         self.labels = labels
-        self.labelset = list(keys)
+        self.labelset = iter(keys)
 
-        if len(self.labels) != len(self.labelset):
+        if len(labels) != len(labelset):
             raise ValueError, 'labels and labelset do not have the same length'
 
     #-------------------------------------------------------------------------
     def __iter__(self):
         self.curslice = -1
-        self.labelset = iter(self.labelset)
         return self
 
     #-------------------------------------------------------------------------
@@ -164,5 +208,3 @@ class SliceParcelIterator (traits.HasTraits):
         self.curlabels.shape = N.product(self.curlabels.shape)
         wherelabel = N.equal(self.curlabels, label)
         return SliceParcelIteratorNext(label, wherelabel, self.curslice)
-
-        

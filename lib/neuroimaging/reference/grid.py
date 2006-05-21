@@ -28,6 +28,7 @@ class SamplingGrid (object):
     # for parcel iterators
     class labels (attribute): pass
     class labelset (attribute): pass
+    class axis (attribute): default=0
 
     #-------------------------------------------------------------------------
     @staticmethod
@@ -92,6 +93,8 @@ class SamplingGrid (object):
             self.iterator = iter(SliceParcelIterator(
               self.labels, self.labelset))
         return self
+
+    #-------------------------------------------------------------------------
     def iterall(self):
         self.itertype = "all"
         return iter(self)
