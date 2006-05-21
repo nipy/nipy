@@ -2,6 +2,8 @@
 Insert long description here.
 """
 import re
+from copy import copy
+
 from path import path
 
 __version__ = "0.01a"
@@ -50,6 +52,18 @@ _preload_modules = (
   'neuroimaging.statistics.contrast',
   'neuroimaging.statistics.utils',
   'neuroimaging.visualization.viewer',)
+
+#-----------------------------------------------------------------------------
+def hasattrs(obj, *attrs):
+    for attr in attrs:
+        if not hasattr(obj, attr): return False
+    return True
+
+#-----------------------------------------------------------------------------
+def reorder(seq, order): return [seq[i] for i in order]
+
+#-----------------------------------------------------------------------------
+def reverse(seq): return reorder(seq, range(len(seq)-1, -1, -1))
 
 #-----------------------------------------------------------------------------
 def ensuredirs(dir):
