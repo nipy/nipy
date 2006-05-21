@@ -1,7 +1,9 @@
 #!/usr/bin/env python
-from qt import qApp, PYSIGNAL, QButtonGroup, QGridLayout, QGroupBox, \
-  QHBoxLayout, QFrame, QLabel, QPoint, QSizePolicy, QSpinBox, QWidget, \
-  QVBoxLayout
+try:
+    from qt import qApp, PYSIGNAL, QButtonGroup, QGridLayout, QGroupBox, \
+      QHBoxLayout, QFrame, QLabel, QPoint, QSizePolicy, QSpinBox, QWidget, \
+      QVBoxLayout
+except: raise ImportError("arrayview requires PyQt")
 from pylab import Figure, figaspect, gci, show, amax, amin, squeeze, asarray,\
     cm, angle, normalize, pi, arange, ravel, ones, outerproduct, floor,\
     fromfunction, zeros

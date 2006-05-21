@@ -1,9 +1,10 @@
 """
-Template ROI class for BrainSTAT
+Template ROI class for NiPy
 """
 
+import gc
+
 import numpy as N
-import gc, UserList
 
 class ROI:
     """
@@ -27,13 +28,15 @@ class ContinuousROI(ROI):
         self.args = args
         self.bfn = bfn
         if not callable(bfn):
-            raise ValueError, 'first argument to ROI should be a callable function.'
+            raise ValueError(
+              'first argument to ROI should be a callable function.')
         # test whether it executes properly
 
         try:
             x = bfn(N.array([[0.,] * self.ndim]))
         except:
-            raise ValueError, 'binary function bfn in ROI failed on ' + `[0.] * self.ndim`
+            raise ValueError(
+              'binary function bfn in ROI failed on ' + `[0.] * self.ndim`)
 
     def __call__(self, real):
         return not_equal(self.bfn(real, **self.args), 0)
@@ -73,7 +76,8 @@ class DiscreteROI(ROI):
 
     def pool(self, fn, **extra):
         '''
-        Pool data from an image over the ROI -- return fn evaluated at each voxel.
+        Pool data from an image over the ROI -- return fn evaluated at
+        each voxel.
         '''
         v = []
 
@@ -83,7 +87,10 @@ class DiscreteROI(ROI):
         
     def feature(self, fn, **extra):
         """
-        Return a feature of an image within the ROI. Feature args are 'args', while **extra are for the readall method. Default is to reduce a ufunc over the ROI. Any other operations should be able to ignore superfluous keywords arguments, i.e. use **extra.
+        Return a feature of an image within the ROI. Feature args are 'args',
+        while **extra are for the readall method. Default is to reduce a ufunc
+        over the ROI. Any other operations should be able to ignore superfluous
+        keywords arguments, i.e. use **extra.
         """
 
         pooled_data = self.pool(fn)
@@ -95,9 +102,11 @@ class DiscreteROI(ROI):
                 voxels = set(self.voxels) + set(other.voxels)
                 return DiscreteROI(self.coordinate_system, voxels)
             else:
-                raise ValueError, 'coordinate systems do not agree in union of DiscreteROI'
+                raise ValueError(
+                  'coordinate systems do not agree in union of DiscreteROI')
         else:
-            raise NotImplementedError, 'only unions of DiscreteROIs with themselves are implemented'
+            raise NotImplementedError(
+              'only unions of DiscreteROIs with themselves are implemented')
 
 class SamplingGridROI(DiscreteROI):
 
@@ -109,11 +118,13 @@ class SamplingGridROI(DiscreteROI):
 
     def pool(self, image, **extra):
         '''
-        Pool data from an image over the ROI -- return fn evaluated at each voxel.
+        Pool data from an image over the ROI -- return fn evaluated at
+        each voxel.
         '''
         v = []
         if image.grid != self.grid:
-            raise ValueError, 'to pool an image over a SamplingGridROI the grids must agree'
+            raise ValueError(
+              'to pool an image over a SamplingGridROI the grids must agree')
 
         tmp = image.readall()
         for voxel in iterator:
@@ -128,9 +139,11 @@ class SamplingGridROI(DiscreteROI):
                 voxels = self.voxels.intersect(other.voxels)
                 return SamplingGridROI(self.coordinate_system, voxels, grid)
             else:
-                raise ValueError, 'grids do not agree in union of SamplingGridROI'
+                raise ValueError(
+                  'grids do not agree in union of SamplingGridROI')
         else:
-            raise NotImplementedError, 'only unions of SamplingGridROIs with themselves are implemented'
+            raise NotImplementedError(
+              'only unions of SamplingGridROIs with themselves are implemented')
 
     def mask(self):
         m = N.zeros(self.grid.shape, N.Int)
@@ -164,7 +177,8 @@ def ROIellipsefn(center, form, a = 1.0):
     """
     Ellipse determined by regions where a quadratic form is <= a. The
     quadratic form is given by the inverse of the 'form' argument, so
-    a sphere of radius 10 can be specified as {'form':10**2 * identity(3), 'a':1} or {'form':identity(3), 'a':100}.
+    a sphere of radius 10 can be specified as
+    {'form':10**2 * identity(3), 'a':1} or {'form':identity(3), 'a':100}.
 
     Form must be positive definite.
     """
@@ -202,5 +216,5 @@ def ROIfromArraySamplingGrid(data, grid):
     coordinate_system = image.grid.output_coordinate_system
     return SamplingGridROI(coordinate_system, voxels, grid)
 
-class ROISequence(UserList.UserList):
+class ROISequence(list):
     pass

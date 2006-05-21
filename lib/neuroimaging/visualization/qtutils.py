@@ -1,8 +1,10 @@
 """
 General helper classes for handling some QT boilerplate.
 """
-from qt import  PYSIGNAL, QFrame, QGridLayout, QHBoxLayout, QLabel, \
-  QRadioButton, QSlider, QVBoxLayout, SIGNAL
+try:
+    from qt import  PYSIGNAL, QFrame, QGridLayout, QHBoxLayout, QLabel, \
+      QRadioButton, QSlider, QVBoxLayout, SIGNAL
+except: raise ImportError("qtutils requires PyQt")
 
 ##############################################################################
 class LayoutWidgetMixin (object):
