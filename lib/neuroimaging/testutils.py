@@ -3,6 +3,8 @@ from unittest import TestSuite, makeSuite, TestCase, TextTestRunner
 from glob import glob
 from os.path import join, dirname, basename
 
+from odict import odict
+
 from neuroimaging import nontest_packages, import_from
 
 #-----------------------------------------------------------------------------
@@ -13,6 +15,12 @@ def run_suite(suite):
     TextTestRunner(verbosity=2).run(suite)
     os.chdir(curdir)
     shutil.rmtree(tmpdir, ignore_errors=False)
+
+#-----------------------------------------------------------------------------
+def run_tests(*tests):
+    for test in tests:
+        print test
+    run_suite(TestSuite([makeSuite(test) for test in tests]))
 
 #-----------------------------------------------------------------------------
 def get_package_modules(package):
@@ -47,9 +55,15 @@ def test_package(packname, testname=None):
     testdict = get_package_tests(packname)
     tests = [val for key,val in testdict.items() \
              if testname==None or testname==key]
-    run_suite(TestSuite([makeSuite(test) for test in tests]))
+    run_tests(*tests)
 
 #-----------------------------------------------------------------------------
-def test_all():
-    for packname in nontest_packages: test_package(packname)
+def test_packages(*packages):
+    "Run all tests for the given packages"
+    tests = odict()
+    for packname in packages: tests.update(get_package_tests(packname))
+    tests.sort()
+    run_tests(*tests.values())
 
+#-----------------------------------------------------------------------------
+def test_all(): test_packages(*nontest_packages)
