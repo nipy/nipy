@@ -1,6 +1,8 @@
+import operator
+
 # External imports
 import numpy as N
-from attributes import attribute, readonly, constant
+from attributes import attribute, readonly, constant, clone
 from protocols import Sequence
 
 # Package imports
@@ -107,82 +109,125 @@ class AllSliceIterator (object):
 ##############################################################################
 class ParcelIteratorNext (object):
     class type (constant): default="parcel"
-    class label (readonly): pass
+    #class label (readonly): pass
     class where (readonly): pass
     def __init__(self, label, where): self.label, self.where = label, where
+    def __repr__(self):
+        return "%s(label=%s, where=%s)"%\
+         (self.__class__.__name__, `self.label`,`self.where`)
 
 
 ##############################################################################
 class ParcelIterator (object):
-    class parcelmap (readonly): default=N.asarray(())
+    """
+    Iterates over subsets of an image grid.  Each iteration returns a boolean
+    mask with the same shape as the grid indicating the elements of the current
+    subset.
+    
+    >>> from numpy import *
+    >>> parcelmap = asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
+    >>> parcelseq = ((1,2),0)
+    >>> i = ParcelIterator(parcelmap,parcelseq) 
+    >>> for n in i: print n
+    ...
+    ParcelIteratorNext(label=(1, 2), where=array([[False, False, False, True, True],
+           [False, False, True, True, True],
+           [False, False, False, False, True]], dtype=bool))
+    ParcelIteratorNext(label=0, where=array([[True, True, True, False, False],
+           [True, True, False, False, False],
+           [True, True, True, True, False]], dtype=bool))
+    """
+    class parcelmap (readonly):
+        "numpy.ndarray of ints defining region(s) for different parcels"
+        default=N.asarray(())
+
     class parcelseq (readonly):
+        """
+        Sequence of ints and/or sequences of ints indicating which parcels
+        and/or collections parcels to iterate over.
+        """
         implements=Sequence
         def init(att, self):
             return N.unique(self.parcelmap.flat)
 
     #-------------------------------------------------------------------------
-    def __init__(self, parcelmap, keys=None):
+    def __init__(self, parcelmap, parcelseq=None):
         self.parcelmap = N.asarray(parcelmap)
-        if keys is not None: self.parcelseq = list(set(keys))
+        if parcelseq is not None: self.parcelseq = list(set(parcelseq))
         self.parcelmap.shape = haslength(self.parcelseq[0]) and\
           (self.parcelmap.shape[0], N.product(self.parcelmap.shape[1:])) or\
           N.product(self.parcelmap.shape)
 
     #-------------------------------------------------------------------------
     def __iter__(self):
-        for label in self.parcelseq:
-            if not haslength(label):
-                wherelabel = N.equal(self.parcelmap, label)
-            else:
-                wherelabel = N.product([N.equal(labeled, label)\
-                  for labeled,label in zip(self.parcelmap, label)])
-            yield ParcelIteratorNext(label, wherelabel)
+        self.labeliter = iter(self.parcelseq)
+        return self
+
+    #-------------------------------------------------------------------------
+    def next(self):
+        label = self.labeliter.next()
+        if not haslength(label):
+            wherelabel = N.equal(self.parcelmap, label)
+        else:
+            wherelabel = reduce(
+                operator.or_, [N.equal(self.parcelmap, lbl) for lbl in label])
+        return ParcelIteratorNext(label, wherelabel)
 
  
 ##############################################################################
 class SliceParcelIteratorNext (ParcelIteratorNext, SliceIteratorNext):
     class type (constant): default="slice/parcel"
     def __init__(self, label, where, slice):
-        SliceIteratorNext.__init__(slice)
-        ParcelIteratorNext.__init__(label, where)
+        SliceIteratorNext.__init__(self, slice)
+        ParcelIteratorNext.__init__(self, label, where)
 
        
 ##############################################################################
-class SliceParcelIterator (ParcelIterator):
+class SliceParcelIterator (object):
     """
-    This iterator assumes that parcelmap is a list of lists (or an array)
-    and the keys is a sequence of length parcelmap.shape[0] (=len(parcelmap)).
-    It then goes through the each element in the sequence
-    of labels returning where the unique elements are from keys.
-    """
-    #-------------------------------------------------------------------------
-    def __init__(self, parcelmap, keys, **keywords):
-        self.parcelmap = parcelmap
-        self.parcelseq = iter(keys)
+    SliceParcelIterator iterates over a different (or potentially identical)
+    collection of subsets (parcels) for each slice of the parcelmap.
+    parcelseq is a sequence of ints and/or sequences of ints indicating which
+    subset of each slice of parcelmap to return.  Each iteration returns a
+    boolean mask with the same shape as a slice of parcelmap indicating the
+    elements of that slice's subset.
 
+    >>> from numpy import *
+    >>> parcelmap = asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
+    >>> parcelseq = ((1,2),0,2)
+    >>> i = SliceParcelIterator(parcelmap,parcelseq) 
+    >>> for n in i: print n
+    ...
+    SliceParcelIteratorNext(label=(1, 2), where=array([False, False, False, True, True], dtype=bool))
+    SliceParcelIteratorNext(label=0, where=array([True, True, False, False, False], dtype=bool))
+    SliceParcelIteratorNext(label=2, where=array([False, False, False, False, True], dtype=bool))
+    """
+
+    clone(ParcelIterator.parcelmap)
+    clone(ParcelIterator.parcelseq)
+
+    #-------------------------------------------------------------------------
+    def __init__(self, parcelmap, parcelseq, **keywords):
+        self.parcelmap = parcelmap
         if len(parcelmap) != len(parcelseq):
-            raise ValueError, 'parcelmap and parcelseq do not have the same length'
+            raise ValueError, 'parcelmap and parcelseq must have the same length'
+        self.parcelseq = parcelseq
 
     #-------------------------------------------------------------------------
     def __iter__(self):
-        self.curslice = -1
+        self._loopvars = iter(enumerate(zip(self.parcelmap, self.parcelseq)))
         return self
 
     #-------------------------------------------------------------------------
     def next(self):
-        try:
-            label = self.curparcelseq.next()
-        except:
-            self.curparcelseq = iter(self.parcelseq.next())
-            label = self.curparcelseq.next()
-            self.curslice += 1
-            pass
+        index, (mapslice,label) = self._loopvars.next()
+        item = iter(ParcelIterator(mapslice, (label,))).next()
+        return SliceParcelIteratorNext(item.label,item.where,index)
 
-        self.curlabels = self.parcelmap[self.curslice]
+        # get rid of index and type from SliceParcelIteratorNext, then do this:
+        #return ParcelIterator(mapslice, (label,)).next()
 
-        if not isinstance(self.curlabels, N.ndarray):
-            self.curlabels = N.array(self.curlabels)
-            
-        self.curlabels.shape = N.product(self.curlabels.shape)
-        wherelabel = N.equal(self.curlabels, label)
-        return SliceParcelIteratorNext(label, wherelabel, self.curslice)
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
