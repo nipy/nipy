@@ -33,7 +33,7 @@ class SamplingGrid (object):
         default=()
         def get(att, self):
             if att.isinitialized(self): return attribute.get(att,self)
-            else: return list(N.unique(N.asarray(self.labels)))
+            else: return list(set(self.labels))
     class axis (attribute): default=0
 
     deferto(mapping, ("input_coords", "output_coords"))
