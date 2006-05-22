@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 
 from neuroimaging.image import Image
 from neuroimaging.fmri import fMRIImage
-from neuroimaging.visualisation.viewer import BoxViewer
+from neuroimaging.visualization.viewer import BoxViewer
 
 #matplotlib.use('WXAgg')
 ###########
