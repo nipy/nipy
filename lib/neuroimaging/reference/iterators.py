@@ -6,7 +6,7 @@ from attributes import attribute, readonly, constant, clone
 from protocols import Sequence
 
 # Package imports
-from neuroimaging import haslength
+from neuroimaging import haslength, flatten
 
 itertypes = ("slice", "parcel", "slice/parcel", "all")
 
@@ -109,7 +109,7 @@ class AllSliceIterator (object):
 ##############################################################################
 class ParcelIteratorNext (object):
     class type (constant): default="parcel"
-    #class label (readonly): pass
+    class label (readonly): implements=(None,) # fix: can be tuple or int
     class where (readonly): pass
     def __init__(self, label, where): self.label, self.where = label, where
     def __repr__(self):
@@ -133,13 +133,16 @@ class ParcelIterator (object):
     ParcelIteratorNext(label=(1, 2), where=array([[False, False, False, True, True],
            [False, False, True, True, True],
            [False, False, False, False, True]], dtype=bool))
-    ParcelIteratorNext(label=0, where=array([[True, True, True, False, False],
+    ParcelIteratorNext(label=(0,), where=array([[True, True, True, False, False],
            [True, True, False, False, False],
            [True, True, True, True, False]], dtype=bool))
     """
+
     class parcelmap (readonly):
         "numpy.ndarray of ints defining region(s) for different parcels"
         default=N.asarray(())
+        def set(_, self, value):
+            readonly.set(_, self, N.asarray(value))
 
     class parcelseq (readonly):
         """
@@ -152,25 +155,19 @@ class ParcelIterator (object):
 
     #-------------------------------------------------------------------------
     def __init__(self, parcelmap, parcelseq=None):
-        self.parcelmap = N.asarray(parcelmap)
+        self.parcelmap = parcelmap
         if parcelseq is not None: self.parcelseq = list(set(parcelseq))
-        self.parcelmap.shape = haslength(self.parcelseq[0]) and\
-          (self.parcelmap.shape[0], N.product(self.parcelmap.shape[1:])) or\
-          N.product(self.parcelmap.shape)
+        self._labeliter = iter(self.parcelseq)
 
     #-------------------------------------------------------------------------
-    def __iter__(self):
-        self.labeliter = iter(self.parcelseq)
-        return self
+    def __iter__(self): return self
 
     #-------------------------------------------------------------------------
     def next(self):
-        label = self.labeliter.next()
-        if not haslength(label):
-            wherelabel = N.equal(self.parcelmap, label)
-        else:
-            wherelabel = reduce(
-                operator.or_, [N.equal(self.parcelmap, lbl) for lbl in label])
+        label = self._labeliter.next()
+        if not haslength(label): label = (label,)
+        wherelabel = reduce(operator.or_,
+          [N.equal(self.parcelmap, lbl) for lbl in label])
         return ParcelIteratorNext(label, wherelabel)
 
  
@@ -199,8 +196,8 @@ class SliceParcelIterator (object):
     >>> for n in i: print n
     ...
     SliceParcelIteratorNext(label=(1, 2), where=array([False, False, False, True, True], dtype=bool))
-    SliceParcelIteratorNext(label=0, where=array([True, True, False, False, False], dtype=bool))
-    SliceParcelIteratorNext(label=2, where=array([False, False, False, False, True], dtype=bool))
+    SliceParcelIteratorNext(label=(0,), where=array([True, True, False, False, False], dtype=bool))
+    SliceParcelIteratorNext(label=(2,), where=array([False, False, False, False, True], dtype=bool))
     """
 
     clone(ParcelIterator.parcelmap)
@@ -212,17 +209,19 @@ class SliceParcelIterator (object):
         if len(parcelmap) != len(parcelseq):
             raise ValueError, 'parcelmap and parcelseq must have the same length'
         self.parcelseq = parcelseq
+        self._loopvars = iter(enumerate(zip(self.parcelmap, self.parcelseq)))
 
     #-------------------------------------------------------------------------
     def __iter__(self):
-        self._loopvars = iter(enumerate(zip(self.parcelmap, self.parcelseq)))
-        return self
+        for index, (mapslice,label) in self._loopvars:
+            item = iter(ParcelIterator(mapslice, (label,))).next()
+            yield SliceParcelIteratorNext(item.label,item.where,index)
 
     #-------------------------------------------------------------------------
-    def next(self):
-        index, (mapslice,label) = self._loopvars.next()
-        item = iter(ParcelIterator(mapslice, (label,))).next()
-        return SliceParcelIteratorNext(item.label,item.where,index)
+    #def next(self):
+    #    index, (mapslice,label) = self._loopvars.next()
+    #    item = iter(ParcelIterator(mapslice, (label,))).next()
+    #    return SliceParcelIteratorNext(item.label,item.where,index)
 
         # get rid of index and type from SliceParcelIteratorNext, then do this:
         #return ParcelIterator(mapslice, (label,)).next()
