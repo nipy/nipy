@@ -1,4 +1,4 @@
-import os, sys
+import sys
 from optparse import OptionParser, Option
 
 from neuroimaging.data import DataSource
