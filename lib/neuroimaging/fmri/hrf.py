@@ -1,3 +1,9 @@
+"""
+This module provides definitions of various hemodynamic response functions (hrf).
+
+In particular, it provides Gary Glover's canonical HRF, AFNI's default HRF, and
+a spectral HRF.
+"""
 import numpy as N
 import numpy.linalg as L
 import filters
@@ -53,20 +59,22 @@ class SpectralHRF(filters.Filter):
 
     def deltaPCA(self, tmax=50., lower=-15.0, delta=N.arange(-4.5,4.6,0.1)):
         """
-        Perform an expansion of fn, shifted over the values in delta. Effectively, a Taylor series approximation to fn(t+delta), in delta, with basis given by the filter elements. If fn is None, it assumes fn=IRF[0], that is the first filter.
+        Perform an expansion of fn, shifted over the values in delta.
+        Effectively, a Taylor series approximation to fn(t+delta), in delta,
+        with basis given by the filter elements. If fn is None, it assumes
+        fn=IRF[0], that is the first filter.
 
-        >>> from numpy.random import *
-        >>> from BrainSTAT.fMRIstat import HRF
-        >>> from pylab import *
-        >>> from numpy import *
+        >>> import numpy as N
+        >>> from pylab import plot, title, show
+        >>> from neuroimaging.fmri.hrf import glover, glover_deriv, SpectralHRF
         >>>
         >>> ddelta = 0.25
         >>> delta = N.arange(-4.5,4.5+ddelta, ddelta)
         >>> time = N.arange(0,20,0.2)
         >>>
-        >>> hrf = HRF.HRF(deriv=True)
+        >>> hrf = glover_deriv
         >>>
-        >>> canonical = HRF.canonical
+        >>> canonical = glover
         >>> taylor = hrf.deltaPCA(delta)
         >>> curplot = plot(time, taylor.components[1](time))
         >>> curplot = plot(time, taylor.components[0](time))

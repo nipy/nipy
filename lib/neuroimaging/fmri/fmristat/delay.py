@@ -27,12 +27,13 @@ class DelayContrast(contrast.Contrast):
     """
     Specify a delay contrast.
 
-    Delay contrasts are specified by a sequence of functions and weights, the functions should
-    NOT already be convolved with any HRF. They will be convolved with self.IRF which is expected
-    to be a filter with a canonical HRF and its derivative -- defaults to the Glover model.
+    Delay contrasts are specified by a sequence of functions and weights, the
+    functions should NOT already be convolved with any HRF. They will be
+    convolved with self.IRF which is expected to be a filter with a canonical
+    HRF and its derivative -- defaults to the Glover model.
 
-    Weights should have the same number of columns as len(fn), with each row specifying
-    a different contrast.
+    Weights should have the same number of columns as len(fn), with each row
+    specifying a different contrast.
 
     TO DO: check that the convolved term is actually in the design column space.
     """
@@ -291,7 +292,10 @@ class DelayHRF(hrf.SpectralHRF):
 
     def deltaPCA(self, tmax=50., lower=-15.0):
         """
-        Perform an expansion of fn, shifted over the values in delta. Effectively, a Taylor series approximation to fn(t+delta), in delta, with basis given by the filter elements. If fn is None, it assumes fn=IRF[0], that is the first filter.
+        Perform an expansion of fn, shifted over the values in delta.
+        Effectively, a Taylor series approximation to fn(t+delta), in delta,
+        with basis given by the filter elements. If fn is None, it assumes
+        fn=IRF[0], that is the first filter.
 
         >>> from numpy.random import *
         >>> from BrainSTAT.fMRIstat import HRF
@@ -367,7 +371,9 @@ class DelayHRF(hrf.SpectralHRF):
 
 def invertR(delta, IRF, niter=20, verbose=False):
     """
-    If IRF has 2 components (w0, w1) return an estimate of the inverse of r=w1/w0, as in Liao et al. (2002). Fits a simple arctan model to the ratio w1/w0.?
+    If IRF has 2 components (w0, w1) return an estimate of the inverse of
+    r=w1/w0, as in Liao et al. (2002). Fits a simple arctan model to the
+    ratio w1/w0.?
 
     """
 
