@@ -1,6 +1,5 @@
 import os
 import sys
-sys.path.insert(0,"lib")
 from optparse import OptionParser, Option
 
 from neuroimaging import packages, nontest_packages
