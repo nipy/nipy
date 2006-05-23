@@ -1,6 +1,5 @@
 import types
-import struct
-from struct import *
+from struct import calcsize, pack, unpack
 
 from path import path
 from attributes import attribute
@@ -49,11 +48,11 @@ def aggregate(formats, values):
 def struct_unpack(infile, byte_order, elements):
     format = struct_format(byte_order, elements)
     return aggregate(elements,
-      list(struct.unpack(format, infile.read(struct.calcsize(format)))))
+      list(unpack(format, infile.read(calcsize(format)))))
 
 def struct_pack(byte_order, elements, values):
     format = struct_format(byte_order, elements)
-    return struct.pack(format, *values)
+    return pack(format, *values)
 
 
 ##############################################################################
