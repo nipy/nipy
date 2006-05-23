@@ -6,7 +6,7 @@ import numpy as N
 import neuroimaging.image.formats.analyze
 
 # not a test until test data is found
-class fMRITest(object): #unittest.TestCase):
+class fMRITest(unittest.TestCase):
 
     def setUp(self):
         self.url = 'http://kff.stanford.edu/BrainSTAT/testdata/test_fmri.img'
