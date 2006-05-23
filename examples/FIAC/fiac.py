@@ -16,6 +16,7 @@ from neuroimaging.fmri.hrf import SpectralHRF, canonical, glover_deriv
 import time, gc
 
 eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
+eventdict_r = {'SSt_SSp':1, 'SSt_DSp':2, 'DSt_SSp':3, 'DSt_DSp':4}
 
 def FIACpath(path, subj=3, run=3):
     base = '/home/analysis/FIAC/'
@@ -63,7 +64,7 @@ def FIACblock(subj=3, run=3):
     intervals = [[events[keep[i]], times[keep[i]] + 3.33, times[keep[i]]+20.]
                  for i in range(len(keep))]
     
-    p = protocol.ExperimentalFactor('FIAC_block', intervals)
+    p = protocol.ExperimentalFactor('FIAC_design', intervals)
     p.design_type = 'block'
     return p
 

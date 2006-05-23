@@ -1,25 +1,17 @@
 
 from fiac import *
 
-def FIACformula(subj=3, run=3, normalize=True, tshift=1.25, df=5):
+def FIACformula(subj=3, run=3, normalize=True, df=5):
     p = FIACprotocol(subj=subj, run=run)
 
     delay_irf = DelayHRF()
     irf = delay_irf[0]
-    print delay_irf.spectral 
+
     f = FIACfmri(subj=subj, run=run)
     m = FIACmask(subj=subj, run=run)
 
     if p:
-        if normalize:
-            brainavg = neuroimaging.fmri.fmristat.WholeBrainNormalize(f, mask=m)
             
-            brainavg_fn = protocol.InterpolatedConfound(times=f.frametimes + tshift,
-                                                        values=brainavg.avg)
-
-            wholebrain = protocol.ExperimentalQuantitative('whole_brain',
-                                                           brainavg_fn)
-
         p.convolve(delay_irf)
 
         drift_fn = protocol.SplineConfound(window=[0,f.frametimes.max()+2.5],
@@ -32,11 +24,11 @@ def FIACformula(subj=3, run=3, normalize=True, tshift=1.25, df=5):
             begin = FIACbegin(subj=subj, run=run)
             formula += begin
             begin.convolve(irf)
-            
-        if normalize:
-            formula += wholebrain
-    del(f); del(m); gc.collect()
-    return formula
+           
+        del(f); del(m); gc.collect()
+        return formula
+    else:
+        return None
 
 
 def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
@@ -57,12 +49,23 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
 
     if p:
         formula = FIACformula(subj=subj, run=run,
-                              normalize=normalize, tshift=tshift, df=5)
+                              tshift=tshift, df=5)
 
         f = FIACfmri(subj=subj, run=run)
         m = FIACmask(subj=subj, run=run)
 
         if normalize:
+
+            brainavg = neuroimaging.fmri.fmristat.WholeBrainNormalize(f, mask=m)
+            
+            brainavg_fn = protocol.InterpolatedConfound(times=f.frametimes + tshift,
+                                                        values=brainavg.avg)
+
+            wholebrain = protocol.ExperimentalQuantitative('whole_brain',
+                                                           brainavg_fn)
+
+        if normalize:
+            formula += wholebrain
             OLSopts['normalize'] = brainavg
 
         # output some contrasts, here is one from the term "p" in "formula",
