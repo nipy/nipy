@@ -209,8 +209,10 @@ class attribute (property):
     def validate(self, value):
         "Raise an exception if the value is not valid."
         if not self.isvalid(value):
-            raise ProtocolError("value %s of type %s must implement one of: %s"%\
-              (value, type(value), self.implements))
+            raise ProtocolError(
+              "the %s attribute of %s implement %s, but a value of %s was "\
+              "specified"%(
+                value, type(value), self.implements))
 
     #-------------------------------------------------------------------------
     def isvalid(self, value):
@@ -238,8 +240,11 @@ class attribute (property):
     #-------------------------------------------------------------------------
     def get(self, host):
         "Return attribute value on host."
+
+        # check no private access
         if not self._access_ok(host):
             raise AccessError("cannot get private attribute %s"%self.name)
+
         attvals = self._get_attvals(host)
         if not self.isinitialized(host): self._initialize(host)
         return attvals[self.name]
@@ -247,12 +252,22 @@ class attribute (property):
     #-------------------------------------------------------------------------
     def set(self, host, value):
         "Set attribute value on host."
+
+        # check no private access
         if not self._access_ok(host):
             raise AccessError("cannot set private attribute %s"%self.name)
+
+        # check for setting readonly
         if self.readonly and self.isinitialized(host):
             raise AttributeError(
               "attribute %s is read-only and has already been set"%self.name)
-        self.validate(value)
+
+        # validate
+        if not self.isvalid(value):
+            raise ProtocolError(
+              "the '%s' attribute of %s implements %s, but a value of %s was "\
+              "specified"%(self.name, host.__class__.__name__,
+                " or ".join(self.implements), `value`))
         if len(self.implements)==0: self.implements = (value,)
         self._get_attvals(host)[self.name] = value
         
@@ -334,7 +349,7 @@ def deferto(delegate, include=(), exclude=(), privates=False):
     includeset = set(include)
     if not includeset.issubset(delegate_proto):
         raise ValueError("delegate does not implement %s"%\
-          tuple(includeset - delegate_proto))
+          (tuple(includeset - delegate_proto),))
 
     scope(1).update(
       dict([(name,wrapper(name,delegate))\
