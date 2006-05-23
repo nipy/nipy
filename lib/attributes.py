@@ -23,11 +23,11 @@ for python classes, built on top of the built-in python properties.
 10
 >>> try: w.dollars = "gazillion"
 ... # can't set numeric attribute to a string
-... except ProtocolOmission: print "can't do that" 
+... except ProtocolError: print "can't do that" 
 ...
 can't do that
 >>> try: w.photoid = "not a photo id"
-... except ProtocolOmission: print "photoid must have a photo"
+... except ProtocolError: print "photoid must have a photo"
 ...
 photoid must have a photo
 >>> class FakeID (object):
@@ -130,7 +130,8 @@ from sys import _getframe as getframe
 from copy import copy
 from types import TupleType, ListType
 
-from protocols import protocol, implements, ProtocolOmission
+import protocols
+from protocols import protoset, union, implements, ProtocolError, Sequence
 
 class AccessError (Exception):
     "Indicate that a private attribute was referred to outside its class."
@@ -147,9 +148,7 @@ class attribute (property):
     default = None
     readonly = False
     doc = None
-    implements = ()
-
-    protocol = property(lambda self: protocol(*self.implements))
+    implements = (None,)
 
     #-------------------------------------------------------------------------
     class __metaclass__ (type):
@@ -168,7 +167,7 @@ class attribute (property):
 
         # make sure implements is a sequence
         if implements is not None: self.implements = implements
-        if type(self.implements) not in (TupleType, ListType):
+        if not type(self.implements) == type(()):
             self.implements = (self.implements,)
 
         # use or override the class default for these
@@ -209,15 +208,14 @@ class attribute (property):
     #-------------------------------------------------------------------------
     def validate(self, value):
         "Raise an exception if the value is not valid."
-        if not self.isvalid(value): raise ProtocolOmission(
-          "attribute %s implements %s, value %s of type %s does not "\
-          "implement: %s"%(self.name, self.implements, value, type(value),
-                tuple(self.protocol - protocol(value))))
+        if not self.isvalid(value):
+            raise ProtocolError("value %s of type %s must implement one of: %s"%\
+              (value, type(value), self.implements))
 
     #-------------------------------------------------------------------------
     def isvalid(self, value):
         "Return whether the value satisfies all implemented protocols"
-        return implements(self.protocol, value)
+        return implements(value, *self.implements)
 
     #-------------------------------------------------------------------------
     def isprivate(self): return self.name[0] == "_"
@@ -301,12 +299,17 @@ class wrapper (attribute):
 def deferto(delegate, include=(), exclude=(), privates=False):
     if include and exclude:
         raise ValueError("please use only include or exclude but not both")
+
+    # include privates if a private is explicitly specified in the includes
     if filter(lambda n: n[0]=='_', include): privates = True
-    delegate_proto = delegate.protocol
+
+    # make sure the delegate supports the inclusions
+    delegate_proto = union(*map(protoset, delegate.implements))
     includeset = set(include)
     if not includeset.issubset(delegate_proto):
         raise ValueError("delegate does not implement %s"%\
           tuple(includeset - delegate_proto))
+
     scope(1).update(
       dict([(name,wrapper(name,delegate))\
             for name in delegate_proto if (privates or name[0]!="_") and\
