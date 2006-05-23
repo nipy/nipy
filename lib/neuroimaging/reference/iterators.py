@@ -12,10 +12,6 @@ itertypes = ("slice", "parcel", "slice/parcel", "all")
 
 
 ##############################################################################
-class SliceIteratorNext (object):
-    class type (constant): default="slice"
-    class slice (attribute): implements=(Sequence,slice)
-    def __init__(self, slice): self.slice = slice
 
 
 ##############################################################################
@@ -44,6 +40,12 @@ class SliceIterator (object):
     class nslicedim (readonly): implements=int
     class nslice (readonly): default=1
     class ndim (readonly): get=lambda _,s: len(s.end)
+
+    class Item (object):
+        "iterator item"
+        class type (constant): default="slice"
+        class slice (attribute): implements=(Sequence,slice)
+        def __init__(self, slice): self.slice = slice
 
     #-------------------------------------------------------------------------
     def __init__(self, end, start=None, step=None, axis=None, nslicedim=None,
@@ -81,7 +83,7 @@ class SliceIterator (object):
                 _slices.append(_slice)
 
         if self.slice >= self.last: self.isend = True
-        return SliceIteratorNext(_slices)
+        return self.Item(_slices)
 
 
 ##############################################################################
@@ -103,22 +105,8 @@ class AllSliceIterator (object):
         if self.isend: raise StopIteration
         _slice = slice(0, self.shape[0], 1)
         self.isend = True
-        return SliceIteratorNext(_slice)
+        return SliceIterator.Item(_slice)
 
-
-##############################################################################
-class ParcelIteratorNext (object):
-
-    class type (constant): default="parcel"
-    class label (readonly): implements=(tuple,int)
-    class where (readonly): pass
-
-    def __init__(self, label, where):
-        self.label, self.where = tuple(label), where
-
-    def __repr__(self):
-        return "%s(label=%s, where=%s)"%\
-         (self.__class__.__name__, `self.label`,`self.where`)
 
 
 ##############################################################################
@@ -134,10 +122,10 @@ class ParcelIterator (object):
     >>> i = ParcelIterator(parcelmap,parcelseq) 
     >>> for n in i: print n
     ...
-    ParcelIteratorNext(label=(1, 2), where=array([[False, False, False, True, True],
+    Item(label=(1, 2), where=array([[False, False, False, True, True],
            [False, False, True, True, True],
            [False, False, False, False, True]], dtype=bool))
-    ParcelIteratorNext(label=(0,), where=array([[True, True, True, False, False],
+    Item(label=(0,), where=array([[True, True, True, False, False],
            [True, True, False, False, False],
            [True, True, True, True, False]], dtype=bool))
     """
@@ -157,6 +145,20 @@ class ParcelIterator (object):
         def init(att, self):
             return N.unique(self.parcelmap.flat)
 
+    class Item (object):
+        "iterator item"
+
+        class type (constant): default="parcel"
+        class label (readonly): implements=(tuple,int)
+        class where (readonly): pass
+
+        def __init__(self, label, where):
+            self.label, self.where = tuple(label), where
+
+        def __repr__(self):
+            return "%s(label=%s, where=%s)"%\
+             (self.__class__.__name__, `self.label`,`self.where`)
+
     #-------------------------------------------------------------------------
     def __init__(self, parcelmap, parcelseq=None):
         self.parcelmap = parcelmap
@@ -172,16 +174,8 @@ class ParcelIterator (object):
         if not haslength(label): label = (label,)
         wherelabel = reduce(operator.or_,
           [N.equal(self.parcelmap, lbl) for lbl in label])
-        return ParcelIteratorNext(label, wherelabel)
+        return self.Item(label, wherelabel)
 
- 
-##############################################################################
-class SliceParcelIteratorNext (ParcelIteratorNext):
-    class type (constant): default="slice/parcel"
-    class slice (readonly): "slice index"; implements=int
-    def __init__(self, label, where, slice):
-        ParcelIteratorNext.__init__(self, label, where)
-        self.slice = slice
 
        
 ##############################################################################
@@ -200,13 +194,21 @@ class SliceParcelIterator (object):
     >>> i = SliceParcelIterator(parcelmap,parcelseq) 
     >>> for n in i: print n
     ...
-    SliceParcelIteratorNext(label=(1, 2), where=array([False, False, False, True, True], dtype=bool))
-    SliceParcelIteratorNext(label=(0,), where=array([True, True, False, False, False], dtype=bool))
-    SliceParcelIteratorNext(label=(2,), where=array([False, False, False, False, True], dtype=bool))
+    Item(label=(1, 2), where=array([False, False, False, True, True], dtype=bool))
+    Item(label=(0,), where=array([True, True, False, False, False], dtype=bool))
+    Item(label=(2,), where=array([False, False, False, False, True], dtype=bool))
     """
 
     clone(ParcelIterator.parcelmap)
     clone(ParcelIterator.parcelseq)
+     
+    class Item (ParcelIterator.Item):
+        "iterator item"
+        class type (constant): default="slice/parcel"
+        class slice (readonly): "slice index"; implements=int
+        def __init__(self, label, where, slice):
+            ParcelIterator.Item.__init__(self, label, where)
+            self.slice = slice
 
     #-------------------------------------------------------------------------
     def __init__(self, parcelmap, parcelseq):
@@ -223,10 +225,10 @@ class SliceParcelIterator (object):
     def next(self):
         index, (mapslice,label) = self._loopvars.next()
         item = iter(ParcelIterator(mapslice, (label,))).next()
-        return SliceParcelIteratorNext(item.label,item.where,index)
+        return self.Item(item.label,item.where,index)
 
-        # get rid of index and type from SliceParcelIteratorNext, then do this:
-        #return ParcelIterator(mapslice, (label,)).next()
+        # get rid of index and type from SliceParcelIterator.Item, then do this:
+        #return ParcelIterator.Item(mapslice, (label,)).next()
 
 
 if __name__ == "__main__":

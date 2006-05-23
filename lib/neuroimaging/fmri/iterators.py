@@ -1,7 +1,7 @@
 from attributes import readonly
 
 from neuroimaging.reference.iterators import SliceIterator, \
-  ParcelIterator, SliceParcelIterator, SliceParcelIteratorNext
+  ParcelIterator, SliceParcelIterator, SliceParcelIterator.Item
 
 ##############################################################################
 class fMRISliceIterator(SliceIterator):
@@ -22,7 +22,7 @@ class fMRISliceParcelIterator(SliceParcelIterator):
 
     class nframe (readonly): "number of frames"; implements=int
 
-    class Next(SliceParcelIteratorNext):
+    class Item(SliceParcelIterator.Item):
         class slice (readonly): implements=tuple
 
     def __init__(self, parcelmap, parcelseq, nframe):
@@ -31,6 +31,6 @@ class fMRISliceParcelIterator(SliceParcelIterator):
 
     def next(self):
         value = SliceParcelIterator.next(self)
-        return self.Next(
+        return self.Item(
             value.label, value.where,(slice(0,self.nframe), value.slice))
 
