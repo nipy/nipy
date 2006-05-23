@@ -1,6 +1,5 @@
 import slices
 import fpformat
-import neuroimaging
 import numpy as N
 import pylab
 import neuroimaging.statistics.utils as utils

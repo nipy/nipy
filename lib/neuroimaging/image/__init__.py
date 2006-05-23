@@ -21,7 +21,8 @@ class Image(traits.HasTraits):
         "A simple class to mimic an image file from an array."
         def __init__(self, data, grid=None, **extra):
             """
-            Create an ArrayPipe instance from an array, by default assumed to be 3d.
+            Create an ArrayImage instance from an array,
+            by default assumed to be 3d.
 
             >>> from numpy import *
             >>> from neuroimaging.image import Image
@@ -151,12 +152,8 @@ class Image(traits.HasTraits):
         else:
             if itertype is 'slice':
                 self.writeslice(value.slice, data)
-            elif itertype is 'parcel':
-                indices = N.nonzero(value.where)
-                self.put(data, indices)
-            elif itertype == 'slice/parcel':
-                indices = N.nonzero(value.where)
-                self.put(data, indices)
+            elif itertype in ('parcel', "slice/parcel"):
+                self.put(data, N.nonzero(value.where))
 
     #-------------------------------------------------------------------------
     def getvoxel(self, voxel):

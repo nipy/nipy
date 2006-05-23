@@ -31,7 +31,7 @@ class BaseImage(object):
     #---------------------------------------------
    
     class array (attribute):
-        "raw unresampled data array"
+        "raw data array"
         implements=N.ndarray
 
     class grid (attribute):
@@ -40,18 +40,14 @@ class BaseImage(object):
         def init(_,self): return SamplingGrid.identity(self.array.shape)
 
     class shape (readonly):
-        "image shape"
+        "image shape (number of voxels in each dimension)"
         def get(_, self): return self.grid.shape
 
     class ndim (readonly):
         "number of image dimensions"
         def get(_, self): return len(self.shape)
 
-    class ismemmapped (readonly):
-        "is the internal array a memory map?"
-        def get(_, self): return isinstance(self.array, numpy.memmap)
-
-    deferto(grid, ("transform",))
+    deferto(grid, ("transform","itertype"))
 
     #---------------------------------------------
     #   Static Methods

@@ -1,6 +1,8 @@
 
 from fiac import *
 
+from neuroimaging.fmri.fmristat.delay import DelayHRF
+
 def FIACformula(subj=3, run=3, normalize=True, df=5):
     p = FIACprotocol(subj=subj, run=run)
 

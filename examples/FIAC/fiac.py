@@ -1,19 +1,11 @@
-import string, os, gc
-import neuroimaging
-import numpy as N
-import urllib
-import pylab
-from neuroimaging.visualization import viewer
+import string, os, gc, time, urllib
 
-from neuroimaging.fmri import protocol
-from neuroimaging.fmri import fmristat
-from neuroimaging.statistics import contrast
-from neuroimaging.fmri.plotting import MultiPlot
-from neuroimaging.fmri.regression import ResidOutput
-from neuroimaging.image.fwhm import fastFWHM
-from neuroimaging.fmri.fmristat.delay import DelayHRF
-from neuroimaging.fmri.hrf import SpectralHRF, canonical, glover_deriv
-import time, gc
+import numpy as N
+import pylab
+
+from neuroimaging.fmri import fMRIImage
+from neuroimaging.fmri.protocol import ExperimentalFactor
+from neuroimaging.image import Image
 
 eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
 eventdict_r = {'SSt_SSp':1, 'SSt_DSp':2, 'DSt_SSp':3, 'DSt_DSp':4}
@@ -64,7 +56,7 @@ def FIACblock(subj=3, run=3):
     intervals = [[events[keep[i]], times[keep[i]] + 3.33, times[keep[i]]+20.]
                  for i in range(len(keep))]
     
-    p = protocol.ExperimentalFactor('FIAC_design', intervals)
+    p = ExperimentalFactor('FIAC_design', intervals)
     p.design_type = 'block'
     return p
 
@@ -90,7 +82,7 @@ def FIACbegin(subj=3, run=3):
 
     keep = range(0, len(events), 6)
     intervals = [['Begin', times[keep[i]], times[keep[i]] + 3.33] for i in range(len(keep))]
-    return protocol.ExperimentalFactor('beginning', intervals)
+    return ExperimentalFactor('beginning', intervals)
     
 
 def FIACevent(subj=3, run=2):
@@ -111,7 +103,7 @@ def FIACevent(subj=3, run=2):
 
     intervals = [[events[i], times[i], times[i]+3.33] for i in range(len(events))]
     
-    p = protocol.ExperimentalFactor('FIAC_design', intervals)
+    p = ExperimentalFactor('FIAC_design', intervals)
     p.design_type = 'event'
 
     return p
@@ -132,10 +124,10 @@ def FIACplot(subj=3, run=3, tmin=1.0, tmax=476.25, dt=0.2):
 
 def FIACfmri(subj=3, run=3):
     url = FIACpath('fsl/filtered_func_data.img', subj=subj, run=run)
-    f = neuroimaging.fmri.fMRIImage(url, usematfile=False)
+    f = fMRIImage(url, usematfile=False)
     return f
 
 def FIACmask(subj=3, run=3):
     url = FIACpath('fsl/mask.img', subj=subj, run=run)
-    return neuroimaging.image.Image(url)
+    return Image(url)
 

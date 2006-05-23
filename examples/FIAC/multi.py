@@ -1,9 +1,11 @@
 import os, shutil
+
 import numpy as N
-import neuroimaging
-from neuroimaging.statistics.utils import recipr
-from fiac import FIACprotocol, FIACblock, FIACevent, FIACpath
-import neuroimaging.image.kernel_smooth as kernel_smooth
+
+from neuroimaging.image import Image
+from neuroimaging.image.onesample import ImageOneSample
+
+from fiac import FIACpath
 
 
 def FIACmulti(contrast='overall', design='block', which='contrasts', clobber=False):
@@ -19,14 +21,14 @@ def FIACmulti(contrast='overall', design='block', which='contrasts', clobber=Fal
         subjdir = FIACpath('fixed/%s/%s/%s' % (design, which, contrast), run=-1, subj=subj)
 
         try:
-            sdimg = neuroimaging.image.Image('%s/sd.img' % subjdir)
-            effimg = neuroimaging.image.Image('%s/effect.img' % subjdir)
+            sdimg = Image('%s/sd.img' % subjdir)
+            effimg = Image('%s/effect.img' % subjdir)
             input.append((effimg, sdimg))
         except:
             pass
     
-    fitter = neuroimaging.image.onesample.ImageOneSample(input, path=outdir, clobber=clobber, which='sdratio', all=True, use_scale=False)
-    fitter = neuroimaging.image.onesample.ImageOneSample(input, path=outdir, clobber=clobber, which='mean', all=True, use_scale=False)
+    fitter = ImageOneSample(input, path=outdir, clobber=clobber, which='sdratio', all=True, use_scale=False)
+    fitter = ImageOneSample(input, path=outdir, clobber=clobber, which='mean', all=True, use_scale=False)
     fitter.fit()
 
 if __name__ == '__main__':

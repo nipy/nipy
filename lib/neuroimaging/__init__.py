@@ -74,6 +74,13 @@ def ensuredirs(dir):
     if not dir.exists(): dir.makedirs()
 
 #-----------------------------------------------------------------------------
+#def keywords(func):
+#    if not hasattrs(func, "func_code", "func_defaults"):
+#        raise ValueError(
+#          "please pass a function or method object (got %s)"%func)
+#    argnames = func.func_code.co_ 
+
+#-----------------------------------------------------------------------------
 def preload(packages=nontest_packages):
     """
     Import the specified modules/packages (enabling fewer imports in client

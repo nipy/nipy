@@ -1,6 +1,5 @@
 import sys, gc, os
 import numpy as N
-import neuroimaging
 from neuroimaging.fmri import fMRIImage
 from neuroimaging.image import Image
 from neuroimaging.reference.mapping import Affine

@@ -58,8 +58,6 @@ class ImageInterpolator(traits.HasTraits):
         return self.evaluate(points)
 
     def evaluate(self, points):
-        if isinstance(points, grid.SamplingGrid):
-            points = points.range() # optimize this for affine grids!
         points = N.array(points, N.Float)
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], N.product(output_shape))

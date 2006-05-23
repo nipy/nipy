@@ -1,10 +1,12 @@
-import neuroimaging
 import enthought.traits as traits
 import numpy as N
 import pylab as P
-
 from matplotlib.axes import Subplot
 from matplotlib.figure import Figure
+
+from neuroimaging.image import Image
+from neuroimaging.fmri import fMRIImage
+from neuroimaging.visualisation.viewer import BoxViewer
 
 #matplotlib.use('WXAgg')
 ###########
@@ -50,11 +52,11 @@ class TSDiagnostics(traits.HasTraits):
             grid = self.fmri_image.grid.subgrid(0)
             allslice = [slice(0,i,1) for i in self.fmri_image.grid.shape[1:]]
             if self.mean:
-                self.mean_image = neuroimaging.image.Image(N.zeros(self.fmri_image.shape[1:]), grid=grid)
+                self.mean_image = Image(N.zeros(self.fmri_image.shape[1:]), grid=grid)
             if self.sd:
-                self.sd_image = neuroimaging.image.Image(N.zeros(self.fmri_image.shape[1:]), grid=grid)
+                self.sd_image = Image(N.zeros(self.fmri_image.shape[1:]), grid=grid)
             if self.mse:
-                self.mse_image = neuroimaging.image.Image(N.zeros(self.fmri_image.shape[1:]), grid=grid)
+                self.mse_image = Image(N.zeros(self.fmri_image.shape[1:]), grid=grid)
 
         npixel = {}
         if self.mask is not None:
@@ -106,7 +108,7 @@ class TSDiagnostics(traits.HasTraits):
         self.meanMSEslice = N.mean(self.MSEslice, axis=0)
         
         self.mse_image.writeslice(allslice, N.sqrt(self.mse_image.readall()/ (ntime-1)))
-        v = neuroimaging.visualization.viewer.BoxViewer(self.mse_image)
+        v = BoxViewer(self.mse_image)
         v.draw(); P.show()
 
     def plotData(self):
@@ -138,7 +140,7 @@ class TSDiagnostics(traits.HasTraits):
 
 if __name__ == '__main__':
     app = wxPySimpleApp(0)
-    sample = neuroimaging.fmri.fMRIImage('http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/fiac0_fonc1.img')
+    sample = fMRIImage('http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/fiac0_fonc1.img')
     
     tsdiag = TSDiagnostics(sample)
     tsdiag.compute()

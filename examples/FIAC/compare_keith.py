@@ -1,5 +1,8 @@
-import neuroimaging, pylab
+import pylab
 import numpy as N
+
+from neuroimaging.image import Image
+from neuroimaging.visualization.viewer import BoxViewer
 
 contrast_map = {'sentence': 'sen',
                 'speaker': 'spk',
@@ -20,13 +23,13 @@ def fmristat_run(subject=3, run=3, which='contrasts', contrast='overall', stat='
 
     runfile = '/home/analysis/FIAC/fmristat/fiac%d/fiac%d_fonc%d_%s_%s_%s.img' % (subject, subject, run, contrast, which, stat)
     
-    return neuroimaging.image.Image(runfile)
+    return Image(runfile)
 
 def fmristat_rho(subject=3, run=3, **extra):
 
     runfile = '/home/analysis/FIAC/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (subject, subject, run)
     
-    return neuroimaging.image.Image(runfile)
+    return Image(runfile)
 
 
 
@@ -34,19 +37,19 @@ def nipy_run(subject=3, run=3, which='contrasts', contrast='overall', stat='t', 
 
     runfile = '/home/analysis/FIAC/fiac%d/fonc%d/fsl/fmristat_run/%s/%s/%s.img' % (subject, run, which, contrast, stat)
 
-    return neuroimaging.image.Image(runfile)
+    return Image(runfile)
 
 
 def nipy_rho(subject=3, run=3, **extra):
 
     runfile = '/home/analysis/FIAC/fiac%d/fonc%d/fsl/fmristat_run/rho.img' % (subject, run)
 
-    return neuroimaging.image.Image(runfile)
+    return Image(runfile)
 
 def mask(subject=3, run=3, **extra):
     runfile = '/home/analysis/FIAC/fiac%d/fonc%d/fsl/mask.img' % (subject, run)
 
-    return neuroimaging.image.Image(runfile)
+    return Image(runfile)
 
 import optparse
 
@@ -74,8 +77,8 @@ else:
     
 m = mask(**options)
 
-vx = neuroimaging.visualization.viewer.BoxViewer(x, mask=m)
-vy = neuroimaging.visualization.viewer.BoxViewer(y, mask=m)
+vx = BoxViewer(x, mask=m)
+vy = BoxViewer(y, mask=m)
 
 print options
 if options['m'] is not None:

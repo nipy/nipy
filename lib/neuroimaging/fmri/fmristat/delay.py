@@ -5,8 +5,6 @@ of delays and contrasts of delays.
 Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H., Evans, A.C. (2002). \'Estimating the delay of the response in fMRI data.\' NeuroImage, 16:593-606.
 
 """
-
-import neuroimaging
 import copy, os, csv, string, fpformat, types
 import numpy as N
 import numpy.linalg as L

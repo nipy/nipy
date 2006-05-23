@@ -1,10 +1,14 @@
-import neuroimaging, fiac, pylab, os
+import os
+
 import numpy as N
-from neuroimaging.visualization import viewer, slices, montage
-import neuroimaging.visualization.slices as slices
+import pylab
+
+from neuroimaging.image import Image
+from neuroimaging.image.interpolation import ImageInterpolator
+from neuroimaging.visualization import slices, montage
 from fixed import FIACresample
 
-standard = neuroimaging.image.Image('/home/analysis/FIAC/avg152T1_brain.img')
+standard = Image('/home/analysis/FIAC/avg152T1_brain.img')
 
 vmax = {'rho':0.7,
         'fwhmOLS':15.}
@@ -28,13 +32,13 @@ def FIACfixedslice(**opts):
         try:
             FIACresample(FIACrunpath(**opts), FIACrunpath(resampled=True, **opts), **opts)
 
-            i = neuroimaging.image.Image(FIACrunpath(resampled=True, **opts))
+            i = Image(FIACrunpath(resampled=True, **opts))
             haveit = True
         except:
             haveit = False
             pass
     else:
-        i = neuroimaging.image.Image(FIACrunpath(resampled=True, **opts))
+        i = Image(FIACrunpath(resampled=True, **opts))
         haveit = True
     
     if haveit:    
@@ -48,7 +52,7 @@ def FIACfixedslice(**opts):
         vmax = float(N.nanmax(idata))
 
         zslice = slices.transversal(i, z=-2, xlim=[-70,70], ylim=[-46,6], shape=(27,71))
-        inter = neuroimaging.image.interpolation.ImageInterpolator(i)
+        inter = ImageInterpolator(i)
 
         dslice = slices.PylabDataSlice(inter, zslice, vmin=vmin, vmax=vmax)
         return dslice

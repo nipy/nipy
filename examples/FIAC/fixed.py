@@ -1,7 +1,12 @@
 import os, shutil, gc, time, urllib
 import numpy as N
-import neuroimaging
-import neuroimaging.reference as reference
+
+from neuroimaging.image import Image
+from neuroimaging.image.interpolation import ImageInterpolator
+from neuroimaging.image.onesample import ImageOneSample
+from neuroimaging.reference.mapping import Affine
+from neuroimaging.reference.grid import SamplingGrid
+
 from fiac import FIACprotocol, FIACblock, FIACevent, FIACpath
 
 def FIACfixed(contrast, which='block', subj=3, base='contrasts', clobber=False):
@@ -35,32 +40,32 @@ def FIACfixed(contrast, which='block', subj=3, base='contrasts', clobber=False):
             outfile = os.path.join(outdir, 'sd_%d.img' % run)
             FIACresample(sdfile, outfile, subj=subj, run=run)
             tic = time.time()
-            sdimg = fix_origin(neuroimaging.image.Image(outfile))
+            sdimg = fix_origin(Image(outfile))
 
             efffile = FIACpath('fsl/fmristat_run/%s/%s/effect.img' % (base, contrast), subj=subj, run=run)
             outfile = os.path.join(outdir, 'effect_%d.hdr' % run)
             FIACresample(efffile, outfile, subj=subj, run=run)
-            effimg = fix_origin(neuroimaging.image.Image(outfile))
+            effimg = fix_origin(Image(outfile))
             input.append((effimg, sdimg))
 
     if input:
-        fitter = neuroimaging.image.onesample.ImageOneSample(input, path=outdir, clobber=clobber, all=True, use_scale=False, weight_type='sd')
+        fitter = ImageOneSample(input, path=outdir, clobber=clobber, all=True, use_scale=False, weight_type='sd')
         fitter.fit()
 
 def fix_origin(img):
     
-    atlas = neuroimaging.image.Image('/home/stow/fsl/etc/standard/avg152T1_brain.img')
+    atlas = Image('/home/stow/fsl/etc/standard/avg152T1_brain.img')
     img.image.origin = atlas.image.origin
     img.image.pixdim = atlas.image.pixdim
 
     hdrfile = file(img.image.hdrfilename(), 'w')
     img.image.writeheader(hdrfile)
     hdrfile.close()
-    return neuroimaging.image.Image(img.image.filename)
+    return Image(img.image.filename)
 
 def FIACresample(infile, outfile, subj=3, run=3, **other):
 
-    inimage = neuroimaging.image.Image(infile,
+    inimage = Image(infile,
                                        ignore_origin=True,
                                        abs_pixdim=True)
 
@@ -76,23 +81,23 @@ def FIACresample(infile, outfile, subj=3, run=3, **other):
 
     fslmat = N.dot(M, N.dot(fslmat, M))
 
-    standard = neuroimaging.image.Image('/home/analysis/FIAC/avg152T1_brain.img',
+    standard = Image('/home/analysis/FIAC/avg152T1_brain.img',
                                         ignore_origin=True,
                                         abs_pixdim=True)
 
     input_coords = inimage.grid.mapping.output_coords
     output_coords = standard.grid.mapping.output_coords
-    fworld2sworld = reference.mapping.Affine(input_coords,
+    fworld2sworld = Affine(input_coords,
                                              output_coords,
                                              fslmat)
     svoxel2fworld = fworld2sworld.inverse() * standard.grid.mapping
 
-    output_grid = reference.grid.SamplingGrid(mapping=svoxel2fworld, shape=standard.grid.shape)
+    output_grid = SamplingGrid(mapping=svoxel2fworld, shape=standard.grid.shape)
 
-    interp = neuroimaging.image.interpolation.ImageInterpolator(inimage)
+    interp = ImageInterpolator(inimage)
     interp_data = interp(output_grid.range())
 
-    new = neuroimaging.image.Image(interp_data, grid=standard.grid)
+    new = Image(interp_data, grid=standard.grid)
     new.tofile(outfile, clobber=True)
 
     del(interp); del(interp_data); del(new) ; gc.collect()

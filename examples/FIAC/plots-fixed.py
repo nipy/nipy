@@ -1,9 +1,12 @@
-import neuroimaging, fiac, pylab
+import pylab
 import numpy as N
-from neuroimaging.visualization import viewer, slices, montage
-import neuroimaging.visualization.slices as slices
 
-standard = neuroimaging.image.Image('/home/analysis/FIAC/avg152T1_brain.img')
+from neuroimaging.image import Image
+from neuroimaging.image.interpolation import ImageInterpolator
+from neuroimaging.visualization import slices, montage
+
+
+standard = Image('/home/analysis/FIAC/avg152T1_brain.img')
 
 options = {'design':'block',
            'contrast':'overall',
@@ -16,7 +19,7 @@ def FIACfixedpath(**opts):
 
 def FIACfixedslice(**opts):
 
-    i = neuroimaging.image.Image(FIACfixedpath(**opts))
+    i = Image(FIACfixedpath(**opts))
     i.grid = standard.grid
 
     idata = i.readall()
@@ -25,7 +28,7 @@ def FIACfixedslice(**opts):
     vmax = float(N.nanmax(idata))
 
     zslice = slices.transversal(i, z=-2, xlim=[-70,70], ylim=[-46,6], shape=(27,71))
-    inter = neuroimaging.image.interpolation.ImageInterpolator(i)
+    inter = ImageInterpolator(i)
 
     dslice = slices.PylabDataSlice(inter, zslice, vmin=vmin, vmax=vmax)
     return dslice

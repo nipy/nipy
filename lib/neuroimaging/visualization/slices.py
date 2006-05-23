@@ -4,8 +4,8 @@ A Slice class for visualizing slices of images.
 
 import numpy as N
 import enthought.traits as traits
-import neuroimaging.reference as reference
-import neuroimaging.image as image
+from neuroimaging.reference import slices
+from neuroimaging.image.interpolation import ImageInterpolator
 
 class Slice(traits.HasTraits):
 
@@ -25,9 +25,9 @@ class Slice(traits.HasTraits):
 
 # Default MNI coordinates
 
-zlim = reference.slices.default_zlim
-ylim = reference.slices.default_ylim
-xlim = reference.slices.default_xlim
+zlim = slices.default_zlim
+ylim = slices.default_ylim
+xlim = slices.default_xlim
 
 def coronal(image, y=0.,
             shape=(128,128),
@@ -40,10 +40,10 @@ def coronal(image, y=0.,
     Shape refers to size of array in sampling the region by an interpolator.
     """
     if xlim is None:
-        xlim = reference.slices.bounding_box(image.grid)[2]
+        xlim = slices.bounding_box(image.grid)[2]
     if zlim is None:
-        zlim = reference.slices.bounding_box(image.grid)[0]
-    return reference.slices.yslice(y=y, ylim=[y,y+1.],
+        zlim = slices.bounding_box(image.grid)[0]
+    return slices.yslice(y=y, ylim=[y,y+1.],
                                    xlim=xlim,
                                    zlim=zlim,
                                    shape=(shape[1],2,shape[0]))
@@ -59,10 +59,10 @@ def transversal(image, z=0.,
     Shape refers to size of array in sampling the region by an interpolator.
     """
     if xlim is None:
-        xlim = reference.slices.bounding_box(image.grid)[2]
+        xlim = slices.bounding_box(image.grid)[2]
     if ylim is None:
-        ylim = reference.slices.bounding_box(image.grid)[1]
-    return reference.slices.zslice(z=z, zlim=[z,z+1.],
+        ylim = slices.bounding_box(image.grid)[1]
+    return slices.zslice(z=z, zlim=[z,z+1.],
                                    xlim=xlim,
                                    ylim=ylim,
                                    shape=(2,shape[0],shape[1]))
@@ -79,10 +79,10 @@ def sagittal(image, x=0.,
 
     """
     if ylim is None:
-        ylim = reference.slices.bounding_box(image.grid)[1]
+        ylim = slices.bounding_box(image.grid)[1]
     if zlim is None:
-        zlim = reference.slices.bounding_box(image.grid)[0]
-    return reference.slices.xslice(x=x, xlim=[x,x+1.],
+        zlim = slices.bounding_box(image.grid)[0]
+    return slices.xslice(x=x, xlim=[x,x+1.],
                                    ylim=ylim,
                                    zlim=zlim,
                                    shape=(shape[1],shape[0],2))
@@ -206,7 +206,7 @@ class SagittalPlot (DataSlicePlot):
     def __init__(self, img, **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.img = img
-        self.interpolator = image.interpolation.ImageInterpolator(self.img)
+        self.interpolator = ImageInterpolator(self.img)
         self.m = float(self.img.readall().min())
         self.M = float(self.img.readall().max())
         self.slice = sagittal(self.img, x=self.x, ylim=self.ylim,
@@ -229,7 +229,7 @@ class CoronalPlot (DataSlicePlot):
     def __init__(self, img, **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.img = img
-        self.interpolator = image.interpolation.ImageInterpolator(self.img)
+        self.interpolator = ImageInterpolator(self.img)
         self.m = float(self.img.readall().min())
         self.M = float(self.img.readall().max())
         self.slice = coronal(self.img, x=self.x, xlim=self.xlim,
@@ -252,7 +252,7 @@ class TransversalPlot (DataSlicePlot):
     def __init__(self, img, **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.img = img
-        self.interpolator = image.interpolation.ImageInterpolator(self.img)
+        self.interpolator = ImageInterpolator(self.img)
         self.m = float(self.img.readall().min())
         self.M = float(self.img.readall().max())
         self.slice = transversal(self.img, z=self.z, ylim=self.ylim,

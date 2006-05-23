@@ -6,7 +6,7 @@ from neuroimaging.fmri import hrf, protocol
 from neuroimaging.statistics import contrast
 from neuroimaging.statistics.utils import recipr0
 
-# this is not a test until it is fixed
+# this is not a test until it is fixed (find HRF)
 class ProtocolTest(object): #unittest.TestCase):
 
     def setUp(self):
