@@ -1,12 +1,10 @@
 #!/usr/bin/env python
-try:
-    from qt import qApp, PYSIGNAL, QButtonGroup, QGridLayout, QGroupBox, \
-      QHBoxLayout, QFrame, QLabel, QPoint, QSizePolicy, QSpinBox, QWidget, \
-      QVBoxLayout
-except: raise ImportError("arrayview requires PyQt")
+from qt import qApp, PYSIGNAL, QButtonGroup, QGridLayout, QGroupBox, \
+  QHBoxLayout, QFrame, QLabel, QPoint, QSizePolicy, QSpinBox, QWidget, \
+  QVBoxLayout
 from pylab import Figure, figaspect, gci, show, amax, amin, squeeze, asarray,\
-    cm, angle, normalize, pi, arange, ravel, ones, outerproduct, floor,\
-    fromfunction, zeros
+  cm, angle, normalize, pi, arange, ravel, ones, outerproduct, floor,\
+  fromfunction, zeros
 from matplotlib.lines import Line2D
 from matplotlib.image import AxesImage
 from matplotlib.backends.backend_qtagg import \

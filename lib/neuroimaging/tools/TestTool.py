@@ -5,8 +5,8 @@ NiPy project utility for running unit tests.
 import sys
 from optparse import OptionParser, Option
 
+from testutils import test_all, test_package, get_package_tests
 from neuroimaging import nontest_packages
-from neuroimaging.testutils import test_all, test_package, get_package_tests
 
 
 ##############################################################################
