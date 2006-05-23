@@ -82,10 +82,11 @@ class SamplingGrid (object):
 
     #-------------------------------------------------------------------------
     def __iter__(self):
-        if self.itertype is "all": return self.iterall()
-        elif self.itertype is "slice": return self.iterslices()
-        elif self.itertype is "parcel": return self.iterparcels()
-        elif self.itertype is "slice/parcel": return self.itersliceparcels()
+        if self.itertype == "all": return self.iterall()
+        elif self.itertype == "slice": return self.iterslices()
+        elif self.itertype == "parcel": return self.iterparcels()
+        elif self.itertype == "slice/parcel": return self.itersliceparcels()
+        else: raise ValueError("unknown itertype %s"%`self.itertype`)
 
     #-------------------------------------------------------------------------
     def iterall(self):
