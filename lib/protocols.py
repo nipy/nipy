@@ -20,6 +20,9 @@ class ProtocolOmission (Exception):
 class Iterable:
     def __iter__(self): pass
 
+class Iterator:
+    def next(self): pass
+
 class Sequence (Iterable):
     def __len__(self): pass
     def __getitem__(self, index): pass
