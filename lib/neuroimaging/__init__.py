@@ -19,8 +19,8 @@ Specifically, we aim to:
 """
 
 __version__ = "0.01a"
-__revision__ = "$Revision$"
-__date__     = "$Date$"
+__revision__ = "$Rev$"
+__date__     = "$LastChangedDate$"
 
 import re
 from copy import copy
