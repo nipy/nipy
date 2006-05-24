@@ -31,6 +31,7 @@ __url__      = "http://neuroimaging.scipy.org"
 import re
 from copy import copy
 
+from numpy import product
 from path import path
 
 packages = (
@@ -85,6 +86,12 @@ def hasattrs(obj, *attrs):
 
 #-----------------------------------------------------------------------------
 def haslength(obj): return hasattr(obj,"__len__")
+
+#-----------------------------------------------------------------------------
+def flatten(arr, dim=0):
+    if len(arr.shape) < 2: return
+    oldshape = arr.shape
+    arr.shape = oldshape[0:dim] + (product(oldshape[dim:]),)
 
 #-----------------------------------------------------------------------------
 def reorder(seq, order): return [seq[i] for i in order]

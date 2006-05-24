@@ -3,6 +3,7 @@ import types, os
 from enthought import traits
 import numpy as N
 
+from neuroimaging import flatten
 from neuroimaging.data import DataSource
 from neuroimaging.image.formats import getreader
 from neuroimaging.reference.grid import SamplingGrid
@@ -144,7 +145,7 @@ class Image(traits.HasTraits):
             if itertype is 'slice':
                 return postread(N.squeeze(self.getslice(value.slice)))
             elif itertype is 'parcel':
-                value.where.shape = N.product(value.where.shape)
+                flatten(value.where)
                 self.label = value.label
                 return postread(self.compress(value.where, axis=0))
             elif itertype == 'slice/parcel':
