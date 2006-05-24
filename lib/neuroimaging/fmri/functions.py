@@ -9,21 +9,19 @@ divided.
 
 """
 
+import types
+
 import numpy as N
-from utils import StepFunction
-import fpformat, types
-
-from neuroimaging.statistics.utils import recipr0
-
-# Use scipy's interpolator
-
+from enthought import traits
 from scipy.interpolate import interp1d
+
+from neuroimaging.statistics.utils import StepFunction, recipr0
+
 
 # Prototypical stimuli: "Event" (on/off) and "Stimuli" (step function)
 # -Event inherits from Stimulus so most functionality is in Stimulus
 # -changes are just in specifying parameters of self.fn
 
-from enthought import traits
 times = N.arange(0,50,0.1)
 
 class TimeFunction(traits.HasTraits):

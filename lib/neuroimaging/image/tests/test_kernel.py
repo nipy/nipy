@@ -1,15 +1,14 @@
-import unittest, os, scipy, glob, sets
-import numpy as N
+import unittest
+
 from neuroimaging.image import Image
-import neuroimaging.image as image
-import neuroimaging.image.kernel_smooth as kernel_smooth
+from neuroimaging.image.kernel_smooth import LinearFilter
+from neuroimaging.tests.data import repository
 from neuroimaging.visualization import viewer
-import pylab
 
 class KernelTest(unittest.TestCase):
     def test_smooth(self):
-        rho = image.Image('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
-        smoother = kernel_smooth.LinearFilter(rho.grid)
+        rho = Image('rho.img', datasource=repository)
+        smoother = LinearFilter(rho.grid)
 
         srho = smoother.smooth(rho)
         view = viewer.BoxViewer(rho)
@@ -19,8 +18,6 @@ class KernelTest(unittest.TestCase):
         sview.m = view.m
         sview.M = view.M
         sview.draw()
-
-##         pylab.show()
 
 def suite():
     suite = unittest.makeSuite(KernelTest)

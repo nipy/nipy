@@ -1,8 +1,9 @@
-import numpy as N
-from utils import ConvolveFunctions, WaveFunction, StepFunction
-import numpy.linalg as L
-from enthought import traits
 import types
+
+import numpy as N
+from enthought import traits
+
+from neuroimaging.fmri.utils import ConvolveFunctions, WaveFunction
 
 class Filter(traits.HasTraits):
     dt = traits.Float(0.02)

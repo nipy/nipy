@@ -1,16 +1,17 @@
-import copy, os, csv, string, fpformat
+import copy, os
+
 import numpy as N
 import numpy.linalg as L
+from scipy.linalg import toeplitz
 from enthought import traits
-import neuroimaging.image as image
-from neuroimaging.reference import grid
+import pylab
+
+from neuroimaging import image
+from neuroimaging.fmri.plotting import MultiPlot
 import neuroimaging.image.regression as imreg
 from neuroimaging.statistics import utils
 
-from scipy.linalg import toeplitz
 
-import pylab
-from plotting import MultiPlot
 canplot = True
 
 class fMRIRegressionOutput(imreg.ImageRegressionOutput):

@@ -6,9 +6,12 @@ Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H., Evans, A.C
 
 """
 import copy, os, csv, string, fpformat, types
+
 import numpy as N
 import numpy.linalg as L
 from enthought import traits
+import pylab
+
 import neuroimaging.image as image
 from neuroimaging.reference import grid
 from neuroimaging.fmri.regression import TContrastOutput 
@@ -18,11 +21,9 @@ from neuroimaging.fmri.regression import fMRIRegressionOutput
 from neuroimaging.statistics.regression import contrastfromcols
 from neuroimaging.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.fmri import hrf, filters
-
-import pylab
 from neuroimaging.fmri.plotting import MultiPlot
+
 canplot = True
-from enthought import traits
 
 class DelayContrast(contrast.Contrast):
 

@@ -5,8 +5,8 @@ from struct import pack, unpack, calcsize
 import numpy as N
 from path import path
 
-from neuroimaging.data import isurl, iszip, unzip, DataSource
-from neuroimaging.reference.axis import VoxelAxis, RegularAxis, space, spacetime
+from neuroimaging.data import iszip, unzip, DataSource
+from neuroimaging.reference.axis import space, spacetime
 from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
 from enthought import traits

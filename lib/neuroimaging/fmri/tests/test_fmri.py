@@ -1,9 +1,12 @@
-import unittest, gc, scipy, os
-import neuroimaging.fmri as fmri
-import neuroimaging.image as image
-import neuroimaging.reference.grid as grid
+import unittest, gc, os
+
 import numpy as N
-import neuroimaging.image.formats.analyze
+import scipy
+
+from neuroimaging import fmri
+from neuroimaging.image import Image
+from neuroimaging.reference import grid
+from neuroimaging.tests.data import repository
 
 # not a test until test data is found
 class fMRITest(unittest.TestCase):
@@ -37,7 +40,7 @@ class fMRITest(unittest.TestCase):
 
 
     def test_labels1(self):
-        rho = image.Image('http://kff.stanford.edu/~jtaylo/BrainSTAT/rho.img')
+        rho = Image('rho.img', datasource=repository)
         labels = (rho.readall() * 100).astype(N.Int)
 
         self.img.grid.itertype = 'parcel'
@@ -50,10 +53,6 @@ class fMRITest(unittest.TestCase):
             v += t.shape[1]
         self.assertEquals(v, N.product(labels.shape))
 
-
-def suite():
-    suite = unittest.makeSuite(fMRITest)
-    return suite
 
 if __name__ == '__main__':
     unittest.main()

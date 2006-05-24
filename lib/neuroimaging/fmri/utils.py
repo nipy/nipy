@@ -1,8 +1,8 @@
 import numpy as N
 import numpy.dft as FFT
-import bisect
 import scipy.interpolate
-from neuroimaging.statistics.utils import StepFunction
+
+# from neuroimaging.statistics.utils import StepFunction
 
 def fwhm2sigma(fwhm):
     """

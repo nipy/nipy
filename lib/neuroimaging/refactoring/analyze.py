@@ -1,17 +1,17 @@
 "This module implements details of the Analyze7.5 file format."
 import struct
 
-from numpy import fromstring, reshape, memmap, UInt8, Int16, Int32, Float32, \
-  Float64, Complex32, amin, amax, dtype, asarray, ndarray
+from numpy import memmap, UInt8, Int16, Int32, Float32, \
+  Float64, Complex32, amin, amax, dtype, asarray
 
 from attributes import attribute, readonly, deferto, wrapper, scope
 from odict import odict
 from path import path
 
 from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging.reference.axis import space, spacetime
+from neuroimaging.reference.axis import space
 from neuroimaging.image.formats import struct_unpack, struct_pack, structfield,\
-  NATIVE, LITTLE_ENDIAN, BIG_ENDIAN
+  LITTLE_ENDIAN, BIG_ENDIAN
 from neuroimaging.refactoring.baseimage import BaseImage
 from neuroimaging.data import DataSource
 

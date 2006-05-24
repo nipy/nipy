@@ -1,10 +1,9 @@
 import csv, string, types, copy
 from enthought import traits
 import numpy as N
-import scipy.interpolate
 
-from utils import LinearInterpolant
-from functions import Events, SplineConfound, TimeFunction, InterpolatedConfound
+#from neuroimaging.fmri.utils import LinearInterpolant
+from neuroimaging.fmri.functions import Events, TimeFunction
 from neuroimaging.statistics.formula import Factor, Quantitative, Formula, Term
 
 namespace = {}

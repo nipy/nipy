@@ -5,7 +5,7 @@ BaseImage class - wrapper for Image class to test changes to Image interface
 
 import sys, os, types
 
-from attributes import *
+from attributes import attribute, readonly, deferto
 import numpy as N
 from enthought import traits
 

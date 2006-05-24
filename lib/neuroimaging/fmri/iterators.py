@@ -1,7 +1,6 @@
-from enthought import traits
 from attributes import readonly
 
-from neuroimaging.reference.iterators import SliceIterator, SliceIteratorNext,\
+from neuroimaging.reference.iterators import SliceIterator, \
   ParcelIterator, SliceParcelIterator, SliceParcelIteratorNext
 
 ##############################################################################
