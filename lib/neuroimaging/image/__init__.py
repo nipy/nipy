@@ -2,7 +2,7 @@ import types, os
 
 from enthought import traits
 import numpy as N
-from attributes import readonly, deferto
+from attributes import attribute, readonly, deferto
 
 from neuroimaging import flatten
 from neuroimaging.data import DataSource
@@ -17,6 +17,8 @@ class Image(traits.HasTraits):
     isfile = False
     shape = traits.ListInt()
     fill = traits.Float(0.0)
+
+    #class postread (attribute): default=lambda x: x
 
     #-------------------------------------------------------------------------
     class ArrayImage (object):
@@ -88,6 +90,8 @@ class Image(traits.HasTraits):
             self.buffer = self.image.memmap
         elif isinstance(self.image.data, N.ndarray):
             self.buffer = self.image.data          
+
+        self.postread = lambda x: x
 
     #-------------------------------------------------------------------------
     def __getitem__(self, slice): return self.image[slice]
@@ -184,12 +188,9 @@ class Image(traits.HasTraits):
         (13, 128, 128)
         """
         if self.isfile: self.close()
-        if clean:
-            _clean = N.nan_to_num
-            _data = _clean(self.readall(**keywords))
-        else: _data = self.readall(**keywords)
-        if hasattr(self, 'postread'): _data = self.postread(_data)
-        return Image(_data, grid=self.grid, **keywords)
+        data = self.readall()
+        if clean: data = N.nan_to_num(data)
+        return Image(self.postread(data), grid=self.grid, **keywords)
 
     #-------------------------------------------------------------------------
     def tofile(self, filename, array=True, clobber=False, **keywords):
@@ -197,7 +198,6 @@ class Image(traits.HasTraits):
                          clobber=clobber, **keywords)
         if array:
             tmp = self.toarray(**keywords)
-            #outimage.image[slice(0,self.grid.shape[0])] = tmp.image.data
             outimage.image[:] = tmp.image.data
         else:
             tmp = iter(self)
@@ -207,18 +207,14 @@ class Image(traits.HasTraits):
         return outimage
 
     #-------------------------------------------------------------------------
-    def readall(self, clean=False, **keywords): 
+    def readall(self, clean=False): 
         """
         Read an entire Image object, returning a numpy, not another instance of
         Image. By default, it does not read 4d images. Missing values are
         filled in with the value of fill (default=self.fill=0.0).
         """
-        try:
-            _slice = self.grid.iterator.allslice
-        except:
-            _slice = slice(0, self.shape[0], 1)
-        value = self.image[_slice]
-        if clean: value = Image(_clean(value, fill=self.fill))
+        value = self.image[self.grid.allslice]
+        if clean: value = Image(N.nan_to_num(value, fill=self.fill))
         return value
 
     #-------------------------------------------------------------------------

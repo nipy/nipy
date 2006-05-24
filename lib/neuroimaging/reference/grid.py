@@ -21,6 +21,11 @@ class SamplingGrid (object):
     class iterator (attribute): implements=Iterator
     class itertype (enum): values=itertypes; default="slice"
     class axis (attribute): default=0
+    class allslice (readonly):
+        "a slice object representing the entire grid"
+        def get(_, self):
+            try: return self.iterator.allslice
+            except AttributeError: return slice(0, self.shape[0])
 
     # for parcel iterators
     clone(ParcelIterator.parcelmap, readonly=False)
