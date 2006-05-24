@@ -12,9 +12,7 @@ from neuroimaging.statistics import utils
 class ImageRegressionOutput(RegressionOutput):
     """
     A class to output things in GLM passes through Image data. It
-    uses the image\'s iterator values to output to an image.
-
-
+    uses the image's iterator values to output to an image.
     """
 
     nout = traits.Int(1)
@@ -30,9 +28,10 @@ class ImageRegressionOutput(RegressionOutput):
             self.outgrid = outgrid
             
         if self.nout > 1:
-            self.grid = grid.DuplicatedGrids([self.grid]*self.nout)
+            self.grid = self.grid.replicate(self.nout)
         if self.arraygrid is not None:
-            self.img = iter(Image(N.zeros(self.arraygrid.shape, N.Float), grid=self.arraygrid))
+            self.img = iter(Image(N.zeros(self.arraygrid.shape, N.Float),
+              grid=self.arraygrid))
 
     def sync_grid(self, img=None):
         """

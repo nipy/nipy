@@ -1,6 +1,6 @@
 import numpy as N
 
-from attributes import attribute, readonly
+from attributes import attribute, readonly, deferto
 from protocols import Iterator
 
 from neuroimaging import reverse
@@ -27,9 +27,14 @@ class SamplingGrid (object):
             attribute.set(_, self, value)
 
     # for parcel iterators
-    class labels (attribute): pass
-    class labelset (attribute): pass
+    class labels (attribute): default=N.asarray(())
+    class labelset (attribute):
+        def get(att, self):
+            if att.isinitialized(self): return attribute.get(att,self)
+            else: return set(self.labels.flat)
     class axis (attribute): default=0
+
+    deferto(mapping, ("input_coords", "output_coords"))
 
     #-------------------------------------------------------------------------
     @staticmethod
@@ -74,40 +79,40 @@ class SamplingGrid (object):
     #-------------------------------------------------------------------------
     def range(self):
         "Return the coordinate values in the same format as numpy.indices."
-        tmp = N.indices(self.shape)
-        tmp_shape = tmp.shape
-        tmp.shape = (self.mapping.ndim, N.product(self.shape))
-        tmp = self.mapping(tmp)
-        tmp.shape = tmp_shape
-        return tmp 
+        indices = N.indices(self.shape)
+        tmp_shape = indices.shape
+        # reshape indices to be a sequence of coordinates
+        indices.shape = (self.mapping.ndim, N.product(self.shape))
+        _range = self.mapping(indices)
+        _range.shape = tmp_shape
+        return _range 
 
     #-------------------------------------------------------------------------
     def __iter__(self):
-        if self.itertype is 'all':
-            self.iterator = iter(AllSliceIterator(self.shape))
-        elif self.itertype is 'slice':
-            self.iterator = iter(SliceIterator(self.shape,
-              start=[0]*self.ndim, step=[1]*self.ndim, axis=self.axis))
-        elif self.itertype is 'parcel':
-            self.iterator = iter(ParcelIterator(self.labels, self.labelset))
-        elif self.itertype is 'slice/parcel':
-            self.iterator = iter(SliceParcelIterator(
-              self.labels, self.labelset))
-        return self
+        if self.itertype is "all": return self.iterall()
+        elif self.itertype is "slice": return self.iterslices()
+        elif self.itertype is "parcel": return self.iterparcels()
+        elif self.itertype is "slice/parcel": return self.itersliceparcels()
 
     #-------------------------------------------------------------------------
+    # TODO: try returning the iterator instead of self
     def iterall(self):
-        self.itertype = "all"
-        return iter(self)
+        self.iterator = iter(AllSliceIterator(self.shape))
+        return self
+
     def iterslices(self):
-        self.itertype = "slice"
-        return iter(self)
-    def iterparcels(self):
-        self.itertype = "parcel"
-        return iter(self)
+        self.iterator = iter(SliceIterator(self.shape,
+          start=[0]*self.ndim, step=[1]*self.ndim, axis=self.axis))
+        return self
+
+    def iterparcels(self, labelset=None):
+        if labelset is None: labelset = self.labelset
+        self.iterator = iter(ParcelIterator(self.labels, labelset))
+        return self
+
     def itersliceparcels(self):
-        self.itertype = "slice/parcel"
-        return iter(self)
+        self.iterator = iter(SliceParcelIterator(self.labels, self.labelset))
+        return self
 
     #-------------------------------------------------------------------------
     def next(self):
@@ -166,7 +171,13 @@ class SamplingGrid (object):
           mapping=self.mapping.python2matlab())
 
     #-------------------------------------------------------------------------
-    def replicate(self, j): return ConcatenatedGrids([self]*j)
+    def replicate(self, n):
+        """
+        Duplicate self n times, returning a ConcatenatedGrids with
+        shape == (n,)+self.shape.
+        """
+        return ConcatenatedGrids([self]*n)
+
 
 
 ###############################################################################
@@ -245,12 +256,6 @@ class ConcatenatedGrids(SamplingGrid):
     #-------------------------------------------------------------------------
     def subgrid(self, i): return self.grids[i]
 
-
-def DuplicatedGrids(grid, j): return grid.replicate(j)
-#    """
-#    Take a given SamplingGrid and duplicate it j times, returning a
-#    SamplingGrid with shape=(j,)+grid.shape.
-#    """
 
 
 ##############################################################################

@@ -1,13 +1,16 @@
 import sys, gc, os
 import numpy as N
 import neuroimaging
+from neuroimaging.fmri import fMRIImage
+from neuroimaging.image import Image
+from neuroimaging.reference.mapping import Affine
 
 def make4d(subj=int(sys.argv[1]), run=int(sys.argv[2])):
     dir = '/home/analysis/FIAC/fiac%d/fonc%d' % (subj, run)
     framefiles = ['%s/fiac%d_fonc%d_%04d.img' % (dir, subj, run, i) for i in range(5, 196)]
 
     print framefiles[0]
-    frame = neuroimaging.image.Image(framefiles[0], usematfile=False)
+    frame = Image(framefiles[0], usematfile=False)
 
     # setup fMRI grid
 
@@ -17,15 +20,16 @@ def make4d(subj=int(sys.argv[1]), run=int(sys.argv[2])):
     T[0:4,4] = 0.
     T[0,0] = 2.5
 
-    fmrigrid = neuroimaging.reference.grid.DuplicatedGrids(frame.grid, 191)
-    fmrigrid.mapping = neuroimaging.reference.mapping.Affine(fmrigrid.mapping.input_coords,
-                                                             fmrigrid.mapping.output_coords, T)
+    fmrigrid = frame.grid.replicate(191)
+    fmrigrid.mapping = Affine(
+        fmrigrid.mapping.input_coords,
+        fmrigrid.mapping.output_coords, T)
 
-    _fmri = neuroimaging.fmri.fMRIImage('%s/fiac%d_fonc%d.img' % (dir, subj, run), grid=fmrigrid, mode='w', clobber=True, usematfile=False)
+    _fmri = fMRIImage('%s/fiac%d_fonc%d.img' % (dir, subj, run), grid=fmrigrid, mode='w', clobber=True, usematfile=False)
 
     i = 0
     for framefile in framefiles:
-        frame = neuroimaging.image.Image(framefile, usematfile=False)
+        frame = Image(framefile, usematfile=False)
         _fmri.image.memmap[slice(i, i+1, 1)] = frame.readall()
         i += 1
     _fmri.image.memmap.sync()
