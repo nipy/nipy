@@ -1,4 +1,4 @@
-import urllib, stat, string, sets, os, urllib2, gzip, atexit
+import urllib, stat, string, os, urllib2, gzip, atexit
 import enthought.traits as traits
 import cache
 
@@ -75,8 +75,8 @@ class DataFetcher(traits.HasTraits):
             for base in [ext] + self.otherexts:
                 zipexts.append(filebase + base + zipext)
 
-        exts = list(sets.Set(exts))
-        zipexts = list(sets.Set(zipexts))
+        exts = list(set(exts))
+        zipexts = list(set(zipexts))
         return exts, zipexts
     
     #-------------------------------------------------------------------------

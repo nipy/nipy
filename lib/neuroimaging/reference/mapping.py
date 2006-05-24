@@ -1,4 +1,4 @@
-import csv, sets, urllib
+import csv, urllib
 import numpy as N
 from numpy.linalg import inv
 from numpy.random import standard_normal
@@ -181,7 +181,7 @@ class Mapping (object):
         determine subset.
         Warning: this does not know about the newer CoordinateSystem classes.
         """
-        dimnames = list(sets.Set(self.input_coords.axisnames)\
+        dimnames = list(set(self.input_coords.axisnames)\
                         .difference(which.keys()))
         order = [self.input_coords.axisnames.index(dimname)\
                   for dimname in dimnames]
@@ -379,7 +379,7 @@ def permutation_matrix(order=range(3)[2::-1]):
     """
     n = len(order)
     matrix = N.zeros((n,n))
-    if sets.Set(order) != sets.Set(range(n)):
+    if set(order) != set(range(n)):
         raise ValueError(
           'order should be a sequence of integers with values, 0 ... len(order)-1.')
     for i in range(n): matrix[i,order[i]] = 1

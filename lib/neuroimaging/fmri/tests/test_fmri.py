@@ -1,4 +1,4 @@
-import unittest, gc, scipy, sets, os
+import unittest, gc, scipy, os
 import neuroimaging.fmri as fmri
 import neuroimaging.image as image
 import neuroimaging.reference.grid as grid
@@ -43,7 +43,7 @@ class fMRITest(unittest.TestCase):
         self.img.grid.itertype = 'parcel'
         self.img.grid.labels = labels
         labels.shape = N.product(labels.shape)
-        self.img.grid.labelset = sets.Set(N.unique(labels))
+        self.img.grid.labelset = set(N.unique(labels))
 
         v = 0
         for t in self.img:

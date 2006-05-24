@@ -3,7 +3,7 @@ Template ROI class for BrainSTAT
 """
 
 import numpy as N
-import gc, sets, UserList
+import gc, UserList
 
 class ROI:
     """
@@ -62,7 +62,7 @@ class DiscreteROI(ROI):
 
     def __init__(self, coordinate_system, voxels):
         ROI.__init__(self, coordinate_system)
-        self.voxels = sets.Set(voxels)
+        self.voxels = set(voxels)
 
     def __iter__(self):
         self.voxels = iter(self.voxels)
@@ -92,7 +92,7 @@ class DiscreteROI(ROI):
     def __add__(self, other):
         if isinstance(other, DiscreteROI):
             if other.coordinate_system == self.coordinate_system:
-                voxels = sets.Set(self.voxels) + sets.Set(other.voxels)
+                voxels = set(self.voxels) + set(other.voxels)
                 return DiscreteROI(self.coordinate_system, voxels)
             else:
                 raise ValueError, 'coordinate systems do not agree in union of DiscreteROI'
@@ -104,7 +104,7 @@ class SamplingGridROI(DiscreteROI):
     def __init__(self, coordinate_system, voxels, grid):
         ROI.__init__(self, coordinate_system)
         self.grid = grid
-        self.voxels = sets.Set(voxels)
+        self.voxels = set(voxels)
         # we assume that voxels are (i,j,k) indices?
 
     def pool(self, image, **extra):

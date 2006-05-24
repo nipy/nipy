@@ -1,6 +1,3 @@
-# Standard imports
-from sets import Set as set
-
 # External imports
 import numpy as N
 import enthought.traits as traits
