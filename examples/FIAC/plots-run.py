@@ -3,12 +3,13 @@ import os
 import numpy as N
 import pylab
 
+from neuroimaging.tests.data import repository
 from neuroimaging.image import Image
 from neuroimaging.image.interpolation import ImageInterpolator
 from neuroimaging.visualization import slices, montage
 from fixed import FIACresample
 
-standard = Image('/home/analysis/FIAC/avg152T1_brain.img')
+standard = Image('avg152T1_brain.img', datasource=repository)
 
 vmax = {'rho':0.7,
         'fwhmOLS':15.}
