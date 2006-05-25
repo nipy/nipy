@@ -7,17 +7,18 @@ import numpy.random as R
 import scipy.ndimage
 import pylab
 
-from neuroimaging.statistics import iterators, utils 
-from neuroimaging.image import utils as imutils
-from neuroimaging.statistics.regression import OLSModel, ARModel
-import neuroimaging.fmri as fmri
-import neuroimaging.image.kernel_smooth as kernel_smooth
-from neuroimaging.fmri.regression import AROutput, TContrastOutput, FContrastOutput, ResidOutput
-from neuroimaging.image.fwhm import fastFWHM
-
-from delay import DelayContrast, DelayContrastOutput
-
+from neuroimaging.fmri import fMRIImage
+from neuroimaging.fmri.fmristat.delay import DelayContrast, DelayContrastOutput
 from neuroimaging.fmri.plotting import MultiPlot
+from neuroimaging.fmri.regression import AROutput, TContrastOutput, \
+  FContrastOutput, ResidOutput
+from neuroimaging.image import kernel_smooth
+from neuroimaging.image.fwhm import fastFWHM
+from neuroimaging.image.utils import fwhm2sigma
+from neuroimaging.statistics import utils 
+from neuroimaging.statistics.regression import LinearModelIterator, \
+  OLSModel, ARModel
+
 canplot = True
 
 class WholeBrainNormalize(traits.HasTraits):
@@ -46,7 +47,7 @@ class WholeBrainNormalize(traits.HasTraits):
             out[i] = fmri_data[i] * 100. / self.avg[i]
         return out
 
-class fMRIStatOLS(iterators.LinearModelIterator):
+class fMRIStatOLS(LinearModelIterator):
 
     """
     OLS pass of fMRIstat.
@@ -70,7 +71,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
     def __init__(self, fmri_image, outputs=[], **keywords):
         traits.HasTraits.__init__(self, **keywords)
-        self.fmri_image = fmri.fMRIImage(fmri_image)
+        self.fmri_image = fMRIImage(fmri_image)
 
         if self.normalize is not None:
             self.fmri_image.postread = self.normalize
@@ -103,12 +104,12 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 
     def fit(self, reference=None, **keywords):
 
-        iterators.LinearModelIterator.fit(self, **keywords)
+        LinearModelIterator.fit(self, **keywords)
 
         sgrid = self.fmri_image.grid.subgrid(0)
 
         if self.output_fwhm:
-            resid = fmri.fMRIImage(self.resid_output.img)
+            resid = fMRIImage(self.resid_output.img)
             fwhmest = fastFWHM(resid, fwhm=os.path.join(self.path, 'fwhmOLS.img'), clobber=self.clobber)
             fwhmest()
             self.fwhm_data = fwhmest.integrate(mask=self.mask)[1]
@@ -120,7 +121,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
 ##      this will fail for non-affine grids, or grids
 ##      whose axes are not aligned in the standard way            
 
-        sigma = imutils.fwhm2sigma(self.fwhm_rho / N.array(self.fmri_image.image.pixdim[1:4][::-1]))
+        sigma = fwhm2sigma(self.fwhm_rho / N.array(self.fmri_image.image.pixdim[1:4][::-1]))
 
 ##         smoother = kernel_smooth.LinearFilter(sgrid, fwhm=self.fwhm_rho)
 ##         self.rho_estimator.img.grid = sgrid
@@ -231,7 +232,7 @@ class fMRIStatOLS(iterators.LinearModelIterator):
         print 'FWHM for AR estimated as: %02f' % self.fwhm_rho
 
 
-class fMRIStatAR(iterators.LinearModelIterator):
+class fMRIStatAR(LinearModelIterator):
 
     """
     AR(1) pass of fMRIstat.

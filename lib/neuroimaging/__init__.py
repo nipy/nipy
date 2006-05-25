@@ -67,7 +67,6 @@ _preload_modules = (
   'neuroimaging.reference.slices',
   'neuroimaging.statistics.regression',
   'neuroimaging.statistics.classification',
-  'neuroimaging.statistics.iterators',
   'neuroimaging.statistics.contrast',
   'neuroimaging.statistics.utils',
   'neuroimaging.visualization.viewer',)
