@@ -1,9 +1,20 @@
+"""
+This module provides classes and definitions for using full width at half
+maximum (FWHM) to be used in conjunction with Guassian Random Field Theory
+to determine resolution elements (resels).
+
+A resolution element (resel) is defined as a block of pixels of the same
+size as the FWHM of the smoothed image.
+"""
+
+import gc
+
 import numpy as N
-import neuroimaging.image as image
-from neuroimaging.statistics.utils import recipr
 from numpy.linalg import det
 from enthought import traits
-import gc
+
+from neuroimaging.image import Image
+from neuroimaging.statistics.utils import recipr
 
 def fwhm2sigma(fwhm):
     return fwhm / N.sqrt(8 * N.log(2))
@@ -54,14 +65,14 @@ class Resels(traits.HasTraits):
 
     def __iter__(self):
         if not self.fwhm:
-            self.fwhm = iter(image.Image(N.zeros(self.grid.shape, N.Float), grid=self.grid))
+            self.fwhm = iter(Image(N.zeros(self.grid.shape, N.Float), grid=self.grid))
         else:
-            self.fwhm = iter(image.Image(self.fwhm, clobber=self.clobber, mode='w', grid=self.grid))
+            self.fwhm = iter(Image(self.fwhm, clobber=self.clobber, mode='w', grid=self.grid))
 
         if not self.resels:
-            self.resels = iter(image.Image(N.zeros(self.grid.shape, N.Float), grid=self.grid))
+            self.resels = iter(Image(N.zeros(self.grid.shape, N.Float), grid=self.grid))
         else:
-            self.resels = iter(image.Image(self.resels, clobber=self.clobber, mode='w', grid=self.grid))
+            self.resels = iter(Image(self.resels, clobber=self.clobber, mode='w', grid=self.grid))
 
 
         return self
@@ -74,18 +85,18 @@ class ReselImage(Resels):
             raise ValueError, 'need either a resels image or an FWHM image'
 
         if fwhm:
-            fwhm = image.Image(fwhm, **keywords)
+            fwhm = Image(fwhm, **keywords)
             Resels.__init__(self, fwhm, resels=resels, fwhm=fwhm)
 
         if resels:
-            resels = image.Image(resels, **keywords)
+            resels = Image(resels, **keywords)
             Resels.__init__(self, resels, resels=resels, fwhm=fwhm)
 
         if not self.fwhm:
-            self.fwhm = image.Image(self.resel2fwhm(self.resels.readall()), mapping=self.resels.mapping, **keywords)
+            self.fwhm = Image(self.resel2fwhm(self.resels.readall()), mapping=self.resels.mapping, **keywords)
 
         if not self.resels:
-            self.resels = image.Image(self.fwhm2resel(self.fwhm.readall()), mapping=self.fwhm.mapping, **keywords)
+            self.resels = Image(self.fwhm2resel(self.fwhm.readall()), mapping=self.fwhm.mapping, **keywords)
 
     def __iter__(self):
         return
@@ -285,7 +296,7 @@ class fastFWHM(Resels):
     def __init__(self, rimage, **keywords):
         Resels.__init__(self, rimage.grid.subgrid(0), **keywords)
         self.n = rimage.grid.shape[0]
-        self.rimage = image.Image(rimage)
+        self.rimage = Image(rimage)
 
     def __call__(self, verbose=False):
 
