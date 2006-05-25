@@ -108,10 +108,14 @@ class AllSliceIterator (object):
 
 ##############################################################################
 class ParcelIteratorNext (object):
+
     class type (constant): default="parcel"
     class label (readonly): implements=(tuple,int)
     class where (readonly): pass
-    def __init__(self, label, where): self.label, self.where = label, where
+
+    def __init__(self, label, where):
+        self.label, self.where = tuple(label), where
+
     def __repr__(self):
         return "%s(label=%s, where=%s)"%\
          (self.__class__.__name__, `self.label`,`self.where`)
@@ -156,7 +160,7 @@ class ParcelIterator (object):
     #-------------------------------------------------------------------------
     def __init__(self, parcelmap, parcelseq=None):
         self.parcelmap = parcelmap
-        if parcelseq is not None: self.parcelseq = list(set(parcelseq))
+        if parcelseq is not None: self.parcelseq = tuple(parcelseq)
         self._labeliter = iter(self.parcelseq)
 
     #-------------------------------------------------------------------------
@@ -172,11 +176,12 @@ class ParcelIterator (object):
 
  
 ##############################################################################
-class SliceParcelIteratorNext (ParcelIteratorNext, SliceIteratorNext):
+class SliceParcelIteratorNext (ParcelIteratorNext):
     class type (constant): default="slice/parcel"
+    class slice (readonly): "slice index"; implements=int
     def __init__(self, label, where, slice):
-        SliceIteratorNext.__init__(self, slice)
         ParcelIteratorNext.__init__(self, label, where)
+        self.slice = slice
 
        
 ##############################################################################
@@ -204,7 +209,7 @@ class SliceParcelIterator (object):
     clone(ParcelIterator.parcelseq)
 
     #-------------------------------------------------------------------------
-    def __init__(self, parcelmap, parcelseq, **keywords):
+    def __init__(self, parcelmap, parcelseq):
         self.parcelmap = parcelmap
         if len(parcelmap) != len(parcelseq):
             raise ValueError, 'parcelmap and parcelseq must have the same length'
