@@ -90,7 +90,7 @@ class RegularAxis (VoxelAxis):
     #-------------------------------------------------------------------------
     def __eq__(self, axis, tol=1.0e-07):
         "Test equality of two axes by name, length, and values."
-        if not hasattr(axis, "values"): return False
+        if not isinstance(axis, Axis): return False
         v = self.values()
         w = axis.values()
         return VoxelAxis.__eq__(self, axis) and ((v-w)**2).sum()\
