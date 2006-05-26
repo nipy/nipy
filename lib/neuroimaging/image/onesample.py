@@ -62,10 +62,9 @@ class ImageOneSample(onesample.OneSampleIterator):
             self.iterator = ImageSequenceIterator(imgs)
 
             ## don't know if this should go here....
-
-            if self.all:
-                self.iterator.grid.itertype = 'all'
-                self.iterator.grid = iter(self.iterator.grid)
+            #if self.all:
+            #    self.iterator.grid.itertype = 'all'
+            #    self.iterator.grid = iter(self.iterator.grid)
 
             self.witerator = ImageSequenceIterator(wimgs, grid=self.iterator.grid)
         else:

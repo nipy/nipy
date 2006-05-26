@@ -34,13 +34,13 @@ class fMRISamplingGrid(SamplingGrid):
 
     #-------------------------------------------------------------------------
     def iterslices(self):
-        self.iterator = iter(fMRISliceIterator(self.shape))
+        self.iterator = fMRISliceIterator(self.shape)
         return self
 
     #-------------------------------------------------------------------------
     def itersliceparcels(self):
-        self.iterator = iter(
-          fMRISliceParcelIterator(self.parcelmap, self.parcelseq, self.shape[0]))
+        self.iterator = fMRISliceParcelIterator(
+          self.parcelmap, self.parcelseq, self.shape[0])
         return self
 
     #-------------------------------------------------------------------------
@@ -148,43 +148,36 @@ class fMRIImage(Image):
             value = self.itervalue
 
         itertype = value.type
+        postread = hasattr(self,"postread") and self.postread or lambda x: x
 
-        if itertype == 'slice':
-            if data is None:
-                return_value = N.squeeze(self[value.slice])
-                if hasattr(self, 'postread'):
-                    return self.postread(return_value)
-                else:
-                    return return_value
-            else:
-                self[value.slice] = data
+        if data is None:
 
-        elif itertype == 'parcel':
-            if data is None:
+            if itertype == 'slice':
+                postread(N.squeeze(self[value.slice]))
+
+            elif itertype == 'parcel':
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
-                return_value = self.compress(value.where, axis=1)
-                if hasattr(self, 'postread'):
-                    return self.postread(return_value)
-                else:
-                    return return_value
-            else:
-                for i in range(self.grid.shape[0]):
-                    _buffer = self[slice(i,i+1)]
-                    _buffer.put(data, indices)
+                postread(self.compress(value.where, axis=1))
 
-        elif itertype == 'slice/parcel':
-            if data is None:
+            elif itertype == 'slice/parcel':
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
                 tmp = self[value.slice]
                 tmp.shape = (tmp.shape[0], N.product(tmp.shape[1:]))
-                return_value = tmp.compress(value.where, axis=1)
-                if hasattr(self, 'postread'):
-                    return self.postread(return_value)
-                else:
-                    return return_value
-            else:
+                postread(tmp.compress(value.where, axis=1))
+
+        else:
+
+            if itertype == 'slice':
+                self[value.slice] = data
+
+            elif itertype == 'parcel':
+                for i in range(self.grid.shape[0]):
+                    _buffer = self[slice(i,i+1)]
+                    _buffer.put(data, indices)
+
+            elif itertype == 'slice/parcel':
                 indices = N.nonzero(value.where)
                 _buffer = self[value.slice]
                 _buffer.put(data, indices)
@@ -193,7 +186,7 @@ class fMRIImage(Image):
     def __iter__(self):
         "Create an iterator over an image based on its grid's iterator."
         iter(self.grid)
-        if self.grid.itertype is 'parcel': flatten(self.buffer, 1)
+        if self.grid.itertype == 'parcel': flatten(self.buffer, 1)
         return self
 
 

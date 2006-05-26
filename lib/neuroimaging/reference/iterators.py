@@ -8,7 +8,7 @@ from protocols import Sequence
 # Package imports
 from neuroimaging import haslength, flatten
 
-itertypes = ("slice", "parcel", "slice/parcel", "all")
+itertypes = ("slice", "parcel", "slice/parcel")
 
 
 ##############################################################################
@@ -40,7 +40,9 @@ class SliceIterator (object):
     class nslicedim (readonly): implements=int
     class nslice (readonly): default=1
     class ndim (readonly): get=lambda _,s: len(s.end)
+    class _isend (attribute): default=False
 
+    #-------------------------------------------------------------------------
     class Item (object):
         "iterator item"
         class type (constant): default="slice"
@@ -53,22 +55,18 @@ class SliceIterator (object):
         self.end = tuple(end)
         for attr in ("start","step","axis","nslice"):
             if locals()[attr] is not None: setattr(self, attr, locals()[attr])
+
         self.nslicedim = max(nslicedim, self.axis+1)
 
-        self.allslice = [slice(self.start[i],
-                               self.end[i],
-                               self.step[i]) for i in range(self.nslicedim)]
+        self.allslice = [slice(self.start[i], self.end[i], self.step[i]) \
+                         for i in range(self.nslicedim)]
 
-    #-------------------------------------------------------------------------
-    def __iter__(self):
-        self.isend = False
         self.slice = self.start[self.axis]
         self.last = self.end[self.axis]
-        return self
 
     #-------------------------------------------------------------------------
     def next(self):
-        if self.isend:
+        if self._isend:
             raise StopIteration
         _slices = []
         for i in range(self.nslicedim):
@@ -82,31 +80,8 @@ class SliceIterator (object):
                 self.slice += self.nslice * self.step[i]
                 _slices.append(_slice)
 
-        if self.slice >= self.last: self.isend = True
+        if self.slice >= self.last: self._isend = True
         return self.Item(_slices)
-
-
-##############################################################################
-class AllSliceIterator (object):
-    class type (constant): default="all"
-    class shape (readonly): implements=tuple
-    class isend (attribute): default=False
-
-    #-------------------------------------------------------------------------
-    def __init__(self, shape): self.shape = shape
-
-    #-------------------------------------------------------------------------
-    def __iter__(self):
-        self.isend = False
-        return self
-
-    #-------------------------------------------------------------------------
-    def next(self):
-        if self.isend: raise StopIteration
-        _slice = slice(0, self.shape[0], 1)
-        self.isend = True
-        return SliceIterator.Item(_slice)
-
 
 
 ##############################################################################
@@ -145,6 +120,7 @@ class ParcelIterator (object):
         def init(att, self):
             return N.unique(self.parcelmap.flat)
 
+    #-------------------------------------------------------------------------
     class Item (object):
         "iterator item"
 
@@ -164,9 +140,6 @@ class ParcelIterator (object):
         self.parcelmap = parcelmap
         if parcelseq is not None: self.parcelseq = tuple(parcelseq)
         self._labeliter = iter(self.parcelseq)
-
-    #-------------------------------------------------------------------------
-    def __iter__(self): return self
 
     #-------------------------------------------------------------------------
     def next(self):
@@ -202,6 +175,7 @@ class SliceParcelIterator (object):
     clone(ParcelIterator.parcelmap)
     clone(ParcelIterator.parcelseq)
      
+    #-------------------------------------------------------------------------
     class Item (ParcelIterator.Item):
         "iterator item"
         class type (constant): default="slice/parcel"
@@ -217,9 +191,6 @@ class SliceParcelIterator (object):
             raise ValueError, 'parcelmap and parcelseq must have the same length'
         self.parcelseq = parcelseq
         self._loopvars = iter(enumerate(zip(self.parcelmap, self.parcelseq)))
-
-    #-------------------------------------------------------------------------
-    def __iter__(self): return self
 
     #-------------------------------------------------------------------------
     def next(self):

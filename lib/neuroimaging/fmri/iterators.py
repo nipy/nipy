@@ -1,7 +1,6 @@
 from attributes import readonly
 
-from neuroimaging.reference.iterators import SliceIterator, \
-  ParcelIterator, SliceParcelIterator, SliceParcelIterator.Item
+from neuroimaging.reference.iterators import SliceIterator, SliceParcelIterator
 
 ##############################################################################
 class fMRISliceIterator(SliceIterator):
@@ -14,7 +13,6 @@ class fMRISliceIterator(SliceIterator):
         kwargs["axis"]=1
         SliceIterator.__init__(self, end, **kwargs)
 
-##############################################################################
 
 ##############################################################################
 class fMRISliceParcelIterator(SliceParcelIterator):

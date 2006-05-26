@@ -9,13 +9,13 @@ from neuroimaging.reference.axis import space, RegularAxis, VoxelAxis, Axis
 from neuroimaging.reference.coordinate_system import VoxelCoordinateSystem,\
   DiagonalCoordinateSystem, CoordinateSystem
 from neuroimaging.reference.iterators import itertypes, SliceIterator,\
-  ParcelIterator, SliceParcelIterator, AllSliceIterator
+  ParcelIterator, SliceParcelIterator
 
 
 ##############################################################################
 class SamplingGrid (object):
 
-    class shape (readonly): implements=tuple #traits.ListInt()
+    class shape (readonly): implements=tuple
     class ndim (readonly): get=lambda _, self: len(self.shape)
     class mapping (attribute): implements=Mapping
     class iterator (attribute): implements=Iterator
@@ -57,7 +57,7 @@ class SamplingGrid (object):
     #-------------------------------------------------------------------------
     @staticmethod
     def identity(shape=(), names=space):
-        "Return an identity grid of the given shape."
+        "@return an identity grid of the given shape."
         ndim = len(shape)
         if len(names) != ndim:
             raise ValueError('shape and number of axisnames do not agree')
@@ -71,7 +71,7 @@ class SamplingGrid (object):
 
     #-------------------------------------------------------------------------
     def range(self):
-        "Return the coordinate values in the same format as numpy.indices."
+        "@return the coordinate values in the same format as numpy.indices."
         indices = N.indices(self.shape)
         tmp_shape = indices.shape
         # reshape indices to be a sequence of coordinates
@@ -82,32 +82,31 @@ class SamplingGrid (object):
 
     #-------------------------------------------------------------------------
     def __iter__(self):
-        if self.itertype == "all": return self.iterall()
-        elif self.itertype == "slice": return self.iterslices()
-        elif self.itertype == "parcel": return self.iterparcels()
-        elif self.itertype == "slice/parcel": return self.itersliceparcels()
-        else: raise ValueError("unknown itertype %s"%`self.itertype`)
-
-    #-------------------------------------------------------------------------
-    def iterall(self):
-        self.iterator = iter(AllSliceIterator(self.shape))
-        return self
+        itermethod = {
+          "slice": self.iterslices,
+          "parcel": self.iterparcels,
+          "slice/parcel": self.itersliceparcels
+        }.get(self.itertype)
+        if itermethod is None:
+            raise ValueError("unknown itertype %s"%`self.itertype`)
+        return itermethod()
 
     #-------------------------------------------------------------------------
     def iterslices(self, axis=None):
         if axis is None: axis = self.axis
-        self.iterator = iter(SliceIterator(self.shape, axis=self.axis))
+        self.iterator = SliceIterator(self.shape, axis=self.axis)
         return self
 
     #-------------------------------------------------------------------------
     def iterparcels(self, parcelseq=None):
         if parcelseq is None: parcelseq = self.parcelseq
-        self.iterator = iter(ParcelIterator(self.parcelmap, parcelseq))
+        self.iterator = ParcelIterator(self.parcelmap, parcelseq)
         return self
 
     #-------------------------------------------------------------------------
-    def itersliceparcels(self):
-        self.iterator = iter(SliceParcelIterator(self.parcelmap, self.parcelseq))
+    def itersliceparcels(self, parcelseq=None):
+        if parcelseq is None: parcelseq = self.parcelseq
+        self.iterator = SliceParcelIterator(self.parcelmap, self.parcelseq)
         return self
 
     #-------------------------------------------------------------------------
