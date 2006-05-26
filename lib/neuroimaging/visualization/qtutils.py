@@ -1,7 +1,8 @@
 """
 General helper classes for handling some QT boilerplate.
 """
-from qt import *
+from qt import  PYSIGNAL, QFrame, QGridLayout, QHBoxLayout, QLabel, \
+  QRadioButton, QSlider, QVBoxLayout, SIGNAL
 
 ##############################################################################
 class LayoutWidgetMixin (object):

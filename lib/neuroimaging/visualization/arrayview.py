@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-from qt import *
+from qt import qApp, PYSIGNAL, QButtonGroup, QGridLayout, QGroupBox, \
+  QHBoxLayout, QFrame, QLabel, QPoint, QSizePolicy, QSpinBox, QWidget, \
+  QVBoxLayout
 from pylab import Figure, figaspect, gci, show, amax, amin, squeeze, asarray,\
     cm, angle, normalize, pi, arange, ravel, ones, outerproduct, floor,\
     fromfunction, zeros
