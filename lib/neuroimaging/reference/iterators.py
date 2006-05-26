@@ -30,11 +30,14 @@ class SliceIterator (object):
 
     More than one slice can be output at a time, using nslice.
     """
-    class end (readonly): pass
+    class end (readonly):
+        def set(_, self, value): readonly.set(_, self, N.asarray(value))
     class start (readonly):
         def init(_, self): return N.array((0,)*self.nslicedim)
+        def set(_, self, value): readonly.set(_, self, N.asarray(value))
     class step (readonly):
         def init(_, self): return N.array((1,)*self.nslicedim)
+        def set(_, self, value): readonly.set(_, self, N.asarray(value))
     class axis (readonly): default=0
     class nslicedim (readonly): implements=int
     class nslice (readonly): default=1
@@ -112,31 +115,33 @@ class ParcelIteratorNext (object):
 
 ##############################################################################
 class ParcelIterator (object):
-    class labels (readonly): pass
-    class labelset (readonly): pass
+    class labels (attribute): default=N.asarray(())
+    class labelset (attribute):
+        implements=Sequence
+        default=()
+        def get(att, self):
+            if att.isinitialized(self): return attribute.get(att,self)
+            else: return N.unique(self.labels.flat)
+
 
     #-------------------------------------------------------------------------
-    def __init__(self, labels, keys):
+    def __init__(self, labels, keys=None):
         self.labels = N.asarray(labels)
-        if keys == None: labelset = N.unique(self.labels.flat)
-        else: labelset = list(set(keys))
-        self.labelset = iter(labelset)
-        self.labels.shape = haslength(keys[0]) and\
+        if keys is not None: self.labelset = list(set(keys))
+        print "ParcelIterator: keys=",keys
+        self.labels.shape = haslength(self.labelset[0]) and\
           (self.labels.shape[0], N.product(self.labels.shape[1:])) or\
           N.product(self.labels.shape)
 
     #-------------------------------------------------------------------------
-    def __iter__(self): return self
-
-    #-------------------------------------------------------------------------
-    def next(self):
-        label = self.labelset.next()
-        if not haslength(label):
-            wherelabel = N.equal(self.labels, label)
-        else:
-            wherelabel = N.product([N.equal(labeled, label)\
-              for labeled,label in zip(self.labels, label)])
-        return ParcelIteratorNext(label, wherelabel)
+    def __iter__(self):
+        for label in self.labelset:
+            if not haslength(label):
+                wherelabel = N.equal(self.labels, label)
+            else:
+                wherelabel = N.product([N.equal(labeled, label)\
+                  for labeled,label in zip(self.labels, label)])
+            yield ParcelIteratorNext(label, wherelabel)
 
  
 ##############################################################################
