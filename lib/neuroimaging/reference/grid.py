@@ -29,7 +29,7 @@ class SamplingGrid (object):
 
     # for parcel iterators
     clone(ParcelIterator.parcelmap, readonly=False)
-    clone(ParcelIterator.labelset, readonly=False)
+    clone(ParcelIterator.parcelseq, readonly=False)
 
     # delegates
     deferto(mapping, ("input_coords", "output_coords"))
@@ -104,14 +104,14 @@ class SamplingGrid (object):
         return self
 
     #-------------------------------------------------------------------------
-    def iterparcels(self, labelset=None):
-        if labelset is None: labelset = self.labelset
-        self.iterator = iter(ParcelIterator(self.parcelmap, labelset))
+    def iterparcels(self, parcelseq=None):
+        if parcelseq is None: parcelseq = self.parcelseq
+        self.iterator = iter(ParcelIterator(self.parcelmap, parcelseq))
         return self
 
     #-------------------------------------------------------------------------
     def itersliceparcels(self):
-        self.iterator = iter(SliceParcelIterator(self.parcelmap, self.labelset))
+        self.iterator = iter(SliceParcelIterator(self.parcelmap, self.parcelseq))
         return self
 
     #-------------------------------------------------------------------------

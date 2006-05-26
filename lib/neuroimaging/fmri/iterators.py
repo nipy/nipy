@@ -20,8 +20,8 @@ class fMRISliceParcelIterator(SliceParcelIterator):
     "Return parcels of timeseries within slices."
     class nframe (readonly): implements=int
 
-    def __init__(self, labels, labelset, nframe, **keywords):
-        SliceParcelIterator.__init__(self, labels, labelset, **keywords)
+    def __init__(self, labels, parcelseq, nframe, **keywords):
+        SliceParcelIterator.__init__(self, labels, parcelseq, **keywords)
         self.nframe = nframe
 
     def next(self):

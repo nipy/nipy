@@ -143,17 +143,17 @@ class fMRIStatOLS(LinearModelIterator):
             tmp.shape = N.product(tmp.shape)
             self.labels = tmp
             tmp = N.compress(1 - N.isnan(tmp), tmp)
-            self.labelset = list(N.unique(tmp))
+            self.parcelseq = list(N.unique(tmp))
             del(tmp); gc.collect()
         else:
             self.labels = []
-            self.labelset = []
+            self.parcelseq = []
             for i in range(self.rho.grid.shape[0]):
                 tmp = self.rho.getslice(slice(i,i+1))
                 tmp.shape = N.product(tmp.shape)
                 tmp = N.around(tmp * (self.nmax / 2.)) / (self.nmax / 2.)
                 newlabels = list(N.unique(tmp))
-                self.labelset += [newlabels]
+                self.parcelseq += [newlabels]
                 self.labels += [tmp]
 
     def setup_output(self):
@@ -306,7 +306,7 @@ class fMRIStatAR(LinearModelIterator):
         # setup the iterator
 
         self.fmri_image.grid.parcelmap = OLS.parcelmap
-        self.fmri_image.grid.labelset = OLS.labelset
+        self.fmri_image.grid.parcelseq = OLS.parcelseq
 
         self.iterator = iter(self.fmri_image)
         self.j = 0

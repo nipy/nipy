@@ -107,12 +107,12 @@ class ImageTest(unittest.TestCase):
         parcelmap = (rho.readall() * 100).astype(N.Int)
         shape = parcelmap.shape
         parcelmap.shape = N.product(parcelmap.shape)
-        labelset = N.unique(parcelmap)
+        parcelseq = N.unique(parcelmap)
 
         test = Image(N.zeros(shape), grid=rho.grid)
         test.grid.itertype = 'parcel'
         test.grid.parcelmap = parcelmap
-        test.grid.labelset = labelset
+        test.grid.parcelseq = parcelseq
 
         v = 0
 

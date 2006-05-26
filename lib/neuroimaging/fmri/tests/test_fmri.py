@@ -44,7 +44,7 @@ class fMRITest(unittest.TestCase):
         self.img.grid.itertype = 'parcel'
         self.img.grid.parcelmap = parcelmap
         parcelmap.shape = N.product(parcelmap.shape)
-        self.img.grid.labelset = N.unique(parcelmap)
+        self.img.grid.parcelseq = N.unique(parcelmap)
 
         v = 0
         for t in self.img:

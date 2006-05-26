@@ -123,7 +123,7 @@ class ImageOneSampleOutput(onesample.OneSampleOutput):
             img = self.img
         img.grid.itertype = self.grid.itertype
         img.grid.parcelmap = self.grid.parcelmap
-        img.grid.labelset = self.grid.labelset
+        img.grid.parcelseq = self.grid.parcelseq
         iter(img)
         
     def __iter__(self):

@@ -115,7 +115,7 @@ class ParcelIteratorNext (object):
 ##############################################################################
 class ParcelIterator (object):
     class parcelmap (readonly): default=N.asarray(())
-    class labelset (readonly):
+    class parcelseq (readonly):
         implements=Sequence
         def init(att, self):
             return N.unique(self.parcelmap.flat)
@@ -123,14 +123,14 @@ class ParcelIterator (object):
     #-------------------------------------------------------------------------
     def __init__(self, parcelmap, keys=None):
         self.parcelmap = N.asarray(parcelmap)
-        if keys is not None: self.labelset = list(set(keys))
-        self.parcelmap.shape = haslength(self.labelset[0]) and\
+        if keys is not None: self.parcelseq = list(set(keys))
+        self.parcelmap.shape = haslength(self.parcelseq[0]) and\
           (self.parcelmap.shape[0], N.product(self.parcelmap.shape[1:])) or\
           N.product(self.parcelmap.shape)
 
     #-------------------------------------------------------------------------
     def __iter__(self):
-        for label in self.labelset:
+        for label in self.parcelseq:
             if not haslength(label):
                 wherelabel = N.equal(self.parcelmap, label)
             else:
@@ -158,10 +158,10 @@ class SliceParcelIterator (ParcelIterator):
     #-------------------------------------------------------------------------
     def __init__(self, parcelmap, keys, **keywords):
         self.parcelmap = parcelmap
-        self.labelset = iter(keys)
+        self.parcelseq = iter(keys)
 
-        if len(parcelmap) != len(labelset):
-            raise ValueError, 'parcelmap and labelset do not have the same length'
+        if len(parcelmap) != len(parcelseq):
+            raise ValueError, 'parcelmap and parcelseq do not have the same length'
 
     #-------------------------------------------------------------------------
     def __iter__(self):
@@ -171,10 +171,10 @@ class SliceParcelIterator (ParcelIterator):
     #-------------------------------------------------------------------------
     def next(self):
         try:
-            label = self.curlabelset.next()
+            label = self.curparcelseq.next()
         except:
-            self.curlabelset = iter(self.labelset.next())
-            label = self.curlabelset.next()
+            self.curparcelseq = iter(self.parcelseq.next())
+            label = self.curparcelseq.next()
             self.curslice += 1
             pass
 

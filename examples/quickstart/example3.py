@@ -17,14 +17,14 @@ def mask_and_func(subject=0, run=1, offset=5):
 m, f = mask_and_func()
 f.grid.itertype = 'parcel'
 f.grid.parcelmap = m.readall()
-f.grid.labelset = [1, 2]
+f.grid.parcelseq = [1, 2]
 
 means = {}
 for d in f:
     print d.shape
     means[f.label] = N.mean(d, axis=1)
 
-f.grid.labelset = [0, 2] # changing the labelset to select "regions"
+f.grid.parcelseq = [0, 2] # changing the parcelseq to select "regions"
 for d in f:
     print d.shape
 
