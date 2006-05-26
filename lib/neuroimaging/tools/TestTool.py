@@ -1,3 +1,7 @@
+"""
+NiPy project utility for running unit tests.
+"""
+
 import sys
 from optparse import OptionParser, Option
 
@@ -8,10 +12,9 @@ from neuroimaging.testutils import test_all, test_package, get_package_tests
 ##############################################################################
 class TestTool (OptionParser):
     """
-    NiPy project utility for running unit tests.  Tests will be run for the
-    named package (or all packages).  If a test name is given, only that test
-    will be run.  If the list option is given, avalailable tests will be
-    listed for the given package (or all packages).
+    Tests will be run for the named package (or all packages).  If a test name
+    is given, only that test will be run.  If the list option is given,
+    avalailable tests will be listed for the given package (or all packages).
     """
     
     _usage= "%prog [options] [<pkgname> [<testname>]]\n"+__doc__
