@@ -159,17 +159,6 @@ class attribute (property):
               classname)
 
     #-------------------------------------------------------------------------
-    @staticmethod
-    def clone(att, **kwargs):
-        """
-        Static factory method for constructing a new attribute from an
-        existing one, with modifications passed as keyword arguments.
-        """
-        newatt = copy(att)
-        newatt.__dict__.update(kwargs)
-        return newatt
-
-    #-------------------------------------------------------------------------
     def __init__(self,
       name, implements=None, default=None, readonly=None, doc=None):
         self.name = name
@@ -198,6 +187,15 @@ class attribute (property):
         if not hasattr(host, self._attvals_name):
             setattr(host, self._attvals_name, {})
         return getattr(host, self._attvals_name)
+
+    #-------------------------------------------------------------------------
+    def clone(self, **kwargs):
+        """
+        Return a copy of self, with modifications passed as keyword arguments.
+        """
+        newatt = self.__class__(self.name)
+        newatt.__dict__.update(kwargs)
+        return newatt
 
     #-------------------------------------------------------------------------
     def super(self, base=None):
