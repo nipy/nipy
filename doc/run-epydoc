@@ -5,7 +5,6 @@ mkdir -p ${output_dir}
 epydoc -qqqq \
   --output ${output_dir} \
   --name nipy \
-  --css grayscale \
   --no-private \
   --inheritance=listed \
   --ignore-param-mismatch \
