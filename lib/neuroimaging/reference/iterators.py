@@ -114,8 +114,8 @@ class ParcelIteratorNext (object):
 
 ##############################################################################
 class ParcelIterator (object):
-    class parcelmap (attribute): default=N.asarray(())
-    class labelset (attribute):
+    class parcelmap (readonly): default=N.asarray(())
+    class labelset (readonly):
         implements=Sequence
         def init(att, self):
             return N.unique(self.parcelmap.flat)
