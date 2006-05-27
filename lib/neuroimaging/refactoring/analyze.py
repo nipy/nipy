@@ -268,8 +268,10 @@ class AnalyzeImage (BaseImage):
 
     #-------------------------------------------------------------------------
     def load_array(self):
-        return memmap(self._datasource.filename(self.imgfile),
+        arr = memmap(self._datasource.filename(self.imgfile),
             dtype=self.numpy_dtype, shape=self.shape)
+        if self.ndim==4 and self.tdim==1: arr=arr.squeeze()
+        return arr
 
     #-------------------------------------------------------------------------
     def load_grid(self):
@@ -289,11 +291,11 @@ class AnalyzeImage (BaseImage):
             origin = tuple(self.origin[0:3]) + (1,)
             step = tuple(self.pixdim[1:5]) 
             shape = self.dim[1:5]
-            if self.squeeze and self.tdim == 1:
-                    origin = origin[0:3]
-                    step = step[0:3]
-                    axisnames = axisnames[0:3]
-                    shape = self.dim[1:4]
+            if self.tdim == 1:
+                origin = origin[0:3]
+                step = step[0:3]
+                axisnames = axisnames[0:3]
+                shape = self.dim[1:4]
 
         ## Setup affine transformation
         self.grid = SamplingGrid.from_start_step(
@@ -304,9 +306,6 @@ class AnalyzeImage (BaseImage):
 
         # assume .mat matrix uses FORTRAN indexing
         self.grid = self.grid.matlab2python()
-
-    #-------------------------------------------------------------------------
-    def write(self, filestem): AnalyzeWriter().write(self, filestem)
 
 
 ##############################################################################

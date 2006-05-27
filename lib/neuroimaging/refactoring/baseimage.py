@@ -1,25 +1,18 @@
 """
 BaseImage class - wrapper for Image class to test changes to Image interface
 """
-
-
 import sys, os, types
 
 from attributes import attribute, readonly, deferto
 import numpy as N
-from enthought import traits
 
+from neuroimaging import flatten
 from neuroimaging.data import DataSource
+from neuroimaging.image import Image
 from neuroimaging.image.formats import getreader
 from neuroimaging.reference import axis, mapping
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.reference.iterators import ParcelIterator, SliceParcelIterator
-
-##############################################################################
-class Image(traits.HasTraits):
-
-    #-------------------------------------------------------------------------
-    def __del__(self): del self.image
 
 
 ##############################################################################
@@ -47,6 +40,7 @@ class BaseImage(object):
         "number of image dimensions"
         def get(_, self): return len(self.shape)
 
+    deferto(array, ("__getitem__", "__setitem__", "put","compress"))
     deferto(grid, ("transform","itertype"))
 
     #---------------------------------------------
@@ -54,8 +48,10 @@ class BaseImage(object):
     #---------------------------------------------
 
     @staticmethod
-    def fromfile(filename, **kwargs):
-        return getreader(filename)(filename, **kwargs)
+    def fromfile(filename, datasource=None):
+        #return getreader(filename)(filename, datasource=datasource)
+        from neuroimaging.refactoring.analyze import AnalyzeImage
+        return AnalyzeImage(filename, datasource=datasource)
 
     #---------------------------------------------
     #   Instance Methods
@@ -67,21 +63,15 @@ class BaseImage(object):
         if grid is not None: self.grid = grid
 
     #-------------------------------------------------------------------------
-    def __getitem__(self, slices): return self.get_slice(slices)
-    def __setitem__(self, slices, data): self.write_slice(slices, data)
-
-    #-------------------------------------------------------------------------
     def __iter__(self):
         "Create an iterator over an image based on its grid's iterator."
         iter(self.grid)
         if isinstance(self.grid.iterator, ParcelIterator) or \
            isinstance(self.grid.iterator, SliceParcelIterator):
-            self.array.shape = N.product(self.buffer.shape)
+            flatten(self.array)
         return self
 
     #-------------------------------------------------------------------------
-    def get_slice(self, slices): return self.array[slices]
-    def write_slice(self, slices, data): self.array[slices] = data
     def apply_transform(self, matrix): self.grid.apply_transform(matrix)
 
     #-------------------------------------------------------------------------
@@ -93,15 +83,7 @@ class BaseImage(object):
         # NB - this used to be the readall method of the Image class
         # We may need port old code from this usage in due course
         # CHECK THAT: all grid iterators should have allslice attribute
-        return self.get_slice(self.grid.iterator.allslice)
-
-    #-------------------------------------------------------------------------
-    def compress(self, where, axis=0):
-        return self.array.compress(where, axis=axis)
-
-    #-------------------------------------------------------------------------
-    def put(self, data, indices):
-        return self.array.put(data, indices)
+        return self[self.grid.iterator.allslice]
 
     #-------------------------------------------------------------------------
     def next(self, value=None, data=None):
@@ -118,13 +100,13 @@ class BaseImage(object):
 
         if data is None:
             if itertype is 'slice':
-                return postread(N.squeeze(self.getslice(value.slice)))
+                return postread(N.squeeze(self[value.slice]))
             elif itertype is 'parcel':
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
                 return postread(self.compress(value.where, axis=0))
             elif itertype == 'slice/parcel':
-                return postread(self.getslice(value.slice).compress(value.where))
+                return postread(self[value.slice].compress(value.where))
         else:
             if itertype is 'slice':
                 self.writeslice(value.slice, data)
@@ -139,19 +121,16 @@ class BaseImage(object):
     def getvoxel(self, voxel):
         if len(voxel) != self.ndim:
             raise ValueError("expecting a voxel coordinate")
-        return self.getslice(voxel)
+        return self[voxel]
 
     #-------------------------------------------------------------------------
-    def tofile(self, filename, array=True, **keywords):
-        outimage = Image(filename, mode='w', grid=self.grid, **keywords)
-        if array:
-            tmp = self.toarray(**keywords)
-            outimage.image.writeslice(slice(0,self.grid.shape[0],1), tmp.image.data)
-        else:
-            outimage = iter(outimage)
-            for dataslice in self: outimage.next(data=dataslice)
-        outimage.close()
-        return outimage
+    def write(self, filename, writer=None):
+        "Write to file.  (was tofile)."
+        #if writer is None: writer = getwriter(filename)
+        from neuroimaging.refactoring.analyze import AnalyzeWriter
+        writer = AnalyzeWriter().write
+        writer(self, filename)
+
 
 #-----------------------------------------------------------------------------
 def image(input, datasource=DataSource()):
@@ -225,14 +204,14 @@ def writebrick(outfile, start, data, shape, offset=0, outtype=None,
 
 
 ##############################################################################
-class ImageSequenceIterator(traits.HasTraits):
+class ImageSequenceIterator (object):
     """
     Take a sequence of images, and an optional grid (which defaults to
     imgs[0].grid) and create an iterator whose next method returns array
     with shapes (len(imgs),) + self.imgs[0].next().shape.  Very useful for
     voxel-based methods, i.e. regression, one-sample t.
     """
-    def __init__(self, imgs, grid=None, **keywords):
+    def __init__(self, imgs, grid=None):
         self.imgs = imgs
         if grid is None: self.grid = iter(self.imgs[0].grid)
         else: self.grid = iter(grid)
@@ -243,5 +222,3 @@ class ImageSequenceIterator(traits.HasTraits):
         if value is None: value = self.grid.next()
         v = [img.next(value=value) for img in self.imgs]
         return N.array(v, N.Float)
-
-
