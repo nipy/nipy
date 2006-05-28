@@ -8,19 +8,25 @@ support as well as single subject fMRI and random effects group comparisons
 model are currently available.
 
 Specifically, we aim to:
+
    1. Provide an open source, mixed language scientific programming
       environment suitable for rapid development.
+
    2. Create sofware components in this environment to make it easy
       to develop tools for MRI, EEG, PET and other modalities.
+
    3. Create and maintain a wide base of developers to contribute to
       this platform.
+
    4. To maintain and develop this framework as a single, easily
       installable bundle.
 """
 
-__version__ = "0.01a"
+__version__  = "0.01a"
 __revision__ = int("$Rev$".split()[-2])
+__status__   = "alpha"
 __date__     = "$LastChangedDate$"
+__url__      = "http://neuroimaging.scipy.org"
 
 import re
 from copy import copy
