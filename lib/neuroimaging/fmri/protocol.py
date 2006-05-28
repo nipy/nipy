@@ -1,4 +1,4 @@
-import csv, string, types, copy
+import csv, types, copy
 from enthought import traits
 import numpy as N
 
@@ -181,11 +181,11 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
                 pass
             
             if type(end) is type('0.0'):
-                end = string.atof(end)
+                end = float(end)
             if type(start) is type('0.0'):
-                start = string.atof(start)
+                start = float(start)
             if type(height) is type('0.0'):
-                height = string.atof(height)
+                height = float(height)
             self.event[eventtype].append(start, end-start, height=height)
         return self.event
 

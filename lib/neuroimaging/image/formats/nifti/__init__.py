@@ -1,4 +1,4 @@
-import struct, os, sys, numpy, string, types
+import struct, os, sys, numpy, types
 from BrainSTAT import Utils
 import BrainSTAT.Base.Dimension as Dimension
 import BrainSTAT.Base.Coordinates as Coordinates

@@ -5,7 +5,7 @@ of delays and contrasts of delays.
 Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H., Evans, A.C. (2002). \'Estimating the delay of the response in fMRI data.\' NeuroImage, 16:593-606.
 
 """
-import copy, os, string, fpformat
+import copy, os, fpformat
 
 import numpy as N
 import numpy.linalg as L
@@ -146,7 +146,7 @@ class DelayContrastOutput(TContrastOutput):
 
             outname = os.path.join(outdir, 'matrix%s.csv' % rowname)
             outfile = file(outname, 'w')
-            outfile.write(string.join([fpformat.fix(x,4) for x in matrix], ',') + '\n')
+            outfile.write([fpformat.fix(x,4) for x in matrix].join(',') + '\n')
             outfile.close()
 
             outname = os.path.join(outdir, 'matrix%s.bin' % rowname)

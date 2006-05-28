@@ -1,4 +1,4 @@
-import os, csv, string, fpformat
+import os, csv, fpformat
 
 import numpy as N
 from enthought import traits
@@ -98,7 +98,7 @@ class TContrastOutput(ImageRegressionOutput):
 
         outname = os.path.join(self.outdir, 'matrix.csv')
         outfile = file(outname, 'w')
-        outfile.write(string.join([fpformat.fix(x,4) for x in self.contrast.matrix], ',') + '\n')
+        outfile.write([fpformat.fix(x,4) for x in self.contrast.matrix].join(',') + '\n')
         outfile.close()
 
         outname = os.path.join(self.outdir, 'matrix.bin')

@@ -19,7 +19,7 @@ Specifically, we aim to:
 """
 
 __version__ = "0.01a"
-__revision__ = "$Rev$"
+__revision__ = int("$Rev$".split()[-2])
 __date__     = "$LastChangedDate$"
 
 import re
@@ -88,9 +88,9 @@ def reorder(seq, order): return [seq[i] for i in order]
 def reverse(seq): return reorder(seq, range(len(seq)-1, -1, -1))
 
 #-----------------------------------------------------------------------------
-def ensuredirs(dir):
-    if not isinstance(dir, path): dir= path(dir)
-    if not dir.exists(): dir.makedirs()
+def ensuredirs(directory):
+    if not isinstance(directory, path): directory= path(directory)
+    if not directory.exists(): directory.makedirs()
 
 #-----------------------------------------------------------------------------
 #def keywords(func):

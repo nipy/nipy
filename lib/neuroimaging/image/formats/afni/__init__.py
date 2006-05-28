@@ -46,8 +46,8 @@ class AFNI:
         self.keywords = keywords
         self.mode = mode
         self.filebase, self.fileext = os.path.splitext(filename)
-        if len(string.split(self.filebase, '+')) > 1:
-            self.filebase, self.filespace = string.split(self.filebase, '+')
+        if len(self.filebase.split('+')) > 1:
+            self.filebase, self.filespace = self.filebase.split('+')
         else:
             self.filespace = 'orig'
         try:
@@ -260,7 +260,7 @@ class AFNI:
         self.close(brick=False)
         self.open(mode='r', brick=False)
         self.header_atts = {}
-        atts = iter(re.split('type', string.strip(self.hdrfile.read())))
+        atts = iter(re.split('type', self.hdrfile.read().strip()))
         atts.next()
         try:
             while 1:
@@ -269,9 +269,9 @@ class AFNI:
                 att_type = att[0]
                 name = att[1]
                 count = string.atoi(att[2])
-                value = string.strip(att[3])
+                value = att[3].strip()
                 if att_type == 'string-attribute':
-                    value = string.split(string.strip(value[1:-1]), '~')
+                    value = value[1:-1]).strip().split('~')
                     if len(value) == 1:
                         value = value[0]
                 elif att_type == 'integer-attribute':
@@ -284,7 +284,7 @@ class AFNI:
                     att_array = zeros((count,), Float)
                     value = re.split('\s*', value)
                     for i in range(count):
-                        att_array[i] = string.atof(value[i])
+                        att_array[i] = float(value[i])
                     value = att_array
                 setattr(self, name, value)
         except StopIteration:
@@ -319,7 +319,7 @@ class AFNI:
                     headerfile.write(fpformat.fix(value[i], ndecimal) + ' ')
             elif att_type == AFNI_string:
                 if type(value) is types.ListType:
-                    cur_string = string.join(map(lambda x: x.__str__(), value), '~')
+                    cur_string = map(lambda x: x.__str__(), value).join('~')
                 else:
                     cur_string = value
                 count = len(cur_string) + 1
@@ -439,7 +439,7 @@ def read1D(_1Dstring, try1D=True, delimiter=None):
     '''
 
     try:
-        filename, columns = string.split(_1Dstring, '[')
+        filename, columns = _1Dstring.split('[')
     except:
         filename = _1Dstring
         columns = '0]'
