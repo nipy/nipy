@@ -311,6 +311,15 @@ def deferto(delegate, include=(), exclude=(), privates=False):
               (not include or name in includeset) and\
               (not exclude or name not in exclude)]))
 
+#-----------------------------------------------------------------------------
+def clone(att, **kwargs):
+    """
+    Add a clone of the given attribute to the calling scope.  The clone can
+    be modified with the keyword args.
+    """
+    name = kwargs.get("name", att.name)
+    scope(1)[name] = att.clone(**kwargs)
+
 
 ##############################################################################
 class readonly (attribute):
