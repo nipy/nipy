@@ -123,12 +123,10 @@ class ParcelIterator (object):
             if att.isinitialized(self): return attribute.get(att,self)
             else: return N.unique(self.labels.flat)
 
-
     #-------------------------------------------------------------------------
     def __init__(self, labels, keys=None):
         self.labels = N.asarray(labels)
         if keys is not None: self.labelset = list(set(keys))
-        print "ParcelIterator: keys=",keys
         self.labels.shape = haslength(self.labelset[0]) and\
           (self.labels.shape[0], N.product(self.labels.shape[1:])) or\
           N.product(self.labels.shape)
