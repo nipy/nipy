@@ -17,7 +17,7 @@ canplot = True
 class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     """
     A class to output things in GLM passes through fMRI data. It
-    uses the fmri_image\'s iterator values to output to an image.
+    uses the fmri_image's iterator values to output to an image.
 
     The difference between this class and ImageRegressionOutput is the
     iterator that drives everything: here it the iterator of an fMRIImage,

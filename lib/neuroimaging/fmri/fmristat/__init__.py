@@ -115,8 +115,7 @@ class fMRIStatOLS(LinearModelIterator):
             self.fwhm_data = fwhmest.integrate(mask=self.mask)[1]
             print 'FWHM for data estimated as: %02f' % self.fwhm_data
 
-        if self.reference is not None:
-            self.estimateFWHM_AR(self.reference)
+        if reference is not None: self.estimateFWHM_AR(reference)
             
 ##      this will fail for non-affine grids, or grids
 ##      whose axes are not aligned in the standard way            
@@ -130,9 +129,9 @@ class fMRIStatOLS(LinearModelIterator):
         srho = scipy.ndimage.gaussian_filter(self.rho_estimator.img.readall(), sigma)
         self.rho_estimator.img.writeslice(slice(0, self.rho_estimator.img.grid.shape[0], 1), srho)
         self.rho = self.rho_estimator.img
-        self.getlabels()
+        self.getparcelmap()
 
-    def getlabels(self):
+    def getparcelmap(self):
 
         if self.mask is not None:
             _mask = self.mask.readall()
@@ -141,12 +140,12 @@ class fMRIStatOLS(LinearModelIterator):
         if self.slicetimes == None:
             tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
             tmp.shape = N.product(tmp.shape)
-            self.labels = tmp
+            self.parcelmap = tmp
             tmp = N.compress(1 - N.isnan(tmp), tmp)
             self.parcelseq = list(N.unique(tmp))
             del(tmp); gc.collect()
         else:
-            self.labels = []
+            self.parcelmap = []
             self.parcelseq = []
             for i in range(self.rho.grid.shape[0]):
                 tmp = self.rho.getslice(slice(i,i+1))
@@ -154,7 +153,7 @@ class fMRIStatOLS(LinearModelIterator):
                 tmp = N.around(tmp * (self.nmax / 2.)) / (self.nmax / 2.)
                 newlabels = list(N.unique(tmp))
                 self.parcelseq += [newlabels]
-                self.labels += [tmp]
+                self.parcelmap += [tmp]
 
     def setup_output(self):
 

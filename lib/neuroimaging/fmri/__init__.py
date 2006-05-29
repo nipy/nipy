@@ -1,6 +1,7 @@
 from enthought import traits
 import numpy as N
 
+from neuroimaging import flatten
 from neuroimaging.image import Image
 from neuroimaging.fmri.iterators import fMRISliceIterator,\
   fMRISliceParcelIterator
@@ -32,17 +33,14 @@ class fMRIListMapping(Mapping):
 class fMRISamplingGrid(SamplingGrid):
 
     #-------------------------------------------------------------------------
-    def __init__(self, **keywords): SamplingGrid.__init__(self, **keywords)
-
-    #-------------------------------------------------------------------------
     def iterslices(self):
         self.iterator = iter(fMRISliceIterator(self.shape))
         return self
 
     #-------------------------------------------------------------------------
     def itersliceparcels(self):
-        self.iterator = iter(fMRISliceParcelIterator(self.parcelmap,
-          self.parcelseq, self.shape))
+        self.iterator = iter(
+          fMRISliceParcelIterator(self.parcelmap, self.parcelseq, self.shape[0]))
         return self
 
     #-------------------------------------------------------------------------
@@ -153,13 +151,13 @@ class fMRIImage(Image):
 
         if itertype == 'slice':
             if data is None:
-                return_value = N.squeeze(self.getslice(value.slice))
+                return_value = N.squeeze(self[value.slice])
                 if hasattr(self, 'postread'):
                     return self.postread(return_value)
                 else:
                     return return_value
             else:
-                self.writeslice(value.slice, data)
+                self[value.slice] = data
 
         elif itertype == 'parcel':
             if data is None:
@@ -172,14 +170,14 @@ class fMRIImage(Image):
                     return return_value
             else:
                 for i in range(self.grid.shape[0]):
-                    _buffer = self.getslice([slice(i,i+1)])
+                    _buffer = self[slice(i,i+1)]
                     _buffer.put(data, indices)
 
         elif itertype == 'slice/parcel':
             if data is None:
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
-                tmp = self.getslice(value.slice)
+                tmp = self[value.slice]
                 tmp.shape = (tmp.shape[0], N.product(tmp.shape[1:]))
                 return_value = tmp.compress(value.where, axis=1)
                 if hasattr(self, 'postread'):
@@ -188,18 +186,14 @@ class fMRIImage(Image):
                     return return_value
             else:
                 indices = N.nonzero(value.where)
-                _buffer = self.getslice(value.slice)
+                _buffer = self[value.slice]
                 _buffer.put(data, indices)
 
     #-------------------------------------------------------------------------
     def __iter__(self):
         "Create an iterator over an image based on its grid's iterator."
         iter(self.grid)
-
-        if self.grid.itertype is 'parcel':
-            self.buffer = self.readall()
-            self.buffer.shape = (
-              self.buffer.shape[0], N.product(self.buffer.shape[1:]))
+        if self.grid.itertype is 'parcel': flatten(self.buffer, 1)
         return self
 
 
