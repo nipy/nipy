@@ -14,16 +14,16 @@ itertypes = ("slice", "parcel", "slice/parcel", "all")
 ##############################################################################
 class SliceIteratorNext (object):
     class type (constant): default="slice"
-    class slice (readonly): pass
+    class slice (attribute): implements=(Sequence,slice)
     def __init__(self, slice): self.slice = slice
 
 
 ##############################################################################
 class SliceIterator (object):
     """
-    This class is an iterator that steps through the slices
-    of a N-dimensional array of shape shape, along a particular axis, with a
-    given step and an optional start.
+    This class is an iterator that steps through the slices of an
+    N-dimensional array of shape shape, along a particular axis, with a given
+    step and an optional start.
 
     The attribute nslicedim determines how long a slice is returned, only
     step[0:nslicedim] and start[0:nslicedim] is used, where self.step
@@ -31,6 +31,7 @@ class SliceIterator (object):
 
     More than one slice can be output at a time, using nslice.
     """
+    class type (constant): default="slice"
     class end (readonly):
         def set(_, self, value): readonly.set(_, self, N.asarray(value))
     class start (readonly):
@@ -43,7 +44,6 @@ class SliceIterator (object):
     class nslicedim (readonly): implements=int
     class nslice (readonly): default=1
     class ndim (readonly): get=lambda _,s: len(s.end)
-    class type (constant): default="slice"
 
     #-------------------------------------------------------------------------
     def __init__(self, end, start=None, step=None, axis=None, nslicedim=None,
@@ -109,7 +109,7 @@ class AllSliceIterator (object):
 ##############################################################################
 class ParcelIteratorNext (object):
     class type (constant): default="parcel"
-    class label (readonly): implements=(None,) # fix: can be tuple or int
+    class label (readonly): implements=(tuple,int)
     class where (readonly): pass
     def __init__(self, label, where): self.label, self.where = label, where
     def __repr__(self):
@@ -212,16 +212,13 @@ class SliceParcelIterator (object):
         self._loopvars = iter(enumerate(zip(self.parcelmap, self.parcelseq)))
 
     #-------------------------------------------------------------------------
-    def __iter__(self):
-        for index, (mapslice,label) in self._loopvars:
-            item = iter(ParcelIterator(mapslice, (label,))).next()
-            yield SliceParcelIteratorNext(item.label,item.where,index)
+    def __iter__(self): return self
 
     #-------------------------------------------------------------------------
-    #def next(self):
-    #    index, (mapslice,label) = self._loopvars.next()
-    #    item = iter(ParcelIterator(mapslice, (label,))).next()
-    #    return SliceParcelIteratorNext(item.label,item.where,index)
+    def next(self):
+        index, (mapslice,label) = self._loopvars.next()
+        item = iter(ParcelIterator(mapslice, (label,))).next()
+        return SliceParcelIteratorNext(item.label,item.where,index)
 
         # get rid of index and type from SliceParcelIteratorNext, then do this:
         #return ParcelIterator(mapslice, (label,)).next()
