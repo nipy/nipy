@@ -348,8 +348,8 @@ def deferto(delegate, include=(), exclude=(), privates=False):
     delegate_proto = union(*map(protoset, delegate.implements))
     includeset = set(include)
     if not includeset.issubset(delegate_proto):
-        raise ValueError("delegate does not implement %s"%\
-          (tuple(includeset - delegate_proto),))
+        raise ValueError("delegate of type %s does not implement %s"%\
+          (`type(delegate)`, tuple(includeset - delegate_proto),))
 
     scope(1).update(
       dict([(name,wrapper(name,delegate))\
