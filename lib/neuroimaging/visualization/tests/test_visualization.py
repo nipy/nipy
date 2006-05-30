@@ -19,11 +19,11 @@ class VisualizationTest(unittest.TestCase):
 
     def test_transversal_slice(self):
         interpolator = ImageInterpolator(self.img)
-        min = float(self.img.readall().min())
-        max = float(self.img.readall().max())
+        vmin = float(self.img.readall().min())
+        vmax = float(self.img.readall().max())
         _slice = slices.transversal(self.img, z=0.,
           xlim=[-20,20.], ylim=[0,40.])
-        x = slices.DataSlicePlot(interpolator, _slice, vmax=max, vmin=min,
+        x = slices.DataSlicePlot(interpolator, _slice, vmax=vmax, vmin=vmin,
           colormap='spectral', interpolation='nearest')
         x.width = 0.8; x.height = 0.8
         pylab.figure(figsize=(3,3))
