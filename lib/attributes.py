@@ -295,6 +295,32 @@ class wrapper (attribute):
         delegate = getattr(host,self.delegate.name)
         setattr(self._host_delegate(host), self.attname, value)
 
+
+##############################################################################
+class readonly (attribute):
+    "An attribute which cannot be changed after it is initialized."
+    classdef = True
+    readonly = True
+
+
+##############################################################################
+class constant (attribute):
+    "An attribute which can never be set (must specify a default value)."
+    classdef = True
+    def get(self, host): return self.default
+    def set(self, host, value): raise AttributeError(
+      "attribute %s is constant (value=%s) and cannot be set"%\
+      (self.name, self.default))
+
+##############################################################################
+class enum (attribute):
+    classdef = True
+    values=()
+    def set(self, host, value):
+        if value not in self.values:
+            raise ValueError("enum %s must be one of %s"%(self.name,values))
+        attribute.set(_, self, value)
+
 #-----------------------------------------------------------------------------
 def deferto(delegate, include=(), exclude=(), privates=False):
     if include and exclude:
@@ -325,22 +351,6 @@ def clone(att, **kwargs):
     name = kwargs.get("name", att.name)
     scope(1)[name] = att.clone(**kwargs)
 
-
-##############################################################################
-class readonly (attribute):
-    "An attribute which cannot be changed after it is initialized."
-    classdef = True
-    readonly = True
-
-
-##############################################################################
-class constant (attribute):
-    "An attribute which can never be set (must specify a default value)."
-    classdef = True
-    def get(self, host): return self.default
-    def set(self, host, value): raise AttributeError(
-      "attribute %s is constant (value=%s) and cannot be set"%\
-      (self.name, self.default))
 
 
 ##############################################################################

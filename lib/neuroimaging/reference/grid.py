@@ -1,6 +1,6 @@
 import numpy as N
 
-from attributes import attribute, readonly, deferto, clone
+from attributes import attribute, readonly, enum, deferto, clone
 from protocols import Iterator, Sequence
 
 from neuroimaging import reverse
@@ -19,12 +19,7 @@ class SamplingGrid (object):
     class ndim (readonly): get=lambda _, self: len(self.shape)
     class mapping (attribute): implements=Mapping
     class iterator (attribute): implements=Iterator
-    class itertype (attribute):
-        default="slice"
-        def set(_, self, value):
-            if value not in itertypes: raise ValueError(
-              "itertype must be one of %s"%itertypes)
-            attribute.set(_, self, value)
+    class itertype (enum): values=itertypes; default="slice"
     class axis (attribute): default=0
 
     # for parcel iterators
