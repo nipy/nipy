@@ -200,7 +200,8 @@ class AnalyzeHeader (object):
            for att in struct_fields.keys()])
 
     #-------------------------------------------------------------------------
-    def write(self, outfile): AnalyzeWriter.write_hdr(self, outfile)
+    def write(self, outfile, clobber=False):
+        AnalyzeWriter(self, clobber=clobber).write_hdr(outfile)
 
 
 def get_filestem(filename, extensions):
@@ -307,6 +308,11 @@ class AnalyzeImage (BaseImage):
         # assume .mat matrix uses FORTRAN indexing
         self.grid = self.grid.matlab2python()
 
+    #-------------------------------------------------------------------------
+    def write(self, outfile, clobber=False):
+        AnalyzeWriter(self, clobber=clobber).write(outfile)
+
+
 
 ##############################################################################
 class AnalyzeWriter (object):
@@ -323,28 +329,20 @@ class AnalyzeWriter (object):
 
     _format_defaults = {'i': 0, 'h': 0, 'f': 0., 'c': '\0', 's': ''}
 
+    class _image (readonly): "image being written"
+    class _clobber (readonly): "overwrite existing files?"; default=False
+
+    #-------------------------------------------------------------------------
+    def __init__(self, image, clobber=None):
+        self._image = image
+        if clobber is not None: self._clobber = clobber
+
     #-------------------------------------------------------------------------
     @staticmethod
-    def write_hdr(image, outfile):
-        """
-        Write ANALYZE format header (.hdr) file.
-        @param image: either an AnalyzeHeader or AnalyzeImage
-        """
-        if type(outfile) == type(""): outfile = file(outfile,'w')
-
-        def fieldvalue(fieldname, fieldformat):
-            if hasattr(image, fieldname): return getattr(image, fieldname)
-            return AnalyzeWriter._default_field_value(fieldname, fieldformat)
-
-        fieldvalues = [fieldvalue(*field) for field in struct_fields.items()]
-        header = struct_pack(image.byteorder, field_formats, fieldvalues)
-        outfile.write(header)
-
-    #-------------------------------------------------------------------------
-    def _default_field_value(self, fieldname, fieldformat):
+    def _default_field_value(fieldname, fieldformat):
         "[STATIC] Get the default value for the given field."
-        return self._field_defaults.get(fieldname, None) or \
-               self._format_defaults[fieldformat[-1]]
+        return AnalyzeWriter._field_defaults.get(fieldname, None) or \
+               AnalyzeWriter._format_defaults[fieldformat[-1]]
 
     #-------------------------------------------------------------------------
     def write(self, filestem):
@@ -354,11 +352,29 @@ class AnalyzeWriter (object):
         self.write_img(imagename)
 
     #-------------------------------------------------------------------------
+    def write_hdr(self, outfile):
+        """
+        Write ANALYZE format header (.hdr) file.
+        @param outfile: filename or filehandle to write the header into
+        """
+        if type(outfile) == type(""): outfile = file(outfile,'w')
+
+        def fieldvalue(fieldname, fieldformat):
+            if hasattr(self._image, fieldname):
+                return getattr(self._image, fieldname)
+            return AnalyzeWriter._default_field_value(fieldname, fieldformat)
+
+        fieldvalues = [fieldvalue(*field) for field in struct_fields.items()]
+        header = struct_pack(self._image.byteorder, field_formats, fieldvalues)
+        outfile.write(header)
+
+
+    #-------------------------------------------------------------------------
     def write_img(self, filename):
         "Write ANALYZE format image (.img) file."
         # Write the image file.
         f = file( filename, "w" )
-        f.write( self.image.data.tostring() )
+        f.write( self._image.array.tostring() )
         f.close()
 
 #-----------------------------------------------------------------------------

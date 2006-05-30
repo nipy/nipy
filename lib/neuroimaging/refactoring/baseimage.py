@@ -40,6 +40,10 @@ class BaseImage(object):
         "number of image dimensions"
         def get(_, self): return len(self.shape)
 
+    class postread (attribute):
+        "apply this function to data after reading"
+        default=lambda self, data: data
+
     deferto(array, ("__getitem__", "__setitem__", "put","compress"))
     deferto(grid, ("transform","itertype"))
 
@@ -72,20 +76,6 @@ class BaseImage(object):
         return self
 
     #-------------------------------------------------------------------------
-    def apply_transform(self, matrix): self.grid.apply_transform(matrix)
-
-    #-------------------------------------------------------------------------
-    def grid_array(self): 
-        '''
-        Read an entire Image object, returning a numpy array. By
-        default, it does not read 4d images. 
-        '''
-        # NB - this used to be the readall method of the Image class
-        # We may need port old code from this usage in due course
-        # CHECK THAT: all grid iterators should have allslice attribute
-        return self[self.grid.iterator.allslice]
-
-    #-------------------------------------------------------------------------
     def next(self, value=None, data=None):
         """
         The value argument here is used when, for instance one wants to
@@ -95,27 +85,34 @@ class BaseImage(object):
         image's iterator returns and use it here.
         """
         if value is None: self.itervalue = value = self.grid.next()
-        itertype = value.type
         postread = getattr(self, 'postread', None) or (lambda x:x)
 
         if data is None:
-            if itertype is 'slice':
-                return postread(N.squeeze(self[value.slice]))
-            elif itertype is 'parcel':
+            if self.itertype is 'slice':
+                result = N.squeeze(self[value.slice])
+            elif self.itertype is 'parcel':
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
-                return postread(self.compress(value.where, axis=0))
-            elif itertype == 'slice/parcel':
-                return postread(self[value.slice].compress(value.where))
+                result = self.compress(value.where, axis=0)
+            elif self.itertype == 'slice/parcel':
+                result = self[value.slice].compress(value.where)
+            return self.postread(result)
         else:
-            if itertype is 'slice':
+            if self.itertype is 'slice':
                 self.writeslice(value.slice, data)
-            elif itertype is 'parcel':
+            elif self.itertype in ("parcel","slice/parcel"):
                 indices = N.nonzero(value.where)
                 self.put(data, indices)
-            elif itertype == 'slice/parcel':
-                indices = N.nonzero(value.where)
-                self.put(data, indices)
+
+    #-------------------------------------------------------------------------
+    def grid_array(self): 
+        '''
+        Read an entire Image object, returning a numpy array. By
+        default, it does not read 4d images. 
+        '''
+        # NB - this used to be the readall method of the Image class
+        # We may need port old code from this usage in due course
+        return self[self.grid.iterator.allslice]
                 
     #-------------------------------------------------------------------------
     def getvoxel(self, voxel):
@@ -124,23 +121,23 @@ class BaseImage(object):
         return self[voxel]
 
     #-------------------------------------------------------------------------
-    def write(self, filename, writer=None):
+    def write(self, filename, writer=None, clobber=False):
         "Write to file.  (was tofile)."
         #if writer is None: writer = getwriter(filename)
         from neuroimaging.refactoring.analyze import AnalyzeWriter
         writer = AnalyzeWriter().write
-        writer(self, filename)
+        writer(self, filename, clobber=clobber)
 
 
 #-----------------------------------------------------------------------------
-def image(input, datasource=DataSource()):
+def image(input, datasource=DataSource(), grid=None):
     """
     Create a Image (volumetric image) object from either a file, an
     existing Image object, or an array.
     """
     
     # from array
-    if isinstance(input, N.ndarray): return BaseImage(input)
+    if isinstance(input, N.ndarray): return BaseImage(input, grid=grid)
         
     # from filename or url
     elif type(input) == types.StringType:

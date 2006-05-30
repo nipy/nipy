@@ -3,7 +3,7 @@ import unittest, glob, os, scipy
 import numpy as N
 
 from neuroimaging.image.onesample import ImageOneSample
-from neuroimaging.refactoring.baseimage import image, BaseImage
+from neuroimaging.refactoring.baseimage import image
 from neuroimaging.tests.data import repository
 
 class BaseImageTest(unittest.TestCase):
@@ -28,7 +28,7 @@ class BaseImageTest(unittest.TestCase):
         self.assertEquals(x.shape, tuple(self.img.grid.shape[1:]))
         
     def test_slice2(self):
-        x = self.img[3,5]
+        x = self.img[3:5]
         self.assertEquals(x.shape, (2,) + tuple(self.img.grid.shape[1:]))
 
     def test_slice3(self):
@@ -37,8 +37,7 @@ class BaseImageTest(unittest.TestCase):
         self.assertEquals(x.shape, (10,) + tuple(self.img.grid.shape[1:]))
 
     def test_slice4(self):
-        s = slice(0,self.img.grid.shape[0])
-        x = self.img[s]
+        x = self.img[:]
         self.assertEquals(x.shape, tuple((self.img.grid.shape)))
 
     def test_slice5(self):
@@ -79,7 +78,7 @@ class BaseImageTest(unittest.TestCase):
     def test_parcels1(self):
         rho = self.rho
         parcelmap = (rho.array * 100).astype(N.Int)
-        test = BaseImage(N.zeros(parcelmap.shape), grid=rho.grid)
+        test = image(N.zeros(parcelmap.shape), grid=rho.grid)
         test.grid.itertype = 'parcel'
         test.grid.parcelmap = parcelmap
        
@@ -91,7 +90,7 @@ class BaseImageTest(unittest.TestCase):
     def test_parcels2(self):
         rho = self.rho
         parcelmap = (rho.array * 100).astype(N.Int)
-        test = BaseImage(N.zeros(parcelmap.shape), grid=rho.grid)
+        test = image(N.zeros(parcelmap.shape), grid=rho.grid)
 
         test.grid.itertype = 'parcel'
         test.grid.parcelmap = parcelmap
@@ -113,7 +112,7 @@ class BaseImageTest(unittest.TestCase):
         parcelmap.shape = N.product(parcelmap.shape)
         parcelseq = N.unique(parcelmap)
 
-        test = BaseImage(N.zeros(shape), grid=rho.grid)
+        test = image(N.zeros(shape), grid=rho.grid)
         test.grid.itertype = 'parcel'
         test.grid.parcelmap = parcelmap
         test.grid.parcelseq = parcelseq
@@ -133,6 +132,5 @@ class BaseImageTest(unittest.TestCase):
             repository)
         x = ImageOneSample([im1,im2,im3], clobber=True)
         x.fit()
-
 
 if __name__ == '__main__': unittest.main()
