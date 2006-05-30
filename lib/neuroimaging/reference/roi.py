@@ -1,5 +1,5 @@
 """
-Template ROI class for NiPy
+Template region of interest (ROI) module
 """
 
 import gc
