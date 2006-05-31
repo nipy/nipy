@@ -102,6 +102,7 @@ False
 28
 >>> h.speak()
 blahblahblah
+>>>
 >>> class ThoughtfulHead (Head):
 ...     "Speaks its mind"
 ...     deferto(Head.brain)
@@ -111,6 +112,7 @@ blahblahblah
 hmmm
 >>> h.numteeth
 28
+>>>
 >>> class HungryHead (Head):
 ...     "Lets the stomach do the talking, but has no acid"
 ...     deferto(Head.stomach, ("speak",))
@@ -122,6 +124,7 @@ I'm hungry!
 Traceback (most recent call last):
   File "<stdin>", line 1, in ?
 AttributeError: 'HungryHead' object has no attribute 'acid'
+>>>
 """
 from sys import _getframe as getframe
 from copy import copy
@@ -143,7 +146,7 @@ class attribute (property):
     classdef = False
     default = None
     readonly = False
-    doc = ""
+    doc = None
     implements = ()
 
     protocol = property(lambda self: protocol(*self.implements))
@@ -177,10 +180,8 @@ class attribute (property):
         if len(self.implements)==0 and self.default is not None:
             self.implements = (self.default,)
 
-        if doc is None: doc = self.__doc__
-
-        property.__init__(self,
-          fget=self.get, fset=self.set, fdel=self.delete, doc=doc)
+        self.doc = (doc is None) and self.__doc__ or doc
+        property.__init__(self, fget=self.get, fset=self.set, fdel=self.delete)
 
     #-------------------------------------------------------------------------
     def _get_attvals(self, host):
