@@ -26,7 +26,7 @@ class ImageTest(unittest.TestCase):
         self.assertEquals(x.shape, tuple(self.img.grid.shape[1:]))
         
     def test_slice2(self):
-        x = self.img.getslice(slice(3,5))
+        x = self.img[3:5]
         self.assertEquals(x.shape, (2,) + tuple(self.img.grid.shape[1:]))
 
     def test_slice3(self):

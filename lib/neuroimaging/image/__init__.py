@@ -10,7 +10,6 @@ from neuroimaging.image.formats import getreader
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.reference.iterators import ParcelIterator, SliceParcelIterator
 
-zipexts = (".gz",".bz2")
 
 ##############################################################################
 class Image(traits.HasTraits):
@@ -26,7 +25,7 @@ class Image(traits.HasTraits):
         class data (readonly): "internal data array"; implements=N.ndarray
         deferto(data, ("__getitem__","__setitem__"))
         
-        def __init__(self, data, grid=None, **extra):
+        def __init__(self, data, grid=None):
             """
             Create an ArrayImage instance from an array,
             by default assumed to be 3d.
@@ -46,15 +45,16 @@ class Image(traits.HasTraits):
 
     #-------------------------------------------------------------------------
     @staticmethod
-    def fromurl(url, datasource=DataSource(), mode="r", grid=None,
-                clobber=False, **keywords):
+    def fromurl(url, datasource=DataSource(), grid=None, mode="r", clobber=False,
+      **keywords):
+        zipexts = (".gz",".bz2")
         base, ext = os.path.splitext(url.strip())
         if ext in zipexts: url = base
         return getreader(url)(filename=url,
           datasource=datasource, mode=mode, clobber=clobber, grid=grid, **keywords)
 
     #-------------------------------------------------------------------------
-    def __init__(self, image, datasource=DataSource(), **keywords):
+    def __init__(self, image, datasource=DataSource(), grid=None, **keywords):
         '''
         Create a Image (volumetric image) object from either a file, an
         existing Image object, or an array.
@@ -64,22 +64,18 @@ class Image(traits.HasTraits):
         # from existing Image
         if isinstance(image, Image):
             self.image = image.image
-            self.isfile = image.isfile
 
         # from array
         elif isinstance(image, N.ndarray) or isinstance(image, N.core.memmap):
-            self.isfile = False
-            self.image = self.ArrayImage(image, **keywords)
+            self.image = self.ArrayImage(image, grid=grid)
 
         # from filename or url
         elif type(image) == types.StringType:
-            self.isfile = True
-            self.image = self.fromurl(image, datasource, **keywords)
+            self.image = self.fromurl(image, datasource, grid=grid, **keywords)
 
-        else: raise ValueError("Image input must be a string, array, or another image.")
+        else: raise ValueError(
+          "Image input must be a string, array, or another image.")
             
-        self.type = type(self.image)
-
         # Find spatial grid -- this is the one that will be used generally
         self.grid = self.image.grid
         self.shape = list(self.grid.shape)
@@ -91,7 +87,7 @@ class Image(traits.HasTraits):
         elif isinstance(self.image.data, N.ndarray):
             self.buffer = self.image.data          
 
-        self.postread = lambda x: x
+        self.postread = lambda x:x
 
     #-------------------------------------------------------------------------
     def __getitem__(self, slice): return self.image[slice]
@@ -99,23 +95,6 @@ class Image(traits.HasTraits):
     def __setitem__(self, slice, data): self.image[slice] = data
     def writeslice(self, slice, data): self[slice] = data
 
-    #-------------------------------------------------------------------------
-    def __del__(self):
-        if self.isfile:
-            try: self.image.close()
-            except: pass
-        else: del(self.image)
-
-    #-------------------------------------------------------------------------
-    def open(self, mode='r'):
-        if self.isfile: self.image.open(mode=mode)
-
-    #-------------------------------------------------------------------------
-    def close(self):
-        if self.isfile:
-            try: self.image.close()
-            except: pass
-        
     #-------------------------------------------------------------------------
     def __iter__(self):
         "Create an iterator over an image based on its grid's iterator."
@@ -147,18 +126,18 @@ class Image(traits.HasTraits):
         original image's iterator returns and use it here.
         """
         if value is None: self.itervalue = value = self.grid.next()
-        itertype = value.type
-        postread = getattr(self, 'postread', None) or (lambda x:x)
+        itertype = self.grid.itertype
 
         if data is None:
             if itertype is 'slice':
-                return postread(N.squeeze(self[value.slice]))
+                result = N.squeeze(self[value.slice])
             elif itertype is 'parcel':
                 flatten(value.where)
                 self.label = value.label
-                return postread(self.compress(value.where, axis=0))
+                result = self.compress(value.where, axis=0)
             elif itertype == 'slice/parcel':
-                return postread(self[value.slice].compress(value.where))
+                result = self[value.slice].compress(value.where)
+            return self.postread(result)
         else:
             if itertype is 'slice':
                 self[value.slice] = data
@@ -187,7 +166,6 @@ class Image(traits.HasTraits):
         >>> print _test.shape
         (13, 128, 128)
         """
-        if self.isfile: self.close()
         data = self.readall()
         if clean: data = N.nan_to_num(data)
         return Image(self.postread(data), grid=self.grid, **keywords)
@@ -203,7 +181,7 @@ class Image(traits.HasTraits):
             tmp = iter(self)
             outimage = iter(outimage)
             for dataslice in tmp: outimage.next(data=dataslice)
-        outimage.close()
+        if hasattr(outimage, "close"): outimage.close()
         return outimage
 
     #-------------------------------------------------------------------------

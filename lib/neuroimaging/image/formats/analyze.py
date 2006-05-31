@@ -187,7 +187,7 @@ class ANALYZE(traits.HasTraits):
     clobber = traits.false
 
     #-------------------------------------------------------------------------
-    def __init__(self, filename=None, datasource=DataSource(), **keywords):
+    def __init__(self, filename=None, datasource=DataSource(), grid=None, **keywords):
         self.datasource = datasource
         self.filebase = filename and os.path.splitext(filename)[0] or None
         self.hdrattnames = [name for name in self.trait_names() \
@@ -195,7 +195,7 @@ class ANALYZE(traits.HasTraits):
         traits.HasTraits.__init__(self, **keywords)
 
         if self.mode is 'w':
-            self._dimfromgrid(keywords['grid'])
+            self._dimfromgrid(grid)
             self.writeheader()
             if filename: self.readheader(self.hdrfilename())
             self.getdtype()
