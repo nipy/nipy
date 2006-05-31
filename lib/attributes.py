@@ -319,7 +319,7 @@ class enum (attribute):
     def set(self, host, value):
         if value not in self.values:
             raise ValueError("enum %s must be one of %s"%(self.name,values))
-        attribute.set(_, self, value)
+        attribute.set(self, host, value)
 
 #-----------------------------------------------------------------------------
 def deferto(delegate, include=(), exclude=(), privates=False):
