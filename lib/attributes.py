@@ -301,6 +301,7 @@ class wrapper (attribute):
 def deferto(delegate, include=(), exclude=(), privates=False):
     if include and exclude:
         raise ValueError("please use only include or exclude but not both")
+    if filter(lambda n: n[0]=='_', include): privates = True
     delegate_proto = delegate.protocol
     includeset = set(include)
     if not includeset.issubset(delegate_proto):
