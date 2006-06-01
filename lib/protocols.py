@@ -23,6 +23,12 @@ class MutableSequence (Sequence):
     def __setitem__(self, index, value): pass
     def __delitem__(self, index): pass
 
+def haslength(obj):
+    try:
+       len(obj)
+       return True
+    except: return False
+
 def protoset(obj):
     "@return the set of names representing the protocol supported by obj."
     proto = dir(obj)
