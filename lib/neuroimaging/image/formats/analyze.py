@@ -431,21 +431,23 @@ class ANALYZE(traits.HasTraits):
             del(self.memmap)
         
     #-------------------------------------------------------------------------
-    def getslice(self, slice):
-        v = self.memmap[slice]
+    def __getitem__(self, _slice):
+        v = self.memmap[_slice]
         if self.scale_factor:
             return v * self.scale_factor
         else:
             return v
+    def getslice(self, _slice): return self[_slice]
 
     #-------------------------------------------------------------------------
-    def writeslice(self, slice, data):
+    def __setitem__(self, _slice, data):
         if self.scale_factor:
             _data = data / self.scale_factor
         else:
             _data = data
-        self.memmap[slice] = _data.astype(self.dtype)
+        self.memmap[_slice] = _data.astype(self.dtype)
         _data.shape = N.product(_data.shape)
+    def writeslice(self, _slice, data): self[slice] = data
         
     #-------------------------------------------------------------------------
     def readmat(self):

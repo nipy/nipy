@@ -2,6 +2,7 @@ import types, os
 
 from enthought import traits
 import numpy as N
+from attributes import readonly, deferto
 
 from neuroimaging import flatten
 from neuroimaging.data import DataSource
@@ -20,6 +21,9 @@ class Image(traits.HasTraits):
     #-------------------------------------------------------------------------
     class ArrayImage (object):
         "A simple class to mimic an image file from an array."
+        class data (readonly): "internal data array"; implements=N.ndarray
+        deferto(data, ("__getitem__","__setitem__"))
+        
         def __init__(self, data, grid=None, **extra):
             """
             Create an ArrayImage instance from an array,
@@ -35,9 +39,8 @@ class Image(traits.HasTraits):
             self.shape = self.data.shape
             self.grid = grid and grid or SamplingGrid.identity(self.shape)
 
-        def getslice(self, _slice): return self.data[_slice]
-
-        def writeslice(self, _slice, data): self.data[_slice] = data
+        def getslice(self, _slice): return self[_slice]
+        def writeslice(self, _slice, data): self[_slice] = data
 
     #-------------------------------------------------------------------------
     @staticmethod
@@ -87,8 +90,10 @@ class Image(traits.HasTraits):
             self.buffer = self.image.data          
 
     #-------------------------------------------------------------------------
-    def __getitem__(self, slices): return self.getslice(slices)
-    def __setitem__(self, slices, data): self.writeslice(slices, data)
+    def __getitem__(self, slice): return self.image[slice]
+    def getslice(self, slice): return self[slice]
+    def __setitem__(self, slice, data): self.image[slice] = data
+    def writeslice(self, slice, data): self[slice] = data
 
     #-------------------------------------------------------------------------
     def __del__(self):
@@ -143,16 +148,16 @@ class Image(traits.HasTraits):
 
         if data is None:
             if itertype is 'slice':
-                return postread(N.squeeze(self.getslice(value.slice)))
+                return postread(N.squeeze(self[value.slice]))
             elif itertype is 'parcel':
                 flatten(value.where)
                 self.label = value.label
                 return postread(self.compress(value.where, axis=0))
             elif itertype == 'slice/parcel':
-                return postread(self.getslice(value.slice).compress(value.where))
+                return postread(self[value.slice].compress(value.where))
         else:
             if itertype is 'slice':
-                self.writeslice(value.slice, data)
+                self[value.slice] = data
             elif itertype in ('parcel', "slice/parcel"):
                 self.put(data, N.nonzero(value.where))
 
@@ -160,7 +165,7 @@ class Image(traits.HasTraits):
     def getvoxel(self, voxel):
         if len(voxel) != self.ndim:
             raise ValueError, 'expecting a voxel coordinate'
-        return self.getslice(voxel)
+        return self[voxel]
 
     #-------------------------------------------------------------------------
     def toarray(self, clean=True, **keywords):
@@ -192,7 +197,8 @@ class Image(traits.HasTraits):
                          clobber=clobber, **keywords)
         if array:
             tmp = self.toarray(**keywords)
-            outimage.image.writeslice(slice(0,self.grid.shape[0],1), tmp.image.data)
+            #outimage.image[slice(0,self.grid.shape[0])] = tmp.image.data
+            outimage.image[:] = tmp.image.data
         else:
             tmp = iter(self)
             outimage = iter(outimage)
@@ -211,13 +217,11 @@ class Image(traits.HasTraits):
             _slice = self.grid.iterator.allslice
         except:
             _slice = slice(0, self.shape[0], 1)
-        value = self.image.getslice(_slice)
+        value = self.image[_slice]
         if clean: value = Image(_clean(value, fill=self.fill))
         return value
 
     #-------------------------------------------------------------------------
-    def getslice(self, slice): return self.image.getslice(slice)
-    def writeslice(self, slice, data): return self.image.writeslice(slice, data)
     def check_grid(self, test): return self.grid == test.grid
 
 
