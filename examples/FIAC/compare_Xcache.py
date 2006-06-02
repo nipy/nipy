@@ -1,4 +1,3 @@
-
 import numpy as N
 import scipy.io
 import scipy.optimize
@@ -14,57 +13,57 @@ t = N.arange(0,191*2.5,0.02)
 def n(x): return x / N.fabs(x).max()
 
 def getxcache(subj=0, run=1):
-    mat = urllib2.urlopen('http://kff.stanford.edu/FIAC/x_cache/mat/x_cache_sub%d_run%d.mat' % (subj, run)).read()
-    if not os.path.exists('x_cache'):
-        os.makedirs('x_cache')
-    outfile = file('x_cache/x_cache_sub%d_run%d.mat' % (subj, run), 'wb')
-    outfile.write(mat)
-    outfile.close()
+    """
+    Retrieve x_cache, downloading .mat file from FIAC results website
+    if necessary.
+    """
     
+    x_cache = 'x_cache/x_cache_sub%d_run%d.mat' % (subj, run)
+    if not os.path.exists(x_cache):
+        mat = urllib2.urlopen('http://kff.stanford.edu/FIAC/x_cache/mat/x_cache_sub%d_run%d.mat' % (subj, run)).read()
+        if not os.path.exists('x_cache'):
+            os.makedirs('x_cache')
+        outfile = file('x_cache/x_cache_sub%d_run%d.mat' % (subj, run), 'wb')
+        outfile.write(mat)
+        outfile.close()
+    X = scipy.io.loadmat(x_cache)['X']
+    if len(X.shape) == 4:
+        X = X[:,:,:,0]
+    return X
 
 def compare(subj=0, run=1, show=False, save=True, etype='DSt_DSp', deriv=True):
 
     f = FIACrun.FIACformula(subj=subj,run=run)
 
-    pi = f.termnames().index('FIAC_design')
-    p = f.terms[pi]
+    """
+    First, get the formula term corresponding to the design,
+    and find out
+    """
+    
+    design_index = f.termnames().index('FIAC_design') 
+    design = f.terms[design_index]
+    event_index = design._event_keys.index(etype)
 
-    x_cache = 'x_cache/x_cache_sub%d_run%d.mat' % (subj, run)
-    if not os.path.exists(x_cache):
-        getxcache(subj=subj, run=run)
-    X = scipy.io.loadmat(x_cache)['X']
-    if len(X.shape) == 4:
-        X = X[:,:,:,0]
+    X = getxcache(subj=subj, run=run)
 
-    pi = p._event_keys.index(etype)
     if deriv:
-        dpi = pi + 4
-        kfi = 3
+        event_index += 4
+        fmristat_index = 3  
     else:
-        dpi = pi
-        kfi = 2
+        fmristat_index = 2  
         
     v = N.zeros((4,), N.Float)
 
     for i in range(4):
-        v[i] = ((n(p(T)[dpi]) - n(X[:,i,kfi]))**2).sum()
+        v[i] = ((n(design(T)[event_index]) - n(X[:,i,fmristat_index]))**2).sum()
 
-    ki = N.argmin(v)
+    fmristat_col = N.argmin(v)
 
     pylab.clf()
     
-    pylab.plot(T, n(X[:,ki,kfi]), 'b-o', label='Xcache[:,%d,%d]' % (ki, kfi))
-    pylab.plot(T, n(X[:,ki,kfi-2]), 'r-o', label='Xcache[:,%d,%d]' % (ki, kfi-2))
-    pylab.plot(t, n(p(t+shift)[dpi]), 'g', label='unshifted', linewidth=2)
-    
-    def crit(x, dx=1.0e-05):
-        v = ((n(p(T+x)[dpi]) - n(X[:,ki,kfi]))**2).sum()
-        w = ((n(p(T+x+dx)[dpi]) - n(X[:,ki,kfi]))**2).sum()
-        return v-w
-
-    dopt = scipy.optimize.bisect(crit, -1.5, 1.5)
-
-    pylab.plot(t, n(p(t+dopt)[dpi]), 'g--', label='shifted', linewidth=2)
+    print design._event_keys
+    pylab.plot(T, n(X[:,fmristat_col,fmristat_index]), 'b-o', label='Xcache[:,%d,%d]' % (fmristat_col, fmristat_index))
+    pylab.plot(t, n(design(t)[event_index]), 'g', label='unshifted', linewidth=2)
 
     a = pylab.gca()
     e = p.events[etype]
@@ -92,15 +91,12 @@ def compare(subj=0, run=1, show=False, save=True, etype='DSt_DSp', deriv=True):
         else:
             a.set_ylim([-0.8,1.6])
 
-    pylab.title('Best shift: %0.3f' % dopt)
     pngfile = '/home/analysis/FIAC/x_cache/images/compare_sub%d_run%d_deriv%d_type%s.png' % (subj, run, int(deriv), etype)
     if save:
         pylab.savefig(pngfile)
     if show:
         pylab.show()
-    return dopt, pngfile
-
-shifts = []
+    return pngfile
 
 f = FIACrun.FIACformula()
 pi = f.termnames().index('FIAC_design')
@@ -122,6 +118,7 @@ html2 = """
 <!-- hhmts start --> <!-- hhmts end -->
 </body> </html>
 """
+compare(subj=0, run=3)
 
 if __name__ == '__main__':
     for i in range(16):
@@ -133,8 +130,7 @@ if __name__ == '__main__':
                 for deriv in [False, True]:
                     try:
                         hasany = True
-                        dopt, pngfile = compare(subj=i, run=j, deriv=deriv, etype=etype)
-                        shifts.append(dopt)
+                        pngfile = compare(subj=i, run=j, deriv=deriv, etype=etype)
                         htmlfile.write('<h2>Event type %s, derivative=%s</h2>\n' % (etype, str(deriv)))
                         htmlfile.write('<img src="images/%s">' % os.path.basename(pngfile))
                         print i, j, deriv, etype

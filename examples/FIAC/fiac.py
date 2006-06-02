@@ -54,7 +54,7 @@ def FIACblock(subj=3, run=3):
     # take off the first 3.33 seconds of each eventtype for the block design
     # the blocks lasted 20 seconds with 9 seconds of rest at the end
 
-##     keep = range(0, len(events), 6)
+##    keep = range(0, len(events), 6)
 ##     intervals = [[events[keep[i]], times[keep[i]] + 3.33, times[keep[i]]+20.] for i in range(len(keep))]
 ##     p = ExperimentalFactor('FIAC_design', intervals, delta=False)
 
