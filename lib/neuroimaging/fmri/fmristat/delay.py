@@ -257,7 +257,7 @@ class DelayContrastOutput(TContrastOutput):
         return results
 
     def next(self, data=None):
-        if self.grid.itervalue.type is 'slice':
+        if self.grid.itertype == 'slice':
             value = copy.copy(self.grid.itervalue)
             value.slice = value.slice[1]
         else:

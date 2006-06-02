@@ -20,9 +20,6 @@ class fMRISliceParcelIterator(SliceParcelIterator):
 
     class nframe (readonly): "number of frames"; implements=int
 
-    class Item(SliceParcelIterator.Item):
-        class slice (readonly): implements=tuple
-
     def __init__(self, parcelmap, parcelseq, nframe):
         SliceParcelIterator.__init__(self, parcelmap, parcelseq)
         self.nframe = nframe

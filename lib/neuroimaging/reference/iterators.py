@@ -125,7 +125,7 @@ class ParcelIterator (object):
         "iterator item"
 
         class type (constant): default="parcel"
-        class label (readonly): implements=(tuple,int)
+        class label (readonly): implements=tuple,int
         class where (readonly): pass
 
         def __init__(self, label, where):
@@ -178,11 +178,13 @@ class SliceParcelIterator (object):
     #-------------------------------------------------------------------------
     class Item (ParcelIterator.Item):
         "iterator item"
+
         class type (constant): default="slice/parcel"
-        class slice (readonly): "slice index"; implements=int
-        def __init__(self, label, where, slice):
+        class slice (readonly): "slice index"; implements=tuple,int
+
+        def __init__(self, label, where, _slice):
             ParcelIterator.Item.__init__(self, label, where)
-            self.slice = slice
+            self.slice = _slice
 
     #-------------------------------------------------------------------------
     def __init__(self, parcelmap, parcelseq):
@@ -195,7 +197,7 @@ class SliceParcelIterator (object):
     #-------------------------------------------------------------------------
     def next(self):
         index, (mapslice,label) = self._loopvars.next()
-        item = iter(ParcelIterator(mapslice, (label,))).next()
+        item = ParcelIterator(mapslice, (label,)).next()
         return self.Item(item.label,item.where,index)
 
         # get rid of index and type from SliceParcelIterator.Item, then do this:

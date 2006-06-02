@@ -148,24 +148,25 @@ class fMRIImage(Image):
             value = self.itervalue
 
         itertype = value.type
-        postread = hasattr(self,"postread") and self.postread or lambda x: x
 
         if data is None:
 
             if itertype == 'slice':
-                postread(N.squeeze(self[value.slice]))
+                result = N.squeeze(self[value.slice])
 
             elif itertype == 'parcel':
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
-                postread(self.compress(value.where, axis=1))
+                result = self.compress(value.where, axis=1)
 
             elif itertype == 'slice/parcel':
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
                 tmp = self[value.slice]
                 tmp.shape = (tmp.shape[0], N.product(tmp.shape[1:]))
-                postread(tmp.compress(value.where, axis=1))
+                result = tmp.compress(value.where, axis=1)
+
+            return self.postread(result)
 
         else:
 

@@ -47,7 +47,7 @@ class fMRIStatTest(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree('fmristat_run', ignore_errors=True)
-                      
+
     def test_model_slicetimes(self):
         OLS = fMRIStatOLS(self.img, formula=self.formula,
                                    slicetimes=self.img.slicetimes)

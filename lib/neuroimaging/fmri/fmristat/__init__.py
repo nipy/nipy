@@ -93,7 +93,7 @@ class fMRIStatOLS(LinearModelIterator):
 
         self.setup_output()
         
-    def model(self, **keywords):
+    def model(self):
         ftime = self.fmri_image.frametimes + self.tshift
         if self.slicetimes is not None:
             _slice = self.iterator.grid.itervalue.slice
@@ -319,13 +319,12 @@ class fMRIStatAR(LinearModelIterator):
                                             clobber=self.clobber)
             self.outputs.append(self.resid_output)
 
-    def model(self, **keywords):
+    def model(self):
         self.j += 1
+        itervalue = self.iterator.grid.itervalue
         if self.slicetimes is not None:
-            rho = self.iterator.grid.itervalue.label
-            i = self.iterator.grid.itervalue.slice[1]
-            model = ARModel(rho=rho, design=self.designs[i])
-        else:
-            rho = self.iterator.grid.itervalue.label
-            model = ARModel(rho=rho, design=self.dmatrix)
-        return model
+            design=self.designs[itervalue.slice[1]]
+        else: design = self.dmatrix
+        # is using the first parcel label correct here?
+        # rho needs to be a single float...
+        return ARModel(rho=itervalue.label[0], design=design)

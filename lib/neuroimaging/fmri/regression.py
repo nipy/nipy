@@ -35,7 +35,7 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
         return self
 
     def next(self, data=None):
-        if self.grid.itervalue.type is 'slice':
+        if self.grid.itertype == 'slice':
             value = copy.copy(self.grid.itervalue)
             value.slice = value.slice[1]
         else:
@@ -107,7 +107,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
             f.clf()
 
     def next(self, data=None):
-        if self.grid.itervalue.type is 'slice':
+        if self.grid.itertype == 'slice':
             value = copy.copy(self.grid.itervalue)
             value.slice = value.slice[1]
         else:
