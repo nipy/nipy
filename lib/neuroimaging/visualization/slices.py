@@ -9,6 +9,8 @@ from neuroimaging.image.interpolation import ImageInterpolator
 
 class Slice(traits.HasTraits):
 
+    transpose = traits.false
+
     def __init__(self, interpolator, grid, **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.interpolator = interpolator
@@ -114,31 +116,39 @@ class RGBASlicePlot(Slice):
     interpolation = interpolation
     origin = origin
 
-    # traits to determine pylab axes instance
+    # traits to determine pylab axes instances
     height = traits.Trait(traits.Float())
     width = traits.Trait(traits.Float())
-    xoffset = traits.Float(0.1)
-    yoffset = traits.Float(0.1)
+    xoffset = traits.Float(0.1, desc="Proportion (in matplotlib units) of figure to left and right of plotting region.")
+    yoffset = traits.Float(0.1, desc="Proportion (in matplotlib units) of figure above and below plotting region.")
 
-    mask = traits.Any()
-    maskthresh = traits.Float(0.1)
-    maskcolor = traits.ListFloat([0,0,0])
+    mask = traits.Any(desc="Mask interpolator defined on the same output coordinate system as the image interpolator.")
+    maskthresh = traits.Float(0.5, desc="Threshold for mask.")
+    maskcolor = traits.ListFloat([0,0,0], desc="Color to display in masked regions.")
+
+    transpose = traits.Trait(False, desc='Transpose data before ploting?')
+
+    def mask_data(self, data):
+        if self.mask is not None:
+            alpha = N.greater_equal(N.squeeze(self.mask(self.grid.range())), 0.1)
+            if self.transpose:
+                alpha = N.transpose(alpha)
+            for i in range(3):
+                data[:,:,i] = data[:,:,i]*alpha + (1 - alpha)*self.maskcolor[i]
+        return data
+            
 
     def draw(self, data=None, redraw=False, *args, **keywords):
         if data is None: data = self.RGBA(data=data)
 
-        if self.mask is not None:
-            alpha = N.greater_equal(N.squeeze(self.mask(self.grid.range())), 0.1)
-            for i in range(3):
-                data[:,:,i] = data[:,:,i]*alpha + (1 - alpha)*self.maskcolor[i]
-            
+        masked_data = self.mask_data(data)
         pylab.axes(self.axes)
 
         if not redraw:
-            self.imshow = pylab.imshow(data, interpolation=self.interpolation,
+            self.imshow = pylab.imshow(masked_data, interpolation=self.interpolation,
               aspect='auto', origin=self.origin)
         else:
-            self.imshow.set_data(data)
+            self.imshow.set_data(masked_data)
             
     def getaxes(self):
         height = self.height and self.height or self.grid.squeezeshape[0]
@@ -147,8 +157,14 @@ class RGBASlicePlot(Slice):
         
     def RGBA(self, data=None):
         "Return the RGBA values for the interpolator over the slice's grid."
-        return data or N.squeeze(self.interpolator(self.grid.range()))
-
+        if data is None:
+            v = N.squeeze(self.interpolator(self.grid.range()))
+        else:
+            v = data
+        if self.transpose:
+            v = N.transpose(v, (1,0,2))
+        return v
+    
 
 class RGBSlicePlot(RGBASlicePlot):
 
@@ -160,12 +176,12 @@ class RGBSlicePlot(RGBASlicePlot):
         """
         v = N.squeeze(self.interpolator(self.grid.range()))
         if self.alpha == 1.:
-            return v
+            return RGBASlicePlot.RGBA(self, data=v)
         else:
             V = N.zeros(v.shape[0:2] + (4,), N.Float)
             V[0:2,0:3] = v
             V[0:2,3] = self.alpha
-            return V
+            return RGBASlicePlot.RGBA(self, data=V)
 
     def draw(self, data=None, redraw=False, *args, **keywords):
         RGBASlicePlot.draw(self, data=self.RGBA(data=data), redraw=redraw)
@@ -191,12 +207,12 @@ class DataSlicePlot(RGBSlicePlot):
             data = N.squeeze(self.interpolator(self.grid.range()))
         v = self.norm(data)
         _cmap = getcmap(self.colormap)
-        return N.array(_cmap(v))
+        return RGBASlicePlot.RGBA(self, data=N.array(_cmap(v)))
 
     def draw(self, data=None, redraw=False, *args, **keywords):
         RGBASlicePlot.draw(self, data=self.RGBA(data=data), redraw=redraw)
 
-class SagittalPlot (DataSlicePlot):
+class SagittalPlot(DataSlicePlot):
 
     x = traits.Float(0.)
     xlim = traits.ListFloat(xlim)

@@ -60,7 +60,7 @@ class Montage(traits.HasTraits):
         for ij, _slice in self.slices.items():
             i, j = ij
             if _slice is not None:
-                data[ij] = _slice.RGBA()
+                data[ij] = _slice.mask_data(_slice.RGBA())
 
         if not redraw:
             self.axes = {}
@@ -75,12 +75,12 @@ class Montage(traits.HasTraits):
                                             dx, dy])
 
                 self.axes[ij].set_xticklabels([])
+                self.axes[ij].set_yticklabels([])
                 self.axes[ij].set_yticks([])
+                self.axes[ij].set_xticks([])
                 
                 if _slice is not None:
-                    pylab.imshow(_slice.RGBA())
-                    pylab.show()
-                    self.imshow[ij] = pylab.imshow(_slice.RGBA(),
+                    self.imshow[ij] = pylab.imshow(data[ij],
                                                    interpolation=self.interpolation,
                                                    aspect='auto',
                                                    origin=self.origin)
@@ -91,18 +91,17 @@ class Montage(traits.HasTraits):
         else:
             for ij, _slice in self.slices.keys():
                 pylab.axes(self.axes[ij])
-                self.imshow[ij].set_data(self.data)
+                self.imshow[ij].set_data(data[ij])
             
         pylab.draw()
 
-        
     def draw_colorbar(self):
  
         dy = (1 - 2. * self.ybuf) / self.nrow
 
         self.color_axes = pylab.axes([1 - 0.8 * self.xrbuf,
                                       self.ybuf,
-                                      0.6 * self.xrbuf,
+                                      0.9 * self.xrbuf,
                                       dy])
         self.color_axes.set_xticks([])
         self.color_axes.set_yticks(range(0,120,20))
