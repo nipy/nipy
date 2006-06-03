@@ -30,7 +30,7 @@ class PCA(traits.HasTraits):
     design_keep = traits.Array(shape=(None,None), desc='Data is projected onto the column span of design_keep.')
     design_resid = traits.Array(shape=(None,None), desc='After projecting onto the column span of design_keep, data is projected off of the column span of this matrix.')
     tol = traits.Float(1.0e-05)
-    pcatype = traits.Trait('cor','cov')
+    pcatype = traits.Trait('cor','cov', desc='Perform PCA on correlation or covariance matrix?')
     mask = traits.Instance(Image)
     ext = traits.String('.img')
 
@@ -251,7 +251,7 @@ try:
 
             basegrid = images[0].grid
             if self.mask is not None:
-                mask_interp = ImageInterpolator(mask)
+                mask_interp = ImageInterpolator(self.mask)
             else:
                 mask_interp = None
 
