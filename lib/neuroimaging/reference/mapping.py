@@ -333,7 +333,7 @@ class Affine(Mapping):
                       inverse(self.transform))
     
     #-------------------------------------------------------------------------
-    def isdiagonal(self): return isdiagonal(self.transform)
+    def isdiagonal(self): return isdiagonal(self.transform[0:self.ndim,0:self.ndim])
  
     #-------------------------------------------------------------------------
     def tofile(self, filename):
