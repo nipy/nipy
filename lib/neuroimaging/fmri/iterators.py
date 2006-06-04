@@ -26,6 +26,6 @@ class fMRISliceParcelIterator(SliceParcelIterator):
 
     def next(self):
         value = SliceParcelIterator.next(self)
-        return self.Item(
+        return SliceParcelIterator.Item(
             value.label, value.where,(slice(0,self.nframe), value.slice))
 

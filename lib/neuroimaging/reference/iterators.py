@@ -3,10 +3,10 @@ import operator
 # External imports
 import numpy as N
 from attributes import attribute, readonly, constant, clone
-from protocols import Sequence
+from protocols import Sequence, haslength
 
 # Package imports
-from neuroimaging import haslength, flatten
+from neuroimaging import flatten
 
 itertypes = ("slice", "parcel", "slice/parcel")
 
@@ -46,7 +46,7 @@ class SliceIterator (object):
     class Item (object):
         "iterator item"
         class type (constant): default="slice"
-        class slice (attribute): implements=(Sequence,slice)
+        class slice (attribute): implements=Sequence,slice
         def __init__(self, slice): self.slice = slice
 
     #-------------------------------------------------------------------------
@@ -81,7 +81,7 @@ class SliceIterator (object):
                 _slices.append(_slice)
 
         if self.slice >= self.last: self._isend = True
-        return self.Item(_slices)
+        return SliceIterator.Item(_slices)
 
 
 ##############################################################################
@@ -147,7 +147,7 @@ class ParcelIterator (object):
         if not haslength(label): label = (label,)
         wherelabel = reduce(operator.or_,
           [N.equal(self.parcelmap, lbl) for lbl in label])
-        return self.Item(label, wherelabel)
+        return ParcelIterator.Item(label, wherelabel)
 
 
        
@@ -198,7 +198,7 @@ class SliceParcelIterator (object):
     def next(self):
         index, (mapslice,label) = self._loopvars.next()
         item = ParcelIterator(mapslice, (label,)).next()
-        return self.Item(item.label,item.where,index)
+        return SliceParcelIterator.Item(item.label,item.where,index)
 
         # get rid of index and type from SliceParcelIterator.Item, then do this:
         #return ParcelIterator.Item(mapslice, (label,)).next()
