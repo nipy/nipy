@@ -2,9 +2,9 @@ import csv, types, copy
 from enthought import traits
 import numpy as N
 
-#from neuroimaging.fmri.utils import LinearInterpolant
 from neuroimaging.fmri.functions import TimeFunction, StepFunction
 from neuroimaging.statistics.formula import Factor, Quantitative, Formula, Term
+from scipy.interpolate import interp1d
 
 namespace = {}
 downtime = 'None/downtime'
@@ -308,7 +308,7 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
                 eventtype, start, end = row
                 if not self.events.has_key(eventtype):
                     self.events[eventtype] = Events(name=eventtype)
-                self.events[eventtype].append(float(start), fload(end)-float(start), height=1.0)
+                self.events[eventtype].append(float(start), float(end)-float(start), height=1.0)
             else:
                 eventtype, start = row
                 if not self.events.has_key(eventtype):
@@ -320,6 +320,7 @@ class ExperimentalFormula(Formula):
     """
     A formula with no intercept.
     """
+
 
     def __mul__(self, other, nested=False):
         return ExperimentalFormula(Formula.__mul__(self, other))

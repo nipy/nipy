@@ -1,5 +1,5 @@
 import fiac, fixed, sys, time, os, fpformat
-import run as RUN
+import run as FIACrun
 
 def FIACsubject(subj=3):
     ttoc = time.time()
@@ -7,11 +7,12 @@ def FIACsubject(subj=3):
         toc = time.time()
         vdict = {'subj':subj, 'run':run}
 
-        fsldir = fiac.FIACpath('fsl', subj=subj, run=run)
+        fsldir = fiac.FIACpath('fsl', subj=subj, run=run, base='/home/analysis/FIAC')
+
         if os.path.exists('%s/filtered_func_data.img' % fsldir):
             os.chdir(fsldir)
 
-            RUN.FIACrun(subj=subj, run=run)
+            FIACrun.FIACrun(subj=subj, run=run)
             tic = time.time()
             print 'time for subj=%(subj)d, run=%(run)d:' % vdict, fpformat.fix(tic-toc, 3)
         

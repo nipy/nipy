@@ -40,8 +40,7 @@ def compare(subj=0, run=1, show=False, save=True, etype='DSt_DSp', deriv=True):
     and find out
     """
     
-    design_index = f.termnames().index('FIAC_design') 
-    design = f.terms[design_index]
+    design = f['FIAC_design']
     event_index = design._event_keys.index(etype)
 
     X = getxcache(subj=subj, run=run)
@@ -52,8 +51,11 @@ def compare(subj=0, run=1, show=False, save=True, etype='DSt_DSp', deriv=True):
     else:
         fmristat_index = 2  
         
+    """
+    Find the correspondence between the columns.
+    """
+    
     v = N.zeros((4,), N.Float)
-
     for i in range(4):
         v[i] = ((n(design(T)[event_index]) - n(X[:,i,fmristat_index]))**2).sum()
 
@@ -61,20 +63,16 @@ def compare(subj=0, run=1, show=False, save=True, etype='DSt_DSp', deriv=True):
 
     pylab.clf()
     
-    print design._event_keys
     pylab.plot(T, n(X[:,fmristat_col,fmristat_index]), 'b-o', label='Xcache[:,%d,%d]' % (fmristat_col, fmristat_index))
     pylab.plot(t, n(design(t)[event_index]), 'g', label='unshifted', linewidth=2)
 
     a = pylab.gca()
-    e = p.events[etype]
+    e = design.events[etype]
     print e.name
 
     pylab.plot(t, e(t), 'm', label='%s(=%d)' % (etype, FIACrun.eventdict_r[etype]), linewidth=2)
 
-    hrf = FIACrun.DelayHRF()
-    ee = hrf.convolve(e, interval=[-5,192*2.5])[int(deriv)]
-    
-    if p.design_type == 'block':
+    if design.design_type == 'block':
         ii = N.nonzero(e.values)
         a.set_xlim([max(e.times[ii[0]]-10.,0),e.times[ii[0]+1]+40.])
         if deriv:
@@ -84,7 +82,7 @@ def compare(subj=0, run=1, show=False, save=True, etype='DSt_DSp', deriv=True):
 
     pylab.legend()
 
-    if p.design_type == 'event':
+    if design.design_type == 'event':
         a.set_xlim([0.,e.times[6]+30.])
         if deriv:
             a.set_ylim([-1.5,1.5])

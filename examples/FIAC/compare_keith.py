@@ -77,8 +77,8 @@ else:
     
 m = mask(**options)
 
-vx = BoxViewer(x, mask=m)
-vy = BoxViewer(y, mask=m)
+vx = BoxViewer(x, mask=m, colormap='spectral')
+vy = BoxViewer(y, mask=m, colormap='spectral')
 
 print options
 if options['m'] is not None:

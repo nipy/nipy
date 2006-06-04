@@ -3,6 +3,7 @@ from fiac import *
 import neuroimaging.fmri.protocol as protocol
 import neuroimaging.statistics.contrast as contrast
 from neuroimaging.fmri.fmristat.delay import DelayHRF
+import neuroimaging.fmri.fmristat as fmristat
 
 def FIACformula(subj=3, run=3, normalize=True, df=5):
     p = FIACprotocol(subj=subj, run=run)
@@ -60,7 +61,7 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
 
         if normalize:
 
-            brainavg = neuroimaging.fmri.fmristat.WholeBrainNormalize(f, mask=m)
+            brainavg = fmristat.WholeBrainNormalize(f, mask=m)
             
             brainavg_fn = protocol.InterpolatedConfound(times=f.frametimes + tshift,
                                                         values=brainavg.avg)
@@ -75,6 +76,7 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
         # output some contrasts, here is one from the term "p" in "formula",
         # i.e. an F for all effects of interest
 
+        p = formula['FIAC_design']
         task = contrast.Contrast(p, formula, name='task')
 
         # another built by linear combinations of functions of (experiment) time

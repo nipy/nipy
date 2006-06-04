@@ -13,7 +13,6 @@ import types
 
 import numpy as N
 from enthought import traits
-from scipy.interpolate import interp1d
 
 from neuroimaging.statistics.utils import StepFunction, recipr0
 

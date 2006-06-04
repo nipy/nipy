@@ -99,17 +99,14 @@ def FIACevent(subj=3, run=2):
     pfile = urllib.urlopen(url)
     pfile = pfile.read().strip().split('\n')
 
-    # start with a "deadtime" interval
-
-    times = [0.]
-    events = ['deadtime']
+    events = []; times = []
 
     for row in pfile:
         time, eventtype = map(float, string.split(row))
         times.append(time)
         events.append(eventdict[eventtype])
 
-    times.pop(1); events.pop(1)
+    times.pop(0); events.pop(0) # delete first event as Keith has
     intervals = [[events[i], times[i]] for i in range(len(events))]
     
     p = ExperimentalFactor('FIAC_design', intervals)

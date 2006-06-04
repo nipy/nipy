@@ -78,6 +78,8 @@ class Montage(traits.HasTraits):
                 self.axes[ij].set_yticks([])
                 
                 if _slice is not None:
+                    pylab.imshow(_slice.RGBA())
+                    pylab.show()
                     self.imshow[ij] = pylab.imshow(_slice.RGBA(),
                                                    interpolation=self.interpolation,
                                                    aspect='auto',

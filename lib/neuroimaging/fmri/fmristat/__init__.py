@@ -126,8 +126,8 @@ class fMRIStatOLS(LinearModelIterator):
 ##         self.rho_estimator.img.grid = sgrid
 ##         self.rho = smoother.smooth(self.rho_estimator.img)
 
-        srho = scipy.ndimage.gaussian_filter(self.rho_estimator.img.readall(), sigma)
-        self.rho_estimator.img.writeslice(slice(0, self.rho_estimator.img.grid.shape[0], 1), srho)
+##        srho = scipy.ndimage.gaussian_filter(self.rho_estimator.img.readall(), sigma)
+ ##       self.rho_estimator.img.writeslice(slice(0, self.rho_estimator.img.grid.shape[0], 1), srho)
         self.rho = self.rho_estimator.img
         self.getparcelmap()
 
@@ -135,7 +135,7 @@ class fMRIStatOLS(LinearModelIterator):
 
         if self.mask is not None:
             _mask = self.mask.readall()
-            self.rho.image.data = N.where(_mask, self.rho.image.data, N.nan)
+            self.rho.image.data[:] = N.where(_mask, self.rho.image.data, N.nan)
 
         if self.slicetimes == None:
             tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)

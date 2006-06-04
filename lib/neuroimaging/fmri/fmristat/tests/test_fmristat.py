@@ -4,9 +4,8 @@ import numpy as N
 
 from neuroimaging.tests.data import repository
 from neuroimaging.fmri import fMRIImage
-from neuroimaging.fmri.functions import SplineConfound
 from neuroimaging.fmri.protocol import ExperimentalFactor,\
-  ExperimentalQuantitative
+  ExperimentalQuantitative, SplineConfound
 from neuroimaging.fmri.fmristat import fMRIStatAR, fMRIStatOLS
 from neuroimaging.statistics.contrast import Contrast
 from  neuroimaging.image import Image
@@ -26,7 +25,7 @@ class fMRIStatTest(unittest.TestCase):
         all = []
         for i in range(20):
             all.append([p[i], on[i], off[i]])
-        pain = ExperimentalFactor('pain', all)
+        pain = ExperimentalFactor('pain', all, delta=False)
         drift_fn = SplineConfound(window=[0,360], df=7)
         drift = ExperimentalQuantitative('drift', drift_fn)
         self.pain = pain
