@@ -131,7 +131,7 @@ from copy import copy
 from types import TupleType, ListType
 
 import protocols
-from protocols import protoset, union, implements, ProtocolError, Sequence
+from protocols import haslength, protoset, union, implements, ProtocolError, Sequence
 
 class AccessError (Exception):
     "Indicate that a private attribute was referred to outside its class."
@@ -143,12 +143,12 @@ def scope(num): return getframe(num+1).f_locals
 
 ##############################################################################
 class attribute (property):
-    _attvals_name = "__attribute_values__"
-    classdef = False
-    default = None
-    readonly = False
-    doc = None
-    implements = (None,)
+    _attvals_name="__attribute_values__"
+    classdef=False
+    default=None
+    readonly=False
+    doc=None
+    implements=protocols.Protocol
 
     #-------------------------------------------------------------------------
     class __metaclass__ (type):
@@ -165,19 +165,20 @@ class attribute (property):
       name, implements=None, default=None, readonly=None, doc=None):
         self.name = name
 
-        # make sure implements is a sequence
-        if implements is not None: self.implements = implements
-        if not type(self.implements) == type(()):
-            self.implements = (self.implements,)
-
         # use or override the class default for these
         for argname in ("default","readonly"):
             argval = locals()[argname]
             if argval is not None: setattr(self, argname, argval)
 
         # if no protocol is specified, use protocol of the default value
-        if len(self.implements)==0 and self.default is not None:
-            self.implements = (self.default,)
+        if implements is None: implements = self.implements
+        if implements != protocols.Protocol and self.default is not None:
+            implements = self.default
+
+        # make sure implements is a sequence
+        isseq = haslength(implements)
+        if not isseq or (isseq and len(implements)==0): implements = (implements,)
+        self.implements = implements
 
         self.doc = (doc is None) and self.__doc__ or doc
         property.__init__(self, fget=self.get, fset=self.set, fdel=self.delete)
@@ -267,7 +268,7 @@ class attribute (property):
             raise ProtocolError(
               "the '%s' attribute of %s implements %s, but a value of %s was "\
               "specified"%(self.name, host.__class__.__name__,
-                " or ".join(self.implements), `value`))
+                " or ".join(map(str, self.implements)), `value`))
         if len(self.implements)==0: self.implements = (value,)
         self._get_attvals(host)[self.name] = value
         
