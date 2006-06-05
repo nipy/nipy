@@ -162,57 +162,5 @@ class TimeFunction(traits.HasTraits):
             raise ValueError, 'unrecognized type'
         return TimeFunction(fn=_f, nout=self.nout)
 
-class Stimulus(TimeFunction):
-
-    times = traits.Any()
-    values = traits.Any()
-
-    def __init__(self, **keywords):
-        TimeFunction.__init__(self, **keywords)
-
-class PeriodicStimulus(Stimulus):
-    n = traits.Int(1)
-    start = traits.Float(0.)
-    duration = traits.Float(3.0)
-    step = traits.Float(6.0) # gap between end of event and next one
-    height = traits.Float(1.0)
-
-    def __init__(self, **keywords):
-
-        traits.HasTraits.__init__(self, **keywords)
-        times = [-1.0e-07]
-        values = [0.]
-
-        for i in range(self.n):
-            times = times + [self.step*i + self.start, self.step*i + self.start + self.duration]
-            values = values + [self.height, 0.]
-        Stimulus.__init__(self, times=times, values=values, **keywords)
-
-class Events(Stimulus):
-
-    def __init__(self, **keywords):
-        Stimulus.__init__(self, **keywords)
-
-    def append(self, start, duration, height=1.0):
-        """
-        Append a square wave to an Event. No checking is made
-        to ensure that there is no overlap with previously defined
-        intervals -- the assumption is that this new interval
-        has empty intersection with all other previously defined intervals.
-        """
-        
-        if self.times is None:
-            self.times = []
-            self.values = []
-            self.fn = lambda x: 0.
-
-        times = N.array(list(self.times) + [start, start + duration])
-        asort = N.argsort(times)
-        values = N.array(list(self.values) + [height, 0.])
-
-        self.times = N.take(times, asort)
-        self.values = N.take(values, asort)
-
-        self.fn = StepFunction(self.times, self.values, sorted=True)
 
         

@@ -3,7 +3,7 @@ from enthought import traits
 import numpy as N
 
 #from neuroimaging.fmri.utils import LinearInterpolant
-from neuroimaging.fmri.functions import Events, TimeFunction
+from neuroimaging.fmri.functions import TimeFunction, StepFunction
 from neuroimaging.statistics.formula import Factor, Quantitative, Formula, Term
 
 namespace = {}
@@ -140,11 +140,13 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
             
 class ExperimentalStepFunction(ExperimentalQuantitative):
     """
-    Return a step function from an iterator returing tuples
+    This returns a
+    step function from an iterator returning tuples
 
     (start, stop, height)
 
     with height defaulting to 1 if not present.
+
     """
 
     def __init__(self, name, iterator, **keywords):
@@ -179,21 +181,34 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
                 start, end = row
                 height = 1.0
                 pass
-            
-            if type(end) is type('0.0'):
-                end = float(end)
-            if type(start) is type('0.0'):
-                start = float(start)
-            if type(height) is type('0.0'):
-                height = float(height)
-            self.event[eventtype].append(start, end-start, height=height)
+
+            self.event[eventtype].append(float(start), float(end)-float(start), height=float(height))
+
         return self.event
 
 class ExperimentalFactor(ExperimentalRegressor, Factor):
     """
-    Return a factor that is a function of experimental time.
+    Return a factor that is a function of experimental time based on
+    an iterator. If the delta attribute is False, it is assumed that
+    the iterator returns rows of the form:
+
+    type, start, stop
+
+    Here, type is a hashable object and start and stop are floats.
+
+    If delta is True, then the events are assumed to be delta functions
+    and the rows are assumed to be of the form:
+
+    type, start
+
+    where the events are (square wave) approximations
+    of a delta function, non zero on [start, start+dt). 
+
     """
     
+    delta = traits.Trait(True, desc='Are the events delta functions?')
+    dt = traits.Trait(0.02, desc='Width of the delta functions.')
+
     def __init__(self, name, iterator, **keywords):
         ExperimentalRegressor.__init__(self, **keywords)
         self.fromiterator(iterator)
@@ -277,17 +292,9 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         else:
             return [names[i] for i in _keep], _keep
 
-
     def fromiterator(self, iterator, delimiter=','):
         """
         Determine an ExperimentalFactor from an iterator
-        which returns rows of the form:
-
-        Type, Start, Stop
-
-        Here, Type is a hashable object and Start and Stop are floats.
-        The fourth being an optional
-        float for the height during the interval [Start,Stop] which defaults to 1.
         """
 
         if type(iterator) is types.StringType:
@@ -297,13 +304,16 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
 
         self.events = {}
         for row in iterator:
-            eventtype, start, end = row
-            if not self.events.has_key(eventtype):
-                self.events[eventtype] = Events(name=eventtype)
-
-            end = float(end)
-            start = float(start)
-            self.events[eventtype].append(start, end-start, height=1.0)
+            if not self.delta:
+                eventtype, start, end = row
+                if not self.events.has_key(eventtype):
+                    self.events[eventtype] = Events(name=eventtype)
+                self.events[eventtype].append(float(start), fload(end)-float(start), height=1.0)
+            else:
+                eventtype, start = row
+                if not self.events.has_key(eventtype):
+                    self.events[eventtype] = Events(name=eventtype)
+                self.events[eventtype].append(float(start), self.dt, height=1.0/self.dt)
 
 class ExperimentalFormula(Formula):
 
@@ -405,15 +415,79 @@ class FunctionConfound(TimeFunction):
         else:
             self.fn = fn
 
+class Stimulus(TimeFunction):
+
+    times = traits.Any()
+    values = traits.Any()
+
+class PeriodicStimulus(Stimulus):
+    n = traits.Int(1)
+    start = traits.Float(0.)
+    duration = traits.Float(3.0)
+    step = traits.Float(6.0) # gap between end of event and next one
+    height = traits.Float(1.0)
+
+    def __init__(self, **keywords):
+
+        traits.HasTraits.__init__(self, **keywords)
+        times = [-1.0e-07]
+        values = [0.]
+
+        for i in range(self.n):
+            times = times + [self.step*i + self.start, self.step*i + self.start + self.duration]
+            values = values + [self.height, 0.]
+        Stimulus.__init__(self, times=times, values=values, **keywords)
+
+class Events(Stimulus):
+
+    def __init__(self, **keywords):
+        Stimulus.__init__(self, **keywords)
+
+    def append(self, start, duration, height=1.0):
+        """
+        Append a square wave to an Event. No checking is made
+        to ensure that there is no overlap with previously defined
+        intervals -- the assumption is that this new interval
+        has empty intersection with all other previously defined intervals.
+        """
+        
+        if self.times is None:
+            self.times = []
+            self.values = []
+            self.fn = lambda x: 0.
+
+        times = N.array(list(self.times) + [start, start + duration])
+        asort = N.argsort(times)
+        values = N.array(list(self.values) + [height, 0.])
+
+        self.times = N.take(times, asort)
+        self.values = N.take(values, asort)
+
+        self.fn = StepFunction(self.times, self.values, sorted=True)
+
+class DeltaFunction(TimeFunction):
+
+    """
+    A square wave approximate delta function returning
+    1/dt in interval [start, start+dt).
+    """
+
+    start = traits.Trait(0.0, desc='Beginning of delta function approximation.')
+    dt = traits.Float(0.02, desc='Width of delta function approximation.')
+
+    def __call__(self, time=None, **extra):
+        return N.greater_equal(time, self.start) * N.less(time, dt) / self.dt
+
 class SplineConfound(FunctionConfound):
 
+    """
+    A natural spline confound with df degrees of freedom.
+    """
+    
     df = traits.Int(4)
     knots = traits.List()
 
     def __init__(self, **keywords):
-        '''
-        Basic spline trend confound.
-        '''
 
         TimeFunction.__init__(self, **keywords)
         tmax = self.window[1]
