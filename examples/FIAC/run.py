@@ -24,9 +24,11 @@ def FIACformula(subj=3, run=3, normalize=True, df=5):
         formula = p + drift
 
         if p.design_type == 'block':
-            begin = FIACbegin(subj=subj, run=run)
-            formula += begin
-            begin.convolve(irf)
+            begin = FIACbegin_block(subj=subj, run=run)
+        else:
+            begin = FIACbegin_event(subj=subj, run=run)
+        formula += begin
+        begin.convolve(irf)
            
         del(f); del(m); gc.collect()
         return formula

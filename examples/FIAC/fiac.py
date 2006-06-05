@@ -54,15 +54,17 @@ def FIACblock(subj=3, run=3):
     # take off the first 3.33 seconds of each eventtype for the block design
     # the blocks lasted 20 seconds with 9 seconds of rest at the end
 
-    keep = range(0, len(events), 6)
-    intervals = [[events[keep[i]], times[keep[i]] + 3.33, times[keep[i]]+20.]
-                 for i in range(len(keep))]
-    
+##     keep = range(0, len(events), 6)
+##     intervals = [[events[keep[i]], times[keep[i]] + 3.33, times[keep[i]]+20.] for i in range(len(keep))]
+##     p = ExperimentalFactor('FIAC_design', intervals, delta=False)
+
+    notkeep = range(0, len(events), 6)
+    intervals = [[events[i], times[i]] for i in range(len(events)) if i not in notkeep]
     p = ExperimentalFactor('FIAC_design', intervals)
     p.design_type = 'block'
     return p
 
-def FIACbegin(subj=3, run=3):
+def FIACbegin_block(subj=3, run=3):
 
     url = FIACpath('subj%(subj)d_bloc_fonc%(run)d.txt' % {'subj':subj, 'run':run}, subj=subj, run=-1)
 
@@ -83,9 +85,13 @@ def FIACbegin(subj=3, run=3):
     # the blocks lasted 20 seconds with 9 seconds of rest at the end
 
     keep = range(0, len(events), 6)
-    intervals = [['Begin', times[keep[i]], times[keep[i]] + 3.33] for i in range(len(keep))]
+    intervals = [['Begin', times[keep[i]]] for i in range(len(keep))]
     return ExperimentalFactor('beginning', intervals)
-    
+
+def FIACbegin_event(subj=3, run=3):
+
+    intervals = [['Begin', 2.]]
+    return ExperimentalFactor('beginning', intervals)
 
 def FIACevent(subj=3, run=2):
     url = FIACpath('subj%(subj)d_evt_fonc%(run)d.txt' % {'subj':subj, 'run':run}, subj=subj, run=-1)
@@ -103,7 +109,8 @@ def FIACevent(subj=3, run=2):
         times.append(time)
         events.append(eventdict[eventtype])
 
-    intervals = [[events[i], times[i], times[i]+3.33] for i in range(len(events))]
+    times.pop(1); events.pop(1)
+    intervals = [[events[i], times[i]] for i in range(len(events))]
     
     p = ExperimentalFactor('FIAC_design', intervals)
     p.design_type = 'event'
