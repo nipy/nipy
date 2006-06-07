@@ -10,8 +10,10 @@ from neuroimaging.image import Image
 eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
 eventdict_r = {'SSt_SSp':1, 'SSt_DSp':2, 'DSt_SSp':3, 'DSt_DSp':4}
 
-def FIACpath(path, subj=3, run=3):
-    base = '/home/analysis/FIAC/'
+base = 'http://kff.stanford.edu/FIAC'
+
+def FIACpath(path, subj=3, run=3, base=base):
+
     if run > 0:
         return os.path.join(base, 'fiac%d' % subj, 'fonc%d' % run, path)
     else:
@@ -108,7 +110,7 @@ def FIACevent(subj=3, run=2):
 
     return p
 
-def FIACplot(subj=3, run=3, tmin=1.0, tmax=476.25, dt=0.2):
+def FIACplot(subj=3, run=3, tmin=1.0, tmax=476.25, dt=0.2, save=False):
     experiment = FIACprotocol(subj=subj, run=run)
 
     t = N.arange(tmin,tmax,dt)
@@ -120,7 +122,8 @@ def FIACplot(subj=3, run=3, tmin=1.0, tmax=476.25, dt=0.2):
         gca = pylab.axes()
         gca.set_ylim([-0.1,1.1])
     pylab.legend(eventdict.values())
-    pylab.savefig(FIACpath('protocol.png', subj=subj, run=run))
+    if save:
+        pylab.savefig(FIACpath('protocol.png', subj=subj, run=run))
 
 def FIACfmri(subj=3, run=3):
     url = FIACpath('fsl/filtered_func_data.img', subj=subj, run=run)

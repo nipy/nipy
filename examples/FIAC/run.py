@@ -1,6 +1,7 @@
-
 from fiac import *
 
+import neuroimaging.fmri.protocol as protocol
+import neuroimaging.statistics.contrast as contrast
 from neuroimaging.fmri.fmristat.delay import DelayHRF
 
 def FIACformula(subj=3, run=3, normalize=True, df=5):
@@ -50,8 +51,7 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
     p = FIACprotocol(subj=subj, run=run)
 
     if p:
-        formula = FIACformula(subj=subj, run=run,
-                              tshift=tshift, df=5)
+        formula = FIACformula(subj=subj, run=run, df=5)
 
         f = FIACfmri(subj=subj, run=run)
         m = FIACmask(subj=subj, run=run)

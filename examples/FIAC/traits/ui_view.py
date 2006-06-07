@@ -1,36 +1,20 @@
 from enthought.traits.ui import View, Group, Item
 import enthought.traits as traits
 
+import sys, os
+sys.path.append(os.path.abspath('..'))
+
 import run as FIACrun
 import fiac
 import numpy as N
 
-class RunUI(traits.HasTraits):
+from ui import RunUI
 
-    base = 'http://kff.stanford.edu/FIAC/'
+class RunUIView(RunUI):
 
-    # Subject/run traits
-
-    run = traits.Range(low=1, high=5, value=3)
-    subj = traits.Range(low=0, high=15, value=3)
-    mask = traits.true
-
-    fmrifile = traits.Str
-    maskfile = traits.Str
-    
-    # Confound traits
-
-    normalize = traits.true
-    mean_reg = traits.true
-    drift_df = traits.Int
-    knots = traits.Array(shape=(None,))
-    tmax = traits.Float(500)
-    tmin = traits.Float(0)
-
-    def __init__(self, subj=3, run=3, drift_df=7, **keywords):
-        traits.HasTraits.__init__(self, subj=subj, run=run, drift_df=drift_df,
-                                  **keywords)
-        
+    '''
+    This class just has a "better" default traits view.
+    '''
 
     traits_view = View(
         Group(
@@ -77,7 +61,7 @@ class RunUI(traits.HasTraits):
                 tooltip = 'Normalize frames to % bold?'
             ),
             Item(
-                name   = 'mean_reg',
+                name   = 'norm_reg',
                 label  = 'Mean regressor',
                 tooltip = 'Use frame averages as a regressor?'
             ),
@@ -85,29 +69,9 @@ class RunUI(traits.HasTraits):
         )
     ) 
 
-    def _drift_df_changed(self):
-        self.knots = N.linspace(self.tmin, self.tmax, self.drift_df - 4)
-
-    def _subj_changed(self):
-        self.fmrifile = fiac.FIACpath('fsl/filtered_func_data.img', subj=self.subj, run=self.run)
-
-        try:
-            test = urllib.urlopen(self.fmrifile)
-        except:
-            self.fmrifile = 'URL "%s" not found' % self.fmrifile
-
-        self.maskfile = fiac.FIACpath('fsl/mask.img', subj=self.subj,
-                                      run=self.run)
-        try:
-            test = urllib.urlopen(self.maskfile)
-        except:
-            self.maskfile = 'URL "%s" not found' % self.maskfile
-
-    def _run_changed(self):
-        self._subj_changed()
 
 if __name__ == '__main__':
-    a = RunUI()
+    a = RunUIView()
     print a.fmrifile, 'fmri'
     a.configure_traits(kind='live')
     print a.subj, a.fmrifile
