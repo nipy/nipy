@@ -233,8 +233,6 @@ try:
 
             """
 
-            pylab.clf()
-
             if nslice is None:
                 nslice = self.image_results[0].grid.shape[0]
             if self.image_results is None:
