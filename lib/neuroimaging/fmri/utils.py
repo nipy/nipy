@@ -2,8 +2,6 @@ import numpy as N
 import numpy.dft as FFT
 import scipy.interpolate
 
-# from neuroimaging.statistics.utils import StepFunction
-
 def fwhm2sigma(fwhm):
     """
     Convert a FWHM value to sigma in a Gaussian kernel.

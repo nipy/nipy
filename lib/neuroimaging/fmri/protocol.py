@@ -60,9 +60,9 @@ class ExperimentalRegressor(traits.HasTraits):
         name = []
         for hrfname in IRF.names:
             for termname in self.names():
-                name.append('(%s**%s)' % (hrfname, termname))
+                name.append('(%s%%%s)' % (hrfname, termname))
  
-        self._convolved = ExperimentalQuantitative(name, _f, termname='(HRF**%s)' % self.termname)
+        self._convolved = ExperimentalQuantitative(name, _f, termname='(HRF%%%s)' % self.termname)
         self.convolved = True
 
         return self
@@ -87,15 +87,6 @@ class ExperimentalRegressor(traits.HasTraits):
                 v = v[index]
             return N.squeeze(v) * 1.
 
-##         time = N.arange(tmin, tmax, dt)
-##         y = N.asarray(self(time=time, namespace=namespace))
-##         if index is not None:
-##             Y = y[index]
-##         elif y.shape[0] == 1:
-##             Y = y[0]
-##         else:
-##             Y = y
-##         _f = LinearInterpolant(time, Y)
         v = TimeFunction(fn=_f, nout=nout)
         return v
 
@@ -138,6 +129,24 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
             else:
                 raise ValueError, 'term %s has not been convolved with an HRF' % self.name
             
+class Time(ExperimentalQuantitative):
+    
+    def __call__(self, time=None, **ignored):
+        return time
+
+    def __pow__(self, i):
+        try:
+            i = int(i)
+        except:
+            raise ValueError, 'only float exponents allowed'
+        def _f(time=None, **ignored):
+            return N.power(time, f)
+        print 'what'
+        return ExperimentalQuantitative('time^%d' % i, _f)
+    
+def _time(time=None): return time
+Time = ExperimentalQuantitative('time', _time)
+
 class ExperimentalStepFunction(ExperimentalQuantitative):
     """
     This returns a
@@ -361,8 +370,6 @@ class ExperimentalFormula(Formula):
         else:
             return [names[i] for i in _keep], _keep
 
-
-
 class InterpolatedConfound(TimeFunction):
 
     times = traits.Any()
@@ -511,7 +518,7 @@ class SplineConfound(FunctionConfound):
 
         def _getspline(a, b):
             def _spline(time=None):
-                return time**3 * N.greater(time, a) * N.less_equal(time, b)
+                return N.power(time, 3.0) * N.greater(time, a) * N.less_equal(time, b)
             return _spline
 
         for i in range(len(self.knots) - 1):
