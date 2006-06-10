@@ -131,8 +131,10 @@ class fMRIImage(Image):
         Image.tofile(self, filename, array=False, **keywords)
         
     #-------------------------------------------------------------------------
-    def frame(self, i, **keywords):
-        return self.toarray(slice=(slice(i)))
+    def frame(self, i, clean=False, **keywords):
+        data = N.squeeze(self.getslice(slice(i,i+1)))
+        if clean: data = N.nan_to_num(data)
+        return Image(self.postread(data), grid=self.grid.subgrid(i), **keywords)
 
     #-------------------------------------------------------------------------
     def next(self, value=None, data=None):
