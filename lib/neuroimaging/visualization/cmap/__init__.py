@@ -26,7 +26,8 @@ _cmdict['spectral'] = spectral
 _cmapn = _cmdict.keys()
 _cmapn.pop(_cmapn.index('spectral'))
 _cmapn = ['spectral'] + _cmapn
-cmap = apply(traits.Trait, _cmapn)
+_cmapn = tuple(_cmapn)
+cmap = traits.Trait(*_cmapn, **{'desc':'A pylab colormap.'})
 
 def getcmap(cmapname):
     return _cmdict[cmapname]

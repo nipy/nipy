@@ -87,13 +87,16 @@ class Montage(traits.HasTraits):
             
             self.draw_colorbar()
 
-
         else:
             for ij, _slice in self.slices.keys():
                 pylab.axes(self.axes[ij])
                 self.imshow[ij].set_data(data[ij])
             
         pylab.draw()
+
+    def title(self, title, x=0.5, y=0.95, fontsize=14, **keywords):
+        pylab.figure(num=self.figure.number)
+        pylab.figtext(x, y, title, fontsize=fontsize, **keywords)
 
     def draw_colorbar(self):
  
