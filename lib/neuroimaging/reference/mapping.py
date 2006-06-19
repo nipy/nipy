@@ -330,7 +330,7 @@ class Affine(Mapping):
     #-------------------------------------------------------------------------
     def inverse(self):
         return Affine(self.output_coords, self.input_coords,
-                      inverse(self.transform))
+                      inv(self.transform))
     
     #-------------------------------------------------------------------------
     def isdiagonal(self): return isdiagonal(self.transform[0:self.ndim,0:self.ndim])
