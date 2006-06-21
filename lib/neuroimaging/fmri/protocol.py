@@ -1,4 +1,5 @@
 import csv, types, copy
+from fpformat import fix
 from enthought import traits
 import numpy as N
 
@@ -134,15 +135,14 @@ class Time(ExperimentalQuantitative):
     def __call__(self, time=None, **ignored):
         return time
 
-    def __pow__(self, i):
+    def __pow__(self, e):
         try:
-            i = int(i)
+            e = float(e)
         except:
             raise ValueError, 'only float exponents allowed'
         def _f(time=None, **ignored):
-            return N.power(time, i)
-        print 'what'
-        return ExperimentalQuantitative('time^%d' % i, _f)
+            return N.power(time, e)
+        return ExperimentalQuantitative('time^%0.2f' % e, _f)
     
 def _time(time=None): return time
 Time = ExperimentalQuantitative('time', _time)
