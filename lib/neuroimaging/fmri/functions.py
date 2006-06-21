@@ -37,9 +37,6 @@ class TimeFunction(traits.HasTraits):
         return TimeFunction(fn=_f)
 
     def __call__(self, time=None, **extra):
-
-        lt = len(N.array(time).shape)
-
         columns = []
 
         if self.nout == 1:
@@ -161,5 +158,3 @@ class TimeFunction(traits.HasTraits):
             raise ValueError, 'unrecognized type'
         return TimeFunction(fn=_f, nout=self.nout)
 
-
-        
