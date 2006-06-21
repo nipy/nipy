@@ -178,7 +178,7 @@ class RGBSlicePlot(RGBASlicePlot):
         if self.alpha == 1.:
             return RGBASlicePlot.RGBA(self, data=v)
         else:
-            V = N.zeros(v.shape[0:2] + (4,), N.Float)
+            V = N.zeros(v.shape[0:2] + (4,), N.float64)
             V[0:2,0:3] = v
             V[0:2,3] = self.alpha
             return RGBASlicePlot.RGBA(self, data=V)

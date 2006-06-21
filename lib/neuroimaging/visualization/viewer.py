@@ -185,7 +185,7 @@ class BoxViewer(traits.HasTraits):
                                   (0, self.shape[0]-1))
         self.ticks[self.slicenames[2]] = ((0, self.shape[1]-1),
                                      (0, self.shape[2]-1))
-        self.ticks['color'] = ([], N.linspace(0,100,10).astype(N.Int))
+        self.ticks['color'] = ([], N.linspace(0,100,10).astype(N.int32))
 
         _str = lambda x: fpformat.fix(x, 0)
         self.ticklabels = {}
@@ -231,7 +231,7 @@ class BoxViewer(traits.HasTraits):
         if not hasattr(self, 'colorbar'):
             self.colorbar = pylab.axes([xoffset, yoffset, width, height])
             self.colorbar.set_xticks([])
-            self.colorbar.set_yticks(N.linspace(0,100,11).astype(N.Int))
+            self.colorbar.set_yticks(N.linspace(0,100,11).astype(N.int32))
             v = N.linspace(0,1.,11) * (self.M - self.m) + self.m
             self.colorbar.set_yticklabels([fpformat.fix(v[i], 1) for i in range(v.shape[0])])
         else:

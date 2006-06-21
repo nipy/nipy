@@ -94,9 +94,14 @@ class Montage(traits.HasTraits):
             
         pylab.draw()
 
-    def title(self, title, x=0.5, y=0.95, fontsize=14, **keywords):
+    def title(self, title, x=0.5, y=0.95,
+              fontsize=14,
+              horizontalalignment='center',
+              **keywords):
         pylab.figure(num=self.figure.number)
-        pylab.figtext(x, y, title, fontsize=fontsize, **keywords)
+        pylab.figtext(x, y, title, fontsize=fontsize,
+                      horizontalalignment=horizontalalignment,
+                      **keywords)
 
     def draw_colorbar(self):
  
