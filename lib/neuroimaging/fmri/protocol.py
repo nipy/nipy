@@ -177,11 +177,11 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
         """
 
         if type(iterator) is types.StringType:
-            iterator = csv.reader(file(iterator))
+            iterator = csv.reader(file(iterator), delimiter=delimiter)
         elif type(iterator) is types.FileType:
-            iterator = csv.reader(iterator)
+            iterator = csv.reader(iterator, delimiter=delimiter)
 
-        self.event = Events(name=self.name)
+        self.events = Events(name=self.name)
 
         for row in iterator:
             try:
@@ -191,9 +191,9 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
                 height = 1.0
                 pass
 
-            self.event[eventtype].append(float(start), float(end)-float(start), height=float(height))
+            self.events[eventtype].append(float(start), float(end)-float(start), height=float(height))
 
-        return self.event
+        return self.events
 
 class ExperimentalFactor(ExperimentalRegressor, Factor):
     """
@@ -291,8 +291,7 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         names = Factor.names(self)
 
         _keep = []
-        for i in range(len(names)):
-            name = names[i]
+        for i, name in enumerate(names):
             if name.find(downtime) < 0:
                 _keep.append(i)
 
@@ -307,9 +306,9 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         """
 
         if type(iterator) is types.StringType:
-            iterator = csv.reader(file(iterator))
+            iterator = csv.reader(file(iterator), delimiter=delimiter)
         elif type(iterator) is types.FileType:
-            iterator = csv.reader(iterator)
+            iterator = csv.reader(iterator, delimiter=delimiter)
 
         self.events = {}
         for row in iterator:
@@ -323,6 +322,7 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
                 if not self.events.has_key(eventtype):
                     self.events[eventtype] = Events(name=eventtype)
                 self.events[eventtype].append(float(start), self.dt, height=1.0/self.dt)
+
 
 class ExperimentalFormula(Formula):
 
@@ -360,7 +360,7 @@ class ExperimentalFormula(Formula):
         names = Formula.names(self)
         
         _keep = []
-        for i in range(len(names)):
+        for i, name in enumerate(names):
             name = names[i]
             if name.find(downtime) < 0:
                 _keep.append(i)
