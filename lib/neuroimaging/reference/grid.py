@@ -99,7 +99,7 @@ class SamplingGrid (object):
     #-------------------------------------------------------------------------
     def iterslices(self, axis=None):
         if axis is None: axis = self.axis
-        self.iterator = SliceIterator(self.shape, axis=self.axis)
+        self.iterator = SliceIterator(self.shape, axis=axis)
         return self
 
     #-------------------------------------------------------------------------
@@ -111,7 +111,7 @@ class SamplingGrid (object):
     #-------------------------------------------------------------------------
     def itersliceparcels(self, parcelseq=None):
         if parcelseq is None: parcelseq = self.parcelseq
-        self.iterator = SliceParcelIterator(self.parcelmap, self.parcelseq)
+        self.iterator = SliceParcelIterator(self.parcelmap, parcelseq)
         return self
 
     #-------------------------------------------------------------------------
