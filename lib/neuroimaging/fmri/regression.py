@@ -179,7 +179,7 @@ class AROutput(fMRIRegressionOutput):
     def setup_bias_correct(self, model):
 
         R = N.identity(model.design.shape[0]) - N.dot(model.design, model.calc_beta)
-        M = N.zeros((self.order+1,)*2, N.Float)
+        M = N.zeros((self.order+1,)*2, N.float64)
         I = N.identity(R.shape[0])
 
         for i in range(self.order+1):
@@ -199,7 +199,7 @@ class AROutput(fMRIRegressionOutput):
 
         sum_sq = results.scale.reshape(resid.shape[1:]) * results.df_resid()
 
-        Cov = N.zeros((self.order + 1,) + sum_sq.shape, N.Float)
+        Cov = N.zeros((self.order + 1,) + sum_sq.shape, N.float64)
         Cov[0] = sum_sq
         for i in range(1, self.order+1):
             Cov[i] = N.add.reduce(resid[i:] * resid[0:-i], 0)

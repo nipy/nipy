@@ -85,7 +85,7 @@ class Filter(traits.HasTraits):
         Return the values of the IRFs of the filter.
         """
         if self.n > 1:
-            value = N.zeros((self.n,) + time.shape, N.Float)
+            value = N.zeros((self.n,) + time.shape, N.float64)
             for i in range(self.n):
                 value[i] = self.IRF[i](time)
         else:

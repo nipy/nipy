@@ -51,13 +51,13 @@ def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, normalize=[0,0]):
 
     if normalize[0]:
         _fn1 = _fn1 / N.sqrt(N.add.reduce(_fn1**2))
-    _fft1 = FFT.real_fft(_fn1)
+    _fft1 = FFT.rfft(_fn1)
 
     if normalize[1]:
         _fn2 = _fn2 / N.sqrt(N.add.reduce(_fn2**2))
 
-    _fft2 = FFT.real_fft(_fn2)
-    value = FFT.inverse_real_fft(_fft1 * _fft2)
+    _fft2 = FFT.rfft(_fn2)
+    value = FFT.irfft(_fft1 * _fft2)
     _minshape = min(time.shape[0], value.shape[-1])
     time = time[0:_minshape]
     value = value[0:_minshape]

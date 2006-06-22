@@ -77,7 +77,7 @@ class PCA(traits.HasTraits):
         # Compute projection matrices
     
         if N.allclose(self.design_keep, [[0]]):
-            self.design_resid = N.ones((self.nimages, 1), N.Float)
+            self.design_resid = N.ones((self.nimages, 1), N.float64)
             
         if N.allclose(self.design_keep, [[0]]):
             self.design_keep = N.identity(self.nimages)
@@ -86,12 +86,12 @@ class PCA(traits.HasTraits):
         XZ = X - N.dot(self.design_resid, N.dot(L.pinv(self.design_resid), X))
         UX, SX, VX = L.svd(XZ, full_matrices=0)
     
-        rank = N.greater(SX/SX.max(), 0.5).astype(N.Int).sum()
+        rank = N.greater(SX/SX.max(), 0.5).astype(N.int32).sum()
         UX = N.transpose(UX[:,range(rank)])
 
         first_slice = slice(0,self.image.shape[0])
         _shape = self.image.grid.shape
-        self.C = N.zeros((rank,)*2, N.Float)
+        self.C = N.zeros((rank,)*2, N.float64)
 
         for i in range(self.image.shape[1]):
             _slice = [first_slice, slice(i,i+1)]
@@ -133,7 +133,7 @@ class PCA(traits.HasTraits):
             outimages = [iter(Image('%s_comp%d%s' % (output_base, i, self.ext),
                                     grid=outgrid, mode='w')) for i in which]
         else:
-            outimages = [iter(Image(N.zeros(outgrid.shape, N.Float),
+            outimages = [iter(Image(N.zeros(outgrid.shape, N.float64),
                                     grid=outgrid)) for i in which]
 
         first_slice = slice(0,self.image.shape[0])
