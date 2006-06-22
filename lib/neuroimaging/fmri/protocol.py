@@ -140,7 +140,7 @@ class Time(ExperimentalQuantitative):
         except:
             raise ValueError, 'only float exponents allowed'
         def _f(time=None, **ignored):
-            return N.power(time, f)
+            return N.power(time, i)
         print 'what'
         return ExperimentalQuantitative('time^%d' % i, _f)
     
@@ -389,9 +389,6 @@ class InterpolatedConfound(TimeFunction):
             self.nout = values.shape[0]
             
     def __call__(self, time=None, **extra):
-
-        lt = len(N.array(time).shape)
-
         columns = []
 
         if self.nout == 1:
@@ -484,7 +481,7 @@ class DeltaFunction(TimeFunction):
     dt = traits.Float(0.02, desc='Width of delta function approximation.')
 
     def __call__(self, time=None, **extra):
-        return N.greater_equal(time, self.start) * N.less(time, dt) / self.dt
+        return N.greater_equal(time, self.start) * N.less(time, self.start + self.dt) / self.dt
 
 class SplineConfound(FunctionConfound):
 
