@@ -38,8 +38,8 @@ class MINCdim(Dimension.RegularDimension, MINCvar):
         for key, att in keywords.items():
             if type(att) in [types.TupleType, types.ListType, mincutils.numpy.ArrayType]:
                 test = 1
-                for i in range(len(att)):
-                    test *= (type(att[i]) is types.IntType)
+                for a in att:
+                    test *= (type(a) is types.IntType)
                 if test:
                     value[key] = (tuple(att), NC_INT)
                 else:
@@ -204,14 +204,14 @@ class MINC:
                 dimensions = None
             if type(dimensions) in [types.ListType, types.TupleType]:
                 new_dim = ()
-                for i in range(len(dimensions)):
-                    if dimensions[i] == MItime:
+                for d in dimensions:
+                    if d == MItime:
                         if hasattr(self, MItime):
                             dimname = MItime
                         else:
                             dimname = MItime_width
                     else:
-                        dimname = dimensions[i]
+                        dimname = d
                     new_dim = new_dim + (getattr(self, dimname),)
                 setattr(getattr(self, var), 'dimensions', new_dim)
 
