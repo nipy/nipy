@@ -351,8 +351,8 @@ class fastFWHM(Resels):
         fwhm = self.resel2fwhm(resels)
 
         fullslice = []
-        for i in range(len(self.grid.shape)):
-            fullslice.append(slice(0, self.grid.shape[i]))
+        for x in self.grid.shape:
+            fullslice.append(slice(0, x))
 
         self.resels.writeslice(fullslice, resels)
         self.fwhm.writeslice(fullslice, fwhm)
