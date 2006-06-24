@@ -11,10 +11,10 @@ import gc
 
 import numpy as N
 from numpy.linalg import det
+from scipy.sandbox.models.utils import recipr
 from enthought import traits
 
 from neuroimaging.image import Image
-from neuroimaging.statistics.utils import recipr
 
 def fwhm2sigma(fwhm):
     return fwhm / N.sqrt(8 * N.log(2))

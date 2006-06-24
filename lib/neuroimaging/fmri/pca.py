@@ -17,9 +17,9 @@ import time, gc
 import numpy as N
 import numpy.linalg as L
 from enthought import traits
+from scipy.sandbox.models.utils import recipr
 
 from neuroimaging.image import Image
-from neuroimaging.statistics.utils import recipr
 
 class PCA(traits.HasTraits):
     """

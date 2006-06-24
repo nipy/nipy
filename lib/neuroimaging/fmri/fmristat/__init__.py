@@ -5,6 +5,7 @@ import numpy as N
 import numpy.linalg as L
 import numpy.random as R
 import scipy.ndimage
+from scipy.sandbox.models.utils import monotone_fn_inverter, rank 
 import pylab
 
 from neuroimaging.fmri import fMRIImage
@@ -15,7 +16,6 @@ from neuroimaging.fmri.regression import AROutput, TContrastOutput, \
 from neuroimaging.image import kernel_smooth
 from neuroimaging.image.fwhm import fastFWHM
 from neuroimaging.image.utils import fwhm2sigma
-from neuroimaging.statistics import utils 
 from neuroimaging.statistics.regression import LinearModelIterator, \
   OLSModel, ARModel
 
@@ -214,13 +214,13 @@ class fMRIStatOLS(LinearModelIterator):
 
         ndim = len(self.fmri_image.shape) - 1
 
-        dfresid = self.fmri_image.shape[0] - utils.rank(self.dmatrix)
+        dfresid = self.fmri_image.shape[0] - rank(self.dmatrix)
 
         def df_eff(fwhm_filter):
             f = N.power(1 + 2. * (fwhm_filter / self.fwhm_data)**2, -ndim/2.)
             return dfresid / (1 + 2. * f * tau)
             
-        df_eff_inv = utils.monotone_fn_inverter(df_eff, N.linspace(0, 50, 500))
+        df_eff_inv = monotone_fn_inverter(df_eff, N.linspace(0, 50, 500))
         if df_eff(0) > df_target:
             self.fwhm_rho = 0.
         else:

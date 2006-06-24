@@ -3,13 +3,13 @@ import copy, os
 import numpy as N
 import numpy.linalg as L
 from scipy.linalg import toeplitz
+from scipy.sandbox.models.utils import recipr
 from enthought import traits
 import pylab
 
-from neuroimaging import image
+from neuroimaging.image import Image
 from neuroimaging.fmri.plotting import MultiPlot
 import neuroimaging.image.regression as imreg
-from neuroimaging.statistics import utils
 
 
 canplot = True
@@ -59,7 +59,7 @@ class ResidOutput(fMRIRegressionOutput):
             os.makedirs(self.outdir)
 
         outname = os.path.join(self.outdir, '%s%s' % (self.basename, self.ext))
-        self.img = image.Image(outname, mode='w', grid=self.grid,
+        self.img = Image(outname, mode='w', grid=self.grid,
                                clobber=self.clobber)
         self.nout = self.grid.shape[0]
         self.sync_grid()
@@ -204,7 +204,7 @@ class AROutput(fMRIRegressionOutput):
         for i in range(1, self.order+1):
             Cov[i] = N.add.reduce(resid[i:] * resid[0:-i], 0)
         Cov = N.dot(self.invM, Cov)
-        output = Cov[1:] * utils.recipr(Cov[0])
+        output = Cov[1:] * recipr(Cov[0])
         return N.squeeze(output)
 
 

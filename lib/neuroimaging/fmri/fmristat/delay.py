@@ -9,6 +9,7 @@ import copy, os, fpformat
 
 import numpy as N
 import numpy.linalg as L
+from scipy.sandbox.models.utils import recipr, recipr0
 from enthought import traits
 import pylab
 
@@ -18,7 +19,7 @@ from neuroimaging.fmri.protocol import ExperimentalQuantitative
 from neuroimaging.fmri.regression import TContrastOutput 
 from neuroimaging.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.image import Image
-from neuroimaging.statistics import utils, regression, contrast
+from neuroimaging.statistics import regression, contrast
 
 canplot = True
 
@@ -182,9 +183,9 @@ class DelayContrastOutput(TContrastOutput):
         
         for i in range(nrow):
             self.T0sq[i] = (self.gamma0[i]**2 *
-                            utils.recipr(results.cov_beta(matrix=self.effectmatrix[i])))
+                            recipr(results.cov_beta(matrix=self.effectmatrix[i])))
 
-        self.r = self.gamma1 * utils.recipr0(self.gamma0)
+        self.r = self.gamma1 * recipr0(self.gamma0)
         self.rC = self.r * self.T0sq / (1. + self.T0sq)
         self.deltahat = delay.inverse(self.rC)
 
@@ -198,14 +199,14 @@ class DelayContrastOutput(TContrastOutput):
 
         nrow = self.gamma0.shape[0]
         for i in range(nrow):
-            self.T1[i] = self.gamma1[i] * utils.recipr(N.sqrt(results.cov_beta(matrix=self.deltamatrix[i])))
+            self.T1[i] = self.gamma1[i] * recipr(N.sqrt(results.cov_beta(matrix=self.deltamatrix[i])))
 
-        a1 = 1 + 1. * utils.recipr(self.T0sq)
+        a1 = 1 + 1. * recipr(self.T0sq)
 
         gdot = N.array(([(self.r * (a1 - 2.) *
-                          utils.recipr0(self.gamma0 * a1**2)),
-                         utils.recipr0(self.gamma0 * a1)] *
-                        utils.recipr0(delay.dforward(self.deltahat))))
+                          recipr0(self.gamma0 * a1**2)),
+                         recipr0(self.gamma0 * a1)] *
+                        recipr0(delay.dforward(self.deltahat))))
 
         tmpcov = N.zeros((2*nrow,)*2 + self.T0sq.shape[1:], N.float64)
 
@@ -242,7 +243,7 @@ class DelayContrastOutput(TContrastOutput):
             self._sd[r] = N.sqrt(var)                
 
     def extract_t(self, results):
-        self._t = self._effect * utils.recipr(self._sd)        
+        self._t = self._effect * recipr(self._sd)        
         self._t = N.clip(self._t, self.Tmin, self.Tmax)
 
     def extract(self, results):

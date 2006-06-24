@@ -14,7 +14,7 @@ import types
 import numpy as N
 from enthought import traits
 
-from neuroimaging.statistics.utils import StepFunction, recipr0
+from scipy.sandbox.models.utils import StepFunction, recipr0
 
 # Prototypical stimuli: "Event" (on/off) and "Stimuli" (step function)
 # -Event inherits from Stimulus so most functionality is in Stimulus
