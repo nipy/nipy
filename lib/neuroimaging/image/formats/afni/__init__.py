@@ -271,7 +271,7 @@ class AFNI:
                 count = string.atoi(att[2])
                 value = att[3].strip()
                 if att_type == 'string-attribute':
-                    value = value[1:-1]).strip().split('~')
+                    value = value[1:-1].strip().split('~')
                     if len(value) == 1:
                         value = value[0]
                 elif att_type == 'integer-attribute':

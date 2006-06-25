@@ -17,6 +17,7 @@ class ImageRegressionOutput(RegressionOutput):
     clobber = traits.false
 
     def __init__(self, grid, outgrid=None, **keywords):
+        # should this not be RegressionOutput.__init__(self, **keywords)?
         traits.HasTraits.__init__(self, **keywords)
         self.grid = grid
         if outgrid is None:
@@ -27,7 +28,7 @@ class ImageRegressionOutput(RegressionOutput):
         if self.nout > 1:
             self.grid = self.grid.replicate(self.nout)
         if self.arraygrid is not None:
-            self.img = iter(Image(N.zeros(self.arraygrid.shape, N.Float),
+            self.img = iter(Image(N.zeros(self.arraygrid.shape, N.float64),
               grid=self.arraygrid))
 
     def sync_grid(self, img=None):
@@ -67,7 +68,7 @@ class TContrastOutput(ImageRegressionOutput):
         self.outdir = os.path.join(path, self.subpath, self.contrast.name)
         self.path = path
         self.setup_contrast()
-        self.setup_output(time=self.frametimes)
+        self.setup_output(time=self.frametimes) # self.frametimes undefined
 
     def setup_contrast(self, **extra):
         self.contrast.getmatrix(**extra)
@@ -161,7 +162,6 @@ class FContrastOutput(ImageRegressionOutput):
         outfile.close()
 
     def extract(self, results):
-        F = results.Fcontrast(self.contrast.matrix).F
         return results.Fcontrast(self.contrast.matrix).F
 
 

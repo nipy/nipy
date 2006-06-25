@@ -20,11 +20,11 @@ ANALYZE_Float = 16
 ANALYZE_Double = 64
 
 datatypes = {
-  ANALYZE_Byte:(N.UInt8, 1),
-  ANALYZE_Short:(N.Int16, 2),
-  ANALYZE_Int:(N.Int32, 4),
-  ANALYZE_Float:(N.Float32, 4),
-  ANALYZE_Double:(N.Float64, 8)}
+  ANALYZE_Byte:(N.uint8, 1),
+  ANALYZE_Short:(N.int16, 2),
+  ANALYZE_Int:(N.int32, 4),
+  ANALYZE_Float:(N.float32, 4),
+  ANALYZE_Double:(N.float64, 8)}
 
 def is_tupled(packstr, value):
     return (packstr[-1] != 's' and len(tuple(value)) > 1)
@@ -194,6 +194,8 @@ class ANALYZE(traits.HasTraits):
           if isinstance(self.trait(name).handler, BinaryHeaderValidator)]
         traits.HasTraits.__init__(self, **keywords)
 
+        self.ndim = self.dim[0]
+
         if self.mode is 'w':
             self._dimfromgrid(grid)
             self.writeheader()
@@ -205,13 +207,13 @@ class ANALYZE(traits.HasTraits):
             from neuroimaging.image.utils import writebrick
             writebrick(file(self.imgfilename(), 'w'),
                        (0,)*self.ndim,
-                       N.zeros(self.grid.shape, N.Float),
+                       N.zeros(self.grid.shape, N.float64),
                        self.grid.shape,
                        byteorder=self.byteorder,
                        outtype = self.typecode)
         elif filename: self.readheader(self.hdrfilename())
 
-        self.ndim = self.dim[0]
+
         
         if self.ignore_origin:
             self.origin = [1]*5

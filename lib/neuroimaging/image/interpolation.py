@@ -22,6 +22,7 @@ class ImageInterpolator(traits.HasTraits):
             self.grid = grid
         self.image = image
         self.prefilter()
+        self.order = order
 
     def prefilter(self):
         if self.order > 1:
@@ -35,7 +36,7 @@ class ImageInterpolator(traits.HasTraits):
         else:
             self.datafile = file(self.datafile.name, 'rb+')
         
-        data = N.nan_to_num(data.astype(N.Float))
+        data = N.nan_to_num(data.astype(N.float64))
         data.tofile(self.datafile)
         datashape = data.shape
         dtype = data.dtype
@@ -59,7 +60,7 @@ class ImageInterpolator(traits.HasTraits):
         return self.evaluate(points)
 
     def evaluate(self, points):
-        points = N.array(points, N.Float)
+        points = N.array(points, N.float64)
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], N.product(output_shape))
         voxels = self.grid.mapping.map(points, inverse=True)

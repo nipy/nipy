@@ -219,4 +219,4 @@ class ImageSequenceIterator(traits.HasTraits):
         v = []
         for i in range(len(self.imgs)):
             v.append(self.imgs[i].next(value=value))
-        return N.array(v, N.Float)
+        return N.array(v, N.float64)

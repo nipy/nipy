@@ -60,7 +60,7 @@ def writebrick(outfile, start, data, shape, offset=0, outtype=None, byteorder=sy
     strides = [1] + list(N.multiply.accumulate(shape_reverse)[:-1])
     strides.reverse()
 
-    strides = N.array(strides, N.Int64)
+    strides = N.array(strides, N.int64)
     strides = strides * elsize
 
     outfile.seek(offset + N.add.reduce(start * strides))

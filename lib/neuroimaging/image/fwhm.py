@@ -1,6 +1,6 @@
 """
 This module provides classes and definitions for using full width at half
-maximum (FWHM) to be used in conjunction with Guassian Random Field Theory
+maximum (FWHM) to be used in conjunction with Gaussian Random Field Theory
 to determine resolution elements (resels).
 
 A resolution element (resel) is defined as a block of pixels of the same
@@ -48,7 +48,7 @@ class Resels(traits.HasTraits):
         else:
             _mask = self.mask
         if _mask is not None:
-            _mask = _mask.readall().astype(N.Int)
+            _mask = _mask.readall().astype(N.int32)
             nvoxel = _mask.sum()
         else:
             _mask = 1.
@@ -65,12 +65,12 @@ class Resels(traits.HasTraits):
 
     def __iter__(self):
         if not self.fwhm:
-            self.fwhm = iter(Image(N.zeros(self.grid.shape, N.Float), grid=self.grid))
+            self.fwhm = iter(Image(N.zeros(self.grid.shape, N.float64), grid=self.grid))
         else:
             self.fwhm = iter(Image(self.fwhm, clobber=self.clobber, mode='w', grid=self.grid))
 
         if not self.resels:
-            self.resels = iter(Image(N.zeros(self.grid.shape, N.Float), grid=self.grid))
+            self.resels = iter(Image(N.zeros(self.grid.shape, N.float64), grid=self.grid))
         else:
             self.resels = iter(Image(self.resels, clobber=self.clobber, mode='w', grid=self.grid))
 
@@ -116,8 +116,8 @@ class iterFWHM(Resels, traits.HasTraits):
         self.Y = grid.shape[1]
         self.X = grid.shape[2]
         self.setup_nneigh()
-        self._fwhm = N.zeros((self.Y,self.X), N.Float)
-        self._resels = N.zeros((self.Y,self.X), N.Float)
+        self._fwhm = N.zeros((self.Y,self.X), N.float64)
+        self._resels = N.zeros((self.Y,self.X), N.float64)
         self.Yindex = N.arange(self.Y)
         self.Xindex = N.arange(self.X)
         self.YX = self.Y*self.X
@@ -158,7 +158,7 @@ class iterFWHM(Resels, traits.HasTraits):
         _mu = _mu / n
         _invnorm = recipr(N.sqrt((_sumsq - n * _mu**2)))
 
-        value = N.zeros(resid.shape, N.Float)
+        value = N.zeros(resid.shape, N.float64)
 
         for i in range(n):
             if self.D == 3:
@@ -211,7 +211,7 @@ class iterFWHM(Resels, traits.HasTraits):
                     ayy = self.Ayy[:,x[0]:x[-1]]
                     axy = N.add.reduce(self.uy[:,x[0]:x[-1]] * self.ux[y[0]:y[-1],:], 2) * self.Yweight[index] * self.Xweight[index]
                     detlam = axx * ayy - axy**2
-                    test = N.greater(detlam, 0).astype(N.Float)
+                    test = N.greater(detlam, 0).astype(N.float64)
                     _resels = N.sqrt(test * detlam)
                     self._resels[y[0]:y[-1], x[0]:x[-1]] = self._resels[y[0]:y[-1], x[0]:x[-1]] + _resels
                     self._fwhm[y[0]:y[-1], x[0]:x[-1]] = self._fwhm[y[0]:y[-1], x[0]:x[-1]] + self.resel2fwhm(_resels)
@@ -233,7 +233,7 @@ class iterFWHM(Resels, traits.HasTraits):
                     azy = N.add.reduce(self.uy[:,x[0]:x[-1]] * self.uz[y[0]:y[-1],x[0]:x[-1]], 2) * self.Xweight[index]
                     detlam = azz * (ayy*axx - ayx**2) - azy * (azy*axx - azx*ayx) + azx * (azy*ayx - azx*ayy)
 
-                test = N.greater(detlam, 0).astype(N.Float)
+                test = N.greater(detlam, 0).astype(N.float64)
                 _resels = N.sqrt(test * detlam)
                 self._resels[y[0]:y[-1], x[0]:x[-1]] = self._resels[y[0]:y[-1], x[0]:x[-1]] + _resels
                 self._fwhm[y[0]:y[-1], x[0]:x[-1]] = self._fwhm[y[0]:y[-1], x[0]:x[-1]] + self.resel2fwhm(_resels)
@@ -246,8 +246,8 @@ class iterFWHM(Resels, traits.HasTraits):
 
             # Clear buffers
 
-            self._fwhm = N.zeros(self._fwhm.shape, N.Float)
-            self._resels = N.zeros(self._resels.shape, N.Float)
+            self._fwhm = N.zeros(self._fwhm.shape, N.float64)
+            self._resels = N.zeros(self._resels.shape, N.float64)
             self.u = 1. * wresid
             self.ux = wresid[:,1:] - wresid[:,0:-1]
             self.uy = wresid[1:,:] - wresid[0:-1,:]
@@ -267,7 +267,7 @@ class iterFWHM(Resels, traits.HasTraits):
                     azx = N.add.reduce(self.ux[x[0]:x[-1],:] * self.uz[x[0]:x[-1],y[0]:y[-1]], 2) * self.Yweight[index]
                     azy = N.add.reduce(self.uy[:,y[0]:y[-1]] * self.uz[x[0]:x[-1],y[0]:y[-1]], 2) * self.Xweight[index]
                     detlam = azz * (ayy*axx - ayx**2) - azy * (azy*axx - azx*ayx) + azx * (azy*ayx - azx*ayy)
-                test = N.greater(N.fabs(detlam), 0).astype(N.Float)
+                test = N.greater(N.fabs(detlam), 0).astype(N.float64)
                 _resels = N.sqrt(test * detlam)
                 self._resels[x[0]:x[-1], y[0]:y[-1]] = self._resels[x[0]:x[-1], y[0]:y[-1]] + _resels
                 self._fwhm[x[0]:x[-1], y[0]:y[-1]] = self._fwhm[x[0]:x[-1], y[0]:y[-1]] + self.resel2fwhm(_resels)
@@ -302,8 +302,6 @@ class fastFWHM(Resels):
 
         Resels.__iter__(self)
 
-        Lzz = Lzy = Lzx = Lyy = Lyx = Lxx = 0.
-
         _mu = 0.
         _sumsq = 0.
 
@@ -321,7 +319,8 @@ class fastFWHM(Resels):
             _mu = 0.
             _invnorm = 1.
 
-        
+
+        Lzz = Lzy = Lzx = Lyy = Lyx = Lxx = 0.        
         for i in range(self.n):
             if verbose:
                 print 'Slice: [%d]' % i
@@ -331,16 +330,16 @@ class fastFWHM(Resels):
 
 
             g = N.gradient(_frame)
-            dz = g[0]; dy = g[1] ; dx = g[2]
+            dz, dy, dx = g[0], g[1], g[2]
 
             del(_frame) 
 
-            Lzz = Lzz + dz * dz
-            Lzy = Lzy + dz * dy
-            Lzx = Lzx + dz * dx
-            Lyy = Lyy + dy * dy
-            Lyx = Lyx + dy * dx
-            Lxx = Lxx + dx * dx
+            Lzz += dz * dz
+            Lzy += dz * dy
+            Lzx += dz * dx
+            Lyy += dy * dy
+            Lyx += dy * dx
+            Lxx += dx * dx
 
             del(dz); del(dy); del(dx); del(g) ; gc.collect()
             
