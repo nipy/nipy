@@ -180,7 +180,11 @@ class Image(traits.HasTraits):
         else:
             tmp = iter(self)
             outimage = iter(outimage)
-            for dataslice in tmp: outimage.next(data=dataslice)
+            # make sure that "self" is driving iteration
+            # over image, i.e. when self is an fMRIImage and
+            # outimage is an Image
+            for dataslice in tmp: outimage.next(data=dataslice,
+                                                value=tmp.itervalue)
         if hasattr(outimage, "close"): outimage.close()
         return outimage
 

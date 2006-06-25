@@ -1,7 +1,7 @@
 from fiac import *
 
 import neuroimaging.fmri.protocol as protocol
-import neuroimaging.statistics.contrast as contrast
+import scipy.sandbox.models.contrast as contrast
 from neuroimaging.fmri.fmristat.delay import DelayHRF
 import neuroimaging.fmri.fmristat as fmristat
 
@@ -29,7 +29,7 @@ def FIACformula(subj=3, run=3, normalize=True, df=5):
         else:
             begin = FIACbegin_event(subj=subj, run=run)
         formula += begin
-        begin.convolve(irf)
+        begin.convolve(delay_irf)
            
         del(f); del(m); gc.collect()
         return formula

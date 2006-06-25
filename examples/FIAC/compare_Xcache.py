@@ -31,6 +31,16 @@ def getxcache(subj=0, run=1):
         X = X[:,:,:,0]
     return X
 
+def getfmristat(subj=0, run=1):
+    X = getxcache(subj=subj, run=run)[:,:,2:] * 1.
+    X.shape = (191,10)
+    return X
+    
+def getnipy(subj=0, run=1):
+    f = FIACrun.FIACformula(subj=subj,run=run)
+    d = f['FIAC_design'] + f['beginning']
+    return d(time=T)
+
 def compare(subj=0, run=1, show=False, save=True, etype='DSt_DSp', deriv=True):
 
     f = FIACrun.FIACformula(subj=subj,run=run)
@@ -55,7 +65,7 @@ def compare(subj=0, run=1, show=False, save=True, etype='DSt_DSp', deriv=True):
     Find the correspondence between the columns.
     """
     
-    v = N.zeros((4,), N.Float)
+    v = N.zeros((4,), N.float64)
     for i in range(4):
         v[i] = ((n(design(T)[event_index]) - n(X[:,i,fmristat_index]))**2).sum()
 

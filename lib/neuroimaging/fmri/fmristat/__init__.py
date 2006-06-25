@@ -32,7 +32,7 @@ class WholeBrainNormalize(traits.HasTraits):
             self._mask.shape = N.product(self._mask.shape)
             
         self.n = fmri_image.grid.shape[0]
-        self.avg = N.zeros((self.n,), N.Float)
+        self.avg = N.zeros((self.n,), N.float64)
 
         for i in range(self.n):
             d = fmri_image.getslice(slice(i,i+1))
@@ -42,7 +42,7 @@ class WholeBrainNormalize(traits.HasTraits):
             self.avg[i] = d.mean()
 
     def __call__(self, fmri_data):
-        out = N.zeros(fmri_data.shape, N.Float)
+        out = N.zeros(fmri_data.shape, N.float64)
         for i in range(self.n):
             out[i] = fmri_data[i] * 100. / self.avg[i]
         return out

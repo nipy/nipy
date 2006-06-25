@@ -34,9 +34,8 @@ class fMRITest(unittest.TestCase):
 
     def test_subgrid(self):
         subgrid = self.img.grid.subgrid(3)
-        matlabgrid = subgrid.python2matlab()
-        scipy.testing.assert_almost_equal(matlabgrid.mapping.transform,
-                                          N.diag([2.34375,2.34375,7,1]))
+        scipy.testing.assert_almost_equal(subgrid.mapping.transform,
+                                          self.img.grid.mapping.transform[1:,1:])
 
     def test_labels1(self):
         parcelmap = (self.rho.readall() * 100).astype(N.int32)
@@ -49,6 +48,19 @@ class fMRITest(unittest.TestCase):
         v = 0
         for t in self.img:
             v += t.shape[1]
+        self.assertEquals(v, N.product(parcelmap.shape))
+
+    def test_labels2(self):
+        parcelmap = (self.rho.readall() * 100).astype(N.int32)
+
+        self.rho.grid.itertype = 'parcel'
+        self.rho.grid.parcelmap = parcelmap
+        parcelmap.shape = N.product(parcelmap.shape)
+        self.rho.grid.parcelseq = N.unique(parcelmap)
+
+        v = 0
+        for t in self.rho:
+            v += t.shape[0]
         self.assertEquals(v, N.product(parcelmap.shape))
 
 if __name__ == '__main__':

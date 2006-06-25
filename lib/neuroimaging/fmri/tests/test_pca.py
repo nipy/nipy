@@ -31,7 +31,7 @@ class PCATest(unittest.TestCase):
         output = p.images(which=range(4))
 
     def test_PCAmontage(self):
-        p = PCA(self.fmridata, mask=self.mask)
+        p = PCAmontage(self.fmridata, mask=self.mask)
         p.fit()
         output = p.images(which=range(4))
         p.time_series()
@@ -39,7 +39,7 @@ class PCATest(unittest.TestCase):
         pylab.show()
 
     def test_PCAmontage_nomask(self):
-        p = PCA(self.fmridata, mask=self.mask)
+        p = PCAmontage(self.fmridata, mask=self.mask)
         p.fit()
         output = p.images(which=range(4))
         p.time_series()

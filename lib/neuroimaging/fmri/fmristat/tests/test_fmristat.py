@@ -47,6 +47,8 @@ class fMRIStatTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree('fmristat_run', ignore_errors=True)
 
+class TestSliceTimes(fMRIStatTest):
+
     def test_model_slicetimes(self):
         OLS = fMRIStatOLS(self.img, formula=self.formula,
                                    slicetimes=self.img.slicetimes)
@@ -60,6 +62,8 @@ class fMRIStatTest(unittest.TestCase):
         AR = fMRIStatAR(OLS)
         AR.fit()
         del(OLS); del(AR); gc.collect()
+
+class TestResid1(fMRIStatTest):
 
     def test_model_resid1(self):
         self.img.slicetimes = None
@@ -75,6 +79,8 @@ class fMRIStatTest(unittest.TestCase):
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
+class TestResid2(fMRIStatTest):
+
     def test_model_resid2(self):
         self.img.slicetimes = None
         OLS = fMRIStatOLS(self.img, formula=self.formula,
@@ -88,6 +94,8 @@ class fMRIStatTest(unittest.TestCase):
         AR = fMRIStatAR(OLS, resid=True)
         AR.fit()
         del(OLS); del(AR); gc.collect()
+
+class TestHRFDeriv(fMRIStatTest):
 
     def test_hrf_deriv(self):
         self.IRF = glover_deriv
@@ -113,6 +121,7 @@ class fMRIStatTest(unittest.TestCase):
         AR.fit()
         del(OLS); del(AR); gc.collect()
         
+class TestContrast(fMRIStatTest):
 
     def test_contrast(self):
         pain = Contrast(self.pain, self.formula, name='pain')
