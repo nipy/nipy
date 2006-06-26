@@ -194,12 +194,12 @@ def ROIellipsefn(center, form, a = 1.0):
         for i in range(ndim):
             _real[i] = _real[i] - center[i]
         _shape = _real.shape
-        _real.shape = _shape[0], product(_shape[1:])
+        _real.shape = _shape[0], N.product(_shape[1:])
 
         X = dot(_cholinv, _real)
         d = sum(X**2)
         d.shape = _shape[1:]
-        value = less_equal(d, a)
+        value = N.less_equal(d, a)
 
         del(_real); del(X); del(d)
         gc.collect()
@@ -214,7 +214,7 @@ def ROIfromArraySamplingGrid(data, grid):
 
     if grid.shape != data.shape:
         raise ValueError, 'grid shape does not agree with data shape'
-    voxels = nonzero(data)
+    voxels = N.nonzero(data)
     coordinate_system = image.grid.output_coordinate_system
     return SamplingGridROI(coordinate_system, voxels, grid)
 
