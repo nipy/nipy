@@ -101,7 +101,7 @@ class BaseImage(object):
             if self.itertype is 'slice':
                 self.writeslice(value.slice, data)
             elif self.itertype in ("parcel","slice/parcel"):
-                indices = N.nonzero(value.where)
+                indices = N.nonzero(value.where.flatten())
                 self.put(data, indices)
 
     #-------------------------------------------------------------------------
@@ -186,7 +186,7 @@ def writebrick(outfile, start, data, shape, offset=0, outtype=None,
     shape_reverse.reverse()
     strides = [1] + list(N.multiply.accumulate(shape_reverse)[:-1])
     strides.reverse()
-    strides = N.array(strides, N.Int64)
+    strides = N.array(strides, N.int64)
     strides = strides * elsize
     outfile.seek(offset + N.add.reduce(start * strides))
     index = 0
@@ -218,4 +218,4 @@ class ImageSequenceIterator (object):
     def next(self, value=None):
         if value is None: value = self.grid.next()
         v = [img.next(value=value) for img in self.imgs]
-        return N.array(v, N.Float)
+        return N.array(v, N.float64)

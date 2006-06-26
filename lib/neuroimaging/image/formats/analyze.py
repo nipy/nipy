@@ -194,8 +194,6 @@ class ANALYZE(traits.HasTraits):
           if isinstance(self.trait(name).handler, BinaryHeaderValidator)]
         traits.HasTraits.__init__(self, **keywords)
 
-        self.ndim = self.dim[0]
-
         if self.mode is 'w':
             self._dimfromgrid(grid)
             self.writeheader()
@@ -204,6 +202,7 @@ class ANALYZE(traits.HasTraits):
 
             # create empty file
 
+            self.ndim = len(grid.shape)
             from neuroimaging.image.utils import writebrick
             writebrick(file(self.imgfilename(), 'w'),
                        (0,)*self.ndim,
@@ -213,7 +212,7 @@ class ANALYZE(traits.HasTraits):
                        outtype = self.typecode)
         elif filename: self.readheader(self.hdrfilename())
 
-
+        self.ndim = self.dim[0]
         
         if self.ignore_origin:
             self.origin = [1]*5
@@ -242,6 +241,7 @@ class ANALYZE(traits.HasTraits):
             origin = (1,) + self.origin[0:3]
             step = (1,) + tuple(self.pixdim[1:4])  
             shape = self.dim[1:5]
+
             if self.squeeze:
                 if self.dim[1] == 1:
                     origin = origin[1:4]
@@ -250,6 +250,7 @@ class ANALYZE(traits.HasTraits):
                     shape = self.dim[2:5]
 
         ## Setup affine transformation
+        
         self.grid = SamplingGrid.from_start_step(names=axisnames,
                                         shape=shape,
                                         start=-N.array(origin)*step,
