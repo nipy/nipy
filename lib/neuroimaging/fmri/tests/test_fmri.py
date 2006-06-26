@@ -10,7 +10,7 @@ from neuroimaging.tests.data import repository
 class fMRITest(unittest.TestCase):
 
     def setUp(self):
-        self.rho = Image('rho.img', datasource=repository)
+        self.rho = Image(repository.filename('rho.img'))
         self.img = fMRIImage("test_fmri.img", datasource=repository)
 
     #def test_TR(self):
@@ -39,7 +39,7 @@ class fMRITest(unittest.TestCase):
                                           N.diag([2.34375,2.34375,7,1]))
 
     def test_labels1(self):
-        parcelmap = (self.rho.readall() * 100).astype(N.Int)
+        parcelmap = (self.rho.readall() * 100).astype(N.int32)
 
         self.img.grid.itertype = 'parcel'
         self.img.grid.parcelmap = parcelmap

@@ -41,7 +41,7 @@ class VisualizationTest(unittest.TestCase):
 
     def test_arrayview(self):
         from neuroimaging.visualization import arrayview
-        arrayview.arrayview(self.img.buffer)
+        arrayview.arrayview(self.img.readall())
 
 def suite():
     return unittest.makeSuite(VisualizationTest)
