@@ -29,7 +29,7 @@ def FIACformula(subj=3, run=3, normalize=True, df=5):
         else:
             begin = FIACbegin_event(subj=subj, run=run)
         formula += begin
-        begin.convolve(delay_irf)
+        begin.convolve(irf)
            
         del(f); del(m); gc.collect()
         return formula

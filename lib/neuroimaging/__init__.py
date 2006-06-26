@@ -57,6 +57,18 @@ packages = (
   'neuroimaging.visualization.cmap',
   'neuroimaging.visualization.tests')
 
+try:
+    import enthought.traits as traits
+except:
+    packages += ('neuroimaging.extra',
+                 'neuroimaging.extra.enthought',
+                 'neuroimaging.extra.enthought.traits',
+                 'neuroimaging.extra.enthought.traits.ui',
+                 'neuroimaging.extra.enthought.traits.ui.null',
+                 'neuroimaging.extra.enthought.util',
+                 'neuroimaging.extra.enthought.resource')
+    
+
 testmatch = re.compile(".*tests").search
 nontest_packages = [p for p in packages if not testmatch(p)]
 

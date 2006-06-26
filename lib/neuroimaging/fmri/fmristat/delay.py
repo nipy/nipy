@@ -20,6 +20,7 @@ from neuroimaging.fmri.regression import TContrastOutput
 from neuroimaging.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.image import Image
 from neuroimaging.statistics import regression, contrast
+from scipy.sandbox.models.contrast import ContrastResults
 
 canplot = True
 
@@ -251,11 +252,9 @@ class DelayContrastOutput(TContrastOutput):
         self.extract_sd(results)
         self.extract_t(results)
 
-        results = regression.ContrastResults()
-        results.effect = self._effect
-        results.sd = self._sd
-        results.t = self._t
-        return results
+        return ContrastResults(effect=self._effect,
+                               sd=self._sd,
+                               t=self._t)
 
     def next(self, data=None):
         if self.grid.itertype == 'slice':

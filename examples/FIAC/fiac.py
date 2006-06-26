@@ -129,9 +129,13 @@ def FIACplot(subj=3, run=3, tmin=1.0, tmax=476.25, dt=0.2, save=False):
     if save:
         pylab.savefig(FIACpath('protocol.png', subj=subj, run=run))
 
-def FIACfmri(subj=3, run=3):
-    url = FIACpath('fsl/filtered_func_data.img', subj=subj, run=run)
-    f = fMRIImage(url, usematfile=False)
+def FIACfmri(subj=3, run=3, test=False):
+    if not test:
+        url = FIACpath('fsl/filtered_func_data.img', subj=subj, run=run)
+        f = fMRIImage(url, usematfile=False)
+    else:
+        import test
+        return test.test()
     return f
 
 def FIACmask(subj=3, run=3):
