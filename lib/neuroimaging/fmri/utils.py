@@ -27,6 +27,11 @@ class LinearInterpolant:
         return self.f(time)
 
 class WaveFunction:
+    """
+    A square wave function of a specified start, duration and height.
+    f(t) = height if (start <= t < start + duration), 0 otherwise
+    """
+
     def __init__(self, start, duration, height):
         self.start = start
         self.duration = duration
