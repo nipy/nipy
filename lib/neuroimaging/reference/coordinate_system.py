@@ -98,8 +98,8 @@ class VoxelCoordinateSystem(CoordinateSystem):
             self._getbox()
         test = 1
         for i in range(self.ndim):
-            test *= (greater_equal(self.x[i], self._box[i][0]) *
-                     less_equal(self.x[i], self._box[i][1]))
+            test *= (greater_equal(x[i], self._box[i][0]) *
+                     less_equal(x[i], self._box[i][1]))
         return test
 
     #-------------------------------------------------------------------------
