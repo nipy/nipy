@@ -73,25 +73,30 @@ def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, normalize=[0,0]):
         return newf
 
 class CutPoly:
-    def __init__(self, trange=None, power=1, range_type='lower'):
+    """
+    A polynomial function of the form f(t) = t^n with an optionally fixed
+    time range on which the function exists.
+    """
+
+    def __init__(self, power, trange=(None, None)):
+        """
+        power - f(t) = t^power
+        trange - A tuple with the upper and lower bound of the function.
+        None signifies no boundary. Default = (None, None)
+        """
         self.power = power
-        if trange is not None:
-            self.trange = trange
-        self.range_type = range_type
+        self.trange = trange
 
     def __call__(self, time):
-        test = None
-        if hasattr(self, 'trange'):
-            if self.range_type == 'lower':
-                test = greater_equal(time, self.trange)
-            elif self.range_type == 'upper':
-                test = N.less(time, self.trange)
-            else:
-                test = N.greater_equal(time, self.trange[0]) * N.less_equal(time, self.trange[1])
-        if test is None:
-            return N.power(time, self.power)
-        else:
-            return N.power(time, self.power) * test
+        test = N.ones(time.shape)
+        lower, upper = self.trange
+        
+        if lower is not None:
+            test *= N.greater_equal(time, lower)
+        if upper is not None:
+            test *= N.less(time, upper)
+        return N.power(time, self.power) * test
+        
         
 def _test():
     import doctest
