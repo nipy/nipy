@@ -42,7 +42,7 @@ class ContinuousROI(ROI):
               'binary function bfn in ROI failed on ' + `[0.] * ndim`)
 
     def __call__(self, real):
-        return not_equal(self.bfn(real, **self.args), 0)
+        return N.not_equal(self.bfn(real, **self.args), 0)
 
     def todiscrete(self, voxels):
         """
@@ -52,7 +52,7 @@ class ContinuousROI(ROI):
         for voxel in voxels:
             if self(voxel):
                 v.append(voxel)
-        return DiscreteROI(coordinate_system, v)
+        return DiscreteROI(self.coordinate_system, v)
     
     def togrid(self, grid):
         """
@@ -62,7 +62,7 @@ class ContinuousROI(ROI):
         for voxel in iter(grid):
             if self(voxel):
                 v.append(voxel)
-        return SamplingGridROI(coordinate_system, v, grid)
+        return SamplingGridROI(self.coordinate_system, v, grid)
 
 class DiscreteROI(ROI):
 
@@ -85,7 +85,7 @@ class DiscreteROI(ROI):
         v = []
 
         for voxel in self.voxels:
-            v.append(fn(voxel))
+            v.append(fn(voxel, **extra))
         return v
         
     def feature(self, fn, **extra):
@@ -96,7 +96,7 @@ class DiscreteROI(ROI):
         keywords arguments, i.e. use **extra.
         """
 
-        pooled_data = self.pool(fn)
+        pooled_data = self.pool(fn, **extra)
         return N.mean(pooled_data)
         
     def __add__(self, other):
@@ -114,9 +114,8 @@ class DiscreteROI(ROI):
 class SamplingGridROI(DiscreteROI):
 
     def __init__(self, coordinate_system, voxels, grid):
-        ROI.__init__(self, coordinate_system)
+        DiscreteROI.__init__(self, coordinate_system, voxels)
         self.grid = grid
-        self.voxels = set(voxels)
         # we assume that voxels are (i,j,k) indices?
 
     def pool(self, image, **extra):
@@ -140,7 +139,7 @@ class SamplingGridROI(DiscreteROI):
         if isinstance(other, SamplingGridROI):
             if other.grid == self.grid:
                 voxels = self.voxels.intersect(other.voxels)
-                return SamplingGridROI(self.coordinate_system, voxels, grid)
+                return SamplingGridROI(self.coordinate_system, voxels, self.grid)
             else:
                 raise ValueError(
                   'grids do not agree in union of SamplingGridROI')
@@ -186,7 +185,7 @@ def ROIellipsefn(center, form, a = 1.0):
     Form must be positive definite.
     """
     from numpy.linalg import cholesky, inv
-    _cholinv = cholesky_decomposition(inverse(form))
+    _cholinv = cholesky(inv(form))
     ndim = array(center).shape[0]
 
     def test(real):
@@ -196,7 +195,7 @@ def ROIellipsefn(center, form, a = 1.0):
         _shape = _real.shape
         _real.shape = _shape[0], N.product(_shape[1:])
 
-        X = dot(_cholinv, _real)
+        X = N.dot(_cholinv, _real)
         d = sum(X**2)
         d.shape = _shape[1:]
         value = N.less_equal(d, a)
