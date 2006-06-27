@@ -28,7 +28,7 @@ def matfromfile(infile, delimiter="\t"):
 #-----------------------------------------------------------------------------
 def matfromstr(tstr, ndim=3, delimiter=None):
     "Read a (ndim+1)x(ndim+1) transform matrix from a string."
-    if tstr[0:24] == "mat file created by perl": return frombin(tstr)
+    if tstr[0:24] == "mat file created by perl": return frombin(tstr) #frombin is undefined
     else:
         transform = N.array(map(float, tstr.split(delimiter)))
         transform.shape = (ndim+1,)*2
@@ -224,7 +224,7 @@ class Mapping (object):
         not invertible.
         """
         shape = real.shape
-        real.shape = (shape[0], product(shape[1:]))
+        real.shape = (shape[0], N.product(shape[1:]))
         voxel = N.around(self.inverse(real))
         real.shape = shape
         voxel.shape = shape
@@ -368,7 +368,7 @@ class DegenerateAffine(Affine):
             t[0:self.nin,0:self.nin] = self.fmatrix
             t[self.nin,self.nin] = 1.
             t[0:self.nin,self.nin] = self.fvector
-            x = inv(t)
+            inv(t) # if not invertable we want to raise here
             Affine.__init__(self, input_coords, output_coords, t, name=name)
         except:
             Mapping.__init__(self, input_coords, output_coords, map)
