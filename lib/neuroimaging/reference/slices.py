@@ -60,8 +60,6 @@ def box_slices(zlim=default_zlim, ylim=default_ylim, xlim=default_xlim,
     if z == N.inf:
         z = (zlim[0]+zlim[1])/2.
 
-    origin = (zlim[0], ylim[0], xlim[0])
-
     # yslice, xslice, zslice
 
     origins = []
