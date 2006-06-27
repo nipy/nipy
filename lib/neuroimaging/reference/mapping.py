@@ -204,7 +204,7 @@ class Mapping (object):
                 shape = voxel.shape[1:]
             except:
                 shape = ()
-            _voxel = N.zeros((self.ndim,) + shape, N.Float)
+            _voxel = N.zeros((self.ndim,) + shape, N.float64)
             for dimname in which.keys():
                 _voxel[whichmap[dimname]] = which[dimname]
             for i in range(len(order)):
@@ -239,7 +239,7 @@ class Mapping (object):
         (v_z,v_y,v_x) to (w_z,w_y,w_x).
         """
         ndim = self.ndim
-        t1 = N.zeros((ndim+1,)*2, N.Float)
+        t1 = N.zeros((ndim+1,)*2, N.float64)
         t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
         t1[ndim, ndim] = 1.0
         t2 = 1. * t1
@@ -252,7 +252,7 @@ class Mapping (object):
     def python2matlab(self):
         "Inverse of matlab2python -- see this function for help."
         ndim = self.ndim
-        t1 = N.zeros((ndim+1,)*2, N.Float)
+        t1 = N.zeros((ndim+1,)*2, N.float64)
         t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
         t1[ndim, ndim] = 1.0
         t2 = 1. * t1
@@ -364,7 +364,7 @@ class DegenerateAffine(Affine):
             return N.dot(self.fmatrix, coords) + self.fvector
 
         try:
-            t = N.zeros((self.ndin+1,)*2, N.Float)
+            t = N.zeros((self.ndin+1,)*2, N.float64)
             t[0:self.nin,0:self.nin] = self.fmatrix
             t[self.nin,self.nin] = 1.
             t[0:self.nin,self.nin] = self.fvector
@@ -394,7 +394,7 @@ def permutation_transform(order=range(3)[2::-1]):
     containing the values 0,...,N-1.
     """
     ndim = len(order)
-    ptransform = N.zeros((ndim+1,ndim+1), N.Float)
+    ptransform = N.zeros((ndim+1,ndim+1), N.float64)
     ptransform[0:ndim,0:ndim] = permutation_matrix(order=order)
     ptransform[ndim,ndim] = 1.
     return ptransform

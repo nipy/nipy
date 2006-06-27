@@ -85,7 +85,7 @@ class RegularAxis (VoxelAxis):
         attributes.
         """
         return N.arange(self.start, self.start + self.step*self.length,
-          self.step).astype(N.Float)
+          self.step).astype(N.float64)
 
     #-------------------------------------------------------------------------
     def __eq__(self, axis, tol=1.0e-07):

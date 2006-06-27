@@ -5,9 +5,6 @@ import numpy as N
 from attributes import attribute, readonly, constant, clone
 from protocols import Sequence, haslength
 
-# Package imports
-from neuroimaging import flatten
-
 itertypes = ("slice", "parcel", "slice/parcel")
 
 

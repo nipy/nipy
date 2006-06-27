@@ -7,7 +7,7 @@ class MappingTest(unittest.TestCase):
 
     def _init(self):
         a = mapping.Mapping.identity()
-        A = N.identity(4, N.Float)
+        A = N.identity(4, N.float64)
         A[0:3] = R.standard_normal((3,4))
         self.mapping = mapping.Affine(a.input_coords, a.output_coords, A)
 

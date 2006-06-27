@@ -1,4 +1,4 @@
-from numpy import zeros, Float
+from numpy import zeros, float64
 
 from odict import odict
 from attributes import readonly
@@ -54,7 +54,7 @@ class CoordinateSystem(odict):
         reordered coordinate system.
         """
         if name is None: name = self.name
-        return CoordinateSystem(name, reorder(axes, order))
+        return CoordinateSystem(name, reorder(self.axes, order))
 
     #-------------------------------------------------------------------------
     def reverse(self, name=None):
@@ -129,7 +129,7 @@ class DiagonalCoordinateSystem(VoxelCoordinateSystem):
         Return an orthogonal  homogeneous transformation matrix based on the
         step, start, length attributes of each axis.
         """
-        value = zeros((self.ndim+1,)*2, Float)
+        value = zeros((self.ndim+1,)*2, float64)
         value[self.ndim, self.ndim] = 1.0
         for i in range(self.ndim):
             value[i,i] = self.axes[i].step

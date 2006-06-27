@@ -1,7 +1,7 @@
 import numpy as N
 
 from attributes import attribute, readonly, enum, deferto, clone
-from protocols import Iterator, Sequence
+from protocols import Iterator
 
 from neuroimaging import reverse
 from neuroimaging.reference.mapping import Mapping, Affine, DegenerateAffine
@@ -226,9 +226,9 @@ class ConcatenatedGrids(SamplingGrid):
         def init(_, self):
             def mapfunc(x):
                 try:
-                    I = x[0].view(N.Int)
+                    I = x[0].view(N.int32)
                     X = x[1:]
-                    v = N.zeros(x.shape[1:], N.Float)
+                    v = N.zeros(x.shape[1:], N.float64)
                     for j in I.shape[0]:
                         v[j] = self.grids[I[j]].mapping(X[j])
                     return v
@@ -267,7 +267,7 @@ class SliceGrid(SamplingGrid):
 
     #-------------------------------------------------------------------------
     def __init__(self, grid, origin, directions, shape):
-        self.fmatrix = N.zeros((self.nout, self.ndim), N.Float)
+        self.fmatrix = N.zeros((self.nout, self.ndim), N.float64)
         _axes = []
         for i in range(directions.shape[0]):
             self.fmatrix[i] = directions[i]

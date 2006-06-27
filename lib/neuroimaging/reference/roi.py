@@ -146,7 +146,7 @@ class SamplingGridROI(DiscreteROI):
               'only unions of SamplingGridROIs with themselves are implemented')
 
     def mask(self):
-        m = N.zeros(self.grid.shape, N.Int)
+        m = N.zeros(self.grid.shape, N.int32)
         for v in self.voxels:
             m[v] = 1.
         return m
