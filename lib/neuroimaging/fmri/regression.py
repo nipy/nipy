@@ -197,7 +197,7 @@ class AROutput(fMRIRegressionOutput):
                                        N.product(results.resid.shape[1:])))
         ntime = resid.shape[0]
 
-        sum_sq = results.scale.reshape(resid.shape[1:]) * results.df_resid()
+        sum_sq = results.scale.reshape(resid.shape[1:]) * results.df_resid
 
         Cov = N.zeros((self.order + 1,) + sum_sq.shape, N.float64)
         Cov[0] = sum_sq

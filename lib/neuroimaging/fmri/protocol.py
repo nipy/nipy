@@ -4,7 +4,7 @@ from enthought import traits
 import numpy as N
 
 from neuroimaging.fmri.functions import TimeFunction, StepFunction
-from neuroimaging.statistics.formula import Factor, Quantitative, Formula, Term
+from scipy.sandbox.models.formula import Factor, Quantitative, Formula, Term
 from scipy.interpolate import interp1d
 
 namespace = {}
@@ -46,16 +46,16 @@ class ExperimentalRegressor(traits.HasTraits):
         self.IRF = IRF
         self.convolved = False
 
-        _fn = IRF.convolve(self)
+        func = IRF.convolve(self)
 
-        def _f(time=None, _fn=tuple(_fn), **keywords):
+        def _f(time=None, func=tuple(func), **keywords):
             v = []
-            for __fn in _fn:
+            for _func in func:
                 try:
-                    v.append(__fn(time, **keywords))
+                    v.append(_func(time, **keywords))
                 except:
-                    for ___fn in __fn:
-                        v.append(___fn(time, **keywords))
+                    for __func in _func:
+                        v.append(__func(time, **keywords))
             return N.array(v)
         
         name = []
@@ -119,7 +119,7 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
         else:
             names = name
 
-        Quantitative.__init__(self, names, _fn=fn, termname=termname, **keywords)
+        Quantitative.__init__(self, names, func=fn, termname=termname, **keywords)
         
     def __call__(self, time=None, namespace=namespace, **keywords):
         if not self.convolved:
@@ -245,7 +245,7 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         else:
             raise ValueError, 'key not found'            
 
-        def _fn(namespace=namespace, time=None, j=j,
+        def func(namespace=namespace, time=None, j=j,
                 obj=self, 
                 **extra):
             _c = obj.convolved
@@ -255,7 +255,7 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
             return [N.squeeze(v) * 1.]
 
         name = '%s[%s]' % (self.termname, `key`)
-        return ExperimentalQuantitative(name, _fn)
+        return ExperimentalQuantitative(name, func)
 
     def __call__(self, time=None, namespace=None, includedown=False, convolved=None, **keywords):
         if convolved is not None:
