@@ -84,7 +84,7 @@ class DiscreteROI(ROI):
         '''
         v = []
 
-        for voxel in iterator:
+        for voxel in self.voxels:
             v.append(fn(voxel))
         return v
         
@@ -130,7 +130,7 @@ class SamplingGridROI(DiscreteROI):
               'to pool an image over a SamplingGridROI the grids must agree')
 
         tmp = image.readall()
-        for voxel in iterator:
+        for voxel in self.voxels:
             v.append(tmp[voxel])
 
         del(tmp); gc.collect()
