@@ -12,27 +12,26 @@ class PCATest(unittest.TestCase):
 
     def setUp(self):
 
-        self.fmridata = fMRIImage('http://kff.stanford.edu/BrainSTAT/testdata/test_fmri.img')
-        #self.fmridata = fMRIImage("test_fmri.img", repository)
+        self.fmridata = fMRIImage("test_fmri.img", datasource=repository)
 
 
-        frame = fmridata.frame(0)
-        self.mask = Image(N.greater(frame.readall(), 500).astype(N.Float), grid=frame.grid)
+        frame = self.fmridata.frame(0)
+        self.mask = Image(N.greater(frame.readall(), 500).astype(N.float64), grid=frame.grid)
 
     def test_PCAmask(self):
 
-        p = PCA(fmridata, mask=mask)
+        p = PCA(self.fmridata, mask=mask)
         p.fit()
         output = p.images(which=range(4))
 
     def test_PCA(self):
 
-        p = PCA(fmridata)
+        p = PCA(self.fmridata)
         p.fit()
         output = p.images(which=range(4))
 
     def test_PCAmontage(self):
-        p = PCA(fmridata, mask=mask)
+        p = PCA(self.fmridata, mask=mask)
         p.fit()
         output = p.images(which=range(4))
         p.time_series()
@@ -40,7 +39,7 @@ class PCATest(unittest.TestCase):
         pylab.show()
 
     def test_PCAmontage_nomask(self):
-        p = PCA(fmridata, mask=mask)
+        p = PCA(self.fmridata, mask=mask)
         p.fit()
         output = p.images(which=range(4))
         p.time_series()

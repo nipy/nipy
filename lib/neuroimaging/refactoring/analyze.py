@@ -1,8 +1,8 @@
 "This module implements details of the Analyze7.5 file format."
 import struct
 
-from numpy import memmap, UInt8, Int16, Int32, Float32, \
-  Float64, Complex32, amin, amax, dtype, asarray
+from numpy import memmap, uint8, int16, int32, float32, \
+  float64, complex64, amin, amax, dtype, asarray
 
 from attributes import attribute, readonly, deferto, wrapper, scope
 from odict import odict
@@ -26,12 +26,12 @@ DOUBLE = 64
 
 # map Analyze datatype to Numeric typecode
 datatype2typecode = {
-  BYTE: UInt8,
-  SHORT: Int16,
-  INTEGER: Int32,
-  FLOAT: Float32,
-  DOUBLE: Float64,
-  COMPLEX: Complex32}
+  BYTE: uint8,
+  SHORT: int16,
+  INTEGER: int32,
+  FLOAT: float32,
+  DOUBLE: float64,
+  COMPLEX: complex64}
 
 # map Numeric typecode to Analyze datatype
 typecode2datatype = \

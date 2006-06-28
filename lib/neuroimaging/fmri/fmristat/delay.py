@@ -119,7 +119,7 @@ class DelayContrastOutput(TContrastOutput):
                 os.makedirs(outdir)
 
             cnrow = self.contrast.matrix.shape[0] / 2
-            l = N.zeros(self.contrast.matrix.shape[0], N.Float)
+            l = N.zeros(self.contrast.matrix.shape[0], N.float64)
             l[0:cnrow] = self.contrast.weights[i]
 
             outname = os.path.join(outdir, 't%s' % self.ext)
@@ -178,7 +178,7 @@ class DelayContrastOutput(TContrastOutput):
         self.gamma1 = N.dot(self.deltamatrix, results.beta)
 
         nrow = self.gamma0.shape[0]
-        self.T0sq = N.zeros(self.gamma0.shape, N.Float)
+        self.T0sq = N.zeros(self.gamma0.shape, N.float64)
         
         for i in range(nrow):
             self.T0sq[i] = (self.gamma0[i]**2 *
@@ -194,7 +194,7 @@ class DelayContrastOutput(TContrastOutput):
 
         delay = self.contrast.IRF.delay
 
-        self.T1 = N.zeros(self.gamma0.shape, N.Float)
+        self.T1 = N.zeros(self.gamma0.shape, N.float64)
 
         nrow = self.gamma0.shape[0]
         for i in range(nrow):
@@ -207,7 +207,7 @@ class DelayContrastOutput(TContrastOutput):
                          utils.recipr0(self.gamma0 * a1)] *
                         utils.recipr0(delay.dforward(self.deltahat))))
 
-        tmpcov = N.zeros((2*nrow,)*2 + self.T0sq.shape[1:], N.Float)
+        tmpcov = N.zeros((2*nrow,)*2 + self.T0sq.shape[1:], N.float64)
 
         Cov = results.cov_beta
         E = self.effectmatrix
@@ -215,7 +215,7 @@ class DelayContrastOutput(TContrastOutput):
 
         nrow = self.effectmatrix.shape[0]
             
-        cov = N.zeros((nrow,)*2 + self.T0sq.shape[1:], N.Float)
+        cov = N.zeros((nrow,)*2 + self.T0sq.shape[1:], N.float64)
 
         for i in range(nrow):
             for j in range(i + 1):
@@ -230,7 +230,7 @@ class DelayContrastOutput(TContrastOutput):
                 cov[j,i] = cov[i,j]
 
         nout = self.contrast.weights.shape[0]
-        self._sd = N.zeros(self._effect.shape, N.Float)
+        self._sd = N.zeros(self._effect.shape, N.float64)
 
         for r in range(nout):
             var = 0
@@ -386,7 +386,7 @@ def invertR(delta, IRF, niter=20, verbose=False):
 
     def grad(x, theta):
         a, b, c = theta
-        value = N.zeros((3, x.shape[0]), N.Float)
+        value = N.zeros((3, x.shape[0]), N.float64)
         _x = x[:,0]
         value[0] = N.arctan(b * _x)
         value[1] = a / (1. + N.power((b * _x), 2.)) * _x

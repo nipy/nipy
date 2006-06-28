@@ -2,12 +2,12 @@ import unittest
 
 from neuroimaging.image import Image
 from neuroimaging.image.kernel_smooth import LinearFilter
-from neuroimaging.data import Repository
+from neuroimaging.tests.data import repository
 from neuroimaging.visualization import viewer
 
 class KernelTest(unittest.TestCase):
     def test_smooth(self):
-        rho = Image('../../tests/data/rho.img', datasource=Repository("."))
+        rho = Image("rho.img", repository)
         smoother = LinearFilter(rho.grid)
 
         srho = smoother.smooth(rho)

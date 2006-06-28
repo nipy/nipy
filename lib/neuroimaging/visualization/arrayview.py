@@ -3,7 +3,7 @@ from qt import qApp, PYSIGNAL, QButtonGroup, QGridLayout, QGroupBox, \
   QHBoxLayout, QFrame, QLabel, QPoint, QSizePolicy, QSpinBox, QWidget, \
   QVBoxLayout
 from pylab import Figure, figaspect, gci, show, amax, amin, squeeze, asarray,\
-  cm, angle, normalize, pi, arange, ravel, ones, outerproduct, floor,\
+  cm, angle, normalize, pi, arange, ravel, ones, outer, floor,\
   fromfunction, zeros
 from matplotlib.lines import Line2D
 from matplotlib.image import AxesImage
@@ -410,7 +410,7 @@ class ColorBar (ViewerCanvas):
             # replace it with the true endpoint
             elif (r_pts[-1] - tx[-1]) > eps: tx[-1] = r_pts[-1]
 
-        data = outerproduct(ones(5),r_pts)
+        data = outer(ones(5),r_pts)
         # need to clear axes because axis Intervals weren't updating
         ax.clear()
         ax.imshow(data, interpolation="nearest",
