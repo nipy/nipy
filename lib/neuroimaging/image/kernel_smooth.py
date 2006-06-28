@@ -25,7 +25,7 @@ class LinearFilter(traits.HasTraits):
         self.kernel = N.exp(-N.minimum(_normsq, 15))
         norm = self.kernel.sum()
         self.kernel = self.kernel / norm
-        self.kernel = FFT.rfft(self.kernel)
+        self.kernel = FFT.rfftn(self.kernel)
 
     def __init__(self, grid, **keywords):
 
@@ -91,7 +91,7 @@ class LinearFilter(traits.HasTraits):
             else:
                 tmp = indata * self.kernel
 
-            tmp2 = FFT.irfft(tmp)
+            tmp2 = FFT.irfftn(tmp)
             del(tmp)
             gc.collect()
             outdata = scale * tmp2[0:inimage.shape[0],0:inimage.shape[1],0:inimage.shape[2]]
@@ -120,4 +120,4 @@ class LinearFilter(traits.HasTraits):
     def presmooth(self, indata):
         _buffer = N.zeros(self.shape, N.float64)
         _buffer[0:indata.shape[0],0:indata.shape[1],0:indata.shape[2]] = indata
-        return FFT.rfft(_buffer)
+        return FFT.rfftn(_buffer)
