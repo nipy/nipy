@@ -364,7 +364,7 @@ class DegenerateAffine(Affine):
             return N.dot(self.fmatrix, coords) + self.fvector
 
         try:
-            t = N.zeros((self.ndin+1,)*2, N.float64)
+            t = N.zeros((self.nin+1,)*2, N.float64)
             t[0:self.nin,0:self.nin] = self.fmatrix
             t[self.nin,self.nin] = 1.
             t[0:self.nin,self.nin] = self.fvector
