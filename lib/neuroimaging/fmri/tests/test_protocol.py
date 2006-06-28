@@ -276,6 +276,18 @@ class ProtocolTest(object): #unittest.TestCase):
 
         scipy.testing.assert_almost_equal(a(t), N.array(q(time=t)) - Z * N.array(r(time=t)))
 
+class DeltaTest(unittest.TestCase):
+
+    def test_DeltaFunction(self):
+        a = N.arange(0,5,0.1)
+        d = protocol.DeltaFunction()
+        d.start = 3.0
+        d.dt = 0.5
+        x = d(a)
+        y = N.array(30*[0.] + 5*[2.] + 15*[0.])
+        scipy.testing.assert_array_equal(x, y)
+
+
 def suite():
     suite = unittest.makeSuite(ProtocolTest)
     return suite
