@@ -22,10 +22,13 @@ class ContinuousROI(ROI):
     Create an ROI with a binary function in a given coordinate system.
     """
     ndim = 3
-    def __init__(self, coordinate_system, bfn, args={}, ndim=ndim):
+    def __init__(self, coordinate_system, bfn, args=None, ndim=ndim):
         ROI.__init__(self, coordinate_system)
 
-        self.args = args
+        if args is None:
+            self.args = {}
+        else:
+            self.args = args
         self.bfn = bfn
         if not callable(bfn):
             raise ValueError(
@@ -182,7 +185,6 @@ def ROIellipsefn(center, form, a = 1.0):
 
     Form must be positive definite.
     """
-    from BrainSTAT.Modules.KernelSmooth import normsq
     from numpy.linalg import cholesky, inv
     _cholinv = cholesky_decomposition(inverse(form))
     ndim = array(center).shape[0]
