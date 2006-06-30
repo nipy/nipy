@@ -1,6 +1,5 @@
-import unittest, gc, scipy, os
+import unittest, gc, os
 import numpy as N
-import scipy
 
 from neuroimaging.fmri import fMRIImage
 from neuroimaging.image import Image
@@ -34,7 +33,7 @@ class fMRITest(unittest.TestCase):
 
     def test_subgrid(self):
         subgrid = self.img.grid.subgrid(3)
-        scipy.testing.assert_almost_equal(subgrid.mapping.transform,
+        N.testing.assert_almost_equal(subgrid.mapping.transform,
                                           self.img.grid.mapping.transform[1:,1:])
 
     def test_labels1(self):

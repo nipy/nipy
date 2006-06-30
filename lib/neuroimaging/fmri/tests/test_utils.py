@@ -1,6 +1,5 @@
 import unittest
 import numpy as N
-import scipy
 
 from neuroimaging.fmri.utils import CutPoly, WaveFunction, ConvolveFunctions
 
@@ -10,19 +9,19 @@ class utilTest(unittest.TestCase):
         f = CutPoly(2.0)
         t = N.arange(0, 10.0, 0.1)
         y = f(t)
-        scipy.testing.assert_almost_equal(y, [x*x for x in t])
+        N.testing.assert_almost_equal(y, [x*x for x in t])
 
         f = CutPoly(2.0, (5, 7))
         y = f(t)
-        scipy.testing.assert_almost_equal(y, [x*x*(x >= 5 and x < 7) for x in t])
+        N.testing.assert_almost_equal(y, [x*x*(x >= 5 and x < 7) for x in t])
 
         f = CutPoly(2.0, (None, 7))
         y = f(t)
-        scipy.testing.assert_almost_equal(y, [x*x*(x < 7) for x in t])
+        N.testing.assert_almost_equal(y, [x*x*(x < 7) for x in t])
 
         f = CutPoly(2.0, (5, None))
         y = f(t)
-        scipy.testing.assert_almost_equal(y, [x*x*(x >= 5) for x in t])
+        N.testing.assert_almost_equal(y, [x*x*(x >= 5) for x in t])
 
 
     def test_WaveFunction(self):
@@ -32,7 +31,7 @@ class utilTest(unittest.TestCase):
         f = WaveFunction(5, 2, 3)
         t = N.arange(0, 10.0, 0.1)
         y = f(t)
-        scipy.testing.assert_almost_equal(y, [height*(x >= start and x < start + duration) for x in t])
+        N.testing.assert_almost_equal(y, [height*(x >= start and x < start + duration) for x in t])
 
 
     def test_ConvolveFunctions(self):
@@ -48,7 +47,7 @@ class utilTest(unittest.TestCase):
         int_f1 = dt*f1(t).sum()
         int_f2 = dt*f2(t).sum()
         int_fa = dt*fa(t).sum()
-        scipy.testing.assert_approx_equal(int_f1*int_f2, int_fa)
+        N.testing.assert_approx_equal(int_f1*int_f2, int_fa)
 
 
 if __name__ == '__main__':

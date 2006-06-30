@@ -1,6 +1,5 @@
 import unittest, csv, os
 import numpy as N
-import scipy
 from scipy.sandbox.models.utils import recipr0
 
 from neuroimaging.fmri import hrf, protocol
@@ -110,7 +109,7 @@ class ProtocolTest(object): #unittest.TestCase):
         formula = self.p + drift
         c = contrast.Contrast(self.p, formula)
         c.getmatrix(time=N.arange(0,300,3.))
-        scipy.testing.assert_almost_equal(c.matrix,
+        N.testing.assert_almost_equal(c.matrix,
                                           [[0.,0.,0.,0.,1.,0.],
                                            [0.,0.,0.,0.,0.,1.]])
 
@@ -121,7 +120,7 @@ class ProtocolTest(object): #unittest.TestCase):
         formula = self.p + drift
         c = contrast.Contrast(self.p.main_effect(formula), formula)
         c.getmatrix(time=self.t)
-        scipy.testing.assert_almost_equal(c.matrix,
+        N.testing.assert_almost_equal(c.matrix,
                                           [0.,0.,0.,0.,-1.,1.])
 
     def testDesign1(self):
@@ -189,16 +188,16 @@ class ProtocolTest(object): #unittest.TestCase):
         Z = float(N.random.standard_normal(()))
 
         D = d * Z
-        scipy.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * Z)
+        N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * Z)
 
         D = d / Z
-        scipy.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) / Z)
+        N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) / Z)
 
         D = d - Z
-        scipy.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) - Z)
+        N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) - Z)
 
         D = d + Z
-        scipy.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) + Z)
+        N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) + Z)
 
 
     def testTimeFn2(self):
@@ -210,16 +209,16 @@ class ProtocolTest(object): #unittest.TestCase):
         t = N.arange(0,30,1.)
 
         D = d * d
-        scipy.testing.assert_almost_equal(D(t), N.array(drift_fn(t))**2)
+        N.testing.assert_almost_equal(D(t), N.array(drift_fn(t))**2)
 
         D = d / d
-        scipy.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * recipr0(drift_fn(t)))
+        N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * recipr0(drift_fn(t)))
 
         D = d - d
-        scipy.testing.assert_almost_equal(D(t), N.zeros(D(t).shape, N.Float))
+        N.testing.assert_almost_equal(D(t), N.zeros(D(t).shape, N.Float))
 
         D = d + d
-        scipy.testing.assert_almost_equal(D(t), 2 * N.array(drift_fn(t)))
+        N.testing.assert_almost_equal(D(t), 2 * N.array(drift_fn(t)))
 
     def testTimeFn3(self):
         self.setup_terms()
@@ -234,19 +233,19 @@ class ProtocolTest(object): #unittest.TestCase):
 
         i = N.random.random_integers(0, n-1)
         D = d * c
-        scipy.testing.assert_almost_equal(D(t)[i], c[i] * N.array(drift_fn(t)[i]) )
+        N.testing.assert_almost_equal(D(t)[i], c[i] * N.array(drift_fn(t)[i]) )
 
         i = N.random.random_integers(0, n-1)
         D = d / c
-        scipy.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] * recipr0(c)[i])
+        N.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] * recipr0(c)[i])
 
         i = N.random.random_integers(0, n-1)
         D = d - c
-        scipy.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] - c[i])
+        N.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] - c[i])
 
         i = N.random.random_integers(0, n-1)
         D = d + c
-        scipy.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] + c[i])
+        N.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] + c[i])
 
 
     def testTimeFn4(self):
@@ -262,7 +261,7 @@ class ProtocolTest(object): #unittest.TestCase):
         i = N.random.random_integers(0, n-1)
         x = d[i]
 
-        scipy.testing.assert_almost_equal(N.squeeze(x(t)), d(t)[i])
+        N.testing.assert_almost_equal(N.squeeze(x(t)), d(t)[i])
 
     def testTimeFn5(self):
         t = N.arange(0,60,1.)
@@ -274,7 +273,7 @@ class ProtocolTest(object): #unittest.TestCase):
 
         a = q.astimefn() - r.astimefn() * Z
 
-        scipy.testing.assert_almost_equal(a(t), N.array(q(time=t)) - Z * N.array(r(time=t)))
+        N.testing.assert_almost_equal(a(t), N.array(q(time=t)) - Z * N.array(r(time=t)))
 
 class DeltaTest(unittest.TestCase):
 
@@ -285,7 +284,7 @@ class DeltaTest(unittest.TestCase):
         d.dt = 0.5
         x = d(a)
         y = N.array(30*[0.] + 5*[2.] + 15*[0.])
-        scipy.testing.assert_array_equal(x, y)
+        N.testing.assert_array_equal(x, y)
 
 
 def suite():

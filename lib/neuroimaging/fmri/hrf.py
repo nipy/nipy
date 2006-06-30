@@ -94,6 +94,7 @@ class SpectralHRF(filters.Filter):
 
         """
 
+        self.delta = delta # store the shift in case we want it later
         time = N.arange(lower, tmax, self.dt)
         ntime = time.shape[0]
         irf = self.IRF
