@@ -8,10 +8,14 @@ from neuroimaging.fmri.utils import ConvolveFunctions, WaveFunction
 class Filter(traits.HasTraits):
     dt = traits.Float(0.02)
     tmax = traits.Float(500.0)
-    delta = N.arange(-4.5,4.6,0.1)
     tmin = traits.Float(-10.)
 
-    '''Takes a list of impulse response functions (IRFs): main purpose is to convolve a functions with each IRF for Design. The class assumes the range of the filter is effectively 50 seconds, can be changed by setting tmax -- this is just for the __mul__ method for convolution.'''
+    '''
+    Takes a list of impulse response functions (IRFs): main purpose is to
+    convolve a functions with each IRF for Design. The class assumes the range
+    of the filter is effectively 50 seconds, can be changed by setting tmax --
+    this is just for the __mul__ method for convolution.
+    '''
 
     def __getitem__(self, i):
         if type(i) is not types.IntType:
@@ -121,7 +125,8 @@ class GammaDENS:
 
     def deriv(self, const=1.):
         '''
-        Differentiate a Gamma density. Returns a GammaCOMB that can evaluate the derivative.
+        Differentiate a Gamma density. Returns a GammaCOMB that can evaluate
+        the derivative.
         '''
         return GammaCOMB([[const*self.coef*(self.alpha-1),
                            GammaDENS(self.alpha-1., self.nu)],
@@ -159,7 +164,9 @@ class GammaCOMB:
     
 class GammaHRF(Filter):
     """
-    A class that represents the Gamma basis in SPM: i.e. the filter is a collection of a certain number of Gamma densities. Parameters are specified as a kx2 matrix for k Gamma functions.
+    A class that represents the Gamma basis in SPM: i.e. the filter is a
+    collection of a certain number of Gamma densities. Parameters are
+    specified as a kx2 matrix for k Gamma functions.
     """
 
     def __init__(self, parameters):
@@ -176,7 +183,9 @@ class GammaHRF(Filter):
     
 class FIR(Filter):
     """
-    A class for FIR filters: i.e. the filter is a collection of square waves. Parameters (start and duration) are specified as a kx2 matrix for k square waves.
+    A class for FIR filters: i.e. the filter is a collection of square waves.
+    Parameters (start and duration) are specified as a kx2 matrix for k square
+    waves.
     
     >>> from BrainSTAT.fMRIstat import Filter
     >>> from pylab import *
