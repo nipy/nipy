@@ -8,8 +8,8 @@ class LinearInterpolant:
     the interpolant to take a keywords argument \'time=\'.
     """
 
-    def __init__(self, x, y, k=1, fill_value=0.):
-        self.f = scipy.interpolate.interp1d(x, y, bounds_error=0, fill_value=0.)
+    def __init__(self, x, y, fill_value=0.):
+        self.f = scipy.interpolate.interp1d(x, y, bounds_error=0, fill_value=fill_value)
 
     def __call__(self, time=None, **keywords):
         return self.f(time)
