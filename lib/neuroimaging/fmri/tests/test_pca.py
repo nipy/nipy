@@ -1,15 +1,20 @@
-from neuroimaging.statistics.pca import PCA, PCAmontage
-from neuroimaging.fmri import fMRIImage
-from neuroimaging.image import Image
-import numpy as N
+import unittest
 
-W = R.standard_normal
+import numpy as N
+import pylab
+
+from neuroimaging.fmri import fMRIImage
+from neuroimaging.fmri.pca import PCA, PCAmontage
+from neuroimaging.image import Image
+from neuroimaging.tests.data import repository
 
 class PCATest(unittest.TestCase):
 
     def setUp(self):
 
         self.fmridata = fMRIImage('http://kff.stanford.edu/BrainSTAT/testdata/test_fmri.img')
+        #self.fmridata = fMRIImage("test_fmri.img", repository)
+
 
         frame = fmridata.frame(0)
         self.mask = Image(N.greater(frame.readall(), 500).astype(N.Float), grid=frame.grid)
