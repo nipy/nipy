@@ -111,13 +111,10 @@ class SpectralHRF(filters.Filter):
         basis = []
         for i in range(self.ncomp):
             b = interpolant(time, U[:,i])
-            
+
             if i == 0:
-                b_int = (b(time) * self.dt).sum()
-                b.f.y /= N.fabs(b_int)
-            else:
-                b_int = (N.fabs(b(time)) * self.dt).sum()
-                b.f.y /= b_int
+                d = (b(time) * self.dt).sum()
+            b.f.y /= d
             basis.append(b)
 
         W = []
