@@ -2,18 +2,6 @@ import numpy as N
 import numpy.dft as FFT
 import scipy.interpolate
 
-def fwhm2sigma(fwhm):
-    """
-    Convert a FWHM value to sigma in a Gaussian kernel.
-    """
-    return fwhm / N.sqrt(8 * N.log(2))
-
-def sigma2fwhm(sigma):
-    """
-    Convert a sigma in a Gaussian kernel to a FWHM value.
-    """
-    return sigma * N.sqrt(8 * N.log(2))
-
 class LinearInterpolant:
     """
     A little wrapper around scipy.interpolate call to force
@@ -60,8 +48,8 @@ def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, normalize=[0,0]):
 
     if normalize[1]:
         _fn2 = _fn2 / N.sqrt(N.add.reduce(_fn2**2))
-
     _fft2 = FFT.rfft(_fn2)
+
     value = FFT.irfft(_fft1 * _fft2)
     _minshape = min(time.shape[0], value.shape[-1])
     time = time[0:_minshape]

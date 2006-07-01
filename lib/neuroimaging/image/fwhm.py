@@ -16,12 +16,6 @@ from enthought import traits
 
 from neuroimaging.image import Image
 
-def fwhm2sigma(fwhm):
-    return fwhm / N.sqrt(8 * N.log(2))
-
-def sigma2fwhm(sigma):
-    return sigma * N.sqrt(8 * N.log(2))
-
 class Resels(traits.HasTraits):
     
     clobber = traits.false
