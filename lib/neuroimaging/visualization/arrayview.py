@@ -2,9 +2,8 @@
 from qt import qApp, PYSIGNAL, QButtonGroup, QGridLayout, QGroupBox, \
   QHBoxLayout, QFrame, QLabel, QPoint, QSizePolicy, QSpinBox, QWidget, \
   QVBoxLayout
-from pylab import Figure, figaspect, gci, show, amax, amin, squeeze, asarray,\
-  cm, angle, normalize, pi, arange, ravel, ones, outer, floor,\
-  fromfunction, zeros
+from pylab import Figure, figaspect, show, amax, amin, squeeze, asarray,\
+  cm, angle, normalize, pi, arange, ravel, ones, outer, zeros
 from matplotlib.lines import Line2D
 from matplotlib.image import AxesImage
 from matplotlib.backends.backend_qtagg import \
