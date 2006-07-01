@@ -67,7 +67,14 @@ except:
                  'neuroimaging.extra.enthought.traits.ui.null',
                  'neuroimaging.extra.enthought.util',
                  'neuroimaging.extra.enthought.resource')
-    
+
+if 'neuroimaging.extra.enthought' in packages:
+    # this should fail on build but work afterwards -- there should be
+    # a better way to do this
+    try:
+        import extra.enthought.traits as traits
+    except:
+        pass
 
 testmatch = re.compile(".*tests").search
 nontest_packages = [p for p in packages if not testmatch(p)]
