@@ -1,11 +1,13 @@
 import gc
+
 import numpy as N
 import numpy.dft as FFT
 import numpy.linalg as NL
-from neuroimaging.reference.mapping import Affine
+from enthought import traits
+
 from neuroimaging.image import Image
 from neuroimaging.image.utils import fwhm2sigma
-from enthought import traits
+from neuroimaging.reference.mapping import Affine
 
 class LinearFilter(traits.HasTraits):
     '''
@@ -23,7 +25,7 @@ class LinearFilter(traits.HasTraits):
         self.kernel = N.exp(-N.minimum(_normsq, 15))
         norm = self.kernel.sum()
         self.kernel = self.kernel / norm
-        self.kernel = FFT.real_fftnd(self.kernel)
+        self.kernel = FFT.rfft(self.kernel)
 
     def __init__(self, grid, **keywords):
 
@@ -89,7 +91,7 @@ class LinearFilter(traits.HasTraits):
             else:
                 tmp = indata * self.kernel
 
-            tmp2 = FFT.inverse_real_fftnd(tmp)
+            tmp2 = FFT.irfft(tmp)
             del(tmp)
             gc.collect()
             outdata = scale * tmp2[0:inimage.shape[0],0:inimage.shape[1],0:inimage.shape[2]]
@@ -118,4 +120,4 @@ class LinearFilter(traits.HasTraits):
     def presmooth(self, indata):
         _buffer = N.zeros(self.shape, N.float64)
         _buffer[0:indata.shape[0],0:indata.shape[1],0:indata.shape[2]] = indata
-        return FFT.real_fftnd(_buffer)
+        return FFT.rfft(_buffer)

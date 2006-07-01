@@ -74,7 +74,7 @@ class ImageTest(unittest.TestCase):
 
     def test_parcels1(self):
         rho = Image("rho.img", repository)
-        parcelmap = (rho.readall() * 100).astype(N.Int)
+        parcelmap = (rho.readall() * 100).astype(N.int32)
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
         test.grid.itertype = 'parcel'
         test.grid.parcelmap = parcelmap
@@ -86,7 +86,7 @@ class ImageTest(unittest.TestCase):
 
     def test_parcels2(self):
         rho = Image("rho.img", repository)
-        parcelmap = (rho.readall() * 100).astype(N.Int)
+        parcelmap = (rho.readall() * 100).astype(N.int32)
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
 
         test.grid.itertype = 'parcel'
@@ -104,7 +104,7 @@ class ImageTest(unittest.TestCase):
 
     def test_parcels3(self):
         rho = Image("rho.img", repository)
-        parcelmap = (rho.readall() * 100).astype(N.Int)
+        parcelmap = (rho.readall() * 100).astype(N.int32)
         shape = parcelmap.shape
         parcelmap.shape = N.product(parcelmap.shape)
         parcelseq = N.unique(parcelmap)

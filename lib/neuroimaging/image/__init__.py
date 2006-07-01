@@ -142,7 +142,7 @@ class Image(traits.HasTraits):
             if itertype is 'slice':
                 self[value.slice] = data
             elif itertype in ('parcel', "slice/parcel"):
-                self.put(data, N.nonzero(value.where))
+                self.put(data, N.nonzero(value.where.flatten()))
 
     #-------------------------------------------------------------------------
     def getvoxel(self, voxel):
