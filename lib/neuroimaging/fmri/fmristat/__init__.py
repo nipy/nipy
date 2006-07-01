@@ -276,27 +276,27 @@ class fMRIStatAR(LinearModelIterator):
         else:
             self.fmri_image.grid.itertype = 'slice/parcel'
             self.designs = []
-            for i in range(len(self.slicetimes)):
-                self.designs.append(self.formula.design(time=ftime + self.slicetimes[i]))
+            for s in self.slicetimes:
+                self.designs.append(self.formula.design(time=ftime + s))
 
         self.contrasts = []
         if contrasts is not None:
             if type(contrasts) not in [type([]), type(())]:
                 contrasts = [contrasts]
-            for i in range(len(contrasts)):
-                contrasts[i].getmatrix(time=ftime)
-                if isinstance(contrasts[i], DelayContrast):
+            for contrast in contrasts:
+                contrast.getmatrix(time=ftime)
+                if isinstance(contrast, DelayContrast):
                     cur = DelayContrastOutput(self.fmri_image.grid,
-                                              contrasts[i], path=self.path,
+                                              contrast, path=self.path,
                                               clobber=self.clobber,
                                               frametimes=ftime)
-                elif contrasts[i].rank == 1:
-                    cur = TContrastOutput(self.fmri_image.grid, contrasts[i],
+                elif contrast.rank == 1:
+                    cur = TContrastOutput(self.fmri_image.grid, contrast,
                                           path=self.path,
                                           clobber=self.clobber,
                                           frametimes=ftime)
                 else:
-                    cur = FContrastOutput(self.fmri_image.grid, contrasts[i],
+                    cur = FContrastOutput(self.fmri_image.grid, contrast,
                                           path=self.path,
                                           clobber=self.clobber,
                                           frametimes=ftime)
