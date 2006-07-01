@@ -82,11 +82,7 @@ class DiscreteROI(ROI):
         Pool data from an image over the ROI -- return fn evaluated at
         each voxel.
         '''
-        v = []
-
-        for voxel in self.voxels:
-            v.append(fn(voxel, **extra))
-        return v
+        return [fn(voxel, **extra) for voxel in self.voxels]
         
     def feature(self, fn, **extra):
         """
@@ -95,7 +91,6 @@ class DiscreteROI(ROI):
         over the ROI. Any other operations should be able to ignore superfluous
         keywords arguments, i.e. use **extra.
         """
-
         pooled_data = self.pool(fn, **extra)
         return N.mean(pooled_data)
         
@@ -123,14 +118,12 @@ class SamplingGridROI(DiscreteROI):
         Pool data from an image over the ROI -- return fn evaluated at
         each voxel.
         '''
-        v = []
         if image.grid != self.grid:
             raise ValueError(
               'to pool an image over a SamplingGridROI the grids must agree')
 
         tmp = image.readall()
-        for voxel in self.voxels:
-            v.append(tmp[voxel])
+        v = [tmp[voxel] for voxel for self.voxels]
 
         del(tmp); gc.collect()
         return v
