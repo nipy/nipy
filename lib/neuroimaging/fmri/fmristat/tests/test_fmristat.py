@@ -11,6 +11,9 @@ from neuroimaging.fmri.fmristat import fMRIStatAR, fMRIStatOLS
 from  neuroimaging.image import Image
 from neuroimaging.fmri.hrf import glover, glover_deriv
 
+from neuroimaging.defines import pylab_def
+PYLAB_DEF, pylab = pylab_def()
+
 class fMRIStatTest(unittest.TestCase):
 
     def setup_formula(self):
@@ -134,9 +137,10 @@ class TestContrast(fMRIStatTest):
         rho = OLS.rho_estimator.img
         rho.tofile('rho.img', clobber=True)
         
-        from neuroimaging.visualization import viewer
-        v=viewer.BoxViewer(rho)
-        v.draw()
+        if PYLAB_DEF:
+            from neuroimaging.visualization import viewer
+            v=viewer.BoxViewer(rho)
+            v.draw()
 
         os.remove('rho.img')
         os.remove('rho.hdr')
@@ -146,8 +150,9 @@ class TestContrast(fMRIStatTest):
         del(OLS); del(AR); gc.collect()
 
         t = Image('fmristat_run/contrasts/pain/F.img')
-        v=viewer.BoxViewer(t)
-        v.draw()
+        if PYLAB_DEF:
+            v=viewer.BoxViewer(t)
+            v.draw()
 
 if __name__ == '__main__':
     unittest.main()

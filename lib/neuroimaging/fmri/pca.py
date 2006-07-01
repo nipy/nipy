@@ -21,6 +21,11 @@ from scipy.sandbox.models.utils import recipr
 
 from neuroimaging.image import Image
 
+from neuroimaging.defines import pylab_def
+PYLAB_DEF, pylab = pylab_def()
+if PYLAB_DEF:
+    from neuroimaging.fmri.plotting import MultiPlot
+
 class PCA(traits.HasTraits):
     """
     Compute the PCA of an image (over axis=0). Image grid should
@@ -177,8 +182,7 @@ class PCA(traits.HasTraits):
 
         return outimages
 
-try:
-    import pylab
+if PYLAB_DEF:
     from neuroimaging.visualization.montage import Montage
     from neuroimaging.image.interpolation import ImageInterpolator
     from neuroimaging.visualization import slices
@@ -332,6 +336,4 @@ try:
             pylab.title(self.title)
 
 
-except:
-    pass
 

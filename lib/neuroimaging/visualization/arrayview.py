@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 from qt import qApp, PYSIGNAL, QButtonGroup, QGridLayout, QGroupBox, \
   QHBoxLayout, QFrame, QLabel, QPoint, QSizePolicy, QSpinBox, QWidget, \
   QVBoxLayout

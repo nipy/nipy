@@ -1,7 +1,14 @@
 import unittest
+
+
+from neuroimaging.defines import qt_def, pylab_def
+QT_DEF, qt = qt_def()
+PYLAB_DEF, pylab = pylab_def()
+
 from neuroimaging.refactoring.analyze import AnalyzeImage
 from neuroimaging.tests.data import repository
-from neuroimaging.visualization.arrayview import arrayview
+if PYLAB_DEF and QT_DEF:
+    from neuroimaging.visualization.arrayview import arrayview
 
 class AnalyzeImageTest(unittest.TestCase):
 
@@ -11,8 +18,8 @@ class AnalyzeImageTest(unittest.TestCase):
     def test_header(self):
         self.image.array
 
-    def test_arrayview(self):
-        arrayview(self.image.array)
-
+    if PYLAB_DEF and QT_DEF:
+        def test_arrayview(self):
+            arrayview(self.image.array)
 
 if __name__ == '__main__': unittest.main()

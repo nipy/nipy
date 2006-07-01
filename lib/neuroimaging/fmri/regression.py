@@ -5,14 +5,14 @@ import numpy.linalg as L
 from scipy.linalg import toeplitz
 from scipy.sandbox.models.utils import recipr
 from neuroimaging import traits
-import pylab
 
 from neuroimaging.image import Image
-from neuroimaging.fmri.plotting import MultiPlot
 import neuroimaging.image.regression as imreg
 
-
-canplot = True
+from neuroimaging.defines import pylab_def
+PYLAB_DEF, pylab = pylab_def()
+if PYLAB_DEF:
+    from neuroimaging.fmri.plotting import MultiPlot
 
 class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     """
@@ -96,7 +96,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 
         imreg.TContrastOutput.setup_output(self)
 
-        if canplot:
+        if PYLAB_DEF:
             ftime = self.frametimes
             f = pylab.gcf()
             f.clf()
@@ -142,7 +142,7 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
 
         imreg.FContrastOutput.setup_output(self)
 
-        if canplot:
+        if PYLAB_DEF:
             ftime = self.frametimes
 
             f = pylab.gcf()

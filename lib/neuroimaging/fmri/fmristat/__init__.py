@@ -6,11 +6,9 @@ import numpy.linalg as L
 import numpy.random as R
 import scipy.ndimage
 from scipy.sandbox.models.utils import monotone_fn_inverter, rank 
-import pylab
 
 from neuroimaging.fmri import fMRIImage
 from neuroimaging.fmri.fmristat.delay import DelayContrast, DelayContrastOutput
-from neuroimaging.fmri.plotting import MultiPlot
 from neuroimaging.fmri.regression import AROutput, TContrastOutput, \
   FContrastOutput, ResidOutput
 from neuroimaging.image import kernel_smooth
@@ -19,7 +17,12 @@ from neuroimaging.image.utils import fwhm2sigma
 from neuroimaging.statistics.regression import LinearModelIterator, \
   OLSModel, ARModel
 
-canplot = True
+# Imports related to pylab
+
+from neuroimaging.defines import pylab_def
+PYLAB_DEF, pylab = pylab_def()
+if PYLAB_DEF:
+    from neuroimaging.fmri.plotting import MultiPlot
 
 class WholeBrainNormalize(traits.HasTraits):
 
@@ -178,8 +181,7 @@ class fMRIStatOLS(LinearModelIterator):
         dmatrix.tofile(outfile)
         outfile.close()
 
-        if canplot:
-
+        if PYLAB_DEF:
             f = pylab.gcf()
             f.clf()
 

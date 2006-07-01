@@ -15,6 +15,10 @@ choose Numeric, numarray or numpy.
 
 import sys, os
 
+# For NiPy -- force NUMERIX=numpy
+
+os.environ['NUMERIX'] = 'numpy'
+
 which = None, None
 
 # First, see if --numarray or --Numeric was specified on the command

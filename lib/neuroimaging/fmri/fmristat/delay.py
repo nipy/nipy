@@ -11,10 +11,8 @@ import numpy as N
 import numpy.linalg as L
 from scipy.sandbox.models.utils import recipr, recipr0
 from neuroimaging import traits
-import pylab
 
 from neuroimaging.fmri import hrf, filters
-from neuroimaging.fmri.plotting import MultiPlot
 from neuroimaging.fmri.protocol import ExperimentalQuantitative
 from neuroimaging.fmri.regression import TContrastOutput 
 from neuroimaging.fmri.utils import LinearInterpolant as interpolant
@@ -22,7 +20,10 @@ from neuroimaging.image import Image
 from neuroimaging.statistics import contrast
 from scipy.sandbox.models.contrast import ContrastResults
 
-canplot = True
+from neuroimaging.defines import pylab_def
+PYLAB_DEF, pylab = pylab_def()
+if PYLAB_DEF:
+    from neuroimaging.fmri.plotting import MultiPlot
 
 class DelayContrast(contrast.Contrast):
 
@@ -158,7 +159,7 @@ class DelayContrastOutput(TContrastOutput):
             matrix.tofile(outfile)
             outfile.close()
 
-            if canplot:
+            if PYLAB_DEF:
                 
                 ftime = self.frametimes
                 def g(time=None, **extra):
