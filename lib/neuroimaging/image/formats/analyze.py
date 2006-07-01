@@ -37,7 +37,7 @@ def isseq(value):
         isseq = False
     return type(value) != StringType and isseq
 
-##############################################################################
+
 class BinaryHeaderValidator(traits.TraitHandler):
 
     def __init__(self, packstr, value=None, seek=0, bytesign = '>', **keywords):
@@ -79,13 +79,13 @@ class BinaryHeaderValidator(traits.TraitHandler):
         return value
 
 
-##############################################################################
+
 def BinaryHeaderAtt(packstr, value=None, **keywords):
     validator = BinaryHeaderValidator(packstr, value=value, **keywords)
     return traits.Trait(value, validator)
 
 
-##############################################################################
+
 class ANALYZE(traits.HasTraits):
     """
     A class to read and write ANALYZE format images. 
@@ -186,7 +186,7 @@ class ANALYZE(traits.HasTraits):
 
     clobber = traits.false
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, filename=None, datasource=DataSource(), grid=None, **keywords):
         self.datasource = datasource
         self.filebase = filename and os.path.splitext(filename)[0] or None
@@ -271,14 +271,14 @@ class ANALYZE(traits.HasTraits):
             self.memmap = N.memmap(imgfilename, dtype=self.dtype,
                 shape=tuple(self.grid.shape), mode=mode)
 
-    #-------------------------------------------------------------------------
+
     def __str__(self):
         value = ''
         for trait in self.hdrattnames:
             value = value + '%s:%s=%s\n' % (self.filebase, trait, str(getattr(self, trait)))
         return value
 
-    #-------------------------------------------------------------------------
+
     def readheader(self, hdrfilename):
         hdrfile = self.datasource.open(hdrfilename)
 
@@ -292,7 +292,7 @@ class ANALYZE(traits.HasTraits):
         self.typecode, self.byte = datatypes[self.datatype]
         hdrfile.close()
 
-    #-------------------------------------------------------------------------
+
     def _datatype_changed(self):
         ## TODO / WARNING, datatype is not checked very carefully...
 
@@ -324,7 +324,7 @@ class ANALYZE(traits.HasTraits):
         else:
             raise ValueError, 'invalid datatype'
 
-    #-------------------------------------------------------------------------
+
     def writeheader(self, hdrfile=None):
 
         if hdrfile is None:
@@ -343,15 +343,15 @@ class ANALYZE(traits.HasTraits):
 
         hdrfile.close()
 
-    #-------------------------------------------------------------------------
+
     def _byteorder_changed(self):
         self.bytesign = {'big':'>', 'little':'<'}[self.byteorder]
 
-    #-------------------------------------------------------------------------
+
     def _bytesign_changed(self):
         self.byteorder = {'>':'big', '<':'little'}[self.bytesign]
 
-    #-------------------------------------------------------------------------
+
     def _filebase_changed(self):
         try:
             hdrfile = self.datasource.open(self.hdrfilename())
@@ -363,41 +363,41 @@ class ANALYZE(traits.HasTraits):
         except:
             pass
 
-    #-------------------------------------------------------------------------
+
     def hdrfilename(self):
         return '%s.hdr' % self.filebase
 
-    #-------------------------------------------------------------------------
+
     def imgfilename(self):
         return '%s.img' % self.filebase
 
-    #-------------------------------------------------------------------------
+
     def matfilename(self):
         return '%s.mat' % self.filebase
 
-    #-------------------------------------------------------------------------
+
     def _grid_changed(self):
         try:
             self.ndim = len(self.grid.shape)
         except:
             pass
 
-    #-------------------------------------------------------------------------
+
     def _datatype_changed(self):
         self.getdtype()
         
-    #-------------------------------------------------------------------------
+
     def getdtype(self):
         self.typecode, self.byte = datatypes[self.datatype]
         self.dtype = N.dtype(self.typecode)
         self.dtype = self.dtype.newbyteorder(self.byteorder)
 
-    #-------------------------------------------------------------------------
+
     def _mode_changed(self):
         _modemap = {'r':'rb', 'w':'wb', 'r+': 'rb+'}
         self._mode = _modemap[self.mode]
         
-    #-------------------------------------------------------------------------
+
     def _dimfromgrid(self, grid):
         self.grid = grid.python2matlab()
             
@@ -429,13 +429,13 @@ class ANALYZE(traits.HasTraits):
             self.origin = [0]*5
         
 
-    #-------------------------------------------------------------------------
+
     def __del__(self):
         if self.memmapped and hasattr(self, "memmap"):
             self.memmap.sync()
             del(self.memmap)
         
-    #-------------------------------------------------------------------------
+
     def __getitem__(self, _slice):
         v = self.memmap[_slice]
         if self.scale_factor:
@@ -444,7 +444,7 @@ class ANALYZE(traits.HasTraits):
             return v
     def getslice(self, _slice): return self[_slice]
 
-    #-------------------------------------------------------------------------
+
     def __setitem__(self, _slice, data):
         if self.scale_factor:
             _data = data / self.scale_factor
@@ -454,7 +454,7 @@ class ANALYZE(traits.HasTraits):
         _data.shape = N.product(_data.shape)
     def writeslice(self, _slice, data): self[slice] = data
         
-    #-------------------------------------------------------------------------
+
     def readmat(self):
         """
         Return affine transformation matrix, if it exists.
@@ -470,7 +470,7 @@ class ANALYZE(traits.HasTraits):
             return Mapping.identity(
               self.ndim, input='world', output='world', names=names)
 
-    #-------------------------------------------------------------------------
+
     def writemat(self, matfile=None):
         "Write out the affine transformation matrix."
         if matfile is None: matfile = self.matfilename()
@@ -478,7 +478,7 @@ class ANALYZE(traits.HasTraits):
             self.grid.mapping.tofile(matfile)
 
 
-#-----------------------------------------------------------------------------
+
 def guess_endianness(hdrfile):
     """
     Try to guess big/little endianness of an ANALYZE file based on dim[0].

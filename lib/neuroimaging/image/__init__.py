@@ -11,7 +11,7 @@ from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.reference.iterators import ParcelIterator, SliceParcelIterator
 
 
-##############################################################################
+
 class Image(traits.HasTraits):
     isfile = False
     shape = traits.ListInt()
@@ -19,7 +19,7 @@ class Image(traits.HasTraits):
 
     #class postread (attribute): default=lambda x: x
 
-    #-------------------------------------------------------------------------
+
     class ArrayImage (object):
         "A simple class to mimic an image file from an array."
         class data (readonly): "internal data array"; implements=N.ndarray
@@ -43,7 +43,7 @@ class Image(traits.HasTraits):
         def getslice(self, _slice): return self[_slice]
         def writeslice(self, _slice, data): self[_slice] = data
 
-    #-------------------------------------------------------------------------
+
     @staticmethod
     def fromurl(url, datasource=DataSource(), grid=None, mode="r", clobber=False,
       **keywords):
@@ -53,7 +53,7 @@ class Image(traits.HasTraits):
         return getreader(url)(filename=url,
           datasource=datasource, mode=mode, clobber=clobber, grid=grid, **keywords)
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, image, datasource=DataSource(), grid=None, **keywords):
         '''
         Create a Image (volumetric image) object from either a file, an
@@ -89,13 +89,13 @@ class Image(traits.HasTraits):
 
         self.postread = lambda x:x
 
-    #-------------------------------------------------------------------------
+
     def __getitem__(self, slice): return self.image[slice]
     def getslice(self, slice): return self[slice]
     def __setitem__(self, slice, data): self.image[slice] = data
     def writeslice(self, slice, data): self[slice] = data
 
-    #-------------------------------------------------------------------------
+
     def __iter__(self):
         "Create an iterator over an image based on its grid's iterator."
         iter(self.grid)
@@ -104,19 +104,19 @@ class Image(traits.HasTraits):
             self.buffer.shape = N.product(self.buffer.shape)
         return self
 
-    #-------------------------------------------------------------------------
+
     def compress(self, where, axis=0):
         if hasattr(self, 'buffer'):
             return self.buffer.compress(where, axis=axis)
         else: raise ValueError, 'no buffer: compress not supported'
 
-    #-------------------------------------------------------------------------
+
     def put(self, data, indices):
         if hasattr(self, 'buffer'):
             return self.buffer.put(data, indices)
         else: raise ValueError, 'no buffer: put not supported'
 
-    #-------------------------------------------------------------------------
+
     def next(self, value=None, data=None):
         """
         The value argument here is used when, for instance one wants to
@@ -144,13 +144,13 @@ class Image(traits.HasTraits):
             elif itertype in ('parcel', "slice/parcel"):
                 self.put(data, N.nonzero(value.where.flatten()))
 
-    #-------------------------------------------------------------------------
+
     def getvoxel(self, voxel):
         if len(voxel) != self.ndim:
             raise ValueError, 'expecting a voxel coordinate'
         return self[voxel]
 
-    #-------------------------------------------------------------------------
+
     def toarray(self, clean=True, **keywords):
         """
         Return a Image instance that has an ArrayPipe as its image attribute.
@@ -170,7 +170,7 @@ class Image(traits.HasTraits):
         if clean: data = N.nan_to_num(data)
         return Image(self.postread(data), grid=self.grid, **keywords)
 
-    #-------------------------------------------------------------------------
+
     def tofile(self, filename, array=True, clobber=False, **keywords):
         outimage = Image(filename, mode='w', grid=self.grid,
                          clobber=clobber, **keywords)
@@ -188,7 +188,7 @@ class Image(traits.HasTraits):
         if hasattr(outimage, "close"): outimage.close()
         return outimage
 
-    #-------------------------------------------------------------------------
+
     def readall(self, clean=False): 
         """
         Read an entire Image object, returning a numpy, not another instance of
@@ -199,11 +199,11 @@ class Image(traits.HasTraits):
         if clean: value = Image(N.nan_to_num(value, fill=self.fill))
         return value
 
-    #-------------------------------------------------------------------------
+
     def check_grid(self, test): return self.grid == test.grid
 
 
-##############################################################################
+
 class ImageSequenceIterator(traits.HasTraits):
     """
     Take a sequence of images, and an optional grid (which defaults to

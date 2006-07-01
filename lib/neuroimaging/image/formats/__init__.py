@@ -55,7 +55,7 @@ def struct_pack(byte_order, elements, values):
     return pack(format, *values)
 
 
-##############################################################################
+
 class structfield (attribute):
     classdef=True
 
@@ -88,7 +88,7 @@ format_modules = (
   #"neuroimaging.image.formats.minc",
 )
 
-#-----------------------------------------------------------------------------
+
 def getreader(filename):
     "Return the appropriate image reader for the given file type."
     extension = path(filename).splitext()[1]
@@ -103,7 +103,7 @@ def getreader(filename):
       "file extension %(ext)s not recognized, %(exts)s files can be created "\
       "at this time."%(extension, all_extensions)
 
-#-----------------------------------------------------------------------------
+
 def hasreader(filename):
     """
     Determine if there is an image format reader registered for the given
