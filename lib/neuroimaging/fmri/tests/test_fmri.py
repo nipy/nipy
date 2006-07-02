@@ -20,6 +20,8 @@ class fMRITest(unittest.TestCase):
 
     def test_write(self):
         self.img.tofile('tmpfmri.img')
+        test = fMRIImage('tmpfmri.img')
+        self.assertEquals(test.grid.shape, self.img.grid.shape)
         os.remove('tmpfmri.img')
         os.remove('tmpfmri.hdr')
 

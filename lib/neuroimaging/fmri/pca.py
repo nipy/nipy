@@ -12,7 +12,7 @@ More specifically, the data is projected onto the eigenvectors of the
 covariance matrix.
 """
 
-import time, gc
+import gc
 
 import numpy as N
 import numpy.linalg as L
@@ -102,7 +102,6 @@ class PCA(traits.HasTraits):
             _slice = [first_slice, slice(i,i+1)]
             
             Y = N.nan_to_num(self.image.getslice(_slice).reshape((_shape[0], N.product(_shape[2:]))))
-            toc = time.time()
             YX = N.dot(UX, Y)
             
             if self.pcatype == 'cor':
@@ -119,8 +118,6 @@ class PCA(traits.HasTraits):
                 del(mask)
             
             self.C += N.dot(YX, N.transpose(YX))
-            tic = time.time()
-            sys.stderr.write('%f\n' % (tic-toc,))
             
             gc.collect()
         
