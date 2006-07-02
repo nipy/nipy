@@ -194,8 +194,8 @@ class ANALYZE(traits.HasTraits):
           if isinstance(self.trait(name).handler, BinaryHeaderValidator)]
         traits.HasTraits.__init__(self, **keywords)
 
-        self.ndim = self.dim[0]
 
+        self.ndim = self.dim[0]
         if self.mode is 'w':
             self._dimfromgrid(grid)
             self.writeheader()
@@ -212,7 +212,9 @@ class ANALYZE(traits.HasTraits):
                        self.grid.shape,
                        byteorder=self.byteorder,
                        outtype = self.typecode)
-        elif filename: self.readheader(self.hdrfilename())
+        elif filename:
+            self.readheader(self.hdrfilename())
+            self.ndim = self.dim[0]
 
         if self.ignore_origin:
             self.origin = [1]*5
