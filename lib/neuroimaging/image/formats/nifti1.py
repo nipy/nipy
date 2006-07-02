@@ -235,12 +235,12 @@ class NIFTI1(BinaryImage):
         else:
             return '%s.img' % self.filebase
 
-    def check_byteorder(self, hdrfile):
+    def check_byteorder(self):
         """
         A check of byteorder based on the 'sizeof_hdr' attribute,
         which should equal 348.
         """
-
+        hdrfile = self.datasource.open(self.hdrfilename())
         sizeof_hdr = self.trait('sizeof_hdr')
         sizeof_hdr.handler.bytesign = self.bytesign
         value = sizeof_hdr.handler.read(hdrfile)
@@ -250,15 +250,15 @@ class NIFTI1(BinaryImage):
                 self.bytesign = '<'
                 self.byteorder = 'little'
             else:
-                self.bytesign = '!'
+                self.bytesign = '>'
                 self.byteorder = 'big'
-        hdrfile.seek(0,0)
+        hdrfile.close()
         
 
     def getdtype(self):
         # NIFTI-1 datatypes
 
-        self.dtype =  {DT_NONE:None, # will fail if unknown
+        self.dtype = N.dtype({DT_NONE:None, # will fail if unknown
                        DT_UNKNOWN:None, 
                        DT_BINARY:N.bool8,
                        DT_UNSIGNED_CHAR:N.uint8,
@@ -283,7 +283,7 @@ class NIFTI1(BinaryImage):
                        DT_UINT64:N.uint64,
                        DT_FLOAT128:None,
                        DT_COMPLEX128:None,
-                       DT_COMPLEX256:None}[self.datatype]
+                       DT_COMPLEX256:None}[self.datatype])
 
         self.dtype = self.dtype.newbyteorder(self.bytesign)
 

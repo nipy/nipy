@@ -160,39 +160,6 @@ class ANALYZE(BinaryImage):
 
         self.getdtype()
 
-        ANALYZE_Byte = 2
-        ANALYZE_Short = 4
-        ANALYZE_Int = 8
-        ANALYZE_Float = 16
-        ANALYZE_Double = 64
-
-        if self.datatype == ANALYZE_Byte:
-            self.bitpix = 8
-            self.glmin = 0
-            self.glmax = 255
-            self.scale_factor = abs(self.calmin) / 255
-        elif self.datatype == ANALYZE_Short: 
-            self.bitpix = 16
-            self.scale_factor = max(abs(self.calmin), abs(self.calmax)) / (2.0**15-1)
-            self.glmin = round(self.scale_factor * self.calmin)
-            self.glmax = round(self.scale_factor * self.calmax)
-        elif self.datatype == ANALYZE_Int: 
-            self.bitpix = 32
-            self.scale_factor = max(abs(self.calmin), abs(self.calmax)) / (2.0**31-1)
-            self.glmin = round(self.scale_factor * self.calmin)
-            self.glmax = round(self.scale_factor * self.calmax)
-        elif self.datatype == ANALYZE_Float:
-            self.bitpix = 32
-            self.scale_factor = 1
-            self.glmin = 0
-            self.glmax = 0
-        elif self.datatype == ANALYZE_Double:
-            self.bitpix = 64
-            self.scale_factor = 1
-            self.glmin = 0
-            self.glmax = 0
-        else:
-            raise ValueError, 'invalid datatype'
 
     def _byteorder_changed(self):
         self.bytesign = {'big':'>', 'little':'<'}[self.byteorder]
@@ -223,14 +190,43 @@ class ANALYZE(BinaryImage):
         ANALYZE_Double = 64
 
         datatypes = {
-            ANALYZE_Byte:(N.uint8, 1),
-            ANALYZE_Short:(N.int16, 2),
-            ANALYZE_Int:(N.int32, 4),
-            ANALYZE_Float:(N.float32, 4),
-            ANALYZE_Double:(N.float64, 8)}
+            ANALYZE_Byte:N.uint8,
+            ANALYZE_Short:N.int16,
+            ANALYZE_Int:N.int32,
+            ANALYZE_Float:N.float32,
+            ANALYZE_Double:N.float64}
 
-        self.dtype, self.byte = datatypes[self.datatype]
+        self.dtype = N.dtype(datatypes[self.datatype])
         self.dtype = self.dtype.newbyteorder(self.bytesign)
+
+#        print self.dtype, self.datatype, self.calmin, self.calmax
+        if self.datatype == ANALYZE_Byte:
+            self.bitpix = 8
+            self.glmin = 0
+            self.glmax = 255
+            self.scale_factor = abs(self.calmin) / 255
+        elif self.datatype == ANALYZE_Short: 
+            self.bitpix = 16
+            self.scale_factor = max(abs(self.calmin), abs(self.calmax)) / (2.0**15-1)
+            self.glmin = round(self.scale_factor * self.calmin)
+            self.glmax = round(self.scale_factor * self.calmax)
+        elif self.datatype == ANALYZE_Int: 
+            self.bitpix = 32
+            self.scale_factor = max(abs(self.calmin), abs(self.calmax)) / (2.0**31-1)
+            self.glmin = round(self.scale_factor * self.calmin)
+            self.glmax = round(self.scale_factor * self.calmax)
+        elif self.datatype == ANALYZE_Float:
+            self.bitpix = 32
+            self.scale_factor = 1
+            self.glmin = 0
+            self.glmax = 0
+        elif self.datatype == ANALYZE_Double:
+            self.bitpix = 64
+            self.scale_factor = 1
+            self.glmin = 0
+            self.glmax = 0
+        else:
+            raise ValueError, 'invalid datatype'
 
 
     def _mode_changed(self):
@@ -300,7 +296,6 @@ class ANALYZE(BinaryImage):
             x = hdrfile.read(2)
             try:
                 test = unpack(sign + 'h', x)[0]
-                print 'test', test
                 if test in range(1,8):
                     byteorder, bytesign = order, sign
             except:
@@ -309,6 +304,7 @@ class ANALYZE(BinaryImage):
             self.byteorder, self.bytesign = byteorder, bytesign
         except:
             raise ValueError, 'file format not recognized: byteorder check failed'
+        hdrfile.close()
 
 # plug in as a format creator (see formats.getreader)
 reader = ANALYZE

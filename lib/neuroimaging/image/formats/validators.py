@@ -110,9 +110,10 @@ class BinaryImage(traits.HasTraits):
         self.hdrattnames = [name for name in self.trait_names() \
           if isinstance(self.trait(name).handler, BinaryHeaderValidator)]
 
-    def readheader(self):
+    def readheader(self, hdrfile=None):
         self.check_byteorder()
-        hdrfile = self.datasource.open(self.hdrfilename())
+        if hdrfile is None:
+            hdrfile = self.datasource.open(self.hdrfilename())
         for traitname in self.hdrattnames:
             trait = self.trait(traitname)
             if hasattr(trait.handler, 'bytesign') and hasattr(self, 'bytesign'):

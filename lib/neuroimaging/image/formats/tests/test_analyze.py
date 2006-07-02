@@ -23,12 +23,19 @@ class AnalyzeTest(unittest.TestCase):
         self.assertEquals(tuple(self.image.grid.shape), (91,109,91))
 
     def test_writehdr(self):
-        f = file('tmp.hdr', 'wb')
-        self.image.writeheader(f)
-        x = file(f.name).read()
+        new = file('tmp.hdr', 'wb')
+        self.image.writeheader(new)
+        new.close()
+        new = file('tmp.hdr', 'rb')
+        old = file(repository.filename(self.image.hdrfilename()))
+        for attname in self.image.hdrattnames:
+            trait = self.image.trait(attname)
+            new_value = trait.handler.read(new)
+            old_value = trait.handler.read(old)
+            self.assertEquals(old_value, new_value)
         os.remove('tmp.hdr')
-        y = file(repository.filename(self.image.hdrfilename())).read()
-        self.assertEquals(x, y)
+        old.seek(0); new.seek(0)
+        self.assertEquals(old.read(), new.read())
 
     def test_read(self):
         data = self.image.getslice(slice(4,7))
