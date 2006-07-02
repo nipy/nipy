@@ -19,7 +19,7 @@ from neuroimaging.fmri.protocol import ExperimentalQuantitative
 from neuroimaging.fmri.regression import TContrastOutput 
 from neuroimaging.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.image import Image
-from neuroimaging.statistics import regression, contrast
+from neuroimaging.statistics import contrast
 from scipy.sandbox.models.contrast import ContrastResults
 
 canplot = True
@@ -209,8 +209,6 @@ class DelayContrastOutput(TContrastOutput):
                          recipr0(self.gamma0 * a1)] *
                         recipr0(delay.dforward(self.deltahat))))
 
-        tmpcov = N.zeros((2*nrow,)*2 + self.T0sq.shape[1:], N.float64)
-
         Cov = results.cov_beta
         E = self.effectmatrix
         D = self.deltamatrix
@@ -329,7 +327,6 @@ class DelayHRF(hrf.SpectralHRF):
         """
 
         time = N.arange(lower, tmax, self.dt)
-        ntime = time.shape[0]
         irf = self.IRF
 
         if not self.spectral: # use Taylor series approximation
