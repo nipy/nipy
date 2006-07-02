@@ -5,7 +5,7 @@ from neuroimaging.data import DataSource
 from neuroimaging.refactoring.analyze import AnalyzeHeader
 
 
-##############################################################################
+
 class AnalyzeHeaderTool (OptionParser):
     "Command-line tool for getting and setting Analyze header values."
     
@@ -16,19 +16,19 @@ class AnalyzeHeaderTool (OptionParser):
       Option('-v', '--value', dest="value",
         help="Set attribute to this value"))
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, *args, **kwargs):
         OptionParser.__init__(self, *args, **kwargs)
         self.set_usage(self._usage)
         self.add_options(self.options)
 
-    #-------------------------------------------------------------------------
+
     def _error(self, message):
         print message
         self.print_help()
         sys.exit(0)
 
-    #-------------------------------------------------------------------------
+
     def run(self):
         options, args = self.parse_args()
         if len(args) != 1: self._error("Please provide a header file name")
