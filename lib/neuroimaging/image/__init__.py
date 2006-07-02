@@ -220,5 +220,5 @@ class ImageSequenceIterator(traits.HasTraits):
 
     def next(self, value=None):
         if value is None: value = self.grid.next()
-        v = [img.next(value=value) for img in self.images]
+        v = [img.next(value=value) for img in self.imgs]
         return N.array(v, N.float64)
