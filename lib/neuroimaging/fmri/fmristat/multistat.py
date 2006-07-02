@@ -3,7 +3,7 @@ import numpy.linalg as L
 
 from neuroimaging import traits
 from neuroimaging.image import Image
-from neuroimaging.statistics.utils import recipr
+from scipy.sandbox.models.utils import recipr
 
 
 class RFXMean(traits.HasTraits):

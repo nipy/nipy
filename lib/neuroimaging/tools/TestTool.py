@@ -6,6 +6,7 @@ import sys
 from optparse import OptionParser, Option
 
 from testutils import test_all, test_package, get_package_tests
+from testutils import doctest_all, doctest_package
 from neuroimaging import nontest_packages
 
 # description = __doc__
@@ -23,7 +24,9 @@ class TestTool (OptionParser):
     _usage = __doc__
     options = (
       Option('-l', '--list', dest="list_tests", action="store_true",
-        default=False, help="list available tests"),)
+        default=False, help="list available tests"),
+      Option('-d', '--doctest', dest="doctest", action="store_true",
+        default=False, help="run available doctests"),)
 
 
     def __init__(self, *args, **kwargs):
@@ -48,19 +51,25 @@ class TestTool (OptionParser):
             else:
                 print "  No tests found for this package"
 
-
     def run_tests(self, package=None, testcase=None):
         if not package: test_all()
         else: test_package(package, testcase)
 
+    def run_doctests(self, package=None):
+        if not package: doctest_all()
+        else: doctest_package(package)
 
     def run(self):
         options, args = self.parse_args()
+
         if options.list_tests:
             if len(args) > 1:
                 self.print_help()
                 sys.exit(0)
             self.list_tests(*args)
         else: self.run_tests(*args)
+
+        if options.doctest and len(args)==1:
+            self.run_doctests(*args)
 
 if __name__ == "__main__": TestTool().run()

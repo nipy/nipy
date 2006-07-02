@@ -51,7 +51,7 @@ class BinaryHeaderValidator(traits.TraitHandler):
         return 'an object of type "%s", apply(struct.pack, "%s", object) must make sense' % (self.packstr, self.packstr)
 
     def read(self, hdrfile):
-        hdrfile.seek(self.seek, 0)
+        hdrfile.seek(self.seek)
         value = unpack(self.bytesign + self.packstr,
                        hdrfile.read(self.size))
         if not is_tupled(self.packstr, value):

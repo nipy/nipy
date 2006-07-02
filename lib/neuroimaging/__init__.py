@@ -33,6 +33,7 @@ from copy import copy
 
 from numpy import product
 from path import path
+
 import defines
 
 packages = (

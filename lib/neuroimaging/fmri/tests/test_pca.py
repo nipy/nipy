@@ -59,9 +59,9 @@ if PYLAB_DEF:
 
 
 def suite():
-    suite = unittest.makeSuite(PCATest)
+    suite = unittest.makeSuite([PCATestMask, PCATestNoMask,
+                                PCATestMontageMask, PCATestMontageNoMask])
     return suite
         
-
 if __name__ == '__main__':
     unittest.main()

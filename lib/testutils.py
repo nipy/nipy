@@ -1,5 +1,6 @@
 import shutil, tempfile, os, types
 from unittest import TestSuite, makeSuite, TestCase, TextTestRunner
+from doctest import DocFileSuite
 from glob import glob
 from os.path import join, dirname, basename
 
@@ -31,6 +32,20 @@ def get_package_modules(package):
         full_modname = "%s.%s"%(package.__name__,modname)
         modules.append(__import__(full_modname,{},{},[modname]))
     return modules
+
+#-----------------------------------------------------------------------------
+def get_package_doctests(packname):
+    modname = packname.split(".")[-1]
+    try:
+        package = __import__(packname,{},{},[modname])
+        suites = ()
+        for module in get_package_modules(package):
+            pyfile = '%s.py' % os.path.splitext(module.__file__)[0]
+            suites += (DocFileSuite(pyfile,
+                                    module_relative=False),)
+        return TestSuite(suites)
+    except:
+        return TestSuite()
 
 #-----------------------------------------------------------------------------
 def get_package_tests(packname):
@@ -67,3 +82,23 @@ def test_packages(*packages):
 
 #-----------------------------------------------------------------------------
 def test_all(): test_packages(*nontest_packages)
+
+#-----------------------------------------------------------------------------
+def doctest_package(packname, testname=None):
+    "Run all doctests for the given package"
+    suite = get_package_doctests(packname)
+    if suite:
+        run_suite(suite)
+
+#-----------------------------------------------------------------------------
+def doctest_packages(*packages):
+    "Run all doctests for the given packages"
+    tests = []
+    for packname in packages:
+        suite = get_package_doctests(packname)
+        if suite: tests += suite
+
+    run_suite(TestSuite(tests))
+
+#-----------------------------------------------------------------------------
+def doctest_all(): doctest_packages(*nontest_packages)
