@@ -1,12 +1,10 @@
-import os, sys, types
-from struct import calcsize
+import os
 import numpy as N
 
-from neuroimaging.data import iszip, unzip, DataSource
-from neuroimaging.reference.axis import space, spacetime
-from neuroimaging.reference.mapping import Affine, Mapping
+from neuroimaging.data import DataSource
+from neuroimaging.reference.axis import space
+from neuroimaging.reference.mapping import Affine
 from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging.image.utils import writebrick
 
 from neuroimaging.image.formats import BinaryImage
 from neuroimaging.data.header import add_headeratts
