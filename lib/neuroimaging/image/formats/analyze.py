@@ -9,7 +9,8 @@ from neuroimaging.data import iszip, unzip, DataSource
 from neuroimaging.reference.axis import space, spacetime
 from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging import traits
+
+from validators import BinaryHeaderAtt, BinaryFile, traits
 
 _byteorder_dict = {'big':'>', 'little':'<'}
 
@@ -26,86 +27,10 @@ datatypes = {
   ANALYZE_Float:(N.float32, 4),
   ANALYZE_Double:(N.float64, 8)}
 
-def is_tupled(packstr, value):
-    return (packstr[-1] != 's' and len(tuple(value)) > 1)
-
-def isseq(value):
-    try:
-        len(value)
-        isseq = True
-    except TypeError:
-        isseq = False
-    return type(value) != StringType and isseq
-
-
-class BinaryHeaderValidator(traits.TraitHandler):
-
-    def __init__(self, packstr, value=None, seek=0, bytesign = '>', **keywords):
-        if len(packstr) < 1: raise ValueError("packstr must be nonempty")
-        for key, value in keywords.items(): setattr(self, key, value)
-        self.seek = seek
-        self.packstr = packstr
-        self.bytesign = bytesign
-
-    def write(self, value, outfile=None):
-        if isseq(value): valtup = tuple(value) 
-        else: valtup = (value,)
-        result = pack(self.bytesign+self.packstr, *valtup)
-        if outfile is not None:
-            outfile.seek(self.seek)
-            outfile.write(result)
-        return result
-
-    def validate(self, object, name, value):
-        try:
-        #if 1:
-            result = self.write(value)
-        except:
-            self.error(object, name, value)
-
-        _value = unpack(self.bytesign + self.packstr, result)
-        if is_tupled(self.packstr, _value): return _value
-        else: return _value[0]
-
-    def info(self):
-        return 'an object of type "%s", apply(struct.pack, "%s", object) must make sense' % (self.packstr, self.packstr)
-
-    def read(self, hdrfile):
-        hdrfile.seek(self.seek)
-        value = unpack(self.bytesign + self.packstr,
-                       hdrfile.read(calcsize(self.packstr)))
-        if not is_tupled(self.packstr, value):
-            value = value[0]
-        return value
-
-
-
-def BinaryHeaderAtt(packstr, value=None, **keywords):
-    validator = BinaryHeaderValidator(packstr, value=value, **keywords)
-    return traits.Trait(value, validator)
-
-
-
-class ANALYZE(traits.HasTraits):
+class ANALYZE(BinaryFile):
     """
     A class to read and write ANALYZE format images. 
 
-    >>> from BrainSTAT import *
-    >>> from numpy import *
-    >>> test = VImage(testfile('test.img'))
-    >>> check = VImage(test)
-    >>> print int(add.reduce(check.readall().flat))
-    -11996
-    >>> print check.shape, test.shape
-    (68, 95, 79) (68, 95, 79)
-
-    >>> test = VImage('http://nifti.nimh.nih.gov/nifti-1/data/zstat1.nii.gz')
-    >>> new = test.tofile('test.img')
-    >>> print new.shape
-    (21, 64, 64)
-    >>> print new.ndim
-    3
-    >>> new.view()
     """
     # header fields
     sizeof_hdr = BinaryHeaderAtt('i', seek=0, value=348)
@@ -188,11 +113,9 @@ class ANALYZE(traits.HasTraits):
 
 
     def __init__(self, filename=None, datasource=DataSource(), grid=None, **keywords):
+        BinaryFile.__init__(self, **keywords)
         self.datasource = datasource
         self.filebase = filename and os.path.splitext(filename)[0] or None
-        self.hdrattnames = [name for name in self.trait_names() \
-          if isinstance(self.trait(name).handler, BinaryHeaderValidator)]
-        traits.HasTraits.__init__(self, **keywords)
 
 
         self.ndim = self.dim[0]
@@ -271,6 +194,12 @@ class ANALYZE(traits.HasTraits):
             self.memmap = N.memmap(imgfilename, dtype=self.dtype,
                 shape=tuple(self.grid.shape), mode=mode)
 
+    def readheader(self, hdrfilename):
+        hdrfile = self.datasource.open(hdrfilename)
+        BinaryFile.readheader(self, hdrfile)
+ 	
+        self.typecode, self.byte = datatypes[self.datatype]
+        hdrfile.close()
 
     def __str__(self):
         value = ''
@@ -279,18 +208,6 @@ class ANALYZE(traits.HasTraits):
         return value
 
 
-    def readheader(self, hdrfilename):
-        hdrfile = self.datasource.open(hdrfilename)
-
-        for traitname in self.hdrattnames:
-            trait = self.trait(traitname)
-            if hasattr(trait.handler, 'bytesign') and hasattr(self, 'bytesign'):
-                trait.handler.bytesign = self.bytesign
-            value = trait.handler.read(hdrfile)
-            setattr(self, traitname, value)
-
-        self.typecode, self.byte = datatypes[self.datatype]
-        hdrfile.close()
 
 
     def _datatype_changed(self):

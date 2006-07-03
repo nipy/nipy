@@ -114,3 +114,5 @@ def hasreader(filename):
         return True
     except NotImplementedError:
         return False
+
+
