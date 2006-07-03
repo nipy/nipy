@@ -26,7 +26,9 @@ class TestTool (OptionParser):
       Option('-l', '--list', dest="list_tests", action="store_true",
         default=False, help="list available tests"),
       Option('-d', '--doctest', dest="doctest", action="store_true",
-        default=False, help="run available doctests"),)
+        default=False, help="run available doctests"),
+      Option('', '--nounit', dest="unit", action="store_false",
+        default=True, help="do not run unittests"),)
 
 
     def __init__(self, *args, **kwargs):
@@ -67,9 +69,9 @@ class TestTool (OptionParser):
                 self.print_help()
                 sys.exit(0)
             self.list_tests(*args)
-        else: self.run_tests(*args)
+        elif options.unit: self.run_tests(*args)
 
-        if options.doctest and len(args)==1:
+        if options.doctest and len(args)<=1:
             self.run_doctests(*args)
 
 if __name__ == "__main__": TestTool().run()
