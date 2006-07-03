@@ -4,7 +4,7 @@ import numpy as N
 import numpy.linalg as L
 from scipy.linalg import toeplitz
 from scipy.sandbox.models.utils import recipr
-from enthought import traits
+from neuroimaging import traits
 import pylab
 
 from neuroimaging.image import Image

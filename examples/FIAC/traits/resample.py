@@ -1,7 +1,7 @@
 import urllib, os
 import numpy as N
 
-import enthought.traits as traits
+from neuroimaging import traits
 
 from neuroimaging.image import Image
 from neuroimaging.image.interpolation import ImageInterpolator

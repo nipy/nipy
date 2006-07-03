@@ -12,7 +12,7 @@ divided.
 import types
 
 import numpy as N
-from enthought import traits
+from neuroimaging import traits
 
 from scipy.sandbox.models.utils import StepFunction, recipr0
 

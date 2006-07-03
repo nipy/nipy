@@ -1,5 +1,5 @@
 import gc, os, fpformat
-from enthought import traits
+from neuroimaging import traits
 
 import numpy as N
 import numpy.linalg as L

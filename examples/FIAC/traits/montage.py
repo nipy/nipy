@@ -1,5 +1,5 @@
 import numpy as N
-import enthought.traits as traits
+from neuroimaging import traits
 from readonly import ReadOnlyValidate
 import os, pylab
 

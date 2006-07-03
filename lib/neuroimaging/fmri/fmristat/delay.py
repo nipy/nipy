@@ -10,7 +10,7 @@ import copy, os, fpformat
 import numpy as N
 import numpy.linalg as L
 from scipy.sandbox.models.utils import recipr, recipr0
-from enthought import traits
+from neuroimaging import traits
 import pylab
 
 from neuroimaging.fmri import hrf, filters

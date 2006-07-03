@@ -1,4 +1,4 @@
-from enthought import traits
+from neuroimaging import traits
 import numpy as N
 import pylab as P
 from matplotlib.axes import Subplot

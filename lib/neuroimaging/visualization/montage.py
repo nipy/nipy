@@ -2,7 +2,7 @@ import fpformat
 
 import numpy as N
 import pylab
-from enthought import traits
+from neuroimaging import traits
 
 from neuroimaging.visualization.cmap import cmap, interpolation, getcmap
 

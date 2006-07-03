@@ -1,6 +1,6 @@
 import os
 import pylab
-import enthought.traits as traits
+from neuroimaging import traits
 import numpy as N
 
 from neuroimaging.fmri.pca import PCA, MultiPlot

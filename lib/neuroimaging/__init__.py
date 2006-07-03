@@ -58,7 +58,7 @@ packages = (
   'neuroimaging.visualization.tests')
 
 try:
-    import enthought.traits as traits
+    from enthought import traits
 except:
     packages += ('neuroimaging.extra',
                  'neuroimaging.extra.enthought',

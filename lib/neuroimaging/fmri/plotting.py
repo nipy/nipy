@@ -4,7 +4,7 @@ Defines a class MultiPlot to plot multiple functions of time simultaneously.
 
 import pylab
 import numpy as N
-from enthought import traits
+from neuroimaging import traits
 
 class MultiPlot(traits.HasTraits):
     """

@@ -1,5 +1,5 @@
 import urllib, stat, string, os, urllib2, gzip, atexit
-from enthought import traits
+from neuroimaging import traits
 import cache
 
 ##############################################################################

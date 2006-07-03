@@ -1,7 +1,7 @@
 import os, types
 
 import numpy as N
-from enthought import traits
+from neuroimaging import traits
 
 from neuroimaging.image import Image, ImageSequenceIterator
 from neuroimaging.statistics import onesample

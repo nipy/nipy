@@ -1,7 +1,7 @@
 from enthought.traits.ui import View, Group, Item, Handler, message
 from enthought.traits.ui.menu import MenuBar, Menu, Action, Separator, OKCancelButtons
 from enthought.pyface.image_resource import ImageResource
-import enthought.traits as traits
+from neuroimaging import traits
 
 import sys, os, urllib2
 sys.path.append(os.path.abspath('..'))

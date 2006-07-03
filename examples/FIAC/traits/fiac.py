@@ -4,7 +4,7 @@ import numpy as N
 import pylab
 
 import enthought.traits.ui
-import enthought.traits as traits
+from neuroimaging import traits
 
 from neuroimaging.fmri import fMRIImage
 from neuroimaging.fmri.protocol import ExperimentalFactor

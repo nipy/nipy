@@ -1,4 +1,4 @@
-from enthought import traits
+from neuroimaging import traits
 from spectral import spectral
 import pylab
 
