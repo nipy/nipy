@@ -1,6 +1,5 @@
 import os, types
 import mincutils
-#from _mincconstants import *
 import _mincconstants as mc
 from neuroimaging.extra.enthought import traits
 from neuroimaging.reference import mapping, axis, coordinate_system

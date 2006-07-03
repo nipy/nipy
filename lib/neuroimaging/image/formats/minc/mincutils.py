@@ -75,8 +75,26 @@ def mincwrite(filename, start, data, set_minmax = False, mincid=mc.MI_ERROR, **k
     return value
 
 ## Format for atts: {attname=(varname, attvalue)} where varname can be NC_GLOBAL
-def minccreate(filename, dimensions, nvector=-1, datatype = mc.NC_SHORT, signtype=mc.MI_UNSIGNED, modality='', frame_times=None, frame_widths=None, clobber=mc.FALSE, history='', special_atts={}):
-    return _mincutils._minccreate(filename, dimensions, datatype=datatype, nvector=nvector, signtype=signtype, modality=modality, frame_widths=frame_widths, frame_times=frame_times, clobber=clobber, special_atts=special_atts, history=history)
+def minccreate(filename, dimensions,
+               nvector=-1,
+               datatype=mc.NC_SHORT,
+               signtype=mc.MI_UNSIGNED,
+               modality='',
+               frame_times=None,
+               frame_widths=None,
+               clobber=mc.FALSE,
+               history='',
+               special_atts={}):
+    return _mincutils._minccreate(filename, dimensions,
+                                  datatype=datatype,
+                                  nvector=nvector,
+                                  signtype=signtype,
+                                  modality=modality,
+                                  frame_widths=frame_widths,
+                                  frame_times=frame_times,
+                                  clobber=clobber,
+                                  special_atts=special_atts,
+                                  history=history)
 
 def getinfo(filename, varname = mc.MIimage, mincid=mc.MI_ERROR):
     step, start, shape, names = _mincutils._getinfo(filename, varname=varname, mincid=mincid)
