@@ -4,10 +4,12 @@ from neuroimaging.tests.data import repository
 from neuroimaging.image import Image
 from neuroimaging.image.interpolation import ImageInterpolator
 
-from neuroimaging.defines import pylab_def
+from neuroimaging.defines import pylab_def, qt_def
 PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
     from neuroimaging.visualization import viewer, slices
+
+QT_DEF, qt = qt_def()
 
 class VisualizationTest(unittest.TestCase):
     if PYLAB_DEF:
@@ -41,9 +43,10 @@ class VisualizationTest(unittest.TestCase):
             pylab.imshow(x.RGBA(), origin=x.origin)
             pylab.show()
 
-        def test_arrayview(self):
-            from neuroimaging.visualization import arrayview
-            arrayview.arrayview(self.img.readall())
+        if QT_DEF:
+            def test_arrayview(self):
+                from neuroimaging.visualization import arrayview
+                arrayview.arrayview(self.img.readall())
 
 def suite():
     return unittest.makeSuite(VisualizationTest)

@@ -1,4 +1,4 @@
-import unittest, os, scipy
+import unittest, os
 import numpy as N
 from neuroimaging.image.formats import analyze
 from neuroimaging.tests.data import repository
@@ -17,7 +17,7 @@ class AnalyzeTest(unittest.TestCase):
                      [   0.,    2.,    0., -126.],
                      [   0.,    0.,    2.,  -90.],
                      [   0.,    0.,    0.,    1.]])
-        scipy.testing.assert_almost_equal(t, a)
+        N.testing.assert_almost_equal(t, a)
         
     def test_shape(self):
         self.assertEquals(tuple(self.image.grid.shape), (91,109,91))

@@ -289,7 +289,7 @@ class DelayHRF(hrf.SpectralHRF):
             raise ValueError, 'expecting one HRF for spectral decomposition'
         self.deltaPCA()
 
-    def deltaPCA(self, tmax=50., lower=-15.0):
+    def deltaPCA(self, tmax=50., lower=-15.0, delta=N.arange(-4.5,4.6,0.1)):
         """
         Perform an expansion of fn, shifted over the values in delta.
         Effectively, a Taylor series approximation to fn(t+delta), in delta,
@@ -335,8 +335,8 @@ class DelayHRF(hrf.SpectralHRF):
             dirf = interpolant(time, -N.gradient(irf(time), self.dt))
 
             H = []
-            for i in range(self.delta.shape[0]):
-                H.append(irf(time - self.delta[i]))
+            for i in range(delta.shape[0]):
+                H.append(irf(time - delta[i]))
             H = N.array(H)
 
             W = []
@@ -348,7 +348,7 @@ class DelayHRF(hrf.SpectralHRF):
 
             coef = []
             for i in range(2):
-                coef.append(interpolant(self.delta, WH[i]))
+                coef.append(interpolant(delta, WH[i]))
             
             def approx(time, delta):
                 value = (coef[0](delta) * irf(time)
@@ -363,7 +363,7 @@ class DelayHRF(hrf.SpectralHRF):
         else:
             hrf.SpectralHRF.deltaPCA(self)
 
-        self.approx.theta, self.approx.inverse, self.approx.dinverse, self.approx.forward, self.approx.dforward = invertR(self.delta, self.approx.coef)
+        self.approx.theta, self.approx.inverse, self.approx.dinverse, self.approx.forward, self.approx.dforward = invertR(delta, self.approx.coef)
         
         self.delay = self.approx
 
