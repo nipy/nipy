@@ -21,7 +21,7 @@ def real_xform(data): return data.real
 def imag_xform(data): return data.imag
 
 
-##############################################################################
+
 class Dimension (object):
     def __init__(self, index, size, name):
         self.index = index
@@ -29,7 +29,7 @@ class Dimension (object):
         self.name = name
 
 
-##############################################################################
+
 class ViewerCanvas (FigureCanvas):
     """
     Handles common logic needed to get an mpl FigureCanvas to play nicely in
@@ -41,7 +41,7 @@ class ViewerCanvas (FigureCanvas):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
  
 
-##############################################################################
+
 class DimSpinner (QSpinBox):
     def __init__(self, parent, name, value, start, end, handler, *args):
         QSpinBox.__init__(self, *args)
@@ -49,7 +49,7 @@ class DimSpinner (QSpinBox):
         #adj.connect("value-changed", handler)
 
 
-##############################################################################
+
 class DimSlider (RangeSlider):
     def __init__(self, parent, dim, *args):
         RangeSlider.__init__(self, parent, 0, 0, dim.size-1, 1,
@@ -58,7 +58,7 @@ class DimSlider (RangeSlider):
         self.dim = dim
 
 
-##############################################################################
+
 class ContrastSlider (RangeSlider):
     def __init__(self, parent, *args):
         RangeSlider.__init__(self, parent, 1.0, 0, 2.0, 0.05,
@@ -66,7 +66,7 @@ class ContrastSlider (RangeSlider):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
 
 
-##############################################################################
+
 class SliderReadoutBox (HBox):
     def __init__(self, parent, slider, formatter=None):
         HBox.__init__(self, parent)
@@ -78,10 +78,10 @@ class SliderReadoutBox (HBox):
         self.addWidget(readout)
 
 
-##############################################################################
+
 class ControlPanel (QGroupBox, LayoutWidgetMixin):
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, parent, shape, dim_names=[], iscomplex=False, *args):
         LayoutWidgetMixin.__init__(self, QVBoxLayout, (5,), QGroupBox, parent, *args)
         self._init_dimensions(shape, dim_names)
@@ -139,14 +139,14 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
         self.addWidget(self.radiobox)
         if not iscomplex: self.radiobox.hide()
 
-    #-------------------------------------------------------------------------
+
     def _add_slider(self, slider, label, formatter=None):
         sliderbox = SliderReadoutBox(self, slider, formatter=formatter)
         label = QLabel(label, self)
         self.addWidget(label)
         self.addWidget(sliderbox)
 
-    #-------------------------------------------------------------------------
+
     def _init_dimensions(self, dim_sizes, dim_names):
         self.dimensions = []
         num_dims = len(dim_sizes)
@@ -158,7 +158,7 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
             self.dimensions.append( Dimension(dim_num, dim_size, dim_name) )
         self.slice_dims = (self.dimensions[-2].index, self.dimensions[-1].index)
 
-    #-------------------------------------------------------------------------
+
     def connect(self,
         spinner_handler, radio_handler, slider_handler, contrast_handler):
         "Connect control elements to the given handler functions."
@@ -180,37 +180,37 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
         self.contrast_slider.connect(self.contrast_slider,
           PYSIGNAL("range-value-changed"), contrast_handler)
 
-    #-------------------------------------------------------------------------
+
     def getContrastLevel(self):
         return self.contrast_slider.getRangeValue()
 
-    #-------------------------------------------------------------------------
+
     def getDimPosition(self, dnum):
         return int(self.sliders[dnum].getRangeValue())
 
-    #-------------------------------------------------------------------------
+
     def setDimPosition(self, dnum, index):
         return self.sliders[dnum].setRangeValue(int(index))
 
-    #-------------------------------------------------------------------------
+
     def getRowIndex(self): return self.getDimPosition(self.slice_dims[0])
 
-    #-------------------------------------------------------------------------
+
     def getColIndex(self): return self.getDimPosition(self.slice_dims[1])
 
-    #------------------------------------------------------------------------- 
+
     def setRowIndex(self, index): self.setDimPosition(self.slice_dims[0],index)
 
-    #------------------------------------------------------------------------- 
+
     def setColIndex(self, index): self.setDimPosition(self.slice_dims[1],index)
 
-    #------------------------------------------------------------------------- 
+
     def getRowDim(self): return self.dimensions[self.slice_dims[0]]
 
-    #------------------------------------------------------------------------- 
+
     def getColDim(self): return self.dimensions[self.slice_dims[1]]
 
-    #-------------------------------------------------------------------------
+
     def getIndexSlices(self):
         return tuple([
           dim.index in self.slice_dims and\
@@ -218,7 +218,7 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
             self.getDimPosition(dim.index)
           for dim in self.dimensions])
 
-    #-------------------------------------------------------------------------
+
     def spinnerHandler(self, adj):
         newval = int(adj.value)
         row_adj = self.row_spinner.get_adjustment()
@@ -232,10 +232,10 @@ class ControlPanel (QGroupBox, LayoutWidgetMixin):
         self.slice_dims = (int(row_adj.value), int(col_adj.value))
 
 
-##############################################################################
+
 class RowPlot (ViewerCanvas):
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, parent, data):
         fig = Figure(figsize=(3., 6.))
         ax  = fig.add_axes([0.05, 0.05, 0.85, 0.85])
@@ -244,11 +244,11 @@ class RowPlot (ViewerCanvas):
         ViewerCanvas.__init__(self, parent, fig)
         self.setData(data)
 
-    #-------------------------------------------------------------------------
+
     def setDataRange(self, data_min, data_max):
         self.figure.axes[0].set_ylim(data_min, data_max)
 
-    #-------------------------------------------------------------------------
+
     def setData(self, data):
         ax = self.figure.axes[0]
         indices = range(len(data))
@@ -259,21 +259,21 @@ class RowPlot (ViewerCanvas):
         self.draw()
 
 
-##############################################################################
+
 class ColPlot (ViewerCanvas):
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, parent, data):
         fig = Figure(figsize=(6., 3.))
         fig.add_axes([0.1, 0.1, 0.85, 0.85])
         ViewerCanvas.__init__(self, parent, fig)
         self.setData(data)
 
-    #-------------------------------------------------------------------------
+
     def setDataRange(self, data_min, data_max):
         self.figure.axes[0].set_xlim(data_min, data_max)
 
-    #-------------------------------------------------------------------------
+
     def setData(self, data):
         ax = self.figure.axes[0]
         indices = range(len(data))
@@ -284,10 +284,10 @@ class ColPlot (ViewerCanvas):
         self.draw()
 
 
-##############################################################################
+
 class SlicePlot (ViewerCanvas):
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, parent, data, x, y, cmap=cm.bone, norm=None):
         self.norm = None
         fig = Figure(figsize=figaspect(data))
@@ -299,7 +299,7 @@ class SlicePlot (ViewerCanvas):
         self.setData(data, norm=norm)
         self._init_crosshairs(x, y)
 
-    #-------------------------------------------------------------------------
+
     def _init_crosshairs(self, x, y):
         row_data, col_data = self._crosshairs_data(x, y)
         row_line = Line2D(row_data[0], row_data[1], color="r", alpha=.5)
@@ -309,25 +309,25 @@ class SlicePlot (ViewerCanvas):
         ax.add_artist(row_line)
         ax.add_artist(col_line)
 
-    #-------------------------------------------------------------------------
+
     def _crosshairs_data(self, x, y):
         data_height, data_width = self.data.shape
         row_data = ((x+.5-data_width/4., x+.5+data_width/4.), (y+.5, y+.5))
         col_data = ((x+.5, x+.5), (y+.5-data_height/4., y+.5+data_height/4.))
         return row_data, col_data
 
-    #-------------------------------------------------------------------------
+
     def getAxes(self): return self.figure.axes[0]
 
-    #-------------------------------------------------------------------------
+
     def getImage(self):
         images = self.getAxes().images
         return len(images) > 0 and images[0] or None
         
-    #-------------------------------------------------------------------------
+
     def setImage(self, image): self.getAxes().images[0] = image
 
-    #-------------------------------------------------------------------------
+
     def setData(self, data, norm=None):
         ax = self.getAxes()
 
@@ -346,7 +346,7 @@ class SlicePlot (ViewerCanvas):
         self.data = data
         self.draw()
 
-    #------------------------------------------------------------------------- 
+
     def setCrosshairs(self, x, y):
         row_data, col_data = self._crosshairs_data(x, y)
         row_line, col_line = self.crosshairs
@@ -354,7 +354,7 @@ class SlicePlot (ViewerCanvas):
         col_line.set_data(*col_data)
         self.draw()
 
-    #-------------------------------------------------------------------------
+
     def getEventCoords(self, event):
         if event.xdata is not None: x = int(event.xdata)
         else: x = None
@@ -365,10 +365,10 @@ class SlicePlot (ViewerCanvas):
         return (y,x)
 
 
-##############################################################################
+
 class ColorBar (ViewerCanvas):
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, parent, range, cmap=cm.bone, norm=None):
         fig = Figure(figsize = (5,0.5))
         fig.add_axes((0.05, 0.55, 0.9, 0.3))
@@ -378,7 +378,7 @@ class ColorBar (ViewerCanvas):
         self.draw()
         self.setRange(range, norm=norm)
 
-    #-------------------------------------------------------------------------
+
     def setRange(self, range, norm=None):
         self.norm = norm
         dMin, dMax = range
@@ -420,10 +420,10 @@ class ColorBar (ViewerCanvas):
         self.draw()
 
 
-##############################################################################
+
 class StatusBar (QGroupBox, LayoutWidgetMixin):
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, parent, range, cmap, *args):
         LayoutWidgetMixin.__init__(self, QHBoxLayout, (), QGroupBox, parent, *args)
         self.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
@@ -440,19 +440,19 @@ class StatusBar (QGroupBox, LayoutWidgetMixin):
         #self.label.set_line_wrap(True)
         self.addWidget(self.label)
 
-    #-------------------------------------------------------------------------
+
     def setLabel(self, text):
         self.label.setText(text)
 
 
-##############################################################################
+
 class ArrayView (QWidget, LayoutWidgetMixin):
     #mag_norm = normalize()
     #phs_norm = normalize(-pi, pi)
     _mouse_x = _mouse_y = None
     _dragging = False
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, data, dim_names=[], title="sliceview", cmap=cm.bone):
         LayoutWidgetMixin.__init__(self, QGridLayout, (3,2,5), QWidget)
         self.setCaption("Array Viewer")
@@ -525,30 +525,30 @@ class ArrayView (QWidget, LayoutWidgetMixin):
         #self.show_all()
         #show()
 
-    #-------------------------------------------------------------------------
+
     def getRow(self):
         return self.getSlice()[self.control_panel.getRowIndex(),:]
 
-    #-------------------------------------------------------------------------
+
     def getCol(self):
         return self.getSlice()[:,self.control_panel.getColIndex()]
 
-    #-------------------------------------------------------------------------
+
     def getSlice(self):
         return self.transform(
           squeeze(self.data[self.control_panel.getIndexSlices()]))
 
-    #-------------------------------------------------------------------------
+
     def updateRow(self):
         self.updateCrosshairs()
         self.rowplot.setData(self.getRow())
 
-    #-------------------------------------------------------------------------
+
     def updateCol(self):
         self.updateCrosshairs()
         self.colplot.setData(self.getCol())
 
-    #-------------------------------------------------------------------------
+
     def updateSlice(self):
         self.setNorm()
         self.sliceplot.setData(self.getSlice(), norm=self.norm)
@@ -556,12 +556,12 @@ class ArrayView (QWidget, LayoutWidgetMixin):
         self.colplot.setData(self.getCol())
         self.status.colorbar.setRange(self.sliceDataRange(), norm=self.norm)
 
-    #-------------------------------------------------------------------------
+
     def sliceDataRange(self):
         flatSlice = ravel(self.getSlice())
         return amin(flatSlice), amax(flatSlice)
 
-    #------------------------------------------------------------------------- 
+
     def updateDataRange(self):
         flat_data = self.transform(self.data).flat
         data_min = amin(flat_data)
@@ -569,31 +569,31 @@ class ArrayView (QWidget, LayoutWidgetMixin):
         self.rowplot.setDataRange(data_min, data_max)
         self.colplot.setDataRange(data_max, data_min)
 
-    #-------------------------------------------------------------------------
+
     def spinnerHandler(self, adj):
         print "sliceview::spinnerHandler slice_dims", \
                self.control_panel.slice_dims
 
-    #-------------------------------------------------------------------------
+
     def sliderHandler(self, slider):
         row_dim, col_dim= self.control_panel.slice_dims
         if slider.dim.index == row_dim: self.updateRow()
         elif slider.dim.index == col_dim: self.updateCol()
         else: self.updateSlice()
 
-    #-------------------------------------------------------------------------
+
     def contrastHandler(self, slider):
         self.conLevel = self.control_panel.getContrastLevel()
         self.updateSlice()
 
-    #-------------------------------------------------------------------------
+
     def radioHandler(self, button):
         if not button.isChecked(): return
         self.transform = button.transform
         self.updateDataRange()
         self.updateSlice()
 
-    #-------------------------------------------------------------------------
+
     def sliceMouseDownHandler(self, event):
         y, x = self.sliceplot.getEventCoords(event)
         self._dragging = True
@@ -601,17 +601,17 @@ class ArrayView (QWidget, LayoutWidgetMixin):
         self._mouse_x = self._mouse_y = None
         self.updateCoords(y,x)
 
-    #-------------------------------------------------------------------------
+
     def sliceMouseUpHandler(self, event):
         y, x = self.sliceplot.getEventCoords(event)
         self._dragging = False
 
-    #-------------------------------------------------------------------------
+
     def sliceMouseMotionHandler(self, event):
         y, x = self.sliceplot.getEventCoords(event)
         self.updateCoords(y,x)
 
-    #-------------------------------------------------------------------------
+
     def updateCoords(self, y, x):
 
         # do nothing if coords haven't changed
@@ -624,14 +624,14 @@ class ArrayView (QWidget, LayoutWidgetMixin):
         # update crosshairs and projection plots if button down
         if self._dragging: self.updateProjections(y,x)
 
-    #------------------------------------------------------------------------- 
+
     def updateStatusLabel(self, y, x):
         if x != None and y != None:
             text = "[%d,%d] = %.4f"%(y, x, self.getSlice()[y,x])
         else: text = ""
         self.status.setLabel(text)
 
-    #------------------------------------------------------------------------- 
+
     def updateProjections(self, y, x):
         "Update crosshairs and row and column plots."
         if x != None and y != None:
@@ -639,13 +639,13 @@ class ArrayView (QWidget, LayoutWidgetMixin):
             self.control_panel.setColIndex(x)
             self.updateCrosshairs()
 
-    #------------------------------------------------------------------------- 
+
     def updateCrosshairs(self):
         self.sliceplot.setCrosshairs(
           self.control_panel.getColIndex(),
           self.control_panel.getRowIndex())
         
-    #------------------------------------------------------------------------- 
+
     def setNorm(self):
         scale = -0.75*(self.conLevel-1.0) + 1.0
         dMin, dMax = self.sliceDataRange()
@@ -662,7 +662,7 @@ class ArrayView (QWidget, LayoutWidgetMixin):
           normalize(-pi*scale, pi*scale) or normalize(sdMin, scale*dMax)
    
 
-#----------------------------------------------------------------------------- 
+
 def arrayview(data):
     viewer = ArrayView(data)
     viewer.show()
@@ -670,7 +670,7 @@ def arrayview(data):
     qApp.exec_loop()
 
 
-##############################################################################
+
 if __name__ == "__main__":
     from pylab import randn
     arrayview(randn(20,20) + randn(20,20)*1.j)

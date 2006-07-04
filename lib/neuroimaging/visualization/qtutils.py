@@ -6,7 +6,7 @@ try:
       QRadioButton, QSlider, QVBoxLayout, SIGNAL
 except: raise ImportError("qtutils requires PyQt")
 
-##############################################################################
+
 class LayoutWidgetMixin (object):
     """
     A QWidget that has a layout.  Child widgets may be added directly instead
@@ -27,19 +27,19 @@ class LayoutWidgetMixin (object):
             self.layout.addWidget(widget, *args)
 
 
-##############################################################################
+
 class HBox (QFrame, LayoutWidgetMixin):
     def __init__(self, *args):
         LayoutWidgetMixin.__init__(self, QHBoxLayout, (), QFrame, *args)
 
 
-##############################################################################
+
 class VBox (QFrame, LayoutWidgetMixin):
     def __init__(self, *args):
         LayoutWidgetMixin.__init__(self, QVBoxLayout, (), QFrame, *args)
 
 
-##############################################################################
+
 class RangeTransform (object):
     """
     Converts (from/to) a discrete range of floats (to/from) the integer tick
@@ -67,7 +67,7 @@ class RangeTransform (object):
     def numTicks(self): return int((self.upper-self.lower)/self.stepsize)
 
 
-##############################################################################
+
 class RangeSlider (QSlider):
     """
     A QSlider that reports and receives its values in a discrete float range,
@@ -113,7 +113,7 @@ class RangeSlider (QSlider):
         self.emit(PYSIGNAL("range-value-changed"), (self,))
 
 
-##############################################################################
+
 class RadioButton (QRadioButton):
     def __init__(self, *args):
         QRadioButton.__init__(self, *args)
@@ -121,7 +121,7 @@ class RadioButton (QRadioButton):
     def toggled(self, checked): self.emit(PYSIGNAL("toggled"), (self,))
 
 
-#-----------------------------------------------------------------------------
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
