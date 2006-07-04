@@ -83,11 +83,10 @@ class structfield (attribute):
 
 format_modules = (
   "neuroimaging.image.formats.analyze",
+  "neuroimaging.image.formats.nifti1",
   #"neuroimaging.image.formats.afni",
-  #"neuroimaging.image.formats.nifti",
   #"neuroimaging.image.formats.minc",
 )
-
 
 def getreader(filename):
     "Return the appropriate image reader for the given file type."

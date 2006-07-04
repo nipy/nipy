@@ -77,6 +77,7 @@ nontest_packages = [p for p in packages if not testmatch(p)]
 # modules to be pre-imported for convenience
 _preload_modules = (
   'neuroimaging.image.formats.analyze',
+  'neuroimaging.image.formats.nifti1',
   'neuroimaging.image.interpolation',
   'neuroimaging.image.onesample',
   'neuroimaging.image.regression',

@@ -1,4 +1,5 @@
 import test_analyze
+import test_nifti1
 import unittest
 
 def suite():

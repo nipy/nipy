@@ -158,7 +158,7 @@ _byteorder_dict = {'big':'>', 'little':'<'}
 
 dimorder = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension']
 
-class NIFTI(BinaryFile):
+class NIFTI1(BinaryFile):
     """
     A class that implements the nifti1 header with some typechecking.
     NIFTI-1 attributes must conform to their description in nifti1.h.
@@ -220,7 +220,7 @@ class NIFTI(BinaryFile):
         self.datasource = datasource
         ext = os.path.splitext(hdrfilename)[1]
         if ext not in ['.nii', '.hdr']:
-            raise ValueError, 'NIFTI images need .hdr or .nii file specified.'
+            raise ValueError, 'NIFTI-1 images need .hdr or .nii file specified.'
 
         self.filebase, self.fileext = os.path.splitext(hdrfilename)
         self.hdrfilename = hdrfilename
@@ -511,10 +511,10 @@ class NIFTI(BinaryFile):
 """
 URLPipe class expects this.
 """
-creator = NIFTI
+creator = NIFTI1
 
 
-NIFTI.__doc__ += """
+NIFTI1.__doc__ += """
 
 
 --------------------------------------------------------------
