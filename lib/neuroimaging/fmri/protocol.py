@@ -93,7 +93,7 @@ class ExperimentalRegressor(traits.HasTraits):
 
 class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
     """
-    Generator a regressor that is a function of time
+    Generate a regressor that is a function of time
     based on a function fn.
     """
 
