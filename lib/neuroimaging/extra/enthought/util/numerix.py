@@ -17,6 +17,12 @@ import sys, os
 
 # For NiPy -- force NUMERIX=numpy
 
+if os.environ.has_key('NUMERIX'):
+    NUMERIX_DEF = True
+    numerix_old = os.environ['NUMERIX']
+else:
+    NUMERIX_DEF = False
+    
 os.environ['NUMERIX'] = 'numpy'
 
 which = None, None
@@ -127,3 +133,8 @@ else:
 # a bug fix for blas numeric suggested by Fernando Perez
 matrixmultiply=dot
 
+if NUMERIX_DEF:
+    os.environ['NUMERIX'] = numerix_old
+    del(numerix_old)
+else:
+    del(os.environ['NUMERIX'])

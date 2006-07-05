@@ -54,8 +54,11 @@ def iswritemode(mode): return mode.find("w")>-1 or mode.find("+")>-1
 ##############################################################################
 class Cache (object):
     class path (readonly):
-        default=path(os.environ["HOME"]).joinpath(".nipy").joinpath("cache")
-
+        if os.name == 'posix':
+            default=path(os.environ["HOME"]).joinpath(".nipy").joinpath("cache")
+        elif os.name == 'nt':
+            default=path(os.environ["HOMEPATH"]).joinpath(".nipy").joinpath("cache")
+            
     def __init__(self, cachepath=None):
         if cachepath is not None: self.path = path(cachepath)
         self.setup()

@@ -33,4 +33,21 @@ def qt_def():
         pass
     return QT_DEF, qt
 
+def enthought_traits_def():
+    """
+    Check to see if enthought.traits is importable.
+    """
+    global ENTHOUGHT_TRAITS_DEF
+    global traits
+    try:
+        import enthought.traits as traits
+        ENTHOUGHT_TRAITS_DEF = True
+    except:
+        ENTHOUGHT_TRAITS_DEF = False
+        try:
+            import neuroimaging.extra.enthought.traits as traits
+        except:
+            traits = None
+            pass
 
+    return ENTHOUGHT_TRAITS_DEF, traits

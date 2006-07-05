@@ -33,6 +33,7 @@ from copy import copy
 
 from numpy import product
 from path import path
+import defines
 
 packages = (
   'neuroimaging',
@@ -52,14 +53,16 @@ packages = (
   'neuroimaging.reference',
   'neuroimaging.reference.tests',
   'neuroimaging.statistics',
-  'neuroimaging.statistics.tests',
-  'neuroimaging.visualization',
-  'neuroimaging.visualization.cmap',
-  'neuroimaging.visualization.tests')
+  'neuroimaging.statistics.tests')
 
-try:
-    from enthought import traits
-except:
+PYLAB_DEF, pylab = defines.pylab_def()
+if PYLAB_DEF:
+    packges += ('neuroimaging.visualization',
+                'neuroimaging.visualization.cmap',
+                'neuroimaging.visualization.tests')
+
+ENTHOUGHT_TRAITS_DEF, traits = defines.enthought_traits_def()
+if not ENTHOUGHT_TRAITS_DEF:
     packages += ('neuroimaging.extra',
                  'neuroimaging.extra.enthought',
                  'neuroimaging.extra.enthought.traits',
@@ -67,14 +70,6 @@ except:
                  'neuroimaging.extra.enthought.traits.ui.null',
                  'neuroimaging.extra.enthought.util',
                  'neuroimaging.extra.enthought.resource')
-
-if 'neuroimaging.extra.enthought' in packages:
-    # this should fail on build but work afterwards -- there should be
-    # a better way to do this
-    try:
-        import extra.enthought.traits as traits
-    except:
-        pass
 
 testmatch = re.compile(".*tests").search
 nontest_packages = [p for p in packages if not testmatch(p)]
