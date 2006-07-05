@@ -1,4 +1,5 @@
-import struct, os, sys, types
+import os, sys, types
+from struct import calcsize
 import numpy as N
 
 from neuroimaging.data import iszip, unzip, DataSource
@@ -7,7 +8,8 @@ from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.image.utils import writebrick
 
-from neuroimaging.image.formats import BinaryHeaderAtt, BinaryImage
+from neuroimaging.image.formats import BinaryImage
+from neuroimaging.data.header import add_headeratts
 
 # NIFTI-1 constants
 
@@ -126,6 +128,53 @@ NIFTI_SLICE = [NIFTI_SLICE_UNKNOWN, NIFTI_SLICE_SEQ_INC, NIFTI_SLICE_SEQ_DEC, NI
 
 dims = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension']
 
+# (name, packstr, default) tuples
+
+headeratts = [('sizeof_hdr', 'i', 348),
+              ('data_type', '10s', ' '*10),
+              ('db_name', '18s', ' '*18),
+              ('extents', 'i', 0),
+              ('session_error', 'h', 0),
+              ('regular', 's', 'r'),
+              ('dim_info', 'b', 0),
+              ('dim', '8h', (4,1,1,1,1) + (0,)*3),
+              ('intent_p1', 'f', 0.),
+              ('intent_p2', 'f', 0.),
+              ('intent_p3', 'f', 0.),
+              ('intent_code', 'h', 0),
+              ('datatype', 'h', 0),
+              ('bitpix', 'h', 0),
+              ('slice_start', 'h', 0),
+              ('pixdim', '8f', (1.,) + (0.,)*7),
+              ('vox_offset', 'f', 0),
+              ('scl_slope', 'f', 1.0),
+              ('scl_inter', 'f', 0.),
+              ('slice_end', 'h', 0),
+              ('slice_code', 'b', 0),
+              ('xyzt_units', 'b', 0),
+              ('cal_max', 'f', 0),
+              ('cal_min', 'f', 0),
+              ('slice_duration', 'f', 0),
+              ('toffset', 'f', 0),
+              ('glmax', 'i', 0),
+              ('glmin', 'i', 0),
+              ('descrip', '80s', ' '*80),
+              ('aux_file', '24s', ' '*24),
+              ('qform_code', 'h', 0),
+              ('sform_code', 'h', 0),
+              ('quatern_b', 'f', 0.0),
+              ('quatern_c', 'f', 0.),
+              ('quatern_d', 'f', 0.),
+              ('qoffset_x', 'f', 0.),
+              ('qoffset_y', 'f', 0.),
+              ('qoffset_z', 'f', 0.),
+              ('srow_x', '4f', [0.,0.,1.,0.]),
+              ('srow_y', '4f', [0.,1.,0.,0.]),
+              ('srow_z', '4f', [1.,0.,0.,0.]),
+              ('intent_name', '16s', ' '*16),
+              ('magic', '4s', 'ni1\0')
+              ]
+
 class NIFTI1(BinaryImage):
     """
     A class that implements the nifti1 header with some typechecking.
@@ -137,55 +186,11 @@ class NIFTI1(BinaryImage):
 
     """
 
-    sizeof_hdr = BinaryHeaderAtt('i', 0, 348)
-    data_type = BinaryHeaderAtt('10s', 4, ' '*10)
-    db_name = BinaryHeaderAtt('18s', 14, ' '*18)
-    extents = BinaryHeaderAtt('i', 32, 0)
-    session_error = BinaryHeaderAtt('h', 36, 0)
-    regular = BinaryHeaderAtt('s', 38, 'r')
-    dim_info = BinaryHeaderAtt('b', 39, 0)
-    dim = BinaryHeaderAtt('8h', 40, (4,1,1,1,1) + (0,)*3)
-    intent_p1 = BinaryHeaderAtt('f', 56, 0.)
-    intent_p2 = BinaryHeaderAtt('f', 60, 0.)
-    intent_p3 = BinaryHeaderAtt('f', 64, 0.)
-    intent_code = BinaryHeaderAtt('h', 68, 0)
-    datatype = BinaryHeaderAtt('h', 70, 0)
-    bitpix = BinaryHeaderAtt('h', 72, 0)
-    slice_start = BinaryHeaderAtt('h', 74, 0)
-    pixdim = BinaryHeaderAtt('8f', 76, (1.,) + (0.,)*7)
-    vox_offset = BinaryHeaderAtt('f', 108, 0)
-    scl_slope = BinaryHeaderAtt('f', 112, 1.0)
-    scl_inter = BinaryHeaderAtt('f', 116, 0.)
-    slice_end = BinaryHeaderAtt('h', 120, 0)
-    slice_code = BinaryHeaderAtt('b', 122, 0)
-    xyzt_units = BinaryHeaderAtt('b', 123, 0)
-    cal_max = BinaryHeaderAtt('f', 124, 0)
-    cal_min = BinaryHeaderAtt('f', 128, 0)
-    slice_duration = BinaryHeaderAtt('f', 132, 0)
-    toffset = BinaryHeaderAtt('f', 136, 0)
-    glmax = BinaryHeaderAtt('i', 140, 0)
-    glmin = BinaryHeaderAtt('i', 144, 0)
-    descrip = BinaryHeaderAtt('80s', 148, ' '*80)
-    aux_file = BinaryHeaderAtt('24s', 228, ' '*24)
-    qform_code = BinaryHeaderAtt('h', 252, 0)
-    sform_code = BinaryHeaderAtt('h', 254, 0)
-    quatern_b = BinaryHeaderAtt('f', 256, 0.0)
-    quatern_c = BinaryHeaderAtt('f', 260, 0.)
-    quatern_d = BinaryHeaderAtt('f', 264, 0.)
-    qoffset_x = BinaryHeaderAtt('f', 268, 0.)
-    qoffset_y = BinaryHeaderAtt('f', 272, 0.)
-    qoffset_z = BinaryHeaderAtt('f', 276, 0.)
-    srow_x = BinaryHeaderAtt('4f', 280, [0.,0.,1.,0.])
-    srow_y = BinaryHeaderAtt('4f', 296, [0.,1.,0.,0.])
-    srow_z = BinaryHeaderAtt('4f', 312, [1.,0.,0.,0.])
-    intent_name = BinaryHeaderAtt('16s', 328, ' '*16)
-    magic = BinaryHeaderAtt('4s', 344, 'ni1\0')
-
     extensions = ('.img', '.hdr', '.nii')
 
     def __init__(self, filename=None, datasource=DataSource(), grid=None, **keywords):
         BinaryImage.__init__(self, **keywords)
-
+                                 
         self.datasource = datasource
         ext = os.path.splitext(filename)[1]
         if ext not in ['.nii', '.hdr']:
@@ -195,10 +200,10 @@ class NIFTI1(BinaryImage):
         self.filename = filename
         
         if self.mode is 'w':
+            self.ndim = len(grid.shape)
             self._dimfromgrid(grid)
             self.writeheader()
             if filename: self.readheader()
-            self.ndim = len(grid.shape)
             self.emptyfile()
             
         elif filename:
@@ -220,13 +225,41 @@ class NIFTI1(BinaryImage):
         t = self.transform()
         self.grid.mapping.transform[0:3,0:3] = t[0:3,0:3]
         self.grid.mapping.transform[0:3,-1] = t[0:3,-1]
-        
+
         # assume .mat matrix uses FORTRAN indexing
         self.grid = self.grid.matlab2python()
         self.getdata()
 
     def hdrfilename(self):
         return self.filename
+
+    def _dimfromgrid(self, grid):
+        self.grid = grid.python2matlab()
+            
+        if not isinstance(self.grid.mapping, Affine):
+            raise ValueError, 'error: non-Affine grid in writing out NIFTI-1 file'
+
+        if self.grid.mapping.isdiagonal():
+            _diag = True
+        else:
+            _diag = False
+
+        _dim = [0]*8
+        _pixdim = [0.] * 8
+        _dim[0] = self.ndim
+
+        for i in range(self.ndim):
+            _dim[i+1] = self.grid.shape[i]
+            if _diag:
+                _pixdim[i+1] = self.grid.mapping.transform[i,i]
+            else:
+                _pixdim[i+1] = 1.
+        self.dim = _dim
+        self.pixdim = _pixdim
+
+        self.srow_x = self.grid.mapping.transform[0]
+        self.srow_y = self.grid.mapping.transform[1]
+        self.srow_z = self.grid.mapping.transform[2]
 
     def imgfilename(self):
         self.offset = int(self.vox_offset)
@@ -327,10 +360,13 @@ class NIFTI1(BinaryImage):
             value[2] = self.srow_z
         elif self.qform_code > 0:
             
-            a, b, c, d = (1.0, self.quatern_b, self.quatern_c, self.quatern_d)
-            R = N.array([[a*a+b*b-c*c-d*d, 2.*b*c-2*a*d,2*b*d+2*a*c],
-                                [2*b*c+2*a*d, a*a+c*c-b*b-d*d, 2*c*d-2*a*b],
-                                [2*b*d-2*a*c, 2*c*d+2*a*b, a*a+d*d-c*c-b*b]])
+            b, c, d = (self.quatern_b, self.quatern_c, self.quatern_d)
+            a = N.sqrt(1 - b**2 - c**2 - d**2)
+            R = N.array([[ a*a+b*b-c*c-d*d, 2*b*c-2*a*d, 2*b*d+2*a*c],
+                        [ 2*b*c+2*a*d, a*a+c*c-b*b-d*d, 2*c*d-2*a*b],
+                        [ 2*b*d-2*a*c, 2*c*d+2*a*b, a*a+d*d-c*c-b*b]],
+                        N.float64)
+
             if self.pixdim[0] == 0.0:
                 qfac = 1.0
             else:
@@ -348,6 +384,7 @@ class NIFTI1(BinaryImage):
 
         return value
             
+add_headeratts(NIFTI1, headeratts)
 
 reader = NIFTI1
 

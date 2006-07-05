@@ -49,6 +49,8 @@ class fMRIStatTest(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree('fmristat_run', ignore_errors=True)
+        for rhofile in ['rho.hdr', 'rho.img']:
+            shutil.rmtree(rhofile, ignore_errors=True)
 
 class TestSliceTimes(fMRIStatTest):
 
@@ -58,9 +60,7 @@ class TestSliceTimes(fMRIStatTest):
         OLS.nmax = 75
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
-        rho.tofile('rho.img')
-        os.remove('rho.img')
-        os.remove('rho.hdr')
+        rho.tofile('rho.img', clobber=True)
 
         AR = fMRIStatAR(OLS)
         AR.fit()
@@ -74,9 +74,7 @@ class TestResid1(fMRIStatTest):
                                    slicetimes=self.img.slicetimes, resid=True)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
-        rho.tofile('rho.img')
-        os.remove('rho.img')
-        os.remove('rho.hdr')
+        rho.tofile('rho.img', clobber=True)
 
         AR = fMRIStatAR(OLS)
         AR.fit()
@@ -90,9 +88,7 @@ class TestResid2(fMRIStatTest):
                                    slicetimes=self.img.slicetimes)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
-        rho.tofile('rho.img')
-        os.remove('rho.img')
-        os.remove('rho.hdr')
+        rho.tofile('rho.img', clobber=True)
 
         AR = fMRIStatAR(OLS, resid=True)
         AR.fit()
@@ -115,10 +111,7 @@ class TestHRFDeriv(fMRIStatTest):
                                    slicetimes=self.img.slicetimes)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
-        rho.tofile('rho.img')
-        
-        os.remove('rho.img')
-        os.remove('rho.hdr')
+        rho.tofile('rho.img', clobber=True)
 
         AR = fMRIStatAR(OLS, contrasts=[pain])
         AR.fit()
@@ -142,8 +135,6 @@ class TestContrast(fMRIStatTest):
             v=viewer.BoxViewer(rho)
             v.draw()
 
-        os.remove('rho.img')
-        os.remove('rho.hdr')
 
         AR = fMRIStatAR(OLS, contrasts=[pain], clobber=True)
         AR.fit()

@@ -1,66 +1,69 @@
 import os, sys
-from struct import unpack
+from struct import unpack, calcsize
 
 import numpy as N
 from path import path
+
+from neuroimaging import traits
 
 from neuroimaging.data import iszip, unzip, DataSource
 from neuroimaging.reference.axis import space, spacetime
 from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging.image.utils import writebrick
+from neuroimaging.image.formats import BinaryImage
+from neuroimaging.data.header import add_headeratts
 
-from neuroimaging.image.formats import BinaryHeaderAtt, BinaryImage, traits
+headeratts = [('sizeof_hdr', 'i', 348),
+              ('data_type', '10s', ' '*10),
+              ('db_name', '18s', ' '*18),
+              ('extents', 'i', 0),
+              ('session_error', 'h', 0),
+              ('regular', 's', 'r'),
+              ('hkey_un0', 's', '0'),
+              ('dim', '8h', (4,91,109,91,1,0,0,0),),
+              ('vox_units', '4s', 'mm  '),
+              ('calib_units', '8s', ' '*8),
+              ('unused1', 'h', 0),
+              ('datatype', 'h', 16),
+              ('bitpix', 'h', 8),
+              ('dim_un0', 'h', 0),
+              ('pixdim', '8f', (0.,2.,2.,2.,)+(0.,)*4),
+              ('vox_offset', 'f', 0.),
+              ('scale_factor', 'f', 1.),
+              ('funused2', 'f', 0.),
+              ('funused3', 'f', 0.),
+              ('calmax', 'f', 0.),
+              ('calmin', 'f', 0.),
+              ('compressed', 'i', 0),
+              ('verified', 'i', 0),
+              ('glmax', 'i', 0),
+              ('glmin', 'i', 0),
+              ('descrip', '80s', ' '*80),
+              ('auxfile', '24s', 'none' + ' '*20),
+              ('orient', 'B', 0),
+              ('origin', '5H', (46,64,37,0,0)),
+              ('generated', '10s', ' '*10),
+              ('scannum', '10s', ' '*10),
+              ('patient_id', '10s', ' '*10),
+              ('exp_date', '10s', ' '*10),
+              ('exp_time', '10s', ' '*10),
+              ('hist_un0', '3s', ' '*3),
+              ('views', 'i', 0),
+              ('vols_added', 'i', 0),
+              ('start_field', 'i', 0),
+              ('field_skip', 'i', 0),
+              ('omax', 'i', 0),
+              ('omin', 'i', 0),
+              ('smax', 'i', 0),
+              ('smin', 'i', 0)
+              ]
+
 
 class ANALYZE(BinaryImage):
     """
     A class to read and write ANALYZE format images. 
 
     """
-    # header fields
-    sizeof_hdr = BinaryHeaderAtt('i', seek=0, value=348)
-    data_type = BinaryHeaderAtt('10s', seek=4, value=' '*10)
-    db_name = BinaryHeaderAtt('18s', seek=14, value=' '*18)
-    extents = BinaryHeaderAtt('i', seek=32, value=0)
-    session_error = BinaryHeaderAtt('h', seek=36, value=0)
-    regular = BinaryHeaderAtt('s', seek=38, value='r')
-    hkey_un0 = BinaryHeaderAtt('s', seek=39, value='0')
-    dim = BinaryHeaderAtt('8h', seek=40, value=(4,91,109,91,1,0,0,0))
-    vox_units = BinaryHeaderAtt('4s', seek=56, value='mm  ')
-    calib_units = BinaryHeaderAtt('8s', seek=60, value=' '*8)
-    unused1 = BinaryHeaderAtt('h', seek=68, value=0)
-    datatype = BinaryHeaderAtt('h', seek=70, value=16)
-    bitpix = BinaryHeaderAtt('h', seek=72, value=8)
-    dim_un0 = BinaryHeaderAtt('h', seek=74, value=0)
-    pixdim = BinaryHeaderAtt('8f', seek=76, value=(0.,2.,2.,2.,)+(0.,)*4)
-    vox_offset = BinaryHeaderAtt('f', seek=108, value=0.)
-    scale_factor = BinaryHeaderAtt('f', seek=112, value=1.)
-    funused2 = BinaryHeaderAtt('f', seek=116, value=0.)
-    funused3 = BinaryHeaderAtt('f', seek=120, value=0.)
-    calmax = BinaryHeaderAtt('f', seek=124, value=0.)
-    calmin = BinaryHeaderAtt('f', seek=128, value=0.)
-    compressed = BinaryHeaderAtt('i', seek=132, value=0)
-    verified = BinaryHeaderAtt('i', seek=136, value=0)
-    glmax = BinaryHeaderAtt('i', seek=140, value=0)
-    glmin = BinaryHeaderAtt('i', seek=144, value=0)
-    descrip = BinaryHeaderAtt('80s', seek=148, value=' '*80)
-    auxfile = BinaryHeaderAtt('24s', seek=228, value='none' + ' '*20)
-    orient = BinaryHeaderAtt('B', seek=252, value=0)
-    origin = BinaryHeaderAtt('5H', seek=253, value=(46,64,37,0,0))
-    generated = BinaryHeaderAtt('10s', seek=263, value=' '*10)
-    scannum = BinaryHeaderAtt('10s', seek=273, value=' '*10)
-    patient_id = BinaryHeaderAtt('10s', seek=283, value=' '*10)
-    exp_date = BinaryHeaderAtt('10s', seek=293, value=' '*10)
-    exp_time = BinaryHeaderAtt('10s', seek=303, value=' '*10)
-    hist_un0 = BinaryHeaderAtt('3s', seek=313, value=' '*3)
-    views = BinaryHeaderAtt('i', seek=316, value=0)
-    vols_added = BinaryHeaderAtt('i', seek=320, value=0)
-    start_field = BinaryHeaderAtt('i', seek=324, value=0)
-    field_skip = BinaryHeaderAtt('i', seek=328, value=0)
-    omax = BinaryHeaderAtt('i', seek=332, value=0)
-    omin = BinaryHeaderAtt('i', seek=336, value=0)
-    smax = BinaryHeaderAtt('i', seek=340, value=0)
-    smin = BinaryHeaderAtt('i', seek=344, value=0)
 
     # file extensions recognized by this format
     extensions = ('.img', '.hdr', '.mat')
@@ -78,6 +81,7 @@ class ANALYZE(BinaryImage):
     def __init__(self, filename=None, datasource=DataSource(), grid=None, **keywords):
 
         BinaryImage.__init__(self, **keywords)
+
         self.datasource = datasource
         self.filebase = filename and os.path.splitext(filename)[0] or None
 
@@ -241,7 +245,7 @@ class ANALYZE(BinaryImage):
             self.origin = list(origin) + [0]*(5-origin.shape[0])
         if not _diag:
             self.origin = [0]*5
-        
+       
     def readmat(self):
         """
         Return affine transformation matrix, if it exists.
@@ -283,6 +287,9 @@ class ANALYZE(BinaryImage):
         except:
             raise ValueError, 'file format not recognized: byteorder check failed'
         hdrfile.close()
+
+add_headeratts(ANALYZE, headeratts)
+
 
 class ANALYZE_FSL(ANALYZE):
 

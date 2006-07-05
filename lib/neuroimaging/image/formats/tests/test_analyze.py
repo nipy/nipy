@@ -28,7 +28,7 @@ class AnalyzeTest(unittest.TestCase):
         new.close()
         new = file('tmp.hdr', 'rb')
         old = file(repository.filename(self.image.hdrfilename()))
-        for attname in self.image.hdrattnames:
+        for attname in self.image.headeratts:
             trait = self.image.trait(attname)
             new_value = trait.handler.read(new)
             old_value = trait.handler.read(old)

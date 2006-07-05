@@ -71,6 +71,21 @@ class NiftiTest(unittest.TestCase):
         N.testing.assert_approx_equal(y.min(), -8.71075057983)
         N.testing.assert_approx_equal(y.max(), 18.582529068)
 
+    def test_write1(self):
+        self.image.tofile('out.nii', clobber=True)
+        os.remove('out.nii')
+
+    def test_write2(self):
+        self.image.tofile('out.img', clobber=True)
+        os.remove('out.img')
+        os.remove('out.hdr')
+
+    def test_write3(self):
+        rho = Image("rho.img", datasource=repository)
+        rho.tofile('out.nii', clobber=True)
+        os.remove('out.nii')
+
+
 def suite():
     suite = unittest.makeSuite(AnalyzeTest)
     return suite
