@@ -73,10 +73,10 @@ class structfield (attribute):
 
     def fromstring(self, string): return self.formattype()(string)
 
-    def unpack(infile, byteorder=NATIVE):
+    def unpack(self, infile, byteorder=NATIVE):
         return struct_unpack(infile, byteorder, (self.format,))
 
-    def pack(value, byteorder=NATIVE):
+    def pack(self, value, byteorder=NATIVE):
         return struct_pack(byteorder, (self.format,), value)
 
     def elemtype(self): return elemtype(self.format)
