@@ -22,19 +22,22 @@ class PCATest(unittest.TestCase):
         frame = self.fmridata.frame(0)
         self.mask = Image(N.greater(frame.readall(), 500).astype(N.float64), grid=frame.grid)
 
+class PCATestMask(PCATest):
     def test_PCAmask(self):
 
         p = PCA(self.fmridata, mask=self.mask)
         p.fit()
         output = p.images(which=range(4))
 
+class PCATestNoMask(PCATest):
     def test_PCA(self):
 
         p = PCA(self.fmridata)
         p.fit()
         output = p.images(which=range(4))
 
-    if PYLAB_DEF:
+if PYLAB_DEF:
+    class PCATestMontageMask(PCATest):
         def test_PCAmontage(self):
             p = PCAmontage(self.fmridata)
             p.fit()
@@ -43,6 +46,7 @@ class PCATest(unittest.TestCase):
             p.montage()
             pylab.show()
 
+    class PCATestMontageNoMask(PCATest):
         def test_PCAmontage_nomask(self):
             p = PCAmontage(self.fmridata, mask=self.mask)
             p.fit()

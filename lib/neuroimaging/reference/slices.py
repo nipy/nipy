@@ -21,7 +21,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     tmp = R.standard_normal((nout, nout-ndim))
     p = N.identity(nout) - N.dot(f, L.pinv(f))
     tmp = N.dot(p, tmp)
-    f[0:nout,ndim:] = N.transpose(tmp)
+    f[0:nout,ndim:] = tmp
 
     for i in range(nout-ndim):
         f[0:nout,ndim+i] = f[0:nout,ndim+i] / N.sqrt(N.add.reduce(f[0:nout,ndim+i]**2))
