@@ -1,4 +1,4 @@
-import unittest
+import unittest, os
 
 import numpy as N
 
@@ -38,7 +38,8 @@ class MontageTest(unittest.TestCase):
         
             m = Montage(slices=rhoslices, vmax=vmax, vmin=vmin)
             m.draw()
-            pylab.show()
+            pylab.savefig('image.png')
+            os.remove('image.png')
 
 def suite():
     return unittest.makeSuite(MontageTest)

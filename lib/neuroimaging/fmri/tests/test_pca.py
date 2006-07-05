@@ -1,4 +1,4 @@
-import unittest
+import unittest, os
 
 import numpy as N
 
@@ -44,7 +44,8 @@ if PYLAB_DEF:
             output = p.images(which=range(4))
             p.time_series()
             p.montage()
-            pylab.show()
+            pylab.savefig('image.png')
+            os.remove('image.png')
 
     class PCATestMontageMask(PCATest):
         def test_PCAmontage_nomask(self):
@@ -53,7 +54,8 @@ if PYLAB_DEF:
             output = p.images(which=range(4))
             p.time_series()
             p.montage()
-            pylab.show()
+            pylab.savefig('image.png')
+            os.remove('image.png')
 
 
 def suite():

@@ -20,7 +20,8 @@ class VisualizationTest(unittest.TestCase):
         def test_view(self):
             view = viewer.BoxViewer(self.img, z_pix=80.)
             view.draw()
-            pylab.show()
+            pylab.savefig('image.png')
+            os.remove('image.png')
 
         def test_transversal_slice(self):
             interpolator = ImageInterpolator(self.img)
@@ -34,7 +35,8 @@ class VisualizationTest(unittest.TestCase):
             pylab.figure(figsize=(3,3))
             x.getaxes()
             pylab.imshow(x.RGBA(), origin=x.origin)
-            pylab.show()
+            pylab.savefig('image.png')
+            os.remove('image.png')
       
         def test_transversal_slice2(self):
             x = slices.TransversalPlot(self.img, y=3., xlim=[-49.,35.])
@@ -42,7 +44,8 @@ class VisualizationTest(unittest.TestCase):
             pylab.figure(figsize=(3,3))
             x.getaxes()
             pylab.imshow(x.RGBA(), origin=x.origin)
-            pylab.show()
+            pylab.savefig('image.png')
+            os.remove('image.png')
 
         if QT_DEF:
             def test_arrayview(self):
