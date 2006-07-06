@@ -1,4 +1,4 @@
-import unittest, os, scipy, glob
+import unittest, os, glob
 import numpy as N
 from neuroimaging.image import Image
 from neuroimaging.image.onesample import ImageOneSample
@@ -54,7 +54,7 @@ class ImageTest(unittest.TestCase):
     def test_nondiag(self):
         self.img.grid.mapping.transform[0,1] = 3.0
         x = self.img.tofile('tmp.img', usematfile=True)
-        scipy.testing.assert_almost_equal(x.grid.mapping.transform, self.img.grid.mapping.transform)
+        N.testing.assert_almost_equal(x.grid.mapping.transform, self.img.grid.mapping.transform)
 
     def test_clobber(self):
         x = self.img.tofile('tmp.img', clobber=True)
@@ -65,7 +65,7 @@ class ImageTest(unittest.TestCase):
         self.assertEquals(z, 0.)
         t = a.grid.mapping.transform
         b = self.img.grid.mapping.transform
-        scipy.testing.assert_almost_equal(b, t)
+        N.testing.assert_almost_equal(b, t)
 
     def test_iter(self):
         I = iter(self.img)
