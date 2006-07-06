@@ -1,6 +1,5 @@
 import os, sys
-from types import StringType
-from struct import pack, unpack, calcsize
+from struct import unpack
 
 import numpy as N
 from path import path
