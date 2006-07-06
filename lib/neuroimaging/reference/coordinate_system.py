@@ -7,7 +7,7 @@ from neuroimaging import reorder, reverse, hasattrs
 from neuroimaging.reference import axis
 
 
-##############################################################################
+
 class CoordinateSystem(odict):
     "A simple class to carry around coordinate information in one bundle."
 
@@ -18,14 +18,14 @@ class CoordinateSystem(odict):
         "list of axis names"; implements=tuple; get=lambda _,s: s.keys()
     class ndim (readonly): "number of dimensions"; get=lambda _,s: len(s.axes)
  
-    #-------------------------------------------------------------------------
+
     def __init__(self, name, axes):
         self.name = name
         self.ndim = len(axes)
         self.axes = tuple(axes)
         odict.__init__(self, [(ax.name,ax) for ax in axes])
 
-    #-------------------------------------------------------------------------
+
     def __getitem__(self, axisname):
         try:
             return odict.__getitem__(self, axisname)
@@ -33,21 +33,21 @@ class CoordinateSystem(odict):
             raise KeyError(
               "axis '%s' not found, names are %s"%(axisname,self.keys()))
         
-    #-------------------------------------------------------------------------
+
     def __setitem__(self, name, value):
         raise TypeError, "CoordinateSystem does not support axis assignment"
 
-    #-------------------------------------------------------------------------
+
     def __eq__(self, other):
         if not hasattrs(other, "name", "axes"): return False
         return (self.name,self.axes)==(other.name,other.axes)
 
-    #-------------------------------------------------------------------------
+
     def __str__(self):
         _dict = {'name': self.name, 'axes':self.axes}
         return `_dict`
    
-    #-------------------------------------------------------------------------
+
     def reorder(self, name, order):
         """
         Given a name for the reordered coordinates, and a new order, return a
@@ -56,19 +56,19 @@ class CoordinateSystem(odict):
         if name is None: name = self.name
         return CoordinateSystem(name, reorder(self.axes, order))
 
-    #-------------------------------------------------------------------------
+
     def reverse(self, name=None):
         if name is None: name = self.name
         return CoordinateSystem(name, reverse(self.axes))
 
-    #-------------------------------------------------------------------------
+
     def hasaxis(self, name): return self.has_key(name)
 
-    #-------------------------------------------------------------------------
+
     def getaxis(self, name): return self.get(name)
 
 
-##############################################################################
+
 class VoxelCoordinateSystem(CoordinateSystem):
     """
     Coordinates with a shape -- assumed to be
@@ -77,7 +77,7 @@ class VoxelCoordinateSystem(CoordinateSystem):
     """
     class shape (readonly): implements=list
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, name, axes, shape=None):
         if shape is None:
             try:
@@ -88,7 +88,7 @@ class VoxelCoordinateSystem(CoordinateSystem):
             self.shape = list(shape)
         CoordinateSystem.__init__(self, name, axes)
 
-    #-------------------------------------------------------------------------
+
     def isvalid(self, x):
         """
         Verify whether x is a valid (voxel) coordinate.
@@ -102,7 +102,7 @@ class VoxelCoordinateSystem(CoordinateSystem):
                      less_equal(x[i], self._box[i][1]))
         return test
 
-    #-------------------------------------------------------------------------
+
     def _getbox(self):
         self._box = []
         for i in range(self.ndim):
@@ -114,16 +114,16 @@ class VoxelCoordinateSystem(CoordinateSystem):
             self._box.append(min(v), max(v))
 
 
-##############################################################################
+
 class DiagonalCoordinateSystem(VoxelCoordinateSystem):
     class axes (readonly): default=axis.MNI
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, name, axes):
         shape = [dim.length for dim in axes]
         VoxelCoordinateSystem.__init__(self, name, axes, shape=shape)
         
-    #-------------------------------------------------------------------------
+
     def transform(self):
         """
         Return an orthogonal  homogeneous transformation matrix based on the

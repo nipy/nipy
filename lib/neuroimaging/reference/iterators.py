@@ -8,10 +8,7 @@ from protocols import Sequence, haslength
 itertypes = ("slice", "parcel", "slice/parcel")
 
 
-##############################################################################
 
-
-##############################################################################
 class SliceIterator (object):
     """
     This class is an iterator that steps through the slices of an
@@ -39,14 +36,14 @@ class SliceIterator (object):
     class ndim (readonly): get=lambda _,s: len(s.end)
     class _isend (attribute): default=False
 
-    #-------------------------------------------------------------------------
+
     class Item (object):
         "iterator item"
         class type (constant): default="slice"
         class slice (attribute): implements=Sequence,slice
         def __init__(self, slice): self.slice = slice
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, end, start=None, step=None, axis=None, nslicedim=None,
       nslice=None):
         self.end = tuple(end)
@@ -61,7 +58,7 @@ class SliceIterator (object):
         self.slice = self.start[self.axis]
         self.last = self.end[self.axis]
 
-    #-------------------------------------------------------------------------
+
     def next(self):
         if self._isend:
             raise StopIteration
@@ -81,7 +78,7 @@ class SliceIterator (object):
         return SliceIterator.Item(_slices)
 
 
-##############################################################################
+
 class ParcelIterator (object):
     """
     Iterates over subsets of an image grid.  Each iteration returns a boolean
@@ -117,7 +114,7 @@ class ParcelIterator (object):
         def init(att, self):
             return N.unique(self.parcelmap.flat)
 
-    #-------------------------------------------------------------------------
+
     class Item (object):
         "iterator item"
 
@@ -132,13 +129,13 @@ class ParcelIterator (object):
             return "%s(label=%s, where=%s)"%\
              (self.__class__.__name__, `self.label`,`self.where`)
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, parcelmap, parcelseq=None):
         self.parcelmap = parcelmap
         if parcelseq is not None: self.parcelseq = tuple(parcelseq)
         self._labeliter = iter(self.parcelseq)
 
-    #-------------------------------------------------------------------------
+
     def next(self):
         label = self._labeliter.next()
         if not haslength(label): label = (label,)
@@ -148,7 +145,7 @@ class ParcelIterator (object):
 
 
        
-##############################################################################
+
 class SliceParcelIterator (object):
     """
     SliceParcelIterator iterates over a different (or potentially identical)
@@ -172,7 +169,7 @@ class SliceParcelIterator (object):
     clone(ParcelIterator.parcelmap)
     clone(ParcelIterator.parcelseq)
      
-    #-------------------------------------------------------------------------
+
     class Item (ParcelIterator.Item):
         "iterator item"
 
@@ -183,7 +180,7 @@ class SliceParcelIterator (object):
             ParcelIterator.Item.__init__(self, label, where)
             self.slice = _slice
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, parcelmap, parcelseq):
         self.parcelmap = parcelmap
         if len(parcelmap) != len(parcelseq):
@@ -191,7 +188,7 @@ class SliceParcelIterator (object):
         self.parcelseq = parcelseq
         self._loopvars = iter(enumerate(zip(self.parcelmap, self.parcelseq)))
 
-    #-------------------------------------------------------------------------
+
     def next(self):
         index, (mapslice,label) = self._loopvars.next()
         item = ParcelIterator(mapslice, (label,)).next()

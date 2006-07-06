@@ -123,7 +123,7 @@ class SamplingGridROI(DiscreteROI):
               'to pool an image over a SamplingGridROI the grids must agree')
 
         tmp = image.readall()
-        v = [tmp[voxel] for voxel for self.voxels]
+        v = [tmp[voxel] for voxel in self.voxels]
 
         del(tmp); gc.collect()
         return v

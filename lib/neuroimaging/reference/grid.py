@@ -12,7 +12,7 @@ from neuroimaging.reference.iterators import itertypes, SliceIterator,\
   ParcelIterator, SliceParcelIterator
 
 
-##############################################################################
+
 class SamplingGrid (object):
 
     class shape (readonly): implements=tuple
@@ -34,7 +34,7 @@ class SamplingGrid (object):
     # delegates
     deferto(mapping, ("input_coords", "output_coords"))
 
-    #-------------------------------------------------------------------------
+
     @staticmethod
     def from_start_step(names=space, shape=[], start=[], step=[]): 
         """
@@ -59,7 +59,7 @@ class SamplingGrid (object):
         mapping = Affine(input_coords, output_coords, transform)
         return SamplingGrid(shape=list(shape), mapping=mapping)
 
-    #-------------------------------------------------------------------------
+
     @staticmethod
     def identity(shape=(), names=space):
         "@return an identity grid of the given shape."
@@ -69,12 +69,12 @@ class SamplingGrid (object):
         w = Mapping.identity(ndim, names=names)
         return SamplingGrid(shape=list(shape), mapping=w)
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, shape, mapping):
         self.shape = tuple(shape)
         self.mapping = mapping
 
-    #-------------------------------------------------------------------------
+
     def range(self):
         "@return the coordinate values in the same format as numpy.indices."
         indices = N.indices(self.shape)
@@ -85,7 +85,7 @@ class SamplingGrid (object):
         _range.shape = tmp_shape
         return _range 
 
-    #-------------------------------------------------------------------------
+
     def __iter__(self):
         itermethod = {
           "slice": self.iterslices,
@@ -96,30 +96,30 @@ class SamplingGrid (object):
             raise ValueError("unknown itertype %s"%`self.itertype`)
         return itermethod()
 
-    #-------------------------------------------------------------------------
+
     def iterslices(self, axis=None):
         if axis is None: axis = self.axis
         self.iterator = SliceIterator(self.shape, axis=axis)
         return self
 
-    #-------------------------------------------------------------------------
+
     def iterparcels(self, parcelseq=None):
         if parcelseq is None: parcelseq = self.parcelseq
         self.iterator = ParcelIterator(self.parcelmap, parcelseq)
         return self
 
-    #-------------------------------------------------------------------------
+
     def itersliceparcels(self, parcelseq=None):
         if parcelseq is None: parcelseq = self.parcelseq
         self.iterator = SliceParcelIterator(self.parcelmap, parcelseq)
         return self
 
-    #-------------------------------------------------------------------------
+
     def next(self):
         self.itervalue = self.iterator.next()
         return self.itervalue
 
-    #-------------------------------------------------------------------------
+
     def slab(self, start, step, count, axis=0):
         """
         A sampling grid for a hyperslab of data from an array, i.e.
@@ -157,20 +157,20 @@ class SamplingGrid (object):
         g.itertype = 'slice'
         return iter(g)
 
-    #-------------------------------------------------------------------------
+
     def transform(self, matrix): self.mapping = matrix * self.mapping
 
-    #-------------------------------------------------------------------------
+
     def matlab2python(self):
         return SamplingGrid(shape=reverse(self.shape),
           mapping=self.mapping.matlab2python())
 
-    #-------------------------------------------------------------------------
+
     def python2matlab(self):
         return SamplingGrid(shape=reverse(self.shape),
           mapping=self.mapping.python2matlab())
 
-    #-------------------------------------------------------------------------
+
     def replicate(self, n):
         """
         Duplicate self n times, returning a ConcatenatedGrids with
@@ -180,7 +180,7 @@ class SamplingGrid (object):
 
 
 
-###############################################################################
+
 class ConcatenatedGrids(SamplingGrid):
     """
     Return a grid formed by concatenating a sequence of grids. Checks are done
@@ -248,24 +248,24 @@ class ConcatenatedGrids(SamplingGrid):
 
     class concataxis (readonly): default="concat"
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, grids, concataxis=None):
         self.grids = grids
         if concataxis is not None: self.concataxis = concataxis
 
-    #-------------------------------------------------------------------------
+
     def subgrid(self, i): return self.grids[i]
 
 
 
-##############################################################################
+
 class SliceGrid(SamplingGrid):
     """
     Return an affine slice of a given grid with specified
     origin, steps and shape.
     """
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, grid, origin, directions, shape):
         self.fmatrix = N.zeros((self.nout, self.ndim), N.float64)
         _axes = []

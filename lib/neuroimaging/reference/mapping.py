@@ -11,21 +11,21 @@ from neuroimaging.reference.coordinate_system import \
   CoordinateSystem, MNI_voxel, MNI_world
 
 
-#-----------------------------------------------------------------------------
+
 def _2matvec(transform):
     ndim = transform.shape[0] - 1
     matrix = transform[0:ndim,0:ndim]
     vector = transform[0:ndim,ndim]
     return matrix, vector
 
-#-----------------------------------------------------------------------------
+
 def matfromfile(infile, delimiter="\t"):
     "Read in an affine transformation matrix from a csv file."
     if type(infile)==type(""): infile = file(infile)
     reader = csv.reader(infile, delimiter=delimiter)
     return N.array([map(float, row) for row in reader])
 
-#-----------------------------------------------------------------------------
+
 def matfromstr(tstr, ndim=3, delimiter=None):
     "Read a (ndim+1)x(ndim+1) transform matrix from a string."
     if tstr[0:24] == "mat file created by perl": return frombin(tstr) #frombin is undefined
@@ -34,7 +34,7 @@ def matfromstr(tstr, ndim=3, delimiter=None):
         transform.shape = (ndim+1,)*2
         return transform
 
-#-----------------------------------------------------------------------------
+
 def xfmfromstr(tstr, ndim=3):
     "Read a (ndim+1)x(ndim+1) transform matrix from a string."
     tstr = tstr.split('\n')
@@ -57,7 +57,7 @@ def xfmfromstr(tstr, ndim=3):
     outdata.shape = (ndim+1,)*2
     return data, outdata
 
-#-----------------------------------------------------------------------------
+
 def fromurl(turl, ndim=3):
     """
     Read a (ndim+1)x(ndim+1) transform matrix from a URL -- tries to autodetect
@@ -74,7 +74,7 @@ def fromurl(turl, ndim=3):
     if turl[-3:] == 'mat': return matfromstr(data, ndim=ndim)
     elif turl[-3:] == 'xfm': return xfmfromstr(data, ndim=ndim)
 
-#-----------------------------------------------------------------------------
+
 def isdiagonal(matrix, tol=1.0e-7):
     ndim = matrix.shape[0]
     D = N.diag(N.diagonal(matrix))
@@ -87,7 +87,7 @@ def isdiagonal(matrix, tol=1.0e-7):
     return N.add.reduce(dnorm / norm) < tol
 
 
-##############################################################################
+
 class Mapping (object):
     """
     A generic mapping class that allows composition, inverses, etc. A mapping
@@ -108,7 +108,7 @@ class Mapping (object):
                   self._inverse, self)
             else: raise AttributeError("non-invertible mapping")
 
-    #-------------------------------------------------------------------------
+
     @staticmethod
     def frommatrix(matrix, names=space, input='voxel', output='world'):
         """
@@ -120,7 +120,7 @@ class Mapping (object):
           CoordinateSystem(input, axes), CoordinateSystem(output, axes),
           matrix)
 
-    #-------------------------------------------------------------------------
+
     @staticmethod
     def fromfile(infile, names=space, input='voxel', output='world', delimiter='\t'):
         """
@@ -131,31 +131,31 @@ class Mapping (object):
         t = matfromfile(infile, delimiter=delimiter)
         return Affine.frommatrix(t, names=names, input=input, output=output)
 
-    #-------------------------------------------------------------------------
+
     @staticmethod
     def identity(ndim=3, names=space, input='voxel', output='world'):
         "Return an identity affine transformation."
         return Mapping.frommatrix(
           N.identity(ndim+1), names=names, input=input, output=output)
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, input_coords, output_coords, map, inverse=None):
         self.input_coords = input_coords
         self.output_coords = output_coords
         self.map = map
         if inverse is not None: self._inverse = inverse
 
-    #-------------------------------------------------------------------------
+
     def __call__(self, x): return self.map(x)
 
-    #-------------------------------------------------------------------------
+
     def __str__(self):
         return '%s:input=%s\n'%(self.name, self.input_coords) +\
         '%s:output=%s\n'%(self.name, self.output_coords) +\
         '%s:map=%s\n'%(self.name, self.map) +\
         '%s:inverse=%s\n'%(self.name, self._inverse)
 
-    #-------------------------------------------------------------------------
+
     def __ne__(self, other): return not self.__eq__(other)
     def __eq__(self, other):
         if not hasattrs(other, "input_coords", "output_coords", "map"):
@@ -163,12 +163,12 @@ class Mapping (object):
         return (self.input_coords, self.output_coords, self.map) == \
                (other.input_coords, other.output_coords, other.map)
 
-    #-------------------------------------------------------------------------
+
     def __mul__(self, other):
         "If this method is not over-written we get complaints about sequences."
         return other.__rmul__(self)
     
-    #-------------------------------------------------------------------------
+
     def __rmul__(self, other):
         def map(coords): return other(self(coords))
         if self.isinvertible and other.isinvertible:
@@ -176,7 +176,7 @@ class Mapping (object):
         else: inverse = None
         return Mapping(self.input_coords, other.output_coords, map, inverse=inverse)
 
-    #-------------------------------------------------------------------------
+
     def reslice(self, which, inname=None, outname=None, sort=True):
         """
         Reorder and/or subset a mapping, uses subset of input_coords.axes to
@@ -216,7 +216,7 @@ class Mapping (object):
 
         return Mapping(incoords, outcoords, map, inverse=None) 
 
-    #-------------------------------------------------------------------------
+
     def tovoxel(self, real):
         """
         Given a real coordinate, where self.input_coords are assumed to be
@@ -230,7 +230,7 @@ class Mapping (object):
         voxel.shape = shape
         return N.array(voxel)
 
-    #-------------------------------------------------------------------------
+
     def matlab2python(self):
         """
         Take that maps matlab voxels to (matlab-ordered) world coordinates and
@@ -248,7 +248,7 @@ class Mapping (object):
         w2 = Affine(self.output_coords, self.output_coords.reverse(), t2)
         return (w2 * self) * w1
 
-    #-------------------------------------------------------------------------
+
     def python2matlab(self):
         "Inverse of matlab2python -- see this function for help."
         ndim = self.ndim
@@ -262,7 +262,7 @@ class Mapping (object):
         return (w2 * self) * w1
 
 
-##############################################################################
+
 class Affine(Mapping):
     "A class representing an affine transformation in n axes."
 
@@ -272,7 +272,7 @@ class Affine(Mapping):
     class bmatrix (readonly): "backward (inverse) transform matrix"
     class bvector (readonly): "backward (inverse) translation vector"
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, input_coords, output_coords, transform):
         self.transform = transform
         self.fmatrix, self.fvector = _2matvec(transform)
@@ -283,13 +283,13 @@ class Affine(Mapping):
         Mapping.__init__(self, input_coords, output_coords, self.map,
           inverse=inverse)
 
-    #-------------------------------------------------------------------------
+
     def __ne__(self, other): return not self.__eq__(other)
     def __eq__(self, other):
         if not hasattr(other, "transform"): return False
         return tuple(self.transform.flat) == tuple(other.transform.flat)
 
-    #-------------------------------------------------------------------------
+
     def __rmul__(self, other):
         if isinstance(other, Affine):
             try: return Affine(
@@ -302,14 +302,14 @@ class Affine(Mapping):
                   self.input_coords, other.output_coords, fmatrix, fvector)
         else: return Mapping.__rmul__(self, other)
 
-    #-------------------------------------------------------------------------
+
     def __str__(self):
         return "%s:input=%s\n%s:output=%s\n%s:fmatrix=%s\n%s:fvector=%s" %\
           (self.name, self.input_coords.name, self.name,
            self.output_coords.name, self.name, `self.fmatrix`, self.name,
            `self.fvector`)
  
-    #-------------------------------------------------------------------------
+
     def map(self, coords, inverse=False, alpha=1.0):
         if not inverse:
             value = N.dot(self.fmatrix, coords)
@@ -327,15 +327,15 @@ class Affine(Mapping):
                 value = value + self.bvector * alpha
         return value
     
-    #-------------------------------------------------------------------------
+
     def inverse(self):
         return Affine(self.output_coords, self.input_coords,
                       inv(self.transform))
     
-    #-------------------------------------------------------------------------
+
     def isdiagonal(self): return isdiagonal(self.transform[0:self.ndim,0:self.ndim])
  
-    #-------------------------------------------------------------------------
+
     def tofile(self, filename):
         matfile = file(filename, 'w')
         writer = csv.writer(matfile, delimiter='\t')
@@ -343,7 +343,7 @@ class Affine(Mapping):
         matfile.close()
   
 
-##############################################################################
+
 class DegenerateAffine(Affine):
     """
     A subclass of affine with no inverse, i.e. where the map is non-invertible.
@@ -351,7 +351,7 @@ class DegenerateAffine(Affine):
     class nout (readonly): init=lambda _,s: s.fmatrix.shape[1]
     class nin (readonly): init=lambda _,s: s.fmatrix.shape[0]
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, input_coords, output_coords, fmatrix, fvector,
                  name='transform'):
         self.name = name
@@ -374,7 +374,7 @@ class DegenerateAffine(Affine):
             Mapping.__init__(self, input_coords, output_coords, map)
 
 
-#-----------------------------------------------------------------------------
+
 def permutation_matrix(order=range(3)[2::-1]):
     """
     Create an NxN permutation matrix from a sequence, containing the values 0,...,N-1.
@@ -387,7 +387,7 @@ def permutation_matrix(order=range(3)[2::-1]):
     for i in range(n): matrix[i,order[i]] = 1
     return matrix
 
-#-----------------------------------------------------------------------------
+
 def permutation_transform(order=range(3)[2::-1]):
     """
     Create an (N+1)x(N+1) permutation transformation matrix from a sequence,
@@ -399,7 +399,7 @@ def permutation_transform(order=range(3)[2::-1]):
     ptransform[ndim,ndim] = 1.
     return ptransform
 
-#-----------------------------------------------------------------------------
+
 def translation_transform(x, ndim):
     """
     Create an affine transformation matrix representing translation by x.
