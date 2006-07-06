@@ -11,14 +11,14 @@ from neuroimaging.reference.iterators import ParcelIterator
 from neuroimaging.reference.mapping import Mapping, Affine
 
 
-##############################################################################
+
 class fMRIListMapping(Mapping):
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, input_coords, output_coords, maps, **keywords):
         self._maps = maps
 
-    #-------------------------------------------------------------------------
+
     def map(self, coords, inverse=False):
         if len(coords.shape) > 1:
             n = coords.shape[1]
@@ -29,21 +29,21 @@ class fMRIListMapping(Mapping):
             return self._maps[coords[0]][coords[1:]]
 
 
-##############################################################################
+
 class fMRISamplingGrid(SamplingGrid):
 
-    #-------------------------------------------------------------------------
+
     def iterslices(self):
         self.iterator = fMRISliceIterator(self.shape)
         return self
 
-    #-------------------------------------------------------------------------
+
     def itersliceparcels(self):
         self.iterator = fMRISliceParcelIterator(
           self.parcelmap, self.parcelseq, self.shape[0])
         return self
 
-    #-------------------------------------------------------------------------
+
     def isproduct(self, tol = 1.0e-07):
         "Determine whether the affine transformation is 'diagonal' in time."
 
@@ -54,7 +54,7 @@ class fMRISamplingGrid(SamplingGrid):
         norm = N.add.reduce(N.add.reduce(t**2))
         return N.sqrt(offdiag / norm) < tol
 
-    #-------------------------------------------------------------------------
+
     def subgrid(self, i):
         """
         Return a subgrid of fMRISamplingGrid. If the image's mapping is an
@@ -106,13 +106,13 @@ class fMRISamplingGrid(SamplingGrid):
         return _grid
 
 
-##############################################################################
+
 class fMRIImage(Image):
     frametimes = traits.Any()
     slicetimes = traits.Any()
     TR = traits.Any()
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, _image, **keywords):
         Image.__init__(self, _image, **keywords)
         self.grid = fMRISamplingGrid(
@@ -126,17 +126,17 @@ class fMRIImage(Image):
             start = self.grid.mapping.transform[d, ndim]
             self.frametimes = start + N.arange(self.grid.shape[d]) * self.TR
 
-    #-------------------------------------------------------------------------
+
     def tofile(self, filename, **keywords):
         Image.tofile(self, filename, array=False, **keywords)
         
-    #-------------------------------------------------------------------------
+
     def frame(self, i, clean=False, **keywords):
         data = N.squeeze(self.getslice(slice(i,i+1)))
         if clean: data = N.nan_to_num(data)
         return Image(self.postread(data), grid=self.grid.subgrid(i), **keywords)
 
-    #-------------------------------------------------------------------------
+
     def next(self, value=None, data=None):
         """
         The value argument here is used when, for instance one wants to
@@ -185,7 +185,7 @@ class fMRIImage(Image):
                 _buffer = self[value.slice]
                 _buffer.put(data, indices)
 
-    #-------------------------------------------------------------------------
+
     def __iter__(self):
         "Create an iterator over an image based on its grid's iterator."
         iter(self.grid)

@@ -2,7 +2,7 @@ from attributes import readonly
 
 from neuroimaging.reference.iterators import SliceIterator, SliceParcelIterator
 
-##############################################################################
+
 class fMRISliceIterator(SliceIterator):
     """
     Instead of iterating over slices of a 4d file -- return slices of
@@ -14,7 +14,7 @@ class fMRISliceIterator(SliceIterator):
         SliceIterator.__init__(self, end, **kwargs)
 
 
-##############################################################################
+
 class fMRISliceParcelIterator(SliceParcelIterator):
     "Return parcels of timeseries within slices."
 
