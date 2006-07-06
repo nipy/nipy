@@ -152,7 +152,7 @@ class PCA(traits.HasTraits):
 
         for i in range(self.image.shape[1]):
             _slice = [first_slice, slice(i,i+1)]
-            Y = self.image.getslice(_slice).reshape((_shape[0], N.product(_shape[2:])))
+            Y = N.nan_to_num(self.image.getslice(_slice).reshape((_shape[0], N.product(_shape[2:]))))
             U = N.dot(subVX, Y)
 
             if self.mask is not None:
