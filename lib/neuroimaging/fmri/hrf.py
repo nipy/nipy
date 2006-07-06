@@ -7,7 +7,7 @@ a spectral HRF.
 import numpy as N
 import numpy.linalg as L
 import filters
-from enthought import traits
+from neuroimaging import traits
 from neuroimaging.fmri.utils import LinearInterpolant as interpolant
 
 def glover2GammaDENS(peak_hrf, fwhm_hrf):
@@ -100,7 +100,7 @@ class SpectralHRF(filters.Filter):
 
         H = []
         for i in range(delta.shape[0]):
-            H.append(irf(time -delta[i]))
+            H.append(irf(time - delta[i]))
         H = N.array(H)
 
             

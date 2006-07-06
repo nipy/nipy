@@ -16,7 +16,7 @@ import gc
 
 import numpy as N
 import numpy.linalg as L
-from enthought import traits
+from neuroimaging import traits
 from scipy.sandbox.models.utils import recipr
 
 from neuroimaging.image import Image

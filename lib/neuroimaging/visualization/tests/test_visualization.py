@@ -6,10 +6,11 @@ from neuroimaging.image.interpolation import ImageInterpolator
 
 from neuroimaging.defines import pylab_def, qt_def
 PYLAB_DEF, pylab = pylab_def()
+QT_DEF, qt = qt_def()
+
 if PYLAB_DEF:
     from neuroimaging.visualization import viewer, slices
 
-QT_DEF, qt = qt_def()
 
 class VisualizationTest(unittest.TestCase):
     if PYLAB_DEF:

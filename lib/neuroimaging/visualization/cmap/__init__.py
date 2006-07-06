@@ -1,4 +1,4 @@
-from enthought import traits
+from neuroimaging import traits
 
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()

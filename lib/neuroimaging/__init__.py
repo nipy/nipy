@@ -61,6 +61,16 @@ if PYLAB_DEF:
                 'neuroimaging.visualization.cmap',
                 'neuroimaging.visualization.tests')
 
+ENTHOUGHT_TRAITS_DEF, traits = defines.enthought_traits_def()
+if not ENTHOUGHT_TRAITS_DEF:
+    packages += ('neuroimaging.extra',
+                 'neuroimaging.extra.enthought',
+                 'neuroimaging.extra.enthought.traits',
+                 'neuroimaging.extra.enthought.traits.ui',
+                 'neuroimaging.extra.enthought.traits.ui.null',
+                 'neuroimaging.extra.enthought.util',
+                 'neuroimaging.extra.enthought.resource')
+
 testmatch = re.compile(".*tests").search
 nontest_packages = [p for p in packages if not testmatch(p)]
 
