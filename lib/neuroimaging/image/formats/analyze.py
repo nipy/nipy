@@ -10,7 +10,7 @@ from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.image.utils import writebrick
 
-from validators import BinaryHeaderAtt, BinaryImage, traits
+from neuroimaging.image.formats import BinaryHeaderAtt, BinaryImage, traits
 
 class ANALYZE(BinaryImage):
     """
@@ -69,13 +69,6 @@ class ANALYZE(BinaryImage):
     # This will cause a problem for 4d files occasionally
     usematfile = traits.true
 
-    # Ignore the origin as FSL does
-    # This is __EQUIVALENT_TO__ setting origin=(1,)*5
-    ignore_origin = traits.false
-
-    # Use abs(pixdim)?
-    abs_pixdim = traits.false
-
     # Try to squeeze 3d files?
     squeeze = traits.true
 
@@ -99,11 +92,7 @@ class ANALYZE(BinaryImage):
             self.readheader()
             self.ndim = self.dim[0]
 
-        if self.ignore_origin:
-            self.origin = [1]*5
-
-        if self.abs_pixdim:
-            self.pixdim = [N.fabs(pixd) for pixd in self.pixdim]
+        self.customize()
 
         if self.ndim == 3:
             axisnames = space[::-1]
@@ -149,11 +138,15 @@ class ANALYZE(BinaryImage):
         # get memmaped array
         self.getdata()
 
-    def __str__(self):
-        value = ''
-        for trait in self.hdrattnames:
-            value = value + '%s:%s=%s\n' % (self.filebase, trait, str(getattr(self, trait)))
-        return value
+    def customize(self):
+        """
+        Customization of the ANALYZE reader, i.e. for ANALYZE_FSL.
+        This is done before constructing the grid, and
+        can be used to set the header arguments to specific values.
+        
+        """
+        return 
+
 
     def _datatype_changed(self):
         ## TODO / WARNING, datatype is not checked very carefully...
@@ -199,36 +192,24 @@ class ANALYZE(BinaryImage):
         self.dtype = N.dtype(datatypes[self.datatype])
         self.dtype = self.dtype.newbyteorder(self.bytesign)
 
-#        print self.dtype, self.datatype, self.calmin, self.calmax
-        if self.datatype == ANALYZE_Byte:
-            self.bitpix = 8
-            self.glmin = 0
-            self.glmax = 255
-            self.scale_factor = abs(self.calmin) / 255
-        elif self.datatype == ANALYZE_Short: 
-            self.bitpix = 16
-            self.scale_factor = max(abs(self.calmin), abs(self.calmax)) / (2.0**15-1)
-            self.glmin = round(self.scale_factor * self.calmin)
-            self.glmax = round(self.scale_factor * self.calmax)
-        elif self.datatype == ANALYZE_Int: 
-            self.bitpix = 32
-            self.scale_factor = max(abs(self.calmin), abs(self.calmax)) / (2.0**31-1)
-            self.glmin = round(self.scale_factor * self.calmin)
-            self.glmax = round(self.scale_factor * self.calmax)
-        elif self.datatype == ANALYZE_Float:
-            self.bitpix = 32
-            self.scale_factor = 1
-            self.glmin = 0
-            self.glmax = 0
-        elif self.datatype == ANALYZE_Double:
-            self.bitpix = 64
-            self.scale_factor = 1
-            self.glmin = 0
-            self.glmax = 0
+    def postread(self, x):
+        """
+        ANALYZE normalization based on scale_factor.
+        """
+        if self.scale_factor:
+            return x * self.scale_factor
         else:
-            raise ValueError, 'invalid datatype'
+            return x
 
-
+    def prewrite(self, x):
+        """
+        ANALYZE normalization based on scale_factor.
+        """
+        if self.scale_factor:
+            return x / self.scale_factor
+        else:
+            return x
+        
     def _mode_changed(self):
         _modemap = {'r':'rb', 'w':'wb', 'r+': 'rb+'}
         self._mode = _modemap[self.mode]
@@ -305,6 +286,19 @@ class ANALYZE(BinaryImage):
         except:
             raise ValueError, 'file format not recognized: byteorder check failed'
         hdrfile.close()
+
+class ANALYZE_FSL(ANALYZE):
+
+    
+    def customize(self):
+        """
+        Customizations to ANALYZE reader that tries to follow
+        FSL's use of the ANALYZE-7.5 header.
+        """
+        self.origin = [1]*5
+        self.pixdim = [N.fabs(pixd) for pixd in self.pixdim]
+
+
 
 # plug in as a format creator (see formats.getreader)
 reader = ANALYZE

@@ -7,7 +7,7 @@ from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.image.utils import writebrick
 
-from validators import BinaryHeaderAtt, BinaryImage, traits
+from neuroimaging.image.formats import BinaryHeaderAtt, BinaryImage
 
 # NIFTI-1 constants
 
@@ -287,6 +287,24 @@ class NIFTI1(BinaryImage):
 
         self.dtype = self.dtype.newbyteorder(self.bytesign)
 
+    def postread(self, x):
+        """
+        NIFTI-1 normalization based on scl_slope and scl_inter.
+        """
+        if self.scl_slope != 0:
+            return x * self.scl_slope + self.scl_inter
+        else:
+            return x
+
+    def prewrite(self, x):
+        """
+        NIFTI-1 normalization based on scl_slope and scl_inter.
+        """
+        if self.scl_slope != 0:
+            return (x - self.scl_inter) / self.scl_slope
+        else:
+            return x
+
     def transform(self):
         """
         Return 4x4 transform matrix based on the NIFTI attributes
@@ -295,7 +313,7 @@ class NIFTI1(BinaryImage):
         if self.qform_code > 0, use the quaternion
         else use a diagonal matrix filled in by pixdim.
 
-        See help(NIFTI1) for explanation.
+        See help(neuroimaging.image.formats.nifti1) for explanation.
 
         """
 
@@ -334,9 +352,7 @@ class NIFTI1(BinaryImage):
 reader = NIFTI1
 
 
-NIFTI1.__doc__ += """
-
-
+__doc__ = """
 --------------------------------------------------------------
     nifti1.h -- definition of NIFTI-1 file format (R. Cox)
 --------------------------------------------------------------

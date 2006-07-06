@@ -1,5 +1,6 @@
 import unittest, os
 import numpy as N
+from neuroimaging.image import Image
 from neuroimaging.image.formats import nifti1
 from neuroimaging.tests.data import repository
 
@@ -7,6 +8,7 @@ class NiftiTest(unittest.TestCase):
 
     def setUp(self):
         self.zimage = nifti1.NIFTI1("zstat1.nii", datasource=repository)
+        self.image = Image("zstat1.nii", datasource=repository)
 
         self.zvalues = {'sizeof_hdr':348,
                         'data_type':'\x00'*10,
@@ -53,13 +55,21 @@ class NiftiTest(unittest.TestCase):
                         'magic':'n+1\x00'
                         }
 
+    def test_print(self):
+        print self.zimage
+
     def test_header1(self):
         for name, value in self.zvalues.items():
             setattr(self.zimage, name, value)
 
-    def test_header1(self):
+    def test_header2(self):
         for name, value in self.zvalues.items():
             self.assertEqual(getattr(self.zimage, name), value)
+
+    def test_read1(self):
+        y = self.zimage[:]
+        N.testing.assert_approx_equal(y.min(), -8.71075057983)
+        N.testing.assert_approx_equal(y.max(), 18.582529068)
 
 def suite():
     suite = unittest.makeSuite(AnalyzeTest)
