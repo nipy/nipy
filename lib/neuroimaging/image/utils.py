@@ -14,6 +14,73 @@ def sigma2fwhm(sigma):
     """
     return sigma * N.sqrt(8 * N.log(2))
 
+
+def readbrick(infile, start, count, shape, offset=0, intype=N.int32, outtype=N.float64, byteorder=sys.byteorder, return_tell = True, check_nan=True, fill=0.0):
+ 	
+    if return_tell:
+        try:
+            startpos = infile.tell()
+        except:
+            infile = file(infile.name, 'rb+')
+            startpos = 0
+
+        ndim = len(shape)
+
+        if not outtype:
+            outtype = intype
+
+        # How many dimensions are "full" slices
+
+        nslicedim = 0
+        i = ndim - 1
+        while count[i] is shape[i] and i >= 0:
+            nslicedim = nslicedim + 1
+            i = i - 1
+
+        if nslicedim:
+            nslice = N.product(shape[(ndim - nslicedim):])
+        else:
+            nslice = count[:-1]
+            nslicedim = 1
+
+        nloopdim = ndim - nslicedim
+
+        test = N.product(N.less_equal(N.array(start) + N.array(count), N.array(shape)))
+        if not test:
+            raise ValueError, 'start+count not <= shape'
+
+        nloop = N.product(count[nloopdim:])
+        nskip = N.product(shape[nloopdim:])
+        ntotal = N.product(count)
+        return_value = N.zeros((ntotal,), outtype)
+
+        elsize = intype.bytes
+
+        shape_reverse = list(shape)
+        shape_reverse.reverse()
+        strides = [1] + list(N.multiply.accumulate(shape_reverse)[:-1])
+        strides.reverse()
+        strides = N.array(strides)
+        strides = strides * elsize
+
+        infile.seek(offset + N.add.reduce(start * strides))
+
+        index = 0
+        while index < ntotal:
+            indata = N.fromfile(infile, intype, shape=(nloop,))
+            if byteorder != sys.byteorder:
+                indata.byteswap()
+            return_value[index:(index+nloop)] = indata.astype(outtype)
+            infile.seek((nskip - nloop) * elsize, 1)
+            index = index + nloop
+
+            return_value.setshape(count)
+
+        if return_tell:
+            infile.seek(startpos, 0)
+        return return_value
+
+
 def writebrick(outfile, start, data, shape, offset=0, outtype=None, byteorder=sys.byteorder, return_tell = True):
     if return_tell:
         try:
@@ -41,8 +108,8 @@ def writebrick(outfile, start, data, shape, offset=0, outtype=None, byteorder=sy
     nslicedim = 0
     i = ndim - 1
     while count[i] is shape[i] and i >= 0:
-        nslicedim = nslicedim + 1
-        i = i - 1
+        nslicedim += 1
+        i -= 1
 
     if nslicedim:
         nslice = N.product(shape[(ndim - nslicedim):])
