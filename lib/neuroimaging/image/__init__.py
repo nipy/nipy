@@ -1,6 +1,6 @@
 import types, os
 
-from neuroimaging import traits
+from enthought import traits
 import numpy as N
 from attributes import attribute, readonly, deferto
 

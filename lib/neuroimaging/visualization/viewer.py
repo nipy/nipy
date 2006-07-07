@@ -2,7 +2,7 @@ import fpformat
 
 import numpy as N
 import pylab
-from neuroimaging import traits
+from enthought import traits
 
 from neuroimaging.image.interpolation import ImageInterpolator
 from neuroimaging.reference.slices import xslice, yslice, zslice, bounding_box

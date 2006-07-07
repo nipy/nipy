@@ -5,7 +5,7 @@ Image interpolators using ndimage.
 import os
 
 from scipy import ndimage
-from neuroimaging import traits
+from enthought import traits
 import numpy as N
 
 from neuroimaging.data.cache import cached

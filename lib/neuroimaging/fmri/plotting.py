@@ -7,7 +7,7 @@ PYLAB_DEF, pylab = pylab_def()
 
 if PYLAB_DEF:
     import numpy as N
-    from neuroimaging import traits
+    from enthought import traits
 
     class MultiPlot(traits.HasTraits):
         """

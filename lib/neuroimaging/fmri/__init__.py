@@ -1,4 +1,4 @@
-from neuroimaging import traits
+from enthought import traits
 import numpy as N
 
 from neuroimaging import flatten

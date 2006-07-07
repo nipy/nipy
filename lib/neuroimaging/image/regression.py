@@ -1,7 +1,7 @@
 import os, csv, fpformat
 
 import numpy as N
-from neuroimaging import traits
+from enthought import traits
 
 from neuroimaging.image import Image
 from neuroimaging.statistics.regression import RegressionOutput

@@ -12,7 +12,7 @@ import gc
 import numpy as N
 from numpy.linalg import det
 from scipy.sandbox.models.utils import recipr
-from neuroimaging import traits
+from enthought import traits
 
 from neuroimaging.image import Image
 

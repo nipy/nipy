@@ -4,7 +4,7 @@ import numpy as N
 import numpy.linalg as L
 from scipy.linalg import toeplitz
 from scipy.sandbox.models.utils import recipr
-from neuroimaging import traits
+from enthought import traits
 
 from neuroimaging.image import Image
 import neuroimaging.image.regression as imreg

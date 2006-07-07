@@ -3,7 +3,7 @@ import gc
 import numpy as N
 import numpy.dft as FFT
 import numpy.linalg as NL
-from neuroimaging import traits
+from enthought import traits
 
 from neuroimaging.image import Image
 from neuroimaging.image.utils import fwhm2sigma

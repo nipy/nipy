@@ -1,7 +1,7 @@
 import types
 
 import numpy as N
-from neuroimaging import traits
+from enthought import traits
 
 from neuroimaging.fmri.utils import ConvolveFunctions, WaveFunction
 

@@ -1,5 +1,5 @@
 import csv, types, copy
-from neuroimaging import traits
+from enthought import traits
 import numpy as N
 
 from neuroimaging.fmri.functions import TimeFunction, StepFunction

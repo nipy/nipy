@@ -9,7 +9,7 @@ from neuroimaging.data import iszip, unzip, DataSource
 from neuroimaging.reference.axis import space, spacetime
 from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging import traits
+from enthought import traits
 
 _byteorder_dict = {'big':'>', 'little':'<'}
 
