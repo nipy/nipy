@@ -1,5 +1,8 @@
-import unittest, os
+import unittest, os, copy
+
 import numpy as N
+import numpy.random as R
+
 from neuroimaging.image import Image
 from neuroimaging.image.formats import nifti1
 from neuroimaging.image.formats.binary import BinaryFormatError
@@ -56,8 +59,12 @@ class NiftiTest(unittest.TestCase):
                         'magic':'n+1\x00'
                         }
 
+class NiftiPrintTest(NiftiTest):
+
     def test_print(self):
         print self.zimage
+
+class NiftiHeaderTest(NiftiTest):
 
     def test_header1(self):
         for name, value in self.zvalues.items():
@@ -67,17 +74,30 @@ class NiftiTest(unittest.TestCase):
         for name, value in self.zvalues.items():
             self.assertEqual(getattr(self.zimage, name), value)
 
+class NiftiReadTest(NiftiTest):
+
     def test_read1(self):
         y = self.zimage[:]
         N.testing.assert_approx_equal(y.min(), -8.71075057983)
         N.testing.assert_approx_equal(y.max(), 18.582529068)
 
+class NiftiWriteTest(NiftiTest):
+
     def test_write1(self):
-        self.image.tofile('out.nii', clobber=True, scalar_type=N.float64)
+        self.image.tofile('out.nii', clobber=True, sctype=N.float64)
+        out = Image('out.nii')
+        self.assertEquals(out.image.sctype, N.float64)
         os.remove('out.nii')
 
     def test_write2(self):
         self.image.tofile('out.img', clobber=True)
+        os.remove('out.img')
+        os.remove('out.hdr')
+
+    def test_write4(self):
+        self.image.tofile('out.img', clobber=True, sctype=N.float64)
+        new = nifti1.NIFTI1('out.hdr')
+        self.assertEquals(out.image.sctype, N.float64)
         os.remove('out.img')
         os.remove('out.hdr')
 
@@ -86,6 +106,8 @@ class NiftiTest(unittest.TestCase):
         rho.tofile('out.nii', clobber=True)
         os.remove('out.nii')
 
+class NiftiModifyHeaderTest(NiftiTest):
+
     def test_add_header_attribute1(self):
         try:
             self.zimage.add_header_attribute('test', 'f', 0.0)
@@ -93,17 +115,57 @@ class NiftiTest(unittest.TestCase):
             pass
 
     def test_add_header_attribute2(self):
-        import copy
         newheader = copy.copy(list(self.zimage.header))
-        newheader.append(('x', '3d', (0.0,)*3))
+        x = R.standard_normal((30,))
+        newheader.append(('x', '30d', tuple(x)))
         testi = nifti1.NIFTI1('out2.nii', mode='w',
-                             header=newheader, grid=self.zimage.grid)
-        os.system('ls -la out2.nii')
+                              header=newheader, grid=self.zimage.grid,
+                              clobber=True)
+        testi.write_header()
+        del(testi)
+        test2 = nifti1.NIFTI1('out2.nii', header=newheader)
+        N.testing.assert_almost_equal(test2.x, x)
 
 
+    def test_add_header_attribute3(self):
+        newheader = copy.copy(list(self.zimage.header))
+        newheader.append(('x', '30d', (0.0,)*30))
+        testi = nifti1.NIFTI1('out3.hdr', mode='w',
+                             header=newheader, grid=self.zimage.grid, clobber=True)
+        y = R.standard_normal((3,))
+        testi.add_header_attribute('y', '3d', tuple(y))
+        testi.y = y
+        testi.remove_header_attribute('x')
+        testi.write_header()
+        self.assertEquals(testi.header_length, os.stat('out3.hdr').st_size)
+        header = testi.header
 
+        del(testi)
+        test2 = nifti1.NIFTI1('out3.hdr', header=header)
+        self.assertEquals(test2.header_length, os.stat('out3.hdr').st_size)
+        self.assertEquals(hasattr(test2, 'x'), False)
+        self.assertEquals(test2.y, tuple(y))
+        os.remove('out3.hdr')
+        os.remove('out3.img')
 
+class NiftiDataTypeTest(NiftiTest):
 
+    def test_datatypes(self):
+        for sctype in nifti1.datatypes.keys():
+            _out = N.ones(self.zimage.grid.shape, sctype)
+            out = Image(_out, grid=self.zimage.grid)
+            out.tofile('out.nii', clobber=True)
+            new = Image('out.nii')
+            self.assertEquals(new.image.datatype, nifti1.datatypes[sctype])
+            self.assertEquals(new.image.sctype, sctype)
+            self.assertEquals(new.image.vox_offset, 352)
+            self.assertEquals(os.stat('out.nii').st_size,
+                              N.product(self.image.grid.shape) *
+                              _out.dtype.itemsize + new.image.vox_offset)
+            N.testing.assert_almost_equal(new[:], _out)
+        os.remove('out.nii')
+
+        
 def suite():
     suite = unittest.makeSuite(AnalyzeTest)
     return suite

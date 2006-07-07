@@ -5,7 +5,7 @@ from sys import byteorder
 from path import path
 from attributes import attribute
 
-from numpy import sctypes, sctype2char
+from numpy import sctypes as _sctypes
 
 from neuroimaging import import_from, traits
 from neuroimaging.data import DataSource
@@ -83,10 +83,10 @@ class structfield (attribute):
         if type(value) is type(""): value = self.fromstring(value)
         attribute.set(self, host, value)
 
-scalar_types = []
+sctypes = []
 for key in ['float', 'complex', 'int', 'uint']:
-    scalar_types += [traits.Type(val) for val in sctypes[key]]
-scalar_types = traits.Trait(scalar_types)
+    sctypes += [traits.Type(val) for val in _sctypes[key]]
+sctypes = traits.Trait(sctypes)
 
 class Format(traits.HasTraits):
 
@@ -94,7 +94,7 @@ class Format(traits.HasTraits):
     extensions = []
 
     """ Character representation of scalar (numpy) type """
-    scalar_type = traits.Trait(scalar_types)
+    sctype = traits.Trait(sctypes)
 
     """ Clobber, filename, filebase, mode """
 

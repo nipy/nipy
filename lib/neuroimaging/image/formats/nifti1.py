@@ -125,6 +125,51 @@ NIFTI_UNITS = [NIFTI_UNITS_UNKNOWN, NIFTI_UNITS_METER, NIFTI_UNITS_MM, NIFTI_UNI
 
 NIFTI_SLICE = [NIFTI_SLICE_UNKNOWN, NIFTI_SLICE_SEQ_INC, NIFTI_SLICE_SEQ_DEC, NIFTI_SLICE_ALT_INC, NIFTI_SLICE_ALT_DEC, NIFTI_SLICE_ALT_INC2, NIFTI_SLICE_ALT_DEC2]
 
+datatypes = {N.bool8:DT_BINARY,
+             N.uint8:DT_UNSIGNED_CHAR,
+             N.int16:DT_SIGNED_SHORT,
+             N.int32:DT_SIGNED_INT,
+             N.float32:DT_FLOAT,
+             N.float64:DT_DOUBLE,
+             N.uint8:DT_UINT8,
+             N.int16:DT_INT16,
+             N.int32:DT_INT32,
+             N.float32:DT_FLOAT32,
+             N.complex64:DT_COMPLEX64,
+             N.float64:DT_FLOAT64,
+             N.int8:DT_INT8,
+             N.uint16:DT_UINT16,
+             N.uint32:DT_UINT32,
+             N.int64:DT_INT64,
+             N.uint64:DT_UINT64}
+
+sctypes = {DT_NONE:None, # will fail if unknown
+           DT_UNKNOWN:None, 
+           DT_BINARY:N.bool8,
+           DT_UNSIGNED_CHAR:N.uint8,
+           DT_SIGNED_SHORT:N.int16,
+           DT_SIGNED_INT:N.int32,
+           DT_FLOAT:N.float32,
+           DT_COMPLEX:None,
+           DT_DOUBLE:N.float64,
+           DT_RGB:None,
+           DT_ALL:None,
+           DT_UINT8:N.uint8,
+           DT_INT16:N.int16,
+           DT_INT32:N.int32,
+           DT_FLOAT32:N.float32,
+           DT_COMPLEX64:N.complex64,
+           DT_FLOAT64:N.float64,
+           DT_RGB24:None,
+           DT_INT8:N.int8,
+           DT_UINT16:N.uint16,
+           DT_UINT32:N.uint32,
+           DT_INT64:N.int64,
+           DT_UINT64:N.uint64,
+           DT_FLOAT128:None,
+           DT_COMPLEX128:None,
+           DT_COMPLEX256:None}
+
 dims = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension']
 
 # (name, packstr, default) tuples
@@ -146,7 +191,7 @@ header = traits.List(
      ('bitpix', 'h', 0),
      ('slice_start', 'h', 0),
      ('pixdim', '8f', (1.,)*5 + (0.,)*3),
-     ('vox_offset', 'f', 0),
+     ('vox_offset', 'f', 352),
      ('scl_slope', 'f', 1.0),
      ('scl_inter', 'f', 0.),
      ('slice_end', 'h', 0),
@@ -190,7 +235,7 @@ class NIFTI1(BinaryFormat):
     header = header
 
     def __init__(self, filename=None, datasource=DataSource(), grid=None,
-                 scalar_type=N.float64, **keywords):
+                 sctype=N.float64, **keywords):
         
         BinaryFormat.__init__(self, filename, **keywords)
                                  
@@ -201,14 +246,16 @@ class NIFTI1(BinaryFormat):
         # Enforce naming rule
         if ext == '.nii':
             self.magic = 'n+1\x00'
+            self.vox_offset = 352
         else:
             self.magic = 'ni1\x00'
+            self.vox_offset = 0
         
         self.filebase, self.fileext = os.path.splitext(filename)
         self.filename = filename
         
         if self.mode is 'w':
-            self.scalar_type = scalar_type
+            self.sctype = sctype
             self.ndim = len(grid.shape)
             self._dimfromgrid(grid)
             self.write_header()
@@ -297,65 +344,14 @@ class NIFTI1(BinaryFormat):
                 self.byteorder = 'big'
         hdrfile.close()
         
-    def _scalar_type_changed(self, scalar_type):
-
-        datatypes = {N.bool8:DT_BINARY,
-                     N.uint8:DT_UNSIGNED_CHAR,
-                     N.int16:DT_SIGNED_SHORT,
-                     N.int32:DT_SIGNED_INT,
-                     N.float32:DT_FLOAT,
-                     N.float64:DT_DOUBLE,
-                     N.uint8:DT_UINT8,
-                     N.int16:DT_INT16,
-                     N.int32:DT_INT32,
-                     N.float32:DT_FLOAT32,
-                     N.complex64:DT_COMPLEX64,
-                     N.float64:DT_FLOAT64,
-                     N.int8:DT_INT8,
-                     N.uint16:DT_UINT16,
-                     N.uint32:DT_UINT32,
-                     N.int64:DT_INT64,
-                     N.uint64:DT_UINT64}
-
-##         for key, val in datatypes.items():
-##             datatypes[N.sctype2char(key)] = val
-##             del(datatypes[key])
-
-        self.datatype = datatypes[scalar_type]
-
+    def _sctype_changed(self, sctype):
+        self.datatype = datatypes[sctype]
 
     def _datatype_changed(self, datatype):
-        # NIFTI-1 datatypes
-
-        self.scalar_type = {DT_NONE:None, # will fail if unknown
-                            DT_UNKNOWN:None, 
-                            DT_BINARY:N.bool8,
-                            DT_UNSIGNED_CHAR:N.uint8,
-                            DT_SIGNED_SHORT:N.int16,
-                            DT_SIGNED_INT:N.int32,
-                            DT_FLOAT:N.float32,
-                            DT_COMPLEX:None,
-                            DT_DOUBLE:N.float64,
-                            DT_RGB:None,
-                            DT_ALL:None,
-                            DT_UINT8:N.uint8,
-                            DT_INT16:N.int16,
-                            DT_INT32:N.int32,
-                            DT_FLOAT32:N.float32,
-                            DT_COMPLEX64:N.complex64,
-                            DT_FLOAT64:N.float64,
-                            DT_RGB24:None,
-                            DT_INT8:N.int8,
-                            DT_UINT16:N.uint16,
-                            DT_UINT32:N.uint32,
-                            DT_INT64:N.int64,
-                            DT_UINT64:N.uint64,
-                            DT_FLOAT128:None,
-                            DT_COMPLEX128:None,
-                            DT_COMPLEX256:None}[self.datatype]
+        self.sctype = sctypes[int(datatype)]
 
     def get_dtype(self):
-        self.dtype = N.dtype(self.scalar_type)
+        self.dtype = N.dtype(self.sctype)
         self.dtype = self.dtype.newbyteorder(self.bytesign)
 
     def postread(self, x):

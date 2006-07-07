@@ -39,6 +39,7 @@ class Image(traits.HasTraits):
             self.data = data
             self.shape = self.data.shape
             self.grid = grid and grid or SamplingGrid.identity(self.shape)
+            self.sctype = self.data.dtype.type
 
         def getslice(self, _slice): return self[_slice]
         def writeslice(self, _slice, data): self[_slice] = data
@@ -168,16 +169,18 @@ class Image(traits.HasTraits):
         (13, 128, 128)
         """
         data = self.readall()
-        if clean: data = N.nan_to_num(data)
+        if clean and data.dtype.type in N.sctypes['float'] + N.sctypes['complex']: 
+            data = N.nan_to_num(data)
+            
         return Image(self.postread(data), grid=self.grid, **keywords)
 
 
     def tofile(self, filename, array=True, clobber=False,
-               scalar_type=None, **keywords):
-        scalar_type = scalar_type or self.image.scalar_type
+               sctype=None, **keywords):
+        sctype = sctype or self.image.sctype
         outimage = Image(filename, mode='w', grid=self.grid,
                          clobber=clobber,
-                         scalar_type=scalar_type,
+                         sctype=sctype,
                          **keywords)
         if array:
             tmp = self.toarray(**keywords)

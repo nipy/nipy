@@ -164,7 +164,10 @@ class BinaryFormat(Format):
                 trait.handler.bytesign = self.bytesign
             value = trait.handler.read(hdrfile)
             setattr(self, name, value)
+
+        self._header_changed()
         self.get_dtype()
+
         hdrfile.close()
 
     def get_dtype(self):
@@ -178,24 +181,25 @@ class BinaryFormat(Format):
 
         if hdrfile is None:
             hdrfilename = self.header_filename()
-            if self.clobber or not exists(self.header_filename()):
+            if not exists(hdrfilename):
                 hdrfile = file(hdrfilename, 'wb')
+            elif self.clobber:
+                if self.modifiable():
+                    hdrfile = file(hdrfilename, 'wb')
+                else:
+                    hdrfile = file(hdrfilename, 'rb+')
             else:
                 raise BinaryFormatError, 'error writing %s: clobber is False and hdrfile exists' % hdrfilename
 
-        for att in self.header:
-            name = att[0]
+        for name in [att[0] for att in self.header]:
             trait = self.trait(name)
             trait.handler.bytesign = self.bytesign
-
-            if hasattr(trait.handler, 'seek'):
-                trait.handler.write(getattr(self, name), outfile=hdrfile)
+            trait.handler.write(getattr(self, name), outfile=hdrfile)
 
         hdrfile.close()
 
     def remove_header_attribute(self, name):
         if self.modifiable():
-
             attnames = [att[0] for att in self.header]
             if name in attnames:
                 idx = attnames.index(name)
@@ -203,8 +207,17 @@ class BinaryFormat(Format):
                 if not trait.required:
                     self.remove_trait(name)
                 self.header.pop(idx)
+                self._header_changed()
         else:
             raise BinaryFormatError, 'header can not be modified'
+
+    def _header_changed(self):
+        self.header_length = 0
+        for name in [att[0] for att in self.header]:
+            trait = self.trait(name)
+            if trait and hasattr(trait.handler, 'seek'):
+                trait.handler.seek = self.header_length
+                self.header_length += calcsize(trait.handler.packstr)
 
     def image_filename(self):
         raise NotImplementedError
@@ -221,12 +234,18 @@ class BinaryFormat(Format):
             outfile = file(self.image_filename(), 'rb+')
 
         if outfile.name == self.header_filename():
-            offset += self.header_length
+            if not hasattr(self, 'vox_offset'):
+                offset += self.header_length
+            else:
+                offset += self.vox_offset
+
         outfile.seek(offset)
         
         outstr = zeros(self.grid.shape[1:], self.dtype).tostring()
         for i in range(self.grid.shape[0]):
             outfile.write(outstr)
+
+        outfile.truncate()
         outfile.close()
 
     def __del__(self):

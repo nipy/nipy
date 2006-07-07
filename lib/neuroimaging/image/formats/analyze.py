@@ -12,6 +12,26 @@ from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.image.formats.binary import BinaryFormat
 
+ANALYZE_Byte = 2
+ANALYZE_Short = 4
+ANALYZE_Int = 8
+ANALYZE_Float = 16
+ANALYZE_Double = 64
+
+datatypes = {N.uint8:ANALYZE_Byte,
+             N.int16:ANALYZE_Short,
+             N.int32:ANALYZE_Int,
+             N.float32:ANALYZE_Float,
+             N.float64:ANALYZE_Double}
+
+sctypes = {
+    ANALYZE_Byte:N.uint8,
+    ANALYZE_Short:N.int16,
+    ANALYZE_Int:N.int32,
+    ANALYZE_Float:N.float32,
+    ANALYZE_Double:N.float64}
+
+
 class ANALYZE(BinaryFormat):
     """
     A class to read and write ANALYZE format images. 
@@ -79,7 +99,7 @@ class ANALYZE(BinaryFormat):
     nvector = traits.Int(-1)
 
     def __init__(self, filename=None, datasource=DataSource(), grid=None,
-                 scalar_type='d', **keywords):
+                 sctype=N.float64, **keywords):
 
         BinaryFormat.__init__(self, filename, **keywords)
 
@@ -87,7 +107,7 @@ class ANALYZE(BinaryFormat):
         self.filebase = filename and os.path.splitext(filename)[0] or None
 
         if self.mode is 'w':
-            self.scalar_type = scalar_type
+            self.sctype = sctype
             self._dimfromgrid(grid)
             self.write_header()
             if filename: self.read_header()
@@ -178,45 +198,16 @@ class ANALYZE(BinaryFormat):
         except:
             pass
 
-    def _scalar_type_changed(self, scalar_type):
+    def _sctype_changed(self, sctype):
 
-        ANALYZE_Byte = 2
-        ANALYZE_Short = 4
-        ANALYZE_Int = 8
-        ANALYZE_Float = 16
-        ANALYZE_Double = 64
-
-        datatypes = {N.uint8:ANALYZE_Byte,
-                     N.int16:ANALYZE_Short,
-                     N.int32:ANALYZE_Int,
-                     N.float32:ANALYZE_Float,
-                     N.float64:ANALYZE_Double}
-
-##         for key, val in datatypes.items():
-##             datatypes[N.sctype2char(key)] = val
-##             del(datatypes[key])
-
-        self.datatype = datatypes[scalar_type]
+        self.datatype = datatypes[sctype]
 
     def _datatype_changed(self, datatype):
 
-        ANALYZE_Byte = 2
-        ANALYZE_Short = 4
-        ANALYZE_Int = 8
-        ANALYZE_Float = 16
-        ANALYZE_Double = 64
-
-        datatypes = {
-            ANALYZE_Byte:N.uint8,
-            ANALYZE_Short:N.int16,
-            ANALYZE_Int:N.int32,
-            ANALYZE_Float:N.float32,
-            ANALYZE_Double:N.float64}
-
-        self.scalar_type = datatypes[self.datatype]
+        self.sctype = sctypes[self.datatype]
 
     def get_dtype(self):
-        self.dtype = N.dtype(self.scalar_type)
+        self.dtype = N.dtype(self.sctype)
         self.dtype = self.dtype.newbyteorder(self.bytesign)
 
     def postread(self, x):

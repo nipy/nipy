@@ -1,15 +1,21 @@
 import unittest, os
 import numpy as N
+
 from neuroimaging.image.formats import analyze
 from neuroimaging.tests.data import repository
+from neuroimaging.image import Image
 
 class AnalyzeTest(unittest.TestCase):
 
     def setUp(self):
         self.image = analyze.ANALYZE("avg152T1", datasource=repository)
 
+
+class AnalyzePrintTest(AnalyzeTest):
     def test_print(self):
         print self.image
+
+class AnalyzeTransformTest(AnalyzeTest):
 
     def test_transform(self):
         t = self.image.grid.mapping.transform
@@ -18,9 +24,12 @@ class AnalyzeTest(unittest.TestCase):
                      [   0.,    0.,    2.,  -90.],
                      [   0.,    0.,    0.,    1.]])
         N.testing.assert_almost_equal(t, a)
-        
+
     def test_shape(self):
         self.assertEquals(tuple(self.image.grid.shape), (91,109,91))
+
+        
+class AnalyzeWriteTest(AnalyzeTest):
 
     def test_writehdr(self):
         new = file('tmp.hdr', 'wb')
@@ -38,9 +47,28 @@ class AnalyzeTest(unittest.TestCase):
         old.seek(0); new.seek(0)
         self.assertEquals(old.read(), new.read())
 
+class AnalyzeReadTest(AnalyzeTest):
+
     def test_read(self):
         data = self.image.getslice(slice(4,7))
         self.assertEquals(data.shape, (3,109,91))
+
+class AnalyzeDataTypeTest(AnalyzeTest):
+
+    def test_datatypes(self):
+        for sctype in analyze.datatypes.keys():
+            
+            _out = N.ones(self.image.grid.shape, sctype)
+            out = Image(_out, grid=self.image.grid)
+            out.tofile('out.hdr', clobber=True)
+            new = Image('out.hdr')
+            self.assertEquals(new.image.sctype, sctype)
+            self.assertEquals(os.stat('out.img').st_size,
+                              N.product(self.image.grid.shape) *
+                              _out.dtype.itemsize)
+            N.testing.assert_almost_equal(new[:], _out)
+
+        os.remove('out.hdr')
 
 def suite():
     suite = unittest.makeSuite(AnalyzeTest)
