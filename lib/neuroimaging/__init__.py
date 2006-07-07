@@ -57,7 +57,7 @@ packages = (
 
 PYLAB_DEF, pylab = defines.pylab_def()
 if PYLAB_DEF:
-    packges += ('neuroimaging.visualization',
+    packages += ('neuroimaging.visualization',
                 'neuroimaging.visualization.cmap',
                 'neuroimaging.visualization.tests')
 
