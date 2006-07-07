@@ -1,4 +1,4 @@
-# netcdf-3.5.0 constants
+"""netcdf-3.5.0 constants"""
 
 NC_NAT = 0
 NC_BYTE = 1
@@ -9,7 +9,13 @@ NC_FLOAT = 5
 NC_DOUBLE = 6
 
 NC_TYPES = [NC_NAT, NC_BYTE, NC_CHAR, NC_SHORT, NC_INT, NC_FLOAT, NC_DOUBLE]
-NC_TYPENAMES = {NC_NAT:'NC_NAT', NC_BYTE:'NC_BYTE', NC_CHAR:'NC_CHAR', NC_SHORT:'NC_SHORT', NC_INT:'NC_INT', NC_FLOAT:'NC_FLOAT', NC_DOUBLE:'NC_DOUBLE'}
+NC_TYPENAMES = {NC_NAT:   'NC_NAT',
+                NC_BYTE:  'NC_BYTE',
+                NC_CHAR:  'NC_CHAR',
+                NC_SHORT: 'NC_SHORT',
+                NC_INT:   'NC_INT',
+                NC_FLOAT: 'NC_FLOAT',
+                NC_DOUBLE:'NC_DOUBLE'}
 
 NC_FILL_BYTE = -127
 NC_FILL_CHAR = 0

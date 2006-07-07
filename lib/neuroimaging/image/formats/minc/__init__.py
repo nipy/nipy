@@ -1,10 +1,10 @@
 import os, types
 import mincutils
-from _mincconstants import *
-import BrainSTAT.Base.Dimension as Dimension
-import BrainSTAT.Base.Coordinates as Coordinates
-from neuroimaging import traits
-from BrainSTAT.Base import Mapping
+#from _mincconstants import *
+import _mincconstants as mc
+from neuroimaging.extra.enthought import traits
+from neuroimaging.reference import mapping, axis, coordinate_system
+import numpy as N
 
 class MINCvar(traits.HasTraits):
 
@@ -21,34 +21,34 @@ class MINCvar(traits.HasTraits):
                     self.dimensions = value
 
     def setnc(self, name, value):
-        if type(value) is type(MINCatt((1.0, NC_FLOAT))):
+        if type(value) is type(MINCatt((1.0, mc.NC_FLOAT))):
             if not hasattr(self, '__ncdict__'):
                 self.__dict__['__ncdict__'] = {}
             self.__ncdict__[name] = value
         setattr(self, name, value.value)
 
-class MINCdim(Dimension.RegularDimension, MINCvar):
+class MINCdim(axis.RegularAxis, MINCvar):
     def __init__(self, name, step=None, start=None, length=0, dircos=None, **keywords):
         value = {}
-        value['step'] = (step, NC_DOUBLE)
-        value['start'] = (start, NC_DOUBLE)
-        value['length'] = (length, NC_INT)
+        value['step'] = (step, mc.NC_DOUBLE)
+        value['start'] = (start, mc.NC_DOUBLE)
+        value['length'] = (length, mc.NC_INT)
         if dircos:
-            value['direction_cosines'] = (tuple(dircos), NC_DOUBLE)
+            value['direction_cosines'] = (tuple(dircos), mc.NC_DOUBLE)
         for key, att in keywords.items():
-            if type(att) in [types.TupleType, types.ListType, mincutils.numpy.ArrayType]:
+            if type(att) in [types.TupleType, types.ListType, N.ArrayType]:
                 test = 1
                 for a in att:
                     test *= (type(a) is types.IntType)
                 if test:
-                    value[key] = (tuple(att), NC_INT)
+                    value[key] = (tuple(att), mc.NC_INT)
                 else:
-                    value[key] = (tuple(att), NC_FLOAT)
+                    value[key] = (tuple(att), mc.NC_FLOAT)
             elif type(att) is types.StringType:
-                value[key] = (att, NC_CHAR)
+                value[key] = (att, mc.NC_CHAR)
             else:
                 raise TypeError, 'invalid attribute type for MINCdim'
-        RegularDimension.__init__(self, name=name, length=length, step=step, start=start)
+        axis.RegularAxis.__init__(self, name=name, length=length, step=step, start=start)
 
 class MINCatt:
     def __init__(self, value):
@@ -62,14 +62,14 @@ OPEN = 1
 CLOSED = 0
 
 class MINC:
-    def __init__(self, filename, mode='r', nvector=-1, datatype=NC_SHORT, signtype=MI_UNSIGNED, modality='', frame_times=None, frame_widths=None, clobber=False, history='', mincid=MI_ERROR, create=False, special_atts={}, **keywords):
+    def __init__(self, filename, mode='r', nvector=-1, datatype=mc.NC_SHORT, signtype=mc.MI_UNSIGNED, modality='', frame_times=None, frame_widths=None, clobber=False, history='', mincid=mc.MI_ERROR, create=False, special_atts={}, **keywords):
         
         if special_atts:
             for key, value in special_atts.items():
                 if len(value) > 1:
                     special_atts[key] = value[0:2]
                 else:
-                    special_atts[key] = (NC_GLOBAL, value)
+                    special_atts[key] = (mc.NC_GLOBAL, value)
         try:
             stat = os.stat(filename)
             self.clobber = clobber
@@ -85,19 +85,27 @@ class MINC:
                 for dimension in dimensions:
                     dimnames.append(dimension.name)
 
-                if MItime in dimnames:
-                    time_index = dimnames.index(MItime)
+                if mc.MItime in dimnames:
+                    time_index = dimnames.index(mc.MItime)
                     frame_times = dimensions[time_index].values()
-                elif MItime_width in dimnames:
-                    time_index = dimnames.index(MItime_width)
+                elif mc.MItime_width in dimnames:
+                    time_index = dimnames.index(mc.MItime_width)
                     frame_widths = dimensions[time_index].values()
                     
-            self.mincid = mincutils.minccreate(filename, dimensions, nvector=nvector, datatype=datatype, signtype=signtype, modality=modality, frame_times=frame_times, frame_widths=frame_widths, clobber=int(self.clobber), history=history, special_atts=special_atts)
+            self.mincid = mincutils.minccreate(filename, dimensions,
+                                               nvector=nvector,
+                                               datatype=datatype,
+                                               signtype=signtype,
+                                               modality=modality,
+                                               frame_times=frame_times,
+                                               frame_widths=frame_widths,
+                                               clobber=int(self.clobber),
+                                               history=history,
+                                               special_atts=special_atts)
             self.status = OPEN
         
         self.readheader()
         self.ndim = len(self.indim)
-        return 
 
     def close(self, force=False):
         if self.status or force:
@@ -147,7 +155,7 @@ class MINC:
             dimlengths[dim[0]] = dim[1]
             index = image_dims.index(dim[0])
             dimnames[index] = dim[0]
-            if dim[0] == MIvector_dimension: # Vector dimension is
+            if dim[0] == mc.MIvector_dimension: # Vector dimension is
                                              # NOT a MINCvar so it does
                                              # not get set in the loop below
                 setattr(self, dim[0], MINCdim(dim[0], step=0.0, length=dim[1], start=0.0))
@@ -184,13 +192,13 @@ class MINC:
                 self.step[index] = step
                 self.start[index] = start
                 
-                if var == MItime:
+                if var == mc.MItime:
                     try:
-                        dimattr = getattr(self, MItime)
-                        setattr(dimattr, 'value', mincutils.getvar(self.filename, MItime))
+                        dimattr = getattr(self, mc.MItime)
+                        setattr(dimattr, 'value', mincutils.getvar(self.filename, mc.MItime))
                     except:
-                        dimattr = getattr(self, MItime_width)
-                        setattr(dimattr, 'value', mincutils.getvar(self.filename, MItime_width))
+                        dimattr = getattr(self, mc.MItime_width)
+                        setattr(dimattr, 'value', mincutils.getvar(self.filename, mc.MItime_width))
 
         self.dimnames = tuple(dimnames)
 
@@ -205,11 +213,11 @@ class MINC:
             if type(dimensions) in [types.ListType, types.TupleType]:
                 new_dim = ()
                 for d in dimensions:
-                    if d == MItime:
-                        if hasattr(self, MItime):
-                            dimname = MItime
+                    if d == mc.MItime:
+                        if hasattr(self, mc.MItime):
+                            dimname = mc.MItime
                         else:
-                            dimname = MItime_width
+                            dimname = mc.MItime_width
                     else:
                         dimname = d
                     new_dim = new_dim + (getattr(self, dimname),)
@@ -219,22 +227,21 @@ class MINC:
 
         # Setup affine transformation
                 
-        self.incoords = Coordinates.VoxelCoordinates('voxel', self.indim)
-        self.outcoords = Coordinates.Coordinates('world', self.outdim)
+        self.incoords = coordinate_system.CoordinateSystem('voxel', self.indim)
+        self.outcoords = coordinate_system.DiagonalCoordinateSystem('world', self.outdim)
 
         try:
             matrix = self._transform()
         except:
-            matrix = self.incoords.transform()
+            matrix = self.outcoords.transform()
 
-        self.mapping = Mapping.Affine(self.incoords, self.outcoords, matrix)
+        self.mapping = mapping.Affine(self.incoords, self.outcoords, matrix)
 
     def _transform(self):
         """This method, (not yet implemented) determines the 4x4 (or larger) transformation matrix from the dircos attributes of the dimensions. """
 
-        NA = mincutils.numpy
         ndim = self.outcoords.ndim
-        transform = NA.zeros((ndim+1,)*2, NA.Float)
+        transform = N.zeros((ndim+1,)*2, N.float64)
         for i in range(ndim):
             try:
                 transform[i,i] = self.outcoords.dimensions[i].step
