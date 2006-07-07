@@ -1,5 +1,4 @@
 import csv, types, copy
-from fpformat import fix
 from neuroimaging import traits
 import numpy as N
 
