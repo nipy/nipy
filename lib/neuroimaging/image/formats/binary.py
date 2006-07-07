@@ -106,7 +106,7 @@ class BinaryFormat(Format):
 
     inited_flag = traits.ReadOnly(desc='Set once all predefined attributes are added.')
 
-    def __init__(self, filename, scalar_type='d', **keywords):
+    def __init__(self, filename, **keywords):
         Format.__init__(self, filename, **keywords)
         traits.HasTraits.__init__(self, **keywords)
         if byteorder == 'little': self.bytesign = '<'
@@ -220,7 +220,6 @@ class BinaryFormat(Format):
         else:
             outfile = file(self.image_filename(), 'rb+')
 
-        print self.scalar_type, self.dtype
         if outfile.name == self.header_filename():
             offset += self.header_length
         outfile.seek(offset)

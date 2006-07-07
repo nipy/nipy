@@ -73,7 +73,7 @@ class NiftiTest(unittest.TestCase):
         N.testing.assert_approx_equal(y.max(), 18.582529068)
 
     def test_write1(self):
-        self.image.tofile('out.nii', clobber=True, scalar_type='d')
+        self.image.tofile('out.nii', clobber=True, scalar_type=N.float64)
         os.remove('out.nii')
 
     def test_write2(self):

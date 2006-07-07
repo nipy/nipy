@@ -85,8 +85,8 @@ class structfield (attribute):
 
 scalar_types = []
 for key in ['float', 'complex', 'int', 'uint']:
-    scalar_types += [sctype2char(val) for val in sctypes[key]]
-
+    scalar_types += [traits.Type(val) for val in sctypes[key]]
+scalar_types = traits.Trait(scalar_types)
 
 class Format(traits.HasTraits):
 

@@ -192,9 +192,9 @@ class ANALYZE(BinaryFormat):
                      N.float32:ANALYZE_Float,
                      N.float64:ANALYZE_Double}
 
-        for key, val in datatypes.items():
-            datatypes[N.sctype2char(key)] = val
-            del(datatypes[key])
+##         for key, val in datatypes.items():
+##             datatypes[N.sctype2char(key)] = val
+##             del(datatypes[key])
 
         self.datatype = datatypes[scalar_type]
 
@@ -212,7 +212,8 @@ class ANALYZE(BinaryFormat):
             ANALYZE_Int:N.int32,
             ANALYZE_Float:N.float32,
             ANALYZE_Double:N.float64}
-        self.scalar_type = N.sctype2char(datatypes[self.datatype])
+
+        self.scalar_type = datatypes[self.datatype]
 
     def get_dtype(self):
         self.dtype = N.dtype(self.scalar_type)

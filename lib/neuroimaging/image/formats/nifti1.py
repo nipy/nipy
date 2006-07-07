@@ -190,7 +190,7 @@ class NIFTI1(BinaryFormat):
     header = header
 
     def __init__(self, filename=None, datasource=DataSource(), grid=None,
-                 scalar_type='d', **keywords):
+                 scalar_type=N.float64, **keywords):
         
         BinaryFormat.__init__(self, filename, **keywords)
                                  
@@ -317,9 +317,9 @@ class NIFTI1(BinaryFormat):
                      N.int64:DT_INT64,
                      N.uint64:DT_UINT64}
 
-        for key, val in datatypes.items():
-            datatypes[N.sctype2char(key)] = val
-            del(datatypes[key])
+##         for key, val in datatypes.items():
+##             datatypes[N.sctype2char(key)] = val
+##             del(datatypes[key])
 
         self.datatype = datatypes[scalar_type]
 
@@ -327,7 +327,7 @@ class NIFTI1(BinaryFormat):
     def _datatype_changed(self, datatype):
         # NIFTI-1 datatypes
 
-        self.scalar_type = N.sctype2char({DT_NONE:None, # will fail if unknown
+        self.scalar_type = {DT_NONE:None, # will fail if unknown
                             DT_UNKNOWN:None, 
                             DT_BINARY:N.bool8,
                             DT_UNSIGNED_CHAR:N.uint8,
@@ -352,7 +352,7 @@ class NIFTI1(BinaryFormat):
                             DT_UINT64:N.uint64,
                             DT_FLOAT128:None,
                             DT_COMPLEX128:None,
-                            DT_COMPLEX256:None}[self.datatype])
+                            DT_COMPLEX256:None}[self.datatype]
 
     def get_dtype(self):
         self.dtype = N.dtype(self.scalar_type)
