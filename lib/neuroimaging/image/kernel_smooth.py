@@ -55,8 +55,8 @@ class LinearFilter(traits.HasTraits):
         if self.fwhm is not 1.0:
             X = X / fwhm2sigma(self.fwhm)
         if self.cov is not None:
-            _chol = NL.cholesky_decomposition(self.cov)
-            X = N.dot(NL.inverse(_chol), X)
+            _chol = NL.cholesky(self.cov)
+            X = N.dot(NL.inv(_chol), X)
         D2 = N.add.reduce(X**2, 0)
         D2.shape = self.shape
         return D2
