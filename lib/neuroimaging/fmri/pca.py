@@ -100,22 +100,31 @@ class PCA(traits.HasTraits):
 
         for i in range(self.image.shape[1]):
             _slice = [first_slice, slice(i,i+1)]
-            Y = self.image.getslice(_slice).reshape((_shape[0], N.product(_shape[2:])))
+            
+            Y = N.nan_to_num(self.image.getslice(_slice).reshape((_shape[0], N.product(_shape[2:]))))
+            toc = time.time()
             YX = N.dot(UX, Y)
-
+            
             if self.pcatype == 'cor':
                 S2 = N.add.reduce(self.project(Y, which='resid')**2, axis=0)
-                Smhalf = recipr(N.sqrt(S2))
-                del(S2); gc.collect()
+                Smhalf = recipr(N.sqrt(S2)); del(S2)
                 YX = YX * Smhalf
-
+                
+            
             if self.mask is not None:
                 mask = self._mask[i]
+                
                 mask.shape = N.product(mask.shape)
-                YX = YX * mask
-
+                YX = YX * N.nan_to_num(mask)
+                del(mask)
+            
             self.C += N.dot(YX, N.transpose(YX))
-
+            tic = time.time()
+            sys.stderr.write('%f\n' % (tic-toc,))
+            
+            gc.collect()
+        
+        
         self.D, self.Vs = L.eigh(self.C)
         order = N.argsort(-self.D)
         self.D = self.D[order]
