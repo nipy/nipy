@@ -331,24 +331,16 @@ class DelayHRF(hrf.SpectralHRF):
         irf = self.IRF
 
         if not self.spectral: # use Taylor series approximation
-
             dirf = interpolant(time, -N.gradient(irf(time), self.dt))
 
-            H = []
-            for i in range(delta.shape[0]):
-                H.append(irf(time - delta[i]))
-            H = N.array(H)
-
-            W = []
+            H = N.array([irf(time - d) for d in delta])
 
             W = N.array([irf(time), dirf(time)])
             W = N.transpose(W)
 
             WH = N.dot(L.pinv(W), N.transpose(H))
 
-            coef = []
-            for i in range(2):
-                coef.append(interpolant(delta, WH[i]))
+            coef = [interpolant(delta, w) for w in WH]
             
             def approx(time, delta):
                 value = (coef[0](delta) * irf(time)

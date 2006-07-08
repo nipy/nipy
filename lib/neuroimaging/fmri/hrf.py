@@ -95,7 +95,6 @@ class SpectralHRF(filters.Filter):
         """
 
         time = N.arange(lower, tmax, self.dt)
-        ntime = time.shape[0]
         irf = self.IRF
 
         H = []
@@ -116,16 +115,13 @@ class SpectralHRF(filters.Filter):
             b.f.y /= d
             basis.append(b)
 
-        W = []
-        for i in range(self.ncomp):
-            W.append(basis[i](time))
+
+        W = N.array([b(time) for b in basis[:self.ncomp]])
         W = N.transpose(W)
 
         WH = N.dot(L.pinv(W), N.transpose(H))
         
-        coef = []
-        for i in range(self.ncomp):
-            coef.append(interpolant(delta, WH[i]))
+        coef = [interpolant(delta, w) for w in WH]
             
         if coef[0](0) < 0:
             coef[0].f.y *= -1.
@@ -147,3 +143,4 @@ class SpectralHRF(filters.Filter):
 
         if self.n == 1:
             self.IRF = self.IRF[0]
+
