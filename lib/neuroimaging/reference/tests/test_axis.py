@@ -1,6 +1,5 @@
 import unittest
 import numpy as N
-import scipy
 
 from neuroimaging.reference.axis import Axis, VoxelAxis, RegularAxis
 
@@ -14,12 +13,12 @@ class AxisTest(unittest.TestCase):
         _axis = VoxelAxis(name='xspace', length=20)
         self.assertEquals(_axis.length, 20)
         self.assertEquals(len(_axis), 20)
-        scipy.testing.assert_almost_equal(_axis.values(), N.arange(20))        
+        N.testing.assert_almost_equal(_axis.values(), N.arange(20))        
 
     def testRegularAxis(self):
         _axis = RegularAxis(name='yspace', length=20, start=1.0, step=2.0)
         v = N.arange(1,41,2).astype(N.float64)
-        scipy.testing.assert_almost_equal(_axis.values(), v)
+        N.testing.assert_almost_equal(_axis.values(), v)
         print _axis
 
     def testRegularAxisEquality(self):

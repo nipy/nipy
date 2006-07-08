@@ -1,4 +1,4 @@
-import unittest, scipy
+import unittest
 import numpy.random as R
 import numpy as N
 from neuroimaging.reference import mapping
@@ -17,19 +17,19 @@ class MappingTest(unittest.TestCase):
         z = self.mapping(v)
         p = self.mapping.python2matlab()
         z_ = p(N.array(v[::-1])+1)[::-1]
-        scipy.testing.assert_almost_equal(z, z_)
+        N.testing.assert_almost_equal(z, z_)
         
     def test_python2matlab2(self):
         self._init()
         p = self.mapping.python2matlab()
         q = p.matlab2python()
-        scipy.testing.assert_almost_equal(q.transform, self.mapping.transform)
+        N.testing.assert_almost_equal(q.transform, self.mapping.transform)
         
     def test_python2matlab3(self):
         self._init()
         p = self.mapping.matlab2python()
         q = p.python2matlab()
-        scipy.testing.assert_almost_equal(q.transform, self.mapping.transform)
+        N.testing.assert_almost_equal(q.transform, self.mapping.transform)
         
 if __name__ == '__main__':
     unittest.main()

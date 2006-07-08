@@ -1,6 +1,5 @@
 import unittest
 
-import scipy
 import numpy as N
 
 from neuroimaging.reference.axis import space
@@ -34,7 +33,7 @@ class GridTest(unittest.TestCase):
         i = SamplingGrid.identity(shape=shape, names=space)
         self.assertEquals(tuple(i.shape), shape)
         y = i.mapping.map([3,4,5])
-        scipy.testing.assert_almost_equal(y, N.array([3,4,5]))
+        N.testing.assert_almost_equal(y, N.array([3,4,5]))
 
 if __name__ == '__main__':
     unittest.main()
