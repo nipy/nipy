@@ -1,7 +1,7 @@
 import os, glob, string, shutil
 import sys
 sys.path.insert(0,"lib")
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 from neuroimaging import packages, __version__, __doc__
 
 
