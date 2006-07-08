@@ -1,12 +1,12 @@
-import os, sys
-from struct import unpack, calcsize
+import os
+from struct import unpack
 
 import numpy as N
 from path import path
 
 from neuroimaging import traits
 
-from neuroimaging.data import iszip, unzip, DataSource
+from neuroimaging.data import DataSource
 from neuroimaging.reference.axis import space, spacetime
 from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
