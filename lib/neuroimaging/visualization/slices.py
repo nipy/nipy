@@ -95,7 +95,6 @@ def sagittal(image, x=0.,
 
 import pylab
 import matplotlib
-import numpy as N
 from cmap import cmap, getcmap
 
 interpolation = traits.Trait('nearest', 'bilinear', 'blackman100',
