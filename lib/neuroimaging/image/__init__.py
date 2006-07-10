@@ -172,9 +172,13 @@ class Image(traits.HasTraits):
         return Image(self.postread(data), grid=self.grid, **keywords)
 
 
-    def tofile(self, filename, array=True, clobber=False, **keywords):
+    def tofile(self, filename, array=True, clobber=False,
+               scalar_type=None, **keywords):
+        scalar_type = scalar_type or self.image.scalar_type
         outimage = Image(filename, mode='w', grid=self.grid,
-                         clobber=clobber, **keywords)
+                         clobber=clobber,
+                         scalar_type=scalar_type,
+                         **keywords)
         if array:
             tmp = self.toarray(**keywords)
             outimage.image[:] = tmp.image.data

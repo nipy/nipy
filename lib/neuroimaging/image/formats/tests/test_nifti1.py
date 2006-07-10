@@ -2,6 +2,7 @@ import unittest, os
 import numpy as N
 from neuroimaging.image import Image
 from neuroimaging.image.formats import nifti1
+from neuroimaging.image.formats.binary import BinaryFormatError
 from neuroimaging.tests.data import repository
 
 class NiftiTest(unittest.TestCase):
@@ -72,7 +73,7 @@ class NiftiTest(unittest.TestCase):
         N.testing.assert_approx_equal(y.max(), 18.582529068)
 
     def test_write1(self):
-        self.image.tofile('out.nii', clobber=True)
+        self.image.tofile('out.nii', clobber=True, scalar_type='d')
         os.remove('out.nii')
 
     def test_write2(self):
@@ -84,6 +85,23 @@ class NiftiTest(unittest.TestCase):
         rho = Image("rho.img", datasource=repository)
         rho.tofile('out.nii', clobber=True)
         os.remove('out.nii')
+
+    def test_add_header_attribute1(self):
+        try:
+            self.zimage.add_header_attribute('test', 'f', 0.0)
+        except BinaryFormatError:
+            pass
+
+    def test_add_header_attribute2(self):
+        import copy
+        newheader = copy.copy(list(self.zimage.header))
+        newheader.append(('x', '3d', (0.0,)*3))
+        testi = nifti1.NIFTI1('out2.nii', mode='w',
+                             header=newheader, grid=self.zimage.grid)
+        os.system('ls -la out2.nii')
+
+
+
 
 
 def suite():

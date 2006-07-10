@@ -8,8 +8,7 @@ from neuroimaging.reference.axis import space
 from neuroimaging.reference.mapping import Affine
 from neuroimaging.reference.grid import SamplingGrid
 
-from neuroimaging.image.formats import BinaryFormat
-#from neuroimaging.data.header import add_headeratt
+from neuroimaging.image.formats.binary import BinaryFormat
 
 # NIFTI-1 constants
 
@@ -130,6 +129,52 @@ dims = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension']
 
 # (name, packstr, default) tuples
 
+header = traits.List(
+    [('sizeof_hdr', 'i', 348),
+     ('data_type', '10s', ' '*10),
+     ('db_name', '18s', ' '*18),
+     ('extents', 'i', 0),
+     ('session_error', 'h', 0),
+     ('regular', 's', 'r'),
+     ('dim_info', 'b', 0),
+     ('dim', '8h', (4,1,1,1,1) + (0,)*3),
+     ('intent_p1', 'f', 0.),
+     ('intent_p2', 'f', 0.),
+     ('intent_p3', 'f', 0.),
+     ('intent_code', 'h', 0),
+     ('datatype', 'h', 0),
+     ('bitpix', 'h', 0),
+     ('slice_start', 'h', 0),
+     ('pixdim', '8f', (1.,)*5 + (0.,)*3),
+     ('vox_offset', 'f', 0),
+     ('scl_slope', 'f', 1.0),
+     ('scl_inter', 'f', 0.),
+     ('slice_end', 'h', 0),
+     ('slice_code', 'b', 0),
+     ('xyzt_units', 'b', 0),
+     ('cal_max', 'f', 0),
+     ('cal_min', 'f', 0),
+     ('slice_duration', 'f', 0),
+     ('toffset', 'f', 0),
+     ('glmax', 'i', 0),
+     ('glmin', 'i', 0),
+     ('descrip', '80s', ' '*80),
+     ('aux_file', '24s', ' '*24),
+     ('qform_code', 'h', 0),
+     ('sform_code', 'h', 0),
+     ('quatern_b', 'f', 0.0),
+     ('quatern_c', 'f', 0.),
+     ('quatern_d', 'f', 0.),
+     ('qoffset_x', 'f', 0.),
+     ('qoffset_y', 'f', 0.),
+     ('qoffset_z', 'f', 0.),
+     ('srow_x', '4f', [0.,0.,1.,0.]),
+     ('srow_y', '4f', [0.,1.,0.,0.]),
+     ('srow_z', '4f', [1.,0.,0.,0.]),
+     ('intent_name', '16s', ' '*16),
+     ('magic', '4s', 'ni1\0')
+     ])
+
 class NIFTI1(BinaryFormat):
     """
     A class that implements the nifti1 header with some typechecking.
@@ -141,75 +186,39 @@ class NIFTI1(BinaryFormat):
 
     """
 
-    header = traits.List(
-        [('sizeof_hdr', 'i', 348),
-         ('data_type', '10s', ' '*10),
-         ('db_name', '18s', ' '*18),
-         ('extents', 'i', 0),
-         ('session_error', 'h', 0),
-         ('regular', 's', 'r'),
-         ('dim_info', 'b', 0),
-         ('dim', '8h', (4,1,1,1,1) + (0,)*3),
-         ('intent_p1', 'f', 0.),
-         ('intent_p2', 'f', 0.),
-         ('intent_p3', 'f', 0.),
-         ('intent_code', 'h', 0),
-         ('datatype', 'h', 0),
-         ('bitpix', 'h', 0),
-         ('slice_start', 'h', 0),
-         ('pixdim', '8f', (1.,)*5 + (0.,)*3),
-         ('vox_offset', 'f', 0),
-         ('scl_slope', 'f', 1.0),
-         ('scl_inter', 'f', 0.),
-         ('slice_end', 'h', 0),
-         ('slice_code', 'b', 0),
-         ('xyzt_units', 'b', 0),
-         ('cal_max', 'f', 0),
-         ('cal_min', 'f', 0),
-         ('slice_duration', 'f', 0),
-         ('toffset', 'f', 0),
-         ('glmax', 'i', 0),
-         ('glmin', 'i', 0),
-         ('descrip', '80s', ' '*80),
-         ('aux_file', '24s', ' '*24),
-         ('qform_code', 'h', 0),
-         ('sform_code', 'h', 0),
-         ('quatern_b', 'f', 0.0),
-         ('quatern_c', 'f', 0.),
-         ('quatern_d', 'f', 0.),
-         ('qoffset_x', 'f', 0.),
-         ('qoffset_y', 'f', 0.),
-         ('qoffset_z', 'f', 0.),
-         ('srow_x', '4f', [0.,0.,1.,0.]),
-         ('srow_y', '4f', [0.,1.,0.,0.]),
-         ('srow_z', '4f', [1.,0.,0.,0.]),
-         ('intent_name', '16s', ' '*16),
-         ('magic', '4s', 'ni1\0')
-         ])
-
     extensions = ('.img', '.hdr', '.nii')
+    header = header
 
-    def __init__(self, filename=None, datasource=DataSource(), grid=None, **keywords):
-        BinaryFormat.__init__(self, **keywords)
+    def __init__(self, filename=None, datasource=DataSource(), grid=None,
+                 scalar_type='d', **keywords):
+        
+        BinaryFormat.__init__(self, filename, **keywords)
                                  
         self.datasource = datasource
         ext = os.path.splitext(filename)[1]
         if ext not in ['.nii', '.hdr']:
             raise ValueError, 'NIFTI-1 images need .hdr or .nii file specified.'
-
+        # Enforce naming rule
+        if ext == '.nii':
+            self.magic = 'n+1\x00'
+        else:
+            self.magic = 'ni1\x00'
+        
         self.filebase, self.fileext = os.path.splitext(filename)
         self.filename = filename
         
         if self.mode is 'w':
+            self.scalar_type = scalar_type
             self.ndim = len(grid.shape)
             self._dimfromgrid(grid)
-            self.writeheader()
-            if filename: self.readheader()
+            self.write_header()
+            if filename: self.read_header()
             self.emptyfile()
             
         elif filename:
-            self.readheader()
+            self.read_header()
             self.ndim = self.dim[0]
+            # attach data to self
 
         axisnames = space[0:self.ndim]
         step = self.pixdim[1:(self.ndim+1)]
@@ -229,9 +238,10 @@ class NIFTI1(BinaryFormat):
 
         # assume .mat matrix uses FORTRAN indexing
         self.grid = self.grid.matlab2python()
-        self.getdata()
 
-    def hdrfilename(self):
+        self.attach_data()
+
+    def header_filename(self):
         return self.filename
 
     def _dimfromgrid(self, grid):
@@ -262,7 +272,7 @@ class NIFTI1(BinaryFormat):
         self.srow_y = self.grid.mapping.transform[1]
         self.srow_z = self.grid.mapping.transform[2]
 
-    def imgfilename(self):
+    def image_filename(self):
         if self.magic == 'n+1\x00':
             return self.filename
         else:
@@ -273,7 +283,7 @@ class NIFTI1(BinaryFormat):
         A check of byteorder based on the 'sizeof_hdr' attribute,
         which should equal 348.
         """
-        hdrfile = self.datasource.open(self.hdrfilename())
+        hdrfile = self.datasource.open(self.header_filename())
         sizeof_hdr = self.trait('sizeof_hdr')
         sizeof_hdr.handler.bytesign = self.bytesign
         value = sizeof_hdr.handler.read(hdrfile)
@@ -287,36 +297,65 @@ class NIFTI1(BinaryFormat):
                 self.byteorder = 'big'
         hdrfile.close()
         
-    def getdtype(self):
+    def _scalar_type_changed(self, scalar_type):
+
+        datatypes = {N.bool8:DT_BINARY,
+                     N.uint8:DT_UNSIGNED_CHAR,
+                     N.int16:DT_SIGNED_SHORT,
+                     N.int32:DT_SIGNED_INT,
+                     N.float32:DT_FLOAT,
+                     N.float64:DT_DOUBLE,
+                     N.uint8:DT_UINT8,
+                     N.int16:DT_INT16,
+                     N.int32:DT_INT32,
+                     N.float32:DT_FLOAT32,
+                     N.complex64:DT_COMPLEX64,
+                     N.float64:DT_FLOAT64,
+                     N.int8:DT_INT8,
+                     N.uint16:DT_UINT16,
+                     N.uint32:DT_UINT32,
+                     N.int64:DT_INT64,
+                     N.uint64:DT_UINT64}
+
+        for key, val in datatypes.items():
+            datatypes[N.sctype2char(key)] = val
+            del(datatypes[key])
+
+        self.datatype = datatypes[scalar_type]
+
+
+    def _datatype_changed(self, datatype):
         # NIFTI-1 datatypes
 
-        self.dtype = N.dtype({DT_NONE:None, # will fail if unknown
-                       DT_UNKNOWN:None, 
-                       DT_BINARY:N.bool8,
-                       DT_UNSIGNED_CHAR:N.uint8,
-                       DT_SIGNED_SHORT:N.int16,
-                       DT_SIGNED_INT:N.int32,
-                       DT_FLOAT:N.float32,
-                       DT_COMPLEX:None,
-                       DT_DOUBLE:N.float64,
-                       DT_RGB:None,
-                       DT_ALL:None,
-                       DT_UINT8:N.uint8,
-                       DT_INT16:N.int16,
-                       DT_INT32:N.int32,
-                       DT_FLOAT32:N.float32,
-                       DT_COMPLEX64:N.complex64,
-                       DT_FLOAT64:N.float64,
-                       DT_RGB24:None,
-                       DT_INT8:N.int8,
-                       DT_UINT16:N.uint16,
-                       DT_UINT32:N.uint32,
-                       DT_INT64:N.int64,
-                       DT_UINT64:N.uint64,
-                       DT_FLOAT128:None,
-                       DT_COMPLEX128:None,
-                       DT_COMPLEX256:None}[self.datatype])
+        self.scalar_type = N.sctype2char({DT_NONE:None, # will fail if unknown
+                            DT_UNKNOWN:None, 
+                            DT_BINARY:N.bool8,
+                            DT_UNSIGNED_CHAR:N.uint8,
+                            DT_SIGNED_SHORT:N.int16,
+                            DT_SIGNED_INT:N.int32,
+                            DT_FLOAT:N.float32,
+                            DT_COMPLEX:None,
+                            DT_DOUBLE:N.float64,
+                            DT_RGB:None,
+                            DT_ALL:None,
+                            DT_UINT8:N.uint8,
+                            DT_INT16:N.int16,
+                            DT_INT32:N.int32,
+                            DT_FLOAT32:N.float32,
+                            DT_COMPLEX64:N.complex64,
+                            DT_FLOAT64:N.float64,
+                            DT_RGB24:None,
+                            DT_INT8:N.int8,
+                            DT_UINT16:N.uint16,
+                            DT_UINT32:N.uint32,
+                            DT_INT64:N.int64,
+                            DT_UINT64:N.uint64,
+                            DT_FLOAT128:None,
+                            DT_COMPLEX128:None,
+                            DT_COMPLEX256:None}[self.datatype])
 
+    def get_dtype(self):
+        self.dtype = N.dtype(self.scalar_type)
         self.dtype = self.dtype.newbyteorder(self.bytesign)
 
     def postread(self, x):

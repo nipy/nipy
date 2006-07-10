@@ -2,14 +2,13 @@ from types import StringType
 from struct import calcsize, pack, unpack
 from sys import byteorder
 
-from numpy import memmap, zeros, float64
-
 from path import path
 from attributes import attribute
 
+from numpy import sctypes, sctype2char
+
 from neuroimaging import import_from, traits
-from neuroimaging.data import iszip, unzip, DataSource
-from neuroimaging.data.header import BinaryHeader, BinaryHeaderAtt
+from neuroimaging.data import DataSource
 from neuroimaging.reference.grid import SamplingGrid
 
 # struct byte order constants
@@ -60,8 +59,6 @@ def struct_pack(byte_order, elements, values):
     format = struct_format(byte_order, elements)
     return pack(format, *values)
 
-
-
 class structfield (attribute):
     classdef=True
 
@@ -86,15 +83,42 @@ class structfield (attribute):
         if type(value) is type(""): value = self.fromstring(value)
         attribute.set(self, host, value)
 
-class Format:
+scalar_types = []
+for key in ['float', 'complex', 'int', 'uint']:
+    scalar_types += [sctype2char(val) for val in sctypes[key]]
+
+
+class Format(traits.HasTraits):
 
     """ Valid file name extensions """
     extensions = []
-    header = None
 
-    def __init__(self, filename, **keywords):
-        self.grid = NotImplemented
-        self.memmap = NotImplemented
+    """ Character representation of scalar (numpy) type """
+    scalar_type = traits.Trait(scalar_types)
+
+    """ Clobber, filename, filebase, mode """
+
+    clobber = traits.false
+    filename = traits.Str()
+    filebase = traits.Str()
+    mode = traits.Trait('r', 'w', 'r+')
+    bmode = traits.Trait(['rb', 'wb', 'rb+'])
+
+    """ Data source """
+    datasource = traits.Instance(DataSource)
+
+    """ Header definition """
+
+    header = traits.List
+
+    """ Sampling grid """
+
+    grid = traits.Trait(SamplingGrid)
+
+    def __init__(self, filename, datasource=DataSource(), **keywords):
+        traits.HasTraits.__init__(self, **keywords)
+        self.datasource = datasource
+        self.filename = filename
 
     @classmethod
     def valid(self, filename, verbose=False, mode='r'):
@@ -114,9 +138,22 @@ class Format:
             return False
         return True
 
-    def add_header_attribute(self, name, attribute):
+    def __str__(self):
+        value = ''
+        for trait in self.header:
+            value = value + '%s:%s=%s\n' % (self.filebase, trait[0], str(getattr(self, trait[0])))
+        return value
+
+    def add_header_attribute(self, name, definition, value):
         """
-        Add an attribute to the header.
+        Add an attribute to the header. Definition should be
+        a format string interpretable by struct.pack. 
+        """
+        raise NotImplementedError
+
+    def set_header_attribute(self, name, attribute, value):
+        """
+        Set an attribute to the header.
         """
         raise NotImplementedError
 
@@ -126,6 +163,24 @@ class Format:
         """
         raise NotImplementedError
 
+    def read_header(self, hdrfile=None):
+        """
+        Read header file.
+        """
+        raise NotImplementedError
+
+    def write_header(self, hdrfile=None):
+        """
+        Write header file.
+        """
+        raise NotImplementedError
+
+    def header_filename(self):
+        """
+        Get header file name.
+        """
+        return self.filename
+
     def __getitem__(self, slice):
         """Data access"""
         raise NotImplementedError
@@ -133,73 +188,6 @@ class Format:
     def __setitem__(self, slice, data):
         """Data access"""
         raise NotImplementedError
-
-
-class BinaryFormat(BinaryHeader,Format):
-    """
-    BinaryHeader with a brick of data attached to be memmap'ed.
-    """
-
-    # grid
-
-    grid = traits.Instance(SamplingGrid)
-
-    def imgfilename(self):
-        raise NotImplementedError
-
-    def getdata(self, offset=0):
-        imgpath = self.imgfilename()
-        if imgpath == self.hdrfilename():
-            offset += self.header_length
-        else:
-            offset += 0
-        imgfilename = self.datasource.filename(imgpath)
-        if iszip(imgfilename): imgfilename = unzip(imgfilename)
-        mode = self.mode in ('r+', 'w') and "r+" or self.mode
-        self.memmap = memmap(imgfilename, dtype=self.dtype,
-                             shape=tuple(self.grid.shape), mode=mode,
-                             offset=offset)
-
-    def emptyfile(self):
-        """
-        Create an empty data file based on
-        self.grid and self.dtype
-        """
-        
-        outfile = file(self.imgfilename(), 'w')
-        outstr = zeros(self.grid.shape[1:], self.dtype).tostring()
-        for i in range(self.grid.shape[0]):
-            outfile.write(outstr)
-        outfile.close()
-
-    def __del__(self):
-        if hasattr(self, "memmap"):
-            self.memmap.sync()
-            del(self.memmap)
-
-    def postread(self, x):
-        """
-        Point transformation of data post reading.
-        """
-        return x
-
-    def prewrite(self, x):
-        """
-        Point transformation of data pre writing.
-        """
-        return x
-
-    def __getitem__(self, _slice):
-        return self.postread(self.memmap[_slice])
-
-    def getslice(self, _slice): return self[_slice]
-
-    def __setitem__(self, _slice, data):
-        self.memmap[_slice] = self.prewrite(data).astype(self.dtype)
-
-    def writeslice(self, _slice, data): self[slice] = data
-
-
 
 format_modules = (
   "neuroimaging.image.formats.analyze",

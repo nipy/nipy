@@ -88,7 +88,7 @@ class Cache (object):
 class DataSource (object):
     class _cache (readonly): default=Cache()
 
-    def __init__(self, cachepath=None):
+    def __init__(self, cachepath=os.curdir):
         if cachepath is not None: self._cache = Cache(cachepath)
 
     def _possible_names(self, filename):

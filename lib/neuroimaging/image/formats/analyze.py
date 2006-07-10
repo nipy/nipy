@@ -10,7 +10,7 @@ from neuroimaging.data import DataSource
 from neuroimaging.reference.axis import space, spacetime
 from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging.image.formats import BinaryFormat
+from neuroimaging.image.formats.binary import BinaryFormat
 
 class ANALYZE(BinaryFormat):
     """
@@ -78,22 +78,24 @@ class ANALYZE(BinaryFormat):
     # Vector axis?
     nvector = traits.Int(-1)
 
-    def __init__(self, filename=None, datasource=DataSource(), grid=None, **keywords):
+    def __init__(self, filename=None, datasource=DataSource(), grid=None,
+                 scalar_type='d', **keywords):
 
-        BinaryFormat.__init__(self, **keywords)
+        BinaryFormat.__init__(self, filename, **keywords)
 
         self.datasource = datasource
         self.filebase = filename and os.path.splitext(filename)[0] or None
 
         if self.mode is 'w':
+            self.scalar_type = scalar_type
             self._dimfromgrid(grid)
-            self.writeheader()
-            if filename: self.readheader()
+            self.write_header()
+            if filename: self.read_header()
             self.ndim = len(grid.shape)
             self.emptyfile()
             
         elif filename:
-            self.readheader()
+            self.read_header()
             self.ndim = self.dim[0]
 
         self.customize()
@@ -134,13 +136,13 @@ class ANALYZE(BinaryFormat):
                                         start=-N.array(origin)*step,
                                         step=step)
 
-        if self.usematfile: self.grid.transform(self.readmat())
+        if self.usematfile: self.grid.transform(self.read_mat())
 
         # assume .mat matrix uses FORTRAN indexing
         self.grid = self.grid.matlab2python()
 
         # get memmaped array
-        self.getdata()
+        self.attach_data()
 
     def customize(self):
         """
@@ -153,7 +155,7 @@ class ANALYZE(BinaryFormat):
 
 
     def _datatype_changed(self):
-        self.getdtype()
+        self.get_dtype()
 
     def _byteorder_changed(self):
         self.bytesign = {'big':'>', 'little':'<'}[self.byteorder]
@@ -161,13 +163,13 @@ class ANALYZE(BinaryFormat):
     def _bytesign_changed(self):
         self.byteorder = {'>':'big', '<':'little'}[self.bytesign]
 
-    def hdrfilename(self):
+    def header_filename(self):
         return '%s.hdr' % self.filebase
 
-    def imgfilename(self):
+    def image_filename(self):
         return '%s.img' % self.filebase
 
-    def matfilename(self):
+    def mat_filename(self):
         return '%s.mat' % self.filebase
 
     def _grid_changed(self):
@@ -176,7 +178,28 @@ class ANALYZE(BinaryFormat):
         except:
             pass
 
-    def getdtype(self):
+    def _scalar_type_changed(self, scalar_type):
+
+        ANALYZE_Byte = 2
+        ANALYZE_Short = 4
+        ANALYZE_Int = 8
+        ANALYZE_Float = 16
+        ANALYZE_Double = 64
+
+        datatypes = {N.uint8:ANALYZE_Byte,
+                     N.int16:ANALYZE_Short,
+                     N.int32:ANALYZE_Int,
+                     N.float32:ANALYZE_Float,
+                     N.float64:ANALYZE_Double}
+
+        for key, val in datatypes.items():
+            datatypes[N.sctype2char(key)] = val
+            del(datatypes[key])
+
+        self.datatype = datatypes[scalar_type]
+
+    def _datatype_changed(self, datatype):
+
         ANALYZE_Byte = 2
         ANALYZE_Short = 4
         ANALYZE_Int = 8
@@ -189,8 +212,10 @@ class ANALYZE(BinaryFormat):
             ANALYZE_Int:N.int32,
             ANALYZE_Float:N.float32,
             ANALYZE_Double:N.float64}
+        self.scalar_type = N.sctype2char(datatypes[self.datatype])
 
-        self.dtype = N.dtype(datatypes[self.datatype])
+    def get_dtype(self):
+        self.dtype = N.dtype(self.scalar_type)
         self.dtype = self.dtype.newbyteorder(self.bytesign)
 
     def postread(self, x):
@@ -246,14 +271,14 @@ class ANALYZE(BinaryFormat):
         if not _diag:
             self.origin = [0]*5
        
-    def readmat(self):
+    def read_mat(self):
         """
         Return affine transformation matrix, if it exists.
         For now, the format is assumed to be a tab-delimited 4 line file.
         Other formats should be added.
         """
-        if self.datasource.exists(self.matfilename()):
-            return Mapping.fromfile(self.datasource.open(self.matfilename()),
+        if self.datasource.exists(self.mat_filename()):
+            return Mapping.fromfile(self.datasource.open(self.mat_filename()),
                      input='world', output='world', delimiter='\t')
         else:
             if self.ndim == 4: names = spacetime[::-1]
@@ -261,7 +286,7 @@ class ANALYZE(BinaryFormat):
             return Mapping.identity(
               self.ndim, input='world', output='world', names=names)
 
-    def writemat(self, matfile=None):
+    def write_mat(self, matfile=None):
         "Write out the affine transformation matrix."
         if matfile is None: matfile = self.matfilename()
         if self.clobber or not path(matfile).exists():
@@ -272,7 +297,7 @@ class ANALYZE(BinaryFormat):
         Try to guess big/little endianness of an ANALYZE file based on dim[0].
         """
 
-        hdrfile = self.datasource.open(self.hdrfilename())
+        hdrfile = self.datasource.open(self.header_filename())
         for order, sign in {'big':'>', 'little':'<'}.items():
             hdrfile.seek(40)
             x = hdrfile.read(2)
@@ -304,7 +329,6 @@ class ANALYZE_FSL(ANALYZE):
         """
         self.origin = [1]*5
         self.pixdim = [N.fabs(pixd) for pixd in self.pixdim]
-
 
 
 # plug in as a format creator (see formats.getreader)

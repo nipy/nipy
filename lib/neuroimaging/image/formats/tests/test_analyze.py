@@ -24,10 +24,10 @@ class AnalyzeTest(unittest.TestCase):
 
     def test_writehdr(self):
         new = file('tmp.hdr', 'wb')
-        self.image.writeheader(new)
+        self.image.write_header(new)
         new.close()
         new = file('tmp.hdr', 'rb')
-        old = file(repository.filename(self.image.hdrfilename()))
+        old = file(repository.filename(self.image.header_filename()))
         for att in self.image.header:
             attname = att[0]
             trait = self.image.trait(attname)
