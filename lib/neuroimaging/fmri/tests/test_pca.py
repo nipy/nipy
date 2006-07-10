@@ -37,7 +37,7 @@ class PCATestNoMask(PCATest):
         output = p.images(which=range(4))
 
 if PYLAB_DEF:
-    class PCATestMontageMask(PCATest):
+    class PCATestMontageNoMask(PCATest):
         def test_PCAmontage(self):
             p = PCAmontage(self.fmridata)
             p.fit()
@@ -46,7 +46,7 @@ if PYLAB_DEF:
             p.montage()
             pylab.show()
 
-    class PCATestMontageNoMask(PCATest):
+    class PCATestMontageMask(PCATest):
         def test_PCAmontage_nomask(self):
             p = PCAmontage(self.fmridata, mask=self.mask)
             p.fit()

@@ -94,14 +94,13 @@ class SpectralHRF(filters.Filter):
 
         """
 
-        self.delta = delta # store the shift in case we want it later
         time = N.arange(lower, tmax, self.dt)
         ntime = time.shape[0]
         irf = self.IRF
 
         H = []
-        for i in range(self.delta.shape[0]):
-            H.append(irf(time - self.delta[i]))
+        for i in range(delta.shape[0]):
+            H.append(irf(time -delta[i]))
         H = N.array(H)
 
             
@@ -126,7 +125,7 @@ class SpectralHRF(filters.Filter):
         
         coef = []
         for i in range(self.ncomp):
-            coef.append(interpolant(self.delta, WH[i]))
+            coef.append(interpolant(delta, WH[i]))
             
         if coef[0](0) < 0:
             coef[0].f.y *= -1.
