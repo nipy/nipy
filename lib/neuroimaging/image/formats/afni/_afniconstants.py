@@ -11,10 +11,10 @@ AFNI_Short = 1
 AFNI_Float = 3
 AFNI_Complex = 5
 
-AFNI_brick_types = {AFNI_UChar:numpy.UInt8,
-                   AFNI_Short:numpy.Int16,
-                   AFNI_Float:numpy.Float32,
-                   AFNI_Complex:numpy.Complex32
+AFNI_brick_types = {AFNI_UChar:numpy.uint8,
+                   AFNI_Short:numpy.int16,
+                   AFNI_Float:numpy.float32,
+                   AFNI_Complex:numpy.complex64
                    }
 
 AFNI_view = {'orig':0,

@@ -1,9 +1,7 @@
-import os, string, re, sys, fpformat, types, tempfile, time, random, csv
-import BrainSTAT.Base.Dimension as Dimension
-import BrainSTAT.Base.Coordinates as Coordinates
-from BrainSTAT.Base import Mapping
-from BrainSTAT import Utils
-from numpy import *
+import os, string, re, sys, fpformat, types, time, random, csv
+from neuroimaging.reference import mapping, coordinate_system, axis
+from neuroimaging.image import utils
+import numpy as N
 from _afniconstants import *
 
 att_re = re.compile('type\s*=\s*(.*?)\n.*?name\s*=\s*(.*?)\n.*?count\s*=\s*(.*?)\n(.*)', re.DOTALL)
@@ -19,10 +17,10 @@ AFNI_Complex = 5
 
 AFNI_byteorder = {'big':'MSB_FIRST', 'little':'LSB_FIRST'}
 
-AFNI_brick_types = {AFNI_UChar:UInt8,
-                   AFNI_Short:Int16,
-                   AFNI_Float:Float32,
-                   AFNI_Complex:Complex32
+AFNI_brick_types = {AFNI_UChar:N.uint8,
+                   AFNI_Short:N.uint16,
+                   AFNI_Float:N.float32,
+                   AFNI_Complex:N.complex64
                    }
 
 AFNI_exts = ['.HEAD', '.BRIK']
@@ -30,7 +28,7 @@ for end in ['HEAD', 'BRIK']:
     for space in ['tlrc', 'orig', 'acpc']:
         AFNI_exts.append(space + '.' + end)
 
-numpy_type = type(array([3,4]))
+numpy_type = type(N.array([3, 4]))
 
 class AFNI:
     '''A class to read and write AFNI format images. 
@@ -50,10 +48,9 @@ class AFNI:
             self.filebase, self.filespace = self.filebase.split('+')
         else:
             self.filespace = 'orig'
-        try:
-            stat = os.stat(filename)
+        if os.path.exists(filename):
             self.clobber = clobber
-        except:
+        else:
             self.clobber = True
 
         if mode == 'r':
@@ -88,21 +85,21 @@ class AFNI:
                             TAXIS_FLOATS[i] = 0.0
 
             if TAXIS_NUMS is not None:
-                DATASET_RANK = array((3, TAXIS_NUMS[0]) + (0,) * 6)
+                DATASET_RANK = N.array((3, TAXIS_NUMS[0]) + (0,) * 6)
                 if nvector > 0:
                     raise ValueError, 'nvector and TAXIS cannot be simultaneuosly defined'
             elif nvector > 0:
-                DATASET_RANK = array((3, nvector) + (0,) * 6)
+                DATASET_RANK = N.array((3, nvector) + (0,) * 6)
                 self.nvector = nvector
             else:
-                DATASET_RANK = array((3, 1) + (0,) * 6)
+                DATASET_RANK = N.array((3, 1) + (0,) * 6)
                 self.nvector = 0
 
             self.hdrfile = file(self.filebase + '+' + self.filespace + '.HEAD', 'w')
             self.brikfile = file(self.filebase + '+' + self.filespace + '.BRIK', 'wb')
             self.DATASET_DIMENSIONS = DATASET_DIMENSIONS[::-1]
             if DATASET_RANK is None:
-                DATASET_RANK = array((3, 1) + (0,) * 6)
+                DATASET_RANK = N.array((3, 1) + (0,) * 6)
             self.DATASET_RANK = DATASET_RANK
             self.ORIGIN = ORIGIN[::-1]
             self.DELTA = DELTA[::-1]
@@ -128,14 +125,14 @@ class AFNI:
                 
         self.readheader()
         try:
-            self.need_scale = (add.reduce(equal(self.BRICK_FLOAT_FACS, 0)) == 0)
+            self.need_scale = (N.add.reduce(N.equal(self.BRICK_FLOAT_FACS, 0)) == 0)
         except:
             self.need_scale = False
 
         self.shape = tuple(self.DATASET_DIMENSIONS)[0:3][::-1]
         self.step = tuple(self.DELTA)[::-1]
         self.start = tuple(self.ORIGIN)[::-1]
-        self.size = multiply.reduce(array(list(self.shape)))
+        self.size = N.multiply.reduce(N.array(list(self.shape)))
         
         if self.DATASET_RANK[1] > 1:
             self.shape = (self.DATASET_RANK[1],) + self.shape
@@ -154,7 +151,7 @@ class AFNI:
         for dim in self.dimensions:
             if dim.name != 'time':
                 orient_specific.append(AFNI_orientations[(dim.name, (float(dim.step) > 0))])
-        return array(orient_specific[::-1])
+        return N.array(orient_specific[::-1])
 
     def generate_dimensions(self):
         self.indim = ()
@@ -175,13 +172,13 @@ class AFNI:
                 self.step = (0.0,) + self.step[1:]
                 self.start = (0.0,) + self.start[1:]
         for i in range(self.ndim):
-            self.indim = self.indim + (Dimension.RegularDimension(name=dimnames[i], length=self.shape[i], start=0.0, step=1.0),)
-            self.outdim = self.outdim + (Dimension.RegularDimension(name=dimnames[i], length=self.shape[i], start=self.start[i], step=abs(self.step[i]) * signs[i]),)
+            self.indim = self.indim + (axis.RegularAxis(name=dimnames[i], length=self.shape[i], start=0.0, step=1.0),)
+            self.outdim = self.outdim + (axis.RegularAxis(name=dimnames[i], length=self.shape[i], start=self.start[i], step=abs(self.step[i]) * signs[i]),)
         
         # Setup affine transformation
                 
-        self.incoords = Coordinates.VoxelCoordinates('voxel', self.indim)
-        self.outcoords = Coordinates.OrthogonalCoordinates('world', self.outdim)
+        self.incoords = coordinate_system.CoordinateSystem('voxel', self.indim)
+        self.outcoords = coordinate_system.DiagonalCoordinateSystem('world', self.outdim)
 
         if self.keywords.has_key('xfmurl'):
             matrix = self._transform(url=self.keywords['xfmurl'])
@@ -189,15 +186,15 @@ class AFNI:
             try:
                 matrix = self._transform()
             except:
-                matrix = self.incoords.transform()
+                matrix = self.outcoords.transform()
 
-        self.mapping = Mapping.Affine(self.incoords, self.outcoords, matrix)
+        self.mapping = mapping.Affine(self.incoords, self.outcoords, matrix)
 
     def _transform(self, url=None):
         """Tries to find a '.mat' file for an SPM type 4x4 transformation matrix."""
         if url is None:
             url = self.filebase + '.mat'
-        return Mapping.fromurl(url, ndim=self.ndim)
+        return mapping.fromurl(url, ndim=self.ndim)
 
     def generate_brick_labs(self, base='BRICK '):
         BRICK_LABS = []
@@ -219,7 +216,7 @@ class AFNI:
             elif attlen is None:
                 attlen = len(list(value))
             elif len(list(value)) != attlen:
-                value = filter(lambda x: x not in  AFNI_missing, list(value))
+                value = [x for x in list(value) if x not in AFNI_missing]
                 if len(list(value)) != attlen:
                     raise ValueError, 'attribute ' + name + ':' + `value` + ' has wrong length -- should be ' + `attlen`
             if attype is types.FloatType:
@@ -268,20 +265,20 @@ class AFNI:
                 att = att_re.search(att_str).groups()
                 att_type = att[0]
                 name = att[1]
-                count = string.atoi(att[2])
+                count = int(att[2])
                 value = att[3].strip()
-                if att_type == 'string-attribute':
+                if att_type == AFNI_string:
                     value = value[1:-1].strip().split('~')
                     if len(value) == 1:
                         value = value[0]
-                elif att_type == 'integer-attribute':
-                    att_array = zeros((count,), Int)
+                elif att_type == AFNI_integer:
+                    att_array = N.zeros((count,), N.int32)
                     value = re.split('\s*', value)
                     for i in range(count):
-                        att_array[i] = string.atoi(value[i])
+                        att_array[i] = int(value[i])
                     value = att_array
-                elif att_type == 'float-attribute':
-                    att_array = zeros((count,), Float)
+                elif att_type == AFNI_float:
+                    att_array = N.zeros((count,), N.float64)
                     value = re.split('\s*', value)
                     for i in range(count):
                         att_array[i] = float(value[i])
@@ -289,7 +286,6 @@ class AFNI:
                 setattr(self, name, value)
         except StopIteration:
             pass
-        
         self.ndim = 3 + (self.DATASET_RANK[1] > 1)
         if self.ndim == 4 and hasattr(self, 'TAXIS_NUMS'):
             self.nvector = 0
@@ -319,7 +315,7 @@ class AFNI:
                     headerfile.write(fpformat.fix(value[i], ndecimal) + ' ')
             elif att_type == AFNI_string:
                 if type(value) is types.ListType:
-                    cur_string = '~'.join(map(lambda x: x.__str__(), value))
+                    cur_string = '~'.join([v.__str__() for v in value])
                 else:
                     cur_string = value
                 count = len(cur_string) + 1
@@ -329,8 +325,8 @@ class AFNI:
 
     def write(self, start, data, offset = 0, **keywords):
         self.close()
-        self.open(mode='r+',header=False)
-        if self.BYTEORDER_STRING == 'LSB_FIRST':
+        self.open(mode='r+', header=False)
+        if self.BYTEORDER_STRING == AFNI_byteorder['little']:
             byteorder = 'little'
         else:
             byteorder = 'big'
@@ -355,10 +351,10 @@ class AFNI:
                 except:
                     fac = 0
                 if fac:
-                    outdata = data[i].astype(Float) / fac
+                    outdata = data[i].astype(N.float64) / fac
                 else:
                     outdata = data[i]
-                Utils.brickutils.writebrick(self.brikfile, start[1:], data[i], self.shape[1:], byteorder = byteorder, outtype = type, offset = total_offset)
+                utils.writebrick(self.brikfile, start[1:], outdata, self.shape[1:], byteorder = byteorder, outtype = type, offset = total_offset)
                 total_offset += type.bytes * self.size
         else:
             type = AFNI_brick_types[self.BRICK_TYPES[0]]
@@ -367,17 +363,17 @@ class AFNI:
             except:
                 fac = 0
             if fac:
-                outdata = data.astype(Float) / fac
+                outdata = data.astype(N.float64) / fac
             else:
                 outdata = data
-            Utils.brickutils.writebrick(self.brikfile, start, data, self.shape, byteorder = byteorder, outtype = type)
+            utils.writebrick(self.brikfile, start, outdata, self.shape, byteorder = byteorder, outtype = type)
         return
         
     def read(self, start, count, offset = 0, **keywords):
         if hasattr(self, 'no_brick'):
             if self.no_brick:
                 raise ValueError, 'no .BRIK file associated with this .HEAD file'
-        if self.BYTEORDER_STRING == 'LSB_FIRST':
+        if self.BYTEORDER_STRING == AFNI_byteorder['little']:
             byteorder = 'little'
         else:
             byteorder = 'big'
@@ -395,25 +391,24 @@ class AFNI:
                     fac = self.BRICK_FLOAT_FACS[i]
                 except:
                     fac = 0
-                value = Utils.brickutils.readbrick(self.brikfile, start[1:], count[1:], self.shape[1:], byteorder = byteorder, intype = type, offset = total_offset)
+                value = utils.readbrick(self.brikfile, start[1:], count[1:], self.shape[1:], byteorder = byteorder, intype = type, offset = total_offset)
                 if fac:
-                    import sets
                     value = 1.0 * fac * value
                 return_value = return_value + (value,)
                 total_offset += type.bytes * self.size
-            return_value = array(return_value)
+            return_value = N.array(return_value)
         else:
             type = AFNI_brick_types[self.BRICK_TYPES[0]]
             try:
                 fac = self.BRICK_FLOAT_FACS[0]
             except:
                 fac = 0
-            return_value = Utils.brickutils.readbrick(self.brikfile, start, count, self.shape, byteorder = byteorder, intype = type)
+            return_value = utils.readbrick(self.brikfile, start, count, self.shape, byteorder = byteorder, intype = type)
             if fac:
                 return_value *= fac
         return return_value
 
-AFNI_defaults = {'SCENE_DATA':array((AFNI_view['orig'], FUNC_BUCK_TYPE, AFNI_typestring['3DIM_HEAD_FUNC']) + (-999,)* 5),
+AFNI_defaults = {'SCENE_DATA':N.array((AFNI_view['orig'], FUNC_BUCK_TYPE, AFNI_typestring['3DIM_HEAD_FUNC']) + (-999,)* 5),
                  'TYPESTRING':'3DIM_HEAD_FUNC',
                  'TAXIS_FLOATS':None,
                  'TAXIS_NUMS':None,
@@ -433,9 +428,6 @@ AFNI_defaults = {'SCENE_DATA':array((AFNI_view['orig'], FUNC_BUCK_TYPE, AFNI_typ
 
 def read1D(_1Dstring, try1D=True, delimiter=None):
     '''A little function to read 1D files a la AFNI notation.
-
-    
-
     '''
 
     try:
@@ -455,19 +447,19 @@ def read1D(_1Dstring, try1D=True, delimiter=None):
         reader = csv.reader(file(filename), delimiter=delimiter)
         for row in reader:
             data.append(map(string.atof, row))
-    data = numpy.array(data, Float)
+    data = N.array(data, N.float64)
     columns = '[' + columns
     try:
         columns = eval(columns)
         for i in columns:
             keep.append(list(data[:,i].flat))
     except:
-        tmp = numpy.transpose(eval('data[:,' + columns[1:-1] + ']'))
+        tmp = N.transpose(eval('data[:,' + columns[1:-1] + ']'))
         for i in range(tmp.shape[0]):
             keep.append(list(tmp[i].flat))
-    if try1D and numpy.array(keep).shape[0] == 1:
+    if try1D and N.array(keep).shape[0] == 1:
         keep = keep[0]
-    return numpy.array(keep)
+    return N.array(keep)
 
 """
 URLPipe class expects this.
