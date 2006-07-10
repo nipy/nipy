@@ -21,10 +21,10 @@ class ImageInterpolator(traits.HasTraits):
         else:
             self.grid = grid
         self.image = image
-        self.prefilter()
         self.order = order
+        self._prefilter()
 
-    def prefilter(self):
+    def _prefilter(self):
         if self.order > 1:
             data = ndimage.spline_filter(N.nan_to_num(self.image.readall()),
                                           self.order)
