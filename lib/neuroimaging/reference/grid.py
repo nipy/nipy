@@ -170,12 +170,12 @@ class SamplingGrid (object):
         return SamplingGrid(shape=reverse(self.shape),
           mapping=self.mapping.python2matlab())
 
-    def replicate(self, n):
+    def replicate(self, n, concataxis=None):
         """
         Duplicate self n times, returning a ConcatenatedGrids with
         shape == (n,)+self.shape.
         """
-        return ConcatenatedIdenticalGrids(self, n)
+        return ConcatenatedIdenticalGrids(self, n, concataxis=concataxis)
 
 class ConcatenatedGrids(SamplingGrid):
     """

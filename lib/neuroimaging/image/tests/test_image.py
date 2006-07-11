@@ -57,7 +57,7 @@ class ImageTest(unittest.TestCase):
         N.testing.assert_almost_equal(x.grid.mapping.transform, self.img.grid.mapping.transform)
 
     def test_clobber(self):
-        x = self.img.tofile('tmp.img', clobber=True)
+        x = self.img.tofile('tmp.img', clobber=True, sctype=N.float64)
         a = Image('tmp.img')
         A = a.readall()
         I = self.img.readall()

@@ -9,7 +9,7 @@ from neuroimaging.data import DataSource
 from neuroimaging.image.formats import getreader
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.reference.iterators import ParcelIterator, SliceParcelIterator
-
+from neuroimaging.image.formats import Format
 
 
 class Image(traits.HasTraits):
@@ -65,36 +65,40 @@ class Image(traits.HasTraits):
         
         # from existing Image
         if isinstance(image, Image):
-            self.image = image.image
+            self.source = image.source
+
+        # from existing Format instance
+        if isinstance(image, Format):
+            self.source = image
 
         # from array
         elif isinstance(image, N.ndarray) or isinstance(image, N.core.memmap):
-            self.image = self.ArrayImage(image, grid=grid)
+            self.source = self.ArrayImage(image, grid=grid)
 
         # from filename or url
         elif type(image) == types.StringType:
-            self.image = self.fromurl(image, datasource, grid=grid, **keywords)
+            self.source = self.fromurl(image, datasource, grid=grid, **keywords)
 
         else: raise ValueError(
           "Image input must be a string, array, or another image.")
             
         # Find spatial grid -- this is the one that will be used generally
-        self.grid = self.image.grid
+        self.grid = self.source.grid
         self.shape = list(self.grid.shape)
         self.ndim = len(self.shape)
 
         # When possible, attach memory-mapped array or array as buffer attr
-        if hasattr(self.image, 'memmap'):
-            self.buffer = self.image.memmap
-        elif isinstance(self.image.data, N.ndarray):
-            self.buffer = self.image.data          
+        if hasattr(self.source, 'memmap'):
+            self.buffer = self.source.memmap
+        elif isinstance(self.source.data, N.ndarray):
+            self.buffer = self.source.data          
 
         self.postread = lambda x:x
 
 
-    def __getitem__(self, slice): return self.image[slice]
+    def __getitem__(self, slice): return self.source[slice]
     def getslice(self, slice): return self[slice]
-    def __setitem__(self, slice, data): self.image[slice] = data
+    def __setitem__(self, slice, data): self.source[slice] = data
     def writeslice(self, slice, data): self[slice] = data
 
 
@@ -161,7 +165,7 @@ class Image(traits.HasTraits):
         >>> from BrainSTAT import *
         >>> test = Image(testfile('anat+orig.HEAD'))
         >>> _test = test.toarray()
-        >>> print _test.image.data.shape
+        >>> print _test.source.data.shape
         (124, 256, 256)
         >>> test = Image(testfile('test_fmri.img'))
         >>> _test = test.toarray(slice=(2,), grid=test.grid)
@@ -177,14 +181,14 @@ class Image(traits.HasTraits):
 
     def tofile(self, filename, array=True, clobber=False,
                sctype=None, **keywords):
-        sctype = sctype or self.image.sctype
+        sctype = sctype or self.source.sctype
         outimage = Image(filename, mode='w', grid=self.grid,
                          clobber=clobber,
                          sctype=sctype,
                          **keywords)
         if array:
             tmp = self.toarray(**keywords)
-            outimage.image[:] = tmp.image.data
+            outimage.source[:] = tmp.source.data
         else:
             tmp = iter(self)
             outimage = iter(outimage)
@@ -203,7 +207,7 @@ class Image(traits.HasTraits):
         Image. By default, it does not read 4d images. Missing values are
         filled in with the value of fill (default=self.fill=0.0).
         """
-        value = self.image[self.grid.allslice]
+        value = self.source[self.grid.allslice]
         if clean: value = Image(N.nan_to_num(value, fill=self.fill))
         return value
 

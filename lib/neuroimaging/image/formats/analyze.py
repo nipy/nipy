@@ -244,7 +244,7 @@ class ANALYZE(BinaryFormat):
             _diag = True
         else:
             _diag = False
-            self.writemat()
+            self.write_mat()
 
         _dim = [0]*8
         _pixdim = [0.] * 8
@@ -281,7 +281,7 @@ class ANALYZE(BinaryFormat):
 
     def write_mat(self, matfile=None):
         "Write out the affine transformation matrix."
-        if matfile is None: matfile = self.matfilename()
+        if matfile is None: matfile = self.mat_filename()
         if self.clobber or not path(matfile).exists():
             self.grid.mapping.tofile(matfile)
 
