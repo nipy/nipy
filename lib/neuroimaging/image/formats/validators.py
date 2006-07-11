@@ -1,5 +1,6 @@
 from struct import pack, unpack, calcsize
 from types import StringType
+from sys import byteorder
 
 from neuroimaging import traits
 
@@ -74,8 +75,15 @@ class BinaryFile(traits.HasTraits):
     This is used for both ANALYZE-7.5 and NIFTI-1 files.
     """
 
+    clobber = traits.false
+    bytesign = traits.Trait(['>','!','<'])
+    byteorder = traits.Trait(['little', 'big'])
+
     def __init__(self, **keywords):
         traits.HasTraits.__init__(self, **keywords)
+        if byteorder == 'little': self.bytesign = '<'
+        else: self.bytesign = '>'
+
         self.hdrattnames = [name for name in self.trait_names() \
           if isinstance(self.trait(name).handler, BinaryHeaderValidator)]
 
@@ -87,3 +95,20 @@ class BinaryFile(traits.HasTraits):
             value = trait.handler.read(hdrfile)
             setattr(self, traitname, value)
 
+    def writeheader(self, hdrfile=None):
+
+        if hdrfile is None:
+            hdrfilename = self.hdrfilename()
+            if self.clobber or not os.path.exists(self.hdrfilename()):
+                hdrfile = file(hdrfilename, 'wb')
+            else:
+                raise ValueError, 'error writing %s: clobber is False and hdrfile exists' % hdrfilename
+
+        for traitname in self.hdrattnames:
+            trait = self.trait(traitname)
+            trait.handler.bytesign = self.bytesign
+
+            if hasattr(trait.handler, 'seek'):
+                trait.handler.write(getattr(self, traitname), outfile=hdrfile)
+
+        hdrfile.close()

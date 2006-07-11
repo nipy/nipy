@@ -5,6 +5,7 @@ from neuroimaging.data import iszip, unzip, DataSource
 from neuroimaging.reference.axis import space, spacetime
 from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
+from neuroimaging.image.utils import writebrick
 
 from validators import BinaryHeaderAtt, BinaryFile, traits
 
@@ -156,7 +157,7 @@ datatypes = {DT_NONE:None, # fail if unknown
 _byteorder_dict = {'big':'>', 'little':'<'}
 
 
-dimorder = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension']
+dims = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension']
 
 class NIFTI1(BinaryFile):
     """
@@ -213,25 +214,85 @@ class NIFTI1(BinaryFile):
     intent_name = BinaryHeaderAtt('16s', 328, ' '*16)
     magic = BinaryHeaderAtt('4s', 344, 'ni1\0')
 
-    extensions = traits.Trait(['.img', '.hdr', '.nii'], desc='Extensions supported by this format.')
+    extensions = ('.img', '.hdr', '.nii')
 
-    def __init__(self, hdrfilename, mode='r', create=False, datasource=DataSource(), **keywords):
+    # file, mode, datatype
+
+    memmapped = traits.true
+    filename = traits.Str()
+    filebase = traits.Str()
+    mode = traits.Trait('r', 'w', 'r+')
+    _mode = traits.Trait(['rb', 'wb', 'rb+'])
+
+    def __init__(self, filename=None, datasource=DataSource(), grid=None, **keywords):
         BinaryFile.__init__(self, **keywords)
+
         self.datasource = datasource
-        ext = os.path.splitext(hdrfilename)[1]
+        ext = os.path.splitext(filename)[1]
         if ext not in ['.nii', '.hdr']:
             raise ValueError, 'NIFTI-1 images need .hdr or .nii file specified.'
 
-        self.filebase, self.fileext = os.path.splitext(hdrfilename)
-        self.hdrfilename = hdrfilename
+        self.filebase, self.fileext = os.path.splitext(filename)
+        self.filename = filename
         
-        # figure out machine byte order -- needed for reading binary data
+        if self.mode is 'w':
+            self._dimfromgrid(grid)
+            self.writeheader()
+            if filename: self.readheader(self.hdrfilename())
+            self.getdtype()
+            self.ndim = len(grid.shape)
+            self.emptyfile()
+            
+        elif filename:
+            self.readheader(self.hdrfilename())
+            self.ndim = self.dim[0]
 
-        self.byteorder = sys.byteorder
-        self.bytesign = _byteorder_dict[self.byteorder]
+        axisnames = space[0:self.ndim]
+        step = self.pixdim[1:(self.ndim+1)]
+        shape = self.dim[1:(self.ndim+1)]
 
-        self.readheader()
+        ## Setup affine transformation
         
+        self.grid = SamplingGrid.from_start_step(names=axisnames,
+                                                 shape=shape,
+                                                 start=N.array(step),
+                                                 step=step)
+        ## Fix up transform based on NIFTI-1 rules
+
+        t = self.transform()
+        self.grid.mapping.transform[0:3,0:3] = t[0:3,0:3]
+        self.grid.mapping.transform[0:3,-1] = t[0:3,-1]
+        
+        # assume .mat matrix uses FORTRAN indexing
+        self.grid = self.grid.matlab2python()
+
+        if self.memmapped:
+            imgpath = self.imgfilename()
+            imgfilename = self.datasource.filename(imgpath)
+            if iszip(imgfilename): imgfilename = unzip(imgfilename)
+            mode = self.mode in ('r+', 'w') and "r+" or self.mode
+            self.memmap = N.memmap(imgfilename, dtype=self.dtype,
+                                   shape=tuple(self.grid.shape),
+                                   mode=mode,
+                                   offset=int(self.vox_offset))
+
+    def hdrfilename(self):
+        return self.filename
+
+    def imgfilename(self):
+        if self.magic == 'n+1\x00':
+            return self.filename
+        else:
+            return '%s.img' % self.filebase
+
+    def emptyfile(self):
+        writebrick(file(self.imgfilename(), 'w'),
+                   (0,)*self.ndim,
+                   N.zeros(self.grid.shape, N.float64),
+                   self.grid.shape,
+                   byteorder=self.byteorder,
+                   outtype = self.typecode)
+
     def check_byteorder(self, hdrfile):
         """
         A check of byteorder based on the 'sizeof_hdr' attribute,
@@ -251,13 +312,13 @@ class NIFTI1(BinaryFile):
                 self.byteorder = 'big'
         hdrfile.seek(0,0)
         
-    def readheader(self, hdrfilename=None):
+    def readheader(self, filename=None):
         """
         Read in a NIFTI-1 header file, filling all default values.
         """
 
-        hdrfilename = hdrfilename or self.hdrfilename
-        hdrfile = self.datasource.open(hdrfilename)
+        filename = filename or self.filename
+        hdrfile = self.datasource.open(filename)
 
         self.check_byteorder(hdrfile)
         BinaryFile.readheader(self, hdrfile)
@@ -265,83 +326,49 @@ class NIFTI1(BinaryFile):
         self.dtype = datatypes[self.datatype]
         hdrfile.close()
 
-##         if self.magic == 'n+1\x00':
-##             self.brikfile = self.hdrfile
-##             self.offset = self.vox_offset # should be 352 for most such files
-##         else:
-##             if mode in ['r']:
-##                 self.brikfile = file(self.filebase + '.img', mode=mode)
-##             elif mode in ['r+', 'w'] and self.clobber and create:
-##                 self.brikfile = file(self.filebase + '.img', mode=mode)
-##             elif mode in ['r+', 'w'] and self.clobber and not create:
-##                 self.brikfile = file(self.filebase + '.img', mode='rb+')
-##             self.offset = 0
 
-##         self.ndim = self.dim[0]
-##         self.shape = self.dim[1:(1+self.ndim)][::-1]
-##         self.step = self.pixdim[1:(1+self.ndim)][::-1]
-##         self.start = [0.] * self.ndim
+    def transform(self):
+        """
+        Return 4x4 transform matrix based on the NIFTI attributes
+        for the 3d (spatial) part of the mapping.
+        If self.sform_code > 0, use the attributes srow_{x,y,z}, else
+        if self.qform_code > 0, use the quaternion
+        else use a diagonal matrix filled in by pixdim.
 
-##         ## Setup affine transformation
+        See help(NIFTI1) for explanation.
 
-##         self.incoords = Coordinates.VoxelCoordinates('voxel', self.indim)
-##         self.outcoords = Coordinates.OrthogonalCoordinates('world', self.outdim)
+        """
 
-##         matrix = self._transform()
-##         self.mapping = Mapping.Affine(self.incoords, self.outcoords, matrix)
-##         if NIFTI.reorder_xfm:
-##             self.mapping.reorder(reorder_dims=NIFTI.reorder_dims)
-
-##         self.incoords = self.mapping.input_coords
-##         self.outcoords = self.mapping.output_coords
-
-##         self.start = self.mapping.output_coords.start
-##         self.step = self.mapping.output_coords.step
-##         self.shape = self.mapping.output_coords.shape
-
-##     def _transform(self):
-##         """
-##         Return 4x4 transform matrix based on the NIFTI attributes.
-##         If self.sform_code > 0, use the attributes srow_{x,y,z}, else
-##         use the quaternion. The calculation is taken from
+        value = N.zeros((4,4), N.float64)
+        value[3,3] = 1.0
         
-##         http://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/quatern.html
+        if self.sform_code > 0:
 
-
-##         """
-
-##         value = N.zeros((4,4), N.float64)
-##         value[3,3] = 1.0
-        
-##         if self.sform_code > 0:
-
-##             value[0] = self.srow_x
-##             value[1] = self.srow_y
-##             value[2] = self.srow_z
-
-##         elif self.qform_code > 0:
+            value[0] = self.srow_x
+            value[1] = self.srow_y
+            value[2] = self.srow_z
+        elif self.qform_code > 0:
             
-##             a, b, c, d = (1.0, self.quatern_b, self.quatern_c, self.quatern_d)
-##             R = N.array([[a*a+b*b-c*c-d*d, 2.*b*c-2*a*d,2*b*d+2*a*c],
-##                                 [2*b*c+2*a*d, a*a+c*c-b*b-d*d, 2*c*d-2*a*b],
-##                                 [2*b*d-2*a*c, 2*c*d+2*a*b, a*a+d*d-c*c-b*b]])
-##             if self.pixdim[0] == 0.0:
-##                 qfac = 1.0
-##             else:
-##                 qfac = self.pixdim[0]
-##             R[:,2] = qfac * R[:,2]
+            a, b, c, d = (1.0, self.quatern_b, self.quatern_c, self.quatern_d)
+            R = N.array([[a*a+b*b-c*c-d*d, 2.*b*c-2*a*d,2*b*d+2*a*c],
+                                [2*b*c+2*a*d, a*a+c*c-b*b-d*d, 2*c*d-2*a*b],
+                                [2*b*d-2*a*c, 2*c*d+2*a*b, a*a+d*d-c*c-b*b]])
+            if self.pixdim[0] == 0.0:
+                qfac = 1.0
+            else:
+                qfac = self.pixdim[0]
+            R[:,2] = qfac * R[:,2]
 
-##             value[0:3,0:3] = R
-##             value[0,3] = self.qoffset_x
-##             value[1,3] = self.qoffset_y
-##             value[2,3] = self.qoffset_z
+            value[0:3,0:3] = R
+            value[0,3] = self.qoffset_x
+            value[1,3] = self.qoffset_y
+            value[2,3] = self.qoffset_z
+        else:
+            value[0,0] = self.pixdim[1]
+            value[1,1] = self.pixdim[2]
+            value[2,2] = self.pixdim[3]
 
-##         else:
-##             value[0,0] = self.pixdim[1]
-##             value[1,1] = self.pixdim[2]
-##             value[2,2] = self.pixdim[3]
-
-##         return value
+        return value
             
 ##     def _dimensions2dim(self, dimensions):
 ##         '''This routine tries to a list of dimensions into sensible NIFTI dimensions.'''
@@ -507,11 +534,7 @@ class NIFTI1(BinaryFile):
 ##             value = value + '%s:%s=%s\n' % (os.path.split(self.hdrfilename)[1], att[0], _value.__str__())
 ##         return value[:-1]
 
-
-"""
-URLPipe class expects this.
-"""
-creator = NIFTI1
+reader = NIFTI1
 
 
 NIFTI1.__doc__ += """

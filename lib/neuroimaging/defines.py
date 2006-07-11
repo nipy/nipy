@@ -40,7 +40,7 @@ def enthought_traits_def():
     global ENTHOUGHT_TRAITS_DEF
     global traits
     try:
-        import enthought.traits as traits
+        import enthought.traits.api as traits
         ENTHOUGHT_TRAITS_DEF = True
     except:
         ENTHOUGHT_TRAITS_DEF = False
