@@ -1,13 +1,15 @@
 import os
 import numpy as N
 
+from neuroimaging import traits
+
 from neuroimaging.data import DataSource
 from neuroimaging.reference.axis import space
 from neuroimaging.reference.mapping import Affine
 from neuroimaging.reference.grid import SamplingGrid
 
 from neuroimaging.image.formats import BinaryImage
-from neuroimaging.data.header import add_headeratts
+#from neuroimaging.data.header import add_headeratt
 
 # NIFTI-1 constants
 
@@ -128,51 +130,6 @@ dims = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension']
 
 # (name, packstr, default) tuples
 
-headeratts = [('sizeof_hdr', 'i', 348),
-              ('data_type', '10s', ' '*10),
-              ('db_name', '18s', ' '*18),
-              ('extents', 'i', 0),
-              ('session_error', 'h', 0),
-              ('regular', 's', 'r'),
-              ('dim_info', 'b', 0),
-              ('dim', '8h', (4,1,1,1,1) + (0,)*3),
-              ('intent_p1', 'f', 0.),
-              ('intent_p2', 'f', 0.),
-              ('intent_p3', 'f', 0.),
-              ('intent_code', 'h', 0),
-              ('datatype', 'h', 0),
-              ('bitpix', 'h', 0),
-              ('slice_start', 'h', 0),
-              ('pixdim', '8f', (1.,) + (0.,)*7),
-              ('vox_offset', 'f', 0),
-              ('scl_slope', 'f', 1.0),
-              ('scl_inter', 'f', 0.),
-              ('slice_end', 'h', 0),
-              ('slice_code', 'b', 0),
-              ('xyzt_units', 'b', 0),
-              ('cal_max', 'f', 0),
-              ('cal_min', 'f', 0),
-              ('slice_duration', 'f', 0),
-              ('toffset', 'f', 0),
-              ('glmax', 'i', 0),
-              ('glmin', 'i', 0),
-              ('descrip', '80s', ' '*80),
-              ('aux_file', '24s', ' '*24),
-              ('qform_code', 'h', 0),
-              ('sform_code', 'h', 0),
-              ('quatern_b', 'f', 0.0),
-              ('quatern_c', 'f', 0.),
-              ('quatern_d', 'f', 0.),
-              ('qoffset_x', 'f', 0.),
-              ('qoffset_y', 'f', 0.),
-              ('qoffset_z', 'f', 0.),
-              ('srow_x', '4f', [0.,0.,1.,0.]),
-              ('srow_y', '4f', [0.,1.,0.,0.]),
-              ('srow_z', '4f', [1.,0.,0.,0.]),
-              ('intent_name', '16s', ' '*16),
-              ('magic', '4s', 'ni1\0')
-              ]
-
 class NIFTI1(BinaryImage):
     """
     A class that implements the nifti1 header with some typechecking.
@@ -183,6 +140,52 @@ class NIFTI1(BinaryImage):
     have the header to figure out what kind of file it is.
 
     """
+
+    header = traits.List(
+        [('sizeof_hdr', 'i', 348),
+         ('data_type', '10s', ' '*10),
+         ('db_name', '18s', ' '*18),
+         ('extents', 'i', 0),
+         ('session_error', 'h', 0),
+         ('regular', 's', 'r'),
+         ('dim_info', 'b', 0),
+         ('dim', '8h', (4,1,1,1,1) + (0,)*3),
+         ('intent_p1', 'f', 0.),
+         ('intent_p2', 'f', 0.),
+         ('intent_p3', 'f', 0.),
+         ('intent_code', 'h', 0),
+         ('datatype', 'h', 0),
+         ('bitpix', 'h', 0),
+         ('slice_start', 'h', 0),
+         ('pixdim', '8f', (1.,)*5 + (0.,)*3),
+         ('vox_offset', 'f', 0),
+         ('scl_slope', 'f', 1.0),
+         ('scl_inter', 'f', 0.),
+         ('slice_end', 'h', 0),
+         ('slice_code', 'b', 0),
+         ('xyzt_units', 'b', 0),
+         ('cal_max', 'f', 0),
+         ('cal_min', 'f', 0),
+         ('slice_duration', 'f', 0),
+         ('toffset', 'f', 0),
+         ('glmax', 'i', 0),
+         ('glmin', 'i', 0),
+         ('descrip', '80s', ' '*80),
+         ('aux_file', '24s', ' '*24),
+         ('qform_code', 'h', 0),
+         ('sform_code', 'h', 0),
+         ('quatern_b', 'f', 0.0),
+         ('quatern_c', 'f', 0.),
+         ('quatern_d', 'f', 0.),
+         ('qoffset_x', 'f', 0.),
+         ('qoffset_y', 'f', 0.),
+         ('qoffset_z', 'f', 0.),
+         ('srow_x', '4f', [0.,0.,1.,0.]),
+         ('srow_y', '4f', [0.,1.,0.,0.]),
+         ('srow_z', '4f', [1.,0.,0.,0.]),
+         ('intent_name', '16s', ' '*16),
+         ('magic', '4s', 'ni1\0')
+         ])
 
     extensions = ('.img', '.hdr', '.nii')
 
@@ -260,7 +263,6 @@ class NIFTI1(BinaryImage):
         self.srow_z = self.grid.mapping.transform[2]
 
     def imgfilename(self):
-        self.offset = int(self.vox_offset)
         if self.magic == 'n+1\x00':
             return self.filename
         else:
@@ -285,7 +287,6 @@ class NIFTI1(BinaryImage):
                 self.byteorder = 'big'
         hdrfile.close()
         
-
     def getdtype(self):
         # NIFTI-1 datatypes
 
@@ -382,7 +383,8 @@ class NIFTI1(BinaryImage):
 
         return value
             
-add_headeratts(NIFTI1, headeratts)
+## for headeratt in headeratts:
+##     add_headeratt(NIFTI1, headeratt)
 
 reader = NIFTI1
 

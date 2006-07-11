@@ -91,21 +91,25 @@ class BinaryImage(BinaryHeader):
     BinaryHeader with a brick of data attached to be memmap'ed.
     """
 
-
     # grid
+
     grid = traits.Instance(SamplingGrid)
 
     def imgfilename(self):
         raise NotImplementedError
 
-    def getdata(self):
+    def getdata(self, offset=0):
         imgpath = self.imgfilename()
+        if imgpath == self.hdrfilename():
+            offset += self.header_length
+        else:
+            offset += 0
         imgfilename = self.datasource.filename(imgpath)
         if iszip(imgfilename): imgfilename = unzip(imgfilename)
         mode = self.mode in ('r+', 'w') and "r+" or self.mode
         self.memmap = memmap(imgfilename, dtype=self.dtype,
                              shape=tuple(self.grid.shape), mode=mode,
-                             offset=self.offset)
+                             offset=offset)
 
     def emptyfile(self):
         """

@@ -35,6 +35,7 @@ class BinaryHeaderValidator(traits.TraitHandler):
         else: valtup = (value,)
         result = pack(self.bytesign+self.packstr, *valtup)
         if outfile is not None:
+            print self.seek
             outfile.seek(self.seek)
             outfile.write(result)
         return result
@@ -53,7 +54,7 @@ class BinaryHeaderValidator(traits.TraitHandler):
         return 'an object of type "%s", apply(struct.pack, "%s", object) must make sense' % (self.packstr, self.packstr)
 
     def read(self, hdrfile):
-        hdrfile.seek(self.seek)
+#        hdrfile.seek(self.seek)
         value = unpack(self.bytesign + self.packstr,
                        hdrfile.read(self.size))
         if not is_tupled(self.packstr, value):
@@ -87,34 +88,37 @@ class BinaryHeader(traits.HasTraits):
     mode = traits.Trait('r', 'w', 'r+')
     _mode = traits.Trait(['rb', 'wb', 'rb+'])
 
-    # offset for the memmap'ed array
-
-    offset = traits.Int(0)
-
     # datasource
     datasource = traits.Instance(DataSource)
+
+    header = traits.List
+    header_length = traits.Int(0)
 
     def __init__(self, **keywords):
         traits.HasTraits.__init__(self, **keywords)
         if byteorder == 'little': self.bytesign = '<'
         else: self.bytesign = '>'
 
+        for att in self.header:
+            self.set_header_attribute(att, append=True)
+            
     def __str__(self):
         value = ''
-        for trait in self.headeratts:
-            value = value + '%s:%s=%s\n' % (self.filebase, trait, str(getattr(self, trait)))
+        for trait in self.header:
+            value = value + '%s:%s=%s\n' % (self.filebase, trait[0], str(getattr(self, trait[0])))
         return value
 
     def readheader(self, hdrfile=None):
         self.check_byteorder()
         if hdrfile is None:
             hdrfile = self.datasource.open(self.hdrfilename())
-        for traitname in self.headeratts:
-            trait = self.trait(traitname)
+        for att in self.header:
+            name = att[0]
+            trait = self.trait(name)
             if hasattr(trait.handler, 'bytesign') and hasattr(self, 'bytesign'):
                 trait.handler.bytesign = self.bytesign
             value = trait.handler.read(hdrfile)
-            setattr(self, traitname, value)
+            setattr(self, name, value)
         self.getdtype()
         hdrfile.close()
 
@@ -136,29 +140,31 @@ class BinaryHeader(traits.HasTraits):
             else:
                 raise ValueError, 'error writing %s: clobber is False and hdrfile exists' % hdrfilename
 
-        for traitname in self.headeratts:
-            trait = self.trait(traitname)
+        for att in self.header:
+            name = att[0]
+            trait = self.trait(name)
             trait.handler.bytesign = self.bytesign
 
             if hasattr(trait.handler, 'seek'):
-                trait.handler.write(getattr(self, traitname), outfile=hdrfile)
+                trait.handler.write(getattr(self, name), outfile=hdrfile)
 
         hdrfile.close()
 
-def add_headeratts(imageclass, headeratts):
-    """
-    Add header attributes to a BinaryHeader class.
-    """
-    imageclass.headeratts = []
+    def set_header_attribute(self, headeratt, seek=0, append=True):
+        """
+        Add header attributes to a Header instance.
+        """
 
-    seek = 0
-    for att in headeratts:
-        if len(att) == 3:
-            name, packstr, default = att
-            extra = {}
+        if append:
+            seek = self.header_length
+        if len(headeratt) == 3:
+            name, definition, default = headeratt
+            keywords = {}
         else:
-            name, packstr, default, desc = att
-            extra = {'desc':desc}
-        imageclass.add_class_trait(name, BinaryHeaderAtt(packstr, seek, default, **extra))
-        imageclass.headeratts.append(name)
-        seek += calcsize(packstr)
+            name, definition, default, keywords = headeratt
+        if name in self.traits().keys():
+            self.remove_trait(name)
+        self.add_trait(name, BinaryHeaderAtt(definition, seek=seek, value=default, **keywords))
+        if append:
+            self.header_length += calcsize(definition)
+
