@@ -10,17 +10,15 @@ from neuroimaging.data import DataSource
 from neuroimaging.reference.axis import space, spacetime
 from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging.image.formats import BinaryImage
-#from neuroimaging.data.header import add_headeratt
+from neuroimaging.image.formats import BinaryFormat
 
-
-class ANALYZE(BinaryImage):
+class ANALYZE(BinaryFormat):
     """
     A class to read and write ANALYZE format images. 
 
     """
 
-    header = traits.List(
+    header = traits.ReadOnly(
         [('sizeof_hdr', 'i', 348),
          ('data_type', '10s', ' '*10),
          ('db_name', '18s', ' '*18),
@@ -82,7 +80,7 @@ class ANALYZE(BinaryImage):
 
     def __init__(self, filename=None, datasource=DataSource(), grid=None, **keywords):
 
-        BinaryImage.__init__(self, **keywords)
+        BinaryFormat.__init__(self, **keywords)
 
         self.datasource = datasource
         self.filebase = filename and os.path.splitext(filename)[0] or None

@@ -86,7 +86,56 @@ class structfield (attribute):
         if type(value) is type(""): value = self.fromstring(value)
         attribute.set(self, host, value)
 
-class BinaryImage(BinaryHeader):
+class Format:
+
+    """ Valid file name extensions """
+    extensions = []
+    header = None
+
+    def __init__(self, filename, **keywords):
+        self.grid = NotImplemented
+        self.memmap = NotImplemented
+
+    @classmethod
+    def valid(self, filename, verbose=False, mode='r'):
+        """
+        Check if filename is valid. If verbose=True, actually try to open
+        and read the file.
+        """
+        try:
+            extension = path(filename).splitext()[1]
+
+            if extension not in extension:
+                return False
+            if verbose:
+                # Try to actually instantiate the objects
+                self(filename, mode)
+        except:
+            return False
+        return True
+
+    def add_header_attribute(self, name, attribute):
+        """
+        Add an attribute to the header.
+        """
+        raise NotImplementedError
+
+    def remove_header_attribute(self, name, attribute):
+        """
+        Remove an attribute from the header.
+        """
+        raise NotImplementedError
+
+    def __getitem__(self, slice):
+        """Data access"""
+        raise NotImplementedError
+
+    def __setitem__(self, slice, data):
+        """Data access"""
+        raise NotImplementedError
+
+
+class BinaryFormat(BinaryHeader,Format):
     """
     BinaryHeader with a brick of data attached to be memmap'ed.
     """

@@ -45,12 +45,13 @@ class Image(traits.HasTraits):
 
 
     @staticmethod
-    def fromurl(url, datasource=DataSource(), grid=None, mode="r", clobber=False,
+    def fromurl(url, datasource=DataSource(), reader=None, grid=None, mode="r", clobber=False,
       **keywords):
         zipexts = (".gz",".bz2")
         base, ext = os.path.splitext(url.strip())
         if ext in zipexts: url = base
-        return getreader(url)(filename=url,
+        reader = reader or getreader(url)
+        return reader(filename=url,
           datasource=datasource, mode=mode, clobber=clobber, grid=grid, **keywords)
 
 

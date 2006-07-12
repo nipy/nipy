@@ -8,7 +8,7 @@ from neuroimaging.reference.axis import space
 from neuroimaging.reference.mapping import Affine
 from neuroimaging.reference.grid import SamplingGrid
 
-from neuroimaging.image.formats import BinaryImage
+from neuroimaging.image.formats import BinaryFormat
 #from neuroimaging.data.header import add_headeratt
 
 # NIFTI-1 constants
@@ -130,7 +130,7 @@ dims = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension']
 
 # (name, packstr, default) tuples
 
-class NIFTI1(BinaryImage):
+class NIFTI1(BinaryFormat):
     """
     A class that implements the nifti1 header with some typechecking.
     NIFTI-1 attributes must conform to their description in nifti1.h.
@@ -190,7 +190,7 @@ class NIFTI1(BinaryImage):
     extensions = ('.img', '.hdr', '.nii')
 
     def __init__(self, filename=None, datasource=DataSource(), grid=None, **keywords):
-        BinaryImage.__init__(self, **keywords)
+        BinaryFormat.__init__(self, **keywords)
                                  
         self.datasource = datasource
         ext = os.path.splitext(filename)[1]
@@ -383,9 +383,6 @@ class NIFTI1(BinaryImage):
 
         return value
             
-## for headeratt in headeratts:
-##     add_headeratt(NIFTI1, headeratt)
-
 reader = NIFTI1
 
 

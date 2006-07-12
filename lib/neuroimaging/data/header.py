@@ -35,7 +35,6 @@ class BinaryHeaderValidator(traits.TraitHandler):
         else: valtup = (value,)
         result = pack(self.bytesign+self.packstr, *valtup)
         if outfile is not None:
-            print self.seek
             outfile.seek(self.seek)
             outfile.write(result)
         return result
@@ -54,7 +53,6 @@ class BinaryHeaderValidator(traits.TraitHandler):
         return 'an object of type "%s", apply(struct.pack, "%s", object) must make sense' % (self.packstr, self.packstr)
 
     def read(self, hdrfile):
-#        hdrfile.seek(self.seek)
         value = unpack(self.bytesign + self.packstr,
                        hdrfile.read(self.size))
         if not is_tupled(self.packstr, value):
@@ -77,8 +75,6 @@ class BinaryHeader(traits.HasTraits):
     This is used for both ANALYZE-7.5 and NIFTI-1 files in the neuroimaging package.
     """
 
-    bytesign = traits.Trait(['>','!','<'])
-    byteorder = traits.Trait(['little', 'big'])
 
     # file, mode, datatype
 
@@ -93,6 +89,8 @@ class BinaryHeader(traits.HasTraits):
 
     header = traits.List
     header_length = traits.Int(0)
+    bytesign = traits.Trait(['>','!','<'])
+    byteorder = traits.Trait(['little', 'big'])
 
     def __init__(self, **keywords):
         traits.HasTraits.__init__(self, **keywords)
