@@ -149,10 +149,7 @@ class ANALYZE(BinaryImage):
 
 
     def _datatype_changed(self):
-        ## TODO / WARNING, datatype is not checked very carefully...
-
         self.getdtype()
-
 
     def _byteorder_changed(self):
         self.bytesign = {'big':'>', 'little':'<'}[self.byteorder]
