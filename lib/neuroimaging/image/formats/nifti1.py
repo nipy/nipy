@@ -7,7 +7,7 @@ from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.image.utils import writebrick
 
-from validators import BinaryHeaderAtt, BinaryFile, traits
+from validators import BinaryHeaderAtt, BinaryImage, traits
 
 # NIFTI-1 constants
 
@@ -124,42 +124,9 @@ NIFTI_UNITS = [NIFTI_UNITS_UNKNOWN, NIFTI_UNITS_METER, NIFTI_UNITS_MM, NIFTI_UNI
 
 NIFTI_SLICE = [NIFTI_SLICE_UNKNOWN, NIFTI_SLICE_SEQ_INC, NIFTI_SLICE_SEQ_DEC, NIFTI_SLICE_ALT_INC, NIFTI_SLICE_ALT_DEC, NIFTI_SLICE_ALT_INC2, NIFTI_SLICE_ALT_DEC2]
 
-# NIFTI-1 datatypes
-
-datatypes = {DT_NONE:None, # fail if unknown
-             DT_UNKNOWN:None, 
-             DT_BINARY:N.bool8,
-             DT_UNSIGNED_CHAR:N.uint8,
-             DT_SIGNED_SHORT:N.int16,
-             DT_SIGNED_INT:N.int32,
-             DT_FLOAT:N.float32,
-             DT_COMPLEX:None,
-             DT_DOUBLE:N.float64,
-             DT_RGB:None,
-             DT_ALL:None,
-             DT_UINT8:N.uint8,
-             DT_INT16:N.int16,
-             DT_INT32:N.int32,
-             DT_FLOAT32:N.float32,
-             DT_COMPLEX64:N.complex64,
-             DT_FLOAT64:N.float64,
-             DT_RGB24:None,
-             DT_INT8:N.int8,
-             DT_UINT16:N.uint16,
-             DT_UINT32:N.uint32,
-             DT_INT64:N.int64,
-             DT_UINT64:N.uint64,
-             DT_FLOAT128:None,
-             DT_COMPLEX128:None,
-             DT_COMPLEX256:None}
-
-
-_byteorder_dict = {'big':'>', 'little':'<'}
-
-
 dims = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension']
 
-class NIFTI1(BinaryFile):
+class NIFTI1(BinaryImage):
     """
     A class that implements the nifti1 header with some typechecking.
     NIFTI-1 attributes must conform to their description in nifti1.h.
@@ -216,16 +183,8 @@ class NIFTI1(BinaryFile):
 
     extensions = ('.img', '.hdr', '.nii')
 
-    # file, mode, datatype
-
-    memmapped = traits.true
-    filename = traits.Str()
-    filebase = traits.Str()
-    mode = traits.Trait('r', 'w', 'r+')
-    _mode = traits.Trait(['rb', 'wb', 'rb+'])
-
     def __init__(self, filename=None, datasource=DataSource(), grid=None, **keywords):
-        BinaryFile.__init__(self, **keywords)
+        BinaryImage.__init__(self, **keywords)
 
         self.datasource = datasource
         ext = os.path.splitext(filename)[1]
@@ -238,13 +197,12 @@ class NIFTI1(BinaryFile):
         if self.mode is 'w':
             self._dimfromgrid(grid)
             self.writeheader()
-            if filename: self.readheader(self.hdrfilename())
-            self.getdtype()
+            if filename: self.readheader()
             self.ndim = len(grid.shape)
             self.emptyfile()
             
         elif filename:
-            self.readheader(self.hdrfilename())
+            self.readheader()
             self.ndim = self.dim[0]
 
         axisnames = space[0:self.ndim]
@@ -265,33 +223,17 @@ class NIFTI1(BinaryFile):
         
         # assume .mat matrix uses FORTRAN indexing
         self.grid = self.grid.matlab2python()
-
-        if self.memmapped:
-            imgpath = self.imgfilename()
-            imgfilename = self.datasource.filename(imgpath)
-            if iszip(imgfilename): imgfilename = unzip(imgfilename)
-            mode = self.mode in ('r+', 'w') and "r+" or self.mode
-            self.memmap = N.memmap(imgfilename, dtype=self.dtype,
-                                   shape=tuple(self.grid.shape),
-                                   mode=mode,
-                                   offset=int(self.vox_offset))
+        self.getdata()
 
     def hdrfilename(self):
         return self.filename
 
     def imgfilename(self):
+        self.offset = int(self.vox_offset)
         if self.magic == 'n+1\x00':
             return self.filename
         else:
             return '%s.img' % self.filebase
-
-    def emptyfile(self):
-        writebrick(file(self.imgfilename(), 'w'),
-                   (0,)*self.ndim,
-                   N.zeros(self.grid.shape, N.float64),
-                   self.grid.shape,
-                   byteorder=self.byteorder,
-                   outtype = self.typecode)
 
     def check_byteorder(self, hdrfile):
         """
@@ -312,20 +254,38 @@ class NIFTI1(BinaryFile):
                 self.byteorder = 'big'
         hdrfile.seek(0,0)
         
-    def readheader(self, filename=None):
-        """
-        Read in a NIFTI-1 header file, filling all default values.
-        """
 
-        filename = filename or self.filename
-        hdrfile = self.datasource.open(filename)
+    def getdtype(self):
+        # NIFTI-1 datatypes
 
-        self.check_byteorder(hdrfile)
-        BinaryFile.readheader(self, hdrfile)
+        self.dtype =  {DT_NONE:None, # will fail if unknown
+                       DT_UNKNOWN:None, 
+                       DT_BINARY:N.bool8,
+                       DT_UNSIGNED_CHAR:N.uint8,
+                       DT_SIGNED_SHORT:N.int16,
+                       DT_SIGNED_INT:N.int32,
+                       DT_FLOAT:N.float32,
+                       DT_COMPLEX:None,
+                       DT_DOUBLE:N.float64,
+                       DT_RGB:None,
+                       DT_ALL:None,
+                       DT_UINT8:N.uint8,
+                       DT_INT16:N.int16,
+                       DT_INT32:N.int32,
+                       DT_FLOAT32:N.float32,
+                       DT_COMPLEX64:N.complex64,
+                       DT_FLOAT64:N.float64,
+                       DT_RGB24:None,
+                       DT_INT8:N.int8,
+                       DT_UINT16:N.uint16,
+                       DT_UINT32:N.uint32,
+                       DT_INT64:N.int64,
+                       DT_UINT64:N.uint64,
+                       DT_FLOAT128:None,
+                       DT_COMPLEX128:None,
+                       DT_COMPLEX256:None}[self.datatype]
 
-        self.dtype = datatypes[self.datatype]
-        hdrfile.close()
-
+        self.dtype = self.dtype.newbyteorder(self.bytesign)
 
     def transform(self):
         """
@@ -370,169 +330,6 @@ class NIFTI1(BinaryFile):
 
         return value
             
-##     def _dimensions2dim(self, dimensions):
-##         '''This routine tries to a list of dimensions into sensible NIFTI dimensions.'''
-
-##         _dimnames = [dim.name for dim in dimensions]
-##         _dimshape = [dim.length for dim in dimensions]
-##         _dimdict = {}
-
-##         for _name in _dimnames:
-##             _dimdict[_name] = dimensions[_dimnames.index(_name)]
-            
-##         if 'vector_dimension' in _dimnames:
-##             ndim = 5
-##             has_vector = True
-##         else:
-##             has_vector = False
-##             if 'time' in _dimnames:
-##                 ndim = 4
-##                 has_time = True
-##             else:
-##                 has_time = False
-##                 ndim = len(dimensions)
-
-##         dim = [ndim]
-##         pixdim = list(self.pixdim[0:1])
-
-##         self.spatial_dimensions = []
-
-##         i = 1
-##         for _name in ['xspace', 'yspace', 'zspace']:
-##             try: # see if these dimensions exist
-##                 dim.append(_dimdict[_name].length)
-##                 pixdim.append(abs(_dimdict[_name].step))
-##                 self.spatial_dimensions.append(_dimdict[_name])
-##             except: # else set pixdim=0 even though dimension may be needed
-##                 dim.append(1)
-##                 pixdim.append(0.)
-##         if has_time and not has_vector:
-##             dim.append(_dimdict['time'].length)
-##             pixdim.append(abs(_dimdict['time'].step))
-##         elif not has_time and has_vector:
-##             dim.append(1)
-##             pixdim.append(0.)
-##             dim.append(_dimdict['vector_dimension'].length)
-##         elif has_time and has_vector:
-##             dim.append(_dimdict['time'].length)
-##             pixdim.append(abs(_dimdict['time'].step))
-##             dim.append(_dimdict['vector_dimension'].length)
-
-##         self.outdim = dimensions
-##         self.indim = [Dimension.RegularDimension(name=outdim.name, length=outdim.length, start=0.0, step=1.0) for outdim in self.outdim]
-
-##         self.dim = tuple(dim + [1] * (8 - len(dim)))
-##         self.pixdim = tuple(pixdim + [0.] * (8 - len(pixdim)))
-        
-##     def read(self, start, count, **keywords):
-##         return_value = Utils.brickutils.readbrick(self.brikfile, start, count, self.shape, byteorder=self.byteorder, intype = self.typecode, offset=self.offset)
-##         if self.scl_slope not in  [1.0, 0.0]:
-##             return_value = self.scl_slope * return_value
-##         if self.scl_inter != 0.0:
-##             return_value = return_value + self.scl_inter
-##         return return_value
-
-##     def write(self, start, data, **keywords):
-##         self.close()
-##         self.open(mode='r+', header=False)
-##         if self.scl_inter != 0:
-##             outdata = data - self.scl_inter
-##         else:
-##             outdata = data
-##         if self.scl_slope != 1.0:
-##             outdata = outdata / self.scl_slope
-##         if len(start) == 3 and len(self.shape) == 4 and self.shape[0] == 1:
-##             newstart = (0,) + tuple(start) # Is the NIFTI file "really 3d"?
-##         else:
-##             newstart = start
-##         Utils.brickutils.writebrick(self.brikfile, newstart, outdata, self.shape, byteorder = self.byteorder, outtype = self.typecode, offset = self.offset)
-##         return 
-
-##     def close(self, header=True, brick=True):
-##         if header:
-##             self.hdrfile.close()
-##         if brick:
-##             self.brikfile.close()
-
-##     def open(self, mode='r', header=True, brick=True):
-##         if mode != 'r' and not self.clobber:
-##             raise ValueError, 'clobber does not agree with mode'
-##         if mode is None:
-##             mode = 'r'
-##         if mode == 'r':
-##             mode = 'rb'
-##         if mode == 'w':
-##             mode = 'wb'
-##         elif mode == 'r+':
-##             mode = 'rb+'
-##         if header:
-##             try:
-##                 self.hdrfile = file(self.hdrfile.name, mode=mode)
-##                 self.hdrfile.seek(0,0)
-##             except:
-##                 raise ValueError, 'errors opening header file %s' % self.hdrfile.name
-##         if brick:
-##             try:
-##                 self.brikfile = file(self.brikfile.name, mode=mode)
-##                 self.brikfile.seek(0,0)
-##             except:
-##                 raise ValueError, 'errors opening data file %s' % self.hdrfile.name
-
-
-
-##     def readheader(self):
-##         self.close(brick=False)
-##         self.open(mode='r', brick=False)
-##         try:
-##             self.hdrfile.seek(0,0)
-##         except:
-##             self.hdrfile = file(self.hdrfile.name)
-##             self.hdrfile.seek(0,0)
-##         for att in _header_atts:
-##             tmp = self.hdrfile.read(struct.calcsize(self.bytesign + att[1]))
-##             value = struct.unpack(self.bytesign + att[1], tmp)
-##             if len(value) == 1:
-##                 setattr(self, att[0], value[0])
-##             else:
-##                 setattr(self, att[0], list(value))
-
-##         self.close(brick=False)
-
-##         dimensions = []
-##         self.ndim = self.dim[0]
-##         for i in range(self.ndim):
-##             if self.pixdim[i+1] != 0:
-##                 dimensions.append(Dimension.RegularDimension(name=dimorder[i], length=self.dim[i+1], start=0.0, step=self.pixdim[i+1]))
-##         self._dimensions2dim(dimensions)
-##         return
-
-##     def writeheader(self, hdrfile = None):
-##         if not hdrfile and self.clobber:
-##             hdrfile = file(self.hdrfile.name, 'w')
-##         elif self.clobber:
-##             self.hdrfile.close()
-##             self.hdrfile = file(self.hdrfile.name, 'w')
-##             hdrfile = self.hdrfile
-##         else:
-##             raise ValueError, 'clobber is False and no hdrfile supplied'
-##         for att in _header_atts: # Fill in default values if attributes are not present
-##             if not hasattr(self, att[0]):
-##                 setattr(self, att[0], att[3])
-##         for att in _atts:
-##             value = getattr(self, att[0])
-##             if att[1][-1] == 's':
-##                 value = value.__str__()
-##             if not att[2]:
-##                 value = (value,)
-##             hdrfile.write(apply(struct.pack, (self.bytesign + att[1],) + tuple(value)))
-##         hdrfile.close()
-
-##     def __str__(self):
-##         value = ''
-##         for att in _header_atts:
-##             _value = getattr(self, att[0])
-##             value = value + '%s:%s=%s\n' % (os.path.split(self.hdrfilename)[1], att[0], _value.__str__())
-##         return value[:-1]
 
 reader = NIFTI1
 

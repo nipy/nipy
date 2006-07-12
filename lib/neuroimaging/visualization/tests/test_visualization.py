@@ -1,4 +1,4 @@
-import unittest
+import unittest, os
 
 from neuroimaging.tests.data import repository
 from neuroimaging.image import Image

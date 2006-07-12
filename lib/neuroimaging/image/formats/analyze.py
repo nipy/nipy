@@ -10,23 +10,9 @@ from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.image.utils import writebrick
 
-from validators import BinaryHeaderAtt, BinaryFile, traits
+from validators import BinaryHeaderAtt, BinaryImage, traits
 
-
-ANALYZE_Byte = 2
-ANALYZE_Short = 4
-ANALYZE_Int = 8
-ANALYZE_Float = 16
-ANALYZE_Double = 64
-
-datatypes = {
-  ANALYZE_Byte:(N.uint8, 1),
-  ANALYZE_Short:(N.int16, 2),
-  ANALYZE_Int:(N.int32, 4),
-  ANALYZE_Float:(N.float32, 4),
-  ANALYZE_Double:(N.float64, 8)}
-
-class ANALYZE(BinaryFile):
+class ANALYZE(BinaryImage):
     """
     A class to read and write ANALYZE format images. 
 
@@ -79,14 +65,6 @@ class ANALYZE(BinaryFile):
     # file extensions recognized by this format
     extensions = ('.img', '.hdr', '.mat')
 
-    # file, mode, datatype
-
-    memmapped = traits.true
-    filename = traits.Str()
-    filebase = traits.Str()
-    mode = traits.Trait('r', 'w', 'r+')
-    _mode = traits.Trait(['rb', 'wb', 'rb+'])
-
     # Use mat file if it's there?
     # This will cause a problem for 4d files occasionally
     usematfile = traits.true
@@ -104,25 +82,21 @@ class ANALYZE(BinaryFile):
     # Vector axis?
     nvector = traits.Int(-1)
 
-    # grid
-    grid = traits.Any()
-
     def __init__(self, filename=None, datasource=DataSource(), grid=None, **keywords):
 
-        BinaryFile.__init__(self, **keywords)
+        BinaryImage.__init__(self, **keywords)
         self.datasource = datasource
         self.filebase = filename and os.path.splitext(filename)[0] or None
 
         if self.mode is 'w':
             self._dimfromgrid(grid)
             self.writeheader()
-            if filename: self.readheader(self.hdrfilename())
-            self.getdtype()
+            if filename: self.readheader()
             self.ndim = len(grid.shape)
             self.emptyfile()
             
         elif filename:
-            self.readheader(self.hdrfilename())
+            self.readheader()
             self.ndim = self.dim[0]
 
         if self.ignore_origin:
@@ -172,34 +146,8 @@ class ANALYZE(BinaryFile):
         # assume .mat matrix uses FORTRAN indexing
         self.grid = self.grid.matlab2python()
 
-        if self.memmapped:
-            imgpath = self.imgfilename()
-            imgfilename = self.datasource.filename(imgpath)
-            if iszip(imgfilename): imgfilename = unzip(imgfilename)
-            mode = self.mode in ('r+', 'w') and "r+" or self.mode
-            self.memmap = N.memmap(imgfilename, dtype=self.dtype,
-                shape=tuple(self.grid.shape), mode=mode)
-
-    def emptyfile(self):
-        """
-        Create an empty data file based on
-        self.grid and typecode.
-        """
-        
-        from neuroimaging.image.utils import writebrick
-        writebrick(file(self.imgfilename(), 'w'),
-                   (0,)*self.ndim,
-                   N.zeros(self.grid.shape, N.float64),
-                   self.grid.shape,
-                   byteorder=self.byteorder,
-                   outtype=self.typecode)
-
-    def readheader(self, hdrfilename):
-        hdrfile = self.datasource.open(hdrfilename)
-        BinaryFile.readheader(self, hdrfile)
- 	
-        self.typecode, self.byte = datatypes[self.datatype]
-        hdrfile.close()
+        # get memmaped array
+        self.getdata()
 
     def __str__(self):
         value = ''
@@ -209,6 +157,14 @@ class ANALYZE(BinaryFile):
 
     def _datatype_changed(self):
         ## TODO / WARNING, datatype is not checked very carefully...
+
+        self.getdtype()
+
+        ANALYZE_Byte = 2
+        ANALYZE_Short = 4
+        ANALYZE_Int = 8
+        ANALYZE_Float = 16
+        ANALYZE_Double = 64
 
         if self.datatype == ANALYZE_Byte:
             self.bitpix = 8
@@ -244,18 +200,6 @@ class ANALYZE(BinaryFile):
     def _bytesign_changed(self):
         self.byteorder = {'>':'big', '<':'little'}[self.bytesign]
 
-    def _filebase_changed(self):
-        try:
-            hdrfile = self.datasource.open(self.hdrfilename())
-            if self.mode in ['r', 'r+']:
-                self.byteorder, self.bytesign = guess_endianness(hdrfile)
-            else:
-                self.byteorder = sys.byteorder 
-            hdrfile.close()
-        except:
-            pass
-
-
     def hdrfilename(self):
         return '%s.hdr' % self.filebase
 
@@ -271,15 +215,22 @@ class ANALYZE(BinaryFile):
         except:
             pass
 
-
-    def _datatype_changed(self):
-        self.getdtype()
-        
-
     def getdtype(self):
-        self.typecode, self.byte = datatypes[self.datatype]
-        self.dtype = N.dtype(self.typecode)
-        self.dtype = self.dtype.newbyteorder(self.byteorder)
+        ANALYZE_Byte = 2
+        ANALYZE_Short = 4
+        ANALYZE_Int = 8
+        ANALYZE_Float = 16
+        ANALYZE_Double = 64
+
+        datatypes = {
+            ANALYZE_Byte:(N.uint8, 1),
+            ANALYZE_Short:(N.int16, 2),
+            ANALYZE_Int:(N.int32, 4),
+            ANALYZE_Float:(N.float32, 4),
+            ANALYZE_Double:(N.float64, 8)}
+
+        self.dtype, self.byte = datatypes[self.datatype]
+        self.dtype = self.dtype.newbyteorder(self.bytesign)
 
 
     def _mode_changed(self):
@@ -317,32 +268,6 @@ class ANALYZE(BinaryFile):
         if not _diag:
             self.origin = [0]*5
         
-
-
-    def __del__(self):
-        if self.memmapped and hasattr(self, "memmap"):
-            self.memmap.sync()
-            del(self.memmap)
-        
-
-    def __getitem__(self, _slice):
-        v = self.memmap[_slice]
-        if self.scale_factor:
-            return v * self.scale_factor
-        else:
-            return v
-    def getslice(self, _slice): return self[_slice]
-
-    def __setitem__(self, _slice, data):
-        if self.scale_factor:
-            _data = data / self.scale_factor
-        else:
-            _data = data
-        self.memmap[_slice] = _data.astype(self.dtype)
-        _data.shape = N.product(_data.shape)
-
-    def writeslice(self, _slice, data): self[slice] = data
-        
     def readmat(self):
         """
         Return affine transformation matrix, if it exists.
@@ -364,20 +289,26 @@ class ANALYZE(BinaryFile):
         if self.clobber or not path(matfile).exists():
             self.grid.mapping.tofile(matfile)
 
-def guess_endianness(hdrfile):
-    """
-    Try to guess big/little endianness of an ANALYZE file based on dim[0].
-    """
-    for order, sign in {'big':'>', 'little':'<', 'net':'!'}.items():
-        hdrfile.seek(40)
-        x = hdrfile.read(2)
+    def check_byteorder(self):
+        """
+        Try to guess big/little endianness of an ANALYZE file based on dim[0].
+        """
+
+        hdrfile = self.datasource.open(self.hdrfilename())
+        for order, sign in {'big':'>', 'little':'<'}.items():
+            hdrfile.seek(40)
+            x = hdrfile.read(2)
+            try:
+                test = unpack(sign + 'h', x)[0]
+                print 'test', test
+                if test in range(1,8):
+                    byteorder, bytesign = order, sign
+            except:
+                pass
         try:
-            test = unpack(sign + 'h', x)[0]
-            if test in range(1,8):
-                return order, sign
+            self.byteorder, self.bytesign = byteorder, bytesign
         except:
-            raise ValueError 
-    raise ValueError, 'file format not recognized: endianness test failed'
+            raise ValueError, 'file format not recognized: byteorder check failed'
 
 # plug in as a format creator (see formats.getreader)
 reader = ANALYZE
