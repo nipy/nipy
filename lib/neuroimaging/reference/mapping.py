@@ -236,7 +236,7 @@ class Mapping (object):
         Take that maps matlab voxels to (matlab-ordered) world coordinates and
         make it python-oriented. This means that if
         mapping(v_x,v_y,v_z)=(w_x,w_y,w_z), then the return will send
-        (v_z,v_y,v_x) to (w_z,w_y,w_x).
+        (v_z-1,v_y-1,v_x-1) to (w_z,w_y,w_x).
         """
         ndim = self.ndim
         t1 = N.zeros((ndim+1,)*2, N.float64)
@@ -247,7 +247,6 @@ class Mapping (object):
         w1 = Affine(self.input_coords.reverse(), self.input_coords, t1)
         w2 = Affine(self.output_coords, self.output_coords.reverse(), t2)
         return (w2 * self) * w1
-
 
     def python2matlab(self):
         "Inverse of matlab2python -- see this function for help."

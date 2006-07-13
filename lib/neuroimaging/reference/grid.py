@@ -178,9 +178,6 @@ class SamplingGrid (object):
         """
         return ConcatenatedGrids([self]*n)
 
-
-
-
 class ConcatenatedGrids(SamplingGrid):
     """
     Return a grid formed by concatenating a sequence of grids. Checks are done

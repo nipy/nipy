@@ -9,11 +9,10 @@ from neuroimaging.tests.data import repository
 
 class GridTest(unittest.TestCase):
 
-    def _open(self):
+    def setUp(self):
         self.img = ANALYZE("avg152T1", repository)
 
     def test_concat(self):
-        self._open()
         grids = ConcatenatedGrids([self.img.grid]*5)
         self.assertEquals(tuple(grids.shape), (5,) + tuple(self.img.grid.shape))
         z = grids.mapping(N.transpose([4,5,6,7]))
@@ -21,12 +20,18 @@ class GridTest(unittest.TestCase):
         x = a.mapping(N.transpose([5,6,7]))
 
     def test_replicate(self):
-        self._open()
         grids = self.img.grid.replicate(4)
         self.assertEquals(tuple(grids.shape), (4,) + tuple(self.img.grid.shape))
         z = grids.mapping(N.transpose([2,5,6,7]))
         a = grids.subgrid(0)
         x = a.mapping(N.transpose([5,6,7]))
+
+    def test_replicate2(self):
+        """
+        Test failing
+        """
+        grids = self.img.grid.replicate(4)
+        grids.python2matlab()
 
     def test_identity(self):
         shape = (30,40,50)
