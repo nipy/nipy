@@ -32,57 +32,58 @@ sctypes = {
     ANALYZE_Double:N.float64}
 
 
+header = [('sizeof_hdr', 'i', 348),
+          ('data_type', '10s', ' '*10),
+          ('db_name', '18s', ' '*18),
+          ('extents', 'i', 0),
+          ('session_error', 'h', 0),
+          ('regular', 's', 'r'),
+          ('hkey_un0', 's', '0'),
+          ('dim', '8h', (4,91,109,91,1,0,0,0),),
+          ('vox_units', '4s', 'mm  '),
+          ('calib_units', '8s', ' '*8),
+          ('unused1', 'h', 0),
+          ('datatype', 'h', 16),
+          ('bitpix', 'h', 8),
+          ('dim_un0', 'h', 0),
+          ('pixdim', '8f', (0.,2.,2.,2.,)+(0.,)*4),
+          ('vox_offset', 'f', 0.),
+          ('scale_factor', 'f', 1.),
+          ('funused2', 'f', 0.),
+          ('funused3', 'f', 0.),
+          ('calmax', 'f', 0.),
+          ('calmin', 'f', 0.),
+          ('compressed', 'i', 0),
+          ('verified', 'i', 0),
+          ('glmax', 'i', 0),
+          ('glmin', 'i', 0),
+          ('descrip', '80s', ' '*80),
+          ('auxfile', '24s', 'none' + ' '*20),
+          ('orient', 'B', 0),
+          ('origin', '5H', (46,64,37,0,0)),
+          ('generated', '10s', ' '*10),
+          ('scannum', '10s', ' '*10),
+          ('patient_id', '10s', ' '*10),
+          ('exp_date', '10s', ' '*10),
+          ('exp_time', '10s', ' '*10),
+          ('hist_un0', '3s', ' '*3),
+          ('views', 'i', 0),
+          ('vols_added', 'i', 0),
+          ('start_field', 'i', 0),
+          ('field_skip', 'i', 0),
+          ('omax', 'i', 0),
+          ('omin', 'i', 0),
+          ('smax', 'i', 0),
+          ('smin', 'i', 0)
+          ]
+
 class ANALYZE(BinaryFormat):
     """
     A class to read and write ANALYZE format images. 
 
     """
 
-    header = traits.ReadOnly(
-        [('sizeof_hdr', 'i', 348),
-         ('data_type', '10s', ' '*10),
-         ('db_name', '18s', ' '*18),
-         ('extents', 'i', 0),
-         ('session_error', 'h', 0),
-         ('regular', 's', 'r'),
-         ('hkey_un0', 's', '0'),
-         ('dim', '8h', (4,91,109,91,1,0,0,0),),
-         ('vox_units', '4s', 'mm  '),
-         ('calib_units', '8s', ' '*8),
-         ('unused1', 'h', 0),
-         ('datatype', 'h', 16),
-         ('bitpix', 'h', 8),
-         ('dim_un0', 'h', 0),
-         ('pixdim', '8f', (0.,2.,2.,2.,)+(0.,)*4),
-         ('vox_offset', 'f', 0.),
-         ('scale_factor', 'f', 1.),
-         ('funused2', 'f', 0.),
-         ('funused3', 'f', 0.),
-         ('calmax', 'f', 0.),
-         ('calmin', 'f', 0.),
-         ('compressed', 'i', 0),
-         ('verified', 'i', 0),
-         ('glmax', 'i', 0),
-         ('glmin', 'i', 0),
-         ('descrip', '80s', ' '*80),
-         ('auxfile', '24s', 'none' + ' '*20),
-         ('orient', 'B', 0),
-         ('origin', '5H', (46,64,37,0,0)),
-         ('generated', '10s', ' '*10),
-         ('scannum', '10s', ' '*10),
-         ('patient_id', '10s', ' '*10),
-         ('exp_date', '10s', ' '*10),
-         ('exp_time', '10s', ' '*10),
-         ('hist_un0', '3s', ' '*3),
-         ('views', 'i', 0),
-         ('vols_added', 'i', 0),
-         ('start_field', 'i', 0),
-         ('field_skip', 'i', 0),
-         ('omax', 'i', 0),
-         ('omin', 'i', 0),
-         ('smax', 'i', 0),
-         ('smin', 'i', 0)
-         ])
+    header = traits.ReadOnly(header)
 
 
     # file extensions recognized by this format

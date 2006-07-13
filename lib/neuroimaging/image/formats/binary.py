@@ -5,13 +5,14 @@ from os.path import exists
 
 from neuroimaging import traits
 from numpy import memmap, zeros
+from numpy.core.memmap import memmap as memmap_type
 
 from neuroimaging.image.formats import Format
 from neuroimaging.data import iszip, unzip
 
 class BinaryFormatError(Exception):
     """
-    Errors raised in intents.
+    Errors raised in BinaryFormat
     """
 
 def is_tupled(packstr, value):
@@ -31,13 +32,14 @@ class BinaryHeaderValidator(traits.TraitHandler):
     headers.
     """
 
-    def __init__(self, packstr, value=None, seek=0, bytesign = '>', **keywords):
+    def __init__(self, name, packstr, value=None, seek=0, bytesign = '>', **keywords):
         if len(packstr) < 1: raise BinaryFormatError("packstr must be nonempty")
         for key, value in keywords.items(): setattr(self, key, value)
         self.seek = seek
         self.packstr = packstr
         self.bytesign = bytesign
         self.size = calcsize(self.packstr)
+        self.name = name
 
     def write(self, value, outfile=None):
         if isseq(value): valtup = tuple(value) 
@@ -62,17 +64,25 @@ class BinaryHeaderValidator(traits.TraitHandler):
         return 'an object of type "%s", apply(struct.pack, "%s", object) must make sense' % (self.packstr, self.packstr)
 
     def read(self, hdrfile):
-        value = unpack(self.bytesign + self.packstr,
-                       hdrfile.read(self.size))
+
+#        hdrfile.seek(self.seek)
+
+        try:
+            s = hdrfile.read(self.size)
+            value = unpack(self.bytesign + self.packstr, s)
+
+        except:
+            print 'fail', self.name, self.size, self.seek, len(s)
+
         if not is_tupled(self.packstr, value):
             value = value[0]
         return value
 
-def BinaryHeaderAttribute(packstr, seek=0, value=None, **keywords):
+def BinaryHeaderAttribute(name, packstr, seek=0, value=None, **keywords):
     """
     Constructor for a binary header attribute for ANALYZE and NIFTI-1 files.
     """
-    validator = BinaryHeaderValidator(packstr, value=value, seek=seek, **keywords)
+    validator = BinaryHeaderValidator(name, packstr, value=value, seek=seek, **keywords)
     return traits.Trait(value, validator)
 
 class BinaryHeader(traits.HasTraits):
@@ -142,8 +152,10 @@ class BinaryFormat(Format):
 
         if self.modifiable():
             seek = self.header_length
-            self.add_trait(name, BinaryHeaderAttribute(definition, seek=seek, value=value, **keywords))
+            self.header_length = seek
+            self.add_trait(name, BinaryHeaderAttribute(name, definition, seek=seek, value=value, **keywords))
             self.header_length += calcsize(definition)
+
             if append:
                 self.header.append((name, definition, value, keywords))
         else:
@@ -165,7 +177,7 @@ class BinaryFormat(Format):
             value = trait.handler.read(hdrfile)
             setattr(self, name, value)
 
-        self._header_changed()
+        self._header_changed(self.header)
         self.get_dtype()
 
         hdrfile.close()
@@ -207,11 +219,11 @@ class BinaryFormat(Format):
                 if not trait.required:
                     self.remove_trait(name)
                 self.header.pop(idx)
-                self._header_changed()
+                self._header_changed(self.header)
         else:
             raise BinaryFormatError, 'header can not be modified'
 
-    def _header_changed(self):
+    def _header_changed(self, header):
         self.header_length = 0
         for name in [att[0] for att in self.header]:
             trait = self.trait(name)
@@ -234,10 +246,10 @@ class BinaryFormat(Format):
             outfile = file(self.image_filename(), 'rb+')
 
         if outfile.name == self.header_filename():
-            if not hasattr(self, 'vox_offset'):
+            if not hasattr(self, 'offset'):
                 offset += self.header_length
             else:
-                offset += self.vox_offset
+                offset += self.offset
 
         outfile.seek(offset)
         
@@ -249,9 +261,9 @@ class BinaryFormat(Format):
         outfile.close()
 
     def __del__(self):
-        if hasattr(self, "memmap"):
+        if isinstance(self.memmap, memmap_type):
             self.memmap.sync()
-            del(self.memmap)
+        del(self.memmap)
 
     def postread(self, x):
         """

@@ -1,5 +1,6 @@
 import os
 import numpy as N
+from numpy.linalg import det, inv
 
 from neuroimaging import traits
 
@@ -9,6 +10,12 @@ from neuroimaging.reference.mapping import Affine
 from neuroimaging.reference.grid import SamplingGrid
 
 from neuroimaging.image.formats.binary import BinaryFormat
+
+
+class NIFTI1FormatError(Exception):
+    """
+    Errors raised in NIFTI1 format
+    """
 
 # NIFTI-1 constants
 
@@ -174,51 +181,51 @@ dims = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension']
 
 # (name, packstr, default) tuples
 
-header = traits.List(
-    [('sizeof_hdr', 'i', 348),
-     ('data_type', '10s', ' '*10),
-     ('db_name', '18s', ' '*18),
-     ('extents', 'i', 0),
-     ('session_error', 'h', 0),
-     ('regular', 's', 'r'),
-     ('dim_info', 'b', 0),
-     ('dim', '8h', (4,1,1,1,1) + (0,)*3),
-     ('intent_p1', 'f', 0.),
-     ('intent_p2', 'f', 0.),
-     ('intent_p3', 'f', 0.),
-     ('intent_code', 'h', 0),
-     ('datatype', 'h', 0),
-     ('bitpix', 'h', 0),
-     ('slice_start', 'h', 0),
-     ('pixdim', '8f', (1.,)*5 + (0.,)*3),
-     ('vox_offset', 'f', 352),
-     ('scl_slope', 'f', 1.0),
-     ('scl_inter', 'f', 0.),
-     ('slice_end', 'h', 0),
-     ('slice_code', 'b', 0),
-     ('xyzt_units', 'b', 0),
-     ('cal_max', 'f', 0),
-     ('cal_min', 'f', 0),
-     ('slice_duration', 'f', 0),
-     ('toffset', 'f', 0),
-     ('glmax', 'i', 0),
-     ('glmin', 'i', 0),
-     ('descrip', '80s', ' '*80),
-     ('aux_file', '24s', ' '*24),
-     ('qform_code', 'h', 0),
-     ('sform_code', 'h', 0),
-     ('quatern_b', 'f', 0.0),
-     ('quatern_c', 'f', 0.),
-     ('quatern_d', 'f', 0.),
-     ('qoffset_x', 'f', 0.),
-     ('qoffset_y', 'f', 0.),
-     ('qoffset_z', 'f', 0.),
-     ('srow_x', '4f', [0.,0.,1.,0.]),
-     ('srow_y', '4f', [0.,1.,0.,0.]),
-     ('srow_z', '4f', [1.,0.,0.,0.]),
-     ('intent_name', '16s', ' '*16),
-     ('magic', '4s', 'ni1\0')
-     ])
+header = [
+    ('sizeof_hdr', 'i', 348),
+    ('data_type', '10s', ' '*10),
+    ('db_name', '18s', ' '*18),
+    ('extents', 'i', 0),
+    ('session_error', 'h', 0),
+    ('regular', 's', 'r'),
+    ('dim_info', 'b', 0),
+    ('dim', '8h', (4,1,1,1,1) + (0,)*3),
+    ('intent_p1', 'f', 0.),
+    ('intent_p2', 'f', 0.),
+    ('intent_p3', 'f', 0.),
+    ('intent_code', 'h', 0),
+    ('datatype', 'h', 0),
+    ('bitpix', 'h', 0),
+    ('slice_start', 'h', 0),
+    ('pixdim', '8f', (1.,)*5 + (0.,)*3),
+    ('vox_offset', 'f', 352),
+    ('scl_slope', 'f', 1.0),
+    ('scl_inter', 'f', 0.),
+    ('slice_end', 'h', 0),
+    ('slice_code', 'b', 0),
+    ('xyzt_units', 'b', 0),
+    ('cal_max', 'f', 0),
+    ('cal_min', 'f', 0),
+    ('slice_duration', 'f', 0),
+    ('toffset', 'f', 0),
+    ('glmax', 'i', 0),
+    ('glmin', 'i', 0),
+    ('descrip', '80s', ' '*80),
+    ('aux_file', '24s', ' '*24),
+    ('qform_code', 'h', 0),
+    ('sform_code', 'h', 0),
+    ('quatern_b', 'f', 0.0),
+    ('quatern_c', 'f', 0.),
+    ('quatern_d', 'f', 0.),
+    ('qoffset_x', 'f', 0.),
+    ('qoffset_y', 'f', 0.),
+    ('qoffset_z', 'f', 0.),
+    ('srow_x', '4f', [0.,0.,1.,0.]),
+    ('srow_y', '4f', [0.,1.,0.,0.]),
+    ('srow_z', '4f', [1.,0.,0.,0.]),
+    ('intent_name', '16s', ' '*16),
+    ('magic', '4s', 'ni1\0')
+    ]
 
 class NIFTI1(BinaryFormat):
     """
@@ -232,7 +239,7 @@ class NIFTI1(BinaryFormat):
     """
 
     extensions = ('.img', '.hdr', '.nii')
-    header = header
+    header = traits.List(header)
 
     def __init__(self, filename=None, datasource=DataSource(), grid=None,
                  sctype=N.float64, **keywords):
@@ -242,15 +249,18 @@ class NIFTI1(BinaryFormat):
         self.datasource = datasource
         ext = os.path.splitext(filename)[1]
         if ext not in ['.nii', '.hdr']:
-            raise ValueError, 'NIFTI-1 images need .hdr or .nii file specified.'
+            raise NIFTI1FormatError, 'NIFTI-1 images need .hdr or .nii file specified.'
+
         # Enforce naming rule
         if ext == '.nii':
             self.magic = 'n+1\x00'
             self.vox_offset = 352
+            self.offset = self.vox_offset
         else:
             self.magic = 'ni1\x00'
             self.vox_offset = 0
-        
+            self.offset = self.vox_offset
+
         self.filebase, self.fileext = os.path.splitext(filename)
         self.filename = filename
         
@@ -295,7 +305,7 @@ class NIFTI1(BinaryFormat):
         self.grid = grid.python2matlab()
             
         if not isinstance(self.grid.mapping, Affine):
-            raise ValueError, 'error: non-Affine grid in writing out NIFTI-1 file'
+            raise NIFTI1FormatError, 'error: non-Affine grid in writing out NIFTI-1 file'
 
         if self.grid.mapping.isdiagonal():
             _diag = True
@@ -303,21 +313,38 @@ class NIFTI1(BinaryFormat):
             _diag = False
 
         _dim = [0]*8
-        _pixdim = [0.] * 8
+        _pixdim = [1.] + [0.] * 7
         _dim[0] = self.ndim
 
+        flip = N.identity(self.ndim)
         for i in range(self.ndim):
             _dim[i+1] = self.grid.shape[i]
+            v = self.grid.mapping.transform[i,i]
             if _diag:
-                _pixdim[i+1] = self.grid.mapping.transform[i,i]
+                flip[i,i] = N.sign(v)
+                _pixdim[i+1] = N.fabs(v)
             else:
                 _pixdim[i+1] = 1.
+
+        if _diag:
+            if N.diag(flip).sum() < 0:
+                flip = -flip
+                _pixdim = [-1] + _pixdim[1:]
+
+            qfac, self.quatern_b, self.quatern_c, self.quatern_d = quaternion(flip)
+
+        else:
+            self.quatern_b, self.quatern_c, self.quatern_d = (0.,)*3
+
         self.dim = _dim
         self.pixdim = _pixdim
 
-        self.srow_x = self.grid.mapping.transform[0]
-        self.srow_y = self.grid.mapping.transform[1]
-        self.srow_z = self.grid.mapping.transform[2]
+        t = N.zeros((3, 4), N.float64)
+        t[0:3,0:3] = self.grid.mapping.transform[0:3,0:3]
+        t[0:3,-1] = self.grid.mapping.transform[0:3,-1]
+        self.srow_x = t[0]
+        self.srow_y = t[1]
+        self.srow_z = t[2]
 
     def image_filename(self):
         if self.magic == 'n+1\x00':
@@ -387,37 +414,247 @@ class NIFTI1(BinaryFormat):
         value = N.zeros((4,4), N.float64)
         value[3,3] = 1.0
         
-        if self.sform_code > 0:
-
-            value[0] = self.srow_x
-            value[1] = self.srow_y
-            value[2] = self.srow_z
+        if self.qform_code == 0:
+            for i in range(3):
+                value[i,i] = self.pixdim[i+1]
+            return value
+        
         elif self.qform_code > 0:
             
-            b, c, d = (self.quatern_b, self.quatern_c, self.quatern_d)
-            a = N.sqrt(1 - b**2 - c**2 - d**2)
-            R = N.array([[ a*a+b*b-c*c-d*d, 2*b*c-2*a*d, 2*b*d+2*a*c],
-                        [ 2*b*c+2*a*d, a*a+c*c-b*b-d*d, 2*c*d-2*a*b],
-                        [ 2*b*d-2*a*c, 2*c*d+2*a*b, a*a+d*d-c*c-b*b]],
-                        N.float64)
+            R = rotation(self.quatern_b, self.quatern_c, self.quatern_d)
 
             if self.pixdim[0] == 0.0:
                 qfac = 1.0
             else:
                 qfac = self.pixdim[0]
+            if qfac not in [-1,1]:
+                raise NIFTI1FormatError, 'invalid setting of qfac(i.e. pixdim[0]), should be -1 or +1'
+            
             R[:,2] = qfac * R[:,2]
 
-            value[0:3,0:3] = R
+            d = N.diag(self.pixdim[1:4])
+            d[2] *= qfac
+            value[0:3,0:3] = N.dot(R, d)
+
             value[0,3] = self.qoffset_x
             value[1,3] = self.qoffset_y
             value[2,3] = self.qoffset_z
-        else:
-            value[0,0] = self.pixdim[1]
-            value[1,1] = self.pixdim[2]
-            value[2,2] = self.pixdim[3]
+
+        elif self.sform_code > 0:
+
+            value[0] = self.srow_x
+            value[1] = self.srow_y
+            value[2] = self.srow_z
 
         return value
             
+    def _header_changed(self, header):
+        BinaryFormat._header_changed(self, header)
+        r = self.header_length % 16
+        if r:
+            self.vox_offset = self.header_length + 16 - r
+            self.offset = self.vox_offset
+
+def quaternion(M):
+    """
+    /*---------------------------------------------------------------------------*/
+    /*! Given the 3x4 upper corner of the matrix R, compute the quaternion
+    parameters that fit it.
+
+    See comments in nifti1.h for details.
+
+    - Any NULL pointer on input won't get assigned (e.g., if you don't want
+    dx,dy,dz, just pass NULL in for those pointers).
+    - If the 3 input matrix columns are NOT orthogonal, they will be
+    orthogonalized prior to calculating the parameters, using
+    the polar decomposition to find the orthogonal matrix closest
+    to the column-normalized input matrix.
+    - However, if the 3 input matrix columns are NOT orthogonal, then
+    the matrix produced by nifti_quatern_to_mat44 WILL have orthogonal
+    columns, so it won't be the same as the matrix input here.
+    This "feature" is because the NIFTI 'qform' transform is
+    deliberately not fully general -- it is intended to model a volume
+    with perpendicular axes.
+    - If the 3 input matrix columns are not even linearly independent,
+    you'll just have to take your luck, won't you?
+    *//*-------------------------------------------------------------------------*/
+
+    """
+
+    qx, qy, qz = M[0:3,-1]
+
+    r11, r12, r13 = M[0,0:3]
+    r21, r22, r23 = M[1,0:3]
+    r31, r32, r33 = M[2,0:3]
+
+    """
+    Compute lengths of each column; these determine grid spacings
+    """
+
+    xd = N.sqrt( r11*r11 + r21*r21 + r31*r31 )
+    yd = N.sqrt( r12*r12 + r22*r22 + r32*r32 )
+    zd = N.sqrt( r13*r13 + r23*r23 + r33*r33 )
+
+    """
+    If a column length is zero, patch the trouble
+    """
+
+    if xd == 0.0: r11 = 1.0 ; r21 = r31 = 0.0 ; xd = 1.0 
+    if yd == 0.0: r22 = 1.0 ; r12 = r32 = 0.0 ; yd = 1.0  
+    if zd == 0.0: r33 = 1.0 ; r13 = r23 = 0.0 ; zd = 1.0 
+
+    """
+    Assign the output lengths
+    """
+
+    dx, dy, dz = xd, yd, zd
+
+    """
+    Normalize the columns
+    """
+
+    r11 /= xd ; r21 /= xd ; r31 /= xd 
+    r12 /= yd ; r22 /= yd ; r32 /= yd 
+    r13 /= zd ; r23 /= zd ; r33 /= zd 
+    
+    """
+    At this point, the matrix has normal columns, but we have to allow
+    for the fact that the hideous user may not have given us a matrix
+    with orthogonal columns.
+    
+    So, now find the orthogonal matrix closest to the current matrix.
+
+    One reason for using the polar decomposition to get this
+    orthogonal matrix, rather than just directly orthogonalizing
+    the columns, is so that inputting the inverse matrix to R
+    will result in the inverse orthogonal matrix at this point.
+    If we just orthogonalized the columns, this wouldn't necessarily hold.
+    """
+
+    Q = N.zeros((3,3), N.float64)
+    Q[0,0] = r11 ; Q[0,1] = r12 ; Q[0,2] = r13 
+    Q[1,0] = r21 ; Q[1,1] = r22 ; Q[1,2] = r23 
+    Q[2,0] = r31 ; Q[2,1] = r32 ; Q[2,2] = r33 
+    
+    P = polar_decomposition(Q)
+    
+    r11 = P[0,0] ; r12 = P[0,1] ; r13 = P[0,2]
+    r21 = P[1,0] ; r22 = P[1,1] ; r23 = P[1,2]
+    r31 = P[2,0] ; r32 = P[2,1] ; r33 = P[2,2]
+    
+    """
+    /*                            [ r11 r12 r13 ]               */
+    /* at this point, the matrix  [ r21 r22 r23 ] is orthogonal */
+    /*                            [ r31 r32 r33 ]               */
+    
+    /* compute the determinant to determine if it is proper */
+    
+    """
+    
+    zd = det(P) # /* should be -1 or 1 */
+
+    if zd > 0: qfac = 1.
+    else:
+        qfac = -1.
+        r13 = -r13 ; r23 = -r23 ; r33 = -r33                       
+        
+    """
+    Now, compute quaternion parameters
+    """
+
+    a = r11 + r22 + r33 + 1.0
+    
+    if a > 0.5:
+        a = 0.5 * N.sqrt(a) 
+        b = 0.25 * (r32-r23) / a 
+        c = 0.25 * (r13-r31) / a 
+        d = 0.25 * (r21-r12) / a 
+    else:
+        xd = 1.0 + r11 - (r22+r33)
+        yd = 1.0 + r22 - (r11+r33)
+        zd = 1.0 + r33 - (r11+r22)
+        if xd > 1.0:
+            b = 0.5 * N.sqrt(xd) 
+            c = 0.25 * (r12+r21) / b
+            d = 0.25 * (r13+r31) / b
+            a = 0.25 * (r32-r23) / b
+        elif yd > 1.0:
+            c = 0.5 * N.sqrt(yd) 
+            b = 0.25* (r12+r21) / c 
+            d = 0.25* (r23+r32) / c 
+            a = 0.25* (r13-r31) / c 
+        else:
+            d = 0.5 * N.sqrt(zd) 
+            b = 0.25* (r13+r31) / d 
+            c = 0.25* (r23+r32) / d 
+            a = 0.25* (r21-r12) / d 
+
+    if a < 0.0:
+        b=-b ; c=-c ; d=-d; a=-a
+    return a, b, c, d, qfac
+
+
+def polar_decomposition(A):
+    """
+    /*---------------------------------------------------------------------------*/
+    /*! polar decomposition of a 3x3 matrix
+
+    This finds the closest orthogonal matrix to input A
+    (in both the Frobenius and L2 norms).
+    
+    Algorithm is that from NJ Higham, SIAM J Sci Stat Comput, 7:1160-1174.
+    *//*-------------------------------------------------------------------------*/
+    """
+    
+    X = A * 1.
+    
+    def norm(X, axis=0):
+        return N.add.reduce(N.fabs(X), axis=axis).max()
+    def rownorm(X):
+        return norm(X, axis=1)
+    def colnorm(X):
+        return norm(X)
+
+    gam = det(X)
+    while( gam == 0.0 ): #        /* perturb matrix */
+        d = 0.00001 * ( 0.001 + rownorm(X) ) 
+        X += N.identity(3)*d
+        gam = det(X)
+     
+    dif = 0.5
+
+    niter = 0
+    while True:
+        Y = inv(X)
+
+        if dif > 0.3:     #/* far from convergence */
+            alp = N.sqrt(rownorm(X) * colnorm(X))
+            bet = N.sqrt(rownorm(Y) * colnorm(Y))
+            gam = N.sqrt( bet / alp ) 
+            gmi = 1.0 / gam 
+        else:
+            gam = gmi = 1.0 #  /* close to convergence */
+        Z = (gam*X + gmi*Y)/2.
+        dif = N.fabs(Z-X).sum()
+
+        niter += 1
+        print dif, niter
+
+        if niter > 100 or dif < 3.e-6: break #  /* convergence or exhaustion */
+    return Z 
+
+def rotation(b, c, d):
+    """
+    NIFTI1 specification of rotation matrix by quaternion.
+    """
+
+    a = N.sqrt(1 - b**2 - c**2 - d**2)
+    return N.array([[ a*a+b*b-c*c-d*d, 2*b*c-2*a*d, 2*b*d+2*a*c],
+                    [ 2*b*c+2*a*d, a*a+c*c-b*b-d*d, 2*c*d-2*a*b],
+                    [ 2*b*d-2*a*c, 2*c*d+2*a*b, a*a+d*d-c*c-b*b]],
+                   N.float64)
+
+
 reader = NIFTI1
 
 
