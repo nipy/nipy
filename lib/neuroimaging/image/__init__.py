@@ -62,13 +62,13 @@ class Image(traits.HasTraits):
         existing Image object, or an array.
         '''
         traits.HasTraits.__init__(self, **keywords)
-        
+
         # from existing Image
         if isinstance(image, Image):
             self.source = image.source
 
         # from existing Format instance
-        if isinstance(image, Format):
+        elif isinstance(image, Format):
             self.source = image
 
         # from array
@@ -79,7 +79,8 @@ class Image(traits.HasTraits):
         elif type(image) == types.StringType:
             self.source = self.fromurl(image, datasource, grid=grid, **keywords)
 
-        else: raise ValueError(
+        else:
+            raise ValueError(
           "Image input must be a string, array, or another image.")
             
         # Find spatial grid -- this is the one that will be used generally
