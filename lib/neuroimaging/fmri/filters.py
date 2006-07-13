@@ -6,16 +6,16 @@ from neuroimaging import traits
 from neuroimaging.fmri.utils import ConvolveFunctions, WaveFunction
 
 class Filter(traits.HasTraits):
-    dt = traits.Float(0.02)
-    tmax = traits.Float(500.0)
-    tmin = traits.Float(-10.)
-
     '''
     Takes a list of impulse response functions (IRFs): main purpose is to
     convolve a functions with each IRF for Design. The class assumes the range
     of the filter is effectively 50 seconds, can be changed by setting tmax --
     this is just for the __mul__ method for convolution.
     '''
+
+    dt = traits.Float(0.02)
+    tmax = traits.Float(500.0)
+    tmin = traits.Float(-10.)
 
     def __getitem__(self, i):
         if type(i) is not types.IntType:
@@ -106,7 +106,7 @@ class GammaDENS:
         self.alpha = alpha
         self.nu = nu
 ##        self.coef = nu**alpha / scipy.special.gamma(alpha)
-        self.coef = 1.0
+        self.coef = coef
 
     def __str__(self):
         return '<GammaDENS:alpha:%03f, nu:%03f, coef:%03f>' % (self.alpha, self.nu, self.coef)
@@ -170,16 +170,11 @@ class GammaHRF(Filter):
     """
 
     def __init__(self, parameters):
-        fns = []
-        for alpha, nu in parameters:
-            fns.append(GammaDENS(alpha, nu))
+        fns = [GammaDENS(alpha, nu) for alpha, nu in parameters]
         Filter.__init__(self, fns)
 
     def deriv(self, const=1.):
-        fns = []
-        for fn in self.IRF:
-            fns.append(fn.deriv(const=const))
-        return fns
+        return [fn.deriv(const=const) for fn in self.IRF]
     
 class FIR(Filter):
     """
@@ -200,9 +195,7 @@ class FIR(Filter):
     """
 
     def __init__(self, parameters):
-        fns = []
-        for start, duration in parameters:
-            fns.append(WaveFunction(start, duration, 1.0))
+        fns = [WaveFunction(start, duration, 1.0) for (start, duration) in parameters]
         Filter.__init__(self, fns)
 
 def _test():
