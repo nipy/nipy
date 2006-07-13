@@ -1,5 +1,5 @@
 
-from neuroimaging.image.formats import nifti1, Format
+from neuroimaging.image.formats import nifti1
 from neuroimaging import traits
 from neuroimaging.image import Image
 from neuroimaging.reference import axis
@@ -202,16 +202,17 @@ Weibull = StatIntent(nifti1.NIFTI_INTENT_WEIBULL, 'weibull', 'location', 'scale'
 Laplace = StatIntent(nifti1.NIFTI_INTENT_LAPLACE, 'laplace', 'location', 'scale')
 ZStat = StatIntent(nifti1.NIFTI_INTENT_ZSCORE, 'zstat')
 
+if __name__ == '__main__':
 
-zimage = Image('http://nifti.nimh.nih.gov/nifti-1/data/zstat1.nii.gz')
-a = ZStat.create('out.nii', grid=zimage.grid, clobber=True)
-print a.shape
+    zimage = Image('http://nifti.nimh.nih.gov/nifti-1/data/zstat1.nii.gz')
+    a = ZStat.create('out.nii', grid=zimage.grid, clobber=True)
+    print a.shape
 
-## a = ZStat.create('out.nii', grid=zimage.grid, clobber=True, voxel_mode=True)
-## print a.shape
+    ## a = ZStat.create('out.nii', grid=zimage.grid, clobber=True, voxel_mode=True)
+    ## print a.shape
 
-a = TStat.create('out.nii', df=5, grid=zimage.grid, clobber=True)
-print a.shape, a.df, a.source.intent_p1
+    a = TStat.create('out.nii', df=5, grid=zimage.grid, clobber=True)
+    print a.shape, a.df, a.source.intent_p1
 
-a = TStat.create('out.nii', grid=zimage.grid, clobber=True, voxel_mode=True)
-print a.shape, a.df.shape, a.tstat.shape
+    a = TStat.create('out.nii', grid=zimage.grid, clobber=True, voxel_mode=True)
+    print a.shape, a.df.shape, a.tstat.shape
