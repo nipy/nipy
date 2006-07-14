@@ -69,6 +69,23 @@ class AnalyzeDataTypeTest(AnalyzeTest):
             N.testing.assert_almost_equal(new[:], _out)
 
         os.remove('out.hdr')
+        os.remove('out.img')
+
+    def test_datatypes2(self):
+        for sctype in analyze.datatypes.keys():
+            for _sctype in analyze.datatypes.keys():
+                _out = N.ones(self.image.grid.shape, sctype)
+                out = Image(_out, grid=self.image.grid)
+                out.tofile('out.hdr', clobber=True, sctype=_sctype)
+                new = Image('out.hdr')
+                self.assertEquals(new.image.sctype, _sctype)
+                self.assertEquals(os.stat('out.img').st_size,
+                                  N.product(self.image.grid.shape) *
+                                  N.dtype(_sctype).itemsize)
+                N.testing.assert_almost_equal(new[:], _out)
+
+        os.remove('out.hdr')
+        os.remove('out.img')
 
 def suite():
     suite = unittest.makeSuite(AnalyzeTest)

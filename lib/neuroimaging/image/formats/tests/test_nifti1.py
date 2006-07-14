@@ -165,6 +165,27 @@ class NiftiDataTypeTest(NiftiTest):
             N.testing.assert_almost_equal(new[:], _out)
         os.remove('out.nii')
 
+    def test_datatypes2(self):
+        for sctype in nifti1.datatypes.keys():
+            for _sctype in nifti1.datatypes.keys():
+                _out = N.ones(self.zimage.grid.shape, sctype)
+                out = Image(_out, grid=self.zimage.grid)
+                out.tofile('out.nii', clobber=True, sctype=_sctype)
+                new = Image('out.nii')
+                self.assertEquals(new.image.datatype, nifti1.datatypes[_sctype])
+                self.assertEquals(new.image.sctype, _sctype)
+                self.assertEquals(new.image.vox_offset, 352)
+                self.assertEquals(os.stat('out.nii').st_size,
+                                  N.product(self.image.grid.shape) *
+                                  N.dtype(_sctype).itemsize +
+                                  new.image.vox_offset)
+                N.testing.assert_almost_equal(new[:], _out)
+
+
+        os.remove('out.nii')
+
+
+
         
 def suite():
     suite = unittest.makeSuite(AnalyzeTest)
