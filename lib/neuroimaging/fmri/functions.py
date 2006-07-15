@@ -14,7 +14,7 @@ import types
 import numpy as N
 from neuroimaging import traits
 
-from scipy.sandbox.models.utils import StepFunction, recipr0
+from scipy.sandbox.models.utils import recipr0
 
 # Prototypical stimuli: "Event" (on/off) and "Stimuli" (step function)
 # -Event inherits from Stimulus so most functionality is in Stimulus
@@ -69,7 +69,7 @@ class TimeFunction(traits.HasTraits):
                 if other.shape != (self.nout,):
                     raise 'shape does not much output, expecting (%d,)' % self.nout
             elif len(other) != self.nout:
-                    raise 'length does not much output, expecting sequence of length %d' % self.nout
+                raise 'length does not much output, expecting sequence of length %d' % self.nout
             def _f(time=None, _self=self, _other=N.array(other), **extra):
                 v = _self(time=time, **extra)
                 for i in range(_other.shape[0]):
@@ -96,7 +96,7 @@ class TimeFunction(traits.HasTraits):
                 if other.shape != (self.nout,):
                     raise 'shape does not much output, expecting (%d,)' % self.nout
             elif len(other) != self.nout:
-                    raise 'length does not much output, expecting sequence of length %d' % self.nout
+                raise 'length does not much output, expecting sequence of length %d' % self.nout
             def _f(time=None, _self=self, _other=N.array(other), **extra):
                 v = _self(time=time, **extra)
                 for i in range(_other.shape[0]):
@@ -123,7 +123,7 @@ class TimeFunction(traits.HasTraits):
                 if other.shape != (self.nout,):
                     raise 'shape does not much output, expecting (%d,)' % self.nout
             elif len(other) != self.nout:
-                    raise 'length does not much output, expecting sequence of length %d' % self.nout
+                raise 'length does not much output, expecting sequence of length %d' % self.nout
             def _f(time=None, _self=self, _other=N.array(other), **extra):
                 v = _self(time=time, **extra)
                 for i in range(_other.shape[0]):
@@ -148,7 +148,7 @@ class TimeFunction(traits.HasTraits):
                 if other.shape != (self.nout,):
                     raise 'shape does not much output, expecting (%d,)' % self.nout
             elif len(other) != self.nout:
-                    raise 'length does not much output, expecting sequence of length %d' % self.nout
+                raise 'length does not much output, expecting sequence of length %d' % self.nout
             def _f(time=None, _self=self, _other=N.array(other), **extra):
                 v = _self(time=time, **extra) 
                 for i in range(_other.shape[0]):
