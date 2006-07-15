@@ -123,7 +123,7 @@ class fMRIStatOLS(LinearModelIterator):
 ##      this will fail for non-affine grids, or grids
 ##      whose axes are not aligned in the standard way            
 
-        sigma = fwhm2sigma(self.fwhm_rho / N.array(self.fmri_image.image.pixdim[1:4][::-1]))
+        #sigma = fwhm2sigma(self.fwhm_rho / N.array(self.fmri_image.image.pixdim[1:4][::-1]))
 
 ##         smoother = kernel_smooth.LinearFilter(sgrid, fwhm=self.fwhm_rho)
 ##         self.rho_estimator.img.grid = sgrid
