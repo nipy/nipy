@@ -82,7 +82,6 @@ class Montage(traits.HasTraits):
                 if _slice is not None:
                     self.imshow[ij] = pylab.imshow(data[ij],
                                                    interpolation=self.interpolation,
-                                                   aspect='auto',
                                                    origin=self.origin)
             
             self.draw_colorbar()

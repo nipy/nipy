@@ -145,7 +145,7 @@ class RGBASlicePlot(Slice):
 
         if not redraw:
             self.imshow = pylab.imshow(masked_data, interpolation=self.interpolation,
-              aspect='auto', origin=self.origin)
+              origin=self.origin)
         else:
             self.imshow.set_data(masked_data)
             
