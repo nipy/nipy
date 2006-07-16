@@ -1,6 +1,5 @@
 import os
 import numpy as N
-from numpy.linalg import det, inv
 
 from scipy.weave import ext_tools # for _nifti1_quaternion module
 
