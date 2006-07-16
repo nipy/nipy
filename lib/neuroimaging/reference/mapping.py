@@ -1,4 +1,5 @@
 import csv, urllib
+from struct import unpack
 
 import numpy as N
 from numpy.linalg import inv
@@ -9,8 +10,6 @@ from neuroimaging import hasattrs
 from neuroimaging.reference.axis import Axis, space
 from neuroimaging.reference.coordinate_system import \
   CoordinateSystem, MNI_voxel, MNI_world
-
-
 
 def _2matvec(transform):
     ndim = transform.shape[0] - 1
@@ -25,10 +24,30 @@ def matfromfile(infile, delimiter="\t"):
     reader = csv.reader(infile, delimiter=delimiter)
     return N.array([map(float, row) for row in reader])
 
+def frombin(tstr):
+    """
+    This is broken -- anyone with mat file experience?
+    >>> import urllib
+    >>> from neuroimaging.reference.mapping import frombin
+    >>> mat = urllib.urlopen('http://kff.stanford.edu/BrainSTAT/fiac3_fonc1_0089.mat')
+    >>> tstr = mat.read()
+    >>> print frombin(tstr)
+    [[  2.99893500e+00  -3.14532000e-03  -1.06594400e-01  -9.61109780e+01]
+    [ -1.37396100e-02  -2.97339600e+00  -5.31224000e-01   1.20082725e+02]
+    [  7.88193000e-02  -3.98643000e-01   3.96313600e+00  -3.32398676e+01]
+    [  0.00000000e+00   0.00000000e+00   0.00000000e+00   1.00000000e+00]]
+    
+    """
+
+    T = N.array(unpack('<16d', tstr[-128:]))
+    T.shape = (4,4)
+    T = N.transpose(T)
+    return T
 
 def matfromstr(tstr, ndim=3, delimiter=None):
     "Read a (ndim+1)x(ndim+1) transform matrix from a string."
-    if tstr[0:24] == "mat file created by perl": return frombin(tstr) #frombin is undefined
+    if tstr[0:24] == "mat file created by perl":
+        return frombin(tstr) 
     else:
         transform = N.array(map(float, tstr.split(delimiter)))
         transform.shape = (ndim+1,)*2
@@ -63,15 +82,16 @@ def fromurl(turl, ndim=3):
     Read a (ndim+1)x(ndim+1) transform matrix from a URL -- tries to autodetect
     '.mat' and '.xfm'.
 
-    >>> from numarray import *
-    >>> x = fromurl('http://kff.stanford.edu/BrainSTAT/fiac3_fonc1.txt')
-    >>> y = fromurl('http://kff.stanford.edu/BrainSTAT/fiac3_fonc1_0089.mat')
-    >>> print bool(max(abs((x - y).flat) < 1.0e-05))
+    >>> from numpy import testing
+    >>> from neuroimaging.reference.mapping import fromurl
+    >>> x = fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1.txt')
+    >>> y = fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
+    >>> print testing.assert_almost_equal(x, y)
     True
     """
     urlpipe = urllib.urlopen(turl)
     data = urlpipe.read()
-    if turl[-3:] == 'mat': return matfromstr(data, ndim=ndim)
+    if turl[-3:] in ['mat', 'txt']: return matfromstr(data, ndim=ndim)
     elif turl[-3:] == 'xfm': return xfmfromstr(data, ndim=ndim)
 
 
@@ -237,6 +257,18 @@ class Mapping (object):
         make it python-oriented. This means that if
         mapping(v_x,v_y,v_z)=(w_x,w_y,w_z), then the return will send
         (v_z-1,v_y-1,v_x-1) to (w_z,w_y,w_x).
+
+        >>> from neuroimaging.image import Image
+        >>> zimage = Image('http://nifti.nimh.nih.gov/nifti-1/data/zstat1.nii.gz')
+        >>> mapping = zimage.grid.mapping
+        >>> mapping([1,2,3])
+        array([ 2.,  3., -4.])
+
+        >>> matlab = mapping.python2matlab()
+        >>> matlab([4,3,2])
+        array([-4.,  3.,  2.])
+        >>>
+
         """
         ndim = self.ndim
         t1 = N.zeros((ndim+1,)*2, N.float64)

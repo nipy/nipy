@@ -3,7 +3,9 @@ import unittest
 import numpy as N
 
 from neuroimaging.reference.axis import space
-from neuroimaging.reference.grid import SamplingGrid, ConcatenatedGrids
+from neuroimaging.reference.grid import SamplingGrid, ConcatenatedGrids, \
+     ConcatenatedIdenticalGrids
+
 from neuroimaging.image.formats.analyze import ANALYZE
 from neuroimaging.tests.data import repository
 
@@ -28,9 +30,24 @@ class GridTest(unittest.TestCase):
 
     def test_replicate2(self):
         """
-        Test failing
+        Test passing
         """
         grids = self.img.grid.replicate(4)
+        grids.python2matlab()
+
+    def test_concat2(self):
+        """
+        Test passing
+        """
+        grids = ConcatenatedIdenticalGrids(self.img.grid, 4)
+        grids.python2matlab()
+
+    def test_concat3(self):
+        """
+        Test failing
+        """
+
+        grids = ConcatenatedGrids([self.img.grid]*4)
         grids.python2matlab()
 
     def test_identity(self):

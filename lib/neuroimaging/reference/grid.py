@@ -170,13 +170,12 @@ class SamplingGrid (object):
         return SamplingGrid(shape=reverse(self.shape),
           mapping=self.mapping.python2matlab())
 
-
     def replicate(self, n):
         """
         Duplicate self n times, returning a ConcatenatedGrids with
         shape == (n,)+self.shape.
         """
-        return ConcatenatedGrids([self]*n)
+        return ConcatenatedIdenticalGrids(self, n)
 
 class ConcatenatedGrids(SamplingGrid):
     """
@@ -253,15 +252,38 @@ class ConcatenatedGrids(SamplingGrid):
 
     def subgrid(self, i): return self.grids[i]
 
+class ConcatenatedIdenticalGrids(ConcatenatedGrids):
 
 
+    def __init__(self, grid, n, concataxis=None):
+        self.grids = [grid for i in range(n)]
+        if concataxis is not None: self.concataxis = concataxis
+
+    class mapping (readonly):
+        def init(_, self):
+
+            newaxis = Axis(name=self.concataxis)
+            ic = self.grids[0].mapping.input_coords
+            newin = CoordinateSystem(
+              '%s:%s'%(ic.name, self.concataxis), [newaxis] + ic.axes)
+            oc = self.grids[0].mapping.output_coords
+            newout = CoordinateSystem(
+              '%s:%s'%(oc.name, self.concataxis), [newaxis] + oc.axes)
+
+            t = self.grids[0].mapping.transform
+            ndim = t.shape[0]-1
+            T = N.zeros((ndim+2,)*2, N.float64)
+            T[0:ndim,0:ndim] = t[0:ndim,0:ndim]
+            T[0:ndim,-1] = t[0:ndim,-1]
+            T[ndim,ndim] = 1.
+            T[(ndim+1),(ndim+1)] = 1.
+            return Affine(newin, newout, T)
 
 class SliceGrid(SamplingGrid):
     """
     Return an affine slice of a given grid with specified
     origin, steps and shape.
     """
-
 
     def __init__(self, grid, origin, directions, shape):
         self.fmatrix = N.zeros((self.nout, self.ndim), N.float64)

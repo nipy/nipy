@@ -88,7 +88,8 @@ class ParcelIterator (object):
     >>> from numpy import *
     >>> parcelmap = asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
     >>> parcelseq = ((1,2),0)
-    >>> i = ParcelIterator(parcelmap,parcelseq) 
+    >>> from neuroimaging.reference.iterators import ParcelIterator
+    >>> i = ParcelIterator(parcelmap,parcelseq)
     >>> for n in i: print n
     ...
     Item(label=(1, 2), where=array([[False, False, False, True, True],
@@ -97,6 +98,7 @@ class ParcelIterator (object):
     Item(label=(0,), where=array([[True, True, True, False, False],
            [True, True, False, False, False],
            [True, True, True, True, False]], dtype=bool))
+    >>>
     """
 
     class parcelmap (readonly):
@@ -113,7 +115,6 @@ class ParcelIterator (object):
         implements=Sequence
         def init(att, self):
             return N.unique(self.parcelmap.flat)
-
 
     class Item (object):
         "iterator item"
@@ -133,8 +134,11 @@ class ParcelIterator (object):
     def __init__(self, parcelmap, parcelseq=None):
         self.parcelmap = parcelmap
         if parcelseq is not None: self.parcelseq = tuple(parcelseq)
+        iter(self)
         self._labeliter = iter(self.parcelseq)
 
+    def __iter__(self):
+        return self
 
     def next(self):
         label = self._labeliter.next()
@@ -155,21 +159,23 @@ class SliceParcelIterator (object):
     boolean mask with the same shape as a slice of parcelmap indicating the
     elements of that slice's subset.
 
-    >>> from numpy import *
-    >>> parcelmap = asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
-    >>> parcelseq = ((1,2),0,2)
-    >>> i = SliceParcelIterator(parcelmap,parcelseq) 
-    >>> for n in i: print n
-    ...
-    Item(label=(1, 2), where=array([False, False, False, True, True], dtype=bool))
-    Item(label=(0,), where=array([True, True, False, False, False], dtype=bool))
-    Item(label=(2,), where=array([False, False, False, False, True], dtype=bool))
+   >>> from numpy import *
+   >>> parcelmap = asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
+   >>> parcelseq = ((1,2),0,2)
+   >>> from neuroimaging.reference.iterators import SliceParcelIterator
+   >>> i = SliceParcelIterator(parcelmap,parcelseq)
+   >>> for n in i: print n
+   ...
+   Item(label=(1, 2), where=array([False, False, False, True, True], dtype=bool))
+   Item(label=(0,), where=array([True, True, False, False, False], dtype=bool))
+   Item(label=(2,), where=array([False, False, False, False, True], dtype=bool))
+   >>>
+
     """
 
     clone(ParcelIterator.parcelmap)
     clone(ParcelIterator.parcelseq)
      
-
     class Item (ParcelIterator.Item):
         "iterator item"
 
@@ -187,6 +193,10 @@ class SliceParcelIterator (object):
             raise ValueError, 'parcelmap and parcelseq must have the same length'
         self.parcelseq = parcelseq
         self._loopvars = iter(enumerate(zip(self.parcelmap, self.parcelseq)))
+
+
+    def __iter__(self):
+        return self
 
 
     def next(self):
