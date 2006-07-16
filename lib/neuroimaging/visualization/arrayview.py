@@ -4,7 +4,8 @@ from qt import qApp, PYSIGNAL, QButtonGroup, QGridLayout, QGroupBox, \
   QHBoxLayout, QFrame, QLabel, QPoint, QSizePolicy, QSpinBox, QWidget, \
   QVBoxLayout
 from pylab import Figure, figaspect, show, amax, amin, squeeze, asarray,\
-  cm, angle, normalize, pi, arange, ravel, ones, outer, zeros
+  cm, angle, normalize, pi, arange, ravel, ones, zeros
+from numpy import outer
 from matplotlib.lines import Line2D
 from matplotlib.image import AxesImage
 from matplotlib.backends.backend_qtagg import \
