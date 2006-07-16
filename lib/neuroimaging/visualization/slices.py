@@ -27,9 +27,9 @@ class Slice(traits.HasTraits):
 
 # Default MNI coordinates
 
-zlim = slices.default_zlim
-ylim = slices.default_ylim
-xlim = slices.default_xlim
+#zlim = slices.default_zlim
+#ylim = slices.default_ylim
+#xlim = slices.default_xlim
 
 def coronal(image, y=0.,
             shape=(128,128),
@@ -214,8 +214,8 @@ class DataSlicePlot(RGBSlicePlot):
 class SagittalPlot(DataSlicePlot):
 
     x = traits.Float(0.)
-    xlim = traits.ListFloat(xlim)
-    ylim = traits.ListFloat(ylim)
+    #xlim = traits.ListFloat(xlim)
+    #ylim = traits.ListFloat(ylim)
     shape = (128,128)
 
     def __init__(self, img, **keywords):
@@ -224,8 +224,7 @@ class SagittalPlot(DataSlicePlot):
         self.interpolator = ImageInterpolator(self.img)
         self.m = float(self.img.readall().min())
         self.M = float(self.img.readall().max())
-        self.slice = sagittal(self.img, x=self.x, ylim=self.ylim,
-                              zlim=self.zlim, shape=self.shape)
+        self.slice = sagittal(self.img, x=self.x, shape=self.shape)
     
         DataSlicePlot.__init__(self, self.interpolator, self.slice,
                                 vmax=self.M,
@@ -237,8 +236,8 @@ class SagittalPlot(DataSlicePlot):
 class CoronalPlot (DataSlicePlot):
 
     x = traits.Float(0.)
-    xlim = traits.ListFloat(xlim)
-    zlim = traits.ListFloat(zlim)
+    #xlim = traits.ListFloat(xlim)
+    #zlim = traits.ListFloat(zlim)
     shape = (128,128)
 
     def __init__(self, img, **keywords):
@@ -247,8 +246,8 @@ class CoronalPlot (DataSlicePlot):
         self.interpolator = ImageInterpolator(self.img)
         self.m = float(self.img.readall().min())
         self.M = float(self.img.readall().max())
-        self.slice = coronal(self.img, x=self.x, xlim=self.xlim,
-                              zlim=self.zlim, shape=self.shape)
+        self.slice = coronal(self.img, x=self.x, 
+                               shape=self.shape)
     
         DataSlicePlot.__init__(self, self.interpolator, self.slice,
                                 vmax=self.M,
@@ -260,8 +259,8 @@ class CoronalPlot (DataSlicePlot):
 class TransversalPlot (DataSlicePlot):
 
     z = traits.Float(0.)
-    xlim = traits.ListFloat(xlim)
-    ylim = traits.ListFloat(ylim)
+    #xlim = traits.ListFloat(xlim)
+    #ylim = traits.ListFloat(ylim)
     shape = (128,128)
 
     def __init__(self, img, **keywords):
@@ -270,8 +269,7 @@ class TransversalPlot (DataSlicePlot):
         self.interpolator = ImageInterpolator(self.img)
         self.m = float(self.img.readall().min())
         self.M = float(self.img.readall().max())
-        self.slice = transversal(self.img, z=self.z, ylim=self.ylim,
-                                 xlim=self.xlim, shape=self.shape)
+        self.slice = transversal(self.img, z=self.z, shape=self.shape)
     
         DataSlicePlot.__init__(self, self.interpolator, self.slice,
                                 vmax=self.M,
