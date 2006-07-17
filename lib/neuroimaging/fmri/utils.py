@@ -31,7 +31,7 @@ class WaveFunction:
 # return the convolution (as a StepFunction) of two functions over interval,
 # with grid size dt
 
-def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, normalize=[0,0]):
+def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, normalize=(0, 0)):
     """
     Convolve fn1 with fn2 -- where fn1 may return a multidimensional output.
     """
