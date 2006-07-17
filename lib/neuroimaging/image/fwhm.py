@@ -344,10 +344,7 @@ class fastFWHM(Resels):
         resels = N.sqrt(detlam * test)
         fwhm = self.resel2fwhm(resels)
 
-        fullslice = []
-        for x in self.grid.shape:
-            fullslice.append(slice(0, x))
-
+        fullslice = [slice(0, x) for x in self.grid.shape]
         self.resels.writeslice(fullslice, resels)
         self.fwhm.writeslice(fullslice, fwhm)
 
