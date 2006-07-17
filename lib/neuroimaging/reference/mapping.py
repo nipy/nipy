@@ -119,8 +119,7 @@ class Mapping (object):
     deferto(input_coords, ("ndim",))
     class output_coords (readonly): implements=CoordinateSystem
     class map (readonly): pass
-    class _inverse (readonly): pass
-    class isinvertible (readonly): get=lambda _,s: s.inverse is not None
+    class isinvertible (readonly): get=lambda _,s: s._inverse is not None
     class inverse (readonly):
         def init(_, self):
             if self.isinvertible:
@@ -163,7 +162,7 @@ class Mapping (object):
         self.input_coords = input_coords
         self.output_coords = output_coords
         self.map = map
-        if inverse is not None: self._inverse = inverse
+        self._inverse = inverse
 
 
     def __call__(self, x): return self.map(x)
