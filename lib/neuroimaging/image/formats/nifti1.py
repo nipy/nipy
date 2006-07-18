@@ -968,7 +968,7 @@ mat33 nifti_mat33_polar( mat33 A )
     
     transform_code = '''
     PyArrayObject *transform;
-    int dim[2] = {4,4};                                                     
+    npy_intp dim[2] = {4,4};                                                     
     int i,j;
     double *ptr;                                                 
     mat44 T;                                                 
@@ -992,7 +992,7 @@ mat33 nifti_mat33_polar( mat33 A )
     mod.add_function(transform_fn)
                                            
     quaternion_code = '''
-    int dim[1] = {10};                                                     
+    npy_intp dim[1] = {10};                                                     
     float qb, qc, qd;
     float qx, qy, qz;
     float dx, dy, dz, qfac;
