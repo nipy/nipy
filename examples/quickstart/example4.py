@@ -13,11 +13,11 @@ m = mask()
 t = N.identity(4)
 t[1,1] = -1.
 
-incoords = outcoords = m.grid.mapping.output_coords
-flip = Affine(incoords, outcoords, t)
+input_coords = output_coords = m.grid.mapping.output_coords
+flip = Affine(input_coords, output_coords, t)
 
 newgrid = SamplingGrid(shape=m.grid.shape, mapping=flip * m.grid.mapping)
-flipped = Image(m.readall(), grid=newgrid)
+flipped = Image(m[:], grid=newgrid)
 
 v1 = BoxViewer(m); v2 = BoxViewer(flipped)
 v1.draw(); v2.draw()

@@ -7,11 +7,11 @@ from neuroimaging.image import Image
 
 # Load an fMRI image
 
-fmridata = fMRIImage('http://kff.stanford.edu/BrainSTAT/testdata/test_fmri.img')
+fmridata = fMRIImage('http://kff.stanford.edu/nipy/testdata/test_fmri.img')
 # Create a mask
 
 frame = fmridata.frame(0)
-mask = Image(N.greater(frame.readall(), 500).astype(N.Float), grid=frame.grid)
+mask = Image(N.greater(frame[:], 500).astype(N.float64), grid=frame.grid)
 
 # Fit PCAmontage which allows you to visualize the results
 

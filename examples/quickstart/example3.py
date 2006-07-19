@@ -16,18 +16,16 @@ def mask_and_func(subject=0, run=1, offset=5):
 
 m, f = mask_and_func()
 f.grid.itertype = 'parcel'
-f.grid.parcelmap = m.readall()
+f.grid.parcelmap = m[:]
 f.grid.parcelseq = [1, 2]
 
 means = {}
 for d in f:
-    print d.shape
     means[f.label] = N.mean(d, axis=1)
 
 f.grid.parcelseq = [0, 2] # changing the parcelseq to select "regions"
 for d in f:
     print d.shape
 
-
-pylab.plot(means[1], means[2], 'bo')
+pylab.plot(means[(1,)], means[(2,)], 'bo')
 pylab.show()
