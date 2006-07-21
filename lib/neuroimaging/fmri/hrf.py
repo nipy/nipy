@@ -16,7 +16,7 @@ def glover2GammaDENS(peak_hrf, fwhm_hrf):
     coef = peak_hrf**(-alpha) * N.exp(peak_hrf / beta)
     return coef, filters.GammaDENS(alpha + 1., 1. / beta)
 
-def _glover(peak_hrf=[5.4, 10.8], fwhm_hrf=[5.2, 7.35], dip=0.35):
+def _glover(peak_hrf=(5.4, 10.8), fwhm_hrf=(5.2, 7.35), dip=0.35):
     coef1, gamma1 = glover2GammaDENS(peak_hrf[0], fwhm_hrf[0])
     coef2, gamma2 = glover2GammaDENS(peak_hrf[1], fwhm_hrf[1])
     f = filters.GammaCOMB([[coef1,gamma1],[-dip*coef2, gamma2]])
@@ -37,17 +37,17 @@ canonical = glover
 afni = filters.Filter(filters.GammaDENS(9.6, 1.0/0.547))
 
 class SpectralHRF(filters.Filter):
-    dt = traits.Float(0.02)
-    tmax = traits.Float(500.0)
-    ncomp = traits.Int(2)
-    names = traits.ListStr(['glover'])
-
     '''
     Delay filter with spectral or Taylor series decomposition
     for estimating delays.
 
     Liao et al. (2002).
     '''
+
+    dt = traits.Float(0.02)
+    tmax = traits.Float(500.0)
+    ncomp = traits.Int(2)
+    names = traits.ListStr(['glover'])
 
     spectral = traits.true
 
