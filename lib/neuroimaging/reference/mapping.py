@@ -230,7 +230,7 @@ class Mapping (object):
                 _voxel[order[i]] = voxel[i]
 
             value = self(_voxel)
-            value = array([value[i] for i in order])
+            value = N.array([value[i] for i in order])
             return value
 
         return Mapping(incoords, outcoords, map, inverse=None) 

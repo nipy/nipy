@@ -1,4 +1,4 @@
-from numpy import zeros, float64
+import numpy as N
 
 from odict import odict
 from attributes import readonly
@@ -21,7 +21,7 @@ class CoordinateSystem(odict):
         self.name = name
         self.ndim = len(axes)
         self.axes = tuple(axes)
-        odict.__init__(self, [(ax.name,ax) for ax in axes])
+        odict.__init__(self, [(ax.name, ax) for ax in axes])
 
 
     def __getitem__(self, axisname):
@@ -38,7 +38,7 @@ class CoordinateSystem(odict):
 
     def __eq__(self, other):
         if not hasattrs(other, "name", "axes"): return False
-        return (self.name,self.axes)==(other.name,other.axes)
+        return (self.name, self.axes)==(other.name, other.axes)
 
 
     def __str__(self):
@@ -96,8 +96,8 @@ class VoxelCoordinateSystem(CoordinateSystem):
             self._getbox()
         test = 1
         for i in range(self.ndim):
-            test *= (greater_equal(x[i], self._box[i][0]) *
-                     less_equal(x[i], self._box[i][1]))
+            test *= (N.greater_equal(x[i], self._box[i][0]) *
+                     N.less_equal(x[i], self._box[i][1]))
         return test
 
 
@@ -127,7 +127,7 @@ class DiagonalCoordinateSystem(VoxelCoordinateSystem):
         Return an orthogonal  homogeneous transformation matrix based on the
         step, start, length attributes of each axis.
         """
-        value = zeros((self.ndim+1,)*2, float64)
+        value = N.zeros((self.ndim+1,)*2, N.float64)
         value[self.ndim, self.ndim] = 1.0
         for i in range(self.ndim):
             value[i,i] = self.axes[i].step

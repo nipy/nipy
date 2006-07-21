@@ -290,8 +290,8 @@ class SliceGrid(SamplingGrid):
         _axes = []
         for i in range(directions.shape[0]):
             self.fmatrix[i] = directions[i]
-            _axes.append(axis.VoxelAxis(len=shape[i], name=axis.space[i]))
-        in_coords = coordinate_system.CoordinateSystem('voxel', _axes)
+            _axes.append(VoxelAxis(len=shape[i], name=space[i]))
+        in_coords = CoordinateSystem('voxel', _axes)
         self.fvector = origin
-        mapping = DegenerateAffine(in_coords, output_coords, fmatrix, fvector)
+        mapping = DegenerateAffine(in_coords, output_coords, self.fmatrix, self.fvector)
         SamplingGrid.__init__(self, shape=shape, mapping=mapping)
