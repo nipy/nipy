@@ -261,9 +261,10 @@ class BinaryFormat(Format):
         outfile.close()
 
     def __del__(self):
-        if isinstance(self.memmap, memmap_type):
-            self.memmap.sync()
-        del(self.memmap)
+        if hasattr(self, 'memmap'):
+            if isinstance(self.memmap, memmap_type):
+                self.memmap.sync()
+            del(self.memmap)
 
     def postread(self, x):
         """

@@ -1,12 +1,13 @@
 import os
 import numpy as N
+from struct import unpack
 
 from scipy.weave import ext_tools # for _nifti1_quaternion module
 
 from neuroimaging import traits
 
 from neuroimaging.data import DataSource
-from neuroimaging.reference.axis import space
+from neuroimaging.reference.axis import valid
 from neuroimaging.reference.mapping import Affine
 from neuroimaging.reference.grid import SamplingGrid
 
@@ -178,7 +179,7 @@ sctypes = {DT_NONE:None, # will fail if unknown
            DT_COMPLEX128:None,
            DT_COMPLEX256:None}
 
-dims = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension']
+dims = valid[0:5][::-1]
 
 # (name, packstr, default) tuples
 
@@ -242,6 +243,7 @@ class NIFTI1(BinaryFormat):
     extensions = ('.img', '.hdr', '.nii')
     header = traits.List(header)
 
+
     def __init__(self, filename=None, datasource=DataSource(), grid=None,
                  sctype=N.float64, **keywords):
         
@@ -278,7 +280,7 @@ class NIFTI1(BinaryFormat):
             self.ndim = self.dim[0]
             # attach data to self
 
-        axisnames = space[0:self.ndim]
+        axisnames = dims[0:self.ndim]
         step = self.pixdim[1:(self.ndim+1)]
         shape = self.dim[1:(self.ndim+1)]
 
@@ -288,6 +290,7 @@ class NIFTI1(BinaryFormat):
                                                  shape=shape,
                                                  start=N.array(step),
                                                  step=step)
+
         ## Fix up transform based on NIFTI-1 rules
 
         t = self.transform()
@@ -295,6 +298,7 @@ class NIFTI1(BinaryFormat):
         self.grid.mapping.transform[0:3,-1] = t[0:3,-1]
 
         # assume .mat matrix uses FORTRAN indexing
+
         self.grid = self.grid.matlab2python()
 
         self.attach_data()
@@ -308,7 +312,10 @@ class NIFTI1(BinaryFormat):
         if not isinstance(grid.mapping, Affine):
             raise NIFTI1FormatError, 'error: non-Affine grid in writing out NIFTI-1 file'
 
-        qb, qc, qd, qx, qy, qz, dx, dy, dz, qfac = quaternion(grid.mapping.transform)
+        ddim = grid.ndim - 3
+        t = grid.mapping.transform[ddim:,ddim:]
+
+        qb, qc, qd, qx, qy, qz, dx, dy, dz, qfac = quaternion(t)
         self.quatern_b, self.quatern_c, self.quatern_d = qb, qc, qd
         self.qoffset_x, self.qoffset_y, self.qoffset_z = qx, qy, qz
 
@@ -316,9 +323,10 @@ class NIFTI1(BinaryFormat):
         _pixdim[0:4] = (qfac, dx, dy, dz)
         self.pixdim = tuple(_pixdim)
 
+        self.qform_code = 1
+        
         self.dim = (self.ndim,) + grid.shape + (8 - (self.ndim+1))*(0,)
         self.grid = grid.matlab2python()
-
 
     def image_filename(self):
         if self.magic == 'n+1\x00':
@@ -1058,9 +1066,6 @@ def quaternion(T):
     """
 
     return _nifti1_quaternion.quaternion(T.astype(N.float64))
-
-
-reader = NIFTI1
 
 
 __doc__ = """

@@ -324,5 +324,3 @@ class ANALYZE_FSL(ANALYZE):
         self.pixdim = [N.fabs(pixd) for pixd in self.pixdim]
 
 
-# plug in as a format creator (see formats.getreader)
-reader = ANALYZE

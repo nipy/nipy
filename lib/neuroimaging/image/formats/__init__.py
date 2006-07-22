@@ -128,8 +128,7 @@ class Format(traits.HasTraits):
         """
         try:
             extension = path(filename).splitext()[1]
-
-            if extension not in extension:
+            if extension not in self.extensions:
                 return False
             if verbose:
                 # Try to actually instantiate the objects
@@ -196,28 +195,35 @@ format_modules = (
   #"neuroimaging.image.formats.minc",
 )
 
-def getreader(filename):
-    "Return the appropriate image reader for the given file type."
-    extension = path(filename).splitext()[1]
-    all_extensions = []
-    for modname in format_modules:
-        reader = import_from(modname, "reader")
-        if extension in reader.extensions: return reader
-        all_extensions += reader.extensions
+default_formats = [("neuroimaging.image.formats.nifti1", "NIFTI1"),
+                   ("neuroimaging.image.formats.analyze", "ANALYZE")]
 
-    # if we made it this far, a reader was not found
+def getformats(filename):
+    "Return the appropriate image format for the given file type."
+    all_formats = []
+    valid_formats = []
+    for modname, formatname in default_formats:
+        all_formats.append(formatname)
+        format = import_from(modname, formatname)
+        if format.valid(filename): valid_formats.append(format)
+        
+    if valid_formats: return valid_formats
+
+    # if we made it this far, a format was not found
+
+    extension = path(filename).splitext()[1]
     raise NotImplementedError,\
       "file extension %(ext)s not recognized, %(exts)s files can be created "\
-      "at this time."%(extension, all_extensions)
+      "at this time."% {'ext':extension, 'exts':all_formats}
 
 
-def hasreader(filename):
+def hasformat(filename):
     """
-    Determine if there is an image format reader registered for the given
+    Determine if there is an image format format registered for the given
     file type.
     """
     try:
-        getreader(filename)
+        getformat(filename)
         return True
     except NotImplementedError:
         return False
