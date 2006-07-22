@@ -38,7 +38,6 @@ class MultiPlotTest(unittest.TestCase):
             pylab.show()
 
         def test4(self):
-            print 4
             self.fnplot.draw(args=(4,7), kw={'coefs':[2,6]})
             pylab.show()
 
