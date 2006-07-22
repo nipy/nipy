@@ -1,5 +1,5 @@
 
-import grid, axis, coordinate_system, mapping
+import grid, axis, coordinate_system, mapping, mni
 import numpy.linalg as L
 import numpy as N
 import numpy.random as R
@@ -35,7 +35,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
                                                            axis.generic,
                                                            shape=shape)
     if output_coords is None:
-        output_coords = coordinate_system.MNI_world
+        output_coords = mni.MNI_world
 
     w = mapping.Affine(input_coords, output_coords, t)
     g = grid.SamplingGrid(mapping=w, shape=list(shape + (1,) * (nout-ndim)))
@@ -43,13 +43,13 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
 
 # MNI default
 
-default_xlim = [-90.,90.]
-default_ylim = [-126.,90.]
-default_zlim = [-72.,108.]
-default_shape = (91,109,91)
+#default_xlim = [-90.,90.]
+#default_ylim = [-126.,90.]
+#default_zlim = [-72.,108.]
+#default_shape = (91,109,91)
 
-def box_slices(zlim=default_zlim, ylim=default_ylim, xlim=default_xlim,
-               shape=default_shape, x=N.inf, y=N.inf, z=N.inf):
+def box_slices(zlim, ylim, xlim,
+               shape, x=N.inf, y=N.inf, z=N.inf):
 
     if x == N.inf:
         x = (xlim[0]+xlim[1])/2.
@@ -99,11 +99,11 @@ def box_slices(zlim=default_zlim, ylim=default_ylim, xlim=default_xlim,
                                               shapes[i]))
     return slices
 
-def yslice(y=0,
-           zlim=default_zlim,
-           ylim=default_ylim,
-           xlim=default_xlim,
-           shape=default_shape):
+def yslice(y,
+           zlim,
+           ylim,
+           xlim,
+           shape):
     """
     Return a slice through a 3d box with y fixed.
     Defaults to a slice through MNI coordinates.
@@ -114,11 +114,11 @@ def yslice(y=0,
                       zlim=zlim,
                       shape=shape,
                       y=y)[0]
-def xslice(x=0,
-           zlim=default_zlim,
-           ylim=default_ylim,
-           xlim=default_xlim,
-           shape=default_shape):
+def xslice(x,
+           zlim,
+           ylim,
+           xlim,
+           shape):
 
     """
     Return a slice through a 3d box with x fixed.
@@ -131,11 +131,11 @@ def xslice(x=0,
                       shape=shape,
                       x=x)[1]
 
-def zslice(z=0,
-           zlim=default_zlim,
-           ylim=default_ylim,
-           xlim=default_xlim,
-           shape=default_shape):
+def zslice(z,
+           zlim,
+           ylim,
+           xlim,
+           shape):
     
     """
     Return a slice through a 3d box with z fixed.

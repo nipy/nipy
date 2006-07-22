@@ -9,7 +9,7 @@ from attributes import readonly, deferto
 from neuroimaging import hasattrs
 from neuroimaging.reference.axis import Axis, space
 from neuroimaging.reference.coordinate_system import \
-  CoordinateSystem, MNI_voxel, MNI_world
+  CoordinateSystem
 
 def _2matvec(transform):
     ndim = transform.shape[0] - 1
@@ -439,5 +439,5 @@ def translation_transform(x, ndim):
     return _transform
 
 
-MNI_mapping = Affine(MNI_voxel, MNI_world, MNI_world.transform())
-MNI_mapping([36,63,45])
+
+

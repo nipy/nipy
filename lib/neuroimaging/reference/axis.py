@@ -13,42 +13,27 @@ class Axis (object):
     """
     class name (readonly): "dimension name"; implements=str
 
-
-    def __init__(self, name):
+    def __init__(self, name, values=None):
         self.name = name
         if self.name not in valid:
             raise ValueError, 'recognized dimension names are ' + `valid`
+        if values is None:
+            self._values = []
+        else:
+            self._values = values
+        self.length = len(self._values)
 
-
-    def __eq__(self, axis):
-        "Equality is defined by name."
-        return hasattr(axis,"name") and self.name == axis.name
-
-
-class VoxelAxis (Axis):
-    "An axis with a length as well."
-
-    class length (readonly): "number of voxel positions"; default=1
-
-    def __init__(self, name, length=None):
-        Axis.__init__(self, name)
-        if length is not None: self.length = length
-
-
-    def __len__(self): return self.length
-
+    def values(self):
+        return self._values
 
     def __eq__(self, axis):
-        "Equality is defined by name and length."
-        return Axis.__eq__(self, axis) and hasattr(axis,"length") and \
-          self.length == axis.length
+        "Equality is defined by name and values."
+        return hasattr(axis,"name") and self.name == axis.name and self.length == axis.length and N.all(N.equal(self.values(), axis.values()))
+    
+    def __len__(self):
+        return self.length
 
-
-    def values(self): return N.arange(self.length)
-
-
-
-class RegularAxis (VoxelAxis):
+class RegularAxis (Axis):
     """
     This class represents a regularly spaced axis. Axes are used in the
     definition Coordinate system. The attributes step and start are usually
@@ -63,38 +48,20 @@ class RegularAxis (VoxelAxis):
     >>>
     """
 
-    class start (readonly): default=0.
-    class step (readonly): default=1.
+    def __init__(self, name, length=0, start=0, step=0):
+        _values = N.linspace(start, start + step*length, length, False)
+        Axis.__init__(self, name, _values)
+        self.start = start
+        self.step = step
 
 
-    def __init__(self, name, length=None, start=None, step=None):
-        VoxelAxis.__init__(self, name, length=length)
-        if start is not None: self.start = start
-        if step is not None: self.step = step
 
+class VoxelAxis (RegularAxis):
+    "An axis with a length as well."
 
-    def __repr__(self):
-        return "%s('%s', length=%s, start=%s, step=%s)"%(
-          self.__class__.__name__,
-          self.name, self.length, self.start, self.step)
+    def __init__(self, name, length=0):
+        RegularAxis.__init__(self, name, length, start=0, step=1)
 
-
-    def values(self):
-        """
-        Return an array of values for the axis, based on step, start, length
-        attributes.
-        """
-        return N.arange(self.start, self.start + self.step*self.length,
-          self.step).astype(N.float64)
-
-
-    def __eq__(self, axis, tol=1.0e-07):
-        "Test equality of two axes by name, length, and values."
-        if not isinstance(axis, Axis): return False
-        v = self.values()
-        w = axis.values()
-        return VoxelAxis.__eq__(self, axis) and ((v-w)**2).sum()\
-               / N.sqrt(((v - v.mean())**2).sum()*((w - w.mean())**2).sum()) < tol
 
 # Default axes
 generic = (
@@ -102,11 +69,6 @@ generic = (
   Axis(name='yspace'),
   Axis(name='xspace'))
 
-# MNI template axes
-MNI = (
-  RegularAxis(name='zspace', length=109, start=-72., step=2.0),
-  RegularAxis(name='yspace', length=109, start=-126., step=2.0),
-  RegularAxis(name='xspace', length=91, start=-90., step=2.0))
    
 
 if __name__ == "__main__":

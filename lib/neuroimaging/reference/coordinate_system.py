@@ -4,8 +4,6 @@ from odict import odict
 from attributes import readonly
 
 from neuroimaging import reorder, reverse, hasattrs
-from neuroimaging.reference import axis
-
 
 
 class CoordinateSystem(odict):
@@ -116,7 +114,7 @@ class VoxelCoordinateSystem(CoordinateSystem):
 
 
 class DiagonalCoordinateSystem(VoxelCoordinateSystem):
-    class axes (readonly): default=axis.MNI
+    class axes (readonly): pass
 
 
     def __init__(self, name, axes):
@@ -136,7 +134,3 @@ class DiagonalCoordinateSystem(VoxelCoordinateSystem):
             value[i, self.ndim] = self.axes[i].start
         return value
 
-# Standard coordinates for MNI template
-MNI_voxel = VoxelCoordinateSystem(
-  'MNI_voxel', axis.generic, [dim.length for dim in axis.MNI])
-MNI_world = DiagonalCoordinateSystem('MNI_world', axis.MNI)
