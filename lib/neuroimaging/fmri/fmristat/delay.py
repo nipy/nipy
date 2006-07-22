@@ -23,7 +23,7 @@ from scipy.sandbox.models.contrast import ContrastResults
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
-    from neuroimaging.fmri.plotting import MultiPlot
+    from neuroimaging.visualization.multiplot import MultiPlot
 
 class DelayContrast(contrast.Contrast):
 

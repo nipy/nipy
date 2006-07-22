@@ -12,7 +12,7 @@ import neuroimaging.image.regression as imreg
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
-    from neuroimaging.fmri.plotting import MultiPlot
+    from neuroimaging.visualization.multiplot import MultiPlot
 
 class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     """

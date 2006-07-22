@@ -23,8 +23,6 @@ from neuroimaging.image import Image
 
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
-if PYLAB_DEF:
-    from neuroimaging.fmri.plotting import MultiPlot
 
 class PCA(traits.HasTraits):
     """
@@ -192,7 +190,7 @@ if PYLAB_DEF:
     from neuroimaging.visualization.montage import Montage
     from neuroimaging.image.interpolation import ImageInterpolator
     from neuroimaging.visualization import slices
-    from neuroimaging.fmri.plotting import MultiPlot
+    from neuroimaging.visualization.multiplot import MultiPlot
 
     class PCAmontage(PCA):
 
@@ -293,53 +291,6 @@ if PYLAB_DEF:
             m = Montage(slices=montage_slices, vmax=vmax, vmin=vmin)
             m.draw()
 
-    class MultiPlot(traits.HasTraits):
-        """
-        Class to plot multi-valued time series simultaneously.
-
-        Should be moved somewhere better.
-        """
-    
-        figure = traits.Any()
-        title = traits.Str()
-        time = traits.Array(shape=(None,))
-
-        def __init__(self, series, **keywords):
-            self.series = series
-            traits.HasTraits.__init__(self, **keywords)
-            self.figure = pylab.gcf()
-
-        def draw(self, **keywords):
-            pylab.figure(num=self.figure.number)
-
-            self.lines = []
-
-            v = self.series
-            if v.ndim == 1:
-                v.shape = (1, v.shape[0])
-            v = v[::-1]
-            
-            if N.allclose(self.time, N.array([0])):
-                self.time = N.arange(v.shape[1])
-            n = v.shape[0]
-            dy = 0.9 / n
-            for i in range(n):
-                a = pylab.axes([0.05,0.05+i*dy,0.9,dy])
-                a.set_xticklabels([])
-                a.set_yticks([])
-                a.set_yticklabels([])
-                m = N.nanmin(v[i])
-                M = N.nanmax(v[i])
-                pylab.plot(self.time, v[i])
-                r = M - m
-                l = m - 0.2 * r
-                u = M + 0.2 * r
-                if l == u:
-                    u += 1.
-                    l -= 1.
-                a.set_ylim([l, u])
-
-            pylab.title(self.title)
 
 
 
