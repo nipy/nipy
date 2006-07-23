@@ -1,9 +1,9 @@
 import numpy as N
 from attributes import readonly
 
-valid = ['xspace', 'yspace', 'zspace', 'time', 'vector_dimension', 'concat']
-space = ['zspace', 'yspace', 'xspace']
-spacetime = ['time', 'zspace', 'yspace', 'xspace']
+valid = ('xspace', 'yspace', 'zspace', 'time', 'vector_dimension', 'concat')
+space = ('zspace', 'yspace', 'xspace')
+spacetime = ('time', 'zspace', 'yspace', 'xspace')
 
 
 class Axis (object):

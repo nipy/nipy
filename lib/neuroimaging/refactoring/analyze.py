@@ -288,7 +288,7 @@ class AnalyzeImage (BaseImage):
             shape = self.dim[1:4]
 
         elif self.ndim == 4:
-            axisnames = space[::-1] + ['time']
+            axisnames = space[::-1] + ('time', )
             origin = tuple(self.origin[0:3]) + (1,)
             step = tuple(self.pixdim[1:5]) 
             shape = self.dim[1:5]
