@@ -1,31 +1,36 @@
 import gc
 
 import numpy as N
-import numpy.dft as FFT
+import numpy.dft as fft
 import numpy.linalg as NL
 from neuroimaging import traits
 
 from neuroimaging.image import Image
 from neuroimaging.image.utils import fwhm2sigma
 from neuroimaging.reference.mapping import Affine
+from neuroimaging.reference.grid import SamplingGrid
+
 
 class LinearFilter(traits.HasTraits):
     '''
     A class to implement some FFT smoothers for VImage objects.
+    By default, this does a Gaussian kernel smooth. More choices
+    would be better!
     '''
 
     padding = traits.Int(5)
     fwhm = traits.Float(6.)
-    norm = traits.Float(2.)
-    periodic = traits.true
-    cov = traits.Any()
-
+    cov = traits.Array(shape=(None,None))
+    grid = traits.Instance(SamplingGrid)
+    scale = traits.Float(1., desc='Scaling applied to output of smoother.')
+    location = traits.Float(0., desc='Shift applied to output of smoother.')
+    
     def setup_kernel(self):
-        _normsq = self.normsq() / 2.
+        _normsq = self._normsq() / 2.
         self.kernel = N.exp(-N.minimum(_normsq, 15))
-        norm = self.kernel.sum()
+        norm = N.sqrt((self.kernel**2).sum())
         self.kernel = self.kernel / norm
-        self.kernel = FFT.rfftn(self.kernel)
+        self.kernel = fft.rfftn(self.kernel)
 
     def __init__(self, grid, **keywords):
 
@@ -34,7 +39,7 @@ class LinearFilter(traits.HasTraits):
         self.shape = N.array(self.grid.shape) + self.padding
         self.setup_kernel()
 
-    def normsq(self):
+    def _normsq(self):
         """
         Compute the (periodic, i.e. on a torus) squared distance needed for
         FFT smoothing. Assumes coordinate system is linear. 
@@ -54,70 +59,64 @@ class LinearFilter(traits.HasTraits):
 
         if self.fwhm is not 1.0:
             X = X / fwhm2sigma(self.fwhm)
-        if self.cov is not None:
+        if self.cov != N.array([[0.]]):
             _chol = NL.cholesky(self.cov)
             X = N.dot(NL.inv(_chol), X)
         D2 = N.add.reduce(X**2, 0)
         D2.shape = self.shape
         return D2
 
-    def smooth(self, inimage, is_fft=False, scale=1.0, location=0.0, clean=True, **keywords):
+    def smooth(self, inimage, clean=False, is_fft=False):
 
-        # check grids here? we should...
-        
-        if inimage.grid != self.grid:
-            raise ValueError, 'grids do not agree in kernel_smooth'
-
-        ndim = len(inimage.grid.shape)
-        if ndim == 4:
+        if inimage.ndim == 4:
             _out = N.zeros(inimage.shape)
             nslice = inimage.shape[0]
-        elif ndim == 3:
+        elif inimage.ndim == 3:
             nslice = 1
         else:
             raise NotImplementedError, 'expecting either 3 or 4-d image.'
 
         for _slice in range(nslice):
-            if ndim == 4:
-                indata = inimage.getslice(slice(_slice,_slice+1))
-            elif ndim == 3:
-                indata = inimage.readall()
+            if inimage.ndim == 4:
+                data = inimage[_slice]
+            elif inimage.ndim == 3:
+                data = inimage[:]
 
             if clean:
-                indata = N.nan_to_num(indata)
+                data = N.nan_to_num(data)
             if not is_fft:
-                Y = self.presmooth(indata)
-                tmp = Y * self.kernel
+                data = self._presmooth(data)
+                data *= self.kernel
             else:
-                tmp = indata * self.kernel
+                data *= self.kernel
 
-            tmp2 = FFT.irfftn(tmp)
-            del(tmp)
+            data = fft.irfftn(data)
+
             gc.collect()
-            outdata = scale * tmp2[0:inimage.shape[0],0:inimage.shape[1],0:inimage.shape[2]]
+            if self.scale != 1:
+                data = self.scale * data[0:inimage.shape[0],0:inimage.shape[1],0:inimage.shape[2]]
 
-            if location != 0.0:
-                outdata = outdata + location
-            del(tmp2)
+            if self.location != 0.0:
+                data += self.location
+
             gc.collect()
 
             # Write out data 
 
-            if ndim == 4:
-                _out[_slice] = outdata
+            if inimage.ndim == 4:
+                _out[_slice] = data
             else:
-                _out = outdata
+                _out = data
             _slice = _slice + 1
 
         gc.collect()
 
-        if ndim == 3:
+        if inimage.ndim == 3:
             return Image(_out, grid=self.grid)
         else:
-            return Image(_out, grid=self.grid.duplicate(inimage.grid.shape[0]))
+            return Image(_out, grid=self.grid.replicate(inimage.grid.shape[0]))
 
-
-    def presmooth(self, indata):
+    def _presmooth(self, indata):
         _buffer = N.zeros(self.shape, N.float64)
         _buffer[0:indata.shape[0],0:indata.shape[1],0:indata.shape[2]] = indata
-        return FFT.rfftn(_buffer)
+        return fft.rfftn(_buffer)

@@ -51,7 +51,7 @@ class TestTool (OptionParser):
             if tests:
                 for test in tests: print " ",test
             else:
-                print "  No tests found for this package"
+                print "No tests found for this package"
 
     def run_tests(self, package=None, testcase=None):
         if not package: test_all()
