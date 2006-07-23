@@ -55,7 +55,6 @@ class RegularAxis (Axis):
         self.step = step
 
 
-
 class VoxelAxis (RegularAxis):
     "An axis with a length as well."
 

@@ -5,7 +5,6 @@ from attributes import readonly
 
 from neuroimaging import reorder, reverse, hasattrs
 
-
 class CoordinateSystem(odict):
     "A simple class to carry around coordinate information in one bundle."
 
@@ -30,7 +29,6 @@ class CoordinateSystem(odict):
         except KeyError:
             raise KeyError(
               "axis '%s' not found, names are %s"%(axisname,self.keys()))
-        
 
     def __setitem__(self, name, value):
         raise TypeError, "CoordinateSystem does not support axis assignment"

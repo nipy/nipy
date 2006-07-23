@@ -236,10 +236,10 @@ class ConcatenatedGrids(SamplingGrid):
             newaxis = Axis(name=self.concataxis)
             ic = self.grids[0].mapping.input_coords
             newin = CoordinateSystem(
-              '%s:%s'%(ic.name, self.concataxis), [newaxis] + ic.axes)
+              '%s:%s'%(ic.name, self.concataxis), [newaxis] + list(ic.axes))
             oc = self.grids[0].mapping.output_coords
             newout = CoordinateSystem(
-              '%s:%s'%(oc.name, self.concataxis), [newaxis] + oc.axes)
+              '%s:%s'%(oc.name, self.concataxis), [newaxis] + list(oc.axes))
             return Mapping(newin, newout, mapfunc)
 
     class concataxis (readonly): default="concat"
@@ -265,10 +265,10 @@ class ConcatenatedIdenticalGrids(ConcatenatedGrids):
             newaxis = Axis(name=self.concataxis)
             ic = self.grids[0].mapping.input_coords
             newin = CoordinateSystem(
-              '%s:%s'%(ic.name, self.concataxis), [newaxis] + ic.axes)
+              '%s:%s'%(ic.name, self.concataxis), [newaxis] + list(ic.axes))
             oc = self.grids[0].mapping.output_coords
             newout = CoordinateSystem(
-              '%s:%s'%(oc.name, self.concataxis), [newaxis] + oc.axes)
+              '%s:%s'%(oc.name, self.concataxis), [newaxis] + list(oc.axes))
 
             t = self.grids[0].mapping.transform
             ndim = t.shape[0]-1

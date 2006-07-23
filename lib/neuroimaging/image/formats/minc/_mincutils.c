@@ -1493,6 +1493,7 @@ static PyObject *minccreate(PyObject *self, PyObject *args, PyObject *keywords)
 				 NC_DOUBLE, ndims-image_dims, dims);
 
    imgid = micreate_std_variable(cdfid, MIimage, datatype, ndims, dims);
+
    (void) miattputstr(cdfid, imgid, MIcomplete, MI_FALSE);
    (void) miattputstr(cdfid, imgid, MIsigntype, signtype);
 

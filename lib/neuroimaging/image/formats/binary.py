@@ -65,8 +65,6 @@ class BinaryHeaderValidator(traits.TraitHandler):
 
     def read(self, hdrfile):
 
-#        hdrfile.seek(self.seek)
-
         try:
             s = hdrfile.read(self.size)
             value = unpack(self.bytesign + self.packstr, s)

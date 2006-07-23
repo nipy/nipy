@@ -243,7 +243,6 @@ class NIFTI1(BinaryFormat):
     extensions = ('.img', '.hdr', '.nii')
     header = traits.List(header)
 
-
     def __init__(self, filename=None, datasource=DataSource(), grid=None,
                  sctype=N.float64, **keywords):
         
