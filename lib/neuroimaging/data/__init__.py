@@ -10,22 +10,17 @@ from neuroimaging import ensuredirs
 zipexts = (".gz",".bz2")
 file_openers = {".gz":gzip.open, ".bz2":bz2.BZ2File, None:file}
 
-#-----------------------------------------------------------------------------
-def bool(obj):
-    if obj: return True
-    else: return False
 
-#-----------------------------------------------------------------------------
 def iszip(filename):
     filebase, ext = path(filename).splitext()
     return ext in zipexts
 
-#-----------------------------------------------------------------------------
+
 def splitzipext(filename):
     if iszip(filename): return path(filename).splitext()
-    else: return filename,None
+    else: return filename, None
 
-#-----------------------------------------------------------------------------
+
 def unzip(filename):
     "Unzip the given file into another file.  Return the new file's name."
     if not iszip(filename): raise ValueError("file %s is not zipped"%filename)
@@ -36,22 +31,22 @@ def unzip(filename):
     outfile.close()
     return unzip_name
 
-#-----------------------------------------------------------------------------
+
 def urlexists(url):
     try: urlopen(url)
     except: return False
     return True
 
-#-----------------------------------------------------------------------------
+
 def isurl(pathstr):
     scheme, netloc, _,_,_,_ = urlparse(pathstr)
     return bool(scheme and netloc)
 
-#-----------------------------------------------------------------------------
+
 def iswritemode(mode): return mode.find("w")>-1 or mode.find("+")>-1
 
 
-##############################################################################
+
 class Cache (object):
     class path (readonly):
         if os.name == 'posix':
@@ -84,7 +79,7 @@ class Cache (object):
         return file(self.filename(uri))
 
 
-##############################################################################
+
 class DataSource (object):
     class _cache (readonly): default=Cache()
 
@@ -125,7 +120,7 @@ class DataSource (object):
         return file_openers[ext](found, mode=mode)
 
 
-##############################################################################
+
 class Repository (DataSource):
     "DataSource with an implied root."
     def __init__(self, baseurl, cachepath=None):
