@@ -2,7 +2,7 @@ import urllib, stat, string, os, urllib2, gzip, atexit
 from neuroimaging import traits
 import cache
 
-##############################################################################
+
 class DataFetcher(traits.HasTraits):
     """
     Not very sophisticated simple class to check if local file exists,
@@ -29,12 +29,12 @@ class DataFetcher(traits.HasTraits):
     zipexts = traits.ListStr(['.gz'])
     cached = traits.false()
 
-    #-------------------------------------------------------------------------
+
     def urldecompose(self):
         self.urltype, self.urlbase = urllib.splittype(self.url)
         self.urlhost, self.urlfile = urllib.splithost(self.urlbase)
 
-    #-------------------------------------------------------------------------
+
     def urlcompose(self, type=True, urlfile=None):
         urlfile = urlfile or self.urlfile
 
@@ -55,11 +55,11 @@ class DataFetcher(traits.HasTraits):
             else:
                 return urlfile
 
-    #-------------------------------------------------------------------------
+
 #    def __init__(self, **keywords):
 #        traits.HasTraits.__init__(self, **keywords)
 
-    #-------------------------------------------------------------------------
+
     def getexts(self):
 
         filebase, ext = os.path.splitext(self.urlfile)
@@ -79,7 +79,7 @@ class DataFetcher(traits.HasTraits):
         zipexts = list(set(zipexts))
         return exts, zipexts
     
-    #-------------------------------------------------------------------------
+
     def geturl(self, url, tryexts=True, force=False):
 
         self.url = url
@@ -101,9 +101,7 @@ class DataFetcher(traits.HasTraits):
         else:
             exts, zipexts = [self.urlfile]
             
-        rmfiles = []
         goodexts = []
-        found = []
         for ext in exts + zipexts:
             _url = self.urlcompose(type=False, urlfile=ext)
             url = self.urlcompose(urlfile=ext)
@@ -131,7 +129,7 @@ class DataFetcher(traits.HasTraits):
 
         ## TODO: have gzip uncompress into neuroimaging.cache.dirname
 
-    #-------------------------------------------------------------------------
+
     def urlretrieve(self, url, writer=None):
         """
         A rudimentary check to see if urlretrieve actually finds a correct URL.
@@ -179,7 +177,7 @@ class DataFetcher(traits.HasTraits):
 _gzipfiles = []
 _rmfiles = []
 
-#-----------------------------------------------------------------------------
+
 def _ungzip(outfile, clobber=True, rm=False, dir=None):
     _outfile = outfile[0:-3]
 
@@ -205,7 +203,7 @@ def _ungzip(outfile, clobber=True, rm=False, dir=None):
         else:
             _rmfiles.append(_outfile)
 
-#-----------------------------------------------------------------------------
+
 def _gzip(infile, clobber=True, rm=True):
     outfile = '%s.gz' % infile
     if clobber or not os.path.exists(outfile):
@@ -223,7 +221,7 @@ def _gzip(infile, clobber=True, rm=True):
         if rm:
             os.remove(infile)
 
-#-----------------------------------------------------------------------------
+
 def _gzipcleanup():
     """
     Gzip all uncompressed files and delete files whose gzipped versions were
@@ -246,7 +244,7 @@ def _gzipcleanup():
 atexit.register(_gzipcleanup)
 
 
-#-----------------------------------------------------------------------------
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
