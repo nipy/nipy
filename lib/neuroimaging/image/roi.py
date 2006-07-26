@@ -151,7 +151,7 @@ class ROIall(SamplingGridROI):
     An ROI for an entire grid. Save time by avoiding compressing, etc.
     """
 
-    def mask(self, mapping, **keywords):
+    def mask(self, image, **keywords):
         try:
             mapping = image.spatial_mapping
         except:
@@ -164,7 +164,7 @@ class ROIall(SamplingGridROI):
 
 def ROIspherefn(center, radius):
     def test(real):
-        diff = array([real[i] - center[i] for i in range(real.shape[0])])
+        diff = N.array([real[i] - center[i] for i in range(real.shape[0])])
         return (sum(diff**2) < radius**2)
     return test
 
@@ -179,7 +179,7 @@ def ROIellipsefn(center, form, a = 1.0):
     """
     from numpy.linalg import cholesky, inv
     _cholinv = cholesky(inv(form))
-    ndim = array(center).shape[0]
+    ndim = N.array(center).shape[0]
 
     def test(real):
         _real = 1. * real
@@ -207,7 +207,7 @@ def ROIfromArraySamplingGrid(data, grid):
     if grid.shape != data.shape:
         raise ValueError, 'grid shape does not agree with data shape'
     voxels = N.nonzero(data)
-    coordinate_system = image.grid.output_coordinate_system
+    coordinate_system = grid.output_coordinate_system
     return SamplingGridROI(coordinate_system, voxels, grid)
 
 class ROISequence(list):
