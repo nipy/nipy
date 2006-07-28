@@ -6,7 +6,7 @@ from attributes import attribute, readonly, deferto
 
 from neuroimaging import flatten
 from neuroimaging.data import DataSource
-from neuroimaging.image.formats import getreader
+from neuroimaging.image.formats import getformats
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.reference.iterators import ParcelIterator, SliceParcelIterator
 from neuroimaging.image.formats import Format
@@ -46,15 +46,21 @@ class Image(traits.HasTraits):
 
 
     @staticmethod
-    def fromurl(url, datasource=DataSource(), reader=None, grid=None, mode="r", clobber=False,
+    def fromurl(url, datasource=DataSource(), format=None, grid=None, mode="r", clobber=False,
       **keywords):
         zipexts = (".gz",".bz2")
         base, ext = os.path.splitext(url.strip())
         if ext in zipexts: url = base
-        reader = reader or getreader(url)
-        return reader(filename=url,
-          datasource=datasource, mode=mode, clobber=clobber, grid=grid, **keywords)
+        if not format: valid = getformats(url)
+        else: valid = [format]
 
+        for format in valid:
+            try:
+                return format(filename=url,
+                               datasource=datasource, mode=mode, clobber=clobber, grid=grid, **keywords)
+            except: pass
+
+        raise NotImplementedError, 'no valid reader found for URL %s' % url
 
     def __init__(self, image, datasource=DataSource(), grid=None, **keywords):
         '''
@@ -235,3 +241,4 @@ class ImageSequenceIterator(traits.HasTraits):
         if value is None: value = self.grid.next()
         v = [img.next(value=value) for img in self.imgs]
         return N.array(v, N.float64)
+
