@@ -4,6 +4,7 @@ from odict import odict
 from attributes import readonly
 
 from neuroimaging import reorder, reverse, hasattrs
+from neuroimaging.reference.axis import VoxelAxis
 
 class CoordinateSystem(odict):
     "A simple class to carry around coordinate information in one bundle."
@@ -84,12 +85,10 @@ class VoxelCoordinateSystem(CoordinateSystem):
 
     def __init__(self, name, axes, shape=None):
         if shape is None:
-            try:
-                self.shape = [dim.length for dim in axes]
-            except:
-                raise ValueError, 'must specify a shape or axes must have lengths'
+            self.shape = [dim.length for dim in axes]
         else:
             self.shape = list(shape)
+        axes = [VoxelAxis(ax.name, length) for (ax, length) in zip(axes, self.shape)]
         CoordinateSystem.__init__(self, name, axes)
 
 
@@ -109,12 +108,8 @@ class VoxelCoordinateSystem(CoordinateSystem):
     def _getbox(self):
         self._box = []
         for i in range(self.ndim):
-            dim = self.axes[i]
-            try:
-                v = dim.values()
-            except:
-                v = range(self.shape[i])
-            self._box.append(min(v), max(v))
+            v = self.axes[i].values()
+            self._box.append((min(v), max(v)))
 
 
 
