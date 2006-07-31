@@ -36,7 +36,7 @@ class Axis (object):
 class RegularAxis (Axis):
     """
     This class represents a regularly spaced axis. Axes are used in the
-    definition Coordinate system. The attributes step and start are usually
+    definition of Coordinate systems. The attributes step and start are usually
     ignored if a valid transformation matrix is provided -- otherwise they
     can be used to create an orthogonal transformation matrix.
 
