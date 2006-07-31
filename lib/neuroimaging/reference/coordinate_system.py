@@ -78,7 +78,7 @@ class CoordinateSystem(odict):
 class VoxelCoordinateSystem(CoordinateSystem):
     """
     Coordinates with a shape -- assumed to be
-    voxel coordinats, i.e. if shape = [3,4,5] then valid range
+    voxel coordinates, i.e. if shape = [3,4,5] then valid range
     interpreted as [0,2] X [0,3] X [0,4].
     """
     class shape (readonly): implements=list
@@ -121,8 +121,6 @@ class VoxelCoordinateSystem(CoordinateSystem):
 
 
 class DiagonalCoordinateSystem(VoxelCoordinateSystem):
-    class axes (readonly): pass
-
 
     def __init__(self, name, axes):
         shape = [dim.length for dim in axes]
