@@ -8,12 +8,20 @@ from neuroimaging import reorder, reverse, hasattrs
 class CoordinateSystem(odict):
     "A simple class to carry around coordinate information in one bundle."
 
-    class name (readonly): "coordinate system name"; implements=str
+    class name (readonly):
+        "coordinate system name"
+        implements=str
     class axes (readonly):
-        "list of axes"; implements=tuple; get=lambda _,s: s.values()
+        "list of axes"
+        implements=tuple
+        get=lambda _,s: s.values()
     class axisnames (readonly):
-        "list of axis names"; implements=tuple; get=lambda _,s: s.keys()
-    class ndim (readonly): "number of dimensions"; get=lambda _,s: len(s.axes)
+        "list of axis names"
+        implements=tuple
+        get=lambda _,s: s.keys()
+    class ndim (readonly):
+        "number of dimensions"
+        get=lambda _,s: len(s.axes)
  
 
     def __init__(self, name, axes):
@@ -58,10 +66,12 @@ class CoordinateSystem(odict):
         return CoordinateSystem(name, reverse(self.axes))
 
 
-    def hasaxis(self, name): return self.has_key(name)
+    def hasaxis(self, name):
+        return self.has_key(name)
 
 
-    def getaxis(self, name): return self.get(name)
+    def getaxis(self, name):
+        return self.get(name)
 
 
 
@@ -88,7 +98,6 @@ class VoxelCoordinateSystem(CoordinateSystem):
     def isvalid(self, x):
         """
         Verify whether x is a valid (voxel) coordinate.
-        Also returns sensible answer for OrthogonalCoordinates.
         """
         if not hasattr(self, '_box'):
             self._getbox()
@@ -122,7 +131,7 @@ class DiagonalCoordinateSystem(VoxelCoordinateSystem):
 
     def transform(self):
         """
-        Return an orthogonal  homogeneous transformation matrix based on the
+        Return an orthogonal homogeneous transformation matrix based on the
         step, start, length attributes of each axis.
         """
         value = N.zeros((self.ndim+1,)*2, N.float64)
