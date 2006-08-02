@@ -33,7 +33,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
 
     input_coords = coordinate_system.VoxelCoordinateSystem('slice',
                                                            axis.generic,
-                                                           shape=shape)
+                                                           shape=shape + (1,))
     if output_coords is None:
         output_coords = mni.MNI_world
 
