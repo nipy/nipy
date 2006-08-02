@@ -138,7 +138,8 @@ class Image(traits.HasTraits):
         the original image's grid, i.e. to just take the value the
         original image's iterator returns and use it here.
         """
-        if value is None: self.itervalue = value = self.grid.next()
+        if value is None:
+            self.itervalue = value = self.grid.next()
         itertype = self.grid.itertype
 
         if data is None:
@@ -202,8 +203,8 @@ class Image(traits.HasTraits):
             # make sure that "self" is driving iteration
             # over image, i.e. when self is an fMRIImage and
             # outimage is an Image
-            for dataslice in tmp: outimage.next(data=dataslice,
-                                                value=tmp.itervalue)
+            for dataslice in tmp:
+                outimage.next(data=dataslice, value=tmp.itervalue)
         if hasattr(outimage, "close"): outimage.close()
         return outimage
 
