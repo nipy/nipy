@@ -26,8 +26,6 @@ class CoordinateSystem(odict):
 
     def __init__(self, name, axes):
         self.name = name
-        self.ndim = len(axes)
-        self.axes = tuple(axes)
         odict.__init__(self, [(ax.name, ax) for ax in axes])
 
 
