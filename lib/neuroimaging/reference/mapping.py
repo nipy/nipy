@@ -12,6 +12,7 @@ from neuroimaging.reference.coordinate_system import \
   CoordinateSystem
 
 def _2matvec(transform):
+    """ Split a tranform into it's matrix and vector components. """
     ndim = transform.shape[0] - 1
     matrix = transform[0:ndim,0:ndim]
     vector = transform[0:ndim,ndim]
@@ -19,8 +20,8 @@ def _2matvec(transform):
 
 
 def matfromfile(infile, delimiter="\t"):
-    "Read in an affine transformation matrix from a csv file."
-    if type(infile)==type(""): infile = file(infile)
+    """ Read in an affine transformation matrix from a csv file."""
+    if type(infile)==type(""): infile = open(infile)
     reader = csv.reader(infile, delimiter=delimiter)
     return N.array([map(float, row) for row in reader])
 
@@ -307,8 +308,6 @@ class Affine(Mapping):
         self.transform = transform
         self.fmatrix, self.fvector = _2matvec(transform)
         self.bmatrix, self.bvector = _2matvec(inv(transform))
-        #def inverse(coords):
-        #    return N.dot(self.bmatrix, coords) + self.bvector
         inverse = lambda c: self.map(c, inverse=True)
         Mapping.__init__(self, input_coords, output_coords, self.map,
           inverse=inverse)
@@ -363,11 +362,12 @@ class Affine(Mapping):
                       inv(self.transform))
     
 
-    def isdiagonal(self): return isdiagonal(self.transform[0:self.ndim,0:self.ndim])
+    def isdiagonal(self):
+        return isdiagonal(self.transform[0:self.ndim,0:self.ndim])
  
 
     def tofile(self, filename):
-        matfile = file(filename, 'w')
+        matfile = open(filename, 'w')
         writer = csv.writer(matfile, delimiter='\t')
         for row in self.transform: writer.writerow(row)
         matfile.close()
@@ -437,7 +437,5 @@ def translation_transform(x, ndim):
     _transform = N.identity(ndim+1)
     _transform[0:ndim,ndim] = _transform[0:ndim,ndim] + x 
     return _transform
-
-
 
 
