@@ -1,5 +1,4 @@
 import unittest
-import numpy as N
 
 import neuroimaging.reference.mni as mni
 
