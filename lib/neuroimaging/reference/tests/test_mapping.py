@@ -8,14 +8,13 @@ from neuroimaging.reference import mapping
 
 class MappingTest(unittest.TestCase):
 
-    def _init(self):
+    def setUp(self):
         a = mapping.Mapping.identity()
         A = N.identity(4, N.float64)
         A[0:3] = R.standard_normal((3,4))
         self.mapping = mapping.Affine(a.input_coords, a.output_coords, A)
 
     def test_python2matlab1(self):
-        self._init()
         v = R.standard_normal((3,))
         z = self.mapping(v)
         p = self.mapping.python2matlab()
@@ -23,13 +22,11 @@ class MappingTest(unittest.TestCase):
         N.testing.assert_almost_equal(z, z_)
         
     def test_python2matlab2(self):
-        self._init()
         p = self.mapping.python2matlab()
         q = p.matlab2python()
         N.testing.assert_almost_equal(q.transform, self.mapping.transform)
         
     def test_python2matlab3(self):
-        self._init()
         p = self.mapping.matlab2python()
         q = p.python2matlab()
         N.testing.assert_almost_equal(q.transform, self.mapping.transform)
@@ -60,19 +57,38 @@ class MappingTest(unittest.TestCase):
 
     def test_tofromfile(self):
         # FIXME: This will only work on linux (at a guess)
-        self._init()
         self.mapping.tofile("/tmp/mapping.csv")
         a = mapping.Mapping.fromfile("/tmp/mapping.csv")
         N.testing.assert_almost_equal(self.mapping.transform, a.transform)
 
     def test___str__(self):
-        self._init()
         print self.mapping
 
     def test___eq__(self):
-        self._init()
         self.assertTrue(self.mapping == self.mapping)
         self.assertTrue(not self.mapping != self.mapping)
+
+    def test_translation_transform(self):
+        a = mapping.translation_transform([1,2,3], 3)
+        b = N.array([[1,0,0,1],
+                     [0,1,0,2],
+                     [0,0,1,3],
+                     [0,0,0,1]], dtype=N.float64)
+        N.testing.assert_equal(a, b)
+
+    def test_permutation_transform(self):
+        order = [2,0,1]
+        a = mapping.permutation_transform(order)
+        b = N.array([[ 0.,  0.,  1.,  0.,],
+                     [ 1.,  0.,  0.,  0.,],
+                     [ 0.,  1.,  0.,  0.,],
+                     [ 0.,  0.,  0.,  1.,]])
+        N.testing.assert_equal(a, b)
+
+        self.assertRaises(ValueError, mapping.permutation_transform, [3,0,1])
+
+    def test_reslice(self):
+        print self.mapping.input_coords.shape
         
 if __name__ == '__main__':
     unittest.main()
