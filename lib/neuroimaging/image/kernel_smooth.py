@@ -25,19 +25,20 @@ class LinearFilter(traits.HasTraits):
     scale = traits.Float(1., desc='Scaling applied to output of smoother.')
     location = traits.Float(0., desc='Shift applied to output of smoother.')
     
-    def setup_kernel(self):
+    def __init__(self, grid, **keywords):
+
+        traits.HasTraits.__init__(self, **keywords)
+        self.grid = grid
+        self.shape = N.array(self.grid.shape) + self.padding
+        self._setup_kernel()
+
+    def _setup_kernel(self):
         _normsq = self._normsq() / 2.
         self.kernel = N.exp(-N.minimum(_normsq, 15))
         norm = N.sqrt((self.kernel**2).sum())
         self.kernel = self.kernel / norm
         self.kernel = fft.rfftn(self.kernel)
 
-    def __init__(self, grid, **keywords):
-
-        traits.HasTraits.__init__(self, **keywords)
-        self.grid = grid
-        self.shape = N.array(self.grid.shape) + self.padding
-        self.setup_kernel()
 
     def _normsq(self):
         """
