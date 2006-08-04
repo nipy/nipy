@@ -118,11 +118,11 @@ class VoxelCoordinateSystem(CoordinateSystem):
 
 
 
-class DiagonalCoordinateSystem(VoxelCoordinateSystem):
+class DiagonalCoordinateSystem(CoordinateSystem):
 
     def __init__(self, name, axes):
-        shape = [dim.length for dim in axes]
-        VoxelCoordinateSystem.__init__(self, name, axes, shape=shape)
+        self.shape = [dim.length for dim in axes]
+        CoordinateSystem.__init__(self, name, axes)
         
 
     def transform(self):
