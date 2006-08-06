@@ -41,6 +41,7 @@ class CoordinateSystemTest(unittest.TestCase):
         self._init()
         # FIXME: how do we make something like this work?
         #self.assertRaises(TypeError, eval, 'self.c["any_name"] = 1')
+        self.assertRaises(TypeError, eval, 'self.c.__setitem__("any_name", None)')
 
     def test___eq__(self):
         self._init()
@@ -55,7 +56,29 @@ class CoordinateSystemTest(unittest.TestCase):
         for i in range(3):
             self.assertEquals(self.c.getaxis(generic[i]),
                               new_c.getaxis(generic[new_order[i]]))
+    def test___str__(self):
+        self._init()
+        print self.c
 
+
+class VoxelCoordinateSystemTest(unittest.TestCase):
+    def _init(self):
+        self.name = "voxel_test"
+        self.axes = generic
+        self.shape = [3,4,5]
+        self.v = VoxelCoordinateSystem(self.name, self.axes, self.shape)
+
+    def test_VoxelCoordinateSystem(self):
+        self._init()
+        self.assertEqual(self.name, self.v.name)
+        self.assertEquals([ax.name for ax in self.axes],
+                          [ax.name for ax in self.v.axes])
+        self.assertEquals(self.shape, self.v.shape)
+
+    def test_isvalid(self):
+        self._init()
+        self.assertTrue(self.v.isvalid([0,0,0]))
+        self.assertTrue(not self.v.isvalid(self.shape))
 
 if __name__ == '__main__':
     unittest.main()
