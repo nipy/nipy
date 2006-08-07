@@ -28,7 +28,10 @@ class Axis (object):
 
     def __eq__(self, axis):
         "Equality is defined by name and values."
-        return hasattr(axis,"name") and self.name == axis.name and self.length == axis.length and N.all(N.equal(self.values(), axis.values()))
+        return hasattr(axis,"name") and \
+               self.name == axis.name and \
+               self.length == axis.length and \
+               N.all(N.equal(self.values(), axis.values()))
     
     def __len__(self):
         return self.length
