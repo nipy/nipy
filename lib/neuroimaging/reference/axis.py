@@ -1,3 +1,25 @@
+"""
+The Axis family of classes are used to represent a named axis within a
+coordinate system. Axes can be discrete or continuous, finite or infinite.
+
+The current class hirachy looks like this.
+
+                 Axis
+                   |
+        ---------------------------
+        |                         |
+        DiscreteAxis        ContinuousAxis
+        |   
+   RegularAxis
+        |
+   VoxelAxis
+
+
+There is currently no support for irregularly spaced axes, however this
+could easily be added as a subclass of DiscreteAxis if required.
+
+"""
+
 import numpy as N
 from attributes import readonly
 
@@ -5,38 +27,81 @@ valid = ('xspace', 'yspace', 'zspace', 'time', 'vector_dimension', 'concat')
 space = ('zspace', 'yspace', 'xspace')
 spacetime = ('time', 'zspace', 'yspace', 'xspace')
 
-
-class Axis (object):
+class Axis(object):
     """
     This class represents a generic axis. Axes are used in the definition
     of CoordinateSystem.
     """
-    class name (readonly): "dimension name"; implements=str
 
-    def __init__(self, name, values=None):
+    class name(readonly):
+        "axis name"
+        implements = str
+
+    def __init__(self, name):
         self.name = name
         if self.name not in valid:
             raise ValueError, 'recognized dimension names are ' + `valid`
-        if values is None:
-            self._values = []
-        else:
-            self._values = values
-        self.length = len(self._values)
+
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def valid(self, x):
+        """ test if x is a point on the axis. """
+        raise NotImplementedError
+
+    def max(self):
+        raise NotImplementedError
+
+    def min(self):
+        raise NotImplementedError
+
+    def range(self):
+        return (self.min(), self.max())
+
+
+class ContinuousAxis(Axis):
+    def __init__(self, name, low=-N.inf, high=N.inf):
+        self.low = low
+        self.high = high
+        Axis.__init__(self, name)
+
+    def __eq__(self, other):
+        return self.range() == other.range() and \
+               Axis.__eq__(self, other)
+
+    def valid(self, x):
+        """ The axis is defined as the range [low:high) """
+        return self.low <= x < self.high
+
+    def max(self):
+        return self.high
+
+    def min(self):
+        return self.low
+
+
+class DiscreteAxis(Axis):
+
+    def __init__(self, name):
+        Axis.__init__(self, name)
+
+    def valid(self, x):
+        raise NotImplementedError
+
+    def min(self):
+        raise NotImplementedError
+
+    def max(self):
+        raise NotImplementedError
 
     def values(self):
-        return self._values
-
-    def __eq__(self, axis):
-        "Equality is defined by name and values."
-        return hasattr(axis,"name") and \
-               self.name == axis.name and \
-               self.length == axis.length and \
-               N.all(N.equal(self.values(), axis.values()))
-    
-    def __len__(self):
-        return self.length
-
-class RegularAxis (Axis):
+        """
+        Return all the values in the axis.
+        Return a generator for the infinite case
+        """
+        raise NotImplementedError
+            
+class RegularAxis (DiscreteAxis):
     """
     This class represents a regularly spaced axis. Axes are used in the
     definition of Coordinate systems. The attributes step and start are usually
@@ -51,28 +116,56 @@ class RegularAxis (Axis):
     >>>
     """
 
-    def __init__(self, name, length=0, start=0, step=0):
-        _values = N.linspace(start, start + step*length, length, False)
-        Axis.__init__(self, name, _values)
+    def __init__(self, name, length=N.inf, start=0, step=1):
+        self.length = length
         self.start = start
-        self.step = step
+        self.step = step        
+        DiscreteAxis.__init__(self, name)
 
+    def __eq__(self, other):        
+        return self.length == other.length and \
+               self.start == other.start and \
+               self.step == other.step and \
+               DiscreteAxis.__eq__(self, other)
+
+    def valid(self, x):
+        if x in (-N.inf, N.inf):
+            return False
+        if self.length == N.inf:
+            tmp = (x - self.start)/self.step
+            return (tmp == int(tmp)) and (0 <= tmp < self.length)
+        else:
+            return x in self.values()
+
+    def values(self):
+        if self.length == N.inf:
+            def f(x):
+                while True:
+                    yield x
+                    x += self.step
+            return f(self.start)
+        else:
+            return N.linspace(self.min(), self.max() + self.step, self.length, False)
+
+    def max(self):
+        return self.start + self.step*(self.length - 1)
+
+    def min(self):
+        return self.start
 
 class VoxelAxis (RegularAxis):
-    "An axis with a length as well."
-
-    def __init__(self, name, length=0):
+    """
+    A RegularAxis which starts at 0 and has a step of 1.
+    """
+    def __init__(self, name, length=N.inf):
         RegularAxis.__init__(self, name, length, start=0, step=1)
 
 
 # Default axes
 generic = (
-  Axis(name='zspace'),
-  Axis(name='yspace'),
-  Axis(name='xspace'))
+  ContinuousAxis(name='zspace'),
+  ContinuousAxis(name='yspace'),
+  ContinuousAxis(name='xspace'))
 
    
 
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
