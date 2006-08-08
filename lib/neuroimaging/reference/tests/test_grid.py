@@ -57,5 +57,10 @@ class GridTest(unittest.TestCase):
         y = i.mapping.map([3,4,5])
         N.testing.assert_almost_equal(y, N.array([3,4,5]))
 
+    def test_allslice(self):
+        shape = (30,40,50)
+        i = SamplingGrid.identity(shape=shape, names=space)
+        print i.allslice
+
 if __name__ == '__main__':
     unittest.main()
