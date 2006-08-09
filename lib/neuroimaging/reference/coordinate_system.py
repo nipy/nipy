@@ -73,6 +73,12 @@ class CoordinateSystem(odict):
         return self.get(name)
 
 
+    def isvalid(self, x):
+        """
+        Verify whether x is a valid coordinate.
+        """
+        return not False in [self.axes[i].valid(x[i]) for i in range(self.ndim)]
+
 
 class VoxelCoordinateSystem(CoordinateSystem):
     """
@@ -92,34 +98,12 @@ class VoxelCoordinateSystem(CoordinateSystem):
         CoordinateSystem.__init__(self, name, axes)
 
 
-    def isvalid(self, x):
-        """
-        Verify whether x is a valid (voxel) coordinate.
-        """
-        if not hasattr(self, '_box'):
-            self._getbox()
-        test = 1
-        for i in range(self.ndim):
-            test *= (N.greater_equal(x[i], self._box[i][0]) *
-                     N.less_equal(x[i], self._box[i][1]))
-        return test
-
-
-    def _getbox(self):
-        self._box = []
-        for i in range(self.ndim):
-            v = self.axes[i].values()
-            self._box.append((min(v), max(v)))
-
-
-
 class DiagonalCoordinateSystem(CoordinateSystem):
 
     def __init__(self, name, axes):
         self.shape = [dim.length for dim in axes]
         CoordinateSystem.__init__(self, name, axes)
         
-
     def transform(self):
         """
         Return an orthogonal homogeneous transformation matrix based on the
