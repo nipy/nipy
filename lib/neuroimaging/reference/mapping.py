@@ -7,9 +7,9 @@ from numpy.linalg import inv
 from attributes import readonly, deferto
 
 from neuroimaging import hasattrs
-from neuroimaging.reference.axis import Axis, space
+from neuroimaging.reference.axis import VoxelAxis, space
 from neuroimaging.reference.coordinate_system import \
-  CoordinateSystem
+  CoordinateSystem, VoxelCoordinateSystem, DiagonalCoordinateSystem
 
 def _2matvec(transform):
     """ Split a tranform into it's matrix and vector components. """
@@ -135,9 +135,9 @@ class Mapping (object):
         Return an Affine instance with named axes and input and output
         coordinate systems.
         """
-        axes = [Axis(name) for name in names]
+        axes = [VoxelAxis(name) for name in names]
         return Affine(
-          CoordinateSystem(input, axes), CoordinateSystem(output, axes),
+          VoxelCoordinateSystem(input, axes), DiagonalCoordinateSystem(output, axes),
           matrix)
 
 
@@ -166,7 +166,8 @@ class Mapping (object):
         self._inverse = inverse
 
 
-    def __call__(self, x): return self.map(x)
+    def __call__(self, x):
+        return self.map(x)
 
 
     def __str__(self):
@@ -424,7 +425,7 @@ def permutation_transform(order=range(3)[2::-1]):
     containing the values 0,...,N-1.
     """
     ndim = len(order)
-    ptransform = N.zeros((ndim+1,ndim+1), N.float64)
+    ptransform = N.zeros((ndim+1,ndim+1))
     ptransform[0:ndim,0:ndim] = permutation_matrix(order=order)
     ptransform[ndim,ndim] = 1.
     return ptransform
@@ -437,5 +438,4 @@ def translation_transform(x, ndim):
     _transform = N.identity(ndim+1)
     _transform[0:ndim,ndim] = _transform[0:ndim,ndim] + x 
     return _transform
-
 
