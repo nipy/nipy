@@ -1,7 +1,7 @@
 import gc
 
 import numpy as N
-import numpy.dft as fft
+import numpy.fft as fft
 import numpy.linalg as NL
 from neuroimaging import traits
 
