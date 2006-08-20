@@ -73,7 +73,7 @@ class ImageTest(unittest.TestCase):
             self.assertEquals(i.shape, (109,91))
 
     def test_parcels1(self):
-        rho = Image("rho.img", repository)
+        rho = Image("rho.hdr", repository)
         parcelmap = (rho.readall() * 100).astype(N.int32)
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
         test.grid.itertype = 'parcel'
@@ -85,7 +85,7 @@ class ImageTest(unittest.TestCase):
         self.assertEquals(v, N.product(test.grid.shape))
 
     def test_parcels2(self):
-        rho = Image("rho.img", repository)
+        rho = Image("rho.hdr", repository)
         parcelmap = (rho.readall() * 100).astype(N.int32)
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
 
@@ -103,7 +103,7 @@ class ImageTest(unittest.TestCase):
                 break
 
     def test_parcels3(self):
-        rho = Image("rho.img", repository)
+        rho = Image("rho.hdr", repository)
         parcelmap = (rho.readall() * 100).astype(N.int32)
         shape = parcelmap.shape
         parcelmap.shape = N.product(parcelmap.shape)
@@ -121,11 +121,11 @@ class ImageTest(unittest.TestCase):
         self.assertEquals(v, N.product(test.grid.shape))
 
     def test_onesample1(self):
-        im1 = Image('FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.img',
+        im1 = Image('FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.hdr',
             repository)
-        im2 = Image('FIAC/fiac4/fonc3/fsl/fmristat_run/contrasts/speaker/effect.img',
+        im2 = Image('FIAC/fiac4/fonc3/fsl/fmristat_run/contrasts/speaker/effect.hdr',
             repository)
-        im3 = Image('FIAC/fiac5/fonc2/fsl/fmristat_run/contrasts/speaker/effect.img',
+        im3 = Image('FIAC/fiac5/fonc2/fsl/fmristat_run/contrasts/speaker/effect.hdr',
             repository)
         x = ImageOneSample([im1,im2,im3], clobber=True)
         x.fit()
