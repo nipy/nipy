@@ -102,7 +102,7 @@ class NiftiWriteTest(NiftiTest):
         os.remove('out.hdr')
 
     def test_write3(self):
-        rho = Image("rho.img", datasource=repository)
+        rho = Image("rho.hdr", datasource=repository)
         rho.tofile('out.nii', clobber=True)
         os.remove('out.nii')
 

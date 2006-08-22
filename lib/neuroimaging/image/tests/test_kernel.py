@@ -12,7 +12,7 @@ if PYLAB_DEF:
 
 class KernelTest(unittest.TestCase):
     def test_smooth(self):
-        rho = Image("rho.img", repository)
+        rho = Image("rho.hdr", repository)
         smoother = LinearFilter(rho.grid)
 
         if PYLAB_DEF:
