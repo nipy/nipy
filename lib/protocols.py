@@ -25,8 +25,8 @@ class MutableSequence (Sequence):
 
 def haslength(obj):
     try:
-       len(obj)
-       return True
+        len(obj)
+        return True
     except: return False
 
 def protoset(obj):
