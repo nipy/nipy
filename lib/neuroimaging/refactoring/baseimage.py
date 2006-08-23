@@ -45,7 +45,7 @@ class BaseImage(object):
         default=lambda self, data: data
 
     deferto(array, ("__getitem__", "__setitem__", "put","compress"))
-    deferto(grid, ("transform","itertype"))
+
 
     #---------------------------------------------
     #   Static Methods
@@ -65,6 +65,8 @@ class BaseImage(object):
     def __init__(self, arr, grid=None):
         self.array = arr
         if grid is not None: self.grid = grid
+        self.itertype = self.grid._itertype
+        self.transform = self.grid.transform
 
     #-------------------------------------------------------------------------
     def __iter__(self):
@@ -112,7 +114,7 @@ class BaseImage(object):
         '''
         # NB - this used to be the readall method of the Image class
         # We may need port old code from this usage in due course
-        return self[self.grid.iterator.allslice]
+        return self[self.grid.iterator.allslice()]
                 
     #-------------------------------------------------------------------------
     def getvoxel(self, voxel):

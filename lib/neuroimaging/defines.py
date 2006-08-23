@@ -46,8 +46,8 @@ def enthought_traits_def():
         ENTHOUGHT_TRAITS_DEF = False
         try:
             import neuroimaging.extra.enthought.traits as traits
-        except:
+            ENTHOUGHT_TRAITS_DEF = True
+        except Exception, e:
             traits = None
             pass
-
     return ENTHOUGHT_TRAITS_DEF, traits

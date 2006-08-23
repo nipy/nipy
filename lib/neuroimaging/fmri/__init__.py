@@ -68,16 +68,16 @@ class fMRISamplingGrid(SamplingGrid):
         # eg: incoords = self.mapping.input_coords.subcoords(...)
         incoords = CoordinateSystem(
           self.mapping.input_coords.name+'-subgrid',
-          self.mapping.input_coords.axes[1:])
+          self.mapping.input_coords.axes()[1:])
 
         if isinstance(self.mapping, fMRIListMapping):
-            outaxes = self.mapping.output_coords.axes[1:]
+            outaxes = self.mapping.output_coords.axes()[1:]
             outcoords = CoordinateSystem(
                 self.mapping.output_coords.name, outaxes)        
             W = Affine(incoords, outcoords, self._maps[i])
 
         elif self.isproduct():
-            outaxes = self.mapping.output_coords.axes[1:]
+            outaxes = self.mapping.output_coords.axes()[1:]
             outcoords = CoordinateSystem(
               self.mapping.output_coords.name, outaxes)        
 
@@ -86,7 +86,7 @@ class fMRISamplingGrid(SamplingGrid):
             W = Affine(incoords, outcoords, t)
 
         else:
-            outaxes = self.mapping.output_coords.axes[1:]
+            outaxes = self.mapping.output_coords.axes()[1:]
             outcoords = CoordinateSystem(
               self.mapping.output_coords.name, outaxes)        
 
@@ -100,9 +100,9 @@ class fMRISamplingGrid(SamplingGrid):
             W = Mapping(incoords, outcoords, _map)
 
         _grid = SamplingGrid(shape=self.shape[1:], mapping=W)
-        _grid.itertype = self.itertype
-        _grid.parcelmap = self.parcelmap
-        _grid.parcelseq = self.parcelseq
+        _grid._itertype = self._itertype
+        _grid._parcelmap = self._parcelmap
+        _grid._parcelseq = self._parcelseq
         return _grid
 
 
@@ -119,7 +119,7 @@ class fMRIImage(Image):
           mapping=self.grid.mapping, shape=self.grid.shape)
         if self.grid.isproduct():
             ndim = len(self.grid.shape)
-            n = [self.grid.mapping.input_coords.axisnames[i] \
+            n = [self.grid.mapping.input_coords.axisnames()[i] \
                  for i in range(ndim)]
             d = n.index('time')
             self.TR = self.grid.mapping.transform[d, d]
@@ -189,7 +189,7 @@ class fMRIImage(Image):
     def __iter__(self):
         "Create an iterator over an image based on its grid's iterator."
         iter(self.grid)
-        if self.grid.itertype == 'parcel': flatten(self.buffer, 1)
+        if self.grid._itertype == 'parcel': flatten(self.buffer, 1)
         return self
 
 

@@ -76,9 +76,7 @@ class ImageTest(unittest.TestCase):
         rho = Image("rho.hdr", repository)
         parcelmap = (rho.readall() * 100).astype(N.int32)
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
-        test.grid.itertype = 'parcel'
-        test.grid.parcelmap = parcelmap
-       
+        test.grid.set_iter('parcel', parcelmap)
         v = 0
         for t in test:
             v += t.shape[0]
@@ -89,8 +87,7 @@ class ImageTest(unittest.TestCase):
         parcelmap = (rho.readall() * 100).astype(N.int32)
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
 
-        test.grid.itertype = 'parcel'
-        test.grid.parcelmap = parcelmap
+        test.grid.set_iter('parcel', parcelmap)
         parcelmap.shape = N.product(parcelmap.shape)
        
         v = 0
@@ -110,10 +107,7 @@ class ImageTest(unittest.TestCase):
         parcelseq = N.unique(parcelmap)
 
         test = Image(N.zeros(shape), grid=rho.grid)
-        test.grid.itertype = 'parcel'
-        test.grid.parcelmap = parcelmap
-        test.grid.parcelseq = parcelseq
-
+        test.grid.set_iter('parcel', parcelmap, parcelseq)
         v = 0
 
         for t in test:

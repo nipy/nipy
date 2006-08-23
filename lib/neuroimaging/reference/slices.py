@@ -1,5 +1,5 @@
 
-import grid, axis, coordinate_system, mapping, mni
+from neuroimaging.reference import grid, axis, coordinate_system, mapping, mni
 import numpy.linalg as L
 import numpy as N
 import numpy.random as R

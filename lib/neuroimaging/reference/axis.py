@@ -21,7 +21,6 @@ could easily be added as a subclass of DiscreteAxis if required.
 """
 
 import numpy as N
-from attributes import readonly
 
 valid = ('xspace', 'yspace', 'zspace', 'time', 'vector_dimension', 'concat')
 space = ('zspace', 'yspace', 'xspace')
@@ -33,14 +32,11 @@ class Axis(object):
     of CoordinateSystem.
     """
 
-    class name(readonly):
-        "axis name"
-        implements = str
-
     def __init__(self, name):
         self.name = name
         if self.name not in valid:
-            raise ValueError, 'recognized dimension names are ' + `valid`
+            raise ValueError, ('%s is invalid: recognized dimension names are ' + `valid`) \
+                % (self.name)
 
     def __eq__(self, other):
         return self.name == other.name

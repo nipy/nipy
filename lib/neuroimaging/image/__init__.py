@@ -140,7 +140,7 @@ class Image(traits.HasTraits):
         """
         if value is None:
             self.itervalue = value = self.grid.next()
-        itertype = self.grid.itertype
+        itertype = self.grid._itertype
 
         if data is None:
             if itertype is 'slice':
@@ -215,7 +215,7 @@ class Image(traits.HasTraits):
         Image. By default, it does not read 4d images. Missing values are
         filled in with the value of fill (default=self.fill=0.0).
         """
-        value = self.source[self.grid.allslice]
+        value = self.source[self.grid.allslice()]
         if clean: value = Image(N.nan_to_num(value, fill=self.fill))
         return value
 

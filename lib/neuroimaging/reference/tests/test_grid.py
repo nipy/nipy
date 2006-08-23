@@ -46,7 +46,6 @@ class GridTest(unittest.TestCase):
         """
         Test failing
         """
-
         grids = ConcatenatedGrids([self.img.grid]*4)
         grids.python2matlab()
 
@@ -57,10 +56,35 @@ class GridTest(unittest.TestCase):
         y = i.mapping.map([3,4,5])
         N.testing.assert_almost_equal(y, N.array([3,4,5]))
 
+    def test_identity2(self):
+        shape = (30, 40)
+        self.assertRaises(ValueError, SamplingGrid.identity, shape, space)
+
     def test_allslice(self):
         shape = (30,40,50)
         i = SamplingGrid.identity(shape=shape, names=space)
-        print i.allslice
+        print i.allslice()
+        
+    def test_iterslices(self):
+        for i in range(3):
+            self.img.grid.set_iter("slice", axis=i)
+            self.assertEqual(len(list(iter(self.img.grid))), self.img.grid.shape[i])
+        
+        parcelmap = N.zeros(self.img.grid.shape)
+        parcelmap[:3,:5,:4] = 1
+        parcelmap[3:10,5:10,4:10] = 2
+        parcelseq = (1, (0,2))
+        self.img.grid.set_iter("parcel", parcelmap=parcelmap, parcelseq=parcelseq)
+        for i in iter(self.img.grid):
+            print i
+            print self.img[i.where]
+
+        print len(parcelmap)
+        parcelseq = (1, (1,2), 0) + (0,)*(len(parcelmap)-3)
+        self.img.grid.set_iter("slice/parcel", parcelseq=parcelseq)                
+        for i, it in enumerate(iter(self.img.grid)):
+            print it.where, self.img.grid.shape
+            print self.img[i,it.where]
 
 if __name__ == '__main__':
     unittest.main()

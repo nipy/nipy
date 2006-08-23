@@ -4,7 +4,6 @@ from struct import unpack
 import numpy as N
 from numpy.linalg import inv
 
-from attributes import readonly, deferto
 
 from neuroimaging import hasattrs
 from neuroimaging.reference.axis import VoxelAxis, space
@@ -115,18 +114,13 @@ class Mapping (object):
     needs only input and output coordinates and a transform between the two,
     and an optional inverse.
     """
-    class name (readonly): default="mapping"
-    class input_coords (readonly): implements=CoordinateSystem
-    deferto(input_coords, ("ndim",))
-    class output_coords (readonly): implements=CoordinateSystem
-    class map (readonly): pass
-    class isinvertible (readonly): get=lambda _,s: s._inverse is not None
-    class inverse (readonly):
-        def init(_, self):
-            if self.isinvertible:
-                return Mapping(self.output_coords, self.input_coords,
-                  self._inverse, self)
-            else: raise AttributeError("non-invertible mapping")
+
+    def inverse(self):
+        if self.isinvertible():
+            return Mapping(self.output_coords, self.input_coords,
+                self._inverse, self)
+        else: 
+            raise AttributeError("non-invertible mapping")
 
 
     @staticmethod
@@ -137,7 +131,8 @@ class Mapping (object):
         """
         axes = [VoxelAxis(name) for name in names]
         return Affine(
-          VoxelCoordinateSystem(input, axes), DiagonalCoordinateSystem(output, axes),
+          VoxelCoordinateSystem(input, axes), 
+          DiagonalCoordinateSystem(output, axes),
           matrix)
 
 
@@ -159,11 +154,12 @@ class Mapping (object):
           N.identity(ndim+1), names=names, input=input, output=output)
 
 
-    def __init__(self, input_coords, output_coords, map, inverse=None):
+    def __init__(self, input_coords, output_coords, map, inverse=None, name="mapping"):
         self.input_coords = input_coords
         self.output_coords = output_coords
         self.map = map
         self._inverse = inverse
+        self.name = name
 
 
     def __call__(self, x):
@@ -192,11 +188,16 @@ class Mapping (object):
 
     def __rmul__(self, other):
         def map(coords): return other(self(coords))
-        if self.isinvertible and other.isinvertible:
+        if self.isinvertible() and other.isinvertible():
             def inverse(coords): return self.inverse(other.inverse(coords))
         else: inverse = None
         return Mapping(self.input_coords, other.output_coords, map, inverse=inverse)
 
+    def isinvertible(self):
+        return self._inverse is not None
+
+    def ndim(self):
+        return self.input_coords.ndim()
 
     def reslice(self, which, inname=None, outname=None, sort=True):
         """
@@ -271,7 +272,7 @@ class Mapping (object):
         >>>
 
         """
-        ndim = self.ndim
+        ndim = self.ndim()
         t1 = N.zeros((ndim+1,)*2, N.float64)
         t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
         t1[ndim, ndim] = 1.0
@@ -283,7 +284,7 @@ class Mapping (object):
 
     def python2matlab(self):
         "Inverse of matlab2python -- see this function for help."
-        ndim = self.ndim
+        ndim = self.ndim()
         t1 = N.zeros((ndim+1,)*2, N.float64)
         t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
         t1[ndim, ndim] = 1.0
@@ -298,11 +299,11 @@ class Mapping (object):
 class Affine(Mapping):
     "A class representing an affine transformation in n axes."
 
-    class transform (readonly): pass
-    class fmatrix (readonly): "forward transform matrix"
-    class fvector (readonly): "forward translation vector"
-    class bmatrix (readonly): "backward (inverse) transform matrix"
-    class bvector (readonly): "backward (inverse) translation vector"
+    #class transform (readonly): pass
+    #class fmatrix (readonly): "forward transform matrix"
+    #class fvector (readonly): "forward translation vector"
+    #class bmatrix (readonly): "backward (inverse) transform matrix"
+    #class bvector (readonly): "backward (inverse) translation vector"
 
 
     def __init__(self, input_coords, output_coords, transform):
@@ -379,8 +380,8 @@ class DegenerateAffine(Affine):
     """
     A subclass of affine with no inverse, i.e. where the map is non-invertible.
     """
-    class nout (readonly): init=lambda _,s: s.fmatrix.shape[1]
-    class nin (readonly): init=lambda _,s: s.fmatrix.shape[0]
+    #class nout (readonly): init=lambda _,s: s.fmatrix.shape[1]
+    #class nin (readonly): init=lambda _,s: s.fmatrix.shape[0]
 
 
     def __init__(self, input_coords, output_coords, fmatrix, fvector,

@@ -7,6 +7,7 @@ from neuroimaging import import_from, traits
 from neuroimaging.data import DataSource
 from neuroimaging.reference.grid import SamplingGrid
 
+
 sctypes = []
 for key in ['float', 'complex', 'int', 'uint']:
     sctypes += [traits.Type(val) for val in _sctypes[key]]

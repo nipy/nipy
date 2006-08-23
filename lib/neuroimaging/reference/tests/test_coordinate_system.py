@@ -15,7 +15,7 @@ class CoordinateSystemTest(unittest.TestCase):
     def test_CoordinateSystem(self):
         self.assertEquals(self.name, self.c.name)
         self.assertEquals([ax.name for ax in self.axes],
-                          [ax.name for ax in self.c.axes])
+                          [ax.name for ax in self.c.axes()])
 
     def test_hasaxis(self):
         for ax in self.axes:
@@ -24,6 +24,10 @@ class CoordinateSystemTest(unittest.TestCase):
     def test_getaxis(self):
         for ax in self.axes:
             self.assertEquals(self.c.getaxis(ax.name), ax)
+
+    def test_axisnames(self):
+        self.assertEquals([ax.name for ax in self.axes],
+                            self.c.axisnames())
 
     def test___getitem__(self):
         for ax in self.axes:
@@ -39,7 +43,7 @@ class CoordinateSystemTest(unittest.TestCase):
         self.assertRaises(TypeError, eval, 'self.c.__setitem__("any_name", None)')
 
     def test___eq__(self):
-        c1 = CoordinateSystem(self.c.name, self.c.axes)
+        c1 = CoordinateSystem(self.c.name, self.c.axes())
         self.assertTrue(c1 == self.c)
 
     def test_reorder(self):
@@ -63,7 +67,7 @@ class VoxelCoordinateSystemTest(unittest.TestCase):
     def test_VoxelCoordinateSystem(self):
         self.assertEqual(self.name, self.v.name)
         self.assertEquals([ax.name for ax in self.axes],
-                          [ax.name for ax in self.v.axes])
+                          [ax.name for ax in self.v.axes()])
         self.assertEquals(self.shape, self.v.shape)
 
     def test_isvalid(self):

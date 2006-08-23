@@ -27,8 +27,11 @@ class fMRITest(unittest.TestCase):
 
     def test_iter(self):
         j = 0
+        print self.img.shape
+        print self.img.grid.shape
         for i in iter(self.img):
             j += 1
+            print i.shape
             self.assertEquals(i.shape, (120,128,128))
             del(i); gc.collect()
         self.assertEquals(j, 13)
