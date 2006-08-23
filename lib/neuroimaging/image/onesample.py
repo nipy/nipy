@@ -23,7 +23,7 @@ class ImageOneSample(onesample.OneSampleIterator):
     clobber = traits.false
     path = traits.Str('onesample')
     basename = traits.Str()
-    ext = traits.Str('.img')
+    ext = traits.Str('.hdr')
     varatioimg = traits.Any()
     est_varatio = traits.true
     varfiximg = traits.Any()

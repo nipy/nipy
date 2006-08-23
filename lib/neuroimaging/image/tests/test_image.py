@@ -49,16 +49,16 @@ class ImageTest(unittest.TestCase):
         x = self.img.toarray()
         
     def test_file(self):
-        x = self.img.tofile('tmp.img')
+        x = self.img.tofile('tmp.hdr')
 
     def test_nondiag(self):
         self.img.grid.mapping.transform[0,1] = 3.0
-        x = self.img.tofile('tmp.img', usematfile=True)
+        x = self.img.tofile('tmp.hdr', usematfile=True)
         N.testing.assert_almost_equal(x.grid.mapping.transform, self.img.grid.mapping.transform)
 
     def test_clobber(self):
-        x = self.img.tofile('tmp.img', clobber=True, sctype=N.float64)
-        a = Image('tmp.img')
+        x = self.img.tofile('tmp.hdr', clobber=True, sctype=N.float64)
+        a = Image('tmp.hdr')
         A = a.readall()
         I = self.img.readall()
         z = N.add.reduce(((A-I)**2).flat)

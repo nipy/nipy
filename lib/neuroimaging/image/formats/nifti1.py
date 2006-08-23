@@ -285,20 +285,23 @@ class NIFTI1(BinaryFormat):
 
         ## Setup affine transformation
         
-        self.grid = SamplingGrid.from_start_step(names=axisnames,
+        if grid is None:
+            self.grid = SamplingGrid.from_start_step(names=axisnames,
                                                  shape=shape,
                                                  start=N.array(step),
                                                  step=step)
+            ## Fix up transform based on NIFTI-1 rules
 
-        ## Fix up transform based on NIFTI-1 rules
+            t = self.transform()
+            self.grid.mapping.transform[0:3,0:3] = t[0:3,0:3]
+            self.grid.mapping.transform[0:3,-1] = t[0:3,-1]
 
-        t = self.transform()
-        self.grid.mapping.transform[0:3,0:3] = t[0:3,0:3]
-        self.grid.mapping.transform[0:3,-1] = t[0:3,-1]
+            # assume .mat matrix uses FORTRAN indexing
+            self.grid = self.grid.matlab2python()
+        else:
+            self.grid = grid
 
-        # assume .mat matrix uses FORTRAN indexing
 
-        self.grid = self.grid.matlab2python()
 
         self.attach_data()
 

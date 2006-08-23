@@ -52,12 +52,13 @@ class Image(traits.HasTraits):
         if ext in zipexts: url = base
         if not format: valid = getformats(url)
         else: valid = [format]
-
         for format in valid:
             try:
                 return format(filename=url,
                                datasource=datasource, mode=mode, clobber=clobber, grid=grid, **keywords)
-            except: pass
+            except Exception, e:
+                pass
+                #print "OPENING FAILED", format, e
 
         raise NotImplementedError, 'no valid reader found for URL %s' % url
 
@@ -67,7 +68,7 @@ class Image(traits.HasTraits):
         existing Image object, or an array.
         '''
         traits.HasTraits.__init__(self, **keywords)
-
+        
         # from existing Image
         if isinstance(image, Image):
             self.source = image.source
