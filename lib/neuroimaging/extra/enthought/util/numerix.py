@@ -106,6 +106,8 @@ elif which[0] == "numpy":
         from numpy.oldnumeric import *
     except ImportError:
         pass
+    except AttributeError:
+        pass
     from numpy import *
     import numpy
     Float8 = Float16 = Float32
