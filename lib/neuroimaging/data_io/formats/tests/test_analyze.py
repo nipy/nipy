@@ -1,7 +1,7 @@
 import unittest, os
 import numpy as N
 
-from neuroimaging.core.image.formats import analyze
+from neuroimaging.data_io.formats import analyze
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.image import Image
 

@@ -47,8 +47,8 @@ packages = (
   'neuroimaging.fmri.fmristat.tests',
   'neuroimaging.core.image',
   'neuroimaging.core.image.tests',
-  'neuroimaging.core.image.formats',
-  'neuroimaging.core.image.formats.tests',
+  'neuroimaging.data_io.formats',
+  'neuroimaging.data_io.formats.tests',
   'neuroimaging.reference',
   'neuroimaging.reference.tests',
   'neuroimaging.algorithms.statistics',
@@ -75,8 +75,8 @@ nontest_packages = [p for p in packages if not testmatch(p)]
 
 # modules to be pre-imported for convenience
 _preload_modules = (
-  'neuroimaging.core.image.formats.analyze',
-  'neuroimaging.core.image.formats.nifti1',
+  'neuroimaging.data_io.formats.analyze',
+  'neuroimaging.data_io.formats.nifti1',
   'neuroimaging.core.image.interpolation',
   'neuroimaging.core.image.onesample',
   'neuroimaging.core.image.regression',

@@ -1,6 +1,6 @@
 import new
 
-from neuroimaging.core.image.formats import nifti1
+from neuroimaging.data_io.formats import nifti1
 from neuroimaging import traits
 from neuroimaging.core.image import Image
 from neuroimaging.reference import axis

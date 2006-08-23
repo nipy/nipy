@@ -5,7 +5,7 @@ import numpy as N
 
 from neuroimaging import flatten
 from neuroimaging.data_io import DataSource
-from neuroimaging.core.image.formats import getformats, Format
+from neuroimaging.data_io.formats import getformats, Format
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.reference.iterators import ParcelIterator, SliceParcelIterator
 

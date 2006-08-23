@@ -112,14 +112,14 @@ class Format(traits.HasTraits):
         raise NotImplementedError
 
 format_modules = (
-  "neuroimaging.core.image.formats.analyze",
-  "neuroimaging.core.image.formats.nifti1",
-  #"neuroimaging.core.image.formats.afni",
-  #"neuroimaging.core.image.formats.minc",
+  "neuroimaging.data_io.formats.analyze",
+  "neuroimaging.data_io.formats.nifti1",
+  #"neuroimaging.data_io.formats.afni",
+  #"neuroimaging.data_io.formats.minc",
 )
 
-default_formats = [("neuroimaging.core.image.formats.nifti1", "NIFTI1"),
-                   ("neuroimaging.core.image.formats.analyze", "ANALYZE")]
+default_formats = [("neuroimaging.data_io.formats.nifti1", "NIFTI1"),
+                   ("neuroimaging.data_io.formats.analyze", "ANALYZE")]
 
 def getformats(filename):
     "Return the appropriate image format for the given file type."

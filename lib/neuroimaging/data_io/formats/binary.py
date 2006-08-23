@@ -7,7 +7,7 @@ from neuroimaging import traits
 from numpy import memmap, zeros
 from numpy.core.memmap import memmap as memmap_type
 
-from neuroimaging.core.image.formats import Format
+from neuroimaging.data_io.formats import Format
 from neuroimaging.data_io import iszip, unzip
 
 class BinaryFormatError(Exception):

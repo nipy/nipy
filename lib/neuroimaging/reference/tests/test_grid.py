@@ -6,7 +6,7 @@ from neuroimaging.reference.axis import space
 from neuroimaging.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
 
-from neuroimaging.core.image.formats.analyze import ANALYZE
+from neuroimaging.data_io.formats.analyze import ANALYZE
 from neuroimaging.utils.tests.data import repository
 
 class GridTest(unittest.TestCase):
