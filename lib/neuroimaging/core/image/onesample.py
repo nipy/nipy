@@ -120,9 +120,9 @@ class ImageOneSampleOutput(onesample.OneSampleOutput):
         """
         if img is None:
             img = self.img
-        img.grid.itertype = self.grid.itertype
-        img.grid.parcelmap = self.grid.parcelmap
-        img.grid.parcelseq = self.grid.parcelseq
+        img.grid._itertype = self.grid._itertype
+        img.grid._parcelmap = self.grid._parcelmap
+        img.grid._parcelseq = self.grid._parcelseq
         iter(img)
         
     def __iter__(self):
