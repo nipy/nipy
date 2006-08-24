@@ -1,9 +1,10 @@
 import numpy as N
 import numpy.linalg as L
+from scipy.sandbox.models.utils import recipr, rank
 
 from neuroimaging import traits
+
 from neuroimaging.image import Image
-from scipy.sandbox.models.utils import recipr
 
 
 class RFXMean(traits.HasTraits):
@@ -53,7 +54,7 @@ class RFXMean(traits.HasTraits):
         Work out degrees of freedom from input.
         """
 
-        npred = statistics.utils.rank(self.X)
+        npred = rank(self.X)
 
         self.df_resid = self.nsubject - npred
 
