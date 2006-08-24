@@ -2,7 +2,6 @@ import types, os
 
 from neuroimaging import traits
 import numpy as N
-from attributes import attribute, readonly, deferto
 
 from neuroimaging import flatten
 from neuroimaging.data import DataSource
@@ -17,14 +16,9 @@ class Image(traits.HasTraits):
     shape = traits.ListInt()
     fill = traits.Float(0.0)
 
-    #class postread (attribute): default=lambda x: x
-
-
     class ArrayImage (object):
         "A simple class to mimic an image file from an array."
-        class data (readonly): "internal data array"; implements=N.ndarray
-        deferto(data, ("__getitem__","__setitem__"))
-        
+       
         def __init__(self, data, grid=None):
             """
             Create an ArrayImage instance from an array,
@@ -40,6 +34,11 @@ class Image(traits.HasTraits):
             self.shape = self.data.shape
             self.grid = grid and grid or SamplingGrid.identity(self.shape)
             self.sctype = self.data.dtype.type
+
+        def __getitem__(self, item): 
+            return self.data[item]
+        def __setitem__(self, item, values):
+            self.data[item] = value
 
         def getslice(self, _slice): return self[_slice]
         def writeslice(self, _slice, data): self[_slice] = data
