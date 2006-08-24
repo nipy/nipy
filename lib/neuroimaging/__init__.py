@@ -32,9 +32,9 @@ import re
 from copy import copy
 
 from numpy import product
-from path import path
 
 import defines
+from neuroimaging.utils.path import path
 
 packages = (
   'neuroimaging',

@@ -2,15 +2,15 @@ import os
 from struct import unpack
 
 import numpy as N
-from path import path
 
 from neuroimaging import traits
 
 from neuroimaging.data import DataSource
+from neuroimaging.image.formats.binary import BinaryFormat
 from neuroimaging.reference.axis import space, spacetime
 from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging.image.formats.binary import BinaryFormat
+from neuroimaging.utils.path import path
 
 ANALYZE_Byte = 2
 ANALYZE_Short = 4

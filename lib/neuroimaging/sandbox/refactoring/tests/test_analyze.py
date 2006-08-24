@@ -5,7 +5,7 @@ from neuroimaging.defines import qt_def, pylab_def
 QT_DEF, qt = qt_def()
 PYLAB_DEF, pylab = pylab_def()
 
-from neuroimaging.refactoring.analyze import AnalyzeImage
+from neuroimaging.sandbox.refactoring.analyze import AnalyzeImage
 from neuroimaging.tests.data import repository
 if PYLAB_DEF and QT_DEF:
     from neuroimaging.visualization.arrayview import arrayview

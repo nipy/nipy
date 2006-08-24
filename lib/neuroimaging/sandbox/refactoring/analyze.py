@@ -7,16 +7,15 @@ from numpy import memmap, uint8, int16, int32, float32, \
 from struct import calcsize, pack, unpack
 
 from attributes import attribute, readonly, deferto, wrapper, scope
-from odict import odict
-from path import path
 
-from neuroimaging.reference.grid import SamplingGrid
+from neuroimaging.data import DataSource
 from neuroimaging.reference.axis import space
+from neuroimaging.reference.grid import SamplingGrid
 #from neuroimaging.image.formats import struct_unpack, struct_pack, structfield,\
 #  LITTLE_ENDIAN, BIG_ENDIAN
-from neuroimaging.refactoring.baseimage import BaseImage
-from neuroimaging.data import DataSource
-
+from neuroimaging.sandbox.refactoring.baseimage import BaseImage
+from neuroimaging.utils.odict import odict
+from neuroimaging.utils.path import path
 
 # struct byte order constants
 NATIVE = "="

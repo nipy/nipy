@@ -54,7 +54,7 @@ class BaseImage(object):
     @staticmethod
     def fromfile(filename, datasource=None):
         #return getreader(filename)(filename, datasource=datasource)
-        from neuroimaging.refactoring.analyze import AnalyzeImage
+        from neuroimaging.sandbox.refactoring.analyze import AnalyzeImage
         return AnalyzeImage(filename, datasource=datasource)
 
     #---------------------------------------------
@@ -126,7 +126,7 @@ class BaseImage(object):
     def write(self, filename, writer=None, clobber=False):
         "Write to file.  (was tofile)."
         #if writer is None: writer = getwriter(filename)
-        from neuroimaging.refactoring.analyze import AnalyzeWriter
+        from neuroimaging.sandbox.refactoring.analyze import AnalyzeWriter
         writer = AnalyzeWriter().write
         writer(self, filename, clobber=clobber)
 

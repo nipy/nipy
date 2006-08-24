@@ -1,9 +1,9 @@
 import os, gzip, bz2
-from path import path
 from urllib2 import urlopen
 from urlparse import urlparse
 
 from neuroimaging import ensuredirs
+from neuroimaging.utils.path import path
 
 zipexts = (".gz",".bz2")
 file_openers = {".gz":gzip.open, ".bz2":bz2.BZ2File, None:file}

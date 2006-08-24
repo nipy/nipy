@@ -4,9 +4,8 @@ from doctest import DocFileSuite
 from glob import glob
 from os.path import join, dirname, basename
 
-from odict import odict
-
 from neuroimaging import nontest_packages, import_from
+from neuroimaging.utils.odict import odict
 
 #-----------------------------------------------------------------------------
 def run_suite(suite):

@@ -1,9 +1,8 @@
 import numpy as N
 
-from odict import odict
-
 from neuroimaging import reorder, reverse, hasattrs
 from neuroimaging.reference.axis import VoxelAxis
+from neuroimaging.utils.odict import odict
 
 class CoordinateSystem(odict):
     "A simple class to carry around coordinate information in one bundle."

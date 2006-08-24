@@ -2,7 +2,7 @@
 
 Example:
 
-from path import path
+from neuroimaging.utils.path import path
 d = path('/home/guido/bin')
 for f in d.files('*.py'):
     f.chmod(0755)
@@ -31,8 +31,6 @@ Date:    7 Mar 2004
 #   - guess_content_type() method?
 #   - Perhaps support arguments to touch().
 #   - Could add split() and join() methods that generate warnings.
-
-from __future__ import generators
 
 import sys, warnings, os, fnmatch, glob, shutil, codecs, md5
 
