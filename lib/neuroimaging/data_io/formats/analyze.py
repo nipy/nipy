@@ -259,7 +259,7 @@ class ANALYZE(BinaryFormat):
         self.dim = _dim
         self.pixdim = _pixdim
         if _diag:
-            origin = self.grid.mapping.map([0]*self.ndim, inverse=True)
+            origin = self.grid.mapping.map.inverse()([0]*self.ndim)
             self.origin = list(origin) + [0]*(5-origin.shape[0])
         if not _diag:
             self.origin = [0]*5
