@@ -1,5 +1,6 @@
 
-from neuroimaging.core.reference import grid, axis, coordinate_system, mapping, mni
+from neuroimaging.core.reference import grid, axis, mapping, mni
+from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem
 import numpy.linalg as L
 import numpy as N
 import numpy.random as R
@@ -31,9 +32,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     t[nout,nout] = 1.
     t[0:nout,nout] = origin
 
-    input_coords = coordinate_system.VoxelCoordinateSystem('slice',
-                                                           axis.generic,
-                                                           shape=shape + (1,))
+    input_coords = VoxelCoordinateSystem('slice', axis.generic, shape=shape + (1,))
     if output_coords is None:
         output_coords = mni.MNI_world
 
@@ -42,8 +41,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     return g
 
 
-def box_slices(zlim, ylim, xlim,
-               shape, x=N.inf, y=N.inf, z=N.inf):
+def box_slices(zlim, ylim, xlim, shape, x=N.inf, y=N.inf, z=N.inf):
 
     if x == N.inf:
         x = (xlim[0]+xlim[1])/2.
@@ -55,117 +53,56 @@ def box_slices(zlim, ylim, xlim,
         z = (zlim[0]+zlim[1])/2.
 
     # yslice, xslice, zslice
+    origins = [[zlim[0], y,       xlim[0]],
+               [zlim[0], ylim[0], x],
+               [z,       ylim[0], xlim[0]]]
 
-    origins = []
-
-    origins.append([zlim[0], y, xlim[0]])
-    origins.append([zlim[0], ylim[0], x])
-    origins.append([z, ylim[0], xlim[0]])
-
-    step = N.zeros((3,), N.float64)
-    step[0] = (zlim[1] - zlim[0]) / (shape[0] - 1.)
-    step[1] = (ylim[1] - ylim[0]) / (shape[1] - 1.)
-    step[2] = (xlim[1] - xlim[0]) / (shape[2] - 1.)
-    
-    # yslice, xslice, zslice
-
-    columns = []
-
-    columns.append(N.array([[0,0,step[2]],[step[0],0,0]]))
-    columns.append(N.array([[0,step[1],0],[step[0],0,0]]))
-    columns.append(N.array([[0,step[1],0],[0,0,step[2]]]))
+    step = [(zlim[1] - zlim[0]) / (shape[0] - 1.),
+            (ylim[1] - ylim[0]) / (shape[1] - 1.),
+            (xlim[1] - xlim[0]) / (shape[2] - 1.)]
 
     # yslice, xslice, zslice
-
-    shapes = []
-
-    shapes.append((shape[0], shape[2]))
-    shapes.append((shape[0], shape[1]))
-    shapes.append((shape[2], shape[1]))
+    columns = [N.array([[0,0,step[2]], [step[0],0,0]]),
+               N.array([[0,step[1],0], [step[0],0,0]]),
+               N.array([[0,step[1],0], [0,0,step[2]]])]
 
     # yslice, xslice, zslice
+    shapes = [(shape[0], shape[2]),
+              (shape[0], shape[1]),
+              (shape[2], shape[1])]
 
+    # yslice, xslice, zslice
     slices = []
-
     for i in range(3):
         slices.append(from_origin_and_columns(origins[i],
                                               columns[i][::-1],
                                               shapes[i]))
     return slices
 
-def yslice(y,
-           zlim,
-           ylim,
-           xlim,
-           shape):
+def yslice(y, zlim, ylim, xlim, shape):
     """
     Return a slice through a 3d box with y fixed.
     Defaults to a slice through MNI coordinates.
     """
+    return box_slices(zlim, ylim, xlim, shape, y=y)[0]
 
-    return box_slices(xlim=xlim,
-                      ylim=ylim,
-                      zlim=zlim,
-                      shape=shape,
-                      y=y)[0]
-def xslice(x,
-           zlim,
-           ylim,
-           xlim,
-           shape):
-
+def xslice(x, zlim, ylim, xlim, shape):
     """
     Return a slice through a 3d box with x fixed.
     Defaults to a slice through MNI coordinates.
     """
+    return box_slices(zlim, ylim, xlim, shape, x=x)[1]
 
-    return box_slices(xlim=xlim,
-                      ylim=ylim,
-                      zlim=zlim,
-                      shape=shape,
-                      x=x)[1]
-
-def zslice(z,
-           zlim,
-           ylim,
-           xlim,
-           shape):
-    
+def zslice(z, zlim, ylim, xlim, shape):    
     """
     Return a slice through a 3d box with z fixed.
     Defaults to a slice through MNI coordinates.
     """
-
-    return box_slices(xlim=xlim,
-                      ylim=ylim,
-                      zlim=zlim,
-                      shape=shape,
-                      z=z)[2]
+    return box_slices(zlim, ylim, xlim, shape, z=z)[2]
 
 def bounding_box(grid):
     """
     Determine a valid bounding box from a SamplingGrid instance.
     """
-
-    r = grid.range()
-    m = []
-    M = []
-
-    ndim = r.shape[0]
-    for i in range(ndim):
-        m.append(r[i].min())
-        M.append(r[i].max())
-
-    return [[m[i], M[i]] for i in range(ndim)]
-
-def squeezeshape(shape):
-    s = N.array(shape)
-    keep = N.not_equal(s, 1)
-    return tuple(s[keep])
+    return [[r.min(), r.max()] for r in grid.range()]
     
-if __name__ == '__main__':
-    print zslice(5, [0, 9], [0, 9], [0, 9], (10, 10, 10)).mapping.transform
-    print
-    print yslice(5, [0, 9], [0, 9], [0, 9], (10, 10, 10)).mapping.transform
-    print
-    print xslice(5, [0, 9], [0, 9], [0, 9], (10, 10, 10)).mapping.transform
