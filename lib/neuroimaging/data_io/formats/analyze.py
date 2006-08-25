@@ -8,7 +8,7 @@ from neuroimaging import traits
 from neuroimaging.data_io import DataSource
 from neuroimaging.data_io.formats.binary import BinaryFormat
 from neuroimaging.core.reference.axis import space, spacetime
-from neuroimaging.core.reference.mapping import Affine, Mapping
+from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.utils.path import path
 
@@ -271,12 +271,12 @@ class ANALYZE(BinaryFormat):
         Other formats should be added.
         """
         if self.datasource.exists(self.mat_filename()):
-            return Mapping.fromfile(self.datasource.open(self.mat_filename()),
+            return Affine.fromfile(self.datasource.open(self.mat_filename()),
                      input='world', output='world', delimiter='\t')
         else:
             if self.ndim == 4: names = spacetime[::-1]
             else: names = space[::-1]
-            return Mapping.identity(
+            return Affine.identity(
               self.ndim, input='world', output='world', names=names)
 
     def write_mat(self, matfile=None):

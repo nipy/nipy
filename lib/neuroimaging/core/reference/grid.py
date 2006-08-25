@@ -42,7 +42,7 @@ class SamplingGrid (object):
         ndim = len(shape)
         if len(names) != ndim:
             raise ValueError('shape and number of axisn ames do not agree')
-        w = Mapping.identity(ndim, names=names)
+        w = Affine.identity(ndim, names=names)
         return SamplingGrid(shape=list(shape), mapping=w)
 
 

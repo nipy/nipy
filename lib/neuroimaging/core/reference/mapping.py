@@ -115,45 +115,6 @@ class Mapping (object):
     and an optional inverse.
     """
 
-    def inverse(self):
-        if self.isinvertible():
-            return Mapping(self.output_coords, self.input_coords,
-                self._inverse, self)
-        else: 
-            raise AttributeError("non-invertible mapping")
-
-
-    @staticmethod
-    def frommatrix(matrix, names=space, input='voxel', output='world'):
-        """
-        Return an Affine instance with named axes and input and output
-        coordinate systems.
-        """
-        axes = [VoxelAxis(name) for name in names]
-        return Affine(
-          VoxelCoordinateSystem(input, axes), 
-          DiagonalCoordinateSystem(output, axes),
-          matrix)
-
-
-    @staticmethod
-    def fromfile(infile, names=space, input='voxel', output='world', delimiter='\t'):
-        """
-        Read in an affine transformation matrix and return an instance of Affine
-        with named axes and input and output coordinate systems.  For now, the
-        format is assumed to be a tab-delimited file.  Other formats should be added.
-        """
-        t = matfromfile(infile, delimiter=delimiter)
-        return Affine.frommatrix(t, names=names, input=input, output=output)
-
-
-    @staticmethod
-    def identity(ndim=3, names=space, input='voxel', output='world'):
-        "Return an identity affine transformation."
-        return Mapping.frommatrix(
-          N.identity(ndim+1), names=names, input=input, output=output)
-
-
     def __init__(self, input_coords, output_coords, map, inverse=None, name="mapping"):
         self.input_coords = input_coords
         self.output_coords = output_coords
@@ -187,57 +148,28 @@ class Mapping (object):
     
 
     def __rmul__(self, other):
-        def map(coords): return other(self(coords))
+        def map(coords): 
+            return other(self(coords))
         if self.isinvertible() and other.isinvertible():
-            def inverse(coords): return self.inverse(other.inverse(coords))
-        else: inverse = None
+            def inverse(coords): 
+                return self.inverse(other.inverse(coords))
+        else: 
+            inverse = None
         return Mapping(self.input_coords, other.output_coords, map, inverse=inverse)
 
     def isinvertible(self):
         return self._inverse is not None
 
+    def inverse(self):
+        if self.isinvertible():
+            return Mapping(self.output_coords, self.input_coords,
+                self._inverse, self)
+        else: 
+            raise AttributeError("non-invertible mapping")
+
+
     def ndim(self):
         return self.input_coords.ndim()
-
-    def reslice(self, which, inname=None, outname=None, sort=True):
-        """
-        Reorder and/or subset a mapping, uses subset of input_coords.axes to
-        determine subset.
-        Warning: this does not know about the newer CoordinateSystem classes.
-        """
-        dimnames = list(set(self.input_coords.axisnames)\
-                        .difference(which.keys()))
-        order = [self.input_coords.axisnames.index(dimname)\
-                  for dimname in dimnames]
-        if sort: order.sort() # keep order of coordinates: a good idea or not?
-
-        whichmap = {}
-        for dimname in which.keys():
-            whichmap[dimname] = self.input_coords.axisnames.index(dimname)
-        
-        indim = [self.input_coords.axes[i] for i in order]
-        incoords = CoordinateSystem(inname or 'voxel', indim)
-        
-        outdim = [self.output_coords.axes[i] for i in order]
-        outcoords = CoordinateSystem(outname or 'world', outdim)
-
-        def map(voxel):
-            try:
-                shape = voxel.shape[1:]
-            except:
-                shape = ()
-            _voxel = N.zeros((self.ndim,) + shape, N.float64)
-            for dimname in which.keys():
-                _voxel[whichmap[dimname]] = which[dimname]
-            for i in range(len(order)):
-                _voxel[order[i]] = voxel[i]
-
-            value = self(_voxel)
-            value = N.array([value[i] for i in order])
-            return value
-
-        return Mapping(incoords, outcoords, map, inverse=None) 
-
 
     def tovoxel(self, real):
         """
@@ -247,8 +179,7 @@ class Mapping (object):
         """
         shape = real.shape
         real.shape = (shape[0], N.product(shape[1:]))
-        voxel = N.around(self.inverse(real))
-        real.shape = shape
+        voxel = N.around(self.inverse()(real))
         voxel.shape = shape
         return N.array(voxel)
 
@@ -299,6 +230,38 @@ class Mapping (object):
 class Affine(Mapping):
     "A class representing an affine transformation in n axes."
 
+    @staticmethod
+    def frommatrix(matrix, names=space, input='voxel', output='world'):
+        """
+        Return an Affine instance with named axes and input and output
+        coordinate systems.
+        """
+        axes = [VoxelAxis(name) for name in names]
+        return Affine(
+          VoxelCoordinateSystem(input, axes), 
+          DiagonalCoordinateSystem(output, axes),
+          matrix)
+
+
+    @staticmethod
+    def fromfile(infile, names=space, input='voxel', output='world', delimiter='\t'):
+        """
+        Read in an affine transformation matrix and return an instance of Affine
+        with named axes and input and output coordinate systems.  For now, the
+        format is assumed to be a tab-delimited file.  Other formats should be added.
+        """
+        t = matfromfile(infile, delimiter=delimiter)
+        return Affine.frommatrix(t, names=names, input=input, output=output)
+
+
+    @staticmethod
+    def identity(ndim=3, names=space, input='voxel', output='world'):
+        "Return an identity affine transformation."
+        return Affine.frommatrix(
+          N.identity(ndim+1), names=names, input=input, output=output)
+
+
+
     #class transform (readonly): pass
     #class fmatrix (readonly): "forward transform matrix"
     #class fvector (readonly): "forward translation vector"
@@ -315,7 +278,6 @@ class Affine(Mapping):
           inverse=inverse)
 
 
-    def __ne__(self, other): return not self.__eq__(other)
     def __eq__(self, other):
         if not hasattr(other, "transform"): return False
         return tuple(self.transform.flat) == tuple(other.transform.flat)

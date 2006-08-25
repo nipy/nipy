@@ -9,7 +9,7 @@ from neuroimaging.core.reference import mapping
 class MappingTest(unittest.TestCase):
 
     def setUp(self):
-        a = mapping.Mapping.identity()
+        a = mapping.Affine.identity()
         A = N.identity(4, N.float64)
         A[0:3] = R.standard_normal((3,4))
         self.mapping = mapping.Affine(a.input_coords, a.output_coords, A)
@@ -60,7 +60,7 @@ class MappingTest(unittest.TestCase):
     def test_tofromfile(self):
         # FIXME: This will only work on linux (at a guess)
         self.mapping.tofile("/tmp/mapping.csv")
-        a = mapping.Mapping.fromfile("/tmp/mapping.csv")
+        a = mapping.Affine.fromfile("/tmp/mapping.csv")
         N.testing.assert_almost_equal(self.mapping.transform, a.transform)
 
     def test___str__(self):
@@ -89,8 +89,11 @@ class MappingTest(unittest.TestCase):
 
         self.assertRaises(ValueError, mapping.permutation_transform, [3,0,1])
 
-    def test_reslice(self):
-        print self.mapping.input_coords.shape
+    def test_tovoxel(self):
+        voxel = [1,2,3]
+        real = self.mapping(voxel)
+        v = self.mapping.tovoxel(real)
+        N.testing.assert_almost_equal(v, voxel)
         
 if __name__ == '__main__':
     unittest.main()
