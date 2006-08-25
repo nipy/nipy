@@ -89,7 +89,10 @@ def sagittal(image, x=0.,
                                    zlim=zlim,
                                    shape=(shape[1],shape[0],2))
 
-
+def squeezeshape(shape):
+    s = N.array(shape)
+    keep = N.not_equal(s, 1)
+    return tuple(s[keep])
 
 ## All pylab specific below
 
