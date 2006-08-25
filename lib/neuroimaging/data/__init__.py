@@ -3,8 +3,6 @@ from path import path
 from urllib2 import urlopen
 from urlparse import urlparse
 
-from attributes import readonly, constant
-
 from neuroimaging import ensuredirs
 
 zipexts = (".gz",".bz2")
@@ -47,14 +45,14 @@ def iswritemode(mode): return mode.find("w")>-1 or mode.find("+")>-1
 
 
 class Cache (object):
-    class path (readonly):
-        if os.name == 'posix':
-            default=path(os.environ["HOME"]).joinpath(".nipy").joinpath("cache")
-        elif os.name == 'nt':
-            default=path(os.environ["HOMEPATH"]).joinpath(".nipy").joinpath("cache")
             
     def __init__(self, cachepath=None):
-        if cachepath is not None: self.path = path(cachepath)
+        if cachepath is not None: 
+            self.path = path(cachepath)
+        elif os.name == 'posix':
+            self.path = path(os.environ["HOME"]).joinpath(".nipy").joinpath("cache")
+        elif os.name == 'nt':
+            self.path = path(os.environ["HOMEPATH"]).joinpath(".nipy").joinpath("cache")
         self.setup()
 
     def filepath(self, uri):
@@ -88,10 +86,10 @@ class Cache (object):
 
 
 class DataSource (object):
-    class _cache (readonly): default=Cache()
 
     def __init__(self, cachepath=os.curdir):
         if cachepath is not None: self._cache = Cache(cachepath)
+        else: self._cache = Cache()
 
     def _possible_names(self, filename):
         names = (filename,)
