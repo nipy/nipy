@@ -19,7 +19,7 @@ class fMRITest(unittest.TestCase):
     #    x = self.img.frametimes
 
     def test_write(self):
-        self.img.tofile('tmpfmri.img')
+        self.img.tofile('tmpfmri.hdr')
         test = fMRIImage('tmpfmri.hdr')
         self.assertEquals(test.grid.shape, self.img.grid.shape)
         os.remove('tmpfmri.img')
@@ -31,7 +31,6 @@ class fMRITest(unittest.TestCase):
         print self.img.grid.shape
         for i in iter(self.img):
             j += 1
-            print i.shape
             self.assertEquals(i.shape, (120,128,128))
             del(i); gc.collect()
         self.assertEquals(j, 13)
