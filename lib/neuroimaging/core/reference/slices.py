@@ -45,7 +45,9 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
 
 
 def box_slices(zlim, ylim, xlim, shape, x=N.inf, y=N.inf, z=N.inf):
-
+    """
+    Create a set of 3 sampling grids representing slices along each plane.
+    """
     if x == N.inf:
         x = (xlim[0]+xlim[1])/2.
 
