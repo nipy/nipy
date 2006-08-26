@@ -2,7 +2,7 @@ import unittest
 import numpy.random as R
 import numpy as N
 
-import urllib
+import urllib, os
 
 from neuroimaging.core.reference import mapping, mni
 
@@ -68,6 +68,7 @@ class MappingTest2(unittest.TestCase):
         bb = self.b*self.b
         self.assertTrue(bb.isinvertible())
         N.testing.assert_almost_equal(bb(value), 4*value)
+        N.testing.assert_almost_equal(bb.inverse()(value), value/4)        
 
         bc = self.b*self.c
         self.assertFalse(bc.isinvertible())
@@ -76,6 +77,7 @@ class MappingTest2(unittest.TestCase):
         bd = self.b*self.d
         self.assertTrue(bd.isinvertible())
         N.testing.assert_almost_equal(bd(value), value)
+        N.testing.assert_almost_equal(bd.inverse()(value), value)        
 
         ca = self.c*self.a
         self.assertFalse(ca.isinvertible())
@@ -100,6 +102,7 @@ class MappingTest2(unittest.TestCase):
         db = self.d*self.b
         self.assertTrue(db.isinvertible())
         N.testing.assert_almost_equal(db(value), value)
+        N.testing.assert_almost_equal(db.inverse()(value), value)        
 
         dc = self.d*self.c
         self.assertFalse(dc.isinvertible())
@@ -108,6 +111,7 @@ class MappingTest2(unittest.TestCase):
         dd = self.d*self.d
         self.assertTrue(dd.isinvertible())
         N.testing.assert_almost_equal(dd(value), value/4)
+        N.testing.assert_almost_equal(dd.inverse()(value), 4*value)        
 
     def test_ndim(self):
         self.assertEqual(self.a.ndim(), 3)
@@ -137,6 +141,7 @@ class MappingTest2(unittest.TestCase):
         
     def test_tovoxel(self):
         value = N.array([2., 4, 6.])
+        value2 = N.array([[2., 4, 6.], [2, 4, 6]])
         tovox = lambda a: a.tovoxel(value)
         self.assertRaises(AttributeError, tovox, self.a)
         self.assertRaises(AttributeError, tovox, self.c)        
@@ -146,7 +151,67 @@ class MappingTest2(unittest.TestCase):
         vox_d = self.d.tovoxel(value)
         N.testing.assert_almost_equal(vox_d, [4., 8., 12.])        
 
+        vox_b = self.b.tovoxel(value2)
+        N.testing.assert_almost_equal(vox_b, [[1., 2., 3.], [1,2,3]])
+        vox_d = self.d.tovoxel(value2)
+        N.testing.assert_almost_equal(vox_d, [[4., 8., 12.], [4,8,12]])        
 
+    def test_python2matlab1(self):
+        v = R.standard_normal((3,))
+        z = self.a(v)
+        p = self.a.python2matlab()
+        z_ = p(N.array(v[::-1])+1)[::-1]
+        N.testing.assert_almost_equal(z, z_)
+        
+    def test_python2matlab2(self):
+        value = N.array([1., 2., 3.])
+        for mat_ in [self.a, self.b, self.c, self.d]:
+            p = mat_.python2matlab()
+            q = p.matlab2python()
+            N.testing.assert_almost_equal(q(value), mat_(value))
+        
+    def test_python2matlab3(self):
+        value = N.array([1., 2., 3.])
+        for mat_ in [self.a, self.b, self.c, self.d]:
+            p = mat_.matlab2python()
+            q = p.python2matlab()
+            N.testing.assert_almost_equal(q(value), mat_(value))
+
+
+class IdentityTest(unittest.TestCase):
+    def setUp(self):
+        self.a = mapping.Affine.identity()
+        
+    def test_call(self):
+        value = N.array([1., 2., 3.])
+        N.testing.assert_almost_equal(self.a(value), value)
+    
+    def test_eq(self):
+        self.assertTrue(self.a == mapping.Affine.identity())
+        
+    def test_mul(self):
+        value = N.array([1., 2., 3.])
+        b = self.a * self.a
+        N.testing.assert_almost_equal(b(value), value)
+
+    def test_str(self):
+        s = str(self.a)
+        
+    def test_invertable(self):
+        self.assertTrue(self.a.isinvertible())
+        
+    def test_inverse(self):
+        self.assertTrue(self.a == self.a.inverse().inverse())
+        
+    def test_isdiagonal(self):
+        self.assertTrue(self.a.isdiagonal())
+        
+    def test_tofile(self):
+        self.a.tofile("tmp.mat")
+        b = mapping.Affine.fromfile("tmp.mat")
+        self.assertTrue(self.a == b)
+        os.remove("tmp.mat")
+        
 class AffineTest(unittest.TestCase):
     def setUp(self):    
         a = mapping.Affine.identity()
