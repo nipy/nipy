@@ -17,7 +17,6 @@ from neuroimaging.fmri.protocol import ExperimentalQuantitative
 from neuroimaging.fmri.regression import TContrastOutput 
 from neuroimaging.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.image import Image
-from neuroimaging.statistics import contrast
 from scipy.sandbox.models.contrast import ContrastResults
 
 from neuroimaging.defines import pylab_def

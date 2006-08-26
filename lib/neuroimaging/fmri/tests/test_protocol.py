@@ -1,9 +1,8 @@
 import unittest, csv, os
 import numpy as N
-from scipy.sandbox.models.utils import recipr0
+from scipy.sandbox.models.utils import recipr0, contrast
 
 from neuroimaging.fmri import hrf, protocol
-from neuroimaging.statistics import contrast
 
 # this is not a test until it is fixed (find HRF)
 class ProtocolTest(object): #unittest.TestCase):
