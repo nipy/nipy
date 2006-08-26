@@ -75,7 +75,6 @@ class fMRIStatOLS(LinearModelIterator):
     def __init__(self, fmri_image, outputs=[], **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.fmri_image = fMRIImage(fmri_image)
-
         if self.normalize is not None:
             self.fmri_image.postread = self.normalize
 
@@ -99,7 +98,7 @@ class fMRIStatOLS(LinearModelIterator):
     def model(self):
         ftime = self.fmri_image.frametimes + self.tshift
         if self.slicetimes is not None:
-            _slice = self.iterator.grid.itervalue.slice
+            _slice = self.iterator.grid.itervalue().slice
             model = OLSModel(design=self.formula.design(time=ftime + self.slicetimes[_slice[1]]))
         else:
             model = OLSModel(design=self.dmatrix)
@@ -143,20 +142,24 @@ class fMRIStatOLS(LinearModelIterator):
         if self.slicetimes == None:
             tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
             tmp.shape = N.product(tmp.shape)
-            self._parcelmap = tmp
+            parcelmap = tmp
             tmp = N.compress(1 - N.isnan(tmp), tmp)
-            self._parcelseq = list(N.unique(tmp))
+            parcelseq = list(N.unique(tmp))
+            self.fmri_image.grid.set_iter_param("parcelmap", parcelmap)
+            self.fmri_image.grid.set_iter_param("parcelseq", parcelseq)            
             del(tmp); gc.collect()
         else:
-            self._parcelmap = []
-            self._parcelseq = []
+            parcelmap = []
+            parcelseq = []
             for i in range(self.rho.grid.shape[0]):
                 tmp = self.rho.getslice(slice(i,i+1))
                 tmp.shape = N.product(tmp.shape)
                 tmp = N.around(tmp * (self.nmax / 2.)) / (self.nmax / 2.)
                 newlabels = list(N.unique(tmp))
-                self._parcelseq += [newlabels]
-                self._parcelmap += [tmp]
+                parcelseq += [newlabels]
+                parcelmap += [tmp]
+            self.fmri_image.grid.set_iter_param("parcelseq", parcelseq)
+            self.fmri_image.grid.set_iter_param("parcelmap", parcelmap)            
 
     def setup_output(self):
 
@@ -274,9 +277,9 @@ class fMRIStatAR(LinearModelIterator):
         self.formula = OLS.formula
         if self.slicetimes is None:
             self.dmatrix = OLS.dmatrix
-            self.fmri_image.grid._itertype = 'parcel'
+            self.fmri_image.grid.set_iter_param("itertype", 'parcel')
         else:
-            self.fmri_image.grid._itertype = 'slice/parcel'
+            self.fmri_image.grid.set_iter_param("itertype", 'slice/parcel')
             self.designs = []
             for s in self.slicetimes:
                 self.designs.append(self.formula.design(time=ftime + s))
@@ -306,8 +309,10 @@ class fMRIStatAR(LinearModelIterator):
                 
         # setup the iterator
 
-        self.fmri_image.grid._parcelmap = OLS._parcelmap
-        self.fmri_image.grid._parcelseq = OLS._parcelseq
+        self.fmri_image.grid.set_iter_param("parcelmap", \
+                        OLS.fmri_image.grid.get_iter_param("parcelmap"))
+        self.fmri_image.grid.set_iter_param("parcelseq", \
+                        OLS.fmri_image.grid.get_iter_param("parcelseq"))
 
         self.iterator = iter(self.fmri_image)
         self.j = 0
@@ -323,7 +328,7 @@ class fMRIStatAR(LinearModelIterator):
 
     def model(self):
         self.j += 1
-        itervalue = self.iterator.grid.itervalue
+        itervalue = self.iterator.grid.itervalue()
         if self.slicetimes is not None:
             design=self.designs[itervalue.slice[1]]
         else: design = self.dmatrix

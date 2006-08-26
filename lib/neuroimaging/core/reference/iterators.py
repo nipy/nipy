@@ -28,7 +28,7 @@ class SliceIterator (object):
             self.slice = slice
             self.type = "slice"
 
-    def __init__(self, end, start=None, step=None, axis=0, nslicedim=0,
+    def __init__(self, end, axis=0, start=None, step=None, nslicedim=0,
       nslice=1):
         self.end = tuple(end)
         self.axis = axis

@@ -45,7 +45,7 @@ class SamplingGrid (object):
         """
         ndim = len(shape)
         if len(names) != ndim:
-            raise ValueError('shape and number of axisn ames do not agree')
+            raise ValueError('shape and number of axis names do not agree')
         w = Affine.identity(ndim, names=names)
         return SamplingGrid(shape=list(shape), mapping=w)
 
@@ -59,10 +59,10 @@ class SamplingGrid (object):
         self.output_coords = mapping.output_coords
 
         # These guys are for use of the SamplingGrid as an iterator.
-        self._axis = 0
-        self._itertype = "slice"
-        self._parcelseq = None
-        self._parcelmap = None
+        iterators = {"slice": (SliceIterator, ["shape", "axis"]),
+                     "parcel": (ParcelIterator, ["parcelmap", "parcelseq"]),
+                     "slice/parcel": (SliceParcelIterator, ["parcelmap", "parcelseq"])}
+        self._iterguy = self._IterHelper(self.shape, 0, "slice", None, None, iterators)
 
     def allslice (self):
         """
@@ -86,42 +86,52 @@ class SamplingGrid (object):
         return _range 
 
     def __iter__(self):
-        itermethod = {
-          "slice": self._iterslices,
-          "parcel": self._iterparcels,
-          "slice/parcel": self._itersliceparcels
-        }.get(self._itertype)
-        if itermethod is None:
-            raise ValueError("unknown itertype %s"%`self._itertype`)
-        return itermethod()
-
-    def set_iter(self, itertype="slice", parcelmap=None, parcelseq=None, axis=None):
-        self._itertype = itertype
-        if parcelmap is not None:
-            self._parcelmap = parcelmap
-        if parcelseq is not None:
-            self._parcelseq = parcelseq
-        if axis is not None:
-            self._axis = axis
-
-    def _iterslices(self):
-        self.iterator = SliceIterator(self.shape, axis=self._axis)
+        iter(self._iterguy)
         return self
-
-    def _iterparcels(self):
-        self.iterator = ParcelIterator(self._parcelmap, self._parcelseq)
-        return self
-
-
-    def _itersliceparcels(self):
-        self.iterator = SliceParcelIterator(self._parcelmap, self._parcelseq)
-        return self
-
-
+        
     def next(self):
-        self.itervalue = self.iterator.next()
-        return self.itervalue
+        return self._iterguy.next()
+    
+    def itervalue(self):
+        return self._iterguy.itervalue
+                
+    def set_iter_param(self, name, val):
+        self._iterguy.set(name, val)
+        
+    def get_iter_param(self, name):
+        return self._iterguy.get(name)
+    
+    class _IterHelper:
+        """
+        This class takes care of all the seedy details of iteration
+        which should be sufficiently hidden from the outside world.
+        """
+        def __init__(self, shape, axis, itertype, parcelseq, parcelmap, iterators):
+            self.dict = {"shape": shape,
+                         "axis": axis,
+                         "itertype": itertype,
+                         "parcelseq": parcelseq,
+                         "parcelmap": parcelmap}
+            self.iterators = iterators
 
+        def set(self, name, val):
+            if name not in self.dict.keys():
+                raise KeyError
+            self.dict[name] = val
+        
+        def get(self, name):
+            return self.dict[name]
+
+        def __iter__(self):
+            itertype = self.dict["itertype"]
+            iterator, params = self.iterators[itertype]
+            self.iterator = iterator(*[self.dict[key] for key in params])
+            return self
+    
+        def next(self):
+            self.itervalue = self.iterator.next()
+            return self.itervalue
+            
 
     def slab(self, start, step, count, axis=0):
         """
@@ -135,12 +145,12 @@ class SamplingGrid (object):
 
         if isinstance(self.mapping, Affine):
             ndim = self.ndim
-            T = 0 * self.mapping.transform
+            T = self.mapping.transform.copy()
             T[0:ndim] = self.mapping(start)
             T[ndim, ndim] = 1.
             for i in range(ndim):
                 v = N.zeros((ndim,))
-                w = 1 * v
+                w = v.copy()
                 v[i] = step[i]
                 T[0:ndim,i] = self.mapping(v) - self.mapping(w)
             _map = Affine(self.mapping.input_coords,
@@ -153,11 +163,7 @@ class SamplingGrid (object):
                            self.mapping.output_coords, __map)
 
         g = SamplingGrid(shape=count, mapping=_map)
-        g.end = N.array(start) + N.array(count) * N.array(step)
-        g.start = start
-        g.step = step
-        g.axis = axis
-        g._itertype = 'slice'
+        g.set_iter_param("axis", axis)
         return iter(g)
 
 

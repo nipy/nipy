@@ -27,8 +27,6 @@ class fMRITest(unittest.TestCase):
 
     def test_iter(self):
         j = 0
-        print self.img.shape
-        print self.img.grid.shape
         for i in iter(self.img):
             j += 1
             self.assertEquals(i.shape, (120,128,128))
@@ -42,8 +40,9 @@ class fMRITest(unittest.TestCase):
 
     def test_labels1(self):
         parcelmap = (self.rho.readall() * 100).astype(N.int32)
-
-        self.img.grid.set_iter('parcel', parcelmap=parcelmap)
+        
+        self.img.grid.set_iter_param("itertype", "parcel")
+        self.img.grid.set_iter_param("parcelmap", parcelmap)
         parcelmap.shape = N.product(parcelmap.shape)
         self.img.grid._parcelseq = N.unique(parcelmap)
 
@@ -55,7 +54,8 @@ class fMRITest(unittest.TestCase):
     def test_labels2(self):
         parcelmap = (self.rho.readall() * 100).astype(N.int32)
 
-        self.rho.grid.set_iter('parcel', parcelmap=parcelmap)
+        self.rho.grid.set_iter_param("itertype", "parcel")
+        self.rho.grid.set_iter_param("parcelmap", parcelmap)
         parcelmap.shape = N.product(parcelmap.shape)
         self.rho.grid._parcelseq = N.unique(parcelmap)
 

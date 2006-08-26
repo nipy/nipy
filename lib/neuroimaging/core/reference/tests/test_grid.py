@@ -67,19 +67,23 @@ class GridTest(unittest.TestCase):
         
     def test_iterslices(self):
         for i in range(3):
-            self.img.grid.set_iter("slice", axis=i)
+            self.img.grid.set_iter_param("itertype", "slice")
+            self.img.grid.set_iter_param("axis", i)
             self.assertEqual(len(list(iter(self.img.grid))), self.img.grid.shape[i])
         
         parcelmap = N.zeros(self.img.grid.shape)
         parcelmap[:3,:5,:4] = 1
         parcelmap[3:10,5:10,4:10] = 2
         parcelseq = (1, (0,2))
-        self.img.grid.set_iter("parcel", parcelmap=parcelmap, parcelseq=parcelseq)
+        self.img.grid.set_iter_param("itertype", "parcel")
+        self.img.grid.set_iter_param("parcelmap", parcelmap)
+        self.img.grid.set_iter_param("parcelseq", parcelseq)
         for i in iter(self.img.grid):
             self.img[i.where]
 
         parcelseq = (1, (1,2), 0) + (0,)*(len(parcelmap)-3)
-        self.img.grid.set_iter("slice/parcel", parcelseq=parcelseq)                
+        self.img.grid.set_iter_param("itertype", "slice/parcel")
+        self.img.grid.set_iter_param("parcelseq", parcelseq)
         for i, it in enumerate(iter(self.img.grid)):
             self.img[i,it.where]
 

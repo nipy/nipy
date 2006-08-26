@@ -7,7 +7,6 @@ from neuroimaging import flatten
 from neuroimaging.data_io import DataSource
 from neuroimaging.data_io.formats import getformats, Format
 from neuroimaging.core.reference.grid import SamplingGrid
-from neuroimaging.core.reference.iterators import ParcelIterator, SliceParcelIterator
 
 
 class Image(traits.HasTraits):
@@ -57,7 +56,6 @@ class Image(traits.HasTraits):
                                datasource=datasource, mode=mode, clobber=clobber, grid=grid, **keywords)
             except Exception, e:
                 pass
-                #print "OPENING FAILED", format, e
 
         raise NotImplementedError, 'no valid reader found for URL %s' % url
 
@@ -67,7 +65,6 @@ class Image(traits.HasTraits):
         existing Image object, or an array.
         '''
         traits.HasTraits.__init__(self, **keywords)
-        
         # from existing Image
         if isinstance(image, Image):
             self.source = image.source
@@ -87,7 +84,6 @@ class Image(traits.HasTraits):
         else:
             raise ValueError(
           "Image input must be a string, array, or another image.")
-            
         # Find spatial grid -- this is the one that will be used generally
         self.grid = self.source.grid
         self.shape = list(self.grid.shape)
@@ -111,8 +107,7 @@ class Image(traits.HasTraits):
     def __iter__(self):
         "Create an iterator over an image based on its grid's iterator."
         iter(self.grid)
-        if isinstance(self.grid.iterator, ParcelIterator) or \
-           isinstance(self.grid.iterator, SliceParcelIterator):
+        if self.grid.get_iter_param("itertype") in ["parcel", "slice/parcel"]:
             self.buffer.shape = N.product(self.buffer.shape)
         return self
 
@@ -139,11 +134,12 @@ class Image(traits.HasTraits):
         """
         if value is None:
             self.itervalue = value = self.grid.next()
-        itertype = self.grid._itertype
+        itertype = self.grid.get_iter_param("itertype")
 
         if data is None:
             if itertype is 'slice':
                 result = N.squeeze(self[value.slice])
+                #result = self[value.slice]
             elif itertype is 'parcel':
                 flatten(value.where)
                 self.label = value.label

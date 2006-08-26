@@ -31,20 +31,16 @@ class fMRIListMapping(Mapping):
 
 class fMRISamplingGrid(SamplingGrid):
 
-
-    def _iterslices(self):
-        self.iterator = fMRISliceIterator(self.shape)
-        return self
-
-
-    def _itersliceparcels(self):
-        self.iterator = fMRISliceParcelIterator(
-          self._parcelmap, self._parcelseq, self.shape[0])
-        return self
+    def __init__(self, shape, mapping):
+        SamplingGrid.__init__(self, shape, mapping)
+        iterators = {"slice": (fMRISliceIterator, ["shape"]),
+                     "parcel": (ParcelIterator, ["parcelmap", "parcelseq"]),
+                     "slice/parcel": (fMRISliceParcelIterator, ["parcelmap", "parcelseq", "shape"])}
+        self._iterguy = self._IterHelper(self.shape, 1, "slice", None, None, iterators)        
 
 
     def isproduct(self, tol = 1.0e-07):
-        "Determine whether the affine transformation is 'diagonal' in time."
+        "Determine whether the affine   ation is 'diagonal' in time."
 
         if not isinstance(self.mapping, Affine): return False
         ndim = self.ndim
@@ -99,9 +95,8 @@ class fMRISamplingGrid(SamplingGrid):
             W = Mapping(incoords, outcoords, _map)
 
         _grid = SamplingGrid(shape=self.shape[1:], mapping=W)
-        _grid._itertype = self._itertype
-        _grid._parcelmap = self._parcelmap
-        _grid._parcelseq = self._parcelseq
+        for param in ["parcelmap", "parcelseq"]:
+            _grid.set_iter_param(param, self.get_iter_param(param))
         return _grid
 
 
@@ -188,7 +183,8 @@ class fMRIImage(Image):
     def __iter__(self):
         "Create an iterator over an image based on its grid's iterator."
         iter(self.grid)
-        if self.grid._itertype == 'parcel': flatten(self.buffer, 1)
+        if self.grid.get_iter_param("itertype") == 'parcel': 
+            flatten(self.buffer, 1)
         return self
 
 

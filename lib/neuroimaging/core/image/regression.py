@@ -37,10 +37,7 @@ class ImageRegressionOutput(RegressionOutput):
         """
         if img is None:
             img = self.img
-        img.grid.set_iter(self.grid._itertype, self.grid._parcelmap, self.grid._parcelseq)
-        #img.grid.itertype = self.grid.itertype
-        #img.grid.parcelmap = self.grid.parcelmap
-        #img.grid.parcelseq = self.grid.parcelseq
+        img.grid._iterguy = self.grid._iterguy
         iter(img)
         
     def __iter__(self):

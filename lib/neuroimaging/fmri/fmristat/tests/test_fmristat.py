@@ -44,7 +44,6 @@ class fMRIStatTest(unittest.TestCase):
         slicetimes = N.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
         self.img = fMRIImage("test_fmri.hdr", datasource=repository, frametimes=frametimes,
                                   slicetimes=slicetimes, usematfile=False)
-
         self.setup_formula()
 
     def tearDown(self):
@@ -60,7 +59,7 @@ class TestSliceTimes(fMRIStatTest):
         OLS.nmax = 75
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
-        rho.tofile('rho.img', clobber=True)
+        rho.tofile('rho.hdr', clobber=True)
 
         AR = fMRIStatAR(OLS)
         AR.fit()
@@ -74,7 +73,7 @@ class TestResid1(fMRIStatTest):
                                    slicetimes=self.img.slicetimes, resid=True)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
-        rho.tofile('rho.img', clobber=True)
+        rho.tofile('rho.hdr', clobber=True)
 
         AR = fMRIStatAR(OLS)
         AR.fit()
