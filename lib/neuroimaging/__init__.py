@@ -44,7 +44,7 @@ from copy import copy
 
 from numpy import product
 
-import defines
+from neuroimaging import defines
 from neuroimaging.utils.path import path
 
 packages = (
