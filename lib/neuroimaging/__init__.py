@@ -23,10 +23,6 @@ Specifically, we aim to:
    4. To maintain and develop this framework as a single, easily
       installable bundle.
 
-.. importgraph:: 
-
-.. classtree:: neuroimaging
-
 Package Organization 
 ==================== 
 The neuroimaging package contains the following subpackages and modules: 
