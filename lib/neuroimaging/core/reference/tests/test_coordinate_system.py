@@ -3,7 +3,7 @@ import numpy as N
 
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
      VoxelCoordinateSystem, DiagonalCoordinateSystem
-from neuroimaging.core.reference.mni import generic
+from neuroimaging.core.reference.axis import generic
 
 class CoordinateSystemTest(unittest.TestCase):
 
