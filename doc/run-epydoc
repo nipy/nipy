@@ -1,6 +1,6 @@
 #!/bin/sh
 PYTHON_PATH=../lib
-FILTER='grep -v tests | grep -v enthought | grep -v sandbox'
+FILTER='tests\|enthought\|sandbox'
 
 output_dir=api
 mkdir -p ${output_dir}
@@ -11,4 +11,4 @@ epydoc -vvvv \
   --no-private \
   --inheritance listed \
   --graph all \
-  $(find $PYTHON_PATH/neuroimaging -name "*py" | xargs $FILTER)
+  $(find $PYTHON_PATH/neuroimaging -name "*py" | grep -v $FILTER)
