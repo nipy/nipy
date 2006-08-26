@@ -1,5 +1,5 @@
 import numpy as N
-import numpy.dft as FFT
+import numpy.fft as FFT
 import scipy.interpolate
 
 class LinearInterpolant:
