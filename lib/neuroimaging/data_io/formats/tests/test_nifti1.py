@@ -86,7 +86,7 @@ class NiftiWriteTest(NiftiTest):
     def test_write1(self):
         self.image.tofile('out.nii', clobber=True, sctype=N.float64)
         out = Image('out.nii')
-        self.assertEquals(out.image.sctype, N.float64)
+        self.assertEquals(out.source.sctype, N.float64)
         os.remove('out.nii')
 
     def test_write2(self):
@@ -97,7 +97,7 @@ class NiftiWriteTest(NiftiTest):
     def test_write4(self):
         self.image.tofile('out.hdr', clobber=True, sctype=N.float64)
         new = nifti1.NIFTI1('out.hdr')
-        self.assertEquals(out.image.sctype, N.float64)
+        self.assertEquals(new.sctype, N.float64)
         os.remove('out.img')
         os.remove('out.hdr')
 
