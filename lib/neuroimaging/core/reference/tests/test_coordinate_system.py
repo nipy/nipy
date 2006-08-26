@@ -54,7 +54,7 @@ class CoordinateSystemTest(unittest.TestCase):
             self.assertEquals(self.c.getaxis(generic[i]),
                               new_c.getaxis(generic[new_order[i]]))
     def test___str__(self):
-        print self.c
+        s = str(self.c)
 
 
 class VoxelCoordinateSystemTest(unittest.TestCase):

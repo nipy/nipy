@@ -63,7 +63,7 @@ class GridTest(unittest.TestCase):
     def test_allslice(self):
         shape = (30,40,50)
         i = SamplingGrid.identity(shape=shape, names=space)
-        print i.allslice()
+        i.allslice()
         
     def test_iterslices(self):
         for i in range(3):
@@ -76,15 +76,12 @@ class GridTest(unittest.TestCase):
         parcelseq = (1, (0,2))
         self.img.grid.set_iter("parcel", parcelmap=parcelmap, parcelseq=parcelseq)
         for i in iter(self.img.grid):
-            print i
-            print self.img[i.where]
+            self.img[i.where]
 
-        print len(parcelmap)
         parcelseq = (1, (1,2), 0) + (0,)*(len(parcelmap)-3)
         self.img.grid.set_iter("slice/parcel", parcelseq=parcelseq)                
         for i, it in enumerate(iter(self.img.grid)):
-            print it.where, self.img.grid.shape
-            print self.img[i,it.where]
+            self.img[i,it.where]
 
 if __name__ == '__main__':
     unittest.main()

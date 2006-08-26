@@ -64,7 +64,7 @@ class MappingTest(unittest.TestCase):
         N.testing.assert_almost_equal(self.mapping.transform, a.transform)
 
     def test___str__(self):
-        print self.mapping
+        s = str(self.mapping)
 
     def test___eq__(self):
         self.assertTrue(self.mapping == self.mapping)
