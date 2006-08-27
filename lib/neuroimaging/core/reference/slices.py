@@ -6,7 +6,8 @@ import numpy.random as R
 
 def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     """
-    Return a grid representing a slice based on a given origin, direction vectors and shape.
+    Return a grid representing a slice based on a given origin, a pair of direction
+    vectors which span the slice, and a shape.
 
     By default the output coordinate system is the MNI world.
     """
@@ -18,11 +19,10 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     for i in range(ndim):
         f[0:nout,i] = colvectors[i]
     
-    tmp = R.standard_normal((nout, nout-ndim))
     p = N.identity(nout) - N.dot(f, L.pinv(f))
+    tmp = R.standard_normal((nout, nout-ndim))
     tmp = N.dot(p, tmp)
     f[0:nout,ndim:] = tmp
-
     for i in range(nout-ndim):
         f[0:nout,ndim+i] = f[0:nout,ndim+i] / N.sqrt(N.add.reduce(f[0:nout,ndim+i]**2))
 
@@ -41,12 +41,6 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     g = grid.SamplingGrid(mapping=w, shape=list(shape + (1,) * (nout-ndim)))
     return g
 
-# MNI default
-
-#default_xlim = [-90.,90.]
-#default_ylim = [-126.,90.]
-#default_zlim = [-72.,108.]
-#default_shape = (91,109,91)
 
 def box_slices(zlim, ylim, xlim,
                shape, x=N.inf, y=N.inf, z=N.inf):
@@ -169,3 +163,9 @@ def squeezeshape(shape):
     keep = N.not_equal(s, 1)
     return tuple(s[keep])
     
+if __name__ == '__main__':
+    print zslice(5, [0, 9], [0, 9], [0, 9], (10, 10, 10)).mapping.transform
+    print
+    print yslice(5, [0, 9], [0, 9], [0, 9], (10, 10, 10)).mapping.transform
+    print
+    print xslice(5, [0, 9], [0, 9], [0, 9], (10, 10, 10)).mapping.transform
