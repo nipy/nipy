@@ -3,7 +3,7 @@ import numpy as N
 
 from neuroimaging.fmri import fMRIImage
 from neuroimaging.image import Image
-from neuroimaging.tests.data import repository
+from neuroimaging.utils.tests.data import repository
 
 # not a test until test data is found
 class fMRITest(unittest.TestCase):

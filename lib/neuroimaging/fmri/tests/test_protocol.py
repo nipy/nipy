@@ -1,6 +1,7 @@
 import unittest, csv, os
 import numpy as N
-from scipy.sandbox.models.utils import recipr0, contrast
+from scipy.sandbox.models.utils import recipr0
+from scipy.sandbox.models import contrast
 
 from neuroimaging.fmri import hrf, protocol
 

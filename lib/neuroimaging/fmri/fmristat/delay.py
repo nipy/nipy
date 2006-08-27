@@ -10,6 +10,7 @@ import copy, os, fpformat
 import numpy as N
 import numpy.linalg as L
 from scipy.sandbox.models.utils import recipr, recipr0
+from scipy.sandbox.models.contrast import Contrast, ContrastResults
 from neuroimaging import traits
 
 from neuroimaging.fmri import hrf, filters
@@ -17,14 +18,13 @@ from neuroimaging.fmri.protocol import ExperimentalQuantitative
 from neuroimaging.fmri.regression import TContrastOutput 
 from neuroimaging.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.image import Image
-from scipy.sandbox.models.contrast import ContrastResults
 
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
     from neuroimaging.visualization.multiplot import MultiPlot
 
-class DelayContrast(contrast.Contrast):
+class DelayContrast(Contrast):
 
     """
     Specify a delay contrast.
@@ -68,7 +68,7 @@ class DelayContrast(contrast.Contrast):
         term = ExperimentalQuantitative('%s_delay' % self.name, self.fn)
         term.convolve(self.IRF)
         
-        contrast.Contrast.__init__(self, term, self.formula, name=self.name)
+        Contrast.__init__(self, term, self.formula, name=self.name)
 
         if rownames == []:
             if name == '':

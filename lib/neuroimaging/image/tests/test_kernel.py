@@ -2,7 +2,7 @@ import unittest
 
 from neuroimaging.image import Image
 from neuroimaging.image.kernel_smooth import LinearFilter
-from neuroimaging.tests.data import repository
+from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()

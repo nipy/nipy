@@ -2,7 +2,7 @@ import unittest, os
 
 import numpy as N
 
-from neuroimaging.tests.data import repository
+from neuroimaging.utils.tests.data import repository
 from neuroimaging.image import Image
 from neuroimaging.image.interpolation import ImageInterpolator
 

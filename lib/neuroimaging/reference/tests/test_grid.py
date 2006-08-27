@@ -7,7 +7,7 @@ from neuroimaging.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
 
 from neuroimaging.image.formats.analyze import ANALYZE
-from neuroimaging.tests.data import repository
+from neuroimaging.utils.tests.data import repository
 
 class GridTest(unittest.TestCase):
 

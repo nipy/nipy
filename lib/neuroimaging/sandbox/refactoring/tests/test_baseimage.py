@@ -4,7 +4,7 @@ import numpy as N
 
 from neuroimaging.image.onesample import ImageOneSample
 from neuroimaging.sandbox.refactoring.baseimage import image
-from neuroimaging.tests.data import repository
+from neuroimaging.utils.tests.data import repository
 
 class BaseImageTest(unittest.TestCase):
 

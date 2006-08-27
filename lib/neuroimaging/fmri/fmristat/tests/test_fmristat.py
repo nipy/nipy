@@ -3,7 +3,7 @@ import unittest, os, gc, shutil
 import numpy as N
 from scipy.sandbox.models.contrast import Contrast
 
-from neuroimaging.tests.data import repository
+from neuroimaging.utils.tests.data import repository
 from neuroimaging.fmri import fMRIImage
 from neuroimaging.fmri.protocol import ExperimentalFactor,\
   ExperimentalQuantitative, SplineConfound

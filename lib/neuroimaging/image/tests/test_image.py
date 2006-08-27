@@ -2,7 +2,7 @@ import unittest, os, glob
 import numpy as N
 from neuroimaging.image import Image
 from neuroimaging.image.onesample import ImageOneSample
-from neuroimaging.tests.data import repository
+from neuroimaging.utils.tests.data import repository
 
 class ImageTest(unittest.TestCase):
 

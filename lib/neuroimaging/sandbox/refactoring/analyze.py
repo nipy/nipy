@@ -215,7 +215,7 @@ headeratts = dict(
 ##############################################################################
 class AnalyzeHeader (object):
     """
-    >>> from neuroimaging.tests.data import repository
+    >>> from neuroimaging.utils.tests.data import repository
     >>> hdr = AnalyzeHeader("rho.hdr", repository.open)
     """
     locals().update(headeratts)
@@ -289,7 +289,7 @@ def get_filestem(filename, extensions):
 ##############################################################################
 class AnalyzeImage (BaseImage):
     """
-    >>> from neuroimaging.tests.data import repository
+    >>> from neuroimaging.utils.tests.data import repository
     >>> image = AnalyzeImage("rho", repository.open)
     """
     extensions = (".hdr",".img",".mat")

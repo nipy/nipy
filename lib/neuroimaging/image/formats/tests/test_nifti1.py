@@ -6,7 +6,7 @@ import numpy.random as R
 from neuroimaging.image import Image
 from neuroimaging.image.formats import nifti1
 from neuroimaging.image.formats.binary import BinaryFormatError
-from neuroimaging.tests.data import repository
+from neuroimaging.utils.tests.data import repository
 
 class NiftiTest(unittest.TestCase):
 

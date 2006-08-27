@@ -3,7 +3,7 @@ import os
 import numpy as N
 import pylab
 
-from neuroimaging.tests.data import repository
+from neuroimaging.utils.tests.data import repository
 from neuroimaging.image import Image
 from neuroimaging.image.interpolation import ImageInterpolator
 from neuroimaging.visualization import slices, montage

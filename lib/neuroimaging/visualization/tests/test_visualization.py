@@ -1,6 +1,6 @@
 import unittest, os
 
-from neuroimaging.tests.data import repository
+from neuroimaging.utils.tests.data import repository
 from neuroimaging.image import Image
 from neuroimaging.image.interpolation import ImageInterpolator
 

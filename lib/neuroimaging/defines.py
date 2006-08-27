@@ -49,5 +49,6 @@ def enthought_traits_def():
             ENTHOUGHT_TRAITS_DEF = True
         except Exception, e:
             traits = None
+            print e
             pass
     return ENTHOUGHT_TRAITS_DEF, traits
