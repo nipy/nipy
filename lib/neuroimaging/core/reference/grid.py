@@ -1,7 +1,7 @@
 import numpy as N
 
 from neuroimaging import reverse
-from neuroimaging.core.reference.mapping import Mapping, Affine, DegenerateAffine
+from neuroimaging.core.reference.mapping import Mapping, Affine
 from neuroimaging.core.reference.axis import space, RegularAxis, VoxelAxis, Axis
 from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem,\
   DiagonalCoordinateSystem, CoordinateSystem
