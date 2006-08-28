@@ -134,7 +134,7 @@ NIFTI_UNITS = [NIFTI_UNITS_UNKNOWN, NIFTI_UNITS_METER, NIFTI_UNITS_MM, NIFTI_UNI
 
 NIFTI_SLICE = [NIFTI_SLICE_UNKNOWN, NIFTI_SLICE_SEQ_INC, NIFTI_SLICE_SEQ_DEC, NIFTI_SLICE_ALT_INC, NIFTI_SLICE_ALT_DEC, NIFTI_SLICE_ALT_INC2, NIFTI_SLICE_ALT_DEC2]
 
-datatypes = {N.bool8:DT_BINARY,
+datatypes = {N.bool_:DT_BINARY,
              N.uint8:DT_UNSIGNED_CHAR,
              N.int16:DT_SIGNED_SHORT,
              N.int32:DT_SIGNED_INT,
@@ -154,7 +154,7 @@ datatypes = {N.bool8:DT_BINARY,
 
 sctypes = {DT_NONE:None, # will fail if unknown
            DT_UNKNOWN:None, 
-           DT_BINARY:N.bool8,
+           DT_BINARY:N.bool_,
            DT_UNSIGNED_CHAR:N.uint8,
            DT_SIGNED_SHORT:N.int16,
            DT_SIGNED_INT:N.int32,
@@ -240,7 +240,7 @@ class NIFTI1(BinaryFormat):
 
     """
 
-    extensions = ('.img', '.hdr', '.nii')
+    extensions = ('.hdr', '.nii')
     header = traits.List(header)
 
     def __init__(self, filename=None, datasource=DataSource(), grid=None,
@@ -250,7 +250,7 @@ class NIFTI1(BinaryFormat):
                                  
         self.datasource = datasource
         ext = os.path.splitext(filename)[1]
-        if ext not in ['.nii', '.hdr']:
+        if ext not in self.extensions:
             raise NIFTI1FormatError, 'NIFTI-1 images need .hdr or .nii file specified.'
 
         # Enforce naming rule
