@@ -46,7 +46,6 @@ def isurl(pathstr):
 def iswritemode(mode): return mode.find("w")>-1 or mode.find("+")>-1
 
 
-
 class Cache (object):
     class path (readonly):
         if os.name == 'posix':
@@ -57,12 +56,17 @@ class Cache (object):
     def __init__(self, cachepath=None):
         if cachepath is not None: self.path = path(cachepath)
         self.setup()
+
     def filepath(self, uri):
         (scheme, netloc, upath, params, query, fragment) = urlparse(uri)
         return self.path.joinpath(netloc, upath[1:])
-    def filename(self, uri): return str(self.filepath(uri))
+
+    def filename(self, uri): 
+        return str(self.filepath(uri))
+    
     def setup(self):
         if not self.path.exists(): ensuredirs(self.path)
+        
     def cache(self, uri):
         if self.iscached(uri): return
         upath = self.filepath(uri)
@@ -70,10 +74,13 @@ class Cache (object):
         try: openedurl = urlopen(uri)
         except: raise IOError("url not found: "+str(uri))
         file(upath, 'w').write(openedurl.read())
+        
     def clear(self):
         for f in self.path.files(): f.rm()
+        
     def iscached(self, uri):
         return self.filepath(uri).exists()
+        
     def retrieve(self, uri):
         self.cache(uri)
         return file(self.filename(uri))
@@ -126,12 +133,16 @@ class Repository (DataSource):
     def __init__(self, baseurl, cachepath=None):
         DataSource.__init__(self, cachepath=cachepath)
         self._baseurl = baseurl
+
     def _fullpath(self, pathstr):
         return path(self._baseurl).joinpath(pathstr)
+
     def filename(self, pathstr):
         return DataSource.filename(self, str(self._fullpath(pathstr)))
+
     def exists(self, pathstr):
         return DataSource.exists(self, self._fullpath(pathstr))
+
     def open(self, pathstr):
         return DataSource.open(self, self._fullpath(pathstr))
 
