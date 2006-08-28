@@ -85,10 +85,8 @@ class ContinuousAxis(Axis):
 class RegularAxis (Axis):
     """
     This class represents a regularly spaced axis. Axes are used in the
-    definition of Coordinate systems. The attributes step and start are usually
-    ignored if a valid transformation matrix is provided -- otherwise they
-    can be used to create an orthogonal transformation matrix.
-
+    definition of Coordinate systems. 
+    
     >>> from neuroimaging.core.reference.axis import RegularAxis
     >>> from numpy import allclose, array
     >>> r = RegularAxis(name='xspace',length=10, start=0.25, step=0.3)
@@ -147,11 +145,11 @@ class VoxelAxis (RegularAxis):
         RegularAxis.__init__(self, name, length, start=0, step=1)
 
 
-"""Default axes"""
+
 generic = (
   ContinuousAxis(name='zspace'),
   ContinuousAxis(name='yspace'),
   ContinuousAxis(name='xspace'))
-
+"""Default axes"""
    
 
