@@ -1,6 +1,6 @@
 """
 The Axis family of classes are used to represent a named axis within a
-coordinate system. Axes can be discrete or continuous, finite or infinite.
+coordinate system. Axes can be regular discrete or continuous, finite or infinite.
 
 The current class hirachy looks like this.
 
@@ -8,16 +8,13 @@ The current class hirachy looks like this.
                    |
         ---------------------------
         |                         |
-        DiscreteAxis        ContinuousAxis
-        |   
-   RegularAxis
+   RegularAxis             ContinuousAxis
         |
    VoxelAxis
 
 
 There is currently no support for irregularly spaced axes, however this
-could easily be added as a subclass of DiscreteAxis if required.
-
+could easily be added.
 """
 
 import numpy as N
@@ -150,7 +147,7 @@ class VoxelAxis (RegularAxis):
         RegularAxis.__init__(self, name, length, start=0, step=1)
 
 
-# Default axes
+"""Default axes"""
 generic = (
   ContinuousAxis(name='zspace'),
   ContinuousAxis(name='yspace'),
