@@ -1,10 +1,13 @@
 import os, types
+
+import numpy as N
+
+from neuroimaging import traits
+
 import _mincutils
 import _mincconstants as mc
-from neuroimaging import traits
-from neuroimaging.reference import mapping, axis, coordinate_system
 from neuroimaging.data_io.formats import Format
-import numpy as N
+from neuroimaging.reference import mapping, axis, coordinate_system
 
 
 class Dimension(axis.VoxelAxis):
@@ -365,7 +368,4 @@ def convert_origin_to_start(origin, xdircos, ydircos, zdircos):
         else:
             start[i] = 0.0
     return start
-
-
-
 
