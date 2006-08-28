@@ -316,10 +316,10 @@ class Affine(Mapping):
 
 
     def __init__(self, transform, name="affine"):
-        Mapping.__init__(self, None, name=name)
         self.transform = transform
-        self._ndim = transform.shape[0] - 1
+        ndim = transform.shape[0] - 1
         self._fmatrix, self._fvector = _2matvec(transform)
+        Mapping.__init__(self, None, name=name, ndim=ndim)
 
     def __call__(self, coords):
         value = N.dot(self._fmatrix, coords) 
