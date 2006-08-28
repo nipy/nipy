@@ -25,6 +25,38 @@ def _2transform(matrix, vector):
     t[nin,   nin] = 1.
     t[0:nin, nin] = vector
     return t
+
+
+
+def permutation_matrix(order=range(3)[2::-1]):
+    """
+    Create an NxN permutation matrix from a sequence, containing the values 0,...,N-1.
+    """
+    n = len(order)
+    matrix = N.zeros((n, n))
+    if set(order) != set(range(n)):
+        raise ValueError(
+          'order should be a sequence of integers with values, 0 ... len(order)-1.')
+    for i in range(n): 
+        matrix[i,order[i]] = 1
+    return matrix
+
+
+def permutation_transform(order=range(3)[2::-1]):
+    """
+    Create an (N+1)x(N+1) permutation transformation matrix from a sequence,
+    containing the values 0,...,N-1.
+    """
+    matrix = permutation_matrix(order=order)
+    vector = N.zeros(len(order))
+    return _2transform(matrix, vector)
+
+
+def translation_transform(x, ndim):
+    """
+    Create an affine transformation matrix representing translation by x.
+    """
+    return _2transform(N.identity(ndim), x)
     
 
 def matfromfile(infile, delimiter="\t"):
@@ -275,7 +307,10 @@ class Affine(Mapping):
 
     def __eq__(self, other):
         if not hasattr(other, "transform"): return False
-        return tuple(self.transform.flat) == tuple(other.transform.flat)
+        return N.all(N.asarray(self.transform) == N.asarray(other.transform)) and \
+            self.name == other.name and \
+            self.input_coords == other.input_coords and \
+            self.output_coords == other.output_coords
 
 
     def __rmul__(self, other):
@@ -316,33 +351,3 @@ class Affine(Mapping):
         for row in self.transform: writer.writerow(row)
         matfile.close()
   
-
-def permutation_matrix(order=range(3)[2::-1]):
-    """
-    Create an NxN permutation matrix from a sequence, containing the values 0,...,N-1.
-    """
-    n = len(order)
-    matrix = N.zeros((n, n))
-    if set(order) != set(range(n)):
-        raise ValueError(
-          'order should be a sequence of integers with values, 0 ... len(order)-1.')
-    for i in range(n): 
-        matrix[i,order[i]] = 1
-    return matrix
-
-
-def permutation_transform(order=range(3)[2::-1]):
-    """
-    Create an (N+1)x(N+1) permutation transformation matrix from a sequence,
-    containing the values 0,...,N-1.
-    """
-    matrix = permutation_matrix(order=order)
-    vector = N.zeros(len(order))
-    return _2transform(matrix, vector)
-
-
-def translation_transform(x, ndim):
-    """
-    Create an affine transformation matrix representing translation by x.
-    """
-    return _2transform(N.identity(ndim), x)
