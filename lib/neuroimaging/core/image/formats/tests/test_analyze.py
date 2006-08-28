@@ -1,9 +1,9 @@
 import unittest, os
 import numpy as N
 
-from neuroimaging.image.formats import analyze
+from neuroimaging.core.image.formats import analyze
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.image import Image
+from neuroimaging.core.image import Image
 
 class AnalyzeTest(unittest.TestCase):
 

@@ -1,6 +1,6 @@
 import os, string, re, sys, fpformat, types, time, random, csv
 from neuroimaging.reference import mapping, coordinate_system, axis
-from neuroimaging.image import utils
+from neuroimaging.core.image import utils
 import numpy as N
 from _afniconstants import *
 

@@ -1,4 +1,4 @@
-from neuroimaging.image import Image
+from neuroimaging.core.image import Image
 from neuroimaging.fmri import fMRIImage
 import numpy as N
 import pylab

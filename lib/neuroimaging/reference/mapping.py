@@ -260,7 +260,7 @@ class Mapping (object):
         mapping(v_x,v_y,v_z)=(w_x,w_y,w_z), then the return will send
         (v_z-1,v_y-1,v_x-1) to (w_z,w_y,w_x).
 
-        >>> from neuroimaging.image import Image
+        >>> from neuroimaging.core.image import Image
         >>> zimage = Image('http://nifti.nimh.nih.gov/nifti-1/data/zstat1.nii.gz')
         >>> mapping = zimage.grid.mapping
         >>> mapping([1,2,3])

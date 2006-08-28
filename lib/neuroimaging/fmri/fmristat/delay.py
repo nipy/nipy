@@ -17,7 +17,7 @@ from neuroimaging.fmri import hrf, filters
 from neuroimaging.fmri.protocol import ExperimentalQuantitative
 from neuroimaging.fmri.regression import TContrastOutput 
 from neuroimaging.fmri.utils import LinearInterpolant as interpolant
-from neuroimaging.image import Image
+from neuroimaging.core.image import Image
 
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()

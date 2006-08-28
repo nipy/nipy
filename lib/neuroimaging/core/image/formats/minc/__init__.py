@@ -3,7 +3,7 @@ import _mincutils
 import _mincconstants as mc
 from neuroimaging import traits
 from neuroimaging.reference import mapping, axis, coordinate_system
-from neuroimaging.image.formats import Format
+from neuroimaging.core.image.formats import Format
 import numpy as N
 
 
@@ -221,7 +221,7 @@ class MINC(Format):
         return mincwrite(self.filename, start, data, set_minmax=set_minmax, mincid=self.mincid, **keywords)
 
 
-from neuroimaging.image.formats.minc import _mincutils
+from neuroimaging.core.image.formats.minc import _mincutils
 
 import numpy as N
 

@@ -14,7 +14,7 @@ import numpy as N
 import scipy.stats
 import pylab
 
-from neuroimaging.image import Image
+from neuroimaging.core.image import Image
 
 webdir = 'http://kff.stanford.edu/nipy/rfx-data/'
 images = [Image(os.path.join(webdir, 'con_%04d.img' % i)) for i in range(6,18)]

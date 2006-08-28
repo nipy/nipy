@@ -11,9 +11,9 @@ from neuroimaging.fmri import fMRIImage
 from neuroimaging.fmri.fmristat.delay import DelayContrast, DelayContrastOutput
 from neuroimaging.fmri.regression import AROutput, TContrastOutput, \
   FContrastOutput, ResidOutput
-from neuroimaging.image import kernel_smooth
-from neuroimaging.image.fwhm import fastFWHM
-from neuroimaging.image.utils import fwhm2sigma
+from neuroimaging.core.image import kernel_smooth
+from neuroimaging.core.image.fwhm import fastFWHM
+from neuroimaging.core.image.utils import fwhm2sigma
 from neuroimaging.algorithms.statistics.regression import LinearModelIterator, \
   OLSModel, ARModel
 

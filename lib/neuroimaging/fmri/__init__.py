@@ -2,7 +2,7 @@ from neuroimaging import traits
 import numpy as N
 
 from neuroimaging import flatten
-from neuroimaging.image import Image
+from neuroimaging.core.image import Image
 from neuroimaging.fmri.iterators import fMRISliceIterator,\
   fMRISliceParcelIterator
 from neuroimaging.reference.coordinate_system import CoordinateSystem

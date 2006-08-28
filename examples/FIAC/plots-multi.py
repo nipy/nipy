@@ -1,5 +1,5 @@
 def FIACmultiview(**opts):
-    i = neuroimaging.image.Image(FIACmultipath(**opts))
+    i = neuroimaging.core.image.Image(FIACmultipath(**opts))
     i.grid = standard.grid
     v = viewer.BoxViewer(v)
     v.draw()

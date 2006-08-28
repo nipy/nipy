@@ -2,7 +2,7 @@ import unittest, gc, os
 import numpy as N
 
 from neuroimaging.fmri import fMRIImage
-from neuroimaging.image import Image
+from neuroimaging.core.image import Image
 from neuroimaging.utils.tests.data import repository
 
 # not a test until test data is found

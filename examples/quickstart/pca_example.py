@@ -3,7 +3,7 @@ import pylab
 
 from neuroimaging.fmri import fMRIImage 
 from neuroimaging.fmri.pca import PCAmontage
-from neuroimaging.image import Image
+from neuroimaging.core.image import Image
 
 # Load an fMRI image
 

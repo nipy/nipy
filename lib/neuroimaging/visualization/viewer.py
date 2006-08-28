@@ -4,7 +4,7 @@ import numpy as N
 import pylab
 from neuroimaging import traits
 
-from neuroimaging.image.interpolation import ImageInterpolator
+from neuroimaging.core.image.interpolation import ImageInterpolator
 from neuroimaging.reference.slices import xslice, yslice, zslice, bounding_box
 from neuroimaging.visualization.cmap import cmap, interpolation
 from neuroimaging.visualization.slices import DataSlicePlot, RGBSlicePlot, RGBASlicePlot

@@ -1,4 +1,4 @@
-from neuroimaging.image import Image
+from neuroimaging.core.image import Image
 from neuroimaging.visualization.viewer import BoxViewer
 import numpy as N
 import pylab

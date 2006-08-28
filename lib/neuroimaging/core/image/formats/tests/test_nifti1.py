@@ -3,9 +3,9 @@ import unittest, os, copy
 import numpy as N
 import numpy.random as R
 
-from neuroimaging.image import Image
-from neuroimaging.image.formats import nifti1
-from neuroimaging.image.formats.binary import BinaryFormatError
+from neuroimaging.core.image import Image
+from neuroimaging.core.image.formats import nifti1
+from neuroimaging.core.image.formats.binary import BinaryFormatError
 from neuroimaging.utils.tests.data import repository
 
 class NiftiTest(unittest.TestCase):

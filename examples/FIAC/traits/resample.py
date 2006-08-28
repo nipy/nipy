@@ -3,8 +3,8 @@ import numpy as N
 
 from neuroimaging import traits
 
-from neuroimaging.image import Image
-from neuroimaging.image.interpolation import ImageInterpolator
+from neuroimaging.core.image import Image
+from neuroimaging.core.image.interpolation import ImageInterpolator
 from neuroimaging.reference.mapping import Affine
 from neuroimaging.reference.grid import SamplingGrid
 

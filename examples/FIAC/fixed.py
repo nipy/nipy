@@ -1,9 +1,9 @@
 import os, shutil, gc, time, urllib
 import numpy as N
 
-from neuroimaging.image import Image
-from neuroimaging.image.interpolation import ImageInterpolator
-from neuroimaging.image.onesample import ImageOneSample
+from neuroimaging.core.image import Image
+from neuroimaging.core.image.interpolation import ImageInterpolator
+from neuroimaging.core.image.onesample import ImageOneSample
 from neuroimaging.reference.mapping import Affine
 from neuroimaging.reference.grid import SamplingGrid
 

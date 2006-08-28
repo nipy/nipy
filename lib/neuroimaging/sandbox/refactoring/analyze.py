@@ -11,7 +11,7 @@ from attributes import attribute, readonly, deferto, wrapper, scope
 from neuroimaging.data import DataSource
 from neuroimaging.reference.axis import space
 from neuroimaging.reference.grid import SamplingGrid
-#from neuroimaging.image.formats import struct_unpack, struct_pack, structfield,\
+#from neuroimaging.core.image.formats import struct_unpack, struct_pack, structfield,\
 #  LITTLE_ENDIAN, BIG_ENDIAN
 from neuroimaging.sandbox.refactoring.baseimage import BaseImage
 from neuroimaging.utils.odict import odict

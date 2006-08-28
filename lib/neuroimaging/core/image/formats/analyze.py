@@ -6,7 +6,7 @@ import numpy as N
 from neuroimaging import traits
 
 from neuroimaging.data import DataSource
-from neuroimaging.image.formats.binary import BinaryFormat
+from neuroimaging.core.image.formats.binary import BinaryFormat
 from neuroimaging.reference.axis import space, spacetime
 from neuroimaging.reference.mapping import Affine, Mapping
 from neuroimaging.reference.grid import SamplingGrid

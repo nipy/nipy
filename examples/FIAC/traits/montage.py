@@ -3,8 +3,8 @@ from neuroimaging import traits
 from readonly import ReadOnlyValidate
 import os, pylab
 
-from neuroimaging.image.interpolation import ImageInterpolator
-from neuroimaging.image import Image
+from neuroimaging.core.image.interpolation import ImageInterpolator
+from neuroimaging.core.image import Image
 from neuroimaging.visualization.cmap import cmap
 from neuroimaging.visualization import slices as vizslice
 from neuroimaging.visualization.montage import Montage as MontageDrawer

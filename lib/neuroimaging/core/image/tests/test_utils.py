@@ -1,7 +1,7 @@
 import unittest
 import numpy as N
 
-from neuroimaging.image.utils import sigma2fwhm, fwhm2sigma
+from neuroimaging.core.image.utils import sigma2fwhm, fwhm2sigma
 
 class utilTest(unittest.TestCase):
    

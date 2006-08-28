@@ -1,5 +1,5 @@
 import sys, pylab
-import neuroimaging.image as image
+import neuroimaging.core.image as image
 import neuroimaging.visualization.viewer as viewer
 
 x = image.Image(sys.argv[1])

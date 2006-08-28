@@ -8,7 +8,7 @@ from neuroimaging import traits
 
 from neuroimaging.fmri import fMRIImage
 from neuroimaging.fmri.protocol import ExperimentalFactor
-from neuroimaging.image import Image
+from neuroimaging.core.image import Image
 
 from protocol import event_protocol, block_protocol
 from io import urlexists

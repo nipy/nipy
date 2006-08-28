@@ -11,7 +11,7 @@ from neuroimaging.reference.axis import valid
 from neuroimaging.reference.mapping import Affine
 from neuroimaging.reference.grid import SamplingGrid
 
-from neuroimaging.image.formats.binary import BinaryFormat
+from neuroimaging.core.image.formats.binary import BinaryFormat
 
 class NIFTI1FormatError(Exception):
     """
@@ -391,7 +391,7 @@ class NIFTI1(BinaryFormat):
         if self.qform_code > 0, use the quaternion
         else use a diagonal matrix filled in by pixdim.
 
-        See help(neuroimaging.image.formats.nifti1) for explanation.
+        See help(neuroimaging.core.image.formats.nifti1) for explanation.
 
         """
 

@@ -5,10 +5,10 @@ import numpy as N
 
 from neuroimaging import flatten
 from neuroimaging.data import DataSource
-from neuroimaging.image.formats import getformats
+from neuroimaging.core.image.formats import getformats
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.reference.iterators import ParcelIterator, SliceParcelIterator
-from neuroimaging.image.formats import Format
+from neuroimaging.core.image.formats import Format
 
 
 class Image(traits.HasTraits):
@@ -25,7 +25,7 @@ class Image(traits.HasTraits):
             by default assumed to be 3d.
 
             >>> from numpy import *
-            >>> from neuroimaging.image import Image
+            >>> from neuroimaging.core.image import Image
             >>> z = Image.ArrayImage(zeros((10,20,20)))
             >>> print z.ndim
             3

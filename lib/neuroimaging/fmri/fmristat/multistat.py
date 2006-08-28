@@ -4,7 +4,7 @@ from scipy.sandbox.models.utils import recipr, rank
 
 from neuroimaging import traits
 
-from neuroimaging.image import Image
+from neuroimaging.core.image import Image
 
 
 class RFXMean(traits.HasTraits):

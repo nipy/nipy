@@ -1,7 +1,7 @@
 import sys, gc, os
 import numpy as N
 from neuroimaging.fmri import fMRIImage
-from neuroimaging.image import Image
+from neuroimaging.core.image import Image
 from neuroimaging.reference.mapping import Affine
 
 def make4d(subj=int(sys.argv[1]), run=int(sys.argv[2])):
