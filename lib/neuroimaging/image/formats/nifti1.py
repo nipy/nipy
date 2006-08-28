@@ -256,7 +256,7 @@ class NIFTI1(BinaryFormat):
         # Enforce naming rule
         if ext == '.nii':
             self.magic = 'n+1\x00'
-            self.vox_offset = 352
+            self.vox_offset = 352 # = 348 + 4 ( header size + offset ) FIXME
             self.offset = self.vox_offset
         else:
             self.magic = 'ni1\x00'
