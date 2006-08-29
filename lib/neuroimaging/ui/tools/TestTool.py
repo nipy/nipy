@@ -5,8 +5,8 @@ Simple utility for running unit tests.
 import sys
 from optparse import OptionParser, Option
 
-from neuroimaging.utils.testutils import test_all, test_package,  \
-    get_package_test, doctest_all, doctest_package
+from neuroimaging.utils.testutils import test_all, test_package, \
+  get_package_tests, doctest_all, doctest_package
 from neuroimaging import nontest_packages
 
 # description = __doc__
