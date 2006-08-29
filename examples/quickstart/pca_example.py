@@ -7,7 +7,7 @@ from neuroimaging.image import Image
 
 # Load an fMRI image
 
-fmridata = fMRIImage('http://kff.stanford.edu/nipy/testdata/test_fmri.img')
+fmridata = fMRIImage("test_fmri.hdr", datasource=repository)
 # Create a mask
 
 frame = fmridata.frame(0)
