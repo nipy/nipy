@@ -16,7 +16,7 @@ class PCATest(unittest.TestCase):
 
     def setUp(self):
 
-        self.fmridata = fMRIImage("test_fmri.img", datasource=repository)
+        self.fmridata = fMRIImage("test_fmri.hdr", datasource=repository)
 
 
         frame = self.fmridata.frame(0)

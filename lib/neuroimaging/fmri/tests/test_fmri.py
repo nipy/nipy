@@ -9,8 +9,8 @@ from neuroimaging.tests.data import repository
 class fMRITest(unittest.TestCase):
 
     def setUp(self):
-        self.rho = Image(repository.filename('rho.img'))
-        self.img = fMRIImage("test_fmri.img", datasource=repository)
+        self.rho = Image(repository.filename('rho.hdr'))
+        self.img = fMRIImage("test_fmri.hdr", datasource=repository)
 
     #def test_TR(self):
     #    tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
@@ -20,7 +20,7 @@ class fMRITest(unittest.TestCase):
 
     def test_write(self):
         self.img.tofile('tmpfmri.img')
-        test = fMRIImage('tmpfmri.img')
+        test = fMRIImage('tmpfmri.hdr')
         self.assertEquals(test.grid.shape, self.img.grid.shape)
         os.remove('tmpfmri.img')
         os.remove('tmpfmri.hdr')

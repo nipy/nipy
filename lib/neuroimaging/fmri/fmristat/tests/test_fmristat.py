@@ -42,7 +42,7 @@ class fMRIStatTest(unittest.TestCase):
     def setUp(self):
         frametimes = N.arange(120)*3.
         slicetimes = N.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
-        self.img = fMRIImage("test_fmri.img", datasource=repository, frametimes=frametimes,
+        self.img = fMRIImage("test_fmri.hdr", datasource=repository, frametimes=frametimes,
                                   slicetimes=slicetimes, usematfile=False)
 
         self.setup_formula()
@@ -88,7 +88,7 @@ class TestResid2(fMRIStatTest):
                                    slicetimes=self.img.slicetimes)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
-        rho.tofile('rho.img', clobber=True)
+        rho.tofile('rho.hdr', clobber=True)
 
         AR = fMRIStatAR(OLS, resid=True)
         AR.fit()
@@ -111,7 +111,7 @@ class TestHRFDeriv(fMRIStatTest):
                                    slicetimes=self.img.slicetimes)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
-        rho.tofile('rho.img', clobber=True)
+        rho.tofile('rho.hdr', clobber=True)
 
         AR = fMRIStatAR(OLS, contrasts=[pain])
         AR.fit()
@@ -128,7 +128,7 @@ class TestContrast(fMRIStatTest):
                                    clobber=True)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
-        rho.tofile('rho.img', clobber=True)
+        rho.tofile('rho.hdr', clobber=True)
         
         if PYLAB_DEF:
             from neuroimaging.visualization import viewer
@@ -140,7 +140,7 @@ class TestContrast(fMRIStatTest):
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
-        t = Image('fmristat_run/contrasts/pain/F.img')
+        t = Image('fmristat_run/contrasts/pain/F.hdr')
         if PYLAB_DEF:
             v=viewer.BoxViewer(t)
             v.draw()
