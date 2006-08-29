@@ -1,3 +1,7 @@
+"""
+odict.py - An object that provides an ordered dictionary.
+"""
+
 class odict(dict):
     """
     This dictionary class extends dict to record the order in which items

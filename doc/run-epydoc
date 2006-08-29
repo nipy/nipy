@@ -5,7 +5,8 @@ mkdir -p ${output_dir}
 epydoc -qqqq \
   --output ${output_dir} \
   --name nipy \
+  --url http://neuroimaging.scipy.org \
   --no-private \
-  --inheritance=listed \
-  --ignore-param-mismatch \
-  $PYTHON_PATH/*.py $PYTHON_PATH/neuroimaging
+  --inheritance listed \
+  --graph all \
+  $PYTHON_PATH/neuroimaging
