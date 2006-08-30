@@ -1,3 +1,3 @@
 """
-Doc string.
+Package for new, experimental code development.  
 """
