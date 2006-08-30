@@ -11,7 +11,6 @@ from struct import unpack
 import numpy as N
 from numpy.linalg import inv
 
-
 from neuroimaging import hasattrs
 from neuroimaging.core.reference.axis import VoxelAxis, space
 from neuroimaging.core.reference.coordinate_system import \
@@ -75,6 +74,7 @@ def matfromfile(infile, delimiter="\t"):
 def frombin(tstr):
     """
     This is broken -- anyone with mat file experience?
+
     >>> import urllib
     >>> from neuroimaging.core.reference.mapping import frombin
     >>> mat = urllib.urlopen('http://kff.stanford.edu/BrainSTAT/fiac3_fonc1_0089.mat')
@@ -93,7 +93,7 @@ def frombin(tstr):
     return T
 
 def matfromstr(tstr, ndim=3, delimiter=None):
-    "Read a (ndim+1)x(ndim+1) transform matrix from a string."
+    """Read a (ndim+1)x(ndim+1) transform matrix from a string."""
     if tstr[0:24] == "mat file created by perl":
         return frombin(tstr) 
     else:
@@ -103,7 +103,7 @@ def matfromstr(tstr, ndim=3, delimiter=None):
 
 
 def xfmfromstr(tstr, ndim=3):
-    "Read a (ndim+1)x(ndim+1) transform matrix from a string."
+    """Read a (ndim+1)x(ndim+1) transform matrix from a string."""
     tstr = tstr.split('\n')
     more = True
     data = []
@@ -144,6 +144,10 @@ def fromurl(turl, ndim=3):
 
 
 def isdiagonal(matrix, tol=1.0e-7):
+    """
+    Test if the given matrix is diagonal (to a given tolerance)
+    """
+
     ndim = matrix.shape[0]
     D = N.diag(N.diagonal(matrix))
     dmatrix = matrix - D
@@ -206,12 +210,19 @@ class Mapping (object):
         return Mapping(self.input_coords, other.output_coords, map, inverse=inverse)
 
     def ndim(self):
+        """ The number of input dimensions """
         return self.input_coords.ndim()
 
     def isinvertible(self):
+        """
+        Does this mapping have an inverse?
+        """
         return self._inverse is not None
 
     def inverse(self):
+        """
+        Create a new Mapping instance which is the inverse of self.
+        """
         if self.isinvertible():
             return Mapping(self.output_coords, self.input_coords,
                 self._inverse, self)
@@ -269,7 +280,13 @@ class Mapping (object):
 
 
 class Affine(Mapping):
-    "A class representing an affine transformation in n axes."
+    """
+    A class representing an affine transformation in n axes.
+    
+    This class adds a transform member, which is a matrix representing
+    the affine transformation. This matrix is used to perform mappings,
+    rather than having an explicit mapping function. 
+    """
 
     @staticmethod
     def frommatrix(matrix, names=space, input='voxel', output='world'):
@@ -349,10 +366,16 @@ class Affine(Mapping):
 
     
     def isdiagonal(self):
+        """
+        Is the transform matrix diagonal?
+        """
         return isdiagonal(self._fmatrix)
 
  
     def tofile(self, filename):
+        """
+        Write the transform matrix to a file.
+        """
         matfile = open(filename, 'w')
         writer = csv.writer(matfile, delimiter='\t')
         for row in self.transform: writer.writerow(row)
