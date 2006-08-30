@@ -39,6 +39,7 @@ class Axis(object):
                 % (self.name)
 
     def __eq__(self, other):
+        """ Equality is defined by name """
         return self.name == other.name
 
     def valid(self, x):
@@ -46,12 +47,15 @@ class Axis(object):
         raise NotImplementedError
 
     def max(self):
+        """ The maximum value of the axis. """
         raise NotImplementedError
 
     def min(self):
+        """ The minimum value of the axis. """
         raise NotImplementedError
 
     def range(self):
+        """ A (min, max) pair representing the range of the axis. """
         return (self.min(), self.max())
 
 
@@ -62,6 +66,7 @@ class ContinuousAxis(Axis):
         Axis.__init__(self, name)
 
     def __eq__(self, other):
+        """ Equality is defined by name and range. """
         return self.range() == other.range() and \
                Axis.__eq__(self, other)
 
@@ -75,29 +80,8 @@ class ContinuousAxis(Axis):
     def min(self):
         return self.low
 
-
-class DiscreteAxis(Axis):
-
-    def __init__(self, name):
-        Axis.__init__(self, name)
-
-    def valid(self, x):
-        raise NotImplementedError
-
-    def min(self):
-        raise NotImplementedError
-
-    def max(self):
-        raise NotImplementedError
-
-    def values(self):
-        """
-        Return all the values in the axis.
-        Return a generator for the infinite case
-        """
-        raise NotImplementedError
             
-class RegularAxis (DiscreteAxis):
+class RegularAxis (Axis):
     """
     This class represents a regularly spaced axis. Axes are used in the
     definition of Coordinate systems. The attributes step and start are usually
@@ -116,13 +100,14 @@ class RegularAxis (DiscreteAxis):
         self.length = length
         self.start = start
         self.step = step        
-        DiscreteAxis.__init__(self, name)
+        Axis.__init__(self, name)
 
     def __eq__(self, other):        
+        """ Equality is defined by (start, stop, length) and name. """
         return self.length == other.length and \
                self.start == other.start and \
                self.step == other.step and \
-               DiscreteAxis.__eq__(self, other)
+               Axis.__eq__(self, other)
 
     def valid(self, x):
         if x in (-N.inf, N.inf):
@@ -134,6 +119,10 @@ class RegularAxis (DiscreteAxis):
             return x in self.values()
 
     def values(self):
+        """
+        Return all the values in the axis.
+        Return a generator for the infinite case
+        """
         if self.length == N.inf:
             def f(x):
                 while True:

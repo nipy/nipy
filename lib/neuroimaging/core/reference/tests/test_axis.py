@@ -2,7 +2,7 @@ import unittest
 import types
 import numpy as N
 
-from neuroimaging.core.reference.axis import Axis, ContinuousAxis, DiscreteAxis, VoxelAxis, RegularAxis
+from neuroimaging.core.reference.axis import Axis, ContinuousAxis, VoxelAxis, RegularAxis
 
 class AxisTest(unittest.TestCase):
 
@@ -81,36 +81,6 @@ class ContinuousAxisTest(unittest.TestCase):
         self.assertEqual(self.finite.range(), (0, 10))
         self.assertEqual(self.infinite.range(), (-N.inf, N.inf))
 
-
-class DiscreteAxisTest(unittest.TestCase):
-
-    def setUp(self):
-        self.axis = DiscreteAxis(name='xspace')
-
-    def test_init(self):
-        # an invalid name shou;d raise an error
-        self.assertRaises(ValueError, DiscreteAxis, name='bad_value')
-
-    def test_eq(self):
-        ax1 = DiscreteAxis(name='xspace')
-        ax2 = DiscreteAxis(name='yspace')
-        self.assertTrue(self.axis == ax1)
-        self.assertFalse(self.axis == ax2)
-
-    def test_valid(self):
-        self.assertRaises(NotImplementedError, self.axis.valid, 0)
-
-    def test_max(self):
-        self.assertRaises(NotImplementedError, self.axis.max)
-
-    def test_min(self):
-        self.assertRaises(NotImplementedError, self.axis.min)
-
-    def test_range(self):
-        self.assertRaises(NotImplementedError, self.axis.range)
-
-    def test_values(self):
-        self.assertRaises(NotImplementedError, self.axis.values)
 
 class RegularAxisTest(unittest.TestCase):
 
