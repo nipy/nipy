@@ -18,20 +18,20 @@ def pylab_def():
         pass
     return PYLAB_DEF, pylab
 
-def qt_def():
-    """
-    Check to see if qt is importable.
-    """
-    global QT_DEF
-    global qt
-    try:
-        import qt
-        QT_DEF = True
-    except:
-        QT_DEF = False
-        qt = None
-        pass
-    return QT_DEF, qt
+#def qt_def():
+#    """
+#    Check to see if qt is importable.
+#    """
+#    global QT_DEF
+#    global qt
+#    try:
+#        import qt
+#        QT_DEF = True
+#    except:
+#        QT_DEF = False
+#        qt = None
+#        pass
+#    return QT_DEF, qt
 
 def enthought_traits_def():
     """

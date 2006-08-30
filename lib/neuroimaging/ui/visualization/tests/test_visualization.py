@@ -4,9 +4,9 @@ from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.image import Image
 from neuroimaging.algorithms.interpolation import ImageInterpolator
 
-from neuroimaging.defines import pylab_def, qt_def
+from neuroimaging.defines import pylab_def #, qt_def
 PYLAB_DEF, pylab = pylab_def()
-QT_DEF, qt = qt_def()
+#QT_DEF, qt = qt_def()
 
 if PYLAB_DEF:
     from neuroimaging.ui.visualization import viewer, slices
