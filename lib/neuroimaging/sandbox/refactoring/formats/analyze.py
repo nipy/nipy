@@ -1,9 +1,11 @@
 import os
-from numpy import uint8, int16, int32, float32, float64, complex64
+from numpy import uint8, int16, int32, float32, float64, complex64, array, dtype
+from numpy.core.memmap import memmap as memmap_type
 
 from neuroimaging.utils.odict import odict
 #import neuroimaging.data_io.formats.binary
-from neuroimaging.sandbox.refactoring.formats.binary import BinaryFormat
+from neuroimaging.data_io import DataSource
+import neuroimaging.sandbox.refactoring.formats.binary as bin
 from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
@@ -21,8 +23,8 @@ FLOAT = 16
 COMPLEX = 32
 DOUBLE = 64 
 
-# map Analyze datatype to Numeric typecode
-datatype2typecode = {
+# map Analyze datatype to numpy scalar type
+datatype2sctype = {
   BYTE: uint8,
   SHORT: int16,
   INTEGER: int32,
@@ -30,9 +32,9 @@ datatype2typecode = {
   DOUBLE: float64,
   COMPLEX: complex64}
 
-# map Numeric typecode to Analyze datatype
-typecode2datatype = \
-  dict([(v,k) for k,v in datatype2typecode.items()])
+# map numpy scalar type to Analyze datatype
+sctype2datatype = \
+  dict([(v,k) for k,v in datatype2sctype.items()])
 
 HEADER_SIZE = 348
 
@@ -83,10 +85,10 @@ struct_formats = odict((
     ('smax','i'),
     ('smin','i')))
 
-field_formats = struct_fields.values()
+field_formats = struct_formats.values()
 
 ##############################################################################
-class Analyze(BinaryFormat):
+class Analyze(bin.BinaryFormat):
     """
     A class to read and write ANALYZE format images. 
 
@@ -98,8 +100,6 @@ class Analyze(BinaryFormat):
       'hkey_un0': ' ',
       'vox_units': 'mm',
       'scale_factor':1.}
-
-    _format_defaults = {'i': 0, 'h': 0, 'f': 0., 'c': '\0', 's': ''}
     
     extensions = ('.img', '.hdr', '.mat')
     usematfile = True
@@ -115,7 +115,7 @@ class Analyze(BinaryFormat):
         clobber = allowed to clobber?
         usemat = use mat file?
         """
-        BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
+        bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.clobber = keywords.get('clobber', False)
         self.intent = keywords.get('intent', '')
         self.usematfile = keywords.get('usemat', True)
@@ -125,21 +125,21 @@ class Analyze(BinaryFormat):
         self.mat_file = self.filebase+".mat"
         self.header_formats = struct_formats
         
-        # try to populate the header
+        # fill the header dictionary in order, with any default values
         self.header_defaults()
         if self.mode[0] is "w":
             # should try to populate the canonical fields and
             # corresponding header fields with info from grid?
             self.sctype = keywords.get('sctype', float64)
-            self.byteorder = NATIVE
+            self.byteorder = bin.NATIVE
             if self.grid is not None:
-                self.header_from_grid()
+                self.header_from_given()
             else:
                 raise NotImplementedError("Don't know how to create header info yet")
-        
+            self.write_header()
         else:
             self.read_header()
-            self.sctype = datatype2typecode[header['datatype']]
+            self.sctype = datatype2sctype[self.header['datatype']]
             self.ndim = self.header['dim'][0]
             self.byteorder = self.guess_byteorder(self.header_file)
 
@@ -179,7 +179,7 @@ class Analyze(BinaryFormat):
         
         self.grid = SamplingGrid.from_start_step(names=axisnames,
                                                  shape=shape,
-                                                 start=-N.array(origin)*step,
+                                                 start=-array(origin)*step,
                                                  step=step)
 
         if self.usematfile: self.grid.transform(self.read_mat())
@@ -194,16 +194,18 @@ class Analyze(BinaryFormat):
     @staticmethod
     def _default_field_value(fieldname, fieldformat):
         "[STATIC] Get the default value for the given field."
-        return AnalyzeWriter._field_defaults.get(fieldname, None) or \
-               AnalyzeWriter._format_defaults[fieldformat[-1]]
+        return Analyze._field_defaults.get(fieldname, None) or \
+               bin.format_defaults[fieldformat[-1]]
     
     #-------------------------------------------------------------------------
     def header_defaults(self):
         for field,format in self.header_formats.items():
-            self.header[field] = _default_field_value(field,format)
+            self.header[field] = self._default_field_value(field,format)
 
     #-------------------------------------------------------------------------
-    def _dimfromgrid(self):
+    def header_from_given(self):
+        self.header['datatype'] = sctype2datatype[self.sctype]
+        self.header['bitpix'] = dtype(self.sctype).itemsize 
         self.grid = self.grid.python2matlab()
         self.ndim = len(self.grid.shape)
         
@@ -229,7 +231,7 @@ class Analyze(BinaryFormat):
         self.header['dim'] = _dim
         self.header['pixdim'] = _pixdim
         if _diag:
-            origin = self.grid.mapping.map.inverse()([0]*self.ndim)
+            origin = self.grid.mapping.inverse()([0]*self.ndim)
             self.header['origin'] = list(origin) + [0]*(5-origin.shape[0])
         if not _diag:
             self.header['origin'] = [0]*5
@@ -255,18 +257,21 @@ class Analyze(BinaryFormat):
 
     #-------------------------------------------------------------------------
     def __setitem__(self, slicer, data):
+        if self.memmap._mode != 'r+':
+            print "Warning: memapped array is not writeable!"
+            return
         self.memmap[slicer] = self.prewrite(data)
 
     #-------------------------------------------------------------------------
-    def attach_data(self):
-        mode = self.mode in ('r+','w') and 'r+' or self.mode
-        self.memmap = memmap(self.datasource.filename(self.data_file),
-                             dtype=self.dtype, shape=tuple(self.grid.shape),
-                             mode=mode)
+    def __del__(self):
+        if hasattr(self, 'memmap'):
+            if isinstance(self.memmap, memmap_type):
+                self.memmap.sync()
+            del(self.memmap)
 
     #-------------------------------------------------------------------------
     def inform_canonical(self, fieldsDict=None):
-        if fieldsDict not None:
+        if fieldsDict is not None:
             self.canonical_fields = odict(fieldsDict)
         else:
             self.canonical_fields['datasize'] = self.header['bitpix']
@@ -274,7 +279,7 @@ class Analyze(BinaryFormat):
              self.canonical_fields['xdim'],
              self.canonical_fields['ydim'],
              self.canonical_fields['zdim'],
-             self.canonical_fields['tdim']) = self.header['dim']
+             self.canonical_fields['tdim']) = self.header['dim'][:5]
             self.canonical_fields['scaling'] = self.header['scale_factor']
         
             
@@ -287,12 +292,11 @@ class Analyze(BinaryFormat):
         """
         if self.datasource.exists(self.mat_file):
             return Affine.fromfile(self.datasource.open(self.mat_file),
-                     input='world', output='world', delimiter='\t')
+                                   delimiter='\t')
         else:
             if self.ndim == 4: names = spacetime[::-1]
             else: names = space[::-1]
-            return Affine.identity(
-              self.ndim, input='world', output='world', names=names)
+            return Affine.identity(self.ndim)
 
     #-------------------------------------------------------------------------
     def write_mat(self, matfile=None):
@@ -310,8 +314,12 @@ class Analyze(BinaryFormat):
         read it in the wrong byte order.
         """
         if type(hdrfile)==type(""): hdrfile=file(hdrfile)
-        byteorder = LITTLE_ENDIAN
-        reported_length = struct_unpack(hdrfile,
+        byteorder = bin.LITTLE_ENDIAN
+        reported_length = bin.struct_unpack(hdrfile,
           byteorder, field_formats[0:1])[0]
-        if reported_length != HEADER_SIZE: byteorder = BIG_ENDIAN
+        if reported_length != HEADER_SIZE: byteorder = bin.BIG_ENDIAN
         return byteorder
+
+
+if __name__=='__main__':
+    newAn = Analyze(writename,mode='w',grid=aGrid)

@@ -4,7 +4,7 @@ import numpy
 from neuroimaging.data_io import DataSource
 from neuroimaging.utils.path import path
 from neuroimaging.utils.odict import odict
-from neuroimaging.reference.grid import SamplingGrid
+from neuroimaging.core.reference.grid import SamplingGrid
 
 ##############################################################################
 class Format (object):
@@ -15,7 +15,7 @@ class Format (object):
     mode = ''
     bmode = ''
 
-    dtype = numpy.float64
+    sctype = numpy.float64
 
     # Has metadata
     header = odict()
