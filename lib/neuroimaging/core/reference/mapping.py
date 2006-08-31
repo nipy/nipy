@@ -11,11 +11,6 @@ from struct import unpack
 import numpy as N
 from numpy.linalg import inv
 
-from neuroimaging import hasattrs
-from neuroimaging.core.reference.axis import VoxelAxis, space
-from neuroimaging.core.reference.coordinate_system import \
-  VoxelCoordinateSystem, DiagonalCoordinateSystem
-
 def _2matvec(transform):
     """ Split a tranform into it's matrix and vector components. """
     ndim = transform.shape[0] - 1
