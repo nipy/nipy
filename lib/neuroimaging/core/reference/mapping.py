@@ -127,29 +127,29 @@ class Mapping (object):
     def __init__(self, input_coords, output_coords, map, inverse=None, name="mapping"):
         self.input_coords = input_coords
         self.output_coords = output_coords
-        self.map = map
+        self._map = map
         self._inverse = inverse
         self.name = name
 
 
     def __call__(self, x):
-        return self.map(x)
+        return self._map(x)
 
 
     def __str__(self):
         return '%s:input=%s\n'%(self.name, self.input_coords) +\
         '%s:output=%s\n'%(self.name, self.output_coords) +\
-        '%s:map=%s\n'%(self.name, self.map) +\
+        '%s:map=%s\n'%(self.name, self._map) +\
         '%s:inverse=%s\n'%(self.name, self._inverse)
 
 
     def __ne__(self, other): return not self.__eq__(other)
     def __eq__(self, other):
-        if not hasattrs(other, "input_coords", "output_coords", "map"):
-            return False
-        return (self.input_coords, self.output_coords, self.map) == \
-               (other.input_coords, other.output_coords, other.map)
-
+        """
+        We can't say whether two map functions are the same so we just
+        raise an exception if people try to compare mappings.
+        """
+        raise NotImplementedError
 
     def __mul__(self, other):
         "If this method is not over-written we get complaints about sequences."
@@ -166,6 +166,9 @@ class Mapping (object):
             inverse = None
         return Mapping(self.input_coords, other.output_coords, map, inverse=inverse)
 
+    def ndim(self):
+        return self.input_coords.ndim()
+
     def isinvertible(self):
         return self._inverse is not None
 
@@ -176,10 +179,6 @@ class Mapping (object):
         else: 
             raise AttributeError("non-invertible mapping")
 
-
-    def ndim(self):
-        return self.input_coords.ndim()
-
     def tovoxel(self, real):
         """
         Given a real coordinate, where self.input_coords are assumed to be
@@ -187,7 +186,8 @@ class Mapping (object):
         not invertible.
         """
         shape = real.shape
-        real.shape = (shape[0], N.product(shape[1:]))
+        if len(shape) > 1:
+            real.shape = (shape[0], N.product(shape[1:]))
         voxel = N.around(self.inverse()(real))
         voxel.shape = shape
         return N.array(voxel)
@@ -264,10 +264,14 @@ class Affine(Mapping):
 
 
     def __init__(self, input_coords, output_coords, transform, name="affine"):
+        Mapping.__init__(self, input_coords, output_coords, None, name=name)
         self.transform = transform
         self._fmatrix, self._fvector = _2matvec(transform)
-        Mapping.__init__(self, input_coords, output_coords, self.map, name=name)
 
+    def __call__(self, coords):
+        value = N.dot(self._fmatrix, coords) 
+        value = value + N.multiply.outer(self._fvector, N.ones(value.shape[1:]))
+        return value
 
     def __eq__(self, other):
         if not hasattr(other, "transform"): return False
@@ -276,15 +280,11 @@ class Affine(Mapping):
 
     def __rmul__(self, other):
         if isinstance(other, Affine):
-            try: return Affine(
+            return Affine(
               self.input_coords, other.output_coords,
                 N.dot(other.transform, self.transform))
-            except:
-                fmatrix = N.dot(other._fmatrix, self._fmatrix)
-                fvector = N.dot(other._fmatrix, self._fvector) + other._fvector
-                return DegenerateAffine(
-                  self.input_coords, other.output_coords, fmatrix, fvector)
-        else: return Mapping.__rmul__(self, other)
+        else: 
+            return Mapping.__rmul__(self, other)
 
 
     def __str__(self):
@@ -294,51 +294,28 @@ class Affine(Mapping):
            `self._fvector`)
  
 
-    def map(self, coords):
-        value = N.dot(self._fmatrix, coords) 
-        value = value + N.multiply.outer(self._fvector, N.ones(value.shape[1:]))
-        return value
-    
+    def isinvertible(self):
+        try:
+            inv(self.transform)
+            return True
+        except:
+            return False
 
     def inverse(self):
         return Affine(self.output_coords, self.input_coords,
                       inv(self.transform))
-    
-    def isinvertible(self):
-        return True # is this true?
 
+    
     def isdiagonal(self):
         return isdiagonal(self._fmatrix)
- 
 
+ 
     def tofile(self, filename):
         matfile = open(filename, 'w')
         writer = csv.writer(matfile, delimiter='\t')
         for row in self.transform: writer.writerow(row)
         matfile.close()
   
-
-
-class DegenerateAffine(Affine):
-    """
-    A subclass of affine with no inverse, i.e. where the map is non-invertible.
-    """
-
-    def __init__(self, input_coords, output_coords, fmatrix, fvector,
-                 name='transform'):
-
-        def map(coords):
-            value = N.dot(fmatrix, coords) 
-            value = value + N.multiply.outer(fvector, N.ones(value.shape[1:]))
-            return value
-
-        try:
-            inv(fmatrix) # if not invertable we want to raise here
-            t = _2transform(fmatrix, fvector)
-            Affine.__init__(self, input_coords, output_coords, t, name=name)
-        except:
-            Mapping.__init__(self, input_coords, output_coords, map, name=name)
-
 
 def permutation_matrix(order=range(3)[2::-1]):
     """
