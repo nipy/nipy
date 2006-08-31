@@ -4,7 +4,156 @@ import numpy as N
 
 import urllib
 
-from neuroimaging.core.reference import mapping
+from neuroimaging.core.reference import mapping, mni
+
+class MappingTest2(unittest.TestCase):
+    def setUp(self):
+        def f(x):
+            return 2*x
+        def g(x):
+            return x/2.0
+        input_coords = mni.MNI_voxel
+        output_coords = mni.MNI_world        
+        self.a = mapping.Mapping(input_coords, output_coords, f)
+        self.b = mapping.Mapping(input_coords, output_coords, f, g)
+        self.c = mapping.Mapping(input_coords, output_coords, g)        
+        self.d = mapping.Mapping(input_coords, output_coords, g, f)        
+
+    def test_call(self):
+        value = N.array([1., 2., 3.])
+        result_a = self.a(value)
+        result_b = self.b(value)
+        result_c = self.c(value)
+        result_d = self.c(value)        
+        N.testing.assert_almost_equal(result_a, 2*value)
+        N.testing.assert_almost_equal(result_b, 2*value)
+        N.testing.assert_almost_equal(result_c, value/2)
+        N.testing.assert_almost_equal(result_d, value/2)        
+        
+    def test_str(self):
+        s_a = str(self.a)
+        s_b = str(self.b)
+        s_c = str(self.c)
+        s_d = str(self.d)                
+        
+    def test_eq(self):
+        eq = lambda a, b: a == b
+        neq = lambda a, b: a != b
+        self.assertRaises(NotImplementedError, eq, self.a, self.b)
+        self.assertRaises(NotImplementedError, neq, self.a, self.b)
+
+    def test_mul(self):
+        value = N.array([1., 2., 3.])
+
+        aa = self.a*self.a
+        self.assertFalse(aa.isinvertible())
+        N.testing.assert_almost_equal(aa(value), 4*value)
+
+        ab = self.a*self.b
+        self.assertFalse(ab.isinvertible())
+        N.testing.assert_almost_equal(ab(value), 4*value)
+
+        ac = self.a*self.c
+        self.assertFalse(ac.isinvertible())
+        N.testing.assert_almost_equal(ac(value), value)
+
+        ad = self.a*self.d
+        self.assertFalse(ad.isinvertible())
+        N.testing.assert_almost_equal(ad(value), value)
+
+        ba = self.b*self.a
+        self.assertFalse(ba.isinvertible())
+        N.testing.assert_almost_equal(ba(value), 4*value)
+
+        bb = self.b*self.b
+        self.assertTrue(bb.isinvertible())
+        N.testing.assert_almost_equal(bb(value), 4*value)
+
+        bc = self.b*self.c
+        self.assertFalse(bc.isinvertible())
+        N.testing.assert_almost_equal(bc(value), value)
+
+        bd = self.b*self.d
+        self.assertTrue(bd.isinvertible())
+        N.testing.assert_almost_equal(bd(value), value)
+
+        ca = self.c*self.a
+        self.assertFalse(ca.isinvertible())
+        N.testing.assert_almost_equal(ca(value), value)
+
+        cb = self.c*self.b
+        self.assertFalse(cb.isinvertible())
+        N.testing.assert_almost_equal(cb(value), value)
+
+        cc = self.c*self.c
+        self.assertFalse(cc.isinvertible())
+        N.testing.assert_almost_equal(cc(value), value/4)
+
+        cd = self.c*self.d
+        self.assertFalse(cd.isinvertible())
+        N.testing.assert_almost_equal(cd(value), value/4)
+
+        da = self.d*self.a
+        self.assertFalse(da.isinvertible())
+        N.testing.assert_almost_equal(da(value), value)
+
+        db = self.d*self.b
+        self.assertTrue(db.isinvertible())
+        N.testing.assert_almost_equal(db(value), value)
+
+        dc = self.d*self.c
+        self.assertFalse(dc.isinvertible())
+        N.testing.assert_almost_equal(dc(value), value/4)
+
+        dd = self.d*self.d
+        self.assertTrue(dd.isinvertible())
+        N.testing.assert_almost_equal(dd(value), value/4)
+
+    def test_ndim(self):
+        self.assertEqual(self.a.ndim(), 3)
+        self.assertEqual(self.b.ndim(), 3)
+        self.assertEqual(self.c.ndim(), 3)
+        self.assertEqual(self.d.ndim(), 3)                        
+        
+    def test_isinvertible(self):
+        self.assertFalse(self.a.isinvertible())
+        self.assertTrue(self.b.isinvertible())
+        self.assertFalse(self.c.isinvertible())
+        self.assertTrue(self.d.isinvertible())
+        
+    def test_inverse(self):
+        inv = lambda a: a.inverse()
+        self.assertRaises(AttributeError, inv, self.a)
+        self.assertRaises(AttributeError, inv, self.c)
+        inv_b = self.b.inverse()
+        inv_d = self.d.inverse()
+        ident_b = inv_b*self.b
+        ident_d = inv_d*self.d
+        value = N.array([1., 2., 3.])
+        N.testing.assert_almost_equal(ident_b(value), value)
+        N.testing.assert_almost_equal(ident_d(value), value)
+        
+      
+        
+    def test_tovoxel(self):
+        value = N.array([2., 4, 6.])
+        tovox = lambda a: a.tovoxel(value)
+        self.assertRaises(AttributeError, tovox, self.a)
+        self.assertRaises(AttributeError, tovox, self.c)        
+        
+        vox_b = self.b.tovoxel(value)
+        N.testing.assert_almost_equal(vox_b, [1., 2., 3.])
+        vox_d = self.d.tovoxel(value)
+        N.testing.assert_almost_equal(vox_d, [4., 8., 12.])        
+
+
+class AffineTest(unittest.TestCase):
+    def setUp(self):    
+        a = mapping.Affine.identity()
+        A = N.identity(4, N.float64)
+        A[0:3] = R.standard_normal((3,4))
+        self.mapping = mapping.Affine(a.input_coords, a.output_coords, A)
+
 
 class MappingTest(unittest.TestCase):
 
