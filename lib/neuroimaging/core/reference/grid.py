@@ -88,7 +88,7 @@ class SamplingGrid (object):
           "slice/parcel": self._itersliceparcels
         }.get(self._itertype)
         if itermethod is None:
-            raise ValueError("unknown itertype %s"%`self.itertype`)
+            raise ValueError("unknown itertype %s"%`self._itertype`)
         return itermethod()
 
     def set_iter(self, itertype="slice", parcelmap=None, parcelseq=None, axis=None):
@@ -153,7 +153,7 @@ class SamplingGrid (object):
         g.start = start
         g.step = step
         g.axis = axis
-        g.itertype = 'slice'
+        g._itertype = 'slice'
         return iter(g)
 
 
@@ -236,10 +236,12 @@ class ConcatenatedGrids(SamplingGrid):
     def __init__(self, grids, concataxis="concat"):
         self.grids = self._grids(grids)
         self.concataxis = concataxis
-        self.mapping = self._mapping()
-        self.shape = (len(self.grids),) + self.grids[0].shape
+        mapping = self._mapping()
+        shape = (len(self.grids),) + self.grids[0].shape
+        SamplingGrid.__init__(self, shape, mapping)
 
-    def subgrid(self, i): return self.grids[i]
+    def subgrid(self, i): 
+        return self.grids[i]
 
 class ConcatenatedIdenticalGrids(ConcatenatedGrids):
 
@@ -265,19 +267,3 @@ class ConcatenatedIdenticalGrids(ConcatenatedGrids):
         T[(ndim+1),(ndim+1)] = 1.
         return Affine(newin, newout, T)
 
-class SliceGrid(SamplingGrid):
-    """
-    Return an affine slice of a given grid with specified
-    origin, steps and shape.
-    """
-
-    def __init__(self, grid, origin, directions, shape):
-        self.fmatrix = N.zeros((self.nout, self.ndim), N.float64)
-        _axes = []
-        for i in range(directions.shape[0]):
-            self.fmatrix[i] = directions[i]
-            _axes.append(VoxelAxis(len=shape[i], name=space[i]))
-        in_coords = CoordinateSystem('voxel', _axes)
-        self.fvector = origin
-        mapping = DegenerateAffine(in_coords, output_coords, self.fmatrix, self.fvector)
-        SamplingGrid.__init__(self, shape=shape, mapping=mapping)
