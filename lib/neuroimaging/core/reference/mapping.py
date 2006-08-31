@@ -17,6 +17,15 @@ def _2matvec(transform):
     vector = transform[0:ndim,ndim]
     return matrix, vector
 
+def _2transform(matrix, vector):
+    """ Combine a matrix and vector into a transform """
+    nin = matrix.shape[1]
+    t = N.zeros((nin+1,)*2)
+    t[0:nin, 0:nin] = matrix
+    t[nin,   nin] = 1.
+    t[0:nin, nin] = vector
+    return t
+    
 
 def matfromfile(infile, delimiter="\t"):
     """ Read in an affine transformation matrix from a csv file."""
@@ -216,10 +225,9 @@ class Mapping (object):
     def python2matlab(self):
         "Inverse of matlab2python -- see this function for help."
         ndim = self.ndim()
-        t1 = N.zeros((ndim+1,)*2, N.float64)
-        t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
-        t1[ndim, ndim] = 1.0
-        t2 = 1. * t1
+
+        t1 = permutation_transform(range(ndim)[::-1])
+        t2 = t1.copy()
         t1[0:ndim,ndim] = -1.0
         w1 = Affine(self.input_coords.reverse(), self.input_coords, t1)
         w2 = Affine(self.output_coords, self.output_coords.reverse(), t2)
@@ -261,11 +269,10 @@ class Affine(Mapping):
           N.identity(ndim+1), names=names, input=input, output=output)
 
 
-    def __init__(self, input_coords, output_coords, transform):
+    def __init__(self, input_coords, output_coords, transform, name="affine"):
         self.transform = transform
-        self.fmatrix, self.fvector = _2matvec(transform)
-        inverse = lambda c: self.map(c, inverse=True)
-        Mapping.__init__(self, input_coords, output_coords, self.map)
+        self._fmatrix, self._fvector = _2matvec(transform)
+        Mapping.__init__(self, input_coords, output_coords, self.map, name=name)
 
 
     def __eq__(self, other):
@@ -279,8 +286,8 @@ class Affine(Mapping):
               self.input_coords, other.output_coords,
                 N.dot(other.transform, self.transform))
             except:
-                fmatrix = N.dot(other.fmatrix, self.fmatrix)
-                fvector = N.dot(other.fmatrix, self.fvector) + other.fvector
+                fmatrix = N.dot(other._fmatrix, self._fmatrix)
+                fvector = N.dot(other._fmatrix, self._fvector) + other._fvector
                 return DegenerateAffine(
                   self.input_coords, other.output_coords, fmatrix, fvector)
         else: return Mapping.__rmul__(self, other)
@@ -289,13 +296,13 @@ class Affine(Mapping):
     def __str__(self):
         return "%s:input=%s\n%s:output=%s\n%s:fmatrix=%s\n%s:fvector=%s" %\
           (self.name, self.input_coords.name, self.name,
-           self.output_coords.name, self.name, `self.fmatrix`, self.name,
-           `self.fvector`)
+           self.output_coords.name, self.name, `self._fmatrix`, self.name,
+           `self._fvector`)
  
 
     def map(self, coords):
-        value = N.dot(self.fmatrix, coords) 
-        value = value + N.multiply.outer(self.fvector, N.ones(value.shape[1:]))
+        value = N.dot(self._fmatrix, coords) 
+        value = value + N.multiply.outer(self._fvector, N.ones(value.shape[1:]))
         return value
     
 
@@ -307,7 +314,7 @@ class Affine(Mapping):
         return True # is this true?
 
     def isdiagonal(self):
-        return isdiagonal(self.fmatrix)
+        return isdiagonal(self._fmatrix)
  
 
     def tofile(self, filename):
@@ -322,32 +329,21 @@ class DegenerateAffine(Affine):
     """
     A subclass of affine with no inverse, i.e. where the map is non-invertible.
     """
-    #class nout (readonly): init=lambda _,s: s.fmatrix.shape[1]
-    #class nin (readonly): init=lambda _,s: s.fmatrix.shape[0]
-
 
     def __init__(self, input_coords, output_coords, fmatrix, fvector,
                  name='transform'):
-        self.name = name
-        self.fmatrix = fmatrix
-        self.fvector = fvector
-        self.nin = fmatrix.shape[1]
-        self.nout = fmatrix.shape[0]
 
         def map(coords):
-            value = N.dot(self.fmatrix, coords) 
-            value = value + N.multiply.outer(self.fvector, N.ones(value.shape[1:]))
+            value = N.dot(fmatrix, coords) 
+            value = value + N.multiply.outer(fvector, N.ones(value.shape[1:]))
             return value
 
         try:
-            t = N.zeros((self.nin+1,)*2, N.float64)
-            t[0:self.nin,0:self.nin] = self.fmatrix
-            t[self.nin,self.nin] = 1.
-            t[0:self.nin,self.nin] = self.fvector
-            inv(t) # if not invertable we want to raise here
+            inv(fmatrix) # if not invertable we want to raise here
+            t = _2transform(fmatrix, fvector)
             Affine.__init__(self, input_coords, output_coords, t, name=name)
         except:
-            Mapping.__init__(self, input_coords, output_coords, map)
+            Mapping.__init__(self, input_coords, output_coords, map, name=name)
 
 
 def permutation_matrix(order=range(3)[2::-1]):
@@ -368,18 +364,13 @@ def permutation_transform(order=range(3)[2::-1]):
     Create an (N+1)x(N+1) permutation transformation matrix from a sequence,
     containing the values 0,...,N-1.
     """
-    ndim = len(order)
-    ptransform = N.zeros((ndim+1,ndim+1))
-    ptransform[0:ndim,0:ndim] = permutation_matrix(order=order)
-    ptransform[ndim,ndim] = 1.
-    return ptransform
+    matrix = permutation_matrix(order=order)
+    vector = N.zeros(len(order))
+    return _2transform(matrix, vector)
 
 
 def translation_transform(x, ndim):
     """
     Create an affine transformation matrix representing translation by x.
     """
-    _transform = N.identity(ndim+1)
-    _transform[0:ndim,ndim] = _transform[0:ndim,ndim] + x 
-    return _transform
-
+    return _2transform(N.identity(ndim), x)
