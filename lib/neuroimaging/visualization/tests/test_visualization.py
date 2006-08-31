@@ -15,7 +15,7 @@ if PYLAB_DEF:
 class VisualizationTest(unittest.TestCase):
     if PYLAB_DEF:
         def setUp(self):
-            self.img = Image(repository.filename("rho.img"))
+            self.img = Image(repository.filename("rho.hdr"))
 
         def test_view(self):
             view = viewer.BoxViewer(self.img, z_pix=80.)

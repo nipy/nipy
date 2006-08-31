@@ -15,7 +15,7 @@ if PYLAB_DEF:
 class MontageTest(unittest.TestCase):
     if PYLAB_DEF:
         def setUp(self):
-            self.img = Image(repository.filename("rho.img"))
+            self.img = Image(repository.filename("rho.hdr"))
             self.interpolator = ImageInterpolator(self.img)
             r = self.img.grid.range()
             self.z = N.unique(r[0].flat); self.z.sort()
