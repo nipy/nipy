@@ -299,15 +299,6 @@ class Affine(Mapping):
     """
 
     @staticmethod
-    def frommatrix(matrix):
-        """
-        Return an Affine instance with named axes and input and output
-        coordinate systems.
-        """
-        return Affine(matrix)
-
-
-    @staticmethod
     def fromfile(infile, delimiter='\t'):
         """
         Read in an affine transformation matrix and return an instance of Affine
@@ -315,13 +306,13 @@ class Affine(Mapping):
         format is assumed to be a tab-delimited file.  Other formats should be added.
         """
         t = matfromfile(infile, delimiter=delimiter)
-        return Affine.frommatrix(t)
+        return Affine(t)
 
 
     @staticmethod
     def identity(ndim=3):
         "Return an identity affine transformation."
-        return Affine.frommatrix(N.identity(ndim+1))
+        return Affine(N.identity(ndim+1))
 
 
     def __init__(self, transform, name="affine"):
