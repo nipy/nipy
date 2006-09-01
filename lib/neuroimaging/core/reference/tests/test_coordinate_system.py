@@ -1,9 +1,9 @@
 import unittest
 import numpy as N
 
-from neuroimaging.reference.coordinate_system import CoordinateSystem, \
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
      VoxelCoordinateSystem, DiagonalCoordinateSystem
-from neuroimaging.reference.mni import generic
+from neuroimaging.core.reference.mni import generic
 
 class CoordinateSystemTest(unittest.TestCase):
 

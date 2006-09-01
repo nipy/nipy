@@ -308,7 +308,7 @@ class BinaryFormat(Format):
 
 ##     import numpy.random as R
 ##     import numpy as N
-##     from neuroimaging.reference.grid import SamplingGrid
+##     from neuroimaging.core.reference.grid import SamplingGrid
 
 ##     ofile = file('example.dat', 'wb')
 ##     shape = (40,5,6)

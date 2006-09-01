@@ -1,6 +1,6 @@
 import unittest
 
-import neuroimaging.reference.mni as mni
+import neuroimaging.core.reference.mni as mni
 
 class MNITest(unittest.TestCase):
 

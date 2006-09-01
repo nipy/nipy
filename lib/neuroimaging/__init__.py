@@ -42,6 +42,8 @@ packages = (
   'neuroimaging.algorithms.statistics.tests',
   'neuroimaging.core.image',
   'neuroimaging.core.image.tests',
+  'neuroimaging.core.reference',
+  'neuroimaging.core.reference.tests',
   'neuroimaging.data_io',
   'neuroimaging.data_io.tests',
   'neuroimaging.data_io.formats',
@@ -50,8 +52,6 @@ packages = (
   'neuroimaging.fmri.tests',
   'neuroimaging.fmri.fmristat',
   'neuroimaging.fmri.fmristat.tests',
-  'neuroimaging.reference',
-  'neuroimaging.reference.tests',
   'neuroimaging.utils.tests')
 
 PYLAB_DEF, pylab = defines.pylab_def()
@@ -75,19 +75,19 @@ nontest_packages = [p for p in packages if not testmatch(p)]
 
 # modules to be pre-imported for convenience
 _preload_modules = (
-  'neuroimaging.data_io.formats.analyze',
-  'neuroimaging.data_io.formats.nifti1',
+  'neuroimaging.algorithms.statistics.regression',
+  'neuroimaging.algorithms.statistics.classification',
   'neuroimaging.core.image.interpolation',
   'neuroimaging.core.image.onesample',
   'neuroimaging.core.image.regression',
-  'neuroimaging.reference.axis',
-  'neuroimaging.reference.coordinate_system',
-  'neuroimaging.reference.grid',
-  'neuroimaging.reference.iterators',
-  'neuroimaging.reference.mapping',
-  'neuroimaging.reference.slices',
-  'neuroimaging.algorithms.statistics.regression',
-  'neuroimaging.algorithms.statistics.classification',
+  'neuroimaging.core.reference.axis',
+  'neuroimaging.core.reference.coordinate_system',
+  'neuroimaging.core.reference.grid',
+  'neuroimaging.core.reference.iterators',
+  'neuroimaging.core.reference.mapping',
+  'neuroimaging.core.reference.slices',
+  'neuroimaging.data_io.formats.analyze',
+  'neuroimaging.data_io.formats.nifti1',
   'neuroimaging.visualization.viewer',)
 
 #-----------------------------------------------------------------------------

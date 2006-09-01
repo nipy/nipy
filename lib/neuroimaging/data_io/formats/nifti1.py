@@ -7,9 +7,9 @@ from scipy.weave import ext_tools # for _nifti1_quaternion module
 from neuroimaging import traits
 
 from neuroimaging.data_io import DataSource
-from neuroimaging.reference.axis import valid
-from neuroimaging.reference.mapping import Affine
-from neuroimaging.reference.grid import SamplingGrid
+from neuroimaging.core.reference.axis import valid
+from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.core.reference.grid import SamplingGrid
 
 from neuroimaging.data_io.formats.binary import BinaryFormat
 

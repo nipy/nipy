@@ -7,7 +7,7 @@ from neuroimaging import traits
 import _mincutils
 import _mincconstants as mc
 from neuroimaging.data_io.formats import Format
-from neuroimaging.reference import mapping, axis, coordinate_system
+from neuroimaging.core.reference import mapping, axis, coordinate_system
 
 
 class Dimension(axis.VoxelAxis):

@@ -104,7 +104,7 @@ class RegularAxis (DiscreteAxis):
     ignored if a valid transformation matrix is provided -- otherwise they
     can be used to create an orthogonal transformation matrix.
 
-    >>> from neuroimaging.reference.axis import RegularAxis
+    >>> from neuroimaging.core.reference.axis import RegularAxis
     >>> from numpy import allclose, array
     >>> r = RegularAxis(name='xspace',length=10, start=0.25, step=0.3)
     >>> allclose(r.values(), array([ 0.25,  0.55,  0.85,  1.15,  1.45,  1.75,  2.05,  2.35,  2.65,  2.95]))

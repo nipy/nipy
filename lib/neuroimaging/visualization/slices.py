@@ -4,7 +4,7 @@ A Slice class for visualizing slices of images.
 
 import numpy as N
 from neuroimaging import traits
-from neuroimaging.reference import slices
+from neuroimaging.core.reference import slices
 from neuroimaging.core.image.interpolation import ImageInterpolator
 
 class Slice(traits.HasTraits):

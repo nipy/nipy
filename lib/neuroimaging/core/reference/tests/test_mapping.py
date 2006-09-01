@@ -4,7 +4,7 @@ import numpy as N
 
 import urllib
 
-from neuroimaging.reference import mapping
+from neuroimaging.core.reference import mapping
 
 class MappingTest(unittest.TestCase):
 

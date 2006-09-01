@@ -10,9 +10,9 @@ from neuroimaging import flatten
 from neuroimaging.data_io import DataSource
 from neuroimaging.core.image import Image
 from neuroimaging.data_io.formats import getformats
-from neuroimaging.reference import axis, mapping
-from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging.reference.iterators import ParcelIterator, SliceParcelIterator
+from neuroimaging.core.reference import axis, mapping
+from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.reference.iterators import ParcelIterator, SliceParcelIterator
 
 
 ##############################################################################

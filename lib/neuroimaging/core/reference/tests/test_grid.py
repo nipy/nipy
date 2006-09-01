@@ -2,8 +2,8 @@ import unittest
 
 import numpy as N
 
-from neuroimaging.reference.axis import space
-from neuroimaging.reference.grid import SamplingGrid, ConcatenatedGrids, \
+from neuroimaging.core.reference.axis import space
+from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
 
 from neuroimaging.data_io.formats.analyze import ANALYZE

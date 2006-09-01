@@ -1,11 +1,11 @@
 import numpy as N
 
 from neuroimaging import reverse
-from neuroimaging.reference.mapping import Mapping, Affine, DegenerateAffine
-from neuroimaging.reference.axis import space, RegularAxis, VoxelAxis, Axis
-from neuroimaging.reference.coordinate_system import VoxelCoordinateSystem,\
+from neuroimaging.core.reference.mapping import Mapping, Affine, DegenerateAffine
+from neuroimaging.core.reference.axis import space, RegularAxis, VoxelAxis, Axis
+from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem,\
   DiagonalCoordinateSystem, CoordinateSystem
-from neuroimaging.reference.iterators import SliceIterator,\
+from neuroimaging.core.reference.iterators import SliceIterator,\
   ParcelIterator, SliceParcelIterator
 
 

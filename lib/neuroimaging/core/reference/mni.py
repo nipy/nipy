@@ -1,7 +1,7 @@
-from neuroimaging.reference.axis import RegularAxis, generic
-from neuroimaging.reference.coordinate_system import VoxelCoordinateSystem, \
+from neuroimaging.core.reference.axis import RegularAxis, generic
+from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem, \
     DiagonalCoordinateSystem
-from neuroimaging.reference.mapping import Affine
+from neuroimaging.core.reference.mapping import Affine
 
 
 # MNI template axes

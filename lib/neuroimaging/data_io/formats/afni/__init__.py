@@ -3,7 +3,7 @@ import os, string, re, sys, fpformat, types, time, random, csv
 import numpy as N
 
 from neuroimaging.core.image import utils
-from neuroimaging.reference import mapping, coordinate_system, axis
+from neuroimaging.core.reference import mapping, coordinate_system, axis
 from _afniconstants import *
 
 att_re = re.compile('type\s*=\s*(.*?)\n.*?name\s*=\s*(.*?)\n.*?count\s*=\s*(.*?)\n(.*)', re.DOTALL)

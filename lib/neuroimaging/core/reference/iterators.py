@@ -78,7 +78,7 @@ class ParcelIterator (object):
     >>> from numpy import *
     >>> parcelmap = asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
     >>> parcelseq = ((1,2),0)
-    >>> from neuroimaging.reference.iterators import ParcelIterator
+    >>> from neuroimaging.core.reference.iterators import ParcelIterator
     >>> i = ParcelIterator(parcelmap,parcelseq)
     >>> for n in i: print n
     ...
@@ -143,7 +143,7 @@ class SliceParcelIterator (object):
    >>> from numpy import *
    >>> parcelmap = asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
    >>> parcelseq = ((1,2),0,2)
-   >>> from neuroimaging.reference.iterators import SliceParcelIterator
+   >>> from neuroimaging.core.reference.iterators import SliceParcelIterator
    >>> i = SliceParcelIterator(parcelmap,parcelseq)
    >>> for n in i: print n
    ...

@@ -7,9 +7,9 @@ from neuroimaging import traits
 
 from neuroimaging.data_io import DataSource
 from neuroimaging.data_io.formats.binary import BinaryFormat
-from neuroimaging.reference.axis import space, spacetime
-from neuroimaging.reference.mapping import Affine, Mapping
-from neuroimaging.reference.grid import SamplingGrid
+from neuroimaging.core.reference.axis import space, spacetime
+from neuroimaging.core.reference.mapping import Affine, Mapping
+from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.utils.path import path
 
 ANALYZE_Byte = 2

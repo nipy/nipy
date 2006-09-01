@@ -6,8 +6,8 @@ from numpy.linalg import inv
 
 
 from neuroimaging import hasattrs
-from neuroimaging.reference.axis import VoxelAxis, space
-from neuroimaging.reference.coordinate_system import \
+from neuroimaging.core.reference.axis import VoxelAxis, space
+from neuroimaging.core.reference.coordinate_system import \
   CoordinateSystem, VoxelCoordinateSystem, DiagonalCoordinateSystem
 
 def _2matvec(transform):
@@ -28,7 +28,7 @@ def frombin(tstr):
     """
     This is broken -- anyone with mat file experience?
     >>> import urllib
-    >>> from neuroimaging.reference.mapping import frombin
+    >>> from neuroimaging.core.reference.mapping import frombin
     >>> mat = urllib.urlopen('http://kff.stanford.edu/BrainSTAT/fiac3_fonc1_0089.mat')
     >>> tstr = mat.read()
     >>> print frombin(tstr)
@@ -83,7 +83,7 @@ def fromurl(turl, ndim=3):
     '.mat' and '.xfm'.
 
     >>> from numpy import testing
-    >>> from neuroimaging.reference.mapping import fromurl
+    >>> from neuroimaging.core.reference.mapping import fromurl
     >>> x = fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1.txt')
     >>> y = fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
     >>> print testing.assert_almost_equal(x, y)

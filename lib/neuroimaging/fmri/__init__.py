@@ -5,10 +5,10 @@ from neuroimaging import flatten
 from neuroimaging.core.image import Image
 from neuroimaging.fmri.iterators import fMRISliceIterator,\
   fMRISliceParcelIterator
-from neuroimaging.reference.coordinate_system import CoordinateSystem
-from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging.reference.iterators import ParcelIterator
-from neuroimaging.reference.mapping import Mapping, Affine
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem
+from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.reference.iterators import ParcelIterator
+from neuroimaging.core.reference.mapping import Mapping, Affine
 
 
 

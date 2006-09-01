@@ -2,7 +2,7 @@ import unittest
 import types
 import numpy as N
 
-from neuroimaging.reference.axis import Axis, ContinuousAxis, DiscreteAxis, VoxelAxis, RegularAxis
+from neuroimaging.core.reference.axis import Axis, ContinuousAxis, DiscreteAxis, VoxelAxis, RegularAxis
 
 class AxisTest(unittest.TestCase):
 

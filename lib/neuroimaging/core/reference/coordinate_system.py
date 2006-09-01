@@ -1,7 +1,7 @@
 import numpy as N
 
 from neuroimaging import reorder, reverse, hasattrs
-from neuroimaging.reference.axis import VoxelAxis
+from neuroimaging.core.reference.axis import VoxelAxis
 from neuroimaging.utils.odict import odict
 
 class CoordinateSystem(odict):
