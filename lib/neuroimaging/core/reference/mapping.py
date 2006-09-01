@@ -8,13 +8,13 @@ from numpy.linalg import inv
 from neuroimaging import hasattrs
 from neuroimaging.core.reference.axis import VoxelAxis, space
 from neuroimaging.core.reference.coordinate_system import \
-  CoordinateSystem, VoxelCoordinateSystem, DiagonalCoordinateSystem
+  VoxelCoordinateSystem, DiagonalCoordinateSystem
 
 def _2matvec(transform):
     """ Split a tranform into it's matrix and vector components. """
     ndim = transform.shape[0] - 1
-    matrix = transform[0:ndim,0:ndim]
-    vector = transform[0:ndim,ndim]
+    matrix = transform[0:ndim, 0:ndim]
+    vector = transform[0:ndim, ndim]
     return matrix, vector
 
 def _2transform(matrix, vector):
@@ -212,27 +212,21 @@ class Mapping (object):
         >>>
 
         """
-        ndim = self.ndim()
-        t1 = N.zeros((ndim+1,)*2, N.float64)
-        t1[0:ndim,0:ndim] = permutation_matrix(range(ndim)[::-1])
-        t1[ndim, ndim] = 1.0
-        t2 = 1. * t1
-        t1[0:ndim,ndim] = 1.0
-        w1 = Affine(self.input_coords.reverse(), self.input_coords, t1)
-        w2 = Affine(self.output_coords, self.output_coords.reverse(), t2)
-        return (w2 * self) * w1
+        return self._f(1.0)
 
     def python2matlab(self):
         "Inverse of matlab2python -- see this function for help."
-        ndim = self.ndim()
+        return self._f(-1.0)
 
-        t1 = permutation_transform(range(ndim)[::-1])
-        t2 = t1.copy()
-        t1[0:ndim,ndim] = -1.0
+    def _f(self, x):
+        """ helper function for matlab2python and python2matlab """
+        ndim = self.ndim()
+        mat = permutation_matrix(range(ndim)[::-1])
+        t1 = _2transform(mat, x)
+        t2 = _2transform(mat, N.zeros(ndim))
         w1 = Affine(self.input_coords.reverse(), self.input_coords, t1)
         w2 = Affine(self.output_coords, self.output_coords.reverse(), t2)
         return (w2 * self) * w1
-
 
 
 class Affine(Mapping):
@@ -294,7 +288,7 @@ class Affine(Mapping):
 
 
     def __str__(self):
-        return "%s:input=%s\n%s:output=%s\n%s:fmatrix=%s\n%s:fvector=%s" %\
+        return "%s:input=%s\n%s:output=%s\n%s:fmatrix=%s\n%s:fvector=%s" % \
           (self.name, self.input_coords.name, self.name,
            self.output_coords.name, self.name, `self._fmatrix`, self.name,
            `self._fvector`)
@@ -351,11 +345,12 @@ def permutation_matrix(order=range(3)[2::-1]):
     Create an NxN permutation matrix from a sequence, containing the values 0,...,N-1.
     """
     n = len(order)
-    matrix = N.zeros((n,n))
+    matrix = N.zeros((n, n))
     if set(order) != set(range(n)):
         raise ValueError(
           'order should be a sequence of integers with values, 0 ... len(order)-1.')
-    for i in range(n): matrix[i,order[i]] = 1
+    for i in range(n): 
+        matrix[i,order[i]] = 1
     return matrix
 
 
