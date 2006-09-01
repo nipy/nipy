@@ -102,6 +102,7 @@ class Analyze(BinaryFormat):
     _format_defaults = {'i': 0, 'h': 0, 'f': 0., 'c': '\0', 's': ''}
     
     extensions = ('.img', '.hdr', '.mat')
+    usematfile = True
 
     #-------------------------------------------------------------------------
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
@@ -111,9 +112,14 @@ class Analyze(BinaryFormat):
         grid = Grid object
         sctype = numpy scalar type
         intent = meaning of data
+        clobber = allowed to clobber?
+        usemat = use mat file?
         """
         BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.clobber = keywords.get('clobber', False)
+        self.intent = keywords.get('intent', '')
+        self.usematfile = keywords.get('usemat', True)
+
         self.header_file = self.filebase+".hdr"
         self.data_file = self.filebase+".img"
         self.mat_file = self.filebase+".mat"
@@ -125,6 +131,7 @@ class Analyze(BinaryFormat):
             # should try to populate the canonical fields and
             # corresponding header fields with info from grid?
             self.sctype = keywords.get('sctype', float64)
+            self.byteorder = NATIVE
             if self.grid is not None:
                 self.header_from_grid()
             else:
@@ -252,6 +259,7 @@ class Analyze(BinaryFormat):
 
     #-------------------------------------------------------------------------
     def attach_data(self):
+        mode = self.mode in ('r+','w') and 'r+' or self.mode
         self.memmap = memmap(self.datasource.filename(self.data_file),
                              dtype=self.dtype, shape=tuple(self.grid.shape),
                              mode=mode)
