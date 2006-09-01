@@ -40,7 +40,7 @@ class fMRISamplingGrid(SamplingGrid):
 
     def _itersliceparcels(self):
         self.iterator = fMRISliceParcelIterator(
-          self.parcelmap, self.parcelseq, self.shape[0])
+          self._parcelmap, self._parcelseq, self.shape[0])
         return self
 
 

@@ -35,7 +35,7 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
         return self
 
     def next(self, data=None):
-        if self.grid.itertype == 'slice':
+        if self.grid._itertype == 'slice':
             value = copy.copy(self.grid.itervalue)
             value.slice = value.slice[1]
         else:
@@ -48,7 +48,7 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
 class ResidOutput(fMRIRegressionOutput):
 
     outdir = traits.Str()
-    ext = traits.Str('.img')
+    ext = traits.Str('.hdr')
     basename = traits.Str('resid')
 
     def __init__(self, grid, path='.', **keywords):
@@ -79,7 +79,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
     sd = traits.true
     t = traits.true
     outdir = traits.Str()
-    ext = traits.Str('.img')
+    ext = traits.Str('.hdr')
     subpath = traits.Str('contrasts')
     frametimes = traits.Any()
 
@@ -107,7 +107,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
             f.clf()
 
     def next(self, data=None):
-        if self.grid.itertype == 'slice':
+        if self.grid._itertype == 'slice':
             value = copy.copy(self.grid.itervalue)
             value.slice = value.slice[1]
         else:
@@ -126,7 +126,7 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
 
     contrast = traits.Any() 
     outdir = traits.Str()
-    ext = traits.Str('.img')
+    ext = traits.Str('.hdr')
     subpath = traits.Str('contrasts')
     frametimes = traits.Any()
 

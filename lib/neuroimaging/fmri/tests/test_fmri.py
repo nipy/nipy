@@ -45,7 +45,7 @@ class fMRITest(unittest.TestCase):
 
         self.img.grid.set_iter('parcel', parcelmap=parcelmap)
         parcelmap.shape = N.product(parcelmap.shape)
-        self.img.grid.parcelseq = N.unique(parcelmap)
+        self.img.grid._parcelseq = N.unique(parcelmap)
 
         v = 0
         for t in self.img:
@@ -57,7 +57,7 @@ class fMRITest(unittest.TestCase):
 
         self.rho.grid.set_iter('parcel', parcelmap=parcelmap)
         parcelmap.shape = N.product(parcelmap.shape)
-        self.rho.grid.parcelseq = N.unique(parcelmap)
+        self.rho.grid._parcelseq = N.unique(parcelmap)
 
         v = 0
         for t in self.rho:
