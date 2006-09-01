@@ -87,10 +87,10 @@ class ReselImage(Resels):
             Resels.__init__(self, resels, resels=resels, fwhm=fwhm)
 
         if not self.fwhm:
-            self.fwhm = Image(self.resel2fwhm(self.resels.readall()), mapping=self.resels.mapping, **keywords)
+            self.fwhm = Image(self.resel2fwhm(self.resels.readall()), mapping=self.resels.grid.mapping, **keywords)
 
         if not self.resels:
-            self.resels = Image(self.fwhm2resel(self.fwhm.readall()), mapping=self.fwhm.mapping, **keywords)
+            self.resels = Image(self.fwhm2resel(self.fwhm.readall()), mapping=self.fwhm.grid.mapping, **keywords)
 
     def __iter__(self):
         return
