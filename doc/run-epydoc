@@ -1,6 +1,6 @@
 #!/bin/sh
 PYTHON_PATH=../lib
-FILTER='tests\|enthought\|sandbox'
+FILTER='tests\|enthought\|sandbox\|attributes.py\|protocols.py\|config'
 
 output_dir=api
 mkdir -p ${output_dir}
