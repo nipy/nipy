@@ -129,7 +129,7 @@ class ImageOneSampleOutput(onesample.OneSampleOutput):
         return self
 
     def next(self, data=None):
-        value = self.grid.itervalue
+        value = self.grid.itervalue()
         self.img.next(data=data, value=value)
 
     def extract(self, results):

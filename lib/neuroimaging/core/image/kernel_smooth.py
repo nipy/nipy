@@ -56,7 +56,7 @@ class LinearFilter(traits.HasTraits):
             voxels[i] = test * voxels[i] + (1. - test) * (voxels[i] - self.shape[i])
     
         voxels.shape = (voxels.shape[0], N.product(voxels.shape[1:]))
-        X = self.grid.mapping.map(voxels)
+        X = self.grid.mapping(voxels)
 
         if self.fwhm is not 1.0:
             X = X / fwhm2sigma(self.fwhm)
