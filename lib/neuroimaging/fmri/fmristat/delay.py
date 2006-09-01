@@ -390,7 +390,7 @@ def invertR(delta, IRF, niter=20, verbose=False):
     else:
         c = -(delta.max() / (N.pi/2)) * 1.2
 
-    from neuroimaging.statistics import nlsmodel
+    from neuroimaging.algorithms.statistics import nlsmodel
     design = R.reshape(R.shape[0], 1)
     model = nlsmodel.NLSModel(Y=delta,
                               design=design,

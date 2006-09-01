@@ -1,3 +1,3 @@
 """
-Package containing generic algorithms such as statistics, simulation, etc.
+Package containing generic algorithms such as registration, statistics, simulation, etc.
 """

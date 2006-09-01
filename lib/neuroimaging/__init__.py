@@ -51,8 +51,8 @@ packages = (
   'neuroimaging.image.formats.tests',
   'neuroimaging.reference',
   'neuroimaging.reference.tests',
-  'neuroimaging.statistics',
-  'neuroimaging.statistics.tests')
+  'neuroimaging.algorithms.statistics',
+  'neuroimaging.algorithms.statistics.tests')
 
 PYLAB_DEF, pylab = defines.pylab_def()
 if PYLAB_DEF:
@@ -86,8 +86,8 @@ _preload_modules = (
   'neuroimaging.reference.iterators',
   'neuroimaging.reference.mapping',
   'neuroimaging.reference.slices',
-  'neuroimaging.statistics.regression',
-  'neuroimaging.statistics.classification',
+  'neuroimaging.algorithms.statistics.regression',
+  'neuroimaging.algorithms.statistics.classification',
   'neuroimaging.visualization.viewer',)
 
 #-----------------------------------------------------------------------------

@@ -4,7 +4,7 @@ import numpy as N
 from neuroimaging import traits
 
 from neuroimaging.image import Image, ImageSequenceIterator
-from neuroimaging.statistics import onesample
+from neuroimaging.algorithms.statistics import onesample
 
 class ImageOneSample(onesample.OneSampleIterator):
     

@@ -4,7 +4,7 @@ import numpy as N
 from neuroimaging import traits
 
 from neuroimaging.image import Image
-from neuroimaging.statistics.regression import RegressionOutput
+from neuroimaging.algorithms.statistics.regression import RegressionOutput
 
 class ImageRegressionOutput(RegressionOutput):
     """

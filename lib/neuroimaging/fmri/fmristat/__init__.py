@@ -14,7 +14,7 @@ from neuroimaging.fmri.regression import AROutput, TContrastOutput, \
 from neuroimaging.image import kernel_smooth
 from neuroimaging.image.fwhm import fastFWHM
 from neuroimaging.image.utils import fwhm2sigma
-from neuroimaging.statistics.regression import LinearModelIterator, \
+from neuroimaging.algorithms.statistics.regression import LinearModelIterator, \
   OLSModel, ARModel
 
 # Imports related to pylab
