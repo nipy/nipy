@@ -39,8 +39,8 @@ from neuroimaging.utils.path import path
 packages = (
   'neuroimaging',
   'neuroimaging.utils.tests',
-  'neuroimaging.data',
-  'neuroimaging.data.tests',
+  'neuroimaging.data_io',
+  'neuroimaging.data_io.tests',
   'neuroimaging.fmri',
   'neuroimaging.fmri.tests',
   'neuroimaging.fmri.fmristat',

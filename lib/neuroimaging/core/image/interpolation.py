@@ -8,7 +8,7 @@ from scipy import ndimage
 from neuroimaging import traits
 import numpy as N
 
-from neuroimaging.data.cache import cached
+from neuroimaging.data_io.cache import cached
 
 class ImageInterpolator(traits.HasTraits):
 

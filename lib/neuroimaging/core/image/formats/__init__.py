@@ -1,7 +1,7 @@
 from numpy import sctypes as _sctypes
 
 from neuroimaging import import_from, traits
-from neuroimaging.data import DataSource
+from neuroimaging.data_io import DataSource
 from neuroimaging.utils.path import path
 from neuroimaging.reference.grid import SamplingGrid
 

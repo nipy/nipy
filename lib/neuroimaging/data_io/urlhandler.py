@@ -134,7 +134,7 @@ class DataFetcher(traits.HasTraits):
         """
         A rudimentary check to see if urlretrieve actually finds a correct URL.
 
-        >>> from neuroimaging.data.urlhandler import DataFetcher
+        >>> from neuroimaging.data_io.urlhandler import DataFetcher
         >>> import StringIO
         >>>
         >>> buffer = StringIO.StringIO()

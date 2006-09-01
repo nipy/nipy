@@ -5,7 +5,7 @@ from neuroimaging import traits
 from neuroimaging.core.image import Image
 from neuroimaging.reference import axis
 from neuroimaging.reference.grid import SamplingGrid
-from neuroimaging.data import DataSource
+from neuroimaging.data_io import DataSource
 
 class IntentError(Exception):
     """

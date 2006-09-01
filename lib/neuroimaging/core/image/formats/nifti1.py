@@ -6,7 +6,7 @@ from scipy.weave import ext_tools # for _nifti1_quaternion module
 
 from neuroimaging import traits
 
-from neuroimaging.data import DataSource
+from neuroimaging.data_io import DataSource
 from neuroimaging.reference.axis import valid
 from neuroimaging.reference.mapping import Affine
 from neuroimaging.reference.grid import SamplingGrid
@@ -1121,7 +1121,7 @@ __doc__ = """
    The twin (and somewhat conflicting) goals of this modified ANALYZE 7.5
    format are:
     (a) To add information to the header that will be useful for functional
-        neuroimaging data analysis and display.  These additions include:
+        neuroimaging.data_io analysis and display.  These additions include:
         - More basic data types.
         - Two affine transformations to specify voxel coordinates.
         - "Intent" codes and parameters to describe the meaning of the data.

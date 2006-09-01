@@ -4,7 +4,7 @@ from neuroimaging import traits
 import numpy as N
 
 from neuroimaging import flatten
-from neuroimaging.data import DataSource
+from neuroimaging.data_io import DataSource
 from neuroimaging.core.image.formats import getformats, Format
 from neuroimaging.reference.grid import SamplingGrid
 from neuroimaging.reference.iterators import ParcelIterator, SliceParcelIterator

@@ -8,7 +8,7 @@ from struct import calcsize, pack, unpack
 
 from attributes import attribute, readonly, deferto, wrapper, scope
 
-from neuroimaging.data import DataSource
+from neuroimaging.data_io import DataSource
 from neuroimaging.reference.axis import space
 from neuroimaging.reference.grid import SamplingGrid
 #from neuroimaging.core.image.formats import struct_unpack, struct_pack, structfield,\

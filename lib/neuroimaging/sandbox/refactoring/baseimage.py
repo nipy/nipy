@@ -7,7 +7,7 @@ from attributes import attribute, readonly, deferto
 import numpy as N
 
 from neuroimaging import flatten
-from neuroimaging.data import DataSource
+from neuroimaging.data_io import DataSource
 from neuroimaging.core.image import Image
 from neuroimaging.core.image.formats import getformats
 from neuroimaging.reference import axis, mapping
