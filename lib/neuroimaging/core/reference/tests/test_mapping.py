@@ -38,6 +38,14 @@ class MappingTest(unittest.TestCase):
                      [0,0,1]])
         self.assertTrue(mapping.isdiagonal(m))
 
+
+    def test_matvec_trasform(self):
+        m1 = R.standard_normal((3, 3))
+        v1 = R.standard_normal((3,))
+        m2, v2 = mapping._2matvec(mapping._2transform(m1, v1))
+        N.testing.assert_almost_equal(m1, m2)
+        N.testing.assert_almost_equal(v1, v2)        
+        
                       
     def test_frombin(self):
         # FIXME: this will only work on my (Tim) system. Need to sort out getting these
