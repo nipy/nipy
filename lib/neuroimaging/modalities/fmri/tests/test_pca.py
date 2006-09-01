@@ -2,15 +2,15 @@ import unittest, os
 
 import numpy as N
 
-from neuroimaging.fmri import fMRIImage
-from neuroimaging.fmri.pca import PCA
+from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.modalities.fmri.pca import PCA
 from neuroimaging.core.image import Image
 from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
-    from neuroimaging.fmri.pca import PCAmontage
+    from neuroimaging.modalities.fmri.pca import PCAmontage
 
 class PCATest(unittest.TestCase):
 

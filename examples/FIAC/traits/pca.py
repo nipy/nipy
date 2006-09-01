@@ -3,7 +3,7 @@ import pylab
 from neuroimaging import traits
 import numpy as N
 
-from neuroimaging.fmri.pca import PCA, MultiPlot
+from neuroimaging.modalities.fmri.pca import PCA, MultiPlot
 from neuroimaging.core.image import Image
 
 from fiac import Run
@@ -22,7 +22,7 @@ class PCARun(Run):
     def fit(self, **pca_keywords):
         """
         Carry out a PCA analysis on self.fmri, passing optional keywords
-        to the instantiation of neuroimaging.fmri.pca.PCA.
+        to the instantiation of neuroimaging.modalities.fmri.pca.PCA.
 
         Image results (based on self.which) are stored as self.space.
         Time series results are stored as self.time.

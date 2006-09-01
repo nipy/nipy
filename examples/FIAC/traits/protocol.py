@@ -1,6 +1,6 @@
 import string, urllib
 
-import neuroimaging.fmri.protocol as protocol
+import neuroimaging.modalities.fmri.protocol as protocol
 
 eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
 eventdict_r = {}

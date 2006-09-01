@@ -8,7 +8,7 @@ import numpy as N
 import numpy.linalg as L
 import filters
 from neuroimaging import traits
-from neuroimaging.fmri.utils import LinearInterpolant as interpolant
+from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
 
 def glover2GammaDENS(peak_hrf, fwhm_hrf):
     alpha = N.power(peak_hrf / fwhm_hrf, 2) * 8 * N.log(2.0)
@@ -66,7 +66,7 @@ class SpectralHRF(filters.Filter):
 
         >>> import numpy as N
         >>> from pylab import plot, title, show
-        >>> from neuroimaging.fmri.hrf import glover, glover_deriv, SpectralHRF
+        >>> from neuroimaging.modalities.fmri.hrf import glover, glover_deriv, SpectralHRF
         >>>
         >>> ddelta = 0.25
         >>> delta = N.arange(-4.5,4.5+ddelta, ddelta)

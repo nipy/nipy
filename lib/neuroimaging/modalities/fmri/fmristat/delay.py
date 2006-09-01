@@ -13,10 +13,10 @@ from scipy.sandbox.models.utils import recipr, recipr0
 from scipy.sandbox.models.contrast import Contrast, ContrastResults
 from neuroimaging import traits
 
-from neuroimaging.fmri import hrf, filters
-from neuroimaging.fmri.protocol import ExperimentalQuantitative
-from neuroimaging.fmri.regression import TContrastOutput 
-from neuroimaging.fmri.utils import LinearInterpolant as interpolant
+from neuroimaging.modalities.fmri import hrf, filters
+from neuroimaging.modalities.fmri.protocol import ExperimentalQuantitative
+from neuroimaging.modalities.fmri.regression import TContrastOutput 
+from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.core.image import Image
 
 from neuroimaging.defines import pylab_def

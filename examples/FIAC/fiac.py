@@ -3,8 +3,8 @@ import string, os, gc, time, urllib
 import numpy as N
 import pylab
 
-from neuroimaging.fmri import fMRIImage
-from neuroimaging.fmri.protocol import ExperimentalFactor
+from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
 from neuroimaging.core.image import Image
 
 eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}

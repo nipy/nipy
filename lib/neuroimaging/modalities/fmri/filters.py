@@ -3,7 +3,7 @@ import types
 import numpy as N
 from neuroimaging import traits
 
-from neuroimaging.fmri.utils import ConvolveFunctions, WaveFunction
+from neuroimaging.modalities.fmri.utils import ConvolveFunctions, WaveFunction
 
 class Filter(traits.HasTraits):
     '''

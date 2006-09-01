@@ -2,7 +2,7 @@ import csv, types, copy
 from neuroimaging import traits
 import numpy as N
 
-from neuroimaging.fmri.functions import TimeFunction
+from neuroimaging.modalities.fmri.functions import TimeFunction
 from scipy.sandbox.models.formula import Factor, Quantitative, Formula, Term
 from scipy.sandbox.models.utils import StepFunction
 from scipy.interpolate import interp1d

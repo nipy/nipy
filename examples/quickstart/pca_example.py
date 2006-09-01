@@ -1,8 +1,8 @@
 import numpy as N
 import pylab
 
-from neuroimaging.fmri import fMRIImage 
-from neuroimaging.fmri.pca import PCAmontage
+from neuroimaging.modalities.fmri import fMRIImage 
+from neuroimaging.modalities.fmri.pca import PCAmontage
 from neuroimaging.core.image import Image
 
 # Load an fMRI image

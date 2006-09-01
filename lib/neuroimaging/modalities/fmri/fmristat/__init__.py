@@ -7,9 +7,9 @@ import numpy.random as R
 import scipy.ndimage
 from scipy.sandbox.models.utils import monotone_fn_inverter, rank 
 
-from neuroimaging.fmri import fMRIImage
-from neuroimaging.fmri.fmristat.delay import DelayContrast, DelayContrastOutput
-from neuroimaging.fmri.regression import AROutput, TContrastOutput, \
+from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, DelayContrastOutput
+from neuroimaging.modalities.fmri.regression import AROutput, TContrastOutput, \
   FContrastOutput, ResidOutput
 from neuroimaging.core.image import kernel_smooth
 from neuroimaging.core.image.fwhm import fastFWHM

@@ -1,9 +1,9 @@
 from fiac import *
 
-import neuroimaging.fmri.protocol as protocol
+import neuroimaging.modalities.fmri.protocol as protocol
 import scipy.sandbox.models.contrast as contrast
-from neuroimaging.fmri.fmristat.delay import DelayHRF
-import neuroimaging.fmri.fmristat as fmristat
+from neuroimaging.modalities.fmri.fmristat.delay import DelayHRF
+import neuroimaging.modalities.fmri.fmristat as fmristat
 
 def FIACformula(subj=3, run=3, normalize=True, df=5):
     p = FIACprotocol(subj=subj, run=run)
@@ -158,7 +158,7 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
         # well output the FWHM, too
 
         if output_fwhm:
-            resid = neuroimaging.fmri.fMRIImage(FIACpath('fsl/fmristat_run/ARresid.img', subj=subj, run=run))
+            resid = neuroimaging.modalities.fmri.fMRIImage(FIACpath('fsl/fmristat_run/ARresid.img', subj=subj, run=run))
             fwhmest = fastFWHM(resid, fwhm=FIACpath('fsl/fmristat_run/fwhm.img'), clobber=True)
             fwhmest()
 

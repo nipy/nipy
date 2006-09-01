@@ -5,7 +5,7 @@ from matplotlib.axes import Subplot
 from matplotlib.figure import Figure
 
 from neuroimaging.core.image import Image
-from neuroimaging.fmri import fMRIImage
+from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.ui.visualization.viewer import BoxViewer
 
 #matplotlib.use('WXAgg')

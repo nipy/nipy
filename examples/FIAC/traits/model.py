@@ -4,12 +4,12 @@ from neuroimaging import traits
 import numpy as N
 from scipy.sandbox.models import contrast
 
-from neuroimaging.fmri.pca import PCA, MultiPlot
-from neuroimaging.fmri import protocol
-from neuroimaging.fmri.fmristat import delay
-from neuroimaging.fmri.filters import Filter
+from neuroimaging.modalities.fmri.pca import PCA, MultiPlot
+from neuroimaging.modalities.fmri import protocol
+from neuroimaging.modalities.fmri.fmristat import delay
+from neuroimaging.modalities.fmri.filters import Filter
 from neuroimaging.core.image import Image
-import neuroimaging.fmri.fmristat as fmristat
+import neuroimaging.modalities.fmri.fmristat as fmristat
 
 from fiac import Run, Subject, Study
 from montage import Montage

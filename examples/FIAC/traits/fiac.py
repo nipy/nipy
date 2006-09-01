@@ -6,8 +6,8 @@ import pylab
 import enthought.traits.ui
 from neuroimaging import traits
 
-from neuroimaging.fmri import fMRIImage
-from neuroimaging.fmri.protocol import ExperimentalFactor
+from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
 from neuroimaging.core.image import Image
 
 from protocol import event_protocol, block_protocol

@@ -9,8 +9,8 @@ This example only treats the protocol.
 import pylab
 import numpy as N
 
-from neuroimaging.fmri import protocol
-from neuroimaging.fmri import hrf
+from neuroimaging.modalities.fmri import protocol
+from neuroimaging.modalities.fmri import hrf
 
 """
 Experiment: periodic block with two conditions 'hot' and 'warm'.

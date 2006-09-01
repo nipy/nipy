@@ -3,7 +3,7 @@ import numpy as N
 from scipy.sandbox.models.utils import recipr0
 from scipy.sandbox.models import contrast
 
-from neuroimaging.fmri import hrf, protocol
+from neuroimaging.modalities.fmri import hrf, protocol
 
 # this is not a test until it is fixed (find HRF)
 class ProtocolTest(object): #unittest.TestCase):

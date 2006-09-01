@@ -59,10 +59,10 @@ packages = (
   'neuroimaging.data_io.tests',
   'neuroimaging.data_io.formats',
   'neuroimaging.data_io.formats.tests',
-  'neuroimaging.fmri',
-  'neuroimaging.fmri.tests',
-  'neuroimaging.fmri.fmristat',
-  'neuroimaging.fmri.fmristat.tests',
+  'neuroimaging.modalities.fmri',
+  'neuroimaging.modalities.fmri.tests',
+  'neuroimaging.modalities.fmri.fmristat',
+  'neuroimaging.modalities.fmri.fmristat.tests',
   'neuroimaging.utils.tests')
 
 PYLAB_DEF, pylab = defines.pylab_def()

@@ -8,7 +8,7 @@ from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
     from neuroimaging.ui.visualization import viewer
-    from neuroimaging.fmri.pca import PCAmontage
+    from neuroimaging.modalities.fmri.pca import PCAmontage
 
 class KernelTest(unittest.TestCase):
     def test_smooth(self):

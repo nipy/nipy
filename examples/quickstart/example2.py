@@ -1,5 +1,5 @@
 from neuroimaging.core.image import Image
-from neuroimaging.fmri import fMRIImage
+from neuroimaging.modalities.fmri import fMRIImage
 import numpy as N
 import pylab
 
