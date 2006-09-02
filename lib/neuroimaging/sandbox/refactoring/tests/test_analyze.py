@@ -8,7 +8,7 @@ PYLAB_DEF, pylab = pylab_def()
 from neuroimaging.sandbox.refactoring.analyze import AnalyzeImage
 from neuroimaging.utils.tests.data import repository
 if PYLAB_DEF and QT_DEF:
-    from neuroimaging.visualization.arrayview import arrayview
+    from neuroimaging.ui.visualization.arrayview import arrayview
 
 class AnalyzeImageTest(unittest.TestCase):
 

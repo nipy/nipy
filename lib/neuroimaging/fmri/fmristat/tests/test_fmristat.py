@@ -131,7 +131,7 @@ class TestContrast(fMRIStatTest):
         rho.tofile('rho.hdr', clobber=True)
         
         if PYLAB_DEF:
-            from neuroimaging.visualization import viewer
+            from neuroimaging.ui.visualization import viewer
             v=viewer.BoxViewer(rho)
             v.draw()
 

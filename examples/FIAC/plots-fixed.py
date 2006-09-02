@@ -3,7 +3,7 @@ import numpy as N
 
 from neuroimaging.core.image import Image
 from neuroimaging.core.image.interpolation import ImageInterpolator
-from neuroimaging.visualization import slices, montage
+from neuroimaging.ui.visualization import slices, montage
 
 
 standard = Image('/home/analysis/FIAC/avg152T1_brain.img')

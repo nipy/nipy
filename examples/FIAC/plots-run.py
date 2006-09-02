@@ -6,7 +6,7 @@ import pylab
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.image import Image
 from neuroimaging.core.image.interpolation import ImageInterpolator
-from neuroimaging.visualization import slices, montage
+from neuroimaging.ui.visualization import slices, montage
 from fixed import FIACresample
 
 standard = Image('avg152T1_brain.img', datasource=repository)

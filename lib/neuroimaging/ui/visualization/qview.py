@@ -1,6 +1,6 @@
 import sys, pylab
 import neuroimaging.core.image as image
-import neuroimaging.visualization.viewer as viewer
+import neuroimaging.ui.visualization.viewer as viewer
 
 x = image.Image(sys.argv[1])
 v = viewer.BoxViewer(x)

@@ -22,7 +22,7 @@ from neuroimaging.algorithms.statistics.regression import LinearModelIterator, \
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
-    from neuroimaging.visualization.multiplot import MultiPlot
+    from neuroimaging.ui.visualization.multiplot import MultiPlot
 
 class WholeBrainNormalize(traits.HasTraits):
 

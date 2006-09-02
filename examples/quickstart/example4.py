@@ -1,7 +1,7 @@
 from neuroimaging.core.image import Image
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.mapping import Affine
-from neuroimaging.visualization.viewer import BoxViewer
+from neuroimaging.ui.visualization.viewer import BoxViewer
 import numpy as N
 import pylab
 

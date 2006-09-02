@@ -9,7 +9,7 @@ PYLAB_DEF, pylab = pylab_def()
 QT_DEF, qt = qt_def()
 
 if PYLAB_DEF:
-    from neuroimaging.visualization import viewer, slices
+    from neuroimaging.ui.visualization import viewer, slices
 
 
 class VisualizationTest(unittest.TestCase):
@@ -49,7 +49,7 @@ class VisualizationTest(unittest.TestCase):
 
         if QT_DEF:
             def test_arrayview(self):
-                from neuroimaging.visualization import arrayview
+                from neuroimaging.ui.visualization import arrayview
                 arrayview.arrayview(self.img.readall())
 
 def suite():

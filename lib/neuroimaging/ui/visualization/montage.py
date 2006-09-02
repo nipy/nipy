@@ -4,7 +4,7 @@ import numpy as N
 import pylab
 from neuroimaging import traits
 
-from neuroimaging.visualization.cmap import cmap, interpolation, getcmap
+from neuroimaging.ui.visualization.cmap import cmap, interpolation, getcmap
 
 class Montage(traits.HasTraits):
     

@@ -9,8 +9,8 @@ from neuroimaging.core.image.interpolation import ImageInterpolator
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
-    from neuroimaging.visualization import viewer, slices
-    from neuroimaging.visualization.montage import Montage
+    from neuroimaging.ui.visualization import viewer, slices
+    from neuroimaging.ui.visualization.montage import Montage
 
 class MontageTest(unittest.TestCase):
     if PYLAB_DEF:

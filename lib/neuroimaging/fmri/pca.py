@@ -187,10 +187,10 @@ class PCA(traits.HasTraits):
         return outimages
 
 if PYLAB_DEF:
-    from neuroimaging.visualization.montage import Montage
+    from neuroimaging.ui.visualization.montage import Montage
     from neuroimaging.core.image.interpolation import ImageInterpolator
-    from neuroimaging.visualization import slices
-    from neuroimaging.visualization.multiplot import MultiPlot
+    from neuroimaging.ui.visualization import slices
+    from neuroimaging.ui.visualization.multiplot import MultiPlot
 
     class PCAmontage(PCA):
 

@@ -5,9 +5,9 @@ import os, pylab
 
 from neuroimaging.core.image.interpolation import ImageInterpolator
 from neuroimaging.core.image import Image
-from neuroimaging.visualization.cmap import cmap
-from neuroimaging.visualization import slices as vizslice
-from neuroimaging.visualization.montage import Montage as MontageDrawer
+from neuroimaging.ui.visualization.cmap import cmap
+from neuroimaging.ui.visualization import slices as vizslice
+from neuroimaging.ui.visualization.montage import Montage as MontageDrawer
 
 from resample import Resampler
 
