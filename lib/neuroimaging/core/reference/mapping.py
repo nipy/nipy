@@ -28,7 +28,6 @@ def _2transform(matrix, vector):
     return t
 
 
-
 def permutation_matrix(order=range(3)[2::-1]):
     """
     Create an NxN permutation matrix from a sequence, containing the values 0,...,N-1.
@@ -170,18 +169,6 @@ class Mapping (object):
         self.name = name
         self._ndim = ndim
         
-    def __setitem__(self, name, val):
-        if name in ["input_coords", "output_coords"]:
-            raise Exception
-        else:
-            self.__dict__[name] = val
-
-    def __getitem(self, name):
-        if name in ["input_coords", "output_coords"]:
-            raise Exception
-        else:
-            return self.__dict__[name]
-
 
     def __call__(self, x):
         return self._map(x)
