@@ -1,5 +1,4 @@
 from path import path
-from attributes import attribute
 
 from numpy import sctypes as _sctypes
 
