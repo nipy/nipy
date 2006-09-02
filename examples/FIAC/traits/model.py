@@ -2,6 +2,7 @@ import os
 import pylab
 from neuroimaging import traits
 import numpy as N
+from scipy.sandbox.models import contrast
 
 from neuroimaging.fmri.pca import PCA, MultiPlot
 from neuroimaging.fmri import protocol
@@ -9,8 +10,6 @@ from neuroimaging.fmri.fmristat import delay
 from neuroimaging.fmri.filters import Filter
 from neuroimaging.image import Image
 import neuroimaging.fmri.fmristat as fmristat
-
-import neuroimaging.statistics.contrast as contrast
 
 from fiac import Run, Subject, Study
 from montage import Montage
