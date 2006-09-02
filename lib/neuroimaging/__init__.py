@@ -34,12 +34,14 @@ The neuroimaging package contains the following subpackages and modules:
 .. packagetree:: 
    :style: UML  
 """
+__docformat__ = 'restructuredtext en'
 
-__version__  = "0.01a"
+__version__  = '0.01a'
 __revision__ = int("$Rev$".split()[-2])
-__status__   = "alpha"
+__status__   = 'alpha'
 __date__     = "$LastChangedDate$"
-__url__      = "http://neuroimaging.scipy.org"
+__url__      = 'http://neuroimaging.scipy.org'
+
 
 import re
 from copy import copy
