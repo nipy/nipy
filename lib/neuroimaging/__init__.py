@@ -35,8 +35,8 @@ __docformat__ = 'restructuredtext en'
 __version__  = '0.01a'
 __revision__ = int("$Rev$".split()[-2])
 __status__   = 'alpha'
-__date__     = "$LastChangedDate$"
-__url__      = 'http://neuroimaging.scipy.org'
+__date__    = "$LastChangedDate$"
+__url__     = 'http://neuroimaging.scipy.org'
 
 
 import re
