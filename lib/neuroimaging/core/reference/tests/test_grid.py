@@ -53,7 +53,7 @@ class GridTest(unittest.TestCase):
         shape = (30,40,50)
         i = SamplingGrid.identity(shape=shape, names=space)
         self.assertEquals(tuple(i.shape), shape)
-        y = i.mapping.map([3,4,5])
+        y = i.mapping([3,4,5])
         N.testing.assert_almost_equal(y, N.array([3,4,5]))
 
     def test_identity2(self):
