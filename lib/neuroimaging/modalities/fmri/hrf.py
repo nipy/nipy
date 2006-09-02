@@ -9,7 +9,7 @@ import numpy.linalg as L
 
 from neuroimaging import traits
 
-import neuroimaging.modalities.fmri.filters
+from neuroimaging.modalities.fmri import filters
 from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
 
 def glover2GammaDENS(peak_hrf, fwhm_hrf):
