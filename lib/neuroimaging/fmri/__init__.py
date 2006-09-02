@@ -14,12 +14,11 @@ from neuroimaging.core.reference.mapping import Mapping, Affine
 
 class fMRIListMapping(Mapping):
 
-
     def __init__(self, input_coords, output_coords, maps, **keywords):
         self._maps = maps
 
 
-    def map(self, coords, inverse=False):
+    def map(self, coords):
         if len(coords.shape) > 1:
             n = coords.shape[1]
             value = []
