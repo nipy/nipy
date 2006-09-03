@@ -2,11 +2,12 @@
 PYTHON_PATH=../lib
 output_dir=api
 mkdir -p ${output_dir}
-epydoc -qqqq \
+epydoc -vvvv \
   --output ${output_dir} \
   --name nipy \
   --url http://neuroimaging.scipy.org \
   --no-private \
   --inheritance listed \
   --graph all \
-  $PYTHON_PATH/neuroimaging
+  $(find $PYTHON_PATH/neuroimaging -name "*py" | grep -v tests | grep -v enthought)
+#  $PYTHON_PATH/neuroimaging
