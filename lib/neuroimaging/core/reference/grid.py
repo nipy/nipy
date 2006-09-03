@@ -7,9 +7,9 @@ import numpy as N
 from neuroimaging import reverse
 from neuroimaging.core.reference.mapping import Mapping, Affine
 from neuroimaging.core.reference.axis import space, RegularAxis, Axis, VoxelAxis
-from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem,\
+from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem, \
   DiagonalCoordinateSystem, CoordinateSystem
-from neuroimaging.core.reference.iterators import SliceIterator,\
+from neuroimaging.core.reference.iterators import SliceIterator, \
   ParcelIterator, SliceParcelIterator
 
 
