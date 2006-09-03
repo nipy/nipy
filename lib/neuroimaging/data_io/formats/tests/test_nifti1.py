@@ -86,7 +86,7 @@ class NiftiWriteTest(NiftiTest):
     def test_write1(self):
         self.image.tofile('out.nii', clobber=True, sctype=N.float64)
         out = Image('out.nii')
-        self.assertEquals(out.source.sctype, N.float64)
+        self.assertEquals(out._source.sctype, N.float64)
         os.remove('out.nii')
 
     def test_write2(self):
@@ -156,12 +156,12 @@ class NiftiDataTypeTest(NiftiTest):
             out = Image(_out, grid=self.zimage.grid)
             out.tofile('out.nii', clobber=True)
             new = Image('out.nii')
-            self.assertEquals(new.source.datatype, nifti1.datatypes[sctype])
-            self.assertEquals(new.source.sctype, sctype)
-            self.assertEquals(new.source.vox_offset, 352)
+            self.assertEquals(new._source.datatype, nifti1.datatypes[sctype])
+            self.assertEquals(new._source.sctype, sctype)
+            self.assertEquals(new._source.vox_offset, 352)
             self.assertEquals(os.stat('out.nii').st_size,
                               N.product(self.image.grid.shape) *
-                              _out.dtype.itemsize + new.source.vox_offset)
+                              _out.dtype.itemsize + new._source.vox_offset)
             N.testing.assert_almost_equal(new[:], _out)
         os.remove('out.nii')
 
@@ -172,13 +172,13 @@ class NiftiDataTypeTest(NiftiTest):
                 out = Image(_out, grid=self.zimage.grid)
                 out.tofile('out.nii', clobber=True, sctype=_sctype)
                 new = Image('out.nii')
-                self.assertEquals(new.source.datatype, nifti1.datatypes[_sctype])
-                self.assertEquals(new.source.sctype, _sctype)
-                self.assertEquals(new.source.vox_offset, 352)
+                self.assertEquals(new._source.datatype, nifti1.datatypes[_sctype])
+                self.assertEquals(new._source.sctype, _sctype)
+                self.assertEquals(new._source.vox_offset, 352)
                 self.assertEquals(os.stat('out.nii').st_size,
                                   N.product(self.image.grid.shape) *
                                   N.dtype(_sctype).itemsize +
-                                  new.source.vox_offset)
+                                  new._source.vox_offset)
                 N.testing.assert_almost_equal(new[:], _out)
 
 

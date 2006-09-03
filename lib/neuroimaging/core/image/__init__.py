@@ -64,39 +64,39 @@ class Image(traits.HasTraits):
         traits.HasTraits.__init__(self, **keywords)
         # from existing Image
         if isinstance(image, Image):
-            self.source = image.source
+            self._source = image._source
 
         # from existing Format instance
         elif isinstance(image, Format):
-            self.source = image
+            self._source = image
 
         # from array
         elif isinstance(image, N.ndarray) or isinstance(image, N.core.memmap):
-            self.source = self.ArrayImage(image, grid=grid)
+            self._source = self.ArrayImage(image, grid=grid)
 
         # from filename or url
         elif type(image) == types.StringType:
-            self.source = self.fromurl(image, datasource, grid=grid, **keywords)
+            self._source = self.fromurl(image, datasource, grid=grid, **keywords)
 
         else:
             raise ValueError(
           "Image input must be a string, array, or another image.")
         # Find spatial grid -- this is the one that will be used generally
-        self.grid = self.source.grid
+        self.grid = self._source.grid
         self.shape = list(self.grid.shape)
         self.ndim = len(self.shape)
 
         # When possible, attach memory-mapped array or array as buffer attr
-        if hasattr(self.source, 'memmap'):
-            self.buffer = self.source.memmap
-        elif isinstance(self.source.data, N.ndarray):
-            self.buffer = self.source.data          
+        if hasattr(self._source, 'memmap'):
+            self.buffer = self._source.memmap
+        elif isinstance(self._source.data, N.ndarray):
+            self.buffer = self._source.data          
 
         self.postread = lambda x:x
 
 
-    def __getitem__(self, slice): return self.source[slice]
-    def __setitem__(self, slice, data): self.source[slice] = data
+    def __getitem__(self, slice): return self._source[slice]
+    def __setitem__(self, slice, data): self._source[slice] = data
 
 
     def __iter__(self):
@@ -179,14 +179,14 @@ class Image(traits.HasTraits):
 
     def tofile(self, filename, array=True, clobber=False,
                sctype=None, **keywords):
-        sctype = sctype or self.source.sctype
+        sctype = sctype or self._source.sctype
         outimage = Image(filename, mode='w', grid=self.grid,
                          clobber=clobber,
                          sctype=sctype,
                          **keywords)
         if array:
             tmp = self.toarray(**keywords)
-            outimage.source[:] = tmp.source.data
+            outimage._source[:] = tmp._source.data
         else:
             tmp = iter(self)
             outimage = iter(outimage)
@@ -206,7 +206,7 @@ class Image(traits.HasTraits):
         Image. By default, it does not read 4d images. Missing values are
         filled in with the value of fill (default=self.fill=0.0).
         """
-        value = self.source[self.grid.allslice()]
+        value = self._source[self.grid.allslice()]
         if clean: value = Image(N.nan_to_num(value, fill=self.fill))
         return value
 

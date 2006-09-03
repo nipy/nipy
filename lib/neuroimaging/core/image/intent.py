@@ -44,11 +44,11 @@ class Intent(traits.HasTraits):
             for par in image.intent_parameters:
                 image.remove_trait(par)
             image.remove_trait('intent_code')
-        if not isinstance(image.source, nifti1.NIFTI1):
+        if not isinstance(image._source, nifti1.NIFTI1):
             image.add_trait('intent_code', intent_trait)
             image.intent_code = self.intent_code
         else:
-            trait = traits.Delegate('source', 'intent_code', modify=True)
+            trait = traits.Delegate('_source', 'intent_code', modify=True)
             image.add_trait('intent_code', trait)
             image.intent_code = self.intent_code 
 
@@ -57,13 +57,13 @@ class Intent(traits.HasTraits):
             par = self.parameters[i]
             if par not in parameter_values.keys():
                 raise IntentError, 'parameters %s must be specified' % `self.parameters`
-            if not isinstance(image.source, nifti1.NIFTI1):
+            if not isinstance(image._source, nifti1.NIFTI1):
                 trait = traits.Float(parameter_values[par])
                 image.add_trait(par, parameter_values[par])
             else:
                 trait = traits.Delegate('image', 'intent_p%d' % (i+1,), modify=True)
                 image.add_trait(par, trait)
-                setattr(image.source, 'intent_p%d' % (i+1,), parameter_values[par])                
+                setattr(image._source, 'intent_p%d' % (i+1,), parameter_values[par])                
             image.intent_parameters = self.parameters
 
     def create(self, filename, datasource=DataSource(), grid=None,
@@ -390,7 +390,7 @@ if __name__ == '__main__':
     ## print a.shape
 
     a = TStat.create('out.nii', df=5, grid=zimage.grid, clobber=True)
-    print a.shape, a.df, a.source.intent_p1
+    print a.shape, a.df, a._source.intent_p1
 
     a = TStat.create('out.nii', grid=zimage.grid, clobber=True, voxelwise=True)
     print a.shape, a.df.shape, a.tstat.shape
