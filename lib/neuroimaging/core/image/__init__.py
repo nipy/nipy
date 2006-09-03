@@ -36,7 +36,7 @@ class Image(traits.HasTraits):
 
         def __getitem__(self, item): 
             return self.data[item]
-        def __setitem__(self, item, values):
+        def __setitem__(self, item, value):
             self.data[item] = value
 
         def getslice(self, _slice): return self[_slice]
