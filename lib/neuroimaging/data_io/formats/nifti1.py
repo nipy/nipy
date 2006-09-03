@@ -278,13 +278,12 @@ class NIFTI1(BinaryFormat):
             self.read_header()
             self.ndim = self.dim[0]
             # attach data to self
-
-        axisnames = dims[0:self.ndim]
+        
+        axisnames = dims[1:self.ndim+1]
         step = self.pixdim[1:(self.ndim+1)]
         shape = self.dim[1:(self.ndim+1)]
 
         ## Setup affine transformation
-        
         if grid is None:
             self.grid = SamplingGrid.from_start_step(names=axisnames,
                                                  shape=shape,
@@ -295,13 +294,10 @@ class NIFTI1(BinaryFormat):
             t = self.transform()
             self.grid.mapping.transform[0:3,0:3] = t[0:3,0:3]
             self.grid.mapping.transform[0:3,-1] = t[0:3,-1]
-
             # assume .mat matrix uses FORTRAN indexing
             self.grid = self.grid.matlab2python()
         else:
             self.grid = grid
-
-
 
         self.attach_data()
 

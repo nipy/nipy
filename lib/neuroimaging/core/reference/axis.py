@@ -22,7 +22,7 @@ could easily be added as a subclass of DiscreteAxis if required.
 
 import numpy as N
 
-valid = ('xspace', 'yspace', 'zspace', 'time', 'vector_dimension', 'concat')
+valid = ('time', 'xspace', 'yspace', 'zspace', 'vector_dimension', 'concat')
 space = ('zspace', 'yspace', 'xspace')
 spacetime = ('time', 'zspace', 'yspace', 'xspace')
 
