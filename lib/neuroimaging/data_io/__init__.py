@@ -1,3 +1,8 @@
+"""
+Package contains generic functions for data input/output. This includes
+methods for accessing file systems and network resources.
+"""
+
 import os, gzip, bz2
 from urllib2 import urlopen
 from urlparse import urlparse

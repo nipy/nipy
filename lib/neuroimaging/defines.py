@@ -1,5 +1,5 @@
 """
-This modules checks to see if particular modules are importable.
+Module checks to see if particular modules are importable.
 For now, it only checks if pylab and/or qt are available.
 """
 

@@ -1,3 +1,3 @@
 """
-Package contains core neuroimaging classes.
+Package containing core neuroimaging classes.
 """

@@ -2,7 +2,9 @@
 Neuroimaging tools for Python (NiPy).
 
 The aim of NiPy is to produce a platform-independent Python environment for
-the analysis of brain imaging data using an open development model.  While
+the analysis of brain imaging data using an open development model.
+
+While
 the project is still in its initial stages, packages for file I/O, script
 support as well as single subject fMRI and random effects group comparisons
 model are currently available.
@@ -20,6 +22,12 @@ Specifically, we aim to:
 
    4. To maintain and develop this framework as a single, easily
       installable bundle.
+
+.. importgraph:: 
+
+.. classtree:: neuroimaging
+  
+.. packagetree:: neuroimaging
 """
 
 __version__  = "0.01a"

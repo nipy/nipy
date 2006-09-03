@@ -1,4 +1,4 @@
 """
-Package contains both command-line and graphical user interfaces as well as 
+Package containing both command-line and graphical user interfaces as well as
 visualization tools.
 """

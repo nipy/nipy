@@ -1,3 +1,6 @@
+"""
+Module containing simple utilities for running our tests.
+"""
 import shutil, tempfile, os, types
 from unittest import TestSuite, makeSuite, TestCase, TextTestRunner
 from doctest import DocFileSuite
