@@ -6,9 +6,8 @@ class fMRISliceIterator(SliceIterator):
     timeseries.
     """
 
-    def __init__(self, end, **kwargs):
-        kwargs["axis"]=1
-        SliceIterator.__init__(self, end, **kwargs)
+    def __init__(self, end):
+        SliceIterator.__init__(self, end, axis = 1)
         self.nframe = self.end[0]
 
 

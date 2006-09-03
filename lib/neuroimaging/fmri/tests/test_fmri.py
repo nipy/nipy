@@ -44,8 +44,7 @@ class fMRITest(unittest.TestCase):
     def test_labels1(self):
         parcelmap = (self.rho.readall() * 100).astype(N.int32)
 
-        self.img.grid.itertype = 'parcel'
-        self.img.grid.parcelmap = parcelmap
+        self.img.grid.set_iter('parcel', parcelmap=parcelmap)
         parcelmap.shape = N.product(parcelmap.shape)
         self.img.grid.parcelseq = N.unique(parcelmap)
 
@@ -57,8 +56,7 @@ class fMRITest(unittest.TestCase):
     def test_labels2(self):
         parcelmap = (self.rho.readall() * 100).astype(N.int32)
 
-        self.rho.grid.itertype = 'parcel'
-        self.rho.grid.parcelmap = parcelmap
+        self.rho.grid.set_iter('parcel', parcelmap=parcelmap)
         parcelmap.shape = N.product(parcelmap.shape)
         self.rho.grid.parcelseq = N.unique(parcelmap)
 

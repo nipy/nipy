@@ -33,12 +33,12 @@ class fMRIListMapping(Mapping):
 class fMRISamplingGrid(SamplingGrid):
 
 
-    def iterslices(self):
+    def _iterslices(self):
         self.iterator = fMRISliceIterator(self.shape)
         return self
 
 
-    def itersliceparcels(self):
+    def _itersliceparcels(self):
         self.iterator = fMRISliceParcelIterator(
           self.parcelmap, self.parcelseq, self.shape[0])
         return self
