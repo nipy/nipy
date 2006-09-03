@@ -125,7 +125,7 @@ class fMRIImage(Image):
         
 
     def frame(self, i, clean=False, **keywords):
-        data = N.squeeze(self.getslice(slice(i,i+1)))
+        data = N.squeeze(self[slice(i,i+1)])
         if clean: data = N.nan_to_num(data)
         return Image(self.postread(data), grid=self.grid.subgrid(i), **keywords)
 

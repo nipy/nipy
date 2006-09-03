@@ -50,7 +50,7 @@ class AnalyzeWriteTest(AnalyzeTest):
 class AnalyzeReadTest(AnalyzeTest):
 
     def test_read(self):
-        data = self.image.getslice(slice(4,7))
+        data = self.image[slice(4,7)]
         self.assertEquals(data.shape, (3,109,91))
 
 class AnalyzeDataTypeTest(AnalyzeTest):

@@ -38,9 +38,6 @@ class Image(traits.HasTraits):
         def __setitem__(self, item, value):
             self.data[item] = value
 
-        def getslice(self, _slice): return self[_slice]
-        def writeslice(self, _slice, data): self[_slice] = data
-
 
     @staticmethod
     def fromurl(url, datasource=DataSource(), format=None, grid=None, mode="r", clobber=False,
@@ -99,9 +96,7 @@ class Image(traits.HasTraits):
 
 
     def __getitem__(self, slice): return self.source[slice]
-    def getslice(self, slice): return self[slice]
     def __setitem__(self, slice, data): self.source[slice] = data
-    def writeslice(self, slice, data): self[slice] = data
 
 
     def __iter__(self):
@@ -200,7 +195,8 @@ class Image(traits.HasTraits):
             # outimage is an Image
             for dataslice in tmp:
                 outimage.next(data=dataslice, value=tmp.itervalue)
-        if hasattr(outimage, "close"): outimage.close()
+        if hasattr(outimage, "close"): 
+            outimage.close()
         return outimage
 
 

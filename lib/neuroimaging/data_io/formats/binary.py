@@ -279,15 +279,11 @@ class BinaryFormat(Format):
     def __getitem__(self, _slice):
         return self.postread(self.memmap[_slice])
 
-    def getslice(self, _slice): return self[_slice]
-
     def __setitem__(self, _slice, data):
         data = self.prewrite(data).astype(self.dtype)
         data.shape = self.memmap[_slice].shape
         self.memmap[_slice] = data
         
-    def writeslice(self, _slice, data): self[_slice] = data
-
     def attach_data(self, offset=0):
 
         """

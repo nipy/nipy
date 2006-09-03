@@ -38,7 +38,7 @@ class WholeBrainNormalize(traits.HasTraits):
         self.avg = N.zeros((self.n,), N.float64)
 
         for i in range(self.n):
-            d = fmri_image.getslice(slice(i,i+1))
+            d = fmri_image[slice(i,i+1)]
             if hasattr(self, '_mask'):
                 d.shape = N.product(d.shape)
                 d = N.compress(self._mask, d)
@@ -152,7 +152,7 @@ class fMRIStatOLS(LinearModelIterator):
             parcelmap = []
             parcelseq = []
             for i in range(self.rho.grid.shape[0]):
-                tmp = self.rho.getslice(slice(i,i+1))
+                tmp = self.rho[slice(i,i+1)]
                 tmp.shape = N.product(tmp.shape)
                 tmp = N.around(tmp * (self.nmax / 2.)) / (self.nmax / 2.)
                 newlabels = list(N.unique(tmp))

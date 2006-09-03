@@ -278,8 +278,8 @@ class iterFWHM(Resels, traits.HasTraits):
     def output(self, FWHMmax=50.):
         value = self.grid.next()
 
-        self.fwhm.writeslice(value.slice, N.clip(self._fwhm, 0, FWHMmax))
-        self.resels.writeslice(value.slice, N.clip(self._resels, 0, FWHMmax))
+        self.fwhm[value.slice] =  N.clip(self._fwhm, 0, FWHMmax)
+        self.resels[value.slice] = N.clip(self._resels, 0, FWHMmax)
 
 class fastFWHM(Resels):
     """
@@ -303,7 +303,7 @@ class fastFWHM(Resels):
             for i in range(self.n):
                 if verbose:
                     print '(Normalizing) Frame: [%d]' % i
-                _frame = self.rimage.getslice(slice(i,i+1))
+                _frame = self.rimage[slice(i,i+1)]
                 _mu = _mu + _frame
                 _sumsq += _frame**2
 
@@ -318,7 +318,7 @@ class fastFWHM(Resels):
         for i in range(self.n):
             if verbose:
                 print 'Slice: [%d]' % i
-            _frame = self.rimage.getslice(slice(i,i+1))
+            _frame = self.rimage[slice(i,i+1)]
             _frame = (_frame - _mu) * _invnorm
             _frame.shape = _frame.shape[1:]
 
@@ -345,6 +345,6 @@ class fastFWHM(Resels):
         fwhm = self.resel2fwhm(resels)
 
         fullslice = [slice(0, x) for x in self.grid.shape]
-        self.resels.writeslice(fullslice, resels)
-        self.fwhm.writeslice(fullslice, fwhm)
+        self.resels[fullslice] = resels
+        self.fwhm[fullslice] = fwhm
 

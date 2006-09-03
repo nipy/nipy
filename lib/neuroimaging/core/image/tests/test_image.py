@@ -22,7 +22,7 @@ class ImageTest(unittest.TestCase):
         self.assertEquals(N.minimum.reduce(y), 0.)
 
     def test_slice1(self):
-        x = self.img.getslice(3)
+        x = self.img[3]
         self.assertEquals(x.shape, tuple(self.img.grid.shape[1:]))
         
     def test_slice2(self):
@@ -31,18 +31,18 @@ class ImageTest(unittest.TestCase):
 
     def test_slice3(self):
         s = slice(0,20,2)
-        x = self.img.getslice(s)
+        x = self.img[s]
         self.assertEquals(x.shape, (10,) + tuple(self.img.grid.shape[1:]))
 
     def test_slice4(self):
         s = slice(0,self.img.grid.shape[0])
-        x = self.img.getslice(s)
+        x = self.img[s]
         self.assertEquals(x.shape, tuple((self.img.grid.shape)))
 
     def test_slice5(self):
         s1 = slice(0,20,2)
         s2 = slice(0,50,5)
-        x = self.img.getslice([s1,s2])
+        x = self.img[[s1,s2]]
         self.assertEquals(x.shape, (10,10,self.img.grid.shape[2]))
 
     def test_array(self):

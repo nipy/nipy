@@ -99,7 +99,7 @@ class PCA(traits.HasTraits):
         for i in range(self.image.shape[1]):
             _slice = [first_slice, slice(i,i+1)]
             
-            Y = N.nan_to_num(self.image.getslice(_slice).reshape((_shape[0], N.product(_shape[2:]))))
+            Y = N.nan_to_num(self.image[_slice].reshape((_shape[0], N.product(_shape[2:]))))
             YX = N.dot(UX, Y)
             
             if self.pcatype == 'cor':
@@ -150,7 +150,7 @@ class PCA(traits.HasTraits):
 
         for i in range(self.image.shape[1]):
             _slice = [first_slice, slice(i,i+1)]
-            Y = N.nan_to_num(self.image.getslice(_slice).reshape((_shape[0], N.product(_shape[2:]))))
+            Y = N.nan_to_num(self.image[_slice].reshape((_shape[0], N.product(_shape[2:]))))
             U = N.dot(subVX, Y)
 
             if self.mask is not None:
@@ -181,7 +181,7 @@ class PCA(traits.HasTraits):
             dabs = N.fabs(d); di = dabs.argmax()
             d = d / d.flat[di]
             outslice = [slice(0,j) for j in outgrid.shape]
-            outimage.writeslice(outslice, d)
+            outimage[outslice] = d
             del(d); gc.collect()
 
         return outimages
