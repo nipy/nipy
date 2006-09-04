@@ -1,3 +1,10 @@
+"""
+Mappings define a transformation between sets of coordinate systems.
+
+These mappings can be used to transform between voxel space and real space,
+for example.
+"""
+
 import csv, urllib
 from struct import unpack
 

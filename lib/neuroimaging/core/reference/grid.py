@@ -1,3 +1,7 @@
+"""
+Samplng grids store all the details about how an image translates to space.
+They also provide mechanisms for iterating over that space.
+"""
 import numpy as N
 
 from neuroimaging import reverse

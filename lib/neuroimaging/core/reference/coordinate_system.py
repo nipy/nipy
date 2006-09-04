@@ -1,3 +1,7 @@
+"""
+Coordinate systems are used to represent the spaces in which the images reside.
+"""
+
 import numpy as N
 
 from neuroimaging import reorder, reverse, hasattrs

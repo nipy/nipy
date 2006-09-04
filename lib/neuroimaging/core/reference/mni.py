@@ -1,3 +1,7 @@
+"""
+A set of reference object which represent the MNI space.
+"""
+
 from neuroimaging.core.reference.axis import RegularAxis, generic
 from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem, \
     DiagonalCoordinateSystem

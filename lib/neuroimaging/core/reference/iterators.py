@@ -1,3 +1,7 @@
+"""
+This module provides a set of classes to be used to iterate over sampling grids.
+"""
+
 import operator
 
 # External imports

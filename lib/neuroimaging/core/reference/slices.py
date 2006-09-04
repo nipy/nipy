@@ -1,3 +1,6 @@
+"""
+A set of methods to get sampling grids which represent slices in space.
+"""
 
 from neuroimaging.core.reference import grid, axis, mapping, mni
 from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem
