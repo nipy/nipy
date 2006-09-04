@@ -6,8 +6,10 @@ a spectral HRF.
 """
 import numpy as N
 import numpy.linalg as L
-import filters
+
 from neuroimaging import traits
+
+import neuroimaging.modalities.fmri.filters
 from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
 
 def glover2GammaDENS(peak_hrf, fwhm_hrf):

@@ -6,7 +6,7 @@ PYLAB_DEF, pylab = pylab_def()
 # Interpolation schemes
 
 if PYLAB_DEF:
-    from spectral import spectral
+    from neuroimaging.ui.visualization.cmap.spectral import spectral
 
     interpolation = traits.Trait('bilinear', 'nearest', 'blackman100',
                                  'blackman256', 'blackman64',

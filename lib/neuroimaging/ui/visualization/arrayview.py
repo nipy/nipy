@@ -11,7 +11,8 @@ from matplotlib.image import AxesImage
 from matplotlib.backends.backend_qtagg import \
   FigureCanvasQTAgg as FigureCanvas
 
-from qtutils import LayoutWidgetMixin, RangeSlider, HBox, RadioButton
+from neuroimaging.ui.visualization.qtutils import \
+  LayoutWidgetMixin, RangeSlider, HBox, RadioButton
 
 def iscomplex(a): return hasattr(a, "imag")
 

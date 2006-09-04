@@ -98,7 +98,7 @@ def squeezeshape(shape):
 
 import pylab
 import matplotlib
-from cmap import cmap, getcmap
+from neuroimaging.ui.visualization.cmap import cmap, getcmap
 
 interpolation = traits.Trait('nearest', 'bilinear', 'blackman100',
                              'blackman256', 'blackman64', 'bicubic',

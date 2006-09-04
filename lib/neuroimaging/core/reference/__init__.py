@@ -30,6 +30,8 @@ functions are presented which will return a SamplingGrid representing a single s
 through a larger grid.
 
 """
-import axis, coordinate_system, grid, iterators, mapping, mni, slices
+from neuroimaging.core.reference import \
+  axis, coordinate_system, grid, iterators, mapping, mni, slices
+
 __all__ = ["axis", "coordinate_system", "grid", "iterators", "mapping", 
            "mni", "slices"]

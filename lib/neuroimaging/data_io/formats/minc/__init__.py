@@ -4,10 +4,10 @@ import numpy as N
 
 from neuroimaging import traits
 
-import _mincutils
-import _mincconstants as mc
-from neuroimaging.data_io.formats import Format
 from neuroimaging.core.reference import mapping, axis, coordinate_system
+from neuroimaging.data_io.formats import Format
+from neuroimaging.data_io.formats.minc import _mincutils
+from neuroimaging.data_io.formats.minc import _mincconstants as mc
 
 
 class Dimension(axis.VoxelAxis):
