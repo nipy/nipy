@@ -163,16 +163,14 @@ class SamplingGrid (object):
                 w = v.copy()
                 v[i] = step[i]
                 T[0:ndim,i] = self.mapping(v) - self.mapping(w)
-            _map = Affine(self.input_coords,
-                          self.output_coords, T)
+            _map = Affine(T)
         else:
             def __map(x, start=start, step=step, _f=self.mapping):
                 v = start + step * x
                 return _f(v)
-            _map = Mapping(self.input_coords,
-                           self.output_coords, __map)
+            _map = Mapping(__map)
 
-        g = SamplingGrid(shape=count, mapping=_map)
+        g = SamplingGrid(count, _map, self.input_coords, self.output_coords)
         g.set_iter_param("axis", axis)
         return iter(g)
 
