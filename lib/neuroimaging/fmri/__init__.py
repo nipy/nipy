@@ -31,8 +31,8 @@ class fMRIListMapping(Mapping):
 
 class fMRISamplingGrid(SamplingGrid):
 
-    def __init__(self, shape, mapping):
-        SamplingGrid.__init__(self, shape, mapping)
+    def __init__(self, shape, mapping, input_coords, output_coords):
+        SamplingGrid.__init__(self, shape, mapping, input_coords, output_coords)
         iterators = {"slice": (fMRISliceIterator, ["shape"]),
                      "parcel": (ParcelIterator, ["parcelmap", "parcelseq"]),
                      "slice/parcel": (fMRISliceParcelIterator, ["parcelmap", "parcelseq", "shape"])}
@@ -62,28 +62,28 @@ class fMRISamplingGrid(SamplingGrid):
         # TODO: this bit should be handled by CoordinateSystem,
         # eg: incoords = self.mapping.input_coords.subcoords(...)
         incoords = CoordinateSystem(
-          self.mapping.input_coords.name+'-subgrid',
-          self.mapping.input_coords.axes()[1:])
+          self.input_coords.name+'-subgrid',
+          self.input_coords.axes()[1:])
 
         if isinstance(self.mapping, fMRIListMapping):
-            outaxes = self.mapping.output_coords.axes()[1:]
+            outaxes = self.output_coords.axes()[1:]
             outcoords = CoordinateSystem(
-                self.mapping.output_coords.name, outaxes)        
-            W = Affine(incoords, outcoords, self._maps[i])
+                self.output_coords.name, outaxes)        
+            W = Affine(self._maps[i])
 
         elif self.isproduct():
-            outaxes = self.mapping.output_coords.axes()[1:]
+            outaxes = self.output_coords.axes()[1:]
             outcoords = CoordinateSystem(
-              self.mapping.output_coords.name, outaxes)        
+              self.output_coords.name, outaxes)        
 
             t = self.mapping.transform
             t = t[1:,1:]
-            W = Affine(incoords, outcoords, t)
+            W = Affine(t)
 
         else:
-            outaxes = self.mapping.output_coords.axes()[1:]
+            outaxes = self.output_coords.axes()[1:]
             outcoords = CoordinateSystem(
-              self.mapping.output_coords.name, outaxes)        
+              self.output_coords.name, outaxes)        
 
             def _map(x, fn=self.mapping.map, **keywords):
                 if len(x.shape) > 1:
@@ -92,9 +92,9 @@ class fMRISamplingGrid(SamplingGrid):
                     _x = N.zeros((x.shape[0]+1,), N.float64)
                 _x[0] = i
                 return fn(_x)
-            W = Mapping(incoords, outcoords, _map)
+            W = Mapping(_map)
 
-        _grid = SamplingGrid(shape=self.shape[1:], mapping=W)
+        _grid = SamplingGrid(self.shape[1:], W, incoords, outcoords)
         for param in ["parcelmap", "parcelseq"]:
             _grid.set_iter_param(param, self.get_iter_param(param))
         return _grid
@@ -109,11 +109,10 @@ class fMRIImage(Image):
 
     def __init__(self, _image, **keywords):
         Image.__init__(self, _image, **keywords)
-        self.grid = fMRISamplingGrid(
-          mapping=self.grid.mapping, shape=self.grid.shape)
+        self.grid = fMRISamplingGrid(self.grid.shape, self.grid.mapping, self.grid.input_coords, self.grid.output_coords)
         if self.grid.isproduct():
             ndim = len(self.grid.shape)
-            n = [self.grid.mapping.input_coords.axisnames()[i] \
+            n = [self.grid.input_coords.axisnames()[i] \
                  for i in range(ndim)]
             d = n.index('time')
             self.TR = self.grid.mapping.transform[d, d]

@@ -12,12 +12,10 @@ class MappingTest2(unittest.TestCase):
             return 2*x
         def g(x):
             return x/2.0
-        input_coords = mni.MNI_voxel
-        output_coords = mni.MNI_world        
-        self.a = mapping.Mapping(input_coords, output_coords, f)
-        self.b = mapping.Mapping(input_coords, output_coords, f, g)
-        self.c = mapping.Mapping(input_coords, output_coords, g)        
-        self.d = mapping.Mapping(input_coords, output_coords, g, f)        
+        self.a = mapping.Mapping(f)
+        self.b = mapping.Mapping(f, g)
+        self.c = mapping.Mapping(g)        
+        self.d = mapping.Mapping(g, f)        
 
     def test_call(self):
         value = N.array([1., 2., 3.])
@@ -113,12 +111,6 @@ class MappingTest2(unittest.TestCase):
         N.testing.assert_almost_equal(dd(value), value/4)
         N.testing.assert_almost_equal(dd.inverse()(value), 4*value)        
 
-    def test_ndim(self):
-        self.assertEqual(self.a.ndim(), 3)
-        self.assertEqual(self.b.ndim(), 3)
-        self.assertEqual(self.c.ndim(), 3)
-        self.assertEqual(self.d.ndim(), 3)                        
-        
     def test_isinvertible(self):
         self.assertFalse(self.a.isinvertible())
         self.assertTrue(self.b.isinvertible())
@@ -226,7 +218,7 @@ class MappingTest(unittest.TestCase):
         a = mapping.Affine.identity()
         A = N.identity(4, N.float64)
         A[0:3] = R.standard_normal((3,4))
-        self.mapping = mapping.Affine(a.input_coords, a.output_coords, A)
+        self.mapping = mapping.Affine(A)
 
     def test_python2matlab1(self):
         v = R.standard_normal((3,))

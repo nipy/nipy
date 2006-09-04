@@ -6,7 +6,7 @@ import numpy as N
 
 from neuroimaging import reverse
 from neuroimaging.core.reference.mapping import Mapping, Affine
-from neuroimaging.core.reference.axis import space, RegularAxis, VoxelAxis, Axis
+from neuroimaging.core.reference.axis import space, RegularAxis, Axis, VoxelAxis
 from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem,\
   DiagonalCoordinateSystem, CoordinateSystem
 from neuroimaging.core.reference.iterators import SliceIterator,\
@@ -14,7 +14,10 @@ from neuroimaging.core.reference.iterators import SliceIterator,\
 
 
 class SamplingGrid (object):
-
+    """
+    Define the space
+    """
+    
     @staticmethod
     def from_start_step(names=space, shape=(), start=(), step=()): 
         """
@@ -25,17 +28,15 @@ class SamplingGrid (object):
         # fill in default step size
         step = N.asarray(step)
         step = N.where(step, step, 1.)
-
-        indim = [VoxelAxis(name=names[i], length=shape[i]) for i in range(ndim)]
-        input_coords = VoxelCoordinateSystem('voxel', indim)
-
-        outdim = [RegularAxis(name=names[i], length=shape[i],
+        
+        axes = [RegularAxis(name=names[i], length=shape[i],
           start=start[i], step=step[i]) for i in range(ndim)]
-        output_coords = DiagonalCoordinateSystem('world', outdim)
-
+        input_coords = VoxelCoordinateSystem('voxel', axes)
+        output_coords = DiagonalCoordinateSystem('world', axes)
         transform = output_coords.transform()
-        mapping = Affine(input_coords, output_coords, transform)
-        return SamplingGrid(shape=list(shape), mapping=mapping)
+
+        mapping = Affine(transform)
+        return SamplingGrid(list(shape), mapping, input_coords, output_coords)
 
 
     @staticmethod
@@ -46,17 +47,21 @@ class SamplingGrid (object):
         ndim = len(shape)
         if len(names) != ndim:
             raise ValueError('shape and number of axis names do not agree')
-        w = Affine.identity(ndim, names=names)
-        return SamplingGrid(shape=list(shape), mapping=w)
+        axes = [VoxelAxis(name) for name in names]
+        input_coords = VoxelCoordinateSystem('voxel', axes), 
+        output_coords = DiagonalCoordinateSystem('world', axes),
+        
+        w = Affine.identity(ndim)
+        return SamplingGrid(list(shape), w, input_coords, output_coords)
 
 
-    def __init__(self, shape, mapping):
+    def __init__(self, shape, mapping, input_coords, output_coords):
         # These guys define the structure of the grid.
         self.shape = tuple(shape)
         self.ndim = len(self.shape)
         self.mapping = mapping
-        self.input_coords = mapping.input_coords
-        self.output_coords = mapping.output_coords
+        self.input_coords = input_coords
+        self.output_coords = output_coords
 
         # These guys are for use of the SamplingGrid as an iterator.
         iterators = {"slice": (SliceIterator, ["shape", "axis"]),
@@ -80,7 +85,7 @@ class SamplingGrid (object):
         indices = N.indices(self.shape)
         tmp_shape = indices.shape
         # reshape indices to be a sequence of coordinates
-        indices.shape = (self.mapping.ndim(), N.product(self.shape))
+        indices.shape = (self.ndim, N.product(self.shape))
         _range = self.mapping(indices)
         _range.shape = tmp_shape
         return _range 
@@ -93,12 +98,17 @@ class SamplingGrid (object):
         return self._iterguy.next()
     
     def itervalue(self):
+        """
+        Return the current iteration value
+        """
         return self._iterguy.itervalue
                 
     def set_iter_param(self, name, val):
+        """ Set an iteration parameter """
         self._iterguy.set(name, val)
         
     def get_iter_param(self, name):
+        """ Get an iteration parameter """
         return self._iterguy.get(name)
     
     class _IterHelper:
@@ -153,30 +163,31 @@ class SamplingGrid (object):
                 w = v.copy()
                 v[i] = step[i]
                 T[0:ndim,i] = self.mapping(v) - self.mapping(w)
-            _map = Affine(self.mapping.input_coords,
-                          self.mapping.output_coords, T)
+            _map = Affine(self.input_coords,
+                          self.output_coords, T)
         else:
             def __map(x, start=start, step=step, _f=self.mapping):
                 v = start + step * x
                 return _f(v)
-            _map = Mapping(self.mapping.input_coords,
-                           self.mapping.output_coords, __map)
+            _map = Mapping(self.input_coords,
+                           self.output_coords, __map)
 
         g = SamplingGrid(shape=count, mapping=_map)
         g.set_iter_param("axis", axis)
         return iter(g)
 
 
-    def transform(self, matrix): 
-        self.mapping = matrix * self.mapping
+    def transform(self, mapping): 
+        self.mapping = mapping * self.mapping
 
     def matlab2python(self):
-        return SamplingGrid(shape=reverse(self.shape),
-          mapping=self.mapping.matlab2python())
+        m = self.mapping.matlab2python()
+        return SamplingGrid(reverse(self.shape), m, self.input_coords.reverse(), self.output_coords)
 
     def python2matlab(self):
-        return SamplingGrid(shape=reverse(self.shape),
-          mapping=self.mapping.python2matlab())
+        m = self.mapping.python2matlab()
+        return SamplingGrid(reverse(self.shape), m, self.input_coords.reverse(), self.output_coords)
+
 
     def replicate(self, n, concataxis="concat"):
         """
@@ -195,25 +206,25 @@ class ConcatenatedGrids(SamplingGrid):
 
     def _grids (self, grids):
         # check mappings are affine
-        check = N.sum([not isinstance(grid.mapping, Affine)\
+        check = N.any([not isinstance(grid.mapping, Affine)\
                           for grid in grids])
         if check: raise ValueError('must all be affine mappings!')
 
         # check shapes are identical
         s = grids[0].shape
-        check = N.sum([grid.shape != s for grid in grids])
+        check = N.any([grid.shape != s for grid in grids])
         if check: raise ValueError('subgrids must have same shape')
 
         # check input coordinate systems are identical
-        ic = grids[0].mapping.input_coords
-        check = N.sum([grid.mapping.input_coords != ic\
+        ic = grids[0].input_coords
+        check = N.any([grid.input_coords != ic\
                            for grid in grids])
         if check: raise ValueError(
               'subgrids must have same input coordinate systems')
 
         # check output coordinate systems are identical
-        oc = grids[0].mapping.output_coords
-        check = N.sum([grid.mapping.output_coords != oc\
+        oc = grids[0].output_coords
+        check = N.any([grid.output_coords != oc\
                            for grid in grids])
         if check: raise ValueError(
               'subgrids must have same output coordinate systems')
@@ -234,21 +245,21 @@ class ConcatenatedGrids(SamplingGrid):
                 return self.grids[i].mapping(x)
                 
         newaxis = Axis(name=self.concataxis)
-        ic = self.grids[0].mapping.input_coords
+        ic = self.grids[0].input_coords
         newin = CoordinateSystem(
               '%s:%s'%(ic.name, self.concataxis), [newaxis] + list(ic.axes()))
-        oc = self.grids[0].mapping.output_coords
+        oc = self.grids[0].output_coords
         newout = CoordinateSystem(
               '%s:%s'%(oc.name, self.concataxis), [newaxis] + list(oc.axes()))
-        return Mapping(newin, newout, mapfunc)
+        return Mapping(mapfunc), newin, newout
 
 
     def __init__(self, grids, concataxis="concat"):
         self.grids = self._grids(grids)
         self.concataxis = concataxis
-        mapping = self._mapping()
+        mapping, input_coords, output_coords = self._mapping()
         shape = (len(self.grids),) + self.grids[0].shape
-        SamplingGrid.__init__(self, shape, mapping)
+        SamplingGrid.__init__(self, shape, mapping, input_coords, output_coords)
 
     def subgrid(self, i): 
         return self.grids[i]
@@ -257,14 +268,14 @@ class ConcatenatedIdenticalGrids(ConcatenatedGrids):
 
     def __init__(self, grid, n, concataxis="concat"):
         ConcatenatedGrids.__init__(self, [grid for i in range(n)], concataxis)
-        self.mapping = self._mapping()
+        self.mapping, self.input_coords, self.output_coords = self._mapping()
 
     def _mapping(self):
         newaxis = Axis(name=self.concataxis)
-        ic = self.grids[0].mapping.input_coords
+        ic = self.grids[0].input_coords
         newin = CoordinateSystem(
             '%s:%s'%(ic.name, self.concataxis), [newaxis] + list(ic.axes()))
-        oc = self.grids[0].mapping.output_coords
+        oc = self.grids[0].output_coords
         newout = CoordinateSystem(
             '%s:%s'%(oc.name, self.concataxis), [newaxis] + list(oc.axes()))
 
@@ -275,5 +286,5 @@ class ConcatenatedIdenticalGrids(ConcatenatedGrids):
         T[0:ndim,-1] = t[0:ndim,-1]
         T[ndim,ndim] = 1.
         T[(ndim+1),(ndim+1)] = 1.
-        return Affine(newin, newout, T)
+        return Affine(T), newin, newout
 

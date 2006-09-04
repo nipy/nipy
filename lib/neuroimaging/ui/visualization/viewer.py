@@ -77,7 +77,7 @@ class BoxViewer(traits.HasTraits):
         self.interpolation = interpolation
         self.slices = {}
 
-        if image.grid.mapping.output_coords.ndim() != 3:
+        if image.grid.output_coords.ndim() != 3:
             raise ValueError, 'only 3d images can be viewed with BoxViewer'
 
         if default:

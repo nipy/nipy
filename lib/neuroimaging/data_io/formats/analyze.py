@@ -276,8 +276,7 @@ class ANALYZE(BinaryFormat):
         else:
             if self.ndim == 4: names = spacetime[::-1]
             else: names = space[::-1]
-            return Affine.identity(
-              self.ndim, input='world', output='world', names=names)
+            return Affine.identity(self.ndim)
 
     def write_mat(self, matfile=None):
         "Write out the affine transformation matrix."

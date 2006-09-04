@@ -39,8 +39,8 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     if output_coords is None:
         output_coords = mni.MNI_world
 
-    w = mapping.Affine(input_coords, output_coords, t)
-    g = grid.SamplingGrid(mapping=w, shape=list(shape + (1,) * (nout-ndim)))
+    w = mapping.Affine(t)
+    g = grid.SamplingGrid(list(shape + (1,) * (nout-ndim)), w, input_coords, output_coords)
     return g
 
 

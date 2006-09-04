@@ -167,12 +167,25 @@ class Mapping (object):
     and an optional inverse.
     """
 
-    def __init__(self, input_coords, output_coords, map, inverse=None, name="mapping"):
-        self.input_coords = input_coords
-        self.output_coords = output_coords
+    def __init__(self, map, inverse=None, name="mapping", ndim=3):
+        #self.input_coords = input_coords
+        #self.output_coords = output_coords
         self._map = map
         self._inverse = inverse
         self.name = name
+        self._ndim = ndim
+        
+    def __setitem__(self, name, val):
+        if name in ["input_coords", "output_coords"]:
+            raise Exception
+        else:
+            self.__dict__[name] = val
+
+    def __getitem(self, name):
+        if name in ["input_coords", "output_coords"]:
+            raise Exception
+        else:
+            return self.__dict__[name]
 
 
     def __call__(self, x):
@@ -180,9 +193,7 @@ class Mapping (object):
 
 
     def __str__(self):
-        return '%s:input=%s\n'%(self.name, self.input_coords) +\
-        '%s:output=%s\n'%(self.name, self.output_coords) +\
-        '%s:map=%s\n'%(self.name, self._map) +\
+        return '%s:map=%s\n'%(self.name, self._map) +\
         '%s:inverse=%s\n'%(self.name, self._inverse)
 
 
@@ -207,11 +218,11 @@ class Mapping (object):
                 return self.inverse()(other.inverse()(coords))
         else: 
             inverse = None
-        return Mapping(self.input_coords, other.output_coords, map, inverse=inverse)
+        return Mapping(map, inverse=inverse)
 
     def ndim(self):
         """ The number of input dimensions """
-        return self.input_coords.ndim()
+        return self._ndim
 
     def isinvertible(self):
         """
@@ -224,8 +235,7 @@ class Mapping (object):
         Create a new Mapping instance which is the inverse of self.
         """
         if self.isinvertible():
-            return Mapping(self.output_coords, self.input_coords,
-                self._inverse, self)
+            return Mapping(self._inverse, self)
         else: 
             raise AttributeError("non-invertible mapping")
 
@@ -274,8 +284,8 @@ class Mapping (object):
         mat = permutation_matrix(range(ndim)[::-1])
         t1 = _2transform(mat, x)
         t2 = _2transform(mat, N.zeros(ndim))
-        w1 = Affine(self.input_coords.reverse(), self.input_coords, t1)
-        w2 = Affine(self.output_coords, self.output_coords.reverse(), t2)
+        w1 = Affine(t1)
+        w2 = Affine(t2)
         return (w2 * self) * w1
 
 
@@ -289,39 +299,35 @@ class Affine(Mapping):
     """
 
     @staticmethod
-    def frommatrix(matrix, names=space, input='voxel', output='world'):
+    def frommatrix(matrix):
         """
         Return an Affine instance with named axes and input and output
         coordinate systems.
         """
-        axes = [VoxelAxis(name) for name in names]
-        return Affine(
-          VoxelCoordinateSystem(input, axes), 
-          DiagonalCoordinateSystem(output, axes),
-          matrix)
+        return Affine(matrix)
 
 
     @staticmethod
-    def fromfile(infile, names=space, input='voxel', output='world', delimiter='\t'):
+    def fromfile(infile, delimiter='\t'):
         """
         Read in an affine transformation matrix and return an instance of Affine
         with named axes and input and output coordinate systems.  For now, the
         format is assumed to be a tab-delimited file.  Other formats should be added.
         """
         t = matfromfile(infile, delimiter=delimiter)
-        return Affine.frommatrix(t, names=names, input=input, output=output)
+        return Affine.frommatrix(t)
 
 
     @staticmethod
-    def identity(ndim=3, names=space, input='voxel', output='world'):
+    def identity(ndim=3):
         "Return an identity affine transformation."
-        return Affine.frommatrix(
-          N.identity(ndim+1), names=names, input=input, output=output)
+        return Affine.frommatrix(N.identity(ndim+1))
 
 
-    def __init__(self, input_coords, output_coords, transform, name="affine"):
-        Mapping.__init__(self, input_coords, output_coords, None, name=name)
+    def __init__(self, transform, name="affine"):
+        Mapping.__init__(self, None, name=name)
         self.transform = transform
+        self._ndim = transform.shape[0] - 1
         self._fmatrix, self._fvector = _2matvec(transform)
 
     def __call__(self, coords):
@@ -332,25 +338,19 @@ class Affine(Mapping):
     def __eq__(self, other):
         if not hasattr(other, "transform"): return False
         return N.all(N.asarray(self.transform) == N.asarray(other.transform)) and \
-            self.name == other.name and \
-            self.input_coords == other.input_coords and \
-            self.output_coords == other.output_coords
+            self.name == other.name
 
 
     def __rmul__(self, other):
         if isinstance(other, Affine):
-            return Affine(
-              self.input_coords, other.output_coords,
-                N.dot(other.transform, self.transform))
+            return Affine(N.dot(other.transform, self.transform))            
         else: 
             return Mapping.__rmul__(self, other)
 
 
     def __str__(self):
-        return "%s:input=%s\n%s:output=%s\n%s:fmatrix=%s\n%s:fvector=%s" % \
-          (self.name, self.input_coords.name, self.name,
-           self.output_coords.name, self.name, `self._fmatrix`, self.name,
-           `self._fvector`)
+        return "%s:fmatrix=%s\n%s:fvector=%s" % \
+          (self.name, `self._fmatrix`, self.name,`self._fvector`)
  
 
     def isinvertible(self):
@@ -361,8 +361,7 @@ class Affine(Mapping):
             return False
 
     def inverse(self):
-        return Affine(self.output_coords, self.input_coords,
-                      inv(self.transform))
+        return Affine(inv(self.transform))
 
     
     def isdiagonal(self):
