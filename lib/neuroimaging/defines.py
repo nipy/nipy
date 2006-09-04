@@ -7,15 +7,17 @@ def pylab_def():
     """
     Check to see if pylab/matplotlib is importable.
     """
-    global PYLAB_DEF
-    global pylab
+#    global PYLAB_DEF
+#    global pylab
     try:
         import pylab
-        PYLAB_DEF = True
-    except:
+    except ImportError:
         PYLAB_DEF = False
         pylab = None
         pass
+    else:
+        PYLAB_DEF = True
+
     return PYLAB_DEF, pylab
 
 #def qt_def():
@@ -37,18 +39,20 @@ def enthought_traits_def():
     """
     Check to see if enthought.traits is importable.
     """
-    global ENTHOUGHT_TRAITS_DEF
-    global traits
+#    global ENTHOUGHT_TRAITS_DEF
+#    global traits
     try:
         import enthought.traits.api as traits
-        ENTHOUGHT_TRAITS_DEF = True
-    except:
-        ENTHOUGHT_TRAITS_DEF = False
+    except ImportError:
         try:
             import neuroimaging.utils.enthought.traits as traits
-            ENTHOUGHT_TRAITS_DEF = True
-        except Exception, e:
+        except ImportError:
+            ENTHOUGHT_TRAITS_DEF = False
             traits = None
-            print e
             pass
+        else:
+            ENTHOUGHT_TRAITS_DEF = True
+    else:
+        ENTHOUGHT_TRAITS_DEF = True
+
     return ENTHOUGHT_TRAITS_DEF, traits
