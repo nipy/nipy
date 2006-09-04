@@ -143,20 +143,20 @@ class fMRIStatOLS(LinearModelIterator):
         if self.slicetimes == None:
             tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
             tmp.shape = N.product(tmp.shape)
-            self.parcelmap = tmp
+            self._parcelmap = tmp
             tmp = N.compress(1 - N.isnan(tmp), tmp)
-            self.parcelseq = list(N.unique(tmp))
+            self._parcelseq = list(N.unique(tmp))
             del(tmp); gc.collect()
         else:
-            self.parcelmap = []
-            self.parcelseq = []
+            self._parcelmap = []
+            self._parcelseq = []
             for i in range(self.rho.grid.shape[0]):
                 tmp = self.rho.getslice(slice(i,i+1))
                 tmp.shape = N.product(tmp.shape)
                 tmp = N.around(tmp * (self.nmax / 2.)) / (self.nmax / 2.)
                 newlabels = list(N.unique(tmp))
-                self.parcelseq += [newlabels]
-                self.parcelmap += [tmp]
+                self._parcelseq += [newlabels]
+                self._parcelmap += [tmp]
 
     def setup_output(self):
 
@@ -274,9 +274,9 @@ class fMRIStatAR(LinearModelIterator):
         self.formula = OLS.formula
         if self.slicetimes is None:
             self.dmatrix = OLS.dmatrix
-            self.fmri_image.grid.itertype = 'parcel'
+            self.fmri_image.grid._itertype = 'parcel'
         else:
-            self.fmri_image.grid.itertype = 'slice/parcel'
+            self.fmri_image.grid._itertype = 'slice/parcel'
             self.designs = []
             for s in self.slicetimes:
                 self.designs.append(self.formula.design(time=ftime + s))
@@ -306,8 +306,8 @@ class fMRIStatAR(LinearModelIterator):
                 
         # setup the iterator
 
-        self.fmri_image.grid.parcelmap = OLS.parcelmap
-        self.fmri_image.grid.parcelseq = OLS.parcelseq
+        self.fmri_image.grid._parcelmap = OLS._parcelmap
+        self.fmri_image.grid._parcelseq = OLS._parcelseq
 
         self.iterator = iter(self.fmri_image)
         self.j = 0
