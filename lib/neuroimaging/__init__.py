@@ -26,8 +26,13 @@ Specifically, we aim to:
 .. importgraph:: 
 
 .. classtree:: neuroimaging
-  
-.. packagetree:: neuroimaging
+
+Package Organization 
+==================== 
+The neuroimaging package contains the following subpackages and modules: 
+
+.. packagetree:: 
+   :style: UML  
 """
 
 __version__  = "0.01a"
