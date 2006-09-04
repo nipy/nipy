@@ -152,7 +152,7 @@ class Mapping (object):
             return other(self(coords))
         if self.isinvertible() and other.isinvertible():
             def inverse(coords): 
-                return self.inverse(other.inverse(coords))
+                return self.inverse()(other.inverse()(coords))
         else: 
             inverse = None
         return Mapping(self.input_coords, other.output_coords, map, inverse=inverse)
@@ -261,21 +261,11 @@ class Affine(Mapping):
           N.identity(ndim+1), names=names, input=input, output=output)
 
 
-
-    #class transform (readonly): pass
-    #class fmatrix (readonly): "forward transform matrix"
-    #class fvector (readonly): "forward translation vector"
-    #class bmatrix (readonly): "backward (inverse) transform matrix"
-    #class bvector (readonly): "backward (inverse) translation vector"
-
-
     def __init__(self, input_coords, output_coords, transform):
         self.transform = transform
         self.fmatrix, self.fvector = _2matvec(transform)
-        self.bmatrix, self.bvector = _2matvec(inv(transform))
         inverse = lambda c: self.map(c, inverse=True)
-        Mapping.__init__(self, input_coords, output_coords, self.map,
-          inverse=inverse)
+        Mapping.__init__(self, input_coords, output_coords, self.map)
 
 
     def __eq__(self, other):
@@ -303,21 +293,9 @@ class Affine(Mapping):
            `self.fvector`)
  
 
-    def map(self, coords, inverse=False, alpha=1.0):
-        if not inverse:
-            value = N.dot(self.fmatrix, coords)
-            if len(value.shape) > 1:
-                value = value + N.multiply.outer(self.fvector, N.ones(value.shape[1]))
-            elif alpha != 0.0:
-                # for derivatives, we don't want translation...
-                value = value + self.fvector * alpha
-        else:
-            value = N.dot(self.bmatrix, coords)
-            if len(value.shape) > 1:
-                value = value + N.multiply.outer(self.bvector, N.ones(value.shape[1:]))
-            elif alpha != 0.0:
-                # for derivatives, we don't want translation...
-                value = value + self.bvector * alpha
+    def map(self, coords):
+        value = N.dot(self.fmatrix, coords) 
+        value = value + N.multiply.outer(self.fvector, N.ones(value.shape[1:]))
         return value
     
 
@@ -325,9 +303,11 @@ class Affine(Mapping):
         return Affine(self.output_coords, self.input_coords,
                       inv(self.transform))
     
+    def isinvertible(self):
+        return True # is this true?
 
     def isdiagonal(self):
-        return isdiagonal(self.transform[0:self.ndim,0:self.ndim])
+        return isdiagonal(self.fmatrix)
  
 
     def tofile(self, filename):
@@ -355,7 +335,9 @@ class DegenerateAffine(Affine):
         self.nout = fmatrix.shape[0]
 
         def map(coords):
-            return N.dot(self.fmatrix, coords) + self.fvector
+            value = N.dot(self.fmatrix, coords) 
+            value = value + N.multiply.outer(self.fvector, N.ones(value.shape[1:]))
+            return value
 
         try:
             t = N.zeros((self.nin+1,)*2, N.float64)
@@ -366,7 +348,6 @@ class DegenerateAffine(Affine):
             Affine.__init__(self, input_coords, output_coords, t, name=name)
         except:
             Mapping.__init__(self, input_coords, output_coords, map)
-
 
 
 def permutation_matrix(order=range(3)[2::-1]):
