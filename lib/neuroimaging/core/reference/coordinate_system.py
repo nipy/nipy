@@ -29,6 +29,9 @@ class CoordinateSystem(odict):
 
 
     def __eq__(self, other):
+        """
+        Equality is defined by he axes and the name.
+        """
         if not hasattrs(other, "name", "axes"): return False
         return (self.name, self.axes())==(other.name, other.axes())
 
@@ -38,13 +41,15 @@ class CoordinateSystem(odict):
         return `_dict`
    
     def ndim(self):
-        """ number of dimensions """
+        """ Number of dimensions """
         return len(self.axes())
     
     def axisnames(self):
+        """ A list of the names of the coordinate system's axes. """
         return self.keys()
         
     def axes(self):
+        """ A list of the coordinate system's axes. """
         return self.values()
     
     def reorder(self, name, order):
@@ -57,6 +62,7 @@ class CoordinateSystem(odict):
 
 
     def reverse(self, name=None):
+        """ Create a new coordinate system with the axes reversed. """
         if name is None: name = self.name
         return CoordinateSystem(name, reverse(self.axes()))
 

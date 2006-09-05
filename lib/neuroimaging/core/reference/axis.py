@@ -60,6 +60,10 @@ class Axis(object):
 
 
 class ContinuousAxis(Axis):
+    """
+    This class represents an axis which is continuous on some range.
+    This range can extend to infinity in either direction.
+    """
     def __init__(self, name, low=-N.inf, high=N.inf):
         self.low = low
         self.high = high
