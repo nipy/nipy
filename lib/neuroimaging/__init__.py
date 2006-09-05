@@ -84,75 +84,38 @@ if not ENTHOUGHT_TRAITS_DEF:
 testmatch = re.compile(".*tests").search
 nontest_packages = [p for p in packages if not testmatch(p)]
 
-# modules to be pre-imported for convenience
-_preload_modules = (
-  'neuroimaging.algorithms.statistics.regression',
-  'neuroimaging.algorithms.statistics.classification',
-  'neuroimaging.core.image.interpolation',
-  'neuroimaging.core.image.onesample',
-  'neuroimaging.core.image.regression',
-  'neuroimaging.core.reference.axis',
-  'neuroimaging.core.reference.coordinate_system',
-  'neuroimaging.core.reference.grid',
-  'neuroimaging.core.reference.iterators',
-  'neuroimaging.core.reference.mapping',
-  'neuroimaging.core.reference.slices',
-  'neuroimaging.data_io.formats.analyze',
-  'neuroimaging.data_io.formats.nifti1',
-  'neuroimaging.ui.visualization.viewer',)
-
-#-----------------------------------------------------------------------------
 def hasattrs(obj, *attrs):
     for attr in attrs:
-        if not hasattr(obj, attr): return False
+        if not hasattr(obj, attr):
+            return False
     return True
 
-#-----------------------------------------------------------------------------
-def haslength(obj): return hasattr(obj,"__len__")
+def haslength(obj):
+    return hasattr(obj,"__len__")
 
-#-----------------------------------------------------------------------------
 def flatten(arr, dim=0):
-    if len(arr.shape) < 2: return
+    if len(arr.shape) < 2:
+        return
     oldshape = arr.shape
     arr.shape = oldshape[0:dim] + (product(oldshape[dim:]),)
 
-#-----------------------------------------------------------------------------
-def reorder(seq, order): return [seq[i] for i in order]
+def reorder(seq, order):
+    return [seq[i] for i in order]
 
-#-----------------------------------------------------------------------------
-def reverse(seq): return reorder(seq, range(len(seq)-1, -1, -1))
+def reverse(seq):
+    return reorder(seq, range(len(seq)-1, -1, -1))
 
-#-----------------------------------------------------------------------------
 def ensuredirs(directory):
-    if not isinstance(directory, path): directory= path(directory)
-    if not directory.exists(): directory.makedirs()
+    if not isinstance(directory, path):
+        directory = path(directory)
+    if not directory.exists():
+        directory.makedirs()
 
-#-----------------------------------------------------------------------------
-#def keywords(func):
-#    if not hasattrs(func, "func_code", "func_defaults"):
-#        raise ValueError(
-#          "please pass a function or method object (got %s)"%func)
-#    argnames = func.func_code.co_ 
-
-#-----------------------------------------------------------------------------
-def preload(packages=nontest_packages):
-    """
-    Import the specified modules/packages (enabling fewer imports in client
-    scripts).  By default, import all non-test packages:\n%s
-    and the following modules:\n%s
-    """%("\n".join(nontest_packages),"\n".join(_preload_modules))
-    for package in packages: __import__(package, {}, {})
-    for module in _preload_modules: __import__(module, {}, {})
-
-#-----------------------------------------------------------------------------
 def import_from(modulename, objectname):
     "Import and return objectname from modulename."
     module = __import__(modulename, {}, {}, (objectname,))
-    try: return getattr(module, objectname)
-    except AttributeError: return None
-
-
-# Always preload all packages.  This should be removed as soon as the client
-# scripts can be modified to call it themselves.
-#preload()
+    try:
+        return getattr(module, objectname)
+    except AttributeError:
+        return None
 

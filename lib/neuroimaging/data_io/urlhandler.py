@@ -1,6 +1,8 @@
 import urllib, stat, string, os, urllib2, gzip, atexit
+
 from neuroimaging import traits
-import cache
+
+from neuroimaging.data_io import cache
 
 
 class DataFetcher(traits.HasTraits):
@@ -86,7 +88,7 @@ class DataFetcher(traits.HasTraits):
         self.urldecompose()
 
         if os.path.exists(self.url): return self.url
-        elif self.urlhost is None: raise IOError, 'file %s not found'%url
+        elif self.urlhost is None: raise IOError, 'file %s not found' % url
 
         self.cached = True
         self.urldecompose()

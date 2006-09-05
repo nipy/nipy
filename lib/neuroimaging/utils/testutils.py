@@ -10,7 +10,6 @@ from os.path import join, dirname, basename
 from neuroimaging import nontest_packages, import_from
 from neuroimaging.utils.odict import odict
 
-#-----------------------------------------------------------------------------
 def run_suite(suite):
     tmpdir = tempfile.mkdtemp(suffix='nipy_unittest')
     curdir = os.path.abspath(os.curdir)
@@ -19,13 +18,11 @@ def run_suite(suite):
     os.chdir(curdir)
     shutil.rmtree(tmpdir, ignore_errors=False)
 
-#-----------------------------------------------------------------------------
 def run_tests(*tests):
     for test in tests:
         print test
     run_suite(TestSuite([makeSuite(test) for test in tests]))
 
-#-----------------------------------------------------------------------------
 def get_package_modules(package):
     modfiles = glob(join(dirname(package.__file__), "*.py"))
     modules = []
@@ -35,7 +32,6 @@ def get_package_modules(package):
         modules.append(__import__(full_modname,{},{},[modname]))
     return modules
 
-#-----------------------------------------------------------------------------
 def get_package_doctests(packname):
     modname = packname.split(".")[-1]
     try:
@@ -49,7 +45,6 @@ def get_package_doctests(packname):
     except:
         return TestSuite()
 
-#-----------------------------------------------------------------------------
 def get_package_tests(packname):
     """
     Retrieve all TestCases defined for the given package.
@@ -66,7 +61,6 @@ def get_package_tests(packname):
                      val != TestCase]
     return dict(tests)
     
-#-----------------------------------------------------------------------------
 def test_package(packname, testname=None):
     "Run all tests for the given package"
     testdict = get_package_tests(packname)
@@ -74,7 +68,6 @@ def test_package(packname, testname=None):
              if testname==None or testname==key]
     run_tests(*tests)
 
-#-----------------------------------------------------------------------------
 def test_packages(*packages):
     "Run all tests for the given packages"
     tests = odict()
@@ -82,17 +75,14 @@ def test_packages(*packages):
     tests.sort()
     run_tests(*tests.values())
 
-#-----------------------------------------------------------------------------
 def test_all(): test_packages(*nontest_packages)
 
-#-----------------------------------------------------------------------------
-def doctest_package(packname, testname=None):
+def doctest_package(packname):
     "Run all doctests for the given package"
     suite = get_package_doctests(packname)
     if suite:
         run_suite(suite)
 
-#-----------------------------------------------------------------------------
 def doctest_packages(*packages):
     "Run all doctests for the given packages"
     tests = []
@@ -102,5 +92,4 @@ def doctest_packages(*packages):
 
     run_suite(TestSuite(tests))
 
-#-----------------------------------------------------------------------------
 def doctest_all(): doctest_packages(*nontest_packages)

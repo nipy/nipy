@@ -20,8 +20,10 @@ def iszip(filename):
 
 
 def splitzipext(filename):
-    if iszip(filename): return path(filename).splitext()
-    else: return filename, None
+    if iszip(filename):
+        return path(filename).splitext()
+    else:
+        return filename, None
 
 
 def unzip(filename):
@@ -42,7 +44,7 @@ def urlexists(url):
 
 
 def isurl(pathstr):
-    scheme, netloc, _,_,_,_ = urlparse(pathstr)
+    scheme, netloc, _, _, _, _ = urlparse(pathstr)
     return bool(scheme and netloc)
 
 
@@ -55,9 +57,9 @@ class Cache (object):
         if cachepath is not None: 
             self.path = path(cachepath)
         elif os.name == 'posix':
-            self.path = path(os.environ["HOME"]).joinpath(".nipy").joinpath("cache")
+            self.path = path(os.environ["HOME"]).joinpath(".nipy","cache")
         elif os.name == 'nt':
-            self.path = path(os.environ["HOMEPATH"]).joinpath(".nipy").joinpath("cache")
+            self.path = path(os.environ["HOMEPATH"]).joinpath(".nipy","cache")
         self.setup()
 
     def filepath(self, uri):
