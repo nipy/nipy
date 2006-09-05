@@ -6,7 +6,7 @@ from scipy.sandbox.models import contrast
 from neuroimaging.modalities.fmri import hrf, protocol
 
 # this is not a test until it is fixed (find HRF)
-class ProtocolTest(object): #unittest.TestCase):
+class ProtocolTest(unittest.TestCase):
 
     def setUp(self):
         """
