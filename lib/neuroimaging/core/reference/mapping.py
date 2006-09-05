@@ -162,14 +162,12 @@ class Mapping (object):
     """
 
     def __init__(self, map, inverse=None, name="mapping", ndim=3):
-        #self.input_coords = input_coords
-        #self.output_coords = output_coords
         self._map = map
         self._inverse = inverse
         self.name = name
         self._ndim = ndim
         
-
+        
     def __call__(self, x):
         return self._map(x)
 
@@ -193,6 +191,7 @@ class Mapping (object):
     
 
     def __rmul__(self, other):
+        """ mapping composition """
         def map(coords): 
             return other(self(coords))
         if self.isinvertible() and other.isinvertible():
@@ -293,7 +292,7 @@ class Affine(Mapping):
 
     @staticmethod
     def identity(ndim=3):
-        "Return an identity affine transformation."
+        """ Return an identity affine transformation."""
         return Affine(N.identity(ndim+1))
 
 
@@ -309,7 +308,11 @@ class Affine(Mapping):
         return value
 
     def __eq__(self, other):
-        if not hasattr(other, "transform"): return False
+        """
+        Equality is defined as equality of both name and transform matrix.
+        """
+        if not hasattr(other, "transform"): 
+            return False
         return N.all(N.asarray(self.transform) == N.asarray(other.transform)) and \
             self.name == other.name
 
@@ -350,6 +353,7 @@ class Affine(Mapping):
         """
         matfile = open(filename, 'w')
         writer = csv.writer(matfile, delimiter='\t')
-        for row in self.transform: writer.writerow(row)
+        for row in self.transform: 
+            writer.writerow(row)
         matfile.close()
   

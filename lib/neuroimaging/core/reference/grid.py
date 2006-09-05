@@ -15,7 +15,7 @@ from neuroimaging.core.reference.iterators import SliceIterator,\
 
 class SamplingGrid (object):
     """
-    Defines a set if input and output coordinate systems and a mapping between the
+    Defines a set of input and output coordinate systems and a mapping between the
     two, which represents the mapping of (for example) an image from voxel space
     to real space.
     """
