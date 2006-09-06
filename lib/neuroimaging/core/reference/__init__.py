@@ -1,11 +1,14 @@
 """
 Frame of reference/coordinates package.
 
-Mathematical model:  The idea of a chart S{phi}: I{U} S{sub} I{M} S{->} B{R}^k
+Mathematical model
+==================
+The idea of a chart S{phi}: I{U} S{sub} I{M} S{->} B{R}^k
 on a "manifold" I{M}.  For a chart both input (I{M}) and output coordinates
 (B{R}^k) must be defined and a map relating the two coordinate systems.
 
-
+Description
+===========
 The modules in this package contains classes which define the space in which an
 image exists and also functions for manipulating and traversing this space.
 
@@ -14,10 +17,10 @@ SamplingGrid consists of an input CoordinateSystem (coordinate_system.py), an
 output CoordinateSystem, and a Mapping (mapping.py) which converts point in the
 input space to points in the output space.
 
-A CoordinateSystem consists of a set of order Axis (axis.py) objects. Each Axis 
-can be either discrete (DiscreteAxis) or continuous (ContinuousAxis). 
+A CoordinateSystem consists of a set of ordered Axis (axis.py) objects. Each
+Axis can be either discrete (DiscreteAxis) or continuous (ContinuousAxis). 
 
-The typical use of a SamplingGrid will be to define how points in an Image
+The typical use of a SamplingGrid is to define how points in an Image
 (core.image.__init__.py) object's raw data map into real space. 
 
 Image traversal is general done in terms of the underlying grid, and a number of
