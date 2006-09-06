@@ -188,7 +188,7 @@ struct_formats_sh = odict((
  ))
 field_formats_sh = struct_formats_sh.values();
 
-##############################################################################
+
 class ECAT7(bin.BinaryFormat):
     """
     A Class to read (maybe write) ECAT7 format images.
@@ -200,7 +200,7 @@ class ECAT7(bin.BinaryFormat):
 
     extensions = ('.v')
     
-    #-------------------------------------------------------------------------
+
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
         """
         Constructs a ECAT7 binary format object with at least a filename
