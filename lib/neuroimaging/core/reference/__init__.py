@@ -18,7 +18,7 @@ A CoordinateSystem consists of a set of order Axis (axis.py) objects. Each Axis
 can be either discrete (DiscreteAxis) or continuous (ContinuousAxis). 
 
 The typical use of a SamplingGrid will be to define how points in an Image
-(core.image.__init__.py) oject's raw data map into real space. 
+(core.image.__init__.py) object's raw data map into real space. 
 
 Image traversal is general done in terms of the underlying grid, and a number of
 iterators are provided to traverse points in the grid (iterators.py). Access to
