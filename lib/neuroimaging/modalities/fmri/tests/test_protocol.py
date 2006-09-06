@@ -48,7 +48,7 @@ class ProtocolTest(unittest.TestCase):
         self.all = all
 
     def setup_terms(self):
-        self.p = protocol.ExperimentalFactor('pain', self.all)
+        self.p = protocol.ExperimentalFactor('pain', self.all, delta=False)
         self.p.convolved = False
 
         self.IRF1 = hrf.glover
@@ -73,7 +73,7 @@ class ProtocolTest(unittest.TestCase):
             writer.writerow(row)
         out.close()
         
-        p = protocol.ExperimentalFactor('pain', 'tmp.csv')
+        p = protocol.ExperimentalFactor('pain', 'tmp.csv', delta=False)
         os.remove('tmp.csv')
 
     def testShape(self):
@@ -215,9 +215,9 @@ class ProtocolTest(unittest.TestCase):
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * recipr0(drift_fn(t)))
 
         D = d - d
-        N.testing.assert_almost_equal(D(t), N.zeros(D(t).shape, N.Float))
+        N.testing.assert_almost_equal(D(t), N.zeros(D(t).shape, N.float64))
 
-        D = d + d
+        d = d + d
         N.testing.assert_almost_equal(D(t), 2 * N.array(drift_fn(t)))
 
     def testTimeFn3(self):
