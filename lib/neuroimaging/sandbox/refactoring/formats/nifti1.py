@@ -1,21 +1,22 @@
 import os
-#from numpy import uint8, int16, int32, float32, float64, complex64, array, dtype
 from numpy.core.memmap import memmap as memmap_type
 import numpy as N
 
 from neuroimaging.utils.odict import odict
-#import neuroimaging.data_io.formats.binary
 from neuroimaging.data_io import DataSource
-import neuroimaging.sandbox.refactoring.formats.binary as bin
-import neuroimaging.sandbox.refactoring.formats.analyze as anlz
-from neuroimaging.sandbox.refactoring.formats.nifti1_ext import quatern2mat, \
+import neuroimaging.sandbox.formats.binary as bin
+import neuroimaging.sandbox.formats.analyze as anlz
+from neuroimaging.sandbox.formats.nifti1_ext import quatern2mat, \
      mat2quatern
 from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.utils.path import path
 
-
+class Nifti1FormatError(Exception):
+    """
+    Nifti format error exception
+    """
 
 # datatype is a one bit flag into the datatype identification byte of the
 # Analyze header. 
@@ -140,7 +141,7 @@ struct_formats = odict((
     ('extents','i'),
     ('session_error','h'),
     ('regular','c'),
-    ('dim_info','c'),
+    ('dim_info','B'),
     ('dim','8h'),
     ('intent_p1','f'),
     ('intent_p2','f'),
@@ -154,8 +155,8 @@ struct_formats = odict((
     ('scl_slope','f'),
     ('scl_inter','f'),
     ('slice_end','h'),
-    ('slice_code','c'),
-    ('xyzt_units','c'),
+    ('slice_code','B'),
+    ('xyzt_units','B'),
     ('cal_max','f'),
     ('cal_min','f'),
     ('slice_duration','f'),
@@ -198,12 +199,14 @@ class Nifti1(bin.BinaryFormat):
                        'scl_slope': 1.0,
                        'magic': 'n+1\x00',
                        'pixdim': [1,0,0,0,0,0,0,0],
+                       'vox_offset': 352.0,
                        }
 
     extensions = ('.img', '.hdr', '.nii', '.mat')
-    usematfile = True
+    # get around to implementing nvector:
+    nvector = -1
 
-
+    extendable = False
     #-------------------------------------------------------------------------
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
         """
@@ -215,16 +218,11 @@ class Nifti1(bin.BinaryFormat):
         sctype = numpy scalar type
         intent = meaning of data
         clobber = allowed to clobber?
-        usemat = use mat file?
         """
 
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.clobber = keywords.get('clobber', False)
         self.intent = keywords.get('intent', '')
-        ### DOES THIS APPLY?
-        self.usematfile = keywords.get('usemat', False)
-        self.mat_file = self.filebase+".mat"
-        ###
         
         self.header_file, self.data_file = self.nifti_filenames()
         # does this need to be redundantly assigned?
@@ -244,45 +242,43 @@ class Nifti1(bin.BinaryFormat):
             self.write_header()
         else:
             # this should work
-            self.byteorder = anlz.Analyze.guess_byteorder(self.header_file)
+            self.byteorder = anlz.Analyze.guess_byteorder(self.header_file,
+                                                    datasource=self.datasource)
             self.read_header()
+            # we may THINK it's a Nifti, but ...
+            if self.header.get('magic','doh!') == 'doh!':
+                raise Nifti1FormatError
             self.sctype = datatype2sctype[self.header['datatype']]
             self.ndim = self.header['dim'][0]
 
         # fill in the canonical list as best we can for Analyze
-        #self.inform_canonical()
+        self.inform_canonical()
 
         ########## This could stand a clean-up ################################
         if self.grid is None:
-            
-            if self.usematfile:
-                self.grid.transform(self.read_mat())
-                # assume .mat matrix uses FORTRAN indexing
-                self.grid = self.grid.matlab2python()
-            else:
-                origin = (self.header['qoffset_x'],
-                          self.header['qoffset_y'],
-                          self.header['qoffset_z'])
-                step = tuple(self.header['pixdim'][1:4])
-                shape = tuple(self.header['dim'][1:4])
-                if self.ndim == 3:
-                    axisnames = space[::-1]
-                elif self.ndim == 4 and self.nvector <= 1:
-                    axisnames = spacetime[::-1]
-                    origin = origin + (1,)
-                    step = step + (self.header['pixdim'][5],)
-                    shape = shape + (self.header['dim'][5],)
+            origin = (self.header['qoffset_x'],
+                      self.header['qoffset_y'],
+                      self.header['qoffset_z'])
+            step = tuple(self.header['pixdim'][1:4])
+            shape = tuple(self.header['dim'][1:4])
+            if self.ndim == 3:
+                axisnames = space[::-1]
+            elif self.ndim == 4 and self.nvector <= 1:
+                axisnames = spacetime[::-1]
+                origin = origin + (1,)
+                step = step + (self.header['pixdim'][5],)
+                shape = shape + (self.header['dim'][5],)
 ##                     if self.squeeze:
 ##                     if self.dim[4] == 1:
 ##                         origin = origin[0:3]
 ##                         step = step[0:3]
 ##                         axisnames = axisnames[0:3]
 ##                         shape = self.dim[1:4]
-                elif self.ndim == 4 and self.nvector > 1:
-                    axisnames = ('vector_dimension', ) + space[::-1]
-                    origin = (1,) + origin
-                    step = (1,) + step
-                    shape = shape + (self.header['dim'][5],)
+##                 elif self.ndim == 4 and self.nvector > 1:
+##                     axisnames = ('vector_dimension', ) + space[::-1]
+##                     origin = (1,) + origin
+##                     step = (1,) + step
+##                     shape = shape + (self.header['dim'][5],)
 ##                     if self.squeeze:
 ##                         if self.dim[1] == 1:
 ##                             origin = origin[1:4]
@@ -290,26 +286,23 @@ class Nifti1(bin.BinaryFormat):
 ##                             axisnames = axisnames[1:4]
 ##                             shape = self.dim[2:5]
 
-                self.grid = SamplingGrid.from_start_step(names=axisnames,
+            self.grid = SamplingGrid.from_start_step(names=axisnames,
                                                 shape=shape,
                                                 start=-N.array(origin)*step,
                                                 step=step)
-                t = self.transform()
-                self.grid.mapping.transform[:3,:3] = t[:3,:3]
-                self.grid.mapping.transform[:3,-1] = t[:3,-1]
-                ### why is this here?
-                self.grid = self.grid.matlab2python()
-        else:
-            self.grid = grid
-            
+            t = self.transform()
+            self.grid.mapping.transform[:3,:3] = t[:3,:3]
+            self.grid.mapping.transform[:3,-1] = t[:3,-1]
+            ### why is this here?
+            self.grid = self.grid.matlab2python()
+        #else: Grid was already assigned by Format constructor
+        
         self.attach_data(offset=int(self.header['vox_offset']))
 
 
     def nifti_filenames(self):
         # Nifti single file will be the preferred type for creation
-##         if self.mode[0] == "w":
-##             return (self.filebase+".nii",self.filebase+".nii")
-        return os.path.exists(self.filebase+".hdr") and \
+        return self.datasource.exists(self.filebase+".hdr") and \
                (self.filebase+".hdr", self.filebase+".img") or\
                (self.filebase+".nii", self.filebase+".nii")
     
@@ -318,7 +311,9 @@ class Nifti1(bin.BinaryFormat):
     def _default_field_value(fieldname, fieldformat):
         "[STATIC] Get the default value for the given field."
         return Nifti1._field_defaults.get(fieldname, None) or \
-               bin.format_defaults[fieldformat[-1]]
+            (fieldformat[:-1] and fieldformat[-1] is not 's') and \
+             [bin.format_defaults[fieldformat[-1]]]*int(fieldformat[:-1]) or \
+             bin.format_defaults[fieldformat[-1]]
     
     #-------------------------------------------------------------------------
     def header_defaults(self):
@@ -336,19 +331,18 @@ class Nifti1(bin.BinaryFormat):
         # bitpix
         # dim
 
-        
         self.grid = self.grid.python2matlab()
         self.header['datatype'] = sctype2datatype[self.sctype]
         self.header['bitpix'] = N.dtype(self.sctype).itemsize
-        self.ndim = len(self.grid.shape)
+        self.ndim = self.grid.ndim
     
         if not isinstance(self.grid.mapping, Affine):
             raise NIFTI1FormatError, 'error: non-Affine grid in writing out NIFTI-1 file'
 
-        ddim = self.grid.ndim - 3
+        ddim = self.ndim - 3
         t = self.grid.mapping.transform[ddim:,ddim:]
 
-        qb, qc, qd, qx, qy, qz, dx, dy, dz, qfac = quaternion(t)
+        qb, qc, qd, qx, qy, qz, dx, dy, dz, qfac = mat2quatern(t)
 
         (self.header['quatern_b'],
          self.header['quatern_c'],
@@ -358,14 +352,18 @@ class Nifti1(bin.BinaryFormat):
          self.header['qoffset_y'],
          self.header['qoffset_z']) = qx, qy, qz
 
+        self.header['qfac'] = qfac
+
         _pixdim = [0.]*8
         _pixdim[0:4] = [qfac, dx, dy, dz]
         self.header['pixdim'] = _pixdim
 
-        self.qform_code = 1
+        # this should be set to something, 1 happens
+        # to be NIFTI_XFORM_SCANNER_ANAT
+        self.header['qform_code'] = 1
         
         self.header['dim'] = \
-                        [self.ndim] + list(self.grid.shape) + [0]*(8-self.ndim)
+                        [self.ndim] + list(self.grid.shape) + [0]*(7-self.ndim)
 
         self.grid = self.grid.matlab2python()
         
@@ -409,24 +407,31 @@ class Nifti1(bin.BinaryFormat):
 
         return value
 
+    def inform_canonical(self, fieldsDict=None):
+        if fieldsDict is not None:
+            self.canonical_fields = odict(fieldsDict)
+        else:
+            self.canonical_fields['datasize'] = self.header['bitpix']
+            (self.canonical_fields['ndim'],
+             self.canonical_fields['xdim'],
+             self.canonical_fields['ydim'],
+             self.canonical_fields['zdim'],
+             self.canonical_fields['tdim']) = self.header['dim'][:5]
+            self.canonical_fields['scaling'] = self.header['scl_slope']
 
     def postread(self, x):
         """
         NIFTI-1 normalization based on scl_slope and scl_inter.
         """
-        return x * self.header['scl_slope'] + self.header['scl_inter']
+        if self.header['scl_slope'] != 0.0:
+            return x * self.header['scl_slope'] + self.header['scl_inter']
+        else: return x
 
     def prewrite(self, x):
         """
         NIFTI-1 normalization based on scl_slope and scl_inter.
         """
-        return (x - self.header['scl_inter']) / self.header['scl_slope']
+        if self.header['scl_slope'] != 0.0:
+            return (x - self.header['scl_inter']) / self.header['scl_slope']
+        else: return x
         
-
-if __name__=='__main__':
-    import sys
-    sys.path.append(os.path.abspath(__file__))
-    import pdb
-    #fname = 'sagittal_gems_TEM1.recon.nii'
-    fname = 'newNiftFile'
-    pdb.run('Nifti1(fname,mode=\'w\',)')

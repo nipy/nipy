@@ -1,17 +1,19 @@
 import os
-from numpy import uint8, int16, int32, float32, float64, complex64, array, dtype
 from numpy.core.memmap import memmap as memmap_type
+import numpy as N
 
 from neuroimaging.utils.odict import odict
-#import neuroimaging.data_io.formats.binary
 from neuroimaging.data_io import DataSource
-import neuroimaging.sandbox.refactoring.formats.binary as bin
+import neuroimaging.sandbox.formats.binary as bin
 from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.utils.path import path
 
-
+class AnalyzeFormatError(Exception):
+    """
+    Analyze format error exception
+    """
 
 
 # datatype is a one bit flag into the datatype identification byte of the
@@ -25,12 +27,12 @@ DOUBLE = 64
 
 # map Analyze datatype to numpy scalar type
 datatype2sctype = {
-  BYTE: uint8,
-  SHORT: int16,
-  INTEGER: int32,
-  FLOAT: float32,
-  DOUBLE: float64,
-  COMPLEX: complex64}
+  BYTE: N.uint8,
+  SHORT: N.int16,
+  INTEGER: N.int32,
+  FLOAT: N.float32,
+  DOUBLE: N.float64,
+  COMPLEX: N.complex64}
 
 # map numpy scalar type to Analyze datatype
 sctype2datatype = \
@@ -69,7 +71,6 @@ struct_formats = odict((
     ('aux_file','24s'),
     ('orient','c'),
     ('origin','5h'),
-    #('sunused','4s'),
     ('generated','10s'),
     ('scannum','10s'),
     ('patient_id','10s'),
@@ -102,8 +103,10 @@ class Analyze(bin.BinaryFormat):
       'scale_factor':1.}
     
     extensions = ('.img', '.hdr', '.mat')
-    usematfile = True
-
+    # maybe I'll implement this when I figure out how
+    nvector = -1
+    # always false for Analyze
+    extendable = False
     #-------------------------------------------------------------------------
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
         """
@@ -130,7 +133,7 @@ class Analyze(bin.BinaryFormat):
         if self.mode[0] is "w":
             # should try to populate the canonical fields and
             # corresponding header fields with info from grid?
-            self.sctype = keywords.get('sctype', float64)
+            self.sctype = keywords.get('sctype', N.float64)
             self.byteorder = bin.NATIVE
             if self.grid is not None:
                 self.header_from_given()
@@ -138,7 +141,8 @@ class Analyze(bin.BinaryFormat):
                 raise NotImplementedError("Don't know how to create header info without a grid object")
             self.write_header()
         else:
-            self.byteorder = self.guess_byteorder(self.header_file)            
+            self.byteorder = self.guess_byteorder(self.header_file,
+                                                  datasource=self.datasource)
             self.read_header()
             self.sctype = datatype2sctype[self.header['datatype']]
             self.ndim = self.header['dim'][0]
@@ -147,48 +151,30 @@ class Analyze(bin.BinaryFormat):
         self.inform_canonical()
 
         ########## This could stand a clean-up ################################
-        if self.ndim == 3:
-            axisnames = space[::-1]
-            origin = tuple(self.header['origin'][0:3])
-            step = tuple(self.header['pixdim'][1:4])
-            shape = tuple(self.header['dim'][1:4])
-        elif self.ndim == 4 and self.nvector <= 1:
-            axisnames = spacetime[::-1]
-            origin = tuple(self.header['origin'][0:3]) + (1,)
-            step = tuple(self.header['pixdim'][1:5]) 
-            shape = tuple(self.header['dim'][1:5])
-##                 if self.squeeze:
-##                     if self.dim[4] == 1:
-##                         origin = origin[0:3]
-##                         step = step[0:3]
-##                         axisnames = axisnames[0:3]
-##                         shape = self.dim[1:4]
-        elif self.ndim == 4 and self.nvector > 1:
-            axisnames = ('vector_dimension', ) + space[::-1]
-            origin = (1,) + tuple(self.header['origin'][0:3])
-            step = (1,) + tuple(self.header['pixdim'][1:4])  
-            shape = tuple(self.header['dim'][1:5])
-                    
-##                     if self.squeeze:
-##                         if self.dim[1] == 1:
-##                             origin = origin[1:4]
-##                             step = step[1:4]
-##                             axisnames = axisnames[1:4]
-##                             shape = self.dim[2:5]
-        #######################################################################
-        ## Setup affine transformation
+        if not self.grid:                
+            if self.ndim == 3:
+                axisnames = space[::-1]
+                origin = tuple(self.header['origin'][0:3])
+                step = tuple(self.header['pixdim'][1:4])
+                shape = tuple(self.header['dim'][1:4])
+            elif self.ndim == 4 and self.nvector <= 1:
+                axisnames = spacetime[::-1]
+                origin = tuple(self.header['origin'][0:3]) + (1,)
+                step = tuple(self.header['pixdim'][1:5]) 
+                shape = tuple(self.header['dim'][1:5])
+
+            ## Setup affine transformation        
+            self.grid = SamplingGrid.from_start_step(names=axisnames,
+                                                shape=shape,
+                                                start=-N.array(origin)*step,
+                                                step=step)
+
+            if self.usematfile:
+                self.grid.transform(self.read_mat())
+                # assume .mat matrix uses FORTRAN indexing
+                self.grid = self.grid.matlab2python()
+        #else: Grid was already assigned by Format constructor
         
-        # what's going on here?
-        self.grid = SamplingGrid.from_start_step(names=axisnames,
-                                                 shape=shape,
-                                                 start=-array(origin)*step,
-                                                 step=step)
-
-        if self.usematfile: self.grid.transform(self.read_mat())
-
-        # assume .mat matrix uses FORTRAN indexing
-        self.grid = self.grid.matlab2python()
-
         # get memmaped array
         self.attach_data()
 
@@ -207,9 +193,9 @@ class Analyze(bin.BinaryFormat):
     #-------------------------------------------------------------------------
     def header_from_given(self):
         self.header['datatype'] = sctype2datatype[self.sctype]
-        self.header['bitpix'] = dtype(self.sctype).itemsize 
+        self.header['bitpix'] = N.dtype(self.sctype).itemsize 
         self.grid = self.grid.python2matlab()
-        self.ndim = len(self.grid.shape)
+        self.ndim = self.grid.ndim
         
         if not isinstance(self.grid.mapping, Affine):
             raise ValueError, 'error: non-Affine grid in writing out ANALYZE file'
@@ -217,20 +203,17 @@ class Analyze(bin.BinaryFormat):
         if self.grid.mapping.isdiagonal():
             _diag = True
         else:
-            # ??
+            # what's goin on here??
             _diag = False
             self.write_mat()
 
         _dim = [0]*8
         _pixdim = [0.] * 8
         _dim[0] = self.ndim
-
-        for i in range(self.ndim):
-            _dim[i+1] = self.grid.shape[i]
-            if _diag:
-                _pixdim[i+1] = self.grid.mapping.transform[i,i]
-            else:
-                _pixdim[i+1] = 1.
+        _dim[1:self.ndim+1] = self.grid.shape[:self.ndim]
+        _pixdim[1:self.ndim+1] = _diag and \
+                        list(N.diag(self.grid.mapping.transform))[:self.ndim] \
+                        or [1.]*self.ndim
         self.header['dim'] = _dim
         self.header['pixdim'] = _pixdim
         if _diag:
@@ -238,6 +221,9 @@ class Analyze(bin.BinaryFormat):
             self.header['origin'] = list(origin) + [0]*(5-origin.shape[0])
         if not _diag:
             self.header['origin'] = [0]*5
+
+        self.grid = self.grid.matlab2python()
+                             
 
     #-------------------------------------------------------------------------
     def prewrite(self, x):
@@ -299,19 +285,16 @@ class Analyze(bin.BinaryFormat):
 
     #-------------------------------------------------------------------------
     @staticmethod
-    def guess_byteorder(hdrfile):
+    def guess_byteorder(hdrfile,datasource=DataSource()):
         """
         Determine byte order of the header.  The first header element is the
         header size.  It should always be 384.  If it is not then you know you
         read it in the wrong byte order.
         """
-        if type(hdrfile)==type(""): hdrfile=file(hdrfile)
+        if type(hdrfile)==type(""): hdrfile=datasource.open(hdrfile)
         byteorder = bin.LITTLE_ENDIAN
         reported_length = bin.struct_unpack(hdrfile,
           byteorder, field_formats[0:1])[0]
         if reported_length != HEADER_SIZE: byteorder = bin.BIG_ENDIAN
         return byteorder
 
-
-if __name__=='__main__':
-    newAn = Analyze(writename,mode='w',grid=aGrid)

@@ -1,6 +1,7 @@
 
 import numpy
 
+from neuroimaging import import_from
 from neuroimaging.data_io import DataSource
 from neuroimaging.utils.path import path
 from neuroimaging.utils.odict import odict
@@ -9,50 +10,39 @@ from neuroimaging.core.reference.grid import SamplingGrid
 ##############################################################################
 class Format (object):
 
-    filename = ''
-    filebase = ''
-
-    mode = ''
-    bmode = ''
-
-    sctype = numpy.float64
-
-    # Has metadata
-    header = odict()
-
-    # Possibly has extended data
-    ext_header = odict()
-    
-    # Has general information (or should!)
-    canonical_fields = odict((
-        ('datasize', 0),
-        ('ndim', 0),
-        ('xdim', 0),
-        ('ydim', 0),
-        ('zdim', 0),
-        ('tdim', 0),
-        ('intent', ''),
-        ('scaling', 0),
-    ))
-
     #-------------------------------------------------------------------------
     def __init__(self, datasource=DataSource(), grid=None, **keywords):
         # Formats should concern themselves with datasources and grids
         self.datasource = datasource
         self.grid = grid
+        # Has metadata
+        self.header = odict()
+        # Possibly has extended data
+        self.ext_header = odict()
+        # Has general information (or should!)
+        self.canonical_fields = odict((
+            ('datasize', 0),
+            ('ndim', 0),
+            ('xdim', 0),
+            ('ydim', 0),
+            ('zdim', 0),
+            ('tdim', 0),
+            ('intent', ''),
+            ('scaling', 0),
+        ))
+
         
     #-------------------------------------------------------------------------
     def dumpHeader(self):
-        return "\n".join(["%s\t%s"%(field,`header[field]`) \
-                          for field in header.keys()])
+        return "\n".join(["%s\t%s"%(field,`self.header[field]`) \
+                          for field in self.header.keys()])
 
     #-------------------------------------------------------------------------
     def inform_canonical(self, fieldsDict=None):
         raise NotImplementedError
 
     #-------------------------------------------------------------------------
-    def __str__(self): self.dumpHeader()
-
+    def __str__(self): return self.dumpHeader()
 
     #-------------------------------------------------------------------------
     def __getitem__(self, slice):
@@ -64,6 +54,18 @@ class Format (object):
         """Data access"""
         raise NotImplementedError        
 
+    #-------------------------------------------------------------------------
+    @classmethod
+    def valid(self, filename, verbose=False, mode='r'):
+        # verbose not implemented
+        try:
+            ext = path(filename).splitext()[1]
+            if ext not in self.extensions:
+                return False
+        except:
+            return False
+        return True
+        
 
     #############################################
     ## The following header manipulations might
@@ -109,8 +111,10 @@ format_modules = (
   #"neuroimaging.data_io.formats.minc",
 )
 
-default_formats = [("neuroimaging.data_io.formats.nifti1", "NIFTI1"),
-                   ("neuroimaging.data_io.formats.analyze", "ANALYZE")]
+default_formats = [("neuroimaging.data_io.formats.nifti1", "Nifti1"),
+                   ("neuroimaging.data_io.formats.analyze", "Analyze"),
+                  ]
+                   
 
 #-----------------------------------------------------------------------------
 def getformats(filename):

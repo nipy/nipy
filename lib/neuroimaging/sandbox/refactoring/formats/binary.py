@@ -3,13 +3,17 @@ from types import TupleType, ListType
 from numpy.core import memmap as memmap_type
 from numpy import memmap
 from struct import calcsize, pack, unpack
-from sys import byteorder
-import os
+import os, sys
 
 from neuroimaging.utils.odict import odict
-#from neuroimaging.data_io.formats import Format
+from neuroimaging.sandbox.formats import Format
 from neuroimaging.data_io import DataSource
-from neuroimaging.sandbox.refactoring.formats import Format
+#from neuroimaging.sandbox.refactoring.formats import Format
+
+class BinaryFormatError(Exception):
+    """
+    Binary format error exception
+    """
 
 # struct byte order constants
 NATIVE = "="
@@ -26,8 +30,9 @@ _typemap = dict((
 allformats = []
 for formats in _typemap.keys(): allformats.extend(formats)
 
-format_defaults = {'i': 0, 'h': 0, 'f': 0., 'c': '\0', 's': ''}
+format_defaults = {'i': 0, 'h': 0, 'f': 0., 'c': '\0', 's': '', 'B': 0}
 
+######## STRUCT PACKING/UNPACKING/INTERPRETATION ROUTINES ####################
 def numvalues(format):
     numstr, fmtchar = format[:-1], format[-1]
     return (numstr and fmtchar not in ("s","p")) and int(numstr) or 1
@@ -78,19 +83,12 @@ def touch(fname): open(fname, 'w')
 ##############################################################################
 class BinaryFormat(Format):
 
-    # In case they are different files
-    header_file = ""
-    data_file = ""
 
-    byteorder = NATIVE
-    
-    # Has metadata + possibly extended data,
-    # but ALSO has struct formats
-
-    header_formats = odict()
-    ext_header_formats = odict()
-
-    extendable = False
+    # Subclass objects should define these:
+    #header_file = ""
+    #data_file = ""
+    #byteorder = NATIVE
+    #extendable = False
 
     #-------------------------------------------------------------------------
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
@@ -99,20 +97,30 @@ class BinaryFormat(Format):
         self.mode = mode
         self.filename = filename
         self.filebase = os.path.splitext(filename)[0]
-        
+        self.header_formats = odict()
+        self.ext_header_formats = odict()
         
     #-------------------------------------------------------------------------
     def read_header(self):
         # Populate header dictionary from a file
-        values = struct_unpack(open(self.header_file), self.byteorder,
+        values = struct_unpack(self.datasource.open(self.header_file),
+                               self.byteorder,
                                self.header_formats.values())
         
         for field, val in zip(self.header.keys(), values):
             self.header[field] = val
 
     #-------------------------------------------------------------------------
-    def write_header(self):
-        fp = open(self.header_file, 'wb')
+    def write_header(self,hdrfile=None):
+        # If someone wants to write a headerfile somewhere specific,
+        # handle that case immediately
+        # Otherwise, try to write to the object's header file
+        if hdrfile:
+            fp = type(hdrfile) == type('') and open(hdrfile,'wb') or hdrfile
+        elif self.datasource.exists(self.header_file):
+            fp = self.datasource.open(self.header_file, 'wb')
+        else:
+            fp = open(self.header_file, 'wb')
         packed = struct_pack(self.byteorder, self.header_formats.values(),
                              self.header.values())
         fp.write(packed)
@@ -121,12 +129,14 @@ class BinaryFormat(Format):
                                      self.ext_header_formats.values(),
                                      self.ext_header.values())
             fp.write(packed_ext)
-        fp.close()
+        # close it if we opened it
+        if not hdrfile or type(hdrfile) is not type(fp):
+            fp.close()
     
     #-------------------------------------------------------------------------
     def attach_data(self, offset=0):
-        mode = self.mode in ('r+','w') and 'r+' or self.mode
-        if mode == 'r+' and not os.path.exists(self.data_file):
+        mode = self.mode in ('r+','w','wb') and 'readwrite' or 'readonly'
+        if mode == 'write' and not self.datasource.exists(self.data_file):
             touch(self.data_file)
         self.memmap = memmap(self.datasource.filename(self.data_file),
                              dtype=self.sctype, shape=tuple(self.grid.shape),
@@ -144,15 +154,15 @@ class BinaryFormat(Format):
 
     #-------------------------------------------------------------------------
     def __getitem__(self, slicer):
-        return self.postread(self.memmap[slicer])
+        return self.postread(self.memmap[slicer].newbyteorder(self.byteorder))
 
     #-------------------------------------------------------------------------
     def __setitem__(self, slicer, data):
-        if self.memmap._mode != 'r+':
+        if self.memmap._mode not in ('r+','w+','w'):
             print "Warning: memapped array is not writeable!"
             return
-        self.memmap[slicer] = self.prewrite(data).astype(self.sctype)
-    
+        self.memmap[slicer] = \
+            self.prewrite(data).astype(self.sctype).newbyteorder(self.byteorder)
     #-------------------------------------------------------------------------
     def __del__(self):
         if hasattr(self, 'memmap'):
@@ -160,6 +170,8 @@ class BinaryFormat(Format):
                 self.memmap.sync()
             del(self.memmap)
 
+    #### These methods are extraneous, the header dictionaries are
+    #### unprotected and can be looked at directly
     #-------------------------------------------------------------------------
     def add_header_field(self, field, format, value):
         if not self.extendable:
@@ -183,16 +195,16 @@ class BinaryFormat(Format):
 
 
     #------------------------------------------------------------------------- 
-    #broken!
     def set_header_field(self, field, value):
         try:
-            self.header[field] = sanevalues(self.header_formats[field], value) and value
+            if sanevalues(self.header_formats[field], value):
+                self.header[field] = value
         except KeyError:
             try:
-                self.ext_header[field] = \
-                        sanevalues(self.ext_header_formats[field], value) and value
+                if sanevalue(self.ext_header_formats[field], value):
+                    self.ext_header[field] = value
             except KeyError:
-                raise KeyError
+                raise KeyError('Field does not exist')
     
     #------------------------------------------------------------------------- 
     def get_header_field(self, field):
