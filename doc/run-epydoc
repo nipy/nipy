@@ -4,7 +4,7 @@ FILTER='tests\|enthought\|sandbox\|attributes.py\|protocols.py\|config'
 
 output_dir=api
 mkdir -p ${output_dir}
-epydoc -vvvv \
+epydoc  \
   --output ${output_dir} \
   --name nipy \
   --url http://neuroimaging.scipy.org \

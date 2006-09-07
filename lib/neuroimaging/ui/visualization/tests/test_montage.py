@@ -4,7 +4,7 @@ import numpy as N
 
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.image import Image
-from neuroimaging.core.image.interpolation import ImageInterpolator
+from neuroimaging.algorithms.interpolation import ImageInterpolator
 
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()

@@ -36,7 +36,7 @@ class ContinuousROI(ROI):
         # test whether it executes properly
 
         try:
-            x = bfn(N.array([[0.,] * ndim]))
+            bfn(N.array([[0.,] * ndim]))
         except:
             raise ValueError(
               'binary function bfn in ROI failed on ' + `[0.] * ndim`)
