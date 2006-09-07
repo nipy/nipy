@@ -63,7 +63,7 @@ class ProtocolTest(unittest.TestCase):
             writer.writerow(row)
         out.close()
         
-        p = protocol.ExperimentalFactor('pain', file('tmp.csv'))
+        p = protocol.ExperimentalFactor('pain', file('tmp.csv'), delta=False)
         os.remove('tmp.csv')
 
     def testFromFileName(self):
@@ -118,7 +118,7 @@ class ProtocolTest(unittest.TestCase):
         drift_fn = protocol.SplineConfound(window=[0,300], df=4)
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         formula = self.p + drift
-        c = contrast.Contrast(self.p.main_effect(formula), formula)
+        c = contrast.Contrast(self.p.main_effect(), formula)
         c.getmatrix(time=self.t)
         N.testing.assert_almost_equal(c.matrix,
                                           [0.,0.,0.,0.,-1.,1.])
@@ -272,8 +272,7 @@ class ProtocolTest(unittest.TestCase):
         Z = float(N.random.standard_normal(()))
 
         a = q.astimefn() - r.astimefn() * Z
-
-        N.testing.assert_almost_equal(a(t), N.array(q(time=t)) - Z * N.array(r(time=t)))
+        N.testing.assert_almost_equal(a(t), (N.array(q(time=t)) - Z * N.array(r(time=t))).flatten())
 
 class DeltaTest(unittest.TestCase):
 
