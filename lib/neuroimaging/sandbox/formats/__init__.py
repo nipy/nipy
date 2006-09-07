@@ -10,6 +10,8 @@ from neuroimaging.core.reference.grid import SamplingGrid
 
 class Format (object):
 
+    """ Valid filename extensions for the file format. """ 
+    extensions = []
 
     def __init__(self, datasource=DataSource(), grid=None, **keywords):
         # Formats should concern themselves with datasources and grids
@@ -145,7 +147,7 @@ def hasformat(filename):
     file type.
     """
     try:
-        getformat(filename)
+        getformats(filename)
         return True
     except NotImplementedError:
         return False

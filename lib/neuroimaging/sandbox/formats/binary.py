@@ -42,7 +42,7 @@ def elemtype(format):
     for formats, typ in _typemap.items():
         if fmtchar in formats: return typ
     raise ValueError("format char %s must be one of: %s"%\
-                     (fmtchar, allformats()))
+                     (fmtchar, allformats))
 
 def sanevalues(format, value):
     nvals, valtype = type(value) in (TupleType, ListType) and \
@@ -205,10 +205,10 @@ class BinaryFormat(Format):
 
     def get_header_field(self, field):
         try:
-            self.header[field]
+            return self.header[field]
         except KeyError:
             try:
-                self.ext_header[field]
+                return self.ext_header[field]
             except KeyError:
                 raise KeyError
     

@@ -1,7 +1,7 @@
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io import DataSource
-import neuroimaging.sandbox.refactoring.formats.binary as bin
+import neuroimaging.sandbox.formats.binary as bin
 
 # ECAT 7 header
 HEADER_SIZE = 512

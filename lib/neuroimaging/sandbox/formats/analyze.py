@@ -244,7 +244,7 @@ class Analyze(bin.BinaryFormat):
         if hasattr(self, 'memmap'):
             if isinstance(self.memmap, memmap_type):
                 self.memmap.sync()
-            del(self.memmap)
+            del self.memmap
 
 
     def inform_canonical(self, fieldsDict=None):
@@ -271,29 +271,35 @@ class Analyze(bin.BinaryFormat):
             return Affine.fromfile(self.datasource.open(self.mat_file),
                                    delimiter='\t')
         else:
-            if self.ndim == 4: names = spacetime[::-1]
-            else: names = space[::-1]
+            # FIXME: Do we want to use these?
+            if self.ndim == 4:
+                names = spacetime[::-1]
+            else:
+                names = space[::-1]
             return Affine.identity(self.ndim)
 
 
     def write_mat(self, matfile=None):
         "Write out the affine transformation matrix."
-        if matfile is None: matfile = self.mat_file
+        if matfile is None:
+            matfile = self.mat_file
         if self.clobber or not path(matfile).exists():
             self.grid.mapping.tofile(matfile)
 
 
     @staticmethod
-    def guess_byteorder(hdrfile,datasource=DataSource()):
+    def guess_byteorder(hdrfile, datasource=DataSource()):
         """
         Determine byte order of the header.  The first header element is the
         header size.  It should always be 384.  If it is not then you know you
         read it in the wrong byte order.
         """
-        if type(hdrfile)==type(""): hdrfile=datasource.open(hdrfile)
+        if type(hdrfile)==type(""):
+            hdrfile = datasource.open(hdrfile)
         byteorder = bin.LITTLE_ENDIAN
         reported_length = bin.struct_unpack(hdrfile,
           byteorder, field_formats[0:1])[0]
-        if reported_length != HEADER_SIZE: byteorder = bin.BIG_ENDIAN
+        if reported_length != HEADER_SIZE:
+            byteorder = bin.BIG_ENDIAN
         return byteorder
 
