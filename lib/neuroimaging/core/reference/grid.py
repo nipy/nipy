@@ -7,8 +7,8 @@ import numpy as N
 from neuroimaging import reverse
 from neuroimaging.core.reference.mapping import Mapping, Affine
 from neuroimaging.core.reference.axis import space, RegularAxis, Axis, VoxelAxis
-from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem, \
-  DiagonalCoordinateSystem, CoordinateSystem
+from neuroimaging.core.reference.coordinate_system import \
+  VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
 from neuroimaging.core.reference.iterators import SliceIterator, \
   ParcelIterator, SliceParcelIterator
 
@@ -182,11 +182,13 @@ class SamplingGrid (object):
 
     def matlab2python(self):
         m = self.mapping.matlab2python()
-        return SamplingGrid(reverse(self.shape), m, self.input_coords.reverse(), self.output_coords)
+        return SamplingGrid(reverse(self.shape), m, 
+          self.input_coords.reverse(), self.output_coords)
 
     def python2matlab(self):
         m = self.mapping.python2matlab()
-        return SamplingGrid(reverse(self.shape), m, self.input_coords.reverse(), self.output_coords)
+        return SamplingGrid(reverse(self.shape), m, 
+          self.input_coords.reverse(), self.output_coords)
 
 
     def replicate(self, n, concataxis="concat"):
@@ -267,7 +269,7 @@ class ConcatenatedGrids(SamplingGrid):
 class ConcatenatedIdenticalGrids(ConcatenatedGrids):
 
     def __init__(self, grid, n, concataxis="concat"):
-        ConcatenatedGrids.__init__(self, [grid for i in range(n)], concataxis)
+        ConcatenatedGrids.__init__(self, [grid]*n , concataxis)
         self.mapping, self.input_coords, self.output_coords = self._mapping()
 
     def _mapping(self):

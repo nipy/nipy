@@ -32,8 +32,9 @@ class CoordinateSystem(odict):
         """
         Equality is defined by he axes and the name.
         """
-        if not hasattrs(other, "name", "axes"): return False
-        return (self.name, self.axes())==(other.name, other.axes())
+        if not hasattrs(other, "name", "axes"): 
+            return False
+        return (self.name, self.axes()) == (other.name, other.axes())
 
 
     def __str__(self):
@@ -79,7 +80,7 @@ class CoordinateSystem(odict):
         """
         Verify whether x is a valid coordinate.
         """
-        return not False in [self.axes()[i].valid(x[i]) for i in range(self.ndim())]
+        return N.all([self.axes()[i].valid(x[i]) for i in range(self.ndim())])
 
 
 class VoxelCoordinateSystem(CoordinateSystem):

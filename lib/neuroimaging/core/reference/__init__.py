@@ -22,12 +22,12 @@ The typical use of a SamplingGrid will be to define how points in an Image
 
 Image traversal is general done in terms of the underlying grid, and a number of
 iterators are provided to traverse points in the grid (iterators.py). Access to
-available iterators is done through the SamplingGrid interface, rather than accessing
-the iterator classes directly. 
+available iterators is done through the SamplingGrid interface, rather than 
+accessing the iterator classes directly. 
 
-The other common image access method is to take slices through the grid. In slices.py
-functions are presented which will return a SamplingGrid representing a single slice
-through a larger grid.
+The other common image access method is to take slices through the grid. In 
+slices.py functions are presented which will return a SamplingGrid representing
+a single slice through a larger grid.
 
 """
 from neuroimaging.core.reference import \
