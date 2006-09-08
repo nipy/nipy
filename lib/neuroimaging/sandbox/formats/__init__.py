@@ -7,10 +7,10 @@ from neuroimaging.utils.path import path
 from neuroimaging.utils.odict import odict
 from neuroimaging.core.reference.grid import SamplingGrid
 
-##############################################################################
+
 class Format (object):
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, datasource=DataSource(), grid=None, **keywords):
         # Formats should concern themselves with datasources and grids
         self.datasource = datasource
@@ -32,29 +32,30 @@ class Format (object):
         ))
 
         
-    #-------------------------------------------------------------------------
+
     def dumpHeader(self):
         return "\n".join(["%s\t%s"%(field,`self.header[field]`) \
                           for field in self.header.keys()])
 
-    #-------------------------------------------------------------------------
+
     def inform_canonical(self, fieldsDict=None):
         raise NotImplementedError
 
-    #-------------------------------------------------------------------------
-    def __str__(self): return self.dumpHeader()
 
-    #-------------------------------------------------------------------------
+    def __str__(self):
+        return self.dumpHeader()
+
+
     def __getitem__(self, slice):
         """Data access"""
         raise NotImplementedError
 
-    #-------------------------------------------------------------------------
+
     def __setitem__(self, slice, data):
         """Data access"""
         raise NotImplementedError        
 
-    #-------------------------------------------------------------------------
+
     @classmethod
     def valid(self, filename, verbose=False, mode='r'):
         # verbose not implemented
@@ -80,7 +81,7 @@ class Format (object):
         """
         raise NotImplementedError
 
-    #-------------------------------------------------------------------------
+
     def remove_header_field(self, name):
         """
         Remove a field from the header. Will Definitely Not
@@ -88,21 +89,21 @@ class Format (object):
         """
         raise NotImplementedError
 
-    #-------------------------------------------------------------------------
+
     def set_header_field(self, name, value):
         """
         Set a field's value
         """ 
         raise NotImplementedError
 
-    #-------------------------------------------------------------------------
+
     def get_header_field(self, name):
         """
         Get a field's value
         """
         raise NotImplementedError
 
-##############################################################################
+
 
 format_modules = (
   "neuroimaging.data_io.formats.analyze",
@@ -116,7 +117,7 @@ default_formats = [("neuroimaging.data_io.formats.nifti1", "Nifti1"),
                   ]
                    
 
-#-----------------------------------------------------------------------------
+
 def getformats(filename):
     "Return the appropriate image format for the given file type."
     all_formats = []
@@ -137,7 +138,7 @@ def getformats(filename):
       "file extension %(ext)s not recognized, %(exts)s files can be created "\
       "at this time."% {'ext':extension, 'exts':all_formats}
 
-#-----------------------------------------------------------------------------
+
 def hasformat(filename):
     """
     Determine if there is an image format format registered for the given

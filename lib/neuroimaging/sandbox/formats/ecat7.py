@@ -1,17 +1,7 @@
-import os
-from numpy.core.memmap import memmap as memmap_type
-import numpy as N
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io import DataSource
 import neuroimaging.sandbox.refactoring.formats.binary as bin
-import neuroimaging.sandbox.refactoring.formats.analyze as anlz
-from neuroimaging.sandbox.refactoring.formats.nifti1_ext import quatern2mat, \
-     mat2quatern
-from neuroimaging.core.reference.axis import space, spacetime
-from neuroimaging.core.reference.mapping import Affine
-from neuroimaging.core.reference.grid import SamplingGrid
-from neuroimaging.utils.path import path
 
 # ECAT 7 header
 HEADER_SIZE = 512

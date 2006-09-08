@@ -1,5 +1,3 @@
-import os
-from numpy.core.memmap import memmap as memmap_type
 import numpy as N
 
 from neuroimaging.utils.odict import odict
@@ -11,7 +9,6 @@ from neuroimaging.sandbox.formats.nifti1_ext import quatern2mat, \
 from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
-from neuroimaging.utils.path import path
 
 class Nifti1FormatError(Exception):
     """
@@ -188,7 +185,7 @@ field_formats = struct_formats.values()
 # int ecode --> the code of the extension
 
 
-##############################################################################
+
 class Nifti1(bin.BinaryFormat):
     """
     A class to read and write NIFTI format images.
@@ -207,7 +204,7 @@ class Nifti1(bin.BinaryFormat):
     nvector = -1
 
     extendable = False
-    #-------------------------------------------------------------------------
+
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
         """
         Constructs a Nifti binary format object with at least a filename
@@ -306,7 +303,7 @@ class Nifti1(bin.BinaryFormat):
                (self.filebase+".hdr", self.filebase+".img") or\
                (self.filebase+".nii", self.filebase+".nii")
     
-    #-------------------------------------------------------------------------
+
     @staticmethod
     def _default_field_value(fieldname, fieldformat):
         "[STATIC] Get the default value for the given field."
@@ -315,7 +312,7 @@ class Nifti1(bin.BinaryFormat):
              [bin.format_defaults[fieldformat[-1]]]*int(fieldformat[:-1]) or \
              bin.format_defaults[fieldformat[-1]]
     
-    #-------------------------------------------------------------------------
+
     def header_defaults(self):
         for field,format in self.header_formats.items():
             self.header[field] = self._default_field_value(field,format)

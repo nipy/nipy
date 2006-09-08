@@ -3,7 +3,7 @@ from types import TupleType, ListType
 from numpy.core import memmap as memmap_type
 from numpy import memmap
 from struct import calcsize, pack, unpack
-import os, sys
+import os
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.sandbox.formats import Format

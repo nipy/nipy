@@ -1,4 +1,3 @@
-import os
 from numpy.core.memmap import memmap as memmap_type
 import numpy as N
 
@@ -88,7 +87,7 @@ struct_formats = odict((
 
 field_formats = struct_formats.values()
 
-##############################################################################
+
 class Analyze(bin.BinaryFormat):
     """
     A class to read and write ANALYZE format images. 
@@ -107,7 +106,7 @@ class Analyze(bin.BinaryFormat):
     nvector = -1
     # always false for Analyze
     extendable = False
-    #-------------------------------------------------------------------------
+
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
         """
         Constructs a Analyze binary format object with at least a filename
@@ -178,19 +177,19 @@ class Analyze(bin.BinaryFormat):
         # get memmaped array
         self.attach_data()
 
-    #-------------------------------------------------------------------------
+
     @staticmethod
     def _default_field_value(fieldname, fieldformat):
         "[STATIC] Get the default value for the given field."
         return Analyze._field_defaults.get(fieldname, None) or \
                bin.format_defaults[fieldformat[-1]]
     
-    #-------------------------------------------------------------------------
+
     def header_defaults(self):
         for field,format in self.header_formats.items():
             self.header[field] = self._default_field_value(field,format)
 
-    #-------------------------------------------------------------------------
+
     def header_from_given(self):
         self.header['datatype'] = sctype2datatype[self.sctype]
         self.header['bitpix'] = N.dtype(self.sctype).itemsize 
@@ -225,7 +224,7 @@ class Analyze(bin.BinaryFormat):
         self.grid = self.grid.matlab2python()
                              
 
-    #-------------------------------------------------------------------------
+
     def prewrite(self, x):
         """
         Might transform the data before writing;
@@ -233,21 +232,21 @@ class Analyze(bin.BinaryFormat):
         """
         return x.astype(self.sctype)
 
-    #-------------------------------------------------------------------------
+
     def postread(self, x):
         """
         Might transform the data after getting it from memmap
         """
         return x
 
-    #-------------------------------------------------------------------------
+
     def __del__(self):
         if hasattr(self, 'memmap'):
             if isinstance(self.memmap, memmap_type):
                 self.memmap.sync()
             del(self.memmap)
 
-    #-------------------------------------------------------------------------
+
     def inform_canonical(self, fieldsDict=None):
         if fieldsDict is not None:
             self.canonical_fields = odict(fieldsDict)
@@ -261,7 +260,7 @@ class Analyze(bin.BinaryFormat):
             self.canonical_fields['scaling'] = self.header['scale_factor']
         
             
-    #-------------------------------------------------------------------------
+
     def read_mat(self):
         """
         Return affine transformation matrix, if it exists.
@@ -276,14 +275,14 @@ class Analyze(bin.BinaryFormat):
             else: names = space[::-1]
             return Affine.identity(self.ndim)
 
-    #-------------------------------------------------------------------------
+
     def write_mat(self, matfile=None):
         "Write out the affine transformation matrix."
         if matfile is None: matfile = self.mat_file
         if self.clobber or not path(matfile).exists():
             self.grid.mapping.tofile(matfile)
 
-    #-------------------------------------------------------------------------
+
     @staticmethod
     def guess_byteorder(hdrfile,datasource=DataSource()):
         """
