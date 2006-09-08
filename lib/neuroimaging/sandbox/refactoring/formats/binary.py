@@ -1,4 +1,6 @@
 from types import TupleType, ListType
+
+from numpy.core import memmap as memmap_type
 from numpy import memmap
 from struct import calcsize, pack, unpack
 from sys import byteorder
@@ -79,7 +81,6 @@ class BinaryFormat(Format):
     # In case they are different files
     header_file = ""
     data_file = ""
-    filebase = ""
 
     byteorder = NATIVE
     
@@ -96,6 +97,7 @@ class BinaryFormat(Format):
         # keep BinaryFormats dealing with datasource and filename/mode
         Format.__init__(self, datasource, keywords.get('grid', None))
         self.mode = mode
+        self.filename = filename
         self.filebase = os.path.splitext(filename)[0]
         
         
@@ -131,17 +133,33 @@ class BinaryFormat(Format):
                              mode=mode, offset=offset)
 
     #-------------------------------------------------------------------------
-##     def empty_datafile(self, offset=0):
-##         if not exists(self.data_file):
-##             fp = open(self.data_file, 'wb')
-##         else:
-##             fp = open(self.data_file, 'rb+')
+    def prewrite(self, x):
+        # PROTOTYPE: subclass MUST define this!
+        pass
 
-##         # need to see if we're clobbering header file here,
-##         # i'm just writing for now
+    #-------------------------------------------------------------------------
+    def postread(self, x):
+        # PROTOTYPE: subclass MUST define this!        
+        pass
 
-##         outfile.seek(offset)
-        
+    #-------------------------------------------------------------------------
+    def __getitem__(self, slicer):
+        return self.postread(self.memmap[slicer])
+
+    #-------------------------------------------------------------------------
+    def __setitem__(self, slicer, data):
+        if self.memmap._mode != 'r+':
+            print "Warning: memapped array is not writeable!"
+            return
+        self.memmap[slicer] = self.prewrite(data).astype(self.sctype)
+    
+    #-------------------------------------------------------------------------
+    def __del__(self):
+        if hasattr(self, 'memmap'):
+            if isinstance(self.memmap, memmap_type):
+                self.memmap.sync()
+            del(self.memmap)
+
     #-------------------------------------------------------------------------
     def add_header_field(self, field, format, value):
         if not self.extendable:

@@ -33,8 +33,6 @@ class Format (object):
         ('tdim', 0),
         ('intent', ''),
         ('scaling', 0),
-        #('grid', SamplingGrid()),
-        #('orientation', Orienter()),
     ))
 
     #-------------------------------------------------------------------------

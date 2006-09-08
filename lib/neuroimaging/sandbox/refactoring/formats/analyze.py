@@ -135,17 +135,18 @@ class Analyze(bin.BinaryFormat):
             if self.grid is not None:
                 self.header_from_given()
             else:
-                raise NotImplementedError("Don't know how to create header info yet")
+                raise NotImplementedError("Don't know how to create header info without a grid object")
             self.write_header()
         else:
+            self.byteorder = self.guess_byteorder(self.header_file)            
             self.read_header()
             self.sctype = datatype2sctype[self.header['datatype']]
             self.ndim = self.header['dim'][0]
-            self.byteorder = self.guess_byteorder(self.header_file)
 
         # fill in the canonical list as best we can for Analyze
         self.inform_canonical()
 
+        ########## This could stand a clean-up ################################
         if self.ndim == 3:
             axisnames = space[::-1]
             origin = tuple(self.header['origin'][0:3])
@@ -174,9 +175,10 @@ class Analyze(bin.BinaryFormat):
 ##                             step = step[1:4]
 ##                             axisnames = axisnames[1:4]
 ##                             shape = self.dim[2:5]
-                                
+        #######################################################################
         ## Setup affine transformation
         
+        # what's going on here?
         self.grid = SamplingGrid.from_start_step(names=axisnames,
                                                  shape=shape,
                                                  start=-array(origin)*step,
@@ -215,6 +217,7 @@ class Analyze(bin.BinaryFormat):
         if self.grid.mapping.isdiagonal():
             _diag = True
         else:
+            # ??
             _diag = False
             self.write_mat()
 
@@ -250,17 +253,6 @@ class Analyze(bin.BinaryFormat):
         Might transform the data after getting it from memmap
         """
         return x
-    
-    #-------------------------------------------------------------------------
-    def __getitem__(self, slicer):
-        return self.postread(self.memmap[slicer])
-
-    #-------------------------------------------------------------------------
-    def __setitem__(self, slicer, data):
-        if self.memmap._mode != 'r+':
-            print "Warning: memapped array is not writeable!"
-            return
-        self.memmap[slicer] = self.prewrite(data)
 
     #-------------------------------------------------------------------------
     def __del__(self):
