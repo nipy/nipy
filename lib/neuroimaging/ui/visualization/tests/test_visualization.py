@@ -47,10 +47,11 @@ class VisualizationTest(unittest.TestCase):
             pylab.savefig('image.png')
             os.remove('image.png')
 
-        if QT_DEF:
-            def test_arrayview(self):
-                from neuroimaging.ui.visualization import arrayview
-                arrayview.arrayview(self.img.readall())
+#jarrod--this was just a test and needs to be removed, for now just no testing
+#        if QT_DEF:
+#            def test_arrayview(self):
+#                from neuroimaging.ui.visualization import arrayview
+#                arrayview.arrayview(self.img.readall())
 
 def suite():
     return unittest.makeSuite(VisualizationTest)
