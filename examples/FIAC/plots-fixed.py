@@ -2,7 +2,7 @@ import pylab
 import numpy as N
 
 from neuroimaging.core.image import Image
-from neuroimaging.core.image.interpolation import ImageInterpolator
+from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.ui.visualization import slices, montage
 
 

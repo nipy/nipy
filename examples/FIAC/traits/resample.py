@@ -4,7 +4,7 @@ import numpy as N
 from neuroimaging import traits
 
 from neuroimaging.core.image import Image
-from neuroimaging.core.image.interpolation import ImageInterpolator
+from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
 

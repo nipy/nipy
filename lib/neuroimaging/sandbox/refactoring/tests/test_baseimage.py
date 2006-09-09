@@ -2,7 +2,7 @@ import unittest, glob, os, scipy
 
 import numpy as N
 
-from neuroimaging.core.image.onesample import ImageOneSample
+from neuroimaging.algorithms.onesample import ImageOneSample
 from neuroimaging.sandbox.refactoring.baseimage import image
 from neuroimaging.utils.tests.data import repository
 
