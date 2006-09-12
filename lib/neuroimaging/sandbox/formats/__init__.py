@@ -1,4 +1,21 @@
+"""
+Format is a class which is abstract enough for Images to talk with. It has:
 
+*grid and datasource
+*metadata in the form of a "header"
+*data get/set (though no specific means to find that data)
+*canonical fields, which is a sort of intersection of all specific
+formats' metadata, but in a known NI language
+
+BinaryFormat(Format) is an object with binary header data and a "brick" of
+binary data. The binary.py module has a lot of struct packing/unpacking
+methods to make life nicer. BinaryFormats have:
+*filenames and modes--in fact, BinaryFormats are always constructed with a
+filename, this is not an option anymore (makes sense to me).
+*header formats (in package struct language)
+*means to read/write contiguous/deterministic-style headers
+
+"""
 import numpy
 
 from neuroimaging import import_from
