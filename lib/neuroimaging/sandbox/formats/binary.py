@@ -80,7 +80,7 @@ def struct_pack(byte_order, elements, values):
 
 def touch(fname): open(fname, 'w')
 
-##############################################################################
+
 class BinaryFormat(Format):
 
 
@@ -90,7 +90,7 @@ class BinaryFormat(Format):
     #byteorder = NATIVE
     #extendable = False
 
-    #-------------------------------------------------------------------------
+
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
         # keep BinaryFormats dealing with datasource and filename/mode
         Format.__init__(self, datasource, keywords.get('grid', None))
@@ -100,7 +100,7 @@ class BinaryFormat(Format):
         self.header_formats = odict()
         self.ext_header_formats = odict()
         
-    #-------------------------------------------------------------------------
+
     def read_header(self):
         # Populate header dictionary from a file
         values = struct_unpack(self.datasource.open(self.header_file),
@@ -110,7 +110,7 @@ class BinaryFormat(Format):
         for field, val in zip(self.header.keys(), values):
             self.header[field] = val
 
-    #-------------------------------------------------------------------------
+
     def write_header(self,hdrfile=None):
         # If someone wants to write a headerfile somewhere specific,
         # handle that case immediately
@@ -133,7 +133,7 @@ class BinaryFormat(Format):
         if not hdrfile or type(hdrfile) is not type(fp):
             fp.close()
     
-    #-------------------------------------------------------------------------
+
     def attach_data(self, offset=0):
         mode = self.mode in ('r+','w','wb') and 'readwrite' or 'readonly'
         if mode == 'write' and not self.datasource.exists(self.data_file):
@@ -142,28 +142,25 @@ class BinaryFormat(Format):
                              dtype=self.sctype, shape=tuple(self.grid.shape),
                              mode=mode, offset=offset)
 
-    #-------------------------------------------------------------------------
+
     def prewrite(self, x):
-        # PROTOTYPE: subclass MUST define this!
-        pass
+        raise NotImplementedError
 
-    #-------------------------------------------------------------------------
+
     def postread(self, x):
-        # PROTOTYPE: subclass MUST define this!        
-        pass
+        raise NotImplementedError
 
-    #-------------------------------------------------------------------------
     def __getitem__(self, slicer):
         return self.postread(self.memmap[slicer].newbyteorder(self.byteorder))
 
-    #-------------------------------------------------------------------------
+
     def __setitem__(self, slicer, data):
         if self.memmap._mode not in ('r+','w+','w'):
             print "Warning: memapped array is not writeable!"
             return
         self.memmap[slicer] = \
             self.prewrite(data).astype(self.sctype).newbyteorder(self.byteorder)
-    #-------------------------------------------------------------------------
+
     def __del__(self):
         if hasattr(self, 'memmap'):
             if isinstance(self.memmap, memmap_type):
@@ -172,7 +169,6 @@ class BinaryFormat(Format):
 
     #### These methods are extraneous, the header dictionaries are
     #### unprotected and can be looked at directly
-    #-------------------------------------------------------------------------
     def add_header_field(self, field, format, value):
         if not self.extendable:
             raise NotImplementedError("%s header type not "\
@@ -187,14 +183,14 @@ class BinaryFormat(Format):
         self.ext_header_formats[field] = format
         self.ext_header[field] = value
 
-    #-------------------------------------------------------------------------
+
     def remove_header_field(self, field):
         if field in self.ext_header.keys():
             self.ext_header.pop(field)
             self.ext_header_formats.pop(field)
 
 
-    #------------------------------------------------------------------------- 
+
     def set_header_field(self, field, value):
         try:
             if sanevalues(self.header_formats[field], value):
@@ -206,7 +202,7 @@ class BinaryFormat(Format):
             except KeyError:
                 raise KeyError('Field does not exist')
     
-    #------------------------------------------------------------------------- 
+
     def get_header_field(self, field):
         try:
             self.header[field]
@@ -217,5 +213,5 @@ class BinaryFormat(Format):
                 raise KeyError
     
             
-##############################################################################
+
             
