@@ -63,7 +63,7 @@ class BaseImage(object):
         return self.data[item]
         
     def __setitem__(self, item, value):
-        self[item] = value
+        self.data[item] = value
 
 class ArrayImage (BaseImage):
     """A simple class to mimic an image file from an array."""
