@@ -197,7 +197,7 @@ class BinaryFormat(Format):
                 self.header[field] = value
         except KeyError:
             try:
-                if sanevalue(self.ext_header_formats[field], value):
+                if sanevalues(self.ext_header_formats[field], value):
                     self.ext_header[field] = value
             except KeyError:
                 raise KeyError('Field does not exist')
