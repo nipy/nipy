@@ -9,7 +9,8 @@ from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.ui.visualization import slices, montage
 from fixed import FIACresample
 
-standard = Image('avg152T1_brain.img', datasource=repository)
+#standard = Image('avg152T1_brain.hdr', datasource=repository)
+standard = Image('avg152T1.hdr', datasource=repository)
 
 vmax = {'rho':0.7,
         'fwhmOLS':15.}
@@ -29,6 +30,7 @@ def FIACrunpath(resampled=False, what='rho', **opts):
 
 def FIACfixedslice(**opts):
 
+    print FIACrunpath(resampled=True, **opts)
     if not os.path.exists(FIACrunpath(resampled=True, **opts)) or options['force']:
         try:
             FIACresample(FIACrunpath(**opts), FIACrunpath(resampled=True, **opts), **opts)
@@ -41,7 +43,7 @@ def FIACfixedslice(**opts):
     else:
         i = Image(FIACrunpath(resampled=True, **opts))
         haveit = True
-    
+
     if haveit:    
         i.grid = standard.grid
 
@@ -72,6 +74,7 @@ def FIACmontage(**opts):
                 dataslices[(j-1,i)] = curslice
             else:
                 dataslices[(j-1,i)] = None
+
 
     # determine colormap
 

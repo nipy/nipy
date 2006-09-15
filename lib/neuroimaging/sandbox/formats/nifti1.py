@@ -175,6 +175,7 @@ struct_formats = odict((
     ('srow_z','4f'),
     ('intent_name','16s'),
     ('magic','4s'),
+    ('qfac','f'),
 ))
 field_formats = struct_formats.values()
 
@@ -218,7 +219,6 @@ class Nifti1(bin.BinaryFormat):
         """
 
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
-        self.clobber = keywords.get('clobber', False)
         self.intent = keywords.get('intent', '')
         
         self.header_file, self.data_file = self.nifti_filenames()

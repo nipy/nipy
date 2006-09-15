@@ -5,7 +5,7 @@ import numpy.fft as fft
 import numpy.linalg as NL
 from neuroimaging import traits
 
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.utils import fwhm2sigma
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid

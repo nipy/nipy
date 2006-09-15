@@ -6,7 +6,7 @@ from scipy.linalg import toeplitz
 from scipy.sandbox.models.utils import recipr
 from neuroimaging import traits
 
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 import neuroimaging.algorithms.regression as imreg
 
 from neuroimaging.defines import pylab_def

@@ -29,8 +29,7 @@ class SamplingGrid (object):
         ndim = len(names)
         # fill in default step size
         step = N.asarray(step)
-        step = N.where(step, step, 1.)
-        
+        #step = N.where(step, step, 1.) # FIXME: I don't think this is right
         axes = [RegularAxis(name=names[i], length=shape[i],
           start=start[i], step=step[i]) for i in range(ndim)]
         input_coords = VoxelCoordinateSystem('voxel', axes)

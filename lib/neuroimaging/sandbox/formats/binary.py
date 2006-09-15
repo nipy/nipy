@@ -93,20 +93,26 @@ class BinaryFormat(Format):
 
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
         # keep BinaryFormats dealing with datasource and filename/mode
-        Format.__init__(self, datasource, keywords.get('grid', None))
+        Format.__init__(self, datasource, keywords.get('grid', None))        
         self.mode = mode
         self.filename = filename
         self.filebase = os.path.splitext(filename)[0]
         self.header_formats = odict()
         self.ext_header_formats = odict()
-        
+        self.clobber = keywords.get('clobber', False)
+
+        if self.clobber and 'w' in self.mode:
+            try:
+                os.remove(self.datasource.filename(self.data_file))
+            except:
+                pass
+
 
     def read_header(self):
         # Populate header dictionary from a file
         values = struct_unpack(self.datasource.open(self.header_file),
                                self.byteorder,
                                self.header_formats.values())
-        
         for field, val in zip(self.header.keys(), values):
             self.header[field] = val
 
@@ -115,30 +121,35 @@ class BinaryFormat(Format):
         # If someone wants to write a headerfile somewhere specific,
         # handle that case immediately
         # Otherwise, try to write to the object's header file
+
         if hdrfile:
             fp = type(hdrfile) == type('') and open(hdrfile,'wb') or hdrfile
         elif self.datasource.exists(self.header_file):
             fp = self.datasource.open(self.header_file, 'wb')
         else:
             fp = open(self.header_file, 'wb')
-        packed = struct_pack(self.byteorder, self.header_formats.values(),
+        packed = struct_pack(self.byteorder,
+                             self.header_formats.values(),
                              self.header.values())
         fp.write(packed)
+
         if self.extendable and self.ext_header != {}:
             packed_ext = struct_pack(self.byteorder,
                                      self.ext_header_formats.values(),
                                      self.ext_header.values())
             fp.write(packed_ext)
+
         # close it if we opened it
         if not hdrfile or type(hdrfile) is not type(fp):
             fp.close()
-    
+
 
     def attach_data(self, offset=0):
+
         mode = self.mode in ('r+','w','wb') and 'readwrite' or 'readonly'
-        if mode == 'write' and not self.datasource.exists(self.data_file):
+        if mode == 'readwrite' and not self.datasource.exists(self.data_file):
             touch(self.data_file)
-        self.memmap = memmap(self.datasource.filename(self.data_file),
+        self.data = memmap(self.datasource.filename(self.data_file),
                              dtype=self.sctype, shape=tuple(self.grid.shape),
                              mode=mode, offset=offset)
 
@@ -151,21 +162,21 @@ class BinaryFormat(Format):
         raise NotImplementedError
 
     def __getitem__(self, slicer):
-        return self.postread(self.memmap[slicer].newbyteorder(self.byteorder))
+        return self.postread(self.data[slicer].newbyteorder(self.byteorder))
 
 
     def __setitem__(self, slicer, data):
-        if self.memmap._mode not in ('r+','w+','w'):
+        if self.data._mode not in ('r+','w+','w'):
             print "Warning: memapped array is not writeable!"
             return
-        self.memmap[slicer] = \
+        self.data[slicer] = \
             self.prewrite(data).astype(self.sctype).newbyteorder(self.byteorder)
 
     def __del__(self):
         if hasattr(self, 'memmap'):
-            if isinstance(self.memmap, memmap_type):
-                self.memmap.sync()
-            del(self.memmap)
+            if isinstance(self.data, memmap_type):
+                self.data.sync()
+            del(self.data)
 
     #### These methods are extraneous, the header dictionaries are
     #### unprotected and can be looked at directly

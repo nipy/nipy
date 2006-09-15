@@ -16,6 +16,8 @@ filename, this is not an option anymore (makes sense to me).
 *means to read/write contiguous/deterministic-style headers
 
 """
+__all__ = ['Format']
+
 import numpy
 
 from neuroimaging import import_from
@@ -23,17 +25,17 @@ from neuroimaging.data_io import DataSource
 from neuroimaging.utils.path import path
 from neuroimaging.utils.odict import odict
 from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.image.base_image import BaseImage
 
-
-class Format(object):
+class Format(BaseImage):
 
     """ Valid filename extensions for the file format. """ 
     extensions = []
 
     def __init__(self, datasource=DataSource(), grid=None, **keywords):
+        BaseImage.__init__(self, NotImplemented, grid, NotImplemented)
         # Formats should concern themselves with datasources and grids
         self.datasource = datasource
-        self.grid = grid
         # Has metadata
         self.header = odict()
         # Possibly has extended data
@@ -125,14 +127,14 @@ class Format(object):
 
 
 format_modules = (
-  "neuroimaging.data_io.formats.analyze",
-  "neuroimaging.data_io.formats.nifti1",
+  "neuroimaging.sandbox.formats.analyze",
+  "neuroimaging.sandbox.formats.nifti1",
   #"neuroimaging.data_io.formats.afni",
   #"neuroimaging.data_io.formats.minc",
 )
 
-default_formats = [("neuroimaging.data_io.formats.nifti1", "Nifti1"),
-                   ("neuroimaging.data_io.formats.analyze", "Analyze"),
+default_formats = [("neuroimaging.sandbox.formats.nifti1", "Nifti1"),
+                   ("neuroimaging.sandbox.formats.analyze", "Analyze"),
                   ]
                    
 
@@ -149,7 +151,7 @@ def getformats(filename):
         
     if valid_formats: 
         return valid_formats
-
+    
     # if we made it this far, a format was not found
 
     extension = path(filename).splitext()[1]

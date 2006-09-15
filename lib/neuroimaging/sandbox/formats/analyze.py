@@ -1,5 +1,6 @@
 from numpy.core.memmap import memmap as memmap_type
 import numpy as N
+import os
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io import DataSource
@@ -102,6 +103,7 @@ class Analyze(bin.BinaryFormat):
       'scale_factor':1.}
     
     extensions = ('.img', '.hdr', '.mat')
+    #extensions = ('.img')
     # maybe I'll implement this when I figure out how
     nvector = -1
     # always false for Analyze
@@ -117,16 +119,18 @@ class Analyze(bin.BinaryFormat):
         clobber = allowed to clobber?
         usemat = use mat file?
         """
+        self.filebase = os.path.splitext(filename)[0]
+        self.header_file = self.filebase+".hdr"
+        self.data_file = self.filebase+".img"
+        self.mat_file = self.filebase+".mat"
+
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.clobber = keywords.get('clobber', False)
         self.intent = keywords.get('intent', '')
         self.usematfile = keywords.get('usemat', True)
 
-        self.header_file = self.filebase+".hdr"
-        self.data_file = self.filebase+".img"
-        self.mat_file = self.filebase+".mat"
         self.header_formats = struct_formats
-        
+
         # fill the header dictionary in order, with any default values
         self.header_defaults()
         if self.mode[0] is "w":
@@ -146,9 +150,12 @@ class Analyze(bin.BinaryFormat):
             self.sctype = datatype2sctype[self.header['datatype']]
             self.ndim = self.header['dim'][0]
 
+        #print self.header['dim']
+
         # fill in the canonical list as best we can for Analyze
         self.inform_canonical()
 
+        
         ########## This could stand a clean-up ################################
         if not self.grid:                
             if self.ndim == 3:
@@ -161,14 +168,23 @@ class Analyze(bin.BinaryFormat):
                 origin = tuple(self.header['origin'][0:3]) + (1,)
                 step = tuple(self.header['pixdim'][1:5]) 
                 shape = tuple(self.header['dim'][1:5])
-
+                #print "foo"
+                if shape[-1] == 1:
+                    axisnames = axisnames[:-1]
+                    origin = origin[:-1]
+                    step = step[:-1]
+                    shape = shape[:-1]
+                    self.ndim -= 1
+                #print "bar"
+                #print "shape = ", shape
+                
             ## Setup affine transformation        
             self.grid = SamplingGrid.from_start_step(names=axisnames,
                                                 shape=shape,
                                                 start=-N.array(origin)*step,
                                                 step=step)
-
             if self.usematfile:
+                #print self.grid.mapping.transform, self.read_mat()
                 self.grid.transform(self.read_mat())
                 # assume .mat matrix uses FORTRAN indexing
                 self.grid = self.grid.matlab2python()
@@ -210,9 +226,11 @@ class Analyze(bin.BinaryFormat):
         _pixdim = [0.] * 8
         _dim[0] = self.ndim
         _dim[1:self.ndim+1] = self.grid.shape[:self.ndim]
-        _pixdim[1:self.ndim+1] = _diag and \
-                        list(N.diag(self.grid.mapping.transform))[:self.ndim] \
-                        or [1.]*self.ndim
+        if _diag:
+            _pixdim[1:self.ndim+1] = list(N.diag(self.grid.mapping.transform))[:self.ndim]
+        else:
+            _pixdim[1:self.ndim+1] = [1.]*self.ndim
+
         self.header['dim'] = _dim
         self.header['pixdim'] = _pixdim
         if _diag:
@@ -241,10 +259,10 @@ class Analyze(bin.BinaryFormat):
 
 
     def __del__(self):
-        if hasattr(self, 'memmap'):
-            if isinstance(self.memmap, memmap_type):
-                self.memmap.sync()
-            del self.memmap
+        if hasattr(self, 'data'):
+            if isinstance(self.data, memmap_type):
+                self.data.sync()
+            del self.data
 
 
     def inform_canonical(self, fieldsDict=None):

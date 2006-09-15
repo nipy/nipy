@@ -3,7 +3,8 @@ import numpy as N
 
 from neuroimaging.sandbox.formats import analyze
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
+from neuroimaging.sandbox.formats.analyze import Analyze
 
 class AnalyzeTest(unittest.TestCase):
 
@@ -56,8 +57,8 @@ class AnalyzeDataTypeTest(AnalyzeTest):
             
             _out = N.ones(self.image.grid.shape, sctype)
             out = Image(_out, grid=self.image.grid)
-            out.tofile('out.hdr', clobber=True)
-            new = Image('out.hdr')
+            out.tofile('out.hdr', clobber=True, format=Analyze)
+            new = Image('out.hdr', format=Analyze)
             self.assertEquals(new._source.sctype, sctype)
             self.assertEquals(os.stat('out.img').st_size,
                               N.product(self.image.grid.shape) *
@@ -72,8 +73,8 @@ class AnalyzeDataTypeTest(AnalyzeTest):
             for _sctype in analyze.sctype2datatype.keys():
                 _out = N.ones(self.image.grid.shape, sctype)
                 out = Image(_out, grid=self.image.grid)
-                out.tofile('out.hdr', clobber=True, sctype=_sctype)
-                new = Image('out.hdr')
+                out.tofile('out.hdr', clobber=True, sctype=_sctype, format=Analyze)
+                new = Image('out.hdr', format=Analyze)
                 self.assertEquals(new._source.sctype, _sctype)
                 self.assertEquals(os.stat('out.img').st_size,
                                   N.product(self.image.grid.shape) *

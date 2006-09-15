@@ -121,6 +121,8 @@ class ANALYZE(BinaryFormat):
 
         self.customize()
 
+        print self.pixdim, self.dim, self.datatype, self.sctype
+
         if self.ndim == 3:
             axisnames = space[::-1]
             origin = self.origin[0:3]
@@ -131,27 +133,25 @@ class ANALYZE(BinaryFormat):
             origin = tuple(self.origin[0:3]) + (1,)
             step = tuple(self.pixdim[1:5]) 
             shape = self.dim[1:5]
-            if self.squeeze:
-                if self.dim[4] == 1:
-                    origin = origin[0:3]
-                    step = step[0:3]
-                    axisnames = axisnames[0:3]
-                    shape = self.dim[1:4]
+            if self.squeeze and self.dim[4] == 1:
+                origin = origin[0:3]
+                step = step[0:3]
+                axisnames = axisnames[0:3]
+                shape = self.dim[1:4]
         elif self.ndim == 4 and self.nvector > 1:
             axisnames = ('vector_dimension', ) + space[::-1]
             origin = (1,) + self.origin[0:3]
             step = (1,) + tuple(self.pixdim[1:4])  
             shape = self.dim[1:5]
 
-            if self.squeeze:
-                if self.dim[1] == 1:
-                    origin = origin[1:4]
-                    step = step[1:4]
-                    axisnames = axisnames[1:4]
-                    shape = self.dim[2:5]
+            if self.squeeze and self.dim[1] == 1:
+                origin = origin[1:4]
+                step = step[1:4]
+                axisnames = axisnames[1:4]
+                shape = self.dim[2:5]
 
         ## Setup affine transformation
-        
+        print "shape = ", shape
         self.grid = SamplingGrid.from_start_step(names=axisnames,
                                         shape=shape,
                                         start=-N.array(origin)*step,

@@ -19,7 +19,7 @@ import numpy.linalg as L
 from neuroimaging import traits
 from scipy.sandbox.models.utils import recipr
 
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()

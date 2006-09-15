@@ -8,7 +8,7 @@ from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor,\
   ExperimentalQuantitative, SplineConfound
 from neuroimaging.modalities.fmri.fmristat import fMRIStatAR, fMRIStatOLS
-from  neuroimaging.core.image import Image
+from  neuroimaging.core.image.image import Image
 from neuroimaging.modalities.fmri.hrf import glover, glover_deriv
 
 from neuroimaging.defines import pylab_def

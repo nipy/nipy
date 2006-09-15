@@ -3,7 +3,7 @@ import unittest, os, copy
 import numpy as N
 import numpy.random as R
 
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 from neuroimaging.sandbox.formats import nifti1
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.utils.odict import odict
@@ -87,9 +87,15 @@ class NiftiWriteTest(NiftiTest):
 
     def test_write1(self):
         self.image.tofile('out.nii', clobber=True, sctype=N.float64)
+        print "creating out.nii"
         out = Image('out.nii')
+        
         self.assertEquals(out._source.sctype, N.float64)
-        os.remove('out.nii')
+        print os.curdir
+        print os.listdir(".")
+        #os.remove('out.img')
+        #os.remove('out.hdr')
+        #os.remove('out.nii')
 
     def test_write2(self):
         self.image.tofile('out.hdr', clobber=True)
@@ -97,7 +103,7 @@ class NiftiWriteTest(NiftiTest):
         # always creats a single .nii file
         #os.remove('out.img')
         #os.remove('out.hdr')
-        os.remove('out.nii')
+        #os.remove('out.nii')
 
     def test_write4(self):
         self.image.tofile('out.hdr', clobber=True, sctype=N.float64)
@@ -105,12 +111,12 @@ class NiftiWriteTest(NiftiTest):
         self.assertEquals(new.sctype, N.float64)
         #os.remove('out.img')
         #os.remove('out.hdr')
-        os.remove('out.nii')
+        #os.remove('out.nii')
 
     def test_write3(self):
         rho = Image("rho.hdr", datasource=repository)
         rho.tofile('out.nii', clobber=True)
-        os.remove('out.nii')
+        #os.remove('out.nii')
 
 ## class NiftiModifyHeaderTest(NiftiTest):
 ## ... I have decided not to jump into adding nifti extensions yet,

@@ -4,7 +4,7 @@ import numpy as N
 
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.modalities.fmri.pca import PCA
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.defines import pylab_def
