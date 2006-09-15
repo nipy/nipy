@@ -8,36 +8,45 @@ from neuroimaging.data_io import DataSource
 from neuroimaging.data_io.formats import getformats, Format
 from neuroimaging.core.reference.grid import SamplingGrid
 
+class BaseImage(object):
+    """
+    This class define a minimal interface which different types of images
+    should implement. This interface is used by the Image class, which is
+    the class which should be used by applications.
+    """
 
-class Image(traits.HasTraits):
-    isfile = False
-    shape = traits.ListInt()
-    fill = traits.Float(0.0)
+    def __init__(self, data, grid, sctype):
+        assert(data.shape == grid.shape)
+        self.grid = grid
+        self.data = data
+        self.sctype = sctype
+        
+    def __getitem__(self, item):
+        return self.data[item]
+        
+    def __setitem__(self, item, value):
+        self[item] = value
 
-    class ArrayImage (object):
-        "A simple class to mimic an image file from an array."
-       
-        def __init__(self, data, grid=None):
-            """
-            Create an ArrayImage instance from an array,
-            by default assumed to be 3d.
+class ArrayImage (BaseImage):
+    """A simple class to mimic an image file from an array."""
+    def __init__(self, data, grid=None):
+        """
+        Create an ArrayImage instance from an array,
+        by default assumed to be 3d.
 
-            >>> from numpy import *
-            >>> from neuroimaging.core.image import Image
-            >>> z = Image.ArrayImage(zeros((10,20,20)))
-            >>> print z.ndim
-            3
-            """
-            self.data = data
-            self.shape = self.data.shape
-            self.grid = grid and grid or SamplingGrid.identity(self.shape)
-            self.sctype = self.data.dtype.type
+        >>> from numpy import *
+        >>> from neuroimaging.core.image import Image
+        >>> z = Image.ArrayImage(zeros((10,20,20)))
+        >>> print z.ndim
+        3
+        """
+        grid = grid and grid or SamplingGrid.identity(self.shape)
+        sctype = data.dtype.type
+        BaseImage.__init__(self, data, grid, sctype)
 
-        def __getitem__(self, item): 
-            return self.data[item]
-        def __setitem__(self, item, value):
-            self.data[item] = value
 
+
+class Image(object):
 
     @staticmethod
     def fromurl(url, datasource=DataSource(), format=None, grid=None, mode="r", clobber=False,
@@ -61,7 +70,7 @@ class Image(traits.HasTraits):
         Create a Image (volumetric image) object from either a file, an
         existing Image object, or an array.
         '''
-        traits.HasTraits.__init__(self, **keywords)
+
         # from existing Image
         if isinstance(image, Image):
             self._source = image._source
@@ -72,7 +81,7 @@ class Image(traits.HasTraits):
 
         # from array
         elif isinstance(image, N.ndarray) or isinstance(image, N.core.memmap):
-            self._source = self.ArrayImage(image, grid=grid)
+            self._source = ArrayImage(image, grid=grid)
 
         # from filename or url
         elif type(image) == types.StringType:
@@ -89,10 +98,11 @@ class Image(traits.HasTraits):
         # When possible, attach memory-mapped array or array as buffer attr
         if hasattr(self._source, 'memmap'):
             self.buffer = self._source.memmap
-        elif isinstance(self._source.data, N.ndarray):
-            self.buffer = self._source.data          
+        else:
+            self.buffer = self._source.data
 
         self.postread = lambda x:x
+        self.fill = 0.0
 
 
     def __getitem__(self, slice): return self._source[slice]
@@ -207,27 +217,30 @@ class Image(traits.HasTraits):
         filled in with the value of fill (default=self.fill=0.0).
         """
         value = self._source[self.grid.allslice()]
-        if clean: value = Image(N.nan_to_num(value, fill=self.fill))
+        if clean: 
+            value = Image(N.nan_to_num(value, fill=self.fill))
         return value
 
 
-    def check_grid(self, test): return self.grid == test.grid
+    def check_grid(self, test): 
+        return self.grid == test.grid
 
 
 
-class ImageSequenceIterator(traits.HasTraits):
+class ImageSequenceIterator(object):
     """
     Take a sequence of images, and an optional grid (which defaults to
     imgs[0].grid) and create an iterator whose next method returns array with
     shapes (len(imgs),) + self.imgs[0].next().shape Very useful for voxel-based
     methods, i.e. regression, one-sample t.
     """
-    def __init__(self, imgs, grid=None, **keywords):
+    def __init__(self, imgs, grid=None):
         self.imgs = imgs
         if grid is None: self.grid = iter(self.imgs[0].grid)
         else: self.grid = iter(grid)
 
-    def __iter__(self): return self
+    def __iter__(self): 
+        return self
 
     def next(self, value=None):
         if value is None: value = self.grid.next()
