@@ -235,7 +235,7 @@ class Nifti1(bin.BinaryFormat):
             if self.grid is not None:
                 self.header_from_given()
             else:
-                raise NotImplementedError("Don't know how to dcreate header info without a grid object")
+                raise NotImplementedError("Don't know how to create header info without a grid object")
             self.write_header()
         else:
             # this should work

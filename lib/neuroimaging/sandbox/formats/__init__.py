@@ -25,7 +25,7 @@ from neuroimaging.utils.odict import odict
 from neuroimaging.core.reference.grid import SamplingGrid
 
 
-class Format (object):
+class Format(object):
 
     """ Valid filename extensions for the file format. """ 
     extensions = []
