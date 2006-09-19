@@ -147,7 +147,7 @@ class fMRIImage(Image):
         if data is None:
 
             if itertype == 'slice':
-                result = N.squeeze(self[value.slice])
+                result = self[value.slice]
 
             elif itertype == 'parcel':
                 value.where.shape = N.product(value.where.shape)
