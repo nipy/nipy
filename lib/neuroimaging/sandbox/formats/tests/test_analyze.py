@@ -11,6 +11,7 @@ class AnalyzeTest(unittest.TestCase):
     def setUp(self):
         # this file header has dim = [4 91 109 91 1 0 0 0]
         # some tests will change if we decide to squeeze out the 4th dim
+        # I have, for now, decided to squeeze the 4th dim...
         self.image = analyze.Analyze("avg152T1", datasource=repository)
 
 
@@ -22,16 +23,23 @@ class AnalyzeTransformTest(AnalyzeTest):
 
     def test_transform(self):
         t = self.image.grid.mapping.transform
+        """
         a = N.array([[   1.,    0.,    0.,    0.,    1.],
                      [   0.,    2.,    0.,    0.,  -72.],
                      [   0.,    0.,    2.,    0., -126.],
                      [   0.,    0.,    0.,    2.,  -90.],
                      [   0.,    0.,    0.,    0.,    1.]])
 
+                     """
+        a = N.array([[   2.,    0.,    0.,  -72.],
+                     [   0.,    2.,    0., -126.],
+                     [   0.,    0.,    2.,  -90.],
+                     [   0.,    0.,    0.,    1.]])
+
         N.testing.assert_almost_equal(t, a)
 
     def test_shape(self):
-        self.assertEquals(tuple(self.image.grid.shape), (1,91,109,91))
+        self.assertEquals(tuple(self.image.grid.shape), (91,109,91))
 
         
 class AnalyzeWriteTest(AnalyzeTest):
@@ -48,7 +56,7 @@ class AnalyzeReadTest(AnalyzeTest):
 
     def test_read(self):
         data = self.image[:,4:7]
-        self.assertEquals(data.shape, (1,3,109,91))
+        self.assertEquals(data.shape, (91,3,91))
 
 class AnalyzeDataTypeTest(AnalyzeTest):
 
