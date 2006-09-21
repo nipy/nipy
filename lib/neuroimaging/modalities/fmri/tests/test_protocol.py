@@ -217,7 +217,7 @@ class ProtocolTest(unittest.TestCase):
         D = d - d
         N.testing.assert_almost_equal(D(t), N.zeros(D(t).shape, N.float64))
 
-        d = d + d
+        D = d + d
         N.testing.assert_almost_equal(D(t), 2 * N.array(drift_fn(t)))
 
     def testTimeFn3(self):
