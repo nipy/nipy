@@ -6,13 +6,14 @@ from neuroimaging.core.reference.axis import space
 from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
 
-from neuroimaging.data_io.formats.analyze import ANALYZE
+#from neuroimaging.data_io.formats.analyze import ANALYZE
+from neuroimaging.sandbox.formats.analyze import Analyze as ANALYZE
 from neuroimaging.utils.tests.data import repository
 
 class GridTest(unittest.TestCase):
 
     def setUp(self):
-        self.img = ANALYZE("avg152T1", repository)
+        self.img = ANALYZE("avg152T1", datasource=repository)
 
     def test_concat(self):
         grids = ConcatenatedGrids([self.img.grid]*5)
