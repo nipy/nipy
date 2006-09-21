@@ -32,8 +32,6 @@ class CoordinateSystem(odict):
         """
         Equality is defined by he axes and the name.
         """
-        if not hasattrs(other, "name", "axes"): 
-            return False
         return (self.name, self.axes()) == (other.name, other.axes())
 
 
