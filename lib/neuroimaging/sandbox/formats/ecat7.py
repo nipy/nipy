@@ -242,6 +242,8 @@ class ECAT7(bin.BinaryFormat):
         self.header_file = self.filebase+".v"
         self.data_file = self.filebase+".v"
 
+        self.checkversion()
+        
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.clobber = keywords.get('clobber', False)
         self.intent = keywords.get('intent', '')
@@ -260,7 +262,15 @@ class ECAT7(bin.BinaryFormat):
             for list in range(len(self.mlist.shape[1])):
                 self.read_subheader()
 
-    def checkversion(self):
+    def checkversion(self,datasource = DataSource()):
+        hdrfile = datasource.open(hdrfile,'rb')
+        byteorder = bin.BIG_ENDIAN ## doesnt really matter for this datatype
+        magic_number = bin.struct_unpack(hdrfile,\
+                                         byteorder, field_formats_mh[0])[0]
+        magic_number = magic_number[0]
+        magic_number = magic_number.split('/x00')
+        if magic_number[0] not 'MATRIX72v':
+            raise NotImplementedError("%s ECAT version not supported"%magic_number[0])
         
 
     def prewrite(self, x):
@@ -287,7 +297,7 @@ class ECAT7(bin.BinaryFormat):
         read it in the wrong byte order.
         """
         if type(hdrfile)==type(""):
-            hdrfile = datasource.open(hdrfile)
+            hdrfile = datasource.open(hdrfile,'rb')
         byteorder = bin.BIG_ENDIAN #Most scans are on suns = BE
         reported_length = bin.struct_unpack(hdrfile,
           byteorder, field_formats_mh[2])[0]
@@ -305,16 +315,16 @@ class ECAT7(bin.BinaryFormat):
      @staticmethod
      def _default_field_value(fieldname, fieldformat):
          "[STATIC] Get empty defualt value for given field"
-         return ECAT7._._field_defaults.get(fieldname, None) or \
+         return ECAT7._field_defaults.get(fieldname, None) or \
                 bin.format_defaults[fieldformat[-1]]
 
 
-     def generate_mlist(self):
+     def generate_mlist(self, datasource=DataSource()):
         """
         List the available matricies in the ECAT file
         """
         # file.seek beyond main header, and read 512 to generate mlist
-        infile = open(self.data_hdr_file, 'rb')
+        infile = datasource.open(self.data_hdr_file, 'rb')
         infile.seek(HEADER_SIZE)
         elements = 128 + ['i'] # all elements are the same
         values = bin.struct_unpack(infile, self.byteorder, elements)
@@ -339,12 +349,12 @@ class ECAT7(bin.BinaryFormat):
             
         self.mlist = mlist.conj().transpose()
 
-    def read_subheader(self,volume):
+    def read_subheader(self,volume, datasource=DataSource()):
         """
         Read an ECAT subheader and fill fields
         """
         recordstart = (self.mlist[1][volume]-1)*512
-        infile = open(self.data_hdr_file, 'rb')
+        infile = datasource.open(self.data_hdr_file, 'rb')
         infile.seek(recordstart)
         values = struct_unpack(infile,
                                self.byteorder,
