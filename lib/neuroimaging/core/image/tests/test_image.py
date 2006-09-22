@@ -20,7 +20,8 @@ class ImageTest(unittest.TestCase):
     def test_analyze(self):
         y = self.img.readall()
         self.assertEquals(y.shape, tuple(self.img.grid.shape))
-        y.shape = N.product(y.shape)
+#        y.shape = N.product(y.shape)
+        y = y.flatten()
         self.assertEquals(N.maximum.reduce(y), 437336.375)
         self.assertEquals(N.minimum.reduce(y), 0.)
 
