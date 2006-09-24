@@ -420,7 +420,7 @@ class Nifti1(bin.BinaryFormat):
         """
         NIFTI-1 normalization based on scl_slope and scl_inter.
         """
-        if self.header['scl_slope'] != 0.0:
+        if self.header['scl_slope']:
             return x * self.header['scl_slope'] + self.header['scl_inter']
         else: return x
 
