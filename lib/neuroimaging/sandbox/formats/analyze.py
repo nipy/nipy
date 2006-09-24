@@ -150,12 +150,9 @@ class Analyze(bin.BinaryFormat):
             self.sctype = datatype2sctype[self.header['datatype']]
             self.ndim = self.header['dim'][0]
 
-        #print self.header['dim']
-
         # fill in the canonical list as best we can for Analyze
         self.inform_canonical()
 
-        
         ########## This could stand a clean-up ################################
         if not self.grid:                
             if self.ndim == 3:
@@ -168,15 +165,12 @@ class Analyze(bin.BinaryFormat):
                 origin = tuple(self.header['origin'][0:3]) + (1,)
                 step = tuple(self.header['pixdim'][1:5]) 
                 shape = tuple(self.header['dim'][1:5])
-                #print "foo"
                 if shape[-1] == 1:
                     axisnames = axisnames[:-1]
                     origin = origin[:-1]
                     step = step[:-1]
                     shape = shape[:-1]
                     self.ndim -= 1
-                #print "bar"
-                #print "shape = ", shape
                 
             ## Setup affine transformation        
             self.grid = SamplingGrid.from_start_step(names=axisnames,
@@ -184,7 +178,6 @@ class Analyze(bin.BinaryFormat):
                                                 start=-N.array(origin)*step,
                                                 step=step)
             if self.usematfile:
-                #print self.grid.mapping.transform, self.read_mat()
                 self.grid.transform(self.read_mat())
                 # assume .mat matrix uses FORTRAN indexing
                 self.grid = self.grid.matlab2python()
