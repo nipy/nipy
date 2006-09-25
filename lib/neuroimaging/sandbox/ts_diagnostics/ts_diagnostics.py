@@ -66,9 +66,9 @@ class TSDiagnostics(traits.HasTraits):
             nvoxel = N.product(self.fmri_image.grid.shape[1:])
 
         for i in range(ntime-1):
-            tmp1 = N.squeeze(self.fmri_image.getslice(slice(i,i+1)))
+            tmp1 = N.squeeze(self.fmri_image[slice(i,i+1)])
             tmp = (tmp1 -
-                   N.squeeze(self.fmri_image.getslice(slice(i+1,i+2))))
+                   N.squeeze(self.fmri_image[slice(i+1,i+2)]))
 
             if self.mask is not None:
                 tmp *= self.mask.readall()
@@ -76,7 +76,7 @@ class TSDiagnostics(traits.HasTraits):
             
             tmp3 = N.power(tmp, 2)
             tmp2 = self.mse_image.readall()
-            self.mse_image.writeslice(allslice, tmp2 + tmp3)
+            self.mse_image[allslice] = tmp2 + tmp3
 
             self.MSEtime[i] = tmp3.sum() / nvoxel
             self.mean_signal[i] = tmp1.sum() / nvoxel
@@ -91,15 +91,15 @@ class TSDiagnostics(traits.HasTraits):
                 self.MSEslice[i,j] = N.power(tmp[j], 2).sum() / npixel[j]
 
         if self.mean:
-            self.mean_image.writeslice(allslice, N.sum(self.fmri_image.readall(), axis=0) / nvoxel)
+            self.mean_image[allslice] = N.sum(self.fmri_image.readall(), axis=0) / nvoxel
         if self.sd:
             if self.mask is not None:
                 mask = self.mask.readall()
-                self.sd_image.writeslice(allslice, N.std(mask * self.fmri_image.readall(), axis=0))
+                self.sd_image[allslice] = N.std(mask * self.fmri_image.readall(), axis=0)
             else:
-                self.sd_image.writeslice(allslice, N.std(self.fmri_image.readall(), axis=0))
+                self.sd_image[allslice] =  N.std(self.fmri_image.readall(), axis=0)
         
-        tmp = self.fmri_image.getslice(slice(i+1,i+2))
+        tmp = self.fmri_image[slice(i+1,i+2)]
         if self.mask is not None:
             tmp *= self.mask.readall()
         self.mean_signal[i+1] = tmp.sum() / nvoxel
@@ -108,7 +108,7 @@ class TSDiagnostics(traits.HasTraits):
         self.minMSEslice = N.minimum.reduce(self.MSEslice, axis=0)
         self.meanMSEslice = N.mean(self.MSEslice, axis=0)
         
-        self.mse_image.writeslice(allslice, N.sqrt(self.mse_image.readall()/ (ntime-1)))
+        self.mse_image[allslice] = N.sqrt(self.mse_image.readall()/ (ntime-1))
         v = BoxViewer(self.mse_image)
         v.draw(); P.show()
 
