@@ -44,12 +44,12 @@ class TSDiagnostics(traits.HasTraits):
         ntime = self.fmri_image.grid.shape[0]
         nslice = self.fmri_image.grid.shape[1]
                                                 
-        self.MSEtime = N.zeros((ntime-1,), N.Float)
-        self.MSEslice = N.zeros((ntime-1, nslice), N.Float)
-        self.mean_signal = N.zeros((ntime,), N.Float)
-        self.maxMSEslice = N.zeros((nslice,), N.Float)
-        self.minMSEslice = N.zeros((nslice,), N.Float)
-        self.meanMSEslice = N.zeros((nslice,), N.Float)
+        self.MSEtime = N.zeros((ntime-1,), N.float64)
+        self.MSEslice = N.zeros((ntime-1, nslice), N.float64)
+        self.mean_signal = N.zeros((ntime,), N.float64)
+        self.maxMSEslice = N.zeros((nslice,), N.float64)
+        self.minMSEslice = N.zeros((nslice,), N.float64)
+        self.meanMSEslice = N.zeros((nslice,), N.float64)
 
         if self.mean or self.sd or self.mse:
             grid = self.fmri_image.grid.subgrid(0)

@@ -76,7 +76,7 @@ class GaussianField(Simulator):
         outdim = [time] + warp.output_coords.dimensions
         outcoords = Dimension.Coordinates('world', outdim)
 
-        transform = N.zeros((d+2,)*2, N.Float)
+        transform = N.zeros((d+2,)*2, N.float64)
         transform[0,0] = 1.0
         transform[1:(d+2),1:(d+2)] = warp.transform
                

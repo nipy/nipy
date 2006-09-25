@@ -4,9 +4,10 @@ import pylab as P
 from matplotlib.axes import Subplot
 from matplotlib.figure import Figure
 
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.ui.visualization.viewer import BoxViewer
+from neuroimaging.utils.tests.data import repository
 
 #matplotlib.use('WXAgg')
 ###########
@@ -41,12 +42,12 @@ class TSDiagnostics(traits.HasTraits):
         ntime = self.fmri_image.grid.shape[0]
         nslice = self.fmri_image.grid.shape[1]
                                                 
-        self.MSEtime = N.zeros((ntime-1,), N.Float)
-        self.MSEslice = N.zeros((ntime-1, nslice), N.Float)
-        self.mean_signal = N.zeros((ntime,), N.Float)
-        self.maxMSEslice = N.zeros((nslice,), N.Float)
-        self.minMSEslice = N.zeros((nslice,), N.Float)
-        self.meanMSEslice = N.zeros((nslice,), N.Float)
+        self.MSEtime = N.zeros((ntime-1,), N.float64)
+        self.MSEslice = N.zeros((ntime-1, nslice), N.float64)
+        self.mean_signal = N.zeros((ntime,), N.float64)
+        self.maxMSEslice = N.zeros((nslice,), N.float64)
+        self.minMSEslice = N.zeros((nslice,), N.float64)
+        self.meanMSEslice = N.zeros((nslice,), N.float64)
 
         if self.mean or self.sd or self.mse:
             grid = self.fmri_image.grid.subgrid(0)
@@ -140,7 +141,8 @@ class TSDiagnostics(traits.HasTraits):
 
 if __name__ == '__main__':
     app = wxPySimpleApp(0)
-    sample = fMRIImage('http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/fiac0_fonc1.img')
+    sample = fMRIImage("test_fmri.hdr", datasource=repository)
+    #sample = fMRIImage('http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/fiac0_fonc1.img')
     
     tsdiag = TSDiagnostics(sample)
     tsdiag.compute()
