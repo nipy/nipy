@@ -1,3 +1,7 @@
+"""
+Calculates statistics to aid in the diagnosis of problems in the time series.
+"""
+
 import numpy as N
 
 from neuroimaging import traits
@@ -17,7 +21,7 @@ class TimeSeriesDiagnosticsStats(traits.HasTraits):
     def compute(self):
         ntime = self.fmri_image.grid.shape[0]
         nslice = self.fmri_image.grid.shape[1]
-                                                
+ 
         self.mse_time = N.zeros((ntime-1,), N.float64)
         self.mse_slice = N.zeros((ntime-1, nslice), N.float64)
         self.mean_signal = N.zeros((ntime,), N.float64)
@@ -52,7 +56,7 @@ class TimeSeriesDiagnosticsStats(traits.HasTraits):
             if self.mask is not None:
                 tmp *= self.mask.readall()
                 tmp1 *= self.mask.readall()
-            
+
             tmp3 = N.power(tmp, 2)
             tmp2 = self.mse_image.readall()
             self.mse_image[allslice] = tmp2 + tmp3
@@ -85,10 +89,9 @@ class TimeSeriesDiagnosticsStats(traits.HasTraits):
         if self.mask is not None:
             tmp *= self.mask.readall()
         self.mean_signal[i+1] = tmp.sum() / nvoxel
-        
+
         self.max_mse_slice = N.maximum.reduce(self.mse_slice, axis=0)
         self.min_mse_slice = N.minimum.reduce(self.mse_slice, axis=0)
         self.mean_mse_slice = N.mean(self.mse_slice, axis=0)
-        
-        self.mse_image[allslice] = N.sqrt(self.mse_image.readall()/ (ntime-1))
 
+        self.mse_image[allslice] = N.sqrt(self.mse_image.readall()/ (ntime-1))
