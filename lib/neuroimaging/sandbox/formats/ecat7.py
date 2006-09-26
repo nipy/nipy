@@ -242,7 +242,7 @@ class ECAT7(bin.BinaryFormat):
         self.header_file = self.filebase+".v"
         self.data_file = self.filebase+".v"
 
-        self.checkversion()
+        #self.checkversion()
         
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.clobber = keywords.get('clobber', False)
@@ -274,9 +274,9 @@ class ECAT7(bin.BinaryFormat):
         Currently only ECAT72 is implemented
         """
         hdrfile = datasource.open(self.header_file,'rb')
+        hdrfile.seek(0)
         byteorder = bin.BIG_ENDIAN ## doesnt really matter for this datatype
-        magic_number = bin.struct_unpack(hdrfile,\
-                                         byteorder, field_formats_mh[0])[0]
+        magic_number = bin.struct_unpack(hdrfile,byteorder, field_formats_mh[0])[0]
         magic_number = magic_number[0]
         magic_number = magic_number.split('/x00')
         if magic_number[0]is not 'MATRIX72v':
@@ -308,10 +308,11 @@ class ECAT7(bin.BinaryFormat):
         """
         if type(hdrfile)==type(""):
             hdrfile = datasource.open(hdrfile,'rb')
+            hdrfile.seek(46)
             byteorder = bin.BIG_ENDIAN #Most scans are on suns = BE
             reported_length = bin.struct_unpack(hdrfile,
                                                 byteorder, field_formats_mh[2])[0]
-            if reported_length[0] != SWVERSION:
+            if reported_length != SWVERSION:
                 byteorder = bin.LITTLE_ENDIAN
         return byteorder
 
@@ -327,7 +328,7 @@ class ECAT7(bin.BinaryFormat):
         Fills sub header with empty default values
         """
         for field,format in self.sub_header_formats.items():
-            self.subheader[field] = self._default_field_value(field,format)
+            self.sub_header_formats[field] = self._default_field_value(field,format)
          
     @staticmethod
     def _default_field_value(fieldname, fieldformat):
@@ -341,10 +342,12 @@ class ECAT7(bin.BinaryFormat):
         List the available matricies in the ECAT file
         """
         # file.seek beyond main header, and read 512 to generate mlist
-        infile = datasource.open(self.data_hdr_file, 'rb')
+        infile = datasource.open(self.header_file, 'rb')
+        infile.seek(0)
         infile.seek(HEADER_SIZE)
-        elements = 128 + ['i'] # all elements are the same
+        elements = ['128i'] # all elements are the same
         values = bin.struct_unpack(infile, self.byteorder, elements)
+        values= N.reshape(values,[32,4])
         #Calculate mlist which is a matrix list with
         #  id
         #  startblock
@@ -354,7 +357,7 @@ class ECAT7(bin.BinaryFormat):
         while values[0,1] != 2:
             if values[0,0]+values[0,3] == 31:
                 tmp =  values[:,1:31]
-                mlist = numpy.asarray(mlist,tmp)
+                mlist = N.asarray(mlist,tmp)
             else:
                 print 'empty Mlist'
                 mlist = []
