@@ -121,7 +121,6 @@ class ANALYZE(BinaryFormat):
 
         self.customize()
 
-        print self.pixdim, self.dim, self.datatype, self.sctype
 
         if self.ndim == 3:
             axisnames = space[::-1]
@@ -151,7 +150,6 @@ class ANALYZE(BinaryFormat):
                 shape = self.dim[2:5]
 
         ## Setup affine transformation
-        print "shape = ", shape
         self.grid = SamplingGrid.from_start_step(names=axisnames,
                                         shape=shape,
                                         start=-N.array(origin)*step,
