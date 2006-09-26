@@ -220,7 +220,7 @@ class Nifti1(bin.BinaryFormat):
 
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.intent = keywords.get('intent', '')
-        
+        self.clobber = keywords.get('clobber', False)
         self.header_file, self.data_file = self.nifti_filenames()
         # does this need to be redundantly assigned?
         self.header_formats = struct_formats
@@ -236,7 +236,7 @@ class Nifti1(bin.BinaryFormat):
                 self.header_from_given()
             else:
                 raise NotImplementedError("Don't know how to create header info without a grid object")
-            self.write_header()
+            self.write_header(clobber=self.clobber)
         else:
             # this should work
             self.byteorder = anlz.Analyze.guess_byteorder(self.header_file,
@@ -427,8 +427,13 @@ class Nifti1(bin.BinaryFormat):
     def prewrite(self, x):
         """
         NIFTI-1 normalization based on scl_slope and scl_inter.
+        If we need to cast the data into Integers, then record the
+        new scaling
         """
-        if self.header['scl_slope'] != 0.0:
-            return (x - self.header['scl_inter']) / self.header['scl_slope']
-        else: return x
+        scale = bin.castData(x-self.header['scl_inter'],
+                             self.sctype, self.header['scl_slope'])
+        if scale != self.header['scl_slope']:
+            self.header['scl_slope'] = scale
+            self.write_header(clobber=True)
+        return x
         

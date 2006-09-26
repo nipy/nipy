@@ -16,6 +16,15 @@ class BinaryFormatError(Exception):
     Binary format error exception
     """
 
+# maximum numbers for different sctype
+maxranges = {
+  N.int8:  127.,
+  N.uint8: 255.,
+  N.int16: 32767.,
+  N.int32: 2147483648.
+  }
+
+
 # struct byte order constants
 NATIVE = "="
 LITTLE_ENDIAN = "<"
@@ -82,6 +91,24 @@ def struct_pack(byte_order, elements, values):
 
 def touch(fname): open(fname, 'w')
 
+#### To filter data written to a file
+def castData(data, new_sctype, default_scale):
+    "casts numbers in data to desired typecode in data_code"
+    # if casting to an integer type, check the data range
+    # if it clips, then scale down
+    # if it has poor integral resolution, then scale up
+    scl = default_scale or 1.0
+    if new_sctype in (N.int8, N.uint8, N.int16, N.int32):
+        maxval = abs(data.max())
+        if maxval == 0.: maxval = 1.e20
+        maxrange = maxranges[new_sctype]
+        if maxval > maxrange: scl = maxval/maxrange
+        else: scl = maxrange/maxval
+    # make the cast
+    data[:] = N.round(data/scl).astype(new_sctype)
+    return scl
+
+
 
 class BinaryFormat(Format):
 
@@ -119,17 +146,19 @@ class BinaryFormat(Format):
             self.header[field] = val
 
 
-    def write_header(self,hdrfile=None):
+    def write_header(self, hdrfile=None, clobber=False):
         # If someone wants to write a headerfile somewhere specific,
         # handle that case immediately
         # Otherwise, try to write to the object's header file
 
         if hdrfile:
-            fp = type(hdrfile) == type('') and open(hdrfile,'wb') or hdrfile
+            fp = type(hdrfile) == type('') and open(hdrfile,'rb+') or hdrfile
         elif self.datasource.exists(self.header_file):
-            fp = self.datasource.open(self.header_file, 'wb')
+            if not clobber:
+                raise IOError('file exists, but not allowed to clobber it')
+            fp = self.datasource.open(self.header_file, 'rb+')
         else:
-            fp = open(self.header_file, 'wb')
+            fp = open(self.header_file, 'rb+')
         packed = struct_pack(self.byteorder,
                              self.header_formats.values(),
                              self.header.values())
@@ -149,8 +178,11 @@ class BinaryFormat(Format):
     def attach_data(self, offset=0):
 
         mode = self.mode in ('r+','w','wb') and 'readwrite' or 'readonly'
-        if mode == 'readwrite' and not self.datasource.exists(self.data_file):
-            touch(self.data_file)
+        if mode == 'readwrite':
+            if not self.datasource.exists(self.data_file):
+                touch(self.data_file)
+            elif not self.clobber:
+                raise IOError('file exists, but not allowed to clobber it')
         self.data = memmap(self.datasource.filename(self.data_file),
                              dtype=self.sctype, shape=tuple(self.grid.shape),
                              mode=mode, offset=offset)
@@ -169,7 +201,7 @@ class BinaryFormat(Format):
 
     def __setitem__(self, slicer, data):
         if self.data._mode not in ('r+','w+','w'):
-            print "Warning: memapped array is not writeable!"
+            print "Warning: memapped array is not writeable! Nothing done"
             return
         self.data[slicer] = \
             self.prewrite(data).astype(self.sctype).newbyteorder(self.byteorder)

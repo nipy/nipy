@@ -142,7 +142,7 @@ class Analyze(bin.BinaryFormat):
                 self.header_from_given()
             else:
                 raise NotImplementedError("Don't know how to create header info without a grid object")
-            self.write_header()
+            self.write_header(clobber=self.clobber)
         else:
             self.byteorder = self.guess_byteorder(self.header_file,
                                                   datasource=self.datasource)
@@ -238,10 +238,14 @@ class Analyze(bin.BinaryFormat):
 
     def prewrite(self, x):
         """
-        Might transform the data before writing;
-        at least confirm sctype
+        Filter the incoming data. If we're casting to an Integer type,
+        record the new scale factor
         """
-        return x.astype(self.sctype)
+        scale = bin.castData(x, self.sctype, self.header['scale_factor'])
+        if scale != self.header['scale_factor']:
+            self.header['scale_factor'] = scale
+            self.write_header(clobber=True)
+        return x
 
 
     def postread(self, x):
