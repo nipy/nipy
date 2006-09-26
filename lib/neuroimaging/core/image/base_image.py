@@ -31,7 +31,7 @@ class ArrayImage (BaseImage):
         >>> print z.ndim
         3
         """
-        grid = grid and grid or SamplingGrid.identity(self.shape)
+        grid = grid and grid or SamplingGrid.identity(data.shape)
         sctype = data.dtype.type
         BaseImage.__init__(self, data, grid, sctype)
 
