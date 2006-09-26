@@ -4,6 +4,7 @@ import numpy as N
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.core.image.image import Image
 from neuroimaging.utils.tests.data import repository
+from neuroimaging.sandbox.formats.analyze import Analyze
 
 # not a test until test data is found
 class fMRITest(unittest.TestCase):
@@ -19,8 +20,8 @@ class fMRITest(unittest.TestCase):
     #    x = self.img.frametimes
 
     def test_write(self):
-        self.img.tofile('tmpfmri.hdr')
-        test = fMRIImage('tmpfmri.hdr')
+        self.img.tofile('tmpfmri.hdr', format=Analyze)
+        test = fMRIImage('tmpfmri.hdr', format=Analyze)
         self.assertEquals(test.grid.shape, self.img.grid.shape)
         os.remove('tmpfmri.img')
         os.remove('tmpfmri.hdr')
@@ -29,7 +30,7 @@ class fMRITest(unittest.TestCase):
         j = 0
         for i in iter(self.img):
             j += 1
-            self.assertEquals(i.shape, (120,128,128))
+            self.assertEquals(i.shape, (120,1,128,128))
             del(i); gc.collect()
         self.assertEquals(j, 13)
 
