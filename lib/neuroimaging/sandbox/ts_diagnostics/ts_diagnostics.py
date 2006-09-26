@@ -2,7 +2,6 @@ import numpy as N
 import pylab as P
 
 from wxPython.wx import *
-from matplotlib.axes import Subplot
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, \
      NavigationToolbar2WxAgg, FigureManager
