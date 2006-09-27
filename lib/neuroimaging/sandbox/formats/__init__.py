@@ -54,7 +54,7 @@ class Format(BaseImage):
 
         
 
-    def dumpHeader(self):
+    def dump_header(self):
         return "\n".join(["%s\t%s"%(field,`self.header[field]`) \
                           for field in self.header.keys()])
 
@@ -64,7 +64,7 @@ class Format(BaseImage):
 
 
     def __str__(self):
-        return self.dumpHeader()
+        return self.dump_header()
 
 
     def __getitem__(self, slice):
