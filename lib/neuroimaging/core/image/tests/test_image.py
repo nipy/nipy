@@ -6,39 +6,11 @@ from neuroimaging.utils.tests.data import repository
 #from neuroimaging.data_io.formats.analyze import ANALYZE
 from neuroimaging.sandbox.formats.analyze import Analyze as ANALYZE
 
-"""
-class TempTest(unittest.TestCase):
-    def setUp(self):
-        print "SETING UP"
-        self.img = Image("avg152T1.img", repository)
-        print "SETUP", self.img._source.header, self.img._source.grid.shape
-    
-
-    def test_clobber(self):
-        print "TEST CLOBBER"
-        x = self.img.tofile('tmp.hdr', format=ANALYZE, clobber=True) #, sctype=N.float64)
-        print "CREATING tmp.hdr"
-        a = Image('tmp.hdr', format=Analyze)
-        print type(a._source), type(self.img._source)
-
-        print "TRANSFORMS:"
-        print a.grid.mapping.transform
-        print self.img.grid.mapping.transform
-        A = a.readall()
-        I = self.img.readall()
-        z = N.add.reduce(((A-I)**2).flat)
-        self.assertEquals(z, 0.)
-
-        t = a.grid.mapping.transform
-        b = self.img.grid.mapping.transform
-        N.testing.assert_almost_equal(b, t)
-"""
 
 class ImageTest(unittest.TestCase):
 
     def setUp(self):
         self.img = Image("avg152T1.img", repository, format=ANALYZE)
-        #print "SETUP", self.img._source.grid.shape
 
     def tearDown(self):
         tmpf = glob.glob('tmp.*')
@@ -47,10 +19,6 @@ class ImageTest(unittest.TestCase):
 
     def test_analyze(self):
         y = self.img.readall()
-        #print y
-        print type(y)
-        print y.dtype
-        print y.shape
         self.assertEquals(y.shape, tuple(self.img.grid.shape))
         y.shape = N.product(y.shape)
         self.assertEquals(N.maximum.reduce(y), 437336.375)
