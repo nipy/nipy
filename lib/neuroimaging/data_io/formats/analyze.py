@@ -241,10 +241,11 @@ class Analyze(bin.BinaryFormat):
         Filter the incoming data. If we're casting to an Integer type,
         record the new scale factor
         """
-        scale = bin.castData(x, self.sctype, self.header['scale_factor'])
+        x, scale = bin.castData(x, self.sctype, self.header['scale_factor'])
         if scale != self.header['scale_factor']:
             self.header['scale_factor'] = scale
             self.write_header(clobber=True)
+            self.attach_data()
         return x
 
 
