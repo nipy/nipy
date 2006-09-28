@@ -41,7 +41,6 @@ class Montage(traits.HasTraits):
         if self.nrow == 0:
             self.nrow = N.array([key[0] for key in self.slices.keys()]).max() + 1
 
-        print self.slices.values()
         self.shape = self.slices.values()[0].grid.shape
         test = []
         for _slice in self.slices.values():
