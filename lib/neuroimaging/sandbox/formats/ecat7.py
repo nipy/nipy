@@ -6,6 +6,7 @@ import neuroimaging.sandbox.formats.binary as bin
 # ECAT 7 header
 HEADER_SIZE = 512
 BLOCKSIZE = 512
+SWVERSION = 72
 
 # Matrix Data Types
 ECAT7_BYTE = 1
@@ -214,6 +215,44 @@ class ECAT7(bin.BinaryFormat):
         
         """
 
+        self.filebase = os.path.splitext(filename)[0]
+        self.data_hdr_file = self.filebase+".v"
+
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.clobber = keywords.get('clobber', False)
         self.intent = keywords.get('intent', '')
+
+        self.main_header_formats = struct_formats_mh
+        self.sub_header_formats = struct_formats_sh
+
+    def prewrite(self, x):
+        """
+        Might transform the data before writing;
+        at least confirm sctype
+        """
+        return x.astype(self.sctype)
+
+
+    def postread(self, x):
+        """
+        Might transform the data after getting it from memmap
+        """
+        return x
+
+
+
+     @staticmethod   
+     def guess_byteorder(hdrfile, datasource=DataSource()):
+        """
+        Determine byte order of the header.  The first header element is the
+        header size.  It should always be 384.  If it is not then you know you
+        read it in the wrong byte order.
+        """
+        if type(hdrfile)==type(""):
+            hdrfile = datasource.open(hdrfile)
+        byteorder = bin.BIG_ENDIAN #Many scans are on suns
+        reported_length = bin.struct_unpack(hdrfile,
+          byteorder, field_formats_mh[2])[0]
+        if reported_length[0] != SWVERSION:
+            byteorder = bin.LITTLE_ENDIAN
+        return byteorder
