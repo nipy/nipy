@@ -8,7 +8,7 @@ import numpy as N
 
 from neuroimaging import flatten
 from neuroimaging.data_io import DataSource
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 from neuroimaging.data_io.formats import getformats
 from neuroimaging.core.reference import axis, mapping
 from neuroimaging.core.reference.grid import SamplingGrid

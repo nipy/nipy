@@ -1,7 +1,7 @@
 import pylab
 import numpy as N
 
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 from neuroimaging.ui.visualization.viewer import BoxViewer
 
 contrast_map = {'sentence': 'sen',

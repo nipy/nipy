@@ -1,6 +1,6 @@
 import unittest
 
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.kernel_smooth import LinearFilter
 from neuroimaging.utils.tests.data import repository
 

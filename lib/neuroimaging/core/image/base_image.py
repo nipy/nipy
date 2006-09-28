@@ -24,7 +24,7 @@ class ArrayImage (BaseImage):
         by default assumed to be 3d.
 
         >>> from numpy import *
-        >>> from neuroimaging.core.image import Image
+        >>> from neuroimaging.core.image.image import Image
         >>> z = Image.ArrayImage(zeros((10,20,20)))
         >>> print z.ndim
         3

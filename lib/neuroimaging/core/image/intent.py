@@ -2,7 +2,7 @@ import new
 
 from neuroimaging.data_io.formats import nifti1
 from neuroimaging import traits
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 from neuroimaging.core.reference import axis
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.data_io import DataSource

@@ -1,4 +1,4 @@
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.ui.visualization.viewer import BoxViewer

@@ -2,7 +2,7 @@ import os, shutil
 
 import numpy as N
 
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.onesample import ImageOneSample
 
 from fiac import FIACpath

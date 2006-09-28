@@ -4,7 +4,7 @@ from readonly import ReadOnlyValidate
 import os, pylab
 
 from neuroimaging.algorithms.interpolation import ImageInterpolator
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 from neuroimaging.ui.visualization.cmap import cmap
 from neuroimaging.ui.visualization import slices as vizslice
 from neuroimaging.ui.visualization.montage import Montage as MontageDrawer

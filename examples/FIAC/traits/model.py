@@ -8,7 +8,7 @@ from neuroimaging.modalities.fmri.pca import PCA, MultiPlot
 from neuroimaging.modalities.fmri import protocol
 from neuroimaging.modalities.fmri.fmristat import delay
 from neuroimaging.modalities.fmri.filters import Filter
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 import neuroimaging.modalities.fmri.fmristat as fmristat
 
 from fiac import Run, Subject, Study

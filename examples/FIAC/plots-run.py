@@ -4,7 +4,7 @@ import numpy as N
 import pylab
 
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.ui.visualization import slices, montage
 from fixed import FIACresample

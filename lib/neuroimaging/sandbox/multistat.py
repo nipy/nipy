@@ -1,10 +1,15 @@
+"""
+FIXME: This module is pretty heavily broken. It's been moved here to the sandbox as 
+an act of triage. If we want it we can clean it up and put it back into fmri.fmristat
+or we can decide to scrap it, which should be Jonathan Taylor's call.
+"""
 import numpy as N
 import numpy.linalg as L
 from scipy.sandbox.models.utils import recipr, rank
 
 from neuroimaging import traits
 
-from neuroimaging.core.image import Image
+from neuroimaging.core.image.image import Image
 
 
 class RFXMean(traits.HasTraits):
