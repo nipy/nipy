@@ -67,12 +67,12 @@ class Format(BaseImage):
         return self.dump_header()
 
 
-    def __getitem__(self, slice):
+    def __getitem__(self, slice_):
         """Data access"""
         raise NotImplementedError
 
 
-    def __setitem__(self, slice, data):
+    def __setitem__(self, slice_, data):
         """Data access"""
         raise NotImplementedError        
 

@@ -1,11 +1,10 @@
-from numpy.core.memmap import memmap as memmap_type
 import numpy as N
 import os
 
 from neuroimaging.utils.odict import odict
 import neuroimaging.data_io as dataio
 from neuroimaging.data_io import DataSource
-import neuroimaging.sandbox.formats.binary as bin
+import neuroimaging.data_io.formats.binary as bin
 
 
 # ECAT 7 header

@@ -1,12 +1,10 @@
 import types, os
 
-from neuroimaging import traits
 import numpy as N
 
 from neuroimaging import flatten
 from neuroimaging.data_io import DataSource
 from neuroimaging.data_io.formats import getformats, Format
-from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.image.base_image import ArrayImage
 
 
@@ -70,8 +68,8 @@ class Image(object):
         self.fill = 0.0
 
 
-    def __getitem__(self, slice): return self._source[slice]
-    def __setitem__(self, slice, data): self._source[slice] = data
+    def __getitem__(self, slice_): return self._source[slice_]
+    def __setitem__(self, slice_, data): self._source[slice_] = data
 
 
     def __iter__(self):
