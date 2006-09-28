@@ -32,6 +32,9 @@ class EcatFramesTest(EcatTest):
         y8 = self.image8[:]
         N.testing.assert_approx_equal(y1.max(),56099.20703125)
         N.testing.assert_approx_equal(y8.max(),78144.84375)
+    def test_image_shape(self):
+        shape = [47, 256, 256]
+        self.assertEqual(self.image1.shape,shape)
 
 def suite():
     suite = unittest.makeSuite(EcatTest)
