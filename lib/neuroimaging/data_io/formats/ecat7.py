@@ -5,7 +5,6 @@ from neuroimaging.utils.odict import odict
 import neuroimaging.data_io as dataio
 from neuroimaging.data_io import DataSource
 import neuroimaging.data_io.formats.binary as bin
-from neuroimaging.core.image.image import Image
 
 from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
