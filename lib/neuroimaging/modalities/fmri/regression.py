@@ -32,9 +32,11 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
         imreg.ImageRegressionOutput.__init__(self, grid, outgrid=grid.subgrid(0), **keywords)
 
     def __iter__(self):
+        iter(self.grid)
         return self
 
     def next(self, data=None):
+        self.grid.next()
         if self.grid.get_iter_param("itertype") == 'slice':
             value = copy.copy(self.grid.itervalue())
             value.slice = value.slice[1]
@@ -68,8 +70,13 @@ class ResidOutput(fMRIRegressionOutput):
         return results.resid
     
     def next(self, data=None):
+        self.grid.next()
         value = self.grid.itervalue()
         self.img.next(data=data, value=value)
+
+    def __iter__(self):
+        iter(self.grid)
+        return self
 
 
 class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):

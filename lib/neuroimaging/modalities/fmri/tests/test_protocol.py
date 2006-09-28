@@ -108,7 +108,7 @@ class ProtocolTest(unittest.TestCase):
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         formula = self.p + drift
         c = contrast.Contrast(self.p, formula)
-        c.getmatrix(time=N.arange(0,300,3.))
+        c.getmatrix(time=self.t)
         N.testing.assert_almost_equal(c.matrix,
                                           [[0.,0.,0.,0.,1.,0.],
                                            [0.,0.,0.,0.,0.,1.]])

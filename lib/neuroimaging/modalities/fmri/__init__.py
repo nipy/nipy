@@ -102,13 +102,16 @@ class fMRISamplingGrid(SamplingGrid):
 
 
 class fMRIImage(Image):
-    frametimes = traits.Any()
-    slicetimes = traits.Any()
+    #frametimes = traits.Any()
+    #slicetimes = traits.Any()
     TR = traits.Any()
 
 
     def __init__(self, _image, **keywords):
         Image.__init__(self, _image, **keywords)
+        self.frametimes = keywords.get('frametimes', None)
+        self.slicetimes = keywords.get('slicetimes', None)
+
         self.grid = fMRISamplingGrid(self.grid.shape, self.grid.mapping, self.grid.input_coords, self.grid.output_coords)
         if self.grid.isproduct():
             ndim = len(self.grid.shape)
@@ -142,6 +145,7 @@ class fMRIImage(Image):
             self.itervalue = self.grid.next()
             value = self.itervalue
 
+
         itertype = value.type
 
         if data is None:
@@ -157,7 +161,7 @@ class fMRIImage(Image):
             elif itertype == 'slice/parcel':
                 value.where.shape = N.product(value.where.shape)
                 self.label = value.label
-                tmp = self[value.slice]
+                tmp = self[value.slice].copy()
                 tmp.shape = (tmp.shape[0], N.product(tmp.shape[1:]))
                 result = tmp.compress(value.where, axis=1)
 

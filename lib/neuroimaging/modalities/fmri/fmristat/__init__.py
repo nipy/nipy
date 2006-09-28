@@ -73,14 +73,11 @@ class fMRIStatOLS(LinearModelIterator):
     output_fwhm = traits.false
 
     def __init__(self, fmri_image, outputs=[], **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+        LinearModelIterator.__init__(self, fmri_image, outputs, **keywords)
+        
         self.fmri_image = fMRIImage(fmri_image)
         if self.normalize is not None:
             self.fmri_image.postread = self.normalize
-
-        self.iterator = iter(self.fmri_image)
-
-        self.outputs += outputs
 
         ftime = self.fmri_image.frametimes + self.tshift
         self.dmatrix = self.formula.design(time=ftime)
