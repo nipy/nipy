@@ -136,7 +136,7 @@ format_modules = (
 
 default_formats = [("neuroimaging.data_io.formats.nifti1", "Nifti1"),
                    ("neuroimaging.data_io.formats.analyze", "Analyze"),
-                   ("neuroimaging.data_io.formats.ecat7", "Ecat7"),
+                   ("neuroimaging.data_io.formats.ecat7", "ECAT7"),
                   ]
                    
 
