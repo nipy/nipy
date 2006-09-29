@@ -1,30 +1,18 @@
-from neuroimaging import traits
 import numpy as N
 import pylab as P
+
+from wxPython.wx import *
 from matplotlib.axes import Subplot
 from matplotlib.figure import Figure
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, \
+     NavigationToolbar2WxAgg, FigureManager
+
+from neuroimaging import traits
 
 from neuroimaging.core.image.image import Image
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.ui.visualization.viewer import BoxViewer
 from neuroimaging.utils.tests.data import repository
-
-#matplotlib.use('WXAgg')
-###########
-# to run plot window without halting execution
-# should add check to make sure wxPython is available,
-# if not maybe import corresponding classes from gtk backends?
-
-## import gtk
-## from matplotlib.backends.backend_gtk import FigureCanvasGTK as FigureCanvas
-## from matplotlib.backends.backend_gtk import NavigationToolbar2GTK as NavigationToolbar
-
-from wxPython.wx import *
-
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, \
-     NavigationToolbar2WxAgg, FigureManager
-
-###########
 
 
 class TSDiagnostics(traits.HasTraits):
@@ -98,7 +86,7 @@ class TSDiagnostics(traits.HasTraits):
                 self.sd_image[allslice] = N.std(mask * self.fmri_image.readall(), axis=0)
             else:
                 self.sd_image[allslice] =  N.std(self.fmri_image.readall(), axis=0)
-        
+
         tmp = self.fmri_image[slice(i+1,i+2)]
         if self.mask is not None:
             tmp *= self.mask.readall()
@@ -143,7 +131,6 @@ if __name__ == '__main__':
     app = wxPySimpleApp(0)
     sample = fMRIImage("test_fmri.hdr", datasource=repository)
     #sample = fMRIImage('http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/fiac0_fonc1.img')
-    
     tsdiag = TSDiagnostics(sample)
     tsdiag.compute()
     tsdiag.plotData()
