@@ -2,6 +2,7 @@ from types import TupleType, ListType
 
 from numpy.core import memmap as memmap_type
 from numpy import memmap
+import numpy as N
 from struct import calcsize, pack, unpack
 import os
 
@@ -162,7 +163,7 @@ class BinaryFormat(Format):
         raise NotImplementedError
 
     def __getitem__(self, slicer):
-        return self.postread(self.data[slicer].newbyteorder(self.byteorder))
+        return N.asarray(self.postread(self.data[slicer].newbyteorder(self.byteorder)))
 
 
     def __setitem__(self, slicer, data):
