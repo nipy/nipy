@@ -2,9 +2,9 @@ import numpy as N
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io import DataSource
-import neuroimaging.sandbox.formats.binary as bin
-import neuroimaging.sandbox.formats.analyze as anlz
-from neuroimaging.sandbox.formats.nifti1_ext import quatern2mat, \
+import neuroimaging.data_io.formats.binary as bin
+import neuroimaging.data_io.formats.analyze as anlz
+from neuroimaging.data_io.formats.nifti1_ext import quatern2mat, \
      mat2quatern
 from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine

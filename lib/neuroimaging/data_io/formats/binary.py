@@ -7,7 +7,7 @@ from struct import calcsize, pack, unpack
 import os
 
 from neuroimaging.utils.odict import odict
-from neuroimaging.sandbox.formats import Format
+from neuroimaging.data_io.formats import Format
 from neuroimaging.data_io import DataSource
 #from neuroimaging.sandbox.refactoring.formats import Format
 

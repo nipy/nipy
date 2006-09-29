@@ -1,10 +1,10 @@
 import unittest, os
 import numpy as N
 
-from neuroimaging.sandbox.formats import analyze
+from neuroimaging.data_io.formats import analyze
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.image.image import Image
-from neuroimaging.sandbox.formats.analyze import Analyze
+from neuroimaging.data_io.formats.analyze import Analyze
 
 class AnalyzeTest(unittest.TestCase):
 

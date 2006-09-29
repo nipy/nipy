@@ -127,14 +127,14 @@ class Format(BaseImage):
 
 
 format_modules = (
-  "neuroimaging.sandbox.formats.analyze",
-  "neuroimaging.sandbox.formats.nifti1",
+  "neuroimaging.data_io.formats.analyze",
+  "neuroimaging.data_io.formats.nifti1",
   #"neuroimaging.data_io.formats.afni",
   #"neuroimaging.data_io.formats.minc",
 )
 
-default_formats = [("neuroimaging.sandbox.formats.nifti1", "Nifti1"),
-                   ("neuroimaging.sandbox.formats.analyze", "Analyze"),
+default_formats = [("neuroimaging.data_io.formats.nifti1", "Nifti1"),
+                   ("neuroimaging.data_io.formats.analyze", "Analyze"),
                   ]
                    
 

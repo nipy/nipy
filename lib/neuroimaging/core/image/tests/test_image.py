@@ -3,14 +3,14 @@ import numpy as N
 from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.onesample import ImageOneSample
 from neuroimaging.utils.tests.data import repository
-#from neuroimaging.data_io.formats.analyze import ANALYZE
-from neuroimaging.sandbox.formats.analyze import Analyze as ANALYZE
+from neuroimaging.data_io.formats.analyze import Analyze
+
 
 
 class ImageTest(unittest.TestCase):
 
     def setUp(self):
-        self.img = Image("avg152T1.img", repository, format=ANALYZE)
+        self.img = Image("avg152T1.img", repository, format=Analyze)
 
     def tearDown(self):
         tmpf = glob.glob('tmp.*')
@@ -61,8 +61,8 @@ class ImageTest(unittest.TestCase):
         N.testing.assert_almost_equal(x.grid.mapping.transform, self.img.grid.mapping.transform)
 
     def test_clobber(self):
-        x = self.img.tofile('tmp.hdr', format=ANALYZE, clobber=True) #, sctype=N.float64)
-        a = Image('tmp.hdr', format=ANALYZE)
+        x = self.img.tofile('tmp.hdr', format=Analyze, clobber=True) #, sctype=N.float64)
+        a = Image('tmp.hdr', format=Analyze)
         A = a.readall()
         I = self.img.readall()
         z = N.add.reduce(((A-I)**2).flat)
@@ -79,7 +79,7 @@ class ImageTest(unittest.TestCase):
             self.assertEquals(i.shape, (109,91))
 
     def test_parcels1(self):
-        rho = Image("rho.hdr", repository, format=ANALYZE)
+        rho = Image("rho.hdr", repository, format=Analyze)
         parcelmap = (rho.readall() * 100).astype(N.int32)
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
         test.grid.set_iter_param("itertype", 'parcel')
@@ -90,7 +90,7 @@ class ImageTest(unittest.TestCase):
         self.assertEquals(v, N.product(test.grid.shape))
 
     def test_parcels2(self):
-        rho = Image("rho.hdr", repository, format=ANALYZE)
+        rho = Image("rho.hdr", repository, format=Analyze)
         parcelmap = (rho.readall() * 100).astype(N.int32)
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
 
@@ -108,7 +108,7 @@ class ImageTest(unittest.TestCase):
                 break
 
     def test_parcels3(self):
-        rho = Image("rho.hdr", repository, format=ANALYZE)
+        rho = Image("rho.hdr", repository, format=Analyze)
         parcelmap = (rho.readall() * 100).astype(N.int32)
         shape = parcelmap.shape
         parcelmap.shape = N.product(parcelmap.shape)
@@ -126,11 +126,11 @@ class ImageTest(unittest.TestCase):
 
     def test_onesample1(self):
         im1 = Image('FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.hdr',
-            repository, format=ANALYZE)
+            repository, format=Analyze)
         im2 = Image('FIAC/fiac4/fonc3/fsl/fmristat_run/contrasts/speaker/effect.hdr',
-            repository, format=ANALYZE)
+            repository, format=Analyze)
         im3 = Image('FIAC/fiac5/fonc2/fsl/fmristat_run/contrasts/speaker/effect.hdr',
-            repository, format=ANALYZE)
+            repository, format=Analyze)
         x = ImageOneSample([im1,im2,im3], clobber=True)
         x.fit()
 

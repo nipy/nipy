@@ -331,4 +331,5 @@ class fMRIStatAR(LinearModelIterator):
         else: design = self.dmatrix
         # is using the first parcel label correct here?
         # rho needs to be a single float...
+        print design
         return ARModel(rho=itervalue.label[0], design=design)

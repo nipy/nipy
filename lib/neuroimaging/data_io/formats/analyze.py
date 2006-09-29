@@ -4,7 +4,7 @@ import os
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io import DataSource
-import neuroimaging.sandbox.formats.binary as bin
+import neuroimaging.data_io.formats.binary as bin
 from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid

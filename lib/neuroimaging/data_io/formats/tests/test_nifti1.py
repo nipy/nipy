@@ -4,7 +4,7 @@ import numpy as N
 import numpy.random as R
 
 from neuroimaging.core.image.image import Image
-from neuroimaging.sandbox.formats import nifti1
+from neuroimaging.data_io.formats import nifti1
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.utils.odict import odict
 
