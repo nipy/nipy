@@ -14,8 +14,7 @@ from neuroimaging.ui.visualization.viewer import BoxViewer
 from neuroimaging.utils.tests.data import repository
 
 
-class TSDiagnostics(traits.HasTraits):
-
+class TimeSeriesDiagnosticsStats(traits.HasTraits):
     mean = traits.true
     sd = traits.true
     mse = traits.true
@@ -49,7 +48,7 @@ class TSDiagnostics(traits.HasTraits):
         npixel = {}
         if self.mask is not None:
             nvoxel = self.mask.readall().sum()
-        else:            
+        else:
             nvoxel = N.product(self.fmri_image.grid.shape[1:])
 
         for i in range(ntime-1):
@@ -96,8 +95,14 @@ class TSDiagnostics(traits.HasTraits):
         self.meanMSEslice = N.mean(self.MSEslice, axis=0)
         
         self.mse_image[allslice] = N.sqrt(self.mse_image.readall()/ (ntime-1))
-        v = BoxViewer(self.mse_image)
-        v.draw(); P.show()
+#        v = BoxViewer(self.mse_image)
+#        v.draw(); P.show()
+
+class TimeSeriesDiagnostics(object):
+
+    def __init__(self, fmri_image, **keywords):
+        self.tsdiag = TimeSeriesDiagnosticsStats(fmri_image)
+        self.tsdiag.compute()
 
     def plotData(self):
         win = wxFrame(None, -1, "")
@@ -105,7 +110,6 @@ class TSDiagnostics(traits.HasTraits):
         canvas = FigureCanvasWxAgg(win, -1, fig)
         toolbar = NavigationToolbar2WxAgg(canvas)
         toolbar.Realize()
-        #figmgr = FigureManager(canvas, 1, win)
         sizer = wxBoxSizer(wxVERTICAL)
         sizer.Add(canvas, 1, wxLEFT|wxTOP|wxGROW)
         sizer.Add(toolbar, 0, wxLEFT|wxGROW)
@@ -114,27 +118,26 @@ class TSDiagnostics(traits.HasTraits):
         
         colors = ['b','g','r','c','m','y','k']
         ax = fig.add_subplot(411)
-        ax.plot(self.MSEtime)
+        ax.plot(self.tsdiag.MSEtime)
         ax = fig.add_subplot(412)
-        for j in range(self.MSEslice.shape[1]):
-            ax.plot(self.MSEslice[:,j], colors[j%7]+'.-')
+        for j in range(self.tsdiag.MSEslice.shape[1]):
+            ax.plot(self.tsdiag.MSEslice[:,j], colors[j%7]+'.-')
         ax = fig.add_subplot(413)
-        ax.plot(self.mean_signal)
+        ax.plot(self.tsdiag.mean_signal)
         ax = fig.add_subplot(414)
-        ax.plot(self.maxMSEslice)
-        ax.plot(self.minMSEslice)
-        ax.plot(self.meanMSEslice)
+        ax.plot(self.tsdiag.maxMSEslice)
+        ax.plot(self.tsdiag.minMSEslice)
+        ax.plot(self.tsdiag.meanMSEslice)
         win.Show()            
 
 if __name__ == '__main__':
     app = wxPySimpleApp(0)
     sample = fMRIImage("test_fmri.hdr", datasource=repository)
     #sample = fMRIImage('http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/fiac0_fonc1.img')
-    tsdiag = TSDiagnostics(sample)
-    tsdiag.compute()
+    tsdiag = TimeSeriesDiagnostics(sample)
     tsdiag.plotData()
     app.MainLoop()
-    tsdiag.sd_image.tofile('diag_sd.img', clobber=True)
-    tsdiag.mean_image.tofile('diag_mean.img', clobber=True)
-    tsdiag.mse_image.tofile('diag_mse.img', clobber=True)
+#    tsdiag.sd_image.tofile('diag_sd.img', clobber=True)
+#    tsdiag.mean_image.tofile('diag_mean.img', clobber=True)
+#    tsdiag.mse_image.tofile('diag_mse.img', clobber=True)
 
