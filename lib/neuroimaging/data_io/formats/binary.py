@@ -1,5 +1,3 @@
-from types import TupleType, ListType
-
 from numpy.core import memmap as memmap_type
 from numpy import memmap
 import numpy as N
