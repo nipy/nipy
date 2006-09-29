@@ -31,7 +31,8 @@ _typemap = dict((
 allformats = []
 for formats in _typemap.keys(): allformats.extend(formats)
 
-format_defaults = {'i': 0, 'h': 0, 'f': 0., 'c': '\0', 's': '', 'B': 0}
+format_defaults = {'i': 0,'I':0, 'h': 0, 'H':0, 'f': 0., 'c': '\0',\
+                   'l':0.,'s': '', 'B': 0}
 
 ######## STRUCT PACKING/UNPACKING/INTERPRETATION ROUTINES ####################
 def numvalues(format):

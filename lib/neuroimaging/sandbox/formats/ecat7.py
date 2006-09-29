@@ -1,3 +1,6 @@
+from numpy.core.memmap import memmap as memmap_type
+import numpy as N
+import os
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io import DataSource
@@ -16,6 +19,26 @@ ECAT7_VAXR4 = 4
 ECAT7_IEEER4 = 5
 ECAT7_SUNI2 = 6
 ECAT7_SUNI4 = 7
+
+# map ECAT datatype to numpy scalar type
+datatype2sctype = {
+    ECAT7_BYTE: N.uint8, 
+    ECAT7_VAXI2: N.int16,
+    ECAT7_VAXI4: N.int32,
+    ECAT7_VAXR4: N.float32,
+    ECAT7_IEEER4: N.float32,
+    ECAT7_SUNI2: N.int16,
+    ECAT7_SUNI4: N.int32}
+
+ sctype2datatype = dict([(k,v) for k,v in datatype2sctype.items()])
+
+
+  BYTE: N.uint8,
+  SHORT: N.int16,
+  INTEGER: N.int32,
+  FLOAT: N.float32,
+  DOUBLE: N.float64,
+  COMPLEX: N.complex64}
 
 # Matrix File Types
 ECAT7_UNKNOWN = 0
@@ -216,7 +239,8 @@ class ECAT7(bin.BinaryFormat):
         """
 
         self.filebase = os.path.splitext(filename)[0]
-        self.data_hdr_file = self.filebase+".v"
+        self.header_file = self.filebase+".v"
+        self.data_file = self.filebase+".v"
 
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.clobber = keywords.get('clobber', False)
@@ -224,6 +248,20 @@ class ECAT7(bin.BinaryFormat):
 
         self.main_header_formats = struct_formats_mh
         self.sub_header_formats = struct_formats_sh
+        # Fill dict with default values
+        self.header_defaults()
+        if self.mode[0] is 'w':
+            #Deal with writing to file or raise implement error?
+        else:
+            self.byteorder = self.guess_byteorder(self.header_file,
+                                                  datasource=self.datasource)
+            self.read_header()
+            self.generate_mlist()
+            for list in range(len(self.mlist.shape[1])):
+                self.read_subheader()
+
+    def checkversion(self):
+        
 
     def prewrite(self, x):
         """
@@ -250,9 +288,68 @@ class ECAT7(bin.BinaryFormat):
         """
         if type(hdrfile)==type(""):
             hdrfile = datasource.open(hdrfile)
-        byteorder = bin.BIG_ENDIAN #Many scans are on suns
+        byteorder = bin.BIG_ENDIAN #Most scans are on suns = BE
         reported_length = bin.struct_unpack(hdrfile,
           byteorder, field_formats_mh[2])[0]
         if reported_length[0] != SWVERSION:
             byteorder = bin.LITTLE_ENDIAN
         return byteorder
+
+     def header_defaults(self):
+         """
+         Fills main header with empty default values
+         """
+         for field,format in self.header_formats.items():
+             self.header[field] = self._default_field_value(field,format)
+
+     @staticmethod
+     def _default_field_value(fieldname, fieldformat):
+         "[STATIC] Get empty defualt value for given field"
+         return ECAT7._._field_defaults.get(fieldname, None) or \
+                bin.format_defaults[fieldformat[-1]]
+
+
+     def generate_mlist(self):
+        """
+        List the available matricies in the ECAT file
+        """
+        # file.seek beyond main header, and read 512 to generate mlist
+        infile = open(self.data_hdr_file, 'rb')
+        infile.seek(HEADER_SIZE)
+        elements = 128 + ['i'] # all elements are the same
+        values = bin.struct_unpack(infile, self.byteorder, elements)
+        #Calculate mlist which is a matrix list with
+        #  id
+        #  startblock
+        #  endblock
+        #  status
+        mlist = []
+        while values[0,1] != 2:
+            if values[0,0]+values[0,3] == 31:
+                tmp =  values[:,1:31]
+                mlist = numpy.asarray(mlist,tmp)
+            else:
+                print 'empty Mlist'
+                mlist = []
+                
+        if mlist == []:
+            mlist = values[1:values[0,3]+1]
+        else:
+            mlist = mlist + values[1:values[0,3]+1]
+            
+        self.mlist = mlist.conj().transpose()
+
+    def read_subheader(self,volume):
+        """
+        Read an ECAT subheader and fill fields
+        """
+        recordstart = (self.mlist[1][volume]-1)*512
+        infile = open(self.data_hdr_file, 'rb')
+        infile.seek(recordstart)
+        values = struct_unpack(infile,
+                               self.byteorder,
+                               self.sub_header_formats.values())
+        for field, val in zip(self.header.keys(), values):
+            self.header[field] = val
+
+        
