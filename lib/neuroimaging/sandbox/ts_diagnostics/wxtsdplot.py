@@ -8,49 +8,48 @@ from neuroimaging.sandbox.ts_diagnostics.tsdstats import \
 
 # Create the PlotApp instance.
 # The title string is one of several optional arguments.
-app = wxmpl.PlotApp('Time Series Diagnostics',size=(10.0, 11.5))
+APP = wxmpl.PlotApp('Time Series Diagnostics', size=(10.0, 11.5))
 
 ### Create the data to plot ###
-fmri_image = fMRIImage("test_fmri.img", datasource=repository)
-tsdiag = TimeSeriesDiagnosticsStats(fmri_image)
-tsdiag.compute()
+FMRI_IMAGE = fMRIImage("test_fmri.img", datasource=repository)
+TS_DIAG = TimeSeriesDiagnosticsStats(FMRI_IMAGE)
+TS_DIAG.compute()
 
 ### Plot it ###
-
-fig = app.get_figure()
+FIG = APP.get_figure()
 
 # Create the subplot Axes
-axes1 = fig.add_subplot(4, 1, 1)
-axes2 = fig.add_subplot(4, 1, 2)
-axes3 = fig.add_subplot(4, 1, 3)
-axes4 = fig.add_subplot(4, 1, 4)
+AXES_1 = FIG.add_subplot(4, 1, 1)
+AXES_2 = FIG.add_subplot(4, 1, 2)
+AXES_3 = FIG.add_subplot(4, 1, 3)
+AXES_4 = FIG.add_subplot(4, 1, 4)
 
-axes1.plot(tsdiag.mse_time)
+AXES_1.plot(TS_DIAG.mse_time)
 
-colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-for j in range(tsdiag.mse_slice.shape[1]):
-    axes2.plot(tsdiag.mse_slice[:,j], colors[j%7]+'.-')
+COLORS = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+for j in range(TS_DIAG.mse_slice.shape[1]):
+    AXES_2.plot(TS_DIAG.mse_slice[:,j], COLORS[j%7]+'.-')
 
-axes3.plot(tsdiag.mean_signal)
+AXES_3.plot(TS_DIAG.mean_signal)
 
-axes4.plot(tsdiag.max_mse_slice)
-axes4.plot(tsdiag.min_mse_slice)
-axes4.plot(tsdiag.mean_mse_slice)
+AXES_4.plot(TS_DIAG.max_mse_slice)
+AXES_4.plot(TS_DIAG.min_mse_slice)
+AXES_4.plot(TS_DIAG.mean_mse_slice)
 
 # Subplots must be labeled carefully, since labels
 # can be accidentally hidden by other subplots
-#axes1.set_title('Time Series Diagnostics')
-axes1.set_xlabel('Difference image number')
-axes1.set_ylabel('Scaled variance')
+#AXES_1.set_title('Time Series Diagnostics')
+AXES_1.set_xlabel('Difference image number')
+AXES_1.set_ylabel('Scaled variance')
 
-axes2.set_xlabel('Difference image number')
-axes2.set_ylabel('Slice by slice variance')
+AXES_2.set_xlabel('Difference image number')
+AXES_2.set_ylabel('Slice by slice variance')
 
-axes3.set_xlabel('Image number')
-axes3.set_ylabel('Scaled mean voxel intensity')
+AXES_3.set_xlabel('Image number')
+AXES_3.set_ylabel('Scaled mean voxel intensity')
 
-axes4.set_xlabel('Slice number')
-axes4.set_ylabel('Max/mean/min slice variance')
+AXES_4.set_xlabel('Slice number')
+AXES_4.set_ylabel('Max/mean/min slice variance')
 
 # Let wxPython do its thing.
-app.MainLoop()
+APP.MainLoop()

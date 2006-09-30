@@ -32,29 +32,28 @@ class TimeSeriesDiagnostics(object):
         sizer.Add(toolbar, 0, wxLEFT|wxGROW)
         win.SetSizer(sizer)
         win.Fit()
-        
+
         colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
-        ax = fig.add_subplot(411)
-        ax.plot(self.tsdiag.mse_time)
-        ax = fig.add_subplot(412)
+        axes_1 = fig.add_subplot(411)
+        axes_1.plot(self.tsdiag.mse_time)
+        axes_2 = fig.add_subplot(412)
         for j in range(self.tsdiag.mse_slice.shape[1]):
-            ax.plot(self.tsdiag.mse_slice[:,j], colors[j%7]+'.-')
-        ax = fig.add_subplot(413)
-        ax.plot(self.tsdiag.mean_signal)
-        ax = fig.add_subplot(414)
-        ax.plot(self.tsdiag.max_mse_slice)
-        ax.plot(self.tsdiag.min_mse_slice)
-        ax.plot(self.tsdiag.mean_mse_slice)
-        win.Show()            
+            axes_2.plot(self.tsdiag.mse_slice[:,j], colors[j%7]+'.-')
+        axes_3 = fig.add_subplot(413)
+        axes_3.plot(self.tsdiag.mean_signal)
+        axes_4 = fig.add_subplot(414)
+        axes_4.plot(self.tsdiag.max_mse_slice)
+        axes_4.plot(self.tsdiag.min_mse_slice)
+        axes_4.plot(self.tsdiag.mean_mse_slice)
+        win.Show()
 
 if __name__ == '__main__':
-    app = wxPySimpleApp(0)
-    sample = fMRIImage("test_fmri.img", datasource=repository)
-    tsdiag = TimeSeriesDiagnostics(sample)
-    tsdiag.plot_data()
-    app.MainLoop()
+    APP = wxPySimpleApp(0)
+    SAMPLE = fMRIImage("test_fmri.img", datasource=repository)
+    TS_DIAG = TimeSeriesDiagnostics(SAMPLE)
+    TS_DIAG.plot_data()
+    APP.MainLoop()
 #    tsdiag.sd_image.tofile('diag_sd.img', clobber=True)
 #    tsdiag.mean_image.tofile('diag_mean.img', clobber=True)
 #    tsdiag.mse_image.tofile('diag_mse.img', clobber=True)
-
