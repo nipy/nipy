@@ -250,8 +250,10 @@ class ECAT7(bin.BinaryFormat):
 
         self.main_header_formats = struct_formats_mh
         self.sub_header_formats = struct_formats_sh
-        # Fill dict with default values
+        # Fill header and subheader dict with default values
         self.header_defaults()
+        self.subheader_defaults()
+        
         if self.mode[0] is 'w':
             #Deal with writing to file or raise implement error?
         else:
@@ -309,9 +311,16 @@ class ECAT7(bin.BinaryFormat):
          """
          Fills main header with empty default values
          """
-         for field,format in self.header_formats.items():
+         for field,format in self.main_header_formats.items():
              self.header[field] = self._default_field_value(field,format)
 
+     def subheader_defaults(self):
+         """
+         Fills sub header with empty default values
+         """
+         for field,format in self.sub_header_formats.items():
+             self.subheader[field] = self._default_field_value(field,format)
+         
      @staticmethod
      def _default_field_value(fieldname, fieldformat):
          "[STATIC] Get empty defualt value for given field"
