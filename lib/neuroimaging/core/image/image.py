@@ -84,7 +84,7 @@ class Image(object):
         return self
 
 
-    def compress(self, where, axis=0):
+    def compress(self, where, axis=None):
         if hasattr(self, 'buffer'):
             return self.buffer.compress(where, axis=axis)
         else: raise ValueError, 'no buffer: compress not supported'
@@ -115,7 +115,7 @@ class Image(object):
             elif itertype is 'parcel':
                 flatten(value.where)
                 self.label = value.label
-                result = self.compress(value.where, axis=0)
+                result = self.compress(value.where)
             elif itertype == 'slice/parcel':
                 result = self[value.slice].compress(value.where)
             return self.postread(result)
