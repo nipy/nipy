@@ -175,6 +175,7 @@ struct_formats = odict((
     ('srow_z','4f'),
     ('intent_name','16s'),
     ('magic','4s'),
+    ('qfac','f'),
 ))
 field_formats = struct_formats.values()
 
@@ -445,6 +446,7 @@ class Nifti1(bin.BinaryFormat):
                 # be careful with NIFTI, open it rb+ in case we're writing
                 # into the same file as the data (.nii file)
                 fp = self.datasource.open(self.header_file, 'rb+')
+
                 self.write_header(hdrfile=fp)
                 return x
             
