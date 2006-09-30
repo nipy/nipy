@@ -87,15 +87,9 @@ class NiftiWriteTest(NiftiTest):
 
     def test_write1(self):
         self.image.tofile('out.nii', clobber=True, sctype=N.float64)
-        print "creating out.nii"
         out = Image('out.nii')
-        
         self.assertEquals(out._source.sctype, N.float64)
-        print os.curdir
-        print os.listdir(".")
-        #os.remove('out.img')
-        #os.remove('out.hdr')
-        #os.remove('out.nii')
+        os.remove('out.nii')
 
     def test_write2(self):
         self.image.tofile('out.hdr', clobber=True)
