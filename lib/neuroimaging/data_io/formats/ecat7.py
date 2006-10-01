@@ -441,7 +441,7 @@ class Frame(bin.BinaryFormat):
                      self.subheader['Y_DIMENSION'])
             origin = [float] *3
             for i in range(len(shape)):
-                origin[i] = shape[i]/2 + offset[i]
+                origin[i] = shape[i]/2. + offset[i]
             
             
             ## Setup affine transformation        
