@@ -12,7 +12,6 @@ from neuroimaging.sandbox.ts_diagnostics.tsdstats import \
 def main():
     fmri_image = fMRIImage("test_fmri.img", datasource=repository)
     ts_diag = TimeSeriesDiagnosticsStats(fmri_image)
-    ts_diag.compute()
     image = N.nan_to_num(ts_diag.mse_image.readall())
 
     app = wxmpl.PlotApp('Time Series Diagnostics', size=(10.0, 11.5))

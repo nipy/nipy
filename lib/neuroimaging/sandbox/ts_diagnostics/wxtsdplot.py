@@ -13,7 +13,6 @@ APP = wxmpl.PlotApp('Time Series Diagnostics', size=(10.0, 11.5))
 ### Create the data to plot ###
 FMRI_IMAGE = fMRIImage("test_fmri.img", datasource=repository)
 TS_DIAG = TimeSeriesDiagnosticsStats(FMRI_IMAGE)
-TS_DIAG.compute()
 
 ### Plot it ###
 FIG = APP.get_figure()

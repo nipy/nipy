@@ -4,30 +4,32 @@ Calculates statistics to aid in the diagnosis of problems in the time series.
 
 import numpy as N
 
-from neuroimaging import traits
-
 from neuroimaging.core.image.image import Image
 
-class TimeSeriesDiagnosticsStats(traits.HasTraits):
-    mean = traits.true
-    sd = traits.true
-    mse = traits.true
-    mask = traits.Any
+class TimeSeriesDiagnosticsStats(object):
 
     def __init__(self, fmri_image, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
-        self.fmri_image = fmri_image
+        self.mean = True
+        self.sd = True
+        self.mse = True
+        self.mask = None
 
-    def compute(self):
-        ntime = self.fmri_image.grid.shape[0]
-        nslice = self.fmri_image.grid.shape[1]
+        self.fmri_image = fmri_image
+        self.ntime = self.fmri_image.grid.shape[0]
+        self.nslice = self.fmri_image.grid.shape[1]
  
-        self.mse_time = N.zeros((ntime-1,), N.float64)
-        self.mse_slice = N.zeros((ntime-1, nslice), N.float64)
-        self.mean_signal = N.zeros((ntime,), N.float64)
-        self.max_mse_slice = N.zeros((nslice,), N.float64)
-        self.min_mse_slice = N.zeros((nslice,), N.float64)
-        self.mean_mse_slice = N.zeros((nslice,), N.float64)
+        self.mse_time = N.zeros((self.ntime-1,), N.float64)
+        self.mse_slice = N.zeros((self.ntime-1, self.nslice), N.float64)
+        self.mean_signal = N.zeros((self.ntime,), N.float64)
+        self.max_mse_slice = N.zeros((self.nslice,), N.float64)
+        self.min_mse_slice = N.zeros((self.nslice,), N.float64)
+        self.mean_mse_slice = N.zeros((self.nslice,), N.float64)
+
+        self._npixel = {}
+
+        self._compute()
+
+    def _compute(self):
 
         if self.mean or self.sd or self.mse:
             grid = self.fmri_image.grid.subgrid(0)
@@ -42,13 +44,12 @@ class TimeSeriesDiagnosticsStats(traits.HasTraits):
                 self.mse_image = \
                   Image(N.zeros(self.fmri_image.shape[1:]), grid=grid)
 
-        npixel = {}
         if self.mask is not None:
             nvoxel = self.mask.readall().sum()
         else:
             nvoxel = N.product(self.fmri_image.grid.shape[1:])
 
-        for i in range(ntime-1):
+        for i in range(self.ntime-1):
             tmp1 = N.squeeze(self.fmri_image[slice(i,i+1)])
             tmp = (tmp1 -
                    N.squeeze(self.fmri_image[slice(i+1,i+2)]))
@@ -64,14 +65,14 @@ class TimeSeriesDiagnosticsStats(traits.HasTraits):
             self.mse_time[i] = tmp3.sum() / nvoxel
             self.mean_signal[i] = tmp1.sum() / nvoxel
 
-            for j in range(nslice):
+            for j in range(self.nslice):
                 if self.mask is not None:
-                    if not npixel.has_key(j):
-                        npixel[j] = self.mask.getslice(slice(j,j+1)).sum()
+                    if not self._npixel.has_key(j):
+                        self._npixel[j] = self.mask.getslice(slice(j,j+1)).sum()
                 else:
-                    if not npixel.has_key(j):
-                        npixel[j] = N.product(self.fmri_image.grid.shape[2:])
-                self.mse_slice[i,j] = N.power(tmp[j], 2).sum() / npixel[j]
+                    if not self._npixel.has_key(j):
+                        self._npixel[j] = N.product(self.fmri_image.grid.shape[2:])
+                self.mse_slice[i,j] = N.power(tmp[j], 2).sum() / self._npixel[j]
 
         if self.mean:
             self.mean_image[allslice] = \
@@ -94,4 +95,4 @@ class TimeSeriesDiagnosticsStats(traits.HasTraits):
         self.min_mse_slice = N.minimum.reduce(self.mse_slice, axis=0)
         self.mean_mse_slice = N.mean(self.mse_slice, axis=0)
 
-        self.mse_image[allslice] = N.sqrt(self.mse_image.readall()/ (ntime-1))
+        self.mse_image[allslice] = N.sqrt(self.mse_image.readall()/ (self.ntime-1))

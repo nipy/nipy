@@ -14,7 +14,6 @@ class TimeSeriesDiagnostics(object):
 
     def __init__(self, fmri_image):
         self.tsdiag = TimeSeriesDiagnosticsStats(fmri_image)
-        self.tsdiag.compute()
 
     def plot_data(self):
         win = wxFrame(None, -1, "")
