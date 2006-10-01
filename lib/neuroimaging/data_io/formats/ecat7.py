@@ -5,7 +5,12 @@ from neuroimaging.utils.odict import odict
 import neuroimaging.data_io as dataio
 from neuroimaging.data_io import DataSource
 import neuroimaging.data_io.formats.binary as bin
+from neuroimaging.core.image.image import Image
 
+from neuroimaging.core.reference.axis import space, spacetime
+from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.utils.path import path
 
 # ECAT 7 header
 HEADER_SIZE = 512
@@ -24,12 +29,12 @@ ECAT7_SUNI4 = 7
 # map ECAT datatype to numpy scalar type
 datatype2sctype = {
     ECAT7_BYTE: N.uint8, 
-    ECAT7_VAXI2: N.int16,
-    ECAT7_VAXI4: N.int32,
-    ECAT7_VAXR4: N.float32,
-    ECAT7_IEEER4: N.float32,
-    ECAT7_SUNI2: N.int16,
-    ECAT7_SUNI4: N.int32}
+    ECAT7_VAXI2: N.int8,
+    ECAT7_VAXI4: N.int16,
+    ECAT7_VAXR4: N.float,
+    ECAT7_IEEER4: N.float,
+    ECAT7_SUNI2: N.int8,
+    ECAT7_SUNI4: N.int16}
 
 sctype2datatype = dict([(k,v) for k,v in datatype2sctype.items()])
 
@@ -272,10 +277,11 @@ class ECAT7(bin.BinaryFormat):
         # for each frame read in subheader and attach data
         self.frames = self.nframes * [Frame]
         for i in range(self.nframes):
-            self.frames[i] = Frame(self.data_file,self.byteorder, self.mlist,i)
+            self.frames[i] = Frame(self.data_file,self.byteorder, self.mlist,i,self.datasource)
         
-            
-        #self.subheader_defaults()
+        # set up canonical
+        self.inform_canonical()
+ 
         
 
     def checkversion(self,datasource):
@@ -367,28 +373,43 @@ class ECAT7(bin.BinaryFormat):
             
         self.mlist = mlist.conj().transpose()
 
-    def read_subheader(self,volume, datasource=DataSource()):
-        """
-        Read an ECAT subheader and fill fields
-        """
-        recordstart = (self.mlist[1][volume]-1)*512
-        infile = datasource.open(self.data_hdr_file, 'rb')
-        infile.seek(recordstart)
-        values = struct_unpack(infile,
-                               self.byteorder,
-                               self.sub_header_formats.values())
-        for field, val in zip(self.header.keys(), values):
-            self.header[field] = val
+    def inform_canonical(self, fieldsDict=None):
+        tmpdat = self.frames[0]
+        if fieldsDict is not None:
+            self.canonical_fields = odict(fieldsDict)
+        else:
+            if tmpdat.subheader['DATA_TYPE'] == 1:
+                self.canonical_fields['datasize'] = 8
+            elif tmpdat.subheader['DATA_TYPE'] == 2 or tmpdat.subheader['DATA_TYPE'] == 6:
+                self.canonical_fields['datasize'] = 16
+            else:
+                self.canonical_fields['datasize'] = 32
 
-class Frame(object):
+            if self.nframes > 1:
+                self.canonical_fields['ndim'] = 4
+                self.canonical_fields['tdim'] = self.nframes
+            else:
+                self.canonical_fields['ndim'] = 3
+                self.canonical_fields['tdim'] = 1
+                
+            self.canonical_fields['xdim'] = tmpdat.subheader['X_DIMENSION']
+            self.canonical_fields['ydim'] = tmpdat.subheader['Y_DIMENSION']
+            self.canonical_fields['zdim'] = tmpdat.subheader['Z_DIMENSION']
+            
+            self.canonical_fields['scaling'] = 1
+
+
+class Frame(bin.BinaryFormat):
     """
     A class to hold ECAT subheaders and associated memmaps
     """
     _sub_field_defaults = {'SCALE_FACTOR': 1.}
     
     
-    def __init__(self, infile, byteorder, mlist, framenumber=0, mode='rb'):
+    def __init__(self, infile, byteorder, mlist, framenumber=0, datasource=DataSource(), mode='rb'):
+        bin.BinaryFormat.__init__(self, infile, mode, datasource)
         self.infile = infile
+        self.data_file = infile
         self.byteorder = byteorder
         
         self.frame = framenumber
@@ -397,12 +418,32 @@ class Frame(object):
         self.sub_header_formats = struct_formats_sh
         self.subheader_defaults()
         recordstart = (mlist[1][framenumber]-1)*BLOCKSIZE
-        self.read_subheader(recordstart)
+        self.read_subheader(recordstart,self.datasource)
+
         
         self.sctype = datatype2sctype[self.subheader['DATA_TYPE']]
         self.ndim = 3
 
-
+        ## grid for data
+        if not self.grid:                
+            axisnames = space[::-1]
+            origin = (self.subheader['X_OFFSET'],
+                      self.subheader['Y_OFFSET'],
+                      self.subheader['Z_OFFSET'])
+            step = (self.subheader['X_PIXEL_SIZE']*10,
+                      self.subheader['Y_PIXEL_SIZE']*10,
+                      self.subheader['Z_PIXEL_SIZE']*10)
+            shape = (self.subheader['X_DIMENSION'],
+                     self.subheader['Y_DIMENSION'],
+                     self.subheader['Z_DIMENSION'])
+            ## Setup affine transformation        
+            self.grid = SamplingGrid.from_start_step(names=axisnames,
+                                                shape=shape,
+                                                start=-N.array(origin)*step,
+                                                step=step)
+            # Get memmaped array
+        offset = (mlist[1,framenumber]-1)*BLOCKSIZE
+        self.attach_data(offset)
 
     def subheader_defaults(self):
         """
@@ -429,3 +470,12 @@ class Frame(object):
                                self.sub_header_formats.values())
         for field, val in zip(self.subheader.keys(), values):
             self.subheader[field] = val
+
+    def postread(self,x):
+        """
+        Might transform the data after getting it from memmap
+        """
+        if self.subheader['SCALE_FACTOR']:
+            return x * self.subheader['SCALE_FACTOR']
+        else:
+            return x 
