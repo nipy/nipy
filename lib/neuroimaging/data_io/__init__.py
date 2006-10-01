@@ -7,7 +7,6 @@ import os, gzip, bz2
 from urllib2 import urlopen
 from urlparse import urlparse
 
-from neuroimaging import ensuredirs
 from neuroimaging.utils.path import path
 
 zipexts = (".gz",".bz2")
@@ -15,11 +14,17 @@ file_openers = {".gz":gzip.open, ".bz2":bz2.BZ2File, None:file}
 
 
 def iszip(filename):
-    filebase, ext = path(filename).splitext()
+    """ Is this filename a zip file. """
+    _, ext = path(filename).splitext()
     return ext in zipexts
 
 
 def splitzipext(filename):
+    """
+    return (base, zip_extension) from filename.
+    If filename does not have a zip extention then
+    base = filename and zip_extension = None
+    """
     if iszip(filename):
         return path(filename).splitext()
     else:
@@ -27,8 +32,9 @@ def splitzipext(filename):
 
 
 def unzip(filename):
-    "Unzip the given file into another file.  Return the new file's name."
-    if not iszip(filename): raise ValueError("file %s is not zipped"%filename)
+    """ Unzip the given file into another file.  Return the new file's name."""
+    if not iszip(filename):
+        raise ValueError("file %s is not zipped"%filename)
     unzip_name, zipext = splitzipext(filename)
     opener = file_openers[zipext]
     outfile = file(unzip_name,'w')
@@ -38,8 +44,13 @@ def unzip(filename):
 
 
 def urlexists(url):
-    try: urlopen(url)
-    except: return False
+    """
+    Test if a url exists by attempting to open it.
+    """
+    try:
+        urlopen(url)
+    except Exception:
+        return False
     return True
 
 
@@ -48,11 +59,28 @@ def isurl(pathstr):
     return bool(scheme and netloc)
 
 
-def iswritemode(mode): return mode.find("w")>-1 or mode.find("+")>-1
+def iswritemode(mode):
+    """ Test is the given mode will open a file for writing. """
+    return mode.find("w")>-1 or mode.find("+")>-1
+
+
+def ensuredirs(directory):
+    """
+    Ensure that the given directory path actually exists.
+    If it doesn't, create it.
+    """
+    if not isinstance(directory, path):
+        directory = path(directory)
+    if not directory.exists():
+        directory.makedirs()
 
 
 class Cache (object):
-            
+    """
+    A file cache. The path of the cache can be specified
+    or else use ~/.nipy/cache by default.
+    """
+    
     def __init__(self, cachepath=None):
         if cachepath is not None: 
             self.path = path(cachepath)
@@ -60,33 +88,52 @@ class Cache (object):
             self.path = path(os.environ["HOME"]).joinpath(".nipy","cache")
         elif os.name == 'nt':
             self.path = path(os.environ["HOMEPATH"]).joinpath(".nipy","cache")
-        self.setup()
+        if not self.path.exists():
+            ensuredirs(self.path)
+
 
     def filepath(self, uri):
-        (scheme, netloc, upath, params, query, fragment) = urlparse(uri)
+        """
+        Return the complete path + filename within the cache.
+        """
+        (_, netloc, upath, _, _, _) = urlparse(uri)
         return self.path.joinpath(netloc, upath[1:])
 
     def filename(self, uri): 
+        """
+        Return the complete path + filename within the cache.
+        """
         return str(self.filepath(uri))
     
-    def setup(self):
-        if not self.path.exists(): ensuredirs(self.path)
-        
     def cache(self, uri):
-        if self.iscached(uri): return
+        """
+        Copy a file into the cache.
+        """
+        if self.iscached(uri):
+            return
         upath = self.filepath(uri)
         ensuredirs(upath.dirname())
-        try: openedurl = urlopen(uri)
-        except: raise IOError("url not found: "+str(uri))
+        try:
+            openedurl = urlopen(uri)
+        except:
+            raise IOError("url not found: "+str(uri))
         file(upath, 'w').write(openedurl.read())
         
     def clear(self):
-        for f in self.path.files(): f.rm()
+        """ Delete all files in the cache. """
+        for f in self.path.files():
+            f.rm()
         
     def iscached(self, uri):
+        """ Check if a file exists in the cache. """
         return self.filepath(uri).exists()
         
     def retrieve(self, uri):
+        """
+        Retrieve a file from the cache.
+        If not already there, create the file and
+        add it to the cache.
+        """
         self.cache(uri)
         return file(self.filename(uri))
 
@@ -95,17 +142,21 @@ class Cache (object):
 class DataSource (object):
 
     def __init__(self, cachepath=os.curdir):
-        if cachepath is not None: self._cache = Cache(cachepath)
-        else: self._cache = Cache()
+        if cachepath is not None:
+            self._cache = Cache(cachepath)
+        else:
+            self._cache = Cache()
 
     def _possible_names(self, filename):
         names = (filename,)
         if not iszip(filename):
-            for zipext in zipexts: names += (filename+zipext,)
+            for zipext in zipexts:
+                names += (filename+zipext,)
         return names
 
     def cache(self, pathstr):
-        if isurl(pathstr): self._cache.cache(pathstr)
+        if isurl(pathstr):
+            self._cache.cache(pathstr)
 
     def filename(self, pathstr):
         found = None
@@ -114,15 +165,18 @@ class DataSource (object):
                 self.cache(name)
                 found = self._cache.filename(name)
             elif path(name).exists(): found = name
-            if found: break
-        if found is None: raise IOError("%s not found"%pathstr)
+            if found:
+                break
+        if found is None:
+            raise IOError("%s not found"%pathstr)
         return found
 
     def exists(self, pathstr):
         try:
             _ = self.filename(pathstr)
             return True
-        except IOError: return False
+        except IOError:
+            return False
 
     def open(self, pathstr, mode='r'):
         if isurl(pathstr) and iswritemode(mode):
@@ -148,10 +202,11 @@ class Repository (DataSource):
     def exists(self, pathstr):
         return DataSource.exists(self, self._fullpath(pathstr))
 
-    def open(self, pathstr):
-        return DataSource.open(self, self._fullpath(pathstr))
+    def open(self, pathstr, mode='r'):
+        return DataSource.open(self, self._fullpath(pathstr), mode)
 
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

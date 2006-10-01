@@ -105,12 +105,6 @@ def reorder(seq, order):
 def reverse(seq):
     return reorder(seq, range(len(seq)-1, -1, -1))
 
-def ensuredirs(directory):
-    if not isinstance(directory, path):
-        directory = path(directory)
-    if not directory.exists():
-        directory.makedirs()
-
 def import_from(modulename, objectname):
     "Import and return objectname from modulename."
     module = __import__(modulename, {}, {}, (objectname,))
