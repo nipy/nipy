@@ -78,8 +78,9 @@ class Image(object):
     def __iter__(self):
         "Create an iterator over an image based on its grid's iterator."
         iter(self.grid)
-        if self.grid.get_iter_param("itertype") in ["parcel", "slice/parcel"]:
-            self.buffer.shape = N.product(self.buffer.shape)
+        # this doesn't seem like a good idea... -- timl
+        #if self.grid.get_iter_param("itertype") in ["parcel", "slice/parcel"]:
+        #    self.buffer.shape = N.product(self.buffer.shape)
         return self
 
 
@@ -91,7 +92,7 @@ class Image(object):
 
     def put(self, data, indices):
         if hasattr(self, 'buffer'):
-            return self.buffer.put(data, indices)
+            return self.buffer.put(indices, data)
         else: raise ValueError, 'no buffer: put not supported'
 
 
