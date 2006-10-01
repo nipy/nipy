@@ -16,7 +16,7 @@ a = N.zeros(f.grid.shape[0])
 nvox = m.sum()
 
 for i in range(a.shape[0]):
-    a[i] = (m * f.getslice(slice(i,i+1))).sum() / nvox
+    a[i] = (m * f[slice(i,i+1)]).sum() / nvox
 
 pylab.plot(a)
 pylab.show()
