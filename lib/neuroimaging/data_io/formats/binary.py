@@ -21,7 +21,7 @@ maxranges = {
   N.int8:  127.,
   N.uint8: 255.,
   N.int16: 32767.,
-  N.int32: 2147483648.
+  N.int32: 2147483647.
   }
 
 
@@ -100,13 +100,16 @@ def castData(data, new_sctype, default_scale):
     scl = default_scale or 1.0
     if new_sctype in (N.int8, N.uint8, N.int16, N.int32):
         maxval = abs(data.max())
-        if maxval == 0.: maxval = 1.e20
+        if maxval == 0.:
+            maxval = 1.e20
         maxrange = maxranges[new_sctype]
-        if maxval > maxrange: scl = maxval/maxrange
-        else: scl = maxrange/maxval
+        #if maxval > maxrange:
+        scl = maxval/maxrange
+        #else:
+        #scl = maxrange/maxval
     # make the cast
-    data[:] = N.round(data/scl).astype(new_sctype)
-    return scl
+    data[:] = N.array(data[0][0]/scl, dtype=new_sctype)
+    return data, scl
 
 
 
@@ -176,7 +179,6 @@ class BinaryFormat(Format):
 
 
     def attach_data(self, offset=0):
-
         mode = self.mode in ('r+','w','wb') and 'readwrite' or 'readonly'
         if mode == 'readwrite':
             if not self.datasource.exists(self.data_file):

@@ -253,8 +253,9 @@ class Analyze(bin.BinaryFormat):
         Might transform the data after getting it from memmap
         """
         if self.header['scale_factor']:
-        	return x*self.header['scale_factor']
-        else: return x
+            return x*self.header['scale_factor']
+        else:
+            return x
 
 
     def __del__(self):
