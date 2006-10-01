@@ -102,13 +102,12 @@ def cast_data(data, new_sctype, default_scale):
     # if casting to an integer type, check the data range
     # if it clips, then scale down
     # if it has poor integral resolution, then scale up
-    scl = default_scale or 1.0
     if new_sctype in integer_ranges.keys():
         maxval = abs(data.max())
         maxrange = integer_ranges[new_sctype]
-        scl = maxval/maxrange
+        scl = maxval/maxrange or 1.
         return scl, N.round(data/scl)
-    return scl, data
+    return default_scale, data
 
 
 
