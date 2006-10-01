@@ -11,17 +11,26 @@ from neuroimaging.core.image.base_image import ArrayImage
 class Image(object):
 
     @staticmethod
-    def fromurl(url, datasource=DataSource(), format=None, grid=None, mode="r", clobber=False,
-      **keywords):
+    def fromurl(url, datasource=DataSource(), format=None, grid=None, mode="r",
+                clobber=False, **keywords):
+        """
+        Create an Image from the given url/filename
+        """
+        
         zipexts = (".gz",".bz2")
         base, ext = os.path.splitext(url.strip())
-        if ext in zipexts: url = base
-        if not format: valid = getformats(url)
-        else: valid = [format]
+        if ext in zipexts:
+            url = base
+            
+        if not format:
+            valid = getformats(url)
+        else:
+            valid = [format]
         for format in valid:
             try:
                 return format(filename=url,
-                              datasource=datasource, mode=mode, clobber=clobber, grid=grid, **keywords)
+                              datasource=datasource, mode=mode, clobber=clobber,
+                              grid=grid, **keywords)
             except Exception, e:
             #    print e
                 pass
@@ -53,31 +62,28 @@ class Image(object):
         else:
             raise ValueError(
           "Image input must be a string, array, or another image.")
+
         # Find spatial grid -- this is the one that will be used generally
         self.grid = self._source.grid
         self.shape = list(self.grid.shape)
         self.ndim = len(self.shape)
 
-        # When possible, attach memory-mapped array or array as buffer attr
-        if hasattr(self._source, 'memmap'):
-            self.buffer = self._source.memmap
-        else:
-            self.buffer = self._source.data
+        # Attach memory-mapped array or array as buffer attr
+        self.buffer = self._source.data
 
-        self.postread = lambda x:x
         self.fill = 0.0
 
 
-    def __getitem__(self, slice_): return self._source[slice_]
-    def __setitem__(self, slice_, data): self._source[slice_] = data
+    def __getitem__(self, slice_):
+        return self._source[slice_]
+
+    def __setitem__(self, slice_, data):
+        self._source[slice_] = data
 
 
     def __iter__(self):
-        "Create an iterator over an image based on its grid's iterator."
+        """ Create an iterator over an image based on its grid's iterator."""
         iter(self.grid)
-        # this doesn't seem like a good idea... -- timl
-        #if self.grid.get_iter_param("itertype") in ["parcel", "slice/parcel"]:
-        #    self.buffer.shape = N.product(self.buffer.shape)
         return self
 
 
@@ -108,14 +114,13 @@ class Image(object):
         if data is None:
             if itertype is 'slice':
                 result = N.squeeze(self[value.slice])
-                #result = self[value.slice]
             elif itertype is 'parcel':
                 flatten(value.where)
-                self.label = value.label
+                #self.label = value.label
                 result = self.compress(value.where)
             elif itertype == 'slice/parcel':
                 result = self[value.slice].compress(value.where)
-            return self.postread(result)
+            return result
         else:
             if itertype is 'slice':
                 self[value.slice] = data
@@ -139,14 +144,19 @@ class Image(object):
         (13, 128, 128)
         """
         data = self.readall()
-        if clean and data.dtype.type in N.sctypes['float'] + N.sctypes['complex']: 
+        if clean and \
+               data.dtype.type in N.sctypes['float'] + N.sctypes['complex']: 
             data = N.nan_to_num(data)
             
-        return Image(self.postread(data), grid=self.grid, **keywords)
+        return Image(data, grid=self.grid, **keywords)
 
 
     def tofile(self, filename, array=True, clobber=False,
                sctype=None, **keywords):
+        """        
+        Write the image to a file. Returns a new Image object
+        of the newly written file.
+        """
         sctype = sctype or self._source.sctype
         outimage = Image(filename, mode='w', grid=self.grid,
                          clobber=clobber,
@@ -163,8 +173,6 @@ class Image(object):
             # outimage is an Image
             for dataslice in tmp:
                 outimage.next(data=dataslice, value=tmp.itervalue)
-        if hasattr(outimage, "close"): 
-            outimage.close()
         return outimage
 
 
@@ -176,7 +184,7 @@ class Image(object):
         """
         value = self._source[self.grid.allslice()]
         if clean: 
-            value = Image(N.nan_to_num(value, fill=self.fill))
+            value = N.nan_to_num(value, fill=self.fill)
         return value
 
 
@@ -190,14 +198,17 @@ class ImageSequenceIterator(object):
     """
     def __init__(self, imgs, grid=None):
         self.imgs = imgs
-        if grid is None: self.grid = iter(self.imgs[0].grid)
-        else: self.grid = iter(grid)
+        if grid is None:
+            self.grid = iter(self.imgs[0].grid)
+        else:
+            self.grid = iter(grid)
 
     def __iter__(self): 
         return self
 
     def next(self, value=None):
-        if value is None: value = self.grid.next()
+        if value is None:
+            value = self.grid.next()
         v = [img.next(value=value) for img in self.imgs]
         return N.array(v, N.float64)
 

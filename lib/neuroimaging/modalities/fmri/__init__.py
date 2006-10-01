@@ -130,7 +130,7 @@ class fMRIImage(Image):
     def frame(self, i, clean=False, **keywords):
         data = N.squeeze(self[slice(i,i+1)])
         if clean: data = N.nan_to_num(data)
-        return Image(self.postread(data), grid=self.grid.subgrid(i), **keywords)
+        return Image(data, grid=self.grid.subgrid(i), **keywords)
 
 
     def next(self, value=None, data=None):
@@ -165,7 +165,7 @@ class fMRIImage(Image):
                 tmp.shape = (tmp.shape[0], N.product(tmp.shape[1:]))
                 result = tmp.compress(value.where, axis=1)
 
-            return self.postread(result)
+            return result
 
         else:
 
