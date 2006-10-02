@@ -3,8 +3,10 @@ import numpy as N
 import os
 
 from neuroimaging.utils.odict import odict
+import neuroimaging.data_io as dataio
 from neuroimaging.data_io import DataSource
 import neuroimaging.sandbox.formats.binary as bin
+
 
 # ECAT 7 header
 HEADER_SIZE = 512
@@ -30,15 +32,8 @@ datatype2sctype = {
     ECAT7_SUNI2: N.int16,
     ECAT7_SUNI4: N.int32}
 
- sctype2datatype = dict([(k,v) for k,v in datatype2sctype.items()])
+sctype2datatype = dict([(k,v) for k,v in datatype2sctype.items()])
 
-
-  BYTE: N.uint8,
-  SHORT: N.int16,
-  INTEGER: N.int32,
-  FLOAT: N.float32,
-  DOUBLE: N.float64,
-  COMPLEX: N.complex64}
 
 # Matrix File Types
 ECAT7_UNKNOWN = 0
@@ -228,6 +223,7 @@ class ECAT7(bin.BinaryFormat):
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
         """
         Constructs a ECAT7 binary format object with at least a filename
+        NOTE: ECAT can be an Image or a Volume
         possible additional keyword arguments:
         mode = mode to open the memmap (default is "r")
         datasource = ???
@@ -237,7 +233,11 @@ class ECAT7(bin.BinaryFormat):
         clobber = allowed to clobber?
         
         """
-
+        #Check if data is zipped
+        if dataio.iszip(filename):
+            self.filebase = dataio.unzip(filename)
+        
+            
         self.filebase = os.path.splitext(filename)[0]
         self.header_file = self.filebase+".v"
         self.data_file = self.filebase+".v"
@@ -253,25 +253,33 @@ class ECAT7(bin.BinaryFormat):
         # Fill header and subheader dict with default values
         self.header_defaults()
         self.subheader_defaults()
-        
+
+        #Read in MainHeader Information
         if self.mode[0] is 'w':
             #Deal with writing to file or raise implement error?
+            raise NotImplementedError
         else:
             self.byteorder = self.guess_byteorder(self.header_file,
                                                   datasource=self.datasource)
+            # read main header
             self.read_header()
             self.generate_mlist()
-            for list in range(len(self.mlist.shape[1])):
-                self.read_subheader()
+            # read subheaders and append data
+            #for 
+            #for list in range(len(self.mlist.shape[1])):
+                #self.read_subheader()
 
     def checkversion(self,datasource = DataSource()):
-        hdrfile = datasource.open(hdrfile,'rb')
+        """
+        Currently only ECAT72 is implemented
+        """
+        hdrfile = datasource.open(self.header_file,'rb')
         byteorder = bin.BIG_ENDIAN ## doesnt really matter for this datatype
         magic_number = bin.struct_unpack(hdrfile,\
                                          byteorder, field_formats_mh[0])[0]
         magic_number = magic_number[0]
         magic_number = magic_number.split('/x00')
-        if magic_number[0] not 'MATRIX72v':
+        if magic_number[0]is not 'MATRIX72v':
             raise NotImplementedError("%s ECAT version not supported"%magic_number[0])
         
 
@@ -291,8 +299,8 @@ class ECAT7(bin.BinaryFormat):
 
 
 
-     @staticmethod   
-     def guess_byteorder(hdrfile, datasource=DataSource()):
+    @staticmethod   
+    def guess_byteorder(hdrfile, datasource=DataSource()):
         """
         Determine byte order of the header.  The first header element is the
         header size.  It should always be 384.  If it is not then you know you
@@ -300,35 +308,35 @@ class ECAT7(bin.BinaryFormat):
         """
         if type(hdrfile)==type(""):
             hdrfile = datasource.open(hdrfile,'rb')
-        byteorder = bin.BIG_ENDIAN #Most scans are on suns = BE
-        reported_length = bin.struct_unpack(hdrfile,
-          byteorder, field_formats_mh[2])[0]
-        if reported_length[0] != SWVERSION:
-            byteorder = bin.LITTLE_ENDIAN
+            byteorder = bin.BIG_ENDIAN #Most scans are on suns = BE
+            reported_length = bin.struct_unpack(hdrfile,
+                                                byteorder, field_formats_mh[2])[0]
+            if reported_length[0] != SWVERSION:
+                byteorder = bin.LITTLE_ENDIAN
         return byteorder
 
-     def header_defaults(self):
-         """
-         Fills main header with empty default values
-         """
-         for field,format in self.main_header_formats.items():
-             self.header[field] = self._default_field_value(field,format)
+    def header_defaults(self):
+        """
+        Fills main header with empty default values
+        """
+        for field,format in self.main_header_formats.items():
+            self.header[field] = self._default_field_value(field,format)
 
-     def subheader_defaults(self):
-         """
-         Fills sub header with empty default values
-         """
-         for field,format in self.sub_header_formats.items():
-             self.subheader[field] = self._default_field_value(field,format)
+    def subheader_defaults(self):
+        """
+        Fills sub header with empty default values
+        """
+        for field,format in self.sub_header_formats.items():
+            self.subheader[field] = self._default_field_value(field,format)
          
-     @staticmethod
-     def _default_field_value(fieldname, fieldformat):
-         "[STATIC] Get empty defualt value for given field"
-         return ECAT7._field_defaults.get(fieldname, None) or \
-                bin.format_defaults[fieldformat[-1]]
+    @staticmethod
+    def _default_field_value(fieldname, fieldformat):
+        "[STATIC] Get empty defualt value for given field"
+        return ECAT7._field_defaults.get(fieldname, None) or \
+               bin.format_defaults[fieldformat[-1]]
+    
 
-
-     def generate_mlist(self, datasource=DataSource()):
+    def generate_mlist(self, datasource=DataSource()):
         """
         List the available matricies in the ECAT file
         """
