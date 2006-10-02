@@ -29,11 +29,11 @@ ECAT7_SUNI4 = 7
 # map ECAT datatype to numpy scalar type
 datatype2sctype = {
     ECAT7_BYTE: N.uint8, 
-    ECAT7_VAXI2: N.int8,
+    ECAT7_VAXI2: N.ushort,
     ECAT7_VAXI4: N.int16,
     ECAT7_VAXR4: N.float,
     ECAT7_IEEER4: N.float,
-    ECAT7_SUNI2: N.int8,
+    ECAT7_SUNI2: N.ushort,
     ECAT7_SUNI4: N.int16}
 
 sctype2datatype = dict([(k,v) for k,v in datatype2sctype.items()])
@@ -475,6 +475,7 @@ class Frame(bin.BinaryFormat):
         """
         Might transform the data after getting it from memmap
         """
+        return x
         if self.subheader['SCALE_FACTOR']:
             return x * self.subheader['SCALE_FACTOR']
         else:
