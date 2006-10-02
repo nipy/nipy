@@ -18,7 +18,7 @@ class Intent(traits.HasTraits):
     parameters = traits.ReadOnly(desc='Parameters associated to intent code.')
     intent_code = intent_trait
     intent_name = traits.Str(desc='Intent name.')
-    format = nifti1.NIFTI1
+    format = nifti1.Nifti1
 
     def __init__(self, intent_code, name, *parameters):
         self.intent_code = intent_code
@@ -44,7 +44,7 @@ class Intent(traits.HasTraits):
             for par in image.intent_parameters:
                 image.remove_trait(par)
             image.remove_trait('intent_code')
-        if not isinstance(image._source, nifti1.NIFTI1):
+        if not isinstance(image._source, nifti1.Nifti1):
             image.add_trait('intent_code', intent_trait)
             image.intent_code = self.intent_code
         else:
@@ -57,7 +57,7 @@ class Intent(traits.HasTraits):
             par = self.parameters[i]
             if par not in parameter_values.keys():
                 raise IntentError, 'parameters %s must be specified' % `self.parameters`
-            if not isinstance(image._source, nifti1.NIFTI1):
+            if not isinstance(image._source, nifti1.Nifti1):
                 trait = traits.Float(parameter_values[par])
                 image.add_trait(par, parameter_values[par])
             else:
