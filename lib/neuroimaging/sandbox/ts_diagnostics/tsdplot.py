@@ -1,8 +1,3 @@
-#import pylab as P
-#from neuroimaging.ui.visualization.viewer import BoxViewer
-#        v = BoxViewer(self.mse_image)
-#        v.draw(); P.show()
-
 from wxPython.wx import wxPySimpleApp, wxFrame, wxBoxSizer, wxVERTICAL, \
   wxLEFT, wxTOP, wxGROW
 from matplotlib.figure import Figure
