@@ -17,7 +17,7 @@ from neuroimaging.sandbox.ts_diagnostics.tsdstats import \
 
 class TimeSeriesDiagnostics(object):
 
-    def __init__(self, fmri_image, **keywords):
+    def __init__(self, fmri_image):
         self.tsdiag = TimeSeriesDiagnosticsStats(fmri_image)
         self.tsdiag.compute()
 
@@ -33,11 +33,11 @@ class TimeSeriesDiagnostics(object):
         win.SetSizer(sizer)
         win.Fit()
         
-        colors = ['b','g','r','c','m','y','k']
+        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
         ax = fig.add_subplot(411)
         ax.plot(self.tsdiag.mse_time)
-	ax = fig.add_subplot(412)
+        ax = fig.add_subplot(412)
         for j in range(self.tsdiag.mse_slice.shape[1]):
             ax.plot(self.tsdiag.mse_slice[:,j], colors[j%7]+'.-')
         ax = fig.add_subplot(413)
@@ -51,7 +51,6 @@ class TimeSeriesDiagnostics(object):
 if __name__ == '__main__':
     app = wxPySimpleApp(0)
     sample = fMRIImage("test_fmri.img", datasource=repository)
-    #sample = fMRIImage('http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/fiac0_fonc1.img')
     tsdiag = TimeSeriesDiagnostics(sample)
     tsdiag.plot_data()
     app.MainLoop()

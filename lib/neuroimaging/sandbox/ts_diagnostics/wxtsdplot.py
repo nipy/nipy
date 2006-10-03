@@ -27,7 +27,7 @@ axes4 = fig.add_subplot(4, 1, 4)
 
 axes1.plot(tsdiag.mse_time)
 
-colors = ['b','g','r','c','m','y','k']
+colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 for j in range(tsdiag.mse_slice.shape[1]):
     axes2.plot(tsdiag.mse_slice[:,j], colors[j%7]+'.-')
 
