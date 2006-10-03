@@ -5,6 +5,7 @@ from neuroimaging.utils.odict import odict
 import neuroimaging.data_io as dataio
 from neuroimaging.data_io import DataSource
 import neuroimaging.data_io.formats.binary as bin
+from neuroimaging.data_io.formats import utils
 
 from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
@@ -321,11 +322,11 @@ class Ecat7(bin.BinaryFormat):
         if type(hdrfile)==type(""):
             hdrfile = datasource.open(hdrfile)
             hdrfile.seek(46)
-            byteorder = bin.BIG_ENDIAN #Most scans are on suns = BE
-            reported_length = bin.struct_unpack(hdrfile,
+            byteorder = utils.BIG_ENDIAN #Most scans are on suns = BE
+            reported_length = utils.struct_unpack(hdrfile,
                                                 byteorder, field_formats_mh[2])[0]
             if reported_length != SWVERSION:
-                byteorder = bin.LITTLE_ENDIAN
+                byteorder = utils.LITTLE_ENDIAN
         return byteorder
 
     def header_defaults(self):
@@ -339,7 +340,7 @@ class Ecat7(bin.BinaryFormat):
     def _default_field_value(fieldname, fieldformat):
         "[STATIC] Get empty defualt value for given field"
         return Ecat7._field_defaults.get(fieldname, None) or \
-               bin.format_defaults[fieldformat[-1]]
+               utils.format_defaults[fieldformat[-1]]
 
     def generate_mlist(self,datasource):
         """
@@ -350,7 +351,7 @@ class Ecat7(bin.BinaryFormat):
         infile.seek(0)
         infile.seek(HEADER_SIZE)
         elements = ['128i'] # all elements are the same
-        values = bin.struct_unpack(infile, self.byteorder, elements)
+        values = utils.struct_unpack(infile, self.byteorder, elements)
         values= N.reshape(values,[32,4])
         #Calculate mlist which is a matrix list with
         #  id
@@ -464,7 +465,7 @@ class Frame(bin.BinaryFormat):
     def _default_sub_field_value(fieldname, fieldformat):
         "[STATIC] Get empty defualt value for given field"
         return Ecat7._sub_field_defaults.get(fieldname, None) or \
-               bin.format_defaults[fieldformat[-1]]
+               utils.format_defaults[fieldformat[-1]]
         
     def read_subheader(self, recordstart,datasource=DataSource()):
         """
@@ -472,7 +473,7 @@ class Frame(bin.BinaryFormat):
         """
         infile = datasource.open(self.infile)
         infile.seek(recordstart)
-        values = bin.struct_unpack(infile,
+        values = utils.struct_unpack(infile,
                                self.byteorder,
                                self.sub_header_formats.values())
         for field, val in zip(self.subheader.keys(), values):

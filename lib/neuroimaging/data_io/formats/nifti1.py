@@ -2,6 +2,7 @@ import numpy as N
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io import DataSource
+from neuroimaging.data_io.formats import utils
 import neuroimaging.data_io.formats.binary as bin
 import neuroimaging.data_io.formats.analyze as anlz
 from neuroimaging.data_io.formats.nifti1_ext import quatern2mat, \
@@ -231,7 +232,7 @@ class Nifti1(bin.BinaryFormat):
             # should try to populate the canonical fields and
             # corresponding header fields with info from grid?
             self.sctype = keywords.get('sctype', N.float64)
-            self.byteorder = bin.NATIVE
+            self.byteorder = utils.NATIVE
             if self.grid is not None:
                 self.header_from_given()
             else:
@@ -309,8 +310,8 @@ class Nifti1(bin.BinaryFormat):
         "[STATIC] Get the default value for the given field."
         return Nifti1._field_defaults.get(fieldname, None) or \
             (fieldformat[:-1] and fieldformat[-1] is not 's') and \
-             [bin.format_defaults[fieldformat[-1]]]*int(fieldformat[:-1]) or \
-             bin.format_defaults[fieldformat[-1]]
+             [utils.format_defaults[fieldformat[-1]]]*int(fieldformat[:-1]) or \
+             utils.format_defaults[fieldformat[-1]]
     
 
     def header_defaults(self):
@@ -437,7 +438,7 @@ class Nifti1(bin.BinaryFormat):
         if x.shape == self.data.shape or \
                x.max() > (self.header['scl_slope']*self.data).max():  
 
-            scale, x = bin.cast_data(x-self.header['scl_inter'],
+            scale, x = utils.cast_data(x-self.header['scl_inter'],
                                      self.sctype, self.header['scl_slope'])
 
             # if the scale changed, mark it down

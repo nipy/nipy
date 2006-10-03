@@ -4,6 +4,7 @@ import os
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io import DataSource
+from neuroimaging.data_io.formats import utils
 import neuroimaging.data_io.formats.binary as bin
 from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
@@ -137,7 +138,7 @@ class Analyze(bin.BinaryFormat):
             # should try to populate the canonical fields and
             # corresponding header fields with info from grid?
             self.sctype = keywords.get('sctype', N.float64)
-            self.byteorder = bin.NATIVE
+            self.byteorder = utils.NATIVE
             if self.grid is not None:
                 self.header_from_given()
             else:
@@ -191,7 +192,7 @@ class Analyze(bin.BinaryFormat):
     def _default_field_value(fieldname, fieldformat):
         "[STATIC] Get the default value for the given field."
         return Analyze._field_defaults.get(fieldname, None) or \
-               bin.format_defaults[fieldformat[-1]]
+               utils.format_defaults[fieldformat[-1]]
     
 
     def header_defaults(self):
@@ -247,7 +248,7 @@ class Analyze(bin.BinaryFormat):
         #     global maximum under the current scaling
         if x.shape == self.data.shape or \
                x.max() > (self.header['scale_factor']*self.data).max():
-            scale, x = bin.cast_data(x, self.sctype,
+            scale, x = utils.cast_data(x, self.sctype,
                                      self.header['scale_factor'])
 
             # if the scale changed, mark it down
@@ -326,10 +327,10 @@ class Analyze(bin.BinaryFormat):
         """
         if type(hdrfile)==type(""):
             hdrfile = datasource.open(hdrfile)
-        byteorder = bin.LITTLE_ENDIAN
-        reported_length = bin.struct_unpack(hdrfile,
+        byteorder = utils.LITTLE_ENDIAN
+        reported_length = utils.struct_unpack(hdrfile,
           byteorder, field_formats[0:1])[0]
         if reported_length != HEADER_SIZE:
-            byteorder = bin.BIG_ENDIAN
+            byteorder = utils.BIG_ENDIAN
         return byteorder
 
