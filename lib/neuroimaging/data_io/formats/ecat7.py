@@ -400,6 +400,13 @@ class Ecat7(bin.BinaryFormat):
             self.canonical_fields['scaling'] = 1
 
 
+    def _get_filenames(self):
+        """
+        Calculate header_file and data_file filenames
+        """
+        return self.filebase+".v", self.filebase+".v"
+
+
 class Frame(bin.BinaryFormat):
     """
     A class to hold ECAT subheaders and associated memmaps
@@ -408,8 +415,9 @@ class Frame(bin.BinaryFormat):
     
     
     def __init__(self, infile, byteorder, mlist,scale, framenumber=0, datasource=DataSource(), mode='rb'):
-        bin.BinaryFormat.__init__(self, infile, mode, datasource)
         self.infile = infile
+
+        bin.BinaryFormat.__init__(self, infile, mode, datasource)
         self.data_file = infile
         self.byteorder = byteorder
         self.scale = scale
@@ -487,3 +495,11 @@ class Frame(bin.BinaryFormat):
             return x * self.subheader['SCALE_FACTOR']*self.scale
         else:
             return x 
+
+
+    def _get_filenames(self):
+        """
+        Calculate header_file and data_file filenames
+        """
+        return self.infile, self.infile
+

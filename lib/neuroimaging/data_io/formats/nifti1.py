@@ -222,7 +222,7 @@ class Nifti1(bin.BinaryFormat):
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.intent = keywords.get('intent', '')
         self.clobber = keywords.get('clobber', False)
-        self.header_file, self.data_file = self.nifti_filenames()
+        #self.header_file, self.data_file = self.nifti_filenames()
         # does this need to be redundantly assigned?
         self.header_formats = struct_formats
 
@@ -298,7 +298,8 @@ class Nifti1(bin.BinaryFormat):
         self.attach_data(offset=int(self.header['vox_offset']))
 
 
-    def nifti_filenames(self):
+    #def nifti_filenames(self):
+    def _get_filenames(self):
         # Nifti single file will be the preferred type for creation
         return self.datasource.exists(self.filebase+".hdr") and \
                (self.filebase+".hdr", self.filebase+".img") or\

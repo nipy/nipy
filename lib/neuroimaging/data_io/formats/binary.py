@@ -33,11 +33,14 @@ class BinaryFormat(Format):
         self.ext_header_formats = odict()
         self.clobber = keywords.get('clobber', False)
 
+        self.header_file, self.data_file = self._get_filenames()
+
         if self.clobber and 'w' in self.mode:
             try:
                 os.remove(self.datasource.filename(self.data_file))
             except:
                 pass
+
 
 
     def read_header(self):
@@ -167,6 +170,10 @@ class BinaryFormat(Format):
             except KeyError:
                 raise KeyError
     
-            
 
+    def _get_filenames(self):
+        """
+        Calculate header_file and data_file filenames
+        """
+        raise NotImplementedError
             

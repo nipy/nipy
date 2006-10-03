@@ -120,12 +120,12 @@ class Analyze(bin.BinaryFormat):
         clobber = allowed to clobber?
         usemat = use mat file?
         """
-        self.filebase = os.path.splitext(filename)[0]
-        self.header_file = self.filebase+".hdr"
-        self.data_file = self.filebase+".img"
-        self.mat_file = self.filebase+".mat"
+        #self.filebase = os.path.splitext(filename)[0]
+        #self.header_file = self.filebase+".hdr"
+        #self.data_file = self.filebase+".img"
 
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
+        self.mat_file = self.filebase+".mat"
         self.clobber = keywords.get('clobber', False)
         self.intent = keywords.get('intent', '')
         self.usematfile = keywords.get('usemat', True)
@@ -316,6 +316,10 @@ class Analyze(bin.BinaryFormat):
             matfile = self.mat_file
         if self.clobber or not path(matfile).exists():
             self.grid.mapping.tofile(matfile)
+
+
+    def _get_filenames(self):
+        return self.filebase + ".hdr", self.filebase + ".img"
 
 
     @staticmethod
