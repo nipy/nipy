@@ -87,16 +87,12 @@ class Image(object):
         return self
 
 
-    def compress(self, where, axis=None):
-        if hasattr(self, 'buffer'):
-            return self.buffer.compress(where, axis=axis)
-        else: raise ValueError, 'no buffer: compress not supported'
+    def compress(self, where, axis=None):        
+        return self.buffer.compress(where, axis=axis)
 
 
-    def put(self, data, indices):
-        if hasattr(self, 'buffer'):
-            return self.buffer.put(indices, data)
-        else: raise ValueError, 'no buffer: put not supported'
+    def put(self, indices, data):
+        return self.buffer.put(indices, data)
 
 
     def next(self, value=None, data=None):
@@ -125,7 +121,7 @@ class Image(object):
             if itertype is 'slice':
                 self[value.slice] = data
             elif itertype in ('parcel', "slice/parcel"):
-                self.put(data, N.nonzero(value.where.flatten()))
+                self.put(N.nonzero(value.where.flatten()), data)
 
 
     def toarray(self, clean=True, **keywords):
