@@ -7,7 +7,7 @@ import types, os
 import numpy as N
 
 from neuroimaging import flatten
-from neuroimaging.data_io import DataSource
+from neuroimaging.data_io import DataSource, splitzipext
 from neuroimaging.data_io.formats import getformats, Format
 from neuroimaging.core.image.base_image import ArrayImage
 
@@ -26,10 +26,8 @@ class Image(object):
         Create an Image from the given url/filename
         """
         
-        zipexts = (".gz",".bz2")
-        base, ext = os.path.splitext(url.strip())
-        if ext in zipexts:
-            url = base
+        # remove any zip extensions
+        url = splitzipext(url)[0]
             
         if not format:
             valid = getformats(url)
