@@ -267,7 +267,7 @@ class Ecat7(bin.BinaryFormat):
         self.header_defaults()
         self.read_header()
         self.generate_mlist(datasource)
-
+        self.scale = self.header['ecat_calibration_factor']
         #Mlist generates nuber of frames, read in each subheader and frame data block
         self.nframes = self.mlist.shape[1]
 
@@ -276,7 +276,8 @@ class Ecat7(bin.BinaryFormat):
         # for each frame read in subheader and attach data
         self.frames = self.nframes * [Frame]
         for i in range(self.nframes):
-            self.frames[i] = Frame(self.data_file,self.byteorder, self.mlist,i,self.datasource)
+            self.frames[i] = Frame(self.data_file,self.byteorder,\
+                                   self.mlist,self.scale,i,self.datasource)
         
         # set up canonical
         self.inform_canonical()
@@ -405,11 +406,12 @@ class Frame(bin.BinaryFormat):
     _sub_field_defaults = {'SCALE_FACTOR': 1.}
     
     
-    def __init__(self, infile, byteorder, mlist, framenumber=0, datasource=DataSource(), mode='rb'):
+    def __init__(self, infile, byteorder, mlist,scale, framenumber=0, datasource=DataSource(), mode='rb'):
         bin.BinaryFormat.__init__(self, infile, mode, datasource)
         self.infile = infile
         self.data_file = infile
         self.byteorder = byteorder
+        self.scale = scale
         
         self.frame = framenumber
         # sub header info
@@ -480,8 +482,7 @@ class Frame(bin.BinaryFormat):
         """
         Might transform the data after getting it from memmap
         """
-        
         if self.subheader['SCALE_FACTOR']:
-            return x * self.subheader['SCALE_FACTOR']
+            return x * self.subheader['SCALE_FACTOR']*self.scale
         else:
             return x 
