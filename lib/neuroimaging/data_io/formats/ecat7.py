@@ -423,26 +423,26 @@ class Frame(bin.BinaryFormat):
         
         self.sctype = datatype2sctype[self.subheader['DATA_TYPE']]
         self.ndim = 3
-
+        
         ## grid for data
         if not self.grid:                
             axisnames = space[::-1]
-            origin = (self.subheader['X_OFFSET'],
-                      self.subheader['Y_OFFSET'],
-                      self.subheader['Z_OFFSET'])
-            step = (self.subheader['X_PIXEL_SIZE']*10,
-                      self.subheader['Y_PIXEL_SIZE']*10,
-                      self.subheader['Z_PIXEL_SIZE']*10)
-            shape = (self.subheader['X_DIMENSION'],
-                     self.subheader['Y_DIMENSION'],
-                     self.subheader['Z_DIMENSION'])
+            origin = (self.subheader['Z_OFFSET'],
+                      self.subheader['X_OFFSET'],
+                      self.subheader['Y_OFFSET'])
+            step = (self.subheader['Z_PIXEL_SIZE']*10,
+                      self.subheader['X_PIXEL_SIZE']*10,
+                      self.subheader['Y_PIXEL_SIZE']*10)
+            shape = (self.subheader['Z_DIMENSION'],
+                     self.subheader['X_DIMENSION'],
+                     self.subheader['Y_DIMENSION'])
             ## Setup affine transformation        
             self.grid = SamplingGrid.from_start_step(names=axisnames,
                                                 shape=shape,
                                                 start=-N.array(origin)*step,
                                                 step=step)
             # Get memmaped array
-        offset = (mlist[1,framenumber]-1)*BLOCKSIZE
+        offset = (mlist[1,framenumber])*BLOCKSIZE
         self.attach_data(offset)
 
     def subheader_defaults(self):
@@ -475,7 +475,7 @@ class Frame(bin.BinaryFormat):
         """
         Might transform the data after getting it from memmap
         """
-        return x
+        
         if self.subheader['SCALE_FACTOR']:
             return x * self.subheader['SCALE_FACTOR']
         else:
