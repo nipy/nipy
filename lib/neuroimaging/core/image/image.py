@@ -125,7 +125,7 @@ class Image(object):
 
     def toarray(self, clean=True, **keywords):
         """
-        Return a Image instance that has an ArrayPipe as its image attribute.
+        Return a Image instance that has an ArrayImage as its _source attribute.
 
         >>> from numpy import *
         >>> from BrainSTAT import *
@@ -178,10 +178,6 @@ class Image(object):
         if clean: 
             value = Image(N.nan_to_num(value, fill=self.fill))
         return value
-
-
-    def check_grid(self, test): 
-        return self.grid == test.grid
 
 
 
