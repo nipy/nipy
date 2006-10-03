@@ -123,10 +123,6 @@ class fMRIImage(Image):
             self.frametimes = start + N.arange(self.grid.shape[d]) * self.TR
 
 
-    def tofile(self, filename, **keywords):
-        Image.tofile(self, filename, array=False, **keywords)
-        
-
     def frame(self, i, clean=False, **keywords):
         data = N.squeeze(self[slice(i,i+1)])
         if clean: data = N.nan_to_num(data)

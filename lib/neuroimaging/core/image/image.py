@@ -147,7 +147,7 @@ class Image(object):
         return Image(data, grid=self.grid, **keywords)
 
 
-    def tofile(self, filename, array=True, clobber=False,
+    def tofile(self, filename, clobber=False,
                sctype=None, **keywords):
         """        
         Write the image to a file. Returns a new Image object
@@ -158,17 +158,9 @@ class Image(object):
                          clobber=clobber,
                          sctype=sctype,
                          **keywords)
-        if array:
-            tmp = self.toarray(**keywords)
-            outimage._source[:] = tmp._source.data
-        else:
-            tmp = iter(self)
-            outimage = iter(outimage)
-            # make sure that "self" is driving iteration
-            # over image, i.e. when self is an fMRIImage and
-            # outimage is an Image
-            for dataslice in tmp:
-                outimage.next(data=dataslice, value=tmp.itervalue)
+
+        tmp = self.toarray(**keywords)
+        outimage._source[:] = tmp._source.data
         return outimage
 
 
