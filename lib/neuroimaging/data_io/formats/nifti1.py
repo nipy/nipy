@@ -175,7 +175,6 @@ struct_formats = odict((
     ('srow_z','4f'),
     ('intent_name','16s'),
     ('magic','4s'),
-    ('qfac','f'),
 ))
 field_formats = struct_formats.values()
 
@@ -217,13 +216,13 @@ class Nifti1(bin.BinaryFormat):
         intent = meaning of data
         clobber = allowed to clobber?
         """
+
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.intent = keywords.get('intent', '')
         self.clobber = keywords.get('clobber', False)
         self.header_file, self.data_file = self.nifti_filenames()
         # does this need to be redundantly assigned?
         self.header_formats = struct_formats
-
 
         # fill the header dictionary in order, with any default values
         self.header_defaults()
@@ -243,15 +242,13 @@ class Nifti1(bin.BinaryFormat):
                                                     datasource=self.datasource)
             self.read_header()
             # we may THINK it's a Nifti, but ...
-            if self.header.get('magic','doh!') == 'doh!':
+            if self.header['magic'] not in ('n+1\x00', 'ni1\x00'):
                 raise Nifti1FormatError
             self.sctype = datatype2sctype[self.header['datatype']]
             self.ndim = self.header['dim'][0]
 
-
         # fill in the canonical list as best we can for Analyze
         self.inform_canonical()
-
 
         ########## This could stand a clean-up ################################
         if self.grid is None:
@@ -295,9 +292,8 @@ class Nifti1(bin.BinaryFormat):
             ### why is this here?
             self.grid = self.grid.matlab2python()
         #else: Grid was already assigned by Format constructor
-
+        
         self.attach_data(offset=int(self.header['vox_offset']))
-
 
 
     def nifti_filenames(self):
@@ -425,8 +421,7 @@ class Nifti1(bin.BinaryFormat):
         """
         if self.header['scl_slope']:
             return x * self.header['scl_slope'] + self.header['scl_inter']
-        else:
-            return x
+        else: return x
 
     def prewrite(self, x):
         """
@@ -434,11 +429,25 @@ class Nifti1(bin.BinaryFormat):
         If we need to cast the data into Integers, then record the
         new scaling
         """
-        x, scale = bin.castData(x-self.header['scl_inter'],
-                             self.sctype, self.header['scl_slope'])
-        if scale != self.header['scl_slope']:
-            self.header['scl_slope'] = scale
-            self.write_header(clobber=True)
-            self.attach_data(offset=int(self.header['vox_offset']))
-        return x
+        # try to cast in two cases:
+        # 1 - we're replacing all the data
+        # 2 - the maximum of the given slice of data exceeds the
+        #     global maximum under the current scaling
+        if x.shape == self.data.shape or \
+               x.max() > (self.header['scl_slope']*self.data).max():  
+
+            scale, x = bin.cast_data(x-self.header['scl_inter'],
+                                     self.sctype, self.header['scl_slope'])
+
+            # if the scale changed, mark it down
+            if scale != self.header['scl_slope']:
+                self.header['scl_slope'] = scale
+                # be careful with NIFTI, open it rb+ in case we're writing
+                # into the same file as the data (.nii file)
+                fp = self.datasource.open(self.header_file, 'rb+')
+                self.write_header(hdrfile=fp)
+                return x
+            
+        # __setitem__ takes care of .astype(self.sctype)
+        return (x - self.header['scl_inter'])/self.header['scl_slope']
         

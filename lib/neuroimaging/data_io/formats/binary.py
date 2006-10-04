@@ -8,7 +8,7 @@ import os
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io.formats import Format
-from neuroimaging.data_io import DataSource
+from neuroimaging.data_io import DataSource, iszip, unzip
 #from neuroimaging.sandbox.refactoring.formats import Format
 
 class BinaryFormatError(Exception):
@@ -17,11 +17,16 @@ class BinaryFormatError(Exception):
     """
 
 # maximum numbers for different sctype
-maxranges = {
+integer_ranges = {
   N.int8:  127.,
   N.uint8: 255.,
   N.int16: 32767.,
-  N.int32: 2147483647.
+  N.uint16: 65535.,  
+  # pretty sure these are better than single floating point precision:
+  #N.int32: 2147483647.,
+  #N.uint32: 4294967295,,
+  #N.int64: 9223372036854775807.,
+  #N.uint: 18446744073709551615.,
   }
 
 
@@ -92,24 +97,18 @@ def struct_pack(byte_order, elements, values):
 def touch(fname): open(fname, 'w')
 
 #### To filter data written to a file
-def castData(data, new_sctype, default_scale):
+def cast_data(data, new_sctype, default_scale):
     "casts numbers in data to desired typecode in data_code"
     # if casting to an integer type, check the data range
     # if it clips, then scale down
     # if it has poor integral resolution, then scale up
     scl = default_scale or 1.0
-    if new_sctype in (N.int8, N.uint8, N.int16, N.int32):
+    if new_sctype in integer_ranges.keys():
         maxval = abs(data.max())
-        if maxval == 0.:
-            maxval = 1.e20
-        maxrange = maxranges[new_sctype]
-        #if maxval > maxrange:
+        maxrange = integer_ranges[new_sctype]
         scl = maxval/maxrange
-        #else:
-        #scl = maxrange/maxval
-    # make the cast
-    data[:] = N.array(data[0][0]/scl, dtype=new_sctype)
-    return data, scl
+        return scl, N.round(data/scl)
+    return scl, data
 
 
 
@@ -155,7 +154,7 @@ class BinaryFormat(Format):
         # Otherwise, try to write to the object's header file
 
         if hdrfile:
-            fp = type(hdrfile) == type('') and open(hdrfile,'rb+') or hdrfile
+            fp = type(hdrfile) == type('') and open(hdrfile,'wb+') or hdrfile
         elif self.datasource.exists(self.header_file):
             if not clobber:
                 raise IOError('file exists, but not allowed to clobber it')
@@ -179,15 +178,21 @@ class BinaryFormat(Format):
 
 
     def attach_data(self, offset=0):
-        mode = self.mode in ('r+','w','wb') and 'readwrite' or 'readonly'
+        mode = self.mode in ('r+','rb+','w','wb','wb+') and \
+               'readwrite' or 'readonly'
         if mode == 'readwrite':
             if not self.datasource.exists(self.data_file):
                 touch(self.data_file)
             elif not self.clobber:
                 raise IOError('file exists, but not allowed to clobber it')
-        self.data = memmap(self.datasource.filename(self.data_file),
-                             dtype=self.sctype, shape=tuple(self.grid.shape),
-                             mode=mode, offset=offset)
+
+        fname = iszip(self.datasource.filename(self.data_file)) and \
+                unzip(self.datasource.filename(self.data_file)) or \
+                self.datasource.filename(self.data_file)
+            
+        self.data = memmap(fname, dtype=self.sctype,
+                           shape=tuple(self.grid.shape), mode=mode,
+                           offset=offset)
 
 
     def prewrite(self, x):

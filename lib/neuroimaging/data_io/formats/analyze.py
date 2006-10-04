@@ -241,12 +241,23 @@ class Analyze(bin.BinaryFormat):
         Filter the incoming data. If we're casting to an Integer type,
         record the new scale factor
         """
-        x, scale = bin.castData(x, self.sctype, self.header['scale_factor'])
-        if scale != self.header['scale_factor']:
-            self.header['scale_factor'] = scale
-            self.write_header(clobber=True)
-            self.attach_data()
-        return x
+        # try to cast in two cases:
+        # 1 - we're replacing all the data
+        # 2 - the maximum of the given slice of data exceeds the
+        #     global maximum under the current scaling
+        if x.shape == self.data.shape or \
+               x.max() > (self.header['scale_factor']*self.data).max():
+            scale, x = bin.cast_data(x, self.sctype,
+                                     self.header['scale_factor'])
+
+            # if the scale changed, mark it down
+            if scale != self.header['scale_factor']:
+                self.header['scale_factor'] = scale
+                self.write_header(clobber=True)
+                return x
+        
+        # __setitem__ takes care of .astype(self.sctype)        
+        return x/self.header['scale_factor']
 
 
     def postread(self, x):
@@ -254,9 +265,8 @@ class Analyze(bin.BinaryFormat):
         Might transform the data after getting it from memmap
         """
         if self.header['scale_factor']:
-            return x*self.header['scale_factor']
-        else:
-            return x
+        	return x*self.header['scale_factor']
+        else: return x
 
 
     def __del__(self):
