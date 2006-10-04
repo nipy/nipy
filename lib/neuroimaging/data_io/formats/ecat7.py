@@ -11,6 +11,7 @@ from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.utils.path import path
+import neuroimaging.data_io as DIO
 
 # ECAT 7 header
 HEADER_SIZE = 512
@@ -280,9 +281,28 @@ class Ecat7(bin.BinaryFormat):
         
         # set up canonical
         self.inform_canonical()
- 
         
 
+        
+        ## grid for data
+        if not self.grid:
+            tmpdat = self.frames[0]
+            self.sctype = tmpdat.sctype
+            self.grid = SamplingGrid.replicate(tmpdat.grid,self.nframes)
+        # cache for data
+        tmpimgfile = 'tmpEcat.img'
+        cachepath = CacheData(self)
+        cachefile =open(cachepath.filename(tmpimgfile),'w')
+
+        # write frames to tmpimgfile
+        
+        for frame in self.frames:
+            frame.data.tofile(cachefile)
+
+        cachefile.close()
+        self.data_file = cachepath.filename(tmpimgfile)
+        self.attach_data()
+        
     def checkversion(self,datasource):
         """
         Currently only Ecat72 is implemented
@@ -340,6 +360,11 @@ class Ecat7(bin.BinaryFormat):
         return Ecat7._field_defaults.get(fieldname, None) or \
                utils.format_defaults[fieldformat[-1]]
 
+    def cache_data(Cache):
+        """
+        Create Cache to hold Ecat Frames in one contiguous Volume
+        """
+        
     def generate_mlist(self,datasource):
         """
         List the available matricies in the ECAT file
@@ -379,7 +404,8 @@ class Ecat7(bin.BinaryFormat):
         else:
             if tmpdat.subheader['DATA_TYPE'] == 1:
                 self.canonical_fields['datasize'] = 8
-            elif tmpdat.subheader['DATA_TYPE'] == 2 or tmpdat.subheader['DATA_TYPE'] == 6:
+            elif tmpdat.subheader['DATA_TYPE'] == 2 \
+                 or tmpdat.subheader['DATA_TYPE'] == 6:
                 self.canonical_fields['datasize'] = 16
             else:
                 self.canonical_fields['datasize'] = 32
@@ -501,3 +527,44 @@ class Frame(bin.BinaryFormat):
         """
         return self.infile, self.infile
 
+class CacheData(DIO.Cache):
+        """
+        Create Cache to hold Ecat Frames in one contiguous Volume
+        """
+        def __init__(self,name):
+            DIO.Cache.__init__(self)
+            
+            
+        def filepath(self,name):
+            """
+            Return the complete path + filename within the cache.
+            """
+                
+            return self.path.joinpath(self.path,name)
+            
+        def filename(self, name):
+            """
+            Return the complete path + filename within the cache.
+            """
+            return str(self.filepath(name))
+            
+        def cache(self, name):
+            """
+            Copy a file into the cache.
+            """
+            if self.iscached(name):
+                return
+            upath = self.filepath(name)
+            ensuredirs(upath.dirname())
+            
+
+        def clear(self):
+            """ Delete all files in the cache. """
+            for f in self.path.files():
+                f.rm()
+
+        def iscached(self, name):
+            """ Check if a file exists in the cache. """
+            return self.filepath(name).exists()
+
+        
