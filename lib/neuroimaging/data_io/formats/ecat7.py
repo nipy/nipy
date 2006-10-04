@@ -266,7 +266,7 @@ class Ecat7(bin.BinaryFormat):
                                                   datasource=self.datasource)
         self.header_defaults()
         self.read_header()
-        self.generate_mlist()
+        self.generate_mlist(datasource)
 
         #Mlist generates nuber of frames, read in each subheader and frame data block
         self.nframes = self.mlist.shape[1]
@@ -287,7 +287,7 @@ class Ecat7(bin.BinaryFormat):
         """
         Currently only Ecat72 is implemented
         """
-        hdrfile = datasource.open(self.header_file,'rb')
+        hdrfile = datasource.open(self.header_file)
         hdrfile.seek(0)
         magicnumber = hdrfile.read(8)
         if magicnumber.find('MATRIX72') is -1:
@@ -318,7 +318,7 @@ class Ecat7(bin.BinaryFormat):
         read it in the wrong byte order.
         """
         if type(hdrfile)==type(""):
-            hdrfile = datasource.open(hdrfile,'rb')
+            hdrfile = datasource.open(hdrfile)
             hdrfile.seek(46)
             byteorder = bin.BIG_ENDIAN #Most scans are on suns = BE
             reported_length = bin.struct_unpack(hdrfile,
@@ -340,12 +340,12 @@ class Ecat7(bin.BinaryFormat):
         return Ecat7._field_defaults.get(fieldname, None) or \
                bin.format_defaults[fieldformat[-1]]
 
-    def generate_mlist(self, datasource=DataSource()):
+    def generate_mlist(self,datasource):
         """
         List the available matricies in the ECAT file
         """
         # file.seek beyond main header, and read 512 to generate mlist
-        infile = datasource.open(self.header_file, 'rb')
+        infile = datasource.open(self.header_file)
         infile.seek(0)
         infile.seek(HEADER_SIZE)
         elements = ['128i'] # all elements are the same
@@ -426,7 +426,8 @@ class Frame(bin.BinaryFormat):
         ## grid for data
         if not self.grid:                
             axisnames = space[::-1]
-            origin = (self.subheader['Z_OFFSET'],
+            
+            offset = (self.subheader['Z_OFFSET'],
                       self.subheader['X_OFFSET'],
                       self.subheader['Y_OFFSET'])
             step = (self.subheader['Z_PIXEL_SIZE']*10,
@@ -435,6 +436,11 @@ class Frame(bin.BinaryFormat):
             shape = (self.subheader['Z_DIMENSION'],
                      self.subheader['X_DIMENSION'],
                      self.subheader['Y_DIMENSION'])
+            origin = [float] *3
+            for i in range(len(shape)):
+                origin[i] = shape[i]/2 + offset[i]
+            
+            
             ## Setup affine transformation        
             self.grid = SamplingGrid.from_start_step(names=axisnames,
                                                 shape=shape,
@@ -462,7 +468,7 @@ class Frame(bin.BinaryFormat):
         """
         Read an ECAT subheader and fill fields
         """
-        infile = datasource.open(self.infile, 'rb')
+        infile = datasource.open(self.infile)
         infile.seek(recordstart)
         values = bin.struct_unpack(infile,
                                self.byteorder,
