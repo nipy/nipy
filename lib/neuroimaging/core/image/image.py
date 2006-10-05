@@ -123,12 +123,6 @@ class Image(object):
                 self.put(data, N.nonzero(value.where.flatten()))
 
 
-    def getvoxel(self, voxel):
-        if len(voxel) != self.ndim:
-            raise ValueError, 'expecting a voxel coordinate'
-        return self[voxel]
-
-
     def toarray(self, clean=True, **keywords):
         """
         Return a Image instance that has an ArrayPipe as its image attribute.
