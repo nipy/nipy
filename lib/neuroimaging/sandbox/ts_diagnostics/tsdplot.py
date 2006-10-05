@@ -33,16 +33,16 @@ class TimeSeriesDiagnostics(object):
         
         colors = ['b','g','r','c','m','y','k']
         ax = fig.add_subplot(411)
-        ax.plot(self.tsdiag.MSEtime)
+        ax.plot(self.tsdiag.mse_time)
         ax = fig.add_subplot(412)
-        for j in range(self.tsdiag.MSEslice.shape[1]):
-            ax.plot(self.tsdiag.MSEslice[:,j], colors[j%7]+'.-')
+        for j in range(self.tsdiag.mse_slice.shape[1]):
+            ax.plot(self.tsdiag.mse_slice[:,j], colors[j%7]+'.-')
         ax = fig.add_subplot(413)
         ax.plot(self.tsdiag.mean_signal)
         ax = fig.add_subplot(414)
-        ax.plot(self.tsdiag.maxMSEslice)
-        ax.plot(self.tsdiag.minMSEslice)
-        ax.plot(self.tsdiag.meanMSEslice)
+        ax.plot(self.tsdiag.max_mse_slice)
+        ax.plot(self.tsdiag.min_mse_slice)
+        ax.plot(self.tsdiag.mean_mse_slice)
         win.Show()            
 
 if __name__ == '__main__':

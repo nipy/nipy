@@ -44,12 +44,12 @@ class TSDiagnostics(traits.HasTraits):
         ntime = self.fmri_image.grid.shape[0]
         nslice = self.fmri_image.grid.shape[1]
                                                 
-        self.MSEtime = N.zeros((ntime-1,), N.float64)
-        self.MSEslice = N.zeros((ntime-1, nslice), N.float64)
+        self.mse_time = N.zeros((ntime-1,), N.float64)
+        self.mse_slice = N.zeros((ntime-1, nslice), N.float64)
         self.mean_signal = N.zeros((ntime,), N.float64)
-        self.maxMSEslice = N.zeros((nslice,), N.float64)
-        self.minMSEslice = N.zeros((nslice,), N.float64)
-        self.meanMSEslice = N.zeros((nslice,), N.float64)
+        self.max_mse_slice = N.zeros((nslice,), N.float64)
+        self.min_mse_slice = N.zeros((nslice,), N.float64)
+        self.mean_mse_slice = N.zeros((nslice,), N.float64)
 
         if self.mean or self.sd or self.mse:
             grid = self.fmri_image.grid.subgrid(0)
@@ -80,7 +80,7 @@ class TSDiagnostics(traits.HasTraits):
             tmp2 = self.mse_image.readall()
             self.mse_image.writeslice(allslice, tmp2 + tmp3)
 
-            self.MSEtime[i] = tmp3.sum() / nvoxel
+            self.mse_time[i] = tmp3.sum() / nvoxel
             self.mean_signal[i] = tmp1.sum() / nvoxel
 
             for j in range(nslice):
@@ -90,7 +90,7 @@ class TSDiagnostics(traits.HasTraits):
                 else:
                     if not npixel.has_key(j):
                         npixel[j] = N.product(self.fmri_image.grid.shape[2:])
-                self.MSEslice[i,j] = N.power(tmp[j], 2).sum() / npixel[j]
+                self.mse_slice[i,j] = N.power(tmp[j], 2).sum() / npixel[j]
 
         if self.mean:
             self.mean_image.writeslice(allslice, N.sum(self.fmri_image.readall(), axis=0) / nvoxel)
@@ -106,9 +106,9 @@ class TSDiagnostics(traits.HasTraits):
             tmp *= self.mask.readall()
         self.mean_signal[i+1] = tmp.sum() / nvoxel
         
-        self.maxMSEslice = N.maximum.reduce(self.MSEslice, axis=0)
-        self.minMSEslice = N.minimum.reduce(self.MSEslice, axis=0)
-        self.meanMSEslice = N.mean(self.MSEslice, axis=0)
+        self.max_mse_slice = N.maximum.reduce(self.mse_slice, axis=0)
+        self.min_mse_slice = N.minimum.reduce(self.mse_slice, axis=0)
+        self.mean_mse_slice = N.mean(self.mse_slice, axis=0)
         
         self.mse_image.writeslice(allslice, N.sqrt(self.mse_image.readall()/ (ntime-1)))
         v = BoxViewer(self.mse_image)
@@ -129,16 +129,16 @@ class TSDiagnostics(traits.HasTraits):
         
         colors = ['b','g','r','c','m','y','k']
         ax = fig.add_subplot(411)
-        ax.plot(self.MSEtime)
+        ax.plot(self.mse_time)
         ax = fig.add_subplot(412)
-        for j in range(self.MSEslice.shape[1]):
-            ax.plot(self.MSEslice[:,j], colors[j%7]+'.-')
+        for j in range(self.mse_slice.shape[1]):
+            ax.plot(self.mse_slice[:,j], colors[j%7]+'.-')
         ax = fig.add_subplot(413)
         ax.plot(self.mean_signal)
         ax = fig.add_subplot(414)
-        ax.plot(self.maxMSEslice)
-        ax.plot(self.minMSEslice)
-        ax.plot(self.meanMSEslice)
+        ax.plot(self.max_mse_slice)
+        ax.plot(self.min_mse_slice)
+        ax.plot(self.mean_mse_slice)
         win.Show()            
 
 if __name__ == '__main__':
