@@ -8,7 +8,6 @@ from scipy import ndimage
 from neuroimaging import traits
 import numpy as N
 
-from neuroimaging.data_io.cache import cached
 
 class ImageInterpolator(traits.HasTraits):
 
@@ -32,9 +31,9 @@ class ImageInterpolator(traits.HasTraits):
             data = N.nan_to_num(self.image.readall())
 
         if not hasattr(self, 'datafile'):
-            self.datafile = file(cached(), 'rb+')
+            self.datafile = file(".tmp_image", 'wb')
         else:
-            self.datafile = file(self.datafile.name, 'rb+')
+            self.datafile = file(self.datafile.name, 'wb')
         
         data = N.nan_to_num(data.astype(N.float64))
         data.tofile(self.datafile)
