@@ -2,16 +2,15 @@ import numpy as N
 import os
 
 from neuroimaging.utils.odict import odict
-import neuroimaging.data_io as dataio
+import neuroimaging.data_io as data_io
 from neuroimaging.data_io import DataSource
 import neuroimaging.data_io.formats.binary as bin
 from neuroimaging.data_io.formats import utils
 
-from neuroimaging.core.reference.axis import space, spacetime
-from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.core.reference.axis import space
 from neuroimaging.core.reference.grid import SamplingGrid
-from neuroimaging.utils.path import path
-import neuroimaging.data_io as DIO
+
+
 
 # ECAT 7 header
 HEADER_SIZE = 512
@@ -240,8 +239,8 @@ class Ecat7(bin.BinaryFormat):
         
         """
         #Check if data is zipped
-        if dataio.iszip(filename):
-            self.filebase = dataio.unzip(filename)
+        if data_io.iszip(filename):
+            self.filebase = data_io.unzip(filename)
         
             
         self.filebase = os.path.splitext(filename)[0]
@@ -276,8 +275,8 @@ class Ecat7(bin.BinaryFormat):
         # for each frame read in subheader and attach data
         self.frames = self.nframes * [Frame]
         for i in range(self.nframes):
-            self.frames[i] = Frame(self.data_file,self.byteorder,\
-                                   self.mlist,self.scale,i,self.datasource)
+            self.frames[i] = Frame(self.data_file, self.byteorder, \
+                                   self.mlist, self.scale, i, self.datasource)
         
         # set up canonical
         self.inform_canonical()
@@ -288,11 +287,11 @@ class Ecat7(bin.BinaryFormat):
         if not self.grid:
             tmpdat = self.frames[0]
             self.sctype = tmpdat.sctype
-            self.grid = SamplingGrid.replicate(tmpdat.grid,self.nframes)
+            self.grid = SamplingGrid.replicate(tmpdat.grid, self.nframes)
         # cache for data
         tmpimgfile = 'tmpEcat.img'
         cachepath = CacheData(self)
-        cachefile =open(cachepath.filename(tmpimgfile),'w')
+        cachefile = open(cachepath.filename(tmpimgfile),'w')
 
         # write frames to tmpimgfile
         
@@ -303,7 +302,7 @@ class Ecat7(bin.BinaryFormat):
         self.data_file = cachepath.filename(tmpimgfile)
         self.attach_data()
         
-    def checkversion(self,datasource):
+    def checkversion(self, datasource):
         """
         Currently only Ecat72 is implemented
         """
@@ -351,7 +350,7 @@ class Ecat7(bin.BinaryFormat):
         """
         Fills main header with empty default values
         """
-        for field,format in self.header_formats.items():
+        for field, format in self.header_formats.items():
             self.header[field] = self._default_field_value(field,format)
 
     @staticmethod
@@ -365,7 +364,7 @@ class Ecat7(bin.BinaryFormat):
         Create Cache to hold Ecat Frames in one contiguous Volume
         """
         
-    def generate_mlist(self,datasource):
+    def generate_mlist(self, datasource):
         """
         List the available matricies in the ECAT file
         """
@@ -375,7 +374,7 @@ class Ecat7(bin.BinaryFormat):
         infile.seek(HEADER_SIZE)
         elements = ['128i'] # all elements are the same
         values = utils.struct_unpack(infile, self.byteorder, elements)
-        values= N.reshape(values,[32,4])
+        values = N.reshape(values, [32,4])
         #Calculate mlist which is a matrix list with
         #  id
         #  startblock
@@ -385,7 +384,7 @@ class Ecat7(bin.BinaryFormat):
         while values[0,1] != 2:
             if values[0,0]+values[0,3] == 31:
                 tmp =  values[:,1:31]
-                mlist = N.asarray(mlist,tmp)
+                mlist = N.asarray(mlist, tmp)
             else:
                 print 'empty Mlist'
                 mlist = []
@@ -438,7 +437,7 @@ class Frame(bin.BinaryFormat):
     _sub_field_defaults = {'SCALE_FACTOR': 1.}
     
     
-    def __init__(self, infile, byteorder, mlist,scale, framenumber=0, datasource=DataSource(), mode='rb'):
+    def __init__(self, infile, byteorder, mlist, scale, framenumber=0, datasource=DataSource(), mode='rb'):
         self.infile = infile
 
         bin.BinaryFormat.__init__(self, infile, mode, datasource)
@@ -452,7 +451,7 @@ class Frame(bin.BinaryFormat):
         self.sub_header_formats = struct_formats_sh
         self.subheader_defaults()
         recordstart = (mlist[1][framenumber]-1)*BLOCKSIZE
-        self.read_subheader(recordstart,self.datasource)
+        self.read_subheader(recordstart, self.datasource)
 
         
         self.sctype = datatype2sctype[self.subheader['DATA_TYPE']]
@@ -489,8 +488,8 @@ class Frame(bin.BinaryFormat):
         """
         Fills sub header with empty default values
         """
-        for field,format in self.sub_header_formats.items():
-            self.subheader[field] = self._default_sub_field_value(field,format)
+        for field, format in self.sub_header_formats.items():
+            self.subheader[field] = self._default_sub_field_value(field, format)
 
     
     @staticmethod
@@ -499,7 +498,7 @@ class Frame(bin.BinaryFormat):
         return Ecat7._sub_field_defaults.get(fieldname, None) or \
                utils.format_defaults[fieldformat[-1]]
         
-    def read_subheader(self, recordstart,datasource=DataSource()):
+    def read_subheader(self, recordstart, datasource=DataSource()):
         """
         Read an ECAT subheader and fill fields
         """
@@ -511,7 +510,7 @@ class Frame(bin.BinaryFormat):
         for field, val in zip(self.subheader.keys(), values):
             self.subheader[field] = val
 
-    def postread(self,x):
+    def postread(self, x):
         """
         Might transform the data after getting it from memmap
         """
@@ -527,20 +526,20 @@ class Frame(bin.BinaryFormat):
         """
         return self.infile, self.infile
 
-class CacheData(DIO.Cache):
+class CacheData(data_io.Cache):
     """
     Create Cache to hold Ecat Frames in one contiguous Volume
     """
-    def __init__(self,name):
-        DIO.Cache.__init__(self)
+    def __init__(self, name):
+        data_io.Cache.__init__(self)
         
         
-    def filepath(self,name):
+    def filepath(self, name):
         """
         Return the complete path + filename within the cache.
         """
                 
-        return self.path.joinpath(self.path,name)
+        return self.path.joinpath(self.path, name)
             
     def filename(self, name):
         """
@@ -555,7 +554,7 @@ class CacheData(DIO.Cache):
         if self.iscached(name):
             return
         upath = self.filepath(name)
-        ensuredirs(upath.dirname())
+        data_io.ensuredirs(upath.dirname())
             
 
     def clear(self):
