@@ -1,3 +1,8 @@
+"""
+These classes provide the most basic structures required by
+the Image class.
+"""
+
 from neuroimaging.core.reference.grid import SamplingGrid
 
 class BaseImage(object):
