@@ -1,3 +1,7 @@
+"""
+The core Image class.
+"""
+
 import types, os
 
 import numpy as N
@@ -9,6 +13,11 @@ from neuroimaging.core.image.base_image import ArrayImage
 
 
 class Image(object):
+    """
+    The Image class provides the core object type used in nipy. An Image
+    represents a volumetric brain image and provides means for manipulating and
+    reading and writing this data to file.
+    """
 
     @staticmethod
     def fromurl(url, datasource=DataSource(), format=None, grid=None, mode="r",
@@ -88,10 +97,16 @@ class Image(object):
 
 
     def compress(self, where, axis=None):        
+        """
+        Call the compress method on the underlying data array
+        """
         return self.buffer.compress(where, axis=axis)
 
 
     def put(self, indices, data):
+        """
+        Call the put method on the underlying data array
+        """
         return self.buffer.put(indices, data)
 
 
@@ -104,7 +119,7 @@ class Image(object):
         original image's iterator returns and use it here.
         """
         if value is None:
-            self.itervalue = value = self.grid.next()
+            value = self.grid.next()
         itertype = self.grid.get_iter_param("itertype")
 
         if data is None:
@@ -112,7 +127,6 @@ class Image(object):
                 result = N.squeeze(self[value.slice])
             elif itertype is 'parcel':
                 flatten(value.where)
-                #self.label = value.label
                 result = self.compress(value.where)
             elif itertype == 'slice/parcel':
                 result = self[value.slice].compress(value.where)
@@ -170,7 +184,7 @@ class Image(object):
         Image. By default, it does not read 4d images. Missing values are
         filled in with the value of fill (default=self.fill=0.0).
         """
-        value = self._source[self.grid.allslice()]
+        value = self[self.grid.allslice()]
         if clean: 
             value = N.nan_to_num(value, fill=self.fill)
         return value
