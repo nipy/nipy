@@ -160,7 +160,7 @@ class Image(object):
                          **keywords)
 
         tmp = self.toarray(**keywords)
-        outimage._source[:] = tmp._source.data
+        outimage[:] = tmp[:]
         return outimage
 
 
