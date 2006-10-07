@@ -16,13 +16,6 @@ class BinaryFormatError(Exception):
 class BinaryFormat(Format):
 
 
-    # Subclass objects should define these:
-    #header_file = ""
-    #data_file = ""
-    #byteorder = NATIVE
-    #extendable = False
-
-
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
         # keep BinaryFormats dealing with datasource and filename/mode
         Format.__init__(self, datasource, keywords.get('grid', None))        
@@ -41,6 +34,8 @@ class BinaryFormat(Format):
             except:
                 pass
 
+        self.byteorder = NotImplemented
+        self.extendable = NotImplemented
 
 
     def read_header(self):

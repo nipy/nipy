@@ -250,12 +250,10 @@ class Ecat7(bin.BinaryFormat):
         self.checkversion(datasource)
         
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
-        self.clobber = keywords.get('clobber', False)
         self.intent = keywords.get('intent', '')
 
         self.header_formats = struct_formats_mh
         
-
         # Writing Ecat not supported yet
         if self.mode[0] is 'w':
             #Deal with writing to file or raise implement error?
