@@ -126,7 +126,7 @@
 
 __docformat__ = "restructuredtext en"
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 __revision__ = '$Id: validate.py 123 2005-09-08 08:54:28Z fuzzyman $'
 
@@ -977,7 +977,16 @@ def is_string(value, min=None, max=None):
     """
     if not isinstance(value, StringTypes):
         raise VdtTypeError(value)
-    return is_list(value, min, max)
+    (min_len, max_len) = _is_num_param(('min', 'max'), (min, max))
+    try:
+        num_members = len(value)
+    except TypeError:
+        raise VdtTypeError(value)
+    if min_len is not None and num_members < min_len:
+        raise VdtValueTooShortError(value)
+    if max_len is not None and num_members > max_len:
+        raise VdtValueTooLongError(value)
+    return value
 
 def is_int_list(value, min=None, max=None):
     """
@@ -1064,7 +1073,12 @@ def is_string_list(value, min=None, max=None):
     >>> vtor.check('string_list', ['a', 1])
     Traceback (most recent call last):
     VdtTypeError: the value "1" is of the wrong type.
+    >>> vtor.check('string_list', 'hello')
+    Traceback (most recent call last):
+    VdtTypeError: the value "hello" is of the wrong type.
     """
+    if isinstance(value, StringTypes):
+        raise VdtTypeError(value)
     return [is_string(mem) for mem in is_list(value, min, max)]
 
 def is_ip_addr_list(value, min=None, max=None):
@@ -1252,6 +1266,12 @@ if __name__ == '__main__':
     
     CHANGELOG
     =========
+    
+    2006/04/23
+    ----------
+    
+    Addressed bug where a string would pass the ``is_list`` test. (Thanks to
+    Konrad Wojas.)
     
     2005/12/16
     ----------
