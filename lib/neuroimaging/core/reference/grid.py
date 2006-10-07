@@ -172,7 +172,7 @@ class SamplingGrid (object):
         if isinstance(self.mapping, Affine):
             ndim = self.ndim
             T = self.mapping.transform.copy()
-            T[0:ndim] = self.mapping(start)
+            T[0:ndim,ndim] = self.mapping(start)
             T[ndim, ndim] = 1.
             for i in range(ndim):
                 v = N.zeros((ndim,))
