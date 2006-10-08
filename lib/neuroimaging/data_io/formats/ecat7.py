@@ -215,7 +215,8 @@ class ECAT7(bin.BinaryFormat):
 
     # Anything which should be default different than field-defaults
     _field_defaults = {'magic_number': 'MATRIX72'}
-
+    _sub_field_defaults = {'SCALE_FACTOR': 1.}
+    
     extensions = ('.v')
     
 
@@ -240,45 +241,51 @@ class ECAT7(bin.BinaryFormat):
         self.filebase = os.path.splitext(filename)[0]
         self.header_file = self.filebase+".v"
         self.data_file = self.filebase+".v"
-
-        #self.checkversion()
+        self.nframes = 0
+        self.checkversion(datasource)
         
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.clobber = keywords.get('clobber', False)
         self.intent = keywords.get('intent', '')
 
-        self.main_header_formats = struct_formats_mh
-        self.sub_header_formats = struct_formats_sh
-        # Fill header and subheader dict with default values
-        self.header_defaults()
-        self.subheader_defaults()
+        self.header_formats = struct_formats_mh
+        
 
-        #Read in MainHeader Information
+        # Writing Ecat not supported yet
         if self.mode[0] is 'w':
             #Deal with writing to file or raise implement error?
             raise NotImplementedError
-        else:
-            self.byteorder = self.guess_byteorder(self.header_file,
-                                                  datasource=self.datasource)
-            # read main header
-            self.read_header()
-            self.generate_mlist()
-            # read subheaders and append data
-            #for 
-            #for list in range(len(self.mlist.shape[1])):
-                #self.read_subheader()
 
-    def checkversion(self,datasource = DataSource()):
+
+        # Fill Main header dict with default values
+        self.byteorder = self.guess_byteorder(self.header_file,
+                                                  datasource=self.datasource)
+        self.header_defaults()
+        self.read_header()
+        self.generate_mlist()
+
+        #Mlist generates nuber of frames, read in each subheader and frame data block
+        self.nframes = self.mlist.shape[1]
+
+        #self.sub_header = self.nframes * [struct_formats_sh]
+
+        # for each frame read in subheader and attach data
+        self.frames = self.nframes * [Frame]
+        for i in range(self.nframes):
+            self.frames[i] = Frame(self.data_file,self.byteorder, self.mlist,i)
+        
+            
+        #self.subheader_defaults()
+        
+
+    def checkversion(self,datasource):
         """
         Currently only ECAT72 is implemented
         """
         hdrfile = datasource.open(self.header_file,'rb')
         hdrfile.seek(0)
-        byteorder = bin.BIG_ENDIAN ## doesnt really matter for this datatype
-        magic_number = bin.struct_unpack(hdrfile,byteorder, field_formats_mh[0])[0]
-        magic_number = magic_number[0]
-        magic_number = magic_number.split('/x00')
-        if magic_number[0]is not 'MATRIX72v':
+        magicnumber = hdrfile.read(8)
+        if magicnumber.find('MATRIX72') is -1:
             raise NotImplementedError("%s ECAT version not supported"%magic_number[0])
         
 
@@ -319,22 +326,14 @@ class ECAT7(bin.BinaryFormat):
         """
         Fills main header with empty default values
         """
-        for field,format in self.main_header_formats.items():
+        for field,format in self.header_formats.items():
             self.header[field] = self._default_field_value(field,format)
 
-    def subheader_defaults(self):
-        """
-        Fills sub header with empty default values
-        """
-        for field,format in self.sub_header_formats.items():
-            self.sub_header_formats[field] = self._default_field_value(field,format)
-         
     @staticmethod
     def _default_field_value(fieldname, fieldformat):
         "[STATIC] Get empty defualt value for given field"
         return ECAT7._field_defaults.get(fieldname, None) or \
                bin.format_defaults[fieldformat[-1]]
-    
 
     def generate_mlist(self, datasource=DataSource()):
         """
@@ -381,4 +380,52 @@ class ECAT7(bin.BinaryFormat):
         for field, val in zip(self.header.keys(), values):
             self.header[field] = val
 
+class Frame(object):
+    """
+    A class to hold ECAT subheaders and associated memmaps
+    """
+    _sub_field_defaults = {'SCALE_FACTOR': 1.}
+    
+    
+    def __init__(self, infile, byteorder, mlist, framenumber=0, mode='rb'):
+        self.infile = infile
+        self.byteorder = byteorder
         
+        self.frame = framenumber
+        # sub header info
+        self.subheader = odict()
+        self.sub_header_formats = struct_formats_sh
+        self.subheader_defaults()
+        recordstart = (mlist[1][framenumber]-1)*BLOCKSIZE
+        self.read_subheader(recordstart)
+        
+        self.sctype = datatype2sctype[self.subheader['DATA_TYPE']]
+        self.ndim = 3
+
+
+
+    def subheader_defaults(self):
+        """
+        Fills sub header with empty default values
+        """
+        for field,format in self.sub_header_formats.items():
+            self.subheader[field] = self._default_sub_field_value(field,format)
+
+    
+    @staticmethod
+    def _default_sub_field_value(fieldname, fieldformat):
+        "[STATIC] Get empty defualt value for given field"
+        return ECAT7._sub_field_defaults.get(fieldname, None) or \
+               bin.format_defaults[fieldformat[-1]]
+        
+    def read_subheader(self, recordstart,datasource=DataSource()):
+        """
+        Read an ECAT subheader and fill fields
+        """
+        infile = datasource.open(self.infile, 'rb')
+        infile.seek(recordstart)
+        values = bin.struct_unpack(infile,
+                               self.byteorder,
+                               self.sub_header_formats.values())
+        for field, val in zip(self.subheader.keys(), values):
+            self.subheader[field] = val
