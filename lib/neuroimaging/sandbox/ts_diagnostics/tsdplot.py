@@ -34,7 +34,7 @@ class TimeSeriesDiagnostics(OptionParser):
         self.print_help()
         sys.exit(0)
 
-    def plot_data(self):
+    def _plot_data(self):
         win = wxFrame(None, -1, "")
         fig = Figure((8,8), 75)
         canvas = FigureCanvasWxAgg(win, -1, fig)
@@ -45,18 +45,20 @@ class TimeSeriesDiagnostics(OptionParser):
         sizer.Add(toolbar, 0, wxLEFT|wxGROW)
         win.SetSizer(sizer)
         win.Fit()
-        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+
         axes_1 = fig.add_subplot(411)
-        axes_1.plot(self.tsdiagstats.mse_time)
         axes_2 = fig.add_subplot(412)
-        for j in range(self.tsdiagstats.mse_slice.shape[1]):
-            axes_2.plot(self.tsdiagstats.mse_slice[:,j], colors[j%7]+'.-')
         axes_3 = fig.add_subplot(413)
-        axes_3.plot(self.tsdiagstats.mean_signal)
         axes_4 = fig.add_subplot(414)
-        axes_4.plot(self.tsdiagstats.max_mse_slice)
-        axes_4.plot(self.tsdiagstats.min_mse_slice)
-        axes_4.plot(self.tsdiagstats.mean_mse_slice)
+
+        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+        axes_1.plot(self._tsdiagstats.mse_time)
+        for j in range(self._tsdiagstats.mse_slice.shape[1]):
+            axes_2.plot(self._tsdiagstats.mse_slice[:,j], colors[j%7]+'.-')
+        axes_3.plot(self._tsdiagstats.mean_signal)
+        axes_4.plot(self._tsdiagstats.max_mse_slice)
+        axes_4.plot(self._tsdiagstats.min_mse_slice)
+        axes_4.plot(self._tsdiagstats.mean_mse_slice)
         win.Show()
 
     def run(self):
@@ -68,9 +70,9 @@ class TimeSeriesDiagnostics(OptionParser):
             self._error("File not found: %s"%filename)
 #        fmri_image = fMRIImage(filename, datasource=repository)
         fmri_image = fMRIImage(filename)
-        self.tsdiagstats = TimeSeriesDiagnosticsStats(fmri_image)
+        self._tsdiagstats = TimeSeriesDiagnosticsStats(fmri_image)
         app = wxPySimpleApp(0)
-        self.plot_data()
+        self._plot_data()
         app.MainLoop()
 
 if __name__ == '__main__':

@@ -1,54 +1,81 @@
-from neuroimaging.utils import wxmpl
+import sys
+from optparse import OptionParser, Option
 
+from neuroimaging.data_io import DataSource
 from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.utils import wxmpl
 from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.sandbox.ts_diagnostics.tsdstats import \
   TimeSeriesDiagnosticsStats
 
-# Create the PlotApp instance.
-# The title string is one of several optional arguments.
-APP = wxmpl.PlotApp('Time Series Diagnostics', size=(10.0, 11.5))
+class TimeSeriesDiagnostics(OptionParser):
+    "Command-line tool for getting and setting Analyze header values."
+	   
+    _usage= "%prog [options] <hdrfile>\n"+__doc__
+#    options = (
+#      Option('-a', '--attribute', dest="attname",
+#        help="Get or set this attribute"),
+#      Option('-v', '--value', dest="value",
+#        help="Set attribute to this value"))
 
-### Create the data to plot ###
-FMRI_IMAGE = fMRIImage("test_fmri.img", datasource=repository)
-TS_DIAG = TimeSeriesDiagnosticsStats(FMRI_IMAGE)
+    def __init__(self, *args, **kwargs):
+        OptionParser.__init__(self, *args, **kwargs)
+        self.set_usage(self._usage)
+#        self.add_options(self.options)
 
-### Plot it ###
-FIG = APP.get_figure()
+    def _error(self, message):
+        print message
+        self.print_help()
+        sys.exit(0)
 
-# Create the subplot Axes
-AXES_1 = FIG.add_subplot(4, 1, 1)
-AXES_2 = FIG.add_subplot(4, 1, 2)
-AXES_3 = FIG.add_subplot(4, 1, 3)
-AXES_4 = FIG.add_subplot(4, 1, 4)
+    def _plot_data(self):
+        fig = self._app.get_figure()
 
-AXES_1.plot(TS_DIAG.mse_time)
+        # Create the subplot Axes
+        axes_1 = fig.add_subplot(4, 1, 1)
+        axes_2 = fig.add_subplot(4, 1, 2)
+        axes_3 = fig.add_subplot(4, 1, 3)
+        axes_4 = fig.add_subplot(4, 1, 4)
 
-COLORS = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-for j in range(TS_DIAG.mse_slice.shape[1]):
-    AXES_2.plot(TS_DIAG.mse_slice[:,j], COLORS[j%7]+'.-')
+        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+        axes_1.plot(self._tsdiagstats.mse_time)
+        for j in range(self._tsdiagstats.mse_slice.shape[1]):
+            axes_2.plot(self._tsdiagstats.mse_slice[:,j], colors[j%7]+'.-')
+        axes_3.plot(self._tsdiagstats.mean_signal)
+        axes_4.plot(self._tsdiagstats.max_mse_slice)
+        axes_4.plot(self._tsdiagstats.min_mse_slice)
+        axes_4.plot(self._tsdiagstats.mean_mse_slice)
 
-AXES_3.plot(TS_DIAG.mean_signal)
+        # Subplots must be labeled carefully, since labels
+        # can be accidentally hidden by other subplots
+        #axes_1.set_title('Time Series Diagnostics')
+        axes_1.set_xlabel('Difference image number')
+        axes_1.set_ylabel('Scaled variance')
+        axes_2.set_xlabel('Difference image number')
+        axes_2.set_ylabel('Slice by slice variance')
+        axes_3.set_xlabel('Image number')
+        axes_3.set_ylabel('Scaled mean voxel intensity')
+        axes_4.set_xlabel('Slice number')
+        axes_4.set_ylabel('Max/mean/min slice variance')
 
-AXES_4.plot(TS_DIAG.max_mse_slice)
-AXES_4.plot(TS_DIAG.min_mse_slice)
-AXES_4.plot(TS_DIAG.mean_mse_slice)
 
-# Subplots must be labeled carefully, since labels
-# can be accidentally hidden by other subplots
-#AXES_1.set_title('Time Series Diagnostics')
-AXES_1.set_xlabel('Difference image number')
-AXES_1.set_ylabel('Scaled variance')
+    def run(self):
+        options, args = self.parse_args()
+        if len(args) != 1: self._error("Please provide a file name")
+#        filename = "test_fmri.img"
+        filename = args[0]
+        if not DataSource().exists(filename):
+            self._error("File not found: %s"%filename)
+#        fmri_image = fMRIImage(filename, datasource=repository)
+        fmri_image = fMRIImage(filename)
+        self._tsdiagstats = TimeSeriesDiagnosticsStats(fmri_image)
+        self._app = wxmpl.PlotApp('Time Series Diagnostics', size=(10.0, 11.5))
+        self._plot_data()
+        self._app.MainLoop()
 
-AXES_2.set_xlabel('Difference image number')
-AXES_2.set_ylabel('Slice by slice variance')
-
-AXES_3.set_xlabel('Image number')
-AXES_3.set_ylabel('Scaled mean voxel intensity')
-
-AXES_4.set_xlabel('Slice number')
-AXES_4.set_ylabel('Max/mean/min slice variance')
-
-# Let wxPython do its thing.
-APP.MainLoop()
+if __name__ == '__main__':
+   TimeSeriesDiagnostics().run() 
+#    self.tsdiagstats.sd_image.tofile('diag_sd.img', clobber=True)
+#    self.tsdiagstats.mean_image.tofile('diag_mean.img', clobber=True)
+#    self.tsdiagstats.mse_image.tofile('diag_mse.img', clobber=True)
