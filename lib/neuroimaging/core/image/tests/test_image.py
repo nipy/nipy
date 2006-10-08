@@ -20,7 +20,6 @@ class ImageTest(unittest.TestCase):
     def test_analyze(self):
         y = self.img.readall()
         self.assertEquals(y.shape, tuple(self.img.grid.shape))
-#        y.shape = N.product(y.shape)
         y = y.flatten()
         self.assertEquals(N.maximum.reduce(y), 437336.375)
         self.assertEquals(N.minimum.reduce(y), 0.)
@@ -61,7 +60,7 @@ class ImageTest(unittest.TestCase):
         N.testing.assert_almost_equal(x.grid.mapping.transform, self.img.grid.mapping.transform)
 
     def test_clobber(self):
-        x = self.img.tofile('tmp.hdr', format=Analyze, clobber=True) #, sctype=N.float64)
+        x = self.img.tofile('tmp.hdr', format=Analyze, clobber=True)
         a = Image('tmp.hdr', format=Analyze)
         A = a.readall()
         I = self.img.readall()
