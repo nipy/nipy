@@ -29,13 +29,12 @@ class SamplingGrid (object):
         ndim = len(names)
         # fill in default step size
         step = N.asarray(step)
-        #step = N.where(step, step, 1.) # FIXME: I don't think this is right
         axes = [RegularAxis(name=names[i], length=shape[i],
           start=start[i], step=step[i]) for i in range(ndim)]
         input_coords = VoxelCoordinateSystem('voxel', axes)
         output_coords = DiagonalCoordinateSystem('world', axes)
         transform = output_coords.transform()
-
+        
         mapping = Affine(transform)
         return SamplingGrid(list(shape), mapping, input_coords, output_coords)
 
@@ -49,11 +48,27 @@ class SamplingGrid (object):
         if len(names) != ndim:
             raise ValueError('shape and number of axis names do not agree')
         axes = [VoxelAxis(name) for name in names]
-        input_coords = VoxelCoordinateSystem('voxel', axes), 
-        output_coords = DiagonalCoordinateSystem('world', axes),
-        
+
+        input_coords = VoxelCoordinateSystem('voxel', axes)
+        output_coords = DiagonalCoordinateSystem('world', axes)
         w = Affine.identity(ndim)
         return SamplingGrid(list(shape), w, input_coords, output_coords)
+
+    @staticmethod
+    def from_affine(mapping, shape=(), names=space):
+        """
+        Return grid using a given affine mapping
+        """
+        ndim = len(names)
+        if mapping.ndim() != ndim:
+            raise ValueError('shape and number of axis names do not agree')
+        axes = [VoxelAxis(name) for name in names]
+
+        input_coords = VoxelCoordinateSystem('voxel', axes)
+        output_coords = DiagonalCoordinateSystem('world', axes)
+
+        return SamplingGrid(list(shape), mapping, input_coords, output_coords)
+
 
 
     def __init__(self, shape, mapping, input_coords, output_coords):
