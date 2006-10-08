@@ -211,7 +211,7 @@ struct_formats_sh = odict((
 field_formats_sh = struct_formats_sh.values();
 
 
-class ECAT7(bin.BinaryFormat):
+class Ecat7(bin.BinaryFormat):
     """
     A Class to read (maybe write) ECAT7 format images.
     Generally these are PET images
@@ -226,7 +226,7 @@ class ECAT7(bin.BinaryFormat):
 
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
         """
-        Constructs a ECAT7 binary format object with at least a filename
+        Constructs a Ecat7 binary format object with at least a filename
         NOTE: ECAT can be an Image or a Volume
         possible additional keyword arguments:
         mode = mode to open the memmap (default is "r")
@@ -285,7 +285,7 @@ class ECAT7(bin.BinaryFormat):
 
     def checkversion(self,datasource):
         """
-        Currently only ECAT72 is implemented
+        Currently only Ecat72 is implemented
         """
         hdrfile = datasource.open(self.header_file,'rb')
         hdrfile.seek(0)
@@ -337,7 +337,7 @@ class ECAT7(bin.BinaryFormat):
     @staticmethod
     def _default_field_value(fieldname, fieldformat):
         "[STATIC] Get empty defualt value for given field"
-        return ECAT7._field_defaults.get(fieldname, None) or \
+        return Ecat7._field_defaults.get(fieldname, None) or \
                bin.format_defaults[fieldformat[-1]]
 
     def generate_mlist(self, datasource=DataSource()):
@@ -455,7 +455,7 @@ class Frame(bin.BinaryFormat):
     @staticmethod
     def _default_sub_field_value(fieldname, fieldformat):
         "[STATIC] Get empty defualt value for given field"
-        return ECAT7._sub_field_defaults.get(fieldname, None) or \
+        return Ecat7._sub_field_defaults.get(fieldname, None) or \
                bin.format_defaults[fieldformat[-1]]
         
     def read_subheader(self, recordstart,datasource=DataSource()):
