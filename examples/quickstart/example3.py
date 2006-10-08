@@ -15,7 +15,7 @@ def mask_and_func(subject=0, run=1, offset=5):
     return mm, f
 
 m, f = mask_and_func()
-f.grid.itertype = 'parcel'
+f.grid.set_iter_param("itertype", 'parcel')
 f.grid.parcelmap = m[:]
 f.grid.parcelseq = [1, 2]
 
