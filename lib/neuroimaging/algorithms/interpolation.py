@@ -6,6 +6,7 @@ import os
 
 from scipy import ndimage
 from neuroimaging import traits
+from neuroimaging.data_io import Cache
 import numpy as N
 
 
@@ -31,7 +32,8 @@ class ImageInterpolator(traits.HasTraits):
             data = N.nan_to_num(self.image.readall())
 
         if not hasattr(self, 'datafile'):
-            self.datafile = file(".tmp_image", 'wb')
+            #self.datafile = file(".tmp_image", 'wb')
+            self.datafile = file(Cache().filename(".tmp_image"), 'wb')
         else:
             self.datafile = file(self.datafile.name, 'wb')
         
