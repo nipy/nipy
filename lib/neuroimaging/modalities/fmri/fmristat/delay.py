@@ -241,25 +241,26 @@ class DelayContrastOutput(TContrastOutput):
 
             self._sd[r] = N.sqrt(var)                
 
-    def extract_t(self, results):
-        self._t = self._effect * recipr(self._sd)        
-        self._t = N.clip(self._t, self.Tmin, self.Tmax)
+    def extract_t(self):
+        t = self._effect * recipr(self._sd)        
+        t = N.clip(t, self.Tmin, self.Tmax)
+        return t
 
     def extract(self, results):
         self.extract_effect(results)
         self.extract_sd(results)
-        self.extract_t(results)
+        t = self.extract_t()
 
         return ContrastResults(effect=self._effect,
                                sd=self._sd,
-                               t=self._t)
+                               t=t)
 
     def next(self, data=None):
-        if self.grid._itertype == 'slice':
-            value = copy.copy(self.grid.itervalue)
+        if self.grid.get_iter_param("itertype") == 'slice':
+            value = copy.copy(self.grid.itervalue())
             value.slice = value.slice[1]
         else:
-            value = self.grid.itervalue
+            value = self.grid.itervalue()
 
         nout = self.contrast.weights.shape[0]
         
