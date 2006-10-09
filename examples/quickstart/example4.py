@@ -13,18 +13,21 @@ m = mask()
 t = N.identity(4)
 t[1,1] = -1.
 
-input_coords = output_coords = m.grid.mapping.output_coords
-flip = Affine(input_coords, output_coords, t)
 
-newgrid = SamplingGrid(shape=m.grid.shape, mapping=flip * m.grid.mapping)
-flipped = Image(m[:], grid=newgrid)
+flip = Affine(t)
+
+
+flipped_map = flip*m.grid.mapping
+new_grid = SamplingGrid.from_affine(flipped_map, m.grid.shape)
+
+flipped = Image(m[:], grid=new_grid)
+
 
 v1 = BoxViewer(m); v2 = BoxViewer(flipped)
 v1.draw(); v2.draw()
 
-
-flipped.tofile('flip.img')
-flipped3 = Image('flip.img', grid=newgrid)
+flipped.tofile('flip.img', clobber=True)
+flipped3 = Image('flip.img', grid=new_grid)
 v3 = BoxViewer(flipped3); v3.draw()
 
 pylab.show()
