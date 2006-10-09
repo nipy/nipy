@@ -114,7 +114,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
             f.clf()
 
     def next(self, data=None):
-        if self.grid._itertype == 'slice':
+        if self.grid.get_iter_param("itertype") == 'slice':
             value = copy.copy(self.grid.itervalue())
             value.slice = value.slice[1]
         else:
