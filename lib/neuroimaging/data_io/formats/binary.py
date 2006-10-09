@@ -131,7 +131,7 @@ class BinaryFormat(Format):
         if field in (header.keys() + ext_header.keys()):
             raise ValueError("Field %s already exists in "
                              "the current header"%field)
-        if not sanevalues(format, value):
+        if not utils.sanevalues(format, value):
             raise ValueError("Field format and value(s) do not match up.")
 
         # if we got here, we're good
@@ -148,11 +148,11 @@ class BinaryFormat(Format):
 
     def set_header_field(self, field, value):
         try:
-            if sanevalues(self.header_formats[field], value):
+            if utils.sanevalues(self.header_formats[field], value):
                 self.header[field] = value
         except KeyError:
             try:
-                if sanevalues(self.ext_header_formats[field], value):
+                if utils.sanevalues(self.ext_header_formats[field], value):
                     self.ext_header[field] = value
             except KeyError:
                 raise KeyError('Field does not exist')
