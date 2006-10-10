@@ -81,7 +81,7 @@ def FIACresample(infile, outfile, subj=3, run=3, **other):
 
     fslmat = N.dot(M, N.dot(fslmat, M))
 
-    standard = Image('/home/analysis/FIAC/avg152T1_brain.img',
+    standard = Image('http://kff.stanford.edu/FIAC/avg152T1_brain.img',
                                         ignore_origin=True,
                                         abs_pixdim=True)
 

@@ -6,7 +6,7 @@ from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.ui.visualization import slices, montage
 
 
-standard = Image('/home/analysis/FIAC/avg152T1_brain.img')
+standard = Image('http://kff.stanford.edu/FIAC/avg152T1_brain.img')
 
 options = {'design':'block',
            'contrast':'overall',
@@ -15,7 +15,7 @@ options = {'design':'block',
            'subj':3}
 
 def FIACfixedpath(**opts):
-    return '/home/analysis/FIAC/fiac%(subj)d/fixed/%(design)s/%(which)s/%(contrast)s/%(stat)s.img' % opts
+    return 'http://kff.stanford.edu/FIAC/fiac%(subj)d/fixed/%(design)s/%(which)s/%(contrast)s/%(stat)s.img' % opts
 
 def FIACfixedslice(**opts):
 
@@ -30,7 +30,7 @@ def FIACfixedslice(**opts):
     zslice = slices.transversal(i, z=-2, xlim=[-70,70], ylim=[-46,6], shape=(27,71))
     inter = ImageInterpolator(i)
 
-    dslice = slices.PylabDataSlice(inter, zslice, vmin=vmin, vmax=vmax)
+    dslice = slices.DataSlicePlot(inter, zslice, vmin=vmin, vmax=vmax)
     return dslice
 
 def FIACmontage(**opts):
@@ -83,5 +83,6 @@ if __name__ == '__main__':
     outfile = '/home/analysis/FIAC/multi/%(design)s/%(which)s/%(contrast)s/%(stat)s.png' % options
     outurl = 'http://kff.stanford.edu/FIAC/multi/%(design)s/%(which)s/%(contrast)s/%(stat)s.png' % options
 
-    pylab.savefig(outfile)
+    pylab.show()
+    #pylab.savefig(outfile)
     pylab.close(plot.figure)

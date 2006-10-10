@@ -10,7 +10,7 @@ from fiac import FIACpath
 
 def FIACmulti(contrast='overall', design='block', which='contrasts', clobber=False):
 
-    outdir = '/home/analysis/FIAC/multi/%s/%s/%s' % (design, which, contrast)
+    outdir = 'http://kff.stanford.edu/FIAC/multi/%s/%s/%s' % (design, which, contrast)
 
     if not os.path.exists(outdir):
         os.makedirs(outdir)

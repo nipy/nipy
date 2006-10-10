@@ -24,9 +24,9 @@ options = {'run':3,
 def FIACrunpath(resampled=False, what='rho', **opts):
     opts['what'] = what
     if not resampled:
-        return '/home/analysis/FIAC/fiac%(subj)d/fonc%(run)d/fsl/fmristat_run/%(what)s.img' % opts
+        return 'http://kff.stanford.edu/FIAC/fiac%(subj)d/fonc%(run)d/fsl/fmristat_run/%(what)s.img' % opts
     else:
-        return '/home/analysis/FIAC/fiac%(subj)d/fonc%(run)d/fsl/fmristat_run/%(what)s_rsmpl.img' % opts
+        return 'http://kff.stanford.edu/FIAC/fiac%(subj)d/fonc%(run)d/fsl/fmristat_run/%(what)s_rsmpl.img' % opts
 
 def FIACfixedslice(**opts):
 
@@ -35,13 +35,13 @@ def FIACfixedslice(**opts):
         try:
             FIACresample(FIACrunpath(**opts), FIACrunpath(resampled=True, **opts), **opts)
 
-            i = Image(FIACrunpath(resampled=True, **opts))
+            i = Image(FIACrunpath(resampled=True, datasource=repository, **opts))
             haveit = True
         except:
             haveit = False
             pass
     else:
-        i = Image(FIACrunpath(resampled=True, **opts))
+        i = Image(FIACrunpath(resampled=True, datasource=repository, **opts))
         haveit = True
 
     if haveit:    

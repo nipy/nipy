@@ -7,7 +7,7 @@ def FIACsubject(subj=3):
         toc = time.time()
         vdict = {'subj':subj, 'run':run}
 
-        fsldir = fiac.FIACpath('fsl', subj=subj, run=run, base='/home/analysis/FIAC')
+        fsldir = fiac.FIACpath('fsl', subj=subj, run=run, base='http://kff.stanford.edu/FIAC')
 
         if os.path.exists('%s/filtered_func_data.img' % fsldir):
             os.chdir(fsldir)

@@ -5,7 +5,7 @@ from neuroimaging.core.image.image import Image
 from neuroimaging.core.reference.mapping import Affine
 
 def make4d(subj=int(sys.argv[1]), run=int(sys.argv[2])):
-    dir = '/home/analysis/FIAC/fiac%d/fonc%d' % (subj, run)
+    dir = 'http://kff.stanford.edu/FIAC/fiac%d/fonc%d' % (subj, run)
     framefiles = ['%s/fiac%d_fonc%d_%04d.img' % (dir, subj, run, i) for i in range(5, 196)]
 
     print framefiles[0]
