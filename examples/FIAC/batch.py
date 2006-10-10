@@ -10,8 +10,9 @@ for subj in range(16):
 
 ttoc = time.time()
 
-for which in ['delays', 'contrasts']:
-    for design in ['block', 'event']:
+
+for design in ['block', 'event']:
+    for which in ['delays', 'contrasts']:
         for contrast in ['overall', 'speaker', 'sentence', 'interaction']:
             for stat in ['t', 'sd', 'effect']:
 
@@ -27,8 +28,9 @@ ttic = time.time()
 print 'total time for runs plots : %02f' % ((ttic-ttoc)/60)
 
 ttoc = time.time()
-for which in ['delays', 'contrasts']:
-    for design in ['block', 'event']:
+
+for design in ['block', 'event']:
+    for which in ['delays', 'contrasts']:
         for contrast in ['overall', 'speaker', 'sentence', 'interaction']:
             cmd = """
             python2.4 ./multi.py --which=%s

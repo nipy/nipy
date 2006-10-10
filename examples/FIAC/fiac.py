@@ -1,4 +1,4 @@
-import string, os, gc, time, urllib
+import string, os, gc, time
 
 import numpy as N
 import pylab
@@ -6,6 +6,7 @@ import pylab
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
 from neuroimaging.core.image.image import Image
+from neuroimaging.data_io import DataSource
 
 eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
 eventdict_r = {'SSt_SSp':1, 'SSt_DSp':2, 'DSt_SSp':3, 'DSt_DSp':4}
@@ -38,7 +39,7 @@ def FIACblock(subj=3, run=3):
 
     url = FIACpath('subj%(subj)d_bloc_fonc%(run)d.txt' % {'subj':subj, 'run':run}, subj=subj, run=-1)
 
-    pfile = urllib.urlopen(url)
+    pfile = DataSource().open(url)
     pfile = pfile.read().strip().split('\n')
 
     # start with a "deadtime" interval
@@ -68,7 +69,7 @@ def FIACbegin_block(subj=3, run=3):
 
     url = FIACpath('subj%(subj)d_bloc_fonc%(run)d.txt' % {'subj':subj, 'run':run}, subj=subj, run=-1)
 
-    pfile = urllib.urlopen(url)
+    pfile = DataSource().open(url)
     pfile = pfile.read().strip().split('\n')
 
     # start with a "deadtime" interval
@@ -96,7 +97,7 @@ def FIACbegin_event(subj=3, run=3):
 def FIACevent(subj=3, run=2):
     url = FIACpath('subj%(subj)d_evt_fonc%(run)d.txt' % {'subj':subj, 'run':run}, subj=subj, run=-1)
 
-    pfile = urllib.urlopen(url)
+    pfile = DataSource().open(url)
     pfile = pfile.read().strip().split('\n')
 
     events = []; times = []

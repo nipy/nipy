@@ -83,6 +83,5 @@ if __name__ == '__main__':
     outfile = '/home/analysis/FIAC/multi/%(design)s/%(which)s/%(contrast)s/%(stat)s.png' % options
     outurl = 'http://kff.stanford.edu/FIAC/multi/%(design)s/%(which)s/%(contrast)s/%(stat)s.png' % options
 
-    pylab.show()
     #pylab.savefig(outfile)
     pylab.close(plot.figure)
