@@ -65,7 +65,6 @@ class Image(object):
         # from filename or url
         elif type(image) == types.StringType:
             self._source = self.fromurl(image, datasource, grid=grid, **keywords)
-
         else:
             raise ValueError(
           "Image input must be a string, array, or another image.")
@@ -77,8 +76,6 @@ class Image(object):
 
         # Attach memory-mapped array or array as buffer attr
         self.buffer = self._source.data
-
-        self.fill = 0.0
 
 
     def __getitem__(self, slice_):
@@ -180,11 +177,11 @@ class Image(object):
         """
         Read an entire Image object, returning a numpy, not another instance of
         Image. By default, it does not read 4d images. Missing values are
-        filled in with the value of fill (default=self.fill=0.0).
+        filled in with 0
         """
         value = self[self.grid.allslice()]
         if clean: 
-            value = N.nan_to_num(value, fill=self.fill)
+            value = N.nan_to_num(value)
         return value
 
 
