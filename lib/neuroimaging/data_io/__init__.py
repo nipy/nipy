@@ -43,17 +43,6 @@ def unzip(filename):
     return unzip_name
 
 
-def urlexists(url):
-    """
-    Test if a url exists by attempting to open it.
-    """
-    try:
-        urlopen(url)
-    except Exception:
-        return False
-    return True
-
-
 def isurl(pathstr):
     scheme, netloc, _, _, _, _ = urlparse(pathstr)
     return bool(scheme and netloc)
@@ -161,10 +150,15 @@ class DataSource (object):
     def filename(self, pathstr):
         found = None
         for name in self._possible_names(pathstr):
-            if isurl(name) and urlexists(name):
-                self.cache(name)
-                found = self._cache.filename(name)
-            elif path(name).exists(): found = name
+            try:                
+                if isurl(name):
+                    self.cache(name)
+                    found = self._cache.filename(name)
+                else:
+                    raise Exception
+            except:
+                if path(name).exists():
+                    found = name
             if found:
                 break
         if found is None:
