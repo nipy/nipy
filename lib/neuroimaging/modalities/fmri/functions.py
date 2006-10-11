@@ -22,15 +22,16 @@ from scipy.interpolate import interp1d
 # -Event inherits from Stimulus so most functionality is in Stimulus
 # -changes are just in specifying parameters of self.fn
 
-times = N.arange(0,50,0.1)
-
 class TimeFunction(traits.HasTraits):
 
     nout = traits.Int(1)
     fn = traits.Any()
 
     windowed = traits.false
-    window = traits.List([0.,0.])
+    window = traits.Tuple((0.,0.))
+
+    def __init__(self, **keywords):
+        traits.HasTraits.__init__(self, **keywords)
 
     def __getitem__(self, j):
 
@@ -42,12 +43,15 @@ class TimeFunction(traits.HasTraits):
         columns = []
 
         if self.nout == 1:
+            # fn is a single function with one output
             columns.append(self.fn(time=time))
         else:
             if type(self.fn) in [types.ListType, types.TupleType]:
+                # fn is a list of functions with one output
                 for fn in self.fn:
                     columns.append(fn(time=time))
             else:
+                # fn is a single function with a list of outputs
                 columns = self.fn(time=time)
 
         if self.windowed:
@@ -190,19 +194,6 @@ class InterpolatedConfound(TimeFunction):
         return N.squeeze(N.array(columns))
 
 
-class FunctionConfound(TimeFunction):
-
-    def __init__(self, fn=[], **keywords):
-        '''
-        Argument "fn" should be a sequence of functions describing the regressor.
-        '''
-        TimeFunction.__init__(self, **keywords)
-        self.nout = len(fn)
-        if len(fn) == 1:
-            self.fn = fn[0]
-        else:
-            self.fn = fn
-
 class Stimulus(TimeFunction):
 
     times = traits.Any()
@@ -266,7 +257,7 @@ class DeltaFunction(TimeFunction):
     def __call__(self, time=None, **extra):
         return N.greater_equal(time, self.start) * N.less(time, self.start + self.dt) / self.dt
 
-class SplineConfound(FunctionConfound):
+class SplineConfound(TimeFunction):
 
     """
     A natural spline confound with df degrees of freedom.
