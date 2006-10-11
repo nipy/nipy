@@ -124,15 +124,6 @@ class ImageTest(unittest.TestCase):
             v += t.shape[0]
         self.assertEquals(v, N.product(test.grid.shape))
 
-    def test_onesample1(self):
-        im1 = Image('FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.hdr',
-            repository, format=Analyze)
-        im2 = Image('FIAC/fiac4/fonc3/fsl/fmristat_run/contrasts/speaker/effect.hdr',
-            repository, format=Analyze)
-        im3 = Image('FIAC/fiac5/fonc2/fsl/fmristat_run/contrasts/speaker/effect.hdr',
-            repository, format=Analyze)
-        x = ImageOneSample([im1,im2,im3], clobber=True)
-        x.fit()
 
 if __name__ == '__main__':
     unittest.main()
