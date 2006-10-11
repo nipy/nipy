@@ -6,7 +6,8 @@ from scipy.sandbox.models.contrast import Contrast
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor,\
-  ExperimentalQuantitative, SplineConfound
+  ExperimentalQuantitative
+from neuroimaging.modalities.fmri.functions import SplineConfound
 from neuroimaging.modalities.fmri.fmristat import fMRIStatAR, fMRIStatOLS
 from  neuroimaging.core.image.image import Image
 from neuroimaging.modalities.fmri.hrf import glover, glover_deriv
