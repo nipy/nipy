@@ -2,10 +2,18 @@ import neuroimaging.data_io.formats.analyze as Ana
 import neuroimaging.data_io.formats.ecat7 as Ecat7
 import numpy as N
 from  neuroimaging.core.image.image import Image
+from neuroimaging.utils.tests.data import repository
 
-pfile = '/home/surge/cindeem/DEVEL/RAW_PET/B05_206-43D52D9100000211-de.v'
+## newfile = '/home/surge/cindeem/DEVEL/TestData/nitest.img'
+## from neuroimaging.core.image.image import Image
+## myImg = Image(tmpdat)
+## myImg.tofile(newfile)
+## newfile = '/home/surge/cindeem/DEVEL/TestData/nitest.hdr'
+## myImg.tofile(newfile)
+## newImg = myImg.toarray()
+## newImg = Analyze.Analyze(newImg)
 
-myecat = Ecat7.Ecat7(pfile)
+myecat = Ecat7.Ecat7("FDG-de.v",datasource=repository)
 
 
 jnk = Ecat7.CacheData('anaTest1.img')
@@ -21,11 +29,11 @@ tmpdat = myecat.frames[0]
 
 tmpdat.data.tofile(jnkname)
 myArray = N.array(tmpdat.data, tmpdat.sctype)
-
+myArray.tofile(jnkname)
 #myArray.tofile(jnkhdrname)
 
-myImg = Image(myArray)
-myImg.tofile(jnkname)
-#myAna = Ana.Analyze.write_header('jnkhdrname')
+myImg = Image(jnkhdrname)
 
-myAna = Ana.Analyze(jnkname)
+#myAna = Ana.Analyze(myArray)
+
+
