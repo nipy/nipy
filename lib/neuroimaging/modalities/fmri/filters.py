@@ -182,11 +182,11 @@ class FIR(Filter):
     Parameters (start and duration) are specified as a kx2 matrix for k square
     waves.
     
-    >>> from BrainSTAT.fMRIstat import Filter
+    >>> from neuroimaging.modalities.fmri import filters
     >>> from pylab import *
     >>> from numpy import *
     >>> parameters = array([[1., 2.], [2., 5.], [4., 8.]])
-    >>> IRF = Filter.FIR(parameters)
+    >>> IRF = filters.FIR(parameters)
     >>> IRF.plot(linestyle='steps')
     >>> ylab = ylabel('Filters')
     >>> xlab = xlabel('Time (s)')
