@@ -1,0 +1,3 @@
+'''
+Time series diagnostics
+'''
