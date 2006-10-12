@@ -65,12 +65,10 @@ def fix_origin(img):
 
 def FIACresample(infile, outfile, subj=3, run=3, **other):
 
-    inimage = Image(infile,
-                                       ignore_origin=True,
-                                       abs_pixdim=True)
-
-    fslmatstr = urllib.urlopen('file://%s' % FIACpath('fsl/example_func2standard.mat',
+    inimage = Image(infile, ignore_origin=True, abs_pixdim=True)
+    fslmatstr = urllib.urlopen('%s' % FIACpath('fsl/example_func2standard.mat',
                                                        subj=subj, run=run)).read().split()
+
     fslmat =  N.array(map(float, fslmatstr))
     fslmat.shape = (4,4)
 
@@ -85,19 +83,20 @@ def FIACresample(infile, outfile, subj=3, run=3, **other):
                                         ignore_origin=True,
                                         abs_pixdim=True)
 
-    input_coords = inimage.grid.mapping.output_coords
-    output_coords = standard.grid.mapping.output_coords
-    fworld2sworld = Affine(input_coords,
-                                             output_coords,
-                                             fslmat)
-    svoxel2fworld = fworld2sworld.inverse() * standard.grid.mapping
+    input_coords = inimage.grid.output_coords
+    output_coords = standard.grid.output_coords
 
-    output_grid = SamplingGrid(mapping=svoxel2fworld, shape=standard.grid.shape)
+    fworld2sworld = Affine(fslmat)
+
+    voxel2fworld = fworld2sworld.inverse() * standard.grid.mapping
+
+    output_grid = SamplingGrid(standard.grid.shape, voxel2fworld, input_coords, output_coords)
 
     interp = ImageInterpolator(inimage)
     interp_data = interp(output_grid.range())
 
     new = Image(interp_data, grid=standard.grid)
+
     new.tofile(outfile, clobber=True)
 
     del(interp); del(interp_data); del(new) ; gc.collect()

@@ -26,7 +26,7 @@ def FIACrunpath(resampled=False, what='rho', **opts):
     if not resampled:
         return 'http://kff.stanford.edu/FIAC/fiac%(subj)d/fonc%(run)d/fsl/fmristat_run/%(what)s.img' % opts
     else:
-        return 'http://kff.stanford.edu/FIAC/fiac%(subj)d/fonc%(run)d/fsl/fmristat_run/%(what)s_rsmpl.img' % opts
+        return 'kff.stanford.edu/FIAC/fiac%(subj)d/fonc%(run)d/fsl/fmristat_run/%(what)s_rsmpl.img' % opts
 
 def FIACfixedslice(**opts):
 
@@ -34,19 +34,18 @@ def FIACfixedslice(**opts):
     if not os.path.exists(FIACrunpath(resampled=True, **opts)) or options['force']:
         try:
             FIACresample(FIACrunpath(**opts), FIACrunpath(resampled=True, **opts), **opts)
-
             i = Image(FIACrunpath(resampled=True, datasource=repository, **opts))
             haveit = True
-        except:
+        except Exception, e:
+            print "OH NOES", e
             haveit = False
             pass
     else:
         i = Image(FIACrunpath(resampled=True, datasource=repository, **opts))
         haveit = True
-
+        
     if haveit:    
         i.grid = standard.grid
-
         slab = standard.grid.slab([35,0,0], [1,1,1], [1,109,91])
         i.grid = slab
         idata = i.readall()
@@ -57,7 +56,7 @@ def FIACfixedslice(**opts):
         zslice = slices.transversal(i, z=-2, xlim=[-70,70], ylim=[-46,6], shape=(27,71))
         inter = ImageInterpolator(i)
 
-        dslice = slices.PylabDataSlice(inter, zslice, vmin=vmin, vmax=vmax)
+        dslice = slices.DataSlicePlot(inter, zslice, vmin=vmin, vmax=vmax)
         return dslice
 
 def FIACmontage(**opts):
@@ -110,7 +109,7 @@ if __name__ == '__main__':
     FIACmontage(**options)
     plot = FIACmontage(**options)
 
-    outfile = '/home/analysis/FIAC/runs/%s.png' % options['what']
+    outfile = 'runs/%s.png' % options['what']
     outurl = 'http://kff.stanford.edu/FIAC/runs/%s.png' % options['what']
 
     pylab.savefig(outfile)

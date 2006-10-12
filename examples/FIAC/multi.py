@@ -10,7 +10,7 @@ from fiac import FIACpath
 
 def FIACmulti(contrast='overall', design='block', which='contrasts', clobber=False):
 
-    outdir = 'http://kff.stanford.edu/FIAC/multi/%s/%s/%s' % (design, which, contrast)
+    outdir = 'kff.stanford.edu/FIAC/multi/%s/%s/%s' % (design, which, contrast)
 
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -27,7 +27,7 @@ def FIACmulti(contrast='overall', design='block', which='contrasts', clobber=Fal
         except:
             pass
     
-    fitter = ImageOneSample(input, path=outdir, clobber=clobber, which='sdratio', all=True, use_scale=False)
+    fitter = ImageOneSample(input, path=outdir, clobber=clobber, which='varatio', all=True, use_scale=False)
     fitter = ImageOneSample(input, path=outdir, clobber=clobber, which='mean', all=True, use_scale=False)
     fitter.fit()
 
