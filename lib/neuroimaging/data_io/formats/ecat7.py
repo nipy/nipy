@@ -528,43 +528,43 @@ class Frame(bin.BinaryFormat):
         return self.infile, self.infile
 
 class CacheData(DIO.Cache):
+    """
+    Create Cache to hold Ecat Frames in one contiguous Volume
+    """
+    def __init__(self,name):
+        DIO.Cache.__init__(self)
+        
+        
+    def filepath(self,name):
         """
-        Create Cache to hold Ecat Frames in one contiguous Volume
+        Return the complete path + filename within the cache.
         """
-        def __init__(self,name):
-            DIO.Cache.__init__(self)
-            
-            
-        def filepath(self,name):
-            """
-            Return the complete path + filename within the cache.
-            """
                 
-            return self.path.joinpath(self.path,name)
+        return self.path.joinpath(self.path,name)
             
-        def filename(self, name):
-            """
-            Return the complete path + filename within the cache.
-            """
-            return str(self.filepath(name))
+    def filename(self, name):
+        """
+        Return the complete path + filename within the cache.
+        """
+        return str(self.filepath(name))
             
-        def cache(self, name):
-            """
-            Copy a file into the cache.
-            """
-            if self.iscached(name):
-                return
-            upath = self.filepath(name)
-            ensuredirs(upath.dirname())
+    def cache(self, name):
+        """
+        Copy a file into the cache.
+        """
+        if self.iscached(name):
+            return
+        upath = self.filepath(name)
+        ensuredirs(upath.dirname())
             
 
-        def clear(self):
-            """ Delete all files in the cache. """
-            for f in self.path.files():
-                f.rm()
+    def clear(self):
+        """ Delete all files in the cache. """
+        for f in self.path.files():
+            f.rm()
 
-        def iscached(self, name):
-            """ Check if a file exists in the cache. """
-            return self.filepath(name).exists()
+    def iscached(self, name):
+        """ Check if a file exists in the cache. """
+        return self.filepath(name).exists()
 
         
