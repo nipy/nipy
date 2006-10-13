@@ -1,6 +1,6 @@
 import unittest, os, glob
 import numpy as N
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.image.image import Image, ImageSequenceIterator
 from neuroimaging.algorithms.onesample import ImageOneSample
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.formats.analyze import Analyze
@@ -16,7 +16,7 @@ class ImageTest(unittest.TestCase):
         tmpf = glob.glob('tmp.*')
         for f in tmpf:
             os.remove(f)
-
+            
     def test_init(self):
         new = Image(self.img)
         N.testing.assert_equal(self.img[:], new[:])
@@ -26,6 +26,10 @@ class ImageTest(unittest.TestCase):
 
 
         self.assertRaises(ValueError, Image, None)
+
+    def test_badfile(self):
+        filename = "bad.file"
+        self.assertRaises(NotImplementedError, Image, filename)
 
     def test_analyze(self):
         y = self.img.readall()
@@ -138,6 +142,20 @@ class ImageTest(unittest.TestCase):
         a = self.img.readall(clean=False)
         b = self.img.readall(clean=True)
         N.testing.assert_equal(a, b)
+
+class ImageSequenceIteratorTest(unittest.TestCase):
+
+    def test_image_sequence_iterator(self):
+        base_img = Image("avg152T1.img", repository, format=Analyze)
+        imgs = [Image(base_img) for _ in range(10)]
+        it = ImageSequenceIterator(imgs)
+        for x in it:
+            self.assertEquals(type(x), type(N.array([])))
+
+        it = ImageSequenceIterator(imgs, grid=imgs[-1].grid)
+        for x in it:
+            self.assertEquals(type(x), type(N.array([])))
+
 
 if __name__ == '__main__':
     unittest.main()
