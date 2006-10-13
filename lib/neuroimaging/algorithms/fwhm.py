@@ -22,7 +22,8 @@ class Resels(traits.HasTraits):
 
     D = traits.Int(3)
 
-    def __init__(self, grid, normalized=False, fwhm=None, resels=None, mask=None, **keywords):
+    def __init__(self, grid, normalized=False, fwhm=None, resels=None,
+                 mask=None, **keywords):
         
         traits.HasTraits.__init__(self, **keywords)
         self.fwhm = fwhm
@@ -52,22 +53,23 @@ class Resels(traits.HasTraits):
         return _resels, _fwhm, nvoxel
 
     def resel2fwhm(self, x):
-        return N.sqrt(4*N.log(2.)) * self.wedge * recipr(N.power(x, 1. / self.D))
+        return N.sqrt(4*N.log(2.)) * self.wedge * recipr(N.power(x, 1./self.D))
 
     def fwhm2resel(self, x):
         return recipr(N.power(x / N.sqrt(4*N.log(2)) * self.wedge, self.D))
 
     def __iter__(self):
         if not self.fwhm:
-            self.fwhm = iter(Image(N.zeros(self.grid.shape, N.float64), grid=self.grid))
+            im = Image(N.zeros(self.grid.shape, N.float64), grid=self.grid)
         else:
-            self.fwhm = iter(Image(self.fwhm, clobber=self.clobber, mode='w', grid=self.grid))
+            im = Image(self.fwhm, clobber=self.clobber, mode='w', grid=self.grid)
+        self.fwhm = iter(im)
 
         if not self.resels:
-            self.resels = iter(Image(N.zeros(self.grid.shape, N.float64), grid=self.grid))
+            im = Image(N.zeros(self.grid.shape, N.float64), grid=self.grid)
         else:
-            self.resels = iter(Image(self.resels, clobber=self.clobber, mode='w', grid=self.grid))
-
+            im = Image(self.resels, clobber=self.clobber, mode='w', grid=self.grid)
+        self.resels = iter(im)
 
         return self
 
@@ -87,10 +89,12 @@ class ReselImage(Resels):
             Resels.__init__(self, resels, resels=resels, fwhm=fwhm)
 
         if not self.fwhm:
-            self.fwhm = Image(self.resel2fwhm(self.resels.readall()), mapping=self.resels.grid.mapping, **keywords)
+            self.fwhm = Image(self.resel2fwhm(self.resels.readall()),
+                              mapping=self.resels.grid.mapping, **keywords)
 
         if not self.resels:
-            self.resels = Image(self.fwhm2resel(self.fwhm.readall()), mapping=self.fwhm.grid.mapping, **keywords)
+            self.resels = Image(self.fwhm2resel(self.fwhm.readall()),
+                                mapping=self.fwhm.grid.mapping, **keywords)
 
     def __iter__(self):
         return
