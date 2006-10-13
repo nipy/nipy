@@ -75,7 +75,7 @@ class TimeSeriesDiagnostics(OptionParser):
         self._app.MainLoop()
 
 if __name__ == '__main__':
-   TimeSeriesDiagnostics().run() 
+    TimeSeriesDiagnostics().run() 
 #    self.tsdiagstats.sd_image.tofile('diag_sd.img', clobber=True)
 #    self.tsdiagstats.mean_image.tofile('diag_mean.img', clobber=True)
 #    self.tsdiagstats.mse_image.tofile('diag_mse.img', clobber=True)
