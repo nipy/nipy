@@ -30,7 +30,7 @@ class fMRIStatTest(unittest.TestCase):
         for i in range(20):
             all.append([p[i], on[i], off[i]])
         pain = ExperimentalFactor('pain', all, delta=False)
-        drift_fn = SplineConfound(window=[0,360], df=7)
+        drift_fn = SplineConfound(window=(0,360), df=7)
         drift = ExperimentalQuantitative('drift', drift_fn)
         self.pain = pain
         self.drift = drift
