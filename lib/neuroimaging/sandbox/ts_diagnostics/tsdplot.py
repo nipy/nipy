@@ -28,27 +28,35 @@ class TimeSeriesDiagnostics(OptionParser):
     """
 
     _usage = "%prog [options]\n"+__doc__
-    options = (
+    _options = (
       Option('-w', '--wxmpl', action="store_true", dest="wxmpl",
         help="use wxmpl for plotting"),
-      Option('-f', '--file', dest='filename',
+      Option('-f', '--file', dest='file',
         help="input file to read data from"))
 
     def __init__(self, *args, **kwargs):
         OptionParser.__init__(self, *args, **kwargs)
         self.set_usage(self._usage)
-        self.add_options(self.options)
-        self._check_required("-f")
+        self.add_options(self._options)
 
     def _error(self, message):
+        """
+        Prints error message and exits.
+        """
+        print '\n-----------------------------------'
+        print 'ERROR MESSAGE:'
         print message
+        print
+        print 'For more information about using this command,'
+        print 'please read the usage information below:'
+        print '-----------------------------------\n'
         self.print_help()
         sys.exit(0)
 
-    def _check_required (self, opt):
-      option = self.get_option(opt)
-
     def _plot_data(self):
+        """
+        Plot data using mpl.
+        """
         win = wxFrame(None, -1, "")
         fig = Figure((8,8), 75)
         canvas = FigureCanvasWxAgg(win, -1, fig)
@@ -76,6 +84,9 @@ class TimeSeriesDiagnostics(OptionParser):
         win.Show()
 
     def _wxmpl_plot_data(self):
+        """
+        Plot data using wxmpl.
+        """
         fig = self._app.get_figure()
 
         # Create the subplot Axes
@@ -107,16 +118,19 @@ class TimeSeriesDiagnostics(OptionParser):
 
     def run(self):
         options, args = self.parse_args()
-        if not DataSource().exists(options.filename):
-            self._error("File not found: %s"%options.filename)
-#        fmri_image = fMRIImage(filename, datasource=repository)
-        fmri_image = fMRIImage(options.filename)
+        if options.file is None:
+            self._error("Please provide a file name.")
+        if not DataSource().exists(options.file):
+            self._error("File not found: %s"%options.file)
+#        fmri_image = fMRIImage(file, datasource=repository)
+        fmri_image = fMRIImage(options.file)
         self._tsdiagstats = TimeSeriesDiagnosticsStats(fmri_image)
         if not options.wxmpl:
             self._app = wxPySimpleApp(0)
             self._plot_data()
         else:
-            self._app = wxmpl.PlotApp('Time Series Diagnostics', size=(10.0, 11.5))
+            self._app = wxmpl.PlotApp('Time Series Diagnostics', \
+                                      size=(10.0, 11.5))
             self._wxmpl_plot_data()
         self._app.MainLoop()
 
