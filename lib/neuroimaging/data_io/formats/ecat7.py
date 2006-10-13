@@ -310,7 +310,7 @@ class Ecat7(bin.BinaryFormat):
         hdrfile.seek(0)
         magicnumber = hdrfile.read(8)
         if magicnumber.find('MATRIX72') is -1:
-            raise NotImplementedError("%s ECAT version not supported"%magic_number[0])
+            raise NotImplementedError("%s ECAT version not supported" % magicnumber[0])
         
 
     def prewrite(self, x):
@@ -351,7 +351,7 @@ class Ecat7(bin.BinaryFormat):
         Fills main header with empty default values
         """
         for field, format in self.header_formats.items():
-            self.header[field] = self._default_field_value(field,format)
+            self.header[field] = self._default_field_value(field, format)
 
     @staticmethod
     def _default_field_value(fieldname, fieldformat):
@@ -359,7 +359,7 @@ class Ecat7(bin.BinaryFormat):
         return Ecat7._field_defaults.get(fieldname, None) or \
                utils.format_defaults[fieldformat[-1]]
 
-    def cache_data(Cache):
+    def cache_data(self, Cache):
         """
         Create Cache to hold Ecat Frames in one contiguous Volume
         """
