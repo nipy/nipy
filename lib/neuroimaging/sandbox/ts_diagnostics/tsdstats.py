@@ -8,7 +8,7 @@ from neuroimaging.core.image.image import Image
 
 class TimeSeriesDiagnosticsStats(object):
 
-    def __init__(self, fmri_image, **keywords):
+    def __init__(self, fmri_image):
         self.mean = True
         self.sd = True
         self.mse = True
@@ -95,4 +95,5 @@ class TimeSeriesDiagnosticsStats(object):
         self.min_mse_slice = N.minimum.reduce(self.mse_slice, axis=0)
         self.mean_mse_slice = N.mean(self.mse_slice, axis=0)
 
-        self.mse_image[allslice] = N.sqrt(self.mse_image.readall()/ (self.ntime-1))
+        self.mse_image[allslice] = \
+          N.sqrt(self.mse_image.readall() / (self.ntime-1))

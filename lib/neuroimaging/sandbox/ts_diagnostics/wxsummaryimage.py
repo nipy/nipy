@@ -4,7 +4,6 @@ import matplotlib.cm as cm
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.utils import wxmpl
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.ui.visualization.viewer import BoxViewer
 
 from neuroimaging.sandbox.ts_diagnostics.tsdstats import \
   TimeSeriesDiagnosticsStats

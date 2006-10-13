@@ -9,7 +9,7 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, \
 
 from neuroimaging.data_io import DataSource
 from neuroimaging.modalities.fmri import fMRIImage
-from neuroimaging.utils.tests.data import repository
+#from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.sandbox.ts_diagnostics.tsdstats import \
   TimeSeriesDiagnosticsStats
@@ -17,7 +17,7 @@ from neuroimaging.sandbox.ts_diagnostics.tsdstats import \
 class TimeSeriesDiagnostics(OptionParser):
     "Command-line tool for getting and setting Analyze header values."
 	   
-    _usage= "%prog [options] <hdrfile>\n"+__doc__
+    _usage = "%prog [options] <hdrfile>\n"+__doc__
 #    options = (
 #      Option('-a', '--attribute', dest="attname",
 #        help="Get or set this attribute"),
@@ -63,7 +63,8 @@ class TimeSeriesDiagnostics(OptionParser):
 
     def run(self):
         options, args = self.parse_args()
-        if len(args) != 1: self._error("Please provide a file name")
+        if len(args) != 1:
+            self._error("Please provide a file name")
 #        filename = "test_fmri.img"
         filename = args[0]
         if not DataSource().exists(filename):
@@ -76,7 +77,7 @@ class TimeSeriesDiagnostics(OptionParser):
         app.MainLoop()
 
 if __name__ == '__main__':
-   TimeSeriesDiagnostics().run() 
+    TimeSeriesDiagnostics().run() 
 #    TS_DIAG.sd_image.tofile('diag_sd.img', clobber=True)
 #    TS_DIAG.mean_image.tofile('diag_mean.img', clobber=True)
 #    TS_DIAG.mse_image.tofile('diag_mse.img', clobber=True)
