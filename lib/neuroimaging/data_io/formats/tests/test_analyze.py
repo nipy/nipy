@@ -49,7 +49,7 @@ class AnalyzeWriteTest(AnalyzeTest):
         self.image.write_header(new)
         new.close()
         new = file('tmp.hdr', 'rb')
-        old = file(repository.filename(self.image.header_file))
+        old = repository.open(self.image.header_file)
         self.assertEquals(old.read(), new.read())
 
 class AnalyzeReadTest(AnalyzeTest):
