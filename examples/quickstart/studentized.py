@@ -32,11 +32,11 @@ for i in range(len(images)):
     for data in cur_image:
         out = N.zeros((n-1,) + data.shape, N.float64)
         for j in range(n-1):
-            out[j] = images_copy[j].next(value=cur_image.itervalue)
+            out[j] = images_copy[j].next(value=cur_image.grid.itervalue())
         mu = out.mean(axis=0)
         std = out.std(axis=0)
         t = (data - mu) / (std * (N.sqrt(1 - 1./n)))
-        out_images[i].next(data=t, value=cur_image.itervalue)
+        out_images[i].next(data=t, value=cur_image.grid.itervalue())
 
 del(out_images)
 out_images = [Image('t_%04d.nii' % i) for i in range(6,18)]
@@ -54,5 +54,5 @@ for image in out_images:
     tval = (tval[1:] - tval[:-1]) * delta / (X[2] - X[1])
     pylab.plot((X[:-1] + X[1:])/2., tval*N.product(imagedata.shape), 'r',
                linewidth=2)
-    pylab.title('Histogram for %s' % image.source.filename)
+    pylab.title('Histogram for %s' % image._source.filename)
     pylab.show()
