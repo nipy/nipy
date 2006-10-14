@@ -1,19 +1,28 @@
 import csv, types, copy
-from neuroimaging import traits
 import numpy as N
 
 from neuroimaging.modalities.fmri.functions import TimeFunction, Events
 from scipy.sandbox.models.formula import Factor, Quantitative, Formula, Term
-from scipy.interpolate import interp1d
 
 namespace = {}
 downtime = 'None/downtime'
 
-class ExperimentalRegressor(traits.HasTraits):
+class ExperimentalRegressor(object):
 
-    convolved = traits.false # a toggle to determine whether we
-                             # want to think of the factor as convolved or not
-                             # i.e. for plotting
+    
+    def __init__(self, convolved=False):
+        self.__c = convolved
+
+    # a toggle to determine whether we
+    # want to think of the factor as convolved or not
+    # i.e. for plotting
+    # fixme: this is ugly, but was confusing with traits
+    # we can put it back to being a trait when my brain
+    # sorts itself out -- Timl
+    def get_c(self):  return self.__c
+    def set_c(self, value):  self.__c = value; self._convolved_changed()
+    def del_c(self): del self.__c
+    convolved = property(get_c, set_c, del_c)
 
     def _convolved_changed(self):
         if not hasattr(self, '_nameunconv'):
@@ -33,6 +42,7 @@ class ExperimentalRegressor(traits.HasTraits):
 
     def names(self):
         if self.convolved:
+            print self.convolved
             return self._convolved.names()
         else:
             if hasattr(self, '_nameunconv'):
@@ -214,11 +224,14 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
 
     """
     
-    delta = traits.Trait(True, desc='Are the events delta functions?')
-    dt = traits.Trait(0.02, desc='Width of the delta functions.')
+    #delta = traits.Trait(True, desc='Are the events delta functions?')
+    #dt = traits.Trait(0.02, desc='Width of the delta functions.')
 
-    def __init__(self, name, iterator, **keywords):
-        ExperimentalRegressor.__init__(self, **keywords)
+    def __init__(self, name, iterator, convolved=False, delta=True, dt=0.02):
+        ExperimentalRegressor.__init__(self, convolved)
+        self.delta = delta
+        self.dt = dt
+        
         self.fromiterator(iterator)
         keys = self.events.keys() + [downtime]
         Factor.__init__(self, name, keys)
@@ -242,7 +255,7 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
             l = self.events.keys()
             j = l.index(key)
         else:
-            raise ValueError, 'key not found'            
+            raise KeyError, 'key not found'            
 
         def func(namespace=namespace, time=None, j=j,
                 obj=self, 
