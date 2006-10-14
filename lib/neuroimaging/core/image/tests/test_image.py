@@ -17,6 +17,16 @@ class ImageTest(unittest.TestCase):
         for f in tmpf:
             os.remove(f)
 
+    def test_init(self):
+        new = Image(self.img)
+        N.testing.assert_equal(self.img[:], new[:])
+
+        new = Image(self.img._source)
+        N.testing.assert_equal(self.img[:], new[:])
+
+
+        self.assertRaises(ValueError, Image, None)
+
     def test_analyze(self):
         y = self.img.readall()
         self.assertEquals(y.shape, tuple(self.img.grid.shape))
@@ -123,6 +133,11 @@ class ImageTest(unittest.TestCase):
             v += t.shape[0]
         self.assertEquals(v, N.product(test.grid.shape))
 
+
+    def test_readall(self):
+        a = self.img.readall(clean=False)
+        b = self.img.readall(clean=True)
+        N.testing.assert_equal(a, b)
 
 if __name__ == '__main__':
     unittest.main()
