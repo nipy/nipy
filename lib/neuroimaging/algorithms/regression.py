@@ -17,8 +17,7 @@ class ImageRegressionOutput(RegressionOutput):
     clobber = traits.false
 
     def __init__(self, grid, outgrid=None, **keywords):
-        # should this not be RegressionOutput.__init__(self, **keywords)?
-        traits.HasTraits.__init__(self, **keywords)
+        RegressionOutput.__init__(self, **keywords)
         self.grid = grid
         if outgrid is None:
             self.outgrid = grid
@@ -44,7 +43,7 @@ class ImageRegressionOutput(RegressionOutput):
         return self
 
     def next(self, data=None):
-        value = self.grid.itervalue
+        value = self.grid.itervalue()
         self.img.next(data=data, value=value)
 
     def extract(self, results):
@@ -110,7 +109,7 @@ class TContrastOutput(ImageRegressionOutput):
         return results.Tcontrast(self.contrast.matrix, sd=self.sd, t=self.t)
 
     def next(self, data=None):
-        value = self.grid.itervalue
+        value = self.grid.itervalue()
 
         self.timg.next(data=data.t, value=value)
         if self.effect:
