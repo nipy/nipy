@@ -134,7 +134,7 @@ class fMRIStatOLS(LinearModelIterator):
 
         if self.mask is not None:
             _mask = self.mask.readall()
-            self.rho.image.data[:] = N.where(_mask, self.rho.image.data, N.nan)
+            self.rho[:] = N.where(_mask, self.rho[:], N.nan)
 
         if self.slicetimes == None:
             tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
