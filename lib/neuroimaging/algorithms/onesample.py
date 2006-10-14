@@ -33,18 +33,18 @@ class ImageOneSample(onesample.OneSampleIterator):
     def weights(self):
         ## TO DO: rename this methods, something like "getinput"
         if self.haveW:
-            w = self.witerator.next(value=self.iterator.grid.itervalue)
+            w = self.witerator.next(value=self.iterator.grid.itervalue())
         else:
             return 1.
 
         if self.varatioimg is not None:
-            value = self.iterator.grid.itervalue
+            value = self.iterator.grid.itervalue()
             self.varatio = self.varatioimg.next(value=value)
         else:
             self.varatio = 1.
         
         if self.varfiximg is not None:
-            value = self.iterator.grid.itervalue
+            value = self.iterator.grid.itervalue()
             self.varfix = self.varfiximg.next(value=value)
         else:
             self.varfix = 0.
@@ -54,6 +54,7 @@ class ImageOneSample(onesample.OneSampleIterator):
     def __init__(self, input, outputs=[], **keywords):
 
         traits.HasTraits.__init__(self, **keywords)
+
 
         if type(input[0]) in [types.ListType, types.TupleType]:
             self.haveW = True
@@ -95,7 +96,7 @@ class ImageOneSample(onesample.OneSampleIterator):
 
 class ImageOneSampleOutput(onesample.OneSampleOutput):
     """
-    A class to output things a one sapmle T passes through data. It
+    A class to output things a one sample T passes through data. It
     uses the image\'s iterator values to output to an image.
 
     """
