@@ -2,7 +2,7 @@
 The core Image class.
 """
 
-import types, os
+import types
 
 import numpy as N
 
