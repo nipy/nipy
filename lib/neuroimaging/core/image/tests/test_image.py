@@ -1,7 +1,11 @@
-import unittest, os, glob
+import unittest
+import os
+import glob
+
 import numpy as N
+
 from neuroimaging.core.image.image import Image, ImageSequenceIterator
-from neuroimaging.algorithms.onesample import ImageOneSample
+#from neuroimaging.algorithms.onesample import ImageOneSample
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.formats.analyze import Analyze
 
@@ -13,9 +17,9 @@ class ImageTest(unittest.TestCase):
         self.img = Image("avg152T1.img", repository, format=Analyze)
 
     def tearDown(self):
-        tmpf = glob.glob('tmp.*')
-        for f in tmpf:
-            os.remove(f)
+        tmpfiles = glob.glob('tmp.*')
+        for tmpfile in tmpfiles:
+            os.remove(tmpfile)
             
     def test_init(self):
         new = Image(self.img)
@@ -57,9 +61,9 @@ class ImageTest(unittest.TestCase):
         self.assertEquals(x.shape, tuple((self.img.grid.shape)))
 
     def test_slice5(self):
-        s1 = slice(0,20,2)
-        s2 = slice(0,50,5)
-        x = self.img[[s1,s2]]
+        slice_1 = slice(0,20,2)
+        slice_2 = slice(0,50,5)
+        x = self.img[[slice_1,slice_2]]
         self.assertEquals(x.shape, (10,10,self.img.grid.shape[2]))
 
     def test_array(self):

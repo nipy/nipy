@@ -1,5 +1,7 @@
 import unittest
+
 import numpy as N
+
 from neuroimaging.core.image.base_image import BaseImage, ArrayImage
 from neuroimaging.core.reference.grid import SamplingGrid
 

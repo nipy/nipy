@@ -32,8 +32,8 @@ class Resels(traits.HasTraits):
 
         self.grid = grid
 
-        t = self.grid.mapping.transform
-        self.wedge = N.power(N.fabs(det(t)), 1./self.D)
+        _transform = self.grid.mapping.transform
+        self.wedge = N.power(N.fabs(det(_transform)), 1./self.D)
         self.normalized = normalized
 
     def integrate(self, mask=None):
@@ -62,13 +62,15 @@ class Resels(traits.HasTraits):
         if not self.fwhm:
             im = Image(N.zeros(self.grid.shape, N.float64), grid=self.grid)
         else:
-            im = Image(self.fwhm, clobber=self.clobber, mode='w', grid=self.grid)
+            im = \
+              Image(self.fwhm, clobber=self.clobber, mode='w', grid=self.grid)
         self.fwhm = iter(im)
 
         if not self.resels:
             im = Image(N.zeros(self.grid.shape, N.float64), grid=self.grid)
         else:
-            im = Image(self.resels, clobber=self.clobber, mode='w', grid=self.grid)
+            im = \
+              Image(self.resels, clobber=self.clobber, mode='w', grid=self.grid)
         self.resels = iter(im)
 
         return self

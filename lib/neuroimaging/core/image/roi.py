@@ -113,7 +113,7 @@ class SamplingGridROI(DiscreteROI):
         self.grid = grid
         # we assume that voxels are (i,j,k) indices?
 
-    def pool(self, image, **extra):
+    def pool(self, image):
         '''
         Pool data from an image over the ROI -- return fn evaluated at
         each voxel.
@@ -151,7 +151,7 @@ class ROIall(SamplingGridROI):
     An ROI for an entire grid. Save time by avoiding compressing, etc.
     """
 
-    def mask(self, image, **keywords):
+    def mask(self, image):
         try:
             mapping = image.spatial_mapping
         except:
@@ -162,13 +162,13 @@ class ROIall(SamplingGridROI):
         tmp = image.readall()
         tmp.shape = N.product(tmp)
 
-def ROIspherefn(center, radius):
+def roi_sphere_fn(center, radius):
     def test(real):
         diff = N.array([real[i] - center[i] for i in range(real.shape[0])])
         return (sum(diff**2) < radius**2)
     return test
 
-def ROIellipsefn(center, form, a = 1.0):
+def roi_ellipse_fn(center, form, a = 1.0):
     """
     Ellipse determined by regions where a quadratic form is <= a. The
     quadratic form is given by the inverse of the 'form' argument, so
@@ -198,7 +198,7 @@ def ROIellipsefn(center, form, a = 1.0):
         return value
     return test
 
-def ROIfromArraySamplingGrid(data, grid):
+def roi_from_array_sampling_grid(data, grid):
     """
     Return a SamplingGridROI from an array (data) on a grid.
     interpolation. Obvious ways to extend this.

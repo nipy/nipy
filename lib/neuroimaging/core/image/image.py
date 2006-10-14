@@ -64,7 +64,8 @@ class Image(object):
 
         # from filename or url
         elif type(image) == types.StringType:
-            self._source = self.fromurl(image, datasource, grid=grid, **keywords)
+            self._source = \
+              self.fromurl(image, datasource, grid=grid, **keywords)
         else:
             raise ValueError(
           "Image input must be a string, array, or another image.")
@@ -206,6 +207,6 @@ class ImageSequenceIterator(object):
     def next(self, value=None):
         if value is None:
             value = self.grid.next()
-        v = [img.next(value=value) for img in self.imgs]
-        return N.array(v, N.float64)
+        val = [img.next(value=value) for img in self.imgs]
+        return N.array(val, N.float64)
 
