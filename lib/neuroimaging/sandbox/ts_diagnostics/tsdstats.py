@@ -71,7 +71,8 @@ class TimeSeriesDiagnosticsStats(object):
                         self._npixel[j] = self.mask.getslice(slice(j,j+1)).sum()
                 else:
                     if not self._npixel.has_key(j):
-                        self._npixel[j] = N.product(self.fmri_image.grid.shape[2:])
+                        self._npixel[j] = \
+                          N.product(self.fmri_image.grid.shape[2:])
                 self.mse_slice[i,j] = N.power(tmp[j], 2).sum() / self._npixel[j]
 
         if self.mean:
