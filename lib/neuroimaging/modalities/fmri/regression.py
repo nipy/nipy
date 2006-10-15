@@ -45,7 +45,8 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
         self.img.next(data=data, value=value)
 
     def extract(self, results):
-        return 0.
+        raise NotImplementedError
+
 
 class ResidOutput(fMRIRegressionOutput):
 
@@ -74,10 +75,6 @@ class ResidOutput(fMRIRegressionOutput):
         value = self.grid.itervalue()
         self.img.next(data=data, value=value)
 
-    def __iter__(self):
-        iter(self.grid)
-        return self
-
 
 class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 
@@ -96,12 +93,12 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 
         self.outdir = os.path.join(path, self.subpath, self.contrast.name)
         self.path = path
-        self.setup_contrast(time=self.frametimes)
-        self.setup_output()
+        self._setup_contrast(time=self.frametimes)
+        self._setup_output()
 
-    def setup_output(self):
+    def _setup_output(self):
 
-        imreg.TContrastOutput.setup_output(self)
+        imreg.TContrastOutput._setup_output(self)
 
         if PYLAB_DEF:
             ftime = self.frametimes
@@ -142,12 +139,12 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
         self.contrast = contrast
         self.path = path
         self.outdir = os.path.join(self.path, self.subpath, self.contrast.name)
-        self.setup_contrast(time=self.frametimes)
-        self.setup_output()
+        self._setup_contrast(time=self.frametimes)
+        self._setup_output()
 
-    def setup_output(self):
+    def _setup_output(self):
 
-        imreg.FContrastOutput.setup_output(self)
+        imreg.FContrastOutput._setup_output(self)
 
         if PYLAB_DEF:
             ftime = self.frametimes
@@ -178,12 +175,12 @@ class AR1Output(fMRIRegressionOutput):
 class AROutput(fMRIRegressionOutput):
 
     order = traits.Int(1)
-    def __init__(self, grid, **keywords):
+    def __init__(self, grid, model, **keywords):
         arraygrid = grid.subgrid(0)
         fMRIRegressionOutput.__init__(self, grid, arraygrid=arraygrid, **keywords)
-        self.invM = N.identity(self.order + 1)
+        self._setup_bias_correct(model)
 
-    def setup_bias_correct(self, model):
+    def _setup_bias_correct(self, model):
 
         R = N.identity(model.design.shape[0]) - N.dot(model.design, model.calc_beta)
         M = N.zeros((self.order+1,)*2, N.float64)
@@ -202,16 +199,15 @@ class AROutput(fMRIRegressionOutput):
     def extract(self, results):
         resid = results.resid.reshape((results.resid.shape[0],
                                        N.product(results.resid.shape[1:])))
-        ntime = resid.shape[0]
 
         sum_sq = results.scale.reshape(resid.shape[1:]) * results.df_resid
 
-        Cov = N.zeros((self.order + 1,) + sum_sq.shape, N.float64)
-        Cov[0] = sum_sq
+        cov = N.zeros((self.order + 1,) + sum_sq.shape, N.float64)
+        cov[0] = sum_sq
         for i in range(1, self.order+1):
-            Cov[i] = N.add.reduce(resid[i:] * resid[0:-i], 0)
-        Cov = N.dot(self.invM, Cov)
-        output = Cov[1:] * recipr(Cov[0])
+            cov[i] = N.add.reduce(resid[i:] * resid[0:-i], 0)
+        cov = N.dot(self.invM, cov)
+        output = cov[1:] * recipr(cov[0])
         return N.squeeze(output)
 
 
