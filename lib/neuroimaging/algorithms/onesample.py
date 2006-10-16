@@ -7,29 +7,55 @@ from neuroimaging.core.image.image import Image, ImageSequenceIterator
 from neuroimaging.algorithms.statistics import onesample
 from neuroimaging.algorithms.statistics.regression import RegressionOutput
 
-class ImageOneSample(onesample.OneSampleIterator, traits.HasTraits):
+class ImageOneSample(onesample.OneSampleIterator):
     
     """
-    Fit a one sample t to a sequence of images. Input should be either a sequence of images (in which
-    case variances are treated as equal) or a sequence of pairs of images and weights (in which case
-    the variance of each image is a function of the \'weight\' image). The \'weight\' image
-    can be a 'std', 'var', or 'weight' -- the appropriate transform will be applied.
+    Fit a one sample t to a sequence of images. Input should be either a
+    sequence of images (in which case variances are treated as equal) or a
+    sequence of pairs of images and weights (in which case the variance of each
+    image is a function of the \'weight\' image). The \'weight\' image can be a
+    'std', 'var', or 'weight' -- the appropriate transform will be applied.
     """
 
-    all = traits.false
-    haveW = traits.false
-    t = traits.true
-    sd = traits.true
-    mean = traits.true
-    clobber = traits.false
-    path = traits.Str('onesample')
-    basename = traits.Str()
-    ext = traits.Str('.hdr')
-    varatioimg = traits.Any()
-    est_varatio = traits.true
-    varfiximg = traits.Any()
-    est_varfix = traits.true
-    which = traits.Trait('mean', 'varatio')
+    def __init__(self, input, outputs=[], path='onesample', ext='.hdr',
+                 t=True, sd=True, mean=True, clobber=False, which='mean',
+                 varfiximg=None, varatioimg=None, est_varatio=True, est_varfix=True):
+
+        self.which = which
+        self.varfiximg = varfiximg
+        self.varatioimg = varatioimg
+
+        if type(input[0]) in [types.ListType, types.TupleType]:
+            self.haveW = True
+            imgs = [val[0] for val in input]
+            wimgs = [val[1] for val in input]
+            self.iterator = ImageSequenceIterator(imgs)
+            self.witerator = ImageSequenceIterator(wimgs, grid=self.iterator.grid)
+        else:
+            self.haveW = False
+            self.iterator = ImageSequenceIterator(input)
+
+
+        onesample.OneSampleIterator.__init__(self, self.iterator, outputs=outputs)
+
+        if self.which == 'mean':
+            if t:
+                self.outputs.append(TOutput(self.iterator.grid, path=path,
+                                            clobber=clobber, ext=ext))
+            if sd:
+                self.outputs.append(SdOutput(self.iterator.grid, path=path,
+                                             clobber=clobber, ext=ext))
+            if mean:
+                self.outputs.append(MeanOutput(self.iterator.grid, path=path,
+                                               clobber=clobber, ext=ext))
+        else:
+            if est_varatio:
+                self.outputs.append(VaratioOutput(self.iterator.grid, path=path,
+                                                  clobber=clobber, ext=ext))
+
+            if est_varfix:
+                self.outputs.append(VarfixOutput(self.iterator.grid, path=path,
+                                                 clobber=clobber, ext=ext))
 
     def weights(self):
         ## TO DO: rename this methods, something like "getinput"
@@ -52,47 +78,6 @@ class ImageOneSample(onesample.OneSampleIterator, traits.HasTraits):
             
         return w
 
-    def __init__(self, input, outputs=[], **keywords):
-
-        traits.HasTraits.__init__(self, **keywords)
-
-
-        if type(input[0]) in [types.ListType, types.TupleType]:
-            self.haveW = True
-            imgs = [val[0] for val in input]
-            wimgs = [val[1] for val in input]
-            self.iterator = ImageSequenceIterator(imgs)
-
-            ## don't know if this should go here....
-            #if self.all:
-            #    self.iterator.grid.itertype = 'all'
-            #    self.iterator.grid = iter(self.iterator.grid)
-
-            self.witerator = ImageSequenceIterator(wimgs, grid=self.iterator.grid)
-        else:
-            self.iterator = ImageSequenceIterator(input)
-
-        onesample.OneSampleIterator.__init__(self, self.iterator, outputs=outputs)
-
-        self.outputs = outputs
-        if self.which == 'mean':
-            if self.t:
-                self.outputs.append(TOutput(self.iterator.grid, path=self.path,
-                                            clobber=self.clobber, ext=self.ext))
-            if self.sd:
-                self.outputs.append(SdOutput(self.iterator.grid, path=self.path,
-                                             clobber=self.clobber, ext=self.ext))
-            if self.mean:
-                self.outputs.append(MeanOutput(self.iterator.grid, path=self.path,
-                                               clobber=self.clobber, ext=self.ext))
-        else:
-            if self.est_varatio:
-                self.outputs.append(VaratioOutput(self.iterator.grid, path=self.path,
-                                                  clobber=self.clobber, ext=self.ext))
-
-            if self.est_varfix:
-                self.outputs.append(VarfixOutput(self.iterator.grid, path=self.path,
-                                                 clobber=self.clobber, ext=self.ext))
 
     def fit(self):
         return onesample.OneSampleIterator.fit(self, which=self.which)
