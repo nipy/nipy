@@ -11,6 +11,7 @@ import numpy as N
 
 from neuroimaging.modalities.fmri import protocol
 from neuroimaging.modalities.fmri import hrf
+from neuroimaging.modalities.fmri import functions
 
 """
 Experiment: periodic block with two conditions 'hot' and 'warm'.
@@ -24,7 +25,7 @@ warm = [['warm',t+27.,t+36.] for t in N.arange(0,360,36)]
 pain_factor = protocol.ExperimentalFactor('pain', hot+warm, delta=False)
 pain_factor.convolve(hrf.canonical)
 
-drift = protocol.SplineConfound(df=7, window=[0,360])
+drift = functions.SplineConfound(df=7, window=(0,360))
 
 """
 Look at the spline basis. The first four terms (not plotted) are just
