@@ -7,8 +7,8 @@ import urllib2
 import run as FIACrun
 
 shift = 1.25
-T = N.arange(0, 191*2.5,2.5) + shift
-t = N.arange(0,191*2.5,0.02)
+T = N.arange(0, 191*2.5, 2.5) + shift
+t = N.arange(0, 191*2.5, 0.02)
 
 def n(x): return x / N.fabs(x).max()
 
@@ -33,17 +33,17 @@ def getxcache(subj=0, run=1):
 
 def getfmristat(subj=0, run=1):
     X = getxcache(subj=subj, run=run)[:,:,2:] * 1.
-    X.shape = (191,10)
+    X.shape = (191, 10)
     return X
     
 def getnipy(subj=0, run=1):
-    f = FIACrun.FIACformula(subj=subj,run=run)
+    f = FIACrun.FIACformula(subj=subj, run=run)
     d = f['FIAC_design'] + f['beginning']
     return d(time=T)
 
 def compare(subj=0, run=1, show=False, save=True, etype='DSt_DSp', deriv=True):
 
-    f = FIACrun.FIACformula(subj=subj,run=run)
+    f = FIACrun.FIACformula(subj=subj, run=run)
 
     """
     First, get the formula term corresponding to the design,
@@ -130,7 +130,7 @@ compare(subj=0, run=3)
 
 if __name__ == '__main__':
     for i in range(16):
-        for j in range(1,5):
+        for j in range(1, 5):
             htmlfile = file('/home/analysis/FIAC/x_cache/compare_sub%d_run%d.html' %(i,j), 'w')
             htmlfile.write(html1)
             htmlfile.write('<h1>Comparing X_cache for subject %d, run %d</h1>\n' % (i, j))

@@ -66,7 +66,7 @@ def FIACmontage(**opts):
 
     for i in range(len(subjects)):
         opts['subj'] = subjects[i]
-        for j in range(1,5):
+        for j in range(1, 5):
             opts['run'] = j 
             curslice = FIACfixedslice(**opts)
             if curslice:
@@ -82,7 +82,7 @@ def FIACmontage(**opts):
 
     for i in range(len(subjects)):
         opts['subj'] = subjects[i]
-        for j in range(1,5):
+        for j in range(1, 5):
             opts['run'] = j
             if dataslices[(j-1,i)] is not None:
                 dataslices[(j-1,i)].vmin = _vmin

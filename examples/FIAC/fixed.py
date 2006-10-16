@@ -1,4 +1,4 @@
-import os, shutil, gc, time, urllib
+import os, gc, urllib
 import numpy as N
 
 from neuroimaging.core.image.image import Image
@@ -7,7 +7,7 @@ from neuroimaging.algorithms.onesample import ImageOneSample
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
 
-from fiac import FIACprotocol, FIACblock, FIACevent, FIACpath
+from fiac import FIACblock, FIACevent, FIACpath
 
 def FIACfixed(contrast, which='block', subj=3, base='contrasts', clobber=False):
     keep = []
@@ -27,8 +27,6 @@ def FIACfixed(contrast, which='block', subj=3, base='contrasts', clobber=False):
         except:
             pass
 
-    var = 0.
-
     input = []
 
     for run in keep:
@@ -39,7 +37,6 @@ def FIACfixed(contrast, which='block', subj=3, base='contrasts', clobber=False):
             sdfile = FIACpath('fsl/fmristat_run/%s/%s/sd.img' % (base, contrast), subj=subj, run=run)
             outfile = os.path.join(outdir, 'sd_%d.img' % run)
             FIACresample(sdfile, outfile, subj=subj, run=run)
-            tic = time.time()
             sdimg = fix_origin(Image(outfile))
 
             efffile = FIACpath('fsl/fmristat_run/%s/%s/effect.img' % (base, contrast), subj=subj, run=run)

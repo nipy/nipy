@@ -1,6 +1,4 @@
-import os, shutil
-
-import numpy as N
+import os
 
 from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.onesample import ImageOneSample

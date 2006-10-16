@@ -16,7 +16,7 @@ stat_map = {'t':'t',
             'effect': 'ef',
             'sd': 'sd'}
 
-def fmristat_run(subject=3, run=3, which='contrasts', contrast='overall', stat='t', **extra):
+def fmristat_run(subject=3, run=3, which='contrasts', contrast='overall', stat='t'):
     contrast = contrast_map[contrast]
     which = which_map[which]
     stat = stat_map[stat]
@@ -25,7 +25,7 @@ def fmristat_run(subject=3, run=3, which='contrasts', contrast='overall', stat='
     
     return Image(runfile)
 
-def fmristat_rho(subject=3, run=3, **extra):
+def fmristat_rho(subject=3, run=3):
 
     runfile = '/home/analysis/FIAC/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (subject, subject, run)
     
@@ -40,13 +40,13 @@ def nipy_run(subject=3, run=3, which='contrasts', contrast='overall', stat='t', 
     return Image(runfile)
 
 
-def nipy_rho(subject=3, run=3, **extra):
+def nipy_rho(subject=3, run=3):
 
     runfile = '/home/analysis/FIAC/fiac%d/fonc%d/fsl/fmristat_run/rho.img' % (subject, run)
 
     return Image(runfile)
 
-def mask(subject=3, run=3, **extra):
+def mask(subject=3, run=3):
     runfile = '/home/analysis/FIAC/fiac%d/fonc%d/fsl/mask.img' % (subject, run)
 
     return Image(runfile)
@@ -82,12 +82,15 @@ vy = BoxViewer(y, mask=m, colormap='spectral')
 
 print options
 if options['m'] is not None:
-    vx.m = options['m']; vy.m = options['m']
+    vx.m = options['m']
+    vy.m = options['m']
 
 if options['M'] is not None:
-    vx.M = options['M']; vy.M = options['M']
+    vx.M = options['M']
+    vy.M = options['M']
 
-vx.draw(); vy.draw()
+vx.draw()
+vy.draw()
 
 X = x.readall() * m.readall()
 X.shape = N.product(X.shape)
@@ -95,6 +98,6 @@ X.shape = N.product(X.shape)
 Y = y.readall() * m.readall()
 Y.shape = N.product(Y.shape)
 
-print N.corrcoef(X,Y)
+print N.corrcoef(X, Y)
 
 pylab.show()

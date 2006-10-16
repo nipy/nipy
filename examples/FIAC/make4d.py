@@ -1,4 +1,4 @@
-import sys, gc, os
+import sys, gc
 import numpy as N
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.core.image.image import Image

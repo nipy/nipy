@@ -1,4 +1,4 @@
-import os, time, string
+import os, time
 
 ttoc = time.time()
 for subj in range(16):
@@ -36,7 +36,7 @@ for design in ['block', 'event']:
             python2.4 ./multi.py --which=%s
             --design=%s --contrast=%s --clobber
             """ % (which, design, contrast)
-            cmd = string.join(cmd.replace('\n', ' ').strip().split())
+            cmd = " ".join(cmd.replace('\n', ' ').strip().split())
             print cmd
             os.system(cmd)
 ttic = time.time()
