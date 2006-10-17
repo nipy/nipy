@@ -9,30 +9,44 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, \
 
 from neuroimaging.data_io import DataSource
 from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.utils import wxmpl
 #from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.sandbox.ts_diagnostics.tsdstats import \
   TimeSeriesDiagnosticsStats
 
 class TimeSeriesDiagnostics(OptionParser):
-    "Command-line tool for getting and setting Analyze header values."
-	   
-    _usage = "%prog [options] <hdrfile>\n"+__doc__
-#    options = (
-#      Option('-a', '--attribute', dest="attname",
-#        help="Get or set this attribute"),
-#      Option('-v', '--value', dest="value",
-#        help="Set attribute to this value"))
+    """
+    Command-line tool for displaying four plots useful for diagnosing
+    potential problems in the time series.
+
+    The top plot displays the scaled variance from image to image;
+    the second plot shows the scaled variance per slice;
+    the third plot shows the scaled mean voxel intensity for each image;
+    while, the bottom one plots the maximum, mean, and minimum scaled
+    slice variances per slice.
+    """
+
+    _usage = "%prog [options]\n"+__doc__
+    options = (
+      Option('-w', '--wxmpl', action="store_true", dest="wxmpl",
+        help="use wxmpl for plotting"),
+      Option('-f', '--file', dest='filename',
+        help="input file to read data from"))
 
     def __init__(self, *args, **kwargs):
         OptionParser.__init__(self, *args, **kwargs)
         self.set_usage(self._usage)
-#        self.add_options(self.options)
+        self.add_options(self.options)
+        self._check_required("-f")
 
     def _error(self, message):
         print message
         self.print_help()
         sys.exit(0)
+
+    def _check_required (self, opt):
+      option = self.get_option(opt)
 
     def _plot_data(self):
         win = wxFrame(None, -1, "")
@@ -61,20 +75,50 @@ class TimeSeriesDiagnostics(OptionParser):
         axes_4.plot(self._tsdiagstats.mean_mse_slice)
         win.Show()
 
+    def _wxmpl_plot_data(self):
+        fig = self._app.get_figure()
+
+        # Create the subplot Axes
+        axes_1 = fig.add_subplot(4, 1, 1)
+        axes_2 = fig.add_subplot(4, 1, 2)
+        axes_3 = fig.add_subplot(4, 1, 3)
+        axes_4 = fig.add_subplot(4, 1, 4)
+
+        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+        axes_1.plot(self._tsdiagstats.mse_time)
+        for j in range(self._tsdiagstats.mse_slice.shape[1]):
+            axes_2.plot(self._tsdiagstats.mse_slice[:,j], colors[j%7]+'.-')
+        axes_3.plot(self._tsdiagstats.mean_signal)
+        axes_4.plot(self._tsdiagstats.max_mse_slice)
+        axes_4.plot(self._tsdiagstats.min_mse_slice)
+        axes_4.plot(self._tsdiagstats.mean_mse_slice)
+
+        # Subplots must be labeled carefully, since labels
+        # can be accidentally hidden by other subplots
+        #axes_1.set_title('Time Series Diagnostics')
+        axes_1.set_xlabel('Difference image number')
+        axes_1.set_ylabel('Scaled variance')
+        axes_2.set_xlabel('Difference image number')
+        axes_2.set_ylabel('Slice by slice variance')
+        axes_3.set_xlabel('Image number')
+        axes_3.set_ylabel('Scaled mean voxel intensity')
+        axes_4.set_xlabel('Slice number')
+        axes_4.set_ylabel('Max/mean/min slice variance')
+
     def run(self):
         options, args = self.parse_args()
-        if len(args) != 1:
-            self._error("Please provide a file name")
-#        filename = "test_fmri.img"
-        filename = args[0]
-        if not DataSource().exists(filename):
-            self._error("File not found: %s"%filename)
+        if not DataSource().exists(options.filename):
+            self._error("File not found: %s"%options.filename)
 #        fmri_image = fMRIImage(filename, datasource=repository)
-        fmri_image = fMRIImage(filename)
+        fmri_image = fMRIImage(options.filename)
         self._tsdiagstats = TimeSeriesDiagnosticsStats(fmri_image)
-        app = wxPySimpleApp(0)
-        self._plot_data()
-        app.MainLoop()
+        if not options.wxmpl:
+            self._app = wxPySimpleApp(0)
+            self._plot_data()
+        else:
+            self._app = wxmpl.PlotApp('Time Series Diagnostics', size=(10.0, 11.5))
+            self._wxmpl_plot_data()
+        self._app.MainLoop()
 
 if __name__ == '__main__':
     TimeSeriesDiagnostics().run() 

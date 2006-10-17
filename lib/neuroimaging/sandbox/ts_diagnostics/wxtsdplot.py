@@ -10,7 +10,16 @@ from neuroimaging.sandbox.ts_diagnostics.tsdstats import \
   TimeSeriesDiagnosticsStats
 
 class TimeSeriesDiagnostics(OptionParser):
-    "Command-line tool for getting and setting Analyze header values."
+    """
+    Command-line tool for displaying four plots useful for diagnosing
+    potential problems in the time series.
+
+    The top plot displays the scaled variance from image to image;
+    the second plot shows the scaled variance per slice;
+    the third plot shows the scaled mean voxel intensity for each image;
+    while, the bottom one plots the maximum, mean, and minimum scaled
+    slice variances per slice.
+    """
 	   
     _usage = "%prog [options] <hdrfile>\n"+__doc__
 #    options = (
