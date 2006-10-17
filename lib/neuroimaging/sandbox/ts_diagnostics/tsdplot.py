@@ -1,5 +1,4 @@
-import sys
-from optparse import OptionParser, Option
+from optparse import Option
 
 from wxPython.wx import wxPySimpleApp, wxFrame, wxBoxSizer, wxVERTICAL, \
   wxLEFT, wxTOP, wxGROW
@@ -9,13 +8,14 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, \
 
 from neuroimaging.data_io import DataSource
 from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.ui.tools import BaseTool
 from neuroimaging.utils import wxmpl
 #from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.sandbox.ts_diagnostics.tsdstats import \
   TimeSeriesDiagnosticsStats
 
-class TimeSeriesDiagnostics(OptionParser):
+class TimeSeriesDiagnostics(BaseTool):
     """
     Command-line tool for displaying four plots useful for diagnosing
     potential problems in the time series.
@@ -27,31 +27,11 @@ class TimeSeriesDiagnostics(OptionParser):
     slice variances per slice.
     """
 
-    _usage = "%prog [options]\n"+__doc__
     _options = (
       Option('-w', '--wxmpl', action="store_true", dest="wxmpl",
         help="use wxmpl for plotting"),
       Option('-f', '--file', dest='file',
         help="input file to read data from"))
-
-    def __init__(self, *args, **kwargs):
-        OptionParser.__init__(self, *args, **kwargs)
-        self.set_usage(self._usage)
-        self.add_options(self._options)
-
-    def _error(self, message):
-        """
-        Prints error message and exits.
-        """
-        print '\n-----------------------------------'
-        print 'ERROR MESSAGE:'
-        print message
-        print
-        print 'For more information about using this command,'
-        print 'please read the usage information below:'
-        print '-----------------------------------\n'
-        self.print_help()
-        sys.exit(0)
 
     def _plot_data(self):
         """

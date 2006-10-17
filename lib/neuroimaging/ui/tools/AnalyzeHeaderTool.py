@@ -1,8 +1,8 @@
-import sys
-from optparse import OptionParser, Option
+from optparse import Option
 
 from neuroimaging.data_io import DataSource
 from neuroimaging.sandbox.refactoring.analyze import AnalyzeHeader
+from neuroimaging.ui.tools import BaseTool
 
 
 
@@ -15,18 +15,6 @@ class AnalyzeHeaderTool (OptionParser):
         help="Get or set this attribute"),
       Option('-v', '--value', dest="value",
         help="Set attribute to this value"))
-
-
-    def __init__(self, *args, **kwargs):
-        OptionParser.__init__(self, *args, **kwargs)
-        self.set_usage(self._usage)
-        self.add_options(self.options)
-
-
-    def _error(self, message):
-        print message
-        self.print_help()
-        sys.exit(0)
 
 
     def run(self):
@@ -48,4 +36,5 @@ class AnalyzeHeaderTool (OptionParser):
             self._error("Only provide a value when an attribute is provided")
         else: print header
 
-if __name__ == "__main__": AnalyzeHeaderTool().run()
+if __name__ == "__main__":
+    AnalyzeHeaderTool().run()
