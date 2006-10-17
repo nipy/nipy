@@ -6,6 +6,7 @@ import numpy.linalg as L
 import numpy.random as R
 import scipy.ndimage
 from scipy.sandbox.models.utils import monotone_fn_inverter, rank 
+from scipy.sandbox.models.regression import OLSModel, ARModel
 
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, DelayContrastOutput
@@ -14,8 +15,8 @@ from neuroimaging.modalities.fmri.regression import AROutput, TContrastOutput, \
 from neuroimaging.algorithms import kernel_smooth
 from neuroimaging.algorithms.fwhm import fastFWHM
 from neuroimaging.algorithms.utils import fwhm2sigma
-from neuroimaging.algorithms.statistics.regression import LinearModelIterator, \
-  OLSModel, ARModel
+from neuroimaging.algorithms.statistics.regression import LinearModelIterator
+
 
 # Imports related to pylab
 
