@@ -102,10 +102,6 @@ class fMRISamplingGrid(SamplingGrid):
 
 
 class fMRIImage(Image):
-    #frametimes = traits.Any()
-    #slicetimes = traits.Any()
-    TR = traits.Any()
-
 
     def __init__(self, _image, **keywords):
         Image.__init__(self, _image, **keywords)
@@ -118,9 +114,9 @@ class fMRIImage(Image):
             n = [self.grid.input_coords.axisnames()[i] \
                  for i in range(ndim)]
             d = n.index('time')
-            self.TR = self.grid.mapping.transform[d, d]
+            transform = self.grid.mapping.transform[d, d]
             start = self.grid.mapping.transform[d, ndim]
-            self.frametimes = start + N.arange(self.grid.shape[d]) * self.TR
+            self.frametimes = start + N.arange(self.grid.shape[d]) * transform
 
 
     def frame(self, i, clean=False, **keywords):
