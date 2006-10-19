@@ -3,7 +3,6 @@ import gc
 import numpy as N
 import numpy.fft as fft
 import numpy.linalg as NL
-from neuroimaging import traits
 
 from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.utils import fwhm2sigma
@@ -11,24 +10,22 @@ from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
 
 
-class LinearFilter(traits.HasTraits):
+class LinearFilter(object):
     '''
     A class to implement some FFT smoothers for VImage objects.
     By default, this does a Gaussian kernel smooth. More choices
     would be better!
     '''
 
-    padding = traits.Int(5)
-    fwhm = traits.Float(6.)
-    cov = traits.Array(shape=(None,None))
-    grid = traits.Instance(SamplingGrid)
-    scale = traits.Float(1., desc='Scaling applied to output of smoother.')
-    location = traits.Float(0., desc='Shift applied to output of smoother.')
-    
-    def __init__(self, grid, **keywords):
+    def __init__(self, grid, fwhm=6.0, padding=5, scale=1.0, location=0.0,
+                 cov=None, **keywords):
 
-        traits.HasTraits.__init__(self, **keywords)
         self.grid = grid
+        self.fwhm = fwhm
+        self.padding = padding
+        self.scale = scale
+        self.location = location
+        self.cov = cov
         self.shape = N.array(self.grid.shape) + self.padding
         self._setup_kernel()
 
@@ -60,7 +57,7 @@ class LinearFilter(traits.HasTraits):
 
         if self.fwhm is not 1.0:
             X = X / fwhm2sigma(self.fwhm)
-        if self.cov != N.array([[0.]]):
+        if self.cov != None:
             _chol = NL.cholesky(self.cov)
             X = N.dot(NL.inv(_chol), X)
         D2 = N.add.reduce(X**2, 0)
