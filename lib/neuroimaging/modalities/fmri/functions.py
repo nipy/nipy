@@ -56,109 +56,101 @@ class TimeFunction(traits.HasTraits):
                 
         return N.squeeze(N.array(columns))
 
-    def __mul__(self, other):
+
+    def _helper(self, other, f1, f2, f3):
+        """
+        All the operator overloads follow this same pattern
+        doing slightly different things for f1, f2 and f3
+        """
         if isinstance(other, TimeFunction):
             if other.nout == self.nout:
-                def _f(time=None, _self=self, _other=other, **extra):
-                    return N.squeeze(_self(time=time, **extra) * _other(time=time, **extra))
+                _f = f1
             else:
                 raise ValueError, 'number of outputs of regressors do not match'
         elif type(other) in [types.FloatType, types.IntType]:
-            def _f(time=None, _self=self, _other=other, **extra):
-                return N.squeeze(_self(time=time, **extra) * other)
+            _f = f2
         elif type(other) in [types.ListType, types.TupleType, N.ndarray]:
             if type(other) is N.ndarray:
                 if other.shape != (self.nout,):
                     raise 'shape does not much output, expecting (%d,)' % self.nout
             elif len(other) != self.nout:
                 raise 'length does not much output, expecting sequence of length %d' % self.nout
-            def _f(time=None, _self=self, _other=N.array(other), **extra):
-                v = _self(time=time, **extra)
-                for i in range(_other.shape[0]):
-                    v[i] *= _other[i]
-                return N.squeeze(v)
+            _f = f3
         else:
             raise ValueError, 'unrecognized type'
         return TimeFunction(fn=_f, nout=self.nout)
+
+
+    def __mul__(self, other):
+
+        def f1(time=None, _self=self, _other=other, **extra):
+            return N.squeeze(_self(time=time, **extra) * _other(time=time, **extra))
+
+        def f2(time=None, _self=self, _other=other, **extra):
+            return N.squeeze(_self(time=time, **extra) * _other)
+
+        def f3(time=None, _self=self, _other=N.array(other), **extra):
+            v = _self(time=time, **extra)
+            for i in range(_other.shape[0]):
+                v[i] *= _other[i]
+            return N.squeeze(v)
+
+        return self._helper(other, f1, f2, f3)
+
+
 
     def __add__(self, other):
-        if isinstance(other, TimeFunction):
-            if other.nout == self.nout:
-                def _f(time=None, _self=self, _other=other, **extra):
-                    v = _self(time=time, **extra) + _other(time=time, **extra)
-                    return N.squeeze(v)
-            else:
-                raise ValueError, 'number of outputs of regressors do not match'
-        elif type(other) in [types.FloatType, types.IntType]:
-            def _f(time=None, _self=self, _other=other, **extra):
-                v = _self(time=time, **extra) + other
-                return N.squeeze(v)
-        elif type(other) in [types.ListType, types.TupleType, N.ndarray]:
-            if type(other) is N.ndarray:
-                if other.shape != (self.nout,):
-                    raise 'shape does not much output, expecting (%d,)' % self.nout
-            elif len(other) != self.nout:
-                raise 'length does not much output, expecting sequence of length %d' % self.nout
-            def _f(time=None, _self=self, _other=N.array(other), **extra):
-                v = _self(time=time, **extra)
-                for i in range(_other.shape[0]):
-                    v[i] += _other[i]
-                return N.squeeze(v)
-        else:
-            raise ValueError, 'unrecognized type'
-        return TimeFunction(fn=_f, nout=self.nout)
+        def f1(time=None, _self=self, _other=other, **extra):
+            v = _self(time=time, **extra) + _other(time=time, **extra)
+            return N.squeeze(v)
+
+        def f2(time=None, _self=self, _other=other, **extra):
+            v = _self(time=time, **extra) + _other
+            return N.squeeze(v)
+
+        def f3(time=None, _self=self, _other=N.array(other), **extra):
+            v = _self(time=time, **extra)
+            for i in range(_other.shape[0]):
+                v[i] += _other[i]
+            return N.squeeze(v)
+
+        return self._helper(other, f1, f2, f3)
+
 
     def __sub__(self, other):
-        if isinstance(other, TimeFunction):
-            if other.nout == self.nout:
-                def _f(time=None, _self=self, _other=other, **extra):
-                    v = _self(time=time, **extra) - _other(time=time, **extra)
-                    return N.squeeze(v)
-            else:
-                raise ValueError, 'number of outputs of regressors do not match'
-        elif type(other) in [types.FloatType, types.IntType]:
-            def _f(time=None, _self=self, _other=other, **extra):
-                v = _self(time=time, **extra) - other
-                return N.squeeze(v)
-        elif type(other) in [types.ListType, types.TupleType, N.ndarray]:
-            if type(other) is N.ndarray:
-                if other.shape != (self.nout,):
-                    raise 'shape does not much output, expecting (%d,)' % self.nout
-            elif len(other) != self.nout:
-                raise 'length does not much output, expecting sequence of length %d' % self.nout
-            def _f(time=None, _self=self, _other=N.array(other), **extra):
-                v = _self(time=time, **extra)
-                for i in range(_other.shape[0]):
-                    v[i] -= _other[i]
-                return N.squeeze(v)
-        else:
-            raise ValueError, 'unrecognized type'
-        return TimeFunction(fn=_f, nout=self.nout)
+        def f1(time=None, _self=self, _other=other, **extra):
+            v = _self(time=time, **extra) - _other(time=time, **extra)
+            return N.squeeze(v)
+
+        def f2(time=None, _self=self, _other=other, **extra):
+            v = _self(time=time, **extra) - _other
+            return N.squeeze(v)
+
+
+        def f3(time=None, _self=self, _other=N.array(other), **extra):
+            v = _self(time=time, **extra)
+            for i in range(_other.shape[0]):
+                v[i] -= _other[i]
+            return N.squeeze(v)
+
+        return self._helper(other, f1, f2, f3)
+
 
     def __div__(self, other):
-        if isinstance(other, TimeFunction):
-            if other.nout == self.nout:
-                def _f(time=None, _self=self, _other=other, **extra):
-                    return N.squeeze(_self(time=time, **extra) * recipr0(_other(time=time, **extra)))
-            else:
-                raise ValueError, 'number of outputs of regressors do not match'
-        elif type(other) in [types.FloatType, types.IntType]:
-            def _f(time=None, _self=self, _other=other, **extra):
-                return N.squeeze(_self(time=time, **extra) * recipr0(other))
-        elif type(other) in [types.ListType, types.TupleType, N.ndarray]:
-            if type(other) is N.ndarray:
-                if other.shape != (self.nout,):
-                    raise 'shape does not much output, expecting (%d,)' % self.nout
-            elif len(other) != self.nout:
-                raise 'length does not much output, expecting sequence of length %d' % self.nout
-            def _f(time=None, _self=self, _other=N.array(other), **extra):
-                v = _self(time=time, **extra) 
-                for i in range(_other.shape[0]):
-                    v[i] *= recipr0(_other[i])
-                return N.squeeze(v)
-        else:
-            raise ValueError, 'unrecognized type'
-        return TimeFunction(fn=_f, nout=self.nout)
+        def f1(time=None, _self=self, _other=other, **extra):
+            return N.squeeze(_self(time=time, **extra) * recipr0(_other(time=time, **extra)))
+
+        def f2(time=None, _self=self, _other=other, **extra):
+            return N.squeeze(_self(time=time, **extra) * recipr0(_other))
+
+        def f3(time=None, _self=self, _other=N.array(other), **extra):
+            v = _self(time=time, **extra) 
+            for i in range(_other.shape[0]):
+                v[i] *= recipr0(_other[i])
+            return N.squeeze(v)
+        
+        return self._helper(other, f1, f2, f3)
+
 
 
 class InterpolatedConfound(TimeFunction):
