@@ -5,17 +5,13 @@ Image interpolators using ndimage.
 import os
 
 from scipy import ndimage
-from neuroimaging import traits
 from neuroimaging.data_io import Cache
 import numpy as N
 
 
-class ImageInterpolator(traits.HasTraits):
+class ImageInterpolator(object):
 
-    order = traits.Int(1)
-
-    def __init__(self, image, order=1, grid=None, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+    def __init__(self, image, order=1, grid=None):
         if grid is None:
             self.grid = image.grid
         else:
