@@ -2,7 +2,7 @@ import sys, pylab
 import neuroimaging.core.image as image
 import neuroimaging.ui.visualization.viewer as viewer
 
-x = image.Image(sys.argv[1])
+x = image.image.Image(sys.argv[1])
 v = viewer.BoxViewer(x)
 
 if len(sys.argv) == 3:
