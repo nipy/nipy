@@ -12,25 +12,20 @@ import gc
 import numpy as N
 from numpy.linalg import det
 from scipy.sandbox.models.utils import recipr
-from neuroimaging import traits
 
 from neuroimaging.core.image.image import Image
 
-class Resels(traits.HasTraits):
+class Resels(object):
     
-    clobber = traits.false
-
-    D = traits.Int(3)
-
     def __init__(self, grid, normalized=False, fwhm=None, resels=None,
-                 mask=None, **keywords):
+                 mask=None, clobber=False, D=3):
         
-        traits.HasTraits.__init__(self, **keywords)
         self.fwhm = fwhm
         self.resels = resels
         self.mask = mask
-
+        self.clobber = clobber
         self.grid = grid
+        self.D = D
 
         _transform = self.grid.mapping.transform
         self.wedge = N.power(N.fabs(det(_transform)), 1./self.D)
@@ -101,7 +96,7 @@ class ReselImage(Resels):
     def __iter__(self):
         return
 
-class iterFWHM(Resels, traits.HasTraits):
+class iterFWHM(Resels):
     """
     Estimate FWHM on an image of residuals sequentially. This is handy when,
     say, residuals from a linear model are written out slice-by-slice.
@@ -110,7 +105,7 @@ class iterFWHM(Resels, traits.HasTraits):
     def __init__(self, grid, df_resid=5.0, df_limit=4.0, mask=None, **keywords):
         '''Setup a FWHM estimator.'''
 
-        Resels.__init__(self, grid, **keywords)
+        Resels.__init__(self, grid, mask=mask, **keywords)
         self.df_resid = df_resid
         self.df_limit = df_limit
         self.Y = grid.shape[1]
@@ -130,7 +125,7 @@ class iterFWHM(Resels, traits.HasTraits):
         self.nslices = grid.shape[0]
         iter(self)
 
-    def __call__(self, resid, verbose=False):
+    def __call__(self, resid):
         resid = iter(resid)
         iter(self)
         while True:
@@ -203,7 +198,7 @@ class iterFWHM(Resels, traits.HasTraits):
             self.Axx = N.add.reduce(self.ux**2, 2)
             self.Ayy = N.add.reduce(self.uy**2, 2)
 
-            if self.D==2:
+            if self.D == 2:
                 for index in range(4):
                     y = self.Yindex + self.Yshift[index]
                     x = self.Xindex + self.Xshift[index]
@@ -242,7 +237,7 @@ class iterFWHM(Resels, traits.HasTraits):
             self._fwhm = self._fwhm / (((self.slice > 1) + 1.) * self.nneigh)
             self._resels = self._resels / (((self.slice > 1) + 1.) * self.nneigh)
 
-            self.output()
+            self.output(FWHMmax)
 
             # Clear buffers
 
