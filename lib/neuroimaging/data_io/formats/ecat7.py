@@ -225,31 +225,33 @@ class Ecat7(bin.BinaryFormat):
     extensions = ('.v')
     
 
-    def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
+    def __init__(self, infilename, mode="r", datasource=DataSource(), **keywords):
         """
         Constructs a Ecat7 binary format object with at least a filename
         NOTE: ECAT can be an Image or a Volume
         possible additional keyword arguments:
         mode = mode to open the memmap (default is "r")
-        datasource = ???
         grid = Grid object
         sctype = numpy scalar type
         intent = meaning of data
         clobber = allowed to clobber?
         
         """
+
+        filename = datasource.filename(infilename)
         #Check if data is zipped
         if data_io.iszip(filename):
-            self.filebase = data_io.unzip(filename)
-        
+            fullfilename = data_io.unzip(filename)
+        else:
+            fullfilename = filename
             
-        self.filebase = os.path.splitext(filename)[0]
+        self.filebase = os.path.splitext(fullfilename)[0]
         self.header_file = self.filebase+".v"
         self.data_file = self.filebase+".v"
         self.nframes = 0
         self.checkversion(datasource)
         
-        bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
+        bin.BinaryFormat.__init__(self, fullfilename, mode, datasource, **keywords)
         self.intent = keywords.get('intent', '')
 
         self.header_formats = struct_formats_mh

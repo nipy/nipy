@@ -13,27 +13,27 @@ from neuroimaging.utils.tests.data import repository
 ## newImg = myImg.toarray()
 ## newImg = Analyze.Analyze(newImg)
 
-myecat = Ecat7.Ecat7("FDG-de.v",datasource=repository)
+myecat = Ecat7.Ecat7("FDG-de.v.bz2",datasource=repository)
 
 
-jnk = Ecat7.CacheData('anaTest1.img')
-jnkname = jnk.filename('anaTest1.img')
+## jnk = Ecat7.CacheData('anaTest1.img')
+## jnkname = jnk.filename('anaTest1.img')
 
-jnkhdr = Ecat7.CacheData('anaTest1.hdr')
-jnkhdrname = jnkhdr.filename('anaTest1.hdr')
+## jnkhdr = Ecat7.CacheData('anaTest1.hdr')
+## jnkhdrname = jnkhdr.filename('anaTest1.hdr')
 
-tmphdr =open(jnkhdrname,'w')
-tmphdr.close()
+## tmphdr =open(jnkhdrname,'w')
+## tmphdr.close()
 
-tmpdat = myecat.frames[0]
+## tmpdat = myecat.frames[0]
 
-tmpdat.data.tofile(jnkname)
-myArray = N.array(tmpdat.data, tmpdat.sctype)
-myArray.tofile(jnkname)
-#myArray.tofile(jnkhdrname)
+## tmpdat.data.tofile(jnkname)
+## myArray = N.array(tmpdat.data, tmpdat.sctype)
+## myArray.tofile(jnkname)
+## #myArray.tofile(jnkhdrname)
 
-myImg = Image(jnkhdrname)
+## myImg = Image(jnkhdrname)
 
-#myAna = Ana.Analyze(myArray)
+## #myAna = Ana.Analyze(myArray)
 
 
