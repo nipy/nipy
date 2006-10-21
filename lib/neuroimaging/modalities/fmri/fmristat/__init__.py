@@ -25,24 +25,24 @@ PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
     from neuroimaging.ui.visualization.multiplot import MultiPlot
 
-class WholeBrainNormalize(traits.HasTraits):
+class WholeBrainNormalize(object):
 
-    mask = traits.Any()
-
-    def __init__(self, fmri_image, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
-        if self.mask is not None:
-            self._mask = self.mask.readall()
-            self._mask.shape = self._mask.size
+    def __init__(self, fmri_image, mask=None):
+        
+        if mask is not None:
+            _mask = mask.readall()
+            _mask.shape = _mask.size
+        else:
+            _mask = None
             
         self.n = fmri_image.grid.shape[0]
         self.avg = N.zeros((self.n,), N.float64)
 
         for i in range(self.n):
             d = fmri_image[slice(i,i+1)]
-            if hasattr(self, '_mask'):
+            if _mask is not None:
                 d.shape = d.size
-                d = N.compress(self._mask, d)
+                d = N.compress(_mask, d)
             self.avg[i] = d.mean()
 
     def __call__(self, fmri_data):
