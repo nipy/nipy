@@ -1,7 +1,7 @@
 import unittest
-import numpy as N
 
-from neuroimaging.core.reference.slices import bounding_box, zslice, yslice, xslice
+from neuroimaging.core.reference.slices import bounding_box, \
+  zslice, yslice, xslice
 from neuroimaging.core.reference.grid import SamplingGrid
 
 class SliceTest(unittest.TestCase):

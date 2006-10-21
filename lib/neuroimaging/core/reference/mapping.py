@@ -154,7 +154,7 @@ def isdiagonal(matrix, tol=1.0e-7):
 
 
 
-class Mapping (object):
+class Mapping(object):
     """
     A generic mapping class that allows composition, inverses, etc. A mapping
     needs only input and output coordinates and a transform between the two,

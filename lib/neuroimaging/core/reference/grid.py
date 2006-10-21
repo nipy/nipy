@@ -51,8 +51,8 @@ class SamplingGrid (object):
 
         input_coords = VoxelCoordinateSystem('voxel', axes)
         output_coords = DiagonalCoordinateSystem('world', axes)
-        w = Affine.identity(ndim)
-        return SamplingGrid(list(shape), w, input_coords, output_coords)
+        aff_ident = Affine.identity(ndim)
+        return SamplingGrid(list(shape), aff_ident, input_coords, output_coords)
 
     @staticmethod
     def from_affine(mapping, shape=(), names=space):
@@ -83,7 +83,8 @@ class SamplingGrid (object):
         iterators = {"slice": (SliceIterator, ["shape", "axis"]),
                      "parcel": (ParcelIterator, ["parcelmap", "parcelseq"]),
                      "slice/parcel": (SliceParcelIterator, ["parcelmap", "parcelseq"])}
-        self._iterguy = self._IterHelper(self.shape, 0, "slice", None, None, iterators)
+        self._iterguy = \
+          self._IterHelper(self.shape, 0, "slice", None, None, iterators)
 
     def allslice (self):
         """
@@ -171,24 +172,25 @@ class SamplingGrid (object):
 
         if isinstance(self.mapping, Affine):
             ndim = self.ndim
-            T = self.mapping.transform.copy()
-            T[0:ndim,ndim] = self.mapping(start)
-            T[ndim, ndim] = 1.
+            trans = self.mapping.transform.copy()
+            trans[0:ndim, ndim] = self.mapping(start)
+            trans[ndim, ndim] = 1.
             for i in range(ndim):
                 v = N.zeros((ndim,))
                 w = v.copy()
                 v[i] = step[i]
-                T[0:ndim,i] = self.mapping(v) - self.mapping(w)
-            _map = Affine(T)
+                trans[0:ndim, i] = self.mapping(v) - self.mapping(w)
+            _map = Affine(trans)
         else:
             def __map(x, start=start, step=step, _f=self.mapping):
                 v = start + step * x
                 return _f(v)
             _map = Mapping(__map)
 
-        g = SamplingGrid(count, _map, self.input_coords, self.output_coords)
-        g.set_iter_param("axis", axis)
-        return iter(g)
+        samp_grid = \
+          SamplingGrid(count, _map, self.input_coords, self.output_coords)
+        samp_grid.set_iter_param("axis", axis)
+        return iter(samp_grid)
 
 
     def transform(self, mapping): 
@@ -224,25 +226,29 @@ class ConcatenatedGrids(SamplingGrid):
         # check mappings are affine
         check = N.any([not isinstance(grid.mapping, Affine)\
                           for grid in grids])
-        if check: raise ValueError('must all be affine mappings!')
+        if check:
+            raise ValueError('must all be affine mappings!')
 
         # check shapes are identical
         s = grids[0].shape
         check = N.any([grid.shape != s for grid in grids])
-        if check: raise ValueError('subgrids must have same shape')
+        if check:
+            raise ValueError('subgrids must have same shape')
 
         # check input coordinate systems are identical
-        ic = grids[0].input_coords
-        check = N.any([grid.input_coords != ic\
+        in_coords = grids[0].input_coords
+        check = N.any([grid.input_coords != in_coords\
                            for grid in grids])
-        if check: raise ValueError(
+        if check:
+            raise ValueError(
               'subgrids must have same input coordinate systems')
 
         # check output coordinate systems are identical
-        oc = grids[0].output_coords
-        check = N.any([grid.output_coords != oc\
+        out_coords = grids[0].output_coords
+        check = N.any([grid.output_coords != out_coords\
                            for grid in grids])
-        if check: raise ValueError(
+        if check:
+            raise ValueError(
               'subgrids must have same output coordinate systems')
         return tuple(grids)
 
@@ -261,12 +267,14 @@ class ConcatenatedGrids(SamplingGrid):
                 return self.grids[i].mapping(x)
                 
         newaxis = Axis(name=self.concataxis)
-        ic = self.grids[0].input_coords
+        in_coords = self.grids[0].input_coords
         newin = CoordinateSystem(
-              '%s:%s'%(ic.name, self.concataxis), [newaxis] + list(ic.axes()))
-        oc = self.grids[0].output_coords
+              '%s:%s'%(in_coords.name, self.concataxis), \
+                 [newaxis] + list(in_coords.axes()))
+        out_coords = self.grids[0].output_coords
         newout = CoordinateSystem(
-              '%s:%s'%(oc.name, self.concataxis), [newaxis] + list(oc.axes()))
+              '%s:%s'%(out_coords.name, self.concataxis), \
+                 [newaxis] + list(out_coords.axes()))
         return Mapping(mapfunc), newin, newout
 
 
@@ -288,19 +296,21 @@ class ConcatenatedIdenticalGrids(ConcatenatedGrids):
 
     def _mapping(self):
         newaxis = Axis(name=self.concataxis)
-        ic = self.grids[0].input_coords
+        in_coords = self.grids[0].input_coords
         newin = CoordinateSystem(
-            '%s:%s'%(ic.name, self.concataxis), [newaxis] + list(ic.axes()))
-        oc = self.grids[0].output_coords
+            '%s:%s'%(in_coords.name, self.concataxis), \
+               [newaxis] + list(in_coords.axes()))
+        out_coords = self.grids[0].output_coords
         newout = CoordinateSystem(
-            '%s:%s'%(oc.name, self.concataxis), [newaxis] + list(oc.axes()))
+            '%s:%s'%(out_coords.name, self.concataxis), \
+               [newaxis] + list(out_coords.axes()))
 
-        t = self.grids[0].mapping.transform
-        ndim = t.shape[0]-1
-        T = N.zeros((ndim+2,)*2, N.float64)
-        T[0:ndim,0:ndim] = t[0:ndim,0:ndim]
-        T[0:ndim,-1] = t[0:ndim,-1]
-        T[ndim,ndim] = 1.
-        T[(ndim+1),(ndim+1)] = 1.
-        return Affine(T), newin, newout
+        in_trans = self.grids[0].mapping.transform
+        ndim = in_trans.shape[0]-1
+        out_trans = N.zeros((ndim+2,)*2, N.float64)
+        out_trans[0:ndim, 0:ndim] = in_trans[0:ndim, 0:ndim]
+        out_trans[0:ndim, -1] = in_trans[0:ndim, -1]
+        out_trans[ndim, ndim] = 1.
+        out_trans[(ndim+1), (ndim+1)] = 1.
+        return Affine(out_trans), newin, newout
 
