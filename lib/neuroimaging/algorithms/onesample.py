@@ -7,7 +7,7 @@ from neuroimaging.core.image.image import Image, ImageSequenceIterator
 from neuroimaging.algorithms.statistics import onesample
 from neuroimaging.algorithms.statistics.regression import RegressionOutput
 
-class ImageOneSample(onesample.OneSampleIterator):
+class ImageOneSample(onesample.OneSampleIterator, traits.HasTraits):
     
     """
     Fit a one sample t to a sequence of images. Input should be either a sequence of images (in which
@@ -95,7 +95,7 @@ class ImageOneSample(onesample.OneSampleIterator):
                                                  clobber=self.clobber, ext=self.ext))
 
     def fit(self):
-        onesample.OneSampleIterator.fit(self, which=self.which)
+        return onesample.OneSampleIterator.fit(self, which=self.which)
 
 class ImageOneSampleOutput(RegressionOutput):
     """
@@ -115,6 +115,7 @@ class ImageOneSampleOutput(RegressionOutput):
         self.grid = grid
         if not os.path.exists(self.path):
             os.makedirs(self.path)
+
         self.img = iter(Image('%s/%s%s' % (self.path, self.basename, self.ext),
                                     mode='w', clobber=self.clobber, grid=grid))
 
