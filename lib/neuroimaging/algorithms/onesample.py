@@ -5,6 +5,7 @@ from neuroimaging import traits
 
 from neuroimaging.core.image.image import Image, ImageSequenceIterator
 from neuroimaging.algorithms.statistics import onesample
+from neuroimaging.algorithms.statistics.regression import RegressionOutput
 
 class ImageOneSample(onesample.OneSampleIterator):
     
@@ -76,25 +77,27 @@ class ImageOneSample(onesample.OneSampleIterator):
         self.outputs = outputs
         if self.which == 'mean':
             if self.t:
-                self.outputs.append(TOutput(self.iterator.grid, path=self.path, clobber=self.clobber,
-                                            ext=self.ext))
+                self.outputs.append(TOutput(self.iterator.grid, path=self.path,
+                                            clobber=self.clobber, ext=self.ext))
             if self.sd:
-                self.outputs.append(SdOutput(self.iterator.grid, path=self.path, clobber=self.clobber,
-                                             ext=self.ext))
+                self.outputs.append(SdOutput(self.iterator.grid, path=self.path,
+                                             clobber=self.clobber, ext=self.ext))
             if self.mean:
-                self.outputs.append(MeanOutput(self.iterator.grid, path=self.path, clobber=self.clobber,
-                                               ext=self.ext))
+                self.outputs.append(MeanOutput(self.iterator.grid, path=self.path,
+                                               clobber=self.clobber, ext=self.ext))
         else:
             if self.est_varatio:
-                self.outputs.append(VaratioOutput(self.iterator.grid, path=self.path, clobber=self.clobber, ext=self.ext))
+                self.outputs.append(VaratioOutput(self.iterator.grid, path=self.path,
+                                                  clobber=self.clobber, ext=self.ext))
 
             if self.est_varfix:
-                self.outputs.append(VarfixOutput(self.iterator.grid, path=self.path, clobber=self.clobber, ext=self.ext))
+                self.outputs.append(VarfixOutput(self.iterator.grid, path=self.path,
+                                                 clobber=self.clobber, ext=self.ext))
 
     def fit(self):
         onesample.OneSampleIterator.fit(self, which=self.which)
 
-class ImageOneSampleOutput(onesample.OneSampleOutput):
+class ImageOneSampleOutput(RegressionOutput):
     """
     A class to output things a one sample T passes through data. It
     uses the image\'s iterator values to output to an image.
@@ -104,11 +107,12 @@ class ImageOneSampleOutput(onesample.OneSampleOutput):
     nout = traits.Int(1)
     clobber = traits.false
     path = traits.Str('onesample')
-    basename = traits.Str()
+    #basename = traits.Str()
     ext = traits.Str('.img')
 
-    def __init__(self, grid, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+    def __init__(self, grid, basename="", **keywords):
+        RegressionOutput.__init__(self, **keywords)
+        self.basename = basename
         self.grid = grid
         if not os.path.exists(self.path):
             os.makedirs(self.path)
@@ -121,9 +125,7 @@ class ImageOneSampleOutput(onesample.OneSampleOutput):
         """
         if img is None:
             img = self.img
-        img.grid._itertype = self.grid._itertype
-        img.grid._parcelmap = self.grid._parcelmap
-        img.grid._parcelseq = self.grid._parcelseq
+        img.grid._iterguy = self.grid._iterguy
         iter(img)
         
     def __iter__(self):
@@ -140,35 +142,43 @@ class TOutput(ImageOneSampleOutput):
 
     Tmax = 100.
     Tmin = -100.
-    basename = traits.Str('t')
+
+    def __init__(self, grid, **keywords):
+        ImageOneSampleOutput(self, grid, 't', **keywords)
 
     def extract(self, results):
         return N.clip(results.t, self.Tmin, self.Tmax)
 
 class SdOutput(ImageOneSampleOutput):
 
-    basename = traits.Str('sd')
+    def __init__(self, grid, **keywords):
+        ImageOneSampleOutput(self, grid, 'sd', **keywords)
 
     def extract(self, results):
         return results.sd
 
 class MeanOutput(ImageOneSampleOutput):
 
-    basename = traits.Str('effect')
+
+    def __init__(self, grid, **keywords):
+        ImageOneSampleOutput(self, grid, 'effect')
+
 
     def extract(self, results):
         return results.mu
 
 class VaratioOutput(ImageOneSampleOutput):
 
-    basename = traits.Str('varatio')
+    def __init__(self, grid, **keywords):
+        ImageOneSampleOutput(self, grid, 'varatio')
 
     def extract(self, results):
         return results.varatio
 
 class VarfixOutput(ImageOneSampleOutput):
 
-    basename = traits.Str('varfix')
+    def __init__(self, grid, **keywords):
+        ImageOneSampleOutput(self, frid, 'varfix')
 
     def extract(self, results):
         return results.varfix
