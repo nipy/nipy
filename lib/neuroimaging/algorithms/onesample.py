@@ -107,7 +107,6 @@ class ImageOneSampleOutput(RegressionOutput):
     nout = traits.Int(1)
     clobber = traits.false
     path = traits.Str('onesample')
-    #basename = traits.Str()
     ext = traits.Str('.img')
 
     def __init__(self, grid, basename="", **keywords):
@@ -136,7 +135,7 @@ class ImageOneSampleOutput(RegressionOutput):
         self.img.next(data=data, value=value)
 
     def extract(self, results):
-        return 0.
+        raise NotImplementedError
 
 class TOutput(ImageOneSampleOutput):
 
@@ -161,8 +160,7 @@ class MeanOutput(ImageOneSampleOutput):
 
 
     def __init__(self, grid, **keywords):
-        ImageOneSampleOutput(self, grid, 'effect')
-
+        ImageOneSampleOutput(self, grid, 'effect', **keywords)
 
     def extract(self, results):
         return results.mu
@@ -170,7 +168,7 @@ class MeanOutput(ImageOneSampleOutput):
 class VaratioOutput(ImageOneSampleOutput):
 
     def __init__(self, grid, **keywords):
-        ImageOneSampleOutput(self, grid, 'varatio')
+        ImageOneSampleOutput(self, grid, 'varatio', **keywords)
 
     def extract(self, results):
         return results.varatio
@@ -178,7 +176,7 @@ class VaratioOutput(ImageOneSampleOutput):
 class VarfixOutput(ImageOneSampleOutput):
 
     def __init__(self, grid, **keywords):
-        ImageOneSampleOutput(self, frid, 'varfix')
+        ImageOneSampleOutput(self, grid, 'varfix', **keywords)
 
     def extract(self, results):
         return results.varfix

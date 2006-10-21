@@ -13,8 +13,9 @@ class ImageRegressionOutput(RegressionOutput):
     """
 
     nout = traits.Int(1)
-    arraygrid = traits.Any()
     clobber = traits.false
+    arraygrid = traits.Any()
+    ext = traits.Str('.img')
 
     def __init__(self, grid, outgrid=None, **keywords):
         RegressionOutput.__init__(self, **keywords)
@@ -26,6 +27,7 @@ class ImageRegressionOutput(RegressionOutput):
             
         if self.nout > 1:
             self.grid = self.grid.replicate(self.nout)
+
         if self.arraygrid is not None:
             self.img = iter(Image(N.zeros(self.arraygrid.shape, N.float64),
               grid=self.arraygrid))
@@ -38,7 +40,7 @@ class ImageRegressionOutput(RegressionOutput):
             img = self.img
         img.grid._iterguy = self.grid._iterguy
         iter(img)
-        
+       
     def __iter__(self):
         return self
 
@@ -47,7 +49,8 @@ class ImageRegressionOutput(RegressionOutput):
         self.img.next(data=data, value=value)
 
     def extract(self, results):
-        return 0.
+        raise NotImplementedError
+
 
 class TContrastOutput(ImageRegressionOutput):
 
@@ -56,21 +59,21 @@ class TContrastOutput(ImageRegressionOutput):
     sd = traits.true
     t = traits.true
     outdir = traits.Str()
-    ext = traits.Str('.img')
     subpath = traits.Str('contrasts')
 
     def __init__(self, grid, contrast, path='.', **keywords):
+        raise Exception
         ImageRegressionOutput.__init__(self, grid, **keywords)                
         self.contrast = contrast
         self.outdir = os.path.join(path, self.subpath, self.contrast.name)
         self.path = path
-        self.setup_contrast()
-        self.setup_output(time=self.frametimes) # self.frametimes undefined
+        self._setup_contrast()
+        self._setup_output(time=self.frametimes) # self.frametimes undefined
 
-    def setup_contrast(self, **extra):
+    def _setup_contrast(self, **extra):
         self.contrast.getmatrix(**extra)
 
-    def setup_output(self, **extra):
+    def _setup_output(self, **extra):
 
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
@@ -121,7 +124,6 @@ class FContrastOutput(ImageRegressionOutput):
 
     contrast = traits.Any()
     outdir = traits.Str()
-    ext = traits.Str('.img')
     subpath = traits.Str('contrasts')
 
     def __init__(self, grid, contrast, path='.', **keywords):
@@ -129,13 +131,13 @@ class FContrastOutput(ImageRegressionOutput):
         self.contrast = contrast
         self.path = path
         self.outdir = os.path.join(self.path, self.subpath, self.contrast.name)
-        self.setup_contrast()
-        self.setup_output()
+        self._setup_contrast()
+        self._setup_output()
 
-    def setup_contrast(self, **extra):
+    def _setup_contrast(self, **extra):
         self.contrast.getmatrix(**extra)
 
-    def setup_output(self):
+    def _setup_output(self):
 
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
@@ -165,7 +167,6 @@ class FContrastOutput(ImageRegressionOutput):
 class ResidOutput(ImageRegressionOutput):
 
     outdir = traits.Str()
-    ext = traits.Str('.img')
     basename = traits.Str('resid')
 
     def __init__(self, grid, path='.', nout=1, **keywords):
@@ -178,13 +179,10 @@ class ResidOutput(ImageRegressionOutput):
         outname = os.path.join(self.outdir, '%s%s' % (self.basename, self.ext))
         self.img = Image(outname, mode='w', grid=self.grid,
                                clobber=self.clobber)
-        self.nout = self.grid.shape[0]
         self.sync_grid()
+        
+        self.nout = self.grid.shape[0]
 
     def extract(self, results):
         return results.resid
     
-    def next(self, data=None):
-        value = self.grid.next()
-        self.img.next(data=data, value=value)
-
