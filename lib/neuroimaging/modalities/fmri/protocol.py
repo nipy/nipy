@@ -19,10 +19,10 @@ class ExperimentalRegressor(object):
     # fixme: this is ugly, but was confusing with traits
     # we can put it back to being a trait when my brain
     # sorts itself out -- Timl
-    def get_c(self):  return self.__c
-    def set_c(self, value):  self.__c = value; self._convolved_changed()
-    def del_c(self): del self.__c
-    convolved = property(get_c, set_c, del_c)
+    def _get_c(self):  return self.__c
+    def _set_c(self, value):  self.__c = value; self._convolved_changed()
+    def _del_c(self): del self.__c
+    convolved = property(_get_c, _set_c, _del_c)
 
     def _convolved_changed(self):
         if not hasattr(self, '_nameunconv'):
@@ -52,7 +52,6 @@ class ExperimentalRegressor(object):
 
     def convolve(self, IRF):
 
-        self.IRF = IRF
         self.convolved = False
 
         func = IRF.convolve(self)
@@ -168,11 +167,10 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
     """
 
     def __init__(self, name, iterator, **keywords):
-
-        fn = self.fromiterator(iterator)
+        fn = self._fromiterator(iterator)
         ExperimentalQuantitative.__init__(self, name, fn, **keywords)
   
-    def fromiterator(self, iterator, delimiter=','):
+    def _fromiterator(self, iterator, delimiter=','):
         """
         Determine an ExperimentalStepFunction from an iterator
         which returns rows of the form:
@@ -190,6 +188,7 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
         elif type(iterator) is types.FileType:
             iterator = csv.reader(iterator, delimiter=delimiter)
 
+        # self.name doesn't exist
         self.events = Events(name=self.name)
 
         for row in iterator:
@@ -200,6 +199,7 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
                 height = 1.0
                 pass
 
+            #event type doesn't exist
             self.events[eventtype].append(float(start), float(end)-float(start), height=float(height))
 
         return self.events
@@ -224,9 +224,6 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
 
     """
     
-    #delta = traits.Trait(True, desc='Are the events delta functions?')
-    #dt = traits.Trait(0.02, desc='Width of the delta functions.')
-
     def __init__(self, name, iterator, convolved=False, delta=True, dt=0.02):
         ExperimentalRegressor.__init__(self, convolved)
         self.delta = delta
@@ -326,18 +323,18 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         for row in iterator:
             if not self.delta:
                 eventtype, start, end = row
-                if not self.events.has_key(eventtype):
-                    self.events[eventtype] = Events(name=eventtype)
-                self.events[eventtype].append(float(start), float(end)-float(start), height=1.0)
+                dt = float(end) - float(start)
+                height = 1.0
             else:
                 eventtype, start = row
-                if not self.events.has_key(eventtype):
-                    self.events[eventtype] = Events(name=eventtype)
-                self.events[eventtype].append(float(start), self.dt, height=1.0/self.dt)
+                dt = self.dt
+                height = 1.0/self.dt
+            if not self.events.has_key(eventtype):
+                self.events[eventtype] = Events(name=eventtype)
+            self.events[eventtype].append(float(start), dt, height=height)
 
 
 class ExperimentalFormula(Formula):
-
     """
     A formula with no intercept.
     """
@@ -354,10 +351,7 @@ class ExperimentalFormula(Formula):
         allvals = []
 
         for term in self.terms:
-            if not hasattr(term, 'IRF'):
-                val = term(time=time, namespace=namespace, **keywords)
-            else:
-                val = term(time=time, namespace=namespace, **keywords)
+            val = term(time=time, namespace=namespace, **keywords)
                       
             if val.ndim == 1:
                 val.shape = (1, val.shape[0])
@@ -370,7 +364,7 @@ class ExperimentalFormula(Formula):
 
     def names(self, keep=False):
         names = Formula.names(self)
-        
+
         _keep = []
         for i, name in enumerate(names):
             name = names[i]
