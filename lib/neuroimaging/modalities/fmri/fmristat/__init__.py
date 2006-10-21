@@ -33,7 +33,7 @@ class WholeBrainNormalize(traits.HasTraits):
         traits.HasTraits.__init__(self, **keywords)
         if self.mask is not None:
             self._mask = self.mask.readall()
-            self._mask.shape = N.product(self._mask.shape)
+            self._mask.shape = self._mask.size
             
         self.n = fmri_image.grid.shape[0]
         self.avg = N.zeros((self.n,), N.float64)
@@ -41,7 +41,7 @@ class WholeBrainNormalize(traits.HasTraits):
         for i in range(self.n):
             d = fmri_image[slice(i,i+1)]
             if hasattr(self, '_mask'):
-                d.shape = N.product(d.shape)
+                d.shape = d.size
                 d = N.compress(self._mask, d)
             self.avg[i] = d.mean()
 
@@ -87,8 +87,8 @@ class fMRIStatOLS(LinearModelIterator):
             self.resid_output = ResidOutput(self.fmri_image.grid, path=self.path, basename='OLSresid', clobber=self.clobber)
             self.outputs.append(self.resid_output)
 
-        self.rho_estimator = AROutput(self.fmri_image.grid, clobber=self.clobber)
-        self.rho_estimator.setup_bias_correct(OLSModel(design=self.dmatrix))
+        model = OLSModel(design=self.dmatrix)
+        self.rho_estimator = AROutput(self.fmri_image.grid, model, clobber=self.clobber)
         self.outputs.append(self.rho_estimator)
 
         self.setup_output()
@@ -139,7 +139,7 @@ class fMRIStatOLS(LinearModelIterator):
 
         if self.slicetimes == None:
             tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
-            tmp.shape = N.product(tmp.shape)
+            tmp.shape = tmp.size
             parcelmap = tmp
             tmp = N.compress(1 - N.isnan(tmp), tmp)
             parcelseq = list(N.unique(tmp))
@@ -151,7 +151,7 @@ class fMRIStatOLS(LinearModelIterator):
             parcelseq = []
             for i in range(self.rho.grid.shape[0]):
                 tmp = self.rho[slice(i,i+1)]
-                tmp.shape = N.product(tmp.shape)
+                tmp.shape = tmp.size
                 tmp = N.around(tmp * (self.nmax / 2.)) / (self.nmax / 2.)
                 newlabels = list(N.unique(tmp))
                 parcelseq += [newlabels]
