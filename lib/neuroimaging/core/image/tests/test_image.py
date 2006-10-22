@@ -113,7 +113,7 @@ class ImageTest(unittest.TestCase):
 
         test.grid.set_iter_param("itertype", 'parcel')
         test.grid.set_iter_param("parcelmap", parcelmap)
-        parcelmap.shape = N.product(parcelmap.shape)
+        parcelmap.shape = parcelmap.size
        
         v = 0
         iter(test)
@@ -128,7 +128,7 @@ class ImageTest(unittest.TestCase):
         rho = Image("rho.hdr", repository, format=Analyze)
         parcelmap = (rho.readall() * 100).astype(N.int32)
         shape = parcelmap.shape
-        parcelmap.shape = N.product(parcelmap.shape)
+        parcelmap.shape = parcelmap.size
         parcelseq = N.unique(parcelmap)
 
         test = Image(N.zeros(shape), grid=rho.grid)

@@ -98,7 +98,7 @@ def writebrick(outfile, start, data, shape, offset=0, outtype=None, byteorder=sy
     if byteorder != sys.byteorder:
         outdata.byteswap()
 
-    outdata.shape = (N.product(outdata.shape),)
+    outdata.shape = outdata.size
     
     count = data.shape
     ndim = len(shape)

@@ -47,7 +47,7 @@ class Resels(traits.HasTraits):
             nvoxel = _mask.sum()
         else:
             _mask = 1.
-            nvoxel = N.product(_resels.shape)
+            nvoxel = _resels.size
         _resels = (_resels * _mask).sum()
         _fwhm = self.resel2fwhm(_resels / nvoxel)
         return _resels, _fwhm, nvoxel
