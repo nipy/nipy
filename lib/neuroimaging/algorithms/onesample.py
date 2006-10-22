@@ -82,7 +82,7 @@ class ImageOneSample(onesample.OneSampleIterator):
     def fit(self):
         return onesample.OneSampleIterator.fit(self, which=self.which)
 
-class ImageOneSampleOutput(RegressionOutput):
+class ImageOneSampleOutput(RegressionOutput, traits.HasTraits):
     """
     A class to output things a one sample T passes through data. It
     uses the image\'s iterator values to output to an image.
@@ -94,8 +94,10 @@ class ImageOneSampleOutput(RegressionOutput):
     path = traits.Str('onesample')
     ext = traits.Str('.img')
 
-    def __init__(self, grid, basename="", **keywords):
-        RegressionOutput.__init__(self, **keywords)
+    def __init__(self, grid, basename="", Tmax=100.0, Tmin=-100.0, Fmax=100.0,
+                 **keywords):
+        RegressionOutput.__init__(self, Tmax, Tmin, Fmax)
+        traits.HasTraits.__init__(self, **keywords)
         self.basename = basename
         self.grid = grid
         if not os.path.exists(self.path):

@@ -6,7 +6,7 @@ from neuroimaging import traits
 from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.statistics.regression import RegressionOutput
 
-class ImageRegressionOutput(RegressionOutput):
+class ImageRegressionOutput(RegressionOutput, traits.HasTraits):
     """
     A class to output things in GLM passes through Image data. It
     uses the image's iterator values to output to an image.
@@ -17,8 +17,10 @@ class ImageRegressionOutput(RegressionOutput):
     arraygrid = traits.Any()
     ext = traits.Str('.img')
 
-    def __init__(self, grid, outgrid=None, **keywords):
-        RegressionOutput.__init__(self, **keywords)
+    def __init__(self, grid, outgrid=None, Tmax=100.0, Tmin=-100.0, Fmax=100.0,
+                 **keywords):
+        RegressionOutput.__init__(self, Tmax, Tmin, Fmax)
+        traits.HasTraits.__init__(self, **keywords)
         self.grid = grid
         if outgrid is None:
             self.outgrid = grid
