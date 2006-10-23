@@ -111,7 +111,7 @@ class PCA(traits.HasTraits):
             if self.mask is not None:
                 mask = self._mask[i]
                 
-                mask.shape = N.product(mask.shape)
+                mask.shape = mask.size
                 YX = YX * N.nan_to_num(mask)
                 del(mask)
             
@@ -155,7 +155,7 @@ class PCA(traits.HasTraits):
 
             if self.mask is not None:
                 mask = self._mask[i]
-                mask.shape = N.product(mask.shape)
+                mask.shape = mask.size
                 U = U * mask
 
             if self.pcatype == 'cor':
