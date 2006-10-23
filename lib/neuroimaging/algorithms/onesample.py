@@ -72,7 +72,7 @@ class ImageOneSample(onesample.OneSampleIterator, traits.HasTraits):
         else:
             self.iterator = ImageSequenceIterator(input)
 
-        onesample.OneSampleIterator.__init__(self, self.iterator, outputs=outputs, **keywords)
+        onesample.OneSampleIterator.__init__(self, self.iterator, outputs=outputs)
 
         self.outputs = outputs
         if self.which == 'mean':
@@ -144,40 +144,40 @@ class TOutput(ImageOneSampleOutput):
     Tmin = -100.
 
     def __init__(self, grid, **keywords):
-        ImageOneSampleOutput(self, grid, 't', **keywords)
+        ImageOneSampleOutput.__init__(self, grid, 't', **keywords)
 
     def extract(self, results):
-        return N.clip(results.t, self.Tmin, self.Tmax)
+        return N.clip(results['mean']['t'], self.Tmin, self.Tmax)
 
 class SdOutput(ImageOneSampleOutput):
 
     def __init__(self, grid, **keywords):
-        ImageOneSampleOutput(self, grid, 'sd', **keywords)
+        ImageOneSampleOutput.__init__(self, grid, 'sd', **keywords)
 
     def extract(self, results):
-        return results.sd
+        return results['mean']['sd']
 
 class MeanOutput(ImageOneSampleOutput):
 
 
     def __init__(self, grid, **keywords):
-        ImageOneSampleOutput(self, grid, 'effect', **keywords)
+        ImageOneSampleOutput.__init__(self, grid, 'effect', **keywords)
 
     def extract(self, results):
-        return results.mu
+        return results['mean']['mu']
 
 class VaratioOutput(ImageOneSampleOutput):
 
     def __init__(self, grid, **keywords):
-        ImageOneSampleOutput(self, grid, 'varatio', **keywords)
+        ImageOneSampleOutput.__init__(self, grid, 'varatio', **keywords)
 
     def extract(self, results):
-        return results.varatio
+        return results['varatio']['varatio']
 
 class VarfixOutput(ImageOneSampleOutput):
 
     def __init__(self, grid, **keywords):
-        ImageOneSampleOutput(self, grid, 'varfix', **keywords)
+        ImageOneSampleOutput.__init__(self, grid, 'varfix', **keywords)
 
     def extract(self, results):
-        return results.varfix
+        return results['varatio']['varfix']
