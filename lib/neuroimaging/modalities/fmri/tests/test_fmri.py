@@ -15,7 +15,7 @@ class fMRITest(unittest.TestCase):
 
     #def test_TR(self):
     #    tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
-    #    tmp.shape = N.product(tmp.shape)
+    #    tmp.shape = tmp.size
     #    tmp = N.com
     #    x = self.img.frametimes
 
@@ -44,26 +44,26 @@ class fMRITest(unittest.TestCase):
         
         self.img.grid.set_iter_param("itertype", "parcel")
         self.img.grid.set_iter_param("parcelmap", parcelmap)
-        parcelmap.shape = N.product(parcelmap.shape)
+        parcelmap.shape = parcelmap.size
         self.img.grid._parcelseq = N.unique(parcelmap)
 
         v = 0
         for t in self.img:
             v += t.shape[1]
-        self.assertEquals(v, N.product(parcelmap.shape))
+        self.assertEquals(v, parcelmap.size)
 
     def test_labels2(self):
         parcelmap = (self.rho.readall() * 100).astype(N.int32)
 
         self.rho.grid.set_iter_param("itertype", "parcel")
         self.rho.grid.set_iter_param("parcelmap", parcelmap)
-        parcelmap.shape = N.product(parcelmap.shape)
+        parcelmap.shape = parcelmap.size
         self.rho.grid._parcelseq = N.unique(parcelmap)
 
         v = 0
         for t in self.rho:
             v += t.shape[0]
-        self.assertEquals(v, N.product(parcelmap.shape))
+        self.assertEquals(v, parcelmap.size)
 
 if __name__ == '__main__':
     unittest.main()
