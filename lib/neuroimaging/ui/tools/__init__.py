@@ -5,8 +5,9 @@ from optparse import OptionParser, Option
 
 class BaseTool(OptionParser):
     """
-    This class defines a minimal interface which differnet types of
-    command-line tools should implement.
+    This is an abstract base class for command-line tools to inherit
+    from.  It should never be instantiated directly and subclasses
+    should overload the run() method.
     """
 
     _usage = "%prog [options]\n"+__doc__
