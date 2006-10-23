@@ -7,7 +7,7 @@ from neuroimaging.core.reference.grid import SamplingGrid
 
 class BaseImage(object):
     """
-    This class define a minimal interface which different types of images
+    This class defines a minimal interface which different types of images
     should implement. This interface is used by the Image class, which is
     the class which should be used by applications.
     """
