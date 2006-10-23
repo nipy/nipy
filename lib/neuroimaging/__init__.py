@@ -49,6 +49,8 @@ from neuroimaging.utils.path import path
 
 packages = (
   'neuroimaging',
+  'neuroimaging.algorithms',
+  'neuroimaging.algorithms.tests',
   'neuroimaging.algorithms.statistics',
   'neuroimaging.algorithms.statistics.tests',
   'neuroimaging.core.image',
