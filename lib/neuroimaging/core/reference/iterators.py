@@ -6,7 +6,6 @@ import operator
 
 # External imports
 import numpy as N
-from protocols import haslength
 
 itertypes = ("slice", "parcel", "slice/parcel")
 
@@ -127,7 +126,11 @@ class ParcelIterator (object):
 
     def next(self):
         label = self._labeliter.next()
-        if not haslength(label): label = (label,)
+        try:
+            len(label)
+        except:
+            label = (label,)
+    
         wherelabel = reduce(operator.or_,
           [N.equal(self.parcelmap, lbl) for lbl in label])
         return ParcelIterator.Item(label, wherelabel)
