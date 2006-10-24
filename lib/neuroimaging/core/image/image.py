@@ -21,11 +21,10 @@ class Image(object):
 
     @staticmethod
     def fromurl(url, datasource=DataSource(), format=None, grid=None, mode="r",
-                clobber=False, **keywords):
+                **keywords):
         """
         Create an Image from the given url/filename
         """
-        
         # remove any zip extensions
         url = splitzipext(url)[0]
             
@@ -36,10 +35,10 @@ class Image(object):
         for format in valid:
             try:
                 return format(filename=url,
-                              datasource=datasource, mode=mode, clobber=clobber,
+                              datasource=datasource, mode=mode,
                               grid=grid, **keywords)
             except Exception, e:
-            #    print e
+                #    print e
                 pass
 
         raise NotImplementedError, 'no valid reader found for URL %s' % url
@@ -107,6 +106,9 @@ class Image(object):
 
 
     def next(self):
+        """
+        Return the next iterator value.
+        """ 
         value = self.grid.next()
         itertype = self.grid.get_iter_param("itertype")
 
@@ -116,10 +118,19 @@ class Image(object):
             flatten(value.where)
             result = self.compress(value.where)
         elif itertype == 'slice/parcel':
-            result = self[value.slice].compress(value.where)
+            result = self[value.slice].compress(N.asarray([value.where]))
         return result
 
     def set_next(self, data):
+        """
+        Set the next iterator value.
+
+
+        This method works in the same way as next(), in that it
+        requires __iter__ to have been called, and will advance
+        the iterator.
+        """
+        
         value = self.grid.next()
         itertype = self.grid.get_iter_param("itertype")
 
@@ -202,6 +213,7 @@ class ImageSequenceIterator(object):
         return self
 
     def next(self):
+        """ Return the next iterator value. """
         val = [img.next() for img in self.imgs]
         return N.array(val, N.float64)
 
