@@ -51,7 +51,7 @@ class WholeBrainNormalize(traits.HasTraits):
             out[i] = fmri_data[i] * 100. / self.avg[i]
         return out
 
-class fMRIStatOLS(LinearModelIterator):
+class fMRIStatOLS(LinearModelIterator, traits.HasTraits):
 
     """
     OLS pass of fMRIstat.
@@ -74,7 +74,8 @@ class fMRIStatOLS(LinearModelIterator):
     output_fwhm = traits.false
 
     def __init__(self, fmri_image, outputs=[], **keywords):
-        LinearModelIterator.__init__(self, fmri_image, outputs, **keywords)
+        LinearModelIterator.__init__(self, fmri_image, outputs)
+        traits.HasTraits.__init__(self, **keywords)
         
         self.fmri_image = fMRIImage(fmri_image)
         if self.normalize is not None:
@@ -234,7 +235,7 @@ class fMRIStatOLS(LinearModelIterator):
         print 'FWHM for AR estimated as: %02f' % self.fwhm_rho
 
 
-class fMRIStatAR(LinearModelIterator):
+class fMRIStatAR(LinearModelIterator, traits.HasTraits):
 
     """
     AR(1) pass of fMRIstat.
