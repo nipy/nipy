@@ -144,10 +144,10 @@ class SliceParcelIterator (object):
     boolean mask with the same shape as a slice of parcelmap indicating the
     elements of that slice's subset.
 
-   >>> from numpy import *
+   >>> from numpy import asarray
+   >>> from neuroimaging.core.reference.iterators import SliceParcelIterator
    >>> parcelmap = asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
    >>> parcelseq = ((1,2),0,2)
-   >>> from neuroimaging.core.reference.iterators import SliceParcelIterator
    >>> i = SliceParcelIterator(parcelmap,parcelseq)
    >>> for n in i: print n
    ...
