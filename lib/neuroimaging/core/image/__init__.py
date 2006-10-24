@@ -10,10 +10,6 @@ A BaseImage object can be created from an ndarray (ArrayImage)
 or from a file (Formats). 
 
 
-TODO: The Formats class does not currently subclass from BaseImage,
-or even provide the correct interface, so this needs to be fixed
-to fall in line with the class structure shown here.
-
   Application Level
 ----------------------
         Image
