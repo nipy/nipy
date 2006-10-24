@@ -46,7 +46,7 @@ class Image(object):
 
     def __init__(self, image, datasource=DataSource(), grid=None, **keywords):
         '''
-        Create a Image (volumetric image) object from either a file, an
+        Create an Image (volumetric image) object from either a file, an
         existing Image object, or an array.
         '''
 
