@@ -259,6 +259,7 @@ class fMRIStatAR(LinearModelIterator, traits.HasTraits):
         """
         
         traits.HasTraits.__init__(self, **keywords)
+        self.outputs = []
         self.outputs += outputs
         if not isinstance(OLS, fMRIStatOLS):
             raise ValueError, 'expecting an fMRIStatOLS object in fMRIStatAR'
