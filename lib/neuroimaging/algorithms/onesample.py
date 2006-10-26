@@ -111,7 +111,10 @@ class ImageOneSampleOutput(RegressionOutput):
     def __iter__(self):
         return self
 
-    def next(self, data):
+    def next(self):
+        return self.img.next()
+
+    def set_next(self, data):
         self.img.set_next(data)
 
     def extract(self, results):

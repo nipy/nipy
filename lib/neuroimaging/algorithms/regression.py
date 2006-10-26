@@ -40,7 +40,10 @@ class ImageRegressionOutput(RegressionOutput):
         iter(self.img)
         return self
 
-    def next(self, data):
+    def next(self):
+        return self.img.next()
+
+    def set_next(self, data):
         self.img.set_next(data)
 
     def extract(self, results):
@@ -100,13 +103,12 @@ class TContrastOutput(ImageRegressionOutput):
     def extract(self, results):
         return results.Tcontrast(self.contrast.matrix, sd=self.sd, t=self.t)
 
-    def next(self, data):
+    def set_next(self, data):
         self.timg.set_next(data.t)
         if self.effect:
             self.effectimg.set_next(data.effect)
         if self.sd:
             self.sdimg.set_next(data.effect)
-
 
 
 class FContrastOutput(ImageRegressionOutput):
