@@ -107,13 +107,6 @@ class Image(object):
 
 
     def next(self):
-        """
-        The value argument here is used when, for instance one wants to
-        iterate over one image with a ParcelIterator and write out data
-        to this image without explicitly setting this image's grid to
-        the original image's grid, i.e. to just take the value the
-        original image's iterator returns and use it here.
-        """
         value = self.grid.next()
         itertype = self.grid.get_iter_param("itertype")
 

@@ -126,15 +126,9 @@ class fMRIImage(Image):
 
 
     def next(self):        
-        """
-        The value argument here is used when, for instance one wants to
-        iterate over one image with a ParcelIterator and write out data to
-        this image without explicitly setting this image's grid to the
-        original image's grid, i.e. to just take the value the original
-        image's iterator returns and use it here.
-        """
-        self.itervalue = self.grid.next()
-        value = self.itervalue
+        itervalue = self.grid.next()
+        value = itervalue
+
         itertype = value.type
 
         if itertype == 'slice':
@@ -155,8 +149,8 @@ class fMRIImage(Image):
         return result
 
     def set_next(self, data):
-        self.itervalue = self.grid.next()
-        value = self.itervalue
+        itervalue = self.grid.next()
+        value = itervalue
 
         itertype = value.type
 
