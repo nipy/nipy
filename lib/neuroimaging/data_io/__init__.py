@@ -179,6 +179,8 @@ class DataSource (object):
         _, ext = splitzipext(found)
         return file_openers[ext](found, mode=mode)
 
+    def _fullpath(self, pathstr):
+        return pathstr
 
 
 class Repository (DataSource):

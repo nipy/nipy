@@ -83,7 +83,7 @@ class BinaryFormat(Format):
             mode = 'readonly'
         if mode == 'readwrite':
             if not self.datasource.exists(self.data_file):
-                utils.touch(self.data_file)
+                utils.touch(self.datasource._fullpath(self.data_file))
             elif not self.clobber:
                 raise IOError('file exists, but not allowed to clobber it')
 
@@ -91,6 +91,7 @@ class BinaryFormat(Format):
                 unzip(self.datasource.filename(self.data_file)) or \
                 self.datasource.filename(self.data_file)
             
+
         self.data = memmap(fname, dtype=self.sctype,
                            shape=tuple(self.grid.shape), mode=mode,
                            offset=offset)
