@@ -7,8 +7,6 @@ import numpy.linalg as NL
 from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.utils import fwhm2sigma
 from neuroimaging.core.reference.mapping import Affine
-from neuroimaging.core.reference.grid import SamplingGrid
-
 
 class LinearFilter(object):
     '''
@@ -18,7 +16,7 @@ class LinearFilter(object):
     '''
 
     def __init__(self, grid, fwhm=6.0, padding=5, scale=1.0, location=0.0,
-                 cov=None, **keywords):
+                 cov=None):
 
         self.grid = grid
         self.fwhm = fwhm
