@@ -59,19 +59,17 @@ class ImageOneSample(onesample.OneSampleIterator):
     def weights(self):
         ## TO DO: rename this methods, something like "getinput"
         if self.haveW:
-            w = self.witerator.next(value=self.iterator.grid.itervalue())
+            w = self.witerator.next()
         else:
             return 1.
 
         if self.varatioimg is not None:
-            value = self.iterator.grid.itervalue()
-            self.varatio = self.varatioimg.next(value=value)
+            self.varatio = self.varatioimg.next()            
         else:
             self.varatio = 1.
         
         if self.varfiximg is not None:
-            value = self.iterator.grid.itervalue()
-            self.varfix = self.varfiximg.next(value=value)
+            self.varfix = self.varfiximg.next()
         else:
             self.varfix = 0.
             
@@ -113,9 +111,8 @@ class ImageOneSampleOutput(RegressionOutput):
     def __iter__(self):
         return self
 
-    def next(self, data=None):
-        value = self.grid.itervalue()
-        self.img.next(data=data, value=value)
+    def next(self, data):
+        self.img.set_next(data)
 
     def extract(self, results):
         raise NotImplementedError

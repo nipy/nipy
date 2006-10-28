@@ -185,7 +185,7 @@ class iterFWHM(Resels):
         self.nneigh[-1,-1] = 1
         self.nneigh[-1,0] = 1
 
-    def next(self, data=None, FWHMmax=50.):
+    def next(self, data, FWHMmax=50.):
 
         wresid = 1.0 * N.transpose(data, (1,2,0))
         if not self.normalized:

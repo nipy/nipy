@@ -30,14 +30,8 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
         iter(self.grid)
         return self
 
-    def next(self, data=None):
-        self.grid.next()
-        if self.grid.get_iter_param("itertype") == 'slice':
-            value = copy.copy(self.grid.itervalue())
-            value.slice = value.slice[1]
-        else:
-            value = self.grid.itervalue()
-        self.img.next(data=data, value=value)
+    def next(self, data):
+        self.img.set_next(data)
 
     def extract(self, results):
         raise NotImplementedError
@@ -61,10 +55,9 @@ class ResidOutput(fMRIRegressionOutput):
     def extract(self, results):
         return results.resid
     
-    def next(self, data=None):
-        self.grid.next()
-        value = self.grid.itervalue()
-        self.img.next(data=data, value=value)
+    def next(self, data):
+        self.img.set_next(data)
+            
 
 
 class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
@@ -93,18 +86,13 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
             pylab.savefig(os.path.join(outdir, 'matrix.png'))
             f.clf()
 
-    def next(self, data=None):
-        if self.grid.get_iter_param("itertype") == 'slice':
-            value = copy.copy(self.grid.itervalue())
-            value.slice = value.slice[1]
-        else:
-            value = self.grid.itervalue()
+    def next(self, data):
+         self.timg.set_next(data.t)
+         if self.effect:
+             self.effectimg.set_next(data.effect)
+         if self.sd:
+             self.sdimg.set_next(data.sd)
 
-        self.timg.next(data=data.t, value=value)
-        if self.effect:
-            self.effectimg.next(data=data.effect, value=value)
-        if self.sd:
-            self.sdimg.next(data=data.sd, value=value)
 
     def extract(self, results):
         return imreg.TContrastOutput.extract(self, results)

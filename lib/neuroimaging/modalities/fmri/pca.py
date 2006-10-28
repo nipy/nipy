@@ -169,7 +169,7 @@ class PCA(traits.HasTraits):
             U.shape = (U.shape[0],) + outgrid.shape[1:]
             itervalue = outgrid.next()
             for k in range(len(which)):
-                outimages[k].next(data=U[k], value=itervalue)
+                outimages[k].set_next(data=U[k], value=itervalue)
 
         for i in range(len(which)):
             if output_base:

@@ -106,7 +106,7 @@ class Image(object):
         return self.buffer.put(indices, data)
 
 
-    def next(self, value=None, data=None):
+    def next(self):
         """
         The value argument here is used when, for instance one wants to
         iterate over one image with a ParcelIterator and write out data
@@ -114,25 +114,28 @@ class Image(object):
         the original image's grid, i.e. to just take the value the
         original image's iterator returns and use it here.
         """
+        value = self.grid.next()
+        itertype = self.grid.get_iter_param("itertype")
+
+        if itertype is 'slice':
+            result = N.squeeze(self[value.slice])
+        elif itertype is 'parcel':
+            flatten(value.where)
+            result = self.compress(value.where)
+        elif itertype == 'slice/parcel':
+            result = self[value.slice].compress(value.where)
+        return result
+
+    def set_next(self, data, value=None):
         if value is None:
             value = self.grid.next()
         itertype = self.grid.get_iter_param("itertype")
 
-        if data is None:
-            if itertype is 'slice':
-                result = N.squeeze(self[value.slice])
-            elif itertype is 'parcel':
-                flatten(value.where)
-                result = self.compress(value.where)
-            elif itertype == 'slice/parcel':
-                result = self[value.slice].compress(value.where)
-            return result
-        else:
-            if itertype is 'slice':
-                self[value.slice] = data
-            elif itertype in ('parcel', "slice/parcel"):
-                self.put(N.nonzero(value.where.flatten()), data)
-
+        if itertype is 'slice':
+            self[value.slice] = data
+        elif itertype in ('parcel', "slice/parcel"):
+            self.put(N.nonzero(value.where.flatten()), data)
+        
 
     def toarray(self, clean=True, **keywords):
         """
@@ -199,14 +202,14 @@ class ImageSequenceIterator(object):
         if grid is None:
             self.grid = iter(self.imgs[0].grid)
         else:
-            self.grid = iter(grid)
+            self.grid = iter(grid)        
 
     def __iter__(self): 
+        """ Return self as an iterator. """
+        _ = [iter(img) for img in self.imgs]
         return self
 
-    def next(self, value=None):
-        if value is None:
-            value = self.grid.next()
-        val = [img.next(value=value) for img in self.imgs]
+    def next(self):
+        val = [img.next() for img in self.imgs]
         return N.array(val, N.float64)
 

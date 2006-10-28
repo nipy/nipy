@@ -125,7 +125,7 @@ class fMRIImage(Image):
         return Image(data, grid=self.grid.subgrid(i), **keywords)
 
 
-    def next(self, value=None, data=None):
+    def next(self):        
         """
         The value argument here is used when, for instance one wants to
         iterate over one image with a ParcelIterator and write out data to
@@ -133,47 +133,48 @@ class fMRIImage(Image):
         original image's grid, i.e. to just take the value the original
         image's iterator returns and use it here.
         """
+        self.itervalue = self.grid.next()
+        value = self.itervalue
+        itertype = value.type
+
+        if itertype == 'slice':
+            result = self[value.slice]
+
+        elif itertype == 'parcel':
+            value.where.shape = N.product(value.where.shape)
+            self.label = value.label
+            result = self.compress(value.where, axis=1)
+            
+        elif itertype == 'slice/parcel':
+            value.where.shape = N.product(value.where.shape)
+            self.label = value.label
+            tmp = self[value.slice].copy()
+            tmp.shape = (tmp.shape[0], N.product(tmp.shape[1:]))
+            result = tmp.compress(value.where, axis=1)
+
+        return result
+
+    def set_next(self, data, value=None):
         if value is None:
             self.itervalue = self.grid.next()
             value = self.itervalue
 
-
         itertype = value.type
 
-        if data is None:
+        if itertype == 'slice':
+            self[value.slice] = data
 
-            if itertype == 'slice':
-                result = self[value.slice]
-
-            elif itertype == 'parcel':
-                value.where.shape = N.product(value.where.shape)
-                self.label = value.label
-                result = self.compress(value.where, axis=1)
-
-            elif itertype == 'slice/parcel':
-                value.where.shape = N.product(value.where.shape)
-                self.label = value.label
-                tmp = self[value.slice].copy()
-                tmp.shape = (tmp.shape[0], N.product(tmp.shape[1:]))
-                result = tmp.compress(value.where, axis=1)
-
-            return result
-
-        else:
-
-            if itertype == 'slice':
-                self[value.slice] = data
-
-            elif itertype == 'parcel':
-                for i in range(self.grid.shape[0]):
-                    _buffer = self[slice(i,i+1)]
-                    _buffer.put(data, indices)
-
-            elif itertype == 'slice/parcel':
-                indices = N.nonzero(value.where)
-                _buffer = self[value.slice]
+        elif itertype == 'parcel':
+            for i in range(self.grid.shape[0]):
+                _buffer = self[slice(i,i+1)]
                 _buffer.put(data, indices)
 
+        elif itertype == 'slice/parcel':
+            indices = N.nonzero(value.where)
+            _buffer = self[value.slice]
+            _buffer.put(data, indices)
+
+        
 
     def __iter__(self):
         "Create an iterator over an image based on its grid's iterator."

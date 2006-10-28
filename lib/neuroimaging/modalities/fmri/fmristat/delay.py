@@ -255,21 +255,14 @@ class DelayContrastOutput(TContrastOutput):
                                sd=self._sd,
                                t=t)
 
-    def next(self, data=None):
-        if self.grid.get_iter_param("itertype") == 'slice':
-            value = copy.copy(self.grid.itervalue())
-            value.slice = value.slice[1]
-        else:
-            value = self.grid.itervalue()
-
+    def next(self, data):
         nout = self.contrast.weights.shape[0]
-        
         for i in range(nout):
-            self.timgs[i].next(data=data.t[i], value=value)
+            self.timgs[i].set_next(data.t[i])
             if self.effect:
-                self.effectimgs[i].next(data=data.effect[i], value=value)
+                self.effectimgs[i].set_next(data.effect[i])
             if self.sd:
-                self.sdimgs[i].next(data=data.sd[i], value=value)
+                self.sdimgs[i].set_next(data.sd[i])
 
 class DelayHRF(hrf.SpectralHRF):
 

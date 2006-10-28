@@ -119,7 +119,7 @@ class ImageTest(unittest.TestCase):
         iter(test)
         while True:
             try:
-                test.next(data=v)
+                test.set_next(data=v)
                 v += 1
             except StopIteration:
                 break

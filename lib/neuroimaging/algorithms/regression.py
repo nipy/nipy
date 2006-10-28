@@ -37,11 +37,11 @@ class ImageRegressionOutput(RegressionOutput):
         iter(img)
        
     def __iter__(self):
+        iter(self.img)
         return self
 
-    def next(self, data=None):
-        value = self.grid.itervalue()
-        self.img.next(data=data, value=value)
+    def next(self, data):
+        self.img.set_next(data)
 
     def extract(self, results):
         raise NotImplementedError
@@ -100,14 +100,14 @@ class TContrastOutput(ImageRegressionOutput):
     def extract(self, results):
         return results.Tcontrast(self.contrast.matrix, sd=self.sd, t=self.t)
 
-    def next(self, data=None):
-        value = self.grid.itervalue()
-
-        self.timg.next(data=data.t, value=value)
+    def next(self, data):
+        self.timg.set_next(data.t)
         if self.effect:
-            self.effectimg.next(data=data.effect, value=value)
+            self.effectimg.set_next(data.effect)
         if self.sd:
-            self.sdimg.next(data=data.effect, value=value)
+            self.sdimg.set_next(data.effect)
+
+
 
 class FContrastOutput(ImageRegressionOutput):
 
