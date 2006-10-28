@@ -32,8 +32,8 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
 
 class ResidOutput(fMRIRegressionOutput):
 
-    def __init__(self, grid, path='.', ext='.hdr', clobber=False,
-                 basename='resid', nout=1, arraygrid=None):
+    def __init__(self, grid, nout=1, clobber=False, arraygrid=None,
+                 path='.', ext='.hdr', basename='resid'):
         fMRIRegressionOutput.__init__(self, grid, nout, clobber, arraygrid)
         outdir = os.path.join(path)
         
@@ -52,9 +52,9 @@ class ResidOutput(fMRIRegressionOutput):
 
 class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 
-    def __init__(self, grid, contrast, path='.', ext='.hdr',
-                 subpath='contrasts', clobber=False, frametimes=[], effect=True,
-                 sd=True, t=True, nout=1, arraygrid=None):
+    def __init__(self, grid, contrast, nout=1, clobber=False, arraygrid=None,
+                 path='.', ext='.hdr', subpath='contrasts', frametimes=[],
+                 effect=True, sd=True, t=True):
         fMRIRegressionOutput.__init__(self, grid, nout, clobber, arraygrid)
         self.contrast = contrast
         self.effect = effect

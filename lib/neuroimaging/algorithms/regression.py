@@ -14,6 +14,7 @@ class ImageRegressionOutput(RegressionOutput):
     def __init__(self, grid, nout=1, outgrid=None, clobber=False,
                  arraygrid=None):
         RegressionOutput.__init__(self, grid, nout)
+
         if outgrid is None:
             self.outgrid = grid
         else:
@@ -29,8 +30,11 @@ class ImageRegressionOutput(RegressionOutput):
 
 class TContrastOutput(ImageRegressionOutput):
 
-    def __init__(self, grid, contrast, path='.', subpath='contrasts', ext=".img", effect=True, sd=True, t=True, **keywords):
-        ImageRegressionOutput.__init__(self, grid, ext=ext, **keywords)                
+    def __init__(self, grid, contrast, path='.', subpath='contrasts', ext=".img",
+                 effect=True, sd=True, t=True, nout=1, outgrid=None,
+                 clobber=False, arraygrid=None):
+        ImageRegressionOutput.__init__(self, grid, nout, outgrid, clobber,
+                                       arraygrid)
         self.contrast = contrast
         self.effect = effect
         self.sd = sd
@@ -89,8 +93,11 @@ class TContrastOutput(ImageRegressionOutput):
 
 class FContrastOutput(ImageRegressionOutput):
 
-    def __init__(self, grid, contrast, path='.', clobber=False, subpath='contrasts', ext='.img', **keywords):
-        ImageRegressionOutput.__init__(self, grid, clobber=clobber, ext=ext, **keywords)                
+    def __init__(self, grid, contrast, path='.', clobber=False,
+                 subpath='contrasts', ext='.img', nout=1, outgrid=None,
+                 arraygrid=None):
+        ImageRegressionOutput.__init__(self, grid, nout, outgrid, clobber,
+                                       arraygrid)
         self.contrast = contrast
         self._setup_contrast()
         self._setup_output(clobber, path, subpath, ext)
@@ -128,9 +135,9 @@ class FContrastOutput(ImageRegressionOutput):
 class ResidOutput(ImageRegressionOutput):
 
     def __init__(self, grid, path='.', nout=1, clobber=False, basename='resid',
-                 ext='.img', **keywords):
-        ImageRegressionOutput.__init__(self, grid, nout=nout, clobber=clobber,
-                                       ext=ext, **keywords)
+                 ext='.img', outgrid=None, arraygrid=None):
+        ImageRegressionOutput.__init__(self, grid, nout, outgrid, clobber,
+                                       arraygrid)
         outdir = os.path.join(path)
     
         if not os.path.exists(outdir):
