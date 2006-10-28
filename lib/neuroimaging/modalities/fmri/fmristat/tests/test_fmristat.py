@@ -55,7 +55,7 @@ class fMRIStatTest(unittest.TestCase):
 class TestSliceTimes(fMRIStatTest):
 
     def test_model_slicetimes(self):
-        OLS = fMRIStatOLS(self.img, formula=self.formula,
+        OLS = fMRIStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes)
         OLS.nmax = 75
         OLS.fit(resid=True)
@@ -70,7 +70,7 @@ class TestResid1(fMRIStatTest):
 
     def test_model_resid1(self):
         self.img.slicetimes = None
-        OLS = fMRIStatOLS(self.img, formula=self.formula,
+        OLS = fMRIStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes, resid=True)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
@@ -84,7 +84,7 @@ class TestResid2(fMRIStatTest):
 
     def test_model_resid2(self):
         self.img.slicetimes = None
-        OLS = fMRIStatOLS(self.img, formula=self.formula,
+        OLS = fMRIStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
@@ -107,7 +107,7 @@ class TestHRFDeriv(fMRIStatTest):
        
         pain = Contrast(self.pain, self.formula, name='hot-warm')
         self.img.slicetimes = None
-        OLS = fMRIStatOLS(self.img, formula=self.formula,
+        OLS = fMRIStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes)
         OLS.fit(resid=True)
         rho = OLS.rho_estimator.img
@@ -123,7 +123,7 @@ class TestContrast(fMRIStatTest):
         pain = Contrast(self.pain, self.formula, name='pain')
 
         self.img.slicetimes = None
-        OLS = fMRIStatOLS(self.img, formula=self.formula,
+        OLS = fMRIStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes,
                                    clobber=True)
         OLS.fit(resid=True)
