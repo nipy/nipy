@@ -12,23 +12,6 @@ from neuroimaging.core.reference.mapping import Mapping, Affine
 
 
 
-class fMRIListMapping(Mapping):
-
-    def __init__(self, input_coords, output_coords, maps, **keywords):
-        self._maps = maps
-
-
-    def map(self, coords):
-        if len(coords.shape) > 1:
-            n = coords.shape[1]
-            value = []
-            for i in range(n):
-                value.append(self._maps[coords[i][0]](coords[i][1:]))
-        else:
-            return self._maps[coords[0]][coords[1:]]
-
-
-
 class fMRISamplingGrid(SamplingGrid):
 
     def __init__(self, shape, mapping, input_coords, output_coords):
@@ -42,7 +25,8 @@ class fMRISamplingGrid(SamplingGrid):
     def isproduct(self, tol = 1.0e-07):
         "Determine whether the affine   ation is 'diagonal' in time."
 
-        if not isinstance(self.mapping, Affine): return False
+        if not isinstance(self.mapping, Affine):
+            return False
         ndim = self.ndim
         t = self.mapping.transform
         offdiag = N.add.reduce(t[1:ndim,0]**2) + N.add.reduce(t[0,1:ndim]**2)
@@ -65,26 +49,17 @@ class fMRISamplingGrid(SamplingGrid):
           self.input_coords.name+'-subgrid',
           self.input_coords.axes()[1:])
 
-        if isinstance(self.mapping, fMRIListMapping):
-            outaxes = self.output_coords.axes()[1:]
-            outcoords = CoordinateSystem(
-                self.output_coords.name, outaxes)        
-            W = Affine(self._maps[i])
+        outaxes = self.output_coords.axes()[1:]
+        outcoords = CoordinateSystem(
+            self.output_coords.name, outaxes)        
 
-        elif self.isproduct():
-            outaxes = self.output_coords.axes()[1:]
-            outcoords = CoordinateSystem(
-              self.output_coords.name, outaxes)        
 
+        if self.isproduct():
             t = self.mapping.transform
             t = t[1:,1:]
             W = Affine(t)
 
         else:
-            outaxes = self.output_coords.axes()[1:]
-            outcoords = CoordinateSystem(
-              self.output_coords.name, outaxes)        
-
             def _map(x, fn=self.mapping.map, **keywords):
                 if len(x.shape) > 1:
                     _x = N.zeros((x.shape[0]+1,) + x.shape[1:], N.float64)
