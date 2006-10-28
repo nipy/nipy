@@ -52,6 +52,10 @@ class CoordinateSystemTest(unittest.TestCase):
         for i in range(3):
             self.assertEquals(self.c.getaxis(generic[i]),
                               new_c.getaxis(generic[new_order[i]]))
+
+        new_c = self.c.reorder(None, new_order)
+        self.assertEquals(new_c.name, self.c.name)
+
     def test___str__(self):
         s = str(self.c)
 
