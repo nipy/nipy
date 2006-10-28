@@ -89,7 +89,7 @@ class ImageOneSampleOutput(RegressionOutput):
     """
 
     def __init__(self, grid, basename="", clobber=False, nout=1, path='onesample',
-                 ext='.img', **keywords):
+                 ext='.img'):
         RegressionOutput.__init__(self)
         self.basename = basename
         self.grid = grid
