@@ -1,7 +1,6 @@
 import os, types
 
 import numpy as N
-from neuroimaging import traits
 
 from neuroimaging.core.image.image import Image, ImageSequenceIterator
 from neuroimaging.algorithms.statistics import onesample
@@ -82,28 +81,24 @@ class ImageOneSample(onesample.OneSampleIterator):
     def fit(self):
         return onesample.OneSampleIterator.fit(self, which=self.which)
 
-class ImageOneSampleOutput(RegressionOutput, traits.HasTraits):
+class ImageOneSampleOutput(RegressionOutput):
     """
     A class to output things a one sample T passes through data. It
     uses the image\'s iterator values to output to an image.
 
     """
 
-    nout = traits.Int(1)
-    clobber = traits.false
-    path = traits.Str('onesample')
-    ext = traits.Str('.img')
-
-    def __init__(self, grid, basename="", Tmax=100.0, Tmin=-100.0, Fmax=100.0,
-                 **keywords):
-        RegressionOutput.__init__(self, Tmax, Tmin, Fmax)
-        traits.HasTraits.__init__(self, **keywords)
+    def __init__(self, grid, basename="", clobber=False, nout=1, path='onesample',
+                 ext='.img', **keywords):
+        RegressionOutput.__init__(self)
         self.basename = basename
         self.grid = grid
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
+        self.clobber = clobber
+        self.nout = nout
+        if not os.path.exists(path):
+            os.makedirs(path)
 
-        self.img = iter(Image('%s/%s%s' % (self.path, self.basename, self.ext),
+        self.img = iter(Image('%s/%s%s' % (path, self.basename, ext),
                                     mode='w', clobber=self.clobber, grid=grid))
 
     def sync_grid(self, img=None):

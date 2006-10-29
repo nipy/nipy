@@ -1,27 +1,20 @@
 import os, csv, fpformat
 
 import numpy as N
-from neuroimaging import traits
 
 from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.statistics.regression import RegressionOutput
 
-class ImageRegressionOutput(RegressionOutput, traits.HasTraits):
+class ImageRegressionOutput(RegressionOutput):
     """
     A class to output things in GLM passes through Image data. It
     uses the image's iterator values to output to an image.
     """
 
-    nout = traits.Int(1)
-    clobber = traits.false
-    arraygrid = traits.Any()
-    ext = traits.Str('.img')
-
-    def __init__(self, grid, outgrid=None, Tmax=100.0, Tmin=-100.0, Fmax=100.0,
-                 **keywords):
-        RegressionOutput.__init__(self, Tmax, Tmin, Fmax)
-        traits.HasTraits.__init__(self, **keywords)
+    def __init__(self, grid, outgrid=None, clobber=False, arraygrid=None, nout=1, ext=".img", **keywords):
+        RegressionOutput.__init__(self)
         self.grid = grid
+        self.nout=1
         if outgrid is None:
             self.outgrid = grid
         else:
@@ -30,9 +23,9 @@ class ImageRegressionOutput(RegressionOutput, traits.HasTraits):
         if self.nout > 1:
             self.grid = self.grid.replicate(self.nout)
 
-        if self.arraygrid is not None:
-            self.img = iter(Image(N.zeros(self.arraygrid.shape, N.float64),
-              grid=self.arraygrid))
+        if arraygrid is not None:
+            self.img = iter(Image(N.zeros(arraygrid.shape, N.float64),
+              grid=arraygrid))
 
     def sync_grid(self, img=None):
         """
@@ -56,55 +49,49 @@ class ImageRegressionOutput(RegressionOutput, traits.HasTraits):
 
 class TContrastOutput(ImageRegressionOutput):
 
-    contrast = traits.Any() # should really start specifying classes with traits, too
-    effect = traits.true
-    sd = traits.true
-    t = traits.true
-    outdir = traits.Str()
-    subpath = traits.Str('contrasts')
-
-    def __init__(self, grid, contrast, path='.', **keywords):
-        raise Exception
-        ImageRegressionOutput.__init__(self, grid, **keywords)                
+    def __init__(self, grid, contrast, path='.', subpath='contrasts', ext=".img", effect=True, sd=True, t=True, **keywords):
+        ImageRegressionOutput.__init__(self, grid, ext=ext, **keywords)                
         self.contrast = contrast
-        self.outdir = os.path.join(path, self.subpath, self.contrast.name)
         self.path = path
+        self.effect = effect
+        self.sd = sd
+        self.t = t
         self._setup_contrast()
-        self._setup_output(time=self.frametimes) # self.frametimes undefined
+        self._setup_output(clobber, subpath, ext, time=self.frametimes) # self.frametimes undefined
 
     def _setup_contrast(self, **extra):
         self.contrast.getmatrix(**extra)
 
-    def _setup_output(self, **extra):
+    def _setup_output(self, clobber, subpath, ext):
+        outdir = os.path.join(self.path, subpath, self.contrast.name)
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
 
-        if not os.path.exists(self.outdir):
-            os.makedirs(self.outdir)
-
-        outname = os.path.join(self.outdir, 't%s' % self.ext)
+        outname = os.path.join(outdir, 't%s' % ext)
         self.timg = Image(outname, mode='w', grid=self.outgrid,
-                                clobber=self.clobber)
+                                clobber=clobber)
 
         self.sync_grid(img=self.timg)
 
         if self.effect:
-            outname = os.path.join(self.outdir, 'effect%s' % self.ext)
+            outname = os.path.join(outdir, 'effect%s' % ext)
             self.effectimg = Image(outname, mode='w', grid=self.outgrid,
-                                         clobber=self.clobber)
+                                         clobber=clobber)
 
             self.sync_grid(img=self.effectimg)
         if self.sd:
-            outname = os.path.join(self.outdir, 'sd%s' % self.ext)
+            outname = os.path.join(outdir, 'sd%s' % ext)
             self.sdimg = iter(Image(outname, mode='w', grid=self.outgrid,
-                                          clobber=self.clobber))
+                                          clobber=clobber))
             self.sync_grid(img=self.sdimg)
 
 
-        outname = os.path.join(self.outdir, 'matrix.csv')
+        outname = os.path.join(outdir, 'matrix.csv')
         outfile = file(outname, 'w')
         outfile.write(','.join(fpformat.fix(x,4) for x in self.contrast.matrix) + '\n')
         outfile.close()
 
-        outname = os.path.join(self.outdir, 'matrix.bin')
+        outname = os.path.join(outdir, 'matrix.bin')
         outfile = file(outname, 'w')
         self.contrast.matrix = self.contrast.matrix.astype('<f8')
         self.contrast.matrix.tofile(outfile)
@@ -124,39 +111,34 @@ class TContrastOutput(ImageRegressionOutput):
 
 class FContrastOutput(ImageRegressionOutput):
 
-    contrast = traits.Any()
-    outdir = traits.Str()
-    subpath = traits.Str('contrasts')
-
-    def __init__(self, grid, contrast, path='.', **keywords):
-        ImageRegressionOutput.__init__(self, grid, **keywords)                
+    def __init__(self, grid, contrast, path='.', clobber=False, subpath='contrasts', ext='.img', **keywords):
+        ImageRegressionOutput.__init__(self, grid, clobber=clobber, ext=ext, **keywords)                
         self.contrast = contrast
         self.path = path
-        self.outdir = os.path.join(self.path, self.subpath, self.contrast.name)
         self._setup_contrast()
-        self._setup_output()
+        self._setup_output(clobber, subpath, ext)
 
     def _setup_contrast(self, **extra):
         self.contrast.getmatrix(**extra)
 
-    def _setup_output(self):
+    def _setup_output(self, clobber, subpath, ext):
+        outdir = os.path.join(self.path, subpath, self.contrast.name)
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
 
-        if not os.path.exists(self.outdir):
-            os.makedirs(self.outdir)
-
-        outname = os.path.join(self.outdir, 'F%s' % self.ext)
+        outname = os.path.join(outdir, 'F%s' % ext)
         self.img = iter(Image(outname, mode='w', grid=self.outgrid,
-                                    clobber=self.clobber))
+                                    clobber=clobber))
         self.sync_grid()
 
-        outname = os.path.join(self.outdir, 'matrix.csv')
+        outname = os.path.join(outdir, 'matrix.csv')
         outfile = file(outname, 'w')
         writer = csv.writer(outfile)
         for row in self.contrast.matrix:
             writer.writerow([fpformat.fix(x, 4) for x in row])
         outfile.close()
 
-        outname = os.path.join(self.outdir, 'matrix.bin')
+        outname = os.path.join(outdir, 'matrix.bin')
         outfile = file(outname, 'w')
         self.contrast.matrix = self.contrast.matrix.astype('<f8')
         self.contrast.matrix.tofile(outfile)
@@ -168,19 +150,16 @@ class FContrastOutput(ImageRegressionOutput):
 
 class ResidOutput(ImageRegressionOutput):
 
-    outdir = traits.Str()
-    basename = traits.Str('resid')
-
-    def __init__(self, grid, path='.', nout=1, **keywords):
-        ImageRegressionOutput.__init__(self, grid, nout=nout, **keywords)                
-        self.outdir = os.path.join(path)
+    def __init__(self, grid, path='.', nout=1, clobber=False, basename='resid', ext='.img', **keywords):
+        ImageRegressionOutput.__init__(self, grid, nout=nout, clobber=clobber, ext=ext, **keywords)
+        outdir = os.path.join(path)
         self.path = path
     
-        if not os.path.exists(self.outdir):
-            os.makedirs(self.outdir)
-        outname = os.path.join(self.outdir, '%s%s' % (self.basename, self.ext))
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+        outname = os.path.join(outdir, '%s%s' % (basename, ext))
         self.img = Image(outname, mode='w', grid=self.grid,
-                               clobber=self.clobber)
+                               clobber=clobber)
         self.sync_grid()
         
         self.nout = self.grid.shape[0]

@@ -4,7 +4,6 @@ import numpy as N
 import numpy.linalg as L
 from scipy.linalg import toeplitz
 from scipy.sandbox.models.utils import recipr
-from neuroimaging import traits
 
 from neuroimaging.core.image.image import Image
 import neuroimaging.algorithms.regression as imreg
@@ -23,10 +22,6 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     iterator that drives everything: here it the iterator of an fMRIImage,
     in the former it is of an Image.
     """
-
-    nout = traits.Int(1)
-    imgarray = traits.false
-    clobber = traits.false
 
     def __init__(self, grid, **keywords):
         imreg.ImageRegressionOutput.__init__(self, grid, outgrid=grid.subgrid(0), **keywords)
@@ -50,20 +45,16 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
 
 class ResidOutput(fMRIRegressionOutput):
 
-    outdir = traits.Str()
-    ext = traits.Str('.hdr')
-    basename = traits.Str('resid')
-
-    def __init__(self, grid, path='.', **keywords):
-        fMRIRegressionOutput.__init__(self, grid, **keywords)                
-        self.outdir = os.path.join(path)
+    def __init__(self, grid, path='.', ext='.hdr', clobber=False, basename='resid', **keywords):
+        fMRIRegressionOutput.__init__(self, grid, ext=ext, clobber=clobber, basename=basename, **keywords)
+        outdir = os.path.join(path)
         
-        if not os.path.exists(self.outdir):
-            os.makedirs(self.outdir)
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
 
-        outname = os.path.join(self.outdir, '%s%s' % (self.basename, self.ext))
+        outname = os.path.join(outdir, '%s%s' % (basename, ext))
         self.img = Image(outname, mode='w', grid=self.grid,
-                               clobber=self.clobber)
+                               clobber=clobber)
         self.nout = self.grid.shape[0]
         self.sync_grid()
 
@@ -78,36 +69,28 @@ class ResidOutput(fMRIRegressionOutput):
 
 class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 
-    contrast = traits.Any() # should really start specifying classes with traits, too
-    effect = traits.true
-    sd = traits.true
-    t = traits.true
-    outdir = traits.Str()
-    ext = traits.Str('.hdr')
-    subpath = traits.Str('contrasts')
-    frametimes = traits.Any()
-
-    def __init__(self, grid, contrast, path='.', **keywords):
-        fMRIRegressionOutput.__init__(self, grid, **keywords)                
+    def __init__(self, grid, contrast, path='.', ext='.hdr', subpath='contrasts', clobber=False, frametimes=[], effect=True, sd=True, t=True, **keywords):
+        fMRIRegressionOutput.__init__(self, grid, ext=ext, clobber=clobber, **keywords)                
         self.contrast = contrast
-
-        self.outdir = os.path.join(path, self.subpath, self.contrast.name)
         self.path = path
-        self._setup_contrast(time=self.frametimes)
-        self._setup_output()
+        self.effect = effect
+        self.sd = sd
+        self.t = t
+        self._setup_contrast(time=frametimes)
+        self._setup_output(clobber, subpath, ext, frametimes)
 
-    def _setup_output(self):
-
-        imreg.TContrastOutput._setup_output(self)
+    def _setup_output(self, clobber, subpath, ext, frametimes):
+        outdir = os.path.join(self.path, subpath, self.contrast.name)
+        imreg.TContrastOutput._setup_output(self, clobber, subpath, ext)
 
         if PYLAB_DEF:
-            ftime = self.frametimes
+            ftime = frametimes
             f = pylab.gcf()
             f.clf()
             pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
                            dt = ftime.max() / 2000., title='Column space for contrast: \'%s\'' % self.contrast.name)
             pl.draw()
-            pylab.savefig(os.path.join(self.outdir, 'matrix.png'))
+            pylab.savefig(os.path.join(outdir, 'matrix.png'))
             f.clf()
 
     def next(self, data=None):
@@ -128,33 +111,26 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 
 class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
 
-    contrast = traits.Any() 
-    outdir = traits.Str()
-    ext = traits.Str('.hdr')
-    subpath = traits.Str('contrasts')
-    frametimes = traits.Any()
-
-    def __init__(self, grid, contrast, path='.', **keywords):
-        fMRIRegressionOutput.__init__(self, grid, **keywords)                
+    def __init__(self, grid, contrast, path='.', ext='.hdr', clobber=False, subpath='contrasts', frametimes=[], **keywords):
+        fMRIRegressionOutput.__init__(self, grid, ext=ext, **keywords)                
         self.contrast = contrast
         self.path = path
-        self.outdir = os.path.join(self.path, self.subpath, self.contrast.name)
-        self._setup_contrast(time=self.frametimes)
-        self._setup_output()
+        self._setup_contrast(time=frametimes)
+        self._setup_output(clobber, subpath, ext, frametimes)
 
-    def _setup_output(self):
-
-        imreg.FContrastOutput._setup_output(self)
+    def _setup_output(self, clobber, subpath, ext, frametimes):
+        outdir = os.path.join(self.path, subpath, self.contrast.name)
+        imreg.FContrastOutput._setup_output(self, clobber, subpath, ext)
 
         if PYLAB_DEF:
-            ftime = self.frametimes
+            ftime = frametimes
 
             f = pylab.gcf()
             f.clf()
             pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
                            dt = ftime.max() / 2000., title='Column space for contrast: \'%s\'' % self.contrast.name)
             pl.draw()
-            pylab.savefig(os.path.join(self.outdir, 'matrix.png'))
+            pylab.savefig(os.path.join(outdir, 'matrix.png'))
             f.clf()
 
     def extract(self, results):
@@ -174,8 +150,8 @@ class AR1Output(fMRIRegressionOutput):
 
 class AROutput(fMRIRegressionOutput):
 
-    order = traits.Int(1)
-    def __init__(self, grid, model, **keywords):
+    def __init__(self, grid, model, order=1, **keywords):
+        self.order = order
         arraygrid = grid.subgrid(0)
         fMRIRegressionOutput.__init__(self, grid, arraygrid=arraygrid, **keywords)
         self._setup_bias_correct(model)
