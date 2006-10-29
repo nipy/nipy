@@ -105,19 +105,19 @@ class PCA(traits.HasTraits):
             if self.pcatype == 'cor':
                 S2 = N.add.reduce(self.project(Y, which='resid')**2, axis=0)
                 Smhalf = recipr(N.sqrt(S2)); del(S2)
-                YX = YX * Smhalf
+                YX *= Smhalf
                 
             
             if self.mask is not None:
                 mask = self._mask[i]
                 
                 mask.shape = mask.size
-                YX = YX * N.nan_to_num(mask)
+                YX *= N.nan_to_num(mask)
                 del(mask)
             
-            self.C += N.dot(YX, N.transpose(YX))
+            self.C += N.dot(YX, YX.T)
             
-            gc.collect()
+            #gc.collect()
         
         
         self.D, self.Vs = L.eigh(self.C)
@@ -156,15 +156,13 @@ class PCA(traits.HasTraits):
             if self.mask is not None:
                 mask = self._mask[i]
                 mask.shape = mask.size
-                U = U * mask
+                U *= mask
 
             if self.pcatype == 'cor':
                 S2 = N.add.reduce(self.project(Y, which='resid')**2, axis=0)
                 Smhalf = recipr(N.sqrt(S2))
-                del(S2); gc.collect()
-                U = U * Smhalf
+                U *= Smhalf
             
-            del(Y); gc.collect()
  
             U.shape = (U.shape[0],) + outgrid.shape[1:]
             itervalue = outgrid.next()
@@ -182,7 +180,7 @@ class PCA(traits.HasTraits):
             d = d / d.flat[di]
             outslice = [slice(0,j) for j in outgrid.shape]
             outimage[outslice] = d
-            del(d); gc.collect()
+            #del(d); gc.collect()
 
         return outimages
 
