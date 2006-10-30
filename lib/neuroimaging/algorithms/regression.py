@@ -11,8 +11,7 @@ class ImageRegressionOutput(RegressionOutput):
     uses the image's iterator values to output to an image.
     """
 
-    def __init__(self, grid, nout=1, outgrid=None, clobber=False,
-                 arraygrid=None):
+    def __init__(self, grid, nout=1, outgrid=None, clobber=False):
         RegressionOutput.__init__(self, grid, nout)
 
         if outgrid is None:
@@ -23,18 +22,16 @@ class ImageRegressionOutput(RegressionOutput):
         if self.nout > 1:
             self.grid = self.grid.replicate(self.nout)
 
-        if arraygrid is not None:
-            self.img = iter(Image(N.zeros(arraygrid.shape, N.float64),
-              grid=arraygrid))
+        self.img = iter(Image(N.zeros(outgrid.shape, N.float64),
+                              grid=outgrid))
 
 
 class TContrastOutput(ImageRegressionOutput):
 
     def __init__(self, grid, contrast, path='.', subpath='contrasts', ext=".img",
                  effect=True, sd=True, t=True, nout=1, outgrid=None,
-                 clobber=False, arraygrid=None):
-        ImageRegressionOutput.__init__(self, grid, nout, outgrid, clobber,
-                                       arraygrid)
+                 clobber=False):
+        ImageRegressionOutput.__init__(self, grid, nout, outgrid, clobber)
         self.contrast = contrast
         self.effect = effect
         self.sd = sd
@@ -94,10 +91,8 @@ class TContrastOutput(ImageRegressionOutput):
 class FContrastOutput(ImageRegressionOutput):
 
     def __init__(self, grid, contrast, path='.', clobber=False,
-                 subpath='contrasts', ext='.img', nout=1, outgrid=None,
-                 arraygrid=None):
-        ImageRegressionOutput.__init__(self, grid, nout, outgrid, clobber,
-                                       arraygrid)
+                 subpath='contrasts', ext='.img', nout=1, outgrid=None):
+        ImageRegressionOutput.__init__(self, grid, nout, outgrid, clobber)
         self.contrast = contrast
         self._setup_contrast()
         self._setup_output(clobber, path, subpath, ext)
@@ -135,9 +130,8 @@ class FContrastOutput(ImageRegressionOutput):
 class ResidOutput(ImageRegressionOutput):
 
     def __init__(self, grid, path='.', nout=1, clobber=False, basename='resid',
-                 ext='.img', outgrid=None, arraygrid=None):
-        ImageRegressionOutput.__init__(self, grid, nout, outgrid, clobber,
-                                       arraygrid)
+                 ext='.img', outgrid=None):
+        ImageRegressionOutput.__init__(self, grid, nout, outgrid, clobber)
         outdir = os.path.join(path)
     
         if not os.path.exists(outdir):
