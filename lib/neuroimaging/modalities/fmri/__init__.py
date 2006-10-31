@@ -126,9 +126,7 @@ class fMRIImage(Image):
 
 
     def next(self):        
-        itervalue = self.grid.next()
-        value = itervalue
-
+        value = self.grid.next()
         itertype = value.type
 
         if itertype == 'slice':
@@ -149,9 +147,7 @@ class fMRIImage(Image):
         return result
 
     def set_next(self, data):
-        itervalue = self.grid.next()
-        value = itervalue
-
+        value = self.grid.next()
         itertype = value.type
 
         if itertype == 'slice':
