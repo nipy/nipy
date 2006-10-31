@@ -31,9 +31,10 @@ class Filter(traits.HasTraits):
         else:
             return Filter(self.IRF[i], names=[self.names[i]])
 
-    def __init__(self, IRF, **keywords):
+    def __init__(self, IRF, names, **keywords):
         traits.HasTraits.__init__(self, **keywords)
         self.IRF = IRF
+        self.names = names
         try:
             self.n = len(self.IRF)
         except:

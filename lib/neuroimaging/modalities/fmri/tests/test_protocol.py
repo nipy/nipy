@@ -80,7 +80,7 @@ class ProtocolTest(unittest.TestCase):
         self.setup_terms()
         
         for df in range(4, 10):
-            drift_fn = functions.SplineConfound(window=(0,300), df=df)
+            drift_fn = functions.SplineConfound(df, window=(0,300))
             drift = protocol.ExperimentalQuantitative('drift', drift_fn)
 
             formula = self.p + drift
@@ -104,7 +104,7 @@ class ProtocolTest(unittest.TestCase):
 
     def testContrast1(self):
         self.setup_terms()
-        drift_fn = functions.SplineConfound(window=(0,300), df=4)
+        drift_fn = functions.SplineConfound(4, window=(0,300))
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         formula = self.p + drift
         c = contrast.Contrast(self.p, formula)
@@ -115,7 +115,7 @@ class ProtocolTest(unittest.TestCase):
 
     def testContrast2(self):
         self.setup_terms()
-        drift_fn = functions.SplineConfound(window=(0,300), df=4)
+        drift_fn = functions.SplineConfound(4, window=(0,300))
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         formula = self.p + drift
         c = contrast.Contrast(self.p.main_effect(), formula)
@@ -128,7 +128,7 @@ class ProtocolTest(unittest.TestCase):
         self.setup_terms()
         
         for df in range(4, 10):
-            drift_fn = functions.SplineConfound(window=(0,300), df=df)
+            drift_fn = functions.SplineConfound(df, window=(0,300))
             drift = protocol.ExperimentalQuantitative('drift', drift_fn)
 
             formula = self.p + drift
@@ -156,7 +156,7 @@ class ProtocolTest(unittest.TestCase):
         self.setup_terms()
         
         for df in range(4, 10):
-            drift_fn = functions.SplineConfound(window=(0,300), df=df)
+            drift_fn = functions.SplineConfound(df, window=(0,300))
             drift = protocol.ExperimentalQuantitative('drift', drift_fn)
 
             formula = self.p + drift
@@ -181,7 +181,7 @@ class ProtocolTest(unittest.TestCase):
     def testTimeFn1(self):
         self.setup_terms()
         
-        drift_fn = functions.SplineConfound(window=(0,300), df=7)
+        drift_fn = functions.SplineConfound(7, window=(0,300))
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         d = drift.astimefn()
         t = N.arange(0,30,1.)
@@ -204,7 +204,7 @@ class ProtocolTest(unittest.TestCase):
     def testTimeFn2(self):
         self.setup_terms()
         
-        drift_fn = functions.SplineConfound(window=(0,300), df=7)
+        drift_fn = functions.SplineConfound(7, window=(0,300))
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         d = drift.astimefn()
         t = N.arange(0,30,1.)
@@ -224,7 +224,7 @@ class ProtocolTest(unittest.TestCase):
     def testTimeFn3(self):
         self.setup_terms()
         
-        drift_fn = functions.SplineConfound(window=(0,300), df=7)
+        drift_fn = functions.SplineConfound(7, window=(0,300))
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         d = drift.astimefn()
         t = N.arange(0,30,1.)
@@ -252,7 +252,7 @@ class ProtocolTest(unittest.TestCase):
     def testTimeFn4(self):
         self.setup_terms()
         
-        drift_fn = functions.SplineConfound(window=(0,300), df=7)
+        drift_fn = functions.SplineConfound(7, window=(0,300))
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         d = drift.astimefn()
 

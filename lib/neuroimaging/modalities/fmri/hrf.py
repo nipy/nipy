@@ -36,7 +36,7 @@ canonical = glover
 
 # AFNI's default HRF (at least at some point in the past)
 
-afni = filters.Filter(filters.GammaDENS(9.6, 1.0/0.547))
+afni = filters.Filter(filters.GammaDENS(9.6, 1.0/0.547), ['gamma'])
 
 class SpectralHRF(filters.Filter):
     '''

@@ -24,14 +24,14 @@ from scipy.interpolate import interp1d
 
 class TimeFunction(traits.HasTraits):
 
-    nout = traits.Int(1)
-    fn = traits.Any()
 
     windowed = traits.false
     window = traits.Tuple((0.,0.))
 
-    def __init__(self, **keywords):
+    def __init__(self, fn, nout=1, **keywords):
         traits.HasTraits.__init__(self, **keywords)
+        self.fn = fn
+        self.nout = nout
 
     def __getitem__(self, j):
 
@@ -220,7 +220,7 @@ class PeriodicStimulus(Stimulus):
 class Events(Stimulus):
 
     def __init__(self, **keywords):
-        Stimulus.__init__(self, **keywords)
+        Stimulus.__init__(self, None, **keywords)
 
     def append(self, start, duration, height=1.0):
         """
@@ -254,6 +254,9 @@ class DeltaFunction(TimeFunction):
     start = traits.Trait(0.0, desc='Beginning of delta function approximation.')
     dt = traits.Float(0.02, desc='Width of delta function approximation.')
 
+    def __init__(self):
+        TimeFunction.__init__(self, None)
+
     def __call__(self, time=None, **extra):
         return N.greater_equal(time, self.start) * N.less(time, self.start + self.dt) / self.dt
 
@@ -263,12 +266,13 @@ class SplineConfound(TimeFunction):
     A natural spline confound with df degrees of freedom.
     """
     
-    df = traits.Int(4)
+#    df = traits.Int(4)
     knots = traits.List()
 
-    def __init__(self, **keywords):
+    def __init__(self, df=4, **keywords):
 
-        TimeFunction.__init__(self, **keywords)
+        TimeFunction.__init__(self, None, **keywords)
+        self.df = df
         tmax = self.window[1]
         tmin = self.window[0]
         trange = tmax - tmin
