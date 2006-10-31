@@ -154,10 +154,9 @@ class fMRIImage(Image):
 
         return result
 
-    def set_next(self, data, value=None):
-        if value is None:
-            self.itervalue = self.grid.next()
-            value = self.itervalue
+    def set_next(self, data):
+        self.itervalue = self.grid.next()
+        value = self.itervalue
 
         itertype = value.type
 

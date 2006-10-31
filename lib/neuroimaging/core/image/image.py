@@ -126,9 +126,8 @@ class Image(object):
             result = self[value.slice].compress(value.where)
         return result
 
-    def set_next(self, data, value=None):
-        if value is None:
-            value = self.grid.next()
+    def set_next(self, data):
+        value = self.grid.next()
         itertype = self.grid.get_iter_param("itertype")
 
         if itertype is 'slice':

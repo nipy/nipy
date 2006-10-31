@@ -66,7 +66,7 @@ class PCA(traits.HasTraits):
                 return Y            
             else:
                 return Y - N.dot(self.proj_resid, Y)
-        
+
     def fit(self):
         """
         Perform the computations needed for the PCA.
@@ -140,10 +140,10 @@ class PCA(traits.HasTraits):
 
         if output_base is not None:
             outimages = [iter(Image('%s_comp%d%s' % (output_base, i, self.ext),
-                                    grid=outgrid, mode='w')) for i in which]
+                                    grid=outgrid.copy(), mode='w')) for i in which]
         else:
             outimages = [iter(Image(N.zeros(outgrid.shape, N.float64),
-                                    grid=outgrid)) for i in which]
+                                    grid=outgrid.copy())) for i in which]
 
         first_slice = slice(0,self.image.shape[0])
         _shape = self.image.grid.shape
@@ -169,7 +169,7 @@ class PCA(traits.HasTraits):
             U.shape = (U.shape[0],) + outgrid.shape[1:]
             itervalue = outgrid.next()
             for k in range(len(which)):
-                outimages[k].set_next(data=U[k], value=itervalue)
+                outimages[k].set_next(data=U[k])
 
         for i in range(len(which)):
             if output_base:
