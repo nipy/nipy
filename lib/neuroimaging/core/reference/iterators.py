@@ -4,7 +4,6 @@ This module provides a set of classes to be used to iterate over sampling grids.
 
 import operator
 
-# External imports
 import numpy as N
 
 itertypes = ("slice", "parcel", "slice/parcel")
@@ -27,9 +26,9 @@ class SliceIterator (object):
             self.slice = slice
             self.type = "slice"
 
-    def __init__(self, end, axis=0, start=None, step=None, nslicedim=0,
+    def __init__(self, shape, axis=0, start=None, step=None, nslicedim=0,
       nslice=1):
-        self.end = tuple(end)
+        self.end = tuple(shape)
         self.axis = axis
         self.nslice = nslice
         self.nslicedim = max(nslicedim, self.axis+1)        
@@ -42,14 +41,13 @@ class SliceIterator (object):
         else:
             self.step = N.asarray(step)
 
-        self.end = N.asarray(end)
+        self.end = N.asarray(shape)
         self.ndim = len(self.end)
         self.allslice = [slice(self.start[i], self.end[i], self.step[i]) \
                          for i in range(self.nslicedim)]
 
         self.slice = self.start[self.axis]
         self.last = self.end[self.axis]
-        self.type = "slice"
         self._isend = False
 
     def next(self):
@@ -101,7 +99,7 @@ class ParcelIterator (object):
             self.type = "parcel"
 
         def __repr__(self):
-            return "%s(label=%s, where=%s)"%\
+            return "%s(label=%s, where=%s)" % \
              (self.__class__.__name__, `self.label`,`self.where`)
 
 
@@ -181,9 +179,9 @@ class SliceParcelIterator (object):
         return self
 
     def next(self):
-        index, (mapslice,label) = self._loopvars.next()
+        index, (mapslice, label) = self._loopvars.next()
         item = ParcelIterator(mapslice, (label,)).next()
-        return SliceParcelIterator.Item(item.label,item.where,index)
+        return SliceParcelIterator.Item(item.label, item.where,index)
 
         # get rid of index and type from SliceParcelIterator.Item, then do this:
         #return ParcelIterator.Item(mapslice, (label,)).next()

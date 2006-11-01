@@ -163,7 +163,7 @@ class SamplingGrid (object):
         def __iter__(self):
             itertype = self.dict["itertype"]
             iterator, params = self.iterators[itertype]
-            self.iterator = iterator(*[self.dict[key] for key in params])
+            self.iterator = iterator(**dict([(key, self.dict[key]) for key in params]))
             return self
     
         def next(self):
