@@ -5,4 +5,5 @@ from neuroimaging.ui.visualization.tests import \
 
 def suite():
     return unittest.TestSuite([test_visualization.suite(),
+                               test_multiplot.suite(),
                                test_montage.suite()])

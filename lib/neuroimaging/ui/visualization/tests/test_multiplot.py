@@ -1,4 +1,4 @@
-import unittest, os
+import unittest
 
 import numpy as N
 

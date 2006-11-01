@@ -4,9 +4,8 @@ from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.interpolation import ImageInterpolator
 
-from neuroimaging.defines import pylab_def #, qt_def
+from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
-#QT_DEF, qt = qt_def()
 
 if PYLAB_DEF:
     from neuroimaging.ui.visualization import viewer, slices
@@ -47,11 +46,6 @@ class VisualizationTest(unittest.TestCase):
             pylab.savefig('image.png')
             os.remove('image.png')
 
-#jarrod--this was just a test and needs to be removed, for now just no testing
-#        if QT_DEF:
-#            def test_arrayview(self):
-#                from neuroimaging.ui.visualization import arrayview
-#                arrayview.arrayview(self.img.readall())
 
 def suite():
     return unittest.makeSuite(VisualizationTest)
