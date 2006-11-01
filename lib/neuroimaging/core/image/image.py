@@ -23,10 +23,16 @@ class Image(object):
     def fromurl(url, datasource=DataSource(), format=None, grid=None, mode="r",
                 **keywords):
         """
-        Create an Image from the given url/filename
+        Create an L{Image} from the given url/filename
 
         @param url: a url or filename
         @type url: C{string}
+        @param format: The file format to use
+        @type format: L{Format}
+        @param grid: The sampling grid for the file
+        @type grid: L{SamplingGrid}
+        @param mode: The mode to open the file in ('r', 'w', etc)
+        @type mode: C{string}
         """
         # remove any zip extensions
         url = splitzipext(url)[0]
