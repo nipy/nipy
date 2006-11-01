@@ -1,6 +1,5 @@
 from numpy.core.memmap import memmap as memmap_type
 import numpy as N
-import os
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io import DataSource
@@ -120,9 +119,6 @@ class Analyze(bin.BinaryFormat):
         clobber = allowed to clobber?
         usemat = use mat file?
         """
-        #self.filebase = os.path.splitext(filename)[0]
-        #self.header_file = self.filebase+".hdr"
-        #self.data_file = self.filebase+".img"
 
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.mat_file = self.filebase+".mat"
