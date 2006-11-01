@@ -1,10 +1,10 @@
 import numpy as N
 import pylab
 
-from neuroimaging.utils.tests.data import repository
+from neuroimaging.core.image.image import Image
 from neuroimaging.modalities.fmri import fMRIImage 
 from neuroimaging.modalities.fmri.pca import PCAmontage
-from neuroimaging.core.image.image import Image
+from neuroimaging.utils.tests.data import repository
 
 # Load an fMRI image
 

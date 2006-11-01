@@ -1,4 +1,3 @@
-
 """
 An example application to take a group of images and
 compute the (one-sample) studentized residuals from them.

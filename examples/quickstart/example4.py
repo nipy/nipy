@@ -1,12 +1,15 @@
+import numpy as N
+import pylab
+
 from neuroimaging.core.image.image import Image
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.ui.visualization.viewer import BoxViewer
-import numpy as N
-import pylab
+from neuroimaging.utils.tests.data import repository
+
 
 def mask(subject=0, run=1):
-    return Image('http://kff.stanford.edu/FIAC/fiac%d/fonc%d/fsl/mask.img' % (subject,run))    
+    return Image('FIAC/fiac%d/fonc%d/fsl/mask.img' % (subject,run), repository) 
 
 m = mask()
 
