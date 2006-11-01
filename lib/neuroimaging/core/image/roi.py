@@ -2,6 +2,9 @@
 Template region of interest (ROI) module
 """
 
+# FIXME: This module needs some attention. There are no unit tests for it
+# so it's hard to say whether it works correctly or not.
+
 import gc
 
 import numpy as N
