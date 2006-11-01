@@ -5,7 +5,6 @@ import glob
 import numpy as N
 
 from neuroimaging.core.image.image import Image, ImageSequenceIterator
-#from neuroimaging.algorithms.onesample import ImageOneSample
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.formats.analyze import Analyze
 
@@ -95,6 +94,19 @@ class ImageTest(unittest.TestCase):
         for i in I:
             self.assertEquals(i.shape, (109,91))
 
+    def test_set_next(self):
+        write_img = Image("test_write.hdr", repository, grid=self.img.grid, format=Analyze,
+                          mode='w', clobber=True)
+        I = iter(write_img)
+        x = 0
+        while True:
+            try:
+                write_img.set_next(N.ones((109, 91)))
+                x += 1
+            except StopIteration:
+                break
+        self.assertEquals(x, 91)
+
     def test_parcels1(self):
         rho = Image("rho.hdr", repository, format=Analyze)
         parcelmap = (rho.readall() * 100).astype(N.int32)
@@ -141,11 +153,31 @@ class ImageTest(unittest.TestCase):
             v += t.shape[0]
         self.assertEquals(v, N.product(test.grid.shape))
 
+    def test_parcels4(self):
+        rho = Image("rho.hdr", repository, format=Analyze)
+        parcelmap = (rho.readall() * 100).astype(N.int32)
+        shape = parcelmap.shape
+        parcelmap.shape = parcelmap.size
+        parcelseq = parcelmap
+        
+        test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
+        test.grid.set_iter_param("itertype", 'slice/parcel')
+        test.grid.set_iter_param("parcelmap", parcelmap)
+        test.grid.set_iter_param("parcelseq", parcelseq)
+        v = 0
+        for t in test:
+            v += 1
+        self.assertEquals(v, N.product(test.grid.shape))
 
     def test_readall(self):
         a = self.img.readall(clean=False)
         b = self.img.readall(clean=True)
         N.testing.assert_equal(a, b)
+
+    def test_badfile(self):
+        # We shouldn't be able to find a reader for this file!
+        filename = "test_image.py"
+        self.assertRaises(NotImplementedError, Image, filename, repository, format=Analyze)
 
 class ImageSequenceIteratorTest(unittest.TestCase):
 
