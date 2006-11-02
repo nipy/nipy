@@ -51,10 +51,9 @@ class SpectralHRF(filters.Filter):
     ncomp = traits.Int(2)
     names = traits.ListStr(['glover'])
 
-    spectral = traits.true
-
-    def __init__(self, input_hrf=canonical, **keywords):
+    def __init__(self, input_hrf=canonical, spectral=True, **keywords):
         filters.Filter.__init__(self, input_hrf, **keywords)
+        self.spectral = spectral
         if self.n != 1:
             raise ValueError, 'expecting one HRF for spectral decomposition'
         self.deltaPCA()
