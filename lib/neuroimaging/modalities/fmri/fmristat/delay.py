@@ -5,7 +5,7 @@ of delays and contrasts of delays.
 Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H., Evans, A.C. (2002). \'Estimating the delay of the response in fMRI data.\' NeuroImage, 16:593-606.
 
 """
-import copy, os, fpformat
+import os, fpformat
 
 import numpy as N
 import numpy.linalg as L
@@ -255,7 +255,7 @@ class DelayContrastOutput(TContrastOutput):
                                sd=self._sd,
                                t=t)
 
-    def next(self, data):
+    def set_next(self, data):
         nout = self.contrast.weights.shape[0]
         for i in range(nout):
             self.timgs[i].set_next(data.t[i])
