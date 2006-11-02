@@ -7,16 +7,14 @@ from neuroimaging import traits
 from neuroimaging.core.reference import slices
 from neuroimaging.algorithms.interpolation import ImageInterpolator
 
-class Slice(traits.HasTraits):
+class Slice(object):
 
-    transpose = traits.false
-
-    def __init__(self, interpolator, grid, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+    def __init__(self, interpolator, grid, transpose=False):
         self.interpolator = interpolator
         self.grid = grid
         self.drawer_args = ()
         self.drawer_keywords = {}
+        self.transpose = transpose
 
     def draw(self, *args, **keywords):
         """
@@ -25,11 +23,6 @@ class Slice(traits.HasTraits):
         pass
 
 
-# Default MNI coordinates
-
-#zlim = slices.default_zlim
-#ylim = slices.default_ylim
-#xlim = slices.default_xlim
 
 def coronal(image, y=0.,
             shape=(128,128),
@@ -107,7 +100,7 @@ interpolation = traits.Trait('nearest', 'bilinear', 'blackman100',
 
 origin = traits.Trait('lower', 'upper')
 
-class RGBASlicePlot(Slice):
+class RGBASlicePlot(Slice, traits.HasTraits):
     """
     A class that draws a slice of RGBA data. The grid instance is assumed to
     have a squeezeshape attribute representing the 'squeezed' shape of the
@@ -129,6 +122,10 @@ class RGBASlicePlot(Slice):
     maskcolor = traits.ListFloat([0,0,0], desc="Color to display in masked regions.")
 
     transpose = traits.Trait(False, desc='Transpose data before ploting?')
+
+    def __init__(self, interpolator, grid, transpose=False, **keywords):
+        traits.HasTraits.__init__(self, **keywords)
+        Slice.__init__(self, interpolator, grid, transpose)
 
     def mask_data(self, data):
         if self.mask is not None:
@@ -216,14 +213,10 @@ class DataSlicePlot(RGBSlicePlot):
 
 class SagittalPlot(DataSlicePlot):
 
-    x = traits.Float(0.)
-    #xlim = traits.ListFloat(xlim)
-    #ylim = traits.ListFloat(ylim)
-    shape = (128,128)
-
-    def __init__(self, img, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+    def __init__(self, img, z=0, shape=(128, 128), **keywords):
         self.img = img
+        self.z = z
+        self.shape = shape
         self.interpolator = ImageInterpolator(self.img)
         self.m = float(self.img.readall().min())
         self.M = float(self.img.readall().max())
@@ -233,19 +226,17 @@ class SagittalPlot(DataSlicePlot):
                                 vmax=self.M,
                                 vmin=self.m,
                                 colormap=self.colormap,
-                                interpolation=self.interpolation)
+                                interpolation=self.interpolation,
+                               **keywords)
 
 
 class CoronalPlot (DataSlicePlot):
 
-    x = traits.Float(0.)
-    #xlim = traits.ListFloat(xlim)
-    #zlim = traits.ListFloat(zlim)
-    shape = (128,128)
 
-    def __init__(self, img, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+    def __init__(self, img, z=0, shape=(128, 128), **keywords):
         self.img = img
+        self.z = z
+        self.shape = shape
         self.interpolator = ImageInterpolator(self.img)
         self.m = float(self.img.readall().min())
         self.M = float(self.img.readall().max())
@@ -256,29 +247,27 @@ class CoronalPlot (DataSlicePlot):
                                 vmax=self.M,
                                 vmin=self.m,
                                 colormap=self.colormap,
-                                interpolation=self.interpolation)
+                                interpolation=self.interpolation,
+                               **keywords)
 
 
 class TransversalPlot (DataSlicePlot):
 
-    z = traits.Float(0.)
-    #xlim = traits.ListFloat(xlim)
-    #ylim = traits.ListFloat(ylim)
-    shape = (128,128)
-
-    def __init__(self, img, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+    def __init__(self, img, z=0, shape=(128, 128), **keywords):
+        self.z = z
         self.img = img
+        self.shape = shape
         self.interpolator = ImageInterpolator(self.img)
         self.m = float(self.img.readall().min())
         self.M = float(self.img.readall().max())
         self.slice = transversal(self.img, z=self.z, shape=self.shape)
     
         DataSlicePlot.__init__(self, self.interpolator, self.slice,
-                                vmax=self.M,
-                                vmin=self.m,
-                                colormap=self.colormap,
-                                interpolation=self.interpolation)
+                               vmax=self.M,
+                               vmin=self.m,
+                               colormap=self.colormap,
+                               interpolation=self.interpolation,
+                               **keywords)
 
 
 

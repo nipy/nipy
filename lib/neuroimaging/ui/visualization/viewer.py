@@ -18,10 +18,6 @@ class BoxViewer(traits.HasTraits):
     y = traits.Float(N.inf)
     z = traits.Float(N.inf)
 
-    xlim = traits.List([-90.,90.])
-    ylim = traits.List([-126.,90.])
-    zlim = traits.List([-72.,108.])
-
     shape = traits.ListInt([91,109,91])
 
     slicenames = traits.ListStr(['coronal', 'sagittal', 'transversal'])
@@ -31,7 +27,6 @@ class BoxViewer(traits.HasTraits):
     M = traits.Float()
 
     # determines layout of slices
-
     buffer_pix = traits.Float(50.) # buffer in pixels
     z_pix = traits.Float(200.) # pixel length of z scale
     dpi = traits.Float(80.)
@@ -71,7 +66,6 @@ class BoxViewer(traits.HasTraits):
         If default is False, then a bounding box for image is returned
         and used for the limits.
         """
-
         self.colormap = colormap
         self.mask = mask
         self.interpolation = interpolation
