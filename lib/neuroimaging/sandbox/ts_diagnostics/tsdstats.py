@@ -18,12 +18,12 @@ class TimeSeriesDiagnosticsStats(object):
         self.ntime = self.fmri_image.grid.shape[0]
         self.nslice = self.fmri_image.grid.shape[1]
  
-        self.mse_time = N.zeros((self.ntime-1,), N.float64)
-        self.mse_slice = N.zeros((self.ntime-1, self.nslice), N.float64)
-        self.mean_signal = N.zeros((self.ntime,), N.float64)
-        self.max_mse_slice = N.zeros((self.nslice,), N.float64)
-        self.min_mse_slice = N.zeros((self.nslice,), N.float64)
-        self.mean_mse_slice = N.zeros((self.nslice,), N.float64)
+        self.mse_time = N.zeros((self.ntime-1,))
+        self.mse_slice = N.zeros((self.ntime-1, self.nslice))
+        self.mean_signal = N.zeros((self.ntime,))
+        self.max_mse_slice = N.zeros((self.nslice,))
+        self.min_mse_slice = N.zeros((self.nslice,))
+        self.mean_mse_slice = N.zeros((self.nslice,))
 
         self._npixel = {}
 
