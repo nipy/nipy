@@ -82,7 +82,7 @@ def frombin(tstr):
     """
 
     T = N.array(unpack('<16d', tstr[-128:]))
-    T.shape = (4,4)
+    T.shape = (4, 4)
     T = N.transpose(T)
     return T
 
@@ -256,7 +256,7 @@ class Mapping(object):
         return self._f(1.0)
 
     def python2matlab(self):
-        "Inverse of matlab2python -- see this function for help."
+        """ Inverse of matlab2python -- see this function for help."""
         return self._f(-1.0)
 
     def _f(self, x):
