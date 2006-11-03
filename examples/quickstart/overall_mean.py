@@ -34,12 +34,15 @@ def mean_overall(images):
     out /= len(images)
     return Image(out, grid=images[0].grid)
 
-SUBJECT_NOS = range(4)
-EFFECT_IMGS = [subj_run_effect_img(subject=i) for i in SUBJECT_NOS]
+# Collect subject images for first run
+subject_nos = range(4)
+effect_imgs = [subj_run_effect_img(subject=i, run=1) for i in subject_nos]
 
-OVERALL_MEAN = mean_overall(EFFECT_IMGS)
-OVERALL_MEAN.tofile('overall_mean.img', clobber=True)
+# Create mean image and write to file
+overall_mean_img = mean_overall(effect_imgs)
+overall_mean_img.tofile('overall_mean.img', clobber=True)
 
-VIEWER = BoxViewer(OVERALL_MEAN, colormap='spectral')
-VIEWER.draw()
+# Show in orthogonal viewer
+viewer = BoxViewer(overall_mean_img, colormap='spectral')
+viewer.draw()
 pylab.show()
