@@ -11,8 +11,8 @@ class ImageRegressionOutput(RegressionOutput):
     uses the image's iterator values to output to an image.
     """
 
-    def __init__(self, grid, nout=1, outgrid=None, clobber=False, arraygrid=None,
-                 ext=".img", **keywords):
+    def __init__(self, grid, nout=1, outgrid=None, clobber=False,
+                 arraygrid=None):
         RegressionOutput.__init__(self, grid, nout)
         if outgrid is None:
             self.outgrid = grid

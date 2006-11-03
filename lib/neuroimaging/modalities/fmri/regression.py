@@ -23,14 +23,18 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     in the former it is of an Image.
     """
 
-    def __init__(self, grid, **keywords):
-        imreg.ImageRegressionOutput.__init__(self, grid, outgrid=grid.subgrid(0), **keywords)
+    def __init__(self, grid, nout=1, clobber=False, arraygrid=None):
+        imreg.ImageRegressionOutput.__init__(self, grid, nout=nout,
+                                             outgrid=grid.subgrid(0),
+                                             clobber=clobber,
+                                             arraygrid=arraygrid)
 
 
 class ResidOutput(fMRIRegressionOutput):
 
-    def __init__(self, grid, path='.', ext='.hdr', clobber=False, basename='resid', **keywords):
-        fMRIRegressionOutput.__init__(self, grid, ext=ext, clobber=clobber, basename=basename, **keywords)
+    def __init__(self, grid, path='.', ext='.hdr', clobber=False,
+                 basename='resid', nout=1, arraygrid=None):
+        fMRIRegressionOutput.__init__(self, grid, nout, clobber, arraygrid)
         outdir = os.path.join(path)
         
         if not os.path.exists(outdir):
@@ -48,8 +52,10 @@ class ResidOutput(fMRIRegressionOutput):
 
 class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 
-    def __init__(self, grid, contrast, path='.', ext='.hdr', subpath='contrasts', clobber=False, frametimes=[], effect=True, sd=True, t=True, **keywords):
-        fMRIRegressionOutput.__init__(self, grid, ext=ext, clobber=clobber, **keywords)                
+    def __init__(self, grid, contrast, path='.', ext='.hdr',
+                 subpath='contrasts', clobber=False, frametimes=[], effect=True,
+                 sd=True, t=True, nout=1, arraygrid=None):
+        fMRIRegressionOutput.__init__(self, grid, nout, clobber, arraygrid)
         self.contrast = contrast
         self.effect = effect
         self.sd = sd
@@ -84,8 +90,9 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 
 class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
 
-    def __init__(self, grid, contrast, path='.', ext='.hdr', clobber=False, subpath='contrasts', frametimes=[], **keywords):
-        fMRIRegressionOutput.__init__(self, grid, ext=ext, **keywords)                
+    def __init__(self, grid, contrast, path='.', ext='.hdr', clobber=False,
+                 subpath='contrasts', frametimes=[], nout=1, arraygrid=None):
+        fMRIRegressionOutput.__init__(self, grid, nout, clobber, arraygrid)
         self.contrast = contrast
         self._setup_contrast(time=frametimes)
         self._setup_output(clobber, path, subpath, ext, frametimes)
@@ -110,9 +117,9 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
 
 class AR1Output(fMRIRegressionOutput):
 
-    def __init__(self, grid, **keywords):
+    def __init__(self, grid, nout=1, clobber=False):
         arraygrid = grid.subgrid(0)
-        fMRIRegressionOutput.__init__(self, grid, arraygrid=arraygrid, **keywords)
+        fMRIRegressionOutput.__init__(self, grid, nout, clobber, arraygrid)
 
     def extract(self, results):
         resid = results.resid
@@ -122,10 +129,10 @@ class AR1Output(fMRIRegressionOutput):
 
 class AROutput(fMRIRegressionOutput):
 
-    def __init__(self, grid, model, order=1, **keywords):
+    def __init__(self, grid, model, order=1, nout=1, clobber=False):
         self.order = order
         arraygrid = grid.subgrid(0)
-        fMRIRegressionOutput.__init__(self, grid, arraygrid=arraygrid, **keywords)
+        fMRIRegressionOutput.__init__(self, grid, nout, clobber, arraygrid)
         self._setup_bias_correct(model)
 
     def _setup_bias_correct(self, model):
