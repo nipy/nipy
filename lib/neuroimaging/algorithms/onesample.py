@@ -86,47 +86,22 @@ class ImageOneSampleOutput(RegressionOutput):
 
     """
 
-    def __init__(self, grid, basename="", clobber=False, nout=1, path='onesample',
+    def __init__(self, grid, nout=1, basename="", clobber=False, path='onesample',
                  ext='.img'):
-        RegressionOutput.__init__(self)
-        self.basename = basename
-        self.grid = grid
-        self.clobber = clobber
-        self.nout = nout
+        RegressionOutput.__init__(self, grid, nout)
         if not os.path.exists(path):
             os.makedirs(path)
 
-        self.img = iter(Image('%s/%s%s' % (path, self.basename, ext),
-                                    mode='w', clobber=self.clobber, grid=grid))
+        self.img = iter(Image('%s/%s%s' % (path, basename, ext),
+                                    mode='w', clobber=clobber, grid=grid))
 
-    def sync_grid(self, img=None):
-        """
-        Synchronize an image's grid iterator to self.grid's iterator.
-        """
-        if img is None:
-            img = self.img
-        img.grid._iterguy = self.grid._iterguy
-        iter(img)
-        
-    def __iter__(self):
-        return self
-
-    def next(self):
-        return self.img.next()
-
-    def set_next(self, data):
-        self.img.set_next(data)
-
-    def extract(self, results):
-        raise NotImplementedError
 
 class TOutput(ImageOneSampleOutput):
 
-    Tmax = 100.
-    Tmin = -100.
-
-    def __init__(self, grid, **keywords):
-        ImageOneSampleOutput.__init__(self, grid, 't', **keywords)
+    def __init__(self, grid, Tmax=100, Tmin=-100, **keywords):
+        ImageOneSampleOutput.__init__(self, grid, basename='t', **keywords)
+        self.Tmax = Tmax
+        self.Tmin = Tmin
 
     def extract(self, results):
         return N.clip(results['mean']['t'], self.Tmin, self.Tmax)
@@ -134,7 +109,7 @@ class TOutput(ImageOneSampleOutput):
 class SdOutput(ImageOneSampleOutput):
 
     def __init__(self, grid, **keywords):
-        ImageOneSampleOutput.__init__(self, grid, 'sd', **keywords)
+        ImageOneSampleOutput.__init__(self, grid, basename='sd', **keywords)
 
     def extract(self, results):
         return results['mean']['sd']
@@ -143,7 +118,7 @@ class MeanOutput(ImageOneSampleOutput):
 
 
     def __init__(self, grid, **keywords):
-        ImageOneSampleOutput.__init__(self, grid, 'effect', **keywords)
+        ImageOneSampleOutput.__init__(self, grid, basename='effect', **keywords)
 
     def extract(self, results):
         return results['mean']['mu']
@@ -151,7 +126,7 @@ class MeanOutput(ImageOneSampleOutput):
 class VaratioOutput(ImageOneSampleOutput):
 
     def __init__(self, grid, **keywords):
-        ImageOneSampleOutput.__init__(self, grid, 'varatio', **keywords)
+        ImageOneSampleOutput.__init__(self, grid, basename='varatio', **keywords)
 
     def extract(self, results):
         return results['varatio']['varatio']
@@ -159,7 +134,7 @@ class VaratioOutput(ImageOneSampleOutput):
 class VarfixOutput(ImageOneSampleOutput):
 
     def __init__(self, grid, **keywords):
-        ImageOneSampleOutput.__init__(self, grid, 'varfix', **keywords)
+        ImageOneSampleOutput.__init__(self, grid, basename='varfix', **keywords)
 
     def extract(self, results):
         return results['varatio']['varfix']

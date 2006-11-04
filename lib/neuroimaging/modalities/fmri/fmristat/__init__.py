@@ -1,5 +1,4 @@
 import gc, os, fpformat
-from neuroimaging import traits
 
 import numpy as N
 import numpy.linalg as L
@@ -51,41 +50,38 @@ class WholeBrainNormalize(object):
             out[i] = fmri_data[i] * 100. / self.avg[i]
         return out
 
-class fMRIStatOLS(LinearModelIterator, traits.HasTraits):
+class fMRIStatOLS(LinearModelIterator):
 
     """
     OLS pass of fMRIstat.
     """
     
-    normalize = traits.Any()
-    
-    slicetimes = traits.Any()
-    tshift = traits.Float(0.)
 
-    fwhm_rho = traits.Float(6.)
-    fwhm_data = traits.Float(6.)
-    target_df = traits.Float(100.)
-    nmax = traits.Int(200) # maximum number of rho values
-    mask = traits.Any()
-    path = traits.String('fmristat_run')
-    resid = traits.false
-    clobber = traits.false
-    output_fwhm = traits.false
-
-    def __init__(self, fmri_image, formula, outputs=[], **keywords):
+    def __init__(self, fmri_image, formula, outputs=[], normalize=None,
+                 output_fwhm=False, clobber=False, mask=None, slicetimes=None,
+                 tshift=0.0, fwhm_rho=6.0, fwhm_data=6.0, resid=False,
+                 nmax=200, path='fmristat_run'):
         LinearModelIterator.__init__(self, fmri_image, outputs)
-        traits.HasTraits.__init__(self, **keywords)
 
         self.formula = formula
+        self.output_fwhm = output_fwhm
+        self.clobber = clobber
+        self.mask = mask
+        self.slicetimes = slicetimes
+        self.tshift = tshift
+        self.fwhm_rho = fwhm_rho
+        self.fwhm_data = fwhm_data
+        self.nmax = nmax
+        self.path=path
         
         self.fmri_image = fMRIImage(fmri_image)
-        if self.normalize is not None:
-            self.fmri_image.postread = self.normalize
+        if normalize is not None:
+            self.fmri_image.postread = normalize
 
         ftime = self.fmri_image.frametimes + self.tshift
         self.dmatrix = self.formula.design(time=ftime)
 
-        if self.resid or self.output_fwhm:
+        if resid or self.output_fwhm:
             self.resid_output = ResidOutput(self.fmri_image.grid, path=self.path, basename='OLSresid', clobber=self.clobber)
             self.outputs.append(self.resid_output)
 
@@ -236,30 +232,21 @@ class fMRIStatOLS(LinearModelIterator, traits.HasTraits):
         print 'FWHM for AR estimated as: %02f' % self.fwhm_rho
 
 
-class fMRIStatAR(LinearModelIterator, traits.HasTraits):
+class fMRIStatAR(LinearModelIterator):
 
     """
     AR(1) pass of fMRIstat.
     """
     
-    formula = traits.Any()
-    slicetimes = traits.Any()
-    tshift = traits.Float(0.)
 
-    fwhm = traits.Float(6.0)
-    path = traits.Str('.')
-    resid = traits.false
-    clobber = traits.false
-
-    def __init__(self, OLS, contrasts=None, outputs=[], **keywords):
+    def __init__(self, OLS, contrasts=None, outputs=[], clobber=False,
+                 resid=False, tshift=0.0):
         """
         Building on OLS results, fit the AR(1) model.
 
         Contrasts is a sequence of terms to be tested in the model.
-
         """
         
-        traits.HasTraits.__init__(self, **keywords)
         self.outputs = []
         self.outputs += outputs
         if not isinstance(OLS, fMRIStatOLS):
@@ -267,13 +254,12 @@ class fMRIStatAR(LinearModelIterator, traits.HasTraits):
         self.fmri_image = OLS.fmri_image
 
         # output path
-        
-        self.path = OLS.path
+        path = OLS.path
 
         # copy the formula
         
         self.slicetimes = OLS.slicetimes
-        ftime = self.fmri_image.frametimes + self.tshift
+        ftime = self.fmri_image.frametimes + tshift
 
         self.formula = OLS.formula
         if self.slicetimes is None:
@@ -293,18 +279,18 @@ class fMRIStatAR(LinearModelIterator, traits.HasTraits):
                 contrast.getmatrix(time=ftime)
                 if isinstance(contrast, DelayContrast):
                     cur = DelayContrastOutput(self.fmri_image.grid,
-                                              contrast, path=self.path,
-                                              clobber=self.clobber,
+                                              contrast, path=path,
+                                              clobber=clobber,
                                               frametimes=ftime)
                 elif contrast.rank == 1:
                     cur = TContrastOutput(self.fmri_image.grid, contrast,
-                                          path=self.path,
-                                          clobber=self.clobber,
+                                          path=path,
+                                          clobber=clobber,
                                           frametimes=ftime)
                 else:
                     cur = FContrastOutput(self.fmri_image.grid, contrast,
-                                          path=self.path,
-                                          clobber=self.clobber,
+                                          path=path,
+                                          clobber=clobber,
                                           frametimes=ftime)
                 self.contrasts.append(cur)
                 
@@ -320,19 +306,20 @@ class fMRIStatAR(LinearModelIterator, traits.HasTraits):
 
         self.outputs += self.contrasts
 
-        if self.resid:
+        if resid:
             self.resid_output = ResidOutput(self.fmri_image.grid,
-                                            path=self.path,
+                                            path=path,
                                             basename='ARresid',
-                                            clobber=self.clobber)
+                                            clobber=clobber)
             self.outputs.append(self.resid_output)
 
     def model(self):
         self.j += 1
         itervalue = self.iterator.grid.itervalue()
         if self.slicetimes is not None:
-            design=self.designs[itervalue.slice[1]]
-        else: design = self.dmatrix
+            design = self.designs[itervalue.slice[1]]
+        else:
+            design = self.dmatrix
         # is using the first parcel label correct here?
         # rho needs to be a single float...
         return ARModel(rho=itervalue.label[0], design=design)

@@ -51,16 +51,15 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
     def __init__(self, grid, contrast, path='.', ext='.hdr', subpath='contrasts', clobber=False, frametimes=[], effect=True, sd=True, t=True, **keywords):
         fMRIRegressionOutput.__init__(self, grid, ext=ext, clobber=clobber, **keywords)                
         self.contrast = contrast
-        self.path = path
         self.effect = effect
         self.sd = sd
         self.t = t
         self._setup_contrast(time=frametimes)
-        self._setup_output(clobber, subpath, ext, frametimes)
+        self._setup_output(clobber, path, subpath, ext, frametimes)
 
-    def _setup_output(self, clobber, subpath, ext, frametimes):
-        outdir = os.path.join(self.path, subpath, self.contrast.name)
-        imreg.TContrastOutput._setup_output(self, clobber, subpath, ext)
+    def _setup_output(self, clobber, path, subpath, ext, frametimes):
+        outdir = os.path.join(path, subpath, self.contrast.name)
+        imreg.TContrastOutput._setup_output(self, clobber, path, subpath, ext)
 
         if PYLAB_DEF:
             ftime = frametimes
@@ -88,13 +87,12 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
     def __init__(self, grid, contrast, path='.', ext='.hdr', clobber=False, subpath='contrasts', frametimes=[], **keywords):
         fMRIRegressionOutput.__init__(self, grid, ext=ext, **keywords)                
         self.contrast = contrast
-        self.path = path
         self._setup_contrast(time=frametimes)
-        self._setup_output(clobber, subpath, ext, frametimes)
+        self._setup_output(clobber, path, subpath, ext, frametimes)
 
-    def _setup_output(self, clobber, subpath, ext, frametimes):
-        outdir = os.path.join(self.path, subpath, self.contrast.name)
-        imreg.FContrastOutput._setup_output(self, clobber, subpath, ext)
+    def _setup_output(self, clobber, path, subpath, ext, frametimes):
+        outdir = os.path.join(path, subpath, self.contrast.name)
+        imreg.FContrastOutput._setup_output(self, clobber, path, subpath, ext)
 
         if PYLAB_DEF:
             ftime = frametimes
