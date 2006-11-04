@@ -27,12 +27,25 @@ class Image(object):
 
         @param url: a url or filename
         @type url: C{string}
-        @param format: The file format to use
+        @param datasource: The datasource to be used for caching
+        @type datasource: L{DataSource}
+        @param format: The file format to use. If C{None} then all possible
+            formats will be tried.
         @type format: L{Format}
         @param grid: The sampling grid for the file
         @type grid: L{SamplingGrid}
         @param mode: The mode to open the file in ('r', 'w', etc)
         @type mode: C{string}
+
+        @raise C{NotImplementedError}: If the specified format, or those tried by
+            default are unable to open the file, an exception is raised.
+
+        @note: The raising of an exception can be misleading. If for example, a
+            bad url is given, it will appear as if that file's format has not
+            been implemented.
+
+        @return: A new L{Image} created from C{url}
+        @rtype: L{Image}
         """
         # remove any zip extensions
         url = splitzipext(url)[0]
