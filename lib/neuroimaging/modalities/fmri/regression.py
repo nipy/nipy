@@ -26,16 +26,6 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     def __init__(self, grid, **keywords):
         imreg.ImageRegressionOutput.__init__(self, grid, outgrid=grid.subgrid(0), **keywords)
 
-    def __iter__(self):
-        iter(self.grid)
-        return self
-
-    def next(self, data):
-        self.img.set_next(data)
-
-    def extract(self, results):
-        raise NotImplementedError
-
 
 class ResidOutput(fMRIRegressionOutput):
 
@@ -55,10 +45,6 @@ class ResidOutput(fMRIRegressionOutput):
     def extract(self, results):
         return results.resid
     
-    def next(self, data):
-        self.img.set_next(data)
-            
-
 
 class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 
@@ -86,7 +72,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
             pylab.savefig(os.path.join(outdir, 'matrix.png'))
             f.clf()
 
-    def next(self, data):
+    def set_next(self, data):
          self.timg.set_next(data.t)
          if self.effect:
              self.effectimg.set_next(data.effect)
