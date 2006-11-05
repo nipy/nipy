@@ -59,7 +59,6 @@ class fMRIStatOLS(LinearModelIterator, traits.HasTraits):
     
     normalize = traits.Any()
     
-    formula = traits.Any()
     slicetimes = traits.Any()
     tshift = traits.Float(0.)
 
@@ -73,9 +72,11 @@ class fMRIStatOLS(LinearModelIterator, traits.HasTraits):
     clobber = traits.false
     output_fwhm = traits.false
 
-    def __init__(self, fmri_image, outputs=[], **keywords):
+    def __init__(self, fmri_image, formula, outputs=[], **keywords):
         LinearModelIterator.__init__(self, fmri_image, outputs)
         traits.HasTraits.__init__(self, **keywords)
+
+        self.formula = formula
         
         self.fmri_image = fMRIImage(fmri_image)
         if self.normalize is not None:
