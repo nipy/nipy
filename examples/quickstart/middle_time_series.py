@@ -1,3 +1,13 @@
+#!/bin/env python
+'''
+Plot the mean intensity of the middle slice within the brain (as
+defined by the mask) across time for the first subject and first run
+in the example dataset
+
+Usage
+middle_time_series.py
+'''
+
 import numpy as N
 import pylab
 
@@ -6,6 +16,8 @@ from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.utils.tests.data import repository
 
 def mask_and_func(subject=0, run=1, offset=5):
+    ''' Return a slice definition for the masked middle slice of the functional run
+    '''
     M = Image('FIAC/fiac%d/fonc%d/fsl/mask.img' % (subject,run), repository)    
     m = N.zeros(M.grid.shape)
     middle = [slice(i/2-offset, i/2+offset, 1) for i in m.shape]
