@@ -9,7 +9,7 @@ from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
-    from neuroimaging.ui.visualization import viewer, slices
+    from neuroimaging.ui.visualization import slices
     from neuroimaging.ui.visualization.montage import Montage
 
 class MontageTest(unittest.TestCase):
@@ -38,6 +38,7 @@ class MontageTest(unittest.TestCase):
         
             m = Montage(slices=rhoslices, vmax=vmax, vmin=vmin)
             m.draw()
+            pylab.show()
             pylab.savefig('image.png')
             os.remove('image.png')
 

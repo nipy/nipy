@@ -1,8 +1,9 @@
 import unittest
-from neuroimaging.core.image.image import Image
+
 from neuroimaging.algorithms.onesample import ImageOneSample
-from neuroimaging.utils.tests.data import repository
+from neuroimaging.core.image.image import Image
 from neuroimaging.data_io.formats.analyze import Analyze
+from neuroimaging.utils.tests.data import repository
 
 
 class OneSampleTest(unittest.TestCase):

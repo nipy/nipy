@@ -1,4 +1,5 @@
-import os, types
+import os
+import types
 
 import numpy as N
 

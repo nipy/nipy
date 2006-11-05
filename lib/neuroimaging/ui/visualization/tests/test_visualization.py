@@ -19,6 +19,7 @@ class VisualizationTest(unittest.TestCase):
         def test_view(self):
             view = viewer.BoxViewer(self.img, z_pix=80.)
             view.draw()
+            pylab.show()
             pylab.savefig('image.png')
             os.remove('image.png')
 

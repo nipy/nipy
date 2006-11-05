@@ -1,13 +1,13 @@
 import unittest
 
-from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.kernel_smooth import LinearFilter
+from neuroimaging.core.image.image import Image
 from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
-    from neuroimaging.ui.visualization import viewer
+    from neuroimaging.ui.visualization.viewer import BoxViewer
     from neuroimaging.modalities.fmri.pca import PCAmontage
 
 class KernelTest(unittest.TestCase):
@@ -17,13 +17,14 @@ class KernelTest(unittest.TestCase):
 
         if PYLAB_DEF:
             srho = smoother.smooth(rho)
-            view = viewer.BoxViewer(rho)
+            view = BoxViewer(rho)
             view.draw()
 
-            sview = viewer.BoxViewer(srho)
+            sview = BoxViewer(srho)
             sview.m = view.m
             sview.M = view.M
             sview.draw()
+            pylab.show()
 
 def suite():
     suite = unittest.makeSuite(KernelTest)
