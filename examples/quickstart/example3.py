@@ -18,8 +18,8 @@ def mask_and_func(subject=0, run=1, offset=5):
 
 m, f = mask_and_func()
 f.grid.set_iter_param("itertype", 'parcel')
-f.grid.parcelmap = m[:]
-f.grid.parcelseq = [1, 2]
+f.grid.set_iter_param("parcelmap", m[:])
+f.grid.set_iter_param("parcelseq", [1, 2])
 
 means = {}
 for d in f:
