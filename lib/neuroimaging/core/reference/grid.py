@@ -130,6 +130,14 @@ class SamplingGrid (object):
     def get_iter_param(self, name):
         """ Get an iteration parameter """
         return self._iterguy.get(name)
+
+    def copy_iter(self, other):
+        """
+        Copy the iterator paramaters from another grid to this one.
+        This does not affect iterator state.
+        """
+        self._iterguy.dict = other._iterguy.dict
+        self._iterguy.iterators = other._iterguy.iterators
     
     class _IterHelper:
         """
