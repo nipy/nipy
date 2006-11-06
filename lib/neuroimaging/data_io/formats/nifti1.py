@@ -245,7 +245,9 @@ class Nifti1(bin.BinaryFormat):
             # we may THINK it's a Nifti, but ...
             if self.header['magic'] not in ('n+1\x00', 'ni1\x00'):
                 raise Nifti1FormatError
-            self.sctype = datatype2sctype[self.header['datatype']]
+            tmpsctype = datatype2sctype[self.header['datatype']]
+            tmpstr = N.dtype(tmpsctype)
+            self.sctype = tmpstr.newbyteorder(self.byteorder)
             self.ndim = self.header['dim'][0]
 
         # fill in the canonical list as best we can for Analyze
