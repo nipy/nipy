@@ -198,7 +198,7 @@ class Analyze(bin.BinaryFormat):
 
     def header_from_given(self):
         self.header['datatype'] = sctype2datatype[self.sctype]
-        self.header['bitpix'] = N.dtype(self.sctype).itemsize 
+        self.header['bitpix'] = N.dtype(self.sctype).itemsize *8
         self.grid = self.grid.python2matlab()
         self.ndim = self.grid.ndim
         

@@ -276,6 +276,7 @@ class Ecat7(bin.BinaryFormat):
         #self.sub_header = self.nframes * [struct_formats_sh]
 
         # for each frame read in subheader and attach data
+
         self.frames = self.nframes * [Frame]
         for i in range(self.nframes):
             self.frames[i] = Frame(self.data_file, self.byteorder, \
