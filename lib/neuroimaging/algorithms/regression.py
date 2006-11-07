@@ -11,14 +11,9 @@ class ImageRegressionOutput(RegressionOutput):
     uses the image's iterator values to output to an image.
     """
 
-    def __init__(self, grid, nout=1, outgrid=None, clobber=False):
-        RegressionOutput.__init__(self, grid, nout)
+    def __init__(self, grid, nout=1, outgrid=None):
+        RegressionOutput.__init__(self, grid, nout, outgrid)
 
-        if outgrid is None:
-            self.outgrid = grid
-        else:
-            self.outgrid = outgrid
-            
         if self.nout > 1:
             self.grid = self.grid.replicate(self.nout)
 
@@ -26,12 +21,13 @@ class ImageRegressionOutput(RegressionOutput):
                               grid=outgrid))
 
 
+
 class TContrastOutput(ImageRegressionOutput):
 
     def __init__(self, grid, contrast, path='.', subpath='contrasts', ext=".img",
                  effect=True, sd=True, t=True, nout=1, outgrid=None,
                  clobber=False):
-        ImageRegressionOutput.__init__(self, grid, nout, outgrid, clobber)
+        ImageRegressionOutput.__init__(self, grid, nout, outgrid)
         self.contrast = contrast
         self.effect = effect
         self.sd = sd
@@ -44,27 +40,11 @@ class TContrastOutput(ImageRegressionOutput):
 
     def _setup_output(self, clobber, path, subpath, ext):
         outdir = os.path.join(path, subpath, self.contrast.name)
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
-
-        outname = os.path.join(outdir, 't%s' % ext)
-        self.timg = Image(outname, mode='w', grid=self.outgrid,
-                                clobber=clobber)
-
-        self.sync_grid(img=self.timg)
-
+        self.timg = self._setup_img(clobber, outdir, ext, 't')
         if self.effect:
-            outname = os.path.join(outdir, 'effect%s' % ext)
-            self.effectimg = Image(outname, mode='w', grid=self.outgrid,
-                                         clobber=clobber)
-
-            self.sync_grid(img=self.effectimg)
+            self.effectimg = self._setup_img(clobber, outdir, ext, 'effect')
         if self.sd:
-            outname = os.path.join(outdir, 'sd%s' % ext)
-            self.sdimg = iter(Image(outname, mode='w', grid=self.outgrid,
-                                          clobber=clobber))
-            self.sync_grid(img=self.sdimg)
-
+            self.sdimg = self._setup_img(clobber, outdir, ext, 'sd')
 
         outname = os.path.join(outdir, 'matrix.csv')
         outfile = file(outname, 'w')
@@ -92,7 +72,7 @@ class FContrastOutput(ImageRegressionOutput):
 
     def __init__(self, grid, contrast, path='.', clobber=False,
                  subpath='contrasts', ext='.img', nout=1, outgrid=None):
-        ImageRegressionOutput.__init__(self, grid, nout, outgrid, clobber)
+        ImageRegressionOutput.__init__(self, grid, nout, outgrid)
         self.contrast = contrast
         self._setup_contrast()
         self._setup_output(clobber, path, subpath, ext)
@@ -102,13 +82,7 @@ class FContrastOutput(ImageRegressionOutput):
 
     def _setup_output(self, clobber, path, subpath, ext):
         outdir = os.path.join(path, subpath, self.contrast.name)
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
-
-        outname = os.path.join(outdir, 'F%s' % ext)
-        self.img = iter(Image(outname, mode='w', grid=self.outgrid,
-                                    clobber=clobber))
-        self.sync_grid()
+        self.img = self._setup_img(clobber, outdir, ext, 'F')
 
         outname = os.path.join(outdir, 'matrix.csv')
         outfile = file(outname, 'w')
@@ -131,16 +105,10 @@ class ResidOutput(ImageRegressionOutput):
 
     def __init__(self, grid, path='.', nout=1, clobber=False, basename='resid',
                  ext='.img', outgrid=None):
-        ImageRegressionOutput.__init__(self, grid, nout, outgrid, clobber)
+        ImageRegressionOutput.__init__(self, grid, nout, outgrid)
         outdir = os.path.join(path)
-    
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
-        outname = os.path.join(outdir, '%s%s' % (basename, ext))
-        self.img = Image(outname, mode='w', grid=self.grid,
-                               clobber=clobber)
-        self.sync_grid()
-        
+
+        self.img = self._setup_img(clobber, outdir, ext, basename)
         self.nout = self.grid.shape[0]
 
     def extract(self, results):

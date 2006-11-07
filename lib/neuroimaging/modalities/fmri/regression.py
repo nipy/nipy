@@ -1,4 +1,4 @@
-import copy, os
+import os
 
 import numpy as N
 import numpy.linalg as L
@@ -23,27 +23,20 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     in the former it is of an Image.
     """
 
-    def __init__(self, grid, nout=1, clobber=False):
+    def __init__(self, grid, nout=1):
         imreg.ImageRegressionOutput.__init__(self, grid, nout=nout,
-                                             outgrid=grid.subgrid(0),
-                                             clobber=clobber)
+                                             outgrid=grid.subgrid(0))
 
 
 class ResidOutput(fMRIRegressionOutput):
 
     def __init__(self, grid, nout=1, clobber=False,
                  path='.', ext='.hdr', basename='resid'):
-        fMRIRegressionOutput.__init__(self, grid, nout, clobber)
+        fMRIRegressionOutput.__init__(self, grid, nout)
         outdir = os.path.join(path)
-        
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
-
-        outname = os.path.join(outdir, '%s%s' % (basename, ext))
-        self.img = Image(outname, mode='w', grid=self.grid,
-                               clobber=clobber)
+        self.outgrid = grid
+        self.img = self._setup_img(clobber, outdir, ext, basename)
         self.nout = self.grid.shape[0]
-        self.sync_grid()
 
     def extract(self, results):
         return results.resid
@@ -54,7 +47,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
     def __init__(self, grid, contrast, nout=1, clobber=False,
                  path='.', ext='.hdr', subpath='contrasts', frametimes=[],
                  effect=True, sd=True, t=True):
-        fMRIRegressionOutput.__init__(self, grid, nout, clobber)
+        fMRIRegressionOutput.__init__(self, grid, nout)
         self.contrast = contrast
         self.effect = effect
         self.sd = sd
@@ -71,17 +64,18 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
             f = pylab.gcf()
             f.clf()
             pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
-                           dt = ftime.max() / 2000., title='Column space for contrast: \'%s\'' % self.contrast.name)
+                           dt = ftime.max() / 2000.,
+                           title='Column space for contrast: \'%s\'' % self.contrast.name)
             pl.draw()
             pylab.savefig(os.path.join(outdir, 'matrix.png'))
             f.clf()
 
     def set_next(self, data):
-         self.timg.set_next(data.t)
-         if self.effect:
-             self.effectimg.set_next(data.effect)
-         if self.sd:
-             self.sdimg.set_next(data.sd)
+        self.timg.set_next(data.t)
+        if self.effect:
+            self.effectimg.set_next(data.effect)
+        if self.sd:
+            self.sdimg.set_next(data.sd)
 
 
     def extract(self, results):
@@ -91,7 +85,7 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
 
     def __init__(self, grid, contrast, path='.', ext='.hdr', clobber=False,
                  subpath='contrasts', frametimes=[], nout=1):
-        fMRIRegressionOutput.__init__(self, grid, nout, clobber)
+        fMRIRegressionOutput.__init__(self, grid, nout)
         self.contrast = contrast
         self._setup_contrast(time=frametimes)
         self._setup_output(clobber, path, subpath, ext, frametimes)
@@ -106,7 +100,8 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
             f = pylab.gcf()
             f.clf()
             pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
-                           dt = ftime.max() / 2000., title='Column space for contrast: \'%s\'' % self.contrast.name)
+                           dt = ftime.max() / 2000.,
+                           title='Column space for contrast: \'%s\'' % self.contrast.name)
             pl.draw()
             pylab.savefig(os.path.join(outdir, 'matrix.png'))
             f.clf()
@@ -124,9 +119,9 @@ class AR1Output(fMRIRegressionOutput):
 
 class AROutput(fMRIRegressionOutput):
 
-    def __init__(self, grid, model, order=1, nout=1, clobber=False):
+    def __init__(self, grid, model, order=1, nout=1):
         self.order = order
-        fMRIRegressionOutput.__init__(self, grid, nout, clobber)
+        fMRIRegressionOutput.__init__(self, grid, nout)
         self._setup_bias_correct(model)
 
     def _setup_bias_correct(self, model):

@@ -18,7 +18,8 @@ class ImageOneSample(onesample.OneSampleIterator):
 
     def __init__(self, input, outputs=[], path='onesample', ext='.hdr',
                  t=True, sd=True, mean=True, clobber=False, which='mean',
-                 varfiximg=None, varatioimg=None, est_varatio=True, est_varfix=True):
+                 varfiximg=None, varatioimg=None, est_varatio=True,
+                 est_varfix=True):
 
         self.which = which
         self.varfiximg = varfiximg
@@ -89,11 +90,7 @@ class ImageOneSampleOutput(RegressionOutput):
     def __init__(self, grid, nout=1, basename="", clobber=False, path='onesample',
                  ext='.img'):
         RegressionOutput.__init__(self, grid, nout)
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        self.img = iter(Image('%s/%s%s' % (path, basename, ext),
-                                    mode='w', clobber=clobber, grid=grid))
+        self.img = iter(self._setup_img(clobber, path, ext, basename))
 
 
 class TOutput(ImageOneSampleOutput):

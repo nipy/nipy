@@ -86,7 +86,7 @@ class fMRIStatOLS(LinearModelIterator):
             self.outputs.append(self.resid_output)
 
         model = OLSModel(design=self.dmatrix)
-        self.rho_estimator = AROutput(self.fmri_image.grid, model, clobber=self.clobber)
+        self.rho_estimator = AROutput(self.fmri_image.grid, model)
         self.outputs.append(self.rho_estimator)
 
         self.setup_output()
