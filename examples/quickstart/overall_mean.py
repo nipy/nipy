@@ -29,8 +29,8 @@ def subj_run_effect_img(subject=0, run=1):
 def mean_overall(images):
     ''' Return mean over list of Images '''
     out = N.zeros(images[0].grid.shape, N.float64)
-    for i in range(len(images)):
-        out += images[i][:]
+    for im in images:
+        out += im[:]
     out /= len(images)
     return Image(out, grid=images[0].grid)
 
