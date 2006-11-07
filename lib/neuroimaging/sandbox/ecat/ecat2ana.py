@@ -86,7 +86,13 @@ class Ecat2Analyze(Ana.Analyze):
                               myecat.data.shape[3]]
         #orientation
         self.header['orient']= self.get_orientation(myecat)
-        self.header['origin'] = 
+        self.header['origin'] =
+
+    def get_origin(self, myecat):
+        """
+        determin original origin from ecat
+        """
+        
         
     def get_orientation(self,myecat):
         """
