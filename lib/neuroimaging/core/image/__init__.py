@@ -9,9 +9,10 @@ builds on top of these.
 A BaseImage object can be created from an ndarray (ArrayImage)
 or from a file (Formats). 
 
+Class structure::
 
-  Application Level
-----------------------
+   Application Level
+ ----------------------
         Image
           |
           o
@@ -25,9 +26,9 @@ or from a file (Formats).
       |
    Binary   
       |
-  ------------------
-  |        |       |
-Nifti   Analyze  ECAT
+   ------------------
+   |        |       |
+ Nifti   Analyze  ECAT
 """
 
 
