@@ -37,7 +37,7 @@ class Image(object):
         @param mode: The mode to open the file in ('r', 'w', etc)
         @type mode: C{string}
 
-        @raise C{NotImplementedError}: If the specified format, or those tried by
+        @raise NotImplementedError: If the specified format, or those tried by
             default are unable to open the file, an exception is raised.
 
         @note: The raising of an exception can be misleading. If for example, a
@@ -68,7 +68,9 @@ class Image(object):
     def __init__(self, image, datasource=DataSource(), grid=None, **keywords):
         '''
         Create an Image (volumetric image) object from either a file, an
-        existing Image object, or an array.
+        existing L{Image} object, or an array.
+
+        @param image: This can be either an L{Image}, string or an array.
         '''
 
         # from existing Image
@@ -147,7 +149,6 @@ class Image(object):
         """
         Set the next iterator value.
 
-
         This method works in the same way as next(), in that it
         requires __iter__ to have been called, and will advance
         the iterator.
@@ -190,6 +191,12 @@ class Image(object):
         """        
         Write the image to a file. Returns a new Image object
         of the newly written file.
+
+        @param filename: The name of the file to write to
+        @type filename: C{string}
+        @param clobber: Should we overwrite an existing file?
+        @type clobber: C{bool}
+        
         """
         sctype = sctype or self._source.sctype
         outimage = Image(filename, mode='w', grid=self.grid,
