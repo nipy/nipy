@@ -26,7 +26,7 @@ class Image(object):
         Create an Image from the given url/filename
 
         @param url: a url or filename
-        @type url: string        
+        @type url: C{string}
         """
         # remove any zip extensions
         url = splitzipext(url)[0]
