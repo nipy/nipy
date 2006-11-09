@@ -44,19 +44,21 @@ myAnaArray = myAnaImg.readall()
 # Plot the Image slice
 #axes1.imshow(myImgArray2[:,128,:]/N.float(myImgArray.max()),
 #             cmap=cm.gray)
-axes1.imshow(myImgArray2[:,128,:], cmap=cm.gray)
+axes1.imshow(myImgArray2[:,128,:], cmap=cm.gray, origin='lower')
 
 axes1.set_aspect(5,adjustable='box',anchor='C')
 axes2.imshow(myImgArray2[:,:,128]/N.float(myImgArray.max()),
-             cmap=cm.gray)
+             cmap=cm.gray, origin='lower')
 axes2.set_aspect(5,adjustable='box',anchor='C')
-axes3.imshow(myAnaArray[22,:,:],
-             cmap=cm.gray)
+axes3.imshow(myImgArray2[22,:,:],
+             cmap=cm.gray, origin='lower')
 axes3.set_aspect(1,adjustable='box',anchor='C')
 
 axes4.plot(myImgArray2[22,128,:])
 
 app.MainLoop()
+
+anafromecat = 
 
 
 class Ecat2Analyze(Ana.Analyze):
@@ -83,10 +85,47 @@ class Ecat2Analyze(Ana.Analyze):
                               myecat.data.shape[2],
                               myecat.data.shape[3]]
         #orientation
-        #self.header['orient']=
+        self.header['orient']= self.get_orientation(myecat)
+        self.header['origin'] = 
         
     def get_orientation(self,myecat):
         """
-        determin original orientation
+        determin original ECAT orientation
+        and translate to Analyze format
         """
+        ecatorient = myecat.header['patient_orientation']
+        if ecatorient == 0:
+            anaorient == 0
+        else:
+            anaorient = -1
+        return anaorient
+
+        """
+        FFP (0)= FeetFirstProne (face down)
+        HFP (1)= HeadFirstProne
+        FFS (2)= FeetFirstSupine (face up)
+        HFS (3)= HeadFirstSupine
+        FFDR (4)= Feet First Decubitus Right (on right side)
+        HFDR (5)= HeadFirstDecubitusRight
+        FFDL (6)= FeetFirstDecubitusLeft (in left side)
+        HFDL (7)= HEadFirstDecubitusLeft
+        unknown (8) = unknown
         
+        R = right
+        L = left
+        P = posterior
+        A = anterior
+        S = superior
+        I = inferior
+
+        
+        FFP -> RL PA IS -> Ana orient = 0 
+        HFP -> LR PA SI -> Ana.orient = -1 (unknown)
+        FFS -> LR AP IS -> Ana.orient = -1 (unknown)
+        HFS -> RL AP SI -> Ana.orient = -1 (unknown)
+
+        FFDR   PA LR IS -> Ana.orient = -1 (unknown)
+        HFDR   AP LR SI -> Ana.orient = -1 (unknown)
+        FFDL   AP RL IS -> Ana.orient = -1 (unknown)
+        HFDL   PA RL SI -> Ana.orient = -1 (unknown)
+        """
