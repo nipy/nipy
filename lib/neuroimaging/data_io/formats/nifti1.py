@@ -247,7 +247,7 @@ class Nifti1(bin.BinaryFormat):
                 raise Nifti1FormatError
             tmpsctype = datatype2sctype[self.header['datatype']]
             tmpstr = N.dtype(tmpsctype)
-            self.sctype = tmpstr.newbyteorder(self.byteorder)
+            self.sctype = tmpstr.newbyteorder(self.byteorder).type
             self.ndim = self.header['dim'][0]
 
         # fill in the canonical list as best we can for Analyze
@@ -331,7 +331,10 @@ class Nifti1(bin.BinaryFormat):
         # dim
 
         self.grid = self.grid.python2matlab()
-        self.header['datatype'] = sctype2datatype[self.sctype]
+        try:
+            self.header['datatype'] = sctype2datatype[self.sctype]
+        except:
+            self.header['datatype'] = sctype2datatype[self.sctype.type]
         self.header['bitpix'] = N.dtype(self.sctype).itemsize
         self.ndim = self.grid.ndim
     

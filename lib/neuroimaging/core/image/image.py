@@ -60,7 +60,7 @@ class Image(object):
                               datasource=datasource, mode=mode,
                               grid=grid, **keywords)
             except Exception, e:
-                #    print e
+                #print e
                 pass
 
         raise NotImplementedError, 'no valid reader found for URL %s' % url
