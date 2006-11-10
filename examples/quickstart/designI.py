@@ -1,9 +1,9 @@
+#!/bin/env python
 """
 This quickstart example shows you how to setup a model formula
 for an fMRI experiment.
 
-This example only treats the protocol.
-
+This example only sets up the model, and does not estimate it
 """
 
 import pylab
