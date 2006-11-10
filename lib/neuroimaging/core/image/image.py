@@ -24,6 +24,9 @@ class Image(object):
                 **keywords):
         """
         Create an Image from the given url/filename
+
+        @param url: a url or filename
+        @type url: string        
         """
         # remove any zip extensions
         url = splitzipext(url)[0]
