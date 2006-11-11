@@ -30,6 +30,14 @@ class Axis(object):
     """
 
     def __init__(self, name):
+        """
+        Create an axis with a given C{name}.
+
+        @param name: The name for the axis
+        @type name: C{string}
+        @precondition: C{name} must be an element of L{axis.valid}
+        """
+        
         self.name = name
         if self.name not in valid:
             raise ValueError, ('%s is invalid: recognized dimension names are ' + `valid`) \
