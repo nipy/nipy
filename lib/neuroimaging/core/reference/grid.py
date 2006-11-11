@@ -87,7 +87,8 @@ class SamplingGrid (object):
           self._IterHelper(self.shape, 0, "slice", None, None, iterators)
 
     def copy(self):
-        return SamplingGrid(self.shape, self.mapping, self.input_coords, self.output_coords)
+        return SamplingGrid(self.shape, self.mapping, self.input_coords,
+                            self.output_coords)
 
     def allslice (self):
         """
