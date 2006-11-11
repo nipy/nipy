@@ -34,8 +34,8 @@ def readbrick(infile, start, count, shape, offset=0, intype=N.int32, outtype=N.f
         nslicedim = 0
         i = ndim - 1
         while count[i] is shape[i] and i >= 0:
-            nslicedim = nslicedim + 1
-            i = i - 1
+            nslicedim += 1
+            i -= 1
 
         if nslicedim:
             nslice = N.product(shape[(ndim - nslicedim):])
@@ -72,7 +72,7 @@ def readbrick(infile, start, count, shape, offset=0, intype=N.int32, outtype=N.f
                 indata.byteswap()
             return_value[index:(index+nloop)] = indata.astype(outtype)
             infile.seek((nskip - nloop) * elsize, 1)
-            index = index + nloop
+            index += nloop
 
             return_value.setshape(count)
 
@@ -143,7 +143,7 @@ def writebrick(outfile, start, data, shape, offset=0, outtype=None, byteorder=sy
     while index < ntotal:
         outdata[index:(index+nloop)].tofile(outfile)
         outfile.seek((nskip - nloop) * elsize, 1)
-        index = index + nloop
+        index += nloop
     if return_tell:
         outfile.seek(startpos, 0)
 

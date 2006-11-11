@@ -150,7 +150,7 @@ class iterFWHM(Resels):
             _mu += _frame
             _sumsq += _frame**2
 
-        _mu = _mu / n
+        _mu /= n
         _invnorm = recipr(N.sqrt((_sumsq - n * _mu**2)))
 
         value = N.zeros(resid.shape, N.float64)
@@ -158,11 +158,13 @@ class iterFWHM(Resels):
         for i in range(n):
             if self.D == 3:
                 _frame = resid[:,:,i]
-                _frame = (_frame - _mu) * _invnorm
+                _frame -= _mu 
+                _frame *= _invnorm
                 value[:,:,i] = _frame
             elif self.D == 2:
                 _frame = resid[:,i]
-                _frame = (_frame - _mu) * _invnorm
+                _frame -= _mu
+                _frame *= _invnorm
                 value[:,i] = _frame
 
         return value
@@ -208,8 +210,8 @@ class iterFWHM(Resels):
                     detlam = axx * ayy - axy**2
                     test = N.greater(detlam, 0).astype(N.float64)
                     _resels = N.sqrt(test * detlam)
-                    self._resels[y[0]:y[-1], x[0]:x[-1]] = self._resels[y[0]:y[-1], x[0]:x[-1]] + _resels
-                    self._fwhm[y[0]:y[-1], x[0]:x[-1]] = self._fwhm[y[0]:y[-1], x[0]:x[-1]] + self.resel2fwhm(_resels)
+                    self._resels[y[0]:y[-1], x[0]:x[-1]] += _resels
+                    self._fwhm[y[0]:y[-1], x[0]:x[-1]] += self.resel2fwhm(_resels)
 
         else:
             self.uz = wresid - self.u
@@ -230,12 +232,12 @@ class iterFWHM(Resels):
 
                 test = N.greater(detlam, 0).astype(N.float64)
                 _resels = N.sqrt(test * detlam)
-                self._resels[y[0]:y[-1], x[0]:x[-1]] = self._resels[y[0]:y[-1], x[0]:x[-1]] + _resels
-                self._fwhm[y[0]:y[-1], x[0]:x[-1]] = self._fwhm[y[0]:y[-1], x[0]:x[-1]] + self.resel2fwhm(_resels)
+                self._resels[y[0]:y[-1], x[0]:x[-1]] += _resels
+                self._fwhm[y[0]:y[-1], x[0]:x[-1]] += self.resel2fwhm(_resels)
                 
             # Get slice ready for output
-            self._fwhm = self._fwhm / (((self.slice > 1) + 1.) * self.nneigh)
-            self._resels = self._resels / (((self.slice > 1) + 1.) * self.nneigh)
+            self._fwhm /= ((self.slice > 1) + 1.) * self.nneigh
+            self._resels /= ((self.slice > 1) + 1.) * self.nneigh
 
             self.output(FWHMmax)
 
@@ -264,17 +266,17 @@ class iterFWHM(Resels):
                     detlam = azz * (ayy*axx - ayx**2) - azy * (azy*axx - azx*ayx) + azx * (azy*ayx - azx*ayy)
                 test = N.greater(N.fabs(detlam), 0).astype(N.float64)
                 _resels = N.sqrt(test * detlam)
-                self._resels[x[0]:x[-1], y[0]:y[-1]] = self._resels[x[0]:x[-1], y[0]:y[-1]] + _resels
-                self._fwhm[x[0]:x[-1], y[0]:y[-1]] = self._fwhm[x[0]:x[-1], y[0]:y[-1]] + self.resel2fwhm(_resels)
+                self._resels[x[0]:x[-1], y[0]:y[-1]] += _resels
+                self._fwhm[x[0]:x[-1], y[0]:y[-1]] += self.resel2fwhm(_resels)
                 
             if self.slice == self.nslices - 1:
-                
+                # FIXME --- can we use inplace operators? is the precendence below even right?
                 self._fwhm = self._fwhm / ((self.slice > 1) + 1.) / self.nneigh
-                self._resels = self._resels / (((self.slice > 1) + 1.) * self.nneigh)
+                self._resels /= ((self.slice > 1) + 1.) * self.nneigh
 
                 self.output()
         
-        self.slice = self.slice + 1
+        self.slice += 1
 
     def output(self, FWHMmax=50.):
         value = self.grid.next()
@@ -305,10 +307,10 @@ class fastFWHM(Resels):
                 if verbose:
                     print '(Normalizing) Frame: [%d]' % i
                 _frame = self.rimage[slice(i,i+1)]
-                _mu = _mu + _frame
+                _mu += _frame
                 _sumsq += _frame**2
 
-            _mu = _mu / self.n
+            _mu /= self.n
             _invnorm = recipr(N.sqrt((_sumsq - self.n * _mu**2)))
         else:
             _mu = 0.

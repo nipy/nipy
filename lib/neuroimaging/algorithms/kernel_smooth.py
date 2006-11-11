@@ -103,7 +103,7 @@ class LinearFilter(object):
                 _out[_slice] = data
             else:
                 _out = data
-            _slice = _slice + 1
+            _slice += 1
 
         gc.collect()
 

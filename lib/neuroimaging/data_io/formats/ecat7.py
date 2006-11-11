@@ -1,5 +1,6 @@
-import numpy as N
 import os
+
+import numpy as N
 
 from neuroimaging.utils.odict import odict
 import neuroimaging.data_io as data_io
@@ -394,7 +395,7 @@ class Ecat7(bin.BinaryFormat):
         if mlist == []:
             mlist = values[1:values[0,3]+1]
         else:
-            mlist = mlist + values[1:values[0,3]+1]
+            mlist += values[1:values[0,3]+1]
             
         self.mlist = mlist.conj().transpose()
 

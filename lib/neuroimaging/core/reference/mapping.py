@@ -5,7 +5,8 @@ These mappings can be used to transform between voxel space and real space,
 for example.
 """
 
-import csv, urllib
+import csv
+import urllib
 from struct import unpack
 
 import numpy as N
@@ -304,7 +305,7 @@ class Affine(Mapping):
 
     def __call__(self, coords):
         value = N.dot(self._fmatrix, coords) 
-        value = value + N.multiply.outer(self._fvector, N.ones(value.shape[1:]))
+        value += N.multiply.outer(self._fvector, N.ones(value.shape[1:]))
         return value
 
     def __eq__(self, other):

@@ -211,7 +211,7 @@ class fMRIStatOLS(LinearModelIterator):
 
         tau = 0.
         for j in range(ARorder):
-            tau = tau + aclag(x, j+1)**2
+            tau += aclag(x, j+1)**2
 
         ndim = len(self.fmri_image.shape) - 1
 
