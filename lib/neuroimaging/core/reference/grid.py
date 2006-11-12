@@ -93,10 +93,7 @@ class SamplingGrid (object):
         """
         a slice object representing the entire grid
         """
-        try: 
-            return self.iterator.allslice
-        except AttributeError: 
-            return slice(0, self.shape[0])
+        return slice(0, self.shape[0])
 
     def range(self):
         """
