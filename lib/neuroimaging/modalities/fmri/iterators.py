@@ -12,12 +12,11 @@ class fMRISliceIterator(SliceIterator):
 
 
 class fMRISliceParcelIterator(SliceParcelIterator):
-    "Return parcels of timeseries within slices."
+    """Return parcels of timeseries within slices."""
 
     def __init__(self, parcelmap, parcelseq, shape):
-        nframe = shape[0]
         SliceParcelIterator.__init__(self, parcelmap, parcelseq)
-        self.nframe = nframe
+        self.nframe = shape[0]
 
     def next(self):
         value = SliceParcelIterator.next(self)
