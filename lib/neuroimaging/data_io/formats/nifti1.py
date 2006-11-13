@@ -49,7 +49,7 @@ datatype2sctype = {
     COMPLEX128: N.complex128,
 }
 
-sctype2datatype = dict([(v,k) for k,v in datatype2sctype.items()])
+sctype2datatype = dict([(v, k) for k, v in datatype2sctype.items()])
 
 # some bit-mask codes
 NIFTI_UNITS_UNKNOWN = 0
@@ -64,18 +64,18 @@ NIFTI_UNITS_PPM = 40
 NIFTI_UNITS_RADS = 48
 
 unitcode2units = {
-    0: '',
-    1: 'm',
-    2: 'mm',
-    3: 'um',
-    8: 's',
-    16: 'ms',
-    24: 'us',
-    32: 'hz',
-    40: 'ppm',
-    48: 'rad',
+    NIFTI_UNITS_UNKNOWN: '',
+    NIFTI_UNITS_METER: 'm',
+    NIFTI_UNITS_MM: 'mm',
+    NIFTI_UNITS_MICRON: 'um',
+    NIFTI_UNITS_SEC: 's',
+    NIFTI_UNITS_MSEC: 'ms',
+    NIFTI_UNITS_USEC: 'us',
+    NIFTI_UNITS_HZ: 'hz',
+    NIFTI_UNITS_PPM: 'ppm',
+    NIFTI_UNITS_RADS: 'rad',
 }
-units2unitcode = dict([(v,k) for k,v in unitcode2units.items()])
+units2unitcode = dict([(v, k) for k, v in unitcode2units.items()])
 
 #q/sform codes
 NIFTI_XFORM_UNKNOWN = 0
@@ -236,7 +236,8 @@ class Nifti1(bin.BinaryFormat):
             if self.grid is not None:
                 self.header_from_given()
             else:
-                raise NotImplementedError("Don't know how to create header info without a grid object")
+                raise NotImplementedError("Don't know how to create header" \
+                                          "info without a grid object")
             self.write_header(clobber=self.clobber)
         else:
             # this should work
@@ -317,8 +318,8 @@ class Nifti1(bin.BinaryFormat):
     
 
     def header_defaults(self):
-        for field,format in self.header_formats.items():
-            self.header[field] = self._default_field_value(field,format)
+        for field, format in self.header_formats.items():
+            self.header[field] = self._default_field_value(field, format)
 
 
     def header_from_given(self):
@@ -333,11 +334,12 @@ class Nifti1(bin.BinaryFormat):
 
         self.grid = self.grid.python2matlab()
         self.header['datatype'] = sctype2datatype[self.dtype.type]
-        self.header['bitpix'] = self.dtype.itemsize
+        self.header['bitpix'] = self.dtype.itemsize * 8
         self.ndim = self.grid.ndim
     
         if not isinstance(self.grid.mapping, Affine):
-            raise NIFTI1FormatError, 'error: non-Affine grid in writing out NIFTI-1 file'
+            raise Nifti1FormatError, 'error: non-Affine grid in writing' \
+                  'out NIFTI-1 file'
 
         ddim = self.ndim - 3
         t = self.grid.mapping.transform[ddim:,ddim:]
@@ -381,7 +383,7 @@ class Nifti1(bin.BinaryFormat):
 
         qfac = float(self.header['pixdim'][0])
         if qfac not in [-1.,1.]:
-            raise NIFTI1FormatError('invalid qfac: orientation unknown')
+            raise Nifti1FormatError('invalid qfac: orientation unknown')
         
         value = N.zeros((4,4), N.float64)
         value[3,3] = 1.0
