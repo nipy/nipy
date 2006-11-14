@@ -5,7 +5,7 @@ import numpy.linalg as L
 import numpy.random as R
 import scipy.ndimage
 from scipy.sandbox.models.utils import monotone_fn_inverter, rank 
-from scipy.sandbox.models.regression import OLSModel, ARModel
+from scipy.sandbox.models.regression import ols_model, ar_model
 
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, DelayContrastOutput
@@ -79,13 +79,14 @@ class fMRIStatOLS(LinearModelIterator):
             self.fmri_image.postread = normalize
 
         ftime = self.fmri_image.frametimes + self.tshift
-        self.dmatrix = self.formula.design(time=ftime)
+#        self.dmatrix = self.formula.design(kw={'time':ftime})
+        self.dmatrix = self.formula.design(args=(ftime,))
 
         if resid or self.output_fwhm:
             self.resid_output = ResidOutput(self.fmri_image.grid, path=self.path, basename='OLSresid', clobber=self.clobber)
             self.outputs.append(self.resid_output)
 
-        model = OLSModel(design=self.dmatrix)
+        model = ols_model(design=self.dmatrix)
         self.rho_estimator = AROutput(self.fmri_image.grid, model)
         self.outputs.append(self.rho_estimator)
 
@@ -95,9 +96,10 @@ class fMRIStatOLS(LinearModelIterator):
         ftime = self.fmri_image.frametimes + self.tshift
         if self.slicetimes is not None:
             _slice = self.iterator.grid.itervalue().slice
-            model = OLSModel(design=self.formula.design(time=ftime + self.slicetimes[_slice[1]]))
+#            model = ols_model(design=self.formula.design(kw={'time':ftime + self.slicetimes[_slice[1]]}))
+            model = ols_model(design=self.formula.design(args=(ftime + self.slicetimes[_slice[1]],)))
         else:
-            model = OLSModel(design=self.dmatrix)
+            model = ols_model(design=self.dmatrix)
         return model
 
     def fit(self, reference=None, **keywords):
@@ -269,8 +271,8 @@ class fMRIStatAR(LinearModelIterator):
             self.fmri_image.grid.set_iter_param("itertype", 'slice/parcel')
             self.designs = []
             for s in self.slicetimes:
-                self.designs.append(self.formula.design(time=ftime + s))
-
+#                self.designs.append(self.formula.design(kw={"time":time + s}))
+                self.designs.append(self.formula.design(args=(time+s,)))
         self.contrasts = []
         if contrasts is not None:
             if type(contrasts) not in [type([]), type(())]:
@@ -322,4 +324,4 @@ class fMRIStatAR(LinearModelIterator):
             design = self.dmatrix
         # is using the first parcel label correct here?
         # rho needs to be a single float...
-        return ARModel(rho=itervalue.label[0], design=design)
+        return ar_model(rho=itervalue.label[0], design=design)

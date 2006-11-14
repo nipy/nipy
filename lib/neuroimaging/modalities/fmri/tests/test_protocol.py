@@ -5,8 +5,7 @@ from scipy.sandbox.models import contrast
 
 from neuroimaging.modalities.fmri import hrf, protocol, functions
 
-
-class ProtocolTest(unittest.TestCase):
+class ProtocolTestSetup(unittest.TestCase):
 
     def setUp(self):
         """
@@ -43,7 +42,7 @@ class ProtocolTest(unittest.TestCase):
                252.0, 270.0, 288.0, 306.0, 324.0, 342.0, 360.0]
         p = ['hot', 'warm'] * 10
         all = []
-        for i in range(10):
+        for i in range(20):
             all.append([p[i], on[i], off[i]])
         self.all = all
 
@@ -56,6 +55,10 @@ class ProtocolTest(unittest.TestCase):
 
         self.t = N.arange(0,300,1)
 
+class ProtocolTest(ProtocolTestSetup):
+
+#class ProtocolFromFile(ProtocolTest):
+
     def testFromFile(self):
         out = file('tmp.csv', 'w')
         writer = csv.writer(out)
@@ -65,6 +68,8 @@ class ProtocolTest(unittest.TestCase):
         
         p = protocol.ExperimentalFactor('pain', file('tmp.csv'), delta=False)
         os.remove('tmp.csv')
+
+#class ProtocolFromFileName(ProtocolTest):
 
     def testFromFileName(self):
         out = file('tmp.csv', 'w')
@@ -76,42 +81,8 @@ class ProtocolTest(unittest.TestCase):
         p = protocol.ExperimentalFactor('pain', 'tmp.csv', delta=False)
         os.remove('tmp.csv')
 
-    def testShape(self):
-        self.setup_terms()
-        
-        for df in range(4, 10):
-            drift_fn = functions.SplineConfound(df, window=(0,300))
-            drift = protocol.ExperimentalQuantitative('drift', drift_fn)
 
-            formula = self.p + drift
-            y = formula(self.t)
-            self.assertEquals(y.shape, (2 + df, self.t.shape[0]))
-
-            self.p.convolve(self.IRF1)
-            formula = self.p + drift
-            y = formula(self.t)
-            self.assertEquals(y.shape, (2 + df, self.t.shape[0]))
-
-            self.p.convolve(self.IRF2)
-            formula = self.p + drift
-            y = formula(self.t)
-            self.assertEquals(y.shape, (4 + df, self.t.shape[0]))
-
-            self.p.convolve(self.IRF1)
-            formula = self.p + drift * self.p
-            y = formula(self.t)
-            self.assertEquals(y.shape, (2 + df * 2, self.t.shape[0]))
-
-    def testContrast1(self):
-        self.setup_terms()
-        drift_fn = functions.SplineConfound(4, window=(0,300))
-        drift = protocol.ExperimentalQuantitative('drift', drift_fn)
-        formula = self.p + drift
-        c = contrast.Contrast(self.p, formula)
-        c.getmatrix(time=self.t)
-        N.testing.assert_almost_equal(c.matrix,
-                                          [[0.,0.,0.,0.,1.,0.],
-                                           [0.,0.,0.,0.,0.,1.]])
+#class ProtocolContrast2(ProtocolTest):
 
     def testContrast2(self):
         self.setup_terms()
@@ -119,38 +90,13 @@ class ProtocolTest(unittest.TestCase):
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         formula = self.p + drift
         c = contrast.Contrast(self.p.main_effect(), formula)
-        c.getmatrix(time=self.t)
+        c.getmatrix(self.t)
         N.testing.assert_almost_equal(c.matrix,
                                           [[0.,0.,0.,0.,1.,0.],
                                            [0.,0.,0.,0.,0.,1.]])
 
-    def testDesign1(self):
-        self.setup_terms()
-        
-        for df in range(4, 10):
-            drift_fn = functions.SplineConfound(df, window=(0,300))
-            drift = protocol.ExperimentalQuantitative('drift', drift_fn)
 
-            formula = self.p + drift
-            y = formula.design(time=self.t)
-            self.assertEquals(y.shape[::-1], (2 + df, self.t.shape[0]))
-
-            self.p.convolve(self.IRF1)
-            self.p.convolved = True
-            formula = self.p + drift
-            y = formula.design(time=self.t)
-            self.assertEquals(y.shape[::-1], (2 + df, self.t.shape[0]))
-
-            self.p.convolve(self.IRF2)
-            self.p.convolved = True
-            formula = self.p + drift
-            y = formula.design(time=self.t)
-            self.assertEquals(y.shape[::-1], (4 + df, self.t.shape[0]))
-
-            self.p.convolve(self.IRF1)
-            formula = self.p + drift * self.p
-            y = formula.design(time=self.t)
-            self.assertEquals(y.shape[::-1], (2 + df * 2, self.t.shape[0]))
+#class ProtocolDesign2(ProtocolTest):
 
     def testDesign2(self):
         self.setup_terms()
@@ -168,7 +114,6 @@ class ProtocolTest(unittest.TestCase):
             self.assertEquals(len(y), 2 + df)
 
             self.p.convolve(self.IRF2)
-            self.convolved = True
             formula = self.p + drift
             y = formula.names()
             self.assertEquals(len(y), 4 + df)
@@ -177,6 +122,8 @@ class ProtocolTest(unittest.TestCase):
             formula = self.p + drift * self.p
             y = formula.names()
             self.assertEquals(len(y), 2 + df * 2)
+
+#class ProtocolTimeFn1(ProtocolTest):
 
     def testTimeFn1(self):
         self.setup_terms()
@@ -201,6 +148,8 @@ class ProtocolTest(unittest.TestCase):
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) + Z)
 
 
+#class ProtocolTimeFn2(ProtocolTest):
+
     def testTimeFn2(self):
         self.setup_terms()
         
@@ -220,6 +169,8 @@ class ProtocolTest(unittest.TestCase):
 
         D = d + d
         N.testing.assert_almost_equal(D(t), 2 * N.array(drift_fn(t)))
+
+#class ProtocolTimeFn3(ProtocolTest):
 
     def testTimeFn3(self):
         self.setup_terms()
@@ -249,6 +200,8 @@ class ProtocolTest(unittest.TestCase):
         N.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] + c[i])
 
 
+#class ProtocolTimeFn4(ProtocolTest):
+
     def testTimeFn4(self):
         self.setup_terms()
         
@@ -264,6 +217,8 @@ class ProtocolTest(unittest.TestCase):
 
         N.testing.assert_almost_equal(N.squeeze(x(t)), d(t)[i])
 
+#class ProtocolTimeFn5(ProtocolTest):
+
     def testTimeFn5(self):
         t = N.arange(0,60,1.)
         self.setup_terms()
@@ -273,9 +228,9 @@ class ProtocolTest(unittest.TestCase):
         Z = float(N.random.standard_normal(()))
 
         a = q.astimefn() - r.astimefn() * Z
-        N.testing.assert_almost_equal(a(t), (N.array(q(time=t)) - Z * N.array(r(time=t))).flatten())
+        N.testing.assert_almost_equal(a(t), (N.array(q(t)) - Z * N.array(r(t))).flatten())
 
-class DeltaTest(unittest.TestCase):
+#class ProtocolDeltaTest(ProtocolTest):
 
     def test_DeltaFunction(self):
         a = N.arange(0,5,0.1)
@@ -287,9 +242,104 @@ class DeltaTest(unittest.TestCase):
         N.testing.assert_array_equal(x, y)
 
 
-def suite():
-    suite = unittest.makeSuite(ProtocolTest)
-    return suite
+#class ProtocolContrast1(ProtocolTest):
+
+    def testContrast1(self):
+        self.setup_terms()
+        drift_fn = functions.SplineConfound(4, window=(0,300))
+        drift = protocol.ExperimentalQuantitative('drift', drift_fn)
+        formula = self.p + drift
+        c = contrast.Contrast(self.p, formula)
+        c.getmatrix(self.t)
+        N.testing.assert_almost_equal(c.matrix,
+                                          [[0.,0.,0.,0.,1.,0.],
+                                           [0.,0.,0.,0.,0.,1.]])
+
+
+#class ProtocolShape(ProtocolTestSetup):
+
+    def testShape(self):
+        self.setup_terms()
+        
+        for df in range(4, 10):
+            drift_fn = functions.SplineConfound(df, window=(0,300))
+            drift = protocol.ExperimentalQuantitative('drift', drift_fn)
+
+            formula = self.p + drift
+            y = formula(self.t)
+            self.assertEquals(y.shape, (2 + df, self.t.shape[0]))
+
+            self.p.convolve(self.IRF1)
+            formula = self.p + drift
+            y = formula(self.t)
+            self.assertEquals(y.shape, (2 + df, self.t.shape[0]))
+
+            self.p.convolve(self.IRF2)
+            formula = self.p + drift
+            y = formula(self.t)
+            self.assertEquals(y.shape, (4 + df, self.t.shape[0]))
+
+            self.p.convolve(self.IRF1)
+            formula = self.p + drift * self.p
+            y = formula(self.t)
+            self.assertEquals(y.shape, (2 + df * 2, self.t.shape[0]))
+
+#class ProtocolDesign1(ProtocolTestSetup):
+
+    def testDesign1(self):
+        self.setup_terms()
+        
+        for df in range(4, 10):
+            drift_fn = functions.SplineConfound(df, window=(0,300))
+            drift = protocol.ExperimentalQuantitative('drift', drift_fn)
+
+            formula = self.p + drift
+            y = formula.design(self.t)
+            self.assertEquals(y.shape[::-1], (2 + df, self.t.shape[0]))
+
+            self.p.convolve(self.IRF1)
+            self.p.convolved = True
+            formula = self.p + drift
+            y = formula.design(self.t)
+            self.assertEquals(y.shape[::-1], (2 + df, self.t.shape[0]))
+
+            self.p.convolve(self.IRF2)
+            self.p.convolved = True
+            formula = self.p + drift
+            y = formula.design(self.t)
+            self.assertEquals(y.shape[::-1], (4 + df, self.t.shape[0]))
+
+            self.p.convolve(self.IRF1)
+            formula = self.p + drift * self.p
+            y = formula.design(self.t)
+            self.assertEquals(y.shape[::-1], (2 + df * 2, self.t.shape[0]))
+
+    def test_toggle(self):
+	"""
+	Test to make sure that .convolved flag works on regression terms.
+	"""
+
+        self.setup_terms()
+
+        for df in range(4, 10):
+
+            drift_fn = functions.SplineConfound(df, window=(0,300))
+            drift = protocol.ExperimentalQuantitative('drift', drift_fn)
+
+	    self.p.convolved = False
+            formula = self.p + drift * self.p
+            y = formula.design(self.t)
+            self.assertEquals(y.shape[::-1], (2 + df * 2, self.t.shape[0]))
+
+            self.p.convolve(self.IRF2)
+            formula = self.p + drift * self.p
+            y = formula.design(self.t)
+            self.assertEquals(y.shape[::-1], (4 + df * 4, self.t.shape[0]))
+
+	    self.p.convolved = False
+            formula = self.p + drift * self.p
+            y = formula.design(self.t)
+            self.assertEquals(y.shape[::-1], (2 + df * 2, self.t.shape[0]))
 
 if __name__ == '__main__':
     unittest.main()

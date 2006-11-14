@@ -2,16 +2,18 @@ import csv, types, copy
 import numpy as N
 
 from neuroimaging.modalities.fmri.functions import TimeFunction, Events
-from scipy.sandbox.models.formula import Factor, Quantitative, Formula, Term
-
+from scipy.sandbox.models.formula import factor, quantitative, formula, term
+from enthought.traits.api import false, HasTraits, Str
 namespace = {}
 downtime = 'None/downtime'
 
 class ExperimentalRegressor(object):
-
     
-    def __init__(self, convolved=False):
+
+    def __init__(self, convolved=False, namespace=namespace, termname='term'):
+	namespace[termname] = self
         self.__c = convolved
+	self.termname = termname
 
     # a toggle to determine whether we
     # want to think of the factor as convolved or not
@@ -19,18 +21,24 @@ class ExperimentalRegressor(object):
     # fixme: this is ugly, but was confusing with traits
     # we can put it back to being a trait when my brain
     # sorts itself out -- Timl
+
     def _get_c(self):  return self.__c
     def _set_c(self, value):  self.__c = value; self._convolved_changed()
     def _del_c(self): del self.__c
     convolved = property(_get_c, _set_c, _del_c)
 
     def _convolved_changed(self):
+
         if not hasattr(self, '_nameunconv'):
             self._nameunconv = copy.copy(self.name)
+	    self._funcunconv = self.func
+	    
         if self.convolved:
             self.name = self._convolved.name
+	    self.func = self._convolved
         else:
             self.name = self._nameunconv
+	    self.func = self._funcunconv
 
     def __add__(self, other):
         other = ExperimentalFormula(other)
@@ -42,64 +50,54 @@ class ExperimentalRegressor(object):
 
     def names(self):
         if self.convolved:
-            print self.convolved
             return self._convolved.names()
         else:
             if hasattr(self, '_nameunconv'):
                 return self._nameunconv
             else:
-                return Term.names(self)
+                return term.names(self)
+
+    def _convolved__call__(self, time, **keywords):
+	"""
+	Call convolved function.
+	"""
+	v = []
+	for _func in self._convolved_func:
+	    try:
+		v.append(_func(time, **keywords))
+	    except:
+		for __func in _func:
+		    v.append(__func(time, **keywords))
+	return N.array(v)
 
     def convolve(self, IRF):
 
         self.convolved = False
-
-        func = IRF.convolve(self)
-
-        def _f(time=None, func=tuple(func), **keywords):
-            v = []
-            for _func in func:
-                try:
-                    v.append(_func(time, **keywords))
-                except:
-                    for __func in _func:
-                        v.append(__func(time, **keywords))
-            return N.array(v)
-        
+        self._convolved_func = IRF.convolve(self)
+       
         name = []
         for hrfname in IRF.names:
             for termname in self.names():
                 name.append('(%s%%%s)' % (hrfname, termname))
  
-        self._convolved = ExperimentalQuantitative(name, _f, termname='(HRF%%%s)' % self.termname)
+        self._convolved = ExperimentalQuantitative(name, self._convolved__call__, termname='(%s%%%s)' % (hrfname, self.termname))
         self.convolved = True
 
         return self
 
-    def astimefn(self, namespace=namespace,
-                 index=None):
+    def astimefn(self, slice=None):
         """
         Return a TimeFunction object that can be added, subtracted, etc.
-
-        The values of the time function are determined by a linear
-        interpolator based on self when astimefn is called.
-
         """
+	#FIXME: should be a better way to determine this
+	testdata = self(N.arange(10))
+	if len(testdata.shape) == 2:
+	    nout = testdata.shape[0]
+	else: nout = 1
+        return TimeFunction(fn=self, slice=slice, nout=nout)
 
-        nout = len(self.names())
-        if index is not None:
-            nout = 1
 
-        def _f(time, index=index, namespace=namespace):
-            v = self(time=time, namespace=namespace)
-            if index is not None:
-                v = v[index]
-            return N.squeeze(v) * 1.
-
-        v = TimeFunction(fn=_f, nout=nout)
-        return v
-
-class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
+class ExperimentalQuantitative(ExperimentalRegressor, quantitative):
     """
     Generate a regressor that is a function of time
     based on a function fn.
@@ -107,14 +105,14 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
 
     def __init__(self, name, fn, termname=None, **keywords):
 
-        ExperimentalRegressor.__init__(self, **keywords)
-        self.fn = fn
+        self.func = fn
         self.name = name
         if termname is None:
             termname = name
-        namespace[termname] = self
-            
-        test = N.array(self.fn(time=N.array([4.0,5.0,6])))
+     
+        ExperimentalRegressor.__init__(self, termname=termname, **keywords)
+
+        test = N.array(self.func(time=N.array([4.0,5.0,6])))
         if test.ndim > 1:
             n = test.shape[0]
         else:
@@ -127,20 +125,11 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
         else:
             names = name
 
-        Quantitative.__init__(self, names, func=fn, termname=termname, **keywords)
-        
-    def __call__(self, time=None, namespace=namespace, **keywords):
-        if not self.convolved:
-            return self.fn(time=time, **keywords)
-        else:
-            if hasattr(self, '_convolved'):
-                return self._convolved(time=time, namespace=namespace, **keywords)
-            else:
-                raise ValueError, 'term %s has not been convolved with an HRF' % self.name
+        quantitative.__init__(self, names, func=fn, termname=termname, **keywords)
             
 class Time(ExperimentalQuantitative):
     
-    def __call__(self, time=None, **ignored):
+    def __call__(self, time, **ignored):
         return time
 
     def __pow__(self, e):
@@ -204,7 +193,7 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
 
         return self.events
 
-class ExperimentalFactor(ExperimentalRegressor, Factor):
+class ExperimentalFactor(ExperimentalRegressor, factor):
     """
     Return a factor that is a function of experimental time based on
     an iterator. If the delta attribute is False, it is assumed that
@@ -231,10 +220,11 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         
         self.fromiterator(iterator)
         keys = self.events.keys() + [downtime]
-        Factor.__init__(self, name, keys)
+        factor.__init__(self, name, keys)
         self._event_keys = self.events.keys()
         self._event_keys.sort()
-        
+        namespace[name] = self
+
     def main_effect(self):
         """
         Return the 'main effect' for an ExperimentalFactor.
@@ -254,19 +244,18 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
         else:
             raise KeyError, 'key not found'            
 
-        def func(namespace=namespace, time=None, j=j,
-                obj=self, 
-                **extra):
+        def factor_func(time, namespace=namespace, j=j,
+                obj=self, **ignored):
             _c = obj.convolved
             obj.convolved = False
-            v = obj(time=time, namespace=namespace)[j]
+            v = obj(time, namespace=namespace)[j]
             obj.convolved = _c
             return [N.squeeze(v) * 1.]
 
         name = '%s[%s]' % (self.termname, `key`)
-        return ExperimentalQuantitative(name, func)
+        return ExperimentalQuantitative(name, factor_func)
 
-    def __call__(self, time=None, namespace=None, includedown=False, convolved=None, **keywords):
+    def __call__(self, time, includedown=False, convolved=None, **kw):
         if convolved is not None:
             __convolved, self.convolved = self.convolved, convolved
         else:
@@ -276,28 +265,28 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
             value = []
             keys = self._event_keys
             for level in keys:
-                value.append(N.squeeze(self.events[level](time,
-                                                          namespace=namespace,
-                                                          **keywords)))
+                value.append(N.squeeze(self.events[level](time, **kw)))
             if includedown:
                 s = N.add.reduce(value)
 
                 keys = keys + [downtime]
                 which = N.argmax(value, axis=0)
                 which = N.where(s, which, keys.index(downtime))
-                value = Factor.__call__(self, namespace={self.termname:[keys[w] for w in which]})
+		tmp, self.namespace = self.namespace, {self.termname:[keys[w] for w in which]}
+                value = factor.__call__(self)
+		self.namespace = tmp
             else:
                 value = N.asarray(value)
         else:
             if hasattr(self, '_convolved'):
-                value = self._convolved(time=time, namespace=namespace, **keywords)
+                value = self._convolved(time, **kw)
             else:
                 raise ValueError, 'no IRF defined for factor %s' % self.name
         self.convolved = __convolved
         return value
 
     def names(self, keep=False):
-        names = Factor.names(self)
+        names = factor.names(self)
 
         _keep = []
         for i, name in enumerate(names):
@@ -334,25 +323,26 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
             self.events[eventtype].append(float(start), dt, height=height)
 
 
-class ExperimentalFormula(Formula):
+class ExperimentalFormula(formula):
     """
     A formula with no intercept.
     """
 
 
     def __mul__(self, other, nested=False):
-        return ExperimentalFormula(Formula.__mul__(self, other))
+        return ExperimentalFormula(formula.__mul__(self, other))
 
     def __add__(self, other):
-        return ExperimentalFormula(Formula.__add__(self, other))
+        return ExperimentalFormula(formula.__add__(self, other))
 
-    def __call__(self, time, namespace=namespace, **keywords):
+    def __call__(self, time, **keywords):
 
         allvals = []
 
-        for term in self.terms:
-            val = term(time=time, namespace=namespace, **keywords)
-                      
+        for t in self.terms:
+	    t.namespace = self.namespace
+	    val = t(time, **keywords)
+
             if val.ndim == 1:
                 val.shape = (1, val.shape[0])
             allvals.append(val)
@@ -363,7 +353,7 @@ class ExperimentalFormula(Formula):
         return N.array([tmp[i] for i in keep])
 
     def names(self, keep=False):
-        names = Formula.names(self)
+        names = formula.names(self)
 
         _keep = []
         for i, name in enumerate(names):
