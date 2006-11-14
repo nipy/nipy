@@ -30,12 +30,12 @@ ECAT7_SUNI4 = 7
 # map ECAT datatype to numpy scalar type
 datatype2sctype = {
     ECAT7_BYTE: N.uint8, 
-    ECAT7_VAXI2: N.ushort,
-    ECAT7_VAXI4: N.int16,
+    ECAT7_VAXI2: N.int16,
+    ECAT7_VAXI4: N.float,
     ECAT7_VAXR4: N.float,
     ECAT7_IEEER4: N.float,
-    ECAT7_SUNI2: N.ushort,
-    ECAT7_SUNI4: N.int16}
+    ECAT7_SUNI2: N.uint16,
+    ECAT7_SUNI4: N.int32}
 
 sctype2datatype = dict([(k,v) for k,v in datatype2sctype.items()])
 
@@ -456,9 +456,13 @@ class Frame(bin.BinaryFormat):
         self.subheader_defaults()
         recordstart = (mlist[1][framenumber]-1)*BLOCKSIZE
         self.read_subheader(recordstart, self.datasource)
-
+        ## Deal with byteorder to prevent endian erros
+        tmpsctype = datatype2sctype[self.subheader['DATA_TYPE']]
+        typstr = N.dtype(tmpsctype)
         
-        self.sctype = datatype2sctype[self.subheader['DATA_TYPE']]
+        self.sctype =typstr.newbyteorder(self.byteorder) 
+
+
         self.ndim = 3
         
         ## grid for data
@@ -487,6 +491,7 @@ class Frame(bin.BinaryFormat):
             # Get memmaped array
         offset = (mlist[1,framenumber])*BLOCKSIZE
         self.attach_data(offset)
+        #self.data = self.postread(self.data)
 
     def subheader_defaults(self):
         """

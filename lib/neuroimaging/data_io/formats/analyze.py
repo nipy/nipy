@@ -144,7 +144,10 @@ class Analyze(bin.BinaryFormat):
             self.byteorder = self.guess_byteorder(self.header_file,
                                                   datasource=self.datasource)
             self.read_header()
-            self.sctype = datatype2sctype[self.header['datatype']]
+            ## make sure we have the correct byteorder 
+            tmpsctype = datatype2sctype[self.header['datatype']]
+            tmpstr = N.dtype(tmpsctype)
+            self.sctype = tmpstr.newbyteorder(self.byteorder)
             self.ndim = self.header['dim'][0]
 
         # fill in the canonical list as best we can for Analyze

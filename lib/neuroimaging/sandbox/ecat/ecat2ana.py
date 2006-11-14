@@ -6,10 +6,13 @@ from  neuroimaging.core.image.image import Image
 from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.utils import wxmpl
+import matplotlib.cm as cm
 
-
-myecat = Ecat7.Ecat7("FDG-de.v.bz2",datasource=repository)
-
+newfile = '/home/surge/cindeem/DEVEL/RAW_PET/B05_206-43D52D9100000211-de.v'
+myecat = Ecat7.Ecat7(newfile)
+#myecat = Ecat7.Ecat7("FDG-de.v.bz2",datasource=repository)
+anaPetFile = '/home/surge/cindeem/DEVEL/RAW_PET/B05_206-43D52D9100000211-de1.hdr'
+myAna = Ana.Analyze(anaPetFile)
 #myNifti =  Nifti.Nifti1
 #myNifti.intent = 
 
@@ -23,13 +26,36 @@ app = wxmpl.PlotApp('Ecat2Nifti')
 fig = app.get_figure()
 
 # Create an Axes on the Figure to plot in.
-axes = fig.gca()
+# create 3 axis
+axes1 = fig.add_subplot(221)
+axes2 = fig.add_subplot(222)
+axes3 = fig.add_subplot(223)
+axes4 = fig.add_subplot(224)
+#axes = fig.gca()
 
 # get image
-myImg = Image(myecat.data[0])
+jnk = myecat.frames[0]
+myImg = Image(jnk.data)
 myImgArray = myImg.readall()
+myImgArray2 = myImgArray.astype('float')/(myecat.scale * jnk.subheader['SCALE_FACTOR'])
+
+myAnaImg =Image(myAna.data)
+myAnaArray = myAnaImg.readall()
 # Plot the Image slice
-axes.imshow(myImgArray[22,:,:])
+#axes1.imshow(myImgArray2[:,128,:]/N.float(myImgArray.max()),
+#             cmap=cm.gray)
+axes1.imshow(myImgArray2[:,128,:], cmap=cm.gray)
+
+axes1.set_aspect(5,adjustable='box',anchor='C')
+axes2.imshow(myImgArray2[:,:,128]/N.float(myImgArray.max()),
+             cmap=cm.gray)
+axes2.set_aspect(5,adjustable='box',anchor='C')
+axes3.imshow(myAnaArray[22,:,:],
+             cmap=cm.gray)
+axes3.set_aspect(1,adjustable='box',anchor='C')
+
+axes4.plot(myImgArray2[22,128,:])
+
 app.MainLoop()
 
 
@@ -45,11 +71,22 @@ class Ecat2Analyze(Ana.Analyze):
     def header_from_given(self):
         #note data type will ned to change to conform to ANALYZE options
         # by default change to Ana.FLOAT
-        
+
+        self.header['bitbix']=32
+        isotop = myecat.header.get('isotope_name')[0:9]
+        self.header['data_type'] = isotop.replace('\x00','')
         self.header['datatype']=Ana.FLOAT
+        self.header['descrip']='ecat2ana.py'
+        
         self.header['dim'] = [3,
                               myecat.data.shape[1],
                               myecat.data.shape[2],
                               myecat.data.shape[3]]
-        #self.header[
+        #orientation
+        #self.header['orient']=
+        
+    def get_orientation(self,myecat):
+        """
+        determin original orientation
+        """
         
