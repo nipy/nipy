@@ -36,7 +36,7 @@ datatype2sctype = {
 
 # map numpy scalar type to Analyze datatype
 sctype2datatype = \
-  dict([(v,k) for k,v in datatype2sctype.items()])
+  dict([(v, k) for k, v in datatype2sctype.items()])
 
 HEADER_SIZE = 348
 
@@ -121,7 +121,7 @@ class Analyze(bin.BinaryFormat):
         """
 
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
-        self.mat_file = self.filebase+".mat"
+        self.mat_file = self.filebase + ".mat"
         self.clobber = keywords.get('clobber', False)
         self.intent = keywords.get('intent', '')
         self.usematfile = keywords.get('usemat', True)
@@ -139,7 +139,8 @@ class Analyze(bin.BinaryFormat):
             if self.grid is not None:
                 self.header_from_given()
             else:
-                raise NotImplementedError("Don't know how to create header info without a grid object")
+                raise NotImplementedError("Don't know how to create header " \
+                                          "info without a grid object")
             self.write_header(clobber=self.clobber)
         else:
             self.byteorder = self.guess_byteorder(self.header_file,
@@ -196,18 +197,18 @@ class Analyze(bin.BinaryFormat):
     
 
     def header_defaults(self):
-        for field,format in self.header_formats.items():
-            self.header[field] = self._default_field_value(field,format)
+        for field, format in self.header_formats.items():
+            self.header[field] = self._default_field_value(field, format)
 
 
     def header_from_given(self):
         self.header['datatype'] = sctype2datatype[self.dtype.type]
-        self.header['bitpix'] = self.dtype.itemsize *8
+        self.header['bitpix'] = self.dtype.itemsize * 8
         self.grid = self.grid.python2matlab()
         self.ndim = self.grid.ndim
         
         if not isinstance(self.grid.mapping, Affine):
-            raise ValueError, 'error: non-Affine grid in writing out ANALYZE file'
+            raise ValueError, 'non-Affine grid in writing out ANALYZE file'
 
         if self.grid.mapping.isdiagonal():
             _diag = True

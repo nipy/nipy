@@ -167,7 +167,7 @@ def getformats(filename):
     # if we made it this far, a format was not found
 
     extension = path(filename).splitext()[1]
-    raise NotImplementedError,\
+    raise NotImplementedError, \
       "file extension %(ext)s not recognized, %(exts)s files can be created "\
       "at this time."% {'ext':extension, 'exts':all_formats}
 
