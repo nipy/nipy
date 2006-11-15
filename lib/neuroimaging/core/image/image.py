@@ -60,7 +60,7 @@ class Image(object):
                               datasource=datasource, mode=mode,
                               grid=grid, **keywords)
             except Exception, e:
-                #print e
+                #print format, e
                 pass
 
         raise NotImplementedError, 'no valid reader found for URL %s' % url
@@ -187,7 +187,7 @@ class Image(object):
 
 
     def tofile(self, filename, clobber=False,
-               sctype=None, **keywords):
+               dtype=None, **keywords):
         """        
         Write the image to a file. Returns a new Image object
         of the newly written file.
@@ -198,10 +198,10 @@ class Image(object):
         @type clobber: C{bool}
         
         """
-        sctype = sctype or self._source.sctype
+        dtype = dtype or self._source.dtype
         outimage = Image(filename, mode='w', grid=self.grid,
                          clobber=clobber,
-                         sctype=sctype,
+                         dtype=dtype,
                          **keywords)
 
         tmp = self.toarray(**keywords)

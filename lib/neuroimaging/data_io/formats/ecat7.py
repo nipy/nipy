@@ -233,7 +233,7 @@ class Ecat7(bin.BinaryFormat):
         possible additional keyword arguments:
         mode = mode to open the memmap (default is "r")
         grid = Grid object
-        sctype = numpy scalar type
+        dtype = numpy data type
         intent = meaning of data
         clobber = allowed to clobber?
         
@@ -290,7 +290,7 @@ class Ecat7(bin.BinaryFormat):
         ## grid for data
         if not self.grid:
             tmpdat = self.frames[0]
-            self.sctype = tmpdat.sctype
+            self.dtype = tmpdat.dtype
             self.grid = SamplingGrid.replicate(tmpdat.grid, self.nframes)
         # cache for data
         tmpimgfile = 'tmpEcat.img'
@@ -320,9 +320,9 @@ class Ecat7(bin.BinaryFormat):
     def prewrite(self, x):
         """
         Might transform the data before writing;
-        at least confirm sctype
+        at least confirm dtype
         """
-        return x.astype(self.sctype)
+        return x.astype(self.dtype)
 
 
     def postread(self, x):
@@ -460,7 +460,7 @@ class Frame(bin.BinaryFormat):
         tmpsctype = datatype2sctype[self.subheader['DATA_TYPE']]
         typstr = N.dtype(tmpsctype)
         
-        self.sctype =typstr.newbyteorder(self.byteorder) 
+        self.dtype = typstr.newbyteorder(self.byteorder) 
 
 
         self.ndim = 3

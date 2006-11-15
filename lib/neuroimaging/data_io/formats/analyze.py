@@ -114,7 +114,7 @@ class Analyze(bin.BinaryFormat):
         Constructs a Analyze binary format object with at least a filename
         possible additional keyword arguments:
         grid = Grid object
-        sctype = numpy scalar type
+        dtype = numpy data type
         intent = meaning of data
         clobber = allowed to clobber?
         usemat = use mat file?
@@ -133,8 +133,9 @@ class Analyze(bin.BinaryFormat):
         if self.mode[0] is "w":
             # should try to populate the canonical fields and
             # corresponding header fields with info from grid?
-            self.sctype = keywords.get('sctype', N.float64)
             self.byteorder = utils.NATIVE
+            self.dtype = N.dtype(keywords.get('dtype', N.float64))
+            self.dtype = self.dtype.newbyteorder(self.byteorder)
             if self.grid is not None:
                 self.header_from_given()
             else:
@@ -147,7 +148,7 @@ class Analyze(bin.BinaryFormat):
             ## make sure we have the correct byteorder 
             tmpsctype = datatype2sctype[self.header['datatype']]
             tmpstr = N.dtype(tmpsctype)
-            self.sctype = tmpstr.newbyteorder(self.byteorder)
+            self.dtype = tmpstr.newbyteorder(self.byteorder)
             self.ndim = self.header['dim'][0]
 
         # fill in the canonical list as best we can for Analyze
@@ -200,8 +201,8 @@ class Analyze(bin.BinaryFormat):
 
 
     def header_from_given(self):
-        self.header['datatype'] = sctype2datatype[self.sctype]
-        self.header['bitpix'] = N.dtype(self.sctype).itemsize *8
+        self.header['datatype'] = sctype2datatype[self.dtype.type]
+        self.header['bitpix'] = self.dtype.itemsize *8
         self.grid = self.grid.python2matlab()
         self.ndim = self.grid.ndim
         
@@ -247,7 +248,7 @@ class Analyze(bin.BinaryFormat):
         #     global maximum under the current scaling
         if x.shape == self.data.shape or \
                x.max() > (self.header['scale_factor']*self.data).max():
-            scale, x = utils.cast_data(x, self.sctype,
+            scale, x = utils.cast_data(x, self.dtype,
                                      self.header['scale_factor'])
 
             # if the scale changed, mark it down
@@ -256,7 +257,6 @@ class Analyze(bin.BinaryFormat):
                 self.write_header(clobber=True)
                 return x
         
-        # __setitem__ takes care of .astype(self.sctype)        
         return x/self.header['scale_factor']
 
 

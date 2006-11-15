@@ -34,6 +34,7 @@ class BinaryFormat(Format):
             except:
                 pass
 
+        self.dtype = NotImplemented
         self.byteorder = NotImplemented
         self.extendable = NotImplemented
 
@@ -92,7 +93,7 @@ class BinaryFormat(Format):
                 self.datasource.filename(self.data_file)
             
 
-        self.data = memmap(fname, dtype=self.sctype,
+        self.data = memmap(fname, dtype=self.dtype,
                            shape=tuple(self.grid.shape), mode=mode,
                            offset=offset)
 
@@ -113,7 +114,7 @@ class BinaryFormat(Format):
             print "Warning: memapped array is not writeable! Nothing done"
             return
         self.data[slicer] = \
-            self.prewrite(data).astype(self.sctype).newbyteorder(self.byteorder)
+            self.prewrite(data).astype(self.dtype)
 
     def __del__(self):
         if hasattr(self, 'memmap'):

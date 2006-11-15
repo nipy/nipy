@@ -67,7 +67,7 @@ class AnalyzeDataTypeTest(AnalyzeTest):
             out = Image(_out, grid=self.image.grid)
             out.tofile('out.hdr', clobber=True, format=Analyze)
             new = Image('out.hdr', format=Analyze)
-            self.assertEquals(new._source.sctype, sctype)
+            self.assertEquals(new._source.dtype.type, sctype)
             self.assertEquals(os.stat('out.img').st_size,
                               N.product(self.image.grid.shape) *
                               _out.dtype.itemsize)
@@ -81,9 +81,9 @@ class AnalyzeDataTypeTest(AnalyzeTest):
             for _sctype in analyze.sctype2datatype.keys():
                 _out = N.ones(self.image.grid.shape, sctype)
                 out = Image(_out, grid=self.image.grid)
-                out.tofile('out.hdr', clobber=True, sctype=_sctype, format=Analyze)
+                out.tofile('out.hdr', clobber=True, dtype=_sctype, format=Analyze)
                 new = Image('out.hdr', format=Analyze)
-                self.assertEquals(new._source.sctype, _sctype)
+                self.assertEquals(new._source.dtype.type, _sctype)
                 self.assertEquals(os.stat('out.img').st_size,
                                   N.product(self.image.grid.shape) *
                                   N.dtype(_sctype).itemsize)

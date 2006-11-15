@@ -103,14 +103,14 @@ def touch(filename):
     open(filename, 'w')
 
 #### To filter data written to a file
-def cast_data(data, new_sctype, default_scale):
+def cast_data(data, new_dtype, default_scale):
     "casts numbers in data to desired typecode in data_code"
     # if casting to an integer type, check the data range
     # if it clips, then scale down
     # if it has poor integral resolution, then scale up
-    if new_sctype in integer_ranges.keys():
+    if new_dtype in integer_ranges.keys():
         maxval = abs(data.max())
-        maxrange = integer_ranges[new_sctype]
+        maxrange = integer_ranges[new_dtype.type]
         scl = maxval/maxrange or 1.
         return scl, N.round(data/scl)
     return default_scale, data

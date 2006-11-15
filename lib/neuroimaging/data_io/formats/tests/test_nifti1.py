@@ -86,9 +86,9 @@ class NiftiReadTest(NiftiTest):
 class NiftiWriteTest(NiftiTest):
 
     def test_write1(self):
-        self.image.tofile('out.nii', clobber=True, sctype=N.float64)
+        self.image.tofile('out.nii', clobber=True, dtype=N.float64)
         out = Image('out.nii')
-        self.assertEquals(out._source.sctype, N.float64)
+        self.assertEquals(out._source.dtype.type, N.float64)
         os.remove('out.nii')
 
     def test_write2(self):
@@ -100,9 +100,9 @@ class NiftiWriteTest(NiftiTest):
         #os.remove('out.nii')
 
     def test_write4(self):
-        self.image.tofile('out.hdr', clobber=True, sctype=N.float64)
+        self.image.tofile('out.hdr', clobber=True, dtype=N.float64)
         new = nifti1.Nifti1('out.hdr')
-        self.assertEquals(new.sctype, N.float64)
+        self.assertEquals(new.dtype.type, N.float64)
         #os.remove('out.img')
         #os.remove('out.hdr')
         #os.remove('out.nii')
@@ -127,7 +127,7 @@ class NiftiDataTypeTest(NiftiTest):
             new = Image('out.nii')
             self.assertEquals(new._source.header['datatype'],
                               nifti1.sctype2datatype[sctype])
-            self.assertEquals(new._source.sctype, sctype)
+            self.assertEquals(new._source.dtype.type, sctype)
             self.assertEquals(new._source.header['vox_offset'], 352)
             self.assertEquals(os.stat('out.nii').st_size,
                               N.product(self.image.grid.shape) *
@@ -141,11 +141,11 @@ class NiftiDataTypeTest(NiftiTest):
             for _sctype in nifti1.sctype2datatype.keys():
                 _out = N.ones(self.zimage.grid.shape, sctype)
                 out = Image(_out, grid=self.zimage.grid)
-                out.tofile('out.nii', clobber=True, sctype=_sctype)
+                out.tofile('out.nii', clobber=True, dtype=_sctype)
                 new = Image('out.nii')
                 self.assertEquals(new._source.header['datatype'],
                                   nifti1.sctype2datatype[_sctype])
-                self.assertEquals(new._source.sctype, _sctype)
+                self.assertEquals(new._source.dtype.type, _sctype)
                 self.assertEquals(new._source.header['vox_offset'], 352.0)
                 self.assertEquals(os.stat('out.nii').st_size,
                                   N.product(self.image.grid.shape) *

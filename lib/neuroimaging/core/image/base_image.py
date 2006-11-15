@@ -12,10 +12,10 @@ class BaseImage(object):
     the class which should be used by applications.
     """
 
-    def __init__(self, data, grid, sctype):
+    def __init__(self, data, grid, dtype):
         self.grid = grid
         self.data = data
-        self.sctype = sctype
+        self.dtype = dtype
         
     def __getitem__(self, item):
         return self.data[item]
@@ -37,6 +37,6 @@ class ArrayImage (BaseImage):
         3
         """
         grid = grid and grid or SamplingGrid.identity(data.shape)
-        sctype = data.dtype.type
-        BaseImage.__init__(self, data, grid, sctype)
+        dtype = data.dtype
+        BaseImage.__init__(self, data, grid, dtype)
 
