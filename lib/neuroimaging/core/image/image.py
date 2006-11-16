@@ -116,13 +116,6 @@ class Image(object):
         return self
 
 
-    def compress(self, where, axis=None):        
-        """
-        Call the compress method on the underlying data array
-        """
-        return self.buffer.compress(where, axis=axis)
-
-
     def put(self, indices, data):
         """
         Call the put method on the underlying data array
@@ -140,10 +133,10 @@ class Image(object):
         if itertype is 'slice':
             result = N.squeeze(self[value.slice])
         elif itertype is 'parcel':
-            flatten(value.where)
-            result = self.compress(value.where)
+            value.where = value.where.reshape(self.shape)
+            result = self[value.where]
         elif itertype == 'slice/parcel':
-            result = self[value.slice].compress(N.asarray([value.where]))
+            result = self[value.slice,N.asarray(value.where)]
         return result
 
     def set_next(self, data):
@@ -162,7 +155,6 @@ class Image(object):
             self[value.slice] = data
         elif itertype in ('parcel', "slice/parcel"):
             self.put(N.nonzero(value.where.flatten()), data)
-        
 
     def toarray(self, clean=True, **keywords):
         """

@@ -108,17 +108,15 @@ class fMRIImage(Image):
             result = self[value.slice]
 
         elif itertype == 'parcel':
-            value.where.shape = N.product(value.where.shape)
             self.label = value.label
-            result = self.compress(value.where, axis=1)
+            result = self[:,value.where]
             
         elif itertype == 'slice/parcel':
             value.where.shape = N.product(value.where.shape)
             self.label = value.label
             tmp = self[value.slice].copy()
             tmp.shape = (tmp.shape[0], N.product(tmp.shape[1:]))
-            result = tmp.compress(value.where, axis=1)
-
+            result = tmp[:,value.where]
         return result
 
     def set_next(self, data):
@@ -131,7 +129,7 @@ class fMRIImage(Image):
         elif itertype == 'parcel':
             for i in range(self.grid.shape[0]):
                 _buffer = self[slice(i,i+1)]
-                _buffer.put(data, indices)
+                _buffer.put(data, indices) # fixme: indices not defined
 
         elif itertype == 'slice/parcel':
             indices = N.nonzero(value.where)
