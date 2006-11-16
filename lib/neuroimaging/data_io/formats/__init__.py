@@ -48,6 +48,14 @@ class Format(BaseImage):
             ('ydim', 0),
             ('zdim', 0),
             ('tdim', 0),
+            ('dx', 0),
+            ('dy', 0),
+            ('dz', 0),
+            ('dt', 0),
+            ('x0', 0),
+            ('y0', 0),
+            ('z0', 0),
+            ('t0', 0),
             ('intent', ''),
             ('scaling', 0),
         ))
@@ -130,6 +138,7 @@ format_modules = (
   "neuroimaging.data_io.formats.analyze",
   "neuroimaging.data_io.formats.nifti1",
   "neuroimaging.data_io.formats.ecat7",
+  "neuroimaging.sandbox.formats.afni",
   #"neuroimaging.data_io.formats.afni",
   #"neuroimaging.data_io.formats.minc",
 )
@@ -137,6 +146,7 @@ format_modules = (
 default_formats = [("neuroimaging.data_io.formats.nifti1", "Nifti1"),
                    ("neuroimaging.data_io.formats.analyze", "Analyze"),
                    ("neuroimaging.data_io.formats.ecat7", "Ecat7"),
+                   ("neuroimaging.sandbox.formats.afni", "AFNI"),
                   ]
                    
 

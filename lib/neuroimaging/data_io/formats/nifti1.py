@@ -289,7 +289,7 @@ class Nifti1(bin.BinaryFormat):
 
             self.grid = SamplingGrid.from_start_step(names=axisnames,
                                                 shape=shape,
-                                                start=-N.array(origin)*step,
+                                                start=-N.array(origin),
                                                 step=step)
             t = self.transform()
             self.grid.mapping.transform[:3,:3] = t[:3,:3]
@@ -435,25 +435,40 @@ class Nifti1(bin.BinaryFormat):
         If we need to cast the data into Integers, then record the
         new scaling
         """
-        # try to cast in two cases:
+        # check if a cast is needed in these two cases:
         # 1 - we're replacing all the data
         # 2 - the maximum of the given slice of data exceeds the
         #     global maximum under the current scaling
-        if x.shape == self.data.shape or \
-               x.max() > (self.header['scl_slope']*self.data).max():  
-
-            scale, x = utils.cast_data(x-self.header['scl_inter'],
+        #
+        # NIFTI1 also contains an intercept term, so see if that needs
+        # to change
+        if x.shape == self.data.shape or x.max() > self[:].max():  
+            if x.shape == self.data.shape:
+                minval = x.min()
+            else:
+                minval = min(x.min(), self[:].min())
+            # try to find a new intercept if:
+            # it's an unsigned type (in order to shift up), or
+            # if all values > 0 (in order to shift down)
+            if self.dtype in N.sctypes['uint']:
+                intercept = minval
+            else:
+                intercept = minval>0 and minval or 0
+                            
+            scale = utils.scale_data(x-intercept,
                                      self.dtype, self.header['scl_slope'])
 
-            # if the scale changed, mark it down
-            if scale != self.header['scl_slope']:
+            # if the scale or intercept changed, mark it down
+            if scale != self.header['scl_slope'] or \
+               intercept != self.header['scl_inter']:
+                self.header['scl_inter'] = intercept
                 self.header['scl_slope'] = scale
                 # be careful with NIFTI, open it rb+ in case we're writing
                 # into the same file as the data (.nii file)
                 fp = self.datasource.open(self.header_file, 'rb+')
 
                 self.write_header(hdrfile=fp)
-                return x
+
             
         return (x - self.header['scl_inter'])/self.header['scl_slope']
         

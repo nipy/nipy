@@ -1,6 +1,6 @@
 from struct import calcsize, pack, unpack
 from types import TupleType, ListType
-
+import sys
 import numpy as N
 
 
@@ -22,6 +22,12 @@ integer_ranges = {
 NATIVE = "="
 LITTLE_ENDIAN = "<"
 BIG_ENDIAN = ">"
+
+# what is native and what is swapped?
+mybyteorders = {
+    sys.byteorder: sys.byteorder=='little' and LITTLE_ENDIAN or BIG_ENDIAN,
+    'swapped': sys.byteorder=='little' and BIG_ENDIAN or LITTLE_ENDIAN
+    }
 
 # map format chars to python data types
 _typemap = dict((
@@ -103,8 +109,8 @@ def touch(filename):
     open(filename, 'w')
 
 #### To filter data written to a file
-def cast_data(data, new_dtype, default_scale):
-    "casts numbers in data to desired typecode in data_code"
+def scale_data(data, new_dtype, default_scale):
+    "scales numbers in data to desired match dynamic range of new dtype"
     # if casting to an integer type, check the data range
     # if it clips, then scale down
     # if it has poor integral resolution, then scale up
@@ -112,5 +118,5 @@ def cast_data(data, new_dtype, default_scale):
         maxval = abs(data.max())
         maxrange = integer_ranges[new_dtype.type]
         scl = maxval/maxrange or 1.
-        return scl, N.round(data/scl)
-    return default_scale, data
+        return scl
+    return default_scale

@@ -228,7 +228,7 @@ class Analyze(bin.BinaryFormat):
         self.header['dim'] = _dim
         self.header['pixdim'] = _pixdim
         if _diag:
-            origin = self.grid.mapping.inverse()([0]*self.ndim)
+            origin = self.grid.mapping.tovoxel(N.array([0]*self.ndim))
             self.header['origin'] = list(origin) + [0]*(5-origin.shape[0])
         if not _diag:
             self.header['origin'] = [0]*5
@@ -248,14 +248,13 @@ class Analyze(bin.BinaryFormat):
         #     global maximum under the current scaling
         if x.shape == self.data.shape or \
                x.max() > (self.header['scale_factor']*self.data).max():
-            scale, x = utils.cast_data(x, self.dtype,
+            scale = utils.scale_data(x, self.dtype,
                                      self.header['scale_factor'])
 
             # if the scale changed, mark it down
             if scale != self.header['scale_factor']:
                 self.header['scale_factor'] = scale
                 self.write_header(clobber=True)
-                return x
         
         return x/self.header['scale_factor']
 

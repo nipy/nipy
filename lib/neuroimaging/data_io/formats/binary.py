@@ -60,7 +60,7 @@ class BinaryFormat(Format):
                 raise IOError('file exists, but not allowed to clobber it')
             fp = self.datasource.open(self.header_file, 'wb+')
         else:
-            fp = open(self.header_file, 'wb+')
+            fp = open(self.datasource._fullpath(self.header_file), 'wb+')
         packed = utils.struct_pack(self.byteorder,
                              self.header_formats.values(),
                              self.header.values())
