@@ -8,7 +8,8 @@
 import numpy as N
 
 class Iterator(object):
-
+    """ The base class for image iterators. """
+    
     def __init__(self, img, mode='r'):
         self.set_img(img)
         self.mode = mode
@@ -16,7 +17,6 @@ class Iterator(object):
     def __iter__(self):
         return self
     
-
     def next(self):
         if self.mode == 'r':
             return self._next().get()
@@ -27,9 +27,18 @@ class Iterator(object):
     def _next(self):
         raise NotImplementedError
 
-
     def set_img(self, img):
         self.img = img
+
+
+    def copy(self, img):
+        it = Iterator(img)
+        self._copy_to(it)
+        it.set_img(img)
+        return it
+
+    def _copy_to(self, it):
+        it.mode = self.mode
 
 class IteratorItem(object):
 
@@ -69,14 +78,29 @@ class SliceIterator(Iterator):
         self.n += 1
         return ret
 
+    def copy(self, img):
+        it = SliceIterator(img)
+        self._copy_to(it)
+        it.set_img(img)
+        return it
+
+    def _copy_to(self, it):
+        Iterator._copy_to(self, it)
+        it.axis = self.axis
+        it.step = self.step
+        it.n = self.n
+
+
 
 class SliceIteratorItem(IteratorItem):
 
     def get(self):
-        return self.img[self.slice].squeeze()
+        #return self.img[self.slice].squeeze()
+        return self.img[self.slice]
 
     def set(self, value):
         if type(value) == N.ndarray:
+            print value.shape, self.img[self.slice].shape
             value = value.reshape(self.img[self.slice].shape)
         self.img[self.slice] = value
 
@@ -110,16 +134,16 @@ if __name__ == '__main__':
 
     # Slice using the image method interface
     print "slicing with .slice() method"
-    for s in img.slice():
+    for s in img.slices():
         print s, s.shape
 
     print "...and along axis=1"
-    for s in img.slice(axis=1):
+    for s in img.slices(axis=1):
         print s, s.shape
 
     print "...and writing along the y axis"
     y = 0
-    for s in img.slice(mode='w', axis=1):
+    for s in img.slices(mode='w', axis=1):
         s.set(y)
         y += 1
 
@@ -130,15 +154,15 @@ if __name__ == '__main__':
 
 
     B = Image(N.zeros((3, 4, 5)))
-    B.from_slice(SliceIterator(img))
+    B.from_slices(SliceIterator(img))
     print B[:]
 
     B = Image(N.zeros((4, 3, 5)))
-    B.from_slice(SliceIterator(img), axis=1)
+    B.from_slices(SliceIterator(img), axis=1)
     print B[:]
 
     B = Image(N.zeros((3, 5, 4)))
-    B.from_slice(SliceIterator(img, axis=2), axis=1)
+    B.from_slices(SliceIterator(img, axis=2), axis=1)
     print B[:]
     
 
