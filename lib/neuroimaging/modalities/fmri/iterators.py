@@ -1,4 +1,4 @@
-from neuroimaging.core.reference.iterators import SliceIterator, SliceParcelIterator
+from neuroimaging.core.reference.old_iterators import SliceIterator, SliceParcelIterator
 
 class fMRISliceIterator(SliceIterator):
     """
