@@ -229,10 +229,20 @@ class Image(object):
         return SliceIterator(self, mode=mode, axis=axis)
 
     def from_slice(self, other, axis=0):
-        it = SliceIterator(self, mode='w', axis=axis)
+        it = iter(SliceIterator(self, mode='w', axis=axis))
         for s in other:
             it.next().set(s)
 
+    def iterate(self, iterator):
+        iterator.set_img(self)
+        return iterator
+
+    def from_iterator(self, other, iterator):
+        iterator.mode = 'w'
+        iterator.set_img(self)
+        iter(iterator)
+        for s in other:
+            iterator.next().set(s)
 
 class ImageSequenceIterator(object):
     """

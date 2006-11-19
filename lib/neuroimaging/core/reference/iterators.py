@@ -10,7 +10,7 @@ import numpy as N
 class Iterator(object):
 
     def __init__(self, img, mode='r'):
-        self.img = img
+        self.set_img(img)
         self.mode = mode
 
     def __iter__(self):
@@ -28,6 +28,9 @@ class Iterator(object):
         raise NotImplementedError
 
 
+    def set_img(self, img):
+        self.img = img
+
 class IteratorItem(object):
 
     def __init__(self, img, slice):
@@ -43,18 +46,24 @@ class IteratorItem(object):
 
 class SliceIterator(Iterator):
 
-    def __init__(self, img, mode='r', axis=0):
-        Iterator.__init__(self, img, mode)
+    def __init__(self, img, mode='r', axis=0, step=1):
         self.axis = axis
-        self.shape = self.img.shape
-        self.max = self.shape[axis]
         self.n = 0
+        self.step = step
+        Iterator.__init__(self, img, mode)
+
+    def set_img(self, img):
+        Iterator.set_img(self, img)
+        if img is not None:
+            self.shape = self.img.shape
+            self.max = self.shape[self.axis]
+
 
     def _next(self):
         if self.n >= self.max:
             raise StopIteration
         else:
-            slices = [slice(0, shape, 1) for shape in self.shape]
+            slices = [slice(0, shape, self.step) for shape in self.shape]
             slices[self.axis] = slice(self.n, self.n+1, 1)
             ret = SliceIteratorItem(self.img, slices)
         self.n += 1
@@ -78,7 +87,7 @@ if __name__ == '__main__':
     import numpy as N
     img = Image(N.zeros((3, 4, 5)))
 
-    # Slice along the 0th axis
+    # Slice along the 0th axis (default)
     print "slicing along axis=0"
     for s in SliceIterator(img):
         print s, s.shape
@@ -116,6 +125,9 @@ if __name__ == '__main__':
 
     print img[:]
 
+    for s in img.iterate(SliceIterator(None, axis=2)):
+        print s
+
 
     B = Image(N.zeros((3, 4, 5)))
     B.from_slice(SliceIterator(img))
@@ -127,5 +139,10 @@ if __name__ == '__main__':
 
     B = Image(N.zeros((3, 5, 4)))
     B.from_slice(SliceIterator(img, axis=2), axis=1)
+    print B[:]
+    
+
+    B.from_iterator(img.iterate(SliceIterator(None, axis=2)),
+                    SliceIterator(None, axis=1))
     print B[:]
     
