@@ -1,5 +1,6 @@
 from numpy.core.memmap import memmap as memmap_type
 import numpy as N
+import scipy.io as SIO
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io import DataSource
@@ -297,10 +298,26 @@ class Analyze(bin.BinaryFormat):
         Return affine transformation matrix, if it exists.
         For now, the format is assumed to be a tab-delimited 4 line file.
         Other formats should be added.
+
+        Read Binary
+        import scipy.io as sio
+        M = sio.loadmat('my.mat')
+        sio.savemat('my_new.mat', M)
         """
         if self.datasource.exists(self.mat_file):
-            return Affine.fromfile(self.datasource.open(self.mat_file),
-                                   delimiter='\t')
+            
+            mat = SIO.loadmat(self.mat_file)
+            # SIO.loadmat puts mat in correct order for a C-ordered array
+            # no need to Affine.matlab2python to correct for ordering
+            if mat.has_key('mat'):
+                return Affine(mat.get('mat'))
+            elif mat.has_key('M'):
+                return Affine(mat.get('M'))
+            else:
+                print 'Mat file did not contain Transform!'
+                # if all fails give them something?
+                return Affine.identity(self.ndim)
+            
         else:
             # FIXME: Do we want to use these?
             if self.ndim == 4:

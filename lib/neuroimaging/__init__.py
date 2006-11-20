@@ -66,7 +66,8 @@ packages = (
   'neuroimaging.modalities.fmri.fmristat',
   'neuroimaging.modalities.fmri.fmristat.tests',
   'neuroimaging.utils',
-  'neuroimaging.utils.tests')
+  'neuroimaging.utils.tests'
+  'neuroimaging.utils.tests.data')
 
 PYLAB_DEF, pylab = defines.pylab_def()
 if PYLAB_DEF:
