@@ -256,8 +256,9 @@ class Analyze(bin.BinaryFormat):
             if scale != self.header['scale_factor']:
                 self.header['scale_factor'] = scale
                 self.write_header(clobber=True)
-        
-        return x/self.header['scale_factor']
+
+
+        return N.round(x/self.header['scale_factor'])
 
 
     def postread(self, x):
