@@ -118,6 +118,7 @@ class ParcelIterator(Iterator):
 
     def __iter__(self):
         self._labeliter = iter(self.parcelseq)
+        return self
     
     def _next(self):
         label = self._labeliter.next()
@@ -142,6 +143,8 @@ class ParcelIteratorItem(IteratorItem):
     def __init__(self, img, slice, label):
         IteratorItem.__init__(self, img, slice)
         self.label = label
+
+
 
 if __name__ == '__main__':
     from neuroimaging.core.image.image import Image
