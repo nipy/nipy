@@ -25,8 +25,8 @@ def FIACmulti(contrast='overall', design='block', which='contrasts', clobber=Fal
         except:
             pass
     
-    fitter = ImageOneSample(input, path=outdir, clobber=clobber, which='varatio', use_scale=False)
-    fitter = ImageOneSample(input, path=outdir, clobber=clobber, which='mean', use_scale=False)
+    fitter = ImageOneSample(input, path=outdir, clobber=clobber, which='varatio')
+    fitter = ImageOneSample(input, path=outdir, clobber=clobber, which='mean')
     fitter.fit()
 
 if __name__ == '__main__':

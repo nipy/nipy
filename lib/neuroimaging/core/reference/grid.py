@@ -103,7 +103,7 @@ class SamplingGrid (object):
         return _range 
 
 
-    def slab(self, start, step, count, axis=0):
+    def slab(self, start, step, count):
         """
         A sampling grid for a hyperslab of data from an array, i.e.
         what would be output from a subsampling of every 2nd voxel or so.
@@ -132,8 +132,7 @@ class SamplingGrid (object):
 
         samp_grid = \
           SamplingGrid(count, _map, self.input_coords, self.output_coords)
-        samp_grid.set_iter_param("axis", axis)
-        return iter(samp_grid)
+        return samp_grid
 
 
     def transform(self, mapping): 

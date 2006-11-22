@@ -104,9 +104,9 @@ class Image(object):
         self.buffer = self._source.data
 
 
-
     def __getitem__(self, slice_):
         return self._source[slice_]
+
 
     def __setitem__(self, slice_, data):
         self._source[slice_] = data
@@ -115,12 +115,6 @@ class Image(object):
     def __iter__(self):
         """ Images cannot be used directly as iterators. """
         raise NotImplementedError
-
-    def put(self, indices, data):
-        """
-        Call the put method on the underlying data array
-        """
-        return self.buffer.put(indices, data)
 
 
     def toarray(self, clean=True, **keywords):
@@ -181,7 +175,6 @@ class Image(object):
         return value
 
 
-
     # Possible new iterator interface stuff. Not for general consumption
     # just yet.    
     def slices(self, mode='r', axis=0):
@@ -216,6 +209,7 @@ class ImageSequenceIterator(object):
             self.grid = self.imgs[0].grid
         else:
             self.grid = grid
+        iter(self)
 
     def __iter__(self): 
         """ Return self as an iterator. """
