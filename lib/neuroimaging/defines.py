@@ -11,7 +11,7 @@ def pylab_def():
 #    global pylab
     try:
         import pylab
-    except ImportError:
+    except (ImportError, RuntimeError):
         PYLAB_DEF = False
         pylab = None
         pass
