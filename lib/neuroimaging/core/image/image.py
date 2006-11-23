@@ -11,6 +11,7 @@ from neuroimaging.data_io import DataSource, splitzipext
 from neuroimaging.data_io.formats import getformats, Format
 from neuroimaging.core.image.base_image import ArrayImage
 
+from neuroimaging.core.reference.iterators import SliceIterator
 
 class Image(object):
     """
@@ -220,6 +221,17 @@ class Image(object):
             value = N.nan_to_num(value)
         return value
 
+
+
+    # Possible new iterator interface stuff. Not for general consumption
+    # just yet.    
+    def slice(self, mode='r', axis=0):
+        return SliceIterator(self, mode=mode, axis=axis)
+
+    def from_slice(self, other, axis=0):
+        it = SliceIterator(self, mode='w', axis=axis)
+        for s in other:
+            it.next().set(s)
 
 
 class ImageSequenceIterator(object):
