@@ -13,6 +13,7 @@ import pylab
 
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.utils.tests.data import repository
+from neuroimaging.core.reference.iterators import fMRIParcelIterator
 
 subject_no=0
 run_no = 1
@@ -31,18 +32,17 @@ off_block_def = [slice(i/2-2*offset, i/2-offset, 1) for i in parcel_arr.shape]
 parcel_arr[off_block_def] = 2
 
 # Set up parcel iteration for functional image
-func_img.grid.set_iter_param("itertype", 'parcel')
-func_img.grid.set_iter_param("parcelmap", parcel_arr[:])
-func_img.grid.set_iter_param("parcelseq", [1, 2])
+it = fMRIParcelIterator(func_img, parcel_arr[:], [1, 2])
 
 # Iterate to collect means over parcels in functional image
 means = {}
-for d in func_img:
-    means[func_img.label] = N.mean(d, axis=1)
+for d in it:
+    means[it.item.label] = N.mean(d, axis=1)
 
 # Now iterate over regions
-func_img.grid.parcelseq = [0, 2] # changing the parcelseq to select "regions"
-for d in func_img:
+# changing the parcelseq to select "regions"
+it = fMRIParcelIterator(func_img, parcel_arr[:], [0, 2])
+for d in it:
     print d.shape
 
 pylab.plot(means[(1,)], means[(2,)], 'bo')

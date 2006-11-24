@@ -21,21 +21,18 @@ images = [Image(os.path.join(webdir, 'con_%04d.img' % i)) for i in range(6,18)]
 out_images = [Image('t_%04d.nii' % i, mode='w', grid=images[i-6].grid,
                     clobber=True) for i in range(6,18)]
 
-n = len(images)
-for i in range(len(images)):
-    images_copy = copy.copy(images)
-    cur_image = iter(images[i])
-    images_copy.pop(i)
-    mu = sd = 0
+out_iters = [img.slices(mode='w') for img in out_images]
 
-    for data in cur_image:
-        out = N.zeros((n-1,) + data.shape, N.float64)
-        for j in range(n-1):
-            out[j] = images_copy[j].next(value=cur_image.grid.itervalue())
+n = len(images)
+for i, cur_image in enumerate(images):
+
+    iters = [img.slices() for img in images if img is not cur_image]
+    for data in cur_image.slices():
+        out = N.array([it.next() for it in iters])
         mu = out.mean(axis=0)
         std = out.std(axis=0)
         t = (data - mu) / (std * (N.sqrt(1 - 1./n)))
-        out_images[i].next(data=t, value=cur_image.grid.itervalue())
+        out_iters[i].next().set(t)
 
 del(out_images)
 out_images = [Image('t_%04d.nii' % i) for i in range(6,18)]
