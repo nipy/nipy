@@ -178,6 +178,7 @@ class Image(object):
     # Possible new iterator interface stuff. Not for general consumption
     # just yet.    
     def slices(self, mode='r', axis=0):
+        ''' Return slice iterator for this image '''
         return SliceIterator(self, mode=mode, axis=axis)
 
     def from_slices(self, other, axis=0):

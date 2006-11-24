@@ -1,4 +1,11 @@
-from neuroimaging.core.reference.iterators import *
+#!/bin/env python
+'''
+Example to show use of slice and slice/parcel iterators
+'''
+
+import numpy as N
+
+from neuroimaging.core.reference.iterators import SliceIterator, SliceParcelIterator
 from neuroimaging.core.image.image import Image
 
 def _main():
