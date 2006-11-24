@@ -71,10 +71,10 @@ class SliceIterator(Iterator):
     def _next(self):
         if self.n >= self.max:
             raise StopIteration
-        else:
-            slices = [slice(0, shape, self.step) for shape in self.shape]
-            slices[self.axis] = slice(self.n, self.n+1, 1)
-            ret = SliceIteratorItem(self.img, slices)
+
+        slices = [slice(0, shape, self.step) for shape in self.shape]
+        slices[self.axis] = slice(self.n, self.n+1, 1)
+        ret = SliceIteratorItem(self.img, slices)
         self.n += 1
         return ret
 
@@ -95,8 +95,7 @@ class SliceIterator(Iterator):
 class SliceIteratorItem(IteratorItem):
 
     def get(self):
-        #return self.img[self.slice].squeeze()
-        return self.img[self.slice]
+        return self.img[self.slice].squeeze()
 
     def set(self, value):
         if type(value) == N.ndarray:
@@ -105,6 +104,44 @@ class SliceIteratorItem(IteratorItem):
         self.img[self.slice] = value
 
 
+
+class ParcelIterator(Iterator):
+    """ The base class for image iterators. """
+    
+    def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
+        Iterator.__init__(self, img, mode)
+        self.parcelmap = N.asarray(parcelmap)
+        if parcelseq is not None: 
+            self.parcelseq = tuple(parcelseq)
+        else:
+            self.parcelseq = N.unique(self.parcelmap.flat)
+
+    def __iter__(self):
+        self._labeliter = iter(self.parcelseq)
+    
+    def _next(self):
+        label = self._labeliter.next()
+        try:
+            len(label)
+        except:
+            label = (label,)
+    
+        wherelabel = reduce(operator.or_,
+          [N.equal(self.parcelmap, lbl) for lbl in label])
+        return ParcelIteratorItem(self.img, wherelabel, label)
+
+    def copy(self, img):
+        it = ParcelIterator(img, self.parcelmap, self.parcelseq)
+        self._copy_to(it)
+        it.set_img(img)
+        return it
+
+
+class ParcelIteratorItem(IteratorItem):
+
+    def __init__(self, img, slice, label):
+        IteratorItem.__init__(self, img, slice)
+        self.label = label
 
 if __name__ == '__main__':
     from neuroimaging.core.image.image import Image
