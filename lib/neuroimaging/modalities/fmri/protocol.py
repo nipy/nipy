@@ -3,7 +3,7 @@ import numpy as N
 
 from neuroimaging.modalities.fmri.functions import TimeFunction, Events
 from scipy.sandbox.models.formula import factor, quantitative, formula, term
-from enthought.traits.api import false, HasTraits, Str
+#from enthought.traits.api import false, HasTraits, Str
 namespace = {}
 downtime = 'None/downtime'
 
