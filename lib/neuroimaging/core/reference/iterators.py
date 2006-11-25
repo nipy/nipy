@@ -15,15 +15,17 @@ class Iterator(object):
     def __init__(self, img, mode='r'):
         self.set_img(img)
         self.mode = mode
+        self.item = NotImplementedError
 
     def __iter__(self):
         return self
     
     def next(self):
+        self.item = self._next()
         if self.mode == 'r':
-            return self._next().get()
+            return self.item.get()
         else:
-            return self._next()
+            return self.item
 
     
     def _next(self):
@@ -52,6 +54,7 @@ class IteratorItem(object):
         return self.img[self.slice]
 
     def set(self, value):
+        tmp = value.reshape(self.img[self.slice].shape)
         self.img[self.slice] = value
 
 
@@ -101,7 +104,6 @@ class SliceIteratorItem(IteratorItem):
 
     def set(self, value):
         if type(value) == N.ndarray:
-            print value.shape, self.img[self.slice].shape
             value = value.reshape(self.img[self.slice].shape)
         self.img[self.slice] = value
 
@@ -128,7 +130,8 @@ class ParcelIterator(Iterator):
             len(label)
         except:
             label = (label,)
-    
+
+
         wherelabel = reduce(operator.or_,
           [N.equal(self.parcelmap, lbl) for lbl in label])
         return ParcelIteratorItem(self.img, wherelabel, label)
@@ -146,8 +149,124 @@ class ParcelIteratorItem(IteratorItem):
         IteratorItem.__init__(self, img, slice)
         self.label = label
 
+    def get(self):
+        self.slice = self.slice.reshape(self.img.shape)
+        return self.img[self.slice]
+
+    def set(self, value):        
+        self.slice = self.slice.reshape(self.img.shape)
+        self.img[self.slice] = value
+
+
+
+class fMRIParcelIterator(Iterator):
+
+    
+    def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
+        Iterator.__init__(self, img, mode)
+        self.parcelmap = N.asarray(parcelmap)
+        if parcelseq is not None: 
+            self.parcelseq = tuple(parcelseq)
+        else:
+            self.parcelseq = N.unique(self.parcelmap.flat)
+
+    def __iter__(self):
+        self._labeliter = iter(self.parcelseq)
+        return self
+    
+    def _next(self):
+        label = self._labeliter.next()
+        try:
+            len(label)
+        except:
+            label = (label,)
+
+
+        wherelabel = reduce(operator.or_,
+          [N.equal(self.parcelmap, lbl) for lbl in label])
+        return fMRIParcelIteratorItem(self.img, wherelabel, label)
+
+    def copy(self, img):
+        it = fMRIParcelIterator(img, self.parcelmap, self.parcelseq)
+        self._copy_to(it)
+        it.set_img(img)
+        return it
+
+
+class fMRIParcelIteratorItem(IteratorItem):
+
+    def __init__(self, img, slice, label):
+        IteratorItem.__init__(self, img, slice)
+        self.label = label
+
+    def get(self):
+        self.slice = self.slice.reshape(self.img.shape[1:])
+        return self.img[:,self.slice]
+
+    def set(self, value):        
+        self.slice = self.slice.reshape(self.img.shape[1:])
+        self.img[:,self.slice] = value
+
 
 class SliceParcelIterator(Iterator):
+
+    
+    def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
+        Iterator.__init__(self, img, mode)
+        self.parcelmap = N.asarray(parcelmap).reshape(img.shape)
+        
+        if parcelseq is not None: 
+            self.parcelseq = [tuple(ps) for ps in parcelseq]
+        else:
+            self.parcelseq = [N.unique(pm.flat) for pm in self.parcelmap]
+
+        self.i = 0
+        self.max = len(self.parcelseq)
+
+    def __iter__(self):
+        self._labeliter = iter(self.parcelseq)
+        return self
+    
+    def _next(self):
+        if self.i >= self.max:            
+            raise StopIteration
+        label = self._labeliter.next()
+        try:
+            len(label)
+        except:
+            label = (label,)
+
+        wherelabel = reduce(operator.or_,
+          [N.equal(self.parcelmap, lbl) for lbl in label])
+        ret = SliceParcelIteratorItem(self.img, wherelabel[self.i], label, self.i)
+        self.i += 1
+        return ret
+
+    def copy(self, img):
+        it = SliceParcelIterator(img, self.parcelmap, self.parcelseq)
+        self._copy_to(it)
+        it.set_img(img)
+        return it
+
+    def _copy_to(it):
+        it.i = self.i
+
+
+class SliceParcelIteratorItem(IteratorItem):
+
+    def __init__(self, img, slice, label, i):
+        IteratorItem.__init__(self, img, slice)
+        self.label = label
+        self.i = i
+
+    def get(self):
+        return self.img[self.i,self.slice]
+
+    def set(self, value):
+        self.img[self.i,self.slice] = value
+
+
+class fMRISliceParcelIterator(Iterator):
 
     
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
@@ -176,7 +295,9 @@ class SliceParcelIterator(Iterator):
     
         wherelabel = reduce(operator.or_,
           [N.equal(self.parcelmap, lbl) for lbl in label])
-        ret = SliceParcelIteratorItem(self.img, wherelabel[self.i], label , self.i)
+
+
+        ret = fMRISliceParcelIteratorItem(self.img, wherelabel[self.i,:], label , self.i)
         self.i += 1
         return ret
 
@@ -190,7 +311,7 @@ class SliceParcelIterator(Iterator):
         it.i = self.i
 
 
-class SliceParcelIteratorItem(IteratorItem):
+class fMRISliceParcelIteratorItem(IteratorItem):
 
     def __init__(self, img, slice, label, i):
         IteratorItem.__init__(self, img, slice)
@@ -198,7 +319,8 @@ class SliceParcelIteratorItem(IteratorItem):
         self.i = i
 
     def get(self):
-        return self.img[self.i,self.slice]
+        self.slice = self.slice.reshape(self.img.shape[2:])
+        return self.img[:,self.i,self.slice]
 
     def set(self, value):
         self.img[self.i,self.slice] = value
