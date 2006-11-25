@@ -57,11 +57,10 @@ class fMRIStatOLS(LinearModelIterator):
     """
     
 
-    def __init__(self, fmri_image, formula, outputs=[], normalize=None,
+    def __init__(self, fmri_image, formula, outputs=None, normalize=None,
                  output_fwhm=False, clobber=False, mask=None, slicetimes=None,
                  tshift=0.0, fwhm_rho=6.0, fwhm_data=6.0, resid=False,
                  nmax=200, path='fmristat_run'):
-        LinearModelIterator.__init__(self, fmri_image, outputs)
 
         self.formula = formula
         self.output_fwhm = output_fwhm
@@ -81,15 +80,19 @@ class fMRIStatOLS(LinearModelIterator):
         ftime = self.fmri_image.frametimes + self.tshift
         self.dmatrix = self.formula.design(*(ftime,))
 
+        if outputs is None:
+            outputs = []
+
         if resid or self.output_fwhm:
             self.resid_output = ResidOutput(self.fmri_image.grid, path=self.path, basename='OLSresid', clobber=self.clobber)
-            self.outputs.append(self.resid_output)
+            outputs.append(self.resid_output)
 
         model = ols_model(design=self.dmatrix)
         self.rho_estimator = AROutput(self.fmri_image.grid, model)
-        self.outputs.append(self.rho_estimator)
+        outputs.append(self.rho_estimator)
 
         self.setup_output()
+        LinearModelIterator.__init__(self, fmri_image, outputs)
         
     def model(self):
         ftime = self.fmri_image.frametimes + self.tshift
@@ -100,9 +103,9 @@ class fMRIStatOLS(LinearModelIterator):
             model = ols_model(design=self.dmatrix)
         return model
 
-    def fit(self, reference=None, **keywords):
+    def fit(self, reference=None):
 
-        LinearModelIterator.fit(self, **keywords)
+        LinearModelIterator.fit(self)
 
         sgrid = self.fmri_image.grid.subgrid(0)
 
@@ -239,19 +242,24 @@ class fMRIStatAR(LinearModelIterator):
     """
     
 
-    def __init__(self, OLS, contrasts=None, outputs=[], clobber=False,
+    def __init__(self, OLS, contrasts=None, outputs=None, clobber=False,
                  resid=False, tshift=0.0):
         """
         Building on OLS results, fit the AR(1) model.
 
         Contrasts is a sequence of terms to be tested in the model.
         """
-        
-        self.outputs = []
-        self.outputs += outputs
+
+        if outputs is None:
+            outputs = []
+        else:
+            outputs = outputs[:]
         if not isinstance(OLS, fMRIStatOLS):
             raise ValueError, 'expecting an fMRIStatOLS object in fMRIStatAR'
+
         self.fmri_image = OLS.fmri_image
+
+
 
         # output path
         path = OLS.path
@@ -270,6 +278,7 @@ class fMRIStatAR(LinearModelIterator):
             self.designs = []
             for s in self.slicetimes:
                 self.designs.append(self.formula.design(*(ftime+s,)))
+
         self.contrasts = []
         if contrasts is not None:
             if type(contrasts) not in [type([]), type(())]:
@@ -293,6 +302,9 @@ class fMRIStatAR(LinearModelIterator):
                                           frametimes=ftime)
                 self.contrasts.append(cur)
                 
+
+
+
         # setup the iterator
 
         self.fmri_image.grid.set_iter_param("parcelmap", \
@@ -300,17 +312,18 @@ class fMRIStatAR(LinearModelIterator):
         self.fmri_image.grid.set_iter_param("parcelseq", \
                         OLS.fmri_image.grid.get_iter_param("parcelseq"))
 
-        self.iterator = iter(self.fmri_image)
         self.j = 0
-
-        self.outputs += self.contrasts
+        outputs += self.contrasts
 
         if resid:
             self.resid_output = ResidOutput(self.fmri_image.grid,
                                             path=path,
                                             basename='ARresid',
                                             clobber=clobber)
-            self.outputs.append(self.resid_output)
+            outputs.append(self.resid_output)
+
+        LinearModelIterator.__init__(self, OLS.fmri_image, outputs)
+
 
     def model(self):
         self.j += 1

@@ -58,7 +58,7 @@ class TestSliceTimes(fMRIStatTest):
         OLS = fMRIStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes)
         OLS.nmax = 75
-        OLS.fit(resid=True)
+        OLS.fit()
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
 
@@ -72,7 +72,7 @@ class TestResid1(fMRIStatTest):
         self.img.slicetimes = None
         OLS = fMRIStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes, resid=True)
-        OLS.fit(resid=True)
+        OLS.fit()
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
 
@@ -86,7 +86,7 @@ class TestResid2(fMRIStatTest):
         self.img.slicetimes = None
         OLS = fMRIStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes)
-        OLS.fit(resid=True)
+        OLS.fit()
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
 
@@ -109,7 +109,7 @@ class TestHRFDeriv(fMRIStatTest):
         self.img.slicetimes = None
         OLS = fMRIStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes)
-        OLS.fit(resid=True)
+        OLS.fit()
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
 
@@ -126,7 +126,7 @@ class TestContrast(fMRIStatTest):
         OLS = fMRIStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes,
                                    clobber=True)
-        OLS.fit(resid=True)
+        OLS.fit()
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
         
