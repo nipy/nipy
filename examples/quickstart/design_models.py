@@ -1,7 +1,7 @@
 #!/bin/env python
 """
 This quickstart example shows you how to setup a model formula
-for an fMRI experimentm, including drift terms, and interactions
+for an fMRI experiment, including drift terms, and interactions
 
 The example only sets up the model, and does not estimate it
 """
