@@ -10,7 +10,7 @@ from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.old_iterators import ParcelIterator
 from neuroimaging.core.reference.mapping import Mapping, Affine
 
-
+from neuroimaging.core.reference.iterators import SliceIterator
 
 class fMRISamplingGrid(SamplingGrid):
 
@@ -148,3 +148,12 @@ class fMRIImage(Image):
         return self
 
 
+    # Possible new iterator interface stuff. Not for general consumption
+    # just yet.    
+    def slices(self, mode='r', axis=1):
+        return SliceIterator(self, mode=mode, axis=axis)
+
+    def from_slices(self, other, axis=1):
+        it = iter(SliceIterator(self, mode='w', axis=axis))
+        for s in other:
+            it.next().set(s)
