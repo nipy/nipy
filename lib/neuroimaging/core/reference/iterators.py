@@ -244,18 +244,14 @@ class fMRIParcelIteratorItem(IteratorItem):
 class SliceParcelIterator(ParcelIterator):
 
     
-    def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
+    def __init__(self, img, parcelmap, parcelseq, mode='r'):
         ParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
         self.i = 0
         self.max = len(self.parcelseq)
         self.iterator_item = SliceParcelIteratorItem
 
     def _prep_seq(self, parcelseq):
-        if parcelseq is not None: 
-            self.parcelseq = [tuple(ps) for ps in parcelseq]
-        else:
-            self.parcelseq = [N.unique(pm.flat) for pm in self.parcelmap]
-
+        self.parcelseq = [tuple(ps) for ps in parcelseq]
 
     def _next(self):
         if self.i >= self.max:            
@@ -289,7 +285,7 @@ class SliceParcelIteratorItem(IteratorItem):
 
 class fMRISliceParcelIterator(SliceParcelIterator):
 
-    def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
+    def __init__(self, img, parcelmap, parcelseq, mode='r'):
         SliceParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
         self.iterator_item = fMRISliceParcelIteratorItem
     

@@ -115,16 +115,7 @@ class ImageTest(unittest.TestCase):
 
         self.assertEquals(v, N.product(test.grid.shape))
 
-    def test_parcels2(self):
-        rho = Image("rho.hdr", repository, format=Analyze)
-        parcelmap = (rho.readall() * 100).astype(N.int32)
-        test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
-        it = SliceParcelIterator(test, parcelmap, None, mode='w')
-        v = 0
-        for s in it:
-            s.set(v)
-            v += 1
-        
+       
 
     def test_parcels3(self):
         rho = Image("rho.hdr", repository, format=Analyze)
