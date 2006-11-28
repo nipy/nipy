@@ -15,7 +15,7 @@ class Iterator(object):
     def __init__(self, img, mode='r'):
         self.set_img(img)
         self.mode = mode
-        self.item = NotImplementedError
+        self.item = NotImplemented
 
     def __iter__(self):
         return self
@@ -26,7 +26,6 @@ class Iterator(object):
             return self.item.get()
         else:
             return self.item
-
     
     def _next(self):
         raise NotImplementedError
@@ -34,9 +33,8 @@ class Iterator(object):
     def set_img(self, img):
         self.img = img
 
-
     def copy(self, img):
-        it = Iterator(img)
+        it = self.__class__(img)
         self._copy_to(it)
         it.set_img(img)
         return it
@@ -54,7 +52,6 @@ class IteratorItem(object):
         return self.img[self.slice]
 
     def set(self, value):
-        tmp = value.reshape(self.img[self.slice].shape)
         self.img[self.slice] = value
 
 
@@ -83,11 +80,6 @@ class SliceIterator(Iterator):
         self.n += 1
         return ret
 
-    def copy(self, img):
-        it = SliceIterator(img)
-        self._copy_to(it)
-        it.set_img(img)
-        return it
 
     def _copy_to(self, it):
         Iterator._copy_to(self, it)
@@ -115,6 +107,11 @@ class ParcelIterator(Iterator):
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
         Iterator.__init__(self, img, mode)
         self.parcelmap = N.asarray(parcelmap)
+        self._prep_seq(parcelseq)
+
+        self.iterator_item = ParcelIteratorItem
+
+    def _prep_seq(self, parcelseq):
         if parcelseq is not None: 
             self.parcelseq = tuple(parcelseq)
         else:
@@ -125,6 +122,10 @@ class ParcelIterator(Iterator):
         return self
     
     def _next(self):
+        wherelabel, label = self._get_wherelabel()
+        return self.iterator_item(self.img, wherelabel, label)
+
+    def _get_wherelabel(self):
         label = self._labeliter.next()
         try:
             len(label)
@@ -134,10 +135,10 @@ class ParcelIterator(Iterator):
 
         wherelabel = reduce(operator.or_,
           [N.equal(self.parcelmap, lbl) for lbl in label])
-        return ParcelIteratorItem(self.img, wherelabel, label)
+        return wherelabel, label
 
     def copy(self, img):
-        it = ParcelIterator(img, self.parcelmap, self.parcelseq)
+        it = self.__class__(img, self.parcelmap, self.parcelseq)
         self._copy_to(it)
         it.set_img(img)
         return it
@@ -159,39 +160,12 @@ class ParcelIteratorItem(IteratorItem):
 
 
 
-class fMRIParcelIterator(Iterator):
+class fMRIParcelIterator(ParcelIterator):
 
-    
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
-        Iterator.__init__(self, img, mode)
-        self.parcelmap = N.asarray(parcelmap)
-        if parcelseq is not None: 
-            self.parcelseq = tuple(parcelseq)
-        else:
-            self.parcelseq = N.unique(self.parcelmap.flat)
-
-    def __iter__(self):
-        self._labeliter = iter(self.parcelseq)
-        return self
+        ParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
+        self.iterator_item = fMRIParcelIteratorItem
     
-    def _next(self):
-        label = self._labeliter.next()
-        try:
-            len(label)
-        except:
-            label = (label,)
-
-
-        wherelabel = reduce(operator.or_,
-          [N.equal(self.parcelmap, lbl) for lbl in label])
-        return fMRIParcelIteratorItem(self.img, wherelabel, label)
-
-    def copy(self, img):
-        it = fMRIParcelIterator(img, self.parcelmap, self.parcelseq)
-        self._copy_to(it)
-        it.set_img(img)
-        return it
-
 
 class fMRIParcelIteratorItem(IteratorItem):
 
@@ -208,47 +182,35 @@ class fMRIParcelIteratorItem(IteratorItem):
         self.img[:,self.slice] = value
 
 
-class SliceParcelIterator(Iterator):
+class SliceParcelIterator(ParcelIterator):
 
     
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
-        Iterator.__init__(self, img, mode)
-        self.parcelmap = N.asarray(parcelmap).reshape(img.shape)
-        
+        ParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
+        self.i = 0
+        self.max = len(self.parcelseq)
+        self.iterator_item = SliceParcelIteratorItem
+
+    def _prep_seq(self, parcelseq):
         if parcelseq is not None: 
             self.parcelseq = [tuple(ps) for ps in parcelseq]
         else:
             self.parcelseq = [N.unique(pm.flat) for pm in self.parcelmap]
 
-        self.i = 0
-        self.max = len(self.parcelseq)
 
-    def __iter__(self):
-        self._labeliter = iter(self.parcelseq)
-        return self
-    
     def _next(self):
         if self.i >= self.max:            
             raise StopIteration
-        label = self._labeliter.next()
-        try:
-            len(label)
-        except:
-            label = (label,)
+        wherelabel, label = self._get_wherelabel()
 
-        wherelabel = reduce(operator.or_,
-          [N.equal(self.parcelmap, lbl) for lbl in label])
-        ret = SliceParcelIteratorItem(self.img, wherelabel[self.i], label, self.i)
+        ret = self.iterator_item(self.img, wherelabel[self.i], label,
+                                      self.i)
         self.i += 1
         return ret
+    
 
-    def copy(self, img):
-        it = SliceParcelIterator(img, self.parcelmap, self.parcelseq)
-        self._copy_to(it)
-        it.set_img(img)
-        return it
-
-    def _copy_to(it):
+    def _copy_to(self, it):
+        ParcelIterator._copy_to(self, it)
         it.i = self.i
 
 
@@ -266,50 +228,12 @@ class SliceParcelIteratorItem(IteratorItem):
         self.img[self.i,self.slice] = value
 
 
-class fMRISliceParcelIterator(Iterator):
+class fMRISliceParcelIterator(SliceParcelIterator):
 
-    
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
-        Iterator.__init__(self, img, mode)
-        self.parcelmap = N.asarray(parcelmap)
-        if parcelseq is not None: 
-            self.parcelseq = tuple(parcelseq)
-        else:
-            self.parcelseq = N.unique(self.parcelmap.flat)
-
-        self.i = 0
-        self.max = len(parcelseq)
-
-    def __iter__(self):
-        self._labeliter = iter(self.parcelseq)
-        return self
+        SliceParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
+        self.iterator_item = fMRISliceParcelIteratorItem
     
-    def _next(self):
-        if self.i >= self.max:
-            raise StopIteration
-        label = self._labeliter.next()
-        try:
-            len(label)
-        except:
-            label = (label,)
-    
-        wherelabel = reduce(operator.or_,
-          [N.equal(self.parcelmap, lbl) for lbl in label])
-
-
-        ret = fMRISliceParcelIteratorItem(self.img, wherelabel[self.i,:], label , self.i)
-        self.i += 1
-        return ret
-
-    def copy(self, img):
-        it = SliceParcelIterator(img, self.parcelmap, self.parcelseq)
-        self._copy_to(it)
-        it.set_img(img)
-        return it
-
-    def _copy_to(it):
-        it.i = self.i
-
 
 class fMRISliceParcelIteratorItem(IteratorItem):
 
@@ -323,13 +247,13 @@ class fMRISliceParcelIteratorItem(IteratorItem):
         return self.img[:,self.i,self.slice]
 
     def set(self, value):
-        self.img[self.i,self.slice] = value
+        self.slice = self.slice.reshape(self.img.shape[2:])
+        self.img[:,self.i,self.slice] = value
 
 
 
-if __name__ == '__main__':
+def _main():
     from neuroimaging.core.image.image import Image
-    import numpy as N
     img = Image(N.zeros((3, 4, 5)))
 
     # Slice along the 0th axis (default)
@@ -401,7 +325,7 @@ if __name__ == '__main__':
     print "========"
 
     parcelmap = N.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
-    parcelseq = ((1,2),0,2)
+    parcelseq = ((1, 2), 0, 2)
     i = SliceParcelIterator(B, parcelmap, parcelseq)
     for n in i:
         print n
@@ -413,8 +337,11 @@ if __name__ == '__main__':
         y += 1
 
     parcelmap = N.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
-    parcelseq = ((1,2),0,2)
+    parcelseq = ((1, 2), 0, 2)
     i = SliceParcelIterator(B, parcelmap, parcelseq)
     for n in i:
         print n
 
+
+if __name__ == '__main__':
+    _main()
