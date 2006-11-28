@@ -26,7 +26,7 @@ def _main():
     print img[:]
 
     # Slice using the image method interface
-    print "slicing with .slice() method"
+    print "slicing with .slices() method"
     for s in img.slices():
         print s, s.shape
 
