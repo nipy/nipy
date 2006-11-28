@@ -5,6 +5,8 @@
 #
 # See http://projects.scipy.org/neuroimaging/ni/wiki/ImageIterators
 
+import operator
+
 import numpy as N
 
 class Iterator(object):
@@ -106,7 +108,7 @@ class SliceIteratorItem(IteratorItem):
 
 
 class ParcelIterator(Iterator):
-    """ The base class for image iterators. """
+
     
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
         Iterator.__init__(self, img, mode)
@@ -143,6 +145,63 @@ class ParcelIteratorItem(IteratorItem):
     def __init__(self, img, slice, label):
         IteratorItem.__init__(self, img, slice)
         self.label = label
+
+
+class SliceParcelIterator(Iterator):
+
+    
+    def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
+        Iterator.__init__(self, img, mode)
+        self.parcelmap = N.asarray(parcelmap)
+        if parcelseq is not None: 
+            self.parcelseq = tuple(parcelseq)
+        else:
+            self.parcelseq = N.unique(self.parcelmap.flat)
+
+        self.i = 0
+        self.max = len(parcelseq)
+
+    def __iter__(self):
+        self._labeliter = iter(self.parcelseq)
+        return self
+    
+    def _next(self):
+        if self.i >= self.max:
+            raise StopIteration
+        label = self._labeliter.next()
+        try:
+            len(label)
+        except:
+            label = (label,)
+    
+        wherelabel = reduce(operator.or_,
+          [N.equal(self.parcelmap, lbl) for lbl in label])
+        ret = SliceParcelIteratorItem(self.img, wherelabel[self.i], label , self.i)
+        self.i += 1
+        return ret
+
+    def copy(self, img):
+        it = SliceParcelIterator(img, self.parcelmap, self.parcelseq)
+        self._copy_to(it)
+        it.set_img(img)
+        return it
+
+    def _copy_to(it):
+        it.i = self.i
+
+
+class SliceParcelIteratorItem(IteratorItem):
+
+    def __init__(self, img, slice, label, i):
+        IteratorItem.__init__(self, img, slice)
+        self.label = label
+        self.i = i
+
+    def get(self):
+        return self.img[self.i,self.slice]
+
+    def set(self, value):
+        self.img[self.i,self.slice] = value
 
 
 
@@ -210,3 +269,30 @@ if __name__ == '__main__':
                     SliceIterator(None, axis=1))
     print B[:]
     
+
+    x = 0
+    for s in B.slices(mode='w'):
+        s.set(x)
+        x += 1
+
+    print B[:]
+    print "========"
+
+    parcelmap = N.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
+    parcelseq = ((1,2),0,2)
+    i = SliceParcelIterator(B, parcelmap, parcelseq)
+    for n in i:
+        print n
+
+
+    y = 0
+    for s in B.slices(axis=1, mode='w'):
+        s.set(y)
+        y += 1
+
+    parcelmap = N.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
+    parcelseq = ((1,2),0,2)
+    i = SliceParcelIterator(B, parcelmap, parcelseq)
+    for n in i:
+        print n
+
