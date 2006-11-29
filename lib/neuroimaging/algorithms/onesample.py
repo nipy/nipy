@@ -90,8 +90,8 @@ class ImageOneSampleOutput(RegressionOutput):
 
     def __init__(self, grid, nout=1, basename="", clobber=False, path='onesample',
                  ext='.img'):
-        RegressionOutput.__init__(self, grid, nout)
-        self.img = iter(self._setup_img(clobber, path, ext, basename))
+        RegressionOutput.__init__(self, None, grid, nout)
+        self.img, self.it = self._setup_img(clobber, path, ext, basename)
 
 
 class TOutput(ImageOneSampleOutput):

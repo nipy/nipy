@@ -16,6 +16,7 @@ from neuroimaging.algorithms.fwhm import fastFWHM
 from neuroimaging.algorithms.utils import fwhm2sigma
 from neuroimaging.algorithms.statistics.regression import LinearModelIterator
 
+from neuroimaging.core.reference.iterators import fMRIParcelIterator, fMRISliceParcelIterator, ParcelIterator, SliceParcelIterator
 
 # Imports related to pylab
 
@@ -92,12 +93,13 @@ class fMRIStatOLS(LinearModelIterator):
         outputs.append(self.rho_estimator)
 
         self.setup_output()
-        LinearModelIterator.__init__(self, fmri_image, outputs)
+
+        LinearModelIterator.__init__(self, fmri_image.slices(), outputs)
         
     def model(self):
         ftime = self.fmri_image.frametimes + self.tshift
         if self.slicetimes is not None:
-            _slice = self.iterator.grid.itervalue().slice
+            _slice = self.iterator.item.slice
             model = ols_model(design=self.formula.design(*(ftime + self.slicetimes[_slice[1]],)))
         else:
             model = ols_model(design=self.dmatrix)
@@ -144,8 +146,6 @@ class fMRIStatOLS(LinearModelIterator):
             parcelmap = tmp
             tmp = N.compress(1 - N.isnan(tmp), tmp)
             parcelseq = list(N.unique(tmp))
-            self.fmri_image.grid.set_iter_param("parcelmap", parcelmap)
-            self.fmri_image.grid.set_iter_param("parcelseq", parcelseq)            
             del(tmp); gc.collect()
         else:
             parcelmap = []
@@ -157,9 +157,8 @@ class fMRIStatOLS(LinearModelIterator):
                 newlabels = list(N.unique(tmp))
                 parcelseq += [newlabels]
                 parcelmap += [tmp]
-            self.fmri_image.grid.set_iter_param("parcelseq", parcelseq)
-            self.fmri_image.grid.set_iter_param("parcelmap", parcelmap)            
-
+        return parcelmap, parcelseq
+            
     def setup_output(self):
 
         if not os.path.exists(self.path):
@@ -260,7 +259,6 @@ class fMRIStatAR(LinearModelIterator):
         self.fmri_image = OLS.fmri_image
 
 
-
         # output path
         path = OLS.path
 
@@ -272,12 +270,20 @@ class fMRIStatAR(LinearModelIterator):
         self.formula = OLS.formula
         if self.slicetimes is None:
             self.dmatrix = OLS.dmatrix
-            self.fmri_image.grid.set_iter_param("itertype", 'parcel')
+            iterator = fMRIParcelIterator
         else:
-            self.fmri_image.grid.set_iter_param("itertype", 'slice/parcel')
             self.designs = []
             for s in self.slicetimes:
-                self.designs.append(self.formula.design(*(ftime+s,)))
+                self.designs.append(self.formula.design(*(ftime+s,))) 
+            iterator = fMRISliceParcelIterator
+
+        parcelmap, parcelseq = OLS.getparcelmap()
+
+        if iterator == fMRIParcelIterator:
+            iterator_ = ParcelIterator
+        elif iterator == fMRISliceParcelIterator:
+            iterator_ = SliceParcelIterator
+
 
         self.contrasts = []
         if contrasts is not None:
@@ -286,50 +292,52 @@ class fMRIStatAR(LinearModelIterator):
             for contrast in contrasts:
                 contrast.getmatrix(time=ftime)
                 if isinstance(contrast, DelayContrast):
+                    it = iterator_(self.fmri_image, parcelmap, parcelseq, mode='w')
                     cur = DelayContrastOutput(self.fmri_image.grid,
                                               contrast, path=path,
                                               clobber=clobber,
-                                              frametimes=ftime)
+                                              frametimes=ftime,
+                                              it=it)
                 elif contrast.rank == 1:
+                    it = iterator_(self.fmri_image, parcelmap, parcelseq, mode='w')
                     cur = TContrastOutput(self.fmri_image.grid, contrast,
                                           path=path,
                                           clobber=clobber,
-                                          frametimes=ftime)
+                                          frametimes=ftime,
+                                          it=it)
                 else:
+                    it = iterator_(self.fmri_image, parcelmap, parcelseq, mode='w')
                     cur = FContrastOutput(self.fmri_image.grid, contrast,
                                           path=path,
                                           clobber=clobber,
-                                          frametimes=ftime)
+                                          frametimes=ftime,
+                                          it=it)
                 self.contrasts.append(cur)
                 
 
 
 
-        # setup the iterator
 
-        self.fmri_image.grid.set_iter_param("parcelmap", \
-                        OLS.fmri_image.grid.get_iter_param("parcelmap"))
-        self.fmri_image.grid.set_iter_param("parcelseq", \
-                        OLS.fmri_image.grid.get_iter_param("parcelseq"))
-
-        self.j = 0
         outputs += self.contrasts
 
         if resid:
+            it = iterator(self.fmri_image, parcelmap, parcelseq, mode='w')
             self.resid_output = ResidOutput(self.fmri_image.grid,
                                             path=path,
                                             basename='ARresid',
-                                            clobber=clobber)
+                                            clobber=clobber,
+                                            it=it)
             outputs.append(self.resid_output)
 
-        LinearModelIterator.__init__(self, OLS.fmri_image, outputs)
+        it = iterator(OLS.fmri_image, parcelmap, parcelseq)
+        LinearModelIterator.__init__(self, it, outputs)
+
 
 
     def model(self):
-        self.j += 1
-        itervalue = self.iterator.grid.itervalue()
+        itervalue = self.iterator.item
         if self.slicetimes is not None:
-            design = self.designs[itervalue.slice[1]]
+            design = self.designs[itervalue.i]
         else:
             design = self.dmatrix
         # is using the first parcel label correct here?

@@ -16,10 +16,6 @@ class fMRISamplingGrid(SamplingGrid):
 
     def __init__(self, shape, mapping, input_coords, output_coords):
         SamplingGrid.__init__(self, shape, mapping, input_coords, output_coords)
-        iterators = {"slice": (fMRISliceIterator, ["shape"]),
-                     "parcel": (ParcelIterator, ["parcelmap", "parcelseq"]),
-                     "slice/parcel": (fMRISliceParcelIterator, ["parcelmap", "parcelseq", "shape"])}
-        self._iterguy = self._IterHelper(self.shape, 1, "slice", None, None, iterators)        
 
 
     def isproduct(self, tol = 1.0e-07):
@@ -70,8 +66,6 @@ class fMRISamplingGrid(SamplingGrid):
             W = Mapping(_map)
 
         _grid = SamplingGrid(self.shape[1:], W, incoords, outcoords)
-        for param in ["parcelmap", "parcelseq"]:
-            _grid.set_iter_param(param, self.get_iter_param(param))
         return _grid
 
 
@@ -98,52 +92,6 @@ class fMRIImage(Image):
         data = N.squeeze(self[slice(i,i+1)])
         if clean: data = N.nan_to_num(data)
         return Image(data, grid=self.grid.subgrid(i), **keywords)
-
-
-    def next(self):        
-        value = self.grid.next()
-        itertype = value.type
-
-        if itertype == 'slice':
-            result = self[value.slice]
-
-        elif itertype == 'parcel':
-            self.label = value.label
-            result = self[:,value.where]
-            
-        elif itertype == 'slice/parcel':
-            value.where.shape = N.product(value.where.shape)
-            self.label = value.label
-            tmp = self[value.slice].copy()
-            tmp.shape = (tmp.shape[0], N.product(tmp.shape[1:]))
-            result = tmp[:,value.where]
-        return result
-
-    def set_next(self, data):
-        value = self.grid.next()
-        itertype = value.type
-
-        if itertype == 'slice':
-            self[value.slice] = data
-
-        elif itertype == 'parcel':
-            for i in range(self.grid.shape[0]):
-                _buffer = self[slice(i,i+1)]
-                _buffer.put(data, indices) # fixme: indices not defined
-
-        elif itertype == 'slice/parcel':
-            indices = N.nonzero(value.where)
-            _buffer = self[value.slice]
-            _buffer.put(data, indices)
-
-        
-
-    def __iter__(self):
-        "Create an iterator over an image based on its grid's iterator."
-        iter(self.grid)
-        if self.grid.get_iter_param("itertype") == 'parcel': 
-            flatten(self.buffer, 1)
-        return self
 
 
     # Possible new iterator interface stuff. Not for general consumption

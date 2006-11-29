@@ -8,6 +8,7 @@ from neuroimaging.core.image.image import Image, ImageSequenceIterator
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.formats.analyze import Analyze
 
+from neuroimaging.core.reference.iterators import ParcelIterator, SliceParcelIterator
 
 
 class ImageTest(unittest.TestCase):
@@ -90,51 +91,40 @@ class ImageTest(unittest.TestCase):
 
 
     def test_iter(self):
-        I = iter(self.img)
-        for i in I:
+        for i in self.img.slices():
             self.assertEquals(i.shape, (109,91))
 
     def test_set_next(self):
         write_img = Image("test_write.hdr", repository, grid=self.img.grid, format=Analyze,
                           mode='w', clobber=True)
-        I = iter(write_img)
+        I = write_img.slices('w')
         x = 0
-        while True:
-            try:
-                write_img.set_next(N.ones((109, 91)))
-                x += 1
-            except StopIteration:
-                break
+        for slice in I:
+            slice.set(N.ones((109, 91)))
+            x += 1
         self.assertEquals(x, 91)
 
     def test_parcels1(self):
         rho = Image("rho.hdr", repository, format=Analyze)
         parcelmap = (rho.readall() * 100).astype(N.int32)
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
-        test.grid.set_iter_param("itertype", 'parcel')
-        test.grid.set_iter_param("parcelmap", parcelmap)
+        it = ParcelIterator(test, parcelmap)
         v = 0
-        for t in test:
-            v += t.shape[0]
+        for i in it:
+            v += i.shape[0]
+
         self.assertEquals(v, N.product(test.grid.shape))
 
     def test_parcels2(self):
         rho = Image("rho.hdr", repository, format=Analyze)
         parcelmap = (rho.readall() * 100).astype(N.int32)
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
-
-        test.grid.set_iter_param("itertype", 'parcel')
-        test.grid.set_iter_param("parcelmap", parcelmap)
-        parcelmap.shape = parcelmap.size
-       
+        it = SliceParcelIterator(test, parcelmap, None, mode='w')
         v = 0
-        iter(test)
-        while True:
-            try:
-                test.set_next(data=v)
-                v += 1
-            except StopIteration:
-                break
+        for s in it:
+            s.set(v)
+            v += 1
+        
 
     def test_parcels3(self):
         rho = Image("rho.hdr", repository, format=Analyze)
@@ -144,30 +134,25 @@ class ImageTest(unittest.TestCase):
         parcelseq = N.unique(parcelmap)
 
         test = Image(N.zeros(shape), grid=rho.grid)
-        test.grid.set_iter_param("itertype", 'parcel')
-        test.grid.set_iter_param("parcelmap", parcelmap)
-        test.grid.set_iter_param("parcelseq", parcelseq)
-        v = 0
 
-        for t in test:
-            v += t.shape[0]
+        it = ParcelIterator(test, parcelmap, parcelseq)
+        v = 0
+        for i in it:
+            v += i.shape[0]
+
         self.assertEquals(v, N.product(test.grid.shape))
 
     def test_parcels4(self):
         rho = Image("rho.hdr", repository, format=Analyze)
         parcelmap = (rho.readall() * 100).astype(N.int32)
-        shape = parcelmap.shape
-        parcelmap.shape = parcelmap.size
         parcelseq = parcelmap
         
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
-        test.grid.set_iter_param("itertype", 'slice/parcel')
-        test.grid.set_iter_param("parcelmap", parcelmap)
-        test.grid.set_iter_param("parcelseq", parcelseq)
+        it = SliceParcelIterator(test, parcelmap, parcelseq)
         v = 0
-        for t in test:
+        for i in it:
             v += 1
-        self.assertEquals(v, N.product(test.grid.shape))
+        self.assertEquals(v, test.grid.shape[0])
 
     def test_readall(self):
         a = self.img.readall(clean=False)

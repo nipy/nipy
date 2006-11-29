@@ -5,14 +5,18 @@ import numpy as N
 from neuroimaging.core.reference.axis import space
 from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
+from neuroimaging.core.reference.iterators import ParcelIterator, SliceParcelIterator
 
 from neuroimaging.data_io.formats.analyze import Analyze
 from neuroimaging.utils.tests.data import repository
 
+from neuroimaging.core.image.image import Image
+
+
 class GridTest(unittest.TestCase):
 
     def setUp(self):
-        self.img = Analyze("avg152T1", datasource=repository)
+        self.img = Image("avg152T1", datasource=repository, format=Analyze)
 
     def test_concat(self):
         grids = ConcatenatedGrids([self.img.grid]*5)
@@ -67,25 +71,18 @@ class GridTest(unittest.TestCase):
         
     def test_iterslices(self):
         for i in range(3):
-            self.img.grid.set_iter_param("itertype", "slice")
-            self.img.grid.set_iter_param("axis", i)
-            self.assertEqual(len(list(iter(self.img.grid))), self.img.grid.shape[i])
+            self.assertEqual(len(list(self.img.slices(axis=i))), self.img.grid.shape[i])
         
         parcelmap = N.zeros(self.img.grid.shape)
         parcelmap[:3,:5,:4] = 1
         parcelmap[3:10,5:10,4:10] = 2
         parcelseq = (1, (0,2))
-        self.img.grid.set_iter_param("itertype", "parcel")
-        self.img.grid.set_iter_param("parcelmap", parcelmap)
-        self.img.grid.set_iter_param("parcelseq", parcelseq)
-        for i in iter(self.img.grid):
-            self.img[i.where]
+        for i in ParcelIterator(self.img, parcelmap, parcelseq):
+            pass
 
-        parcelseq = (1, (1,2), 0) + (0,)*(len(parcelmap)-3)
-        self.img.grid.set_iter_param("itertype", "slice/parcel")
-        self.img.grid.set_iter_param("parcelseq", parcelseq)
-        for i, it in enumerate(iter(self.img.grid)):
-            self.img[i,it.where]
+        parcelseq = ((1,), (1,2), (0,)) + ((0,),)*(len(parcelmap)-3)
+        for i in SliceParcelIterator(self.img, parcelmap, parcelseq):
+            pass
 
 if __name__ == '__main__':
     unittest.main()

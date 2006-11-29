@@ -136,14 +136,14 @@ class PCA(traits.HasTraits):
         ncomp = len(which)
         subVX = self.components[which]
 
-        outgrid = iter(self.image.grid.subgrid(0))
+        outgrid = self.image.grid.subgrid(0)
 
         if output_base is not None:
-            outimages = [iter(Image('%s_comp%d%s' % (output_base, i, self.ext),
-                                    grid=outgrid.copy(), mode='w')) for i in which]
+            outiters = [Image('%s_comp%d%s' % (output_base, i, self.ext),
+                                    grid=outgrid.copy(), mode='w').slices(mode='w') for i in which]
         else:
-            outimages = [iter(Image(N.zeros(outgrid.shape, N.float64),
-                                    grid=outgrid.copy())) for i in which]
+            outiters = [Image(N.zeros(outgrid.shape, N.float64),
+                                    grid=outgrid.copy()).slices(mode='w') for i in which]
 
         first_slice = slice(0,self.image.shape[0])
         _shape = self.image.grid.shape
@@ -165,16 +165,15 @@ class PCA(traits.HasTraits):
             
  
             U.shape = (U.shape[0],) + outgrid.shape[1:]
-            itervalue = outgrid.next()
             for k in range(len(which)):
-                outimages[k].set_next(data=U[k])
+                outiters[k].next().set(U[k])
 
         for i in range(len(which)):
             if output_base:
-                outimage = iter(Image('%s_comp%d%s' % (output_base, which[i], self.ext),
-                                      grid=outgrid, mode='r+'))
+                outimage = Image('%s_comp%d%s' % (output_base, which[i], self.ext),
+                                      grid=outgrid, mode='r+')
             else:
-                outimage = outimages[i]
+                outimage = outiters[i].img
             d = outimage.readall()
             dabs = N.fabs(d); di = dabs.argmax()
             d = d / d.flat[di]
@@ -182,7 +181,7 @@ class PCA(traits.HasTraits):
             outimage[outslice] = d
             #del(d); gc.collect()
 
-        return outimages
+        return [it.img for it in outiters]
 
 if PYLAB_DEF:
     from neuroimaging.ui.visualization.montage import Montage

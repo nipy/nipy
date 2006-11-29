@@ -11,14 +11,14 @@ class ImageRegressionOutput(RegressionOutput):
     uses the image's iterator values to output to an image.
     """
 
-    def __init__(self, grid, nout=1, outgrid=None):
-        RegressionOutput.__init__(self, grid, nout, outgrid)
+    def __init__(self, it, grid, nout=1, outgrid=None):
+        RegressionOutput.__init__(self, it, grid, nout, outgrid)
 
         if self.nout > 1:
             self.grid = self.grid.replicate(self.nout)
 
         self.img = Image(N.zeros(outgrid.shape, N.float64), grid=outgrid)
-
+        self.it = self.img.slices(mode='w')
 
 
 class TContrastOutput(ImageRegressionOutput):
@@ -26,7 +26,7 @@ class TContrastOutput(ImageRegressionOutput):
     def __init__(self, grid, contrast, path='.', subpath='contrasts', ext=".img",
                  effect=True, sd=True, t=True, nout=1, outgrid=None,
                  clobber=False):
-        ImageRegressionOutput.__init__(self, grid, nout, outgrid)
+        ImageRegressionOutput.__init__(self, None, grid, nout, outgrid)
         self.contrast = contrast
         self.effect = effect
         self.sd = sd
@@ -39,11 +39,11 @@ class TContrastOutput(ImageRegressionOutput):
 
     def _setup_output(self, clobber, path, subpath, ext):
         outdir = os.path.join(path, subpath, self.contrast.name)
-        self.timg = self._setup_img(clobber, outdir, ext, 't')
+        self.timg, self.timg_it = self._setup_img(clobber, outdir, ext, 't')
         if self.effect:
-            self.effectimg = self._setup_img(clobber, outdir, ext, 'effect')
+            self.effectimg, self.effectimg_it = self._setup_img(clobber, outdir, ext, 'effect')
         if self.sd:
-            self.sdimg = self._setup_img(clobber, outdir, ext, 'sd')
+            self.sdimg, self.sdimg_it = self._setup_img(clobber, outdir, ext, 'sd')
 
         outname = os.path.join(outdir, 'matrix.csv')
         outfile = file(outname, 'w')
@@ -60,18 +60,18 @@ class TContrastOutput(ImageRegressionOutput):
         return results.Tcontrast(self.contrast.matrix, sd=self.sd, t=self.t)
 
     def set_next(self, data):
-        self.timg.set_next(data.t)
+        self.timg_it.next().set(data.t)
         if self.effect:
-            self.effectimg.set_next(data.effect)
+            self.effectimg_it.next().set(data.effect)
         if self.sd:
-            self.sdimg.set_next(data.effect)
+            self.sdimg_it.next().set(data.effect)
 
 
 class FContrastOutput(ImageRegressionOutput):
 
     def __init__(self, grid, contrast, path='.', clobber=False,
                  subpath='contrasts', ext='.img', nout=1, outgrid=None):
-        ImageRegressionOutput.__init__(self, grid, nout, outgrid)
+        ImageRegressionOutput.__init__(self, None, grid, nout, outgrid)
         self.contrast = contrast
         self._setup_contrast()
         self._setup_output(clobber, path, subpath, ext)
@@ -81,7 +81,7 @@ class FContrastOutput(ImageRegressionOutput):
 
     def _setup_output(self, clobber, path, subpath, ext):
         outdir = os.path.join(path, subpath, self.contrast.name)
-        self.img = self._setup_img(clobber, outdir, ext, 'F')
+        self.img, self.it = self._setup_img(clobber, outdir, ext, 'F')
 
         outname = os.path.join(outdir, 'matrix.csv')
         outfile = file(outname, 'w')
@@ -104,10 +104,10 @@ class ResidOutput(ImageRegressionOutput):
 
     def __init__(self, grid, path='.', nout=1, clobber=False, basename='resid',
                  ext='.img', outgrid=None):
-        ImageRegressionOutput.__init__(self, grid, nout, outgrid)
+        ImageRegressionOutput.__init__(self, None, grid, nout, outgrid)
         outdir = os.path.join(path)
 
-        self.img = self._setup_img(clobber, outdir, ext, basename)
+        self.img, self.it = self._setup_img(clobber, outdir, ext, basename)
         self.nout = self.grid.shape[0]
 
     def extract(self, results):

@@ -106,7 +106,7 @@ class LinearFilter(object):
             _slice += 1
 
         gc.collect()
-
+        _out = _out[[slice(0, n) for n in self.grid.shape]]
         if inimage.ndim == 3:
             return Image(_out, grid=self.grid)
         else:

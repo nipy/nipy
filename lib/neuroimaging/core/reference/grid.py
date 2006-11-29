@@ -79,12 +79,6 @@ class SamplingGrid (object):
         self.input_coords = input_coords
         self.output_coords = output_coords
 
-        # These guys are for use of the SamplingGrid as an iterator.
-        iterators = {"slice": (SliceIterator, ["shape", "axis"]),
-                     "parcel": (ParcelIterator, ["parcelmap", "parcelseq"]),
-                     "slice/parcel": (SliceParcelIterator, ["parcelmap", "parcelseq"])}
-        self._iterguy = \
-          self._IterHelper(self.shape, 0, "slice", None, None, iterators)
 
     def copy(self):
         return SamplingGrid(self.shape, self.mapping, self.input_coords,
@@ -108,66 +102,6 @@ class SamplingGrid (object):
         _range.shape = tmp_shape
         return _range 
 
-    def __iter__(self):
-        iter(self._iterguy)
-        return self
-        
-    def next(self):
-        return self._iterguy.next()
-    
-    def itervalue(self):
-        """
-        Return the current iteration value
-        """
-        return self._iterguy.itervalue
-                
-    def set_iter_param(self, name, val):
-        """ Set an iteration parameter """
-        self._iterguy.set(name, val)
-        
-    def get_iter_param(self, name):
-        """ Get an iteration parameter """
-        return self._iterguy.get(name)
-
-    def copy_iter(self, other):
-        """
-        Copy the iterator paramaters from another grid to this one.
-        This does not affect iterator state.
-        """
-        self._iterguy.dict = other._iterguy.dict
-        self._iterguy.iterators = other._iterguy.iterators
-    
-    class _IterHelper:
-        """
-        This class takes care of all the seedy details of iteration
-        which should be sufficiently hidden from the outside world.
-        """
-        def __init__(self, shape, axis, itertype, parcelseq, parcelmap, iterators):
-            self.dict = {"shape": shape,
-                         "axis": axis,
-                         "itertype": itertype,
-                         "parcelseq": parcelseq,
-                         "parcelmap": parcelmap}
-            self.iterators = iterators
-
-        def set(self, name, val):
-            if name not in self.dict.keys():
-                raise KeyError
-            self.dict[name] = val
-        
-        def get(self, name):
-            return self.dict[name]
-
-        def __iter__(self):
-            itertype = self.dict["itertype"]
-            iterator, params = self.iterators[itertype]
-            self.iterator = iterator(**dict([(key, self.dict[key]) for key in params]))
-            return self
-    
-        def next(self):
-            self.itervalue = self.iterator.next()
-            return self.itervalue
-            
 
     def slab(self, start, step, count, axis=0):
         """

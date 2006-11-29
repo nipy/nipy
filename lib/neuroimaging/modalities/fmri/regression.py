@@ -23,19 +23,23 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     in the former it is of an Image.
     """
 
-    def __init__(self, grid, nout=1):
-        imreg.ImageRegressionOutput.__init__(self, grid, nout=nout,
+    def __init__(self, it, grid, nout=1):
+        imreg.ImageRegressionOutput.__init__(self, it, grid, nout=nout,
                                              outgrid=grid.subgrid(0))
 
 
 class ResidOutput(fMRIRegressionOutput):
 
     def __init__(self, grid, nout=1, clobber=False,
-                 path='.', ext='.hdr', basename='resid'):
-        fMRIRegressionOutput.__init__(self, grid, nout)
+                 path='.', ext='.hdr', basename='resid', it=None):
+        fMRIRegressionOutput.__init__(self, None, grid, nout)
         outdir = os.path.join(path)
         self.outgrid = grid
-        self.img = self._setup_img(clobber, outdir, ext, basename)
+        if it is None:
+            self.it.axis = 1
+        else:
+            self.it = it
+        self.img, self.it = self._setup_img(clobber, outdir, ext, basename)
         self.nout = self.grid.shape[0]
 
     def extract(self, results):
@@ -46,8 +50,10 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 
     def __init__(self, grid, contrast, nout=1, clobber=False,
                  path='.', ext='.hdr', subpath='contrasts', frametimes=[],
-                 effect=True, sd=True, t=True):
-        fMRIRegressionOutput.__init__(self, grid, nout)
+                 effect=True, sd=True, t=True, it=None):
+        fMRIRegressionOutput.__init__(self, None, grid, nout)
+        if it is not None:
+            self.it = it
         self.contrast = contrast
         self.effect = effect
         self.sd = sd
@@ -84,8 +90,10 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
 class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
 
     def __init__(self, grid, contrast, path='.', ext='.hdr', clobber=False,
-                 subpath='contrasts', frametimes=[], nout=1):
-        fMRIRegressionOutput.__init__(self, grid, nout)
+                 subpath='contrasts', frametimes=[], nout=1, it=None):
+        fMRIRegressionOutput.__init__(self, None, grid, nout)
+        if it is not None:
+            self.it = it
         self.contrast = contrast
         self._setup_contrast(time=frametimes)
         self._setup_output(clobber, path, subpath, ext, frametimes)
@@ -121,7 +129,7 @@ class AROutput(fMRIRegressionOutput):
 
     def __init__(self, grid, model, order=1, nout=1):
         self.order = order
-        fMRIRegressionOutput.__init__(self, grid, nout)
+        fMRIRegressionOutput.__init__(self, None, grid, nout)
         self._setup_bias_correct(model)
 
     def _setup_bias_correct(self, model):
@@ -153,6 +161,7 @@ class AROutput(fMRIRegressionOutput):
         cov = N.dot(self.invM, cov)
         output = cov[1:] * recipr(cov[0])
         return N.squeeze(output)
+
 
 
 ## this makes sense only if the labels are [slice, other] labels...

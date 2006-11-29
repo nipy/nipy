@@ -100,7 +100,9 @@ class Image(object):
         self.ndim = len(self.shape)
 
         # Attach memory-mapped array or array as buffer attr
+        self._source.data.shape = self.shape
         self.buffer = self._source.data
+
 
 
     def __getitem__(self, slice_):
@@ -111,10 +113,8 @@ class Image(object):
 
 
     def __iter__(self):
-        """ Create an iterator over an image based on its grid's iterator."""
-        iter(self.grid)
-        return self
-
+        """ Images cannot be used directly as iterators. """
+        raise NotImplementedError
 
     def put(self, indices, data):
         """
@@ -123,42 +123,9 @@ class Image(object):
         return self.buffer.put(indices, data)
 
 
-    def next(self):
-        """
-        Return the next iterator value.
-        """ 
-        value = self.grid.next()
-        itertype = self.grid.get_iter_param("itertype")
-
-        if itertype is 'slice':
-            result = N.squeeze(self[value.slice])
-        elif itertype is 'parcel':
-            value.where = value.where.reshape(self.shape)
-            result = self[value.where]
-        elif itertype == 'slice/parcel':
-            result = self[value.slice,N.asarray(value.where)]
-        return result
-
-    def set_next(self, data):
-        """
-        Set the next iterator value.
-
-        This method works in the same way as next(), in that it
-        requires __iter__ to have been called, and will advance
-        the iterator.
-        """
-        
-        value = self.grid.next()
-        itertype = self.grid.get_iter_param("itertype")
-
-        if itertype is 'slice':
-            self[value.slice] = data
-        elif itertype in ('parcel', "slice/parcel"):
-            self.put(N.nonzero(value.where.flatten()), data)
-
     def toarray(self, clean=True, **keywords):
         """
-        Return a Image instance that has an ArrayImage as its _source attribute.
+       Return a Image instance that has an ArrayImage as its _source attribute.
 
         >>> from numpy import *
         >>> from BrainSTAT import *
@@ -246,17 +213,17 @@ class ImageSequenceIterator(object):
     def __init__(self, imgs, grid=None):
         self.imgs = imgs
         if grid is None:
-            self.grid = iter(self.imgs[0].grid)
+            self.grid = self.imgs[0].grid
         else:
-            self.grid = iter(grid)        
+            self.grid = grid
 
     def __iter__(self): 
         """ Return self as an iterator. """
-        _ = [iter(img) for img in self.imgs]
+        self.iters = [img.slices() for img in self.imgs]
         return self
 
     def next(self):
         """ Return the next iterator value. """
-        val = [img.next() for img in self.imgs]
+        val = [it.next() for it in self.iters]
         return N.array(val, N.float64)
 
