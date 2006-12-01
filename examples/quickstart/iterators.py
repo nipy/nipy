@@ -97,6 +97,15 @@ def _main():
     for n in i:
         print n
 
+    for s in img.slices(axis=[0,1]):
+        print s
+
+    for s in img.slices(axis=[0,2]):
+        print s
+
+    for s in img.slices(axis=[1,2]):
+        print s
+
 
 if __name__ == '__main__':
     _main()

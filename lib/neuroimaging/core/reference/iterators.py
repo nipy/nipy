@@ -117,25 +117,34 @@ class IteratorItem(object):
 class SliceIterator(Iterator):
 
     def __init__(self, img, mode='r', axis=0, step=1):
-        self.axis = axis
+        try:
+            self.axis = list(axis)[::-1]
+        except TypeError:
+            self.axis = [axis]
         self.n = 0
         self.step = step
         Iterator.__init__(self, img, mode)
+
 
     def set_img(self, img):
         Iterator.set_img(self, img)
         if img is not None:
             self.shape = self.img.shape
-            self.max = self.shape[self.axis]
-
+            self.max = N.product(N.asarray(self.shape)[self.axis])
+            mods = N.cumprod(N.asarray(self.shape)[self.axis])            
+            divs = [1] + list(mods[:-1])
+            self.divmod = zip(divs, mods)
+            self.slices = N.asarray([slice(0, shape, self.step) for shape in self.shape])
 
     def _next(self):
         if self.n >= self.max:
             raise StopIteration
 
-        slices = [slice(0, shape, self.step) for shape in self.shape]
-        slices[self.axis] = slice(self.n, self.n+1, 1)
-        ret = SliceIteratorItem(self.img, slices)
+        for ax, (div, mod) in zip(self.axis, self.divmod):
+            self.slices[ax] = slice((self.n / div) % mod,
+                                    ((self.n / div) % mod) + 1, 1)
+
+        ret = SliceIteratorItem(self.img, list(self.slices))
         self.n += 1
         return ret
 

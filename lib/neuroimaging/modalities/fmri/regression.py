@@ -36,7 +36,7 @@ class ResidOutput(fMRIRegressionOutput):
         outdir = os.path.join(path)
         self.outgrid = grid
         if it is None:
-            self.it.axis = 1
+            self.it.axis = [1]
         else:
             self.it = it
         self.img, self.it = self._setup_img(clobber, outdir, ext, basename)

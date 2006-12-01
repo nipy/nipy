@@ -62,6 +62,17 @@ class IteratorTest(unittest.TestCase):
             N.testing.assert_equal(slice_, N.ones((20, 30)))
 
 
+    def test_multi_slice(self):
+        for slice_ in self.img.slices(axis=[0, 1]):
+            self.assertEquals(slice_.shape, (30,))
+
+        for slice_ in self.img.slices(axis=[2, 1]):
+            self.assertEquals(slice_.shape, (10,))
+
+    def test_multi_slice_write(self):
+        for slice_ in self.img.slices(axis = [0, 1], mode='w'):
+            slice_.set(N.zeros((30,)))
+
     def test_parcel(self):
         parcelmap = N.zeros(self.img3.shape)
         parcelmap[0,0,0] = 1
