@@ -42,12 +42,13 @@ def normalize(x):
     else:
         return x
 
+pylab.subplot(311)
 for i in range(4,7):
     pylab.plot(T,normalize(drift[i](time=T)))
 
 ax = pylab.gca()
 ax.set_ylim([-0.1,1.1])
-pylab.show()
+pylab.title('Models in NiPy')
 
 """
 The drift function is not yet a Term in a model. For
@@ -87,10 +88,10 @@ Let's look at the interaction term.
 
 interaction = newmodel['pain*time']
 
+pylab.subplot(312)
 for i in range(2):
     pylab.plot(T, interaction(time=T)[i], label=interaction.names()[i])
 pylab.legend()
-pylab.show()
 
 """
 How about a cubic.
@@ -100,8 +101,12 @@ newmodel = newmodel + protocol.Time**3 * pain_factor
 interaction = newmodel['pain*time^3']
 print newmodel, interaction
 
+pylab.subplot(313)
 for i in range(2):
     pylab.plot(T, interaction(time=T)[i], label=interaction.names()[i])
 pylab.legend()
+pylab.xlabel('Time')
+
+# And show our nice figure
 pylab.show()
 

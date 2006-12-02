@@ -38,4 +38,7 @@ for i in range(n_tps):
     tp_means[i] = (mask_arr * func_img[slice(i, i+1)]).sum() / nvox
 
 pylab.plot(tp_means)
+pylab.title('Time series in middle cube')
+pylab.xlabel('Frame number')
+pylab.ylabel('Mean signal in central cube')
 pylab.show()

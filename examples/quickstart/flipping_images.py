@@ -41,4 +41,5 @@ flipped_img.tofile('flip.img', clobber=True)
 still_flipped_img = Image('flip.img', grid=new_grid)
 BoxViewer(still_flipped_img).draw()
 
+# Show the figures
 pylab.show()

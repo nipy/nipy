@@ -52,12 +52,13 @@ evaluating the design on the frametimes, the behaviour is slightly unexpected.
 
 """
 
+pylab.subplot(411)
 pylab.plot(frametimes, hot_events(time=frametimes), label='Hot', linestyle='steps')
 pylab.plot(frametimes, warm_events(time=frametimes), label='Warm', linestyle='steps')
 axes = pylab.gca()
 axes.set_ylim([-0.1,1.1])
 pylab.legend()
-pylab.show()
+pylab.title('Regressors in NiPy')
 
 """
 We will convolve the response with a filter, the canonical 'Glover' filter.
@@ -68,10 +69,11 @@ pain_factor.convolve(hrf.canonical)
 
 ptime = N.linspace(0,100,1000)
 pain_convolved = pain_factor(time=ptime)
+
+pylab.subplot(412)
 pylab.plot(ptime, pain_convolved[0], label='Hot')
 pylab.plot(ptime, pain_convolved[1], label='Warm')
 pylab.legend()
-pylab.show()
 
 """
 We can 'turn off' the convolution.
@@ -79,12 +81,13 @@ We can 'turn off' the convolution.
 
 pain_factor.convolved = False
 pain_unconvolved = pain_factor(time=ptime)
+
+pylab.subplot(413)
 pylab.plot(ptime, pain_unconvolved[0], label='Hot', linestyle='steps')
 pylab.plot(ptime, pain_unconvolved[1], label='Warm', linestyle='steps')
 axes = pylab.gca()
 axes.set_ylim([-0.1,1.1])
 pylab.legend()
-pylab.show()
 
 
 """
@@ -96,10 +99,12 @@ pain_factor.convolve(hrf.glover_deriv)
 pain_convolved = pain_factor(time=ptime)
 
 names = pain_factor.names()
+
+pylab.subplot(414)
 for i in range(4):
     pylab.plot(ptime, pain_convolved[i], label=names[i], linestyle='steps')
 pylab.legend()
-pylab.show()
+pylab.xlabel('Time')
 
 """
 See what happens when we turn off the
@@ -108,5 +113,8 @@ See what happens when we turn off the
 
 pain_factor.convolved = False
 print pain_factor.names()
+
+# Show our nice figure
+pylab.show()
 
 

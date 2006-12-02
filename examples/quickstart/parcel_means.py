@@ -36,14 +36,21 @@ it = fMRIParcelIterator(func_img, parcel_arr[:], [1, 2])
 
 # Iterate to collect means over parcels in functional image
 means = {}
+parcel_labels = []
 for d in it:
-    means[it.item.label] = N.mean(d, axis=1)
-
+    L = it.item.label
+    means[L] = N.mean(d, axis=1)
+    parcel_labels.append(L)
+    
 # Now iterate over regions
 # changing the parcelseq to select "regions"
 it = fMRIParcelIterator(func_img, parcel_arr[:], [0, 2])
 for d in it:
     print d.shape
 
+# Show the figure
 pylab.plot(means[(1,)], means[(2,)], 'bo')
+pylab.title('Parcel means')
+pylab.xlabel('Mean signal - parcel %s' % parcel_labels[0])
+pylab.ylabel('Mean signal - parcel %s' % parcel_labels[1])
 pylab.show()
