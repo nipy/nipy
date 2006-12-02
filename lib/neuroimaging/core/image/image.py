@@ -55,16 +55,18 @@ class Image(object):
             valid = getformats(url)
         else:
             valid = [format]
+        errors = {}
         for format in valid:
             try:
                 return format(filename=url,
                               datasource=datasource, mode=mode,
                               grid=grid, **keywords)
             except Exception, e:
-                #print format, e
-                pass
+                errors[format] = e
 
-        raise NotImplementedError, 'no valid reader found for URL %s' % url
+        raise NotImplementedError, 'no valid reader found for URL %s\n%s' % \
+              (url, \
+              "\n".join(["%s: %s\n%s" % (str(format), str(msg.__class__), str(msg)) for format, msg in errors.items()]))
 
     def __init__(self, image, datasource=DataSource(), grid=None, **keywords):
         '''
