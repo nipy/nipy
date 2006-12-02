@@ -29,11 +29,11 @@ class Iterator(object):
         Create an Iterator for an image
 
         @param img: The image to be iterated over
-        @oaram type: L{Image}
+        @type img: L{Image}
         @param mode: The mode to run the iterator in.
             'r' - read-only (default)
             'w' - read-write
-        @param type: C{string}
+        @type mode: C{string}
         """
         self.set_img(img)
         self.mode = mode
@@ -125,6 +125,10 @@ class SliceIterator(Iterator):
         @param axis: The index of the axis (or axes) to be iterated over. If
             a list is supplied, the axes are iterated over slowest to fastest.
         @type axis: C{int} or C{list} of C{int}.
+        @param mode: The mode to run the iterator in.
+            'r' - read-only (default)
+            'w' - read-write
+        @type mode: C{string}
         """
         try:
             # we get given axes slowest changing to fastest, but we want
