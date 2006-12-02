@@ -8,7 +8,8 @@ from neuroimaging.core.image.image import Image, ImageSequenceIterator
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.formats.analyze import Analyze
 
-from neuroimaging.core.reference.iterators import ParcelIterator, SliceParcelIterator
+from neuroimaging.core.reference.iterators import ParcelIterator, \
+     SliceParcelIterator, SliceIterator
 
 
 class ImageTest(unittest.TestCase):
@@ -93,6 +94,27 @@ class ImageTest(unittest.TestCase):
     def test_iter(self):
         for i in self.img.slice_iterator():
             self.assertEquals(i.shape, (109,91))
+
+    def test_iter2(self):
+        for i in self.img.iterate(SliceIterator(None, axis=0)):
+            self.assertEquals(i.shape, (109,91))
+
+    def test_iter3(self):
+        self.assertRaises(NotImplementedError, iter, self.img)
+
+    def test_iter4(self):
+        tmp = Image(N.zeros(self.img.shape), mode='w')
+        iterator = SliceIterator(self.img)
+        tmp.from_slice_iterator(iterator)
+        N.testing.assert_almost_equal(tmp[:], self.img[:])
+
+    def test_iter5(self):
+        tmp = Image(N.zeros(self.img.shape), mode='w')
+        iterator1 = SliceIterator(self.img)
+        iterator2 = SliceIterator(None)
+        tmp.from_iterator(iterator1, iterator2)
+        N.testing.assert_almost_equal(tmp[:], self.img[:])
+
 
     def test_set_next(self):
         write_img = Image("test_write.hdr", repository, grid=self.img.grid, format=Analyze,
