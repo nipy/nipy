@@ -35,15 +35,15 @@ out_images = [Image('t_%04d.nii' % i, mode='w', grid=images[i-6].grid,
                     clobber=True) for i in con_nos]
 
 # Make slice iterators for output images
-out_iters = [img.slices(mode='w') for img in out_images]
+out_iters = [img.slice_iterator(mode='w') for img in out_images]
 
 for i, cur_image in enumerate(images):
 
     # collect slice iterators for all input images but the current image
-    iters = [img.slices() for img in images if img is not cur_image]
+    iters = [img.slice_iterator() for img in images if img is not cur_image]
 
     # Iterate over the slices of the current image
-    for data in cur_image.slices():
+    for data in cur_image.slice_iterator():
         # Get matching slice from all other images
         out = N.array([it.next() for it in iters])
         # Calculate t value
