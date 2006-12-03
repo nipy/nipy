@@ -120,7 +120,6 @@ class Analyze(bin.BinaryFormat):
         clobber = allowed to clobber?
         usemat = use mat file?
         """
-
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.mat_file = self.filebase + ".mat"
         self.clobber = keywords.get('clobber', False)
@@ -274,8 +273,10 @@ class Analyze(bin.BinaryFormat):
 
     def __del__(self):
         if hasattr(self, 'data'):
-            if isinstance(self.data, memmap_type):
+            try:
                 self.data.sync()
+            except: # what do we expect to go wrong here?
+                pass
             del self.data
 
 
