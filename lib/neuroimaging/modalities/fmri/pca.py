@@ -2,7 +2,7 @@
 This module provides a class for principal components analysis (PCA).
 
 PCA is an orthonormal, linear transform (i.e., a rotation) that maps the
-data to a new coordinate system such that the  maximal variability of the
+data to a new coordinate system such that the maximal variability of the
 data lies on the first coordinate (or the first principal component), the
 second greatest variability is projected onto the second coordinate, and
 so on.  The resulting data has unit covariance (i.e., it is decorrelated).

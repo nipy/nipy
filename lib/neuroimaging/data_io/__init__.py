@@ -3,7 +3,11 @@ Package contains generic functions for data input/output. This includes
 methods for accessing file systems and network resources.
 """
 
-import os, gzip, bz2
+import os
+import gzip
+import bz2
+from tempfile import mkstemp
+
 from urllib2 import urlopen
 from urlparse import urlparse
 
@@ -80,6 +84,10 @@ class Cache (object):
         if not self.path.exists():
             ensuredirs(self.path)
 
+    def tempfile(self,suffix='', prefix=''):
+        ''' Return an temporary file name in the cache'''
+        fd, fname = mkstemp(suffix, prefix, self.path)
+        return fname
 
     def filepath(self, uri):
         """

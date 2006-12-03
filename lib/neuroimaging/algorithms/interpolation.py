@@ -3,10 +3,10 @@ Image interpolators using ndimage.
 """
 
 import os
+import numpy as N
 
 from scipy import ndimage
 from neuroimaging.data_io import Cache
-import numpy as N
 
 
 class ImageInterpolator(object):
@@ -28,7 +28,7 @@ class ImageInterpolator(object):
             data = N.nan_to_num(self.image.readall())
 
         if not hasattr(self, 'datafile'):
-            self.datafile = file(Cache().filename(".tmp_image"), 'wb')
+            self.datafile = file(Cache().tempfile(),mode='wb')
         else:
             self.datafile = file(self.datafile.name, 'wb')
         
