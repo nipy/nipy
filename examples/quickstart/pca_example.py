@@ -22,18 +22,18 @@ frame = fmridata.frame(0)
 mask = Image(N.greater(frame[:], 500).astype(N.float64), grid=frame.grid)
 
 # Fit PCAmontage which allows you to visualize the results
-p = PCAmontage(fmridata, mask=mask)
-p.fit()
+pca_montage = PCAmontage(fmridata, mask=mask)
+pca_montage.fit()
 
 # Return calculated output PCA images into image object list
 # Write images to disk
-output = p.images(which=range(4))
+output = pca_montage.images(which=range(4))
 for i, img in enumerate(output):
     fname = 'pca_component_%04d.nii' % i
     img.tofile(fname, clobber=True)
     
 # View the results
 # compare with "http://www.math.mcgill.ca/keith/fmristat/figs/figpca1.jpg"
-p.time_series()
-p.montage()
+pca_montage.time_series()
+pca_montage.montage()
 pylab.show()

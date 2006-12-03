@@ -1,9 +1,9 @@
 #!/bin/env python
 """
 This quickstart example shows you how to setup a model formula
-for an fMRI experiment.
+for an fMRI experimentm, including drift terms, and interactions
 
-This example only sets up the model, and does not estimate it
+The example only sets up the model, and does not estimate it
 """
 
 import pylab
@@ -45,8 +45,8 @@ def normalize(x):
 for i in range(4,7):
     pylab.plot(T,normalize(drift[i](time=T)))
 
-a = pylab.gca()
-a.set_ylim([-0.1,1.1])
+ax = pylab.gca()
+ax.set_ylim([-0.1,1.1])
 pylab.show()
 
 """

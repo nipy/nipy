@@ -1,9 +1,7 @@
 #!/bin/env python
 """
-This quickstart example shows you how to setup a model formula
-for an fMRI experiment.
-
-This example only sets up the model, and does not estimate it
+This quickstart example shows how you set up regressors for an FMRI
+design, and convolve them with basis functions such as a canonical HRF
 """
 
 import pylab
