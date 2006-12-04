@@ -80,7 +80,7 @@ class GridTest(unittest.TestCase):
         for i in ParcelIterator(self.img, parcelmap, parcelseq):
             pass
 
-        parcelseq = ((1,), (1,2), (0,)) + ((0,),)*(len(parcelmap)-3)
+        parcelseq = (1, (1,2), 0) + (0,)*(len(parcelmap)-3)
         for i in SliceParcelIterator(self.img, parcelmap, parcelseq):
             pass
 

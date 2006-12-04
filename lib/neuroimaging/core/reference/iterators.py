@@ -120,7 +120,12 @@ class SliceIterator(Iterator):
     iteration.
     """
 
-    def __init__(self, img, mode='r', axis=0):
+    def __init__(self, img, axis=0, mode='r'):
+        """
+        @param axis: The index of the axis (or axes) to be iterated over. If
+            a list is supplied, the axes are iterated over slowest to fastest.
+        @type axis: C{int} or C{list} of {int}.
+        """
         try:
             # we get given axes slowest changing to fastest, but we want
             # to store them the other way round.
@@ -147,8 +152,8 @@ class SliceIterator(Iterator):
 
             # set up a full set of slices for the image, to be modified
             # at each iteration
-            self.slices = N.asarray([slice(0, shape, 1) for shape in
-                                     self.shape])
+            self.slices = [slice(0, shape, 1) for shape in self.shape]
+
 
     def _next(self):
 
@@ -156,12 +161,11 @@ class SliceIterator(Iterator):
             raise StopIteration
 
         for (ax, div, mod) in self.divmod:
-            self.slices[ax] = slice((self.n / div) % mod,
-                                    ((self.n / div) % mod) + 1, 1)
+            x = self.n / div % mod
+            self.slices[ax] = slice(x, x+1, 1)
 
-        ret = SliceIteratorItem(self.img, list(self.slices))
         self.n += 1
-        return ret
+        return SliceIteratorItem(self.img, self.slices)
 
 
     def copy(self, img):
@@ -190,9 +194,41 @@ class SliceIteratorItem(IteratorItem):
 
 
 class ParcelIterator(Iterator):
+    """
+    This class is used to iterate over different regions of an image.
+    A C{parcelmap} is used to define the regions and a C{parcelseq} is used
+    to define the order in which the regions are iterated over.
 
+    >>> img = N.arange(3*3)
+    >>> img = img.reshape((3, 3))
+    >>> pm = [[1,2,1],
+    ...       [3,4,3],
+    ...       [1,2,1]]
+    >>> ps = [(1,), (2,), (3,), (4,), (1,4), (2,3,4)]
+    >>> for x in ParcelIterator(img, pm, ps):
+    ...     print x
+    ... 
+    [0 2 6 8]
+    [1 7]
+    [3 5]
+    [4]
+    [0 2 4 6 8]
+    [1 3 4 5 7]
+    """
     
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
+        """
+
+        @param parcelmap: This is an C{int} array of the same shape as C{img}.
+           The different values of the array define different regions in the
+           image. For example, all the 0s define a region, all the 1s define
+           another region.
+        @param parcelseq: This is an array of integers or tuples of integers,
+           which define the order to iterate over the regions. Each tuple
+           can consist of one or more different integers. The union of the
+           regions defined in C{parcelmap} by these values is the region
+           taken at each iteration.
+        """
         Iterator.__init__(self, img, mode)
         self.parcelmap = N.asarray(parcelmap)
         self._prep_seq(parcelseq)
@@ -200,10 +236,16 @@ class ParcelIterator(Iterator):
         self.iterator_item = ParcelIteratorItem
 
     def _prep_seq(self, parcelseq):
-        if parcelseq is not None: 
-            self.parcelseq = tuple(parcelseq)
-        else:
-            self.parcelseq = N.unique(self.parcelmap.flat)
+        if parcelseq is None:
+            parcelseq = N.unique(self.parcelmap.flat)
+        self.parcelseq = list(parcelseq)
+        for i, label in enumerate(self.parcelseq):
+            try:
+                len(label)
+            except:
+                label = (label,)
+            self.parcelseq[i] = label
+
 
     def __iter__(self):
         self._labeliter = iter(self.parcelseq)
@@ -215,12 +257,6 @@ class ParcelIterator(Iterator):
 
     def _get_wherelabel(self):
         label = self._labeliter.next()
-        try:
-            len(label)
-        except:
-            label = (label,)
-
-
         wherelabel = reduce(operator.or_,
           [N.equal(self.parcelmap, lbl) for lbl in label])
         return wherelabel, label
@@ -256,7 +292,10 @@ class ParcelIteratorItem(IteratorItem):
 
 
 class fMRIParcelIterator(ParcelIterator):
-
+    """
+    This class works in much the same way as the L{ParcelIterator} except
+    that 
+    """
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
         ParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
         self.iterator_item = fMRIParcelIteratorItem
@@ -287,7 +326,9 @@ class SliceParcelIterator(ParcelIterator):
         self.iterator_item = SliceParcelIteratorItem
 
     def _prep_seq(self, parcelseq):
-        self.parcelseq = [tuple(ps) for ps in parcelseq]
+        if parcelseq is None:
+            raise ValueError, "parcelseq cannot be None"
+        ParcelIterator._prep_seq(self, parcelseq)
 
     def _next(self):
         if self.i >= self.max:            
@@ -336,6 +377,4 @@ class fMRISliceParcelIteratorItem(IteratorItem):
     def set(self, value):
         self.slice = self.slice.reshape(self.img.shape[2:])
         self.img[:,self.i,self.slice] = value
-
-
 

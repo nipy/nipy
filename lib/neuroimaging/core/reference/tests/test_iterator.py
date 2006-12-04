@@ -81,7 +81,7 @@ class IteratorTest(unittest.TestCase):
         parcelmap[1,2,1] = 2
         parcelmap[2,3,2] = 2
         parcelmap[0,1,0] = 2
-        parcelseq = ((0,), (1,), (2,), (3,))
+        parcelseq = (0, 1, 2, 3)
         expected = [N.product(self.img3.shape) - 6, 3, 3, 0]
         iterator = ParcelIterator(self.img3, parcelmap, parcelseq)
         for i, slice_ in enumerate(iterator):
@@ -100,7 +100,7 @@ class IteratorTest(unittest.TestCase):
         parcelmap[1,2,1] = 2
         parcelmap[2,3,2] = 2
         parcelmap[0,1,0] = 2
-        parcelseq = ((0,), (1,), (2,), (3,))
+        parcelseq = (0, 1, 2, 3)
         expected = [N.product(self.img3.shape) - 6, 3, 3, 0]
         iterator = ParcelIterator(self.img3, parcelmap, parcelseq, mode='w')
 
@@ -134,7 +134,7 @@ class IteratorTest(unittest.TestCase):
         parcelmap[1,2,1] = 2
         parcelmap[2,3,2] = 2
         parcelmap[0,1,0] = 2
-        parcelseq = ((0,), (1,), (2,), (3,))
+        parcelseq = (0, 1, 2, 3)
         expected = [N.product(self.img3.shape) - 6, 3, 3, 0]
         iterator = ParcelIterator(self.img3, parcelmap, parcelseq)
         tmp = Image(self.img3)
@@ -159,7 +159,7 @@ class IteratorTest(unittest.TestCase):
         parcelmap[1,2,1] = 2
         parcelmap[2,3,2] = 2
         parcelmap[0,1,0] = 2
-        parcelseq = ((0,), (1,), (2,), (3,))
+        parcelseq = (0, 1, 2, 3)
         
         expected = [N.product(self.fmri_img.shape[1:]) - 6, 3, 3, 0]
         iterator = fMRIParcelIterator(self.fmri_img, parcelmap, parcelseq)
@@ -179,7 +179,7 @@ class IteratorTest(unittest.TestCase):
         parcelmap[1,2,1] = 2
         parcelmap[2,3,2] = 2
         parcelmap[0,1,0] = 2
-        parcelseq = ((0,), (1,), (2,), (3,))
+        parcelseq = (0, 1, 2, 3)
         expected = [N.product(self.fmri_img.shape[1:]) - 6, 3, 3, 0]
         iterator = fMRIParcelIterator(self.fmri_img, parcelmap, parcelseq, mode='w')
 
@@ -212,7 +212,7 @@ class IteratorTest(unittest.TestCase):
         parcelmap[1,2,1] = 2
         parcelmap[2,3,2] = 2
         parcelmap[0,1,0] = 2
-        parcelseq = ((0,), (1,), (2,), (3,))
+        parcelseq = (0, 1, 2, 3)
         expected = [N.product(self.fmri_img.shape[1:]) - 6, 3, 3, 0]
         iterator = fMRIParcelIterator(self.fmri_img, parcelmap, parcelseq)
         tmp = fMRIImage(self.fmri_img)
@@ -229,18 +229,21 @@ class IteratorTest(unittest.TestCase):
 
     def test_sliceparcel(self):
         parcelmap = N.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
-        parcelseq = ((1, 2), (0,), (2,))
+        parcelseq = ((1, 2), 0, 2)
         iterator = SliceParcelIterator(self.img3, parcelmap, parcelseq)
         for i, slice_ in enumerate(iterator):
             pm = parcelmap[i]
             ps = parcelseq[i]
-            x  = len([n for n in pm if n in ps])
+            try:
+                x = len([n for n in pm if n in ps])
+            except TypeError:
+                x = len([n for n in pm if n == ps])
             self.assertEqual(x, slice_.shape[0])
             self.assertEqual(self.img3.shape[2:], list(slice_.shape[1:]))
 
     def test_sliceparcel_copy(self):
         parcelmap = N.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
-        parcelseq = ((1, 2), (0,), (2,))
+        parcelseq = ((1, 2), 0, 2)
         iterator = SliceParcelIterator(self.img3, parcelmap, parcelseq)
 
         new_iterator = iterator.copy(self.img4)
@@ -248,18 +251,24 @@ class IteratorTest(unittest.TestCase):
         for i, slice_ in enumerate(new_iterator):
             pm = parcelmap[i]
             ps = parcelseq[i]
-            x  = len([n for n in pm if n in ps])
+            try:
+                x = len([n for n in pm if n in ps])
+            except TypeError:
+                x = len([n for n in pm if n == ps])
             self.assertEqual(x, slice_.shape[0])
             self.assertEqual(self.img4.shape[2:], list(slice_.shape[1:]))
 
     def test_sliceparcel_write(self):
         parcelmap = N.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
-        parcelseq = ((1, 2), (0,), (2,))
+        parcelseq = ((1, 2), 0, 2)
         iterator = SliceParcelIterator(self.img3, parcelmap, parcelseq, mode='w')
         for i, slice_ in enumerate(iterator):
             pm = parcelmap[i]
             ps = parcelseq[i]
-            x  = len([n for n in pm if n in ps])
+            try:
+                x = len([n for n in pm if n in ps])
+            except TypeError:
+                x = len([n for n in pm if n == ps])
             shape = (x, self.img3.shape[2])
             slice_.set(N.ones(shape))
 
@@ -267,7 +276,10 @@ class IteratorTest(unittest.TestCase):
         for i, slice_ in enumerate(iterator):
             pm = parcelmap[i]
             ps = parcelseq[i]
-            x  = len([n for n in pm if n in ps])
+            try:
+                x = len([n for n in pm if n in ps])
+            except TypeError:
+                x = len([n for n in pm if n == ps])
             self.assertEqual(x, slice_.shape[0])
             N.testing.assert_equal(N.ones((x ,self.img3.shape[2])), slice_)
 
@@ -277,12 +289,15 @@ class IteratorTest(unittest.TestCase):
         parcelmap = N.asarray([[[0,0,0,1,2,2]]*5,
                                [[0,0,1,1,2,2]]*5,
                                [[0,0,0,0,2,2]]*5])
-        parcelseq = ((1, 2), (0,), (2,))
+        parcelseq = ((1, 2), 0, 2)
         iterator = fMRISliceParcelIterator(self.fmri_img, parcelmap, parcelseq)
         for i, slice_ in enumerate(iterator):
             pm = parcelmap[i]
             ps = parcelseq[i]
-            x  = len([n for n in pm.flat if n in ps])
+            try:
+                x = len([n for n in pm.flat if n in ps])
+            except TypeError:
+                x = len([n for n in pm.flat if n == ps])
             self.assertEqual(x, slice_.shape[1])
             self.assertEqual(self.fmri_img.shape[0], slice_.shape[0])
 
@@ -290,13 +305,16 @@ class IteratorTest(unittest.TestCase):
         parcelmap = N.asarray([[[0,0,0,1,2,2]]*5,
                                [[0,0,1,1,2,2]]*5,
                                [[0,0,0,0,2,2]]*5])
-        parcelseq = ((1, 2), (0,), (2,))
+        parcelseq = ((1, 2), 0, 2)
         iterator = fMRISliceParcelIterator(self.fmri_img, parcelmap, parcelseq, mode='w')
 
         for i, slice_ in enumerate(iterator):
             pm = parcelmap[i]
             ps = parcelseq[i]
-            x  = len([n for n in pm.flat if n in ps])
+            try:
+                x = len([n for n in pm.flat if n in ps])
+            except TypeError:
+                x = len([n for n in pm.flat if n == ps])
             value = [i*N.arange(x) for i in range(self.fmri_img.shape[0])]
             slice_.set(value)
 
@@ -304,7 +322,10 @@ class IteratorTest(unittest.TestCase):
         for i, slice_ in enumerate(iterator):
             pm = parcelmap[i]
             ps = parcelseq[i]
-            x  = len([n for n in pm.flat if n in ps])
+            try:
+                x = len([n for n in pm.flat if n in ps])
+            except TypeError:
+                x = len([n for n in pm.flat if n == ps])
             value = [i*N.arange(x) for i in range(self.fmri_img.shape[0])]
             self.assertEqual(x, slice_.shape[1])
             self.assertEqual(self.fmri_img.shape[0], slice_.shape[0])
