@@ -79,20 +79,13 @@ class Iterator(object):
     def copy(self, img):
         """
         Create a copy of this iterator for a new image.
+        The new iterator starts from the beginning, it does not get
+        initialised to the current position of the original iterator.
 
         @param img: The image to be used with the new iterator
         @type img: L{Image}
         """
-        iterator = self.__class__(img)
-        self._copy_to(iterator)
-        iterator.set_img(img)
-        return iterator
-
-    def _copy_to(self, iterator):
-        """
-        This method handles custom requirements of subclasses of Iterator.
-        """
-        iterator.mode = self.mode
+        return self.__class__(img, mode=self.mode)
 
 class IteratorItem(object):
     """
@@ -171,10 +164,16 @@ class SliceIterator(Iterator):
         return ret
 
 
-    def _copy_to(self, iterator):
-        Iterator._copy_to(self, iterator)
-        iterator.axis = self.axis
-        iterator.n = self.n
+    def copy(self, img):
+        """
+        Create a copy of this iterator for a new image.
+        The new iterator starts from the beginning, it does not get
+        initialised to the current position of the original iterator.
+
+        @param img: The image to be used with the new iterator
+        @type img: L{Image}
+        """
+        return self.__class__(img, axis=self.axis, mode=self.mode)
 
 
 
@@ -226,11 +225,18 @@ class ParcelIterator(Iterator):
           [N.equal(self.parcelmap, lbl) for lbl in label])
         return wherelabel, label
 
+
     def copy(self, img):
-        iterator = self.__class__(img, self.parcelmap, self.parcelseq)
-        self._copy_to(iterator)
-        iterator.set_img(img)
-        return iterator
+        """
+        Create a copy of this iterator for a new image.
+        The new iterator starts from the beginning, it does not get
+        initialised to the current position of the original iterator.
+
+        @param img: The image to be used with the new iterator
+        @type img: L{Image}
+        """
+        return self.__class__(img, self.parcelmap, self.parcelseq,
+                              mode=self.mode)
 
 
 class ParcelIteratorItem(IteratorItem):
@@ -293,10 +299,6 @@ class SliceParcelIterator(ParcelIterator):
         self.i += 1
         return ret
     
-
-    def _copy_to(self, iterator):
-        ParcelIterator._copy_to(self, iterator)
-        iterator.i = self.i
 
 
 class SliceParcelIteratorItem(IteratorItem):
