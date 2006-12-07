@@ -34,6 +34,11 @@ class IteratorTest(unittest.TestCase):
 
         N.testing.assert_equal(item.get(), value)
 
+    def test_base_class_copy(self):
+        iterator = Iterator(self.img)
+        new_iterator = iterator.copy(self.img)
+        self.assertEquals(iterator.mode, new_iterator.mode)
+        self.assertEquals(iterator.img, new_iterator.img)
 
     def test_read_slices(self):
         for slice_ in self.img.slice_iterator():
@@ -240,6 +245,12 @@ class IteratorTest(unittest.TestCase):
                 x = len([n for n in pm if n == ps])
             self.assertEqual(x, slice_.shape[0])
             self.assertEqual(self.img3.shape[2:], list(slice_.shape[1:]))
+
+    def test_sliceparcel1(self):
+        parcelmap = N.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
+        self.assertRaises(ValueError, SliceParcelIterator, self.img3, \
+                          parcelmap, None)
+        return
 
     def test_sliceparcel_copy(self):
         parcelmap = N.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
