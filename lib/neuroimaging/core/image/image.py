@@ -6,7 +6,6 @@ import types
 
 import numpy as N
 
-from neuroimaging import flatten
 from neuroimaging.data_io import DataSource, splitzipext
 from neuroimaging.data_io.formats import getformats, Format
 from neuroimaging.core.image.base_image import ArrayImage
@@ -66,7 +65,8 @@ class Image(object):
 
         raise NotImplementedError, 'no valid reader found for URL %s\n%s' % \
               (url, \
-              "\n".join(["%s: %s\n%s" % (str(format), str(msg.__class__), str(msg)) for format, msg in errors.items()]))
+              "\n".join(["%s: %s\n%s" % (str(format), str(msg.__class__), \
+                                str(msg)) for format, msg in errors.items()]))
 
     def __init__(self, image, datasource=DataSource(), grid=None, **keywords):
         '''
@@ -178,19 +178,54 @@ class Image(object):
 
 
     def slice_iterator(self, mode='r', axis=0):
-        ''' Return slice iterator for this image '''
+        ''' Return slice iterator for this image
+
+        @param axis: The index of the axis (or axes) to be iterated over. If
+            a list is supplied, the axes are iterated over slowest to fastest.
+        @type axis: C{int} or C{list} of C{int}.
+        @param mode: The mode to run the iterator in.
+            'r' - read-only (default)
+            'w' - read-write
+        @type mode: C{string}
+        '''
         return SliceIterator(self, mode=mode, axis=axis)
 
     def from_slice_iterator(self, other, axis=0):
+        """
+        Take an existing L{SliceIterator} and use it to set the values
+        in this image.
+
+        @param other: The iterator from which to take the values
+        @type other: L{SliceIterator}
+        @param axis: The axis to iterate over for this image.
+        @type axis: C{int} or C{list} of {int}
+        """
         it = iter(SliceIterator(self, mode='w', axis=axis))
         for s in other:
             it.next().set(s)
 
     def iterate(self, iterator):
+        """
+        Use the given iterator to iterate over this image.
+
+        @param iterator: The iterator to use
+        @type iterator: L{Iterator}
+        @returns: An iterator which can be used to iterate over this image.
+        """
         iterator.set_img(self)
-        return iterator
+        return iter(iterator)
 
     def from_iterator(self, other, iterator):
+        """
+        Set the values of this image, taking them from one iterator and using
+        another to do the iteration over itself.
+
+        @param other: The iterator from which to take the values
+        @type other: L{Iterator}
+        @param iterator: The iterator to use to iterate over self.
+        @type iterator: L{Iterator}
+
+        """
         iterator.mode = 'w'
         iterator.set_img(self)
         iter(iterator)
