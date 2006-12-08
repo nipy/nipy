@@ -3,7 +3,10 @@ These classes provide the most basic structures required by
 the Image class.
 """
 
+import os
+
 from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.data_io import DataSource
 
 class BaseImage(object):
     """
@@ -23,6 +26,9 @@ class BaseImage(object):
     def __setitem__(self, item, value):
         self.data[item] = value
 
+    def asfile(self):
+        raise NotImplementedError
+
 class ArrayImage (BaseImage):
     """A simple class to mimic an image file from an array."""
     def __init__(self, data, grid=None):
@@ -40,3 +46,6 @@ class ArrayImage (BaseImage):
         dtype = data.dtype
         BaseImage.__init__(self, data, grid, dtype)
 
+    def asfile(self):        
+        filename = DataSource().tempfile(".img", "nipy-")
+        return filename

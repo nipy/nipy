@@ -133,6 +133,8 @@ class Format(BaseImage):
         raise NotImplementedError
 
 
+    def asfile(self):
+        raise NotImplementedError
 
 format_modules = (
   "neuroimaging.data_io.formats.analyze",

@@ -165,6 +165,13 @@ class Image(object):
         return outimage
 
 
+    def asfile(self):
+        """ Return image filename corresponding to Image object data """
+        filename = self._source.asfile()
+        if type(self._source) == ArrayImage:
+            self.tofile(filename, clobber=True)
+        return filename
+
     def readall(self, clean=False): 
         """
         Read an entire Image object, returning a numpy, not another instance of

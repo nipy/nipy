@@ -177,6 +177,16 @@ class ImageTest(unittest.TestCase):
         filename = "test_image.py"
         self.assertRaises(NotImplementedError, Image, filename, repository, format=Analyze)
 
+    def test_asfile(self):
+        tmp_img = Image(self.img.asfile())
+        N.testing.assert_almost_equal(tmp_img[:], self.img[:])
+
+        array_img = Image(N.zeros((10, 10, 10)))
+        tmp_img = Image(array_img.asfile())
+        N.testing.assert_almost_equal(tmp_img[:], array_img[:])
+        
+
+
 class ImageSequenceIteratorTest(unittest.TestCase):
 
     def test_image_sequence_iterator(self):

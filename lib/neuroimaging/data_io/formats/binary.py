@@ -174,3 +174,5 @@ class BinaryFormat(Format):
         """
         raise NotImplementedError
             
+    def asfile(self):
+        return  self.datasource.filename(self._get_filenames()[1])

@@ -144,6 +144,10 @@ class DataSource (object):
         else:
             self._cache = Cache()
 
+    def tempfile(self,suffix='', prefix=''):
+        ''' Return an temporary file name in the cache'''
+        return self._cache.tempfile(suffix, prefix)
+
     def _possible_names(self, filename):
         names = (filename,)
         if not iszip(filename):
