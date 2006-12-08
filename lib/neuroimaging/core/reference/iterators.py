@@ -124,7 +124,7 @@ class SliceIterator(Iterator):
         """
         @param axis: The index of the axis (or axes) to be iterated over. If
             a list is supplied, the axes are iterated over slowest to fastest.
-        @type axis: C{int} or C{list} of {int}.
+        @type axis: C{int} or C{list} of C{int}.
         """
         try:
             # we get given axes slowest changing to fastest, but we want
@@ -184,6 +184,12 @@ class SliceIterator(Iterator):
 class SliceIteratorItem(IteratorItem):
 
     def get(self):
+        """
+        Return the slice of the image.
+
+        This calls the squeeze method on the array before returning to remove
+        any redundant dimensions.
+        """
         return self.img[self.slice].squeeze()
 
     def set(self, value):
@@ -197,15 +203,17 @@ class ParcelIterator(Iterator):
     """
     This class is used to iterate over different regions of an image.
     A C{parcelmap} is used to define the regions and a C{parcelseq} is used
-    to define the order in which the regions are iterated over.
+    to define the order in which the regions are iterated over. Each iteration
+    returns a 1 dimensional array containing the values of the image in the
+    specified region.
 
     >>> img = N.arange(3*3)
     >>> img = img.reshape((3, 3))
-    >>> pm = [[1,2,1],
+    >>> parcelmap = [[1,2,1],
     ...       [3,4,3],
     ...       [1,2,1]]
-    >>> ps = [(1,), (2,), (3,), (4,), (1,4), (2,3,4)]
-    >>> for x in ParcelIterator(img, pm, ps):
+    >>> parcelseq = [(1,), (2,), (3,), (4,), (1,4), (2,3,4)]
+    >>> for x in ParcelIterator(img, parcelmap, parcelseq):
     ...     print x
     ... 
     [0 2 6 8]
@@ -222,12 +230,14 @@ class ParcelIterator(Iterator):
         @param parcelmap: This is an C{int} array of the same shape as C{img}.
            The different values of the array define different regions in the
            image. For example, all the 0s define a region, all the 1s define
-           another region.
+           another region, etc.
         @param parcelseq: This is an array of integers or tuples of integers,
-           which define the order to iterate over the regions. Each tuple
-           can consist of one or more different integers. The union of the
-           regions defined in C{parcelmap} by these values is the region
-           taken at each iteration.
+           which define the order to iterate over the regions. Each element
+           of the array can consist of one or more different integers. The
+           union of the regions defined in C{parcelmap} by these values is
+           the region taken at each iteration.
+           If C{parcelseq} is C{None} then the iterator will go through one
+           region for each number in C{parcelmap}
         """
         Iterator.__init__(self, img, mode)
         self.parcelmap = N.asarray(parcelmap)
@@ -236,6 +246,14 @@ class ParcelIterator(Iterator):
         self.iterator_item = ParcelIteratorItem
 
     def _prep_seq(self, parcelseq):
+        """
+        This method does some preprocessing on the parcelseq. It can be
+        overrided to suit the needs of sub classes.
+
+        In this case it creates a parcelseq from the parcelmap if none
+        was supplied. Otherwise it goes through and converts lone integers
+        in the list to tuples, as this is what is needed in _get_wherelabel.
+        """
         if parcelseq is None:
             parcelseq = N.unique(self.parcelmap.flat)
         self.parcelseq = list(parcelseq)
