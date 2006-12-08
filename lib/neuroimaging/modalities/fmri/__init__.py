@@ -3,8 +3,6 @@ import numpy as N
 
 from neuroimaging import flatten
 from neuroimaging.core.image.image import Image
-from neuroimaging.modalities.fmri.iterators import fMRISliceIterator,\
-  fMRISliceParcelIterator
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.iterators import ParcelIterator
@@ -95,9 +93,30 @@ class fMRIImage(Image):
 
 
     def slice_iterator(self, mode='r', axis=1):
+        ''' Return slice iterator for this image. By default we iterate
+        over the C{axis=1} instead of C{axis=0} as for the L{Image} class.
+
+        @param axis: The index of the axis (or axes) to be iterated over. If
+            a list is supplied, the axes are iterated over slowest to fastest.
+        @type axis: C{int} or C{list} of C{int}.
+        @param mode: The mode to run the iterator in.
+            'r' - read-only (default)
+            'w' - read-write
+        @type mode: C{string}
+        '''
         return SliceIterator(self, mode=mode, axis=axis)
 
     def from_slice_iterator(self, other, axis=1):
+        """
+        Take an existing L{SliceIterator} and use it to set the values
+        in this image. By default we iterate over the C{axis=1} for this image
+        instead of C{axis=0} as for the L{Image} class.
+
+        @param other: The iterator from which to take the values
+        @type other: L{SliceIterator}
+        @param axis: The axis to iterate over for this image.
+        @type axis: C{int} or C{list} of {int}
+        """
         it = iter(SliceIterator(self, mode='w', axis=axis))
         for s in other:
             it.next().set(s)
