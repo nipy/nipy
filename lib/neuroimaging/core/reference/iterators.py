@@ -13,13 +13,6 @@ to read and write values from and to the image. The iterator mode is controlled
 by the keyword argument mode in the Iterator constructor.
 """
 
-#
-# This is demonstration code to help thrash out ideas for the new iterator
-# proposal. This will most likely change and shouldn't be used. See the
-# end of the file for example usage.
-#
-# See http://projects.scipy.org/neuroimaging/ni/wiki/ImageIterators
-
 import operator
 
 import numpy as N
@@ -102,27 +95,46 @@ class Iterator(object):
         iterator.mode = self.mode
 
 class IteratorItem(object):
+    """
+    This class provides the interface for objects returned by the
+    L{Iterator._next()} method. This is the class which actually
+    interacts with the image data itself.
+    """
 
     def __init__(self, img, slice_):
+        """ Create the IteratorItem for a given item and slice
+        """
         self.img = img
         self.slice = slice_
 
     def get(self):
+        """
+        Return the slice of the image.
+        """
         return self.img[self.slice]
 
     def set(self, value):
+        """
+        Set the value of the slice of the image.
+        """
         self.img[self.slice] = value
 
 
 class SliceIterator(Iterator):
+    """
+    This class provides an iterator for iterating over n axes
+    of the image, returning ndim-n dimensional slices of the image at each
+    iteration.
+    """
 
-    def __init__(self, img, mode='r', axis=0, step=1):
+    def __init__(self, img, mode='r', axis=0):
         try:
+            # we get given axes slowest changing to fastest, but we want
+            # to store them the other way round.
             self.axis = list(axis)[::-1]
         except TypeError:
             self.axis = [axis]
         self.n = 0
-        self.step = step
         Iterator.__init__(self, img, mode)
 
 
@@ -130,17 +142,27 @@ class SliceIterator(Iterator):
         Iterator.set_img(self, img)
         if img is not None:
             self.shape = self.img.shape
+
+            # the total number of iterations to be made
             self.max = N.product(N.asarray(self.shape)[self.axis])
+
+            # calculate the 'divmod' paramter which is used to work out
+            # which index to use to use for each axis during iteration
             mods = N.cumprod(N.asarray(self.shape)[self.axis])            
             divs = [1] + list(mods[:-1])
-            self.divmod = zip(divs, mods)
-            self.slices = N.asarray([slice(0, shape, self.step) for shape in self.shape])
+            self.divmod = zip(self.axis, divs, mods)
+
+            # set up a full set of slices for the image, to be modified
+            # at each iteration
+            self.slices = N.asarray([slice(0, shape, 1) for shape in
+                                     self.shape])
 
     def _next(self):
+
         if self.n >= self.max:
             raise StopIteration
 
-        for ax, (div, mod) in zip(self.axis, self.divmod):
+        for (ax, div, mod) in self.divmod:
             self.slices[ax] = slice((self.n / div) % mod,
                                     ((self.n / div) % mod) + 1, 1)
 
@@ -152,7 +174,6 @@ class SliceIterator(Iterator):
     def _copy_to(self, iterator):
         Iterator._copy_to(self, iterator)
         iterator.axis = self.axis
-        iterator.step = self.step
         iterator.n = self.n
 
 
