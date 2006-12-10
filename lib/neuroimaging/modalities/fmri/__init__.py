@@ -94,12 +94,10 @@ class fMRIImage(Image):
         return Image(data, grid=self.grid.subgrid(i), **keywords)
 
 
-    # Possible new iterator interface stuff. Not for general consumption
-    # just yet.    
-    def slices(self, mode='r', axis=1):
+    def slice_iterator(self, mode='r', axis=1):
         return SliceIterator(self, mode=mode, axis=axis)
 
-    def from_slices(self, other, axis=1):
+    def from_slice_iterator(self, other, axis=1):
         it = iter(SliceIterator(self, mode='w', axis=axis))
         for s in other:
             it.next().set(s)

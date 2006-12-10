@@ -140,10 +140,10 @@ class PCA(traits.HasTraits):
 
         if output_base is not None:
             outiters = [Image('%s_comp%d%s' % (output_base, i, self.ext),
-                                    grid=outgrid.copy(), mode='w').slices(mode='w') for i in which]
+                                    grid=outgrid.copy(), mode='w').slice_iterator(mode='w') for i in which]
         else:
             outiters = [Image(N.zeros(outgrid.shape, N.float64),
-                                    grid=outgrid.copy()).slices(mode='w') for i in which]
+                                    grid=outgrid.copy()).slice_iterator(mode='w') for i in which]
 
         first_slice = slice(0,self.image.shape[0])
         _shape = self.image.grid.shape

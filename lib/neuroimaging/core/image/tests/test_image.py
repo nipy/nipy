@@ -91,13 +91,13 @@ class ImageTest(unittest.TestCase):
 
 
     def test_iter(self):
-        for i in self.img.slices():
+        for i in self.img.slice_iterator():
             self.assertEquals(i.shape, (109,91))
 
     def test_set_next(self):
         write_img = Image("test_write.hdr", repository, grid=self.img.grid, format=Analyze,
                           mode='w', clobber=True)
-        I = write_img.slices('w')
+        I = write_img.slice_iterator('w')
         x = 0
         for slice in I:
             slice.set(N.ones((109, 91)))

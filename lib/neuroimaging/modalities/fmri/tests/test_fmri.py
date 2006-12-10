@@ -30,7 +30,7 @@ class fMRITest(unittest.TestCase):
 
     def test_iter(self):
         j = 0
-        for i in self.img.slices():
+        for i in self.img.slice_iterator():
             j += 1
             self.assertEquals(i.shape, (120,128,128))
             del(i); gc.collect()

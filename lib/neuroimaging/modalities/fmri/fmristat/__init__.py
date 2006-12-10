@@ -94,7 +94,7 @@ class fMRIStatOLS(LinearModelIterator):
 
         self.setup_output()
 
-        LinearModelIterator.__init__(self, fmri_image.slices(), outputs)
+        LinearModelIterator.__init__(self, fmri_image.slice_iterator(), outputs)
         
     def model(self):
         ftime = self.fmri_image.frametimes + self.tshift

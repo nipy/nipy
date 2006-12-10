@@ -177,13 +177,11 @@ class Image(object):
         return value
 
 
-    # Possible new iterator interface stuff. Not for general consumption
-    # just yet.    
-    def slices(self, mode='r', axis=0):
+    def slice_iterator(self, mode='r', axis=0):
         ''' Return slice iterator for this image '''
         return SliceIterator(self, mode=mode, axis=axis)
 
-    def from_slices(self, other, axis=0):
+    def from_slice_iterator(self, other, axis=0):
         it = iter(SliceIterator(self, mode='w', axis=axis))
         for s in other:
             it.next().set(s)
@@ -216,7 +214,7 @@ class ImageSequenceIterator(object):
 
     def __iter__(self): 
         """ Return self as an iterator. """
-        self.iters = [img.slices() for img in self.imgs]
+        self.iters = [img.slice_iterator() for img in self.imgs]
         return self
 
     def next(self):

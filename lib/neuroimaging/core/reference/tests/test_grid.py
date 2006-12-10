@@ -71,7 +71,7 @@ class GridTest(unittest.TestCase):
         
     def test_iterslices(self):
         for i in range(3):
-            self.assertEqual(len(list(self.img.slices(axis=i))), self.img.grid.shape[i])
+            self.assertEqual(len(list(self.img.slice_iterator(axis=i))), self.img.grid.shape[i])
         
         parcelmap = N.zeros(self.img.grid.shape)
         parcelmap[:3,:5,:4] = 1

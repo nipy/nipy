@@ -36,41 +36,41 @@ class IteratorTest(unittest.TestCase):
 
 
     def test_read_slices(self):
-        for slice_ in self.img.slices():
+        for slice_ in self.img.slice_iterator():
             self.assertEquals(slice_.shape, (20, 30))
 
-        for slice_ in self.img.slices(axis=1):
+        for slice_ in self.img.slice_iterator(axis=1):
             self.assertEquals(slice_.shape, (10, 30))
 
-        for slice_ in self.img.slices(axis=2):
+        for slice_ in self.img.slice_iterator(axis=2):
             self.assertEquals(slice_.shape, (10, 20))
 
     def test_write_slices(self):
-        for slice_ in self.img.slices(mode='w'):
+        for slice_ in self.img.slice_iterator(mode='w'):
             slice_.set(N.ones((20, 30)))
 
-        for slice_ in self.img.slices(axis=1, mode='w'):
+        for slice_ in self.img.slice_iterator(axis=1, mode='w'):
             slice_.set(N.ones((10, 30)))
 
-        for slice_ in self.img.slices(axis=2, mode='w'):
+        for slice_ in self.img.slice_iterator(axis=2, mode='w'):
             slice_.set(N.ones((10, 20)))
 
     def test_copy(self):
-        iterator = self.img.slices()
+        iterator = self.img.slice_iterator()
         iterator2 = iterator.copy(self.img2)
         for slice_ in iterator2:
             N.testing.assert_equal(slice_, N.ones((20, 30)))
 
 
     def test_multi_slice(self):
-        for slice_ in self.img.slices(axis=[0, 1]):
+        for slice_ in self.img.slice_iterator(axis=[0, 1]):
             self.assertEquals(slice_.shape, (30,))
 
-        for slice_ in self.img.slices(axis=[2, 1]):
+        for slice_ in self.img.slice_iterator(axis=[2, 1]):
             self.assertEquals(slice_.shape, (10,))
 
     def test_multi_slice_write(self):
-        for slice_ in self.img.slices(axis = [0, 1], mode='w'):
+        for slice_ in self.img.slice_iterator(axis = [0, 1], mode='w'):
             slice_.set(N.zeros((30,)))
 
     def test_parcel(self):
