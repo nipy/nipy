@@ -33,17 +33,17 @@ def _main():
     print img[:]
 
     # Slice using the image method interface
-    print "slicing with .slices() method"
-    for s in img.slices():
+    print "slicing with .slice_iterator() method"
+    for s in img.slice_iterator():
         print s, s.shape
 
     print "...and along axis=1"
-    for s in img.slices(axis=1):
+    for s in img.slice_iterator(axis=1):
         print s, s.shape
 
     print "...and writing along the y axis"
     y = 0
-    for s in img.slices(mode='w', axis=1):
+    for s in img.slice_iterator(mode='w', axis=1):
         s.set(y)
         y += 1
 
@@ -54,15 +54,15 @@ def _main():
 
 
     B = Image(N.zeros((3, 4, 5)))
-    B.from_slices(SliceIterator(img))
+    B.from_slice_iterator(SliceIterator(img))
     print B[:]
 
     B = Image(N.zeros((4, 3, 5)))
-    B.from_slices(SliceIterator(img), axis=1)
+    B.from_slice_iterator(SliceIterator(img), axis=1)
     print B[:]
 
     B = Image(N.zeros((3, 5, 4)))
-    B.from_slices(SliceIterator(img, axis=2), axis=1)
+    B.from_slice_iterator(SliceIterator(img, axis=2), axis=1)
     print B[:]
     
 
@@ -72,7 +72,7 @@ def _main():
     
 
     x = 0
-    for s in B.slices(mode='w'):
+    for s in B.slice_iterator(mode='w'):
         s.set(x)
         x += 1
 
@@ -87,7 +87,7 @@ def _main():
 
 
     y = 0
-    for s in B.slices(axis=1, mode='w'):
+    for s in B.slice_iterator(axis=1, mode='w'):
         s.set(y)
         y += 1
 
@@ -97,13 +97,13 @@ def _main():
     for n in i:
         print n
 
-    for s in img.slices(axis=[0,1]):
+    for s in img.slice_iterator(axis=[0,1]):
         print s
 
-    for s in img.slices(axis=[0,2]):
+    for s in img.slice_iterator(axis=[0,2]):
         print s
 
-    for s in img.slices(axis=[1,2]):
+    for s in img.slice_iterator(axis=[1,2]):
         print s
 
 
