@@ -6,6 +6,7 @@ from neuroimaging.core.reference.axis import space
 from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
 from neuroimaging.core.reference.iterators import ParcelIterator, SliceParcelIterator
+from neuroimaging.core.reference.mapping import Affine
 
 from neuroimaging.data_io.formats.analyze import Analyze
 from neuroimaging.utils.tests.data import repository
@@ -83,6 +84,10 @@ class GridTest(unittest.TestCase):
         parcelseq = (1, (1,2), 0) + (0,)*(len(parcelmap)-3)
         for i in SliceParcelIterator(self.img, parcelmap, parcelseq):
             pass
+
+    def test_from_affine(self):
+        a = Affine.identity()
+        g = SamplingGrid.from_affine(a)
 
 if __name__ == '__main__':
     unittest.main()
