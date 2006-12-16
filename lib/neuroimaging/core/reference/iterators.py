@@ -211,6 +211,8 @@ class ParcelIterator(Iterator):
     returns a 1 dimensional array containing the values of the image in the
     specified region.
 
+    >>> import numpy as N
+    >>> from neuroimaging.core.reference.iterators import ParcelIterator
     >>> img = N.arange(3*3)
     >>> img = img.reshape((3, 3))
     >>> parcelmap = [[1,2,1],
@@ -226,6 +228,7 @@ class ParcelIterator(Iterator):
     [4]
     [0 2 4 6 8]
     [1 3 4 5 7]
+    >>>
     """
     
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):

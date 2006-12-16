@@ -13,7 +13,7 @@ from neuroimaging import traits
 
 from neuroimaging.modalities.fmri import filters
 from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
-from neuroimaging.modalities.fmri.fmristat.utils import invertR
+from neuroimaging.modalities.fmri.fmristat.invert import invertR
 
 def glover2GammaDENS(peak_hrf, fwhm_hrf):
     alpha = N.power(peak_hrf / fwhm_hrf, 2) * 8 * N.log(2.0)
