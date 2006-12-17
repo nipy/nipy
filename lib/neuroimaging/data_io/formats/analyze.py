@@ -247,8 +247,10 @@ class Analyze(bin.BinaryFormat):
         # 1 - we're replacing all the data
         # 2 - the maximum of the given slice of data exceeds the
         #     global maximum under the current scaling
+        x = N.asarray(x)
         if x.shape == self.data.shape or \
                x.max() > (self.header['scale_factor']*self.data).max():
+            #FIXME: I'm not 100% sure that this is correct --timl
             scale = utils.scale_data(x, self.dtype,
                                      self.header['scale_factor'])
 
@@ -256,7 +258,6 @@ class Analyze(bin.BinaryFormat):
             if scale != self.header['scale_factor']:
                 self.header['scale_factor'] = scale
                 self.write_header(clobber=True)
-
 
         return N.round(x/self.header['scale_factor'])
 
