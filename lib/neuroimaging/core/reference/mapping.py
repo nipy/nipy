@@ -134,8 +134,10 @@ def fromurl(turl, ndim=3):
     """
     urlpipe = urllib.urlopen(turl)
     data = urlpipe.read()
-    if turl[-3:] in ['mat', 'txt']: return matfromstr(data, ndim=ndim)
-    elif turl[-3:] == 'xfm': return xfmfromstr(data, ndim=ndim)
+    if turl[-3:] in ['mat', 'txt']:
+        return matfromstr(data, ndim=ndim)
+    elif turl[-3:] == 'xfm':
+        return xfmfromstr(data, ndim=ndim)
 
 
 def isdiagonal(matrix, tol=1.0e-7):
