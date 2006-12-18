@@ -267,6 +267,16 @@ class MappingTest(unittest.TestCase):
         y = mapping.fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
         N.testing.assert_almost_equal(x, y, decimal=5)
 
+        z = mapping.fromurl('http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/example_func2highres.xfm')
+        N.testing.assert_almost_equal(z[0], [[-0.058193, -3.47651, 0.827575, 225.012],
+                                             [0.0612378, 0.658445, 4.01176, 37.1965],
+                                             [-2.11749, -0.0100964, 0.0288848, 129.901],
+                                             [0, 0, 0, 1]])
+        N.testing.assert_almost_equal(z[1], [[0.898438, 0, 0, 0],
+                                             [0, -1, 0, 256],
+                                             [0, 0, 1.42188, 0],
+                                             [0, 0, 0, 1]])
+
     def test_tofromfile(self):
         # FIXME: This will only work on linux (at a guess)
         self.mapping.tofile("/tmp/mapping.csv")

@@ -98,7 +98,11 @@ def matfromstr(tstr, ndim=3, delimiter=None):
 
 
 def xfmfromstr(tstr, ndim=3):
-    """Read a (ndim+1)x(ndim+1) transform matrix from a string."""
+    """Read a (ndim+1)x(ndim+1) transform matrix from a string.
+
+    The format being read is that used by the FLS group, for example
+    http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/example_func2highres.xfm
+    """
     tstr = tstr.split('\n')
     more = True
     data = []
