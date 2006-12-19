@@ -276,7 +276,7 @@ class Analyze(bin.BinaryFormat):
         if hasattr(self, 'data'):
             try:
                 self.data.sync()
-            except: # what do we expect to go wrong here?
+            except AttributeError:
                 pass
             del self.data
 
