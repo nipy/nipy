@@ -1,5 +1,7 @@
 import os, time
 
+print "WARNING: Running this program will involve downloading up to 3 gigs of data and takes a number of hours to run."
+
 ttoc = time.time()
 for subj in range(16):
 
