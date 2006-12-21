@@ -10,6 +10,7 @@ from neuroimaging.core.reference.mapping import Mapping, Affine
 
 from neuroimaging.core.reference.iterators import SliceIterator
 
+
 class fMRISamplingGrid(SamplingGrid):
 
     def __init__(self, shape, mapping, input_coords, output_coords):

@@ -4,6 +4,8 @@ This module provides definitions of various hemodynamic response functions (hrf)
 In particular, it provides Gary Glover's canonical HRF, AFNI's default HRF, and
 a spectral HRF.
 """
+
+
 import numpy as N
 import numpy.linalg as L
 
@@ -11,6 +13,7 @@ from neuroimaging import traits
 
 from neuroimaging.modalities.fmri import filters
 from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
+from neuroimaging.modalities.fmri.fmristat.utils import invertR
 
 def glover2GammaDENS(peak_hrf, fwhm_hrf):
     alpha = N.power(peak_hrf / fwhm_hrf, 2) * 8 * N.log(2.0)
@@ -52,7 +55,7 @@ class SpectralHRF(filters.Filter):
     names = traits.ListStr(['glover'])
 
     def __init__(self, input_hrf=canonical, spectral=True, **keywords):
-        filters.Filter.__init__(self, input_hrf, **keywords)
+        filters.Filter.__init__(self, input_hrf, names=self.names, **keywords)
         self.spectral = spectral
         if self.n != 1:
             raise ValueError, 'expecting one HRF for spectral decomposition'
@@ -96,7 +99,10 @@ class SpectralHRF(filters.Filter):
         """
 
         time = N.arange(lower, tmax, self.dt)
-        irf = self.IRF
+        if callable(self.IRF):
+            irf = self.IRF
+        else:
+            irf = self.IRF[0]
 
         H = []
         for i in range(delta.shape[0]):
@@ -144,4 +150,8 @@ class SpectralHRF(filters.Filter):
 
         if self.n == 1:
             self.IRF = self.IRF[0]
+
+        self.approx.theta, self.approx.inverse, self.approx.dinverse, self.approx.forward, self.approx.dforward = invertR(delta, self.approx.coef)
+        return approx
+
 

@@ -197,7 +197,7 @@ class FIR(Filter):
 
     def __init__(self, parameters):
         fns = [WaveFunction(start, duration, 1.0) for (start, duration) in parameters]
-        Filter.__init__(self, fns)
+        Filter.__init__(self, fns, names="FIR")
 
 def _test():
     import doctest
