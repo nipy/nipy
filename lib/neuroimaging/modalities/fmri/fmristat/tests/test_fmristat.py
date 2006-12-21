@@ -3,6 +3,8 @@ import unittest, os, gc, shutil
 import numpy as N
 from scipy.sandbox.models.contrast import Contrast
 
+from neuroimaging.utils.test_decorators import slow, data
+
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor,\
@@ -41,11 +43,14 @@ class fMRIStatTest(unittest.TestCase):
         self.formula = self.pain + self.drift
 
     def setUp(self):
+        self.setup_formula()
+
+    def data_setUp(self):
         frametimes = N.arange(120)*3.
         slicetimes = N.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
+
         self.img = fMRIImage("test_fmri.hdr", datasource=repository, frametimes=frametimes,
                                   slicetimes=slicetimes, usematfile=False)
-        self.setup_formula()
 
     def tearDown(self):
         shutil.rmtree('fmristat_run', ignore_errors=True)
@@ -54,6 +59,8 @@ class fMRIStatTest(unittest.TestCase):
 
 class TestSliceTimes(fMRIStatTest):
 
+    @slow
+    @data
     def test_model_slicetimes(self):
         OLS = fMRIStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes)
@@ -68,6 +75,8 @@ class TestSliceTimes(fMRIStatTest):
 
 class TestResid1(fMRIStatTest):
 
+    @slow
+    @data
     def test_model_resid1(self):
         self.img.slicetimes = None
         OLS = fMRIStatOLS(self.img, self.formula,
@@ -82,6 +91,8 @@ class TestResid1(fMRIStatTest):
 
 class TestResid2(fMRIStatTest):
 
+    @slow
+    @data
     def test_model_resid2(self):
         self.img.slicetimes = None
         OLS = fMRIStatOLS(self.img, self.formula,
@@ -96,6 +107,8 @@ class TestResid2(fMRIStatTest):
 
 class TestHRFDeriv(fMRIStatTest):
 
+    @slow
+    @data
     def test_hrf_deriv(self):
         self.IRF = glover_deriv
 
@@ -119,6 +132,8 @@ class TestHRFDeriv(fMRIStatTest):
         
 class TestContrast(fMRIStatTest):
 
+    @slow
+    @data
     def test_contrast(self):
         pain = Contrast(self.pain, self.formula, name='pain')
 

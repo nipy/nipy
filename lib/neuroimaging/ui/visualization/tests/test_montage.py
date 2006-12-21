@@ -2,6 +2,8 @@ import unittest, os
 
 import numpy as N
 
+from neuroimaging.utils.test_decorators import gui
+
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.interpolation import ImageInterpolator
@@ -22,6 +24,7 @@ class MontageTest(unittest.TestCase):
             self.y = N.unique(r[1].flat); self.y.sort()
             self.x = N.unique(r[2].flat); self.x.sort()
 
+        @gui
         def test_montage(self):
             rhoslices = {}
             vmax = float(self.img.readall().max()); vmin = float(self.img.readall().min())

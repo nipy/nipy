@@ -1,6 +1,8 @@
 import unittest, os
 import numpy as N
 
+from neuroimaging.utils.test_decorators import slow
+
 from neuroimaging.data_io.formats import analyze
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.image.image import Image
@@ -60,6 +62,7 @@ class AnalyzeReadTest(AnalyzeTest):
 
 class AnalyzeDataTypeTest(AnalyzeTest):
 
+    @slow
     def test_datatypes(self):
         for sctype in analyze.sctype2datatype.keys():
             
@@ -76,6 +79,7 @@ class AnalyzeDataTypeTest(AnalyzeTest):
         os.remove('out.hdr')
         os.remove('out.img')
 
+    @slow
     def test_datatypes2(self):
         for sctype in analyze.sctype2datatype.keys():
             for _sctype in analyze.sctype2datatype.keys():

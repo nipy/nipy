@@ -1,5 +1,7 @@
 import unittest
 
+from neuroimaging.utils.test_decorators import slow, data
+
 from neuroimaging.algorithms.onesample import ImageOneSample
 from neuroimaging.core.image.image import Image
 from neuroimaging.data_io.formats.analyze import Analyze
@@ -9,6 +11,11 @@ from neuroimaging.utils.tests.data import repository
 class OneSampleTest(unittest.TestCase):
 
 
+    def data_setUp(self):
+        pass
+    
+    @slow
+    @data
     def test_onesample1(self):
         im1 = Image('FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.hdr',
             repository, format=Analyze)

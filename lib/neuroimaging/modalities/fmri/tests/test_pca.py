@@ -2,6 +2,8 @@ import unittest, os
 
 import numpy as N
 
+from neuroimaging.utils.test_decorators import slow, data
+
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.modalities.fmri.pca import PCA
 from neuroimaging.core.image.image import Image
@@ -15,7 +17,9 @@ if PYLAB_DEF:
 class PCATest(unittest.TestCase):
 
     def setUp(self):
+        pass
 
+    def data_setUp(self):
         self.fmridata = fMRIImage("test_fmri.hdr", datasource=repository)
 
 
@@ -23,6 +27,8 @@ class PCATest(unittest.TestCase):
         self.mask = Image(N.greater(frame.readall(), 500).astype(N.float64), grid=frame.grid)
 
 class PCATestMask(PCATest):
+    @slow
+    @data
     def test_PCAmask(self):
 
         p = PCA(self.fmridata, mask=self.mask)
@@ -30,6 +36,8 @@ class PCATestMask(PCATest):
         output = p.images(which=range(4))
 
 class PCATestNoMask(PCATest):
+    @slow
+    @data
     def test_PCA(self):
 
         p = PCA(self.fmridata)
@@ -37,7 +45,10 @@ class PCATestNoMask(PCATest):
         output = p.images(which=range(4))
 
 if PYLAB_DEF:
+
     class PCATestMontageNoMask(PCATest):
+        @slow
+        @data
         def test_PCAmontage(self):
             p = PCAmontage(self.fmridata)
             p.fit()
@@ -48,6 +59,8 @@ if PYLAB_DEF:
             os.remove('image.png')
 
     class PCATestMontageMask(PCATest):
+        @slow
+        @data
         def test_PCAmontage_nomask(self):
             p = PCAmontage(self.fmridata, mask=self.mask)
             p.fit()

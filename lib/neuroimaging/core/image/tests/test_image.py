@@ -4,6 +4,8 @@ import glob
 
 import numpy as N
 
+from neuroimaging.utils.test_decorators import slow
+
 from neuroimaging.core.image.image import Image, ImageSequenceIterator
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.formats.analyze import Analyze
@@ -125,6 +127,7 @@ class ImageTest(unittest.TestCase):
         N.testing.assert_almost_equal(tmp[:], self.img[:])
 
 
+    @slow
     def test_set_next(self):
         write_img = Image("test_write.hdr", repository, grid=self.img.grid, format=Analyze,
                           mode='w', clobber=True)
@@ -164,6 +167,7 @@ class ImageTest(unittest.TestCase):
 
         self.assertEquals(v, N.product(test.grid.shape))
 
+    @slow
     def test_parcels4(self):
         rho = Image("rho.hdr", repository, format=Analyze)
         parcelmap = (rho.readall() * 100).astype(N.int32)
@@ -198,6 +202,7 @@ class ImageTest(unittest.TestCase):
 
 class ImageSequenceIteratorTest(unittest.TestCase):
 
+    @slow
     def test_image_sequence_iterator(self):
         base_img = Image("avg152T1.img", repository, format=Analyze)
         imgs = [Image(base_img) for _ in range(10)]

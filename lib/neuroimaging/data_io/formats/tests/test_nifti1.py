@@ -3,6 +3,8 @@ import unittest, os, copy
 import numpy as N
 import numpy.random as R
 
+from neuroimaging.utils.test_decorators import slow
+
 from neuroimaging.core.image.image import Image
 from neuroimaging.data_io.formats import nifti1
 from neuroimaging.utils.tests.data import repository
@@ -136,6 +138,7 @@ class NiftiDataTypeTest(NiftiTest):
             N.testing.assert_almost_equal(new[:], _out)
         os.remove('out.nii')
 
+    @slow
     def test_datatypes2(self):
         for sctype in nifti1.sctype2datatype.keys():
             for _sctype in nifti1.sctype2datatype.keys():

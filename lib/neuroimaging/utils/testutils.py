@@ -50,6 +50,7 @@ def get_package_tests(packname):
     Retrieve all TestCases defined for the given package.
     @returns {testname:testclass,...}
     """
+
     package = import_from(packname, "tests")
     if not package: return {}
     modules = get_package_modules(package)

@@ -28,8 +28,14 @@ class TestTool (OptionParser):
       Option('-d', '--doctest', dest="doctest", action="store_true",
         default=False, help="run available doctests"),
       Option('', '--nounit', dest="unit", action="store_false",
-        default=True, help="do not run unittests"),)
+        default=True, help="do not run unittests"),
+      Option('', '--slow', dest=None, action="store_true", default=False),
+      Option('', '--gui', dest=None, action="store_true", default=False),
+      Option('', '--data', dest=None, action="store_true", default=False),
+      Option('', '--all', dest=None, action="store_true", default=False),
+      )
 
+    
 
     def __init__(self, *args, **kwargs):
         OptionParser.__init__(self, *args, **kwargs)
@@ -63,14 +69,13 @@ class TestTool (OptionParser):
 
     def run(self):
         options, args = self.parse_args()
-
         if options.list_tests:
             if len(args) > 1:
                 self.print_help()
                 sys.exit(0)
             self.list_tests(*args)
-        elif options.unit: self.run_tests(*args)
-
+        elif options.unit:
+            self.run_tests(*args)
         if options.doctest and len(args)<=1:
             self.run_doctests(*args)
 

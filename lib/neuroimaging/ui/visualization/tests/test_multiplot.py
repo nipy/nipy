@@ -2,6 +2,8 @@ import unittest
 
 import numpy as N
 
+from neuroimaging.utils.test_decorators import gui
+
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
@@ -25,18 +27,22 @@ class MultiPlotTest(unittest.TestCase):
             self.fnplot = MultiPlot(fn, tmin=0, tmax=10., dt=0.1, title='Testing')
             self.dataplot = MultiPlot(fn(N.linspace(0,10,101)), tmin=0, tmax=10., dt=0.1, title='Testing')
 
+        @gui
         def test1(self):
             self.fnplot.draw()
             pylab.show()
-
+            
+        @gui
         def test2(self):
             self.dataplot.draw()
             pylab.show()
 
+        @gui
         def test3(self):
             self.fnplot.draw(args=(4,7))
             pylab.show()
 
+        @gui
         def test4(self):
             self.fnplot.draw(args=(4,7), kw={'coefs':[2,6]})
             pylab.show()

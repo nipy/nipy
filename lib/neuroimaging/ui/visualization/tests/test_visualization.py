@@ -1,5 +1,7 @@
 import unittest, os
 
+from neuroimaging.utils.test_decorators import gui
+
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.interpolation import ImageInterpolator
@@ -16,6 +18,7 @@ class VisualizationTest(unittest.TestCase):
         def setUp(self):
             self.img = Image(repository.filename("rho.hdr"))
 
+        @gui
         def test_view(self):
             view = viewer.BoxViewer(self.img, z_pix=80.)
             view.draw()
