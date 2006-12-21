@@ -24,8 +24,9 @@ def FIACfixed(contrast, which='block', subj=3, base='contrasts', clobber=False):
         try:
             p = pdir[which](subj=subj, run=run)
             keep.append(run)
-        except:
+        except IOError:
             pass
+        
 
     input = []
 
