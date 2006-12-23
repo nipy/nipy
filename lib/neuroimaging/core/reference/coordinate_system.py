@@ -152,6 +152,14 @@ class CoordinateSystem(odict):
         return N.all([self.axes()[i].valid(x[i]) for i in range(self.ndim())])
 
 
+    def sub_coords(self):
+        """
+        Return a subset of the coordinate system to be used as part of a subgrid.
+
+        @rtype: L{CoordinateSystem}
+        """
+        return CoordinateSystem(self.name + "-subgrid", self.axes()[1:])
+
 class VoxelCoordinateSystem(CoordinateSystem):
     """
     Coordinates with a shape -- assumed to be

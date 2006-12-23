@@ -38,16 +38,8 @@ class fMRISamplingGrid(SamplingGrid):
         hold, it returns a generic, non-invertible map in the original output
         coordinate system.
         """
-        # TODO: this bit should be handled by CoordinateSystem,
-        # eg: incoords = self.mapping.input_coords.subcoords(...)
-        incoords = CoordinateSystem(
-          self.input_coords.name+'-subgrid',
-          self.input_coords.axes()[1:])
-
-        outaxes = self.output_coords.axes()[1:]
-        outcoords = CoordinateSystem(
-            self.output_coords.name, outaxes)        
-
+        incoords = self.input_coords.sub_coords()
+        outcoords = self.output_coords.sub_coords()
 
         if self.isproduct():
             t = self.mapping.transform

@@ -59,6 +59,11 @@ class CoordinateSystemTest(unittest.TestCase):
     def test___str__(self):
         s = str(self.c)
 
+    def test_sub_coords(self):
+        new_c = self.c.sub_coords()
+        self.assertEquals(new_c.name, self.c.name + "-subgrid")
+        self.assertEquals(new_c.axes(), self.c.axes()[1:])
+        
 
 class VoxelCoordinateSystemTest(unittest.TestCase):
     def setUp(self):
