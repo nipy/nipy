@@ -28,7 +28,7 @@ class ImageInterpolator(object):
             data = N.nan_to_num(self.image.readall())
 
         if not hasattr(self, 'datafile'):
-            self.datafile = file(Cache().tempfile(),mode='wb')
+            self.datafile = file(Cache().tempfile(), mode='wb')
         else:
             self.datafile = file(self.datafile.name, 'wb')
         
