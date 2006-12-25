@@ -206,8 +206,7 @@ class fMRIStatOLS(LinearModelIterator):
 
         reference.getmatrix(time=self.fmri_image.frametimes + self.tshift)
 
-        x = N.dot(N.transpose(L.pinv(self.dmatrix)),
-                  reference.matrix)
+        x = N.dot(L.pinv(self.dmatrix).T, reference.matrix)
 
         def aclag(x, j):
             return N.add.reduce(x[j:] * x[0:-j]) / N.add.reduce(x**2)

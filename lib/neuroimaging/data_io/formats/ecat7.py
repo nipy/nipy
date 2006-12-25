@@ -398,7 +398,7 @@ class Ecat7(bin.BinaryFormat):
         else:
             mlist += values[1:values[0,3]+1]
             
-        self.mlist = mlist.conj().transpose()
+        self.mlist = mlist.conj().T
 
     def inform_canonical(self, fieldsDict=None):
         tmpdat = self.frames[0]

@@ -334,9 +334,9 @@ class DelayHRF(hrf.SpectralHRF):
             H = N.array([irf(time - d) for d in delta])
 
             W = N.array([irf(time), dirf(time)])
-            W = N.transpose(W)
+            W = W.T
 
-            WH = N.dot(L.pinv(W), N.transpose(H))
+            WH = N.dot(L.pinv(W), H.T)
 
             coef = [interpolant(delta, w) for w in WH]
             

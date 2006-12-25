@@ -84,8 +84,7 @@ def frombin(tstr):
 
     T = N.array(unpack('<16d', tstr[-128:]))
     T.shape = (4, 4)
-    T = N.transpose(T)
-    return T
+    return T.T
 
 def matfromstr(tstr, ndim=3, delimiter=None):
     """Read a (ndim+1)x(ndim+1) transform matrix from a string."""

@@ -110,7 +110,7 @@ class SpectralHRF(filters.Filter):
         H = N.array(H)
 
 
-        U, S, V = L.svd(N.transpose(H), full_matrices=0)
+        U, S, V = L.svd(H.T, full_matrices=0)
         prcnt_var_spectral = N.sum(S[0:self.ncomp]**2) / N.sum(S**2) * 100
 
         basis = []
@@ -124,9 +124,8 @@ class SpectralHRF(filters.Filter):
 
 
         W = N.array([b(time) for b in basis[:self.ncomp]])
-        W = N.transpose(W)
 
-        WH = N.dot(L.pinv(W), N.transpose(H))
+        WH = N.dot(L.pinv(W.T), H.T)
         
         coef = [interpolant(delta, w) for w in WH]
             

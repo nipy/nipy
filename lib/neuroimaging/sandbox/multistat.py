@@ -36,7 +36,7 @@ class RFXMean(traits.HasTraits):
         self.nsubject = len(input_files)
 
         self.X = N.ones((self.nsubject, 1), N.float64)
-        self.Xsq = N.power(N.transpose(self.design_matrix), 2)
+        self.Xsq = N.power(self.design_matrix.T, 2)
         self.pinvX = L.pinv(self.X)
 
         # Prepare files for reading in
@@ -112,17 +112,17 @@ class RFXMean(traits.HasTraits):
         W = recipr(Sigma)
         X2W = N.dot(self.Xsq, W)
         XWXinv = recipr(X2W)
-        betahat = XWXinv * N.dot(N.transpose(self.X), W * self.Y)
-        sdeffect = N.transpose(N.dot(self.contrast, sqrt(XWXinv)))
+        betahat = XWXinv * N.dot(self.X.T, W * self.Y)
+        sdeffect = N.dot(self.contrast, sqrt(XWXinv)).T
     
         betahat = N.dot(self.pinvX, self.Y)
         varatio_smooth = self.varatio_smooth.next()
         varatio_smooth.setshape(product(varatio_smooth.shape))
-        sigma2 = N.transpose(varatio_smooth)
-        sdeffect = ncpinvX * sqrt(N.transpose(sigma2))
+        sigma2 = varatio_smooth.T
+        sdeffect = ncpinvX * sqrt(sigma2.T)
         Sigma = N.dot(N.one((self.nsubject,), N.float64), sigma2)
         W = recipr(Sigma)
-        effect = N.transpose(N.dot(self.contrast, betahat))
+        effect = N.dot(self.contrast, betahat).T
 
         tstat = effect * recipr(sdeffect)
 

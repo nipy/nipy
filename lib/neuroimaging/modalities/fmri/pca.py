@@ -90,7 +90,7 @@ class PCA(traits.HasTraits):
         UX, SX, VX = L.svd(XZ, full_matrices=0)
     
         rank = N.greater(SX/SX.max(), 0.5).astype(N.int32).sum()
-        UX = N.transpose(UX[:,range(rank)])
+        UX = UX[:,range(rank)].T
 
         first_slice = slice(0,self.image.shape[0])
         _shape = self.image.grid.shape
@@ -125,7 +125,7 @@ class PCA(traits.HasTraits):
         self.D = self.D[order]
         self.pcntvar = self.D * 100 / self.D.sum()
     
-        self.components = N.transpose(N.dot(N.transpose(UX), self.Vs))[order]
+        self.components = N.transpose(N.dot(UX.T, self.Vs))[order]
 
     def images(self, which=[0], output_base=None):
         """

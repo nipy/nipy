@@ -22,7 +22,7 @@ def invertR(delta, IRF, niter=20, verbose=False):
         value[0] = N.arctan(b * _x)
         value[1] = a / (1. + N.power((b * _x), 2.)) * _x
         value[2] = 1.
-        return N.transpose(value)
+        return value.T
 
     c = delta.max() / (N.pi/2)
     n = delta.shape[0]

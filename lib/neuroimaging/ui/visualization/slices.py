@@ -131,7 +131,7 @@ class RGBASlicePlot(Slice, traits.HasTraits):
         if self.mask is not None:
             alpha = N.greater_equal(N.squeeze(self.mask(self.grid.range())), 0.1)
             if self.transpose:
-                alpha = N.transpose(alpha)
+                alpha = alpha.T
             for i in range(3):
                 data[:,:,i] = data[:,:,i]*alpha + (1 - alpha)*self.maskcolor[i]
         return data
