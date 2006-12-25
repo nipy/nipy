@@ -89,7 +89,7 @@ class ImageOneSampleOutput(RegressionOutput):
 
     def __init__(self, grid, nout=1, basename="", clobber=False, path='onesample',
                  ext='.img'):
-        RegressionOutput.__init__(self, None, grid, nout)
+        RegressionOutput.__init__(self, grid, nout)
         self.img, self.it = self._setup_img(clobber, path, ext, basename)
 
 
@@ -112,7 +112,6 @@ class SdOutput(ImageOneSampleOutput):
         return results['mean']['sd']
 
 class MeanOutput(ImageOneSampleOutput):
-
 
     def __init__(self, grid, **keywords):
         ImageOneSampleOutput.__init__(self, grid, basename='effect', **keywords)

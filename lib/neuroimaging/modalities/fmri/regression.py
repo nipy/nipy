@@ -23,8 +23,8 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     in the former it is of an Image.
     """
 
-    def __init__(self, it, grid, nout=1):
-        imreg.ImageRegressionOutput.__init__(self, it, grid, nout=nout,
+    def __init__(self, grid, nout=1):
+        imreg.ImageRegressionOutput.__init__(self, grid, nout=nout,
                                              outgrid=grid.subgrid(0))
 
 
@@ -32,7 +32,7 @@ class ResidOutput(fMRIRegressionOutput):
 
     def __init__(self, grid, nout=1, clobber=False,
                  path='.', ext='.hdr', basename='resid', it=None):
-        fMRIRegressionOutput.__init__(self, None, grid, nout)
+        fMRIRegressionOutput.__init__(self, grid, nout)
         outdir = os.path.join(path)
         self.outgrid = grid
         if it is None:
@@ -51,7 +51,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
     def __init__(self, grid, contrast, nout=1, clobber=False,
                  path='.', ext='.hdr', subpath='contrasts', frametimes=[],
                  effect=True, sd=True, t=True, it=None):
-        fMRIRegressionOutput.__init__(self, None, grid, nout)
+        fMRIRegressionOutput.__init__(self, grid, nout)
         if it is not None:
             self.it = it
         self.contrast = contrast
@@ -91,7 +91,7 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
 
     def __init__(self, grid, contrast, path='.', ext='.hdr', clobber=False,
                  subpath='contrasts', frametimes=[], nout=1, it=None):
-        fMRIRegressionOutput.__init__(self, None, grid, nout)
+        fMRIRegressionOutput.__init__(self, grid, nout)
         if it is not None:
             self.it = it
         self.contrast = contrast
@@ -129,7 +129,7 @@ class AROutput(fMRIRegressionOutput):
 
     def __init__(self, grid, model, order=1, nout=1):
         self.order = order
-        fMRIRegressionOutput.__init__(self, None, grid, nout)
+        fMRIRegressionOutput.__init__(self, grid, nout)
         self._setup_bias_correct(model)
 
     def _setup_bias_correct(self, model):

@@ -11,8 +11,8 @@ class ImageRegressionOutput(RegressionOutput):
     uses the image's iterator values to output to an image.
     """
 
-    def __init__(self, it, grid, nout=1, outgrid=None):
-        RegressionOutput.__init__(self, it, grid, nout, outgrid)
+    def __init__(self, grid, nout=1, outgrid=None):
+        RegressionOutput.__init__(self, grid, nout, outgrid)
 
         if self.nout > 1:
             self.grid = self.grid.replicate(self.nout)
@@ -26,7 +26,7 @@ class TContrastOutput(ImageRegressionOutput):
     def __init__(self, grid, contrast, path='.', subpath='contrasts', ext=".img",
                  effect=True, sd=True, t=True, nout=1, outgrid=None,
                  clobber=False):
-        ImageRegressionOutput.__init__(self, None, grid, nout, outgrid)
+        ImageRegressionOutput.__init__(self, grid, nout, outgrid)
         self.contrast = contrast
         self.effect = effect
         self.sd = sd
@@ -71,7 +71,7 @@ class FContrastOutput(ImageRegressionOutput):
 
     def __init__(self, grid, contrast, path='.', clobber=False,
                  subpath='contrasts', ext='.img', nout=1, outgrid=None):
-        ImageRegressionOutput.__init__(self, None, grid, nout, outgrid)
+        ImageRegressionOutput.__init__(self, grid, nout, outgrid)
         self.contrast = contrast
         self._setup_contrast()
         self._setup_output(clobber, path, subpath, ext)
@@ -104,7 +104,7 @@ class ResidOutput(ImageRegressionOutput):
 
     def __init__(self, grid, path='.', nout=1, clobber=False, basename='resid',
                  ext='.img', outgrid=None):
-        ImageRegressionOutput.__init__(self, None, grid, nout, outgrid)
+        ImageRegressionOutput.__init__(self, grid, nout, outgrid)
         outdir = os.path.join(path)
 
         self.img, self.it = self._setup_img(clobber, outdir, ext, basename)
