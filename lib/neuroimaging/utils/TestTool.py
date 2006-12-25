@@ -24,15 +24,19 @@ class TestTool (OptionParser):
     _usage = __doc__
     options = (
       Option('-l', '--list', dest="list_tests", action="store_true",
-        default=False, help="list available tests"),
+        default=False, help="List available tests"),
       Option('-d', '--doctest', dest="doctest", action="store_true",
-        default=False, help="run available doctests"),
+        default=False, help="Run available doctests"),
       Option('', '--nounit', dest="unit", action="store_false",
-        default=True, help="do not run unittests"),
-      Option('', '--slow', dest=None, action="store_true", default=False),
-      Option('', '--gui', dest=None, action="store_true", default=False),
-      Option('', '--data', dest=None, action="store_true", default=False),
-      Option('', '--all', dest=None, action="store_true", default=False),
+        default=True, help="Do not run unittests"),
+      Option('', '--slow', dest=None, action="store_true", default=False,
+             help="Include slow running tests"),
+      Option('', '--gui', dest=None, action="store_true", default=False,
+             help="Include tests which require a gui"),
+      Option('', '--data', dest=None, action="store_true", default=False,
+             help="Include tests which require the data pack to be installed"),
+      Option('', '--all', dest=None, action="store_true", default=False,
+             help="Include all tests"),
       )
 
     
