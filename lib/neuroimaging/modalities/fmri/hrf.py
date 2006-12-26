@@ -37,6 +37,7 @@ glover_deriv = filters.Filter([_glover(), _glover().deriv(const=-1.)],
                               names=['glover', 'dglover'])
 canonical = glover
 
+
 # AFNI's default HRF (at least at some point in the past)
 
 afni = filters.Filter(filters.GammaDENS(9.6, 1.0/0.547), ['gamma'])
@@ -76,9 +77,8 @@ class SpectralHRF(filters.Filter):
         >>> delta = N.arange(-4.5,4.5+ddelta, ddelta)
         >>> time = N.arange(0,20,0.2)
         >>>
-        >>> hrf = glover_deriv
+        >>> hrf = SpectralHRF(glover_deriv)
         >>>
-        >>> canonical = glover
         >>> taylor = hrf.deltaPCA(delta)
         >>> curplot = plot(time, taylor.components[1](time))
         >>> curplot = plot(time, taylor.components[0](time))
@@ -109,7 +109,7 @@ class SpectralHRF(filters.Filter):
             H.append(irf(time - delta[i]))
         H = N.array(H)
 
-            
+
         U, S, V = L.svd(N.transpose(H), full_matrices=0)
         prcnt_var_spectral = N.sum(S[0:self.ncomp]**2) / N.sum(S**2) * 100
 
