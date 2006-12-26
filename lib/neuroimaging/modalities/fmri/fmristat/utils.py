@@ -1,15 +1,19 @@
 import gc, os, fpformat
 
 import numpy as N
+import numpy.linalg as L
 from scipy.sandbox.models.regression import ols_model, ar_model
+from scipy.sandbox.models.utils import monotone_fn_inverter, rank 
 
 from neuroimaging.modalities.fmri import fMRIImage
-from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, DelayContrastOutput
+from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
+     DelayContrastOutput
 from neuroimaging.algorithms.statistics.regression import LinearModelIterator
-from neuroimaging.modalities.fmri.regression import AROutput, TContrastOutput, \
-  FContrastOutput, ResidOutput
-from neuroimaging.core.reference.iterators import fMRIParcelIterator, fMRISliceParcelIterator, ParcelIterator, SliceParcelIterator
-
+from neuroimaging.modalities.fmri.regression import AROutput, \
+     TContrastOutput, FContrastOutput, ResidOutput
+from neuroimaging.core.reference.iterators import fMRIParcelIterator, \
+     fMRISliceParcelIterator, ParcelIterator, SliceParcelIterator
+from neuroimaging.algorithms.fwhm import fastFWHM
 
 
 
@@ -67,7 +71,7 @@ class fMRIStatOLS(LinearModelIterator):
         self.fwhm_rho = fwhm_rho
         self.fwhm_data = fwhm_data
         self.nmax = nmax
-        self.path=path
+        self.path = path
         
         self.fmri_image = fMRIImage(fmri_image)
         if normalize is not None:
@@ -80,7 +84,9 @@ class fMRIStatOLS(LinearModelIterator):
             outputs = []
 
         if resid or self.output_fwhm:
-            self.resid_output = ResidOutput(self.fmri_image.grid, path=self.path, basename='OLSresid', clobber=self.clobber)
+            self.resid_output = ResidOutput(self.fmri_image.grid,
+                                            path=self.path, basename='OLSresid',
+                                            clobber=self.clobber)
             outputs.append(self.resid_output)
 
         model = ols_model(design=self.dmatrix)

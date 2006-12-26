@@ -2,7 +2,9 @@
 This module defines a class to output estimates
 of delays and contrasts of delays.
 
-Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H., Evans, A.C. (2002). \'Estimating the delay of the response in fMRI data.\' NeuroImage, 16:593-606.
+Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H.,
+Evans, A.C. (2002). \'Estimating the delay of the response in fMRI
+data.\' NeuroImage, 16:593-606.
 
 """
 import os, fpformat
@@ -64,7 +66,8 @@ class DelayContrast(Contrast):
             self.weights.shape = (1, self.weights.shape[0])
 
         if len(fn) != self.weights.shape[1]:
-            raise ValueError, 'length of weights does not match number of terms in DelayContrast'
+            raise ValueError, 'length of weights does not match number of ' \
+                  'terms in DelayContrast'
 
         term = ExperimentalQuantitative('%s_delay' % self.name, self.fn)
         term.convolve(self.IRF)
@@ -167,7 +170,8 @@ class DelayContrastOutput(TContrastOutput):
                 f = pylab.gcf()
                 f.clf()
                 pl = MultiPlot(g, tmin=0, tmax=ftime.max(),
-                               dt = ftime.max() / 2000., title='Magnitude column space for delay: \'%s\'' % rowname)
+                               dt = ftime.max() / 2000.,
+                               title='Magnitude column space for delay: \'%s\'' % rowname)
                 pl.draw()
                 pylab.savefig(os.path.join(outdir, 'matrix%s.png' % rowname))
                 f.clf()
