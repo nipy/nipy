@@ -3,6 +3,7 @@ import numpy.random as R
 import numpy as N
 
 import urllib, os
+from tempfile import mkstemp
 
 from neuroimaging.core.reference import mapping, mni
 
@@ -278,9 +279,11 @@ class MappingTest(unittest.TestCase):
                                              [0, 0, 0, 1]])
 
     def test_tofromfile(self):
-        # FIXME: This will only work on linux (at a guess)
-        self.mapping.tofile("/tmp/mapping.csv")
-        a = mapping.Affine.fromfile("/tmp/mapping.csv")
+        (_, filename) = mkstemp(suffix='.csv')
+        print filename
+        self.mapping.tofile(filename)
+        a = mapping.Affine.fromfile(filename)
+        os.remove(filename)        
         N.testing.assert_almost_equal(self.mapping.transform, a.transform)
 
     def test___str__(self):
