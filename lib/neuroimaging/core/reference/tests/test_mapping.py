@@ -280,7 +280,6 @@ class MappingTest(unittest.TestCase):
 
     def test_tofromfile(self):
         (_, filename) = mkstemp(suffix='.csv')
-        print filename
         self.mapping.tofile(filename)
         a = mapping.Affine.fromfile(filename)
         os.remove(filename)        
