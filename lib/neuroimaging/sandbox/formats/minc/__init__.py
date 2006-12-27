@@ -206,7 +206,7 @@ class MINC(Format):
         """This method, (not yet implemented) determines the 4x4 (or larger) transformation matrix from the dircos attributes of the dimensions. """
 
         ndim = self.outcoords.ndim
-        transform = N.zeros((ndim+1,)*2, N.float64)
+        transform = N.zeros((ndim+1,)*2)
         for i in range(ndim):
             try:
                 transform[i,i] = self.outcoords.dimensions[i].step
@@ -340,13 +340,13 @@ def readheader(filename, mincid=mc.MI_ERROR):
 ## Code to implement conversion of origin to start -- not implemented yet
 
 def convert_origin_to_start(origin, xdircos, ydircos, zdircos):
-    axes = N.zeros((3, 3), N.float64)
+    axes = N.zeros((3, 3))
     axes[0] = xdircos
     axes[1] = ydircos
     axes[2] = zdircos
 
-    lengths = N.zeros((3,), N.float64)
-    start = N.zeros((3,), N.float64)
+    lengths = N.zeros((3,))
+    start = N.zeros((3,))
 
     for i in range(3):
         d1, d2 = (i, int(N.fmod(i+1, 3)))

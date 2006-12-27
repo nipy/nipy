@@ -245,7 +245,7 @@ def signs2subset(signs):
     return N.compress(N.greater(signs, 0), N.arange(signs.shape[0]))
 
 def subset2signs(subset, n):
-    values = N.ones((n,), N.float64)
+    values = N.ones((n,))
     for i in subset:
         values[i] = -1.0
     return values

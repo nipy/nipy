@@ -197,7 +197,7 @@ class ConcatenatedGrids(SamplingGrid):
             try:
                 I = x[0].view(N.int32)
                 X = x[1:]
-                v = N.zeros(x.shape[1:], N.float64)
+                v = N.zeros(x.shape[1:])
                 for j in I.shape[0]:
                     v[j] = self.grids[I[j]].mapping(X[j])
                 return v
@@ -247,7 +247,7 @@ class ConcatenatedIdenticalGrids(ConcatenatedGrids):
 
         in_trans = self.grids[0].mapping.transform
         ndim = in_trans.shape[0]-1
-        out_trans = N.zeros((ndim+2,)*2, N.float64)
+        out_trans = N.zeros((ndim+2,)*2)
         out_trans[0:ndim, 0:ndim] = in_trans[0:ndim, 0:ndim]
         out_trans[0:ndim, -1] = in_trans[0:ndim, -1]
         out_trans[ndim, ndim] = 1.

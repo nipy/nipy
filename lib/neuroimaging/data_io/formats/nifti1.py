@@ -385,7 +385,7 @@ class Nifti1(bin.BinaryFormat):
         if qfac not in [-1.,1.]:
             raise Nifti1FormatError('invalid qfac: orientation unknown')
         
-        value = N.zeros((4,4), N.float64)
+        value = N.zeros((4,4))
         value[3,3] = 1.0
         
         if self.header['qform_code'] > 0:

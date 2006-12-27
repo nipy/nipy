@@ -113,7 +113,7 @@ class LinearFilter(object):
             return Image(_out, grid=self.grid.replicate(inimage.grid.shape[0]))
 
     def _presmooth(self, indata):
-        _buffer = N.zeros(self.shape, N.float64)
+        _buffer = N.zeros(self.shape)
         _buffer[0:indata.shape[0],0:indata.shape[1],0:indata.shape[2]] = indata
         return fft.rfftn(_buffer)
 

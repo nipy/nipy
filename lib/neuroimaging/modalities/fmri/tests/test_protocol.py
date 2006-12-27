@@ -165,7 +165,7 @@ class ProtocolTest(ProtocolTestSetup):
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * recipr0(drift_fn(t)))
 
         D = d - d
-        N.testing.assert_almost_equal(D(t), N.zeros(D(t).shape, N.float64))
+        N.testing.assert_almost_equal(D(t), N.zeros(D(t).shape))
 
         D = d + d
         N.testing.assert_almost_equal(D(t), 2 * N.array(drift_fn(t)))

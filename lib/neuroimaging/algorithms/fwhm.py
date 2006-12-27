@@ -55,14 +55,14 @@ class Resels(object):
 
     def __iter__(self):
         if not self.fwhm:
-            im = Image(N.zeros(self.grid.shape, N.float64), grid=self.grid)
+            im = Image(N.zeros(self.grid.shape), grid=self.grid)
         else:
             im = \
               Image(self.fwhm, clobber=self.clobber, mode='w', grid=self.grid)
         self.fwhm = iter(im)
 
         if not self.resels:
-            im = Image(N.zeros(self.grid.shape, N.float64), grid=self.grid)
+            im = Image(N.zeros(self.grid.shape), grid=self.grid)
         else:
             im = \
               Image(self.resels, clobber=self.clobber, mode='w', grid=self.grid)
@@ -111,8 +111,8 @@ class iterFWHM(Resels):
         self.Y = grid.shape[1]
         self.X = grid.shape[2]
         self.setup_nneigh()
-        self._fwhm = N.zeros((self.Y,self.X), N.float64)
-        self._resels = N.zeros((self.Y,self.X), N.float64)
+        self._fwhm = N.zeros((self.Y,self.X))
+        self._resels = N.zeros((self.Y,self.X))
         self.Yindex = N.arange(self.Y)
         self.Xindex = N.arange(self.X)
         self.YX = self.Y*self.X
@@ -153,7 +153,7 @@ class iterFWHM(Resels):
         _mu /= n
         _invnorm = recipr(N.sqrt((_sumsq - n * _mu**2)))
 
-        value = N.zeros(resid.shape, N.float64)
+        value = N.zeros(resid.shape)
 
         for i in range(n):
             if self.D == 3:
@@ -243,8 +243,8 @@ class iterFWHM(Resels):
 
             # Clear buffers
 
-            self._fwhm = N.zeros(self._fwhm.shape, N.float64)
-            self._resels = N.zeros(self._resels.shape, N.float64)
+            self._fwhm = N.zeros(self._fwhm.shape)
+            self._resels = N.zeros(self._resels.shape)
             self.u = 1. * wresid
             self.ux = wresid[:,1:] - wresid[:,0:-1]
             self.uy = wresid[1:,:] - wresid[0:-1,:]

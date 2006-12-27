@@ -49,9 +49,9 @@ class fMRISamplingGrid(SamplingGrid):
         else:
             def _map(x, fn=self.mapping.map, **keywords):
                 if len(x.shape) > 1:
-                    _x = N.zeros((x.shape[0]+1,) + x.shape[1:], N.float64)
+                    _x = N.zeros((x.shape[0]+1,) + x.shape[1:])
                 else:
-                    _x = N.zeros((x.shape[0]+1,), N.float64)
+                    _x = N.zeros((x.shape[0]+1,))
                 _x[0] = i
                 return fn(_x)
             W = Mapping(_map)

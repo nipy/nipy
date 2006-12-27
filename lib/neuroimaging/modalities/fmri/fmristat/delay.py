@@ -125,7 +125,7 @@ class DelayContrastOutput(TContrastOutput):
                 os.makedirs(outdir)
 
             cnrow = self.contrast.matrix.shape[0] / 2
-            l = N.zeros(self.contrast.matrix.shape[0], N.float64)
+            l = N.zeros(self.contrast.matrix.shape[0])
             l[0:cnrow] = self.contrast.weights[i]
 
             outname = os.path.join(outdir, 't%s' % self.ext)
@@ -185,7 +185,7 @@ class DelayContrastOutput(TContrastOutput):
         self.gamma1 = N.dot(self.deltamatrix, results.beta)
 
         nrow = self.gamma0.shape[0]
-        self.T0sq = N.zeros(self.gamma0.shape, N.float64)
+        self.T0sq = N.zeros(self.gamma0.shape)
         
         for i in range(nrow):
             self.T0sq[i] = (self.gamma0[i]**2 *
@@ -201,7 +201,7 @@ class DelayContrastOutput(TContrastOutput):
 
         delay = self.contrast.IRF.delay
 
-        self.T1 = N.zeros(self.gamma0.shape, N.float64)
+        self.T1 = N.zeros(self.gamma0.shape)
 
         nrow = self.gamma0.shape[0]
         for i in range(nrow):
@@ -220,7 +220,7 @@ class DelayContrastOutput(TContrastOutput):
 
         nrow = self.effectmatrix.shape[0]
             
-        cov = N.zeros((nrow,)*2 + self.T0sq.shape[1:], N.float64)
+        cov = N.zeros((nrow,)*2 + self.T0sq.shape[1:])
 
         for i in range(nrow):
             for j in range(i + 1):
@@ -235,7 +235,7 @@ class DelayContrastOutput(TContrastOutput):
                 cov[j,i] = cov[i,j]
 
         nout = self.contrast.weights.shape[0]
-        self._sd = N.zeros(self._effect.shape, N.float64)
+        self._sd = N.zeros(self._effect.shape)
 
         for r in range(nout):
             var = 0

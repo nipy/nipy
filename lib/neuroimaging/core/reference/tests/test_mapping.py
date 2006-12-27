@@ -208,7 +208,7 @@ class IdentityTest(unittest.TestCase):
 class AffineTest(unittest.TestCase):
     def setUp(self):    
         a = mapping.Affine.identity()
-        A = N.identity(4, N.float64)
+        A = N.identity(4)
         A[0:3] = R.standard_normal((3,4))
         self.mapping = mapping.Affine(a.input_coords, a.output_coords, A)
 
@@ -222,7 +222,7 @@ class MappingTest(unittest.TestCase):
         self.a = mapping.Mapping(f)
 
         a = mapping.Affine.identity()
-        A = N.identity(4, N.float64)
+        A = N.identity(4)
         A[0:3] = R.standard_normal((3,4))
         self.mapping = mapping.Affine(A)
 

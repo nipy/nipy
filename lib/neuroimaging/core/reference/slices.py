@@ -19,7 +19,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     nout = colvectors.shape[1]
     ndim = colvectors.shape[0]
 
-    f = N.zeros((nout,)*2, N.float64)
+    f = N.zeros((nout,)*2)
     for i in range(ndim):
         f[0:nout,i] = colvectors[i]
     
@@ -30,7 +30,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     for i in range(nout-ndim):
         f[0:nout,ndim+i] = f[0:nout,ndim+i] / N.sqrt(N.add.reduce(f[0:nout,ndim+i]**2))
 
-    t = N.zeros((nout+1,)*2, N.float64)
+    t = N.zeros((nout+1,)*2)
     t[0:nout,0:nout] = f
     t[nout,nout] = 1.
     t[0:nout,nout] = origin

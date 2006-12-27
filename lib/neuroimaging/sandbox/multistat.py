@@ -35,7 +35,7 @@ class RFXMean(traits.HasTraits):
 
         self.nsubject = len(input_files)
 
-        self.X = N.ones((self.nsubject, 1), N.float64)
+        self.X = N.ones((self.nsubject, 1))
         self.Xsq = N.power(self.design_matrix.T, 2)
         self.pinvX = L.pinv(self.X)
 
@@ -70,7 +70,7 @@ class RFXMean(traits.HasTraits):
                         raise ValueError, 'len(df) != len(input_files) in MultiStat'
                     self.input_df = array(list(df))
                 except TypeError:
-                    self.input_df = N.ones((len(input_files),), N.float64) * df
+                    self.input_df = N.ones((len(input_files),)) * df
             else:
                 self.input_df = N.inf * N.ones((len(input_files),))
 
@@ -88,22 +88,22 @@ class RFXMean(traits.HasTraits):
 
     def estimate_varatio(self, Y, S=None, df=None):
 
-        self.Y = N.zeros((self.nsubject, self.npixel), N.float64)
-        self.S = N.ones((self.nsubject, self.npixel), N.float64)
+        self.Y = N.zeros((self.nsubject, self.npixel))
+        self.S = N.ones((self.nsubject, self.npixel))
 
     def fit(self, Y, S=None, df=None):
 
         if not self.fixed and self.varatio is None:
             self.estimate_varatio(Y, S, df)
             
-        effect = N.zeros(Y.shape[1:], N.float64)
-        sdeffect = N.zeros(Y.shape[1:], N.float64)
+        effect = N.zeros(Y.shape[1:])
+        sdeffect = N.zeros(Y.shape[1:])
 
         ncpinvX = N.sqrt(N.add.reduce(N.power(N.squeeze(self.pinvX), 2)))
    
         sigma2 = self.varfix * self.varatio
 
-        Sigma = self.S + multiply.outer(N.ones((self.nsubject,), N.float64), sigma2)
+        Sigma = self.S + multiply.outer(N.ones((self.nsubject,)), sigma2)
 
         # To ensure that Sigma is always positive:
         if self.fwhm_varatio > 0:
@@ -120,7 +120,7 @@ class RFXMean(traits.HasTraits):
         varatio_smooth.setshape(product(varatio_smooth.shape))
         sigma2 = varatio_smooth.T
         sdeffect = ncpinvX * sqrt(sigma2.T)
-        Sigma = N.dot(N.one((self.nsubject,), N.float64), sigma2)
+        Sigma = N.dot(N.one((self.nsubject,)), sigma2)
         W = recipr(Sigma)
         effect = N.dot(self.contrast, betahat).T
 

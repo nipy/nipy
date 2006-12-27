@@ -17,7 +17,7 @@ def invertR(delta, IRF, niter=20, verbose=False):
 
     def grad(x, theta):
         a, b, c = theta
-        value = N.zeros((3, x.shape[0]), N.float64)
+        value = N.zeros((3, x.shape[0]))
         _x = x[:,0]
         value[0] = N.arctan(b * _x)
         value[1] = a / (1. + N.power((b * _x), 2.)) * _x

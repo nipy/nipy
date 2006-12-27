@@ -17,7 +17,7 @@ class ImageRegressionOutput(RegressionOutput):
         if self.nout > 1:
             self.grid = self.grid.replicate(self.nout)
 
-        self.img = Image(N.zeros(outgrid.shape, N.float64), grid=outgrid)
+        self.img = Image(N.zeros(outgrid.shape), grid=outgrid)
         self.it = self.img.slice_iterator(mode='w')
 
 
