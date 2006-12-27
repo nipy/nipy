@@ -270,8 +270,7 @@ class iterFWHM(Resels):
                 self._fwhm[x[0]:x[-1], y[0]:y[-1]] += self.resel2fwhm(_resels)
                 
             if self.slice == self.nslices - 1:
-                # FIXME --- can we use inplace operators? is the precendence below even right?
-                self._fwhm = self._fwhm / ((self.slice > 1) + 1.) / self.nneigh
+                self._fwhm /= ((self.slice > 1) + 1.) * self.nneigh
                 self._resels /= ((self.slice > 1) + 1.) * self.nneigh
 
                 self.output()
