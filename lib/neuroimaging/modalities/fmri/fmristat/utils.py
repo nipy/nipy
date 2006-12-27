@@ -292,26 +292,23 @@ class fMRIStatAR(LinearModelIterator):
             for contrast in contrasts:
                 contrast.getmatrix(time=ftime)
                 if isinstance(contrast, DelayContrast):
-                    it = iterator_(self.fmri_image, parcelmap, parcelseq, mode='w')
                     cur = DelayContrastOutput(self.fmri_image.grid,
                                               contrast, path=path,
                                               clobber=clobber,
-                                              frametimes=ftime,
-                                              it=it)
+                                              frametimes=ftime)
+                    cur.it = iterator_(cur.img, parcelmap, parcelseq, mode='w')
                 elif contrast.rank == 1:
-                    it = iterator_(self.fmri_image, parcelmap, parcelseq, mode='w')
                     cur = TContrastOutput(self.fmri_image.grid, contrast,
                                           path=path,
                                           clobber=clobber,
-                                          frametimes=ftime,
-                                          it=it)
+                                          frametimes=ftime)
+                    cur.it = iterator_(cur.img, parcelmap, parcelseq, mode='w')
                 else:
-                    it = iterator_(self.fmri_image, parcelmap, parcelseq, mode='w')
                     cur = FContrastOutput(self.fmri_image.grid, contrast,
                                           path=path,
                                           clobber=clobber,
-                                          frametimes=ftime,
-                                          it=it)
+                                          frametimes=ftime)
+                    cur.it = iterator_(cur.img, parcelmap, parcelseq, mode='w')
                 self.contrasts.append(cur)
                 
 
@@ -321,12 +318,11 @@ class fMRIStatAR(LinearModelIterator):
         outputs += self.contrasts
 
         if resid:
-            it = iterator(self.fmri_image, parcelmap, parcelseq, mode='w')
             self.resid_output = ResidOutput(self.fmri_image.grid,
                                             path=path,
                                             basename='ARresid',
-                                            clobber=clobber,
-                                            it=it)
+                                            clobber=clobber)
+            self.resid_output.it = iterator(self.resid_output.img, parcelmap, parcelseq, mode='w')
             outputs.append(self.resid_output)
 
         it = iterator(OLS.fmri_image, parcelmap, parcelseq)
