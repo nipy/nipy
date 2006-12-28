@@ -72,13 +72,13 @@ def frombin(tstr):
 
     >>> import urllib
     >>> from neuroimaging.core.reference.mapping import frombin
-    >>> mat = urllib.urlopen('http://kff.stanford.edu/BrainSTAT/fiac3_fonc1_0089.mat')
+    >>> mat = urllib.urlopen('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
     >>> tstr = mat.read()
     >>> print frombin(tstr)
     [[  2.99893500e+00  -3.14532000e-03  -1.06594400e-01  -9.61109780e+01]
-    [ -1.37396100e-02  -2.97339600e+00  -5.31224000e-01   1.20082725e+02]
-    [  7.88193000e-02  -3.98643000e-01   3.96313600e+00  -3.32398676e+01]
-    [  0.00000000e+00   0.00000000e+00   0.00000000e+00   1.00000000e+00]]
+     [ -1.37396100e-02  -2.97339600e+00  -5.31224000e-01   1.20082725e+02]
+     [  7.88193000e-02  -3.98643000e-01   3.96313600e+00  -3.32398676e+01]
+     [  0.00000000e+00   0.00000000e+00   0.00000000e+00   1.00000000e+00]]
     
     """
 
@@ -132,8 +132,8 @@ def fromurl(turl, ndim=3):
     >>> from neuroimaging.core.reference.mapping import fromurl
     >>> x = fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1.txt')
     >>> y = fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
-    >>> print testing.assert_almost_equal(x, y)
-    True
+    >>> testing.assert_almost_equal(x, y, decimal=5)
+
     """
     urlpipe = urllib.urlopen(turl)
     data = urlpipe.read()
@@ -251,11 +251,11 @@ class Mapping(object):
         >>> zimage = Image('http://nifti.nimh.nih.gov/nifti-1/data/zstat1.nii.gz')
         >>> mapping = zimage.grid.mapping
         >>> mapping([1,2,3])
-        array([ 2.,  3., -4.])
+        array([ 12.,  12., -16.])
 
         >>> matlab = mapping.python2matlab()
         >>> matlab([4,3,2])
-        array([-4.,  3.,  2.])
+        array([-16.,  12.,  12.])
         >>>
 
         """
