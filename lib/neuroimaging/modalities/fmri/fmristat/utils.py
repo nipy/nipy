@@ -87,6 +87,8 @@ class fMRIStatOLS(LinearModelIterator):
             self.resid_output = ResidOutput(self.fmri_image.grid,
                                             path=self.path, basename='OLSresid',
                                             clobber=self.clobber)
+            self.resid_output.it = \
+                          self.fmri_image.slice_iterator(mode='w').copy(self.resid_output.img)
             outputs.append(self.resid_output)
 
         model = ols_model(design=self.dmatrix)
