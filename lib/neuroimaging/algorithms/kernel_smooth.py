@@ -10,7 +10,7 @@ from neuroimaging.core.reference.mapping import Affine
 
 class LinearFilter(object):
     '''
-    A class to implement some FFT smoothers for VImage objects.
+    A class to implement some FFT smoothers for Image objects.
     By default, this does a Gaussian kernel smooth. More choices
     would be better!
     '''
@@ -116,3 +116,21 @@ class LinearFilter(object):
         _buffer = N.zeros(self.shape, N.float64)
         _buffer[0:indata.shape[0],0:indata.shape[1],0:indata.shape[2]] = indata
         return fft.rfftn(_buffer)
+
+if __name__ == '__main__':
+    from neuroimaging.core.image.image import Image
+    from pylab import plot, show, imshow, subplot
+    a = 100*N.random.random((100, 100, 100))
+    img = Image(a)
+    filt = LinearFilter(img.grid)
+    smoothed = filt.smooth(img)
+
+    from neuroimaging.utils.tests.data import repository
+    from neuroimaging.ui.visualization.viewer import BoxViewer
+
+    view = BoxViewer(img)
+    view.draw()
+    sview = BoxViewer(smoothed, colormap='jet')
+    sview.draw()
+    show()
+
