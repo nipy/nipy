@@ -22,16 +22,16 @@ class GridTest(unittest.TestCase):
     def test_concat(self):
         grids = ConcatenatedGrids([self.img.grid]*5)
         self.assertEquals(tuple(grids.shape), (5,) + tuple(self.img.grid.shape))
-        z = grids.mapping(N.transpose([4,5,6,7]))
+        z = grids.mapping([4,5,6,7])
         a = grids.subgrid(0)
-        x = a.mapping(N.transpose([5,6,7]))
+        x = a.mapping([5,6,7])
 
     def test_replicate(self):
         grids = self.img.grid.replicate(4)
         self.assertEquals(tuple(grids.shape), (4,) + tuple(self.img.grid.shape))
-        z = grids.mapping(N.transpose([2,5,6,7]))
+        z = grids.mapping([2,5,6,7])
         a = grids.subgrid(0)
-        x = a.mapping(N.transpose([5,6,7]))
+        x = a.mapping([5,6,7])
 
     def test_replicate2(self):
         """
