@@ -116,6 +116,10 @@ class DelayContrastOutput(TContrastOutput):
         self.sdimgs = []
         self.effectimgs = []
 
+        self.timg_iters = []
+        self.sdimg_iters = []
+        self.effectimg_iters = []
+
         nout = self.contrast.weights.shape[0]
 
         for i in range(nout):
@@ -128,26 +132,17 @@ class DelayContrastOutput(TContrastOutput):
             l = N.zeros(self.contrast.matrix.shape[0])
             l[0:cnrow] = self.contrast.weights[i]
 
-            outname = os.path.join(outdir, 't%s' % self.ext)
-            timg = Image(outname, mode='w', grid=self.outgrid,
-                               clobber=self.clobber)
+            img, it = self._setup_img(self.clobber, outdit, "t", self.ext)
+            self.timgs.append(img)
+            self.timg_iters.append(it)
 
-            self.sync_grid(img=timg)
-            self.timgs.append(timg)
+            img, it = self._setup_img(self.clobber, outdit, "effect", self.ext)
+            self.effectimgs.append(img)
+            self.effectimg_iters.append(it)
 
-            outname = os.path.join(outdir, 'effect%s' % self.ext)
-            effectimg = Image(outname, mode='w', grid=self.outgrid,
-                                    clobber=self.clobber)
-
-            self.sync_grid(img=effectimg)
-            self.effectimgs.append(effectimg)
-
-            outname = os.path.join(outdir, 'sd%s' % self.ext)
-            sdimg = iter(Image(outname, mode='w', grid=self.outgrid,
-                                     clobber=self.clobber))
-
-            self.sync_grid(img=sdimg)
-            self.sdimgs.append(sdimg)
+            img, it = self._setup_img(self.clobber, outdit, "sd", self.ext)
+            self.sdimgs.append(img)
+            self.sdimg_iters.append(it)
 
             matrix = N.squeeze(N.dot(l, self.contrast.matrix))
 
@@ -263,11 +258,11 @@ class DelayContrastOutput(TContrastOutput):
     def set_next(self, data):
         nout = self.contrast.weights.shape[0]
         for i in range(nout):
-            self.timgs[i].set_next(data.t[i])
+            self.timg_iters[i].set_next(data.t[i])
             if self.effect:
-                self.effectimgs[i].set_next(data.effect[i])
+                self.effectimg_iters[i].set_next(data.effect[i])
             if self.sd:
-                self.sdimgs[i].set_next(data.sd[i])
+                self.sdimg_iters[i].set_next(data.sd[i])
 
 class DelayHRF(hrf.SpectralHRF):
 
