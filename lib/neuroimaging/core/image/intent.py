@@ -12,7 +12,7 @@ class IntentError(Exception):
     Errors raised in intents.
     """
 
-intent_trait = traits.Trait(nifti1.NIFTI_INTENT, desc='Allowable intent codes -- currently only NIFTI1 codes.')
+intent_trait = traits.Trait(nifti1.NIFTI_INTENT_NONE, desc='Allowable intent codes -- currently only NIFTI1 codes.')
 
 class Intent(traits.HasTraits):
     parameters = traits.ReadOnly(desc='Parameters associated to intent code.')
