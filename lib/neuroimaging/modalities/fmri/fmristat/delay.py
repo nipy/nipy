@@ -172,7 +172,7 @@ class DelayContrastOutput(TContrastOutput):
                 f.clf()
                 del(f); del(g)
                 
-    def extract_effect(self, results):
+    def _extract_effect(self, results):
 
         delay = self.contrast.IRF.delay
 
@@ -192,7 +192,7 @@ class DelayContrastOutput(TContrastOutput):
 
         self._effect = N.dot(self.contrast.weights, self.deltahat)
 
-    def extract_sd(self, results):
+    def _extract_sd(self, results):
 
         delay = self.contrast.IRF.delay
 
@@ -241,15 +241,15 @@ class DelayContrastOutput(TContrastOutput):
 
             self._sd[r] = N.sqrt(var)                
 
-    def extract_t(self):
+    def _extract_t(self):
         t = self._effect * recipr(self._sd)        
         t = N.clip(t, self.Tmin, self.Tmax)
         return t
 
     def extract(self, results):
-        self.extract_effect(results)
-        self.extract_sd(results)
-        t = self.extract_t()
+        self._extract_effect(results)
+        self._extract_sd(results)
+        t = self._extract_t()
 
         return ContrastResults(effect=self._effect,
                                sd=self._sd,
