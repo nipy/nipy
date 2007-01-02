@@ -124,15 +124,17 @@ class Image(object):
        Return a Image instance that has an ArrayImage as its _source attribute.
 
         >>> from numpy import *
-        >>> from BrainSTAT import *
-        >>> test = Image(testfile('anat+orig.HEAD'))
+        >>> from neuroimaging.core.image.image import Image
+        >>> from neuroimaging.utils.tests.data import repository
+        >>> test = Image('anat+orig.HEAD', datasource=repository)
         >>> _test = test.toarray()
-        >>> print _test.source.data.shape
+        >>> print _test._source.data.shape
         (124, 256, 256)
-        >>> test = Image(testfile('test_fmri.img'))
-        >>> _test = test.toarray(slice=(2,), grid=test.grid)
+        >>> test = Image('test_fmri.img', datasource=repository)
+        >>> _test = test.toarray()
         >>> print _test.shape
-        (13, 128, 128)
+        [120, 13, 128, 128]
+        
         """
         data = self.readall()
         if clean and \

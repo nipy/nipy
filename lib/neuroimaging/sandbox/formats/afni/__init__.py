@@ -87,6 +87,7 @@ extra_header = odict((
     ('MARKS_XYZ',(AFNI_float, 30)),
     ('MARKS_LAB',(AFNI_string, None)),
     ('MARKS_FLAGS',(AFNI_integer, None)),
+    ('MARKS_HELP', (AFNI_string, None)),
     ('TAGSET_NUM',(AFNI_integer, 2)),
     ('TAGSET_FLOATS',(AFNI_float, None)),
     ('TAGSET_LABELS',(AFNI_string, None)),
