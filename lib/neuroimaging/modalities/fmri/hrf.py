@@ -49,8 +49,9 @@ class SpectralHRF(filters.Filter):
     '''
 
     def __init__(self, input_hrf=canonical, spectral=True, ncomp=2,
-                 names=['glover'], **keywords):
+                 names=['glover'], deriv=False, **keywords):
         filters.Filter.__init__(self, input_hrf, names=names, **keywords)
+        self.deriv = deriv
         self.ncomp = ncomp
         self.spectral = spectral
         if self.n != 1:

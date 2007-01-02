@@ -278,11 +278,7 @@ class DelayHRF(hrf.SpectralHRF):
     '''
 
     def __init__(self, input_hrf=hrf.canonical, spectral=True, **keywords):
-        filters.Filter.__init__(self, input_hrf, ['hrf'])
-        self.spectral = spectral
-        if self.n != 1:
-            raise ValueError, 'expecting one HRF for spectral decomposition'
-        self.deltaPCA()
+        hrf.SpectralHRF.__init__(self, input_hrf, spectral=spectral, names=['hrf'], **keywords)
 
     def deltaPCA(self, tmax=50., lower=-15.0, delta=N.arange(-4.5,4.6,0.1)):
         """
