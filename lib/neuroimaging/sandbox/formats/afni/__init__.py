@@ -317,9 +317,9 @@ class AFNI(bin.BinaryFormat):
             brk_max = (a*scale_b0).max()
             try:
                 N.testing.assert_almost_equal(brkmax, maxval)
-                self.byteorder = util.mybyteorders[sys.byteorder]
+                self.byteorder = utils.mybyteorders[sys.byteorder]
             except:
-                self.byteorder = util.mybyteorders['swapped']
+                self.byteorder = utils.mybyteorders['swapped']
                 self.dtype.newbyteorder(self.byteorder)
         else:
             raise AFNIFormatError("no byteorder infomation in the header!")
