@@ -77,9 +77,9 @@ class SpectralHRF(filters.Filter):
         >>> delta = N.arange(-4.5,4.5+ddelta, ddelta)
         >>> time = N.arange(0,20,0.2)
         >>>
-        >>> hrf = SpectralHRF(glover_deriv)
+        >>> hrf = SpectralHRF(glover)
         >>>
-        >>> taylor = hrf.deltaPCA(delta)
+        >>> taylor = hrf.deltaPCA(delta=delta)
         >>> curplot = plot(time, taylor.components[1](time))
         >>> curplot = plot(time, taylor.components[0](time))
         >>> curtitle=title('Shift using Taylor series -- components')
