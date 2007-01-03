@@ -13,7 +13,6 @@ import numpy as N
 import numpy.linalg as L
 from scipy.sandbox.models.utils import recipr, recipr0
 from scipy.sandbox.models.contrast import Contrast, ContrastResults
-from neuroimaging import traits
 
 from neuroimaging.modalities.fmri import hrf, filters
 from neuroimaging.modalities.fmri.protocol import ExperimentalQuantitative
@@ -86,13 +85,18 @@ class DelayContrast(Contrast):
 
 class DelayContrastOutput(TContrastOutput):
 
-    IRF = traits.Any()
-    dt = traits.Float(0.01)
-    delta = traits.ListFloat(N.linspace(-4.5,4.5,91))
-    Tmax = 100.
-    Tmin = -100.
-    subpath = traits.Str('delays')
-    frametimes = traits.Any()
+
+    def __init__(self, grid, contrast, IRF=None, dt=0.01, delta=None, Tmax=100,
+                 Tmin=-100, subpath='delays', **kw):
+        TContrastOutput.__init__(self, grid, contrast, subpath=subpath, **kw)
+        self.IRF = IRF
+        self.dt = dt
+        if delta is None:
+            self.delta = N.linsapce(-4.5, 4.5, 91)
+        else:
+            self.delta = delta
+        self.Tmax = Tmax
+        self.Tmin = Tmin
     
     def setup_contrast(self, time=None):
         """
@@ -273,11 +277,9 @@ class DelayHRF(hrf.SpectralHRF):
     Liao et al. (2002).
     '''
 
-    spectral = traits.true
-
-    def __init__(self, input_hrf=hrf.canonical, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+    def __init__(self, input_hrf=hrf.canonical, spectral=True, **keywords):
         filters.Filter.__init__(self, input_hrf, ['hrf'])
+        self.spectral = spectral
         if self.n != 1:
             raise ValueError, 'expecting one HRF for spectral decomposition'
         self.deltaPCA()
