@@ -36,11 +36,12 @@ class ArrayImage (BaseImage):
         Create an ArrayImage instance from an array,
         by default assumed to be 3d.
 
-        >>> from numpy import *
-        >>> from neuroimaging.core.image.image import Image
-        >>> z = Image.ArrayImage(zeros((10,20,20)))
-        >>> print z.ndim
+        >>> from numpy import zeros
+        >>> from neuroimaging.core.image.base_image import ArrayImage
+        >>> z = ArrayImage(zeros((10,20,20)))
+        >>> print z.grid.ndim
         3
+        
         """
         grid = grid and grid or SamplingGrid.identity(data.shape)
         dtype = data.dtype
