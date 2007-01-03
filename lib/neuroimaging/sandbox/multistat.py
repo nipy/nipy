@@ -1,37 +1,37 @@
 """
-FIXME: This module is pretty heavily broken. It's been moved here to the sandbox as 
-an act of triage. If we want it we can clean it up and put it back into fmri.fmristat
-or we can decide to scrap it, which should be Jonathan Taylor's call.
+FIXME: This module is pretty heavily broken. It's been moved here to the
+sandbox as an act of triage. If we want it we can clean it up and put it back
+into fmri.fmristat or we can decide to scrap it, which should be Jonathan
+Taylor's call.
 """
 import numpy as N
 import numpy.linalg as L
 from scipy.sandbox.models.utils import recipr, rank
 
-from neuroimaging import traits
-
 from neuroimaging.core.image.image import Image
 
 
-class RFXMean(traits.HasTraits):
-    clobber = traits.false
-    max_varatio = traits.Float(10.)
-    df_limit = traits.Float(4.)
-    df_target = traits.Float(100.)
-    niter = traits.Int(10)
-    verbose = traits.false
-    fixed = traits.false
-    mask = traits.Any()
-    fwhm_varatio = traits.Any()
-
+class RFXMean(object):
     """
     Perform a RFX analysis for the mean -- i.e. the fixed effect design matrix is a column of 1's.
 
     Input is a sequence: if the entries are 
     """
 
-    def __init__(self, input, df=None, fwhm=None, tol=1.0e+05, outputs=None, **keywords):
+    def __init__(self, input, df=None, fwhm=None, tol=1.0e+05, outputs=None,
+                 clobber=False, max_varatio=10., df_limit=4., df_target=100.,
+                 niter=10, verbose=False, fixed=False, mask=None,
+                 fwhm_varatio=None, **keywords):
 
-        traits.HasTraits.__init__(self, **keywords)
+        self.clobber = clobber
+        self.max_varatio = max_varatio
+        self.df_limit = df_limit
+        self.df_target = df_target
+        self.niter = niter
+        self.verbose = verbose
+        self.fixed = fixed
+        self.mask = mask
+        self.fwhm_varatio = fwhm_varatio
 
         self.nsubject = len(input_files)
 
