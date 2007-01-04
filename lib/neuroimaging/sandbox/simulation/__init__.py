@@ -1,18 +1,15 @@
 import gc
 
-from neuroimaging import traits
-
 from neuroimaging.core.image.image import Image, roi
 
-class Simulator(traits.HasTraits):
+class Simulator(object):
 
-    intermediate = traits.true
-    search = traits.Instance(roi.ROI)
-    verbose = traits.false
-    parallel = traits.false
-    total_iterations = traits.Trait(50, desc='How many iterations?')
+    def __init__(self, search=None, verbose=False, intermediate=True,
+                 parallel=False, total_iterations=50):
 
-    def __init__(self, search=None, verbose=False):
+        self.intermediate = intermediate
+        self.parallel = parallel
+        self.total_iterations = total_iterations
 
         if search is None:
             self.search = roi.ROIall()

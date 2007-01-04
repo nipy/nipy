@@ -8,13 +8,6 @@ import numpy as N
 import gc
 
 from neuroimaging.core.image.fwhm import fastFWHM
-#from BrainSTAT.Simulation import Simulator
-#from BrainSTAT import *
-#from BrainSTAT.Modules.UGRF import UGRF
-#from BrainSTAT.RFT.EC import *
-
-from neuroimaging import traits
-
 from neuroimaging.algorithms.statistics.simulation import ugrf, Simulator
 
 class GaussianField(Simulator):
@@ -25,12 +18,11 @@ class GaussianField(Simulator):
     Note: fwhm argument is only used when image is a VImage instance, and is ignored if image is a UGRF instance.
     """
 
-    estimate_resels = traits.false(desc='Produce a resel estimate?')
-    ugrf = traits.Instance(ugrf.UGRF, desc='Simulator.')
-
-    def __init__(self, grid, search=None, verbose=False, **keywords):
+    def __init__(self, grid, search=None, verbose=False, estimate_resels=False,
+                 **keywords):
         self.ugrf = ugrf.UGRF(grid, **keywords)
         Simulator.__init__(self, search=search, verbose=verbose)
+        self.estimate_resels = estimate_resels
 
         if resels is None and self.estimate_resels:
             self.resels = self.resel_estimator(**keywords)
