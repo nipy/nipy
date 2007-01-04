@@ -1,4 +1,3 @@
-from neuroimaging import traits
 import numpy as N
 
 from neuroimaging import flatten

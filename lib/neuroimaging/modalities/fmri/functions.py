@@ -12,7 +12,6 @@ divided.
 import types
 
 import numpy as N
-from neuroimaging import traits
 
 from scipy.sandbox.models.utils import recipr0
 from scipy.sandbox.models.utils import StepFunction
@@ -22,14 +21,12 @@ from scipy.interpolate import interp1d
 # -Event inherits from Stimulus so most functionality is in Stimulus
 # -changes are just in specifying parameters of self.fn
 
-class TimeFunction(traits.HasTraits):
+class TimeFunction(object):
 
-
-    windowed = traits.false
-    window = traits.Tuple((0.,0.))
-
-    def __init__(self, fn, nout=1, slice=None, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+    def __init__(self, fn, nout=1, slice=None, windowed=False, window=(0., 0.), name=""):
+        self.name = name
+        self.windowed = windowed
+        self.window = window
         self.fn = fn
         self.nout = nout
 	self.slice = slice
@@ -158,11 +155,18 @@ class TimeFunction(traits.HasTraits):
 
 class InterpolatedConfound(TimeFunction):
 
-    times = traits.Any()
-    values = traits.Any()
-
-    def __init__(self, **keywords):
+    def __init__(self, times=None, values=None, **keywords):
         TimeFunction.__init__(self, **keywords)
+        if times is None:
+            self.times = []
+        else:
+            self.times = times
+
+        if self.values is None:
+            self.values = []
+        else:
+            self.values = values
+
         if len(N.asarray(self.values).shape) == 1:
             self.f = interp1d(self.times, self.values, bounds_error=0)
             self.nout = 1
@@ -194,19 +198,27 @@ class InterpolatedConfound(TimeFunction):
 
 class Stimulus(TimeFunction):
 
-    times = traits.Any()
-    values = traits.Any()
+    def __init__(self, fn, times=None, values=None, **keywords):
+        TimeFunction.__init__(self, fn, **keywords)
+        if times is None:
+            self.times = []
+        else:
+            self.times = times
+
+        if values is None:
+            self.values = []
+        else:
+            self.values = values
 
 class PeriodicStimulus(Stimulus):
-    n = traits.Int(1)
-    start = traits.Float(0.)
-    duration = traits.Float(3.0)
-    step = traits.Float(6.0) # gap between end of event and next one
-    height = traits.Float(1.0)
 
-    def __init__(self, **keywords):
+    def __init__(self, n=1, start=0.0, duration=3.0, step=6.0, height=1.0, **keywords):
+        self.n = n
+        self.start = start
+        self.duration = duration
+        self.step = step
+        self.height = height
 
-        traits.HasTraits.__init__(self, **keywords)
         times = [-1.0e-07]
         values = [0.]
 
@@ -249,14 +261,16 @@ class DeltaFunction(TimeFunction):
     1/dt in interval [start, start+dt).
     """
 
-    start = traits.Trait(0.0, desc='Beginning of delta function approximation.')
-    dt = traits.Float(0.02, desc='Width of delta function approximation.')
-
-    def __init__(self):
+    def __init__(self, start=0.0, dt=0.02):
+        """
+        @param start: Beginning of delta function approximation.
+        @type start: C{float}
+        @param dt: Width of delta function approximation.
+        @type dt: C{float}
+        """
         TimeFunction.__init__(self, None)
 
     def __call__(self, time, **extra):
-
         return N.greater_equal(time, self.start) * N.less(time, self.start + self.dt) / self.dt
 
 class SplineConfound(TimeFunction):
@@ -265,12 +279,14 @@ class SplineConfound(TimeFunction):
     A natural spline confound with df degrees of freedom.
     """
     
-    knots = traits.List()
-
-    def __init__(self, df=4, **keywords):
+    def __init__(self, df=4, knots=None, **keywords):
 
         TimeFunction.__init__(self, None, **keywords)
         self.df = df
+        if knots is None:
+            self.knots = []
+        else:
+            self.knots = knots
         tmax = self.window[1]
         tmin = self.window[0]
         trange = tmax - tmin
