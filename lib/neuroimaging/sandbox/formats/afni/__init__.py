@@ -223,7 +223,7 @@ class AFNI(bin.BinaryFormat):
             for aname in time_header.keys():
                 # TAXIS_OFFSETS is only manditory if TAXIS_NUMS is set
                 if aname=='TAXIS_OFFSETS' and not self.header['TAXIS_NUMS'][1]:
-                        continue
+                    continue
                 try:
                     val = available_atts.pop(aname)
                 except KeyError:
@@ -237,7 +237,7 @@ class AFNI(bin.BinaryFormat):
                 self.header[aname] = val
             else:
                 # IMPORTANT: could try VOLREG_ROTCOM_xxxxxx or something!
-                print "Non-standard attribute %s skipped"%aname
+                print "Non-standard attribute %s skipped" % aname
         
     def inform_canonical(self):
         ## Get dims info
@@ -316,7 +316,7 @@ class AFNI(bin.BinaryFormat):
                 (self.zdim,self.ydim,self.xdim))
             brk_max = (a*scale_b0).max()
             try:
-                N.testing.assert_almost_equal(brkmax, maxval)
+                N.testing.assert_almost_equal(brk_max, maxval)
                 self.byteorder = utils.mybyteorders[sys.byteorder]
             except:
                 self.byteorder = utils.mybyteorders['swapped']
@@ -430,7 +430,7 @@ class AFNI(bin.BinaryFormat):
         if type(brick_slice) is not type(slice(0)):
             brick_slice = slice(brick_slice, brick_slice+1)
 
-        if self.ndim==4:
+        if self.ndim == 4:
             full_slice = type(slicer) is type(slice(0)) and slice(None) or \
                          [type(sl) is type(slice(0)) and slice(None) \
                           or N.newaxis for sl in slicer] + \
