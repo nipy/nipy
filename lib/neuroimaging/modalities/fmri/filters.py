@@ -188,7 +188,7 @@ class FIR(Filter):
     >>> from numpy import *
     >>> parameters = array([[1., 2.], [2., 5.], [4., 8.]])
     >>> IRF = filters.FIR(parameters)
-    >>> IRF.plot(linestyle='steps')
+    >>> _ = plot(arange(0, 15, 0.1), sum(IRF(arange(0, 15, 0.1)), axis=0))
     >>> ylab = ylabel('Filters')
     >>> xlab = xlabel('Time (s)')
     >>> show()
