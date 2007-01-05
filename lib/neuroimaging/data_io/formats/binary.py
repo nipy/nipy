@@ -54,7 +54,7 @@ class BinaryFormat(Format):
         # Otherwise, try to write to the object's header file
 
         if hdrfile:
-            fp = type(hdrfile) == type('') and open(hdrfile,'wb+') or hdrfile
+            fp = isinstance(hdrfile, str) and open(hdrfile,'wb+') or hdrfile
         elif self.datasource.exists(self.header_file):
             if not clobber:
                 raise IOError('file exists, but not allowed to clobber it')

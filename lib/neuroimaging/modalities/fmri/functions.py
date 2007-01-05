@@ -44,7 +44,7 @@ class TimeFunction(object):
             # fn is a single function with one output
             columns.append(self.fn(time))
         else:
-            if type(self.fn) in [types.ListType, types.TupleType]:
+            if isinstance(self.fn, list) or isinstance(self.fn, tuple):
                 # fn is a list of functions with one output
                 for fn in self.fn:
                     columns.append(fn(time))
@@ -71,10 +71,11 @@ class TimeFunction(object):
                 _f = f1
             else:
                 raise ValueError, 'number of outputs of regressors do not match'
-        elif type(other) in [types.FloatType, types.IntType]:
+        elif isinstance(other, float) or isinstance(other, int):
             _f = f2
-        elif type(other) in [types.ListType, types.TupleType, N.ndarray]:
-            if type(other) is N.ndarray:
+        elif isinstance(other, list) or isinstance(other, tuple) or \
+                 isinstance(other, N.ndarray):
+            if isinstance(other, N.ndarray):
                 if other.shape != (self.nout,):
                     raise 'shape does not much output, expecting (%d,)' % self.nout
             elif len(other) != self.nout:
@@ -184,7 +185,7 @@ class InterpolatedConfound(TimeFunction):
         if self.nout == 1:
             columns.append(self.f(time))
         else:
-            if type(self.f) in [types.ListType, types.TupleType]:
+            if isinstance(self.f, list) or isinstance(self.f, tuple):
                 for f in self.f:
                     columns.append(f(time))
             else:

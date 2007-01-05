@@ -340,7 +340,7 @@ class Ecat7(bin.BinaryFormat):
         header size.  It should always be 384.  If it is not then you know you
         read it in the wrong byte order.
         """
-        if type(hdrfile)==type(""):
+        if isinstance(hdrfile, str):
             hdrfile = datasource.open(hdrfile)
             hdrfile.seek(46)
             byteorder = utils.BIG_ENDIAN #Most scans are on suns = BE
@@ -348,6 +348,8 @@ class Ecat7(bin.BinaryFormat):
                                                 byteorder, field_formats_mh[2])[0]
             if reported_length != SWVERSION:
                 byteorder = utils.LITTLE_ENDIAN
+        else:
+            pass #FIXME: need to do something here
         return byteorder
 
     def header_defaults(self):

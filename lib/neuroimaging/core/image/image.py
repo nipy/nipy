@@ -89,7 +89,7 @@ class Image(object):
             self._source = ArrayImage(image, grid=grid)
 
         # from filename or url
-        elif type(image) == types.StringType:
+        elif isinstance(image, str):
             self._source = \
               self.fromurl(image, datasource, grid=grid, **keywords)
         else:
@@ -170,7 +170,7 @@ class Image(object):
     def asfile(self):
         """ Return image filename corresponding to Image object data """
         filename = self._source.asfile()
-        if type(self._source) == ArrayImage:
+        if isinstance(self._source, ArrayImage):
             self.tofile(filename, clobber=True)
         return filename
 

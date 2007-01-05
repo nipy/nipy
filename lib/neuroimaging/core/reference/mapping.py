@@ -62,7 +62,8 @@ def translation_transform(x, ndim):
 
 def matfromfile(infile, delimiter="\t"):
     """ Read in an affine transformation matrix from a csv file."""
-    if type(infile)==type(""): infile = open(infile)
+    if isinstance(infile, str):
+        infile = open(infile)
     reader = csv.reader(infile, delimiter=delimiter)
     return N.array([map(float, row) for row in reader])
 

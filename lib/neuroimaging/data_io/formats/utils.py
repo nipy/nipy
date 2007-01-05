@@ -63,7 +63,7 @@ def elemtype(format):
                      (fmtchar, allformats))
 
 def sanevalues(format, value):
-    nvals, valtype = type(value) in (TupleType, ListType) and \
+    nvals, valtype = (isinstance(value, tuple) or isinstance(value, list)) and \
                      (len(value), type(value[0])) or (1, type(value))
     
     return elemtype(format) == valtype and numvalues(format) == nvals

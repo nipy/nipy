@@ -197,7 +197,7 @@ class SliceIteratorItem(IteratorItem):
         return self.img[self.slice].squeeze()
 
     def set(self, value):
-        if type(value) == N.ndarray:
+        if isinstance(value, N.ndarray):
             value = value.reshape(self.img[self.slice].shape)
         self.img[self.slice] = value
 

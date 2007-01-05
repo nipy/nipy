@@ -289,7 +289,7 @@ class fMRIStatAR(LinearModelIterator):
 
         self.contrasts = []
         if contrasts is not None:
-            if type(contrasts) not in [type([]), type(())]:
+            if not isinstance(contrasts, tuple) and not isinstance(contrasts, list):
                 contrasts = [contrasts]
             for contrast in contrasts:
                 contrast.getmatrix(time=ftime)

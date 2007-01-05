@@ -348,7 +348,7 @@ class Analyze(bin.BinaryFormat):
         header size.  It should always be 384.  If it is not then you know you
         read it in the wrong byte order.
         """
-        if type(hdrfile)==type(""):
+        if isinstance(hdrfile, str):
             hdrfile = datasource.open(hdrfile)
         byteorder = utils.LITTLE_ENDIAN
         reported_length = utils.struct_unpack(hdrfile,

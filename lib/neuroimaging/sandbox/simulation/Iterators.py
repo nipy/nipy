@@ -34,7 +34,7 @@ class probstat_iter:
 class probstat_iter_list:
 
     def __getitem__(self, key):
-        if type(key) is not type(1):
+        if not isinstance(key, int):
             raise ValueError, 'key should be an integer for class probstat_iter_list'
         j = 0
         tmp = 0

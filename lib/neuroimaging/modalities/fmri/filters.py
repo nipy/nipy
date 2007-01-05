@@ -25,7 +25,7 @@ class Filter(object):
             self.n = 1
 
     def __getitem__(self, i):
-        if type(i) is not types.IntType:
+        if not isinstance(i, int):
             raise ValueError, 'integer needed'
         if self.n == 1:
             if i != 0:

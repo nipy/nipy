@@ -93,7 +93,8 @@ class ExperimentalRegressor(object):
 	testdata = self(N.arange(10))
 	if len(testdata.shape) == 2:
 	    nout = testdata.shape[0]
-	else: nout = 1
+	else:
+            nout = 1
         return TimeFunction(fn=self, slice=slice, nout=nout)
 
 
@@ -118,7 +119,7 @@ class ExperimentalQuantitative(ExperimentalRegressor, quantitative):
         else:
             n = 1
         if n > 1:
-            if type(name) in [type([]), type(())]:
+            if isinstance(name, list) or isinstance(name, tuple):
                 names = name
             else:
                 names = ['(%s:%d)' % (name, i) for i in range(n)]
@@ -172,9 +173,9 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
         defaults to 1.
         """
 
-        if type(iterator) is types.StringType:
+        if isinstance(iterator, str):
             iterator = csv.reader(file(iterator), delimiter=delimiter)
-        elif type(iterator) is types.FileType:
+        elif isinstance(iterator, file):
             iterator = csv.reader(iterator, delimiter=delimiter)
 
         # self.name doesn't exist
@@ -303,9 +304,9 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
         Determine an ExperimentalFactor from an iterator
         """
 
-        if type(iterator) is types.StringType:
+        if isinstance(iterator, str):
             iterator = csv.reader(file(iterator), delimiter=delimiter)
-        elif type(iterator) is types.FileType:
+        elif isinstance(iterator, file):
             iterator = csv.reader(iterator, delimiter=delimiter)
 
         self.events = {}

@@ -365,7 +365,7 @@ class AFNI(bin.BinaryFormat):
 
     def write_header(self, hdrfile=None, clobber=False):
         if hdrfile:
-            fp = type(hdrfile)==type('') and open(hdrfile, 'w+') or hdrfile
+            fp = isinstance(hdrfile, str) and open(hdrfile, 'w+') or hdrfile
         elif self.datasource.exists(self.header_file):
             if not clobber:
                 raise IOError('file exists, but not allowed to clobber it')
@@ -391,7 +391,7 @@ class AFNI(bin.BinaryFormat):
                 for i in range(count):
                     fp.write(fpformat.fix(val[i], ndecimal) + ' ')
             elif att_type == AFNI_string:
-                if type(val) is types.ListType:
+                if isinstance(val, list):
                     cur_string = '~'.join([v.__str__() for v in val])
                 else:
                     cur_string = val
@@ -422,17 +422,17 @@ class AFNI(bin.BinaryFormat):
         # 1 - we're replacing all the data of all bricks
         # 2 - if the maximum/maxima of the given slice of data exceeds
         #     the maximum/maxima of the brick(s) it slices into
-        if type(slicer) is type(()):
+        if isinstance(slicer, tuple):
             brick_slice = slicer[0]
         else:
             brick_slice = slicer
         # in case this is a simple index, fix to be a slice obj!
-        if type(brick_slice) is not type(slice(0)):
+        if not isinstance(brick_slice, slice):
             brick_slice = slice(brick_slice, brick_slice+1)
 
         if self.ndim == 4:
-            full_slice = type(slicer) is type(slice(0)) and slice(None) or \
-                         [type(sl) is type(slice(0)) and slice(None) \
+            full_slice = isinstance(slicer, slice) and slice(None) or \
+                         [isinstance(sl, slice) and slice(None) \
                           or N.newaxis for sl in slicer] + \
                           [slice(None)]*(self.ndim-len(slicer))
         else:
@@ -460,7 +460,7 @@ class AFNI(bin.BinaryFormat):
 
     def postread(self, x, slicer):
         if self.scales is not None:
-            if type(slicer) is type(()):
+            if isinstance(slicer, tuple):
                 brick_slice = slicer[0]
             else:
                 brick_slice = slicer
