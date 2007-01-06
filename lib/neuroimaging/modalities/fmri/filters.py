@@ -1,11 +1,10 @@
 import types
 
 import numpy as N
-from neuroimaging import traits
 
 from neuroimaging.modalities.fmri.utils import ConvolveFunctions, WaveFunction
 
-class Filter(traits.HasTraits):
+class Filter(object):
     '''
     Takes a list of impulse response functions (IRFs): main purpose is to
     convolve a functions with each IRF for Design. The class assumes the range
@@ -13,14 +12,13 @@ class Filter(traits.HasTraits):
     this is just for the __mul__ method for convolution.
     '''
 
-    dt = traits.Float(0.02)
-    tmax = traits.Float(500.0)
-    tmin = traits.Float(-10.)
 
-    def __init__(self, IRF, names, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+    def __init__(self, IRF, names, dt=0.02, tmin=-10., tmax=500.):
         self.IRF = IRF
         self.names = names
+        self.dt = dt
+        self.tmin = tmin
+        self.tmax = tmax
         try:
             self.n = len(self.IRF)
         except:

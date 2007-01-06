@@ -9,8 +9,6 @@ a spectral HRF.
 import numpy as N
 import numpy.linalg as L
 
-from neuroimaging import traits
-
 from neuroimaging.modalities.fmri import filters
 from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
@@ -50,13 +48,10 @@ class SpectralHRF(filters.Filter):
     Liao et al. (2002).
     '''
 
-    dt = traits.Float(0.02)
-    tmax = traits.Float(500.0)
-    ncomp = traits.Int(2)
-    names = traits.ListStr(['glover'])
-
-    def __init__(self, input_hrf=canonical, spectral=True, **keywords):
-        filters.Filter.__init__(self, input_hrf, names=self.names, **keywords)
+    def __init__(self, input_hrf=canonical, spectral=True, ncomp=2,
+                 names=['glover'], **keywords):
+        filters.Filter.__init__(self, input_hrf, names=names, **keywords)
+        self.ncomp = ncomp
         self.spectral = spectral
         if self.n != 1:
             raise ValueError, 'expecting one HRF for spectral decomposition'

@@ -265,7 +265,6 @@ class SplineConfound(TimeFunction):
     A natural spline confound with df degrees of freedom.
     """
     
-#    df = traits.Int(4)
     knots = traits.List()
 
     def __init__(self, df=4, **keywords):
