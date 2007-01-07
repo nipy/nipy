@@ -53,6 +53,7 @@ class BinaryFormat(Format):
         # handle that case immediately
         # Otherwise, try to write to the object's header file
 
+
         if hdrfile:
             fp = isinstance(hdrfile, str) and open(hdrfile,'wb+') or hdrfile
         elif self.datasource.exists(self.header_file):

@@ -5,7 +5,6 @@ import numpy.fft as fft
 import numpy.linalg as NL
 
 from neuroimaging.core.image.image import Image
-from neuroimaging.algorithms.utils import fwhm2sigma
 from neuroimaging.core.reference.mapping import Affine
 
 class LinearFilter(object):
@@ -116,6 +115,21 @@ class LinearFilter(object):
         _buffer = N.zeros(self.shape)
         _buffer[0:indata.shape[0],0:indata.shape[1],0:indata.shape[2]] = indata
         return fft.rfftn(_buffer)
+
+
+def fwhm2sigma(fwhm):
+    """
+    Convert a FWHM value to sigma in a Gaussian kernel.
+    """
+    return fwhm / N.sqrt(8 * N.log(2))
+
+def sigma2fwhm(sigma):
+    """
+    Convert a sigma in a Gaussian kernel to a FWHM value.
+    """
+    return sigma * N.sqrt(8 * N.log(2))
+
+
 
 if __name__ == '__main__':
     from neuroimaging.core.image.image import Image

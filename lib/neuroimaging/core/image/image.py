@@ -56,12 +56,12 @@ class Image(object):
             valid = [format]
         errors = {}
         for format in valid:
-            try:
-                return format(filename=url,
+            #try:
+            return format(filename=url,
                               datasource=datasource, mode=mode,
                               grid=grid, **keywords)
-            except Exception, e:
-                errors[format] = e
+            #except Exception, e:
+            #    errors[format] = e
 
         raise NotImplementedError, 'no valid reader found for URL %s\n%s' % \
               (url, \
