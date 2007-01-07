@@ -16,7 +16,6 @@ import gc
 
 import numpy as N
 import numpy.linalg as L
-from neuroimaging import traits
 from scipy.sandbox.models.utils import recipr
 
 from neuroimaging.core.image.image import Image
@@ -24,22 +23,32 @@ from neuroimaging.core.image.image import Image
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 
-class PCA(traits.HasTraits):
+class PCA(object):
     """
     Compute the PCA of an image (over axis=0). Image grid should
     have a subgrid method.
     """
 
-    design_keep = traits.Array(shape=(None,None), desc='Data is projected onto the column span of design_keep.')
-    design_resid = traits.Array(shape=(None,None), desc='After projecting onto the column span of design_keep, data is projected off of the column span of this matrix.')
-    tol = traits.Float(1.0e-05)
-    pcatype = traits.Trait('cor','cov', desc='Perform PCA on correlation or covariance matrix?')
-    mask = traits.Instance(Image)
-    ext = traits.String('.img')
-
-    def __init__(self, image, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
+    def __init__(self, image, tol=1e-5, ext='.img', mask=None, pcatype='cor',
+                 design_keep=None, design_resid=None, **keywords):
+        """
+        @param design_resid: After projecting onto the column span of design_keep, data is projected off of the column span of this matrix.
+        @param design_keep: Data is projected onto the column span of design_keep.
+        """
         self.image = image
+        self.tol = tol
+        self.ext = ext
+        self.mask = mask
+        self.pcatype = pcatype
+        if design_keep is None:
+            self.design_keep = [[]]
+        else:
+            self.design_keep = design_keep
+
+        if design_resid is None:
+            self.design_resid = [[]]
+        else:
+            self.design_keep = design_keep
 
         if self.mask is not None:
             self._mask = N.array(self.mask.readall())
@@ -49,23 +58,17 @@ class PCA(traits.HasTraits):
 
         self.nimages = self.image.grid.shape[0]
 
-    def _design_keep_changed(self):
-        self.proj_keep = N.dot(self.design_keep, L.pinv(self.design_keep))
-
-    def _design_resid_changed(self):
-        self.proj_resid = N.dot(self.design_resid, L.pinv(self.design_resid))
-
     def project(self, Y, which='keep'):
         if which == 'keep':
             if self.design_keep is None:
                 return Y
             else:
-                return N.dot(self.proj_keep, Y)
+                return N.dot(N.dot(self.design_keep, L.pinv(self.design_keep)), Y)
         else:
             if self.design_resid is None:
                 return Y            
             else:
-                return Y - N.dot(self.proj_resid, Y)
+                return Y - N.dot(N.dot(self.design_resid, L.pinv(self.design_resid)), Y)
 
     def fit(self):
         """
@@ -199,8 +202,10 @@ if PYLAB_DEF:
         therefore to free the memory of the output of images, the
         image_results attribute of this instance will also have to be deleted.
         """
-        
-        image_results = traits.Any()
+
+        def __init__(self, image, **keywords):
+            PCA.__init__(self, image, **keywords)
+            self.image_results = None
         
         def images(self, which=[0], output_base=None):
             PCA.images.__doc__
