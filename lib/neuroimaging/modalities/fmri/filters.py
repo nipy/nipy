@@ -17,6 +17,15 @@ class Filter(traits.HasTraits):
     tmax = traits.Float(500.0)
     tmin = traits.Float(-10.)
 
+    def __init__(self, IRF, names, **keywords):
+        traits.HasTraits.__init__(self, **keywords)
+        self.IRF = IRF
+        self.names = names
+        try:
+            self.n = len(self.IRF)
+        except:
+            self.n = 1
+
     def __getitem__(self, i):
         if type(i) is not types.IntType:
             raise ValueError, 'integer needed'
@@ -31,14 +40,6 @@ class Filter(traits.HasTraits):
         else:
             return Filter(self.IRF[i], names=[self.names[i]])
 
-    def __init__(self, IRF, names, **keywords):
-        traits.HasTraits.__init__(self, **keywords)
-        self.IRF = IRF
-        self.names = names
-        try:
-            self.n = len(self.IRF)
-        except:
-            self.n = 1
 
     def __add__(self, other):
         """
