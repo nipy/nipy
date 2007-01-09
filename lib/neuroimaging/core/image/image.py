@@ -85,7 +85,7 @@ class Image(object):
             self._source = image
 
         # from array
-        elif isinstance(image, N.ndarray) or isinstance(image, N.core.memmap):
+        elif isinstance(image, (N.ndarray, N.core.memmap)):
             self._source = ArrayImage(image, grid=grid)
 
         # from filename or url

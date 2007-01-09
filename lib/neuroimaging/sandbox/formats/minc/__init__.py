@@ -175,7 +175,7 @@ class MINC(Format):
                 dimensions = getattr(getattr(self, var), 'dimensions')
             except:
                 dimensions = None
-            if isinstance(dimensions, list) or isinstance(dimensions tuple):
+            if isinstance(dimensions, (list, tuple)):
                 new_dim = ()
                 for d in dimensions:
                     if d == mc.MItime:

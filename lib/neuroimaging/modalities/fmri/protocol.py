@@ -119,7 +119,7 @@ class ExperimentalQuantitative(ExperimentalRegressor, quantitative):
         else:
             n = 1
         if n > 1:
-            if isinstance(name, list) or isinstance(name, tuple):
+            if isinstance(name, (list, tuple)):
                 names = name
             else:
                 names = ['(%s:%d)' % (name, i) for i in range(n)]
