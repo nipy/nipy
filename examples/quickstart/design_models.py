@@ -48,7 +48,7 @@ for i in range(4,7):
 
 ax = pylab.gca()
 ax.set_ylim([-0.1,1.1])
-pylab.title('Models in NiPy')
+pylab.title('Models in NIPY')
 
 """
 The drift function is not yet a Term in a model. For

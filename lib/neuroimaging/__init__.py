@@ -1,7 +1,7 @@
 """
-Neuroimaging tools for Python (NiPy).
+Neuroimaging tools for Python (NIPY).
 
-The aim of NiPy is to produce a platform-independent Python environment for
+The aim of NIPY is to produce a platform-independent Python environment for
 the analysis of brain imaging data using an open development model.
 
 While

@@ -58,7 +58,7 @@ pylab.plot(frametimes, warm_events(time=frametimes), label='Warm', linestyle='st
 axes = pylab.gca()
 axes.set_ylim([-0.1,1.1])
 pylab.legend()
-pylab.title('Regressors in NiPy')
+pylab.title('Regressors in NIPY')
 
 """
 We will convolve the response with a filter, the canonical 'Glover' filter.

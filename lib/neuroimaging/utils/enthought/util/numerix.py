@@ -15,7 +15,7 @@ choose Numeric, numarray or numpy.
 
 import sys, os
 
-# For NiPy -- force NUMERIX=numpy
+# For NIPY -- force NUMERIX=numpy
 
 if os.environ.has_key('NUMERIX'):
     NUMERIX_DEF = True
