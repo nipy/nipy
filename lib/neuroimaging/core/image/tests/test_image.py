@@ -208,11 +208,11 @@ class ImageSequenceIteratorTest(unittest.TestCase):
         imgs = [Image(base_img) for _ in range(10)]
         it = ImageSequenceIterator(imgs)
         for x in it:
-            self.assertEquals(type(x), type(N.array([])))
+            self.assertTrue(isinstance(x, N.ndarray))
 
         it = ImageSequenceIterator(imgs, grid=imgs[-1].grid)
         for x in it:
-            self.assertEquals(type(x), type(N.array([])))
+            self.assertTrue(isinstance(x, N.ndarray))
 
 
 if __name__ == '__main__':

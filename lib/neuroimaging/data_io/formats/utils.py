@@ -73,7 +73,7 @@ def formattype(format):
 
 def flatten_values(valseq):
     """ Flattens the type of header values constructed by aggregate. """
-    if type(valseq) != type([]):
+    if isinstance(valseq, list):
         return [valseq]
     if valseq == []:
         return valseq

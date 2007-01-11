@@ -25,7 +25,7 @@ class ImageOneSample(onesample.OneSampleIterator):
         self.varfiximg = varfiximg
         self.varatioimg = varatioimg
 
-        if type(input[0]) in [types.ListType, types.TupleType]:
+        if isinstance(input[0], list) or isinstance(input[0], tuple):
             self.haveW = True
             imgs = [val[0] for val in input]
             wimgs = [val[1] for val in input]

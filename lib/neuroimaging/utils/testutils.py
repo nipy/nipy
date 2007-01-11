@@ -57,7 +57,7 @@ def get_package_tests(packname):
     tests = []
     for module in modules:
         tests += [(key,val) for key,val in module.__dict__.items() \
-                  if type(val)==types.TypeType and \
+                  if isinstance(val, type) and \
                      issubclass(val, TestCase) and \
                      val != TestCase]
     return dict(tests)
