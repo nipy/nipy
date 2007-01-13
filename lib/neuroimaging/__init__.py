@@ -32,7 +32,7 @@ The neuroimaging package contains the following subpackages and modules:
 """
 __docformat__ = 'restructuredtext en'
 
-__version__  = '0.01a'
+__version__  = '0.1.2'
 __revision__ = int("$Rev$".split()[-2])
 __status__   = 'alpha'
 __date__    = "$LastChangedDate$"
