@@ -2,8 +2,6 @@
 The core Image class.
 """
 
-import types
-
 import numpy as N
 
 from neuroimaging.data_io import DataSource, splitzipext
@@ -168,7 +166,10 @@ class Image(object):
 
 
     def asfile(self):
-        """ Return image filename corresponding to Image object data """
+        """ Return image filename corresponding to Image object data
+
+        @rtype: C{string}
+        """
         filename = self._source.asfile()
         if isinstance(self._source, ArrayImage):
             self.tofile(filename, clobber=True)
@@ -254,6 +255,7 @@ class ImageSequenceIterator(object):
             self.grid = self.imgs[0].grid
         else:
             self.grid = grid
+        self.iters = None
         iter(self)
 
     def __iter__(self): 
