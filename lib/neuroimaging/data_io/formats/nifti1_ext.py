@@ -627,7 +627,7 @@ try:
     import _nifti1_quaternion
 except ImportError:
     mod = setup_quaternion_extension()
-    d = mod.setup_extension().__dict__
+    d = mod.setup_extension(location=os.path.dirname(__file__)).__dict__
     n = d['name']; del(d['name'])
     s = d['sources']; del(d['sources'])
     d['include_dirs'].append(N.get_numpy_include())
