@@ -318,6 +318,10 @@ class MappingTest(unittest.TestCase):
         v = self.mapping.tovoxel(real)
         N.testing.assert_almost_equal(v, voxel)
 
+        tovox = lambda a: a.tovoxel(real)
+        self.assertRaises(N.linalg.LinAlgError, tovox, self.singular)
+        
+
     def test_isinvertable(self):
         self.assertTrue(self.mapping.isinvertible())
         self.assertTrue(not self.singular.isinvertible())
