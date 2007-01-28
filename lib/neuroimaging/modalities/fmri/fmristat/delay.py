@@ -89,8 +89,10 @@ class DelayContrastOutput(TContrastOutput):
 
 
     def __init__(self, grid, contrast, IRF=None, dt=0.01, delta=None, Tmax=100,
-                 Tmin=-100, subpath='delays', **kw):
-        TContrastOutput.__init__(self, grid, contrast, subpath=subpath, **kw)
+                 Tmin=-100, subpath='delays', clobber=False, path='.', ext='.hdr',
+                 frametimes=[], **kw):
+        TContrastOutput.__init__(self, grid, contrast, subpath=subpath, clobber=clobber,
+                                 frametimes=frametimes, **kw)
         self.IRF = IRF
         self.dt = dt
         if delta is None:
@@ -99,19 +101,25 @@ class DelayContrastOutput(TContrastOutput):
             self.delta = delta
         self.Tmax = Tmax
         self.Tmin = Tmin
-    
-    def setup_contrast(self, time=None):
+        self.path = path
+        self.subpath = subpath
+        self.clobber = clobber
+        self._setup_output_delay(path, clobber, subpath, ext, frametimes)
+        frametimes = N.array(frametimes)
+
+    def _setup_contrast(self, time=None):
         """
         Setup the contrast for the delay.
         """
 
-        self.contrast.getmatrix(time=self.frametimes)
-
+        self.contrast.getmatrix(time=time)
+        print self.contrast.matrix
+        
         cnrow = self.contrast.matrix.shape[0] / 2
         self.effectmatrix = self.contrast.matrix[0:cnrow]
         self.deltamatrix = self.contrast.matrix[cnrow:]
 
-    def setup_output(self):
+    def _setup_output_delay(self, path, clobber, subpath, ext, frametimes):
         """
         Setup the output for contrast, the DelayContrast. One t, sd, and effect img is output for each
         row of contrast.weights. Further, the \'magnitude\' (canonical HRF) contrast matrix and \'magnitude\'
@@ -130,7 +138,7 @@ class DelayContrastOutput(TContrastOutput):
 
         for i in range(nout):
             rowname = self.contrast.rownames[i]
-            outdir = os.path.join(self.path, self.subpath, rowname)
+            outdir = os.path.join(path, subpath, rowname)
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
 
@@ -138,15 +146,15 @@ class DelayContrastOutput(TContrastOutput):
             l = N.zeros(self.contrast.matrix.shape[0])
             l[0:cnrow] = self.contrast.weights[i]
 
-            img, it = self._setup_img(self.clobber, outdit, "t", self.ext)
+            img, it = self._setup_img(clobber, outdir, ext, "t")
             self.timgs.append(img)
             self.timg_iters.append(it)
 
-            img, it = self._setup_img(self.clobber, outdit, "effect", self.ext)
+            img, it = self._setup_img(clobber, outdir, ext, "effect")
             self.effectimgs.append(img)
             self.effectimg_iters.append(it)
 
-            img, it = self._setup_img(self.clobber, outdit, "sd", self.ext)
+            img, it = self._setup_img(clobber, outdir, ext, "sd")
             self.sdimgs.append(img)
             self.sdimg_iters.append(it)
 
@@ -165,7 +173,7 @@ class DelayContrastOutput(TContrastOutput):
 
             if PYLAB_DEF:
                 
-                ftime = self.frametimes
+                ftime = frametimes
                 def g(time=None, **extra):
                     return N.squeeze(N.dot(l, self.contrast.term(time=time, **extra)))
                 f = pylab.gcf()
@@ -264,11 +272,11 @@ class DelayContrastOutput(TContrastOutput):
     def set_next(self, data):
         nout = self.contrast.weights.shape[0]
         for i in range(nout):
-            self.timg_iters[i].set_next(data.t[i])
+            self.timg_iters[i].next().set(data.t[i])
             if self.effect:
-                self.effectimg_iters[i].set_next(data.effect[i])
+                self.effectimg_iters[i].next().set(data.effect[i])
             if self.sd:
-                self.sdimg_iters[i].set_next(data.sd[i])
+                self.sdimg_iters[i].next().set(data.sd[i])
 
 class DelayHRF(hrf.SpectralHRF):
 

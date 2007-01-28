@@ -280,12 +280,11 @@ class fMRIStatAR(LinearModelIterator):
             iterator = fMRISliceParcelIterator
 
         parcelmap, parcelseq = OLS.getparcelmap()
-
+        
         if iterator == fMRIParcelIterator:
             iterator_ = ParcelIterator
         elif iterator == fMRISliceParcelIterator:
             iterator_ = SliceParcelIterator
-
 
         self.contrasts = []
         if contrasts is not None:
@@ -297,25 +296,21 @@ class fMRIStatAR(LinearModelIterator):
                     cur = DelayContrastOutput(self.fmri_image.grid,
                                               contrast, path=path,
                                               clobber=clobber,
-                                              frametimes=ftime)
-                    cur.it = iterator_(cur.img, parcelmap, parcelseq, mode='w')
+                                              frametimes=ftime,
+                                              it=iterator_(self.fmri_image.grid, parcelmap, parcelseq, mode='w'))
                 elif contrast.rank == 1:
                     cur = TContrastOutput(self.fmri_image.grid, contrast,
                                           path=path,
                                           clobber=clobber,
-                                          frametimes=ftime)
-                    cur.it = iterator_(cur.img, parcelmap, parcelseq, mode='w')
+                                          frametimes=ftime,
+                                          it=iterator_(self.fmri_image.grid, parcelmap, parcelseq, mode='w'))
                 else:
                     cur = FContrastOutput(self.fmri_image.grid, contrast,
                                           path=path,
                                           clobber=clobber,
-                                          frametimes=ftime)
-                    cur.it = iterator_(cur.img, parcelmap, parcelseq, mode='w')
+                                          frametimes=ftime,
+                                          it=iterator_(self.fmri_image.grid, parcelmap, parcelseq, mode='w'))
                 self.contrasts.append(cur)
-                
-
-
-
 
         outputs += self.contrasts
 
@@ -329,7 +324,6 @@ class fMRIStatAR(LinearModelIterator):
 
         it = iterator(OLS.fmri_image, parcelmap, parcelseq)
         LinearModelIterator.__init__(self, it, outputs)
-
 
 
     def model(self):
