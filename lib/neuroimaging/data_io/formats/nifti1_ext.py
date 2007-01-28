@@ -630,7 +630,7 @@ except ImportError:
     d = mod.setup_extension(location=os.path.dirname(__file__)).__dict__
     n = d['name']; del(d['name'])
     s = d['sources']; del(d['sources'])
-    d['include_dirs'].append(N.get_numpy_include())
+    d['include_dirs'].append(N.get_include())
     extension = n, s, d
     pass
 
