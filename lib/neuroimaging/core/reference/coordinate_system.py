@@ -193,7 +193,7 @@ class DiagonalCoordinateSystem(CoordinateSystem):
         value = N.zeros((self.ndim()+1,)*2)
         value[self.ndim(), self.ndim()] = 1.0
         for i in range(self.ndim()):
-            value[i,i] = self.axes()[i].step
+            value[i, i] = self.axes()[i].step
             value[i, self.ndim()] = self.axes()[i].start
         return value
 
