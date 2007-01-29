@@ -1,5 +1,6 @@
 """
-This module provides definitions of various hemodynamic response functions (hrf).
+This module provides definitions of various hemodynamic response functions
+(hrf).
 
 In particular, it provides Gary Glover's canonical HRF, AFNI's default HRF, and
 a spectral HRF.
@@ -146,7 +147,11 @@ class SpectralHRF(filters.Filter):
         if self.n == 1:
             self.IRF = self.IRF[0]
 
-        self.approx.theta, self.approx.inverse, self.approx.dinverse, self.approx.forward, self.approx.dforward = invertR(delta, self.approx.coef)
+        (self.approx.theta,
+         self.approx.inverse,
+         self.approx.dinverse,
+         self.approx.forward,
+         self.approx.dforward) = invertR(delta, self.approx.coef)
         return approx
 
 

@@ -9,8 +9,6 @@ divided.
 
 """
 
-import types
-
 import numpy as N
 
 from scipy.sandbox.models.utils import recipr0
@@ -56,10 +54,10 @@ class TimeFunction(object):
             _window = N.greater(time, self.window[0]) * N.less_equal(time, self.window[1])
             columns = [column * _window for column in columns]
                 
-	if not self.slice:
-	    return N.squeeze(N.array(columns))
-	else:
-	    return N.squeeze(N.array(columns[self.slice]))
+        if not self.slice:
+            return N.squeeze(N.array(columns))
+        else:
+            return N.squeeze(N.array(columns[self.slice]))
 
     def _helper(self, other, f1, f2, f3):
         """

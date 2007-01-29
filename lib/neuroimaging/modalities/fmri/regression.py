@@ -5,7 +5,6 @@ import numpy.linalg as L
 from scipy.linalg import toeplitz
 from scipy.sandbox.models.utils import recipr
 
-from neuroimaging.core.image.image import Image
 import neuroimaging.algorithms.regression as imreg
 
 from neuroimaging.defines import pylab_def

@@ -1,5 +1,3 @@
-import types
-
 import numpy as N
 
 from neuroimaging.modalities.fmri.utils import ConvolveFunctions, WaveFunction
@@ -63,7 +61,8 @@ class Filter(object):
         newIRF = []
         interval = (self.tmin, self.tmax + other.tmax)
         for i in range(self.n):
-            curfn = ConvolveFunctions(self.IRF[i], other.IRF[i], interval, self.dt)
+            curfn = ConvolveFunctions(self.IRF[i], other.IRF[i], interval,
+                                      self.dt)
             newIRF.append(curfn)
         return Filter(newIRF)
 
@@ -109,7 +108,9 @@ class GammaDENS:
         self.coef = coef
 
     def __str__(self):
-        return '<GammaDENS:alpha:%03f, nu:%03f, coef:%03f>' % (self.alpha, self.nu, self.coef)
+        return '<GammaDENS:alpha:%03f, nu:%03f, coef:%03f>' % (self.alpha,
+                                                               self.nu,
+                                                               self.coef)
 
     def __repr__(self):
         return self.__str__()
@@ -195,7 +196,8 @@ class FIR(Filter):
     """
 
     def __init__(self, parameters):
-        fns = [WaveFunction(start, duration, 1.0) for (start, duration) in parameters]
+        fns = [WaveFunction(start, duration, 1.0) for
+               (start, duration) in parameters]
         Filter.__init__(self, fns, names="FIR")
 
 def _test():

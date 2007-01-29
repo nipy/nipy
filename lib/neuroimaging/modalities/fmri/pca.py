@@ -12,8 +12,6 @@ More specifically, the data is projected onto the eigenvectors of the
 covariance matrix.
 """
 
-import gc
-
 import numpy as N
 import numpy.linalg as L
 from scipy.sandbox.models.utils import recipr
@@ -120,8 +118,6 @@ class PCA(object):
             
             self.C += N.dot(YX, YX.T)
             
-            #gc.collect()
-        
         
         self.D, self.Vs = L.eigh(self.C)
         order = N.argsort(-self.D)
@@ -182,7 +178,6 @@ class PCA(object):
             d = d / d.flat[di]
             outslice = [slice(0,j) for j in outgrid.shape]
             outimage[outslice] = d
-            #del(d); gc.collect()
 
         return [it.img for it in outiters]
 
