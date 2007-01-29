@@ -1,145 +1,153 @@
-import os
+import string, os, gc, time, urllib
 
 import numpy as N
 import pylab
 
+from neuroimaging import traits
+
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
 from neuroimaging.core.image.image import Image
-from neuroimaging.data_io import DataSource
 
-eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
-eventdict_r = {'SSt_SSp':1, 'SSt_DSp':2, 'DSt_SSp':3, 'DSt_DSp':4}
+from protocol import event_protocol, block_protocol
+from io import urlexists
+from readonly import ReadOnlyValidate, HasReadOnlyTraits
 
-base = 'http://kff.stanford.edu/FIAC'
+#-----------------------------------------------------------------------------#
 
-def FIACpath(path, subj=3, run=3, base=base):
+class Study(HasReadOnlyTraits):
 
-    if run > 0:
-        return os.path.join(base, 'fiac%d' % subj, 'fonc%d' % run, path)
-    else:
-        return os.path.join(base, 'fiac%d' % subj, path)
+    root = ReadOnlyValidate(traits.Str, desc='Root FIAC directory.')
+
+local_study = Study(root='/home/analysis/FIAC')
+www_study = Study(root='http://kff.stanford.edu/FIAC')
+
+#-----------------------------------------------------------------------------#
+
+class Subject(HasReadOnlyTraits):
+
+    id = ReadOnlyValidate(traits.Range(low=0,high=15),
+                          desc='Which FIAC subject? Ranges from 0 to 15.')
+
+    study = ReadOnlyValidate(Study)
+    root = ReadOnlyValidate(traits.Str,
+                            desc='Root directory for this subject.')
+
+    event = traits.ReadOnly(desc='Which runs are event-related runs?')
+    block = traits.ReadOnly(desc='Which runs are block runs?')
+
+    def __init__(self, id, study=local_study):
+
+        self.study = study
+        self.id = id
+        self.root = os.path.join(self.study.root, 'fiac%d' % self.id)
+        self._getruns()
+
+    def __repr__(self):
+        return '<FIAC subject %d>' % self.id
+
+    def _getruns(self):
+
+        _path = lambda x: os.path.join(self.root, x)
+        event = []
+        block = []
+
+        for run in range(1,5):
+            if urlexists(_path('subj%d_bloc_fonc%d.txt' % (self.id, run))):
+                block.append(run)
+            elif urlexists(_path('subj%d_evt_fonc%d.txt' % (self.id, run))):
+                event.append(run)
+
+        self.event = event
+        self.block = block
         
-def FIACprotocol(subj=3, run=3):
-    good = False
 
-    for ptype in [FIACblock, FIACevent]:
-        try:
-            v = ptype(subj=subj, run=run)
-            good = True
-        except:
-            pass
+#-----------------------------------------------------------------------------#
 
-    if good:
-        return v
-    else:
-        return None
-
-def FIACblock(subj=3, run=3):
-
-    url = FIACpath('subj%(subj)d_bloc_fonc%(run)d.txt' % {'subj':subj, 'run':run}, subj=subj, run=-1)
-
-    pfile = DataSource().open(url)
-    pfile = pfile.read().strip().split('\n')
-
-    # start with a "deadtime" interval
-
-    times = []
-    events = []
-
-    for row in pfile:
-        time, eventtype = map(float, row.split())
-        times.append(time)
-        events.append(eventdict[eventtype])
-
-    # take off the first 3.33 seconds of each eventtype for the block design
-    # the blocks lasted 20 seconds with 9 seconds of rest at the end
-
-##    keep = range(0, len(events), 6)
-##     intervals = [[events[keep[i]], times[keep[i]] + 3.33, times[keep[i]]+20.] for i in range(len(keep))]
-##     p = ExperimentalFactor('FIAC_design', intervals, delta=False)
-
-    notkeep = range(0, len(events), 6)
-    intervals = [[events[i], times[i]] for i in range(len(events)) if i not in notkeep]
-    p = ExperimentalFactor('FIAC_design', intervals)
-    p.design_type = 'block'
-    return p
-
-def FIACbegin_block(subj=3, run=3):
-
-    url = FIACpath('subj%(subj)d_bloc_fonc%(run)d.txt' % {'subj':subj, 'run':run}, subj=subj, run=-1)
-
-    pfile = DataSource().open(url)
-    pfile = pfile.read().strip().split('\n')
-
-    # start with a "deadtime" interval
-
-    times = []
-    events = []
-
-    for row in pfile:
-        time, eventtype = map(float, row.split())
-        times.append(time)
-        events.append(eventdict[eventtype])
-
-    # take off the first 3.33 seconds of each eventtype for the block design
-    # the blocks lasted 20 seconds with 9 seconds of rest at the end
-
-    keep = range(0, len(events), 6)
-    intervals = [['Begin', times[keep[i]]] for i in range(len(keep))]
-    return ExperimentalFactor('beginning', intervals)
-
-def FIACbegin_event(subj=3, run=3):
-
-    intervals = [['Begin', 2.]]
-    return ExperimentalFactor('beginning', intervals)
-
-def FIACevent(subj=3, run=2):
-    url = FIACpath('subj%(subj)d_evt_fonc%(run)d.txt' % {'subj':subj, 'run':run}, subj=subj, run=-1)
-
-    pfile = DataSource().open(url)
-    pfile = pfile.read().strip().split('\n')
-
-    events = []; times = []
-
-    for row in pfile:
-        time, eventtype = map(float, row.split())
-        times.append(time)
-        events.append(eventdict[eventtype])
-
-    times.pop(0); events.pop(0) # delete first event as Keith has
-    intervals = [[events[i], times[i]] for i in range(len(events))]
+class Run(HasReadOnlyTraits):
     
-    p = ExperimentalFactor('FIAC_design', intervals)
-    p.design_type = 'event'
+    subject = ReadOnlyValidate(Subject)
+    id = ReadOnlyValidate(traits.Range(low=1, high=5, desc='Which run? Ranges from 1 to 5. '))
 
-    return p
+    root = ReadOnlyValidate(traits.Str,
+                            desc='Directory containing data for this run.')
 
-def FIACplot(subj=3, run=3, tmin=1.0, tmax=476.25, dt=0.2, save=False):
-    experiment = FIACprotocol(subj=subj, run=run)
+    fmrifile = ReadOnlyValidate(traits.Str, desc="Path for fMRI file.", label='fMRI data')
+    maskfile = ReadOnlyValidate(traits.Str, desc="Path for mask.", label='Mask')
+    anatfile = ReadOnlyValidate(traits.Str, desc="Path for hires anatomy.",
+                                label='Hi-res anatomy')
 
-    t = N.arange(tmin,tmax,dt)
+    fmri = traits.Instance(fMRIImage)
+    mask = traits.Instance(Image)
+    anat = traits.Instance(Image)
 
-    for event in eventdict.values():
-        pylab.plot(t, experiment[event](t), label=event,
-                       linewidth=2, linestyle='steps')
 
-        gca = pylab.axes()
-        gca.set_ylim([-0.1,1.1])
-    pylab.legend(eventdict.values())
-    if save:
-        pylab.savefig(FIACpath('protocol.png', subj=subj, run=run))
+    type = ReadOnlyValidate(traits.Trait(['block', 'event'],
+                                         desc='What type of run?'))
 
-def FIACfmri(subj=3, run=3, test=False):
-    if not test:
-        url = FIACpath('fsl/filtered_func_data.img', subj=subj, run=run)
-        f = fMRIImage(url, usematfile=False)
-    else:
-        import test
-        return test.test()
-    return f
+    begin = traits.Instance(ExperimentalFactor)
+    experiment = traits.Instance(ExperimentalFactor)
 
-def FIACmask(subj=3, run=3):
-    url = FIACpath('fsl/mask.img', subj=subj, run=run)
-    return Image(url)
+    def __init__(self, subject, id, **keywords):
+        self.subject = subject
+        self.id = id
+        traits.HasTraits.__init__(self, **keywords)
+
+        if self.id in self.subject.block:
+            self.type = 'block'
+        elif self.id in self.subject.event:
+            self.type = 'event'
+        else:
+            raise ValueError, 'run %d not found for %s' % (self.id, `self.subject`)
+
+        self.root = os.path.join(self.subject.root, 'fonc%d' % self.id)
+        self._getimages()
+        self._getprotocol()
+
+    def __repr__(self):
+        return '<FIAC subject %d, run %d>' % (self.subject.id, self.id)
+
+    def _getimages(self):
+        """
+        Find mask and anatomy image for given subject/run.
+        """
+
+        _path = lambda x: os.path.join(self.root, x)
+        self.fmrifile = _path('fsl/filtered_func_data.img')
+        self.maskfile = _path('fsl/mask.img')
+        self.anatfile = _path('fsl/highres2standard.img')
+
+    def load(self):
+        if urlexists(self.fmrifile):
+            self.fmri = fMRIImage(self.fmrifile)
+            
+        if urlexists(self.maskfile):
+            self.mask = Image(self.maskfile)
+            
+        if urlexists(self.anatfile):
+            self.anat = Image(self.anatfile, usemat=False)
+
+    def clear(self):
+        del(self.fmri); del(self.mask); del(self.anat)
+        
+    def _getprotocol(self):
+        _path = lambda x: os.path.join(self.subject.root,
+                                       x)
+        if self.id in self.subject.block: 
+            self.begin, self.experiment = block_protocol(_path('subj%d_bloc_fonc%d.txt' % (self.subject.id, self.id)))
+        elif self.id in self.subject.event:
+            self.begin, self.experiment = event_protocol(_path('subj%d_evt_fonc%d.txt' % (self.subject.id, self.id)))
+
+if __name__ == '__main__':
+    study = Study(root='/home/analysis/FIAC')
+    subjects = [Subject(i) for i in range(16)]
+
+    runs = []
+    for i in range(16):
+        subject = subjects[i]
+        subj_runs = []
+        for run in subject.event + subject.block:
+            cur_run = Run(subject, id=run)
+            subj_runs.append(cur_run)
+        runs.append(subj_runs)
 

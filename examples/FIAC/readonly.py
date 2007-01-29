@@ -1,9 +1,9 @@
-from enthought.traits import TraitHandler, Trait, HasStrictTraits, Dict
+from enthought.traits import TraitHandler, Trait, HasTraits, Dict
 from enthought.traits.trait_errors import TraitError
 
 ##############################################################################
 
-class HasReadOnlyTraits(HasStrictTraits):
+class HasReadOnlyTraits(HasTraits):
     readonly_set = Dict
 
 

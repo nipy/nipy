@@ -1,6 +1,6 @@
 import string, urllib
 
-import neuroimaging.modalities.fmri.protocol as protocol
+from neuroimaging.modalities.fmri import protocol, functions
 
 eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
 eventdict_r = {}
@@ -71,8 +71,7 @@ def event_protocol(url):
 
     return b, p
 
-
 def drift(df=7, window=[0,477.5]):
-    drift_fn = protocol.SplineConfound(window=window, df=df)
+    drift_fn = functions.SplineConfound(window=window, df=df)
     return protocol.ExperimentalQuantitative('drift', drift_fn)
 

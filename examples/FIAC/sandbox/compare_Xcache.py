@@ -78,12 +78,11 @@ def compare(subj=0, run=1, show=False, save=True, etype='DSt_DSp', deriv=True):
 
     a = pylab.gca()
     e = design.events[etype]
-    print e.name
 
     pylab.plot(t, e(t), 'm', label='%s(=%d)' % (etype, FIACrun.eventdict_r[etype]), linewidth=2)
 
     if design.design_type == 'block':
-        ii = N.nonzero(e.values)
+        ii = N.nonzero(e.values)[0]
         a.set_xlim([max(e.times[ii[0]]-10.,0),e.times[ii[0]+1]+40.])
         if deriv:
             a.set_ylim([-1.2,1.2])
@@ -126,25 +125,29 @@ html2 = """
 <!-- hhmts start --> <!-- hhmts end -->
 </body> </html>
 """
-compare(subj=0, run=3)
 
 if __name__ == '__main__':
-    for i in range(16):
+
+    for i in [5] + range(16):
         for j in range(1, 5):
             htmlfile = file('/home/analysis/FIAC/x_cache/compare_sub%d_run%d.html' %(i,j), 'w')
             htmlfile.write(html1)
             htmlfile.write('<h1>Comparing X_cache for subject %d, run %d</h1>\n' % (i, j))
             for etype in etypes:
                 for deriv in [False, True]:
+                    hasany = True
                     try:
-                        hasany = True
                         pngfile = compare(subj=i, run=j, deriv=deriv, etype=etype)
                         htmlfile.write('<h2>Event type %s, derivative=%s</h2>\n' % (etype, str(deriv)))
                         htmlfile.write('<img src="images/%s">' % os.path.basename(pngfile))
                         print i, j, deriv, etype
-                    except:
+                    except urllib2.HTTPError:
                         hasany = False
                         pass
+                    except NotImplementedError:
+                        hasany = False
+                        pass
+
             htmlfile.write(html2)
 
             htmlfile.close()

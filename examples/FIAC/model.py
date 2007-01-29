@@ -5,11 +5,11 @@ import numpy as N
 from scipy.sandbox.models import contrast
 
 from neuroimaging.modalities.fmri.pca import PCA, MultiPlot
-from neuroimaging.modalities.fmri import protocol
+from neuroimaging.modalities.fmri import protocol, functions
 from neuroimaging.modalities.fmri.fmristat import delay
 from neuroimaging.modalities.fmri.filters import Filter
 from neuroimaging.core.image.image import Image
-import neuroimaging.modalities.fmri.fmristat as fmristat
+import neuroimaging.modalities.fmri.fmristat.utils as fmristat
 
 from fiac import Run, Subject, Study
 from montage import Montage
@@ -24,7 +24,7 @@ from readonly import ReadOnlyValidate, HasReadOnlyTraits
 
 tmax = 190*2.5+1.25
 tmin = 0.
-drift_fn = protocol.SplineConfound(window=[tmin, tmax], df=5)
+drift_fn = functions.SplineConfound(window=[tmin, tmax], df=5)
 canonical_drift = protocol.ExperimentalQuantitative('drift', drift_fn)
 
 #-----------------------------------------------------------------------------#
@@ -54,7 +54,7 @@ class Model(HasReadOnlyTraits):
 
     hrf = traits.Instance(Filter, desc='Hemodynamic response function.')
 
-    formula = traits.Instance(protocol.Formula, desc='Model formula.')
+    formula = traits.Instance(protocol.formula, desc='Model formula.')
 
     shift = traits.Float(1.25, desc='Global offset time from images recorded frametimes -- note that FSL has slice-timed data to the midpoint of the TR.')
 
@@ -65,7 +65,7 @@ class Model(HasReadOnlyTraits):
         self.drift = drift or canonical_drift
         self.hrf = hrf or delay_hrf
         HasReadOnlyTraits.__init__(self, **keywords)
-        self.formula = protocol.Formula(self.drift)
+        self.formula = protocol.formula(self.drift)
 
     def __repr__(self):
         return '<FIAC drift model>'
@@ -154,9 +154,9 @@ class RunModel(Model, Run):
             brainavg = fmristat.WholeBrainNormalize(self.fmri, mask=self.mask)
             if self.normalize_reg:
                 brainavg_fn = \
-                            protocol.InterpolatedConfound(values=brainavg.avg,
-                                                          times=self.shift +
-                                                          self.fmri.frametimes)
+                            functions.InterpolatedConfound(values=brainavg.avg,
+                                                           times=self.shift +
+                                                           self.fmri.frametimes)
 
                 self.frameavg = protocol.ExperimentalQuantitative('frameavg',
                                                                brainavg_fn)

@@ -16,7 +16,7 @@ stat_map = {'t':'t',
             'effect': 'ef',
             'sd': 'sd'}
 
-def fmristat_run(subject=3, run=3, which='contrasts', contrast='overall', stat='t'):
+def fmristat_run(subject=3, run=3, which='contrasts', contrast='overall', stat='t', **kw):
     contrast = contrast_map[contrast]
     which = which_map[which]
     stat = stat_map[stat]
@@ -46,7 +46,7 @@ def nipy_rho(subject=3, run=3):
 
     return Image(runfile)
 
-def mask(subject=3, run=3):
+def mask(subject=3, run=3, **kw):
     runfile = '/home/analysis/FIAC/fiac%d/fonc%d/fsl/mask.img' % (subject, run)
 
     return Image(runfile)
@@ -68,6 +68,8 @@ parser.add_option('', '--rho', help='compare AR(1) coefs', dest='rho', action='s
 options, args = parser.parse_args()
 options = parser.values.__dict__
 
+print options
+
 if not parser.values.rho:
     x = nipy_run(**options)
     y = fmristat_run(**options)
@@ -80,7 +82,6 @@ m = mask(**options)
 vx = BoxViewer(x, mask=m, colormap='spectral')
 vy = BoxViewer(y, mask=m, colormap='spectral')
 
-print options
 if options['m'] is not None:
     vx.m = options['m']
     vy.m = options['m']

@@ -5,6 +5,7 @@ import neuroimaging.modalities.fmri.functions as confound
 import scipy.sandbox.models.contrast as contrast
 from neuroimaging.modalities.fmri.fmristat.delay import DelayHRF
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
+from neuroimaging.core.image.image import Image
 
 import gc, time
 
@@ -151,6 +152,11 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
         
         contrasts = [task, overall, sentence, speaker, interaction, delays]
         toc = time.time()
+
+        # use keith's estimate of rho
+
+        OLS.rho = fmristat_rho(subject=subj, run=run)
+
         AR = fmristat.fMRIStatAR(OLS, contrasts=contrasts, tshift=tshift, **ARopts)
         AR.fit()
         tic = time.time()
@@ -167,6 +173,10 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
 
         del(OLS); del(AR); gc.collect()
         return formula
+
+def fmristat_rho(subject=3, run=3):
+    runfile = '/home/analysis/FIAC/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (subject, subject, run)
+    return Image(runfile)
 
 if __name__ == '__main__':
 
