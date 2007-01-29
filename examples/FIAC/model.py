@@ -1,5 +1,5 @@
-import os
-import pylab
+import os, time, urllib2
+
 from neuroimaging import traits
 import numpy as N
 from scipy.sandbox.models import contrast
@@ -10,6 +10,8 @@ from neuroimaging.modalities.fmri.fmristat import delay
 from neuroimaging.modalities.fmri.filters import Filter
 from neuroimaging.core.image.image import Image
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
+
+import keith
 
 from fiac import Run, Subject, Study
 from montage import Montage
@@ -47,6 +49,7 @@ class Model(HasReadOnlyTraits):
     normalize = ReadOnlyValidate(traits.true,
                                  desc='Use frame averages to normalize to % BOLD?')
 
+    
     normalize_reg = ReadOnlyValidate(traits.true,
                                      desc='Use frame averages as a regressor in model?')
                           
@@ -61,7 +64,10 @@ class Model(HasReadOnlyTraits):
     plot = ReadOnlyValidate(traits.Instance(MultiPlot),
                             desc='Rudimentary multi-line plotter for design')
 
-    def __init__(self, drift=None, hrf=None, **keywords):
+    def __init__(self, drift=None, hrf=None, normalize=True,
+                 normalize_reg=True, **keywords):
+        self.normalize = normalize
+        self.normalize_reg = normalize_reg
         self.drift = drift or canonical_drift
         self.hrf = hrf or delay_hrf
         HasReadOnlyTraits.__init__(self, **keywords)
@@ -166,6 +172,134 @@ class RunModel(Model, Run):
     def __repr__(self):
         return Run.__repr__(self)
 
+
+    def _setup_contrasts(self):
+        """
+        This function is specific to the FIAC data, and defines
+        the contrasts of interest.
+        """
+
+        p = self.experiment
+        irf = self.hrf[0] 
+        f = self.formula
+
+        self.overallF = Contrast(p, f, name='overallF')
+
+        SSt_SSp = p['SSt_SSp'].astimefn()
+        DSt_SSp = p['DSt_SSp'].astimefn()
+        SSt_DSp = p['SSt_DSp'].astimefn()
+        DSt_DSp = p['DSt_DSp'].astimefn()
+
+        # Average effect
+
+        self.average = (SSt_SSp + DSt_SSp + SSt_DSp + DSt_DSp) * 0.25
+
+        # important: average is NOT convolved with HRF even though p was!!!
+        # same follows for other contrasts below
+        
+        self.average = irf.convolve(self.average)
+        self.average = Contrast(self.average,
+                           f,
+                           name='average')
+        
+        # Sentence effect
+
+        self.sentence = (DSt_SSp + DSt_DSp) * 0.5 - (SSt_SSp + SSt_DSp) * 0.5
+        self.sentence = irf.convolve(self.sentence)
+        self.sentence = Contrast(self.sentence, f, name='sentence')
+        
+        # Speaker effect
+
+        self.speaker =  (SSt_DSp + DSt_DSp) / 2. - (SSt_SSp + DSt_SSp) / 2.
+        self.speaker = irf.convolve(self.speaker)
+        self.speaker = Contrast(self.speaker, f, name='speaker')
+        
+        # Interaction effect
+
+        self.interaction = SSt_SSp - SSt_DSp - DSt_SSp + DSt_DSp
+        self.interaction = irf.convolve(self.interaction)
+        self.interaction = Contrast(self.interaction, f, name='interaction')
+        
+        # delay -- this presumes
+        # that the HRF used is a subclass of delay.DelayIRF
+    
+        self.delays = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp],
+                                             [[0.5,0.5,-0.5,-0.5],
+                                              [-0.5,0.5,-0.5,0.5],
+                                              [-1,1,1,-1],
+                                              [0.25,0.25,0.25,0.25]],
+                                             f,
+                                             name='task',
+                                             rownames=['speaker',
+                                                       'sentence',
+                                                       'interaction',
+                                                       'overall'],
+                                             IRF=self.hrf)
+
+    def OLS(self, **OLSopts):
+        """
+        OLS pass through data.
+        """
+        
+        self.load()
+
+        self.OLSmodel= fmristat.fMRIStatOLS(self.fmri,
+                                            formula=self.formula,
+                                            mask=self.mask,
+                                            tshift=self.shift, 
+                                            path=os.path.join(self.root, "fsl", "fmristat_run"),
+                                            **OLSopts)
+
+        self._setup_contrasts()
+        self.OLSmodel.reference = self.average
+        
+        toc = time.time()
+        self.OLSmodel.fit()
+        tic = time.time()
+        
+        print 'OLS time', `tic-toc`
+        
+        rho = self.OLSmodel.rho_estimator.img
+        rho.tofile("%s/rho.img" % self.OLSmodel.path, clobber=True)
+        
+        try:
+            self.OLSmodel.rho = keith.rho(subject=self.subject.id, run=self.id)        
+        except urllib2.HTTPError:
+            pass
+        
+        self.clear()
+
+    def AR(self, **ARopts):
+
+        self.load()
+        toc = time.time()
+        self.ARmodel = fmristat.fMRIStatAR(self.OLSmodel,
+                                           contrasts=[self.overallF,
+                                                      self.average,
+                                                      self.speaker,
+                                                      self.sentence,
+                                                      self.interaction,
+                                                      self.delays],
+                                           tshift=self.shift,
+                                           **ARopts)
+        self.ARmodel.fit()
+        tic = time.time()
+        
+        self.clear()
+        print 'AR time', `tic-toc`
+
+##         # if we output the AR whitened residuals, we might as
+##         # well output the FWHM, too
+
+##         if output_fwhm:
+##             resid = neuroimaging.modalities.fmri.fMRIImage(FIACpath('fsl/fmristat_run/ARresid.img', subj=subj, run=run))
+##             fwhmest = fastFWHM(resid, fwhm=FIACpath('fsl/fmristat_run/fwhm.img'), clobber=True)
+##             fwhmest()
+
+##         del(OLS); del(AR); gc.collect()
+##         return formula
+
+
 #-----------------------------------------------------------------------------#
 #
 # Contrasts, with a "view"
@@ -184,92 +318,28 @@ class Contrast(contrast.Contrast, HasReadOnlyTraits):
         self.plot.draw()
 
     def __repr__(self):
-        return '<Contrast: %s>' % self.name
+        return '<contrast: %s>' % self.name
         
-
-#-----------------------------------------------------------------------------#
-#
-# FIAC contrasts of interest
-#
-#-----------------------------------------------------------------------------#
-
-def contrasts(model):
-    """
-    This function is specific to the FIAC data, and defines
-    the contrasts of interest.
-    """
-
-    p = model.experiment
-    irf = model.hrf[0] 
-    formula = model.formula
-
-    overallF = Contrast(p, formula, name='overallF')
-
-    SSt_SSp = p['SSt_SSp'].astimefn()
-    DSt_SSp = p['DSt_SSp'].astimefn()
-    SSt_DSp = p['SSt_DSp'].astimefn()
-    DSt_DSp = p['DSt_DSp'].astimefn()
-
-    # Average effect
-
-    average = (SSt_SSp + DSt_SSp + SSt_DSp + DSt_DSp) * 0.25
-
-    # important: average is NOT convolved with HRF even though p was!!!
-    # same follows for other contrasts below
-        
-    average = irf.convolve(average)
-    average = Contrast(average,
-                       formula,
-                       name='average')
-
-    # Sentence effect
-
-    sentence = (DSt_SSp + DSt_DSp) * 0.5 - (SSt_SSp + SSt_DSp) * 0.5
-    sentence = irf.convolve(sentence)
-    sentence = Contrast(sentence, formula, name='sentence')
-        
-    # Speaker effect
-
-    speaker =  (SSt_DSp + DSt_DSp) / 2. - (SSt_SSp + DSt_SSp) / 2.
-    speaker = irf.convolve(speaker)
-    speaker = Contrast(speaker, formula, name='speaker')
-        
-    # Interaction effect
-
-    interaction = SSt_SSp - SSt_DSp - DSt_SSp + DSt_DSp
-    interaction = irf.convolve(interaction)
-    interaction = Contrast(interaction, formula, name='interaction')
-        
-    # delay -- this presumes
-    # that the HRF used is a subclass of delay.DelayIRF
-    
-    delays = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp],
-                                    [[0.5,0.5,-0.5,-0.5],
-                                     [-0.5,0.5,-0.5,0.5],
-                                     [-1,1,1,-1],
-                                     [0.25,0.25,0.25,0.25]],
-                                    model.formula,
-                                    name='task',
-                                    rownames=['speaker',
-                                              'sentence',
-                                              'interaction',
-                                              'overall'],
-                                    IRF=model.hrf)
-
-    return [overallF, average, sentence, speaker, interaction, delays]
-       
 
 if __name__ == '__main__':
 
-    import pylab
+    import sys
+    if len(sys.argv) == 3:
+        subj, run = map(int, sys.argv[1:])
+    else:
+        subj, run = (3, 3)
+
     study = StudyModel(root='/home/analysis/FIAC')
-    subject = SubjectModel(0, study=study)
-    run = RunModel(subject, 1)
-    run.view()
+    subject = SubjectModel(subj, study=study)
+    runmodel = RunModel(subject, run)
+    runmodel.OLS(clobber=True)
+    runmodel.AR(clobber=True)
 
-    c = contrasts(run)
-    for i in range(len(c)-1): # don't plot delay
-        pylab.figure()
-        c[i].view()
+##    run.view()
 
-    pylab.show()
+##     c = contrasts(run)
+##     for i in range(len(c)-1): # don't plot delay
+##         pylab.figure()
+##         c[i].view()
+
+##    pylab.show()
