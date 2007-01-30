@@ -26,16 +26,17 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     p = N.identity(nout) - N.dot(f, L.pinv(f))
     tmp = R.standard_normal((nout, nout-ndim))
     tmp = N.dot(p, tmp)
-    f[0:nout,ndim:] = tmp
+    f[0:nout, ndim:] = tmp
     for i in range(nout-ndim):
         f[0:nout,ndim+i] = f[0:nout,ndim+i] / N.sqrt(N.add.reduce(f[0:nout,ndim+i]**2))
 
     t = N.zeros((nout+1,)*2)
-    t[0:nout,0:nout] = f
-    t[nout,nout] = 1.
-    t[0:nout,nout] = origin
+    t[0:nout, 0:nout] = f
+    t[nout, nout] = 1.
+    t[0:nout, nout] = origin
 
-    input_coords = VoxelCoordinateSystem('slice', axis.generic, shape=shape + (1,))
+    input_coords = VoxelCoordinateSystem('slice', axis.generic,
+                                         shape=shape + (1,))
     if output_coords is None:
         output_coords = mni.MNI_world
 
