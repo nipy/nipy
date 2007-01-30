@@ -5,8 +5,11 @@ from neuroimaging.data_io.formats import afni
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.image.image import Image
 
+from neuroimaging.utils.test_decorators import slow, data
+
 class AFNITest(unittest.TestCase):
 
+    @data
     def setUp(self):
         # This data set is part of the AFNI test data package
         # it is anatomical with shape (124,256,256)
@@ -14,11 +17,14 @@ class AFNITest(unittest.TestCase):
 
 
 class AFNIPrintTest(AFNITest):
+
+    @data
     def test_print(self):
         print self.image
 
 class AFNITransformTest(AFNITest):
 
+    @data
     def test_transform(self):
         t = self.image.grid.mapping.transform
 
@@ -35,6 +41,7 @@ class AFNITransformTest(AFNITest):
                      [   0.,    0.        ,    0.        ,    1.        ]])
         N.testing.assert_almost_equal(t,a)
 
+    @data
     def test_shape(self):
         self.assertEquals(tuple(self.image.grid.shape), (124,256,256))
 
@@ -51,6 +58,7 @@ class AFNITransformTest(AFNITest):
 
 class AFNIReadTest(AFNITest):
 
+    @data
     def test_read(self):
         data = self.image[:]
         minmax = self.image.header['BRICK_STATS']
@@ -61,6 +69,7 @@ class AFNIReadTest(AFNITest):
 
 class AFNIDataTypeTest(AFNITest):
 
+    @slow
     def test_datatypes(self):
         for sctype in afni.AFNI_dtype2bricktype.keys():
             
@@ -77,6 +86,7 @@ class AFNIDataTypeTest(AFNITest):
         os.remove('out.HEAD')
         os.remove('out.BRIK')
 
+    @slow
     def test_datatypes2(self):
         for sctype in afni.AFNI_dtype2bricktype.keys():
             for _sctype in afni.AFNI_dtype2bricktype.keys():
