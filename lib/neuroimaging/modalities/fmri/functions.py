@@ -309,7 +309,7 @@ class SplineConfound(TimeFunction):
 
         def _getspline(a, b):
             def _spline(time):
-                return N.power(time, 3.0) * N.greater(time, a) * N.less_equal(time, b)
+                return N.power(time - a, 3.0) * N.greater(time, a) * N.less_equal(time, b)
             return _spline
 
         for i in range(len(self.knots) - 1):

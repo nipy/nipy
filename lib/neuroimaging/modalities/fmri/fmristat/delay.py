@@ -266,7 +266,7 @@ class DelayContrastOutput(TContrastOutput):
 
         return ContrastResults(effect=self._effect,
                                sd=self._sd,
-                               t=t)
+                               t=t, df_denom=results.df_resid)
 
     def set_next(self, data):
         nout = self.contrast.weights.shape[0]

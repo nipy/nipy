@@ -350,3 +350,4 @@ class fMRIStatAR(LinearModelIterator):
 
 
 
+
