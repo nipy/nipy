@@ -140,15 +140,14 @@ format_modules = (
   "neuroimaging.data_io.formats.analyze",
   "neuroimaging.data_io.formats.nifti1",
   "neuroimaging.data_io.formats.ecat7",
-  "neuroimaging.sandbox.formats.afni",
-  #"neuroimaging.data_io.formats.afni",
+  "neuroimaging.data_io.formats.afni",
   #"neuroimaging.data_io.formats.minc",
 )
 
 default_formats = [("neuroimaging.data_io.formats.nifti1", "Nifti1"),
                    ("neuroimaging.data_io.formats.analyze", "Analyze"),
                    ("neuroimaging.data_io.formats.ecat7", "Ecat7"),
-                   ("neuroimaging.sandbox.formats.afni", "AFNI"),
+                   ("neuroimaging.data_io.formats.afni", "AFNI"),
                   ]
                    
 
