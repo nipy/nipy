@@ -1,6 +1,5 @@
 import numpy as N, re
 import sys, fpformat
-from types import IntType as Int, FloatType as Float, StringType as String
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io import DataSource, iswritemode
@@ -8,7 +7,6 @@ from neuroimaging.data_io.formats import utils
 import neuroimaging.data_io.formats.binary as bin
 from neuroimaging.data_io.formats._afniconstants import *
 from neuroimaging.core.reference.axis import space, spacetime
-from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
 
 class AFNIFormatError(Exception):
@@ -222,7 +220,8 @@ class AFNI(bin.BinaryFormat):
         if available_atts.has_key('TAXIS_NUMS'):
             for aname in time_header.keys():
                 # TAXIS_OFFSETS is only manditory if TAXIS_NUMS is set
-                if aname=='TAXIS_OFFSETS' and not self.header['TAXIS_NUMS'][1]:
+                if aname == 'TAXIS_OFFSETS' and \
+                       not self.header['TAXIS_NUMS'][1]:
                     continue
                 try:
                     val = available_atts.pop(aname)
@@ -296,7 +295,7 @@ class AFNI(bin.BinaryFormat):
         # intent info is available, but I don't know what to do with it!
 
         ## since retrieving is awkward, map into self.__dict__ too
-        for (k,v) in self.canonical_fields.items():
+        for (k, v) in self.canonical_fields.items():
             self.__dict__[k] = v
         
     def divine_byteorder(self):
@@ -330,7 +329,7 @@ class AFNI(bin.BinaryFormat):
         self.ndim = ndim = grid.ndim
         shape = grid.shape
         self.nbricks = nbricks = ndim < 4 and 1 or shape[3]
-        self.header['DATASET_RANK'] = (3,nbricks) 
+        self.header['DATASET_RANK'] = (3, nbricks) 
         self.header['DATASET_DIMENSIONS'] = shape[:3]
         self.header['TYPESTRING'] = '3DIM_HEAD_FUNC' # ?? figure this out
         self.header['SCENE_DATA'] = (0, 0, 0)        # ?? too
