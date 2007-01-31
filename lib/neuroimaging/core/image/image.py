@@ -119,7 +119,7 @@ class Image(object):
 
     def toarray(self, clean=True, **keywords):
         """
-       Return a Image instance that has an ArrayImage as its _source attribute.
+        Return a Image instance that has an ArrayImage as its _source attribute.
 
         >>> from numpy import *
         >>> from neuroimaging.core.image.image import Image
