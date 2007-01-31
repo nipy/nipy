@@ -259,7 +259,14 @@ class Analyze(bin.BinaryFormat):
                 self.header['scale_factor'] = scale
                 self.write_header(clobber=True)
 
-        return N.round(x/self.header['scale_factor'])
+        
+        x /= self.header['scale_factor']
+        if self.dtype in [datatype2sctype[FLOAT],
+                          datatype2sctype[DOUBLE],
+                          datatype2sctype[COMPLEX]]:
+            return x
+        else:
+            return N.round(x)
 
 
     def postread(self, x):
