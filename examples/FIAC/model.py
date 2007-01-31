@@ -23,7 +23,7 @@ from readonly import ReadOnlyValidate, HasReadOnlyTraits
 #-----------------------------------------------------------------------------#
 
 tmax = 190*2.5+1.25
-tmin = 0.
+tmin = 1.25
 drift_fn = functions.SplineConfound(window=[tmin, tmax], df=5)
 canonical_drift = protocol.ExperimentalQuantitative('drift', drift_fn)
 
@@ -235,7 +235,7 @@ class RunModel(Model, Run):
                                              rownames=['speaker',
                                                        'sentence',
                                                        'interaction',
-                                                       'overall'],
+                                                       'average'],
                                              IRF=self.hrf)
 
     def OLS(self, **OLSopts):
