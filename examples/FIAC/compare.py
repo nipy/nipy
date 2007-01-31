@@ -175,8 +175,12 @@ class VoxelModel(CompareRun):
         self.rho = N.around(rho * (self.OLSmodel.nmax / 2.)) / (self.OLSmodel.nmax / 2.)
         parcelmap, parcelseq = self.OLSmodel.getparcelmap()
 
+        mask = N.equal(parcelmap, self.rho)
+
         self.AR(clobber=True, parcel=(parcelmap, [self.rho]))
         self.design = self.OLSmodel.model().design
+
+        self.X = keith._getxcache(subj=self.subject.id, run=self.id)
 
         m = ar_model(self.design, self.rho)
         self.load()
@@ -184,14 +188,47 @@ class VoxelModel(CompareRun):
         data = self.fmri[:,i,j,k]
         results = m.fit(data)
 
+        cor = {}
+
         for output in self.ARmodel.outputs:
             if isinstance(output, delay.DelayContrastOutput):
-                print output.extract(results), [(x,N.array([self.result(which='delays', contrast=output.contrast.rownames[_j], stat=x)[i,j,k] for _j in range(4)])) for x in ['effect', 'sd', 't']], output.contrast.name
+                RR = {}; KK = {}
+                for stat in ['effect', 'sd', 't']:
+                    RR[stat] = []; KK[stat] = []
+                for _j in range(4):
+                    for stat in ['effect', 'sd', 't']:
+                        R = self.result(which='delays', contrast=output.contrast.rownames[_j], stat=stat)
+                        K = self.keith_result(which='delays', contrast=output.contrast.rownames[_j], stat=stat)
+                        cor[('delays', stat, output.contrast.rownames[_j])] = N.corrcoef(R[:].flat * mask[:], K[:].flat * mask[:])[0,1]
+                        RR[stat].append(R[i,j,k]); KK[stat].append(K[i,j,k])
+
+                for stat in ['effect', 'sd', 't']:
+                    for obj in [RR,KK]:
+                        obj[stat] = N.array(obj[stat])
+                print output.extract(results), RR, KK
+
             elif not isinstance(output, FContrastOutput):
-                print output.extract(results), [(x,self.result(which='contrasts', contrast=output.contrast.name, stat=x)[i,j,k]) for x in ['effect', 'sd', 't']], output.contrast.name
+                RR = {}
+                KK = {}
+                for stat in ['effect', 'sd', 't']:
+                    R = self.result(which='contrasts', contrast=output.contrast.name, stat=stat)
+                    K = self.keith_result(which='contrasts', contrast=output.contrast.name, stat=stat)
+                    RR[stat] = R[i,j,k]
+                    KK[stat] = K[i,j,k]
+
+                    cor[('contrasts', stat, output.contrast.name)] = N.corrcoef(R[:].flat * mask[:], K[:].flat * mask[:])[0,1]
+
+                print output.extract(results), RR, KK, output.contrast.name
             else:
                 print output.extract(results)
+        print cor
         
+class KeithRho(CompareRun):
+
+    def OLS(self, **OLSopts):
+        CompareRun.OLS(self, **OLSopts)
+        self.OLSmodel.rho = keith.rho(subject=self.subject.id, run=self.id)
+
 def plot_result(result1, result2, mask, which='contrasts', contrast='speaker', stat='t', vmax=None, vmin=None):
     
     resultargs = {'which':which, 'contrast':contrast, 'stat':stat}
@@ -241,29 +278,45 @@ if __name__ == '__main__':
 
     study = model.StudyModel(root='/home/analysis/FIAC')
     subject = model.SubjectModel(subj, study=study)
+
+##     try:
+##         runmodel.max_corr()
+##         runmodel.webpage()
+##     except (urllib2.HTTPError, ValueError, NotImplementedError):
+##         pass
+
+##     print runmodel.corr
+##     runmodel.load()
+##     mask = runmodel.mask
+
+
+##     vmodel = VoxelModel(subject, run)
+##     vmodel.OLS(clobber=True)
+##     vmodel.voxel_model(15,32,20)
+
+
     runmodel = CompareRun(subject, run)
     runmodel.OLS(clobber=True)
     runmodel.AR(clobber=True)
-
-    vmodel = VoxelModel(subject, run)
-    vmodel.OLS(clobber=True)
-    vmodel.voxel_model(20,30,30)
-    
-    try:
-        runmodel.max_corr()
-        runmodel.webpage()
-    except (urllib2.HTTPError, ValueError, NotImplementedError):
-        pass
-
-    runmodel.load()
-    mask = runmodel.mask
-    print cor_result(runmodel.result, runmodel.keith_result, mask)
+        
 
 ##     keithrho = KeithRho(subject, run, resultdir=os.path.join("fsl", "fmristat_rho"))
 ##     keithrho.OLS(clobber=True)
 ##     keithrho.AR(clobber=True)
 
-    plot_result(runmodel.result, runmodel.keith_result, runmodel.mask)
+    M = runmodel
+    M.load()
+    for contrast in ['average', 'sentence', 'speaker', 'interaction']:
+        v = [cor_result(M.result, M.keith_result, M.mask, stat=stat,
+                        contrast=contrast)[0,1] for stat in ['t', 'sd', 'effect']]
+        r = (N.nan_to_num(M.result(contrast=contrast, stat='sd')[:]) / 
+             N.nan_to_num(M.keith_result(contrast=contrast, stat='sd')[:])) * M.mask[:]
+        r = r[N.nonzero(N.nan_to_num(r))]
+        print v, r.mean(), r.std(), r.min(), r.max()
+
+
+
+##     plot_result(runmodel.result, runmodel.keith_result, runmodel.mask)
 ##     rho1 = runmodel.OLSmodel.rho
 ##     rho2 = keithrho.OLSmodel.rho
 
