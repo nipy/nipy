@@ -1,4 +1,4 @@
-import numpy, types, time
+import numpy, types
 
 AFNI_missing = [-999, -999999]
 
@@ -131,12 +131,12 @@ AFNI_byteorder2att = _swap_dict(AFNI_att2byteorder)
 ##                     'BRICK_KEYWORDS':(types.StringType, None)
 ##                     }
 
-AFNI_orientations = {('xspace',True): ORI_R2L_TYPE,
-                     ('xspace',False): ORI_L2R_TYPE,
-                     ('yspace',True): ORI_A2P_TYPE,
-                     ('yspace',False): ORI_P2A_TYPE,
-                     ('zspace',True): ORI_I2S_TYPE,
-                     ('zspace',False): ORI_S2I_TYPE
+AFNI_orientations = {('xspace', True): ORI_R2L_TYPE,
+                     ('xspace', False): ORI_L2R_TYPE,
+                     ('yspace', True): ORI_A2P_TYPE,
+                     ('yspace', False): ORI_P2A_TYPE,
+                     ('zspace', True): ORI_I2S_TYPE,
+                     ('zspace', False): ORI_S2I_TYPE
                      }
 
 AFNI_orientations_inv = {ORI_R2L_TYPE: ('xspace', True),
