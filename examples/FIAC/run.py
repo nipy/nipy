@@ -1,9 +1,12 @@
 from fiac import *
 
 import neuroimaging.modalities.fmri.protocol as protocol
+import neuroimaging.modalities.fmri.functions as confound
 import scipy.sandbox.models.contrast as contrast
 from neuroimaging.modalities.fmri.fmristat.delay import DelayHRF
-import neuroimaging.modalities.fmri.fmristat as fmristat
+import neuroimaging.modalities.fmri.fmristat.utils as fmristat
+
+import gc, time
 
 def FIACformula(subj=3, run=3, normalize=True, df=5):
     p = FIACprotocol(subj=subj, run=run)
@@ -18,7 +21,7 @@ def FIACformula(subj=3, run=3, normalize=True, df=5):
             
         p.convolve(delay_irf)
 
-        drift_fn = protocol.SplineConfound(window=[0,f.frametimes.max()+2.5],
+        drift_fn = confound.SplineConfound(window=[0,f.frametimes.max()+2.5],
                                            df=df)
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
 
@@ -63,7 +66,7 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
 
             brainavg = fmristat.WholeBrainNormalize(f, mask=m)
             
-            brainavg_fn = protocol.InterpolatedConfound(times=f.frametimes + tshift,
+            brainavg_fn = confound.InterpolatedConfound(times=f.frametimes + tshift,
                                                         values=brainavg.avg)
 
             wholebrain = protocol.ExperimentalQuantitative('whole_brain',
