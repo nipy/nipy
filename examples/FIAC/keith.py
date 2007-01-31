@@ -17,7 +17,7 @@ stat_map = {'t':'t',
             'sd': 'sd'}
 
 def rho(subject=3, run=3):
-    runfile = '/home/analysis/FIAC/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (subject, subject, run)
+    runfile = 'http://kff.stanford.edu/FIAC/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (subject, subject, run)
     return Image(runfile)
 
 def result(subject=3, run=3, which='contrasts', contrast='average', stat='t'):
@@ -25,7 +25,7 @@ def result(subject=3, run=3, which='contrasts', contrast='average', stat='t'):
     which = which_map[which]
     stat = stat_map[stat]
 
-    resultfile = '/home/analysis/FIAC/fmristat/fiac%d/fiac%d_fonc%d_%s_%s_%s.img' % (subject, subject, run, contrast, which, stat)
+    resultfile = 'http://kff.stanford.edu/FIAC/fmristat/fiac%d/fiac%d_fonc%d_%s_%s_%s.img' % (subject, subject, run, contrast, which, stat)
     return Image(resultfile)
 
 def _getxcache(subj=0, run=1):
