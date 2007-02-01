@@ -52,7 +52,7 @@ def event_protocol(url):
     regressor, the other the protocol.    
     """
 
-    time, events = _read_url(url)
+    times, events = _read_url(url)
 
     times.pop(0)
     events.pop(0) # delete first event as Keith has
