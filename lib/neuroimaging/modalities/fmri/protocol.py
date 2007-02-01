@@ -11,9 +11,9 @@ class ExperimentalRegressor(object):
     
 
     def __init__(self, convolved=False, namespace=namespace, termname='term'):
-	namespace[termname] = self
+        namespace[termname] = self
         self.__c = convolved
-	self.termname = termname
+        self.termname = termname
 
     # a toggle to determine whether we
     # want to think of the factor as convolved or not
@@ -31,14 +31,14 @@ class ExperimentalRegressor(object):
 
         if not hasattr(self, '_nameunconv'):
             self._nameunconv = copy.copy(self.name)
-	    self._funcunconv = self.func
+            self._funcunconv = self.func
 	    
         if self.convolved:
             self.name = self._convolved.name
-	    self.func = self._convolved
+            self.func = self._convolved
         else:
             self.name = self._nameunconv
-	    self.func = self._funcunconv
+            self.func = self._funcunconv
 
     def __add__(self, other):
         other = ExperimentalFormula(other)
@@ -58,17 +58,17 @@ class ExperimentalRegressor(object):
                 return term.names(self)
 
     def _convolved__call__(self, time, **keywords):
-	"""
+        """
 	Call convolved function.
 	"""
-	v = []
-	for _func in self._convolved_func:
-	    try:
-		v.append(_func(time, **keywords))
-	    except:
-		for __func in _func:
-		    v.append(__func(time, **keywords))
-	return N.array(v)
+        v = []
+        for _func in self._convolved_func:
+            try:
+                v.append(_func(time, **keywords))
+            except:
+                for __func in _func:
+                    v.append(__func(time, **keywords))
+        return N.array(v)
 
     def convolve(self, IRF):
 
@@ -90,11 +90,11 @@ class ExperimentalRegressor(object):
         Return a TimeFunction object that can be added, subtracted, etc.
         """
 	#FIXME: should be a better way to determine this
-	testdata = self(N.arange(10))
+        testdata = self(N.arange(10))
 
-	if len(testdata.shape) == 2:
-	    nout = testdata.shape[0]
-	else:
+        if len(testdata.shape) == 2:
+            nout = testdata.shape[0]
+        else:
             nout = 1
         return TimeFunction(fn=self, slice=slice, nout=nout)
 
@@ -274,9 +274,9 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
                 keys = keys + [downtime]
                 which = N.argmax(value, axis=0)
                 which = N.where(s, which, keys.index(downtime))
-		tmp, self.namespace = self.namespace, {self.termname:[keys[w] for w in which]}
+                tmp, self.namespace = self.namespace, {self.termname:[keys[w] for w in which]}
                 value = factor.__call__(self)
-		self.namespace = tmp
+                self.namespace = tmp
             else:
                 value = N.asarray(value)
         else:
@@ -342,8 +342,8 @@ class ExperimentalFormula(formula):
         allvals = []
 
         for t in self.terms:
-	    t.namespace = self.namespace
-	    val = t(time, **keywords)
+            t.namespace = self.namespace
+            val = t(time, **keywords)
 
             if val.ndim == 1:
                 val.shape = (1, val.shape[0])
