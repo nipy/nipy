@@ -209,6 +209,15 @@ class DelayContrast(Contrast):
         t = N.clip(t, self.Tmin, self.Tmax)
         return t
 
+    def extract(self, results):
+        self._extract_effect(results)
+        self._extract_sd(results)
+        t = self._extract_t()
+
+        return ContrastResults(effect=self._effect,
+                               sd=self._sd,
+                               t=t, df_denom=results.df_resid)
+
 
 
 class DelayContrastOutput(TContrastOutput):
@@ -308,13 +317,7 @@ class DelayContrastOutput(TContrastOutput):
                 del(f); del(g)
                 
     def extract(self, results):
-        self.contrast._extract_effect(results)
-        self.contrast._extract_sd(results)
-        t = self.contrast._extract_t()
-
-        return ContrastResults(effect=self.contrast._effect,
-                               sd=self.contrast._sd,
-                               t=t, df_denom=results.df_resid)
+        return self.contrast.extract(results)
 
     def set_next(self, data):
         nout = self.contrast.weights.shape[0]
