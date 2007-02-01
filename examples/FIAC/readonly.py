@@ -1,5 +1,10 @@
-from enthought.traits import TraitHandler, Trait, HasTraits, Dict
-from enthought.traits.trait_errors import TraitError
+try:
+    from enthought.traits import TraitHandler, Trait, HasTraits, Dict
+    from enthought.traits.trait_errors import TraitError
+except ImportError:
+    from neuroimaging.utils.enthought.traits import TraitHandler, Trait, HasTraits, Dict
+    from neuroimaging.utils.enthought.traits.trait_errors import TraitError
+
 
 ##############################################################################
 
