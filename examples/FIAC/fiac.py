@@ -10,16 +10,17 @@ from protocol import event_protocol, block_protocol
 from io import urlexists
 from readonly import ReadOnlyValidate, HasReadOnlyTraits
 
-#-----------------------------------------------------------------------------#
-
 class Study(HasReadOnlyTraits):
 
     root = ReadOnlyValidate(traits.Str, desc='Root FIAC directory.')
 
-local_study = Study(root='/home/analysis/FIAC')
+    def joinpath(self, x):
+        return os.path.join(self.root, x)
+
+local_study = Study(root='/home/timl/src/nipy-data/fmri/FIAC')
 www_study = Study(root='http://kff.stanford.edu/FIAC')
 
-#-----------------------------------------------------------------------------#
+
 
 class Subject(HasReadOnlyTraits):
 
@@ -37,29 +38,27 @@ class Subject(HasReadOnlyTraits):
 
         self.study = study
         self.id = id
-        self.root = os.path.join(self.study.root, 'fiac%d' % self.id)
-        self._getruns()
+        self.root = self.study.joinpath('fiac%d' % self.id)
+        self.event, self.block = self._getruns()
 
     def __repr__(self):
         return '<FIAC subject %d>' % self.id
 
+    def joinpath(self, x):
+        return os.path.join(self.root, x)
+
     def _getruns(self):
 
-        _path = lambda x: os.path.join(self.root, x)
         event = []
         block = []
-
         for run in range(1, 5):
-            if urlexists(_path('subj%d_bloc_fonc%d.txt' % (self.id, run))):
+            if urlexists(self.joinpath('subj%d_bloc_fonc%d.txt' % (self.id, run))):
                 block.append(run)
-            elif urlexists(_path('subj%d_evt_fonc%d.txt' % (self.id, run))):
+            elif urlexists(self.joinpath('subj%d_evt_fonc%d.txt' % (self.id, run))):
                 event.append(run)
 
-        self.event = event
-        self.block = block
+        return event, block
         
-
-#-----------------------------------------------------------------------------#
 
 class Run(HasReadOnlyTraits):
     
@@ -104,17 +103,22 @@ class Run(HasReadOnlyTraits):
     def __repr__(self):
         return '<FIAC subject %d, run %d>' % (self.subject.id, self.id)
 
+    def joinpath(self, x):
+        return os.path.join(self.root, x)
+
     def _getimages(self):
         """
         Find mask and anatomy image for given subject/run.
         """
 
-        _path = lambda x: os.path.join(self.root, x)
-        self.fmrifile = _path('fsl/filtered_func_data.img')
-        self.maskfile = _path('fsl/mask.img')
-        self.anatfile = _path('fsl/highres2standard.img')
+        self.fmrifile = self.joinpath('fsl/filtered_func_data.img')
+        self.maskfile = self.joinpath('fsl/mask.img')
+        self.anatfile = self.joinpath('fsl/highres2standard.img')
 
     def load(self):
+        """
+        Open each of the files associated with this run.
+        """
         if urlexists(self.fmrifile):
             self.fmri = fMRIImage(self.fmrifile)
             
@@ -125,17 +129,18 @@ class Run(HasReadOnlyTraits):
             self.anat = Image(self.anatfile, usemat=False)
 
     def clear(self):
+        """
+        Close each of the files associated with this run.
+        """
         del(self.fmri)
         del(self.mask)
         del(self.anat)
         
     def _getprotocol(self):
-        _path = lambda x: os.path.join(self.subject.root,
-                                       x)
         if self.id in self.subject.block: 
-            self.begin, self.experiment = block_protocol(_path('subj%d_bloc_fonc%d.txt' % (self.subject.id, self.id)))
+            self.begin, self.experiment = block_protocol(self.subject.joinpath('subj%d_bloc_fonc%d.txt' % (self.subject.id, self.id)))
         elif self.id in self.subject.event:
-            self.begin, self.experiment = event_protocol(_path('subj%d_evt_fonc%d.txt' % (self.subject.id, self.id)))
+            self.begin, self.experiment = event_protocol(self.subject.joinpath('subj%d_evt_fonc%d.txt' % (self.subject.id, self.id)))
 
 if __name__ == '__main__':
     study = Study(root='/home/analysis/FIAC')

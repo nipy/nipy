@@ -1,4 +1,4 @@
-import urllib, os, gc
+import urllib, gc
 import numpy as N
 
 from neuroimaging import traits
@@ -25,12 +25,11 @@ class Resampler(Run):
 
     def __init__(self, *args, **keywords):
         Run.__init__(self, *args, **keywords)
-        self.get_grid()
+        self.input_grid, self.output_grid = self._get_grid()
 
-    def get_grid(self):
-        fslmatstr = urllib.urlopen(os.path.join(self.root,
-                                                'fsl/example_func2standard.mat')).read().split()
-        fslmat =  N.array(map(float, fslmatstr))
+    def _get_grid(self):
+        fslmatstr = urllib.urlopen(self.joinpath('fsl/example_func2standard.mat')).read().split()
+        fslmat =  N.array(fslmatstr, dtype=N.float64)
         fslmat.shape = (4, 4)
 
         M = [[0,0,1,0],
@@ -40,21 +39,20 @@ class Resampler(Run):
 
         fslmat = N.dot(M, N.dot(fslmat, M))
         
-        tmpimage = Image(self.maskfile,
-                         ignore_origin=True,
-                         abs_pixdim=True)
+        tmpimage = Image(self.maskfile, ignore_origin=True, abs_pixdim=True)
                          
-        self.input_grid = tmpimage.grid
+        input_grid = tmpimage.grid
         
-        input_coords = self.input_grid.mapping.output_coords
+        input_coords = input_grid.mapping.output_coords
         output_coords = standard.grid.mapping.output_coords
         fworld2sworld = Affine(input_coords,
                                output_coords,
                                fslmat)
         svoxel2fworld = fworld2sworld.inverse() * standard.grid.mapping
 
-        self.output_grid = SamplingGrid(mapping=svoxel2fworld,
+        output_grid = SamplingGrid(mapping=svoxel2fworld,
                                         shape=standard.grid.shape)
+        return input_grid, output_grid
 
     def __repr__(self):
         return '< Resampler for FIAC subject %d, run %d>' % (self.subject.id, self.id)
