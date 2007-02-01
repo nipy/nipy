@@ -3,8 +3,6 @@ These classes provide the most basic structures required by
 the Image class.
 """
 
-import os
-
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.data_io import DataSource
 
