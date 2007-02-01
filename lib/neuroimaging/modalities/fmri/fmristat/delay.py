@@ -113,7 +113,6 @@ class DelayContrastOutput(TContrastOutput):
         """
 
         self.contrast.getmatrix(time=time)
-        print self.contrast.matrix
         
         cnrow = self.contrast.matrix.shape[0] / 2
         self.effectmatrix = self.contrast.matrix[0:cnrow]

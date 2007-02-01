@@ -135,7 +135,7 @@ class fMRIStatOLS(LinearModelIterator):
 ##        srho = scipy.ndimage.gaussian_filter(self.rho_estimator.img.readall(), sigma)
  ##       self.rho_estimator.img.writeslice(slice(0, self.rho_estimator.img.grid.shape[0], 1), srho)
         self.rho = self.rho_estimator.img
-        self.getparcelmap()
+##        self.getparcelmap()
 
     def getparcelmap(self):
 
@@ -334,6 +334,7 @@ class fMRIStatAR(LinearModelIterator):
             design = self.dmatrix
         # is using the first parcel label correct here?
         # rho needs to be a single float...
+
         return ar_model(rho=itervalue.label[0], design=design)
 
 
