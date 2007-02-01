@@ -82,6 +82,51 @@ class DelayContrast(Contrast):
         else:
             self.rownames = rownames
 
+    def getmatrix(self, time=None):
+        Contrast.getmatrix(self, time=time)
+        self.isestimable(time)
+
+    def isestimable(self, t):
+        """
+        To estimate the delay, it is assumed that the response contains
+
+        (f ** HRF)(t + delta)
+
+        for each delay model time series 'f'.
+        More specifically, it is assumed that
+
+        f(t + delta) = c1 * (f ** HRF)(t) + delta * c2 * (f ** dHRF)(t)
+
+        where HRF and dHRF are the HRFs for this delay contrast.
+
+        This function checks to ensure that the columns
+
+        [(f ** HRF)(t), (f ** dHRF(t))]
+
+        are in the column space of the fMRI regression model.
+        """
+        
+        D = self.formula(t).T
+        pinvD = L.pinv(D)
+
+        C = self.term(t)
+
+        cnrow = C.shape[0] / 2
+        effects = C[0:cnrow]
+        deffects = C[cnrow:]
+
+        for i in range(self.weights.shape[0]):
+            for matrix in [effects, deffects]:
+                col = N.dot(self.weights[i], matrix)
+                colhat = N.dot(D, N.dot(pinvD, col))
+                if not N.allclose(col, colhat):
+                    if self.weights.shape[0] > 1:
+                        name = self.rownames[i]
+                    else:
+                        name = ''
+                    raise ValueError, 'delay contrast %snot estimable' % name
+        return 
+
 class DelayContrastOutput(TContrastOutput):
 
 
@@ -109,7 +154,7 @@ class DelayContrastOutput(TContrastOutput):
         """
 
         self.contrast.getmatrix(time=time)
-        
+
         cnrow = self.contrast.matrix.shape[0] / 2
         self.effectmatrix = self.contrast.matrix[0:cnrow]
         self.deltamatrix = self.contrast.matrix[cnrow:]
