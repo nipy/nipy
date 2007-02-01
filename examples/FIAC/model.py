@@ -145,7 +145,7 @@ class RunModel(Model, Run):
                  **keywords):
         Run.__init__(self, subject, id=id)
         Model.__init__(self, drift=drift, hrf=hrf, **keywords)
-        self.resultdir = os.path.join(self.root, resultdir)
+        self.resultdir = self.joinpath(resultdir)
         self.subject = subject
 
         self.begin.convolve(self.hrf[0])
@@ -193,15 +193,11 @@ class RunModel(Model, Run):
 
         # Average effect
 
-        self.average = (SSt_SSp + DSt_SSp + SSt_DSp + DSt_DSp) * 0.25
-
         # important: average is NOT convolved with HRF even though p was!!!
         # same follows for other contrasts below
-        
+        self.average = (SSt_SSp + DSt_SSp + SSt_DSp + DSt_DSp) * 0.25        
         self.average = irf.convolve(self.average)
-        self.average = Contrast(self.average,
-                           f,
-                           name='average')
+        self.average = Contrast(self.average, f, name='average')
         
         # Sentence effect
 
@@ -301,7 +297,7 @@ class RunModel(Model, Run):
 
 #-----------------------------------------------------------------------------#
 #
-# Contrasts, with a "view"
+# Contrasts, with a "view" method
 #
 #-----------------------------------------------------------------------------#
 
