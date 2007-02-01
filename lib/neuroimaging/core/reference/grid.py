@@ -79,18 +79,23 @@ class SamplingGrid (object):
 
 
     def copy(self):
+        """
+        Create a copy of the grid.
+
+        @rtype: L{SamplingGrid}
+        """
         return SamplingGrid(self.shape, self.mapping, self.input_coords,
                             self.output_coords)
 
     def allslice (self):
         """
-        a slice object representing the entire grid
+        A slice object representing the entire grid.
         """
         return slice(0, self.shape[0])
 
     def range(self):
         """
-        return the coordinate values in the same format as numpy.indices.
+        Return the coordinate values in the same format as numpy.indices.
         """
         indices = N.indices(self.shape)
         tmp_shape = indices.shape
@@ -162,7 +167,16 @@ class ConcatenatedGrids(SamplingGrid):
     This is most likely the kind of grid to be used for fMRI images.
     """
 
-    def _grids (self, grids):
+
+    def __init__(self, grids, concataxis="concat"):
+        self.grids = self._grids(grids)
+        self.concataxis = concataxis
+        mapping, input_coords, output_coords = self._mapping()
+        shape = (len(self.grids),) + self.grids[0].shape
+        SamplingGrid.__init__(self, shape, mapping, input_coords, output_coords)
+
+
+    def _grids(self, grids):
         # check mappings are affine
         check = N.any([not isinstance(grid.mapping, Affine)\
                           for grid in grids])
@@ -208,22 +222,13 @@ class ConcatenatedGrids(SamplingGrid):
                 
         newaxis = Axis(name=self.concataxis)
         in_coords = self.grids[0].input_coords
-        newin = CoordinateSystem(
-              '%s:%s'%(in_coords.name, self.concataxis), \
-                 [newaxis] + list(in_coords.axes()))
+        newin = CoordinateSystem('%s:%s'%(in_coords.name, self.concataxis), \
+                                 [newaxis] + list(in_coords.axes()))
         out_coords = self.grids[0].output_coords
-        newout = CoordinateSystem(
-              '%s:%s'%(out_coords.name, self.concataxis), \
-                 [newaxis] + list(out_coords.axes()))
+        newout = CoordinateSystem('%s:%s'%(out_coords.name, self.concataxis), \
+                                  [newaxis] + list(out_coords.axes()))
         return Mapping(mapfunc), newin, newout
 
-
-    def __init__(self, grids, concataxis="concat"):
-        self.grids = self._grids(grids)
-        self.concataxis = concataxis
-        mapping, input_coords, output_coords = self._mapping()
-        shape = (len(self.grids),) + self.grids[0].shape
-        SamplingGrid.__init__(self, shape, mapping, input_coords, output_coords)
 
     def subgrid(self, i): 
         return self.grids[i]
