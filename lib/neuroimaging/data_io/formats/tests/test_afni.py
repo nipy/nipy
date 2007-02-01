@@ -9,11 +9,13 @@ from neuroimaging.utils.test_decorators import slow, data
 
 class AFNITest(unittest.TestCase):
 
-    @data
-    def setUp(self):
+    def data_setUp(self):
         # This data set is part of the AFNI test data package
         # it is anatomical with shape (124,256,256)
         self.image = afni.AFNI("anat+orig", datasource=repository)
+
+    def setUp(self):
+        pass
 
 
 class AFNIPrintTest(AFNITest):
@@ -70,6 +72,7 @@ class AFNIReadTest(AFNITest):
 class AFNIDataTypeTest(AFNITest):
 
     @slow
+    @data
     def test_datatypes(self):
         for sctype in afni.AFNI_dtype2bricktype.keys():
             
@@ -87,6 +90,7 @@ class AFNIDataTypeTest(AFNITest):
         os.remove('out.BRIK')
 
     @slow
+    @data
     def test_datatypes2(self):
         for sctype in afni.AFNI_dtype2bricktype.keys():
             for _sctype in afni.AFNI_dtype2bricktype.keys():
