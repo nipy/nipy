@@ -166,9 +166,9 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
         Determine an ExperimentalStepFunction from an iterator
         which returns rows of the form:
 
-        (start, stop, height)
+        (eventtype, start, stop, height)
 
-        Here, Type is a hashable object and Start and Stop are floats.
+        Here, eventtype is a hashable object and Start and Stop are floats.
         The fourth being an optional
         float for the height during the interval [Start,Stop] which
         defaults to 1.
@@ -179,18 +179,15 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
         elif isinstance(iterator, file):
             iterator = csv.reader(iterator, delimiter=delimiter)
 
-        # self.name doesn't exist
         self.events = Events(name=self.name)
 
         for row in iterator:
             try:
-                start, end, height = row
+                eventtype, start, end, height = row
             except:
-                start, end = row
+                eventtype, start, end = row
                 height = 1.0
-                pass
 
-            #event type doesn't exist
             self.events[eventtype].append(float(start), float(end)-float(start), height=float(height))
 
         return self.events
