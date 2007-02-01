@@ -31,15 +31,16 @@ def _2transform(matrix, vector):
 
 def permutation_matrix(order=range(3)[2::-1]):
     """
-    Create an NxN permutation matrix from a sequence, containing the values 0,...,N-1.
+    Create an NxN permutation matrix from a sequence, containing the values
+    0,...,N-1.
     """
     n = len(order)
     matrix = N.zeros((n, n))
     if set(order) != set(range(n)):
-        raise ValueError(
-          'order should be a sequence of integers with values, 0 ... len(order)-1.')
+        raise ValueError('order should be a sequence of integers with' \
+                         'values, 0 ... len(order)-1.')
     for i in range(n): 
-        matrix[i,order[i]] = 1
+        matrix[i, order[i]] = 1
     return matrix
 
 
@@ -65,7 +66,7 @@ def matfromfile(infile, delimiter="\t"):
     if isinstance(infile, str):
         infile = open(infile)
     reader = csv.reader(infile, delimiter=delimiter)
-    return N.array([map(float, row) for row in reader])
+    return N.array(list(reader)).astype(float)
 
 def frombin(tstr):
     """
@@ -92,7 +93,7 @@ def matfromstr(tstr, ndim=3, delimiter=None):
     if tstr[0:24] == "mat file created by perl":
         return frombin(tstr) 
     else:
-        transform = N.array(map(float, tstr.split(delimiter)))
+        transform = N.array(tstr.split(delimiter)).astype(float)
         transform.shape = (ndim+1,)*2
         return transform
 
@@ -180,8 +181,8 @@ class Mapping(object):
 
 
     def __str__(self):
-        return '%s:map=%s\n'%(self.name, self._map) +\
-        '%s:inverse=%s\n'%(self.name, self._inverse)
+        return '%s:map=%s\n' % (self.name, self._map) + \
+        '%s:inverse=%s\n' % (self.name, self._inverse)
 
 
     def __ne__(self, other): return not self.__eq__(other)
@@ -209,18 +210,23 @@ class Mapping(object):
         return Mapping(map, inverse=inverse)
 
     def ndim(self):
-        """ The number of input dimensions """
+        """ The number of input dimensions
+
+        @rtpye: C{int}
+        """
         return self._ndim
 
     def isinvertible(self):
         """
         Does this mapping have an inverse?
+
+        @rtype: C{bool}
         """
         return self._inverse is not None
 
     def inverse(self):
         """
-        Create a new Mapping instance which is the inverse of self.
+        Create a new L{Mapping} instance which is the inverse of self.
         """
         if self.isinvertible():
             return Mapping(self._inverse, self)
@@ -232,6 +238,8 @@ class Mapping(object):
         Given a real coordinate, where self.input_coords are assumed to be
         voxels, return the closest voxel for real. Will choke if mapping is
         not invertible.
+
+        @raises: N.linalg.LinAlgError is mapping is not invertible.
         """
         shape = real.shape
         if len(shape) > 1:
@@ -320,8 +328,8 @@ class Affine(Mapping):
         """
         if not hasattr(other, "transform"): 
             return False
-        return N.all(N.asarray(self.transform) == N.asarray(other.transform)) and \
-            self.name == other.name
+        return N.all(N.asarray(self.transform) == N.asarray(other.transform)) \
+               and self.name == other.name
 
 
     def __rmul__(self, other):
@@ -337,6 +345,11 @@ class Affine(Mapping):
  
 
     def isinvertible(self):
+        """
+        Does this mapping have an inverse?
+
+        @rtype: C{bool}
+        """
         try:
             inv(self.transform)
             return True
@@ -344,6 +357,9 @@ class Affine(Mapping):
             return False
 
     def inverse(self):
+        """
+        Create a new L{Addine} instance which is the inverse of self.
+        """
         return Affine(inv(self.transform))
 
     
