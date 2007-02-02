@@ -1,4 +1,4 @@
-import string, urllib
+import urllib
 
 from neuroimaging.modalities.fmri import protocol, functions
 
@@ -24,7 +24,7 @@ def block_protocol(url):
     events = []
 
     for row in pfile:
-        time, eventtype = map(float, string.split(row))
+        time, eventtype = map(float, row.split())
         times.append(time)
         events.append(eventdict[eventtype])
 
@@ -53,14 +53,16 @@ def event_protocol(url):
     pfile = urllib.urlopen(url)
     pfile = pfile.read().strip().split('\n')
 
-    events = []; times = []
+    events = []
+    times = []
 
     for row in pfile:
-        time, eventtype = map(float, string.split(row))
+        time, eventtype = map(float, row.split())
         times.append(time)
         events.append(eventdict[eventtype])
 
-    times.pop(0); events.pop(0) # delete first event as Keith has
+    times.pop(0)
+    events.pop(0) # delete first event as Keith has
     intervals = [[events[i], times[i]] for i in range(len(events))]
     
     p = protocol.ExperimentalFactor('FIAC_design', intervals)

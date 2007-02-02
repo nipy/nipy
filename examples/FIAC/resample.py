@@ -1,4 +1,4 @@
-import urllib, os
+import urllib, os, gc
 import numpy as N
 
 from neuroimaging import traits
@@ -31,7 +31,7 @@ class Resampler(Run):
         fslmatstr = urllib.urlopen(os.path.join(self.root,
                                                 'fsl/example_func2standard.mat')).read().split()
         fslmat =  N.array(map(float, fslmatstr))
-        fslmat.shape = (4,4)
+        fslmat.shape = (4, 4)
 
         M = [[0,0,1,0],
              [0,1,0,0],
@@ -82,5 +82,8 @@ class Resampler(Run):
         else:
             return new
 
-        del(interp); del(interp_data); del(new) ; gc.collect()
+        del(interp)
+        del(interp_data)
+        del(new)
+        gc.collect()
 

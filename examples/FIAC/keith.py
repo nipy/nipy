@@ -52,6 +52,6 @@ def xcache(subj=0, run=1):
     fmristat design matrix
     """
     
-    X = getxcache(subj=subj, run=run)[:,:,2:] * 1.
+    X = _getxcache(subj=subj, run=run)[:,:,2:] * 1.
     X.shape = (191, 10)
     return X

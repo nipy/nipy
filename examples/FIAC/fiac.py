@@ -1,7 +1,4 @@
-import string, os, gc, time, urllib
-
-import numpy as N
-import pylab
+import os
 
 from neuroimaging import traits
 
@@ -52,7 +49,7 @@ class Subject(HasReadOnlyTraits):
         event = []
         block = []
 
-        for run in range(1,5):
+        for run in range(1, 5):
             if urlexists(_path('subj%d_bloc_fonc%d.txt' % (self.id, run))):
                 block.append(run)
             elif urlexists(_path('subj%d_evt_fonc%d.txt' % (self.id, run))):
@@ -128,7 +125,9 @@ class Run(HasReadOnlyTraits):
             self.anat = Image(self.anatfile, usemat=False)
 
     def clear(self):
-        del(self.fmri); del(self.mask); del(self.anat)
+        del(self.fmri)
+        del(self.mask)
+        del(self.anat)
         
     def _getprotocol(self):
         _path = lambda x: os.path.join(self.subject.root,

@@ -33,7 +33,8 @@ class PCARun(Run):
         pca.fit()
         self.space = pca.images(which=self.which)
         self.time = pca.components
-        del(pca); gc.collect()
+        del(pca)
+        gc.collect()
         self.clear() # close the fMRI, anat and mask files
 
     def view(self, **montage_keywords):

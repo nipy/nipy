@@ -1,18 +1,16 @@
-import os, time, urllib2
+import os, time
 
 from neuroimaging import traits
 import numpy as N
 from scipy.sandbox.models import contrast
 
-from neuroimaging.modalities.fmri.pca import PCA, MultiPlot
+from neuroimaging.modalities.fmri.pca import MultiPlot
 from neuroimaging.modalities.fmri import protocol, functions
 from neuroimaging.modalities.fmri.fmristat import delay
 from neuroimaging.modalities.fmri.filters import Filter
-from neuroimaging.core.image.image import Image
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
 
 from fiac import Run, Subject, Study
-from montage import Montage
 
 from readonly import ReadOnlyValidate, HasReadOnlyTraits
 
@@ -247,12 +245,12 @@ class RunModel(Model, Run):
         if self.normalize:
             OLSopts['normalize'] = self.brainavg
 
-        self.OLSmodel= fmristat.fMRIStatOLS(self.fmri,
-                                            formula=self.formula,
-                                            mask=self.mask,
-                                            tshift=self.shift, 
-                                            path=self.resultdir,
-                                            **OLSopts)
+        self.OLSmodel = fmristat.fMRIStatOLS(self.fmri,
+                                             formula=self.formula,
+                                             mask=self.mask,
+                                             tshift=self.shift, 
+                                             path=self.resultdir,
+                                             **OLSopts)
 
         self._setup_contrasts()
         self.OLSmodel.reference = self.average
@@ -311,7 +309,7 @@ class Contrast(contrast.Contrast, HasReadOnlyTraits):
     plot = ReadOnlyValidate(traits.Instance(MultiPlot),
                             desc='Rudimentary multi-line plotter for design')
 
-    def view(self, time=N.linspace(0,191*2.5, 3000)):
+    def view(self, time=N.linspace(0, 191*2.5, 3000)):
         self.plot = MultiPlot(self.term(time=time),
                               time=time,
                               title='Column space for %s' % `self`)

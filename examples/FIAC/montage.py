@@ -45,7 +45,8 @@ class Montage(Resampler):
         image.grid = self.input_grid
         
         nrow = self.z.shape[0] / self.ncol
-        if nrow * self.ncol < self.z.shape[0]: nrow += 1
+        if nrow * self.ncol < self.z.shape[0]:
+            nrow += 1
 
         montage_slices = {}
 

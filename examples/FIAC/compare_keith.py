@@ -6,7 +6,8 @@ from neuroimaging.ui.visualization.viewer import BoxViewer
 
 import keith
 
-def nipy_run(subject=3, run=3, which='contrasts', contrast='overall', stat='t', **extra):
+def nipy_run(subject=3, run=3, which='contrasts', contrast='overall',
+             stat='t', **extra):
 
     runfile = '/home/analysis/FIAC/fiac%d/fonc%d/fsl/fmristat_run/%s/%s/%s.img' % (subject, run, which, contrast, stat)
 
@@ -30,13 +31,16 @@ parser = optparse.OptionParser()
 
 parser.add_option('', '--which', help='contrasts or delays', dest='which',
                       default='contrasts')
-parser.add_option('', '--run', help='which run?', dest='run', default=1, type='int')
-parser.add_option('', '--subject', help='which subject?', dest='subject', default=0, type='int')
+parser.add_option('', '--run', help='which run?', dest='run', default=1,
+                  type='int')
+parser.add_option('', '--subject', help='which subject?', dest='subject',
+                  default=0, type='int')
 parser.add_option('', '--stat', help='t, sd or effect?', dest='stat', default='t')
 parser.add_option('', '--contrast', help='overall, sentence, speaker, or interaction', dest='contrast', default='overall')
 parser.add_option('', '--vmin', help='min for colorbar', dest='m', type='float')
 parser.add_option('', '--vmax', help='max for colorbar', dest='M', type='float')
-parser.add_option('', '--rho', help='compare AR(1) coefs', dest='rho', action='store_true', default=False)
+parser.add_option('', '--rho', help='compare AR(1) coefs', dest='rho',
+                  action='store_true', default=False)
 
 options, args = parser.parse_args()
 options = parser.values.__dict__

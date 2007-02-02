@@ -7,7 +7,7 @@ import model, keith
 from protocol import eventdict_r
 from neuroimaging.core.image.image import Image
 from neuroimaging.ui.visualization.viewer import BoxViewer
-from scipy.sandbox.models.regression import ols_model, ar_model
+from scipy.sandbox.models.regression import ar_model
 from neuroimaging.modalities.fmri.fmristat import delay
 from neuroimaging.modalities.fmri.regression import FContrastOutput
 
@@ -28,7 +28,8 @@ class CompareRun(model.RunModel):
                 self._plot_agreement(deriv, etype)
 
     def result(self, which='contrasts', contrast='speaker', stat='t'):
-        resultfile = os.path.join(self.resultdir, which, contrast, "%s.img" % stat)
+        resultfile = os.path.join(self.resultdir, which, contrast,
+                                  "%s.img" % stat)
         return Image(resultfile)
 
     def keith_result(self, which='contrasts', contrast='speaker', stat='t'):
@@ -43,8 +44,6 @@ class CompareRun(model.RunModel):
         or that the columns are basically the same.
         """
         
-        def n(x): return x / N.fabs(x).max()
-
         """
         First, get the formula term corresponding to the design,
         and find out
@@ -56,6 +55,7 @@ class CompareRun(model.RunModel):
         self.X = keith._getxcache(subj=self.subject.id, run=self.id)
         self.D = self.ARmodel.model().design
 
+        # FIXME: index is never used.
         if deriv:
             event_index += 4
             index = 3  
@@ -68,7 +68,6 @@ class CompareRun(model.RunModel):
     
         shift = 1.25
         T = N.arange(0, 191*2.5, 2.5) + shift
-        v = N.zeros((4,))
 
         nipy = design(T)[event_index]
 
@@ -98,7 +97,8 @@ class CompareRun(model.RunModel):
         if deriv:
             event_index += 4
 
-        def n(x): return x / N.fabs(x).max()
+        def n(x):
+            return x / N.fabs(x).max()
 
         shift = 1.25
         T = N.arange(0, 191*2.5, 2.5) + shift
@@ -107,13 +107,16 @@ class CompareRun(model.RunModel):
         _, _, col, index = self.corr[(deriv, etype)]
         pylab.clf()
     
-        pylab.plot(T, n(self.X[:,col,index]), 'b-o', label='Xcache[:,%d,%d]' % (col, index))
-        pylab.plot(t, n(design(t)[event_index]), 'g', label='unshifted', linewidth=2)
+        pylab.plot(T, n(self.X[:,col,index]), 'b-o',
+                   label='Xcache[:,%d,%d]' % (col, index))
+        pylab.plot(t, n(design(t)[event_index]), 'g', label='unshifted',
+                   linewidth=2)
 
         a = pylab.gca()
         e = design.events[etype]
 
-        pylab.plot(t, e(t), 'm', label='%s(=%d)' % (etype, eventdict_r[etype]), linewidth=2)
+        pylab.plot(t, e(t), 'm', label='%s(=%d)' % (etype, eventdict_r[etype]),
+                   linewidth=2)
 
         if design.design_type == 'block':
             ii = N.nonzero(e.values)[0]
@@ -192,15 +195,22 @@ class VoxelModel(CompareRun):
 
         for output in self.ARmodel.outputs:
             if isinstance(output, delay.DelayContrastOutput):
-                RR = {}; KK = {}
+                RR = {}
+                KK = {}
                 for stat in ['effect', 'sd', 't']:
-                    RR[stat] = []; KK[stat] = []
+                    RR[stat] = []
+                    KK[stat] = []
                 for _j in range(4):
                     for stat in ['effect', 'sd', 't']:
-                        R = self.result(which='delays', contrast=output.contrast.rownames[_j], stat=stat)
-                        K = self.keith_result(which='delays', contrast=output.contrast.rownames[_j], stat=stat)
+                        R = self.result(which='delays',
+                                        contrast=output.contrast.rownames[_j],
+                                        stat=stat)
+                        K = self.keith_result(which='delays',
+                                              contrast=output.contrast.rownames[_j],
+                                              stat=stat)
                         cor[('delays', stat, output.contrast.rownames[_j])] = N.corrcoef(R[:].flat * mask[:], K[:].flat * mask[:])[0,1]
-                        RR[stat].append(R[i,j,k]); KK[stat].append(K[i,j,k])
+                        RR[stat].append(R[i,j,k])
+                        KK[stat].append(K[i,j,k])
 
                 for stat in ['effect', 'sd', 't']:
                     for obj in [RR,KK]:
@@ -263,8 +273,10 @@ def cor_result(result1, result2, mask, which='contrasts', contrast='speaker', st
     x = result1(**resultargs)
     y = result2(**resultargs)
 
-    x = N.nan_to_num(x[:]) * mask[:]; x.shape = N.product(x.shape)
-    y = N.nan_to_num(y[:]) * mask[:]; y.shape = N.product(y.shape)
+    x = N.nan_to_num(x[:]) * mask[:]
+    y = N.nan_to_num(y[:]) * mask[:]
+    x.shape = N.product(x.shape)
+    y.shape = N.product(y.shape)
     return N.corrcoef(x, y)
 
 
