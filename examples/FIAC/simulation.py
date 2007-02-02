@@ -153,7 +153,7 @@ class SignalOnly(model.RunModel):
             os.makedirs(self.resultdir)
 
         self.fmri = fMRIImage(self.simfmrifile,
-                  grid=self.fmri.grid, mode='w', clobber=True)
+                              grid=self.fmri.grid, clobber=True)
             
     def AR(self, **ARopts):
         """
@@ -327,7 +327,7 @@ class SignalNoise(SignalOnly):
         for chunk in result.it:
             mresult = self.ar_results[i].Fcontrast(output.matrix).F
             if not N.allclose(mresult, chunk):
-                print "F it is not good here: %s, %s, %s"% (contrast, stat, str(self.ar_results[i].Fcontrast(output.matrix)))
+                print "F it is not good here: overallF, F, %s"% str(self.ar_results[i].Fcontrast(output.matrix))
             i += 1
 
 if __name__ == '__main__':
@@ -355,7 +355,7 @@ if __name__ == '__main__':
     runmodel.getparcelmap()
     runmodel.get_frameavg()
 
-
+    options.generate, options.fit, options.check = (0,1,0)
     if options.generate:
         runmodel.generate()
     if options.fit:
