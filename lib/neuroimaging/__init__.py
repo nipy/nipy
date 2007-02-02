@@ -73,9 +73,10 @@ packages = (
 
 PYLAB_DEF, pylab = defines.pylab_def()
 if PYLAB_DEF:
-    packages += ('neuroimaging.ui.visualization',
-                'neuroimaging.ui.visualization.cmap',
-                'neuroimaging.ui.visualization.tests')
+    packages += ('neuroimaging.ui',
+                 'neuroimaging.ui.visualization',
+                 'neuroimaging.ui.visualization.cmap',
+                 'neuroimaging.ui.visualization.tests')
 
 ENTHOUGHT_TRAITS_DEF, traits = defines.enthought_traits_def()
 if not ENTHOUGHT_TRAITS_DEF:
