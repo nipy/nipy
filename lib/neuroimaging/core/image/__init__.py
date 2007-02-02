@@ -1,13 +1,14 @@
 """
-The Image class provides the interface which should be used
+The L{Image<image.Image>} class provides the interface which should be used
 by users at the application level. It is build on top of a
-BaseImage object (self._source) which handles the actual
-representation of the data. A base image provides a grid,
-a data type and the data itself, while the main Image class
+L{BaseImage<image.base_image.BaseImage>} object (self._source) which handles
+the actual representation of the data. A base image provides a grid,
+a data type and the data itself, while the main L{Image<image.Image>} class
 builds on top of these.
 
-A BaseImage object can be created from an ndarray (ArrayImage)
-or from a file (Formats). 
+A L{BaseImage<image.base_image.BaseImage>} object can be created from an
+ndarray (L{ArrayImage<image.base_image.ArrayImage>})
+or from a file (L{Format<neuroimaging.data_io.formats.Format>}). 
 
 Class structure::
 
