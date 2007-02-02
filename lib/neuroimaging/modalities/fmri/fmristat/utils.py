@@ -38,7 +38,8 @@ class WholeBrainNormalize(object):
         for i in range(self.n):
             d = fmri_image[i:i+1]
             if mask is not None:
-                d *= mask
+                d = d * mask # can't do in place as the slice points into a 
+                             # memmap which may not be writable.
             self.avg[i] = d.sum() / nvox
 
     def __call__(self, fmri_data):
