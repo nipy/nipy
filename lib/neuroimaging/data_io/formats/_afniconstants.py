@@ -1,6 +1,6 @@
 import numpy, types, time
 
-AFNI_missing = [-999,-999999]
+AFNI_missing = [-999, -999999]
 
 AFNI_float = 'float-attribute'
 AFNI_integer = 'integer-attribute'
@@ -11,25 +11,29 @@ AFNI_Short = 1
 AFNI_Float = 3
 AFNI_Complex = 5
 
+def _swap_dict(d):
+    """ swap the (key, value) pairs to be (value, key) """
+    return dict([(v, k) for k, v in d.items()])
+
 AFNI_bricktype2dtype = {AFNI_UChar:numpy.uint8,
                         AFNI_Short:numpy.int16,
                         AFNI_Float:numpy.float32,
                         AFNI_Complex:numpy.complex64
                         }
-AFNI_dtype2bricktype = dict([(v,k) for k,v in AFNI_bricktype2dtype.items()])
+AFNI_dtype2bricktype = _swap_dict(AFNI_bricktype2dtype)
 
 AFNI_view2code = {'orig':0,
                   'acpc':1,
                   'tlrc':2
                   }
-AFNI_code2view = dict([(v,k) for k,v in AFNI_view2code.items()])
+AFNI_code2view = _swap_dict(AFNI_view2code)
 
 AFNI_typestring2code = {'3DIM_HEAD_ANAT':0,
                         '3DIM_HEAD_FUNC':1,
                         '3DIM_GEN_ANAT':2,
                         '3DIM_GEN_FUNC':3
                         }
-AFNI_code2typestring = dict([(v,k) for k,v in AFNI_typestring2code.items()])
+AFNI_code2typestring = _swap_dict(AFNI_typestring2code)
                    
 ANAT_SPGR_TYPE = 0
 ANAT_FSE_TYPE = 1
@@ -71,7 +75,7 @@ UNITS_HZ_TYPE = 77003
 AFNI_att2byteorder = {'MSB_FIRST': '>',
                       'LSB_FIRST': '<',
                       }
-AFNI_byteorder2att = dict([(v,k) for k,v in AFNI_att2byteorder.items()])
+AFNI_byteorder2att = _swap_dict(AFNI_att2byteorder)
 
 ## # Below ignores the "variable" named attributed NOTE_NUMBER_xxx, etc.
 
@@ -135,8 +139,8 @@ AFNI_orientations = {('xspace',True): ORI_R2L_TYPE,
                      ('zspace',False): ORI_S2I_TYPE
                      }
 
-AFNI_orientations_inv = {ORI_L2R_TYPE: ('xspace', False),
-                         ORI_R2L_TYPE: ('xspace', True),
+AFNI_orientations_inv = {ORI_R2L_TYPE: ('xspace', True),
+                         ORI_L2R_TYPE: ('xspace', False),
                          ORI_P2A_TYPE: ('yspace', True),
                          ORI_A2P_TYPE: ('yspace', False),
                          ORI_I2S_TYPE: ('zspace', True),
