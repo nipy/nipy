@@ -1,7 +1,7 @@
 import unittest, os
 import numpy as N
 
-from neuroimaging.sandbox.formats import afni
+from neuroimaging.data_io.formats import afni
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.image.image import Image
 

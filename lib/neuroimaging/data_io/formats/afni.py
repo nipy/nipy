@@ -6,7 +6,7 @@ from neuroimaging.utils.odict import odict
 from neuroimaging.data_io import DataSource, iswritemode
 from neuroimaging.data_io.formats import utils
 import neuroimaging.data_io.formats.binary as bin
-from neuroimaging.sandbox.formats.afni._afniconstants import *
+from neuroimaging.data_io.formats._afniconstants import *
 from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid

@@ -3,6 +3,8 @@ import test_nifti1
 import unittest
 
 def suite():
-    return unittest.TestSuite((test_analyze.suite(), test_nifti1.suite()))
+    return unittest.TestSuite( (test_analyze.suite(),
+                                test_nifti1.suite(),
+                                test_afni.suite()) )
     
 
