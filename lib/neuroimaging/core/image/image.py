@@ -105,24 +105,11 @@ class Image(object):
 
 
     def __getitem__(self, slice_):
-        return self.postread(self._source[slice_])
+        return self._source[slice_]
 
-    def postread(self, x):
-        """
-        A transformation to be applied to the values of the image after
-        retrieving them from the image's source.
-        """
-        return x
-
-    def prewrite(self, x):
-        """
-        A transformation to be applied to the values of the image before
-        writing them to the image's source.
-        """
-        return x
 
     def __setitem__(self, slice_, data):
-        self._source[slice_] = self.prewrite(data)
+        self._source[slice_] = data
 
 
     def __iter__(self):
