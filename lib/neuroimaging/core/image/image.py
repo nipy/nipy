@@ -63,7 +63,7 @@ class Image(object):
 
         for format, exception in errors.items():
             if not exception.__class__  is IOError:
-                raise NotImplementedError, 'no valid reader found for URL %s.' \
+                raise NotImplementedError, 'no valid format found for URL %s.' \
                       'The following errors were raised:\n%s' % \
                       (url, \
                        "\n".join(["%s: %s\n%s" % \
