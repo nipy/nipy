@@ -21,7 +21,8 @@ from scipy.interpolate import interp1d
 
 class TimeFunction(object):
 
-    def __init__(self, fn, nout=1, slice=None, windowed=False, window=(0., 0.), name=""):
+    def __init__(self, fn, nout=1, slice=None, windowed=False, window=(0., 0.),
+                 name=""):
         self.name = name
         self.windowed = windowed
         self.window = window
@@ -31,11 +32,11 @@ class TimeFunction(object):
 
     def __getitem__(self, j):
 
-        def _f(time, obj=self, **extra):
-            return obj(time, **extra)[int(j)]
+        def _f(time, obj=self):
+            return obj(time)[int(j)]
         return TimeFunction(fn=_f)
 
-    def __call__(self, time, **extra):
+    def __call__(self, time):
         columns = []
 
         if self.nout == 1:
@@ -74,9 +75,11 @@ class TimeFunction(object):
         elif isinstance(other, (list, tuple, N.ndarray)):
             if isinstance(other, N.ndarray):
                 if other.shape != (self.nout,):
-                    raise 'shape does not much output, expecting (%d,)' % self.nout
+                    raise 'shape does not much output, ' \
+                          'expecting (%d,)' % self.nout
             elif len(other) != self.nout:
-                raise 'length does not much output, expecting sequence of length %d' % self.nout
+                raise 'length does not much output, expecting sequence of' \
+                      'length %d' % self.nout
             _f = f3
         else:
             raise ValueError, 'unrecognized type'
@@ -84,14 +87,14 @@ class TimeFunction(object):
 
     def __mul__(self, other):
 
-        def f1(time, _self=self, _other=other, **extra):
-            return N.squeeze(_self(time, **extra) * _other(time, **extra))
+        def f1(time, _self=self, _other=other):
+            return N.squeeze(_self(time) * _other(time))
 
-        def f2(time, _self=self, _other=other, **extra):
-            return N.squeeze(_self(time, **extra) * _other)
+        def f2(time, _self=self, _other=other):
+            return N.squeeze(_self(time) * _other)
 
-        def f3(time, _self=self, _other=N.array(other), **extra):
-            v = _self(time, **extra)
+        def f3(time, _self=self, _other=N.array(other)):
+            v = _self(time)
             for i in range(_other.shape[0]):
                 v[i] *= _other[i]
             return N.squeeze(v)
@@ -99,16 +102,16 @@ class TimeFunction(object):
         return self._helper(other, f1, f2, f3)
 
     def __add__(self, other):
-        def f1(time, _self=self, _other=other, **extra):
-            v = _self(time, **extra) + _other(time, **extra)
+        def f1(time, _self=self, _other=other):
+            v = _self(time) + _other(time)
             return N.squeeze(v)
 
-        def f2(time, _self=self, _other=other, **extra):
-            v = _self(time, **extra) + _other
+        def f2(time, _self=self, _other=other):
+            v = _self(time) + _other
             return N.squeeze(v)
 
-        def f3(time, _self=self, _other=N.array(other), **extra):
-            v = _self(time, **extra)
+        def f3(time, _self=self, _other=N.array(other)):
+            v = _self(time)
             for i in range(_other.shape[0]):
                 v[i] += _other[i]
             return N.squeeze(v)
@@ -117,17 +120,17 @@ class TimeFunction(object):
 
 
     def __sub__(self, other):
-        def f1(time, _self=self, _other=other, **extra):
-            v = _self(time, **extra) - _other(time, **extra)
+        def f1(time, _self=self, _other=other):
+            v = _self(time) - _other(time)
             return N.squeeze(v)
 
-        def f2(time, _self=self, _other=other, **extra):
-            v = _self(time, **extra) - _other
+        def f2(time, _self=self, _other=other):
+            v = _self(time) - _other
             return N.squeeze(v)
 
 
-        def f3(time, _self=self, _other=N.array(other), **extra):
-            v = _self(time, **extra)
+        def f3(time, _self=self, _other=N.array(other)):
+            v = _self(time)
             for i in range(_other.shape[0]):
                 v[i] -= _other[i]
             return N.squeeze(v)
@@ -135,14 +138,14 @@ class TimeFunction(object):
         return self._helper(other, f1, f2, f3)
 
     def __div__(self, other):
-        def f1(time, _self=self, _other=other, **extra):
-            return N.squeeze(_self(time, **extra) * recipr0(_other(time, **extra)))
+        def f1(time, _self=self, _other=other):
+            return N.squeeze(_self(time) * recipr0(_other(time)))
 
-        def f2(time, _self=self, _other=other, **extra):
-            return N.squeeze(_self(time, **extra) * recipr0(_other))
+        def f2(time, _self=self, _other=other):
+            return N.squeeze(_self(time) * recipr0(_other))
 
-        def f3(time, _self=self, _other=N.array(other), **extra):
-            v = _self(time, **extra) 
+        def f3(time, _self=self, _other=N.array(other)):
+            v = _self(time) 
             for i in range(_other.shape[0]):
                 v[i] *= recipr0(_other[i])
             return N.squeeze(v)
@@ -172,13 +175,13 @@ class InterpolatedConfound(TimeFunction):
             self.f = []
             values = N.asarray(self.values)
             for i in range(values.shape[0]):
-                f = interp1d(self.times, self.values[:,i], bounds_error=0)
+                f = interp1d(self.times, self.values[:, i], bounds_error=0)
                 self.f.append(f)
             self.nout = values.shape[0]
             
         TimeFunction.__init__(self, self.f, nout=self.nout, **keywords)
 
-    def __call__(self, time, **extra):
+    def __call__(self, time):
         columns = []
 
         if self.nout == 1:
@@ -191,7 +194,8 @@ class InterpolatedConfound(TimeFunction):
                 columns = self.f(time)
 
         if self.windowed:
-            _window = N.greater(time, self.window[0]) * N.less_equal(time, self.window[1])
+            _window = N.greater(time, self.window[0]) * \
+                      N.less_equal(time, self.window[1])
             columns = [column * _window for column in columns]
                 
         return N.squeeze(N.array(columns))
@@ -212,7 +216,8 @@ class Stimulus(TimeFunction):
 
 class PeriodicStimulus(Stimulus):
 
-    def __init__(self, n=1, start=0.0, duration=3.0, step=6.0, height=1.0, **keywords):
+    def __init__(self, n=1, start=0.0, duration=3.0, step=6.0, height=1.0,
+                 **keywords):
         self.n = n
         self.start = start
         self.duration = duration
@@ -223,7 +228,8 @@ class PeriodicStimulus(Stimulus):
         values = [0.]
 
         for i in range(self.n):
-            times = times + [self.step*i + self.start, self.step*i + self.start + self.duration]
+            times = times + [self.step*i + self.start,
+                             self.step*i + self.start + self.duration]
             values = values + [self.height, 0.]
         Stimulus.__init__(self, times=times, values=values, **keywords)
 
@@ -269,9 +275,12 @@ class DeltaFunction(TimeFunction):
         @type dt: C{float}
         """
         TimeFunction.__init__(self, None)
+        self.start = start
+        self.dt = dt
 
-    def __call__(self, time, **extra):
-        return N.greater_equal(time, self.start) * N.less(time, self.start + self.dt) / self.dt
+    def __call__(self, time):
+        return N.greater_equal(time, self.start) * \
+               N.less(time, self.start + self.dt) / self.dt
 
 class SplineConfound(TimeFunction):
 
@@ -307,7 +316,8 @@ class SplineConfound(TimeFunction):
 
         def _getspline(a, b):
             def _spline(time):
-                return N.power(time - a, 3.0) * N.greater(time, a) * N.less_equal(time, b)
+                return N.power(time - a, 3.0) * N.greater(time, a) * \
+                       N.less_equal(time, b)
             return _spline
 
         for i in range(len(self.knots) - 1):

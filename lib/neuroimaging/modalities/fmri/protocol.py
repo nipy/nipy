@@ -264,7 +264,7 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
             value = []
             keys = self._event_keys
             for level in keys:
-                value.append(N.squeeze(self.events[level](time, **kw)))
+                value.append(N.squeeze(self.events[level](time)))
             if includedown:
                 s = N.add.reduce(value)
 
