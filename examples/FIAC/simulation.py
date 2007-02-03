@@ -88,7 +88,7 @@ class SignalOnly(model.RunModel):
             value = N.dot(self.D, self.coefs[:,i])
             mu.append(value)
         self.mu = N.array(mu)
-        self.write()
+        SignalOnly.write(self)
         
     def write(self):
         """
@@ -107,7 +107,6 @@ class SignalOnly(model.RunModel):
         """
         do the work of writing matrix to files name.{bin,csv} (all files relative to join(self.root, self.resultdir)
         """
-        print self.root, self.resultdir
         outfile = file(os.path.join(self.resultdir, "%s.csv" % name), 'w')
         writer = csv.writer(outfile, delimiter=',')
         for row in matrix:
@@ -150,8 +149,11 @@ class SignalOnly(model.RunModel):
             pass
         
         self.simfmrifile = os.path.join(self.resultdir, 'simfmri.img')
-        del(self.fmri)
-        self.fmri = fMRIImage(self.simfmrifile)
+        if not os.path.exists(self.resultdir):
+            os.makedirs(self.resultdir)
+
+        self.fmri = fMRIImage(self.simfmrifile,
+                  grid=self.fmri.grid, mode='w', clobber=True)
             
     def AR(self, **ARopts):
         """
@@ -250,6 +252,10 @@ class SignalNoise(SignalOnly):
 
         for rtype in ["OLS", "AR"]:
             self.resid = fMRIImage(os.path.join(self.resultdir, "%sresid.img" % rtype))
+            print "SHAPE", self.resid.shape
+            # I get a results of [0, 30, 64, 64] here
+            # which leads to the code below breaking. I'm not sure why this
+            # file would have this shape though... --Tim
             self.resid.it = fMRIParcelIterator(self.resid, self.parcelmap,
                                                self.parcelseq)
             i = 0
@@ -338,7 +344,7 @@ if __name__ == '__main__':
     if len(args) == 3:
         subj, run = map(int, args)
     else:
-        subj, run = (3, 3)
+        subj, run = (1, 2)
 
     import io
     study = model.StudyModel(root=io.data_path)
