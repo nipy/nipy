@@ -156,13 +156,13 @@ class TimeFunction(object):
 class InterpolatedConfound(TimeFunction):
 
     def __init__(self, times=None, values=None, **keywords):
-        TimeFunction.__init__(self, **keywords)
+
         if times is None:
             self.times = []
         else:
             self.times = times
 
-        if self.values is None:
+        if values is None:
             self.values = []
         else:
             self.values = values
@@ -178,6 +178,8 @@ class InterpolatedConfound(TimeFunction):
                 self.f.append(f)
             self.nout = values.shape[0]
             
+        TimeFunction.__init__(self, self.f, nout=self.nout, **keywords)
+
     def __call__(self, time, **extra):
         columns = []
 

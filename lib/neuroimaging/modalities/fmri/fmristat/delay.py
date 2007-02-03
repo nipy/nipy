@@ -42,6 +42,12 @@ class DelayContrast(Contrast):
     TO DO: check that the convolved term is actually in the design column space.
     """
 
+    def _sequence_call(self, time):
+        v = []
+        for i in range(len(self._sequence_fn)):
+            v.append(self._sequence_fn[i](time))
+        return N.array(v)
+
     def __init__(self, fn, weights, formula, IRF=None, name='', rownames=[]):
         if IRF is None:
             self.IRF = canonical
@@ -53,12 +59,8 @@ class DelayContrast(Contrast):
         self.name = name
         self.formula = formula
         
-        def f(namespace=None, fn=fn, time=None, n=len(fn), **extras):
-            v = []
-            for i in range(n):
-                v.append(fn[i](namespace=namespace, time=time))
-            return N.array(v)
-        self.fn = f
+        self._sequence_fn = fn
+        self.fn = self._sequence_call
 
         self.weights = N.asarray(weights)
         if self.weights.ndim == 1:
@@ -92,7 +94,7 @@ class DelayContrastOutput(TContrastOutput):
         self.IRF = IRF
         self.dt = dt
         if delta is None:
-            self.delta = N.linsapce(-4.5, 4.5, 91)
+            self.delta = N.linspace(-4.5, 4.5, 91)
         else:
             self.delta = delta
         self.Tmax = Tmax
