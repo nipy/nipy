@@ -63,6 +63,7 @@ class Iterator(object):
         Do the hard work of generating the next item from the iterator.
 
         This method must be overriden by the subclasses of Iterator.
+        @raises NotImplementedError
         @rtype: L{IteratorItem}
         """
         raise NotImplementedError
@@ -141,6 +142,12 @@ class SliceIterator(Iterator):
 
 
     def set_img(self, img):
+        """
+        Setup the iterator to have a given image.
+
+        @param img: The new image for the iterator
+        @type img: L{Image}
+        """
         Iterator.set_img(self, img)
         if img is not None:
             self.shape = self.img.shape
@@ -160,7 +167,11 @@ class SliceIterator(Iterator):
 
 
     def _next(self):
+        """
+        Do the hard work of generating the next item from the iterator.
 
+        @rtype: L{SliceIteratorItem}
+        """
         if self.n >= self.max:
             raise StopIteration
 
@@ -197,6 +208,9 @@ class SliceIteratorItem(IteratorItem):
         return self.img[self.slice].squeeze()
 
     def set(self, value):
+        """
+        Set the value of the slice of the image.
+        """
         if isinstance(value, N.ndarray):
             value = value.reshape(self.img[self.slice].shape)
         self.img[self.slice] = value
@@ -277,6 +291,9 @@ class ParcelIterator(Iterator):
         return self
     
     def _next(self):
+        """
+        Do the hard work of generating the next item from the iterator.
+        """
         wherelabel, label = self._get_wherelabel()
         return self.iterator_item(self.img, wherelabel, label)
 
@@ -307,10 +324,16 @@ class ParcelIteratorItem(IteratorItem):
         self.label = label
 
     def get(self):
+        """
+        Return the slice of the image.
+        """
         self.slice = self.slice.reshape(self.img.shape)
         return self.img[self.slice]
 
     def set(self, value):        
+        """
+        Set the value of the slice of the image.
+        """
         self.slice = self.slice.reshape(self.img.shape)
         self.img[self.slice] = value
 
@@ -333,12 +356,18 @@ class fMRIParcelIteratorItem(IteratorItem):
         self.label = label
 
     def get(self):
+        """
+        Return the slice of the image.
+        """
         self.slice = self.slice.reshape(self.img.shape[1:])
-        return self.img[:,self.slice]
+        return self.img[:, self.slice]
 
     def set(self, value):        
+        """
+        Set the value of the slice of the image.
+        """
         self.slice = self.slice.reshape(self.img.shape[1:])
-        self.img[:,self.slice] = value
+        self.img[:, self.slice] = value
 
 
 class SliceParcelIterator(ParcelIterator):
@@ -356,6 +385,9 @@ class SliceParcelIterator(ParcelIterator):
         ParcelIterator._prep_seq(self, parcelseq)
 
     def _next(self):
+        """
+        Do the hard work of generating the next item from the iterator.
+        """
         if self.i >= self.max:            
             raise StopIteration
         wherelabel, label = self._get_wherelabel()
@@ -375,10 +407,16 @@ class SliceParcelIteratorItem(IteratorItem):
         self.i = i
 
     def get(self):
-        return self.img[self.i,self.slice]
+        """
+        Return the slice of the image.
+        """
+        return self.img[self.i, self.slice]
 
     def set(self, value):
-        self.img[self.i,self.slice] = value
+        """
+        Set the value of the slice of the image.
+        """
+        self.img[self.i, self.slice] = value
 
 
 class fMRISliceParcelIterator(SliceParcelIterator):
@@ -396,10 +434,16 @@ class fMRISliceParcelIteratorItem(IteratorItem):
         self.i = i
 
     def get(self):
+        """
+        Return the slice of the image.
+        """
         self.slice = self.slice.reshape(self.img.shape[2:])
-        return self.img[:,self.i,self.slice]
+        return self.img[:, self.i, self.slice]
 
     def set(self, value):
+        """
+        Set the value of the slice of the image.
+        """
         self.slice = self.slice.reshape(self.img.shape[2:])
-        self.img[:,self.i,self.slice] = value
+        self.img[:, self.i, self.slice] = value
 
