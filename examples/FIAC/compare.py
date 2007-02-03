@@ -27,11 +27,6 @@ class CompareRun(model.RunModel):
                 self.indices[(deriv, etype)] = self._get_indices(deriv, etype)
                 self._plot_agreement(deriv, etype)
 
-    def result(self, which='contrasts', contrast='speaker', stat='t'):
-        resultfile = os.path.join(self.resultdir, which, contrast,
-                                  "%s.img" % stat)
-        return Image(resultfile)
-
     def keith_result(self, which='contrasts', contrast='speaker', stat='t'):
         return keith.result(subject=self.subject.id, run=self.id,
                             which=which,

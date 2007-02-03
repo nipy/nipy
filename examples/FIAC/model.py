@@ -174,6 +174,11 @@ class RunModel(Model, Run):
         return Run.__repr__(self)
 
 
+    def result(self, which='contrasts', contrast='speaker', stat='t'):
+        resultfile = os.path.join(self.resultdir, which, contrast,
+                                  "%s.img" % stat)
+        return Image(resultfile)
+
     def _setup_contrasts(self):
         """
         This function is specific to the FIAC data, and defines
