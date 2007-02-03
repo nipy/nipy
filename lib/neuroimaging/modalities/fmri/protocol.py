@@ -1,4 +1,4 @@
-import csv, types, copy
+import csv, copy
 import numpy as N
 
 from neuroimaging.modalities.fmri.functions import TimeFunction, Events
