@@ -623,16 +623,12 @@ mat33 nifti_mat33_polar( mat33 A )
 
     return mod
 	
-try:
-    import _nifti1_quaternion
-except ImportError:
-    mod = setup_quaternion_extension()
-    d = mod.setup_extension(location=os.path.dirname(__file__)).__dict__
-    n = d['name']; del(d['name'])
-    s = d['sources']; del(d['sources'])
-    d['include_dirs'].append(N.get_include())
-    extension = n, s, d
-    pass
+mod = setup_quaternion_extension()
+d = mod.setup_extension(location=os.path.dirname(__file__)).__dict__
+n = d['name']; del(d['name'])
+s = d['sources']; del(d['sources'])
+d['include_dirs'].append(N.get_include())
+extension = n, s, d
 
 def quatern2mat(b=0., c=0., d=0., qx=0., qy=0., qz=0., dx=1., dy=1., dz=1., qfac=1.):
     args = (b, c, d, qx, qy, qz, dx, dy, dz, qfac)
