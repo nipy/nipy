@@ -22,8 +22,6 @@ PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
     from neuroimaging.ui.visualization.multiplot import MultiPlot
 
-
-
 class WholeBrainNormalize(object):
 
     def __init__(self, fmri_image, mask=None):
@@ -44,8 +42,9 @@ class WholeBrainNormalize(object):
                 d = N.compress(_mask, d)
             self.avg[i] = d.mean()
 
+        self.idx = 0
     def __call__(self, fmri_data):
-        out = N.zeros(fmri_data.shape)
+        out = N.zeros(fmri_data.shape, N.float64)
         for i in range(self.n):
             out[i] = fmri_data[i] * 100. / self.avg[i]
         return out
@@ -75,7 +74,9 @@ class fMRIStatOLS(LinearModelIterator):
         
         self.fmri_image = fMRIImage(fmri_image)
         if normalize is not None:
-            self.fmri_image.postread = normalize
+            self.normalize = normalize
+        else:
+            self.normalize = None
 
         ftime = self.fmri_image.frametimes + self.tshift
         self.dmatrix = self.formula.design(*(ftime,))
@@ -91,7 +92,7 @@ class fMRIStatOLS(LinearModelIterator):
                           self.fmri_image.slice_iterator(mode='w').copy(self.resid_output.img)
             outputs.append(self.resid_output)
 
-        model = ols_model(design=self.dmatrix)
+        model = ols_model(self.dmatrix)
         self.rho_estimator = AROutput(self.fmri_image.grid, model)
         outputs.append(self.rho_estimator)
 
@@ -103,12 +104,15 @@ class fMRIStatOLS(LinearModelIterator):
         ftime = self.fmri_image.frametimes + self.tshift
         if self.slicetimes is not None:
             _slice = self.iterator.item.slice
-            model = ols_model(design=self.formula.design(*(ftime + self.slicetimes[_slice[1]],)))
+            model = ols_model(self.formula.design(*(ftime + self.slicetimes[_slice[1]],)))
         else:
-            model = ols_model(design=self.dmatrix)
+            model = ols_model(self.dmatrix)
         return model
 
     def fit(self, reference=None):
+
+        if self.normalize:
+            self.iterator.img.postread = self.normalize
 
         LinearModelIterator.fit(self)
 
@@ -244,7 +248,7 @@ class fMRIStatAR(LinearModelIterator):
     
 
     def __init__(self, OLS, contrasts=None, outputs=None, clobber=False,
-                 resid=False, tshift=0.0):
+                 resid=False, tshift=0.0, parcel=None):
         """
         Building on OLS results, fit the AR(1) model.
 
@@ -259,8 +263,8 @@ class fMRIStatAR(LinearModelIterator):
             raise ValueError, 'expecting an fMRIStatOLS object in fMRIStatAR'
 
         self.fmri_image = OLS.fmri_image
-
-
+        self.normalize = OLS.normalize
+        
         # output path
         path = OLS.path
 
@@ -279,8 +283,11 @@ class fMRIStatAR(LinearModelIterator):
                 self.designs.append(self.formula.design(*(ftime+s,))) 
             iterator = fMRISliceParcelIterator
 
-        parcelmap, parcelseq = OLS.getparcelmap()
-        
+        if parcel is None:
+            parcelmap, parcelseq = OLS.getparcelmap()
+        else:
+            parcelmap, parcelseq = parcel
+
         if iterator == fMRIParcelIterator:
             iterator_ = ParcelIterator
         elif iterator == fMRISliceParcelIterator:
@@ -325,6 +332,10 @@ class fMRIStatAR(LinearModelIterator):
         it = iterator(OLS.fmri_image, parcelmap, parcelseq)
         LinearModelIterator.__init__(self, it, outputs)
 
+    def fit(self):
+        if self.normalize:
+            self.iterator.img.postread = self.normalize
+        LinearModelIterator.fit(self)
 
     def model(self):
         itervalue = self.iterator.item
@@ -335,7 +346,7 @@ class fMRIStatAR(LinearModelIterator):
         # is using the first parcel label correct here?
         # rho needs to be a single float...
 
-        return ar_model(rho=itervalue.label[0], design=design)
+        return ar_model(design, itervalue.label[0])
 
 
 
