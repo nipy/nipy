@@ -42,7 +42,7 @@ class DelayContrast(Contrast):
     """
 
     def _sequence_call(self, time):
-        return N.array([fn(time) for n in self._sequence_fn])
+        return N.array([fn(time) for fn in self._sequence_fn])
 
     def __init__(self, fns, weights, formula, IRF=None, name='', rownames=[]):
         if IRF is None:
