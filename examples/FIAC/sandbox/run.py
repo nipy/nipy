@@ -1,5 +1,6 @@
 from fiac import *
 
+from fmristat import rho
 import neuroimaging.modalities.fmri.protocol as protocol
 import neuroimaging.modalities.fmri.functions as confound
 import scipy.sandbox.models.contrast as contrast
@@ -155,7 +156,7 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
 
         # use keith's estimate of rho
 
-        OLS.rho = fmristat_rho(subject=subj, run=run)
+        OLS.rho = keith.rho(subject=subj, run=run)
 
         AR = fmristat.fMRIStatAR(OLS, contrasts=contrasts, tshift=tshift, **ARopts)
         AR.fit()
