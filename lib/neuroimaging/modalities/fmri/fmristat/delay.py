@@ -27,6 +27,9 @@ if PYLAB_DEF:
 
 class DelayContrast(Contrast):
 
+    Tmin = -100.
+    Tmax = 100.
+
     """
     Specify a delay contrast.
 
@@ -84,6 +87,11 @@ class DelayContrast(Contrast):
 
     def getmatrix(self, time=None):
         Contrast.getmatrix(self, time=time)
+
+        cnrow = self.matrix.shape[0] / 2
+        self.effectmatrix = self.matrix[0:cnrow]
+        self.deltamatrix = self.matrix[cnrow:]
+
         self.isestimable(time)
 
     def isestimable(self, t):
@@ -127,11 +135,87 @@ class DelayContrast(Contrast):
                     raise ValueError, 'delay contrast %snot estimable' % name
         return 
 
+    def _extract_effect(self, results):
+
+        delay = self.IRF.delay
+
+        self.gamma0 = N.dot(self.effectmatrix, results.beta)
+        self.gamma1 = N.dot(self.deltamatrix, results.beta)
+
+        nrow = self.gamma0.shape[0]
+        self.T0sq = N.zeros(self.gamma0.shape)
+        
+        for i in range(nrow):
+            self.T0sq[i] = (self.gamma0[i]**2 *
+                            recipr(results.cov_beta(matrix=self.effectmatrix[i])))
+
+        self.r = self.gamma1 * recipr0(self.gamma0)
+        self.rC = self.r * self.T0sq / (1. + self.T0sq)
+        self.deltahat = delay.inverse(self.rC)
+
+        self._effect = N.dot(self.weights, self.deltahat)
+
+    def _extract_sd(self, results):
+
+        delay = self.IRF.delay
+
+        self.T1 = N.zeros(self.gamma0.shape)
+
+        nrow = self.gamma0.shape[0]
+        for i in range(nrow):
+            self.T1[i] = self.gamma1[i] * recipr(N.sqrt(results.cov_beta(matrix=self.deltamatrix[i])))
+
+        a1 = 1 + 1. * recipr(self.T0sq)
+
+        gdot = N.array(([(self.r * (a1 - 2.) *
+                          recipr0(self.gamma0 * a1**2)),
+                         recipr0(self.gamma0 * a1)] *
+                        recipr0(delay.dforward(self.deltahat))))
+
+        Cov = results.cov_beta
+        E = self.effectmatrix
+        D = self.deltamatrix
+
+        nrow = self.effectmatrix.shape[0]
+            
+        cov = N.zeros((nrow,)*2 + self.T0sq.shape[1:])
+
+        for i in range(nrow):
+            for j in range(i + 1):
+                cov[i,j] = (gdot[0,i] * gdot[0,j] * Cov(matrix=E[i],
+                                                      other=E[j]) +  
+                            gdot[0,i] * gdot[1,j] * Cov(matrix=E[i],
+                                                      other=D[j]) +
+                            gdot[1,i] * gdot[0,j] * Cov(matrix=D[i],
+                                                      other=E[j]) +
+                            gdot[1,i] * gdot[1,j] * Cov(matrix=D[i],
+                                                      other=D[j]))
+                cov[j,i] = cov[i,j]
+
+        nout = self.weights.shape[0]
+        self._sd = N.zeros(self._effect.shape)
+
+        for r in range(nout):
+            var = 0
+            for i in range(nrow):
+                var += cov[i,i] * N.power(self.weights[r,i], 2)
+                for j in range(i):
+                    var += 2 * cov[i,j] * self.weights[r,i] * self.weights[r,j]
+
+            self._sd[r] = N.sqrt(var)                
+
+    def _extract_t(self):
+        t = self._effect * recipr(self._sd)        
+        t = N.clip(t, self.Tmin, self.Tmax)
+        return t
+
+
+
 class DelayContrastOutput(TContrastOutput):
 
 
-    def __init__(self, grid, contrast, IRF=None, dt=0.01, delta=None, Tmax=100,
-                 Tmin=-100, subpath='delays', clobber=False, path='.',
+    def __init__(self, grid, contrast, IRF=None, dt=0.01, delta=None, 
+                 subpath='delays', clobber=False, path='.',
                  ext='.hdr', frametimes=[], **kw):
         TContrastOutput.__init__(self, grid, contrast, subpath=subpath,
                                  clobber=clobber, frametimes=frametimes, **kw)
@@ -141,8 +225,6 @@ class DelayContrastOutput(TContrastOutput):
             self.delta = N.linspace(-4.5, 4.5, 91)
         else:
             self.delta = delta
-        self.Tmax = Tmax
-        self.Tmin = Tmin
         self.path = path
         self.subpath = subpath
         self.clobber = clobber
@@ -154,10 +236,6 @@ class DelayContrastOutput(TContrastOutput):
         """
 
         self.contrast.getmatrix(time=time)
-
-        cnrow = self.contrast.matrix.shape[0] / 2
-        self.effectmatrix = self.contrast.matrix[0:cnrow]
-        self.deltamatrix = self.contrast.matrix[cnrow:]
 
     def _setup_output_delay(self, path, clobber, subpath, ext, frametimes):
         """
@@ -229,87 +307,13 @@ class DelayContrastOutput(TContrastOutput):
                 f.clf()
                 del(f); del(g)
                 
-    def _extract_effect(self, results):
-
-        delay = self.contrast.IRF.delay
-
-        self.gamma0 = N.dot(self.effectmatrix, results.beta)
-        self.gamma1 = N.dot(self.deltamatrix, results.beta)
-
-        nrow = self.gamma0.shape[0]
-        self.T0sq = N.zeros(self.gamma0.shape)
-        
-        for i in range(nrow):
-            self.T0sq[i] = (self.gamma0[i]**2 *
-                            recipr(results.cov_beta(matrix=self.effectmatrix[i])))
-
-        self.r = self.gamma1 * recipr0(self.gamma0)
-        self.rC = self.r * self.T0sq / (1. + self.T0sq)
-        self.deltahat = delay.inverse(self.rC)
-
-        self._effect = N.dot(self.contrast.weights, self.deltahat)
-
-    def _extract_sd(self, results):
-
-        delay = self.contrast.IRF.delay
-
-        self.T1 = N.zeros(self.gamma0.shape)
-
-        nrow = self.gamma0.shape[0]
-        for i in range(nrow):
-            self.T1[i] = self.gamma1[i] * recipr(N.sqrt(results.cov_beta(matrix=self.deltamatrix[i])))
-
-        a1 = 1 + 1. * recipr(self.T0sq)
-
-        gdot = N.array(([(self.r * (a1 - 2.) *
-                          recipr0(self.gamma0 * a1**2)),
-                         recipr0(self.gamma0 * a1)] *
-                        recipr0(delay.dforward(self.deltahat))))
-
-        Cov = results.cov_beta
-        E = self.effectmatrix
-        D = self.deltamatrix
-
-        nrow = self.effectmatrix.shape[0]
-            
-        cov = N.zeros((nrow,)*2 + self.T0sq.shape[1:])
-
-        for i in range(nrow):
-            for j in range(i + 1):
-                cov[i,j] = (gdot[0,i] * gdot[0,j] * Cov(matrix=E[i],
-                                                      other=E[j]) +  
-                            gdot[0,i] * gdot[1,j] * Cov(matrix=E[i],
-                                                      other=D[j]) +
-                            gdot[1,i] * gdot[0,j] * Cov(matrix=D[i],
-                                                      other=E[j]) +
-                            gdot[1,i] * gdot[1,j] * Cov(matrix=D[i],
-                                                      other=D[j]))
-                cov[j,i] = cov[i,j]
-
-        nout = self.contrast.weights.shape[0]
-        self._sd = N.zeros(self._effect.shape)
-
-        for r in range(nout):
-            var = 0
-            for i in range(nrow):
-                var += cov[i,i] * N.power(self.contrast.weights[r,i], 2)
-                for j in range(i):
-                    var += 2 * cov[i,j] * self.contrast.weights[r,i] * self.contrast.weights[r,j]
-
-            self._sd[r] = N.sqrt(var)                
-
-    def _extract_t(self):
-        t = self._effect * recipr(self._sd)        
-        t = N.clip(t, self.Tmin, self.Tmax)
-        return t
-
     def extract(self, results):
-        self._extract_effect(results)
-        self._extract_sd(results)
-        t = self._extract_t()
+        self.contrast._extract_effect(results)
+        self.contrast._extract_sd(results)
+        t = self.contrast._extract_t()
 
-        return ContrastResults(effect=self._effect,
-                               sd=self._sd,
+        return ContrastResults(effect=self.contrast._effect,
+                               sd=self.contrast._sd,
                                t=t, df_denom=results.df_resid)
 
     def set_next(self, data):
