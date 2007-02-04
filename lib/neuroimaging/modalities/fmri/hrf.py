@@ -23,11 +23,11 @@ def glover2GammaDENS(peak_hrf, fwhm_hrf):
 def _glover(peak_hrf=(5.4, 10.8), fwhm_hrf=(5.2, 7.35), dip=0.35):
     coef1, gamma1 = glover2GammaDENS(peak_hrf[0], fwhm_hrf[0])
     coef2, gamma2 = glover2GammaDENS(peak_hrf[1], fwhm_hrf[1])
-    f = filters.GammaCOMB([[coef1,gamma1],[-dip*coef2, gamma2]])
+    f = filters.GammaCOMB([[coef1, gamma1], [-dip*coef2, gamma2]])
     dt = 0.02
     t = N.arange(0, 50 + dt, dt)
     c = (f(t) * dt).sum()
-    return filters.GammaCOMB([[coef1/c,gamma1],[-dip*coef2/c, gamma2]])
+    return filters.GammaCOMB([[coef1/c, gamma1], [-dip*coef2/c, gamma2]])
 
 # Glover, 'canonical HRF'
 
@@ -59,7 +59,7 @@ class SpectralHRF(filters.Filter):
             raise ValueError, 'expecting one HRF for spectral decomposition'
         self.deltaPCA()
 
-    def deltaPCA(self, tmax=50., lower=-15.0, delta=N.arange(-4.5,4.6,0.1)):
+    def deltaPCA(self, tmax=50., lower=-15.0, delta=N.arange(-4.5, 4.6, 0.1)):
         """
         Perform an expansion of fn, shifted over the values in delta.
         Effectively, a Taylor series approximation to fn(t+delta), in delta,
@@ -108,11 +108,10 @@ class SpectralHRF(filters.Filter):
 
 
         U, S, V = L.svd(H.T, full_matrices=0)
-        prcnt_var_spectral = N.sum(S[0:self.ncomp]**2) / N.sum(S**2) * 100
 
         basis = []
         for i in range(self.ncomp):
-            b = interpolant(time, U[:,i])
+            b = interpolant(time, U[:, i])
 
             if i == 0:
                 d = N.fabs((b(time) * self.dt).sum())
