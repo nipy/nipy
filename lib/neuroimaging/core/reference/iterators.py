@@ -163,7 +163,7 @@ class SliceIterator(Iterator):
 
             # set up a full set of slices for the image, to be modified
             # at each iteration
-            self.slices = [slice(0, shape, 1) for shape in self.shape]
+            self.slices = [slice(0, shape) for shape in self.shape]
 
 
     def _next(self):
@@ -175,9 +175,9 @@ class SliceIterator(Iterator):
         if self.n >= self.max:
             raise StopIteration
 
-        for (ax, div, mod) in self.divmod:
+        for (axis, div, mod) in self.divmod:
             x = self.n / div % mod
-            self.slices[ax] = slice(x, x+1, 1)
+            self.slices[axis] = slice(x, x+1)
 
         self.n += 1
         return SliceIteratorItem(self.img, self.slices)

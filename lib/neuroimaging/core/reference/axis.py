@@ -217,11 +217,11 @@ class RegularAxis (Axis):
         @rtype: C{numpy.ndarray(numpy.float)} or C{generator} of C{numpy.float}
         """
         if self.length == N.inf:
-            def f(x):
+            def generator(x):
                 while True:
                     yield x
                     x += self.step
-            return f(self.start)
+            return generator(self.start)
         else:
             return N.linspace(self.min(), self.max() + self.step, self.length,
                               False)
