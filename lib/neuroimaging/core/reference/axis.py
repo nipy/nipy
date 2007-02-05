@@ -1,6 +1,7 @@
 """
 The L{Axis} family of classes are used to represent a named axis within a
-coordinate system. Axes can be regular discrete or continuous, finite or infinite.
+coordinate system. Axes can be regular discrete or continuous, finite or
+infinite.
 
 The current class hirachy looks like this::
 
@@ -40,8 +41,9 @@ class Axis(object):
         
         self.name = name
         if self.name not in valid:
-            raise ValueError, ('%s is invalid: recognized dimension names are ' + `valid`) \
-                % (self.name)
+            raise ValueError, ('%s is invalid: recognized dimension ' \
+                               'names are ' + str(valid)) \
+                               % (self.name)
 
     def __eq__(self, other):
         """ Equality is defined by name 
@@ -121,7 +123,14 @@ class ContinuousAxis(Axis):
                Axis.__eq__(self, other)
 
     def valid(self, x):
-        """ The axis is defined as the range [low:high) """
+        """ Test if x is a point on the axis. 
+
+        The axis is defined as the range [low:high).
+        
+        @param x: A voxel.
+        @type x: C{float}
+        @rtype: C{bool}
+        """ 
         return self.low <= x < self.high
 
     def max(self):
@@ -186,6 +195,12 @@ class RegularAxis (Axis):
                Axis.__eq__(self, other)
 
     def valid(self, x):
+        """ Test if x is a point on the axis. 
+
+        @param x: A voxel.
+        @type x: C{float}
+        @rtype: C{bool}
+        """ 
         if x in (-N.inf, N.inf):
             return False
         if self.length == N.inf:
@@ -208,7 +223,8 @@ class RegularAxis (Axis):
                     x += self.step
             return f(self.start)
         else:
-            return N.linspace(self.min(), self.max() + self.step, self.length, False)
+            return N.linspace(self.min(), self.max() + self.step, self.length,
+                              False)
 
     def max(self):
         """ The maximum value of the axis. 
