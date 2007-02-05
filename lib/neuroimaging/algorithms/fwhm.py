@@ -180,12 +180,12 @@ class iterFWHM(Resels):
         self.nneigh = 4. * N.ones((self.Y,self.X))
         self.nneigh[0] = 2
         self.nneigh[-1] = 2
-        self.nneigh[:,0] = 2
-        self.nneigh[:,-1] = 2
-        self.nneigh[0,0] = 1
-        self.nneigh[0,-1] = 1
-        self.nneigh[-1,-1] = 1
-        self.nneigh[-1,0] = 1
+        self.nneigh[:, 0] = 2
+        self.nneigh[:, -1] = 2
+        self.nneigh[0, 0] = 1
+        self.nneigh[0, -1] = 1
+        self.nneigh[-1, -1] = 1
+        self.nneigh[-1, 0] = 1
 
     def set_next(self, data, FWHMmax=50.):
 
@@ -204,14 +204,18 @@ class iterFWHM(Resels):
                 for index in range(4):
                     y = self.Yindex + self.Yshift[index]
                     x = self.Xindex + self.Xshift[index]
-                    axx = self.Axx[y[0]:y[-1],:]
-                    ayy = self.Ayy[:,x[0]:x[-1]]
-                    axy = N.add.reduce(self.uy[:,x[0]:x[-1]] * self.ux[y[0]:y[-1],:], 2) * self.Yweight[index] * self.Xweight[index]
+                    yslice = slice(y[0], y[-1])
+                    xslice = slice(x[0], x[-1])
+                    axx = self.Axx[yslice, :]
+                    ayy = self.Ayy[:, xslice]
+                    axy = N.add.reduce(self.uy[:, xslice] *
+                                       self.ux[yslice, :], 2)
+                    axy *= self.Yweight[index] * self.Xweight[index]
                     detlam = axx * ayy - axy**2
                     test = N.greater(detlam, 0).astype(N.float64)
                     _resels = N.sqrt(test * detlam)
-                    self._resels[y[0]:y[-1], x[0]:x[-1]] += _resels
-                    self._fwhm[y[0]:y[-1], x[0]:x[-1]] += self.resel2fwhm(_resels)
+                    self._resels[yslice, xslice] += _resels
+                    self._fwhm[yslice, xslice] += self.resel2fwhm(_resels)
 
         else:
             self.uz = wresid - self.u
@@ -221,19 +225,29 @@ class iterFWHM(Resels):
             for index in range(4):
                 y = self.Yindex + self.Yshift[index] 
                 x = self.Xindex + self.Xshift[index]
-                axx = self.Axx[y[0]:y[-1],:]
-                ayy = self.Ayy[:,x[0]:x[-1]]
-                azz = self.Azz[y[0]:y[-1],x[0]:x[-1]]
+                yslice = slice(y[0], y[-1])
+                xslice = slice(x[0], x[-1])
+                axx = self.Axx[yslice, :]
+                ayy = self.Ayy[:, xslice]
+                azz = self.Azz[yslice, xslice]
                 if self.df_resid > self.df_limit:
-                    ayx = N.add.reduce(self.uy[:,x[0]:x[-1]] * self.ux[y[0]:y[-1],:], 2) * self.Yweight[index] * self.Xweight[index]
-                    azx = N.add.reduce(self.ux[y[0]:y[-1],:] * self.uz[y[0]:y[-1],x[0]:x[-1]], 2) * self.Yweight[index]
-                    azy = N.add.reduce(self.uy[:,x[0]:x[-1]] * self.uz[y[0]:y[-1],x[0]:x[-1]], 2) * self.Xweight[index]
-                    detlam = azz * (ayy*axx - ayx**2) - azy * (azy*axx - azx*ayx) + azx * (azy*ayx - azx*ayy)
+                    xx = self.ux[yslice: ]
+                    yy = self.uy[:, xslice]
+                    zz = self.uz[yslice, xslice]
+                    ayx = N.add.reduce(yy * xx, 2)
+                    azx = N.add.reduce(xx * zz, 2)
+                    azy = N.add.reduce(yy * zz, 2)
+                    ayx *= self.Yweight[index] * self.Xweight[index]
+                    azx *= self.Yweight[index]
+                    azy *= self.Xweight[index]
+                    detlam = azz * (ayy*axx - ayx**2) - \
+                             azy * (azy*axx - azx*ayx) + \
+                             azx * (azy*ayx - azx*ayy)
 
                 test = N.greater(detlam, 0).astype(N.float64)
                 _resels = N.sqrt(test * detlam)
-                self._resels[y[0]:y[-1], x[0]:x[-1]] += _resels
-                self._fwhm[y[0]:y[-1], x[0]:x[-1]] += self.resel2fwhm(_resels)
+                self._resels[yslice, xslice] += _resels
+                self._fwhm[yslice, xslice] += self.resel2fwhm(_resels)
                 
             # Get slice ready for output
             self._fwhm /= ((self.slice > 1) + 1.) * self.nneigh
@@ -256,18 +270,29 @@ class iterFWHM(Resels):
             for index in range(4):
                 x = self.Yindex + self.Yshift[index]
                 y = self.Xindex + self.Xshift[index]
-                axx = self.Axx[x[0]:x[-1],:]
-                ayy = self.Ayy[:,y[0]:y[-1]]
-                azz = self.Azz[x[0]:x[-1],y[0]:y[-1]]
+                yslice = slice(y[0], y[-1])
+                xslice = slice(x[0], x[-1])
+                axx = self.Axx[xslice, :]
+                ayy = self.Ayy[:, yslice]
+                azz = self.Azz[xslice, yslice]
                 if self.df_resid > self.df_limit:
-                    ayx = N.add.reduce(self.uy[:,y[0]:y[-1]] * self.ux[x[0]:x[-1],:], 2) * self.Yweight[index] * self.Xweight[index]
-                    azx = N.add.reduce(self.ux[x[0]:x[-1],:] * self.uz[x[0]:x[-1],y[0]:y[-1]], 2) * self.Yweight[index]
-                    azy = N.add.reduce(self.uy[:,y[0]:y[-1]] * self.uz[x[0]:x[-1],y[0]:y[-1]], 2) * self.Xweight[index]
-                    detlam = azz * (ayy*axx - ayx**2) - azy * (azy*axx - azx*ayx) + azx * (azy*ayx - azx*ayy)
+                    xx = self.ux[xslice, :]
+                    yy = self.uy[:, yslice]
+                    zz = self.uz[xslice, yslice]
+                    ayx = N.add.reduce(yy * xx, 2)
+                    azx = N.add.reduce(xx * zz, 2)
+                    azy = N.add.reduce(yy * zz, 2)
+
+                    ayx *= self.Yweight[index] * self.Xweight[index]
+                    azx *= self.Yweight[index]
+                    azy *= self.Xweight[index]
+                    detlam = azz * (ayy*axx - ayx**2) - \
+                             azy * (azy*axx - azx*ayx) + \
+                             azx * (azy*ayx - azx*ayy)
                 test = N.greater(N.fabs(detlam), 0).astype(N.float64)
                 _resels = N.sqrt(test * detlam)
-                self._resels[x[0]:x[-1], y[0]:y[-1]] += _resels
-                self._fwhm[x[0]:x[-1], y[0]:y[-1]] += self.resel2fwhm(_resels)
+                self._resels[xslice, yslice] += _resels
+                self._fwhm[xslice, yslice] += self.resel2fwhm(_resels)
                 
             if self.slice == self.nslices - 1:
                 self._fwhm /= ((self.slice > 1) + 1.) * self.nneigh
