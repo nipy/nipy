@@ -6,7 +6,7 @@ from neuroimaging.core.image.image import Image
 
 contrast_map = {'sentence': 'sen',
                 'speaker': 'spk',
-                'average': 'all',
+                'overall': 'all',
                 'interaction': 'snp'}
 
 which_map = {'contrasts': 'mag',
@@ -20,7 +20,7 @@ def rho(subject=3, run=3):
     runfile = 'http://kff.stanford.edu/FIAC/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (subject, subject, run)
     return Image(runfile)
 
-def result(subject=3, run=3, which='contrasts', contrast='average', stat='t'):
+def result(subject=3, run=3, which='contrasts', contrast='overall', stat='t', **kw):
     contrast = contrast_map[contrast]
     which = which_map[which]
     stat = stat_map[stat]

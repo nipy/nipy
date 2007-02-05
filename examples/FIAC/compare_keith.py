@@ -6,7 +6,7 @@ from neuroimaging.ui.visualization.viewer import BoxViewer
 
 import keith
 
-path = "/home/analysis/FIAC"
+path = "../../../nipy-data/fmri/FIAC"
 
 def nipy_run(subject=3, run=3, which='contrasts', contrast='overall',
              stat='t', **extra):
@@ -16,14 +16,14 @@ def nipy_run(subject=3, run=3, which='contrasts', contrast='overall',
     return Image(runfile)
 
 
-def nipy_rho(subject=3, run=3):
+def nipy_rho(subject=3, run=3, **kw):
 
     runfile = '%s/fiac%d/fonc%d/fsl/fmristat_run/rho.img' % (path, subject, run)
 
     return Image(runfile)
 
 def mask(subject=3, run=3, **kw):
-    runfile = '%path/fiac%d/fonc%d/fsl/mask.img' % (path, subject, run)
+    runfile = '%s/fiac%d/fonc%d/fsl/mask.img' % (path, subject, run)
 
     return Image(runfile)
 
@@ -54,7 +54,7 @@ if parser.values.rho:
     y = keith.rho(**options)
 else:
     x = nipy_run(**options)
-    y = keith.run(**options)
+    y = keith.result(**options)
     
 m = mask(**options)
 
