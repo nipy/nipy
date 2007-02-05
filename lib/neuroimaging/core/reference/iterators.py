@@ -197,6 +197,9 @@ class SliceIterator(Iterator):
 
 
 class SliceIteratorItem(IteratorItem):
+    """
+    A class for objects returned by L{SliceIterator}s
+    """
 
     def get(self):
         """
@@ -318,6 +321,9 @@ class ParcelIterator(Iterator):
 
 
 class ParcelIteratorItem(IteratorItem):
+    """
+    A class for objects returned by L{ParcelIterator}s
+    """
 
     def __init__(self, img, slice_, label):
         IteratorItem.__init__(self, img, slice_)
@@ -350,6 +356,9 @@ class fMRIParcelIterator(ParcelIterator):
     
 
 class fMRIParcelIteratorItem(IteratorItem):
+    """
+    A class for objects returned by L{fMRISliceIterator}s
+    """
 
     def __init__(self, img, slice_, label):
         IteratorItem.__init__(self, img, slice_)
@@ -400,6 +409,9 @@ class SliceParcelIterator(ParcelIterator):
 
 
 class SliceParcelIteratorItem(IteratorItem):
+    """
+    A class for objects returned by L{SliceParcelIterator}s
+    """
 
     def __init__(self, img, slice_, label, i):
         IteratorItem.__init__(self, img, slice_)
@@ -427,6 +439,9 @@ class fMRISliceParcelIterator(SliceParcelIterator):
     
 
 class fMRISliceParcelIteratorItem(IteratorItem):
+    """
+    A class for objects returned by L{fMRISliceParcelIterator}s
+    """
 
     def __init__(self, img, slice_, label, i):
         IteratorItem.__init__(self, img, slice_)
