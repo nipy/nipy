@@ -40,8 +40,6 @@ class DelayContrast(Contrast):
 
     Weights should have the same number of columns as len(fns), with each row
     specifying a different contrast.
-
-    TO DO: check that the convolved term is actually in the design column space.
     """
 
     def _sequence_call(self, time):
@@ -120,7 +118,7 @@ class DelayContrast(Contrast):
         C = self.term(t)
 
         cnrow = C.shape[0] / 2
-        effects = C[0:cnrow]
+        effects = C[:cnrow]
         deffects = C[cnrow:]
 
         for i in range(self.weights.shape[0]):
