@@ -1,10 +1,15 @@
-import urllib2
+import urllib2, os.path
 
 import pylab
 import numpy as N
 
 import model, keith
 from protocol import eventdict_r
+from neuroimaging.core.image.image import Image
+from neuroimaging.ui.visualization.viewer import BoxViewer
+from scipy.sandbox.models.regression import ols_model, ar_model
+from neuroimaging.modalities.fmri.fmristat import delay
+from neuroimaging.modalities.fmri.regression import FContrastOutput
 
 class CompareRun(model.RunModel):
 
@@ -21,6 +26,16 @@ class CompareRun(model.RunModel):
             for etype in self.etypes:
                 self.indices[(deriv, etype)] = self._get_indices(deriv, etype)
                 self._plot_agreement(deriv, etype)
+
+    def result(self, which='contrasts', contrast='speaker', stat='t'):
+        resultfile = os.path.join(self.resultdir, which, contrast, "%s.img" % stat)
+        return Image(resultfile)
+
+    def keith_result(self, which='contrasts', contrast='speaker', stat='t'):
+        return keith.result(subject=self.subject.id, run=self.id,
+                            which=which,
+                            contrast=contrast,
+                            stat=stat)
 
     def _get_indices(self, deriv, etype):
         """
@@ -151,7 +166,69 @@ class CompareRun(model.RunModel):
         htmlfile = file('/home/analysis/FIAC/x_cache/compare_sub%d_run%d.html' % (self.subject.id, self.id), 'w')
         htmlfile.write(html)
         htmlfile.close()
-        print htmlfile
+
+class VoxelModel(CompareRun):
+
+    def voxel_model(self, i, j, k):
+        self.load()
+        rho = keith.rho(subject=self.subject.id, run=self.id)[i,j,k]        
+        self.rho = N.around(rho * (self.OLSmodel.nmax / 2.)) / (self.OLSmodel.nmax / 2.)
+        parcelmap, parcelseq = self.OLSmodel.getparcelmap()
+
+        self.AR(clobber=True, parcel=(parcelmap, [self.rho]))
+        self.design = self.OLSmodel.model().design
+
+        m = ar_model(self.design, self.rho)
+        self.load()
+        self.fmri.postread = self.brainavg
+        data = self.fmri[:,i,j,k]
+        results = m.fit(data)
+
+        for output in self.ARmodel.outputs:
+            if isinstance(output, delay.DelayContrastOutput):
+                print output.extract(results), [(x,N.array([self.result(which='delays', contrast=output.contrast.rownames[_j], stat=x)[i,j,k] for _j in range(4)])) for x in ['effect', 'sd', 't']], output.contrast.name
+            elif not isinstance(output, FContrastOutput):
+                print output.extract(results), [(x,self.result(which='contrasts', contrast=output.contrast.name, stat=x)[i,j,k]) for x in ['effect', 'sd', 't']], output.contrast.name
+            else:
+                print output.extract(results)
+        
+def plot_result(result1, result2, mask, which='contrasts', contrast='speaker', stat='t', vmax=None, vmin=None):
+    
+    resultargs = {'which':which, 'contrast':contrast, 'stat':stat}
+    x = result1(**resultargs)
+    y = result2(**resultargs)
+
+    vx = BoxViewer(x, mask=mask, colormap='spectral')
+    vy = BoxViewer(y, mask=mask, colormap='spectral')
+
+    if vmin is not None:
+        vx.m = vmin
+        vy.m = vmin
+
+    if vmax is not None:
+        vx.M = vmax
+        vy.M = vmax
+
+    vx.draw()
+    vy.draw()
+
+    X = x.readall() * mask.readall()
+    X.shape = N.product(X.shape)
+
+    Y = y.readall() * mask.readall()
+    Y.shape = N.product(Y.shape)
+
+    print 'corr', N.corrcoef(X, Y)[0,1]
+    pylab.show()
+
+def cor_result(result1, result2, mask, which='contrasts', contrast='speaker', stat='t'):
+    resultargs = {'which':which, 'contrast':contrast, 'stat':stat}
+    x = result1(**resultargs)
+    y = result2(**resultargs)
+
+    x = N.nan_to_num(x[:]) * mask[:]; x.shape = N.product(x.shape)
+    y = N.nan_to_num(y[:]) * mask[:]; y.shape = N.product(y.shape)
+    return N.corrcoef(x, y)
 
 
 if __name__ == '__main__':
@@ -168,10 +245,26 @@ if __name__ == '__main__':
     runmodel.OLS(clobber=True)
     runmodel.AR(clobber=True)
 
+    vmodel = VoxelModel(subject, run)
+    vmodel.OLS(clobber=True)
+    vmodel.voxel_model(20,30,30)
+    
     try:
         runmodel.max_corr()
         runmodel.webpage()
-        print runmodel.corr
     except (urllib2.HTTPError, ValueError, NotImplementedError):
         pass
+
+    runmodel.load()
+    mask = runmodel.mask
+    print cor_result(runmodel.result, runmodel.keith_result, mask)
+
+##     keithrho = KeithRho(subject, run, resultdir=os.path.join("fsl", "fmristat_rho"))
+##     keithrho.OLS(clobber=True)
+##     keithrho.AR(clobber=True)
+
+    plot_result(runmodel.result, runmodel.keith_result, runmodel.mask)
+##     rho1 = runmodel.OLSmodel.rho
+##     rho2 = keithrho.OLSmodel.rho
+
 
