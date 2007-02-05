@@ -1,5 +1,4 @@
 from struct import calcsize, pack, unpack
-from types import TupleType, ListType
 import sys
 import numpy as N
 

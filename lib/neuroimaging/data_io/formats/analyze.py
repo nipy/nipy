@@ -1,4 +1,3 @@
-from numpy.core.memmap import memmap as memmap_type
 import numpy as N
 import scipy.io as SIO
 
