@@ -91,29 +91,9 @@ if not ENTHOUGHT_TRAITS_DEF:
 testmatch = re.compile(".*tests").search
 nontest_packages = [p for p in packages if not testmatch(p)]
 
-def hasattrs(obj, *attrs):
-    for attr in attrs:
-        if not hasattr(obj, attr):
-            return False
-    return True
-
-def haslength(obj):
-    return hasattr(obj,"__len__")
-
-def flatten(arr, dim=0):
-    if len(arr.shape) < 2:
-        return
-    oldshape = arr.shape
-    arr.shape = oldshape[0:dim] + (product(oldshape[dim:]),)
-
-def reorder(seq, order):
-    return [seq[i] for i in order]
-
-def reverse(seq):
-    return reorder(seq, range(len(seq)-1, -1, -1))
 
 def import_from(modulename, objectname):
-    "Import and return objectname from modulename."
+    """Import and return objectname from modulename."""
     module = __import__(modulename, {}, {}, (objectname,))
     try:
         return getattr(module, objectname)

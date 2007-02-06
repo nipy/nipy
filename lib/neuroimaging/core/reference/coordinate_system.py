@@ -4,7 +4,6 @@ Coordinate systems are used to represent the spaces in which the images reside.
 
 import numpy as N
 
-from neuroimaging import reorder, reverse
 from neuroimaging.core.reference.axis import VoxelAxis
 from neuroimaging.utils.odict import odict
 
@@ -105,7 +104,7 @@ class CoordinateSystem(odict):
         """
         if name is None:
             name = self.name
-        return CoordinateSystem(name, reorder(self.axes(), order))
+        return CoordinateSystem(name, _reorder(self.axes(), order))
 
 
     def reverse(self, name=None):
@@ -117,7 +116,7 @@ class CoordinateSystem(odict):
         """
         if name is None:
             name = self.name
-        return CoordinateSystem(name, reverse(self.axes()))
+        return CoordinateSystem(name, _reverse(self.axes()))
 
 
     def hasaxis(self, name):
@@ -197,3 +196,8 @@ class DiagonalCoordinateSystem(CoordinateSystem):
             value[i, self.ndim()] = self.axes()[i].start
         return value
 
+def _reorder(seq, order):
+    return [seq[i] for i in order]
+
+def _reverse(seq):
+    return _reorder(seq, range(len(seq)-1, -1, -1))

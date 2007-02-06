@@ -1,6 +1,5 @@
 import numpy as N
 
-from neuroimaging import flatten
 from neuroimaging.core.image.image import Image
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem
 from neuroimaging.core.reference.grid import SamplingGrid
