@@ -90,6 +90,10 @@ class ExperimentalRegressor(object):
         Return a TimeFunction object that can be added, subtracted, etc.
         """
 	#FIXME: should be a better way to determine this
+        # A better way will require all the callable objects we have
+        # (including things like term, quantative from scipy.models)
+        # to have a .nout member. This will require a lot of changes
+        # in a lot of places i think. --Tim
         testdata = self(N.arange(10))
 
         if len(testdata.shape) == 2:
