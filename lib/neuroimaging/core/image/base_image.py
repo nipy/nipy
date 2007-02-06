@@ -25,6 +25,11 @@ class BaseImage(object):
         self.data[item] = value
 
     def asfile(self):
+        """ Return image filename corresponding to Image object data.
+
+        @rtype: C{string}
+        @raises NotImplemenetedError: Subclasses must implement this.       
+        """
         raise NotImplementedError
 
 class ArrayImage (BaseImage):
@@ -46,5 +51,9 @@ class ArrayImage (BaseImage):
         BaseImage.__init__(self, data, grid, dtype)
 
     def asfile(self):        
+        """ Return image filename corresponding to Image object data.
+
+        @rtype: C{string}
+        """
         filename = DataSource().tempfile(".img", "nipy-")
         return filename
