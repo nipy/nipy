@@ -68,7 +68,7 @@ class TContrastOutput(ImageRegressionOutput):
         if self.effect:
             self.effectimg_it.next().set(data.effect)
         if self.sd:
-            self.sdimg_it.next().set(data.effect)
+            self.sdimg_it.next().set(data.sd)
 
 
 class FContrastOutput(ImageRegressionOutput):
