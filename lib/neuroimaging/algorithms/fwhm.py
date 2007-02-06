@@ -111,8 +111,8 @@ class iterFWHM(Resels):
         self.Y = grid.shape[1]
         self.X = grid.shape[2]
         self.setup_nneigh()
-        self._fwhm = N.zeros((self.Y,self.X))
-        self._resels = N.zeros((self.Y,self.X))
+        self._fwhm = N.zeros((self.Y, self.X))
+        self._resels = N.zeros((self.Y, self.X))
         self.Yindex = N.arange(self.Y)
         self.Xindex = N.arange(self.X)
         self.YX = self.Y*self.X
@@ -177,7 +177,7 @@ class iterFWHM(Resels):
         return self
 
     def setup_nneigh(self):
-        self.nneigh = 4. * N.ones((self.Y,self.X))
+        self.nneigh = 4. * N.ones((self.Y, self.X))
         self.nneigh[0] = 2
         self.nneigh[-1] = 2
         self.nneigh[:, 0] = 2
@@ -195,8 +195,8 @@ class iterFWHM(Resels):
 
         if self.slice == 0:
             self.u = 1. * wresid
-            self.ux = wresid[:,1:] - wresid[:,0:-1]
-            self.uy = wresid[1:,:] - wresid[0:-1,:]
+            self.ux = wresid[:, 1:] - wresid[:, :-1]
+            self.uy = wresid[1:, :] - wresid[:-1, :]
             self.Axx = N.add.reduce(self.ux**2, 2)
             self.Ayy = N.add.reduce(self.uy**2, 2)
 
@@ -211,7 +211,7 @@ class iterFWHM(Resels):
                     axy = N.add.reduce(self.uy[:, xslice] *
                                        self.ux[yslice, :], 2)
                     axy *= self.Yweight[index] * self.Xweight[index]
-                    detlam = axx * ayy - axy**2
+                    detlam = calc_detlam(axx, ayy, 1, ayx, 0, 0)
                     test = N.greater(detlam, 0).astype(N.float64)
                     _resels = N.sqrt(test * detlam)
                     self._resels[yslice, xslice] += _resels
@@ -240,9 +240,7 @@ class iterFWHM(Resels):
                     ayx *= self.Yweight[index] * self.Xweight[index]
                     azx *= self.Yweight[index]
                     azy *= self.Xweight[index]
-                    detlam = azz * (ayy*axx - ayx**2) - \
-                             azy * (azy*axx - azx*ayx) + \
-                             azx * (azy*ayx - azx*ayy)
+                    detlam = calc_detlam(axx, ayy, azz, ayx, azx, azy)
 
                 test = N.greater(detlam, 0).astype(N.float64)
                 _resels = N.sqrt(test * detlam)
@@ -260,8 +258,8 @@ class iterFWHM(Resels):
             self._fwhm = N.zeros(self._fwhm.shape)
             self._resels = N.zeros(self._resels.shape)
             self.u = 1. * wresid
-            self.ux = wresid[:,1:] - wresid[:,0:-1]
-            self.uy = wresid[1:,:] - wresid[0:-1,:]
+            self.ux = wresid[:, 1:] - wresid[:, :-1]
+            self.uy = wresid[1:, :] - wresid[:-1, :]
             self.Axx = N.add.reduce(self.ux**2, 2)
             self.Ayy = N.add.reduce(self.uy**2, 2)
 
@@ -286,9 +284,7 @@ class iterFWHM(Resels):
                     ayx *= self.Yweight[index] * self.Xweight[index]
                     azx *= self.Yweight[index]
                     azy *= self.Xweight[index]
-                    detlam = azz * (ayy*axx - ayx**2) - \
-                             azy * (azy*axx - azx*ayx) + \
-                             azx * (azy*ayx - azx*ayy)
+                    detlam = calc_detlam(axx, ayy, azz, ayx, azx, azy)
                 test = N.greater(N.fabs(detlam), 0).astype(N.float64)
                 _resels = N.sqrt(test * detlam)
                 self._resels[xslice, yslice] += _resels
@@ -330,7 +326,7 @@ class fastFWHM(Resels):
             for i in range(self.n):
                 if verbose:
                     print '(Normalizing) Frame: [%d]' % i
-                _frame = self.rimage[slice(i,i+1)]
+                _frame = self.rimage[slice(i, i+1)]
                 _mu += _frame
                 _sumsq += _frame**2
 
@@ -345,7 +341,7 @@ class fastFWHM(Resels):
         for i in range(self.n):
             if verbose:
                 print 'Slice: [%d]' % i
-            _frame = self.rimage[slice(i,i+1)]
+            _frame = self.rimage[slice(i, i+1)]
             _frame = (_frame - _mu) * _invnorm
             _frame.shape = _frame.shape[1:]
 
@@ -365,7 +361,8 @@ class fastFWHM(Resels):
             del(dz); del(dy); del(dx); del(g) ; gc.collect()
             
 
-        detlam = Lzz * (Lyy*Lxx - Lyx**2) - Lzy * (Lzy*Lxx - Lzx*Lyx) + Lzx * (Lzy*Lyx - Lzx*Lyy)
+
+        detlam = calc_detlam(Lxx, Lyy, Lzz, Lyx, Lzx, Lzy)
 
         test = N.greater(detlam, 0)
         resels = N.sqrt(detlam * test)
@@ -375,3 +372,8 @@ class fastFWHM(Resels):
         self.resels[fullslice] = resels
         self.fwhm[fullslice] = fwhm
 
+
+def calc_detlam(xx, yy, zz, yx, zx, zy):
+    return zz * (yy*xx - yx**2) - \
+           zy * (zy*xx - zx*yx) + \
+           zx * (zy*yx - zx*yy)
