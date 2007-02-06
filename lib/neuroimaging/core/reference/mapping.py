@@ -239,7 +239,7 @@ class Mapping(object):
         voxels, return the closest voxel for real. Will choke if mapping is
         not invertible.
 
-        @raises: N.linalg.LinAlgError is mapping is not invertible.
+        @raise N.linalg.LinAlgError: is mapping is not invertible.
         """
         shape = real.shape
         if len(shape) > 1:

@@ -260,7 +260,7 @@ class ConcatenatedGrids(SamplingGrid):
 
         @param i: The grid to return
         @type i: C{int}
-        @raises: C{IndexError} if i in out of range.
+        @raise C{IndexError}: if i in out of range.
         """
         return self.grids[i]
 

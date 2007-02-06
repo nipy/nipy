@@ -48,7 +48,7 @@ def get_package_doctests(packname):
 def get_package_tests(packname):
     """
     Retrieve all TestCases defined for the given package.
-    @returns {testname:testclass,...}
+    @return: {testname: testclass, ...}
     """
 
     package = import_from(packname, "tests")
@@ -63,7 +63,7 @@ def get_package_tests(packname):
     return dict(tests)
     
 def test_package(packname, testname=None):
-    "Run all tests for the given package"
+    """Run all tests for the given package."""
     testdict = get_package_tests(packname)
     tests = [val for key,val in testdict.items() \
              if testname==None or testname==key]

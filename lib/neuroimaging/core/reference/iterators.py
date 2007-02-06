@@ -62,8 +62,8 @@ class Iterator(object):
         """
         Do the hard work of generating the next item from the iterator.
 
-        This method must be overriden by the subclasses of Iterator.
-        @raises NotImplementedError
+        @raise NotImplementedError: This method must be overriden by the
+            subclasses of Iterator.
         @rtype: L{IteratorItem}
         """
         raise NotImplementedError
