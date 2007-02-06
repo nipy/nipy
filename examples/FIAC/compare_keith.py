@@ -4,34 +4,7 @@ import numpy as N
 from neuroimaging.core.image.image import Image
 from neuroimaging.ui.visualization.viewer import BoxViewer
 
-contrast_map = {'sentence': 'sen',
-                'speaker': 'spk',
-                'overall': 'all',
-                'interaction': 'snp'}
-
-which_map = {'contrasts': 'mag',
-             'delays': 'del'}
-
-stat_map = {'t':'t',
-            'effect': 'ef',
-            'sd': 'sd'}
-
-def fmristat_run(subject=3, run=3, which='contrasts', contrast='overall', stat='t', **kw):
-    contrast = contrast_map[contrast]
-    which = which_map[which]
-    stat = stat_map[stat]
-
-    runfile = '/home/analysis/FIAC/fmristat/fiac%d/fiac%d_fonc%d_%s_%s_%s.img' % (subject, subject, run, contrast, which, stat)
-    
-    return Image(runfile)
-
-def fmristat_rho(subject=3, run=3):
-
-    runfile = '/home/analysis/FIAC/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (subject, subject, run)
-    
-    return Image(runfile)
-
-
+import keith
 
 def nipy_run(subject=3, run=3, which='contrasts', contrast='overall', stat='t', **extra):
 
@@ -72,10 +45,10 @@ print options
 
 if not parser.values.rho:
     x = nipy_run(**options)
-    y = fmristat_run(**options)
+    y = keith.run(**options)
 else:
     x = nipy_rho(**options)
-    y = fmristat_rho(**options)
+    y = keith.rho(**options)
     
 m = mask(**options)
 
