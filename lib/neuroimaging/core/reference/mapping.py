@@ -212,7 +212,7 @@ class Mapping(object):
     def ndim(self):
         """ The number of input dimensions
 
-        @rtpye: C{int}
+        @rtype: C{int}
         """
         return self._ndim
 
