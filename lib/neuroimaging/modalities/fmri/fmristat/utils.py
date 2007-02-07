@@ -44,7 +44,7 @@ class WholeBrainNormalize(object):
 
         self.idx = 0
     def __call__(self, fmri_data):
-        out = N.zeros(fmri_data.shape, N.float64)
+        out = N.zeros(fmri_data.shape)
         for i in range(self.n):
             out[i] = fmri_data[i] * 100. / self.avg[i]
         return out

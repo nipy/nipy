@@ -14,7 +14,7 @@ def make4d(subj=int(sys.argv[1]), run=int(sys.argv[2])):
     # setup fMRI grid
 
     t = frame.grid.mapping.transform
-    T = N.zeros((5,5), N.float64)
+    T = N.zeros((5,5))
     T[1:,1:] = t
     T[0:4,4] = 0.
     T[0,0] = 2.5

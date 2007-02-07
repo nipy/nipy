@@ -68,7 +68,7 @@ class CompareRun(model.RunModel):
     
         shift = 1.25
         T = N.arange(0, 191*2.5, 2.5) + shift
-        v = N.zeros((4,), N.float64)
+        v = N.zeros((4,))
 
         nipy = design(T)[event_index]
 
@@ -86,7 +86,7 @@ class CompareRun(model.RunModel):
     def _match_cols(self, vector, matrix):
 
         n = matrix.shape[1]
-        v = N.zeros((n,), N.float64)
+        v = N.zeros((n,))
         for i in range(n):
             v[i] = N.corrcoef(vector, matrix[:,i])[0,1]
         return N.argmax(N.fabs(N.nan_to_num(v)))
