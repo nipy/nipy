@@ -30,7 +30,7 @@ def block_protocol(url):
     regressor, the other the protocol.    
     """
 
-    time, events = _read_url(url(
+    time, events = _read_url(url)
 
     # take off the first 3.33 seconds of each eventtype for the block design
     # the blocks lasted 20 seconds with 9 seconds of rest at the end
