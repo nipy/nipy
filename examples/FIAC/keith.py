@@ -6,7 +6,7 @@ from neuroimaging.core.image.image import Image
 
 contrast_map = {'sentence': 'sen',
                 'speaker': 'spk',
-                'overall': 'all',
+                'average': 'all',
                 'interaction': 'snp'}
 
 which_map = {'contrasts': 'mag',
@@ -20,13 +20,13 @@ def rho(subject=3, run=3):
     runfile = '/home/analysis/FIAC/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (subject, subject, run)
     return Image(runfile)
 
-def run(subject=3, run=3, which='contrasts', contrast='overall', stat='t', **kw):
+def result(subject=3, run=3, which='contrasts', contrast='average', stat='t'):
     contrast = contrast_map[contrast]
     which = which_map[which]
     stat = stat_map[stat]
 
-    runfile = '/home/analysis/FIAC/fmristat/fiac%d/fiac%d_fonc%d_%s_%s_%s.img' % (subject, subject, run, contrast, which, stat)
-    return Image(runfile)
+    resultfile = '/home/analysis/FIAC/fmristat/fiac%d/fiac%d_fonc%d_%s_%s_%s.img' % (subject, subject, run, contrast, which, stat)
+    return Image(resultfile)
 
 def _getxcache(subj=0, run=1):
     """
