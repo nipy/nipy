@@ -36,7 +36,7 @@ class WholeBrainNormalize(object):
         self.avg = N.zeros((self.n,))
 
         for i in range(self.n):
-            d = fmri_image[slice(i,i+1)]
+            d = fmri_image[i:i+1]
             if _mask is not None:
                 d.shape = d.size
                 d = N.compress(_mask, d)
@@ -86,7 +86,8 @@ class fMRIStatOLS(LinearModelIterator):
 
         if resid or self.output_fwhm:
             self.resid_output = ResidOutput(self.fmri_image.grid,
-                                            path=self.path, basename='OLSresid',
+                                            path=self.path,
+                                            basename='OLSresid',
                                             clobber=self.clobber)
             self.resid_output.it = \
                           self.fmri_image.slice_iterator(mode='w').copy(self.resid_output.img)
@@ -98,7 +99,8 @@ class fMRIStatOLS(LinearModelIterator):
 
         self.setup_output()
 
-        LinearModelIterator.__init__(self, fmri_image.slice_iterator(), outputs)
+        LinearModelIterator.__init__(self, fmri_image.slice_iterator(),
+                                     outputs)
         
     def model(self):
         ftime = self.fmri_image.frametimes + self.tshift
@@ -120,7 +122,7 @@ class fMRIStatOLS(LinearModelIterator):
 
         if self.output_fwhm:
             resid = fMRIImage(self.resid_output.img)
-            fwhmest = fastFWHM(resid, fwhm=os.path.join(self.path, 'fwhmOLS.img'), clobber=self.clobber)
+            fwhmest = fastWHM(resid, fwhm=os.path.join(self.path, 'fwhmOLS.img'), clobber=self.clobber)
             fwhmest()
             self.fwhm_data = fwhmest.integrate(mask=self.mask)[1]
             print 'FWHM for data estimated as: %02f' % self.fwhm_data
@@ -158,7 +160,7 @@ class fMRIStatOLS(LinearModelIterator):
             parcelmap = []
             parcelseq = []
             for i in range(self.rho.grid.shape[0]):
-                tmp = self.rho[slice(i,i+1)]
+                tmp = self.rho[i:i+1]
                 tmp.shape = tmp.size
                 tmp = N.around(tmp * (self.nmax / 2.)) / (self.nmax / 2.)
                 newlabels = list(N.unique(tmp))
@@ -173,13 +175,15 @@ class fMRIStatOLS(LinearModelIterator):
 
         ftime = self.fmri_image.frametimes + self.tshift
         dmatrix = self.dmatrix.astype('<f8')
-        ftime.shape = (ftime.shape[0],1)
+        ftime.shape = (ftime.shape[0], 1)
         dmatrix = N.hstack([ftime, dmatrix])
         ftime.shape = (ftime.shape[0],)
 
         outname = os.path.join(self.path, 'matrix.csv')
         outfile = file(outname, 'w')
-        tmatrix = [[fpformat.fix(dmatrix[i][j], 4) for j in range(dmatrix.shape[1])] for i in range(dmatrix.shape[0])]
+        tmatrix = [[fpformat.fix(dmatrix[i][j], 4)
+                    for j in range(dmatrix.shape[1])]
+                   for i in range(dmatrix.shape[0])]
         outfile.write('\n'.join(','.join(tmatrix[i]) for i in range(dmatrix.shape[0])))
         outfile.close()
 
@@ -304,19 +308,25 @@ class fMRIStatAR(LinearModelIterator):
                                               contrast, path=path,
                                               clobber=clobber,
                                               frametimes=ftime,
-                                              it=iterator_(self.fmri_image.grid, parcelmap, parcelseq, mode='w'))
+                                              it=iterator_(self.fmri_image.grid,
+                                                           parcelmap,
+                                                           parcelseq, mode='w'))
                 elif contrast.rank == 1:
                     cur = TContrastOutput(self.fmri_image.grid, contrast,
                                           path=path,
                                           clobber=clobber,
                                           frametimes=ftime,
-                                          it=iterator_(self.fmri_image.grid, parcelmap, parcelseq, mode='w'))
+                                          it=iterator_(self.fmri_image.grid,
+                                                       parcelmap,
+                                                       parcelseq, mode='w'))
                 else:
                     cur = FContrastOutput(self.fmri_image.grid, contrast,
                                           path=path,
                                           clobber=clobber,
                                           frametimes=ftime,
-                                          it=iterator_(self.fmri_image.grid, parcelmap, parcelseq, mode='w'))
+                                          it=iterator_(self.fmri_image.grid,
+                                                       parcelmap,
+                                                       parcelseq, mode='w'))
                 self.contrasts.append(cur)
 
         outputs += self.contrasts
@@ -326,7 +336,8 @@ class fMRIStatAR(LinearModelIterator):
                                             path=path,
                                             basename='ARresid',
                                             clobber=clobber)
-            self.resid_output.it = iterator(self.resid_output.img, parcelmap, parcelseq, mode='w')
+            self.resid_output.it = iterator(self.resid_output.img, parcelmap,
+                                            parcelseq, mode='w')
             outputs.append(self.resid_output)
 
         it = iterator(OLS.fmri_image, parcelmap, parcelseq)

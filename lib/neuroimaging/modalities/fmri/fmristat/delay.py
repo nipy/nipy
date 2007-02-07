@@ -14,11 +14,10 @@ import numpy.linalg as L
 from scipy.sandbox.models.utils import recipr, recipr0
 from scipy.sandbox.models.contrast import Contrast, ContrastResults
 
-from neuroimaging.modalities.fmri import hrf, filters
+from neuroimaging.modalities.fmri import hrf
 from neuroimaging.modalities.fmri.protocol import ExperimentalQuantitative
 from neuroimaging.modalities.fmri.regression import TContrastOutput 
 from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
-from neuroimaging.core.image.image import Image
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
 
 from neuroimaging.defines import pylab_def
@@ -79,7 +78,8 @@ class DelayContrast(Contrast):
             if name == '':
                 raise ValueError, 'if rownames are not specified, name must be specified'
             if self.weights.shape[0] > 1:
-                self.rownames = ['%srow%d' % (name, i) for i in range(self.weights.shape[0])]
+                self.rownames = ['%srow%d' % (name, i) for i in
+                                 range(self.weights.shape[0])]
             elif self.weights.shape[0] == 1:
                 self.rownames = ['']
         else:
@@ -89,10 +89,10 @@ class DelayContrastOutput(TContrastOutput):
 
 
     def __init__(self, grid, contrast, IRF=None, dt=0.01, delta=None, Tmax=100,
-                 Tmin=-100, subpath='delays', clobber=False, path='.', ext='.hdr',
-                 frametimes=[], **kw):
-        TContrastOutput.__init__(self, grid, contrast, subpath=subpath, clobber=clobber,
-                                 frametimes=frametimes, **kw)
+                 Tmin=-100, subpath='delays', clobber=False, path='.',
+                 ext='.hdr', frametimes=[], **kw):
+        TContrastOutput.__init__(self, grid, contrast, subpath=subpath,
+                                 clobber=clobber, frametimes=frametimes, **kw)
         self.IRF = IRF
         self.dt = dt
         if delta is None:
@@ -120,9 +120,11 @@ class DelayContrastOutput(TContrastOutput):
 
     def _setup_output_delay(self, path, clobber, subpath, ext, frametimes):
         """
-        Setup the output for contrast, the DelayContrast. One t, sd, and effect img is output for each
-        row of contrast.weights. Further, the \'magnitude\' (canonical HRF) contrast matrix and \'magnitude\'
-        column space are also output to illustrate what contrast this corresponds to.
+        Setup the output for contrast, the DelayContrast. One t, sd, and
+        effect img is output for each row of contrast.weights. Further,
+        the \'magnitude\' (canonical HRF) contrast matrix and \'magnitude\'
+        column space are also output to illustrate what contrast this
+        corresponds to.
         """
 
         self.timgs = []
@@ -174,7 +176,8 @@ class DelayContrastOutput(TContrastOutput):
                 
                 ftime = frametimes
                 def g(time=None, **extra):
-                    return N.squeeze(N.dot(l, self.contrast.term(time=time, **extra)))
+                    return N.squeeze(N.dot(l, self.contrast.term(time=time,
+                                                                 **extra)))
                 f = pylab.gcf()
                 f.clf()
                 pl = MultiPlot(g, tmin=0, tmax=ftime.max(),
@@ -287,7 +290,8 @@ class DelayHRF(hrf.SpectralHRF):
     '''
 
     def __init__(self, input_hrf=hrf.canonical, spectral=True, **keywords):
-        hrf.SpectralHRF.__init__(self, input_hrf, spectral=spectral, names=['hrf'], **keywords)
+        hrf.SpectralHRF.__init__(self, input_hrf, spectral=spectral,
+                                 names=['hrf'], **keywords)
 
     def deltaPCA(self, tmax=50., lower=-15.0, delta=N.arange(-4.5,4.6,0.1)):
         """
@@ -355,7 +359,11 @@ class DelayHRF(hrf.SpectralHRF):
         else:
             hrf.SpectralHRF.deltaPCA(self)
 
-        self.approx.theta, self.approx.inverse, self.approx.dinverse, self.approx.forward, self.approx.dforward = invertR(delta, self.approx.coef)
+        (self.approx.theta,
+         self.approx.inverse,
+         self.approx.dinverse,
+         self.approx.forward,
+         self.approx.dforward) = invertR(delta, self.approx.coef)
         
         self.delay = self.approx
 
