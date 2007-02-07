@@ -248,8 +248,11 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
 
     def __getitem__(self, key):
 
-        if self.events.has_key(key) not in self.events.keys():
-            l = self.events.keys()
+        if self.events.has_key(key): # not in self.events.keys():
+                                     # this statement above seems useless 
+            l = self.event_keys()
+            l.sort()                 # sort the keys so output
+                                     # is consistent -- JT
             j = l.index(key)
         else:
             raise KeyError, 'key not found'            
