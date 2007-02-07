@@ -47,7 +47,8 @@ class LinearFilter(object):
 
         for i in range(voxels.shape[0]):
             test = N.less(voxels[i], self.shape[i] / 2.)
-            voxels[i] = test * voxels[i] + (1. - test) * (voxels[i] - self.shape[i])
+            voxels[i] = test * voxels[i] + \
+                        (1. - test) * (voxels[i] - self.shape[i])
     
         voxels.shape = (voxels.shape[0], N.product(voxels.shape[1:]))
         X = self.grid.mapping(voxels)
@@ -89,7 +90,9 @@ class LinearFilter(object):
 
             gc.collect()
             if self.scale != 1:
-                data = self.scale * data[0:inimage.shape[0],0:inimage.shape[1],0:inimage.shape[2]]
+                data = self.scale * data[:inimage.shape[0],
+                                         :inimage.shape[1],
+                                         :inimage.shape[2]]
 
             if self.location != 0.0:
                 data += self.location
@@ -113,7 +116,9 @@ class LinearFilter(object):
 
     def _presmooth(self, indata):
         _buffer = N.zeros(self.shape)
-        _buffer[0:indata.shape[0],0:indata.shape[1],0:indata.shape[2]] = indata
+        _buffer[:indata.shape[0],
+                :indata.shape[1],
+                :indata.shape[2]] = indata
         return fft.rfftn(_buffer)
 
 
@@ -132,14 +137,12 @@ def sigma2fwhm(sigma):
 
 
 if __name__ == '__main__':
-    from neuroimaging.core.image.image import Image
-    from pylab import plot, show, imshow, subplot
+    from pylab import show
     a = 100*N.random.random((100, 100, 100))
     img = Image(a)
     filt = LinearFilter(img.grid)
     smoothed = filt.smooth(img)
 
-    from neuroimaging.utils.tests.data import repository
     from neuroimaging.ui.visualization.viewer import BoxViewer
 
     view = BoxViewer(img)
