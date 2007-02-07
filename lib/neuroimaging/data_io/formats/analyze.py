@@ -259,7 +259,7 @@ class Analyze(bin.BinaryFormat):
                 self.header['scale_factor'] = scale
                 self.write_header(clobber=True)
 
-        x = x / self.header['scale_factor']
+        x /= self.header['scale_factor']
         if self.dtype in [datatype2sctype[FLOAT],
                           datatype2sctype[DOUBLE],
                           datatype2sctype[COMPLEX]]:
