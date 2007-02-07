@@ -35,19 +35,16 @@ class DelayContrast(Contrast):
     convolved with self.IRF which is expected to be a filter with a canonical
     HRF and its derivative -- defaults to the Glover model.
 
-    Weights should have the same number of columns as len(fn), with each row
+    Weights should have the same number of columns as len(fns), with each row
     specifying a different contrast.
 
     TO DO: check that the convolved term is actually in the design column space.
     """
 
     def _sequence_call(self, time):
-        v = []
-        for i in range(len(self._sequence_fn)):
-            v.append(self._sequence_fn[i](time))
-        return N.array(v)
+        return N.array([fn(time) for n in self._sequence_fn]])
 
-    def __init__(self, fn, weights, formula, IRF=None, name='', rownames=[]):
+    def __init__(self, fns, weights, formula, IRF=None, name='', rownames=[]):
         if IRF is None:
             self.IRF = canonical
         else:
@@ -58,14 +55,14 @@ class DelayContrast(Contrast):
         self.name = name
         self.formula = formula
         
-        self._sequence_fn = fn
+        self._sequence_fn = fns
         self.fn = self._sequence_call
 
         self.weights = N.asarray(weights)
         if self.weights.ndim == 1:
             self.weights.shape = (1, self.weights.shape[0])
 
-        if len(fn) != self.weights.shape[1]:
+        if len(self._sequence_fn) != self.weights.shape[1]:
             raise ValueError, 'length of weights does not match number of ' \
                   'terms in DelayContrast'
 
