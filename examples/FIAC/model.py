@@ -11,8 +11,6 @@ from neuroimaging.modalities.fmri.filters import Filter
 from neuroimaging.core.image.image import Image
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
 
-import keith
-
 from fiac import Run, Subject, Study
 from montage import Montage
 
@@ -144,10 +142,11 @@ class RunModel(Model, Run):
     resultdir = ReadOnlyValidate(traits.Str, desc='Directory where results are stored.')
 
     def __init__(self, subject, id, drift=None, hrf=None,
+                 resultdir=os.path.join("fsl", "fmristat_run"),
                  **keywords):
         Run.__init__(self, subject, id=id)
         Model.__init__(self, drift=drift, hrf=hrf, **keywords)
-        self.resultdir = os.path.join(self.root, 'fsl', 'fmristat_run')
+        self.resultdir = os.path.join(self.root, resultdir)
         self.subject = subject
 
         self.begin.convolve(self.hrf[0])
@@ -166,6 +165,9 @@ class RunModel(Model, Run):
 
                 self.frameavg = protocol.ExperimentalQuantitative('frameavg',
                                                                brainavg_fn)
+            if self.normalize:
+                self.brainavg = brainavg
+                
             self.clear()
             self.formula += self.frameavg
 
@@ -242,12 +244,14 @@ class RunModel(Model, Run):
         """
         
         self.load()
+        if self.normalize:
+            OLSopts['normalize'] = self.brainavg
 
         self.OLSmodel= fmristat.fMRIStatOLS(self.fmri,
                                             formula=self.formula,
                                             mask=self.mask,
                                             tshift=self.shift, 
-                                            path=os.path.join(self.root, "fsl", "fmristat_run"),
+                                            path=self.resultdir,
                                             **OLSopts)
 
         self._setup_contrasts()
@@ -262,16 +266,12 @@ class RunModel(Model, Run):
         rho = self.OLSmodel.rho_estimator.img
         rho.tofile("%s/rho.img" % self.OLSmodel.path, clobber=True)
         
-        try:
-            self.OLSmodel.rho = keith.rho(subject=self.subject.id, run=self.id)        
-        except urllib2.HTTPError:
-            pass
-        
         self.clear()
 
     def AR(self, **ARopts):
 
         self.load()
+
         toc = time.time()
         self.ARmodel = fmristat.fMRIStatAR(self.OLSmodel,
                                            contrasts=[self.overallF,
