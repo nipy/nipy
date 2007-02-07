@@ -11,14 +11,17 @@ class ImageRegressionOutput(RegressionOutput):
     uses the image's iterator values to output to an image.
     """
 
-    def __init__(self, grid, nout=1, outgrid=None):
+    def __init__(self, grid, nout=1, outgrid=None, it=None):
         RegressionOutput.__init__(self, grid, nout, outgrid)
 
         if self.nout > 1:
             self.grid = self.grid.replicate(self.nout)
 
         self.img = Image(N.zeros(outgrid.shape), grid=outgrid)
-        self.it = self.img.slice_iterator(mode='w')
+        if it is None:
+            self.it = self.img.slice_iterator(mode='w')
+        else:
+            self.it = it
 
 
 class TContrastOutput(ImageRegressionOutput):
@@ -32,7 +35,7 @@ class TContrastOutput(ImageRegressionOutput):
         self.sd = sd
         self.t = t
         self._setup_contrast()
-        self._setup_output(clobber, path, subpath, ext, time=self.frametimes) # self.frametimes undefined
+        self._setup_output(clobber, path, subpath, ext)
 
     def _setup_contrast(self, **extra):
         self.contrast.getmatrix(**extra)
@@ -40,6 +43,7 @@ class TContrastOutput(ImageRegressionOutput):
     def _setup_output(self, clobber, path, subpath, ext):
         outdir = os.path.join(path, subpath, self.contrast.name)
         self.timg, self.timg_it = self._setup_img(clobber, outdir, ext, 't')
+
         if self.effect:
             self.effectimg, self.effectimg_it = self._setup_img(clobber, outdir, ext, 'effect')
         if self.sd:

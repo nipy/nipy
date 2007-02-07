@@ -60,7 +60,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
         self.t = t
         self._setup_contrast(time=frametimes)
         self._setup_output(clobber, path, subpath, ext, frametimes)
-
+        
     def _setup_output(self, clobber, path, subpath, ext, frametimes):
         outdir = os.path.join(path, subpath, self.contrast.name)
         imreg.TContrastOutput._setup_output(self, clobber, path, subpath, ext)
@@ -75,14 +75,6 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
             pl.draw()
             pylab.savefig(os.path.join(outdir, 'matrix.png'))
             f.clf()
-
-    def set_next(self, data):
-        self.timg.set_next(data.t)
-        if self.effect:
-            self.effectimg.set_next(data.effect)
-        if self.sd:
-            self.sdimg.set_next(data.sd)
-
 
     def extract(self, results):
         return imreg.TContrastOutput.extract(self, results)
