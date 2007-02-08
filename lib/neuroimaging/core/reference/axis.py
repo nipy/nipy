@@ -34,7 +34,7 @@ class Axis(object):
 
     def __init__(self, name):
         """
-        Create an axis with a given C{name}.
+        Create an axis with a given name.
 
         :Parameters:
             `name` : string
@@ -57,7 +57,7 @@ class Axis(object):
                 The object to be compared with.
 
         :Returns:
-            results : bool
+            `result` : bool
         """
         return self.name == other.name
 
@@ -69,7 +69,7 @@ class Axis(object):
                 A voxel
 
         :Returns:
-            result : bool
+            `result` : bool
         
 
         :Raises NotImplementedError: Abstract method
@@ -80,7 +80,7 @@ class Axis(object):
         """ The maximum value of the axis. 
 
         :Returns:
-            result : numpy.float
+            `result` : numpy.float
         
         :Raises NotImplementedError: Abstract method
         """
@@ -90,7 +90,7 @@ class Axis(object):
         """ The minimum value of the axis. 
 
         :Returns:
-            result : numpy.float
+            `result` : numpy.float
         
         :Raises NotImplementedError: Abstract method
         """
@@ -100,7 +100,7 @@ class Axis(object):
         """ A (min, max) pair representing the range of the axis. 
 
         :Returns:
-            result : (numpy.float, numpy.float)
+            `result` : (numpy.float, numpy.float)
         """
         return (self.min(), self.max())
 
