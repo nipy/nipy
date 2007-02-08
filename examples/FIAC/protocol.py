@@ -7,14 +7,8 @@ eventdict_r = {}
 for key, value in eventdict.items():
     eventdict_r[value] = key
 
-def block_protocol(url):
-    """
-    From one of the FIAC block design descriptions, return two
-    regressors for use in an fMRI formula: one the 'beginning'
-    regressor, the other the protocol.
-    
-    """
 
+def _read_url(url):
     pfile = urllib.urlopen(url)
     pfile = pfile.read().strip().split('\n')
 
@@ -27,6 +21,16 @@ def block_protocol(url):
         time, eventtype = map(float, row.split())
         times.append(time)
         events.append(eventdict[eventtype])
+    return time, events
+
+def block_protocol(url):
+    """
+    From one of the FIAC block design descriptions, return two
+    regressors for use in an fMRI formula: one the 'beginning'
+    regressor, the other the protocol.    
+    """
+
+    time, events = _read_url(url(
 
     # take off the first 3.33 seconds of each eventtype for the block design
     # the blocks lasted 20 seconds with 9 seconds of rest at the end
@@ -42,24 +46,13 @@ def block_protocol(url):
     return b, p
 
 def event_protocol(url):
-
     """
     From one of the FIAC event design descriptions, return two
     regressors for use in an fMRI formula: one the 'beginning'
-    regressor, the other the protocol.
-    
+    regressor, the other the protocol.    
     """
 
-    pfile = urllib.urlopen(url)
-    pfile = pfile.read().strip().split('\n')
-
-    events = []
-    times = []
-
-    for row in pfile:
-        time, eventtype = map(float, row.split())
-        times.append(time)
-        events.append(eventdict[eventtype])
+    time, events = _read_url(url)
 
     times.pop(0)
     events.pop(0) # delete first event as Keith has
