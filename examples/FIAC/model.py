@@ -1,4 +1,4 @@
-import os, time
+import os, time, glob
 
 from neuroimaging import traits
 import numpy as N
@@ -12,7 +12,7 @@ from neuroimaging.modalities.fmri.hrf import canonical
 from neuroimaging.core.image.image import Image
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
 
-from fiac import Run, Subject, Study
+import fiac
 import io
 
 from readonly import ReadOnlyValidate, HasReadOnlyTraits
@@ -97,17 +97,17 @@ class Model(HasReadOnlyTraits):
 #
 #-----------------------------------------------------------------------------#
 
-class StudyModel(Model, Study):
+class Study(Model, fiac.Study):
 
     def __init__(self, root=None, drift=None, hrf=None, **keywords):
-        Study.__init__(self, root=root)
+        fiac.Study.__init__(self, root=root)
         Model.__init__(self, drift=drift, hrf=hrf, **keywords)
 
     def __repr__(self):
-        return Study.__repr__(self)
+        return fiac.Study.__repr__(self)
 
-local_study = StudyModel(root=io.data_path)
-www_study = StudyModel(root='http://kff.stanford.edu/FIAC')
+local_study = Study(root=io.data_path)
+www_study = Study(root='http://kff.stanford.edu/FIAC')
 
 #-----------------------------------------------------------------------------#
 #
@@ -115,23 +115,23 @@ www_study = StudyModel(root='http://kff.stanford.edu/FIAC')
 #
 #-----------------------------------------------------------------------------#
 
-class SubjectModel(Model, Subject):
+class Subject(Model, fiac.Subject):
     """
     Perhaps each subject has a different HRF -- this code
     can be put in a subclass of this class.
     """
 
-    study = ReadOnlyValidate(traits.Instance(StudyModel), desc='Study level model.')
+    study = ReadOnlyValidate(traits.Instance(Model), desc='Study level model.')
 
     def __init__(self, id, drift=None, hrf=None,
                  study=local_study, **keywords):
         self.study = study
-        Subject.__init__(self, id, study=study)
+        fiac.Subject.__init__(self, id, study=study)
         Model.__init__(self, drift=drift, hrf=hrf, **keywords)
         self.formula = self.study.formula
 
     def __repr__(self):
-        return Subject.__repr__(self)
+        return fiac.Subject.__repr__(self)
 
 #-----------------------------------------------------------------------------#
 #
@@ -139,20 +139,20 @@ class SubjectModel(Model, Subject):
 #
 #-----------------------------------------------------------------------------#
 
-class RunModel(Model, Run):
+class Run(Model, fiac.Run):
 
     """
     Run specific model. Model formula is returned by formula method.
     """
 
-    subject = ReadOnlyValidate(traits.Instance(SubjectModel), desc='Subject level model.')
+    subject = ReadOnlyValidate(traits.Instance(Subject), desc='Subject level model.')
 
     resultdir = ReadOnlyValidate(traits.Str, desc='Directory where results are stored.')
 
     def __init__(self, subject, id, drift=None, hrf=None,
                  resultdir=os.path.join("fsl", "fmristat_run"),
                  **keywords):
-        Run.__init__(self, subject, id=id)
+        fiac.Run.__init__(self, subject, id=id)
         Model.__init__(self, drift=drift, hrf=hrf, **keywords)
         self.resultdir = self.joinpath(resultdir)
         self.subject = subject
@@ -180,12 +180,25 @@ class RunModel(Model, Run):
             self.formula += self.frameavg
 
     def __repr__(self):
-        return Run.__repr__(self)
+        return fiac.Run.__repr__(self)
 
     def result(self, which='contrasts', contrast='speaker', stat='t'):
+        """
+        Retrieve result of a specific which/contrast/stat
+        """
+        
         resultfile = os.path.join(self.resultdir, which, contrast,
-                                  "%s.img" % stat)
+                                  "%s.nii" % stat)
         return Image(resultfile)
+
+    def cleanup(self):
+        """
+        Remove uncompressed .nii files from results directories.
+        """
+        for which in ['contrasts', 'delays']:
+            for contrast in ['average', 'interaction', 'speaker', 'sentence']:
+                resultpath = os.path.join(self.resultdir, which, contrast)
+                [os.remove(imfile) for imfile in glob.glob(os.path.join(resultpath, "*nii"))]
 
     def _setup_contrasts(self):
         """
@@ -274,7 +287,7 @@ class RunModel(Model, Run):
         print 'OLS time', `tic-toc`
         
         rho = self.OLSmodel.rho_estimator.img
-        rho.tofile("%s/rho.img" % self.OLSmodel.path, clobber=True)
+        rho.tofile("%s/rho.nii" % self.OLSmodel.path, clobber=True)
         
         self.clear()
 
@@ -334,9 +347,9 @@ def run(subj=3, run=3):
     """
     Run through a fit of FIAC data.
     """
-    study = StudyModel(root=io.data_path)
-    subject = SubjectModel(subj, study=study)
-    runmodel = RunModel(subject, run)
+    study = Study(root=io.data_path)
+    subject = Subject(subj, study=study)
+    runmodel = Run(subject, run)
     runmodel.OLS(clobber=True)
     runmodel.AR(clobber=True)
 
