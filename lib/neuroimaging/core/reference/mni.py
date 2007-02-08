@@ -2,6 +2,8 @@
 A set of reference object which represent the MNI space.
 """
 
+__docformat__ = 'restructuredtext'
+
 from neuroimaging.core.reference.axis import RegularAxis
 from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem, \
     DiagonalCoordinateSystem

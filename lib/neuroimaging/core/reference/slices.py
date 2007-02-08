@@ -2,6 +2,8 @@
 A set of methods to get sampling grids which represent slices in space.
 """
 
+__docformat__ = 'restructuredtext'
+
 from neuroimaging.core.reference import grid, axis, mapping, mni
 from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem
 import numpy.linalg as L
@@ -14,6 +16,9 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     vectors which span the slice, and a shape.
 
     By default the output coordinate system is the MNI world.
+
+    :Returns:
+        `SamplingGrid`
     """
 
     nout = colvectors.shape[1]

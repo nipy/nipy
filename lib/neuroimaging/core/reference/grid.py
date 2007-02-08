@@ -2,6 +2,9 @@
 Samplng grids store all the details about how an image translates to space.
 They also provide mechanisms for iterating over that space.
 """
+
+__docformat__ = 'restructuredtext'
+
 import numpy as N
 
 from coordinate_system import _reverse
@@ -9,6 +12,7 @@ from neuroimaging.core.reference.mapping import Mapping, Affine
 from neuroimaging.core.reference.axis import space, RegularAxis, Axis, VoxelAxis
 from neuroimaging.core.reference.coordinate_system import \
   VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
+
 
 
 class SamplingGrid (object):
@@ -23,6 +27,9 @@ class SamplingGrid (object):
         """
         Create a SamplingGrid instance from sequences of names, shape, start
         and step.
+
+        :Returns:
+            `SamplingGrid`
         """
         ndim = len(names)
         # fill in default step size
@@ -40,7 +47,10 @@ class SamplingGrid (object):
     @staticmethod
     def identity(shape=(), names=space):
         """
-        return an identity grid of the given shape.
+        Return an identity grid of the given shape.
+
+        :Returns:
+            `SamplingGrid`
         """
         ndim = len(shape)
         if len(names) != ndim:
@@ -56,6 +66,9 @@ class SamplingGrid (object):
     def from_affine(mapping, shape=(), names=space):
         """
         Return grid using a given affine mapping
+
+        :Returns:
+            `SamplingGrid`
         """
         ndim = len(names)
         if mapping.ndim() != ndim:
@@ -82,12 +95,13 @@ class SamplingGrid (object):
         """
         Create a copy of the grid.
 
-        @rtype: L{SamplingGrid}
+        :Returns:
+            `SamplingGrid`
         """
         return SamplingGrid(self.shape, self.mapping, self.input_coords,
                             self.output_coords)
 
-    def allslice (self):
+    def allslice(self):
         """
         A slice object representing the entire grid.
         """
@@ -181,11 +195,11 @@ class ConcatenatedGrids(SamplingGrid):
 
     def __init__(self, grids, concataxis="concat"):
         """
-        @param grid: The grids to be used.
-        @type grid: [L{SamplingGrid}]
-        @param concataxis: The name of the new dimension formed by
-            concatentation
-        @type concataxis: C{str}
+        :Parameters:
+            `grid` : [SamplingGrid]
+                The grids to be used.
+            `concataxis` : string
+                The name of the new dimension formed by concatenation
         """        
         self.grids = self._grids(grids)
         self.concataxis = concataxis
@@ -258,9 +272,14 @@ class ConcatenatedGrids(SamplingGrid):
         """
         Return the i'th grid from the sequence of grids.
 
-        @param i: The grid to return
-        @type i: C{int}
-        @raise C{IndexError}: if i in out of range.
+        :Parameters:
+           `i` : int
+               The index of the grid to return
+
+        :Returns:
+            `SamplingGrid`
+        
+        :Raises IndexError: if i in out of range.
         """
         return self.grids[i]
 
@@ -271,13 +290,13 @@ class ConcatenatedIdenticalGrids(ConcatenatedGrids):
     
     def __init__(self, grid, n, concataxis="concat"):
         """
-        @param grid: The grid to be used.
-        @type grid: L{SamplingGrid}
-        @param n: The number of times to concatenate the grid
-        @type n: C{int}
-        @param concataxis: The name of the new dimension formed by
-            concatentation
-        @type concataxis: C{str}
+        :Parameters:
+            `grid` : SamplingGrid
+                The grid to be used
+            `n` : int
+                The number of tiems to concatenate the grid
+            `concataxis` : string
+                The name of the new dimension formed by concatenation
         """
         ConcatenatedGrids.__init__(self, [grid]*n , concataxis)
 

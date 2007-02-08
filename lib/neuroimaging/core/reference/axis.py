@@ -1,5 +1,5 @@
 """
-The L{Axis} family of classes are used to represent a named axis within a
+The Axis family of classes are used to represent a named axis within a
 coordinate system. Axes can be regular discrete or continuous, finite or
 infinite.
 
@@ -125,7 +125,7 @@ class ContinuousAxis(Axis):
         -----
 
         If low > high, the behaviour of the class is undefined, though
-        this can be changed if a particular choice of bevaviour is clearly
+        this can be changed if a particular choice of behaviour is clearly
         useful.
         
         :Precondition: name must be an element of axis.valid

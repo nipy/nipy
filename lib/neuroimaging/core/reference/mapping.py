@@ -5,6 +5,8 @@ These mappings can be used to transform between voxel space and real space,
 for example.
 """
 
+__docformat__ = 'restructuredtext'
+
 import csv
 import urllib
 from struct import unpack
@@ -20,7 +22,7 @@ def _2matvec(transform):
     return matrix, vector
 
 def _2transform(matrix, vector):
-    """ Combine a matrix and vector into a transform """
+    """ Combine a matrix and vector into a transform. """
     nin = matrix.shape[1]
     t = N.zeros((nin+1,)*2)
     t[0:nin, 0:nin] = matrix
@@ -32,7 +34,7 @@ def _2transform(matrix, vector):
 def permutation_matrix(order=range(3)[2::-1]):
     """
     Create an NxN permutation matrix from a sequence, containing the values
-    0,...,N-1.
+    0, ..., N-1.
     """
     n = len(order)
     matrix = N.zeros((n, n))
@@ -212,7 +214,8 @@ class Mapping(object):
     def ndim(self):
         """ The number of input dimensions
 
-        @rtype: C{int}
+        :Returns:
+            `int`
         """
         return self._ndim
 
@@ -220,13 +223,14 @@ class Mapping(object):
         """
         Does this mapping have an inverse?
 
-        @rtype: C{bool}
+        :Returns:
+            `bool`
         """
         return self._inverse is not None
 
     def inverse(self):
         """
-        Create a new L{Mapping} instance which is the inverse of self.
+        Create a new Mapping instance which is the inverse of self.
         """
         if self.isinvertible():
             return Mapping(self._inverse, self)
@@ -239,7 +243,7 @@ class Mapping(object):
         voxels, return the closest voxel for real. Will choke if mapping is
         not invertible.
 
-        @raise N.linalg.LinAlgError: is mapping is not invertible.
+        :Raises N.linalg.LinAlgError: is mapping is not invertible.
         """
         shape = real.shape
         if len(shape) > 1:
@@ -348,7 +352,8 @@ class Affine(Mapping):
         """
         Does this mapping have an inverse?
 
-        @rtype: C{bool}
+        :Returns:
+            `bool`
         """
         try:
             inv(self.transform)
@@ -358,7 +363,7 @@ class Affine(Mapping):
 
     def inverse(self):
         """
-        Create a new L{Addine} instance which is the inverse of self.
+        Create a new Affine instance which is the inverse of self.
         """
         return Affine(inv(self.transform))
 

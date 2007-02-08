@@ -1,17 +1,19 @@
 """
 The image iterator module.
 
-This module contains classes which allow for iteration over L{Image}
+This module contains classes which allow for iteration over Image
 objects in a number of different ways. Each iterator follows a common
-interface defined by the L{Iterator} class.
+interface defined by the Iterator class.
 
 Iterators can be used in two different modes, read-only and read-write. In
 read-only mode, iterating over the iterator returns the actual data from
-the L{Image}. In read-write mode iterating over the iterator returns an
-L{IteratorItem} object. This has a get() and set() method which can be used
+the Image. In read-write mode iterating over the iterator returns an
+IteratorItem object. This has a get() and set() method which can be used
 to read and write values from and to the image. The iterator mode is controlled
 by the keyword argument mode in the Iterator constructor.
 """
+
+__docformat__ = 'restructuredtext'
 
 import operator
 
@@ -28,11 +30,13 @@ class Iterator(object):
         """
         Create an Iterator for an image
 
-        @param img: The image to be iterated over
-        @type img: L{Image}
-        @param mode: The mode to run the iterator in.
-            'r' - read-only (default)
-            'w' - read-write
+        :Parameters:
+            `img` : Image
+                The image to be iterated over
+            `mode` : string            
+                The mode to run the iterator in.
+                    'r' - read-only (default)
+                    'w' - read-write
         @type mode: C{string}
         """
         self.set_img(img)
@@ -41,7 +45,7 @@ class Iterator(object):
 
     def __iter__(self):
         """        
-        Use this L{Iterator} as a python iterator.
+        Use this Iterator as a python iterator.
         """
         return self
     
@@ -50,7 +54,7 @@ class Iterator(object):
         Return the next item from the iterator.
 
         If in read-only mode, this will be a slice of the image.
-        If in read-write mode, this will be an L{IteratorItem} object.
+        If in read-write mode, this will be an IteratorItem object.
         """
         self.item = self._next()
         if self.mode == 'r':
@@ -62,9 +66,11 @@ class Iterator(object):
         """
         Do the hard work of generating the next item from the iterator.
 
-        @raise NotImplementedError: This method must be overriden by the
+        :Returns:
+            `IteratorItem`
+
+        :raises NotImplementedError: This method must be overriden by the
             subclasses of Iterator.
-        @rtype: L{IteratorItem}
         """
         raise NotImplementedError
 
@@ -72,8 +78,9 @@ class Iterator(object):
         """
         Setup the iterator to have a given image.
 
-        @param img: The new image for the iterator
-        @type img: L{Image}
+        :Paraetmers:
+            `img` : Image
+                The new image for the iterator
         """
         self.img = img
 
@@ -83,15 +90,16 @@ class Iterator(object):
         The new iterator starts from the beginning, it does not get
         initialised to the current position of the original iterator.
 
-        @param img: The image to be used with the new iterator
-        @type img: L{Image}
+        :Parameters:
+            `img` : Image
+                The image to be used with the new iterator
         """
         return self.__class__(img, mode=self.mode)
 
 class IteratorItem(object):
     """
     This class provides the interface for objects returned by the
-    L{Iterator._next()} method. This is the class which actually
+    Iterator._next() method. This is the class which actually
     interacts with the image data itself.
     """
 
@@ -123,13 +131,14 @@ class SliceIterator(Iterator):
 
     def __init__(self, img, axis=0, mode='r'):
         """
-        @param axis: The index of the axis (or axes) to be iterated over. If
-            a list is supplied, the axes are iterated over slowest to fastest.
-        @type axis: C{int} or C{list} of C{int}.
-        @param mode: The mode to run the iterator in.
-            'r' - read-only (default)
-            'w' - read-write
-        @type mode: C{string}
+        :Parameter:
+            `axis` : int or [int]
+                The index of the axis (or axes) to be iterated over. If a list
+                is supplied, the axes are iterated over slowest to fastest.
+            `mode` : string
+                The mode to run the iterator in.
+                    'r' - read-only (default)
+                    'w' - read-write
         """
         try:
             # we get given axes slowest changing to fastest, but we want
@@ -145,8 +154,9 @@ class SliceIterator(Iterator):
         """
         Setup the iterator to have a given image.
 
-        @param img: The new image for the iterator
-        @type img: L{Image}
+        :Parameters:
+            `img` : Image
+                The new image for the iterator
         """
         Iterator.set_img(self, img)
         if img is not None:
@@ -170,7 +180,8 @@ class SliceIterator(Iterator):
         """
         Do the hard work of generating the next item from the iterator.
 
-        @rtype: L{SliceIteratorItem}
+        :Returns:
+            `SliceIteratorItem`
         """
         if self.n >= self.max:
             raise StopIteration
@@ -189,8 +200,9 @@ class SliceIterator(Iterator):
         The new iterator starts from the beginning, it does not get
         initialised to the current position of the original iterator.
 
-        @param img: The image to be used with the new iterator
-        @type img: L{Image}
+        :Parameters:
+            `img` : Image
+                The image to be used with the new iterator
         """
         return self.__class__(img, axis=self.axis, mode=self.mode)
 
@@ -223,7 +235,7 @@ class SliceIteratorItem(IteratorItem):
 class ParcelIterator(Iterator):
     """
     This class is used to iterate over different regions of an image.
-    A C{parcelmap} is used to define the regions and a C{parcelseq} is used
+    A parcelmap is used to define the regions and a parcelseq is used
     to define the order in which the regions are iterated over. Each iteration
     returns a 1 dimensional array containing the values of the image in the
     specified region.
@@ -250,18 +262,21 @@ class ParcelIterator(Iterator):
     
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
         """
-
-        @param parcelmap: This is an C{int} array of the same shape as C{img}.
-           The different values of the array define different regions in the
-           image. For example, all the 0s define a region, all the 1s define
-           another region, etc.
-        @param parcelseq: This is an array of integers or tuples of integers,
-           which define the order to iterate over the regions. Each element
-           of the array can consist of one or more different integers. The
-           union of the regions defined in C{parcelmap} by these values is
-           the region taken at each iteration.
-           If C{parcelseq} is C{None} then the iterator will go through one
-           region for each number in C{parcelmap}
+        :Parameters:
+            `parcelmap` : [int]
+                This is an int array of the same shape as img.
+                The different values of the array define different regions in
+                the image. For example, all the 0s define a region, all the 1s
+                define another region, etc.
+           
+            `parcelseq` : [int] or [(int, int, ...)]
+                This is an array of integers or tuples of integers, which
+                define the order to iterate over the regions. Each element of
+                the array can consist of one or more different integers. The
+                union of the regions defined in parcelmap by these values is
+                the region taken at each iteration. If parcelseq is None then
+                the iterator will go through one region for each number in
+                parcelmap.
         """
         Iterator.__init__(self, img, mode)
         self.parcelmap = N.asarray(parcelmap)
@@ -313,8 +328,12 @@ class ParcelIterator(Iterator):
         The new iterator starts from the beginning, it does not get
         initialised to the current position of the original iterator.
 
-        @param img: The image to be used with the new iterator
-        @type img: L{Image}
+        :Parameters:
+            `img` : Image
+                The image to be used with the new iterator
+
+        :Returns:
+            `self.__class__`
         """
         return self.__class__(img, self.parcelmap, self.parcelseq,
                               mode=self.mode)
@@ -322,7 +341,7 @@ class ParcelIterator(Iterator):
 
 class ParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by L{ParcelIterator}s
+    A class for objects returned by ParcelIterators
     """
 
     def __init__(self, img, slice_, label):
@@ -347,7 +366,7 @@ class ParcelIteratorItem(IteratorItem):
 
 class fMRIParcelIterator(ParcelIterator):
     """
-    This class works in much the same way as the L{ParcelIterator} except
+    This class works in much the same way as the ParcelIterator except
     that 
     """
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
@@ -357,7 +376,7 @@ class fMRIParcelIterator(ParcelIterator):
 
 class fMRIParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by L{fMRISliceIterator}s
+    A class for objects returned by fMRISliceIterators
     """
 
     def __init__(self, img, slice_, label):
@@ -410,7 +429,7 @@ class SliceParcelIterator(ParcelIterator):
 
 class SliceParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by L{SliceParcelIterator}s
+    A class for objects returned by SliceParcelIterators
     """
 
     def __init__(self, img, slice_, label, i):
@@ -440,7 +459,7 @@ class fMRISliceParcelIterator(SliceParcelIterator):
 
 class fMRISliceParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by L{fMRISliceParcelIterator}s
+    A class for objects returned by fMRISliceParcelIterators
     """
 
     def __init__(self, img, slice_, label, i):
