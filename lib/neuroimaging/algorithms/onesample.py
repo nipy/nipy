@@ -58,12 +58,12 @@ class ImageOneSample(onesample.OneSampleIterator):
                                                  clobber=clobber, ext=ext))
 
     def weights(self):
-        ## TO DO: rename this methods, something like "getinput"
         if self.haveW:
-            w = self.witerator.next()
+            return self.witerator.next()
         else:
             return 1.
-
+            
+    def _getinputs(self):
         if self.varatioimg is not None:
             self.varatio = self.varatioimg.next()            
         else:
@@ -73,9 +73,6 @@ class ImageOneSample(onesample.OneSampleIterator):
             self.varfix = self.varfiximg.next()
         else:
             self.varfix = 0.
-            
-        return w
-
 
     def fit(self):
         return onesample.OneSampleIterator.fit(self, which=self.which)
