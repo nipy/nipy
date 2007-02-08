@@ -61,10 +61,15 @@ class Image(object):
             except Exception, exception:
                 errors[format] = exception
 
-        raise NotImplementedError, 'no valid reader found for URL %s\n%s' % \
-              (url, \
-              "\n".join(["%s: %s\n%s" % (str(format), str(msg.__class__), \
-                                str(msg)) for format, msg in errors.items()]))
+        for format, exception in errors.items():
+            if not exception.__class__  is IOError:
+                raise NotImplementedError, 'no valid reader found for URL %s.' \
+                      'The following errors were raised:\n%s' % \
+                      (url, "\n".join(["%s: %s\n%s" % \
+                                       (str(format), str(msg.__class__), \
+                                        str(msg)) for format, msg in errors.items()]))
+
+        raise IOError, 'Filename "%s" (or its header files) does not exist' % url
 
     def __init__(self, image, datasource=DataSource(), grid=None, **keywords):
         '''

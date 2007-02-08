@@ -188,7 +188,7 @@ class ImageTest(unittest.TestCase):
     def test_badfile(self):
         # We shouldn't be able to find a reader for this file!
         filename = "test_image.py"
-        self.assertRaises(NotImplementedError, Image, filename, repository, format=Analyze)
+        self.assertRaises(IOError, Image, filename, repository, format=Analyze)
 
     def test_asfile(self):
         tmp_img = Image(self.img.asfile())
