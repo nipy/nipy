@@ -1,5 +1,3 @@
-import types
-
 import numpy as N
 
 from neuroimaging.core.image.image import ImageSequenceIterator
@@ -16,11 +14,13 @@ class ImageOneSample(onesample.OneSampleIterator):
     'std', 'var', or 'weight' -- the appropriate transform will be applied.
     """
 
-    def __init__(self, input, outputs=[], path='onesample', ext='.hdr',
+    def __init__(self, input, outputs=None, path='onesample', ext='.hdr',
                  t=True, sd=True, mean=True, clobber=False, which='mean',
                  varfiximg=None, varatioimg=None, est_varatio=True,
                  est_varfix=True):
 
+        if outputs is None:
+            outputs = []
         self.which = which
         self.varfiximg = varfiximg
         self.varatioimg = varatioimg
@@ -30,13 +30,15 @@ class ImageOneSample(onesample.OneSampleIterator):
             imgs = [val[0] for val in input]
             wimgs = [val[1] for val in input]
             self.iterator = ImageSequenceIterator(imgs)
-            self.witerator = ImageSequenceIterator(wimgs, grid=self.iterator.grid)
+            self.witerator = ImageSequenceIterator(wimgs,
+                                                   grid=self.iterator.grid)
         else:
             self.haveW = False
             self.iterator = ImageSequenceIterator(input)
 
 
-        onesample.OneSampleIterator.__init__(self, self.iterator, outputs=outputs)
+        onesample.OneSampleIterator.__init__(self, self.iterator,
+                                             outputs=outputs)
 
         if self.which == 'mean':
             if t:
@@ -84,8 +86,8 @@ class ImageOneSampleOutput(RegressionOutput):
 
     """
 
-    def __init__(self, grid, nout=1, basename="", clobber=False, path='onesample',
-                 ext='.img'):
+    def __init__(self, grid, nout=1, basename="", clobber=False,
+                 path='onesample', ext='.img'):
         RegressionOutput.__init__(self, grid, nout)
         self.img, self.it = self._setup_img(clobber, path, ext, basename)
 
