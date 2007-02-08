@@ -122,7 +122,7 @@ class fMRIStatOLS(LinearModelIterator):
 
         if self.output_fwhm:
             resid = fMRIImage(self.resid_output.img)
-            fwhmest = fastWHM(resid, fwhm=os.path.join(self.path, 'fwhmOLS.img'), clobber=self.clobber)
+            fwhmest = fastFWHM(resid, fwhm=os.path.join(self.path, 'fwhmOLS.img'), clobber=self.clobber)
             fwhmest()
             self.fwhm_data = fwhmest.integrate(mask=self.mask)[1]
             print 'FWHM for data estimated as: %02f' % self.fwhm_data
