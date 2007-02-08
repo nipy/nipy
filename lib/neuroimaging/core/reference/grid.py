@@ -139,16 +139,27 @@ class SamplingGrid (object):
 
 
     def transform(self, mapping): 
+        """
+        Apply a transformation (mapping) to this grid.
+        """
         self.mapping = mapping * self.mapping
 
     def matlab2python(self):
-        m = self.mapping.matlab2python()
-        return SamplingGrid(reverse(self.shape), m, 
+        """
+        Convert a grid in matlab-ordered voxels to python ordered voxels.
+        See Mapping.matlab2python for more details.
+        """
+        mapping = self.mapping.matlab2python()
+        return SamplingGrid(reverse(self.shape), mapping, 
           self.input_coords.reverse(), self.output_coords)
 
     def python2matlab(self):
-        m = self.mapping.python2matlab()
-        return SamplingGrid(reverse(self.shape), m, 
+        """
+        Convert a grid in python ordered voxels to matlab ordered voxels.
+        See Mapping.python2matlab for more details.
+        """
+        mapping = self.mapping.python2matlab()
+        return SamplingGrid(reverse(self.shape), mapping, 
           self.input_coords.reverse(), self.output_coords)
 
 
@@ -169,6 +180,13 @@ class ConcatenatedGrids(SamplingGrid):
 
 
     def __init__(self, grids, concataxis="concat"):
+        """
+        @param grid: The grids to be used.
+        @type grid: [L{SamplingGrid}]
+        @param concataxis: The name of the new dimension formed by
+            concatentation
+        @type concataxis: C{str}
+        """        
         self.grids = self._grids(grids)
         self.concataxis = concataxis
         mapping, input_coords, output_coords = self._mapping()
@@ -177,6 +195,9 @@ class ConcatenatedGrids(SamplingGrid):
 
 
     def _grids(self, grids):
+        """
+        Setup the grids.
+        """
         # check mappings are affine
         check = N.any([not isinstance(grid.mapping, Affine)\
                           for grid in grids])
@@ -207,6 +228,9 @@ class ConcatenatedGrids(SamplingGrid):
         return tuple(grids)
 
     def _mapping(self):
+        """
+        Set up the mapping and coordinate systems.
+        """
         def mapfunc(x):
             try:
                 I = x[0].view(N.int32)
@@ -230,16 +254,37 @@ class ConcatenatedGrids(SamplingGrid):
         return Mapping(mapfunc), newin, newout
 
 
-    def subgrid(self, i): 
+    def subgrid(self, i):
+        """
+        Return the i'th grid from the sequence of grids.
+
+        @param i: The grid to return
+        @type i: C{int}
+        @raises: C{IndexError} if i in out of range.
+        """
         return self.grids[i]
 
 class ConcatenatedIdenticalGrids(ConcatenatedGrids):
-
+    """
+    A set of concatenated grids, which are all identical.
+    """
+    
     def __init__(self, grid, n, concataxis="concat"):
+        """
+        @param grid: The grid to be used.
+        @type grid: L{SamplingGrid}
+        @param n: The number of times to concatenate the grid
+        @type n: C{int}
+        @param concataxis: The name of the new dimension formed by
+            concatentation
+        @type concataxis: C{str}
+        """
         ConcatenatedGrids.__init__(self, [grid]*n , concataxis)
-        self.mapping, self.input_coords, self.output_coords = self._mapping()
 
     def _mapping(self):
+        """
+        Set up the mapping and coordinate systems.
+        """
         newaxis = Axis(name=self.concataxis)
         in_coords = self.grids[0].input_coords
         newin = CoordinateSystem(
