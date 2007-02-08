@@ -96,7 +96,7 @@ class Run(HasReadOnlyTraits):
         else:
             raise ValueError, 'run %d not found for %s' % (self.id, `self.subject`)
 
-        self.root = os.path.join(self.subject.root, 'fonc%d' % self.id)
+        self.root = self.subject.joinpath('fonc%d' % self.id)
         self._getimages()
         self._getprotocol()
 

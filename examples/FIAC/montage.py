@@ -1,7 +1,7 @@
 import numpy as N
 from neuroimaging import traits
 from readonly import ReadOnlyValidate
-import os, pylab
+import pylab
 
 from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.core.image.image import Image
@@ -88,11 +88,11 @@ if __name__ == '__main__':
 
     keywds = {'vmax':0.8, 'vmin':-0.5}
 
-    rho = os.path.join(montage.root, 'fsl/fmristat_run/rho.img')
+    rho = montage.joinpath('fsl/fmristat_run/rho.img')
     rhoI = montage.draw(rho, **keywds)
     rhoI.title('AR coefficient for %s' % str(montage))
 
-    rho_keith = os.path.join(montage.subject.study.root, 'fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (montage.subject.id, montage.id, montage.id))
+    rho_keith = montage.subject.study.joinpath('fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (montage.subject.id, montage.id, montage.id))
 
     rhoII = montage.draw(rho_keith, **keywds)
     rhoII.title('AR coefficient for fmristat %s' % str(montage))
