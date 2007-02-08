@@ -27,7 +27,7 @@ class Subject(HasReadOnlyTraits):
     id = ReadOnlyValidate(traits.Range(low=0,high=15),
                           desc='Which FIAC subject? Ranges from 0 to 15.')
 
-    study = ReadOnlyValidate(Study)
+    study = ReadOnlyValidate(traits.Instance(Study))
     root = ReadOnlyValidate(traits.Str,
                             desc='Root directory for this subject.')
 
@@ -77,9 +77,8 @@ class Run(HasReadOnlyTraits):
     mask = traits.Instance(Image)
     anat = traits.Instance(Image)
 
-
-    type = ReadOnlyValidate(traits.Trait(['block', 'event'],
-                                         desc='What type of run?'))
+    design_type = ReadOnlyValidate(traits.Trait(['block', 'event'],
+                                           desc='What type of run?'))
 
     begin = traits.Instance(ExperimentalFactor)
     experiment = traits.Instance(ExperimentalFactor)
@@ -90,9 +89,9 @@ class Run(HasReadOnlyTraits):
         traits.HasTraits.__init__(self, **keywords)
 
         if self.id in self.subject.block:
-            self.type = 'block'
+            self.design_type = 'block'
         elif self.id in self.subject.event:
-            self.type = 'event'
+            self.design_type = 'event'
         else:
             raise ValueError, 'run %d not found for %s' % (self.id, `self.subject`)
 
@@ -119,6 +118,7 @@ class Run(HasReadOnlyTraits):
         """
         Open each of the files associated with this run.
         """
+
         if urlexists(self.fmrifile):
             self.fmri = fMRIImage(self.fmrifile)
             
@@ -142,12 +142,5 @@ class Run(HasReadOnlyTraits):
         elif self.id in self.subject.event:
             self.begin, self.experiment = event_protocol(self.subject.joinpath('subj%d_evt_fonc%d.txt' % (self.subject.id, self.id)))
 
-if __name__ == '__main__':
-    study = Study(root=data_path)
-    subjects = [Subject(i, study=local_study) for i in range(16)]
-
-    runs = []
-    for subject in subjects:
-        subj_runs = [Run(subject, id=run) for run in subject.event + subject.block]
-        runs.append(subj_runs)
+subjects = [0,1,3,4,6,7,8,9,10,11,12,13,14,15]
 
