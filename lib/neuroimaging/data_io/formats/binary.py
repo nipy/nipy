@@ -16,7 +16,15 @@ class BinaryFormatError(Exception):
     """    
 
 class BinaryFormat(Format):
-
+    """
+    BinaryFormat(Format) is an object with binary header data and a "brick" of
+    binary data. The binary.py module has a lot of struct packing/unpacking
+    methods to make life nicer. BinaryFormats have:
+    *filenames and modes--in fact, BinaryFormats are always constructed with a
+    filename, this is not an option anymore (makes sense to me).
+    *header formats (in package struct language)
+    *means to read/write contiguous/deterministic-style headers
+    """
 
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
         # keep BinaryFormats dealing with datasource and filename/mode
@@ -33,7 +41,8 @@ class BinaryFormat(Format):
         if self.clobber and 'w' in self.mode:
             try:
                 os.remove(self.datasource.filename(self.data_file))
-            except:
+            except IOError:
+                # Ignore exceptions due to the file not existing, etc.
                 pass
 
         self.dtype = NotImplemented
@@ -42,6 +51,10 @@ class BinaryFormat(Format):
 
 
     def read_header(self):
+        """
+        :Returns:
+            `None`
+        """
         # Populate header dictionary from a file
         values = utils.struct_unpack(self.datasource.open(self.header_file),
                                self.byteorder,
@@ -51,11 +64,14 @@ class BinaryFormat(Format):
 
 
     def write_header(self, hdrfile=None, clobber=False):
+        """
+        :Returns:
+            `None`
+        """
+        
         # If someone wants to write a headerfile somewhere specific,
         # handle that case immediately
         # Otherwise, try to write to the object's header file
-
-
         if hdrfile:
             fp = isinstance(hdrfile, str) and open(hdrfile,'wb+') or hdrfile
         elif self.datasource.exists(self.header_file):
@@ -81,6 +97,13 @@ class BinaryFormat(Format):
 
 
     def attach_data(self, offset=0):
+        """
+        :Returns:
+            `None`
+
+        :Raises IOError: If the file exists but we are not allowed to clobber
+            it.
+        """
         if iswritemode(self.mode):
             mode = 'readwrite'
         else:
@@ -102,17 +125,32 @@ class BinaryFormat(Format):
 
 
     def prewrite(self, x):
+        """
+        :Raises NotImplementedError: Abstract method
+        """
         raise NotImplementedError
 
 
     def postread(self, x):
+        """
+        :Raises NotImplementedError: Abstract method
+        """
         raise NotImplementedError
 
     def __getitem__(self, slicer):
-        return N.asarray(self.postread(self.data[slicer].newbyteorder(self.byteorder)))
+        """
+        :Returns:
+            `numpy.ndarray`
+        """
+        data = self.postread(self.data[slicer].newbyteorder(self.byteorder))
+        return N.asarray(data)
 
 
     def __setitem__(self, slicer, data):
+        """
+        :Returns:
+            `None
+        """
         if not iswritemode(self.data._mode):
             print "Warning: memapped array is not writeable! Nothing done"
             return
@@ -120,6 +158,10 @@ class BinaryFormat(Format):
             self.prewrite(data).astype(self.dtype)
 
     def __del__(self):
+        """
+        :Returns:
+            `None`
+        """
         if hasattr(self, 'memmap'):
             if isinstance(self.data, memmap_type):
                 self.data.sync()
@@ -128,12 +170,16 @@ class BinaryFormat(Format):
     #### These methods are extraneous, the header dictionaries are
     #### unprotected and can be looked at directly
     def add_header_field(self, field, format, value):
+        """
+        :Returns:
+            `None`
+        """
         if not self.extendable:
             raise NotImplementedError("%s header type not "\
-                                      "extendable"%self.filetype)
-        if field in (header.keys() + ext_header.keys()):
+                                      "extendable" % self.__class__)
+        if field in (self.header.keys() + self.ext_header.keys()):
             raise ValueError("Field %s already exists in "
-                             "the current header"%field)
+                             "the current header" % field)
         if not utils.sanevalues(format, value):
             raise ValueError("Field format and value(s) do not match up.")
 
@@ -143,6 +189,10 @@ class BinaryFormat(Format):
 
 
     def remove_header_field(self, field):
+        """
+        :Returns:
+            `None`
+        """
         if field in self.ext_header.keys():
             self.ext_header.pop(field)
             self.ext_header_formats.pop(field)
@@ -150,6 +200,12 @@ class BinaryFormat(Format):
 
 
     def set_header_field(self, field, value):
+        """
+        :Returns:
+            `None`
+
+        :Raises KeyError: if the given `field` is not valid.
+        """
         try:
             if utils.sanevalues(self.header_formats[field], value):
                 self.header[field] = value
@@ -162,6 +218,9 @@ class BinaryFormat(Format):
     
 
     def get_header_field(self, field):
+        """
+        :Raises KeyError: if the given `field` is not valid.
+        """
         try:
             return self.header[field]
         except KeyError:
@@ -174,8 +233,20 @@ class BinaryFormat(Format):
     def _get_filenames(self):
         """
         Calculate header_file and data_file filenames
+
+        :Raises NotImplementedError: Abstract method
         """
         raise NotImplementedError
             
     def asfile(self):
-        return  self.datasource.filename(self._get_filenames()[1])
+        """
+        :Returns:
+            `string`
+        """
+        return self.datasource.filename(self._get_filenames()[1])
+
+    def inform_canonical(self, fieldsDict=None):
+        """
+        :Raises NotImplementedError: Abstract method
+        """
+        raise NotImplementedError
