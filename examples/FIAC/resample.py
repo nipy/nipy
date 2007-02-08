@@ -29,7 +29,7 @@ class Resampler(Run):
 
     def _get_grid(self):
         fslmatstr = urllib.urlopen(self.joinpath('fsl/example_func2standard.mat')).read().split()
-        fslmat =  N.array(fslmatstr, dtype=N.float64)
+        fslmat =  N.array(fslmatstr).astype(N.float64)
         fslmat.shape = (4, 4)
 
         M = [[0,0,1,0],
@@ -43,15 +43,13 @@ class Resampler(Run):
                          
         input_grid = tmpimage.grid
         
-        input_coords = input_grid.mapping.output_coords
-        output_coords = standard.grid.mapping.output_coords
-        fworld2sworld = Affine(input_coords,
-                               output_coords,
-                               fslmat)
+        input_coords = input_grid.output_coords
+        output_coords = standard.grid.output_coords
+        fworld2sworld = Affine(fslmat)
         svoxel2fworld = fworld2sworld.inverse() * standard.grid.mapping
 
-        output_grid = SamplingGrid(mapping=svoxel2fworld,
-                                        shape=standard.grid.shape)
+        output_grid = SamplingGrid(standard.grid.shape, svoxel2fworld, 
+                                   input_coords, output_coords)
         return input_grid, output_grid
 
     def __repr__(self):
