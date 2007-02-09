@@ -100,7 +100,7 @@ class Axis(object):
         """ A (min, max) pair representing the range of the axis. 
 
         :Returns:
-            `result` : (numpy.float, numpy.float)
+            `result`
         """
         return (self.min(), self.max())
 
