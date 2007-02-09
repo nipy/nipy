@@ -91,6 +91,7 @@ class ExperimentalRegressor(object):
         """
 	#FIXME: should be a better way to determine this
 	testdata = self(N.arange(10))
+
 	if len(testdata.shape) == 2:
 	    nout = testdata.shape[0]
 	else:
@@ -157,9 +158,9 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
     """
 
     def __init__(self, name, iterator, **keywords):
-        fn = self._fromiterator(iterator)
         ExperimentalQuantitative.__init__(self, name, fn, **keywords)
-  
+        fn = self._fromiterator(iterator)
+
     def _fromiterator(self, iterator, delimiter=','):
         """
         Determine an ExperimentalStepFunction from an iterator
