@@ -58,8 +58,8 @@ class Image(object):
                 return format(filename=url,
                               datasource=datasource, mode=mode,
                               grid=grid, **keywords)
-            except Exception, e:
-                errors[format] = e
+            except Exception, exception:
+                errors[format] = exception
 
         raise NotImplementedError, 'no valid reader found for URL %s\n%s' % \
               (url, \
@@ -210,9 +210,9 @@ class Image(object):
         @param axis: The axis to iterate over for this image.
         @type axis: C{int} or C{list} of {int}
         """
-        it = iter(SliceIterator(self, mode='w', axis=axis))
-        for s in other:
-            it.next().set(s)
+        iterator = iter(SliceIterator(self, mode='w', axis=axis))
+        for slice_ in other:
+            iterator.next().set(slice_)
 
     def iterate(self, iterator):
         """
@@ -239,8 +239,8 @@ class Image(object):
         iterator.mode = 'w'
         iterator.set_img(self)
         iter(iterator)
-        for s in other:
-            iterator.next().set(s)
+        for slice_ in other:
+            iterator.next().set(slice_)
 
 class ImageSequenceIterator(object):
     """
