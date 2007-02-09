@@ -1,3 +1,5 @@
+__docformat__ = 'restructuredtext'
+
 from optparse import Option
 
 from neuroimaging.data_io import DataSource

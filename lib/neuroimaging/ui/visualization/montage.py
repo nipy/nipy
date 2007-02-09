@@ -1,3 +1,5 @@
+__docformat__ = 'restructuredtext'
+
 import fpformat
 
 import numpy as N

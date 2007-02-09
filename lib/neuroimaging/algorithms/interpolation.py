@@ -2,6 +2,8 @@
 Image interpolators using ndimage.
 """
 
+__docformat__ = 'restructuredtext'
+
 import os
 import numpy as N
 

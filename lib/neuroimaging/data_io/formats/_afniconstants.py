@@ -1,3 +1,5 @@
+__docformat__ = 'restructuredtext'
+
 import numpy, types
 
 AFNI_missing = [-999, -999999]

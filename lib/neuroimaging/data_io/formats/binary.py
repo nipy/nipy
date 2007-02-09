@@ -1,3 +1,5 @@
+__docformat__ = 'restructuredtext'
+
 from numpy.core import memmap as memmap_type
 from numpy import memmap
 import numpy as N

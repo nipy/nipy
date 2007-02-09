@@ -2,6 +2,8 @@
 Template region of interest (ROI) module
 """
 
+__docformat__ = 'restructuredtext'
+
 # FIXME: This module needs some attention. There are no unit tests for it
 # so it's hard to say whether it works correctly or not.
 
@@ -22,7 +24,7 @@ class ROI:
 
 class ContinuousROI(ROI):
     """
-    Create an ROI with a binary function in a given coordinate system.
+    Create an `ROI` with a binary function in a given coordinate system.
     """
     ndim = 3
     def __init__(self, coordinate_system, bfn, args=None, ndim=ndim):
@@ -49,7 +51,7 @@ class ContinuousROI(ROI):
 
     def todiscrete(self, voxels):
         """
-        Return a DiscreteROI instance at the voxels in the ROI.
+        Return a `DiscreteROI` instance at the voxels in the ROI.
         """
         v = []
         for voxel in voxels:
@@ -59,7 +61,7 @@ class ContinuousROI(ROI):
     
     def togrid(self, grid):
         """
-        Return a SamplingGridROI instance at the voxels in the ROI.
+        Return a `SamplingGridROI` instance at the voxels in the ROI.
         """
         v = []
         for voxel in iter(grid):
@@ -203,7 +205,7 @@ def roi_ellipse_fn(center, form, a = 1.0):
 
 def roi_from_array_sampling_grid(data, grid):
     """
-    Return a SamplingGridROI from an array (data) on a grid.
+    Return a `SamplingGridROI` from an array (data) on a grid.
     interpolation. Obvious ways to extend this.
     """
 

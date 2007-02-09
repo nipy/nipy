@@ -1,3 +1,5 @@
+__docformat__ = 'restructuredtext'
+
 version = '0.1.2'
 release=False
 

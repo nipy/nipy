@@ -17,6 +17,7 @@ filename, this is not an option anymore (makes sense to me).
 
 """
 __all__ = ['Format']
+__docformat__ = 'restructuredtext'
 
 import numpy
 

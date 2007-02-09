@@ -1,3 +1,5 @@
+__docformat__ = 'restructuredtext'
+
 import csv, copy
 import numpy as N
 

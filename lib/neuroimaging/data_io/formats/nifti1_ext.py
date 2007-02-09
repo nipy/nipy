@@ -8,6 +8,9 @@ mat2quatern(T) goes in the opposite direction, filling in b,c,d...
 
 the two methods are at the end of the weave code
 """
+
+__docformat__ = 'restructuredtext'
+
 from scipy.weave import ext_tools
 import numpy as N
 import os

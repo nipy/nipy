@@ -3,6 +3,8 @@ Package contains generic functions for data input/output. This includes
 methods for accessing file systems and network resources.
 """
 
+__docformat__ = 'restructuredtext'
+
 import os
 import gzip
 import bz2
@@ -48,12 +50,20 @@ def unzip(filename):
 
 
 def isurl(pathstr):
+    """
+    :Returns:
+        `bool`
+    """
     scheme, netloc, _, _, _, _ = urlparse(pathstr)
     return bool(scheme and netloc)
 
 
 def iswritemode(mode):
-    """ Test is the given mode will open a file for writing. """
+    """ Test is the given mode will open a file for writing.
+
+    :Returns:
+        `bool`
+    """
     return mode.find("w")>-1 or mode.find("+")>-1
 
 
@@ -99,12 +109,18 @@ class Cache (object):
     def filename(self, uri): 
         """
         Return the complete path + filename within the cache.
+
+        :Returns:
+            `string`
         """
         return str(self.filepath(uri))
     
     def cache(self, uri):
         """
         Copy a file into the cache.
+
+        :Returns:
+            `None`
         """
         if self.iscached(uri):
             return
@@ -117,12 +133,20 @@ class Cache (object):
         file(upath, 'w').write(openedurl.read())
         
     def clear(self):
-        """ Delete all files in the cache. """
+        """ Delete all files in the cache.
+
+        :Returns:
+            `None`
+        """
         for f in self.path.files():
             f.rm()
         
     def iscached(self, uri):
-        """ Check if a file exists in the cache. """
+        """ Check if a file exists in the cache.
+
+        :Returns:
+            `bool`
+        """
         return self.filepath(uri).exists()
         
     def retrieve(self, uri):
@@ -130,6 +154,9 @@ class Cache (object):
         Retrieve a file from the cache.
         If not already there, create the file and
         add it to the cache.
+
+        :Returns:
+            `file`
         """
         self.cache(uri)
         return file(self.filename(uri))
@@ -196,7 +223,7 @@ class DataSource (object):
 
 
 class Repository (DataSource):
-    "DataSource with an implied root."
+    """DataSource with an implied root."""
     def __init__(self, baseurl, cachepath=None):
         DataSource.__init__(self, cachepath=cachepath)
         self._baseurl = baseurl

@@ -3,6 +3,8 @@ Module checks to see if particular modules are importable.
 For now, it only checks if pylab and/or qt are available.
 """
 
+__docformat__ = 'restructuredtext'
+
 def pylab_def():
     """
     Check to see if pylab/matplotlib is importable.

@@ -7,6 +7,9 @@ Evans, A.C. (2002). \'Estimating the delay of the response in fMRI
 data.\' NeuroImage, 16:593-606.
 
 """
+
+__docformat__ = 'restructuredtext'
+
 import os, fpformat
 
 import numpy as N

@@ -1,3 +1,5 @@
+__docformat__ = 'restructuredtext'
+
 from struct import calcsize, pack, unpack
 import sys
 import numpy as N

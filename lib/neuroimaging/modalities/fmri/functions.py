@@ -9,6 +9,8 @@ divided.
 
 """
 
+__docformat__ = 'restructuredtext'
+
 import numpy as N
 
 from scipy.sandbox.models.utils import recipr0

@@ -1,3 +1,5 @@
+__docformat__ = 'restructuredtext'
+
 from neuroimaging import traits
 
 from neuroimaging.defines import pylab_def

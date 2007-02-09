@@ -2,6 +2,8 @@
 A Slice class for visualizing slices of images.
 """
 
+__docformat__ = 'restructuredtext'
+
 import numpy as N
 from neuroimaging import traits
 from neuroimaging.core.reference import slices

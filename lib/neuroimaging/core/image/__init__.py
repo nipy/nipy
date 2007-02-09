@@ -31,6 +31,6 @@ Class structure::
    |        |       |
  Nifti   Analyze  ECAT
 """
-
+__docformat__ = 'restructuredtext'
 
 

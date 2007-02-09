@@ -1,3 +1,5 @@
+__docformat__ = 'restructuredtext'
+
 import numpy as N
 import numpy.fft as FFT
 import scipy.interpolate

@@ -1,3 +1,5 @@
+__docformat__ = 'restructuredtext'
+
 import sys, pylab
 import neuroimaging.core.image as image
 import neuroimaging.ui.visualization.viewer as viewer

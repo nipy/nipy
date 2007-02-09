@@ -1,5 +1,7 @@
 "Package containing implementations of command-line tools and applications."
 
+__docformat__ = 'restructuredtext'
+
 import sys
 from optparse import OptionParser, Option
 

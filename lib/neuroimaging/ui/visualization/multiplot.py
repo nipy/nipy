@@ -2,6 +2,8 @@
 Defines a class MultiPlot to plot multiple functions of time simultaneously.
 """
 
+__docformat__ = 'restructuredtext'
+
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 

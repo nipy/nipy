@@ -6,6 +6,8 @@ In particular, it provides Gary Glover's canonical HRF, AFNI's default HRF, and
 a spectral HRF.
 """
 
+__docformat__ = 'restructuredtext'
+
 
 import numpy as N
 import numpy.linalg as L

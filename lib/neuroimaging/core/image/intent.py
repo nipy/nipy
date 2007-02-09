@@ -1,3 +1,5 @@
+__docformat__ = 'restructuredtext'
+
 import new
 
 from neuroimaging.data_io.formats import nifti1

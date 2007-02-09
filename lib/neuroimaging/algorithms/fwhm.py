@@ -7,6 +7,8 @@ A resolution element (resel) is defined as a block of pixels of the same
 size as the FWHM of the smoothed image.
 """
 
+__docformat__ = 'restructuredtext'
+
 import gc
 
 import numpy as N

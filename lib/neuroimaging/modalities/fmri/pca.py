@@ -12,6 +12,8 @@ More specifically, the data is projected onto the eigenvectors of the
 covariance matrix.
 """
 
+__docformat__ = 'restructuredtext'
+
 import numpy as N
 import numpy.linalg as L
 from scipy.sandbox.models.utils import recipr

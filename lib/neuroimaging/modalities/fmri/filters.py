@@ -1,3 +1,5 @@
+__docformat__ = 'restructuredtext'
+
 import numpy as N
 
 from neuroimaging.modalities.fmri.utils import ConvolveFunctions, WaveFunction
