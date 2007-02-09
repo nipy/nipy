@@ -11,6 +11,7 @@ from neuroimaging.modalities.fmri.filters import Filter
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
 
 from fiac import Run, Subject, Study
+import io
 
 from readonly import ReadOnlyValidate, HasReadOnlyTraits
 
@@ -96,7 +97,7 @@ class StudyModel(Model, Study):
     def __repr__(self):
         return Study.__repr__(self)
 
-local_study = StudyModel(root='/home/analysis/FIAC')
+local_study = StudyModel(root=io.data_path)
 www_study = StudyModel(root='http://kff.stanford.edu/FIAC')
 
 #-----------------------------------------------------------------------------#
@@ -327,7 +328,7 @@ if __name__ == '__main__':
     else:
         subj, run = (3, 3)
 
-    study = StudyModel(root='/home/analysis/FIAC')
+    study = StudyModel(root=io.data_path)
     subject = SubjectModel(subj, study=study)
     runmodel = RunModel(subject, run)
     runmodel.OLS(clobber=True)

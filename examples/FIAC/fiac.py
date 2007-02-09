@@ -143,7 +143,8 @@ class Run(HasReadOnlyTraits):
             self.begin, self.experiment = event_protocol(self.subject.joinpath('subj%d_evt_fonc%d.txt' % (self.subject.id, self.id)))
 
 if __name__ == '__main__':
-    study = Study(root='/home/analysis/FIAC')
+    import io
+    study = Study(root=io.data_path)
     subjects = [Subject(i) for i in range(16)]
 
     runs = []

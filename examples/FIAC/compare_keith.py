@@ -4,9 +4,9 @@ import numpy as N
 from neuroimaging.core.image.image import Image
 from neuroimaging.ui.visualization.viewer import BoxViewer
 
-import keith
+import keith, io
 
-path = "../../../nipy-data/fmri/FIAC"
+path = io.data_path
 
 def nipy_run(subject=3, run=3, which='contrasts', contrast='overall',
              stat='t', **extra):

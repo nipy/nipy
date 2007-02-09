@@ -56,9 +56,9 @@ class PCARun(Run):
     
 
 if __name__ == '__main__':
-
+    import io
     from fiac import Subject, Study
-    study = Study(root='/home/analysis/FIAC')
+    study = Study(root=io.data_path)
     subject = Subject(3, study=study)
     pcarun = PCARun(subject, 3)
     pcarun.fit()

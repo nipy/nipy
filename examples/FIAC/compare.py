@@ -3,7 +3,7 @@ import urllib2, os.path
 import pylab
 import numpy as N
 
-import model, keith
+import model, keith, io
 from protocol import eventdict_r
 from neuroimaging.core.image.image import Image
 from neuroimaging.ui.visualization.viewer import BoxViewer
@@ -135,7 +135,7 @@ class CompareRun(model.RunModel):
             else:
                 a.set_ylim([-0.8,1.6])
 
-        pngfile = '/home/analysis/FIAC/x_cache/images/compare_sub%d_run%d_deriv%d_type%s.png' % (self.subject.id, self.id, int(deriv), etype)
+        pngfile = '%s/x_cache/images/compare_sub%d_run%d_deriv%d_type%s.png' % (io.data_path, self.subject.id, self.id, int(deriv), etype)
         pylab.savefig(pngfile)
 
     def webpage(self):
@@ -166,7 +166,7 @@ class CompareRun(model.RunModel):
         <!-- hhmts start --> <!-- hhmts end -->
         </body> </html>
         """
-        htmlfile = file('/home/analysis/FIAC/x_cache/compare_sub%d_run%d.html' % (self.subject.id, self.id), 'w')
+        htmlfile = file('%s/x_cache/compare_sub%d_run%d.html' % (io.data_path, self.subject.id, self.id), 'w')
         htmlfile.write(html)
         htmlfile.close()
 
@@ -288,7 +288,7 @@ if __name__ == '__main__':
     else:
         subj, run = (3, 1)
 
-    study = model.StudyModel(root='/home/analysis/FIAC')
+    study = model.StudyModel(root=io.data_path)
     subject = model.SubjectModel(subj, study=study)
 
 ##     try:
