@@ -36,8 +36,8 @@ class Axis(object):
         """
         Create an axis with a given C{name}.
 
-        :Parameter:
-            name : string
+        :Parameters:
+            `name` : string
                 The name for the axis
 
         :Precondition: name must be an element of axis.valid
@@ -52,8 +52,8 @@ class Axis(object):
     def __eq__(self, other):
         """ Equality is defined by name 
 
-        :Parameter:
-            other : Axis
+        :Parameters:
+            `other` : Axis
                 The object to be compared with.
 
         :Returns:
@@ -64,16 +64,15 @@ class Axis(object):
     def valid(self, x):
         """ Test if x is a point on the axis. 
 
-        :Parameter:
-            x : float
+        :Parameters:
+            `x` : float
                 A voxel
 
         :Returns:
             result : bool
         
 
-        :Raises:
-            NotImplementedError : Abstract method
+        :Raises NotImplementedError: Abstract method
         """
         raise NotImplementedError
 
@@ -83,8 +82,7 @@ class Axis(object):
         :Returns:
             result : numpy.float
         
-        :Raises:
-            NotImplementedError : Abstract method
+        :Raises NotImplementedError: Abstract method
         """
         raise NotImplementedError
 
@@ -94,8 +92,7 @@ class Axis(object):
         :Returns:
             result : numpy.float
         
-        :Raises:
-            NotImplementedError : Abstract method
+        :Raises NotImplementedError: Abstract method
         """
         raise NotImplementedError
 
