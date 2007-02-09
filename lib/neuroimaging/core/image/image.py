@@ -123,10 +123,26 @@ class Image(object):
 
 
     def __getitem__(self, slice_):
+        """
+        :Parameters:
+            `slice_`: ``slice``
+                TODO
+
+        :Returns: TODO        
+        """
         return self._source[slice_]
 
 
     def __setitem__(self, slice_, data):
+        """        
+        :Parameters:
+            `slice_` : ``slice``
+                TODO
+            `data` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         self._source[slice_] = data
 
 
@@ -284,6 +300,13 @@ class ImageSequenceIterator(object):
     methods, i.e. regression, one-sample t.
     """
     def __init__(self, imgs, grid=None):
+        """
+        :Parameters:
+            `imgs` : ``[`Image`]``
+                TODO
+            `grid` : TODO
+                TODO
+        """
         self.imgs = imgs
         if grid is None:
             self.grid = self.imgs[0].grid

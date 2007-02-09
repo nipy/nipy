@@ -14,6 +14,17 @@ class ImageRegressionOutput(RegressionOutput):
     """
 
     def __init__(self, grid, nout=1, outgrid=None, it=None):
+        """
+        :Parameters:
+            `grid` : TODO
+                TODO
+            `nout` : int
+                TODO
+            `outgrid` : TODO
+                TODO
+            `it` : TODO
+                TODO
+        """
         RegressionOutput.__init__(self, grid, nout, outgrid)
 
         if self.nout > 1:
@@ -31,6 +42,31 @@ class TContrastOutput(ImageRegressionOutput):
     def __init__(self, grid, contrast, path='.', subpath='contrasts', ext=".img",
                  effect=True, sd=True, t=True, nout=1, outgrid=None,
                  clobber=False):
+        """
+        :Parameters:
+            `grid` : TODO
+                TODO
+            `contrast` : TODO
+                TODO
+            `path` : string
+                TODO
+            `subpath` : string
+                TODO
+            `ext` : string
+                TODO
+            `effect` : bool
+                TODO
+            `sd` : bool
+                TODO
+            `t` : bool
+                TODO
+            `nout` : int
+                TODO
+            `outgrid` : TODO
+                TODO
+            `clobber` : bool
+                TODO
+        """
         ImageRegressionOutput.__init__(self, grid, nout, outgrid)
         self.contrast = contrast
         self.effect = effect
@@ -63,9 +99,23 @@ class TContrastOutput(ImageRegressionOutput):
         outfile.close()
 
     def extract(self, results):
+        """
+        :Parameters:
+            `results` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         return results.Tcontrast(self.contrast.matrix, sd=self.sd, t=self.t)
 
     def set_next(self, data):
+        """
+        :Parameters:
+            `data` : TODO
+                TODO
+            
+        :Returns: ``None``
+        """
         self.timg_it.next().set(data.t)
         if self.effect:
             self.effectimg_it.next().set(data.effect)

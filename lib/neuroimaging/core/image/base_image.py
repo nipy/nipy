@@ -16,18 +16,43 @@ class BaseImage(object):
     """
 
     def __init__(self, data, grid, dtype):
+        """
+        :Parameters:
+            `data` : TODO
+                TODO
+            `grid` : TODO
+                TODO
+            `dtype` : TODO
+                TODO
+        """
         self.grid = grid
         self.data = data
         self.dtype = dtype
         
     def __getitem__(self, item):
+        """
+        :Parameters:
+            `item` : TODO
+                TODO
+        
+        :Returns: TODO        
+        """
         return self.data[item]
         
     def __setitem__(self, item, value):
+        """
+        :Parameters:
+            `item` : TODO
+                TODO
+            `value` : TODO
+                TODO
+        
+        :Returns: ``None``
+        """
         self.data[item] = value
 
     def asfile(self):
-        """ Return image filename corresponding to `image.image.Image` object data.
+        """ Return image filename corresponding to `core.image.image.Image` object data.
 
         :Returns: ``string``
             
@@ -57,7 +82,7 @@ class ArrayImage (BaseImage):
         BaseImage.__init__(self, data, grid, dtype)
 
     def asfile(self):        
-        """ Return image filename corresponding to `image.image.Image` object data.
+        """ Return image filename corresponding to `core.image.image.Image` object data.
 
         :Returns: ``string``
         """

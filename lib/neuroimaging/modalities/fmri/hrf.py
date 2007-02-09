@@ -17,6 +17,15 @@ from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
 
 def glover2GammaDENS(peak_hrf, fwhm_hrf):
+    """
+    :Parameters:
+        `peak_hfr` : TODO
+            TODO
+        `fwhm_hrf` : TODO
+            TODO
+    
+    :Returns: TODO
+    """
     alpha = N.power(peak_hrf / fwhm_hrf, 2) * 8 * N.log(2.0)
     beta = N.power(fwhm_hrf, 2) / peak_hrf / 8 / N.log(2.0)
     coef = peak_hrf**(-alpha) * N.exp(peak_hrf / beta)
@@ -53,6 +62,21 @@ class SpectralHRF(filters.Filter):
 
     def __init__(self, input_hrf=canonical, spectral=True, ncomp=2,
                  names=['glover'], deriv=False, **keywords):
+        """
+        :Parameters:
+            `input_hrf` : TODO
+                TODO
+            `spectral` : bool
+                TODO
+            `ncomp` : int
+                TODO
+            `names` : TODO
+                TODO
+            `deriv` : bool
+                TODO
+            `keywords` : dict
+                passed as keyword arguments to `filters.Filter.__init__`
+        """
         filters.Filter.__init__(self, input_hrf, names=names, **keywords)
         self.deriv = deriv
         self.ncomp = ncomp

@@ -1,3 +1,6 @@
+"""
+TODO
+"""
 __docformat__ = 'restructuredtext'
 
 import os
@@ -10,8 +13,8 @@ from scipy.sandbox.models.utils import recipr
 import neuroimaging.algorithms.regression as imreg
 
 from neuroimaging.defines import pylab_def
-PYLAB_DEF, pylab = pylab_def()
-if PYLAB_DEF:
+_PYLAB_DEF, pylab = pylab_def()
+if _PYLAB_DEF:
     from neuroimaging.ui.visualization.multiplot import MultiPlot
 
 class fMRIRegressionOutput(imreg.ImageRegressionOutput):
@@ -25,14 +28,41 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
     """
 
     def __init__(self, grid, nout=1):
+        """ 
+        :Parameters:
+            `grid` : TODO
+                TODO
+            `nout` : int
+                TODO
+        """ 
         imreg.ImageRegressionOutput.__init__(self, grid, nout=nout,
                                              outgrid=grid.subgrid(0))
 
 
 class ResidOutput(fMRIRegressionOutput):
+    """
+    TODO
+    """
 
     def __init__(self, grid, nout=1, clobber=False,
                  path='.', ext='.hdr', basename='resid', it=None):
+        """
+        :Parameters:
+            `grid` : TODO
+                TODO
+            `nout` : int
+                TODO
+            `clobber` : bool
+                TODO
+            `path` : string
+                TODO
+            `ext` : string
+                TODO
+            `basename` : string
+                TODO
+            `it` : TODO
+                TODO
+        """
         fMRIRegressionOutput.__init__(self, grid, nout)
         outdir = os.path.join(path)
         self.outgrid = grid
@@ -44,14 +74,51 @@ class ResidOutput(fMRIRegressionOutput):
         self.nout = self.grid.shape[0]
 
     def extract(self, results):
+        """
+        :Parameters:
+            `resid` : TODO
+                TODO
+                
+        :Returns: TODO
+        """
         return results.resid
     
 
 class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
+    """
+    TODO
+    """
 
     def __init__(self, grid, contrast, nout=1, clobber=False,
                  path='.', ext='.hdr', subpath='contrasts', frametimes=[],
-                 effect=True, sd=True, t=True, it=None):
+                 effect=True, sd=True, t=True, it=None):                 
+        """
+        :Parameters:
+            `grid` : TODO
+                TODO
+            `contrast` : TODO
+                TODO
+            `nout` : int
+                TODO
+            `clobber` : bool
+                TODO
+            `path` : string
+                TODO
+            `ext` : string
+                TODO
+            `subpath` : string
+                TODO
+            `frametimes` : TODO
+                TODO
+            `effect` : bool
+                TODO
+            `sd` : bool
+                TODO
+            `t` : bool
+                TODO
+            `it` : TODO
+                TODO
+        """
         fMRIRegressionOutput.__init__(self, grid, nout)
         if it is not None:
             self.it = it
@@ -66,7 +133,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
         outdir = os.path.join(path, subpath, self.contrast.name)
         imreg.TContrastOutput._setup_output(self, clobber, path, subpath, ext)
 
-        if PYLAB_DEF:
+        if _PYLAB_DEF:
             ftime = frametimes
             f = pylab.gcf()
             f.clf()
@@ -78,12 +145,43 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
             f.clf()
 
     def extract(self, results):
+        """
+        :Parameters:
+            `results` : TODO
+                TODO
+                
+        :Returns: TODO
+        """
         return imreg.TContrastOutput.extract(self, results)
 
 class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
+    """
+    TODO
+    """
 
     def __init__(self, grid, contrast, path='.', ext='.hdr', clobber=False,
                  subpath='contrasts', frametimes=[], nout=1, it=None):
+        """
+        :Parameters:
+            `grid` : TODO
+                TODO
+            `contrast` : TODO
+                TODO
+            `path` : string            
+                TODO
+            `ext` : string
+                TODO
+            `clobber` : bool
+                TODO
+            `subpath` : strings
+                TODO
+            `frametimes` : TODO
+                TODO
+            `nout` : int
+                TODO
+            `it` : TODO
+                TODO                        
+        """
         fMRIRegressionOutput.__init__(self, grid, nout)
         if it is not None:
             self.it = it
@@ -95,7 +193,7 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
         outdir = os.path.join(path, subpath, self.contrast.name)
         imreg.FContrastOutput._setup_output(self, clobber, path, subpath, ext)
 
-        if PYLAB_DEF:
+        if _PYLAB_DEF:
             ftime = frametimes
 
             f = pylab.gcf()
@@ -108,19 +206,50 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
             f.clf()
 
     def extract(self, results):
+        """
+        :Parameters:
+            `results` : TODO
+                TODO
+                
+        :Returns: TODO
+        """
         return imreg.FContrastOutput.extract(self, results)
 
 class AR1Output(fMRIRegressionOutput):
+    """
+    TODO
+    """
 
     def extract(self, results):
+        """
+        :Parameters:
+            `results` : TODO
+                TODO
+                
+        :Returns: TODO
+        """
         resid = results.resid
         rho = N.add.reduce(resid[0:-1]*resid[1:] / N.add.reduce(resid[1:-1]**2))
         return rho
                 
 
 class AROutput(fMRIRegressionOutput):
+    """
+    TODO
+    """
 
     def __init__(self, grid, model, order=1, nout=1):
+        """
+        :Parameters:
+            `grid` : TODO
+                TODO
+            `model` : TODO
+                TODO
+            `order` : int
+                TODO
+            `nout` : int
+                TODO
+        """
         self.order = order
         fMRIRegressionOutput.__init__(self, grid, nout)
         self._setup_bias_correct(model)
@@ -142,6 +271,13 @@ class AROutput(fMRIRegressionOutput):
         return
     
     def extract(self, results):
+        """
+        :Parameters:
+            `results` : TODO
+                TODO
+                
+        :Returns: ``numpy.ndarray``
+        """
         resid = results.resid.reshape((results.resid.shape[0],
                                        N.product(results.resid.shape[1:])))
 

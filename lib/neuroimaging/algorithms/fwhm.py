@@ -21,7 +21,23 @@ class Resels(object):
     
     def __init__(self, grid, normalized=False, fwhm=None, resels=None,
                  mask=None, clobber=False, D=3):
-        
+        """
+        :Parameters:
+            `grid` : TODO
+                TODO
+            `normalized` : bool
+                TODO
+            `fwhm` : TODO
+                TODO
+            `resels` : TODO
+                TODO
+            `mask` : TODO
+                TODO
+            `clobber` : bool
+                TODO
+            `D` : int
+                TODO
+        """
         self.fwhm = fwhm
         self.resels = resels
         self.mask = mask
@@ -34,6 +50,13 @@ class Resels(object):
         self.normalized = normalized
 
     def integrate(self, mask=None):
+        """
+        :Parameters:
+            `mask` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         _resels = self.resels.readall()
         if mask is not None:
             _mask = mask
@@ -50,12 +73,29 @@ class Resels(object):
         return _resels, _fwhm, nvoxel
 
     def resel2fwhm(self, x):
+        """
+        :Parameters:
+            `x` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         return N.sqrt(4*N.log(2.)) * self.wedge * recipr(N.power(x, 1./self.D))
 
     def fwhm2resel(self, x):
+        """
+        :Parameters:
+            `x` : TODO
+                TODO
+
+        :Returns: TODO
+        """
         return recipr(N.power(x / N.sqrt(4*N.log(2)) * self.wedge, self.D))
 
     def __iter__(self):
+        """
+        :Returns: ``self``
+        """
         if not self.fwhm:
             im = Image(N.zeros(self.grid.shape), grid=self.grid)
         else:
@@ -75,7 +115,15 @@ class Resels(object):
 class ReselImage(Resels):
 
     def __init__(self, resels=None, fwhm=None, **keywords):
-
+        """
+        :Parameters:
+            `resels` : TODO
+                TODO
+            `fwhm` : TODO
+                TODO
+            `keywords` : dict
+                Passed as keywords arguments to `core.image.image.Image`
+        """
         if not resels and not fwhm:
             raise ValueError, 'need either a resels image or an FWHM image'
 
@@ -95,7 +143,10 @@ class ReselImage(Resels):
             self.resels = Image(self.fwhm2resel(self.fwhm.readall()),
                                 mapping=self.fwhm.grid.mapping, **keywords)
 
-    def __iter__(self):
+    def __iter__(self): 
+        """
+        :Returns: ``None`` FIXME: should this be ``self``?
+        """
         return
 
 class iterFWHM(Resels):
@@ -105,7 +156,20 @@ class iterFWHM(Resels):
     """
 
     def __init__(self, grid, df_resid=5.0, df_limit=4.0, mask=None, **keywords):
-        '''Setup a FWHM estimator.'''
+        """Setup a FWHM estimator.
+        
+        :Parameters:
+            `grid` : TODO
+                TODO
+            `df_resid` : float
+                TODO
+            `df_limit` : float
+                TODO
+            `mask` : TODO
+                TODO
+            `keywords` : dict
+                Passed as keyword parameters to `Resels.__init__`
+        """
 
         Resels.__init__(self, grid, mask=mask, **keywords)
         self.df_resid = df_resid
@@ -128,6 +192,13 @@ class iterFWHM(Resels):
         iter(self)
 
     def __call__(self, resid):
+        """
+        :Parameters:
+            `resid` : TODO
+                TODO
+        
+        :Returns: ``None``
+        """
         resid = iter(resid)
         iter(self)
         while True:
@@ -138,7 +209,13 @@ class iterFWHM(Resels):
                 break
 
     def normalize(self, resid):
-
+        """
+        :Parameters:
+            `resid` : TODO
+                TODO
+                
+        :Returns: TODO
+        """
         _mu = 0.
         _sumsq = 0.
 
@@ -172,6 +249,9 @@ class iterFWHM(Resels):
         return value
 
     def __iter__(self):
+        """
+        :Returns: ``self``
+        """
         Resels.__iter__(self)
 
         self.slice = 0
@@ -179,6 +259,9 @@ class iterFWHM(Resels):
         return self
 
     def setup_nneigh(self):
+        """
+        :Returns: ``None``
+        """
         self.nneigh = 4. * N.ones((self.Y, self.X))
         self.nneigh[0] = 2
         self.nneigh[-1] = 2
@@ -190,6 +273,15 @@ class iterFWHM(Resels):
         self.nneigh[-1, 0] = 1
 
     def set_next(self, data, FWHMmax=50.):
+        """
+        :Parameters:
+            `data` : TODO
+                TODO
+            `FWHMmax` : float
+                TODO
+        
+        :Returns: ``None``
+        """
 
         wresid = 1.0 * N.transpose(data, (1,2,0))
         if not self.normalized:
@@ -301,6 +393,13 @@ class iterFWHM(Resels):
         self.slice += 1
 
     def output(self, FWHMmax=50.):
+        """
+        :Parameters:
+            `FWHMmax` : float
+                TODO
+                
+        :Returns: ``None``
+        """
         value = self.grid.next()
 
         self.fwhm[value.slice] =  N.clip(self._fwhm, 0, FWHMmax)

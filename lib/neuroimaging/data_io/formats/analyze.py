@@ -374,7 +374,7 @@ class Analyze(bin.BinaryFormat):
         read it in the wrong byte order.
 
         :Returns:
-            `string` : One of utils.LITTLE_ENDIAN or utils.BIG_ENDIAN
+            ``string`` : One of utils.LITTLE_ENDIAN or utils.BIG_ENDIAN
         """
         if isinstance(hdrfile, str):
             hdrfile = datasource.open(hdrfile)

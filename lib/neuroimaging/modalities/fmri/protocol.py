@@ -13,6 +13,15 @@ class ExperimentalRegressor(object):
     
 
     def __init__(self, convolved=False, namespace=namespace, termname='term'):
+        """
+        :Parameters:
+            `convolved` : bool
+                TODO
+            `namespace` : TODO
+                TODO
+            `termname` : string
+                TODO
+        """
         namespace[termname] = self
         self.__c = convolved
         self.termname = termname
@@ -43,14 +52,31 @@ class ExperimentalRegressor(object):
             self.func = self._funcunconv
 
     def __add__(self, other):
+        """
+        :Parameters:
+            `other` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         other = ExperimentalFormula(other)
         return other + self
 
     def __mul__(self, other):
+        """
+        :Parameters:
+            `other` : TODO
+                TODO
+                
+        :Returns: TODO
+        """
         other = ExperimentalFormula(other)
         return other * self
 
     def names(self):
+        """
+        :Returns: TODO
+        """
         if self.convolved:
             return self._convolved.names()
         else:
@@ -61,8 +87,8 @@ class ExperimentalRegressor(object):
 
     def _convolved__call__(self, time, **keywords):
         """
-	Call convolved function.
-	"""
+        Call convolved function.
+        """
         v = []
         for _func in self._convolved_func:
             try:
@@ -73,6 +99,13 @@ class ExperimentalRegressor(object):
         return N.array(v)
 
     def convolve(self, IRF):
+        """
+        :Parameters:
+            `IRF` : TODO
+                TODO
+                
+        :Returns: ``self``
+        """
 
         self.convolved = False
         self._convolved_func = IRF.convolve(self)
@@ -90,6 +123,12 @@ class ExperimentalRegressor(object):
     def astimefn(self, slice=None):
         """
         Return a TimeFunction object that can be added, subtracted, etc.
+        
+        :Parameters:
+            `slice` : TODO
+                TODO
+                
+        :Returns: `TimeFunction`
         """
 	#FIXME: should be a better way to determine this
         # A better way will require all the callable objects we have
@@ -138,9 +177,27 @@ class ExperimentalQuantitative(ExperimentalRegressor, quantitative):
 class Time(ExperimentalQuantitative):
     
     def __call__(self, time, **ignored):
+        """
+        :Parameters:
+            `time` : TODO
+                TODO
+            `ignored` : TODO
+                TODO
+
+        :Returns: ``time``
+        """
         return time
 
     def __pow__(self, e):
+        """
+        :Parameters:
+            `e` : float
+                The exponent to raise to
+        
+        :Returns: TODO
+        
+        :Raises ValueError: if ``e`` cannot be cast to float.
+        """
         try:
             e = float(e)
         except:
@@ -164,6 +221,15 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
     """
 
     def __init__(self, name, iterator, **keywords):
+        """
+        :Parameters:
+            `name` : TODO
+                TODO
+            `iterator` : TODO
+                TODO
+            `keywords` : dict
+                Passed through as the keywords to `ExperimentalQuantitative.__init__`
+        """
         ExperimentalQuantitative.__init__(self, name, fn, **keywords)
         fn = self._fromiterator(iterator)
 
@@ -216,8 +282,8 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
     where the events are (square wave) approximations
     of a delta function, non zero on [start, start+dt). 
 
-    Notes:
-    ------
+    Notes
+    -----
 
     self[key] returns the __UNCONVOLVED__ factor, even if the
     ExperimentalFactor has been convolved with an HRF. 
@@ -226,6 +292,19 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
     """
     
     def __init__(self, name, iterator, convolved=False, delta=True, dt=0.02):
+        """
+        :Parameters:
+            `name` : TODO
+                TODO
+            `iterator` : TODO
+                TODO
+            `convolved` : bool
+                TODO
+            `delta` : bool
+                TODO
+            `dt` : float
+                TODO
+        """
         ExperimentalRegressor.__init__(self, convolved)
         self.delta = delta
         self.dt = dt
@@ -240,6 +319,8 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
     def main_effect(self):
         """
         Return the 'main effect' for an ExperimentalFactor.
+        
+        :Returns: `ExperimentalQuantitative`
         """
 
         _c = self.convolved
@@ -249,6 +330,13 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
         return ExperimentalQuantitative('%s:maineffect' % self.termname, f)
 
     def __getitem__(self, key):
+        """
+        :Parameters:
+            `key` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
 
         if self.events.has_key(key): # not in self.events.keys():
                                      # this statement above seems useless 
@@ -271,6 +359,19 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
         return ExperimentalQuantitative(name, factor_func)
 
     def __call__(self, time, includedown=False, convolved=None, **kw):
+        """
+        :Parameters:
+            `time` : TODO
+                TODO
+            `includedown` : bool
+                TODO
+            `convolved` : TODO
+                TODO
+            `kw` : dict
+                TODO
+        
+        :Returns: TODO
+        """
         if convolved is not None:
             __convolved, self.convolved = self.convolved, convolved
         else:
@@ -302,6 +403,13 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
         return value
 
     def names(self, keep=False):
+        """
+        :Parameters:
+            `keep` : bool
+                TODO
+        
+        :Returns: TODO
+        """
         names = factor.names(self)
 
         _keep = []
@@ -317,6 +425,14 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
     def fromiterator(self, iterator, delimiter=','):
         """
         Determine an ExperimentalFactor from an iterator
+        
+        :Parameters:
+            `iterator` : TODO
+                TODO
+            `delimiter` : string
+                TODO
+                
+        :Returns: ``None``
         """
 
         if isinstance(iterator, str):
@@ -344,15 +460,38 @@ class ExperimentalFormula(formula):
     A formula with no intercept.
     """
 
-
     def __mul__(self, other, nested=False):
+        """
+        :Parameters:
+            `other` : TODO
+                TODO
+            `nested` : bool
+                TODO
+        
+        :Returns: `ExperimentalFormula`
+        """
         return ExperimentalFormula(formula.__mul__(self, other))
 
     def __add__(self, other):
+        """
+        :Parameters:
+            `other` : TODO
+                TODO
+        
+        :Returns: `ExperimentalFormula`
+        """
         return ExperimentalFormula(formula.__add__(self, other))
 
     def __call__(self, time, **keywords):
-
+        """
+        :Parameters:
+            `time` : TODO
+                TODO
+            `keywords` : dict
+                TODO
+                
+        :Returns: ``numpy.ndarray``
+        """
         allvals = []
 
         for t in self.terms:
@@ -369,6 +508,13 @@ class ExperimentalFormula(formula):
         return N.array([tmp[i] for i in keep])
 
     def names(self, keep=False):
+        """
+        :Parameters:
+            `keep` : bool
+                TODO
+                
+        :Returns: TODO
+        """
         names = formula.names(self)
 
         _keep = []
