@@ -115,7 +115,10 @@ class fMRIImage(Image):
             ndim = len(self.grid.shape)
             n = [self.grid.input_coords.axisnames()[i] \
                  for i in range(ndim)]
-            d = n.index('time')
+            try:
+                d = n.index('time')
+            except ValueError:
+                raise ValueError, "fMRIImage expecting a 'time' axis, got %s" % n
             transform = self.grid.mapping.transform[d, d]
             start = self.grid.mapping.transform[d, ndim]
             self.frametimes = start + N.arange(self.grid.shape[d]) * transform
