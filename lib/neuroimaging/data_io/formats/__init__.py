@@ -24,7 +24,8 @@ class Format(BaseImage):
            formats' metadata, but in a known NI language
     """
         
-    extensions = [] """ Valid filename extensions for the file format. """ 
+    extensions = []
+    """ Valid filename extensions for the file format. """ 
 
     def __init__(self, datasource=DataSource(), grid=None):
         """
