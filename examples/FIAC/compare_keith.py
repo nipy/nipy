@@ -6,22 +6,24 @@ from neuroimaging.ui.visualization.viewer import BoxViewer
 
 import keith
 
+path = "/home/analysis/FIAC"
+
 def nipy_run(subject=3, run=3, which='contrasts', contrast='overall',
              stat='t', **extra):
 
-    runfile = '/home/analysis/FIAC/fiac%d/fonc%d/fsl/fmristat_run/%s/%s/%s.img' % (subject, run, which, contrast, stat)
+    runfile = '%s/fiac%d/fonc%d/fsl/fmristat_run/%s/%s/%s.img' % (path, subject, run, which, contrast, stat)
 
     return Image(runfile)
 
 
 def nipy_rho(subject=3, run=3):
 
-    runfile = '/home/analysis/FIAC/fiac%d/fonc%d/fsl/fmristat_run/rho.img' % (subject, run)
+    runfile = '%s/fiac%d/fonc%d/fsl/fmristat_run/rho.img' % (path, subject, run)
 
     return Image(runfile)
 
 def mask(subject=3, run=3, **kw):
-    runfile = '/home/analysis/FIAC/fiac%d/fonc%d/fsl/mask.img' % (subject, run)
+    runfile = '%path/fiac%d/fonc%d/fsl/mask.img' % (path, subject, run)
 
     return Image(runfile)
 
@@ -47,12 +49,12 @@ options = parser.values.__dict__
 
 print options
 
-if not parser.values.rho:
-    x = nipy_run(**options)
-    y = keith.run(**options)
-else:
+if parser.values.rho:
     x = nipy_rho(**options)
     y = keith.rho(**options)
+else:
+    x = nipy_run(**options)
+    y = keith.run(**options)
     
 m = mask(**options)
 
