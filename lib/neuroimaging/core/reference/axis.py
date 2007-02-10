@@ -38,7 +38,7 @@ class Axis(object):
 
         :Parameters:
             `name` : string
-                The name for the axis
+                The name for the axis.
 
         :Precondition: name must be an element of axis.valid
         """
@@ -50,14 +50,14 @@ class Axis(object):
                                % (self.name)
 
     def __eq__(self, other):
-        """ Equality is defined by name 
+        """ Equality is defined by name.
 
         :Parameters:
             `other` : Axis
                 The object to be compared with.
 
         :Returns:
-            `bool` : 
+            `bool`
         """
         return self.name == other.name
 
@@ -69,7 +69,7 @@ class Axis(object):
                 A voxel
 
         :Returns:
-            `bool` : result
+            `bool`
         
 
         :Raises NotImplementedError: Abstract method
@@ -80,7 +80,7 @@ class Axis(object):
         """ The maximum value of the axis. 
 
         :Returns:
-            `result` : numpy.float
+            `numpy.float`
         
         :Raises NotImplementedError: Abstract method
         """
@@ -90,7 +90,7 @@ class Axis(object):
         """ The minimum value of the axis. 
 
         :Returns:
-            `result` : numpy.float
+            `numpy.float`
         
         :Raises NotImplementedError: Abstract method
         """
@@ -100,7 +100,7 @@ class Axis(object):
         """ A (min, max) pair representing the range of the axis. 
 
         :Returns:
-            `result`
+            `(numpy.float, numpy.float)`
         """
         return (self.min(), self.max())
 
@@ -112,18 +112,23 @@ class ContinuousAxis(Axis):
     """
     def __init__(self, name, low=-N.inf, high=N.inf):
         """
-        @param name: The name for the axis
-        @type name: C{string}
-        @param low: The lower bound of the axis
-        @type low: C{numpy.float}
-        @param high: The upper bound of the axis
-        @type high: C{numpy.float}
+
+        :Parameters:
+            `name` : string
+                The name for the axis
+            `low` : numpy.float
+                The lower bound of the axis
+            `high` : numpy.float
+                The upper bound of the axis
+
+        Notes
+        -----
+
+        If low > high, the behaviour of the class is undefined, though
+        this can be changed if a particular choice of bevaviour is clearly
+        useful.
         
-        @note: If low > high, the behaviour of the class is undefined, though
-            this can be changed if a particular choice of bevaviour is clearly
-            useful.
-        
-        @precondition: C{name} must be an element of L{axis.valid}    
+        :Precondition: name must be an element of axis.valid
         """
         self.low = low
         self.high = high
@@ -131,10 +136,13 @@ class ContinuousAxis(Axis):
 
     def __eq__(self, other):
         """ Equality is defined by name and range. 
-        
-        @param other: The object to be compared with
-        @type other: L{ContinuousAxis}
-        @rtype: C{bool}        
+
+        :Parameters:
+            `other` : ContinuousAxis
+                The object to be compared with
+
+        :Returns:
+            `bool`
         """
         return self.range() == other.range() and \
                Axis.__eq__(self, other)
@@ -143,24 +151,29 @@ class ContinuousAxis(Axis):
         """ Test if x is a point on the axis. 
 
         The axis is defined as the range [low:high).
-        
-        @param x: A voxel.
-        @type x: C{float}
-        @rtype: C{bool}
+
+        :Parameters:
+            `x` : float
+                A voxel
+
+        :Returns:
+            `bool`
         """ 
         return self.low <= x < self.high
 
     def max(self):
         """ The maximum value of the axis. 
-        
-        @rtype: C{numpy.float}        
+
+        :Returns:
+            `numpy.float`
         """    
         return self.high
 
     def min(self):
         """ The minimum value of the axis. 
-        
-        @rtype: C{numpy.float}
+
+        :Returns:
+            `numpy.float`
         """    
         return self.low
 
@@ -181,17 +194,18 @@ class RegularAxis (Axis):
     def __init__(self, name, length=N.inf, start=0, step=1):
         """
         Create a regularly spaced axis with a given name.
-        
-        @param name: The name for the axis
-        @type name: C{string}
-        @param length: The overall length of the axis
-        @type length: C{numpy.float}
-        @param start: The starting value of the axis
-        @type start: C{numpy.float}
-        @param step: The spacing of points on the axis
-        @type step: C{numpy.float}
 
-        @precondition: C{name} must be an element of L{axis.valid}
+        :Parameters:
+            `name` : string
+                The name for the axis
+            `length` : numpy.float
+                The overall length of the axis
+            `start` : numpy.float
+                The starting value of the axis
+            `step` : numpy.float
+                The spacing of the points on the axis
+
+        :Precondition: name must be an element of axis.valid
         """
 
         self.length = length
@@ -201,10 +215,13 @@ class RegularAxis (Axis):
 
     def __eq__(self, other):        
         """ Equality is defined by (start, stop, length) and name. 
-        
-        @param other: The object to be compared with
-        @type other: L{RegularAxis}
-        @rtype: C{bool}        
+
+        :Parameters:
+            `other` : RegurlarAxis
+                The object to be compared with
+
+        :Returns:
+            `bool`
         """
         return self.length == other.length and \
                self.start == other.start and \
@@ -214,9 +231,12 @@ class RegularAxis (Axis):
     def valid(self, x):
         """ Test if x is a point on the axis. 
 
-        @param x: A voxel.
-        @type x: C{float}
-        @rtype: C{bool}
+        :Parameters:
+            `x` : float
+                A voxel
+
+        :Returns:
+            `bool`
         """ 
         if x in (-N.inf, N.inf):
             return False
@@ -230,8 +250,9 @@ class RegularAxis (Axis):
         """
         Return all the values in the axis.
         Return a generator for the infinite case
-        
-        @rtype: C{numpy.ndarray(numpy.float)} or C{generator} of C{numpy.float}
+
+        :Returns:        
+            `numpy.ndarray(numpy.float)` or `generator` of `numpy.float`
         """
         if self.length == N.inf:
             def generator(x):
@@ -245,15 +266,17 @@ class RegularAxis (Axis):
 
     def max(self):
         """ The maximum value of the axis. 
-        
-        @rtype: C{numpy.float}        
+
+        :Returns:
+            `numpy.float`
         """    
         return self.start + self.step*(self.length - 1)
 
     def min(self):
         """ The minimum value of the axis. 
-        
-        @rtype: C{numpy.float}        
+
+        :Returns:
+            `numpy.float`
         """    
         return self.start
 
@@ -264,13 +287,15 @@ class VoxelAxis (RegularAxis):
     def __init__(self, name, length=N.inf):
         """
         Create a voxel axis with a given name.
-        
-        @param name: The name for the axis
-        @type name: C{string}
-        @param length: The overall length of the axis
-        @type length: C{numpy.float}
 
-        @precondition: C{name} must be an element of L{axis.valid}
+
+        :Parameters:
+            `name` : string
+                The name for the axis
+            `length` : numpy.float
+                The overall length of the axis
+
+        :Precondition: name must be an element of axis.valid
         """    
         RegularAxis.__init__(self, name, length, start=0, step=1)
 
