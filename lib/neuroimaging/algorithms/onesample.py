@@ -12,7 +12,7 @@ class ImageOneSample(onesample.OneSampleIterator):
     Fit a one sample t to a sequence of images. Input should be either a
     sequence of images (in which case variances are treated as equal) or a
     sequence of pairs of images and weights (in which case the variance of each
-    image is a function of the \'weight\' image). The \'weight\' image can be a
+    image is a function of the 'weight' image). The 'weight' image can be a
     'std', 'var', or 'weight' -- the appropriate transform will be applied.
     """
 
@@ -37,7 +37,6 @@ class ImageOneSample(onesample.OneSampleIterator):
         else:
             self.haveW = False
             self.iterator = ImageSequenceIterator(input)
-
 
         onesample.OneSampleIterator.__init__(self, self.iterator,
                                              outputs=outputs)
