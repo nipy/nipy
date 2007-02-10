@@ -27,22 +27,20 @@ class WholeBrainNormalize(object):
     def __init__(self, fmri_image, mask=None):
         
         if mask is not None:
-            _mask = mask.readall()
-            _mask.shape = _mask.size
+            mask = mask[:]
+            nvox = mask.astype(N.int32).sum()
         else:
-            _mask = None
-            
+            nvox = N.product(fmri_image.grid.shape[1:])
+
         self.n = fmri_image.grid.shape[0]
         self.avg = N.zeros((self.n,))
 
         for i in range(self.n):
             d = fmri_image[i:i+1]
-            if _mask is not None:
-                d.shape = d.size
-                d = N.compress(_mask, d)
-            self.avg[i] = d.mean()
+            if mask is not None:
+                d *= mask
+            self.avg[i] = d.sum() / nvox
 
-        self.idx = 0
     def __call__(self, fmri_data):
         out = N.zeros(fmri_data.shape)
         for i in range(self.n):
@@ -114,7 +112,23 @@ class fMRIStatOLS(LinearModelIterator):
     def fit(self, reference=None):
 
         if self.normalize:
-            self.iterator.img.postread = self.normalize
+
+            class fMRINormalize(self.iterator.__class__):
+
+                def __init__(self, iterator, normalizer):
+                    self.iterator = iterator
+                    self.normalizer = normalizer
+
+                def next(self):
+                    v = self.iterator.next()
+                    self.item = self.iterator.item
+                    return self.normalizer(v)
+
+                def __iter__(self):
+                    return self
+
+            self._iterator = self.iterator
+            self.iterator = fMRINormalize(self._iterator, self.normalize)
 
         LinearModelIterator.fit(self)
 
@@ -345,7 +359,23 @@ class fMRIStatAR(LinearModelIterator):
 
     def fit(self):
         if self.normalize:
-            self.iterator.img.postread = self.normalize
+            class fMRINormalize(self.iterator.__class__):
+
+                def __init__(self, iterator, normalizer):
+                    self.iterator = iterator
+                    self.normalizer = normalizer
+
+                def next(self):
+                    v = self.iterator.next()
+                    self.item = self.iterator.item
+                    return self.normalizer(v)
+
+                def __iter__(self):
+                    return self
+
+            self._iterator = self.iterator
+            self.iterator = fMRINormalize(self._iterator, self.normalize)
+
         LinearModelIterator.fit(self)
 
     def model(self):
@@ -357,7 +387,7 @@ class fMRIStatAR(LinearModelIterator):
         # is using the first parcel label correct here?
         # rho needs to be a single float...
 
-        return ar_model(design, itervalue.label[0])
+        return ar_model(design, itervalue.label[0]) 
 
 
 
