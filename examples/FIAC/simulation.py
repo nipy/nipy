@@ -355,7 +355,7 @@ if __name__ == '__main__':
     runmodel.getparcelmap()
     runmodel.get_frameavg()
 
-    options.generate, options.fit, options.check = (0,1,0)
+#    options.generate, options.fit, options.check = (0,1,0)
     if options.generate:
         runmodel.generate()
     if options.fit:
