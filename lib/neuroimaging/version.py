@@ -17,8 +17,11 @@ if not release:
     import neuroimaging
 
     nipy = sys.modules.get('neuroimaging')
-    svn_entries = os.path.join(os.path.dirname(nipy.__file__),'.svn', 'entries')
-    svn_doc = parse(open(svn_entries)).documentElement
-    svn_version = _get_svn_version(svn_doc)
+    try:
+        svn_entries = os.path.join(os.path.dirname(nipy.__file__),'.svn', 'entries')
+        svn_doc = parse(open(svn_entries)).documentElement
+        svn_version = _get_svn_version(svn_doc)
 
-    version += '.dev'+svn_version
+        version += '.dev'+svn_version
+    except IOError:
+        version += '.dev'+'_unknown_svn'
