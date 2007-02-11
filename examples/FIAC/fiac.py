@@ -7,7 +7,7 @@ from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
 from neuroimaging.core.image.image import Image
 
 from protocol import event_protocol, block_protocol
-from io import urlexists
+from io import urlexists, data_path
 from readonly import ReadOnlyValidate, HasReadOnlyTraits
 
 class Study(HasReadOnlyTraits):
@@ -17,7 +17,7 @@ class Study(HasReadOnlyTraits):
     def joinpath(self, x):
         return os.path.join(self.root, x)
 
-local_study = Study(root='/home/timl/src/nipy-data/fmri/FIAC')
+local_study = Study(root=data_path)
 www_study = Study(root='http://kff.stanford.edu/FIAC')
 
 
@@ -143,16 +143,11 @@ class Run(HasReadOnlyTraits):
             self.begin, self.experiment = event_protocol(self.subject.joinpath('subj%d_evt_fonc%d.txt' % (self.subject.id, self.id)))
 
 if __name__ == '__main__':
-    import io
-    study = Study(root=io.data_path)
-    subjects = [Subject(i) for i in range(16)]
+    study = Study(root=data_path)
+    subjects = [Subject(i, study=local_study) for i in range(16)]
 
     runs = []
-    for i in range(16):
-        subject = subjects[i]
-        subj_runs = []
-        for run in subject.event + subject.block:
-            cur_run = Run(subject, id=run)
-            subj_runs.append(cur_run)
+    for subject in subjects:
+        subj_runs = [Run(subject, id=run) for run in subject.event + subject.block]
         runs.append(subj_runs)
 
