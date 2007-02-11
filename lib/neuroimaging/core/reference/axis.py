@@ -5,13 +5,13 @@ infinite.
 
 The current class hirachy looks like this::
 
-                 Axis
+                 `Axis`
                    |
         ---------------------------
         |                         |
-   RegularAxis             ContinuousAxis
+   `RegularAxis`             `ContinuousAxis`
         |
-   VoxelAxis
+   `VoxelAxis`
 
 
 There is currently no support for irregularly spaced axes, however this
@@ -29,7 +29,7 @@ spacetime = ('time', 'zspace', 'yspace', 'xspace')
 class Axis(object):
     """
     This class represents a generic axis. Axes are used in the definition
-    of CoordinateSystem.
+    of `CoordinateSystem`.
     """
 
     def __init__(self, name):
@@ -53,7 +53,7 @@ class Axis(object):
         """ Equality is defined by name.
 
         :Parameters:
-            `other` : Axis
+            `other` : `Axis`
                 The object to be compared with.
 
         :Returns:
@@ -138,7 +138,7 @@ class ContinuousAxis(Axis):
         """ Equality is defined by name and range. 
 
         :Parameters:
-            `other` : ContinuousAxis
+            `other` : `ContinuousAxis`
                 The object to be compared with
 
         :Returns:
@@ -182,6 +182,9 @@ class RegularAxis (Axis):
     """
     This class represents a regularly spaced axis. Axes are used in the
     definition of Coordinate systems. 
+
+    Example
+    -------
     
     >>> from neuroimaging.core.reference.axis import RegularAxis
     >>> from numpy import allclose, array
@@ -217,7 +220,7 @@ class RegularAxis (Axis):
         """ Equality is defined by (start, stop, length) and name. 
 
         :Parameters:
-            `other` : RegurlarAxis
+            `other` : `RegurlarAxis`
                 The object to be compared with
 
         :Returns:

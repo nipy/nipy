@@ -25,7 +25,7 @@ class SamplingGrid (object):
     @staticmethod
     def from_start_step(names=space, shape=(), start=(), step=()): 
         """
-        Create a SamplingGrid instance from sequences of names, shape, start
+        Create a `SamplingGrid` instance from sequences of names, shape, start
         and step.
 
         :Returns:
@@ -65,7 +65,7 @@ class SamplingGrid (object):
     @staticmethod
     def from_affine(mapping, shape=(), names=space):
         """
-        Return grid using a given affine mapping
+        Return grid using a given `Affine` mapping
 
         :Returns:
             `SamplingGrid`
@@ -161,7 +161,7 @@ class SamplingGrid (object):
     def matlab2python(self):
         """
         Convert a grid in matlab-ordered voxels to python ordered voxels.
-        See Mapping.matlab2python for more details.
+        See `Mapping.matlab2python` for more details.
         """
         mapping = self.mapping.matlab2python()
         return SamplingGrid(_reverse(self.shape), mapping, 
@@ -170,7 +170,7 @@ class SamplingGrid (object):
     def python2matlab(self):
         """
         Convert a grid in python ordered voxels to matlab ordered voxels.
-        See Mapping.python2matlab for more details.
+        See `Mapping.python2matlab` for more details.
         """
         mapping = self.mapping.python2matlab()
         return SamplingGrid(_reverse(self.shape), mapping, 
@@ -179,7 +179,7 @@ class SamplingGrid (object):
 
     def replicate(self, n, concataxis="concat"):
         """
-        Duplicate self n times, returning a ConcatenatedGrids with
+        Duplicate self n times, returning a `ConcatenatedGrids` with
         shape == (n,)+self.shape.
         """
         return ConcatenatedIdenticalGrids(self, n, concataxis=concataxis)
@@ -196,7 +196,7 @@ class ConcatenatedGrids(SamplingGrid):
     def __init__(self, grids, concataxis="concat"):
         """
         :Parameters:
-            `grid` : [SamplingGrid]
+            `grid` : [`SamplingGrid`]
                 The grids to be used.
             `concataxis` : string
                 The name of the new dimension formed by concatenation

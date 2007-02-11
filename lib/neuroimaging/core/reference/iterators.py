@@ -28,10 +28,10 @@ class Iterator(object):
     
     def __init__(self, img, mode='r'):
         """
-        Create an Iterator for an image
+        Create an `Iterator` for an image
 
         :Parameters:
-            `img` : Image
+            `img` : `Image`
                 The image to be iterated over
             `mode` : string            
                 The mode to run the iterator in.
@@ -44,7 +44,7 @@ class Iterator(object):
 
     def __iter__(self):
         """        
-        Use this Iterator as a python iterator.
+        Use this `Iterator` as a python iterator.
         """
         return self
     
@@ -53,7 +53,7 @@ class Iterator(object):
         Return the next item from the iterator.
 
         If in read-only mode, this will be a slice of the image.
-        If in read-write mode, this will be an IteratorItem object.
+        If in read-write mode, this will be an `IteratorItem` object.
         """
         self.item = self._next()
         if self.mode == 'r':
@@ -69,7 +69,7 @@ class Iterator(object):
             `IteratorItem`
 
         :raises NotImplementedError: This method must be overriden by the
-            subclasses of Iterator.
+            subclasses of `Iterator`.
         """
         raise NotImplementedError
 
@@ -98,12 +98,12 @@ class Iterator(object):
 class IteratorItem(object):
     """
     This class provides the interface for objects returned by the
-    Iterator._next() method. This is the class which actually
+    `Iterator`.`_next`() method. This is the class which actually
     interacts with the image data itself.
     """
 
     def __init__(self, img, slice_):
-        """ Create the IteratorItem for a given item and slice
+        """ Create the `IteratorItem` for a given item and slice
         """
         self.img = img
         self.slice = slice_
@@ -200,7 +200,7 @@ class SliceIterator(Iterator):
         initialised to the current position of the original iterator.
 
         :Parameters:
-            `img` : Image
+            `img` : `Image`
                 The image to be used with the new iterator
         """
         return self.__class__(img, axis=self.axis, mode=self.mode)
@@ -285,7 +285,7 @@ class ParcelIterator(Iterator):
 
     def _prep_seq(self, parcelseq):
         """
-        This method does some preprocessing on the parcelseq. It can be
+        This method does some preprocessing on the `parcelseq`. It can be
         overrided to suit the needs of sub classes.
 
         In this case it creates a parcelseq from the parcelmap if none
@@ -328,7 +328,7 @@ class ParcelIterator(Iterator):
         initialised to the current position of the original iterator.
 
         :Parameters:
-            `img` : Image
+            `img` : `Image`
                 The image to be used with the new iterator
 
         :Returns:
@@ -340,7 +340,7 @@ class ParcelIterator(Iterator):
 
 class ParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by ParcelIterators
+    A class for objects returned by `ParcelIterator`s
     """
 
     def __init__(self, img, slice_, label):
@@ -365,7 +365,7 @@ class ParcelIteratorItem(IteratorItem):
 
 class fMRIParcelIterator(ParcelIterator):
     """
-    This class works in much the same way as the ParcelIterator except
+    This class works in much the same way as the `ParcelIterator` except
     that 
     """
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
@@ -375,7 +375,7 @@ class fMRIParcelIterator(ParcelIterator):
 
 class fMRIParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by fMRISliceIterators
+    A class for objects returned by `fMRISliceIterator`s
     """
 
     def __init__(self, img, slice_, label):
@@ -428,7 +428,7 @@ class SliceParcelIterator(ParcelIterator):
 
 class SliceParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by SliceParcelIterators
+    A class for objects returned by `SliceParcelIterator`s
     """
 
     def __init__(self, img, slice_, label, i):
@@ -458,7 +458,7 @@ class fMRISliceParcelIterator(SliceParcelIterator):
 
 class fMRISliceParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by fMRISliceParcelIterators
+    A class for objects returned by `fMRISliceParcelIterator`s
     """
 
     def __init__(self, img, slice_, label, i):

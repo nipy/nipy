@@ -31,7 +31,7 @@ class Image(object):
             `datasource` : `DataSource`
                 The datasource to be used for caching
             `format` : `Format`
-                The file format to use. If None then all possible formats will
+                The file format to use. If `None` then all possible formats will
                 be tried.
             `grid` : `SamplingGrid`
                 The sampling grid for the file
@@ -128,7 +128,7 @@ class Image(object):
 
 
     def __iter__(self):
-        """ Images cannot be used directly as iterators.
+        """ `Image`s cannot be used directly as iterators.
 
         :Raises NotImplementedError:
         """
@@ -190,7 +190,7 @@ class Image(object):
 
 
     def asfile(self):
-        """ Return image filename corresponding to Image object data
+        """ Return image filename corresponding to `Image` object data
 
         :Returns:
             `string`
@@ -202,9 +202,9 @@ class Image(object):
 
     def readall(self, clean=False): 
         """
-        Read an entire Image object, returning a numpy, not another instance of
-        Image. By default, it does not read 4d images. Missing values are
-        filled in with 0
+        Read an entire `Image` object, returning a numpy array, not another
+        instance of `Image`. By default, it does not read 4d images. Missing
+        values are filled in with 0
         """
         value = self[self.grid.allslice()]
         if clean: 
@@ -231,12 +231,12 @@ class Image(object):
 
     def from_slice_iterator(self, other, axis=0):
         """
-        Take an existing SliceIterator and use it to set the values
+        Take an existing `SliceIterator` and use it to set the values
         in this image.
 
         :Parameters:
-            `other` : SliceIterator
-                The iterator from whcih to take the values
+            `other` : `SliceIterator`
+                The iterator from which to take the values
             `axis` : int or [int]
                 The axis to iterator over for this image.
         """
@@ -249,7 +249,7 @@ class Image(object):
         Use the given iterator to iterate over this image.
 
         :Parameters:
-            `iterator` : Iterator
+            `iterator` : `Iterator`
                 The iterator to use.
 
         :Returns:
@@ -264,9 +264,9 @@ class Image(object):
         another to do the iteration over itself.
 
         :Parameters:
-            `other` : Iterator
+            `other` : `Iterator`
                 The iterator from which to take the values
-            `iterator` : Iterator
+            `iterator` : `Iterator`
                 The iterator to use to iterate over self.
         """
         iterator.mode = 'w'
@@ -277,7 +277,7 @@ class Image(object):
 
 class ImageSequenceIterator(object):
     """
-    Take a sequence of images, and an optional grid (which defaults to
+    Take a sequence of `Image`s, and an optional grid (which defaults to
     imgs[0].grid) and create an iterator whose next method returns array with
     shapes (len(imgs),) + self.imgs[0].next().shape Very useful for voxel-based
     methods, i.e. regression, one-sample t.

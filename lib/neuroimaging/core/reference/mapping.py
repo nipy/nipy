@@ -220,7 +220,7 @@ class Mapping(object):
         """ mapping composition
 
         :Parameters:
-            `other` : Mapping
+            `other` : `Mapping`
                 The mapping to compose with.
         :Returns:
             `Mapping`
@@ -307,7 +307,7 @@ class Mapping(object):
         return self._f(1.0)
 
     def python2matlab(self):
-        """ Inverse of matlab2python -- see this function for help.
+        """ Inverse of `matlab2python` -- see this function for help.
 
         :Returns:
             `Mapping`
@@ -315,7 +315,7 @@ class Mapping(object):
         return self._f(-1.0)
 
     def _f(self, x):
-        """ helper function for matlab2python and python2matlab """
+        """ helper function for `matlab2python` and `python2matlab` """
         ndim = self.ndim()
         mat = permutation_matrix(range(ndim)[::-1])
         t1 = _2transform(mat, x)
@@ -337,9 +337,10 @@ class Affine(Mapping):
     @staticmethod
     def fromfile(infile, delimiter='\t'):
         """
-        Read in an affine transformation matrix and return an instance of Affine
-        with named axes and input and output coordinate systems.  For now, the
-        format is assumed to be a tab-delimited file.  Other formats should be added.
+        Read in an affine transformation matrix and return an instance of
+        `Affine` with named axes and input and output coordinate systems.  For
+        now, the format is assumed to be a tab-delimited file.  Other formats
+        should be added.
 
         :Returns:
             `Affine`
@@ -375,7 +376,7 @@ class Affine(Mapping):
         Equality is defined as equality of both name and transform matrix.
 
         :Parameters:
-            `other` : Affine
+            `other` : `Affine`
 
         :Returns:
             `bool`
@@ -389,7 +390,7 @@ class Affine(Mapping):
     def __rmul__(self, other):
         """
         :Paramters:
-            `other` : Mapping or Affine
+            `other` : `Mapping` or `Affine`
         :Returns:
             `Mapping` or `Affine`
         """
@@ -423,7 +424,7 @@ class Affine(Mapping):
 
     def inverse(self):
         """
-        Create a new Affine instance which is the inverse of self.
+        Create a new `Affine` instance which is the inverse of self.
 
         :Returns:
             `Affine`
