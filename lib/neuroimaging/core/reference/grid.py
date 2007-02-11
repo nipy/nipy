@@ -4,7 +4,7 @@ They also provide mechanisms for iterating over that space.
 """
 import numpy as N
 
-from neuroimaging import reverse
+from coordinate_system import _reverse
 from neuroimaging.core.reference.mapping import Mapping, Affine
 from neuroimaging.core.reference.axis import space, RegularAxis, Axis, VoxelAxis
 from neuroimaging.core.reference.coordinate_system import \
@@ -150,7 +150,7 @@ class SamplingGrid (object):
         See Mapping.matlab2python for more details.
         """
         mapping = self.mapping.matlab2python()
-        return SamplingGrid(reverse(self.shape), mapping, 
+        return SamplingGrid(_reverse(self.shape), mapping, 
           self.input_coords.reverse(), self.output_coords)
 
     def python2matlab(self):
@@ -159,7 +159,7 @@ class SamplingGrid (object):
         See Mapping.python2matlab for more details.
         """
         mapping = self.mapping.python2matlab()
-        return SamplingGrid(reverse(self.shape), mapping, 
+        return SamplingGrid(_reverse(self.shape), mapping, 
           self.input_coords.reverse(), self.output_coords)
 
 
