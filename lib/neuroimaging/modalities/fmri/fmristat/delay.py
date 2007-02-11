@@ -42,7 +42,7 @@ class DelayContrast(Contrast):
     """
 
     def _sequence_call(self, time):
-        return N.array([fn(time) for n in self._sequence_fn]])
+        return N.array([fn(time) for n in self._sequence_fn])
 
     def __init__(self, fns, weights, formula, IRF=None, name='', rownames=[]):
         if IRF is None:
@@ -102,7 +102,6 @@ class DelayContrastOutput(TContrastOutput):
         self.subpath = subpath
         self.clobber = clobber
         self._setup_output_delay(path, clobber, subpath, ext, frametimes)
-        frametimes = N.array(frametimes)
 
     def _setup_contrast(self, time=None):
         """
