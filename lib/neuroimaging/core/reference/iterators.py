@@ -130,7 +130,7 @@ class SliceIterator(Iterator):
 
     def __init__(self, img, axis=0, mode='r'):
         """
-        :Parameter:
+        :Parameters:
             `axis` : int or [int]
                 The index of the axis (or axes) to be iterated over. If a list
                 is supplied, the axes are iterated over slowest to fastest.

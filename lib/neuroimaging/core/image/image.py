@@ -216,7 +216,7 @@ class Image(object):
         """ Return slice iterator for this image
 
         :Parameters:
-            `axis`: int or [int]
+            `axis` : int or [int]
                 The index of the axis (or axes) to be iterated over. If a list
                 is supplied the axes are iterated over slowest to fastest.
             `mode` : string

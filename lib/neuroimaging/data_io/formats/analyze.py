@@ -198,6 +198,10 @@ class Analyze(bin.BinaryFormat):
     
 
     def header_defaults(self):
+        """
+        :Returns:
+            `None`
+        """
         for field, format in self.header_formats.items():
             self.header[field] = self._default_field_value(field, format)
 
@@ -223,7 +227,8 @@ class Analyze(bin.BinaryFormat):
         _dim[0] = self.ndim
         _dim[1:self.ndim+1] = self.grid.shape[:self.ndim]
         if _diag:
-            _pixdim[1:self.ndim+1] = list(N.diag(self.grid.mapping.transform))[:self.ndim]
+            _pixdim[1:self.ndim+1] = \
+                         list(N.diag(self.grid.mapping.transform))[:self.ndim]
         else:
             _pixdim[1:self.ndim+1] = [1.]*self.ndim
 
@@ -282,6 +287,10 @@ class Analyze(bin.BinaryFormat):
 
 
     def __del__(self):
+        """
+        :Returns:
+            `None`
+        """
         if hasattr(self, 'data'):
             try:
                 self.data.sync()
@@ -314,6 +323,9 @@ class Analyze(bin.BinaryFormat):
         import scipy.io as sio
         M = sio.loadmat('my.mat')
         sio.savemat('my_new.mat', M)
+
+        :Returns:
+            `Affine`
         """
         if self.datasource.exists(self.mat_file):
             
@@ -339,7 +351,11 @@ class Analyze(bin.BinaryFormat):
 
 
     def write_mat(self, matfile=None):
-        "Write out the affine transformation matrix."
+        """Write out the affine transformation matrix.
+
+        :Returns:
+            `None`
+        """
         if matfile is None:
             matfile = self.mat_file
         if self.clobber or not path(matfile).exists():
@@ -347,6 +363,10 @@ class Analyze(bin.BinaryFormat):
 
 
     def _get_filenames(self):
+        """
+        :Returns:
+            `string`
+        """
         return self.filebase + ".hdr", self.filebase + ".img"
 
 
@@ -356,6 +376,9 @@ class Analyze(bin.BinaryFormat):
         Determine byte order of the header.  The first header element is the
         header size.  It should always be 384.  If it is not then you know you
         read it in the wrong byte order.
+
+        :Returns:
+            `string` : One of utils.LITTLE_ENDIAN or utils.BIG_ENDIAN
         """
         if isinstance(hdrfile, str):
             hdrfile = datasource.open(hdrfile)

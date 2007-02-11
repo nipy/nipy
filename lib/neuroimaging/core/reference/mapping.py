@@ -389,7 +389,7 @@ class Affine(Mapping):
 
     def __rmul__(self, other):
         """
-        :Paramters:
+        :Parameters:
             `other` : `Mapping` or `Affine`
         :Returns:
             `Mapping` or `Affine`
