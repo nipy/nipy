@@ -1,3 +1,7 @@
+"""
+TODO
+"""
+
 __docformat__ = 'restructuredtext'
 
 import numpy as N
@@ -38,6 +42,16 @@ class Filter(object):
             self.n = 1
 
     def __getitem__(self, i):
+        """
+        :Parameters:
+            `i` : int
+                TODO
+        
+        :Returns: `Filter`
+        
+        :Raises ValueError: if ``i`` is not an int
+        :Raises IndexError: if ``i`` is not a valid index
+        """
         if not isinstance(i, int):
             raise ValueError, 'integer needed'
         if self.n == 1:
@@ -120,17 +134,32 @@ class GammaDENS:
     By default, normalized to integrate to 1.
     """
     def __init__(self, alpha, nu, coef=1.0):
+        """
+        :Parameters:
+            `alpha` : TODO
+                TODO
+            `nu` : TODO
+                TODO
+            `coef` : float
+                TODO
+        """
         self.alpha = alpha
         self.nu = nu
 ##        self.coef = nu**alpha / scipy.special.gamma(alpha)
         self.coef = coef
 
     def __str__(self):
+        """
+        :Returns: ``string``
+        """
         return '<GammaDENS:alpha:%03f, nu:%03f, coef:%03f>' % (self.alpha,
                                                                self.nu,
                                                                self.coef)
 
     def __repr__(self):
+        """
+        :Returns: ``string``
+        """
         return self.__str__()
 
 ##     def __mul__(self, const):
@@ -153,26 +182,63 @@ class GammaDENS:
                            GammaDENS(self.alpha, self.nu)]])
 
 class GammaCOMB:
+    """
+    TODO
+    """
+    
     def __init__(self, fns):
+        """
+        :Parameters:
+            `fns` : TODO
+                TODO
+        """
         self.fns = fns
 
     def __mul__(self, const):
+        """
+        :Parameters:
+            `const` : TODO
+                TODO
+                
+        :Returns: `GammaCOMB`
+        """
         fns = []
         for fn in self.fns:
             fns.append([fn[0] * const, fn[1]])
         return GammaCOMB(fns)
 
     def __add__(self, other):
+        """
+        :Parameters:
+            `other` : TODO
+                TODO
+
+        :Returns: `GammaCOMB`
+        """
         fns = self.fns + other.fns
         return GammaCOMB(fns)
 
     def __call__(self, x):
+        """
+        :Parameters:
+            `x` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         value = 0
         for coef, fn in self.fns:
             value = value + coef * fn(x)
         return value
 
     def deriv(self, const=1.):
+        """
+        :Parameters:
+            `const` : float
+                TODO
+                
+        :Returns: `GammaCOMB`
+        """
         fns = []
         for coef, fn in self.fns:
             comb = fn.deriv(const=const)
@@ -202,6 +268,8 @@ class GammaHRF(Filter):
         :Parameters:
             `const` : float
                 TODO
+        
+        :Returns: TODO
         """
         return [fn.deriv(const=const) for fn in self.IRF]
     

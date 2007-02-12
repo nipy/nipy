@@ -23,8 +23,13 @@ __docformat__ = 'restructuredtext'
 import numpy as N
 
 valid = ('time', 'xspace', 'yspace', 'zspace', 'vector_dimension', 'concat')
+""" Valid names for axes """
+
 space = ('zspace', 'yspace', 'xspace')
+""" The set of axis names that make up space """
+
 spacetime = ('time', 'zspace', 'yspace', 'xspace')
+""" THe set of axis names that make up spacetime """
 
 class Axis(object):
     """

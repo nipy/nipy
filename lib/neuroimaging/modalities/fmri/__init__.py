@@ -1,3 +1,7 @@
+"""
+TODO
+"""
+
 __docformat__ = 'restructuredtext'
 
 import numpy as N
@@ -12,13 +16,33 @@ from neuroimaging.core.reference.iterators import SliceIterator
 
 
 class fMRISamplingGrid(SamplingGrid):
+    """
+    TODO
+    """
 
     def __init__(self, shape, mapping, input_coords, output_coords):
+        """
+        :Parameters:
+            `shape` : tuple of ints
+                TODO
+            `mapping` : TODO
+                TODO
+            `input_coords` : TODO
+                TODO
+            `output_coords` : TODO            
+        """
         SamplingGrid.__init__(self, shape, mapping, input_coords, output_coords)
 
 
     def isproduct(self, tol = 1.0e-07):
-        "Determine whether the affine   ation is 'diagonal' in time."
+        """Determine whether the affine ation is 'diagonal' in time.
+        
+        :Parameters:
+            `tol` : float
+                TODO
+                
+        :Returns: ``bool``
+        """
 
         if not isinstance(self.mapping, Affine):
             return False
@@ -37,6 +61,10 @@ class fMRISamplingGrid(SamplingGrid):
         mappings, it returns the i-th mapping.  Finally, if these two do not
         hold, it returns a generic, non-invertible map in the original output
         coordinate system.
+        
+        :Parameters:
+            `i` : int
+                The index of the subgrid to return
 
         :Returns:
             `SamplingGrid`
@@ -65,8 +93,18 @@ class fMRISamplingGrid(SamplingGrid):
 
 
 class fMRIImage(Image):
+    """
+    TODO
+    """
 
     def __init__(self, _image, **keywords):
+        """
+        :Parameters:
+            `_image` : TODO
+                TODO
+            `keywords` : dict
+                Passed through as keyword arguments to `Image.__init__`
+        """
         Image.__init__(self, _image, **keywords)
         self.frametimes = keywords.get('frametimes', None)
         self.slicetimes = keywords.get('slicetimes', None)
@@ -83,6 +121,17 @@ class fMRIImage(Image):
 
 
     def frame(self, i, clean=False, **keywords):
+        """
+        :Parameters:
+            `i` : int
+                TODO
+            `clean` : bool
+                TODO
+            `keywords` : dict
+                Pass through as keyword arguments to `Image`
+                
+        :Returns: `Image`
+        """
         data = N.squeeze(self[slice(i,i+1)])
         if clean: data = N.nan_to_num(data)
         return Image(data, grid=self.grid.subgrid(i), **keywords)
@@ -101,8 +150,7 @@ class fMRIImage(Image):
                 'r' - read-only (default)
                 'w' - read-write
 
-        :Returns:
-            `SliceIterator`
+        :Returns: `SliceIterator`
         '''
         return SliceIterator(self, mode=mode, axis=axis)
 
@@ -117,6 +165,8 @@ class fMRIImage(Image):
                 The iterator from which to take the values
             `axis` : int or [int]
                 The axis to iterate over for this image.
+                
+        :Returns: TODO
         """
         it = iter(SliceIterator(self, mode='w', axis=axis))
         for s in other:

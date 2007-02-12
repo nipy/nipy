@@ -42,7 +42,14 @@ format_defaults = {'i': 0, 'I':0,
 
 ######## STRUCT PACKING/UNPACKING/INTERPRETATION ROUTINES ####################
 def numvalues(format):
-    """ The number of values for the given format. """
+    """ The number of values for the given format. 
+    
+    :Parameters:
+        `format` : TODO
+            TODO
+            
+    :Returns: int
+    """
     numstr, fmtchar = format[:-1], format[-1]
     return (numstr and fmtchar not in ("s","p")) and int(numstr) or 1
 
@@ -67,16 +74,39 @@ def elemtype(format):
                      (fmtchar, _allformats))
 
 def sanevalues(format, value):
+    """
+    :Parameters:
+        `format` : TODO
+            TODO
+        `value` : TODO
+            TODO
+    
+    :Returns: ``bool``
+    """
     nvals, valtype = isinstance(value, (tuple, list)) and \
                      (len(value), type(value[0])) or (1, type(value))
     
     return elemtype(format) == valtype and numvalues(format) == nvals
 
 def formattype(format):
+    """
+    :Parameters:
+        `format` : TODO
+            TODO
+
+    :Returns: TODO
+    """
     return numvalues(format) > 1 and list or elemtype(format)
 
 def flatten_values(valseq):
-    """ Flattens the type of header values constructed by aggregate. """
+    """ Flattens the type of header values constructed by aggregate. 
+    
+    :Parameters:
+        `valseq` : TODO
+            TODO
+    
+    :Returns: TODO
+    """
     if not isinstance(valseq, list):
         return [valseq]
     if valseq == []:
@@ -86,7 +116,13 @@ def flatten_values(valseq):
 def takeval(numvals, values):
     """ Take numvals from values.
 
-    Returns a single value if numvals == 1 or else a list of values.
+    :Parameters:
+        `numvals` : TODO
+            TODO
+        `values` : TODO
+            TODO
+
+    :Returns: a single value if numvals == 1 or else a list of values.
     """
     if numvals == 1:
         return values.pop(0)
@@ -94,12 +130,41 @@ def takeval(numvals, values):
         return [values.pop(0) for _ in range(numvals)]
 
 def struct_format(byte_order, elements):
+    """
+    :Parameters:
+        `byte_order` : ``string``
+            TODO
+        `elements` : ``[string]``
+            TODO
+    
+    :Returns: ``string``
+    """
     return byte_order+" ".join(elements)
    
 def aggregate(formats, values):
+    """
+    :Parameters:
+        `formats` : TODO
+            TODO
+        `values` : TODO
+            TODO
+            
+    :Returns: TODO
+    """
     return [takeval(numvalues(format), values) for format in formats]
 
 def struct_unpack(infile, byte_order, elements):
+    """
+    :Parameters:
+        `inflie` : TODO
+            TODO
+        `byte_order` : TODO
+            TODO
+        `elements` : TODO
+            TODO
+            
+    :Returns: TODO
+    """
     format = struct_format(byte_order, elements)
     return aggregate(elements,
       list(unpack(format, infile.read(calcsize(format)))))
@@ -122,6 +187,10 @@ def struct_pack(byte_order, elements, values):
 
 def touch(filename):
     """ Ensure that filename exists and is writable.
+
+    :Parameters:
+        `filename` : string
+            The file to be touched
 
     :Returns: ``None``
     """
@@ -150,7 +219,18 @@ _integer_ranges = {
 
 
 def scale_data(data, new_dtype, default_scale):
-    """ Scales numbers in data to desired match dynamic range of new dtype """
+    """ Scales numbers in data to desired match dynamic range of new dtype 
+    
+    :Parameters:
+        `data` : TODO
+            TODO
+        `new_dtype` : TODO
+            TODO
+        `default_dtype` : TODO
+            TODO
+            
+    :Returns: TODO
+    """
     # if casting to an integer type, check the data range
     # if it clips, then scale down
     # if it has poor integral resolution, then scale up

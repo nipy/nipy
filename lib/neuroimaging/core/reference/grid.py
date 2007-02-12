@@ -83,6 +83,17 @@ class SamplingGrid (object):
 
 
     def __init__(self, shape, mapping, input_coords, output_coords):
+        """
+        :Parameters:
+            `shape` : TODO
+                TODO
+            `mapping` : TODO
+                TODO
+            `input_coords` : TODO
+                TODO
+            `output_coords` : TODO
+                TODO
+        """
         # These guys define the structure of the grid.
         self.shape = tuple(shape)
         self.ndim = len(self.shape)

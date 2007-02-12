@@ -185,6 +185,16 @@ class VoxelCoordinateSystem(CoordinateSystem):
     """
 
     def __init__(self, name, axes, shape=None):
+        """
+        :Parameters
+            `name` : string
+                The name of the coordinate system
+            `axes` : [`axis.Axis`]
+                The axes which make up the coordinate system
+            `shape` : TODO
+                TODO
+        """
+
         if shape is None:
             self.shape = [dim.length for dim in axes]
         else:
@@ -195,8 +205,18 @@ class VoxelCoordinateSystem(CoordinateSystem):
 
 
 class DiagonalCoordinateSystem(CoordinateSystem):
+    """
+    TODO
+    """
 
     def __init__(self, name, axes):
+        """
+        :Parameters:
+            `name` : string
+                The name of the coordinate system
+            `axes` : [`axis.Axis`]
+                The axes which make up the coordinate system        
+        """
         self.shape = [dim.length for dim in axes]
         CoordinateSystem.__init__(self, name, axes)
         

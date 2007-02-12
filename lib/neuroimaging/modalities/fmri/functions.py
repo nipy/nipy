@@ -92,7 +92,7 @@ class TimeFunction(object):
     def _helper(self, other, f1, f2, f3):
         """
         All the operator overloads follow this same pattern
-        doing slightly different things for f1, f2 and f3
+        doing slightly different things for f1, f2 and f3                
         """
         if isinstance(other, TimeFunction):
             if other.nout == self.nout:
@@ -115,7 +115,13 @@ class TimeFunction(object):
         return TimeFunction(fn=_f, nout=self.nout)
 
     def __mul__(self, other):
-
+        """
+        :Parameters:
+            `other` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         def f1(time, _self=self, _other=other):
             return N.squeeze(_self(time) * _other(time))
 
@@ -131,6 +137,13 @@ class TimeFunction(object):
         return self._helper(other, f1, f2, f3)
 
     def __add__(self, other):
+        """
+        :Parameters:
+            `other` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         def f1(time, _self=self, _other=other):
             v = _self(time) + _other(time)
             return N.squeeze(v)
@@ -149,6 +162,13 @@ class TimeFunction(object):
 
 
     def __sub__(self, other):
+        """
+        :Parameters:
+            `other` : TODO
+                TODO
+                
+        :Returns: TODO
+        """
         def f1(time, _self=self, _other=other):
             v = _self(time) - _other(time)
             return N.squeeze(v)
@@ -167,6 +187,13 @@ class TimeFunction(object):
         return self._helper(other, f1, f2, f3)
 
     def __div__(self, other):
+        """
+        :Parameters:
+            `other` : TODO
+                TODO
+                
+        :Returns: TODO
+        """
         def f1(time, _self=self, _other=other):
             return N.squeeze(_self(time) * recipr0(_other(time)))
 
@@ -186,7 +213,15 @@ class TimeFunction(object):
 class InterpolatedConfound(TimeFunction):
 
     def __init__(self, times=None, values=None, **keywords):
-
+        """
+        :Parameters:
+            `times` : TODO
+                TODO
+            `values` : TODO
+                TODO
+            `keywords` : dict
+                Passed through to `TimeFunction.__init__`
+        """
         if times is None:
             self.times = []
         else:
@@ -211,6 +246,13 @@ class InterpolatedConfound(TimeFunction):
         TimeFunction.__init__(self, self.f, nout=self.nout, **keywords)
 
     def __call__(self, time):
+        """
+        :Parameters:
+            `time` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         columns = []
 
         if self.nout == 1:
@@ -230,8 +272,22 @@ class InterpolatedConfound(TimeFunction):
         return N.squeeze(N.array(columns))
 
 class Stimulus(TimeFunction):
+    """
+    TODO
+    """
 
     def __init__(self, fn, times=None, values=None, **keywords):
+        """
+        :Parameters:
+            `fn` : TODO
+                TODO
+            `times` : TODO
+                TODO
+            `values` : TODO
+                TODO
+            `keywords` : dict
+                Passed through to `TimeFunction.__init__`
+        """
         TimeFunction.__init__(self, fn, **keywords)
         if times is None:
             self.times = []
@@ -244,9 +300,27 @@ class Stimulus(TimeFunction):
             self.values = values
 
 class PeriodicStimulus(Stimulus):
+    """
+    TODO
+    """
 
     def __init__(self, n=1, start=0.0, duration=3.0, step=6.0, height=1.0,
                  **keywords):
+        """
+        :Parameters:
+            `n` : int
+                TODO
+            `start` : float
+                TODO
+            `duration` : float
+                TODO
+            `step` : float
+                TODO
+            `height` : float
+                TODO
+            `keywords` : dict
+                Passed through to `Stimulus.__init__`
+        """
         self.n = n
         self.start = start
         self.duration = duration
@@ -263,8 +337,16 @@ class PeriodicStimulus(Stimulus):
         Stimulus.__init__(self, times=times, values=values, **keywords)
 
 class Events(Stimulus):
+    """
+    TODO
+    """
 
     def __init__(self, **keywords):
+        """
+        :Parameters:
+            `keywords` : dict
+                Passed through to `Stimulus.__init__`
+        """
         Stimulus.__init__(self, None, **keywords)
 
     def append(self, start, duration, height=1.0):
@@ -273,6 +355,16 @@ class Events(Stimulus):
         to ensure that there is no overlap with previously defined
         intervals -- the assumption is that this new interval
         has empty intersection with all other previously defined intervals.
+        
+        :Parameters:
+            `start` : TODO
+                TODO
+            `duration` : TODO
+                TODO
+            `height` : float
+                TODO
+                
+        :Returns: ``None``
         """
         
         if self.times is None:
@@ -309,6 +401,13 @@ class DeltaFunction(TimeFunction):
         self.dt = dt
 
     def __call__(self, time):
+        """
+        :Parameters:
+            `time` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         return N.greater_equal(time, self.start) * \
                N.less(time, self.start + self.dt) / self.dt
 
@@ -319,6 +418,15 @@ class SplineConfound(TimeFunction):
     """
     
     def __init__(self, df=4, knots=None, **keywords):
+        """
+        :Parameters:
+            `df` : int
+                TODO
+            `knots` : TODO
+                TODO
+            `keywords` : dict
+                Passed through to `TimeFunction.__init__`
+        """
 
         TimeFunction.__init__(self, None, **keywords)
         self.df = df

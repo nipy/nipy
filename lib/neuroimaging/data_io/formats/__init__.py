@@ -23,13 +23,17 @@ class Format(BaseImage):
      - canonical fields, which is a sort of intersection of all specific
            formats' metadata, but in a known NI language
     """
-
-
-
-    """ Valid filename extensions for the file format. """ 
-    extensions = []
+        
+    extensions = [] """ Valid filename extensions for the file format. """ 
 
     def __init__(self, datasource=DataSource(), grid=None):
+        """
+        :Parameters:
+            `datasource` : `DataSource`
+                TODO
+            `grid` : TODO
+                TODO
+        """
         BaseImage.__init__(self, NotImplemented, grid, NotImplemented)
         # Formats should concern themselves with datasources and grids
         self.datasource = datasource
@@ -60,6 +64,9 @@ class Format(BaseImage):
         
 
     def dump_header(self):
+        """
+        :Returns: ``string``
+        """
         return "\n".join(["%s\t%s"%(field,`self.header[field]`) \
                           for field in self.header.keys()])
 
@@ -96,6 +103,17 @@ class Format(BaseImage):
 
     @classmethod
     def valid(self, filename, verbose=False, mode='r'):
+        """
+        :Parameters:
+            `filename` : string
+                TODO
+            `verbose` : bool
+                TODO
+            `mode` : string
+                TODO
+        
+        :Returns: bool
+        """
         # verbose not implemented
         try:
             ext = path(filename).splitext()[1]
@@ -173,7 +191,16 @@ default_formats = [("neuroimaging.data_io.formats.nifti1", "Nifti1"),
 
 
 def getformats(filename):
-    "Return the appropriate image format for the given file type."
+    """Return the appropriate image format for the given file type.
+    
+    :Parameters:
+        `filename` : string
+            The name of the file to be checked
+    
+    :Returns: `Format`
+    
+    :Raises NotImplementedError: if no valid format can be found.
+    """
     all_formats = []
     valid_formats = []
     for modname, formatname in default_formats:
@@ -197,6 +224,12 @@ def hasformat(filename):
     """
     Determine if there is an image format format registered for the given
     file type.
+    
+    :Parameters:
+        `filename` : string
+            The name of the file to be checked
+    
+    :Returns: ``bool``
     """
     try:
         getformats(filename)

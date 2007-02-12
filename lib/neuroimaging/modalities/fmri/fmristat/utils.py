@@ -25,9 +25,18 @@ if PYLAB_DEF:
     from neuroimaging.ui.visualization.multiplot import MultiPlot
 
 class WholeBrainNormalize(object):
-
+    """
+    TODO
+    """
+    
     def __init__(self, fmri_image, mask=None):
-        
+        """
+        :Parameters:
+            `fmri_image` ; TODO
+                TODO
+            `mask` : TODO
+                TODO
+        """
         if mask is not None:
             mask = mask[:]
             nvox = mask.astype(N.int32).sum()
@@ -45,23 +54,59 @@ class WholeBrainNormalize(object):
             self.avg[i] = d.sum() / nvox
 
     def __call__(self, fmri_data):
+        """
+        :Parameters:
+            `fmri_data` : TODO
+                TODO
+                
+        :Returns: TODO
+            TODO
+        """
         out = N.zeros(fmri_data.shape)
         for i in range(self.n):
             out[i] = fmri_data[i] * 100. / self.avg[i]
         return out
 
 class fMRIStatOLS(LinearModelIterator):
-
     """
     OLS pass of fMRIstat.
     """
     
-
     def __init__(self, fmri_image, formula, outputs=None, normalize=None,
                  output_fwhm=False, clobber=False, mask=None, slicetimes=None,
                  tshift=0.0, fwhm_rho=6.0, fwhm_data=6.0, resid=False,
                  nmax=200, path='fmristat_run'):
-
+        """
+        :Parameters:
+            `fmri_image` : TODO
+                TODO
+            `formula` : TODO
+                TODO
+            `outputs` : TODO
+                TODO
+            `normalize` : TODO
+                TODO
+            `output_fwhm` : bool
+                TODO
+            `clobber` : bool
+                TODO
+            `mask` : TODO
+                TODO
+            `slicetimes` : TODO
+                TODO
+            `tshift` : float
+                TODO
+            `fwhm_rho` : float
+                TODO
+            `fwhm_data` : float
+                TODO
+            `resid` : bool
+                TODO
+            `nmax` : int
+                TODO
+            `path` : string
+                TODO
+        """
         self.formula = formula
         self.output_fwhm = output_fwhm
         self.clobber = clobber
@@ -104,6 +149,9 @@ class fMRIStatOLS(LinearModelIterator):
                                      outputs)
         
     def model(self):
+        """
+        :Returns: `old_model`
+        """
         ftime = self.fmri_image.frametimes + self.tshift
         if self.slicetimes is not None:
             _slice = self.iterator.item.slice
@@ -113,7 +161,13 @@ class fMRIStatOLS(LinearModelIterator):
         return model
 
     def fit(self, reference=None):
-
+        """
+        :Parameters:
+            `reference` TODO
+                TODO
+        
+        :Returns: ``None``
+        """
         if self.normalize:
 
             class fMRINormalize(self.iterator.__class__):
@@ -161,6 +215,9 @@ class fMRIStatOLS(LinearModelIterator):
 ##        self.getparcelmap()
 
     def getparcelmap(self):
+        """
+        :Returns: TODO
+        """
 
         if self.mask is not None:
             _mask = self.mask.readall()
@@ -186,6 +243,9 @@ class fMRIStatOLS(LinearModelIterator):
         return parcelmap, parcelseq
             
     def setup_output(self):
+        """
+        :Returns: ``None``
+        """
 
         if not os.path.exists(self.path):
             os.makedirs(self.path)
@@ -229,6 +289,13 @@ class fMRIStatOLS(LinearModelIterator):
 
         Worsley, K.J. (2005). \'Spatial smoothing of autocorrelations to control the degrees of freedom in fMRI analysis.\' NeuroImage, 26:635-641.
 
+        :Parameters:
+            `reference` : TODO
+                TODO
+            `ARorder` : int
+                TODO
+            `df_target` : float
+                TODO                
         """
 
         reference.getmatrix(time=self.fmri_image.frametimes + self.tshift)
@@ -272,8 +339,22 @@ class fMRIStatAR(LinearModelIterator):
                  resid=False, tshift=0.0, parcel=None):
         """
         Building on OLS results, fit the AR(1) model.
-
-        Contrasts is a sequence of terms to be tested in the model.
+                
+        :Parameters:
+            `OLS` : TODO
+                TODO
+            `contrasts` : TODO
+                A sequence of terms to be tested in the model.
+            `outputs` : TODO
+                TODO
+            `clobber` : bool
+                TODO
+            `resid` : bool
+                TODO
+            `tshift` : float
+                TODO
+            `parcel` : TODO
+                TODO
         """
 
         if outputs is None:
@@ -361,6 +442,9 @@ class fMRIStatAR(LinearModelIterator):
         LinearModelIterator.__init__(self, it, outputs)
 
     def fit(self):
+        """
+        :Returns: ``None``
+        """
         if self.normalize:
             class fMRINormalize(self.iterator.__class__):
 
@@ -382,6 +466,9 @@ class fMRIStatAR(LinearModelIterator):
         LinearModelIterator.fit(self)
 
     def model(self):
+        """
+        :Returns: `ar_model`
+        """
         itervalue = self.iterator.item
         if self.slicetimes is not None:
             design = self.designs[itervalue.i]

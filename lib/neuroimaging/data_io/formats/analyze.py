@@ -1,3 +1,6 @@
+"""
+TODO
+"""
 __docformat__ = 'restructuredtext'
 
 import numpy as N
@@ -94,7 +97,6 @@ field_formats = struct_formats.values()
 class Analyze(bin.BinaryFormat):
     """
     A class to read and write ANALYZE format images. 
-
     """
     _field_defaults = {
       'sizeof_hdr': HEADER_SIZE,
@@ -115,11 +117,11 @@ class Analyze(bin.BinaryFormat):
         """
         Constructs a Analyze binary format object with at least a filename
         possible additional keyword arguments:
-        grid = Grid object
-        dtype = numpy data type
-        intent = meaning of data
-        clobber = allowed to clobber?
-        usemat = use mat file?
+         - grid = Grid object
+         - dtype = numpy data type
+         - intent = meaning of data
+         - clobber = allowed to clobber?
+         - usemat = use mat file?
         """
         bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.mat_file = self.filebase + ".mat"
@@ -192,7 +194,16 @@ class Analyze(bin.BinaryFormat):
 
     @staticmethod
     def _default_field_value(fieldname, fieldformat):
-        "[STATIC] Get the default value for the given field."
+        """[STATIC] Get the default value for the given field.
+        
+        :Parameters:
+            `fieldname` : TODO
+                TODO
+            `fieldformat` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         return Analyze._field_defaults.get(fieldname, None) or \
                utils.format_defaults[fieldformat[-1]]
     
@@ -206,6 +217,9 @@ class Analyze(bin.BinaryFormat):
 
 
     def header_from_given(self):
+        """
+        :Returns: ``None``
+        """
         self.header['datatype'] = sctype2datatype[self.dtype.type]
         self.header['bitpix'] = self.dtype.itemsize * 8
         self.grid = self.grid.python2matlab()
@@ -247,6 +261,12 @@ class Analyze(bin.BinaryFormat):
         """
         Filter the incoming data. If we're casting to an Integer type,
         record the new scale factor
+        
+        :Parameters:
+            `x` : TODO
+                TODO
+        
+        :Returns: TODO
         """
         # try to cast in two cases:
         # 1 - we're replacing all the data
@@ -278,6 +298,12 @@ class Analyze(bin.BinaryFormat):
     def postread(self, x):
         """
         Might transform the data after getting it from memmap
+        
+        :Parameters:
+            `x` : TODO
+                TODO
+        
+        :Returns` : TODO
         """
         if self.header['scale_factor']:
             return x*self.header['scale_factor']
@@ -298,6 +324,13 @@ class Analyze(bin.BinaryFormat):
 
 
     def inform_canonical(self, fieldsDict=None):
+        """
+        :Parameters:
+            `fieldsDict` : TODO
+                TODO
+        
+        :Returns: ``None``
+        """
         if fieldsDict is not None:
             self.canonical_fields = odict(fieldsDict)
         else:
@@ -351,6 +384,10 @@ class Analyze(bin.BinaryFormat):
     def write_mat(self, matfile=None):
         """Write out the affine transformation matrix.
 
+        :Parameters:
+            `matfile` : TODO
+                TODO
+
         :Returns: ``None``
         """
         if matfile is None:
@@ -372,6 +409,11 @@ class Analyze(bin.BinaryFormat):
         Determine byte order of the header.  The first header element is the
         header size.  It should always be 384.  If it is not then you know you
         read it in the wrong byte order.
+
+        :Parameters:
+            `hdrfile` : TODO
+                TODO
+            `datasource` : `DataSource`
 
         :Returns:
             ``string`` : One of utils.LITTLE_ENDIAN or utils.BIG_ENDIAN

@@ -29,10 +29,6 @@ if PYLAB_DEF:
     from neuroimaging.ui.visualization.multiplot import MultiPlot
 
 class DelayContrast(Contrast):
-
-    Tmin = -100.
-    Tmax = 100.
-
     """
     Specify a delay contrast.
 
@@ -44,6 +40,9 @@ class DelayContrast(Contrast):
     Weights should have the same number of columns as len(fns), with each row
     specifying a different contrast.
     """
+
+    Tmin = -100.
+    Tmax = 100.
 
     def _sequence_call(self, time):
         """
@@ -249,6 +248,13 @@ class DelayContrast(Contrast):
         return t
 
     def extract(self, results):
+        """
+        :Parameters:
+            `results` : TODO
+                TODO
+        
+        :Returns: `ContrastResults`
+        """
         self._extract_effect(results)
         self._extract_sd(results)
         t = self._extract_t()
@@ -260,7 +266,9 @@ class DelayContrast(Contrast):
 
 
 class DelayContrastOutput(TContrastOutput):
-
+    """
+    TODO
+    """
 
     def __init__(self, grid, contrast, IRF=None, dt=0.01, delta=None, 
                  subpath='delays', clobber=False, path='.',

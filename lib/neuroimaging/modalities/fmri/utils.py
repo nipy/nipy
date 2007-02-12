@@ -11,9 +11,28 @@ class LinearInterpolant:
     """
 
     def __init__(self, x, y, fill_value=0.):
+        """
+        :Parameters:
+            `x` : TODO
+                TODO
+            `y` : TODO
+                TODO
+            `fill_value` : float
+                TODO
+        """
         self.f = scipy.interpolate.interp1d(x, y, bounds_error=0, fill_value=fill_value)
 
     def __call__(self, time=None, **keywords):
+        """
+        :Parameters:
+            `time` : TODO
+                TODO
+            `keywords` : dict
+                TODO
+                
+        :Returns:
+            TODO
+        """
         return self.f(time)
 
 class WaveFunction:
@@ -23,11 +42,27 @@ class WaveFunction:
     """
 
     def __init__(self, start, duration, height):
+        """
+        :Parameters:
+            `start` : float
+                TODO
+            `duration` : float
+                TODO
+            `height` : float
+                TODO            
+        """
         self.start = start
         self.duration = duration
         self.height = float(height)
 
     def __call__(self, time):
+        """
+        :Parameters:
+            `time` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         return N.greater_equal(time, self.start) * N.less(time, self.start + self.duration) * self.height
 
 # return the convolution (as a StepFunction) of two functions over interval,
@@ -36,6 +71,22 @@ class WaveFunction:
 def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, normalize=(0, 0)):
     """
     Convolve fn1 with fn2 -- where fn1 may return a multidimensional output.
+    
+    :Parameters:
+        `fn1` : TODO
+            TODO
+        `fn2` : TODO
+            TODO
+        `interval` : TODO
+            TODO
+        `dt` : TODO
+            TODO
+        `padding_f` : float
+            TODO
+        `normalize` : TODO
+            TODO
+            
+    :Returns: TODO
     """
 
     max_interval, min_interval = max(interval), min(interval)
@@ -76,14 +127,24 @@ class CutPoly:
 
     def __init__(self, power, trange=(None, None)):
         """
-        power - f(t) = t^power
-        trange - A tuple with the upper and lower bound of the function.
-        None signifies no boundary. Default = (None, None)
+        :Paramters:
+            `power` : float
+                f(t) = t^power
+            `trange` : (float or None, float or None)
+                A tuple with the upper and lower bound of the function.
+                None signifies no boundary. Default = (None, None)
         """
         self.power = power
         self.trange = trange
 
     def __call__(self, time):
+        """
+        :Parameters:
+            `time` : TODO
+                TODO
+        
+        :Returns: TODO
+        """
         test = N.ones(time.shape)
         lower, upper = self.trange
         
