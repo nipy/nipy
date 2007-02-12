@@ -39,7 +39,7 @@ class ImageRegressionOutput(RegressionOutput):
 
 class TContrastOutput(ImageRegressionOutput):
 
-    def __init__(self, grid, contrast, path='.', subpath='contrasts', ext=".img",
+    def __init__(self, grid, contrast, path='.', subpath='contrasts', ext=".nii",
                  effect=True, sd=True, t=True, nout=1, outgrid=None,
                  clobber=False):
         """
@@ -126,7 +126,7 @@ class TContrastOutput(ImageRegressionOutput):
 class FContrastOutput(ImageRegressionOutput):
 
     def __init__(self, grid, contrast, path='.', clobber=False,
-                 subpath='contrasts', ext='.img', nout=1, outgrid=None):
+                 subpath='contrasts', ext='.nii', nout=1, outgrid=None):
         ImageRegressionOutput.__init__(self, grid, nout, outgrid)
         self.contrast = contrast
         self._setup_contrast()
@@ -159,7 +159,7 @@ class FContrastOutput(ImageRegressionOutput):
 class ResidOutput(ImageRegressionOutput):
 
     def __init__(self, grid, path='.', nout=1, clobber=False, basename='resid',
-                 ext='.img', outgrid=None):
+                 ext='.nii', outgrid=None):
         ImageRegressionOutput.__init__(self, grid, nout, outgrid)
         outdir = os.path.join(path)
 
