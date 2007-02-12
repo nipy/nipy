@@ -2,6 +2,8 @@
 The core Image class.
 """
 
+__docformat__ = 'restructuredtext'
+
 import numpy as N
 
 from neuroimaging.data_io import DataSource, splitzipext
@@ -21,29 +23,32 @@ class Image(object):
     def fromurl(url, datasource=DataSource(), format=None, grid=None, mode="r",
                 **keywords):
         """
-        Create an L{Image} from the given url/filename
+        Create an Image from the given url/filename
 
-        @param url: a url or filename
-        @type url: C{string}
-        @param datasource: The datasource to be used for caching
-        @type datasource: L{DataSource}
-        @param format: The file format to use. If C{None} then all possible
-            formats will be tried.
-        @type format: L{Format}
-        @param grid: The sampling grid for the file
-        @type grid: L{SamplingGrid}
-        @param mode: The mode to open the file in ('r', 'w', etc)
-        @type mode: C{string}
+        :Parameters:
+            `url` : string
+                a url or filename
+            `datasource` : DataSource
+                The datasource to be used for caching
+            `format` : Format
+                The file format to use. If None then all possible formats will
+                be tried.
+            `grid` : SamplingGrid
+                The sampling grid for the file
+            `mode` : string
+                The mode ot open the file in ('r', 'w', etc)
 
-        @raise NotImplementedError: If the specified format, or those tried by
+        :Raises NotImplementedError: If the specified format, or those tried by
             default are unable to open the file, an exception is raised.
 
-        @note: The raising of an exception can be misleading. If for example, a
-            bad url is given, it will appear as if that file's format has not
-            been implemented.
+        :Returns:
+            `Image` : A new Image created from url
 
-        @return: A new L{Image} created from C{url}
-        @rtype: L{Image}
+        Notes
+        -----
+        The raising of an exception can be misleading. If for example, a
+        bad url is given, it will appear as if that file's format has not
+        been implemented.
         """
         # remove any zip extensions
         url = splitzipext(url)[0]
@@ -76,9 +81,10 @@ class Image(object):
     def __init__(self, image, datasource=DataSource(), grid=None, **keywords):
         '''
         Create an Image (volumetric image) object from either a file, an
-        existing L{Image} object, or an array.
+        existing Image object, or an array.
 
-        @param image: This can be either an L{Image}, string or an array.
+        :Parameters:
+            image : Image or string or array            
         '''
 
         # from existing Image
@@ -126,8 +132,11 @@ class Image(object):
 
     def toarray(self, clean=True, **keywords):
         """
-        Return a Image instance that has an L{ArrayImage} as its _source attribute.
+        Return a Image instance that has an ArrayImage as its _source attribute.
 
+        Example
+        -------
+        
         >>> from numpy import *
         >>> from neuroimaging.core.image.image import Image
         >>> from neuroimaging.utils.tests.data import repository
@@ -155,11 +164,14 @@ class Image(object):
         Write the image to a file. Returns a new Image object
         of the newly written file.
 
-        @param filename: The name of the file to write to
-        @type filename: C{string}
-        @param clobber: Should we overwrite an existing file?
-        @type clobber: C{bool}
-        
+        :Parameters:
+            `filename` : string
+                The name of the file to write to
+            `clobber` : bool
+                Should we overwrite an existing file?
+
+        :Returns:
+            `Image`
         """
         dtype = dtype or self._source.dtype
         outimage = Image(filename, mode='w', grid=self.grid,
@@ -175,7 +187,8 @@ class Image(object):
     def asfile(self):
         """ Return image filename corresponding to Image object data
 
-        @rtype: C{string}
+        :Returns:
+            `string`
         """
         filename = self._source.asfile()
         if isinstance(self._source, ArrayImage):
@@ -195,27 +208,32 @@ class Image(object):
 
 
     def slice_iterator(self, mode='r', axis=0):
-        ''' Return slice iterator for this image
+        """ Return slice iterator for this image
 
-        @param axis: The index of the axis (or axes) to be iterated over. If
-            a list is supplied, the axes are iterated over slowest to fastest.
-        @type axis: C{int} or C{list} of C{int}.
-        @param mode: The mode to run the iterator in.
-            'r' - read-only (default)
-            'w' - read-write
-        @type mode: C{string}
-        '''
+        :Parameters:
+            `axis`: int or [int]
+                The index of the axis (or axes) to be iterated over. If a list
+                is supplied the axes are iterated over slowest to fastest.
+            `mode` : string
+                The mode to run the iterator in.
+                'r' - read-only (default)
+                'w' - read-write
+
+        :Returns:
+            `SliceIterator`
+        """
         return SliceIterator(self, mode=mode, axis=axis)
 
     def from_slice_iterator(self, other, axis=0):
         """
-        Take an existing L{SliceIterator} and use it to set the values
+        Take an existing SliceIterator and use it to set the values
         in this image.
 
-        @param other: The iterator from which to take the values
-        @type other: L{SliceIterator}
-        @param axis: The axis to iterate over for this image.
-        @type axis: C{int} or C{list} of {int}
+        :Parameters:
+            `other` : SliceIterator
+                The iterator from whcih to take the values
+            `axis` : int or [int]
+                The axis to iterator over for this image.
         """
         iterator = iter(SliceIterator(self, mode='w', axis=axis))
         for slice_ in other:
@@ -225,9 +243,12 @@ class Image(object):
         """
         Use the given iterator to iterate over this image.
 
-        @param iterator: The iterator to use
-        @type iterator: L{Iterator}
-        @returns: An iterator which can be used to iterate over this image.
+        :Parameters:
+            `iterator` : Iterator
+                The iterator to use.
+
+        :Returns:
+            An iterator which can be used to iterate over this image.
         """
         iterator.set_img(self)
         return iter(iterator)
@@ -237,11 +258,11 @@ class Image(object):
         Set the values of this image, taking them from one iterator and using
         another to do the iteration over itself.
 
-        @param other: The iterator from which to take the values
-        @type other: L{Iterator}
-        @param iterator: The iterator to use to iterate over self.
-        @type iterator: L{Iterator}
-
+        :Parameters:
+            `other` : Iterator
+                The iterator from which to take the values
+            `iterator` : Iterator
+                The iterator to use to iterate over self.
         """
         iterator.mode = 'w'
         iterator.set_img(self)

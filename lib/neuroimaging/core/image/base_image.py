@@ -3,6 +3,8 @@ These classes provide the most basic structures required by
 the Image class.
 """
 
+__docformat__ = 'restructuredtext'
+
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.data_io import DataSource
 
@@ -27,8 +29,10 @@ class BaseImage(object):
     def asfile(self):
         """ Return image filename corresponding to Image object data.
 
-        @rtype: C{string}
-        @raises NotImplemenetedError: Subclasses must implement this.       
+        :Returns:
+            `string`
+            
+        :Raises NotImplemenetedError: Subclasses must implement this.       
         """
         raise NotImplementedError
 
@@ -39,6 +43,9 @@ class ArrayImage (BaseImage):
         Create an ArrayImage instance from an array,
         by default assumed to be 3d.
 
+        Example
+        -------
+        
         >>> from numpy import zeros
         >>> from neuroimaging.core.image.base_image import ArrayImage
         >>> z = ArrayImage(zeros((10,20,20)))
@@ -53,7 +60,8 @@ class ArrayImage (BaseImage):
     def asfile(self):        
         """ Return image filename corresponding to Image object data.
 
-        @rtype: C{string}
+        :Returns:
+            `string`
         """
         filename = DataSource().tempfile(".img", "nipy-")
         return filename

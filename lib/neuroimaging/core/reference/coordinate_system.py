@@ -2,6 +2,8 @@
 Coordinate systems are used to represent the spaces in which the images reside.
 """
 
+__docformat__ = 'restructuredtext'
+
 import numpy as N
 
 from neuroimaging.core.reference.axis import VoxelAxis

@@ -376,6 +376,7 @@ class Affine(Mapping):
 
         :Parameters:
             `other` : Affine
+
         :Returns:
             `bool`
         """

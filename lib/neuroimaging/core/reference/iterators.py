@@ -78,7 +78,7 @@ class Iterator(object):
         """
         Setup the iterator to have a given image.
 
-        :Paraetmers:
+        :Parameters:
             `img` : Image
                 The new image for the iterator
         """
