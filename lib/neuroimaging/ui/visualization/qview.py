@@ -1,10 +1,11 @@
 __docformat__ = 'restructuredtext'
 
-import sys, pylab
-import neuroimaging.core.image as image
+import sys
+import pylab
+from neuroimaging.core.api import Image
 import neuroimaging.ui.visualization.viewer as viewer
 
-x = image.image.Image(sys.argv[1])
+x = Image(sys.argv[1])
 v = viewer.BoxViewer(x)
 
 if len(sys.argv) == 3:

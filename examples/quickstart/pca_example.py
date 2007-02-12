@@ -9,7 +9,7 @@ pca_example.py
 import numpy as N
 import pylab
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.modalities.fmri import fMRIImage 
 from neuroimaging.modalities.fmri.pca import PCAmontage
 from neuroimaging.utils.tests.data import repository

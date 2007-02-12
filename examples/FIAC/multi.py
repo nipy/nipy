@@ -3,7 +3,7 @@ import glob
 from os.path import join, exists
 import os
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.algorithms.onesample import ImageOneSample
 
 import fixed, fmristat, fiac

@@ -236,7 +236,7 @@ if PYLAB_DEF:
         def __init__(self, image, **keywords):
             """
             :Parameters:
-                `image` : `core.image.image.Image`
+                `image` : `core.api.Image`
                     The image to be analysed and displayed
                 `keywords` : dict
                     The keywords to be passed to the `PCA` constructor

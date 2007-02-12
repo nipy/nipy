@@ -6,7 +6,7 @@ import numpy as N
 
 from neuroimaging.utils.test_decorators import slow
 
-from neuroimaging.core.image.image import Image, ImageSequenceIterator
+from neuroimaging.core.api import Image, ImageSequenceIterator
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.formats.analyze import Analyze
 

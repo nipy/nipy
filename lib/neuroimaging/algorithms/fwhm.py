@@ -122,7 +122,7 @@ class ReselImage(Resels):
             `fwhm` : TODO
                 TODO
             `keywords` : dict
-                Passed as keywords arguments to `core.image.image.Image`
+                Passed as keywords arguments to `core.api.Image`
         """
         if not resels and not fwhm:
             raise ValueError, 'need either a resels image or an FWHM image'

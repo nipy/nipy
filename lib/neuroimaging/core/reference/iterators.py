@@ -31,7 +31,7 @@ class Iterator(object):
         Create an `Iterator` for an image
 
         :Parameters:
-            `img` : `image.image.Image`
+            `img` : `api.Image`
                 The image to be iterated over
             `mode` : string            
                 The mode to run the iterator in.
@@ -80,7 +80,7 @@ class Iterator(object):
         Setup the iterator to have a given image.
 
         :Parameters:
-            `img` : `image.image.Image`
+            `img` : `api.Image`
                 The new image for the iterator
         """
         self.img = img
@@ -92,7 +92,7 @@ class Iterator(object):
         initialised to the current position of the original iterator.
 
         :Parameters:
-            `img` : `image.image.Image`
+            `img` : `api.Image`
                 The image to be used with the new iterator
         """
         return self.__class__(img, mode=self.mode)
@@ -108,7 +108,7 @@ class IteratorItem(object):
         """ Create the `IteratorItem` for a given item and slice
 
         :Parameters:
-            `img` : `image.image.Image`
+            `img` : `api.Image`
                 The image being iterated over.
             `slice_` : slice
                 TODO
@@ -139,7 +139,7 @@ class SliceIterator(Iterator):
     def __init__(self, img, axis=0, mode='r'):
         """
         :Parameters:
-            `img` : `image.image.Image`
+            `img` : `api.Image`
                 The image being iterated over.
             `axis` : int or [int]
                 The index of the axis (or axes) to be iterated over. If a list
@@ -164,7 +164,7 @@ class SliceIterator(Iterator):
         Setup the iterator to have a given image.
 
         :Parameters:
-            `img` : `image.image.Image`
+            `img` : `api.Image`
                 The new image for the iterator
         """
         Iterator.set_img(self, img)
@@ -209,7 +209,7 @@ class SliceIterator(Iterator):
         initialised to the current position of the original iterator.
 
         :Parameters:
-            `img` : `image.image.Image`
+            `img` : `api.Image`
                 The image to be used with the new iterator
         """
         return self.__class__(img, axis=self.axis, mode=self.mode)
@@ -271,7 +271,7 @@ class ParcelIterator(Iterator):
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
         """
         :Parameters:
-            `image` : `image.image.Image`
+            `image` : `api.Image`
                 The image to be iterated over
             `parcelmap` : [int]
                 This is an int array of the same shape as img.
@@ -345,7 +345,7 @@ class ParcelIterator(Iterator):
         initialised to the current position of the original iterator.
 
         :Parameters:
-            `img` : `image.image.Image`
+            `img` : `api.Image`
                 The image to be used with the new iterator
 
         :Returns: `self.__class__`
@@ -362,7 +362,7 @@ class ParcelIteratorItem(IteratorItem):
     def __init__(self, img, slice_, label):
         """
         :Parameters:
-            `img` : `image.image.Image`
+            `img` : `api.Image`
                 The image being iterated over.
             `slice_` : slice
                 TODO
@@ -461,7 +461,7 @@ class SliceParcelIterator(ParcelIterator):
     def __init__(self, img, parcelmap, parcelseq, mode='r'):
         """
         :Parameters:
-            `img` : `image.image.Image`
+            `img` : `api.Image`
                 The image being iterated over.
             `parcelmap` : [int]
                 This is an int array of the same shape as img.
@@ -514,7 +514,7 @@ class SliceParcelIteratorItem(IteratorItem):
     def __init__(self, img, slice_, label, i):
         """
         :Parameters:
-            `img` : `image.image.Image`
+            `img` : `api.Image`
                 The image being iterated over.
             `slice_` : slice
                 TODO

@@ -6,7 +6,7 @@ from neuroimaging.core.reference.iterators import Iterator, IteratorItem, \
      ParcelIterator, SliceParcelIterator, fMRIParcelIterator, \
      fMRISliceParcelIterator
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.modalities.fmri import fMRIImage
 import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.reference.grid as grid

@@ -297,7 +297,7 @@ class Mapping(object):
         Examples
         --------
 
-        >>> from neuroimaging.core.image.image import Image
+        >>> from neuroimaging.core.api import Image
         >>> zimage = Image('http://nifti.nimh.nih.gov/nifti-1/data/zstat1.nii.gz')
         >>> mapping = zimage.grid.mapping
         >>> mapping([1,2,3])

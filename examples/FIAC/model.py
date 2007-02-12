@@ -9,7 +9,7 @@ from neuroimaging.modalities.fmri import protocol, functions
 from neuroimaging.modalities.fmri.fmristat import delay
 from neuroimaging.modalities.fmri.filters import Filter
 from neuroimaging.modalities.fmri.hrf import canonical
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
 
 import fiac

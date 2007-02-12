@@ -15,7 +15,7 @@ Creates overall_mean.img in working directory
 import numpy as N
 import pylab
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.ui.visualization.viewer import BoxViewer
 from neuroimaging.utils.tests.data import repository
 

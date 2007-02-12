@@ -1,7 +1,7 @@
 import os, gc, urllib, glob
 import numpy as N
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.algorithms.onesample import ImageOneSample
 from neuroimaging.core.reference.mapping import Affine

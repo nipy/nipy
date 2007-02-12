@@ -6,7 +6,7 @@ Example to show use of slice and slice/parcel iterators
 import numpy as N
 
 from neuroimaging.core.reference.iterators import SliceIterator, SliceParcelIterator
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 
 def _main():
     img = Image(N.zeros((3, 4, 5)))

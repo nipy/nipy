@@ -4,7 +4,7 @@ from csv import reader
 from scipy.io import loadmat
 from numpy import asarray
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 
 contrast_map = {'sentence': 'sen',
                 'speaker': 'spk',

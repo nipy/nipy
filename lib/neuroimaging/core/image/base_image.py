@@ -52,7 +52,7 @@ class BaseImage(object):
         self.data[item] = value
 
     def asfile(self):
-        """ Return image filename corresponding to `core.image.image.Image` object data.
+        """ Return image filename corresponding to `core.api.Image` object data.
 
         :Returns: ``string``
             
@@ -88,7 +88,7 @@ class ArrayImage (BaseImage):
         BaseImage.__init__(self, data, grid, dtype)
 
     def asfile(self):        
-        """ Return image filename corresponding to `core.image.image.Image` object data.
+        """ Return image filename corresponding to `core.api.Image` object data.
 
         :Returns: ``string``
         """

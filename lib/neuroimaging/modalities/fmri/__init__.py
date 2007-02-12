@@ -101,7 +101,7 @@ class fMRIImage(Image):
                 are provided, their data is used. If a string is given it is treated
                 as either a filename or url.
             `keywords` : dict
-                Passed through as keyword arguments to `core.image.image.Image.__init__`
+                Passed through as keyword arguments to `core.api.Image.__init__`
         """
         Image.__init__(self, _image, **keywords)
         self.frametimes = keywords.get('frametimes', None)

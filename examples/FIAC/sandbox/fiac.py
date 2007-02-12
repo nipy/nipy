@@ -5,7 +5,7 @@ import pylab
 
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.data_io import DataSource
 
 eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}

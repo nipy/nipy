@@ -168,7 +168,7 @@ class Image(object):
         -------
         
         >>> from numpy import *
-        >>> from neuroimaging.core.image.image import Image
+        >>> from neuroimaging.core.api import Image
         >>> from neuroimaging.utils.tests.data import repository
         >>> test = Image('anat+orig.HEAD', datasource=repository)
         >>> _test = test.toarray()

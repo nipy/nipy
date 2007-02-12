@@ -6,7 +6,7 @@ import neuroimaging.modalities.fmri.functions as confound
 import scipy.sandbox.models.contrast as contrast
 from neuroimaging.modalities.fmri.fmristat.delay import DelayHRF
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 
 import gc, time
 

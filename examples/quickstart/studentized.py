@@ -17,7 +17,7 @@ import numpy as N
 import scipy.stats
 import pylab
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 
 # Web directory points to an unpacked copy of the rfx dataset described here:
 # http://www.fil.ion.ucl.ac.uk/spm/data/multi_sub.html

@@ -4,7 +4,7 @@ from neuroimaging import traits
 import numpy as N
 
 from neuroimaging.modalities.fmri.pca import PCA, MultiPlot
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 
 import fiac, io
 from montage import Montage

@@ -4,7 +4,7 @@ from neuroimaging import traits
 
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 
 from protocol import event_protocol, block_protocol
 from io import urlexists, data_path
