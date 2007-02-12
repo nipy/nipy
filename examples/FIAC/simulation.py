@@ -58,9 +58,8 @@ class SignalOnly(model.RunModel):
 
         self.generate_values()
         
-        d = os.path.join(self.root, self.resultdir)
-        if not os.path.exists(d):
-            os.makedirs(d)
+        if not os.path.exists(self.resultdir):
+            os.makedirs(self.resultdir)
 
         self.load()
         self.simfmrifile = os.path.join(self.resultdir, 'simfmri.img')
@@ -108,7 +107,8 @@ class SignalOnly(model.RunModel):
         """
         do the work of writing matrix to files name.{bin,csv} (all files relative to join(self.root, self.resultdir)
         """
-        outfile = file(os.path.join(self.root, self.resultdir, "%s.csv" % name), 'w')
+        print self.root, self.resultdir
+        outfile = file(os.path.join(self.resultdir, "%s.csv" % name), 'w')
         writer = csv.writer(outfile, delimiter=',')
         for row in matrix:
             try:
@@ -117,7 +117,7 @@ class SignalOnly(model.RunModel):
                 writer.writerow([row])
         outfile.close()
 
-        outfile = file(os.path.join(self.root, self.resultdir, "%s.bin" % name), 'w')
+        outfile = file(os.path.join(self.resultdir, "%s.bin" % name), 'w')
         matrix.astype(">d").tofile(outfile)
         outfile.close()
 
@@ -127,7 +127,7 @@ class SignalOnly(model.RunModel):
         do the work of reading matrix from file name.bin (all files relative to join(self.root, self.resultdir)
         """
 
-        fname = os.path.join(self.root, self.resultdir, "%s.bin" % name)
+        fname = os.path.join(self.resultdir, "%s.bin" % name)
         if os.path.exists(fname):
             infile = file(fname)
             v = N.fromfile(infile,">d")
@@ -340,7 +340,9 @@ if __name__ == '__main__':
     else:
         subj, run = (3, 3)
 
-    study = model.StudyModel(root='/home/analysis/FIAC')
+    import io
+    study = model.StudyModel(root=io.data_path)
+    #study = model.StudyModel(root='http://kff.stanford.edu/FIAC')
     subject = model.SubjectModel(subj, study=study)
     runmodel = SignalNoise(subject, run, resultdir=os.path.join("fsl", "fmristat_sim"))
 
