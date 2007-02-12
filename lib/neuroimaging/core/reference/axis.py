@@ -57,7 +57,7 @@ class Axis(object):
                 The object to be compared with.
 
         :Returns:
-            `result` : bool
+            `bool` : 
         """
         return self.name == other.name
 
@@ -69,7 +69,7 @@ class Axis(object):
                 A voxel
 
         :Returns:
-            `result` : bool
+            `bool` : result
         
 
         :Raises NotImplementedError: Abstract method
