@@ -438,7 +438,7 @@ class DelayHRF(hrf.SpectralHRF):
             `spectral` : bool
                 TODO
             `keywords` : dict
-                Passed through as keywords to the `spectralHRF` constructor.
+                Passed through as keywords to the `hrf.spectralHRF` constructor.
         """
         hrf.SpectralHRF.__init__(self, input_hrf, spectral=spectral,
                                  names=['hrf'], **keywords)

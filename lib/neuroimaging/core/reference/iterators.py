@@ -374,7 +374,7 @@ class fMRIParcelIterator(ParcelIterator):
 
 class fMRIParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by `fMRISliceIterator`\ s
+    A class for objects returned by `fMRIParcelIterator`\ s
     """
 
     def __init__(self, img, slice_, label):

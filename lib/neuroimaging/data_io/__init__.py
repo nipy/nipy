@@ -126,8 +126,7 @@ class Cache (object):
         """
         Return the complete path + filename within the cache.
 
-        :Returns:
-            `string`
+        :Returns: ``string``
         """
         return str(self.filepath(uri))
     
@@ -135,8 +134,7 @@ class Cache (object):
         """
         Copy a file into the cache.
 
-        :Returns:
-            `None`
+        :Returns: ``None``
         """
         if self.iscached(uri):
             return
@@ -151,8 +149,7 @@ class Cache (object):
     def clear(self):
         """ Delete all files in the cache.
 
-        :Returns:
-            `None`
+        :Returns: ``None``
         """
         for f in self.path.files():
             f.rm()
@@ -160,8 +157,7 @@ class Cache (object):
     def iscached(self, uri):
         """ Check if a file exists in the cache.
 
-        :Returns:
-            `bool`
+        :Returns: ``bool``
         """
         return self.filepath(uri).exists()
         
@@ -171,8 +167,7 @@ class Cache (object):
         If not already there, create the file and
         add it to the cache.
 
-        :Returns:
-            `file`
+        :Returns: ``file``
         """
         self.cache(uri)
         return file(self.filename(uri))
