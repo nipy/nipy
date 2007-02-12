@@ -45,7 +45,7 @@ class ResidOutput(fMRIRegressionOutput):
     """
 
     def __init__(self, grid, nout=1, clobber=False,
-                 path='.', ext='.hdr', basename='resid', it=None):
+                 path='.', ext='.nii', basename='resid', it=None):
         """
         :Parameters:
             `grid` : TODO
@@ -90,7 +90,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
     """
 
     def __init__(self, grid, contrast, nout=1, clobber=False,
-                 path='.', ext='.hdr', subpath='contrasts', frametimes=[],
+                 path='.', ext='.nii', subpath='contrasts', frametimes=[],
                  effect=True, sd=True, t=True, it=None):                 
         """
         :Parameters:
@@ -159,7 +159,7 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
     TODO
     """
 
-    def __init__(self, grid, contrast, path='.', ext='.hdr', clobber=False,
+    def __init__(self, grid, contrast, path='.', ext='.nii', clobber=False,
                  subpath='contrasts', frametimes=[], nout=1, it=None):
         """
         :Parameters:
