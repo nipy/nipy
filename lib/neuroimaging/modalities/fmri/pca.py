@@ -25,7 +25,7 @@ PYLAB_DEF, pylab = pylab_def()
 
 class PCA(object):
     """
-    Compute the PCA of an image (over axis=0). Image grid should
+    Compute the PCA of an image (over ``axis=0``). Image grid should
     have a subgrid method.
     """
 
@@ -33,10 +33,20 @@ class PCA(object):
                  design_keep=None, design_resid=None, **keywords):
         """
         :Parameters:
-            `design_resid` : 
+            `image` : `Image`
+                The image to be analysed
+            `tol` : float
+                TODO
+            `ext` : string
+                The file extension for the output image
+            `mask` : TODO
+                TODO
+            `pcatype` : string
+                TODO                
+            `design_resid` : TODO
                 After projecting onto the column span of design_keep, data is
                 projected off of the column span of this matrix.
-            `design_keep` :
+            `design_keep` : TODO
                 Data is projected onto the column span of design_keep.
         """
         self.image = image
@@ -63,6 +73,15 @@ class PCA(object):
         self.nimages = self.image.grid.shape[0]
 
     def project(self, Y, which='keep'):
+        """
+        :Parameters:
+            `Y` : TODO
+                TODO
+            `which` : string
+                TODO
+
+        :Returns: TODO        
+        """
         if which == 'keep':
             if self.design_keep is None:
                 return Y
@@ -82,6 +101,8 @@ class PCA(object):
         The components are stored as the attributes 'components', 
         for an fMRI image these are the time series explaining the most
         variance.
+
+        :Returns: ``None``
         """
 
         # Compute projection matrices
@@ -136,6 +157,14 @@ class PCA(object):
         """
         Output the component images -- by default, only output the first
         principal component.
+
+        :Parameters:
+            `which` : TODO
+                TODO
+            `output_base` : TODO
+                TODO
+
+        :Returns: TODO            
         """
 
         ncomp = len(which)
@@ -205,10 +234,26 @@ if PYLAB_DEF:
         """
 
         def __init__(self, image, **keywords):
+            """
+            :Parameters:
+                `image` : `image.image.Image`
+                    The image to be analysed and displayed
+                `keywords` : dict
+                    The keywords to be passed to the `PCA` constructor
+            """
             PCA.__init__(self, image, **keywords)
             self.image_results = None
         
         def images(self, which=[0], output_base=None):
+            """
+            :Parameters:
+                `which` : TODO
+                    TODO
+                `output_base` : TODO
+                    TODO
+
+            :Returns: TODO
+            """
             PCA.images.__doc__
             self.image_results = PCA.images(self, which=which, output_base=output_base)
             self.image_which = which
@@ -217,6 +262,12 @@ if PYLAB_DEF:
         def time_series(self, title='Principal components in time'):
             """
             Plot the time components from the last call to 'images' method.
+
+            :Parameters:
+                `title` : string
+                    The title to be displayed
+
+            :Returns: ``None``
             """
 
             pylab.clf()
@@ -232,7 +283,7 @@ if PYLAB_DEF:
                                        title=title)
             self.time_plot.draw()
 
-        def montage(self, z=None, nslice=None, xlim=[-120,120], ylim=[-120,120],
+        def montage(self, z=None, nslice=None, xlim=(-120,120), ylim=(-120,120),
                     colormap='spectral', width=10):
             """
             Plot a montage of transversal slices from last call to
@@ -242,6 +293,21 @@ if PYLAB_DEF:
             along the range of the first axis of image_results[0].grid is used,
             where nslice defaults to image_results[0].grid.shape[0].
 
+            :Parameters:
+                `z` : TODO
+                    TODO
+                `nslice` : TODO
+                    TODO
+                `xlim` : (int, int)
+                    TODO
+                `ylim` : (int, int)
+                    TODO
+                `colormap` : string
+                    The name of the colormap to use for display
+                `width` : TODO
+                    TODO
+
+            :Returns: ``None``
             """
 
             if nslice is None:
