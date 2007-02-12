@@ -32,7 +32,7 @@ class WholeBrainNormalize(object):
     def __init__(self, fmri_image, mask=None):
         """
         :Parameters:
-            `fmri_image` ; TODO
+            `fmri_image` : TODO
                 TODO
             `mask` : TODO
                 TODO
@@ -150,7 +150,7 @@ class fMRIStatOLS(LinearModelIterator):
         
     def model(self):
         """
-        :Returns: `old_model`
+        :Returns: ``old_model``
         """
         ftime = self.fmri_image.frametimes + self.tshift
         if self.slicetimes is not None:
@@ -163,7 +163,7 @@ class fMRIStatOLS(LinearModelIterator):
     def fit(self, reference=None):
         """
         :Parameters:
-            `reference` TODO
+            `reference` : TODO
                 TODO
         
         :Returns: ``None``

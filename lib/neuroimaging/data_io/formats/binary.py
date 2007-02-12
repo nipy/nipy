@@ -195,7 +195,7 @@ class BinaryFormat(Format):
         """
         :Returns: ``None``
 
-        :Raises KeyError: if the given `field` is not valid.
+        :Raises KeyError: if the given ``field`` is not valid.
         """
         try:
             if utils.sanevalues(self.header_formats[field], value):
@@ -210,7 +210,7 @@ class BinaryFormat(Format):
 
     def get_header_field(self, field):
         """
-        :Raises KeyError: if the given `field` is not valid.
+        :Raises KeyError: if the given ``field`` is not valid.
         """
         try:
             return self.header[field]

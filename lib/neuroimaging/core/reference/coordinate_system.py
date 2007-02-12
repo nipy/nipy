@@ -186,7 +186,7 @@ class VoxelCoordinateSystem(CoordinateSystem):
 
     def __init__(self, name, axes, shape=None):
         """
-        :Parameters
+        :Parameters:
             `name` : string
                 The name of the coordinate system
             `axes` : [`axis.Axis`]

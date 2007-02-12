@@ -294,7 +294,7 @@ class Image(object):
 
 class ImageSequenceIterator(object):
     """
-    Take a sequence of `Image`s, and an optional grid (which defaults to
+    Take a sequence of `Image`\ s, and an optional grid (which defaults to
     imgs[0].grid) and create an iterator whose next method returns array with
     shapes (len(imgs),) + self.imgs[0].next().shape Very useful for voxel-based
     methods, i.e. regression, one-sample t.

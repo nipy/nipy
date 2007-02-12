@@ -30,6 +30,7 @@ class fMRISamplingGrid(SamplingGrid):
             `input_coords` : TODO
                 TODO
             `output_coords` : TODO            
+                TODO
         """
         SamplingGrid.__init__(self, shape, mapping, input_coords, output_coords)
 
@@ -103,7 +104,7 @@ class fMRIImage(Image):
             `_image` : TODO
                 TODO
             `keywords` : dict
-                Passed through as keyword arguments to `Image.__init__`
+                Passed through as keyword arguments to `core.image.image.Image.__init__`
         """
         Image.__init__(self, _image, **keywords)
         self.frametimes = keywords.get('frametimes', None)

@@ -414,7 +414,8 @@ class Analyze(bin.BinaryFormat):
             `hdrfile` : TODO
                 TODO
             `datasource` : `DataSource`
-
+                TODO
+                
         :Returns:
             ``string`` : One of utils.LITTLE_ENDIAN or utils.BIG_ENDIAN
         """
