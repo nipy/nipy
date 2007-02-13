@@ -197,7 +197,9 @@ class DiagonalCoordinateSystem(CoordinateSystem):
         return value
 
 def _reorder(seq, order):
+    """ Reorder a sequence. """
     return [seq[i] for i in order]
 
 def _reverse(seq):
+    """ Reverse a sequence. """
     return _reorder(seq, range(len(seq)-1, -1, -1))
