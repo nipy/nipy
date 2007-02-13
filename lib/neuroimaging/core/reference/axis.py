@@ -18,6 +18,8 @@ There is currently no support for irregularly spaced axes, however this
 could easily be added.
 """
 
+__docformat__ = 'restructuredtext'
+
 import numpy as N
 
 valid = ('time', 'xspace', 'yspace', 'zspace', 'vector_dimension', 'concat')
