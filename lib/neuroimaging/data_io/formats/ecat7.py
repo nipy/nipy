@@ -5,7 +5,7 @@ import os
 import numpy as N
 
 from neuroimaging.utils.odict import odict
-from neuroimaging.data_io.datasource import DataSource, Cache, iszip, ensuredirs, unzip
+from neuroimaging.data_io.api import DataSource, Cache, iszip, ensuredirs, unzip
 import neuroimaging.data_io.formats.binary as bin
 from neuroimaging.data_io.formats import utils
 

@@ -7,7 +7,7 @@ import numpy as N
 import scipy.io as SIO
 
 from neuroimaging.utils.odict import odict
-from neuroimaging.data_io.datasource import DataSource
+from neuroimaging.data_io.api import DataSource
 from neuroimaging.data_io.formats import utils
 import neuroimaging.data_io.formats.binary as bin
 from neuroimaging.core.reference.axis import space, spacetime
