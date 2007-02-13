@@ -8,6 +8,7 @@ from neuroimaging.modalities.fmri.pca import MultiPlot
 from neuroimaging.modalities.fmri import protocol, functions
 from neuroimaging.modalities.fmri.fmristat import delay
 from neuroimaging.modalities.fmri.filters import Filter
+from neuroimaging.modalities.fmri.hrf import canonical
 from neuroimaging.core.image.image import Image
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
 
@@ -22,9 +23,16 @@ from readonly import ReadOnlyValidate, HasReadOnlyTraits
 #
 #-----------------------------------------------------------------------------#
 
-tmax = 190*2.5+1.25
-tmin = 1.25
-drift_fn = functions.SplineConfound(window=[tmin, tmax], df=5)
+def drift_fn(time):
+    """
+    Drift function defined by fmristat
+    """
+    _t = (time - 1.25) / 2.5 - 191/2. # return to time index, centered at numframes/ 2
+    v = N.asarray([N.ones(_t.shape[0]), _t, _t**2, _t**3, N.greater(_t, 0) * _t**3])
+    for i in range(5):
+        v[i] /= v[i].max()
+    return v
+
 canonical_drift = protocol.ExperimentalQuantitative('drift', drift_fn)
 
 #-----------------------------------------------------------------------------#
@@ -149,7 +157,7 @@ class RunModel(Model, Run):
         self.resultdir = self.joinpath(resultdir)
         self.subject = subject
 
-        self.begin.convolve(self.hrf[0])
+        self.begin.convolve(canonical)
         self.experiment.convolve(self.hrf)
        
         self.formula = self.subject.formula + self.begin + self.experiment
@@ -322,25 +330,3 @@ class Contrast(contrast.Contrast, HasReadOnlyTraits):
         return '<contrast: %s>' % self.name
         
 
-if __name__ == '__main__':
-
-    import sys
-    if len(sys.argv) == 3:
-        subj, run = map(int, sys.argv[1:])
-    else:
-        subj, run = (3, 3)
-
-    study = StudyModel(root=io.data_path)
-    subject = SubjectModel(subj, study=study)
-    runmodel = RunModel(subject, run)
-    runmodel.OLS(clobber=True)
-    runmodel.AR(clobber=True)
-
-##    run.view()
-
-##     c = contrasts(run)
-##     for i in range(len(c)-1): # don't plot delay
-##         pylab.figure()
-##         c[i].view()
-
-##    pylab.show()
