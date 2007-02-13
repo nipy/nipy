@@ -18,16 +18,29 @@ stat_map = {'t':'t',
             'effect': 'ef',
             'sd': 'sd'}
 
+design_map = {'event':'evt',
+              'block':'bloc'}
+
 def rho(subject=3, run=3):
     runfile = 'http://kff.stanford.edu/FIAC/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (subject, subject, run)
     return Image(runfile)
 
-def result(subject=3, run=3, which='contrasts', contrast='average', stat='t', **kw):
+def result(subject=3, run=3, which='contrasts', contrast='average', stat='t'):
     contrast = contrast_map[contrast]
     which = which_map[which]
     stat = stat_map[stat]
 
     resultfile = 'http://kff.stanford.edu/FIAC/fmristat/fiac%d/fiac%d_fonc%d_%s_%s_%s.img' % (subject, subject, run, contrast, which, stat)
+    return Image(resultfile)
+
+def fixed(subject=3, which='contrasts', contrast='average', design='block', stat='effect'):
+    contrast = contrast_map[contrast]
+    which = which_map[which]
+    stat = stat_map[stat]
+    design = design_map[design]
+
+    resultfile = 'http://kff.stanford.edu/FIAC/fmristat/subj/subj%d_%s_%s_%s_%s.img' % (subject, design, contrast, which, stat)
+    print resultfile
     return Image(resultfile)
 
 def xcache(subj=0, run=1):
