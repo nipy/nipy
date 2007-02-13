@@ -5,7 +5,6 @@ import numpy as N
 
 import model, keith, io
 from protocol import eventdict_r
-from neuroimaging.core.image.image import Image
 from neuroimaging.ui.visualization.viewer import BoxViewer
 from scipy.sandbox.models.regression import ar_model
 from neuroimaging.modalities.fmri.fmristat import delay
