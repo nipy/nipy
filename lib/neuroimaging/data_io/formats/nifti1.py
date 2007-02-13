@@ -267,8 +267,8 @@ class Nifti1(bin.BinaryFormat):
             elif self.ndim == 4 and self.nvector <= 1:
                 axisnames = spacetime[::-1]
                 origin = origin + (1,)
-                step = step + (self.header['pixdim'][5],)
-                shape = shape + (self.header['dim'][5],)
+                step = step + (self.header['pixdim'][4],)
+                shape = shape + (self.header['dim'][4],)
 ##                     if self.squeeze:
 ##                     if self.dim[4] == 1:
 ##                         origin = origin[0:3]
