@@ -13,12 +13,17 @@ class LinearInterpolant:
     def __init__(self, x, y, fill_value=0.):
         """
         :Parameters:
-            `x` : TODO
-                TODO
-            `y` : TODO
-                TODO
+            `x` : numpy.ndarray
+                A 1D array of monotonically increasing real values. x cannot 
+                include duplicate values (otherwise f is overspecified)
+            `y` : numpy.ndarray
+                An N-D array of real values. y's length along the interpolation
+                axis must be equal to the length of x.
             `fill_value` : float
-                TODO
+                If provided, then this value will be used to fill in for requested
+                points outside of the data range.
+                
+        :Prerequisite: len(x) == len(y)
         """
         self.f = scipy.interpolate.interp1d(x, y, bounds_error=0, fill_value=fill_value)
 
@@ -28,10 +33,9 @@ class LinearInterpolant:
             `time` : TODO
                 TODO
             `keywords` : dict
-                TODO
+                Keyword arguments are discarded.
                 
-        :Returns:
-            TODO
+        :Returns: TODO
         """
         return self.f(time)
 
@@ -45,11 +49,11 @@ class WaveFunction:
         """
         :Parameters:
             `start` : float
-                TODO
+                The time of the rising edge of the square wave.
             `duration` : float
-                TODO
+                The width of the square wave
             `height` : float
-                TODO            
+                The height of the square wave
         """
         self.start = start
         self.duration = duration
@@ -58,10 +62,10 @@ class WaveFunction:
     def __call__(self, time):
         """
         :Parameters:
-            `time` : TODO
-                TODO
+            `time` : float or numpy.ndarray
+                A time value or values for the function to be evaluated at.
         
-        :Returns: TODO
+        :Returns: ``float`` or ``numpy.ndarray``
         """
         return N.greater_equal(time, self.start) * N.less(time, self.start + self.duration) * self.height
 
@@ -140,12 +144,12 @@ class CutPoly:
     def __call__(self, time):
         """
         :Parameters:
-            `time` : TODO
-                TODO
+            `time` : float or numpy.ndarray
+                A time value or values for the function to be evaluated at.            
         
-        :Returns: TODO
+        :Returns: ``float`` or ``numpy.ndarray``
         """
-        test = N.ones(time.shape)
+        test = N.ones(N.asarray(time).shape)
         lower, upper = self.trange
         
         if lower is not None:

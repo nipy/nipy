@@ -101,8 +101,10 @@ class fMRIImage(Image):
     def __init__(self, _image, **keywords):
         """
         :Parameters:
-            `_image` : TODO
-                TODO
+            `_image` : `fMRIImage` or `Image` or ``string`` or ``array``
+                The object to create this Image from. If an `Image` or ``array``
+                are provided, their data is used. If a string is given it is treated
+                as either a filename or url.
             `keywords` : dict
                 Passed through as keyword arguments to `core.image.image.Image.__init__`
         """
@@ -126,18 +128,21 @@ class fMRIImage(Image):
 
     def frame(self, i, clean=False, **keywords):
         """
+        TODO
+        
         :Parameters:
             `i` : int
                 TODO
             `clean` : bool
-                TODO
+                If true then ``nan_to_num`` is called on the data before creating the `Image`
             `keywords` : dict
                 Pass through as keyword arguments to `Image`
                 
         :Returns: `Image`
         """
         data = N.squeeze(self[slice(i,i+1)])
-        if clean: data = N.nan_to_num(data)
+        if clean: 
+            data = N.nan_to_num(data)
         return Image(data, grid=self.grid.subgrid(i), **keywords)
 
 
@@ -170,7 +175,7 @@ class fMRIImage(Image):
             `axis` : int or [int]
                 The axis to iterate over for this image.
                 
-        :Returns: TODO
+        :Returns: ``None``
         """
         it = iter(SliceIterator(self, mode='w', axis=axis))
         for s in other:

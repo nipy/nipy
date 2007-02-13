@@ -90,6 +90,12 @@ class Image(object):
                 The object to create this Image from. If an `Image` or ``array``
                 are provided, their data is used. If a string is given it is treated
                 as either a filename or url.
+            `datasource` : TODO
+                TODO
+            `grid` : TODO
+                TODO
+            `keywords` : dict
+                TODO
         '''
 
         # from existing Image
@@ -125,10 +131,10 @@ class Image(object):
     def __getitem__(self, slice_):
         """
         :Parameters:
-            `slice_`: ``slice``
-                TODO
+            `slice_`: slice
+                The slice of the image to take.
 
-        :Returns: TODO        
+        :Returns: ``numpy.ndarray``
         """
         return self._source[slice_]
 
@@ -136,12 +142,12 @@ class Image(object):
     def __setitem__(self, slice_, data):
         """        
         :Parameters:
-            `slice_` : ``slice``
-                TODO
-            `data` : TODO
-                TODO
+            `slice_` : slice
+                The slice of the image to write to
+            `data` : A slive value or array of type self.dtype
+                The value to be set.
         
-        :Returns: TODO
+        :Returns: ``None``
         """
         self._source[slice_] = data
 
@@ -304,8 +310,8 @@ class ImageSequenceIterator(object):
         :Parameters:
             `imgs` : ``[`Image`]``
                 The sequence of images to iterate over
-            `grid` : TODO
-                TODO
+            `grid` : `SamplingGrid`
+                A grid to be used as the grid attribute for this iterator.
         """
         self.imgs = imgs
         if grid is None:
