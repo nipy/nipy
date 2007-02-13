@@ -4,13 +4,14 @@ import numpy as N
 
 from neuroimaging import traits
 
-from neuroimaging.core.reference import mapping, axis, coordinate_system
+from neuroimaging.api import Affine, VoxelAxis, CoordinateSystem, \
+     DiagonalCoordinateSystem
 from neuroimaging.data_io.formats import Format
 from neuroimaging.data_io.formats.minc import _mincutils
 from neuroimaging.data_io.formats.minc import _mincconstants as mc
 
 
-class Dimension(axis.VoxelAxis):
+class Dimension(VoxelAxis):
     pass
 
 class Variable(traits.HasTraits):
@@ -44,7 +45,7 @@ class Attribute(traits.HasTraits):
         except:
             pass
 
-class DimensionVariable(Variable, axis.VoxelAxis):
+class DimensionVariable(Variable, VoxelAxis):
     pass
 
 class MINC(Format):
@@ -192,15 +193,15 @@ class MINC(Format):
 
         # Setup affine transformation
                 
-        self.incoords = coordinate_system.CoordinateSystem('voxel', self.indim)
-        self.outcoords = coordinate_system.DiagonalCoordinateSystem('world', self.outdim)
+        self.incoords = CoordinateSystem('voxel', self.indim)
+        self.outcoords = DiagonalCoordinateSystem('world', self.outdim)
 
         try:
             matrix = self._transform()
         except:
             matrix = self.outcoords.transform()
 
-        self.mapping = mapping.Affine(self.incoords, self.outcoords, matrix)
+        self.mapping = Affine(self.incoords, self.outcoords, matrix)
 
     def _transform(self):
         """This method, (not yet implemented) determines the 4x4 (or larger) transformation matrix from the dircos attributes of the dimensions. """

@@ -13,7 +13,7 @@ from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
 from neuroimaging.algorithms.statistics.regression import LinearModelIterator
 from neuroimaging.modalities.fmri.regression import AROutput, \
      TContrastOutput, FContrastOutput, ResidOutput
-from neuroimaging.core.reference.iterators import fMRIParcelIterator, \
+from neuroimaging.core.api import fMRIParcelIterator, \
      fMRISliceParcelIterator, ParcelIterator, SliceParcelIterator
 from neuroimaging.algorithms.fwhm import fastFWHM
 
