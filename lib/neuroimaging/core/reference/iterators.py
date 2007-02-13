@@ -339,7 +339,7 @@ class ParcelIterator(Iterator):
 
 class ParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by `ParcelIterator`s
+    A class for objects returned by `ParcelIterator`\ s
     """
 
     def __init__(self, img, slice_, label):
@@ -374,7 +374,7 @@ class fMRIParcelIterator(ParcelIterator):
 
 class fMRIParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by `fMRISliceIterator`s
+    A class for objects returned by `fMRISliceIterator`\ s
     """
 
     def __init__(self, img, slice_, label):
@@ -427,7 +427,7 @@ class SliceParcelIterator(ParcelIterator):
 
 class SliceParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by `SliceParcelIterator`s
+    A class for objects returned by `SliceParcelIterator`\ s
     """
 
     def __init__(self, img, slice_, label, i):
@@ -457,7 +457,7 @@ class fMRISliceParcelIterator(SliceParcelIterator):
 
 class fMRISliceParcelIteratorItem(IteratorItem):
     """
-    A class for objects returned by `fMRISliceParcelIterator`s
+    A class for objects returned by `fMRISliceParcelIterator`\ s
     """
 
     def __init__(self, img, slice_, label, i):

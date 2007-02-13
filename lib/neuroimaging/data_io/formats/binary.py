@@ -20,10 +20,10 @@ class BinaryFormat(Format):
     BinaryFormat(Format) is an object with binary header data and a "brick" of
     binary data. The binary.py module has a lot of struct packing/unpacking
     methods to make life nicer. BinaryFormats have:
-    *filenames and modes--in fact, BinaryFormats are always constructed with a
-    filename, this is not an option anymore (makes sense to me).
-    *header formats (in package struct language)
-    *means to read/write contiguous/deterministic-style headers
+     - filenames and modes--in fact, BinaryFormats are always constructed with a
+       filename, this is not an option anymore (makes sense to me).
+     - header formats (in package struct language)
+     - means to read/write contiguous/deterministic-style headers
     """
 
     def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):

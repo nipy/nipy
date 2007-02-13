@@ -17,11 +17,11 @@ class Format(BaseImage):
     """
     Format is a class which is abstract enough for Images to talk with. It has:
 
-    *grid and datasource
-    *metadata in the form of a "header"
-    *data get/set (though no specific means to find that data)
-    *canonical fields, which is a sort of intersection of all specific
-    formats' metadata, but in a known NI language
+     - grid and datasource
+     - metadata in the form of a "header"
+     - data get/set (though no specific means to find that data)
+     - canonical fields, which is a sort of intersection of all specific
+           formats' metadata, but in a known NI language
     """
 
 

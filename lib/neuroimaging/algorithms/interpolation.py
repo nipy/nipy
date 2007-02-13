@@ -74,7 +74,7 @@ class ImageInterpolator(object):
         """
         Using an ImageInterpolator, resample an Image on the range
         of a grid, applying an optional mapping (taking
-        keywords arguments **keywords) between the output
+        keyword arguments ``keywords``) between the output
         coordinates of grid and self.image.grid.
         """
 

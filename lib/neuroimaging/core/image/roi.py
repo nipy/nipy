@@ -92,9 +92,9 @@ class DiscreteROI(ROI):
     def feature(self, fn, **extra):
         """
         Return a feature of an image within the ROI. Feature args are 'args',
-        while **extra are for the readall method. Default is to reduce a ufunc
+        while ``extra`` are for the readall method. Default is to reduce a ufunc
         over the ROI. Any other operations should be able to ignore superfluous
-        keywords arguments, i.e. use **extra.
+        keywords arguments, i.e. use ``extra``.
         """
         pooled_data = self.pool(fn, **extra)
         return N.mean(pooled_data)

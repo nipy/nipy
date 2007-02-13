@@ -131,7 +131,7 @@ class Image(object):
 
 
     def __iter__(self):
-        """ `Image`s cannot be used directly as iterators.
+        """ `Image`\ s cannot be used directly as iterators.
 
         :Raises NotImplementedError:
         """
