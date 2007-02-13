@@ -14,7 +14,7 @@ from neuroimaging.core.reference.iterators import SliceIterator
 
 class Image(object):
     """
-    The Image class provides the core object type used in nipy. An Image
+    The `Image` class provides the core object type used in nipy. An `Image`
     represents a volumetric brain image and provides means for manipulating and
     reading and writing this data to file.
     """
@@ -23,17 +23,17 @@ class Image(object):
     def fromurl(url, datasource=DataSource(), format=None, grid=None, mode="r",
                 **keywords):
         """
-        Create an Image from the given url/filename
+        Create an `Image` from the given url/filename
 
         :Parameters:
             `url` : string
                 a url or filename
-            `datasource` : DataSource
+            `datasource` : `DataSource`
                 The datasource to be used for caching
-            `format` : Format
+            `format` : `Format`
                 The file format to use. If None then all possible formats will
                 be tried.
-            `grid` : SamplingGrid
+            `grid` : `SamplingGrid`
                 The sampling grid for the file
             `mode` : string
                 The mode ot open the file in ('r', 'w', etc)
@@ -44,7 +44,7 @@ class Image(object):
             default are unable to open the file, an exception is raised.
 
         :Returns:
-            `Image` : A new Image created from url
+            `Image` : A new `Image` created from url
 
         Notes
         -----
@@ -82,11 +82,11 @@ class Image(object):
 
     def __init__(self, image, datasource=DataSource(), grid=None, **keywords):
         '''
-        Create an Image (volumetric image) object from either a file, an
-        existing Image object, or an array.
+        Create an `Image` (volumetric image) object from either a file, an
+        existing `Image` object, or an array.
 
         :Parameters:
-            `image` : Image or string or array            
+            `image` : `Image` or `string` or `array`            
         '''
 
         # from existing Image
@@ -137,7 +137,7 @@ class Image(object):
 
     def toarray(self, clean=True, **keywords):
         """
-        Return a Image instance that has an ArrayImage as its _source attribute.
+        Return a `Image` instance that has an `ArrayImage` as its _source attribute.
 
         Example
         -------
@@ -166,7 +166,7 @@ class Image(object):
     def tofile(self, filename, clobber=False,
                dtype=None, **keywords):
         """        
-        Write the image to a file. Returns a new Image object
+        Write the image to a file. Returns a new `Image` object
         of the newly written file.
 
         :Parameters:
