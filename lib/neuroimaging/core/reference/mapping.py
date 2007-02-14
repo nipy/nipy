@@ -150,6 +150,15 @@ def fromurl(turl, ndim=3):
 def isdiagonal(matrix, tol=1.0e-7):
     """
     Test if the given matrix is diagonal (to a given tolerance)
+
+    :Parameters:
+        `matrix` : numpy.ndarray
+            The matrix to check.
+        `tol` : float
+            The tolerance level to be used.
+
+    :Returns:
+        `bool`
     """
 
     ndim = matrix.shape[0]
@@ -179,6 +188,7 @@ class Mapping(object):
         
         
     def __call__(self, x):
+        """ Apply this mapping to the given coordinates. """
         return self._map(x)
 
 
@@ -192,16 +202,29 @@ class Mapping(object):
         """
         We can't say whether two map functions are the same so we just
         raise an exception if people try to compare mappings.
+
+        :Raises NotImplementedError:
         """
         raise NotImplementedError
 
     def __mul__(self, other):
-        "If this method is not over-written we get complaints about sequences."
+        """If this method is not over-written we get complaints about sequences.
+
+        :Returns:
+            `Mapping`
+        """
         return other.__rmul__(self)
     
 
     def __rmul__(self, other):
-        """ mapping composition """
+        """ mapping composition
+
+        :Parameters:
+            `other` : Mapping
+                The mapping to compose with.
+        :Returns:
+            `Mapping`
+        """
         def map(coords): 
             return other(self(coords))
         if self.isinvertible() and other.isinvertible():
@@ -231,6 +254,9 @@ class Mapping(object):
     def inverse(self):
         """
         Create a new Mapping instance which is the inverse of self.
+
+        :Returns:
+            `Mapping`
         """
         if self.isinvertible():
             return Mapping(self._inverse, self)
@@ -260,6 +286,12 @@ class Mapping(object):
         mapping(v_x,v_y,v_z)=(w_x,w_y,w_z), then the return will send
         (v_z-1,v_y-1,v_x-1) to (w_z,w_y,w_x).
 
+        :Returns:
+            `Mapping`
+
+        Examples
+        --------
+
         >>> from neuroimaging.core.image.image import Image
         >>> zimage = Image('http://nifti.nimh.nih.gov/nifti-1/data/zstat1.nii.gz')
         >>> mapping = zimage.grid.mapping
@@ -275,7 +307,11 @@ class Mapping(object):
         return self._f(1.0)
 
     def python2matlab(self):
-        """ Inverse of matlab2python -- see this function for help."""
+        """ Inverse of matlab2python -- see this function for help.
+
+        :Returns:
+            `Mapping`
+        """
         return self._f(-1.0)
 
     def _f(self, x):
@@ -304,6 +340,9 @@ class Affine(Mapping):
         Read in an affine transformation matrix and return an instance of Affine
         with named axes and input and output coordinate systems.  For now, the
         format is assumed to be a tab-delimited file.  Other formats should be added.
+
+        :Returns:
+            `Affine`
         """
         t = matfromfile(infile, delimiter=delimiter)
         return Affine(t)
@@ -311,7 +350,11 @@ class Affine(Mapping):
 
     @staticmethod
     def identity(ndim=3):
-        """ Return an identity affine transformation."""
+        """ Return an identity affine transformation.
+
+        :Returns:
+            `Affine`
+        """
         return Affine(N.identity(ndim+1))
 
 
@@ -322,6 +365,7 @@ class Affine(Mapping):
         Mapping.__init__(self, None, name=name, ndim=ndim)
 
     def __call__(self, coords):
+        """ Apply this mapping to the given coordinates. """
         value = N.dot(self._fmatrix, coords) 
         value += N.multiply.outer(self._fvector, N.ones(value.shape[1:]))
         return value
@@ -329,6 +373,11 @@ class Affine(Mapping):
     def __eq__(self, other):
         """
         Equality is defined as equality of both name and transform matrix.
+
+        :Parameters:
+            `other` : Affine
+        :Returns:
+            `bool`
         """
         if not hasattr(other, "transform"): 
             return False
@@ -337,6 +386,12 @@ class Affine(Mapping):
 
 
     def __rmul__(self, other):
+        """
+        :Paramters:
+            `other` : Mapping or Affine
+        :Returns:
+            `Mapping` or `Affine`
+        """
         if isinstance(other, Affine):
             return Affine(N.dot(other.transform, self.transform))            
         else: 
@@ -344,6 +399,10 @@ class Affine(Mapping):
 
 
     def __str__(self):
+        """
+        :Returns:
+            `string`
+        """
         return "%s:fmatrix=%s\n%s:fvector=%s" % \
           (self.name, `self._fmatrix`, self.name,`self._fvector`)
  
@@ -364,6 +423,9 @@ class Affine(Mapping):
     def inverse(self):
         """
         Create a new Affine instance which is the inverse of self.
+
+        :Returns:
+            `Affine`
         """
         return Affine(inv(self.transform))
 
@@ -371,6 +433,9 @@ class Affine(Mapping):
     def isdiagonal(self):
         """
         Is the transform matrix diagonal?
+
+        :Returns:
+            `bool`
         """
         return isdiagonal(self._fmatrix)
 
@@ -378,6 +443,13 @@ class Affine(Mapping):
     def tofile(self, filename):
         """
         Write the transform matrix to a file.
+
+        :Parameters:
+            `filename` : string
+                The filename to write to
+
+        :Returns:
+            `None`
         """
         matfile = open(filename, 'w')
         writer = csv.writer(matfile, delimiter='\t')
