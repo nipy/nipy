@@ -1,3 +1,6 @@
+"""
+TODO
+"""
 __docformat__ = 'restructuredtext'
 
 import os, csv, fpformat
@@ -16,13 +19,13 @@ class ImageRegressionOutput(RegressionOutput):
     def __init__(self, grid, nout=1, outgrid=None, it=None):
         """
         :Parameters:
-            `grid` : TODO
+            grid : TODO
                 TODO
-            `nout` : int
+            nout : int
                 TODO
-            `outgrid` : TODO
+            outgrid : TODO
                 TODO
-            `it` : TODO
+            it : TODO
                 TODO
         """
         RegressionOutput.__init__(self, grid, nout, outgrid)
@@ -38,33 +41,36 @@ class ImageRegressionOutput(RegressionOutput):
 
 
 class TContrastOutput(ImageRegressionOutput):
+    """
+    TODO
+    """
 
     def __init__(self, grid, contrast, path='.', subpath='contrasts', ext=".nii",
                  effect=True, sd=True, t=True, nout=1, outgrid=None,
                  clobber=False):
         """
         :Parameters:
-            `grid` : TODO
+            grid : TODO
                 TODO
-            `contrast` : TODO
+            contrast : TODO
                 TODO
-            `path` : string
+            path : ``string``
                 TODO
-            `subpath` : string
+            subpath : ``string``
                 TODO
-            `ext` : string
+            ext : ``string``
                 TODO
-            `effect` : bool
+            effect : ``bool``
                 TODO
-            `sd` : bool
+            sd : ``bool``
                 TODO
-            `t` : bool
+            t : ``bool``
                 TODO
-            `nout` : int
+            nout : ``int``
                 TODO
-            `outgrid` : TODO
+            outgrid : TODO
                 TODO
-            `clobber` : bool
+            clobber : ``bool``
                 TODO
         """
         ImageRegressionOutput.__init__(self, grid, nout, outgrid)
@@ -101,7 +107,7 @@ class TContrastOutput(ImageRegressionOutput):
     def extract(self, results):
         """
         :Parameters:
-            `results` : TODO
+            results : TODO
                 TODO
         
         :Returns: TODO
@@ -111,7 +117,7 @@ class TContrastOutput(ImageRegressionOutput):
     def set_next(self, data):
         """
         :Parameters:
-            `data` : TODO
+            data : TODO
                 TODO
             
         :Returns: ``None``
@@ -124,9 +130,31 @@ class TContrastOutput(ImageRegressionOutput):
 
 
 class FContrastOutput(ImageRegressionOutput):
+    """
+    TODO
+    """
 
     def __init__(self, grid, contrast, path='.', clobber=False,
                  subpath='contrasts', ext='.nii', nout=1, outgrid=None):
+        """
+        :Parameters:
+            grid : TODO
+                TODO
+            contrast : TODO
+                TODO
+            path : ``string``
+                TODO
+            clobber : ``bool``
+                TODO
+            subpath : ``string``
+                TODO
+            ext : ``string``
+                TODO
+            nout : ``int``
+                TODO
+            outgrid : TODO
+                TODO
+        """
         ImageRegressionOutput.__init__(self, grid, nout, outgrid)
         self.contrast = contrast
         self._setup_contrast()
@@ -153,13 +181,38 @@ class FContrastOutput(ImageRegressionOutput):
         outfile.close()
 
     def extract(self, results):
+        """
+        :Parameters:
+            results : TODO
+                TODO
+        """
         return results.Fcontrast(self.contrast.matrix).F
 
 
 class ResidOutput(ImageRegressionOutput):
+    """
+    TODO
+    """
 
     def __init__(self, grid, path='.', nout=1, clobber=False, basename='resid',
                  ext='.nii', outgrid=None):
+        """
+        :Parameters:
+            grid : TODO
+                TODO
+            path : ``string``
+                TODO
+            nout : ``int``
+                TODO
+            clobber : ``bool``
+                TODO
+            basename : ``string``
+                TODO
+            ext : ``string``
+                TODO
+            outgrid : TODO
+                TODO
+        """
         ImageRegressionOutput.__init__(self, grid, nout, outgrid)
         outdir = os.path.join(path)
 
@@ -167,5 +220,12 @@ class ResidOutput(ImageRegressionOutput):
         self.nout = self.grid.shape[0]
 
     def extract(self, results):
+        """
+        :Parameters:
+            results : TODO
+                TODO
+
+        :Returns: TODO
+        """
         return results.resid
     

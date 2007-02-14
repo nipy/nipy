@@ -23,19 +23,19 @@ class Resels(object):
                  mask=None, clobber=False, D=3):
         """
         :Parameters:
-            `grid` : TODO
+            grid : TODO
                 TODO
-            `normalized` : bool
+            normalized : ``bool``
                 TODO
-            `fwhm` : TODO
+            fwhm : TODO
                 TODO
-            `resels` : TODO
+            resels : TODO
                 TODO
-            `mask` : TODO
+            mask : TODO
                 TODO
-            `clobber` : bool
+            clobber : ``bool``
                 TODO
-            `D` : int
+            D : ``int``
                 TODO
         """
         self.fwhm = fwhm
@@ -52,7 +52,7 @@ class Resels(object):
     def integrate(self, mask=None):
         """
         :Parameters:
-            `mask` : TODO
+            mask : TODO
                 TODO
         
         :Returns: TODO
@@ -75,7 +75,7 @@ class Resels(object):
     def resel2fwhm(self, x):
         """
         :Parameters:
-            `x` : TODO
+            x : TODO
                 TODO
         
         :Returns: TODO
@@ -85,7 +85,7 @@ class Resels(object):
     def fwhm2resel(self, x):
         """
         :Parameters:
-            `x` : TODO
+            x : TODO
                 TODO
 
         :Returns: TODO
@@ -117,11 +117,11 @@ class ReselImage(Resels):
     def __init__(self, resels=None, fwhm=None, **keywords):
         """
         :Parameters:
-            `resels` : TODO
+            resels : TODO
                 TODO
-            `fwhm` : TODO
+            fwhm : TODO
                 TODO
-            `keywords` : dict
+            keywords : ``dict``
                 Passed as keywords arguments to `core.api.Image`
         """
         if not resels and not fwhm:
@@ -159,15 +159,15 @@ class iterFWHM(Resels):
         """Setup a FWHM estimator.
         
         :Parameters:
-            `grid` : TODO
+            grid : TODO
                 TODO
-            `df_resid` : float
+            df_resid : ``float``
                 TODO
-            `df_limit` : float
+            df_limit : ``float``
                 TODO
-            `mask` : TODO
+            mask : TODO
                 TODO
-            `keywords` : dict
+            keywords : ``dict``
                 Passed as keyword parameters to `Resels.__init__`
         """
 
@@ -194,7 +194,7 @@ class iterFWHM(Resels):
     def __call__(self, resid):
         """
         :Parameters:
-            `resid` : TODO
+            resid : TODO
                 TODO
         
         :Returns: ``None``
@@ -211,7 +211,7 @@ class iterFWHM(Resels):
     def normalize(self, resid):
         """
         :Parameters:
-            `resid` : TODO
+            resid : TODO
                 TODO
                 
         :Returns: TODO
@@ -275,9 +275,9 @@ class iterFWHM(Resels):
     def set_next(self, data, FWHMmax=50.):
         """
         :Parameters:
-            `data` : TODO
+            data : TODO
                 TODO
-            `FWHMmax` : float
+            FWHMmax : ``float``
                 TODO
         
         :Returns: ``None``
@@ -395,7 +395,7 @@ class iterFWHM(Resels):
     def output(self, FWHMmax=50.):
         """
         :Parameters:
-            `FWHMmax` : float
+            FWHMmax : ``float``
                 TODO
                 
         :Returns: ``None``

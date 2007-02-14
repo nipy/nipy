@@ -12,8 +12,20 @@ from neuroimaging.data_io import Cache
 
 
 class ImageInterpolator(object):
+    """
+    TODO
+    """
 
     def __init__(self, image, order=1, grid=None):
+        """
+        :Parameters:
+            image : TODO
+                TODO
+            order : ``int``
+                TODO
+            grid : TODO
+                TODO        
+        """
         if grid is None:
             self.grid = image.grid
         else:
@@ -55,9 +67,23 @@ class ImageInterpolator(object):
                 pass
 
     def __call__(self, points):
+        """
+        :Parameters:
+            points : TODO
+                TODO
+
+        :Returns: TODO
+        """
         return self.evaluate(points)
 
     def evaluate(self, points):
+        """
+        :Parameters:
+            points : TODO
+                TODO
+
+        :Returns: TODO
+        """
         points = N.array(points, N.float64)
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], N.product(output_shape))
@@ -76,6 +102,16 @@ class ImageInterpolator(object):
         of a grid, applying an optional mapping (taking
         keyword arguments ``keywords``) between the output
         coordinates of grid and self.image.grid.
+
+        :Parameters:
+            grid : TODO
+                TODO
+            mapping : TODO
+                TODO
+            keywords : ``dict``
+                TODO
+
+        :Returns: TODO        
         """
 
         points = grid.range()

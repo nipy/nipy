@@ -1,3 +1,6 @@
+"""
+TODO
+"""
 __docformat__ = 'restructuredtext'
 
 import numpy as N
@@ -20,6 +23,34 @@ class ImageOneSample(onesample.OneSampleIterator):
                  t=True, sd=True, mean=True, clobber=False, which='mean',
                  varfiximg=None, varatioimg=None, est_varatio=True,
                  est_varfix=True):
+        """
+        :Parameters:
+            input : TODO
+                TODO
+            outputs : TODO
+                TODO
+            path : ``string``
+                TODO
+            ext : ``string``
+                TODO
+            t : ``bool``
+                TODO
+            sd : ``bool``
+                TODO
+            mean : ``bool``
+                TODO
+            clobber : ``bool``
+                TODO
+            which : ``string``
+                TODO
+            varfiximg : TODO
+                TODO
+            varatioimg : TODO
+                TODO
+            est_varatio : ``bool``
+                TODO
+            est_varfix : ``bool``
+        """
 
         if outputs is None:
             outputs = []
@@ -61,6 +92,9 @@ class ImageOneSample(onesample.OneSampleIterator):
                                                  clobber=clobber, ext=ext))
 
     def weights(self):
+        """
+        :Returns: TODO
+        """
         if self.haveW:
             return self.witerator.next()
         else:
@@ -78,6 +112,9 @@ class ImageOneSample(onesample.OneSampleIterator):
             self.varfix = 0.
 
     def fit(self):
+        """
+        :Returns: TODO
+        """
         return onesample.OneSampleIterator.fit(self, which=self.which)
 
 class ImageOneSampleOutput(RegressionOutput):
@@ -89,13 +126,42 @@ class ImageOneSampleOutput(RegressionOutput):
 
     def __init__(self, grid, nout=1, basename="", clobber=False,
                  path='onesample', ext='.img'):
+        """
+        :Parameters:
+            grid : TODO
+                TODO
+            nout : ``int``
+                TODO
+            basename : ``string``
+                TODO
+            clobber : ``bool``
+                TODO
+            path : ``string``
+                TODO
+            ext : ``string``
+                TODO
+        """
         RegressionOutput.__init__(self, grid, nout)
         self.img, self.it = self._setup_img(clobber, path, ext, basename)
 
 
 class TOutput(ImageOneSampleOutput):
+    """
+    TODO
+    """
 
     def __init__(self, grid, Tmax=100, Tmin=-100, **keywords):
+        """
+        :Parameters:
+            grid : TODO
+                TODO
+            Tmax : TODO
+                TODO
+            Tmin : TODO
+                TODO
+            keywords : ``dict``
+                Keyword arguments passed to `ImageOneSampleOutput.__init__`
+        """
         ImageOneSampleOutput.__init__(self, grid, basename='t', **keywords)
         self.Tmax = Tmax
         self.Tmin = Tmin
@@ -104,33 +170,101 @@ class TOutput(ImageOneSampleOutput):
         return N.clip(results['mean']['t'], self.Tmin, self.Tmax)
 
 class SdOutput(ImageOneSampleOutput):
+    """
+    TODO
+    """
 
     def __init__(self, grid, **keywords):
+        """
+        :Parameters:
+            grid : TODO
+                TODO
+            keywords : ``dict``
+                Keyword arguments passed to `ImageOneSampleOutput.__init__`
+        """
         ImageOneSampleOutput.__init__(self, grid, basename='sd', **keywords)
 
     def extract(self, results):
+        """
+        :Parameters:
+            results : TODO
+                TODO
+
+        :Returns: TODO
+        """
         return results['mean']['sd']
 
 class MeanOutput(ImageOneSampleOutput):
+    """
+    TODO
+    """
 
     def __init__(self, grid, **keywords):
+        """
+        :Parameters:
+            grid : TODO
+                TODO
+            keywords : ``dict``
+                Keyword arguments passed to `ImageOneSampleOutput.__init__`
+        """
         ImageOneSampleOutput.__init__(self, grid, basename='effect', **keywords)
 
     def extract(self, results):
+        """
+        :Parameters:
+            results : TODO
+                TODO
+
+        :Returns: TODO
+        """
         return results['mean']['mu']
 
 class VaratioOutput(ImageOneSampleOutput):
+    """
+    TODO
+    """
 
     def __init__(self, grid, **keywords):
+        """
+        :Parameters:
+            grid : TODO
+                TODO
+            keywords : ``dict``
+                Keyword arguments passed to `ImageOneSampleOutput.__init__`
+        """
         ImageOneSampleOutput.__init__(self, grid, basename='varatio', **keywords)
 
     def extract(self, results):
+        """
+        :Parameters:
+            results : TODO
+                TODO
+
+        :Returns: TODO
+        """
         return results['varatio']['varatio']
 
 class VarfixOutput(ImageOneSampleOutput):
+    """
+    TODO
+    """
 
     def __init__(self, grid, **keywords):
+        """
+        :Parameters:
+            grid : TODO
+                TODO
+            keywords : ``dict``
+                Keyword arguments passed to `ImageOneSampleOutput.__init__`
+        """
         ImageOneSampleOutput.__init__(self, grid, basename='varfix', **keywords)
 
-    def extract(self, results):
+    def extract(self, results)
+        """
+        :Parameters:
+            results : TODO
+                TODO
+
+        :Returns: TODO
+        """
         return results['varatio']['varfix']

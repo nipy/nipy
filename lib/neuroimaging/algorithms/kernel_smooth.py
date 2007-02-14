@@ -1,3 +1,6 @@
+"""
+TODO
+"""
 __docformat__ = 'restructuredtext'
 
 import gc
@@ -17,7 +20,20 @@ class LinearFilter(object):
 
     def __init__(self, grid, fwhm=6.0, padding=5, scale=1.0, location=0.0,
                  cov=None):
-
+        """
+        :Parameters:
+            grid : TODO
+                TODO
+            fwhm : ``float``
+                TODO
+            padding : ``int``
+                TODO
+            scale : ``float``
+                TODO
+            location : ``float``
+                TODO
+        """
+        
         self.grid = grid
         self.fwhm = fwhm
         self.padding = padding
@@ -64,7 +80,17 @@ class LinearFilter(object):
         return D2
 
     def smooth(self, inimage, clean=False, is_fft=False):
+        """
+        :Parameters:
+            inimage : TODO
+                TODO
+            clean : ``bool``
+                TODO
+            is_fft : ``bool``
+                TODO
 
+        :Returns: `Image`
+        """
         if inimage.ndim == 4:
             _out = N.zeros(inimage.shape)
             nslice = inimage.shape[0]
@@ -126,12 +152,23 @@ class LinearFilter(object):
 def fwhm2sigma(fwhm):
     """
     Convert a FWHM value to sigma in a Gaussian kernel.
+
+    :Parameters:
+        fwhm : ``float``
+            TODO
+
+    :Returns: ``float``
     """
     return fwhm / N.sqrt(8 * N.log(2))
 
 def sigma2fwhm(sigma):
     """
     Convert a sigma in a Gaussian kernel to a FWHM value.
+
+    :Parameters:
+        sigma : ``float``
+
+    :Returns: ``float``
     """
     return sigma * N.sqrt(8 * N.log(2))
 
