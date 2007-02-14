@@ -40,7 +40,7 @@ class ArrayImage (BaseImage):
     """A simple class to mimic an image file from an array."""
     def __init__(self, data, grid=None):
         """
-        Create an ArrayImage instance from an array,
+        Create an `ArrayImage` instance from an array,
         by default assumed to be 3d.
 
         Example

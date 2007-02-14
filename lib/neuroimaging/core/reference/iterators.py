@@ -37,7 +37,6 @@ class Iterator(object):
                 The mode to run the iterator in.
                     'r' - read-only (default)
                     'w' - read-write
-        @type mode: C{string}
         """
         self.set_img(img)
         self.mode = mode

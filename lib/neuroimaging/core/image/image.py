@@ -38,6 +38,8 @@ class Image(object):
             `mode` : string
                 The mode ot open the file in ('r', 'w', etc)
 
+        :Raises IOError: If the specified format, or those tried by default
+            all raise IOErrors.
         :Raises NotImplementedError: If the specified format, or those tried by
             default are unable to open the file, an exception is raised.
 
@@ -84,7 +86,7 @@ class Image(object):
         existing Image object, or an array.
 
         :Parameters:
-            image : Image or string or array            
+            `image` : Image or string or array            
         '''
 
         # from existing Image
@@ -126,7 +128,10 @@ class Image(object):
 
 
     def __iter__(self):
-        """ Images cannot be used directly as iterators. """
+        """ Images cannot be used directly as iterators.
+
+        :Raises NotImplementedError:
+        """
         raise NotImplementedError
 
 
