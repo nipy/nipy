@@ -1,9 +1,8 @@
-import unittest
 import os
 import glob
 
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import slow
 
@@ -213,4 +212,4 @@ class test_ImageSequenceIterator(NumpyTestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

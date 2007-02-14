@@ -1,7 +1,5 @@
-import unittest
-
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.core.reference.axis import space
 from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
@@ -91,4 +89,4 @@ class test_Grid(NumpyTestCase):
         g = SamplingGrid.from_affine(a)
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

@@ -1,6 +1,4 @@
-import unittest
-
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 import neuroimaging.core.reference.mni as mni
 
@@ -14,4 +12,4 @@ class test_MNI(NumpyTestCase):
         m_m = mni.MNI_mapping
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

@@ -1,7 +1,5 @@
-import unittest
-
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.algorithms.kernel_smooth import LinearFilter
 from neuroimaging.core.api import Image
@@ -46,10 +44,6 @@ class test_SigmaFWHM(NumpyTestCase):
         N.testing.assert_almost_equal(fwhm2sigma(sigma2fwhm(sigma)), sigma)
 
 
-def suite():
-    suite = unittest.makeSuite(test_Kernel, test_SigmaFWHM)
-    return suite
-
         
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

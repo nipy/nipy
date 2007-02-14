@@ -1,7 +1,5 @@
-import unittest
-
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.core.image.base_image import BaseImage, ArrayImage
 from neuroimaging.core.reference.grid import SamplingGrid
@@ -72,4 +70,4 @@ class test_ArrayImage(NumpyTestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

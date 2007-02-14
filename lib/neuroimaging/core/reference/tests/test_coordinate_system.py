@@ -1,6 +1,4 @@
-import unittest
-
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
      VoxelCoordinateSystem
@@ -85,4 +83,4 @@ class test_VoxelCoordinateSystem(NumpyTestCase):
         self.assertTrue(not self.v.isvalid(self.shape))
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

@@ -1,9 +1,9 @@
-import unittest, os, gc, shutil
+import os, gc, shutil
 
 import numpy as N
 from scipy.sandbox.models.contrast import Contrast
 
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import slow, data
 
@@ -163,4 +163,4 @@ class test_Contrast(test_fMRIStat):
             v.draw()
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

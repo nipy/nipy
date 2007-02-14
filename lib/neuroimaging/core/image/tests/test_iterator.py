@@ -1,7 +1,5 @@
-import unittest
-
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.core.image.iterators import Iterator, IteratorItem, \
      ParcelIterator, SliceParcelIterator, fMRIParcelIterator, \
@@ -342,3 +340,7 @@ class test_Iterator(NumpyTestCase):
             self.assertEqual(x, slice_.shape[1])
             self.assertEqual(self.fmri_img.shape[0], slice_.shape[0])
             N.testing.assert_equal(slice_, value)
+
+
+if __name__ == '__main__':
+    NumpyTest.run()

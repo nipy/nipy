@@ -1,7 +1,7 @@
-import unittest, os
+import os
 import numpy as N
 
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.data_io.formats import afni
 from neuroimaging.utils.tests.data import repository
@@ -113,4 +113,4 @@ class test_AFNIDataType(test_AFNI):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

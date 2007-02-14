@@ -8,7 +8,8 @@ import numpy as N
 import gc
 
 from neuroimaging.algorithms.fwhm import fastFWHM
-from neuroimaging.sandbox.simulation import ugrf, Simulator
+#from neuroimaging.sandbox.simulation import ugrf, Simulator
+from neuroimaging.sandbox.simulation import Simulator
 
 class GaussianField(Simulator):
 

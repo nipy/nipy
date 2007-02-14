@@ -1,7 +1,7 @@
-import unittest, os
+import os
 import numpy as N
 
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import data
 
@@ -47,10 +47,6 @@ class test_EcatFrames(test_Ecat):
         shape = [47, 256, 256]
         self.assertEqual(self.image1.shape,shape)
 
-def suite():
-    suite = unittest.makeSuite(test_Ecat)
-    return suite
-
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

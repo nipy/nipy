@@ -1,7 +1,6 @@
-import unittest
 import types
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.core.reference.axis import Axis, ContinuousAxis, VoxelAxis, RegularAxis
 
@@ -173,4 +172,4 @@ class test_VoxelAxis(NumpyTestCase):
         self.assertEqual(self.infinite.length, N.inf)
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

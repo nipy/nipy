@@ -1,9 +1,9 @@
-import unittest, os, copy
+import os, copy
 
 import numpy as N
 import numpy.random as R
 
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import slow
 
@@ -161,13 +161,7 @@ class test_NiftiDataType(test_Nifti):
 
         os.remove('out.nii')
 
-
-
         
-def suite():
-    suite = unittest.makeSuite(test_Nifti)
-    return suite
-
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

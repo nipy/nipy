@@ -1,7 +1,7 @@
-import unittest, os
+import os
 
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import gui
 
@@ -46,9 +46,6 @@ class test_Montage(NumpyTestCase):
             pylab.savefig('image.png')
             os.remove('image.png')
 
-def suite():
-    return unittest.makeSuite(test_Montage)
-
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest().run()

@@ -1,6 +1,6 @@
-import unittest, gc, os
+import gc, os
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import slow, data
 
@@ -72,4 +72,4 @@ class test_fMRI(NumpyTestCase):
         self.assertEquals(v, parcelmap.size)
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

@@ -1,7 +1,6 @@
-import unittest
 import numpy.random as R
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 import urllib, os
 from tempfile import mkstemp
@@ -329,4 +328,4 @@ class test_Mapping(NumpyTestCase):
         
         
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

@@ -1,6 +1,6 @@
-import unittest, csv, os
+import csv, os
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 from scipy.sandbox.models.utils import recipr0
 from scipy.sandbox.models import contrast
 
@@ -322,4 +322,4 @@ class test_Protocol(test_ProtocolSetup):
             self.assertEquals(y.shape[::-1], (2 + df * 2, self.t.shape[0]))
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

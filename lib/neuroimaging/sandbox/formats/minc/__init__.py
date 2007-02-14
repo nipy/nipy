@@ -7,9 +7,9 @@ from neuroimaging import traits
 from neuroimaging.core.api import Affine, VoxelAxis, CoordinateSystem, \
      DiagonalCoordinateSystem
 from neuroimaging.data_io.formats.format import Format
-from neuroimaging.sandbox.formats.minc import _mincutils
-from neuroimaging.sandbox.formats.minc import _mincconstants as mc
-
+#from neuroimaging.sandbox.formats.minc import _mincutils
+#from neuroimaging.sandbox.formats.minc import _mincconstants as mc
+from neuroimaging.data_io import DataSource
 
 class Dimension(VoxelAxis):
     pass
@@ -20,8 +20,8 @@ class Variable(traits.HasTraits):
     """
     
     name = traits.Int(desc='MINC variable name')
-    nctype = traits.Trait(mc.NC_TYPES, desc='NetCDF type of the variable')
-    length = traits.Trait(mc.NC_TYPES, desc='Length of MINC variable')
+    #nctype = traits.Trait(mc.NC_TYPES, desc='NetCDF type of the variable')
+    #length = traits.Trait(mc.NC_TYPES, desc='Length of MINC variable')
     dimensions = traits.ListInstance(Dimension, desc='List of dimensions for variable.')
     value = traits.Any(desc='Value of variable')
 
@@ -32,7 +32,7 @@ class Attribute(traits.HasTraits):
 
     variable = traits.Instance(Variable, desc='Parent of attribute.')
     name = traits.Int(desc='MINC attribute name')
-    nctype = traits.Trait(mc.NC_TYPES, desc='NetCDF type of the attribute')
+    #nctype = traits.Trait(mc.NC_TYPES, desc='NetCDF type of the attribute')
     length = traits.Int(0, desc='Length of MINC variable')
     value = traits.Any(desc='Value of variable')
 

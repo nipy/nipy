@@ -1,7 +1,5 @@
-import unittest
-
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import gui
 
@@ -49,9 +47,6 @@ class test_MultiPlot(NumpyTestCase):
             pylab.show()
 
 
-def suite():
-    return unittest.makeSuite(test_MultiPlot)
-
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

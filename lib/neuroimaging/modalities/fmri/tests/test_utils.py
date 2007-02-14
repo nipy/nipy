@@ -1,6 +1,5 @@
-import unittest
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.modalities.fmri.utils import CutPoly, WaveFunction, ConvolveFunctions
 
@@ -52,4 +51,4 @@ class test_util(NumpyTestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

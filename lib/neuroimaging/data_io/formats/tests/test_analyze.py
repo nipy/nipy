@@ -1,7 +1,7 @@
-import unittest, os
+import os
 import numpy as N
 
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import slow
 
@@ -98,11 +98,7 @@ class test_AnalyzeDataType(test_Analyze):
         os.remove('out.hdr')
         os.remove('out.img')
 
-def suite():
-    suite = unittest.makeSuite(test_Analyze)
-    return suite
-
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()
 

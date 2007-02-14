@@ -1,6 +1,4 @@
-import unittest
-
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 class test_Template(NumpyTestCase):
 
@@ -15,4 +13,4 @@ class test_Template(NumpyTestCase):
       
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.main()

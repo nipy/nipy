@@ -1,7 +1,7 @@
-import unittest, os
+import os
 
 import numpy as N
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import slow, data
 
@@ -71,11 +71,6 @@ if PYLAB_DEF:
             pylab.savefig('image.png')
             os.remove('image.png')
 
-
-def suite():
-    suite = unittest.makeSuite([test_PCAMask, test_PCANoMask,
-                                test_PCAMontageMask, test_PCAMontageNoMask])
-    return suite
         
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.main()

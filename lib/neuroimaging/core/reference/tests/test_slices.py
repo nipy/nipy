@@ -1,6 +1,4 @@
-import unittest
-
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.core.reference.slices import bounding_box, \
   zslice, yslice, xslice
@@ -19,4 +17,4 @@ class test_Slice(NumpyTestCase):
         xslice(5, [0, 9], [0, 9], [0, 9], (10, 10, 10)).mapping.transform
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()

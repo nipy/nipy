@@ -1,6 +1,6 @@
-import unittest, os
+import os
 
-from numpy.testing import NumpyTestCase
+from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import gui
 
@@ -53,9 +53,6 @@ class test_Visualization(NumpyTestCase):
             os.remove('image.png')
 
 
-def suite():
-    return unittest.makeSuite(test_Visualization)
-
 
 if __name__ == '__main__':
-    unittest.main()
+    NumpyTest.run()
