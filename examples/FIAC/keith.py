@@ -1,12 +1,14 @@
 import os, urllib2
+from csv import reader
 
 from scipy.io import loadmat
+from numpy import asarray
 
 from neuroimaging.core.image.image import Image
 
 contrast_map = {'sentence': 'sen',
                 'speaker': 'spk',
-                'overall': 'all',
+                'average': 'all',
                 'interaction': 'snp'}
 
 which_map = {'contrasts': 'mag',
@@ -20,7 +22,7 @@ def rho(subject=3, run=3):
     runfile = 'http://kff.stanford.edu/FIAC/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (subject, subject, run)
     return Image(runfile)
 
-def result(subject=3, run=3, which='contrasts', contrast='overall', stat='t', **kw):
+def result(subject=3, run=3, which='contrasts', contrast='average', stat='t', **kw):
     contrast = contrast_map[contrast]
     which = which_map[which]
     stat = stat_map[stat]
@@ -28,30 +30,42 @@ def result(subject=3, run=3, which='contrasts', contrast='overall', stat='t', **
     resultfile = 'http://kff.stanford.edu/FIAC/fmristat/fiac%d/fiac%d_fonc%d_%s_%s_%s.img' % (subject, subject, run, contrast, which, stat)
     return Image(resultfile)
 
-def _getxcache(subj=0, run=1):
+def xcache(subj=0, run=1):
     """
-    Retrieve x_cache, downloading .mat file from FIAC results website
-    if necessary.
+    fmristat X_cache
     """
     
-    x_cache = 'x_cache/x_cache_sub%d_run%d.mat' % (subj, run)
+    x_cache = 'x_cache/subj%d_run%d.mat' % (subj, run)
     if not os.path.exists(x_cache):
-        mat = urllib2.urlopen('http://kff.stanford.edu/FIAC/x_cache/mat/x_cache_sub%d_run%d.mat' % (subj, run)).read()
+        url = 'http://kff.stanford.edu/FIAC/x_cache/mat/subj%d_run%d.mat' % (subj, run)
+        mat = urllib2.urlopen(url).read()
         if not os.path.exists('x_cache'):
             os.makedirs('x_cache')
-        outfile = file('x_cache/x_cache_sub%d_run%d.mat' % (subj, run), 'wb')
+        outfile = file('x_cache/subj%d_run%d.mat' % (subj, run), 'wb')
         outfile.write(mat)
         outfile.close()
-    X = loadmat(x_cache)['X']
+
+    X = loadmat(x_cache)['X_cache'].X
     if len(X.shape) == 4:
         X = X[:,:,:,0]
     return X
 
-def xcache(subj=0, run=1):
+def design(subj=0, run=1):
     """
     fmristat design matrix
     """
-    
-    X = _getxcache(subj=subj, run=run)[:,:,2:] * 1.
-    X.shape = (191, 10)
-    return X
+
+    design = "x_cache/subj%d_run%d.csv" % (subj, run)
+    if not os.path.exists(design):
+        url = 'http://kff.stanford.edu/FIAC/x_cache/mat/subj%d_run%d.csv' % (subj, run)
+        mat = urllib2.urlopen(url).read()
+        if not os.path.exists('x_cache'):
+            os.makedirs('x_cache')
+        outfile = file('x_cache/subj%d_run%d.csv' % (subj, run), 'wb')
+        outfile.write(mat)
+        outfile.close()
+
+    out = []
+    for row in reader(file(design), delimiter='\t'):
+        out.append([float(r) for r in row[:15]])
+    return asarray(out)

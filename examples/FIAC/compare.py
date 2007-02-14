@@ -3,12 +3,16 @@ import urllib2, os.path
 import pylab
 import numpy as N
 
-import model, keith, io
-from protocol import eventdict_r
 from neuroimaging.ui.visualization.viewer import BoxViewer
 from scipy.sandbox.models.regression import ar_model
 from neuroimaging.modalities.fmri.fmristat import delay
 from neuroimaging.modalities.fmri.regression import FContrastOutput
+from neuroimaging.ui.visualization import slices as vizslice
+from neuroimaging.algorithms.interpolation import ImageInterpolator
+from neuroimaging.ui.visualization.montage import Montage as MontageDrawer
+
+import model, keith, io
+from protocol import eventdict_r, eventdict
 
 class CompareRun(model.RunModel):
 
@@ -18,7 +22,11 @@ class CompareRun(model.RunModel):
         self.etypes = p.events.keys()
         self.indices = {}
         self.corr = {}
-
+        self.design = keith.design(subj=self.subject.id, run=self.id)
+        self.X = keith.xcache(subj=self.subject.id, run=self.id)
+        self.design_match()
+        self._plot_beginning()
+        
     def max_corr(self):
 
         for deriv in [True, False]:
@@ -44,18 +52,16 @@ class CompareRun(model.RunModel):
         """
     
         design = self.formula['FIAC_design']
-        event_index = design._event_keys.index(etype)
+        keys = design.events.keys(); keys.sort()
+        event_index = keys.index(etype)
 
-        self.X = keith._getxcache(subj=self.subject.id, run=self.id)
         self.D = self.ARmodel.model().design
 
-        # FIXME: index is never used.
         if deriv:
             event_index += 4
-            index = 3  
+            fmristat_index = 3
         else:
-            index = 2  
-        
+            fmristat_index = 2
         """
         Find the correspondence between the columns.
         """
@@ -65,16 +71,24 @@ class CompareRun(model.RunModel):
 
         nipy = design(T)[event_index]
 
-        if deriv:
-            fmristat_index = 3
-        else:
-            fmristat_index = 2
-        Xcol = self._match_cols(nipy, self.X[:,:,fmristat_index])
+        Xcol, _ = self._match_cols(nipy, self.X[:,:,fmristat_index])
 
-        Dcol = self._match_cols(nipy, self.D)
+        Dcol, _ = self._match_cols(nipy, self.D)
         cor = N.corrcoef(self.X[:,Xcol,fmristat_index], self.D[:,Dcol])[0,1]
         self.corr[(deriv, etype)] = cor, Dcol, Xcol, fmristat_index
         return Dcol, Xcol, fmristat_index
+
+    def design_match(self):
+        D = self.formula.design(N.arange(191)*2.5 + 1.25)
+        for i in range(14):
+            col, corr = self._match_cols(self.design[:,i], D)
+            print self.formula.names()[col], corr
+
+        for i in range(1,5):
+            d = self.formula['FIAC_design'][eventdict[i]]
+            d = self.hrf[0].convolve(d)
+            col, corr = self._match_cols(d(N.arange(191)*2.5+1.25), self.design)
+            print eventdict[i], corr, col
 
     def _match_cols(self, vector, matrix):
 
@@ -82,12 +96,15 @@ class CompareRun(model.RunModel):
         v = N.zeros((n,))
         for i in range(n):
             v[i] = N.corrcoef(vector, matrix[:,i])[0,1]
-        return N.argmax(N.fabs(N.nan_to_num(v)))
+        return N.argmax(N.fabs(N.nan_to_num(v))), N.max(N.fabs(N.nan_to_num(v)))
 
     def _plot_agreement(self, deriv, etype):
 
         design = self.formula['FIAC_design']
-        event_index = design._event_keys.index(etype)
+
+        keys = design.events.keys(); keys.sort()
+        event_index = keys.index(etype)
+
         if deriv:
             event_index += 4
 
@@ -132,7 +149,40 @@ class CompareRun(model.RunModel):
         pngfile = '%s/x_cache/images/compare_sub%d_run%d_deriv%d_type%s.png' % (io.data_path, self.subject.id, self.id, int(deriv), etype)
         pylab.savefig(pngfile)
 
+    def _plot_beginning(self):
+
+        b = self.formula['beginning']
+
+        def n(x):
+            return x / N.fabs(x).max()
+
+        shift = 1.25
+        T = N.arange(0, 191*2.5, 2.5) + shift
+        t = N.arange(0, 191*2.5, 0.02)
+        
+        pylab.clf()
+    
+        col = 0
+        index = 2
+        pylab.plot(T, n(self.design[:,0]), 'b-o',
+                   label='X[:,0]')
+        pylab.plot(t, n(b(t)), 'g', label='unshifted',
+                   linewidth=2)
+        a = pylab.gca()
+        a.set_ylim([-0.8,1.6])
+        if self.type == 'block':
+            a.set_xlim([0,100])
+        else:
+            a.set_xlim([0,20])
+        pylab.legend()
+
+        pngfile = '%s/x_cache/images/compare_sub%d_run%d_begin.png' % (io.data_path, self.subject.id, self.id)
+        pylab.savefig(pngfile)
+
     def webpage(self):
+
+        self._plot_beginning()
+
         html = """
         <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
         <html> <head>
@@ -155,11 +205,14 @@ class CompareRun(model.RunModel):
                 """ % (etype, str(deriv), pngfile)
 
         html += """
+        <h2>Beginning</h2>
+        <img src="images/%s>
         <hr>
         <address></address>
         <!-- hhmts start --> <!-- hhmts end -->
         </body> </html>
-        """
+        """ % 'compare_sub%d_run%d_begin.png' % (self.subject.id, self.id)
+
         htmlfile = file('%s/x_cache/compare_sub%d_run%d.html' % (io.data_path, self.subject.id, self.id), 'w')
         htmlfile.write(html)
         htmlfile.close()
@@ -176,8 +229,6 @@ class VoxelModel(CompareRun):
 
         self.AR(clobber=True, parcel=(parcelmap, [self.rho]))
         self.design = self.OLSmodel.model().design
-
-        self.X = keith._getxcache(subj=self.subject.id, run=self.id)
 
         m = ar_model(self.design, self.rho)
         self.load()
@@ -233,7 +284,8 @@ class KeithRho(CompareRun):
         CompareRun.OLS(self, **OLSopts)
         self.OLSmodel.rho = keith.rho(subject=self.subject.id, run=self.id)
 
-def plot_result(result1, result2, mask, which='contrasts', contrast='speaker', stat='t', vmax=None, vmin=None):
+
+def plot_result(result1, result2, mask, which='contrasts', contrast='average', stat='t', vmax=None, vmin=None):
     
     resultargs = {'which':which, 'contrast':contrast, 'stat':stat}
     x = result1(**resultargs)
@@ -280,12 +332,17 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         subj, run = map(int, sys.argv[1:])
     else:
-        subj, run = (3, 1)
+        subj, run = (3, 3)
 
     study = model.StudyModel(root=io.data_path)
     subject = model.SubjectModel(subj, study=study)
 
+##     runmodel = CompareRun(subject, run)
+##     print runmodel.type
+
 ##     try:
+##         runmodel.OLS(clobber=True)
+##         runmodel.AR(clobber=True)
 ##         runmodel.max_corr()
 ##         runmodel.webpage()
 ##     except (urllib2.HTTPError, ValueError, NotImplementedError):
@@ -301,29 +358,39 @@ if __name__ == '__main__':
 ##     vmodel.voxel_model(15,32,20)
 
 
+      
+
     runmodel = CompareRun(subject, run)
-    runmodel.OLS(clobber=True)
-    runmodel.AR(clobber=True)
-        
+##    keithrho = KeithRho(subject, run, resultdir=os.path.join("fsl", "fmristat_rho"))
+    keithrho = runmodel
+    print keithrho.type
+    keithrho.OLS(clobber=True)
+    keithrho.AR(clobber=True)
 
-##     keithrho = KeithRho(subject, run, resultdir=os.path.join("fsl", "fmristat_rho"))
-##     keithrho.OLS(clobber=True)
-##     keithrho.AR(clobber=True)
-
-    M = runmodel
+    M = keithrho
+    print M.__class__
     M.load()
-    for contrast in ['average', 'sentence', 'speaker', 'interaction']:
-        v = [cor_result(M.result, M.keith_result, M.mask, stat=stat,
-                        contrast=contrast)[0,1] for stat in ['t', 'sd', 'effect']]
-        r = (N.nan_to_num(M.result(contrast=contrast, stat='sd')[:]) / 
-             N.nan_to_num(M.keith_result(contrast=contrast, stat='sd')[:])) * M.mask[:]
-        r = r[N.nonzero(N.nan_to_num(r))]
-        print v, r.mean(), r.std(), r.min(), r.max()
+    corr = {}
+    for stat in ['t', 'sd', 'effect']:
+        corr[stat] = N.zeros((4,4))
+        mask = M.mask[:].astype(N.bool)
+        for i in range(4):
+            for j in range(4):
+                c1 = ['average', 'sentence', 'speaker', 'interaction'][i]
+                c2 = ['average', 'sentence', 'speaker', 'interaction'][j]
 
+                x1 = M.result(stat=stat, contrast=c1, which='delays')
+                x2 = M.keith_result(stat=stat, contrast=c2, which='delays')
 
+                x1 = N.nan_to_num(x1[:])[mask]
+                x2 = N.nan_to_num(x2[:])[mask]
 
-##     plot_result(runmodel.result, runmodel.keith_result, runmodel.mask)
-##     rho1 = runmodel.OLSmodel.rho
-##     rho2 = keithrho.OLSmodel.rho
+                x1.shape = N.product(x1.shape)
+                x2.shape = N.product(x2.shape)
+
+                corr[stat][i,j] = N.corrcoef(x1, x2)[0,1]
+        print N.diagonal(corr[stat])
+
+#    plot_result(M.result, M.keith_result, M.mask, contrast='speaker', which='delays', stat='t')
 
 

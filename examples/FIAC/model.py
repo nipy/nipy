@@ -182,7 +182,6 @@ class RunModel(Model, Run):
     def __repr__(self):
         return Run.__repr__(self)
 
-
     def result(self, which='contrasts', contrast='speaker', stat='t'):
         resultfile = os.path.join(self.resultdir, which, contrast,
                                   "%s.img" % stat)
@@ -209,21 +208,21 @@ class RunModel(Model, Run):
 
         # important: average is NOT convolved with HRF even though p was!!!
         # same follows for other contrasts below
-        self.average = (SSt_SSp + DSt_SSp + SSt_DSp + DSt_DSp) * 0.25        
+        self.average = (SSt_SSp + SSt_DSp + DSt_SSp + DSt_DSp) * 0.25        
         self.average = irf.convolve(self.average)
         self.average = Contrast(self.average, f, name='average')
         
-        # Sentence effect
-
-        self.sentence = (DSt_SSp + DSt_DSp) * 0.5 - (SSt_SSp + SSt_DSp) * 0.5
-        self.sentence = irf.convolve(self.sentence)
-        self.sentence = Contrast(self.sentence, f, name='sentence')
-        
         # Speaker effect
 
-        self.speaker =  (SSt_DSp + DSt_DSp) / 2. - (SSt_SSp + DSt_SSp) / 2.
+        self.speaker = (SSt_DSp - SSt_SSp + DSt_DSp - DSt_SSp) * 0.5
         self.speaker = irf.convolve(self.speaker)
         self.speaker = Contrast(self.speaker, f, name='speaker')
+        
+        # Sentence effect
+
+        self.sentence = (DSt_SSp + DSt_DSp - SSt_SSp - SSt_DSp) * 0.5
+        self.sentence = irf.convolve(self.sentence)
+        self.sentence = Contrast(self.sentence, f, name='sentence')
         
         # Interaction effect
 
@@ -234,15 +233,17 @@ class RunModel(Model, Run):
         # delay -- this presumes
         # that the HRF used is a subclass of delay.DelayIRF
     
-        self.delays = fmristat.DelayContrast([SSt_DSp, DSt_DSp, SSt_SSp, DSt_SSp],
-                                             [[0.5,0.5,-0.5,-0.5],
+        # eventdict:{1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
+
+        self.delays = fmristat.DelayContrast([SSt_SSp, SSt_DSp, DSt_SSp, DSt_DSp],
+                                             [[-0.5,-0.5,0.5,0.5],
                                               [-0.5,0.5,-0.5,0.5],
-                                              [-1,1,1,-1],
+                                              [1,-1,-1,1],
                                               [0.25,0.25,0.25,0.25]],
                                              f,
                                              name='task',
-                                             rownames=['speaker',
-                                                       'sentence',
+                                             rownames=['sentence',
+                                                       'speaker',
                                                        'interaction',
                                                        'average'],
                                              IRF=self.hrf)
