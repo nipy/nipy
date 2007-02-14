@@ -252,7 +252,6 @@ class SignalNoise(SignalOnly):
 
         for rtype in ["OLS", "AR"]:
             self.resid = fMRIImage(os.path.join(self.resultdir, "%sresid.img" % rtype))
-            print "SHAPE", self.resid.shape
             # I get a results of [0, 30, 64, 64] here
             # which leads to the code below breaking. I'm not sure why this
             # file would have this shape though... --Tim
