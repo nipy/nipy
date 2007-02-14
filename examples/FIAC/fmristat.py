@@ -22,10 +22,16 @@ design_map = {'event':'evt',
               'block':'bloc'}
 
 def rho(subject=3, run=3):
+    """
+    Estimate of AR(1) coefficient from fmristat
+    """
     runfile = 'http://kff.stanford.edu/FIAC/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (subject, subject, run)
     return Image(runfile)
 
 def result(subject=3, run=3, which='contrasts', contrast='average', stat='t'):
+    """
+    Retrieve an fmristat result for one run of the FIAC data.
+    """
     contrast = contrast_map[contrast]
     which = which_map[which]
     stat = stat_map[stat]
@@ -34,13 +40,28 @@ def result(subject=3, run=3, which='contrasts', contrast='average', stat='t'):
     return Image(resultfile)
 
 def fixed(subject=3, which='contrasts', contrast='average', design='block', stat='effect'):
+    """
+    Retrieve a within-subject fixed effect fmristat result for one FIAC subject.
+    """
     contrast = contrast_map[contrast]
     which = which_map[which]
     stat = stat_map[stat]
     design = design_map[design]
 
     resultfile = 'http://kff.stanford.edu/FIAC/fmristat/subj/subj%d_%s_%s_%s_%s.img' % (subject, design, contrast, which, stat)
-    print resultfile
+
+    return Image(resultfile)
+
+def multi(which='contrasts', contrast='average', design='block', stat='effect'):
+    """
+    Retrieve a random effect fmristat result.
+    """
+    contrast = contrast_map[contrast]
+    which = which_map[which]
+    stat = stat_map[stat]
+    design = design_map[design]
+
+    resultfile = 'http://kff.stanford.edu/FIAC/fmristat/multi/multi_%s_%s_%s_%s.img' % (design, contrast, which, stat)
     return Image(resultfile)
 
 def xcache(subj=0, run=1):

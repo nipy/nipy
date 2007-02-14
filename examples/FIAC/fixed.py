@@ -11,7 +11,7 @@ from neuroimaging import traits
 
 from readonly import ReadOnlyValidate
 
-import model, io, keith
+import model, io, fmristat
 
 class Fixed(model.Study):
 
@@ -49,8 +49,8 @@ class Subject(model.Subject):
     def resultpath(self, path):
         return os.path.join(self.study.resultpath(""), "fiac%d" % self.id, path)
     
-    def keith_result(self, stat='t'):
-        return keith.fixed(subject=self.id,
+    def fmristat_result(self, stat='t'):
+        return fmristat.fixed(subject=self.id,
                            which=self.study.which,
                            contrast=self.study.contrast,
                            stat=stat,
@@ -187,7 +187,7 @@ def compare(subj=3, which='delays', contrast='speaker', design='event'):
     subject = Subject(subj, fixed)
     
     effect, sd = subject.fit()
-    keffect, ksd = [subject.keith_result(stat=stat)
+    keffect, ksd = [subject.fmristat_result(stat=stat)
                     for stat in ['effect', 'sd']]
     
     print _cor_result(effect, keffect)

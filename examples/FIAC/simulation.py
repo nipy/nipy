@@ -26,7 +26,7 @@ from neuroimaging.core.image.image import Image
 from neuroimaging.core.reference.iterators import fMRIParcelIterator, ParcelIterator
 from neuroimaging.modalities.fmri import fMRIImage
 
-import keith, model
+import fmristat, model
 
 class SignalOnly(model.RunModel):
 
@@ -45,7 +45,7 @@ class SignalOnly(model.RunModel):
         parcel AR estimate on scale of N.linspace(-1,1,21) (multiplying result by 0.9 to avoid +- 1)
         """
         try:
-            self.rho = keith.rho(subject=self.subject.id, run=self.id)
+            self.rho = fmristat.rho(subject=self.subject.id, run=self.id)
         except:
             self.rho = Image(os.path.join(self.root, 'fsl', 'fmristat_run', 'rho.img'))
         self.parcelmap = N.round(self.rho[:] * 10) / 10. * 0.9

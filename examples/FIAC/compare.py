@@ -11,7 +11,7 @@ from neuroimaging.ui.visualization import slices as vizslice
 from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.ui.visualization.montage import Montage as MontageDrawer
 
-import model, keith, io
+import model, fmristat, io
 from protocol import eventdict_r, eventdict
 
 class CompareRun(model.RunModel):
@@ -22,8 +22,8 @@ class CompareRun(model.RunModel):
         self.etypes = p.events.keys()
         self.indices = {}
         self.corr = {}
-        self.design = keith.design(subj=self.subject.id, run=self.id)
-        self.X = keith.xcache(subj=self.subject.id, run=self.id)
+        self.design = fmristat.design(subj=self.subject.id, run=self.id)
+        self.X = fmristat.xcache(subj=self.subject.id, run=self.id)
         self.design_match()
         self._plot_beginning()
         
@@ -34,8 +34,8 @@ class CompareRun(model.RunModel):
                 self.indices[(deriv, etype)] = self._get_indices(deriv, etype)
                 self._plot_agreement(deriv, etype)
 
-    def keith_result(self, which='contrasts', contrast='speaker', stat='t'):
-        return keith.result(subject=self.subject.id, run=self.id,
+    def fmristat_result(self, which='contrasts', contrast='speaker', stat='t'):
+        return fmristat.result(subject=self.subject.id, run=self.id,
                             which=which,
                             contrast=contrast,
                             stat=stat)
@@ -221,7 +221,7 @@ class VoxelModel(CompareRun):
 
     def voxel_model(self, i, j, k):
         self.load()
-        rho = keith.rho(subject=self.subject.id, run=self.id)[i,j,k]        
+        rho = fmristat.rho(subject=self.subject.id, run=self.id)[i,j,k]        
         self.rho = N.around(rho * (self.OLSmodel.nmax / 2.)) / (self.OLSmodel.nmax / 2.)
         parcelmap, parcelseq = self.OLSmodel.getparcelmap()
 
@@ -250,7 +250,7 @@ class VoxelModel(CompareRun):
                         R = self.result(which='delays',
                                         contrast=output.contrast.rownames[_j],
                                         stat=stat)
-                        K = self.keith_result(which='delays',
+                        K = self.fmristat_result(which='delays',
                                               contrast=output.contrast.rownames[_j],
                                               stat=stat)
                         cor[('delays', stat, output.contrast.rownames[_j])] = N.corrcoef(R[:].flat * mask[:], K[:].flat * mask[:])[0,1]
@@ -267,7 +267,7 @@ class VoxelModel(CompareRun):
                 KK = {}
                 for stat in ['effect', 'sd', 't']:
                     R = self.result(which='contrasts', contrast=output.contrast.name, stat=stat)
-                    K = self.keith_result(which='contrasts', contrast=output.contrast.name, stat=stat)
+                    K = self.fmristat_result(which='contrasts', contrast=output.contrast.name, stat=stat)
                     RR[stat] = R[i,j,k]
                     KK[stat] = K[i,j,k]
 
@@ -278,11 +278,11 @@ class VoxelModel(CompareRun):
                 print output.extract(results)
         print cor
         
-class KeithRho(CompareRun):
+class FmristatRho(CompareRun):
 
     def OLS(self, **OLSopts):
         CompareRun.OLS(self, **OLSopts)
-        self.OLSmodel.rho = keith.rho(subject=self.subject.id, run=self.id)
+        self.OLSmodel.rho = fmristat.rho(subject=self.subject.id, run=self.id)
 
 
 def plot_result(result1, result2, mask, which='contrasts', contrast='average', stat='t', vmax=None, vmin=None):

@@ -6,7 +6,7 @@ import os
 from neuroimaging.core.image.image import Image
 from neuroimaging.algorithms.onesample import ImageOneSample
 
-import fixed, keith, fiac
+import fixed, fmristat, fiac
 
 class Multi(fixed.Fixed):
 
