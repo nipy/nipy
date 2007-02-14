@@ -32,8 +32,12 @@ class PCA(object):
     def __init__(self, image, tol=1e-5, ext='.img', mask=None, pcatype='cor',
                  design_keep=None, design_resid=None, **keywords):
         """
-        @param design_resid: After projecting onto the column span of design_keep, data is projected off of the column span of this matrix.
-        @param design_keep: Data is projected onto the column span of design_keep.
+        :Parameters:
+            `design_resid` : 
+                After projecting onto the column span of design_keep, data is
+                projected off of the column span of this matrix.
+            `design_keep` :
+                Data is projected onto the column span of design_keep.
         """
         self.image = image
         self.tol = tol

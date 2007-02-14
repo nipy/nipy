@@ -271,10 +271,11 @@ class DeltaFunction(TimeFunction):
 
     def __init__(self, start=0.0, dt=0.02):
         """
-        @param start: Beginning of delta function approximation.
-        @type start: C{float}
-        @param dt: Width of delta function approximation.
-        @type dt: C{float}
+        :Parameters:
+            `start` : float
+                Beginning of delta function approximation.
+            `dt` : float
+                Width of delta function approximation.
         """
         TimeFunction.__init__(self, None)
         self.start = start

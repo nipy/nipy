@@ -37,6 +37,9 @@ class fMRISamplingGrid(SamplingGrid):
         mappings, it returns the i-th mapping.  Finally, if these two do not
         hold, it returns a generic, non-invertible map in the original output
         coordinate system.
+
+        :Returns:
+            `SamplingGrid`
         """
         incoords = self.input_coords.sub_coords()
         outcoords = self.output_coords.sub_coords()
@@ -87,28 +90,33 @@ class fMRIImage(Image):
 
     def slice_iterator(self, mode='r', axis=1):
         ''' Return slice iterator for this image. By default we iterate
-        over the C{axis=1} instead of C{axis=0} as for the L{Image} class.
+        over the ``axis=1`` instead of ``axis=0`` as for the `Image` class.
 
-        @param axis: The index of the axis (or axes) to be iterated over. If
-            a list is supplied, the axes are iterated over slowest to fastest.
-        @type axis: C{int} or C{list} of C{int}.
-        @param mode: The mode to run the iterator in.
-            'r' - read-only (default)
-            'w' - read-write
-        @type mode: C{string}
+        :Parameters:
+            `axis` : int or [int]
+                The index of the axis (or axes) to be iterated over. If a list
+                is supplied, the axes are iterated over slowest to fastest.
+            `mode` : string
+                The mode to run the iterator in.
+                'r' - read-only (default)
+                'w' - read-write
+
+        :Returns:
+            `SliceIterator`
         '''
         return SliceIterator(self, mode=mode, axis=axis)
 
     def from_slice_iterator(self, other, axis=1):
         """
         Take an existing L{SliceIterator} and use it to set the values
-        in this image. By default we iterate over the C{axis=1} for this image
-        instead of C{axis=0} as for the L{Image} class.
+        in this image. By default we iterate over the ``axis=1`` for this image
+        instead of ``axis=0`` as for the `Image` class.
 
-        @param other: The iterator from which to take the values
-        @type other: L{SliceIterator}
-        @param axis: The axis to iterate over for this image.
-        @type axis: C{int} or C{list} of {int}
+        :Parameters:
+            `other` : `SliceIterator`
+                The iterator from which to take the values
+            `axis` : int or [int]
+                The axis to iterate over for this image.
         """
         it = iter(SliceIterator(self, mode='w', axis=axis))
         for s in other:
