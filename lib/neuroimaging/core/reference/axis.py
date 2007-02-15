@@ -37,10 +37,11 @@ class Axis(object):
         Create an axis with a given C{name}.
 
         :Parameters:
-            name : C{string}
+            name : string
                 The name for the axis
 
-        @precondition: C{name} must be an element of L{axis.valid}
+        :Precondition:
+            name must be an element of axis.valid
         """
         
         self.name = name
@@ -53,11 +54,11 @@ class Axis(object):
         """ Equality is defined by name 
 
         :Parameters:
-            other : L{Axis}
+            other : Axis
                 The object to be compared with
 
         :Returns:
-            results : C{bool}
+            results : bool
         """
         return self.name == other.name
 
@@ -65,14 +66,15 @@ class Axis(object):
         """ Test if x is a point on the axis. 
 
         :Parameters:
-            x : C{float}
+            x : float
                 A voxel
 
         :Returns:
-            result : C{bool}
+            result : bool
         
 
-        @raise NotImplementedError: Abstract method
+        :Raises:
+            NotImplementedError : Abstract method
         """
         raise NotImplementedError
 
@@ -80,9 +82,10 @@ class Axis(object):
         """ The maximum value of the axis. 
 
         :Returns:
-            result : C{numpy.float}
+            result : numpy.float
         
-        @raise NotImplementedError: Abstract method
+        :Raises:
+            NotImplementedError : Abstract method
         """
         raise NotImplementedError
 
@@ -90,9 +93,10 @@ class Axis(object):
         """ The minimum value of the axis. 
 
         :Returns:
-            result : C{numpy.float}
+            result : numpy.float
         
-        @raise NotImplementedError: Abstract method
+        :Raises:
+            NotImplementedError : Abstract method
         """
         raise NotImplementedError
 
@@ -100,7 +104,7 @@ class Axis(object):
         """ A (min, max) pair representing the range of the axis. 
 
         :Returns:
-            result : C{(numpy.float, numpy.float)}
+            result : (numpy.float, numpy.float)
         """
         return (self.min(), self.max())
 
