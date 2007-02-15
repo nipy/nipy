@@ -8,9 +8,10 @@ import numpy
 
 from neuroimaging import import_from
 from neuroimaging.data_io import DataSource
+from neuroimaging.core.image.base_image import BaseImage
+from neuroimaging.core.api import SamplingGrid
 from neuroimaging.utils.path import path
 from neuroimaging.utils.odict import odict
-from neuroimaging.core.api import BaseImage, SamplingGrid
 
 class Format(BaseImage):
     """

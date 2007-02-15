@@ -1,8 +1,10 @@
-import sys, gc
+import sys
+import gc
+
 import numpy as N
+
 from neuroimaging.modalities.fmri import fMRIImage
-from neuroimaging.core.api import Image
-from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.core.api import Image, Affine
 
 def make4d(subj=int(sys.argv[1]), run=int(sys.argv[2])):
     dir = 'http://kff.stanford.edu/FIAC/fiac%d/fonc%d' % (subj, run)

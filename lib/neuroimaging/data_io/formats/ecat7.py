@@ -11,7 +11,7 @@ import neuroimaging.data_io.formats.binary as bin
 from neuroimaging.data_io.formats import utils
 
 from neuroimaging.core.reference.axis import space
-from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.api import SamplingGrid
 
 
 

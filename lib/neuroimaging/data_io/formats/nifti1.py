@@ -10,8 +10,7 @@ import neuroimaging.data_io.formats.analyze as anlz
 from neuroimaging.data_io.formats.nifti1_ext import quatern2mat, \
      mat2quatern
 from neuroimaging.core.reference.axis import space, spacetime
-from neuroimaging.core.reference.mapping import Affine
-from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.api import Affine, SamplingGrid
 
 class Nifti1FormatError(Exception):
     """

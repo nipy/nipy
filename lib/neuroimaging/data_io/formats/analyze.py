@@ -11,8 +11,7 @@ from neuroimaging.data_io import DataSource
 from neuroimaging.data_io.formats import utils
 import neuroimaging.data_io.formats.binary as bin
 from neuroimaging.core.reference.axis import space, spacetime
-from neuroimaging.core.reference.mapping import Affine
-from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.api import Affine, SamplingGrid
 from neuroimaging.utils.path import path
 
 class AnalyzeFormatError(Exception):

@@ -5,7 +5,6 @@ system.  Use this module for importing core names into your namespace. For examp
 """
 
 # Note: The order of imports is important here.
-from neuroimaging.core.image.base_image import BaseImage
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.image.image import Image, ImageSequenceIterator
 from neuroimaging.core.reference.iterators import SliceIterator, \

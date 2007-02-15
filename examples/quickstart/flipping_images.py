@@ -9,9 +9,7 @@ flipping_image.py
 import numpy as N
 import pylab
 
-from neuroimaging.core.api import Image
-from neuroimaging.core.reference.grid import SamplingGrid
-from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.core.api import Image, SamplingGrid, Affine
 from neuroimaging.ui.visualization.viewer import BoxViewer
 from neuroimaging.utils.tests.data import repository
 

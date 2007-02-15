@@ -1,12 +1,12 @@
-import urllib, gc
+import urllib
+import gc
+
 import numpy as N
 
 from neuroimaging import traits
 
-from neuroimaging.core.api import Image
+from neuroimaging.core.api import Image, Affine, SamplingGrid
 from neuroimaging.algorithms.interpolation import ImageInterpolator
-from neuroimaging.core.reference.mapping import Affine
-from neuroimaging.core.reference.grid import SamplingGrid
 
 from fiac import Run
 
