@@ -3,7 +3,7 @@ import unittest
 import numpy as N
 
 from neuroimaging.algorithms.kernel_smooth import LinearFilter
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.utils.test_decorators import gui

@@ -6,8 +6,7 @@ import numpy as N
 import numpy.fft as fft
 import numpy.linalg as NL
 
-from neuroimaging.core.image.image import Image
-from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.core.api import Image, Affine
 
 class LinearFilter(object):
     '''

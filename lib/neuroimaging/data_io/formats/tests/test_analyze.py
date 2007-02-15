@@ -5,7 +5,7 @@ from neuroimaging.utils.test_decorators import slow
 
 from neuroimaging.data_io.formats import analyze
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.data_io.formats.analyze import Analyze
 
 class AnalyzeTest(unittest.TestCase):

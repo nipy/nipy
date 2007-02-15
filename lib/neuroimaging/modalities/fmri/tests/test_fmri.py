@@ -4,7 +4,7 @@ import numpy as N
 from neuroimaging.utils.test_decorators import slow, data
 
 from neuroimaging.modalities.fmri import fMRIImage
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.formats.analyze import Analyze
 

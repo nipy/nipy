@@ -2,7 +2,7 @@ __docformat__ = 'restructuredtext'
 
 import numpy as N
 
-from neuroimaging.core.image.image import ImageSequenceIterator
+from neuroimaging.core.api import ImageSequenceIterator
 from neuroimaging.algorithms.statistics import onesample
 from neuroimaging.algorithms.statistics.regression import RegressionOutput
 

@@ -8,7 +8,7 @@ import numpy as N
 import numpy.linalg as L
 from scipy.sandbox.models.utils import recipr, rank
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 
 
 class RFXMean(object):

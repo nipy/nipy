@@ -4,7 +4,7 @@ import numpy as N
 
 from mlabwrap import mlab
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 
 mlab.spm_defaults()
 

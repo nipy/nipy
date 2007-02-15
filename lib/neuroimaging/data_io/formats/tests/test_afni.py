@@ -3,7 +3,7 @@ import numpy as N
 
 from neuroimaging.data_io.formats import afni
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 
 from neuroimaging.utils.test_decorators import slow, data
 

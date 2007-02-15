@@ -5,7 +5,7 @@ from neuroimaging.utils.test_decorators import data
 
 from neuroimaging.data_io.formats import ecat7
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.data_io.formats.ecat7 import Ecat7
 
 class EcatTest(unittest.TestCase):

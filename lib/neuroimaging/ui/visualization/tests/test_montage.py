@@ -5,7 +5,7 @@ import numpy as N
 from neuroimaging.utils.test_decorators import gui
 
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.algorithms.interpolation import ImageInterpolator
 
 from neuroimaging.defines import pylab_def

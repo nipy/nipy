@@ -5,7 +5,7 @@ import numpy.random as R
 
 from neuroimaging.utils.test_decorators import slow
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.data_io.formats import nifti1
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.utils.odict import odict

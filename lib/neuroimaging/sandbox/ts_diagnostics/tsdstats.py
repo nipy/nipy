@@ -4,7 +4,7 @@ Calculates statistics to aid in the diagnosis of problems in the time series.
 
 import numpy as N
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 
 class TimeSeriesDiagnosticsStats(object):
 

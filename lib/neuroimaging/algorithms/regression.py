@@ -4,7 +4,7 @@ import os, csv, fpformat
 
 import numpy as N
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.algorithms.statistics.regression import RegressionOutput
 
 class ImageRegressionOutput(RegressionOutput):

@@ -7,14 +7,14 @@ import numpy as N
 
 from mlabwrap import mlab
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.api import Image
 from neuroimaging.sandbox.spm import utils as spmutils
 
 class NormalizeSPM(object):
     ''' SPM normalization process
 
     For example:
-    from neuroimaging.core.image.image import Image
+    from neuroimaging.core.api import Image
     from neuroimaging.sandbox.spatial import normalization
     img = Image("some_image.nii")
     N = normalization.NormalizeSPM(reg=0.01)
