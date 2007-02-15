@@ -6,7 +6,7 @@ import numpy as N
 
 from neuroimaging.utils.odict import odict
 import neuroimaging.data_io as data_io
-from neuroimaging.data_io.datasource import DataSource, Cache
+from neuroimaging.data_io.datasource import DataSource, Cache, iszip
 import neuroimaging.data_io.formats.binary as bin
 from neuroimaging.data_io.formats import utils
 
@@ -243,7 +243,7 @@ class Ecat7(bin.BinaryFormat):
 
         filename = datasource.filename(infilename)
         #Check if data is zipped
-        if data_io.iszip(filename):
+        if iszip(filename):
             fullfilename = data_io.unzip(filename)
         else:
             fullfilename = filename
