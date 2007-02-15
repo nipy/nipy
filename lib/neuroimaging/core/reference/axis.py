@@ -18,6 +18,8 @@ There is currently no support for irregularly spaced axes, however this
 could easily be added.
 """
 
+__docformat__ = 'restructuredtext'
+
 import numpy as N
 
 valid = ('time', 'xspace', 'yspace', 'zspace', 'vector_dimension', 'concat')
@@ -34,8 +36,10 @@ class Axis(object):
         """
         Create an axis with a given C{name}.
 
-        @param name: The name for the axis
-        @type name: C{string}
+        :Parameters:
+            name : C{string}
+                The name for the axis
+
         @precondition: C{name} must be an element of L{axis.valid}
         """
         
@@ -47,43 +51,56 @@ class Axis(object):
 
     def __eq__(self, other):
         """ Equality is defined by name 
-        
-        @param other: The object to be compared with
-        @type other: L{Axis}
-        @rtype: C{bool}
+
+        :Parameters:
+            other : L{Axis}
+                The object to be compared with
+
+        :Returns:
+            results : C{bool}
         """
         return self.name == other.name
 
     def valid(self, x):
         """ Test if x is a point on the axis. 
+
+        :Parameters:
+            x : C{float}
+                A voxel
+
+        :Returns:
+            result : C{bool}
         
-        @param x: A voxel.
-        @type x: C{float}
-        @raises NotImplementedError: Abstract method
-        @rtype: C{bool}
+
+        @raise NotImplementedError: Abstract method
         """
         raise NotImplementedError
 
     def max(self):
         """ The maximum value of the axis. 
+
+        :Returns:
+            result : C{numpy.float}
         
-        @raises NotImplementedError: Abstract method
-        @rtype: C{numpy.float}        
+        @raise NotImplementedError: Abstract method
         """
         raise NotImplementedError
 
     def min(self):
         """ The minimum value of the axis. 
+
+        :Returns:
+            result : C{numpy.float}
         
-        @raises NotImplementedError: Abstract method
-        @rtype: C{numpy.float}
+        @raise NotImplementedError: Abstract method
         """
         raise NotImplementedError
 
     def range(self):
         """ A (min, max) pair representing the range of the axis. 
-        
-        @rtype: C{(numpy.float, numpy.float)}
+
+        :Returns:
+            result : C{(numpy.float, numpy.float)}
         """
         return (self.min(), self.max())
 
