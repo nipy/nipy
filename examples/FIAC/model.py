@@ -330,4 +330,13 @@ class Contrast(contrast.Contrast, HasReadOnlyTraits):
     def __repr__(self):
         return '<contrast: %s>' % self.name
         
+def run(subj=3, run=3):
+    """
+    Run through a fit of FIAC data.
+    """
+    study = StudyModel(root=io.data_path)
+    subject = SubjectModel(subj, study=study)
+    runmodel = RunModel(subject, run)
+    runmodel.OLS(clobber=True)
+    runmodel.AR(clobber=True)
 
