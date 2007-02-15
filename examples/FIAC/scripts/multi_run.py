@@ -11,8 +11,8 @@ if __name__ == "__main__":
 
     import multi, io
 
-    if len(sys.argv) == 3:
-        design, which, contrast = int(sys.argv[1:])
+    if len(sys.argv) == 4:
+        design, which, contrast = sys.argv[1:]
     else:
         design, which, contrast = ('block', 'contrasts', 'average')
 
