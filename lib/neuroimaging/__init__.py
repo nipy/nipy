@@ -100,9 +100,10 @@ def import_from(modulename, objectname):
     except AttributeError:
         return None
 
-from numpy.testing import NumpyTest
+from numpy.testing import NumpyTest, importall
 
 def test(level=1, verbosity=1):
+    importall('neuroimaging')
     if level <= 10:
         return NumpyTest().test(level, verbosity)
     else:
