@@ -14,6 +14,19 @@ class Filter(object):
 
 
     def __init__(self, IRF, names, dt=0.02, tmin=-10., tmax=500.):
+        """
+        :Parameters:
+            `IRF` : TODO
+                TODO
+            `names` : TODO
+                TODO
+            `dt` : float
+                TODO
+            `tmin` : float
+                TODO
+            `tmax` : float
+                TODO
+        """
         self.IRF = IRF
         self.names = names
         self.dt = dt
@@ -43,6 +56,9 @@ class Filter(object):
         """
         Take two Filters with the same number of outputs and create a new one
         whose IRFs are the sum of the two.
+
+
+        :Returns: `Filter`
         """
         if self.n != other.n:
             raise ValueError, 'number of dimensions in Filters must agree'
@@ -173,10 +189,20 @@ class GammaHRF(Filter):
     """
 
     def __init__(self, parameters):
+        """
+        :Parameters:
+            `parameters` : TODO
+                TODO
+        """
         fns = [GammaDENS(alpha, nu) for alpha, nu in parameters]
         Filter.__init__(self, fns)
 
     def deriv(self, const=1.):
+        """
+        :Parameters:
+            `const` : float
+                TODO
+        """
         return [fn.deriv(const=const) for fn in self.IRF]
     
 class FIR(Filter):
@@ -198,6 +224,11 @@ class FIR(Filter):
     """
 
     def __init__(self, parameters):
+        """
+        :Parameters:
+            `parameters` : TODO
+                TODO
+        """
         fns = [WaveFunction(start, duration, 1.0) for
                (start, duration) in parameters]
         Filter.__init__(self, fns, names="FIR")

@@ -1,12 +1,11 @@
 """
 This module defines functions of time and tools to manipulate them.
 
-The main class TimeFunction, is a function from (real) time to an arbitrary
+The main classm `TimeFunction`, is a function from (real) time to an arbitrary
 number of (real) outputs.
 
 These objects can be (coordinate-wised) multiplied, added, subtracted and
 divided.
-
 """
 
 __docformat__ = 'restructuredtext'
@@ -25,6 +24,21 @@ class TimeFunction(object):
 
     def __init__(self, fn, nout=1, slice=None, windowed=False, window=(0., 0.),
                  name=""):
+        """
+        :Parameters:
+            `fn` : TODO
+                TODO
+            `nout` : int
+                TODO
+            `slice` : TODO
+                TODO
+            `windowed` : bool
+                TODO
+            `window` : (float, float)
+                TODO
+            `name` : string
+                TODO
+        """
         self.name = name
         self.windowed = windowed
         self.window = window
@@ -33,12 +47,25 @@ class TimeFunction(object):
 	self.slice = slice
 
     def __getitem__(self, j):
+        """
+        :Parameters:
+            `j` : int
+                TODO
 
+        :Returns: `TimeFunction`        
+        """    
         def _f(time, obj=self):
             return obj(time)[int(j)]
         return TimeFunction(fn=_f)
 
     def __call__(self, time):
+        """
+        :Parameters:
+            `time` : TODO
+                TODO
+
+        :Returns: TODO
+        """
         columns = []
 
         if self.nout == 1:

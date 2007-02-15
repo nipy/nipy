@@ -20,7 +20,10 @@ file_openers = {".gz":gzip.open, ".bz2":bz2.BZ2File, None:file}
 
 
 def iszip(filename):
-    """ Is this filename a zip file. """
+    """ Is this filename a zip file.
+
+    :Returns: ``bool``
+    """
     _, ext = path(filename).splitext()
     return ext in zipexts
 
@@ -38,7 +41,10 @@ def splitzipext(filename):
 
 
 def unzip(filename):
-    """ Unzip the given file into another file.  Return the new file's name."""
+    """ Unzip the given file into another file.  Return the new file's name.
+
+    :Returns: ``string``
+    """
     if not iszip(filename):
         raise ValueError("file %s is not zipped"%filename)
     unzip_name, zipext = splitzipext(filename)
@@ -51,6 +57,12 @@ def unzip(filename):
 
 def isurl(pathstr):
     """
+    Check whether a given string can be parsed as a URL.
+
+    :Parameters:
+        `pathstr` : string
+            The string to be checked.
+    
     :Returns: ``bool``
     """
     scheme, netloc, _, _, _, _ = urlparse(pathstr)
@@ -58,7 +70,11 @@ def isurl(pathstr):
 
 
 def iswritemode(mode):
-    """ Test is the given mode will open a file for writing.
+    """ Test if the given mode will open a file for writing.
+
+    :Parameters:
+        `mode` : string
+            The mode to be checked
 
     :Returns: ``bool``
     """
@@ -69,6 +85,8 @@ def ensuredirs(directory):
     """
     Ensure that the given directory path actually exists.
     If it doesn't, create it.
+
+    :Returns: ``None``
     """
     if not isinstance(directory, path):
         directory = path(directory)
@@ -93,8 +111,8 @@ class Cache (object):
             ensuredirs(self.path)
 
     def tempfile(self,suffix='', prefix=''):
-        ''' Return an temporary file name in the cache'''
-        fd, fname = mkstemp(suffix, prefix, self.path)
+        """ Return an temporary file name in the cache"""
+        _, fname = mkstemp(suffix, prefix, self.path)
         return fname
 
     def filepath(self, uri):
