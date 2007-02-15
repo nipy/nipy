@@ -26,16 +26,16 @@ class Image(object):
         Create an `Image` from the given url/filename
 
         :Parameters:
-            `url` : string
+            url : ``string``
                 a url or filename
-            `datasource` : `DataSource`
+            datasource : `DataSource`
                 The datasource to be used for caching
-            `format` : `Format`
+            format : `Format`
                 The file format to use. If ``None`` then all possible formats will
                 be tried.
-            `grid` : `reference.grid.SamplingGrid`
+            grid : `reference.grid.SamplingGrid`
                 The sampling grid for the file
-            `mode` : string
+            mode : ``string``
                 The mode ot open the file in ('r', 'w', etc)
 
         :Raises IOError: If the specified format, or those tried by default
@@ -86,15 +86,15 @@ class Image(object):
         existing `Image` object, or an array.
 
         :Parameters:
-            `image` : `Image` or ``string`` or ``array``
+            image : `Image` or ``string`` or ``array``
                 The object to create this Image from. If an `Image` or ``array``
                 are provided, their data is used. If a string is given it is treated
                 as either a filename or url.
-            `datasource` : TODO
+            datasource : TODO
                 TODO
-            `grid` : TODO
+            grid : TODO
                 TODO
-            `keywords` : dict
+            keywords : ``dict``
                 TODO
         '''
 
@@ -131,7 +131,7 @@ class Image(object):
     def __getitem__(self, slice_):
         """
         :Parameters:
-            `slice_` : slice
+            slice_ : ``slice``
                 The slice of the image to take.
 
         :Returns: ``numpy.ndarray``
@@ -142,9 +142,9 @@ class Image(object):
     def __setitem__(self, slice_, data):
         """        
         :Parameters:
-            `slice_` : slice
+            slice_ : ``slice``
                 The slice of the image to write to
-            `data` : A slive value or array of type self.dtype
+            data : A slice value or array of type ``self.dtype``
                 The value to be set.
         
         :Returns: ``None``
@@ -195,9 +195,9 @@ class Image(object):
         of the newly written file.
 
         :Parameters:
-            `filename` : string
+            filename : ``string``
                 The name of the file to write to
-            `clobber` : bool
+            clobber : ``bool``
                 Should we overwrite an existing file?
 
         :Returns: `Image`
@@ -239,10 +239,10 @@ class Image(object):
         """ Return slice iterator for this image
 
         :Parameters:
-            `axis` : int or [int]
+            axis : ``int`` or ``[int]``
                 The index of the axis (or axes) to be iterated over. If a list
                 is supplied the axes are iterated over slowest to fastest.
-            `mode` : string
+            mode : ``string``
                 The mode to run the iterator in.
                 'r' - read-only (default)
                 'w' - read-write
@@ -258,9 +258,9 @@ class Image(object):
         in this image.
 
         :Parameters:
-            `other` : `SliceIterator`
+            other : `SliceIterator`
                 The iterator from which to take the values
-            `axis` : int or [int]
+            axis : ``int`` or ``[int]``
                 The axis to iterator over for this image.
         """
         iterator = iter(SliceIterator(self, mode='w', axis=axis))
@@ -272,7 +272,7 @@ class Image(object):
         Use the given iterator to iterate over this image.
 
         :Parameters:
-            `iterator` : `image.iterators.Iterator`
+            iterator : `image.iterators.Iterator`
                 The iterator to use.
 
         :Returns:
@@ -287,9 +287,9 @@ class Image(object):
         another to do the iteration over itself.
 
         :Parameters:
-            `other` : `image.iterators.Iterator`
+            other : `image.iterators.Iterator`
                 The iterator from which to take the values
-            `iterator` : `image.iterators.Iterator`
+            iterator : `image.iterators.Iterator`
                 The iterator to use to iterate over self.
         """
         iterator.mode = 'w'

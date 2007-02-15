@@ -18,11 +18,11 @@ class BaseImage(object):
     def __init__(self, data, grid, dtype):
         """
         :Parameters:
-            `data` : numpy.ndarray
+            data : ``numpy.ndarray``
                 The image data.
-            `grid` : `SamplingGrid`
+            grid : `SamplingGrid`
                 The grid to use for this image.
-            `dtype` : numpy.dtype
+            dtype : ``numpy.dtype``
                 The dtype of the data.
         """
         self.grid = grid
@@ -32,7 +32,7 @@ class BaseImage(object):
     def __getitem__(self, item):
         """
         :Parameters:
-            `item` : slice
+            item : ``slice``
                 The slice of the image to take.
         
         :Returns: ``numpy.ndarray``
@@ -42,9 +42,9 @@ class BaseImage(object):
     def __setitem__(self, item, value):
         """
         :Parameters:
-            `item` : slice
+            item : ``slice``
                 The slice of the image to write to
-            `value` : A single value or array of type self.dtype
+            value : A single value or array of type ``self.dtype``
                 The value to be set.
         
         :Returns: ``None``

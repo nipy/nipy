@@ -1,3 +1,6 @@
+"""
+TODO
+"""
 __docformat__ = 'restructuredtext'
 
 import new
@@ -17,23 +20,52 @@ class IntentError(Exception):
 intent_trait = traits.Trait(nifti1.NIFTI_INTENT_NONE, desc='Allowable intent codes -- currently only NIFTI1 codes.')
 
 class Intent(traits.HasTraits):
+    """
+    TODO
+    """
+
     parameters = traits.ReadOnly(desc='Parameters associated to intent code.')
     intent_code = intent_trait
     intent_name = traits.Str(desc='Intent name.')
     format = nifti1.Nifti1
 
     def __init__(self, intent_code, name, *parameters):
+        """
+        :Parameters:
+            intent_code : TODO
+                TODO
+            name : TODO
+                TODO
+            parameters : TODO
+                TODO
+        """
         self.intent_code = intent_code
         self.name = name
         self.parameters = list(parameters)
 
     def __call__(self, image, **parameter_values):
+        """
+        :Parameters:
+            image : TODO
+                TODO
+            parameter_values : TODO
+                TODO
+
+        :Returns: `Image`
+        """
         if not isinstance(image, Image):
             image = Image(image, format=self.format)
         self._set_intent(image, **parameter_values)
         return image
 
     def validate(self, image):
+        """
+        :Parameters:
+            image : TODO
+                TODO
+
+        :Returns: ``None``
+        """
         pass
     
     def _set_intent(self, image, **parameter_values):
@@ -70,6 +102,21 @@ class Intent(traits.HasTraits):
 
     def create(self, filename, datasource=DataSource(), grid=None,
                clobber=False, **keywords):
+        """
+        :Parameters:
+            filename : TODO
+                TODO
+            datasource : `DataSource`
+                TODO
+            grid : TODO
+                TODO
+            clobber : ``bool``
+                TODO
+            keywords : ``dict``
+                TODO
+
+        :Returns; `Image`
+        """
 
         parameter_values = {}
         for par in self.parameters:
@@ -85,6 +132,9 @@ class Intent(traits.HasTraits):
         return self(image, **parameter_values)
 
 class StatIntent(Intent):
+    """
+    TODO
+    """
 
     voxelwise = traits.false
     
@@ -106,7 +156,23 @@ class StatIntent(Intent):
     def create(self, filename, datasource=DataSource(), grid=None,
                clobber=False, voxelwise=False,
                **keywords):
+        """
+        :Parameters:
+            filename : TODO
+                TODO
+            datasource : `DataSource`
+                TODO
+            grid : TODO
+                TODO
+            clobber : ``bool``
+                TODO
+            voxelwise : ``bool``
+                TODO
+            keywords : ``dict``
+                TODO
 
+        :Returns: `Image`
+        """
         parameter_values = {}
                 
         npar = len(self.parameters)
@@ -160,6 +226,12 @@ def vector_validate(self, image):
     """
     Ensure that image is interpretable as an image
     of vectors.
+
+    :Parameters:
+        image : TODO
+            TODO
+
+    :Returns: ``None``
     """
 
     if image.grid.ndim != 5:
@@ -171,6 +243,21 @@ def vector_create(self, filename, datasource=DataSource(), grid=None,
     """
     Create a vector image with n coordinates
     based on a given grid.
+
+    :Parameters:
+        filename : TODO
+            TODO
+        datasource : `DataSource`
+            TODO
+        grid : TODO
+            TODO
+        clobber : ``bool``
+            TODO
+        n : ``int``
+            TODO
+
+    :Returns: `Image`
+    
     """
     self.grid = grid
     image = _replicate_create(n, self.format, filename, datasource=datasource,
@@ -186,6 +273,14 @@ def symmatrix_validate(self, image):
     """
     Ensure that image is interpretable as an image
     of symmetric matrices of shape (self.n,)*2
+
+    :Parameters:
+        image : TODO
+            TODO
+
+    :Returns: ``None``
+
+    :Raises IntentError: TODO
     """
     if image.grid.ndim != 5:
         raise IntentError, 'symmetric matrix needs 5 dimensions'
@@ -197,6 +292,20 @@ def symmatrix_create(self, filename, datasource=DataSource(), grid=None,
     """
     Create an image of symmetric matrices of shape (self.n,)*2 with
     coordinates based on a given grid.
+
+    :Parameters:
+        filename : TODO
+            TODO
+        datasource : `DataSource`
+            TODO
+        grid : TODO
+            TODO
+        clobber : ``bool``
+            TODO
+        n : ``int``
+            TODO
+
+    :Returns: `Image`
     """
     self.grid = grid
     self.n = n
@@ -214,6 +323,14 @@ def dispvector_validate(self, image):
     """
     Ensure that image is interpretable as an
     image of 3d displacement vectors.
+
+    :Parameters:
+        image : `Image`
+            TODO
+
+    :Returns: ``None``
+
+    :Raises IntentError: TODO
     """
     if image.grid.ndim != 5:
         raise IntentError, 'displacement vector needs 5 dimensions'
@@ -225,6 +342,18 @@ def dispvector_create(self, filename, datasource=DataSource(), grid=None,
     """
     Create a 3d displacement vector image with coordinates
     based on a given grid.
+
+    :Parameters:
+        filename : TODO
+            TODO
+        datasource : `DataSource`
+            TODO
+        grid : TODO
+            TODO
+        clobber : ``bool``
+            TODO
+
+    :Returns: `Image`
     """
     self.grid = grid
     image = _replicate_create(3, self.format, filename, datasource=datasource,
@@ -241,6 +370,14 @@ def matrix_validate(self, image):
     """
     Ensure that image is interpretable as an image
     of matrices of shape (self.m, self.n)
+
+    :Parameters:
+        image : `Image`
+            TODO
+
+    :Returns: ``None``
+
+    :Raises IntentError: TODO
     """
 
     if image.grid.ndim != 5:
@@ -253,6 +390,22 @@ def matrix_create(self, filename, datasource=DataSource(), grid=None,
     """
     Create an image of matrices of shape (self.m, self.n) with coordinates
     based on a given grid.
+
+    :Parameters:
+        filename : TODO
+            TODO
+        datasource : `DataSource`
+            TODO
+        grid : TODO
+            TODO
+        clobber : ``bool``
+            TODO
+        m : ``int``
+            TODO
+        n : ``int``
+            TODO
+
+    :Returns: `Image`
     """
     self.m = m; self.n = n
     self.grid = grid
@@ -270,6 +423,14 @@ def quaternion_validate(self, image):
     """
     Ensure that image is interpretable as an image
     of quaternions.
+
+    :Parameters:
+        image : `Image`
+            TODO
+
+    :Returns: ``None``
+
+    :Raises IntentError: TODO    
     """
     
     if image.grid.ndim != 5:
@@ -282,6 +443,18 @@ def quaternion_create(self, filename, datasource=DataSource(), grid=None,
     """
     Create an image of quaternions with coordinates
     based on a given grid.
+
+    :Parameters:
+        filename : TODO
+            TODO
+        datasource : `DataSource`
+            TODO
+        grid : TODO
+            TODO
+        clobber : ``bool``
+            TODO
+
+    :Returns: `Image`
     """
     self.grid = grid
     n = 4
@@ -295,6 +468,15 @@ Quaternion.create = new.instancemethod(quaternion_create, Quaternion, Intent)
 
 PointSet = Intent(nifti1.NIFTI_INTENT_POINTSET, 'pointset')
 def pointset_validate(self, image):
+    """
+    :Paramters:
+        image : `Image`
+            TODO
+
+    :Returns: ``None``
+
+    :Raises IntentError: TODO
+    """
     if image.grid.ndim != 5:
         raise IntentError, 'pointset needs 5 dimensions'
     if image.grid.shape[1:4] != (1,1,1):
@@ -305,6 +487,18 @@ def pointset_create(self, filename, datasource=DataSource(),
     """
     Create a pointset image with n points of dimension dim.
 
+    :Parameters:
+        filename : TODO
+            TODO
+        datasource : `DataSource`
+            TODO
+        clobber : ``bool``
+            TODO
+        n : ``int``
+            TODO
+        dim : ``int``
+            TODO
+             
     """
     grid = SamplingGrid.from_start_step(names=['concat'],
                                         shape=[n],
@@ -321,6 +515,15 @@ PointSet.create = new.instancemethod(pointset_create, PointSet, Intent)
 
 Triangle = Intent(nifti1.NIFTI_INTENT_TRIANGLE, 'triangle')
 def triangle_validate(self, image):
+    """
+    :Parameters:
+        image : `Image`
+            TODO
+
+    :Returns: ``None``
+
+    :Raises IntentError: TODO
+    """
     if image.grid.ndim != 5:
         raise IntentError, 'triangle needs 5 dimensions'
     if image.grid.shape[0] != 3:
@@ -333,6 +536,15 @@ def triangle_create(self, filename, datasource=DataSource(),
     """
     Create a triangles image with n triangles.
 
+    :Parameters:
+        filename : TODO
+            TODO
+        datasource : `DataSource`
+            TODO
+        clobber : ``bool``
+            TODO
+        n : ``int``
+            TODO
     """
     grid = SamplingGrid.from_start_step(names=['concat'],
                                         shape=[n],

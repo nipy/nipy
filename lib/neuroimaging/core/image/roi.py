@@ -20,6 +20,11 @@ class ROI:
     """
 
     def __init__(self, coordinate_system):
+        """
+        :Parameters:
+            coordinate_system : TODO
+                TODO
+        """
         self.coordinate_system = coordinate_system
 
 class ContinuousROI(ROI):
@@ -28,6 +33,17 @@ class ContinuousROI(ROI):
     """
     ndim = 3
     def __init__(self, coordinate_system, bfn, args=None, ndim=ndim):
+        """
+        :Parameters:
+            coordinate_system : TODO
+                TODO
+            bfn : TODO
+                TODO
+            args : TODO
+                TODO
+            ndim : ``int``
+                TODO
+        """
         ROI.__init__(self, coordinate_system)
 
         if args is None:
@@ -47,11 +63,24 @@ class ContinuousROI(ROI):
               'binary function bfn in ROI failed on ' + `[0.] * ndim`)
 
     def __call__(self, real):
+        """
+        :Parameters:
+            real : TODO
+                TODO
+
+        :Returns: TODO
+        """
         return N.not_equal(self.bfn(real, **self.args), 0)
 
-    def todiscrete(self, voxels):
+    def todiscrete(self, voxels):        
         """
         Return a `DiscreteROI` instance at the voxels in the ROI.
+
+        :Parameters:
+            voxels : TODO
+                TODO
+
+        :Returns: `DiscreteROI`
         """
         v = []
         for voxel in voxels:
@@ -59,9 +88,15 @@ class ContinuousROI(ROI):
                 v.append(voxel)
         return DiscreteROI(self.coordinate_system, v)
     
-    def togrid(self, grid):
+    def togrid(self, grid):        
         """
         Return a `SamplingGridROI` instance at the voxels in the ROI.
+
+        :Parameters:
+            grid : TODO
+                TODO
+
+        :Returns: `SamplingGridROI`
         """
         v = []
         for voxel in iter(grid):
@@ -70,23 +105,49 @@ class ContinuousROI(ROI):
         return SamplingGridROI(self.coordinate_system, v, grid)
 
 class DiscreteROI(ROI):
+    """
+    TODO
+    """
+    
 
     def __init__(self, coordinate_system, voxels):
+        """
+        :Parameters:
+            coordinate_system : TODO
+                TODO
+            voxels : TODO
+                TODO
+
+        """
         ROI.__init__(self, coordinate_system)
         self.voxels = set(voxels)
 
     def __iter__(self):
+        """
+        :Returns: ``self``
+        """
         self.voxels = iter(self.voxels)
         return self
 
     def next(self):
+        """
+        :Returns: TODO
+        """
         return self.voxels.next()
 
     def pool(self, fn, **extra):
-        '''
+        """
         Pool data from an image over the ROI -- return fn evaluated at
         each voxel.
-        '''
+
+        :Parameters:
+            fn : TODO
+                TODO
+            extras : ``dict``
+                TODO
+
+        :Returns: TODO
+        """
         return [fn(voxel, **extra) for voxel in self.voxels]
         
     def feature(self, fn, **extra):
@@ -95,6 +156,17 @@ class DiscreteROI(ROI):
         while ``extra`` are for the readall method. Default is to reduce a ufunc
         over the ROI. Any other operations should be able to ignore superfluous
         keywords arguments, i.e. use ``extra``.
+
+        :Parameters:
+            fn : TODO
+                TODO
+            extra : ``dict
+                TODO
+
+        :Returns: `DiscreteROI`
+
+        :Raises ValueError: TODO
+        :Raises NotImplementedError: TODO        
         """
         pooled_data = self.pool(fn, **extra)
         return N.mean(pooled_data)
@@ -114,15 +186,33 @@ class DiscreteROI(ROI):
 class SamplingGridROI(DiscreteROI):
 
     def __init__(self, coordinate_system, voxels, grid):
+        """
+        :Parameters:
+            coordinate_system : TODO
+                TODO
+            voxels : TODO
+                TODO
+            grid : TODO
+                TODO
+        
+        """
         DiscreteROI.__init__(self, coordinate_system, voxels)
         self.grid = grid
         # we assume that voxels are (i,j,k) indices?
 
     def pool(self, image):
-        '''
+        """
         Pool data from an image over the ROI -- return fn evaluated at
         each voxel.
-        '''
+
+        :Parameters:
+            image : `Image`
+                TODO
+
+        :Returns: TODO
+
+        :Raises ValueError: TODO
+        """
         if image.grid != self.grid:
             raise ValueError(
               'to pool an image over a SamplingGridROI the grids must agree')
@@ -134,6 +224,15 @@ class SamplingGridROI(DiscreteROI):
         return v
         
     def __mul__(self, other):
+        """
+        :Parameters:
+            other : TODO
+                TODO
+        :Returns: `SamplingGridROI`
+
+        :Raises ValueError: TODO
+        :Raises NotImplementedError: TODO
+        """
         if isinstance(other, SamplingGridROI):
             if other.grid == self.grid:
                 voxels = self.voxels.intersect(other.voxels)
@@ -146,6 +245,9 @@ class SamplingGridROI(DiscreteROI):
               'only unions of SamplingGridROIs with themselves are implemented')
 
     def mask(self):
+        """
+        :Returns: ``numpy.ndarray`
+        """
         m = N.zeros(self.grid.shape, N.int32)
         for v in self.voxels:
             m[v] = 1.
@@ -157,6 +259,13 @@ class ROIall(SamplingGridROI):
     """
 
     def mask(self, image):
+        """
+        :Parameters:
+            image : TODO
+                TODO
+
+        :Return: ``numpy.ndarray`
+        """
         try:
             mapping = image.spatial_mapping
         except:
@@ -164,10 +273,25 @@ class ROIall(SamplingGridROI):
         return N.ones(mapping.shape)
 
     def pool(self, image):
+        """
+        :Parameters:
+            image : `Image`
+
+        :Returns: ``None``
+        """
         tmp = image.readall()
         tmp.shape = N.product(tmp)
 
 def roi_sphere_fn(center, radius):
+    """
+    :Parameters:
+        center : TODO
+            TODO
+        radius : TODO
+            TODO
+
+    :Returns: TODO
+    """
     def test(real):
         diff = N.array([real[i] - center[i] for i in range(real.shape[0])])
         return (sum(diff**2) < radius**2)
@@ -181,6 +305,14 @@ def roi_ellipse_fn(center, form, a = 1.0):
     {'form':10**2 * identity(3), 'a':1} or {'form':identity(3), 'a':100}.
 
     Form must be positive definite.
+
+    :Parameters:
+        form : TODO
+            TODO
+        a : ``float``
+            TODO
+            
+    :Returns: TODO
     """
     from numpy.linalg import cholesky, inv
     _cholinv = cholesky(inv(form))
@@ -207,6 +339,14 @@ def roi_from_array_sampling_grid(data, grid):
     """
     Return a `SamplingGridROI` from an array (data) on a grid.
     interpolation. Obvious ways to extend this.
+
+    :Parameters:
+        data : TODO
+            TODO
+        grid : TODO
+            TODO
+
+    :Returns: `SamplingGridROI`
     """
 
     if grid.shape != data.shape:
@@ -216,4 +356,7 @@ def roi_from_array_sampling_grid(data, grid):
     return SamplingGridROI(coordinate_system, voxels, grid)
 
 class ROISequence(list):
+    """
+    TODO
+    """
     pass
