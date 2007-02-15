@@ -298,36 +298,3 @@ class Image(object):
         for slice_ in other:
             iterator.next().set(slice_)
 
-class ImageSequenceIterator(object):
-    """
-    Take a sequence of `Image`\ s, and an optional grid (which defaults to
-    imgs[0].grid) and create an iterator whose next method returns array with
-    shapes (len(imgs),) + self.imgs[0].next().shape Very useful for voxel-based
-    methods, i.e. regression, one-sample t.
-    """
-    def __init__(self, imgs, grid=None):
-        """
-        :Parameters:
-            `imgs` : ``[`Image`]``
-                The sequence of images to iterate over
-            `grid` : `reference.grid.SamplingGrid`
-                A grid to be used as the grid attribute for this iterator.
-        """
-        self.imgs = imgs
-        if grid is None:
-            self.grid = self.imgs[0].grid
-        else:
-            self.grid = grid
-        self.iters = None
-        iter(self)
-
-    def __iter__(self): 
-        """ Return self as an iterator. """
-        self.iters = [img.slice_iterator() for img in self.imgs]
-        return self
-
-    def next(self):
-        """ Return the next iterator value. """
-        val = [it.next() for it in self.iters]
-        return N.array(val, N.float64)
-
