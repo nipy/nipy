@@ -36,12 +36,11 @@ class Axis(object):
         """
         Create an axis with a given C{name}.
 
-        :Parameters:
+        :Parameter:
             name : string
                 The name for the axis
 
-        :Precondition:
-            name must be an element of axis.valid
+        :Precondition: name must be an element of axis.valid
         """
         
         self.name = name
@@ -53,9 +52,9 @@ class Axis(object):
     def __eq__(self, other):
         """ Equality is defined by name 
 
-        :Parameters:
+        :Parameter:
             other : Axis
-                The object to be compared with
+                The object to be compared with.
 
         :Returns:
             results : bool
@@ -65,7 +64,7 @@ class Axis(object):
     def valid(self, x):
         """ Test if x is a point on the axis. 
 
-        :Parameters:
+        :Parameter:
             x : float
                 A voxel
 
