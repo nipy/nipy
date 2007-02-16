@@ -391,7 +391,7 @@ class Affine(Mapping):
             `coords` : numpy.ndarray
                 A coordinate vector
         
-        :Returns: `numpy.ndarray`
+        :Returns: ``numpy.ndarray``
         """
         value = N.dot(self._fmatrix, coords) 
         value += N.multiply.outer(self._fvector, N.ones(value.shape[1:]))

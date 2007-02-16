@@ -303,7 +303,7 @@ class ImageSequenceIterator(object):
         """
         :Parameters:
             `imgs` : ``[`Image`]``
-                TODO
+                The sequence of images to iterate over
             `grid` : TODO
                 TODO
         """

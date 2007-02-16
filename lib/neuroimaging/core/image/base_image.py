@@ -18,12 +18,12 @@ class BaseImage(object):
     def __init__(self, data, grid, dtype):
         """
         :Parameters:
-            `data` : TODO
-                TODO
-            `grid` : TODO
-                TODO
-            `dtype` : TODO
-                TODO
+            `data` : numpy.ndarray
+                The image data.
+            `grid` : `SamplingGrid`
+                The grid to use for this image.
+            `dtype` : numpy.dtype
+                The dtype of the data.
         """
         self.grid = grid
         self.data = data
@@ -32,20 +32,20 @@ class BaseImage(object):
     def __getitem__(self, item):
         """
         :Parameters:
-            `item` : TODO
-                TODO
+            `item` : slice
+                The slice of the image to take.
         
-        :Returns: TODO        
+        :Returns: ``numpy.ndarray``
         """
         return self.data[item]
         
     def __setitem__(self, item, value):
         """
         :Parameters:
-            `item` : TODO
-                TODO
-            `value` : TODO
-                TODO
+            `item` : slice
+                The slice of the image to write to
+            `value` : A single value or array of type self.dtype
+                The value to be set.
         
         :Returns: ``None``
         """
@@ -76,6 +76,12 @@ class ArrayImage (BaseImage):
         >>> print z.grid.ndim
         3
         
+        :Parameters:
+            `data` : numpy.ndarray
+                The data to construct the image from.
+            `grid` : `SamplingGrid` or None
+                The grid to use for this image. If ``None`` then an identity
+                grid of the same shape as ``data`` will be used.
         """
         grid = grid and grid or SamplingGrid.identity(data.shape)
         dtype = data.dtype

@@ -89,11 +89,11 @@ class SamplingGrid (object):
         
         :Parameters:
             `mapping` : `Affine`
-                TODO
+                An affine mapping between the input and output coordinate systems.
             `shape` : tuple of int
-                TODO
+                The shape of the grid
             `names` : tuple of string
-                TODO
+                The names of the axes of the coordinate systems
 
         :Returns: `SamplingGrid`
         
@@ -117,13 +117,13 @@ class SamplingGrid (object):
         """
         :Parameters:
             `shape` : tuple of ints
-                TODO
+                The shape of the grid
             `mapping` : `mapping.Mapping`
-                TODO
+                The mapping between input and output coordinates
             `input_coords` : `CoordinateSystem`
-                TODO
+                The input coordinate system
             `output_coords` : `CoordinateSystem`
-                TODO
+                The output coordinate system
         """
         # These guys define the structure of the grid.
         self.shape = tuple(shape)
@@ -177,7 +177,7 @@ class SamplingGrid (object):
         :Parameters:
             `start` : TODO
                 TODO
-            `step` ; TODO
+            `step` : TODO
                 TODO
             `count` : TODO
                 TODO

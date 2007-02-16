@@ -139,8 +139,8 @@ class SliceIterator(Iterator):
     def __init__(self, img, axis=0, mode='r'):
         """
         :Parameters:
-            `img` : TODO
-                TODO
+            `img` : `image.image.Image`
+                The image being iterated over.
             `axis` : int or [int]
                 The index of the axis (or axes) to be iterated over. If a list
                 is supplied, the axes are iterated over slowest to fastest.
@@ -271,12 +271,13 @@ class ParcelIterator(Iterator):
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
         """
         :Parameters:
+            `image` : `image.image.Image`
+                The image to be iterated over
             `parcelmap` : [int]
                 This is an int array of the same shape as img.
                 The different values of the array define different regions in
                 the image. For example, all the 0s define a region, all the 1s
-                define another region, etc.
-           
+                define another region, etc.           
             `parcelseq` : [int] or [(int, int, ...)]
                 This is an array of integers or tuples of integers, which
                 define the order to iterate over the regions. Each element of
@@ -285,6 +286,10 @@ class ParcelIterator(Iterator):
                 the region taken at each iteration. If parcelseq is None then
                 the iterator will go through one region for each number in
                 parcelmap.
+            `mode` : string
+                The mode to run the iterator in.
+                    'r' - read-only (default)
+                    'w' - read-write                
         """
         Iterator.__init__(self, img, mode)
         self.parcelmap = N.asarray(parcelmap)
@@ -359,9 +364,9 @@ class ParcelIteratorItem(IteratorItem):
         :Parameters:
             `img` : `image.image.Image`
                 The image being iterated over.
-            `slice_` : TODO
+            `slice_` : slice
                 TODO
-            `label` : TODO
+            `label` : int or tuple of int
                 TODO
         """
         IteratorItem.__init__(self, img, slice_)
@@ -393,12 +398,23 @@ class fMRIParcelIterator(ParcelIterator):
         :Parameters:
             `img` : `modalities.fmri.fMRIImage`
                 The fmri image being iterated over.
-            `parcelmap` : TODO
-                TODO
-            `parcelseq` : TODO
-                TODO
+            `parcelmap` : [int]
+                This is an int array of the same shape as img.
+                The different values of the array define different regions in
+                the image. For example, all the 0s define a region, all the 1s
+                define another region, etc.           
+            `parcelseq` : [int] or [(int, int, ...)]
+                This is an array of integers or tuples of integers, which
+                define the order to iterate over the regions. Each element of
+                the array can consist of one or more different integers. The
+                union of the regions defined in parcelmap by these values is
+                the region taken at each iteration. If parcelseq is None then
+                the iterator will go through one region for each number in
+                parcelmap.                
             `mode` : string
-                TODO
+                The mode to run the iterator in.
+                    'r' - read-only (default)
+                    'w' - read-write
         """
         ParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
         self.iterator_item = fMRIParcelIteratorItem
@@ -414,9 +430,9 @@ class fMRIParcelIteratorItem(IteratorItem):
         :Parameters:
             `img` : `modalities.fmri.fMRIImage`
                 The fmri image being iterated over.
-            `slice_` : TODO
+            `slice_` : slice
                 TODO
-            `label` : TODO
+            `label` : int or tuple of int
                 TODO
         """
         IteratorItem.__init__(self, img, slice_)
@@ -447,12 +463,23 @@ class SliceParcelIterator(ParcelIterator):
         :Parameters:
             `img` : `image.image.Image`
                 The image being iterated over.
-            `parcelmap` : TODO
-                TODO
-            `parcelseq` : TODO
-                TODO
+            `parcelmap` : [int]
+                This is an int array of the same shape as img.
+                The different values of the array define different regions in
+                the image. For example, all the 0s define a region, all the 1s
+                define another region, etc.           
+            `parcelseq` : [int] or [(int, int, ...)]
+                This is an array of integers or tuples of integers, which
+                define the order to iterate over the regions. Each element of
+                the array can consist of one or more different integers. The
+                union of the regions defined in parcelmap by these values is
+                the region taken at each iteration. If parcelseq is None then
+                the iterator will go through one region for each number in
+                parcelmap.                
             `mode` : string
-                TODO
+                The mode to run the iterator in.
+                    'r' - read-only (default)
+                    'w' - read-write
         """
         ParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
         self.i = 0
@@ -489,9 +516,9 @@ class SliceParcelIteratorItem(IteratorItem):
         :Parameters:
             `img` : `image.image.Image`
                 The image being iterated over.
-            `slice_` : TODO
+            `slice_` : slice
                 TODO
-            `label` : TODO
+            `label` : int or tuple of int
                 TODO
             `i` : TODO
                 TODO
@@ -521,14 +548,25 @@ class fMRISliceParcelIterator(SliceParcelIterator):
     def __init__(self, img, parcelmap, parcelseq, mode='r'):
         """
         :Parameters:
-            `img` : TODO
-                TODO
-            `parcelmap` : TODO
-                TODO
-            `parcelseq` : TODO
-                TODO
+            `img` : `modalities.fmri.fMRIImage`
+                The fmri image to be iterated over
+            `parcelmap` : [int]
+                This is an int array of the same shape as img.
+                The different values of the array define different regions in
+                the image. For example, all the 0s define a region, all the 1s
+                define another region, etc.           
+            `parcelseq` : [int] or [(int, int, ...)]
+                This is an array of integers or tuples of integers, which
+                define the order to iterate over the regions. Each element of
+                the array can consist of one or more different integers. The
+                union of the regions defined in parcelmap by these values is
+                the region taken at each iteration. If parcelseq is None then
+                the iterator will go through one region for each number in
+                parcelmap.                
             `mode` : string
-                TODO
+                The mode to run the iterator in.
+                    'r' - read-only (default)
+                    'w' - read-write
         """
         SliceParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
         self.iterator_item = fMRISliceParcelIteratorItem
@@ -546,7 +584,7 @@ class fMRISliceParcelIteratorItem(IteratorItem):
                 The fmri image being iterated over.
             `slice_` : TODO
                 TODO
-            `label` : TODO
+            `label` : int or tuple of int
                 TODO
             `i` : TODO
                 TODO
