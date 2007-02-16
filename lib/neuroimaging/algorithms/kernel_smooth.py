@@ -7,7 +7,7 @@ import gc
 
 import numpy as N
 import numpy.fft as fft
-import numpy.linalg as NL
+import numpy.linalg as L
 
 from neuroimaging.core.api import Image, Affine
 
@@ -200,11 +200,11 @@ def _crop(X, tol=1.0e-10):
     
     aX = N.fabs(X)
     n = len(X.shape)
-    I = N.indices(X.shape)[:,N.greater(aX, tol)]
+    I = N.indices(X.shape)[:, N.greater(aX, tol)]
     if I.shape[1] > 0:
         m = [I[i].min() for i in range(n)]
         M = [I[i].max() for i in range(n)]
-        slices = [slice(m[i],M[i]+1,1) for i in range(n)]
+        slices = [slice(m[i], M[i]+1, 1) for i in range(n)]
         return X[slices]
     else:
         return N.zeros((1,)*n)
