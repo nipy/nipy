@@ -24,19 +24,19 @@ class fMRISamplingGrid(SamplingGrid):
         """
         :Parameters:
             `shape` : tuple of ints
-                TODO
-            `mapping` : TODO
-                TODO
-            `input_coords` : TODO
-                TODO
-            `output_coords` : TODO            
-                TODO
+                The shape of the grid
+            `mapping` : `mapping.Mapping`
+                The mapping between input and output coordinates
+            `input_coords` : `CoordinateSystem`
+                The input coordinate system
+            `output_coords` : `CoordinateSystem`
+                The output coordinate system
         """
         SamplingGrid.__init__(self, shape, mapping, input_coords, output_coords)
 
 
     def isproduct(self, tol = 1.0e-07):
-        """Determine whether the affine ation is 'diagonal' in time.
+        """Determine whether the affine transformation is 'diagonal' in time.
         
         :Parameters:
             `tol` : float
@@ -112,11 +112,12 @@ class fMRIImage(Image):
         self.frametimes = keywords.get('frametimes', None)
         self.slicetimes = keywords.get('slicetimes', None)
 
-        self.grid = fMRISamplingGrid(self.grid.shape, self.grid.mapping, self.grid.input_coords, self.grid.output_coords)
+        self.grid = fMRISamplingGrid(self.grid.shape, self.grid.mapping,
+                                     self.grid.input_coords,
+                                     self.grid.output_coords)
         if self.grid.isproduct():
             ndim = len(self.grid.shape)
-            n = [self.grid.input_coords.axisnames()[i] \
-                 for i in range(ndim)]
+            n = self.grid.input_coords.axisnames()[:ndim]
             try:
                 d = n.index('time')
             except ValueError:
@@ -165,7 +166,7 @@ class fMRIImage(Image):
 
     def from_slice_iterator(self, other, axis=1):
         """
-        Take an existing L{SliceIterator} and use it to set the values
+        Take an existing `SliceIterator` and use it to set the values
         in this image. By default we iterate over the ``axis=1`` for this image
         instead of ``axis=0`` as for the `Image` class.
 
