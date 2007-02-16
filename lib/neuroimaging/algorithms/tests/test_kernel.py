@@ -65,6 +65,7 @@ class test_SigmaFWHM(NumpyTestCase):
     
             kernel = LinearFilter(grid, fwhm=R.random_integers(50,100)/10.)
             ssignal = kernel.smooth(signal)
+            ssignal[:] *= kernel.norms[kernel.normalization]
 
             I = N.indices(ssignal.shape)
             I.shape = (3, N.product(shape))

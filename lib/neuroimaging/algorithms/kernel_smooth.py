@@ -18,6 +18,8 @@ class LinearFilter(object):
     would be better!
     '''
 
+    normalization = 'l1sum'
+    
     def __init__(self, grid, fwhm=6.0, scale=1.0, location=0.0,
                  cov=None):
         """
@@ -54,7 +56,10 @@ class LinearFilter(object):
         kernel = self(X)
         
         kernel = _crop(kernel)
-        self.l2norm = N.sqrt((kernel**2).sum())
+        self.norms = {'l2':N.sqrt((kernel**2).sum()),
+                      'l1':N.fabs(kernel).sum(),
+                      'l1sum':kernel.sum()}
+
         self._kernel = kernel
 
         self.shape = (N.ceil((N.asarray(self.grid.shape) +
@@ -122,11 +127,11 @@ class LinearFilter(object):
                 data = N.nan_to_num(data)
             if not is_fft:
                 data = self._presmooth(data)
-                data *= self.fkernel
+                data *= self.fkernel 
             else:
                 data *= self.fkernel
 
-            data = fft.irfftn(data)
+            data = fft.irfftn(data) / self.norms[self.normalization]
 
             gc.collect()
             _dslice = [slice(0, self.grid.shape[i], 1) for i in range(3)]
