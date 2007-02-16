@@ -46,9 +46,31 @@ class DelayContrast(Contrast):
     """
 
     def _sequence_call(self, time):
+        """
+        :Parameters:
+            `time` : TODO
+                TODO
+
+        :Returns: ``numpy.ndarray``
+        """
         return N.array([fn(time) for fn in self._sequence_fn])
 
     def __init__(self, fns, weights, formula, IRF=None, name='', rownames=[]):
+        """
+        :Parameters:
+            `fns` : TODO
+                TODO
+            `weights` : TODO
+                TODO
+            `formula` : TODO
+                TODO
+            `IRF` : TODO
+                TODO
+            `name` : string
+                TODO
+            `rownames` : [string]
+                TODO
+        """
         if IRF is None:
             self.IRF = canonical
         else:
@@ -87,6 +109,13 @@ class DelayContrast(Contrast):
             self.rownames = rownames
 
     def getmatrix(self, time=None):
+        """
+        :Parameters:
+            `time` : TODO
+                TODO
+
+        :Returns: ``None``
+        """
         Contrast.getmatrix(self, time=time)
 
         cnrow = self.matrix.shape[0] / 2
@@ -113,6 +142,15 @@ class DelayContrast(Contrast):
         [(f ** HRF)(t), (f ** dHRF(t))]
 
         are in the column space of the fMRI regression model.
+
+        :Parameters:
+            `t` : TODO
+                TODO
+
+        :Returns: ``None``
+
+        :Raises ValueError: if any of the columns are not in the column space
+            of the model
         """
         
         D = self.formula(t).T
@@ -134,7 +172,7 @@ class DelayContrast(Contrast):
                     else:
                         name = ''
                     raise ValueError, 'delay contrast %snot estimable' % name
-        return 
+
 
     def _extract_effect(self, results):
 
@@ -227,6 +265,32 @@ class DelayContrastOutput(TContrastOutput):
     def __init__(self, grid, contrast, IRF=None, dt=0.01, delta=None, 
                  subpath='delays', clobber=False, path='.',
                  ext='.hdr', frametimes=[], **kw):
+        """
+        :Parameters:
+            `grid` : TODO
+                TODO
+            `contrast` : TODO
+                TODO
+            `IRF` : TODO
+                TODO
+            `dt` : float
+                TODO
+            `delta` : TODO
+                TODO
+            `subpath` : string
+                TODO
+            `clobber` : bool
+                TODO
+            `path` : string
+                TODO
+            `ext` : string
+                TODO
+            `frametimes` : TODO
+                TODO
+            `kw` : dict
+                Passed through to the constructor of `TContrastOutput`
+            
+        """
         TContrastOutput.__init__(self, grid, contrast, subpath=subpath,
                                  clobber=clobber, frametimes=frametimes, **kw)
         self.IRF = IRF
@@ -254,6 +318,20 @@ class DelayContrastOutput(TContrastOutput):
         the \'magnitude\' (canonical HRF) contrast matrix and \'magnitude\'
         column space are also output to illustrate what contrast this
         corresponds to.
+
+        :Parameters:
+            `path` : string
+                TODO
+            `clobber` : bool
+                TODO
+            `subpath` : string
+                TODO
+            `ext` : TODO
+                TODO
+            `frametimes` : TODO
+                TODO
+
+        :Returns: ``None``
         """
 
         self.timgs = []
@@ -318,9 +396,23 @@ class DelayContrastOutput(TContrastOutput):
                 del(f); del(g)
                 
     def extract(self, results):
+        """
+        :Parameters:
+            `results` : TODO
+                TODO
+
+        :Returns: TODO        
+        """
         return self.contrast.extract(results)
 
     def set_next(self, data):
+        """
+        :Parameters:
+            `data` : TODO
+                TODO
+
+        :Returns: ``None``
+        """
         nout = self.contrast.weights.shape[0]
         for i in range(nout):
             self.timg_iters[i].next().set(data.t[i])
@@ -339,6 +431,15 @@ class DelayHRF(hrf.SpectralHRF):
     '''
 
     def __init__(self, input_hrf=hrf.canonical, spectral=True, **keywords):
+        """
+        :Parameters:
+            `input_hrf` : TODO
+                TODO
+            `spectral` : bool
+                TODO
+            `keywords` : dict
+                Passed through as keywords to the `spectralHRF` constructor.
+        """
         hrf.SpectralHRF.__init__(self, input_hrf, spectral=spectral,
                                  names=['hrf'], **keywords)
 
@@ -348,6 +449,19 @@ class DelayHRF(hrf.SpectralHRF):
         Effectively, a Taylor series approximation to fn(t+delta), in delta,
         with basis given by the filter elements. If fn is None, it assumes
         fn=IRF[0], that is the first filter.
+
+        :Parameters:
+            `tmax` : float
+                TODO
+            `lower` : float
+                TODO
+            `delta` : [float]
+                TODO
+
+        :Returns: ``None``
+
+        Example
+        -------
 
         >>> from numpy.random import *
         >>> from pylab import *
