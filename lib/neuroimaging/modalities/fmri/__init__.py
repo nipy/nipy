@@ -6,13 +6,8 @@ __docformat__ = 'restructuredtext'
 
 import numpy as N
 
-from neuroimaging.core.image.image import Image
-from neuroimaging.core.reference.coordinate_system import CoordinateSystem
-from neuroimaging.core.reference.grid import SamplingGrid
-from neuroimaging.core.reference.iterators import ParcelIterator
-from neuroimaging.core.reference.mapping import Mapping, Affine
-
-from neuroimaging.core.reference.iterators import SliceIterator
+from neuroimaging.core.api import Image, CoordinateSystem, SamplingGrid, \
+     ParcelIterator, SliceIterator, Mapping, Affine
 
 
 class fMRISamplingGrid(SamplingGrid):
