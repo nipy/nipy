@@ -32,8 +32,7 @@ class ImageOneSample(onesample.OneSampleIterator):
             imgs = [val[0] for val in input]
             wimgs = [val[1] for val in input]
             self.iterator = ImageSequenceIterator(imgs)
-            self.witerator = ImageSequenceIterator(wimgs,
-                                                   grid=self.iterator.grid)
+            self.witerator = ImageSequenceIterator(wimgs)
         else:
             self.haveW = False
             self.iterator = ImageSequenceIterator(input)
@@ -41,23 +40,24 @@ class ImageOneSample(onesample.OneSampleIterator):
         onesample.OneSampleIterator.__init__(self, self.iterator,
                                              outputs=outputs)
 
+        grid = self.iterator.imgs[0].grid
         if self.which == 'mean':
             if t:
-                self.outputs.append(TOutput(self.iterator.grid, path=path,
+                self.outputs.append(TOutput(grid, path=path,
                                             clobber=clobber, ext=ext))
             if sd:
-                self.outputs.append(SdOutput(self.iterator.grid, path=path,
+                self.outputs.append(SdOutput(grid, path=path,
                                              clobber=clobber, ext=ext))
             if mean:
-                self.outputs.append(MeanOutput(self.iterator.grid, path=path,
+                self.outputs.append(MeanOutput(grid, path=path,
                                                clobber=clobber, ext=ext))
         else:
             if est_varatio:
-                self.outputs.append(VaratioOutput(self.iterator.grid, path=path,
+                self.outputs.append(VaratioOutput(grid, path=path,
                                                   clobber=clobber, ext=ext))
 
             if est_varfix:
-                self.outputs.append(VarfixOutput(self.iterator.grid, path=path,
+                self.outputs.append(VarfixOutput(grid, path=path,
                                                  clobber=clobber, ext=ext))
 
     def weights(self):

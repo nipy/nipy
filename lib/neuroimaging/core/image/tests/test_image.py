@@ -210,10 +210,6 @@ class ImageSequenceIteratorTest(unittest.TestCase):
         for x in it:
             self.assertTrue(isinstance(x, N.ndarray))
 
-        it = ImageSequenceIterator(imgs, grid=imgs[-1].grid)
-        for x in it:
-            self.assertTrue(isinstance(x, N.ndarray))
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -610,24 +610,17 @@ class fMRISliceParcelIteratorItem(IteratorItem):
 
 class ImageSequenceIterator(object):
     """
-    Take a sequence of `Image`\ s, and an optional grid (which defaults to
-    imgs[0].grid) and create an iterator whose next method returns array with
-    shapes (len(imgs),) + self.imgs[0].next().shape Very useful for voxel-based
-    methods, i.e. regression, one-sample t.
+    Take a sequence of `Image`\ s, and create an iterator whose next method
+    returns array with shapes (len(imgs),) + self.imgs[0].next().shape Very
+    useful for voxel-based methods, i.e. regression, one-sample t.
     """
-    def __init__(self, imgs, grid=None):
+    def __init__(self, imgs):
         """
         :Parameters:
             `imgs` : ``[`Image`]``
                 The sequence of images to iterate over
-            `grid` : `reference.grid.SamplingGrid`
-                A grid to be used as the grid attribute for this iterator.
         """
         self.imgs = imgs
-        if grid is None:
-            self.grid = self.imgs[0].grid
-        else:
-            self.grid = grid
         self.iters = None
         iter(self)
 
