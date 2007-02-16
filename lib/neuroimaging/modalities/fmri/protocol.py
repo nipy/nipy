@@ -214,6 +214,13 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
     where the events are (square wave) approximations
     of a delta function, non zero on [start, start+dt). 
 
+    Notes:
+    ------
+
+    self[key] returns the __UNCONVOLVED__ factor, even if the
+    ExperimentalFactor has been convolved with an HRF. 
+    
+
     """
     
     def __init__(self, name, iterator, convolved=False, delta=True, dt=0.02):
