@@ -147,29 +147,22 @@ def fromurl(turl, ndim=3):
         return xfmfromstr(data, ndim=ndim)
 
 
-def isdiagonal(matrix, tol=1.0e-7):
+def isdiagonal(matrix):
     """
-    Test if the given matrix is diagonal (to a given tolerance)
+    Test if the given matrix is diagonal.
 
     :Parameters:
         `matrix` : numpy.ndarray
             The matrix to check.
-        `tol` : float
-            The tolerance level to be used.
-
     :Returns: ``bool``
+
+    :Precondition: matrix must be square
     """
 
     ndim = matrix.shape[0]
-    D = N.diag(N.diagonal(matrix))
-    dmatrix = matrix - D
-    dmatrix.shape = (ndim,)*2
-    dnorm = N.add.reduce(dmatrix**2)
-    fmatrix = 1. * matrix
-    fmatrix.shape = dmatrix.shape
-    norm = N.add.reduce(fmatrix**2)
-    return N.add.reduce(dnorm / norm) < tol
-
+    mask = ~N.identity(ndim, dtype=bool)
+    masked = N.ma.array(matrix, mask=mask, fill_value=0.).filled()
+    return N.all(masked == matrix)
 
 
 class Mapping(object):
