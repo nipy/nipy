@@ -6,10 +6,10 @@ import numpy as N
 from neuroimaging.modalities.fmri.pca import PCA, MultiPlot
 from neuroimaging.core.image.image import Image
 
-from fiac import Run
+import fiac, io
 from montage import Montage
 
-class PCARun(Run):
+class Run(fiac.Run):
 
     which = traits.ListInt(range(4),
                            desc='Which components should we output?')
@@ -54,13 +54,13 @@ class PCARun(Run):
         time_plot.draw()
         self.drawers.append(time_plot)
     
+def run(subj=3, run=3):
+    """
+    Run through a PCA analysis for a run of FIAC data.
+    """
+    study = fiac.Study(root=io.data_path)
+    subject = fiac.Subject(subj, study=study)
 
-if __name__ == '__main__':
-    import io
-    from fiac import Subject, Study
-    study = Study(root=io.data_path)
-    subject = Subject(3, study=study)
-    pcarun = PCARun(subject, 3)
+    pcarun = PCA(subject, 3)
     pcarun.fit()
-    pcarun.view()
-    pylab.show()
+
