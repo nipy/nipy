@@ -29,18 +29,18 @@ class SamplingGrid (object):
         and step.
 
         :Parameters:
-            `names` : tuple of string
+            names : ``tuple`` of ``string``
                 TODO
-            `shape` : tuple of int
+            shape : ``tuple`` of ``int``
                 TODO
-            `start` : tuple of float
+            start : ``tuple`` of ``float``
                 TODO
-            `step` : tuple of float
+            step : ``tuple`` of ``float``
                 TODO
 
         :Returns: `SamplingGrid`
         
-        :Predcondition: len(names) == len(shape) == len(start) == len(step)
+        :Predcondition: ``len(names) == len(shape) == len(start) == len(step)``
         """
         ndim = len(names)
         # fill in default step size
@@ -61,16 +61,16 @@ class SamplingGrid (object):
         Return an identity grid of the given shape.
         
         :Parameters:
-            `shape` : tuple of int
+            shape : ``tuple`` of ``int``
                 TODO
-            `names` : tuple of string
+            names : ``tuple`` of ``string``
                 TODO
 
         :Returns: `SamplingGrid`
         
-        :Precondition: len(shape) == len(names)
+        :Precondition: ``len(shape) == len(names)``
         
-        :Raises ValueError: if len(shape) != len(names)
+        :Raises ValueError: ``if len(shape) != len(names)``
         """
         ndim = len(shape)
         if len(names) != ndim:
@@ -88,18 +88,18 @@ class SamplingGrid (object):
         Return grid using a given `Affine` mapping
         
         :Parameters:
-            `mapping` : `Affine`
+            mapping : `Affine`
                 An affine mapping between the input and output coordinate systems.
-            `shape` : tuple of int
+            shape : ``tuple`` of ``int``
                 The shape of the grid
-            `names` : tuple of string
+            names : ``tuple`` of ``string``
                 The names of the axes of the coordinate systems
 
         :Returns: `SamplingGrid`
         
-        :Precondition: len(shape) == len(names)
+        :Precondition: ``len(shape) == len(names)``
         
-        :Raises ValueError: if len(shape) != len(names)
+        :Raises ValueError: ``if len(shape) != len(names)``
         """
         ndim = len(names)
         if mapping.ndim() != ndim:
@@ -116,13 +116,13 @@ class SamplingGrid (object):
     def __init__(self, shape, mapping, input_coords, output_coords):
         """
         :Parameters:
-            `shape` : tuple of ints
+            shape : ``tuple`` of ``ints``
                 The shape of the grid
-            `mapping` : `mapping.Mapping`
+            mapping : `mapping.Mapping`
                 The mapping between input and output coordinates
-            `input_coords` : `CoordinateSystem`
+            input_coords : `CoordinateSystem`
                 The input coordinate system
-            `output_coords` : `CoordinateSystem`
+            output_coords : `CoordinateSystem`
                 The output coordinate system
         """
         # These guys define the structure of the grid.
@@ -175,11 +175,11 @@ class SamplingGrid (object):
         specified axis with nslicedim=1.
         
         :Parameters:
-            `start` : TODO
+            start : TODO
                 TODO
-            `step` : TODO
+            step : TODO
                 TODO
-            `count` : TODO
+            count : TODO
                 TODO
         
         :Returns: `SamplingGrid`
@@ -212,7 +212,7 @@ class SamplingGrid (object):
         Apply a transformation (mapping) to this grid.
         
         :Parameters:
-            `mapping` : `mapping.Mapping`
+            mapping : `mapping.Mapping`
                 The mapping to be applied.
         
         :Returns: ``None``
@@ -244,9 +244,9 @@ class SamplingGrid (object):
         shape == (n,)+self.shape.
         
         :Parameters:
-            `n` : int
+            n : ``int``
                 TODO
-            `concataxis` : string
+            concataxis : ``string``
                 The name of the new dimension formed by concatenation
         """
         return ConcatenatedIdenticalGrids(self, n, concataxis=concataxis)
@@ -263,9 +263,9 @@ class ConcatenatedGrids(SamplingGrid):
     def __init__(self, grids, concataxis="concat"):
         """
         :Parameters:
-            `grid` : [`SamplingGrid`]
+            grid : ``[`SamplingGrid`]``
                 The grids to be used.
-            `concataxis` : string
+            concataxis : ``string``
                 The name of the new dimension formed by concatenation
         """        
         self.grids = self._grids(grids)
@@ -340,7 +340,7 @@ class ConcatenatedGrids(SamplingGrid):
         Return the i'th grid from the sequence of grids.
 
         :Parameters:
-           `i` : int
+           i : ``int``
                The index of the grid to return
 
         :Returns: `SamplingGrid`
@@ -357,11 +357,11 @@ class ConcatenatedIdenticalGrids(ConcatenatedGrids):
     def __init__(self, grid, n, concataxis="concat"):
         """
         :Parameters:
-            `grid` : SamplingGrid
+            grid : `SamplingGrid`
                 The grid to be used
-            `n` : int
+            n : ``int``
                 The number of tiems to concatenate the grid
-            `concataxis` : string
+            concataxis : ``string``
                 The name of the new dimension formed by concatenation
         """
         ConcatenatedGrids.__init__(self, [grid]*n , concataxis)

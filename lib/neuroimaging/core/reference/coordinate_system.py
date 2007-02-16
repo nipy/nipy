@@ -18,9 +18,9 @@ class CoordinateSystem(odict):
         Create a coordinate system with a given name and axes.
 
         :Parameters:
-            `name` : string
+            name : ``string``
                 The name of the coordinate system
-            `axes` : [`axis.Axis`]
+            axes : ``[`axis.Axis`]``
                 The axes which make up the coordinate system
         """
         self.name = name
@@ -32,7 +32,7 @@ class CoordinateSystem(odict):
         Return an axis indexed by name
 
         :Parameters:
-            `axisname` : string
+            axisname : ``string``
                 The name of the axis to return
 
         :Returns: `axis.Axis`
@@ -60,7 +60,7 @@ class CoordinateSystem(odict):
         Equality is defined by he axes and the name.
 
         :Parameters:
-            `other` : CoordinateSystem
+            other : `CoordinateSystem`
                 The object to be compared with
 
         :Returns: ``bool``
@@ -104,9 +104,9 @@ class CoordinateSystem(odict):
         reordered coordinate system.
 
         :Parameters:
-            `name` : string
+            name : ``string``
                 The name for the new coordinate system
-            `order` : [int]
+            order : ``[int]``
                 The order of the axes, e.g. [2, 0, 1]
 
         :Returns:
@@ -121,7 +121,7 @@ class CoordinateSystem(odict):
         """ Create a new coordinate system with the axes reversed. 
 
         :Parameters:
-            `name` : string
+            name : ``string``
                 The name for the new coordinate system
 
         :Returns: ``CoordinateSystem``
@@ -136,7 +136,7 @@ class CoordinateSystem(odict):
         Does self contain an axis with the given name
 
         :Parameters:
-            `name` : string
+            name : ``string``
                 The name to be tested for
 
         :Returns: ``bool``
@@ -148,7 +148,7 @@ class CoordinateSystem(odict):
         """ Return the axis with a given name
 
         :Parameters:
-            `name` : string
+            name : ``string``
                 The name of the axis to return
 
         :Returns: `axis.Axis`
@@ -161,7 +161,7 @@ class CoordinateSystem(odict):
         Verify whether x is a valid coordinate.
 
         :Parameters:
-            `x` : tuple or list of int or float
+            x : ``tuple`` or ``list`` of ``int`` or ``float``
                 A voxel
 
         :Returns: ``bool``
@@ -187,11 +187,11 @@ class VoxelCoordinateSystem(CoordinateSystem):
     def __init__(self, name, axes, shape=None):
         """
         :Parameters:
-            `name` : string
+            name : ``string``
                 The name of the coordinate system
-            `axes` : [`axis.Axis`]
+            axes : ``[`axis.Axis`]``
                 The axes which make up the coordinate system
-            `shape` : tuple of ints
+            shape : ``tuple`` of ``int``
                 The shape of the coordinate system. If ``None`` then the shape
                 is determined by the lengths of the ``axes``
         
@@ -215,9 +215,9 @@ class DiagonalCoordinateSystem(CoordinateSystem):
     def __init__(self, name, axes):
         """
         :Parameters:
-            `name` : string
+            name : ``string``
                 The name of the coordinate system
-            `axes` : [`axis.Axis`]
+            axes : ``[`axis.Axis`]``
                 The axes which make up the coordinate system        
         """
         self.shape = [dim.length for dim in axes]

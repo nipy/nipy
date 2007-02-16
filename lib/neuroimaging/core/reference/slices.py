@@ -17,6 +17,16 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
 
     By default the output coordinate system is the MNI world.
 
+    :Parameters:
+        origin : TODO
+            TODO
+        colvectors : TODO
+            TODO
+        shape : TODO
+            TODO
+        output_coords : TODO
+            TODO
+
     :Returns: `grid.SamplingGrid`
     """
 
@@ -52,6 +62,23 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
 def box_slices(zlim, ylim, xlim, shape, x=N.inf, y=N.inf, z=N.inf):
     """
     Create a set of 3 sampling grids representing slices along each plane.
+
+    :Parameters:
+        zlim : TODO
+            TODO
+        ylim : TODO
+            TODO
+        xlim : TODO
+            TODO
+        shape : TODO
+            TODO
+        x : TODO
+            TODO
+        y : TODO
+            TODO
+        z : TODO
+            TODO
+    
     """
     if x == N.inf:
         x = (xlim[0]+xlim[1])/2.
@@ -93,6 +120,18 @@ def yslice(y, zlim, ylim, xlim, shape):
     """
     Return a slice through a 3d box with y fixed.
     Defaults to a slice through MNI coordinates.
+
+    :Parameters:
+        y : TODO
+            TODO
+        zlim : TODO
+            TODO
+        ylim : TODO
+            TODO
+        xlim : TODO
+            TODO
+        shape : TODO
+            TODO
     """
     return box_slices(zlim, ylim, xlim, shape, y=y)[0]
 
@@ -100,6 +139,19 @@ def xslice(x, zlim, ylim, xlim, shape):
     """
     Return a slice through a 3d box with x fixed.
     Defaults to a slice through MNI coordinates.
+
+    :Parameters:
+        x : TODO
+            TODO
+        zlim : TODO
+            TODO
+        ylim : TODO
+            TODO
+        xlim : TODO
+            TODO
+        shape : TODO
+            TODO
+
     """
     return box_slices(zlim, ylim, xlim, shape, x=x)[1]
 
@@ -107,12 +159,29 @@ def zslice(z, zlim, ylim, xlim, shape):
     """
     Return a slice through a 3d box with z fixed.
     Defaults to a slice through MNI coordinates.
+
+    :Parameters:
+        z : TODO
+            TODO
+        zlim : TODO
+            TODO
+        ylim : TODO
+            TODO
+        xlim : TODO
+            TODO
+        shape : TODO
+            TODO
+
     """
     return box_slices(zlim, ylim, xlim, shape, z=z)[2]
 
 def bounding_box(grid):
     """
     Determine a valid bounding box from a SamplingGrid instance.
+
+    :Parameters:
+        grid : `SamplingGrid`
+            TODO
     """
     return [[r.min(), r.max()] for r in grid.range()]
     

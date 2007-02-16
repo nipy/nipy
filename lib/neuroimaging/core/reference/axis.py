@@ -42,7 +42,7 @@ class Axis(object):
         Create an axis with a given name.
 
         :Parameters:
-            `name` : string
+            name : ``string``
                 The name for the axis.
 
         :Precondition: name must be an element of axis.valid
@@ -58,7 +58,7 @@ class Axis(object):
         """ Equality is defined by name.
 
         :Parameters:
-            `other` : `Axis`
+            other : `Axis`
                 The object to be compared with.
 
         :Returns: ``bool``
@@ -69,7 +69,7 @@ class Axis(object):
         """ Test if x is a point on the axis. 
 
         :Parameters:
-            `x` : float
+            x : ``float``
                 A numerical value
 
         :Returns: ``bool``
@@ -113,11 +113,11 @@ class ContinuousAxis(Axis):
     def __init__(self, name, low=-N.inf, high=N.inf):
         """
         :Parameters:
-            `name` : string
+            name : ``string``
                 The name for the axis
-            `low` : numpy.float
+            low : ``numpy.float``
                 The lower bound of the axis
-            `high` : numpy.float
+            high : ``numpy.float``
                 The upper bound of the axis
 
         Notes
@@ -137,7 +137,7 @@ class ContinuousAxis(Axis):
         """ Equality is defined by name and range. 
 
         :Parameters:
-            `other` : `ContinuousAxis`
+            other : `ContinuousAxis`
                 The object to be compared with
 
         :Returns: ``bool``
@@ -151,7 +151,7 @@ class ContinuousAxis(Axis):
         The axis is defined as the range ``[low:high)``.
 
         :Parameters:
-            `x` : float
+            x : ``float``
                 A numerical value
 
         :Returns: ``bool``
@@ -194,13 +194,13 @@ class RegularAxis (Axis):
         Create a regularly spaced axis with a given name.
 
         :Parameters:
-            `name` : string
+            name : ``string``
                 The name for the axis
-            `length` : numpy.float
+            length : ``numpy.float``
                 The overall length of the axis
-            `start` : numpy.float
+            start : ``numpy.float``
                 The starting value of the axis
-            `step` : numpy.float
+            step : ``numpy.float``
                 The spacing of the points on the axis
 
         :Precondition: ''name'' must be an element of axis.valid
@@ -215,7 +215,7 @@ class RegularAxis (Axis):
         """ Equality is defined by ``(start, stop, length)`` and ``name``. 
 
         :Parameters:
-            `other` : `RegularAxis`
+            other : `RegularAxis`
                 The object to be compared with
 
         :Returns: ``bool``
@@ -229,7 +229,7 @@ class RegularAxis (Axis):
         """ Test if x is a point on the axis. 
 
         :Parameters:
-            `x` : float
+            x : ``float``
                 A numerical value
 
         :Returns: ``bool``
@@ -282,9 +282,9 @@ class VoxelAxis (RegularAxis):
         Create a voxel axis with a given name.
 
         :Parameters:
-            `name` : string
+            name : ``string``
                 The name for the axis
-            `length` : numpy.float
+            length : ``numpy.float``
                 The overall length of the axis
 
         :Precondition: ``name`` must be an element of `axis.valid`

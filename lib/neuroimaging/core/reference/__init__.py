@@ -33,10 +33,12 @@ slices.py functions are presented which will return a `SamplingGrid` representin
 a single slice through a larger grid.
 
 """
+__docformat__ = 'restructuredtext'
+
 from neuroimaging.core.reference import \
   axis, coordinate_system, grid, mapping, mni, slices
 
 __all__ = ["axis", "coordinate_system", "grid", "mapping", 
            "mni", "slices"]
 
-__docformat__ = 'restructuredtext'
+
