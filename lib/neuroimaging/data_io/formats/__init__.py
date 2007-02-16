@@ -1,19 +1,4 @@
 """
-Format is a class which is abstract enough for Images to talk with. It has:
-
-*grid and datasource
-*metadata in the form of a "header"
-*data get/set (though no specific means to find that data)
-*canonical fields, which is a sort of intersection of all specific
-formats' metadata, but in a known NI language
-
-BinaryFormat(Format) is an object with binary header data and a "brick" of
-binary data. The binary.py module has a lot of struct packing/unpacking
-methods to make life nicer. BinaryFormats have:
-*filenames and modes--in fact, BinaryFormats are always constructed with a
-filename, this is not an option anymore (makes sense to me).
-*header formats (in package struct language)
-*means to read/write contiguous/deterministic-style headers
 
 """
 __all__ = ['Format']
@@ -29,6 +14,17 @@ from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.image.base_image import BaseImage
 
 class Format(BaseImage):
+    """
+    Format is a class which is abstract enough for Images to talk with. It has:
+
+    *grid and datasource
+    *metadata in the form of a "header"
+    *data get/set (though no specific means to find that data)
+    *canonical fields, which is a sort of intersection of all specific
+    formats' metadata, but in a known NI language
+    """
+
+
 
     """ Valid filename extensions for the file format. """ 
     extensions = []
@@ -69,20 +65,33 @@ class Format(BaseImage):
 
 
     def inform_canonical(self, fieldsDict=None):
+        """
+        :Raises NotImplementedError: Abstract method
+        """
         raise NotImplementedError
 
 
     def __str__(self):
+        """
+        :Returns:
+            `string`
+        """
         return self.dump_header()
 
 
     def __getitem__(self, slice_):
-        """Data access"""
+        """Data access
+
+        :Raises NotImplementedError: Abstract method
+        """
         raise NotImplementedError
 
 
     def __setitem__(self, slice_, data):
-        """Data access"""
+        """Data access
+
+        :Raises NotImplementedError: Abstract method
+        """
         raise NotImplementedError        
 
 
@@ -108,6 +117,8 @@ class Format(BaseImage):
         """
         Add a field to the header. Type should be
         a format string interpretable by struct.pack.
+
+        :Raises NotImplementedError: Abstract method
         """
         raise NotImplementedError
 
@@ -116,6 +127,8 @@ class Format(BaseImage):
         """
         Remove a field from the header. Will Definitely Not
         remove any protected fields.
+
+        :Raises NotImplementedError: Abstract method
         """
         raise NotImplementedError
 
@@ -123,6 +136,8 @@ class Format(BaseImage):
     def set_header_field(self, name, value):
         """
         Set a field's value
+
+        :Raises NotImplementedError: Abstract method
         """ 
         raise NotImplementedError
 
@@ -130,11 +145,16 @@ class Format(BaseImage):
     def get_header_field(self, name):
         """
         Get a field's value
+
+        :Raises NotImplementedError: Abstract method
         """
         raise NotImplementedError
 
 
     def asfile(self):
+        """
+        :Raises NotImplementedError: Abstract method
+        """
         raise NotImplementedError
 
 format_modules = (
