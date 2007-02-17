@@ -131,7 +131,7 @@ class Image(object):
     def __getitem__(self, slice_):
         """
         :Parameters:
-            `slice_`: slice
+            `slice_` : slice
                 The slice of the image to take.
 
         :Returns: ``numpy.ndarray``
@@ -310,7 +310,7 @@ class ImageSequenceIterator(object):
         :Parameters:
             `imgs` : ``[`Image`]``
                 The sequence of images to iterate over
-            `grid` : `SamplingGrid`
+            `grid` : `reference.grid.SamplingGrid`
                 A grid to be used as the grid attribute for this iterator.
         """
         self.imgs = imgs
