@@ -29,16 +29,18 @@ class SamplingGrid (object):
         and step.
 
         :Parameters:
-            `names` : TODO
+            `names` : tuple of string
                 TODO
-            `shape` : TODO
+            `shape` : tuple of int
                 TODO
-            `start` : TODO
+            `start` : tuple of float
                 TODO
-            `step` : TODO
+            `step` : tuple of float
                 TODO
 
         :Returns: `SamplingGrid`
+        
+        :Predcondition: len(names) == len(shape) == len(start) == len(step)
         """
         ndim = len(names)
         # fill in default step size
@@ -59,12 +61,16 @@ class SamplingGrid (object):
         Return an identity grid of the given shape.
         
         :Parameters:
-            `shape` : TODO
+            `shape` : tuple of int
                 TODO
-            `names` : TODO
+            `names` : tuple of string
                 TODO
 
         :Returns: `SamplingGrid`
+        
+        :Precondition: len(shape) == len(names)
+        
+        :Raises ValueError: if len(shape) != len(names)
         """
         ndim = len(shape)
         if len(names) != ndim:
@@ -82,14 +88,18 @@ class SamplingGrid (object):
         Return grid using a given `Affine` mapping
         
         :Parameters:
-            `mapping` : TODO
+            `mapping` : `Affine`
                 TODO
-            `shape` : TODO
+            `shape` : tuple of int
                 TODO
-            `names` : TODO
+            `names` : tuple of string
                 TODO
 
         :Returns: `SamplingGrid`
+        
+        :Precondition: len(shape) == len(names)
+        
+        :Raises ValueError: if len(shape) != len(names)
         """
         ndim = len(names)
         if mapping.ndim() != ndim:
@@ -127,8 +137,7 @@ class SamplingGrid (object):
         """
         Create a copy of the grid.
 
-        :Returns:
-            `SamplingGrid`
+        :Returns: `SamplingGrid`
         """
         return SamplingGrid(self.shape, self.mapping, self.input_coords,
                             self.output_coords)
@@ -203,8 +212,8 @@ class SamplingGrid (object):
         Apply a transformation (mapping) to this grid.
         
         :Parameters:
-            `mapping` : TODO
-                TODO
+            `mapping` : `mapping.Mapping`
+                The mapping to be applied.
         
         :Returns: ``None``
         """
@@ -233,6 +242,12 @@ class SamplingGrid (object):
         """
         Duplicate self n times, returning a `ConcatenatedGrids` with
         shape == (n,)+self.shape.
+        
+        :Parameters:
+            `n` : int
+                TODO
+            `concataxis` : string
+                The name of the new dimension formed by concatenation
         """
         return ConcatenatedIdenticalGrids(self, n, concataxis=concataxis)
 
@@ -328,8 +343,7 @@ class ConcatenatedGrids(SamplingGrid):
            `i` : int
                The index of the grid to return
 
-        :Returns:
-            `SamplingGrid`
+        :Returns: `SamplingGrid`
         
         :Raises IndexError: if i in out of range.
         """

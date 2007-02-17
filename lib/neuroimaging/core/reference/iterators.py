@@ -106,6 +106,12 @@ class IteratorItem(object):
 
     def __init__(self, img, slice_):
         """ Create the `IteratorItem` for a given item and slice
+
+        :Parameters:
+            `img` : `image.image.Image`
+                The image being iterated over.
+            `slice_` : slice
+                TODO
         """
         self.img = img
         self.slice = slice_
@@ -133,6 +139,8 @@ class SliceIterator(Iterator):
     def __init__(self, img, axis=0, mode='r'):
         """
         :Parameters:
+            `img` : TODO
+                TODO
             `axis` : int or [int]
                 The index of the axis (or axes) to be iterated over. If a list
                 is supplied, the axes are iterated over slowest to fastest.
@@ -181,8 +189,7 @@ class SliceIterator(Iterator):
         """
         Do the hard work of generating the next item from the iterator.
 
-        :Returns:
-            `SliceIteratorItem`
+        :Returns: `SliceIteratorItem`
         """
         if self.n >= self.max:
             raise StopIteration
@@ -350,8 +357,8 @@ class ParcelIteratorItem(IteratorItem):
     def __init__(self, img, slice_, label):
         """
         :Parameters:
-            `img` : TODO
-                TODO
+            `img` : `image.image.Image`
+                The image being iterated over.
             `slice_` : TODO
                 TODO
             `label` : TODO
@@ -379,13 +386,13 @@ class ParcelIteratorItem(IteratorItem):
 class fMRIParcelIterator(ParcelIterator):
     """
     This class works in much the same way as the `ParcelIterator` except
-    that 
+    that ...TODO
     """
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
         """
         :Parameters:
-            `img` : TODO
-                TODO
+            `img` : `modalities.fmri.fMRIImage`
+                The fmri image being iterated over.
             `parcelmap` : TODO
                 TODO
             `parcelseq` : TODO
@@ -405,8 +412,8 @@ class fMRIParcelIteratorItem(IteratorItem):
     def __init__(self, img, slice_, label):
         """
         :Parameters:
-            `img` : TODO
-                TODO
+            `img` : `modalities.fmri.fMRIImage`
+                The fmri image being iterated over.
             `slice_` : TODO
                 TODO
             `label` : TODO
@@ -438,8 +445,8 @@ class SliceParcelIterator(ParcelIterator):
     def __init__(self, img, parcelmap, parcelseq, mode='r'):
         """
         :Parameters:
-            `img` : TODO
-                TODO
+            `img` : `image.image.Image`
+                The image being iterated over.
             `parcelmap` : TODO
                 TODO
             `parcelseq` : TODO
@@ -480,8 +487,8 @@ class SliceParcelIteratorItem(IteratorItem):
     def __init__(self, img, slice_, label, i):
         """
         :Parameters:
-            `img` : TODO
-                TODO
+            `img` : `image.image.Image`
+                The image being iterated over.
             `slice_` : TODO
                 TODO
             `label` : TODO
@@ -535,8 +542,8 @@ class fMRISliceParcelIteratorItem(IteratorItem):
     def __init__(self, img, slice_, label, i):
         """
         :Parameters:
-            `img` : TODO
-                TODO
+            `img` : `modalities.fmri.fMRIImage`
+                The fmri image being iterated over.
             `slice_` : TODO
                 TODO
             `label` : TODO
