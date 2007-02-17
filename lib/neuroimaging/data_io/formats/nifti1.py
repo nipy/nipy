@@ -425,7 +425,8 @@ class Nifti1(binary.BinaryFormat):
         """
         if self.header['scl_slope']:
             return x * self.header['scl_slope'] + self.header['scl_inter']
-        else: return x
+        else:
+            return x
 
     def prewrite(self, x):
         """
@@ -440,7 +441,9 @@ class Nifti1(binary.BinaryFormat):
         #
         # NIFTI1 also contains an intercept term, so see if that needs
         # to change
-        if x.shape == self.data.shape or x.max() > self[:].max():  
+
+        scaled_x = (x - self.header['scl_inter'])/self.header['scl_slope']
+        if x.shape == self.data.shape or scaled_x.max() > self.data.max():  
             if x.shape == self.data.shape:
                 minval = x.min()
             else:
@@ -466,7 +469,8 @@ class Nifti1(binary.BinaryFormat):
                 fp = self.datasource.open(self.header_file, 'rb+')
 
                 self.write_header(hdrfile=fp)
-
+                scaled_x = (x - self.header['scl_inter'])/self.header['scl_slope']
             
-        return (x - self.header['scl_inter'])/self.header['scl_slope']
+        return scaled_x
+
         
