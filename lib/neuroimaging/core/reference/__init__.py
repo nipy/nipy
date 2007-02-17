@@ -38,3 +38,5 @@ from neuroimaging.core.reference import \
 
 __all__ = ["axis", "coordinate_system", "grid", "iterators", "mapping", 
            "mni", "slices"]
+
+__docformat__ = 'restructuredtext'
