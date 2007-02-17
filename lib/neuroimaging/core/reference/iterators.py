@@ -31,7 +31,7 @@ class Iterator(object):
         Create an `Iterator` for an image
 
         :Parameters:
-            `img` : `Image`
+            `img` : `image.image.Image`
                 The image to be iterated over
             `mode` : string            
                 The mode to run the iterator in.
@@ -78,7 +78,7 @@ class Iterator(object):
         Setup the iterator to have a given image.
 
         :Parameters:
-            `img` : Image
+            `img` : `image.image.Image`
                 The new image for the iterator
         """
         self.img = img
@@ -90,7 +90,7 @@ class Iterator(object):
         initialised to the current position of the original iterator.
 
         :Parameters:
-            `img` : Image
+            `img` : `image.image.Image`
                 The image to be used with the new iterator
         """
         return self.__class__(img, mode=self.mode)
@@ -154,7 +154,7 @@ class SliceIterator(Iterator):
         Setup the iterator to have a given image.
 
         :Parameters:
-            `img` : Image
+            `img` : `image.image.Image`
                 The new image for the iterator
         """
         Iterator.set_img(self, img)
@@ -200,7 +200,7 @@ class SliceIterator(Iterator):
         initialised to the current position of the original iterator.
 
         :Parameters:
-            `img` : `Image`
+            `img` : `image.image.Image`
                 The image to be used with the new iterator
         """
         return self.__class__(img, axis=self.axis, mode=self.mode)
@@ -328,11 +328,10 @@ class ParcelIterator(Iterator):
         initialised to the current position of the original iterator.
 
         :Parameters:
-            `img` : `Image`
+            `img` : `image.image.Image`
                 The image to be used with the new iterator
 
-        :Returns:
-            `self.__class__`
+        :Returns: `self.__class__`
         """
         return self.__class__(img, self.parcelmap, self.parcelseq,
                               mode=self.mode)

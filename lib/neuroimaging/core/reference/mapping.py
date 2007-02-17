@@ -157,8 +157,7 @@ def isdiagonal(matrix, tol=1.0e-7):
         `tol` : float
             The tolerance level to be used.
 
-    :Returns:
-        `bool`
+    :Returns: ``bool``
     """
 
     ndim = matrix.shape[0]
@@ -210,8 +209,7 @@ class Mapping(object):
     def __mul__(self, other):
         """If this method is not over-written we get complaints about sequences.
 
-        :Returns:
-            `Mapping`
+        :Returns: `Mapping`
         """
         return other.__rmul__(self)
     
@@ -222,8 +220,7 @@ class Mapping(object):
         :Parameters:
             `other` : `Mapping`
                 The mapping to compose with.
-        :Returns:
-            `Mapping`
+        :Returns: `Mapping`
         """
         def map(coords): 
             return other(self(coords))
@@ -237,8 +234,7 @@ class Mapping(object):
     def ndim(self):
         """ The number of input dimensions
 
-        :Returns:
-            `int`
+        :Returns: ``int``
         """
         return self._ndim
 
@@ -246,8 +242,7 @@ class Mapping(object):
         """
         Does this mapping have an inverse?
 
-        :Returns:
-            `bool`
+        :Returns: ``bool``
         """
         return self._inverse is not None
 
@@ -377,9 +372,9 @@ class Affine(Mapping):
 
         :Parameters:
             `other` : `Affine`
-
-        :Returns:
-            `bool`
+                The mapping to be compared to.
+                
+        :Returns: ``bool``
         """
         if not hasattr(other, "transform"): 
             return False
@@ -391,8 +386,9 @@ class Affine(Mapping):
         """
         :Parameters:
             `other` : `Mapping` or `Affine`
-        :Returns:
-            `Mapping` or `Affine`
+                The mapping to be multiplied by.
+                
+        :Returns: `Mapping` or `Affine`
         """
         if isinstance(other, Affine):
             return Affine(N.dot(other.transform, self.transform))            
@@ -402,8 +398,7 @@ class Affine(Mapping):
 
     def __str__(self):
         """
-        :Returns:
-            `string`
+        :Returns: ``string``
         """
         return "%s:fmatrix=%s\n%s:fvector=%s" % \
           (self.name, `self._fmatrix`, self.name,`self._fvector`)
@@ -413,8 +408,7 @@ class Affine(Mapping):
         """
         Does this mapping have an inverse?
 
-        :Returns:
-            `bool`
+        :Returns: ``bool``
         """
         try:
             inv(self.transform)
@@ -426,8 +420,7 @@ class Affine(Mapping):
         """
         Create a new `Affine` instance which is the inverse of self.
 
-        :Returns:
-            `Affine`
+        :Returns: `Affine`
         """
         return Affine(inv(self.transform))
 
@@ -436,8 +429,7 @@ class Affine(Mapping):
         """
         Is the transform matrix diagonal?
 
-        :Returns:
-            `bool`
+        :Returns: ``bool``
         """
         return isdiagonal(self._fmatrix)
 
@@ -450,8 +442,7 @@ class Affine(Mapping):
             `filename` : string
                 The filename to write to
 
-        :Returns:
-            `None`
+        :Returns: ``None``
         """
         matfile = open(filename, 'w')
         writer = csv.writer(matfile, delimiter='\t')

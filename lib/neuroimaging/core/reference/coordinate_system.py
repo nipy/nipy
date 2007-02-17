@@ -20,7 +20,7 @@ class CoordinateSystem(odict):
         :Parameters:
             `name` : string
                 The name of the coordinate system
-            `axes` : [Axis]
+            `axes` : [`axis.Axis`]
                 The axes which make up the coordinate system
         """
         self.name = name
@@ -35,8 +35,7 @@ class CoordinateSystem(odict):
             `axisname` : string
                 The name of the axis to return
 
-        :Returns:
-            `Axis`
+        :Returns: `axis.Axis`
         
         :Raises KeyError: If axisname is not the name of an axis in this 
             coordinate system.
@@ -64,8 +63,7 @@ class CoordinateSystem(odict):
             `other` : CoordinateSystem
                 The object to be compared with
 
-        :Returns:
-            `bool`
+        :Returns: ``bool``
         """
         return (self.name, self.axes()) == (other.name, other.axes())
 
@@ -74,8 +72,7 @@ class CoordinateSystem(odict):
         """
         Create a string representation of the coordinate system
 
-        :Returns:
-            `string`
+        :Returns: ``string``
         """
         _dict = {'name': self.name, 'axes':self.axes}
         return `_dict`
@@ -83,24 +80,21 @@ class CoordinateSystem(odict):
     def ndim(self):
         """ Number of dimensions 
         
-        :Returns:
-            `int`
+        :Returns: ``int``
         """
         return len(self.axes())
     
     def axisnames(self):
         """ A list of the names of the coordinate system's axes. 
         
-        :Returns:
-            `string`
+        :Returns: ``string``
         """
         return self.keys()
         
     def axes(self):
         """ A list of the coordinate system's axes. 
         
-        :Returns:
-            `[Axis]`
+        :Returns: ``[`axis.Axis`]``
         """
         return self.values()
     
@@ -130,8 +124,7 @@ class CoordinateSystem(odict):
             `name` : string
                 The name for the new coordinate system
 
-        :Returns:
-            `CoordinateSystem`
+        :Returns: ``CoordinateSystem``
         """
         if name is None:
             name = self.name
@@ -146,8 +139,7 @@ class CoordinateSystem(odict):
             `name` : string
                 The name to be tested for
 
-        :Returns:
-            `bool`
+        :Returns: ``bool``
         """
         return self.has_key(name)
 
@@ -159,8 +151,7 @@ class CoordinateSystem(odict):
             `name` : string
                 The name of the axis to return
 
-        :Returns:
-            `Axis`
+        :Returns: `axis.Axis`
         """
         return self.get(name)
 
@@ -173,8 +164,7 @@ class CoordinateSystem(odict):
             `x` : [int] or [float]
                 a voxel
 
-        :Returns:
-            `bool`
+        :Returns: ``bool``
         """
         return N.all([self.axes()[i].valid(x[i]) for i in range(self.ndim())])
 
@@ -183,8 +173,7 @@ class CoordinateSystem(odict):
         """
         Return a subset of the coordinate system to be used as part of a subgrid.
 
-        :Returns:
-            `CoordinateSystem`
+        :Returns: ``CoordinateSystem``
         """
         return CoordinateSystem(self.name + "-subgrid", self.axes()[1:])
 
@@ -216,8 +205,7 @@ class DiagonalCoordinateSystem(CoordinateSystem):
         Return an orthogonal homogeneous transformation matrix based on the
         step, start, length attributes of each axis.
 
-        :Returns:
-            `[[numpy.float]]`
+        :Returns: ``[[numpy.float]]``
         """
         value = N.zeros((self.ndim()+1,)*2)
         value[self.ndim(), self.ndim()] = 1.0

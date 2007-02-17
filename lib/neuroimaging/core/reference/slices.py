@@ -17,8 +17,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
 
     By default the output coordinate system is the MNI world.
 
-    :Returns:
-        `SamplingGrid`
+    :Returns: `grid.SamplingGrid`
     """
 
     nout = colvectors.shape[1]

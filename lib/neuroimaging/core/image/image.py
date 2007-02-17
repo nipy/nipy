@@ -31,9 +31,9 @@ class Image(object):
             `datasource` : `DataSource`
                 The datasource to be used for caching
             `format` : `Format`
-                The file format to use. If `None` then all possible formats will
+                The file format to use. If ``None`` then all possible formats will
                 be tried.
-            `grid` : `SamplingGrid`
+            `grid` : `reference.grid.SamplingGrid`
                 The sampling grid for the file
             `mode` : string
                 The mode ot open the file in ('r', 'w', etc)
@@ -86,7 +86,10 @@ class Image(object):
         existing `Image` object, or an array.
 
         :Parameters:
-            `image` : `Image` or `string` or `array`            
+            `image` : `Image` or ``string`` or ``array``
+                The object to create this Image from. If an `Image` or ``array``
+                are provided, their data is used. If a string is given it is treated
+                as either a filename or url.
         '''
 
         # from existing Image
@@ -175,8 +178,7 @@ class Image(object):
             `clobber` : bool
                 Should we overwrite an existing file?
 
-        :Returns:
-            `Image`
+        :Returns: `Image`
         """
         dtype = dtype or self._source.dtype
         outimage = Image(filename, mode='w', grid=self.grid,
@@ -192,8 +194,7 @@ class Image(object):
     def asfile(self):
         """ Return image filename corresponding to `Image` object data
 
-        :Returns:
-            `string`
+        :Returns: ``string``
         """
         filename = self._source.asfile()
         if isinstance(self._source, ArrayImage):
@@ -249,7 +250,7 @@ class Image(object):
         Use the given iterator to iterate over this image.
 
         :Parameters:
-            `iterator` : `Iterator`
+            `iterator` : `reference.iterators.Iterator`
                 The iterator to use.
 
         :Returns:
@@ -264,9 +265,9 @@ class Image(object):
         another to do the iteration over itself.
 
         :Parameters:
-            `other` : `Iterator`
+            `other` : `reference.iterators.Iterator`
                 The iterator from which to take the values
-            `iterator` : `Iterator`
+            `iterator` : `reference.iterators.Iterator`
                 The iterator to use to iterate over self.
         """
         iterator.mode = 'w'

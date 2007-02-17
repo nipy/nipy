@@ -52,8 +52,7 @@ class BinaryFormat(Format):
 
     def read_header(self):
         """
-        :Returns:
-            `None`
+        :Returns: ``None``
         """
         # Populate header dictionary from a file
         values = utils.struct_unpack(self.datasource.open(self.header_file),
@@ -65,8 +64,7 @@ class BinaryFormat(Format):
 
     def write_header(self, hdrfile=None, clobber=False):
         """
-        :Returns:
-            `None`
+        :Returns: ``None``
         """
         
         # If someone wants to write a headerfile somewhere specific,
@@ -98,8 +96,7 @@ class BinaryFormat(Format):
 
     def attach_data(self, offset=0):
         """
-        :Returns:
-            `None`
+        :Returns: ``None``
 
         :Raises IOError: If the file exists but we are not allowed to clobber
             it.
@@ -139,8 +136,7 @@ class BinaryFormat(Format):
 
     def __getitem__(self, slicer):
         """
-        :Returns:
-            `numpy.ndarray`
+        :Returns: ``numpy.ndarray``
         """
         data = self.postread(self.data[slicer].newbyteorder(self.byteorder))
         return N.asarray(data)
@@ -148,8 +144,7 @@ class BinaryFormat(Format):
 
     def __setitem__(self, slicer, data):
         """
-        :Returns:
-            `None
+        :Returns: ``None``
         """
         if not iswritemode(self.data._mode):
             print "Warning: memapped array is not writeable! Nothing done"
@@ -159,8 +154,7 @@ class BinaryFormat(Format):
 
     def __del__(self):
         """
-        :Returns:
-            `None`
+        :Returns: ``None``
         """
         if hasattr(self, 'memmap'):
             if isinstance(self.data, memmap_type):
@@ -171,8 +165,7 @@ class BinaryFormat(Format):
     #### unprotected and can be looked at directly
     def add_header_field(self, field, format, value):
         """
-        :Returns:
-            `None`
+        :Returns: ``None``
         """
         if not self.extendable:
             raise NotImplementedError("%s header type not "\
@@ -190,8 +183,7 @@ class BinaryFormat(Format):
 
     def remove_header_field(self, field):
         """
-        :Returns:
-            `None`
+        :Returns: ``None``
         """
         if field in self.ext_header.keys():
             self.ext_header.pop(field)
@@ -201,8 +193,7 @@ class BinaryFormat(Format):
 
     def set_header_field(self, field, value):
         """
-        :Returns:
-            `None`
+        :Returns: ``None``
 
         :Raises KeyError: if the given `field` is not valid.
         """
@@ -240,8 +231,7 @@ class BinaryFormat(Format):
             
     def asfile(self):
         """
-        :Returns:
-            `string`
+        :Returns: ``string``
         """
         return self.datasource.filename(self._get_filenames()[1])
 

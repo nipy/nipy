@@ -11,7 +11,7 @@ from neuroimaging.data_io import DataSource
 class BaseImage(object):
     """
     This class defines a minimal interface which different types of images
-    should implement. This interface is used by the `Image` class, which is
+    should implement. This interface is used by the `image.Image` class, which is
     the class which should be used by applications.
     """
 
@@ -27,10 +27,9 @@ class BaseImage(object):
         self.data[item] = value
 
     def asfile(self):
-        """ Return image filename corresponding to `Image` object data.
+        """ Return image filename corresponding to `image.Image` object data.
 
-        :Returns:
-            `string`
+        :Returns: ``string``
             
         :Raises NotImplemenetedError: Subclasses must implement this.       
         """
@@ -58,10 +57,9 @@ class ArrayImage (BaseImage):
         BaseImage.__init__(self, data, grid, dtype)
 
     def asfile(self):        
-        """ Return image filename corresponding to `Image` object data.
+        """ Return image filename corresponding to `image.Image` object data.
 
-        :Returns:
-            `string`
+        :Returns: ``string``
         """
         filename = DataSource().tempfile(".img", "nipy-")
         return filename

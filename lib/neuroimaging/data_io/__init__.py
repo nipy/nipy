@@ -51,8 +51,7 @@ def unzip(filename):
 
 def isurl(pathstr):
     """
-    :Returns:
-        `bool`
+    :Returns: ``bool``
     """
     scheme, netloc, _, _, _, _ = urlparse(pathstr)
     return bool(scheme and netloc)
@@ -61,8 +60,7 @@ def isurl(pathstr):
 def iswritemode(mode):
     """ Test is the given mode will open a file for writing.
 
-    :Returns:
-        `bool`
+    :Returns: ``bool``
     """
     return mode.find("w")>-1 or mode.find("+")>-1
 

@@ -55,7 +55,7 @@ def elemtype(format):
             A format string
 
     :Returns:
-        `float` or `int` or `str`
+        ``float`` or ``int`` or ``str``
 
     :Raises ValueError: if an invalid format character is given.
     """
@@ -115,8 +115,7 @@ def struct_pack(byte_order, elements, values):
         `value` : [ ... ]
             A list of values to be packed into the format string
 
-    :Returns:
-        `string`
+    :Returns: ``string``
     """
     format = struct_format(byte_order, elements)
     return pack(format, *flatten_values(values))
@@ -124,8 +123,7 @@ def struct_pack(byte_order, elements, values):
 def touch(filename):
     """ Ensure that filename exists and is writable.
 
-    :Returns:
-        `None`
+    :Returns: ``None``
     """
 
     try:

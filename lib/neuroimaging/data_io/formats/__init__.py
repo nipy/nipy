@@ -73,8 +73,7 @@ class Format(BaseImage):
 
     def __str__(self):
         """
-        :Returns:
-            `string`
+        :Returns: ``string``
         """
         return self.dump_header()
 

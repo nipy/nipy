@@ -199,8 +199,7 @@ class Analyze(bin.BinaryFormat):
 
     def header_defaults(self):
         """
-        :Returns:
-            `None`
+        :Returns: ``None``
         """
         for field, format in self.header_formats.items():
             self.header[field] = self._default_field_value(field, format)
@@ -288,8 +287,7 @@ class Analyze(bin.BinaryFormat):
 
     def __del__(self):
         """
-        :Returns:
-            `None`
+        :Returns: ``None``
         """
         if hasattr(self, 'data'):
             try:
@@ -353,8 +351,7 @@ class Analyze(bin.BinaryFormat):
     def write_mat(self, matfile=None):
         """Write out the affine transformation matrix.
 
-        :Returns:
-            `None`
+        :Returns: ``None``
         """
         if matfile is None:
             matfile = self.mat_file
@@ -364,8 +361,7 @@ class Analyze(bin.BinaryFormat):
 
     def _get_filenames(self):
         """
-        :Returns:
-            `string`
+        :Returns: ``string``
         """
         return self.filebase + ".hdr", self.filebase + ".img"
 
