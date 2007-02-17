@@ -276,7 +276,8 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
 
         if not self.convolved:
             value = []
-            keys = self._event_keys
+            keys = self.events.keys()
+            keys.sort()
             for level in keys:
                 value.append(N.squeeze(self.events[level](time)))
             if includedown:
