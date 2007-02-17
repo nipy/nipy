@@ -6,8 +6,9 @@ __docformat__ = 'restructuredtext'
 
 import numpy as N
 
-from neuroimaging.data_io.api import DataSource, splitzipext
-from neuroimaging.data_io.formats.format import getformats, Format
+from neuroimaging.data_io.datasource import DataSource, splitzipext
+from neuroimaging.data_io.formats.format import getformats
+from neuroimaging.data_io.formats.format import Format
 from neuroimaging.core.image.base_image import ArrayImage
 
 from neuroimaging.core.image.iterators import SliceIterator

@@ -3,7 +3,8 @@ Package containing core neuroimaging classes.
 """
 __docformat__ = 'restructuredtext'
 
-#import image, reference, api
+import image
+import reference
 __all__ = ["image", "reference", "api"]
 
 

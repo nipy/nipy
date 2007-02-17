@@ -6,7 +6,7 @@ the Image class.
 __docformat__ = 'restructuredtext'
 
 from neuroimaging.core.reference.grid import SamplingGrid
-from neuroimaging.data_io.api import DataSource
+from neuroimaging.data_io.datasource import DataSource
 
 class BaseImage(object):
     """

@@ -32,6 +32,8 @@ The neuroimaging package contains the following subpackages and modules:
 """
 __docformat__ = 'restructuredtext en'
 
+
+
 from version import version as __version__
 __revision__ = int("$Rev$".split()[-2])
 __status__   = 'alpha'
@@ -109,3 +111,4 @@ def test(level=1, verbosity=1):
     else:
         return NumpyTest().testall(level, verbosity)
 test.__doc__ = NumpyTest.test.__doc__
+

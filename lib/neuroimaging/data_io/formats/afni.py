@@ -5,8 +5,7 @@ import sys, fpformat
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io.datasource import DataSource, iswritemode
-from neuroimaging.data_io.formats import utils
-import neuroimaging.data_io.formats.binary as bin
+from neuroimaging.data_io.formats import utils, binary
 from neuroimaging.data_io.formats._afniconstants import *
 from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.api import SamplingGrid
@@ -109,7 +108,7 @@ extra_header = odict((
 ###   x,y,z,t order (smallest -> largest stride)
 ##############################################################################
 
-class AFNI(bin.BinaryFormat):
+class AFNI(binary.BinaryFormat):
     """
     A class to read and write AFNI files
     """
@@ -121,7 +120,7 @@ class AFNI(bin.BinaryFormat):
         # pick up these attributes:
         # mode, filename, filebase, clobber, header_file, data_file
         # header, ext_header, datasource (possibly), grid (possibly)
-        bin.BinaryFormat.__init__(self, filename, mode, datasource, **kwds)
+        binary.BinaryFormat.__init__(self, filename, mode, datasource, **kwds)
         if self.mode[0] is 'w':
             if not self.grid:
                 raise AFNIFormatError("Can't create header info without a "\

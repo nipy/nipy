@@ -6,8 +6,7 @@ import numpy as N
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io.api import DataSource, Cache, iszip, ensuredirs, unzip
-import neuroimaging.data_io.formats.binary as bin
-from neuroimaging.data_io.formats import utils
+from neuroimaging.data_io.formats import utils, binary
 
 from neuroimaging.core.reference.axis import space
 from neuroimaging.core.api import SamplingGrid
@@ -214,7 +213,7 @@ struct_formats_sh = odict((
 field_formats_sh = struct_formats_sh.values();
 
 
-class Ecat7(bin.BinaryFormat):
+class Ecat7(binary.BinaryFormat):
     """
     A Class to read (maybe write) ECAT7 format images.
     Generally these are PET images
@@ -253,7 +252,7 @@ class Ecat7(bin.BinaryFormat):
         self.nframes = 0
         self.checkversion(datasource)
         
-        bin.BinaryFormat.__init__(self, fullfilename, mode, datasource, **keywords)
+        binary.BinaryFormat.__init__(self, fullfilename, mode, datasource, **keywords)
         self.intent = keywords.get('intent', '')
 
         self.header_formats = struct_formats_mh
@@ -437,7 +436,7 @@ class Ecat7(bin.BinaryFormat):
         return self.filebase+".v", self.filebase+".v"
 
 
-class Frame(bin.BinaryFormat):
+class Frame(binary.BinaryFormat):
     """
     A class to hold ECAT subheaders and associated memmaps
     """
@@ -447,7 +446,7 @@ class Frame(bin.BinaryFormat):
     def __init__(self, infile, byteorder, mlist, scale, framenumber=0, datasource=DataSource(), mode='rb'):
         self.infile = infile
 
-        bin.BinaryFormat.__init__(self, infile, mode, datasource)
+        binary.BinaryFormat.__init__(self, infile, mode, datasource)
         self.data_file = infile
         self.byteorder = byteorder
         self.scale = scale

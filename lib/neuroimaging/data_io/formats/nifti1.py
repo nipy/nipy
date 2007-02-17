@@ -4,13 +4,10 @@ import numpy as N
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io.api import DataSource
-from neuroimaging.data_io.formats import utils
-import neuroimaging.data_io.formats.binary as bin
-import neuroimaging.data_io.formats.analyze as anlz
+from neuroimaging.data_io.formats import utils, binary, analyze
 from neuroimaging.data_io.formats.nifti1_ext import quatern2mat, \
      mat2quatern
-from neuroimaging.core.reference.axis import space, spacetime
-from neuroimaging.core.api import Affine, SamplingGrid
+from neuroimaging.core.api import Affine, SamplingGrid, space, spacetime
 
 class Nifti1FormatError(Exception):
     """
@@ -189,7 +186,7 @@ field_formats = struct_formats.values()
 
 
 
-class Nifti1(bin.BinaryFormat):
+class Nifti1(binary.BinaryFormat):
     """
     A class to read and write NIFTI format images.
     """
@@ -220,7 +217,7 @@ class Nifti1(bin.BinaryFormat):
         clobber = allowed to clobber?
         """
 
-        bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
+        binary.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.intent = keywords.get('intent', '')
 
         # does this need to be redundantly assigned?
@@ -242,7 +239,7 @@ class Nifti1(bin.BinaryFormat):
             self.write_header(clobber=self.clobber)
         else:
             # this should work
-            self.byteorder = anlz.Analyze.guess_byteorder(self.header_file,
+            self.byteorder = analyze.Analyze.guess_byteorder(self.header_file,
                                                     datasource=self.datasource)
             self.read_header()
             # we may THINK it's a Nifti, but ...

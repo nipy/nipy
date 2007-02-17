@@ -1,15 +1,15 @@
 """
 
 """
-__all__ = ['Format']
+#__all__ = ['Format', 'getformats']
 __docformat__ = 'restructuredtext'
 
 import numpy
 
 from neuroimaging import import_from
-from neuroimaging.data_io.api import DataSource
+from neuroimaging.data_io.datasource import DataSource
 from neuroimaging.core.image.base_image import BaseImage
-from neuroimaging.core.api import SamplingGrid
+from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.utils.path import path
 from neuroimaging.utils.odict import odict
 

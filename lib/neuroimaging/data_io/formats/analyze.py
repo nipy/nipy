@@ -7,11 +7,9 @@ import numpy as N
 import scipy.io as SIO
 
 from neuroimaging.utils.odict import odict
-from neuroimaging.data_io.api import DataSource
-from neuroimaging.data_io.formats import utils
-import neuroimaging.data_io.formats.binary as bin
-from neuroimaging.core.reference.axis import space, spacetime
-from neuroimaging.core.api import Affine, SamplingGrid
+from neuroimaging.data_io.datasource import DataSource
+from neuroimaging.data_io.formats import utils, binary
+from neuroimaging.core.api import Affine, SamplingGrid, space, spacetime
 from neuroimaging.utils.path import path
 
 class AnalyzeFormatError(Exception):
@@ -93,7 +91,7 @@ struct_formats = odict((
 field_formats = struct_formats.values()
 
 
-class Analyze(bin.BinaryFormat):
+class Analyze(binary.BinaryFormat):
     """
     A class to read and write ANALYZE format images. 
     """
@@ -122,7 +120,7 @@ class Analyze(bin.BinaryFormat):
          - clobber = allowed to clobber?
          - usemat = use mat file?
         """
-        bin.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
+        binary.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
         self.mat_file = self.filebase + ".mat"
         self.clobber = keywords.get('clobber', False)
         self.intent = keywords.get('intent', '')
