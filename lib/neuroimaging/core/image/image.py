@@ -81,6 +81,7 @@ class Image(object):
         raise IOError, \
               'Filename "%s" (or its header files) does not exist' % url
 
+
     def __init__(self, image, datasource=DataSource(), grid=None, **keywords):
         '''
         Create an `Image` (volumetric image) object from either a file, an
@@ -299,3 +300,28 @@ class Image(object):
         for slice_ in other:
             iterator.next().set(slice_)
 
+
+def merge_images(filename, images, cls=Image, clobber=False):
+    """
+    Create a new image by combining a series of images together.
+
+    :Parameters:
+        filename : ``string``
+            The filename to write the new image as
+        images : [`Image`]
+            The list of images to be merged
+        cls : ``class``
+            The class of image to create
+        clobber : ``bool``
+            Overwrite the file if it already exists
+
+    :Returns: ``cls``
+    """
+    n = len(images)
+    out = cls(filename, mode='w', clobber=clobber,
+              grid=images[0].grid.replicate(n, "time"))
+    data = N.empty(shape=out.shape)
+    for i, image in enumerate(images):
+        data[i] = image[:]
+    out[:] = data[:]
+    return out
