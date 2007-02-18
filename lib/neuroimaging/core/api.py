@@ -18,4 +18,4 @@ from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
      DiagonalCoordinateSystem
 from neuroimaging.core.reference.axis import VoxelAxis, space, spacetime
 
-from neuroimaging.core.image.image import Image, merge_images
+from neuroimaging.core.image.image import Image, merge_images, merge_to_array

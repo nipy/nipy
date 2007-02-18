@@ -303,7 +303,7 @@ class Image(object):
 
 def merge_images(filename, images, cls=Image, clobber=False):
     """
-    Create a new image by combining a series of images together.
+    Create a new file based image by combining a series of images together.
 
     :Parameters:
         filename : ``string``
@@ -318,10 +318,33 @@ def merge_images(filename, images, cls=Image, clobber=False):
     :Returns: ``cls``
     """
     n = len(images)
-    out = cls(filename, mode='w', clobber=clobber,
-              grid=images[0].grid.replicate(n, "time"))
-    data = N.empty(shape=out.shape)
+    im0 = images[0]
+    grid = im0.grid.replicate(n, "time")
+    data = N.empty(shape=grid.shape)
     for i, image in enumerate(images):
         data[i] = image[:]
+    out = cls(filename, mode='w', clobber=clobber, grid=grid)
     out[:] = data[:]
     return out
+
+def merge_to_array(images, cls=Image):
+    """
+    Create a new array based image by combining a series of images together.
+
+    :Parameters:
+        images : [`Image`]
+            The list of images to be merged
+        cls : ``class``
+            The class of image to create
+
+    :Returns: ``cls``    
+    """
+    n = len(images)
+    im0 = images[0]
+    grid = im0.grid.replicate(n, "time")
+    data = N.empty(shape=grid.shape)
+    for i, image in enumerate(images):
+        data[i] = image[:]
+    return cls(data, mode='w', grid=grid)
+
+    
