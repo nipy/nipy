@@ -79,13 +79,13 @@ class TestResid1(fMRIStatTest):
     @data
     def test_model_resid1(self):
         self.img.slicetimes = None
-        OLS = fMRIStatOLS(self.img, self.formula,
+        OLS = fMRIStatOLS(self.img, self.formula, path=".", clobber=True,
                                    slicetimes=self.img.slicetimes, resid=True)
         OLS.fit()
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
 
-        AR = fMRIStatAR(OLS)
+        AR = fMRIStatAR(OLS, clobber=True)
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
@@ -95,13 +95,13 @@ class TestResid2(fMRIStatTest):
     @data
     def test_model_resid2(self):
         self.img.slicetimes = None
-        OLS = fMRIStatOLS(self.img, self.formula,
+        OLS = fMRIStatOLS(self.img, self.formula, path=".", clobber=True,
                                    slicetimes=self.img.slicetimes)
         OLS.fit()
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
 
-        AR = fMRIStatAR(OLS, resid=True)
+        AR = fMRIStatAR(OLS, resid=True, clobber=True)
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
@@ -126,7 +126,7 @@ class TestHRFDeriv(fMRIStatTest):
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
 
-        AR = fMRIStatAR(OLS, contrasts=[pain])
+        AR = fMRIStatAR(OLS, contrasts=[pain], clobber=True)
         AR.fit()
         del(OLS); del(AR); gc.collect()
         
@@ -138,7 +138,7 @@ class TestContrast(fMRIStatTest):
         pain = Contrast(self.pain, self.formula, name='pain')
 
         self.img.slicetimes = None
-        OLS = fMRIStatOLS(self.img, self.formula,
+        OLS = fMRIStatOLS(self.img, self.formula, 
                                    slicetimes=self.img.slicetimes,
                                    clobber=True)
         OLS.fit()
