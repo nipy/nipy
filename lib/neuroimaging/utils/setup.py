@@ -1,3 +1,4 @@
+from os.path import join
 from neuroimaging import ENTHOUGHT_TRAITS_DEF
 
 
@@ -12,7 +13,7 @@ def configuration(parent_package='',top_path=None):
 
     if not ENTHOUGHT_TRAITS_DEF:
         print "yo"
-        config.add_subpackage('enthough')
+        config.add_subpackage('enthought')
         config.add_extension('enthought.traits.ctraits',
           [join(*('enthought/traits/ctraits.c'.split('/')))])
 
