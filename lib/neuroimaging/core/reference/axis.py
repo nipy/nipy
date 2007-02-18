@@ -70,7 +70,7 @@ class Axis(object):
 
         :Parameters:
             `x` : float
-                A voxel
+                A numerical value
 
         :Returns: ``bool``
         
@@ -82,7 +82,7 @@ class Axis(object):
     def max(self):
         """ The maximum value of the axis. 
 
-        :Returns: numpy.float
+        :Returns: ``numpy.float``
         
         :Raises NotImplementedError: Abstract method
         """
@@ -91,7 +91,7 @@ class Axis(object):
     def min(self):
         """ The minimum value of the axis. 
 
-        :Returns: numpy.float
+        :Returns: ``numpy.float``
         
         :Raises NotImplementedError: Abstract method
         """
@@ -112,7 +112,6 @@ class ContinuousAxis(Axis):
     """
     def __init__(self, name, low=-N.inf, high=N.inf):
         """
-
         :Parameters:
             `name` : string
                 The name for the axis
@@ -124,11 +123,11 @@ class ContinuousAxis(Axis):
         Notes
         -----
 
-        If low > high, the behaviour of the class is undefined, though
+        If ``low`` > ``high``, the behaviour of the class is undefined, though
         this can be changed if a particular choice of behaviour is clearly
         useful.
         
-        :Precondition: name must be an element of `axis.valid`
+        :Precondition: ``name`` must be an element of `axis.valid`
         """
         self.low = low
         self.high = high
@@ -153,7 +152,7 @@ class ContinuousAxis(Axis):
 
         :Parameters:
             `x` : float
-                A voxel
+                A numerical value
 
         :Returns: ``bool``
         """ 
@@ -204,7 +203,7 @@ class RegularAxis (Axis):
             `step` : numpy.float
                 The spacing of the points on the axis
 
-        :Precondition: name must be an element of axis.valid
+        :Precondition: ''name'' must be an element of axis.valid
         """
 
         self.length = length
@@ -213,7 +212,7 @@ class RegularAxis (Axis):
         Axis.__init__(self, name)
 
     def __eq__(self, other):        
-        """ Equality is defined by (start, stop, length) and name. 
+        """ Equality is defined by ``(start, stop, length)`` and ``name``. 
 
         :Parameters:
             `other` : `RegularAxis`
@@ -231,7 +230,7 @@ class RegularAxis (Axis):
 
         :Parameters:
             `x` : float
-                A voxel
+                A numerical value
 
         :Returns: ``bool``
         """ 
@@ -282,14 +281,13 @@ class VoxelAxis (RegularAxis):
         """
         Create a voxel axis with a given name.
 
-
         :Parameters:
             `name` : string
                 The name for the axis
             `length` : numpy.float
                 The overall length of the axis
 
-        :Precondition: name must be an element of `axis.valid`
+        :Precondition: ``name`` must be an element of `axis.valid`
         """    
         RegularAxis.__init__(self, name, length, start=0, step=1)
 

@@ -180,6 +180,17 @@ class Mapping(object):
     """
 
     def __init__(self, map, inverse=None, name="mapping", ndim=3):
+        """
+        :Parameters:
+            `map` : callable
+                A function which takes a coordinate vector and returns a new coordinate vector
+            `inverse` : callable
+                An inverse function to ``map``
+            `name` : string
+                The name of the mapping
+            `ndim` : int
+                The number of dimensions of the mapping.
+        """
         self._map = map
         self._inverse = inverse
         self.name = name
@@ -196,7 +207,13 @@ class Mapping(object):
         '%s:inverse=%s\n' % (self.name, self._inverse)
 
 
-    def __ne__(self, other): return not self.__eq__(other)
+    def __ne__(self, other): 
+        """
+        :SeeAlso:
+         - `Mapping.__eq__`
+        """
+        return not self.__eq__(other)
+        
     def __eq__(self, other):
         """
         We can't say whether two map functions are the same so we just
@@ -355,13 +372,27 @@ class Affine(Mapping):
 
 
     def __init__(self, transform, name="affine"):
+        """
+        :Parameters:
+            `transform` : numpy.ndarray
+                A transformation matrix
+            `name` : string
+                The name of the mapping
+        """
         self.transform = transform
         ndim = transform.shape[0] - 1
         self._fmatrix, self._fvector = _2matvec(transform)
         Mapping.__init__(self, None, name=name, ndim=ndim)
 
     def __call__(self, coords):
-        """ Apply this mapping to the given coordinates. """
+        """ Apply this mapping to the given coordinates. 
+        
+        :Parameters:
+            `coords` : numpy.ndarray
+                A coordinate vector
+        
+        :Returns: `numpy.ndarray`
+        """
         value = N.dot(self._fmatrix, coords) 
         value += N.multiply.outer(self._fvector, N.ones(value.shape[1:]))
         return value

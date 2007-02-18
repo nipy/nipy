@@ -161,8 +161,8 @@ class CoordinateSystem(odict):
         Verify whether x is a valid coordinate.
 
         :Parameters:
-            `x` : [int] or [float]
-                a voxel
+            `x` : tuple or list of int or float
+                A voxel
 
         :Returns: ``bool``
         """
@@ -180,7 +180,7 @@ class CoordinateSystem(odict):
 class VoxelCoordinateSystem(CoordinateSystem):
     """
     Coordinates with a shape -- assumed to be
-    voxel coordinates, i.e. if shape = [3,4,5] then valid range
+    voxel coordinates, i.e. if shape = (3, 4, 5) then valid range
     interpreted as [0,2] X [0,3] X [0,4].
     """
 
@@ -191,8 +191,11 @@ class VoxelCoordinateSystem(CoordinateSystem):
                 The name of the coordinate system
             `axes` : [`axis.Axis`]
                 The axes which make up the coordinate system
-            `shape` : TODO
-                TODO
+            `shape` : tuple of ints
+                The shape of the coordinate system. If ``None`` then the shape
+                is determined by the lengths of the ``axes``
+        
+        :Precondition: ``len(axes) == len(shape)``
         """
 
         if shape is None:

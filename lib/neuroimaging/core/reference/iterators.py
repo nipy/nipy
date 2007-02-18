@@ -45,6 +45,8 @@ class Iterator(object):
     def __iter__(self):
         """        
         Use this `Iterator` as a python iterator.
+        
+        :Returns: ``self``
         """
         return self
     
@@ -304,6 +306,9 @@ class ParcelIterator(Iterator):
 
 
     def __iter__(self):
+        """
+        :Returns: ``self``
+        """
         self._labeliter = iter(self.parcelseq)
         return self
     
@@ -343,6 +348,15 @@ class ParcelIteratorItem(IteratorItem):
     """
 
     def __init__(self, img, slice_, label):
+        """
+        :Parameters:
+            `img` : TODO
+                TODO
+            `slice_` : TODO
+                TODO
+            `label` : TODO
+                TODO
+        """
         IteratorItem.__init__(self, img, slice_)
         self.label = label
 
@@ -368,6 +382,17 @@ class fMRIParcelIterator(ParcelIterator):
     that 
     """
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
+        """
+        :Parameters:
+            `img` : TODO
+                TODO
+            `parcelmap` : TODO
+                TODO
+            `parcelseq` : TODO
+                TODO
+            `mode` : string
+                TODO
+        """
         ParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
         self.iterator_item = fMRIParcelIteratorItem
     
@@ -378,6 +403,15 @@ class fMRIParcelIteratorItem(IteratorItem):
     """
 
     def __init__(self, img, slice_, label):
+        """
+        :Parameters:
+            `img` : TODO
+                TODO
+            `slice_` : TODO
+                TODO
+            `label` : TODO
+                TODO
+        """
         IteratorItem.__init__(self, img, slice_)
         self.label = label
 
@@ -397,9 +431,22 @@ class fMRIParcelIteratorItem(IteratorItem):
 
 
 class SliceParcelIterator(ParcelIterator):
-
+    """
+    TODO
+    """
     
     def __init__(self, img, parcelmap, parcelseq, mode='r'):
+        """
+        :Parameters:
+            `img` : TODO
+                TODO
+            `parcelmap` : TODO
+                TODO
+            `parcelseq` : TODO
+                TODO
+            `mode` : string
+                TODO
+        """
         ParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
         self.i = 0
         self.max = len(self.parcelseq)
@@ -431,6 +478,17 @@ class SliceParcelIteratorItem(IteratorItem):
     """
 
     def __init__(self, img, slice_, label, i):
+        """
+        :Parameters:
+            `img` : TODO
+                TODO
+            `slice_` : TODO
+                TODO
+            `label` : TODO
+                TODO
+            `i` : TODO
+                TODO
+        """    
         IteratorItem.__init__(self, img, slice_)
         self.label = label
         self.i = i
@@ -449,8 +507,22 @@ class SliceParcelIteratorItem(IteratorItem):
 
 
 class fMRISliceParcelIterator(SliceParcelIterator):
-
+    """
+    TODO
+    """
+    
     def __init__(self, img, parcelmap, parcelseq, mode='r'):
+        """
+        :Parameters:
+            `img` : TODO
+                TODO
+            `parcelmap` : TODO
+                TODO
+            `parcelseq` : TODO
+                TODO
+            `mode` : string
+                TODO
+        """
         SliceParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
         self.iterator_item = fMRISliceParcelIteratorItem
     
@@ -461,6 +533,17 @@ class fMRISliceParcelIteratorItem(IteratorItem):
     """
 
     def __init__(self, img, slice_, label, i):
+        """
+        :Parameters:
+            `img` : TODO
+                TODO
+            `slice_` : TODO
+                TODO
+            `label` : TODO
+                TODO
+            `i` : TODO
+                TODO
+        """
         IteratorItem.__init__(self, img, slice_)
         self.label = label
         self.i = i

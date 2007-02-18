@@ -28,8 +28,17 @@ class SamplingGrid (object):
         Create a `SamplingGrid` instance from sequences of names, shape, start
         and step.
 
-        :Returns:
-            `SamplingGrid`
+        :Parameters:
+            `names` : TODO
+                TODO
+            `shape` : TODO
+                TODO
+            `start` : TODO
+                TODO
+            `step` : TODO
+                TODO
+
+        :Returns: `SamplingGrid`
         """
         ndim = len(names)
         # fill in default step size
@@ -48,9 +57,14 @@ class SamplingGrid (object):
     def identity(shape=(), names=space):
         """
         Return an identity grid of the given shape.
+        
+        :Parameters:
+            `shape` : TODO
+                TODO
+            `names` : TODO
+                TODO
 
-        :Returns:
-            `SamplingGrid`
+        :Returns: `SamplingGrid`
         """
         ndim = len(shape)
         if len(names) != ndim:
@@ -66,9 +80,16 @@ class SamplingGrid (object):
     def from_affine(mapping, shape=(), names=space):
         """
         Return grid using a given `Affine` mapping
+        
+        :Parameters:
+            `mapping` : TODO
+                TODO
+            `shape` : TODO
+                TODO
+            `names` : TODO
+                TODO
 
-        :Returns:
-            `SamplingGrid`
+        :Returns: `SamplingGrid`
         """
         ndim = len(names)
         if mapping.ndim() != ndim:
@@ -85,13 +106,13 @@ class SamplingGrid (object):
     def __init__(self, shape, mapping, input_coords, output_coords):
         """
         :Parameters:
-            `shape` : TODO
+            `shape` : tuple of ints
                 TODO
-            `mapping` : TODO
+            `mapping` : `mapping.Mapping`
                 TODO
-            `input_coords` : TODO
+            `input_coords` : `CoordinateSystem`
                 TODO
-            `output_coords` : TODO
+            `output_coords` : `CoordinateSystem`
                 TODO
         """
         # These guys define the structure of the grid.
@@ -115,12 +136,16 @@ class SamplingGrid (object):
     def allslice(self):
         """
         A slice object representing the entire grid.
+        
+        :Returns: ``slice``
         """
         return slice(0, self.shape[0])
 
     def range(self):
         """
         Return the coordinate values in the same format as numpy.indices.
+        
+        :Returns: TODO
         """
         indices = N.indices(self.shape)
         tmp_shape = indices.shape
@@ -139,6 +164,16 @@ class SamplingGrid (object):
         By default, the iterator of the slab is a SliceIterator
         with the same start, step, count and iterating over the
         specified axis with nslicedim=1.
+        
+        :Parameters:
+            `start` : TODO
+                TODO
+            `step` ; TODO
+                TODO
+            `count` : TODO
+                TODO
+        
+        :Returns: `SamplingGrid`
         """
 
         if isinstance(self.mapping, Affine):
@@ -164,8 +199,14 @@ class SamplingGrid (object):
 
 
     def transform(self, mapping): 
-        """
+        """        
         Apply a transformation (mapping) to this grid.
+        
+        :Parameters:
+            `mapping` : TODO
+                TODO
+        
+        :Returns: ``None``
         """
         self.mapping = mapping * self.mapping
 
