@@ -26,59 +26,59 @@ class Slice(object):
 
 
 
-def coronal(image, y=0.,
+def coronal(grid, y=0.,
             shape=(128,128),
             xlim=None,
             zlim=None):
     """
-    Coronal slice through an image, with optional xlim and zlim. Otherwise,
-    these are taken from a bounding for image.
+    Coronal slice through a grid, with optional xlim and zlim. Otherwise,
+    these are taken from a bounding for grid.
 
     Shape refers to size of array in sampling the region by an interpolator.
     """
     if xlim is None:
-        xlim = slices.bounding_box(image.grid)[2]
+        xlim = slices.bounding_box(grid)[2]
     if zlim is None:
-        zlim = slices.bounding_box(image.grid)[0]
+        zlim = slices.bounding_box(grid)[0]
     return slices.yslice(y=y, ylim=[y,y+1.],
                                    xlim=xlim,
                                    zlim=zlim,
                                    shape=(shape[1],2,shape[0]))
 
-def transversal(image, z=0.,
+def transversal(grid, z=0.,
                 shape=(128,128),
                 xlim=None,
                 ylim=None):
     """
-    Transversal slice through an image, with optional xlim and ylim. Otherwise,
-    these are taken from a bounding for image.
+    Transversal slice through a grid, with optional xlim and ylim. Otherwise,
+    these are taken from a bounding for grid.
 
     Shape refers to size of array in sampling the region by an interpolator.
     """
     if xlim is None:
-        xlim = slices.bounding_box(image.grid)[2]
+        xlim = slices.bounding_box(grid)[2]
     if ylim is None:
-        ylim = slices.bounding_box(image.grid)[1]
+        ylim = slices.bounding_box(grid)[1]
     return slices.zslice(z=z, zlim=[z,z+1.],
                                    xlim=xlim,
                                    ylim=ylim,
                                    shape=(2,shape[0],shape[1]))
 
-def sagittal(image, x=0.,
+def sagittal(grid, x=0.,
             shape=(128,128),
             ylim=None,
             zlim=None):
     """
-    Sagittal slice through an image, with optional ylim and zlim. Otherwise,
-    these are taken from a bounding for image.
+    Sagittal slice through a grid, with optional ylim and zlim. Otherwise,
+    these are taken from a bounding for grid.
 
     Shape refers to size of array in sampling the region by an interpolator.
 
     """
     if ylim is None:
-        ylim = slices.bounding_box(image.grid)[1]
+        ylim = slices.bounding_box(grid)[1]
     if zlim is None:
-        zlim = slices.bounding_box(image.grid)[0]
+        zlim = slices.bounding_box(grid)[0]
     return slices.xslice(x=x, xlim=[x,x+1.],
                                    ylim=ylim,
                                    zlim=zlim,
