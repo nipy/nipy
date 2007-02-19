@@ -1,6 +1,8 @@
 import unittest, os
 import numpy as N
 
+from numpy.testing import NumpyTestCase
+
 from neuroimaging.utils.test_decorators import data
 
 from neuroimaging.data_io.formats import ecat7
@@ -8,7 +10,7 @@ from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.api import Image
 from neuroimaging.data_io.formats.ecat7 import Ecat7
 
-class EcatTest(unittest.TestCase):
+class test_Ecat(NumpyTestCase):
 
     def setUp(self):
         pass
@@ -22,13 +24,13 @@ class EcatTest(unittest.TestCase):
         self.image8 = Image(self.ecat.frames[7])
 
 
-class EcatMainHeaderTest(EcatTest):
+class test_EcatMainHeader(test_Ecat):
     @data
     def test_header_print(self):
         for field,value in self.ecat.header.items():
             print '%s: %s'%(field,str(value))
             
-class EcatFramesTest(EcatTest):
+class test_EcatFrames(test_Ecat):
     @data
     def test_number_frames(self):
         header_nframes = self.ecat.header['num_frames']
@@ -46,7 +48,7 @@ class EcatFramesTest(EcatTest):
         self.assertEqual(self.image1.shape,shape)
 
 def suite():
-    suite = unittest.makeSuite(EcatTest)
+    suite = unittest.makeSuite(test_Ecat)
     return suite
 
 

@@ -4,11 +4,11 @@ import numpy as N
 
 from neuroimaging import traits
 
-from neuroimaging.api import Affine, VoxelAxis, CoordinateSystem, \
+from neuroimaging.core.api import Affine, VoxelAxis, CoordinateSystem, \
      DiagonalCoordinateSystem
-from neuroimaging.data_io.formats import Format
-from neuroimaging.data_io.formats.minc import _mincutils
-from neuroimaging.data_io.formats.minc import _mincconstants as mc
+from neuroimaging.data_io.formats.format import Format
+from neuroimaging.sandbox.formats.minc import _mincutils
+from neuroimaging.sandbox.formats.minc import _mincconstants as mc
 
 
 class Dimension(VoxelAxis):

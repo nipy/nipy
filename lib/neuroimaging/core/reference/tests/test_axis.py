@@ -1,10 +1,11 @@
 import unittest
 import types
 import numpy as N
+from numpy.testing import NumpyTestCase
 
 from neuroimaging.core.reference.axis import Axis, ContinuousAxis, VoxelAxis, RegularAxis
 
-class AxisTest(unittest.TestCase):
+class test_Axis(NumpyTestCase):
 
     def setUp(self):
         self.axis = Axis(name='xspace')
@@ -32,7 +33,7 @@ class AxisTest(unittest.TestCase):
         self.assertRaises(NotImplementedError, self.axis.range)
 
 
-class ContinuousAxisTest(unittest.TestCase):
+class test_ContinuousAxis(NumpyTestCase):
 
     def setUp(self):
         self.finite = ContinuousAxis(name='xspace', low=0, high=10)
@@ -82,7 +83,7 @@ class ContinuousAxisTest(unittest.TestCase):
         self.assertEqual(self.infinite.range(), (-N.inf, N.inf))
 
 
-class RegularAxisTest(unittest.TestCase):
+class test_RegularAxis(NumpyTestCase):
 
     def setUp(self):
         self.finite = RegularAxis(name='xspace', start=0, step=2, length=10)
@@ -156,7 +157,7 @@ class RegularAxisTest(unittest.TestCase):
 
 
 
-class VoxelAxisTest(unittest.TestCase):
+class test_VoxelAxis(NumpyTestCase):
 
     def setUp(self):
         self.finite = VoxelAxis(name='xspace', length=10)

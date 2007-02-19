@@ -1,10 +1,12 @@
 import unittest
 
+from numpy.testing import NumpyTestCase
+
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
      VoxelCoordinateSystem
 from neuroimaging.core.reference.axis import generic
 
-class CoordinateSystemTest(unittest.TestCase):
+class test_CoordinateSystem(NumpyTestCase):
 
     def setUp(self):
         self.name = "test"
@@ -65,7 +67,7 @@ class CoordinateSystemTest(unittest.TestCase):
         self.assertEquals(new_c.axes(), self.c.axes()[1:])
         
 
-class VoxelCoordinateSystemTest(unittest.TestCase):
+class test_VoxelCoordinateSystem(NumpyTestCase):
     def setUp(self):
         self.name = "voxel_test"
         self.axes = generic

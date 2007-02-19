@@ -1,8 +1,10 @@
 import unittest
 
+from numpy.testing import NumpyTestCase
+
 import neuroimaging.core.reference.mni as mni
 
-class MNITest(unittest.TestCase):
+class test_MNI(NumpyTestCase):
 
     def testMNI(self):
         """ ensure all elementes of the interface exist """

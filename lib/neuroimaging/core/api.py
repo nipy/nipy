@@ -13,4 +13,6 @@ from neuroimaging.core.image.iterators import SliceIterator, \
      SliceParcelIterator, ParcelIterator, fMRIParcelIterator, \
      fMRISliceParcelIterator, ImageSequenceIterator
 from neuroimaging.core.reference.mapping import Mapping, Affine
-from neuroimaging.core.reference.coordinate_system import CoordinateSystem
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
+     DiagonalCoordinateSystem
+from neuroimaging.core.reference.axis import VoxelAxis

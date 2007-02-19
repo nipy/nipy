@@ -1,11 +1,12 @@
 import unittest, csv, os
 import numpy as N
+from numpy.testing import NumpyTestCase
 from scipy.sandbox.models.utils import recipr0
 from scipy.sandbox.models import contrast
 
 from neuroimaging.modalities.fmri import hrf, protocol, functions
 
-class ProtocolTestSetup(unittest.TestCase):
+class test_ProtocolSetup(NumpyTestCase):
 
     def setUp(self):
         """
@@ -55,9 +56,7 @@ class ProtocolTestSetup(unittest.TestCase):
 
         self.t = N.arange(0,300,1)
 
-class ProtocolTest(ProtocolTestSetup):
-
-#class ProtocolFromFile(ProtocolTest):
+class test_Protocol(test_ProtocolSetup):
 
     def testFromFile(self):
         out = file('tmp.csv', 'w')
@@ -69,7 +68,6 @@ class ProtocolTest(ProtocolTestSetup):
         p = protocol.ExperimentalFactor('pain', file('tmp.csv'), delta=False)
         os.remove('tmp.csv')
 
-#class ProtocolFromFileName(ProtocolTest):
 
     def testFromFileName(self):
         out = file('tmp.csv', 'w')
@@ -82,8 +80,6 @@ class ProtocolTest(ProtocolTestSetup):
         os.remove('tmp.csv')
 
 
-#class ProtocolContrast2(ProtocolTest):
-
     def testContrast2(self):
         self.setup_terms()
         drift_fn = functions.SplineConfound(4, window=(0,300))
@@ -95,8 +91,6 @@ class ProtocolTest(ProtocolTestSetup):
                                           [[0.,0.,0.,0.,1.,0.],
                                            [0.,0.,0.,0.,0.,1.]])
 
-
-#class ProtocolDesign2(ProtocolTest):
 
     def testDesign2(self):
         self.setup_terms()
@@ -123,8 +117,6 @@ class ProtocolTest(ProtocolTestSetup):
             y = formula.names()
             self.assertEquals(len(y), 2 + df * 2)
 
-#class ProtocolTimeFn1(ProtocolTest):
-
     def testTimeFn1(self):
         self.setup_terms()
         
@@ -148,8 +140,6 @@ class ProtocolTest(ProtocolTestSetup):
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) + Z)
 
 
-#class ProtocolTimeFn2(ProtocolTest):
-
     def testTimeFn2(self):
         self.setup_terms()
         
@@ -169,8 +159,6 @@ class ProtocolTest(ProtocolTestSetup):
 
         D = d + d
         N.testing.assert_almost_equal(D(t), 2 * N.array(drift_fn(t)))
-
-#class ProtocolTimeFn3(ProtocolTest):
 
     def testTimeFn3(self):
         self.setup_terms()
@@ -200,8 +188,6 @@ class ProtocolTest(ProtocolTestSetup):
         N.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] + c[i])
 
 
-#class ProtocolTimeFn4(ProtocolTest):
-
     def testTimeFn4(self):
         self.setup_terms()
         
@@ -217,7 +203,6 @@ class ProtocolTest(ProtocolTestSetup):
 
         N.testing.assert_almost_equal(N.squeeze(x(t)), d(t)[i])
 
-#class ProtocolTimeFn5(ProtocolTest):
 
     def testTimeFn5(self):
         t = N.arange(0,60,1.)
@@ -230,7 +215,6 @@ class ProtocolTest(ProtocolTestSetup):
         a = q.astimefn() - r.astimefn() * Z
         N.testing.assert_almost_equal(a(t), (N.array(q(t)) - Z * N.array(r(t))).flatten())
 
-#class ProtocolDeltaTest(ProtocolTest):
 
     def test_DeltaFunction(self):
         a = N.arange(0,5,0.1)
@@ -242,7 +226,6 @@ class ProtocolTest(ProtocolTestSetup):
         N.testing.assert_array_equal(x, y)
 
 
-#class ProtocolContrast1(ProtocolTest):
 
     def testContrast1(self):
         self.setup_terms()
@@ -255,8 +238,6 @@ class ProtocolTest(ProtocolTestSetup):
                                           [[0.,0.,0.,0.,1.,0.],
                                            [0.,0.,0.,0.,0.,1.]])
 
-
-#class ProtocolShape(ProtocolTestSetup):
 
     def testShape(self):
         self.setup_terms()
@@ -284,7 +265,6 @@ class ProtocolTest(ProtocolTestSetup):
             y = formula(self.t)
             self.assertEquals(y.shape, (2 + df * 2, self.t.shape[0]))
 
-#class ProtocolDesign1(ProtocolTestSetup):
 
     def testDesign1(self):
         self.setup_terms()

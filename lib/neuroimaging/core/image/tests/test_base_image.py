@@ -1,12 +1,13 @@
 import unittest
 
 import numpy as N
+from numpy.testing import NumpyTestCase
 
 from neuroimaging.core.image.base_image import BaseImage, ArrayImage
 from neuroimaging.core.reference.grid import SamplingGrid
 
 
-class BaseImageTest(unittest.TestCase):
+class test_BaseImage(NumpyTestCase):
 
 
     def test_init(self):
@@ -38,7 +39,7 @@ class BaseImageTest(unittest.TestCase):
         self.assertEquals(img[0], row)
 
 
-class ArrayImageTest(unittest.TestCase):
+class test_ArrayImage(NumpyTestCase):
 
 
     def test_init(self):

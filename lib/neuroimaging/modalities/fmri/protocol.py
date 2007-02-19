@@ -125,7 +125,7 @@ class ExperimentalRegressor(object):
         Return a TimeFunction object that can be added, subtracted, etc.
         
         :Parameters:
-            `slice` : TODO
+            slice : TODO
                 TODO
                 
         :Returns: `TimeFunction`
@@ -179,9 +179,9 @@ class Time(ExperimentalQuantitative):
     def __call__(self, time, **ignored):
         """
         :Parameters:
-            `time` : TODO
+            time : TODO
                 TODO
-            `ignored` : TODO
+            ignored : TODO
                 TODO
 
         :Returns: ``time``
@@ -191,7 +191,7 @@ class Time(ExperimentalQuantitative):
     def __pow__(self, e):
         """
         :Parameters:
-            `e` : float
+            e : float
                 The exponent to raise to
         
         :Returns: TODO
@@ -223,11 +223,11 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
     def __init__(self, name, iterator, **keywords):
         """
         :Parameters:
-            `name` : TODO
+            name : TODO
                 TODO
-            `iterator` : TODO
+            iterator : TODO
                 TODO
-            `keywords` : dict
+            keywords : dict
                 Passed through as the keywords to `ExperimentalQuantitative.__init__`
         """
         ExperimentalQuantitative.__init__(self, name, fn, **keywords)
@@ -294,15 +294,15 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
     def __init__(self, name, iterator, convolved=False, delta=True, dt=0.02):
         """
         :Parameters:
-            `name` : TODO
+            name : TODO
                 TODO
-            `iterator` : TODO
+            iterator : TODO
                 TODO
-            `convolved` : bool
+            convolved : bool
                 TODO
-            `delta` : bool
+            delta : bool
                 TODO
-            `dt` : float
+            dt : float
                 TODO
         """
         ExperimentalRegressor.__init__(self, convolved)
@@ -332,7 +332,7 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
     def __getitem__(self, key):
         """
         :Parameters:
-            `key` : TODO
+            key : TODO
                 TODO
         
         :Returns: TODO
@@ -361,13 +361,13 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
     def __call__(self, time, includedown=False, convolved=None, **kw):
         """
         :Parameters:
-            `time` : TODO
+            time : TODO
                 TODO
-            `includedown` : bool
+            includedown : ``bool``
                 TODO
-            `convolved` : TODO
+            convolved : TODO
                 TODO
-            `kw` : dict
+            kw : ``dict``
                 TODO
         
         :Returns: TODO
@@ -405,7 +405,7 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
     def names(self, keep=False):
         """
         :Parameters:
-            `keep` : bool
+            keep : bool
                 TODO
         
         :Returns: TODO
@@ -427,9 +427,9 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
         Determine an ExperimentalFactor from an iterator
         
         :Parameters:
-            `iterator` : TODO
+            iterator : TODO
                 TODO
-            `delimiter` : string
+            delimiter : string
                 TODO
                 
         :Returns: ``None``
@@ -463,9 +463,9 @@ class ExperimentalFormula(formula):
     def __mul__(self, other, nested=False):
         """
         :Parameters:
-            `other` : TODO
+            other : TODO
                 TODO
-            `nested` : bool
+            nested : bool
                 TODO
         
         :Returns: `ExperimentalFormula`
@@ -475,7 +475,7 @@ class ExperimentalFormula(formula):
     def __add__(self, other):
         """
         :Parameters:
-            `other` : TODO
+            other : TODO
                 TODO
         
         :Returns: `ExperimentalFormula`
@@ -485,9 +485,9 @@ class ExperimentalFormula(formula):
     def __call__(self, time, **keywords):
         """
         :Parameters:
-            `time` : TODO
+            time : TODO
                 TODO
-            `keywords` : dict
+            keywords : dict
                 TODO
                 
         :Returns: ``numpy.ndarray``
@@ -510,7 +510,7 @@ class ExperimentalFormula(formula):
     def names(self, keep=False):
         """
         :Parameters:
-            `keep` : bool
+            keep : bool
                 TODO
                 
         :Returns: TODO

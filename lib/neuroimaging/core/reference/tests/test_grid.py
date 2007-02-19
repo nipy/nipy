@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as N
+from numpy.testing import NumpyTestCase
 
 from neuroimaging.core.reference.axis import space
 from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
@@ -14,7 +15,7 @@ from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.api import Image
 
 
-class GridTest(unittest.TestCase):
+class test_Grid(NumpyTestCase):
 
     def setUp(self):
         self.img = Image("avg152T1", datasource=repository, format=Analyze)

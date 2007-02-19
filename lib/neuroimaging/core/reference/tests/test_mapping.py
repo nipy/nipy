@@ -1,13 +1,14 @@
 import unittest
 import numpy.random as R
 import numpy as N
+from numpy.testing import NumpyTestCase
 
 import urllib, os
 from tempfile import mkstemp
 
 from neuroimaging.core.reference import mapping, mni
 
-class MappingTest2(unittest.TestCase):
+class test_Mapping2(NumpyTestCase):
     def setUp(self):
         def f(x):
             return 2*x
@@ -171,7 +172,7 @@ class MappingTest2(unittest.TestCase):
             N.testing.assert_almost_equal(q(value), mat_(value))
 
 
-class IdentityTest(unittest.TestCase):
+class test_Identity(NumpyTestCase):
     def setUp(self):
         self.a = mapping.Affine.identity()
         
@@ -205,7 +206,7 @@ class IdentityTest(unittest.TestCase):
         self.assertTrue(self.a == b)
         os.remove("tmp.mat")
         
-class AffineTest(unittest.TestCase):
+class test_Affine(NumpyTestCase):
     def setUp(self):    
         a = mapping.Affine.identity()
         A = N.identity(4)
@@ -213,7 +214,7 @@ class AffineTest(unittest.TestCase):
         self.mapping = mapping.Affine(a.input_coords, a.output_coords, A)
 
 
-class MappingTest(unittest.TestCase):
+class test_Mapping(NumpyTestCase):
 
     def setUp(self):
 

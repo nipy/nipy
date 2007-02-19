@@ -259,7 +259,7 @@ class VarfixOutput(ImageOneSampleOutput):
         """
         ImageOneSampleOutput.__init__(self, grid, basename='varfix', **keywords)
 
-    def extract(self, results)
+    def extract(self, results):
         """
         :Parameters:
             results : TODO

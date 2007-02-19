@@ -1,6 +1,6 @@
 import gc
 
-from neuroimaging.core.image.image import roi
+from neuroimaging.core.image import roi
 from neuroimaging.core.api import Image
 
 class Simulator(object):

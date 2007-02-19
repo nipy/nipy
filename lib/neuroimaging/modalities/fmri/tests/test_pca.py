@@ -1,6 +1,7 @@
 import unittest, os
 
 import numpy as N
+from numpy.testing import NumpyTestCase
 
 from neuroimaging.utils.test_decorators import slow, data
 
@@ -14,7 +15,7 @@ PYLAB_DEF, pylab = pylab_def()
 if PYLAB_DEF:
     from neuroimaging.modalities.fmri.pca import PCAmontage
 
-class PCATest(unittest.TestCase):
+class test_PCA(NumpyTestCase):
 
     def setUp(self):
         pass
@@ -26,7 +27,7 @@ class PCATest(unittest.TestCase):
         frame = self.fmridata.frame(0)
         self.mask = Image(N.greater(frame.readall(), 500).astype(N.float64), grid=frame.grid)
 
-class PCATestMask(PCATest):
+class test_PCAMask(test_PCA):
     @slow
     @data
     def test_PCAmask(self):
@@ -35,7 +36,7 @@ class PCATestMask(PCATest):
         p.fit()
         output = p.images(which=range(4))
 
-class PCATestNoMask(PCATest):
+class test_PCANoMask(test_PCA):
     @slow
     @data
     def test_PCA(self):
@@ -46,7 +47,7 @@ class PCATestNoMask(PCATest):
 
 if PYLAB_DEF:
 
-    class PCATestMontageNoMask(PCATest):
+    class test_PCAMontageNoMask(test_PCA):
         @slow
         @data
         def test_PCAmontage(self):
@@ -58,7 +59,7 @@ if PYLAB_DEF:
             pylab.savefig('image.png')
             os.remove('image.png')
 
-    class PCATestMontageMask(PCATest):
+    class test_PCAMontageMask(test_PCA):
         @slow
         @data
         def test_PCAmontage_nomask(self):
@@ -72,8 +73,8 @@ if PYLAB_DEF:
 
 
 def suite():
-    suite = unittest.makeSuite([PCATestMask, PCATestNoMask,
-                                PCATestMontageMask, PCATestMontageNoMask])
+    suite = unittest.makeSuite([test_PCAMask, test_PCANoMask,
+                                test_PCAMontageMask, test_PCAMontageNoMask])
     return suite
         
 if __name__ == '__main__':

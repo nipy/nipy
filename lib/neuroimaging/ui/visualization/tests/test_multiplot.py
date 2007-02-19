@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as N
+from numpy.testing import NumpyTestCase
 
 from neuroimaging.utils.test_decorators import gui
 
@@ -10,7 +11,7 @@ if PYLAB_DEF:
     from neuroimaging.ui.visualization.multiplot import MultiPlot
 
 
-class MultiPlotTest(unittest.TestCase):
+class test_MultiPlot(NumpyTestCase):
     if PYLAB_DEF:
 
         def setUp(self):
@@ -49,7 +50,7 @@ class MultiPlotTest(unittest.TestCase):
 
 
 def suite():
-    return unittest.makeSuite(MultiPlotTest)
+    return unittest.makeSuite(test_MultiPlot)
 
 
 if __name__ == '__main__':

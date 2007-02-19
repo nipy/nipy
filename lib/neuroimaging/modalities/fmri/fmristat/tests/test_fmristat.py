@@ -3,6 +3,8 @@ import unittest, os, gc, shutil
 import numpy as N
 from scipy.sandbox.models.contrast import Contrast
 
+from numpy.testing import NumpyTestCase
+
 from neuroimaging.utils.test_decorators import slow, data
 
 from neuroimaging.utils.tests.data import repository
@@ -17,7 +19,7 @@ from neuroimaging.modalities.fmri.hrf import glover, glover_deriv
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 
-class fMRIStatTest(unittest.TestCase):
+class test_fMRIStat(NumpyTestCase):
 
     def setup_formula(self):
 
@@ -57,7 +59,7 @@ class fMRIStatTest(unittest.TestCase):
         for rhofile in ['rho.hdr', 'rho.img']:
             shutil.rmtree(rhofile, ignore_errors=True)
 
-class TestSliceTimes(fMRIStatTest):
+class test_SliceTimes(test_fMRIStat):
 
     @slow
     @data
@@ -73,7 +75,7 @@ class TestSliceTimes(fMRIStatTest):
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
-class TestResid1(fMRIStatTest):
+class test_Resid1(test_fMRIStat):
 
     @slow
     @data
@@ -89,7 +91,7 @@ class TestResid1(fMRIStatTest):
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
-class TestResid2(fMRIStatTest):
+class test_Resid2(test_fMRIStat):
 
     @slow
     @data
@@ -105,7 +107,7 @@ class TestResid2(fMRIStatTest):
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
-class TestHRFDeriv(fMRIStatTest):
+class test_HRFDeriv(test_fMRIStat):
 
     @slow
     @data
@@ -130,7 +132,7 @@ class TestHRFDeriv(fMRIStatTest):
         AR.fit()
         del(OLS); del(AR); gc.collect()
         
-class TestContrast(fMRIStatTest):
+class test_Contrast(test_fMRIStat):
 
     @slow
     @data

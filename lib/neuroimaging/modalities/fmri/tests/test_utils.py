@@ -1,9 +1,10 @@
 import unittest
 import numpy as N
+from numpy.testing import NumpyTestCase
 
 from neuroimaging.modalities.fmri.utils import CutPoly, WaveFunction, ConvolveFunctions
 
-class utilTest(unittest.TestCase):
+class test_util(NumpyTestCase):
     
     def test_CutPoly(self):
         f = CutPoly(2.0)

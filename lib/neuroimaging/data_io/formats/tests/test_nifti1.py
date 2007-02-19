@@ -3,6 +3,8 @@ import unittest, os, copy
 import numpy as N
 import numpy.random as R
 
+from numpy.testing import NumpyTestCase
+
 from neuroimaging.utils.test_decorators import slow
 
 from neuroimaging.core.api import Image
@@ -10,7 +12,7 @@ from neuroimaging.data_io.formats import nifti1
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.utils.odict import odict
 
-class NiftiTest(unittest.TestCase):
+class test_Nifti(NumpyTestCase):
 
     def setUp(self):
         self.zimage = nifti1.Nifti1("zstat1.nii", datasource=repository)
@@ -63,12 +65,12 @@ class NiftiTest(unittest.TestCase):
         ))
             
 
-class NiftiPrintTest(NiftiTest):
+class test_NiftiPrint(test_Nifti):
 
     def test_print(self):
         print self.zimage
 
-class NiftiHeaderTest(NiftiTest):
+class test_NiftiHeader(test_Nifti):
 
     def test_header1(self):
         for name, value in self.zvalues.items():
@@ -78,14 +80,14 @@ class NiftiHeaderTest(NiftiTest):
         for name, value in self.zvalues.items():
             self.assertEqual(self.zimage.header[name], value)
 
-class NiftiReadTest(NiftiTest):
+class test_NiftiRead(test_Nifti):
 
     def test_read1(self):
         y = self.zimage[:]
         N.testing.assert_approx_equal(y.min(), -8.71075057983)
         N.testing.assert_approx_equal(y.max(), 18.582529068)
 
-class NiftiWriteTest(NiftiTest):
+class test_NiftiWrite(test_Nifti):
 
     def test_write1(self):
         self.image.tofile('out.nii', clobber=True, dtype=N.float64)
@@ -119,7 +121,7 @@ class NiftiWriteTest(NiftiTest):
 ##     not until we identify (or define) a known extension structure
 ##
 
-class NiftiDataTypeTest(NiftiTest):
+class test_NiftiDataType(test_Nifti):
 
     def test_datatypes(self):
         for sctype in nifti1.sctype2datatype.keys():
@@ -163,7 +165,7 @@ class NiftiDataTypeTest(NiftiTest):
 
         
 def suite():
-    suite = unittest.makeSuite(NiftiTest)
+    suite = unittest.makeSuite(test_Nifti)
     return suite
 
 

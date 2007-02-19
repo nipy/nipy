@@ -1,6 +1,8 @@
 import unittest
 
-class TemplateTest(unittest.TestCase):
+from numpy.testing import NumpyTestCase
+
+class test_Template(NumpyTestCase):
 
     def setUp(self):
         print "TestCase initialization..."

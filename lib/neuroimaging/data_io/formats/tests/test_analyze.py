@@ -1,6 +1,8 @@
 import unittest, os
 import numpy as N
 
+from numpy.testing import NumpyTestCase
+
 from neuroimaging.utils.test_decorators import slow
 
 from neuroimaging.data_io.formats import analyze
@@ -8,7 +10,7 @@ from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.api import Image
 from neuroimaging.data_io.formats.analyze import Analyze
 
-class AnalyzeTest(unittest.TestCase):
+class test_Analyze(NumpyTestCase):
 
     def setUp(self):
         # this file header has dim = [4 91 109 91 1 0 0 0]
@@ -17,11 +19,11 @@ class AnalyzeTest(unittest.TestCase):
         self.image = analyze.Analyze("avg152T1", datasource=repository)
 
 
-class AnalyzePrintTest(AnalyzeTest):
+class test_AnalyzePrintTest(test_Analyze):
     def test_print(self):
         print self.image
 
-class AnalyzeTransformTest(AnalyzeTest):
+class test_AnalyzeTransform(test_Analyze):
 
     def test_transform(self):
         t = self.image.grid.mapping.transform
@@ -44,7 +46,7 @@ class AnalyzeTransformTest(AnalyzeTest):
         self.assertEquals(tuple(self.image.grid.shape), (91,109,91))
 
         
-class AnalyzeWriteTest(AnalyzeTest):
+class test_AnalyzeWrite(test_Analyze):
 
     def test_writehdr(self):
         new = file('tmp.hdr', 'wb')
@@ -54,13 +56,13 @@ class AnalyzeWriteTest(AnalyzeTest):
         old = repository.open(self.image.header_file)
         self.assertEquals(old.read(), new.read())
 
-class AnalyzeReadTest(AnalyzeTest):
+class test_AnalyzeRead(test_Analyze):
 
     def test_read(self):
         data = self.image[:,4:7]
         self.assertEquals(data.shape, (91,3,91))
 
-class AnalyzeDataTypeTest(AnalyzeTest):
+class test_AnalyzeDataType(test_Analyze):
 
     @slow
     def test_datatypes(self):
@@ -97,7 +99,7 @@ class AnalyzeDataTypeTest(AnalyzeTest):
         os.remove('out.img')
 
 def suite():
-    suite = unittest.makeSuite(AnalyzeTest)
+    suite = unittest.makeSuite(test_Analyze)
     return suite
 
 

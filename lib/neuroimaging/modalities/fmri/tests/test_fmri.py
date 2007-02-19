@@ -1,5 +1,6 @@
 import unittest, gc, os
 import numpy as N
+from numpy.testing import NumpyTestCase
 
 from neuroimaging.utils.test_decorators import slow, data
 
@@ -10,7 +11,7 @@ from neuroimaging.data_io.formats.analyze import Analyze
 
 
 # not a test until test data is found
-class fMRITest(unittest.TestCase):
+class test_fMRI(NumpyTestCase):
 
     def setUp(self):
         self.rho = Image(repository.filename('rho.hdr'))

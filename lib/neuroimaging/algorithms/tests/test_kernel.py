@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as N
+from numpy.testing import NumpyTestCase
 
 from neuroimaging.algorithms.kernel_smooth import LinearFilter
 from neuroimaging.core.api import Image
@@ -17,7 +18,7 @@ if PYLAB_DEF:
     from neuroimaging.ui.visualization.viewer import BoxViewer
     from neuroimaging.modalities.fmri.pca import PCAmontage
 
-class KernelTest(unittest.TestCase):
+class test_Kernel(NumpyTestCase):
     @gui
     def test_smooth(self):
         rho = Image("rho.hdr", repository)
@@ -34,7 +35,7 @@ class KernelTest(unittest.TestCase):
             sview.draw()
             pylab.show()
 
-class SigmaFWHMTest(unittest.TestCase):
+class test_SigmaFWHM(NumpyTestCase):
     def test_sigma_fwhm(self):
         """
         ensure that fwhm2sigma and sigma2fwhm are inverses of each other        
@@ -46,7 +47,7 @@ class SigmaFWHMTest(unittest.TestCase):
 
 
 def suite():
-    suite = unittest.makeSuite(KernelTest)
+    suite = unittest.makeSuite(test_Kernel, test_SigmaFWHM)
     return suite
 
         

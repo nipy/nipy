@@ -1,10 +1,12 @@
 import unittest
 
+from numpy.testing import NumpyTestCase
+
 from neuroimaging.core.reference.slices import bounding_box, \
   zslice, yslice, xslice
 from neuroimaging.core.reference.grid import SamplingGrid
 
-class SliceTest(unittest.TestCase):
+class test_Slice(NumpyTestCase):
 
     def test_bounding_box(self):
         shape = (10, 10, 10)

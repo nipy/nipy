@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as N
+from numpy.testing import NumpyTestCase
 
 from neuroimaging.core.image.iterators import Iterator, IteratorItem, \
      ParcelIterator, SliceParcelIterator, fMRIParcelIterator, \
@@ -11,7 +12,7 @@ from neuroimaging.modalities.fmri import fMRIImage
 import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.reference.grid as grid
 
-class IteratorTest(unittest.TestCase):
+class test_Iterator(NumpyTestCase):
 
     def setUp(self):
         self.img = Image(N.zeros((10, 20, 30)))

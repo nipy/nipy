@@ -48,6 +48,7 @@ class LinearFilter(object):
         self.kernel = N.exp(-N.minimum(_normsq, 15))
         norm = N.sqrt((self.kernel**2).sum())
         self.kernel = self.kernel / norm
+        self._k = self.kernel[:]
         self.kernel = fft.rfftn(self.kernel)
 
 
@@ -71,23 +72,23 @@ class LinearFilter(object):
         X = self.grid.mapping(voxels)
 
         if self.fwhm is not 1.0:
-            X = X / fwhm2sigma(self.fwhm)
+            X /= fwhm2sigma(self.fwhm)
         if self.cov != None:
             _chol = NL.cholesky(self.cov)
             X = N.dot(NL.inv(_chol), X)
-        D2 = N.add.reduce(X**2, 0)
+        D2 = N.add.reduce(X**2)
         D2.shape = self.shape
         return D2
 
     def smooth(self, inimage, clean=False, is_fft=False):
         """
         :Parameters:
-            inimage : TODO
-                TODO
+            inimage : `core.api.Image`
+                The image to be smoothed
             clean : ``bool``
-                TODO
+                Should we call ``nan_to_num`` on the data before smoothing?
             is_fft : ``bool``
-                TODO
+                Has the data already been fft'd?
 
         :Returns: `Image`
         """
@@ -101,7 +102,7 @@ class LinearFilter(object):
 
         for _slice in range(nslice):
             if inimage.ndim == 4:
-                data = inimage[_slice]
+                data = inimage[_slice][:]
             elif inimage.ndim == 3:
                 data = inimage[:]
 
@@ -176,15 +177,18 @@ def sigma2fwhm(sigma):
 
 if __name__ == '__main__':
     from pylab import show
-    a = 100*N.random.random((100, 100, 100))
+    #a = 100*N.random.random((100, 100, 100))
+    a = 100*N.zeros((101, 101, 101))
+    a[50,50,50] = 1.0
     img = Image(a)
     filt = LinearFilter(img.grid)
     smoothed = filt.smooth(img)
+    print (filt._k[3:104,3:104,3:104] - N.array(smoothed[:]))
 
     from neuroimaging.ui.visualization.viewer import BoxViewer
 
-    view = BoxViewer(img)
-    view.draw()
+    #view = BoxViewer(img)
+    #view.draw()
     sview = BoxViewer(smoothed, colormap='jet')
     sview.draw()
     show()

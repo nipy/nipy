@@ -1,6 +1,7 @@
 import unittest, os
 
 import numpy as N
+from numpy.testing import NumpyTestCase
 
 from neuroimaging.utils.test_decorators import gui
 
@@ -14,7 +15,7 @@ if PYLAB_DEF:
     from neuroimaging.ui.visualization import slices
     from neuroimaging.ui.visualization.montage import Montage
 
-class MontageTest(unittest.TestCase):
+class test_Montage(NumpyTestCase):
     if PYLAB_DEF:
         def setUp(self):
             self.img = Image(repository.filename("rho.hdr"))
@@ -46,7 +47,7 @@ class MontageTest(unittest.TestCase):
             os.remove('image.png')
 
 def suite():
-    return unittest.makeSuite(MontageTest)
+    return unittest.makeSuite(test_Montage)
 
 
 if __name__ == '__main__':

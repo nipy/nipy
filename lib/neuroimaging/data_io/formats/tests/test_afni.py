@@ -1,13 +1,15 @@
 import unittest, os
 import numpy as N
 
+from numpy.testing import NumpyTestCase
+
 from neuroimaging.data_io.formats import afni
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.api import Image
 
 from neuroimaging.utils.test_decorators import slow, data
 
-class AFNITest(unittest.TestCase):
+class test_AFNI(NumpyTestCase):
 
     def data_setUp(self):
         # This data set is part of the AFNI test data package
@@ -18,13 +20,13 @@ class AFNITest(unittest.TestCase):
         pass
 
 
-class AFNIPrintTest(AFNITest):
+class test_AFNIPrint(test_AFNI):
 
     @data
     def test_print(self):
         print self.image
 
-class AFNITransformTest(AFNITest):
+class test_AFNITransform(test_AFNI):
 
     @data
     def test_transform(self):
@@ -58,7 +60,7 @@ class AFNITransformTest(AFNITest):
 ##         old = repository.open(self.image.header_file)
 ##         self.assertEquals(old.read(), new.read())
 
-class AFNIReadTest(AFNITest):
+class test_AFNIRead(test_AFNI):
 
     @data
     def test_read(self):
@@ -69,7 +71,7 @@ class AFNIReadTest(AFNITest):
         dminmax[1::2] = N.reshape(data, (1,124*256*256)).max(axis=-1)
         N.testing.assert_almost_equal(minmax, dminmax)
 
-class AFNIDataTypeTest(AFNITest):
+class test_AFNIDataType(test_AFNI):
 
     @slow
     @data
@@ -108,9 +110,6 @@ class AFNIDataTypeTest(AFNITest):
         os.remove('out.HEAD')
         os.remove('out.BRIK')
 
-def suite():
-    suite = unittest.makeSuite(AnalyzeTest)
-    return suite
 
 
 if __name__ == '__main__':

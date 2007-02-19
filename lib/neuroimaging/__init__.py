@@ -100,3 +100,11 @@ def import_from(modulename, objectname):
     except AttributeError:
         return None
 
+from numpy.testing import NumpyTest
+
+def test(level=1, verbosity=1):
+    if level <= 10:
+        return NumpyTest().test(level, verbosity)
+    else:
+        return NumpyTest().testall(level, verbosity)
+test.__doc__ = NumpyTest.test.__doc__

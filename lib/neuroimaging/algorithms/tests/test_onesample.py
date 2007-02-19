@@ -1,5 +1,7 @@
 import unittest
 
+from numpy.testing import NumpyTestCase
+
 from neuroimaging.utils.test_decorators import slow, data
 
 from neuroimaging.algorithms.onesample import ImageOneSample
@@ -8,7 +10,7 @@ from neuroimaging.data_io.formats.analyze import Analyze
 from neuroimaging.utils.tests.data import repository
 
 
-class OneSampleTest(unittest.TestCase):
+class test_OneSample(NumpyTestCase):
 
 
     def data_setUp(self):

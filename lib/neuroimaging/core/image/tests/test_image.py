@@ -3,6 +3,7 @@ import os
 import glob
 
 import numpy as N
+from numpy.testing import NumpyTestCase
 
 from neuroimaging.utils.test_decorators import slow
 
@@ -14,7 +15,7 @@ from neuroimaging.core.image.iterators import ParcelIterator, \
      SliceParcelIterator, SliceIterator
 
 
-class ImageTest(unittest.TestCase):
+class test_image(NumpyTestCase):
 
     def setUp(self):
         self.img = Image("avg152T1.img", repository, format=Analyze)
@@ -200,7 +201,7 @@ class ImageTest(unittest.TestCase):
         
 
 
-class ImageSequenceIteratorTest(unittest.TestCase):
+class test_ImageSequenceIterator(NumpyTestCase):
 
     @slow
     def test_image_sequence_iterator(self):

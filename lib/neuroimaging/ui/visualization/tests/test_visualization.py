@@ -1,5 +1,7 @@
 import unittest, os
 
+from numpy.testing import NumpyTestCase
+
 from neuroimaging.utils.test_decorators import gui
 
 from neuroimaging.utils.tests.data import repository
@@ -13,7 +15,7 @@ if PYLAB_DEF:
     from neuroimaging.ui.visualization import viewer, slices
 
 
-class VisualizationTest(unittest.TestCase):
+class test_Visualization(NumpyTestCase):
     if PYLAB_DEF:
         def setUp(self):
             self.img = Image(repository.filename("rho.hdr"))
@@ -52,7 +54,7 @@ class VisualizationTest(unittest.TestCase):
 
 
 def suite():
-    return unittest.makeSuite(VisualizationTest)
+    return unittest.makeSuite(test_Visualization)
 
 
 if __name__ == '__main__':
