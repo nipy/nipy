@@ -222,7 +222,7 @@ class SagittalPlot(DataSlicePlot):
         self.interpolator = ImageInterpolator(self.img)
         self.m = float(self.img.readall().min())
         self.M = float(self.img.readall().max())
-        self.slice = sagittal(self.img, x=self.x, shape=self.shape)
+        self.slice = sagittal(self.img.grid, x=self.x, shape=self.shape)
     
         DataSlicePlot.__init__(self, self.interpolator, self.slice,
                                 vmax=self.M,
@@ -242,7 +242,7 @@ class CoronalPlot (DataSlicePlot):
         self.interpolator = ImageInterpolator(self.img)
         self.m = float(self.img.readall().min())
         self.M = float(self.img.readall().max())
-        self.slice = coronal(self.img, x=self.x, 
+        self.slice = coronal(self.img.grid, x=self.x, 
                                shape=self.shape)
     
         DataSlicePlot.__init__(self, self.interpolator, self.slice,
@@ -262,7 +262,7 @@ class TransversalPlot (DataSlicePlot):
         self.interpolator = ImageInterpolator(self.img)
         self.m = float(self.img.readall().min())
         self.M = float(self.img.readall().max())
-        self.slice = transversal(self.img, z=self.z, shape=self.shape)
+        self.slice = transversal(self.img.grid, z=self.z, shape=self.shape)
     
         DataSlicePlot.__init__(self, self.interpolator, self.slice,
                                vmax=self.M,

@@ -32,7 +32,7 @@ class test_Visualization(NumpyTestCase):
             interpolator = ImageInterpolator(self.img)
             vmin = float(self.img.readall().min())
             vmax = float(self.img.readall().max())
-            _slice = slices.transversal(self.img, z=0.,
+            _slice = slices.transversal(self.img.grid, z=0.,
                                         xlim=[-20,20.], ylim=[0,40.])
             x = slices.DataSlicePlot(interpolator, _slice, vmax=vmax, vmin=vmin,
                                      colormap='spectral', interpolation='nearest')
