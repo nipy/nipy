@@ -73,7 +73,10 @@ def matfromfile(infile, delimiter="\t"):
 def frombin(tstr):
     """
     This is broken -- anyone with mat file experience?
-
+    
+    Example
+    -------
+    
     >>> import urllib
     >>> from neuroimaging.core.reference.mapping import frombin
     >>> mat = urllib.urlopen('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
@@ -132,6 +135,9 @@ def fromurl(turl, ndim=3):
     Read a (ndim+1)x(ndim+1) transform matrix from a URL -- tries to autodetect
     '.mat' and '.xfm'.
 
+    Example
+    -------
+
     >>> from numpy import testing
     >>> from neuroimaging.core.reference.mapping import fromurl
     >>> x = fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1.txt')
@@ -152,7 +158,7 @@ def isdiagonal(matrix):
     Test if the given matrix is diagonal.
 
     :Parameters:
-        `matrix` : numpy.ndarray
+        matrix : ``numpy.ndarray``
             The matrix to check.
     :Returns: ``bool``
 
@@ -175,13 +181,13 @@ class Mapping(object):
     def __init__(self, map, inverse=None, name="mapping", ndim=3):
         """
         :Parameters:
-            `map` : callable
+            map : callable
                 A function which takes a coordinate vector and returns a new coordinate vector
-            `inverse` : callable
+            inverse : callable
                 An inverse function to ``map``
-            `name` : string
+            name : ``string``
                 The name of the mapping
-            `ndim` : int
+            ndim : ``int``
                 The number of dimensions of the mapping.
         """
         self._map = map
@@ -228,7 +234,7 @@ class Mapping(object):
         """ mapping composition
 
         :Parameters:
-            `other` : `Mapping`
+            other : `Mapping`
                 The mapping to compose with.
         :Returns: `Mapping`
         """
@@ -260,8 +266,7 @@ class Mapping(object):
         """
         Create a new Mapping instance which is the inverse of self.
 
-        :Returns:
-            `Mapping`
+        :Returns: `Mapping`
         """
         if self.isinvertible():
             return Mapping(self._inverse, self)
@@ -271,7 +276,7 @@ class Mapping(object):
     def tovoxel(self, real):
         """
         Given a real coordinate, where self.input_coords are assumed to be
-        voxels, return the closest voxel for real. Will choke if mapping is
+        voxels, return the closest voxel for reaf. Will choke if mapping is
         not invertible.
 
         :Raises N.linalg.LinAlgError: is mapping is not invertible.
@@ -291,8 +296,7 @@ class Mapping(object):
         mapping(v_x,v_y,v_z)=(w_x,w_y,w_z), then the return will send
         (v_z-1,v_y-1,v_x-1) to (w_z,w_y,w_x).
 
-        :Returns:
-            `Mapping`
+        :Returns: `Mapping`
 
         Examples
         --------
@@ -314,8 +318,7 @@ class Mapping(object):
     def python2matlab(self):
         """ Inverse of `matlab2python` -- see this function for help.
 
-        :Returns:
-            `Mapping`
+        :Returns: `Mapping`
         """
         return self._f(-1.0)
 
@@ -347,8 +350,7 @@ class Affine(Mapping):
         now, the format is assumed to be a tab-delimited file.  Other formats
         should be added.
 
-        :Returns:
-            `Affine`
+        :Returns: `Affine`
         """
         t = matfromfile(infile, delimiter=delimiter)
         return Affine(t)
@@ -358,8 +360,7 @@ class Affine(Mapping):
     def identity(ndim=3):
         """ Return an identity affine transformation.
 
-        :Returns:
-            `Affine`
+        :Returns: `Affine`
         """
         return Affine(N.identity(ndim+1))
 
@@ -367,9 +368,9 @@ class Affine(Mapping):
     def __init__(self, transform, name="affine"):
         """
         :Parameters:
-            `transform` : numpy.ndarray
+            transform : ``numpy.ndarray``
                 A transformation matrix
-            `name` : string
+            name : ``string``
                 The name of the mapping
         """
         self.transform = transform
@@ -381,7 +382,7 @@ class Affine(Mapping):
         """ Apply this mapping to the given coordinates. 
         
         :Parameters:
-            `coords` : numpy.ndarray
+            coords : ``numpy.ndarray``
                 A coordinate vector
         
         :Returns: ``numpy.ndarray``
@@ -395,7 +396,7 @@ class Affine(Mapping):
         Equality is defined as equality of both name and transform matrix.
 
         :Parameters:
-            `other` : `Affine`
+            other : `Affine`
                 The mapping to be compared to.
                 
         :Returns: ``bool``
@@ -409,7 +410,7 @@ class Affine(Mapping):
     def __rmul__(self, other):
         """
         :Parameters:
-            `other` : `Mapping` or `Affine`
+            other : `Mapping` or `Affine`
                 The mapping to be multiplied by.
                 
         :Returns: `Mapping` or `Affine`
@@ -463,7 +464,7 @@ class Affine(Mapping):
         Write the transform matrix to a file.
 
         :Parameters:
-            `filename` : string
+            filename : ``string``
                 The filename to write to
 
         :Returns: ``None``
