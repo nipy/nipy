@@ -29,7 +29,7 @@ class Format(BaseImage):
     """ Valid filename extensions for the file format. """ 
     extensions = []
 
-    def __init__(self, datasource=DataSource(), grid=None, **keywords):
+    def __init__(self, datasource=DataSource(), grid=None):
         BaseImage.__init__(self, NotImplemented, grid, NotImplemented)
         # Formats should concern themselves with datasources and grids
         self.datasource = datasource
