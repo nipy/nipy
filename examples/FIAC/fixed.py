@@ -46,18 +46,10 @@ class Subject(model.Subject):
         self.runs = runs
         if not os.path.exists(self.resultpath("")):
             os.makedirs(self.resultpath(""))
-        print 'runs', runs
 
     def resultpath(self, path):
         return os.path.join(self.study.resultpath(""), "fiac%d" % self.id, path)
     
-    def fmristat_result(self, stat='t'):
-        return fmristat.fixed(subject=self.id,
-                           which=self.study.which,
-                           contrast=self.study.contrast,
-                           stat=stat,
-                           design=self.study.design)
-
     def result(self, run, stat='effect', resampled=True):
 
         if not resampled:
@@ -122,6 +114,7 @@ class Subject(model.Subject):
         sds = [self.result(run, stat='sd') for run in self.runs]
         effect = Image(N.zeros(effects[0].grid.shape), grid=effects[0].grid)
         sd = Image(N.zeros(effects[0].grid.shape), grid=effects[0].grid)
+        t = Image(N.zeros(effects[0].grid.shape), grid=effects[0].grid)
         d = 0
         v = 0
         for i in range(len(effects)):
@@ -134,18 +127,24 @@ class Subject(model.Subject):
         sd[:] = N.sqrt(N.nan_to_num(1./d))
         _sd = sd.tofile(self.resultpath("sd.nii"), clobber=True)
         _effect = effect.tofile(self.resultpath("effect.nii"), clobber=True)
+        t[:] = effect[:] * N.sqrt(d)
+        _t = t.tofile(self.resultpath("t.nii"), clobber=True)
 
         [os.remove(sd._source.filename) for sd in sds]
         [os.remove(effect._source.filename) for effect in effects]
         [run.cleanup() for run in self.runs]
 
-        return (_effect, _sd) 
+        return (_effect, _sd, _t) 
 
     def cleanup(self):
         """
         Remove uncompressed .nii files from results directory.
         """
         [os.remove(imfile) for imfile in glob.glob(self.resultpath("*nii"))]
+
+    def estimates(self):
+        v = [Image(self.resultpath("%s.nii" % stat)) for stat in ['effect', 'sd', 't']]
+        return {'effect': v[0], 'sd': v[1], 't': v[2]}
 
 def _fix_origin(img):
     
@@ -164,12 +163,6 @@ def _fix_origin(img):
     hdrfile.close()
     return Image(img._source.filename)
 
-def _cor_result(im1, im2):
-    x = N.nan_to_num(im1[:])
-    y = N.nan_to_num(im2[:])
-    x.shape = N.product(x.shape)
-    y.shape = N.product(y.shape)
-    return N.corrcoef(x, y)[0,1]
 
 
 def run(root=io.data_path, subj=3, resample=True, fit=True):
@@ -181,28 +174,4 @@ def run(root=io.data_path, subj=3, resample=True, fit=True):
                 subject = Subject(subj, fixed)
 
                 if fit:
-                    effect, sd = subject.fit()
-
-
-def compare(subj=3, which='delays', contrast='speaker', design='event'):
-    fixed = Fixed(root=io.data_path, which=which, contrast=contrast, design=design)
-    subject = Subject(subj, fixed)
-    
-    effect, sd = subject.fit()
-    keffect, ksd = [subject.fmristat_result(stat=stat)
-                    for stat in ['effect', 'sd']]
-    
-    print _cor_result(effect, keffect)
-    print _cor_result(sd, ksd)
-
-##     from neuroimaging.ui.visualization.viewer import BoxViewer
-
-##     u1 = BoxViewer(sd, colormap='spectral'); u1.M=2.2; u1.draw()
-##     u2 = BoxViewer(ksd, colormap='spectral'); u2.M=2.2; u2.draw()
-
-##     v1 = BoxViewer(effect, colormap='spectral'); v1.m = -1; v1.M=1.6; v1.draw()
-##     v2 = BoxViewer(keffect, colormap='spectral'); v2.m = -1; v2.M=1.6; v2.draw()
-
-##     import pylab
-##     pylab.show()
-
+                    effect, sd, t = subject.fit()
