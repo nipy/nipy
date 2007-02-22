@@ -10,7 +10,7 @@ from neuroimaging.core.api import Image, ImageSequenceIterator
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.formats.analyze import Analyze
 
-from neuroimaging.core.reference.iterators import ParcelIterator, \
+from neuroimaging.core.image.iterators import ParcelIterator, \
      SliceParcelIterator, SliceIterator
 
 

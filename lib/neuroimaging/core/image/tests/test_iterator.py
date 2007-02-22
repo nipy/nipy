@@ -2,7 +2,7 @@ import unittest
 
 import numpy as N
 
-from neuroimaging.core.reference.iterators import Iterator, IteratorItem, \
+from neuroimaging.core.image.iterators import Iterator, IteratorItem, \
      ParcelIterator, SliceParcelIterator, fMRIParcelIterator, \
      fMRISliceParcelIterator
 

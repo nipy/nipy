@@ -10,7 +10,7 @@ from neuroimaging.data_io import DataSource, splitzipext
 from neuroimaging.data_io.formats import getformats, Format
 from neuroimaging.core.image.base_image import ArrayImage
 
-from neuroimaging.core.reference.iterators import SliceIterator
+from neuroimaging.core.image.iterators import SliceIterator
 
 class Image(object):
     """
@@ -272,7 +272,7 @@ class Image(object):
         Use the given iterator to iterate over this image.
 
         :Parameters:
-            `iterator` : `reference.iterators.Iterator`
+            `iterator` : `image.iterators.Iterator`
                 The iterator to use.
 
         :Returns:
@@ -287,9 +287,9 @@ class Image(object):
         another to do the iteration over itself.
 
         :Parameters:
-            `other` : `reference.iterators.Iterator`
+            `other` : `image.iterators.Iterator`
                 The iterator from which to take the values
-            `iterator` : `reference.iterators.Iterator`
+            `iterator` : `image.iterators.Iterator`
                 The iterator to use to iterate over self.
         """
         iterator.mode = 'w'

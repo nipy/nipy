@@ -7,7 +7,7 @@ system.  Use this module for importing core names into your namespace. For examp
 # Note: The order of imports is important here.
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.image.image import Image, ImageSequenceIterator
-from neuroimaging.core.reference.iterators import SliceIterator, \
+from neuroimaging.core.image.iterators import SliceIterator, \
      SliceParcelIterator, ParcelIterator, fMRIParcelIterator, \
      fMRISliceParcelIterator
 from neuroimaging.core.reference.mapping import Mapping, Affine

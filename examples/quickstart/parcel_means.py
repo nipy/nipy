@@ -13,7 +13,7 @@ import pylab
 
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.core.reference.iterators import fMRIParcelIterator
+from neuroimaging.core.image.iterators import fMRIParcelIterator
 
 subject_no=0
 run_no = 1

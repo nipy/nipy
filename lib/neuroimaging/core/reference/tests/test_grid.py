@@ -5,7 +5,7 @@ import numpy as N
 from neuroimaging.core.reference.axis import space
 from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
-from neuroimaging.core.reference.iterators import ParcelIterator, SliceParcelIterator
+from neuroimaging.core.image.iterators import ParcelIterator, SliceParcelIterator
 from neuroimaging.core.reference.mapping import Affine
 
 from neuroimaging.data_io.formats.analyze import Analyze

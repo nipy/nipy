@@ -34,9 +34,9 @@ a single slice through a larger grid.
 
 """
 from neuroimaging.core.reference import \
-  axis, coordinate_system, grid, iterators, mapping, mni, slices
+  axis, coordinate_system, grid, mapping, mni, slices
 
-__all__ = ["axis", "coordinate_system", "grid", "iterators", "mapping", 
+__all__ = ["axis", "coordinate_system", "grid", "mapping", 
            "mni", "slices"]
 
 __docformat__ = 'restructuredtext'
