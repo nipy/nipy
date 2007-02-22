@@ -206,7 +206,7 @@ class SamplingGridROI(DiscreteROI):
         each voxel.
 
         :Parameters:
-            image : `Image`
+            image : `image.Image`
                 TODO
 
         :Returns: TODO
@@ -275,7 +275,7 @@ class ROIall(SamplingGridROI):
     def pool(self, image):
         """
         :Parameters:
-            image : `Image`
+            image : `image.Image`
 
         :Returns: ``None``
         """

@@ -180,7 +180,7 @@ def bounding_box(grid):
     Determine a valid bounding box from a SamplingGrid instance.
 
     :Parameters:
-        grid : `SamplingGrid`
+        grid : `grid.SamplingGrid`
             TODO
     """
     return [[r.min(), r.max()] for r in grid.range()]

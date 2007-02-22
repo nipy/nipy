@@ -612,14 +612,14 @@ class fMRISliceParcelIteratorItem(IteratorItem):
 
 class ImageSequenceIterator(object):
     """
-    Take a sequence of `Image`\ s, and create an iterator whose next method
+    Take a sequence of `image.Image`\ s, and create an iterator whose next method
     returns array with shapes (len(imgs),) + self.imgs[0].next().shape Very
     useful for voxel-based methods, i.e. regression, one-sample t.
     """
     def __init__(self, imgs):
         """
         :Parameters:
-            imgs : ``[`Image`]``
+            imgs : ``[`image.Image`]``
                 The sequence of images to iterate over
         """
         self.imgs = imgs
