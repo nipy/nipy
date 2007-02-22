@@ -8,7 +8,7 @@ import os
 import numpy as N
 
 from scipy import ndimage
-from neuroimaging.data_io import Cache
+from neuroimaging.data_io.datasource import Cache
 
 
 class ImageInterpolator(object):

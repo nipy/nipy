@@ -6,7 +6,7 @@ import numpy as N
 
 from neuroimaging.utils.odict import odict
 import neuroimaging.data_io as data_io
-from neuroimaging.data_io import DataSource
+from neuroimaging.data_io.datasource import DataSource, Cache
 import neuroimaging.data_io.formats.binary as bin
 from neuroimaging.data_io.formats import utils
 
@@ -539,12 +539,12 @@ class Frame(bin.BinaryFormat):
         """
         return self.infile, self.infile
 
-class CacheData(data_io.Cache):
+class CacheData(Cache):
     """
     Create Cache to hold Ecat Frames in one contiguous Volume
     """
     def __init__(self, name):
-        data_io.Cache.__init__(self)
+        Cache.__init__(self)
         
         
     def filepath(self, name):

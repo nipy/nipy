@@ -7,7 +7,7 @@ __docformat__ = 'restructuredtext'
 import numpy
 
 from neuroimaging import import_from
-from neuroimaging.data_io import DataSource
+from neuroimaging.data_io.datasource import DataSource
 from neuroimaging.core.image.base_image import BaseImage
 from neuroimaging.core.api import SamplingGrid
 from neuroimaging.utils.path import path

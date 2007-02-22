@@ -3,7 +3,7 @@ __docformat__ = 'restructuredtext'
 import numpy as N
 
 from neuroimaging.utils.odict import odict
-from neuroimaging.data_io import DataSource
+from neuroimaging.data_io.datasource import DataSource
 from neuroimaging.data_io.formats import utils
 import neuroimaging.data_io.formats.binary as bin
 import neuroimaging.data_io.formats.analyze as anlz

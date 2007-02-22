@@ -8,7 +8,7 @@ import os
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io.formats import utils
 from neuroimaging.data_io.formats.format import Format
-from neuroimaging.data_io import DataSource, iszip, unzip, iswritemode
+from neuroimaging.data_io.datasource import DataSource, iszip, unzip, iswritemode
 
 
 class BinaryFormatError(Exception):

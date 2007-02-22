@@ -4,7 +4,7 @@ import numpy as N, re
 import sys, fpformat
 
 from neuroimaging.utils.odict import odict
-from neuroimaging.data_io import DataSource, iswritemode
+from neuroimaging.data_io.datasource import DataSource, iswritemode
 from neuroimaging.data_io.formats import utils
 import neuroimaging.data_io.formats.binary as bin
 from neuroimaging.data_io.formats._afniconstants import *
