@@ -6,7 +6,8 @@ import numpy as N
 import os
 
 from neuroimaging.utils.odict import odict
-from neuroimaging.data_io.formats import Format, utils
+from neuroimaging.data_io.formats import utils
+from neuroimaging.data_io.formats.format import Format
 from neuroimaging.data_io import DataSource, iszip, unzip, iswritemode
 
 
