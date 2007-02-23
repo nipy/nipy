@@ -10,7 +10,7 @@ from neuroimaging import traits
 from neuroimaging.core.api import Image
 from neuroimaging.core.reference import axis
 from neuroimaging.core.reference.grid import SamplingGrid
-from neuroimaging.data_io import DataSource
+from neuroimaging.data_io.datasource import DataSource
 
 class IntentError(Exception):
     """

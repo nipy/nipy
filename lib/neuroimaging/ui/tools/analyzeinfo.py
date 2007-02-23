@@ -2,7 +2,7 @@ __docformat__ = 'restructuredtext'
 
 from optparse import Option
 
-from neuroimaging.data_io import DataSource
+from neuroimaging.data_io.datasource import DataSource
 from neuroimaging.sandbox.refactoring.analyze import AnalyzeHeader
 from neuroimaging.ui.tools import BaseTool
 

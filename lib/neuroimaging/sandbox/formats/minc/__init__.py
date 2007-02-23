@@ -9,7 +9,7 @@ from neuroimaging.core.api import Affine, VoxelAxis, CoordinateSystem, \
 from neuroimaging.data_io.formats.format import Format
 #from neuroimaging.sandbox.formats.minc import _mincutils
 #from neuroimaging.sandbox.formats.minc import _mincconstants as mc
-from neuroimaging.data_io import DataSource
+from neuroimaging.data_io.datasource import DataSource
 
 class Dimension(VoxelAxis):
     pass

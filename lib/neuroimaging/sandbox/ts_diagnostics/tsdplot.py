@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, \
   NavigationToolbar2WxAgg
 
-from neuroimaging.data_io import DataSource
+from neuroimaging.data_io.datasource import DataSource
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.ui.tools import BaseTool
 from neuroimaging.utils import wxmpl

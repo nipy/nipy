@@ -708,7 +708,7 @@ __doc__ = """
    The twin (and somewhat conflicting) goals of this modified ANALYZE 7.5
    format are:
     (a) To add information to the header that will be useful for functional
-        neuroimaging.data_io analysis and display.  These additions include:
+        neuroimaging.data_io.datasource analysis and display.  These additions include:
         - More basic data types.
         - Two affine transformations to specify voxel coordinates.
         - "Intent" codes and parameters to describe the meaning of the data.
