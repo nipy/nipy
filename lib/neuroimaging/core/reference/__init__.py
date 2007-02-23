@@ -42,3 +42,7 @@ __all__ = ["axis", "coordinate_system", "grid", "mapping",
            "mni", "slices"]
 
 
+def test(level=1, verbosity=1):
+    from numpy.testing import NumpyTest
+    return NumpyTest().test(level, verbosity)
+
