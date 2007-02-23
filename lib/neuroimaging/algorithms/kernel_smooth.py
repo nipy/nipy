@@ -18,15 +18,13 @@ class LinearFilter(object):
     would be better!
     '''
 
-    def __init__(self, grid, fwhm=6.0, padding=5, scale=1.0, location=0.0,
+    def __init__(self, grid, fwhm=6.0, scale=1.0, location=0.0,
                  cov=None):
         """
         :Parameters:
             grid : TODO
                 TODO
             fwhm : ``float``
-                TODO
-            padding : ``int``
                 TODO
             scale : ``float``
                 TODO
@@ -36,49 +34,63 @@ class LinearFilter(object):
         
         self.grid = grid
         self.fwhm = fwhm
-        self.padding = padding
         self.scale = scale
         self.location = location
         self.cov = cov
-        self.shape = N.array(self.grid.shape) + self.padding
         self._setup_kernel()
 
     def _setup_kernel(self):
-        _normsq = self._normsq() / 2.
-        self.kernel = N.exp(-N.minimum(_normsq, 15))
-        norm = N.sqrt((self.kernel**2).sum())
-        self.kernel = self.kernel / norm
-        self._k = self.kernel[:]
-        self.kernel = fft.rfftn(self.kernel)
+        if not isinstance(self.grid.mapping, Affine):
+            raise ValueError, 'for FFT smoothing, need a regular (affine) grid'
 
+        voxels = N.indices(self.grid.shape).astype(N.float64)
 
-    def _normsq(self):
+        center = N.asarray(self.grid.shape)/2
+        center = self.grid.mapping([[center[i]] for i in range(len(self.grid.shape))])
+
+        voxels.shape = (voxels.shape[0], N.product(voxels.shape[1:]))
+        X = self.grid.mapping(voxels) - center
+        X.shape = (3,) + self.grid.shape
+        kernel = self(X)
+        
+        kernel = _crop(kernel)
+        self.l2norm = N.sqrt((kernel**2).sum())
+        self._kernel = kernel
+
+        self.shape = (N.ceil((N.asarray(self.grid.shape) +
+                              N.asarray(kernel.shape))/2)*2+2)
+        self.fkernel = N.zeros(self.shape)
+        slices = [slice(0, kernel.shape[i]) for i in range(len(kernel.shape))]
+        self.fkernel[slices] = kernel
+        self.fkernel = fft.rfftn(self.fkernel)
+
+        return kernel
+
+    def _normsq(self, X):
         """
         Compute the (periodic, i.e. on a torus) squared distance needed for
         FFT smoothing. Assumes coordinate system is linear. 
         """
 
-        if not isinstance(self.grid.mapping, Affine):
-            raise ValueError, 'for FFT smoothing, need a regular (affine) grid'
-
-        voxels = N.indices(self.shape).astype(N.float64)
-
-        for i in range(voxels.shape[0]):
-            test = N.less(voxels[i], self.shape[i] / 2.)
-            voxels[i] = test * voxels[i] + \
-                        (1. - test) * (voxels[i] - self.shape[i])
-    
-        voxels.shape = (voxels.shape[0], N.product(voxels.shape[1:]))
-        X = self.grid.mapping(voxels)
-
+        _X = N.copy(X)
         if self.fwhm is not 1.0:
-            X /= fwhm2sigma(self.fwhm)
+            f = fwhm2sigma(self.fwhm)
+            if f.shape == ():
+                f = N.ones(len(self.grid.shape)) * f
+            for i in range(len(self.grid.shape)):
+                _X[i] /= f[i]
         if self.cov != None:
-            _chol = NL.cholesky(self.cov)
-            X = N.dot(NL.inv(_chol), X)
-        D2 = N.add.reduce(X**2)
-        D2.shape = self.shape
+            _chol = L.cholesky(self.cov)
+            _X = N.dot(L.inv(_chol), _X)
+        D2 = N.add.reduce(_X**2, 0)
+        D2.shape = X.shape[1:]
         return D2
+
+
+    def __call__(self, X):
+        _normsq = self._normsq(X) / 2.
+        t = N.less_equal(_normsq, 15)
+        return N.exp(-N.minimum(_normsq, 15)) * t
 
     def smooth(self, inimage, clean=False, is_fft=False):
         """
@@ -102,7 +114,7 @@ class LinearFilter(object):
 
         for _slice in range(nslice):
             if inimage.ndim == 4:
-                data = inimage[_slice][:]
+                data = inimage[_slice]
             elif inimage.ndim == 3:
                 data = inimage[:]
 
@@ -110,17 +122,16 @@ class LinearFilter(object):
                 data = N.nan_to_num(data)
             if not is_fft:
                 data = self._presmooth(data)
-                data *= self.kernel
+                data *= self.fkernel
             else:
-                data *= self.kernel
+                data *= self.fkernel
 
             data = fft.irfftn(data)
 
             gc.collect()
+            _dslice = [slice(0, self.grid.shape[i], 1) for i in range(3)]
             if self.scale != 1:
-                data = self.scale * data[:inimage.shape[0],
-                                         :inimage.shape[1],
-                                         :inimage.shape[2]]
+                data = self.scale * data[_dslice]
 
             if self.location != 0.0:
                 data += self.location
@@ -136,17 +147,18 @@ class LinearFilter(object):
             _slice += 1
 
         gc.collect()
-        _out = _out[[slice(0, n) for n in self.grid.shape]]
+        _out = _out[[slice(self._kernel.shape[i]/2, self.grid.shape[i] +
+                           self._kernel.shape[i]/2) for i in range(len(self.grid.shape))]]
         if inimage.ndim == 3:
             return Image(_out, grid=self.grid)
         else:
             return Image(_out, grid=self.grid.replicate(inimage.grid.shape[0]))
 
+
     def _presmooth(self, indata):
+        slices = [slice(0, self.grid.shape[i], 1) for i in range(len(self.shape))]
         _buffer = N.zeros(self.shape)
-        _buffer[:indata.shape[0],
-                :indata.shape[1],
-                :indata.shape[2]] = indata
+        _buffer[slices] = indata
         return fft.rfftn(_buffer)
 
 
@@ -175,21 +187,20 @@ def sigma2fwhm(sigma):
 
 
 
-if __name__ == '__main__':
-    from pylab import show
-    #a = 100*N.random.random((100, 100, 100))
-    a = 100*N.zeros((101, 101, 101))
-    a[50,50,50] = 1.0
-    img = Image(a)
-    filt = LinearFilter(img.grid)
-    smoothed = filt.smooth(img)
-    print (filt._k[3:104,3:104,3:104] - N.array(smoothed[:]))
-
-    from neuroimaging.ui.visualization.viewer import BoxViewer
-
-    #view = BoxViewer(img)
-    #view.draw()
-    sview = BoxViewer(smoothed, colormap='jet')
-    sview.draw()
-    show()
+def _crop(X, tol=1.0e-10):
+    """
+    Find a bounding box for support of fabs(X) > tol and returned
+    crop region.
+    """
+    
+    aX = N.fabs(X)
+    n = len(X.shape)
+    I = N.indices(X.shape)[:,N.greater(aX, tol)]
+    if I.shape[1] > 0:
+        m = [I[i].min() for i in range(n)]
+        M = [I[i].max() for i in range(n)]
+        slices = [slice(m[i],M[i]+1,1) for i in range(n)]
+        return X[slices]
+    else:
+        return N.zeros((1,)*n)
 
