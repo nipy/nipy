@@ -7,7 +7,7 @@ from neuroimaging.utils.test_decorators import slow, data
 from neuroimaging.modalities.fmri import fMRIImage
 from neuroimaging.core.api import Image, ParcelIterator, fMRIParcelIterator
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.data_io.formats.analyze import Analyze
+from neuroimaging.data_io.api import Analyze
 
 
 # not a test until test data is found

@@ -4,7 +4,7 @@ from neuroimaging.utils.test_decorators import slow, data
 
 from neuroimaging.algorithms.onesample import ImageOneSample
 from neuroimaging.core.api import Image
-from neuroimaging.data_io.formats.analyze import Analyze
+from neuroimaging.data_io.api import Analyze
 from neuroimaging.utils.tests.data import repository
 
 

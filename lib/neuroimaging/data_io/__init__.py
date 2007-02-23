@@ -8,7 +8,8 @@ __docformat__ = 'restructuredtext'
 
 __all__ = ["formats", "datasource"]
 
-import formats, datasource
+import formats
+#, datasource
 
 def test(level=1, verbosity=1):
     from numpy.testing import NumpyTest

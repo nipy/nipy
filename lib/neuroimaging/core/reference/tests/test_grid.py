@@ -7,7 +7,7 @@ from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
 from neuroimaging.core.image.iterators import ParcelIterator, SliceParcelIterator
 from neuroimaging.core.reference.mapping import Affine
 
-from neuroimaging.data_io.formats.analyze import Analyze
+from neuroimaging.data_io.api import Analyze
 from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.core.api import Image
