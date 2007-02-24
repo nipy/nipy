@@ -6,7 +6,7 @@ import os
 from neuroimaging.core.api import Image
 from neuroimaging.algorithms.onesample import ImageOneSample
 
-import fixed, fmristat, fiac
+import fixed, fmristat, fiac, fmristat
 
 class Multi(fixed.Fixed):
 
@@ -19,6 +19,12 @@ class Multi(fixed.Fixed):
         
     def resultpath(self, path):
         return join(self.root, 'multi', self.design, self.which, self.contrast, path)
+
+    def fmristat_result(self, stat='effect'):
+        return fmristat.multi(which=self.which, design=self.design, contrast=self.contrast, stat=stat)
+
+    def result(self, stat='effect'):
+        return Image(self.resultpath("%s.nii" % stat))
 
     def fit(self, clobber=True):
 
