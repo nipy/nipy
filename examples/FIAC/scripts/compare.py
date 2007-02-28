@@ -1,3 +1,34 @@
+def plot_result(result1, result2, mask, which='contrasts', contrast='average', stat='t', vmax=None, vmin=None):
+    
+    resultargs = {'which':which, 'contrast':contrast, 'stat':stat}
+    x = result1(**resultargs)
+    y = result2(**resultargs)
+
+    vx = BoxViewer(x, mask=mask, colormap='spectral')
+    vy = BoxViewer(y, mask=mask, colormap='spectral')
+
+    if vmin is not None:
+        vx.m = vmin
+        vy.m = vmin
+
+    if vmax is not None:
+        vx.M = vmax
+        vy.M = vmax
+
+    vx.draw()
+    vy.draw()
+
+    X = x.readall() * mask.readall()
+    X.shape = N.product(X.shape)
+
+    Y = y.readall() * mask.readall()
+    Y.shape = N.product(Y.shape)
+
+    print 'corr', N.corrcoef(X, Y)[0,1]
+    pylab.show()
+
+
+
 if __name__ == '__main__':
 
     import sys
