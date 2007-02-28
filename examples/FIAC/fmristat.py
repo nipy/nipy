@@ -4,6 +4,7 @@ from csv import reader
 from scipy.io import loadmat
 from numpy import asarray
 
+import io
 from neuroimaging.core.api import Image
 
 contrast_map = {'sentence': 'sen',
@@ -25,7 +26,7 @@ def rho(subject=3, run=3):
     """
     Estimate of AR(1) coefficient from fmristat
     """
-    runfile = 'http://kff.stanford.edu/FIAC/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (subject, subject, run)
+    runfile = '%s/fmristat/fiac%d/fiac%d_fonc%d_all_cor.img' % (io.web_path, subject, subject, run)
     return Image(runfile)
 
 def result(subject=3, run=3, which='contrasts', contrast='average', stat='t'):
@@ -36,7 +37,7 @@ def result(subject=3, run=3, which='contrasts', contrast='average', stat='t'):
     which = which_map[which]
     stat = stat_map[stat]
 
-    resultfile = 'http://kff.stanford.edu/FIAC/fmristat/fiac%d/fiac%d_fonc%d_%s_%s_%s.img' % (subject, subject, run, contrast, which, stat)
+    resultfile = '%s/fmristat/fiac%d/fiac%d_fonc%d_%s_%s_%s.img' % (io.web_path, subject, subject, run, contrast, which, stat)
     return Image(resultfile)
 
 def fixed(subject=3, which='contrasts', contrast='average', design='block', stat='effect'):
@@ -48,7 +49,7 @@ def fixed(subject=3, which='contrasts', contrast='average', design='block', stat
     stat = stat_map[stat]
     design = design_map[design]
 
-    resultfile = 'http://kff.stanford.edu/FIAC/fmristat/subj/subj%d_%s_%s_%s_%s.img' % (subject, design, contrast, which, stat)
+    resultfile = '%s/fmristat/subj/subj%d_%s_%s_%s_%s.img' % (io.web_path, subject, design, contrast, which, stat)
 
     return Image(resultfile)
 
@@ -61,7 +62,7 @@ def multi(which='contrasts', contrast='average', design='block', stat='effect'):
     stat = stat_map[stat]
     design = design_map[design]
 
-    resultfile = 'http://kff.stanford.edu/FIAC/fmristat/multi/multi_%s_%s_%s_%s.img' % (design, contrast, which, stat)
+    resultfile = '%s/fmristat/multi/multi_%s_%s_%s_%s.img' % (io.web_path, design, contrast, which, stat)
     return Image(resultfile)
 
 def xcache(subj=0, run=1):
@@ -71,7 +72,7 @@ def xcache(subj=0, run=1):
     
     x_cache = 'x_cache/subj%d_run%d.mat' % (subj, run)
     if not os.path.exists(x_cache):
-        url = 'http://kff.stanford.edu/FIAC/x_cache/mat/subj%d_run%d.mat' % (subj, run)
+        url = '%s/x_cache/mat/subj%d_run%d.mat' % (io.web_path, subj, run)
         mat = urllib2.urlopen(url).read()
         if not os.path.exists('x_cache'):
             os.makedirs('x_cache')
@@ -91,7 +92,7 @@ def design(subj=0, run=1):
 
     design = "x_cache/subj%d_run%d.csv" % (subj, run)
     if not os.path.exists(design):
-        url = 'http://kff.stanford.edu/FIAC/x_cache/mat/subj%d_run%d.csv' % (subj, run)
+        url = '%s/x_cache/mat/subj%d_run%d.csv' % (io.web_path, subj, run)
         mat = urllib2.urlopen(url).read()
         if not os.path.exists('x_cache'):
             os.makedirs('x_cache')
