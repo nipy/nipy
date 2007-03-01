@@ -6,9 +6,9 @@ import csv, sys, os
 
 sys.path.insert(0, "..")
 
-import fiac, model, compare, io, fmristat
+import fiac, model, compare, io
 
-compare.Run.verbose=False
+compare.Run.verbose = False
 def runcor(subj=15, run=1):
 
     study = model.Study(root=io.data_path)
@@ -38,7 +38,7 @@ writer = csv.writer(ofile)
 
 for s in fiac.subjects[-1:] + fiac.subjects[0:-1]:
     results = []
-    for i in range(1,5):
+    for i in range(1, 5):
         results += runcor(subj=s, run=i)
     for result in results:
         writer.writerow(result)

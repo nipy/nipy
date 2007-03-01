@@ -9,7 +9,7 @@ if __name__ == "__main__":
     import sys, os
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-    import model, io
+    import model
 
     if len(sys.argv) == 3:
         subj, run = map(int, sys.argv[1:])

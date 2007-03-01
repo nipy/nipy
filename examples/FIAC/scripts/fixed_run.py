@@ -10,7 +10,7 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
     import fixed, io
-    io.data_path='/home/analysis/FIAC'
+    io.data_path = '/home/analysis/FIAC'
 
     if len(sys.argv) == 2:
         subject = int(sys.argv[1])

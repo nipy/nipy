@@ -16,6 +16,6 @@ if __name__ == "__main__":
     else:
         design, which, contrast = ('block', 'contrasts', 'average')
 
-    m=multi.Multi(which=which, contrast=contrast, design=design, root=io.data_path)
+    m = multi.Multi(which=which, contrast=contrast, design=design, root=io.data_path)
     m.fit()
     os.system("bzip2 /home/analysis/FIAC/multi/%s/%s/%s/*nii" % (design, which, contrast))

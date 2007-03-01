@@ -1,3 +1,5 @@
+import numpy as N
+
 def plot_result(result1, result2, mask, which='contrasts', contrast='average', stat='t', vmax=None, vmin=None):
     
     resultargs = {'which':which, 'contrast':contrast, 'stat':stat}
@@ -31,7 +33,7 @@ def plot_result(result1, result2, mask, which='contrasts', contrast='average', s
 
 if __name__ == '__main__':
 
-    import sys
+    import sys, io, model
     if len(sys.argv) == 3:
         subj, run = map(int, sys.argv[1:])
     else:

@@ -4,14 +4,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 import fiac
 
 for i in fiac.subjects[-1:]:
-    for run in range(1,5):
+    for run in range(1, 5):
         cmd = "python model_run.py %d %d" % (i, run)
         os.system(cmd)
     cmd = "python fixed_run.py %d" % (i,)
     os.system(cmd)
 
 import visualization
-for contrast in ['average', 'interaction' ,'speaker', 'sentence']:
+for contrast in ['average', 'interaction', 'speaker', 'sentence']:
     for which in ['contrasts', 'delays']:
         for design in ['event', 'block']:
             print "http://kff.stanford.edu/FIAC/fixed/%s/%s/%s" % (design, which, contrast)
