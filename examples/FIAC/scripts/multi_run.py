@@ -18,4 +18,4 @@ if __name__ == "__main__":
 
     m = multi.Multi(which=which, contrast=contrast, design=design, root=io.data_path)
     m.fit()
-    os.system("bzip2 /home/analysis/FIAC/multi/%s/%s/%s/*nii" % (design, which, contrast))
+    os.system("bzip2 %s/multi/%s/%s/%s/*nii" % (io.data_path, design, which, contrast))

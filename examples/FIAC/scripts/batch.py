@@ -1,7 +1,7 @@
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import fiac
+import fiac, io
 
 for i in fiac.subjects[-1:]:
     for run in range(1, 5):
@@ -20,8 +20,8 @@ for contrast in ['average', 'interaction', 'speaker', 'sentence']:
                               design=design)
 
             cmd = """
-            rm /home/analysis/FIAC/fixed/%(d)s/%(w)s/%(c)s/*/t.nii;
-            rm /home/analysis/FIAC/fixed/%(d)s/%(w)s/%(c)s/*/sd.nii;
-            rm /home/analysis/FIAC/fixed/%(d)s/%(w)s/%(c)s/*/effect.nii;
-            """ % {'d':design, 'c':contrast, 'w':which}
+            rm %(p)s/fixed/%(d)s/%(w)s/%(c)s/*/t.nii;
+            rm %(p)s/fixed/%(d)s/%(w)s/%(c)s/*/sd.nii;
+            rm %(p)s/fixed/%(d)s/%(w)s/%(c)s/*/effect.nii;
+            """ % {'p': io.data_path, 'd':design, 'c':contrast, 'w':which}
             os.system(cmd)
