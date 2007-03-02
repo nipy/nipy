@@ -3,6 +3,7 @@ import urllib2, os.path
 import pylab
 import numpy as N
 
+from neuroimaging.core.api import Image
 from neuroimaging.ui.visualization.viewer import BoxViewer
 from scipy.sandbox.models.regression import ar_model
 from neuroimaging.modalities.fmri.fmristat import delay
@@ -11,13 +12,18 @@ from neuroimaging.ui.visualization import slices as vizslice
 from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.ui.visualization.montage import Montage as MontageDrawer
 
-import model, fmristat, io
+import model, fmristat, io, fixed, multi, visualization, fiac
 from protocol import eventdict_r, eventdict
 
-class CompareRun(model.RunModel):
+class Run(model.Run):
 
+    verbose = True
+    """
+    Compare results to Run
+    """
+    
     def __init__(self, *args, **kw):
-        model.RunModel.__init__(self, *args, **kw)
+        model.Run.__init__(self, *args, **kw)
         p = self.formula['FIAC_design']
         self.etypes = p.events.keys()
         self.indices = {}
@@ -29,12 +35,20 @@ class CompareRun(model.RunModel):
         
     def max_corr(self):
 
+        """
+        Find and plot the signals of model.Run and compare them with
+        columns of fmristat design matrix.
+        """
+        
         for deriv in [True, False]:
             for etype in self.etypes:
                 self.indices[(deriv, etype)] = self._get_indices(deriv, etype)
                 self._plot_agreement(deriv, etype)
 
     def fmristat_result(self, which='contrasts', contrast='speaker', stat='t'):
+        """
+        Retrieve fmristat result for this run
+        """
         return fmristat.result(subject=self.subject.id, run=self.id,
                             which=which,
                             contrast=contrast,
@@ -42,15 +56,11 @@ class CompareRun(model.RunModel):
 
     def _get_indices(self, deriv, etype):
         """
-        Verify that space spanned by design columns is the same as fMRIstat --
-        or that the columns are basically the same.
+        For a given event type (and derivative True/False), find
+        corresponding columns of self.formula.design() and
+        fmristat's design
         """
         
-        """
-        First, get the formula term corresponding to the design,
-        and find out
-        """
-    
         design = self.formula['FIAC_design']
         keys = design.events.keys(); keys.sort()
         event_index = keys.index(etype)
@@ -62,41 +72,37 @@ class CompareRun(model.RunModel):
             fmristat_index = 3
         else:
             fmristat_index = 2
-        """
-        Find the correspondence between the columns.
-        """
     
         shift = 1.25
         T = N.arange(0, 191*2.5, 2.5) + shift
 
         nipy = design(T)[event_index]
 
-        Xcol, _ = self._match_cols(nipy, self.X[:,:,fmristat_index])
+        Xcol, _ = _match_cols(nipy, self.X[:,:,fmristat_index])
 
-        Dcol, _ = self._match_cols(nipy, self.D)
+        Dcol, _ = _match_cols(nipy, self.D)
         cor = N.corrcoef(self.X[:,Xcol,fmristat_index], self.D[:,Dcol])[0,1]
         self.corr[(deriv, etype)] = cor, Dcol, Xcol, fmristat_index
         return Dcol, Xcol, fmristat_index
 
     def design_match(self):
+        """
+        See how close self.formula.design corresponds to
+        fmristat design.
+        """
+        
         D = self.formula.design(N.arange(191)*2.5 + 1.25)
         for i in range(14):
-            col, corr = self._match_cols(self.design[:,i], D)
-            print self.formula.names()[col], corr
+            col, corr = _match_cols(self.design[:,i], D)
+            if self.verbose:
+                print self.formula.names()[col], corr
 
         for i in range(1,5):
             d = self.formula['FIAC_design'][eventdict[i]]
             d = self.hrf[0].convolve(d)
-            col, corr = self._match_cols(d(N.arange(191)*2.5+1.25), self.design)
-            print eventdict[i], corr, col
-
-    def _match_cols(self, vector, matrix):
-
-        n = matrix.shape[1]
-        v = N.zeros((n,))
-        for i in range(n):
-            v[i] = N.corrcoef(vector, matrix[:,i])[0,1]
-        return N.argmax(N.fabs(N.nan_to_num(v))), N.max(N.fabs(N.nan_to_num(v)))
+            col, corr = _match_cols(d(N.arange(191)*2.5+1.25), self.design)
+            if self.verbose:
+                print eventdict[i], corr, col
 
     def _plot_agreement(self, deriv, etype):
 
@@ -151,6 +157,11 @@ class CompareRun(model.RunModel):
 
     def _plot_beginning(self):
 
+        """
+        Plot 'begin' column of fmristat and model.Run -- verify visually
+        that they agree.
+        """
+        
         b = self.formula['beginning']
 
         def n(x):
@@ -170,7 +181,7 @@ class CompareRun(model.RunModel):
                    linewidth=2)
         a = pylab.gca()
         a.set_ylim([-0.8,1.6])
-        if self.type == 'block':
+        if self.design_type == 'block':
             a.set_xlim([0,100])
         else:
             a.set_xlim([0,20])
@@ -180,7 +191,10 @@ class CompareRun(model.RunModel):
         pylab.savefig(pngfile)
 
     def webpage(self):
-
+        """
+        Create a webpage with comparison plots: comparing each event type and the 'begin' event
+        """
+        
         self._plot_beginning()
 
         html = """
@@ -196,7 +210,7 @@ class CompareRun(model.RunModel):
         <h1>Comparing X_cache for subject %d, run %d</h1>\n
         """ % (self.subject.id, self.id)
             
-        for etype in runmodel.etypes:
+        for etype in self.etypes:
             for deriv in [False, True]:
                 pngfile = 'compare_sub%d_run%d_deriv%d_type%s.png' % (self.subject.id, self.id, int(deriv), etype)
                 html += """
@@ -217,8 +231,12 @@ class CompareRun(model.RunModel):
         htmlfile.write(html)
         htmlfile.close()
 
-class VoxelModel(CompareRun):
+class Voxel(Run):
 
+    """
+    Compare results at a particular voxel using voxel_model methodd.
+    """
+    
     def voxel_model(self, i, j, k):
         self.load()
         rho = fmristat.rho(subject=self.subject.id, run=self.id)[i,j,k]        
@@ -260,7 +278,8 @@ class VoxelModel(CompareRun):
                 for stat in ['effect', 'sd', 't']:
                     for obj in [RR,KK]:
                         obj[stat] = N.array(obj[stat])
-                print output.extract(results), RR, KK
+                if self.verbose:
+                    print output.extract(results), RR, KK
 
             elif not isinstance(output, FContrastOutput):
                 RR = {}
@@ -273,56 +292,122 @@ class VoxelModel(CompareRun):
 
                     cor[('contrasts', stat, output.contrast.name)] = N.corrcoef(R[:].flat * mask[:], K[:].flat * mask[:])[0,1]
 
-                print output.extract(results), RR, KK, output.contrast.name
+                if self.verbose:
+                    print output.extract(results), RR, KK, output.contrast.name
             else:
-                print output.extract(results)
-        print cor
+                if self.verbose:
+                    print output.extract(results)
+        if self.verbose:
+            print cor
         
-class FmristatRho(CompareRun):
+class FmristatRun(Run):
+
+    """
+    Run the analysis replacing estimate of AR(1) parameter
+    with fmristat's estimate for second pass of model.
+    """
 
     def OLS(self, **OLSopts):
         CompareRun.OLS(self, **OLSopts)
         self.OLSmodel.rho = fmristat.rho(subject=self.subject.id, run=self.id)
 
+class FixedSubject(fixed.Subject):
 
-def plot_result(result1, result2, mask, which='contrasts', contrast='average', stat='t', vmax=None, vmin=None):
+    def result(self, stat='t', resampled=True):
+        return fmristat.fixed(subject=self.id,
+                              which=self.study.which,
+                              contrast=self.study.contrast,
+                              stat=stat,
+                              design=self.study.design)
+    def estimates(self):
+        v = [self.result(stat=stat) for stat in ['effect', 'sd', 't']]
+        return {'effect': v[0], 'sd': v[1], 't': v[2]}
+
+
+
+
+class VisualizationFixed(visualization.Fixed):
+
+    def _get_images(self):
+        vmin = []; vmax = []
+        self.images = {}
+        for s in fiac.subjects:
+            im = Image(fmristat.fixed(subject=s,
+                                      which=self.which,
+                                      contrast=self.contrast,
+                                      stat=self.stat,
+                                      design=self.design))
+            self.images[s] = visualization.Slice(im)
+            vmin.append(N.nanmin(self.images[s].slab[:])); vmax.append(N.nanmax(self.images[s].slab[:]))
+
+        self.vmin = N.array(vmin).mean(); self.vmax = N.array(vmax).mean()
+        
+    def output(self):
+        pylab.savefig(self.resultpath('%s_fmristat.png' % self.stat))
+
+def visualization_run(contrast='average', which='contrasts', design='event'):
+
+    for stat in ['effect', 'sd', 't']:
+        v = VisualizationFixed(root=io.data_path,
+                  stat=stat,
+                  which=which,
+                  contrast=contrast,
+                  design=design)
+        if stat == 't':
+            v.vmax = 4.5; v.vmin = -4.5
+        v.draw()
+        v.output()
+        
+        htmlfile = file(v.resultpath("fmristat.html"), 'w')
+        htmlfile.write("""
+        <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+        <html> <head>
+        <title></title>
+        </head>
+        
+        <body>
+        <h2>Contrast %s, %s design, %s</h2>
+        <h3>Effect</h3>
+        <img src="effect.png">
+        <h3>Effect, fmristat</h3>
+        <img src="effect_fmristat.png">
+        <h3>SD</h3>
+        <img src="sd.png">
+        <h3>SD, fmristat</h3>
+        <img src="sd_fmristat.png">
+        <h3>T</h3>
+        <img src="t.png">
+        <h3>T, fmristat</h3>
+        <img src="t_fmristat.png">
+        </body>
+        </html>
+        """ % (contrast, design, {'contrasts': 'magnitude', 'delays':'delay'}[which]))
+        htmlfile.close()
+
+
+def _match_cols(vector, matrix):
     
-    resultargs = {'which':which, 'contrast':contrast, 'stat':stat}
-    x = result1(**resultargs)
-    y = result2(**resultargs)
+    """
+    For given (vector, matrix), find maximal correlation (and its index)
+    of vector with columns of matrix.
+    """
+    
+    n = matrix.shape[1]
+    v = N.zeros((n,))
+    for i in range(n):
+        v[i] = N.corrcoef(vector, matrix[:,i])[0,1]
+    return N.argmax(N.fabs(N.nan_to_num(v))), N.max(N.fabs(N.nan_to_num(v)))
 
-    vx = BoxViewer(x, mask=mask, colormap='spectral')
-    vy = BoxViewer(y, mask=mask, colormap='spectral')
-
-    if vmin is not None:
-        vx.m = vmin
-        vy.m = vmin
-
-    if vmax is not None:
-        vx.M = vmax
-        vy.M = vmax
-
-    vx.draw()
-    vy.draw()
-
-    X = x.readall() * mask.readall()
-    X.shape = N.product(X.shape)
-
-    Y = y.readall() * mask.readall()
-    Y.shape = N.product(Y.shape)
-
-    print 'corr', N.corrcoef(X, Y)[0,1]
-    pylab.show()
-
-def cor_result(result1, result2, mask, which='contrasts', contrast='speaker', stat='t'):
-    resultargs = {'which':which, 'contrast':contrast, 'stat':stat}
-    x = result1(**resultargs)
-    y = result2(**resultargs)
-
-    x = N.nan_to_num(x[:]) * mask[:]
-    y = N.nan_to_num(y[:]) * mask[:]
+def _cor(im1, im2, mask=1.):
+    """
+    Return correlation of two images.
+    """
+    x = N.nan_to_num(im1[:])
+    y = N.nan_to_num(im2[:])
+    m = mask[:]
+    x *= m
+    y *= m
     x.shape = N.product(x.shape)
     y.shape = N.product(y.shape)
-    return N.corrcoef(x, y)
-
+    return N.corrcoef(x, y)[0,1]
 
