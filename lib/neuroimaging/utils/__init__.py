@@ -4,3 +4,7 @@ general purpose functions that are useful to a broader community and not
 restricted to the neuroimaging community. This package may contain
 third-party software included here for convenience.
 """
+
+def test(level=1, verbosity=1):
+    from numpy.testing import NumpyTest
+    return NumpyTest().test(level, verbosity)
