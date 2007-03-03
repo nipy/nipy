@@ -33,7 +33,7 @@ Class structure::
 """
 __docformat__ = 'restructuredtext'
 
-import image, base_image, intent, roi, iterators
+import image, base_image, roi, iterators
 
 def test(level=1, verbosity=1):
     from numpy.testing import NumpyTest
