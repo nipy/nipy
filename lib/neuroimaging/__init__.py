@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Neuroimaging tools for Python (NIPY).
 
