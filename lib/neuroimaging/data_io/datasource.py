@@ -222,6 +222,8 @@ class DataSource (object):
             raise ValueError("URLs are not writeable")
         found = self.filename(pathstr)
         _, ext = splitzipext(found)
+        if ext == 'bz2':
+            mode.replace("+", "")
         return file_openers[ext](found, mode=mode)
 
     def _fullpath(self, pathstr):
