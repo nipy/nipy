@@ -73,12 +73,12 @@ class test_image(NumpyTestCase):
         x = self.img.toarray()
         
     def test_file(self):
-        img2 = self.img.tofile('tmp.hdr')
+        img2 = self.img.tofile('tmp.hdr', format=Analyze)
 
         img2[0,0,0] = 370000
         img3 = Image(img2.asfile())
         img2[1,1,1] = 100000
-        
+
         scale = img2._source.header['scale_factor']
         self.assertTrue(abs(370000 - img3[0,0,0]) < scale)
         self.assertTrue(abs(100000 - img3[1,1,1]) < scale)
