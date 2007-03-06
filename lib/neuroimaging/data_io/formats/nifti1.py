@@ -7,7 +7,11 @@ from neuroimaging.data_io.datasource import DataSource
 from neuroimaging.data_io.formats import utils, binary, analyze
 from neuroimaging.data_io.formats.nifti1_ext import quatern2mat, \
      mat2quatern
-from neuroimaging.core.api import Affine, SamplingGrid, space, spacetime
+
+from neuroimaging.core.reference.axis import space, spacetime
+from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.core.reference.grid import SamplingGrid
+
 
 class Nifti1FormatError(Exception):
     """

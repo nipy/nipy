@@ -8,7 +8,7 @@ from neuroimaging.data_io.datasource import DataSource, iswritemode
 from neuroimaging.data_io.formats import utils, binary
 from neuroimaging.data_io.formats._afniconstants import *
 from neuroimaging.core.reference.axis import space, spacetime
-from neuroimaging.core.api import SamplingGrid
+from neuroimaging.core.reference.grid import SamplingGrid
 
 class AFNIFormatError(Exception):
     """

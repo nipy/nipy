@@ -1,4 +1,5 @@
-#import format, binary, analyze, afni, ecat7, nifti1, utils
+import binary, format, utils
+import afni, nifti1, analyze, ecat7
 
 def test(level=1, verbosity=1):
     from numpy.testing import NumpyTest

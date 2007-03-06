@@ -5,11 +5,11 @@ import os
 import numpy as N
 
 from neuroimaging.utils.odict import odict
-from neuroimaging.data_io.api import DataSource, Cache, iszip, ensuredirs, unzip
+from neuroimaging.data_io.datasource import DataSource, Cache, iszip, ensuredirs, unzip
 from neuroimaging.data_io.formats import utils, binary
 
 from neuroimaging.core.reference.axis import space
-from neuroimaging.core.api import SamplingGrid
+from neuroimaging.core.reference.grid import SamplingGrid
 
 
 
