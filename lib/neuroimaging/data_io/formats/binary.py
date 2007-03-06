@@ -38,6 +38,7 @@ class BinaryFormat(Format):
         self.clobber = keywords.get('clobber', False)
 
         self.header_file, self.data_file = self._get_filenames()
+        self._check_filenames()
 
         if self.clobber and 'w' in self.mode:
             try:
@@ -50,6 +51,13 @@ class BinaryFormat(Format):
         self.byteorder = NotImplemented
         self.extendable = NotImplemented
 
+    def _check_filenames(self):
+        if (self.datasource.exists(self.header_file) or \
+               self.datasource.exists(self.data_file)) and \
+               not self.clobber and \
+               'w' in self.mode:
+            print "a", self.header_file
+            raise IOError('file exists, but not allowed to clobber it')
 
     def read_header(self):
         """
@@ -74,8 +82,6 @@ class BinaryFormat(Format):
         if hdrfile:
             fp = isinstance(hdrfile, str) and open(hdrfile,'wb+') or hdrfile
         elif self.datasource.exists(self.header_file):
-            if not clobber:
-                raise IOError('file exists, but not allowed to clobber it')
             fp = self.datasource.open(self.header_file, 'wb+')
         else:
             fp = open(self.datasource._fullpath(self.header_file), 'wb+')
@@ -109,9 +115,6 @@ class BinaryFormat(Format):
         if mode == 'readwrite':
             if not self.datasource.exists(self.data_file):
                 utils.touch(self.datasource._fullpath(self.data_file))
-            elif not self.clobber:
-                raise IOError('file exists, but not allowed to clobber it')
-
         fname = iszip(self.datasource.filename(self.data_file)) and \
                 unzip(self.datasource.filename(self.data_file)) or \
                 self.datasource.filename(self.data_file)
