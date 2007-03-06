@@ -443,7 +443,7 @@ class Nifti1(binary.BinaryFormat):
         # to change
 
         scaled_x = (x - self.header['scl_inter'])/self.header['scl_slope']
-        if x.shape == self.data.shape or scaled_x.max() > self.data.max():  
+        if N.asarray(x).shape == self.data.shape or scaled_x.max() > self.data.max():  
             if x.shape == self.data.shape:
                 minval = x.min()
             else:
