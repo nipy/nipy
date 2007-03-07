@@ -8,6 +8,7 @@ def configuration(parent_package='',top_path=None):
     name, source, d = extension
 
     config.add_extension(name, source, **d)
+    config.add_data_files(source[0])
 
     return config
 
