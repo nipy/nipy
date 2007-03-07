@@ -22,9 +22,8 @@ def configuration(parent_package='',top_path=None):
 
     config.add_subpackage('config')
 
-    if not ENTHOUGHT_TRAITS_DEF:
-        config.add_subpackage('enthought')
-        config.add_extension('enthought.traits.ctraits',
+    config.add_subpackage('enthought')
+    config.add_extension('enthought.traits.ctraits',
           [join(*('enthought/traits/ctraits.c'.split('/')))])
 
 
