@@ -176,3 +176,8 @@ class fMRIImage(Image):
         it = iter(SliceIterator(self, mode='w', axis=axis))
         for s in other:
             it.next().set(s)
+
+
+def test(level=1, verbosity=1):
+    from numpy.testing import NumpyTest
+    return NumpyTest().test(level, verbosity)
