@@ -31,10 +31,22 @@ def data(func):
 
 
 
+def set_flags(flags):
+    for flag in ["--slow", "--gui", "--data", "--all"]:
+        if flag in sys.argv:
+            sys.argv.remove(flag)
 
-@slow
-def foo(x, y, z):
-    print "foo"
+    if type(flags) == str:
+        sys.argv.append(flags)
+    else:
+        for flag in flags:
+            sys.argv.append(flag)
+
 
 if __name__ == '__main__':
+    @slow
+    def foo(x, y, z):
+        print "foo"
+
+
     foo(1, 2, 3)
