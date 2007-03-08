@@ -65,9 +65,10 @@ from help_template \
     
 from message \
     import message, error
-    
-from tree_node \
-    import TreeNode, ObjectTreeNode, TreeNodeObject, MultiTreeNode
+
+# Requires ui.resources    
+#from tree_node \
+#    import TreeNode, ObjectTreeNode, TreeNodeObject, MultiTreeNode
     
 from editors \
     import ArrayEditor, BooleanEditor, ButtonEditor, CheckListEditor, \
