@@ -1,3 +1,5 @@
+import os
+
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
     config = Configuration('neuroimaging', parent_package, top_path)
@@ -8,6 +10,10 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('modalities')
     config.add_subpackage('ui')
     config.add_subpackage('utils')            
+
+    try: os.remove("lib/neuroimaging/__svn_version__.py")
+    except OSError: pass
+    config.make_svn_version_py(delete=False)
 
     return config
 
