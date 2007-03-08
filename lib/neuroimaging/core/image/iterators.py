@@ -251,7 +251,7 @@ class ParcelIterator(Iterator):
     -------
 
     >>> import numpy as N
-    >>> from neuroimaging.core.reference.iterators import ParcelIterator
+    >>> from neuroimaging.core.api import ParcelIterator
     >>> img = N.arange(3*3)
     >>> img = img.reshape((3, 3))
     >>> parcelmap = [[1,2,1],
