@@ -4,7 +4,7 @@ from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import slow, data
 
-from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.modalities.fmri.fmri import fMRIImage
 from neuroimaging.core.api import Image, ParcelIterator, fMRIParcelIterator
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.api import Analyze

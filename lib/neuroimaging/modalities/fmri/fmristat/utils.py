@@ -7,7 +7,7 @@ import numpy.linalg as L
 from scipy.sandbox.models.regression import ols_model, ar_model
 from scipy.sandbox.models.utils import monotone_fn_inverter, rank 
 
-from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.modalities.fmri.fmri import fMRIImage
 from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
      DelayContrastOutput
 from neuroimaging.algorithms.statistics.regression import LinearModelIterator
