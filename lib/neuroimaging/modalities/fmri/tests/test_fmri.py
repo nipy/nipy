@@ -14,11 +14,11 @@ from neuroimaging.data_io.api import Analyze
 class test_fMRI(NumpyTestCase):
 
     def setUp(self):
-        self.rho = Image(repository.filename('rho.hdr'))
+        self.rho = Image(repository.filename('rho.hdr'), format=Analyze)
         #self.img = fMRIImage("test_fmri.hdr", datasource=repository)
 
     def data_setUp(self):
-        self.img = fMRIImage("test_fmri.hdr", datasource=repository)
+        self.img = fMRIImage("test_fmri.hdr", datasource=repository, format=Analyze)
 
     #def test_TR(self):
     #    tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
