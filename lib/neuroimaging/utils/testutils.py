@@ -14,9 +14,9 @@ class MyDocTestFinder(doctest.DocTestFinder):
                 options = ["slow", "gui", "data"]
                 for opt in options:
                     if ex.source == "%s = True\n" % opt.upper():
-                        flags.append("--%s" % opt)                    
+                        flags.append("%s" % opt)                    
                 for flag in flags:
-                    if flag not in sys.argv and "--all" not in sys.argv:
+                    if flag not in sys.argv and "all" not in sys.argv:
                         res.examples = []
                 if res.examples == []:
                     break

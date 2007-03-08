@@ -8,20 +8,20 @@ class Needs:
         print ("Test not run. Requires %s flag"  % self.flag)
 
 def _flag(func, flag):
-    if flag not in sys.argv and "--all" not in sys.argv:
+    if flag not in sys.argv and "all" not in sys.argv:
         return Needs(flag)
     else:
         return func
 
 def slow(func):    
-    return _flag(func, "--slow")
+    return _flag(func, "slow")
 
 def gui(func):    
-    return _flag(func, "--gui")
+    return _flag(func, "gui")
 
 def data(func):    
-    flag = "--data"
-    if flag not in sys.argv and "--all" not in sys.argv:
+    flag = "data"
+    if flag not in sys.argv and "all" not in sys.argv:
         return Needs(flag)
     else:
         def _f(self):
@@ -32,7 +32,7 @@ def data(func):
 
 
 def set_flags(flags):
-    for flag in ["--slow", "--gui", "--data", "--all"]:
+    for flag in ["slow", "gui", "data", "all"]:
         if flag in sys.argv:
             sys.argv.remove(flag)
 
