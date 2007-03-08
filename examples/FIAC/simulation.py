@@ -28,7 +28,7 @@ from neuroimaging.modalities.fmri import fMRIImage
 
 import fmristat, model
 
-class SignalOnly(model.RunModel):
+class SignalOnly(model.Run):
 
     """
     Generate an fMRIImage according to the following model:
@@ -142,7 +142,7 @@ class SignalOnly(model.RunModel):
 
         """
 
-        model.RunModel.load(self)
+        model.Run.load(self)
         try:
             self.read()
         except OSError:
@@ -161,7 +161,7 @@ class SignalOnly(model.RunModel):
         """
         
         ARopts['parcel'] = (self.parcelmap, self.parcelseq)
-        model.RunModel.AR(self, **ARopts)
+        model.Run.AR(self, **ARopts)
 
     def check_resid(self):
         """
@@ -347,15 +347,15 @@ if __name__ == '__main__':
         subj, run = (1, 2)
 
     import io
-    study = model.StudyModel(root=io.data_path)
+    study = model.Study(root=io.data_path)
     #study = model.StudyModel(root='http://kff.stanford.edu/FIAC')
-    subject = model.SubjectModel(subj, study=study)
+    subject = model.Subject(subj, study=study)
     runmodel = SignalNoise(subject, run, resultdir=os.path.join("fsl", "fmristat_sim"))
 
     runmodel.getparcelmap()
     runmodel.get_frameavg()
 
-#    options.generate, options.fit, options.check = (0,1,0)
+    options.generate, options.fit, options.check = (1,1,1)
     if options.generate:
         runmodel.generate()
     if options.fit:
