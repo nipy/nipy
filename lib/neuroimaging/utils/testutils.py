@@ -9,6 +9,19 @@ import doctest
 
 FLAGS = []
 
+def set_flags(flags):
+    from neuroimaging.utils.testutils import FLAGS
+    for flag in ["slow", "gui", "data", "all"]:
+        if flag in FLAGS:
+            FLAGS.remove(flag)
+
+    if type(flags) == str:
+        FLAGS.append(flags)
+    else:
+        for flag in flags:
+            FLAGS.append(flag)
+
+
 class MyDocTestFinder(doctest.DocTestFinder):
     def find(self, obj, name=None, module=None, globs=None,
              extraglobs=None):

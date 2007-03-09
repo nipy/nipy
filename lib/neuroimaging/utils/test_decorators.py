@@ -29,17 +29,6 @@ def data(func):
             return func(self)
         return _f
 
-def set_flags(flags):
-    from neuroimaging.utils.testutils import FLAGS
-    for flag in ["slow", "gui", "data", "all"]:
-        if flag in FLAGS:
-            FLAGS.remove(flag)
-
-    if type(flags) == str:
-        FLAGS.append(flags)
-    else:
-        for flag in flags:
-            FLAGS.append(flag)
 
 
 if __name__ == '__main__':
