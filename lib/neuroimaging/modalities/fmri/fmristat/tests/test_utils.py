@@ -163,8 +163,7 @@ class test_Contrast(test_fMRIStat):
             v.draw()
 
 from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.modalities.fmri.fmristat')
-
+test_suite = make_doctest_suite('neuroimaging.modalities.fmri.fmristat.utils')
 
 if __name__ == '__main__':
     NumpyTest.run()
