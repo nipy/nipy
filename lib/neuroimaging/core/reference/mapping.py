@@ -96,7 +96,7 @@ def frombin(tstr):
 
 def matfromstr(tstr, ndim=3, delimiter=None):
     """Read a (ndim+1)x(ndim+1) transform matrix from a string."""
-    if tstr[0:24] == "mat file created by perl":
+    if tstr.startswith("mat file created by perl"):
         return frombin(tstr) 
     else:
         transform = N.array(tstr.split(delimiter)).astype(float)
