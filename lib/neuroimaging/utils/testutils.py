@@ -95,10 +95,27 @@ def doctest_packages(*packages):
 
 def doctest_all(): doctest_packages(*nontest_packages)
 
+import doctest
+
+class MyDocTestFinder(doctest.DocTestFinder):
+    def find(self, obj, name=None, module=None, globs=None,
+             extraglobs=None):
+        results = doctest.DocTestFinder.find(self, obj, name, module, globs,
+                                             extraglobs)
+        for res in results:
+            for ex in res.examples:
+                slow = ex.source == "SLOW = True\n"
+                gui = ex.source == "GUI = True\n"
+                data = ex.source == "DATA = True\n"
+                if slow or gui or data:
+                    res.examples = []
+                    break                
+        return results
+
 def make_doctest_suite(module):
     def test_suite(level=1):
         import doctest, neuroimaging        
         m1 = __import__(module)
-        return doctest.DocTestSuite(eval(module))
+        return doctest.DocTestSuite(eval(module), test_finder=MyDocTestFinder())
     return test_suite
 
