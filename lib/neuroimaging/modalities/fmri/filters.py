@@ -278,7 +278,8 @@ class FIR(Filter):
     A class for FIR filters: i.e. the filter is a collection of square waves.
     Parameters (start and duration) are specified as a kx2 matrix for k square
     waves.
-    
+
+    >>> GUI = True
     >>> from neuroimaging.modalities.fmri import filters
     >>> from pylab import *
     >>> from numpy import *

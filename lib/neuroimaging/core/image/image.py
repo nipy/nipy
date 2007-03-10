@@ -167,7 +167,8 @@ class Image(object):
 
         Example
         -------
-        
+
+        >>> SLOW = True
         >>> from numpy import *
         >>> from neuroimaging.core.api import Image
         >>> from neuroimaging.utils.tests.data import repository

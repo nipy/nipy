@@ -6,6 +6,7 @@ import urllib, os
 from tempfile import mkstemp
 
 from neuroimaging.core.reference import mapping, mni
+from neuroimaging.utils.test_decorators import slow
 
 class test_Mapping2(NumpyTestCase):
     def setUp(self):
@@ -262,7 +263,7 @@ class test_Mapping(NumpyTestCase):
         N.testing.assert_almost_equal(m1, m2)
         N.testing.assert_almost_equal(v1, v2)        
         
-
+    @slow
     def test_fromurl(self):
         x = mapping.fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1.txt')
         y = mapping.fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')

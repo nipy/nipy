@@ -2,7 +2,7 @@ import os
 
 from numpy.testing import NumpyTest, NumpyTestCase
 
-from neuroimaging.utils.test_decorators import gui
+from neuroimaging.utils.test_decorators import gui, slow
 
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.api import Image
@@ -28,6 +28,7 @@ class test_Visualization(NumpyTestCase):
             pylab.savefig('image.png')
             os.remove('image.png')
 
+        @slow
         def test_transversal_slice(self):
             interpolator = ImageInterpolator(self.img)
             vmin = float(self.img.readall().min())
@@ -43,6 +44,7 @@ class test_Visualization(NumpyTestCase):
             pylab.savefig('image.png')
             os.remove('image.png')
       
+        @slow
         def test_transversal_slice2(self):
             x = slices.TransversalPlot(self.img, y=3., xlim=[-49.,35.])
             x.width = 0.8; x.height = 0.8

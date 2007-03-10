@@ -123,6 +123,7 @@ class test_NiftiWrite(test_Nifti):
 
 class test_NiftiDataType(test_Nifti):
 
+    @slow
     def test_datatypes(self):
         for sctype in nifti1.sctype2datatype.keys():
             _out = N.ones(self.zimage.grid.shape, sctype)

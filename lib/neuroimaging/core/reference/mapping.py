@@ -76,7 +76,8 @@ def frombin(tstr):
     
     Example
     -------
-    
+
+    >>> SLOW = True
     >>> import urllib
     >>> from neuroimaging.core.reference.mapping import frombin
     >>> mat = urllib.urlopen('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
@@ -138,6 +139,7 @@ def fromurl(turl, ndim=3):
     Example
     -------
 
+    >>> SLOW = True
     >>> from numpy import testing
     >>> from neuroimaging.core.reference.mapping import fromurl
     >>> x = fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1.txt')
@@ -301,6 +303,7 @@ class Mapping(object):
         Examples
         --------
 
+        >>> SLOW = True
         >>> from neuroimaging.core.api import Image
         >>> zimage = Image('http://nifti.nimh.nih.gov/nifti-1/data/zstat1.nii.gz')
         >>> mapping = zimage.grid.mapping

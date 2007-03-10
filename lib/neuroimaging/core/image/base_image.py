@@ -69,7 +69,8 @@ class ArrayImage (BaseImage):
 
         Example
         -------
-        
+
+        >>> SLOW = True
         >>> from numpy import zeros
         >>> from neuroimaging.core.image.base_image import ArrayImage
         >>> z = ArrayImage(zeros((10,20,20)))

@@ -5,6 +5,7 @@ from scipy.sandbox.models.utils import recipr0
 from scipy.sandbox.models import contrast
 
 from neuroimaging.modalities.fmri import hrf, protocol, functions
+from neuroimaging.utils.test_decorators import slow
 
 class test_ProtocolSetup(NumpyTestCase):
 
@@ -91,7 +92,7 @@ class test_Protocol(test_ProtocolSetup):
                                           [[0.,0.,0.,0.,1.,0.],
                                            [0.,0.,0.,0.,0.,1.]])
 
-
+    @slow
     def testDesign2(self):
         self.setup_terms()
         
@@ -239,6 +240,7 @@ class test_Protocol(test_ProtocolSetup):
                                            [0.,0.,0.,0.,0.,1.]])
 
 
+    @slow
     def testShape(self):
         self.setup_terms()
         
@@ -266,6 +268,7 @@ class test_Protocol(test_ProtocolSetup):
             self.assertEquals(y.shape, (2 + df * 2, self.t.shape[0]))
 
 
+    @slow
     def testDesign1(self):
         self.setup_terms()
         
@@ -294,6 +297,7 @@ class test_Protocol(test_ProtocolSetup):
             y = formula.design(self.t)
             self.assertEquals(y.shape[::-1], (2 + df * 2, self.t.shape[0]))
 
+    @slow
     def test_toggle(self):
 	"""
 	Test to make sure that .convolved flag works on regression terms.

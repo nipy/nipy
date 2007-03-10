@@ -92,6 +92,7 @@ class SpectralHRF(filters.Filter):
         with basis given by the filter elements. If fn is None, it assumes
         fn=IRF[0], that is the first filter.
 
+        >>> GUI = True
         >>> import numpy as N
         >>> from pylab import plot, title, show
         >>> from neuroimaging.modalities.fmri.hrf import glover, glover_deriv, SpectralHRF

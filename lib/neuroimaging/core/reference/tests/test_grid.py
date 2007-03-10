@@ -12,6 +12,7 @@ from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.core.api import Image
 
+from neuroimaging.utils.test_decorators import slow
 
 class test_Grid(NumpyTestCase):
 
@@ -69,6 +70,7 @@ class test_Grid(NumpyTestCase):
         i = SamplingGrid.identity(shape=shape, names=space)
         i.allslice()
         
+    @slow
     def test_iterslices(self):
         for i in range(3):
             self.assertEqual(len(list(self.img.slice_iterator(axis=i))), self.img.grid.shape[i])

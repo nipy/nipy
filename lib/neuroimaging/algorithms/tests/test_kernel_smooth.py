@@ -6,7 +6,7 @@ from neuroimaging.algorithms.kernel_smooth import LinearFilter
 from neuroimaging.core.api import Image
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.reference.grid import SamplingGrid, space
-from neuroimaging.utils.test_decorators import gui
+from neuroimaging.utils.test_decorators import gui, slow
 from neuroimaging.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 
 from neuroimaging.defines import pylab_def
@@ -44,6 +44,7 @@ class test_SigmaFWHM(NumpyTestCase):
         N.testing.assert_almost_equal(sigma2fwhm(fwhm2sigma(fwhm)), fwhm)
         N.testing.assert_almost_equal(fwhm2sigma(sigma2fwhm(sigma)), sigma)
 
+    @slow
     def test_kernel(self):
         """
         Verify the the convolution with a delta function
