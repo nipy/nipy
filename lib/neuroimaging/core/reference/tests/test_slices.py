@@ -18,3 +18,6 @@ class test_Slice(NumpyTestCase):
 
 if __name__ == '__main__':
     NumpyTest.run()
+else:
+    import doctest, neuroimaging.core.reference.slices
+    test_suite = lambda _: doctest.DocTestSuite(neuroimaging.core.reference.slices)

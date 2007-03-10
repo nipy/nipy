@@ -173,3 +173,6 @@ class test_VoxelAxis(NumpyTestCase):
 
 if __name__ == '__main__':
     NumpyTest.run()
+else:
+    import doctest, neuroimaging.core.reference.axis
+    test_suite = lambda _: doctest.DocTestSuite(neuroimaging.core.reference.axis)

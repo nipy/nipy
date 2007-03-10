@@ -84,3 +84,6 @@ class test_VoxelCoordinateSystem(NumpyTestCase):
 
 if __name__ == '__main__':
     NumpyTest.run()
+else:
+    import doctest, neuroimaging.core.reference.coordinate_system
+    test_suite = lambda _: doctest.DocTestSuite(neuroimaging.core.reference.coordinate_system)

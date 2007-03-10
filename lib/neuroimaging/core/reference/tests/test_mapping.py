@@ -329,3 +329,6 @@ class test_Mapping(NumpyTestCase):
         
 if __name__ == '__main__':
     NumpyTest.run()
+else:
+    import doctest, neuroimaging.core.reference.mapping
+    test_suite = lambda _: doctest.DocTestSuite(neuroimaging.core.reference.mapping)

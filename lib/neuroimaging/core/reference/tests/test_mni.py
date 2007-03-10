@@ -13,3 +13,6 @@ class test_MNI(NumpyTestCase):
 
 if __name__ == '__main__':
     NumpyTest.run()
+else:
+    import doctest, neuroimaging.core.reference.mni
+    test_suite = lambda _: doctest.DocTestSuite(neuroimaging.core.reference.mni)
