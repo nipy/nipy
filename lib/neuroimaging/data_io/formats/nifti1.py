@@ -3,7 +3,7 @@ __docformat__ = 'restructuredtext'
 import numpy as N
 
 from neuroimaging.utils.odict import odict
-from neuroimaging.data_io.api import DataSource
+from neuroimaging.data_io.datasource import DataSource
 from neuroimaging.data_io.formats import utils, binary, analyze
 from neuroimaging.data_io.formats.nifti1_ext import quatern2mat, \
      mat2quatern
