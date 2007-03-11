@@ -1,7 +1,13 @@
 """
 Module containing simple utilities for running our tests.
 """
-import doctest, sys
+import doctest
+
+# This is a module level variable to keep track of which flags are set.
+# It replaces the use of sys.argv we previously had. Perhaps we can find a
+# way to do it with no global state at all... -- Tim
+
+FLAGS = []
 
 class MyDocTestFinder(doctest.DocTestFinder):
     def find(self, obj, name=None, module=None, globs=None,
@@ -16,7 +22,7 @@ class MyDocTestFinder(doctest.DocTestFinder):
                     if ex.source == "%s = True\n" % opt.upper():
                         flags.append("%s" % opt)                    
                 for flag in flags:
-                    if flag not in sys.argv and "all" not in sys.argv:
+                    if flag not in FLAGS and "all" not in FLAGS:
                         res.examples = []
                 if res.examples == []:
                     break

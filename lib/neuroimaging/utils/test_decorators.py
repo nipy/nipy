@@ -1,5 +1,3 @@
-import sys
-
 class Needs:
     def __init__(self, flag):
         self.flag = flag
@@ -8,7 +6,8 @@ class Needs:
         print ("Test not run. Requires %s flag"  % self.flag)
 
 def _flag(func, flag):
-    if flag not in sys.argv and "all" not in sys.argv:
+    from neuroimaging.utils.testutils import FLAGS
+    if flag not in FLAGS and "all" not in FLAGS:
         return Needs(flag)
     else:
         return func
@@ -20,8 +19,9 @@ def gui(func):
     return _flag(func, "gui")
 
 def data(func):    
+    from neuroimaging.utils.testutils import FLAGS
     flag = "data"
-    if flag not in sys.argv and "all" not in sys.argv:
+    if flag not in FLAGS and "all" not in FLAGS:
         return Needs(flag)
     else:
         def _f(self):
@@ -29,18 +29,17 @@ def data(func):
             return func(self)
         return _f
 
-
-
 def set_flags(flags):
+    from neuroimaging.utils.testutils import FLAGS
     for flag in ["slow", "gui", "data", "all"]:
-        if flag in sys.argv:
-            sys.argv.remove(flag)
+        if flag in FLAGS:
+            FLAGS.remove(flag)
 
     if type(flags) == str:
-        sys.argv.append(flags)
+        FLAGS.append(flags)
     else:
         for flag in flags:
-            sys.argv.append(flag)
+            FLAGS.append(flag)
 
 
 if __name__ == '__main__':
