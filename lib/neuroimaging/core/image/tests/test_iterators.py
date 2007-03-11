@@ -342,5 +342,8 @@ class test_Iterator(NumpyTestCase):
             N.testing.assert_equal(slice_, value)
 
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.core.image.iterators')
+
 if __name__ == '__main__':
     NumpyTest.run()

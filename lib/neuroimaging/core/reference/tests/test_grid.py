@@ -88,8 +88,8 @@ class test_Grid(NumpyTestCase):
         a = Affine.identity()
         g = SamplingGrid.from_affine(a)
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.core.reference.grid')
+
 if __name__ == '__main__':
     NumpyTest.run()
-else:
-    import doctest, neuroimaging.core.reference.grid
-    test_suite = lambda _: doctest.DocTestSuite(neuroimaging.core.reference.grid)

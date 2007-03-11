@@ -636,3 +636,8 @@ class ImageSequenceIterator(object):
         val = [it.next() for it in self.iters]
         return N.array(val, N.float64)
 
+
+
+def test_suite(level=1):
+    import doctest
+    return doctest.DocTestSuite(eval(__name__))

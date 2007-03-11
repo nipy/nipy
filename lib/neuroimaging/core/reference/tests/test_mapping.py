@@ -325,10 +325,9 @@ class test_Mapping(NumpyTestCase):
     def test_isinvertable(self):
         self.assertTrue(self.mapping.isinvertible())
         self.assertTrue(not self.singular.isinvertible())
-        
+
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.core.reference.mapping')        
         
 if __name__ == '__main__':
     NumpyTest.run()
-else:
-    import doctest, neuroimaging.core.reference.mapping
-    test_suite = lambda _: doctest.DocTestSuite(neuroimaging.core.reference.mapping)

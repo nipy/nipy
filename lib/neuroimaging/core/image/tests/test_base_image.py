@@ -68,6 +68,9 @@ class test_ArrayImage(NumpyTestCase):
         #self.assertEquals(img[0], row)
 
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.core.image.base_image')
+
 
 if __name__ == '__main__':
     NumpyTest.run()

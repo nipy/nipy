@@ -171,8 +171,8 @@ class test_VoxelAxis(NumpyTestCase):
         self.assertEqual(self.infinite.step, 1)
         self.assertEqual(self.infinite.length, N.inf)
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.core.reference.axis')
+
 if __name__ == '__main__':
     NumpyTest.run()
-else:
-    import doctest, neuroimaging.core.reference.axis
-    test_suite = lambda _: doctest.DocTestSuite(neuroimaging.core.reference.axis)

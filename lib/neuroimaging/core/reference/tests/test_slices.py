@@ -16,8 +16,8 @@ class test_Slice(NumpyTestCase):
         yslice(5, [0, 9], [0, 9], [0, 9], (10, 10, 10)).mapping.transform
         xslice(5, [0, 9], [0, 9], [0, 9], (10, 10, 10)).mapping.transform
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.core.reference.slices')        
+
 if __name__ == '__main__':
     NumpyTest.run()
-else:
-    import doctest, neuroimaging.core.reference.slices
-    test_suite = lambda _: doctest.DocTestSuite(neuroimaging.core.reference.slices)

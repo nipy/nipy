@@ -94,3 +94,11 @@ def doctest_packages(*packages):
     run_suite(TestSuite(tests))
 
 def doctest_all(): doctest_packages(*nontest_packages)
+
+def make_doctest_suite(module):
+    def test_suite(level=1):
+        import doctest, neuroimaging        
+        m1 = __import__(module)
+        return doctest.DocTestSuite(eval(module))
+    return test_suite
+

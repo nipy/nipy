@@ -82,8 +82,9 @@ class test_VoxelCoordinateSystem(NumpyTestCase):
         self.assertTrue(self.v.isvalid([0,0,0]))
         self.assertTrue(not self.v.isvalid(self.shape))
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.core.reference.coordinate_system')
+
+
 if __name__ == '__main__':
     NumpyTest.run()
-else:
-    import doctest, neuroimaging.core.reference.coordinate_system
-    test_suite = lambda _: doctest.DocTestSuite(neuroimaging.core.reference.coordinate_system)

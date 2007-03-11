@@ -11,8 +11,8 @@ class test_MNI(NumpyTestCase):
         m_w = mni.MNI_world        
         m_m = mni.MNI_mapping
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.core.reference.mni')        
+
 if __name__ == '__main__':
     NumpyTest.run()
-else:
-    import doctest, neuroimaging.core.reference.mni
-    test_suite = lambda _: doctest.DocTestSuite(neuroimaging.core.reference.mni)

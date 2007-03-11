@@ -210,6 +210,8 @@ class test_ImageSequenceIterator(NumpyTestCase):
         for x in it:
             self.assertTrue(isinstance(x, N.ndarray))
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.core.image.image')
 
 if __name__ == '__main__':
     NumpyTest.run()
