@@ -374,11 +374,6 @@ class Analyze(binary.BinaryFormat):
                 return Affine.identity(self.ndim)
             
         else:
-            # FIXME: Do we want to use these?
-            if self.ndim == 4:
-                names = spacetime[::-1]
-            else:
-                names = space[::-1]
             return Affine.identity(self.ndim)
 
 
