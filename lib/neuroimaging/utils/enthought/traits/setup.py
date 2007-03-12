@@ -30,27 +30,11 @@ def configuration(parent_package='',top_path=None):
 
     config.add_extension('ctraits',['ctraits.c'])
 
-    config.add_data_dir('demo')
     config.add_data_dir('doc')
     config.add_data_dir('examples')
-    config.add_data_dir('images')
-    config.add_data_dir('plugins')
-    config.add_data_dir('tests')
     
     config.add_subpackage('ui')
-    config.add_subpackage('ui.extras')
     config.add_subpackage('ui.null')
-    config.add_subpackage('ui.tk')
-    config.add_subpackage('ui.wx')
-    config.add_data_dir('ui/demos')
-    config.add_data_dir('ui/images')
-    config.add_data_dir('ui/tests')
-    config.add_data_dir('ui/wx/images')
-    config.add_data_dir('ui/wx/tests')
-
-    config.add_subpackage('vet')
-    config.add_data_dir('vet/examples')
-    config.add_data_dir('vet/images')
 
     config.add_data_files('*.txt')
 
