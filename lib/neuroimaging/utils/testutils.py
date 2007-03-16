@@ -95,7 +95,7 @@ def doctest_packages(*packages):
 
 def doctest_all(): doctest_packages(*nontest_packages)
 
-import doctest
+import doctest, sys
 
 class MyDocTestFinder(doctest.DocTestFinder):
     def find(self, obj, name=None, module=None, globs=None,
@@ -104,12 +104,16 @@ class MyDocTestFinder(doctest.DocTestFinder):
                                              extraglobs)
         for res in results:
             for ex in res.examples:
-                slow = ex.source == "SLOW = True\n"
-                gui = ex.source == "GUI = True\n"
-                data = ex.source == "DATA = True\n"
-                if slow or gui or data:
-                    res.examples = []
-                    break                
+                flags = []
+                options = ["slow", "gui", "data"]
+                for opt in options:
+                    if ex.source == "%s = True\n" % opt.upper():
+                        flags.append("--%s" % opt)                    
+                for flag in flags:
+                    if flag not in sys.argv and "--all" not in sys.argv:
+                        res.examples = []
+                if res.examples == []:
+                    break
         return results
 
 def make_doctest_suite(module):
