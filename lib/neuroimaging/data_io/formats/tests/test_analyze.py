@@ -99,6 +99,9 @@ class test_AnalyzeDataType(test_Analyze):
         os.remove('out.img')
 
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.data_io.formats.analyze')
+
 if __name__ == '__main__':
     NumpyTest.run()
 

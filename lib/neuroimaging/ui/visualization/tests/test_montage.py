@@ -47,5 +47,9 @@ class test_Montage(NumpyTestCase):
             os.remove('image.png')
 
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.ui.visualization.montage')
+
+
 if __name__ == '__main__':
     NumpyTest().run()

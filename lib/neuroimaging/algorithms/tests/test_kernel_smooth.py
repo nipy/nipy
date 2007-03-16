@@ -102,6 +102,9 @@ class test_SigmaFWHM(NumpyTestCase):
             self.assertTrue(N.corrcoef(vz, kernel(vvz))[0,1] > tol)
 
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.algorithms.kernel_smooth')
+
         
 if __name__ == '__main__':
     NumpyTest.run()

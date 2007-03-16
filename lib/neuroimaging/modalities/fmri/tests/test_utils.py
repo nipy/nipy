@@ -50,5 +50,9 @@ class test_util(NumpyTestCase):
         N.testing.assert_approx_equal(int_f1*int_f2, int_fa)
 
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.modalities.fmri.utils')
+
+
 if __name__ == '__main__':
     NumpyTest.run()

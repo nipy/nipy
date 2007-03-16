@@ -321,5 +321,8 @@ class test_Protocol(test_ProtocolSetup):
             y = formula.design(self.t)
             self.assertEquals(y.shape[::-1], (2 + df * 2, self.t.shape[0]))
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.modalities.fmri.protocol')
+
 if __name__ == '__main__':
     NumpyTest.run()

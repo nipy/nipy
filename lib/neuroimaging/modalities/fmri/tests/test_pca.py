@@ -71,6 +71,10 @@ if PYLAB_DEF:
             pylab.savefig('image.png')
             os.remove('image.png')
 
+
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.modalities.fmri.pca')
+
         
 if __name__ == '__main__':
     NumpyTest.main()

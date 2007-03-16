@@ -161,6 +161,8 @@ class test_NiftiDataType(test_Nifti):
 
         os.remove('out.nii')
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.data_io.formats.nifti1')
         
 
 if __name__ == '__main__':

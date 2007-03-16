@@ -26,5 +26,8 @@ class test_OneSample(NumpyTestCase):
         x = ImageOneSample([im1,im2,im3], clobber=True)
         x.fit()
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.algorithms.onesample')
+
 if __name__ == '__main__':
     NumpyTest.run()

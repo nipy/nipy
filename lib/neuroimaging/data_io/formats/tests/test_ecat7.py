@@ -48,5 +48,8 @@ class test_EcatFrames(test_Ecat):
         self.assertEqual(self.image1.shape,shape)
 
 
+from neuroimaging.utils.testutils import make_doctest_suite
+test_suite = make_doctest_suite('neuroimaging.data_io.formats.ecat7')
+
 if __name__ == '__main__':
     NumpyTest.run()
