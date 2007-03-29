@@ -208,6 +208,7 @@ class Image(object):
         outimage = Image(filename, mode='w', grid=self.grid,
                          clobber=clobber,
                          dtype=dtype,
+                         use_memmap=True,
                          **keywords)
 
         tmp = self.toarray(**keywords)

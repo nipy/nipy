@@ -226,7 +226,7 @@ class Ecat7(binary.BinaryFormat):
     extensions = ('.v')
     
 
-    def __init__(self, infilename, mode="r", datasource=DataSource(), **keywords):
+    def __init__(self, infilename, mode="r", datasource=DataSource(), use_memmap=True, **keywords):
         """
         Constructs a Ecat7 binary format object with at least a filename
         NOTE: ECAT can be an Image or a Volume
@@ -304,7 +304,7 @@ class Ecat7(binary.BinaryFormat):
 
         cachefile.close()
         self.data_file = cachepath.filename(tmpimgfile)
-        self.attach_data()
+        self.attach_data(use_memmap=use_memmap)
         
     def checkversion(self, datasource):
         """
@@ -443,7 +443,7 @@ class Frame(binary.BinaryFormat):
     _sub_field_defaults = {'SCALE_FACTOR': 1.}
     
     
-    def __init__(self, infile, byteorder, mlist, scale, framenumber=0, datasource=DataSource(), mode='rb'):
+    def __init__(self, infile, byteorder, mlist, scale, framenumber=0, datasource=DataSource(), mode='rb', use_memmap=True):
         self.infile = infile
 
         binary.BinaryFormat.__init__(self, infile, mode, datasource)
@@ -492,7 +492,7 @@ class Frame(binary.BinaryFormat):
                                                 step=step)
             # Get memmaped array
         offset = (mlist[1,framenumber])*BLOCKSIZE
-        self.attach_data(offset)
+        self.attach_data(offset, use_memmap=use_memmap)
         #self.data = self.postread(self.data)
 
     def subheader_defaults(self):
@@ -525,6 +525,9 @@ class Frame(binary.BinaryFormat):
         """
         Might transform the data after getting it from memmap
         """
+        if not self.use_memmap:
+             return x
+
         if self.subheader['SCALE_FACTOR']:
             return x * self.subheader['SCALE_FACTOR']*self.scale
         else:

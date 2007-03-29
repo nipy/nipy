@@ -56,7 +56,6 @@ class BinaryFormat(Format):
                self.datasource.exists(self.data_file)) and \
                not self.clobber and \
                'w' in self.mode:
-            print "a", self.header_file
             raise IOError('file exists, but not allowed to clobber it')
 
     def read_header(self):
@@ -101,7 +100,7 @@ class BinaryFormat(Format):
             fp.close()
 
 
-    def attach_data(self, offset=0):
+    def attach_data(self, offset=0, use_memmap=True):
         """
         :Returns: ``None``
 
@@ -124,6 +123,12 @@ class BinaryFormat(Format):
                            shape=tuple(self.grid.shape), mode=mode,
                            offset=offset)
 
+        self.use_memmap = True
+        if not use_memmap:
+            self.data = self[:]
+            self.data.newbyteorder(self.byteorder)
+        self.use_memmap = use_memmap
+
 
     def prewrite(self, x):
         """
@@ -142,7 +147,10 @@ class BinaryFormat(Format):
         """
         :Returns: ``numpy.ndarray``
         """
-        data = self.postread(self.data[slicer].newbyteorder(self.byteorder))
+        if self.use_memmap:
+            data = self.postread(self.data[slicer].newbyteorder(self.byteorder))            
+        else:
+            data = self.postread(self.data[slicer])
         return N.asarray(data)
 
 
@@ -150,7 +158,7 @@ class BinaryFormat(Format):
         """
         :Returns: ``None``
         """
-        if not iswritemode(self.data._mode):
+        if self.use_memmap and not iswritemode(self.data._mode):
             print "Warning: memapped array is not writeable! Nothing done"
             return
         self.data[slicer] = \

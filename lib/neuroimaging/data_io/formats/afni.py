@@ -115,7 +115,7 @@ class AFNI(binary.BinaryFormat):
 
     extensions = ('.HEAD', '.BRIK')
 
-    def __init__(self, filename, mode='r', datasource=DataSource(), **kwds):
+    def __init__(self, filename, mode='r', datasource=DataSource(), use_memmap=True, **kwds):
 
         # pick up these attributes:
         # mode, filename, filebase, clobber, header_file, data_file
@@ -161,7 +161,7 @@ class AFNI(binary.BinaryFormat):
                                                          step=deltas)
                 # be satisfied with identity xform for now
 
-        self.attach_data()
+        self.attach_data(use_memmap=use_memmap)
         #self.callback()
 
     def _fitdtype(self, dtype_request):
@@ -418,6 +418,9 @@ class AFNI(binary.BinaryFormat):
         self.write_header(clobber=True)
 
     def prewrite(self, x, slicer):
+        if not self.use_memmap:
+             return x
+
         # try to cast in two cases:
         # 1 - we're replacing all the data of all bricks
         # 2 - if the maximum/maxima of the given slice of data exceeds
@@ -459,6 +462,9 @@ class AFNI(binary.BinaryFormat):
             return x / self.scales[scale_slice]
 
     def postread(self, x, slicer):
+        if not self.use_memmap:
+             return x
+
         if self.scales is not None:
             if isinstance(slicer, tuple):
                 brick_slice = slicer[0]

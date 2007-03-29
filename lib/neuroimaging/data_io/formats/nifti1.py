@@ -209,7 +209,7 @@ class Nifti1(binary.BinaryFormat):
 
     extendable = False
 
-    def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
+    def __init__(self, filename, mode="r", datasource=DataSource(), use_memmap=True, **keywords):
         """
         Constructs a Nifti binary format object with at least a filename
         possible additional keyword arguments:
@@ -300,7 +300,7 @@ class Nifti1(binary.BinaryFormat):
             self.grid = self.grid.matlab2python()
         #else: Grid was already assigned by Format constructor
         
-        self.attach_data(offset=int(self.header['vox_offset']))
+        self.attach_data(offset=int(self.header['vox_offset']), use_memmap=use_memmap)
 
 
     def _get_filenames(self):
@@ -427,6 +427,9 @@ class Nifti1(binary.BinaryFormat):
         """
         NIFTI-1 normalization based on scl_slope and scl_inter.
         """
+        if not self.use_memmap:
+            return x
+
         if self.header['scl_slope']:
             return x * self.header['scl_slope'] + self.header['scl_inter']
         else:
@@ -445,6 +448,9 @@ class Nifti1(binary.BinaryFormat):
         #
         # NIFTI1 also contains an intercept term, so see if that needs
         # to change
+
+        if not self.use_memmap:
+            return x
 
         scaled_x = (x - self.header['scl_inter'])/self.header['scl_slope']
         if N.asarray(x).shape == self.data.shape or scaled_x.max() > self.data.max():  

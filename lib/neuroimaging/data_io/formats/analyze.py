@@ -114,7 +114,7 @@ class Analyze(binary.BinaryFormat):
     # always false for Analyze
     extendable = False
 
-    def __init__(self, filename, mode="r", datasource=DataSource(), **keywords):
+    def __init__(self, filename, mode="r", datasource=DataSource(), use_memmap=True, **keywords):
         """
         Constructs a Analyze binary format object with at least a filename
         possible additional keyword arguments:
@@ -190,7 +190,7 @@ class Analyze(binary.BinaryFormat):
         #else: Grid was already assigned by Format constructor
         
         # get memmaped array
-        self.attach_data()
+        self.attach_data(use_memmap=use_memmap)
 
 
     @staticmethod
@@ -269,11 +269,16 @@ class Analyze(binary.BinaryFormat):
         
         :Returns: TODO
         """
+        
+        x = N.asarray(x)
+        if not self.use_memmap:
+            return x
+
         # try to cast in two cases:
         # 1 - we're replacing all the data
         # 2 - the maximum of the given slice of data exceeds the
         #     global maximum under the current scaling
-        x = N.asarray(x)
+
         if x.shape == self.data.shape or \
                x.max() > (self.header['scale_factor']*self.data).max():
             #FIXME: I'm not 100% sure that this is correct --timl
@@ -306,6 +311,9 @@ class Analyze(binary.BinaryFormat):
         
         :Returns` : TODO
         """
+        if not self.use_memmap:
+             return x
+
         if self.header['scale_factor']:
             return x*self.header['scale_factor']
         else:

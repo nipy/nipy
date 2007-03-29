@@ -76,7 +76,7 @@ class test_image(NumpyTestCase):
         img2 = self.img.tofile('tmp.hdr', format=Analyze)
 
         img2[0,0,0] = 370000
-        img3 = Image(img2.asfile())
+        img3 = Image(img2.asfile(), use_memmap=True)
         img2[1,1,1] = 100000
 
         scale = img2._source.header['scale_factor']
