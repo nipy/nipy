@@ -6,6 +6,7 @@ import neuroimaging.modalities.fmri.functions as confound
 import scipy.sandbox.models.contrast as contrast
 from neuroimaging.modalities.fmri.fmristat.delay import DelayHRF
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
+from neuroimaging.modalities.fmri.api import fMRIImage
 from neuroimaging.core.api import Image
 
 import gc, time
@@ -168,7 +169,7 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
         # well output the FWHM, too
 
         if output_fwhm:
-            resid = neuroimaging.modalities.fmri.fMRIImage(FIACpath('fsl/fmristat_run/ARresid.img', subj=subj, run=run))
+            resid = fMRIImage(FIACpath('fsl/fmristat_run/ARresid.img', subj=subj, run=run))
             fwhmest = fastFWHM(resid, fwhm=FIACpath('fsl/fmristat_run/fwhm.img'), clobber=True)
             fwhmest()
 

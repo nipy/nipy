@@ -24,7 +24,7 @@ from scipy.sandbox.models.regression import ols_model, ar_model
 
 from neuroimaging.core.api import Image
 from neuroimaging.core.image.iterators import fMRIParcelIterator, ParcelIterator
-from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.modalities.api import fMRIImage
 
 import fmristat, model
 

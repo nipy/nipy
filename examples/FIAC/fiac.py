@@ -2,7 +2,7 @@ import os
 
 from neuroimaging import traits
 
-from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.modalities.fmri.api import fMRIImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
 from neuroimaging.core.api import Image
 

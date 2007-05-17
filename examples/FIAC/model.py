@@ -11,6 +11,8 @@ from neuroimaging.modalities.fmri.filters import Filter
 from neuroimaging.modalities.fmri.hrf import canonical
 from neuroimaging.core.api import Image
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
+import neuroimaging.modalities.api
+
 
 import fiac
 import io
@@ -315,7 +317,7 @@ class Run(Model, fiac.Run):
 ##         # well output the FWHM, too
 
 ##         if output_fwhm:
-##             resid = neuroimaging.modalities.fmri.fMRIImage(FIACpath('fsl/fmristat_run/ARresid.img', subj=subj, run=run))
+##             resid = neuroimaging.modalities.fmri.api.fMRIImage(FIACpath('fsl/fmristat_run/ARresid.img', subj=subj, run=run))
 ##             fwhmest = fastFWHM(resid, fwhm=FIACpath('fsl/fmristat_run/fwhm.img'), clobber=True)
 ##             fwhmest()
 

@@ -3,7 +3,7 @@ import os
 import numpy as N
 import pylab
 
-from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.modalities.fmri.api import fMRIImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
 from neuroimaging.core.api import Image
 from neuroimaging.data_io.api import DataSource
