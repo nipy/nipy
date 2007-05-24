@@ -97,8 +97,8 @@ def import_from(modulename, objectname):
 
 def test(level=1, verbosity=1, flags=[]):
     from numpy.testing import NumpyTest, importall
-    from neuroimaging.utils.testutils import set_flags
-    set_flags(flags)
+    #from neuroimaging.utils.testutils import set_flags
+    #set_flags(flags)
     importall('neuroimaging')
     if level <= 10:
         return NumpyTest().test(level, verbosity)

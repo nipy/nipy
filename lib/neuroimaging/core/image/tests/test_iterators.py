@@ -2,11 +2,9 @@ import numpy as N
 from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.core.image.iterators import Iterator, IteratorItem, \
-     ParcelIterator, SliceParcelIterator, fMRIParcelIterator, \
-     fMRISliceParcelIterator
+     ParcelIterator, SliceParcelIterator
 
 from neuroimaging.core.api import Image
-from neuroimaging.modalities.fmri.api import fMRIImage
 import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.reference.grid as grid
 
@@ -17,8 +15,6 @@ class test_Iterator(NumpyTestCase):
         self.img2 = Image(N.ones((10, 20, 30)))
         self.img3 = Image(N.zeros((3, 5, 4)))
         self.img4 = Image(N.ones((3, 5, 4)))
-
-        self.fmri_img = fMRIImage(N.zeros((3, 4, 5, 6)), grid = grid.SamplingGrid.identity((3,4,5,6), axis.spacetime))
 
     def test_base_class1(self):
         iterator = Iterator(self.img)
@@ -152,85 +148,6 @@ class test_Iterator(NumpyTestCase):
         for i, slice_ in enumerate(new_iterator):
             self.assertEqual((expected[i],), slice_.shape)
 
-
-
-
-    def test_fmri_parcel(self):
-        parcelmap = N.zeros(self.fmri_img.shape[1:])
-        parcelmap[0,0,0] = 1
-        parcelmap[1,1,1] = 1
-        parcelmap[2,2,2] = 1
-        parcelmap[1,2,1] = 2
-        parcelmap[2,3,2] = 2
-        parcelmap[0,1,0] = 2
-        parcelseq = (0, 1, 2, 3)
-        
-        expected = [N.product(self.fmri_img.shape[1:]) - 6, 3, 3, 0]
-        iterator = fMRIParcelIterator(self.fmri_img, parcelmap, parcelseq)
-
-        for i, slice_ in enumerate(iterator):
-            self.assertEqual((self.fmri_img.shape[0], expected[i],), slice_.shape)
-
-        iterator = fMRIParcelIterator(self.fmri_img, parcelmap)
-        for i, slice_ in enumerate(iterator):
-            self.assertEqual((self.fmri_img.shape[0], expected[i],), slice_.shape)
-
-    def test_fmri_parcel_write(self):
-        parcelmap = N.zeros(self.fmri_img.shape[1:])
-        parcelmap[0,0,0] = 1
-        parcelmap[1,1,1] = 1
-        parcelmap[2,2,2] = 1
-        parcelmap[1,2,1] = 2
-        parcelmap[2,3,2] = 2
-        parcelmap[0,1,0] = 2
-        parcelseq = (0, 1, 2, 3)
-        expected = [N.product(self.fmri_img.shape[1:]) - 6, 3, 3, 0]
-        iterator = fMRIParcelIterator(self.fmri_img, parcelmap, parcelseq, mode='w')
-
-        for i, slice_ in enumerate(iterator):
-            value = N.asarray([N.arange(expected[i]) for _ in range(self.fmri_img.shape[0])])
-            slice_.set(value)
-
-        iterator = fMRIParcelIterator(self.fmri_img, parcelmap, parcelseq)
-        for i, slice_ in enumerate(iterator):
-            self.assertEqual((self.fmri_img.shape[0], expected[i],), slice_.shape)
-            N.testing.assert_equal(slice_, N.asarray([N.arange(expected[i]) for _ in range(self.fmri_img.shape[0])]))
-
-
-        iterator = fMRIParcelIterator(self.fmri_img, parcelmap, mode='w')
-        for i, slice_ in enumerate(iterator):
-            value = N.asarray([N.arange(expected[i]) for _ in range(self.fmri_img.shape[0])])
-            slice_.set(value)
-
-        iterator = fMRIParcelIterator(self.fmri_img, parcelmap)
-        for i, slice_ in enumerate(iterator):
-            self.assertEqual((self.fmri_img.shape[0], expected[i],), slice_.shape)
-            N.testing.assert_equal(slice_, N.asarray([N.arange(expected[i]) for _ in range(self.fmri_img.shape[0])]))
-
-
-    def test_fmri_parcel_copy(self):
-        parcelmap = N.zeros(self.fmri_img.shape[1:])
-        parcelmap[0,0,0] = 1
-        parcelmap[1,1,1] = 1
-        parcelmap[2,2,2] = 1
-        parcelmap[1,2,1] = 2
-        parcelmap[2,3,2] = 2
-        parcelmap[0,1,0] = 2
-        parcelseq = (0, 1, 2, 3)
-        expected = [N.product(self.fmri_img.shape[1:]) - 6, 3, 3, 0]
-        iterator = fMRIParcelIterator(self.fmri_img, parcelmap, parcelseq)
-        tmp = fMRIImage(self.fmri_img)
-
-        new_iterator = iterator.copy(tmp)
-
-        for i, slice_ in enumerate(new_iterator):
-            self.assertEqual((self.fmri_img.shape[0], expected[i],), slice_.shape)
-
-        iterator = fMRIParcelIterator(self.fmri_img, parcelmap)
-        for i, slice_ in enumerate(new_iterator):
-            self.assertEqual((self.fmri_img.shape[0], expected[i],), slice_.shape)
-
-
     def test_sliceparcel(self):
         parcelmap = N.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
         parcelseq = ((1, 2), 0, 2)
@@ -292,54 +209,6 @@ class test_Iterator(NumpyTestCase):
                 x = len([n for n in pm if n == ps])
             self.assertEqual(x, slice_.shape[0])
             N.testing.assert_equal(N.ones((x ,self.img3.shape[2])), slice_)
-
-
-
-    def test_fmri_sliceparcel(self):
-        parcelmap = N.asarray([[[0,0,0,1,2,2]]*5,
-                               [[0,0,1,1,2,2]]*5,
-                               [[0,0,0,0,2,2]]*5])
-        parcelseq = ((1, 2), 0, 2)
-        iterator = fMRISliceParcelIterator(self.fmri_img, parcelmap, parcelseq)
-        for i, slice_ in enumerate(iterator):
-            pm = parcelmap[i]
-            ps = parcelseq[i]
-            try:
-                x = len([n for n in pm.flat if n in ps])
-            except TypeError:
-                x = len([n for n in pm.flat if n == ps])
-            self.assertEqual(x, slice_.shape[1])
-            self.assertEqual(self.fmri_img.shape[0], slice_.shape[0])
-
-    def test_fmri_sliceparcel_write(self):
-        parcelmap = N.asarray([[[0,0,0,1,2,2]]*5,
-                               [[0,0,1,1,2,2]]*5,
-                               [[0,0,0,0,2,2]]*5])
-        parcelseq = ((1, 2), 0, 2)
-        iterator = fMRISliceParcelIterator(self.fmri_img, parcelmap, parcelseq, mode='w')
-
-        for i, slice_ in enumerate(iterator):
-            pm = parcelmap[i]
-            ps = parcelseq[i]
-            try:
-                x = len([n for n in pm.flat if n in ps])
-            except TypeError:
-                x = len([n for n in pm.flat if n == ps])
-            value = [i*N.arange(x) for i in range(self.fmri_img.shape[0])]
-            slice_.set(value)
-
-        iterator = fMRISliceParcelIterator(self.fmri_img, parcelmap, parcelseq)
-        for i, slice_ in enumerate(iterator):
-            pm = parcelmap[i]
-            ps = parcelseq[i]
-            try:
-                x = len([n for n in pm.flat if n in ps])
-            except TypeError:
-                x = len([n for n in pm.flat if n == ps])
-            value = [i*N.arange(x) for i in range(self.fmri_img.shape[0])]
-            self.assertEqual(x, slice_.shape[1])
-            self.assertEqual(self.fmri_img.shape[0], slice_.shape[0])
-            N.testing.assert_equal(slice_, value)
 
 
 from neuroimaging.utils.testutils import make_doctest_suite

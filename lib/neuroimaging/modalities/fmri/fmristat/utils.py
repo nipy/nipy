@@ -7,14 +7,14 @@ import numpy.linalg as L
 from scipy.sandbox.models.regression import ols_model, ar_model
 from scipy.sandbox.models.utils import monotone_fn_inverter, rank 
 
-from neuroimaging.modalities.fmri.api import fMRIImage
+from neuroimaging.modalities.fmri.api import fMRIImage, fMRIParcelIterator, \
+     fMRISliceParcelIterator
 from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
      DelayContrastOutput
 from neuroimaging.algorithms.statistics.regression import LinearModelIterator
 from neuroimaging.modalities.fmri.regression import AROutput, \
      TContrastOutput, FContrastOutput, ResidOutput
-from neuroimaging.core.api import fMRIParcelIterator, \
-     fMRISliceParcelIterator, ParcelIterator, SliceParcelIterator
+from neuroimaging.core.api import ParcelIterator, SliceParcelIterator
 from neuroimaging.algorithms.fwhm import fastFWHM
 
 
