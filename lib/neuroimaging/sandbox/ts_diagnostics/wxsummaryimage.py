@@ -1,7 +1,7 @@
 import numpy as N
 import matplotlib.cm as cm
 
-from neuroimaging.modalities.fmri import fMRIImage
+from neuroimaging.modalities.fmri.api import fMRIImage
 from neuroimaging.utils import wxmpl
 from neuroimaging.utils.tests.data import repository
 

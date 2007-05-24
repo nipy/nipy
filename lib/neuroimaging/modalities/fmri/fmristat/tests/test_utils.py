@@ -8,7 +8,7 @@ from numpy.testing import NumpyTest, NumpyTestCase
 from neuroimaging.utils.test_decorators import slow, data
 
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.modalities.fmri.fmri import fMRIImage
+from neuroimaging.modalities.fmri.api import fMRIImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor,\
   ExperimentalQuantitative
 from neuroimaging.modalities.fmri.functions import SplineConfound
