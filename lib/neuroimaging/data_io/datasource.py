@@ -172,21 +172,18 @@ class Cache (object):
 class DataSource (object):
 
     def __init__(self, cachepath=os.curdir):
-        if cachepath is not None:
-            self._cache = Cache(cachepath)
-        else:
-            self._cache = Cache()
+        self._cache = Cache(cachepath)
 
     def tempfile(self,suffix='', prefix=''):
         ''' Return an temporary file name in the cache'''
         return self._cache.tempfile(suffix, prefix)
 
     def _possible_names(self, filename):
-        names = (filename,)
+        names = [filename]
         if not iszip(filename):
             for zipext in zipexts:
-                names += (filename+zipext,)
-        return names
+                names.append(filename+zipext)
+        return tuple(names)
 
     def cache(self, pathstr):
         if isurl(pathstr):

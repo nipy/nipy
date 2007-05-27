@@ -1,4 +1,6 @@
 import os
+from cStringIO import StringIO
+
 import numpy as N
 
 from numpy.testing import NumpyTest, NumpyTestCase
@@ -21,7 +23,7 @@ class test_Analyze(NumpyTestCase):
 
 class test_AnalyzePrintTest(test_Analyze):
     def test_print(self):
-        print self.image
+        print >> StringIO(), self.image
 
 class test_AnalyzeTransform(test_Analyze):
 

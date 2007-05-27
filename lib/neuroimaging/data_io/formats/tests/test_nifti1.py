@@ -1,4 +1,5 @@
 import os, copy
+from cStringIO import StringIO
 
 import numpy as N
 import numpy.random as R
@@ -68,7 +69,7 @@ class test_Nifti(NumpyTestCase):
 class test_NiftiPrint(test_Nifti):
 
     def test_print(self):
-        print self.zimage
+        print >> StringIO(), self.zimage
 
 class test_NiftiHeader(test_Nifti):
 

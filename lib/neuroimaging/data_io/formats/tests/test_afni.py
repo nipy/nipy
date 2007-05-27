@@ -1,4 +1,6 @@
 import os
+from cStringIO import StringIO
+
 import numpy as N
 
 from numpy.testing import NumpyTest, NumpyTestCase
@@ -24,7 +26,7 @@ class test_AFNIPrint(test_AFNI):
 
     @data
     def test_print(self):
-        print self.image
+        print >> StringIO(), self.image
 
 class test_AFNITransform(test_AFNI):
 

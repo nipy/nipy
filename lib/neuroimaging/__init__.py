@@ -42,13 +42,7 @@ __date__    = "$LastChangedDate$"
 __url__     = 'http://neuroimaging.scipy.org'
 
 
-import re
-from copy import copy
-
-from numpy import product
-
 from neuroimaging import defines
-from neuroimaging.utils.path import path
 
 packages = (
   'neuroimaging',
@@ -91,9 +85,6 @@ if not ENTHOUGHT_TRAITS_DEF:
                  'neuroimaging.utils.enthought.util',
                  'neuroimaging.utils.enthought.resource')
 
-testmatch = re.compile(".*tests").search
-nontest_packages = [p for p in packages if not testmatch(p)]
-
 
 def import_from(modulename, objectname):
     """Import and return objectname from modulename."""
@@ -103,9 +94,9 @@ def import_from(modulename, objectname):
     except AttributeError:
         return None
 
-from numpy.testing import NumpyTest, importall
 
 def test(level=1, verbosity=1, flags=[]):
+    from numpy.testing import NumpyTest, importall
     from neuroimaging.utils.testutils import set_flags
     set_flags(flags)
     importall('neuroimaging')
@@ -113,5 +104,5 @@ def test(level=1, verbosity=1, flags=[]):
         return NumpyTest().test(level, verbosity)
     else:
         return NumpyTest().testall(level, verbosity)
-test.__doc__ = NumpyTest.test.__doc__
+#test.__doc__ = NumpyTest.test.__doc__
 
