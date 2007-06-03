@@ -9,7 +9,7 @@ def configuration(parent_package='',top_path=None):
     # before moving it into the install location.
     from data_io.datasource import unzip
     import os
-    path = "lib/neuroimaging/utils/tests/data"
+    path = "neuroimaging/utils/tests/data"
     for filename in os.listdir(path):
         if filename.endswith('bz2'):
             filename = os.path.join(path, filename)
