@@ -11,8 +11,6 @@ from neuroimaging.modalities.fmri.filters import Filter
 from neuroimaging.modalities.fmri.hrf import canonical
 from neuroimaging.core.api import Image
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
-import neuroimaging.modalities.api
-
 
 import fiac
 import io
