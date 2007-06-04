@@ -7,14 +7,13 @@ import numpy.linalg as L
 from scipy.sandbox.models.regression import ols_model, ar_model
 from scipy.sandbox.models.utils import monotone_fn_inverter, rank 
 
-from neuroimaging.modalities.fmri.api import FmriImage, FmriParcelIterator, \
-     FmriSliceParcelIterator
+from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
      DelayContrastOutput
 from neuroimaging.algorithms.statistics.regression import LinearModelIterator
 from neuroimaging.modalities.fmri.regression import AROutput, \
      TContrastOutput, FContrastOutput, ResidOutput
-from neuroimaging.core.api import ParcelIterator, SliceParcelIterator
+from neuroimaging.core.api import Image
 from neuroimaging.algorithms.fwhm import fastFWHM
 
 
@@ -378,22 +377,22 @@ class FmriStatAR(LinearModelIterator):
         self.formula = OLS.formula
         if self.slicetimes is None:
             self.dmatrix = OLS.dmatrix
-            iterator = FmriParcelIterator
+            iterator = FmriImage.ParcelIterator
         else:
             self.designs = []
             for s in self.slicetimes:
                 self.designs.append(self.formula.design(*(ftime+s,))) 
-            iterator = FmriSliceParcelIterator
+            iterator = FmriImage.SliceParcelIterator
 
         if parcel is None:
             parcelmap, parcelseq = OLS.getparcelmap()
         else:
             parcelmap, parcelseq = parcel
 
-        if iterator == FmriParcelIterator:
-            iterator_ = ParcelIterator
-        elif iterator == FmriSliceParcelIterator:
-            iterator_ = SliceParcelIterator
+        if iterator == FmriImage.ParcelIterator:
+            iterator_ = Image.ParcelIterator
+        elif iterator == FmriImage.SliceParcelIterator:
+            iterator_ = Image.SliceParcelIterator
 
         self.contrasts = []
         if contrasts is not None:

@@ -392,7 +392,7 @@ class SliceParcelIterator(ParcelIterator):
     """
     TODO
     """
-     
+ 
     class Item(ParcelIterator.Item):
         """
         A class for objects returned by `SliceParcelIterator`\ s
@@ -426,7 +426,7 @@ class SliceParcelIterator(ParcelIterator):
             self.img[self.i, self.slice] = value
 
 
-    def __init__(self, img, parcelmap, parcelseq, mode='r'):
+    def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
         """
         :Parameters:
             img : `api.Image`

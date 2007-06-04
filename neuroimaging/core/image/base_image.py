@@ -60,6 +60,7 @@ class BaseImage(object):
         """
         raise NotImplementedError
 
+
 class ArrayImage (BaseImage):
     """A simple class to mimic an image file from an array."""
     def __init__(self, data, grid=None):

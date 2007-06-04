@@ -10,9 +10,6 @@ from neuroimaging.core.api import Image, ImageSequenceIterator
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.api import Analyze
 
-from neuroimaging.core.image.iterators import ParcelIterator, \
-     SliceParcelIterator, SliceIterator
-
 
 class test_image(NumpyTestCase):
 
@@ -107,7 +104,7 @@ class test_image(NumpyTestCase):
             self.assertEquals(i.shape, (109,91))
 
     def test_iter2(self):
-        for i in self.img.iterate(SliceIterator(None, axis=0)):
+        for i in self.img.iterate(Image.SliceIterator(None, axis=0)):
             self.assertEquals(i.shape, (109,91))
 
     def test_iter3(self):
@@ -115,14 +112,13 @@ class test_image(NumpyTestCase):
 
     def test_iter4(self):
         tmp = Image(N.zeros(self.img.shape), mode='w')
-        iterator = SliceIterator(self.img)
-        tmp.from_slice_iterator(iterator)
+        tmp.from_slice_iterator(self.img.slice_iterator())
         N.testing.assert_almost_equal(tmp[:], self.img[:])
 
     def test_iter5(self):
         tmp = Image(N.zeros(self.img.shape), mode='w')
-        iterator1 = SliceIterator(self.img)
-        iterator2 = SliceIterator(None)
+        iterator1 = self.img.slice_iterator()
+        iterator2 = Image.SliceIterator(None)
         tmp.from_iterator(iterator1, iterator2)
         N.testing.assert_almost_equal(tmp[:], self.img[:])
 
@@ -131,7 +127,7 @@ class test_image(NumpyTestCase):
     def test_set_next(self):
         write_img = Image("test_write.hdr", repository, grid=self.img.grid, format=Analyze,
                           mode='w', clobber=True)
-        I = write_img.slice_iterator('w')
+        I = write_img.slice_iterator(mode='w')
         x = 0
         for slice in I:
             slice.set(N.ones((109, 91)))
@@ -142,9 +138,8 @@ class test_image(NumpyTestCase):
         rho = Image("rho.hdr", repository, format=Analyze)
         parcelmap = (rho.readall() * 100).astype(N.int32)
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
-        it = ParcelIterator(test, parcelmap)
         v = 0
-        for i in it:
+        for i in test.parcel_iterator(parcelmap):
             v += i.shape[0]
 
         self.assertEquals(v, N.product(test.grid.shape))
@@ -160,9 +155,8 @@ class test_image(NumpyTestCase):
 
         test = Image(N.zeros(shape), grid=rho.grid)
 
-        it = ParcelIterator(test, parcelmap, parcelseq)
         v = 0
-        for i in it:
+        for i in test.parcel_iterator(parcelmap, parcelseq):
             v += i.shape[0]
 
         self.assertEquals(v, N.product(test.grid.shape))
@@ -174,9 +168,9 @@ class test_image(NumpyTestCase):
         parcelseq = parcelmap
         
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
-        it = SliceParcelIterator(test, parcelmap, parcelseq)
+
         v = 0
-        for i in it:
+        for i in test.slice_parcel_iterator(parcelmap, parcelseq):
             v += 1
         self.assertEquals(v, test.grid.shape[0])
 

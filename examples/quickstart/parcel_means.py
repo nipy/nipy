@@ -11,7 +11,7 @@ parcel_means.py
 import numpy as N
 import pylab
 
-from neuroimaging.modalities.fmri.api import FmriImage, FmriParcelIterator
+from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.utils.tests.data import repository
 
 subject_no=0
@@ -31,7 +31,7 @@ off_block_def = [slice(i/2-2*offset, i/2-offset, 1) for i in parcel_arr.shape]
 parcel_arr[off_block_def] = 2
 
 # Set up parcel iteration for functional image
-it = FmriParcelIterator(func_img, parcel_arr[:], [1, 2])
+it = func_img.parcel_iterator(parcel_arr[:], [1, 2])
 
 # Iterate to collect means over parcels in functional image
 means = {}
@@ -43,8 +43,7 @@ for d in it:
     
 # Now iterate over regions
 # changing the parcelseq to select "regions"
-it = FmriParcelIterator(func_img, parcel_arr[:], [0, 2])
-for d in it:
+for d in func_img.parcel_iterator(parcel_arr[:], [0, 2]):
     print d.shape
 
 # Show the figure

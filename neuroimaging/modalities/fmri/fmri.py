@@ -2,7 +2,9 @@ import numpy as N
 
 
 from neuroimaging.core.api import Image, CoordinateSystem, SamplingGrid, \
-     ParcelIterator, SliceIterator, SliceParcelIterator, Mapping, Affine
+     Mapping, Affine
+from neuroimaging.modalities.fmri.iterators import FmriParcelIterator, \
+     FmriSliceParcelIterator
 
 
 class FmriSamplingGrid(SamplingGrid):
@@ -88,6 +90,9 @@ class FmriImage(Image):
     TODO
     """
 
+    ParcelIterator = FmriParcelIterator
+    SliceParcelIterator = FmriSliceParcelIterator
+
     def __init__(self, _image, **keywords):
         """
         :Parameters:
@@ -135,39 +140,3 @@ class FmriImage(Image):
         if clean: 
             data = N.nan_to_num(data)
         return Image(data, grid=self.grid.subgrid(i), **keywords)
-
-
-    def slice_iterator(self, mode='r', axis=1):
-        ''' Return slice iterator for this image. By default we iterate
-        over the ``axis=1`` instead of ``axis=0`` as for the `Image` class.
-
-        :Parameters:
-            `axis` : int or [int]
-                The index of the axis (or axes) to be iterated over. If a list
-                is supplied, the axes are iterated over slowest to fastest.
-            `mode` : string
-                The mode to run the iterator in.
-                'r' - read-only (default)
-                'w' - read-write
-
-        :Returns: `SliceIterator`
-        '''
-        return SliceIterator(self, mode=mode, axis=axis)
-
-    def from_slice_iterator(self, other, axis=1):
-        """
-        Take an existing `SliceIterator` and use it to set the values
-        in this image. By default we iterate over the ``axis=1`` for this image
-        instead of ``axis=0`` as for the `Image` class.
-
-        :Parameters:
-            `other` : `SliceIterator`
-                The iterator from which to take the values
-            `axis` : int or [int]
-                The axis to iterate over for this image.
-                
-        :Returns: ``None``
-        """
-        it = iter(SliceIterator(self, mode='w', axis=axis))
-        for s in other:
-            it.next().set(s)

@@ -7,9 +7,8 @@ import neuroimaging.core.reference.grid as grid
 
 from neuroimaging.utils.test_decorators import slow, data
 
-from neuroimaging.modalities.fmri.api import FmriImage, FmriParcelIterator, \
-   FmriSliceParcelIterator
-from neuroimaging.core.api import Image, ParcelIterator
+from neuroimaging.modalities.fmri.api import FmriImage
+from neuroimaging.core.api import Image
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.api import Analyze
 
@@ -59,18 +58,16 @@ class test_fMRI(NumpyTestCase):
     def test_labels1(self):
         parcelmap = (self.rho.readall() * 100).astype(N.int32)
         
-        it = FmriParcelIterator(self.img, parcelmap)
         v = 0
-        for t in it:
+        for t in self.img.parcel_iterator(parcelmap):
             v += t.shape[1]
         self.assertEquals(v, parcelmap.size)
 
     def test_labels2(self):
         parcelmap = (self.rho.readall() * 100).astype(N.int32)
 
-        it = ParcelIterator(self.rho, parcelmap)
         v = 0
-        for t in it:
+        for t in self.rho.parcel_iterator(parcelmap):
             v += t.shape[0]
 
         self.assertEquals(v, parcelmap.size)

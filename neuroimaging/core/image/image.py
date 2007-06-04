@@ -3,12 +3,14 @@ The core Image class.
 """
 
 __docformat__ = 'restructuredtext'
+__all__ = ['Image', 'merge_images', 'merge_to_array']
 
 import numpy as N
 
 from neuroimaging.data_io.datasource import DataSource, splitzipext
 from neuroimaging.core.image.base_image import ArrayImage
-from neuroimaging.core.image.iterators import SliceIterator
+from neuroimaging.core.image.iterators import SliceIterator, ParcelIterator, \
+  SliceParcelIterator
 
 class Image(object):
     """
@@ -16,6 +18,10 @@ class Image(object):
     represents a volumetric brain image and provides means for manipulating and
     reading and writing this data to file.
     """
+
+    SliceIterator = SliceIterator
+    ParcelIterator = ParcelIterator
+    SliceParcelIterator = SliceParcelIterator
 
     @staticmethod
     def fromurl(url, datasource=DataSource(), format=None, grid=None, mode="r",
@@ -238,7 +244,7 @@ class Image(object):
         return value
 
 
-    def slice_iterator(self, mode='r', axis=0):
+    def slice_iterator(self, axis=0, mode='r'):
         """ Return slice iterator for this image
 
         :Parameters:
@@ -253,7 +259,56 @@ class Image(object):
         :Returns:
             `SliceIterator`
         """
-        return SliceIterator(self, mode=mode, axis=axis)
+        return self.SliceIterator(self, axis=axis, mode=mode)
+
+
+    def parcel_iterator(self, parcelmap, parcelseq=None, mode='r'):
+        """
+        :Parameters:
+            parcelmap : ``[int]``
+                This is an int array of the same shape as self.
+                The different values of the array define different regions.
+                For example, all the 0s define a region, all the 1s define
+                another region, etc.           
+            parcelseq : ``[int]`` or ``[(int, int, ...)]``
+                This is an array of integers or tuples of integers, which
+                define the order to iterate over the regions. Each element of
+                the array can consist of one or more different integers. The
+                union of the regions defined in parcelmap by these values is
+                the region taken at each iteration. If parcelseq is None then
+                the iterator will go through one region for each number in
+                parcelmap.
+            mode : ``string``
+                The mode to run the iterator in.
+                    'r' - read-only (default)
+                    'w' - read-write                
+        """
+        return self.ParcelIterator(self, parcelmap, parcelseq, mode=mode)
+
+
+    def slice_parcel_iterator(self, parcelmap, parcelseq=None, mode='r'):
+        """
+        :Parameters:
+            parcelmap : ``[int]``
+                This is an int array of the same shape as self.
+                The different values of the array define different regions.
+                For example, all the 0s define a region, all the 1s define
+                another region, etc.           
+            parcelseq : ``[int]`` or ``[(int, int, ...)]``
+                This is an array of integers or tuples of integers, which
+                define the order to iterate over the regions. Each element of
+                the array can consist of one or more different integers. The
+                union of the regions defined in parcelmap by these values is
+                the region taken at each iteration. If parcelseq is None then
+                the iterator will go through one region for each number in
+                parcelmap.                
+            mode : ``string``
+                The mode to run the iterator in.
+                    'r' - read-only (default)
+                    'w' - read-write
+        """
+        return self.SliceParcelIterator(self, parcelmap, parcelseq, mode=mode)
+
 
     def from_slice_iterator(self, other, axis=0):
         """
@@ -266,7 +321,7 @@ class Image(object):
             axis : ``int`` or ``[int]``
                 The axis to iterator over for this image.
         """
-        iterator = iter(SliceIterator(self, mode='w', axis=axis))
+        iterator = iter(self.slice_iterator(axis=axis, mode='w'))
         for slice_ in other:
             iterator.next().set(slice_)
 

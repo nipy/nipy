@@ -22,8 +22,8 @@ import numpy.random as R
 
 from scipy.sandbox.models.regression import ols_model, ar_model
 
-from neuroimaging.core.api import Image, ParcelIterator
-from neuroimaging.modalities.api import FmriImage, FmriParcelIterator
+from neuroimaging.core.api import Image
+from neuroimaging.modalities.fmri.api import FmriImage
 
 import fmristat, model
 
@@ -62,13 +62,12 @@ class SignalOnly(model.Run):
 
         self.load()
         self.simfmrifile = os.path.join(self.resultdir, 'simfmri.img')
-        simfmri = FmriImage(self.simfmrifile,
-                            grid=self.fmri.grid, mode='w', clobber=True)
-        simfmri.it = FmriParcelIterator(simfmri, self.parcelmap,
-                                        self.parcelseq, mode='w')
+        simfmri = FmriImage(
+          self.simfmrifile, grid=self.fmri.grid, mode='w', clobber=True)
         i = 0
         mu = []
-        for chunk in simfmri.it:
+        for chunk in simfmri.parcel_iterator(
+          self.parcelmap, self.parcelseq, mode='w'):
             nvox = chunk.slice.astype(N.int32).sum()
             chunk.set(N.multiply.outer(self.mu[i], N.ones(nvox)))
             i += 1
@@ -250,14 +249,12 @@ class SignalNoise(SignalOnly):
         self.get_models()
 
         for rtype in ["OLS", "AR"]:
-            self.resid = FmriImage(os.path.join(self.resultdir, "%sresid.img" % rtype))
+            resid = FmriImage(os.path.join(self.resultdir, "%sresid.img" % rtype))
             # I get a results of [0, 30, 64, 64] here
             # which leads to the code below breaking. I'm not sure why this
             # file would have this shape though... --Tim
-            self.resid.it = FmriParcelIterator(self.resid, self.parcelmap,
-                                               self.parcelseq)
             i = 0
-            for chunk in self.resid.it:
+            for chunk in resid.parcel_iterator(self.parcelmap, self.parcelseq):
                 r = self.ols_results[i].resid
                 r = N.multiply.outer(r, N.ones(chunk.shape[1]))
                 SSE = ((chunk - r)**2).sum() / N.product(chunk.shape)
@@ -282,15 +279,12 @@ class SignalNoise(SignalOnly):
         for stat in ['effect', 'sd', 't']:
 
             for contrast in ['average', 'speaker', 'sentence', 'interaction']:
-                result = self.result(stat=stat,
-                                     contrast=contrast)
-                result.it = ParcelIterator(result, self.parcelmap,
-                                           self.parcelseq)
+                result = self.result(stat=stat, contrast=contrast)
                 output = getattr(self, contrast)
                 output.getmatrix(self.t)
 
                 i = 0
-                for chunk in result.it:
+                for chunk in result.parcel_iterator(self.parcelmap, self.parcelseq):
                     mresult = self.ar_results[i].Tcontrast(output.matrix)
                     mresult = getattr(mresult, stat)
                     if not N.allclose(mresult, chunk):
@@ -300,15 +294,11 @@ class SignalNoise(SignalOnly):
                 output = self.delays
                 output.getmatrix(self.t)
             
-                result = self.result(stat=stat,
-                                     contrast=contrast,
-                                     which='delays')
+                result = self.result(stat=stat, contrast=contrast, which='delays')
                 
-                result.it = ParcelIterator(result, self.parcelmap,
-                                           self.parcelseq)
                 i = 0
                 row = output.rownames.index(contrast)
-                for chunk in result.it:
+                for chunk in result.parcel_iterator(self.parcelmap, self.parcelseq):
                     mresult = output.extract(self.ar_results[i])
                     mresult = getattr(mresult, stat)[row]
                     if not N.allclose(mresult, chunk):
@@ -318,12 +308,8 @@ class SignalNoise(SignalOnly):
         output = self.overallF
         output.getmatrix(self.t)
         i = 0
-        result = self.result(stat='F',
-                             contrast='overallF')
-        result.it = ParcelIterator(result, self.parcelmap,
-                                   self.parcelseq)
-
-        for chunk in result.it:
+        result = self.result(stat='F', contrast='overallF')
+        for chunk in result.parcel_iterator(self.parcelmap, self.parcelseq):
             mresult = self.ar_results[i].Fcontrast(output.matrix).F
             if not N.allclose(mresult, chunk):
                 print "F it is not good here: overallF, F, %s"% str(self.ar_results[i].Fcontrast(output.matrix))
