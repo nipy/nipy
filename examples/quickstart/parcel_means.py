@@ -11,9 +11,8 @@ parcel_means.py
 import numpy as N
 import pylab
 
-from neuroimaging.modalities.fmri.api import fMRIImage
+from neuroimaging.modalities.fmri.api import fMRIImage, fMRIParcelIterator
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.core.image.iterators import fMRIParcelIterator
 
 subject_no=0
 run_no = 1

@@ -77,6 +77,3 @@ if __name__ == '__main__':
 
     pylab.draw()
     pylab.savefig("overlay.png")
-    pylab.savefig("/home/jtaylo/public_html/test.png")
-    
-
