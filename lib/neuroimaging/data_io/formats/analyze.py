@@ -118,7 +118,7 @@ class Analyze(binary.BinaryFormat):
         """
         Constructs a Analyze binary format object with at least a filename
         possible additional keyword arguments:
-         - grid = Grid object
+         - grid = SamplingGrid object
          - dtype = numpy data type
          - intent = meaning of data
          - clobber = allowed to clobber?
@@ -186,7 +186,9 @@ class Analyze(binary.BinaryFormat):
             if self.usematfile:
                 self.grid.transform(self.read_mat())
                 # assume .mat matrix uses FORTRAN indexing
-                self.grid = self.grid.matlab2python()
+
+            self.grid = self.grid.matlab2python()
+
         #else: Grid was already assigned by Format constructor
         
         # get memmaped array
