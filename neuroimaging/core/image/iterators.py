@@ -8,7 +8,7 @@ interface defined by the Iterator class.
 Iterators can be used in two different modes, read-only and read-write. In
 read-only mode, iterating over the iterator returns the actual data from
 the Image. In read-write mode iterating over the iterator returns an
-IteratorItem object. This has a get() and set() method which can be used
+Iterator.Item object. This has a get() and set() method which can be used
 to read and write values from and to the image. The iterator mode is controlled
 by the keyword argument mode in the Iterator constructor.
 """
@@ -25,7 +25,39 @@ class Iterator(object):
     This is an abstract class which requires the _next() method
     to be overridden for it to work.
     """
-    
+     
+    class Item(object):
+        """
+        This class provides the interface for objects returned by the
+        `Iterator`.`_next`() method. This is the class which actually
+        interacts with the image data itself.
+        """
+
+        def __init__(self, img, slice_):
+            """ Create the `Iterator.Item` for a given item and slice
+
+            :Parameters:
+                img : `api.Image`
+                    The image being iterated over.
+                slice_ : ``slice``
+                    TODO
+            """
+            self.img = img
+            self.slice = slice_
+
+        def get(self):
+            """
+            Return the slice of the image.
+            """
+            return self.img[self.slice]
+
+        def set(self, value):
+            """
+            Set the value of the slice of the image.
+            """
+            self.img[self.slice] = value
+
+   
     def __init__(self, img, mode='r'):
         """
         Create an `Iterator` for an image
@@ -55,7 +87,7 @@ class Iterator(object):
         Return the next item from the iterator.
 
         If in read-only mode, this will be a slice of the image.
-        If in read-write mode, this will be an `IteratorItem` object.
+        If in read-write mode, this will be an `Iterator.Item` object.
         """
         self.item = self._next()
         if self.mode == 'r':
@@ -67,7 +99,7 @@ class Iterator(object):
         """
         Do the hard work of generating the next item from the iterator.
 
-        :Returns: `IteratorItem`
+        :Returns: `Iterator.Item`
 
         :raises NotImplementedError: This method must be overriden by the
             subclasses of `Iterator`.
@@ -96,44 +128,35 @@ class Iterator(object):
         """
         return self.__class__(img, mode=self.mode)
 
-class IteratorItem(object):
-    """
-    This class provides the interface for objects returned by the
-    `Iterator`.`_next`() method. This is the class which actually
-    interacts with the image data itself.
-    """
-
-    def __init__(self, img, slice_):
-        """ Create the `IteratorItem` for a given item and slice
-
-        :Parameters:
-            img : `api.Image`
-                The image being iterated over.
-            slice_ : ``slice``
-                TODO
-        """
-        self.img = img
-        self.slice = slice_
-
-    def get(self):
-        """
-        Return the slice of the image.
-        """
-        return self.img[self.slice]
-
-    def set(self, value):
-        """
-        Set the value of the slice of the image.
-        """
-        self.img[self.slice] = value
-
-
 class SliceIterator(Iterator):
     """
     This class provides an iterator for iterating over n axes
     of the image, returning ndim-n dimensional slices of the image at each
     iteration.
     """
+
+    class Item(Iterator.Item):
+        """
+        A class for objects returned by L{SliceIterator}s
+        """
+
+        def get(self):
+            """
+            Return the slice of the image.
+
+            This calls the squeeze method on the array before returning to remove
+            any redundant dimensions.
+            """
+            return self.img[self.slice].squeeze()
+
+        def set(self, value):
+            """
+            Set the value of the slice of the image.
+            """
+            if isinstance(value, N.ndarray):
+                value = value.reshape(self.img[self.slice].shape)
+            self.img[self.slice] = value
+
 
     def __init__(self, img, axis=0, mode='r'):
         """
@@ -188,7 +211,7 @@ class SliceIterator(Iterator):
         """
         Do the hard work of generating the next item from the iterator.
 
-        :Returns: `SliceIteratorItem`
+        :Returns: `SliceIterator.Item`
         """
         if self.n >= self.max:
             raise StopIteration
@@ -198,7 +221,7 @@ class SliceIterator(Iterator):
             self.slices[axis] = slice(x, x+1)
 
         self.n += 1
-        return SliceIteratorItem(self.img, self.slices)
+        return self.Item(self.img, self.slices)
 
 
     def copy(self, img):
@@ -213,62 +236,6 @@ class SliceIterator(Iterator):
         """
         return self.__class__(img, axis=self.axis, mode=self.mode)
 
-
-
-class SliceIteratorItem(IteratorItem):
-    """
-    A class for objects returned by L{SliceIterator}s
-    """
-
-    def get(self):
-        """
-        Return the slice of the image.
-
-        This calls the squeeze method on the array before returning to remove
-        any redundant dimensions.
-        """
-        return self.img[self.slice].squeeze()
-
-    def set(self, value):
-        """
-        Set the value of the slice of the image.
-        """
-        if isinstance(value, N.ndarray):
-            value = value.reshape(self.img[self.slice].shape)
-        self.img[self.slice] = value
-
-
-class ParcelIteratorItem(IteratorItem):
-    """
-    A class for objects returned by `ParcelIterator`\ s
-    """
-
-    def __init__(self, img, slice_, label):
-        """
-        :Parameters:
-            img : `api.Image`
-                The image being iterated over.
-            slice_ : ``slice``
-                TODO
-            label : ``int`` or ``tuple`` of ``int``
-                TODO
-        """
-        IteratorItem.__init__(self, img, slice_)
-        self.label = label
-
-    def get(self):
-        """
-        Return the slice of the image.
-        """
-        self.slice = self.slice.reshape(self.img.shape)
-        return self.img[self.slice]
-
-    def set(self, value):        
-        """
-        Set the value of the slice of the image.
-        """
-        self.slice = self.slice.reshape(self.img.shape)
-        self.img[self.slice] = value
 
 
 
@@ -303,7 +270,38 @@ class ParcelIterator(Iterator):
     >>>
     """
 
-    iterator_item = ParcelIteratorItem
+    class Item(Iterator.Item):
+        """
+        A class for objects returned by `ParcelIterator`\ s
+        """
+
+        def __init__(self, img, slice_, label):
+            """
+            :Parameters:
+                img : `api.Image`
+                    The image being iterated over.
+                slice_ : ``slice``
+                    TODO
+                label : ``int`` or ``tuple`` of ``int``
+                    TODO
+            """
+            Iterator.Item.__init__(self, img, slice_)
+            self.label = label
+
+        def get(self):
+            """
+            Return the slice of the image.
+            """
+            self.slice = self.slice.reshape(self.img.shape)
+            return self.img[self.slice]
+
+        def set(self, value):        
+            """
+            Set the value of the slice of the image.
+            """
+            self.slice = self.slice.reshape(self.img.shape)
+            self.img[self.slice] = value
+
     
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
         """
@@ -365,7 +363,7 @@ class ParcelIterator(Iterator):
         Do the hard work of generating the next item from the iterator.
         """
         wherelabel, label = self._get_wherelabel()
-        return self.iterator_item(self.img, wherelabel, label)
+        return self.Item(self.img, wherelabel, label)
 
     def _get_wherelabel(self):
         label = self._labeliter.next()
@@ -390,46 +388,43 @@ class ParcelIterator(Iterator):
                               mode=self.mode)
 
 
-class SliceParcelIteratorItem(IteratorItem):
-    """
-    A class for objects returned by `SliceParcelIterator`\ s
-    """
-
-    def __init__(self, img, slice_, label, i):
-        """
-        :Parameters:
-            img : `api.Image`
-                The image being iterated over.
-            slice_ : ``slice``
-                TODO
-            label : ``int`` or ``tuple`` of ``int``
-                TODO
-            i : TODO
-                TODO
-        """    
-        IteratorItem.__init__(self, img, slice_)
-        self.label = label
-        self.i = i
-
-    def get(self):
-        """
-        Return the slice of the image.
-        """
-        return self.img[self.i, self.slice]
-
-    def set(self, value):
-        """
-        Set the value of the slice of the image.
-        """
-        self.img[self.i, self.slice] = value
-
-
 class SliceParcelIterator(ParcelIterator):
     """
     TODO
     """
-    
-    iterator_item = SliceParcelIteratorItem
+     
+    class Item(ParcelIterator.Item):
+        """
+        A class for objects returned by `SliceParcelIterator`\ s
+        """
+
+        def __init__(self, img, slice_, label, i):
+            """
+            :Parameters:
+                img : `api.Image`
+                    The image being iterated over.
+                slice_ : ``slice``
+                    TODO
+                label : ``int`` or ``tuple`` of ``int``
+                    TODO
+                i : TODO
+                    TODO
+            """    
+            ParcelIterator.Item.__init__(self, img, slice_, label)
+            self.i = i
+
+        def get(self):
+            """
+            Return the slice of the image.
+            """
+            return self.img[self.i, self.slice]
+
+        def set(self, value):
+            """
+            Set the value of the slice of the image.
+            """
+            self.img[self.i, self.slice] = value
+
 
     def __init__(self, img, parcelmap, parcelseq, mode='r'):
         """
@@ -470,9 +465,7 @@ class SliceParcelIterator(ParcelIterator):
         if self.i >= self.max:            
             raise StopIteration
         wherelabel, label = self._get_wherelabel()
-
-        ret = self.iterator_item(self.img, wherelabel[self.i], label,
-                                      self.i)
+        ret = self.Item(self.img, wherelabel[self.i], label, self.i)
         self.i += 1
         return ret
     

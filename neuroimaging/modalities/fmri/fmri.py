@@ -2,8 +2,7 @@ import numpy as N
 
 
 from neuroimaging.core.api import Image, CoordinateSystem, SamplingGrid, \
-     ParcelIterator, SliceIterator, SliceParcelIterator, IteratorItem, \
-     Mapping, Affine
+     ParcelIterator, SliceIterator, SliceParcelIterator, Mapping, Affine
 
 
 class FmriSamplingGrid(SamplingGrid):

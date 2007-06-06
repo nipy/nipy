@@ -1,8 +1,8 @@
 import numpy as N
 from numpy.testing import NumpyTest, NumpyTestCase
 
-from neuroimaging.core.image.iterators import Iterator, IteratorItem, \
-     ParcelIterator, SliceParcelIterator
+from neuroimaging.core.image.iterators import Iterator, ParcelIterator, \
+  SliceParcelIterator
 
 from neuroimaging.core.api import Image
 import neuroimaging.core.reference.axis as axis
@@ -21,7 +21,7 @@ class test_Iterator(NumpyTestCase):
         self.assertRaises(NotImplementedError, iterator.next)
 
     def test_base_class2(self):
-        item = IteratorItem(self.img, [slice(0, 10), slice(0, 20), slice(0,1)])
+        item = Iterator.Item(self.img, [slice(0, 10), slice(0, 20), slice(0,1)])
         self.assertEquals(item.get().shape, (10, 20, 1))
 
         value = N.ones((10, 20, 1))

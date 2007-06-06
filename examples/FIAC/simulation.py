@@ -22,9 +22,8 @@ import numpy.random as R
 
 from scipy.sandbox.models.regression import ols_model, ar_model
 
-from neuroimaging.core.api import Image
-from neuroimaging.core.image.iterators import FmriParcelIterator, ParcelIterator
-from neuroimaging.modalities.api import FmriImage
+from neuroimaging.core.api import Image, ParcelIterator
+from neuroimaging.modalities.api import FmriImage, FmriParcelIterator
 
 import fmristat, model
 
