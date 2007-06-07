@@ -9,9 +9,9 @@ from neuroimaging.core.image.base_image import BaseImage
 from neuroimaging.core.reference.grid import SamplingGrid
 
 
-
 from neuroimaging.core.image.iterators import SliceIterator, IteratorItem, \
-     SliceParcelIterator, ParcelIterator, ImageSequenceIterator
+     SliceParcelIterator, ParcelIterator, ImageSequenceIterator, \
+     ParcelIteratorItem, SliceParcelIteratorItem
 from neuroimaging.core.reference.mapping import Mapping, Affine
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
      DiagonalCoordinateSystem

@@ -238,6 +238,39 @@ class SliceIteratorItem(IteratorItem):
         self.img[self.slice] = value
 
 
+class ParcelIteratorItem(IteratorItem):
+    """
+    A class for objects returned by `ParcelIterator`\ s
+    """
+
+    def __init__(self, img, slice_, label):
+        """
+        :Parameters:
+            img : `api.Image`
+                The image being iterated over.
+            slice_ : ``slice``
+                TODO
+            label : ``int`` or ``tuple`` of ``int``
+                TODO
+        """
+        IteratorItem.__init__(self, img, slice_)
+        self.label = label
+
+    def get(self):
+        """
+        Return the slice of the image.
+        """
+        self.slice = self.slice.reshape(self.img.shape)
+        return self.img[self.slice]
+
+    def set(self, value):        
+        """
+        Set the value of the slice of the image.
+        """
+        self.slice = self.slice.reshape(self.img.shape)
+        self.img[self.slice] = value
+
+
 
 class ParcelIterator(Iterator):
     """
@@ -269,6 +302,8 @@ class ParcelIterator(Iterator):
     [1 3 4 5 7]
     >>>
     """
+
+    iterator_item = ParcelIteratorItem
     
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
         """
@@ -297,7 +332,6 @@ class ParcelIterator(Iterator):
         self.parcelmap = N.asarray(parcelmap)
         self._prep_seq(parcelseq)
 
-        self.iterator_item = ParcelIteratorItem
 
     def _prep_seq(self, parcelseq):
         """
@@ -356,92 +390,6 @@ class ParcelIterator(Iterator):
                               mode=self.mode)
 
 
-class ParcelIteratorItem(IteratorItem):
-    """
-    A class for objects returned by `ParcelIterator`\ s
-    """
-
-    def __init__(self, img, slice_, label):
-        """
-        :Parameters:
-            img : `api.Image`
-                The image being iterated over.
-            slice_ : ``slice``
-                TODO
-            label : ``int`` or ``tuple`` of ``int``
-                TODO
-        """
-        IteratorItem.__init__(self, img, slice_)
-        self.label = label
-
-    def get(self):
-        """
-        Return the slice of the image.
-        """
-        self.slice = self.slice.reshape(self.img.shape)
-        return self.img[self.slice]
-
-    def set(self, value):        
-        """
-        Set the value of the slice of the image.
-        """
-        self.slice = self.slice.reshape(self.img.shape)
-        self.img[self.slice] = value
-
-
-class SliceParcelIterator(ParcelIterator):
-    """
-    TODO
-    """
-    
-    def __init__(self, img, parcelmap, parcelseq, mode='r'):
-        """
-        :Parameters:
-            img : `api.Image`
-                The image being iterated over.
-            parcelmap : ``[int]``
-                This is an int array of the same shape as img.
-                The different values of the array define different regions in
-                the image. For example, all the 0s define a region, all the 1s
-                define another region, etc.           
-            parcelseq : ``[int]`` or ``[(int, int, ...)]``
-                This is an array of integers or tuples of integers, which
-                define the order to iterate over the regions. Each element of
-                the array can consist of one or more different integers. The
-                union of the regions defined in parcelmap by these values is
-                the region taken at each iteration. If parcelseq is None then
-                the iterator will go through one region for each number in
-                parcelmap.                
-            mode : ``string``
-                The mode to run the iterator in.
-                    'r' - read-only (default)
-                    'w' - read-write
-        """
-        ParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
-        self.i = 0
-        self.max = len(self.parcelseq)
-        self.iterator_item = SliceParcelIteratorItem
-
-    def _prep_seq(self, parcelseq):
-        if parcelseq is None:
-            raise ValueError, "parcelseq cannot be None"
-        ParcelIterator._prep_seq(self, parcelseq)
-
-    def _next(self):
-        """
-        Do the hard work of generating the next item from the iterator.
-        """
-        if self.i >= self.max:            
-            raise StopIteration
-        wherelabel, label = self._get_wherelabel()
-
-        ret = self.iterator_item(self.img, wherelabel[self.i], label,
-                                      self.i)
-        self.i += 1
-        return ret
-    
-
-
 class SliceParcelIteratorItem(IteratorItem):
     """
     A class for objects returned by `SliceParcelIterator`\ s
@@ -474,6 +422,60 @@ class SliceParcelIteratorItem(IteratorItem):
         Set the value of the slice of the image.
         """
         self.img[self.i, self.slice] = value
+
+
+class SliceParcelIterator(ParcelIterator):
+    """
+    TODO
+    """
+    
+    iterator_item = SliceParcelIteratorItem
+
+    def __init__(self, img, parcelmap, parcelseq, mode='r'):
+        """
+        :Parameters:
+            img : `api.Image`
+                The image being iterated over.
+            parcelmap : ``[int]``
+                This is an int array of the same shape as img.
+                The different values of the array define different regions in
+                the image. For example, all the 0s define a region, all the 1s
+                define another region, etc.           
+            parcelseq : ``[int]`` or ``[(int, int, ...)]``
+                This is an array of integers or tuples of integers, which
+                define the order to iterate over the regions. Each element of
+                the array can consist of one or more different integers. The
+                union of the regions defined in parcelmap by these values is
+                the region taken at each iteration. If parcelseq is None then
+                the iterator will go through one region for each number in
+                parcelmap.                
+            mode : ``string``
+                The mode to run the iterator in.
+                    'r' - read-only (default)
+                    'w' - read-write
+        """
+        ParcelIterator.__init__(self, img, parcelmap, parcelseq, mode)
+        self.i = 0
+        self.max = len(self.parcelseq)
+
+    def _prep_seq(self, parcelseq):
+        if parcelseq is None:
+            raise ValueError, "parcelseq cannot be None"
+        ParcelIterator._prep_seq(self, parcelseq)
+
+    def _next(self):
+        """
+        Do the hard work of generating the next item from the iterator.
+        """
+        if self.i >= self.max:            
+            raise StopIteration
+        wherelabel, label = self._get_wherelabel()
+
+        ret = self.iterator_item(self.img, wherelabel[self.i], label,
+                                      self.i)
+        self.i += 1
+        return ret
+    
 
 
 class ImageSequenceIterator(object):
