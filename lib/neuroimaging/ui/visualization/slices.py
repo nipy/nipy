@@ -24,8 +24,6 @@ class Slice(object):
         """
         pass
 
-
-
 def coronal(grid, y=0.,
             shape=None,
             xlim=None,
@@ -41,10 +39,7 @@ def coronal(grid, y=0.,
         xlim = slices.bounding_box(grid)[2]
     if zlim is None:
         zlim = slices.bounding_box(grid)[0]
-    return slices.yslice(y=y, ylim=[y,y+1.],
-                                   xlim=xlim,
-                                   zlim=zlim,
-                                   shape=(shape[1],2,shape[0]))
+    return slices.yslice(y, zlim, [y,y+1.0e-06], xlim, (shape[0],2,shape[2]))
 
 def transversal(grid, z=0.,
                 shape=None,
@@ -61,10 +56,7 @@ def transversal(grid, z=0.,
         xlim = slices.bounding_box(grid)[2]
     if ylim is None:
         ylim = slices.bounding_box(grid)[1]
-    return slices.zslice(z=z, zlim=[z,z+1.],
-                                   xlim=xlim,
-                                   ylim=ylim,
-                                   shape=(2,shape[0],shape[1]))
+    return slices.zslice(z, [z,z+1.0e-06], ylim, xlim, (2, shape[1], shape[2]))
 
 def sagittal(grid, x=0.,
             shape=None,
@@ -82,10 +74,7 @@ def sagittal(grid, x=0.,
     if zlim is None:
         zlim = slices.bounding_box(grid)[0]
     shape = shape or grid.shape
-    return slices.xslice(x=x, xlim=[x,x+1.],
-                                   ylim=ylim,
-                                   zlim=zlim,
-                                   shape=(shape[1],shape[0],2))
+    return slices.xslice(x, zlim, ylim, [x,x+1.0e-06], (shape[0],shape[1],2))
 
 def squeezeshape(shape):
     s = N.array(shape)
@@ -128,6 +117,12 @@ class RGBASlicePlot(Slice, traits.HasTraits):
 
     transpose = traits.Trait(False, desc='Transpose data before ploting?')
 
+    def numdata(self):
+        """
+        Return self.interpolator evaluated over self.grid.range.
+        """
+        return N.squeeze(self.interpolator(self.grid.range()))
+
     def __init__(self, interpolator, grid, transpose=False, **keywords):
         traits.HasTraits.__init__(self, **keywords)
         Slice.__init__(self, interpolator, grid, transpose)
@@ -143,7 +138,6 @@ class RGBASlicePlot(Slice, traits.HasTraits):
             
     def draw(self, data=None, redraw=False, *args, **keywords):
         if data is None: data = self.RGBA(data=data)
-
         masked_data = self.mask_data(data)
         pylab.axes(self.axes)
 
@@ -161,7 +155,7 @@ class RGBASlicePlot(Slice, traits.HasTraits):
     def RGBA(self, data=None):
         "Return the RGBA values for the interpolator over the slice's grid."
         if data is None:
-            v = N.squeeze(self.interpolator(self.grid.range()))
+            v = self.numdata()
         else:
             v = data
         if self.transpose:
@@ -177,7 +171,7 @@ class RGBSlicePlot(RGBASlicePlot):
         """
         Return the RGBA values for the interpolator over the slice\'s grid.
         """
-        v = N.squeeze(self.interpolator(self.grid.range()))
+        v = self.numdata()
         if self.alpha == 1.:
             return RGBASlicePlot.RGBA(self, data=v)
         else:
@@ -207,7 +201,7 @@ class DataSlicePlot(RGBSlicePlot):
         """
         
         if data is None:
-            data = N.squeeze(self.interpolator(self.grid.range()))
+            data = self.numdata()
         v = self.norm(data)
         _cmap = getcmap(self.colormap)
         return RGBASlicePlot.RGBA(self, data=N.array(_cmap(v)))
@@ -231,21 +225,18 @@ class SagittalPlot(DataSlicePlot):
         DataSlicePlot.__init__(self, self.interpolator, self.slice,
                                 vmax=self.M,
                                 vmin=self.m,
-                                colormap=self.colormap,
-                                interpolation=self.interpolation,
                                **keywords)
 
 
 class CoronalPlot (DataSlicePlot):
-
 
     def __init__(self, img, y=0, xlim=None, zlim=None, shape=None, **keywords):
         self.img = img
         self.y = y
         self.shape = shape
         self.interpolator = ImageInterpolator(self.img)
-        self.m = float(self.img[:].min())
-        self.M = float(self.img[:].max())
+        self.m = float(N.nanmin(self.img[:]))
+        self.M = float(N.nanmax(self.img[:]))
         self.slice = coronal(self.img.grid, y=self.y, 
                              xlim=xlim, zlim=zlim,
                              shape=self.shape)
@@ -253,8 +244,6 @@ class CoronalPlot (DataSlicePlot):
         DataSlicePlot.__init__(self, self.interpolator, self.slice,
                                vmax=self.M,
                                vmin=self.m,
-                               colormap=self.colormap,
-                               interpolation=self.interpolation,
                                **keywords)
 
 
@@ -273,8 +262,6 @@ class TransversalPlot (DataSlicePlot):
         DataSlicePlot.__init__(self, self.interpolator, self.slice,
                                vmax=self.M,
                                vmin=self.m,
-                               colormap=self.colormap,
-                               interpolation=self.interpolation,
                                **keywords)
 
 
