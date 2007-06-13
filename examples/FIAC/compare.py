@@ -324,8 +324,6 @@ class FixedSubject(fixed.Subject):
         return {'effect': v[0], 'sd': v[1], 't': v[2]}
 
 
-
-
 class VisualizationFixed(visualization.Fixed):
 
     def _get_images(self):
@@ -337,8 +335,11 @@ class VisualizationFixed(visualization.Fixed):
                                       contrast=self.contrast,
                                       stat=self.stat,
                                       design=self.design))
-            self.images[s] = visualization.Slice(im)
-            vmin.append(N.nanmin(self.images[s].slab[:])); vmax.append(N.nanmax(self.images[s].slab[:]))
+            fixed.set_transform(im)
+            self.images[s] = visualization.Slice(im, axis='fixed')
+            d = self.images[s].dslice.scalardata()
+            self.images[s].dslice.transpose = True
+            vmin.append(N.nanmin(d)); vmax.append(N.nanmax(d))
 
         self.vmin = N.array(vmin).mean(); self.vmax = N.array(vmax).mean()
         
@@ -383,7 +384,7 @@ def visualization_run(contrast='average', which='contrasts', design='event'):
         </html>
         """ % (contrast, design, {'contrasts': 'magnitude', 'delays':'delay'}[which]))
         htmlfile.close()
-
+        del(v)
 
 def _match_cols(vector, matrix):
     

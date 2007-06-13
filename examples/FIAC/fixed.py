@@ -14,6 +14,7 @@ from neuroimaging import traits
 from readonly import ReadOnlyValidate
 
 import model, io, fmristat
+from fiac import avganat
 
 class Fixed(model.Study):
 
@@ -163,6 +164,12 @@ def _fix_origin(img):
     hdrfile.close()
     return Image(img._source.filename)
 
+
+def set_transform(image):
+    """
+    Set the transform of images correctly.
+    """
+    image.grid.mapping = Affine(avganat.grid.mapping.transform)
 
 
 def run(root=io.data_path, subj=3, resample=True, fit=True):

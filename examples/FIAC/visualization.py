@@ -1,45 +1,65 @@
 from os.path import join
+from gc import collect
 
 import numpy as N
 
 import pylab
 
 from neuroimaging.core.api import Image, SamplingGrid
-from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.ui.visualization import slices, montage
+from neuroimaging.core.reference.mapping import permutation_matrix, Affine
 
 standard = Image('http://kff.stanford.edu/FIAC/avg152T1_brain.img')
 
 import fixed, io, fiac
+reload(fixed)
 io.data_path='/home/analysis/FIAC'
 
+xlim = [-90,90]
+ylim = [-126,90]
+zlim = [-74, 106]
+shape = (91,109,91)
+
+defaults = {'z':(slices.TransversalPlot, {'z':-2,
+                                      'xlim':xlim,
+                                      'ylim':ylim,
+                                      'shape':shape}),
+            'x':(slices.SagittalPlot, {'x':0,
+                                       'zlim':zlim,
+                                       'ylim':ylim,
+                                       'shape':shape}),
+            
+            'y':(slices.CoronalPlot, {'y':20,
+                                      'xlim':xlim,
+                                      'zlim':zlim,
+                                      'shape':shape}),
+            'fixed':(slices.TransversalPlot, {'z':-2,
+                                              'xlim':[-70,70],
+                                              'ylim':[-46,6],
+                                              'shape':(91,27,71)})
+            }
+            
 class Slice:
 
+    axis = 'z'
+
+    colormap = 'spectral'
     vmax = 5.
     vmin = -5.
-    z = -2.
-    zbuff = 2
-    xlim = [-70,70]
-    ylim = [-46,6]
-    shape = (27,71)
 
-    def __init__(self, image):
-
+    def __init__(self, image, axis='z'):
+        self.axis = axis
         self.image = image
-        origin = N.array([self.z, N.mean(self.xlim), N.mean(self.ylim)])
-        i = standard.grid.mapping.inverse()
-        zvox = N.around(i(origin) - [self.zbuff,0,0])[0]
+        self.setup()
+        
+    def setup(self, args=defaults):
 
-        grid = standard.grid.slab([zvox-self.zbuff,0,0],
-                                  [1,1,1],
-                                  [2*self.zbuff+1, standard.grid.shape[1], standard.grid.shape[2]])
-
-        self.slab = Image(image[zvox:(zvox+2*self.zbuff+1)], grid=grid)
-        self.interp = ImageInterpolator(self.slab)
-        self.zslice = slices.transversal(self.slab.grid, z=self.z, xlim=self.xlim, ylim=self.ylim, shape=self.shape)
-        self.dslice = slices.DataSlicePlot(self.interp, self.zslice)
-        self.dslice.vmax = float(N.nanmax(self.slab[:]))
-        self.dslice.vmin = float(N.nanmin(self.slab[:]))
+        self.plotmaker, self.defaults = args[self.axis]
+        self.dslice = self.plotmaker(self.image, **self.defaults)
+        self.dslice.colormap = self.colormap
+        d = self.dslice.scalardata()
+        self.dslice.vmax = float(N.nanmax(d))
+        self.dslice.vmin = float(N.nanmin(d))
 
 class Fixed(fixed.Fixed):
 
@@ -51,11 +71,17 @@ class Fixed(fixed.Fixed):
     def _get_images(self):
         vmin = []; vmax = []
         self.images = {}
+
         for s in fiac.subjects:
             im = Image(self.resultpath(join('fiac%d' % s, '%s.nii' % self.stat)))
-            self.images[s] = Slice(im)
-            vmin.append(N.nanmin(self.images[s].slab[:])); vmax.append(N.nanmax(self.images[s].slab[:]))
-
+            fixed.set_transform(im)
+            self.images[s] = Slice(im, axis='fixed')
+            self.images[s].setup()
+            self.images[s].dslice.transpose = True
+            d = self.images[s].dslice.scalardata()
+            vmin.append(N.nanmin(d)); vmax.append(N.nanmax(d))
+            del(im)
+            
         self.vmin = N.array(vmin).mean(); self.vmax = N.array(vmax).mean()
         
     def draw(self):
@@ -77,6 +103,8 @@ class Fixed(fixed.Fixed):
     def output(self):
         pylab.savefig(self.resultpath('%s.png' % self.stat))
 
+    def __del__(self):
+        del(self.images); collect()
 
 def run(contrast='average', which='contrasts', design='event'):
     for stat in ['effect', 'sd', 't']:
@@ -109,3 +137,4 @@ def run(contrast='average', which='contrasts', design='event'):
         </html>
         """ % (contrast, design, {'contrasts': 'magnitude', 'delays':'delay'}[which]))
         htmlfile.close()
+    del(v)

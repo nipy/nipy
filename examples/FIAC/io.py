@@ -1,8 +1,8 @@
 import urllib2, os
 
-#data_path = "/home/analysis/FIAC"
+data_path = "/home/analysis/FIAC"
 #data_path = "/home/timl/src/nipy-data/fmri/FIAC"
-data_path = "/home/timl/data/kff.stanford.edu/FIAC"
+#data_path = "/home/timl/data/kff.stanford.edu/FIAC"
 web_path = "http://kff.stanford.edu/FIAC"
 
 def urlexists(url):

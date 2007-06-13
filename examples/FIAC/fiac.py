@@ -1,10 +1,13 @@
 import os
 
+from numpy import array
+
 from neuroimaging import traits
 
 from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
 from neuroimaging.core.api import Image
+from neuroimaging.core.reference.mapping import Affine
 
 from protocol import event_protocol, block_protocol
 from io import urlexists, data_path
@@ -19,8 +22,6 @@ class Study(HasReadOnlyTraits):
 
 local_study = Study(root=data_path)
 www_study = Study(root='http://kff.stanford.edu/FIAC')
-
-
 
 class Subject(HasReadOnlyTraits):
 
@@ -144,3 +145,8 @@ class Run(HasReadOnlyTraits):
 
 subjects = [0,1,3,4,6,7,8,9,10,11,12,13,14,15]
 
+avganat = Image(os.path.join(data_path, 'avganat.img'))
+avganat.grid.mapping = Affine(array([[   2.,    0.,    0.,  -72.],
+                                     [   0.,    2.,    0., -126.],
+                                     [   0.,    0.,    -2.,  90.],
+                                     [   0.,    0.,    0.,    1.]]))
