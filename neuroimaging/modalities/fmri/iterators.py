@@ -1,5 +1,5 @@
 from neuroimaging.core.api import ParcelIterator, SliceParcelIterator, \
-  ParcelIteratorItem, IteratorItem
+  ParcelIteratorItem, SliceParcelIteratorItem
 
 
 class fMRIParcelIteratorItem(ParcelIteratorItem):
@@ -30,26 +30,10 @@ class fMRIParcelIterator(ParcelIterator):
     iterator_item = fMRIParcelIteratorItem
 
 
-class fMRISliceParcelIteratorItem(IteratorItem):
+class fMRISliceParcelIteratorItem(SliceParcelIteratorItem):
     """
     A class for objects returned by `fMRISliceParcelIterator`\ s
     """
-
-    def __init__(self, img, slice_, label, i):
-        """
-        :Parameters:
-            img : `modalities.fmri.fMRIImage`
-                The fmri image being iterated over.
-            slice_ : TODO
-                TODO
-            label : ``int`` or ``tuple`` of ``int``
-                TODO
-            i : TODO
-                TODO
-        """
-        IteratorItem.__init__(self, img, slice_)
-        self.label = label
-        self.i = i
 
     def get(self):
         """
