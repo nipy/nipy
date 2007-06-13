@@ -5,7 +5,7 @@ from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import slow, data
 
-from neuroimaging.modalities.fmri.api import fMRIImage
+from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.modalities.fmri.pca import PCA
 from neuroimaging.core.api import Image
 from neuroimaging.utils.tests.data import repository
@@ -21,7 +21,7 @@ class test_PCA(NumpyTestCase):
         pass
 
     def data_setUp(self):
-        self.fmridata = fMRIImage("test_fmri.hdr", datasource=repository)
+        self.fmridata = FmriImage("test_fmri.hdr", datasource=repository)
 
 
         frame = self.fmridata.frame(0)

@@ -7,8 +7,8 @@ import numpy.linalg as L
 from scipy.sandbox.models.regression import ols_model, ar_model
 from scipy.sandbox.models.utils import monotone_fn_inverter, rank 
 
-from neuroimaging.modalities.fmri.api import fMRIImage, fMRIParcelIterator, \
-     fMRISliceParcelIterator
+from neuroimaging.modalities.fmri.api import FmriImage, FmriParcelIterator, \
+     FmriSliceParcelIterator
 from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
      DelayContrastOutput
 from neuroimaging.algorithms.statistics.regression import LinearModelIterator
@@ -67,7 +67,7 @@ class WholeBrainNormalize(object):
             out[i] = fmri_data[i] * 100. / self.avg[i]
         return out
 
-class fMRIStatOLS(LinearModelIterator):
+class FmriStatOLS(LinearModelIterator):
     """
     OLS pass of fMRIstat.
     """
@@ -118,7 +118,7 @@ class fMRIStatOLS(LinearModelIterator):
         self.nmax = nmax
         self.path = path
         
-        self.fmri_image = fMRIImage(fmri_image)
+        self.fmri_image = FmriImage(fmri_image)
         if normalize is not None:
             self.normalize = normalize
         else:
@@ -170,7 +170,7 @@ class fMRIStatOLS(LinearModelIterator):
         """
         if self.normalize:
 
-            class fMRINormalize(self.iterator.__class__):
+            class FmriNormalize(self.iterator.__class__):
 
                 def __init__(self, iterator, normalizer):
                     self.iterator = iterator
@@ -185,14 +185,14 @@ class fMRIStatOLS(LinearModelIterator):
                     return self
 
             self._iterator = self.iterator
-            self.iterator = fMRINormalize(self._iterator, self.normalize)
+            self.iterator = FmriNormalize(self._iterator, self.normalize)
 
         LinearModelIterator.fit(self)
 
         sgrid = self.fmri_image.grid.subgrid(0)
 
         if self.output_fwhm:
-            resid = fMRIImage(self.resid_output.img)
+            resid = FmriImage(self.resid_output.img)
             fwhmest = fastFWHM(resid, fwhm=os.path.join(self.path, 'fwhmOLS.nii'), clobber=self.clobber)
             fwhmest()
             self.fwhm_data = fwhmest.integrate(mask=self.mask)[1]
@@ -328,7 +328,7 @@ class fMRIStatOLS(LinearModelIterator):
         print 'FWHM for AR estimated as: %02f' % self.fwhm_rho
 
 
-class fMRIStatAR(LinearModelIterator):
+class FmriStatAR(LinearModelIterator):
 
     """
     AR(1) pass of fMRIstat.
@@ -361,8 +361,8 @@ class fMRIStatAR(LinearModelIterator):
             outputs = []
         else:
             outputs = outputs[:]
-        if not isinstance(OLS, fMRIStatOLS):
-            raise ValueError, 'expecting an fMRIStatOLS object in fMRIStatAR'
+        if not isinstance(OLS, FmriStatOLS):
+            raise ValueError, 'expecting an FmriStatOLS object in FmriStatAR'
 
         self.fmri_image = OLS.fmri_image
         self.normalize = OLS.normalize
@@ -378,21 +378,21 @@ class fMRIStatAR(LinearModelIterator):
         self.formula = OLS.formula
         if self.slicetimes is None:
             self.dmatrix = OLS.dmatrix
-            iterator = fMRIParcelIterator
+            iterator = FmriParcelIterator
         else:
             self.designs = []
             for s in self.slicetimes:
                 self.designs.append(self.formula.design(*(ftime+s,))) 
-            iterator = fMRISliceParcelIterator
+            iterator = FmriSliceParcelIterator
 
         if parcel is None:
             parcelmap, parcelseq = OLS.getparcelmap()
         else:
             parcelmap, parcelseq = parcel
 
-        if iterator == fMRIParcelIterator:
+        if iterator == FmriParcelIterator:
             iterator_ = ParcelIterator
-        elif iterator == fMRISliceParcelIterator:
+        elif iterator == FmriSliceParcelIterator:
             iterator_ = SliceParcelIterator
 
         self.contrasts = []
@@ -446,7 +446,7 @@ class fMRIStatAR(LinearModelIterator):
         :Returns: ``None``
         """
         if self.normalize:
-            class fMRINormalize(self.iterator.__class__):
+            class FmriNormalize(self.iterator.__class__):
 
                 def __init__(self, iterator, normalizer):
                     self.iterator = iterator
@@ -461,7 +461,7 @@ class fMRIStatAR(LinearModelIterator):
                     return self
 
             self._iterator = self.iterator
-            self.iterator = fMRINormalize(self._iterator, self.normalize)
+            self.iterator = FmriNormalize(self._iterator, self.normalize)
 
         LinearModelIterator.fit(self)
 

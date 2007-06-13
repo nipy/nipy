@@ -7,7 +7,7 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, \
   NavigationToolbar2WxAgg
 
 from neuroimaging.data_io.api import DataSource
-from neuroimaging.modalities.fmri.api import fMRIImage
+from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.ui.tools import BaseTool
 from neuroimaging.utils import wxmpl
 #from neuroimaging.utils.tests.data import repository
@@ -102,8 +102,8 @@ class TimeSeriesDiagnostics(BaseTool):
             self._error("Please provide a file name.")
         if not DataSource().exists(options.file):
             self._error("File not found: %s"%options.file)
-#        fmri_image = fMRIImage(file, datasource=repository)
-        fmri_image = fMRIImage(options.file)
+#        fmri_image = FmriImage(file, datasource=repository)
+        fmri_image = FmriImage(options.file)
         self._tsdiagstats = TimeSeriesDiagnosticsStats(fmri_image)
         if not options.wxmpl:
             self._app = wxPySimpleApp(0)

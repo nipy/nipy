@@ -2,9 +2,9 @@ from neuroimaging.core.api import ParcelIterator, SliceParcelIterator, \
   ParcelIteratorItem, SliceParcelIteratorItem
 
 
-class fMRIParcelIteratorItem(ParcelIteratorItem):
+class FmriParcelIteratorItem(ParcelIteratorItem):
     """
-    A class for objects returned by `fMRIParcelIterator`\ s
+    A class for objects returned by `FmriParcelIterator`\ s
     """
 
     def get(self):
@@ -22,17 +22,17 @@ class fMRIParcelIteratorItem(ParcelIteratorItem):
         self.img[:, self.slice] = value
 
 
-class fMRIParcelIterator(ParcelIterator):
+class FmriParcelIterator(ParcelIterator):
     """
     This class works in much the same way as the `ParcelIterator` except
     that ...TODO
     """
-    iterator_item = fMRIParcelIteratorItem
+    iterator_item = FmriParcelIteratorItem
 
 
-class fMRISliceParcelIteratorItem(SliceParcelIteratorItem):
+class FmriSliceParcelIteratorItem(SliceParcelIteratorItem):
     """
-    A class for objects returned by `fMRISliceParcelIterator`\ s
+    A class for objects returned by `FmriSliceParcelIterator`\ s
     """
 
     def get(self):
@@ -50,9 +50,9 @@ class fMRISliceParcelIteratorItem(SliceParcelIteratorItem):
         self.img[:, self.i, self.slice] = value
 
 
-class fMRISliceParcelIterator(SliceParcelIterator):
+class FmriSliceParcelIterator(SliceParcelIterator):
     """
     TODO
     """
-    iterator_item = fMRISliceParcelIteratorItem
+    iterator_item = FmriSliceParcelIteratorItem
 

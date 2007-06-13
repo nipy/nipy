@@ -3,7 +3,7 @@ import os
 import numpy as N
 import pylab
 
-from neuroimaging.modalities.fmri.api import fMRIImage
+from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
 from neuroimaging.core.api import Image
 from neuroimaging.data_io.api import DataSource
@@ -133,7 +133,7 @@ def FIACplot(subj=3, run=3, tmin=1.0, tmax=476.25, dt=0.2, save=False):
 def FIACfmri(subj=3, run=3, test=False):
     if not test:
         url = FIACpath('fsl/filtered_func_data.img', subj=subj, run=run)
-        f = fMRIImage(url, usematfile=False)
+        f = FmriImage(url, usematfile=False)
     else:
         import test
         return test.test()

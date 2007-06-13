@@ -1,7 +1,7 @@
 import numpy as N
 import matplotlib.cm as cm
 
-from neuroimaging.modalities.fmri.api import fMRIImage
+from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.utils import wxmpl
 from neuroimaging.utils.tests.data import repository
 
@@ -9,7 +9,7 @@ from neuroimaging.sandbox.ts_diagnostics.tsdstats import \
   TimeSeriesDiagnosticsStats
 
 def main():
-    fmri_image = fMRIImage("test_fmri.img", datasource=repository)
+    fmri_image = FmriImage("test_fmri.img", datasource=repository)
     ts_diag = TimeSeriesDiagnosticsStats(fmri_image)
     image = N.nan_to_num(ts_diag.mse_image.readall())
 

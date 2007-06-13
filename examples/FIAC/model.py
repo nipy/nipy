@@ -270,7 +270,7 @@ class Run(Model, fiac.Run):
         if self.normalize:
             OLSopts['normalize'] = self.brainavg
 
-        self.OLSmodel = fmristat.fMRIStatOLS(self.fmri,
+        self.OLSmodel = fmristat.FmriStatOLS(self.fmri,
                                              formula=self.formula,
                                              mask=self.mask,
                                              tshift=self.shift, 
@@ -296,7 +296,7 @@ class Run(Model, fiac.Run):
         self.load()
 
         toc = time.time()
-        self.ARmodel = fmristat.fMRIStatAR(self.OLSmodel,
+        self.ARmodel = fmristat.FmriStatAR(self.OLSmodel,
                                            contrasts=[self.overallF,
                                                       self.average,
                                                       self.speaker,
@@ -315,7 +315,7 @@ class Run(Model, fiac.Run):
 ##         # well output the FWHM, too
 
 ##         if output_fwhm:
-##             resid = neuroimaging.modalities.fmri.api.fMRIImage(FIACpath('fsl/fmristat_run/ARresid.img', subj=subj, run=run))
+##             resid = neuroimaging.modalities.fmri.api.FmriImage(FIACpath('fsl/fmristat_run/ARresid.img', subj=subj, run=run))
 ##             fwhmest = fastFWHM(resid, fwhm=FIACpath('fsl/fmristat_run/fwhm.img'), clobber=True)
 ##             fwhmest()
 

@@ -10,12 +10,12 @@ import numpy as N
 import pylab
 
 from neuroimaging.core.api import Image
-from neuroimaging.modalities.fmri.api import fMRIImage 
+from neuroimaging.modalities.fmri.api import FmriImage 
 from neuroimaging.modalities.fmri.pca import PCAmontage
 from neuroimaging.utils.tests.data import repository
 
 # Load an fMRI image
-fmridata = fMRIImage("test_fmri.hdr", datasource=repository)
+fmridata = FmriImage("test_fmri.hdr", datasource=repository)
 
 # Create a mask
 frame = fmridata.frame(0)

@@ -17,13 +17,13 @@ _PYLAB_DEF, pylab = pylab_def()
 if _PYLAB_DEF:
     from neuroimaging.ui.visualization.multiplot import MultiPlot
 
-class fMRIRegressionOutput(imreg.ImageRegressionOutput):
+class FmriRegressionOutput(imreg.ImageRegressionOutput):
     """
     A class to output things in GLM passes through fMRI data. It
     uses the fmri_image's iterator values to output to an image.
 
     The difference between this class and ImageRegressionOutput is the
-    iterator that drives everything: here it the iterator of an fMRIImage,
+    iterator that drives everything: here it the iterator of an FmriImage,
     in the former it is of an Image.
     """
 
@@ -39,7 +39,7 @@ class fMRIRegressionOutput(imreg.ImageRegressionOutput):
                                              outgrid=grid.subgrid(0))
 
 
-class ResidOutput(fMRIRegressionOutput):
+class ResidOutput(FmriRegressionOutput):
     """
     TODO
     """
@@ -63,7 +63,7 @@ class ResidOutput(fMRIRegressionOutput):
             `it` : TODO
                 TODO
         """
-        fMRIRegressionOutput.__init__(self, grid, nout)
+        FmriRegressionOutput.__init__(self, grid, nout)
         outdir = os.path.join(path)
         self.outgrid = grid
         if it is None:
@@ -84,7 +84,7 @@ class ResidOutput(fMRIRegressionOutput):
         return results.resid
     
 
-class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
+class TContrastOutput(FmriRegressionOutput, imreg.TContrastOutput):
     """
     TODO
     """
@@ -119,7 +119,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
             `it` : TODO
                 TODO
         """
-        fMRIRegressionOutput.__init__(self, grid, nout)
+        FmriRegressionOutput.__init__(self, grid, nout)
         if it is not None:
             self.it = it
         self.contrast = contrast
@@ -154,7 +154,7 @@ class TContrastOutput(fMRIRegressionOutput, imreg.TContrastOutput):
         """
         return imreg.TContrastOutput.extract(self, results)
 
-class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
+class FContrastOutput(FmriRegressionOutput, imreg.FContrastOutput):
     """
     TODO
     """
@@ -182,7 +182,7 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
             `it` : TODO
                 TODO                        
         """
-        fMRIRegressionOutput.__init__(self, grid, nout)
+        FmriRegressionOutput.__init__(self, grid, nout)
         if it is not None:
             self.it = it
         self.contrast = contrast
@@ -215,7 +215,7 @@ class FContrastOutput(fMRIRegressionOutput, imreg.FContrastOutput):
         """
         return imreg.FContrastOutput.extract(self, results)
 
-class AR1Output(fMRIRegressionOutput):
+class AR1Output(FmriRegressionOutput):
     """
     TODO
     """
@@ -233,7 +233,7 @@ class AR1Output(fMRIRegressionOutput):
         return rho
                 
 
-class AROutput(fMRIRegressionOutput):
+class AROutput(FmriRegressionOutput):
     """
     TODO
     """
@@ -251,7 +251,7 @@ class AROutput(fMRIRegressionOutput):
                 TODO
         """
         self.order = order
-        fMRIRegressionOutput.__init__(self, grid, nout)
+        FmriRegressionOutput.__init__(self, grid, nout)
         self._setup_bias_correct(model)
 
     def _setup_bias_correct(self, model):
@@ -305,7 +305,7 @@ class AROutput(fMRIRegressionOutput):
 ##         self.fwhmest = iter(iterFWHM(fmri.frame(0)))
 
 ##     def next(self, data=None, iterator=None):
-##         if hasattr(iterator, 'newslice'): # for LabelledfMRIImage class
+##         if hasattr(iterator, 'newslice'): # for LabelledFmriImage class
 ##             if iterator.newslice:
 ##                 self.fwhmest.next(data=iterator.buffer)
 ##         else:

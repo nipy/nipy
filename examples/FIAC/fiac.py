@@ -2,7 +2,7 @@ import os
 
 from neuroimaging import traits
 
-from neuroimaging.modalities.fmri.api import fMRIImage
+from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
 from neuroimaging.core.api import Image
 
@@ -73,7 +73,7 @@ class Run(HasReadOnlyTraits):
     anatfile = ReadOnlyValidate(traits.Str, desc="Path for hires anatomy.",
                                 label='Hi-res anatomy')
 
-    fmri = traits.Instance(fMRIImage)
+    fmri = traits.Instance(FmriImage)
     mask = traits.Instance(Image)
     anat = traits.Instance(Image)
 
@@ -120,7 +120,7 @@ class Run(HasReadOnlyTraits):
         """
 
         if urlexists(self.fmrifile):
-            self.fmri = fMRIImage(self.fmrifile)
+            self.fmri = FmriImage(self.fmrifile)
             
         if urlexists(self.maskfile):
             self.mask = Image(self.maskfile)

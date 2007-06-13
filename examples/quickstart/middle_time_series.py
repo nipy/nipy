@@ -11,12 +11,12 @@ middle_time_series.py
 import numpy as N
 import pylab
 
-from neuroimaging.modalities.fmri.api import fMRIImage
+from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.utils.tests.data import repository
 
 subject_no=0
 run_no = 1
-func_img = fMRIImage('FIAC/fiac%d/fonc%d/fsl/filtered_func_data.img' %
+func_img = FmriImage('FIAC/fiac%d/fonc%d/fsl/filtered_func_data.img' %
                      (subject_no, run_no),
                      datasource=repository)
 

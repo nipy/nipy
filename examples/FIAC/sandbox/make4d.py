@@ -3,7 +3,7 @@ import gc
 
 import numpy as N
 
-from neuroimaging.modalities.fmri.api import fMRIImage
+from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.core.api import Image, Affine
 
 def make4d(subj=int(sys.argv[1]), run=int(sys.argv[2])):
@@ -26,7 +26,7 @@ def make4d(subj=int(sys.argv[1]), run=int(sys.argv[2])):
         fmrigrid.mapping.input_coords,
         fmrigrid.mapping.output_coords, T)
 
-    _fmri = fMRIImage('%s/fiac%d_fonc%d.img' % (dir, subj, run), grid=fmrigrid, mode='w', clobber=True, usematfile=False)
+    _fmri = FmriImage('%s/fiac%d_fonc%d.img' % (dir, subj, run), grid=fmrigrid, mode='w', clobber=True, usematfile=False)
 
     i = 0
     for framefile in framefiles:

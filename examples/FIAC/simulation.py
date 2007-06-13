@@ -1,7 +1,7 @@
 """
 this module:
 
-i) simulates a piecewise constant fMRIImage of the same size as the FIAC data:
+i) simulates a piecewise constant FmriImage of the same size as the FIAC data:
        - there are between 10 and 20 parcels in the image, based on truncating
          an estimate of the AR coefficient from the FIAC data
        - the mean is a random combination of the columns of the FIAC design (for a given subject)
@@ -23,15 +23,15 @@ import numpy.random as R
 from scipy.sandbox.models.regression import ols_model, ar_model
 
 from neuroimaging.core.api import Image
-from neuroimaging.core.image.iterators import fMRIParcelIterator, ParcelIterator
-from neuroimaging.modalities.api import fMRIImage
+from neuroimaging.core.image.iterators import FmriParcelIterator, ParcelIterator
+from neuroimaging.modalities.api import FmriImage
 
 import fmristat, model
 
 class SignalOnly(model.Run):
 
     """
-    Generate an fMRIImage according to the following model:
+    Generate an FmriImage according to the following model:
 
     * round off AR estimate to a scale of N.linspace(-1,1,21) (multiplying result by 0.9 to avoid +- 1)
     * within each chunk, generate a random signal from FIAC formula with NO measurement noise, i.e. resids should be 0
@@ -63,9 +63,9 @@ class SignalOnly(model.Run):
 
         self.load()
         self.simfmrifile = os.path.join(self.resultdir, 'simfmri.img')
-        simfmri = fMRIImage(self.simfmrifile,
+        simfmri = FmriImage(self.simfmrifile,
                             grid=self.fmri.grid, mode='w', clobber=True)
-        simfmri.it = fMRIParcelIterator(simfmri, self.parcelmap,
+        simfmri.it = FmriParcelIterator(simfmri, self.parcelmap,
                                         self.parcelseq, mode='w')
         i = 0
         mu = []
@@ -152,7 +152,7 @@ class SignalOnly(model.Run):
         if not os.path.exists(self.resultdir):
             os.makedirs(self.resultdir)
 
-        self.fmri = fMRIImage(self.simfmrifile,
+        self.fmri = FmriImage(self.simfmrifile,
                               grid=self.fmri.grid, clobber=True)
             
     def AR(self, **ARopts):
@@ -169,7 +169,7 @@ class SignalOnly(model.Run):
         """
         
         for rtype in ["OLS", "AR"]:
-            resid = fMRIImage(os.path.join(self.resultdir, "%sresid.img" % rtype))
+            resid = FmriImage(os.path.join(self.resultdir, "%sresid.img" % rtype))
 
             for s in resid.slice_iterator():
                 MSE = (s**2).sum() / (191 * 64**2)
@@ -251,11 +251,11 @@ class SignalNoise(SignalOnly):
         self.get_models()
 
         for rtype in ["OLS", "AR"]:
-            self.resid = fMRIImage(os.path.join(self.resultdir, "%sresid.img" % rtype))
+            self.resid = FmriImage(os.path.join(self.resultdir, "%sresid.img" % rtype))
             # I get a results of [0, 30, 64, 64] here
             # which leads to the code below breaking. I'm not sure why this
             # file would have this shape though... --Tim
-            self.resid.it = fMRIParcelIterator(self.resid, self.parcelmap,
+            self.resid.it = FmriParcelIterator(self.resid, self.parcelmap,
                                                self.parcelseq)
             i = 0
             for chunk in self.resid.it:

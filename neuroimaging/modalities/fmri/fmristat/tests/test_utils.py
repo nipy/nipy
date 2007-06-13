@@ -8,18 +8,18 @@ from numpy.testing import NumpyTest, NumpyTestCase
 from neuroimaging.utils.test_decorators import slow, data
 
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.modalities.fmri.api import fMRIImage
+from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor,\
   ExperimentalQuantitative
 from neuroimaging.modalities.fmri.functions import SplineConfound
-from neuroimaging.modalities.fmri.fmristat.utils import fMRIStatAR, fMRIStatOLS
+from neuroimaging.modalities.fmri.fmristat.utils import FmriStatAR, FmriStatOLS
 from  neuroimaging.core.api import Image
 from neuroimaging.modalities.fmri.hrf import glover, glover_deriv
 
 from neuroimaging.defines import pylab_def
 PYLAB_DEF, pylab = pylab_def()
 
-class test_fMRIStat(NumpyTestCase):
+class test_FmriStat(NumpyTestCase):
 
     def setup_formula(self):
 
@@ -51,7 +51,7 @@ class test_fMRIStat(NumpyTestCase):
         frametimes = N.arange(120)*3.
         slicetimes = N.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
 
-        self.img = fMRIImage("test_fmri.hdr", datasource=repository, frametimes=frametimes,
+        self.img = FmriImage("test_fmri.hdr", datasource=repository, frametimes=frametimes,
                                   slicetimes=slicetimes, usematfile=False)
 
     def tearDown(self):
@@ -59,55 +59,55 @@ class test_fMRIStat(NumpyTestCase):
         for rhofile in ['rho.hdr', 'rho.img']:
             shutil.rmtree(rhofile, ignore_errors=True)
 
-class test_SliceTimes(test_fMRIStat):
+class test_SliceTimes(test_FmriStat):
 
     @slow
     @data
     def test_model_slicetimes(self):
-        OLS = fMRIStatOLS(self.img, self.formula,
+        OLS = FmriStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes)
         OLS.nmax = 75
         OLS.fit()
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
 
-        AR = fMRIStatAR(OLS)
+        AR = FmriStatAR(OLS)
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
-class test_Resid1(test_fMRIStat):
+class test_Resid1(test_FmriStat):
 
     @slow
     @data
     def test_model_resid1(self):
         self.img.slicetimes = None
-        OLS = fMRIStatOLS(self.img, self.formula, path=".", clobber=True,
+        OLS = FmriStatOLS(self.img, self.formula, path=".", clobber=True,
                                    slicetimes=self.img.slicetimes, resid=True)
         OLS.fit()
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
 
-        AR = fMRIStatAR(OLS, clobber=True)
+        AR = FmriStatAR(OLS, clobber=True)
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
-class test_Resid2(test_fMRIStat):
+class test_Resid2(test_FmriStat):
 
     @slow
     @data
     def test_model_resid2(self):
         self.img.slicetimes = None
-        OLS = fMRIStatOLS(self.img, self.formula, path=".", clobber=True,
+        OLS = FmriStatOLS(self.img, self.formula, path=".", clobber=True,
                                    slicetimes=self.img.slicetimes)
         OLS.fit()
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
 
-        AR = fMRIStatAR(OLS, resid=True, clobber=True)
+        AR = FmriStatAR(OLS, resid=True, clobber=True)
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
-class test_HRFDeriv(test_fMRIStat):
+class test_HRFDeriv(test_FmriStat):
 
     @slow
     @data
@@ -122,17 +122,17 @@ class test_HRFDeriv(test_fMRIStat):
        
         pain = Contrast(self.pain, self.formula, name='hot-warm')
         self.img.slicetimes = None
-        OLS = fMRIStatOLS(self.img, self.formula,
+        OLS = FmriStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes)
         OLS.fit()
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
 
-        AR = fMRIStatAR(OLS, contrasts=[pain], clobber=True)
+        AR = FmriStatAR(OLS, contrasts=[pain], clobber=True)
         AR.fit()
         del(OLS); del(AR); gc.collect()
         
-class test_Contrast(test_fMRIStat):
+class test_Contrast(test_FmriStat):
 
     @slow
     @data
@@ -140,7 +140,7 @@ class test_Contrast(test_fMRIStat):
         pain = Contrast(self.pain, self.formula, name='pain')
 
         self.img.slicetimes = None
-        OLS = fMRIStatOLS(self.img, self.formula, 
+        OLS = FmriStatOLS(self.img, self.formula, 
                                    slicetimes=self.img.slicetimes,
                                    clobber=True)
         OLS.fit()
@@ -153,7 +153,7 @@ class test_Contrast(test_fMRIStat):
             v.draw()
 
 
-        AR = fMRIStatAR(OLS, contrasts=[pain], clobber=True)
+        AR = FmriStatAR(OLS, contrasts=[pain], clobber=True)
         AR.fit()
         del(OLS); del(AR); gc.collect()
 

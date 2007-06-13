@@ -6,7 +6,7 @@ import neuroimaging.modalities.fmri.functions as confound
 import scipy.sandbox.models.contrast as contrast
 from neuroimaging.modalities.fmri.fmristat.delay import DelayHRF
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
-from neuroimaging.modalities.fmri.api import fMRIImage
+from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.core.api import Image
 
 import gc, time
@@ -134,7 +134,7 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
 
         # OLS pass
         
-        OLS = fmristat.fMRIStatOLS(f, formula=formula, mask=m,
+        OLS = fmristat.FmriStatOLS(f, formula=formula, mask=m,
                                    tshift=tshift, 
                                    **OLSopts)
         OLS.reference = overall
@@ -159,7 +159,7 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
 
         OLS.rho = keith.rho(subject=subj, run=run)
 
-        AR = fmristat.fMRIStatAR(OLS, contrasts=contrasts, tshift=tshift, **ARopts)
+        AR = fmristat.FmriStatAR(OLS, contrasts=contrasts, tshift=tshift, **ARopts)
         AR.fit()
         tic = time.time()
         
@@ -169,7 +169,7 @@ def FIACrun(subj=3, run=3, output_fwhm=False, normalize=True):
         # well output the FWHM, too
 
         if output_fwhm:
-            resid = fMRIImage(FIACpath('fsl/fmristat_run/ARresid.img', subj=subj, run=run))
+            resid = FmriImage(FIACpath('fsl/fmristat_run/ARresid.img', subj=subj, run=run))
             fwhmest = fastFWHM(resid, fwhm=FIACpath('fsl/fmristat_run/fwhm.img'), clobber=True)
             fwhmest()
 

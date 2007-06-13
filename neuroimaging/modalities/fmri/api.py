@@ -1,2 +1,2 @@
-from fmri import fMRIImage
-from iterators import fMRIParcelIterator, fMRISliceParcelIterator
+from fmri import FmriImage
+from iterators import FmriParcelIterator, FmriSliceParcelIterator

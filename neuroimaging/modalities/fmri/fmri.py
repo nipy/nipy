@@ -6,7 +6,7 @@ from neuroimaging.core.api import Image, CoordinateSystem, SamplingGrid, \
      Mapping, Affine
 
 
-class fMRISamplingGrid(SamplingGrid):
+class FmriSamplingGrid(SamplingGrid):
     """
     TODO
     """
@@ -47,7 +47,7 @@ class fMRISamplingGrid(SamplingGrid):
 
     def subgrid(self, i):
         """
-        Return a subgrid of fMRISamplingGrid. If the image's mapping is an
+        Return a subgrid of FmriSamplingGrid. If the image's mapping is an
         Affine instance and is 'diagonal' in time, then it returns a new
         Affine instance. Otherwise, if the image's mapping is a list of
         mappings, it returns the i-th mapping.  Finally, if these two do not
@@ -84,7 +84,7 @@ class fMRISamplingGrid(SamplingGrid):
 
 
 
-class fMRIImage(Image):
+class FmriImage(Image):
     """
     TODO
     """
@@ -92,7 +92,7 @@ class fMRIImage(Image):
     def __init__(self, _image, **keywords):
         """
         :Parameters:
-            `_image` : `fMRIImage` or `Image` or ``string`` or ``array``
+            `_image` : `FmriImage` or `Image` or ``string`` or ``array``
                 The object to create this Image from. If an `Image` or ``array``
                 are provided, their data is used. If a string is given it is treated
                 as either a filename or url.
@@ -103,7 +103,7 @@ class fMRIImage(Image):
         self.frametimes = keywords.get('frametimes', None)
         self.slicetimes = keywords.get('slicetimes', None)
 
-        self.grid = fMRISamplingGrid(self.grid.shape, self.grid.mapping,
+        self.grid = FmriSamplingGrid(self.grid.shape, self.grid.mapping,
                                      self.grid.input_coords,
                                      self.grid.output_coords)
         if self.grid.isproduct():
@@ -112,7 +112,7 @@ class fMRIImage(Image):
             try:
                 d = n.index('time')
             except ValueError:
-                raise ValueError, "fMRIImage expecting a 'time' axis, got %s" % n
+                raise ValueError, "FmriImage expecting a 'time' axis, got %s" % n
             transform = self.grid.mapping.transform[d, d]
             start = self.grid.mapping.transform[d, ndim]
             self.frametimes = start + N.arange(self.grid.shape[d]) * transform
