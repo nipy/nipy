@@ -144,7 +144,7 @@ class FmriStatOLS(LinearModelIterator):
 
         self.setup_output()
 
-        LinearModelIterator.__init__(self, fmri_image.slice_iterator(),
+        LinearModelIterator.__init__(self, fmri_image.slice_iterator(axis=1),
                                      outputs)
         
     def model(self):
