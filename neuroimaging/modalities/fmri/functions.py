@@ -239,7 +239,7 @@ class InterpolatedConfound(TimeFunction):
             self.f = []
             values = N.asarray(self.values)
             for i in range(values.shape[0]):
-                f = interp1d(self.times, self.values[:, i], bounds_error=0)
+                f = interp1d(self.times, self.values[i, :], bounds_error=0)
                 self.f.append(f)
             self.nout = values.shape[0]
             
