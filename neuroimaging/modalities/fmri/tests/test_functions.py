@@ -10,10 +10,14 @@ test_suite = make_doctest_suite('neuroimaging.modalities.fmri.functions')
 class test_functions(NumpyTestCase):
 
     def test_interpolate_confound(self):
-        # Test for multiple columns of regressors
+        # Test for single and multiple regressors
         T = N.arange(100)
+        C = N.random.normal(size=(T.shape))
+        ic = functions.InterpolatedConfound(T, C)
+        assert N.allclose(C, ic(T))
         C = N.random.normal(size=(2,100))
         ic = functions.InterpolatedConfound(T, C)
+        assert N.allclose(C, ic(T))
 
 
 if __name__ == '__main__':
