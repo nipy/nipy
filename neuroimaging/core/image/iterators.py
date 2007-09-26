@@ -75,9 +75,9 @@ class Iterator(object):
         self.item = NotImplemented
 
     def __iter__(self):
-        """        
-        Use this `Iterator` as a python iterator.
-        
+        """
+        Begin iteration, using self as a python iterator.
+
         :Returns: ``self``
         """
         return self
@@ -353,6 +353,8 @@ class ParcelIterator(Iterator):
 
     def __iter__(self):
         """
+        Begin iteration, using self as a python iterator.
+
         :Returns: ``self``
         """
         self._labeliter = iter(self.parcelseq)
