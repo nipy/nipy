@@ -4,7 +4,6 @@ TODO
 __docformat__ = 'restructuredtext'
 
 import numpy as N
-from scipy.io.path import path
 import scipy.io as SIO
 
 from neuroimaging.utils.odict import odict
@@ -15,6 +14,7 @@ from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
 
 
+from neuroimaging.utils.path import path
 
 class AnalyzeFormatError(Exception):
     """

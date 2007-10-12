@@ -1,4 +1,4 @@
-from scipy.io.datasource import DataSource, iswritemode, iszip, unzip, splitzipext, \
+from datasource import DataSource, iswritemode, iszip, unzip, splitzipext, \
      Repository, Cache, ensuredirs
 from formats.format import getformats, Format
 from formats.analyze import Analyze

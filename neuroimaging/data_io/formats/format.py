@@ -5,12 +5,12 @@
 __docformat__ = 'restructuredtext'
 
 import numpy
-from scipy.io.path import path
 
 from neuroimaging import import_from
 from neuroimaging.data_io.datasource import DataSource
 from neuroimaging.core.image.base_image import BaseImage
 from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.utils.path import path
 from neuroimaging.utils.odict import odict
 
 class Format(BaseImage):
