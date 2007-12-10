@@ -12,8 +12,8 @@ __docformat__ = 'restructuredtext'
 
 import numpy as N
 
-from scipy.sandbox.models.utils import recipr0
-from scipy.sandbox.models.utils import StepFunction
+from scipy.stats.models.utils import recipr0
+from scipy.stats.models.utils import StepFunction
 from scipy.interpolate import interp1d
 
 # Prototypical stimuli: "Event" (on/off) and "Stimuli" (step function)

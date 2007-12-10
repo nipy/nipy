@@ -16,7 +16,7 @@ __docformat__ = 'restructuredtext'
 
 import numpy as N
 import numpy.linalg as L
-from scipy.sandbox.models.utils import recipr
+from scipy.stats.models.utils import recipr
 
 from neuroimaging.core.api import Image
 

@@ -4,7 +4,7 @@ import csv, copy
 import numpy as N
 
 from neuroimaging.modalities.fmri.functions import TimeFunction, Events
-from scipy.sandbox.models.formula import factor, quantitative, formula, term
+from scipy.stats.models.formula import Factor, Quantitative, Formula, Term
 
 namespace = {}
 downtime = 'None/downtime'
@@ -83,7 +83,7 @@ class ExperimentalRegressor(object):
             if hasattr(self, '_nameunconv'):
                 return self._nameunconv
             else:
-                return term.names(self)
+                return Term.names(self)
 
     def _convolved__call__(self, time, **keywords):
         """
@@ -144,7 +144,7 @@ class ExperimentalRegressor(object):
         return TimeFunction(fn=self, slice=slice, nout=nout)
 
 
-class ExperimentalQuantitative(ExperimentalRegressor, quantitative):
+class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
     """
     Generate a regressor that is a function of time
     based on a function fn.
@@ -172,7 +172,7 @@ class ExperimentalQuantitative(ExperimentalRegressor, quantitative):
         else:
             names = name
 
-        quantitative.__init__(self, names, func=fn, termname=termname, **keywords)
+        Quantitative.__init__(self, names, func=fn, termname=termname, **keywords)
             
 class Time(ExperimentalQuantitative):
     
@@ -264,7 +264,7 @@ class ExperimentalStepFunction(ExperimentalQuantitative):
 
         return self.events
 
-class ExperimentalFactor(ExperimentalRegressor, factor):
+class ExperimentalFactor(ExperimentalRegressor, Factor):
     """
     Return a factor that is a function of experimental time based on
     an iterator. If the delta attribute is False, it is assumed that
@@ -311,7 +311,7 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
         
         self.fromiterator(iterator)
         keys = self.events.keys() + [downtime]
-        factor.__init__(self, name, keys)
+        Factor.__init__(self, name, keys)
         self._event_keys = self.events.keys()
         self._event_keys.sort()
         namespace[name] = self
@@ -390,7 +390,7 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
                 which = N.argmax(value, axis=0)
                 which = N.where(s, which, keys.index(downtime))
                 tmp, self.namespace = self.namespace, {self.termname:[keys[w] for w in which]}
-                value = factor.__call__(self)
+                value = Factor.__call__(self)
                 self.namespace = tmp
             else:
                 value = N.asarray(value)
@@ -410,7 +410,7 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
         
         :Returns: TODO
         """
-        names = factor.names(self)
+        names = Factor.names(self)
 
         _keep = []
         for i, name in enumerate(names):
@@ -455,7 +455,7 @@ class ExperimentalFactor(ExperimentalRegressor, factor):
             self.events[eventtype].append(float(start), dt, height=height)
 
 
-class ExperimentalFormula(formula):
+class ExperimentalFormula(Formula):
     """
     A formula with no intercept.
     """
@@ -470,7 +470,7 @@ class ExperimentalFormula(formula):
         
         :Returns: `ExperimentalFormula`
         """
-        return ExperimentalFormula(formula.__mul__(self, other))
+        return ExperimentalFormula(Formula.__mul__(self, other))
 
     def __add__(self, other):
         """
@@ -480,7 +480,7 @@ class ExperimentalFormula(formula):
         
         :Returns: `ExperimentalFormula`
         """
-        return ExperimentalFormula(formula.__add__(self, other))
+        return ExperimentalFormula(Formula.__add__(self, other))
 
     def __call__(self, time, **keywords):
         """
@@ -515,7 +515,7 @@ class ExperimentalFormula(formula):
                 
         :Returns: TODO
         """
-        names = formula.names(self)
+        names = Formula.names(self)
 
         _keep = []
         for i, name in enumerate(names):

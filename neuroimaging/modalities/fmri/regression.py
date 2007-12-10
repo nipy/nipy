@@ -8,7 +8,7 @@ import os
 import numpy as N
 import numpy.linalg as L
 from scipy.linalg import toeplitz
-from scipy.sandbox.models.utils import recipr
+from scipy.stats.models.utils import recipr
 
 import neuroimaging.algorithms.regression as imreg
 
