@@ -13,3 +13,11 @@ prefix = "http://www-stat.stanford.edu/~jtaylo/matthew"
 sentence = Image("%s/fixed-spm/block/contrasts/sentence/fiac3/t.nii" % prefix)
 average = Image("%s/fixed-spm/block/contrasts/average/fiac3/t.nii" % prefix)
 
+
+
+# random effects sentence and overall 
+
+prefix = "http://kff.stanford.edu/FIAC/multi/block/contrasts"
+sentence = Image("%s/sentence/t.nii" % prefix)
+average = Image("%s/average/t.nii" % prefix)
+

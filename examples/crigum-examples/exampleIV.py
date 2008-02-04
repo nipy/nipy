@@ -21,7 +21,7 @@ import numpy as N
 from scipy import mgrid
 
 import sys
-sys.path.append("../trauma-study/python")
+sys.path.append("./trauma-study/python")
 
 from hotelling import effect, T2
 
@@ -55,7 +55,7 @@ mayavi.add_module(o)
 
 import struct
 
-wm = N.array(struct.unpack("<%df" % (181*217*181,), file("../trauma-study/python/CNT_AVG_wm.bin").read()))
+wm = N.array(struct.unpack("<%df" % (181*217*181,), file("./trauma-study/python/CNT_AVG_wm.bin").read()))
 wm.shape = (181,217,181)
 wm = wm[::2,::2,::2]
 
