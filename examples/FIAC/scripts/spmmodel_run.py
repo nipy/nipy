@@ -9,21 +9,20 @@ import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import model, io
-
+import spm_model.spm_model as spm
 
 def run(subj, run):
     try:
-        model.run(subj, run)
-    except ValueError:
+        spm.run(subj=subj, run=run)
+    except:
         pass
-    
-    os.system("bzip2 %s/fiac%d/fonc%d/fsl/fmristat_run/*/*/*nii" % (io.data_path, subj, run))
+    os.system("bzip2 %s/fiac%d/fonc%d/spm/*/*/*nii" % (io.data_path, subj, run))
 
 if __name__ == "__main__":
-
     if len(sys.argv) == 3:
-        subj, _run = map(int, sys.argv[1:])
+        subj, run_ = map(int, sys.argv[1:])
     else:
-        subj, _run = (1, 2)
+        subj, run_ = (1, 2)
 
-    run(subj, _run)
+    run(subj, run_)
+
