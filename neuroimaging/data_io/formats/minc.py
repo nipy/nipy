@@ -14,9 +14,9 @@ from neuroimaging.core.reference.grid import SamplingGrid
 
 from ecat7 import CacheData
 
-class MINC(Format):
+class MINC1(Format):
     """
-    A Class to read MINC format images. No write support yet
+    A Class to read MINC1 format images. No write support yet
     	
     TODO: 
     * handle direction cosines (need some test cases!) 	
@@ -107,6 +107,8 @@ class MINC(Format):
 
         """
 
+        _data = N.zeros(data.shape, N.float)
+
        	im = self.get_variable("image")
 
         if self.norm_range is None:
@@ -117,8 +119,8 @@ class MINC(Format):
                                ('c','unsigned'):'c',
                                ('i','unsigned'):'I',
                                ('i','signed__'):'i',		
-                               ('h','unsigned'):'h',
-                               ('h','signed__'):'H',		
+                               ('h','unsigned'):'H',
+                               ('h','signed__'):'h',		
                                }[(im.typecode(), im.signtype)]
 
                 vrange = {'B':[0,255],
@@ -148,7 +150,7 @@ class MINC(Format):
         indices.shape = (indices.shape[0], N.product(indices.shape[1:]))
         
         def __normalize(d, i, I, v, V):
-            return N.clip((d - v).astype(N.float) / (V - v), 0, 1) * (I - i) + i
+            return N.clip((d - v).astype(N.float) / float(V - v), 0., 1.) * (I - i) + i
 
         for index in indices.T:
             slice_ = []
@@ -161,8 +163,14 @@ class MINC(Format):
                     slice_.append(slice(index[iaxis], index[iaxis]+1,1))
                     aslice_.append(slice(index[iaxis], index[iaxis]+1,1))
                     iaxis += 1
-            data[slice_] = __normalize(data[slice_], image_min[aslice_], image_max[aslice_], vrange[0], vrange[1])
-	return data
+            try:
+                _image_min = image_min[aslice_]
+                _image_max = image_max[aslice_]
+            except IndexError:
+                _image_min = image_min.getValue()
+                _image_max = image_max.getValue()
+            _data[slice_] = __normalize(data[slice_], _image_min, _image_max, vrange[0], vrange[1])
+	return _data
 
     def __getitem__(self, slice_):
         """
