@@ -36,7 +36,8 @@ __docformat__ = 'restructuredtext en'
 
 
 from version import version as __version__
-__revision__ = int("$Rev$".split()[-2])
+# FIXME
+#__revision__ = int("$Rev$".split()[-2])
 __status__   = 'alpha'
 __date__    = "$LastChangedDate$"
 __url__     = 'http://neuroimaging.scipy.org'
