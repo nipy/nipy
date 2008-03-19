@@ -1,5 +1,9 @@
 from setuptools import setup
 execfile('setup.py') #,
+
+# FIXME: GV: This is probably not necessary, but I am keeping it here,
+#            just in case we lost useful information.
+#
 #         {'additional_params' :
 #         {'namespace_packages' : ['mpl_toolkits']}})
 
