@@ -13,10 +13,6 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('testing')
     config.add_data_dir('testing')
 
-    try: os.remove("lib/neuroimaging/__svn_version__.py")
-    except OSError: pass
-    config.make_svn_version_py(delete=False)
-
     return config
 
 if __name__ == '__main__':
