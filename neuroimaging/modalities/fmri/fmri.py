@@ -1,59 +1,22 @@
 import numpy as N
 
 
-from neuroimaging.core.api import Image, CoordinateSystem, SamplingGrid, \
-     Mapping, Affine
-from neuroimaging.core.api import load_image as _load_image
-from neuroimaging.core.image.iterators import SliceIterator
+from neuroimaging.core.api import ImageList
 
-from neuroimaging.data_io.datasource import DataSource
+from neuroimaging.core.image.iterators import SliceIterator
 
 # this is unnecessary, i think
 from neuroimaging.modalities.fmri.iterators import FmriParcelIterator, \
      FmriSliceParcelIterator
 
-class ImageList:
 
-    def __init__(self, images=None):
 
-        if images is not None:
-            for im in images:
-                if not hasattr(im, "grid"):
-                    raise ValueError, "expecting each element of images to have a 'grid' attribute"
-            self.list = images
-        else:
-            self.list = []
-
-    def __array__(self):
-        """Return data in ndarray.  Called through numpy.array.
-        
-        # BUG: this doctest has to look like a list of images
-
-        Examples
-        --------
-        >>> import numpy as np
-        >>> from neuroimaging.core.image import image
-        >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'))
-        >>> imgarr = np.array(img)
-
-        """
-
-        return np.asarray([np.asarray(im) for im in self.list])
-
-    def __iter__(self):
-        self._iter = iter(self.list)
-        return self
-
-    def next(self):
-        return self._iter.next()
-
-    
-class FmriImageList:
+class FmriImage(Image):
     """
     TODO
     """
 
-    def __init__(self, fourd_image, TR=None):
+    def __init__(self, data, grid, frametimes=None, slicetimes=None):
         """
         :Parameters:
             `_image` : `FmriImage` or `Image` or ``string`` or ``array``
@@ -63,8 +26,7 @@ class FmriImageList:
             `keywords` : dict
                 Passed through as keyword arguments to `core.api.Image.__init__`
         """
-
-        self._image 
+        Image.__init__(self, data, grid)
         self.frametimes = frametimes
         self.slicetimes = slicetimes
 
