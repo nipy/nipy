@@ -11,14 +11,20 @@ Examples
 >>> img.shape
 (20, 2, 20, 20)
 
+Notes
+-----
+BUG: anatomical.nii.gz is a copy of functional.nii.gz.  This is a place-holder
+    until we build a proper anatomical test image.
+
 """
 
 import os
 
-__all__ = ['funcfile']
+__all__ = ['funcfile', 'anatfile']
 
 # Discover directory path
 filepath = os.path.abspath(__file__)
 basedir = os.path.dirname(filepath)
 
 funcfile = os.path.join(basedir, 'functional.nii.gz')
+anatfile = os.path.join(basedir, 'anatomical.nii.gz')
