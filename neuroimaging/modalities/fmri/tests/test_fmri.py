@@ -7,8 +7,8 @@ import neuroimaging.core.reference.grid as grid
 
 from neuroimaging.utils.test_decorators import slow, data
 
-from neuroimaging.modalities.fmri.api import FmriImage
-from neuroimaging.core.api import Image, load_image, parcel_iterator
+from neuroimaging.modalities.fmri.api import FmriImage, parcel_iterator
+from neuroimaging.core.api import Image, load_image
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.api import Analyze
 
@@ -59,7 +59,7 @@ class test_fMRI(NumpyTestCase):
         parcelmap = (self.rho[:] * 100).astype(N.int32)
         
         v = 0
-        for t in parcel_iterator(self.rho, parcelmap):
+        for t in parcel_iterator(self.img, parcelmap):
             v += t.shape[1]
         self.assertEquals(v, parcelmap.size)
 
@@ -67,8 +67,8 @@ class test_fMRI(NumpyTestCase):
         parcelmap = (self.rho[:] * 100).astype(N.int32)
 
         v = 0
-        for t in parcel_iterator(self.rho, parcelmap):
-            v += t.shape[0]
+        for t in parcel_iterator(self.img, parcelmap):
+            v += t.shape[1]
 
         self.assertEquals(v, parcelmap.size)
 

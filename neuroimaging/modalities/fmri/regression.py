@@ -10,12 +10,7 @@ import numpy.linalg as L
 from scipy.linalg import toeplitz
 from neuroimaging.fixes.scipy.stats_models.utils import recipr
 
-import neuroimaging.algorithms.regression as imreg
-
-from neuroimaging.defines import pylab_def
-_PYLAB_DEF, pylab = pylab_def()
-if _PYLAB_DEF:
-    from neuroimaging.ui.visualization.multiplot import MultiPlot
+import neuroimaging.algorithms.statistics.regression as imreg
 
 class FmriRegressionOutput(imreg.ImageRegressionOutput):
     """
@@ -133,16 +128,6 @@ class TContrastOutput(FmriRegressionOutput, imreg.TContrastOutput):
         outdir = os.path.join(path, subpath, self.contrast.name)
         imreg.TContrastOutput._setup_output(self, clobber, path, subpath, ext)
 
-        if _PYLAB_DEF:
-            ftime = frametimes
-            f = pylab.gcf()
-            f.clf()
-            pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
-                           dt = ftime.max() / 2000.,
-                           title='Column space for contrast: \'%s\'' % self.contrast.name)
-            pl.draw()
-            pylab.savefig(os.path.join(outdir, 'matrix.png'))
-            f.clf()
 
     def extract(self, results):
         """
@@ -192,18 +177,6 @@ class FContrastOutput(FmriRegressionOutput, imreg.FContrastOutput):
     def _setup_output(self, clobber, path, subpath, ext, frametimes):
         outdir = os.path.join(path, subpath, self.contrast.name)
         imreg.FContrastOutput._setup_output(self, clobber, path, subpath, ext)
-
-        if _PYLAB_DEF:
-            ftime = frametimes
-
-            f = pylab.gcf()
-            f.clf()
-            pl = MultiPlot(self.contrast.term, tmin=0, tmax=ftime.max(),
-                           dt = ftime.max() / 2000.,
-                           title='Column space for contrast: \'%s\'' % self.contrast.name)
-            pl.draw()
-            pylab.savefig(os.path.join(outdir, 'matrix.png'))
-            f.clf()
 
     def extract(self, results):
         """
