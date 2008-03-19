@@ -189,7 +189,6 @@ field_formats = struct_formats.values()
 # int ecode --> the code of the extension
 
 
-
 class Nifti1(binary.BinaryFormat):
     """
     A class to read and write NIFTI format images.
@@ -401,15 +400,15 @@ class Nifti1(binary.BinaryFormat):
         if self.header['qform_code'] > 0:
             
             value = quatern2mat(b=self.header['quatern_b'],
-                              c=self.header['quatern_c'],
-                              d=self.header['quatern_d'],
-                              qx=self.header['qoffset_x'],
-                              qy=self.header['qoffset_y'],
-                              qz=self.header['qoffset_z'],
-                              dx=self.header['pixdim'][1],
-                              dy=self.header['pixdim'][2],
-                              dz=self.header['pixdim'][3],
-                              qfac=qfac)
+                                c=self.header['quatern_c'],
+                                d=self.header['quatern_d'],
+                                qx=self.header['qoffset_x'],
+                                qy=self.header['qoffset_y'],
+                                qz=self.header['qoffset_z'],
+                                dx=self.header['pixdim'][1],
+                                dy=self.header['pixdim'][2],
+                                dz=self.header['pixdim'][3],
+                                qfac=qfac)
 
         elif self.header['sform_code'] > 0:
 

@@ -1,5 +1,6 @@
 from neuroimaging.core.api import ParcelIterator, SliceParcelIterator
 
+import numpy as N
 
 class FmriParcelIterator(ParcelIterator):
     """

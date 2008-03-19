@@ -1,3 +1,4 @@
+
 __docformat__ = 'restructuredtext'
 
 import numpy as N
@@ -6,7 +7,7 @@ def invertR(delta, IRF, niter=20):
     """
     If IRF has 2 components (w0, w1) return an estimate of the inverse of
     r=w1/w0, as in Liao et al. (2002). Fits a simple arctan model to the
-    ratio w1/w0.?
+    ratio w1/w0.
 
     """
 

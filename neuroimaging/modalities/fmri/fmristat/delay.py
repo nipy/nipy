@@ -23,10 +23,10 @@ from neuroimaging.modalities.fmri.regression import TContrastOutput
 from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
 
-from neuroimaging.defines import pylab_def
-PYLAB_DEF, pylab = pylab_def()
-if PYLAB_DEF:
-    from neuroimaging.ui.visualization.multiplot import MultiPlot
+## from neuroimaging.defines import pylab_def
+## PYLAB_DEF, pylab = pylab_def()
+## if PYLAB_DEF:
+##     from neuroimaging.ui.visualization.multiplot import MultiPlot
 
 class DelayContrast(Contrast):
     """
@@ -391,22 +391,23 @@ class DelayContrastOutput(TContrastOutput):
             matrix.tofile(outfile)
             outfile.close()
 
-            if PYLAB_DEF:
+##             if PYLAB_DEF:
                 
-                ftime = frametimes
-                def g(time=None, **extra):
-                    return N.squeeze(N.dot(l, self.contrast.term(time=time,
-                                                                 **extra)))
-                f = pylab.gcf()
-                f.clf()
-                pl = MultiPlot(g, tmin=0, tmax=ftime.max(),
-                               dt = ftime.max() / 2000.,
-                               title='Magnitude column space for delay: \'%s\'' % rowname)
-                pl.draw()
-                pylab.savefig(os.path.join(outdir, 'matrix%s.png' % rowname))
-                f.clf()
-                del(f); del(g)
+##                 ftime = frametimes
+##                 def g(time=None, **extra):
+##                     return N.squeeze(N.dot(l, self.contrast.term(time=time,
+##                                                                  **extra)))
+##                 f = pylab.gcf()
+##                 f.clf()
+##                 pl = MultiPlot(g, tmin=0, tmax=ftime.max(),
+##                                dt = ftime.max() / 2000.,
+##                                title='Magnitude column space for delay: \'%s\'' % rowname)
+##                 pl.draw()
+##                 pylab.savefig(os.path.join(outdir, 'matrix%s.png' % rowname))
+##                 f.clf()
+##                 del(f); del(g)
                 
+
     def extract(self, results):
         """
         :Parameters:

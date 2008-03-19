@@ -18,5 +18,5 @@ from neuroimaging.core.reference.axis import VoxelAxis, space, spacetime
 from neuroimaging.core.image.image import Image, merge_images, merge_to_array, zeros
 from neuroimaging.core.image.image import load as load_image
 from neuroimaging.core.image.image import save as save_image
-from neuroimaging.core.image.image import slice_iterator, slice_parcel_iterator, parcel_iterator
+from neuroimaging.core.image.image import slice_iterator, slice_parcel_iterator, parcel_iterator, fromarray
 

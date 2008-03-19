@@ -68,7 +68,7 @@ class BinaryFormat(Format):
                                self.header_formats.values())
         for field, val in zip(self.header.keys(), values):
             self.header[field] = val
-
+        return self.header
 
     def write_header(self, hdrfile=None, clobber=False):
         """
@@ -79,9 +79,9 @@ class BinaryFormat(Format):
         # handle that case immediately
         # Otherwise, try to write to the object's header file
         if hdrfile:
-            fp = isinstance(hdrfile, str) and open(hdrfile,'wb+') or hdrfile
+            fp = isinstance(hdrfile, str) and open(hdrfile,'rb+') or hdrfile
         elif self.datasource.exists(self.header_file):
-            fp = self.datasource.open(self.header_file, 'wb+')
+            fp = self.datasource.open(self.header_file, 'rb+')
         else:
             fp = open(self.datasource._fullpath(self.header_file), 'wb+')
         packed = utils.struct_pack(self.byteorder,

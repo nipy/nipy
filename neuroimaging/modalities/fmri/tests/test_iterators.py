@@ -3,9 +3,9 @@ from numpy.testing import NumpyTest, NumpyTestCase
 
 import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.reference.grid as grid
-from neuroimaging.core.api import slice_parcel_iterator
+from neuroimaging.modalities.fmri.api import slice_parcel_iterator, FmriImage, \
+     parcel_iterator
 
-from neuroimaging.modalities.fmri.api import FmriImage
 
 class test_Iterators(NumpyTestCase):
 
@@ -24,11 +24,11 @@ class test_Iterators(NumpyTestCase):
         
         expected = [N.product(self.img.shape[1:]) - 6, 3, 3, 0]
 
-        iterator = self.img.parcel_iterator(parcelmap, parcelseq)
+        iterator = parcel_iterator(self.img, parcelmap, parcelseq)
         for i, slice_ in enumerate(iterator):
             self.assertEqual((self.img.shape[0], expected[i],), slice_.shape)
 
-        iterator = self.img.parcel_iterator(parcelmap)
+        iterator = parcel_iterator(self.img, parcelmap)
         for i, slice_ in enumerate(iterator):
             self.assertEqual((self.img.shape[0], expected[i],), slice_.shape)
 
@@ -43,23 +43,23 @@ class test_Iterators(NumpyTestCase):
         parcelseq = (0, 1, 2, 3)
         expected = [N.product(self.img.shape[1:]) - 6, 3, 3, 0]
 
-        iterator = self.img.parcel_iterator(parcelmap, parcelseq, mode='w')
+        iterator = parcel_iterator(self.img, parcelmap, parcelseq, mode='w')
         for i, slice_ in enumerate(iterator):
             value = N.asarray([N.arange(expected[i]) for _ in range(self.img.shape[0])])
             slice_.set(value)
 
-        iterator = self.img.parcel_iterator(parcelmap, parcelseq)
+        iterator = parcel_iterator(self.img, parcelmap, parcelseq)
         for i, slice_ in enumerate(iterator):
             self.assertEqual((self.img.shape[0], expected[i],), slice_.shape)
             N.testing.assert_equal(slice_, N.asarray([N.arange(expected[i]) for _ in range(self.img.shape[0])]))
 
 
-        iterator = self.img.parcel_iterator(parcelmap, mode='w')
+        iterator = parcel_iterator(self.img, parcelmap, mode='w')
         for i, slice_ in enumerate(iterator):
             value = N.asarray([N.arange(expected[i]) for _ in range(self.img.shape[0])])
             slice_.set(value)
 
-        iterator = self.img.parcel_iterator(parcelmap)
+        iterator = parcel_iterator(self.img, parcelmap)
         for i, slice_ in enumerate(iterator):
             self.assertEqual((self.img.shape[0], expected[i],), slice_.shape)
             N.testing.assert_equal(slice_, N.asarray([N.arange(expected[i]) for _ in range(self.img.shape[0])]))
@@ -75,15 +75,15 @@ class test_Iterators(NumpyTestCase):
         parcelmap[0,1,0] = 2
         parcelseq = (0, 1, 2, 3)
         expected = [N.product(self.img.shape[1:]) - 6, 3, 3, 0]
-        iterator = self.img.parcel_iterator(parcelmap, parcelseq)
-        tmp = FmriImage(self.img)
+        iterator = parcel_iterator(self.img, parcelmap, parcelseq)
+        tmp = FmriImage(self.img[:] * 1., self.img.grid)
 
         new_iterator = iterator.copy(tmp)
 
         for i, slice_ in enumerate(new_iterator):
             self.assertEqual((self.img.shape[0], expected[i],), slice_.shape)
 
-        iterator = self.img.parcel_iterator(parcelmap)
+        iterator = parcel_iterator(self.img, parcelmap)
         for i, slice_ in enumerate(new_iterator):
             self.assertEqual((self.img.shape[0], expected[i],), slice_.shape)
 
