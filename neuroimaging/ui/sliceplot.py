@@ -25,9 +25,9 @@ class SlicePlot(object):
     Examples
     --------
     >>> from neuroimaging.ui import sliceplot
-    >>> from neuroimaging.data import MNI_file
+    >>> from neuroimaging.testing import anatfile
     >>> from neuroimaging.core.image import image
-    >>> img = image.load(MNI_file)
+    >>> img = image.load(anatfile)
     >>> zdim, ydim, xdim = img.shape
     >>> sag_slice = img[:, :, xdim/2]
     >>> import pylab
@@ -335,15 +335,15 @@ class SliceViewer(object):
     --------
     
     >>> import neuroimaging.ui.sliceplot as spt
-    >>> from neuroimaging.data import MNI_file
+    >>> from neuroimaging.testing import anatfile
     >>> # Initialize viewer with a data file
-    >>> viewer = spt.SliceViewer(MNI_file)
+    >>> viewer = spt.SliceViewer(anatfile)
 
     >>> import neuroimaging.ui.sliceplot as spt
-    >>> from neuroimaging.data import MNI_file
+    >>> from neuroimaging.testing import anatfile
     >>> viewer = spt.SliceViewer()
     >>> # Set the data after viewer is created
-    >>> viewer.set_data(MNI_file)
+    >>> viewer.set_data(anatfile)
 
     """
 

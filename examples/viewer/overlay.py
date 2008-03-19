@@ -5,16 +5,16 @@
 import pylab
 
 from neuroimaging.core.image import image
-from neuroimaging.data import MNI_file
-from neuroimaging.data import avganat_file
+from neuroimaging.testing import anatfile
+from neuroimaging.testing import funcfile
 
 import neuroimaging.ui.sliceplot as spt
 
 # Create a SliceViewer and load the anatomical
-viewer = spt.SliceViewer(MNI_file)
+viewer = spt.SliceViewer(anatfile)
 
 # load overlay img
-avgimg = image.load(avganat_file)
+avgimg = image.load(funcfile)
 # add it to the viewer
 viewer.set_overlay(avgimg)
 # change overlay cmap to Reds

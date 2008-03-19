@@ -187,10 +187,10 @@ def load(url, datasource=DataSource(), format=None, **keywords):
     --------
 
     >>> from neuroimaging.core.image import image
-    >>> from neuroimaging.data import MNI_file
-    >>> img = image.load(MNI_file)
+    >>> from neuroimaging.testing import anatfile
+    >>> img = image.load(anatfile)
     >>> img.shape
-    (91, 109, 91)
+    (20, 2, 20, 20)
 
     """
 
@@ -235,8 +235,8 @@ def save(img, filename, datasource=DataSource(), clobber=False, format=None, **k
     
     >>> from numpy import allclose
     >>> from neuroimaging.core.image import image
-    >>> from neuroimaging.data import MNI_file
-    >>> img_orig = image.load(MNI_file)
+    >>> from neuroimaging.testing import anatfile
+    >>> img_orig = image.load(anatfile)
     >>> # For testing, we'll use a tempfile for saving.
     >>> # In 'real' work, you would save to a known directory.
     >>> from tempfile import mkstemp
@@ -312,8 +312,8 @@ def slice_iterator(img, axis=0, mode='r'):
 
     >>> import numpy as np
     >>> from neuroimaging.core.image import image
-    >>> from neuroimaging.data import MNI_file
-    >>> img = image.load(MNI_file)
+    >>> from neuroimaging.testing import anatfile
+    >>> img = image.load(anatfile)
     >>> for slice_ in image.slice_iterator(img):
     ...     y = np.mean(slice_)
     
@@ -393,8 +393,8 @@ class Image(object):
     --------
 
     >>> from neuroimaging.core.image import image
-    >>> from neuroimaging.data import MNI_file
-    >>> img = image.load(MNI_file)
+    >>> from neuroimaging.testing import anatfile
+    >>> img = image.load(anatfile)
 
     >>> import numpy as np
     >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'))
@@ -453,8 +453,8 @@ class Image(object):
         Examples
         --------
         >>> from neuroimaging.core.image import image
-        >>> from neuroimaging.data import MNI_file
-        >>> img = image.load(MNI_file)
+        >>> from neuroimaging.testing import anatfile
+        >>> img = image.load(anatfile)
         >>> zdim, ydim, xdim = img.shape
         >>> central_axial_slice = img[zdim/2, :, :]
 

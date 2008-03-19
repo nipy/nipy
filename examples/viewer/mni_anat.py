@@ -14,14 +14,14 @@ In [8]: viewer.set_data(imgarray)
 import pylab
 
 from neuroimaging.core.image import image
-from neuroimaging.data import MNI_file
+from neuroimaging.testing import anatfile
 
 import neuroimaging.ui.sliceplot as spt
 
 # Create a SliceViewer
 viewer = spt.SliceViewer()
 # Load our image
-img = image.load(MNI_file)
+img = image.load(anatfile)
 # Set the data for plots in the viewer
 viewer.set_data(img)
 
