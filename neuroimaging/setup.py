@@ -10,11 +10,6 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('modalities')
     config.add_subpackage('ui')
     config.add_subpackage('utils')
-
-    # FIXME: remove once testing is setup
-    config.add_subpackage('data')
-    config.add_data_dir('data')
-
     config.add_subpackage('testing')
     config.add_data_dir('testing')
 
