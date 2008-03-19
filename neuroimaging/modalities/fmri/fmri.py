@@ -8,90 +8,52 @@ from neuroimaging.core.image.iterators import SliceIterator
 
 from neuroimaging.data_io.datasource import DataSource
 
+# this is unnecessary, i think
 from neuroimaging.modalities.fmri.iterators import FmriParcelIterator, \
      FmriSliceParcelIterator
 
-class FmriSamplingGrid(SamplingGrid):
-    """
-    TODO
-    """
+class ImageList:
 
-    def __init__(self, shape, mapping, input_coords, output_coords):
-        """
-        :Parameters:
-            `shape` : tuple of ints
-                The shape of the grid
-            `mapping` : `mapping.Mapping`
-                The mapping between input and output coordinates
-            `input_coords` : `CoordinateSystem`
-                The input coordinate system
-            `output_coords` : `CoordinateSystem`
-                The output coordinate system
-        """
-        SamplingGrid.__init__(self, shape, mapping, input_coords, output_coords)
+    def __init__(self, images=None):
 
-    def isproduct(self, tol = 1.0e-07):
-        """Determine whether the affine transformation is 'diagonal' in time.
-        
-        :Parameters:
-            `tol` : float
-                TODO
-                
-        :Returns: ``bool``
-        """
-
-        if not isinstance(self.mapping, Affine):
-            return False
-        ndim = self.ndim
-        t = self.mapping.transform
-        offdiag = N.add.reduce(t[1:ndim,0]**2) + N.add.reduce(t[0,1:ndim]**2)
-        norm = N.add.reduce(N.add.reduce(t**2))
-        return N.sqrt(offdiag / norm) < tol
-
-
-    def subgrid(self, i):
-        """
-        Return a subgrid of FmriSamplingGrid. If the image's mapping is an
-        Affine instance and is 'diagonal' in time, then it returns a new
-        Affine instance. Otherwise, if the image's mapping is a list of
-        mappings, it returns the i-th mapping.  Finally, if these two do not
-        hold, it returns a generic, non-invertible map in the original output
-        coordinate system.
-        
-        :Parameters:
-            `i` : int
-                The index of the subgrid to return
-
-        :Returns:
-            `SamplingGrid`
-        """
-        incoords = self.input_coords.sub_coords()
-        outcoords = self.output_coords.sub_coords()
-
-        if self.isproduct():
-            t = self.mapping.transform
-            t = t[1:,1:]
-            W = Affine(t)
-
+        if images is not None:
+            for im in images:
+                if not hasattr(im, "grid"):
+                    raise ValueError, "expecting each element of images to have a 'grid' attribute"
+            self.list = images
         else:
-            def _map(x, fn=self.mapping.map, **keywords):
-                if len(x.shape) > 1:
-                    _x = N.zeros((x.shape[0]+1,) + x.shape[1:])
-                else:
-                    _x = N.zeros((x.shape[0]+1,))
-                _x[0] = i
-                return fn(_x)
-            W = Mapping(_map)
+            self.list = []
 
-        _grid = SamplingGrid(self.shape[1:], W, incoords, outcoords)
-        return _grid
+    def __array__(self):
+        """Return data in ndarray.  Called through numpy.array.
+        
+        # BUG: this doctest has to look like a list of images
 
-class FmriImage(Image):
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from neuroimaging.core.image import image
+        >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'))
+        >>> imgarr = np.array(img)
+
+        """
+
+        return np.asarray([np.asarray(im) for im in self.list])
+
+    def __iter__(self):
+        self._iter = iter(self.list)
+        return self
+
+    def next(self):
+        return self._iter.next()
+
+    
+class FmriImageList:
     """
     TODO
     """
 
-    def __init__(self, data, grid, frametimes=None, slicetimes=None):
+    def __init__(self, fourd_image, TR=None):
         """
         :Parameters:
             `_image` : `FmriImage` or `Image` or ``string`` or ``array``
@@ -101,7 +63,8 @@ class FmriImage(Image):
             `keywords` : dict
                 Passed through as keyword arguments to `core.api.Image.__init__`
         """
-        Image.__init__(self, data, grid)
+
+        self._image 
         self.frametimes = frametimes
         self.slicetimes = slicetimes
 
