@@ -344,7 +344,10 @@ class Nifti1(binary.BinaryFormat):
         self.grid = self.grid.python2matlab()
         self.header['datatype'] = sctype2datatype[self.dtype.type]
         self.header['bitpix'] = self.dtype.itemsize * 8
-        self.ndim = self.grid.ndim
+        ndimin, ndimout = self.grid.ndim
+        if ndimin != ndimout:
+            raise ValueError, 'to create NIFTI1 file, grid should have same number of input and output dimensions'
+        self.ndim = ndimin
     
         if not isinstance(self.grid.mapping, Affine):
             raise Nifti1FormatError, 'error: non-Affine grid in writing' \
