@@ -5,6 +5,7 @@ They also provide mechanisms for iterating over that space.
 
 __docformat__ = 'restructuredtext'
 
+import copy
 import numpy as N
 
 from coordinate_system import _reverse
@@ -12,8 +13,6 @@ from neuroimaging.core.reference.mapping import Mapping, Affine
 from neuroimaging.core.reference.axis import space, RegularAxis, Axis, VoxelAxis
 from neuroimaging.core.reference.coordinate_system import \
   VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
-
-
 
 class SamplingGrid (object):
     """
@@ -144,11 +143,33 @@ class SamplingGrid (object):
 
     def allslice(self):
         """
+        TODO: where is this still used?
         A slice object representing the entire grid.
         
         :Returns: ``slice``
         """
         return slice(0, self.shape[0])
+
+    def __getitem__(self, index):
+        """
+        If all input coordinates are VoxelCoordinateSystem, return
+        a slice through the grid.
+
+        """
+
+        if isinstance(self.input_coords, VoxelCoordinateSystem):
+            varcoords, mapping, shape = self.mapping._slice_mapping(index, self.shape)
+
+            ia = self.input_coords.axes()
+            newia = []
+            for i in range(self.ndim):
+                if i in varcoords:
+                    a = copy.deepcopy(ia[i])
+                    newia.append(a)
+            newic = VoxelCoordinateSystem(self.input_coords.name, newia)
+            return SamplingGrid(shape, mapping, newic, self.output_coords)
+        else:
+            raise ValueError, 'input_coords must be VoxelCoordinateSystem for slice of grid to make sense'
 
     def range(self):
         """
@@ -206,7 +227,6 @@ class SamplingGrid (object):
           SamplingGrid(count, _map, self.input_coords, self.output_coords)
         return samp_grid
 
-
     def transform(self, mapping): 
         """        
         Apply a transformation (mapping) to this grid.
@@ -221,22 +241,35 @@ class SamplingGrid (object):
 
     def matlab2python(self):
         """
-        Convert a grid in matlab-ordered voxels to python ordered voxels.
+        Convert a grid in matlab-ordered voxels to python ordered voxels
+        if input_coords is an instance of VoxelCoordinateSystem.
         See `Mapping.matlab2python` for more details.
+
+
         """
-        mapping = self.mapping.matlab2python()
-        return SamplingGrid(_reverse(self.shape), mapping, 
-          self.input_coords.reverse(), self.output_coords)
+        if isinstance(self.input_coords, VoxelCoordinateSystem):
+            mapping = self.mapping.matlab2python()
+            newi = self.input_coords.reverse()
+            return SamplingGrid(_reverse(self.shape), mapping, 
+                                VoxelCoordinateSystem(newi.name, newi.axes()),
+                                self.output_coords.reverse())
+        else:
+            raise ValueError, 'input_coords must be VoxelCoordinateSystem for self.matlab2python to make sense'
 
     def python2matlab(self):
         """
-        Convert a grid in python ordered voxels to matlab ordered voxels.
+        Convert a grid in python ordered voxels to matlab ordered voxels
+        if input_coords is an instance of VoxelCoordinateSystem.
         See `Mapping.python2matlab` for more details.
         """
-        mapping = self.mapping.python2matlab()
-        return SamplingGrid(_reverse(self.shape), mapping, 
-          self.input_coords.reverse(), self.output_coords)
-
+        if isinstance(self.input_coords, VoxelCoordinateSystem):
+            mapping = self.mapping.python2matlab()
+            newi = self.input_coords.reverse()
+            return SamplingGrid(_reverse(self.shape), mapping, 
+                                VoxelCoordinateSystem(newi.name, newi.axes()),
+                                self.output_coords.reverse())
+        else:
+            raise ValueError, 'input_coords must be VoxelCoordinateSystem for self.python2matlab to make sense'
 
     def replicate(self, n, concataxis="concat"):
         """

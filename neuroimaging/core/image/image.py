@@ -462,74 +462,9 @@ class Image(object):
 
         """
 
-        return self.return_image(index)
-#        return self._data[index]
-
-    def return_image(self, index):
-
-        print 'index', index
-        # get the array data
         data = self._data[index]
-
-        varcoords = []
-        fixcoords = []
-        coordinf = []
-        shape = []
-        maps = []
-        ones = []
-        ia = self.grid.input_coords.axes()
-
-        if type(index) != type(()):
-            index = (index,)
-        for i in index:
-            if type(i) is type(1):
-                fixcoords.append(i)
-                coordinf.append('fix')
-                maps.append(lambda x: x)
-                ones.append(np.array([i]))
-            elif type(i) is type(slice(0,1)):
-                varcoords.append(i)
-                start, stop, step = i.start, i.stop, i.step
-                if step is None:
-                    step = 1 
-                shape.append(int((stop - start) / step))
-                coordinf.append('var')
-                maps.append(lambda x: x * step + start)
-            else:
-                raise ValueError, 'expecting a list of integers or slices'
-
-        varcoords = tuple(varcoords)
-        fixcoords = tuple(fixcoords)
-        coordinf = tuple(coordinf)
-        maps = tuple(maps)
-        nd = len(self.grid.shape)
-        nvar = len(varcoords)
-        nfix = len(fixcoords)
-        
-        def mapping(x, grid=self.grid):
-            y = x.copy()
-            o = np.ones(x.shape)
-            for i in range(nvar):
-                y[i] = maps[i](y[i])
-            for i in range(nd):
-                if coordinf[i] == 'fix':
-                    o = np.vstack([o, np.ones(x.shape) * ones[i]])
-                else:
-                    o = np.vstack([o, y[i]])
-
-            return self.grid.mapping(o[1:])
-        oc = self.grid.output_coords
-        ic = self.grid.input_coords
-
-        iaxes = []
-        as = ic.axes()
-        for i in range(len(coordinf)):
-            if coordinf[i] == 'var':
-                iaxes.append(as[i])
-        newic = CoordinateSystem(ic.name, iaxes)
-        shape = tuple(shape)
-        newgrid = SamplingGrid(shape, mapping, newic, oc)
-        return Image(data, newgrid)
+        grid = self.grid[index]
+        return Image(data, grid)
     
     def __setitem__(self, slice_, data):
         """Set values of ``slice_`` to ``data``.
