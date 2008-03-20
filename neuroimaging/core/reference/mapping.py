@@ -307,7 +307,7 @@ class Mapping(object):
         ssteps = []
         sstarts = []
 
-        if type(index) != type(()):
+        if type(index) not in  [type(()), type([])]:
             index = (index,)
         for i in range(len(index), len(gshape)):
             index += (slice(0,gshape[i],1),)
@@ -320,12 +320,22 @@ class Mapping(object):
                 start, stop, step = i.start, i.stop, i.step
                 if step is None:
                     step = 1 
-                shape.append(int((min(stop,gshape[i]) - min(start,gshape[i])) / step))
+                if stop is None:
+                    stop = gshape[j]
+                stop = min(stop, gshape[j])
+                if start is None:
+                    start = 0
+                start = min(start, gshape[j])
+                try:
+                    x = stop - start
+                except:
+                    raise ValueError, `stop` + ' ' + `start` + ' ' + `i` + ' ' + `type(i)` + ' ' + `i.stop`
+                shape.append(int((stop - start) / step))
                 sstarts.append(start)
                 maps.append(lambda x: x * step + start)
                 ssteps.append(step)
             else:
-                raise ValueError, 'expecting a tuple of integers or slices'
+                raise ValueError, 'expecting a tuple or sequence of integers or slices'
         return varcoords, tuple(maps), sstarts, ssteps, shape
 
     def matlab2python(self):
@@ -434,7 +444,6 @@ class Affine(Mapping):
         startvector = N.dot(self.transform, N.array(list(start)+[1]))[:-1]
 
         tmatrix = N.zeros((len(gshape) + 1, len(varcoords) + 1))
-        print tmatrix.shape
         for i, j in enumerate(varcoords):
             tmatrix[:-1,i] = self.transform[:-1,j]
         tmatrix[-1,-1] = 1.

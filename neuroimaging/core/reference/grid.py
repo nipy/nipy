@@ -14,7 +14,7 @@ from neuroimaging.core.reference.axis import space, RegularAxis, Axis, VoxelAxis
 from neuroimaging.core.reference.coordinate_system import \
   VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
 
-class SamplingGrid (object):
+class SamplingGrid(object):
     """
     Defines a set of input and output coordinate systems and a mapping between the
     two, which represents the mapping of (for example) an image from voxel space
@@ -51,7 +51,7 @@ class SamplingGrid (object):
         transform = output_coords.transform()
         
         mapping = Affine(transform)
-        return SamplingGrid(list(shape), mapping, input_coords, output_coords)
+        return SamplingGrid(mapping, input_coords, output_coords)
 
 
     @staticmethod
@@ -65,7 +65,8 @@ class SamplingGrid (object):
             names : ``tuple`` of ``string``
                 TODO
 
-        :Returns: `SamplingGrid`
+        :Returns: `SamplingGrid` with `VoxelCoordinateSystem` input
+                  and an identity transform 
         
         :Precondition: ``len(shape) == len(names)``
         
@@ -74,12 +75,13 @@ class SamplingGrid (object):
         ndim = len(shape)
         if len(names) != ndim:
             raise ValueError('shape and number of axis names do not agree')
-        axes = [VoxelAxis(name) for name in names]
+        iaxes = [VoxelAxis(name, l) for l, name in zip(shape, names)]
+        oaxes = [VoxelAxis(name) for name in names]
 
-        input_coords = VoxelCoordinateSystem('voxel', axes)
-        output_coords = DiagonalCoordinateSystem('world', axes)
+        input_coords = VoxelCoordinateSystem('voxel', iaxes)
+        output_coords = DiagonalCoordinateSystem('world', oaxes)
         aff_ident = Affine.identity(ndim)
-        return SamplingGrid(list(shape), aff_ident, input_coords, output_coords)
+        return SamplingGrid(aff_ident, input_coords, output_coords)
 
     @staticmethod
     def from_affine(mapping, shape=(), names=space):
@@ -105,18 +107,17 @@ class SamplingGrid (object):
             raise ValueError('shape and number of axis names do not agree')
         axes = [VoxelAxis(name) for name in names]
 
-        input_coords = VoxelCoordinateSystem('voxel', axes)
+        if shape:
+            input_coords = VoxelCoordinateSystem('voxel', axes)
+        else:
+            input_coords = DiagonalCoordinateSystem('voxel', axes)
         output_coords = DiagonalCoordinateSystem('world', axes)
 
-        return SamplingGrid(list(shape), mapping, input_coords, output_coords)
+        return SamplingGrid(mapping, input_coords, output_coords)
 
-
-
-    def __init__(self, shape, mapping, input_coords, output_coords):
+    def __init__(self, mapping, input_coords, output_coords):
         """
         :Parameters:
-            shape : ``tuple`` of ``ints``
-                The shape of the grid
             mapping : `mapping.Mapping`
                 The mapping between input and output coordinates
             input_coords : `CoordinateSystem`
@@ -125,12 +126,38 @@ class SamplingGrid (object):
                 The output coordinate system
         """
         # These guys define the structure of the grid.
-        self.shape = tuple(shape)
-        self.ndim = len(self.shape)
         self.mapping = mapping
         self.input_coords = input_coords
         self.output_coords = output_coords
 
+    def _getshape(self):
+        if isinstance(self.input_coords, VoxelCoordinateSystem):
+            s = tuple([a.length for a in self.input_coords.axes()])
+            return s
+        else:
+            raise AttributeError, "input_coords must be a VoxelCoordinateSystem to have a shape"
+    shape = property(_getshape)
+
+    def _getndim(self):
+        return (len(self.input_coords.axes()), len(self.output_coords.axes()))
+    ndim = property(_getndim)
+
+    def isaffine(self):
+        if isinstance(self.mapping, Affine):
+            return True
+        return False
+
+    def _getaffine(self):
+        if hasattr(self.mapping, "transform"):
+            return self.mapping.transform
+        raise AttributeError
+    affine = property(_getaffine)
+
+    def __call__(self, x):
+        """
+        Return self.mapping(x)
+        """
+        return self.mapping(x)
 
     def copy(self):
         """
@@ -138,7 +165,7 @@ class SamplingGrid (object):
 
         :Returns: `SamplingGrid`
         """
-        return SamplingGrid(self.shape, self.mapping, self.input_coords,
+        return SamplingGrid(self.mapping, self.input_coords,
                             self.output_coords)
 
     def allslice(self):
@@ -162,12 +189,12 @@ class SamplingGrid (object):
 
             ia = self.input_coords.axes()
             newia = []
-            for i in range(self.ndim):
+            for i in range(self.ndim[0]):
                 if i in varcoords:
                     a = copy.deepcopy(ia[i])
                     newia.append(a)
             newic = VoxelCoordinateSystem(self.input_coords.name, newia)
-            return SamplingGrid(shape, mapping, newic, self.output_coords)
+            return SamplingGrid(mapping, newic, self.output_coords)
         else:
             raise ValueError, 'input_coords must be VoxelCoordinateSystem for slice of grid to make sense'
 
@@ -177,15 +204,19 @@ class SamplingGrid (object):
         
         :Returns: TODO
         """
-        indices = N.indices(self.shape)
-        tmp_shape = indices.shape
-        # reshape indices to be a sequence of coordinates
-        indices.shape = (self.ndim, N.product(self.shape))
-        _range = self.mapping(indices)
-        _range.shape = tmp_shape
-        return _range 
+        if hasattr(self, 'shape'):
+            indices = N.indices(self.shape)
+            tmp_shape = indices.shape
+            # reshape indices to be a sequence of coordinates
+            indices.shape = (self.ndim[0], N.product(self.shape))
+            _range = self.mapping(indices)
+            _range.shape = tmp_shape
+            return _range 
+        else:
+            raise AttributeError, 'range of grid only makes sense if input_coords are VoxelCoordinateSystem'
 
-
+    # TODO: get rid of this slab method -- can do it with slicing
+    
     def slab(self, start, step, count):
         """
         A sampling grid for a hyperslab of data from an array, i.e.
@@ -207,7 +238,7 @@ class SamplingGrid (object):
         """
 
         if isinstance(self.mapping, Affine):
-            ndim = self.ndim
+            ndimin, ndimout = self.ndim
             trans = self.mapping.transform.copy()
             trans[0:ndim, ndim] = self.mapping(start)
             trans[ndim, ndim] = 1.
@@ -224,7 +255,7 @@ class SamplingGrid (object):
             _map = Mapping(__map)
 
         samp_grid = \
-          SamplingGrid(count, _map, self.input_coords, self.output_coords)
+          SamplingGrid(_map, self.input_coords, self.output_coords)
         return samp_grid
 
     def transform(self, mapping): 
@@ -250,7 +281,7 @@ class SamplingGrid (object):
         if isinstance(self.input_coords, VoxelCoordinateSystem):
             mapping = self.mapping.matlab2python()
             newi = self.input_coords.reverse()
-            return SamplingGrid(_reverse(self.shape), mapping, 
+            return SamplingGrid(mapping, 
                                 VoxelCoordinateSystem(newi.name, newi.axes()),
                                 self.output_coords.reverse())
         else:
@@ -265,7 +296,7 @@ class SamplingGrid (object):
         if isinstance(self.input_coords, VoxelCoordinateSystem):
             mapping = self.mapping.python2matlab()
             newi = self.input_coords.reverse()
-            return SamplingGrid(_reverse(self.shape), mapping, 
+            return SamplingGrid(mapping, 
                                 VoxelCoordinateSystem(newi.name, newi.axes()),
                                 self.output_coords.reverse())
         else:
@@ -305,7 +336,7 @@ class ConcatenatedGrids(SamplingGrid):
         self.concataxis = concataxis
         mapping, input_coords, output_coords = self._mapping()
         shape = (len(self.grids),) + self.grids[0].shape
-        SamplingGrid.__init__(self, shape, mapping, input_coords, output_coords)
+        SamplingGrid.__init__(self, mapping, input_coords, output_coords)
 
 
     def _grids(self, grids):
