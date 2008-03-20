@@ -46,7 +46,10 @@ class ImageList:
         """
         self.list[index]
         """
-        return self.list[index]
+        if type(index) is type(1):
+            return self.list[index]
+        else:
+            return ImageList(images=self.list[index])
 
     def __getslice__(self, i, j):
         """
