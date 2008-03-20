@@ -404,8 +404,8 @@ class Image(object):
     """
 
     def _getaffine(self):
-        if hasattr(self.grid, "transform"):
-            return self.grid.transform
+        if hasattr(self.grid, "affine"):
+            return self.grid.affine
         raise AttributeError
     affine = property(_getaffine)
 
