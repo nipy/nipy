@@ -297,9 +297,9 @@ class Nifti1(binary.BinaryFormat):
             #print 'origin:', origin
 
             self.grid = SamplingGrid.from_start_step(names=axisnames,
-                                                shape=shape,
-                                                start=-N.array(origin),
-                                                step=step)
+                                                     shape=shape,
+                                                     start=-N.array(origin),
+                                                     step=step)
             t = self.transform()
             self.grid.mapping.transform[:3,:3] = t[:3,:3]
             self.grid.mapping.transform[:3,-1] = t[:3,-1]
