@@ -486,23 +486,6 @@ class Image(object):
         """
         self._data[slice_] = data
 
-
-    def __iter__(self):
-        """ `Image`\ s cannot be used directly as iterators.
-
-        See Also
-        --------
-        slice_iterator : function in image module to iterate image slices
-
-        Notes
-        -----
-        Raises NotImplementedError
-        
-        """
-        
-        raise NotImplementedError
-
-
     def __array__(self):
         """Return data in ndarray.  Called through numpy.array.
         
