@@ -1,6 +1,6 @@
 import numpy as N
 
-from neuroimaging.core.api import ImageList
+from neuroimaging.core.api import ImageList, Image
 
 from neuroimaging.core.image.iterators import SliceIterator
 from neuroimaging.core.reference.grid import SamplingGrid
@@ -55,9 +55,24 @@ class FmriImage(ImageList):
         self.TR = TR
         self.slicetimes = slicetimes
 
+    
     def __getitem__(self, index):
-        FmriImage(images=self.list[index], TR=self.TR,
-                  slicetimes=self.slicetimes)
+        """
+        If index is an index, return self.list[index], an Image
+        else return an FmriImage with images=self.list[index].
+        
+        """
+        if type(index) is type(1):
+            return self.list[index]
+        else:
+            return FmriImage(images=self.list[index], TR=self.TR,
+                             slicetimes=self.slicetimes)
+
+    def __array__(self):
+        return N.asarray([N.asarray(i) for i in self.list])
+
+    def emptycopy(self):
+        return FmriImage(images=[], TR=self.TR, slicetimes=self.slicetimes)
 
 def parcel_iterator(img, parcelmap, parcelseq=None, mode='r'):
     """
@@ -131,13 +146,14 @@ def fromimage(fourdimage, TR=None, slicetimes=None):
     if not isinstance(fourdimage.grid.mapping, Affine):
         raise ValueError, 'fourdimage must have an Affine mapping'
     
-    for im in [fourdimage[i] for i in fourdimage.shape]:
+    print fourdimage.shape
+    for im in [fourdimage[i] for i in range(fourdimage.shape[0])]:
         g = im.grid
-        ia = g.grid.input_coords.axes()[1:]
+        ia = g.input_coords.axes()[1:]
         ic = VoxelCoordinateSystem("voxel", ia)
         t = im.grid.mapping.transform[1:]
         a = Affine(t)
         newg = SamplingGrid(a, ic, g.output_coords)
-        images.append(N.asarray(im), newg)
+        images.append(Image(N.asarray(im), newg))
 
     return FmriImage(images=images, TR=TR, slicetimes=slicetimes)
