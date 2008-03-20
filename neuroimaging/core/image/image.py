@@ -404,8 +404,8 @@ class Image(object):
     """
 
     def _getaffine(self):
-        if hasattr(self.grid, "transform"):
-            return self.grid.transform
+        if hasattr(self.grid, "affine"):
+            return self.grid.affine
         raise AttributeError
     affine = property(_getaffine)
 
@@ -485,23 +485,6 @@ class Image(object):
         """Set values of ``slice_`` to ``data``.
         """
         self._data[slice_] = data
-
-
-    def __iter__(self):
-        """ `Image`\ s cannot be used directly as iterators.
-
-        See Also
-        --------
-        slice_iterator : function in image module to iterate image slices
-
-        Notes
-        -----
-        Raises NotImplementedError
-        
-        """
-        
-        raise NotImplementedError
-
 
     def __array__(self):
         """Return data in ndarray.  Called through numpy.array.
