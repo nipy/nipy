@@ -19,13 +19,15 @@ See documentation for load and save functions for 'working' examples.
 __docformat__ = 'restructuredtext'
 __all__ = ['load', 'save', 'fromarray', 'slice_iterator']
 
-from numpy import empty
+from numpy import empty, array
+from numpy import zeros as npzeros
 
 from neuroimaging.data_io.datasource import DataSource, splitzipext
 from neuroimaging.core.image.base_image import ArrayImage
 from neuroimaging.core.image.iterators import SliceIterator, ParcelIterator, \
   SliceParcelIterator
 from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem
 from neuroimaging.data_io.formats.format import getformats
 
 def _open_pynifti(url, datasource=DataSource(), mode="r", clobber=False):
@@ -233,7 +235,7 @@ def save(img, filename, datasource=DataSource(), clobber=False, format=None, **k
     # "clobber=True" is left out. This is an IOError similar to
     # ones documented in the _open function above.
     
-    >>> from numpy import allclose
+    >>> from numpy import allclose, array
     >>> from neuroimaging.core.image import image
     >>> from neuroimaging.testing import anatfile
     >>> img_orig = image.load(anatfile)
@@ -243,7 +245,7 @@ def save(img, filename, datasource=DataSource(), clobber=False, format=None, **k
     >>> fd, filename = mkstemp(suffix='.nii')
     >>> image.save(img_orig, filename, clobber=True)
     >>> img_copy = image.load(filename)
-    >>> print allclose(img_orig[:], img_copy[:])
+    >>> print allclose(array(img_orig)[:], array(img_copy)[:])
     True
 
     """
@@ -257,7 +259,7 @@ def save(img, filename, datasource=DataSource(), clobber=False, format=None, **k
                      clobber=clobber,
                      datasource=datasource,
                      format=format, **keywords)
-    outimage[:] = img[:]
+    outimage[:] = array(img)[:]
     del(outimage)
 
 
@@ -401,6 +403,12 @@ class Image(object):
 
     """
 
+    def _getaffine(self):
+        if hasattr(self.grid, "transform"):
+            return self.grid.transform
+        raise AttributeError
+    affine = property(_getaffine)
+
     def __init__(self, data, grid):
         """Create an `Image` object from a numpy array and a `Grid` object.
         
@@ -443,11 +451,12 @@ class Image(object):
     def _getgrid(self):
         return self._grid
     grid = property(_getgrid)
+
     # NOTE: Rename grid to spacemap?  There's been much discussion regarding
     # the appropriate name of this attr.  We should probably settle it and 
     # move on.
 
-    def __getitem__(self, slice_):
+    def __getitem__(self, index):
         """Get a slice of image data.  Just like slicing a numpy array.
 
         Examples
@@ -460,8 +469,18 @@ class Image(object):
 
         """
 
-        return self._data[slice_]
-
+        if type(index) not in [type(()), type([])]:
+            index = (index,)
+        else:
+            index = tuple(index)
+        
+        for i in index:
+            if type(i) not in [type(1), type(slice(0,4,1))]:
+                raise ValueError, 'when slicing images, index must be a list of integers or slices'
+        data = self._data[index]
+        grid = self.grid[index]
+        return Image(data, grid)
+    
     def __setitem__(self, slice_, data):
         """Set values of ``slice_`` to ``data``.
         """
@@ -560,7 +579,7 @@ def zeros(grid):
     Return an Image of zeros with a given grid.
     """
     if hasattr(grid, "shape"):
-        return fromarray(N.zeros(grid.shape))
+        return fromarray(npzeros(grid.shape))
     else:
         return fromarray(grid)
 

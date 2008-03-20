@@ -12,7 +12,6 @@ from neuroimaging.utils.odict import odict
 class CoordinateSystem(odict):
     """A simple class to carry around coordinate information in one bundle."""
 
-
     def __init__(self, name, axes):
         """
         Create a coordinate system with a given name and axes.

@@ -226,7 +226,10 @@ class Analyze(binary.BinaryFormat):
         self.header['datatype'] = sctype2datatype[self.dtype.type]
         self.header['bitpix'] = self.dtype.itemsize * 8
         self.grid = self.grid.python2matlab()
-        self.ndim = self.grid.ndim
+        ndimin, ndimout = self.grid.ndim
+        if ndimin != ndimout:
+            raise ValueError, 'to create ANALYZE file, grid should have same number of input and output dimensions'
+        self.ndim = ndimin
         
         if not isinstance(self.grid.mapping, Affine):
             raise ValueError, 'non-Affine grid in writing out ANALYZE file'
@@ -240,6 +243,7 @@ class Analyze(binary.BinaryFormat):
 
         _dim = [0]*8
         _pixdim = [0.] * 8
+
         _dim[0] = self.ndim
         _dim[1:self.ndim+1] = self.grid.shape[:self.ndim]
         if _diag:

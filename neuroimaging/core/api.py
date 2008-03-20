@@ -20,3 +20,6 @@ from neuroimaging.core.image.image import load as load_image
 from neuroimaging.core.image.image import save as save_image
 from neuroimaging.core.image.image import slice_iterator, slice_parcel_iterator, parcel_iterator, fromarray
 
+from neuroimaging.core.image.image_list import ImageList
+
+
