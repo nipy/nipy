@@ -8,12 +8,11 @@ import numpy
 
 from neuroimaging import import_from
 from neuroimaging.data_io.datasource import DataSource
-from neuroimaging.core.image.base_image import BaseImage
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.utils.path import path
 from neuroimaging.utils.odict import odict
 
-class Format(BaseImage):
+class Format:
     """
     Format is a class which is abstract enough for Images to talk with. It has:
 
@@ -35,7 +34,7 @@ class Format(BaseImage):
             `grid` : TODO
                 TODO
         """
-        BaseImage.__init__(self, NotImplemented, grid, NotImplemented)
+        self.grid = grid
         # Formats should concern themselves with datasources and grids
         self.datasource = datasource
         # Has metadata
