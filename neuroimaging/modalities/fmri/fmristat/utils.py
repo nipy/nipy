@@ -4,8 +4,8 @@ import gc, os, fpformat
 
 import numpy as N
 import numpy.linalg as L
-from neuroimaging.fixes.scipy.stats_models.regression import OLSModel, ARModel
-from neuroimaging.fixes.scipy.stats_models.utils import monotone_fn_inverter, rank 
+from neuroimaging.fixes.scipy.stats.models.regression import OLSModel, ARModel
+from neuroimaging.fixes.scipy.stats.models.utils import monotone_fn_inverter, rank 
 
 from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \

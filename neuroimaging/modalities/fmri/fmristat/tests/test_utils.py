@@ -1,7 +1,7 @@
 import os, gc, shutil
 
 import numpy as N
-from neuroimaging.fixes.scipy.stats_models.contrast import Contrast
+from neuroimaging.fixes.scipy.stats.models.contrast import Contrast
 
 from numpy.testing import NumpyTest, NumpyTestCase
 

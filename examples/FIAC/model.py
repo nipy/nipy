@@ -2,7 +2,7 @@ import os, time, glob
 
 from neuroimaging import traits
 import numpy as N
-from neuroimaging.fixes.scipy.stats_models import contrast
+from neuroimaging.fixes.scipy.stats.models import contrast
 
 from neuroimaging.modalities.fmri.pca import MultiPlot
 from neuroimaging.modalities.fmri import protocol, functions

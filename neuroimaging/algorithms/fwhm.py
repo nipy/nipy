@@ -20,7 +20,7 @@ import gc
 
 import numpy as N
 from numpy.linalg import det
-from neuroimaging.fixes.scipy.stats_models.utils import recipr
+from neuroimaging.fixes.scipy.stats.models.utils import recipr
 
 from neuroimaging.core.api import Image
 
