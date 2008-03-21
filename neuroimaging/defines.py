@@ -28,7 +28,7 @@ def enthought_traits_def():
         import enthought.traits.api as traits
     except ImportError:
         try:
-            import neuroimaging.utils.enthought.traits as traits
+            import neuroimaging.externals.enthought.traits as traits
         except ImportError:
             ENTHOUGHT_TRAITS_DEF = False
             traits = None
