@@ -5,7 +5,6 @@ system.  Use this module for importing core names into your namespace. For examp
 """
 
 # Note: The order of imports is important here.
-from neuroimaging.core.image.base_image import BaseImage
 from neuroimaging.core.reference.grid import SamplingGrid
 
 from neuroimaging.core.image.iterators import SliceParcelIterator, \
@@ -18,8 +17,8 @@ from neuroimaging.core.reference.axis import VoxelAxis, space, spacetime
 from neuroimaging.core.image.image import Image, merge_images, merge_to_array, zeros
 from neuroimaging.core.image.image import load as load_image
 from neuroimaging.core.image.image import save as save_image
-from neuroimaging.core.image.image import slice_iterator, slice_parcel_iterator, parcel_iterator, fromarray
+from neuroimaging.core.image.image import fromarray
 
 from neuroimaging.core.image.image_list import ImageList
 
-
+from neuroimaging.core.image.generators import parcels, data_generator, write_data
