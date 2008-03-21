@@ -22,14 +22,14 @@ from enthought.mayavi.modules.vectors import Vectors
 
 import numpy as N
 
-from neuroimaging.core.image.image import Image
+from neuroimaging.core.image.image import load
 
 prefix = os.getcwd()
 
-avg152 = Image("%s/avg152T1_brain.img" % prefix)
+avg152 = load("%s/avg152T1_brain.img" % prefix)
 # subject 3's sentence and overall 
-sentence = Image("%s/sentence_t.nii" % prefix)
-average = Image("%s/average_t.nii" % prefix)
+sentence = load("%s/sentence_t.nii" % prefix)
+average = load("%s/average_t.nii" % prefix)
 
 
 def iso(img, contour, color=(1.,1.,1.), sample=None, spacing=[1,1,1],
