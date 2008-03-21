@@ -2,6 +2,7 @@ import numpy as N
 from numpy.testing import NumpyTest, NumpyTestCase
 
 import neuroimaging.core.reference.axis as axis
+import neuroimaging.core.api import Image
 import neuroimaging.core.reference.grid as grid
 from neuroimaging.modalities.fmri.api import slice_parcel_iterator, FmriImage, \
      parcel_iterator
@@ -10,7 +11,8 @@ from neuroimaging.modalities.fmri.api import slice_parcel_iterator, FmriImage, \
 class test_Iterators(NumpyTestCase):
 
     def setUp(self):
-        self.img = FmriImage(N.zeros((3, 4, 5, 6)), grid = grid.SamplingGrid.identity((3,4,5,6), axis.spacetime))
+        im = Image(N.zeros((3,4,5,6)), grid = grid.SamplingGrid.identity((3,4,5,6), axis.spacetime))
+        self.img = fromimage(im)
 
     def test_fmri_parcel(self):
         parcelmap = N.zeros(self.img.shape[1:])

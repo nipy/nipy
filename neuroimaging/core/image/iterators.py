@@ -49,15 +49,15 @@ class Iterator(object):
             """
             Return the slice of the image.
             """
-            return self.img[self.slice]
+            return N.array(self.img)[self.slice]
 
         def set(self, value):
             """
             Set the value of the slice of the image.
             """
-            self.img[self.slice] = value
+            im = self.img[self.slice]
+            N.array(im)[:] = value
 
-   
     def __init__(self, img, mode='r'):
         """
         Create an `Iterator` for an image
@@ -147,16 +147,16 @@ class SliceIterator(Iterator):
             This calls the squeeze method on the array before returning to remove
             any redundant dimensions.
             """
-            return self.img[self.slice].squeeze()
+            return N.array(self.img)[self.slice].squeeze()
 
         def set(self, value):
             """
             Set the value of the slice of the image.
             """
+            im = self.img[self.slice]
             if isinstance(value, N.ndarray):
-                value = value.reshape(self.img[self.slice].shape)
-            self.img[self.slice] = value
-
+                value = value.reshape(im.shape)
+            N.array(im)[:] = value
 
     def __init__(self, img, axis=0, mode='r'):
         """
@@ -293,15 +293,14 @@ class ParcelIterator(Iterator):
             Return the slice of the image.
             """
             self.slice = self.slice.reshape(self.img.shape)
-            return self.img[self.slice]
+            return N.array(self.img)[self.slice]
 
         def set(self, value):        
             """
             Set the value of the slice of the image.
             """
             self.slice = self.slice.reshape(self.img.shape)
-            self.img[self.slice] = value
-
+            N.array(self.img)[self.slice] = value
     
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):
         """
@@ -417,13 +416,13 @@ class SliceParcelIterator(ParcelIterator):
             """
             Return the slice of the image.
             """
-            return self.img[self.i, self.slice]
+            return N.array(self.img)[self.i, self.slice]
 
         def set(self, value):
             """
             Set the value of the slice of the image.
             """
-            self.img[self.i, self.slice] = value
+            N.array(self.img)[self.i, self.slice] = value
 
 
     def __init__(self, img, parcelmap, parcelseq=None, mode='r'):

@@ -273,7 +273,7 @@ class RegularAxis (Axis):
         """    
         return self.start
 
-class VoxelAxis (RegularAxis):
+class VoxelAxis(RegularAxis):
     """
     A RegularAxis which starts at 0 and has a step of 1.
     """

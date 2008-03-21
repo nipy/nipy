@@ -7,7 +7,7 @@ for example.
 
 __docformat__ = 'restructuredtext'
 
-import csv
+import csv, copy
 import urllib
 from struct import unpack
 
@@ -16,18 +16,19 @@ from numpy.linalg import inv
 
 def _2matvec(transform):
     """ Split a tranform into it's matrix and vector components. """
-    ndim = transform.shape[0] - 1
-    matrix = transform[0:ndim, 0:ndim]
-    vector = transform[0:ndim, ndim]
+    ndimin = transform.shape[0] - 1
+    ndimout = transform.shape[1] - 1
+    matrix = transform[0:ndimin, 0:ndimout]
+    vector = transform[0:ndimin, ndimout]
     return matrix, vector
 
 def _2transform(matrix, vector):
     """ Combine a matrix and vector into a transform. """
-    nin = matrix.shape[1]
-    t = N.zeros((nin+1,)*2)
-    t[0:nin, 0:nin] = matrix
-    t[nin,   nin] = 1.
-    t[0:nin, nin] = vector
+    nin, nout = matrix.shape
+    t = N.zeros((nin+1,nout+1))
+    t[0:nin, 0:nout] = matrix
+    t[nin,   nout] = 1.
+    t[0:nin, nout] = vector
     return t
 
 
@@ -290,6 +291,52 @@ class Mapping(object):
         voxel.shape = shape
         return N.array(voxel)
 
+    def _preslice_mapping(self, index, gshape):
+        """
+        Compute fixed and varying indices in the slice object index.
+
+        Output is used in self.slice_mapping method.
+
+        shape is used to compute where to stop ?
+
+        """
+        
+        varcoords = []
+        shape = []
+        maps = []
+        ssteps = []
+        sstarts = []
+
+        if type(index) not in  [type(()), type([])]:
+            index = (index,)
+        for i in range(len(index), len(gshape)):
+            index += (slice(0,gshape[i],1),)
+        for j, i in enumerate(index):
+            if type(i) is type(1):
+                maps.append(lambda x: x)
+                sstarts.append(i)
+            elif type(i) is type(slice(0,1)):
+                varcoords.append(j)
+                start, stop, step = i.start, i.stop, i.step
+                if step is None:
+                    step = 1 
+                if stop is None:
+                    stop = gshape[j]
+                stop = min(stop, gshape[j])
+                if start is None:
+                    start = 0
+                start = min(start, gshape[j])
+                try:
+                    x = stop - start
+                except:
+                    raise ValueError, `stop` + ' ' + `start` + ' ' + `i` + ' ' + `type(i)` + ' ' + `i.stop`
+                shape.append(int((stop - start) / step))
+                sstarts.append(start)
+                maps.append(lambda x: x * step + start)
+                ssteps.append(step)
+            else:
+                raise ValueError, 'expecting a tuple or sequence of integers or slices'
+        return varcoords, tuple(maps), sstarts, ssteps, shape
 
     def matlab2python(self):
         """
@@ -335,6 +382,26 @@ class Mapping(object):
         w2 = Affine(t2)
         return (w2 * self) * w1
 
+    def _slice_mapping(self, index, gshape):
+        """
+        TODO: this has to be tested for nonaffine mappings...
+        """
+        varcoords, maps, _, _, shape = self._preslice_mapping(index, gshape)
+        mapc = copy.deepcopy(self._map)
+
+        def mapping(x):
+            y = x.copy()
+            o = N.ones(x.shape)
+            for i in range(nvar):
+                y[i] = maps[i](y[i])
+            for i in range(self.ndim()):
+                if i not in varcoords:
+                    o = np.vstack([o, np.ones(x.shape) * N.ones[i]])
+                else:
+                    o = np.vstack([o, y[i]])
+
+            return mapc(o[1:])
+        return varcoords, Mapping(mapping), shape
 
 class Affine(Mapping):
     """
@@ -367,6 +434,22 @@ class Affine(Mapping):
         """
         return Affine(N.identity(ndim+1))
 
+
+    def _slice_mapping(self, index, gshape):
+        """
+        Return an Affine instance
+        """
+        varcoords, _, start, step, shape = self._preslice_mapping(index, gshape)
+        stepmatrix = N.diag(list(step) + [1])
+        startvector = N.dot(self.transform, N.array(list(start)+[1]))[:-1]
+
+        tmatrix = N.zeros((len(gshape) + 1, len(varcoords) + 1))
+        for i, j in enumerate(varcoords):
+            tmatrix[:-1,i] = self.transform[:-1,j]
+        tmatrix[-1,-1] = 1.
+        tmatrix = N.dot(tmatrix, stepmatrix)
+        tmatrix[:-1,-1] = startvector
+        return varcoords, Affine(tmatrix), shape
 
     def __init__(self, transform, name="affine"):
         """

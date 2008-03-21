@@ -21,7 +21,7 @@ class test_Iterator(NumpyTestCase):
         self.assertRaises(NotImplementedError, iterator.next)
 
     def test_base_class2(self):
-        item = Iterator.Item(self.img, [slice(0, 10), slice(0, 20), slice(0,1)])
+        item = Iterator.Item(self.img2, [slice(0, 10), slice(0, 20), slice(0,1)])
         self.assertEquals(item.get().shape, (10, 20, 1))
 
         value = N.ones((10, 20, 1))
@@ -61,7 +61,6 @@ class test_Iterator(NumpyTestCase):
         for slice_ in iterator2:
             N.testing.assert_equal(slice_, N.ones((20, 30)))
 
-
     def test_multi_slice(self):
         for slice_ in slice_iterator(self.img, axis=[0, 1]):
             self.assertEquals(slice_.shape, (30,))
@@ -91,7 +90,6 @@ class test_Iterator(NumpyTestCase):
         for i, slice_ in enumerate(iterator):
             self.assertEqual((expected[i],), slice_.shape)
 
-
     def test_parcel_write(self):
         parcelmap = N.zeros(self.img3.shape)
         parcelmap[0,0,0] = 1
@@ -112,7 +110,6 @@ class test_Iterator(NumpyTestCase):
         for i, slice_ in enumerate(iterator):
             self.assertEqual((expected[i],), slice_.shape)
             N.testing.assert_equal(slice_, N.arange(expected[i]))
-
 
         iterator = ParcelIterator(self.img3, parcelmap, mode='w')
         for i, slice_ in enumerate(iterator):
@@ -137,7 +134,7 @@ class test_Iterator(NumpyTestCase):
         parcelseq = (0, 1, 2, 3)
         expected = [N.product(self.img3.shape) - 6, 3, 3, 0]
         iterator = ParcelIterator(self.img3, parcelmap, parcelseq)
-        tmp = Image(self.img3[:], self.img3.grid)
+        tmp = Image(N.array(self.img3), self.img3.grid)
 
         new_iterator = iterator.copy(tmp)
 

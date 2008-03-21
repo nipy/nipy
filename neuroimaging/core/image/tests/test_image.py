@@ -7,14 +7,15 @@ from numpy.testing import NumpyTest, NumpyTestCase
 from neuroimaging.utils.test_decorators import slow
 
 from neuroimaging.core.api import Image, ImageSequenceIterator, load_image, save_image, slice_iterator, parcel_iterator
-from neuroimaging.utils.tests.data import repository
+from neuroimaging.testing import anatfile, funcfile
 from neuroimaging.data_io.api import Analyze
 
 
 class test_image(NumpyTestCase):
 
     def setUp(self):
-        self.img = load_image("avg152T1.img", repository)
+        self.img = load_image(anatfile)
+        self.func = load_image(funcfile)
 
     def tearDown(self):
         tmpfiles = glob.glob('tmp.*')
@@ -22,11 +23,11 @@ class test_image(NumpyTestCase):
             os.remove(tmpfile)
             
     def test_init(self):
-        new = Image(self.img[:], self.img.grid)
-        N.testing.assert_equal(self.img[:], new[:])
+        new = Image(N.asarray(self.img[:]), self.img.grid)
+        N.testing.assert_equal(N.asarray(self.img)[:], N.asarray(new)[:])
 
         new = Image(self.img._data, self.img.grid)
-        N.testing.assert_equal(self.img[:], new[:])
+        N.testing.assert_equal(N.asarray(self.img)[:], N.asarray(new)[:])
 
         self.assertRaises(ValueError, Image, None, None)
 
@@ -35,7 +36,11 @@ class test_image(NumpyTestCase):
         self.assertRaises(NotImplementedError, Image, filename)
 
     def test_analyze(self):
-        y = self.img[:]
+        """
+        TODO: 
+        """
+        self.fail("this maximum is obviously wrong -- value should be fixed")
+        y = N.asarray(self.img)
         self.assertEquals(y.shape, tuple(self.img.grid.shape))
         y = y.flatten()
         self.assertEquals(N.maximum.reduce(y), 437336.375)
@@ -62,8 +67,8 @@ class test_image(NumpyTestCase):
     def test_slice5(self):
         slice_1 = slice(0,20,2)
         slice_2 = slice(0,50,5)
-        x = self.img[[slice_1,slice_2]]
-        self.assertEquals(x.shape, (10,10,self.img.grid.shape[2]))
+        x = self.func[[slice_1,slice(None,None), slice_2]]
+        self.assertEquals(x.shape, (10,2,4,20))
 
     def test_array(self):
         x = N.asarray(self.img)
@@ -75,7 +80,10 @@ class test_image(NumpyTestCase):
 
         # This fails: saying array is not writeable
         
-        img2[0,0,0] = 370000
+        try:
+            img2[0,0,0] = 370000
+        except RuntimeError:
+            raise RuntimeError, 'this is a problem with the memmap of img2 -- seems not to be writeable'
         img3 = Image(img2.asfile(), use_memmap=True)
         img2[1,1,1] = 100000
 
@@ -90,7 +98,10 @@ class test_image(NumpyTestCase):
         """
         self.img.grid.mapping.transform[0,1] = 3.0
         save_image(self.img, 'tmp.hdr', usematfile=True)
-        x = load_image('tmp.hdr', usematfile=True, format=Analyze)
+        try:
+            x = load_image('tmp.hdr', usematfile=True, format=Analyze)
+        except NotImplementedError:
+            raise NotImplementedError, 'this is a problem with reading so-called "mat" files, JT'
         N.testing.assert_almost_equal(x.grid.mapping.transform, self.img.grid.mapping.transform)
 
     def test_clobber(self):
@@ -98,11 +109,12 @@ class test_image(NumpyTestCase):
         a = load_image('tmp.hdr', format=Analyze)
         A = a[:]
         I = self.img[:]
-        z = N.add.reduce(((A-I)**2).flat)
+        z = N.add.reduce(((N.asarray(A)-N.asarray(I))**2).flat)
         self.assertEquals(z, 0.)
 
         t = a.grid.mapping.transform
         b = self.img.grid.mapping.transform
+        self.fail("there is a problem with Analyze and NIFTI1 getting setting transforms from a given grid -- these are the methods 'grid_from_given'")
         N.testing.assert_almost_equal(b, t)
 
 
@@ -110,19 +122,21 @@ class test_image(NumpyTestCase):
         """
         This next test seems like it could be deprecated with simplified iterator options
         """
+        self.fail("this is a problem with the anatfile shape -- whatever is input, (109,91) should be replaced with anatfile.shape[1:]")
         for i in slice_iterator(self.img):
             self.assertEquals(i.shape, (109,91))
 
-    
-
     def test_iter2(self):
-        for i in self.img.iterate(Image.SliceIterator(None, axis=0)):
+        self.fail("This test too is not part of the API, JT Image class no longer has SliceIterator attribute")
+        it = Image.SliceIterator(self.img, axis=0)
+        for i in it:
             self.assertEquals(i.shape, (109,91))
 
     def test_iter3(self):
         self.assertRaises(NotImplementedError, iter, self.img)
 
     def test_iter4(self):
+        self.fail("This test too is not part of the API, JT no 'from_slice_iterator' method")
         tmp = Image(N.zeros(self.img.shape), self.img.grid)
         tmp.from_slice_iterator(self.img.slice_iterator())
         N.testing.assert_almost_equal(tmp[:], self.img[:])
@@ -134,6 +148,8 @@ class test_image(NumpyTestCase):
         This next test seems like it could be deprecated with simplified iterator options
         """
         
+        self.fail("This test too is not part of the API, JT no 'from_slice_iterator' method")
+
         tmp = Image(N.zeros(self.img.shape), self.img.grid)
         iterator1 = slice_iterator(self.img)
         iterator2 = Image.SliceIterator(None)
@@ -153,8 +169,8 @@ class test_image(NumpyTestCase):
         self.assertEquals(x, 91)
 
     def test_parcels1(self):
-        rho = load_image("rho.hdr", repository, format=Analyze)
-        parcelmap = (rho[:] * 100).astype(N.int32)
+        rho = load_image(anatfile)
+        parcelmap = (N.asarray(rho)[:] * 100).astype(N.int32)
         test = Image(N.zeros(parcelmap.shape), grid=rho.grid)
         v = 0
         for i in parcel_iterator(test, parcelmap):
@@ -165,8 +181,8 @@ class test_image(NumpyTestCase):
        
 
     def test_parcels3(self):
-        rho = load_image("rho.hdr", repository, format=Analyze)
-        parcelmap = (rho[:] * 100).astype(N.int32)
+        rho = load_image(anatfile)
+        parcelmap = (N.asarray(rho)[:] * 100).astype(N.int32)
         shape = parcelmap.shape
         parcelmap.shape = parcelmap.size
         parcelseq = N.unique(parcelmap)
@@ -195,17 +211,17 @@ class test_image(NumpyTestCase):
     def test_badfile(self):
         # We shouldn't be able to find a reader for this file!
         filename = "test_image.py"
-        self.assertRaises(IOError, load_image, filename, repository, format=Analyze)
+        self.assertRaises(NotImplementedError, load_image, filename)
 
-##     this test is no longer needed -- asfile method is deprecated 
 
-##     def test_asfile(self):
-##         tmp_img = Image(self.img.asfile())
-##         N.testing.assert_almost_equal(tmp_img[:], self.img[:])
+    def test_asfile(self):
+        self.fail("this test is deprecated -- asfile method is deprecated ")
+        tmp_img = Image(self.img.asfile())
+        N.testing.assert_almost_equal(tmp_img[:], self.img[:])
 
-##         array_img = Image(N.zeros((10, 10, 10)))
-##         tmp_img = Image(array_img.asfile())
-##         N.testing.assert_almost_equal(tmp_img[:], array_img[:])
+        array_img = Image(N.zeros((10, 10, 10)))
+        tmp_img = Image(array_img.asfile())
+        N.testing.assert_almost_equal(tmp_img[:], array_img[:])
         
 
 
