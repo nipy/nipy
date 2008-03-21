@@ -55,7 +55,6 @@ class FmriImage(ImageList):
         self.TR = TR
         self.slicetimes = slicetimes
 
-    
     def __getitem__(self, index):
         """
         If index is an index, return self.list[index], an Image
@@ -146,14 +145,13 @@ def fromimage(fourdimage, TR=None, slicetimes=None):
     if not isinstance(fourdimage.grid.mapping, Affine):
         raise ValueError, 'fourdimage must have an Affine mapping'
     
-    print fourdimage.shape
     for im in [fourdimage[i] for i in range(fourdimage.shape[0])]:
         g = im.grid
-        ia = g.input_coords.axes()[1:]
-        ic = VoxelCoordinateSystem("voxel", ia)
+        oa = g.output_coords.axes()[1:]
+        oc = VoxelCoordinateSystem("world", oa)
         t = im.grid.mapping.transform[1:]
         a = Affine(t)
-        newg = SamplingGrid(a, ic, g.output_coords)
+        newg = SamplingGrid(a, im.grid.input_coords, oc)
         images.append(Image(N.asarray(im), newg))
 
     return FmriImage(images=images, TR=TR, slicetimes=slicetimes)
