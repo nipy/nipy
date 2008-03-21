@@ -22,6 +22,10 @@ __all__ = ['load', 'save', 'fromarray', 'slice_iterator']
 from numpy import empty, array
 from numpy import zeros as npzeros
 
+import nifti
+
+from neuroimaging.core.reference.axis import space
+
 from neuroimaging.data_io.datasource import DataSource, splitzipext
 from neuroimaging.core.image.base_image import ArrayImage
 from neuroimaging.core.image.iterators import SliceIterator, ParcelIterator, \
@@ -31,19 +35,9 @@ from neuroimaging.core.reference.coordinate_system import CoordinateSystem
 from neuroimaging.data_io.formats.format import getformats
 
 def _open_pynifti(url, datasource=DataSource(), mode="r", clobber=False):
-    """Open the image using PyNifti."""
-
-    """Look at the code from nifti1.Nifti1 for creating SamplingGrid
+    """Open the image using PyNifti.
 
     """
-
-    # Note: Nipy's Format code loads the data using a memmap.  Pynifti just
-    # loads it as an array.  But, np.allclose returns True when comparing
-    # the same file loaded through Pynifit and Nipy.
-    import nifti
-
-    from neuroimaging.core.reference.axis import space
-    import numpy as np
 
     nimg = nifti.NiftiImage(url)
 
@@ -151,7 +145,6 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
 
     raise IOError, \
         'Filename "%s" (or its header files) does not exist' % url
-
 
 def load(url, datasource=DataSource(), format=None, **keywords):
     """Load an image from the given url.
@@ -262,7 +255,6 @@ def save(img, filename, datasource=DataSource(), clobber=False, format=None, **k
     outimage[:] = array(img)[:]
     del(outimage)
 
-
 def fromarray(data, grid=None):
     """Create an image from a numpy array.
 
@@ -289,7 +281,6 @@ def fromarray(data, grid=None):
                                             start=(0,)*data.ndim, 
                                             step=(1,)*data.ndim)
     return Image(data, grid)
-
 
 def slice_iterator(img, axis=0, mode='r'):
     """Return slice iterator for this image
@@ -326,7 +317,6 @@ def slice_iterator(img, axis=0, mode='r'):
     
     return SliceIterator(img, axis=axis, mode=mode)
 
-
 def parcel_iterator(img, parcelmap, parcelseq=None, mode='r'):
     """
     Parameters
@@ -352,7 +342,6 @@ def parcel_iterator(img, parcelmap, parcelseq=None, mode='r'):
     """
     
     return ParcelIterator(img, parcelmap, parcelseq, mode=mode)
-
 
 def slice_parcel_iterator(img, parcelmap, parcelseq=None, mode='r'):
     """
@@ -403,12 +392,6 @@ class Image(object):
 
     """
 
-    def _getaffine(self):
-        if hasattr(self.grid, "affine"):
-            return self.grid.affine
-        raise AttributeError
-    affine = property(_getaffine)
-
     def __init__(self, data, grid):
         """Create an `Image` object from a numpy array and a `Grid` object.
         
@@ -434,6 +417,12 @@ class Image(object):
         self._data = data
         self._grid = grid
 
+    def _getaffine(self):
+        if hasattr(self.grid, "affine"):
+            return self.grid.affine
+        raise AttributeError
+    affine = property(_getaffine)
+
     def _getshape(self):
         if hasattr(self._data, "shape"):
             return self._data.shape
@@ -451,10 +440,6 @@ class Image(object):
     def _getgrid(self):
         return self._grid
     grid = property(_getgrid)
-
-    # NOTE: Rename grid to spacemap?  There's been much discussion regarding
-    # the appropriate name of this attr.  We should probably settle it and 
-    # move on.
 
     def __getitem__(self, index):
         """Get a slice of image data.  Just like slicing a numpy array.
@@ -499,7 +484,6 @@ class Image(object):
         """
 
         return self._data[:]
-
 
 def merge_images(filename, images, cls=Image, clobber=False):
     """
@@ -565,4 +549,3 @@ def zeros(grid):
         return fromarray(npzeros(grid.shape))
     else:
         return fromarray(grid)
-
