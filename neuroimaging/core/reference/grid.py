@@ -215,49 +215,6 @@ class SamplingGrid(object):
         else:
             raise AttributeError, 'range of grid only makes sense if input_coords are VoxelCoordinateSystem'
 
-    # TODO: get rid of this slab method -- can do it with slicing
-    
-    def slab(self, start, step, count):
-        """
-        A sampling grid for a hyperslab of data from an array, i.e.
-        what would be output from a subsampling of every 2nd voxel or so.
-
-        By default, the iterator of the slab is a SliceIterator
-        with the same start, step, count and iterating over the
-        specified axis with nslicedim=1.
-        
-        :Parameters:
-            start : TODO
-                TODO
-            step : TODO
-                TODO
-            count : TODO
-                TODO
-        
-        :Returns: `SamplingGrid`
-        """
-
-        if isinstance(self.mapping, Affine):
-            ndimin, ndimout = self.ndim
-            trans = self.mapping.transform.copy()
-            trans[0:ndim, ndim] = self.mapping(start)
-            trans[ndim, ndim] = 1.
-            for i in range(ndim):
-                v = N.zeros((ndim,))
-                w = v.copy()
-                v[i] = step[i]
-                trans[0:ndim, i] = self.mapping(v) - self.mapping(w)
-            _map = Affine(trans)
-        else:
-            def __map(x, start=start, step=step, _f=self.mapping):
-                v = start + step * x
-                return _f(v)
-            _map = Mapping(__map)
-
-        samp_grid = \
-          SamplingGrid(_map, self.input_coords, self.output_coords)
-        return samp_grid
-
     def transform(self, mapping): 
         """        
         Apply a transformation (mapping) to this grid.
