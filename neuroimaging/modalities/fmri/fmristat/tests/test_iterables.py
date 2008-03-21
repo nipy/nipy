@@ -3,53 +3,77 @@ from numpy.random import standard_normal as noise
 
 from neuroimaging.testing import funcfile, anatfile
 from neuroimaging.core.api import load_image
-from neuroimaging.modalities.fmri.api import fromimage
-
+from neuroimaging.modalities.fmri.api import fromimage, fmri_generator
+from neuroimaging.core.image.generators import *
 from neuroimaging.fixes.scipy.stats_models.regression import OLSModel as ols_model
 
-fi = fromimage(load_image(funcfile))
+fd = np.asarray(load_image(funcfile))
+fi = fromimage(load_image(funcfile)) # I think it makes more
+                                     # sense to use fd instead of fi
+                                     # for GLM purposes -- reduces some
+                                     # noticeable overhead in creating
+                                     # the array from FmriImage.list
 
-design = noise((len(fi.list),3))
+# create a design matrix, model and contrast matrix
+
+design = noise((fd.shape[0],3))
 model = ols_model(design)
+cmatrix = np.array([[1,0,0],[0,1,0]])
 
-print fi[0].grid.ndim, 'what'
-print fi[0].affine.shape
-print fi[0][1]
+# two prototypical functions in a GLM analysis
 
 def fit(input):
     return model.fit(input).resid
 
-def g(iterable):
-    l = len(list(fi.list)) # this may require generating some large list --
-                           # do we assume fi.list has an implicit len?
-                           # in this case, we could write len(fi.list) above
-    for i in iterable:
+def contrast(results):
+    return results.Fcontrast(cmatrix)
 
-        # for a regular 4d image this call above does not have much overhead
-        # but it is more than fi[:,i] when you know that fi has an array
-        # associated with it
+def result_generator(datag):
+    for i, fdata in datag:
+        yield i, model.fit(fdata)
 
-        indata = np.asarray([np.asarray(fi[j])[i] for j in range(l)])
-        indata.shape = (indata.shape[0], np.product(indata.shape[1:]))
+def flatten_generator(ing):
+    for i, r in ing:
+        r.shape = (r.shape[0], np.product(r.shape[1:]))
+        yield i, r
 
-        # this probably makes a copy, in general
-        #
-        # unless we know that FmriImage came from an underlying 4d array,
-        # I think the overhead above is unavoidable, 
-        # even if we hide this line in a method of FmriImage
-        #
+def unflatten_generator(ing):
+    for i, r in ing:
+        r.shape = (20,20)
+        yield i, r
 
-        resid = fit(indata) 
-        yield resid.shape
+def contrast_generator(resultg):
+    for i, r in resultg:
+        print np.asarray(contrast(r)).shape
+        yield i, np.asarray(contrast(r))
+        
+"""
+Fit a model, iterating over the slices of an array
+associated to an FmriImage.
+"""
 
-for f in g(range(fi[0].shape[0])):
-    print f
+c = np.zeros(fd.shape[1:]) + 0.5
+write_data(c, unflatten_generator(contrast_generator(result_generator(flatten_generator(fmri_generator(fd))))))
 
-a = np.asarray(fi[0])
-b = [np.greater(a, a.mean()), np.less_equal(a, a.mean())]
+"""
+Fit a model, iterating over the array associated to an FmriImage,
+iterating over a list of ROIs defined by binary regions
+of the same shape as a frame of FmriImage
+"""
 
-for f in g(b):
-    print f
+a = np.asarray(fd[0]) # this might really be an anatomical image or
+                      # AR(1) coefficients 
 
+p = np.greater(a, a.mean())
+
+d = np.ones(fd.shape[1:]) * 2.
+write_data(d, contrast_generator(result_generator(flatten_generator(fmri_generator(fd, parcels(p))))))
+
+assert np.allclose(d, c)
+
+e = np.zeros(fd.shape[1:]) + 3.
+write_data(e, f_generator(contrast, result_generator(flatten_generator(fmri_generator(fd, parcels(p))))))
+
+assert np.allclose(d, e)
 
     

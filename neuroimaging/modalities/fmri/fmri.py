@@ -1,15 +1,10 @@
-import numpy as N
+from numpy import asarray
 
 from neuroimaging.core.api import ImageList, Image
 
-from neuroimaging.core.image.iterators import SliceIterator
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem
 from neuroimaging.core.reference.mapping import Affine
-
-# this is unnecessary, i think
-from neuroimaging.modalities.fmri.iterators import FmriParcelIterator, \
-     FmriSliceParcelIterator
 
 class FmriImage(ImageList):
     """
@@ -68,62 +63,32 @@ class FmriImage(ImageList):
                              slicetimes=self.slicetimes)
 
     def __array__(self):
-        return N.asarray([N.asarray(i) for i in self.list])
+        print 'scooby'*20
+        return asarray([asarray(i) for i in self.list])
 
     def emptycopy(self):
         return FmriImage(images=[], TR=self.TR, slicetimes=self.slicetimes)
 
-def parcel_iterator(img, parcelmap, parcelseq=None, mode='r'):
+def fmri_generator(data, iterable=None):
     """
-    Parameters
+    This function takes an iterable object and returns a generator for
 
-    ----------
-    parcelmap : ``[int]``
-        This is an int array of the same shape as self.
-        The different values of the array define different regions.
-        For example, all the 0s define a region, all the 1s define
-        another region, etc.           
-    parcelseq : ``[int]`` or ``[(int, int, ...)]``
-        This is an array of integers or tuples of integers, which
-        define the order to iterate over the regions. Each element of
-        the array can consist of one or more different integers. The
-        union of the regions defined in parcelmap by these values is
-        the region taken at each iteration. If parcelseq is None then
-        the iterator will go through one region for each number in
-        parcelmap.
-    mode : ``string``
-        The mode to run the iterator in.
-        'r' - read-only (default)
-        'w' - read-write                
-    
-    """
-    return FmriParcelIterator(img, parcelmap, parcelseq, mode=mode)
+    [numpy.asarray(data)[:,item] for item in iterator]
 
-def slice_parcel_iterator(img, parcelmap, parcelseq=None, mode='r'):
+    This is used to get time series out of a 4d fMRI image.
+
+    Note that if data is an FmriImage instance, there is more 
+    overhead involved in calling numpy.asarray(data) than if
+    data is in Image instance.
+
+    If iterables is None, it defaults to range(data.shape[0])
     """
-    Parameters
-    ----------
-    parcelmap : ``[int]``
-        This is an int array of the same shape as self.
-        The different values of the array define different regions.
-        For example, all the 0s define a region, all the 1s define
-        another region, etc.           
-    parcelseq : ``[int]`` or ``[(int, int, ...)]``
-        This is an array of integers or tuples of integers, which
-        define the order to iterate over the regions. Each element of
-        the array can consist of one or more different integers. The
-        union of the regions defined in parcelmap by these values is
-        the region taken at each iteration. If parcelseq is None then
-        the iterator will go through one region for each number in
-        parcelmap.                
-    mode : ``string``
-        The mode to run the iterator in.
-        'r' - read-only (default)
-        'w' - read-write
-    
-    """
-    
-    return FmriSliceParcelIterator(img, parcelmap, parcelseq, mode=mode)
+    data = asarray(data)
+    if iterable is None:
+        iterable = range(data.shape[1])
+    for item in iterable:
+        yield item, data[:,item]
+
 
 def fromimage(fourdimage, TR=None, slicetimes=None):
     """Create an FmriImage from a 4D Image.
@@ -152,6 +117,6 @@ def fromimage(fourdimage, TR=None, slicetimes=None):
         t = im.grid.mapping.transform[1:]
         a = Affine(t)
         newg = SamplingGrid(a, im.grid.input_coords, oc)
-        images.append(Image(N.asarray(im), newg))
+        images.append(Image(asarray(im), newg))
 
     return FmriImage(images=images, TR=TR, slicetimes=slicetimes)
