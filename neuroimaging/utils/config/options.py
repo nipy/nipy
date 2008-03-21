@@ -34,7 +34,7 @@ Revision history
 
 import sys
 import os
-from configobj import ConfigObj, flatten_errors 
+from neuroimaging.externals.configobj import ConfigObj, flatten_errors 
 from validate import ValidateError, VdtValueError, Validator
 
 # Share, repository directories and filename
