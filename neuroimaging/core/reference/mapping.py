@@ -311,6 +311,7 @@ class Mapping(object):
             index = (index,)
         for i in range(len(index), len(gshape)):
             index += (slice(0,gshape[i],1),)
+
         for j, i in enumerate(index):
             if type(i) is type(1):
                 maps.append(lambda x: x)
@@ -388,7 +389,6 @@ class Mapping(object):
         """
         varcoords, maps, _, _, shape = self._preslice_mapping(index, gshape)
         mapc = copy.deepcopy(self._map)
-
         def mapping(x):
             y = x.copy()
             o = N.ones(x.shape)
