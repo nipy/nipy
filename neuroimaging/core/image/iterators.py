@@ -16,7 +16,6 @@ by the keyword argument mode in the Iterator constructor.
 __docformat__ = 'restructuredtext'
 
 import operator
-
 import numpy as N
 
 class Iterator(object):

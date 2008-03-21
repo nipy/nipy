@@ -1,18 +1,16 @@
 """
 The L{Image<image.Image>} class provides the interface which should be used
-by users at the application level. It is build on top of a
-L{BaseImage<image.base_image.BaseImage>} object (self._source) which handles
-the actual representation of the data. A base image provides a grid,
-a data type and the data itself, while the main L{Image<image.Image>} class
-builds on top of these.
+by users at the application level. The image provides a grid,
+and the data itself.
 
-A L{BaseImage<image.base_image.BaseImage>} object can be created from an
-ndarray (L{ArrayImage<image.base_image.ArrayImage>})
-or from a file (L{Format<neuroimaging.data_io.formats.Format>}). 
 
 Class structure::
 
    Application Level
+
+TODO: I think this graph is unnecessary and wrong after removing
+      BaseImage, JT
+
  ----------------------
         Image
           |
@@ -33,7 +31,7 @@ Class structure::
 """
 __docformat__ = 'restructuredtext'
 
-import image, base_image, roi, iterators
+import image, roi, iterators
 
 def test(level=1, verbosity=1, flags=[]):
     from neuroimaging.utils.testutils import set_flags

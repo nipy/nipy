@@ -23,7 +23,6 @@ from numpy import empty, array
 from numpy import zeros as npzeros
 
 from neuroimaging.data_io.datasource import DataSource, splitzipext
-from neuroimaging.core.image.base_image import ArrayImage
 from neuroimaging.core.image.iterators import SliceIterator, ParcelIterator, \
   SliceParcelIterator
 from neuroimaging.core.reference.grid import SamplingGrid
