@@ -34,11 +34,12 @@ average = load("%s/average_t.nii" % prefix)
 
 def iso(img, contour, color=(1.,1.,1.), sample=None, spacing=[1,1,1],
         opacity=1):
+    img_array = N.asarray(img)
     src = ArraySource(transpose_input_array=False, spacing=spacing)
     mayavi.add_source(src)
     if sample is not None:
-        img = img[sample]
-    src.scalar_data = N.nan_to_num(img[:])
+        img_array = img_array[sample]
+    src.scalar_data = N.nan_to_num(img_array[:])
     i = IsoSurface(compute_normals=True)
     mayavi.add_module(i)
     i.actor.property.color = color
@@ -49,7 +50,7 @@ def iso(img, contour, color=(1.,1.,1.), sample=None, spacing=[1,1,1],
 
 if __name__ == "__main__":
     mayavi.new_scene()
-    iso(avg152, 230000.)
+    iso(avg152, 114.)
     iso(sentence, 4, color=(1,0,0))
     iso(average, 4, color=(0,0,1), opacity=0.5)
     o = Outline()
