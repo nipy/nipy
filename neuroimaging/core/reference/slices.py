@@ -1,5 +1,6 @@
 """
 A set of methods to get sampling grids which represent slices in space.
+
 """
 
 __docformat__ = 'restructuredtext'
@@ -10,7 +11,7 @@ import numpy.linalg as L
 import numpy as N
 import numpy.random as R
 
-def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
+def from_origin_and_columns(origin, colvectors, shape, output_coords):
     """
     Return a grid representing a slice based on a given origin, a pair of direction
     vectors which span the slice, and a shape.
@@ -18,33 +19,30 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     By default the output coordinate system is the MNI world.
 
     :Parameters:
-        origin : TODO
-            TODO
-        colvectors : TODO
-            TODO
-        shape : TODO
-            TODO
-        output_coords : TODO
-            TODO
+        origin : the corner of the output coordinates, i.e. the [0]*ndimin
+                 point
+        colvectors : the steps in each voxel direction
+        shape : how many steps in each voxel direction
+        output_coords : a CoordinateSystem for the output
 
     :Returns: `grid.SamplingGrid`
     """
 
     nout = colvectors.shape[1]
-    ndim = colvectors.shape[0]
+    nin = colvectors.shape[0]
 
-    f = N.zeros((nout,)*2)
-    for i in range(ndim):
+    f = N.zeros((nout,nin)*2)
+    for i in range(ndin):
         f[0:nout,i] = colvectors[i]
     
-    p = N.identity(nout) - N.dot(f, L.pinv(f))
-    tmp = R.standard_normal((nout, nout-ndim))
-    tmp = N.dot(p, tmp)
-    f[0:nout, ndim:] = tmp
-    for i in range(nout-ndim):
-        f[0:nout,ndim+i] = f[0:nout,ndim+i] / N.sqrt(N.add.reduce(f[0:nout,ndim+i]**2))
+##     p = N.identity(nout) - N.dot(f, L.pinv(f))
+##     tmp = R.standard_normal((nout, nout-ndim))
+##     tmp = N.dot(p, tmp)
+##     f[0:nout, ndim:] = tmp
+##     for i in range(nout-ndim):
+##         f[0:nout,ndim+i] = f[0:nout,ndim+i] / N.sqrt(N.add.reduce(f[0:nout,ndim+i]**2))
 
-    t = N.zeros((nout+1,)*2)
+    t = N.zeros((nout+1,nin+1))
     t[0:nout, 0:nout] = f
     t[nout, nout] = 1.
     t[0:nout, nout] = origin
@@ -57,7 +55,6 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     w = mapping.Affine(t)
     g = grid.SamplingGrid(w, input_coords, output_coords)
     return g
-
 
 def box_slices(zlim, ylim, xlim, shape, x=N.inf, y=N.inf, z=N.inf):
     """
