@@ -87,7 +87,7 @@ class test_Protocol(test_ProtocolSetup):
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         formula = self.p + drift
         c = contrast.Contrast(self.p.main_effect(), formula)
-        c.getmatrix(self.t)
+        c.compute_matrix(self.t)
         N.testing.assert_almost_equal(c.matrix,
                                           [[0.,0.,0.,0.,1.,0.],
                                            [0.,0.,0.,0.,0.,1.]])
@@ -234,7 +234,7 @@ class test_Protocol(test_ProtocolSetup):
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         formula = self.p + drift
         c = contrast.Contrast(self.p, formula)
-        c.getmatrix(self.t)
+        c.compute_matrix(self.t)
         N.testing.assert_almost_equal(c.matrix,
                                           [[0.,0.,0.,0.,1.,0.],
                                            [0.,0.,0.,0.,0.,1.]])
