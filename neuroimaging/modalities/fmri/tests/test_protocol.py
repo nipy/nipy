@@ -1,8 +1,8 @@
 import csv, os
 import numpy as N
 from numpy.testing import NumpyTest, NumpyTestCase
-from scipy.sandbox.models.utils import recipr0
-from scipy.sandbox.models import contrast
+from neuroimaging.fixes.scipy.stats_models.utils import recipr0
+from neuroimaging.fixes.scipy.stats_models import contrast
 
 from neuroimaging.modalities.fmri import hrf, protocol, functions
 from neuroimaging.utils.test_decorators import slow

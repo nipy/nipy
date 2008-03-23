@@ -9,14 +9,14 @@ flipping_image.py
 import numpy as N
 import pylab
 
-from neuroimaging.core.api import Image, SamplingGrid, Affine
+from neuroimaging.core.api import Image, SamplingGrid, Affine, load_image
 from neuroimaging.ui.visualization.viewer import BoxViewer
 from neuroimaging.utils.tests.data import repository
 
 subject_no=0
 run_no = 1
-mask_img = Image('FIAC/fiac%d/fonc%d/fsl/mask.img' %
-                 (subject_no, run_no), repository) 
+mask_img = load_image('FIAC/fiac%d/fonc%d/fsl/mask.img' %
+                      (subject_no, run_no), datasource=repository) 
 
 # Make Y flip transformation matrix
 t = N.identity(4)

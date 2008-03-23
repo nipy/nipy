@@ -289,6 +289,14 @@ class Nifti1(binary.BinaryFormat):
 ##                             axisnames = axisnames[1:4]
 ##                             shape = self.dim[2:5]
 
+            # DEBUG:  some debugging notes... chris
+            #print 'In nifti1.Nifti1... create SamplingGrid'
+            #print 'names:', axisnames
+            #print 'shape:', shape
+            #print 'start:', -N.array(origin)
+            #print 'step:', step
+            #print 'origin:', origin
+
             self.grid = SamplingGrid.from_start_step(names=axisnames,
                                                 shape=shape,
                                                 start=-N.array(origin),
@@ -483,4 +491,3 @@ class Nifti1(binary.BinaryFormat):
             
         return scaled_x
 
-        

@@ -14,8 +14,8 @@ import os, fpformat
 
 import numpy as N
 import numpy.linalg as L
-from scipy.sandbox.models.utils import recipr, recipr0
-from scipy.sandbox.models.contrast import Contrast, ContrastResults
+from neuroimaging.fixes.scipy.stats_models.utils import recipr, recipr0
+from neuroimaging.fixes.scipy.stats_models.contrast import Contrast, ContrastResults
 
 from neuroimaging.modalities.fmri import hrf
 from neuroimaging.modalities.fmri.protocol import ExperimentalQuantitative
@@ -80,16 +80,20 @@ class DelayContrast(Contrast):
         self.name = name
         self.formula = formula
         
-        self._sequence_fn = fns
-        self.fn = self._sequence_call
+        if type(fns) in [type([]), type(())]:
+            self._sequence_fn = fns
+            self._nsequence = len(_sequence_fn)
+            self.fn = self._sequence_call
+        else:
+            self.fn = fns
 
         self.weights = N.asarray(weights)
         if self.weights.ndim == 1:
             self.weights.shape = (1, self.weights.shape[0])
 
-        if len(self._sequence_fn) != self.weights.shape[1]:
-            raise ValueError, 'length of weights does not match number of ' \
-                  'terms in DelayContrast'
+##         if len(self._sequence_fn) != self.weights.shape[1]:
+##             raise ValueError, 'length of weights does not match number of ' \
+##                   'terms in DelayContrast'
 
         term = ExperimentalQuantitative('%s_delay' % self.name, self.fn)
         term.convolve(self.IRF)

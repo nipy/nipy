@@ -4,17 +4,17 @@ from numpy.testing import NumpyTest, NumpyTestCase
 from neuroimaging.core.image.iterators import Iterator, ParcelIterator, \
   SliceParcelIterator
 
-from neuroimaging.core.api import Image
+from neuroimaging.core.api import Image, load_image, save_image, slice_iterator, parcel_iterator
 import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.reference.grid as grid
 
 class test_Iterator(NumpyTestCase):
 
     def setUp(self):
-        self.img = Image(N.zeros((10, 20, 30)))
-        self.img2 = Image(N.ones((10, 20, 30)))
-        self.img3 = Image(N.zeros((3, 5, 4)))
-        self.img4 = Image(N.ones((3, 5, 4)))
+        self.img = Image(N.zeros((10, 20, 30)), grid.SamplingGrid.from_start_step(shape=(10,20,30), step=(1,)*3, start=(0,)*3))
+        self.img2 = Image(N.ones((10, 20, 30)), grid.SamplingGrid.from_start_step(shape=(10,20,30), step=(1,)*3, start=(0,)*3))
+        self.img3 = Image(N.zeros((3, 5, 4)), grid.SamplingGrid.from_start_step(shape=(3,5,4), step=(1,)*3, start=(0,)*3))
+        self.img4 = Image(N.ones((3, 5, 4)), grid.SamplingGrid.from_start_step(shape=(3,5,4), step=(1,)*3, start=(0,)*3))
 
     def test_base_class1(self):
         iterator = Iterator(self.img)
@@ -36,41 +36,41 @@ class test_Iterator(NumpyTestCase):
         self.assertEquals(iterator.img, new_iterator.img)
 
     def test_read_slices(self):
-        for slice_ in self.img.slice_iterator():
+        for slice_ in slice_iterator(self.img):
             self.assertEquals(slice_.shape, (20, 30))
 
-        for slice_ in self.img.slice_iterator(axis=1):
+        for slice_ in slice_iterator(self.img, axis=1):
             self.assertEquals(slice_.shape, (10, 30))
 
-        for slice_ in self.img.slice_iterator(axis=2):
+        for slice_ in slice_iterator(self.img, axis=2):
             self.assertEquals(slice_.shape, (10, 20))
 
     def test_write_slices(self):
-        for slice_ in self.img.slice_iterator(mode='w'):
+        for slice_ in slice_iterator(self.img, mode='w'):
             slice_.set(N.ones((20, 30)))
 
-        for slice_ in self.img.slice_iterator(axis=1, mode='w'):
+        for slice_ in slice_iterator(self.img, axis=1, mode='w'):
             slice_.set(N.ones((10, 30)))
 
-        for slice_ in self.img.slice_iterator(axis=2, mode='w'):
+        for slice_ in slice_iterator(self.img, axis=2, mode='w'):
             slice_.set(N.ones((10, 20)))
 
     def test_copy(self):
-        iterator = self.img.slice_iterator()
+        iterator = slice_iterator(self.img)
         iterator2 = iterator.copy(self.img2)
         for slice_ in iterator2:
             N.testing.assert_equal(slice_, N.ones((20, 30)))
 
 
     def test_multi_slice(self):
-        for slice_ in self.img.slice_iterator(axis=[0, 1]):
+        for slice_ in slice_iterator(self.img, axis=[0, 1]):
             self.assertEquals(slice_.shape, (30,))
 
-        for slice_ in self.img.slice_iterator(axis=[2, 1]):
+        for slice_ in slice_iterator(self.img, axis=[2, 1]):
             self.assertEquals(slice_.shape, (10,))
 
     def test_multi_slice_write(self):
-        for slice_ in self.img.slice_iterator(axis = [0, 1], mode='w'):
+        for slice_ in slice_iterator(self.img, axis=[0, 1], mode='w'):
             slice_.set(N.zeros((30,)))
 
     def test_parcel(self):
@@ -137,7 +137,7 @@ class test_Iterator(NumpyTestCase):
         parcelseq = (0, 1, 2, 3)
         expected = [N.product(self.img3.shape) - 6, 3, 3, 0]
         iterator = ParcelIterator(self.img3, parcelmap, parcelseq)
-        tmp = Image(self.img3)
+        tmp = Image(self.img3[:], self.img3.grid)
 
         new_iterator = iterator.copy(tmp)
 
@@ -160,7 +160,7 @@ class test_Iterator(NumpyTestCase):
             except TypeError:
                 x = len([n for n in pm if n == ps])
             self.assertEqual(x, slice_.shape[0])
-            self.assertEqual(self.img3.shape[2:], list(slice_.shape[1:]))
+            self.assertEqual(self.img3[:].shape[2:], slice_.shape[1:])
 
     def test_sliceparcel1(self):
         parcelmap = N.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
@@ -183,7 +183,7 @@ class test_Iterator(NumpyTestCase):
             except TypeError:
                 x = len([n for n in pm if n == ps])
             self.assertEqual(x, slice_.shape[0])
-            self.assertEqual(self.img4.shape[2:], list(slice_.shape[1:]))
+            self.assertEqual(self.img4[:].shape[2:], slice_.shape[1:])
 
     def test_sliceparcel_write(self):
         parcelmap = N.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])

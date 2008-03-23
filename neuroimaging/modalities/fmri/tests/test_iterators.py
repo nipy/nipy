@@ -3,9 +3,9 @@ from numpy.testing import NumpyTest, NumpyTestCase
 
 import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.reference.grid as grid
+from neuroimaging.core.api import slice_parcel_iterator
 
 from neuroimaging.modalities.fmri.api import FmriImage
-
 
 class test_Iterators(NumpyTestCase):
 
@@ -92,7 +92,7 @@ class test_Iterators(NumpyTestCase):
                                [[0,0,1,1,2,2]]*5,
                                [[0,0,0,0,2,2]]*5])
         parcelseq = ((1, 2), 0, 2)
-        iterator = self.img.slice_parcel_iterator(parcelmap, parcelseq)
+        iterator = slice_parcel_iterator(self.img, parcelmap, parcelseq)
         for i, slice_ in enumerate(iterator):
             pm = parcelmap[i]
             ps = parcelseq[i]
@@ -108,7 +108,7 @@ class test_Iterators(NumpyTestCase):
                                [[0,0,1,1,2,2]]*5,
                                [[0,0,0,0,2,2]]*5])
         parcelseq = ((1, 2), 0, 2)
-        iterator = self.img.slice_parcel_iterator(parcelmap, parcelseq, mode='w')
+        iterator = slice_parcel_iterator(self.img, parcelmap, parcelseq, mode='w')
 
         for i, slice_ in enumerate(iterator):
             pm = parcelmap[i]
@@ -120,7 +120,7 @@ class test_Iterators(NumpyTestCase):
             value = [i*N.arange(x) for i in range(self.img.shape[0])]
             slice_.set(value)
 
-        iterator = self.img.slice_parcel_iterator(parcelmap, parcelseq)
+        iterator = slice_parcel_iterator(self.img, parcelmap, parcelseq)
         for i, slice_ in enumerate(iterator):
             pm = parcelmap[i]
             ps = parcelseq[i]

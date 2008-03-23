@@ -5,7 +5,7 @@ import numpy as N
 
 from neuroimaging.core.api import Image
 from neuroimaging.ui.visualization.viewer import BoxViewer
-from scipy.sandbox.models.regression import ar_model
+from neuroimaging.fixes.scipy.stats_models.regression import ar_model
 from neuroimaging.modalities.fmri.fmristat import delay
 from neuroimaging.modalities.fmri.regression import FContrastOutput
 from neuroimaging.ui.visualization import slices as vizslice

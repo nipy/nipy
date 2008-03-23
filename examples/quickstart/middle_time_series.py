@@ -13,12 +13,13 @@ import pylab
 
 from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.utils.tests.data import repository
+from neuroimaging.core.api import load_image
 
 subject_no=0
 run_no = 1
-func_img = FmriImage('FIAC/fiac%d/fonc%d/fsl/filtered_func_data.img' %
-                     (subject_no, run_no),
-                     datasource=repository)
+func_img = load_image('FIAC/fiac%d/fonc%d/fsl/filtered_func_data.img' %
+                      (subject_no, run_no),
+                      datasource=repository)
 
 # Create array of same shape as one time point of functional image
 mask_arr = N.zeros(func_img.grid.shape[1:])

@@ -10,14 +10,15 @@ from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.data_io.api import Analyze
 from neuroimaging.utils.tests.data import repository
 
-from neuroimaging.core.api import Image
+from neuroimaging.core.api import load_image
 
 from neuroimaging.utils.test_decorators import slow
 
 class test_Grid(NumpyTestCase):
 
     def setUp(self):
-        self.img = Image("avg152T1", datasource=repository, format=Analyze)
+        self.img = load_image("avg152T1.img", datasource=repository,
+                              format=Analyze)
 
     def test_concat(self):
         grids = ConcatenatedGrids([self.img.grid]*5)

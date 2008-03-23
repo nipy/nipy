@@ -9,7 +9,10 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('data_io')
     config.add_subpackage('modalities')
     config.add_subpackage('ui')
-    config.add_subpackage('utils')            
+    config.add_subpackage('utils')
+    config.add_subpackage('data')
+
+    config.add_data_dir('data')
 
     try: os.remove("lib/neuroimaging/__svn_version__.py")
     except OSError: pass

@@ -15,16 +15,16 @@ Creates overall_mean.img in working directory
 import numpy as N
 import pylab
 
-from neuroimaging.core.api import Image
+from neuroimaging.core.api import Image, load_image
 from neuroimaging.ui.visualization.viewer import BoxViewer
 from neuroimaging.utils.tests.data import repository
 
 def subj_run_effect_img(subject=0, run=1):
     ''' Return effect image from example dataset for subject and run no 
     '''
-    return Image(
+    return load_image(
         'FIAC/fiac%d/fonc%d/fsl/fmristat_run/contrasts/overall/effect.img'
-        % (subject,run), repository)
+        % (subject,run), datasource=repository)
 
 def mean_overall(images):
     ''' Return mean over list of Images '''
@@ -32,7 +32,7 @@ def mean_overall(images):
     for im in images:
         out += im[:]
     out /= len(images)
-    return Image(out, grid=images[0].grid)
+    return Image(out, images[0].grid)
 
 # Collect subject images for first run
 subject_nos = range(4)

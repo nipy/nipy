@@ -55,6 +55,7 @@ packages = (
   'neuroimaging.core.image.tests',
   'neuroimaging.core.reference',
   'neuroimaging.core.reference.tests',
+  'neuroimaging.data',
   'neuroimaging.data_io',
   'neuroimaging.data_io.tests',
   'neuroimaging.data_io.formats',

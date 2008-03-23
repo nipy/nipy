@@ -14,7 +14,7 @@ hyperplane of any dataset.
 import numpy as N
 import pylab, matplotlib
 
-from neuroimaging.core.api import Image
+from neuroimaging.core.api import Image, load_image
 from neuroimaging.ui.visualization.slices import CoronalPlot
 from neuroimaging.core.reference.mapping import Affine
 
@@ -27,10 +27,10 @@ mapping = Affine(N.array([[   2.,    0.,    0.,  -72.],
                           [   0.,    0.,    2.,  -90.],
                           [   0.,    0.,    0.,    1.]]))
                          
-standard = Image("http://kff.stanford.edu/FIAC/avg152T1_brain.img")
+standard = load_image("http://kff.stanford.edu/FIAC/avg152T1_brain.img")
 standard.grid.mapping = mapping
 
-T = Image("http://kff.stanford.edu/FIAC/multi/block/contrasts/average/t.nii")
+T = load_image("http://kff.stanford.edu/FIAC/multi/block/contrasts/average/t.nii")
 T.grid.mapping = mapping
 
 def overlay(threshold=4, y=-14):

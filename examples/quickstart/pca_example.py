@@ -6,20 +6,20 @@ Usage:
 pca_example.py
 '''
 
-import numpy as N
+import numpy as np
 import pylab
 
-from neuroimaging.core.api import Image
+from neuroimaging.core.api import Image, load_image
 from neuroimaging.modalities.fmri.api import FmriImage 
 from neuroimaging.modalities.fmri.pca import PCAmontage
 from neuroimaging.utils.tests.data import repository
 
 # Load an fMRI image
-fmridata = FmriImage("test_fmri.hdr", datasource=repository)
+fmridata = load_image("test_fmri.hdr", datasource=repository)
 
 # Create a mask
 frame = fmridata.frame(0)
-mask = Image(N.greater(frame[:], 500).astype(N.float64), grid=frame.grid)
+mask = Image(np.greater(frame[:], 500).astype(np.float64), frame.grid)
 
 # Fit PCAmontage which allows you to visualize the results
 pca_montage = PCAmontage(fmridata, mask=mask)

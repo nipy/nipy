@@ -1,382 +1,529 @@
-"""
-The core Image class.
+"""The image module provides basic functions for working with images in nipy.
+Functions are provided to load, save and create image objects, along with
+iterators to easily slice through volumes.
+
+    load : load an image from a file or url
+
+    save : save an image to a file
+
+    fromarray : create an image from a numpy array
+
+    slice_iterator : simple axis-aligned iteration
+
+Examples
+--------
+See documentation for load and save functions for 'working' examples.
+
 """
 
 __docformat__ = 'restructuredtext'
-__all__ = ['Image', 'merge_images', 'merge_to_array']
+__all__ = ['load', 'save', 'fromarray', 'slice_iterator']
 
-import numpy as N
+from numpy import empty
 
 from neuroimaging.data_io.datasource import DataSource, splitzipext
 from neuroimaging.core.image.base_image import ArrayImage
 from neuroimaging.core.image.iterators import SliceIterator, ParcelIterator, \
   SliceParcelIterator
+from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.data_io.formats.format import getformats
+
+def _open_pynifti(url, datasource=DataSource(), mode="r", clobber=False):
+    """Open the image using PyNifti."""
+
+    """Look at the code from nifti1.Nifti1 for creating SamplingGrid
+
+    """
+
+    # Note: Nipy's Format code loads the data using a memmap.  Pynifti just
+    # loads it as an array.  But, np.allclose returns True when comparing
+    # the same file loaded through Pynifit and Nipy.
+    import nifti
+
+    from neuroimaging.core.reference.axis import space
+    import numpy as np
+
+    nimg = nifti.NiftiImage(url)
+
+    origin = nimg.getQOffset()
+    pixdim = nimg.getPixDims()
+    step = pixdim[0:3] # Note, getPixDims ignores pixdim[0], the qfac
+    dim = nimg.header.get('dim')  # Is there a method for getting this?
+    shape = tuple(dim[1:4])
+    ndim = dim[0]
+    if ndim == 3:
+        axisnames = space[::-1]  # Why do we reverse the list here?
+    else:
+        raise NotImplementedError, 'Not handling 4d images yet!'
+    
+    grid = SamplingGrid.from_start_step(names=axisnames, 
+                                        shape=shape,
+                                        start=-np.array(origin),
+                                        step=step)
+    #raise NotImplementedError
+    return Image(nimg.asarray(), grid)
+
+def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
+          clobber=False, **keywords):
+    """
+    Create an `Image` from the given url/filename
+
+    Parameters
+    ----------
+    url : ``string``
+        a url or filename
+    datasource : `DataSource`
+        The datasource to be used for caching
+    format : `Format`
+        The file format to use. If ``None`` then all possible formats will
+        be tried.
+    grid : `reference.grid.SamplingGrid`
+        The sampling grid for the file
+    mode : ``string``
+        The mode ot open the file in ('r', 'w', etc)
+
+    Returns
+    -------
+    image : A new `Image` object created from the url.
+
+    Notes
+    -----
+    Raises IOError : If the specified format, or those tried by default
+        all raise IOErrors.
+    Raises NotImplementedError : If the specified format, or those tried by
+        default are unable to open the file, an exception is raised.
+
+    The raising of an exception can be misleading. If for example, a
+    bad url is given, it will appear as if that file's format has not
+    been implemented.
+    
+    """
+
+    # remove any zip extensions
+    url = splitzipext(url)[0]
+
+    if not format:
+        valid = getformats(url)
+    else:
+        valid = [format]
+    errors = {}
+    imgfmt = {}
+    for format in valid:
+        try:
+            imgfmt = format(filename=url,
+                          datasource=datasource, mode=mode,
+                          grid=grid, clobber=clobber, **keywords)
+        except Exception, exception:
+            errors[format] = exception
+
+    if imgfmt:
+        # HACK... WANT TO CHECK THE FORMAT
+        tmpimg = Image(imgfmt.data, imgfmt.grid)
+        tmpimg.fmt = imgfmt
+        return tmpimg
+        #return Image(imgfmt.data, imgfmt.grid)
+
+    ## if file exists and clobber is False, error message is misleading
+    # python test_image.py
+    # <neuroimaging.core.reference.grid.SamplingGrid object at 0x1b6b310>
+    # Traceback (most recent call last):
+    #   File "test_image.py", line 12, in <module>
+    #     image.save(img, "/home/cburns/data/avganat3.nii")
+    #   File "/home/cburns/src/nipy-trunk/neuroimaging/core/image/image.py", line 102, in save
+    #     format=format)
+    #   File "/home/cburns/src/nipy-trunk/neuroimaging/core/image/image.py", line 77, in _open
+    #     'Filename "%s" (or its header files) does not exist' % url
+    # IOError: Filename "/home/cburns/data/avganat3.nii" (or its header files) does not exist
+
+    ## same name, different file extension raises the same error
+
+    ## problem: the exceptions raised are not IOErrors
+
+    for format, exception in errors.items():
+        if not exception.__class__  is IOError:
+            raise NotImplementedError, 'no valid format found for URL %s.' \
+                'The following errors were raised:\n%s' % \
+                (url, "\n".join(["%s: %s\n%s" % \
+                (str(format), str(msg.__class__), str(msg)) \
+                for format, msg in errors.items()]))
+
+    raise IOError, \
+        'Filename "%s" (or its header files) does not exist' % url
+
+
+def load(url, datasource=DataSource(), format=None, **keywords):
+    """Load an image from the given url.
+
+    Load an image from the file specified by ``url`` and ``datasource``.
+
+    Parameters
+    ----------
+    url : string
+        Should resolve to a complete filename path, possibly with the provided
+        datasource.
+    datasource : A `DataSource` object
+        A datasource for the image to load.
+    format : A `Format` object
+        The file format to use when opening the image file.  If ``None``, the
+        default, all supported formats are tried.
+    keywords : Keyword arguments passed to `Format` initialization call.
+
+    Returns
+    -------
+    image : An `Image` object
+        If successful, a new `Image` object is returned.
+
+    See Also
+    --------
+    save : function for saving images
+    fromarray : function for creating images from numpy arrays
+
+    Notes
+    -----
+    The raising of an exception can be misleading. If for example, a bad url 
+    is given, it will appear as if that file's format has not been implemented.
+
+    Examples
+    --------
+
+    >>> from neuroimaging.core.image import image
+    >>> from neuroimaging.data import MNI_file
+    >>> img = image.load(MNI_file)
+    >>> img.shape
+    (91, 109, 91)
+
+    """
+
+    # BUG: Should DataSource here be a Repository?  So the Repository
+    # would be a 'base url' and the url would be the filename.
+    # Fix when porting code to numpy-trunk that now includes DataSource.
+    # and update documentation above.
+
+    return _open(url, datasource=datasource, format=format, mode='r', **keywords)
+
+def save(img, filename, datasource=DataSource(), clobber=False, format=None, **keywords):
+    """Write the image to a file.
+
+    Parameters
+    ----------
+    img : An `Image` object
+    filename : string
+        Should be a valid filename.
+    datasource : A `DataSource` object
+        A datasource to specify the location of the file.
+    clobber : bool
+        Should ``save`` overwrite an existing file.
+    format : A `Format` object
+        The image file format to save the
+    keywords : Keyword arguments passed to `Format` initialization call.
+
+    Returns
+    -------
+    image : An `Image` object
+
+    See Also
+    --------
+    load : function for loading images
+    fromarray : function for creating images from numpy arrays
+
+    Examples
+    --------
+    
+    # BUG:  image.save below will fail if keyword
+    # "clobber=True" is left out. This is an IOError similar to
+    # ones documented in the _open function above.
+    
+    >>> from numpy import allclose
+    >>> from neuroimaging.core.image import image
+    >>> from neuroimaging.data import MNI_file
+    >>> img_orig = image.load(MNI_file)
+    >>> # For testing, we'll use a tempfile for saving.
+    >>> # In 'real' work, you would save to a known directory.
+    >>> from tempfile import mkstemp
+    >>> fd, filename = mkstemp(suffix='.nii')
+    >>> image.save(img_orig, filename, clobber=True)
+    >>> img_copy = image.load(filename)
+    >>> print allclose(img_orig[:], img_copy[:])
+    True
+
+    """
+
+    # BUG:  If format is None, what's the default format?  Does it default
+    # to nifti or look at the file extension?
+
+    # Answer: looks at the file extension..
+
+    outimage = _open(filename, mode='w', grid=img.grid,
+                     clobber=clobber,
+                     datasource=datasource,
+                     format=format, **keywords)
+    outimage[:] = img[:]
+    del(outimage)
+
+
+def fromarray(data, grid=None):
+    """Create an image from a numpy array.
+
+    Parameters
+    ----------
+    data : numpy array
+        A numpy array of three dimensions.
+    grid : A `SamplingGrid`
+        If not specified, a uniform sampling grid is created.
+
+    Returns
+    -------
+    image : An `Image` object
+
+    See Also
+    --------
+    load : function for loading images
+    save : function for saving images
+
+    """
+
+    if not grid:
+        grid = SamplingGrid.from_start_step(shape=data.shape, 
+                                            start=(0,)*data.ndim, 
+                                            step=(1,)*data.ndim)
+    return Image(data, grid)
+
+
+def slice_iterator(img, axis=0, mode='r'):
+    """Return slice iterator for this image
+    
+    Parameters
+    ----------
+    img : An `Image` object
+    axis : ``int`` or ``[int]``
+        The index of the axis (or axes) to be iterated over. If a list
+        is supplied the axes are iterated over slowest to fastest.
+    mode : ``string``
+        The mode to run the iterator in.
+        'r' - read-only (default)
+        'w' - read-write
+
+    Returns
+    -------
+    iterator : A `SliceIterator` object.
+    
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> from neuroimaging.core.image import image
+    >>> from neuroimaging.data import MNI_file
+    >>> img = image.load(MNI_file)
+    >>> for slice_ in image.slice_iterator(img):
+    ...     y = np.mean(slice_)
+    
+    >>> imgiter = image.slice_iterator(img)
+    >>> slice_ = imgiter.next()
+
+    """
+    
+    return SliceIterator(img, axis=axis, mode=mode)
+
+
+def parcel_iterator(img, parcelmap, parcelseq=None, mode='r'):
+    """
+    Parameters
+    ----------
+    parcelmap : ``[int]``
+        This is an int array of the same shape as self.
+        The different values of the array define different regions.
+        For example, all the 0s define a region, all the 1s define
+        another region, etc.           
+    parcelseq : ``[int]`` or ``[(int, int, ...)]``
+        This is an array of integers or tuples of integers, which
+        define the order to iterate over the regions. Each element of
+        the array can consist of one or more different integers. The
+        union of the regions defined in parcelmap by these values is
+        the region taken at each iteration. If parcelseq is None then
+        the iterator will go through one region for each number in
+        parcelmap.
+    mode : ``string``
+        The mode to run the iterator in.
+        'r' - read-only (default)
+        'w' - read-write                
+    
+    """
+    
+    return ParcelIterator(img, parcelmap, parcelseq, mode=mode)
+
+
+def slice_parcel_iterator(img, parcelmap, parcelseq=None, mode='r'):
+    """
+    Parameters
+    ----------
+    parcelmap : ``[int]``
+        This is an int array of the same shape as self.
+        The different values of the array define different regions.
+        For example, all the 0s define a region, all the 1s define
+        another region, etc.           
+    parcelseq : ``[int]`` or ``[(int, int, ...)]``
+        This is an array of integers or tuples of integers, which
+        define the order to iterate over the regions. Each element of
+        the array can consist of one or more different integers. The
+        union of the regions defined in parcelmap by these values is
+        the region taken at each iteration. If parcelseq is None then
+        the iterator will go through one region for each number in
+        parcelmap.                
+    mode : ``string``
+        The mode to run the iterator in.
+        'r' - read-only (default)
+        'w' - read-write
+    
+    """
+    
+    return SliceParcelIterator(img, parcelmap, parcelseq, mode=mode)
 
 class Image(object):
     """
     The `Image` class provides the core object type used in nipy. An `Image`
-    represents a volumetric brain image and provides means for manipulating and
-    reading and writing this data to file.
+    represents a volumetric brain image and provides means for manipulating
+    the image data.  Most functions in the image module operate on `Image`
+    objects.
+
+    Notes
+    -----
+    Images should be created through the module functions load and fromarray.
+
+    Examples
+    --------
+
+    >>> from neuroimaging.core.image import image
+    >>> from neuroimaging.data import MNI_file
+    >>> img = image.load(MNI_file)
+
+    >>> import numpy as np
+    >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'))
+
     """
 
-    SliceIterator = SliceIterator
-    ParcelIterator = ParcelIterator
-    SliceParcelIterator = SliceParcelIterator
+    def __init__(self, data, grid):
+        """Create an `Image` object from a numpy array and a `Grid` object.
+        
+        Images should be created through the module functions load and
+        fromarray.
 
-    @staticmethod
-    def fromurl(url, datasource=DataSource(), format=None, grid=None, mode="r",
-                **keywords):
+        Parameters
+        ----------
+        data : A numpy.ndarray
+        grid : A `SamplingGrid` Object
+        
+        See Also
+        --------
+        load : load `Image` from a file
+        save : save `Image` to a file
+        fromarray : create an `Image` from a numpy array
+
         """
-        Create an `Image` from the given url/filename
 
-        :Parameters:
-            url : ``string``
-                a url or filename
-            datasource : `DataSource`
-                The datasource to be used for caching
-            format : `Format`
-                The file format to use. If ``None`` then all possible formats will
-                be tried.
-            grid : `reference.grid.SamplingGrid`
-                The sampling grid for the file
-            mode : ``string``
-                The mode ot open the file in ('r', 'w', etc)
+        if data is None or grid is None:
+            raise ValueError, 'expecting an array and SamplingGrid instance'
 
-        :Raises IOError: If the specified format, or those tried by default
-            all raise IOErrors.
-        :Raises NotImplementedError: If the specified format, or those tried by
-            default are unable to open the file, an exception is raised.
+        self._data = data
+        self._grid = grid
 
-        :Returns:
-            `Image` : A new `Image` created from url
-
-        Notes
-        -----
-        The raising of an exception can be misleading. If for example, a
-        bad url is given, it will appear as if that file's format has not
-        been implemented.
-        """
-        # remove any zip extensions
-        url = splitzipext(url)[0]
-            
-        if not format:
-            from neuroimaging.data_io.formats.format import getformats
-            valid = getformats(url)
+    def _getshape(self):
+        if hasattr(self._data, "shape"):
+            return self._data.shape
         else:
-            valid = [format]
-        errors = {}
-        for format in valid:
-            try:
-                return format(filename=url,
-                              datasource=datasource, mode=mode,
-                              grid=grid, **keywords)
-            except Exception, exception:
-                errors[format] = exception
+            return self._data[:].shape
+    shape = property(_getshape)
 
-        for format, exception in errors.items():
-            if not exception.__class__  is IOError:
-                raise NotImplementedError, 'no valid format found for URL %s.' \
-                      'The following errors were raised:\n%s' % \
-                      (url, \
-                       "\n".join(["%s: %s\n%s" % \
-                                  (str(format), str(msg.__class__), str(msg)) \
-                                  for format, msg in errors.items()]))
-
-        raise IOError, \
-              'Filename "%s" (or its header files) does not exist' % url
-
-
-    def __init__(self, image, datasource=DataSource(), grid=None, **keywords):
-        '''
-        Create an `Image` (volumetric image) object from either a file, an
-        existing `Image` object, or an array.
-
-        :Parameters:
-            image : `Image` or ``string`` or ``array``
-                The object to create this Image from. If an `Image` or ``array``
-                are provided, their data is used. If a string is given it is treated
-                as either a filename or url.
-            datasource : TODO
-                TODO
-            grid : TODO
-                TODO
-            keywords : ``dict``
-                TODO
-        '''
-
-        from neuroimaging.data_io.formats.format import Format
-        # from existing Image
-        if isinstance(image, Image):
-            self._source = image._source
-
-        # from existing Format instance
-        elif isinstance(image, Format):
-            self._source = image
-
-        # from array
-        elif isinstance(image, (N.ndarray, N.core.memmap)):
-            self._source = ArrayImage(image, grid=grid)
-
-        # from filename or url
-        elif isinstance(image, str):
-            self._source = \
-              self.fromurl(image, datasource, grid=grid, **keywords)
+    def _getndim(self):
+        if hasattr(self._data, "ndim"):
+            return self._data.ndim
         else:
-            raise ValueError(
-          "Image input must be a string, array, or another image.")
+            return self._data[:].ndim
+    ndim = property(_getndim)
 
-        # Find spatial grid -- this is the one that will be used generally
-        self.grid = self._source.grid
-        self.shape = list(self.grid.shape)
-        self.ndim = len(self.shape)
-
-        # Attach memory-mapped array or array as buffer attr
-        self._source.data.shape = self.shape
-        self.buffer = self._source.data
-
+    def _getgrid(self):
+        return self._grid
+    grid = property(_getgrid)
+    # NOTE: Rename grid to spacemap?  There's been much discussion regarding
+    # the appropriate name of this attr.  We should probably settle it and 
+    # move on.
 
     def __getitem__(self, slice_):
-        """
-        :Parameters:
-            slice_ : ``slice``
-                The slice of the image to take.
+        """Get a slice of image data.  Just like slicing a numpy array.
 
-        :Returns: ``numpy.ndarray``
-        """
-        return self._source[slice_]
+        Examples
+        --------
+        >>> from neuroimaging.core.image import image
+        >>> from neuroimaging.data import MNI_file
+        >>> img = image.load(MNI_file)
+        >>> zdim, ydim, xdim = img.shape
+        >>> central_axial_slice = img[zdim/2, :, :]
 
+        """
+
+        return self._data[slice_]
 
     def __setitem__(self, slice_, data):
-        """        
-        :Parameters:
-            slice_ : ``slice``
-                The slice of the image to write to
-            data : A slice value or array of type ``self.dtype``
-                The value to be set.
-        
-        :Returns: ``None``
+        """Set values of ``slice_`` to ``data``.
         """
-        self._source[slice_] = data
+        self._data[slice_] = data
 
 
     def __iter__(self):
         """ `Image`\ s cannot be used directly as iterators.
 
-        :Raises NotImplementedError:
+        See Also
+        --------
+        slice_iterator : function in image module to iterate image slices
+
+        Notes
+        -----
+        Raises NotImplementedError
+        
         """
+        
         raise NotImplementedError
 
 
-    def toarray(self, clean=True, **keywords):
-        """
-        Return a `Image` instance that has an `ArrayImage` as its _source attribute.
-
-        Example
-        -------
-
-        >>> SLOW = True
-        >>> from numpy import *
-        >>> from neuroimaging.core.api import Image
-        >>> from neuroimaging.utils.tests.data import repository
-        >>> test = Image('anat+orig.HEAD', datasource=repository)
-        >>> _test = test.toarray()
-        >>> print _test._source.data.shape
-        (124, 256, 256)
-        >>> test = Image('test_fmri.img', datasource=repository)
-        >>> _test = test.toarray()
-        >>> print _test.shape
-        [120, 13, 128, 128]
+    def __array__(self):
+        """Return data in ndarray.  Called through numpy.array.
         
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from neuroimaging.core.image import image
+        >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'))
+        >>> imgarr = np.array(img)
+
         """
-        data = self.readall()
-        if clean and \
-               data.dtype.type in N.sctypes['float'] + N.sctypes['complex']: 
-            data = N.nan_to_num(data)
-            
-        return Image(data, grid=self.grid, **keywords)
 
-
-    def tofile(self, filename, clobber=False,
-               dtype=None, **keywords):
-        """        
-        Write the image to a file. Returns a new `Image` object
-        of the newly written file.
-
-        :Parameters:
-            filename : ``string``
-                The name of the file to write to
-            clobber : ``bool``
-                Should we overwrite an existing file?
-
-        :Returns: `Image`
-        """
-        dtype = dtype or self._source.dtype
-        outimage = Image(filename, mode='w', grid=self.grid,
-                         clobber=clobber,
-                         dtype=dtype,
-                         use_memmap=True,
-                         **keywords)
-
-        tmp = self.toarray(**keywords)
-        outimage[:] = tmp[:]
-        return outimage
-
-
-    def asfile(self):
-        """ Return image filename corresponding to `Image` object data
-
-        :Returns: ``string``
-        """
-        filename = self._source.asfile()
-        if isinstance(self._source, ArrayImage):
-            self.tofile(filename, clobber=True)
-        return filename
-
-    def readall(self, clean=False): 
-        """
-        Read an entire `Image` object, returning a numpy array, not another
-        instance of `Image`. By default, it does not read 4d images. Missing
-        values are filled in with 0
-        """
-        value = self[self.grid.allslice()]
-        if clean: 
-            value = N.nan_to_num(value)
-        return value
-
-
-    def slice_iterator(self, axis=0, mode='r'):
-        """ Return slice iterator for this image
-
-        :Parameters:
-            axis : ``int`` or ``[int]``
-                The index of the axis (or axes) to be iterated over. If a list
-                is supplied the axes are iterated over slowest to fastest.
-            mode : ``string``
-                The mode to run the iterator in.
-                'r' - read-only (default)
-                'w' - read-write
-
-        :Returns:
-            `SliceIterator`
-        """
-        return self.SliceIterator(self, axis=axis, mode=mode)
-
-
-    def parcel_iterator(self, parcelmap, parcelseq=None, mode='r'):
-        """
-        :Parameters:
-            parcelmap : ``[int]``
-                This is an int array of the same shape as self.
-                The different values of the array define different regions.
-                For example, all the 0s define a region, all the 1s define
-                another region, etc.           
-            parcelseq : ``[int]`` or ``[(int, int, ...)]``
-                This is an array of integers or tuples of integers, which
-                define the order to iterate over the regions. Each element of
-                the array can consist of one or more different integers. The
-                union of the regions defined in parcelmap by these values is
-                the region taken at each iteration. If parcelseq is None then
-                the iterator will go through one region for each number in
-                parcelmap.
-            mode : ``string``
-                The mode to run the iterator in.
-                    'r' - read-only (default)
-                    'w' - read-write                
-        """
-        return self.ParcelIterator(self, parcelmap, parcelseq, mode=mode)
-
-
-    def slice_parcel_iterator(self, parcelmap, parcelseq=None, mode='r'):
-        """
-        :Parameters:
-            parcelmap : ``[int]``
-                This is an int array of the same shape as self.
-                The different values of the array define different regions.
-                For example, all the 0s define a region, all the 1s define
-                another region, etc.           
-            parcelseq : ``[int]`` or ``[(int, int, ...)]``
-                This is an array of integers or tuples of integers, which
-                define the order to iterate over the regions. Each element of
-                the array can consist of one or more different integers. The
-                union of the regions defined in parcelmap by these values is
-                the region taken at each iteration. If parcelseq is None then
-                the iterator will go through one region for each number in
-                parcelmap.                
-            mode : ``string``
-                The mode to run the iterator in.
-                    'r' - read-only (default)
-                    'w' - read-write
-        """
-        return self.SliceParcelIterator(self, parcelmap, parcelseq, mode=mode)
-
-
-    def from_slice_iterator(self, other, axis=0):
-        """
-        Take an existing `SliceIterator` and use it to set the values
-        in this image.
-
-        :Parameters:
-            other : `SliceIterator`
-                The iterator from which to take the values
-            axis : ``int`` or ``[int]``
-                The axis to iterator over for this image.
-        """
-        iterator = iter(self.slice_iterator(axis=axis, mode='w'))
-        for slice_ in other:
-            iterator.next().set(slice_)
-
-    def iterate(self, iterator):
-        """
-        Use the given iterator to iterate over this image.
-
-        :Parameters:
-            iterator : `image.iterators.Iterator`
-                The iterator to use.
-
-        :Returns:
-            An iterator which can be used to iterate over this image.
-        """
-        iterator.set_img(self)
-        return iter(iterator)
-
-    def from_iterator(self, other, iterator):
-        """
-        Set the values of this image, taking them from one iterator and using
-        another to do the iteration over itself.
-
-        :Parameters:
-            other : `image.iterators.Iterator`
-                The iterator from which to take the values
-            iterator : `image.iterators.Iterator`
-                The iterator to use to iterate over self.
-        """
-        iterator.mode = 'w'
-        iterator.set_img(self)
-        iter(iterator)
-        for slice_ in other:
-            iterator.next().set(slice_)
+        return self._data[:]
 
 
 def merge_images(filename, images, cls=Image, clobber=False):
     """
     Create a new file based image by combining a series of images together.
 
-    :Parameters:
-        filename : ``string``
-            The filename to write the new image as
-        images : [`Image`]
-            The list of images to be merged
-        cls : ``class``
-            The class of image to create
-        clobber : ``bool``
-            Overwrite the file if it already exists
+    Parameters
+    ----------
+    filename : ``string``
+        The filename to write the new image as
+    images : [`Image`]
+        The list of images to be merged
+    cls : ``class``
+        The class of image to create
+    clobber : ``bool``
+        Overwrite the file if it already exists
 
-    :Returns: ``cls``
+    Returns
+    -------
+    ``cls``
+    
     """
+    
     n = len(images)
     im0 = images[0]
     grid = im0.grid.replicate(n, "time")
-    data = N.empty(shape=grid.shape)
+    data = empty(shape=grid.shape)
     for i, image in enumerate(images):
         data[i] = image[:]
     out = cls(filename, mode='w', clobber=clobber, grid=grid)
@@ -387,20 +534,33 @@ def merge_to_array(images, cls=Image):
     """
     Create a new array based image by combining a series of images together.
 
-    :Parameters:
-        images : [`Image`]
-            The list of images to be merged
-        cls : ``class``
-            The class of image to create
+    Parameters
+    ----------
+    images : [`Image`]
+        The list of images to be merged
+    cls : ``class``
+        The class of image to create
 
-    :Returns: ``cls``    
+    Returns
+    -------
+    ``cls``
+    
     """
+    
     n = len(images)
     im0 = images[0]
     grid = im0.grid.replicate(n, "time")
-    data = N.empty(shape=grid.shape)
+    data = empty(shape=grid.shape)
     for i, image in enumerate(images):
         data[i] = image[:]
     return cls(data, mode='w', grid=grid)
 
-    
+def zeros(grid):
+    """
+    Return an Image of zeros with a given grid.
+    """
+    if hasattr(grid, "shape"):
+        return fromarray(N.zeros(grid.shape))
+    else:
+        return fromarray(grid)
+

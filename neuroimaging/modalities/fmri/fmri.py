@@ -107,9 +107,9 @@ class FmriImage(Image):
         self.frametimes = keywords.get('frametimes', None)
         self.slicetimes = keywords.get('slicetimes', None)
 
-        self.grid = FmriSamplingGrid(self.grid.shape, self.grid.mapping,
-                                     self.grid.input_coords,
-                                     self.grid.output_coords)
+        self._grid = FmriSamplingGrid(self.grid.shape, self.grid.mapping,
+                                      self.grid.input_coords,
+                                      self.grid.output_coords)
         if self.grid.isproduct():
             ndim = len(self.grid.shape)
             n = self.grid.input_coords.axisnames()[:ndim]

@@ -3,7 +3,7 @@ from fiac import *
 from fmristat import rho
 import neuroimaging.modalities.fmri.protocol as protocol
 import neuroimaging.modalities.fmri.functions as confound
-import scipy.sandbox.models.contrast as contrast
+import neuroimaging.fixes.scipy.stats_models.contrast as contrast
 from neuroimaging.modalities.fmri.fmristat.delay import DelayHRF
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
 from neuroimaging.modalities.fmri.api import FmriImage

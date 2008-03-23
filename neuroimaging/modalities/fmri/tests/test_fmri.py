@@ -8,7 +8,7 @@ import neuroimaging.core.reference.grid as grid
 from neuroimaging.utils.test_decorators import slow, data
 
 from neuroimaging.modalities.fmri.api import FmriImage
-from neuroimaging.core.api import Image
+from neuroimaging.core.api import Image, load_image, parcel_iterator
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.data_io.api import Analyze
 
@@ -17,11 +17,11 @@ from neuroimaging.data_io.api import Analyze
 class test_fMRI(NumpyTestCase):
 
     def setUp(self):
-        self.rho = Image(repository.filename('rho.hdr'), format=Analyze)
-        #self.img = FmriImage("test_fmri.hdr", datasource=repository)
+        self.rho = load_image(repository.filename('rho.hdr'), format=Analyze)
+        self.img = load_image(repository.filename("test_fmri.hdr"))
 
     def data_setUp(self):
-        self.img = FmriImage("test_fmri.hdr", datasource=repository, format=Analyze)
+        self.img = load_image(repository.filename("test_fmri.hdr"))
 
     #def test_TR(self):
     #    tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
@@ -56,18 +56,18 @@ class test_fMRI(NumpyTestCase):
     @slow
     @data
     def test_labels1(self):
-        parcelmap = (self.rho.readall() * 100).astype(N.int32)
+        parcelmap = (self.rho[:] * 100).astype(N.int32)
         
         v = 0
-        for t in self.img.parcel_iterator(parcelmap):
+        for t in parcel_iterator(self.rho, parcelmap):
             v += t.shape[1]
         self.assertEquals(v, parcelmap.size)
 
     def test_labels2(self):
-        parcelmap = (self.rho.readall() * 100).astype(N.int32)
+        parcelmap = (self.rho[:] * 100).astype(N.int32)
 
         v = 0
-        for t in self.rho.parcel_iterator(parcelmap):
+        for t in parcel_iterator(self.rho, parcelmap):
             v += t.shape[0]
 
         self.assertEquals(v, parcelmap.size)

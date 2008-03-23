@@ -1,7 +1,6 @@
 from neuroimaging.core.api import ParcelIterator, SliceParcelIterator
 
 
-
 class FmriParcelIterator(ParcelIterator):
     """
     This class works in much the same way as the `ParcelIterator` except
@@ -25,7 +24,6 @@ class FmriParcelIterator(ParcelIterator):
             """
             self.slice = self.slice.reshape(self.img.shape[1:])
             self.img[:, self.slice] = value
-
 
 
 class FmriSliceParcelIterator(SliceParcelIterator):
