@@ -332,19 +332,29 @@ class Nifti1(binary.BinaryFormat):
 
 
     def header_from_given(self):
-        # try to set up these fields from what we know:
-        # datatype
-        # bitpix
-        # quatern_b,c,d
-        # qoffset_x,y,z
-        # qfac
-        # bitpix
-        # dim
+        """
+        Try to set up these fields of the NIFIT1 header from what we know:
 
-        self.grid = self.grid.python2matlab()
-        self.header['datatype'] = sctype2datatype[self.dtype.type]
-        self.header['bitpix'] = self.dtype.itemsize * 8
+        datatype
+        bitpix
+        quatern_b,c,d
+        qoffset_x,y,z
+        qfac
+        bitpix
+        dim
+
+        Note, that for greater than 3d images. The 4x4 matrix
+        written to the NIFTI1 file is the submatrix corresponding
+        to the three fastest moving coordinates.
+
+        The pixdims of the other dimensions are taken to be the
+        corresponding diagonal elements of the transform matrix.
+
+        """
+
+        print self.grid.mapping.transform
         ndimin, ndimout = self.grid.ndim
+
         if ndimin != ndimout:
             raise ValueError, 'to create NIFTI1 file, grid should have same number of input and output dimensions'
         self.ndim = ndimin
@@ -354,7 +364,10 @@ class Nifti1(binary.BinaryFormat):
                   'out NIFTI-1 file'
 
         ddim = self.ndim - 3
-        t = self.grid.mapping.transform[ddim:,ddim:]
+        t = Affine(self.grid.mapping.transform[ddim:,ddim:]).python2matlab().transform
+
+        self.header['datatype'] = sctype2datatype[self.dtype.type]
+        self.header['bitpix'] = self.dtype.itemsize * 8
 
         qb, qc, qd, qx, qy, qz, dx, dy, dz, qfac = mat2quatern(t)
 
@@ -370,6 +383,7 @@ class Nifti1(binary.BinaryFormat):
 
         _pixdim = [0.]*8
         _pixdim[0:4] = [qfac, dx, dy, dz]
+        _pixdim[4:(self.ndim+1)] = N.diag(self.grid.mapping.transform)[0:(self.ndim-3)]
         self.header['pixdim'] = _pixdim
 
         # this should be set to something, 1 happens
@@ -378,8 +392,6 @@ class Nifti1(binary.BinaryFormat):
         
         self.header['dim'] = \
                         [self.ndim] + list(self.grid.shape) + [0]*(7-self.ndim)
-
-        self.grid = self.grid.matlab2python()
         
     def transform(self):
         """
