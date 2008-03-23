@@ -296,15 +296,31 @@ class Nifti1(binary.BinaryFormat):
             #print 'step:', step
             #print 'origin:', origin
 
-            self.grid = SamplingGrid.from_start_step(names=axisnames,
-                                                     shape=shape,
-                                                     start=-N.array(origin),
-                                                     step=step)
+            tgrid = SamplingGrid.from_start_step(names=axisnames,
+                                                 shape=shape,
+                                                 start=-N.array(origin),
+                                                 step=step)
+            tgridm = tgrid.python2matlab().transform
+
+            # Correct transform information of tgrid by
+            # NIFTI file's transform information
+            # tgrid's transform matrix may be larger than 4x4,
+            # the NIFTI file provides information for the last
+            # (in C/python index) three coordinates, or (in
+            # MATLAB/FORTRAN index) the first three.
+
+            # What follows is just a way to write over tgrid's
+            # transformation matrix with the appropriate information
+            # from the NIFTI header
+
             t = self.transform()
-            self.grid.mapping.transform[:3,:3] = t[:3,:3]
-            self.grid.mapping.transform[:3,-1] = t[:3,-1]
-            ### why is this here?
-            self.grid = self.grid.matlab2python()
+            tm = Affine(t).python2matlab().transform
+            tgridm[:3,:3] = tm[:3,:3]
+            tgridm[:3,-1] = tm[:3,-1]
+            self.grid = SamplingGrid(Affine(tgridm).matlab2python(),
+                                     tgrid.input_coords,
+                                     tgrid.output_coords)
+
         #else: Grid was already assigned by Format constructor
         
         self.attach_data(offset=int(self.header['vox_offset']), use_memmap=use_memmap)
@@ -350,9 +366,33 @@ class Nifti1(binary.BinaryFormat):
         The pixdims of the other dimensions are taken to be the
         corresponding diagonal elements of the transform matrix.
 
+        WARNING:
+        --------
+        This means that the only way the NIFTI1 file's grid will agree
+        with the input grid is if it is diagonal in the dimensions
+        other than x,y,z and its origin is 0 because the
+        NIFTI1 format does not allow origins for dimensions other than
+        x,y,z.
+        
+        For instance, an fMRI file with this 5x5 transform (in (t,x,y,z) and
+        C indexing order) will be fine:
+
+        [[TR  0   0   0  0],
+         [0 M11 M12 M13 O1],
+         [0 M21 M22 M23 O2],
+         [0 M31 M32 M33 O3],
+         [0   0   0   0  1]]
+
+        But this one will not
+        [[TR  a   b   c  d],
+         [e M11 M12 M13 O1],
+         [f M21 M22 M23 O2],
+         [g M31 M32 M33 O3],
+         [0   0   0   0  1]]
+        
+        if any of a, b, c, d, e, f, g are non zero.
         """
 
-        print self.grid.mapping.transform
         ndimin, ndimout = self.grid.ndim
 
         if ndimin != ndimout:
@@ -388,6 +428,7 @@ class Nifti1(binary.BinaryFormat):
 
         # this should be set to something, 1 happens
         # to be NIFTI_XFORM_SCANNER_ANAT
+
         self.header['qform_code'] = 1
         
         self.header['dim'] = \
@@ -403,6 +444,10 @@ class Nifti1(binary.BinaryFormat):
 
         See help(neuroimaging.data_io.formats.nifti1_ext) for explanation.
 
+        It return the 4x4 matrix in NiPy order, rather than MATLAB order.
+        That is, entering voxel [0,0,0] gives the (z,y,x) coordinates
+        of the first voxel. In MATLAB order, entering voxel [1,1,1] gives
+        the (x,y,z) coordinates of the first voxel.
         """
 
         qfac = float(self.header['pixdim'][0])
@@ -413,7 +458,6 @@ class Nifti1(binary.BinaryFormat):
         value[3,3] = 1.0
         
         if self.header['qform_code'] > 0:
-            
             value = quatern2mat(b=self.header['quatern_b'],
                                 c=self.header['quatern_c'],
                                 d=self.header['quatern_d'],
@@ -431,7 +475,7 @@ class Nifti1(binary.BinaryFormat):
             value[1] = N.array(self.header['srow_y'])
             value[2] = N.array(self.header['srow_z'])
 
-        return value
+        return Affine(value).matlab2python().transform 
 
     def inform_canonical(self, fieldsDict=None):
         if fieldsDict is not None:
