@@ -31,7 +31,7 @@ TODO: I think this graph is unnecessary and wrong after removing
 """
 __docformat__ = 'restructuredtext'
 
-import image, roi, iterators
+import image, roi, generators
 
 def test(level=1, verbosity=1, flags=[]):
     from neuroimaging.utils.testutils import set_flags
