@@ -64,11 +64,6 @@ class test_Grid(NumpyTestCase):
         shape = (30, 40)
         self.assertRaises(ValueError, SamplingGrid.identity, shape, space)
 
-    def test_allslice(self):
-        shape = (30,40,50)
-        i = SamplingGrid.identity(shape=shape, names=space)
-        i.allslice()
-        
 
     def test_from_affine(self):
         a = Affine.identity()

@@ -168,15 +168,6 @@ class SamplingGrid(object):
         return SamplingGrid(self.mapping, self.input_coords,
                             self.output_coords)
 
-    def allslice(self):
-        """
-        TODO: where is this still used?
-        A slice object representing the entire grid.
-        
-        :Returns: ``slice``
-        """
-        return slice(0, self.shape[0])
-
     def __getitem__(self, index):
         """
         If all input coordinates are VoxelCoordinateSystem, return
