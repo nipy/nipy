@@ -8,8 +8,6 @@ iterators to easily slice through volumes.
 
     fromarray : create an image from a numpy array
 
-    slice_iterator : simple axis-aligned iteration
-
 Examples
 --------
 See documentation for load and save functions for 'working' examples.
@@ -17,17 +15,134 @@ See documentation for load and save functions for 'working' examples.
 """
 
 __docformat__ = 'restructuredtext'
-__all__ = ['load', 'save', 'fromarray', 'slice_iterator']
+__all__ = ['load', 'save', 'fromarray']
 
-from numpy import empty, array
-from numpy import zeros as npzeros
+import numpy as np
 
 from neuroimaging.data_io.datasource import DataSource, splitzipext
-from neuroimaging.core.image.iterators import SliceIterator, ParcelIterator, \
-  SliceParcelIterator
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem
 from neuroimaging.data_io.formats.format import getformats
+
+class Image(object):
+    """
+    The `Image` class provides the core object type used in nipy. An `Image`
+    represents a volumetric brain image and provides means for manipulating
+    the image data.  Most functions in the image module operate on `Image`
+    objects.
+
+    Notes
+    -----
+    Images should be created through the module functions load and fromarray.
+
+    Examples
+    --------
+
+    >>> from neuroimaging.core.image import image
+    >>> from neuroimaging.testing import anatfile
+    >>> img = image.load(anatfile)
+
+    >>> import numpy as np
+    >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'))
+
+    """
+
+    def _getaffine(self):
+        if hasattr(self.grid, "affine"):
+            return self.grid.affine
+        raise AttributeError
+    affine = property(_getaffine)
+
+    def __init__(self, data, grid):
+        """Create an `Image` object from a numpy array and a `Grid` object.
+        
+        Images should be created through the module functions load and
+        fromarray.
+
+        Parameters
+        ----------
+        data : A numpy.ndarray
+        grid : A `SamplingGrid` Object
+        
+        See Also
+        --------
+        load : load `Image` from a file
+        save : save `Image` to a file
+        fromarray : create an `Image` from a numpy array
+
+        """
+
+        if data is None or grid is None:
+            raise ValueError, 'expecting an array and SamplingGrid instance'
+
+        self._data = data
+        self._grid = grid
+
+    def _getshape(self):
+        if hasattr(self._data, "shape"):
+            return self._data.shape
+        else:
+            return self._data[:].shape
+    shape = property(_getshape)
+
+    def _getndim(self):
+        if hasattr(self._data, "ndim"):
+            return self._data.ndim
+        else:
+            return self._data[:].ndim
+    ndim = property(_getndim)
+
+    def _getgrid(self):
+        return self._grid
+    grid = property(_getgrid)
+
+    # NOTE: Rename grid to spacemap?  There's been much discussion regarding
+    # the appropriate name of this attr.  We should probably settle it and 
+    # move on.
+
+    def __getitem__(self, index):
+        """Get a slice of image data.  Just like slicing a numpy array.
+
+        Examples
+        --------
+        >>> from neuroimaging.core.image import image
+        >>> from neuroimaging.testing import anatfile
+        >>> img = image.load(anatfile)
+        >>> zdim, ydim, xdim = img.shape
+        >>> central_axial_slice = img[zdim/2, :, :]
+
+        """
+
+        if type(index) not in [type(()), type([])]:
+            index = (index,)
+        else:
+            index = tuple(index)
+        
+        for i in index:
+            if type(i) not in [type(1), type(slice(0,4,1))]:
+                raise ValueError, 'when slicing images, index must be a list of integers or slices'
+        data = self._data[index]
+        grid = self.grid[index]
+        return Image(data, grid)
+    
+    def __setitem__(self, slice_, data):
+        """Set values of ``slice_`` to ``data``.
+        """
+        self._data[slice_] = data
+
+    def __array__(self):
+        """Return data in ndarray.  Called through numpy.array.
+        
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from neuroimaging.core.image import image
+        >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'))
+        >>> imgarr = np.array(img)
+
+        """
+
+        return np.asarray(self._data[:])
 
 def _open_pynifti(url, datasource=DataSource(), mode="r", clobber=False):
     """Open the image using PyNifti."""
@@ -152,7 +267,7 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
         'Filename "%s" (or its header files) does not exist' % url
 
 
-def load(url, datasource=DataSource(), format=None, **keywords):
+def load(url, datasource=DataSource(), format=None, mode='r', **keywords):
     """Load an image from the given url.
 
     Load an image from the file specified by ``url`` and ``datasource``.
@@ -167,6 +282,7 @@ def load(url, datasource=DataSource(), format=None, **keywords):
     format : A `Format` object
         The file format to use when opening the image file.  If ``None``, the
         default, all supported formats are tried.
+    mode : Either 'r' or 'r+'
     keywords : Keyword arguments passed to `Format` initialization call.
 
     Returns
@@ -200,7 +316,9 @@ def load(url, datasource=DataSource(), format=None, **keywords):
     # Fix when porting code to numpy-trunk that now includes DataSource.
     # and update documentation above.
 
-    return _open(url, datasource=datasource, format=format, mode='r', **keywords)
+    if mode not in ['r', 'r+']:
+        raise ValueError, 'image opening mode must be either "r" or "r+"'
+    return _open(url, datasource=datasource, format=format, mode=mode, **keywords)
 
 def save(img, filename, datasource=DataSource(), clobber=False, format=None, **keywords):
     """Write the image to a file.
@@ -289,218 +407,18 @@ def fromarray(data, grid=None):
                                             step=(1,)*data.ndim)
     return Image(data, grid)
 
-
-def slice_iterator(img, axis=0, mode='r'):
-    """Return slice iterator for this image
-    
-    Parameters
-    ----------
-    img : An `Image` object
-    axis : ``int`` or ``[int]``
-        The index of the axis (or axes) to be iterated over. If a list
-        is supplied the axes are iterated over slowest to fastest.
-    mode : ``string``
-        The mode to run the iterator in.
-        'r' - read-only (default)
-        'w' - read-write
-
-    Returns
-    -------
-    iterator : A `SliceIterator` object.
-    
-    Examples
-    --------
-
-    >>> import numpy as np
-    >>> from neuroimaging.core.image import image
-    >>> from neuroimaging.testing import anatfile
-    >>> img = image.load(anatfile)
-    >>> for slice_ in image.slice_iterator(img):
-    ...     y = np.mean(slice_)
-    
-    >>> imgiter = image.slice_iterator(img)
-    >>> slice_ = imgiter.next()
-
+def create_outfile(filename, grid, dtype=np.float32):
     """
-    
-    return SliceIterator(img, axis=axis, mode=mode)
-
-
-def parcel_iterator(img, parcelmap, parcelseq=None, mode='r'):
+    Create a zero-filled Image, saved to filename and
+    reopened in 'r+' mode.
     """
-    Parameters
-    ----------
-    parcelmap : ``[int]``
-        This is an int array of the same shape as self.
-        The different values of the array define different regions.
-        For example, all the 0s define a region, all the 1s define
-        another region, etc.           
-    parcelseq : ``[int]`` or ``[(int, int, ...)]``
-        This is an array of integers or tuples of integers, which
-        define the order to iterate over the regions. Each element of
-        the array can consist of one or more different integers. The
-        union of the regions defined in parcelmap by these values is
-        the region taken at each iteration. If parcelseq is None then
-        the iterator will go through one region for each number in
-        parcelmap.
-    mode : ``string``
-        The mode to run the iterator in.
-        'r' - read-only (default)
-        'w' - read-write                
-    
-    """
-    
-    return ParcelIterator(img, parcelmap, parcelseq, mode=mode)
+    tmp = Image(np.zeros(grid.shape, dtype), grid)
+    save_image(tmp, filename)
+    del(tmp)
+    return load_image(filename, mode='r+')
 
-
-def slice_parcel_iterator(img, parcelmap, parcelseq=None, mode='r'):
-    """
-    Parameters
-    ----------
-    parcelmap : ``[int]``
-        This is an int array of the same shape as self.
-        The different values of the array define different regions.
-        For example, all the 0s define a region, all the 1s define
-        another region, etc.           
-    parcelseq : ``[int]`` or ``[(int, int, ...)]``
-        This is an array of integers or tuples of integers, which
-        define the order to iterate over the regions. Each element of
-        the array can consist of one or more different integers. The
-        union of the regions defined in parcelmap by these values is
-        the region taken at each iteration. If parcelseq is None then
-        the iterator will go through one region for each number in
-        parcelmap.                
-    mode : ``string``
-        The mode to run the iterator in.
-        'r' - read-only (default)
-        'w' - read-write
-    
-    """
-    
-    return SliceParcelIterator(img, parcelmap, parcelseq, mode=mode)
-
-class Image(object):
-    """
-    The `Image` class provides the core object type used in nipy. An `Image`
-    represents a volumetric brain image and provides means for manipulating
-    the image data.  Most functions in the image module operate on `Image`
-    objects.
-
-    Notes
-    -----
-    Images should be created through the module functions load and fromarray.
-
-    Examples
-    --------
-
-    >>> from neuroimaging.core.image import image
-    >>> from neuroimaging.testing import anatfile
-    >>> img = image.load(anatfile)
-
-    >>> import numpy as np
-    >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'))
-
-    """
-
-    def _getaffine(self):
-        if hasattr(self.grid, "affine"):
-            return self.grid.affine
-        raise AttributeError
-    affine = property(_getaffine)
-
-    def __init__(self, data, grid):
-        """Create an `Image` object from a numpy array and a `Grid` object.
-        
-        Images should be created through the module functions load and
-        fromarray.
-
-        Parameters
-        ----------
-        data : A numpy.ndarray
-        grid : A `SamplingGrid` Object
-        
-        See Also
-        --------
-        load : load `Image` from a file
-        save : save `Image` to a file
-        fromarray : create an `Image` from a numpy array
-
-        """
-
-        if data is None or grid is None:
-            raise ValueError, 'expecting an array and SamplingGrid instance'
-
-        self._data = data
-        self._grid = grid
-
-    def _getshape(self):
-        if hasattr(self._data, "shape"):
-            return self._data.shape
-        else:
-            return self._data[:].shape
-    shape = property(_getshape)
-
-    def _getndim(self):
-        if hasattr(self._data, "ndim"):
-            return self._data.ndim
-        else:
-            return self._data[:].ndim
-    ndim = property(_getndim)
-
-    def _getgrid(self):
-        return self._grid
-    grid = property(_getgrid)
-
-    # NOTE: Rename grid to spacemap?  There's been much discussion regarding
-    # the appropriate name of this attr.  We should probably settle it and 
-    # move on.
-
-    def __getitem__(self, index):
-        """Get a slice of image data.  Just like slicing a numpy array.
-
-        Examples
-        --------
-        >>> from neuroimaging.core.image import image
-        >>> from neuroimaging.testing import anatfile
-        >>> img = image.load(anatfile)
-        >>> zdim, ydim, xdim = img.shape
-        >>> central_axial_slice = img[zdim/2, :, :]
-
-        """
-
-        if type(index) not in [type(()), type([])]:
-            index = (index,)
-        else:
-            index = tuple(index)
-        
-        for i in index:
-            if type(i) not in [type(1), type(slice(0,4,1))]:
-                raise ValueError, 'when slicing images, index must be a list of integers or slices'
-        data = self._data[index]
-        grid = self.grid[index]
-        return Image(data, grid)
-    
-    def __setitem__(self, slice_, data):
-        """Set values of ``slice_`` to ``data``.
-        """
-        self._data[slice_] = data
-
-    def __array__(self):
-        """Return data in ndarray.  Called through numpy.array.
-        
-        Examples
-        --------
-        >>> import numpy as np
-        >>> from neuroimaging.core.image import image
-        >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'))
-        >>> imgarr = np.array(img)
-
-        """
-
-        return self._data[:]
-
-
-def merge_images(filename, images, cls=Image, clobber=False):
+def merge_images(filename, images, cls=Image, clobber=False,
+                 axis='time'):
     """
     Create a new file based image by combining a series of images together.
 
@@ -514,7 +432,9 @@ def merge_images(filename, images, cls=Image, clobber=False):
         The class of image to create
     clobber : ``bool``
         Overwrite the file if it already exists
-
+    axis : ``string``
+        Name of the concatenated axis.
+        
     Returns
     -------
     ``cls``
@@ -523,45 +443,18 @@ def merge_images(filename, images, cls=Image, clobber=False):
     
     n = len(images)
     im0 = images[0]
-    grid = im0.grid.replicate(n, "time")
-    data = empty(shape=grid.shape)
+    grid = im0.grid.replicate(n, axis)
+    data = np.empty(shape=grid.shape)
     for i, image in enumerate(images):
-        data[i] = image[:]
-    out = cls(filename, mode='w', clobber=clobber, grid=grid)
-    out[:] = data[:]
-    return out
-
-def merge_to_array(images, cls=Image):
-    """
-    Create a new array based image by combining a series of images together.
-
-    Parameters
-    ----------
-    images : [`Image`]
-        The list of images to be merged
-    cls : ``class``
-        The class of image to create
-
-    Returns
-    -------
-    ``cls``
-    
-    """
-    
-    n = len(images)
-    im0 = images[0]
-    grid = im0.grid.replicate(n, "time")
-    data = empty(shape=grid.shape)
-    for i, image in enumerate(images):
-        data[i] = image[:]
-    return cls(data, mode='w', grid=grid)
+        data[i] = np.asarray(image)[:]
+    return Image(data, grid)
 
 def zeros(grid):
     """
     Return an Image of zeros with a given grid.
     """
     if hasattr(grid, "shape"):
-        return fromarray(npzeros(grid.shape))
+        return fromarray(np.zeros(grid.shape))
     else:
         return fromarray(grid)
 
