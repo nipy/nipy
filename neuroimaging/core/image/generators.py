@@ -16,7 +16,7 @@ parcels: return binary array of the unique components of data
 
 """
 
-from numpy import unique, asarray, equal, product, cumprod
+from numpy import unique, asarray, equal, product, cumprod, bool
 
 def parcels(data, labels=None):
     """
@@ -24,7 +24,10 @@ def parcels(data, labels=None):
 
     [numpy.equal(data, label) for label in labels]
 
-    If labels is None, labels = numpy.unique(data)
+    If labels is None, labels = numpy.unique(data).
+    Each label in labels can be a sequence, in which case
+    the value returned for that label union
+    [numpy.equal(data, l) for l in label]
 
     >>> for p in parcels([[1,1],[2,1]]):
     ...     print p
@@ -42,12 +45,26 @@ def parcels(data, labels=None):
     [[False False]
      [False  True]]
     >>>               
+    >>> for p in parcels([[1,1],[2,3]], labels=[(2,3),2]):
+    ...     print p
+    ...
+    [[False False]
+     [ True  True]]
+    [[False False]
+     [ True False]]
+    >>>      
     """
     data = asarray(data)
     if labels is None:
         labels = unique(data)
     for label in labels:
-        yield equal(data, label)
+        if type(label) not in [type(()), type([])]:
+            yield equal(data, label)
+        else:
+            v = 0
+            for l in label:
+                v += equal(data, l)
+            yield v.astype(bool)
 
 def data_generator(data, iterable=None):
     """
@@ -125,11 +142,11 @@ def slice_generator(data, axis=0):
         data = asarray(data)
 
         # the total number of iterations to be made
-        nmax = product(asarray(shape)[axis])
+        nmax = product(asarray(data.shape)[axis])
 
         # calculate the 'divmod' paramter which is used to work out
         # which index to use to use for each axis during iteration
-        mods = cumprod(data.shape[axis])            
+        mods = cumprod(asarray(data.shape)[axis])
         divs = [1] + list(mods[:-1])
 
         # set up a full set of slices for the image, to be modified
@@ -141,9 +158,10 @@ def slice_generator(data, axis=0):
 
             if n >= nmax:
                 raise StopIteration
-            for (a, div, mod) in divmod:
+            for (a, div, mod) in zip(axis, divs, mods):
                 x = n / div % mod
-                slices[a] = slice(x, x+1)
+                slices[a] = x
+            n += 1
             yield slices, data[slices]
 
 def f_generator(f, iterable):
@@ -161,3 +179,40 @@ def f_generator(f, iterable):
     """
     for i, x in iterable:
         yield i, asarray(f(x))
+
+def slice_parcels(data, labels=None, axis=0):
+    """
+    A generator for slicing through parcels and slices of data...
+
+    hmmm... a better description is needed
+    
+    >>> from numpy import *
+    >>> x=array([[0,0,0,1],[0,1,0,1],[2,2,0,1]])
+    >>> for a in slice_parcels(x):
+    ...     print a, x[a]
+    ...
+    ((0,), array([ True,  True,  True, False], dtype=bool)) [0 0 0]
+    ((0,), array([False, False, False,  True], dtype=bool)) [1]
+    ((1,), array([ True, False,  True, False], dtype=bool)) [0 0]
+    ((1,), array([False,  True, False,  True], dtype=bool)) [1 1]
+    ((2,), array([False, False,  True, False], dtype=bool)) [0]
+    ((2,), array([False, False, False,  True], dtype=bool)) [1]
+    ((2,), array([ True,  True, False, False], dtype=bool)) [2 2]
+
+    >>> for a in slice_parcels(x, axis=1):
+    ...     b, c = a
+    ...     print a, x[b][c]
+    ...
+    ((slice(None, None, None), 0), array([ True,  True, False], dtype=bool)) [0 0]
+    ((slice(None, None, None), 0), array([False, False,  True], dtype=bool)) [2]
+    ((slice(None, None, None), 1), array([ True, False, False], dtype=bool)) [0]
+    ((slice(None, None, None), 1), array([False,  True, False], dtype=bool)) [1]
+    ((slice(None, None, None), 1), array([False, False,  True], dtype=bool)) [2]
+    ((slice(None, None, None), 2), array([ True,  True,  True], dtype=bool)) [0 0 0]
+    ((slice(None, None, None), 3), array([ True,  True,  True], dtype=bool)) [1 1 1]
+
+    """
+    for i, d in slice_generator(data, axis=axis):
+        for p in parcels(d, labels=labels):
+            yield (i, p)
+
