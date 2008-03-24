@@ -214,6 +214,10 @@ class SlicePlot(object):
         data : a 2D array
 
         """
+
+        if data.ndim is not 2:
+            raise ValueError, 'Data array must be a 2D array.'
+
         # Should something like this work via a property?
         #     sag_plot.data = mni_vol[:, :, 10]
         self.data = data
