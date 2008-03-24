@@ -16,6 +16,7 @@ from pylab import figure
 from neuroimaging.core.image import image
 
 _default_alpha = 0.5
+_bgcolor = (0.2, 0.2, 0.2)
 
 class SlicePlot(object):
     """Class for plotting image slices.
@@ -38,7 +39,7 @@ class SlicePlot(object):
 
     """
 
-    def __init__(self, plt, data=None, parent=None, cmap=cm.gray, 
+    def __init__(self, plt=None, data=None, parent=None, cmap=cm.gray, 
                  origin='lower', interpolation='nearest'):
         """Create a slice plot using matplotlib.
         
@@ -50,7 +51,9 @@ class SlicePlot(object):
         parent : object that owns this plot to receive event messages
         """
 
-        assert plt is not None, "SlicePlot requires a valid plt"
+        if plt is None:
+            fig = figure()
+            plt = fig.add_subplot(1, 1, 1, axisbg=_bgcolor)
         self.plt = plt
         # plt is a matplotlib.axes.Subplot object
         # We could code it to accept a matplotlib.image.AxesImage also.
@@ -211,10 +214,16 @@ class SlicePlot(object):
         data : a 2D array
 
         """
-        # Should something like this work?
+        # Should something like this work via a property?
         #     sag_plot.data = mni_vol[:, :, 10]
         self.data = data
         self.imgaxes.set_data(self.data)
+        vmin = self.data.min()
+        vmax = self.data.max()
+        self.set_clim(vmin, vmax)
+        ydim, xdim = self.data.shape
+        self.set_xlim((0, xdim))
+        self.set_ylim((0, ydim))
         self.draw()
 
     def set_grid(self, b=None, **kwargs):
@@ -364,13 +373,12 @@ class SliceViewer(object):
         self.fig = figure()
         # put some space between plots so it's easier to see axis
         self.fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        bgcolor = (0.2, 0.2, 0.2)
         # create 3 orthogonal view subplots
-        self._cor_subplot = self.fig.add_subplot(2, 2, 1, axisbg=bgcolor)
+        self._cor_subplot = self.fig.add_subplot(2, 2, 1, axisbg=_bgcolor)
         self._cor_subplot.axis('equal')
-        self._sag_subplot = self.fig.add_subplot(2, 2, 2, axisbg=bgcolor)
+        self._sag_subplot = self.fig.add_subplot(2, 2, 2, axisbg=_bgcolor)
         self._sag_subplot.axis('equal')
-        self._axl_subplot = self.fig.add_subplot(2, 2, 3, axisbg=bgcolor)
+        self._axl_subplot = self.fig.add_subplot(2, 2, 3, axisbg=_bgcolor)
         self._axl_subplot.axis('equal')
 
         # create SlicePlots
