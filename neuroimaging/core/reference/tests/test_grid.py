@@ -69,23 +69,6 @@ class test_Grid(NumpyTestCase):
         i = SamplingGrid.identity(shape=shape, names=space)
         i.allslice()
         
-    @slow
-    #TODO: slice_iterator ParcelITerator are deprecated,
-    #      fix these to use generators
-    def test_iterslices(self):
-        for i in range(3):
-            self.assertEqual(len(list(self.img.slice_iterator(axis=i))), self.img.grid.shape[i])
-        
-        parcelmap = N.zeros(self.img.grid.shape)
-        parcelmap[:3,:5,:4] = 1
-        parcelmap[3:10,5:10,4:10] = 2
-        parcelseq = (1, (0,2))
-        for i in ParcelIterator(self.img, parcelmap, parcelseq):
-            pass
-
-        parcelseq = (1, (1,2), 0) + (0,)*(len(parcelmap)-3)
-        for i in SliceParcelIterator(self.img, parcelmap, parcelseq):
-            pass
 
     def test_from_affine(self):
         a = Affine.identity()
