@@ -193,7 +193,7 @@ class SamplingGrid(object):
                 if i in varcoords:
                     a = copy.deepcopy(ia[i])
                     newia.append(a)
-            newic = VoxelCoordinateSystem(self.input_coords.name, newia)
+            newic = VoxelCoordinateSystem(self.input_coords.name, newia, shape=shape)
             return SamplingGrid(mapping, newic, self.output_coords)
         else:
             raise ValueError, 'input_coords must be VoxelCoordinateSystem for slice of grid to make sense'
