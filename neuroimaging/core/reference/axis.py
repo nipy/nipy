@@ -49,6 +49,7 @@ class Axis(object):
         """
         
         self.name = name
+
         if self.name not in valid:
             raise ValueError, ('%s is invalid: recognized dimension ' \
                                'names are ' + str(valid)) \
