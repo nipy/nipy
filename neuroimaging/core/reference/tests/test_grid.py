@@ -4,7 +4,6 @@ from numpy.testing import NumpyTest, NumpyTestCase
 from neuroimaging.core.reference.axis import space
 from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
-from neuroimaging.core.image.iterators import ParcelIterator, SliceParcelIterator
 from neuroimaging.core.reference.mapping import Affine
 
 from neuroimaging.data_io.api import Analyze
@@ -71,6 +70,8 @@ class test_Grid(NumpyTestCase):
         i.allslice()
         
     @slow
+    #TODO: slice_iterator ParcelITerator are deprecated,
+    #      fix these to use generators
     def test_iterslices(self):
         for i in range(3):
             self.assertEqual(len(list(self.img.slice_iterator(axis=i))), self.img.grid.shape[i])

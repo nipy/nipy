@@ -129,6 +129,7 @@ class test_image(NumpyTestCase):
             self.assertEquals(d.shape, (2,20,20))
 
     def test_iter3(self):
+        self.fail("this assertion is not raised -- python seems to give the default slice through data, i.e. iterating through the first indices")
         self.assertRaises(NotImplementedError, iter, self.img)
 
     def test_iter4(self):

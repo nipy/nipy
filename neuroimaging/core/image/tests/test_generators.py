@@ -5,8 +5,9 @@ from neuroimaging.core.api import data_generator, parcels, write_data, slice_gen
 from neuroimaging.core.api import Image, load_image, save_image
 import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.reference.grid as grid
+import neuroimaging.core.image.generators as g
 
-class test_Iterator(NumpyTestCase):
+class test_Generator(NumpyTestCase):
 
     def setUp(self):
         self.img = Image(np.zeros((10, 20, 30)), grid.SamplingGrid.from_start_step(shape=(10,20,30), step=(1,)*3, start=(0,)*3))
@@ -59,13 +60,16 @@ class test_Iterator(NumpyTestCase):
         parcelmap[0,1,0] = 2
         parcelseq = (0, 1, 2, 3)
         expected = [np.product(self.img3.shape) - 6, 3, 3, 0]
-        iterator = ParcelIterator(self.img3, parcelmap, parcelseq)
-        for i, slice_ in enumerate(iterator):
-            self.assertEqual((expected[i],), slice_.shape)
+        iterator = g.data_generator(self.img3, g.parcels(parcelmap, labels=parcelseq))
 
-        iterator = ParcelIterator(self.img3, parcelmap)
-        for i, slice_ in enumerate(iterator):
-            self.assertEqual((expected[i],), slice_.shape)
+        for i, pair in enumerate(iterator):
+            s, d = pair
+            self.assertEqual((expected[i],), d.shape)
+
+        iterator = g.data_generator(self.img3, g.parcels(parcelmap))
+        for i, pair in enumerate(iterator):
+            s, d = pair
+            self.assertEqual((expected[i],), d.shape)
 
     def test_parcel_write(self):
         parcelmap = np.zeros(self.img3.shape)
@@ -77,28 +81,28 @@ class test_Iterator(NumpyTestCase):
         parcelmap[0,1,0] = 2
         parcelseq = (0, 1, 2, 3)
         expected = [np.product(self.img3.shape) - 6, 3, 3, 0]
-        iterator = ParcelIterator(self.img3, parcelmap, parcelseq, mode='w')
+        iterator = g.parcels(parcelmap, labels=parcelseq)
 
-        for i, slice_ in enumerate(iterator):
+        for i, s in enumerate(iterator):
             value = np.arange(expected[i])
-            slice_.set(value)
+            self.img3[s] = value
 
-        iterator = ParcelIterator(self.img3, parcelmap, parcelseq)
-        for i, slice_ in enumerate(iterator):
-            self.assertEqual((expected[i],), slice_.shape)
-            np.testing.assert_equal(slice_, np.arange(expected[i]))
+        iterator = g.parcels(parcelmap, labels=parcelseq)
+        for i, pair in enumerate(g.data_generator(self.img3, iterator)):
+            s, d = pair
+            self.assertEqual((expected[i],), d.shape)
+            np.testing.assert_equal(d, np.arange(expected[i]))
 
-        iterator = ParcelIterator(self.img3, parcelmap, mode='w')
-        for i, slice_ in enumerate(iterator):
+        iterator = g.parcels(parcelmap)
+        for i, s in enumerate(iterator):
             value = np.arange(expected[i])
-            slice_.set(value)
+            self.img3[s] = value
 
-        iterator = ParcelIterator(self.img3, parcelmap)
-        for i, slice_ in enumerate(iterator):
-            self.assertEqual((expected[i],), slice_.shape)
-            np.testing.assert_equal(slice_, np.arange(expected[i]))
-
-
+        iterator = g.parcels(parcelmap)
+        for i, pair in enumerate(g.data_generator(self.img3, iterator)):
+            s, d = pair
+            self.assertEqual((expected[i],), d.shape)
+            np.testing.assert_equal(d, np.arange(expected[i]))
 
     def test_parcel_copy(self):
         parcelmap = np.zeros(self.img3.shape)
@@ -110,83 +114,34 @@ class test_Iterator(NumpyTestCase):
         parcelmap[0,1,0] = 2
         parcelseq = (0, 1, 2, 3)
         expected = [np.product(self.img3.shape) - 6, 3, 3, 0]
-        iterator = ParcelIterator(self.img3, parcelmap, parcelseq)
-        tmp = Image(np.array(self.img3), self.img3.grid)
+        iterator = g.parcels(parcelmap, labels=parcelseq)
+        tmp = Image(np.asarray(self.img3), self.img3.grid)
 
-        new_iterator = iterator.copy(tmp)
+        new_iterator = g.data_generator(tmp, g.parcels(parcelmap, labels=parcelseq))
 
         for i, slice_ in enumerate(new_iterator):
-            self.assertEqual((expected[i],), slice_.shape)
+            self.assertEqual((expected[i],), slice_[1].shape)
 
-        iterator = ParcelIterator(self.img3, parcelmap)
-        for i, slice_ in enumerate(new_iterator):
-            self.assertEqual((expected[i],), slice_.shape)
 
     def test_sliceparcel(self):
         parcelmap = np.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
         parcelseq = ((1, 2), 0, 2)
-        iterator = SliceParcelIterator(self.img3, parcelmap, parcelseq)
-        for i, slice_ in enumerate(iterator):
-            pm = parcelmap[i]
-            ps = parcelseq[i]
-            try:
-                x = len([n for n in pm if n in ps])
-            except TypeError:
-                x = len([n for n in pm if n == ps])
-            self.assertEqual(x, slice_.shape[0])
-            self.assertEqual(self.img3[:].shape[2:], slice_.shape[1:])
+        
+        o = np.zeros(parcelmap.shape)
+        iterator = g.slice_parcels(parcelmap, labels=parcelseq)
 
-    def test_sliceparcel1(self):
-        parcelmap = np.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
-        self.assertRaises(ValueError, SliceParcelIterator, self.img3, \
-                          parcelmap, None)
-        return
+        for i, pair in enumerate(iterator):
+            a, s = pair
+            o[a][s] = i
+        np.testing.assert_equal(o,
+                                np.array([[1,1,1,0,2],
+                                          [4,4,3,3,5],
+                                          [7,7,7,7,8]]))
 
-    def test_sliceparcel_copy(self):
-        parcelmap = np.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
-        parcelseq = ((1, 2), 0, 2)
-        iterator = SliceParcelIterator(self.img3, parcelmap, parcelseq)
-
-        new_iterator = iterator.copy(self.img4)
-
-        for i, slice_ in enumerate(new_iterator):
-            pm = parcelmap[i]
-            ps = parcelseq[i]
-            try:
-                x = len([n for n in pm if n in ps])
-            except TypeError:
-                x = len([n for n in pm if n == ps])
-            self.assertEqual(x, slice_.shape[0])
-            self.assertEqual(self.img4[:].shape[2:], slice_.shape[1:])
-
-    def test_sliceparcel_write(self):
-        parcelmap = np.asarray([[0,0,0,1,2],[0,0,1,1,2],[0,0,0,0,2]])
-        parcelseq = ((1, 2), 0, 2)
-        iterator = SliceParcelIterator(self.img3, parcelmap, parcelseq, mode='w')
-        for i, slice_ in enumerate(iterator):
-            pm = parcelmap[i]
-            ps = parcelseq[i]
-            try:
-                x = len([n for n in pm if n in ps])
-            except TypeError:
-                x = len([n for n in pm if n == ps])
-            shape = (x, self.img3.shape[2])
-            slice_.set(np.ones(shape))
-
-        iterator = SliceParcelIterator(self.img3, parcelmap, parcelseq)
-        for i, slice_ in enumerate(iterator):
-            pm = parcelmap[i]
-            ps = parcelseq[i]
-            try:
-                x = len([n for n in pm if n in ps])
-            except TypeError:
-                x = len([n for n in pm if n == ps])
-            self.assertEqual(x, slice_.shape[0])
-            np.testing.assert_equal(np.ones((x ,self.img3.shape[2])), slice_)
 
 
 from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.core.image.iterators')
+test_suite = make_doctest_suite('neuroimaging.core.image.generators')
 
 if __name__ == '__main__':
     NumpyTest.run()

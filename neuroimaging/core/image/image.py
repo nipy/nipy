@@ -304,8 +304,8 @@ def load(url, datasource=DataSource(), format=None, mode='r', **keywords):
     --------
 
     >>> from neuroimaging.core.image import image
-    >>> from neuroimaging.testing import anatfile
-    >>> img = image.load(anatfile)
+    >>> from neuroimaging.testing import funcfile
+    >>> img = image.load(funcfile)
     >>> img.shape
     (20, 2, 20, 20)
 
@@ -376,7 +376,7 @@ def save(img, filename, datasource=DataSource(), clobber=False, format=None, **k
                      clobber=clobber,
                      datasource=datasource,
                      format=format, **keywords)
-    outimage[:] = array(img)[:]
+    outimage[:] = np.array(img)[:]
     del(outimage)
 
 
