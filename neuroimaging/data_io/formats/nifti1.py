@@ -300,7 +300,7 @@ class Nifti1(binary.BinaryFormat):
                                                  shape=shape,
                                                  start=-N.array(origin),
                                                  step=step)
-            tgridm = tgrid.python2matlab().transform
+            tgridm = tgrid.python2matlab().affine
 
             # Correct transform information of tgrid by
             # NIFTI file's transform information
@@ -313,7 +313,7 @@ class Nifti1(binary.BinaryFormat):
             # transformation matrix with the appropriate information
             # from the NIFTI header
 
-            t = self.transform()
+            t = self.transform
             tm = Affine(t).python2matlab().transform
             tgridm[:3,:3] = tm[:3,:3]
             tgridm[:3,-1] = tm[:3,-1]
@@ -434,7 +434,7 @@ class Nifti1(binary.BinaryFormat):
         self.header['dim'] = \
                         [self.ndim] + list(self.grid.shape) + [0]*(7-self.ndim)
         
-    def transform(self):
+    def _transform(self):
         """
         Return 4x4 transform matrix based on the NIFTI attributes
         for the 3d (spatial) part of the mapping.
@@ -476,6 +476,7 @@ class Nifti1(binary.BinaryFormat):
             value[2] = N.array(self.header['srow_z'])
 
         return Affine(value).matlab2python().transform 
+    transform = property(_transform)
 
     def inform_canonical(self, fieldsDict=None):
         if fieldsDict is not None:
