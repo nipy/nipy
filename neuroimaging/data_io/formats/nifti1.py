@@ -203,8 +203,6 @@ class Nifti1(binary.BinaryFormat):
                        }
 
     extensions = ('.img', '.hdr', '.nii', '.mat')
-    # get around to implementing nvector:
-    nvector = -1
 
     extendable = False
 
@@ -235,7 +233,7 @@ class Nifti1(binary.BinaryFormat):
             self.dtype = N.dtype(keywords.get('dtype', N.float64))
             self.dtype = self.dtype.newbyteorder(self.byteorder)
             if self.grid is not None:
-                self.header_from_given()
+                self._header_from_grid()
             else:
                 raise NotImplementedError("Don't know how to create header" \
                                           "info without a grid object")
@@ -256,75 +254,10 @@ class Nifti1(binary.BinaryFormat):
         # fill in the canonical list as best we can for Analyze
         self.inform_canonical()
 
-        ########## This could stand a clean-up ################################
         if self.grid is None:
-            origin = (self.header['qoffset_x'],
-                      self.header['qoffset_y'],
-                      self.header['qoffset_z'])
-            step = tuple(self.header['pixdim'][1:4])
-            shape = tuple(self.header['dim'][1:4])
-            if self.ndim == 3:
-                axisnames = space[::-1]
-            elif self.ndim == 4 and self.nvector <= 1:
-                axisnames = spacetime[::-1]
-                origin = origin + (1,)
-                step = step + (self.header['pixdim'][4],)
-                shape = shape + (self.header['dim'][4],)
-##                     if self.squeeze:
-##                     if self.dim[4] == 1:
-##                         origin = origin[0:3]
-##                         step = step[0:3]
-##                         axisnames = axisnames[0:3]
-##                         shape = self.dim[1:4]
-##                 elif self.ndim == 4 and self.nvector > 1:
-##                     axisnames = ('vector_dimension', ) + space[::-1]
-##                     origin = (1,) + origin
-##                     step = (1,) + step
-##                     shape = shape + (self.header['dim'][5],)
-##                     if self.squeeze:
-##                         if self.dim[1] == 1:
-##                             origin = origin[1:4]
-##                             step = step[1:4]
-##                             axisnames = axisnames[1:4]
-##                             shape = self.dim[2:5]
-
-            # DEBUG:  some debugging notes... chris
-            #print 'In nifti1.Nifti1... create SamplingGrid'
-            #print 'names:', axisnames
-            #print 'shape:', shape
-            #print 'start:', -N.array(origin)
-            #print 'step:', step
-            #print 'origin:', origin
-
-            tgrid = SamplingGrid.from_start_step(names=axisnames,
-                                                 shape=shape,
-                                                 start=-N.array(origin),
-                                                 step=step)
-            tgridm = tgrid.python2matlab().affine
-
-            # Correct transform information of tgrid by
-            # NIFTI file's transform information
-            # tgrid's transform matrix may be larger than 4x4,
-            # the NIFTI file provides information for the last
-            # (in C/python index) three coordinates, or (in
-            # MATLAB/FORTRAN index) the first three.
-
-            # What follows is just a way to write over tgrid's
-            # transformation matrix with the appropriate information
-            # from the NIFTI header
-
-            t = self.transform
-            tm = Affine(t).python2matlab().transform
-            tgridm[:3,:3] = tm[:3,:3]
-            tgridm[:3,-1] = tm[:3,-1]
-            self.grid = SamplingGrid(Affine(tgridm).matlab2python(),
-                                     tgrid.input_coords,
-                                     tgrid.output_coords)
-
-        #else: Grid was already assigned by Format constructor
+            self._grid_from_header()
         
         self.attach_data(offset=int(self.header['vox_offset']), use_memmap=use_memmap)
-
 
     def _get_filenames(self):
         # Nifti single file will be the preferred type for creation
@@ -332,7 +265,6 @@ class Nifti1(binary.BinaryFormat):
                (self.filebase+".hdr", self.filebase+".img") or\
                (self.filebase+".nii", self.filebase+".nii")
     
-
     @staticmethod
     def _default_field_value(fieldname, fieldformat):
         "[STATIC] Get the default value for the given field."
@@ -341,13 +273,44 @@ class Nifti1(binary.BinaryFormat):
              [utils.format_defaults[fieldformat[-1]]]*int(fieldformat[:-1]) or \
              utils.format_defaults[fieldformat[-1]]
     
-
     def header_defaults(self):
         for field, format in self.header_formats.items():
             self.header[field] = self._default_field_value(field, format)
 
+    def _grid_from_header(self):
+        origin = (self.header['qoffset_x'],
+                  self.header['qoffset_y'],
+                  self.header['qoffset_z'])
+        origin += (0,) * (self.ndim - 3)
+        step = tuple(self.header['pixdim'][1:(self.ndim+1)])
+        shape = tuple(self.header['dim'][1:(self.ndim+1)])
+        axisnames = ['xspace', 'yspace', 'zspace', 'time', 'vector'][:self.ndim]
+        tgrid = SamplingGrid.from_start_step(names=axisnames,
+                                             shape=shape,
+                                             start=-N.array(origin),
+                                             step=step)
+        tgridm = tgrid.python2matlab().affine
 
-    def header_from_given(self):
+        # Correct transform information of tgrid by
+        # NIFTI file's transform information
+        # tgrid's transform matrix may be larger than 4x4,
+        # the NIFTI file provides information for the last
+        # (in C/python index) three coordinates, or (in
+        # MATLAB/FORTRAN index) the first three.
+
+        # What follows is just a way to write over tgrid's
+        # transformation matrix with the appropriate information
+        # from the NIFTI header
+
+        t = self.transform
+        tm = Affine(t).python2matlab().transform
+        tgridm[:3,:3] = tm[:3,:3]
+        tgridm[:3,-1] = tm[:3,-1]
+        self.grid = SamplingGrid(Affine(tgridm).matlab2python(),
+                                 tgrid.input_coords,
+                                 tgrid.output_coords)
+
+    def _header_from_grid(self):
         """
         Try to set up these fields of the NIFIT1 header from what we know:
 
