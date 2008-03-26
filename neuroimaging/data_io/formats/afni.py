@@ -125,8 +125,8 @@ class AFNI(binary.BinaryFormat):
                 raise AFNIFormatError("Can't create header info without a "\
                                       "grid object!")
             self.byteorder = utils.mybyteorders[sys.byteorder]
-            self.dtype = self._fitdtype(N.dtype(kwds.get('dtype', N.float32)))
-            self.dtype = self.dtype.newbyteorder(self.byteorder)
+            self._dtype = self._fitdtype(N.dtype(kwds.get('dtype', N.float32)))
+            self._dtype = self.dtype.newbyteorder(self.byteorder)
             self.fill_header()
             self.inform_canonical()
             self.write_header(clobber=self.clobber)
@@ -137,7 +137,7 @@ class AFNI(binary.BinaryFormat):
             #     scaling
             #     dtype
             #
-            self.inform_canonical()
+#            self.inform_canonical()
             # divine_byteorder() will inform self.dtype too
             self.divine_byteorder()
 
@@ -240,8 +240,32 @@ class AFNI(binary.BinaryFormat):
             else:
                 # IMPORTANT: could try VOLREG_ROTCOM_xxxxxx or something!
                 print "Non-standard attribute %s skipped" % aname
-        
+    def _getdtype(self):
+        if not hasattr(self, "_dtype"):
+            if self.header.has_key('BRICK_TYPES'):
+                # there is a number for each brick--
+                # if they're not all equal, we're not going to play
+                types = self.header['BRICK_TYPES']
+                if np.alltrue(np.equal(types, types[0])):
+                    raise AFNIFormatError("not all bricks are the same data type, try loading as ImageList with afni.image_list")
+                else:
+                    self._dtype = N.dtype(AFNI_bricktype2dtype[types[0]])
+            else:
+                # try to guess?? damn!
+                import os
+                dsize = self.canonical_fields['zdim'] * \
+                        self.canonical_fields['ydim'] * \
+                        self.canonical_fields['xdim'] * nbricks
+                fsize = os.stat(self.data_file).st_size
+                sctype = {1:N.uint8, 2:N.int16,
+                      4:N.float32, 8:N.complex64}[int(fsize/dsize)]
+            self._dtype = N.dtype(sctype)
+        return self._dtype
+    dtype = property(_getdtype)
+
     def _getscalers(self):
+        ## this should raise an exception fi not all the
+        ## scales are the same -- open as image_list
         pass
     scalers = property(_getscalers)
     
@@ -488,3 +512,10 @@ class AFNI(binary.BinaryFormat):
         else:
             return x
             
+def image_list(filename):
+    """
+    TODO Return an ImageList instance for an AFNI file with multiple bricks that:
+
+    either have different dtypes or different scales.
+    """
+    pass
