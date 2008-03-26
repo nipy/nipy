@@ -43,7 +43,8 @@ class Image(object):
     >>> img = image.load(anatfile)
 
     >>> import numpy as np
-    >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'))
+    >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'),
+    ...                       ['zspace', 'yspace', 'xspace'])
 
     """
 
@@ -52,6 +53,12 @@ class Image(object):
             return self.grid.affine
         raise AttributeError
     affine = property(_getaffine)
+
+    def _getheader(self):
+        if hasattr(self, '_header'):
+            return self._header
+        raise AttributeError
+    header = property(_getheader)
 
     def __init__(self, data, grid):
         """Create an `Image` object from a numpy array and a `Grid` object.
@@ -137,47 +144,48 @@ class Image(object):
         --------
         >>> import numpy as np
         >>> from neuroimaging.core.image import image
-        >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'))
+        >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'),
+        ...                       ['zspace', 'yspace', 'xspace'])
         >>> imgarr = np.array(img)
 
         """
 
         return np.asarray(self._data[:])
 
-def _open_pynifti(url, datasource=DataSource(), mode="r", clobber=False):
-    """Open the image using PyNifti."""
+## def _open_pynifti(url, datasource=DataSource(), mode="r", clobber=False):
+##     """Open the image using PyNifti."""
 
-    """Look at the code from nifti1.Nifti1 for creating SamplingGrid
+##     """Look at the code from nifti1.Nifti1 for creating SamplingGrid
 
-    """
+##     """
 
-    # Note: Nipy's Format code loads the data using a memmap.  Pynifti just
-    # loads it as an array.  But, np.allclose returns True when comparing
-    # the same file loaded through Pynifit and Nipy.
-    import nifti
+##     # Note: Nipy's Format code loads the data using a memmap.  Pynifti just
+##     # loads it as an array.  But, np.allclose returns True when comparing
+##     # the same file loaded through Pynifit and Nipy.
+##     import nifti
 
-    from neuroimaging.core.reference.axis import space
-    import numpy as np
+##     from neuroimaging.core.reference.axis import space
+##     import numpy as np
 
-    nimg = nifti.NiftiImage(url)
+##     nimg = nifti.NiftiImage(url)
 
-    origin = nimg.getQOffset()
-    pixdim = nimg.getPixDims()
-    step = pixdim[0:3] # Note, getPixDims ignores pixdim[0], the qfac
-    dim = nimg.header.get('dim')  # Is there a method for getting this?
-    shape = tuple(dim[1:4])
-    ndim = dim[0]
-    if ndim == 3:
-        axisnames = space[::-1]  # Why do we reverse the list here?
-    else:
-        raise NotImplementedError, 'Not handling 4d images yet!'
+##     origin = nimg.getQOffset()
+##     pixdim = nimg.getPixDims()
+##     step = pixdim[0:3] # Note, getPixDims ignores pixdim[0], the qfac
+##     dim = nimg.header.get('dim')  # Is there a method for getting this?
+##     shape = tuple(dim[1:4])
+##     ndim = dim[0]
+##     if ndim == 3:
+##         axisnames = space[::-1]  # Why do we reverse the list here?
+##     else:
+##         raise NotImplementedError, 'Not handling 4d images yet!'
     
-    grid = SamplingGrid.from_start_step(names=axisnames, 
-                                        shape=shape,
-                                        start=-np.array(origin),
-                                        step=step)
-    #raise NotImplementedError
-    return Image(nimg.asarray(), grid)
+##     grid = SamplingGrid.from_start_step(names=axisnames, 
+##                                         shape=shape,
+##                                         start=-np.array(origin),
+##                                         step=step)
+##     #raise NotImplementedError
+##     return Image(nimg.asarray(), grid)
 
 def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
           clobber=False, **keywords):
@@ -233,11 +241,9 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
             errors[format] = exception
 
     if imgfmt:
-        # HACK... WANT TO CHECK THE FORMAT
         tmpimg = Image(imgfmt.data, imgfmt.grid)
-        tmpimg.fmt = imgfmt
+        tmpimg._header = imgfmt.header
         return tmpimg
-        #return Image(imgfmt.data, imgfmt.grid)
 
     ## if file exists and clobber is False, error message is misleading
     # python test_image.py
@@ -380,13 +386,14 @@ def save(img, filename, datasource=DataSource(), clobber=False, format=None, **k
     del(outimage)
 
 
-def fromarray(data, grid=None):
+def fromarray(data, names, grid=None):
     """Create an image from a numpy array.
 
     Parameters
     ----------
     data : numpy array
         A numpy array of three dimensions.
+    names : a list of axis names
     grid : A `SamplingGrid`
         If not specified, a uniform sampling grid is created.
 
@@ -401,10 +408,13 @@ def fromarray(data, grid=None):
 
     """
 
+    ndim = len(data.shape)
     if not grid:
-        grid = SamplingGrid.from_start_step(shape=data.shape, 
-                                            start=(0,)*data.ndim, 
-                                            step=(1,)*data.ndim)
+        grid = SamplingGrid.from_start_step(names,
+                                            (0,)*ndim,
+                                            (1,)*ndim,
+                                            data.shape)
+
     return Image(data, grid)
 
 def create_outfile(filename, grid, dtype=np.float32):
@@ -449,12 +459,12 @@ def merge_images(filename, images, cls=Image, clobber=False,
         data[i] = np.asarray(image)[:]
     return Image(data, grid)
 
-def zeros(grid):
+def zeros(grid, names):
     """
     Return an Image of zeros with a given grid.
     """
     if hasattr(grid, "shape"):
-        return fromarray(np.zeros(grid.shape))
+        return fromarray(np.zeros(grid.shape), names)
     else:
-        return fromarray(grid)
+        return fromarray(grid, names)
 

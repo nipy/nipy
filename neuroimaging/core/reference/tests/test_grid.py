@@ -1,7 +1,6 @@
 import numpy as N
 from numpy.testing import NumpyTest, NumpyTestCase
 
-from neuroimaging.core.reference.axis import space
 from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
 from neuroimaging.core.reference.mapping import Affine
@@ -55,18 +54,18 @@ class test_Grid(NumpyTestCase):
 
     def test_identity(self):
         shape = (30,40,50)
-        i = SamplingGrid.identity(shape=shape, names=space)
+        i = SamplingGrid.identity(['zspace', 'yspace', 'xshape'], shape=shape)
         self.assertEquals(tuple(i.shape), shape)
         y = i.mapping([3,4,5])
         N.testing.assert_almost_equal(y, N.array([3,4,5]))
 
     def test_identity2(self):
         shape = (30, 40)
-        self.assertRaises(ValueError, SamplingGrid.identity, shape, space)
+        self.assertRaises(ValueError, SamplingGrid.identity, ['zspace', 'yspace', 'xspace'], shape)
 
 
     def test_from_affine(self):
-        a = Affine.identity()
+        a = Affine.identity(['xspace', 'yspace'], (30,40))
         g = SamplingGrid.from_affine(a)
 
 from neuroimaging.utils.testutils import make_doctest_suite

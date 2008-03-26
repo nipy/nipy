@@ -173,66 +173,6 @@ class BinaryFormat(Format):
                 self.data.sync()
             del(self.data)
 
-    #### These methods are extraneous, the header dictionaries are
-    #### unprotected and can be looked at directly
-    def add_header_field(self, field, format, value):
-        """
-        :Returns: ``None``
-        """
-        if not self.extendable:
-            raise NotImplementedError("%s header type not "\
-                                      "extendable" % self.__class__)
-        if field in (self.header.keys() + self.ext_header.keys()):
-            raise ValueError("Field %s already exists in "
-                             "the current header" % field)
-        if not utils.sanevalues(format, value):
-            raise ValueError("Field format and value(s) do not match up.")
-
-        # if we got here, we're good
-        self.ext_header_formats[field] = format
-        self.ext_header[field] = value
-
-
-    def remove_header_field(self, field):
-        """
-        :Returns: ``None``
-        """
-        if field in self.ext_header.keys():
-            self.ext_header.pop(field)
-            self.ext_header_formats.pop(field)
-
-
-
-    def set_header_field(self, field, value):
-        """
-        :Returns: ``None``
-
-        :Raises KeyError: if the given ``field`` is not valid.
-        """
-        try:
-            if utils.sanevalues(self.header_formats[field], value):
-                self.header[field] = value
-        except KeyError:
-            try:
-                if utils.sanevalues(self.ext_header_formats[field], value):
-                    self.ext_header[field] = value
-            except KeyError:
-                raise KeyError('Field does not exist')
-    
-
-    def get_header_field(self, field):
-        """
-        :Raises KeyError: if the given ``field`` is not valid.
-        """
-        try:
-            return self.header[field]
-        except KeyError:
-            try:
-                return self.ext_header[field]
-            except KeyError:
-                raise KeyError
-    
-
     def _get_filenames(self):
         """
         Calculate header_file and data_file filenames
@@ -247,8 +187,3 @@ class BinaryFormat(Format):
         """
         return self.datasource.filename(self._get_filenames()[1])
 
-    def inform_canonical(self, fieldsDict=None):
-        """
-        :Raises NotImplementedError: Abstract method
-        """
-        raise NotImplementedError

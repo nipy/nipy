@@ -197,9 +197,6 @@ class test_Identity(NumpyTestCase):
     def test_inverse(self):
         self.assertTrue(self.a == self.a.inverse().inverse())
         
-    def test_isdiagonal(self):
-        self.assertTrue(self.a.isdiagonal())
-        
     def test_tofile(self):
         self.a.tofile("tmp.mat")
         b = mapping.Affine.fromfile("tmp.mat")
@@ -247,14 +244,6 @@ class test_Mapping(NumpyTestCase):
         p = self.mapping.matlab2python()
         q = p.python2matlab()
         N.testing.assert_almost_equal(q.transform, self.mapping.transform)
-
-
-    def test_isdiagonal(self):
-        m = N.array([[1,0,0],
-                     [0,1,0],
-                     [0,0,1]])
-        self.assertTrue(mapping.isdiagonal(m))
-
 
     def test_matvec_trasform(self):
         m1 = R.standard_normal((3, 3))

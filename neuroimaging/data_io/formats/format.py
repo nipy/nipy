@@ -41,41 +41,52 @@ class Format:
         self.header = odict()
         # Possibly has extended data
         self.ext_header = odict()
-        # Has general information (or should!)
-        self.canonical_fields = odict((
-            ('datasize', 0),
-            ('ndim', 0),
-            ('xdim', 0),
-            ('ydim', 0),
-            ('zdim', 0),
-            ('tdim', 0),
-            ('dx', 0),
-            ('dy', 0),
-            ('dz', 0),
-            ('dt', 0),
-            ('x0', 0),
-            ('y0', 0),
-            ('z0', 0),
-            ('t0', 0),
-            ('intent', ''),
-            ('scaling', 0),
-        ))
 
-        
+##      Most of this information below is in the grid
+##      "scaling" could be a property that returns the scaling and its inverse
+##      "intent" is left as is for now
+##      "datasize" can be obtained from self.dtype.itemsize        
+##        
+##         # Has general information (or should!)
+##         self.canonical_fields = odict((
+##             ('datasize', 0),
+##             ('ndim', 0),
+##             ('xdim', 0),
+##             ('ydim', 0),
+##             ('zdim', 0),
+##             ('tdim', 0),
+##             ('dx', 0),
+##             ('dy', 0),
+##             ('dz', 0),
+##             ('dt', 0),
+##             ('x0', 0),
+##             ('y0', 0),
+##             ('z0', 0),
+##             ('t0', 0),
+##             ('intent', ''),
+##             ('scaling', 0),
+##         ))
 
+    def _getscalers(self):
+        def f(x): return x
+        return f, f
+    scalers = property(_getscalers)
+
+    def _getdatasize(self):
+        return self.dtype.itemsize
+    datasize = property(_getdatasize)
+
+    def _getintent(self):
+        if hasattr(self.header['intent_code']):
+            return self.header['intent_code']
+        raise AttributeError
+    
     def dump_header(self):
         """
         :Returns: ``string``
         """
         return "\n".join(["%s\t%s"%(field,`self.header[field]`) \
                           for field in self.header.keys()])
-
-
-    def inform_canonical(self, fieldsDict=None):
-        """
-        :Raises NotImplementedError: Abstract method
-        """
-        raise NotImplementedError
 
 
     def __str__(self):
@@ -123,51 +134,6 @@ class Format:
             return False
         return True
         
-
-    #############################################
-    ## The following header manipulations might
-    ## not be implemented for a given format.
-    ## They require specific knowledge of the
-    ## header field names
-    #############################################
-    def add_header_field(self, name, type, value):
-        """
-        Add a field to the header. Type should be
-        a format string interpretable by struct.pack.
-
-        :Raises NotImplementedError: Abstract method
-        """
-        raise NotImplementedError
-
-
-    def remove_header_field(self, name):
-        """
-        Remove a field from the header. Will Definitely Not
-        remove any protected fields.
-
-        :Raises NotImplementedError: Abstract method
-        """
-        raise NotImplementedError
-
-
-    def set_header_field(self, name, value):
-        """
-        Set a field's value
-
-        :Raises NotImplementedError: Abstract method
-        """ 
-        raise NotImplementedError
-
-
-    def get_header_field(self, name):
-        """
-        Get a field's value
-
-        :Raises NotImplementedError: Abstract method
-        """
-        raise NotImplementedError
-
-
     def asfile(self):
         """
         :Raises NotImplementedError: Abstract method

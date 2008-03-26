@@ -10,7 +10,7 @@ import numpy as N
 
 from coordinate_system import _reverse
 from neuroimaging.core.reference.mapping import Mapping, Affine
-from neuroimaging.core.reference.axis import space, RegularAxis, Axis, VoxelAxis
+from neuroimaging.core.reference.axis import RegularAxis, Axis, VoxelAxis
 from neuroimaging.core.reference.coordinate_system import \
   VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
 
@@ -22,7 +22,7 @@ class SamplingGrid(object):
     """
     
     @staticmethod
-    def from_start_step(names=space, shape=(), start=(), step=()): 
+    def from_start_step(names, start, step, shape):
         """
         Create a `SamplingGrid` instance from sequences of names, shape, start
         and step.
@@ -55,7 +55,7 @@ class SamplingGrid(object):
 
 
     @staticmethod
-    def identity(shape=(), names=space):
+    def identity(names, shape):
         """
         Return an identity grid of the given shape.
         
@@ -84,7 +84,7 @@ class SamplingGrid(object):
         return SamplingGrid(aff_ident, input_coords, output_coords)
 
     @staticmethod
-    def from_affine(mapping, shape=(), names=space):
+    def from_affine(mapping, names, shape):
         """
         Return grid using a given `Affine` mapping
         

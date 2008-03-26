@@ -7,7 +7,6 @@ from neuroimaging.utils.odict import odict
 from neuroimaging.data_io.datasource import DataSource, iswritemode
 from neuroimaging.data_io.formats import utils, binary
 from neuroimaging.data_io.formats._afniconstants import *
-from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.grid import SamplingGrid
 
 class AFNIFormatError(Exception):
@@ -154,11 +153,14 @@ class AFNI(binary.BinaryFormat):
                 shape = ( self.tdim is not None and (self.tdim,) or ()) + \
                         (self.zdim, self.ydim, self.xdim)
                         
+                space = ['zspace', 'yspace', 'xspace']
+                spacetime = ['time'] + space
                 names = self.tdim and spacetime or space
-                self.grid = SamplingGrid.from_start_step(names=names,
-                                                         shape=shape,
-                                                         start=N.array(origin),
-                                                         step=deltas)
+                self.grid = SamplingGrid.from_start_step(names,
+                                                         N.array(origin),
+                                                         deltas,
+                                                         shape)
+
                 # be satisfied with identity xform for now
 
         self.attach_data(use_memmap=use_memmap)
@@ -239,65 +241,76 @@ class AFNI(binary.BinaryFormat):
                 # IMPORTANT: could try VOLREG_ROTCOM_xxxxxx or something!
                 print "Non-standard attribute %s skipped" % aname
         
-    def inform_canonical(self):
-        ## Get dims info
-        ndim = self.canonical_fields['ndim'] = \
-               self.header.has_key('TAXIS_NUMS')  and 4 or 3
+    def _getscalers(self):
+        pass
+    scalers = property(_getscalers)
+    
+##     Most of this information is in the grid
+##     except "scaling" and "dtype"
+##     If the scaling is not identical, i.e. nbricks > 1
+##     then it probably makes sense to open an AFNI file as an ImageList
+##     instead of an Image        
 
-        nbricks = self.nbricks = self.header['DATASET_RANK'][1]
+##     def inform_canonical(self):
+##         ## Get dims info
+##         ndim = self.canonical_fields['ndim'] = \
+##                self.header.has_key('TAXIS_NUMS')  and 4 or 3
+
+##         nbricks = self.nbricks = self.header['DATASET_RANK'][1]
         
-        tdim = self.canonical_fields['tdim'] = ndim > 3 and nbricks or None
+##         tdim = self.canonical_fields['tdim'] = ndim > 3 and nbricks or None
 
-        (self.canonical_fields['xdim'],
-         self.canonical_fields['ydim'],
-         self.canonical_fields['zdim']) = self.header['DATASET_DIMENSIONS'][:3]
+##         (self.canonical_fields['xdim'],
+##          self.canonical_fields['ydim'],
+##          self.canonical_fields['zdim']) = self.header['DATASET_DIMENSIONS'][:3]
 
-        ## get dim step and origin info
-        (self.canonical_fields['dx'],
-         self.canonical_fields['dy'],
-         self.canonical_fields['dz']) =  tuple(self.header['DELTA'][:3])
+##         ## get dim step and origin info
+##         (self.canonical_fields['dx'],
+##          self.canonical_fields['dy'],
+##          self.canonical_fields['dz']) =  tuple(self.header['DELTA'][:3])
 
-        self.canonical_fields['dt'] = tdim and \
-                                      self.header['TAXIS_FLOATS'][1] or None
+##         self.canonical_fields['dt'] = tdim and \
+##                                       self.header['TAXIS_FLOATS'][1] or None
 
-        (self.canonical_fields['x0'],
-         self.canonical_fields['y0'],
-         self.canonical_fields['z0'],
-         self.canonical_fields['t0']) = \
-             tuple(self.header['ORIGIN'][:3]) + (tdim and (0,) or (None,))
+##         (self.canonical_fields['x0'],
+##          self.canonical_fields['y0'],
+##          self.canonical_fields['z0'],
+##          self.canonical_fields['t0']) = \
+##              tuple(self.header['ORIGIN'][:3]) + (tdim and (0,) or (None,))
 
-        ## Get scaling info
-        self.scales = self.header.get('BRICK_FLOAT_FACS', N.ones((nbricks,)))
-        # when no scaling, BRICK_FLOAT_FACS is all 0
-        N.putmask(self.scales, self.scales==0., 1.)
-        self.canonical_fields['scaling'] = self.scales
+##         ## Get scaling info
+##         self.scales = self.header.get('BRICK_FLOAT_FACS', N.ones((nbricks,)))
+##         # when no scaling, BRICK_FLOAT_FACS is all 0
+##         N.putmask(self.scales, self.scales==0., 1.)
+##         self.canonical_fields['scaling'] = self.scales
 
-        ## Get datatype info (which is NOT MANDATORY!!!!???)
-        if self.header.has_key('BRICK_TYPES'):
-            # there is a number for each brick--
-            # if they're not all equal, we're not going to play
-            types = self.header['BRICK_TYPES']
-            if types.sum()/float(nbricks) != types[0]:
-                raise AFNIFormatError("not all bricks are the same data type")
-            else:
-                self.dtype = N.dtype(AFNI_bricktype2dtype[types[0]])
-        else:
-            # try to guess?? damn!
-            import os
-            dsize = self.canonical_fields['zdim'] * \
-                    self.canonical_fields['ydim'] * \
-                    self.canonical_fields['xdim'] * nbricks
-            fsize = os.stat(self.data_file).st_size
-            sctype = {1:N.uint8, 2:N.int16,
-                      4:N.float32, 8:N.complex64}[int(fsize/dsize)]
-            self.dtype = N.dtype(sctype)
-        self.canonical_fields['datasize'] = self.dtype.itemsize*8            
+##         ## Get datatype info (which is NOT MANDATORY!!!!???)
+##         if self.header.has_key('BRICK_TYPES'):
+##             # there is a number for each brick--
+##             # if they're not all equal, we're not going to play
+##             types = self.header['BRICK_TYPES']
+##             if types.sum()/float(nbricks) != types[0]:
+##                 raise AFNIFormatError("not all bricks are the same data type")
+##             else:
+##                 self.dtype = N.dtype(AFNI_bricktype2dtype[types[0]])
+##         else:
+##             # try to guess?? damn!
+##             import os
+##             dsize = self.canonical_fields['zdim'] * \
+##                     self.canonical_fields['ydim'] * \
+##                     self.canonical_fields['xdim'] * nbricks
+##             fsize = os.stat(self.data_file).st_size
+##             sctype = {1:N.uint8, 2:N.int16,
+##                       4:N.float32, 8:N.complex64}[int(fsize/dsize)]
+##             self.dtype = N.dtype(sctype)
+##         self.canonical_fields['datasize'] = self.dtype.itemsize*8            
 
-        # intent info is available, but I don't know what to do with it!
+##         # intent info is available, but I don't know what to do with it!
 
-        ## since retrieving is awkward, map into self.__dict__ too
-        for (k, v) in self.canonical_fields.items():
-            self.__dict__[k] = v
+##         ## since retrieving is awkward, map into self.__dict__ too
+##         for (k, v) in self.canonical_fields.items():
+##             self.__dict__[k] = v
+
         
     def divine_byteorder(self):
         # easiest case: it's in the header!

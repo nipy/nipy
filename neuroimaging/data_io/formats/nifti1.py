@@ -8,7 +8,6 @@ from neuroimaging.data_io.formats import utils, binary, analyze
 from neuroimaging.data_io.formats.nifti1_ext import quatern2mat, \
      mat2quatern
 
-from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
 
@@ -251,9 +250,6 @@ class Nifti1(binary.BinaryFormat):
             self.dtype = tmpstr.newbyteorder(self.byteorder)
             self.ndim = self.header['dim'][0]
 
-        # fill in the canonical list as best we can for Analyze
-        self.inform_canonical()
-
         if self.grid is None:
             self._grid_from_header()
         
@@ -285,10 +281,10 @@ class Nifti1(binary.BinaryFormat):
         step = tuple(self.header['pixdim'][1:(self.ndim+1)])
         shape = tuple(self.header['dim'][1:(self.ndim+1)])
         axisnames = ['xspace', 'yspace', 'zspace', 'time', 'vector'][:self.ndim]
-        tgrid = SamplingGrid.from_start_step(names=axisnames,
-                                             shape=shape,
-                                             start=-N.array(origin),
-                                             step=step)
+        tgrid = SamplingGrid.from_start_step(axisnames,
+                                             -N.array(origin),
+                                             step,
+                                             shape)
         tgridm = tgrid.python2matlab().affine
 
         # Correct transform information of tgrid by
@@ -441,18 +437,17 @@ class Nifti1(binary.BinaryFormat):
         return Affine(value).matlab2python().transform 
     transform = property(_transform)
 
-    def inform_canonical(self, fieldsDict=None):
-        if fieldsDict is not None:
-            self.canonical_fields = odict(fieldsDict)
-        else:
-            self.canonical_fields['datasize'] = self.header['bitpix']
-            (self.canonical_fields['ndim'],
-             self.canonical_fields['xdim'],
-             self.canonical_fields['ydim'],
-             self.canonical_fields['zdim'],
-             self.canonical_fields['tdim']) = self.header['dim'][:5]
-            self.canonical_fields['scaling'] = self.header['scl_slope']
-
+    def _getscalers(self):
+        if not hasattr(self, "_scalers"):
+            def f(y):
+                return y*self.header['scl_slope'] + self.header['scl_inter']
+            def finv(y):
+                return ((y-self.header['scl_inter']) / self.header['scl_slope']).astype(self.dtype)
+            self._scalers = [f, finv]
+        return self._scalers
+    
+    scalers = property(_getscalers)
+    
     def postread(self, x):
         """
         NIFTI-1 normalization based on scl_slope and scl_inter.

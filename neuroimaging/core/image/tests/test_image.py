@@ -42,7 +42,7 @@ class test_image(NumpyTestCase):
         """
         TODO: 
         """
-        self.fail("this maximum is obviously wrong -- value should be fixed")
+        self.fail("this maximum is wrong for the new anatfile -- value should be fixed")
         y = np.asarray(self.img)
         self.assertEquals(y.shape, tuple(self.img.grid.shape))
         y = y.flatten()
@@ -77,8 +77,10 @@ class test_image(NumpyTestCase):
         x = np.asarray(self.img)
         
     def test_file(self):
+        self.fail('this is a problem with reading/writing so-called "mat" files -- all the functions for these have been moved from core.reference.mapping to data_io.formats.analyze -- and they need to be fixed because they do not work. the names of the functions are: matfromstr, matfromfile, matfrombin, matfromxfm, mattofile')
         save_image(self.img, 'tmp.hdr', format=Analyze)
         
+        # Analyze is broken
         img2 = load_image('tmp.hdr', format=Analyze)
 
         # This fails: saying array is not writeable
@@ -99,25 +101,28 @@ class test_image(NumpyTestCase):
         """
         This test doesn't work, presumably something to do with the matfile.
         """
+        self.fail('this is a problem with reading/writing so-called "mat" files -- all the functions for these have been moved from core.reference.mapping to data_io.formats.analyze -- and they need to be fixed because they do not work. the names of the functions are: matfromstr, matfromfile, matfrombin, matfromxfm, mattofile')
         self.img.grid.mapping.transform[0,1] = 3.0
         save_image(self.img, 'tmp.hdr', usematfile=True)
         try:
             x = load_image('tmp.hdr', usematfile=True, format=Analyze)
         except NotImplementedError:
-            raise NotImplementedError, 'this is a problem with reading so-called "mat" files, JT'
+            raise NotImplementedError, 'this is a problem with reading so-called "mat" files'
         np.testing.assert_almost_equal(x.grid.mapping.transform, self.img.grid.mapping.transform)
 
     def test_clobber(self):
+        self.fail('this is a problem with reading/writing so-called "mat" files -- all the functions for these have been moved from core.reference.mapping to data_io.formats.analyze -- and they need to be fixed because they do not work. the names of the functions are: matfromstr, matfromfile, matfrombin, matfromxfm, mattofile')
+
         x = save_image(self.img, 'tmp.hdr', format=Analyze, clobber=True)
         a = load_image('tmp.hdr', format=Analyze)
-        A = a[:]
-        I = self.img[:]
-        z = np.add.reduce(((np.asarray(A)-np.asarray(I))**2).flat)
+
+        A = np.asarray(a)
+        I = np.asarray(self.img)
+        z = np.add.reduce(((A-I)**2).flat)
         self.assertEquals(z, 0.)
 
         t = a.grid.mapping.transform
         b = self.img.grid.mapping.transform
-        self.fail("there is a problem with Analyze and NIFTI1 getting setting transforms from a given grid -- these are the methods 'grid_from_given'")
         np.testing.assert_almost_equal(b, t)
 
 
@@ -209,7 +214,7 @@ class test_image(NumpyTestCase):
         tmp_img = load_image("tmp.img")
         np.testing.assert_almost_equal(np.asarray(tmp_img)[:], np.asarray(self.img)[:])
 
-        array_img = Image(np.zeros((10, 10, 10)), SamplingGrid.identity((10,)*3))
+        array_img = Image(np.zeros((10, 10, 10)), SamplingGrid.identity(['zspace', 'yspace', 'xspace'], (10,)*3))
 
 from neuroimaging.utils.testutils import make_doctest_suite
 test_suite = make_doctest_suite('neuroimaging.core.image.image')

@@ -64,97 +64,6 @@ def translation_transform(x, ndim):
     return _2transform(N.identity(ndim), x)
     
 
-def matfromfile(infile, delimiter="\t"):
-    """ Read in an affine transformation matrix from a csv file."""
-    if isinstance(infile, str):
-        infile = open(infile)
-    reader = csv.reader(infile, delimiter=delimiter)
-    return N.array(list(reader)).astype(float)
-
-def frombin(tstr):
-    """
-    This is broken -- anyone with mat file experience?
-    
-    Example
-    -------
-
-    >>> SLOW = True
-    >>> import urllib
-    >>> from neuroimaging.core.reference.mapping import frombin
-    >>> mat = urllib.urlopen('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
-    >>> tstr = mat.read()
-    >>> print frombin(tstr)
-    [[  2.99893500e+00  -3.14532000e-03  -1.06594400e-01  -9.61109780e+01]
-     [ -1.37396100e-02  -2.97339600e+00  -5.31224000e-01   1.20082725e+02]
-     [  7.88193000e-02  -3.98643000e-01   3.96313600e+00  -3.32398676e+01]
-     [  0.00000000e+00   0.00000000e+00   0.00000000e+00   1.00000000e+00]]
-    
-    """
-
-    T = N.array(unpack('<16d', tstr[-128:]))
-    T.shape = (4, 4)
-    return T.T
-
-def matfromstr(tstr, ndim=3, delimiter=None):
-    """Read a (ndim+1)x(ndim+1) transform matrix from a string."""
-    if tstr.startswith("mat file created by perl"):
-        return frombin(tstr) 
-    else:
-        transform = N.array(tstr.split(delimiter)).astype(float)
-        transform.shape = (ndim+1,)*2
-        return transform
-
-
-def xfmfromstr(tstr, ndim=3):
-    """Read a (ndim+1)x(ndim+1) transform matrix from a string.
-
-    The format being read is that used by the FLS group, for example
-    http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/example_func2highres.xfm
-    """
-    tstr = tstr.split('\n')
-    more = True
-    data = []
-    outdata = []
-    for i in range(len(tstr)):
-
-        if tstr[i].find('/matrix') >= 0:
-            for j in range((ndim+1)**2):
-                data.append(float(tstr[i+j+1]))
-
-        if tstr[i].find('/outputusermatrix') >= 0:
-            for j in range((ndim+1)**2):
-                outdata.append(float(tstr[i+j+1]))
-
-    data = N.array(data)
-    data.shape = (ndim+1,)*2
-    outdata = N.array(outdata)
-    outdata.shape = (ndim+1,)*2
-    return data, outdata
-
-
-def fromurl(turl, ndim=3):
-    """
-    Read a (ndim+1)x(ndim+1) transform matrix from a URL -- tries to autodetect
-    '.mat' and '.xfm'.
-
-    Example
-    -------
-
-    >>> SLOW = True
-    >>> from numpy import testing
-    >>> from neuroimaging.core.reference.mapping import fromurl
-    >>> x = fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1.txt')
-    >>> y = fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
-    >>> testing.assert_almost_equal(x, y, decimal=5)
-
-    """
-    urlpipe = urllib.urlopen(turl)
-    data = urlpipe.read()
-    if turl[-3:] in ['mat', 'txt']:
-        return matfromstr(data, ndim=ndim)
-    elif turl[-3:] == 'xfm':
-        return xfmfromstr(data, ndim=ndim)
-
 
 def isdiagonal(matrix):
     """
@@ -413,20 +322,6 @@ class Affine(Mapping):
     """
 
     @staticmethod
-    def fromfile(infile, delimiter='\t'):
-        """
-        Read in an affine transformation matrix and return an instance of
-        `Affine` with named axes and input and output coordinate systems.  For
-        now, the format is assumed to be a tab-delimited file.  Other formats
-        should be added.
-
-        :Returns: `Affine`
-        """
-        t = matfromfile(infile, delimiter=delimiter)
-        return Affine(t)
-
-
-    @staticmethod
     def identity(ndim=3):
         """ Return an identity affine transformation.
 
@@ -536,28 +431,3 @@ class Affine(Mapping):
         return Affine(inv(self.transform))
 
     
-    def isdiagonal(self):
-        """
-        Is the transform matrix diagonal?
-
-        :Returns: ``bool``
-        """
-        return isdiagonal(self._fmatrix)
-
- 
-    def tofile(self, filename):
-        """
-        Write the transform matrix to a file.
-
-        :Parameters:
-            filename : ``string``
-                The filename to write to
-
-        :Returns: ``None``
-        """
-        matfile = open(filename, 'w')
-        writer = csv.writer(matfile, delimiter='\t')
-        for row in self.transform: 
-            writer.writerow(row)
-        matfile.close()
-  
