@@ -162,7 +162,7 @@ class SlicePlot(object):
             self.set_crosshair(x, y)
             #self.set_data(self.data)
             if self.parent and hasattr(self.parent, '_on_pick'):
-                self.parent._on_pick(self, x, y)
+                self.parent._on_pick(self, xi, yi)
 
     def _on_scroll(self, event):
         """Handle mouse wheel events in plot.
