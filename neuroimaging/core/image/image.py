@@ -421,25 +421,26 @@ class Image(object):
         if hasattr(self.grid, "affine"):
             return self.grid.affine
         raise AttributeError
-    affine = property(_getaffine)
+    affine = property(_getaffine, \
+                          doc="Affine transform of the image, if it has one.")
 
     def _getshape(self):
         if hasattr(self._data, "shape"):
             return self._data.shape
         else:
             return self._data[:].shape
-    shape = property(_getshape)
+    shape = property(_getshape, doc="Shape of the image data.")
 
     def _getndim(self):
         if hasattr(self._data, "ndim"):
             return self._data.ndim
         else:
             return self._data[:].ndim
-    ndim = property(_getndim)
+    ndim = property(_getndim, doc="Number of dimensions in the image data.")
 
     def _getgrid(self):
         return self._grid
-    grid = property(_getgrid)
+    grid = property(fget=_getgrid, doc="SamplingGrid:"+SamplingGrid.__doc__)
 
     def __getitem__(self, index):
         """Get a slice of image data.  Just like slicing a numpy array.
