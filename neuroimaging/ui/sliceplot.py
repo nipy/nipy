@@ -10,7 +10,7 @@ from matplotlib import cm
 from matplotlib.axes import Subplot
 from matplotlib.image import AxesImage
 from matplotlib.lines import Line2D
-from numpy import ndarray, zeros
+from numpy import asarray, ndarray, zeros
 from pylab import figure
 
 from neuroimaging.core.image import image
@@ -392,7 +392,7 @@ class SliceViewer(object):
 
         self._init_axes()
 
-        if data:
+        if data is not None:
             self.set_data(data)
         else:
             self.draw()
@@ -697,7 +697,8 @@ def _axial_slice(img, zindex, xlim=None, ylim=None, t=0):
         xlim = [0, xdim]
     if not ylim:
         ylim = [0, ydim]
-    return img[zindex, ylim[0]:ylim[1], xlim[0]:xlim[1]]
+    img_slice = img[zindex, ylim[0]:ylim[1], xlim[0]:xlim[1]]
+    return asarray(img_slice)
 
 def _coronal_slice(img, yindex, xlim=None, zlim=None, t=0):
     """Return coronal slice of the image."""
@@ -709,7 +710,8 @@ def _coronal_slice(img, yindex, xlim=None, zlim=None, t=0):
         xlim = [0, xdim]
     if not zlim:
         zlim = [0, zdim]
-    return img[zlim[0]:zlim[1], yindex, xlim[0]:xlim[1]]
+    img_slice = img[zlim[0]:zlim[1], yindex, xlim[0]:xlim[1]]
+    return asarray(img_slice)
 
 def _sagittal_slice(img, xindex, ylim=None, zlim=None, t=0):
     """Return sagittal slice of the image."""
@@ -721,8 +723,8 @@ def _sagittal_slice(img, xindex, ylim=None, zlim=None, t=0):
         ylim = [0, ydim]
     if not zlim:
         zlim = [0, zdim]
-    return img[zlim[0]:zlim[1], ylim[0]:ylim[1], xindex]
-
+    img_slice = img[zlim[0]:zlim[1], ylim[0]:ylim[1], xindex]
+    return asarray(img_slice)
 
 def _image_loader(data, **kwargs):
     """Utility function to load images.
