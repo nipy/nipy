@@ -182,8 +182,36 @@ class SamplingGrid(object):
         If all input coordinates are VoxelCoordinateSystem, return
         a slice through the grid.
 
+        Parameters
+        ----------
+        index : ``int`` or ``slice``
+            sequnce of integers or slices
+        
+        Examples
+        -----
+        >>> from neuroimaging.core.image import image
+        >>> from neuroimaging.testing import anatfile
+        >>> img = image.load(anatfile)
+        >>> zdim, ydim, xdim = img.shape
+        >>> a = img.grid[zdim/2, 0:ydim, 0:xdim]
+        >>> a.shape
+        (35, 25)
+        >>> index = (9, slice(0, ydim), slice(0, xdim))
+        >>> b = img.grid[index]
+        >>> b.shape
+        (35, 25)
+
         """
 
+        # Make sure indicies are slices or integers
+        typed_index = list(index)
+        for i, val in enumerate(index):
+            if type(val) not in [type(1), type(slice(0,4,1))]:
+                typed_index[i] = int(val)
+            else:
+                typed_index[i] = val
+        index = tuple(typed_index)
+        
         if isinstance(self.input_coords, VoxelCoordinateSystem):
             varcoords, mapping, shape = self.mapping._slice_mapping(index, self.shape)
 

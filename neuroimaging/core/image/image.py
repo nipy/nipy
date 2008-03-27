@@ -459,9 +459,6 @@ class Image(object):
         else:
             index = tuple(index)
         
-        for i in index:
-            if type(i) not in [type(1), type(slice(0,4,1))]:
-                raise ValueError, 'when slicing images, index must be a list of integers or slices'
         data = self._data[index]
         grid = self.grid[index]
         return Image(data, grid)
