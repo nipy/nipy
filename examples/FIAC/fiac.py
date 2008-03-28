@@ -4,9 +4,9 @@ from numpy import array
 
 from neuroimaging import traits
 
-from neuroimaging.modalities.fmri.api import FmriImage
+from neuroimaging.modalities.fmri.api import FmriImage, fromimage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
-from neuroimaging.core.api import Image
+from neuroimaging.core.api import Image, load_image
 from neuroimaging.core.reference.mapping import Affine
 
 from protocol import event_protocol, block_protocol
@@ -121,13 +121,13 @@ class Run(HasReadOnlyTraits):
         """
 
         if urlexists(self.fmrifile):
-            self.fmri = FmriImage(self.fmrifile)
+            self.fmri = FmriImage(fromimage(image_load(self.fmrifile)))
             
         if urlexists(self.maskfile):
-            self.mask = Image(self.maskfile)
+            self.mask = load_image(self.maskfile)
             
         if urlexists(self.anatfile):
-            self.anat = Image(self.anatfile, usemat=False)
+            self.anat = load_image(self.anatfile)
 
     def clear(self):
         """
@@ -145,7 +145,7 @@ class Run(HasReadOnlyTraits):
 
 subjects = [0,1,3,4,6,7,8,9,10,11,12,13,14,15]
 
-avganat = Image(os.path.join(data_path, 'avganat.img'))
+avganat = load_image(os.path.join(data_path, 'avganat.img'))
 avganat.grid.mapping = Affine(array([[   2.,    0.,    0.,  -72.],
                                      [   0.,    2.,    0., -126.],
                                      [   0.,    0.,    -2.,  90.],

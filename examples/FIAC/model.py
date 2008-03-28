@@ -1,15 +1,14 @@
 import os, time, glob
 
 from neuroimaging import traits
-import numpy as N
+import numpy as np
 from neuroimaging.fixes.scipy.stats_models import contrast
 
-from neuroimaging.modalities.fmri.pca import MultiPlot
 from neuroimaging.modalities.fmri import protocol, functions
 from neuroimaging.modalities.fmri.fmristat import delay
 from neuroimaging.modalities.fmri.filters import Filter
 from neuroimaging.modalities.fmri.hrf import canonical
-from neuroimaging.core.api import Image
+from neuroimaging.core.api import Image, create_outfile
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
 
 import fiac
@@ -28,7 +27,7 @@ def drift_fn(time):
     Drift function defined by fmristat
     """
     _t = (time - 1.25) / 2.5 - 191/2. # return to time index, centered at numframes/ 2
-    v = N.asarray([N.ones(_t.shape[0]), _t, _t**2, _t**3, N.greater(_t, 0) * _t**3])
+    v = np.asarray([np.ones(_t.shape[0]), _t, _t**2, _t**3, np.greater(_t, 0) * _t**3])
     for i in range(5):
         v[i] /= v[i].max()
     return v
@@ -52,6 +51,7 @@ delay_hrf = delay.DelayHRF()
 class Model(HasReadOnlyTraits):
 
     drift = ReadOnlyValidate(traits.Instance(protocol.ExperimentalQuantitative), desc='Model for drift.')
+
     normalize = ReadOnlyValidate(traits.true,
                                  desc='Use frame averages to normalize to % BOLD?')
 
@@ -63,7 +63,7 @@ class Model(HasReadOnlyTraits):
 
     hrf = traits.Instance(Filter, desc='Hemodynamic response function.')
 
-    formula = traits.Instance(protocol.formula, desc='Model formula.')
+    formula = traits.Instance(protocol.Formula, desc='Model formula.')
 
     shift = traits.Float(1.25, desc='Global offset time from images recorded frametimes -- note that FSL has slice-timed data to the midpoint of the TR.')
 
@@ -77,12 +77,12 @@ class Model(HasReadOnlyTraits):
         self.drift = drift or canonical_drift
         self.hrf = hrf or delay_hrf
         HasReadOnlyTraits.__init__(self, **keywords)
-        self.formula = protocol.formula(self.drift)
+        self.formula = protocol.Formula(self.drift)
 
     def __repr__(self):
         return '<FIAC drift model>'
 
-    def view(self, time=N.linspace(0,191*2.5,3000)):
+    def view(self, time=np.linspace(0,191*2.5,3000)):
         """
         View a multiline display of the formula for a given model.
         """
@@ -334,7 +334,7 @@ class Contrast(contrast.Contrast, HasReadOnlyTraits):
     plot = ReadOnlyValidate(traits.Instance(MultiPlot),
                             desc='Rudimentary multi-line plotter for design')
 
-    def view(self, time=N.linspace(0, 191*2.5, 3000)):
+    def view(self, time=np.linspace(0, 191*2.5, 3000)):
         self.plot = MultiPlot(self.term(time=time),
                               time=time,
                               title='Column space for %s' % `self`)
