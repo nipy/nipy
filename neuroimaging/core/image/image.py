@@ -417,15 +417,15 @@ def fromarray(data, names, grid=None):
 
     return Image(data, grid)
 
-def create_outfile(filename, grid, dtype=np.float32):
+def create_outfile(filename, grid, dtype=np.float32, clobber=False):
     """
     Create a zero-filled Image, saved to filename and
     reopened in 'r+' mode.
     """
     tmp = Image(np.zeros(grid.shape, dtype), grid)
-    save_image(tmp, filename)
+    save(tmp, filename, clobber=clobber)
     del(tmp)
-    return load_image(filename, mode='r+')
+    return load(filename, mode='r+')
 
 def merge_images(filename, images, cls=Image, clobber=False,
                  axis='time'):
