@@ -216,3 +216,23 @@ def slice_parcels(data, labels=None, axis=0):
         for p in parcels(d, labels=labels):
             yield (i, p)
 
+def matrix_generator(img):
+    """
+    From a generator of items (i, r), return
+    (i, rp) where rp is a 2d array with rp.shape = (r.shape[0], prod(r.shape[1:]))
+    
+    """
+    for i, r in img:
+        r.shape = (r.shape[0], product(r.shape[1:]))
+        yield i, r
+
+def shape_generator(img, shape):
+    """
+    From a generator of items (i, r), return
+    (i, r.reshape(shape))
+    
+    """
+    for i, r in ing:
+        r.shape = shape
+        yield i, r
+
