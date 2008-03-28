@@ -103,17 +103,12 @@ class SamplingGrid(object):
         :Raises ValueError: ``if len(shape) != len(names)``
         """
         ndim = len(names)
-        if mapping.ndim() != ndim:
+        if mapping.ndim != ndim:
             raise ValueError('shape and number of axis names do not agree')
-        axes = [VoxelAxis(name) for name in names]
-
-        if shape:
-            input_coords = VoxelCoordinateSystem('voxel', axes)
-        else:
-            input_coords = DiagonalCoordinateSystem('voxel', axes)
+        axes = [VoxelAxis(name, length=l) for name, l in zip(names, shape)]
+        input_coords = VoxelCoordinateSystem("voxel", axes)
         output_coords = DiagonalCoordinateSystem('world', axes)
-
-        return SamplingGrid(mapping, input_coords, output_coords)
+        return SamplingGrid(Affine(mapping.transform), input_coords, output_coords)
 
     def __init__(self, mapping, input_coords, output_coords):
         """
@@ -177,7 +172,6 @@ class SamplingGrid(object):
 
         if isinstance(self.input_coords, VoxelCoordinateSystem):
             varcoords, mapping, shape = self.mapping._slice_mapping(index, self.shape)
-
             ia = self.input_coords.axes()
             newia = []
             for i in range(self.ndim[0]):
