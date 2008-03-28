@@ -159,7 +159,7 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
      
         ExperimentalRegressor.__init__(self, termname=termname, **keywords)
 
-        test = N.array(self.func(time=N.array([4.0,5.0,6])))
+        test = N.array(self.func(N.array([4.0,5.0,6])))
         if test.ndim > 1:
             n = test.shape[0]
         else:
