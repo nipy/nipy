@@ -1,4 +1,4 @@
-from numpy import asarray
+from numpy import asarray, arange
 
 from neuroimaging.core.api import ImageList, Image
 
@@ -11,7 +11,8 @@ class FmriImage(ImageList):
     TODO: change hte name of FmriImage -- maybe FmriImageList
     """
 
-    def __init__(self, images=None, TR=None, slicetimes=None):
+    def __init__(self, images=None, TR=0., slicetimes=None,
+                 frametimes=None):
         """
         A lightweight implementation of an fMRI image as in ImageList
         
@@ -21,28 +22,26 @@ class FmriImage(ImageList):
                 this is checked by asserting that each has a `grid` attribute
         TR:     time between frames in fMRI acquisition
         slicetimes: ndarray specifying offset for each slice of each frame
-
-        >>> from numpy import asarray
-        >>> from neuroimaging.testing funcfile
-        >>> from neuroimaging.modalities.fmri.api import FmriImageList
-        >>> from neuroimaging.modalities.fmri.api import load_fmri
-        >>> from neuroimaging.modalities.core.api import load_image
-        
-        >>> # fmrilist and ilist represent the same data
-
-        >>> fmrilist = load_fmri(funcfile)
-        >>> funcim = load_image(funcfile)
-        >>> ilist = FmriImageList(funcim)
-        >>> print ilist[2:5]
-        
-        >>> print ilist[2]
-        
-        >>> print asarray(ilist).shape
-        >>> print asarray(ilist[4]).shape
-
+        frametimes: optional way of overriding TR if frames are not evenly
+                    sampled in time
         See Also
         --------
         neuroimaging.core.image_list.ImageList
+
+        >>> from numpy import asarray
+        >>> from neuroimaging.testing import funcfile
+        >>> from neuroimaging.modalities.fmri.api import FmriImage, fromimage
+        >>> from neuroimaging.core.api import load_image
+        
+        >>> # fmrilist and ilist represent the same data
+
+        >>> funcim = load_image(funcfile)
+        >>> fmrilist = fromimage(funcim)
+        >>> ilist = FmriImage(funcim)
+        >>> print asarray(ilist).shape
+        (20, 2, 20, 20)
+        >>> print asarray(ilist[4]).shape
+        (2, 20, 20)
 
         """
 
@@ -62,12 +61,22 @@ class FmriImage(ImageList):
             return FmriImage(images=self.list[index], TR=self.TR,
                              slicetimes=self.slicetimes)
 
+    def __setitem__(self, index, value):
+        self.list[index] = value
+        
     def __array__(self):
-        print 'scooby'*20
         return asarray([asarray(i) for i in self.list])
 
     def emptycopy(self):
         return FmriImage(images=[], TR=self.TR, slicetimes=self.slicetimes)
+
+    def _getframetimes(self):
+        if hasattr(self, "_frametimes"):
+            return self._frametimes
+        else:
+            return arange(len(self.list)) * self.TR
+
+    frametimes = property(_getframetimes)
 
 def fmri_generator(data, iterable=None):
     """
