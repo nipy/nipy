@@ -6,7 +6,7 @@ import numpy as N
 import numpy.linalg as L
 from scipy.stats import f as FDbn
 
-from neuroimaging.fixes.scipy.stats_models.regression import OLSModel
+from neuroimaging.fixes.scipy.stats.models.regression import OLSModel
 
 import neuroimaging.modalities.fmri.fmristat.utils as fmristat
 from neuroimaging.modalities.fmri.regression import FContrastOutput
@@ -20,7 +20,7 @@ class GLSModel(OLSModel):
     """
     Generalized least squares model with a general covariance structure
 
-    This should probably go into neuroimaging.fixes.scipy.stats_models.regression
+    This should probably go into neuroimaging.fixes.scipy.stats.models.regression
 
     """
 
@@ -127,7 +127,7 @@ class Run(model.Run):
         F = self.Fcutoff.img
         dfF, dftot = self.Fcutoff.contrast.matrix.shape
 
-        ## TODO check neuroimaging.fixes.scipy.stats_models.contrast to see if rank is
+        ## TODO check neuroimaging.fixes.scipy.stats.models.contrast to see if rank is
         ## correctly set -- I don't think it is right now.
 
         dfresid = resid.shape[0] - dftot

@@ -20,7 +20,7 @@ import os, csv
 import numpy as N
 import numpy.random as R
 
-from neuroimaging.fixes.scipy.stats_models.regression import ols_model, ar_model
+from neuroimaging.fixes.scipy.stats.models.regression import ols_model, ar_model
 
 from neuroimaging.core.api import Image
 from neuroimaging.modalities.fmri.api import FmriImage
