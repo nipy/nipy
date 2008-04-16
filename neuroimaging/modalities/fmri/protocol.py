@@ -120,29 +120,6 @@ class ExperimentalRegressor(object):
 
         return self
 
-    def astimefn(self, slice=None):
-        """
-        Return a TimeFunction object that can be added, subtracted, etc.
-        
-        :Parameters:
-            slice : TODO
-                TODO
-                
-        :Returns: `TimeFunction`
-        """
-	#FIXME: should be a better way to determine this
-        # A better way will require all the callable objects we have
-        # (including things like term, quantative from scipy.models)
-        # to have a .nout member. This will require a lot of changes
-        # in a lot of places i think. --Tim
-        testdata = self(N.arange(10))
-
-        if len(testdata.shape) == 2:
-            nout = testdata.shape[0]
-        else:
-            nout = 1
-        return TimeFunction(fn=self, slice=slice, nout=nout)
-
 
 class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
     """
@@ -325,7 +302,7 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
 
         _c = self.convolved
         self.convolved = False
-        f = self.astimefn()
+        f = lambda t: f(t)
         self.convolved = _c
         return ExperimentalQuantitative('%s:maineffect' % self.termname, f)
 

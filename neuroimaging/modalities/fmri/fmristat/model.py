@@ -134,7 +134,6 @@ def reshape(i, x):
             x.shape = self.fmri_image[0].shape[1:]
     return i, x
 
-
 def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
              clobber=False):
     """
