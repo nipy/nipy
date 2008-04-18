@@ -10,12 +10,13 @@ from matplotlib import cm
 from matplotlib.axes import Subplot
 from matplotlib.image import AxesImage
 from matplotlib.lines import Line2D
-from numpy import ndarray, zeros
+from numpy import asarray, ndarray, zeros
 from pylab import figure
 
 from neuroimaging.core.image import image
 
 _default_alpha = 0.5
+_bgcolor = (0.2, 0.2, 0.2)
 
 class SlicePlot(object):
     """Class for plotting image slices.
@@ -38,7 +39,7 @@ class SlicePlot(object):
 
     """
 
-    def __init__(self, plt, data=None, parent=None, cmap=cm.gray, 
+    def __init__(self, plt=None, data=None, parent=None, cmap=cm.gray, 
                  origin='lower', interpolation='nearest'):
         """Create a slice plot using matplotlib.
         
@@ -50,7 +51,9 @@ class SlicePlot(object):
         parent : object that owns this plot to receive event messages
         """
 
-        assert plt is not None, "SlicePlot requires a valid plt"
+        if plt is None:
+            fig = figure()
+            plt = fig.add_subplot(1, 1, 1, axisbg=_bgcolor)
         self.plt = plt
         # plt is a matplotlib.axes.Subplot object
         # We could code it to accept a matplotlib.image.AxesImage also.
@@ -211,10 +214,20 @@ class SlicePlot(object):
         data : a 2D array
 
         """
-        # Should something like this work?
+
+        if data.ndim is not 2:
+            raise ValueError, 'Data array must be a 2D array.'
+
+        # Should something like this work via a property?
         #     sag_plot.data = mni_vol[:, :, 10]
         self.data = data
         self.imgaxes.set_data(self.data)
+        vmin = self.data.min()
+        vmax = self.data.max()
+        self.set_clim(vmin, vmax)
+        ydim, xdim = self.data.shape
+        self.set_xlim((0, xdim))
+        self.set_ylim((0, ydim))
         self.draw()
 
     def set_grid(self, b=None, **kwargs):
@@ -364,13 +377,12 @@ class SliceViewer(object):
         self.fig = figure()
         # put some space between plots so it's easier to see axis
         self.fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        bgcolor = (0.2, 0.2, 0.2)
         # create 3 orthogonal view subplots
-        self._cor_subplot = self.fig.add_subplot(2, 2, 1, axisbg=bgcolor)
+        self._cor_subplot = self.fig.add_subplot(2, 2, 1, axisbg=_bgcolor)
         self._cor_subplot.axis('equal')
-        self._sag_subplot = self.fig.add_subplot(2, 2, 2, axisbg=bgcolor)
+        self._sag_subplot = self.fig.add_subplot(2, 2, 2, axisbg=_bgcolor)
         self._sag_subplot.axis('equal')
-        self._axl_subplot = self.fig.add_subplot(2, 2, 3, axisbg=bgcolor)
+        self._axl_subplot = self.fig.add_subplot(2, 2, 3, axisbg=_bgcolor)
         self._axl_subplot.axis('equal')
 
         # create SlicePlots
@@ -380,7 +392,7 @@ class SliceViewer(object):
 
         self._init_axes()
 
-        if data:
+        if data is not None:
             self.set_data(data)
         else:
             self.draw()
@@ -685,7 +697,8 @@ def _axial_slice(img, zindex, xlim=None, ylim=None, t=0):
         xlim = [0, xdim]
     if not ylim:
         ylim = [0, ydim]
-    return img[zindex, ylim[0]:ylim[1], xlim[0]:xlim[1]]
+    img_slice = img[zindex, ylim[0]:ylim[1], xlim[0]:xlim[1]]
+    return asarray(img_slice)
 
 def _coronal_slice(img, yindex, xlim=None, zlim=None, t=0):
     """Return coronal slice of the image."""
@@ -697,7 +710,8 @@ def _coronal_slice(img, yindex, xlim=None, zlim=None, t=0):
         xlim = [0, xdim]
     if not zlim:
         zlim = [0, zdim]
-    return img[zlim[0]:zlim[1], yindex, xlim[0]:xlim[1]]
+    img_slice = img[zlim[0]:zlim[1], yindex, xlim[0]:xlim[1]]
+    return asarray(img_slice)
 
 def _sagittal_slice(img, xindex, ylim=None, zlim=None, t=0):
     """Return sagittal slice of the image."""
@@ -709,8 +723,8 @@ def _sagittal_slice(img, xindex, ylim=None, zlim=None, t=0):
         ylim = [0, ydim]
     if not zlim:
         zlim = [0, zdim]
-    return img[zlim[0]:zlim[1], ylim[0]:ylim[1], xindex]
-
+    img_slice = img[zlim[0]:zlim[1], ylim[0]:ylim[1], xindex]
+    return asarray(img_slice)
 
 def _image_loader(data, **kwargs):
     """Utility function to load images.

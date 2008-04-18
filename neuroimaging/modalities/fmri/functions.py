@@ -1,13 +1,17 @@
 """
-This module defines some convenience functions of time.
+This module defines functions of time and tools to manipulate them.
+
+
+These objects can be (coordinate-wised) multiplied, added, subtracted and
+divided.
 """
 
 __docformat__ = 'restructuredtext'
 
 import numpy as N
 
-from neuroimaging.fixes.scipy.stats_models.utils import recipr0
-from neuroimaging.fixes.scipy.stats_models.utils import StepFunction
+from neuroimaging.fixes.scipy.stats.models.utils import recipr0
+from neuroimaging.fixes.scipy.stats.models.utils import StepFunction
 from scipy.interpolate import interp1d
 
 # Prototypical stimuli: "Event" (on/off) and "Stimuli" (step function)
@@ -40,8 +44,6 @@ class Stimulus:
             `values` : TODO
                 TODO
         """
-
-        self.name = name
         if times is None:
             self.times = []
         else:
@@ -52,9 +54,12 @@ class Stimulus:
         else:
             self.values = values
 
-        self.values.sort()
-        self.times.sort()
-        self.fn = StepFunction(self.times, self.values, sorted=True)    
+        if self.times:
+            a = np.argsort(self.times)
+            self.values = self.values[a]
+            self.times = self.times[a]
+
+        self.fn = StepFunction(self.times, self.values, sorted=True)
 
     def __call__(self, t):
         """
@@ -67,7 +72,9 @@ class PeriodicStimulus(Stimulus):
     TODO
     """
 
-    def __init__(self, n=1, name='stimulus', start=0.0, duration=3.0, step=6.0, height=1.0):
+    def __init__(self, n=1, start=0.0, duration=3.0, step=6.0, height=1.0,
+                 name='periodic stimulus'):
+
         """
         :Parameters:
             `n` : int
@@ -87,7 +94,7 @@ class PeriodicStimulus(Stimulus):
         self.step = step
         self.height = height
 
-        times = [-1.0e-07]
+        times = [start-1.0e-07]
         values = [0.]
 
         for i in range(self.n):
@@ -182,6 +189,9 @@ class SplineConfound:
             self.knots = []
         else:
             self.knots = knots
+        tmax = self.window[1]
+        tmin = self.window[0]
+        trange = tmax - tmin
 
         self.fn = []
 
@@ -193,13 +203,9 @@ class SplineConfound:
         for i in range(min(self.df, 4)):
             self.fn.append(getpoly(i))
 
-        if window:
-            trange = window[1] - window[0]
-            tmin = window[0]
-        else:
-            trange = 1.
-            tmin = 0.
-            
+        trange = window[0] - window[1]
+        tmin = window[0]
+        
         if self.df >= 4 and not self.knots:
             self.knots = list(trange * N.arange(1, self.df - 2) / (self.df - 3.0) + tmin)
         self.knots[-1] = N.inf 
@@ -225,19 +231,19 @@ class InterpolatedConfound:
     def __init__(self, times=None, values=None, name='confound'):
         """
         :Parameters:
-            `times` : TODO
-                TODO
-            `values` : TODO
-                TODO
-            `name` : TODO
-                TODO
-                
+        `times` : TODO
+        TODO
+        `values` : TODO
+        TODO
+        `name` : TODO
+        TODO
+
         """
         if times is None:
             self.times = []
         else:
             self.times = times
-
+            
         if values is None:
             self.values = []
         else:
@@ -251,22 +257,24 @@ class InterpolatedConfound:
             for i in range(values.shape[0]):
                 f = interp1d(self.times, self.values[i, :], bounds_error=0)
                 self.f.append(f)
-            
+
     def __call__(self, time):
         """
         :Parameters:
-            `time` : TODO
-                TODO
+        `time` : TODO
+        TODO
         
         :Returns: TODO
         """
-
+        
         if isinstance(self.f, (list, tuple)):
             columns = []
             for f in self.f:
                 columns.append(f(time))
         else:
-                columns = self.f(time)
-                
+            columns = self.f(time)
+            
         return N.squeeze(N.asarray(columns))
+
+
 

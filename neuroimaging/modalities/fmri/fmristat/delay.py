@@ -14,8 +14,8 @@ import os, fpformat
 
 import numpy as N
 import numpy.linalg as L
-from neuroimaging.fixes.scipy.stats_models.utils import recipr, recipr0
-from neuroimaging.fixes.scipy.stats_models.contrast import Contrast, ContrastResults
+from neuroimaging.fixes.scipy.stats.models.utils import recipr, recipr0
+from neuroimaging.fixes.scipy.stats.models.contrast import Contrast, ContrastResults
 
 from neuroimaging.modalities.fmri import hrf
 from neuroimaging.modalities.fmri.protocol import ExperimentalQuantitative

@@ -1,8 +1,8 @@
 import csv, os
 import numpy as N
 from numpy.testing import NumpyTest, NumpyTestCase
-from neuroimaging.fixes.scipy.stats_models.utils import recipr0
-from neuroimaging.fixes.scipy.stats_models import contrast
+from neuroimaging.fixes.scipy.stats.models.utils import recipr0
+from neuroimaging.fixes.scipy.stats.models import contrast
 
 from neuroimaging.modalities.fmri import hrf, protocol, functions
 from neuroimaging.utils.test_decorators import slow
@@ -127,16 +127,16 @@ class test_Protocol(test_ProtocolSetup):
 
         Z = float(N.random.standard_normal(()))
 
-        D = lambda t: drift_fn(t) * Z
+        D = lambda t: drift(t) * Z
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * Z)
 
-        D = lambda t: drift_fn(t) / Z
+        D = lambda t: drift(t) / Z
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) / Z)
 
-        D = lambda t: drift_fn(t) - Z
+        D = lambda t: drift(t) - Z
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) - Z)
 
-        D = lambda t: drift_fn(t) + Z
+        D = lambda t: drift(t) + Z
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) + Z)
 
 
@@ -151,55 +151,6 @@ class test_Protocol(test_ProtocolSetup):
         D = lambda t: d(t) * d(t)
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t))**2)
 
-        D = lambda t: d(t) / d(t)
-        N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * recipr0(drift_fn(t)))
-
-        D = lambda t: d(t) - d(t)
-        N.testing.assert_almost_equal(D(t), N.zeros(D(t).shape))
-
-        D = lambda t: d(t) + d(t)
-        N.testing.assert_almost_equal(D(t), 2 * N.array(drift_fn(t)))
-
-    def testTimeFn3(self):
-        self.setup_terms()
-        
-        drift_fn = functions.SplineConfound(7, window=(0,300))
-        drift = protocol.ExperimentalQuantitative('drift', drift_fn)
-        d = lamdba t: drift(t)
-        d = lambda t: d(t)
-        t = N.arange(0,30,1.)
-
-        n = d(t).shape[0]
-        c = N.random.standard_normal((n,))
-
-        i = N.random.random_integers(0, n-1)
-        D = lambda t: d(t) * c
-        N.testing.assert_almost_equal(D(t)[i], c[i] * N.array(drift_fn(t)[i]) )
-
-        i = N.random.random_integers(0, n-1)
-        D = lambda t: d(t) / c
-        N.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] * recipr0(c)[i])
-
-        i = N.random.random_integers(0, n-1)
-        D = lambda t: d(t) - c
-        N.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] - c[i])
-
-        i = N.random.random_integers(0, n-1)
-        D = lambda t: d(t) + c
-        N.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] + c[i])
-
-
-    def testTimeFn5(self):
-        t = N.arange(0,60,1.)
-        self.setup_terms()
-        q = self.p['hot']
-        r = self.p['warm']
-        b = lambda t: q(t)
-        c = lambda t: r(t)
-        Z = float(N.random.standard_normal(()))
-
-        a = lambda t: b(t) - c(t) * Z
-        N.testing.assert_almost_equal(a(t), (N.array(q(t)) - Z * N.array(r(t))).flatten())
 
 
     def test_DeltaFunction(self):

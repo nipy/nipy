@@ -18,9 +18,10 @@ class test_Grid(NumpyTestCase):
         self.img = load_image(anatfile)
 
     def test_concat(self):
+        self.fail("concatenated and replicated SamplingGrids need to be fixed")
+
         grids = ConcatenatedGrids([self.img.grid]*5)
         self.assertEquals(tuple(grids.shape), (5,) + tuple(self.img.grid.shape))
-        self.fail("concatenated and replicated SamplingGrids need to be fixed")
         z = grids.mapping([4,5,6,7])
         a = grids.subgrid(0)
         x = a.mapping([5,6,7])
@@ -39,7 +40,6 @@ class test_Grid(NumpyTestCase):
         Test passing
         """
         self.fail("concatenated and replicated SamplingGrids need to be fixed")
-
         grids = self.img.grid.replicate(4)
         grids.python2matlab()
 
@@ -48,7 +48,7 @@ class test_Grid(NumpyTestCase):
         Test passing
         """
         self.fail("concatenated and replicated SamplingGrids need to be fixed")
-
+        
         grids = ConcatenatedIdenticalGrids(self.img.grid, 4)
         grids.python2matlab()
 
@@ -57,7 +57,6 @@ class test_Grid(NumpyTestCase):
         Test failing
         """
         self.fail("concatenated and replicated SamplingGrids need to be fixed")
-
         grids = ConcatenatedGrids([self.img.grid]*4)
         grids.python2matlab()
 
@@ -76,6 +75,7 @@ class test_Grid(NumpyTestCase):
     def test_from_affine(self):
         a = Affine.identity(2)
         g = SamplingGrid.from_affine(a, ['zspace', 'xspace'], (20,30))
+
 
 from neuroimaging.utils.testutils import make_doctest_suite
 test_suite = make_doctest_suite('neuroimaging.core.reference.grid')
