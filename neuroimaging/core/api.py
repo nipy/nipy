@@ -19,4 +19,4 @@ from neuroimaging.core.image.image import fromarray, create_outfile
 
 from neuroimaging.core.image.image_list import ImageList
 
-from neuroimaging.core.image.generators import parcels, data_generator, write_data, slice_generator, f_generator
+from neuroimaging.core.image.generators import parcels, data_generator, write_data, slice_generator, f_generator, matrix_generator

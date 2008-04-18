@@ -19,7 +19,7 @@ from neuroimaging.fixes.scipy.stats_models.contrast import Contrast, ContrastRes
 
 from neuroimaging.modalities.fmri import hrf
 from neuroimaging.modalities.fmri.protocol import ExperimentalQuantitative
-from neuroimaging.modalities.fmri.regression import TContrastOutput 
+from neuroimaging.algorithms.statistics.regression import TOutput 
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
 
 class DelayContrast(Contrast):
@@ -263,7 +263,7 @@ class DelayContrast(Contrast):
 
 
 
-class DelayContrastOutput(TContrastOutput):
+class DelayContrastOutput(TOutput):
     """
     TODO
     """

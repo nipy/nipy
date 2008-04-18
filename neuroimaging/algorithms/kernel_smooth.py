@@ -190,8 +190,6 @@ def sigma2fwhm(sigma):
     """
     return sigma * N.sqrt(8 * N.log(2))
 
-
-
 def _crop(X, tol=1.0e-10):
     """
     Find a bounding box for support of fabs(X) > tol and returned

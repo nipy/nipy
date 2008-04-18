@@ -37,8 +37,9 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
     f[0:nout,-1] = origin
     f[nout, nin] = 1.
 
-    input_coords = VoxelCoordinateSystem('slice', axis.generic,
-                                         shape=shape + (1,))
+    input_coords = VoxelCoordinateSystem('slice', \
+       [axis.VoxelAxis('voxel%d' % d, length=shape[d])
+        for d in range(len(shape))])
 
     w = mapping.Affine(f)
     g = grid.SamplingGrid(w, input_coords, output_coords)

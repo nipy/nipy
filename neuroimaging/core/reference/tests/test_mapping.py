@@ -198,6 +198,7 @@ class test_Identity(NumpyTestCase):
         self.assertTrue(self.a == self.a.inverse().inverse())
         
     def test_tofile(self):
+        self.fail("the IO for .mat files has been moved to the analyze module")
         self.a.tofile("tmp.mat")
         b = mapping.Affine.fromfile("tmp.mat")
         self.assertTrue(self.a == b)
@@ -252,8 +253,9 @@ class test_Mapping(NumpyTestCase):
         N.testing.assert_almost_equal(m1, m2)
         N.testing.assert_almost_equal(v1, v2)        
         
-    @slow
+#    @slow
     def test_fromurl(self):
+        self.fail("the IO for .mat files has been moved to the analyze module")
         x = mapping.fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1.txt')
         y = mapping.fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
         N.testing.assert_almost_equal(x, y, decimal=5)
@@ -269,6 +271,7 @@ class test_Mapping(NumpyTestCase):
                                              [0, 0, 0, 1]])
 
     def test_tofromfile(self):
+        self.fail("the IO for .mat files has been moved to the analyze module")
         (_, filename) = mkstemp(suffix='.csv')
         self.mapping.tofile(filename)
         a = mapping.Affine.fromfile(filename)

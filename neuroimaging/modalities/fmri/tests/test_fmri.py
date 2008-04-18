@@ -7,9 +7,9 @@ import neuroimaging.core.reference.grid as grid
 
 from neuroimaging.utils.test_decorators import slow, data
 
-from neuroimaging.modalities.fmri.api import FmriImage, parcel_iterator
-from neuroimaging.core.api import Image, load_image
-from neuroimaging.utils.tests.data import repository
+from neuroimaging.modalities.fmri.api import FmriImage, fmri_generator, fromimage
+from neuroimaging.core.api import Image, load_image, data_generator, parcels, save_image
+from neuroimaging.testing import anatfile, funcfile
 from neuroimaging.data_io.api import Analyze
 
 
@@ -17,60 +17,46 @@ from neuroimaging.data_io.api import Analyze
 class test_fMRI(NumpyTestCase):
 
     def setUp(self):
-        self.rho = load_image(repository.filename('rho.hdr'), format=Analyze)
-        self.img = load_image(repository.filename("test_fmri.hdr"))
+        self.parcels = load_image(funcfile)[0]
+        self.img = load_image(funcfile)
+        self.fmri = fromimage(self.img)
 
     def data_setUp(self):
-        self.img = load_image(repository.filename("test_fmri.hdr"))
+        self.img = load_image(funcfile)
 
-    #def test_TR(self):
-    #    tmp = N.around(self.rho.readall() * (self.nmax / 2.)) / (self.nmax / 2.)
-    #    tmp.shape = tmp.size
-    #    tmp = N.com
-    #    x = self.img.frametimes
-
-    @slow
-    @data
     def test_write(self):
-        self.img.tofile('tmpfmri.hdr', format=Analyze)
-        test = FmriImage('tmpfmri.hdr', format=Analyze)
-        self.assertEquals(test.grid.shape, self.img.grid.shape)
+        self.fail('this is a problem with reading/writing so-called "mat" files -- all the functions for these have been moved from core.reference.mapping to data_io.formats.analyze -- and they need to be fixed because they do not work. the names of the functions are: matfromstr, matfromfile, matfrombin, matfromxfm, mattofile')
+        save_image(self.img, 'tmpfmri.hdr', format=Analyze)
+        test = fromimage(load_image('tmpfmri.hdr', format=Analyze))
+        self.assertEquals(test[0].grid.shape, self.img[0].grid.shape)
         os.remove('tmpfmri.img')
         os.remove('tmpfmri.hdr')
 
-    @data
     def test_iter(self):
         j = 0
-        for i in self.img.slice_iterator():
+        for i, d in fmri_generator(self.img):
             j += 1
-            self.assertEquals(i.shape, (120,128,128))
+            self.assertEquals(d.shape, (20,20,20))
             del(i); gc.collect()
-        self.assertEquals(j, 13)
+        self.assertEquals(j, 2)
 
-    @data
     def test_subgrid(self):
-        subgrid = self.img.grid.subgrid(3)
+        subgrid = self.img.grid[3]
         N.testing.assert_almost_equal(subgrid.mapping.transform,
-                                          self.img.grid.mapping.transform[1:,1:])
+                                      [[0., 0., 0., -49.21875],
+                                       [-7., 0., 0., 7.],
+                                       [0., -2.34375, 0., 53.90625],
+                                       [0., 0., -2.34375, 53.90625],
+                                       [0, 0, 0, 1]])
 
-    @slow
-    @data
     def test_labels1(self):
-        parcelmap = (self.rho[:] * 100).astype(N.int32)
+        parcelmap = (N.asarray(self.parcels) * 100).astype(N.int32)
         
         v = 0
-        for t in parcel_iterator(self.img, parcelmap):
-            v += t.shape[1]
+        for i, d in fmri_generator(self.img, parcels(parcelmap)):
+            v += d.shape[1]
         self.assertEquals(v, parcelmap.size)
 
-    def test_labels2(self):
-        parcelmap = (self.rho[:] * 100).astype(N.int32)
-
-        v = 0
-        for t in parcel_iterator(self.img, parcelmap):
-            v += t.shape[1]
-
-        self.assertEquals(v, parcelmap.size)
 
 from neuroimaging.utils.testutils import make_doctest_suite
 test_suite = make_doctest_suite('neuroimaging.modalities.fmri.fmri')

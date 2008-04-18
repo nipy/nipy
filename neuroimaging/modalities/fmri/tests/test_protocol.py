@@ -123,21 +123,20 @@ class test_Protocol(test_ProtocolSetup):
         
         drift_fn = functions.SplineConfound(7, window=(0,300))
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
-        d = drift.astimefn()
         t = N.arange(0,30,1.)
 
         Z = float(N.random.standard_normal(()))
 
-        D = d * Z
+        D = lambda t: drift_fn(t) * Z
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * Z)
 
-        D = d / Z
+        D = lambda t: drift_fn(t) / Z
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) / Z)
 
-        D = d - Z
+        D = lambda t: drift_fn(t) - Z
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) - Z)
 
-        D = d + Z
+        D = lambda t: drift_fn(t) + Z
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) + Z)
 
 
@@ -146,19 +145,19 @@ class test_Protocol(test_ProtocolSetup):
         
         drift_fn = functions.SplineConfound(7, window=(0,300))
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
-        d = drift.astimefn()
+        d = lambda t: drift(t)
         t = N.arange(0,30,1.)
 
-        D = d * d
+        D = lambda t: d(t) * d(t)
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t))**2)
 
-        D = d / d
+        D = lambda t: d(t) / d(t)
         N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * recipr0(drift_fn(t)))
 
-        D = d - d
+        D = lambda t: d(t) - d(t)
         N.testing.assert_almost_equal(D(t), N.zeros(D(t).shape))
 
-        D = d + d
+        D = lambda t: d(t) + d(t)
         N.testing.assert_almost_equal(D(t), 2 * N.array(drift_fn(t)))
 
     def testTimeFn3(self):
@@ -166,43 +165,28 @@ class test_Protocol(test_ProtocolSetup):
         
         drift_fn = functions.SplineConfound(7, window=(0,300))
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
-        d = drift.astimefn()
+        d = lamdba t: drift(t)
+        d = lambda t: d(t)
         t = N.arange(0,30,1.)
 
         n = d(t).shape[0]
         c = N.random.standard_normal((n,))
 
         i = N.random.random_integers(0, n-1)
-        D = d * c
+        D = lambda t: d(t) * c
         N.testing.assert_almost_equal(D(t)[i], c[i] * N.array(drift_fn(t)[i]) )
 
         i = N.random.random_integers(0, n-1)
-        D = d / c
+        D = lambda t: d(t) / c
         N.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] * recipr0(c)[i])
 
         i = N.random.random_integers(0, n-1)
-        D = d - c
+        D = lambda t: d(t) - c
         N.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] - c[i])
 
         i = N.random.random_integers(0, n-1)
-        D = d + c
+        D = lambda t: d(t) + c
         N.testing.assert_almost_equal(D(t)[i], N.array(drift_fn(t))[i] + c[i])
-
-
-    def testTimeFn4(self):
-        self.setup_terms()
-        
-        drift_fn = functions.SplineConfound(7, window=(0,300))
-        drift = protocol.ExperimentalQuantitative('drift', drift_fn)
-        d = drift.astimefn()
-
-        t = N.arange(0,30,1.)
-        n = d(t).shape[0]
-
-        i = N.random.random_integers(0, n-1)
-        x = d[i]
-
-        N.testing.assert_almost_equal(N.squeeze(x(t)), d(t)[i])
 
 
     def testTimeFn5(self):
@@ -210,10 +194,11 @@ class test_Protocol(test_ProtocolSetup):
         self.setup_terms()
         q = self.p['hot']
         r = self.p['warm']
-        b = q.astimefn()
+        b = lambda t: q(t)
+        c = lambda t: r(t)
         Z = float(N.random.standard_normal(()))
 
-        a = q.astimefn() - r.astimefn() * Z
+        a = lambda t: b(t) - c(t) * Z
         N.testing.assert_almost_equal(a(t), (N.array(q(t)) - Z * N.array(r(t))).flatten())
 
 

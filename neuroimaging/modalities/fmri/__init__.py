@@ -4,7 +4,7 @@ TODO
 
 __docformat__ = 'restructuredtext'
 
-import filters, fmri, functions, hrf, pca, protocol, regression, utils
+import filters, fmri, hrf, pca, protocol, utils
 import fmristat
 
 def test(level=1, verbosity=1, flags=[]):
