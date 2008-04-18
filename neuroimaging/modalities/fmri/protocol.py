@@ -4,7 +4,7 @@ import csv, copy
 import numpy as N
 
 from neuroimaging.modalities.fmri.functions import Events
-from neuroimaging.fixes.scipy.stats_models.formula import Factor, Quantitative, Formula, Term
+from neuroimaging.fixes.scipy.stats.models.formula import Factor, Quantitative, Formula, Term
 
 namespace = {}
 downtime = 'None/downtime'
