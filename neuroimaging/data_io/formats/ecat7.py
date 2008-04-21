@@ -8,7 +8,6 @@ from neuroimaging.utils.odict import odict
 from neuroimaging.data_io.datasource import DataSource, Cache, iszip, ensuredirs, unzip
 from neuroimaging.data_io.formats import utils, binary
 
-from neuroimaging.core.reference.axis import space
 from neuroimaging.core.reference.grid import SamplingGrid
 
 
@@ -402,31 +401,44 @@ class Ecat7(binary.BinaryFormat):
             
         self.mlist = mlist.conj().T
 
-    def inform_canonical(self, fieldsDict=None):
-        tmpdat = self.frames[0]
-        if fieldsDict is not None:
-            self.canonical_fields = odict(fieldsDict)
-        else:
-            if tmpdat.subheader['DATA_TYPE'] == 1:
-                self.canonical_fields['datasize'] = 8
-            elif tmpdat.subheader['DATA_TYPE'] == 2 \
-                 or tmpdat.subheader['DATA_TYPE'] == 6:
-                self.canonical_fields['datasize'] = 16
-            else:
-                self.canonical_fields['datasize'] = 32
+    def _getscalers(self):
+        def f(x): return x
+        return f, f
+    scalers = property(_getscalers)
+    
+##     Most of this information is in the grid
+##     except "scaling" and "dtype"
+##     If the scaling is not identical, i.e. nbricks > 1
+##     then it probably makes sense to open an AFNI file as an ImageList
+##     instead of an Image        
 
-            if self.nframes > 1:
-                self.canonical_fields['ndim'] = 4
-                self.canonical_fields['tdim'] = self.nframes
-            else:
-                self.canonical_fields['ndim'] = 3
-                self.canonical_fields['tdim'] = 1
+
+
+##     def inform_canonical(self, fieldsDict=None):
+##         tmpdat = self.frames[0]
+##         if fieldsDict is not None:
+##             self.canonical_fields = odict(fieldsDict)
+##         else:
+##             if tmpdat.subheader['DATA_TYPE'] == 1:
+##                 self.canonical_fields['datasize'] = 8
+##             elif tmpdat.subheader['DATA_TYPE'] == 2 \
+##                  or tmpdat.subheader['DATA_TYPE'] == 6:
+##                 self.canonical_fields['datasize'] = 16
+##             else:
+##                 self.canonical_fields['datasize'] = 32
+
+##             if self.nframes > 1:
+##                 self.canonical_fields['ndim'] = 4
+##                 self.canonical_fields['tdim'] = self.nframes
+##             else:
+##                 self.canonical_fields['ndim'] = 3
+##                 self.canonical_fields['tdim'] = 1
                 
-            self.canonical_fields['xdim'] = tmpdat.subheader['X_DIMENSION']
-            self.canonical_fields['ydim'] = tmpdat.subheader['Y_DIMENSION']
-            self.canonical_fields['zdim'] = tmpdat.subheader['Z_DIMENSION']
+##             self.canonical_fields['xdim'] = tmpdat.subheader['X_DIMENSION']
+##             self.canonical_fields['ydim'] = tmpdat.subheader['Y_DIMENSION']
+##             self.canonical_fields['zdim'] = tmpdat.subheader['Z_DIMENSION']
             
-            self.canonical_fields['scaling'] = 1
+##             self.canonical_fields['scaling'] = 1
 
 
     def _get_filenames(self):
@@ -469,7 +481,7 @@ class Frame(binary.BinaryFormat):
         
         ## grid for data
         if not self.grid:                
-            axisnames = space[::-1]
+            axisnames = ['xspace', 'yspace', 'zspace']
             
             offset = (self.subheader['Z_OFFSET'],
                       self.subheader['X_OFFSET'],
@@ -486,10 +498,10 @@ class Frame(binary.BinaryFormat):
             
             
             ## Setup affine transformation        
-            self.grid = SamplingGrid.from_start_step(names=axisnames,
-                                                shape=shape,
-                                                start=-N.array(origin)*step,
-                                                step=step)
+            self.grid = SamplingGrid.from_start_step(axisnames,
+                                                     -N.array(origin)*step,
+                                                     step,
+                                                     shape)
             # Get memmaped array
         offset = (mlist[1,framenumber])*BLOCKSIZE
         self.attach_data(offset, use_memmap=use_memmap)

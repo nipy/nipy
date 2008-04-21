@@ -44,7 +44,7 @@ def normalize(x):
 
 pylab.subplot(311)
 for i in range(4,7):
-    pylab.plot(T,normalize(drift[i](time=T)))
+    pylab.plot(T,normalize(drift(T)[i]))
 
 ax = pylab.gca()
 ax.set_ylim([-0.1,1.1])

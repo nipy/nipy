@@ -11,6 +11,7 @@ class test_Axis(NumpyTestCase):
 
     def test_init(self):
         # an invalid name shou;d raise an error
+        self.fail("the valid names of axes has been removed so this doesn't raise an exception anymore")
         self.assertRaises(ValueError, Axis, name='bad_value')
 
     def test_eq(self):

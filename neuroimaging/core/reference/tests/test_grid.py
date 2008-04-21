@@ -1,10 +1,8 @@
 import numpy as N
 from numpy.testing import NumpyTest, NumpyTestCase
 
-from neuroimaging.core.reference.axis import space
 from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
-from neuroimaging.core.image.iterators import ParcelIterator, SliceParcelIterator
 from neuroimaging.core.reference.mapping import Affine
 
 from neuroimaging.data_io.api import Analyze
@@ -20,6 +18,8 @@ class test_Grid(NumpyTestCase):
         self.img = load_image(anatfile)
 
     def test_concat(self):
+        self.fail("concatenated and replicated SamplingGrids need to be fixed")
+
         grids = ConcatenatedGrids([self.img.grid]*5)
         self.assertEquals(tuple(grids.shape), (5,) + tuple(self.img.grid.shape))
         z = grids.mapping([4,5,6,7])
@@ -27,6 +27,8 @@ class test_Grid(NumpyTestCase):
         x = a.mapping([5,6,7])
 
     def test_replicate(self):
+        self.fail("concatenated and replicated SamplingGrids need to be fixed")
+
         grids = self.img.grid.replicate(4)
         self.assertEquals(tuple(grids.shape), (4,) + tuple(self.img.grid.shape))
         z = grids.mapping([2,5,6,7])
@@ -37,6 +39,7 @@ class test_Grid(NumpyTestCase):
         """
         Test passing
         """
+        self.fail("concatenated and replicated SamplingGrids need to be fixed")
         grids = self.img.grid.replicate(4)
         grids.python2matlab()
 
@@ -44,6 +47,8 @@ class test_Grid(NumpyTestCase):
         """
         Test passing
         """
+        self.fail("concatenated and replicated SamplingGrids need to be fixed")
+        
         grids = ConcatenatedIdenticalGrids(self.img.grid, 4)
         grids.python2matlab()
 
@@ -51,44 +56,26 @@ class test_Grid(NumpyTestCase):
         """
         Test failing
         """
+        self.fail("concatenated and replicated SamplingGrids need to be fixed")
         grids = ConcatenatedGrids([self.img.grid]*4)
         grids.python2matlab()
 
     def test_identity(self):
         shape = (30,40,50)
-        i = SamplingGrid.identity(shape=shape, names=space)
+        i = SamplingGrid.identity(['zspace', 'yspace', 'xshape'], shape=shape)
         self.assertEquals(tuple(i.shape), shape)
         y = i.mapping([3,4,5])
         N.testing.assert_almost_equal(y, N.array([3,4,5]))
 
     def test_identity2(self):
         shape = (30, 40)
-        self.assertRaises(ValueError, SamplingGrid.identity, shape, space)
+        self.assertRaises(ValueError, SamplingGrid.identity, ['zspace', 'yspace', 'xspace'], shape)
 
-    def test_allslice(self):
-        shape = (30,40,50)
-        i = SamplingGrid.identity(shape=shape, names=space)
-        i.allslice()
-        
-    @slow
-    def test_iterslices(self):
-        for i in range(3):
-            self.assertEqual(len(list(self.img.slice_iterator(axis=i))), self.img.grid.shape[i])
-        
-        parcelmap = N.zeros(self.img.grid.shape)
-        parcelmap[:3,:5,:4] = 1
-        parcelmap[3:10,5:10,4:10] = 2
-        parcelseq = (1, (0,2))
-        for i in ParcelIterator(self.img, parcelmap, parcelseq):
-            pass
-
-        parcelseq = (1, (1,2), 0) + (0,)*(len(parcelmap)-3)
-        for i in SliceParcelIterator(self.img, parcelmap, parcelseq):
-            pass
 
     def test_from_affine(self):
-        a = Affine.identity()
-        g = SamplingGrid.from_affine(a)
+        a = Affine.identity(2)
+        g = SamplingGrid.from_affine(a, ['zspace', 'xspace'], (20,30))
+
 
 from neuroimaging.utils.testutils import make_doctest_suite
 test_suite = make_doctest_suite('neuroimaging.core.reference.grid')

@@ -8,7 +8,6 @@ from neuroimaging.data_io.formats import utils, binary, analyze
 from neuroimaging.data_io.formats.nifti1_ext import quatern2mat, \
      mat2quatern
 
-from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
 
@@ -203,8 +202,6 @@ class Nifti1(binary.BinaryFormat):
                        }
 
     extensions = ('.img', '.hdr', '.nii', '.mat')
-    # get around to implementing nvector:
-    nvector = -1
 
     extendable = False
 
@@ -235,7 +232,7 @@ class Nifti1(binary.BinaryFormat):
             self.dtype = N.dtype(keywords.get('dtype', N.float64))
             self.dtype = self.dtype.newbyteorder(self.byteorder)
             if self.grid is not None:
-                self.header_from_given()
+                self._header_from_grid()
             else:
                 raise NotImplementedError("Don't know how to create header" \
                                           "info without a grid object")
@@ -253,62 +250,10 @@ class Nifti1(binary.BinaryFormat):
             self.dtype = tmpstr.newbyteorder(self.byteorder)
             self.ndim = self.header['dim'][0]
 
-        # fill in the canonical list as best we can for Analyze
-        self.inform_canonical()
-
-        ########## This could stand a clean-up ################################
         if self.grid is None:
-            origin = (self.header['qoffset_x'],
-                      self.header['qoffset_y'],
-                      self.header['qoffset_z'])
-            step = tuple(self.header['pixdim'][1:4])
-            shape = tuple(self.header['dim'][1:4])
-            if self.ndim == 3:
-                axisnames = space[::-1]
-            elif self.ndim == 4 and self.nvector <= 1:
-                axisnames = spacetime[::-1]
-                origin = origin + (1,)
-                step = step + (self.header['pixdim'][4],)
-                shape = shape + (self.header['dim'][4],)
-##                     if self.squeeze:
-##                     if self.dim[4] == 1:
-##                         origin = origin[0:3]
-##                         step = step[0:3]
-##                         axisnames = axisnames[0:3]
-##                         shape = self.dim[1:4]
-##                 elif self.ndim == 4 and self.nvector > 1:
-##                     axisnames = ('vector_dimension', ) + space[::-1]
-##                     origin = (1,) + origin
-##                     step = (1,) + step
-##                     shape = shape + (self.header['dim'][5],)
-##                     if self.squeeze:
-##                         if self.dim[1] == 1:
-##                             origin = origin[1:4]
-##                             step = step[1:4]
-##                             axisnames = axisnames[1:4]
-##                             shape = self.dim[2:5]
-
-            # DEBUG:  some debugging notes... chris
-            #print 'In nifti1.Nifti1... create SamplingGrid'
-            #print 'names:', axisnames
-            #print 'shape:', shape
-            #print 'start:', -N.array(origin)
-            #print 'step:', step
-            #print 'origin:', origin
-
-            self.grid = SamplingGrid.from_start_step(names=axisnames,
-                                                     shape=shape,
-                                                     start=-N.array(origin),
-                                                     step=step)
-            t = self.transform()
-            self.grid.mapping.transform[:3,:3] = t[:3,:3]
-            self.grid.mapping.transform[:3,-1] = t[:3,-1]
-            ### why is this here?
-            self.grid = self.grid.matlab2python()
-        #else: Grid was already assigned by Format constructor
+            self._grid_from_header()
         
         self.attach_data(offset=int(self.header['vox_offset']), use_memmap=use_memmap)
-
 
     def _get_filenames(self):
         # Nifti single file will be the preferred type for creation
@@ -316,7 +261,6 @@ class Nifti1(binary.BinaryFormat):
                (self.filebase+".hdr", self.filebase+".img") or\
                (self.filebase+".nii", self.filebase+".nii")
     
-
     @staticmethod
     def _default_field_value(fieldname, fieldformat):
         "[STATIC] Get the default value for the given field."
@@ -325,26 +269,91 @@ class Nifti1(binary.BinaryFormat):
              [utils.format_defaults[fieldformat[-1]]]*int(fieldformat[:-1]) or \
              utils.format_defaults[fieldformat[-1]]
     
-
     def header_defaults(self):
         for field, format in self.header_formats.items():
             self.header[field] = self._default_field_value(field, format)
 
+    def _grid_from_header(self):
+        origin = (self.header['qoffset_x'],
+                  self.header['qoffset_y'],
+                  self.header['qoffset_z'])
+        origin += (0,) * (self.ndim - 3)
+        step = tuple(self.header['pixdim'][1:(self.ndim+1)])
+        shape = tuple(self.header['dim'][1:(self.ndim+1)])
+        axisnames = ['xspace', 'yspace', 'zspace', 'time', 'vector'][:self.ndim]
+        tgrid = SamplingGrid.from_start_step(axisnames,
+                                             -N.array(origin),
+                                             step,
+                                             shape)
+        tgridm = tgrid.python2matlab().affine
 
-    def header_from_given(self):
-        # try to set up these fields from what we know:
-        # datatype
-        # bitpix
-        # quatern_b,c,d
-        # qoffset_x,y,z
-        # qfac
-        # bitpix
-        # dim
+        # Correct transform information of tgrid by
+        # NIFTI file's transform information
+        # tgrid's transform matrix may be larger than 4x4,
+        # the NIFTI file provides information for the last
+        # (in C/python index) three coordinates, or (in
+        # MATLAB/FORTRAN index) the first three.
 
-        self.grid = self.grid.python2matlab()
-        self.header['datatype'] = sctype2datatype[self.dtype.type]
-        self.header['bitpix'] = self.dtype.itemsize * 8
+        # What follows is just a way to write over tgrid's
+        # transformation matrix with the appropriate information
+        # from the NIFTI header
+
+        t = self.transform
+        tm = Affine(t).python2matlab().transform
+        tgridm[:3,:3] = tm[:3,:3]
+        tgridm[:3,-1] = tm[:3,-1]
+        self.grid = SamplingGrid(Affine(tgridm).matlab2python(),
+                                 tgrid.input_coords,
+                                 tgrid.output_coords)
+
+    def _header_from_grid(self):
+        """
+        Try to set up these fields of the NIFIT1 header from what we know:
+
+        datatype
+        bitpix
+        quatern_b,c,d
+        qoffset_x,y,z
+        qfac
+        bitpix
+        dim
+
+        Note, that for greater than 3d images. The 4x4 matrix
+        written to the NIFTI1 file is the submatrix corresponding
+        to the three fastest moving coordinates.
+
+        The pixdims of the other dimensions are taken to be the
+        corresponding diagonal elements of the transform matrix.
+
+        WARNING:
+        --------
+        This means that the only way the NIFTI1 file's grid will agree
+        with the input grid is if it is diagonal in the dimensions
+        other than x,y,z and its origin is 0 because the
+        NIFTI1 format does not allow origins for dimensions other than
+        x,y,z.
+        
+        For instance, an fMRI file with this 5x5 transform (in (t,x,y,z) and
+        C indexing order) will be fine:
+
+        [[TR  0   0   0  0],
+         [0 M11 M12 M13 O1],
+         [0 M21 M22 M23 O2],
+         [0 M31 M32 M33 O3],
+         [0   0   0   0  1]]
+
+        But this one will not
+        [[TR  a   b   c  d],
+         [e M11 M12 M13 O1],
+         [f M21 M22 M23 O2],
+         [g M31 M32 M33 O3],
+         [0   0   0   0  1]]
+        
+        if any of a, b, c, d, e, f, g are non zero.
+        """
+
         ndimin, ndimout = self.grid.ndim
+
         if ndimin != ndimout:
             raise ValueError, 'to create NIFTI1 file, grid should have same number of input and output dimensions'
         self.ndim = ndimin
@@ -354,7 +363,10 @@ class Nifti1(binary.BinaryFormat):
                   'out NIFTI-1 file'
 
         ddim = self.ndim - 3
-        t = self.grid.mapping.transform[ddim:,ddim:]
+        t = Affine(self.grid.mapping.transform[ddim:,ddim:]).python2matlab().transform
+
+        self.header['datatype'] = sctype2datatype[self.dtype.type]
+        self.header['bitpix'] = self.dtype.itemsize * 8
 
         qb, qc, qd, qx, qy, qz, dx, dy, dz, qfac = mat2quatern(t)
 
@@ -370,18 +382,18 @@ class Nifti1(binary.BinaryFormat):
 
         _pixdim = [0.]*8
         _pixdim[0:4] = [qfac, dx, dy, dz]
+        _pixdim[4:(self.ndim+1)] = N.diag(self.grid.mapping.transform)[0:(self.ndim-3)]
         self.header['pixdim'] = _pixdim
 
         # this should be set to something, 1 happens
         # to be NIFTI_XFORM_SCANNER_ANAT
+
         self.header['qform_code'] = 1
         
         self.header['dim'] = \
                         [self.ndim] + list(self.grid.shape) + [0]*(7-self.ndim)
-
-        self.grid = self.grid.matlab2python()
         
-    def transform(self):
+    def _transform(self):
         """
         Return 4x4 transform matrix based on the NIFTI attributes
         for the 3d (spatial) part of the mapping.
@@ -391,6 +403,10 @@ class Nifti1(binary.BinaryFormat):
 
         See help(neuroimaging.data_io.formats.nifti1_ext) for explanation.
 
+        It return the 4x4 matrix in NiPy order, rather than MATLAB order.
+        That is, entering voxel [0,0,0] gives the (z,y,x) coordinates
+        of the first voxel. In MATLAB order, entering voxel [1,1,1] gives
+        the (x,y,z) coordinates of the first voxel.
         """
 
         qfac = float(self.header['pixdim'][0])
@@ -401,7 +417,6 @@ class Nifti1(binary.BinaryFormat):
         value[3,3] = 1.0
         
         if self.header['qform_code'] > 0:
-            
             value = quatern2mat(b=self.header['quatern_b'],
                                 c=self.header['quatern_c'],
                                 d=self.header['quatern_d'],
@@ -419,20 +434,20 @@ class Nifti1(binary.BinaryFormat):
             value[1] = N.array(self.header['srow_y'])
             value[2] = N.array(self.header['srow_z'])
 
-        return value
+        return Affine(value).matlab2python().transform 
+    transform = property(_transform)
 
-    def inform_canonical(self, fieldsDict=None):
-        if fieldsDict is not None:
-            self.canonical_fields = odict(fieldsDict)
-        else:
-            self.canonical_fields['datasize'] = self.header['bitpix']
-            (self.canonical_fields['ndim'],
-             self.canonical_fields['xdim'],
-             self.canonical_fields['ydim'],
-             self.canonical_fields['zdim'],
-             self.canonical_fields['tdim']) = self.header['dim'][:5]
-            self.canonical_fields['scaling'] = self.header['scl_slope']
-
+    def _getscalers(self):
+        if not hasattr(self, "_scalers"):
+            def f(y):
+                return y*self.header['scl_slope'] + self.header['scl_inter']
+            def finv(y):
+                return ((y-self.header['scl_inter']) / self.header['scl_slope']).astype(self.dtype)
+            self._scalers = [f, finv]
+        return self._scalers
+    
+    scalers = property(_getscalers)
+    
     def postread(self, x):
         """
         NIFTI-1 normalization based on scl_slope and scl_inter.

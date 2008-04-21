@@ -22,15 +22,6 @@ __docformat__ = 'restructuredtext'
 
 import numpy as N
 
-valid = ('time', 'xspace', 'yspace', 'zspace', 'vector_dimension', 'concat')
-""" Valid names for axes """
-
-space = ('zspace', 'yspace', 'xspace')
-""" The set of axis names that make up space """
-
-spacetime = ('time', 'zspace', 'yspace', 'xspace')
-""" THe set of axis names that make up spacetime """
-
 class Axis(object):
     """
     This class represents a generic axis. Axes are used in the definition
@@ -45,14 +36,9 @@ class Axis(object):
             name : ``string``
                 The name for the axis.
 
-        :Precondition: name must be an element of axis.valid
         """
         
         self.name = name
-        if self.name not in valid:
-            raise ValueError, ('%s is invalid: recognized dimension ' \
-                               'names are ' + str(valid)) \
-                               % (self.name)
 
     def __eq__(self, other):
         """ Equality is defined by name.
@@ -127,8 +113,8 @@ class ContinuousAxis(Axis):
         this can be changed if a particular choice of behaviour is clearly
         useful.
         
-        :Precondition: ``name`` must be an element of `axis.valid`
         """
+
         self.low = low
         self.high = high
         Axis.__init__(self, name)
@@ -203,7 +189,6 @@ class RegularAxis (Axis):
             step : ``numpy.float``
                 The spacing of the points on the axis
 
-        :Precondition: ''name'' must be an element of axis.valid
         """
 
         self.length = length
@@ -287,16 +272,10 @@ class VoxelAxis(RegularAxis):
             length : ``numpy.float``
                 The overall length of the axis
 
-        :Precondition: ``name`` must be an element of `axis.valid`
         """    
+
         RegularAxis.__init__(self, name, length, start=0, step=1)
 
 
 
-generic = (
-  ContinuousAxis(name='zspace'),
-  ContinuousAxis(name='yspace'),
-  ContinuousAxis(name='xspace'))
-"""Default axes"""
-   
 

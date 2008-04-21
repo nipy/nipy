@@ -2,13 +2,13 @@ from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
      VoxelCoordinateSystem
-from neuroimaging.core.reference.axis import generic
+from neuroimaging.core.reference.axis import Axis
 
 class test_CoordinateSystem(NumpyTestCase):
 
     def setUp(self):
         self.name = "test"
-        self.axes = generic
+        self.axes = [Axis(n) for n in ['zspace', 'yspace', 'xspace']]
         self.c = CoordinateSystem(self.name, self.axes)
 
     def test_CoordinateSystem(self):
@@ -49,6 +49,7 @@ class test_CoordinateSystem(NumpyTestCase):
         new_order = [1, 2, 0]
         new_c = self.c.reorder("new", new_order)
         self.assertEquals(new_c.name, "new")
+        generic = [Axis(n) for n in ['zspace', 'yspace', 'xspace']]
         for i in range(3):
             self.assertEquals(self.c.getaxis(generic[i]),
                               new_c.getaxis(generic[new_order[i]]))
@@ -68,7 +69,7 @@ class test_CoordinateSystem(NumpyTestCase):
 class test_VoxelCoordinateSystem(NumpyTestCase):
     def setUp(self):
         self.name = "voxel_test"
-        self.axes = generic
+        self.axes = [Axis(n) for n in ['zspace', 'yspace', 'xspace']]
         self.shape = [3,4,5]
         self.v = VoxelCoordinateSystem(self.name, self.axes, self.shape)
 

@@ -10,7 +10,7 @@ import numpy as N
 
 from coordinate_system import _reverse
 from neuroimaging.core.reference.mapping import Mapping, Affine
-from neuroimaging.core.reference.axis import space, RegularAxis, Axis, VoxelAxis
+from neuroimaging.core.reference.axis import RegularAxis, Axis, VoxelAxis
 from neuroimaging.core.reference.coordinate_system import \
   VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
 
@@ -22,7 +22,7 @@ class SamplingGrid(object):
     """
     
     @staticmethod
-    def from_start_step(names=space, shape=(), start=(), step=()): 
+    def from_start_step(names, start, step, shape):
         """
         Create a `SamplingGrid` instance from sequences of names, shape, start
         and step.
@@ -55,7 +55,7 @@ class SamplingGrid(object):
 
 
     @staticmethod
-    def identity(shape=(), names=space):
+    def identity(names, shape):
         """
         Return an identity grid of the given shape.
         
@@ -84,7 +84,7 @@ class SamplingGrid(object):
         return SamplingGrid(aff_ident, input_coords, output_coords)
 
     @staticmethod
-    def from_affine(mapping, shape=(), names=space):
+    def from_affine(mapping, names, shape):
         """
         Return grid using a given `Affine` mapping
         
@@ -103,17 +103,12 @@ class SamplingGrid(object):
         :Raises ValueError: ``if len(shape) != len(names)``
         """
         ndim = len(names)
-        if mapping.ndim() != ndim:
+        if mapping.ndim != ndim:
             raise ValueError('shape and number of axis names do not agree')
-        axes = [VoxelAxis(name) for name in names]
-
-        if shape:
-            input_coords = VoxelCoordinateSystem('voxel', axes)
-        else:
-            input_coords = DiagonalCoordinateSystem('voxel', axes)
+        axes = [VoxelAxis(name, length=l) for name, l in zip(names, shape)]
+        input_coords = VoxelCoordinateSystem("voxel", axes)
         output_coords = DiagonalCoordinateSystem('world', axes)
-
-        return SamplingGrid(mapping, input_coords, output_coords)
+        return SamplingGrid(Affine(mapping.transform), input_coords, output_coords)
 
     def __init__(self, mapping, input_coords, output_coords):
         """
@@ -168,15 +163,6 @@ class SamplingGrid(object):
         return SamplingGrid(self.mapping, self.input_coords,
                             self.output_coords)
 
-    def allslice(self):
-        """
-        TODO: where is this still used?
-        A slice object representing the entire grid.
-        
-        :Returns: ``slice``
-        """
-        return slice(0, self.shape[0])
-
     def __getitem__(self, index):
         """
         If all input coordinates are VoxelCoordinateSystem, return
@@ -191,14 +177,13 @@ class SamplingGrid(object):
 
         if isinstance(self.input_coords, VoxelCoordinateSystem):
             varcoords, mapping, shape = self.mapping._slice_mapping(index, self.shape)
-
             ia = self.input_coords.axes()
             newia = []
             for i in range(self.ndim[0]):
                 if i in varcoords:
                     a = copy.deepcopy(ia[i])
                     newia.append(a)
-            newic = VoxelCoordinateSystem(self.input_coords.name, newia)
+            newic = VoxelCoordinateSystem(self.input_coords.name, newia, shape=shape)
             return SamplingGrid(mapping, newic, self.output_coords)
         else:
             raise ValueError, 'input_coords must be VoxelCoordinateSystem for slice of grid to make sense'
@@ -219,49 +204,6 @@ class SamplingGrid(object):
             return _range 
         else:
             raise AttributeError, 'range of grid only makes sense if input_coords are VoxelCoordinateSystem'
-
-    # TODO: get rid of this slab method -- can do it with slicing
-    
-    def slab(self, start, step, count):
-        """
-        A sampling grid for a hyperslab of data from an array, i.e.
-        what would be output from a subsampling of every 2nd voxel or so.
-
-        By default, the iterator of the slab is a SliceIterator
-        with the same start, step, count and iterating over the
-        specified axis with nslicedim=1.
-        
-        :Parameters:
-            start : TODO
-                TODO
-            step : TODO
-                TODO
-            count : TODO
-                TODO
-        
-        :Returns: `SamplingGrid`
-        """
-
-        if isinstance(self.mapping, Affine):
-            ndimin, ndimout = self.ndim
-            trans = self.mapping.transform.copy()
-            trans[0:ndim, ndim] = self.mapping(start)
-            trans[ndim, ndim] = 1.
-            for i in range(ndim):
-                v = N.zeros((ndim,))
-                w = v.copy()
-                v[i] = step[i]
-                trans[0:ndim, i] = self.mapping(v) - self.mapping(w)
-            _map = Affine(trans)
-        else:
-            def __map(x, start=start, step=step, _f=self.mapping):
-                v = start + step * x
-                return _f(v)
-            _map = Mapping(__map)
-
-        samp_grid = \
-          SamplingGrid(_map, self.input_coords, self.output_coords)
-        return samp_grid
 
     def transform(self, mapping): 
         """        

@@ -3,13 +3,14 @@ TODO
 """
 __docformat__ = 'restructuredtext'
 
-import numpy as N
+import csv
+
+import numpy as np
 import scipy.io as SIO
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io.datasource import DataSource
 from neuroimaging.data_io.formats import utils, binary
-from neuroimaging.core.reference.axis import space, spacetime
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
 
@@ -33,12 +34,12 @@ DOUBLE = 64
 
 # map Analyze datatype to numpy scalar type
 datatype2sctype = {
-  BYTE: N.uint8,
-  SHORT: N.int16,
-  INTEGER: N.int32,
-  FLOAT: N.float32,
-  DOUBLE: N.float64,
-  COMPLEX: N.complex64}
+  BYTE: np.uint8,
+  SHORT: np.int16,
+  INTEGER: np.int32,
+  FLOAT: np.float32,
+  DOUBLE: np.float64,
+  COMPLEX: np.complex64}
 
 # map numpy scalar type to Analyze datatype
 sctype2datatype = \
@@ -138,10 +139,12 @@ class Analyze(binary.BinaryFormat):
             # should try to populate the canonical fields and
             # corresponding header fields with info from grid?
             self.byteorder = utils.NATIVE
-            self.dtype = N.dtype(keywords.get('dtype', N.float64))
+            self.dtype = np.dtype(keywords.get('dtype', np.float64))
             self.dtype = self.dtype.newbyteorder(self.byteorder)
+            self.header['datatype'] = sctype2datatype[self.dtype.type]
+            self.header['bitpix'] = self.dtype.itemsize * 8
             if self.grid is not None:
-                self.header_from_given()
+                self._header_from_grid()
             else:
                 raise NotImplementedError("Don't know how to create header " \
                                           "info without a grid object")
@@ -152,42 +155,10 @@ class Analyze(binary.BinaryFormat):
             self.read_header()
             ## make sure we have the correct byteorder 
             tmpsctype = datatype2sctype[self.header['datatype']]
-            tmpstr = N.dtype(tmpsctype)
+            tmpstr = np.dtype(tmpsctype)
             self.dtype = tmpstr.newbyteorder(self.byteorder)
             self.ndim = self.header['dim'][0]
-
-        # fill in the canonical list as best we can for Analyze
-        self.inform_canonical()
-
-        ########## This could stand a clean-up ################################
-        if not self.grid:                
-            if self.ndim == 3:
-                axisnames = space[::-1]
-                origin = tuple(self.header['origin'][0:3])
-                step = tuple(self.header['pixdim'][1:4])
-                shape = tuple(self.header['dim'][1:4])
-            elif self.ndim == 4 and self.nvector <= 1:
-                axisnames = spacetime[::-1]
-                origin = tuple(self.header['origin'][0:3]) + (1,)
-                step = tuple(self.header['pixdim'][1:5]) 
-                shape = tuple(self.header['dim'][1:5])
-                if shape[-1] == 1:
-                    axisnames = axisnames[:-1]
-                    origin = origin[:-1]
-                    step = step[:-1]
-                    shape = shape[:-1]
-                    self.ndim -= 1
-                
-            ## Setup affine transformation        
-            self.grid = SamplingGrid.from_start_step(names=axisnames,
-                                                shape=shape,
-                                                start=-N.array(origin)*step,
-                                                step=step)
-            if self.usematfile:
-                self.grid.transform(self.read_mat())
-                # assume .mat matrix uses FORTRAN indexing
-
-            self.grid = self.grid.matlab2python()
+            self._grid_from_header()
 
         #else: Grid was already assigned by Format constructor
         
@@ -218,13 +189,52 @@ class Analyze(binary.BinaryFormat):
         for field, format in self.header_formats.items():
             self.header[field] = self._default_field_value(field, format)
 
+    def _grid_from_header(self):
 
-    def header_from_given(self):
+        axisnames = ['xspace', 'yspace', 'zspace', 'time', 'vector'][:self.ndim]
+        origin = tuple(self.header['origin'])[:self.ndim]
+        shape = tuple(self.header['dim'])[1:(self.ndim+1)]
+        step = tuple(self.header['pixdim'])[1:(self.ndim+1)]
+        ## Setup affine transformation        
+        self.grid = SamplingGrid.from_start_step(axisnames,
+                                                 -np.array(origin)*step,
+                                                 step,
+                                                 shape)
+        if self.usematfile:
+            t = self.read_mat()
+            
+            tgrid = SamplingGrid.from_start_step(names=axisnames,
+                                                 shape=shape,
+                                                 start=-np.array(origin),
+                                                 step=step)
+            tgridm = tgrid.python2matlab().affine
+
+            # Correct transform information of tgrid by
+            # NIFTI file's transform information
+            # tgrid's transform matrix may be larger than 4x4,
+            # the NIFTI file provides information for the last
+            # (in C/python index) three coordinates, or (in
+            # MATLAB/FORTRAN index) the first three.
+
+            # What follows is just a way to write over tgrid's
+            # transformation matrix with the appropriate information
+            # from the NIFTI header
+            
+            tm = self.read_mat()
+            tgridm[:3,:3] = tm[:3,:3]
+            tgridm[:3,-1] = tm[:3,-1]
+            self.grid = SamplingGrid(Affine(tgridm).matlab2python(),
+                                     tgrid.input_coords,
+                                     tgrid.output_coords)
+
+
+                # assume .mat matrix uses FORTRAN indexing
+
+
+    def _header_from_grid(self):
         """
         :Returns: ``None``
         """
-        self.header['datatype'] = sctype2datatype[self.dtype.type]
-        self.header['bitpix'] = self.dtype.itemsize * 8
         self.grid = self.grid.python2matlab()
         ndimin, ndimout = self.grid.ndim
         if ndimin != ndimout:
@@ -234,12 +244,23 @@ class Analyze(binary.BinaryFormat):
         if not isinstance(self.grid.mapping, Affine):
             raise ValueError, 'non-Affine grid in writing out ANALYZE file'
 
-        if self.grid.mapping.isdiagonal():
-            _diag = True
-        else:
-            # what's goin on here??
-            _diag = False
+
+        dpart = np.diag(np.diag(self.grid.affine))
+        _diag = np.allclose(dpart, self.grid.affine)
+
+        if not _diag:
+            # Q: what's goin on here??
+            #
+            # A: we have to store the affine part of the grid information
+            #    somehow. if the affine matrix is diagonal, it can be saved
+            #    in the ANALYZE format
+            #    otherwise, we have to write it out, AND be able to read
+            #    it in afterwards on opening the file
+
             self.write_mat()
+
+        _dim = [0]*8
+        _pixdim = [0.] * 8
 
         _dim = [0]*8
         _pixdim = [0.] * 8
@@ -248,22 +269,21 @@ class Analyze(binary.BinaryFormat):
         _dim[1:self.ndim+1] = self.grid.shape[:self.ndim]
         if _diag:
             _pixdim[1:self.ndim+1] = \
-                         list(N.diag(self.grid.mapping.transform))[:self.ndim]
+                         list(np.diag(self.grid.affine))[:self.ndim]
         else:
             _pixdim[1:self.ndim+1] = [1.]*self.ndim
 
         self.header['dim'] = _dim
         self.header['pixdim'] = _pixdim
+
         if _diag:
-            origin = self.grid.mapping.tovoxel(N.array([0]*self.ndim))
+            origin = self.grid.mapping.tovoxel(np.array([0]*self.ndim))
             self.header['origin'] = list(origin) + [0]*(5-origin.shape[0])
         if not _diag:
             self.header['origin'] = [0]*5
 
         self.grid = self.grid.matlab2python()
                              
-
-
     def prewrite(self, x):
         """
         Filter the incoming data. If we're casting to an Integer type,
@@ -276,7 +296,7 @@ class Analyze(binary.BinaryFormat):
         :Returns: TODO
         """
         
-        x = N.asarray(x)
+        x = np.asarray(x)
         if not self.use_memmap:
             return x
 
@@ -304,8 +324,7 @@ class Analyze(binary.BinaryFormat):
                           datatype2sctype[COMPLEX]]:
             return x
         else:
-            return N.round(x)
-
+            return np.round(x)
 
     def postread(self, x):
         """
@@ -320,11 +339,10 @@ class Analyze(binary.BinaryFormat):
         if not self.use_memmap:
              return x
 
-        if self.header['scale_factor']:
-            return x*self.header['scale_factor']
+        if self.header['scale_factor'] not in [0,1]:
+            return self.scalers[0](x)
         else:
             return x
-
 
     def __del__(self):
         """
@@ -337,27 +355,16 @@ class Analyze(binary.BinaryFormat):
                 pass
             del self.data
 
-
-    def inform_canonical(self, fieldsDict=None):
-        """
-        :Parameters:
-            `fieldsDict` : TODO
-                TODO
-        
-        :Returns: ``None``
-        """
-        if fieldsDict is not None:
-            self.canonical_fields = odict(fieldsDict)
-        else:
-            self.canonical_fields['datasize'] = self.header['bitpix']
-            (self.canonical_fields['ndim'],
-             self.canonical_fields['xdim'],
-             self.canonical_fields['ydim'],
-             self.canonical_fields['zdim'],
-             self.canonical_fields['tdim']) = self.header['dim'][:5]
-            self.canonical_fields['scaling'] = self.header['scale_factor']
-        
-            
+    def _getscalers(self):
+        if not hasattr("_scalers"):
+            def f(y):
+                return y * self.header['scale_factor']
+            def finv(y):
+                return (y / self.header['scale_factor']).astype(self.dtype)
+        self._scalers = [f, finv]
+        return self._scalers
+    
+    scalers = property(_getscalers)
 
     def read_mat(self):
         """
@@ -374,7 +381,10 @@ class Analyze(binary.BinaryFormat):
             `Affine`
         """
         if self.datasource.exists(self.mat_file):
-            
+            print 'what'*80
+            import os
+            print os.popen("ls -la %s" % self.mat_file).read()
+            print 'now'*80
             mat = SIO.loadmat(self.mat_file)
             # SIO.loadmat puts mat in correct order for a C-ordered array
             # no need to Affine.matlab2python to correct for ordering
@@ -385,10 +395,9 @@ class Analyze(binary.BinaryFormat):
             else:
                 print 'Mat file did not contain Transform!'
                 # if all fails give them something?
-                return Affine.identity(self.ndim)
-            
+                return Affine.identity(3)
         else:
-            return Affine.identity(self.ndim)
+            return Affine.identity(3)
 
 
     def write_mat(self, matfile=None):
@@ -403,8 +412,7 @@ class Analyze(binary.BinaryFormat):
         if matfile is None:
             matfile = self.mat_file
         if self.clobber or not path(matfile).exists():
-            self.grid.mapping.tofile(matfile)
-
+            mattofile(matfile)
 
     def _get_filenames(self):
         """
@@ -437,4 +445,112 @@ class Analyze(binary.BinaryFormat):
         if reported_length != HEADER_SIZE:
             byteorder = utils.BIG_ENDIAN
         return byteorder
+
+def matfromfile(infile, delimiter="\t"):
+    """ Read in an affine transformation matrix from a csv file."""
+    if isinstance(infile, str):
+        infile = open(infile)
+    reader = csv.reader(infile, delimiter=delimiter)
+    return np.array(list(reader)).astype(float)
+
+def matfrombin(tstr):
+    """
+    This is broken -- anyone with mat file experience?
+    
+    Example
+    -------
+
+    >>> SLOW = True
+    >>> import urllib
+    >>> from neuroimaging.core.reference.mapping import frombin
+    >>> mat = urllib.urlopen('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
+    >>> tstr = mat.read()
+    >>> print frombin(tstr)
+    [[  2.99893500e+00  -3.14532000e-03  -1.06594400e-01  -9.61109780e+01]
+     [ -1.37396100e-02  -2.97339600e+00  -5.31224000e-01   1.20082725e+02]
+     [  7.88193000e-02  -3.98643000e-01   3.96313600e+00  -3.32398676e+01]
+     [  0.00000000e+00   0.00000000e+00   0.00000000e+00   1.00000000e+00]]
+    
+    """
+
+    T = np.array(unpack('<16d', tstr[-128:]))
+    T.shape = (4, 4)
+    return T.T
+
+def matfromstr(tstr, ndim=3, delimiter=None):
+    """Read a (ndim+1)x(ndim+1) transform matrix from a string."""
+    if tstr.startswith("mat file created by perl"):
+        return frombin(tstr) 
+    else:
+        transform = np.array(tstr.split(delimiter)).astype(float)
+        transform.shape = (ndim+1,)*2
+        return transform
+
+
+def matfromxfm(tstr, ndim=3):
+    """Read a (ndim+1)x(ndim+1) transform matrix from a string.
+
+    The format being read is that used by the FSL group, for example
+    http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/example_func2highres.xfm
+    """
+    tstr = tstr.split('\n')
+    more = True
+    data = []
+    outdata = []
+    for i in range(len(tstr)):
+
+        if tstr[i].find('/matrix') >= 0:
+            for j in range((ndim+1)**2):
+                data.append(float(tstr[i+j+1]))
+
+        if tstr[i].find('/outputusermatrix') >= 0:
+            for j in range((ndim+1)**2):
+                outdata.append(float(tstr[i+j+1]))
+
+    data = np.array(data)
+    data.shape = (ndim+1,)*2
+    outdata = np.array(outdata)
+    outdata.shape = (ndim+1,)*2
+    return data, outdata
+
+
+def matfromurl(turl, ndim=3):
+    """
+    Read a (ndim+1)x(ndim+1) transform matrix from a URL -- tries to autodetect
+    '.mat' and '.xfm'.
+
+    Example
+    -------
+
+    >>> SLOW = True
+    >>> from numpy import testing
+    >>> from neuroimaging.data_io.formats.analyze import matfromurl
+    >>> x = matfromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1.txt')
+    >>> y = matfromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
+    >>> testing.assert_almost_equal(x, y, decimal=5)
+
+    """
+    urlpipe = urllib.urlopen(turl)
+    data = urlpipe.read()
+    if turl[-3:] in ['mat', 'txt']:
+        return matfromstr(data, ndim=ndim)
+    elif turl[-3:] == 'xfm':
+        return xfmfromstr(data, ndim=ndim)
+
+def mattofile(self, filename):
+    """
+    Write the transform matrix to a csv file.
+    
+    :Parameters:
+    filename : ``string``
+    The filename to write to
+
+    :Returns: ``None``
+    """
+    
+    matfile = open(filename, 'w')
+    writer = csv.writer(matfile, delimiter='\t')
+    for row in self.transform: 
+        writer.writerow(row)
+    matfile.close()
 

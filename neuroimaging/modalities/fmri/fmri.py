@@ -1,22 +1,18 @@
-import numpy as N
+from numpy import asarray, arange
 
 from neuroimaging.core.api import ImageList, Image
 
-from neuroimaging.core.image.iterators import SliceIterator
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem
 from neuroimaging.core.reference.mapping import Affine
-
-# this is unnecessary, i think
-from neuroimaging.modalities.fmri.iterators import FmriParcelIterator, \
-     FmriSliceParcelIterator
 
 class FmriImage(ImageList):
     """
     TODO: change hte name of FmriImage -- maybe FmriImageList
     """
 
-    def __init__(self, images=None, TR=None, slicetimes=None):
+    def __init__(self, images=None, TR=0., slicetimes=None,
+                 frametimes=None):
         """
         A lightweight implementation of an fMRI image as in ImageList
         
@@ -26,28 +22,26 @@ class FmriImage(ImageList):
                 this is checked by asserting that each has a `grid` attribute
         TR:     time between frames in fMRI acquisition
         slicetimes: ndarray specifying offset for each slice of each frame
-
-        >>> from numpy import asarray
-        >>> from neuroimaging.testing funcfile
-        >>> from neuroimaging.modalities.fmri.api import FmriImageList
-        >>> from neuroimaging.modalities.fmri.api import load_fmri
-        >>> from neuroimaging.modalities.core.api import load_image
-        
-        >>> # fmrilist and ilist represent the same data
-
-        >>> fmrilist = load_fmri(funcfile)
-        >>> funcim = load_image(funcfile)
-        >>> ilist = FmriImageList(funcim)
-        >>> print ilist[2:5]
-        
-        >>> print ilist[2]
-        
-        >>> print asarray(ilist).shape
-        >>> print asarray(ilist[4]).shape
-
+        frametimes: optional way of overriding TR if frames are not evenly
+                    sampled in time
         See Also
         --------
         neuroimaging.core.image_list.ImageList
+
+        >>> from numpy import asarray
+        >>> from neuroimaging.testing import funcfile
+        >>> from neuroimaging.modalities.fmri.api import FmriImage, fromimage
+        >>> from neuroimaging.core.api import load_image
+        
+        >>> # fmrilist and ilist represent the same data
+
+        >>> funcim = load_image(funcfile)
+        >>> fmrilist = fromimage(funcim)
+        >>> ilist = FmriImage(funcim)
+        >>> print asarray(ilist).shape
+        (20, 2, 20, 20)
+        >>> print asarray(ilist[4]).shape
+        (2, 20, 20)
 
         """
 
@@ -55,7 +49,6 @@ class FmriImage(ImageList):
         self.TR = TR
         self.slicetimes = slicetimes
 
-    
     def __getitem__(self, index):
         """
         If index is an index, return self.list[index], an Image
@@ -68,63 +61,43 @@ class FmriImage(ImageList):
             return FmriImage(images=self.list[index], TR=self.TR,
                              slicetimes=self.slicetimes)
 
+    def __setitem__(self, index, value):
+        self.list[index] = value
+        
     def __array__(self):
-        return N.asarray([N.asarray(i) for i in self.list])
+        return asarray([asarray(i) for i in self.list])
 
     def emptycopy(self):
         return FmriImage(images=[], TR=self.TR, slicetimes=self.slicetimes)
 
-def parcel_iterator(img, parcelmap, parcelseq=None, mode='r'):
-    """
-    Parameters
+    def _getframetimes(self):
+        if hasattr(self, "_frametimes"):
+            return self._frametimes
+        else:
+            return arange(len(self.list)) * self.TR
 
-    ----------
-    parcelmap : ``[int]``
-        This is an int array of the same shape as self.
-        The different values of the array define different regions.
-        For example, all the 0s define a region, all the 1s define
-        another region, etc.           
-    parcelseq : ``[int]`` or ``[(int, int, ...)]``
-        This is an array of integers or tuples of integers, which
-        define the order to iterate over the regions. Each element of
-        the array can consist of one or more different integers. The
-        union of the regions defined in parcelmap by these values is
-        the region taken at each iteration. If parcelseq is None then
-        the iterator will go through one region for each number in
-        parcelmap.
-    mode : ``string``
-        The mode to run the iterator in.
-        'r' - read-only (default)
-        'w' - read-write                
-    
-    """
-    return FmriParcelIterator(img, parcelmap, parcelseq, mode=mode)
+    frametimes = property(_getframetimes)
 
-def slice_parcel_iterator(img, parcelmap, parcelseq=None, mode='r'):
+def fmri_generator(data, iterable=None):
     """
-    Parameters
-    ----------
-    parcelmap : ``[int]``
-        This is an int array of the same shape as self.
-        The different values of the array define different regions.
-        For example, all the 0s define a region, all the 1s define
-        another region, etc.           
-    parcelseq : ``[int]`` or ``[(int, int, ...)]``
-        This is an array of integers or tuples of integers, which
-        define the order to iterate over the regions. Each element of
-        the array can consist of one or more different integers. The
-        union of the regions defined in parcelmap by these values is
-        the region taken at each iteration. If parcelseq is None then
-        the iterator will go through one region for each number in
-        parcelmap.                
-    mode : ``string``
-        The mode to run the iterator in.
-        'r' - read-only (default)
-        'w' - read-write
-    
+    This function takes an iterable object and returns a generator for
+
+    [numpy.asarray(data)[:,item] for item in iterator]
+
+    This is used to get time series out of a 4d fMRI image.
+
+    Note that if data is an FmriImage instance, there is more 
+    overhead involved in calling numpy.asarray(data) than if
+    data is in Image instance.
+
+    If iterables is None, it defaults to range(data.shape[0])
     """
-    
-    return FmriSliceParcelIterator(img, parcelmap, parcelseq, mode=mode)
+    data = asarray(data)
+    if iterable is None:
+        iterable = range(data.shape[1])
+    for item in iterable:
+        yield item, data[:,item]
+
 
 def fromimage(fourdimage, TR=None, slicetimes=None):
     """Create an FmriImage from a 4D Image.
@@ -146,14 +119,13 @@ def fromimage(fourdimage, TR=None, slicetimes=None):
     if not isinstance(fourdimage.grid.mapping, Affine):
         raise ValueError, 'fourdimage must have an Affine mapping'
     
-    print fourdimage.shape
     for im in [fourdimage[i] for i in range(fourdimage.shape[0])]:
         g = im.grid
-        ia = g.input_coords.axes()[1:]
-        ic = VoxelCoordinateSystem("voxel", ia)
+        oa = g.output_coords.axes()[1:]
+        oc = VoxelCoordinateSystem("world", oa)
         t = im.grid.mapping.transform[1:]
         a = Affine(t)
-        newg = SamplingGrid(a, ic, g.output_coords)
-        images.append(Image(N.asarray(im), newg))
+        newg = SamplingGrid(a, im.grid.input_coords, oc)
+        images.append(Image(asarray(im), newg))
 
     return FmriImage(images=images, TR=TR, slicetimes=slicetimes)

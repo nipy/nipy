@@ -19,14 +19,8 @@ from neuroimaging.fixes.scipy.stats.models.contrast import Contrast, ContrastRes
 
 from neuroimaging.modalities.fmri import hrf
 from neuroimaging.modalities.fmri.protocol import ExperimentalQuantitative
-from neuroimaging.modalities.fmri.regression import TContrastOutput 
-from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
+from neuroimaging.algorithms.statistics.regression import TOutput 
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
-
-## from neuroimaging.defines import pylab_def
-## PYLAB_DEF, pylab = pylab_def()
-## if PYLAB_DEF:
-##     from neuroimaging.ui.visualization.multiplot import MultiPlot
 
 class DelayContrast(Contrast):
     """
@@ -111,7 +105,7 @@ class DelayContrast(Contrast):
         else:
             self.rownames = rownames
 
-    def getmatrix(self, time=None):
+    def compute_matrix(self, time=None):
         """
         :Parameters:
             `time` : TODO
@@ -119,7 +113,7 @@ class DelayContrast(Contrast):
 
         :Returns: ``None``
         """
-        Contrast.getmatrix(self, time=time)
+        Contrast.compute_matrix(self, time=time)
 
         cnrow = self.matrix.shape[0] / 2
         self.effectmatrix = self.matrix[0:cnrow]
@@ -269,7 +263,7 @@ class DelayContrast(Contrast):
 
 
 
-class DelayContrastOutput(TContrastOutput):
+class DelayContrastOutput(TOutput):
     """
     TODO
     """
@@ -321,7 +315,7 @@ class DelayContrastOutput(TContrastOutput):
         Setup the contrast for the delay.
         """
 
-        self.contrast.getmatrix(time=time)
+        self.contrast.compute_matrix(time=time)
 
     def _setup_output_delay(self, path, clobber, subpath, ext, frametimes):
         """

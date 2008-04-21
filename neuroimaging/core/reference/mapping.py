@@ -11,7 +11,7 @@ import csv, copy
 import urllib
 from struct import unpack
 
-import numpy as N
+import numpy as np
 from numpy.linalg import inv
 
 def _2matvec(transform):
@@ -25,7 +25,7 @@ def _2matvec(transform):
 def _2transform(matrix, vector):
     """ Combine a matrix and vector into a transform. """
     nin, nout = matrix.shape
-    t = N.zeros((nin+1,nout+1))
+    t = np.zeros((nin+1,nout+1))
     t[0:nin, 0:nout] = matrix
     t[nin,   nout] = 1.
     t[0:nin, nout] = vector
@@ -38,7 +38,7 @@ def permutation_matrix(order=range(3)[2::-1]):
     0, ..., N-1.
     """
     n = len(order)
-    matrix = N.zeros((n, n))
+    matrix = np.zeros((n, n))
     if set(order) != set(range(n)):
         raise ValueError('order should be a sequence of integers with' \
                          'values, 0 ... len(order)-1.')
@@ -53,7 +53,7 @@ def permutation_transform(order=range(3)[2::-1]):
     containing the values 0,...,N-1.
     """
     matrix = permutation_matrix(order=order)
-    vector = N.zeros(len(order))
+    vector = np.zeros(len(order))
     return _2transform(matrix, vector)
 
 
@@ -61,99 +61,8 @@ def translation_transform(x, ndim):
     """
     Create an affine transformation matrix representing translation by x.
     """
-    return _2transform(N.identity(ndim), x)
+    return _2transform(np.identity(ndim), x)
     
-
-def matfromfile(infile, delimiter="\t"):
-    """ Read in an affine transformation matrix from a csv file."""
-    if isinstance(infile, str):
-        infile = open(infile)
-    reader = csv.reader(infile, delimiter=delimiter)
-    return N.array(list(reader)).astype(float)
-
-def frombin(tstr):
-    """
-    This is broken -- anyone with mat file experience?
-    
-    Example
-    -------
-
-    >>> SLOW = True
-    >>> import urllib
-    >>> from neuroimaging.core.reference.mapping import frombin
-    >>> mat = urllib.urlopen('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
-    >>> tstr = mat.read()
-    >>> print frombin(tstr)
-    [[  2.99893500e+00  -3.14532000e-03  -1.06594400e-01  -9.61109780e+01]
-     [ -1.37396100e-02  -2.97339600e+00  -5.31224000e-01   1.20082725e+02]
-     [  7.88193000e-02  -3.98643000e-01   3.96313600e+00  -3.32398676e+01]
-     [  0.00000000e+00   0.00000000e+00   0.00000000e+00   1.00000000e+00]]
-    
-    """
-
-    T = N.array(unpack('<16d', tstr[-128:]))
-    T.shape = (4, 4)
-    return T.T
-
-def matfromstr(tstr, ndim=3, delimiter=None):
-    """Read a (ndim+1)x(ndim+1) transform matrix from a string."""
-    if tstr.startswith("mat file created by perl"):
-        return frombin(tstr) 
-    else:
-        transform = N.array(tstr.split(delimiter)).astype(float)
-        transform.shape = (ndim+1,)*2
-        return transform
-
-
-def xfmfromstr(tstr, ndim=3):
-    """Read a (ndim+1)x(ndim+1) transform matrix from a string.
-
-    The format being read is that used by the FLS group, for example
-    http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/example_func2highres.xfm
-    """
-    tstr = tstr.split('\n')
-    more = True
-    data = []
-    outdata = []
-    for i in range(len(tstr)):
-
-        if tstr[i].find('/matrix') >= 0:
-            for j in range((ndim+1)**2):
-                data.append(float(tstr[i+j+1]))
-
-        if tstr[i].find('/outputusermatrix') >= 0:
-            for j in range((ndim+1)**2):
-                outdata.append(float(tstr[i+j+1]))
-
-    data = N.array(data)
-    data.shape = (ndim+1,)*2
-    outdata = N.array(outdata)
-    outdata.shape = (ndim+1,)*2
-    return data, outdata
-
-
-def fromurl(turl, ndim=3):
-    """
-    Read a (ndim+1)x(ndim+1) transform matrix from a URL -- tries to autodetect
-    '.mat' and '.xfm'.
-
-    Example
-    -------
-
-    >>> SLOW = True
-    >>> from numpy import testing
-    >>> from neuroimaging.core.reference.mapping import fromurl
-    >>> x = fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1.txt')
-    >>> y = fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
-    >>> testing.assert_almost_equal(x, y, decimal=5)
-
-    """
-    urlpipe = urllib.urlopen(turl)
-    data = urlpipe.read()
-    if turl[-3:] in ['mat', 'txt']:
-        return matfromstr(data, ndim=ndim)
-    elif turl[-3:] == 'xfm':
-        return xfmfromstr(data, ndim=ndim)
 
 
 def isdiagonal(matrix):
@@ -169,9 +78,9 @@ def isdiagonal(matrix):
     """
 
     ndim = matrix.shape[0]
-    mask = ~N.identity(ndim, dtype=bool)
-    masked = N.ma.array(matrix, mask=mask, fill_value=0.).filled()
-    return N.all(masked == matrix)
+    mask = ~np.identity(ndim, dtype=bool)
+    masked = np.ma.array(matrix, mask=mask, fill_value=0.).filled()
+    return np.all(masked == matrix)
 
 
 class Mapping(object):
@@ -196,8 +105,7 @@ class Mapping(object):
         self._map = map
         self._inverse = inverse
         self.name = name
-        self._ndim = ndim
-        
+        self.ndim = ndim
         
     def __call__(self, x):
         """ Apply this mapping to the given coordinates. """
@@ -250,13 +158,6 @@ class Mapping(object):
             inverse = None
         return Mapping(map, inverse=inverse)
 
-    def ndim(self):
-        """ The number of input dimensions
-
-        :Returns: ``int``
-        """
-        return self._ndim
-
     def isinvertible(self):
         """
         Does this mapping have an inverse?
@@ -282,14 +183,14 @@ class Mapping(object):
         voxels, return the closest voxel for reaf. Will choke if mapping is
         not invertible.
 
-        :Raises N.linalg.LinAlgError: is mapping is not invertible.
+        :Raises np.linalg.LinAlgError: is mapping is not invertible.
         """
         shape = real.shape
         if len(shape) > 1:
-            real.shape = (shape[0], N.product(shape[1:]))
-        voxel = N.around(self.inverse()(real))
+            real.shape = (shape[0], np.product(shape[1:]))
+        voxel = np.around(self.inverse()(real))
         voxel.shape = shape
-        return N.array(voxel)
+        return np.array(voxel)
 
     def _preslice_mapping(self, index, gshape):
         """
@@ -311,6 +212,7 @@ class Mapping(object):
             index = (index,)
         for i in range(len(index), len(gshape)):
             index += (slice(0,gshape[i],1),)
+
         for j, i in enumerate(index):
             if type(i) is type(1):
                 maps.append(lambda x: x)
@@ -330,7 +232,7 @@ class Mapping(object):
                     x = stop - start
                 except:
                     raise ValueError, `stop` + ' ' + `start` + ' ' + `i` + ' ' + `type(i)` + ' ' + `i.stop`
-                shape.append(int((stop - start) / step))
+                shape.append(int(np.ceil((stop - start) / (step * 1.))))
                 sstarts.append(start)
                 maps.append(lambda x: x * step + start)
                 ssteps.append(step)
@@ -374,10 +276,10 @@ class Mapping(object):
 
     def _f(self, x):
         """ helper function for `matlab2python` and `python2matlab` """
-        ndim = self.ndim()
+        ndim = self.ndim
         mat = permutation_matrix(range(ndim)[::-1])
         t1 = _2transform(mat, x)
-        t2 = _2transform(mat, N.zeros(ndim))
+        t2 = _2transform(mat, np.zeros(ndim))
         w1 = Affine(t1)
         w2 = Affine(t2)
         return (w2 * self) * w1
@@ -388,15 +290,14 @@ class Mapping(object):
         """
         varcoords, maps, _, _, shape = self._preslice_mapping(index, gshape)
         mapc = copy.deepcopy(self._map)
-
         def mapping(x):
             y = x.copy()
-            o = N.ones(x.shape)
+            o = np.ones(x.shape)
             for i in range(nvar):
                 y[i] = maps[i](y[i])
-            for i in range(self.ndim()):
+            for i in range(self.ndim):
                 if i not in varcoords:
-                    o = np.vstack([o, np.ones(x.shape) * N.ones[i]])
+                    o = np.vstack([o, np.ones(x.shape) * np.ones[i]])
                 else:
                     o = np.vstack([o, y[i]])
 
@@ -413,26 +314,12 @@ class Affine(Mapping):
     """
 
     @staticmethod
-    def fromfile(infile, delimiter='\t'):
-        """
-        Read in an affine transformation matrix and return an instance of
-        `Affine` with named axes and input and output coordinate systems.  For
-        now, the format is assumed to be a tab-delimited file.  Other formats
-        should be added.
-
-        :Returns: `Affine`
-        """
-        t = matfromfile(infile, delimiter=delimiter)
-        return Affine(t)
-
-
-    @staticmethod
     def identity(ndim=3):
         """ Return an identity affine transformation.
 
         :Returns: `Affine`
         """
-        return Affine(N.identity(ndim+1))
+        return Affine(np.identity(ndim+1))
 
 
     def _slice_mapping(self, index, gshape):
@@ -440,14 +327,14 @@ class Affine(Mapping):
         Return an Affine instance
         """
         varcoords, _, start, step, shape = self._preslice_mapping(index, gshape)
-        stepmatrix = N.diag(list(step) + [1])
-        startvector = N.dot(self.transform, N.array(list(start)+[1]))[:-1]
+        stepmatrix = np.diag(list(step) + [1])
+        startvector = np.dot(self.transform, np.array(list(start)+[1]))[:-1]
 
-        tmatrix = N.zeros((len(gshape) + 1, len(varcoords) + 1))
+        tmatrix = np.zeros((len(gshape) + 1, len(varcoords) + 1))
         for i, j in enumerate(varcoords):
             tmatrix[:-1,i] = self.transform[:-1,j]
         tmatrix[-1,-1] = 1.
-        tmatrix = N.dot(tmatrix, stepmatrix)
+        tmatrix = np.dot(tmatrix, stepmatrix)
         tmatrix[:-1,-1] = startvector
         return varcoords, Affine(tmatrix), shape
 
@@ -473,8 +360,8 @@ class Affine(Mapping):
         
         :Returns: ``numpy.ndarray``
         """
-        value = N.dot(self._fmatrix, coords) 
-        value += N.multiply.outer(self._fvector, N.ones(value.shape[1:]))
+        value = np.dot(self._fmatrix, coords) 
+        value += np.multiply.outer(self._fvector, np.ones(value.shape[1:]))
         return value
 
     def __eq__(self, other):
@@ -489,7 +376,7 @@ class Affine(Mapping):
         """
         if not hasattr(other, "transform"): 
             return False
-        return N.all(N.asarray(self.transform) == N.asarray(other.transform)) \
+        return np.all(np.asarray(self.transform) == np.asarray(other.transform)) \
                and self.name == other.name
 
 
@@ -502,7 +389,7 @@ class Affine(Mapping):
         :Returns: `Mapping` or `Affine`
         """
         if isinstance(other, Affine):
-            return Affine(N.dot(other.transform, self.transform))            
+            return Affine(np.dot(other.transform, self.transform))            
         else: 
             return Mapping.__rmul__(self, other)
 
@@ -536,28 +423,3 @@ class Affine(Mapping):
         return Affine(inv(self.transform))
 
     
-    def isdiagonal(self):
-        """
-        Is the transform matrix diagonal?
-
-        :Returns: ``bool``
-        """
-        return isdiagonal(self._fmatrix)
-
- 
-    def tofile(self, filename):
-        """
-        Write the transform matrix to a file.
-
-        :Parameters:
-            filename : ``string``
-                The filename to write to
-
-        :Returns: ``None``
-        """
-        matfile = open(filename, 'w')
-        writer = csv.writer(matfile, delimiter='\t')
-        for row in self.transform: 
-            writer.writerow(row)
-        matfile.close()
-  

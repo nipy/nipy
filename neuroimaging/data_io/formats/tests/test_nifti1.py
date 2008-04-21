@@ -8,7 +8,8 @@ from numpy.testing import NumpyTest, NumpyTestCase
 
 from neuroimaging.utils.test_decorators import slow
 
-from neuroimaging.core.api import Image
+from neuroimaging.core.api import Image, load_image, save_image
+from neuroimaging.testing import anatfile, funcfile
 from neuroimaging.data_io.formats import nifti1
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.utils.odict import odict
@@ -16,10 +17,18 @@ from neuroimaging.utils.odict import odict
 class test_Nifti(NumpyTestCase):
 
     def setUp(self):
-        self.zimage = nifti1.Nifti1("zstat1.nii", datasource=repository)
-        self.image = Image("zstat1.nii", datasource=repository)
+        self.anat = load_image(anatfile)
+        self.func = load_image(funcfile)
 
-        self.zvalues = odict((
+class test_NiftiPrint(test_Nifti):
+
+    def test_print(self):
+        print >> StringIO(), self.zimage
+
+class test_NiftiHeader(test_Nifti):
+
+    def test_header1(self):       
+        zvalues = odict((
             ('sizeof_hdr',348),
             ('data_type','\x00'*10),
             ('db_name','\x00'*18),
@@ -64,36 +73,26 @@ class test_Nifti(NumpyTestCase):
             ('intent_name','\x00'*16),
             ('magic','n+1\x00'),
         ))
-            
 
-class test_NiftiPrint(test_Nifti):
-
-    def test_print(self):
-        print >> StringIO(), self.zimage
-
-class test_NiftiHeader(test_Nifti):
-
-    def test_header1(self):
-        for name, value in self.zvalues.items():
+        for name, value in zvalues.items():
             self.zimage.header[name] = value
 
-    def test_header2(self):
-        for name, value in self.zvalues.items():
-            self.assertEqual(self.zimage.header[name], value)
 
 class test_NiftiRead(test_Nifti):
 
     def test_read1(self):
-        y = self.zimage[:]
+        y = N.asarray(self.anatfile)
         N.testing.assert_approx_equal(y.min(), -8.71075057983)
         N.testing.assert_approx_equal(y.max(), 18.582529068)
 
 class test_NiftiWrite(test_Nifti):
 
     def test_write1(self):
-        self.image.tofile('out.nii', clobber=True, dtype=N.float64)
-        out = Image('out.nii')
+        save_file(self.anatfile, 'out.nii', clobber=True, dtype=N.float64)
+        out = load_image("out.nii")
         self.assertEquals(out._source.dtype.type, N.float64)
+        N.testing.assert_almost_equal(out.grid.mapping.transform,
+                                      self.anatfile.grid.mapping.transform)
         os.remove('out.nii')
 
     def test_write2(self):
@@ -104,18 +103,6 @@ class test_NiftiWrite(test_Nifti):
         #os.remove('out.hdr')
         #os.remove('out.nii')
 
-    def test_write4(self):
-        self.image.tofile('out.hdr', clobber=True, dtype=N.float64)
-        new = nifti1.Nifti1('out.hdr')
-        self.assertEquals(new.dtype.type, N.float64)
-        #os.remove('out.img')
-        #os.remove('out.hdr')
-        #os.remove('out.nii')
-
-    def test_write3(self):
-        rho = Image("rho.hdr", datasource=repository)
-        rho.tofile('out.nii', clobber=True)
-        #os.remove('out.nii')
 
 ## class NiftiModifyHeaderTest(NiftiTest):
 ## ... I have decided not to jump into adding nifti extensions yet,
@@ -127,38 +114,38 @@ class test_NiftiDataType(test_Nifti):
     @slow
     def test_datatypes(self):
         for sctype in nifti1.sctype2datatype.keys():
-            _out = N.ones(self.zimage.grid.shape, sctype)
-            out = Image(_out, grid=self.zimage.grid)
-            out.tofile('out.nii', clobber=True)
-            new = Image('out.nii')
-            self.assertEquals(new._source.header['datatype'],
+            _out = N.ones(self.anatfile.grid.shape, sctype)
+            out = Image(_out, self.anatfile.grid)
+            save_image(out, 'out.nii', clobber=True)
+            new = load_image('out.nii')
+            self.assertEquals(new.fmt.header['datatype'],
                               nifti1.sctype2datatype[sctype])
-            self.assertEquals(new._source.dtype.type, sctype)
-            self.assertEquals(new._source.header['vox_offset'], 352)
+            self.assertEquals(new.fmt.dtype.type, sctype)
+            self.assertEquals(new.fmt.header['vox_offset'], 352)
             self.assertEquals(os.stat('out.nii').st_size,
                               N.product(self.image.grid.shape) *
                               _out.dtype.itemsize +
-                              new._source.header['vox_offset'])
-            N.testing.assert_almost_equal(new[:], _out)
+                              new.fmt.header['vox_offset'])
+            N.testing.assert_almost_equal(N.asarray(new), _out)
         os.remove('out.nii')
 
     @slow
     def test_datatypes2(self):
         for sctype in nifti1.sctype2datatype.keys():
             for _sctype in nifti1.sctype2datatype.keys():
-                _out = N.ones(self.zimage.grid.shape, sctype)
-                out = Image(_out, grid=self.zimage.grid)
-                out.tofile('out.nii', clobber=True, dtype=_sctype)
-                new = Image('out.nii')
-                self.assertEquals(new._source.header['datatype'],
+                _out = N.ones(self.anatfile.grid.shape, sctype)
+                out = Image(_out, self.anatfile.grid)
+                save_image(out, 'out.nii', clobber=True)
+                new = load_image('out.nii')
+                self.assertEquals(new.fmt.header['datatype'],
                                   nifti1.sctype2datatype[_sctype])
-                self.assertEquals(new._source.dtype.type, _sctype)
-                self.assertEquals(new._source.header['vox_offset'], 352.0)
+                self.assertEquals(new.fmt.dtype.type, _sctype)
+                self.assertEquals(new.fmt.header['vox_offset'], 352.0)
                 self.assertEquals(os.stat('out.nii').st_size,
                                   N.product(self.image.grid.shape) *
                                   N.dtype(_sctype).itemsize +
-                                  new._source.header['vox_offset'])
-                N.testing.assert_almost_equal(new[:], _out)
+                                  new.fmt.header['vox_offset'])
+                N.testing.assert_almost_equal(N.asarray(new), _out)
 
 
         os.remove('out.nii')

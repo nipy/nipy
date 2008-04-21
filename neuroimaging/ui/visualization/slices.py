@@ -11,6 +11,7 @@ from neuroimaging.algorithms.interpolation import ImageInterpolator
 
 class Slice(object):
 
+
     def __init__(self, interpolator, grid, transpose=False):
         self.interpolator = interpolator
         self.grid = grid
@@ -33,6 +34,7 @@ def coronal(grid, y=0.,
     these are taken from a bounding for grid.
 
     Shape refers to size of array in sampling the region by an interpolator.
+    TODO: make these slices 2dslices, rather than this hack +1.0e-06
     """
     shape = shape or grid.shape
     if xlim is None:
@@ -48,7 +50,7 @@ def transversal(grid, z=0.,
     """
     Transversal slice through a grid, with optional xlim and ylim. Otherwise,
     these are taken from a bounding for grid.
-
+    TODO: make these slices 2dslices, rather than this hack +1.0e-06
     Shape refers to size of array in sampling the region by an interpolator.
     """
     shape = shape or grid.shape
@@ -67,7 +69,7 @@ def sagittal(grid, x=0.,
     these are taken from a bounding for grid.
 
     Shape refers to size of array in sampling the region by an interpolator.
-
+    TODO: make these slices 2dslices, rather than this hack +1.0e-06
     """
     if ylim is None:
         ylim = slices.bounding_box(grid)[1]

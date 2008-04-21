@@ -1,5 +1,6 @@
 """
 A set of methods to get sampling grids which represent slices in space.
+
 """
 
 __docformat__ = 'restructuredtext'
@@ -7,10 +8,10 @@ __docformat__ = 'restructuredtext'
 from neuroimaging.core.reference import grid, axis, mapping, mni
 from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem
 import numpy.linalg as L
-import numpy as N
+import numpy as np
 import numpy.random as R
 
-def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
+def from_origin_and_columns(origin, colvectors, shape, output_coords):
     """
     Return a grid representing a slice based on a given origin, a pair of direction
     vectors which span the slice, and a shape.
@@ -18,129 +19,63 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords=None):
     By default the output coordinate system is the MNI world.
 
     :Parameters:
-        origin : TODO
-            TODO
-        colvectors : TODO
-            TODO
-        shape : TODO
-            TODO
-        output_coords : TODO
-            TODO
+        origin : the corner of the output coordinates, i.e. the [0]*ndimin
+                 point
+        colvectors : the steps in each voxel direction
+        shape : how many steps in each voxel direction
+        output_coords : a CoordinateSystem for the output
 
     :Returns: `grid.SamplingGrid`
     """
-
+    colvectors = np.asarray(colvectors)
     nout = colvectors.shape[1]
-    ndim = colvectors.shape[0]
+    nin = colvectors.shape[0]
 
-    f = N.zeros((nout,)*2)
-    for i in range(ndim):
+    f = np.zeros((nout+1,nin+1))
+    for i in range(nin):
         f[0:nout,i] = colvectors[i]
-    
-    p = N.identity(nout) - N.dot(f, L.pinv(f))
-    tmp = R.standard_normal((nout, nout-ndim))
-    tmp = N.dot(p, tmp)
-    f[0:nout, ndim:] = tmp
-    for i in range(nout-ndim):
-        f[0:nout,ndim+i] = f[0:nout,ndim+i] / N.sqrt(N.add.reduce(f[0:nout,ndim+i]**2))
+    f[0:nout,-1] = origin
+    f[nout, nin] = 1.
 
-    t = N.zeros((nout+1,)*2)
-    t[0:nout, 0:nout] = f
-    t[nout, nout] = 1.
-    t[0:nout, nout] = origin
+    input_coords = VoxelCoordinateSystem('slice', \
+       [axis.VoxelAxis('voxel%d' % d, length=shape[d])
+        for d in range(len(shape))])
 
-    input_coords = VoxelCoordinateSystem('slice', axis.generic,
-                                         shape=shape + (1,))
-    if output_coords is None:
-        output_coords = mni.MNI_world
-
-    w = mapping.Affine(t)
+    w = mapping.Affine(f)
     g = grid.SamplingGrid(w, input_coords, output_coords)
     return g
 
 
-def box_slices(zlim, ylim, xlim, shape, x=N.inf, y=N.inf, z=N.inf):
-    """
-    Create a set of 3 sampling grids representing slices along each plane.
-
-    :Parameters:
-        zlim : TODO
-            TODO
-        ylim : TODO
-            TODO
-        xlim : TODO
-            TODO
-        shape : TODO
-            TODO
-        x : TODO
-            TODO
-        y : TODO
-            TODO
-        z : TODO
-            TODO
-    
-    """
-    if x == N.inf:
-        x = (xlim[0]+xlim[1])/2.
-
-    if y == N.inf:
-        y = (ylim[0]+ylim[1])/2.
-
-    if z == N.inf:
-        z = (zlim[0]+zlim[1])/2.
-
-    # yslice, xslice, zslice
-    origins = [[zlim[0], y,       xlim[0]],
-               [zlim[0], ylim[0], x],
-               [z,       ylim[0], xlim[0]]]
-
-    step = [(zlim[1] - zlim[0]) / (shape[0] - 1.),
-            (ylim[1] - ylim[0]) / (shape[1] - 1.),
-            (xlim[1] - xlim[0]) / (shape[2] - 1.)]
-
-    # yslice, xslice, zslice
-    columns = [N.array([[0,0,step[2]], [step[0],0,0]]),
-               N.array([[0,step[1],0], [step[0],0,0]]),
-               N.array([[0,step[1],0], [0,0,step[2]]])]
-
-    # yslice, xslice, zslice
-    shapes = [(shape[0], shape[2]),
-              (shape[0], shape[1]),
-              (shape[2], shape[1])]
-
-    # yslice, xslice, zslice
-    slices = []
-    for i in range(3):
-        slices.append(from_origin_and_columns(origins[i],
-                                              columns[i][::-1],
-                                              shapes[i]))
-    return slices
-
-def yslice(y, zlim, ylim, xlim, shape):
-    """
-    Return a slice through a 3d box with y fixed.
-    Defaults to a slice through MNI coordinates.
-
-    :Parameters:
-        y : TODO
-            TODO
-        zlim : TODO
-            TODO
-        ylim : TODO
-            TODO
-        xlim : TODO
-            TODO
-        shape : TODO
-            TODO
-    """
-    return box_slices(zlim, ylim, xlim, shape, y=y)[0]
-
-def xslice(x, zlim, ylim, xlim, shape):
+def xslice(x, zlim, ylim, output_coords, shape):
     """
     Return a slice through a 3d box with x fixed.
     Defaults to a slice through MNI coordinates.
 
     :Parameters:
+        y : TODO
+            TODO
+        zlim : TODO
+            TODO
+        ylim : TODO
+            TODO
+        xlim : TODO
+            TODO
+        shape : TODO
+            TODO
+        output_coords : TODO
+            TODO
+    """
+    origin = [zlim[0],ylim[0],x]
+    colvectors = [[(zlim[1]-zlim[0])/(shape[1] - 1.),0,0],
+                  [0,(ylim[1]-ylim[0])/(shape[0] - 1.),0]]
+    return from_origin_and_columns(origin, colvectors, shape, output_coords)
+
+def yslice(y, zlim, xlim, output_coords, shape):
+    """
+    Return a slice through a 3d box with y fixed.
+    Defaults to a slice through MNI coordinates.
+
+    :Parameters:
         x : TODO
             TODO
         zlim : TODO
@@ -151,11 +86,15 @@ def xslice(x, zlim, ylim, xlim, shape):
             TODO
         shape : TODO
             TODO
-
+        output_coords : TODO
+            TODO
     """
-    return box_slices(zlim, ylim, xlim, shape, x=x)[1]
+    origin = [zlim[0],y,xlim[0]]
+    colvectors = [[(zlim[1]-zlim[0])/(shape[1] - 1.),0,0],
+                  [0,0,(xlim[1]-xlim[0])/(shape[0] - 1.)]]
+    return from_origin_and_columns(origin, colvectors, shape, output_coords)
 
-def zslice(z, zlim, ylim, xlim, shape):    
+def zslice(z, ylim, xlim, output_coords, shape):    
     """
     Return a slice through a 3d box with z fixed.
     Defaults to a slice through MNI coordinates.
@@ -163,17 +102,21 @@ def zslice(z, zlim, ylim, xlim, shape):
     :Parameters:
         z : TODO
             TODO
-        zlim : TODO
-            TODO
         ylim : TODO
             TODO
         xlim : TODO
             TODO
         shape : TODO
             TODO
-
+        output_coords : TODO
+            TODO
     """
-    return box_slices(zlim, ylim, xlim, shape, z=z)[2]
+    origin = [z,xlim[0],ylim[0]]
+    colvectors = [[0,(ylim[1]-ylim[0])/(shape[1] - 1.),0],
+                  [0,0,(xlim[1]-xlim[0])/(shape[0] - 1.)]]
+    return from_origin_and_columns(origin, colvectors, shape, output_coords)
+
+
 
 def bounding_box(grid):
     """

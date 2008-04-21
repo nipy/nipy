@@ -1,11 +1,11 @@
+#TODO the iterators are deprecated
 import numpy as N
 from numpy.testing import NumpyTest, NumpyTestCase
 
 import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.api import Image
 import neuroimaging.core.reference.grid as grid
-from neuroimaging.modalities.fmri.api import slice_parcel_iterator, FmriImage, \
-     parcel_iterator
+from neuroimaging.modalities.fmri.api import FmriImage
 
 
 class test_Iterators(NumpyTestCase):
