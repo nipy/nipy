@@ -455,6 +455,10 @@ class Image(object):
 
         """
 
+        for i in index: 		
+            if type(i) not in [type(1), type(slice(0,4,1))]:
+                raise ValueError, "when slicing images, index must be list of integers or slices"
+
         if type(index) not in [type(()), type([])]:
             index = (index,)
         else:
