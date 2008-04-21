@@ -6,7 +6,7 @@ from neuroimaging.modalities.fmri.api import fromimage
 from neuroimaging.core.api import load_image
 
 from neuroimaging.modalities.fmri.protocol import Formula, ExperimentalQuantitative
-from neuroimaging.fixes.scipy.stats_models.contrast import Contrast
+from neuroimaging.fixes.scipy.stats.models.contrast import Contrast
 
 # Load in the data
 

@@ -6,7 +6,7 @@ GLM passes of fmristat
 import gc, copy
 
 import numpy as np
-from neuroimaging.fixes.scipy.stats_models.regression import OLSModel, ARModel
+from neuroimaging.fixes.scipy.stats.models.regression import OLSModel, ARModel
 from neuroimaging.core.api import Image, data_generator, parcels, matrix_generator
 
 from neuroimaging.modalities.fmri.api import FmriImage, fmri_generator

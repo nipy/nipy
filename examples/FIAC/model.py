@@ -2,7 +2,7 @@ import os, time, glob
 
 from neuroimaging import traits
 import numpy as np
-from neuroimaging.fixes.scipy.stats_models import contrast
+from neuroimaging.fixes.scipy.stats.models import contrast
 
 from neuroimaging.modalities.fmri import protocol, functions
 from neuroimaging.modalities.fmri.fmristat import delay
