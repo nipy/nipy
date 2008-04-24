@@ -241,7 +241,7 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
             errors[format] = exception
 
     if imgfmt:
-        tmpimg = Image(imgfmt.data, imgfmt.grid)
+        tmpimg = Image(imgfmt, imgfmt.grid)
         tmpimg._header = imgfmt.header
         return tmpimg
 
