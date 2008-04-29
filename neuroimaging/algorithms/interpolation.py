@@ -5,7 +5,7 @@ Image interpolators using ndimage.
 __docformat__ = 'restructuredtext'
 
 import os
-import numpy as N
+import numpy as np
 
 from scipy import ndimage
 from neuroimaging.data_io.api import Cache
@@ -36,17 +36,17 @@ class ImageInterpolator(object):
 
     def _prefilter(self):
         if self.order > 1:
-            data = ndimage.spline_filter(N.nan_to_num(self.image.readall()),
+            data = ndimage.spline_filter(np.nan_to_num(np.asarray(self.image)),
                                           self.order)
         else:
-            data = N.nan_to_num(self.image.readall())
+            data = np.nan_to_num(np.asarray(self.image))
 
         if not hasattr(self, 'datafile'):
             self.datafile = file(Cache().tempfile(), mode='wb')
         else:
             self.datafile = file(self.datafile.name, 'wb')
         
-        data = N.nan_to_num(data.astype(N.float64))
+        data = np.nan_to_num(data.astype(np.float64))
         data.tofile(self.datafile)
         datashape = data.shape
         dtype = data.dtype
@@ -55,7 +55,7 @@ class ImageInterpolator(object):
         self.datafile.close()
 
         self.datafile = file(self.datafile.name)
-        self.data = N.memmap(self.datafile.name, dtype=dtype,
+        self.data = np.memmap(self.datafile.name, dtype=dtype,
                              mode='r+', shape=datashape)
 
     def __del__(self):
@@ -84,9 +84,9 @@ class ImageInterpolator(object):
 
         :Returns: TODO
         """
-        points = N.array(points, N.float64)
+        points = np.array(points, np.float64)
         output_shape = points.shape[1:]
-        points.shape = (points.shape[0], N.product(output_shape))
+        points.shape = (points.shape[0], np.product(output_shape))
         voxels = self.grid.mapping.inverse()(points)
         V = ndimage.map_coordinates(self.data, 
                                      voxels,
