@@ -21,6 +21,10 @@ will only run tests labeled 'slow' (for which there's a decorator) and this::
   nosetests -s -A "not slow" test_foo.py
 
 will *exclude* all slow tests from a run.
+
+Run all tests, output all standard output (-s), in verbose mode (-v)::
+  nosetests -sv test_foo.py
+
 """
 
 # This single import statement should provide all the common functionality for
