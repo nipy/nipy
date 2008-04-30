@@ -60,6 +60,14 @@ def permutation_transform(order=range(3)[2::-1]):
 def translation_transform(x, ndim):
     """
     Create an affine transformation matrix representing translation by x.
+    
+    translation_transform( x=(1,2,3), ndim=3)
+    array([[ 1.,  0.,  0.,  1.],
+           [ 0.,  1.,  0.,  2.],
+           [ 0.,  0.,  1.,  3.],
+           [ 0.,  0.,  0.,  1.]])
+
+
     """
     return _2transform(np.identity(ndim), x)
     
