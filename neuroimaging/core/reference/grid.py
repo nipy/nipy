@@ -91,11 +91,10 @@ class SamplingGrid(object):
         :Parameters:
             mapping : `Affine`
                 An affine mapping between the input and output coordinate systems.
-            shape : ``tuple`` of ``int``
-                The shape of the grid
             names : ``tuple`` of ``string``
                 The names of the axes of the coordinate systems
-
+            shape : ''tuple'' of ''int''
+                The shape of the grid
         :Returns: `SamplingGrid`
         
         :Precondition: ``len(shape) == len(names)``
