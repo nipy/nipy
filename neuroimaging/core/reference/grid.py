@@ -30,12 +30,11 @@ class SamplingGrid(object):
         :Parameters:
             names : ``tuple`` of ``string``
                 TODO
-            shape : ``tuple`` of ``int``
-                TODO
             start : ``tuple`` of ``float``
                 TODO
             step : ``tuple`` of ``float``
                 TODO
+            shape: ''tuple'' of ''int''
 
         :Returns: `SamplingGrid`
         
@@ -260,6 +259,50 @@ class SamplingGrid(object):
                 The name of the new dimension formed by concatenation
         """
         return ConcatenatedIdenticalGrids(self, n, concataxis=concataxis)
+
+def centered_grid(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
+    """
+    creates a simple centered grid that centers matrix on zero
+
+    If you have a nd-array and just want a simple grid that puts the center of
+    your data matrix at approx (0,0,0)...this will generate the grid you need
+
+    Parameters
+    _________
+    shape   : tuple
+        shape of the data matrix (90, 109, 90)
+    pixdims : tuple
+        tuple if ints maps voxel to real-world  mm size (2,2,2)
+    names   : tuple 
+        tuple of names describing axis ('zaxis', 'yaxis', 'xaxis')
+
+    :Returns: `SamplingGrid`
+        
+        :Predcondition: ``len(shape) == len(pixdims) == len(names)``
+
+    Put in a catch for ndims > 3 as time vectors are rarely start < 0
+    """
+    if not len(shape) == len(pixdims) == len(names):
+        print 'Error: len(shape) == len(pixdims) == len(names)'
+        return None
+    ndim = len(names)
+    # fill in default step size
+    step = N.asarray(pixdims)
+    ashape = N.asarray(shape)
+    # start = 
+    start = ashape * N.abs(step) /2 * N.sign(step)*-1
+    axes = [RegularAxis(name=names[i], length=ashape[i],
+                        start=start[i], step=step[i]) for i in range(ndim)]
+    input_coords = VoxelCoordinateSystem('voxel', axes)
+    output_coords = DiagonalCoordinateSystem('world', axes)
+    transform = output_coords.transform()
+        
+    mapping = Affine(transform)
+    return SamplingGrid(mapping, input_coords, output_coords)
+   
+        
+        
+    
 
 class ConcatenatedGrids(SamplingGrid):
     """
