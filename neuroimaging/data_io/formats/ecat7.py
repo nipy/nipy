@@ -335,9 +335,7 @@ class Ecat7(binary.BinaryFormat):
     @staticmethod   
     def guess_byteorder(hdrfile, datasource=DataSource()):
         """
-        Determine byte order of the header.  The first header element is the
-        header size.  It should always be 384.  If it is not then you know you
-        read it in the wrong byte order.
+        Determine byte order of the header.  
         """
         if isinstance(hdrfile, str):
             hdrfile = datasource.open(hdrfile)
