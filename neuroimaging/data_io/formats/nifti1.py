@@ -205,7 +205,8 @@ class Nifti1(binary.BinaryFormat):
 
     extendable = False
 
-    def __init__(self, filename, mode="r", datasource=DataSource(), use_memmap=True, **keywords):
+    def __init__(self, filename, mode="r", datasource=DataSource(), 
+                 use_memmap=True, **keywords):
         """
         Constructs a Nifti binary format object with at least a filename
         possible additional keyword arguments:
@@ -217,7 +218,8 @@ class Nifti1(binary.BinaryFormat):
         clobber = allowed to clobber?
         """
 
-        binary.BinaryFormat.__init__(self, filename, mode, datasource, **keywords)
+        binary.BinaryFormat.__init__(self, filename, mode, datasource, 
+                                     **keywords)
         self.intent = keywords.get('intent', '')
 
         # does this need to be redundantly assigned?
@@ -253,7 +255,8 @@ class Nifti1(binary.BinaryFormat):
         if self.grid is None:
             self._grid_from_header()
         
-        self.attach_data(offset=int(self.header['vox_offset']), use_memmap=use_memmap)
+        self.attach_data(offset=int(self.header['vox_offset']), 
+                         use_memmap=use_memmap)
 
     def _get_filenames(self):
         # Nifti single file will be the preferred type for creation
@@ -410,8 +413,12 @@ class Nifti1(binary.BinaryFormat):
         """
 
         qfac = float(self.header['pixdim'][0])
-        if qfac not in [-1.,1.]:
-            raise Nifti1FormatError('invalid qfac: orientation unknown')
+        if qfac not in [-1.0, 1.0]:
+            if qfac == 0.0:
+                # According to Nifti Spec, if pixdim[0]=0.0, take qfac=1
+                qfac = 1.0;
+            else:
+                raise Nifti1FormatError('invalid qfac: orientation unknown')
         
         value = N.zeros((4,4))
         value[3,3] = 1.0
@@ -505,6 +512,6 @@ class Nifti1(binary.BinaryFormat):
 
                 self.write_header(hdrfile=fp)
                 scaled_x = (x - self.header['scl_inter'])/self.header['scl_slope']
-            
+
         return scaled_x
 
