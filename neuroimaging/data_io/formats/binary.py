@@ -171,7 +171,7 @@ class BinaryFormat(Format):
 
         """
 
-        if hasattr(self.data, 'flush'):
+        if hasattr(self, 'data') and hasattr(self.data, 'flush'):
             # Numpy memmaps perform a flush on deletion so we don't
             # need to do anything explicitly.
             del self.data
