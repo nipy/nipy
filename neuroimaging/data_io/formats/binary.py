@@ -1,6 +1,5 @@
 __docformat__ = 'restructuredtext'
 
-from numpy.core import memmap as memmap_type
 from numpy import memmap
 import numpy as N
 import os
@@ -165,13 +164,17 @@ class BinaryFormat(Format):
             self.prewrite(data).astype(self.dtype)
 
     def __del__(self):
+        """Perform any IO finalization before deleting object.
+
+        If the image was opened using memmmaps, this will flush any unwritten
+        data to disk before deleting the object.
+
         """
-        :Returns: ``None``
-        """
-        if hasattr(self, 'memmap'):
-            if isinstance(self.data, memmap_type):
-                self.data.sync()
-            del(self.data)
+
+        if hasattr(self.data, 'flush'):
+            # Numpy memmaps perform a flush on deletion so we don't
+            # need to do anything explicitly.
+            del self.data
 
     def _get_filenames(self):
         """
