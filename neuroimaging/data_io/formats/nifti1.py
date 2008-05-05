@@ -273,7 +273,68 @@ class Nifti1(binary.BinaryFormat):
         for field, format in self.header_formats.items():
             self.header[field] = self._default_field_value(field, format)
 
+    
+
+    def _affine_from_header(self):
+        """
+        Returns appropriate affine transform to send to Sampling Grid 
+        to define voxel (array indexes)-> real-world (continuous coordinates) mapping 
+        
+
+        Calculates appropriate Affine transform in nipy orderd data
+        (z y x t) needed to generate a SamplingGrid
+        Check first for sform > 0
+            (gives tranform of image to some standard space)
+        Then check for qform > 0
+            (gives transform in scanner space)
+        Then do the nifti Method 1 fallback
+            (only when qform and sform == 0)
+            
+        Returns
+        --------------------
+        affine  :  numpy.ndarray (4,4) 
+            4 X 4 transformation matrix in nipy order 
+            | z  0  0  1 |
+            | 0  y  0  1 |
+            | 0  0  x  1 |
+            | 0  0  0  1 |
+
+        """
+        if self.header['sform_code'] > 0:
+            # use srow_x,srow_y,srow_z
+            value = N.zeros((4,4))
+            value[3,3] = 1.0
+    
+            value[0] = N.array(self.header['srow_x'])
+            value[1] = N.array(self.header['srow_y'])
+            value[2] = N.array(self.header['srow_z'])
+            
+            # generate transforms to flip data from matlabish
+            #  to nipyish ordering
+            trans = N.zeros((4,4))
+            trans[0:3,0:3] = N.fliplr(N.eye(3))
+            trans[3,3] = 1
+            trans2 = trans.copy()
+            trans2[:,3] = 1
+            affine = N.dot(N.dot(trans, value), trans2)
+            return affine
+            
+        
+        
+
+        
     def _grid_from_header(self):
+        """
+        Check first for sform > 0
+        (gives tranform of image to some standard space)
+        Then check for qform > 0
+        (gives transform in scanner space)
+        Then do the nifti Method 1 fallback
+        (only when qform and sform == 0)
+        """
+        
+            
+
         origin = (self.header['qoffset_x'],
                   self.header['qoffset_y'],
                   self.header['qoffset_z'])
@@ -411,6 +472,9 @@ class Nifti1(binary.BinaryFormat):
 
         qfac = float(self.header['pixdim'][0])
         if qfac not in [-1.,1.]:
+            """
+            in the nifti header doc it suggests to assume qfac=1 if pixdim[0]==0.0
+            """
             raise Nifti1FormatError('invalid qfac: orientation unknown')
         
         value = N.zeros((4,4))
@@ -436,7 +500,7 @@ class Nifti1(binary.BinaryFormat):
 
         return Affine(value).matlab2python().transform 
     transform = property(_transform)
-
+    
     def _getscalers(self):
         if not hasattr(self, "_scalers"):
             def f(y):
