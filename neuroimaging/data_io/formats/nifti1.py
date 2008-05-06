@@ -304,23 +304,65 @@ class Nifti1(binary.BinaryFormat):
 
         """
         if self.header['sform_code'] > 0:
-            # use srow_x,srow_y,srow_z
+            """
+            Method to map into a standard space
+              use srow_x,srow_y,srow_z
+            """
             value = N.zeros((4,4))
             value[3,3] = 1.0
     
             value[0] = N.array(self.header['srow_x'])
             value[1] = N.array(self.header['srow_y'])
             value[2] = N.array(self.header['srow_z'])
-            
-            # generate transforms to flip data from matlabish
-            #  to nipyish ordering
-            trans = N.zeros((4,4))
-            trans[0:3,0:3] = N.fliplr(N.eye(3))
-            trans[3,3] = 1
-            trans2 = trans.copy()
-            trans2[:,3] = 1
-            affine = N.dot(N.dot(trans, value), trans2)
-            return affine
+        elif self.header['qform_code'] > 0:
+            """
+            Method to map into original scanner space
+            """
+            # check qfac
+            qfac = float(self.header['pixdim'][0])
+            if qfac not in [-1.0, 1.0]:
+                if qfac == 0.0:
+                    # Ac cording to Nifti Spec, if pixdim[0]=0.0, take qfac=1
+                    print 'qfac of nifti header is invalid: setting to 1.0'
+                    print 'check your original file to validate orientation'
+                    qfac = 1.0;
+            else:
+                raise Nifti1FormatError('invalid qfac: orientation unknown')
+
+            value = quatern2mat(b=self.header['quatern_b'],
+                                c=self.header['quatern_c'],
+                                d=self.header['quatern_d'],
+                                qx=self.header['qoffset_x'],
+                                qy=self.header['qoffset_y'],
+                                qz=self.header['qoffset_z'],
+                                dx=self.header['pixdim'][1],
+                                dy=self.header['pixdim'][2],
+                                dz=self.header['pixdim'][3],
+                                qfac=qfac)
+        else:
+            """
+            Using default Method 1
+            """
+            origin = (self.header['qoffset_x'],
+                      self.header['qoffset_y'],
+                      self.header['qoffset_z'])
+            step = N.ones(4)
+            step[0:4] = img.header['pixdim'][1:5]
+            value = N.eye(4) * step
+            value[:3,3] = origin
+        
+
+        """
+        generate transforms to flip data from matlabish
+        #  to nipyish ordering
+        """
+        trans = N.zeros((4,4))
+        trans[0:3,0:3] = N.fliplr(N.eye(3))
+        trans[3,3] = 1
+        trans2 = trans.copy()
+        trans2[:,3] = 1
+        affine = N.dot(N.dot(trans, value), trans2)
+        return affine
             
         
         
