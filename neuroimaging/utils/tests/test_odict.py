@@ -18,4 +18,4 @@ class TestOdict(TestCase):
         assert cpydict is not self.thedict
         
 if __name__ == "__main__":
-    nose.run(argv=['', __file__])
+    nose.runmodule()
