@@ -58,8 +58,7 @@ class BinaryFormat(Format):
             raise IOError('file exists, but not allowed to clobber it')
 
     def read_header(self):
-        """
-        :Returns: ``None``
+        """Read header from the file and load values into the header dictionary.
         """
         # Populate header dictionary from a file
         values = utils.struct_unpack(self.datasource.open(self.header_file),
@@ -67,7 +66,6 @@ class BinaryFormat(Format):
                                self.header_formats.values())
         for field, val in zip(self.header.keys(), values):
             self.header[field] = val
-        return self.header
 
     def write_header(self, hdrfile=None, clobber=False):
         """

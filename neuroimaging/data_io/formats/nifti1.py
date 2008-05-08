@@ -187,19 +187,71 @@ field_formats = struct_formats.values()
 # int esize --> the size of the extension in bytes
 # int ecode --> the code of the extension
 
+# Anything which should be default different than field-defaults
+_field_defaults = {'sizeof_hdr': HEADER_SIZE,
+                   'scl_slope': 1.0,
+                   'magic': 'n+1\x00',
+                   'pixdim': [1,0,0,0,0,0,0,0],
+                   'vox_offset': 352.0,
+                   }
+
+def _default_field_value(fieldname, fieldformat):
+    """ Get the default value for the given field."""
+
+    dflt_val = _field_defaults.get(fieldname, None)
+    if dflt_val is not None:
+        # Use the default for this field if there is one
+        return dflt_val
+
+    multiple_values = fieldformat[:-1]
+    a_string = fieldformat[-1] is 's'
+    if multiple_values and not a_string:
+        # build a list of the default values for this format type
+        # ex: '4f' => [0.0, 0.0, 0.0, 0.0]
+        val = utils.format_defaults[fieldformat[-1]]
+        numvals = int(fieldformat[:-1])
+        return [val] * numvals
+    else:
+        # return single default value for this format type
+        return utils.format_defaults[fieldformat[-1]]
+
+def create_default_header(header_formats=None):
+    """Create a Nifti1 header with default values.
+
+    BUG: Should fill in dim and pixdim with 1.0 instead of 0.0.
+        qfac defaults to 0.0 also and should probably be 1.0
+
+    Parameters
+    ----------
+    header_formats : {dict}
+        Dictionary describing the struct format codes for each key.
+
+    Returns
+    -------
+    header : {odict}
+       An ordered dictionary with default values for each header key.
+
+    Examples
+    --------
+    
+    >>> from neuroimaging.data_io.formats import nifti1
+    >>> default_nifti_header = nifti1.create_default_header()
+
+    """
+
+    hdr = odict()
+    if header_formats is None:
+        fmts = struct_formats.copy()
+    else:
+        fmts = header_formats
+    for field, format in fmts.items():
+        hdr[field] = _default_field_value(field, format)
+    return hdr
 
 class Nifti1(binary.BinaryFormat):
     """
     A class to read and write NIFTI format images.
     """
-
-    # Anything which should be default different than field-defaults
-    _field_defaults = {'sizeof_hdr': HEADER_SIZE,
-                       'scl_slope': 1.0,
-                       'magic': 'n+1\x00',
-                       'pixdim': [1,0,0,0,0,0,0,0],
-                       'vox_offset': 352.0,
-                       }
 
     extensions = ('.img', '.hdr', '.nii', '.mat')
 
@@ -222,11 +274,10 @@ class Nifti1(binary.BinaryFormat):
                                      **keywords)
         self.intent = keywords.get('intent', '')
 
-        # does this need to be redundantly assigned?
-        self.header_formats = struct_formats
+        # Initialize header with default values from nifti1 spec
+        self.header_formats = struct_formats.copy()
+        self.header = create_default_header(self.header_formats)
 
-        # fill the header dictionary in order, with any default values
-        self.header_defaults()
         if self.mode[0] is "w":
             # should try to populate the canonical fields and
             # corresponding header fields with info from grid?
@@ -263,21 +314,7 @@ class Nifti1(binary.BinaryFormat):
         return self.datasource.exists(self.filebase+".hdr") and \
                (self.filebase+".hdr", self.filebase+".img") or\
                (self.filebase+".nii", self.filebase+".nii")
-    
-    @staticmethod
-    def _default_field_value(fieldname, fieldformat):
-        "[STATIC] Get the default value for the given field."
-        return Nifti1._field_defaults.get(fieldname, None) or \
-            (fieldformat[:-1] and fieldformat[-1] is not 's') and \
-             [utils.format_defaults[fieldformat[-1]]]*int(fieldformat[:-1]) or \
-             utils.format_defaults[fieldformat[-1]]
-    
-    def header_defaults(self):
-        for field, format in self.header_formats.items():
-            self.header[field] = self._default_field_value(field, format)
-
-    
-
+        
     def _affine_from_header(self):
         """
         Returns appropriate affine transform to send to Sampling Grid 

@@ -1,6 +1,7 @@
 """
 odict.py - An object that provides an ordered dictionary.
 """
+from copy import copy as _copy
 
 class odict(dict):
     """
@@ -8,6 +9,7 @@ class odict(dict):
     are added.  Calling keys(), values(), items(), etc. will return results in
     this order.
     """
+    _keys = []
 
     def __init__(self, items=()):
         self._keys = map(lambda t: t[0], items)
@@ -26,9 +28,26 @@ class odict(dict):
         self._keys = []
 
     def copy(self):
-        dict = dict.copy(self)
-        dict._keys = self._keys[:]
-        return dict
+        """Copy this ordered dictionary.
+
+        Returns a shallow copy of this dictionary.
+
+        Examples
+        --------
+        
+        >>> from neuroimaging.utils.odict import odict
+        >>> origdict = odict((('one', 1.0), ('two', 2.0)))
+        >>> origdict
+        {'two': 2.0, 'one': 1.0}
+        >>> newdict = origdict.copy()
+        >>> newdict == origdict
+        True
+        >>> newdict is not origdict
+        True
+
+        """
+        
+        return _copy(self)
 
     def sort( self, keyfunc=None ):
         if keyfunc is None: self._keys.sort()
