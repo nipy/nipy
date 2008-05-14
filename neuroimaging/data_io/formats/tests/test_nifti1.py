@@ -10,6 +10,9 @@ from neuroimaging.core.api import Image, load_image, save_image
 from neuroimaging.testing import anatfile
 from neuroimaging.data_io.formats import nifti1
 
+def nifti_tempfile():
+    """Create and return a temporary file with nifti suffix."""
+    return NamedTemporaryFile(prefix='nifti', suffix='.nii')
 
 def default_value(fieldname):
     """Return default value from _field_defaults."""
@@ -46,6 +49,20 @@ class TestHeaderDefaults(TestCase):
         key = 'vox_offset'
         self.assertEqual(self.header[key], default_value(key))
 
+"""
+Some header tests to add:
+test reading of byte order
+valid pixdims and qfac
+sensical qform and sforms
+intensity scaling
+"""
+def test_should_fail():
+    raise NotImplementedError, 'Need to add more tests for headers.'
+
+#
+# NOTE:  Should rewrite these tests so we don't depend on a specific
+#     data file.  Instead generate some image data and test on that. 
+#
 class test_Nifti(TestCase):
     def setUp(self):
         self.anat = load_image(anatfile)
@@ -60,7 +77,7 @@ class test_NiftiWrite(test_Nifti):
     def setUp(self):
         print self.__class__
         super(self.__class__, self).setUp()
-        self.tmpfile = NamedTemporaryFile(prefix='nifti', suffix='.nii')
+        self.tmpfile = nifti_tempfile()
 
     def teardown(self):
         self.tmpfile.unlink
