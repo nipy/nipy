@@ -2,11 +2,11 @@ import os
 import glob
 
 import numpy as np
-from numpy.testing import NumpyTest, NumpyTestCase
-
+#from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.externals.scipy.testing import *
 from neuroimaging.utils.test_decorators import slow
 
-from neuroimaging.core.api import Image, load_image, save_image
+from neuroimaging.core.api import Image, load_image, save_image, fromarray
 from neuroimaging.core.api import parcels, data_generator, write_data
 
 from neuroimaging.core.reference.grid import SamplingGrid
@@ -14,7 +14,7 @@ from neuroimaging.testing import anatfile, funcfile
 from neuroimaging.data_io.api import Analyze
 
 
-class test_image(NumpyTestCase):
+class test_image(TestCase):
 
     def setUp(self):
         self.img = load_image(anatfile)
@@ -216,8 +216,55 @@ class test_image(NumpyTestCase):
 
         array_img = Image(np.zeros((10, 10, 10)), SamplingGrid.identity(['zspace', 'yspace', 'xspace'], (10,)*3))
 
+
+
+def test_nifti_scaling():
+    def nifti_scaling(data, scale_factor, scale_inter):
+        return data * scale_factor + scale_inter
+    data = np.ones((2,3,4))
+    img = fromarray(data)
+    img.scale_factor = 3.0
+    img.scale_inter = 10.0
+    img.scale_func = nifti_scaling
+    #img.scale_func = lambda x,m,b : m * x + b
+    # image.__array__ method will apply scaling
+    data = np.asarray(img)
+    assert data.mean() == 13.0
+    # image.__getitem__ method will apply scaling
+    data = img[:]
+    assert data._data.mean() == 13.0
+
+def test_analyze_scaling():
+    def analyze_scaling(data, scale_factor):
+        return data * scale_factor
+    data = np.ones((2,3,4))
+    img = fromarray(data)
+    img.scale_factor = 3.0
+    img.scale_func = analyze_scaling
+    data = np.asarray(img)
+    assert data.mean() == 3.0
+    data = img[:]
+    assert data._data.mean() == 3.0
+
+def test_slicing():
+    data = np.ones((2,3,4))
+    img = fromarray(data)
+    assert isinstance(img, Image)
+    assert img.ndim == 3
+    # 2D slice
+    img2D = img[:,:,0]
+    assert isinstance(img, Image)
+    assert img.ndim == 2
+    # 1D slice
+    img1D = img[:,0,0]
+    assert isinstance(img, Image)
+    assert img.ndim == 1
+
+
 from neuroimaging.utils.testutils import make_doctest_suite
 test_suite = make_doctest_suite('neuroimaging.core.image.image')
 
 if __name__ == '__main__':
-    NumpyTest.run()
+    #NumpyTest().run()
+    nose.runmodule()
+

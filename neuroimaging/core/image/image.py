@@ -17,12 +17,67 @@ See documentation for load and save functions for 'working' examples.
 __docformat__ = 'restructuredtext'
 __all__ = ['load', 'save', 'fromarray']
 
+
 import numpy as np
 
 from neuroimaging.data_io.datasource import DataSource, splitzipext
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem
 from neuroimaging.data_io.formats.format import getformats
+
+# DEVNOTE:
+# Would like to abstract out the postread from the Formats code so the
+# Image class doesn't need to maintain a reference to a Format Object.
+# Reasons Format 'owns' the data array:
+# 1) Intensity scaling (postread methods).  This can be implemented in the
+#   Image class using the Strategy Design Pattern.  The intensity scaling
+#   is an algorithm that is specific to the image format.  An Image object
+#   needs to apply that algorithm when memmapped data is sliced, but
+#   the Image object does not need to know any of the implementation details
+#   about the scaling.  The Format code could return a function that
+#   implements this and be hooking into the data attr via a property.
+#   Should this 'postread' be a module-level function or method?
+# 2) memmap.  This could also be handled in the Image class.  shape, ndims,
+#   and dtype could be returned from Format.
+# 3) grid... currently the Format code creates a grid from the header info.
+#   need to figure out what this info is and how to handle it.  ???
+
+"""DESIGN QUESTION:
+We have an image (img) and it has a scale_func and scale_factor...
+When we slice img:
+    newimg = img[:]
+the slicing will apply the scaling via the scale_func and newimg will
+have scaled data, newimg.scale_func == None, newimg.scale_factor = 0.0.
+This seems correct.  Right?
+
+>>> from neuroimaging.core.image import image
+>>> import numpy as np
+>>> data = np.ones((2,3,4))
+>>> img = image.fromarray(data)
+>>> img.scale_func = lambda x,m,b : m * x + b
+>>> img.scale_factor = 10
+>>> newimg = img[:]
+>>> assert img.scale_func != None
+>>> assert newimg.scale_func == None
+>>> img._data
+array([[[ 1.,  1.,  1.,  1.],
+        [ 1.,  1.,  1.,  1.],
+        [ 1.,  1.,  1.,  1.]],
+
+       [[ 1.,  1.,  1.,  1.],
+        [ 1.,  1.,  1.,  1.],
+        [ 1.,  1.,  1.,  1.]]])
+
+>>> newimg._data
+array([[[ 10.,  10.,  10.,  10.],
+        [ 10.,  10.,  10.,  10.],
+        [ 10.,  10.,  10.,  10.]],
+
+       [[ 10.,  10.,  10.,  10.],
+        [ 10.,  10.,  10.,  10.],
+        [ 10.,  10.,  10.,  10.]]])
+
+"""
 
 class Image(object):
     """
@@ -85,10 +140,17 @@ class Image(object):
         self._data = data
         self._grid = grid
 
+        # Intensity scaling attrs
+        self.scale_func = None
+        self.scale_factor = 0.0
+        self.scale_inter = 0.0
+
     def _getshape(self):
         if hasattr(self._data, "shape"):
             return self._data.shape
         else:
+            # BUG:  This slicing will trigger the postread!  Data should be
+            #     a numpy array and always have a shape.
             return self._data[:].shape
     shape = property(_getshape)
 
@@ -96,6 +158,8 @@ class Image(object):
         if hasattr(self._data, "ndim"):
             return self._data.ndim
         else:
+            # BUG:  This slicing will trigger the postread!  Data should be
+            #    a numpy array and always have a ndim.
             return self._data[:].ndim
     ndim = property(_getndim)
 
@@ -103,9 +167,34 @@ class Image(object):
         return self._grid
     grid = property(_getgrid)
 
-    # NOTE: Rename grid to spacemap?  There's been much discussion regarding
-    # the appropriate name of this attr.  We should probably settle it and 
-    # move on.
+    """
+    def _getdata(self, index):
+        if hasattr(self, 'scale_func') and callable(self.scale_func):
+            # If we have a defined scale function, scale the data
+            return self.scale_func(self._data[index], self.scale_factor,
+                                   self.scale_inter)
+        else:
+            return self._data[index]
+    data = property(_getdata)
+    """
+
+    def _getdata(self, index):
+        """Get data and apply slicing if appropriate."""
+        # if our data is a memmap and we have a callable scale function
+        # then scale the data
+        # QUESTION: Would one ever need to apply scaling on a non-memmapped
+        # array?  Seems like a potentially useful operation and one
+        # that shouldn't require a memmap.  Really we only need to check
+        # here if the image has a valid scaling function, whether it came
+        # from a memmapped file or from a data array.
+        #if hasattr(self._data, 'flush') and callable(self.scale_func):
+        print 'image._getdata index:', index
+        if callable(self.scale_func):
+            data = self.scale_func(self._data[index], self.scale_factor,
+                                   self.scale_inter)
+        else:
+            data = self._data[index]
+        return data
 
     def __getitem__(self, index):
         """Get a slice of image data.  Just like slicing a numpy array.
@@ -128,7 +217,22 @@ class Image(object):
         for i in index:
             if type(i) not in [type(1), type(slice(0,4,1))]:
                 raise ValueError, 'when slicing images, index must be a list of integers or slices'
-        data = self._data[index]
+
+        #data = self._data[index]
+        """        
+        # if our data is a memmap and we have a callable scale function
+        # then scale the data
+        #if hasattr(self._data, 'flush') and callable(self.scale_func):
+        if callable(self.scale_func):
+            data = self.scale_func(self._data[index], self.scale_factor,
+                                   self.scale_inter)
+        else:
+            data = self._data[index]
+        """
+        #data = self.scale_func(self._data[index], self.scale_factor,
+        #                       self.scale_inter)
+        data = self._getdata(index)
+
         grid = self.grid[index]
         return Image(data, grid)
     
@@ -150,42 +254,33 @@ class Image(object):
 
         """
 
-        return np.asarray(self._data[:])
+        """
+        # if our data is a memmap and we have a callable scale function
+        # then scale the data
+        # QUESTION: Would one ever need to apply scaling on a non-memmapped
+        # array?  Seems like a potentially useful operation and one
+        # that shouldn't require a memmap.  Really we only need to check
+        # here if the image has a valid scaling function, whether it came
+        # from a memmapped file or from a data array.
+        #if hasattr(self._data, 'flush') and callable(self.scale_func):
+        if callable(self.scale_func):
+            data = self.scale_func(self._data[:], self.scale_factor,
+                                   self.scale_inter)
+        else:
+            data = self._data[:]
+        """
+        #data = self.scale_func(self._data[:], self.scale_factor,
+        #                       self.scale_inter)
 
-## def _open_pynifti(url, datasource=DataSource(), mode="r", clobber=False):
-##     """Open the image using PyNifti."""
-
-##     """Look at the code from nifti1.Nifti1 for creating SamplingGrid
-
-##     """
-
-##     # Note: Nipy's Format code loads the data using a memmap.  Pynifti just
-##     # loads it as an array.  But, np.allclose returns True when comparing
-##     # the same file loaded through Pynifit and Nipy.
-##     import nifti
-
-##     from neuroimaging.core.reference.axis import space
-##     import numpy as np
-
-##     nimg = nifti.NiftiImage(url)
-
-##     origin = nimg.getQOffset()
-##     pixdim = nimg.getPixDims()
-##     step = pixdim[0:3] # Note, getPixDims ignores pixdim[0], the qfac
-##     dim = nimg.header.get('dim')  # Is there a method for getting this?
-##     shape = tuple(dim[1:4])
-##     ndim = dim[0]
-##     if ndim == 3:
-##         axisnames = space[::-1]  # Why do we reverse the list here?
-##     else:
-##         raise NotImplementedError, 'Not handling 4d images yet!'
-    
-##     grid = SamplingGrid.from_start_step(names=axisnames, 
-##                                         shape=shape,
-##                                         start=-np.array(origin),
-##                                         step=step)
-##     #raise NotImplementedError
-##     return Image(nimg.asarray(), grid)
+        # Generate a slice tuple based on our number of dimensions.
+        # This is to give a slice like this: data[:],
+        # but use a method so __array__ and __getitem__ use the
+        # same function for scaling the data.
+        #slice_ = (slice(None,None,None),) * self.ndim
+        slice_ = (slice(None, None, None),)
+        data = self._getdata(slice_)
+        return np.asarray(data)
+        #return np.asarray(self._data[:])
 
 def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
           clobber=False, **keywords):
@@ -243,6 +338,11 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
     if imgfmt:
         tmpimg = Image(imgfmt, imgfmt.grid)
         tmpimg._header = imgfmt.header
+
+        # Grab scale params from format object
+        tmpimg.scale_func, tmpimg.scale_factor, tmpimg.scale_inter = \
+            imgfmt.get_scale_factors()
+
         return tmpimg
 
     ## if file exists and clobber is False, error message is misleading
@@ -383,10 +483,11 @@ def save(img, filename, datasource=DataSource(), clobber=False, format=None, **k
                      datasource=datasource,
                      format=format, **keywords)
     outimage[:] = np.array(img)[:]
-    del(outimage)
+    #del(outimage)
+    # return image for Debugging
+    return outimage
 
-
-def fromarray(data, names, grid=None):
+def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
     """Create an image from a numpy array.
 
     Parameters

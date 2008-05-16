@@ -140,10 +140,36 @@ class BinaryFormat(Format):
         """
         raise NotImplementedError
 
+    def get_scale_factors(self):
+        """Return scale factor parameters.
+
+        Returns
+        -------
+        scale_func : function object
+            The module-level function that implements the scaling for
+            this image format.  Default to None.
+        scale_factor : float
+            The scale factor or tuple of scale factors. Default to zero.
+        scale_inter : float
+            The scale intercept.  Default to zero if there is none.
+
+        This an Abstract-method that should be overridden by the individual
+        format subclasses to pass format specific params back.
+
+        """
+        return None, 0.0, 0.0
+
     def __getitem__(self, slicer):
         """
         :Returns: ``numpy.ndarray``
         """
+        # byteorder is stored in the dtype of numpy arrays.  We should use
+        # that instead of storing it.  Need to introspect this in the
+        # header on first read, (in pixdim[0] of nifti for ex.) but
+        # should not store after that.
+
+        # Should test for memmap-like instead of using a use_memmap flag.
+        # if hasattr(self.data, 'flush')
         if self.use_memmap:
             data = self.postread(self.data[slicer].newbyteorder(self.byteorder))            
         else:

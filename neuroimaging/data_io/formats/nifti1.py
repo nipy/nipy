@@ -248,6 +248,29 @@ def create_default_header(header_formats=None):
         hdr[field] = _default_field_value(field, format)
     return hdr
 
+def scale_data(data, scl_slope, scl_inter):
+    """Apply scaling to the data.
+
+    Parameters
+    ----------
+    data : array
+        Unscaled data
+    scl_slope : float
+    scl_inter : float
+
+    Returns
+    -------
+    scaled_data : array
+
+    """
+    
+    print '\t\t nifti1.scale_data()'
+    # Only apply if scl_slope is nonzero
+    if scl_slope != 0.0:
+        return data * scl_slope + scl_inter    
+    else:
+        return data
+
 class Nifti1(binary.BinaryFormat):
     """
     A class to read and write NIFTI format images.
@@ -595,10 +618,22 @@ class Nifti1(binary.BinaryFormat):
     
     scalers = property(_getscalers)
     
+    def get_scale_factors(self):
+        """Return scale factor information.
+
+        See docstring in BinaryFormat.get_scale_factors
+        
+        """
+        
+        return scale_data, self.header['scl_slope'], self.header['scl_inter']
+
     def postread(self, x):
         """
         NIFTI-1 normalization based on scl_slope and scl_inter.
         """
+        print '\t\t Nifti1.postread. BYPASSED postread FUNCTIONALITY!!!'
+        return x
+
         if not self.use_memmap:
             return x
 
