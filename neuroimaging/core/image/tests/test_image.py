@@ -219,7 +219,9 @@ class test_image(TestCase):
 
 
 def test_nifti_scaling():
-    def nifti_scaling(data, scale_factor, scale_inter):
+    def nifti_scaling(data, **kwargs):
+        scale_factor = kwargs.get('scale_factor', 1.0)
+        scale_inter = kwargs.get('scale_inter', 0.0)
         return data * scale_factor + scale_inter
     data = np.ones((2,3,4))
     img = fromarray(data)
@@ -235,7 +237,8 @@ def test_nifti_scaling():
     assert data._data.mean() == 13.0
 
 def test_analyze_scaling():
-    def analyze_scaling(data, scale_factor):
+    def analyze_scaling(data, **kwargs):
+        scale_factor = kwargs.get('scale_factor', 1.0)
         return data * scale_factor
     data = np.ones((2,3,4))
     img = fromarray(data)
