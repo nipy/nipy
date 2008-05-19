@@ -49,15 +49,44 @@ class TestHeaderDefaults(TestCase):
         key = 'vox_offset'
         self.assertEqual(self.header[key], default_value(key))
 
+def test_scale_factor_only():
+    # scale data from [0,255] to [0.0, 1.0]
+    data_uint8 = np.array([0, 128, 255], dtype=np.uint8)
+    scl_factor = 1.0/255    # normalize data to range [0,1]
+    data_float = nifti1.scale_data(data_uint8, scale_factor=scl_factor)
+    assert np.allclose(data_float.min(), 0.0, rtol=0.01)
+    assert np.allclose(data_float.max(), 1.0, rtol=0.01)
+    assert np.allclose(data_float.mean(), 0.5, rtol=0.01)
+        
+def test_scale_factor_and_intercept():
+    # scale data from [-32768, 32767] to [0.0, 1.0]
+    data_int16 = np.array([-32768, 0, 32767], dtype=np.int16)
+    scl_factor = 1.0/(2**16)
+    scl_inter = 0.5
+    data_float = nifti1.scale_data(data_int16, scale_factor=scl_factor,
+                                   scale_inter=scl_inter)
+    # values won't be exact, but should be within desired range
+    assert np.allclose(data_float.min(), 0.000, rtol=0.01)
+    assert np.allclose(data_float.max(), 0.999, rtol=0.01)
+    assert np.allclose(data_float.mean(), 0.5, rtol=0.1)
+
+def test_invalid_scale_params():
+    data_uint8 = np.array([0, 128, 255], dtype=np.uint8)
+    # foo and bar are not kwargs searched in the scale_data function
+    # they should not affect the data
+    data_new = nifti1.scale_data(data_uint8, foo=5.0, bar=100.0)
+    assert np.allclose(data_uint8, data_new)
+
+
 """
 Some header tests to add:
 test reading of byte order
 valid pixdims and qfac
 sensical qform and sforms
-intensity scaling
 """
 def test_should_fail():
     raise NotImplementedError, 'Need to add more tests for headers.'
+
 
 #
 # NOTE:  Should rewrite these tests so we don't depend on a specific
