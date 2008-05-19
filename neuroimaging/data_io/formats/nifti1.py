@@ -248,26 +248,38 @@ def create_default_header(header_formats=None):
         hdr[field] = _default_field_value(field, format)
     return hdr
 
-def scale_data(data, scl_slope, scl_inter):
+def scale_data(data, **kwargs):
     """Apply scaling to the data.
 
     Parameters
     ----------
     data : array
         Unscaled data
-    scl_slope : float
-    scl_inter : float
+    kwargs : dict
+        dictionary of keyword args used in the intensity scaling for this
+        format.  Nifti will look for scale_factor and scale_inter.
 
     Returns
     -------
     scaled_data : array
 
+    Examples
+    --------
+    >>> # Scale data from full int16 range to [0,1]
+    >>> import numpy as np
+    >>> from neuroimaging.data_io.formats import nifti1
+    >>> data = np.array([-32768, 0, 32767], dtype=np.int16)
+    >>> fac = 1.0/(2**16)
+    >>> intr = 0.5
+    >>> scaled_data =nifti1.scale_data(data, scale_factor=fac, scale_inter=intr)
+
     """
     
-    print '\t\t nifti1.scale_data()'
+    scale_factor = kwargs.get('scale_factor', 0.0)
+    scale_inter = kwargs.get('scale_inter', 0.0)
     # Only apply if scl_slope is nonzero
-    if scl_slope != 0.0:
-        return data * scl_slope + scl_inter    
+    if scale_factor != 0.0:
+        return data * scale_factor + scale_inter
     else:
         return data
 
