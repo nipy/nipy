@@ -167,17 +167,6 @@ class Image(object):
         return self._grid
     grid = property(_getgrid)
 
-    """
-    def _getdata(self, index):
-        if hasattr(self, 'scale_func') and callable(self.scale_func):
-            # If we have a defined scale function, scale the data
-            return self.scale_func(self._data[index], self.scale_factor,
-                                   self.scale_inter)
-        else:
-            return self._data[index]
-    data = property(_getdata)
-    """
-
     def _getdata(self, index):
         """Get data and apply slicing if appropriate."""
         # if our data is a memmap and we have a callable scale function
@@ -190,8 +179,9 @@ class Image(object):
         #if hasattr(self._data, 'flush') and callable(self.scale_func):
         print 'image._getdata index:', index
         if callable(self.scale_func):
-            data = self.scale_func(self._data[index], self.scale_factor,
-                                   self.scale_inter)
+            data = self.scale_func(self._data[index], 
+                                   scale_factor=self.scale_factor,
+                                   scale_inter=self.scale_inter)
         else:
             data = self._data[index]
         return data
@@ -218,21 +208,7 @@ class Image(object):
             if type(i) not in [type(1), type(slice(0,4,1))]:
                 raise ValueError, 'when slicing images, index must be a list of integers or slices'
 
-        #data = self._data[index]
-        """        
-        # if our data is a memmap and we have a callable scale function
-        # then scale the data
-        #if hasattr(self._data, 'flush') and callable(self.scale_func):
-        if callable(self.scale_func):
-            data = self.scale_func(self._data[index], self.scale_factor,
-                                   self.scale_inter)
-        else:
-            data = self._data[index]
-        """
-        #data = self.scale_func(self._data[index], self.scale_factor,
-        #                       self.scale_inter)
         data = self._getdata(index)
-
         grid = self.grid[index]
         return Image(data, grid)
     
@@ -254,24 +230,6 @@ class Image(object):
 
         """
 
-        """
-        # if our data is a memmap and we have a callable scale function
-        # then scale the data
-        # QUESTION: Would one ever need to apply scaling on a non-memmapped
-        # array?  Seems like a potentially useful operation and one
-        # that shouldn't require a memmap.  Really we only need to check
-        # here if the image has a valid scaling function, whether it came
-        # from a memmapped file or from a data array.
-        #if hasattr(self._data, 'flush') and callable(self.scale_func):
-        if callable(self.scale_func):
-            data = self.scale_func(self._data[:], self.scale_factor,
-                                   self.scale_inter)
-        else:
-            data = self._data[:]
-        """
-        #data = self.scale_func(self._data[:], self.scale_factor,
-        #                       self.scale_inter)
-
         # Generate a slice tuple based on our number of dimensions.
         # This is to give a slice like this: data[:],
         # but use a method so __array__ and __getitem__ use the
@@ -280,7 +238,6 @@ class Image(object):
         slice_ = (slice(None, None, None),)
         data = self._getdata(slice_)
         return np.asarray(data)
-        #return np.asarray(self._data[:])
 
 def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
           clobber=False, **keywords):
