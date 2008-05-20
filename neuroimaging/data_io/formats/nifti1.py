@@ -349,80 +349,210 @@ class Nifti1(binary.BinaryFormat):
         return self.datasource.exists(self.filebase+".hdr") and \
                (self.filebase+".hdr", self.filebase+".img") or\
                (self.filebase+".nii", self.filebase+".nii")
+    def _getaffine_method1(self):
+        """
+        Method to get image orientation location
+        based on Method1 in nifti.h
+
+        METHOD 1 (the "old" way, used only when qform_code = 0):
+        -------------------------------------------------------
+        The coordinate mapping from (i,j,k) to (x,y,z) is the ANALYZE
+        7.5 way.  This is a simple scaling relationship:
+        
+        x = pixdim[1] * i
+        y = pixdim[2] * j
+        z = pixdim[3] * k
+        
+        No particular spatial orientation is attached to these (x,y,z)
+        coordinates.  (NIFTI-1 does not have the ANALYZE 7.5 orient field,
+        which is not general and is often not set properly.)  This method
+        is not recommended, and is present mainly for compatibility with
+        ANALYZE 7.5 files.
+        
+
+        Returns:
+        ________________________
+        transmatrix :numpy.array
+             simple 4X4 transformation matrix
+        """
+        origin = (self.header['qoffset_x'],
+                  self.header['qoffset_y'],
+                  self.header['qoffset_z'])
+        step = N.ones(4)
+        step[0:4] = self.header['pixdim'][1:5]
+        transmatrix = N.eye(4) * step
+        transmatrix[:3,3] = origin
+        return transmatrix
+
+    def _getaffine_method2(self):
+        """
+        Method to get image orientation location
+        based on Method2 in nifti.h
+
+
+        METHOD 2 (used when qform_code > 0, which should be the "normal" case):
+        ---------------------------------------------------------------------
+        The (x,y,z) coordinates are given by the pixdim[] scales, a rotation
+        matrix, and a shift.  This method is intended to represent
+        "scanner-anatomical" coordinates, which are often embedded in the
+        image header (e.g., DICOM fields (0020,0032), (0020,0037), (0028,0030),
+        and (0018,0050)), and represent the nominal orientation and location of
+        the data.  This method can also be used to represent "aligned"
+        coordinates, which would typically result from some post-acquisition
+        alignment of the volume to a standard orientation (e.g., the same
+        subject on another day, or a rigid rotation to true anatomical
+        orientation from the tilted position of the subject in the scanner).
+        The formula for (x,y,z) in terms of header parameters and (i,j,k) is:
+        
+        [ x ]   [ R11 R12 R13 ] [        pixdim[1] * i ]   [ qoffset_x ]
+        [ y ] = [ R21 R22 R23 ] [        pixdim[2] * j ] + [ qoffset_y ]
+        [ z ]   [ R31 R32 R33 ] [ qfac * pixdim[3] * k ]   [ qoffset_z ]
+        
+        The qoffset_* shifts are in the NIFTI-1 header.  Note that the center
+        of the (i,j,k)=(0,0,0) voxel (first value in the dataset array) is
+        just (x,y,z)=(qoffset_x,qoffset_y,qoffset_z).
+        
+        The rotation matrix R is calculated from the quatern_* parameters.
+        This calculation is described below.
+        
+        The scaling factor qfac is either 1 or -1.  The rotation matrix R
+        defined by the quaternion parameters is "proper" (has determinant 1).
+        This may not fit the needs of the data; for example, if the image
+        grid is
+        i increases from Left-to-Right
+        j increases from Anterior-to-Posterior
+        k increases from Inferior-to-Superior
+        Then (i,j,k) is a left-handed triple.  In this example, if qfac=1,
+        the R matrix would have to be
+        
+        [  1   0   0 ]
+        [  0  -1   0 ]  which is "improper" (determinant = -1).
+        [  0   0   1 ]
+        
+        If we set qfac=-1, then the R matrix would be
+
+        [  1   0   0 ]
+        [  0  -1   0 ]  which is proper.
+        [  0   0  -1 ]
+        
+        This R matrix is represented by quaternion [a,b,c,d] = [0,1,0,0]
+        (which encodes a 180 degree rotation about the x-axis).
+        
+        
+        Returns:
+        ________________________
+        transmatrix :numpy.array
+              simple 4X4 transformation matrix
+        """
+        # check qfac
+        qfac = float(self.header['pixdim'][0])
+        if qfac not in [-1.0, 1.0]:
+            if qfac == 0.0:
+                # According to Nifti Spec, if pixdim[0]=0.0, take qfac=1
+                print 'qfac of nifti header is invalid: setting to 1.0'
+                print 'check your original file to validate orientation'
+                qfac = 1.0;
+            else:
+                raise Nifti1FormatError('invalid qfac: orientation unknown')
+
+        transmatrix = quatern2mat(b=self.header['quatern_b'],
+                                  c=self.header['quatern_c'],
+                                  d=self.header['quatern_d'],
+                                  qx=self.header['qoffset_x'],
+                                  qy=self.header['qoffset_y'],
+                                  qz=self.header['qoffset_z'],
+                                  dx=self.header['pixdim'][1],
+                                  dy=self.header['pixdim'][2],
+                                  dz=self.header['pixdim'][3],
+                                  qfac=qfac)
+        return transmatrix
+
+    def _getaffine_method3(self):
+        """
+        Method to get image orientation location
+        based on Method3 in nifti.h
+
+        METHOD 3 (used when sform_code > 0):
+        -----------------------------------
+        The (x,y,z) coordinates are given by a general affine transformation
+        of the (i,j,k) indexes:
+        
+        x = srow_x[0] * i + srow_x[1] * j + srow_x[2] * k + srow_x[3]
+        y = srow_y[0] * i + srow_y[1] * j + srow_y[2] * k + srow_y[3]
+        z = srow_z[0] * i + srow_z[1] * j + srow_z[2] * k + srow_z[3]
+        
+        The srow_* vectors are in the NIFTI_1 header.  Note that no use is
+        made of pixdim[] in this method.
+        
+        Returns:
+        ________________________
+        transmatrix :numpy.array
+              simple 4X4 transformation matrix
+        """
+        transmatrix = N.zeros((4,4))
+        transmatrix[3,3] = 1.0
+        
+        transmatrix[0] = N.array(self.header['srow_x'])
+        transmatrix[1] = N.array(self.header['srow_y'])
+        transmatrix[2] = N.array(self.header['srow_z'])
+        return transmatrix
+        
         
     def _affine_from_header(self):
         """
         Returns appropriate affine transform to send to Sampling Grid 
-        to define voxel (array indexes)-> real-world (continuous coordinates) mapping 
+        to define voxel (array indexes)-> 
+             real-world (continuous coordinates) mapping 
         
 
-        Calculates appropriate Affine transform in nipy orderd data
-        (z y x t) needed to generate a SamplingGrid
+        Calculates appropriate Affine transform in nipy (c-ordered) data
+        (t z y x) needed to generate a SamplingGrid
         Check first for sform > 0
             (gives tranform of image to some standard space)
         Then check for qform > 0
-            (gives transform in scanner space)
+            (gives transform in original scanner space)
         Then do the nifti Method 1 fallback
             (only when qform and sform == 0)
-            
-        Returns
-        --------------------
-        affine  :  numpy.ndarray (4,4) 
-            4 X 4 transformation matrix in nipy order 
-            | z  0  0  1 |
-            | 0  y  0  1 |
-            | 0  0  x  1 |
-            | 0  0  0  1 |
 
+        Returns
+        -------
+        affine  :  numpy.ndarray (dim[0],dim[0]) 
+            ndims X ndims transformation matrix in nipy order 
+            | z  0  0  1 |       | t  0  0  0  1 |
+            | 0  y  0  1 |   or  | 0  z  0  0  1 |
+            | 0  0  x  1 |       | 0  0  y  0  1 |
+            | 0  0  0  1 |       | 0  0  0  x  1 |
+                                 | 0  0  0  0  1 |
+
+        Examples
+        --------
+        Can be used to generate a Sampling grid
+        from neuroimaging.core.reference import grid
+        newgrid = grid.SamplingGrid.from_affine(grid.Affine(affine),
+                                               ('zspace', 'yspace', 'xspace'),
+                                                tuple(nimg.header['dim'][1:4]))
+            
+                                 
         """
+
         if self.header['sform_code'] > 0:
             """
             Method to map into a standard space
               use srow_x,srow_y,srow_z
             """
-            value = N.zeros((4,4))
-            value[3,3] = 1.0
-    
-            value[0] = N.array(self.header['srow_x'])
-            value[1] = N.array(self.header['srow_y'])
-            value[2] = N.array(self.header['srow_z'])
+            value = self._getaffine_method3()
+
         elif self.header['qform_code'] > 0:
             """
             Method to map into original scanner space
             """
-            # check qfac
-            qfac = float(self.header['pixdim'][0])
-            if qfac not in [-1.0, 1.0]:
-                if qfac == 0.0:
-                    # Ac cording to Nifti Spec, if pixdim[0]=0.0, take qfac=1
-                    print 'qfac of nifti header is invalid: setting to 1.0'
-                    print 'check your original file to validate orientation'
-                    qfac = 1.0;
-            else:
-                raise Nifti1FormatError('invalid qfac: orientation unknown')
+            value = self._getaffine_method2()
 
-            value = quatern2mat(b=self.header['quatern_b'],
-                                c=self.header['quatern_c'],
-                                d=self.header['quatern_d'],
-                                qx=self.header['qoffset_x'],
-                                qy=self.header['qoffset_y'],
-                                qz=self.header['qoffset_z'],
-                                dx=self.header['pixdim'][1],
-                                dy=self.header['pixdim'][2],
-                                dz=self.header['pixdim'][3],
-                                qfac=qfac)
         else:
             """
             Using default Method 1
             """
-            origin = (self.header['qoffset_x'],
-                      self.header['qoffset_y'],
-                      self.header['qoffset_z'])
-            step = N.ones(4)
-            step[0:4] = img.header['pixdim'][1:5]
-            value = N.eye(4) * step
-            value[:3,3] = origin
-        
+            value = self._getaffine_method1()
 
         """
         generate transforms to flip data from matlabish
@@ -433,9 +563,20 @@ class Nifti1(binary.BinaryFormat):
         trans[3,3] = 1
         trans2 = trans.copy()
         trans2[:,3] = 1
-        affine = N.dot(N.dot(trans, value), trans2)
-        return affine
-            
+        affine4 = N.dot(N.dot(trans, value), trans2)
+        """
+        # deal with 4D+ dimensions
+        """
+        if self.header['dim'][0] > 3:
+            # create identity with steps based on pixdim
+            affine = N.eye(self.header['dim'][0])
+            step = N.array(self.header['pixdim'][1:(self.ndim+1)])
+            affine = affine * step[::-1]
+            affine[-4:,-4:] = affine4
+
+            return affine
+        else:
+            return affine4
         
         
 
