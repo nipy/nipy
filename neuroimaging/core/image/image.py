@@ -169,15 +169,9 @@ class Image(object):
 
     def _getdata(self, index):
         """Get data and apply slicing if appropriate."""
-        # if our data is a memmap and we have a callable scale function
-        # then scale the data
-        # QUESTION: Would one ever need to apply scaling on a non-memmapped
-        # array?  Seems like a potentially useful operation and one
-        # that shouldn't require a memmap.  Really we only need to check
-        # here if the image has a valid scaling function, whether it came
-        # from a memmapped file or from a data array.
-        #if hasattr(self._data, 'flush') and callable(self.scale_func):
-        print 'image._getdata index:', index
+
+        # Apply scaling is a scale_func is defined.  This can be true
+        # for memmapped and non-memmapped data.
         if callable(self.scale_func):
             data = self.scale_func(self._data[index], 
                                    scale_factor=self.scale_factor,
@@ -230,13 +224,9 @@ class Image(object):
 
         """
 
-        # Generate a slice tuple based on our number of dimensions.
-        # This is to give a slice like this: data[:],
-        # but use a method so __array__ and __getitem__ use the
-        # same function for scaling the data.
-        #slice_ = (slice(None,None,None),) * self.ndim
-        slice_ = (slice(None, None, None),)
-        data = self._getdata(slice_)
+        # Generate slice index to match 'data[:]'
+        index = (slice(None, None, None),)
+        data = self._getdata(index)
         return np.asarray(data)
 
 def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
