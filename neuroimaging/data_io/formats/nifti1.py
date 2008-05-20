@@ -1,6 +1,6 @@
 __docformat__ = 'restructuredtext'
 
-import numpy as N
+import numpy as np
 
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io.datasource import DataSource
@@ -36,18 +36,18 @@ COMPLEX128 = 1792
 COMPLEX256 = 2048 # has no translation!
 
 datatype2sctype = {
-    UBYTE: N.uint8,
-    SHORT: N.int16,
-    INTEGER: N.int32,
-    FLOAT: N.float32,
-    COMPLEX: N.complex64,
-    DOUBLE: N.float64,
-    INT8: N.int8,
-    UINT16: N.uint16,
-    UINT32: N.uint32,
-    INT64: N.int64,
-    UINT64: N.uint64,
-    COMPLEX128: N.complex128,
+    UBYTE: np.uint8,
+    SHORT: np.int16,
+    INTEGER: np.int32,
+    FLOAT: np.float32,
+    COMPLEX: np.complex64,
+    DOUBLE: np.float64,
+    INT8: np.int8,
+    UINT16: np.uint16,
+    UINT32: np.uint32,
+    INT64: np.int64,
+    UINT64: np.uint64,
+    COMPLEX128: np.complex128,
 }
 
 sctype2datatype = dict([(v, k) for k, v in datatype2sctype.items()])
@@ -317,7 +317,7 @@ class Nifti1(binary.BinaryFormat):
             # should try to populate the canonical fields and
             # corresponding header fields with info from grid?
             self.byteorder = utils.NATIVE
-            self.dtype = N.dtype(keywords.get('dtype', N.float64))
+            self.dtype = np.dtype(keywords.get('dtype', np.float64))
             self.dtype = self.dtype.newbyteorder(self.byteorder)
             if self.grid is not None:
                 self._header_from_grid()
@@ -334,7 +334,7 @@ class Nifti1(binary.BinaryFormat):
             if self.header['magic'] not in ('n+1\x00', 'ni1\x00'):
                 raise Nifti1FormatError
             tmpsctype = datatype2sctype[self.header['datatype']]
-            tmpstr = N.dtype(tmpsctype)
+            tmpstr = np.dtype(tmpsctype)
             self.dtype = tmpstr.newbyteorder(self.byteorder)
             self.ndim = self.header['dim'][0]
 
@@ -378,9 +378,9 @@ class Nifti1(binary.BinaryFormat):
         origin = (self.header['qoffset_x'],
                   self.header['qoffset_y'],
                   self.header['qoffset_z'])
-        step = N.ones(4)
+        step = np.ones(4)
         step[0:4] = self.header['pixdim'][1:5]
-        transmatrix = N.eye(4) * step
+        transmatrix = np.eye(4) * step
         transmatrix[:3,3] = origin
         return transmatrix
 
@@ -489,12 +489,12 @@ class Nifti1(binary.BinaryFormat):
         transmatrix :numpy.array
               simple 4X4 transformation matrix
         """
-        transmatrix = N.zeros((4,4))
+        transmatrix = np.zeros((4,4))
         transmatrix[3,3] = 1.0
         
-        transmatrix[0] = N.array(self.header['srow_x'])
-        transmatrix[1] = N.array(self.header['srow_y'])
-        transmatrix[2] = N.array(self.header['srow_z'])
+        transmatrix[0] = np.array(self.header['srow_x'])
+        transmatrix[1] = np.array(self.header['srow_y'])
+        transmatrix[2] = np.array(self.header['srow_z'])
         return transmatrix
         
         
@@ -558,19 +558,19 @@ class Nifti1(binary.BinaryFormat):
         generate transforms to flip data from matlabish
         #  to nipyish ordering
         """
-        trans = N.zeros((4,4))
-        trans[0:3,0:3] = N.fliplr(N.eye(3))
+        trans = np.zeros((4,4))
+        trans[0:3,0:3] = np.fliplr(np.eye(3))
         trans[3,3] = 1
         trans2 = trans.copy()
         trans2[:,3] = 1
-        affine4 = N.dot(N.dot(trans, value), trans2)
+        affine4 = np.dot(np.dot(trans, value), trans2)
         """
         # deal with 4D+ dimensions
         """
         if self.header['dim'][0] > 3:
             # create identity with steps based on pixdim
-            affine = N.eye(self.header['dim'][0])
-            step = N.array(self.header['pixdim'][1:(self.ndim+1)])
+            affine = np.eye(self.header['dim'][0])
+            step = np.array(self.header['pixdim'][1:(self.ndim+1)])
             affine = affine * step[::-1]
             affine[-4:,-4:] = affine4
 
@@ -601,7 +601,7 @@ class Nifti1(binary.BinaryFormat):
         shape = tuple(self.header['dim'][1:(self.ndim+1)])
         axisnames = ['xspace', 'yspace', 'zspace', 'time', 'vector'][:self.ndim]
         tgrid = SamplingGrid.from_start_step(axisnames,
-                                             -N.array(origin),
+                                             -np.array(origin),
                                              step,
                                              shape)
         tgridm = tgrid.python2matlab().affine
@@ -701,7 +701,7 @@ class Nifti1(binary.BinaryFormat):
 
         _pixdim = [0.]*8
         _pixdim[0:4] = [qfac, dx, dy, dz]
-        _pixdim[4:(self.ndim+1)] = N.diag(self.grid.mapping.transform)[0:(self.ndim-3)]
+        _pixdim[4:(self.ndim+1)] = np.diag(self.grid.mapping.transform)[0:(self.ndim-3)]
         self.header['pixdim'] = _pixdim
 
         # this should be set to something, 1 happens
@@ -736,7 +736,7 @@ class Nifti1(binary.BinaryFormat):
             else:
                 raise Nifti1FormatError('invalid qfac: orientation unknown')
         
-        value = N.zeros((4,4))
+        value = np.zeros((4,4))
         value[3,3] = 1.0
         
         if self.header['qform_code'] > 0:
@@ -753,9 +753,9 @@ class Nifti1(binary.BinaryFormat):
 
         elif self.header['sform_code'] > 0:
 
-            value[0] = N.array(self.header['srow_x'])
-            value[1] = N.array(self.header['srow_y'])
-            value[2] = N.array(self.header['srow_z'])
+            value[0] = np.array(self.header['srow_x'])
+            value[1] = np.array(self.header['srow_y'])
+            value[2] = np.array(self.header['srow_z'])
 
         return Affine(value).matlab2python().transform 
     transform = property(_transform)
@@ -813,7 +813,7 @@ class Nifti1(binary.BinaryFormat):
             return x
 
         scaled_x = (x - self.header['scl_inter'])/self.header['scl_slope']
-        if N.asarray(x).shape == self.data.shape or scaled_x.max() > self.data.max():  
+        if np.asarray(x).shape == self.data.shape or scaled_x.max() > self.data.max():  
             if x.shape == self.data.shape:
                 minval = x.min()
             else:
@@ -821,7 +821,7 @@ class Nifti1(binary.BinaryFormat):
             # try to find a new intercept if:
             # it's an unsigned type (in order to shift up), or
             # if all values > 0 (in order to shift down)
-            if self.dtype in N.sctypes['uint']:
+            if self.dtype in np.sctypes['uint']:
                 intercept = minval
             else:
                 intercept = minval>0 and minval or 0
