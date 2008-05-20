@@ -196,7 +196,32 @@ _field_defaults = {'sizeof_hdr': HEADER_SIZE,
                    }
 
 def _default_field_value(fieldname, fieldformat):
-    """ Get the default value for the given field."""
+    """Get the default value for the given field.
+
+    Field values are initialized to default values specified in the
+    nifti1.h specification.  Unknown field values are initialized to zero.
+    
+    Parameters
+    ----------
+    fieldname : {string}
+        Name of the field in the header
+    fieldformat : {string}
+        Format string for this header field.
+
+    Returns
+    -------
+    value : {any type supported by the struct module}
+        The default field value for this field with the specified format.
+
+    Example
+    -------
+    >>> from neuroimaging.data_io.formats import nifti1
+    >>> nifti1._default_field_value('pixdim', '8f')
+    [1, 0, 0, 0, 0, 0, 0, 0]
+    >>> nifti1._default_field_value('qform_code', 'h')
+    0
+
+    """
 
     dflt_val = _field_defaults.get(fieldname, None)
     if dflt_val is not None:
