@@ -153,21 +153,42 @@ def aggregate(formats, values):
     """
     return [takeval(numvalues(format), values) for format in formats]
 
-def struct_unpack(infile, byte_order, elements):
-    """
-    :Parameters:
-        `inflie` : TODO
-            TODO
-        `byte_order` : TODO
-            TODO
-        `elements` : TODO
-            TODO
+def struct_unpack(infile, byte_order, formats):
+    """Unpack infile using the format characters in formats.
+
+    Parameters
+    ----------
+    infile : file_like
+        File_like object providing a read method (file, StringIO, Datasource...)
+    byte_order : string
+        String specifying the byte-order.
+        {utils.NATIVE, UTILS.LITTLE_ENDIAN, UTILS.BIG_ENDIAN, '=', '<', '>'}
+    formats : list
+        List of format charaters as defined by the struct module.
             
-    :Returns: TODO
+    Returns
+    -------
+    unpacked values : list
+        Returns a list of unpacked values from the infile using the format 
+        characters in formats.
+
+    Examples
+    --------
+    >>> import StringIO
+    >>> from neuroimaging.data_io.formats import utils
+    >>> fp = StringIO.StringIO()
+    >>> packed = utils.struct_pack(utils.NATIVE, ['4i'], [1,2,3,4])
+    >>> fp.write(packed)
+    >>> fp.seek(0)
+    >>> unpacked = utils.struct_unpack(fp, utils.NATIVE, ['4i'])
+    >>> unpacked
+    [[1, 2, 3, 4]]
+    >>> fp.close()
+
     """
-    format = struct_format(byte_order, elements)
-    return aggregate(elements,
-      list(unpack(format, infile.read(calcsize(format)))))
+
+    fmt = struct_format(byte_order, formats)
+    return aggregate(formats, list(unpack(fmt, infile.read(calcsize(fmt)))))
 
 def struct_pack(byte_order, elements, values):
     """
