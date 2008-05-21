@@ -162,15 +162,20 @@ def struct_unpack(infile, byte_order, formats):
         File_like object providing a read method (file, StringIO, Datasource...)
     byte_order : string
         String specifying the byte-order.
-        {utils.NATIVE, UTILS.LITTLE_ENDIAN, UTILS.BIG_ENDIAN, '=', '<', '>'}
+        {utils.NATIVE, utils.LITTLE_ENDIAN, utils.BIG_ENDIAN, '=', '<', '>'}
     formats : list
-        List of format charaters as defined by the struct module.
+        List of format characters as defined by the struct module.
             
     Returns
     -------
-    unpacked values : list
+    unpacked_values : list
         Returns a list of unpacked values from the infile using the format 
         characters in formats.
+
+    See Also
+    --------
+    utils.struct_pack
+    python struct module
 
     Examples
     --------
@@ -190,21 +195,47 @@ def struct_unpack(infile, byte_order, formats):
     fmt = struct_format(byte_order, formats)
     return aggregate(formats, list(unpack(fmt, infile.read(calcsize(fmt)))))
 
-def struct_pack(byte_order, elements, values):
-    """
-    :Parameters:
-        `byte_order` : string
-            The byte order to use. Must be one of NATIVE, BIG_ENDIAN,
-            LITLE_ENDIAN
-        `elements` : [string]
-            A list of format string elements to use
-        `value` : [ ... ]
-            A list of values to be packed into the format string
+def struct_pack(byte_order, formats, values):
+    """Pack values using the format characters in formats.
 
-    :Returns: ``string``
+    Parameters
+    ----------
+    byte_order : string
+        String specifying the byte-order.
+        {utils.NATIVE, utils.LITTLE_ENDIAN, utils.BIG_ENDIAN, '=', '<', '>'}
+    formats : list
+        List of format characters as defined by the struct module.
+    values : list
+        Values to pack into the formatted string.
+
+    Returns
+    -------
+    packed_values : string
+        Returns a string of packed values, formatted as specified by the
+        formats.
+
+    See Also
+    --------
+    utils.struct_unpack
+    python struct module
+
+    Examples
+    --------
+    >>> import StringIO
+    >>> from neuroimaging.data_io.formats import utils
+    >>> fp = StringIO.StringIO()
+    >>> packed = utils.struct_pack(utils.NATIVE, ['4i'], [1,2,3,4])
+    >>> fp.write(packed)
+    >>> fp.seek(0)
+    >>> unpacked = utils.struct_unpack(fp, utils.NATIVE, ['4i'])
+    >>> unpacked
+    [[1, 2, 3, 4]]
+    >>> fp.close()
+
     """
-    format = struct_format(byte_order, elements)
-    return pack(format, *flatten_values(values))
+
+    fmt = struct_format(byte_order, formats)
+    return pack(fmt, *flatten_values(values))
 
 def touch(filename):
     """ Ensure that filename exists and is writable.
