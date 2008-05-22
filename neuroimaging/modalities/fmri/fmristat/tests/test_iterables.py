@@ -5,7 +5,7 @@ from neuroimaging.testing import funcfile, anatfile
 from neuroimaging.core.api import load_image
 from neuroimaging.modalities.fmri.api import fromimage, fmri_generator
 from neuroimaging.core.image.generators import *
-from neuroimaging.fixes.scipy.stats_models.regression import OLSModel as ols_model
+from neuroimaging.fixes.scipy.stats.models.regression import OLSModel as ols_model
 
 fd = np.asarray(load_image(funcfile))
 fi = fromimage(load_image(funcfile)) # I think it makes more

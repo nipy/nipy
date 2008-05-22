@@ -1632,10 +1632,11 @@ call_notifiers ( PyListObject      * tnotifiers,
                      
     int i, n, new_value_has_traits;
     PyObject * result;
+    PyObject * args;
     
     new_value_has_traits = PyHasTraits_Check( new_value );
     
-    PyObject * args = PyTuple_New( 4 );
+    args = PyTuple_New( 4 );
     if ( args == NULL )
         return -1;
     PyTuple_SET_ITEM( args, 0, (PyObject *) obj );

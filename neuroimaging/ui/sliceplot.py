@@ -162,7 +162,7 @@ class SlicePlot(object):
             self.set_crosshair(x, y)
             #self.set_data(self.data)
             if self.parent and hasattr(self.parent, '_on_pick'):
-                self.parent._on_pick(self, x, y)
+                self.parent._on_pick(self, xi, yi)
 
     def _on_scroll(self, event):
         """Handle mouse wheel events in plot.
@@ -423,9 +423,10 @@ class SliceViewer(object):
             self._z, self._y, self._x = map(lambda x: x/2, self.img.shape)
             zdim, ydim, xdim = self.img.shape
             
+            imgarray = asarray(self.img)
             # Find min and max data values for set_clim calls below
-            vmin = self.img._data.min()
-            vmax = self.img._data.max()
+            vmin = imgarray.min()
+            vmax = imgarray.max()
             # Update Axial Plot
             self._set_axial_data()
             self.axl_splot.set_xlim((0, xdim))
