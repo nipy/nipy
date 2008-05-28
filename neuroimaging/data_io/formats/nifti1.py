@@ -410,13 +410,11 @@ class Nifti1(binary.BinaryFormat):
         return self.datasource.exists(self.filebase+".hdr") and \
                (self.filebase+".hdr", self.filebase+".img") or\
                (self.filebase+".nii", self.filebase+".nii")
-    def _getaffine_method1(self):
-        """
-        Method to get image orientation location
-        based on Method1 in nifti.h
 
-        METHOD 1 (the "old" way, used only when qform_code = 0):
-        -------------------------------------------------------
+    def _getaffine_method1(self):
+        """Method to get image orientation location based on Method1 in nifti.h
+
+        METHOD 1 (the "old" way, used only when qform_code = 0)
         The coordinate mapping from (i,j,k) to (x,y,z) is the ANALYZE
         7.5 way.  This is a simple scaling relationship:
         
@@ -430,12 +428,13 @@ class Nifti1(binary.BinaryFormat):
         is not recommended, and is present mainly for compatibility with
         ANALYZE 7.5 files.
         
+        Returns
+        -------
+        transmatrix : numpy.array
+            4x4 affine transformation matrix
 
-        Returns:
-        ________________________
-        transmatrix :numpy.array
-             simple 4X4 transformation matrix
         """
+
         origin = (self.header['qoffset_x'],
                   self.header['qoffset_y'],
                   self.header['qoffset_z'])
@@ -446,13 +445,9 @@ class Nifti1(binary.BinaryFormat):
         return transmatrix
 
     def _getaffine_method2(self):
-        """
-        Method to get image orientation location
-        based on Method2 in nifti.h
+        """Method to get image orientation location based on Method2 in nifti.h
 
-
-        METHOD 2 (used when qform_code > 0, which should be the "normal" case):
-        ---------------------------------------------------------------------
+        METHOD 2 (used when qform_code > 0, which should be the "normal" case)
         The (x,y,z) coordinates are given by the pixdim[] scales, a rotation
         matrix, and a shift.  This method is intended to represent
         "scanner-anatomical" coordinates, which are often embedded in the
@@ -500,11 +495,13 @@ class Nifti1(binary.BinaryFormat):
         (which encodes a 180 degree rotation about the x-axis).
         
         
-        Returns:
-        ________________________
-        transmatrix :numpy.array
-              simple 4X4 transformation matrix
+        Returns
+        -------
+        transmatrix : numpy.array
+            4x4 affine transformation matrix
+
         """
+
         # check qfac
         qfac = float(self.header['pixdim'][0])
         if qfac not in [-1.0, 1.0]:
@@ -529,12 +526,9 @@ class Nifti1(binary.BinaryFormat):
         return transmatrix
 
     def _getaffine_method3(self):
-        """
-        Method to get image orientation location
-        based on Method3 in nifti.h
+        """Method to get image orientation location based on Method3 in nifti.h
 
-        METHOD 3 (used when sform_code > 0):
-        -----------------------------------
+        METHOD 3 (used when sform_code > 0)
         The (x,y,z) coordinates are given by a general affine transformation
         of the (i,j,k) indexes:
         
@@ -545,11 +539,13 @@ class Nifti1(binary.BinaryFormat):
         The srow_* vectors are in the NIFTI_1 header.  Note that no use is
         made of pixdim[] in this method.
         
-        Returns:
-        ________________________
-        transmatrix :numpy.array
-              simple 4X4 transformation matrix
+        Returns
+        -------
+        transmatrix : numpy.array
+            4x4 affine transformation matrix
+
         """
+
         transmatrix = np.zeros((4,4))
         transmatrix[3,3] = 1.0
         
@@ -560,7 +556,8 @@ class Nifti1(binary.BinaryFormat):
         
         
     def _affine_from_header(self):
-        """
+        """Build affine transformation from values in the header.
+
         Returns appropriate affine transform to send to Sampling Grid 
         to define voxel (array indexes)-> 
              real-world (continuous coordinates) mapping 
@@ -587,60 +584,42 @@ class Nifti1(binary.BinaryFormat):
 
         Examples
         --------
-        Can be used to generate a Sampling grid
-        from neuroimaging.core.reference import grid
-        newgrid = grid.SamplingGrid.from_affine(grid.Affine(affine),
-                                               ('zspace', 'yspace', 'xspace'),
+        # Can be used to generate a Sampling grid
+        >>> from neuroimaging.core.reference import grid
+        >>> newgrid = grid.SamplingGrid.from_affine(grid.Affine(affine),
+                                                ('zspace', 'yspace', 'xspace'),
                                                 tuple(nimg.header['dim'][1:4]))
             
                                  
         """
 
         if self.header['sform_code'] > 0:
-            """
-            Method to map into a standard space
-              use srow_x,srow_y,srow_z
-            """
+            # Method to map into a standard space use srow_x, srow_y, srow_z
             value = self._getaffine_method3()
-
         elif self.header['qform_code'] > 0:
-            """
-            Method to map into original scanner space
-            """
+            # Method to map into original scanner space
             value = self._getaffine_method2()
-
         else:
-            """
-            Using default Method 1
-            """
+            # Using default Method 1
             value = self._getaffine_method1()
 
-        """
-        generate transforms to flip data from matlabish
-        #  to nipyish ordering
-        """
+        # generate transforms to flip data from matlabish to nipyish ordering
         trans = np.zeros((4,4))
         trans[0:3,0:3] = np.fliplr(np.eye(3))
         trans[3,3] = 1
         trans2 = trans.copy()
         trans2[:,3] = 1
         affine4 = np.dot(np.dot(trans, value), trans2)
-        """
         # deal with 4D+ dimensions
-        """
         if self.header['dim'][0] > 3:
             # create identity with steps based on pixdim
             affine = np.eye(self.header['dim'][0])
             step = np.array(self.header['pixdim'][1:(self.ndim+1)])
             affine = affine * step[::-1]
             affine[-4:,-4:] = affine4
-
             return affine
         else:
             return affine4
-        
-        
-
         
     def _grid_from_header(self):
         """
@@ -652,8 +631,6 @@ class Nifti1(binary.BinaryFormat):
         (only when qform and sform == 0)
         """
         
-            
-
         origin = (self.header['qoffset_x'],
                   self.header['qoffset_y'],
                   self.header['qoffset_z'])
