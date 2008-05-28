@@ -308,6 +308,42 @@ def scale_data(data, **kwargs):
     else:
         return data
 
+def read_header(filename):
+    """Read nifti header from filename.
+
+    Parameters
+    ----------
+    filename : string
+        Path to nifti file.
+
+    Returns
+    -------
+    header : dict
+        Dictionary with header information from given filename.
+
+    """
+
+    fp = file(filename)
+    fmts = struct_formats.copy()
+    header = create_default_header()
+    # Try little endian first
+    byteorder = utils.LITTLE_ENDIAN
+    values = utils.struct_unpack(fp, byteorder, fmts.values())
+    for field, val in zip(header.keys(), values):
+        header[field] = val
+        
+    ndims = header['dim'][0]
+    if ndims < 1 or ndims > 7:
+        # rewind and try big endian
+        fp.seek(0)
+        byteorder = utils.BIG_ENDIAN
+        values = utils.struct_unpack(fp, byteorder, fmts.values())
+        for field, val in zip(header.keys(), values):
+            header[field] = val
+
+    fp.close()
+    return header
+
 class Nifti1(binary.BinaryFormat):
     """
     A class to read and write NIFTI format images.
