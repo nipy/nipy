@@ -1,7 +1,7 @@
 """
 
 """
-#__all__ = ['Format', 'getformats']
+#__all__ = ['Format', 'getformats',]
 __docformat__ = 'restructuredtext'
 
 import numpy
@@ -156,27 +156,50 @@ default_formats = [("neuroimaging.data_io.formats.nifti1", "Nifti1"),
                   ]
                    
 
+def getformat_exts():
+    """Return a list of valid image file extensions.
+
+    Returns
+    -------
+    exts : list of valid extensions
+
+    """
+
+    exts = []
+    for modname, formatname in default_formats:
+        format = import_from(modname, formatname)
+        for fmtext in format.extensions:
+            exts.append(fmtext)
+    return exts
 
 def getformats(filename):
     """Return the appropriate image format for the given file type.
     
-    :Parameters:
-        `filename` : string
-            The name of the file to be checked
+    Parameters
+    ----------
+    filename : string
+        The name of the file to be checked
     
-    :Returns: `Format`
+    Returns
+    -------
+    formats : list
+        A list of possible format readers for the filename.
     
-    :Raises NotImplementedError: if no valid format can be found.
+    Notes
+    -----
+    Raises NotImplementedError: if no valid format can be found.
+
     """
+
     all_formats = []
     valid_formats = []
     for modname, formatname in default_formats:
         all_formats.append(formatname)
         format = import_from(modname, formatname)
-        if format.valid(filename): 
+        if format.valid(filename):
             valid_formats.append(format)
         
-    if valid_formats: 
+    if valid_formats:
         return valid_formats
     
     # if we made it this far, a format was not found

@@ -24,7 +24,7 @@ class MINC1(Format):
 
     """
 
-    extensions = [".mnc"]
+    extensions = (".mnc",)
 
     def __init__(self, filename, mode="r", datasource=DataSource(), dtype=N.float, norm_range=None, **keywords):
         """

@@ -222,7 +222,7 @@ class Ecat7(binary.BinaryFormat):
     _field_defaults = {'magic_number': 'MATRIX72'}
     _sub_field_defaults = {'SCALE_FACTOR': 1.}
     
-    extensions = ('.v')
+    extensions = ('.v',)
     
 
     def __init__(self, infilename, mode="r", datasource=DataSource(), use_memmap=True, **keywords):
