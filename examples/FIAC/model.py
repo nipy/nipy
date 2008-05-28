@@ -212,10 +212,10 @@ class Run(Model, fiac.Run):
 
         self.overallF = Contrast(p, f, name='overallF')
 
-        SSt_SSp = p['SSt_SSp'].astimefn()
-        DSt_SSp = p['DSt_SSp'].astimefn()
-        SSt_DSp = p['SSt_DSp'].astimefn()
-        DSt_DSp = p['DSt_DSp'].astimefn()
+        SSt_SSp = lambda t: p['SSt_SSp'](t)
+        DSt_SSp = lambda t: p['DSt_SSp'](t)
+        SSt_DSp = lambda t: p['SSt_DSp'](t)
+        DSt_DSp = lambda t: p['DSt_DSp'](t)
 
         # Average effect
 

@@ -282,9 +282,12 @@ class ConcatenatedGrids(SamplingGrid):
         self.grids = self._grids(grids)
         self.concataxis = concataxis
         mapping, input_coords, output_coords = self._mapping()
-        shape = (len(self.grids),) + self.grids[0].shape
         SamplingGrid.__init__(self, mapping, input_coords, output_coords)
 
+
+    def _getshape(self):
+        return (len(self.grids),) + self.grids[0].shape
+    shape = property(_getshape)
 
     def _grids(self, grids):
         """

@@ -10,6 +10,7 @@ class test_Axis(NumpyTestCase):
         self.axis = Axis(name='xspace')
 
     def test_init(self):
+        self.fail("the valid names of axes has been removed so this doesn't raise an exception anymore")
         # an invalid name shou;d raise an error
         self.fail("the valid names of axes has been removed so this doesn't raise an exception anymore")
         self.assertRaises(ValueError, Axis, name='bad_value')
