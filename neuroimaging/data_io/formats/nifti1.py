@@ -400,9 +400,9 @@ class Nifti1(binary.BinaryFormat):
             self.ndim = self.header['dim'][0]
 
         if self.grid is None:
-            spaces = ['xspace','yspace','zspace','time','vector']
+            spaces = ['vector','time','zspace','yspace','xspace']
             ndims = self.header['dim'][0]
-            space = tuple(spaces[::-ndims+1])
+            space = tuple(spaces[-ndims:])
             shape = tuple(self.header['dim'][1:ndims+1])
             transform = self._affine_from_header()
             self.grid = SamplingGrid.from_affine(Affine(transform),space,shape)
