@@ -1,4 +1,5 @@
 from tempfile import NamedTemporaryFile
+from StringIO import StringIO
 
 import numpy as np
 
@@ -48,6 +49,32 @@ class TestHeaderDefaults(TestCase):
     def test_vox_offset(self):
         key = 'vox_offset'
         self.assertEqual(self.header[key], default_value(key))
+
+class TestHeaderLittleEndian(TestCase):
+    """Test read/write of little endian header for nifti io."""
+    def setUp(self):
+        """Create a default header and pack into a StringIO object."""
+        self.formats = nifti1.struct_formats.copy()
+        self.header = nifti1.create_default_header()
+        self.byteorder = nifti1.utils.LITTLE_ENDIAN
+        self.packed = nifti1.utils.struct_pack(self.byteorder,
+                                               self.formats.values(),
+                                               self.header.values())
+        self.fp = StringIO()
+        self.fp.write(self.packed)
+        self.fp.seek(0)
+        self.unpacked = nifti1.utils.struct_unpack(self.fp,
+                                                   self.byteorder,
+                                                   self.formats.values())
+
+    def tearDown(self):
+        self.fp.close()
+        del self.fp
+
+    def test_roundtrip(self):
+        # DEV NOTE:  stopped implementing to work on numpy 1.1.0
+        # Decide if this is a necessary test before going further!!!
+        raise NotImplementedError, 'ADDING LITTLE ENDIAN TESTS!'
 
 def test_scale_factor_only():
     # scale data from [0,255] to [0.0, 1.0]
