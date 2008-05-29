@@ -400,7 +400,13 @@ class Nifti1(binary.BinaryFormat):
             self.ndim = self.header['dim'][0]
 
         if self.grid is None:
-            self._grid_from_header()
+            spaces = ['xspace','yspace','zspace','time','vector']
+            ndims = self.header['dim'][0]
+            space = tuple(spaces[::-ndims+1])
+            shape = tuple(self.header['dim'][1:ndims+1])
+            transform = self._affine_from_header()
+            self.grid = SamplingGrid.from_affine(Affine(transform),space,shape)
+            #self._grid_from_header()
         
         self.attach_data(offset=int(self.header['vox_offset']), 
                          use_memmap=use_memmap)
