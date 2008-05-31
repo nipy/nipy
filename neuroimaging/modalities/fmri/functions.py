@@ -1,11 +1,20 @@
 """
-This module defines functions of time and tools to manipulate them.
+This module defines some convenience functions of time.
 
-The main classm `TimeFunction`, is a function from (real) time to an arbitrary
-number of (real) outputs.
+Stimulus: a class to implement square-wave protocol based on
+          a pair of sequences [times,values]
 
-These objects can be (coordinate-wised) multiplied, added, subtracted and
-divided.
+PeriodicStimulus: periodic Stimulus
+
+Events: subclass of Stimulus to which events can be appended
+
+DeltaFunction: an approximate delta function
+
+SplineConfound: generate natural cubic splines with given knots
+
+InterpolatedConfound: based on a sequence of [times, values], return
+                      a linearly interpolated confound
+
 """
 
 __docformat__ = 'restructuredtext'
@@ -31,7 +40,7 @@ def window(f, r):
         return g
     return h
 
-class Stimulus(TimeFunction):
+class Stimulus:
     """
     TODO
     """
@@ -184,8 +193,6 @@ class SplineConfound:
                 TODO
             `knots` : TODO
                 TODO
-            `keywords` : dict
-                Passed through to `TimeFunction.__init__`
         """
 
         self.df = df

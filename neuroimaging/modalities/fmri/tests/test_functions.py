@@ -13,10 +13,10 @@ class test_functions(NumpyTestCase):
         # Test for single and multiple regressors
         T = N.arange(100)
         C = N.random.normal(size=(T.shape))
-        ic = functions.InterpolatedConfound(T, C)
+        ic = functions.InterpolatedConfound(times=T, values=C)
         assert N.allclose(C, ic(T))
         C = N.random.normal(size=(2,100))
-        ic = functions.InterpolatedConfound(T, C)
+        ic = functions.InterpolatedConfound(times=T, values=C)
         assert N.allclose(C, ic(T))
 
 

@@ -3,7 +3,7 @@ __docformat__ = 'restructuredtext'
 import csv, copy
 import numpy as N
 
-from neuroimaging.modalities.fmri.functions import TimeFunction, Events
+from neuroimaging.modalities.fmri.functions import Events
 from neuroimaging.fixes.scipy.stats.models.formula import Factor, Quantitative, Formula, Term
 
 namespace = {}

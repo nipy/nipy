@@ -497,12 +497,10 @@ def merge_images(filename, images, cls=Image, clobber=False,
         data[i] = np.asarray(image)[:]
     return Image(data, grid)
 
-def zeros(grid, names):
+def zeros(grid):
     """
     Return an Image of zeros with a given grid.
     """
-    if hasattr(grid, "shape"):
-        return fromarray(np.zeros(grid.shape), names)
-    else:
-        return fromarray(grid, names)
+    return Image(np.zeros(grid.shape), grid)
+
 
