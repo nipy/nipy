@@ -249,6 +249,15 @@ def test_analyze_scaling():
     data = img[:]
     assert data._data.mean() == 3.0
 
+def test_none_scaling():
+    data = np.ones((2,3,4))
+    img = fromarray(data)
+    assert img.scale_func == None
+    data = np.asarray(img)
+    assert data.mean() == 1.0
+    data = img[:]
+    assert data._data.mean() == 1.0
+
 def test_slicing():
     data = np.ones((2,3,4))
     img = fromarray(data)

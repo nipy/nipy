@@ -22,8 +22,8 @@ import numpy as np
 
 from neuroimaging.data_io.datasource import DataSource, splitzipext
 from neuroimaging.core.reference.grid import SamplingGrid
-from neuroimaging.core.reference.coordinate_system import CoordinateSystem
-from neuroimaging.data_io.formats.format import getformats
+#from neuroimaging.data_io.formats.format import getformats
+
 
 # DEVNOTE:
 # Would like to abstract out the postread from the Formats code so the
@@ -103,18 +103,6 @@ class Image(object):
 
     """
 
-    def _getaffine(self):
-        if hasattr(self.grid, "affine"):
-            return self.grid.affine
-        raise AttributeError
-    affine = property(_getaffine)
-
-    def _getheader(self):
-        if hasattr(self, '_header'):
-            return self._header
-        raise AttributeError
-    header = property(_getheader)
-
     def __init__(self, data, grid):
         """Create an `Image` object from a numpy array and a `Grid` object.
         
@@ -146,31 +134,33 @@ class Image(object):
         self.scale_inter = 0.0
 
     def _getshape(self):
-        if hasattr(self._data, "shape"):
-            return self._data.shape
-        else:
-            # BUG:  This slicing will trigger the postread!  Data should be
-            #     a numpy array and always have a shape.
-            return self._data[:].shape
+        return self._data.shape
     shape = property(_getshape)
 
     def _getndim(self):
-        if hasattr(self._data, "ndim"):
-            return self._data.ndim
-        else:
-            # BUG:  This slicing will trigger the postread!  Data should be
-            #    a numpy array and always have a ndim.
-            return self._data[:].ndim
+        return self._data.ndim
     ndim = property(_getndim)
 
     def _getgrid(self):
         return self._grid
     grid = property(_getgrid)
 
+    def _getaffine(self):
+        if hasattr(self.grid, "affine"):
+            return self.grid.affine
+        raise AttributeError
+    affine = property(_getaffine)
+
+    def _getheader(self):
+        if hasattr(self, '_header'):
+            return self._header
+        raise AttributeError
+    header = property(_getheader)
+
     def _getdata(self, index):
         """Get data and apply slicing if appropriate."""
 
-        # Apply scaling is a scale_func is defined.  This can be true
+        # Apply scaling if a scale_func is defined.  This can be true
         # for memmapped and non-memmapped data.
         if callable(self.scale_func):
             data = self.scale_func(self._data[index], 

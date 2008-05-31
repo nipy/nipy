@@ -1,8 +1,15 @@
-import nifti
+"""The Nipy interface to the PyNifti library.
+
+Use PyNifti to open files and extract necessary data to generate a Nipy Image.
+
+"""
+
 import numpy as np
+
+import nifti
+
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.core.reference.grid import SamplingGrid
-
 from neuroimaging.data_io.formats.nifti1_ext import quatern2mat
 
 def gridfromfile(infile):
