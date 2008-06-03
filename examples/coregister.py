@@ -9,6 +9,8 @@ import numpy as np
 
 import scipy.ndimage._registration as reg
 
+from neuroimaging.core.image import image
+
 # Data files
 basedir = '/Users/cburns/data/twaite'
 anatfile = path.join(basedir, 'ANAT1_V0001.img')
@@ -16,7 +18,11 @@ funcdir = path.join(basedir, 'fMRIData')
 fileglob = path.join(funcdir, 'FUNC1_V000?.img')   # Get first 10 images
 
 
-def demo_coregistration(anatfile, funclist, optimizer_method='powell', 
+# Image names proposed:  Run past Matthew Brett
+# Reference for the template/anatomical images 
+# Moving for the functional images
+
+def demo_coregistration(anatfile, funclist, optimizer_method='hybrid', 
                         histo_method=1, smooth_histo=0, smooth_image=0, 
                         ftype=1):
     """Coregister functional images to the anatomical image.
@@ -37,8 +43,14 @@ def demo_coregistration(anatfile, funclist, optimizer_method='powell',
         path to the anatomical file
     funclist : list
         list of paths to functional images
-    
-
+    optimizer_methods : {'powell', 'cg', 'hybrid'}
+        default is hybrid which uses powell for the low-res pass (first pass), 
+        conjugate gradient for the hi-res pass (second pass)
+    histo_method :
+    smooth_histo :
+    smooth_image :
+    ftype :
+        
     Returns
     -------
     measures : ndarray
@@ -68,20 +80,25 @@ def demo_coregistration(anatfile, funclist, optimizer_method='powell',
 
     # read the anatomical MRI volume
     anat_desc = reg.load_anatMRI_desc()
-    imageF_anat = reg.load_volume(anat_desc, imagename=anatfile)
+    # load_volume returns dict: data as ndarray, layers, rows, cols
+    imageF_anat = load_volume(anat_desc, imagename=anatfile)
     # the sampling structure
+    # Want smoothing sigmas, and subsample resolution
     imdata = reg.build_structs()
     # the volume filter
+    # build_fwhm(affine_voxel_to_mm, subsample_resolution)
     imageF_anat['fwhm'] = reg.build_fwhm(imageF_anat['mat'], imdata['step'])
 
     # read in the file list of the fMRI data
+    # rotate is the simulated/perturbed rotation
+    # align_rotate is the rotation params resulting from registration.
+    # 6 params are alpha (pitch), beta (roll), gamma (yaw), 
+    #     xtrans, ytrans, ztrans
     metric_test = np.dtype([('cost', 'f'),
                            ('align_cost', 'f'),
                            ('rotate', 'f', 6),
                            ('align_rotate', 'f', 6)])
 
-    #fMRIdata = read_fMRI_directory('fMRIData\*.img')
-    #fMRIdata = read_fMRI_directory(funcdir + '/*.img')
     fMRIdata = funclist
     fmri_desc = reg.load_fMRI_desc()
     fmri_series = {}
@@ -105,6 +122,8 @@ def demo_coregistration(anatfile, funclist, optimizer_method='powell',
         else:
             x = np.random.random(6) - 0.5
             x = 10.0 * x
+            # demo_rotate_fMRI_volume(dict, float)
+            # dict :  fwhm, image dimensions and array
             fmri_series[count] = reg.demo_rotate_fMRI_volume(image, x)
             measures[count]['rotate'][0:6] = x[0:6]
             count = count + 1
@@ -170,6 +189,129 @@ def demo_coregistration(anatfile, funclist, optimizer_method='powell',
     return measures, imageF_anat, fmri_series
 
 
+def load_volume(imagedesc, imagename=None, threshold=0.999, debug=0):
+    """Load image volume
+
+    image = load_volume(imagedesc, imagename=None, threshold=0.999, debug=0)
+    --- OR ---
+    image, h, ih, index = load_volume(imagedesc, imagename=None, 
+    threshold=0.999, debug=0)
+
+    gets an image descriptor and optional filename and returns a
+    scaled 8 bit volume. The scaling is designed to make full use of
+    the 8 bits (ignoring high amplitude outliers).  The current method
+    uses numpy fromfile and will be replaced by neuroimage nifti load.
+
+    Parameters 
+    ----------
+    imagedesc : {dictionary} 
+        imagedesc is the descriptor of the image to be read. 
+
+    imagename : {string} : optional
+        name of image file. No name creates a blank image that is used for 
+        creating a rotated test image or image rescaling.
+
+    threshold : {float} : optional 
+        this is the threshold for upper cutoff in the 8 bit
+        scaling. The volume histogram and integrated histogram is
+        computed and the upper amplitude cutoff is where the
+        integrated histogram crosses the value set in the threshold.
+        setting threshold to 1.0 means the scaling is done over the
+        min to max amplitude range.
+
+    debug : {0, 1} : optional
+        when debug=1 the method returns the volume histogram, integrated 
+        histogram and the amplitude index where the provided threshold occured.
+
+    Returns 
+    -------
+    image : {dictionary}
+        the volume data assoicated with the filename or a blank volume
+        of the same dimensions as specified in imagedesc.
+
+    --- OR --- (if debug = 1)
+
+    image : {dictionary}
+        the volume data assoicated with the filename or a blank volume
+        of the same dimensions as specified in imagedesc.
+
+    h : {nd_array}
+        the volume 1D amplitude histogram
+
+    ih : {nd_array}
+        the volume 1D amplitude integrated histogram
+
+    index : {int}
+        the amplitude (histogram index) where the integrated histogram
+        crosses the 'threshold' provided.
+
+    Examples
+    --------
+
+    >>> import numpy as NP
+    >>> import _registration as reg
+    >>> anat_desc = reg.load_anatMRI_desc()
+    >>> image_anat, h, ih, index = reg.load_volume(anat_desc, imagename='ANAT1_V0001.img', debug=1)
+    >>> index
+    210
+
+
+    """
+
+    # load MRI or fMRI volume and return an autoscaled 8 bit image.
+    # autoscale is using integrated histogram to deal with outlier 
+    # high amplitude voxels
+    if imagename is None:
+        
+        # imagename of none means to create a blank image
+        ImageVolume = np.zeros(imagedesc['layers']*imagedesc['rows']*imagedesc['cols'],
+                        dtype=np.uint16).reshape(imagedesc['layers'], imagedesc['rows'], imagedesc['cols'])
+    else:
+        ImageVolume = np.fromfile(imagename,
+                        dtype=np.uint16).reshape(imagedesc['layers'], imagedesc['rows'], imagedesc['cols']);
+
+    # the mat (voxel to physical) matrix
+    M = np.eye(4, dtype=np.float64);
+    # for now just the sample size (mm units) in x, y and z
+    M[0][0] = imagedesc['sample_x']
+    M[1][1] = imagedesc['sample_y']
+    M[2][2] = imagedesc['sample_z']
+    # dimensions 
+    D = np.zeros(3, dtype=np.int32);
+    # Gaussian kernel - fill in with build_fwhm() 
+    F = np.zeros(3, dtype=np.float64);
+    D[0] = imagedesc['rows']
+    D[1] = imagedesc['cols']
+    D[2] = imagedesc['layers']
+
+    if imagename == None:
+        # no voxels to scale to 8 bits
+        ImageVolume = ImageVolume.astype(np.uint8)
+        image = {'data' : ImageVolume, 'mat' : M, 'dim' : D, 'fwhm' : F}
+        return image
+
+    # 8 bit scale with threshold clip of the volume integrated histogram
+    max = ImageVolume.max()
+    min = ImageVolume.min()
+    ih  = np.zeros(max-min+1, dtype=np.float64);
+    h   = np.zeros(max-min+1, dtype=np.float64);
+    if threshold <= 0:
+        threshold = 0.999
+    elif threshold > 1.0:
+        threshold = 1.0
+    # get the integrated histogram of the volume and get max from 
+    # the threshold crossing in the integrated histogram 
+    index  = reg.register_image_threshold(ImageVolume, h, ih, threshold)
+    scale  = 255.0 / (index-min)
+    # generate the scaled 8 bit image
+    images = (scale*(ImageVolume.astype(np.float)-min))
+    images[images>255] = 255 
+    image = {'data' : images.astype(np.uint8), 'mat' : M, 'dim' : D, 'fwhm' : F}
+    if debug == 1:
+        return image, h, ih, index
+    else:
+        return image
+
 if __name__ == '__main__':
     print 'Coregister anatomical:\n', anatfile
     print '\nWith these functional images:'
@@ -180,3 +322,4 @@ if __name__ == '__main__':
     #measures, imageF_anat, fmri_series = \
     #reg.demo_MRI_coregistration(anatfile, funclist[0:4])
     demo_coregistration(anatfile, funclist)
+
