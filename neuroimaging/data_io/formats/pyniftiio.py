@@ -8,15 +8,97 @@ import numpy as np
 
 import nifti
 
-from neuroimaging.core.reference.mapping import Affine
-from neuroimaging.core.reference.grid import SamplingGrid
+#from neuroimaging.core.reference.mapping import Affine
+#from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.data_io.formats.nifti1_ext import quatern2mat
+from neuroimaging.data_io.formats.nifti1 import scale_data
 
-def gridfromfile(infile):
+NIFTI_UNKNOWN = 0
+# Nifti orientation codes from nifti1_io.h
+NIFTI_L2R = 1    # Left to Right
+NIFTI_R2L = 2    # Right to Left
+NIFTI_P2A = 3    # Posterior to Anterior
+NIFTI_A2P = 4    # Anterior to Posterior
+NIFTI_I2S = 5    # Inferior to Superior
+NIFTI_S2I = 6    # Superior to Inferior
+
+orientation_to_names = {NIFTI_L2R : 'xspace',
+                        NIFTI_R2L : 'xspace',
+                        NIFTI_P2A : 'yspace',
+                        NIFTI_A2P : 'yspace',
+                        NIFTI_I2S : 'zspace',
+                        NIFTI_S2I : 'zspace'
+}
+
+"""
+In [75]: img.getSOrientation(as_string=True)
+Out[75]: ['Right-to-Left', 'Posterior-to-Anterior', 'Inferior-to-Superior']
+
+In [76]: img.getQOrientation(as_string=True)
+Out[76]: ['Right-to-Left', 'Posterior-to-Anterior', 'Inferior-to-Superior']
+
+In [77]: funcimg.getSOrientation(as_string=True)
+Out[77]: ['Unknown', 'Unknown', 'Unknown']
+
+In [78]: funcimg.getQOrientation(as_string=True)
+Out[78]: ['Left-to-Right', 'Posterior-to-Anterior', 'Inferior-to-Superior']
+"""
+
+class PyNiftiIO:
+    """Wrapper around the PyNifit image class.
     """
-    given a nifti file, generates a Sampling Grid
+    def __init__(self, data):
+        self.img = nifti.NiftiImage(data)
+
+    def _get_affine(self):
+        return getaffine(self.img)
+    affine = property(_get_affine)
+
+    def _get_data(self):
+        return self.img.asarray(copy=True)
+    data = property(_get_data, doc='Return data as array copy')
+
+    def _get_scale_func(self):
+        return scale_data
+    scale_func = property(_get_scale_func)
+
+    def _get_scale_factor(self):
+        return self.img.slope
+    scale_factor = property(_get_scale_factor)
+    
+    def _get_scale_inter(self):
+        return self.img.intercept
+    scale_inter = property(_get_scale_inter)
+
+    def _get_orientation(self):
+        # Try the S and Q orientations and get one that works
+        ornt = self.img.getSOrientation()
+        if ornt[0] == NIFTI_UNKNOWN:
+            ornt = self.img.getQOrientation()
+        return ornt
+    orientation = property(_get_orientation)
+
+    def _get_header(self):
+        # Not sure this is needed in the long run... here for current 
+        # compatibility of nipy
+        return self.img.header
+    header = property(_get_header)
+
+def getaffine(img):
+    """Get affine transform from a NiftiImage.
+
+    Parameters
+    ----------
+    img : NiftiImage
+        image opened with PyNifti
+
+    Returns
+    -------
+    affine : array
+        The 4x4 affine transform in a numpy array
+
     """
-    img = nifti.NiftiImage(infile)
+
     sformcode = int(img.header['sform_code'])
     
     if sformcode > 0:
@@ -63,11 +145,15 @@ def gridfromfile(infile):
         affine[-4:,-4:] = baseaffine
     else:
         affine = baseaffine
+
+    """
     spaces = ['vector','time','zspace','yspace','xspace']
     space = tuple(spaces[-ndim:])
     shape = tuple(img.header['dim'][1:ndim+1])
     grid = SamplingGrid.from_affine(Affine(affine),space,shape)
     return grid        
+    """
+    return affine
     
 def _getaffine_method1(qoffset, pixdims):
     """
@@ -181,33 +267,3 @@ def _getaffine_method2(quaternion, qoffset, pixdims):
                               dz=pixdims[3],
                               qfac=qfac)
     return transmatrix
-
-def _getaffine_method3():
-        """Method to get image orientation location based on Method3 in nifti.h
-
-        METHOD 3 (used when sform_code > 0)
-        The (x,y,z) coordinates are given by a general affine transformation
-        of the (i,j,k) indexes:
-        
-        x = srow_x[0] * i + srow_x[1] * j + srow_x[2] * k + srow_x[3]
-        y = srow_y[0] * i + srow_y[1] * j + srow_y[2] * k + srow_y[3]
-        z = srow_z[0] * i + srow_z[1] * j + srow_z[2] * k + srow_z[3]
-        
-        The srow_* vectors are in the NIFTI_1 header.  Note that no use is
-        made of pixdim[] in this method.
-        
-        Returns
-        -------
-        transmatrix : numpy.array
-            4x4 affine transformation matrix
-
-        """
-
-        transmatrix = np.zeros((4,4))
-        transmatrix[3,3] = 1.0
-        
-        transmatrix[0] = np.array(self.header['srow_x'])
-        transmatrix[1] = np.array(self.header['srow_y'])
-        transmatrix[2] = np.array(self.header['srow_z'])
-        return transmatrix
-        

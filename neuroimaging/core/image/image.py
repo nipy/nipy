@@ -22,6 +22,9 @@ import numpy as np
 
 from neuroimaging.data_io.datasource import DataSource, splitzipext
 from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.reference.mapping import Affine
+
+from neuroimaging.data_io.formats.pyniftiio import PyNiftiIO, orientation_to_names
 #from neuroimaging.data_io.formats.format import getformats
 
 
@@ -41,6 +44,23 @@ from neuroimaging.core.reference.grid import SamplingGrid
 #   and dtype could be returned from Format.
 # 3) grid... currently the Format code creates a grid from the header info.
 #   need to figure out what this info is and how to handle it.  ???
+
+""" DESIGN THOUGHTS
+The Formats code is doing a lot... does it need to?
+
+__SamplingGrid__ in Formats code... the Formats abstract an affine transform
+from the header data.  This transform is used to build a grid.  However, the
+the grid could be created in the factory-function (_open) in the image
+module.  This way the Formats code doesn't know anything about the SamplingGrid.
+Image class would import SamplingGrid.from_affine and build the grid.
+
+__data__ Formats owns the memmap... return data instead.
+
+__postread__ OR __scale_func__ This is format specific, but implement as a 
+module-level function so we don't need to keep the format object around.
+
+
+"""
 
 """DESIGN QUESTION:
 We have an image (img) and it has a scale_func and scale_factor...
@@ -257,7 +277,24 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
 
     # remove any zip extensions
     url = splitzipext(url)[0]
-
+    fmt = PyNiftiIO(url)
+    if fmt is not None:
+        #fmtmodule.open(url, datasource=datasource, mode=mode, clobber=clobber)
+        #data, affine, scale_func, scale_factor, scale_inter = fmtmodule(url)
+        data = fmt.data
+        affine = fmt.affine
+        grid = grid_from_affine(affine, fmt.orientation, data.shape)
+        img = Image(data, grid)
+        img.scale_func = fmt.scale_func
+        img.scale_factor = fmt.scale_factor
+        img.scale_inter = fmt.scale_inter
+        img.orientation = fmt.orientation
+        img._header = fmt.header.copy()
+        return img
+    else:
+        raise IOError, 'Unable to open file %s' % url
+        
+    """
     if not format:
         valid = getformats(url)
     else:
@@ -281,6 +318,7 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
             imgfmt.get_scale_factors()
 
         return tmpimg
+    """
 
     ## if file exists and clobber is False, error message is misleading
     # python test_image.py
@@ -298,6 +336,7 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
 
     ## problem: the exceptions raised are not IOErrors
 
+    """
     for format, exception in errors.items():
         if not exception.__class__  is IOError:
             raise NotImplementedError, 'no valid format found for URL %s.' \
@@ -308,7 +347,7 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
 
     raise IOError, \
         'Filename "%s" (or its header files) does not exist' % url
-
+    """
 
 def load(url, datasource=DataSource(), format=None, mode='r', **keywords):
     """Load an image from the given url.
@@ -503,4 +542,21 @@ def zeros(grid):
     """
     return Image(np.zeros(grid.shape), grid)
 
+
+
+def grid_from_affine(affine, orientation, shape):
+    """Generate a SamplingGrid from an affine transform."""
+    """
+    spaces = ['vector','time','zspace','yspace','xspace']
+    space = tuple(spaces[-ndim:])
+    shape = tuple(img.header['dim'][1:ndim+1])
+    grid = SamplingGrid.from_affine(Affine(affine),space,shape)
+    return grid        
+    """
+    names = []
+    for ornt in orientation:
+        names.append(orientation_to_names.get(ornt))
+    affobj = Affine(affine)
+    grid = SamplingGrid.from_affine(affobj, names, shape)
+    return grid
 
