@@ -17,7 +17,6 @@ See documentation for load and save functions for 'working' examples.
 __docformat__ = 'restructuredtext'
 __all__ = ['load', 'save', 'fromarray']
 
-
 import numpy as np
 
 from neuroimaging.data_io.datasource import DataSource, splitzipext
@@ -25,79 +24,6 @@ from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.mapping import Affine
 
 from neuroimaging.data_io.formats.pyniftiio import PyNiftiIO, orientation_to_names
-#from neuroimaging.data_io.formats.format import getformats
-
-
-# DEVNOTE:
-# Would like to abstract out the postread from the Formats code so the
-# Image class doesn't need to maintain a reference to a Format Object.
-# Reasons Format 'owns' the data array:
-# 1) Intensity scaling (postread methods).  This can be implemented in the
-#   Image class using the Strategy Design Pattern.  The intensity scaling
-#   is an algorithm that is specific to the image format.  An Image object
-#   needs to apply that algorithm when memmapped data is sliced, but
-#   the Image object does not need to know any of the implementation details
-#   about the scaling.  The Format code could return a function that
-#   implements this and be hooking into the data attr via a property.
-#   Should this 'postread' be a module-level function or method?
-# 2) memmap.  This could also be handled in the Image class.  shape, ndims,
-#   and dtype could be returned from Format.
-# 3) grid... currently the Format code creates a grid from the header info.
-#   need to figure out what this info is and how to handle it.  ???
-
-""" DESIGN THOUGHTS
-The Formats code is doing a lot... does it need to?
-
-__SamplingGrid__ in Formats code... the Formats abstract an affine transform
-from the header data.  This transform is used to build a grid.  However, the
-the grid could be created in the factory-function (_open) in the image
-module.  This way the Formats code doesn't know anything about the SamplingGrid.
-Image class would import SamplingGrid.from_affine and build the grid.
-
-__data__ Formats owns the memmap... return data instead.
-
-__postread__ OR __scale_func__ This is format specific, but implement as a 
-module-level function so we don't need to keep the format object around.
-
-
-"""
-
-"""DESIGN QUESTION:
-We have an image (img) and it has a scale_func and scale_factor...
-When we slice img:
-    newimg = img[:]
-the slicing will apply the scaling via the scale_func and newimg will
-have scaled data, newimg.scale_func == None, newimg.scale_factor = 0.0.
-This seems correct.  Right?
-
->>> from neuroimaging.core.image import image
->>> import numpy as np
->>> data = np.ones((2,3,4))
->>> img = image.fromarray(data)
->>> img.scale_func = lambda x,m,b : m * x + b
->>> img.scale_factor = 10
->>> newimg = img[:]
->>> assert img.scale_func != None
->>> assert newimg.scale_func == None
->>> img._data
-array([[[ 1.,  1.,  1.,  1.],
-        [ 1.,  1.,  1.,  1.],
-        [ 1.,  1.,  1.,  1.]],
-
-       [[ 1.,  1.,  1.,  1.],
-        [ 1.,  1.,  1.,  1.],
-        [ 1.,  1.,  1.,  1.]]])
-
->>> newimg._data
-array([[[ 10.,  10.,  10.,  10.],
-        [ 10.,  10.,  10.,  10.],
-        [ 10.,  10.,  10.,  10.]],
-
-       [[ 10.,  10.,  10.,  10.],
-        [ 10.,  10.,  10.,  10.],
-        [ 10.,  10.,  10.,  10.]]])
-
-"""
 
 class Image(object):
     """
@@ -279,8 +205,6 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
     url = splitzipext(url)[0]
     fmt = PyNiftiIO(url)
     if fmt is not None:
-        #fmtmodule.open(url, datasource=datasource, mode=mode, clobber=clobber)
-        #data, affine, scale_func, scale_factor, scale_inter = fmtmodule(url)
         data = fmt.data
         affine = fmt.affine
         grid = grid_from_affine(affine, fmt.orientation, data.shape)
@@ -290,6 +214,7 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
         img.scale_inter = fmt.scale_inter
         img.orientation = fmt.orientation
         img._header = fmt.header.copy()
+        del fmt
         return img
     else:
         raise IOError, 'Unable to open file %s' % url
@@ -318,25 +243,7 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
             imgfmt.get_scale_factors()
 
         return tmpimg
-    """
 
-    ## if file exists and clobber is False, error message is misleading
-    # python test_image.py
-    # <neuroimaging.core.reference.grid.SamplingGrid object at 0x1b6b310>
-    # Traceback (most recent call last):
-    #   File "test_image.py", line 12, in <module>
-    #     image.save(img, "/home/cburns/data/avganat3.nii")
-    #   File "/home/cburns/src/nipy-trunk/neuroimaging/core/image/image.py", line 102, in save
-    #     format=format)
-    #   File "/home/cburns/src/nipy-trunk/neuroimaging/core/image/image.py", line 77, in _open
-    #     'Filename "%s" (or its header files) does not exist' % url
-    # IOError: Filename "/home/cburns/data/avganat3.nii" (or its header files) does not exist
-
-    ## same name, different file extension raises the same error
-
-    ## problem: the exceptions raised are not IOErrors
-
-    """
     for format, exception in errors.items():
         if not exception.__class__  is IOError:
             raise NotImplementedError, 'no valid format found for URL %s.' \
@@ -543,9 +450,9 @@ def zeros(grid):
     return Image(np.zeros(grid.shape), grid)
 
 
-
 def grid_from_affine(affine, orientation, shape):
     """Generate a SamplingGrid from an affine transform."""
+
     """
     spaces = ['vector','time','zspace','yspace','xspace']
     space = tuple(spaces[-ndim:])

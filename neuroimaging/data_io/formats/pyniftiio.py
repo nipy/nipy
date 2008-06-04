@@ -8,8 +8,6 @@ import numpy as np
 
 import nifti
 
-#from neuroimaging.core.reference.mapping import Affine
-#from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.data_io.formats.nifti1_ext import quatern2mat
 from neuroimaging.data_io.formats.nifti1 import scale_data
 
@@ -146,13 +144,6 @@ def getaffine(img):
     else:
         affine = baseaffine
 
-    """
-    spaces = ['vector','time','zspace','yspace','xspace']
-    space = tuple(spaces[-ndim:])
-    shape = tuple(img.header['dim'][1:ndim+1])
-    grid = SamplingGrid.from_affine(Affine(affine),space,shape)
-    return grid        
-    """
     return affine
     
 def _getaffine_method1(qoffset, pixdims):
