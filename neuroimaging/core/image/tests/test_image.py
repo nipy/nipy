@@ -6,10 +6,13 @@ import numpy as np
 from neuroimaging.externals.scipy.testing import *
 from neuroimaging.utils.test_decorators import slow
 
+from neuroimaging.core.image import image
+
 from neuroimaging.core.api import Image, load_image, save_image, fromarray
 from neuroimaging.core.api import parcels, data_generator, write_data
 
 from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.testing import anatfile, funcfile
 from neuroimaging.data_io.api import Analyze
 
@@ -239,31 +242,38 @@ def test_slicing():
     assert img.ndim == 1
 
 
-class ImageInterface(object):
+class ArrayLikeObj(object):
+    """The data attr in Image is an array-like object.
+    Test the array-like interface that we'll expect to support."""
     def __init__(self):
-        self.data = np.ones((2,3,4))
+        self._data = np.ones((2,3,4))
     
     def get_ndim(self):
-        return self.data.ndim
+        return self._data.ndim
     ndim = property(get_ndim)
         
     def get_shape(self):
-        return self.data.shape
+        return self._data.shape
     shape = property(get_shape)
 
     def __getitem__(self, index):
-        return self.data[index]
+        return self._data[index]
 
     def __setitem__(self, index, value):
-        self.data[index] = value
+        self._data[index] = value
 
     def __array__(self):
-        return self.data
+        return self._data
 
-def test_ImageInterface():
-    obj = ImageInterface()
-    #assertRaises obj.ndim = 20
-    img = image.fromarray(obj)
+def test_ArrayLikeObj():
+    obj = ArrayLikeObj()
+    # create simple grid
+    xform = np.eye(4)
+    affine = Affine(xform)
+    grid = SamplingGrid.from_affine(affine, ['zspace', 'yspace', 'xspace'],
+                                    (2,3,4))
+    # create image form array-like object and grid
+    img = image.Image(obj, grid)
     assert img.ndim == 3
     assert img.shape == (2,3,4)
     assert np.allclose(np.asarray(img), 1)
@@ -271,6 +281,43 @@ def test_ImageInterface():
     img[:] = 4
     assert np.allclose(img[:], 4)
 
+# Should test common image sizes 2D, 3D, 4D
+class TestFromArray(TestCase):
+    def setUp(self):
+        self.array2D_shape = (2,3)
+        self.array3D_shape = (2,3,4)
+        self.array4D_shape = (2,3,4,5)
+
+    def test_defaults_2D(self):
+        img = image.fromarray(np.ones(self.array2D_shape))
+        assert isinstance(img._data, np.ndarray)
+        assert img.ndim == 2
+        assert img.shape == self.array2D_shape
+        self.assertRaises(AttributeError, getattr, img, 'header')
+        assert img.affine.shape == (3,3)
+        assert img.affine.diagonal().all() == 1
+        
+    def test_defaults_3D(self):
+        img = image.fromarray(np.ones(self.array3D_shape))
+        assert isinstance(img._data, np.ndarray)
+        assert img.ndim == 3
+        assert img.shape == self.array3D_shape
+        # ndarray's do not have a header
+        self.assertRaises(AttributeError, getattr, img, 'header')
+        assert img.affine.shape == (4,4)
+        assert img.affine.diagonal().all() == 1
+
+    def test_defaults_4D(self):
+        img = image.fromarray(np.ones(self.array4D_shape))
+        assert isinstance(img._data, np.ndarray)
+        assert img.ndim == 4
+        assert img.shape == self.array4D_shape
+        self.assertRaises(AttributeError, getattr, img, 'header')
+        assert img.affine.shape == (5,5)
+        assert img.affine.diagonal().all() == 1
+
+# Nose also has assert_ functions, but they're hidden in tools
+#nose.tools.assert_raises(AttributeError, getattr, img, 'header')
 
 if __name__ == '__main__':
     nose.runmodule()
