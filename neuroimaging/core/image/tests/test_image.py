@@ -273,6 +273,38 @@ def test_slicing():
     assert img.ndim == 1
 
 
+class ImageInterface(object):
+    def __init__(self):
+        self.data = np.ones((2,3,4))
+    
+    def get_ndim(self):
+        return self.data.ndim
+    ndim = property(get_ndim)
+        
+    def get_shape(self):
+        return self.data.shape
+    shape = property(get_shape)
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+    def __setitem__(self, index, value):
+        self.data[index] = value
+
+    def __array__(self):
+        return self.data
+
+def test_ImageInterface():
+    obj = ImageInterface()
+    #assertRaises obj.ndim = 20
+    img = image.fromarray(obj)
+    assert img.ndim == 3
+    assert img.shape == (2,3,4)
+    assert np.allclose(np.asarray(img), 1)
+    assert np.allclose(img[:], 1)
+    img[:] = 4
+    assert np.allclose(img[:], 4)
+
 from neuroimaging.utils.testutils import make_doctest_suite
 test_suite = make_doctest_suite('neuroimaging.core.image.image')
 

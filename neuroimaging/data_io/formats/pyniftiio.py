@@ -42,31 +42,20 @@ In [78]: funcimg.getQOrientation(as_string=True)
 Out[78]: ['Left-to-Right', 'Posterior-to-Anterior', 'Inferior-to-Superior']
 """
 
+
 class PyNiftiIO:
     """Wrapper around the PyNifit image class.
     """
+
     def __init__(self, data):
         self.img = nifti.NiftiImage(data)
 
+    # image attributes
+    # ----------------
     def _get_affine(self):
+        # build affine transform from header info
         return getaffine(self.img)
     affine = property(_get_affine)
-
-    def _get_data(self):
-        return self.img.asarray(copy=True)
-    data = property(_get_data, doc='Return data as array copy')
-
-    def _get_scale_func(self):
-        return scale_data
-    scale_func = property(_get_scale_func)
-
-    def _get_scale_factor(self):
-        return self.img.slope
-    scale_factor = property(_get_scale_factor)
-    
-    def _get_scale_inter(self):
-        return self.img.intercept
-    scale_inter = property(_get_scale_inter)
 
     def _get_orientation(self):
         # Try the S and Q orientations and get one that works
@@ -77,10 +66,50 @@ class PyNiftiIO:
     orientation = property(_get_orientation)
 
     def _get_header(self):
-        # Not sure this is needed in the long run... here for current 
-        # compatibility of nipy
         return self.img.header
     header = property(_get_header)
+
+    def _getdata(self, index):
+        """Apply slicing and return data."""
+        # Only apply if scl_slope is nonzero
+        if self.img.slope != 0.0:
+            return self.img.data[index] * self.img.slope + self.img.intercept
+        else:
+            return self.img.data[index]
+
+    # array-like interface
+    # --------------------
+    def _get_ndim(self):
+        return self.img.data.ndim
+    ndim = property(_get_ndim)
+
+    def _get_shape(self):
+        return self.img.data.shape
+    shape = property(_get_shape)
+
+    def __getitem__(self, index):
+        if type(index) not in [type(()), type([])]:
+            index = (index,)
+        else:
+            index = tuple(index)
+        
+        msg = 'when slicing images, index must be a list of integers or slices'
+        for i in index:
+            if type(i) not in [type(1), type(slice(0,4,1))]:
+                raise ValueError, msg
+
+        data = self._getdata(index)
+        return data
+    
+    def __setitem__(self, index, data):
+        # BUG?  Should check if file was opened read-only?
+        self.img.data[index] = data
+
+    def __array__(self):
+        # Generate slice index to match 'data[:]'
+        index = (slice(None, None, None),)
+        data = self._getdata(index)
+        return np.asarray(data)
 
 def getaffine(img):
     """Get affine transform from a NiftiImage.

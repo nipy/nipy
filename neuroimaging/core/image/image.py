@@ -71,99 +71,53 @@ class Image(object):
         if data is None or grid is None:
             raise ValueError, 'expecting an array and SamplingGrid instance'
 
+        # self._data is an array-like object.  It must implement a subset of
+        # array methods  (Need to specify these, for now implied in pyniftio)
         self._data = data
         self._grid = grid
 
-        # Intensity scaling attrs
-        self.scale_func = None
-        self.scale_factor = 0.0
-        self.scale_inter = 0.0
-
     def _getshape(self):
         return self._data.shape
-    shape = property(_getshape)
+    shape = property(_getshape, doc="Shape of data array")
 
     def _getndim(self):
         return self._data.ndim
-    ndim = property(_getndim)
+    ndim = property(_getndim, doc="Number of data dimensions")
 
     def _getgrid(self):
         return self._grid
-    grid = property(_getgrid)
+    grid = property(_getgrid,
+                    doc="Coordinate mapping from input coords to output coords")
 
     def _getaffine(self):
         if hasattr(self.grid, "affine"):
             return self.grid.affine
         raise AttributeError
-    affine = property(_getaffine)
+    affine = property(_getaffine, doc="Affine transformation is one exists")
 
     def _getheader(self):
-        if hasattr(self, '_header'):
-            return self._header
+        # data loaded from a file should have a header
+        if hasattr(self._data, 'header'):
+            return self._data.header
         raise AttributeError
-    header = property(_getheader)
-
-    def _getdata(self, index):
-        """Get data and apply slicing if appropriate."""
-
-        # Apply scaling if a scale_func is defined.  This can be true
-        # for memmapped and non-memmapped data.
-        if callable(self.scale_func):
-            data = self.scale_func(self._data[index], 
-                                   scale_factor=self.scale_factor,
-                                   scale_inter=self.scale_inter)
-        else:
-            data = self._data[index]
-        return data
+    header = property(_getheader, doc="Image header if loaded from disk")
 
     def __getitem__(self, index):
-        """Get a slice of image data.  Just like slicing a numpy array.
-
-        Examples
-        --------
-        >>> from neuroimaging.core.image import image
-        >>> from neuroimaging.testing import anatfile
-        >>> img = image.load(anatfile)
-        >>> zdim, ydim, xdim = img.shape
-        >>> central_axial_slice = img[zdim/2, :, :]
-
-        """
-
-        if type(index) not in [type(()), type([])]:
-            index = (index,)
-        else:
-            index = tuple(index)
-        
-        for i in index:
-            if type(i) not in [type(1), type(slice(0,4,1))]:
-                raise ValueError, 'when slicing images, index must be a list of integers or slices'
-
-        data = self._getdata(index)
+        """Slicing an image returns a new image."""
+        data = self._data[index]
         grid = self.grid[index]
+        # BUG: If it's a zero-dimension array we should return a numpy scalar
+        # like np.int32(data[index])
+        # Need to figure out elegant way to handle this
         return Image(data, grid)
-    
-    def __setitem__(self, slice_, data):
-        """Set values of ``slice_`` to ``data``.
-        """
-        self._data[slice_] = data
+
+    def __setitem__(self, index, value):
+        """Setting values of an image, set values in the data array."""
+        self._data[index] = value
 
     def __array__(self):
-        """Return data in ndarray.  Called through numpy.array.
-        
-        Examples
-        --------
-        >>> import numpy as np
-        >>> from neuroimaging.core.image import image
-        >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'),
-        ...                       ['zspace', 'yspace', 'xspace'])
-        >>> imgarr = np.array(img)
-
-        """
-
-        # Generate slice index to match 'data[:]'
-        index = (slice(None, None, None),)
-        data = self._getdata(index)
-        return np.asarray(data)
+        """Return data as a numpy array."""
+        return np.asarray(self._data)
 
 def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
           clobber=False, **keywords):
@@ -201,6 +155,17 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
     
     """
 
+    ioimg = PyNiftiIO(url)
+    if ioimg is not None:
+        grid = grid_from_affine(ioimg.affine, ioimg.orientation, ioimg.shape)
+        # Build nipy image from array-like object and sampling grid
+        img = Image(ioimg, grid)
+        return img
+    else:
+        raise IOError, 'Unable to open file %s' % url
+        
+    """
+    # Chris version 2008-05-30
     # remove any zip extensions
     url = splitzipext(url)[0]
     fmt = PyNiftiIO(url)
@@ -218,7 +183,8 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
         return img
     else:
         raise IOError, 'Unable to open file %s' % url
-        
+    """
+
     """
     if not format:
         valid = getformats(url)
@@ -366,9 +332,7 @@ def save(img, filename, datasource=DataSource(), clobber=False, format=None, **k
                      datasource=datasource,
                      format=format, **keywords)
     outimage[:] = np.array(img)[:]
-    #del(outimage)
-    # return image for Debugging
-    return outimage
+    del(outimage)
 
 def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
     """Create an image from a numpy array.
