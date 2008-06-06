@@ -8,8 +8,10 @@ import numpy as np
 
 import nifti
 
-from neuroimaging.data_io.formats.nifti1_ext import quatern2mat
-from neuroimaging.data_io.formats.nifti1 import scale_data
+# TODO: Change this to use the nifticlib library directly instead of this
+# weave extension.
+from neuroimaging.data_io.formats.nifti1_ext import quatern2mat, \
+    mat2quatern
 
 NIFTI_UNKNOWN = 0
 # Nifti orientation codes from nifti1_io.h
@@ -20,6 +22,7 @@ NIFTI_A2P = 4    # Anterior to Posterior
 NIFTI_I2S = 5    # Inferior to Superior
 NIFTI_S2I = 6    # Superior to Inferior
 
+# TODO: Move to using the nifti orientations instead of our names/spaces
 orientation_to_names = {NIFTI_L2R : 'xspace',
                         NIFTI_R2L : 'xspace',
                         NIFTI_P2A : 'yspace',

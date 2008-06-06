@@ -92,14 +92,14 @@ class Image(object):
     def _getaffine(self):
         if hasattr(self.grid, "affine"):
             return self.grid.affine
-        raise AttributeError
+        raise AttributeError, 'Nonlinear transform does not have an affine.'
     affine = property(_getaffine, doc="Affine transformation is one exists")
 
     def _getheader(self):
         # data loaded from a file should have a header
         if hasattr(self._data, 'header'):
             return self._data.header
-        raise AttributeError
+        raise AttributeError, 'Image created from arrays do not have headers.'
     header = property(_getheader, doc="Image header if loaded from disk")
 
     def __getitem__(self, index):
@@ -164,64 +164,6 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
     else:
         raise IOError, 'Unable to open file %s' % url
         
-    """
-    # Chris version 2008-05-30
-    # remove any zip extensions
-    url = splitzipext(url)[0]
-    fmt = PyNiftiIO(url)
-    if fmt is not None:
-        data = fmt.data
-        affine = fmt.affine
-        grid = grid_from_affine(affine, fmt.orientation, data.shape)
-        img = Image(data, grid)
-        img.scale_func = fmt.scale_func
-        img.scale_factor = fmt.scale_factor
-        img.scale_inter = fmt.scale_inter
-        img.orientation = fmt.orientation
-        img._header = fmt.header.copy()
-        del fmt
-        return img
-    else:
-        raise IOError, 'Unable to open file %s' % url
-    """
-
-    """
-    if not format:
-        valid = getformats(url)
-    else:
-        valid = [format]
-    errors = {}
-    imgfmt = {}
-    for format in valid:
-        try:
-            imgfmt = format(filename=url,
-                          datasource=datasource, mode=mode,
-                          grid=grid, clobber=clobber, **keywords)
-        except Exception, exception:
-            errors[format] = exception
-
-    if imgfmt:
-        tmpimg = Image(imgfmt, imgfmt.grid)
-        tmpimg._header = imgfmt.header
-
-        # Grab scale params from format object
-        tmpimg.scale_func, tmpimg.scale_factor, tmpimg.scale_inter = \
-            imgfmt.get_scale_factors()
-
-        return tmpimg
-
-    for format, exception in errors.items():
-        if not exception.__class__  is IOError:
-            raise NotImplementedError, 'no valid format found for URL %s.' \
-                'The following errors were raised:\n%s' % \
-                (url, "\n".join(["%s: %s\n%s" % \
-                (str(format), str(msg.__class__), str(msg)) \
-                for format, msg in errors.items()]))
-
-    raise IOError, \
-        'Filename "%s" (or its header files) does not exist' % url
-    """
-
 def load(url, datasource=DataSource(), format=None, mode='r', **keywords):
     """Load an image from the given url.
 
