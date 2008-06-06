@@ -96,7 +96,7 @@ class test_image(TestCase):
         self.assertTrue(abs(370000 - img3[0,0,0]) < scale)
         self.assertTrue(abs(100000 - img3[1,1,1]) < scale)
         
-
+    # TODO: This is a test for the SamplingGrid, not Image?
     def test_nondiag(self):
         """
         This test doesn't work, presumably something to do with the matfile.
@@ -126,6 +126,7 @@ class test_image(TestCase):
         np.testing.assert_almost_equal(b, t)
 
 
+    # TODO: Should be in test_generator.py
     def test_iter(self):
         """
         """
@@ -133,17 +134,19 @@ class test_image(TestCase):
         for i, d in g:
             self.assertEquals(d.shape, (2,20,20))
 
+    # TODO: Should be in test_generator.py
     def test_iter3(self):
         self.fail("this assertion is not raised -- python seems to give the default slice through data, i.e. iterating through the first indices")
         self.assertRaises(NotImplementedError, iter, self.img)
 
+    # TODO: Should be in test_generator.py
     def test_iter4(self):
         tmp = Image(np.zeros(self.img.shape), self.img.grid)
         write_data(tmp, data_generator(self.img, range(self.img.shape[0])))
         np.testing.assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
 
     
-
+    # TODO: Should be in test_generator.py
     def test_iter5(self):
         """
         This next test seems like it could be deprecated with simplified iterator options
@@ -161,11 +164,12 @@ class test_image(TestCase):
                                clobber=True)
         I = write_img.slice_iterator(mode='w')
         x = 0
-        for slice in I:
-            slice.set(np.ones((109, 91)))
+        for slice_ in I:
+            slice_.set(np.ones((109, 91)))
             x += 1
         self.assertEquals(x, 91)
 
+    # TODO: Should be in test_generator.py
     def test_parcels1(self):
         rho = load_image(anatfile)
         parcelmap = (np.asarray(rho)[:] * 100).astype(np.int32)
@@ -177,6 +181,7 @@ class test_image(TestCase):
 
         self.assertEquals(v, np.product(test.shape))
 
+    # TODO: Should be in test_generator.py
     def test_parcels3(self):
         rho = load_image(anatfile)[0]
         parcelmap = (np.asarray(rho)[:] * 100).astype(np.int32)
@@ -189,6 +194,7 @@ class test_image(TestCase):
 
         self.assertEquals(v, np.product(test.shape))
 
+    # TODO: Should be in test_generator.py
     @slow
     def test_parcels4(self):
         """TODO: fix this
@@ -217,46 +223,6 @@ class test_image(TestCase):
         array_img = Image(np.zeros((10, 10, 10)), SamplingGrid.identity(['zspace', 'yspace', 'xspace'], (10,)*3))
 
 
-
-def test_nifti_scaling():
-    def nifti_scaling(data, **kwargs):
-        scale_factor = kwargs.get('scale_factor', 1.0)
-        scale_inter = kwargs.get('scale_inter', 0.0)
-        return data * scale_factor + scale_inter
-    data = np.ones((2,3,4))
-    img = fromarray(data)
-    img.scale_factor = 3.0
-    img.scale_inter = 10.0
-    img.scale_func = nifti_scaling
-    #img.scale_func = lambda x,m,b : m * x + b
-    # image.__array__ method will apply scaling
-    data = np.asarray(img)
-    assert data.mean() == 13.0
-    # image.__getitem__ method will apply scaling
-    data = img[:]
-    assert data._data.mean() == 13.0
-
-def test_analyze_scaling():
-    def analyze_scaling(data, **kwargs):
-        scale_factor = kwargs.get('scale_factor', 1.0)
-        return data * scale_factor
-    data = np.ones((2,3,4))
-    img = fromarray(data)
-    img.scale_factor = 3.0
-    img.scale_func = analyze_scaling
-    data = np.asarray(img)
-    assert data.mean() == 3.0
-    data = img[:]
-    assert data._data.mean() == 3.0
-
-def test_none_scaling():
-    data = np.ones((2,3,4))
-    img = fromarray(data)
-    assert img.scale_func == None
-    data = np.asarray(img)
-    assert data.mean() == 1.0
-    data = img[:]
-    assert data._data.mean() == 1.0
 
 def test_slicing():
     data = np.ones((2,3,4))
@@ -305,10 +271,7 @@ def test_ImageInterface():
     img[:] = 4
     assert np.allclose(img[:], 4)
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.core.image.image')
 
 if __name__ == '__main__':
-    #NumpyTest().run()
     nose.runmodule()
 
