@@ -189,34 +189,23 @@ def demo_coregistration(anatfile, funclist, optimizer_method='hybrid',
     return measures, imageF_anat, fmri_series
 
 
-def load_volume(imagedesc, imagename=None, threshold=0.999, debug=0):
-    """Load image volume
+def load_volume(filename, threshold=0.999, debug=0):
+    """Load and scale an image.
 
-    image = load_volume(imagedesc, imagename=None, threshold=0.999, debug=0)
-    --- OR ---
-    image, h, ih, index = load_volume(imagedesc, imagename=None, 
-    threshold=0.999, debug=0)
-
-    gets an image descriptor and optional filename and returns a
-    scaled 8 bit volume. The scaling is designed to make full use of
-    the 8 bits (ignoring high amplitude outliers).  The current method
-    uses numpy fromfile and will be replaced by neuroimage nifti load.
+    Load an image from a file and scale the data into 8bit images.
+    The scaling is designed to make full use of the 8 bits (ignoring
+    high amplitude outliers).
 
     Parameters 
     ----------
-    imagedesc : {dictionary} 
-        imagedesc is the descriptor of the image to be read. 
-
-    imagename : {string} : optional
-        name of image file. No name creates a blank image that is used for 
-        creating a rotated test image or image rescaling.
-
+    filename : {string}
+        Name of the image file.
     threshold : {float} : optional 
-        this is the threshold for upper cutoff in the 8 bit
-        scaling. The volume histogram and integrated histogram is
+        This is the threshold for upper cutoff in the 8 bit
+        scaling. The volume histogram and integrated histogram are
         computed and the upper amplitude cutoff is where the
         integrated histogram crosses the value set in the threshold.
-        setting threshold to 1.0 means the scaling is done over the
+        Setting threshold to 1.0 means the scaling is done over the
         min to max amplitude range.
 
     debug : {0, 1} : optional
@@ -225,50 +214,46 @@ def load_volume(imagedesc, imagename=None, threshold=0.999, debug=0):
 
     Returns 
     -------
-    image : {dictionary}
-        the volume data assoicated with the filename or a blank volume
-        of the same dimensions as specified in imagedesc.
+    image : nipy image
+        A nipy image object.
 
-    --- OR --- (if debug = 1)
-
-    image : {dictionary}
-        the volume data assoicated with the filename or a blank volume
-        of the same dimensions as specified in imagedesc.
-
-    h : {nd_array}
+    h : {nd_array}, optional
         the volume 1D amplitude histogram
 
-    ih : {nd_array}
+    ih : {nd_array}, optional
         the volume 1D amplitude integrated histogram
 
-    index : {int}
+    index : {int}, optional
         the amplitude (histogram index) where the integrated histogram
         crosses the 'threshold' provided.
 
     Examples
     --------
+    # Broken!
+    >>> image_anat, h, ih, index = load_volume('ANAT1_V0001.img', debug=1)
 
-    >>> import numpy as NP
-    >>> import _registration as reg
-    >>> anat_desc = reg.load_anatMRI_desc()
-    >>> image_anat, h, ih, index = reg.load_volume(anat_desc, imagename='ANAT1_V0001.img', debug=1)
-    >>> index
-    210
-
+    Notes
+    -----
+    Usage:
+    image = load_volume(imagedesc, imagename=None, threshold=0.999, debug=0)
+    image, h, ih, index = load_volume(imagedesc, imagename=None, 
+    threshold=0.999, debug=0)
 
     """
 
     # load MRI or fMRI volume and return an autoscaled 8 bit image.
     # autoscale is using integrated histogram to deal with outlier 
     # high amplitude voxels
+
     if imagename is None:
         
-        # imagename of none means to create a blank image
-        ImageVolume = np.zeros(imagedesc['layers']*imagedesc['rows']*imagedesc['cols'],
-                        dtype=np.uint16).reshape(imagedesc['layers'], imagedesc['rows'], imagedesc['cols'])
+
     else:
         ImageVolume = np.fromfile(imagename,
                         dtype=np.uint16).reshape(imagedesc['layers'], imagedesc['rows'], imagedesc['cols']);
+
+    img = image.load(filename)
+    # BUG: need some way to verify the data is in the zyx order!
 
     # the mat (voxel to physical) matrix
     M = np.eye(4, dtype=np.float64);
@@ -284,33 +269,56 @@ def load_volume(imagedesc, imagename=None, threshold=0.999, debug=0):
     D[1] = imagedesc['cols']
     D[2] = imagedesc['layers']
 
-    if imagename == None:
-        # no voxels to scale to 8 bits
-        ImageVolume = ImageVolume.astype(np.uint8)
-        image = {'data' : ImageVolume, 'mat' : M, 'dim' : D, 'fwhm' : F}
-        return image
 
     # 8 bit scale with threshold clip of the volume integrated histogram
-    max = ImageVolume.max()
-    min = ImageVolume.min()
+    max = np.max(img)
+    min = np.min(img)
     ih  = np.zeros(max-min+1, dtype=np.float64);
     h   = np.zeros(max-min+1, dtype=np.float64);
     if threshold <= 0:
         threshold = 0.999
     elif threshold > 1.0:
         threshold = 1.0
+
     # get the integrated histogram of the volume and get max from 
     # the threshold crossing in the integrated histogram 
+    
+    # __UPDATE__
     index  = reg.register_image_threshold(ImageVolume, h, ih, threshold)
     scale  = 255.0 / (index-min)
+
     # generate the scaled 8 bit image
-    images = (scale*(ImageVolume.astype(np.float)-min))
-    images[images>255] = 255 
-    image = {'data' : images.astype(np.uint8), 'mat' : M, 'dim' : D, 'fwhm' : F}
+    #images = (scale*(ImageVolume.astype(np.float)-min))
+    images = scale * (np.asarray(img).astype(np.float) - min)
+    images[images>255] = 255
+
+    #image = {'data' : images.astype(np.uint8), 'mat' : M, 'dim' : D, 'fwhm' : F}
+    # image -> create new image
+    # M -> img.affine
+    # D -> img.shape
+    # fwhm -> sampling_sizes param
+    image = image.fromarray(data, names, grid)
+
     if debug == 1:
         return image, h, ih, index
     else:
         return image
+
+def emtpy_volume():
+    """Placeholder for the code that Tom has in load_volume to create an
+    empty volume.  Cleanup later"""
+    raise NotImplementedError
+
+    # imagename of none means to create a blank image
+    ImageVolume = np.zeros(imagedesc['layers']*imagedesc['rows']*imagedesc['cols'],
+                           dtype=np.uint16).reshape(imagedesc['layers'], imagedesc['rows'], imagedesc['cols'])
+
+    if imagename == None:
+        # no voxels to scale to 8 bits
+        ImageVolume = ImageVolume.astype(np.uint8)
+        image = {'data' : ImageVolume, 'mat' : M, 'dim' : D, 'fwhm' : F}
+        return image
+
 
 if __name__ == '__main__':
     print 'Coregister anatomical:\n', anatfile
@@ -323,3 +331,33 @@ if __name__ == '__main__':
     #reg.demo_MRI_coregistration(anatfile, funclist[0:4])
     demo_coregistration(anatfile, funclist)
 
+
+
+"""
+# reshape into zxy order?
+
+ImageVolume = np.fromfile(imagename,
+dtype=np.uint16).reshape(imagedesc['layers'], imagedesc['rows'], imagedesc['cols']);
+
+                      
+# affine is in img.affine
+# the mat (voxel to physical) matrix
+M = np.eye(4, dtype=np.float64);
+# for now just the sample size (mm units) in x, y and z
+M[0][0] = imagedesc['sample_x']
+M[1][1] = imagedesc['sample_y']
+M[2][2] = imagedesc['sample_z']
+
+# dims are stored in img.shape
+# dimensions
+D = np.zeros(3, dtype=np.int32);
+
+# Gaussian kernel - fill in with build_fwhm() 
+F = np.zeros(3, dtype=np.float64);
+
+# xyz order?
+D[0] = imagedesc['rows']
+D[1] = imagedesc['cols']
+D[2] = imagedesc['layers']
+
+"""
