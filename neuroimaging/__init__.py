@@ -42,7 +42,7 @@ __status__   = 'alpha'
 __date__    = "$LastChangedDate$"
 __url__     = 'http://neuroimaging.scipy.org'
 
-
+"""
 from neuroimaging import defines
 
 packages = (
@@ -86,7 +86,13 @@ if not ENTHOUGHT_TRAITS_DEF:
                  'neuroimaging.utils.enthought.traits.ui.null',
                  'neuroimaging.utils.enthought.util',
                  'neuroimaging.utils.enthought.resource')
+"""
 
+# These are slowing down the imports... all of pylab is imported!
+# Appears this is used in the ui and in the examples... handle it there
+# not for all of nipy
+PYLAB_DEF = False
+ENTHOUGHT_TRAITS_DEF = False
 
 def import_from(modulename, objectname):
     """Import and return objectname from modulename."""
