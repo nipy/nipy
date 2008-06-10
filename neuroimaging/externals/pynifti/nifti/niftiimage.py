@@ -12,7 +12,7 @@ __docformat__ = 'restructuredtext'
 
 
 # the swig wrapper if the NIfTI C library
-import nifti.nifticlib as nifticlib
+import nifticlib
 import numpy as N
 
 

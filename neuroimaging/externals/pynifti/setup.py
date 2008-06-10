@@ -9,52 +9,77 @@
 
 __docformat__ = 'restructuredtext'
 
-#from distutils.core import setup, Extension
-#import os
 from os.path import join
-#import numpy as N
-#from glob import glob
 
-# We don't want to require swig... include generated C files
+# Debug import
 """
-nifti_wrapper_file = os.path.join('nifti', 'nifticlib.py')
+import neuroimaging.externals.pynifti # directory /Users/cburns/src/nipy/neuroimaging/externals/pynifti
 
-# create an empty file to workaround crappy swig wrapper installation
-if not os.path.isfile(nifti_wrapper_file):
-    open(nifti_wrapper_file, 'w')
+# /Users/cburns/src/nipy/neuroimaging/externals/pynifti/__init__.pyc matches /Users/cburns/src/nipy/neuroimaging/externals/pynifti/__init__.py
+
+import neuroimaging.externals.pynifti # precompiled from /Users/cburns/src/nipy/neuroimaging/externals/pynifti/__init__.pyc
+
+import neuroimaging.externals.pynifti.nifti # directory /Users/cburns/src/nipy/neuroimaging/externals/pynifti/nifti
+
+# /Users/cburns/src/nipy/neuroimaging/externals/pynifti/nifti/__init__.pyc matches /Users/cburns/src/nipy/neuroimaging/externals/pynifti/nifti/__init__.py
+
+import neuroimaging.externals.pynifti.nifti # precompiled from /Users/cburns/src/nipy/neuroimaging/externals/pynifti/nifti/__init__.pyc
+
+import nifti # directory /Users/cburns/local/lib/python2.5/site-packages/nifti
+
+# /Users/cburns/local/lib/python2.5/site-packages/nifti/__init__.pyc matches /Users/cburns/local/lib/python2.5/site-packages/nifti/__init__.py
+
+import nifti # precompiled from /Users/cburns/local/lib/python2.5/site-packages/nifti/__init__.pyc
+
+# /Users/cburns/local/lib/python2.5/site-packages/nifti/niftiimage.pyc matches /Users/cburns/local/lib/python2.5/site-packages/nifti/niftiimage.py
+
+import nifti.niftiimage # precompiled from /Users/cburns/local/lib/python2.5/site-packages/nifti/niftiimage.pyc
+
+# /Users/cburns/local/lib/python2.5/site-packages/nifti/nifticlib.pyc matches /Users/cburns/local/lib/python2.5/site-packages/nifti/nifticlib.py
+
+import nifti.nifticlib # precompiled from /Users/cburns/local/lib/python2.5/site-packages/nifti/nifticlib.pyc
+
+dlopen("/Users/cburns/local/lib/python2.5/site-packages/nifti/_nifticlib.so", 2);
+
+import nifti._nifticlib # dynamically loaded from /Users/cburns/local/lib/python2.5/site-packages/nifti/_nifticlib.so
+
 """
 
-# find numpy headers
-#numpy_headers = os.path.join(os.path.dirname(N.__file__),'core','include')
-
-
-# Notes on the setup
-# Version scheme is:
-# 0.<4-digit-year><2-digit-month><2-digit-day>.<ever-increasing-integer>
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
+
+    # debug
+    from numpy.distutils import system_info
+    system_info.verbosity = 1
 
     config = Configuration('nifti', parent_package, top_path)
  
     nifticlib_include_dirs = [get_numpy_include_dirs(),
                               join('nifti', 'nifticlib', 'include')]
 
+    # znz library
     znzlib_src = join('nifti', 'nifticlib', 'znzlib', 'znzlib.c')
     config.add_library('znz',
-                       sources=znzlib_src,
-                       headers=join('nifti', 'nifticlib', 'znzlib', 'znzlib.h'))
+                       sources = znzlib_src,
+                       headers = join('nifti', 'nifticlib', 'znzlib', 
+                                      'znzlib.h'),
+                       libraries = 'z')
 
+    # niftiio library
     niftiio_src = join('nifti', 'nifticlib', 'niftilib', 'nifti1_io.c')
     config.add_library('niftilib',
-                       sources=niftiio_src,
-                       headers=join('nifti', 'nifticlib', 'niftilib',
+                       sources = niftiio_src,
+                       headers = join('nifti', 'nifticlib', 'niftilib',
                                     'nifti1_io.h'),
                        include_dirs = nifticlib_include_dirs)
 
-    #config.add_extension(join('nifti', '_nifticlib'),
-    config.add_extension('_nifticlib',
-                         sources = [join('nifti', 'nifticlib_wrap.c')],
-                         include_dirs = nifticlib_include_dirs,
+    # nifticlib extension
+    nifticlib_src = join('nifti', 'nifticlib_wrap.c')
+    config.add_extension(join('nifti', '_nifticlib'),
+    #config.add_extension('_nifticlib',
+                         sources = nifticlib_src,
+                         include_dirs = [nifticlib_include_dirs,
+                                         join('usr', 'lib')],
                          libraries = ['znz', 'niftilib'],
                          depends = [znzlib_src, niftiio_src])
 
