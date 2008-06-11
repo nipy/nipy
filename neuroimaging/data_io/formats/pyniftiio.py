@@ -6,7 +6,7 @@ Use PyNifti to open files and extract necessary data to generate a Nipy Image.
 
 import numpy as np
 
-import nifti
+from neuroimaging.externals.pynifti import nifti
 
 # TODO: Change this to use the nifticlib library directly instead of this
 # weave extension.
