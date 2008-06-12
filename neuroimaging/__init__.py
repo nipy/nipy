@@ -42,7 +42,6 @@ __status__   = 'alpha'
 __date__    = "$LastChangedDate$"
 __url__     = 'http://neuroimaging.scipy.org'
 
-"""
 from neuroimaging import defines
 
 packages = (
@@ -69,6 +68,8 @@ packages = (
   'neuroimaging.utils.tests',
   'neuroimaging.utils.tests.data',
   'neuroimaging.testing')
+
+"""
 
 PYLAB_DEF, pylab = defines.pylab_def()
 if PYLAB_DEF:
