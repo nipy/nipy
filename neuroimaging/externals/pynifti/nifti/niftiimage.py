@@ -1,3 +1,4 @@
+
 #emacs: -*- mode: python-mode; py-indent-offset: 4; indent-tabs-mode: nil -*-
 #ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
@@ -744,8 +745,8 @@ class NiftiImage(object):
 
         pixdim = nifticlib.floatArray_frompointer( self.__nimg.pixdim )
 
-        for i in value:
-            pixdim[i+1] = float(i)
+        for ind, val in enumerate(value):
+            pixdim[ind+1] = float(val)
 
 
     def getPixDims(self):
