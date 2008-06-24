@@ -289,7 +289,8 @@ class TestFromArray(TestCase):
         self.array4D_shape = (2,3,4,5)
 
     def test_defaults_2D(self):
-        img = image.fromarray(np.ones(self.array2D_shape))
+        data = np.ones(self.array2D_shape)
+        img = image.fromarray(data, names=['yspace', 'xspace'])
         assert isinstance(img._data, np.ndarray)
         assert img.ndim == 2
         assert img.shape == self.array2D_shape
@@ -308,13 +309,16 @@ class TestFromArray(TestCase):
         assert img.affine.diagonal().all() == 1
 
     def test_defaults_4D(self):
-        img = image.fromarray(np.ones(self.array4D_shape))
+        data = np.ones(self.array4D_shape)
+        names = ['time', 'zspace', 'yspace', 'xspace']
+        img = image.fromarray(data, names=names)
         assert isinstance(img._data, np.ndarray)
         assert img.ndim == 4
         assert img.shape == self.array4D_shape
         self.assertRaises(AttributeError, getattr, img, 'header')
         assert img.affine.shape == (5,5)
         assert img.affine.diagonal().all() == 1
+
 
 # Nose also has assert_ functions, but they're hidden in tools
 #nose.tools.assert_raises(AttributeError, getattr, img, 'header')
