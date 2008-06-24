@@ -234,12 +234,12 @@ def test_slicing():
     assert img.ndim == 3
     # 2D slice
     img2D = img[:,:,0]
-    assert isinstance(img, Image)
-    assert img.ndim == 2
+    assert isinstance(img2D, Image)
+    assert img2D.ndim == 2
     # 1D slice
     img1D = img[:,0,0]
-    assert isinstance(img, Image)
-    assert img.ndim == 1
+    assert isinstance(img1D, Image)
+    assert img1D.ndim == 1
 
 
 class ArrayLikeObj(object):
