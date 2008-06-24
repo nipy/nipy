@@ -17,7 +17,7 @@ from neuroimaging.testing import anatfile, funcfile
 from neuroimaging.data_io.api import Analyze
 
 
-class test_image(TestCase):
+class TestImageClass(TestCase):
 
     def setUp(self):
         self.img = load_image(anatfile)
@@ -38,21 +38,16 @@ class test_image(TestCase):
         self.assertRaises(ValueError, Image, None, None)
 
     def test_badfile(self):
-        filename = "bad.file"
-        self.assertRaises(NotImplementedError, Image, filename)
+        filename = "bad_file.foo"
+        self.assertRaises(RuntimeError, load_image, filename)
 
-    def test_analyze(self):
-        """
-        TODO: 
-        """
-        self.fail("this maximum is wrong for the new anatfile -- value should be fixed")
+    def test_maxmin_values(self):
         y = np.asarray(self.img)
         self.assertEquals(y.shape, tuple(self.img.grid.shape))
-        y = y.flatten()
-        self.assertEquals(np.maximum.reduce(y), 437336.375)
-        self.assertEquals(np.minimum.reduce(y), 0.)
+        self.assertEquals(y.max(), 7902.0)
+        self.assertEquals(y.min(), 1910.0)
 
-    def test_slice1(self):
+    def test_slice(self):
         x = self.img[3]
         self.assertEquals(x.shape, tuple(self.img.grid.shape[1:]))
         
@@ -214,10 +209,6 @@ class test_image(TestCase):
             v += 1
         self.assertEquals(v, test.grid.shape[0])
 
-    def test_badfile(self):
-        # We shouldn't be able to find a reader for this file!
-        filename = "test_image.py"
-        self.assertRaises(NotImplementedError, load_image, filename)
     def test_tofile(self):
         save_image(self.img, "tmp.img")
         tmp_img = load_image("tmp.img")
