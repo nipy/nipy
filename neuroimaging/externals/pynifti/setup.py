@@ -52,7 +52,6 @@ def configuration(parent_package='', top_path=None):
     nifticlib_src = join('nifti', 'nifticlib_wrap.c')
     config.add_extension(join('nifti', '_nifticlib'),
                          sources = nifticlib_src,
-                         define_macros = [define_have_zlib],
                          include_dirs = [nifticlib_include_dirs],
                          libraries = ['znz', 'niftilib'],
                          depends = [znzlib_src, niftiio_src])
