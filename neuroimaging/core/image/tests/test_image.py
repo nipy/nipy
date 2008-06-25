@@ -17,7 +17,7 @@ from neuroimaging.testing import anatfile, funcfile
 from neuroimaging.data_io.api import Analyze
 
 
-class TestImageClass(TestCase):
+class TestImage(TestCase):
 
     def setUp(self):
         self.img = load_image(anatfile)
@@ -47,33 +47,41 @@ class TestImageClass(TestCase):
         self.assertEquals(y.max(), 7902.0)
         self.assertEquals(y.min(), 1910.0)
 
-    def test_slice(self):
+    def test_slice_plane(self):
         x = self.img[3]
-        self.assertEquals(x.shape, tuple(self.img.grid.shape[1:]))
-        
-    def test_slice2(self):
+        self.assertEquals(x.shape, self.img.shape[1:])
+        self.assertEquals(x.shape, x.grid.shape)
+
+    def test_slice_block(self):
         x = self.img[3:5]
         self.assertEquals(x.shape, (2,) + tuple(self.img.grid.shape[1:]))
+        self.assertEquals(x.shape, x.grid.shape)
 
-    def test_slice3(self):
+    def test_slice_step(self):
         s = slice(0,20,2)
         x = self.img[s]
         self.assertEquals(x.shape, (10,) + tuple(self.img.grid.shape[1:]))
+        self.assertEquals(x.shape, x.grid.shape)
 
-    def test_slice4(self):
+    def test_slice_type(self):
         s = slice(0,self.img.grid.shape[0])
         x = self.img[s]
         self.assertEquals(x.shape, tuple((self.img.grid.shape)))
+        self.assertEquals(x.shape, x.grid.shape)
 
-    def test_slice5(self):
-        slice_1 = slice(0,20,2)
-        slice_2 = slice(0,50,5)
-        x = self.func[[slice_1,slice(None,None), slice_2]]
-        self.assertEquals(x.shape, (10,2,4,20))
+    def test_slice_steps(self):
+        zdim, ydim, xdim = self.img.shape
+        slice_z = slice(0, zdim, 2)
+        slice_y = slice(0, ydim, 2)
+        slice_x = slice(0, xdim, 2)
+        x = self.img[slice_z, slice_y, slice_x]
+        newshape = ((zdim/2)+1, (ydim/2)+1, (xdim/2)+1)
+        self.assertEquals(x.shape, newshape)
 
     def test_array(self):
         x = np.asarray(self.img)
-        
+        assert isinstance(x, np.ndarray)
+
     def test_file(self):
         self.fail('this is a problem with reading/writing so-called "mat" files -- all the functions for these have been moved from core.reference.mapping to data_io.formats.analyze -- and they need to be fixed because they do not work. the names of the functions are: matfromstr, matfromfile, matfrombin, matfromxfm, mattofile')
         save_image(self.img, 'tmp.hdr', format=Analyze)
@@ -218,7 +226,7 @@ class TestImageClass(TestCase):
 
 
 
-def test_slicing():
+def test_slicing_returns_image():
     data = np.ones((2,3,4))
     img = fromarray(data)
     assert isinstance(img, Image)
