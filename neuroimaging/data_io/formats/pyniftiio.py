@@ -46,43 +46,43 @@ class PyNiftiIO:
     """
 
     def __init__(self, data):
-        self._img = nifti.NiftiImage(data)
+        self._nim = nifti.NiftiImage(data)
 
     # image attributes
     # ----------------
     def _get_affine(self):
         # build affine transform from header info
-        return getaffine(self._img)
+        return getaffine(self._nim)
     affine = property(_get_affine)
 
     def _get_orientation(self):
         # Try the S and Q orientations and get one that works
-        ornt = self._img.getSOrientation()
+        ornt = self._nim.getSOrientation()
         if ornt[0] == NIFTI_UNKNOWN:
-            ornt = self._img.getQOrientation()
+            ornt = self._nim.getQOrientation()
         return ornt
     orientation = property(_get_orientation)
 
     def _get_header(self):
-        return self._img.header
+        return self._nim.header
     header = property(_get_header)
 
     def _getdata(self, index):
         """Apply slicing and return data."""
         # Only apply if scl_slope is nonzero
-        if self._img.slope != 0.0:
-            return self._img.data[index] * self._img.slope + self._img.intercept
+        if self._nim.slope != 0.0:
+            return self._nim.data[index] * self._nim.slope + self._nim.intercept
         else:
-            return self._img.data[index]
+            return self._nim.data[index]
 
     # array-like interface
     # --------------------
     def _get_ndim(self):
-        return self._img.data.ndim
+        return self._nim.data.ndim
     ndim = property(_get_ndim)
 
     def _get_shape(self):
-        return self._img.data.shape
+        return self._nim.data.shape
     shape = property(_get_shape)
 
     def __getitem__(self, index):
@@ -101,7 +101,7 @@ class PyNiftiIO:
     
     def __setitem__(self, index, data):
         # BUG:  Should check if file was opened read-only!
-        self._img.data[index] = data
+        self._nim.data[index] = data
 
     def __array__(self):
         # Generate slice index to match 'data[:]'
