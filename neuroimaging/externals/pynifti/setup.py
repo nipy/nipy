@@ -21,7 +21,7 @@ from os.path import join
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
 
-    config = Configuration('nifti', parent_package, top_path)
+    config = Configuration('pynifti', parent_package, top_path)
  
     nifticlib_include_dirs = [get_numpy_include_dirs(),
                               join('nifti', 'nifticlib', 'include')]
