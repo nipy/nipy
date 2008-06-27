@@ -45,8 +45,9 @@ class PyNiftiIO:
     """Wrapper around the PyNifit image class.
     """
 
-    def __init__(self, data):
+    def __init__(self, data, mode='r'):
         self._nim = nifti.NiftiImage(data)
+        self.mode = mode
 
     # image attributes
     # ----------------
@@ -100,8 +101,11 @@ class PyNiftiIO:
         return data
     
     def __setitem__(self, index, data):
-        # BUG:  Should check if file was opened read-only!
-        self._nim.data[index] = data
+        if self.mode is not 'r':
+            self._nim.data[index] = data
+        else:
+            raise IOError, \
+                "File %s is open for read only!" % self._nim.filename
 
     def __array__(self):
         # Generate slice index to match 'data[:]'

@@ -121,8 +121,7 @@ class Image(object):
 
 def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
           clobber=False, **keywords):
-    """
-    Create an `Image` from the given url/filename
+    """Create an `Image` from the given url/filename
 
     Parameters
     ----------
@@ -155,7 +154,7 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
     
     """
 
-    ioimg = PyNiftiIO(url)
+    ioimg = PyNiftiIO(url, mode)
     if ioimg is not None:
         grid = grid_from_affine(ioimg.affine, ioimg.orientation, ioimg.shape)
         # Build nipy image from array-like object and sampling grid
@@ -372,4 +371,3 @@ def grid_from_affine(affine, orientation, shape):
     affobj = Affine(affine)
     grid = SamplingGrid.from_affine(affobj, names, shape)
     return grid
-
