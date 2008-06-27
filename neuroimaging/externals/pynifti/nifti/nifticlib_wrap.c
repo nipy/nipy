@@ -2620,7 +2620,7 @@ static PyObject* wrapImageDataWithArray(nifti_image* _img)
     }
 
     /* create numpy array */
-    volarray = PyArray_FromDimsAndData ( ndims, ar_dim, array_type, ( char* ) _img->data );
+    volarray = PyArray_SimpleNewFromData ( ndims, ar_dim, array_type, ( char* ) _img->data );
 
     return PyArray_Return ( (PyArrayObject*) volarray  );
 }
@@ -11232,6 +11232,37 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_nifti_datatype_is_valid(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  int arg1 ;
+  int arg2 ;
+  int result;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:nifti_datatype_is_valid",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "nifti_datatype_is_valid" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = (int)(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "nifti_datatype_is_valid" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = (int)(val2);
+  result = (int)nifti_datatype_is_valid(arg1,arg2);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_nifti_datatype_from_string(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   char *arg1 = (char *) 0 ;
@@ -13537,6 +13568,19 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_nifti_compiled_with_zlib(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)":nifti_compiled_with_zlib")) SWIG_fail;
+  result = (int)nifti_compiled_with_zlib();
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_nifti_copy_extensions(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   nifti_image *arg1 = (nifti_image *) 0 ;
@@ -15685,6 +15729,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"nifti_swap_8bytes", _wrap_nifti_swap_8bytes, METH_VARARGS, NULL},
 	 { (char *)"nifti_swap_16bytes", _wrap_nifti_swap_16bytes, METH_VARARGS, NULL},
 	 { (char *)"nifti_swap_Nbytes", _wrap_nifti_swap_Nbytes, METH_VARARGS, NULL},
+	 { (char *)"nifti_datatype_is_valid", _wrap_nifti_datatype_is_valid, METH_VARARGS, NULL},
 	 { (char *)"nifti_datatype_from_string", _wrap_nifti_datatype_from_string, METH_VARARGS, NULL},
 	 { (char *)"nifti_datatype_to_string", _wrap_nifti_datatype_to_string, METH_VARARGS, NULL},
 	 { (char *)"swap_nifti_header", _wrap_swap_nifti_header, METH_VARARGS, NULL},
@@ -15754,6 +15799,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"nifti_set_iname_offset", _wrap_nifti_set_iname_offset, METH_VARARGS, NULL},
 	 { (char *)"nifti_set_type_from_names", _wrap_nifti_set_type_from_names, METH_VARARGS, NULL},
 	 { (char *)"nifti_add_extension", _wrap_nifti_add_extension, METH_VARARGS, NULL},
+	 { (char *)"nifti_compiled_with_zlib", _wrap_nifti_compiled_with_zlib, METH_VARARGS, NULL},
 	 { (char *)"nifti_copy_extensions", _wrap_nifti_copy_extensions, METH_VARARGS, NULL},
 	 { (char *)"nifti_free_extensions", _wrap_nifti_free_extensions, METH_VARARGS, NULL},
 	 { (char *)"nifti_get_intlist", _wrap_nifti_get_intlist, METH_VARARGS, NULL},
