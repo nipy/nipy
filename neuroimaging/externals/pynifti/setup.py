@@ -24,28 +24,26 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('pynifti', parent_package, top_path)
  
     nifticlib_include_dirs = [get_numpy_include_dirs(),
-                              join('nifti', 'nifticlib', 'include')]
+                              join('nifti', 'nifticlibs')]
 
     # The c source files have several ifdef's that only compile in
     # support for zlib if this is defined.
     define_have_zlib = ('HAVE_ZLIB', '1')
 
     # znz library
-    znzlib_src = join('nifti', 'nifticlib', 'znzlib', 'znzlib.c')
+    znzlib_src = join('nifti', 'nifticlibs', 'znzlib.c')
     config.add_library('znz',
                        sources = znzlib_src,
                        macros = [define_have_zlib],
-                       headers = join('nifti', 'nifticlib', 'znzlib', 
-                                      'znzlib.h'),
+                       headers = join('nifti', 'nifticlibs', 'znzlib.h'),
                        libraries = 'z')
 
     # niftiio library
-    niftiio_src = join('nifti', 'nifticlib', 'niftilib', 'nifti1_io.c')
+    niftiio_src = join('nifti', 'nifticlibs', 'nifti1_io.c')
     config.add_library('niftilib',
                        sources = niftiio_src,
                        macros = [define_have_zlib],
-                       headers = join('nifti', 'nifticlib', 'niftilib',
-                                    'nifti1_io.h'),
+                       headers = join('nifti', 'nifticlibs', 'nifti1_io.h'),
                        include_dirs = nifticlib_include_dirs)
 
     # nifticlib extension
