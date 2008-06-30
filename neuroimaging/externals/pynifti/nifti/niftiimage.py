@@ -12,9 +12,9 @@ __docformat__ = 'restructuredtext'
 
 
 # the swig wrapper if the NIfTI C library
-import nifti.nifticlib as nifticlib
-from nifti.niftiformat import NiftiFormat
-from nifti.utils import splitFilename, nifti2numpy_dtype_map
+import nifticlib
+from niftiformat import NiftiFormat
+from utils import splitFilename, nifti2numpy_dtype_map
 import numpy as N
 
 
@@ -80,6 +80,10 @@ class NiftiImage(NiftiFormat):
         """Do all necessary cleanups.
         """
         self.unload()
+
+        # it is required to call base class destructors!
+        NiftiFormat.__del__(self)
+
 
 
     def save(self, filename=None, filetype = 'NIFTI'):
@@ -440,6 +444,9 @@ class MemMappedNiftiImage(NiftiImage):
         """
         self._data.sync()
 
+        # it is required to call base class destructors!
+        NiftiFormat.__del__(self)
+
 
     def save(self):
         """Save the image.
@@ -473,3 +480,25 @@ class MemMappedNiftiImage(NiftiImage):
         raise RuntimeError, \
               "Filename modifications are not supported for memory mapped " \
               "images."
+
+
+def cropImage( nimg, bbox ):
+    """ Crop an image.
+
+    'bbox' has to be a sequency of (min,max) tuples (one for each image
+    dimension).
+
+    The function returns the cropped image. The data is not shared with the
+    original image, but is copied.
+    """
+
+    # build crop command
+    cmd = 'nimg.data.squeeze()['
+    cmd += ','.join( [ ':'.join( [ str(i) for i in dim ] ) for dim in bbox ] )
+    cmd += ']'
+
+    # crop the image data array
+    cropped = eval(cmd).copy()
+
+    # return the cropped image with preserved header data
+    return NiftiImage(cropped, nimg.header)
