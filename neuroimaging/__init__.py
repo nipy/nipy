@@ -70,7 +70,6 @@ packages = (
   'neuroimaging.testing')
 
 """
-
 PYLAB_DEF, pylab = defines.pylab_def()
 if PYLAB_DEF:
     packages += ('neuroimaging.ui',
@@ -80,13 +79,13 @@ if PYLAB_DEF:
 
 ENTHOUGHT_TRAITS_DEF, traits = defines.enthought_traits_def()
 if not ENTHOUGHT_TRAITS_DEF:
-    packages += ('neuroimaging.utils',
-                 'neuroimaging.utils.enthought',
-                 'neuroimaging.utils.enthought.traits',
-                 'neuroimaging.utils.enthought.traits.ui',
-                 'neuroimaging.utils.enthought.traits.ui.null',
-                 'neuroimaging.utils.enthought.util',
-                 'neuroimaging.utils.enthought.resource')
+    packages += ('neuroimaging.externals',
+                 'neuroimaging.externals.enthought',
+                 'neuroimaging.externals.enthought.traits',
+                 'neuroimaging.externals.enthought.traits.ui',
+                 'neuroimaging.externals.enthought.traits.ui.null',
+                 'neuroimaging.externals.enthought.util',
+                 'neuroimaging.externals.enthought.resource')
 """
 
 # These are slowing down the imports... all of pylab is imported!
