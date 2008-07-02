@@ -8,34 +8,19 @@ from neuroimaging.externals.scipy.testing import *
 
 from neuroimaging.data_io.formats.pyniftiio import PyNiftiIO
 
-# Test File io
-"""
-open file read only 'r'
-open readwrite 'r+'
-create new file from array
-create new file from an Image (copy data array and header)
-NOTE:  Need to update to the modular branch of pynifti, there's a few bug fixes
-    to saving image attr to a file for images created from arrays. 2008-06-21
-"""
-
 def test_affine_analyze():
     # Test method1 from nifti1.h, Analyze 7.5 mapping.
     # pynifti stores numpy array's in zyx order
     data = np.zeros((4,3,2))
     img = PyNiftiIO(data)
+    pdim = [2.0, 3.0, 4.0, 1.0, 1.0, 1.0, 1.0]
+    img._nim.pixdim = pdim
+    xform = np.array([[4.0, 0.0, 0.0, 4.0],
+                     [0.0, 3.0, 0.0, 3.0],
+                     [0.0, 0.0, 2.0, 2.0],
+                     [0.0, 0.0, 0.0, 1.0]])
     assert img._nim.header['sform_code'] == 0
     assert img._nim.header['qform_code'] == 0
-    pdim = [2.0, 3.0, 4.0, 1.0]
-    qoff = [20.0, 30.0, 40.0]
-    # Note: pixdim attr in pynifti images is nifti pixdim element's 1 through 7
-    #     (does not include qfac, pixdim[0])
-    img._nim.pixdim = pdim
-    img._nim.qoffset = qoff
-    # create an array to test against
-    xform = np.array([[4.0, 0.0, 0.0, 44.0],
-                     [0.0, 3.0, 0.0, 33.0],
-                     [0.0, 0.0, 2.0, 22.0],
-                     [0.0, 0.0, 0.0, 1.0]])
     assert np.allclose(img.affine, xform)
 
 def test_affine_qform():

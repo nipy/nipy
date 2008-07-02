@@ -143,7 +143,6 @@ def getaffine(img):
         # Method 2 in Nifti1 spec.
         transform = img.getQForm()
     else:
-        qoffset = img.getQOffset()
         # getPixDims only returns the last 7 pixdims, does not include qfac
         pdims = img.getPixDims()
         qfac = img.qfac
@@ -151,7 +150,6 @@ def getaffine(img):
         # unpack pdims tuple into pixdims list
         [pixdims.append(i) for i in pdims]
         transform = np.diag(pixdims[1:5])
-        transform[:3,3] = qoffset
 
     """
     generate transforms to flip data from 
