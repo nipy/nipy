@@ -32,13 +32,13 @@ def configuration(parent_package='', top_path=None):
 
     # znzlib has the znzprintf ifdef'd with a WIN32.  Define it so it's
     # included in Windows builds.
-    define_win32 = ('WIN32', '1')
+    undefine_win32 = ('WIN32', '0')
     
     # znz library
     znzlib_src = join('nifti', 'nifticlibs', 'znzlib.c')
     config.add_library('znz',
                        sources = znzlib_src,
-                       macros = [define_have_zlib, define_win32],
+                       macros = [define_have_zlib, undefine_win32],
                        headers = join('nifti', 'nifticlibs', 'znzlib.h'),
                        libraries = 'z')
 
