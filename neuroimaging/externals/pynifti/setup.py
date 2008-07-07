@@ -30,6 +30,10 @@ def configuration(parent_package='', top_path=None):
     # support for zlib if this is defined.
     define_have_zlib = ('HAVE_ZLIB', '1')
 
+    # znzlib has the znzprintf ifdef'd with a WIN32.  Define it so it's
+    # included in Windows builds.
+    define_win32 = ('WIN32', '1')
+    
     # znz library
     znzlib_src = join('nifti', 'nifticlibs', 'znzlib.c')
     config.add_library('znz',
@@ -42,7 +46,7 @@ def configuration(parent_package='', top_path=None):
     niftiio_src = join('nifti', 'nifticlibs', 'nifti1_io.c')
     config.add_library('niftilib',
                        sources = niftiio_src,
-                       macros = [define_have_zlib],
+                       macros = [define_have_zlib, define_win32],
                        headers = join('nifti', 'nifticlibs', 'nifti1_io.h'),
                        include_dirs = nifticlib_include_dirs)
 
