@@ -60,6 +60,8 @@ def configuration(parent_package='', top_path=None):
                          libraries = ['znz', 'niftilib'],
                          depends = [znzlib_src, niftiio_src])
 
+    config.add_subpackage('nifti')
+    
     return config
 
 if __name__ == '__main__':
