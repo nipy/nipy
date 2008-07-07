@@ -38,7 +38,7 @@ def configuration(parent_package='', top_path=None):
     znzlib_src = join('nifti', 'nifticlibs', 'znzlib.c')
     config.add_library('znz',
                        sources = znzlib_src,
-                       macros = [define_have_zlib],
+                       macros = [define_have_zlib, define_win32],
                        headers = join('nifti', 'nifticlibs', 'znzlib.h'),
                        libraries = 'z')
 
@@ -46,7 +46,7 @@ def configuration(parent_package='', top_path=None):
     niftiio_src = join('nifti', 'nifticlibs', 'nifti1_io.c')
     config.add_library('niftilib',
                        sources = niftiio_src,
-                       macros = [define_have_zlib, define_win32],
+                       macros = [define_have_zlib],
                        headers = join('nifti', 'nifticlibs', 'nifti1_io.h'),
                        include_dirs = nifticlib_include_dirs)
 
