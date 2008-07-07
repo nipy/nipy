@@ -4077,55 +4077,6 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_znzprintf__varargs__(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *varargs) {
-  PyObject *resultobj = 0;
-  znzFile arg1 = (znzFile) 0 ;
-  char *arg2 = (char *) 0 ;
-  void *arg3 = 0 ;
-  int result;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int res2 ;
-  char *buf2 = 0 ;
-  int alloc2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:znzprintf",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_znzptr, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "znzprintf" "', argument " "1"" of type '" "znzFile""'"); 
-  }
-  arg1 = (znzFile)(argp1);
-  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "znzprintf" "', argument " "2"" of type '" "char const *""'");
-  }
-  arg2 = (char *)(buf2);
-  result = (int)znzprintf(arg1,(char const *)arg2,arg3);
-  resultobj = SWIG_From_int((int)(result));
-  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
-  return resultobj;
-fail:
-  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_znzprintf(PyObject *self, PyObject *args) {
-  PyObject *resultobj;
-  PyObject *varargs;
-  PyObject *newargs;
-  
-  newargs = PyTuple_GetSlice(args,0,2);
-  varargs = PyTuple_GetSlice(args,2,PyTuple_Size(args)+1);
-  resultobj = _wrap_znzprintf__varargs__(self,newargs,varargs);
-  Py_XDECREF(newargs);
-  Py_XDECREF(varargs);
-  return resultobj;
-}
-
-
 SWIGINTERN PyObject *_wrap_nifti_1_header_sizeof_hdr_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   struct nifti_1_header *arg1 = (struct nifti_1_header *) 0 ;
@@ -15456,7 +15407,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"znzgets", _wrap_znzgets, METH_VARARGS, NULL},
 	 { (char *)"znzputc", _wrap_znzputc, METH_VARARGS, NULL},
 	 { (char *)"znzgetc", _wrap_znzgetc, METH_VARARGS, NULL},
-	 { (char *)"znzprintf", _wrap_znzprintf, METH_VARARGS, NULL},
 	 { (char *)"nifti_1_header_sizeof_hdr_set", _wrap_nifti_1_header_sizeof_hdr_set, METH_VARARGS, NULL},
 	 { (char *)"nifti_1_header_sizeof_hdr_get", _wrap_nifti_1_header_sizeof_hdr_get, METH_VARARGS, NULL},
 	 { (char *)"nifti_1_header_data_type_set", _wrap_nifti_1_header_data_type_set, METH_VARARGS, NULL},

@@ -94,7 +94,6 @@ znzputs = _nifticlib.znzputs
 znzgets = _nifticlib.znzgets
 znzputc = _nifticlib.znzputc
 znzgetc = _nifticlib.znzgetc
-znzprintf = _nifticlib.znzprintf
 class nifti_1_header(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, nifti_1_header, name, value)
