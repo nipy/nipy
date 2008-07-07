@@ -368,6 +368,11 @@ def grid_from_affine(affine, orientation, shape):
     names = []
     for ornt in orientation:
         names.append(orientation_to_names.get(ornt))
+    names = names[::-1]
+    if len(shape) == 4:
+        names = ['time'] + names
+    elif len(shape) == 5:
+        names = ['vector', 'time'] + names
     affobj = Affine(affine)
     grid = SamplingGrid.from_affine(affobj, names, shape)
     return grid

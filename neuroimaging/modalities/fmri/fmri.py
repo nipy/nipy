@@ -8,7 +8,7 @@ from neuroimaging.core.reference.mapping import Affine
 
 class FmriImage(ImageList):
     """
-    TODO: change hte name of FmriImage -- maybe FmriImageList
+    TODO: change the name of FmriImage -- maybe FmriImageList
     """
 
     def __init__(self, images=None, TR=0., slicetimes=None,
@@ -110,7 +110,9 @@ def fromimage(fourdimage, TR=None, slicetimes=None):
     Parameters
     ----------
     fourdimage: a 4D Image 
-    TR:     time between frames in fMRI acquisition
+    TR:     time between frames in fMRI acquisition, defaults to
+            the diagonal entry of slowest moving dimension
+            of Affine transform
     slicetimes: ndarray specifying offset for each slice of each frame
 
 
@@ -128,4 +130,7 @@ def fromimage(fourdimage, TR=None, slicetimes=None):
         newg = SamplingGrid(a, im.grid.input_coords, oc)
         images.append(Image(asarray(im), newg))
 
+    if TR is None:
+        TR = fourdimage.grid.mapping.transform[0,0]
+        
     return FmriImage(images=images, TR=TR, slicetimes=slicetimes)

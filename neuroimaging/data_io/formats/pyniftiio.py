@@ -149,8 +149,9 @@ def getaffine(img):
         pixdims = [qfac]
         # unpack pdims tuple into pixdims list
         [pixdims.append(i) for i in pdims]
-        transform = np.diag(pixdims[1:5])
-
+        transform = np.identity(4)
+        transform[:-1, :-1] = np.diag(pixdims[1:4])
+        
     """
     generate transforms to flip data from 
     matlabish (nifti header default fortran ordered)
@@ -160,15 +161,16 @@ def getaffine(img):
     trans = np.fliplr(np.eye(4, k=1))
     trans[3,3] = 1
     trans2 = trans.copy()
-    trans2[:,3] = 1  # Why do we add a pixdim step to our translation?
+    trans2[:,3] = 1  # Q: Why do we add a pixdim step to our translation?
+                     # A: for the 0-based vs 1-based indexing
     baseaffine = np.dot(np.dot(trans, transform), trans2)
     # deal with 4D+ dimensions
     ndim = img.header['dim'][0]
     if ndim > 3:
         # create identity with steps based on pixdim
-        affine = np.eye(img.header['dim'][0])
+        affine = np.eye(img.header['dim'][0]+1)
         step = np.array(img.header['pixdim'][1:(ndim+1)])
-        affine = affine * step[::-1]
+        affine[:-1,:-1] = np.diag(step[::-1])
         affine[-4:,-4:] = baseaffine
     else:
         affine = baseaffine
