@@ -41,7 +41,7 @@ Out[78]: ['Left-to-Right', 'Posterior-to-Anterior', 'Inferior-to-Superior']
 """
 
 
-class PyNiftiIO:
+class PyNiftiIO(object):
     """Wrapper around the PyNifit image class.
     """
 
@@ -113,6 +113,20 @@ class PyNiftiIO:
         data = self._getdata(index)
         return np.asarray(data)
 
+    # file interface
+    # --------------
+    def _get_filename(self):
+        return self._nim.getFilename()
+    def _set_filename(self, filename):
+        self._nim.setFilename(filename)
+    filename = property(fget=_get_filename, fset=_set_filename)
+
+    def save(self, filename=None):
+        if filename is not None:
+            # update filename
+            self.filename = filename
+        self._nim.save()
+        
 def getaffine(img):
     """Get affine transform from a NiftiImage.
 
