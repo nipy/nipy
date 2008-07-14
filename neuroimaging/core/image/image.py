@@ -274,7 +274,7 @@ def save(img, filename, datasource=DataSource(), clobber=False, format=None, **k
                      format=format, **keywords)
     outimage[:] = np.array(img)[:]
     del(outimage)
-
+    
 def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
     """Create an image from a numpy array.
 
@@ -307,15 +307,42 @@ def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
     return Image(data, grid)
 
 def create_outfile(filename, grid, dtype=np.float32, clobber=False):
-    """
-    Create a zero-filled Image, saved to filename and
-    reopened in 'r+' mode.
-    """
-    tmp = Image(np.zeros(grid.shape, dtype), grid)
-    save(tmp, filename, clobber=clobber)
-    del(tmp)
-    return load(filename, mode='r+')
+    """Create a zero-filled Image, saved to filename and opened in 'r+' mode.
 
+    Parameters
+    ----------
+    filename : string
+        Filename or path to file to create output file.
+    grid : `SamplingGrid`
+        The `SamplingGrid` for the `Image`.
+    dtype : numpy dtype
+        The data-type of the `Image` data.
+    clobber : boolean
+        Currently ignored!
+
+    Returns
+    -------
+    image : An `Image` object.
+        This image is linked to a file, opened for reading and writing.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tempfile import NamedTemporaryFile
+    >>> from neuroimaging.core.api import create_outfile
+    >>> from neuroimaging.core.image.image import grid_from_affine
+    >>> fp = NamedTemporaryFile(suffix='.nii.gz')
+    >>> grid = grid_from_affine(np.eye(4), [1,3,5], (10,20,30))
+    >>> img = create_outfile(fp.name, grid)
+    >>> fp.close()
+    
+    """
+    
+    data = np.zeros(grid.shape, dtype)
+    img = _open(data, mode='r+')
+    img._data.save(filename)
+    return img
+    
 def merge_images(filename, images, cls=Image, clobber=False,
                  axis='time'):
     """
