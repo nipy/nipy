@@ -154,13 +154,15 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
     
     """
 
-    ioimg = PyNiftiIO(url, mode)
-    if ioimg is not None:
-        grid = grid_from_affine(ioimg.affine, ioimg.orientation, ioimg.shape)
+    try:
+        ioimg = PyNiftiIO(url, mode)
+        if grid is None:
+            grid = grid_from_affine(ioimg.affine, ioimg.orientation,
+                                    ioimg.shape)
         # Build nipy image from array-like object and sampling grid
         img = Image(ioimg, grid)
         return img
-    else:
+    except IOError:
         raise IOError, 'Unable to open file %s' % url
         
 def load(url, datasource=DataSource(), format=None, mode='r', **keywords):
@@ -216,7 +218,7 @@ def load(url, datasource=DataSource(), format=None, mode='r', **keywords):
         raise ValueError, 'image opening mode must be either "r" or "r+"'
     return _open(url, datasource=datasource, format=format, mode=mode, **keywords)
 
-def save(img, filename, datasource=DataSource(), clobber=False, format=None, **keywords):
+def save(img, filename, datasource=DataSource()):
     """Write the image to a file.
 
     Parameters
@@ -226,11 +228,7 @@ def save(img, filename, datasource=DataSource(), clobber=False, format=None, **k
         Should be a valid filename.
     datasource : A `DataSource` object
         A datasource to specify the location of the file.
-    clobber : bool
-        Should ``save`` overwrite an existing file.
-    format : A `Format` object
-        The image file format to save the
-    keywords : Keyword arguments passed to `Format` initialization call.
+        NOTE: This is currently ignored!
 
     Returns
     -------
@@ -241,39 +239,20 @@ def save(img, filename, datasource=DataSource(), clobber=False, format=None, **k
     load : function for loading images
     fromarray : function for creating images from numpy arrays
 
-    Examples
-    --------
-    
-    # BUG:  image.save below will fail if keyword
-    # "clobber=True" is left out. This is an IOError similar to
-    # ones documented in the _open function above.
-    
-    >>> from numpy import allclose, array
-    >>> from neuroimaging.core.image import image
-    >>> from neuroimaging.testing import anatfile
-    >>> img_orig = image.load(anatfile)
-    >>> # For testing, we'll use a tempfile for saving.
-    >>> # In 'real' work, you would save to a known directory.
-    >>> from tempfile import mkstemp
-    >>> fd, filename = mkstemp(suffix='.nii')
-    >>> image.save(img_orig, filename, clobber=True)
-    >>> img_copy = image.load(filename)
-    >>> print allclose(array(img_orig)[:], array(img_copy)[:])
-    True
-
+    Notes
+    -----
+    Filetype is determined by the file extension in 'filename'.  Currently the
+    following filetypes are supported:
+        Nifti single file : ['.nii', '.nii.gz']
+        Nifti file pair : ['.hdr', '.hdr.gz']
+        Analyze file pair : ['.img', 'img.gz']
+        
     """
 
-    # BUG:  If format is None, what's the default format?  Does it default
-    # to nifti or look at the file extension?
-
-    # Answer: looks at the file extension..
-
-    outimage = _open(filename, mode='w', grid=img.grid,
-                     clobber=clobber,
-                     datasource=datasource,
-                     format=format, **keywords)
-    outimage[:] = np.array(img)[:]
-    del(outimage)
+    data = np.asarray(img)
+    outimage = _open(data, grid=img.grid, mode='w')
+    outimage._data.save(filename)
+    return outimage
     
 def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
     """Create an image from a numpy array.

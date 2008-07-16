@@ -1,7 +1,9 @@
 import os
 import glob
+from tempfile import NamedTemporaryFile
 
 import numpy as np
+
 #from numpy.testing import NumpyTest, NumpyTestCase
 from neuroimaging.externals.scipy.testing import *
 from neuroimaging.utils.test_decorators import slow
@@ -225,7 +227,22 @@ class TestImage(TestCase):
         array_img = Image(np.zeros((10, 10, 10)), SamplingGrid.identity(['zspace', 'yspace', 'xspace'], (10,)*3))
 
 
-
+def test_save():
+    from neuroimaging.testing.gen_data import image_uint16
+    img = image_uint16()
+    fp = NamedTemporaryFile(suffix='.nii.gz')
+    save_image(img, fp.name)
+    img2 = load_image(fp.name)
+    assert img.shape == img2.shape
+    assert img.ndim == img2.ndim
+    data = np.asarray(img)
+    data2 = np.asarray(img2)
+    assert data.mean() == data2.mean()
+    assert data.min() == data2.min()
+    assert data.max() == data2.max()
+    fp.close()
+    
+    
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
     img = fromarray(data)
