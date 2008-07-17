@@ -7,6 +7,7 @@ import numpy as np
 #from numpy.testing import NumpyTest, NumpyTestCase
 from neuroimaging.externals.scipy.testing import *
 from neuroimaging.utils.test_decorators import slow
+from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.core.image import image
 
@@ -15,15 +16,12 @@ from neuroimaging.core.api import parcels, data_generator, write_data
 
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.mapping import Affine
-from neuroimaging.testing import anatfile, funcfile
 from neuroimaging.data_io.api import Analyze
-
 
 class TestImage(TestCase):
 
     def setUp(self):
-        self.img = load_image(anatfile)
-        self.func = load_image(funcfile)
+        self.img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
 
     def tearDown(self):
         tmpfiles = glob.glob('tmp.*')
@@ -31,10 +29,7 @@ class TestImage(TestCase):
             os.remove(tmpfile)
             
     def test_init(self):
-        new = Image(np.asarray(self.img[:]), self.img.grid)
-        np.testing.assert_equal(np.asarray(self.img)[:], np.asarray(new)[:])
-
-        new = Image(self.img._data, self.img.grid)
+        new = Image(np.asarray(self.img), self.img.grid)
         np.testing.assert_equal(np.asarray(self.img)[:], np.asarray(new)[:])
 
         self.assertRaises(ValueError, Image, None, None)
@@ -46,8 +41,8 @@ class TestImage(TestCase):
     def test_maxmin_values(self):
         y = np.asarray(self.img)
         self.assertEquals(y.shape, tuple(self.img.grid.shape))
-        self.assertEquals(y.max(), 7902.0)
-        self.assertEquals(y.min(), 1910.0)
+        np.allclose(y.max(), 437336.36, rtol=1.0e-8)
+        self.assertEquals(y.min(), 0.0)
 
     def test_slice_plane(self):
         x = self.img[3]
