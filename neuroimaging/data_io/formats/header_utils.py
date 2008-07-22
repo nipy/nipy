@@ -7,6 +7,8 @@ Public function is get_header
 
 """
 
+from os.path import splitext
+
 from neuroimaging.utils.odict import odict
 from neuroimaging.data_io.formats import utils
 
@@ -100,6 +102,7 @@ def get_header(filename, byteorder=None):
     Parameters
     ----------
     filename : string
+        Filename should have one of the extensions ['.hdr', '.img', '.nii']
     byteorder : [None, '<', '>']
         If None, it will be determined from file.
         '<' is Little Endian
@@ -110,7 +113,13 @@ def get_header(filename, byteorder=None):
     hdr : dictionary
 
     """
-    
+
+    fn, ext = splitext(filename)
+    if ext not in ['.hdr', '.img', '.nii']:
+        raise IOError, 'Invalid file extention %s.' % ext
+    if ext == '.img':
+        # grab header file from img/hdr pair
+        filename = fn + '.hdr'
     fp = file(filename)
     hdr = default_analyze_header()
     if byteorder is None:
