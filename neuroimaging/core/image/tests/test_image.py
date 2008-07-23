@@ -4,7 +4,6 @@ from tempfile import NamedTemporaryFile
 
 import numpy as np
 
-#from numpy.testing import NumpyTest, NumpyTestCase
 from neuroimaging.externals.scipy.testing import *
 from neuroimaging.utils.test_decorators import slow
 from neuroimaging.utils.tests.data import repository
@@ -22,7 +21,8 @@ class TestImage(TestCase):
 
     def setUp(self):
         self.img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
-
+        self.tmpfile = NamedTemporaryFile(suffix='.nii.gz')
+        
     def tearDown(self):
         tmpfiles = glob.glob('tmp.*')
         for tmpfile in tmpfiles:
@@ -79,87 +79,54 @@ class TestImage(TestCase):
         x = np.asarray(self.img)
         assert isinstance(x, np.ndarray)
 
-    def test_file(self):
-        self.fail('this is a problem with reading/writing so-called "mat" files -- all the functions for these have been moved from core.reference.mapping to data_io.formats.analyze -- and they need to be fixed because they do not work. the names of the functions are: matfromstr, matfromfile, matfrombin, matfromxfm, mattofile')
-        save_image(self.img, 'tmp.hdr', format=Analyze)
-        
-        # Analyze is broken
-        img2 = load_image('tmp.hdr', format=Analyze)
+    def test_file_roundtrip(self):
+        save_image(self.img, self.tmpfile.name)
+        img2 = load_image(self.tmpfile.name)
+        data = np.asarray(self.img)
+        data2 = np.asarray(img2)
+        # verify data
+        np.testing.assert_almost_equal(data2, data)
+        np.testing.assert_almost_equal(data2.mean(), data.mean())
+        np.testing.assert_almost_equal(data2.min(), data.min())
+        np.testing.assert_almost_equal(data2.max(), data.max())
+        # verify shape and ndims
+        np.testing.assert_equal(img2.shape, self.img.shape)
+        np.testing.assert_equal(img2.ndim, self.img.ndim)
+        # verify affine
+        np.testing.assert_equal(img2.affine, self.img.affine)
 
-        # This fails: saying array is not writeable
-        
-        try:
-            img2[0,0,0] = 370000
-        except RuntimeError:
-            raise RuntimeError, 'this is a problem with the memmap of img2 -- seems not to be writeable'
-        img3 = Image(img2.asfile(), use_memmap=True)
-        img2[1,1,1] = 100000
-
-        scale = img2._source.header['scale_factor']
-        self.assertTrue(abs(370000 - img3[0,0,0]) < scale)
-        self.assertTrue(abs(100000 - img3[1,1,1]) < scale)
         
     # TODO: This is a test for the SamplingGrid, not Image?
     def test_nondiag(self):
-        """
-        This test doesn't work, presumably something to do with the matfile.
-        """
-        self.fail('this is a problem with reading/writing so-called "mat" files -- all the functions for these have been moved from core.reference.mapping to data_io.formats.analyze -- and they need to be fixed because they do not work. the names of the functions are: matfromstr, matfromfile, matfrombin, matfromxfm, mattofile')
         self.img.grid.mapping.transform[0,1] = 3.0
-        save_image(self.img, 'tmp.hdr', usematfile=True)
-        try:
-            x = load_image('tmp.hdr', usematfile=True, format=Analyze)
-        except NotImplementedError:
-            raise NotImplementedError, 'this is a problem with reading so-called "mat" files'
-        np.testing.assert_almost_equal(x.grid.mapping.transform, self.img.grid.mapping.transform)
+        save_image(self.img, self.tmpfile.name)
+        img2 = load_image(self.tmpfile.name)
+        np.testing.assert_almost_equal(img2.grid.mapping.transform,
+                                       self.img.grid.mapping.transform)
 
-    def test_clobber(self):
-        self.fail('this is a problem with reading/writing so-called "mat" files -- all the functions for these have been moved from core.reference.mapping to data_io.formats.analyze -- and they need to be fixed because they do not work. the names of the functions are: matfromstr, matfromfile, matfrombin, matfromxfm, mattofile')
+    def test_generator(self):
+        gen = data_generator(self.img)
+        for ind, data in gen:
+            self.assertEquals(data.shape, (109,91))
 
-        x = save_image(self.img, 'tmp.hdr', format=Analyze, clobber=True)
-        a = load_image('tmp.hdr', format=Analyze)
-
-        A = np.asarray(a)
-        I = np.asarray(self.img)
-        z = np.add.reduce(((A-I)**2).flat)
-        self.assertEquals(z, 0.)
-
-        t = a.grid.mapping.transform
-        b = self.img.grid.mapping.transform
-        np.testing.assert_almost_equal(b, t)
-
-
-    # TODO: Should be in test_generator.py
     def test_iter(self):
-        """
-        """
-        g = data_generator(self.func, range(self.func.shape[0]))
-        for i, d in g:
-            self.assertEquals(d.shape, (2,20,20))
+        imgiter = iter(self.img)
+        for data in imgiter:
+            self.assertEquals(data.shape, (109,91))
 
-    # TODO: Should be in test_generator.py
-    def test_iter3(self):
-        self.fail("this assertion is not raised -- python seems to give the default slice through data, i.e. iterating through the first indices")
-        self.assertRaises(NotImplementedError, iter, self.img)
-
-    # TODO: Should be in test_generator.py
     def test_iter4(self):
         tmp = Image(np.zeros(self.img.shape), self.img.grid)
         write_data(tmp, data_generator(self.img, range(self.img.shape[0])))
         np.testing.assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
 
-    
-    # TODO: Should be in test_generator.py
     def test_iter5(self):
-        """
-        This next test seems like it could be deprecated with simplified iterator options
-        """
+        #This next test seems like it could be deprecated with
+        #simplified iterator options
         
         tmp = Image(np.zeros(self.img.shape), self.img.grid)
         g = data_generator(self.img)
         write_data(tmp, g)
         np.testing.assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
-
 
     @slow
     def test_set_next(self):
@@ -172,9 +139,8 @@ class TestImage(TestCase):
             x += 1
         self.assertEquals(x, 91)
 
-    # TODO: Should be in test_generator.py
     def test_parcels1(self):
-        rho = load_image(anatfile)
+        rho = self.img
         parcelmap = (np.asarray(rho)[:] * 100).astype(np.int32)
         
         test = np.zeros(parcelmap.shape)
@@ -184,9 +150,8 @@ class TestImage(TestCase):
 
         self.assertEquals(v, np.product(test.shape))
 
-    # TODO: Should be in test_generator.py
     def test_parcels3(self):
-        rho = load_image(anatfile)[0]
+        rho = self.img[0]
         parcelmap = (np.asarray(rho)[:] * 100).astype(np.int32)
         labels = np.unique(parcelmap)
         test = np.zeros(rho.shape)
@@ -197,7 +162,6 @@ class TestImage(TestCase):
 
         self.assertEquals(v, np.product(test.shape))
 
-    # TODO: Should be in test_generator.py
     @slow
     def test_parcels4(self):
         """TODO: fix this
@@ -214,30 +178,6 @@ class TestImage(TestCase):
             v += 1
         self.assertEquals(v, test.grid.shape[0])
 
-    def test_tofile(self):
-        save_image(self.img, "tmp.img")
-        tmp_img = load_image("tmp.img")
-        np.testing.assert_almost_equal(np.asarray(tmp_img)[:], np.asarray(self.img)[:])
-
-        array_img = Image(np.zeros((10, 10, 10)), SamplingGrid.identity(['zspace', 'yspace', 'xspace'], (10,)*3))
-
-
-def test_save():
-    from neuroimaging.testing.gen_data import image_uint16
-    img = image_uint16()
-    fp = NamedTemporaryFile(suffix='.nii.gz')
-    save_image(img, fp.name)
-    img2 = load_image(fp.name)
-    assert img.shape == img2.shape
-    assert img.ndim == img2.ndim
-    data = np.asarray(img)
-    data2 = np.asarray(img2)
-    assert data.mean() == data2.mean()
-    assert data.min() == data2.min()
-    assert data.max() == data2.max()
-    fp.close()
-    
-    
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
     img = fromarray(data)
