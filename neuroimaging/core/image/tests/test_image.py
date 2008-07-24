@@ -122,16 +122,6 @@ class TestImage(TestCase):
         write_data(tmp, g)
         np.testing.assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
 
-    #@slow
-    def test_set_next(self):
-        write_img = save_image(self.img, self.tmpfile.name)
-        I = write_img.slice_iterator(mode='w')
-        x = 0
-        for slice_ in I:
-            slice_.set(np.ones((109, 91)))
-            x += 1
-        self.assertEquals(x, 91)
-
     def test_parcels1(self):
         rho = self.img
         parcelmap = (np.asarray(rho)[:] * 100).astype(np.int32)
@@ -154,19 +144,6 @@ class TestImage(TestCase):
             v += d.shape[0]
 
         self.assertEquals(v, np.product(test.shape))
-
-    #@slow
-    def test_parcels4(self):
-        rho = self.img
-        parcelmap = (rho[:] * 100).astype(np.int32)
-        parcelseq = parcelmap
-        
-        test = Image(np.zeros(parcelmap.shape), grid=rho.grid)
-
-        v = 0
-        for i in test.slice_parcel_iterator(parcelmap, parcelseq):
-            v += 1
-        self.assertEquals(v, test.grid.shape[0])
 
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
