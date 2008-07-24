@@ -3,7 +3,7 @@ import numpy as N
 from numpy.testing import NumpyTest, NumpyTestCase
 
 import neuroimaging.core.reference.axis as axis
-import neuroimaging.core.api import Image
+from neuroimaging.core.api import Image
 import neuroimaging.core.reference.grid as grid
 from neuroimaging.modalities.fmri.api import FmriImage
 
