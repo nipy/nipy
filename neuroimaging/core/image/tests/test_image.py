@@ -1,5 +1,3 @@
-import os
-import glob
 from tempfile import NamedTemporaryFile
 
 import numpy as np
@@ -23,11 +21,6 @@ class TestImage(TestCase):
         self.img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
         self.tmpfile = NamedTemporaryFile(suffix='.nii.gz')
         
-    def tearDown(self):
-        tmpfiles = glob.glob('tmp.*')
-        for tmpfile in tmpfiles:
-            os.remove(tmpfile)
-            
     def test_init(self):
         new = Image(np.asarray(self.img), self.img.grid)
         np.testing.assert_equal(np.asarray(self.img)[:], np.asarray(new)[:])
@@ -78,7 +71,9 @@ class TestImage(TestCase):
     def test_array(self):
         x = np.asarray(self.img)
         assert isinstance(x, np.ndarray)
-
+        self.assertEquals(x.shape, self.img.shape)
+        self.assertEquals(x.ndim, self.img.ndim)
+        
     def test_file_roundtrip(self):
         save_image(self.img, self.tmpfile.name)
         img2 = load_image(self.tmpfile.name)
@@ -96,7 +91,6 @@ class TestImage(TestCase):
         np.testing.assert_equal(img2.affine, self.img.affine)
 
         
-    # TODO: This is a test for the SamplingGrid, not Image?
     def test_nondiag(self):
         self.img.grid.mapping.transform[0,1] = 3.0
         save_image(self.img, self.tmpfile.name)
@@ -128,10 +122,9 @@ class TestImage(TestCase):
         write_data(tmp, g)
         np.testing.assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
 
-    @slow
+    #@slow
     def test_set_next(self):
-        write_img = save_image("test_write.hdr", repository, grid=self.img.grid, format=Analyze,
-                               clobber=True)
+        write_img = save_image(self.img, self.tmpfile.name)
         I = write_img.slice_iterator(mode='w')
         x = 0
         for slice_ in I:
@@ -162,12 +155,9 @@ class TestImage(TestCase):
 
         self.assertEquals(v, np.product(test.shape))
 
-    @slow
+    #@slow
     def test_parcels4(self):
-        """TODO: fix this
-        """
-        
-        rho = load_image("rho.hdr", repository, format=Analyze)
+        rho = self.img
         parcelmap = (rho[:] * 100).astype(np.int32)
         parcelseq = parcelmap
         
