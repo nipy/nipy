@@ -1,8 +1,8 @@
 from tempfile import NamedTemporaryFile
 
 import numpy as np
+from numpy.testing import *
 
-from neuroimaging.externals.scipy.testing import *
 from neuroimaging.utils.test_decorators import slow
 from neuroimaging.utils.tests.data import repository
 
@@ -238,9 +238,5 @@ class TestFromArray(TestCase):
         assert img.affine.diagonal().all() == 1
 
 
-# Nose also has assert_ functions, but they're hidden in tools
-#nose.tools.assert_raises(AttributeError, getattr, img, 'header')
-
 if __name__ == '__main__':
-    nose.runmodule()
-
+    run_module_suite()
