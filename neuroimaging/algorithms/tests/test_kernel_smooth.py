@@ -9,30 +9,23 @@ from neuroimaging.core.reference.grid import SamplingGrid, space
 from neuroimaging.utils.test_decorators import gui, slow
 from neuroimaging.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 
-from neuroimaging.defines import pylab_def
-
-
-PYLAB_DEF, pylab = pylab_def()
-if PYLAB_DEF:
-    from neuroimaging.ui.visualization.viewer import BoxViewer
-    from neuroimaging.modalities.fmri.pca import PCAmontage
-
 class test_Kernel(NumpyTestCase):
     @gui
+    import pylab
+    from neuroimaging.ui.visualization.viewer import BoxViewer
     def test_smooth(self):
         rho = Image("rho.hdr", repository)
         smoother = LinearFilter(rho.grid)
 
-        if PYLAB_DEF:
-            srho = smoother.smooth(rho)
-            view = BoxViewer(rho)
-            view.draw()
+        srho = smoother.smooth(rho)
+        view = BoxViewer(rho)
+        view.draw()
 
-            sview = BoxViewer(srho)
-            sview.m = view.m
-            sview.M = view.M
-            sview.draw()
-            pylab.show()
+        sview = BoxViewer(srho)
+        sview.m = view.m
+        sview.M = view.M
+        sview.draw()
+        pylab.show()
 
 class test_SigmaFWHM(NumpyTestCase):
     def test_sigma_fwhm(self):

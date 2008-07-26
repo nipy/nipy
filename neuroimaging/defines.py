@@ -5,21 +5,6 @@ For now, it only checks if pylab and/or qt are available.
 
 __docformat__ = 'restructuredtext'
 
-def pylab_def():
-    """
-    Check to see if pylab/matplotlib is importable.
-    """
-    try:
-        import pylab
-    except (ImportError, RuntimeError):
-        PYLAB_DEF = False
-        pylab = None
-    else:
-        PYLAB_DEF = True
-
-    return PYLAB_DEF, pylab
-
-
 def enthought_traits_def():
     """
     Check to see if enthought.traits is importable.

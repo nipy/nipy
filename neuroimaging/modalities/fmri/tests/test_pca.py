@@ -10,10 +10,6 @@ from neuroimaging.modalities.fmri.pca import PCA
 from neuroimaging.core.api import Image, load_image
 from neuroimaging.testing import funcfile
 
-## from neuroimaging.defines import pylab_def
-## PYLAB_DEF, pylab = pylab_def()
-## if PYLAB_DEF:
-##     from neuroimaging.modalities.fmri.pca import PCAmontage
 
 class test_PCA(NumpyTestCase):
 
@@ -42,32 +38,33 @@ class test_PCANoMask(test_PCA):
         p.fit()
         output = p.images(which=range(4))
 
-## if PYLAB_DEF:
+class test_PCAMontageNoMask(test_PCA):
+    @slow
+    @data
+    def test_PCAmontage(self):
+        from neuroimaging.modalities.fmri.pca import PCAmontage
+        from pylab import savefig
+        p = PCAmontage(self.fmridata)
+        p.fit()
+        output = p.images(which=range(4))
+        p.time_series()
+        p.montage()
+        savefig('image.png')
+        os.remove('image.png')
 
-##     class test_PCAMontageNoMask(test_PCA):
-##         @slow
-##         @data
-##         def test_PCAmontage(self):
-##             p = PCAmontage(self.fmridata)
-##             p.fit()
-##             output = p.images(which=range(4))
-##             p.time_series()
-##             p.montage()
-##             pylab.savefig('image.png')
-##             os.remove('image.png')
-
-##     class test_PCAMontageMask(test_PCA):
-##         @slow
-##         @data
-##         def test_PCAmontage_nomask(self):
-##             p = PCAmontage(self.fmridata, mask=self.mask)
-##             p.fit()
-##             output = p.images(which=range(4))
-##             p.time_series()
-##             p.montage()
-##             pylab.savefig('image.png')
-##             os.remove('image.png')
-
+class test_PCAMontageMask(test_PCA):
+    @slow
+    @data
+    def test_PCAmontage_nomask(self):
+        from neuroimaging.modalities.fmri.pca import PCAmontage
+        from pylab import savefig
+        p = PCAmontage(self.fmridata, mask=self.mask)
+        p.fit()
+        output = p.images(which=range(4))
+        p.time_series()
+        p.montage()
+        savefig('image.png')
+        os.remove('image.png')
 
 from neuroimaging.utils.testutils import make_doctest_suite
 test_suite = make_doctest_suite('neuroimaging.modalities.fmri.pca')

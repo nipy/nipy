@@ -16,8 +16,6 @@ from neuroimaging.modalities.fmri.fmristat.utils import FmriStatAR, FmriStatOLS
 from  neuroimaging.core.api import Image
 from neuroimaging.modalities.fmri.hrf import glover, glover_deriv
 
-from neuroimaging.defines import pylab_def
-PYLAB_DEF, pylab = pylab_def()
 
 class test_FmriStat(NumpyTestCase):
 
@@ -147,20 +145,17 @@ class test_Contrast(test_FmriStat):
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
         
-        if PYLAB_DEF:
-            from neuroimaging.ui.visualization import viewer
-            v=viewer.BoxViewer(rho)
-            v.draw()
-
+        from neuroimaging.ui.visualization import viewer
+        v=viewer.BoxViewer(rho)
+        v.draw()
 
         AR = FmriStatAR(OLS, contrasts=[pain], clobber=True)
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
         t = Image('fmristat_run/contrasts/pain/F.hdr')
-        if PYLAB_DEF:
-            v=viewer.BoxViewer(t)
-            v.draw()
+        v=viewer.BoxViewer(t)
+        v.draw()
 
 from neuroimaging.utils.testutils import make_doctest_suite
 test_suite = make_doctest_suite('neuroimaging.modalities.fmri.fmristat.utils')

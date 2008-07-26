@@ -1,4 +1,5 @@
 import os
+import pylab
 
 from numpy.testing import NumpyTest, NumpyTestCase
 
@@ -8,53 +9,45 @@ from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.api import Image
 from neuroimaging.algorithms.interpolation import ImageInterpolator
 
-from neuroimaging.defines import pylab_def
-PYLAB_DEF, pylab = pylab_def()
-
-if PYLAB_DEF:
-    from neuroimaging.ui.visualization import viewer, slices
-
+from neuroimaging.ui.visualization import viewer, slices
 
 class test_Visualization(NumpyTestCase):
-    if PYLAB_DEF:
-        def setUp(self):
-            self.img = Image(repository.filename("rho.hdr"))
+    def setUp(self):
+        self.img = Image(repository.filename("rho.hdr"))
 
-        @gui
-        def test_view(self):
-            view = viewer.BoxViewer(self.img, z_pix=80.)
-            view.draw()
-            pylab.show()
-            pylab.savefig('image.png')
-            os.remove('image.png')
+    @gui
+    def test_view(self):
+        view = viewer.BoxViewer(self.img, z_pix=80.)
+        view.draw()
+        pylab.show()
+        pylab.savefig('image.png')
+        os.remove('image.png')
 
-        @slow
-        def test_transversal_slice(self):
-            interpolator = ImageInterpolator(self.img)
-            vmin = float(self.img.readall().min())
-            vmax = float(self.img.readall().max())
-            _slice = slices.transversal(self.img.grid, z=0.,
-                                        xlim=[-20,20.], ylim=[0,40.])
-            x = slices.DataSlicePlot(interpolator, _slice, vmax=vmax, vmin=vmin,
-                                     colormap='spectral', interpolation='nearest')
-            x.width = 0.8; x.height = 0.8
-            pylab.figure(figsize=(3,3))
-            x.getaxes()
-            pylab.imshow(x.RGBA(), origin=x.origin)
-            pylab.savefig('image.png')
-            os.remove('image.png')
-      
-        @slow
-        def test_transversal_slice2(self):
-            x = slices.TransversalPlot(self.img, y=3., xlim=[-49.,35.])
-            x.width = 0.8; x.height = 0.8
-            pylab.figure(figsize=(3,3))
-            x.getaxes()
-            pylab.imshow(x.RGBA(), origin=x.origin)
-            pylab.savefig('image.png')
-            os.remove('image.png')
+    @slow
+    def test_transversal_slice(self):
+        interpolator = ImageInterpolator(self.img)
+        vmin = float(self.img.readall().min())
+        vmax = float(self.img.readall().max())
+        _slice = slices.transversal(self.img.grid, z=0.,
+                                    xlim=[-20,20.], ylim=[0,40.])
+        x = slices.DataSlicePlot(interpolator, _slice, vmax=vmax, vmin=vmin,
+                                 colormap='spectral', interpolation='nearest')
+        x.width = 0.8; x.height = 0.8
+        pylab.figure(figsize=(3,3))
+        x.getaxes()
+        pylab.imshow(x.RGBA(), origin=x.origin)
+        pylab.savefig('image.png')
+        os.remove('image.png')
 
-
+    @slow
+    def test_transversal_slice2(self):
+        x = slices.TransversalPlot(self.img, y=3., xlim=[-49.,35.])
+        x.width = 0.8; x.height = 0.8
+        pylab.figure(figsize=(3,3))
+        x.getaxes()
+        pylab.imshow(x.RGBA(), origin=x.origin)
+        pylab.savefig('image.png')
+        os.remove('image.png')
 
 from neuroimaging.utils.testutils import make_doctest_suite
 test_suite = make_doctest_suite('neuroimaging.ui.visualization')

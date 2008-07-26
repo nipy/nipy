@@ -385,22 +385,22 @@ class DelayContrastOutput(TOutput):
             matrix.tofile(outfile)
             outfile.close()
 
-##             if PYLAB_DEF:
-                
-##                 ftime = frametimes
-##                 def g(time=None, **extra):
-##                     return N.squeeze(N.dot(l, self.contrast.term(time=time,
-##                                                                  **extra)))
-##                 f = pylab.gcf()
-##                 f.clf()
-##                 pl = MultiPlot(g, tmin=0, tmax=ftime.max(),
-##                                dt = ftime.max() / 2000.,
-##                                title='Magnitude column space for delay: \'%s\'' % rowname)
-##                 pl.draw()
-##                 pylab.savefig(os.path.join(outdir, 'matrix%s.png' % rowname))
-##                 f.clf()
-##                 del(f); del(g)
-                
+
+            ftime = frametimes
+
+            def g(time=None, **extra):
+                return N.squeeze(N.dot(l, self.contrast.term(time=time,
+                                                             **extra)))
+            f = pylab.gcf()
+            f.clf()
+            pl = MultiPlot(g, tmin=0, tmax=ftime.max(),
+                           dt = ftime.max() / 2000.,
+                           title='Magnitude column space for delay: \'%s\'' % rowname)
+            pl.draw()
+            pylab.savefig(os.path.join(outdir, 'matrix%s.png' % rowname))
+            f.clf()
+            del(f)
+            del(g)
 
     def extract(self, results):
         """

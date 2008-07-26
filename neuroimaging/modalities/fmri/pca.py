@@ -214,7 +214,7 @@ class PCA(object):
 
         return [it.img for it in outiters]
 
-## if PYLAB_DEF:
+##     import pylab
 ##     from neuroimaging.ui.visualization.montage import Montage
 ##     from neuroimaging.algorithms.interpolation import ImageInterpolator
 ##     from neuroimaging.ui.visualization import slices
