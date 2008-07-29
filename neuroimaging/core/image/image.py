@@ -23,7 +23,7 @@ from neuroimaging.data_io.datasource import DataSource, splitzipext
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.mapping import Affine
 
-from neuroimaging.data_io.formats.pyniftiio import PyNiftiIO, orientation_to_names
+from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
 
 class Image(object):
     """

@@ -6,7 +6,7 @@ import numpy as np
 
 from neuroimaging.externals.scipy.testing import *
 
-from neuroimaging.data_io.formats.pyniftiio import PyNiftiIO
+from neuroimaging.io.pyniftiio import PyNiftiIO
 
 def test_affine_analyze():
     # Test method1 from nifti1.h, Analyze 7.5 mapping.
