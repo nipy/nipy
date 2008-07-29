@@ -6,9 +6,9 @@ def configuration(parent_package='',top_path=None):
 
     config.add_subpackage('algorithms')
     config.add_subpackage('core')
-    config.add_subpackage('data_io')
     config.add_subpackage('externals')
     config.add_subpackage('fixes')
+    config.add_subpackage('io')
     config.add_subpackage('modalities')
     config.add_subpackage('ui')
     config.add_subpackage('utils')
