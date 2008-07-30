@@ -88,4 +88,4 @@ test_suite = make_doctest_suite('neuroimaging.core.reference.coordinate_system')
 
 
 if __name__ == '__main__':
-    NumpyTest.run()
+    run_module_suite()

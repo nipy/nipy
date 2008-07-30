@@ -80,4 +80,4 @@ from neuroimaging.utils.testutils import make_doctest_suite
 test_suite = make_doctest_suite('neuroimaging.core.reference.grid')
 
 if __name__ == '__main__':
-    NumpyTest.run()
+    run_module_suite()
