@@ -35,8 +35,12 @@ a single slice through a larger grid.
 """
 __docformat__ = 'restructuredtext'
 
-from neuroimaging.core.reference import \
-  axis, coordinate_system, grid, mapping, mni, slices
+import axis
+import coordinate_system
+import grid
+import mapping
+import mni
+import slices
 
 __all__ = ["axis", "coordinate_system", "grid", "mapping", 
            "mni", "slices"]
