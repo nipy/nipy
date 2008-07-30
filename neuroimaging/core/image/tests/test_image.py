@@ -13,7 +13,6 @@ from neuroimaging.core.api import parcels, data_generator, write_data
 
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.mapping import Affine
-from neuroimaging.data_io.api import Analyze
 
 class TestImage(TestCase):
 
