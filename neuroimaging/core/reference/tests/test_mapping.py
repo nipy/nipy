@@ -319,8 +319,8 @@ class test_Mapping(NumpyTestCase):
         self.assertTrue(self.mapping.isinvertible())
         self.assertTrue(not self.singular.isinvertible())
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.core.reference.mapping')        
+
+
         
 if __name__ == '__main__':
     run_module_suite()

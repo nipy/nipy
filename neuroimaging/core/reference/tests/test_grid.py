@@ -76,8 +76,8 @@ class test_Grid(NumpyTestCase):
         g = SamplingGrid.from_affine(a, ['zspace', 'xspace'], (20,30))
 
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.core.reference.grid')
+
+
 
 if __name__ == '__main__':
     run_module_suite()
