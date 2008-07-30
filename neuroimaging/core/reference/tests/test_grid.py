@@ -9,7 +9,7 @@ from neuroimaging.testing import anatfile, funcfile
 
 from neuroimaging.core.api import load_image
 
-from neuroimaging.utils.test_decorators import slow
+
 
 class test_Grid(NumpyTestCase):
 
