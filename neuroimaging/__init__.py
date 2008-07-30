@@ -65,23 +65,6 @@ packages = (
   'neuroimaging.utils.tests.data',
   'neuroimaging.testing')
 
-"""
-ENTHOUGHT_TRAITS_DEF, traits = defines.enthought_traits_def()
-if not ENTHOUGHT_TRAITS_DEF:
-    packages += ('neuroimaging.externals',
-                 'neuroimaging.externals.enthought',
-                 'neuroimaging.externals.enthought.traits',
-                 'neuroimaging.externals.enthought.traits.ui',
-                 'neuroimaging.externals.enthought.traits.ui.null',
-                 'neuroimaging.externals.enthought.util',
-                 'neuroimaging.externals.enthought.resource')
-"""
-
-# These are slowing down the imports... all of pylab is imported!
-# Appears this is used in the ui and in the examples... handle it there
-# not for all of nipy
-ENTHOUGHT_TRAITS_DEF = False
-
 def import_from(modulename, objectname):
     """Import and return objectname from modulename."""
     module = __import__(modulename, {}, {}, (objectname,))
