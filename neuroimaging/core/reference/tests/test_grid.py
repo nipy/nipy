@@ -5,7 +5,6 @@ from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
 from neuroimaging.core.reference.mapping import Affine
 
-from neuroimaging.data_io.api import Analyze
 from neuroimaging.testing import anatfile, funcfile
 
 from neuroimaging.core.api import load_image
