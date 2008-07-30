@@ -1,4 +1,4 @@
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 import numpy.testing
 
 from neuroimaging.core.reference.slices import bounding_box, \

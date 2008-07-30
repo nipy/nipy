@@ -1,6 +1,6 @@
 import types
 import numpy as N
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 from neuroimaging.core.reference.axis import Axis, ContinuousAxis, VoxelAxis, RegularAxis
 

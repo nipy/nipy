@@ -1,5 +1,5 @@
 import numpy as N
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids

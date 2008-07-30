@@ -1,4 +1,4 @@
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 import neuroimaging.core.reference.mni as mni
 

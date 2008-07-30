@@ -1,4 +1,4 @@
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
      VoxelCoordinateSystem

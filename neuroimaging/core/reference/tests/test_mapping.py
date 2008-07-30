@@ -1,12 +1,12 @@
 import numpy.random as R
 import numpy as N
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 import urllib, os
 from tempfile import mkstemp
 
 from neuroimaging.core.reference import mapping, mni
-from neuroimaging.utils.test_decorators import slow
+
 
 class test_Mapping2(NumpyTestCase):
     def setUp(self):
