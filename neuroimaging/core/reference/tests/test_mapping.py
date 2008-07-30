@@ -8,7 +8,7 @@ from tempfile import mkstemp
 from neuroimaging.core.reference import mapping, mni
 
 
-class test_Mapping2(NumpyTestCase):
+class test_Mapping2(TestCase):
     def setUp(self):
         def f(x):
             return 2*x
@@ -172,7 +172,7 @@ class test_Mapping2(NumpyTestCase):
             N.testing.assert_almost_equal(q(value), mat_(value))
 
 
-class test_Identity(NumpyTestCase):
+class test_Identity(TestCase):
     def setUp(self):
         self.a = mapping.Affine.identity()
         
@@ -204,7 +204,7 @@ class test_Identity(NumpyTestCase):
         self.assertTrue(self.a == b)
         os.remove("tmp.mat")
         
-class test_Affine(NumpyTestCase):
+class test_Affine(TestCase):
     def setUp(self):    
         a = mapping.Affine.identity()
         A = N.identity(4)
@@ -212,7 +212,7 @@ class test_Affine(NumpyTestCase):
         self.mapping = mapping.Affine(a.input_coords, a.output_coords, A)
 
 
-class test_Mapping(NumpyTestCase):
+class test_Mapping(TestCase):
 
     def setUp(self):
 

@@ -4,7 +4,7 @@ from neuroimaging.testing import *
 
 from neuroimaging.core.reference.axis import Axis, ContinuousAxis, VoxelAxis, RegularAxis
 
-class test_Axis(NumpyTestCase):
+class test_Axis(TestCase):
 
     def setUp(self):
         self.axis = Axis(name='xspace')
@@ -34,7 +34,7 @@ class test_Axis(NumpyTestCase):
         self.assertRaises(NotImplementedError, self.axis.range)
 
 
-class test_ContinuousAxis(NumpyTestCase):
+class test_ContinuousAxis(TestCase):
 
     def setUp(self):
         self.finite = ContinuousAxis(name='xspace', low=0, high=10)
@@ -84,7 +84,7 @@ class test_ContinuousAxis(NumpyTestCase):
         self.assertEqual(self.infinite.range(), (-N.inf, N.inf))
 
 
-class test_RegularAxis(NumpyTestCase):
+class test_RegularAxis(TestCase):
 
     def setUp(self):
         self.finite = RegularAxis(name='xspace', start=0, step=2, length=10)
@@ -158,7 +158,7 @@ class test_RegularAxis(NumpyTestCase):
 
 
 
-class test_VoxelAxis(NumpyTestCase):
+class test_VoxelAxis(TestCase):
 
     def setUp(self):
         self.finite = VoxelAxis(name='xspace', length=10)

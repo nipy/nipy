@@ -2,7 +2,7 @@ from neuroimaging.testing import *
 
 import neuroimaging.core.reference.mni as mni
 
-class test_MNI(NumpyTestCase):
+class test_MNI(TestCase):
 
     def testMNI(self):
         """ ensure all elementes of the interface exist """

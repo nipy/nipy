@@ -11,7 +11,7 @@ from neuroimaging.core.api import load_image
 
 
 
-class test_Grid(NumpyTestCase):
+class test_Grid(TestCase):
 
     def setUp(self):
         self.img = load_image(anatfile)

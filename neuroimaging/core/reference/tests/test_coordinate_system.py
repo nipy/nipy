@@ -4,7 +4,7 @@ from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
      VoxelCoordinateSystem
 from neuroimaging.core.reference.axis import Axis
 
-class test_CoordinateSystem(NumpyTestCase):
+class test_CoordinateSystem(TestCase):
 
     def setUp(self):
         self.name = "test"
@@ -66,7 +66,7 @@ class test_CoordinateSystem(NumpyTestCase):
         self.assertEquals(new_c.axes(), self.c.axes()[1:])
         
 
-class test_VoxelCoordinateSystem(NumpyTestCase):
+class test_VoxelCoordinateSystem(TestCase):
     def setUp(self):
         self.name = "voxel_test"
         self.axes = [Axis(n) for n in ['zspace', 'yspace', 'xspace']]
