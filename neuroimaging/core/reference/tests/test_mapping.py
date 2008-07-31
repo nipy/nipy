@@ -253,7 +253,7 @@ class test_Mapping(TestCase):
         assert_almost_equal(m1, m2)
         assert_almost_equal(v1, v2)        
         
-#    @slow
+    @dec.slow
     def test_fromurl(self):
         self.fail("the IO for .mat files has been moved to the analyze module")
         x = mapping.fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1.txt')
