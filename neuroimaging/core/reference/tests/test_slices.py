@@ -1,5 +1,4 @@
 from neuroimaging.testing import *
-import numpy.testing
 
 from neuroimaging.core.reference.slices import bounding_box, \
   zslice, yslice, xslice
@@ -15,20 +14,20 @@ class test_Slice(TestCase):
     def test_box_slice(self):
         grid = SamplingGrid.identity((10,10,10,))
         t = zslice(5, [0, 9], [0, 9], grid.output_coords, (10,10)).affine
-        numpy.testing.assert_almost_equal(t, [[ 0.  0.  5.],
+        assert_almost_equal(t, [[ 0.  0.  5.],
                                               [ 1.  0.  0.],
                                               [ 0.  1.  0.],
                                               [ 0.  0.  1.]])
         
 
         t = yslice(4, [0, 9], [0, 9], grid.output_coords, (10,10)).affine
-        numpy.testing.assert_almost_equal(t, [[ 1.  0.  0.],
+        assert_almost_equal(t, [[ 1.  0.  0.],
                                               [ 0.  0.  4.],
                                               [ 0.  1.  0.],
                                               [ 0.  0.  1.]])
         
         t = xslice(3, [0, 9], [0, 9], grid.output_coords, (10,10)).affine
-        numpy.testing.assert_almost_equal(t, [[ 1.  0.  0.],
+        assert_almost_equal(t, [[ 1.  0.  0.],
                                               [ 0.  1.  0.],
                                               [ 0.  0.  3.],
                                               [ 0.  0.  1.]])
