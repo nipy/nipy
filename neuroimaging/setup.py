@@ -10,7 +10,6 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('fixes')
     config.add_subpackage('io')
     config.add_subpackage('modalities')
-    config.add_subpackage('ui')
     config.add_subpackage('utils')
     config.add_subpackage('testing')
     config.add_data_dir('testing')
