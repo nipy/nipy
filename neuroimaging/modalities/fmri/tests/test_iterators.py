@@ -1,6 +1,6 @@
 #TODO the iterators are deprecated
 import numpy as N
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 import neuroimaging.core.reference.axis as axis
 from neuroimaging.core.api import Image
@@ -8,7 +8,7 @@ import neuroimaging.core.reference.grid as grid
 from neuroimaging.modalities.fmri.api import FmriImage
 
 
-class test_Iterators(NumpyTestCase):
+class test_Iterators(TestCase):
 
     def setUp(self):
         im = Image(N.zeros((3,4,5,6)), grid = grid.SamplingGrid.identity((3,4,5,6), axis.spacetime))
@@ -53,7 +53,7 @@ class test_Iterators(NumpyTestCase):
         iterator = parcel_iterator(self.img, parcelmap, parcelseq)
         for i, slice_ in enumerate(iterator):
             self.assertEqual((self.img.shape[0], expected[i],), slice_.shape)
-            N.testing.assert_equal(slice_, N.asarray([N.arange(expected[i]) for _ in range(self.img.shape[0])]))
+            assert_equal(slice_, N.asarray([N.arange(expected[i]) for _ in range(self.img.shape[0])]))
 
 
         iterator = parcel_iterator(self.img, parcelmap, mode='w')
@@ -64,7 +64,7 @@ class test_Iterators(NumpyTestCase):
         iterator = parcel_iterator(self.img, parcelmap)
         for i, slice_ in enumerate(iterator):
             self.assertEqual((self.img.shape[0], expected[i],), slice_.shape)
-            N.testing.assert_equal(slice_, N.asarray([N.arange(expected[i]) for _ in range(self.img.shape[0])]))
+            assert_equal(slice_, N.asarray([N.arange(expected[i]) for _ in range(self.img.shape[0])]))
 
 
     def test_fmri_parcel_copy(self):
@@ -133,11 +133,11 @@ class test_Iterators(NumpyTestCase):
             value = [i*N.arange(x) for i in range(self.img.shape[0])]
             self.assertEqual(x, slice_.shape[1])
             self.assertEqual(self.img.shape[0], slice_.shape[0])
-            N.testing.assert_equal(slice_, value)
+            assert_equal(slice_, value)
 
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.modalities.fmri.iterators')
+
+
 
 if __name__ == '__main__':
     NumpyTest().run()

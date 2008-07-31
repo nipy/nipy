@@ -1,12 +1,12 @@
 import gc, os
 from tempfile import mkstemp
 import numpy as np
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.reference.grid as grid
 
-from neuroimaging.utils.test_decorators import slow, data
+
 
 from neuroimaging.modalities.fmri.api import FmriImage, fmri_generator, fromimage
 from neuroimaging.core.api import Image, load_image, data_generator, parcels, save_image
@@ -14,7 +14,7 @@ from neuroimaging.testing import anatfile, funcfile
 
 
 # not a test until test data is found
-class test_fMRI(NumpyTestCase):
+class test_fMRI(TestCase):
 
     def setUp(self):
         self.parcels = load_image(funcfile)[0]
@@ -42,7 +42,7 @@ class test_fMRI(NumpyTestCase):
 
     def test_subgrid(self):
         subgrid = self.img.grid[3]
-        np.testing.assert_almost_equal(subgrid.mapping.transform,
+        assert_almost_equal(subgrid.mapping.transform,
                                       [[0., 0., 0., -49.21875],
                                        [-7., 0., 0., 7.],
                                        [0., -2.34375, 0., 53.90625],
@@ -58,9 +58,9 @@ class test_fMRI(NumpyTestCase):
         self.assertEquals(v, parcelmap.size)
 
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.modalities.fmri.fmri')
+
+
 
 
 if __name__ == '__main__':
-    NumpyTest.run()
+    run_module_suite()

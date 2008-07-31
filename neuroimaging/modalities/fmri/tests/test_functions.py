@@ -1,13 +1,13 @@
 import numpy as N
 
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 from neuroimaging.modalities.fmri import functions
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.modalities.fmri.functions')
 
-class test_functions(NumpyTestCase):
+
+
+class test_functions(TestCase):
 
     def test_interpolate_confound(self):
         # Test for single and multiple regressors
@@ -21,4 +21,4 @@ class test_functions(NumpyTestCase):
 
 
 if __name__ == '__main__':
-    NumpyTest.run()
+    run_module_suite()
