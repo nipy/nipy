@@ -13,7 +13,7 @@ class test_OneSample(TestCase):
     def data_setUp(self):
         pass
     
-    @slow
+    @dec.slow
     @data
     def test_onesample1(self):
         im1 = load_image('FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.hdr',
