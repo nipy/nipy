@@ -35,16 +35,16 @@ a single slice through a larger grid.
 """
 __docformat__ = 'restructuredtext'
 
-from neuroimaging.core.reference import \
-  axis, coordinate_system, grid, mapping, mni, slices
+import axis
+import coordinate_system
+import grid
+import mapping
+import mni
+import slices
 
 __all__ = ["axis", "coordinate_system", "grid", "mapping", 
            "mni", "slices"]
 
-
-def test(level=1, verbosity=1, flags=[]):
-    from neuroimaging.utils.testutils import set_flags
-    set_flags(flags)
-    from numpy.testing import NumpyTest
-    return NumpyTest().test(level, verbosity)
-
+from neuroimaging.testing import Tester
+test = Tester().test
+bench = Tester().bench
