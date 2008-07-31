@@ -25,10 +25,10 @@ class test_Mapping2(TestCase):
         result_b = self.b(value)
         result_c = self.c(value)
         result_d = self.c(value)        
-        N.testing.assert_almost_equal(result_a, 2*value)
-        N.testing.assert_almost_equal(result_b, 2*value)
-        N.testing.assert_almost_equal(result_c, value/2)
-        N.testing.assert_almost_equal(result_d, value/2)        
+        assert_almost_equal(result_a, 2*value)
+        assert_almost_equal(result_b, 2*value)
+        assert_almost_equal(result_c, value/2)
+        assert_almost_equal(result_d, value/2)        
         
     def test_str(self):
         s_a = str(self.a)
@@ -47,71 +47,71 @@ class test_Mapping2(TestCase):
 
         aa = self.a*self.a
         self.assertFalse(aa.isinvertible())
-        N.testing.assert_almost_equal(aa(value), 4*value)
+        assert_almost_equal(aa(value), 4*value)
 
         ab = self.a*self.b
         self.assertFalse(ab.isinvertible())
-        N.testing.assert_almost_equal(ab(value), 4*value)
+        assert_almost_equal(ab(value), 4*value)
 
         ac = self.a*self.c
         self.assertFalse(ac.isinvertible())
-        N.testing.assert_almost_equal(ac(value), value)
+        assert_almost_equal(ac(value), value)
 
         ad = self.a*self.d
         self.assertFalse(ad.isinvertible())
-        N.testing.assert_almost_equal(ad(value), value)
+        assert_almost_equal(ad(value), value)
 
         ba = self.b*self.a
         self.assertFalse(ba.isinvertible())
-        N.testing.assert_almost_equal(ba(value), 4*value)
+        assert_almost_equal(ba(value), 4*value)
 
         bb = self.b*self.b
         self.assertTrue(bb.isinvertible())
-        N.testing.assert_almost_equal(bb(value), 4*value)
-        N.testing.assert_almost_equal(bb.inverse()(value), value/4)        
+        assert_almost_equal(bb(value), 4*value)
+        assert_almost_equal(bb.inverse()(value), value/4)        
 
         bc = self.b*self.c
         self.assertFalse(bc.isinvertible())
-        N.testing.assert_almost_equal(bc(value), value)
+        assert_almost_equal(bc(value), value)
 
         bd = self.b*self.d
         self.assertTrue(bd.isinvertible())
-        N.testing.assert_almost_equal(bd(value), value)
-        N.testing.assert_almost_equal(bd.inverse()(value), value)        
+        assert_almost_equal(bd(value), value)
+        assert_almost_equal(bd.inverse()(value), value)        
 
         ca = self.c*self.a
         self.assertFalse(ca.isinvertible())
-        N.testing.assert_almost_equal(ca(value), value)
+        assert_almost_equal(ca(value), value)
 
         cb = self.c*self.b
         self.assertFalse(cb.isinvertible())
-        N.testing.assert_almost_equal(cb(value), value)
+        assert_almost_equal(cb(value), value)
 
         cc = self.c*self.c
         self.assertFalse(cc.isinvertible())
-        N.testing.assert_almost_equal(cc(value), value/4)
+        assert_almost_equal(cc(value), value/4)
 
         cd = self.c*self.d
         self.assertFalse(cd.isinvertible())
-        N.testing.assert_almost_equal(cd(value), value/4)
+        assert_almost_equal(cd(value), value/4)
 
         da = self.d*self.a
         self.assertFalse(da.isinvertible())
-        N.testing.assert_almost_equal(da(value), value)
+        assert_almost_equal(da(value), value)
 
         db = self.d*self.b
         self.assertTrue(db.isinvertible())
-        N.testing.assert_almost_equal(db(value), value)
-        N.testing.assert_almost_equal(db.inverse()(value), value)        
+        assert_almost_equal(db(value), value)
+        assert_almost_equal(db.inverse()(value), value)        
 
         dc = self.d*self.c
         self.assertFalse(dc.isinvertible())
-        N.testing.assert_almost_equal(dc(value), value/4)
+        assert_almost_equal(dc(value), value/4)
 
         dd = self.d*self.d
         self.assertTrue(dd.isinvertible())
-        N.testing.assert_almost_equal(dd(value), value/4)
-        N.testing.assert_almost_equal(dd.inverse()(value), 4*value)        
+        assert_almost_equal(dd(value), value/4)
+        assert_almost_equal(dd.inverse()(value), 4*value)        
 
     def test_isinvertible(self):
         self.assertFalse(self.a.isinvertible())
@@ -128,8 +128,8 @@ class test_Mapping2(TestCase):
         ident_b = inv_b*self.b
         ident_d = inv_d*self.d
         value = N.array([1., 2., 3.])
-        N.testing.assert_almost_equal(ident_b(value), value)
-        N.testing.assert_almost_equal(ident_d(value), value)
+        assert_almost_equal(ident_b(value), value)
+        assert_almost_equal(ident_d(value), value)
         
       
         
@@ -141,35 +141,35 @@ class test_Mapping2(TestCase):
         self.assertRaises(AttributeError, tovox, self.c)        
         
         vox_b = self.b.tovoxel(value)
-        N.testing.assert_almost_equal(vox_b, [1., 2., 3.])
+        assert_almost_equal(vox_b, [1., 2., 3.])
         vox_d = self.d.tovoxel(value)
-        N.testing.assert_almost_equal(vox_d, [4., 8., 12.])        
+        assert_almost_equal(vox_d, [4., 8., 12.])        
 
         vox_b = self.b.tovoxel(value2)
-        N.testing.assert_almost_equal(vox_b, [[1., 2., 3.], [1,2,3]])
+        assert_almost_equal(vox_b, [[1., 2., 3.], [1,2,3]])
         vox_d = self.d.tovoxel(value2)
-        N.testing.assert_almost_equal(vox_d, [[4., 8., 12.], [4,8,12]])        
+        assert_almost_equal(vox_d, [[4., 8., 12.], [4,8,12]])        
 
     def test_python2matlab1(self):
         v = R.standard_normal((3,))
         z = self.a(v)
         p = self.a.python2matlab()
         z_ = p(N.array(v[::-1])+1)[::-1]
-        N.testing.assert_almost_equal(z, z_)
+        assert_almost_equal(z, z_)
         
     def test_python2matlab2(self):
         value = N.array([1., 2., 3.])
         for mat_ in [self.a, self.b, self.c, self.d]:
             p = mat_.python2matlab()
             q = p.matlab2python()
-            N.testing.assert_almost_equal(q(value), mat_(value))
+            assert_almost_equal(q(value), mat_(value))
         
     def test_python2matlab3(self):
         value = N.array([1., 2., 3.])
         for mat_ in [self.a, self.b, self.c, self.d]:
             p = mat_.matlab2python()
             q = p.python2matlab()
-            N.testing.assert_almost_equal(q(value), mat_(value))
+            assert_almost_equal(q(value), mat_(value))
 
 
 class test_Identity(TestCase):
@@ -178,7 +178,7 @@ class test_Identity(TestCase):
         
     def test_call(self):
         value = N.array([1., 2., 3.])
-        N.testing.assert_almost_equal(self.a(value), value)
+        assert_almost_equal(self.a(value), value)
     
     def test_eq(self):
         self.assertTrue(self.a == mapping.Affine.identity())
@@ -186,7 +186,7 @@ class test_Identity(TestCase):
     def test_mul(self):
         value = N.array([1., 2., 3.])
         b = self.a * self.a
-        N.testing.assert_almost_equal(b(value), value)
+        assert_almost_equal(b(value), value)
 
     def test_str(self):
         s = str(self.a)
@@ -234,38 +234,38 @@ class test_Mapping(TestCase):
         z = self.mapping(v)
         p = self.mapping.python2matlab()
         z_ = p(N.array(v[::-1])+1)[::-1]
-        N.testing.assert_almost_equal(z, z_)
+        assert_almost_equal(z, z_)
         
     def test_python2matlab2(self):
         p = self.mapping.python2matlab()
         q = p.matlab2python()
-        N.testing.assert_almost_equal(q.transform, self.mapping.transform)
+        assert_almost_equal(q.transform, self.mapping.transform)
         
     def test_python2matlab3(self):
         p = self.mapping.matlab2python()
         q = p.python2matlab()
-        N.testing.assert_almost_equal(q.transform, self.mapping.transform)
+        assert_almost_equal(q.transform, self.mapping.transform)
 
     def test_matvec_trasform(self):
         m1 = R.standard_normal((3, 3))
         v1 = R.standard_normal((3,))
         m2, v2 = mapping._2matvec(mapping._2transform(m1, v1))
-        N.testing.assert_almost_equal(m1, m2)
-        N.testing.assert_almost_equal(v1, v2)        
+        assert_almost_equal(m1, m2)
+        assert_almost_equal(v1, v2)        
         
 #    @slow
     def test_fromurl(self):
         self.fail("the IO for .mat files has been moved to the analyze module")
         x = mapping.fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1.txt')
         y = mapping.fromurl('http://kff.stanford.edu/nipy/testdata/fiac3_fonc1_0089.mat')
-        N.testing.assert_almost_equal(x, y, decimal=5)
+        assert_almost_equal(x, y, decimal=5)
 
         z = mapping.fromurl('http://kff.stanford.edu/FIAC/fiac0/fonc1/fsl/example_func2highres.xfm')
-        N.testing.assert_almost_equal(z[0], [[-0.058193, -3.47651, 0.827575, 225.012],
+        assert_almost_equal(z[0], [[-0.058193, -3.47651, 0.827575, 225.012],
                                              [0.0612378, 0.658445, 4.01176, 37.1965],
                                              [-2.11749, -0.0100964, 0.0288848, 129.901],
                                              [0, 0, 0, 1]])
-        N.testing.assert_almost_equal(z[1], [[0.898438, 0, 0, 0],
+        assert_almost_equal(z[1], [[0.898438, 0, 0, 0],
                                              [0, -1, 0, 256],
                                              [0, 0, 1.42188, 0],
                                              [0, 0, 0, 1]])
@@ -276,7 +276,7 @@ class test_Mapping(TestCase):
         self.mapping.tofile(filename)
         a = mapping.Affine.fromfile(filename)
         os.remove(filename)        
-        N.testing.assert_almost_equal(self.mapping.transform, a.transform)
+        assert_almost_equal(self.mapping.transform, a.transform)
 
     def test___str__(self):
         s = str(self.mapping)
@@ -292,7 +292,7 @@ class test_Mapping(TestCase):
                      [0,1,0,2],
                      [0,0,1,3],
                      [0,0,0,1]], dtype=N.float64)
-        N.testing.assert_equal(a, b)
+        assert_equal(a, b)
 
     def test_permutation_transform(self):
         order = [2,0,1]
@@ -301,7 +301,7 @@ class test_Mapping(TestCase):
                      [ 1.,  0.,  0.,  0.,],
                      [ 0.,  1.,  0.,  0.,],
                      [ 0.,  0.,  0.,  1.,]])
-        N.testing.assert_equal(a, b)
+        assert_equal(a, b)
 
         self.assertRaises(ValueError, mapping.permutation_transform, [3,0,1])
 
@@ -309,7 +309,7 @@ class test_Mapping(TestCase):
         voxel = [1,2,3]
         real = self.mapping(voxel)
         v = self.mapping.tovoxel(real)
-        N.testing.assert_almost_equal(v, voxel)
+        assert_almost_equal(v, voxel)
 
         tovox = lambda a: a.tovoxel(real)
         self.assertRaises(N.linalg.LinAlgError, tovox, self.singular)

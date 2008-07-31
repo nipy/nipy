@@ -64,7 +64,7 @@ class test_Grid(TestCase):
         i = SamplingGrid.identity(['zspace', 'yspace', 'xshape'], shape=shape)
         self.assertEquals(tuple(i.shape), shape)
         y = i.mapping([3,4,5])
-        N.testing.assert_almost_equal(y, N.array([3,4,5]))
+        assert_almost_equal(y, N.array([3,4,5]))
 
     def test_identity2(self):
         shape = (30, 40)
