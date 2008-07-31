@@ -4,15 +4,18 @@ from neuroimaging.core.reference.slices import bounding_box, \
   zslice, yslice, xslice
 from neuroimaging.core.reference.grid import SamplingGrid
 
+# Names for a 3D axis set
+names = ['xspace','yspace','zspace']
+
 class test_Slice(TestCase):
 
     def test_bounding_box(self):
         shape = (10, 10, 10)
-        grid = SamplingGrid.identity(shape)
+        grid = SamplingGrid.identity(names, shape)
         self.assertEqual(bounding_box(grid), [[0., 9.], [0, 9], [0, 9]])
 
     def test_box_slice(self):
-        grid = SamplingGrid.identity((10,10,10,))
+        grid = SamplingGrid.identity(names, (10,10,10,))
         t = zslice(5, [0, 9], [0, 9], grid.output_coords, (10,10)).affine
         assert_almost_equal(t, [[ 0.,  0.,  5.],
                                 [ 1.,  0.,  0.],
