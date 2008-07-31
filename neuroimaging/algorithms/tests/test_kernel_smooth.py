@@ -10,7 +10,7 @@ from neuroimaging.core.reference.grid import SamplingGrid, space
 from neuroimaging.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 
 class test_Kernel(TestCase):
-    @gui
+    @dec.gui
     import pylab
     from neuroimaging.ui.visualization.viewer import BoxViewer
     def test_smooth(self):
