@@ -1,6 +1,6 @@
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
-class test_Template(NumpyTestCase):
+class test_Template(TestCase):
 
     def setUp(self):
         pass

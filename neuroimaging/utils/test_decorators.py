@@ -32,7 +32,7 @@ def data(func):
 
 
 if __name__ == '__main__':
-    @slow
+    @dec.slow
     def foo(x, y, z):
         print "foo"
 
