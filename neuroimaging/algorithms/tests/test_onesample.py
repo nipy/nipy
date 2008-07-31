@@ -1,13 +1,13 @@
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
-from neuroimaging.utils.test_decorators import slow, data
+
 
 from neuroimaging.algorithms.onesample import ImageOneSample
 from neuroimaging.core.api import load_image
 from neuroimaging.utils.tests.data import repository
 
 
-class test_OneSample(NumpyTestCase):
+class test_OneSample(TestCase):
 
 
     def data_setUp(self):
@@ -25,8 +25,8 @@ class test_OneSample(NumpyTestCase):
         x = ImageOneSample([im1,im2,im3], clobber=True)
         x.fit()
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.algorithms.onesample')
+
+
 
 if __name__ == '__main__':
-    NumpyTest.run()
+    run_module_suite()
