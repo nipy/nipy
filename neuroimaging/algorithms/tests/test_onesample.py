@@ -1,18 +1,10 @@
 from neuroimaging.testing import *
 
-
-
 from neuroimaging.algorithms.onesample import ImageOneSample
 from neuroimaging.core.api import load_image
 from neuroimaging.utils.tests.data import repository
 
-
 class test_OneSample(TestCase):
-
-
-    def data_setUp(self):
-        pass
-    
     @dec.slow
     @dec.data
     def test_onesample1(self):
@@ -24,9 +16,3 @@ class test_OneSample(TestCase):
             repository)
         x = ImageOneSample([im1,im2,im3], clobber=True)
         x.fit()
-
-
-
-
-if __name__ == '__main__':
-    run_module_suite()
