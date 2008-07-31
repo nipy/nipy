@@ -36,7 +36,7 @@ import image, roi, generators
 def test(level=1, verbosity=1, flags=[]):
     from neuroimaging.utils.testutils import set_flags
     set_flags(flags)
-    from numpy.testing import NumpyTest
+    from neuroimaging.testing import *
     return NumpyTest().test(level, verbosity)
 
 
