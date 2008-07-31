@@ -7,7 +7,6 @@ from neuroimaging.core.api import Image
 import neuroimaging.core.reference.grid as grid
 from neuroimaging.modalities.fmri.api import FmriImage
 
-
 class test_Iterators(TestCase):
 
     def setUp(self):
@@ -135,9 +134,3 @@ class test_Iterators(TestCase):
             self.assertEqual(self.img.shape[0], slice_.shape[0])
             assert_equal(slice_, value)
 
-
-
-
-
-if __name__ == '__main__':
-    NumpyTest().run()
