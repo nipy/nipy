@@ -16,11 +16,11 @@ class test_OneSample(TestCase):
     @dec.slow
     @dec.data
     def test_onesample1(self):
-        im1 = load_image('FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.hdr',
+        im1 = load_image('FIAC/fiac3/fonc3/fsl/fmristat_run/contrasts/speaker/effect.nii.gz',
             repository)
-        im2 = load_image('FIAC/fiac4/fonc3/fsl/fmristat_run/contrasts/speaker/effect.hdr',
+        im2 = load_image('FIAC/fiac4/fonc3/fsl/fmristat_run/contrasts/speaker/effect.nii.gz',
             repository)
-        im3 = load_image('FIAC/fiac5/fonc2/fsl/fmristat_run/contrasts/speaker/effect.hdr',
+        im3 = load_image('FIAC/fiac5/fonc2/fsl/fmristat_run/contrasts/speaker/effect.nii.gz',
             repository)
         x = ImageOneSample([im1,im2,im3], clobber=True)
         x.fit()
