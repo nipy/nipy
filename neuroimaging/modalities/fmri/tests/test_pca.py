@@ -22,7 +22,7 @@ class test_PCA(TestCase):
                           frame.grid)
 
 class test_PCAMask(test_PCA):
-#    @slow
+#    @dec.slow
     def test_PCAmask(self):
 
         p = PCA(self.fmridata, self.mask)
@@ -30,8 +30,8 @@ class test_PCAMask(test_PCA):
         output = p.images(which=range(4))
 
 class test_PCANoMask(test_PCA):
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_PCA(self):
 
         p = PCA(self.fmridata)
@@ -39,8 +39,8 @@ class test_PCANoMask(test_PCA):
         output = p.images(which=range(4))
 
 class test_PCAMontageNoMask(test_PCA):
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_PCAmontage(self):
         from neuroimaging.modalities.fmri.pca import PCAmontage
         from pylab import savefig
@@ -53,8 +53,8 @@ class test_PCAMontageNoMask(test_PCA):
         os.remove('image.png')
 
 class test_PCAMontageMask(test_PCA):
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_PCAmontage_nomask(self):
         from neuroimaging.modalities.fmri.pca import PCAmontage
         from pylab import savefig

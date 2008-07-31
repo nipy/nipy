@@ -59,8 +59,8 @@ class test_FmriStat(TestCase):
 
 class test_SliceTimes(test_FmriStat):
 
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_model_slicetimes(self):
         OLS = FmriStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes)
@@ -75,8 +75,8 @@ class test_SliceTimes(test_FmriStat):
 
 class test_Resid1(test_FmriStat):
 
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_model_resid1(self):
         self.img.slicetimes = None
         OLS = FmriStatOLS(self.img, self.formula, path=".", clobber=True,
@@ -91,8 +91,8 @@ class test_Resid1(test_FmriStat):
 
 class test_Resid2(test_FmriStat):
 
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_model_resid2(self):
         self.img.slicetimes = None
         OLS = FmriStatOLS(self.img, self.formula, path=".", clobber=True,
@@ -107,8 +107,8 @@ class test_Resid2(test_FmriStat):
 
 class test_HRFDeriv(test_FmriStat):
 
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_hrf_deriv(self):
         self.IRF = glover_deriv
 
@@ -132,8 +132,8 @@ class test_HRFDeriv(test_FmriStat):
         
 class test_Contrast(test_FmriStat):
 
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_contrast(self):
         pain = Contrast(self.pain, self.formula, name='pain')
 
