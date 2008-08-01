@@ -73,6 +73,6 @@ def import_from(modulename, objectname):
     except AttributeError:
         return None
 
-from externals.scipy.testing.pkgtester import Tester
+from neuroimaging.testing import Tester
 test = Tester().test
 bench = Tester().bench
