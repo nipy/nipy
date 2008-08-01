@@ -4,7 +4,7 @@ pynifti code for the low-level functionality.
 
 import numpy as np
 
-from neuroimaging.externals.scipy.testing import *
+from neuroimaging.testing import *
 
 from neuroimaging.io.pyniftiio import PyNiftiIO
 
@@ -64,5 +64,3 @@ def test_affine_sform():
                       [0.0, 0.0, 0.0, 1.0]])
     assert np.all(img.affine == xform)
 
-if __name__ == '__main__':
-    nose.runmodule()

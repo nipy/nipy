@@ -1,6 +1,6 @@
 """Test file for the ordered dictionary module, odict.py."""
 
-from neuroimaging.externals.scipy.testing import *
+from neuroimaging.testing import *
 
 from neuroimaging.utils.odict import odict
 
@@ -17,5 +17,3 @@ class TestOdict(TestCase):
         # test that it's a copy and not a reference
         assert cpydict is not self.thedict
         
-if __name__ == "__main__":
-    nose.runmodule()
