@@ -237,5 +237,5 @@ class TestFromArray(TestCase):
         assert img.affine.diagonal().all() == 1
 
 
-if __name__ == '__main__':
-    run_module_suite()
+
+
