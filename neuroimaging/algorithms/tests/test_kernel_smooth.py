@@ -9,6 +9,8 @@ from neuroimaging.core.reference.grid import SamplingGrid, space
 
 from neuroimaging.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 
+"""
+# Need to make an automated test for this!
 class test_Kernel(TestCase):
     @dec.gui
     import pylab
@@ -26,6 +28,7 @@ class test_Kernel(TestCase):
         sview.M = view.M
         sview.draw()
         pylab.show()
+"""
 
 class test_SigmaFWHM(TestCase):
     def test_sigma_fwhm(self):
