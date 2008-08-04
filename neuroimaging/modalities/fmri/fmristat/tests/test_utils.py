@@ -3,9 +3,9 @@ import os, gc, shutil
 import numpy as N
 from neuroimaging.fixes.scipy.stats.models.contrast import Contrast
 
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
-from neuroimaging.utils.test_decorators import slow, data
+
 
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.modalities.fmri.api import FmriImage
@@ -17,7 +17,7 @@ from  neuroimaging.core.api import Image
 from neuroimaging.modalities.fmri.hrf import glover, glover_deriv
 
 
-class test_FmriStat(NumpyTestCase):
+class test_FmriStat(TestCase):
 
     def setup_formula(self):
 
@@ -59,8 +59,8 @@ class test_FmriStat(NumpyTestCase):
 
 class test_SliceTimes(test_FmriStat):
 
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_model_slicetimes(self):
         OLS = FmriStatOLS(self.img, self.formula,
                                    slicetimes=self.img.slicetimes)
@@ -75,8 +75,8 @@ class test_SliceTimes(test_FmriStat):
 
 class test_Resid1(test_FmriStat):
 
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_model_resid1(self):
         self.img.slicetimes = None
         OLS = FmriStatOLS(self.img, self.formula, path=".", clobber=True,
@@ -91,8 +91,8 @@ class test_Resid1(test_FmriStat):
 
 class test_Resid2(test_FmriStat):
 
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_model_resid2(self):
         self.img.slicetimes = None
         OLS = FmriStatOLS(self.img, self.formula, path=".", clobber=True,
@@ -107,8 +107,8 @@ class test_Resid2(test_FmriStat):
 
 class test_HRFDeriv(test_FmriStat):
 
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_hrf_deriv(self):
         self.IRF = glover_deriv
 
@@ -132,8 +132,8 @@ class test_HRFDeriv(test_FmriStat):
         
 class test_Contrast(test_FmriStat):
 
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_contrast(self):
         pain = Contrast(self.pain, self.formula, name='pain')
 
@@ -157,8 +157,8 @@ class test_Contrast(test_FmriStat):
         v=viewer.BoxViewer(t)
         v.draw()
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.modalities.fmri.fmristat.utils')
 
-if __name__ == '__main__':
-    NumpyTest.run()
+
+
+
+

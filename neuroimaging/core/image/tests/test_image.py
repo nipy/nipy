@@ -1,9 +1,9 @@
 from tempfile import NamedTemporaryFile
 
 import numpy as np
-from numpy.testing import *
+from neuroimaging.testing import *
 
-from neuroimaging.utils.test_decorators import slow
+
 from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.core.image import image
@@ -13,7 +13,6 @@ from neuroimaging.core.api import parcels, data_generator, write_data
 
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.mapping import Affine
-from neuroimaging.data_io.api import Analyze
 
 class TestImage(TestCase):
 
@@ -23,7 +22,7 @@ class TestImage(TestCase):
         
     def test_init(self):
         new = Image(np.asarray(self.img), self.img.grid)
-        np.testing.assert_equal(np.asarray(self.img)[:], np.asarray(new)[:])
+        assert_equal(np.asarray(self.img)[:], np.asarray(new)[:])
 
         self.assertRaises(ValueError, Image, None, None)
 
@@ -80,22 +79,22 @@ class TestImage(TestCase):
         data = np.asarray(self.img)
         data2 = np.asarray(img2)
         # verify data
-        np.testing.assert_almost_equal(data2, data)
-        np.testing.assert_almost_equal(data2.mean(), data.mean())
-        np.testing.assert_almost_equal(data2.min(), data.min())
-        np.testing.assert_almost_equal(data2.max(), data.max())
+        assert_almost_equal(data2, data)
+        assert_almost_equal(data2.mean(), data.mean())
+        assert_almost_equal(data2.min(), data.min())
+        assert_almost_equal(data2.max(), data.max())
         # verify shape and ndims
-        np.testing.assert_equal(img2.shape, self.img.shape)
-        np.testing.assert_equal(img2.ndim, self.img.ndim)
+        assert_equal(img2.shape, self.img.shape)
+        assert_equal(img2.ndim, self.img.ndim)
         # verify affine
-        np.testing.assert_equal(img2.affine, self.img.affine)
+        assert_equal(img2.affine, self.img.affine)
 
         
     def test_nondiag(self):
         self.img.grid.mapping.transform[0,1] = 3.0
         save_image(self.img, self.tmpfile.name)
         img2 = load_image(self.tmpfile.name)
-        np.testing.assert_almost_equal(img2.grid.mapping.transform,
+        assert_almost_equal(img2.grid.mapping.transform,
                                        self.img.grid.mapping.transform)
 
     def test_generator(self):
@@ -111,7 +110,7 @@ class TestImage(TestCase):
     def test_iter4(self):
         tmp = Image(np.zeros(self.img.shape), self.img.grid)
         write_data(tmp, data_generator(self.img, range(self.img.shape[0])))
-        np.testing.assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
+        assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
 
     def test_iter5(self):
         #This next test seems like it could be deprecated with
@@ -120,7 +119,7 @@ class TestImage(TestCase):
         tmp = Image(np.zeros(self.img.shape), self.img.grid)
         g = data_generator(self.img)
         write_data(tmp, g)
-        np.testing.assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
+        assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
 
     def test_parcels1(self):
         rho = self.img
@@ -238,5 +237,5 @@ class TestFromArray(TestCase):
         assert img.affine.diagonal().all() == 1
 
 
-if __name__ == '__main__':
-    run_module_suite()
+
+

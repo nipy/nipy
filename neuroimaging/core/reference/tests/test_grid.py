@@ -1,18 +1,17 @@
 import numpy as N
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
 from neuroimaging.core.reference.mapping import Affine
 
-from neuroimaging.data_io.api import Analyze
 from neuroimaging.testing import anatfile, funcfile
 
 from neuroimaging.core.api import load_image
 
-from neuroimaging.utils.test_decorators import slow
 
-class test_Grid(NumpyTestCase):
+
+class test_Grid(TestCase):
 
     def setUp(self):
         self.img = load_image(anatfile)
@@ -65,7 +64,7 @@ class test_Grid(NumpyTestCase):
         i = SamplingGrid.identity(['zspace', 'yspace', 'xshape'], shape=shape)
         self.assertEquals(tuple(i.shape), shape)
         y = i.mapping([3,4,5])
-        N.testing.assert_almost_equal(y, N.array([3,4,5]))
+        assert_almost_equal(y, N.array([3,4,5]))
 
     def test_identity2(self):
         shape = (30, 40)
@@ -77,8 +76,8 @@ class test_Grid(NumpyTestCase):
         g = SamplingGrid.from_affine(a, ['zspace', 'xspace'], (20,30))
 
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.core.reference.grid')
 
-if __name__ == '__main__':
-    NumpyTest.run()
+
+
+
+

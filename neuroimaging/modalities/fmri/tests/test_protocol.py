@@ -1,13 +1,13 @@
 import csv, os
 import numpy as N
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 from neuroimaging.fixes.scipy.stats.models.utils import recipr0
 from neuroimaging.fixes.scipy.stats.models import contrast
 
 from neuroimaging.modalities.fmri import hrf, protocol, functions
-from neuroimaging.utils.test_decorators import slow
 
-class test_ProtocolSetup(NumpyTestCase):
+
+class test_ProtocolSetup(TestCase):
 
     def setUp(self):
         """
@@ -88,11 +88,11 @@ class test_Protocol(test_ProtocolSetup):
         formula = self.p + drift
         c = contrast.Contrast(self.p.main_effect(), formula)
         c.compute_matrix(self.t)
-        N.testing.assert_almost_equal(c.matrix,
+        assert_almost_equal(c.matrix,
                                           [[0.,0.,0.,0.,1.,0.],
                                            [0.,0.,0.,0.,0.,1.]])
 
-    @slow
+    @dec.slow
     def testDesign2(self):
         self.setup_terms()
         
@@ -128,16 +128,16 @@ class test_Protocol(test_ProtocolSetup):
         Z = float(N.random.standard_normal(()))
 
         D = lambda t: drift(t) * Z
-        N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) * Z)
+        assert_almost_equal(D(t), N.array(drift_fn(t)) * Z)
 
         D = lambda t: drift(t) / Z
-        N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) / Z)
+        assert_almost_equal(D(t), N.array(drift_fn(t)) / Z)
 
         D = lambda t: drift(t) - Z
-        N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) - Z)
+        assert_almost_equal(D(t), N.array(drift_fn(t)) - Z)
 
         D = lambda t: drift(t) + Z
-        N.testing.assert_almost_equal(D(t), N.array(drift_fn(t)) + Z)
+        assert_almost_equal(D(t), N.array(drift_fn(t)) + Z)
 
 
     def testTimeFn2(self):
@@ -149,7 +149,7 @@ class test_Protocol(test_ProtocolSetup):
         t = N.arange(0,30,1.)
 
         D = lambda t: d(t) * d(t)
-        N.testing.assert_almost_equal(D(t), N.array(drift_fn(t))**2)
+        assert_almost_equal(D(t), N.array(drift_fn(t))**2)
 
 
 
@@ -160,7 +160,7 @@ class test_Protocol(test_ProtocolSetup):
         d.dt = 0.5
         x = d(a)
         y = N.array(30*[0.] + 5*[2.] + 15*[0.])
-        N.testing.assert_array_equal(x, y)
+        assert_array_equal(x, y)
 
 
 
@@ -171,12 +171,12 @@ class test_Protocol(test_ProtocolSetup):
         formula = self.p + drift
         c = contrast.Contrast(self.p, formula)
         c.compute_matrix(self.t)
-        N.testing.assert_almost_equal(c.matrix,
+        assert_almost_equal(c.matrix,
                                           [[0.,0.,0.,0.,1.,0.],
                                            [0.,0.,0.,0.,0.,1.]])
 
 
-    @slow
+    @dec.slow
     def testShape(self):
         self.setup_terms()
         
@@ -204,7 +204,7 @@ class test_Protocol(test_ProtocolSetup):
             self.assertEquals(y.shape, (2 + df * 2, self.t.shape[0]))
 
 
-    @slow
+    @dec.slow
     def testDesign1(self):
         self.setup_terms()
         
@@ -233,7 +233,7 @@ class test_Protocol(test_ProtocolSetup):
             y = formula.design(self.t)
             self.assertEquals(y.shape[::-1], (2 + df * 2, self.t.shape[0]))
 
-    @slow
+    @dec.slow
     def test_toggle(self):
 	"""
 	Test to make sure that .convolved flag works on regression terms.
@@ -261,8 +261,8 @@ class test_Protocol(test_ProtocolSetup):
             y = formula.design(self.t)
             self.assertEquals(y.shape[::-1], (2 + df * 2, self.t.shape[0]))
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.modalities.fmri.protocol')
 
-if __name__ == '__main__':
-    NumpyTest.run()
+
+
+
+

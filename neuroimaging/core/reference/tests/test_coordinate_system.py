@@ -1,10 +1,10 @@
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
      VoxelCoordinateSystem
 from neuroimaging.core.reference.axis import Axis
 
-class test_CoordinateSystem(NumpyTestCase):
+class test_CoordinateSystem(TestCase):
 
     def setUp(self):
         self.name = "test"
@@ -66,7 +66,7 @@ class test_CoordinateSystem(NumpyTestCase):
         self.assertEquals(new_c.axes(), self.c.axes()[1:])
         
 
-class test_VoxelCoordinateSystem(NumpyTestCase):
+class test_VoxelCoordinateSystem(TestCase):
     def setUp(self):
         self.name = "voxel_test"
         self.axes = [Axis(n) for n in ['zspace', 'yspace', 'xspace']]
@@ -83,9 +83,9 @@ class test_VoxelCoordinateSystem(NumpyTestCase):
         self.assertTrue(self.v.isvalid([0,0,0]))
         self.assertTrue(not self.v.isvalid(self.shape))
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.core.reference.coordinate_system')
 
 
-if __name__ == '__main__':
-    NumpyTest.run()
+
+
+
+

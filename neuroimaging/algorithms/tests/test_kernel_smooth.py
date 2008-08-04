@@ -1,16 +1,16 @@
 import numpy as N
 import numpy.random as R
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 from neuroimaging.algorithms.kernel_smooth import LinearFilter
 from neuroimaging.core.api import Image
 from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.reference.grid import SamplingGrid, space
-from neuroimaging.utils.test_decorators import gui, slow
+
 from neuroimaging.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 
-class test_Kernel(NumpyTestCase):
-    @gui
+class test_Kernel(TestCase):
+    @dec.gui
     import pylab
     from neuroimaging.ui.visualization.viewer import BoxViewer
     def test_smooth(self):
@@ -27,17 +27,17 @@ class test_Kernel(NumpyTestCase):
         sview.draw()
         pylab.show()
 
-class test_SigmaFWHM(NumpyTestCase):
+class test_SigmaFWHM(TestCase):
     def test_sigma_fwhm(self):
         """
         ensure that fwhm2sigma and sigma2fwhm are inverses of each other        
         """
         fwhm = N.arange(1.0, 5.0, 0.1)
         sigma = N.arange(1.0, 5.0, 0.1)
-        N.testing.assert_almost_equal(sigma2fwhm(fwhm2sigma(fwhm)), fwhm)
-        N.testing.assert_almost_equal(fwhm2sigma(sigma2fwhm(sigma)), sigma)
+        assert_almost_equal(sigma2fwhm(fwhm2sigma(fwhm)), fwhm)
+        assert_almost_equal(fwhm2sigma(sigma2fwhm(sigma)), sigma)
 
-    @slow
+    @dec.slow
     def test_kernel(self):
         """
         Verify the the convolution with a delta function
@@ -96,9 +96,9 @@ class test_SigmaFWHM(NumpyTestCase):
             self.assertTrue(N.corrcoef(vz, kernel(vvz))[0,1] > tol)
 
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.algorithms.kernel_smooth')
+
+
 
         
-if __name__ == '__main__':
-    NumpyTest.run()
+
+

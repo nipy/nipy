@@ -1,9 +1,9 @@
 import os
 
 import numpy as N
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
-from neuroimaging.utils.test_decorators import slow, data
+
 
 from neuroimaging.modalities.fmri.api import FmriImage, fromimage
 from neuroimaging.modalities.fmri.pca import PCA
@@ -11,7 +11,7 @@ from neuroimaging.core.api import Image, load_image
 from neuroimaging.testing import funcfile
 
 
-class test_PCA(NumpyTestCase):
+class test_PCA(TestCase):
 
     def setUp(self):
         self.img = load_image(funcfile)
@@ -22,7 +22,7 @@ class test_PCA(NumpyTestCase):
                           frame.grid)
 
 class test_PCAMask(test_PCA):
-#    @slow
+#    @dec.slow
     def test_PCAmask(self):
 
         p = PCA(self.fmridata, self.mask)
@@ -30,8 +30,8 @@ class test_PCAMask(test_PCA):
         output = p.images(which=range(4))
 
 class test_PCANoMask(test_PCA):
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_PCA(self):
 
         p = PCA(self.fmridata)
@@ -39,8 +39,8 @@ class test_PCANoMask(test_PCA):
         output = p.images(which=range(4))
 
 class test_PCAMontageNoMask(test_PCA):
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_PCAmontage(self):
         from neuroimaging.modalities.fmri.pca import PCAmontage
         from pylab import savefig
@@ -53,8 +53,8 @@ class test_PCAMontageNoMask(test_PCA):
         os.remove('image.png')
 
 class test_PCAMontageMask(test_PCA):
-    @slow
-    @data
+    @dec.slow
+    @dec.data
     def test_PCAmontage_nomask(self):
         from neuroimaging.modalities.fmri.pca import PCAmontage
         from pylab import savefig
@@ -66,9 +66,9 @@ class test_PCAMontageMask(test_PCA):
         savefig('image.png')
         os.remove('image.png')
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.modalities.fmri.pca')
+
+
 
         
-if __name__ == '__main__':
-    NumpyTest.main()
+
+

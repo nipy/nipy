@@ -20,7 +20,7 @@ BUG: anatomical.nii.gz is a copy of functional.nii.gz.  This is a place-holder
 
 import os
 
-__all__ = ['funcfile', 'anatfile']
+#__all__ = ['funcfile', 'anatfile']
 
 # Discover directory path
 filepath = os.path.abspath(__file__)
@@ -28,3 +28,6 @@ basedir = os.path.dirname(filepath)
 
 funcfile = os.path.join(basedir, 'functional.nii.gz')
 anatfile = os.path.join(basedir, 'anatomical.nii.gz')
+
+from numpy.testing import *
+import decorators as dec

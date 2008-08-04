@@ -1,4 +1,4 @@
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 import neuroimaging.modalities.fmri.fmristat.model as model
 from neuroimaging.testing import funcfile
@@ -10,7 +10,7 @@ from neuroimaging.fixes.scipy.stats.models.contrast import Contrast
 
 # Load in the data
 
-class test_fMRIstat_model(NumpyTestCase):
+class test_fMRIstat_model(TestCase):
 
     def setUp(self):
         pass
@@ -51,9 +51,9 @@ class test_fMRIstat_model(NumpyTestCase):
         os.remove('out_sd.nii')
         os.remove('out_effect.nii')
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.modalities.fmri.fmristat.model')
 
 
-if __name__ == '__main__':
-    NumpyTest.run()
+
+
+
+

@@ -10,7 +10,7 @@ Install the data in your home directory from the data repository::
 """
 from os.path import expanduser, exists, join
 
-from neuroimaging.data_io.datasource import Repository
+from neuroimaging.io.datasource import Repository
 
 # data directory should be: $HOME/.nipy/tests/data
 datapath = expanduser(join('~', '.nipy', 'tests', 'data'))

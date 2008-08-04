@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.testing import NumpyTest, NumpyTestCase
+from neuroimaging.testing import *
 
 from neuroimaging.core.api import data_generator, parcels, write_data, slice_generator
 from neuroimaging.core.api import Image, load_image, save_image
@@ -7,7 +7,7 @@ import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.reference.grid as grid
 import neuroimaging.core.image.generators as g
 
-class test_Generator(NumpyTestCase):
+class test_Generator(TestCase):
 
     def setUp(self):
         names = ['zspace', 'yspace', 'xspace']
@@ -33,15 +33,15 @@ class test_Generator(NumpyTestCase):
     def test_write_slices(self):
         tmp = np.zeros(self.img.shape)
         write_data(tmp, slice_generator(self.img))
-        np.testing.assert_almost_equal(tmp, np.asarray(self.img))
+        assert_almost_equal(tmp, np.asarray(self.img))
 
         tmp = np.zeros(self.img.shape)
         write_data(tmp, slice_generator(self.img, axis=1))
-        np.testing.assert_almost_equal(tmp, np.asarray(self.img))
+        assert_almost_equal(tmp, np.asarray(self.img))
 
         tmp = np.zeros(self.img.shape)
         write_data(tmp, slice_generator(self.img, axis=2))
-        np.testing.assert_almost_equal(tmp, np.asarray(self.img))
+        assert_almost_equal(tmp, np.asarray(self.img))
 
     def test_multi_slice(self):
         for _, d in slice_generator(self.img, axis=[0, 1]):
@@ -53,7 +53,7 @@ class test_Generator(NumpyTestCase):
     def test_multi_slice_write(self):
         a = np.zeros(self.img.shape)
         write_data(a, slice_generator(self.img, axis=[0, 1]))
-        np.testing.assert_almost_equal(a, np.asarray(self.img))
+        assert_almost_equal(a, np.asarray(self.img))
 
     def test_parcel(self):
         parcelmap = np.zeros(self.img3.shape)
@@ -96,7 +96,7 @@ class test_Generator(NumpyTestCase):
         for i, pair in enumerate(g.data_generator(self.img3, iterator)):
             s, d = pair
             self.assertEqual((expected[i],), d.shape)
-            np.testing.assert_equal(d, np.arange(expected[i]))
+            assert_equal(d, np.arange(expected[i]))
 
         iterator = g.parcels(parcelmap)
         for i, s in enumerate(iterator):
@@ -107,7 +107,7 @@ class test_Generator(NumpyTestCase):
         for i, pair in enumerate(g.data_generator(self.img3, iterator)):
             s, d = pair
             self.assertEqual((expected[i],), d.shape)
-            np.testing.assert_equal(d, np.arange(expected[i]))
+            assert_equal(d, np.arange(expected[i]))
 
     def test_parcel_copy(self):
         parcelmap = np.zeros(self.img3.shape)
@@ -138,15 +138,15 @@ class test_Generator(NumpyTestCase):
         for i, pair in enumerate(iterator):
             a, s = pair
             o[a][s] = i
-        np.testing.assert_equal(o,
+        assert_equal(o,
                                 np.array([[1,1,1,0,2],
                                           [4,4,3,3,5],
                                           [7,7,7,7,8]]))
 
 
 
-from neuroimaging.utils.testutils import make_doctest_suite
-test_suite = make_doctest_suite('neuroimaging.core.image.generators')
 
-if __name__ == '__main__':
-    NumpyTest.run()
+
+
+
+
