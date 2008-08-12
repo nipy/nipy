@@ -1,4 +1,9 @@
 from numpy import asarray
+
+from numpy.testing import *
+
+from neuroimaging.utils.tests.data import repository
+
 from neuroimaging.core.image.image_list import ImageList
 from neuroimaging.core.api import load_image
 from neuroimaging.modalities.fmri.api import FmriImage, fromimage
@@ -6,14 +11,19 @@ from neuroimaging.modalities.fmri.api import FmriImage, fromimage
 
 import numpy as np
 
-ff = load_image("/home/paris/code/nipy/neuroimaging/utils/tests/data/test_fmri.hdr")
-f = fromimage(ff, TR=2.)
+# FIXME: Write valid tests for fmri image list objects.
+@dec.skipknownfailure
+def test_image_list():
+    img_path = str(repository._fullpath("test_fmri.nii.gz"))
+    ff = load_image(img_path)
 
-fl = ImageList([f.frame(i) for i in range(f.shape[0])])
-print type(np.asarray(fl))
+    f = fromimage(ff, TR=2.)
 
-print fl[2:5].__class__
-print fl[2].__class__
+    fl = ImageList([f.frame(i) for i in range(f.shape[0])])
+    print type(np.asarray(fl))
+
+    print fl[2:5].__class__
+    print fl[2].__class__
 
 ## from numpy import asarray
 ## from neuroimaging.testing funcfile
