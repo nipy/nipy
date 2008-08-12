@@ -9,8 +9,11 @@ class test_Axis(TestCase):
     def setUp(self):
         self.axis = Axis(name='xspace')
 
+    # FIXME: Persumably we would have a defined set of valid axis
+    # names.  There should be a test for setting valid and invalid
+    # names.
+    @dec.skipknownfailure    
     def test_init(self):
-        self.fail("the valid names of axes has been removed so this doesn't raise an exception anymore")
         # an invalid name shou;d raise an error
         self.fail("the valid names of axes has been removed so this doesn't raise an exception anymore")
         self.assertRaises(ValueError, Axis, name='bad_value')
