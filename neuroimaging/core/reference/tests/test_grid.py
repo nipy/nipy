@@ -16,6 +16,8 @@ class test_Grid(TestCase):
     def setUp(self):
         self.img = load_image(anatfile)
 
+    # FIXME: "concatenated and replicated SamplingGrids need to be fixed"
+    @dec.skipknownfailure
     def test_concat(self):
         self.fail("concatenated and replicated SamplingGrids need to be fixed")
 
@@ -25,6 +27,8 @@ class test_Grid(TestCase):
         a = grids.subgrid(0)
         x = a.mapping([5,6,7])
 
+    # FIXME: "concatenated and replicated SamplingGrids need to be fixed"
+    @dec.skipknownfailure
     def test_replicate(self):
         self.fail("concatenated and replicated SamplingGrids need to be fixed")
 
@@ -34,6 +38,8 @@ class test_Grid(TestCase):
         a = grids.subgrid(0)
         x = a.mapping([5,6,7])
 
+    # FIXME: "concatenated and replicated SamplingGrids need to be fixed"
+    @dec.skipknownfailure
     def test_replicate2(self):
         """
         Test passing
@@ -42,6 +48,8 @@ class test_Grid(TestCase):
         grids = self.img.grid.replicate(4)
         grids.python2matlab()
 
+    # FIXME: "concatenated and replicated SamplingGrids need to be fixed"
+    @dec.skipknownfailure
     def test_concat2(self):
         """
         Test passing
@@ -51,6 +59,8 @@ class test_Grid(TestCase):
         grids = ConcatenatedIdenticalGrids(self.img.grid, 4)
         grids.python2matlab()
 
+    # FIXME: "concatenated and replicated SamplingGrids need to be fixed"
+    @dec.skipknownfailure
     def test_concat3(self):
         """
         Test failing

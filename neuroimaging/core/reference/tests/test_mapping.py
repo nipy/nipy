@@ -197,6 +197,8 @@ class test_Identity(TestCase):
     def test_inverse(self):
         self.assertTrue(self.a == self.a.inverse().inverse())
         
+    # FIXME: "the IO for .mat files has been moved to the analyze module"
+    @dec.skipknownfailure
     def test_tofile(self):
         self.fail("the IO for .mat files has been moved to the analyze module")
         self.a.tofile("tmp.mat")
@@ -252,7 +254,9 @@ class test_Mapping(TestCase):
         m2, v2 = mapping._2matvec(mapping._2transform(m1, v1))
         assert_almost_equal(m1, m2)
         assert_almost_equal(v1, v2)        
-        
+
+    # FIXME: "the IO for .mat files has been moved to the analyze module"
+    @dec.skipknownfailure        
     @dec.slow
     def test_fromurl(self):
         self.fail("the IO for .mat files has been moved to the analyze module")
@@ -270,6 +274,8 @@ class test_Mapping(TestCase):
                                              [0, 0, 1.42188, 0],
                                              [0, 0, 0, 1]])
 
+    # FIXME: "the IO for .mat files has been moved to the analyze module"
+    @dec.skipknownfailure        
     def test_tofromfile(self):
         self.fail("the IO for .mat files has been moved to the analyze module")
         (_, filename) = mkstemp(suffix='.csv')
