@@ -27,7 +27,7 @@ class test_fMRI(TestCase):
     def test_write(self):
         #self.fail('this is a problem with reading/writing so-called "mat" files -- all the functions for these have been moved from core.reference.mapping to data_io.formats.analyze -- and they need to be fixed because they do not work. the names of the functions are: matfromstr, matfromfile, matfrombin, matfromxfm, mattofile')
         fp, fname = mkstemp('.nii')
-        save_image(self.img, fname, clobber=True)
+        save_image(self.img, fname)
         test = fromimage(load_image(fname))
         self.assertEquals(test[0].grid.shape, self.img[0].grid.shape)
         os.remove(fname)
@@ -36,19 +36,21 @@ class test_fMRI(TestCase):
         j = 0
         for i, d in fmri_generator(self.img):
             j += 1
-            self.assertEquals(d.shape, (20,20,20))
+            self.assertEquals(d.shape, (20,2,20))
             del(i); gc.collect()
-        self.assertEquals(j, 2)
+        self.assertEquals(j, 20)
 
     def test_subgrid(self):
         subgrid = self.img.grid[3]
-        assert_almost_equal(subgrid.mapping.transform,
-                                      [[0., 0., 0., -49.21875],
-                                       [-7., 0., 0., 7.],
-                                       [0., -2.34375, 0., 53.90625],
-                                       [0., 0., -2.34375, 53.90625],
-                                       [0, 0, 0, 1]])
 
+        xform = np.array([[ 0., 0., 0., 10.35363007],
+                          [-7.,  0., 0., 7.],
+                          [ 0.,  -2.34375, 0., 53.90625],
+                          [ 0.,  0., -2.34375, 53.90625],
+                          [ 0.,  0., 0., 1.]])
+        
+        assert_almost_equal(subgrid.mapping.transform, xform)
+        
     def test_labels1(self):
         parcelmap = (np.asarray(self.parcels) * 100).astype(np.int32)
         
