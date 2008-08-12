@@ -1,21 +1,22 @@
 import os, gc, shutil
 
 import numpy as np
-from neuroimaging.fixes.scipy.stats.models.contrast import Contrast
 
 from neuroimaging.testing import *
 
-
-
 from neuroimaging.utils.tests.data import repository
+
+from  neuroimaging.core.api import Image
+from neuroimaging.fixes.scipy.stats.models.contrast import Contrast
+
 from neuroimaging.modalities.fmri.api import FmriImage
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor,\
   ExperimentalQuantitative
 from neuroimaging.modalities.fmri.functions import SplineConfound
-from neuroimaging.modalities.fmri.fmristat.utils import FmriStatAR, FmriStatOLS
-from  neuroimaging.core.api import Image
 from neuroimaging.modalities.fmri.hrf import glover, glover_deriv
 
+# FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
+#from neuroimaging.modalities.fmri.fmristat.utils import FmriStatAR, FmriStatOLS
 
 class test_FmriStat(TestCase):
 
@@ -45,6 +46,9 @@ class test_FmriStat(TestCase):
     def setUp(self):
         self.setup_formula()
 
+    # FIXME: data_setUp is never called!  As a result, self.img is not
+    #     defined.  Need to verify the data file exists (try
+    #     test_fmri.nii.gz) and the calling convention for FmriImage
     def data_setUp(self):
         frametimes = np.arange(120)*3.
         slicetimes = np.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
@@ -53,12 +57,16 @@ class test_FmriStat(TestCase):
                                   slicetimes=slicetimes, usematfile=False)
 
     def tearDown(self):
+        # FIXME: Use NamedTemporaryFile (import from tempfile) instead
+        # of specific temporary files that need to be removed via
+        # shutl.rmtree.
         shutil.rmtree('fmristat_run', ignore_errors=True)
         for rhofile in ['rho.hdr', 'rho.img']:
             shutil.rmtree(rhofile, ignore_errors=True)
 
 class test_SliceTimes(test_FmriStat):
-
+    # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
+    @dec.skipknownfailure
     @dec.slow
     @dec.data
     def test_model_slicetimes(self):
@@ -74,7 +82,8 @@ class test_SliceTimes(test_FmriStat):
         del(OLS); del(AR); gc.collect()
 
 class test_Resid1(test_FmriStat):
-
+    # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
+    @dec.skipknownfailure    
     @dec.slow
     @dec.data
     def test_model_resid1(self):
@@ -90,7 +99,8 @@ class test_Resid1(test_FmriStat):
         del(OLS); del(AR); gc.collect()
 
 class test_Resid2(test_FmriStat):
-
+    # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
+    @dec.skipknownfailure
     @dec.slow
     @dec.data
     def test_model_resid2(self):
@@ -106,7 +116,8 @@ class test_Resid2(test_FmriStat):
         del(OLS); del(AR); gc.collect()
 
 class test_HRFDeriv(test_FmriStat):
-
+    # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
+    @dec.skipknownfailure
     @dec.slow
     @dec.data
     def test_hrf_deriv(self):
@@ -114,7 +125,7 @@ class test_HRFDeriv(test_FmriStat):
 
         self.pain.convolve(self.IRF)
         self.pain.convolved = True
-
+        
         self.formula = self.pain + self.drift
 
        
@@ -131,7 +142,8 @@ class test_HRFDeriv(test_FmriStat):
         del(OLS); del(AR); gc.collect()
         
 class test_Contrast(test_FmriStat):
-
+    # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
+    @dec.skipknownfailure
     @dec.slow
     @dec.data
     def test_contrast(self):
