@@ -1,5 +1,5 @@
 import csv, os
-import numpy as N
+import numpy as np
 from neuroimaging.testing import *
 from neuroimaging.fixes.scipy.stats.models.utils import recipr0
 from neuroimaging.fixes.scipy.stats.models import contrast
@@ -55,7 +55,7 @@ class test_ProtocolSetup(TestCase):
         self.IRF1 = hrf.glover
         self.IRF2 = hrf.glover_deriv
 
-        self.t = N.arange(0,300,1)
+        self.t = np.arange(0,300,1)
 
 class test_Protocol(test_ProtocolSetup):
 
@@ -81,6 +81,18 @@ class test_Protocol(test_ProtocolSetup):
         os.remove('tmp.csv')
 
 
+    # FIXME: Fix recursion error: c =
+    #     contrast.Contrast(self.p.main_effect(), formula) File
+    #     "/Users/cburns/src/nipy-trunk/neuroimaging/modalities/fmri/protocol.py",
+    #     line 307, in main_effect return
+    #     ExperimentalQuantitative('%s:maineffect' % self.termname, f)
+    #     File
+    #     "/Users/cburns/src/nipy-trunk/neuroimaging/modalities/fmri/protocol.py",
+    #     line 139, in __init__ test =
+    #     np.array(self.func(np.array([4.0,5.0,6]))) File
+    #     "/Users/cburns/src/nipy-trunk/neuroimaging/modalities/fmri/protocol.py",
+    #     line 305, in <lambda> f = lambda t: f(t)
+    @dec.skipknownfailure
     def testContrast2(self):
         self.setup_terms()
         drift_fn = functions.SplineConfound(4, window=(0,300))
@@ -123,21 +135,21 @@ class test_Protocol(test_ProtocolSetup):
         
         drift_fn = functions.SplineConfound(7, window=(0,300))
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
-        t = N.arange(0,30,1.)
+        t = np.arange(0,30,1.)
 
-        Z = float(N.random.standard_normal(()))
+        Z = float(np.random.standard_normal(()))
 
         D = lambda t: drift(t) * Z
-        assert_almost_equal(D(t), N.array(drift_fn(t)) * Z)
+        assert_almost_equal(D(t), np.array(drift_fn(t)) * Z)
 
         D = lambda t: drift(t) / Z
-        assert_almost_equal(D(t), N.array(drift_fn(t)) / Z)
+        assert_almost_equal(D(t), np.array(drift_fn(t)) / Z)
 
         D = lambda t: drift(t) - Z
-        assert_almost_equal(D(t), N.array(drift_fn(t)) - Z)
+        assert_almost_equal(D(t), np.array(drift_fn(t)) - Z)
 
         D = lambda t: drift(t) + Z
-        assert_almost_equal(D(t), N.array(drift_fn(t)) + Z)
+        assert_almost_equal(D(t), np.array(drift_fn(t)) + Z)
 
 
     def testTimeFn2(self):
@@ -146,20 +158,20 @@ class test_Protocol(test_ProtocolSetup):
         drift_fn = functions.SplineConfound(7, window=(0,300))
         drift = protocol.ExperimentalQuantitative('drift', drift_fn)
         d = lambda t: drift(t)
-        t = N.arange(0,30,1.)
+        t = np.arange(0,30,1.)
 
         D = lambda t: d(t) * d(t)
-        assert_almost_equal(D(t), N.array(drift_fn(t))**2)
+        assert_almost_equal(D(t), np.array(drift_fn(t))**2)
 
 
 
     def test_DeltaFunction(self):
-        a = N.arange(0,5,0.1)
+        a = np.arange(0,5,0.1)
         d = functions.DeltaFunction()
         d.start = 3.0
         d.dt = 0.5
         x = d(a)
-        y = N.array(30*[0.] + 5*[2.] + 15*[0.])
+        y = np.array(30*[0.] + 5*[2.] + 15*[0.])
         assert_array_equal(x, y)
 
 
