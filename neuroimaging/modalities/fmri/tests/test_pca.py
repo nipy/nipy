@@ -1,6 +1,6 @@
 import os
 
-import numpy as N
+import numpy as np
 from neuroimaging.testing import *
 
 
@@ -18,7 +18,7 @@ class test_PCA(TestCase):
         self.fmridata = fromimage(self.img)
 
         frame = self.fmridata[0]
-        self.mask = Image(N.greater(N.asarray(frame), 500).astype(N.float64),
+        self.mask = Image(np.greater(np.asarray(frame), 500).astype(np.float64),
                           frame.grid)
 
 class test_PCAMask(test_PCA):

@@ -14,7 +14,7 @@ covariance matrix.
 
 __docformat__ = 'restructuredtext'
 
-import numpy as N
+import numpy as np
 import numpy.linalg as L
 from neuroimaging.fixes.scipy.stats.models.utils import recipr
 
@@ -46,7 +46,7 @@ class PCA(object):
             `design_keep` : TODO
                 Data is projected onto the column span of design_keep.
         """
-        self.image = N.asarray(image)
+        self.image = np.asarray(image)
         self.outgrid = image[0].grid
         self.tol = tol
         self.ext = ext
@@ -63,10 +63,10 @@ class PCA(object):
             self.design_keep = design_keep
 
         if self.mask is not None:
-            self._mask = N.array(self.mask.readall())
+            self._mask = np.array(self.mask.readall())
             self.nvoxel = self._mask.sum()
         else:
-            self.nvoxel = N.product(self.image.shape[1:])
+            self.nvoxel = np.product(self.image.shape[1:])
 
         self.nimages = self.image.shape[0]
 
@@ -84,12 +84,12 @@ class PCA(object):
             if self.design_keep is None:
                 return Y
             else:
-                return N.dot(N.dot(self.design_keep, L.pinv(self.design_keep)), Y)
+                return np.dot(np.dot(self.design_keep, L.pinv(self.design_keep)), Y)
         else:
             if self.design_resid is None:
                 return Y            
             else:
-                return Y - N.dot(N.dot(self.design_resid, L.pinv(self.design_resid)), Y)
+                return Y - np.dot(np.dot(self.design_resid, L.pinv(self.design_resid)), Y)
 
     def fit(self):
         """
@@ -105,32 +105,32 @@ class PCA(object):
 
         # Compute projection matrices
     
-        if N.allclose(self.design_keep, [[0]]):
-            self.design_resid = N.ones((self.nimages, 1))
+        if np.allclose(self.design_keep, [[0]]):
+            self.design_resid = np.ones((self.nimages, 1))
             
-        if N.allclose(self.design_keep, [[0]]):
-            self.design_keep = N.identity(self.nimages)
+        if np.allclose(self.design_keep, [[0]]):
+            self.design_keep = np.identity(self.nimages)
 
-        X = N.dot(self.design_keep, L.pinv(self.design_keep))
-        XZ = X - N.dot(self.design_resid, N.dot(L.pinv(self.design_resid), X))
+        X = np.dot(self.design_keep, L.pinv(self.design_keep))
+        XZ = X - np.dot(self.design_resid, np.dot(L.pinv(self.design_resid), X))
         UX, SX, VX = L.svd(XZ, full_matrices=0)
     
-        rank = N.greater(SX/SX.max(), 0.5).astype(N.int32).sum()
+        rank = np.greater(SX/SX.max(), 0.5).astype(np.int32).sum()
         UX = UX[:,range(rank)].T
 
         first_slice = slice(0,self.image.shape[0])
         _shape = self.image.shape
-        self.C = N.zeros((rank,)*2)
+        self.C = np.zeros((rank,)*2)
 
         for i in range(self.image.shape[1]):
             _slice = [first_slice, slice(i,i+1)]
             
-            Y = N.nan_to_num(self.image[_slice].reshape((_shape[0], N.product(_shape[2:]))))
-            YX = N.dot(UX, Y)
+            Y = np.nan_to_num(self.image[_slice].reshape((_shape[0], np.product(_shape[2:]))))
+            YX = np.dot(UX, Y)
             
             if self.pcatype == 'cor':
-                S2 = N.add.reduce(self.project(Y, which='resid')**2, axis=0)
-                Smhalf = recipr(N.sqrt(S2)); del(S2)
+                S2 = np.add.reduce(self.project(Y, which='resid')**2, axis=0)
+                Smhalf = recipr(np.sqrt(S2)); del(S2)
                 YX *= Smhalf
                 
             
@@ -138,18 +138,18 @@ class PCA(object):
                 mask = self._mask[i]
                 
                 mask.shape = mask.size
-                YX *= N.nan_to_num(mask)
+                YX *= np.nan_to_num(mask)
                 del(mask)
             
-            self.C += N.dot(YX, YX.T)
+            self.C += np.dot(YX, YX.T)
             
         
         self.D, self.Vs = L.eigh(self.C)
-        order = N.argsort(-self.D)
+        order = np.argsort(-self.D)
         self.D = self.D[order]
         self.pcntvar = self.D * 100 / self.D.sum()
     
-        self.components = N.transpose(N.dot(UX.T, self.Vs))[order]
+        self.components = np.transpose(np.dot(UX.T, self.Vs))[order]
 
     def images(self, which=[0], output_base=None):
         """
@@ -174,7 +174,7 @@ class PCA(object):
             outiters = [Image('%s_comp%d%s' % (output_base, i, self.ext),
                                     grid=outgrid.copy(), mode='w').slice_iterator(mode='w') for i in which]
         else:
-            outiters = [Image(N.zeros(outgrid.shape),
+            outiters = [Image(np.zeros(outgrid.shape),
                                     grid=outgrid.copy()).slice_iterator(mode='w') for i in which]
 
         first_slice = slice(0,self.image.shape[0])
@@ -182,8 +182,8 @@ class PCA(object):
 
         for i in range(self.image.shape[1]):
             _slice = [first_slice, slice(i,i+1)]
-            Y = N.nan_to_num(self.image[_slice].reshape((_shape[0], N.product(_shape[2:]))))
-            U = N.dot(subVX, Y)
+            Y = np.nan_to_num(self.image[_slice].reshape((_shape[0], np.product(_shape[2:]))))
+            U = np.dot(subVX, Y)
 
             if self.mask is not None:
                 mask = self._mask[i]
@@ -191,8 +191,8 @@ class PCA(object):
                 U *= mask
 
             if self.pcatype == 'cor':
-                S2 = N.add.reduce(self.project(Y, which='resid')**2, axis=0)
-                Smhalf = recipr(N.sqrt(S2))
+                S2 = np.add.reduce(self.project(Y, which='resid')**2, axis=0)
+                Smhalf = recipr(np.sqrt(S2))
                 U *= Smhalf
             
  
@@ -207,7 +207,7 @@ class PCA(object):
             else:
                 outimage = outiters[i].img
             d = outimage.readall()
-            dabs = N.fabs(d); di = dabs.argmax()
+            dabs = np.fabs(d); di = dabs.argmax()
             d = d / d.flat[di]
             outslice = [slice(0,j) for j in outgrid.shape]
             outimage[outslice] = d
@@ -275,7 +275,7 @@ class PCA(object):
 ##             try:
 ##                 t = self.image.frametimes
 ##             except:
-##                 t = N.arange(self.image.grid.shape[0])
+##                 t = np.arange(self.image.grid.shape[0])
 ##             self.time_plot = MultiPlot(self.components[self.image_which],
 ##                                        time=t,
 ##                                        title=title)
@@ -318,9 +318,9 @@ class PCA(object):
 ##             if z is None:
 ##                 r = images[0].grid.range()
 ##                 zmin = r[0].min(); zmax = r[0].max()
-##                 z = N.linspace(zmin, zmax, nslice)
+##                 z = np.linspace(zmin, zmax, nslice)
                 
-##             z = list(N.asarray(z).flat)
+##             z = list(np.asarray(z).flat)
 ##             z.sort()
 ##             ncol = len(z)
 
@@ -338,8 +338,8 @@ class PCA(object):
 ##                                                 xlim=xlim,
 ##                                                 ylim=ylim) for zval in z]
 
-##             vmax = N.array([images[i].readall().max() for i in range(nrow)]).max()
-##             vmin = N.array([images[i].readall().min() for i in range(nrow)]).min()
+##             vmax = np.array([images[i].readall().max() for i in range(nrow)]).max()
+##             vmin = np.array([images[i].readall().min() for i in range(nrow)]).min()
 
 ##             for i in range(nrow):
 

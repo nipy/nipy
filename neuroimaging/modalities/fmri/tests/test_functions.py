@@ -1,4 +1,4 @@
-import numpy as N
+import numpy as np
 
 from neuroimaging.testing import *
 
@@ -11,13 +11,13 @@ class test_functions(TestCase):
 
     def test_interpolate_confound(self):
         # Test for single and multiple regressors
-        T = N.arange(100)
-        C = N.random.normal(size=(T.shape))
+        T = np.arange(100)
+        C = np.random.normal(size=(T.shape))
         ic = functions.InterpolatedConfound(times=T, values=C)
-        assert N.allclose(C, ic(T))
-        C = N.random.normal(size=(2,100))
+        assert np.allclose(C, ic(T))
+        C = np.random.normal(size=(2,100))
         ic = functions.InterpolatedConfound(times=T, values=C)
-        assert N.allclose(C, ic(T))
+        assert np.allclose(C, ic(T))
 
 
 

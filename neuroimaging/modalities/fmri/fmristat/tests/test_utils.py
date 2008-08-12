@@ -1,6 +1,6 @@
 import os, gc, shutil
 
-import numpy as N
+import numpy as np
 from neuroimaging.fixes.scipy.stats.models.contrast import Contrast
 
 from neuroimaging.testing import *
@@ -46,8 +46,8 @@ class test_FmriStat(TestCase):
         self.setup_formula()
 
     def data_setUp(self):
-        frametimes = N.arange(120)*3.
-        slicetimes = N.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
+        frametimes = np.arange(120)*3.
+        slicetimes = np.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
 
         self.img = FmriImage("test_fmri.hdr", datasource=repository, frametimes=frametimes,
                                   slicetimes=slicetimes, usematfile=False)

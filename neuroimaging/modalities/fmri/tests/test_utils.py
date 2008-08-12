@@ -1,4 +1,4 @@
-import numpy as N
+import numpy as np
 from neuroimaging.testing import *
 
 from neuroimaging.modalities.fmri.utils import CutPoly, WaveFunction, ConvolveFunctions
@@ -7,7 +7,7 @@ class test_util(TestCase):
     
     def test_CutPoly(self):
         f = CutPoly(2.0)
-        t = N.arange(0, 10.0, 0.1)
+        t = np.arange(0, 10.0, 0.1)
         y = f(t)
         assert_almost_equal(y, [x*x for x in t])
 
@@ -29,7 +29,7 @@ class test_util(TestCase):
         duration = 2.0
         height = 3.0
         f = WaveFunction(5, 2, 3)
-        t = N.arange(0, 10.0, 0.1)
+        t = np.arange(0, 10.0, 0.1)
         y = f(t)
         assert_almost_equal(y, [height*(x >= start and x < start + duration) for x in t])
 
@@ -40,7 +40,7 @@ class test_util(TestCase):
         to the product of the integrals of the original functions.
         """
         dt = 0.01
-        t = N.arange(0, 10.0, dt)
+        t = np.arange(0, 10.0, dt)
         f1 = WaveFunction(2, 1, 1)
         f2 = WaveFunction(4, 1, 1)
         fa = ConvolveFunctions(f1, f2, [t[0], t[-1]], dt, normalize=[1,1])

@@ -9,7 +9,7 @@ a spectral HRF.
 __docformat__ = 'restructuredtext'
 
 
-import numpy as N
+import numpy as np
 import numpy.linalg as L
 
 from neuroimaging.modalities.fmri import filters
@@ -26,9 +26,9 @@ def glover2GammaDENS(peak_hrf, fwhm_hrf):
     
     :Returns: TODO
     """
-    alpha = N.power(peak_hrf / fwhm_hrf, 2) * 8 * N.log(2.0)
-    beta = N.power(fwhm_hrf, 2) / peak_hrf / 8 / N.log(2.0)
-    coef = peak_hrf**(-alpha) * N.exp(peak_hrf / beta)
+    alpha = np.power(peak_hrf / fwhm_hrf, 2) * 8 * np.log(2.0)
+    beta = np.power(fwhm_hrf, 2) / peak_hrf / 8 / np.log(2.0)
+    coef = peak_hrf**(-alpha) * np.exp(peak_hrf / beta)
     return coef, filters.GammaDENS(alpha + 1., 1. / beta)
 
 def _glover(peak_hrf=(5.4, 10.8), fwhm_hrf=(5.2, 7.35), dip=0.35):
@@ -36,7 +36,7 @@ def _glover(peak_hrf=(5.4, 10.8), fwhm_hrf=(5.2, 7.35), dip=0.35):
     coef2, gamma2 = glover2GammaDENS(peak_hrf[1], fwhm_hrf[1])
     f = filters.GammaCOMB([[coef1, gamma1], [-dip*coef2, gamma2]])
     dt = 0.02
-    t = N.arange(0, 50 + dt, dt)
+    t = np.arange(0, 50 + dt, dt)
     c = (f(t) * dt).sum()
     return filters.GammaCOMB([[coef1/c, gamma1], [-dip*coef2/c, gamma2]])
 
@@ -85,7 +85,7 @@ class SpectralHRF(filters.Filter):
             raise ValueError, 'expecting one HRF for spectral decomposition'
         self.deltaPCA()
 
-    def deltaPCA(self, tmax=50., lower=-15.0, delta=N.arange(-4.5, 4.6, 0.1)):
+    def deltaPCA(self, tmax=50., lower=-15.0, delta=np.arange(-4.5, 4.6, 0.1)):
         """
         Perform an expansion of fn, shifted over the values in delta.
         Effectively, a Taylor series approximation to fn(t+delta), in delta,
@@ -93,13 +93,13 @@ class SpectralHRF(filters.Filter):
         fn=IRF[0], that is the first filter.
 
         >>> GUI = True
-        >>> import numpy as N
+        >>> import numpy as np
         >>> from pylab import plot, title, show
         >>> from neuroimaging.modalities.fmri.hrf import glover, glover_deriv, SpectralHRF
         >>>
         >>> ddelta = 0.25
-        >>> delta = N.arange(-4.5,4.5+ddelta, ddelta)
-        >>> time = N.arange(0,20,0.2)
+        >>> delta = np.arange(-4.5,4.5+ddelta, ddelta)
+        >>> time = np.arange(0,20,0.2)
         >>>
         >>> hrf = SpectralHRF(glover)
         >>>
@@ -122,7 +122,7 @@ class SpectralHRF(filters.Filter):
 
         """
 
-        time = N.arange(lower, tmax, self.dt)
+        time = np.arange(lower, tmax, self.dt)
         if callable(self.IRF):
             irf = self.IRF
         else:
@@ -131,7 +131,7 @@ class SpectralHRF(filters.Filter):
         H = []
         for i in range(delta.shape[0]):
             H.append(irf(time - delta[i]))
-        H = N.array(H)
+        H = np.array(H)
 
 
         U, S, V = L.svd(H.T, full_matrices=0)
@@ -141,14 +141,14 @@ class SpectralHRF(filters.Filter):
             b = interpolant(time, U[:, i])
 
             if i == 0:
-                d = N.fabs((b(time) * self.dt).sum())
+                d = np.fabs((b(time) * self.dt).sum())
             b.f.y /= d
             basis.append(b)
 
 
-        W = N.array([b(time) for b in basis[:self.ncomp]])
+        W = np.array([b(time) for b in basis[:self.ncomp]])
 
-        WH = N.dot(L.pinv(W.T), H.T)
+        WH = np.dot(L.pinv(W.T), H.T)
         
         coef = [interpolant(delta, w) for w in WH]
             

@@ -1,7 +1,7 @@
 __docformat__ = 'restructuredtext'
 
 import csv, copy
-import numpy as N
+import numpy as np
 
 from neuroimaging.modalities.fmri.functions import Events
 from neuroimaging.fixes.scipy.stats.models.formula import Factor, Quantitative, Formula, Term
@@ -96,7 +96,7 @@ class ExperimentalRegressor(object):
             except:
                 for __func in _func:
                     v.append(__func(time, **keywords))
-        return N.array(v)
+        return np.array(v)
 
     def convolve(self, IRF):
         """
@@ -136,7 +136,7 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
      
         ExperimentalRegressor.__init__(self, termname=termname, **keywords)
 
-        test = N.array(self.func(N.array([4.0,5.0,6])))
+        test = np.array(self.func(np.array([4.0,5.0,6])))
         if test.ndim > 1:
             n = test.shape[0]
         else:
@@ -180,7 +180,7 @@ class Time(ExperimentalQuantitative):
         except:
             raise ValueError, 'only float exponents allowed'
         def _f(time=None, **ignored):
-            return N.power(time, e)
+            return np.power(time, e)
         return ExperimentalQuantitative('time^%0.2f' % e, _f)
     
 def _time(time=None): return time
@@ -330,7 +330,7 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
             obj.convolved = False
             v = obj(time, namespace=namespace)[j]
             obj.convolved = _c
-            return [N.squeeze(v) * 1.]
+            return [np.squeeze(v) * 1.]
 
         name = '%s[%s]' % (self.termname, `key`)
         return ExperimentalQuantitative(name, factor_func)
@@ -359,18 +359,18 @@ class ExperimentalFactor(ExperimentalRegressor, Factor):
             keys = self.events.keys()
             keys.sort()
             for level in keys:
-                value.append(N.squeeze(self.events[level](time)))
+                value.append(np.squeeze(self.events[level](time)))
             if includedown:
-                s = N.add.reduce(value)
+                s = np.add.reduce(value)
 
                 keys = keys + [downtime]
-                which = N.argmax(value, axis=0)
-                which = N.where(s, which, keys.index(downtime))
+                which = np.argmax(value, axis=0)
+                which = np.where(s, which, keys.index(downtime))
                 tmp, self.namespace = self.namespace, {self.termname:[keys[w] for w in which]}
                 value = Factor.__call__(self)
                 self.namespace = tmp
             else:
-                value = N.asarray(value)
+                value = np.asarray(value)
         else:
             if hasattr(self, '_convolved'):
                 value = self._convolved(time, **kw)
@@ -479,10 +479,10 @@ class ExperimentalFormula(Formula):
                 val.shape = (1, val.shape[0])
             allvals.append(val)
 
-        tmp = N.concatenate(allvals)
+        tmp = np.concatenate(allvals)
         names, keep = self.names(keep=True)
 
-        return N.array([tmp[i] for i in keep])
+        return np.array([tmp[i] for i in keep])
 
     def names(self, keep=False):
         """

@@ -1,6 +1,6 @@
 __docformat__ = 'restructuredtext'
 
-import numpy as N
+import numpy as np
 import numpy.fft as FFT
 import scipy.interpolate
 
@@ -67,7 +67,7 @@ class WaveFunction:
         
         :Returns: ``float`` or ``numpy.ndarray``
         """
-        return N.greater_equal(time, self.start) * N.less(time, self.start + self.duration) * self.height
+        return np.greater_equal(time, self.start) * np.less(time, self.start + self.duration) * self.height
 
 # return the convolution (as a StepFunction) of two functions over interval,
 # with grid size dt
@@ -95,17 +95,17 @@ def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, normalize=(0, 0)):
 
     max_interval, min_interval = max(interval), min(interval)
     ltime = max_interval - min_interval
-    time = N.arange(min_interval, max_interval + padding_f * ltime, dt)
+    time = np.arange(min_interval, max_interval + padding_f * ltime, dt)
 
-    _fn1 = N.array(fn1(time))
-    _fn2 = N.array(fn2(time))
+    _fn1 = np.array(fn1(time))
+    _fn2 = np.array(fn2(time))
 
     if normalize[0]:
-        _fn1 /= N.sqrt(N.add.reduce(_fn1**2))
+        _fn1 /= np.sqrt(np.add.reduce(_fn1**2))
     _fft1 = FFT.rfft(_fn1)
 
     if normalize[1]:
-        _fn2 /= N.sqrt(N.add.reduce(_fn2**2))
+        _fn2 /= np.sqrt(np.add.reduce(_fn2**2))
     _fft2 = FFT.rfft(_fn2)
 
     value = FFT.irfft(_fft1 * _fft2)
@@ -149,14 +149,14 @@ class CutPoly:
         
         :Returns: ``float`` or ``numpy.ndarray``
         """
-        test = N.ones(N.asarray(time).shape)
+        test = np.ones(np.asarray(time).shape)
         lower, upper = self.trange
         
         if lower is not None:
-            test *= N.greater_equal(time, lower)
+            test *= np.greater_equal(time, lower)
         if upper is not None:
-            test *= N.less(time, upper)
-        return N.power(time, self.power) * test
+            test *= np.less(time, upper)
+        return np.power(time, self.power) * test
         
         
 def _test():

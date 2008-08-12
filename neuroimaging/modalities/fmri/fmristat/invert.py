@@ -1,7 +1,7 @@
 
 __docformat__ = 'restructuredtext'
 
-import numpy as N
+import numpy as np
 
 def invertR(delta, IRF, niter=20):
     """
@@ -16,24 +16,24 @@ def invertR(delta, IRF, niter=20):
     def f(x, theta):
         a, b, c = theta
         _x = x[:,0]
-        return a * N.arctan(b * _x) + c
+        return a * np.arctan(b * _x) + c
 
     def grad(x, theta):
         a, b, c = theta
-        value = N.zeros((3, x.shape[0]))
+        value = np.zeros((3, x.shape[0]))
         _x = x[:,0]
-        value[0] = N.arctan(b * _x)
-        value[1] = a / (1. + N.power((b * _x), 2.)) * _x
+        value[0] = np.arctan(b * _x)
+        value[1] = a / (1. + np.power((b * _x), 2.)) * _x
         value[2] = 1.
         return value.T
 
-    c = delta.max() / (N.pi/2)
+    c = delta.max() / (np.pi/2)
     n = delta.shape[0]
     delta0 = (delta[n/2+2] - delta[n/2+1])/(R[n/2+2] - R[n/2+1])
     if delta0 < 0:
-        c = (delta.max() / (N.pi/2)) * 1.2
+        c = (delta.max() / (np.pi/2)) * 1.2
     else:
-        c = -(delta.max() / (N.pi/2)) * 1.2
+        c = -(delta.max() / (np.pi/2)) * 1.2
 
     from neuroimaging.algorithms.statistics import nlsmodel
     design = R.reshape(R.shape[0], 1)
@@ -41,7 +41,7 @@ def invertR(delta, IRF, niter=20):
                               design=design,
                               f=f,
                               grad=grad,
-                              theta=N.array([4., 0.5, 0]),
+                              theta=np.array([4., 0.5, 0]),
                               niter=niter)
 
     for iteration in model:
@@ -50,16 +50,16 @@ def invertR(delta, IRF, niter=20):
     a, b, c = model.theta
 
     def _deltahat(r):
-        return a * N.arctan(b * r) + c
+        return a * np.arctan(b * r) + c
 
     def _ddeltahat(r):
         return a * b / (1 + (b * r)**2) 
 
     def _deltahatinv(d):
-        return N.tan((d - c) / a) / b
+        return np.tan((d - c) / a) / b
 
     def _ddeltahatinv(d):
-        return 1. / (a * b * N.cos((d - c) / a)**2)
+        return 1. / (a * b * np.cos((d - c) / a)**2)
 
     for fn in [_deltahat, _ddeltahat, _deltahatinv, _ddeltahatinv]:
         setattr(fn, 'a', a)

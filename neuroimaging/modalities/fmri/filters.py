@@ -4,7 +4,7 @@ TODO
 
 __docformat__ = 'restructuredtext'
 
-import numpy as N
+import numpy as np
 
 from neuroimaging.modalities.fmri.utils import ConvolveFunctions, WaveFunction
 
@@ -120,7 +120,7 @@ class Filter(object):
         Return the values of the IRFs of the filter.
         """
         if self.n > 1:
-            value = N.zeros((self.n,) + time.shape)
+            value = np.zeros((self.n,) + time.shape)
             for i in range(self.n):
                 value[i] = self.IRF[i](time)
         else:
@@ -168,8 +168,8 @@ class GammaDENS:
     
     def __call__(self, x):
         '''Evaluate the Gamma density.'''
-        _x = x * N.greater_equal(x, 0)
-        return self.coef * N.power(_x, self.alpha-1.) * N.exp(-self.nu*_x)
+        _x = x * np.greater_equal(x, 0)
+        return self.coef * np.power(_x, self.alpha-1.) * np.exp(-self.nu*_x)
 
     def deriv(self, const=1.):
         '''

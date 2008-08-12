@@ -12,7 +12,7 @@ __docformat__ = 'restructuredtext'
 
 import os, fpformat
 
-import numpy as N
+import numpy as np
 import numpy.linalg as L
 from neuroimaging.fixes.scipy.stats.models.utils import recipr, recipr0
 from neuroimaging.fixes.scipy.stats.models.contrast import Contrast, ContrastResults
@@ -46,7 +46,7 @@ class DelayContrast(Contrast):
 
         :Returns: ``numpy.ndarray``
         """
-        return N.array([fn(time) for fn in self._sequence_fn])
+        return np.array([fn(time) for fn in self._sequence_fn])
 
     def __init__(self, fns, weights, formula, IRF=None, name='', rownames=[]):
         """
@@ -81,7 +81,7 @@ class DelayContrast(Contrast):
         else:
             self.fn = fns
 
-        self.weights = N.asarray(weights)
+        self.weights = np.asarray(weights)
         if self.weights.ndim == 1:
             self.weights.shape = (1, self.weights.shape[0])
 
@@ -161,9 +161,9 @@ class DelayContrast(Contrast):
 
         for i in range(self.weights.shape[0]):
             for matrix in [effects, deffects]:
-                col = N.dot(self.weights[i], matrix)
-                colhat = N.dot(D, N.dot(pinvD, col))
-                if not N.allclose(col, colhat):
+                col = np.dot(self.weights[i], matrix)
+                colhat = np.dot(D, np.dot(pinvD, col))
+                if not np.allclose(col, colhat):
                     if self.weights.shape[0] > 1:
                         name = self.rownames[i]
                     else:
@@ -175,11 +175,11 @@ class DelayContrast(Contrast):
 
         delay = self.IRF.delay
 
-        self.gamma0 = N.dot(self.effectmatrix, results.beta)
-        self.gamma1 = N.dot(self.deltamatrix, results.beta)
+        self.gamma0 = np.dot(self.effectmatrix, results.beta)
+        self.gamma1 = np.dot(self.deltamatrix, results.beta)
 
         nrow = self.gamma0.shape[0]
-        self.T0sq = N.zeros(self.gamma0.shape)
+        self.T0sq = np.zeros(self.gamma0.shape)
         
         for i in range(nrow):
             self.T0sq[i] = (self.gamma0[i]**2 *
@@ -189,21 +189,21 @@ class DelayContrast(Contrast):
         self.rC = self.r * self.T0sq / (1. + self.T0sq)
         self.deltahat = delay.inverse(self.rC)
 
-        self._effect = N.dot(self.weights, self.deltahat)
+        self._effect = np.dot(self.weights, self.deltahat)
 
     def _extract_sd(self, results):
 
         delay = self.IRF.delay
 
-        self.T1 = N.zeros(self.gamma0.shape)
+        self.T1 = np.zeros(self.gamma0.shape)
 
         nrow = self.gamma0.shape[0]
         for i in range(nrow):
-            self.T1[i] = self.gamma1[i] * recipr(N.sqrt(results.cov_beta(matrix=self.deltamatrix[i])))
+            self.T1[i] = self.gamma1[i] * recipr(np.sqrt(results.cov_beta(matrix=self.deltamatrix[i])))
 
         a1 = 1 + 1. * recipr(self.T0sq)
 
-        gdot = N.array(([(self.r * (a1 - 2.) *
+        gdot = np.array(([(self.r * (a1 - 2.) *
                           recipr0(self.gamma0 * a1**2)),
                          recipr0(self.gamma0 * a1)] *
                         recipr0(delay.dforward(self.deltahat))))
@@ -214,7 +214,7 @@ class DelayContrast(Contrast):
 
         nrow = self.effectmatrix.shape[0]
             
-        cov = N.zeros((nrow,)*2 + self.T0sq.shape[1:])
+        cov = np.zeros((nrow,)*2 + self.T0sq.shape[1:])
 
         for i in range(nrow):
             for j in range(i + 1):
@@ -229,20 +229,20 @@ class DelayContrast(Contrast):
                 cov[j,i] = cov[i,j]
 
         nout = self.weights.shape[0]
-        self._sd = N.zeros(self._effect.shape)
+        self._sd = np.zeros(self._effect.shape)
 
         for r in range(nout):
             var = 0
             for i in range(nrow):
-                var += cov[i,i] * N.power(self.weights[r,i], 2)
+                var += cov[i,i] * np.power(self.weights[r,i], 2)
                 for j in range(i):
                     var += 2 * cov[i,j] * self.weights[r,i] * self.weights[r,j]
 
-            self._sd[r] = N.sqrt(var)                
+            self._sd[r] = np.sqrt(var)                
 
     def _extract_t(self):
         t = self._effect * recipr(self._sd)        
-        t = N.clip(t, self.Tmin, self.Tmax)
+        t = np.clip(t, self.Tmin, self.Tmax)
         return t
 
     def extract(self, results):
@@ -302,7 +302,7 @@ class DelayContrastOutput(TOutput):
         self.IRF = IRF
         self.dt = dt
         if delta is None:
-            self.delta = N.linspace(-4.5, 4.5, 91)
+            self.delta = np.linspace(-4.5, 4.5, 91)
         else:
             self.delta = delta
         self.path = path
@@ -357,7 +357,7 @@ class DelayContrastOutput(TOutput):
                 os.makedirs(outdir)
 
             cnrow = self.contrast.matrix.shape[0] / 2
-            l = N.zeros(self.contrast.matrix.shape[0])
+            l = np.zeros(self.contrast.matrix.shape[0])
             l[0:cnrow] = self.contrast.weights[i]
 
             img, it = self._setup_img(clobber, outdir, ext, "t")
@@ -372,7 +372,7 @@ class DelayContrastOutput(TOutput):
             self.sdimgs.append(img)
             self.sdimg_iters.append(it)
 
-            matrix = N.squeeze(N.dot(l, self.contrast.matrix))
+            matrix = np.squeeze(np.dot(l, self.contrast.matrix))
 
             outname = os.path.join(outdir, 'matrix%s.csv' % rowname)
             outfile = file(outname, 'w')
@@ -389,7 +389,7 @@ class DelayContrastOutput(TOutput):
             ftime = frametimes
 
             def g(time=None, **extra):
-                return N.squeeze(N.dot(l, self.contrast.term(time=time,
+                return np.squeeze(np.dot(l, self.contrast.term(time=time,
                                                              **extra)))
             f = pylab.gcf()
             f.clf()
@@ -450,7 +450,7 @@ class DelayHRF(hrf.SpectralHRF):
         hrf.SpectralHRF.__init__(self, input_hrf, spectral=spectral,
                                  names=['hrf'], **keywords)
 
-    def deltaPCA(self, tmax=50., lower=-15.0, delta=N.arange(-4.5,4.6,0.1)):
+    def deltaPCA(self, tmax=50., lower=-15.0, delta=np.arange(-4.5,4.6,0.1)):
         """
         Perform an expansion of fn, shifted over the values in delta.
         Effectively, a Taylor series approximation to fn(t+delta), in delta,
@@ -475,11 +475,11 @@ class DelayHRF(hrf.SpectralHRF):
         >>> from numpy import *
         >>>
         >>> import neuroimaging.modalities.fmri.hrf as HRF
-        >>> import numpy as N
+        >>> import numpy as np
         >>>
         >>> ddelta = 0.25
-        >>> delta = N.arange(-4.5,4.5+ddelta, ddelta)
-        >>> time = N.arange(0,20,0.2)
+        >>> delta = np.arange(-4.5,4.5+ddelta, ddelta)
+        >>> time = np.arange(0,20,0.2)
         >>> hrf = HRF.SpectralHRF(deriv=True)
         >>>
         >>> canonical = HRF.canonical
@@ -501,18 +501,18 @@ class DelayHRF(hrf.SpectralHRF):
         >>>
         """
 
-        time = N.arange(lower, tmax, self.dt)
+        time = np.arange(lower, tmax, self.dt)
         irf = self.IRF
 
         if not self.spectral: # use Taylor series approximation
-            dirf = interpolant(time, -N.gradient(irf(time), self.dt))
+            dirf = interpolant(time, -np.gradient(irf(time), self.dt))
 
-            H = N.array([irf(time - d) for d in delta])
+            H = np.array([irf(time - d) for d in delta])
 
-            W = N.array([irf(time), dirf(time)])
+            W = np.array([irf(time), dirf(time)])
             W = W.T
 
-            WH = N.dot(L.pinv(W), H.T)
+            WH = np.dot(L.pinv(W), H.T)
 
             coef = [interpolant(delta, w) for w in WH]
             
