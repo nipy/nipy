@@ -19,7 +19,7 @@ InterpolatedConfound: based on a sequence of [times, values], return
 
 __docformat__ = 'restructuredtext'
 
-import numpy as N
+import numpy as np
 
 from neuroimaging.fixes.scipy.stats.models.utils import recipr0
 from neuroimaging.fixes.scipy.stats.models.utils import StepFunction
@@ -35,7 +35,7 @@ def window(f, r):
     """
     def h(f):
         def g(x):
-            return N.greater_equal(x, r[0]) * N.less_equal(x, r[1]) * f(x)
+            return np.greater_equal(x, r[0]) * np.less_equal(x, r[1]) * f(x)
         g.window = r
         return g
     return h
@@ -142,9 +142,9 @@ class Events(Stimulus):
             self.values = []
             self.fn = lambda x: 0.
 
-        times = N.array(list(self.times) + [start, start + duration])
-        asort = N.argsort(times)
-        values = N.array(list(self.values) + [height, 0.])
+        times = np.array(list(self.times) + [start, start + duration])
+        asort = np.argsort(times)
+        values = np.array(list(self.values) + [height, 0.])
 
         self.times = times[asort]
         self.values = values[asort]
@@ -177,8 +177,8 @@ class DeltaFunction:
         
         :Returns: TODO
         """
-        return N.greater_equal(time, self.start) * \
-               N.less(time, self.start + self.dt) / self.dt
+        return np.greater_equal(time, self.start) * \
+               np.less(time, self.start + self.dt) / self.dt
 
 class SplineConfound:
 
@@ -200,8 +200,8 @@ class SplineConfound:
             self.knots = []
         else:
             self.knots = knots
-        tmax = self.window[1]
-        tmin = self.window[0]
+        tmax = window[1]
+        tmin = window[0]
         trange = tmax - tmin
 
         self.fn = []
@@ -214,16 +214,18 @@ class SplineConfound:
         for i in range(min(self.df, 4)):
             self.fn.append(getpoly(i))
 
+        # FIXME: This trange is calculated different than above!  Do
+        # this calculation correctly and do it once.
         trange = window[0] - window[1]
         tmin = window[0]
         
         if self.df >= 4 and not self.knots:
-            self.knots = list(trange * N.arange(1, self.df - 2) / (self.df - 3.0) + tmin)
-        self.knots[-1] = N.inf 
+            self.knots = list(trange * np.arange(1, self.df - 2) / (self.df - 3.0) + tmin)
+        self.knots[-1] = np.inf 
 
         def _getspline(a, b):
             def _spline(time):
-                return N.power(time - a, 3.0) * N.greater(time, a) 
+                return np.power(time - a, 3.0) * np.greater(time, a) 
             return _spline
 
         for i in range(len(self.knots) - 1):
@@ -233,7 +235,7 @@ class SplineConfound:
 
     def __call__(self, t):
         if type(self.fn) in [type([]), type(())]:
-            return N.asarray([f(t) for f in self.fn])
+            return np.asarray([f(t) for f in self.fn])
         else:
             return self.fn(t)
 
@@ -260,11 +262,11 @@ class InterpolatedConfound:
         else:
             self.values = values
 
-        if len(N.asarray(self.values).shape) == 1:
+        if len(np.asarray(self.values).shape) == 1:
             self.f = interp1d(self.times, self.values, bounds_error=0)
         else:
             self.f = []
-            values = N.asarray(self.values)
+            values = np.asarray(self.values)
             for i in range(values.shape[0]):
                 f = interp1d(self.times, self.values[i, :], bounds_error=0)
                 self.f.append(f)
@@ -285,7 +287,7 @@ class InterpolatedConfound:
         else:
             columns = self.f(time)
             
-        return N.squeeze(N.asarray(columns))
+        return np.squeeze(np.asarray(columns))
 
 
 
