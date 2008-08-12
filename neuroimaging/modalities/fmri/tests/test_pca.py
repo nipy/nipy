@@ -38,6 +38,8 @@ class test_PCANoMask(test_PCA):
         p.fit()
         output = p.images(which=range(4))
 
+# FIXME: Figure out good automated test to replace these graphical tests.
+"""
 class test_PCAMontageNoMask(test_PCA):
     @dec.slow
     @dec.data
@@ -65,7 +67,7 @@ class test_PCAMontageMask(test_PCA):
         p.montage()
         savefig('image.png')
         os.remove('image.png')
-
+"""
 
 
 
