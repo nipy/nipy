@@ -9,7 +9,7 @@ __docformat__ = 'restructuredtext'
 
 import gc
 
-import numpy as N
+import numpy as np
 
 class ROI:
     """
@@ -57,7 +57,7 @@ class ContinuousROI(ROI):
         # test whether it executes properly
 
         try:
-            bfn(N.array([[0.,] * ndim]))
+            bfn(np.array([[0.,] * ndim]))
         except:
             raise ValueError(
               'binary function bfn in ROI failed on ' + `[0.] * ndim`)
@@ -70,7 +70,7 @@ class ContinuousROI(ROI):
 
         :Returns: TODO
         """
-        return N.not_equal(self.bfn(real, **self.args), 0)
+        return np.not_equal(self.bfn(real, **self.args), 0)
 
     def todiscrete(self, voxels):        
         """
@@ -169,7 +169,7 @@ class DiscreteROI(ROI):
         :Raises NotImplementedError: TODO        
         """
         pooled_data = self.pool(fn, **extra)
-        return N.mean(pooled_data)
+        return np.mean(pooled_data)
         
     def __add__(self, other):
         if isinstance(other, DiscreteROI):
@@ -248,7 +248,7 @@ class SamplingGridROI(DiscreteROI):
         """
         :Returns: ``numpy.ndarray`
         """
-        m = N.zeros(self.grid.shape, N.int32)
+        m = np.zeros(self.grid.shape, np.int32)
         for v in self.voxels:
             m[v] = 1.
         return m
@@ -270,7 +270,7 @@ class ROIall(SamplingGridROI):
             mapping = image.spatial_mapping
         except:
             mapping = image # is it a mapping?
-        return N.ones(mapping.shape)
+        return np.ones(mapping.shape)
 
     def pool(self, image):
         """
@@ -280,7 +280,7 @@ class ROIall(SamplingGridROI):
         :Returns: ``None``
         """
         tmp = image.readall()
-        tmp.shape = N.product(tmp)
+        tmp.shape = np.product(tmp)
 
 def roi_sphere_fn(center, radius):
     """
@@ -293,7 +293,7 @@ def roi_sphere_fn(center, radius):
     :Returns: TODO
     """
     def test(real):
-        diff = N.array([real[i] - center[i] for i in range(real.shape[0])])
+        diff = np.array([real[i] - center[i] for i in range(real.shape[0])])
         return (sum(diff**2) < radius**2)
     return test
 
@@ -316,19 +316,19 @@ def roi_ellipse_fn(center, form, a = 1.0):
     """
     from numpy.linalg import cholesky, inv
     _cholinv = cholesky(inv(form))
-    ndim = N.array(center).shape[0]
+    ndim = np.array(center).shape[0]
 
     def test(real):
         _real = 1. * real
         for i in range(ndim):
             _real[i] = _real[i] - center[i]
         _shape = _real.shape
-        _real.shape = _shape[0], N.product(_shape[1:])
+        _real.shape = _shape[0], np.product(_shape[1:])
 
-        X = N.dot(_cholinv, _real)
+        X = np.dot(_cholinv, _real)
         d = sum(X**2)
         d.shape = _shape[1:]
-        value = N.less_equal(d, a)
+        value = np.less_equal(d, a)
 
         del(_real); del(X); del(d)
         gc.collect()
@@ -351,7 +351,7 @@ def roi_from_array_sampling_grid(data, grid):
 
     if grid.shape != data.shape:
         raise ValueError, 'grid shape does not agree with data shape'
-    voxels = N.nonzero(data)
+    voxels = np.nonzero(data)
     coordinate_system = grid.output_coordinate_system
     return SamplingGridROI(coordinate_system, voxels, grid)
 

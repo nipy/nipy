@@ -20,7 +20,7 @@ could easily be added.
 
 __docformat__ = 'restructuredtext'
 
-import numpy as N
+import numpy as np
 
 class Axis(object):
     """
@@ -96,7 +96,7 @@ class ContinuousAxis(Axis):
     This class represents an axis which is continuous on some range.
     This range can extend to infinity in either direction.
     """
-    def __init__(self, name, low=-N.inf, high=N.inf):
+    def __init__(self, name, low=-np.inf, high=np.inf):
         """
         :Parameters:
             name : ``string``
@@ -175,7 +175,7 @@ class RegularAxis (Axis):
     >>>
     """
 
-    def __init__(self, name, length=N.inf, start=0, step=1):
+    def __init__(self, name, length=np.inf, start=0, step=1):
         """
         Create a regularly spaced axis with a given name.
 
@@ -219,9 +219,9 @@ class RegularAxis (Axis):
 
         :Returns: ``bool``
         """ 
-        if x in (-N.inf, N.inf):
+        if x in (-np.inf, np.inf):
             return False
-        if self.length == N.inf:
+        if self.length == np.inf:
             tmp = (x - self.start)/self.step
             return (tmp == int(tmp)) and (0 <= tmp < self.length)
         else:
@@ -234,14 +234,14 @@ class RegularAxis (Axis):
 
         :Returns: ``numpy.ndarray(numpy.float)`` or ``generator`` of ``numpy.float``
         """
-        if self.length == N.inf:
+        if self.length == np.inf:
             def generator(x):
                 while True:
                     yield x
                     x += self.step
             return generator(self.start)
         else:
-            return N.linspace(self.min(), self.max() + self.step, self.length,
+            return np.linspace(self.min(), self.max() + self.step, self.length,
                               False)
 
     def max(self):
@@ -262,7 +262,7 @@ class VoxelAxis(RegularAxis):
     """
     A RegularAxis which starts at 0 and has a step of 1.
     """
-    def __init__(self, name, length=N.inf):
+    def __init__(self, name, length=np.inf):
         """
         Create a voxel axis with a given name.
 

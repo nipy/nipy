@@ -1,5 +1,5 @@
 import types
-import numpy as N
+import numpy as np
 from neuroimaging.testing import *
 
 from neuroimaging.core.reference.axis import Axis, ContinuousAxis, VoxelAxis, RegularAxis
@@ -46,8 +46,8 @@ class test_ContinuousAxis(TestCase):
     def test_init(self):
         self.assertTrue(self.finite.low == 0)
         self.assertTrue(self.finite.high == 10)
-        self.assertTrue(self.infinite.low == -N.inf)
-        self.assertTrue(self.infinite.high == N.inf)
+        self.assertTrue(self.infinite.low == -np.inf)
+        self.assertTrue(self.infinite.high == np.inf)
 
     def test_eq(self):
         fin_ax1 = ContinuousAxis(name='xspace', low=0, high=10)
@@ -56,7 +56,7 @@ class test_ContinuousAxis(TestCase):
         self.assertFalse(self.finite == fin_ax2)
 
         inf_ax1 = ContinuousAxis(name='xspace')
-        inf_ax2 = ContinuousAxis(name='xspace', low=0, high=N.inf)
+        inf_ax2 = ContinuousAxis(name='xspace', low=0, high=np.inf)
         self.assertTrue(self.infinite == inf_ax1)
         self.assertFalse(self.infinite == inf_ax2)
 
@@ -68,23 +68,23 @@ class test_ContinuousAxis(TestCase):
         self.assertFalse(self.finite.valid(10))
         self.assertFalse(self.finite.valid(15))
 
-        self.assertTrue(self.infinite.valid(-N.inf))
+        self.assertTrue(self.infinite.valid(-np.inf))
         self.assertTrue(self.infinite.valid(-100))
         self.assertTrue(self.infinite.valid(0))
         self.assertTrue(self.infinite.valid(100))
-        self.assertFalse(self.infinite.valid(N.inf))
+        self.assertFalse(self.infinite.valid(np.inf))
 
     def test_max(self):
         self.assertEqual(self.finite.max(), 10)
-        self.assertEqual(self.infinite.max(), N.inf)
+        self.assertEqual(self.infinite.max(), np.inf)
 
     def test_min(self):
         self.assertEqual(self.finite.min(), 0)
-        self.assertEqual(self.infinite.min(), -N.inf)
+        self.assertEqual(self.infinite.min(), -np.inf)
 
     def test_range(self):
         self.assertEqual(self.finite.range(), (0, 10))
-        self.assertEqual(self.infinite.range(), (-N.inf, N.inf))
+        self.assertEqual(self.infinite.range(), (-np.inf, np.inf))
 
 
 class test_RegularAxis(TestCase):
@@ -100,7 +100,7 @@ class test_RegularAxis(TestCase):
 
         self.assertEqual(self.infinite.start, 0)
         self.assertEqual(self.infinite.step, 2)
-        self.assertEqual(self.infinite.length, N.inf)
+        self.assertEqual(self.infinite.length, np.inf)
 
     def test_eq(self):
         fin_ax1 = RegularAxis(name='xspace', start=0, step=2, length=10)
@@ -136,13 +136,13 @@ class test_RegularAxis(TestCase):
         self.assertTrue(self.infinite.valid(2))
         self.assertFalse(self.infinite.valid(2.5))
         self.assertTrue(self.infinite.valid(2000))
-        self.assertFalse(self.infinite.valid(N.inf))
-        self.assertFalse(self.infinite.valid(-N.inf))
+        self.assertFalse(self.infinite.valid(np.inf))
+        self.assertFalse(self.infinite.valid(-np.inf))
 
 
     def test_max(self):
         self.assertEqual(self.finite.max(), 18)
-        self.assertEqual(self.infinite.max(), N.inf)
+        self.assertEqual(self.infinite.max(), np.inf)
 
     def test_min(self):
         self.assertEqual(self.finite.min(), 0)
@@ -150,7 +150,7 @@ class test_RegularAxis(TestCase):
 
     def test_range(self):
         self.assertEqual(self.finite.range(), (0, 18))
-        self.assertEqual(self.infinite.range(), (0, N.inf))
+        self.assertEqual(self.infinite.range(), (0, np.inf))
 
     def test_values(self):
         self.assertTrue((self.finite.values() == [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]).all())
@@ -174,7 +174,7 @@ class test_VoxelAxis(TestCase):
 
         self.assertEqual(self.infinite.start, 0)
         self.assertEqual(self.infinite.step, 1)
-        self.assertEqual(self.infinite.length, N.inf)
+        self.assertEqual(self.infinite.length, np.inf)
 
 
 

@@ -4,7 +4,7 @@ Coordinate systems are used to represent the spaces in which the images reside.
 
 __docformat__ = 'restructuredtext'
 
-import numpy as N
+import numpy as np
 
 from neuroimaging.core.reference.axis import VoxelAxis
 from neuroimaging.utils.odict import odict
@@ -165,7 +165,7 @@ class CoordinateSystem(odict):
 
         :Returns: ``bool``
         """
-        return N.all([self.axes()[i].valid(x[i]) for i in range(self.ndim())])
+        return np.all([self.axes()[i].valid(x[i]) for i in range(self.ndim())])
 
 
     def sub_coords(self):
@@ -229,7 +229,7 @@ class DiagonalCoordinateSystem(CoordinateSystem):
 
         :Returns: ``[[numpy.float]]``
         """
-        value = N.zeros((self.ndim()+1,)*2)
+        value = np.zeros((self.ndim()+1,)*2)
         value[self.ndim(), self.ndim()] = 1.0
         for i in range(self.ndim()):
             value[i, i] = self.axes()[i].step

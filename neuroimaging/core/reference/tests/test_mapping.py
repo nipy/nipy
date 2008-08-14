@@ -1,5 +1,5 @@
 import numpy.random as R
-import numpy as N
+import numpy as np
 from neuroimaging.testing import *
 
 import urllib, os
@@ -20,7 +20,7 @@ class test_Mapping2(TestCase):
         self.d = mapping.Mapping(g, f)        
 
     def test_call(self):
-        value = N.array([1., 2., 3.])
+        value = np.array([1., 2., 3.])
         result_a = self.a(value)
         result_b = self.b(value)
         result_c = self.c(value)
@@ -43,7 +43,7 @@ class test_Mapping2(TestCase):
         self.assertRaises(NotImplementedError, neq, self.a, self.b)
 
     def test_mul(self):
-        value = N.array([1., 2., 3.])
+        value = np.array([1., 2., 3.])
 
         aa = self.a*self.a
         self.assertFalse(aa.isinvertible())
@@ -127,15 +127,15 @@ class test_Mapping2(TestCase):
         inv_d = self.d.inverse()
         ident_b = inv_b*self.b
         ident_d = inv_d*self.d
-        value = N.array([1., 2., 3.])
+        value = np.array([1., 2., 3.])
         assert_almost_equal(ident_b(value), value)
         assert_almost_equal(ident_d(value), value)
         
       
         
     def test_tovoxel(self):
-        value = N.array([2., 4, 6.])
-        value2 = N.array([[2., 4, 6.], [2, 4, 6]])
+        value = np.array([2., 4, 6.])
+        value2 = np.array([[2., 4, 6.], [2, 4, 6]])
         tovox = lambda a: a.tovoxel(value)
         self.assertRaises(AttributeError, tovox, self.a)
         self.assertRaises(AttributeError, tovox, self.c)        
@@ -154,18 +154,18 @@ class test_Mapping2(TestCase):
         v = R.standard_normal((3,))
         z = self.a(v)
         p = self.a.python2matlab()
-        z_ = p(N.array(v[::-1])+1)[::-1]
+        z_ = p(np.array(v[::-1])+1)[::-1]
         assert_almost_equal(z, z_)
         
     def test_python2matlab2(self):
-        value = N.array([1., 2., 3.])
+        value = np.array([1., 2., 3.])
         for mat_ in [self.a, self.b, self.c, self.d]:
             p = mat_.python2matlab()
             q = p.matlab2python()
             assert_almost_equal(q(value), mat_(value))
         
     def test_python2matlab3(self):
-        value = N.array([1., 2., 3.])
+        value = np.array([1., 2., 3.])
         for mat_ in [self.a, self.b, self.c, self.d]:
             p = mat_.matlab2python()
             q = p.python2matlab()
@@ -177,14 +177,14 @@ class test_Identity(TestCase):
         self.a = mapping.Affine.identity()
         
     def test_call(self):
-        value = N.array([1., 2., 3.])
+        value = np.array([1., 2., 3.])
         assert_almost_equal(self.a(value), value)
     
     def test_eq(self):
         self.assertTrue(self.a == mapping.Affine.identity())
         
     def test_mul(self):
-        value = N.array([1., 2., 3.])
+        value = np.array([1., 2., 3.])
         b = self.a * self.a
         assert_almost_equal(b(value), value)
 
@@ -209,7 +209,7 @@ class test_Identity(TestCase):
 class test_Affine(TestCase):
     def setUp(self):    
         a = mapping.Affine.identity()
-        A = N.identity(4)
+        A = np.identity(4)
         A[0:3] = R.standard_normal((3,4))
         self.mapping = mapping.Affine(a.input_coords, a.output_coords, A)
 
@@ -223,11 +223,11 @@ class test_Mapping(TestCase):
         self.a = mapping.Mapping(f)
 
         a = mapping.Affine.identity()
-        A = N.identity(4)
+        A = np.identity(4)
         A[0:3] = R.standard_normal((3,4))
         self.mapping = mapping.Affine(A)
 
-        self.singular = mapping.Affine(N.array([[ 0,  1,  2,  3],
+        self.singular = mapping.Affine(np.array([[ 0,  1,  2,  3],
                                                 [ 4,  5,  6,  7],
                                                 [ 8,  9, 10, 11],
                                                 [ 8,  9, 10, 11]]))
@@ -235,7 +235,7 @@ class test_Mapping(TestCase):
         v = R.standard_normal((3,))
         z = self.mapping(v)
         p = self.mapping.python2matlab()
-        z_ = p(N.array(v[::-1])+1)[::-1]
+        z_ = p(np.array(v[::-1])+1)[::-1]
         assert_almost_equal(z, z_)
         
     def test_python2matlab2(self):
@@ -294,16 +294,16 @@ class test_Mapping(TestCase):
 
     def test_translation_transform(self):
         a = mapping.translation_transform([1,2,3], 3)
-        b = N.array([[1,0,0,1],
+        b = np.array([[1,0,0,1],
                      [0,1,0,2],
                      [0,0,1,3],
-                     [0,0,0,1]], dtype=N.float64)
+                     [0,0,0,1]], dtype=np.float64)
         assert_equal(a, b)
 
     def test_permutation_transform(self):
         order = [2,0,1]
         a = mapping.permutation_transform(order)
-        b = N.array([[ 0.,  0.,  1.,  0.,],
+        b = np.array([[ 0.,  0.,  1.,  0.,],
                      [ 1.,  0.,  0.,  0.,],
                      [ 0.,  1.,  0.,  0.,],
                      [ 0.,  0.,  0.,  1.,]])
@@ -318,7 +318,7 @@ class test_Mapping(TestCase):
         assert_almost_equal(v, voxel)
 
         tovox = lambda a: a.tovoxel(real)
-        self.assertRaises(N.linalg.LinAlgError, tovox, self.singular)
+        self.assertRaises(np.linalg.LinAlgError, tovox, self.singular)
         
 
     def test_isinvertable(self):

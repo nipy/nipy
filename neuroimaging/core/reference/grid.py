@@ -6,7 +6,7 @@ They also provide mechanisms for iterating over that space.
 __docformat__ = 'restructuredtext'
 
 import copy
-import numpy as N
+import numpy as np
 
 from coordinate_system import _reverse
 from neuroimaging.core.reference.mapping import Mapping, Affine
@@ -42,7 +42,7 @@ class SamplingGrid(object):
         """
         ndim = len(names)
         # fill in default step size
-        step = N.asarray(step)
+        step = np.asarray(step)
         axes = [RegularAxis(name=names[i], length=shape[i],
           start=start[i], step=step[i]) for i in range(ndim)]
         input_coords = VoxelCoordinateSystem('voxel', axes)
@@ -193,10 +193,10 @@ class SamplingGrid(object):
         :Returns: TODO
         """
         if hasattr(self, 'shape'):
-            indices = N.indices(self.shape)
+            indices = np.indices(self.shape)
             tmp_shape = indices.shape
             # reshape indices to be a sequence of coordinates
-            indices.shape = (self.ndim[0], N.product(self.shape))
+            indices.shape = (self.ndim[0], np.product(self.shape))
             _range = self.mapping(indices)
             _range.shape = tmp_shape
             return _range 
@@ -287,10 +287,10 @@ def centered_grid(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
         return None
     ndim = len(names)
     # fill in default step size
-    step = N.asarray(pixdims)
-    ashape = N.asarray(shape)
+    step = np.asarray(pixdims)
+    ashape = np.asarray(shape)
     # start = 
-    start = ashape * N.abs(step) /2 * N.sign(step)*-1
+    start = ashape * np.abs(step) /2 * np.sign(step)*-1
     axes = [RegularAxis(name=names[i], length=ashape[i],
                         start=start[i], step=step[i]) for i in range(ndim)]
     input_coords = VoxelCoordinateSystem('voxel', axes)
@@ -336,20 +336,20 @@ class ConcatenatedGrids(SamplingGrid):
         Setup the grids.
         """
         # check mappings are affine
-        check = N.any([not isinstance(grid.mapping, Affine)\
+        check = np.any([not isinstance(grid.mapping, Affine)\
                           for grid in grids])
         if check:
             raise ValueError('must all be affine mappings!')
 
         # check shapes are identical
         s = grids[0].shape
-        check = N.any([grid.shape != s for grid in grids])
+        check = np.any([grid.shape != s for grid in grids])
         if check:
             raise ValueError('subgrids must have same shape')
 
         # check input coordinate systems are identical
         in_coords = grids[0].input_coords
-        check = N.any([grid.input_coords != in_coords\
+        check = np.any([grid.input_coords != in_coords\
                            for grid in grids])
         if check:
             raise ValueError(
@@ -357,7 +357,7 @@ class ConcatenatedGrids(SamplingGrid):
 
         # check output coordinate systems are identical
         out_coords = grids[0].output_coords
-        check = N.any([grid.output_coords != out_coords\
+        check = np.any([grid.output_coords != out_coords\
                            for grid in grids])
         if check:
             raise ValueError(
@@ -370,9 +370,9 @@ class ConcatenatedGrids(SamplingGrid):
         """
         def mapfunc(x):
             try:
-                I = x[0].view(N.int32)
+                I = x[0].view(np.int32)
                 X = x[1:]
-                v = N.zeros(x.shape[1:])
+                v = np.zeros(x.shape[1:])
                 for j in I.shape[0]:
                     v[j] = self.grids[I[j]].mapping(X[j])
                 return v
@@ -438,7 +438,7 @@ class ConcatenatedIdenticalGrids(ConcatenatedGrids):
 
         in_trans = self.grids[0].mapping.transform
         ndim = in_trans.shape[0]-1
-        out_trans = N.zeros((ndim+2,)*2)
+        out_trans = np.zeros((ndim+2,)*2)
         out_trans[0:ndim, 0:ndim] = in_trans[0:ndim, 0:ndim]
         out_trans[0:ndim, -1] = in_trans[0:ndim, -1]
         out_trans[ndim, ndim] = 1.
