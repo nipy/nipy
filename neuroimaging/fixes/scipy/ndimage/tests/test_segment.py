@@ -1,5 +1,5 @@
 import math
-import numpy as NP
+import numpy as np
 import scipy.ndimage._segmenter as seg
 from numpy.testing import *
 
@@ -46,7 +46,7 @@ def run_texture1():
                                           ROI=disc_ROI, verbose=1)
     kernels = calib[0]
     x = laws_kernel['coefficients'][0]
-    m = NP.outer(x, x)
+    m = np.outer(x, x)
     m = m * 2
     laws_LL = kernels[0, 50-4:50+3, 50-3:50+4]
     return m, laws_LL 
@@ -73,14 +73,14 @@ class TestSegment(TestCase):
         # confirm the bounding boxes are at the true position
         measures, voxel_means = run_sobel()
         number = measures.size
-        _shortstruct = NP.dtype([('left', 'i'),
+        _shortstruct = np.dtype([('left', 'i'),
                                  ('right', 'i'),
                                  ('top', 'i'),
                                  ('bottom', 'i')])
 
         assert_equal(number, 4)
         # load the ground truth
-        truth = NP.zeros(number, dtype=_shortstruct)
+        truth = np.zeros(number, dtype=_shortstruct)
         truth[0] = (76, 179, 179, 77) 
         truth[1] = (332, 435, 179, 77)
         truth[2] = (76, 179, 435, 333)
@@ -88,7 +88,7 @@ class TestSegment(TestCase):
         match = (truth==measures).all()
         assert_equal(match, True)
         # load the ground truth for the bounding box test image mean value
-        voxel_truth = NP.zeros(number, dtype=NP.float64)
+        voxel_truth = np.zeros(number, dtype=np.float64)
         voxel_truth = (80.0, 90.0, 100.0, 110.0)
         match = (voxel_truth==voxel_means).all()
         assert_equal(match, True)
@@ -100,14 +100,14 @@ class TestSegment(TestCase):
         # confirm the bounding boxes are at the true position
         measures, voxel_means = run_canny()
         number = measures.size
-        _shortstruct = NP.dtype([('left', 'i'),
+        _shortstruct = np.dtype([('left', 'i'),
                                  ('right', 'i'),
                                  ('top', 'i'),
                                  ('bottom', 'i')])
 
         assert_equal(number, 4)
         # load the ground truth for the bounding box
-        truth = NP.zeros(number, dtype=_shortstruct)
+        truth = np.zeros(number, dtype=_shortstruct)
         truth[0] = (78,  177, 177, 79)
         truth[1] = (334, 433, 177, 79)
         truth[2] = (78,  177, 433, 335)
@@ -115,7 +115,7 @@ class TestSegment(TestCase):
         match = (truth==measures).all()
         assert_equal(match, True)
         # load the ground truth for the bounding box test image mean value
-        voxel_truth = NP.zeros(number, dtype=NP.float64)
+        voxel_truth = np.zeros(number, dtype=np.float64)
         voxel_truth = (80.0, 90.0, 100.0, 110.0)
         match = (voxel_truth==voxel_means).all()
         assert_equal(match, True)
@@ -136,18 +136,18 @@ class TestSegment(TestCase):
         tem = run_texture2()
         tem0 = tem[0]
         tem1 = tem[1]
-        truth_tem0 = NP.array(
+        truth_tem0 = np.array(
                         [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
                           0.        ,  0.13306101,  0.08511007,  0.05084148,  0.07550675,
                           0.4334695 ,  0.03715914,  0.00289055,  0.02755581,  0.48142046,
                           0.03137803,  0.00671277,  0.51568902,  0.01795249,  0.49102375,  1.
-                        ], dtype=NP.float32)
-        truth_tem1 = NP.array(
+                        ], dtype=np.float32)
+        truth_tem1 = np.array(
                         [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
                           0.        ,  0.02970393,  0.00164266,  0.00922416,  0.01221788,
                           0.51485199,  0.03298925,  0.02212243,  0.01912871,  0.48350537,
                           0.01125561,  0.00826189,  0.49437219,  0.00526817,  0.49736592,  1.
-                        ], dtype=NP.float32)
+                        ], dtype=np.float32)
 
         assert_array_almost_equal(tem0, truth_tem0, decimal=6)
         assert_array_almost_equal(tem1, truth_tem1, decimal=6)

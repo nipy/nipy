@@ -1,8 +1,8 @@
 import math
-import numpy as NP
+import numpy as np
 import scipy.ndimage._segment as S
 
-_objstruct = NP.dtype([('Left', 'i'),
+_objstruct = np.dtype([('Left', 'i'),
                        ('Right', 'i'),
                        ('Top', 'i'),
                        ('Bottom', 'i'),
@@ -51,7 +51,7 @@ def canny_hysteresis(magnitude, canny_stats):
 
     """
     [rows, cols] = magnitude.shape
-    edge_image = NP.zeros(rows*cols, dtype=NP.int16).reshape(rows, cols)
+    edge_image = np.zeros(rows*cols, dtype=np.int16).reshape(rows, cols)
     S.canny_hysteresis(magnitude, edge_image, canny_stats['low'], canny_stats['high'])
 
     return edge_image
@@ -101,7 +101,7 @@ def canny_nonmax_supress(horz_DGFilter, vert_DGFilter, img_means, thres=0.5,
 
     """
     [rows, cols] = horz_DGFilter.shape
-    magnitude = NP.zeros(rows*cols, dtype=NP.float64).reshape(rows, cols)
+    magnitude = np.zeros(rows*cols, dtype=np.float64).reshape(rows, cols)
     aveMag, canny_low, canny_high = S.canny_nonmax_supress(horz_DGFilter, vert_DGFilter,
                                         magnitude, mode, img_means['x-dg']*thres,
                                         img_means['y-dg']*thres, canny_l, canny_h)
@@ -139,10 +139,10 @@ def canny_filter(slice, dg_kernel):
 
 
     """
-    slice = slice.astype(NP.float64)
+    slice = slice.astype(np.float64)
     [rows, cols] = slice.shape
-    horz_DGFilter = NP.zeros(rows*cols, dtype=NP.float64).reshape(rows, cols)
-    vert_DGFilter = NP.zeros(rows*cols, dtype=NP.float64).reshape(rows, cols)
+    horz_DGFilter = np.zeros(rows*cols, dtype=np.float64).reshape(rows, cols)
+    vert_DGFilter = np.zeros(rows*cols, dtype=np.float64).reshape(rows, cols)
     aveX, aveY = S.canny_filter(slice, horz_DGFilter, vert_DGFilter,
                    dg_kernel['coefficients'], dg_kernel['kernelSize'])
 
@@ -177,7 +177,7 @@ def binary_edge(label_image, ROI):
     """
 
     [rows, cols]      = label_image.shape
-    binary_edge_image = NP.zeros(rows*cols, dtype=NP.uint16).reshape(rows, cols)
+    binary_edge_image = np.zeros(rows*cols, dtype=np.uint16).reshape(rows, cols)
     number_regions    = ROI.size
     indices           = range(0, number_regions)
     for i in indices:
@@ -197,8 +197,8 @@ def binary_edge(label_image, ROI):
 
         roi_rows = top-bottom
         roi_cols = right-left
-        label_region  = NP.zeros(roi_rows*roi_cols, dtype=NP.uint16).reshape(roi_rows, roi_cols)
-        input = NP.zeros(roi_rows*roi_cols, dtype=NP.uint16).reshape(roi_rows, roi_cols)
+        label_region  = np.zeros(roi_rows*roi_cols, dtype=np.uint16).reshape(roi_rows, roi_cols)
+        input = np.zeros(roi_rows*roi_cols, dtype=np.uint16).reshape(roi_rows, roi_cols)
         # load the labeled region 
         label_region[0:roi_rows, 0:roi_cols][label_image[bottom:top, left:right]==Label] = 1 
         S.binary_edge(label_region, input)
@@ -269,32 +269,32 @@ def roi_co_occurence(label_image, raw_image, ROI, distance=2, orientation=90, ve
         rows   = top-bottom
         cols   = right-left
         # copy the mask to section image
-        section = NP.zeros(rows*cols, dtype=label_image.dtype).reshape(rows, cols)
+        section = np.zeros(rows*cols, dtype=label_image.dtype).reshape(rows, cols)
         section[0:rows, 0:cols][label_image[bottom:top, left:right]==Label] = 1
-        source_region = NP.zeros(rows*cols, dtype=NP.float64).reshape(rows, cols)
-        cocm_block = NP.zeros(num_bits*num_bits, dtype=NP.int32).reshape(num_bits, num_bits)
+        source_region = np.zeros(rows*cols, dtype=np.float64).reshape(rows, cols)
+        cocm_block = np.zeros(num_bits*num_bits, dtype=np.int32).reshape(num_bits, num_bits)
         source_region[0:rows, 0:cols] = copy_image[bottom:top, left:right] 
         # scale segment to 8 bits. this needs to be smarter (e.g. use integrated histogram method)
         max_value = source_region.max()
         min_value = source_region.min()
         scale = 255.0 / (max_value-min_value)
-        image_roi = (scale*(source_region-min_value)).astype(NP.int16)
+        image_roi = (scale*(source_region-min_value)).astype(np.int16)
         # image_roi is short type
         S.roi_co_occurence(section, image_roi, cocm_block, distance, orientation)
         co_occurence_image_list[i] = cocm_block
         # normalize the joint histogram prior to feature extraction
-        joint_histogram  = cocm_block.astype(NP.float64) 
+        joint_histogram  = cocm_block.astype(np.float64) 
         joint_histogram  = joint_histogram / joint_histogram.sum()
         # to prevent log(0)
         joint_histogram += epsilon
         # compute the com features
         energy = joint_histogram.std()
-        H = joint_histogram * NP.log(joint_histogram)
+        H = joint_histogram * np.log(joint_histogram)
         entropy = H.sum()
         r, c = joint_histogram.shape
-        [a, b] = NP.mgrid[1:c+1, 1:r+1]
-        contrast = ((NP.square(a-b))*joint_histogram).sum()
-        d = 1.0 + NP.abs(a-b)
+        [a, b] = np.mgrid[1:c+1, 1:r+1]
+        contrast = ((np.square(a-b))*joint_histogram).sum()
+        d = 1.0 + np.abs(a-b)
         homogeneity = (joint_histogram / d).sum()
         ROI[i]['COM'][0] = distance
         ROI[i]['COM'][1] = orientation 
@@ -359,7 +359,7 @@ def region_grow(label_image, raw_image, ROI, roi_index, roi_inflate,
 
     """
 
-    _c_ext_struct = NP.dtype([('Left', 'i'),
+    _c_ext_struct = np.dtype([('Left', 'i'),
                               ('Right', 'i'),
                               ('Top', 'i'),
                               ('Bottom', 'i'),
@@ -372,7 +372,7 @@ def region_grow(label_image, raw_image, ROI, roi_index, roi_inflate,
                               ('cZ', 'f')]
                              )
 
-    expanded_ROI = NP.zeros(1, dtype=_c_ext_struct)
+    expanded_ROI = np.zeros(1, dtype=_c_ext_struct)
 
     dimensions  = label_image.ndim
 
@@ -409,10 +409,10 @@ def region_grow(label_image, raw_image, ROI, roi_index, roi_inflate,
         expanded_ROI['Label']  = Label 
         rows    = top-bottom
         cols    = right-left
-        label   = NP.zeros(rows*cols, dtype=NP.int16).reshape(rows, cols)
-        section = NP.zeros(rows*cols, dtype=NP.float64).reshape(rows, cols)
+        label   = np.zeros(rows*cols, dtype=np.int16).reshape(rows, cols)
+        section = np.zeros(rows*cols, dtype=np.float64).reshape(rows, cols)
         label   = label_image[bottom:top, left:right].copy()
-        section = (raw_image[bottom:top, left:right].astype(NP.float64)).copy()
+        section = (raw_image[bottom:top, left:right].astype(np.float64)).copy()
     elif dimensions == 3:  
         left    = ROI[roi_index]['Left']-x_ext
         right   = ROI[roi_index]['Right']+x_ext
@@ -445,16 +445,16 @@ def region_grow(label_image, raw_image, ROI, roi_index, roi_inflate,
         rows    = top-bottom
         cols    = right-left
         layers  = back-front
-        label   = NP.zeros(layers*rows*cols, dtype=NP.int16).reshape(layers, rows, cols)
+        label   = np.zeros(layers*rows*cols, dtype=np.int16).reshape(layers, rows, cols)
         label   = label_image[front:back, bottom:top, left:right].copy()
-        section = NP.zeros(layers*rows*cols, dtype=NP.float64).reshape(layers, rows, cols)
-        section = (raw_image[front:back, bottom:top, left:right].astype(NP.float64)).copy()
+        section = np.zeros(layers*rows*cols, dtype=np.float64).reshape(layers, rows, cols)
+        section = (raw_image[front:back, bottom:top, left:right].astype(np.float64)).copy()
 
     #
     # this newgrow_ROI gets filled in and the label image is grown
     #
 
-    newgrow_ROI = NP.zeros(1, dtype=_c_ext_struct)
+    newgrow_ROI = np.zeros(1, dtype=_c_ext_struct)
     S.region_grow(section, label, expanded_ROI, newgrow_ROI, lcutoff, hcutoff, Label, N_connectivity)
 
     if debug==1:  
@@ -555,15 +555,15 @@ def seg_co_occurence(raw_image, window=16, distance=2, orientation=90):
     col_indices  = range(window, cols-window)
 
     # create a fixed mask and scratch window for raw source
-    section       = NP.ones(2*window*2*window, dtype=NP.int16).reshape(2*window, 2*window)
-    source_region = NP.zeros(2*window*2*window, dtype=NP.float64).reshape(2*window, 2*window)
+    section       = np.ones(2*window*2*window, dtype=np.int16).reshape(2*window, 2*window)
+    source_region = np.zeros(2*window*2*window, dtype=np.float64).reshape(2*window, 2*window)
 
     # output images
-    energy_image      = NP.zeros(rows*cols, dtype=NP.float64).reshape(rows, cols)
-    entropy_image     = NP.zeros(rows*cols, dtype=NP.float64).reshape(rows, cols)
-    homogeneity_image = NP.zeros(rows*cols, dtype=NP.float64).reshape(rows, cols)
-    contrast_image    = NP.zeros(rows*cols, dtype=NP.float64).reshape(rows, cols)
-    cocm_block        = NP.zeros(num_bits*num_bits, dtype=NP.int32).reshape(num_bits, num_bits)
+    energy_image      = np.zeros(rows*cols, dtype=np.float64).reshape(rows, cols)
+    entropy_image     = np.zeros(rows*cols, dtype=np.float64).reshape(rows, cols)
+    homogeneity_image = np.zeros(rows*cols, dtype=np.float64).reshape(rows, cols)
+    contrast_image    = np.zeros(rows*cols, dtype=np.float64).reshape(rows, cols)
+    cocm_block        = np.zeros(num_bits*num_bits, dtype=np.int32).reshape(num_bits, num_bits)
     
     for i in row_indices:
         bottom = i - window
@@ -576,23 +576,23 @@ def seg_co_occurence(raw_image, window=16, distance=2, orientation=90):
             max_value = source_region.max()
             min_value = source_region.min()
             scale     = 255.0 / (max_value-min_value)
-            image_roi = (scale*(source_region-min_value)).astype(NP.int16)
+            image_roi = (scale*(source_region-min_value)).astype(np.int16)
             # image_roi is short type
             cocm_block[:] = 0.0
             S.roi_co_occurence(section, image_roi, cocm_block, distance, orientation)
             # normalize the joint histogram prior to feature extraction
-            joint_histogram = cocm_block.astype(NP.float64) 
+            joint_histogram = cocm_block.astype(np.float64) 
             joint_histogram = joint_histogram / joint_histogram.sum()
             # to prevent log(0)
             joint_histogram += epsilon
             # compute the com features
             energy      = joint_histogram.std()
-            H           = joint_histogram * NP.log(joint_histogram)
+            H           = joint_histogram * np.log(joint_histogram)
             entropy     = H.sum()
             r, c        = joint_histogram.shape
-            [a, b]      = NP.mgrid[1:c+1, 1:r+1]
-            contrast    = ((NP.square(a-b))*joint_histogram).sum()
-            d           = 1.0 + NP.abs(a-b)
+            [a, b]      = np.mgrid[1:c+1, 1:r+1]
+            contrast    = ((np.square(a-b))*joint_histogram).sum()
+            d           = 1.0 + np.abs(a-b)
             homogeneity = (joint_histogram / d).sum()
             # store the feature pixel for the 4 images
             energy_image[i, j]      = energy
@@ -648,14 +648,14 @@ def roi_mat_filter(label_image, thin_kernel, ROI):
 
     [rows, cols] = label_image.shape
     # destination image
-    thin_edge_image = NP.zeros(rows*cols, dtype=NP.uint16).reshape(rows, cols)
+    thin_edge_image = np.zeros(rows*cols, dtype=np.uint16).reshape(rows, cols)
     # scratch memory for thin 
-    input           = NP.zeros(rows*cols, dtype=NP.uint8).reshape(rows, cols)
-    cinput          = NP.zeros(rows*cols, dtype=NP.uint8).reshape(rows, cols)
-    erosion         = NP.zeros(rows*cols, dtype=NP.uint8).reshape(rows, cols)
-    dialation       = NP.zeros(rows*cols, dtype=NP.uint8).reshape(rows, cols)
-    hmt             = NP.zeros(rows*cols, dtype=NP.uint8).reshape(rows, cols)
-    copy            = NP.zeros(rows*cols, dtype=NP.uint8).reshape(rows, cols)
+    input           = np.zeros(rows*cols, dtype=np.uint8).reshape(rows, cols)
+    cinput          = np.zeros(rows*cols, dtype=np.uint8).reshape(rows, cols)
+    erosion         = np.zeros(rows*cols, dtype=np.uint8).reshape(rows, cols)
+    dialation       = np.zeros(rows*cols, dtype=np.uint8).reshape(rows, cols)
+    hmt             = np.zeros(rows*cols, dtype=np.uint8).reshape(rows, cols)
+    copy            = np.zeros(rows*cols, dtype=np.uint8).reshape(rows, cols)
 
     bbox = get_max_bounding_box(ROI)
 
@@ -723,7 +723,7 @@ def mat_filter(label_image, thin_kernel, ROI=None):
 
     """
     if ROI==None:
-        ROIList = NP.zeros(1, dtype=_objstruct)
+        ROIList = np.zeros(1, dtype=_objstruct)
         [rows, cols] = label_image.shape
         ROIList['Left']   = 2
         ROIList['Right']  = cols-3
@@ -732,15 +732,15 @@ def mat_filter(label_image, thin_kernel, ROI=None):
 
     [rows, cols] = label_image.shape
     # destination image
-    thin_edge_image = NP.zeros(rows*cols, dtype=NP.uint16).reshape(rows, cols)
-    mat_image       = NP.zeros(rows*cols, dtype=NP.uint16).reshape(rows, cols)
+    thin_edge_image = np.zeros(rows*cols, dtype=np.uint16).reshape(rows, cols)
+    mat_image       = np.zeros(rows*cols, dtype=np.uint16).reshape(rows, cols)
     # scratch memory for thin 
-    input           = NP.zeros(rows*cols, dtype=NP.uint8).reshape(rows, cols)
-    cinput          = NP.zeros(rows*cols, dtype=NP.uint8).reshape(rows, cols)
-    erosion         = NP.zeros(rows*cols, dtype=NP.uint8).reshape(rows, cols)
-    dialation       = NP.zeros(rows*cols, dtype=NP.uint8).reshape(rows, cols)
-    hmt             = NP.zeros(rows*cols, dtype=NP.uint8).reshape(rows, cols)
-    copy            = NP.zeros(rows*cols, dtype=NP.uint8).reshape(rows, cols)
+    input           = np.zeros(rows*cols, dtype=np.uint8).reshape(rows, cols)
+    cinput          = np.zeros(rows*cols, dtype=np.uint8).reshape(rows, cols)
+    erosion         = np.zeros(rows*cols, dtype=np.uint8).reshape(rows, cols)
+    dialation       = np.zeros(rows*cols, dtype=np.uint8).reshape(rows, cols)
+    hmt             = np.zeros(rows*cols, dtype=np.uint8).reshape(rows, cols)
+    copy            = np.zeros(rows*cols, dtype=np.uint8).reshape(rows, cols)
 
     number_regions = ROI.size
     indices = range(0, number_regions)
@@ -833,7 +833,7 @@ def laws_texture_filter(raw_image, label_image, laws_kernel, ROI=None, dc_thres=
 
     """
     if ROI==None:
-        ROI= NP.zeros(1, dtype=_objstruct)
+        ROI= np.zeros(1, dtype=_objstruct)
         [rows, cols] = label_image.shape
         ROI['Left']   = 2
         ROI['Right']  = cols-3
@@ -853,9 +853,9 @@ def laws_texture_filter(raw_image, label_image, laws_kernel, ROI=None, dc_thres=
         Label  = ROI[i]['Label']
         rows   = top-bottom
         cols   = right-left
-        label_region  = NP.zeros(rows*cols, dtype=NP.uint16).reshape(rows, cols)
-        source_region = NP.zeros(rows*cols, dtype=NP.float64).reshape(rows, cols)
-        laws_block    = NP.zeros(layers*rows*cols, dtype=NP.float32).reshape(layers, rows, cols)
+        label_region  = np.zeros(rows*cols, dtype=np.uint16).reshape(rows, cols)
+        source_region = np.zeros(rows*cols, dtype=np.float64).reshape(rows, cols)
+        laws_block    = np.zeros(layers*rows*cols, dtype=np.float32).reshape(layers, rows, cols)
         # load the labeled region 
         label_region[0:rows,  0:cols][label_image[bottom:top, left:right]==Label] = 1 
         source_region[0:rows, 0:cols] = raw_image[bottom:top, left:right] 
@@ -921,7 +921,7 @@ def get_voxel_measures(label_image, raw_image, ROI=None):
     dimensions = label_image.ndim
 
     if ROI==None:
-        ROIList = NP.zeros(1, dtype=_objstruct)
+        ROIList = np.zeros(1, dtype=_objstruct)
         if dimensions == 2:  
             [rows, cols] = label_image.shape
             ROIList['Left']   = 1
@@ -949,7 +949,7 @@ def get_voxel_measures(label_image, raw_image, ROI=None):
             Label  = ROI[i]['Label']
             rows   = top-bottom-1
             cols   = right-left-1
-            section= NP.zeros(rows*cols, dtype=raw_image.dtype).reshape(rows, cols)
+            section= np.zeros(rows*cols, dtype=raw_image.dtype).reshape(rows, cols)
             section = raw_image[bottom:top, left:right] \
                                [label_image[bottom:top, left:right]==Label]
         elif dimensions == 3:  
@@ -963,7 +963,7 @@ def get_voxel_measures(label_image, raw_image, ROI=None):
             rows   = top-bottom-1
             cols   = right-left-1
             layers = back-front-1
-            section= NP.zeros(layers*rows*cols, dtype=raw_image.dtype).reshape(layers, rows, cols)
+            section= np.zeros(layers*rows*cols, dtype=raw_image.dtype).reshape(layers, rows, cols)
             section = raw_image[front:back, bottom:top, left:right] \
                                [label_image[front:back, bottom:top, left:right]==Label]
 
@@ -1001,7 +1001,7 @@ def get_blob_regions(labeled_image, groups, dust=16):
 
     """
 
-    _c_ext_struct = NP.dtype([('Left', 'i'),
+    _c_ext_struct = np.dtype([('Left', 'i'),
                               ('Right', 'i'),
                               ('Top', 'i'),
                               ('Bottom', 'i'),
@@ -1014,8 +1014,8 @@ def get_blob_regions(labeled_image, groups, dust=16):
                               ('cZ', 'f')]
                              )
 
-    c_ext_ROI = NP.zeros(groups, dtype=_c_ext_struct)
-    ROIList = NP.zeros(groups, dtype=_objstruct)
+    c_ext_ROI = np.zeros(groups, dtype=_c_ext_struct)
+    ROIList = np.zeros(groups, dtype=_objstruct)
     # return the bounding box for each connected edge
     S.get_blob_regions(labeled_image, c_ext_ROI)
 
@@ -1071,12 +1071,12 @@ def get_blobs(binary_edge_image, mask=1):
         if mask != 1 and mask != 4 and mask != 8:
             mask = 1 
         [rows, cols] = binary_edge_image.shape
-        labeled_edge_image_or_vol = NP.zeros(rows*cols, dtype=NP.uint16).reshape(rows, cols)
+        labeled_edge_image_or_vol = np.zeros(rows*cols, dtype=np.uint16).reshape(rows, cols)
     elif dimensions == 3:
         if mask != 1 and mask != 6 and mask != 14 and mask != 28:
             mask = 1 
         [layers, rows, cols] = binary_edge_image.shape
-        labeled_edge_image_or_vol = NP.zeros(layers*rows*cols, dtype=NP.uint16).reshape(layers, rows, cols)
+        labeled_edge_image_or_vol = np.zeros(layers*rows*cols, dtype=np.uint16).reshape(layers, rows, cols)
     else:
         labeled_edge_image_or_vol = None
         groups = 0
@@ -1115,7 +1115,7 @@ def sobel_edges(sobel_edge_image, sobel_stats, mode=1, sobel_threshold=0.3):
 
     """
     [rows, cols] = sobel_edge_image.shape
-    sobel_edge = NP.zeros(rows*cols, dtype=NP.uint16).reshape(rows, cols)
+    sobel_edge = np.zeros(rows*cols, dtype=np.uint16).reshape(rows, cols)
     S.sobel_edges(sobel_edge_image, sobel_edge, sobel_stats['ave_gt0'], sobel_stats['min_gt0'],
                   sobel_stats['max_gt0'], mode, sobel_threshold)
 
@@ -1144,9 +1144,9 @@ def sobel_image(filtered_slice):
         mean and nonzero min, max of sobel filtering
 
     """
-    filtered_slice = filtered_slice.astype(NP.float64)
+    filtered_slice = filtered_slice.astype(np.float64)
     [rows, cols] = filtered_slice.shape
-    sobel_edge_image = NP.zeros(rows*cols, dtype=NP.float64).reshape(rows, cols)
+    sobel_edge_image = np.zeros(rows*cols, dtype=np.float64).reshape(rows, cols)
     pAve, min_value, max_value = S.sobel_image(filtered_slice, sobel_edge_image)
 
     # can replace this with numpy calls for the image stats. but C ext is faster
@@ -1197,15 +1197,15 @@ def pre_filter(slice, filter, low_threshold=0, high_threshold=0, conv_binary=0):
         # default to the maximum value of the image
         high_threshold = slice.max()
 
-    slice = slice.astype(NP.int16)
+    slice = slice.astype(np.int16)
     [rows, cols] = slice.shape
-    edge_image = NP.zeros(rows*cols, dtype=NP.float64).reshape(rows, cols)
+    edge_image = np.zeros(rows*cols, dtype=np.float64).reshape(rows, cols)
     S.edge_prefilter(low_threshold, high_threshold, filter['kernelSize'], filter['kernel'],
                      slice, edge_image)
 
     if conv_binary == 1:
         edge_image[edge_image>0] = 1
-        edge_image = edge_image.astype(NP.uint16)
+        edge_image = edge_image.astype(np.uint16)
 
     return edge_image
 
@@ -1259,11 +1259,11 @@ def get_all_bounding_boxes(ROI):
 
     number = ROI.size
     indices = range(0, ROI.size)
-    _shortstruct = NP.dtype([('left', 'i'),
+    _shortstruct = np.dtype([('left', 'i'),
                              ('right', 'i'),
                              ('top', 'i'),
                              ('bottom', 'i')])
-    measures = NP.zeros(number, dtype=_shortstruct)
+    measures = np.zeros(number, dtype=_shortstruct)
     for i in indices:
         measures[i]['left']   = ROI[i]['Left']
         measures[i]['right']  = ROI[i]['Right']
@@ -1299,7 +1299,7 @@ def build_2d_kernel(aperature=21, hiFilterCutoff=10.0):
 
     rad = math.pi / 180.0
     HalfFilterTaps = (aperature-1) / 2
-    kernel = NP.zeros((aperature), dtype=NP.float64)
+    kernel = np.zeros((aperature), dtype=np.float64)
     LC = 0.0
     HC = hiFilterCutoff * rad 
     t2 = 2.0 * math.pi
@@ -1352,7 +1352,7 @@ def build_d_gauss_kernel(gWidth=20, sigma=1.0):
 
     """
 
-    kernel  = NP.zeros((1+gWidth), dtype=NP.float64)
+    kernel  = np.zeros((1+gWidth), dtype=np.float64)
     indices = range(0, gWidth)  
 
     for i in indices:
@@ -1387,8 +1387,8 @@ def build_morpho_thin_masks():
 
     # (layers, rows, cols)
     size = (8*3*3)
-    J_mask = NP.zeros(size, dtype=NP.int16)
-    K_mask = NP.zeros(size, dtype=NP.int16)
+    J_mask = np.zeros(size, dtype=np.int16)
+    K_mask = np.zeros(size, dtype=np.int16)
 
     maskCols = 3
     # load the 8 J masks for medial axis transformation
@@ -1504,7 +1504,7 @@ def build_laws_kernel():
 
     """
     aperature = (6, 7)
-    coefficients = NP.zeros((aperature), dtype=NP.float64)
+    coefficients = np.zeros((aperature), dtype=np.float64)
     names = ('L', 'E', 'S', 'W', 'R', 'O' )
 
     coefficients[0, :] =  ( 1.0,  6.0,  15.0, 20.0,  15.0,  6.0,  1.0)
@@ -1550,7 +1550,7 @@ def build_laws_masks(LAWSFilter):
 
     mask_2 = masks[2]
 
-    z = NP.zeros(256*256, dtype=NP.float32).reshape(256, 256)
+    z = np.zeros(256*256, dtype=np.float32).reshape(256, 256)
     z[0:7, 0:7] = mask_0
     x = abs(fftshift(fft2(z)))
     pylab.imshow(x)
@@ -1563,13 +1563,13 @@ def build_laws_masks(LAWSFilter):
     for i in outer_indices:
         rowFilter = LAWSFilter['coefficients'][i]
         colFilter = LAWSFilter['coefficients'][i]
-        matrix = NP.outer(rowFilter, colFilter)
+        matrix = np.outer(rowFilter, colFilter)
         mask_array[count] = 2.0*matrix
         count = count + 1 
         inner_indices = range(i+1, LAWSFilter['numKernels'])
         for j in inner_indices:
             colFilter = LAWSFilter['coefficients'][j]
-            matrix = NP.outer(rowFilter, colFilter) + NP.outer(colFilter, rowFilter)
+            matrix = np.outer(rowFilter, colFilter) + np.outer(colFilter, rowFilter)
             mask_array[count] = matrix
             count = count + 1 
 
@@ -1600,12 +1600,12 @@ def build_test_texture_discs():
     """
     rows = 512
     cols = 512
-    rad  = NP.pi / 180.0
-    test_image = NP.zeros(rows*cols, dtype=NP.float32).reshape(rows, cols)
-    [a, b] = NP.mgrid[0:rows, 0:cols]
+    rad  = np.pi / 180.0
+    test_image = np.zeros(rows*cols, dtype=np.float32).reshape(rows, cols)
+    [a, b] = np.mgrid[0:rows, 0:cols]
 
-    test_image[0:255,0:255]     = NP.sin(4.0*rad*a[0:255,0:255])  + NP.sin(-4.0*rad*b[0:255,0:255]) 
-    test_image[256:511,256:511] = NP.sin(24.0*rad*a[0:255,0:255]) + NP.sin(20.0*rad*b[0:255,0:255])
+    test_image[0:255,0:255]     = np.sin(4.0*rad*a[0:255,0:255])  + np.sin(-4.0*rad*b[0:255,0:255]) 
+    test_image[256:511,256:511] = np.sin(24.0*rad*a[0:255,0:255]) + np.sin(20.0*rad*b[0:255,0:255])
 
     test_image = test_image + test_image.min()
     discs = build_test_unit_discs()
@@ -1634,8 +1634,8 @@ def build_test_discs():
     radius = 50
     rows   = 512
     cols   = 512
-    test_image = NP.zeros(rows*cols, dtype=NP.int16).reshape(rows, cols)
-    y_indices = NP.array(range(-radius, radius+1))
+    test_image = np.zeros(rows*cols, dtype=np.int16).reshape(rows, cols)
+    y_indices = np.array(range(-radius, radius+1))
     center_x = rows / 4
     center_y = cols / 4
 
@@ -1670,8 +1670,8 @@ def build_test_unit_discs():
     radius = 50
     rows   = 512
     cols   = 512
-    test_image = NP.zeros(rows*cols, dtype=NP.int16).reshape(rows, cols)
-    y_indices = NP.array(range(-radius, radius+1))
+    test_image = np.zeros(rows*cols, dtype=np.int16).reshape(rows, cols)
+    y_indices = np.array(range(-radius, radius+1))
     center_x = rows / 4
     center_y = cols / 4
 
@@ -1706,7 +1706,7 @@ def build_test_impulses():
     """
     rows = 512
     cols = 512
-    test_image = NP.zeros(rows*cols, dtype=NP.int16).reshape(rows, cols)
+    test_image = np.zeros(rows*cols, dtype=np.int16).reshape(rows, cols)
     test_image[128,128] = 1 
     test_image[378,128] = 1 
     test_image[128,378] = 1 

@@ -155,7 +155,7 @@ def get_inverse_mappings(parm_vector):
     Examples
     --------
 
-    >>> import numpy as NP
+    >>> import numpy as np
     >>> import _registration as reg
     >>> array = np.zeros(6, dtype=float)
     >>> M = reg.get_inverse_mappings(array)
@@ -230,7 +230,7 @@ def register(image1, image1_mat, image2, image2_mat, multires=[4, 2], histo_fwhm
     Examples
     --------
 
-    >>> import numpy as NP
+    >>> import numpy as np
     >>> import _registration as reg
 
     >>> image1, image2, fwhm, improc = reg.demo_build_dual_volumes()
@@ -348,7 +348,7 @@ def multires_registration(optimize_function, image1, image1_mat, image2, image2_
     --------
 
     (calling this from register which optionally filters image2)
-    >>> import numpy as NP
+    >>> import numpy as np
     >>> import _registration as reg
     >>> image1, mat1, image2, mat2 = reg.demo_build_dual_volumes()
     >>> parm_vector = register(image1, image2, imdata)
@@ -440,7 +440,7 @@ def smooth_kernel(fwhm, x, pixel_scale=8.0, ktype=1):
     Examples
     --------
 
-    >>> import numpy as NP
+    >>> import numpy as np
     >>> import _registration as reg
     >>> fwhm = 3
     >>> ftype = 2
@@ -555,7 +555,7 @@ def build_fwhm(M, S):
     Examples
     --------
 
-    >>> import numpy as NP
+    >>> import numpy as np
     >>> import _registration as reg
     >>> anat_desc = reg.load_anatMRI_desc()
     >>> image1 = reg.load_volume(anat_desc, imagename='ANAT1_V0001.img')
@@ -642,7 +642,7 @@ def cost_function(x, optfunc_args):
     Examples
     --------
 
-    >>> import numpy as NP
+    >>> import numpy as np
     >>> import _registration as reg
     >>> anat_desc = reg.load_anatMRI_desc()
     >>> image1 = reg.load_volume(anat_desc, imagename='ANAT1_V0001.img')
@@ -798,7 +798,7 @@ def build_rotate_matrix(img_data_parms):
     Examples
     --------
 
-    >>> import numpy as NP
+    >>> import numpy as np
     >>> import _registration as reg
     >>> x = np.zeros(6, dtype=np.float64)
     >>> M = reg.build_rotate_matrix(x)
