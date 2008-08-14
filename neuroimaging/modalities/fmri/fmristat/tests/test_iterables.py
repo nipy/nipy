@@ -39,12 +39,11 @@ def flatten_generator(ing):
 
 def unflatten_generator(ing):
     for i, r in ing:
-        r.shape = (20,20)
+        r.shape = (2,20)
         yield i, r
 
 def contrast_generator(resultg):
     for i, r in resultg:
-        print np.asarray(contrast(r)).shape
         yield i, np.asarray(contrast(r))
         
 """
