@@ -3,7 +3,7 @@ TODO
 """
 __docformat__ = 'restructuredtext'
 
-import numpy as N
+import numpy as np
 
 from neuroimaging.algorithms.statistics import onesample
 from neuroimaging.algorithms.statistics.regression import RegressionOutput
@@ -166,7 +166,7 @@ class TOutput(ImageOneSampleOutput):
         self.Tmin = Tmin
 
     def extract(self, results):
-        return N.clip(results['mean']['t'], self.Tmin, self.Tmax)
+        return np.clip(results['mean']['t'], self.Tmin, self.Tmax)
 
 class SdOutput(ImageOneSampleOutput):
     """

@@ -5,7 +5,7 @@ __docformat__ = 'restructuredtext'
 
 import gc
 
-import numpy as N
+import numpy as np
 import numpy.fft as fft
 import numpy.linalg as L
 
@@ -45,26 +45,26 @@ class LinearFilter(object):
         if not isinstance(self.grid.mapping, Affine):
             raise ValueError, 'for FFT smoothing, need a regular (affine) grid'
 
-        voxels = N.indices(self.grid.shape).astype(N.float64)
+        voxels = np.indices(self.grid.shape).astype(np.float64)
 
-        center = N.asarray(self.grid.shape)/2
+        center = np.asarray(self.grid.shape)/2
         center = self.grid.mapping([[center[i]] for i in range(len(self.grid.shape))])
 
-        voxels.shape = (voxels.shape[0], N.product(voxels.shape[1:]))
+        voxels.shape = (voxels.shape[0], np.product(voxels.shape[1:]))
         X = self.grid.mapping(voxels) - center
         X.shape = (3,) + self.grid.shape
         kernel = self(X)
         
         kernel = _crop(kernel)
-        self.norms = {'l2':N.sqrt((kernel**2).sum()),
-                      'l1':N.fabs(kernel).sum(),
+        self.norms = {'l2':np.sqrt((kernel**2).sum()),
+                      'l1':np.fabs(kernel).sum(),
                       'l1sum':kernel.sum()}
 
         self._kernel = kernel
 
-        self.shape = (N.ceil((N.asarray(self.grid.shape) +
-                              N.asarray(kernel.shape))/2)*2+2)
-        self.fkernel = N.zeros(self.shape)
+        self.shape = (np.ceil((np.asarray(self.grid.shape) +
+                              np.asarray(kernel.shape))/2)*2+2)
+        self.fkernel = np.zeros(self.shape)
         slices = [slice(0, kernel.shape[i]) for i in range(len(kernel.shape))]
         self.fkernel[slices] = kernel
         self.fkernel = fft.rfftn(self.fkernel)
@@ -77,25 +77,25 @@ class LinearFilter(object):
         FFT smoothing. Assumes coordinate system is linear. 
         """
 
-        _X = N.copy(X)
+        _X = np.copy(X)
         if self.fwhm is not 1.0:
             f = fwhm2sigma(self.fwhm)
             if f.shape == ():
-                f = N.ones(len(self.grid.shape)) * f
+                f = np.ones(len(self.grid.shape)) * f
             for i in range(len(self.grid.shape)):
                 _X[i] /= f[i]
         if self.cov != None:
             _chol = L.cholesky(self.cov)
-            _X = N.dot(L.inv(_chol), _X)
-        D2 = N.add.reduce(_X**2, 0)
+            _X = np.dot(L.inv(_chol), _X)
+        D2 = np.add.reduce(_X**2, 0)
         D2.shape = X.shape[1:]
         return D2
 
 
     def __call__(self, X):
         _normsq = self._normsq(X) / 2.
-        t = N.less_equal(_normsq, 15)
-        return N.exp(-N.minimum(_normsq, 15)) * t
+        t = np.less_equal(_normsq, 15)
+        return np.exp(-np.minimum(_normsq, 15)) * t
 
     def smooth(self, inimage, clean=False, is_fft=False):
         """
@@ -110,7 +110,7 @@ class LinearFilter(object):
         :Returns: `Image`
         """
         if inimage.ndim == 4:
-            _out = N.zeros(inimage.shape)
+            _out = np.zeros(inimage.shape)
             nslice = inimage.shape[0]
         elif inimage.ndim == 3:
             nslice = 1
@@ -124,7 +124,7 @@ class LinearFilter(object):
                 data = inimage[:]
 
             if clean:
-                data = N.nan_to_num(data)
+                data = np.nan_to_num(data)
             if not is_fft:
                 data = self._presmooth(data)
                 data *= self.fkernel 
@@ -162,7 +162,7 @@ class LinearFilter(object):
 
     def _presmooth(self, indata):
         slices = [slice(0, self.grid.shape[i], 1) for i in range(len(self.shape))]
-        _buffer = N.zeros(self.shape)
+        _buffer = np.zeros(self.shape)
         _buffer[slices] = indata
         return fft.rfftn(_buffer)
 
@@ -177,7 +177,7 @@ def fwhm2sigma(fwhm):
 
     :Returns: ``float``
     """
-    return fwhm / N.sqrt(8 * N.log(2))
+    return fwhm / np.sqrt(8 * np.log(2))
 
 def sigma2fwhm(sigma):
     """
@@ -188,7 +188,7 @@ def sigma2fwhm(sigma):
 
     :Returns: ``float``
     """
-    return sigma * N.sqrt(8 * N.log(2))
+    return sigma * np.sqrt(8 * np.log(2))
 
 def _crop(X, tol=1.0e-10):
     """
@@ -196,14 +196,14 @@ def _crop(X, tol=1.0e-10):
     crop region.
     """
     
-    aX = N.fabs(X)
+    aX = np.fabs(X)
     n = len(X.shape)
-    I = N.indices(X.shape)[:, N.greater(aX, tol)]
+    I = np.indices(X.shape)[:, np.greater(aX, tol)]
     if I.shape[1] > 0:
         m = [I[i].min() for i in range(n)]
         M = [I[i].max() for i in range(n)]
         slices = [slice(m[i], M[i]+1, 1) for i in range(n)]
         return X[slices]
     else:
-        return N.zeros((1,)*n)
+        return np.zeros((1,)*n)
 

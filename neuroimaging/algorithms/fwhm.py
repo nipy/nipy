@@ -18,7 +18,7 @@ __docformat__ = 'restructuredtext'
 
 import gc
 
-import numpy as N
+import numpy as np
 from numpy.linalg import det
 from neuroimaging.fixes.scipy.stats.models.utils import recipr
 
@@ -55,7 +55,7 @@ class Resels(object):
         self.D = D
 
         _transform = self.grid.mapping.transform
-        self.wedge = N.power(N.fabs(det(_transform)), 1./self.D)
+        self.wedge = np.power(np.fabs(det(_transform)), 1./self.D)
 
     def integrate(self, mask=None):
         """
@@ -75,7 +75,7 @@ class Resels(object):
         else:
             _mask = self.mask
         if _mask is not None:
-            _mask = _mask[:].astype(N.int32)
+            _mask = _mask[:].astype(np.int32)
             nvoxel = _mask.sum()
         else:
             _mask = 1.
@@ -93,7 +93,7 @@ class Resels(object):
         
         :Returns: FWHM
         """
-        return N.sqrt(4*N.log(2.)) * self.wedge * recipr(N.power(x, 1./self.D))
+        return np.sqrt(4*np.log(2.)) * self.wedge * recipr(np.power(x, 1./self.D))
 
     def fwhm2resel(self, fwhm):
         """
@@ -105,21 +105,21 @@ class Resels(object):
 
         :Returns: resels
         """
-        return recipr(N.power(x / N.sqrt(4*N.log(2)) * self.wedge, self.D))
+        return recipr(np.power(x / np.sqrt(4*np.log(2)) * self.wedge, self.D))
 
     def __iter__(self):
         """
         :Returns: ``self``
         """
         if not self.fwhm:
-            im = Image(N.zeros(self.grid.shape), grid=self.grid)
+            im = Image(np.zeros(self.grid.shape), grid=self.grid)
         else:
             im = \
               Image(self.fwhm, clobber=self.clobber, mode='w', grid=self.grid)
         self.fwhm = im
 
         if not self.resels:
-            im = Image(N.zeros(self.grid.shape), grid=self.grid)
+            im = Image(np.zeros(self.grid.shape), grid=self.grid)
         else:
             im = \
               Image(self.resels, clobber=self.clobber, mode='w', grid=self.grid)
@@ -198,15 +198,15 @@ class iterFWHM(Resels):
         self.Y = grid.shape[1]
         self.X = grid.shape[2]
         self._setup_nneigh()
-        self._fwhm = N.zeros((self.Y, self.X))
-        self._resels = N.zeros((self.Y, self.X))
-        self.Yindex = N.arange(self.Y)
-        self.Xindex = N.arange(self.X)
+        self._fwhm = np.zeros((self.Y, self.X))
+        self._resels = np.zeros((self.Y, self.X))
+        self.Yindex = np.arange(self.Y)
+        self.Xindex = np.arange(self.X)
         self.YX = self.Y*self.X
-        self.Yshift = N.array([0,1,0,1])
-        self.Xshift = N.array([0,0,1,1])
-        self.Yweight = -N.array([1,-1,1,-1.])
-        self.Xweight = -N.array([1,1,-1,-1.])
+        self.Yshift = np.array([0,1,0,1])
+        self.Xshift = np.array([0,0,1,1])
+        self.Yweight = -np.array([1,-1,1,-1.])
+        self.Xweight = -np.array([1,1,-1,-1.])
 
         self.slices = []
         self.nslices = grid.shape[0]
@@ -256,9 +256,9 @@ class iterFWHM(Resels):
             _sumsq += _frame**2
 
         _mu /= n
-        _invnorm = recipr(N.sqrt((_sumsq - n * _mu**2)))
+        _invnorm = recipr(np.sqrt((_sumsq - n * _mu**2)))
 
-        value = N.zeros(resid.shape)
+        value = np.zeros(resid.shape)
 
         for i in range(n):
             if self.D == 3:
@@ -290,7 +290,7 @@ class iterFWHM(Resels):
 
         :Returns: ``None``
         """
-        self.nneigh = 4. * N.ones((self.Y, self.X))
+        self.nneigh = 4. * np.ones((self.Y, self.X))
         self.nneigh[0] = 2
         self.nneigh[-1] = 2
         self.nneigh[:, 0] = 2
@@ -311,7 +311,7 @@ class iterFWHM(Resels):
         :Returns: ``None``
         """
 
-        wresid = 1.0 * N.transpose(data, (1,2,0))
+        wresid = 1.0 * np.transpose(data, (1,2,0))
         if not self.normalized:
             wresid = self.normalize(wresid)
 
@@ -319,8 +319,8 @@ class iterFWHM(Resels):
             self.u = 1. * wresid
             self.ux = wresid[:, 1:] - wresid[:, :-1]
             self.uy = wresid[1:, :] - wresid[:-1, :]
-            self.Axx = N.add.reduce(self.ux**2, 2)
-            self.Ayy = N.add.reduce(self.uy**2, 2)
+            self.Axx = np.add.reduce(self.ux**2, 2)
+            self.Ayy = np.add.reduce(self.uy**2, 2)
 
             if self.D == 2:
                 for index in range(4):
@@ -330,18 +330,18 @@ class iterFWHM(Resels):
                     xslice = slice(x[0], x[-1])
                     axx = self.Axx[yslice, :]
                     ayy = self.Ayy[:, xslice]
-                    axy = N.add.reduce(self.uy[:, xslice] *
+                    axy = np.add.reduce(self.uy[:, xslice] *
                                        self.ux[yslice, :], 2)
                     axy *= self.Yweight[index] * self.Xweight[index]
                     detlam = _calc_detlam(axx, ayy, 1, ayx, 0, 0)
-                    test = N.greater(detlam, 0).astype(N.float64)
-                    _resels = N.sqrt(test * detlam)
+                    test = np.greater(detlam, 0).astype(np.float64)
+                    _resels = np.sqrt(test * detlam)
                     self._resels[yslice, xslice] += _resels
                     self._fwhm[yslice, xslice] += self.resel2fwhm(_resels)
 
         else:
             self.uz = wresid - self.u
-            self.Azz = N.add.reduce(self.uz**2, 2)
+            self.Azz = np.add.reduce(self.uz**2, 2)
 
             # The 4 upper cube corners:
             for index in range(4):
@@ -356,16 +356,16 @@ class iterFWHM(Resels):
                 xx = self.ux[yslice: ]
                 yy = self.uy[:, xslice]
                 zz = self.uz[yslice, xslice]
-                ayx = N.add.reduce(yy * xx, 2)
-                azx = N.add.reduce(xx * zz, 2)
-                azy = N.add.reduce(yy * zz, 2)
+                ayx = np.add.reduce(yy * xx, 2)
+                azx = np.add.reduce(xx * zz, 2)
+                azy = np.add.reduce(yy * zz, 2)
                 ayx *= self.Yweight[index] * self.Xweight[index]
                 azx *= self.Yweight[index]
                 azy *= self.Xweight[index]
                 detlam = _calc_detlam(axx, ayy, azz, ayx, azx, azy)
 
-                test = N.greater(detlam, 0).astype(N.float64)
-                _resels = N.sqrt(test * detlam)
+                test = np.greater(detlam, 0).astype(np.float64)
+                _resels = np.sqrt(test * detlam)
                 self._resels[yslice, xslice] += _resels
                 self._fwhm[yslice, xslice] += self.resel2fwhm(_resels)
                 
@@ -375,13 +375,13 @@ class iterFWHM(Resels):
 
             # Clear buffers
 
-            self._fwhm = N.zeros(self._fwhm.shape)
-            self._resels = N.zeros(self._resels.shape)
+            self._fwhm = np.zeros(self._fwhm.shape)
+            self._resels = np.zeros(self._resels.shape)
             self.u = 1. * wresid
             self.ux = wresid[:, 1:] - wresid[:, :-1]
             self.uy = wresid[1:, :] - wresid[:-1, :]
-            self.Axx = N.add.reduce(self.ux**2, 2)
-            self.Ayy = N.add.reduce(self.uy**2, 2)
+            self.Axx = np.add.reduce(self.ux**2, 2)
+            self.Ayy = np.add.reduce(self.uy**2, 2)
 
             # The 4 lower cube corners:
 
@@ -397,17 +397,17 @@ class iterFWHM(Resels):
                 xx = self.ux[xslice, :]
                 yy = self.uy[:, yslice]
                 zz = self.uz[xslice, yslice]
-                ayx = N.add.reduce(yy * xx, 2)
-                azx = N.add.reduce(xx * zz, 2)
-                azy = N.add.reduce(yy * zz, 2)
+                ayx = np.add.reduce(yy * xx, 2)
+                azx = np.add.reduce(xx * zz, 2)
+                azy = np.add.reduce(yy * zz, 2)
                 
                 ayx *= self.Yweight[index] * self.Xweight[index]
                 azx *= self.Yweight[index]
                 azy *= self.Xweight[index]
                 detlam = _calc_detlam(axx, ayy, azz, ayx, azx, azy)
 
-                test = N.greater(N.fabs(detlam), 0).astype(N.float64)
-                _resels = N.sqrt(test * detlam)
+                test = np.greater(np.fabs(detlam), 0).astype(np.float64)
+                _resels = np.sqrt(test * detlam)
                 self._resels[xslice, yslice] += _resels
                 self._fwhm[xslice, yslice] += self.resel2fwhm(_resels)
                 
@@ -425,8 +425,8 @@ class iterFWHM(Resels):
         """
         value = self.grid.next()
 
-        self.fwhm[value.slice] =  N.clip(self._fwhm, 0, self.FWHMmax)
-        self.resels[value.slice] = N.clip(self._resels, 0, self.FWHMmax)
+        self.fwhm[value.slice] =  np.clip(self._fwhm, 0, self.FWHMmax)
+        self.resels[value.slice] = np.clip(self._resels, 0, self.FWHMmax)
 
 class fastFWHM(Resels):
 
@@ -465,7 +465,7 @@ class fastFWHM(Resels):
                 _sumsq += _frame**2
 
             _mu /= self.n
-            _invnorm = recipr(N.sqrt((_sumsq - self.n * _mu**2)))
+            _invnorm = recipr(np.sqrt((_sumsq - self.n * _mu**2)))
         else:
             _mu = 0.
             _invnorm = 1.
@@ -480,7 +480,7 @@ class fastFWHM(Resels):
             _frame.shape = _frame.shape[1:]
 
 
-            g = N.gradient(_frame)
+            g = np.gradient(_frame)
             dz, dy, dx = g[0], g[1], g[2]
 
             del(_frame) 
@@ -496,8 +496,8 @@ class fastFWHM(Resels):
             
         detlam = _calc_detlam(Lxx, Lyy, Lzz, Lyx, Lzx, Lzy)
 
-        test = N.greater(detlam, 0)
-        resels = N.sqrt(detlam * test)
+        test = np.greater(detlam, 0)
+        resels = np.sqrt(detlam * test)
         fwhm = self.resel2fwhm(resels)
 
         fullslice = [slice(0, x) for x in self.grid.shape]
