@@ -74,5 +74,19 @@ def import_from(modulename, objectname):
         return None
 
 from neuroimaging.testing import Tester
+
 test = Tester().test
 bench = Tester().bench
+
+def _test_local_install():
+    """ Warn the user that running with neuroimaging being
+        imported locally is a bad idea.
+    """
+    import os
+    if os.getcwd() == os.sep.join(
+                            os.path.abspath(__file__).split(os.sep)[:-2]):
+        import warnings
+        warnings.warn('Running the tests from the install directory may '
+                     'trigger some failures')
+
+_test_local_install()
