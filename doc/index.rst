@@ -14,6 +14,7 @@ Welcome to nipy's documentation!
 
    users/index.rst
    devel/index.rst
+   faq/index.rst
    api/index.rst
 
 

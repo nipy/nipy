@@ -9,6 +9,8 @@ import sys
 conf = {}
 execfile("conf.py",conf)
 
+BASEDIR = os.getcwd()
+
 def check_build():
     build_dirs = ['build', 'build/doctrees', 'build/html', 'build/latex',
                   '_static', '_templates']
@@ -47,16 +49,35 @@ def latex():
         print 'latex build has not been tested on windows'
 
 def clean():
-    shutil.rmtree('build')
+    try:
+        shutil.rmtree('build')
+        shutil.rmtree('dist')
+    except OSError:
+        pass
+
+def dist():
+    s = os.system
+    os.chdir(BASEDIR)
+    s('rm -f dist/*')
+    s('mkdir -p dist')
+    s('ln build/latex/nipy.pdf dist/')
+    s('cp -al build/html dist/')
+    
+def pdf():
+    "Just an alias for latex"
+    latex()
 
 def all():
     html()
     latex()
+    dist()
 
 
 funcd = {'html':html,
          'latex':latex,
+         'pdf':pdf,
          'clean':clean,
+         'dist':dist,
          'all':all,
          }
 
