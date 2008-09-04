@@ -2,7 +2,7 @@
 Functions are provided to load, save and create image objects, along with
 iterators to easily slice through volumes.
 
-    load : load an image from a file or url
+    load : load an image from a file
 
     save : save an image to a file
 
@@ -19,7 +19,6 @@ __all__ = ['load', 'save', 'fromarray']
 
 import numpy as np
 
-from neuroimaging.io.datasource import DataSource, splitzipext
 from neuroimaging.core.reference.grid import SamplingGrid
 from neuroimaging.core.reference.mapping import Affine
 
@@ -119,19 +118,12 @@ class Image(object):
         """Return data as a numpy array."""
         return np.asarray(self._data)
 
-def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
-          clobber=False, **keywords):
-    """Create an `Image` from the given url/filename
+def _open(filename, grid=None, mode="r"):
+    """Create an `Image` from the given filename
 
     Parameters
     ----------
-    url : ``string``
-        a url or filename
-    datasource : `DataSource`
-        The datasource to be used for caching
-    format : `Format`
-        The file format to use. If ``None`` then all possible formats will
-        be tried.
+    filename : ``string``
     grid : `reference.grid.SamplingGrid`
         The sampling grid for the file
     mode : ``string``
@@ -139,23 +131,12 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
 
     Returns
     -------
-    image : A new `Image` object created from the url.
+    image : A new `Image` object created from the filename.
 
-    Notes
-    -----
-    Raises IOError : If the specified format, or those tried by default
-        all raise IOErrors.
-    Raises NotImplementedError : If the specified format, or those tried by
-        default are unable to open the file, an exception is raised.
-
-    The raising of an exception can be misleading. If for example, a
-    bad url is given, it will appear as if that file's format has not
-    been implemented.
-    
     """
 
     try:
-        ioimg = PyNiftiIO(url, mode)
+        ioimg = PyNiftiIO(filename, mode)
         if grid is None:
             grid = _grid_from_affine(ioimg.affine, ioimg.orientation,
                                     ioimg.shape)
@@ -163,25 +144,18 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
         img = Image(ioimg, grid)
         return img
     except IOError:
-        raise IOError, 'Unable to open file %s' % url
+        raise IOError, 'Unable to open file %s' % filename
         
-def load(url, datasource=DataSource(), format=None, mode='r', **keywords):
-    """Load an image from the given url.
+def load(filename, mode='r'):
+    """Load an image from the given filename.
 
-    Load an image from the file specified by ``url`` and ``datasource``.
+    Load an image from the file specified by ``filename``.
 
     Parameters
     ----------
-    url : string
-        Should resolve to a complete filename path, possibly with the provided
-        datasource.
-    datasource : A `DataSource` object
-        A datasource for the image to load.
-    format : A `Format` object
-        The file format to use when opening the image file.  If ``None``, the
-        default, all supported formats are tried.
+    filename : string
+        Should resolve to a complete filename path.
     mode : Either 'r' or 'r+'
-    keywords : Keyword arguments passed to `Format` initialization call.
 
     Returns
     -------
@@ -190,35 +164,25 @@ def load(url, datasource=DataSource(), format=None, mode='r', **keywords):
 
     See Also
     --------
-    save : function for saving images
+    save_image : function for saving images
     fromarray : function for creating images from numpy arrays
-
-    Notes
-    -----
-    The raising of an exception can be misleading. If for example, a bad url 
-    is given, it will appear as if that file's format has not been implemented.
 
     Examples
     --------
 
-    >>> from neuroimaging.core.image import image
-    >>> from neuroimaging.testing import funcfile
-    >>> img = image.load(funcfile)
+    >>> from neuroimaging.core.api import load_image
+    >>> from neuroimaging.testing import anatfile
+    >>> img = load_image(anatfile)
     >>> img.shape
-    (20, 2, 20, 20)
+    (25, 35, 25)
 
     """
 
-    # BUG: Should DataSource here be a Repository?  So the Repository
-    # would be a 'base url' and the url would be the filename.
-    # Fix when porting code to numpy-trunk that now includes DataSource.
-    # and update documentation above.
-
     if mode not in ['r', 'r+']:
         raise ValueError, 'image opening mode must be either "r" or "r+"'
-    return _open(url, datasource=datasource, format=format, mode=mode, **keywords)
+    return _open(filename, mode=mode)
 
-def save(img, filename, datasource=DataSource()):
+def save(img, filename):
     """Write the image to a file.
 
     Parameters
@@ -226,9 +190,6 @@ def save(img, filename, datasource=DataSource()):
     img : An `Image` object
     filename : string
         Should be a valid filename.
-    datasource : A `DataSource` object
-        A datasource to specify the location of the file.
-        NOTE: This is currently ignored!
 
     Returns
     -------
@@ -236,8 +197,21 @@ def save(img, filename, datasource=DataSource()):
 
     See Also
     --------
-    load : function for loading images
+    load_image : function for loading images
     fromarray : function for creating images from numpy arrays
+
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> from tempfile import NamedTemporaryFile
+    >>> from neuroimaging.core.api import save_image, fromarray
+    >>> data = np.zeros((91,109,91), dtype=np.uint8)
+    >>> img = fromarray(data)
+    >>> tmpfile = NamedTemporaryFile(suffix='.nii.gz')
+    >>> saved_img = save_image(img, tmpfile.name)
+    >>> saved_img.shape
+    (91, 109, 91)
 
     Notes
     -----
