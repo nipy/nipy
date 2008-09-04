@@ -157,7 +157,7 @@ def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
     try:
         ioimg = PyNiftiIO(url, mode)
         if grid is None:
-            grid = grid_from_affine(ioimg.affine, ioimg.orientation,
+            grid = _grid_from_affine(ioimg.affine, ioimg.orientation,
                                     ioimg.shape)
         # Build nipy image from array-like object and sampling grid
         img = Image(ioimg, grid)
@@ -324,16 +324,19 @@ def zeros(grid):
     return Image(np.zeros(grid.shape), grid)
 
 
-def grid_from_affine(affine, orientation, shape):
-    """Generate a SamplingGrid from an affine transform."""
+def _grid_from_affine(affine, orientation, shape):
+    """Generate a SamplingGrid from an affine transform.
 
+    This is a convenience function to create a SamplingGrid from image
+    attributes.  It uses the orientation field from pynifti IO to map
+    to the nipy *names*, prepending *time* or *vector* depending on
+    dimension.
+
+    FIXME: This is an internal function and should be revisited when
+    the SamplingGrid is refactored.
+    
     """
-    spaces = ['vector','time','zspace','yspace','xspace']
-    space = tuple(spaces[-ndim:])
-    shape = tuple(img.header['dim'][1:ndim+1])
-    grid = SamplingGrid.from_affine(Affine(affine),space,shape)
-    return grid        
-    """
+
     names = []
     for ornt in orientation:
         names.append(orientation_to_names.get(ornt))
