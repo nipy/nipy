@@ -12,7 +12,7 @@ from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
      DiagonalCoordinateSystem
 from neuroimaging.core.reference.axis import VoxelAxis
 
-from neuroimaging.core.image.image import Image, merge_images, zeros
+from neuroimaging.core.image.image import Image, merge_images
 from neuroimaging.core.image.image import load as load_image
 from neuroimaging.core.image.image import save as save_image
 from neuroimaging.core.image.image import fromarray

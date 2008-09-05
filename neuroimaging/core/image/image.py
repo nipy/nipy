@@ -291,13 +291,6 @@ def merge_images(filename, images, cls=Image, clobber=False,
         data[i] = np.asarray(image)[:]
     return Image(data, grid)
 
-def zeros(grid):
-    """
-    Return an Image of zeros with a given grid.
-    """
-    return Image(np.zeros(grid.shape), grid)
-
-
 def _grid_from_affine(affine, orientation, shape):
     """Generate a SamplingGrid from an affine transform.
 
