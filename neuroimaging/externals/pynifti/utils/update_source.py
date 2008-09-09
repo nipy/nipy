@@ -9,7 +9,7 @@ wrapper for nifticlib.  We do not want swig as a dependency for nipy.
 """
 
 from os import mkdir
-from os.path import join, exists
+from os.path import join, exists, expanduser
 from shutil import copy2 as copy
 
 """
@@ -18,7 +18,8 @@ Ex:
     /Users/cburns/src/nipy
     /Users/cburns/src/pynifti
 """
-src_dir = '../../../../../pynifti'
+
+src_dir = expanduser('~/src/pynifti')
 
 # Destination directory is the top-level externals/pynifti directory
 dst_dir = '..'
