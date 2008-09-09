@@ -7,10 +7,10 @@ import gc, copy
 
 import numpy as np
 from neuroimaging.fixes.scipy.stats.models.regression import OLSModel, ARModel
-from neuroimaging.core.api import Image, data_generator, parcels, matrix_generator
+from neuroimaging.core.api import data_generator, parcels, matrix_generator
 
 from neuroimaging.modalities.fmri.api import FmriImage, fmri_generator
-from neuroimaging.core.api import f_generator, create_outfile, Image
+from neuroimaging.core.api import f_generator, fromarray, save_image, Image
 from neuroimaging.core.reference.api import Affine, SamplingGrid
 from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
      DelayContrastOutput
@@ -19,6 +19,15 @@ import neuroimaging.algorithms.statistics.regression as regression
 from neuroimaging.algorithms.fwhm import fastFWHM
 import neuroimaging.algorithms.statistics.regression as regression
 
+
+# FIXME: Is there a clean, generic way to handle these temporary
+# files?  We removed create_outfile from image.py because we'd like to
+# minimize the number of ways users create and deal with files.
+# Simplify the api.  But perhaps there is a need for a create_outfile
+# type function?
+def _create_outfile(filename, grid):
+    img = fromarray(np.zeros(grid.shape), grid=grid)
+    return save_image(img, filename)
 
 def model_generator(formula, data, frametimes, iterable=None, slicetimes=None,
                     model_type=OLSModel, model_params = lambda x: ()):
@@ -141,26 +150,25 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
     contrast: a TContrast
     """
     if effect:
-        effectim = create_outfile(outbase % {'stat':'effect'}, fmri_image[0].grid, clobber=clobber)
+        effectim = _create_outfile(outbase % {'stat':'effect'},
+                                   fmri_image[0].grid)
     else:
         effectim = None
 
     if sd:
-        sdim = create_outfile(outbase % {'stat':'sd'}, fmri_image[0].grid,
-                              clobber=clobber)
+        sdim = _create_outfile(outbase % {'stat':'sd'}, fmri_image[0].grid)
     else:
         sdim = None
 
     if t:
-        tim = create_outfile(outbase % {'stat':'t'}, fmri_image[0].grid,
-                             clobber=clobber)
+        tim = _create_outfile(outbase % {'stat':'t'}, fmri_image[0].grid)
     else:
         tim = None
     return regression.TOutput(contrast, effect=effectim,
                               sd=sdim, t=tim)
 
 def output_F(outfile, contrast, fmri_image, clobber=False):
-    f = create_outfile(outfile, fmri_image[0].grid, clobber=clobber)
+    f = _create_outfile(outfile, fmri_image[0].grid)
     c = copy.deepcopy(contrast)
     return regression.RegressionOutput(f, lambda x: regression.output_F(x, c))
                              
@@ -172,7 +180,7 @@ def output_AR1(outfile, fmri_image, clobber=False):
     image: FmriImage 
 
     """
-    outim = create_outfile(outfile, fmri_image[0].grid, clobber=clobber)
+    outim = _create_outfile(outfile, fmri_image[0].grid)
     return regression.RegressionOutput(outim, regression.output_AR1)
 
 def output_resid(outfile, fmri_image, clobber=False):
@@ -199,7 +207,7 @@ def output_resid(outfile, fmri_image, clobber=False):
         grid = fmri_image.grid
     else:
         raise ValueError, "expecting FmriImage or 4d Image"
-    outim = create_outfile(outfile, grid, clobber=clobber)
+    outim = _create_outfile(outfile, grid)
     return regression.ArrayOutput(outim, regression.output_resid)
 
 def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
