@@ -8,11 +8,12 @@ Overview
 --------
 
 This document describes the official workflow for nipy development
-using bazaar and the launchpad.net hosting service.  All developers
-are required to adopt this workflow for development.  This workflow is
-flexible enough that even a casual/occassional developer can
-contribute code to nipy.  This particular workflow was developed to
-achieve two primary objectives.
+using bazaar and the launchpad_ hosting service.  All developers are
+expected to adopt this workflow for development.  This workflow is
+flexible enough that even an occassional developer can contribute code
+to nipy since it does not require all contributors to have commit
+access to the main trunk.  This particular workflow was developed to
+achieve these primary objectives.
 
 #. Maintain a linear revision number history on the main nipy-trunk.
 #. Provide a clear process for code reviews.
@@ -21,31 +22,53 @@ achieve two primary objectives.
 
 Launchpad structure
 -------------------
-
-On launchpad, there exists one main trunk that only administrators
+On launchpad_, there exists one main nipy_ trunk that only administrators
 have commit access to.  All developers have their own
 launchpad.net/~developer directory which may be registered with the
 nipy_ project.  In addition, there may be shared team directories on
 nipy_, for feature development, but in general individual development
-should happen in your own launchpad directory.
+should happen in your ~developer directory.
 
-Launchpad code directorys:
+A snapshot of the nipy_ code directories on launchpad_
 
-* nipy-trunk
-* ~cburns/nipy
-* ~twaite/nipy
+* lp:nipy - the nipy-trunk
+* ~cburns/nipy - developer branch for cburns (registered with nipy)
+* ~twaite/nipy - developer branch for twaite (registered with nipy)
 
 Developer directory structure
 -----------------------------
-
 Your development directory will contain two subdirectories:
 
-* trunk-lp
-* trunk-dev
+* nipy-repo/trunk-lp
+* nipy-repo/trunk-dev
 
-`trunk-lp` is a pull from the *lp:nipy*.   `trunk-dev` is a branch from
-your home directory on launchpad and is your working development
-directory, *lp:~cburns*
+*trunk-lp* is a pull from the *lp:nipy*.  *trunk-dev* is a branch from
+your user directory on launchpad_ and is your working, development
+directory. 
+
+Initializing your development environment
+----------------------------------------- 
+
+We're using the `shared repository
+http://bazaar-vcs.org/SharedRepositoryTutorial`_ feature of bazaar_.
+
+#. Create a *shared repository*::
+
+  bzr init-repo --trees nipy-repo
+  cd nipy-repo
+
+#. Checkout the nipy-trunk::
+
+  bzr branch lp:nipy trunk-lp
+
+#. Create a development branch::
+
+  bzr branch trunk-lp trunk-dev
+
+#. Push your development branch up to launchpad_::
+
+  cd trunk-dev
+  bzr push bzr+ssh://USER@bazaar.launchpad.net/~USER/nipy/nipy-trunk
 
 Daily development cycle
 -----------------------
@@ -144,3 +167,6 @@ Matthew Brett performed this merge on his machine.
 .. _nipy: https://launchpad.net/nipy
 .. _matplotlib: http://matplotlib.sourceforge.net/
 .. _sphinx: http://sphinx.pocoo.org/
+.. _launchpad: https://launchpad.net/
+
+
