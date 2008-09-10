@@ -13,3 +13,5 @@
    :maxdepth: 2
 
    bzr_workflow.rst
+   virtualenv-tutor.rst
+
