@@ -25,12 +25,12 @@ Launchpad structure
 -------------------
 
 On launchpad_, there exists one main nipy_ trunk that only an
-administrator has commit access to (see
-:ref:`bzr_administration`).  All developers have their own
-launchpad.net/~developer directory which may be registered with the
-nipy_ project.  In addition, there may be shared team directories on
-nipy_, for feature development, but in general individual development
-should happen in your ~developer directory.
+administrator has commit access to (see :ref:`bzr_administration`).
+All developers have their own launchpad.net/~developer directory which
+may be registered with the nipy_ project.  In addition, there may be
+shared team directories on nipy_, for feature development, but in
+general individual development should happen in your ~developer
+directory.
 
 A snapshot of the nipy_ code directories on launchpad_
 
@@ -52,25 +52,25 @@ Initializing your development environment
 
 We're using the `shared repository <http://bazaar-vcs.org/SharedRepositoryTutorial>`_ feature of bazaar_.
 
-#. Create a *shared repository*::
+#. Create a shared repository::
 
-  bzr init-repo --trees nipy-repo
-  cd nipy-repo
+     bzr init-repo --trees nipy-repo
+     cd nipy-repo
 
 #. Create your own personal development branch, named `trunk-dev`, by
-replicating the nipy_ trunk::
+   replicating the nipy_ trunk::
 
-  bzr branch lp:nipy trunk-dev
+     bzr branch lp:nipy trunk-dev
 
 #. Push your development branch up to launchpad_ for backup and to
-make your changes visible to the rest of the team::
+   make your changes visible to the rest of the team::
 
-  cd trunk-dev
-  bzr push bzr+ssh://USER@bazaar.launchpad.net/~USER/nipy/trunk-dev --remember
+     cd trunk-dev
+     bzr push bzr+ssh://USER@bazaar.launchpad.net/~USER/nipy/trunk-dev --remember
 
-Real example of the line above for user `cburns`::
+   Real example of the line above for user `cburns`::
 
-  bzr push bzr+ssh://cburns@bazaar.launchpad.net/~cburns/nipy/trunk-dev --remember
+     bzr push bzr+ssh://cburns@bazaar.launchpad.net/~cburns/nipy/trunk-dev --remember
 
 You now have your own branch, stored on launchpad, and on your
 machine, in which you can develop nipy_ code.
@@ -100,5 +100,5 @@ branch::                ::
 
 .. _nipy: https://launchpad.net/nipy
 .. _launchpad: https://launchpad.net/
-
+.. _bazaar: http://bazaar-vcs.org/
 

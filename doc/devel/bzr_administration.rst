@@ -1,3 +1,5 @@
+.. _bzr_administration:
+
 ============================
  nipy bazaar administration
 ============================
