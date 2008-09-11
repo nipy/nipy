@@ -60,7 +60,7 @@ def test_resample2d2():
 
     A = np.identity(2)
     b = np.ones(2)*4
-    ir = affine(i, i.grid, (A, b))
+    ir = resample(i, i.grid, (A, b))
     assert(np.allclose(ir[42:47,32:47], 3.))
 
     return i, ir
@@ -73,7 +73,7 @@ def test_resample2d3():
     a = np.identity(3)
     a[:2,-1] = 4.
 
-    ir = affine(i, i.grid, a)
+    ir = resample(i, i.grid, a)
     assert(np.allclose(ir[42:47,32:47], 3.))
 
     return i, ir
@@ -114,7 +114,6 @@ def test_nonaffine():
     g = SamplingGrid.from_affine(Affine(np.identity(3)), ['x', 'y'], (100,90))
     i = Image(np.ones((100,90)), g)
     i[50:55,40:55] = 3.
-
 
     tgrid = SamplingGrid.from_start_step(['t'], [0], [np.pi*1.8/100], (100,))
     def curve(x):

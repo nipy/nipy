@@ -6,7 +6,7 @@ from scipy.ndimage import affine_transform
 import numpy as np
 
 from neuroimaging.algorithms.interpolation import ImageInterpolator as I
-from neuroimaging.core.api import Image, SamplingGrid, Mapping, Affine
+from neuroimaging.core.api import Image, SamplingGrid, Mapping, Affine 
 
 def resample(image, target, mapping, order=3):
     """
@@ -23,7 +23,10 @@ def resample(image, target, mapping, order=3):
     target -- target SamplingGrid for output image
     mapping -- transformation from target.output_coords
                to image.grid.output_coords, i.e. 'world-to-world mapping'
-    order -- what order of interpolation 
+               Can be specified in three ways: a callable, a
+               tuple (A, b) representing the mapping y=dot(A,x)+b
+               or a representation of this in homogeneous coordinates. 
+    order -- what order of interpolation to use in `scipy.ndimage`
 
     OUTPUTS:
     --------
@@ -31,19 +34,26 @@ def resample(image, target, mapping, order=3):
                   
     """
 
+    if not iscallable(mapping):
+        if type(mapping) is type(()):
+            A, b = mapping
+            ndimout = b.shape[0]
+            ndimin = A.shape[1]
+            mapping  = np.zeros((ndimout+1, ndimin+1))
+            mapping[:ndimout,:ndimin] = A
+            mapping[:ndimout,-1] = b
+            mapping[-1,-1] = 1.
+        mapping = Affine(mapping)
+
     input_coords = target.input_coords
     output_coords = image.grid.output_coords
 
     # image world to target world mapping
     
-    TW2IW = mapping
+    TW2IW = Mapping.from_callable(mapping)
 
     # target voxel to image world mapping
-    
-    if isinstance(mapping, Mapping):
-        TV2IW = TW2IW * target.mapping
-    else:
-        TV2IW = lambda x: TW2IW(target.mapping(x))
+    TV2IW = TW2IW * target.mapping
 
     # SamplingGrid describing mapping from target voxel to
     # image world coordinates
@@ -61,7 +71,7 @@ def resample(image, target, mapping, order=3):
         del(interp)
     else:
         TV2IV = image.grid.mapping.inverse() * TV2IW
-        if isinstance(TV2IW, Affine):
+        if isinstance(TV2IV, Affine):
             A, b = TV2IV.params
             idata = affine_transform(np.asarray(image), A,
                                      offset=b,
@@ -73,26 +83,4 @@ def resample(image, target, mapping, order=3):
             
     return Image(idata, target.copy())
 
-def affine(image, target, transform, order=3):
-    """
-    Perform affine resampling using splines of a given order,
-    resampling image to a grid target based on transform.
-    
-    INPUTS
-    ------
-    image -- `Image` to be resampled
-    target -- `SamplingGrid` instance for output
-    transform -- either a tuple (A, b) representing the mapping y=dot(A,x)+b
-                 or a representation of this in homogeneous coordinates, 
-                 the transformation is from target.output_coords to
-                 image.grid.input_coords
-    """
-    if type(transform) is type(()):
-        A, b = transform
-        ndim = b.shape[0]
-        transform  = np.identity(ndim+1)
-        transform[:ndim,:ndim] = A
-        transform[:ndim,-1] = b
-    mapping = Affine(transform)
-    return resample(image, target, mapping, order=order)
         
