@@ -12,6 +12,10 @@
 .. toctree::
    :maxdepth: 2
 
+   howto_document.rst
    bzr_workflow.rst
+   bzr_administration.rst
    virtualenv-tutor.rst
+   tricked_out_emacs.rst
 
+   roadmap.rst
