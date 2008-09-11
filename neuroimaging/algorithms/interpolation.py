@@ -10,31 +10,28 @@ import numpy as np
 from scipy import ndimage
 from neuroimaging.io.api import Cache
 
-
 class ImageInterpolator(object):
     """
-    TODO
+    A class that enables interpolation of an Image instance
+    at arbitrary points in the Image's world space (image.grid.output_coords).
+
+    The resampling is down with scipy.ndimage.
     """
 
-    def __init__(self, image, order=1, grid=None):
+    def __init__(self, image, order=3):
         """
         :Parameters:
-            image : TODO
-                TODO
+            image : Image
+                Image to be interpolated
             order : ``int``
-                TODO
-            grid : TODO
-                TODO        
+                order of spline interpolation as used in scipy.ndimage
+                
         """
-        if grid is None:
-            self.grid = image.grid
-        else:
-            self.grid = grid
         self.image = image
         self.order = order
-        self._prefilter()
+        self._buildknots()
 
-    def _prefilter(self):
+    def _buildknots(self):
         if self.order > 1:
             data = ndimage.spline_filter(np.nan_to_num(np.asarray(self.image)),
                                           self.order)
@@ -66,55 +63,28 @@ class ImageInterpolator(object):
             except:
                 pass
 
-    def __call__(self, points):
-        """
-        :Parameters:
-            points : TODO
-                TODO
-
-        :Returns: TODO
-        """
-        return self.evaluate(points)
-
     def evaluate(self, points):
         """
         :Parameters:
-            points : TODO
-                TODO
+            points : values in self.image.grid.output_coords 
 
-        :Returns: TODO
+        :Returns: 
+            V: ndarray
+               interpolator of self.image evaluated at points
+
         """
         points = np.array(points, np.float64)
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], np.product(output_shape))
-        voxels = self.grid.mapping.inverse()(points)
+        voxels = self.image.grid.mapping.inverse()(points)
         V = ndimage.map_coordinates(self.data, 
                                      voxels,
                                      order=self.order,
                                      prefilter=False)
                                      
+        # ndimage.map_coordinates returns a flat array,
+        # it needs to be reshaped to the original shape
+        
         V.shape = output_shape
         return V
 
-    def resample(self, grid, mapping=None, **keywords):
-        """
-        Using an ImageInterpolator, resample an Image on the range
-        of a grid, applying an optional mapping (taking
-        keyword arguments ``keywords``) between the output
-        coordinates of grid and self.image.grid.
-
-        :Parameters:
-            grid : TODO
-                TODO
-            mapping : TODO
-                TODO
-            keywords : ``dict``
-                TODO
-
-        :Returns: TODO        
-        """
-
-        points = grid.range()
-        if mapping is not None:
-            points = mapping(points, **keywords)
-        return self.evaluate(points)
