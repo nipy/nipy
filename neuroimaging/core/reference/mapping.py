@@ -90,7 +90,6 @@ def isdiagonal(matrix):
     masked = np.ma.array(matrix, mask=mask, fill_value=0.).filled()
     return np.all(masked == matrix)
 
-
 class Mapping(object):
     """
     A generic mapping class that allows composition, inverses, etc. A mapping
@@ -125,6 +124,17 @@ class Mapping(object):
         '%s:inverse=%s\n' % (self.name, self._inverse)
 
 
+    @staticmethod
+    def from_callable(c):
+        """
+        Construct a Mapping from a callable. If the
+        callable is an instance of Mapping, return it.
+        """
+        if isinstance(c, Mapping):
+            return c
+        else:
+            return Mapping(c)
+
     def __ne__(self, other): 
         """
         :SeeAlso:
@@ -148,7 +158,6 @@ class Mapping(object):
         """
         return other.__rmul__(self)
     
-
     def __rmul__(self, other):
         """ mapping composition
 
@@ -157,14 +166,15 @@ class Mapping(object):
                 The mapping to compose with.
         :Returns: `Mapping`
         """
-        def map(coords): 
+        other = Mapping.from_callable(other)
+        def _map(coords): 
             return other(self(coords))
         if self.isinvertible() and other.isinvertible():
             def inverse(coords): 
                 return self.inverse()(other.inverse()(coords))
         else: 
             inverse = None
-        return Mapping(map, inverse=inverse)
+        return Mapping(_map, inverse=inverse)
 
     def isinvertible(self):
         """
