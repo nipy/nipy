@@ -15,7 +15,7 @@ class test_Iterators(TestCase):
     def setUp(self):
         spacetime = ['time', 'zspace', 'yspace', 'xspace']
         im = Image(np.zeros((3,4,5,6)),
-                   grid = grid.SamplingGrid.identity((3,4,5,6), spacetime))
+                   grid = grid.CoordinateMap.identity((3,4,5,6), spacetime))
         self.img = FmriImage(im)
 
     def test_fmri_parcel(self):

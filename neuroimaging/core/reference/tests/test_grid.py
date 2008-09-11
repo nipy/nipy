@@ -1,7 +1,7 @@
 import numpy as np
 from neuroimaging.testing import *
 
-from neuroimaging.core.reference.grid import SamplingGrid, ConcatenatedGrids, \
+from neuroimaging.core.reference.grid import CoordinateMap, ConcatenatedGrids, \
      ConcatenatedIdenticalGrids
 from neuroimaging.core.reference.mapping import Affine
 
@@ -71,19 +71,19 @@ class test_Grid(TestCase):
 
     def test_identity(self):
         shape = (30,40,50)
-        i = SamplingGrid.identity(['zspace', 'yspace', 'xshape'], shape=shape)
+        i = CoordinateMap.identity(['zspace', 'yspace', 'xshape'], shape=shape)
         self.assertEquals(tuple(i.shape), shape)
         y = i.mapping([3,4,5])
         assert_almost_equal(y, np.array([3,4,5]))
 
     def test_identity2(self):
         shape = (30, 40)
-        self.assertRaises(ValueError, SamplingGrid.identity, ['zspace', 'yspace', 'xspace'], shape)
+        self.assertRaises(ValueError, CoordinateMap.identity, ['zspace', 'yspace', 'xspace'], shape)
 
 
     def test_from_affine(self):
         a = Affine.identity(2)
-        g = SamplingGrid.from_affine(a, ['zspace', 'xspace'], (20,30))
+        g = CoordinateMap.from_affine(a, ['zspace', 'xspace'], (20,30))
 
 
 

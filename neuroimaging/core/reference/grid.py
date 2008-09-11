@@ -14,7 +14,7 @@ from neuroimaging.core.reference.axis import RegularAxis, Axis, VoxelAxis
 from neuroimaging.core.reference.coordinate_system import \
   VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
 
-class SamplingGrid(object):
+class CoordinateMap(object):
     """
     Defines a set of input and output coordinate systems and a mapping
     between the two, which represents the mapping of (for example) an
@@ -24,7 +24,7 @@ class SamplingGrid(object):
     @staticmethod
     def from_start_step(names, start, step, shape):
         """
-        Create a `SamplingGrid` instance from sequences of names, shape, start
+        Create a `CoordinateMap` instance from sequences of names, shape, start
         and step.
 
         :Parameters:
@@ -36,7 +36,7 @@ class SamplingGrid(object):
                 TODO
             shape: ''tuple'' of ''int''
 
-        :Returns: `SamplingGrid`
+        :Returns: `CoordinateMap`
         
         :Predcondition: ``len(names) == len(shape) == len(start) == len(step)``
         """
@@ -50,7 +50,7 @@ class SamplingGrid(object):
         transform = output_coords.transform()
         
         mapping = Affine(transform)
-        return SamplingGrid(mapping, input_coords, output_coords)
+        return CoordinateMap(mapping, input_coords, output_coords)
 
 
     @staticmethod
@@ -64,7 +64,7 @@ class SamplingGrid(object):
             names : ``tuple`` of ``string``
                 TODO
 
-        :Returns: `SamplingGrid` with `VoxelCoordinateSystem` input
+        :Returns: `CoordinateMap` with `VoxelCoordinateSystem` input
                   and an identity transform 
         
         :Precondition: ``len(shape) == len(names)``
@@ -80,7 +80,7 @@ class SamplingGrid(object):
         input_coords = VoxelCoordinateSystem('voxel', iaxes)
         output_coords = DiagonalCoordinateSystem('world', oaxes)
         aff_ident = Affine.identity(ndim)
-        return SamplingGrid(aff_ident, input_coords, output_coords)
+        return CoordinateMap(aff_ident, input_coords, output_coords)
 
     @staticmethod
     def from_affine(mapping, names, shape):
@@ -94,7 +94,7 @@ class SamplingGrid(object):
                 The names of the axes of the coordinate systems
             shape : ''tuple'' of ''int''
                 The shape of the grid
-        :Returns: `SamplingGrid`
+        :Returns: `CoordinateMap`
         
         :Precondition: ``len(shape) == len(names)``
         
@@ -106,7 +106,7 @@ class SamplingGrid(object):
         axes = [VoxelAxis(name, length=l) for name, l in zip(names, shape)]
         input_coords = VoxelCoordinateSystem("voxel", axes)
         output_coords = DiagonalCoordinateSystem('world', axes)
-        return SamplingGrid(Affine(mapping.transform), input_coords, output_coords)
+        return CoordinateMap(Affine(mapping.transform), input_coords, output_coords)
 
     def __init__(self, mapping, input_coords, output_coords):
         """
@@ -156,9 +156,9 @@ class SamplingGrid(object):
         """
         Create a copy of the grid.
 
-        :Returns: `SamplingGrid`
+        :Returns: `CoordinateMap`
         """
-        return SamplingGrid(self.mapping, self.input_coords,
+        return CoordinateMap(self.mapping, self.input_coords,
                             self.output_coords)
 
     def __getitem__(self, index):
@@ -182,7 +182,7 @@ class SamplingGrid(object):
                     a = copy.deepcopy(ia[i])
                     newia.append(a)
             newic = VoxelCoordinateSystem(self.input_coords.name, newia, shape=shape)
-            return SamplingGrid(mapping, newic, self.output_coords)
+            return CoordinateMap(mapping, newic, self.output_coords)
         else:
             raise ValueError, 'input_coords must be VoxelCoordinateSystem for slice of grid to make sense'
 
@@ -226,7 +226,7 @@ class SamplingGrid(object):
         if isinstance(self.input_coords, VoxelCoordinateSystem):
             mapping = self.mapping.matlab2python()
             newi = self.input_coords.reverse()
-            return SamplingGrid(mapping, 
+            return CoordinateMap(mapping, 
                                 VoxelCoordinateSystem(newi.name, newi.axes()),
                                 self.output_coords.reverse())
         else:
@@ -241,7 +241,7 @@ class SamplingGrid(object):
         if isinstance(self.input_coords, VoxelCoordinateSystem):
             mapping = self.mapping.python2matlab()
             newi = self.input_coords.reverse()
-            return SamplingGrid(mapping, 
+            return CoordinateMap(mapping, 
                                 VoxelCoordinateSystem(newi.name, newi.axes()),
                                 self.output_coords.reverse())
         else:
@@ -276,7 +276,7 @@ def centered_grid(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
     names   : tuple 
         tuple of names describing axis ('zaxis', 'yaxis', 'xaxis')
 
-    :Returns: `SamplingGrid`
+    :Returns: `CoordinateMap`
         
         :Predcondition: ``len(shape) == len(pixdims) == len(names)``
 
@@ -298,13 +298,13 @@ def centered_grid(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
     transform = output_coords.transform()
         
     mapping = Affine(transform)
-    return SamplingGrid(mapping, input_coords, output_coords)
+    return CoordinateMap(mapping, input_coords, output_coords)
    
         
         
     
 
-class ConcatenatedGrids(SamplingGrid):
+class ConcatenatedGrids(CoordinateMap):
     """
     Return a grid formed by concatenating a sequence of grids. Checks are done
     to ensure that the coordinate systems are consistent, as is the shape.
@@ -316,7 +316,7 @@ class ConcatenatedGrids(SamplingGrid):
     def __init__(self, grids, concataxis="concat"):
         """
         :Parameters:
-            grid : ``[`SamplingGrid`]``
+            grid : ``[`CoordinateMap`]``
                 The grids to be used.
             concataxis : ``string``
                 The name of the new dimension formed by concatenation
@@ -324,7 +324,7 @@ class ConcatenatedGrids(SamplingGrid):
         self.grids = self._grids(grids)
         self.concataxis = concataxis
         mapping, input_coords, output_coords = self._mapping()
-        SamplingGrid.__init__(self, mapping, input_coords, output_coords)
+        CoordinateMap.__init__(self, mapping, input_coords, output_coords)
 
 
     def _getshape(self):
@@ -399,7 +399,7 @@ class ConcatenatedGrids(SamplingGrid):
            i : ``int``
                The index of the grid to return
 
-        :Returns: `SamplingGrid`
+        :Returns: `CoordinateMap`
         
         :Raises IndexError: if i in out of range.
         """
@@ -413,7 +413,7 @@ class ConcatenatedIdenticalGrids(ConcatenatedGrids):
     def __init__(self, grid, n, concataxis="concat"):
         """
         :Parameters:
-            grid : `SamplingGrid`
+            grid : `CoordinateMap`
                 The grid to be used
             n : ``int``
                 The number of tiems to concatenate the grid

@@ -13,16 +13,15 @@ Examples
 See documentation for load and save functions for 'working' examples.
 
 """
+import numpy as np
+
+from neuroimaging.core.reference.grid import CoordinateMap
+from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
+
 
 __docformat__ = 'restructuredtext'
 __all__ = ['load', 'save', 'fromarray']
-
-import numpy as np
-
-from neuroimaging.core.reference.grid import SamplingGrid
-from neuroimaging.core.reference.mapping import Affine
-
-from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
 
 class Image(object):
     """
@@ -48,7 +47,7 @@ class Image(object):
 
     """
 
-    def __init__(self, data, grid):
+    def __init__(self, data, comap):
         """Create an `Image` object from a numpy array and a `Grid` object.
         
         Images should be created through the module functions load and
@@ -57,7 +56,7 @@ class Image(object):
         Parameters
         ----------
         data : A numpy.ndarray
-        grid : A `SamplingGrid` Object
+        comap : A `CoordinateMap` Object
         
         See Also
         --------
@@ -67,13 +66,13 @@ class Image(object):
 
         """
 
-        if data is None or grid is None:
-            raise ValueError, 'expecting an array and SamplingGrid instance'
+        if data is None or comap is None:
+            raise ValueError, 'expecting an array and CoordinateMap instance'
 
         # self._data is an array-like object.  It must implement a subset of
         # array methods  (Need to specify these, for now implied in pyniftio)
         self._data = data
-        self._grid = grid
+        self._grid = comap
 
     def _getshape(self):
         return self._data.shape
@@ -236,7 +235,7 @@ def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
     data : numpy array
         A numpy array of three dimensions.
     names : a list of axis names
-    grid : A `SamplingGrid`
+    grid : A `CoordinateMap`
         If not specified, a uniform sampling grid is created.
 
     Returns
@@ -252,7 +251,7 @@ def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
 
     ndim = len(data.shape)
     if not grid:
-        grid = SamplingGrid.from_start_step(names,
+        grid = CoordinateMap.from_start_step(names,
                                             (0,)*ndim,
                                             (1,)*ndim,
                                             data.shape)
@@ -292,15 +291,15 @@ def merge_images(filename, images, cls=Image, clobber=False,
     return Image(data, grid)
 
 def _grid_from_affine(affine, orientation, shape):
-    """Generate a SamplingGrid from an affine transform.
+    """Generate a CoordinateMap from an affine transform.
 
-    This is a convenience function to create a SamplingGrid from image
+    This is a convenience function to create a CoordinateMap from image
     attributes.  It uses the orientation field from pynifti IO to map
     to the nipy *names*, prepending *time* or *vector* depending on
     dimension.
 
     FIXME: This is an internal function and should be revisited when
-    the SamplingGrid is refactored.
+    the CoordinateMap is refactored.
     
     """
 
@@ -313,5 +312,5 @@ def _grid_from_affine(affine, orientation, shape):
     elif len(shape) == 5:
         names = ['vector', 'time'] + names
     affobj = Affine(affine)
-    grid = SamplingGrid.from_affine(affobj, names, shape)
+    grid = CoordinateMap.from_affine(affobj, names, shape)
     return grid

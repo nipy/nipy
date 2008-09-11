@@ -112,17 +112,17 @@ class Resels(object):
         :Returns: ``self``
         """
         if not self.fwhm:
-            im = Image(np.zeros(self.grid.shape), grid=self.grid)
+            im = Image(np.zeros(self.grid.shape), comap=self.grid)
         else:
             im = \
-              Image(self.fwhm, clobber=self.clobber, mode='w', grid=self.grid)
+              Image(self.fwhm, clobber=self.clobber, mode='w', comap=self.grid)
         self.fwhm = im
 
         if not self.resels:
-            im = Image(np.zeros(self.grid.shape), grid=self.grid)
+            im = Image(np.zeros(self.grid.shape), comap=self.grid)
         else:
             im = \
-              Image(self.resels, clobber=self.clobber, mode='w', grid=self.grid)
+              Image(self.resels, clobber=self.clobber, mode='w', comap=self.grid)
         self.resels = im
 
         return self
@@ -152,11 +152,11 @@ class ReselImage(Resels):
 
         if not self.fwhm:
             self.fwhm = Image(self.resel2fwhm(self.resels[:]),
-                              grid=self.grid, **keywords)
+                              comap=self.grid, **keywords)
 
         if not self.resels:
             self.resels = Image(self.fwhm2resel(self.fwhm[:]),
-                                grid=self.grid, **keywords)
+                                comap=self.grid, **keywords)
 
     def __iter__(self): 
         """

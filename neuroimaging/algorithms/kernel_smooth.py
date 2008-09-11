@@ -155,9 +155,9 @@ class LinearFilter(object):
         _out = _out[[slice(self._kernel.shape[i]/2, self.grid.shape[i] +
                            self._kernel.shape[i]/2) for i in range(len(self.grid.shape))]]
         if inimage.ndim == 3:
-            return Image(_out, grid=self.grid)
+            return Image(_out, comap=self.grid)
         else:
-            return Image(_out, grid=self.grid.replicate(inimage.grid.shape[0]))
+            return Image(_out, comap=self.grid.replicate(inimage.grid.shape[0]))
 
 
     def _presmooth(self, indata):

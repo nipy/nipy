@@ -25,7 +25,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
         shape : how many steps in each voxel direction
         output_coords : a CoordinateSystem for the output
 
-    :Returns: `grid.SamplingGrid`
+    :Returns: `grid.CoordinateMap`
     """
     colvectors = np.asarray(colvectors)
     nout = colvectors.shape[1]
@@ -42,7 +42,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
         for d in range(len(shape))])
 
     w = mapping.Affine(f)
-    g = grid.SamplingGrid(w, input_coords, output_coords)
+    g = grid.CoordinateMap(w, input_coords, output_coords)
     return g
 
 

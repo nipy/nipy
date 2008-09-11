@@ -11,7 +11,7 @@ from neuroimaging.core.api import data_generator, parcels, matrix_generator
 
 from neuroimaging.modalities.fmri.api import FmriImage, fmri_generator
 from neuroimaging.core.api import f_generator, fromarray, save_image, Image
-from neuroimaging.core.reference.api import Affine, SamplingGrid
+from neuroimaging.core.reference.api import Affine, CoordinateMap
 from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
      DelayContrastOutput
 import neuroimaging.algorithms.statistics.regression as regression
@@ -200,7 +200,7 @@ def output_resid(outfile, fmri_image, clobber=False):
         T[1:,1:] = fmri_image[0].grid.affine
         T[0,0] = fmri_image.TR
         anames = ["time"] + [a.name for a in g.input_coords.axes()]
-        grid = SamplingGrid.from_affine(Affine(T),
+        grid = CoordinateMap.from_affine(Affine(T),
                                         anames,
                                         (n,) + g.shape)
     elif isinstance(fmri_image, Image):

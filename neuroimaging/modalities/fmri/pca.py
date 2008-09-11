@@ -174,11 +174,11 @@ class PCA(object):
         # generators are done.
         if output_base is not None:
             outiters = [Image('%s_comp%d%s' % (output_base, i, self.ext),
-                              grid=outgrid.copy(),
+                              comap=outgrid.copy(),
                               mode='w').slice_iterator(mode='w') for i in which]
         else:
             outiters = [Image(np.zeros(outgrid.shape),
-                              grid=outgrid.copy()).slice_iterator(mode='w')
+                              comap=outgrid.copy()).slice_iterator(mode='w')
                         for i in which]
 
         first_slice = slice(0,self.image.shape[0])
@@ -207,7 +207,7 @@ class PCA(object):
         for i in range(len(which)):
             if output_base:
                 outimage = Image('%s_comp%d%s' % (output_base, which[i], self.ext),
-                                      grid=outgrid, mode='r+')
+                                      comap=outgrid, mode='r+')
             else:
                 outimage = outiters[i].img
             d = outimage.readall()

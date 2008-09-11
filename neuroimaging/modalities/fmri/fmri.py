@@ -2,7 +2,7 @@ from numpy import asarray, arange
 
 from neuroimaging.core.api import ImageList, Image
 
-from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.reference.grid import CoordinateMap
 from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem
 from neuroimaging.core.reference.mapping import Affine
 
@@ -127,7 +127,7 @@ def fromimage(fourdimage, TR=None, slicetimes=None):
         oc = VoxelCoordinateSystem("world", oa)
         t = im.grid.mapping.transform[1:]
         a = Affine(t)
-        newg = SamplingGrid(a, im.grid.input_coords, oc)
+        newg = CoordinateMap(a, im.grid.input_coords, oc)
         images.append(Image(asarray(im), newg))
 
     if TR is None:

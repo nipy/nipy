@@ -5,7 +5,7 @@ from neuroimaging.testing import *
 from neuroimaging.algorithms.kernel_smooth import LinearFilter
 from neuroimaging.core.api import Image
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.reference.grid import CoordinateMap
 
 from neuroimaging.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 
@@ -55,13 +55,13 @@ class test_SigmaFWHM(TestCase):
             ii, jj, kk = nprand.random_integers(11,17, (3,))
 
             space = ('zspace', 'yspace', 'xspace')
-            grid = SamplingGrid.from_start_step(names=space, shape=shape,
+            grid = CoordinateMap.from_start_step(names=space, shape=shape,
                                                 step=nprand.random_integers(5,10,(3,))*0.5,
                                                 start=nprand.random_integers(5,20,(3,))*0.25)
 
             signal = np.zeros(shape)
             signal[ii,jj,kk] = 1.
-            signal = Image(signal, grid=grid)
+            signal = Image(signal, comap=grid)
     
             kernel = LinearFilter(grid, fwhm=nprand.random_integers(50,100)/10.)
             ssignal = kernel.smooth(signal)

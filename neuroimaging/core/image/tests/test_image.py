@@ -11,7 +11,7 @@ from neuroimaging.core.image import image
 from neuroimaging.core.api import Image, load_image, save_image, fromarray
 from neuroimaging.core.api import parcels, data_generator, write_data
 
-from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.reference.grid import CoordinateMap
 from neuroimaging.core.reference.mapping import Affine
 
 class TestImage(TestCase):
@@ -192,7 +192,7 @@ def test_ArrayLikeObj():
     # create simple grid
     xform = np.eye(4)
     affine = Affine(xform)
-    grid = SamplingGrid.from_affine(affine, ['zspace', 'yspace', 'xspace'],
+    grid = CoordinateMap.from_affine(affine, ['zspace', 'yspace', 'xspace'],
                                     (2,3,4))
     # create image form array-like object and grid
     img = image.Image(obj, grid)
