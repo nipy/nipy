@@ -12,4 +12,6 @@
 .. toctree::
    :maxdepth: 2
 
-   nipy_dev.rst
+   bzr_workflow.rst
+   virtualenv-tutor.rst
+
