@@ -369,6 +369,10 @@ class Affine(Mapping):
         self._fmatrix, self._fvector = _2matvec(transform)
         Mapping.__init__(self, None, name=name, ndim=ndim)
 
+    def get_params(self):
+        return self._fmatrix, self._fvector
+    params = property(get_params,doc='Matrix, vector representation of affine')
+
     def __call__(self, coords):
         """ Apply this mapping to the given coordinates. 
         

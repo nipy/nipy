@@ -2,7 +2,7 @@
 import numpy as np
 from neuroimaging.core.api import Affine, Image, SamplingGrid, Mapping
 
-from neuroimaging.algorithms.resample import resample, affine
+from neuroimaging.algorithms.resample import resample
 
 def test_resample2d():
 
@@ -33,6 +33,9 @@ def test_resample2d():
 
 def test_resample2d1():
 
+    # Tests the same as test_resample2d, only using a callable instead of
+    # an Affine instance
+    
     g = SamplingGrid.from_affine(Affine(np.diag([0.5,0.5,1])), ['x', 'y'], (100,90))
     i = Image(np.ones((100,90)), g)
     i[50:55,40:55] = 3.
@@ -64,7 +67,11 @@ def test_resample2d2():
     assert(np.allclose(ir[42:47,32:47], 3.))
 
     return i, ir
+
 def test_resample2d3():
+
+    # Same as test_resample2d, only a different way of specifying
+    # the transform: here it is an (A,b) pair
 
     g = SamplingGrid.from_affine(Affine(np.diag([0.5,0.5,1])), ['x', 'y'], (100,90))
     i = Image(np.ones((100,90)), g)
@@ -154,24 +161,20 @@ def test_nonaffine2():
     pylab.figure(num=5)
     pylab.plot(np.asarray(ir))
     
+def test_2d_from_3d():
 
-if __name__ == "__main__":
-    a, b = test_resample2d()
-    test_resample2d1()
-    test_resample2d2()
-    test_resample2d3()
+    # Resample a 3d image on a 2d affine grid
+    # This example creates a grid that coincides with
+    # the 10th slice of an image, and checks that
+    # resampling agrees with the data in the 10th slice.
 
-    import pylab
+    g = SamplingGrid.from_affine(Affine(np.diag([0.5,0.5,0.5,1])), ['x', 'y', 'z'],
+                                 (100,90,80))
+    i = Image(np.ones(g.shape), g)
+    i[50:55,40:55,30:33] = 3.
+    
+    a = np.identity(4)
 
-    pylab.figure(num=1)
-    pylab.imshow(a, interpolation='nearest')
-    pylab.colorbar()
-
-    pylab.figure(num=2)
-    pylab.imshow(b, interpolation='nearest')
-    pylab.colorbar()
-
-    test_resample3d()
-    test_nonaffine()
-    test_nonaffine2()
-    pylab.show()
+    g2 = g[10]
+    ir = resample(i, g2, Affine(a))
+    assert(np.allclose(np.asarray(ir), np.asarray(i[10])))

@@ -5,7 +5,7 @@ Some simple examples and utility functions for resampling.
 from scipy.ndimage import affine_transform
 import numpy as np
 
-from neuroimaging.algorithms.interpolation import ImageInterpolator as I
+from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.core.api import Image, SamplingGrid, Mapping, Affine 
 
 def resample(image, target, mapping, order=3):
@@ -34,7 +34,7 @@ def resample(image, target, mapping, order=3):
                   
     """
 
-    if not iscallable(mapping):
+    if not callable(mapping):
         if type(mapping) is type(()):
             A, b = mapping
             ndimout = b.shape[0]
@@ -66,8 +66,8 @@ def resample(image, target, mapping, order=3):
         # interpolator evaluates image at values image.grid.output_coords,
         # i.e. physical coordinates rather than voxel coordinates
 
-        interp = I(image, order=order)
-        idata = interp(output_grid.range())
+        interp = ImageInterpolator(image, order=order)
+        idata = interp.evaluate(output_grid.range())
         del(interp)
     else:
         TV2IV = image.grid.mapping.inverse() * TV2IW
@@ -77,8 +77,8 @@ def resample(image, target, mapping, order=3):
                                      offset=b,
                                      output_shape=output_grid.shape)
         else:
-            interp = I(image, order=order)
-            idata = interp(output_grid.range())
+            interp = ImageInterpolator(image, order=order)
+            idata = interp.evaluate(output_grid.range())
             del(interp)
             
     return Image(idata, target.copy())
