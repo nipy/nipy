@@ -1,12 +1,12 @@
 .. _tricked_out_emacs:
 
-======================================
+===================================
 Tricked out emacs for python coding
-======================================
+===================================
 
 Various ways to configure your emacs that you might find useful.
 
-There are various pages on emacs and python - see
+There are various pages on emacs and python - for example see
 http://wiki.gungfu.de/Main/HackingPythonWithEmacs
 
 Rest mode
@@ -56,11 +56,11 @@ to call back into emacs.
 
 Install
 ````````
-- rope_ - by downloading from the link, and running `python setup.py
-  install` in the usual way.
-- pymacs_ - probably via your package manager - for example `apt-get
-  install pymacs`
-- ropemacs_ - download from link, `python setup.py install`
+- rope_ - by downloading from the link, and running ``python setup.py
+  install`` in the usual way.
+- pymacs_ - probably via your package manager - for example ``apt-get
+  install pymacs``
+- ropemacs_ - download from link, ``python setup.py install``
 
 You may need to put the rope stuff into your *system* python path, if
 you (like me) run into problems with gnome launchers not getting my
