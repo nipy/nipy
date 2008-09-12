@@ -49,7 +49,6 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
 def xslice(x, zlim, ylim, output_coords, shape):
     """
     Return a slice through a 3d box with x fixed.
-    Defaults to a slice through MNI coordinates.
 
     :Parameters:
         y : TODO
@@ -73,7 +72,6 @@ def xslice(x, zlim, ylim, output_coords, shape):
 def yslice(y, zlim, xlim, output_coords, shape):
     """
     Return a slice through a 3d box with y fixed.
-    Defaults to a slice through MNI coordinates.
 
     :Parameters:
         x : TODO
@@ -97,7 +95,6 @@ def yslice(y, zlim, xlim, output_coords, shape):
 def zslice(z, ylim, xlim, output_coords, shape):    
     """
     Return a slice through a 3d box with z fixed.
-    Defaults to a slice through MNI coordinates.
 
     :Parameters:
         z : TODO
