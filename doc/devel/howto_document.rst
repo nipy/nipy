@@ -15,8 +15,7 @@ You may want to review:
 - `ReST quick reference <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_
 
 Consider using emacs `rst-mode` - rst.el for editing rst files, and
-ReST_ in docstrings.  
-
+ReST_ in docstrings - :ref:`tricked_out_emacs`. 
 
 .. _ReST: http://docutils.sourceforge.net/rst.html
 

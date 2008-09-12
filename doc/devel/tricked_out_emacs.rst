@@ -1,3 +1,5 @@
+.. _tricked_out_emacs:
+
 ======================================
  Tricking out emacs for python coding
 ======================================
