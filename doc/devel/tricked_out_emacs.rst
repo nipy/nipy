@@ -75,9 +75,17 @@ into something lispey).  Add these lines somewhere in your `.emacs` file::
 and restart emacs.  When you open a python file, you should have a
 ``rope`` menu. Note `C-c g` - the excellent `goto-definition` command.
 
+emacs code browser
+------------------
+
+Not really python specific, but a rather nice set of windows for
+browsing code directories, and code - see the ECB_ page.  Again, your
+package manager may help you (``apt-get install ecb``).
+
 .. _docutils: http://docutils.sourceforge.net/
 .. _doctest-mode: http://www.cis.upenn.edu/~edloper/projects/doctestmode/
 .. _pylint: http://www.logilab.org/project/pylint
 .. _rope: http://rope.sourceforge.net/
 .. _pymacs: http://pymacs.progiciels-bpi.ca/pymacs.html
 .. _ropemacs: http://rope.sourceforge.net/ropemacs.html
+.. _ECB: http://ecb.sourceforge.net/
