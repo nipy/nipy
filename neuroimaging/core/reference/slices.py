@@ -45,7 +45,6 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
     g = grid.SamplingGrid(w, input_coords, output_coords)
     return g
 
-
 def xslice(x, zlim, ylim, output_coords, shape):
     """
     Return a slice through a 3d box with x fixed.
@@ -65,8 +64,8 @@ def xslice(x, zlim, ylim, output_coords, shape):
             TODO
     """
     origin = [zlim[0],ylim[0],x]
-    colvectors = [[(zlim[1]-zlim[0])/(shape[1] - 1.),0,0],
-                  [0,(ylim[1]-ylim[0])/(shape[0] - 1.),0]]
+    colvectors = [[(zlim[1]-zlim[0])/(shape[0] - 1.),0,0],
+                  [0,(ylim[1]-ylim[0])/(shape[1] - 1.),0]]
     return from_origin_and_columns(origin, colvectors, shape, output_coords)
 
 def yslice(y, zlim, xlim, output_coords, shape):
@@ -88,8 +87,8 @@ def yslice(y, zlim, xlim, output_coords, shape):
             TODO
     """
     origin = [zlim[0],y,xlim[0]]
-    colvectors = [[(zlim[1]-zlim[0])/(shape[1] - 1.),0,0],
-                  [0,0,(xlim[1]-xlim[0])/(shape[0] - 1.)]]
+    colvectors = [[(zlim[1]-zlim[0])/(shape[0] - 1.),0,0],
+                  [0,0,(xlim[1]-xlim[0])/(shape[1] - 1.)]]
     return from_origin_and_columns(origin, colvectors, shape, output_coords)
 
 def zslice(z, ylim, xlim, output_coords, shape):    
@@ -109,8 +108,8 @@ def zslice(z, ylim, xlim, output_coords, shape):
             TODO
     """
     origin = [z,xlim[0],ylim[0]]
-    colvectors = [[0,(ylim[1]-ylim[0])/(shape[1] - 1.),0],
-                  [0,0,(xlim[1]-xlim[0])/(shape[0] - 1.)]]
+    colvectors = [[0,(ylim[1]-ylim[0])/(shape[0] - 1.),0],
+                  [0,0,(xlim[1]-xlim[0])/(shape[1] - 1.)]]
     return from_origin_and_columns(origin, colvectors, shape, output_coords)
 
 

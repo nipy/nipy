@@ -1,8 +1,88 @@
 
 import numpy as np
 from neuroimaging.core.api import Affine, Image, SamplingGrid, Mapping
+from neuroimaging.core.reference import slices
 
 from neuroimaging.algorithms.resample import resample
+
+def test_rotate2d():
+    # Rotate an image in 2d on a square grid,
+    # should result in transposed image
+    
+    g = SamplingGrid.from_affine(Affine(np.diag([0.7,0.5,1])), ['x', 'y'], (100,100))
+    g2 = SamplingGrid.from_affine(Affine(np.diag([0.5,0.7,1])), ['y', 'x'], (100,100))
+
+    i = Image(np.ones((100,100)), g)
+    i[50:55,40:55] = 3.
+
+    a = np.array([[0,1,0],
+                  [1,0,0],
+                  [0,0,1]], np.float)
+
+    ir = resample(i, g2, Affine(a))
+    assert(np.allclose(np.asarray(ir).T, i))
+
+def test_rotate2d2():
+    # Rotate an image in 2d on a non-square grid,
+    # should result in transposed image
+    
+    g = SamplingGrid.from_affine(Affine(np.diag([0.7,0.5,1])), ['x', 'y'], (100,80))
+    g2 = SamplingGrid.from_affine(Affine(np.diag([0.5,0.7,1])), ['y', 'x'], (80,100))
+
+    i = Image(np.ones((100,80)), g)
+    i[50:55,40:55] = 3.
+
+    a = np.array([[0,1,0],
+                  [1,0,0],
+                  [0,0,1]], np.float)
+
+    ir = resample(i, g2, Affine(a))
+    assert(np.allclose(np.asarray(ir).T, i))
+
+def test_rotate2d3():
+    # Another way to rotate/transpose the image, similar to test_rotate2d2 and test_rotate2d
+    # except the output_coords of the output grid are the same as the output_coords of
+    # the original image. That is, the data is transposed on disk, but the output
+    # coordinates are still 'x,'y' order, not 'y', 'x' order as above
+
+    # this functionality may or may not be used a lot. if data
+    # is to be transposed but one wanted to keep the NIFTI order of output coords
+    # this would do the trick
+
+    g = SamplingGrid.from_affine(Affine(np.diag([0.5,0.7,1])), ['x', 'y'], (100,80))
+    i = Image(np.ones((100,80)), g)
+    i[50:55,40:55] = 3.
+
+    a = np.identity(3)
+    g2 = SamplingGrid.from_affine(Affine(np.array([[0,0.5,0],
+                                                   [0.7,0,0],
+                                                   [0,0,1]])), ['x', 'y'], (80,100))
+    ir = resample(i, g2, Affine(a))
+    v2v = g.mapping.inverse() * g2.mapping
+    print v2v.params
+    print ir.grid.affine
+    assert(np.allclose(np.asarray(ir).T, i))
+    
+
+def test_rotate3d():
+
+    # Rotate / transpose a 3d image on a non-square grid
+
+    g = SamplingGrid.from_affine(Affine(np.diag([0.5,0.6,0.7,1])), ['x', 'y', 'z'],
+                                 (100,90,80))
+    g2 = SamplingGrid.from_affine(Affine(np.diag([0.5,0.7,0.6,1])), ['x', 'z', 'y'],
+                                 (100,80,90))
+
+    i = Image(np.ones(g.shape), g)
+    i[50:55,40:55,30:33] = 3.
+    
+    a = np.array([[1,0,0,0],
+                  [0,0,1,0],
+                  [0,1,0,0],
+                  [0,0,0,1.]])
+
+    ir = resample(i, g2, Affine(a))
+    assert(np.allclose(np.transpose(np.asarray(ir), (0,2,1)), i))
 
 def test_resample2d():
 
@@ -178,3 +258,34 @@ def test_2d_from_3d():
     g2 = g[10]
     ir = resample(i, g2, Affine(a))
     assert(np.allclose(np.asarray(ir), np.asarray(i[10])))
+
+def test_slice_from_3d():
+
+    # Resample a 3d image, returning a zslice, yslice and xslice
+    # 
+    # This example creates a grid that coincides with
+    # the 10th slice of an image, and checks that
+    # resampling agrees with the data in the 10th slice.
+
+    g = SamplingGrid.from_affine(Affine(np.diag([0.5,0.5,0.5,1])), ['x', 'y', 'z'],
+                                 (100,90,80))
+    i = Image(np.ones(g.shape), g)
+    i[50:55,40:55,30:33] = 3
+    
+    a = np.identity(4)
+
+    zsl = slices.zslice(26, (0,44.5), (0,39.5), i.grid.output_coords, (90,80))
+    print zsl.affine, i.grid.affine
+    ir = resample(i, zsl, Affine(a))
+    print np.sum((np.asarray(ir) - np.asarray(i[53]))**2) / np.sum(np.asarray(ir)**2)
+    assert(np.allclose(np.asarray(ir), np.asarray(i[53])))
+
+    ysl = slices.yslice(22, (0,49.5), (0,39.5), i.grid.output_coords, (100,80))
+    print ysl.affine
+    ir = resample(i, ysl, Affine(a))
+    assert(np.allclose(np.asarray(ir), np.asarray(i[:,45])))
+
+    xsl = slices.xslice(15.5, (0,49.5), (0,44.5), i.grid.output_coords, (100,90))
+    print xsl.affine
+    ir = resample(i, xsl, Affine(a))
+    assert(np.allclose(np.asarray(ir), np.asarray(i[:,:,32])))
