@@ -71,7 +71,7 @@ Plan is:
 #. Review of Rick Reynold's (AFNI) changes to Nifti per Chris's request.
 #. Clean up SamplingGrid code.
    - Rename to CoordinateMap.
-   - Affine is 5x4 in time volume slicing. Needs to be fixed.
+   - Affine is 5x4 in time volume slicing. Needs to be fixed. (This can/should be done using FmriImageList)
    - 1 voxel offset in affine (possible mat to python functions - ask Jonathan)
    - Orientation/names issue.
 #. Fix the viewer and install in nipy-viz.
@@ -90,7 +90,7 @@ Questions
 - Smoothing splines.
 - Intrinsic volume weave code and algorithm understanding.
 - Statistics code.
-- fmristat status.
+- fmristat status. (Would like to get most of this functionality http://www.math.mcgill.ca/keith/fmristat/toolbox/stat_threshold.m)
 - FmriImageList. what is it and how do we make it work.
 - Jonathan's current projects and availability to be at Berkeley.
 
