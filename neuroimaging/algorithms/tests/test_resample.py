@@ -275,17 +275,13 @@ def test_slice_from_3d():
     a = np.identity(4)
 
     zsl = slices.zslice(26, (0,44.5), (0,39.5), i.grid.output_coords, (90,80))
-    print zsl.affine, i.grid.affine
     ir = resample(i, zsl, Affine(a))
-    print np.sum((np.asarray(ir) - np.asarray(i[53]))**2) / np.sum(np.asarray(ir)**2)
     assert(np.allclose(np.asarray(ir), np.asarray(i[53])))
 
     ysl = slices.yslice(22, (0,49.5), (0,39.5), i.grid.output_coords, (100,80))
-    print ysl.affine
     ir = resample(i, ysl, Affine(a))
     assert(np.allclose(np.asarray(ir), np.asarray(i[:,45])))
 
     xsl = slices.xslice(15.5, (0,49.5), (0,44.5), i.grid.output_coords, (100,90))
-    print xsl.affine
     ir = resample(i, xsl, Affine(a))
     assert(np.allclose(np.asarray(ir), np.asarray(i[:,:,32])))
