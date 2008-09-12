@@ -6,7 +6,8 @@ Tricked out emacs for python coding
 
 Various ways to configure your emacs that you might find useful.
 
-There are various pages on emacs and python - see http://wiki.gungfu.de/Main/HackingPythonWithEmacs
+There are various pages on emacs and python - see
+http://wiki.gungfu.de/Main/HackingPythonWithEmacs
 
 Rest mode
 ---------
@@ -80,4 +81,3 @@ and restart emacs.  When you open a python file, you should have a
 .. _rope: http://rope.sourceforge.net/
 .. _pymacs: http://pymacs.progiciels-bpi.ca/pymacs.html
 .. _ropemacs: http://rope.sourceforge.net/ropemacs.html
-
