@@ -6,16 +6,19 @@ Tricked out emacs for python coding
 
 Various ways to configure your emacs that you might find useful.
 
-There are various pages on emacs and python - one particularly useful
-one is emacs_python_mode_.
+See emacs_python_mode_ for a good summary.
 
-Rest mode
+ReST mode
 ---------
 
 For editing ReST documents like this one.  You may need a recent
 version of the ``rst.el`` file from the docutils_ site.
 
-docttest mode
+On - for example - Ubuntu, the default ``M-x rst-compile`` command
+uses ``rst2html.py`` whereas the command installed is ``rst2html``.
+Time for a symlink.
+
+doctest mode
 -------------
 
 This useful mode for writing doctests (``doctest-mode.el``) came with
@@ -25,7 +28,7 @@ code checkers
 -------------
 
 Code checkers within emacs can be useful to check code for errors,
-unused variables and imports and so on.  Alternatives are pychecker_,
+unused variables, imports and so on.  Alternatives are pychecker_,
 pylint_ and pyflakes_. Note that rope_ (below) also does some code
 checking.  pylint_ and pyflakes_ work best with emacs flymake_,
 which usually comes with emacs. 
