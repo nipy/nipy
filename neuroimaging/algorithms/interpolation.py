@@ -16,20 +16,20 @@ class ImageInterpolator(object):
     TODO
     """
 
-    def __init__(self, image, order=1, grid=None):
+    def __init__(self, image, order=1, comap=None):
         """
         :Parameters:
             image : TODO
                 TODO
             order : ``int``
                 TODO
-            grid : TODO
+            comap : TODO
                 TODO        
         """
-        if grid is None:
-            self.grid = image.grid
+        if comap is None:
+            self.comap = image.comap
         else:
-            self.grid = grid
+            self.comap = comap
         self.image = image
         self.order = order
         self._prefilter()
@@ -87,7 +87,7 @@ class ImageInterpolator(object):
         points = np.array(points, np.float64)
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], np.product(output_shape))
-        voxels = self.grid.mapping.inverse()(points)
+        voxels = self.comap.mapping.inverse()(points)
         V = ndimage.map_coordinates(self.data, 
                                      voxels,
                                      order=self.order,
@@ -96,15 +96,15 @@ class ImageInterpolator(object):
         V.shape = output_shape
         return V
 
-    def resample(self, grid, mapping=None, **keywords):
+    def resample(self, comap, mapping=None, **keywords):
         """
         Using an ImageInterpolator, resample an Image on the range
-        of a grid, applying an optional mapping (taking
+        of a comap, applying an optional mapping (taking
         keyword arguments ``keywords``) between the output
-        coordinates of grid and self.image.grid.
+        coordinates of comap and self.image.comap.
 
         :Parameters:
-            grid : TODO
+            comap : TODO
                 TODO
             mapping : TODO
                 TODO
@@ -114,7 +114,7 @@ class ImageInterpolator(object):
         :Returns: TODO        
         """
 
-        points = grid.range()
+        points = comap.range()
         if mapping is not None:
             points = mapping(points, **keywords)
         return self.evaluate(points)

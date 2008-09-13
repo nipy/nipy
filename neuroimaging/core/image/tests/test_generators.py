@@ -4,7 +4,7 @@ from neuroimaging.testing import *
 from neuroimaging.core.api import data_generator, parcels, write_data, slice_generator
 from neuroimaging.core.api import Image, load_image, save_image
 import neuroimaging.core.reference.axis as axis
-import neuroimaging.core.reference.grid as grid
+import neuroimaging.core.reference.coordinate_map as coordinate_map
 import neuroimaging.core.image.generators as g
 
 class test_Generator(TestCase):
@@ -12,12 +12,12 @@ class test_Generator(TestCase):
     def setUp(self):
         names = ['zspace', 'yspace', 'xspace']
         shape = (10,20,30)
-        self.img = Image(np.zeros(shape), grid.CoordinateMap.from_start_step(names, (0,)*3, (1,)*3, shape))
-        self.img2 = Image(np.ones(shape), grid.CoordinateMap.from_start_step(names, (0,)*3, (1,)*3, shape))
+        self.img = Image(np.zeros(shape), coordinate_map.CoordinateMap.from_start_step(names, (0,)*3, (1,)*3, shape))
+        self.img2 = Image(np.ones(shape), coordinate_map.CoordinateMap.from_start_step(names, (0,)*3, (1,)*3, shape))
                        
         shape = (3,5,4)
-        self.img3 = Image(np.zeros(shape), grid.CoordinateMap.from_start_step(names, (0,)*3, (1,)*3, shape))
-        self.img4 = Image(np.zeros(shape), grid.CoordinateMap.from_start_step(names, (0,)*3, (1,)*3, shape))
+        self.img3 = Image(np.zeros(shape), coordinate_map.CoordinateMap.from_start_step(names, (0,)*3, (1,)*3, shape))
+        self.img4 = Image(np.zeros(shape), coordinate_map.CoordinateMap.from_start_step(names, (0,)*3, (1,)*3, shape))
 
 
     def test_read_slices(self):
@@ -120,7 +120,7 @@ class test_Generator(TestCase):
         parcelseq = (0, 1, 2, 3)
         expected = [np.product(self.img3.shape) - 6, 3, 3, 0]
         iterator = g.parcels(parcelmap, labels=parcelseq)
-        tmp = Image(np.asarray(self.img3), self.img3.grid)
+        tmp = Image(np.asarray(self.img3), self.img3.comap)
 
         new_iterator = g.data_generator(tmp, g.parcels(parcelmap, labels=parcelseq))
 

@@ -30,7 +30,7 @@ class WholeBrainNormalize(object):
         else:
             nvox = np.product(fmri_image[0].shape[1:])
 
-        self.n = fmri_image.grid.shape[0]
+        self.n = fmri_image.comap.shape[0]
         self.avg = np.zeros((self.n,))
 
         for i, d in data_generator(fmri_image):

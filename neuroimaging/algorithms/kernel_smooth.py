@@ -20,11 +20,11 @@ class LinearFilter(object):
 
     normalization = 'l1sum'
     
-    def __init__(self, grid, fwhm=6.0, scale=1.0, location=0.0,
+    def __init__(self, comap, fwhm=6.0, scale=1.0, location=0.0,
                  cov=None):
         """
         :Parameters:
-            grid : TODO
+            comap : TODO
                 TODO
             fwhm : ``float``
                 TODO
@@ -34,7 +34,7 @@ class LinearFilter(object):
                 TODO
         """
         
-        self.grid = grid
+        self.comap = comap
         self.fwhm = fwhm
         self.scale = scale
         self.location = location
@@ -42,17 +42,17 @@ class LinearFilter(object):
         self._setup_kernel()
 
     def _setup_kernel(self):
-        if not isinstance(self.grid.mapping, Affine):
-            raise ValueError, 'for FFT smoothing, need a regular (affine) grid'
+        if not isinstance(self.comap.mapping, Affine):
+            raise ValueError, 'for FFT smoothing, need a regular (affine) comap'
 
-        voxels = np.indices(self.grid.shape).astype(np.float64)
+        voxels = np.indices(self.comap.shape).astype(np.float64)
 
-        center = np.asarray(self.grid.shape)/2
-        center = self.grid.mapping([[center[i]] for i in range(len(self.grid.shape))])
+        center = np.asarray(self.comap.shape)/2
+        center = self.comap.mapping([[center[i]] for i in range(len(self.comap.shape))])
 
         voxels.shape = (voxels.shape[0], np.product(voxels.shape[1:]))
-        X = self.grid.mapping(voxels) - center
-        X.shape = (3,) + self.grid.shape
+        X = self.comap.mapping(voxels) - center
+        X.shape = (3,) + self.comap.shape
         kernel = self(X)
         
         kernel = _crop(kernel)
@@ -62,7 +62,7 @@ class LinearFilter(object):
 
         self._kernel = kernel
 
-        self.shape = (np.ceil((np.asarray(self.grid.shape) +
+        self.shape = (np.ceil((np.asarray(self.comap.shape) +
                               np.asarray(kernel.shape))/2)*2+2)
         self.fkernel = np.zeros(self.shape)
         slices = [slice(0, kernel.shape[i]) for i in range(len(kernel.shape))]
@@ -81,8 +81,8 @@ class LinearFilter(object):
         if self.fwhm is not 1.0:
             f = fwhm2sigma(self.fwhm)
             if f.shape == ():
-                f = np.ones(len(self.grid.shape)) * f
-            for i in range(len(self.grid.shape)):
+                f = np.ones(len(self.comap.shape)) * f
+            for i in range(len(self.comap.shape)):
                 _X[i] /= f[i]
         if self.cov != None:
             _chol = L.cholesky(self.cov)
@@ -134,7 +134,7 @@ class LinearFilter(object):
             data = fft.irfftn(data) / self.norms[self.normalization]
 
             gc.collect()
-            _dslice = [slice(0, self.grid.shape[i], 1) for i in range(3)]
+            _dslice = [slice(0, self.comap.shape[i], 1) for i in range(3)]
             if self.scale != 1:
                 data = self.scale * data[_dslice]
 
@@ -152,16 +152,16 @@ class LinearFilter(object):
             _slice += 1
 
         gc.collect()
-        _out = _out[[slice(self._kernel.shape[i]/2, self.grid.shape[i] +
-                           self._kernel.shape[i]/2) for i in range(len(self.grid.shape))]]
+        _out = _out[[slice(self._kernel.shape[i]/2, self.comap.shape[i] +
+                           self._kernel.shape[i]/2) for i in range(len(self.comap.shape))]]
         if inimage.ndim == 3:
-            return Image(_out, comap=self.grid)
+            return Image(_out, comap=self.comap)
         else:
-            return Image(_out, comap=self.grid.replicate(inimage.grid.shape[0]))
+            return Image(_out, comap=self.comap.replicate(inimage.comap.shape[0]))
 
 
     def _presmooth(self, indata):
-        slices = [slice(0, self.grid.shape[i], 1) for i in range(len(self.shape))]
+        slices = [slice(0, self.comap.shape[i], 1) for i in range(len(self.shape))]
         _buffer = np.zeros(self.shape)
         _buffer[slices] = indata
         return fft.rfftn(_buffer)

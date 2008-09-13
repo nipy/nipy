@@ -263,7 +263,7 @@ class Mapping(object):
         >>> SLOW = True
         >>> from neuroimaging.core.api import Image
         >>> zimage = Image('http://nifti.nimh.nih.gov/nifti-1/data/zstat1.nii.gz')
-        >>> mapping = zimage.grid.mapping
+        >>> mapping = zimage.comap.mapping
         >>> mapping([1,2,3])
         array([ 12.,  12., -16.])
 

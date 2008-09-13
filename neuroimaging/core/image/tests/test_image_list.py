@@ -1,6 +1,6 @@
 from numpy import asarray
 
-from numpy.testing import *
+from neuroimaging.testing import *
 
 from neuroimaging.utils.tests.data import repository
 

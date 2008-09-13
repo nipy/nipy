@@ -67,3 +67,7 @@ def make_label_dec(label, ds=None):
 # Nipy specific labels
 gui = make_label_dec('gui')
 data = make_label_dec('data')
+
+def skipknownfailure(f):
+   return knownfailureif(True)(f)
+

@@ -2,7 +2,7 @@ from numpy import asarray, arange
 
 from neuroimaging.core.api import ImageList, Image
 
-from neuroimaging.core.reference.grid import CoordinateMap
+from neuroimaging.core.reference.coordinate_map import CoordinateMap
 from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem
 from neuroimaging.core.reference.mapping import Affine
 
@@ -19,7 +19,7 @@ class FmriImage(ImageList):
         Parameters
         ----------
         images: a sliceable object whose items are meant to be images,
-                this is checked by asserting that each has a `grid` attribute
+                this is checked by asserting that each has a `comap` attribute
         TR:     time between frames in fMRI acquisition
         slicetimes: ndarray specifying offset for each slice of each frame
         frametimes: optional way of overriding TR if frames are not evenly
@@ -118,19 +118,19 @@ def fromimage(fourdimage, TR=None, slicetimes=None):
 
     """
     images = []
-    if not isinstance(fourdimage.grid.mapping, Affine):
+    if not isinstance(fourdimage.comap.mapping, Affine):
         raise ValueError, 'fourdimage must have an Affine mapping'
     
     for im in [fourdimage[i] for i in range(fourdimage.shape[0])]:
-        g = im.grid
+        g = im.comap
         oa = g.output_coords.axes()[1:]
         oc = VoxelCoordinateSystem("world", oa)
-        t = im.grid.mapping.transform[1:]
+        t = im.comap.mapping.transform[1:]
         a = Affine(t)
-        newg = CoordinateMap(a, im.grid.input_coords, oc)
+        newg = CoordinateMap(a, im.comap.input_coords, oc)
         images.append(Image(asarray(im), newg))
 
     if TR is None:
-        TR = fourdimage.grid.mapping.transform[0,0]
+        TR = fourdimage.comap.mapping.transform[0,0]
         
     return FmriImage(images=images, TR=TR, slicetimes=slicetimes)

@@ -88,21 +88,21 @@ class ContinuousROI(ROI):
                 v.append(voxel)
         return DiscreteROI(self.coordinate_system, v)
     
-    def togrid(self, grid):        
+    def tocomap(self, comap):        
         """
-        Return a `SamplingGridROI` instance at the voxels in the ROI.
+        Return a `CoordinateMapROI` instance at the voxels in the ROI.
 
         :Parameters:
-            grid : TODO
+            comap : TODO
                 TODO
 
-        :Returns: `SamplingGridROI`
+        :Returns: `CoordinateMapROI`
         """
         v = []
-        for voxel in iter(grid):
+        for voxel in iter(comap):
             if self(voxel):
                 v.append(voxel)
-        return SamplingGridROI(self.coordinate_system, v, grid)
+        return CoordinateMapROI(self.coordinate_system, v, comap)
 
 class DiscreteROI(ROI):
     """
@@ -183,21 +183,21 @@ class DiscreteROI(ROI):
             raise NotImplementedError(
               'only unions of DiscreteROIs with themselves are implemented')
 
-class SamplingGridROI(DiscreteROI):
+class CoordinateMapROI(DiscreteROI):
 
-    def __init__(self, coordinate_system, voxels, grid):
+    def __init__(self, coordinate_system, voxels, comap):
         """
         :Parameters:
             coordinate_system : TODO
                 TODO
             voxels : TODO
                 TODO
-            grid : TODO
+            comap : TODO
                 TODO
         
         """
         DiscreteROI.__init__(self, coordinate_system, voxels)
-        self.grid = grid
+        self.comap = comap
         # we assume that voxels are (i,j,k) indices?
 
     def pool(self, image):
@@ -213,9 +213,9 @@ class SamplingGridROI(DiscreteROI):
 
         :Raises ValueError: TODO
         """
-        if image.grid != self.grid:
+        if image.comap != self.comap:
             raise ValueError(
-              'to pool an image over a SamplingGridROI the grids must agree')
+              'to pool an image over a CoordinateMapROI the comaps must agree')
 
         tmp = image.readall()
         v = [tmp[voxel] for voxel in self.voxels]
@@ -228,34 +228,34 @@ class SamplingGridROI(DiscreteROI):
         :Parameters:
             other : TODO
                 TODO
-        :Returns: `SamplingGridROI`
+        :Returns: `CoordinateMapROI`
 
         :Raises ValueError: TODO
         :Raises NotImplementedError: TODO
         """
-        if isinstance(other, SamplingGridROI):
-            if other.grid == self.grid:
+        if isinstance(other, CoordinateMapROI):
+            if other.comap == self.comap:
                 voxels = self.voxels.intersect(other.voxels)
-                return SamplingGridROI(self.coordinate_system, voxels, self.grid)
+                return CoordinateMapROI(self.coordinate_system, voxels, self.comap)
             else:
                 raise ValueError(
-                  'grids do not agree in union of SamplingGridROI')
+                  'comaps do not agree in union of CoordinateMapROI')
         else:
             raise NotImplementedError(
-              'only unions of SamplingGridROIs with themselves are implemented')
+              'only unions of CoordinateMapROIs with themselves are implemented')
 
     def mask(self):
         """
         :Returns: ``numpy.ndarray`
         """
-        m = np.zeros(self.grid.shape, np.int32)
+        m = np.zeros(self.comap.shape, np.int32)
         for v in self.voxels:
             m[v] = 1.
         return m
     
-class ROIall(SamplingGridROI):
+class ROIall(CoordinateMapROI):
     """
-    An ROI for an entire grid. Save time by avoiding compressing, etc.
+    An ROI for an entire comap. Save time by avoiding compressing, etc.
     """
 
     def mask(self, image):
@@ -335,25 +335,25 @@ def roi_ellipse_fn(center, form, a = 1.0):
         return value
     return test
 
-def roi_from_array_sampling_grid(data, grid):
+def roi_from_array_sampling_comap(data, comap):
     """
-    Return a `SamplingGridROI` from an array (data) on a grid.
+    Return a `CoordinateMapROI` from an array (data) on a comap.
     interpolation. Obvious ways to extend this.
 
     :Parameters:
         data : TODO
             TODO
-        grid : TODO
+        comap : TODO
             TODO
 
-    :Returns: `SamplingGridROI`
+    :Returns: `CoordinateMapROI`
     """
 
-    if grid.shape != data.shape:
-        raise ValueError, 'grid shape does not agree with data shape'
+    if comap.shape != data.shape:
+        raise ValueError, 'comap shape does not agree with data shape'
     voxels = np.nonzero(data)
-    coordinate_system = grid.output_coordinate_system
-    return SamplingGridROI(coordinate_system, voxels, grid)
+    coordinate_system = comap.output_coordinate_system
+    return CoordinateMapROI(coordinate_system, voxels, comap)
 
 class ROISequence(list):
     """

@@ -4,7 +4,7 @@ from neuroimaging.testing import *
 
 import neuroimaging.core.reference.axis as axis
 from neuroimaging.core.api import Image
-import neuroimaging.core.reference.grid as grid
+import neuroimaging.core.reference.coordinate_map as coordinate_map
 from neuroimaging.modalities.fmri.api import FmriImage
 """
 Comment out since these are slated for deletion and currently are broken.
@@ -15,7 +15,7 @@ class test_Iterators(TestCase):
     def setUp(self):
         spacetime = ['time', 'zspace', 'yspace', 'xspace']
         im = Image(np.zeros((3,4,5,6)),
-                   grid = grid.CoordinateMap.identity((3,4,5,6), spacetime))
+                   coordinate_map = coordinate_map.CoordinateMap.identity((3,4,5,6), spacetime))
         self.img = FmriImage(im)
 
     def test_fmri_parcel(self):
@@ -82,7 +82,7 @@ class test_Iterators(TestCase):
         parcelseq = (0, 1, 2, 3)
         expected = [np.product(self.img.shape[1:]) - 6, 3, 3, 0]
         iterator = parcel_iterator(self.img, parcelmap, parcelseq)
-        tmp = FmriImage(self.img[:] * 1., self.img.grid)
+        tmp = FmriImage(self.img[:] * 1., self.img.comap)
 
         new_iterator = iterator.copy(tmp)
 

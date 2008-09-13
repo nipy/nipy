@@ -70,24 +70,24 @@ class ImageOneSample(onesample.OneSampleIterator):
         onesample.OneSampleIterator.__init__(self, self.iterator,
                                              outputs=outputs)
 
-        grid = self.iterator.imgs[0].grid
+        comap = self.iterator.imgs[0].comap
         if self.which == 'mean':
             if t:
-                self.outputs.append(TOutput(grid, path=path,
+                self.outputs.append(TOutput(comap, path=path,
                                             clobber=clobber, ext=ext))
             if sd:
-                self.outputs.append(SdOutput(grid, path=path,
+                self.outputs.append(SdOutput(comap, path=path,
                                              clobber=clobber, ext=ext))
             if mean:
-                self.outputs.append(MeanOutput(grid, path=path,
+                self.outputs.append(MeanOutput(comap, path=path,
                                                clobber=clobber, ext=ext))
         else:
             if est_varatio:
-                self.outputs.append(VaratioOutput(grid, path=path,
+                self.outputs.append(VaratioOutput(comap, path=path,
                                                   clobber=clobber, ext=ext))
 
             if est_varfix:
-                self.outputs.append(VarfixOutput(grid, path=path,
+                self.outputs.append(VarfixOutput(comap, path=path,
                                                  clobber=clobber, ext=ext))
 
     def weights(self):
@@ -123,11 +123,11 @@ class ImageOneSampleOutput(RegressionOutput):
 
     """
 
-    def __init__(self, grid, nout=1, basename="", clobber=False,
+    def __init__(self, comap, nout=1, basename="", clobber=False,
                  path='onesample', ext='.img'):
         """
         :Parameters:
-            grid : TODO
+            comap : TODO
                 TODO
             nout : ``int``
                 TODO
@@ -140,7 +140,7 @@ class ImageOneSampleOutput(RegressionOutput):
             ext : ``string``
                 TODO
         """
-        RegressionOutput.__init__(self, grid, nout)
+        RegressionOutput.__init__(self, comap, nout)
         self.img, self.it = self._setup_img(clobber, path, ext, basename)
 
 
@@ -149,10 +149,10 @@ class TOutput(ImageOneSampleOutput):
     TODO
     """
 
-    def __init__(self, grid, Tmax=100, Tmin=-100, **keywords):
+    def __init__(self, comap, Tmax=100, Tmin=-100, **keywords):
         """
         :Parameters:
-            grid : TODO
+            comap : TODO
                 TODO
             Tmax : TODO
                 TODO
@@ -161,7 +161,7 @@ class TOutput(ImageOneSampleOutput):
             keywords : ``dict``
                 Keyword arguments passed to `ImageOneSampleOutput.__init__`
         """
-        ImageOneSampleOutput.__init__(self, grid, basename='t', **keywords)
+        ImageOneSampleOutput.__init__(self, comap, basename='t', **keywords)
         self.Tmax = Tmax
         self.Tmin = Tmin
 
@@ -173,15 +173,15 @@ class SdOutput(ImageOneSampleOutput):
     TODO
     """
 
-    def __init__(self, grid, **keywords):
+    def __init__(self, comap, **keywords):
         """
         :Parameters:
-            grid : TODO
+            comap : TODO
                 TODO
             keywords : ``dict``
                 Keyword arguments passed to `ImageOneSampleOutput.__init__`
         """
-        ImageOneSampleOutput.__init__(self, grid, basename='sd', **keywords)
+        ImageOneSampleOutput.__init__(self, comap, basename='sd', **keywords)
 
     def extract(self, results):
         """
@@ -198,15 +198,15 @@ class MeanOutput(ImageOneSampleOutput):
     TODO
     """
 
-    def __init__(self, grid, **keywords):
+    def __init__(self, comap, **keywords):
         """
         :Parameters:
-            grid : TODO
+            comap : TODO
                 TODO
             keywords : ``dict``
                 Keyword arguments passed to `ImageOneSampleOutput.__init__`
         """
-        ImageOneSampleOutput.__init__(self, grid, basename='effect', **keywords)
+        ImageOneSampleOutput.__init__(self, comap, basename='effect', **keywords)
 
     def extract(self, results):
         """
@@ -223,15 +223,15 @@ class VaratioOutput(ImageOneSampleOutput):
     TODO
     """
 
-    def __init__(self, grid, **keywords):
+    def __init__(self, comap, **keywords):
         """
         :Parameters:
-            grid : TODO
+            comap : TODO
                 TODO
             keywords : ``dict``
                 Keyword arguments passed to `ImageOneSampleOutput.__init__`
         """
-        ImageOneSampleOutput.__init__(self, grid, basename='varatio', **keywords)
+        ImageOneSampleOutput.__init__(self, comap, basename='varatio', **keywords)
 
     def extract(self, results):
         """
@@ -248,15 +248,15 @@ class VarfixOutput(ImageOneSampleOutput):
     TODO
     """
 
-    def __init__(self, grid, **keywords):
+    def __init__(self, comap, **keywords):
         """
         :Parameters:
-            grid : TODO
+            comap : TODO
                 TODO
             keywords : ``dict``
                 Keyword arguments passed to `ImageOneSampleOutput.__init__`
         """
-        ImageOneSampleOutput.__init__(self, grid, basename='varfix', **keywords)
+        ImageOneSampleOutput.__init__(self, comap, basename='varfix', **keywords)
 
     def extract(self, results):
         """

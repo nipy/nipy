@@ -1,18 +1,20 @@
 """
-Samplng grids store all the details about how an image translates to space.
+Coordinate maps store all the details about how an image translates to space.
 They also provide mechanisms for iterating over that space.
 """
-
-__docformat__ = 'restructuredtext'
-
 import copy
+
 import numpy as np
 
-from coordinate_system import _reverse
-from neuroimaging.core.reference.mapping import Mapping, Affine
 from neuroimaging.core.reference.axis import RegularAxis, Axis, VoxelAxis
 from neuroimaging.core.reference.coordinate_system import \
   VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
+from neuroimaging.core.reference.mapping import Mapping, Affine
+
+
+__docformat__ = 'restructuredtext'
+
+
 
 class CoordinateMap(object):
     """
@@ -56,7 +58,7 @@ class CoordinateMap(object):
     @staticmethod
     def identity(names, shape):
         """
-        Return an identity grid of the given shape.
+        Return an identity comap of the given shape.
         
         :Parameters:
             shape : ``tuple`` of ``int``
@@ -85,7 +87,7 @@ class CoordinateMap(object):
     @staticmethod
     def from_affine(mapping, names, shape):
         """
-        Return grid using a given `Affine` mapping
+        Return comap using a given `Affine` mapping
         
         :Parameters:
             mapping : `Affine`
@@ -93,7 +95,7 @@ class CoordinateMap(object):
             names : ``tuple`` of ``string``
                 The names of the axes of the coordinate systems
             shape : ''tuple'' of ''int''
-                The shape of the grid
+                The shape of the comap
         :Returns: `CoordinateMap`
         
         :Precondition: ``len(shape) == len(names)``
@@ -118,7 +120,7 @@ class CoordinateMap(object):
             output_coords : `CoordinateSystem`
                 The output coordinate system
         """
-        # These guys define the structure of the grid.
+        # These guys define the structure of the comap.
         self.mapping = mapping
         self.input_coords = input_coords
         self.output_coords = output_coords
@@ -154,7 +156,7 @@ class CoordinateMap(object):
 
     def copy(self):
         """
-        Create a copy of the grid.
+        Create a copy of the comap.
 
         :Returns: `CoordinateMap`
         """
@@ -164,7 +166,7 @@ class CoordinateMap(object):
     def __getitem__(self, index):
         """
         If all input coordinates are VoxelCoordinateSystem, return
-        a slice through the grid.
+        a slice through the comap.
 
         Parameters
         ----------
@@ -184,7 +186,7 @@ class CoordinateMap(object):
             newic = VoxelCoordinateSystem(self.input_coords.name, newia, shape=shape)
             return CoordinateMap(mapping, newic, self.output_coords)
         else:
-            raise ValueError, 'input_coords must be VoxelCoordinateSystem for slice of grid to make sense'
+            raise ValueError, 'input_coords must be VoxelCoordinateSystem for slice of comap to make sense'
 
     def range(self):
         """
@@ -201,11 +203,11 @@ class CoordinateMap(object):
             _range.shape = tmp_shape
             return _range 
         else:
-            raise AttributeError, 'range of grid only makes sense if input_coords are VoxelCoordinateSystem'
+            raise AttributeError, 'range of comap only makes sense if input_coords are VoxelCoordinateSystem'
 
     def transform(self, mapping): 
         """        
-        Apply a transformation (mapping) to this grid.
+        Apply a transformation (mapping) to this comap.
         
         :Parameters:
             mapping : `mapping.Mapping`
@@ -217,7 +219,7 @@ class CoordinateMap(object):
 
     def matlab2python(self):
         """
-        Convert a grid in matlab-ordered voxels to python ordered voxels
+        Convert a comap in matlab-ordered voxels to python ordered voxels
         if input_coords is an instance of VoxelCoordinateSystem.
         See `Mapping.matlab2python` for more details.
 
@@ -234,7 +236,7 @@ class CoordinateMap(object):
 
     def python2matlab(self):
         """
-        Convert a grid in python ordered voxels to matlab ordered voxels
+        Convert a comap in python ordered voxels to matlab ordered voxels
         if input_coords is an instance of VoxelCoordinateSystem.
         See `Mapping.python2matlab` for more details.
         """
@@ -249,7 +251,7 @@ class CoordinateMap(object):
 
     def replicate(self, n, concataxis="concat"):
         """
-        Duplicate self n times, returning a `ConcatenatedGrids` with
+        Duplicate self n times, returning a `ConcatenatedComaps` with
         shape == (n,)+self.shape.
         
         :Parameters:
@@ -258,14 +260,14 @@ class CoordinateMap(object):
             concataxis : ``string``
                 The name of the new dimension formed by concatenation
         """
-        return ConcatenatedIdenticalGrids(self, n, concataxis=concataxis)
+        return ConcatenatedIdenticalComaps(self, n, concataxis=concataxis)
 
-def centered_grid(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
+def centered_comap(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
     """
-    creates a simple centered grid that centers matrix on zero
+    creates a simple centered comap that centers matrix on zero
 
-    If you have a nd-array and just want a simple grid that puts the center of
-    your data matrix at approx (0,0,0)...this will generate the grid you need
+    If you have a nd-array and just want a simple comap that puts the center of
+    your data matrix at approx (0,0,0)...this will generate the comap you need
 
     Parameters
     _________
@@ -304,65 +306,65 @@ def centered_grid(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
         
     
 
-class ConcatenatedGrids(CoordinateMap):
+class ConcatenatedComaps(CoordinateMap):
     """
-    Return a grid formed by concatenating a sequence of grids. Checks are done
+    Return a comap formed by concatenating a sequence of comaps. Checks are done
     to ensure that the coordinate systems are consistent, as is the shape.
-    It returns a grid with the proper shape but no inverse.
-    This is most likely the kind of grid to be used for fMRI images.
+    It returns a comap with the proper shape but no inverse.
+    This is most likely the kind of comap to be used for fMRI images.
     """
 
 
-    def __init__(self, grids, concataxis="concat"):
+    def __init__(self, comaps, concataxis="concat"):
         """
         :Parameters:
-            grid : ``[`CoordinateMap`]``
-                The grids to be used.
+            comap : ``[`CoordinateMap`]``
+                The comaps to be used.
             concataxis : ``string``
                 The name of the new dimension formed by concatenation
         """        
-        self.grids = self._grids(grids)
+        self.comaps = self._comaps(comaps)
         self.concataxis = concataxis
         mapping, input_coords, output_coords = self._mapping()
         CoordinateMap.__init__(self, mapping, input_coords, output_coords)
 
 
     def _getshape(self):
-        return (len(self.grids),) + self.grids[0].shape
+        return (len(self.comaps),) + self.comaps[0].shape
     shape = property(_getshape)
 
-    def _grids(self, grids):
+    def _comaps(self, comaps):
         """
-        Setup the grids.
+        Setup the comaps.
         """
         # check mappings are affine
-        check = np.any([not isinstance(grid.mapping, Affine)\
-                          for grid in grids])
+        check = np.any([not isinstance(comap.mapping, Affine)\
+                          for comap in comaps])
         if check:
             raise ValueError('must all be affine mappings!')
 
         # check shapes are identical
-        s = grids[0].shape
-        check = np.any([grid.shape != s for grid in grids])
+        s = comaps[0].shape
+        check = np.any([comap.shape != s for comap in comaps])
         if check:
-            raise ValueError('subgrids must have same shape')
+            raise ValueError('subcomaps must have same shape')
 
         # check input coordinate systems are identical
-        in_coords = grids[0].input_coords
-        check = np.any([grid.input_coords != in_coords\
-                           for grid in grids])
+        in_coords = comaps[0].input_coords
+        check = np.any([comap.input_coords != in_coords\
+                           for comap in comaps])
         if check:
             raise ValueError(
-              'subgrids must have same input coordinate systems')
+              'subcomaps must have same input coordinate systems')
 
         # check output coordinate systems are identical
-        out_coords = grids[0].output_coords
-        check = np.any([grid.output_coords != out_coords\
-                           for grid in grids])
+        out_coords = comaps[0].output_coords
+        check = np.any([comap.output_coords != out_coords\
+                           for comap in comaps])
         if check:
             raise ValueError(
-              'subgrids must have same output coordinate systems')
-        return tuple(grids)
+              'subcomaps must have same output coordinate systems')
+        return tuple(comaps)
 
     def _mapping(self):
         """
@@ -374,69 +376,69 @@ class ConcatenatedGrids(CoordinateMap):
                 X = x[1:]
                 v = np.zeros(x.shape[1:])
                 for j in I.shape[0]:
-                    v[j] = self.grids[I[j]].mapping(X[j])
+                    v[j] = self.comaps[I[j]].mapping(X[j])
                 return v
             except:
                 i = int(x[0])
                 x = x[1:]
-                return self.grids[i].mapping(x)
+                return self.comaps[i].mapping(x)
                 
         newaxis = Axis(name=self.concataxis)
-        in_coords = self.grids[0].input_coords
+        in_coords = self.comaps[0].input_coords
         newin = CoordinateSystem('%s:%s'%(in_coords.name, self.concataxis), \
                                  [newaxis] + list(in_coords.axes()))
-        out_coords = self.grids[0].output_coords
+        out_coords = self.comaps[0].output_coords
         newout = CoordinateSystem('%s:%s'%(out_coords.name, self.concataxis), \
                                   [newaxis] + list(out_coords.axes()))
         return Mapping(mapfunc), newin, newout
 
 
-    def subgrid(self, i):
+    def subcomap(self, i):
         """
-        Return the i'th grid from the sequence of grids.
+        Return the i'th comap from the sequence of comaps.
 
         :Parameters:
            i : ``int``
-               The index of the grid to return
+               The index of the comap to return
 
         :Returns: `CoordinateMap`
         
         :Raises IndexError: if i in out of range.
         """
-        return self.grids[i]
+        return self.comaps[i]
 
-class ConcatenatedIdenticalGrids(ConcatenatedGrids):
+class ConcatenatedIdenticalComaps(ConcatenatedComaps):
     """
-    A set of concatenated grids, which are all identical.
+    A set of concatenated comaps, which are all identical.
     """
     
-    def __init__(self, grid, n, concataxis="concat"):
+    def __init__(self, comap, n, concataxis="concat"):
         """
         :Parameters:
-            grid : `CoordinateMap`
-                The grid to be used
+            comap : `CoordinateMap`
+                The comap to be used
             n : ``int``
-                The number of tiems to concatenate the grid
+                The number of tiems to concatenate the comap
             concataxis : ``string``
                 The name of the new dimension formed by concatenation
         """
-        ConcatenatedGrids.__init__(self, [grid]*n , concataxis)
+        ConcatenatedComaps.__init__(self, [comap]*n , concataxis)
 
     def _mapping(self):
         """
         Set up the mapping and coordinate systems.
         """
         newaxis = Axis(name=self.concataxis)
-        in_coords = self.grids[0].input_coords
+        in_coords = self.comaps[0].input_coords
         newin = CoordinateSystem(
             '%s:%s'%(in_coords.name, self.concataxis), \
                [newaxis] + list(in_coords.axes()))
-        out_coords = self.grids[0].output_coords
+        out_coords = self.comaps[0].output_coords
         newout = CoordinateSystem(
             '%s:%s'%(out_coords.name, self.concataxis), \
                [newaxis] + list(out_coords.axes()))
 
-        in_trans = self.grids[0].mapping.transform
+        in_trans = self.comaps[0].mapping.transform
         ndim = in_trans.shape[0]-1
         out_trans = np.zeros((ndim+2,)*2)
         out_trans[0:ndim, 0:ndim] = in_trans[0:ndim, 0:ndim]
