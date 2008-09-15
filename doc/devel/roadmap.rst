@@ -84,15 +84,35 @@ General Plan:
 
 #. Diagnostics.
 
+Jonathan
+--------
+- Cleanup the FIAC examples and make sure it's understandable for the
+  general audience.
+- Once we have nipy registration, remove the FSL preprocessing from
+  the FIAC examples.
+
+
 Questions
 ---------
-- Iterators to Generators status.
-- Smoothing splines.
+- Iterators to Generators status.  There should be no Iterators anymore.
+
+- Smoothing splines.  Not necessary in the near term... have a
+  smoothers sprint at a later date.
+
 - Intrinsic volume weave code and algorithm understanding.
+
 - Statistics code.
-- fmristat status.
+
+- fmristat status.  Focus on getting the FIAC examples working.  Use
+  this to gear refactoring of public api.
+
 - FmriImageList. what is it and how do we make it work.
+  Once this is working can remove the concatenate coordinate map.
+
 - Jonathan's current projects and availability to be at Berkeley.
+    - Participate in Monday morning meetings via conference call.
+    - Try and join coding sprints once a week or every other week,
+      either at UCB or Stanford.
 
 
 
