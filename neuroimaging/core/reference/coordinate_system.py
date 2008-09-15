@@ -1,5 +1,9 @@
 """
 Coordinate systems are used to represent the spaces in which the images reside.
+
+A coordinate system contains axes; the axes define the coordinates
+within the coordinate system.  For example a 3D coordinate system contains 3 axes.
+
 """
 
 __docformat__ = 'restructuredtext'
@@ -155,9 +159,9 @@ class CoordinateSystem(odict):
         return self.get(name)
 
 
-    def isvalid(self, x):
+    def isvalidpoint(self, x):
         """
-        Verify whether x is a valid coordinate.
+        Verify whether x is a valid coordinate in this system
 
         :Parameters:
             x : ``tuple`` or ``list`` of ``int`` or ``float``
@@ -165,7 +169,8 @@ class CoordinateSystem(odict):
 
         :Returns: ``bool``
         """
-        return np.all([self.axes()[i].valid(x[i]) for i in range(self.ndim())])
+        return np.all([self.axes()[i].isvalidvalue(x[i])
+                       for i in range(self.ndim())])
 
 
     def sub_coords(self):
@@ -175,6 +180,7 @@ class CoordinateSystem(odict):
         :Returns: ``CoordinateSystem``
         """
         return CoordinateSystem(self.name + "-subgrid", self.axes()[1:])
+
 
 class VoxelCoordinateSystem(CoordinateSystem):
     """
@@ -208,33 +214,29 @@ class VoxelCoordinateSystem(CoordinateSystem):
 
 class DiagonalCoordinateSystem(CoordinateSystem):
     """
-    TODO
+    Coordinate system with orthogonal axes
+
+    The orthogonality of the axes is assumed by the use of this class
+    to define the coordinate system.  Assuming orthogonality allows
+    the definition of a method to return an orthogonal transformation
+    matrix (tranform method)
     """
 
-    def __init__(self, name, axes):
-        """
-        :Parameters:
-            name : ``string``
-                The name of the coordinate system
-            axes : ``[`axis.Axis`]``
-                The axes which make up the coordinate system        
-        """
-        self.shape = [dim.length for dim in axes]
-        CoordinateSystem.__init__(self, name, axes)
-        
     def transform(self):
         """
         Return an orthogonal homogeneous transformation matrix based on the
-        step, start, length attributes of each axis.
+        step, start attributes of each axis.
 
         :Returns: ``[[numpy.float]]``
         """
-        value = np.zeros((self.ndim()+1,)*2)
-        value[self.ndim(), self.ndim()] = 1.0
-        for i in range(self.ndim()):
-            value[i, i] = self.axes()[i].step
-            value[i, self.ndim()] = self.axes()[i].start
-        return value
+        ndim = self.ndim()
+        xform = np.eye((ndim+1))
+        for i in range(ndim):
+            # Scaling values on diagonal
+            xform[i, i] = self.axes()[i].step
+            # Translations in last column
+            xform[i, -1] = self.axes()[i].start
+        return xform
 
 def _reorder(seq, order):
     """ Reorder a sequence. """
