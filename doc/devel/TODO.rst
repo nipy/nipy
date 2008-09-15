@@ -143,6 +143,12 @@ Image Iterators
   generators after the Paris Sprint.  This code transition is not
   complete.
 
+- Jonathon says the conversion was complete. Need to add the following:
+  - in testing, load data volume with ramps.
+  - test to include value of the sliced ramp.
+  - be able to reset the generator
+
+
 Core Reference
 --------------
 
@@ -168,6 +174,28 @@ Fix deprecation error in pynifti's swig generated extension code::
   DeprecationWarning: PyArray_FromDimsAndDataAndDescr: use
   PyArray_NewFromDescr.  return
   nifticlib.mat442array(self.__nimg.sto_xyz)
+
+Pynifti file saving.
+
+Document Pynifti.
+
+
+
+Affine
+------
+- calling affine with load, ImageInterpolate, etc., results in a one-pixel offset
+  in the translation columns (x, y and z) of the affine matrix and is related to
+  converting python to matlab format.
+
+
+Imagelist
+---------
+- remove concatenating grid (composite the mappings?)
+- look at Mergeimage function and understand it.
+- consider preventing Image from opening 4D. simplfy the user API for 3D/4D.
+  create factory function to do this.
+
+
 
 
 Modalities
