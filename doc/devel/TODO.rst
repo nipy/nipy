@@ -4,6 +4,8 @@
 TODO for nipy development
 =========================
 
+.. contents::
+
 This document will serve to organize current development work on nipy.
 It will include current sprint items, future feature ideas and sprint
 items, and design discussions.  This should contain more details than
@@ -27,6 +29,9 @@ Documentation
 - Add list of dependencies in the INSTALL.
 
 - Post sphinx generated docs to update neuroimaging.scipy.org.
+
+- Document nipy development process with pynifti.  Use of git branches
+  and updating the source in nipy (update_source.py).
 
 Bugs
 ====
@@ -54,7 +59,36 @@ were added here this summer, grouping until they can be input.
   * modalities/fmri/tests/test_regression.py 
   * modalities/fmri/fmristat/tests/test_model.py
 
-- Pass all tests.
+- Cleanup and standardize the axis names and pynifti orientation
+  codes.  See failing test in test_axis:test_Axis.test_init,
+  presumably the Axis initializer use to check for a valid name before
+  assigning.  It now blindly assigns the name.
+
+- Fix test errors for concatenation and replication of sampling grids.
+  See test_grid.py.
+
+- Fix .mat file IO.  See test_mapping.py
+
+- Verify documententation of the image generators. Create a simple
+  example using them.
+
+- Add test data where volumes contain intensity ramps.  Slice with
+  generator and test ramp values.
+
+- Use python 2.5 feature of being able to reset the generator?
+
+- Fix deprecation error in pynifti's swig generated extension code::
+
+    /Users/cburns/src/nipy-trunk/neuroimaging/externals/pynifti/nifti/niftiformat.py:458
+    DeprecationWarning: PyArray_FromDims: use PyArray_SimpleNew.  return
+    nifticlib.mat442array(self.__nimg.sto_xyz)
+    ...
+    /Users/cburns/src/nipy-trunk/neuroimaging/externals/pynifti/nifti/niftiformat.py:458
+    DeprecationWarning: PyArray_FromDimsAndDataAndDescr: use
+    PyArray_NewFromDescr.  return
+    nifticlib.mat442array(self.__nimg.sto_xyz)
+
+- Nifti image saving bug.  PixDims not being saved correctly.
 
 Data
 ====
@@ -95,33 +129,9 @@ Refactorings
 - Remove neuroimaging.utils dir. (path.py and odict.py should be in
   externals)
 
-Code Design Thoughts
-====================
-
-Perhaps there's a better place for this, but I wanted a central
-location to dump thoughts that could be shared by the developers and
-tracked easily.  I also don't like having to switch from my code
-editor to a browser just to jot down an idea like this.
-
-Image Class
-===========
-
-- **CRITICAL** A one voxel offset in the affine transform matrix.
-    Should that be there?
-
-- **CRITICAL** Slicing a time-series yields an 5x4 affine with the
-    top-row == [0, 0, 0, time-of-this-slice].  This causes errors in
-    resampling in the ImageInterpolator.
-
-- **QUESTION** Should millimeter coordinates be expressed in xyz or zyx order?
-
-- ImageInterpolator should have a default spline order of 3.  In
-  prefilter method and in evaluate method.  Ask Jonathan if there is a
-  problem with this?
-
-- save function should accept filename or file-like object.  If I have
-  an open file I would like to be able to pass that in also, instead
-  of fp.name.  Happens in test code a lot.
+- image.save function should accept filename or file-like object.  If
+  I have an open file I would like to be able to pass that in also,
+  instead of fp.name.  Happens in test code a lot.
 
 - image._open function should accept Image objects in addition to
   ndarrays and filenames.  Currently the save function has to call
@@ -144,63 +154,25 @@ Image Class
 
 - Rename SamplingGrid to CoordinateMap.  Image.grid to Image.coordmap?
 
-Functions should only require filename/url, not a (filename, repository) pair.
+Code Design Thoughts
+====================
 
-Image Iterators
-===============
-
-- Cleanup the image iterators/generators.  I believe Jonathan was in
-  the process of converting the code from using iterators to
-  generators after the Paris Sprint.  This code transition is not
-  complete.
-
-- Jonathon says the conversion was complete. Need to add the following:
-  - in testing, load data volume with ramps.
-  - test to include value of the sliced ramp.
-  - be able to reset the generator
+A central location to dump thoughts that could be shared by the
+developers and tracked easily.
 
 
-Core Reference
-==============
-
-Cleanup and standardize the axis names and pynifti orientation codes.
-See failing test in test_axis:test_Axis.test_init, presumably the Axis
-initializer use to check for a valid name before assigning.  It now
-blindly assigns the name.
-
-Fix test errors for concatenation and replication of sampling grids.
-See test_grid.py.
-
-Fix .mat file IO.  See test_mapping.py
-
-Pynifti IO
-==========
-
-Fix deprecation error in pynifti's swig generated extension code::
-
-  /Users/cburns/src/nipy-trunk/neuroimaging/externals/pynifti/nifti/niftiformat.py:458:
-  DeprecationWarning: PyArray_FromDims: use PyArray_SimpleNew.  return
-  nifticlib.mat442array(self.__nimg.sto_xyz)
-  /Users/cburns/src/nipy-trunk/neuroimaging/externals/pynifti/nifti/niftiformat.py:458:
-  DeprecationWarning: PyArray_FromDimsAndDataAndDescr: use
-  PyArray_NewFromDescr.  return
-  nifticlib.mat442array(self.__nimg.sto_xyz)
-
-Pynifti file saving.
-
-Document Pynifti.
 
 
 
 Affine
-======
+------
 - calling affine with load, ImageInterpolate, etc., results in a one-pixel offset
   in the translation columns (x, y and z) of the affine matrix and is related to
   converting python to matlab format.
 
 
 Imagelist
-=========
+---------
 - remove concatenating grid (composite the mappings?)
 - look at Mergeimage function and understand it.
 - consider preventing Image from opening 4D. simplfy the user API for 3D/4D.
@@ -210,7 +182,7 @@ Imagelist
 
 
 Modalities
-==========
+----------
 
 - Fix fmri.pca module.  Internally it's referencing old image api that
   no longer exists like Image.slice_iterator.  Currently all tests are
@@ -228,7 +200,7 @@ Modalities
   
 
 fixes.scipy.ndimage
-===================
+-------------------
 
 Fix possible precision error in test_registration function
 test_autoalign_nmi_value_2.  See FIXME.
@@ -236,7 +208,7 @@ test_autoalign_nmi_value_2.  See FIXME.
 Fix error in test_segment test_texture2 function.  See FIXME.
 
 Future Features
-===============
+---------------
 
 Egg support.  Look to revno 1642, a setup_egg.py that Gael had added.
 This was removed as it did not work.  It did appear to allow this
@@ -265,5 +237,9 @@ Update import statements to match scipy/numpy standards::
 
 Get nifticlib to support bz2.
 
+Questions
+---------
+
+- Should millimeter coordinates be expressed in xyz or zyx order?
 
 .. _nipy: https://launchpad.net/nipy
