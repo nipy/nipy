@@ -1,36 +1,52 @@
+.. _todo:
+
 =========================
-TODO for NIPY development
+TODO for nipy development
 =========================
 
-Organize this document better.
+This document will serve to organize current development work on nipy.
+It will include current sprint items, future feature ideas and sprint
+items, and design discussions.  This should contain more details than
+the :ref:`roadmap`.
 
-Create NIPY sidebar with links to all project related websites.
+Documentation
+=============
 
-Create a Best Practices document.  As rst doc on wiki.
+- There have been many changes to nipy_, the documentation here, on
+  Launchpad and the TRAC site should be organized and updated.
+ 
+- Create NIPY sidebar with links to all project related websites.
 
-Post virtualenv tutorial on numpy wiki as rst doc.  Include utility scripts.
+- Create a Best Practices document.
 
-Tests
------
+- Update the README and INSTALL on the Trac Wiki.  These should
+  reference a reST formatted version committed to the repository.
+  Include information on downloading the fmri data and running the
+  tests.
 
-Resolve differences between running tests via nose on command line and
-ni.test().
+- Add list of dependencies in the INSTALL.
 
-  cburns@nipy 11:32:32 $ nosetests -sv 
-  Ran 216 tests in 135.606s
-  FAILED (SKIP=35, errors=3)
+- Post sphinx generated docs to update neuroimaging.scipy.org.
 
-  In [2]: ni.test()
-  Ran 146 tests in 10.874s
-  FAILED (SKIP=18, errors=12)
-  Out[2]: <nose.result.TextTestResult run=146 errors=12 failures=0>
+Bugs
+====
 
-Replace fmri test file `funcfile` with a reasonable fmri file.  It's
-shape is odd, (20,20,2,20).  Many tests have been updated to this file
-and will need to me modified.  `funcfile` is located in
-neuroimaging/testing/functinal.nii.gz
+These should be moved to the nipy_ bug section on launchpad.  Many
+were added here this summer, grouping until they can be input.
 
-Some issues specific to tests to cleanup.
+- Resolve differences between running tests via nose on command line
+  and ni.test().
+
+  ::
+  
+    cburns@nipy 11:32:32 $ nosetests -sv 
+    Ran 216 tests in 135.606s
+    FAILED (SKIP=35, errors=3)
+    
+    In [2]: ni.test()
+    Ran 146 tests in 10.874s
+    FAILED (SKIP=18, errors=12)
+    Out[2]: <nose.result.TextTestResult run=146 errors=12 failures=0>
 
 - Remove creation of named temporary files "\*.nii", use NamedTemporaryFile 
   instead in test modules:
@@ -38,54 +54,49 @@ Some issues specific to tests to cleanup.
   * modalities/fmri/tests/test_regression.py 
   * modalities/fmri/fmristat/tests/test_model.py
 
-- Affine is wrong in test_image.  Formats.Analyze reported 4x4 with
-  MNI translation in 4th column.  PyniftiIO reports 5x5 with only one
-  pixdim translation.
-
 - Pass all tests.
 
-Trac Wiki
----------
+Data
+====
 
-- Update the README and INSTALL on the Trac Wiki.  These should
-  reference a reST formatted version committed to the repository.
-  Include information on downloading the fmri data and running the
-  tests.
+- Replace fmri test file :file:`funcfile` with a reasonable fmri file.  It's
+  shape is odd, (20,20,2,20).  Many tests have been updated to this
+  file and will need to me modified.  :file:`funcfile` is located in
+  neuroimaging/testing/functinal.nii.gz
 
-Nipy code base
---------------
 
-Update INSTALL and README so they are current.  Add list of
-dependencies in the INSTALL.
+Refactorings
+============
 
-datasource and path.py cleanup should be done together as nipy's
-datasource is one of the main users of path.py:
+- Remove path.py and replace datasource with numpy's version.
+  datasource and path.py cleanup should be done together as nipy's
+  datasource is one of the main users of path.py:
 
-* Delete neuroimaging/utils/path.py.  This custom path module does not
-  provide any benefit over os.path.  Using a non-standard path module
-  adds confusion to the code.  This will require going through the
-  code base and updating all references to the path module.  Perhaps a
-  good use of grin for a global search and replace.
+  * Convert from nipy datasource to numpy datasource.  Then remove
+    nipy's datasource.py
 
-* Convert from nipy datasource to numpy datasource.  Then remove
-  nipy's datasource.py
+  * Delete neuroimaging/utils/path.py.  This custom path module does
+    not provide any benefit over os.path.  Using a non-standard path
+    module adds confusion to the code.  This will require going
+    through the code base and updating all references to the path
+    module.  Perhaps a good use of grin for a global search and
+    replace.
 
-Rewrite weave code in algorithms/statistics/intrinsic_volumes.py as C extension.
+- Rewrite weave code in algorithms/statistics/intrinsic_volumes.py as
+  C extension.
 
-Use sphinx to generate docs and update neuroimaging.scipy.org/api.
+- Determine need for odict.py.  Verify origin and license if we
+  determine we need it.
 
-Determine need for odict.py.  Verify origin and license if we
-determine we need it.
+- Cleanup neuroimaging.testing directory.  Possibly rename 'testing'
+  to 'tests'.  Move utils.tests.data.__init__.py to tests and update
+  import statements in all test modules.
 
-Cleanup neuroimaging.testing directory.  Possibly rename 'testing' to
-'tests'.  Move utils.tests.data.__init__.py to tests and update import
-statements in all test modules.
-
-Remove neuroimaging.utils dir. (path.py and odict.py should be in externals)
-
+- Remove neuroimaging.utils dir. (path.py and odict.py should be in
+  externals)
 
 Code Design Thoughts
---------------------
+====================
 
 Perhaps there's a better place for this, but I wanted a central
 location to dump thoughts that could be shared by the developers and
@@ -93,7 +104,7 @@ tracked easily.  I also don't like having to switch from my code
 editor to a browser just to jot down an idea like this.
 
 Image Class
------------
+===========
 
 - **CRITICAL** A one voxel offset in the affine transform matrix.
     Should that be there?
@@ -136,7 +147,7 @@ Image Class
 Functions should only require filename/url, not a (filename, repository) pair.
 
 Image Iterators
----------------
+===============
 
 - Cleanup the image iterators/generators.  I believe Jonathan was in
   the process of converting the code from using iterators to
@@ -150,7 +161,7 @@ Image Iterators
 
 
 Core Reference
---------------
+==============
 
 Cleanup and standardize the axis names and pynifti orientation codes.
 See failing test in test_axis:test_Axis.test_init, presumably the Axis
@@ -163,7 +174,7 @@ See test_grid.py.
 Fix .mat file IO.  See test_mapping.py
 
 Pynifti IO
-----------
+==========
 
 Fix deprecation error in pynifti's swig generated extension code::
 
@@ -182,14 +193,14 @@ Document Pynifti.
 
 
 Affine
-------
+======
 - calling affine with load, ImageInterpolate, etc., results in a one-pixel offset
   in the translation columns (x, y and z) of the affine matrix and is related to
   converting python to matlab format.
 
 
 Imagelist
----------
+=========
 - remove concatenating grid (composite the mappings?)
 - look at Mergeimage function and understand it.
 - consider preventing Image from opening 4D. simplfy the user API for 3D/4D.
@@ -199,23 +210,25 @@ Imagelist
 
 
 Modalities
-----------
+==========
 
-Fix fmri.pca module.  Internally it's referencing old image api that
-no longer exists like Image.slice_iterator.  Currently all tests are
-skipped or commented out.
+- Fix fmri.pca module.  Internally it's referencing old image api that
+  no longer exists like Image.slice_iterator.  Currently all tests are
+  skipped or commented out.
 
-FmriStat has undefined objects, FmriStatOLS and FmriStatAR.  Look into
-modalities.fmri.fmristat.tests.test_utils.py
+- FmriStat has undefined objects, FmriStatOLS and FmriStatAR.  Look
+  into modalities.fmri.fmristat.tests.test_utils.py
 
-Automated test for pca, check for covariance diagonal structure, post pca.
+- Automated test for pca, check for covariance diagonal structure, post pca.
 
-Create working example out of this TRAC pca page.  Should also be a
-rest document.
-  http://neuroimaging.scipy.org/neuroimaging/ni/wiki/PrincipalComponents
+- Create working example out of this TRAC `pca
+  <http://neuroimaging.scipy.org/neuroimaging/ni/wiki/PrincipalComponents>`_
+  page.  Should also be a rest document.
+  
+  
 
 fixes.scipy.ndimage
--------------------
+===================
 
 Fix possible precision error in test_registration function
 test_autoalign_nmi_value_2.  See FIXME.
@@ -223,7 +236,7 @@ test_autoalign_nmi_value_2.  See FIXME.
 Fix error in test_segment test_texture2 function.  See FIXME.
 
 Future Features
----------------
+===============
 
 Egg support.  Look to revno 1642, a setup_egg.py that Gael had added.
 This was removed as it did not work.  It did appear to allow this
@@ -252,3 +265,5 @@ Update import statements to match scipy/numpy standards::
 
 Get nifticlib to support bz2.
 
+
+.. _nipy: https://launchpad.net/nipy
