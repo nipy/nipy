@@ -6,7 +6,7 @@ from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.core.image.image_list import ImageList
 from neuroimaging.core.api import load_image
-from neuroimaging.modalities.fmri.api import FmriImage, fromimage
+from neuroimaging.modalities.fmri.api import FmriImageList, fromimage
 
 
 import numpy as np

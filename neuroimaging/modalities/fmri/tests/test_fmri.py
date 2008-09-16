@@ -6,7 +6,7 @@ from neuroimaging.testing import *
 import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.reference.coordinate_map as coordinate_map
 
-from neuroimaging.modalities.fmri.api import FmriImage, fmri_generator, fromimage
+from neuroimaging.modalities.fmri.api import FmriImageList, fmri_generator, fromimage
 from neuroimaging.core.api import Image, load_image, data_generator, parcels, save_image
 from neuroimaging.testing import anatfile, funcfile
 

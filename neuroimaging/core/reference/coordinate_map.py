@@ -11,9 +11,7 @@ from neuroimaging.core.reference.coordinate_system import \
   VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
 from neuroimaging.core.reference.mapping import Mapping, Affine
 
-
 __docformat__ = 'restructuredtext'
-
 
 
 class CoordinateMap(object):

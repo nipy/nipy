@@ -9,7 +9,7 @@ import numpy as np
 from neuroimaging.fixes.scipy.stats.models.regression import OLSModel, ARModel
 from neuroimaging.core.api import data_generator, parcels, matrix_generator
 
-from neuroimaging.modalities.fmri.api import FmriImage, fmri_generator
+from neuroimaging.modalities.fmri.api import FmriImageList, fmri_generator
 from neuroimaging.core.api import f_generator, fromarray, save_image, Image
 from neuroimaging.core.reference.api import Affine, CoordinateMap
 from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
@@ -55,7 +55,7 @@ class OLS:
 
     Parameters
     ----------
-    fmri_image : `FmriImage`
+    fmri_image : `FmriImageList`
     formula :  `neuroimaging.modalities.fmri.protocol.Formula`
 
 
@@ -95,7 +95,7 @@ class AR1:
 
     Parameters
     ----------
-    fmri_image : `FmriImage`
+    fmri_image : `FmriImageList`
     formula :  `neuroimaging.modalities.fmri.protocol.Formula`
     rho : Image of AR(1) coefficients.
     """
@@ -177,7 +177,7 @@ def output_AR1(outfile, fmri_image, clobber=False):
     Create an output file of the AR1 parameter from the OLS pass of
     fmristat.
 
-    image: FmriImage 
+    image: FmriImageList 
 
     """
     outim = _create_outfile(outfile, fmri_image[0].coordmap)
@@ -193,7 +193,7 @@ def output_resid(outfile, fmri_image, clobber=False):
 
     """
 
-    if isinstance(fmri_image, FmriImage):
+    if isinstance(fmri_image, FmriImageList):
         n = len(fmri_image.list)
         T = np.zeros((5,5))
         g = fmri_image[0].coordmap
@@ -206,7 +206,7 @@ def output_resid(outfile, fmri_image, clobber=False):
     elif isinstance(fmri_image, Image):
         coordmap = fmri_image.coordmap
     else:
-        raise ValueError, "expecting FmriImage or 4d Image"
+        raise ValueError, "expecting FmriImageList or 4d Image"
     outim = _create_outfile(outfile, coordmap)
     return regression.ArrayOutput(outim, regression.output_resid)
 
