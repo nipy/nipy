@@ -4,7 +4,7 @@ import numpy as np
 import numpy.fft as FFT
 import scipy.interpolate
 
-class LinearInterpolant:
+class LinearInterpolant(object):
     """
     A little wrapper around scipy.interpolate call to force
     the interpolant to take a keywords argument \'time=\'.
@@ -39,7 +39,7 @@ class LinearInterpolant:
         """
         return self.f(time)
 
-class WaveFunction:
+class WaveFunction(object):
     """
     A square wave function of a specified start, duration and height.
     f(t) = height if (start <= t < start + duration), 0 otherwise
@@ -123,7 +123,7 @@ def ConvolveFunctions(fn1, fn2, interval, dt, padding_f=0.1, normalize=(0, 0)):
         newf = LinearInterpolant(time + min_interval, value)
         return newf
 
-class CutPoly:
+class CutPoly(object):
     """
     A polynomial function of the form f(t) = t^n with an optionally fixed
     time range on which the function exists.
