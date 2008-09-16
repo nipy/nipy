@@ -33,6 +33,10 @@ Documentation
 - Document nipy development process with pynifti.  Use of git branches
   and updating the source in nipy (update_source.py).
 
+- Create working example out of this TRAC `pca
+  <http://neuroimaging.scipy.org/neuroimaging/ni/wiki/PrincipalComponents>`_
+  page.  Should also be a rest document.
+
 Bugs
 ====
 
@@ -89,6 +93,23 @@ were added here this summer, grouping until they can be input.
     nifticlib.mat442array(self.__nimg.sto_xyz)
 
 - Nifti image saving bug.  PixDims not being saved correctly.
+
+- Fix fmri.pca module.  Internally it's referencing old image api that
+  no longer exists like Image.slice_iterator.  Currently all tests are
+  skipped or commented out.
+
+- FmriStat has undefined objects, FmriStatOLS and FmriStatAR.  Look
+  into modalities.fmri.fmristat.tests.test_utils.py
+
+- Fix possible precision error in
+  fixes.scipy.ndimage.test_registration function
+  test_autoalign_nmi_value_2.  See FIXME.
+
+- Fix error in test_segment test_texture2 functions
+  (fixes.scipy.ndimage).  See FIXME.
+
+- import neuroimaging.algorithms is very slow!  Find and fix.  The
+  shared library is slow.
 
 Data
 ====
@@ -154,92 +175,91 @@ Refactorings
 
 - Rename SamplingGrid to CoordinateMap.  Image.grid to Image.coordmap?
 
+- Consider removing class ConcatenatedGrid in grid.py.  Is this
+  functionality provided in the ImageList class?
+
+- Look at image.merge_image function.  Is it still needed?  Does it
+  fit into the current api?
+
+- Provide clear documentation and examples for how to use Image,
+  ImageList, and FmriImageList classes with 3D and 4D images.  It
+  should be clear to the user when to use each and we should provide a
+  clean api to move images between them.
+
+- Automated test for modalities.fmri.pca, check for covariance
+  diagonal structure, post pca.
+
 Code Design Thoughts
 ====================
 
 A central location to dump thoughts that could be shared by the
 developers and tracked easily.
 
-
-
-
-
-Affine
-------
-- calling affine with load, ImageInterpolate, etc., results in a one-pixel offset
-  in the translation columns (x, y and z) of the affine matrix and is related to
-  converting python to matlab format.
-
-
-Imagelist
----------
-- remove concatenating grid (composite the mappings?)
-- look at Mergeimage function and understand it.
-- consider preventing Image from opening 4D. simplfy the user API for 3D/4D.
-  create factory function to do this.
-
-
-
-
-Modalities
-----------
-
-- Fix fmri.pca module.  Internally it's referencing old image api that
-  no longer exists like Image.slice_iterator.  Currently all tests are
-  skipped or commented out.
-
-- FmriStat has undefined objects, FmriStatOLS and FmriStatAR.  Look
-  into modalities.fmri.fmristat.tests.test_utils.py
-
-- Automated test for pca, check for covariance diagonal structure, post pca.
-
-- Create working example out of this TRAC `pca
-  <http://neuroimaging.scipy.org/neuroimaging/ni/wiki/PrincipalComponents>`_
-  page.  Should also be a rest document.
-  
-  
-
-fixes.scipy.ndimage
--------------------
-
-Fix possible precision error in test_registration function
-test_autoalign_nmi_value_2.  See FIXME.
-
-Fix error in test_segment test_texture2 function.  See FIXME.
-
 Future Features
----------------
+===============
 
-Egg support.  Look to revno 1642, a setup_egg.py that Gael had added.
-This was removed as it did not work.  It did appear to allow this
-development install option, which we should restore when eggs are working::
+Put ideas here for features nipy should have but are not part of our
+current development.  These features will eventually be added to a
+weekly sprint log.
+
+- Egg support.  Look to revno 1642, a setup_egg.py that Gael had
+  added.  This was removed as it did not work.  It did appear to allow
+  this development install option, which we should restore when eggs
+  are working::
 
     sudo python setup_egg.py develop --prefix /usr/local
 
-Add Fernando's nose fix for running doctests in extension code.  May
-get this through numpy?  Fernando was considering adding this there.
+- Create a nipy tools repos that can be shared by the team.  Include
+  tools for building like makepkg, tools from the old utils directory,
+  header_utils and analyze_to_nifti, etc...
 
-Place nipy-io-overhaul up on lp/cburns for matthew reference.
+- Auto backup script for nipy repos to run as weekly cron job.  We
+  should setup a machine to perform regular branch builds and tests.
+  This would also provide an on-site backup.
 
-Move header_utils, utils, analyze_to_nifti and sliceplot to
-sandbox/tools.  Files are currently in
-nipy-sandbox/neuroimaging/data_io/formats.
-
-import neuroimaging.algorithms is very slow!  Find and fix.  The
-shared library is slow.
-
-Auto backup script for nipy repos to run as weekly cron job.  Chris
-will run this on his machine.
-
-Update import statements to match scipy/numpy standards::
-
-  import numpy as np
-
-Get nifticlib to support bz2.
+- See if we can add bz2 support to nifticlib.
 
 Questions
----------
+=========
 
 - Should millimeter coordinates be expressed in xyz or zyx order?
+
+Weekly Sprint
+=============
+
+This will hold our current sprint items and be updated weekly as we
+work through the backlog.
+
+**Goal:**
+
+*Fix bugs and implement any functionality needed to begin registration
+next week.*
+
+* Implement fmriimagelist blueprint.
+
+  * Requires some changes to CoordinateMap?
+  * FmriImageList has a frametimes attr.  Document it and consider
+    renaming to volume_start_times.
+
+* Rename SamplingGrid to CoordinateMap.  image.grid to image.coordmap
+
+* Create a blueprint for the public api of CoordinateMap.  Have done
+  by Wednesday PM.  Share with Jonathan.
+
+* Fix image saving bug with pixdims.
+
+* Document pynifti development in nipy.
+
+* **Thursday:** Focus on spline Unser code and using Jonathan's resample.
+
+* **Friday:** Work on viewer.  Merge Tom and Chris versions.  Make
+    overlay's work.  Lightbox/montage viewer if time permitting.
+
+* Should image.load have an optional squeeze keyword to squeeze a 4D
+  image with one frame into a 3D image?
+
+* Add *bzr whoami* to bzr_workflow.
+
+* Create a rst doc for *Request a review* process.
 
 .. _nipy: https://launchpad.net/nipy
