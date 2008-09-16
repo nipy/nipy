@@ -15,7 +15,7 @@ class ImageInterpolator(object):
     A class that enables interpolation of an Image instance
     at arbitrary points in the Image's world space (image.grid.output_coords).
 
-    The resampling is down with scipy.ndimage.
+    The resampling is done with scipy.ndimage.
     """
 
     def __init__(self, image, order=3):
