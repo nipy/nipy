@@ -17,7 +17,7 @@ class test_coordmap(TestCase):
         self.img = load_image(anatfile)
 
     # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
-    @dec.skipknownfailure
+    @dec.knownfailure
     def test_concat(self):
         self.fail("concatenated and replicated CoordinateMaps need to be fixed")
 
@@ -28,7 +28,7 @@ class test_coordmap(TestCase):
         x = a.mapping([5,6,7])
 
     # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
-    @dec.skipknownfailure
+    @dec.knownfailure
     def test_replicate(self):
         self.fail("concatenated and replicated CoordinateMaps need to be fixed")
 
@@ -39,7 +39,7 @@ class test_coordmap(TestCase):
         x = a.mapping([5,6,7])
 
     # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
-    @dec.skipknownfailure
+    @dec.knownfailure
     def test_replicate2(self):
         """
         Test passing
@@ -49,7 +49,7 @@ class test_coordmap(TestCase):
         coordmaps.python2matlab()
 
     # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
-    @dec.skipknownfailure
+    @dec.knownfailure
     def test_concat2(self):
         """
         Test passing
@@ -60,7 +60,7 @@ class test_coordmap(TestCase):
         coordmaps.python2matlab()
 
     # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
-    @dec.skipknownfailure
+    @dec.knownfailure
     def test_concat3(self):
         """
         Test failing

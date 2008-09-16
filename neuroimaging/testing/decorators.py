@@ -68,6 +68,7 @@ def make_label_dec(label, ds=None):
 gui = make_label_dec('gui')
 data = make_label_dec('data')
 
-def skipknownfailure(f):
+# We have a lot of known failures, sadly
+def knownfailure(f):
    return knownfailureif(True)(f)
 

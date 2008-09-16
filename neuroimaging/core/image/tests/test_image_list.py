@@ -12,7 +12,7 @@ from neuroimaging.modalities.fmri.api import FmriImage, fromimage
 import numpy as np
 
 # FIXME: Write valid tests for fmri image list objects.
-@dec.skipknownfailure
+@dec.knownfailure
 def test_image_list():
     img_path = str(repository._fullpath("test_fmri.nii.gz"))
     ff = load_image(img_path)

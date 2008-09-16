@@ -20,7 +20,7 @@ class test_PCA(TestCase):
 
 class test_PCAMask(test_PCA):
     # FIXME: Fix slice_iterator errors in pca module.
-    @dec.skipknownfailure
+    @dec.knownfailure
     def test_PCAmask(self):
         p = PCA(self.fmridata, self.mask)
         p.fit()
@@ -28,7 +28,7 @@ class test_PCAMask(test_PCA):
 
 class test_PCANoMask(test_PCA):
     # FIXME: Fix slice_iterator errors in pca modules.
-    @dec.skipknownfailure
+    @dec.knownfailure
     @dec.slow
     @dec.data
     def test_PCA(self):
