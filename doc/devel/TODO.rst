@@ -14,26 +14,26 @@ the :ref:`roadmap`.
 Documentation
 =============
 
-- There have been many changes to nipy_, the documentation here, on
+* There have been many changes to nipy_, the documentation here, on
   Launchpad and the TRAC site should be organized and updated.
  
-- Create NIPY sidebar with links to all project related websites.
+* Create NIPY sidebar with links to all project related websites.
 
-- Create a Best Practices document.
+* Create a Best Practices document.
 
-- Update the README and INSTALL on the Trac Wiki.  These should
+* Update the README and INSTALL on the Trac Wiki.  These should
   reference a reST formatted version committed to the repository.
   Include information on downloading the fmri data and running the
   tests.
 
-- Add list of dependencies in the INSTALL.
+* Add list of dependencies in the INSTALL.
 
-- Post sphinx generated docs to update neuroimaging.scipy.org.
+* Post sphinx generated docs to update neuroimaging.scipy.org.
 
-- Document nipy development process with pynifti.  Use of git branches
+* Document nipy development process with pynifti.  Use of git branches
   and updating the source in nipy (update_source.py).
 
-- Create working example out of this TRAC `pca
+* Create working example out of this TRAC `pca
   <http://neuroimaging.scipy.org/neuroimaging/ni/wiki/PrincipalComponents>`_
   page.  Should also be a rest document.
 
@@ -43,7 +43,7 @@ Bugs
 These should be moved to the nipy_ bug section on launchpad.  Many
 were added here this summer, grouping until they can be input.
 
-- Resolve differences between running tests via nose on command line
+* Resolve differences between running tests via nose on command line
   and ni.test().
 
   ::
@@ -57,31 +57,31 @@ were added here this summer, grouping until they can be input.
     FAILED (SKIP=18, errors=12)
     Out[2]: <nose.result.TextTestResult run=146 errors=12 failures=0>
 
-- Remove creation of named temporary files "\*.nii", use NamedTemporaryFile 
+* Remove creation of named temporary files "\*.nii", use NamedTemporaryFile 
   instead in test modules:
 
   * modalities/fmri/tests/test_regression.py 
   * modalities/fmri/fmristat/tests/test_model.py
 
-- Cleanup and standardize the axis names and pynifti orientation
+* Cleanup and standardize the axis names and pynifti orientation
   codes.  See failing test in test_axis:test_Axis.test_init,
   presumably the Axis initializer use to check for a valid name before
   assigning.  It now blindly assigns the name.
 
-- Fix test errors for concatenation and replication of sampling grids.
+* Fix test errors for concatenation and replication of sampling grids.
   See test_grid.py.
 
-- Fix .mat file IO.  See test_mapping.py
+* Fix .mat file IO.  See test_mapping.py
 
-- Verify documententation of the image generators. Create a simple
+* Verify documententation of the image generators. Create a simple
   example using them.
 
-- Add test data where volumes contain intensity ramps.  Slice with
+* Add test data where volumes contain intensity ramps.  Slice with
   generator and test ramp values.
 
-- Use python 2.5 feature of being able to reset the generator?
+* Use python 2.5 feature of being able to reset the generator?
 
-- Fix deprecation error in pynifti's swig generated extension code::
+* Fix deprecation error in pynifti's swig generated extension code::
 
     /Users/cburns/src/nipy-trunk/neuroimaging/externals/pynifti/nifti/niftiformat.py:458
     DeprecationWarning: PyArray_FromDims: use PyArray_SimpleNew.  return
@@ -92,29 +92,29 @@ were added here this summer, grouping until they can be input.
     PyArray_NewFromDescr.  return
     nifticlib.mat442array(self.__nimg.sto_xyz)
 
-- Nifti image saving bug.  PixDims not being saved correctly.
+* Nifti image saving bug.  PixDims not being saved correctly.
 
-- Fix fmri.pca module.  Internally it's referencing old image api that
+* Fix fmri.pca module.  Internally it's referencing old image api that
   no longer exists like Image.slice_iterator.  Currently all tests are
   skipped or commented out.
 
-- FmriStat has undefined objects, FmriStatOLS and FmriStatAR.  Look
+* FmriStat has undefined objects, FmriStatOLS and FmriStatAR.  Look
   into modalities.fmri.fmristat.tests.test_utils.py
 
-- Fix possible precision error in
+* Fix possible precision error in
   fixes.scipy.ndimage.test_registration function
   test_autoalign_nmi_value_2.  See FIXME.
 
-- Fix error in test_segment test_texture2 functions
+* Fix error in test_segment test_texture2 functions
   (fixes.scipy.ndimage).  See FIXME.
 
-- import neuroimaging.algorithms is very slow!  Find and fix.  The
+* import neuroimaging.algorithms is very slow!  Find and fix.  The
   shared library is slow.
 
 Data
 ====
 
-- Replace fmri test file :file:`funcfile` with a reasonable fmri file.  It's
+* Replace fmri test file :file:`funcfile` with a reasonable fmri file.  It's
   shape is odd, (20,20,2,20).  Many tests have been updated to this
   file and will need to me modified.  :file:`funcfile` is located in
   neuroimaging/testing/functinal.nii.gz
@@ -123,7 +123,7 @@ Data
 Refactorings
 ============
 
-- Remove path.py and replace datasource with numpy's version.
+* Remove path.py and replace datasource with numpy's version.
   datasource and path.py cleanup should be done together as nipy's
   datasource is one of the main users of path.py:
 
@@ -137,35 +137,35 @@ Refactorings
     module.  Perhaps a good use of grin for a global search and
     replace.
 
-- Rewrite weave code in algorithms/statistics/intrinsic_volumes.py as
+* Rewrite weave code in algorithms/statistics/intrinsic_volumes.py as
   C extension.
 
-- Determine need for odict.py.  Verify origin and license if we
+* Determine need for odict.py.  Verify origin and license if we
   determine we need it.
 
-- Cleanup neuroimaging.testing directory.  Possibly rename 'testing'
+* Cleanup neuroimaging.testing directory.  Possibly rename 'testing'
   to 'tests'.  Move utils.tests.data.__init__.py to tests and update
   import statements in all test modules.
 
-- Remove neuroimaging.utils dir. (path.py and odict.py should be in
+* Remove neuroimaging.utils dir. (path.py and odict.py should be in
   externals)
 
-- image.save function should accept filename or file-like object.  If
+* image.save function should accept filename or file-like object.  If
   I have an open file I would like to be able to pass that in also,
   instead of fp.name.  Happens in test code a lot.
 
-- image._open function should accept Image objects in addition to
+* image._open function should accept Image objects in addition to
   ndarrays and filenames.  Currently the save function has to call
   np.asarray(img) to get the data array out of the image and pass them
   to _open in order to create the output image.
 
-- Add dtype options when saving. When saving images it uses the native
+* Add dtype options when saving. When saving images it uses the native
   dtype for the system.  Should be able to specify this.  in the
   test_file_roundtrip, self.img is a uint8, but is saved to tmpfile as
   float64.  Adding this would allow us to save images without the
   scaling being applied.
 
-- In image._open(url, ...), should we test if the "url" is a PyNiftiIO
+* In image._open(url, ...), should we test if the "url" is a PyNiftiIO
   object already? This was in the tests from 'old code' and passed::
   
     new = Image(self.img._data, self.img.grid) 
@@ -173,20 +173,20 @@ Refactorings
   img._data is a PyNIftiIO object.  It works, but we should verify
   it's harmless otherwise prevent it from happening.
 
-- Rename SamplingGrid to CoordinateMap.  Image.grid to Image.coordmap?
+* Rename SamplingGrid to CoordinateMap.  Image.grid to Image.coordmap?
 
-- Consider removing class ConcatenatedGrid in grid.py.  Is this
+* Consider removing class ConcatenatedGrid in grid.py.  Is this
   functionality provided in the ImageList class?
 
-- Look at image.merge_image function.  Is it still needed?  Does it
+* Look at image.merge_image function.  Is it still needed?  Does it
   fit into the current api?
 
-- Provide clear documentation and examples for how to use Image,
+* Provide clear documentation and examples for how to use Image,
   ImageList, and FmriImageList classes with 3D and 4D images.  It
   should be clear to the user when to use each and we should provide a
   clean api to move images between them.
 
-- Automated test for modalities.fmri.pca, check for covariance
+* Automated test for modalities.fmri.pca, check for covariance
   diagonal structure, post pca.
 
 Code Design Thoughts
@@ -202,27 +202,27 @@ Put ideas here for features nipy should have but are not part of our
 current development.  These features will eventually be added to a
 weekly sprint log.
 
-- Egg support.  Look to revno 1642, a setup_egg.py that Gael had
+* Egg support.  Look to revno 1642, a setup_egg.py that Gael had
   added.  This was removed as it did not work.  It did appear to allow
   this development install option, which we should restore when eggs
   are working::
 
     sudo python setup_egg.py develop --prefix /usr/local
 
-- Create a nipy tools repos that can be shared by the team.  Include
+* Create a nipy tools repos that can be shared by the team.  Include
   tools for building like makepkg, tools from the old utils directory,
   header_utils and analyze_to_nifti, etc...
 
-- Auto backup script for nipy repos to run as weekly cron job.  We
+* Auto backup script for nipy repos to run as weekly cron job.  We
   should setup a machine to perform regular branch builds and tests.
   This would also provide an on-site backup.
 
-- See if we can add bz2 support to nifticlib.
+* See if we can add bz2 support to nifticlib.
 
 Questions
 =========
 
-- Should millimeter coordinates be expressed in xyz or zyx order?
+* Should millimeter coordinates be expressed in xyz or zyx order?
 
 Weekly Sprint
 =============
