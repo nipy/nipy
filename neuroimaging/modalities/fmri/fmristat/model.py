@@ -25,8 +25,8 @@ import neuroimaging.algorithms.statistics.regression as regression
 # minimize the number of ways users create and deal with files.
 # Simplify the api.  But perhaps there is a need for a create_outfile
 # type function?
-def _create_outfile(filename, comap):
-    img = fromarray(np.zeros(comap.shape), comap=comap)
+def _create_outfile(filename, coordmap):
+    img = fromarray(np.zeros(coordmap.shape), coordmap=coordmap)
     return save_image(img, filename)
 
 def model_generator(formula, data, frametimes, iterable=None, slicetimes=None,
@@ -151,24 +151,24 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
     """
     if effect:
         effectim = _create_outfile(outbase % {'stat':'effect'},
-                                   fmri_image[0].comap)
+                                   fmri_image[0].coordmap)
     else:
         effectim = None
 
     if sd:
-        sdim = _create_outfile(outbase % {'stat':'sd'}, fmri_image[0].comap)
+        sdim = _create_outfile(outbase % {'stat':'sd'}, fmri_image[0].coordmap)
     else:
         sdim = None
 
     if t:
-        tim = _create_outfile(outbase % {'stat':'t'}, fmri_image[0].comap)
+        tim = _create_outfile(outbase % {'stat':'t'}, fmri_image[0].coordmap)
     else:
         tim = None
     return regression.TOutput(contrast, effect=effectim,
                               sd=sdim, t=tim)
 
 def output_F(outfile, contrast, fmri_image, clobber=False):
-    f = _create_outfile(outfile, fmri_image[0].comap)
+    f = _create_outfile(outfile, fmri_image[0].coordmap)
     c = copy.deepcopy(contrast)
     return regression.RegressionOutput(f, lambda x: regression.output_F(x, c))
                              
@@ -180,7 +180,7 @@ def output_AR1(outfile, fmri_image, clobber=False):
     image: FmriImage 
 
     """
-    outim = _create_outfile(outfile, fmri_image[0].comap)
+    outim = _create_outfile(outfile, fmri_image[0].coordmap)
     return regression.RegressionOutput(outim, regression.output_AR1)
 
 def output_resid(outfile, fmri_image, clobber=False):
@@ -196,18 +196,18 @@ def output_resid(outfile, fmri_image, clobber=False):
     if isinstance(fmri_image, FmriImage):
         n = len(fmri_image.list)
         T = np.zeros((5,5))
-        g = fmri_image[0].comap
-        T[1:,1:] = fmri_image[0].comap.affine
+        g = fmri_image[0].coordmap
+        T[1:,1:] = fmri_image[0].coordmap.affine
         T[0,0] = fmri_image.TR
         anames = ["time"] + [a.name for a in g.input_coords.axes()]
-        comap = CoordinateMap.from_affine(Affine(T),
+        coordmap = CoordinateMap.from_affine(Affine(T),
                                         anames,
                                         (n,) + g.shape)
     elif isinstance(fmri_image, Image):
-        comap = fmri_image.comap
+        coordmap = fmri_image.coordmap
     else:
         raise ValueError, "expecting FmriImage or 4d Image"
-    outim = _create_outfile(outfile, comap)
+    outim = _create_outfile(outfile, coordmap)
     return regression.ArrayOutput(outim, regression.output_resid)
 
 def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):

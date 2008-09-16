@@ -20,11 +20,11 @@ class LinearFilter(object):
 
     normalization = 'l1sum'
     
-    def __init__(self, comap, fwhm=6.0, scale=1.0, location=0.0,
+    def __init__(self, coordmap, fwhm=6.0, scale=1.0, location=0.0,
                  cov=None):
         """
         :Parameters:
-            comap : TODO
+            coordmap : TODO
                 TODO
             fwhm : ``float``
                 TODO
@@ -34,7 +34,7 @@ class LinearFilter(object):
                 TODO
         """
         
-        self.comap = comap
+        self.coordmap = coordmap
         self.fwhm = fwhm
         self.scale = scale
         self.location = location
@@ -42,17 +42,17 @@ class LinearFilter(object):
         self._setup_kernel()
 
     def _setup_kernel(self):
-        if not isinstance(self.comap.mapping, Affine):
-            raise ValueError, 'for FFT smoothing, need a regular (affine) comap'
+        if not isinstance(self.coordmap.mapping, Affine):
+            raise ValueError, 'for FFT smoothing, need a regular (affine) coordmap'
 
-        voxels = np.indices(self.comap.shape).astype(np.float64)
+        voxels = np.indices(self.coordmap.shape).astype(np.float64)
 
-        center = np.asarray(self.comap.shape)/2
-        center = self.comap.mapping([[center[i]] for i in range(len(self.comap.shape))])
+        center = np.asarray(self.coordmap.shape)/2
+        center = self.coordmap.mapping([[center[i]] for i in range(len(self.coordmap.shape))])
 
         voxels.shape = (voxels.shape[0], np.product(voxels.shape[1:]))
-        X = self.comap.mapping(voxels) - center
-        X.shape = (3,) + self.comap.shape
+        X = self.coordmap.mapping(voxels) - center
+        X.shape = (3,) + self.coordmap.shape
         kernel = self(X)
         
         kernel = _crop(kernel)
@@ -62,7 +62,7 @@ class LinearFilter(object):
 
         self._kernel = kernel
 
-        self.shape = (np.ceil((np.asarray(self.comap.shape) +
+        self.shape = (np.ceil((np.asarray(self.coordmap.shape) +
                               np.asarray(kernel.shape))/2)*2+2)
         self.fkernel = np.zeros(self.shape)
         slices = [slice(0, kernel.shape[i]) for i in range(len(kernel.shape))]
@@ -81,8 +81,8 @@ class LinearFilter(object):
         if self.fwhm is not 1.0:
             f = fwhm2sigma(self.fwhm)
             if f.shape == ():
-                f = np.ones(len(self.comap.shape)) * f
-            for i in range(len(self.comap.shape)):
+                f = np.ones(len(self.coordmap.shape)) * f
+            for i in range(len(self.coordmap.shape)):
                 _X[i] /= f[i]
         if self.cov != None:
             _chol = L.cholesky(self.cov)
@@ -134,7 +134,7 @@ class LinearFilter(object):
             data = fft.irfftn(data) / self.norms[self.normalization]
 
             gc.collect()
-            _dslice = [slice(0, self.comap.shape[i], 1) for i in range(3)]
+            _dslice = [slice(0, self.coordmap.shape[i], 1) for i in range(3)]
             if self.scale != 1:
                 data = self.scale * data[_dslice]
 
@@ -152,16 +152,16 @@ class LinearFilter(object):
             _slice += 1
 
         gc.collect()
-        _out = _out[[slice(self._kernel.shape[i]/2, self.comap.shape[i] +
-                           self._kernel.shape[i]/2) for i in range(len(self.comap.shape))]]
+        _out = _out[[slice(self._kernel.shape[i]/2, self.coordmap.shape[i] +
+                           self._kernel.shape[i]/2) for i in range(len(self.coordmap.shape))]]
         if inimage.ndim == 3:
-            return Image(_out, comap=self.comap)
+            return Image(_out, coordmap=self.coordmap)
         else:
-            return Image(_out, comap=self.comap.replicate(inimage.comap.shape[0]))
+            return Image(_out, coordmap=self.coordmap.replicate(inimage.coordmap.shape[0]))
 
 
     def _presmooth(self, indata):
-        slices = [slice(0, self.comap.shape[i], 1) for i in range(len(self.shape))]
+        slices = [slice(0, self.coordmap.shape[i], 1) for i in range(len(self.shape))]
         _buffer = np.zeros(self.shape)
         _buffer[slices] = indata
         return fft.rfftn(_buffer)

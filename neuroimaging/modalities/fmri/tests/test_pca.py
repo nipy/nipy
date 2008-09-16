@@ -16,7 +16,7 @@ class test_PCA(TestCase):
 
         frame = self.fmridata[0]
         self.mask = Image(np.greater(np.asarray(frame), 500).astype(np.float64),
-                          frame.comap)
+                          frame.coordmap)
 
 class test_PCAMask(test_PCA):
     # FIXME: Fix slice_iterator errors in pca module.

@@ -47,7 +47,7 @@ class Image(object):
 
     """
 
-    def __init__(self, data, comap):
+    def __init__(self, data, coordmap):
         """Create an `Image` object from array and ``CoordinateMap`` object.
         
         Images should be created through the module functions load and
@@ -56,7 +56,7 @@ class Image(object):
         Parameters
         ----------
         data : A numpy.ndarray
-        comap : A `CoordinateMap` Object
+        coordmap : A `CoordinateMap` Object
         
         See Also
         --------
@@ -66,13 +66,13 @@ class Image(object):
 
         """
 
-        if data is None or comap is None:
+        if data is None or coordmap is None:
             raise ValueError, 'expecting an array and CoordinateMap instance'
 
         # self._data is an array-like object.  It must implement a subset of
         # array methods  (Need to specify these, for now implied in pyniftio)
         self._data = data
-        self._comap = comap
+        self._coordmap = coordmap
 
     def _getshape(self):
         return self._data.shape
@@ -82,14 +82,14 @@ class Image(object):
         return self._data.ndim
     ndim = property(_getndim, doc="Number of data dimensions")
 
-    def _getcomap(self):
-        return self._comap
-    comap = property(_getcomap,
+    def _getcoordmap(self):
+        return self._coordmap
+    coordmap = property(_getcoordmap,
                     doc="Coordinate mapping from input coords to output coords")
 
     def _getaffine(self):
-        if hasattr(self.comap, "affine"):
-            return self.comap.affine
+        if hasattr(self.coordmap, "affine"):
+            return self.coordmap.affine
         raise AttributeError, 'Nonlinear transform does not have an affine.'
     affine = property(_getaffine, doc="Affine transformation is one exists")
 
@@ -103,11 +103,11 @@ class Image(object):
     def __getitem__(self, index):
         """Slicing an image returns a new image."""
         data = self._data[index]
-        comap = self.comap[index]
+        coordmap = self.coordmap[index]
         # BUG: If it's a zero-dimension array we should return a numpy scalar
         # like np.int32(data[index])
         # Need to figure out elegant way to handle this
-        return Image(data, comap)
+        return Image(data, coordmap)
 
     def __setitem__(self, index, value):
         """Setting values of an image, set values in the data array."""
@@ -117,13 +117,13 @@ class Image(object):
         """Return data as a numpy array."""
         return np.asarray(self._data)
 
-def _open(filename, comap=None, mode="r"):
+def _open(filename, coordmap=None, mode="r"):
     """Create an `Image` from the given filename
 
     Parameters
     ----------
     filename : ``string``
-    comap : `reference.coordinate_map.CoordinateMap`
+    coordmap : `reference.coordinate_map.CoordinateMap`
         The coordinate map for the file
     mode : ``string``
         The mode ot open the file in ('r', 'w', etc)
@@ -136,11 +136,11 @@ def _open(filename, comap=None, mode="r"):
 
     try:
         ioimg = PyNiftiIO(filename, mode)
-        if comap is None:
-            comap = _comap_from_affine(ioimg.affine, ioimg.orientation,
+        if coordmap is None:
+            coordmap = _coordmap_from_affine(ioimg.affine, ioimg.orientation,
                                     ioimg.shape)
         # Build nipy image from array-like object and coordinate map
-        img = Image(ioimg, comap)
+        img = Image(ioimg, coordmap)
         return img
     except IOError:
         raise IOError, 'Unable to open file %s' % filename
@@ -223,11 +223,11 @@ def save(img, filename):
     """
 
     data = np.asarray(img)
-    outimage = _open(data, comap=img.comap, mode='w')
+    outimage = _open(data, coordmap=img.coordmap, mode='w')
     outimage._data.save(filename)
     return outimage
     
-def fromarray(data, names=['zspace', 'yspace', 'xspace'], comap=None):
+def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
     """Create an image from a numpy array.
 
     Parameters
@@ -235,7 +235,7 @@ def fromarray(data, names=['zspace', 'yspace', 'xspace'], comap=None):
     data : numpy array
         A numpy array of three dimensions.
     names : a list of axis names
-    comap : A `CoordinateMap`
+    coordmap : A `CoordinateMap`
         If not specified, a uniform coordinate map is created.
 
     Returns
@@ -250,13 +250,13 @@ def fromarray(data, names=['zspace', 'yspace', 'xspace'], comap=None):
     """
 
     ndim = len(data.shape)
-    if not comap:
-        comap = CoordinateMap.from_start_step(names,
+    if not coordmap:
+        coordmap = CoordinateMap.from_start_step(names,
                                             (0,)*ndim,
                                             (1,)*ndim,
                                             data.shape)
 
-    return Image(data, comap)
+    return Image(data, coordmap)
 
 def merge_images(filename, images, cls=Image, clobber=False,
                  axis='time'):
@@ -284,13 +284,13 @@ def merge_images(filename, images, cls=Image, clobber=False,
     
     n = len(images)
     im0 = images[0]
-    comap = im0.comap.replicate(n, axis)
-    data = np.empty(shape=comap.shape)
+    coordmap = im0.coordmap.replicate(n, axis)
+    data = np.empty(shape=coordmap.shape)
     for i, image in enumerate(images):
         data[i] = np.asarray(image)[:]
-    return Image(data, comap)
+    return Image(data, coordmap)
 
-def _comap_from_affine(affine, orientation, shape):
+def _coordmap_from_affine(affine, orientation, shape):
     """Generate a CoordinateMap from an affine transform.
 
     This is a convenience function to create a CoordinateMap from image
@@ -312,5 +312,5 @@ def _comap_from_affine(affine, orientation, shape):
     elif len(shape) == 5:
         names = ['vector', 'time'] + names
     affobj = Affine(affine)
-    comap = CoordinateMap.from_affine(affobj, names, shape)
-    return comap
+    coordmap = CoordinateMap.from_affine(affobj, names, shape)
+    return coordmap

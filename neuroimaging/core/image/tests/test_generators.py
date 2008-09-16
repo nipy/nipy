@@ -120,7 +120,7 @@ class test_Generator(TestCase):
         parcelseq = (0, 1, 2, 3)
         expected = [np.product(self.img3.shape) - 6, 3, 3, 0]
         iterator = g.parcels(parcelmap, labels=parcelseq)
-        tmp = Image(np.asarray(self.img3), self.img3.comap)
+        tmp = Image(np.asarray(self.img3), self.img3.coordmap)
 
         new_iterator = g.data_generator(tmp, g.parcels(parcelmap, labels=parcelseq))
 

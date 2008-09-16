@@ -16,20 +16,20 @@ class ImageInterpolator(object):
     TODO
     """
 
-    def __init__(self, image, order=1, comap=None):
+    def __init__(self, image, order=1, coordmap=None):
         """
         :Parameters:
             image : TODO
                 TODO
             order : ``int``
                 TODO
-            comap : TODO
+            coordmap : TODO
                 TODO        
         """
-        if comap is None:
-            self.comap = image.comap
+        if coordmap is None:
+            self.coordmap = image.coordmap
         else:
-            self.comap = comap
+            self.coordmap = coordmap
         self.image = image
         self.order = order
         self._prefilter()
@@ -87,7 +87,7 @@ class ImageInterpolator(object):
         points = np.array(points, np.float64)
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], np.product(output_shape))
-        voxels = self.comap.mapping.inverse()(points)
+        voxels = self.coordmap.mapping.inverse()(points)
         V = ndimage.map_coordinates(self.data, 
                                      voxels,
                                      order=self.order,
@@ -96,15 +96,15 @@ class ImageInterpolator(object):
         V.shape = output_shape
         return V
 
-    def resample(self, comap, mapping=None, **keywords):
+    def resample(self, coordmap, mapping=None, **keywords):
         """
         Using an ImageInterpolator, resample an Image on the range
-        of a comap, applying an optional mapping (taking
+        of a coordmap, applying an optional mapping (taking
         keyword arguments ``keywords``) between the output
-        coordinates of comap and self.image.comap.
+        coordinates of coordmap and self.image.coordmap.
 
         :Parameters:
-            comap : TODO
+            coordmap : TODO
                 TODO
             mapping : TODO
                 TODO
@@ -114,7 +114,7 @@ class ImageInterpolator(object):
         :Returns: TODO        
         """
 
-        points = comap.range()
+        points = coordmap.range()
         if mapping is not None:
             points = mapping(points, **keywords)
         return self.evaluate(points)

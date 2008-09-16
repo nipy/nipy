@@ -10,7 +10,7 @@ class ImageList:
         Parameters
         ----------
         images: a sliceable object whose items are meant to be images,
-                this is checked by asserting that each has a `comap` attribute
+                this is checked by asserting that each has a `coordmap` attribute
 
         >>> from numpy import asarray
         >>> from neuroimaging.testing funcfile
@@ -29,8 +29,8 @@ class ImageList:
         """
         if images is not None:
             for im in images:
-                if not hasattr(im, "comap"):
-                    raise ValueError, "expecting each element of images to have a 'comap' attribute"
+                if not hasattr(im, "coordmap"):
+                    raise ValueError, "expecting each element of images to have a 'coordmap' attribute"
             self.list = images
         else:
             self.list = []

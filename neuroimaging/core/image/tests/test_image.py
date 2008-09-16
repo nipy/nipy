@@ -21,7 +21,7 @@ class TestImage(TestCase):
         self.tmpfile = NamedTemporaryFile(suffix='.nii.gz')
         
     def test_init(self):
-        new = Image(np.asarray(self.img), self.img.comap)
+        new = Image(np.asarray(self.img), self.img.coordmap)
         assert_equal(np.asarray(self.img)[:], np.asarray(new)[:])
 
         self.assertRaises(ValueError, Image, None, None)
@@ -32,31 +32,31 @@ class TestImage(TestCase):
 
     def test_maxmin_values(self):
         y = np.asarray(self.img)
-        self.assertEquals(y.shape, tuple(self.img.comap.shape))
+        self.assertEquals(y.shape, tuple(self.img.coordmap.shape))
         np.allclose(y.max(), 437336.36, rtol=1.0e-8)
         self.assertEquals(y.min(), 0.0)
 
     def test_slice_plane(self):
         x = self.img[3]
         self.assertEquals(x.shape, self.img.shape[1:])
-        self.assertEquals(x.shape, x.comap.shape)
+        self.assertEquals(x.shape, x.coordmap.shape)
 
     def test_slice_block(self):
         x = self.img[3:5]
-        self.assertEquals(x.shape, (2,) + tuple(self.img.comap.shape[1:]))
-        self.assertEquals(x.shape, x.comap.shape)
+        self.assertEquals(x.shape, (2,) + tuple(self.img.coordmap.shape[1:]))
+        self.assertEquals(x.shape, x.coordmap.shape)
 
     def test_slice_step(self):
         s = slice(0,20,2)
         x = self.img[s]
-        self.assertEquals(x.shape, (10,) + tuple(self.img.comap.shape[1:]))
-        self.assertEquals(x.shape, x.comap.shape)
+        self.assertEquals(x.shape, (10,) + tuple(self.img.coordmap.shape[1:]))
+        self.assertEquals(x.shape, x.coordmap.shape)
 
     def test_slice_type(self):
-        s = slice(0,self.img.comap.shape[0])
+        s = slice(0,self.img.coordmap.shape[0])
         x = self.img[s]
-        self.assertEquals(x.shape, tuple((self.img.comap.shape)))
-        self.assertEquals(x.shape, x.comap.shape)
+        self.assertEquals(x.shape, tuple((self.img.coordmap.shape)))
+        self.assertEquals(x.shape, x.coordmap.shape)
 
     def test_slice_steps(self):
         zdim, ydim, xdim = self.img.shape
@@ -96,11 +96,11 @@ class TestImage(TestCase):
     # FIXME: AssertionError: Arrays are not almost equal
     @dec.skipknownfailure
     def test_nondiag(self):
-        self.img.comap.mapping.transform[0,1] = 3.0
+        self.img.coordmap.mapping.transform[0,1] = 3.0
         save_image(self.img, self.tmpfile.name)
         img2 = load_image(self.tmpfile.name)
-        assert_almost_equal(img2.comap.mapping.transform,
-                                       self.img.comap.mapping.transform)
+        assert_almost_equal(img2.coordmap.mapping.transform,
+                                       self.img.coordmap.mapping.transform)
 
     def test_generator(self):
         gen = data_generator(self.img)
@@ -113,7 +113,7 @@ class TestImage(TestCase):
             self.assertEquals(data.shape, (109,91))
 
     def test_iter4(self):
-        tmp = Image(np.zeros(self.img.shape), self.img.comap)
+        tmp = Image(np.zeros(self.img.shape), self.img.coordmap)
         write_data(tmp, data_generator(self.img, range(self.img.shape[0])))
         assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
 
@@ -121,7 +121,7 @@ class TestImage(TestCase):
         #This next test seems like it could be deprecated with
         #simplified iterator options
         
-        tmp = Image(np.zeros(self.img.shape), self.img.comap)
+        tmp = Image(np.zeros(self.img.shape), self.img.coordmap)
         g = data_generator(self.img)
         write_data(tmp, g)
         assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
@@ -189,13 +189,13 @@ class ArrayLikeObj(object):
 
 def test_ArrayLikeObj():
     obj = ArrayLikeObj()
-    # create simple comap
+    # create simple coordmap
     xform = np.eye(4)
     affine = Affine(xform)
-    comap = CoordinateMap.from_affine(affine, ['zspace', 'yspace', 'xspace'],
+    coordmap = CoordinateMap.from_affine(affine, ['zspace', 'yspace', 'xspace'],
                                     (2,3,4))
-    # create image form array-like object and comap
-    img = image.Image(obj, comap)
+    # create image form array-like object and coordmap
+    img = image.Image(obj, coordmap)
     assert img.ndim == 3
     assert img.shape == (2,3,4)
     assert np.allclose(np.asarray(img), 1)

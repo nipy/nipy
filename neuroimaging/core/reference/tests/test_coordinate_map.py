@@ -11,7 +11,7 @@ from neuroimaging.core.api import load_image
 
 
 
-class test_comap(TestCase):
+class test_coordmap(TestCase):
 
     def setUp(self):
         self.img = load_image(anatfile)
@@ -21,10 +21,10 @@ class test_comap(TestCase):
     def test_concat(self):
         self.fail("concatenated and replicated CoordinateMaps need to be fixed")
 
-        comaps = ConcatenatedComaps([self.img.comap]*5)
-        self.assertEquals(tuple(comaps.shape), (5,) + tuple(self.img.comap.shape))
-        z = comaps.mapping([4,5,6,7])
-        a = comaps.subcomap(0)
+        coordmaps = ConcatenatedComaps([self.img.coordmap]*5)
+        self.assertEquals(tuple(coordmaps.shape), (5,) + tuple(self.img.coordmap.shape))
+        z = coordmaps.mapping([4,5,6,7])
+        a = coordmaps.subcoordmap(0)
         x = a.mapping([5,6,7])
 
     # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
@@ -32,10 +32,10 @@ class test_comap(TestCase):
     def test_replicate(self):
         self.fail("concatenated and replicated CoordinateMaps need to be fixed")
 
-        comaps = self.img.comap.replicate(4)
-        self.assertEquals(tuple(comaps.shape), (4,) + tuple(self.img.comap.shape))
-        z = comaps.mapping([2,5,6,7])
-        a = comaps.subcomap(0)
+        coordmaps = self.img.coordmap.replicate(4)
+        self.assertEquals(tuple(coordmaps.shape), (4,) + tuple(self.img.coordmap.shape))
+        z = coordmaps.mapping([2,5,6,7])
+        a = coordmaps.subcoordmap(0)
         x = a.mapping([5,6,7])
 
     # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
@@ -45,8 +45,8 @@ class test_comap(TestCase):
         Test passing
         """
         self.fail("concatenated and replicated CoordinateMaps need to be fixed")
-        comaps = self.img.comap.replicate(4)
-        comaps.python2matlab()
+        coordmaps = self.img.coordmap.replicate(4)
+        coordmaps.python2matlab()
 
     # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
     @dec.skipknownfailure
@@ -56,8 +56,8 @@ class test_comap(TestCase):
         """
         self.fail("concatenated and replicated CoordinateMaps need to be fixed")
         
-        comaps = ConcatenatedIdenticalComaps(self.img.comap, 4)
-        comaps.python2matlab()
+        coordmaps = ConcatenatedIdenticalComaps(self.img.coordmap, 4)
+        coordmaps.python2matlab()
 
     # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
     @dec.skipknownfailure
@@ -66,8 +66,8 @@ class test_comap(TestCase):
         Test failing
         """
         self.fail("concatenated and replicated CoordinateMaps need to be fixed")
-        comaps = ConcatenatedComaps([self.img.comap]*4)
-        comaps.python2matlab()
+        coordmaps = ConcatenatedComaps([self.img.coordmap]*4)
+        coordmaps.python2matlab()
 
     def test_identity(self):
         shape = (30,40,50)

@@ -88,21 +88,21 @@ class ContinuousROI(ROI):
                 v.append(voxel)
         return DiscreteROI(self.coordinate_system, v)
     
-    def tocomap(self, comap):        
+    def tocoordmap(self, coordmap):        
         """
         Return a `CoordinateMapROI` instance at the voxels in the ROI.
 
         :Parameters:
-            comap : TODO
+            coordmap : TODO
                 TODO
 
         :Returns: `CoordinateMapROI`
         """
         v = []
-        for voxel in iter(comap):
+        for voxel in iter(coordmap):
             if self(voxel):
                 v.append(voxel)
-        return CoordinateMapROI(self.coordinate_system, v, comap)
+        return CoordinateMapROI(self.coordinate_system, v, coordmap)
 
 class DiscreteROI(ROI):
     """
@@ -185,19 +185,19 @@ class DiscreteROI(ROI):
 
 class CoordinateMapROI(DiscreteROI):
 
-    def __init__(self, coordinate_system, voxels, comap):
+    def __init__(self, coordinate_system, voxels, coordmap):
         """
         :Parameters:
             coordinate_system : TODO
                 TODO
             voxels : TODO
                 TODO
-            comap : TODO
+            coordmap : TODO
                 TODO
         
         """
         DiscreteROI.__init__(self, coordinate_system, voxels)
-        self.comap = comap
+        self.coordmap = coordmap
         # we assume that voxels are (i,j,k) indices?
 
     def pool(self, image):
@@ -213,9 +213,9 @@ class CoordinateMapROI(DiscreteROI):
 
         :Raises ValueError: TODO
         """
-        if image.comap != self.comap:
+        if image.coordmap != self.coordmap:
             raise ValueError(
-              'to pool an image over a CoordinateMapROI the comaps must agree')
+              'to pool an image over a CoordinateMapROI the coordmaps must agree')
 
         tmp = image.readall()
         v = [tmp[voxel] for voxel in self.voxels]
@@ -234,12 +234,12 @@ class CoordinateMapROI(DiscreteROI):
         :Raises NotImplementedError: TODO
         """
         if isinstance(other, CoordinateMapROI):
-            if other.comap == self.comap:
+            if other.coordmap == self.coordmap:
                 voxels = self.voxels.intersect(other.voxels)
-                return CoordinateMapROI(self.coordinate_system, voxels, self.comap)
+                return CoordinateMapROI(self.coordinate_system, voxels, self.coordmap)
             else:
                 raise ValueError(
-                  'comaps do not agree in union of CoordinateMapROI')
+                  'coordmaps do not agree in union of CoordinateMapROI')
         else:
             raise NotImplementedError(
               'only unions of CoordinateMapROIs with themselves are implemented')
@@ -248,14 +248,14 @@ class CoordinateMapROI(DiscreteROI):
         """
         :Returns: ``numpy.ndarray`
         """
-        m = np.zeros(self.comap.shape, np.int32)
+        m = np.zeros(self.coordmap.shape, np.int32)
         for v in self.voxels:
             m[v] = 1.
         return m
     
 class ROIall(CoordinateMapROI):
     """
-    An ROI for an entire comap. Save time by avoiding compressing, etc.
+    An ROI for an entire coordmap. Save time by avoiding compressing, etc.
     """
 
     def mask(self, image):
@@ -335,25 +335,25 @@ def roi_ellipse_fn(center, form, a = 1.0):
         return value
     return test
 
-def roi_from_array_sampling_comap(data, comap):
+def roi_from_array_sampling_coordmap(data, coordmap):
     """
-    Return a `CoordinateMapROI` from an array (data) on a comap.
+    Return a `CoordinateMapROI` from an array (data) on a coordmap.
     interpolation. Obvious ways to extend this.
 
     :Parameters:
         data : TODO
             TODO
-        comap : TODO
+        coordmap : TODO
             TODO
 
     :Returns: `CoordinateMapROI`
     """
 
-    if comap.shape != data.shape:
-        raise ValueError, 'comap shape does not agree with data shape'
+    if coordmap.shape != data.shape:
+        raise ValueError, 'coordmap shape does not agree with data shape'
     voxels = np.nonzero(data)
-    coordinate_system = comap.output_coordinate_system
-    return CoordinateMapROI(coordinate_system, voxels, comap)
+    coordinate_system = coordmap.output_coordinate_system
+    return CoordinateMapROI(coordinate_system, voxels, coordmap)
 
 class ROISequence(list):
     """

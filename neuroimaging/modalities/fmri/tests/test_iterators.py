@@ -82,7 +82,7 @@ class test_Iterators(TestCase):
         parcelseq = (0, 1, 2, 3)
         expected = [np.product(self.img.shape[1:]) - 6, 3, 3, 0]
         iterator = parcel_iterator(self.img, parcelmap, parcelseq)
-        tmp = FmriImage(self.img[:] * 1., self.img.comap)
+        tmp = FmriImage(self.img[:] * 1., self.img.coordmap)
 
         new_iterator = iterator.copy(tmp)
 

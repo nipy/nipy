@@ -118,13 +118,13 @@ def zslice(z, ylim, xlim, output_coords, shape):
 
 
 
-def bounding_box(comap):
+def bounding_box(coordmap):
     """
     Determine a valid bounding box from a CoordinateMap instance.
 
     :Parameters:
-        comap : `coordinate_map.CoordinateMap`
+        coordmap : `coordinate_map.CoordinateMap`
             TODO
     """
-    return [[r.min(), r.max()] for r in comap.range()]
+    return [[r.min(), r.max()] for r in coordmap.range()]
     

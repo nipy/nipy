@@ -175,11 +175,11 @@ class CoordinateSystem(odict):
 
     def sub_coords(self):
         """
-        Return a subset of the coordinate system to be used as part of a subcomap.
+        Return a subset of the coordinate system to be used as part of a subcoordmap.
 
         :Returns: ``CoordinateSystem``
         """
-        return CoordinateSystem(self.name + "-subcomap", self.axes()[1:])
+        return CoordinateSystem(self.name + "-subcoordmap", self.axes()[1:])
 
 
 class VoxelCoordinateSystem(CoordinateSystem):

@@ -22,8 +22,8 @@ from neuroimaging.core.api import Image
 
 class PCA(object):
     """
-    Compute the PCA of an image (over ``axis=0``). Image comap should
-    have a subcomap method.
+    Compute the PCA of an image (over ``axis=0``). Image coordmap should
+    have a subcoordmap method.
     """
 
     def __init__(self, image, tol=1e-5, ext='.img', mask=None, pcatype='cor',
@@ -47,7 +47,7 @@ class PCA(object):
                 Data is projected onto the column span of design_keep.
         """
         self.image = np.asarray(image)
-        self.outcomap = image[0].comap
+        self.outcoordmap = image[0].coordmap
         self.tol = tol
         self.ext = ext
         self.mask = mask
@@ -168,17 +168,17 @@ class PCA(object):
         ncomp = len(which)
         subVX = self.components[which]
 
-        outcomap = self.outcomap
+        outcoordmap = self.outcoordmap
 
         # FIXME: There is no Image.slice_iterator.  Replace when
         # generators are done.
         if output_base is not None:
             outiters = [Image('%s_comp%d%s' % (output_base, i, self.ext),
-                              comap=outcomap.copy(),
+                              coordmap=outcoordmap.copy(),
                               mode='w').slice_iterator(mode='w') for i in which]
         else:
-            outiters = [Image(np.zeros(outcomap.shape),
-                              comap=outcomap.copy()).slice_iterator(mode='w')
+            outiters = [Image(np.zeros(outcoordmap.shape),
+                              coordmap=outcoordmap.copy()).slice_iterator(mode='w')
                         for i in which]
 
         first_slice = slice(0,self.image.shape[0])
@@ -200,20 +200,20 @@ class PCA(object):
                 U *= Smhalf
             
  
-            U.shape = (U.shape[0],) + outcomap.shape[1:]
+            U.shape = (U.shape[0],) + outcoordmap.shape[1:]
             for k in range(len(which)):
                 outiters[k].next().set(U[k])
 
         for i in range(len(which)):
             if output_base:
                 outimage = Image('%s_comp%d%s' % (output_base, which[i], self.ext),
-                                      comap=outcomap, mode='r+')
+                                      coordmap=outcoordmap, mode='r+')
             else:
                 outimage = outiters[i].img
             d = outimage.readall()
             dabs = np.fabs(d); di = dabs.argmax()
             d = d / d.flat[di]
-            outslice = [slice(0,j) for j in outcomap.shape]
+            outslice = [slice(0,j) for j in outcoordmap.shape]
             outimage[outslice] = d
 
         return [it.img for it in outiters]
@@ -279,7 +279,7 @@ class PCA(object):
 ##             try:
 ##                 t = self.image.frametimes
 ##             except:
-##                 t = np.arange(self.image.comap.shape[0])
+##                 t = np.arange(self.image.coordmap.shape[0])
 ##             self.time_plot = MultiPlot(self.components[self.image_which],
 ##                                        time=t,
 ##                                        title=title)
@@ -292,8 +292,8 @@ class PCA(object):
 ##             'images' method.
 
 ##             If z is not specified, a range of nslice equally spaced slices
-##             along the range of the first axis of image_results[0].comap is used,
-##             where nslice defaults to image_results[0].comap.shape[0].
+##             along the range of the first axis of image_results[0].coordmap is used,
+##             where nslice defaults to image_results[0].coordmap.shape[0].
 
 ##             :Parameters:
 ##                 `z` : TODO
@@ -313,14 +313,14 @@ class PCA(object):
 ##             """
 
 ##             if nslice is None:
-##                 nslice = self.image_results[0].comap.shape[0]
+##                 nslice = self.image_results[0].coordmap.shape[0]
 ##             if self.image_results is None:
 ##                 raise ValueError, 'run "images" before montage'
 ##             images = self.image_results
 ##             nrow = len(images)
 
 ##             if z is None:
-##                 r = images[0].comap.range()
+##                 r = images[0].coordmap.range()
 ##                 zmin = r[0].min(); zmax = r[0].max()
 ##                 z = np.linspace(zmin, zmax, nslice)
                 
@@ -328,7 +328,7 @@ class PCA(object):
 ##             z.sort()
 ##             ncol = len(z)
 
-##             basecomap = images[0].comap
+##             basecoordmap = images[0].coordmap
 ##             if self.mask is not None:
 ##                 mask_interp = ImageInterpolator(self.mask)
 ##             else:
@@ -337,7 +337,7 @@ class PCA(object):
 ##             montage_slices = {}
 
 ##             image_interps = [ImageInterpolator(images[i]) for i in range(nrow)]
-##             interp_slices = [slices.transversal(basecomap,
+##             interp_slices = [slices.transversal(basecoordmap,
 ##                                                 z=zval,
 ##                                                 xlim=xlim,
 ##                                                 ylim=ylim) for zval in z]

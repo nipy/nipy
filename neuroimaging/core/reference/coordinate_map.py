@@ -58,7 +58,7 @@ class CoordinateMap(object):
     @staticmethod
     def identity(names, shape):
         """
-        Return an identity comap of the given shape.
+        Return an identity coordmap of the given shape.
         
         :Parameters:
             shape : ``tuple`` of ``int``
@@ -87,7 +87,7 @@ class CoordinateMap(object):
     @staticmethod
     def from_affine(mapping, names, shape):
         """
-        Return comap using a given `Affine` mapping
+        Return coordmap using a given `Affine` mapping
         
         :Parameters:
             mapping : `Affine`
@@ -95,7 +95,7 @@ class CoordinateMap(object):
             names : ``tuple`` of ``string``
                 The names of the axes of the coordinate systems
             shape : ''tuple'' of ''int''
-                The shape of the comap
+                The shape of the coordmap
         :Returns: `CoordinateMap`
         
         :Precondition: ``len(shape) == len(names)``
@@ -120,7 +120,7 @@ class CoordinateMap(object):
             output_coords : `CoordinateSystem`
                 The output coordinate system
         """
-        # These guys define the structure of the comap.
+        # These guys define the structure of the coordmap.
         self.mapping = mapping
         self.input_coords = input_coords
         self.output_coords = output_coords
@@ -156,7 +156,7 @@ class CoordinateMap(object):
 
     def copy(self):
         """
-        Create a copy of the comap.
+        Create a copy of the coordmap.
 
         :Returns: `CoordinateMap`
         """
@@ -166,7 +166,7 @@ class CoordinateMap(object):
     def __getitem__(self, index):
         """
         If all input coordinates are VoxelCoordinateSystem, return
-        a slice through the comap.
+        a slice through the coordmap.
 
         Parameters
         ----------
@@ -186,7 +186,7 @@ class CoordinateMap(object):
             newic = VoxelCoordinateSystem(self.input_coords.name, newia, shape=shape)
             return CoordinateMap(mapping, newic, self.output_coords)
         else:
-            raise ValueError, 'input_coords must be VoxelCoordinateSystem for slice of comap to make sense'
+            raise ValueError, 'input_coords must be VoxelCoordinateSystem for slice of coordmap to make sense'
 
     def range(self):
         """
@@ -203,11 +203,11 @@ class CoordinateMap(object):
             _range.shape = tmp_shape
             return _range 
         else:
-            raise AttributeError, 'range of comap only makes sense if input_coords are VoxelCoordinateSystem'
+            raise AttributeError, 'range of coordmap only makes sense if input_coords are VoxelCoordinateSystem'
 
     def transform(self, mapping): 
         """        
-        Apply a transformation (mapping) to this comap.
+        Apply a transformation (mapping) to this coordmap.
         
         :Parameters:
             mapping : `mapping.Mapping`
@@ -219,7 +219,7 @@ class CoordinateMap(object):
 
     def matlab2python(self):
         """
-        Convert a comap in matlab-ordered voxels to python ordered voxels
+        Convert a coordmap in matlab-ordered voxels to python ordered voxels
         if input_coords is an instance of VoxelCoordinateSystem.
         See `Mapping.matlab2python` for more details.
 
@@ -236,7 +236,7 @@ class CoordinateMap(object):
 
     def python2matlab(self):
         """
-        Convert a comap in python ordered voxels to matlab ordered voxels
+        Convert a coordmap in python ordered voxels to matlab ordered voxels
         if input_coords is an instance of VoxelCoordinateSystem.
         See `Mapping.python2matlab` for more details.
         """
@@ -262,12 +262,12 @@ class CoordinateMap(object):
         """
         return ConcatenatedIdenticalComaps(self, n, concataxis=concataxis)
 
-def centered_comap(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
+def centered_coordmap(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
     """
-    creates a simple centered comap that centers matrix on zero
+    creates a simple centered coordmap that centers matrix on zero
 
-    If you have a nd-array and just want a simple comap that puts the center of
-    your data matrix at approx (0,0,0)...this will generate the comap you need
+    If you have a nd-array and just want a simple coordmap that puts the center of
+    your data matrix at approx (0,0,0)...this will generate the coordmap you need
 
     Parameters
     _________
@@ -308,63 +308,63 @@ def centered_comap(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
 
 class ConcatenatedComaps(CoordinateMap):
     """
-    Return a comap formed by concatenating a sequence of comaps. Checks are done
+    Return a coordmap formed by concatenating a sequence of coordmaps. Checks are done
     to ensure that the coordinate systems are consistent, as is the shape.
-    It returns a comap with the proper shape but no inverse.
-    This is most likely the kind of comap to be used for fMRI images.
+    It returns a coordmap with the proper shape but no inverse.
+    This is most likely the kind of coordmap to be used for fMRI images.
     """
 
 
-    def __init__(self, comaps, concataxis="concat"):
+    def __init__(self, coordmaps, concataxis="concat"):
         """
         :Parameters:
-            comap : ``[`CoordinateMap`]``
-                The comaps to be used.
+            coordmap : ``[`CoordinateMap`]``
+                The coordmaps to be used.
             concataxis : ``string``
                 The name of the new dimension formed by concatenation
         """        
-        self.comaps = self._comaps(comaps)
+        self.coordmaps = self._coordmaps(coordmaps)
         self.concataxis = concataxis
         mapping, input_coords, output_coords = self._mapping()
         CoordinateMap.__init__(self, mapping, input_coords, output_coords)
 
 
     def _getshape(self):
-        return (len(self.comaps),) + self.comaps[0].shape
+        return (len(self.coordmaps),) + self.coordmaps[0].shape
     shape = property(_getshape)
 
-    def _comaps(self, comaps):
+    def _coordmaps(self, coordmaps):
         """
-        Setup the comaps.
+        Setup the coordmaps.
         """
         # check mappings are affine
-        check = np.any([not isinstance(comap.mapping, Affine)\
-                          for comap in comaps])
+        check = np.any([not isinstance(coordmap.mapping, Affine)\
+                          for coordmap in coordmaps])
         if check:
             raise ValueError('must all be affine mappings!')
 
         # check shapes are identical
-        s = comaps[0].shape
-        check = np.any([comap.shape != s for comap in comaps])
+        s = coordmaps[0].shape
+        check = np.any([coordmap.shape != s for coordmap in coordmaps])
         if check:
-            raise ValueError('subcomaps must have same shape')
+            raise ValueError('subcoordmaps must have same shape')
 
         # check input coordinate systems are identical
-        in_coords = comaps[0].input_coords
-        check = np.any([comap.input_coords != in_coords\
-                           for comap in comaps])
+        in_coords = coordmaps[0].input_coords
+        check = np.any([coordmap.input_coords != in_coords\
+                           for coordmap in coordmaps])
         if check:
             raise ValueError(
-              'subcomaps must have same input coordinate systems')
+              'subcoordmaps must have same input coordinate systems')
 
         # check output coordinate systems are identical
-        out_coords = comaps[0].output_coords
-        check = np.any([comap.output_coords != out_coords\
-                           for comap in comaps])
+        out_coords = coordmaps[0].output_coords
+        check = np.any([coordmap.output_coords != out_coords\
+                           for coordmap in coordmaps])
         if check:
             raise ValueError(
-              'subcomaps must have same output coordinate systems')
-        return tuple(comaps)
+              'subcoordmaps must have same output coordinate systems')
+        return tuple(coordmaps)
 
     def _mapping(self):
         """
@@ -376,69 +376,69 @@ class ConcatenatedComaps(CoordinateMap):
                 X = x[1:]
                 v = np.zeros(x.shape[1:])
                 for j in I.shape[0]:
-                    v[j] = self.comaps[I[j]].mapping(X[j])
+                    v[j] = self.coordmaps[I[j]].mapping(X[j])
                 return v
             except:
                 i = int(x[0])
                 x = x[1:]
-                return self.comaps[i].mapping(x)
+                return self.coordmaps[i].mapping(x)
                 
         newaxis = Axis(name=self.concataxis)
-        in_coords = self.comaps[0].input_coords
+        in_coords = self.coordmaps[0].input_coords
         newin = CoordinateSystem('%s:%s'%(in_coords.name, self.concataxis), \
                                  [newaxis] + list(in_coords.axes()))
-        out_coords = self.comaps[0].output_coords
+        out_coords = self.coordmaps[0].output_coords
         newout = CoordinateSystem('%s:%s'%(out_coords.name, self.concataxis), \
                                   [newaxis] + list(out_coords.axes()))
         return Mapping(mapfunc), newin, newout
 
 
-    def subcomap(self, i):
+    def subcoordmap(self, i):
         """
-        Return the i'th comap from the sequence of comaps.
+        Return the i'th coordmap from the sequence of coordmaps.
 
         :Parameters:
            i : ``int``
-               The index of the comap to return
+               The index of the coordmap to return
 
         :Returns: `CoordinateMap`
         
         :Raises IndexError: if i in out of range.
         """
-        return self.comaps[i]
+        return self.coordmaps[i]
 
 class ConcatenatedIdenticalComaps(ConcatenatedComaps):
     """
-    A set of concatenated comaps, which are all identical.
+    A set of concatenated coordmaps, which are all identical.
     """
     
-    def __init__(self, comap, n, concataxis="concat"):
+    def __init__(self, coordmap, n, concataxis="concat"):
         """
         :Parameters:
-            comap : `CoordinateMap`
-                The comap to be used
+            coordmap : `CoordinateMap`
+                The coordmap to be used
             n : ``int``
-                The number of tiems to concatenate the comap
+                The number of tiems to concatenate the coordmap
             concataxis : ``string``
                 The name of the new dimension formed by concatenation
         """
-        ConcatenatedComaps.__init__(self, [comap]*n , concataxis)
+        ConcatenatedComaps.__init__(self, [coordmap]*n , concataxis)
 
     def _mapping(self):
         """
         Set up the mapping and coordinate systems.
         """
         newaxis = Axis(name=self.concataxis)
-        in_coords = self.comaps[0].input_coords
+        in_coords = self.coordmaps[0].input_coords
         newin = CoordinateSystem(
             '%s:%s'%(in_coords.name, self.concataxis), \
                [newaxis] + list(in_coords.axes()))
-        out_coords = self.comaps[0].output_coords
+        out_coords = self.coordmaps[0].output_coords
         newout = CoordinateSystem(
             '%s:%s'%(out_coords.name, self.concataxis), \
                [newaxis] + list(out_coords.axes()))
 
-        in_trans = self.comaps[0].mapping.transform
+        in_trans = self.coordmaps[0].mapping.transform
         ndim = in_trans.shape[0]-1
         out_trans = np.zeros((ndim+2,)*2)
         out_trans[0:ndim, 0:ndim] = in_trans[0:ndim, 0:ndim]
