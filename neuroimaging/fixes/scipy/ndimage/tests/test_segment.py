@@ -140,7 +140,7 @@ class TestSegment(TestCase):
     # 0.05084148, 0.07550675, 0.4334695 , 0.03715914, 0.00289055,
     # 0.02755581, 0.48142046, 0.03137803, 0.00671277, 0.51568902,
     # 0.01795249, 0.49102375, 1.  ], dtype=float32)
-    @dec.skipknownfailure
+    @dec.knownfailureif(True)
     def test_texture2(self):
         # [2] texture2 is 2 plane waves and assert the 20-element feature
         #     vector for each disc is correct
