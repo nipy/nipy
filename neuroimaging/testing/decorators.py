@@ -25,10 +25,12 @@ def make_label_dec(label, ds=None):
 
    :Examples:
 
+   >>> from neuroimaging.testing import make_label_dec
    >>> slow = make_label_dec('slow')
    >>> print slow.__doc__
    Labels a test as 'slow'
 
+   >>> from neuroimaging.testing import make_label_dec
    >>> rare = make_label_dec(['slow','hard'],
    ... "Mix labels 'slow' and 'hard' for rare tests")
    >>> @rare
