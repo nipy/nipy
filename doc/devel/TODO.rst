@@ -235,7 +235,8 @@ work through the backlog.
 *Fix bugs and implement any functionality needed to begin registration
 next week.*
 
-* Implement fmriimagelist blueprint.
+* Implement `fmriimagelist blueprint
+  <https://blueprints.launchpad.net/nipy/+spec/fmriimagelist>`_.
 
   * Requires some changes to CoordinateMap?
   * FmriImageList has a frametimes attr.  Document it and consider
