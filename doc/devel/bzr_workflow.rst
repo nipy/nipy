@@ -133,6 +133,45 @@ changesets on Launchpad with the color-coded diffs.
 
 **Note:** Developers can also subscribe to other team members branches.
 
+Code review of developer branches
+---------------------------------
+
+In order to do code reviews, each developer should propose their
+developer branch for merging into the nipy mainline.  We have decided
+to keep these proposed merges open indefinitely so the code reviewer
+can use Launchpad to view branch changes prior to pulling the branch.
+*You only need to do this procedure one.*
+
+In your developer code directory, select the **Propose for merging
+into another branch** link and choose these options:
+
+  Target Branch:
+    The NIPY mainline (*default selection*)
+
+Click on the **Register** button.
+
+Edit the branch **Title** and **Summary**.  In your branch page,
+select the little yellow circle with the pencil icon next to the title
+to *Change branch details*.  Set the options to something like:
+
+  Title:
+    Chris' development copy of the nipy trunk
+
+  Summary: 
+    This branch is my development copy of the trunk. It is
+    available here for review by other developers, and merges will be
+    periodically made into trunk.
+
+    For this reason, it will always be marked for review to be merged.
+
+  Status:
+    Development
+
+Click on the **Change branch** button to finalize.
+
+Look at `Chris' branch
+<https://code.launchpad.net/~cburns/nipy/trunk-dev>`_ for an example.
+
 
 .. _nipy: https://launchpad.net/nipy
 .. _launchpad: https://launchpad.net/
