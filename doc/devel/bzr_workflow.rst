@@ -11,7 +11,7 @@ This document describes the standard workflow for nipy development
 using bazaar and the launchpad_ hosting service.  It would help very
 much in keeping track of shared code if all nipy_ developers adopt
 this workflow.  The workflow should be flexible enough that even an
-occassional developer can contribute code to nipy since it does not
+occasional developer can contribute code to nipy_ since it does not
 require all contributors to have commit access to the main trunk.
 This particular workflow was developed to achieve these primary
 objectives.
@@ -48,7 +48,7 @@ where *trunk-dev* is a branch from your user directory on launchpad_
 and is your working development branch.
 
 Initializing your development environment
------------------------------------------ 
+-----------------------------------------
 
 We're using the `shared repository <http://bazaar-vcs.org/SharedRepositoryTutorial>`_ feature of bazaar_.
 
@@ -75,6 +75,8 @@ We're using the `shared repository <http://bazaar-vcs.org/SharedRepositoryTutori
 You now have your own branch, stored on launchpad, and on your
 machine, in which you can develop nipy_ code.
 
+.. _daily-development-cycle:
+
 Daily development cycle
 -----------------------
 
@@ -87,18 +89,52 @@ development branch::
  bzr commit -m 'Merge from trunk'
 
 When editing you will want to push your changes up to your launchpad_
-branch::                ::
+branch::
 
  cd trunk-dev
  # edit code
- bzr ci -m "meaningful message"
+ bzr ci -m "Add a meaningful summary of your edits in one complete sentence."
  # repeat
  ...
  # periodically push to lp:~user (like end of day)
  bzr push
 
+Keeping current with the nipy trunk
+-----------------------------------
+
+Since we are all doing development in our own launchpad_ branches,
+each developer should keep their branch up-to-date with the main trunk
+so their branch doesn't diverge significantly from the rest of the
+team.  This is done with the ``bzr merge lp:nipy`` line in the
+:ref:`daily-development-cycle` section above.  Launchpad allows
+developers to subscribe to a branch and receive email notifications
+when there are changes.  By subscribing to the `nipy trunk`_, you will
+be emailed whenever the trunk changes, reminding you to merge the
+trunk into your branch.
+
+On the `nipy trunk`_ page there is an **Owner / Subscribers** section
+on the right-hand side.  Click on the link *Subscribe yourself*.
+Select the desired options and click the *Subscribe* button.
+
+These options should be sufficient for developers:
+
+  Notification Level:
+    Branch attribute and revision notifications
+
+  Generated Diff Size Limit:
+    Don't send diffs (*more below*)
+
+  Code review Level:
+    Email about all changes
+
+The *Diff Size Limit* is a personal preference.  The full diff's can
+be long and a lot to read in an email.  I find it easier to view the
+changesets on Launchpad with the color-coded diffs.
+
+**Note:** Developers can also subscribe to other team members branches.
+
 
 .. _nipy: https://launchpad.net/nipy
 .. _launchpad: https://launchpad.net/
 .. _bazaar: http://bazaar-vcs.org/
-
+.. _`nipy trunk`: https://code.launchpad.net/~nipy-developers/nipy/trunk
