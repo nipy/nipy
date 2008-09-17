@@ -175,7 +175,7 @@ class TestRegistration(TestCase):
     # Items are not equal:
     # ACTUAL: -1.7962622116524041
     # DESIRED: -1.7973048186515352
-    @dec.skipknownfailure
+    @dec.knownfailureif(True)
     @dec.slow
     def test_autoalign_nmi_value_2(self):
         "test_autoalign_nmi_value_2"

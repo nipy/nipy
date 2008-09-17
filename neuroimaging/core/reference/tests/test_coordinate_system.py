@@ -64,7 +64,7 @@ class test_CoordinateSystem(TestCase):
 
     def test_sub_coords(self):
         new_c = self.c.sub_coords()
-        self.assertEquals(new_c.name, self.c.name + "-subgrid")
+        self.assertEquals(new_c.name, self.c.name + "-subcoordmap")
         self.assertEquals(new_c.axes(), self.c.axes()[1:])
         
 

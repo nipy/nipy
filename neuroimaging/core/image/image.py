@@ -13,16 +13,15 @@ Examples
 See documentation for load and save functions for 'working' examples.
 
 """
+import numpy as np
+
+from neuroimaging.core.reference.coordinate_map import CoordinateMap
+from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
+
 
 __docformat__ = 'restructuredtext'
 __all__ = ['load', 'save', 'fromarray']
-
-import numpy as np
-
-from neuroimaging.core.reference.grid import SamplingGrid
-from neuroimaging.core.reference.mapping import Affine
-
-from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
 
 class Image(object):
     """
@@ -48,8 +47,8 @@ class Image(object):
 
     """
 
-    def __init__(self, data, grid):
-        """Create an `Image` object from a numpy array and a `Grid` object.
+    def __init__(self, data, coordmap):
+        """Create an `Image` object from array and ``CoordinateMap`` object.
         
         Images should be created through the module functions load and
         fromarray.
@@ -57,7 +56,7 @@ class Image(object):
         Parameters
         ----------
         data : A numpy.ndarray
-        grid : A `SamplingGrid` Object
+        coordmap : A `CoordinateMap` Object
         
         See Also
         --------
@@ -67,13 +66,13 @@ class Image(object):
 
         """
 
-        if data is None or grid is None:
-            raise ValueError, 'expecting an array and SamplingGrid instance'
+        if data is None or coordmap is None:
+            raise ValueError, 'expecting an array and CoordinateMap instance'
 
         # self._data is an array-like object.  It must implement a subset of
         # array methods  (Need to specify these, for now implied in pyniftio)
         self._data = data
-        self._grid = grid
+        self._coordmap = coordmap
 
     def _getshape(self):
         return self._data.shape
@@ -83,14 +82,14 @@ class Image(object):
         return self._data.ndim
     ndim = property(_getndim, doc="Number of data dimensions")
 
-    def _getgrid(self):
-        return self._grid
-    grid = property(_getgrid,
+    def _getcoordmap(self):
+        return self._coordmap
+    coordmap = property(_getcoordmap,
                     doc="Coordinate mapping from input coords to output coords")
 
     def _getaffine(self):
-        if hasattr(self.grid, "affine"):
-            return self.grid.affine
+        if hasattr(self.coordmap, "affine"):
+            return self.coordmap.affine
         raise AttributeError, 'Nonlinear transform does not have an affine.'
     affine = property(_getaffine, doc="Affine transformation is one exists")
 
@@ -104,11 +103,11 @@ class Image(object):
     def __getitem__(self, index):
         """Slicing an image returns a new image."""
         data = self._data[index]
-        grid = self.grid[index]
+        coordmap = self.coordmap[index]
         # BUG: If it's a zero-dimension array we should return a numpy scalar
         # like np.int32(data[index])
         # Need to figure out elegant way to handle this
-        return Image(data, grid)
+        return Image(data, coordmap)
 
     def __setitem__(self, index, value):
         """Setting values of an image, set values in the data array."""
@@ -118,14 +117,14 @@ class Image(object):
         """Return data as a numpy array."""
         return np.asarray(self._data)
 
-def _open(filename, grid=None, mode="r"):
+def _open(filename, coordmap=None, mode="r"):
     """Create an `Image` from the given filename
 
     Parameters
     ----------
     filename : ``string``
-    grid : `reference.grid.SamplingGrid`
-        The sampling grid for the file
+    coordmap : `reference.coordinate_map.CoordinateMap`
+        The coordinate map for the file
     mode : ``string``
         The mode ot open the file in ('r', 'w', etc)
 
@@ -137,11 +136,11 @@ def _open(filename, grid=None, mode="r"):
 
     try:
         ioimg = PyNiftiIO(filename, mode)
-        if grid is None:
-            grid = _grid_from_affine(ioimg.affine, ioimg.orientation,
+        if coordmap is None:
+            coordmap = _coordmap_from_affine(ioimg.affine, ioimg.orientation,
                                     ioimg.shape)
-        # Build nipy image from array-like object and sampling grid
-        img = Image(ioimg, grid)
+        # Build nipy image from array-like object and coordinate map
+        img = Image(ioimg, coordmap)
         return img
     except IOError:
         raise IOError, 'Unable to open file %s' % filename
@@ -224,11 +223,11 @@ def save(img, filename):
     """
 
     data = np.asarray(img)
-    outimage = _open(data, grid=img.grid, mode='w')
+    outimage = _open(data, coordmap=img.coordmap, mode='w')
     outimage._data.save(filename)
     return outimage
     
-def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
+def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
     """Create an image from a numpy array.
 
     Parameters
@@ -236,8 +235,8 @@ def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
     data : numpy array
         A numpy array of three dimensions.
     names : a list of axis names
-    grid : A `SamplingGrid`
-        If not specified, a uniform sampling grid is created.
+    coordmap : A `CoordinateMap`
+        If not specified, a uniform coordinate map is created.
 
     Returns
     -------
@@ -251,13 +250,13 @@ def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
     """
 
     ndim = len(data.shape)
-    if not grid:
-        grid = SamplingGrid.from_start_step(names,
+    if not coordmap:
+        coordmap = CoordinateMap.from_start_step(names,
                                             (0,)*ndim,
                                             (1,)*ndim,
                                             data.shape)
 
-    return Image(data, grid)
+    return Image(data, coordmap)
 
 def merge_images(filename, images, cls=Image, clobber=False,
                  axis='time'):
@@ -285,22 +284,22 @@ def merge_images(filename, images, cls=Image, clobber=False,
     
     n = len(images)
     im0 = images[0]
-    grid = im0.grid.replicate(n, axis)
-    data = np.empty(shape=grid.shape)
+    coordmap = im0.coordmap.replicate(n, axis)
+    data = np.empty(shape=coordmap.shape)
     for i, image in enumerate(images):
         data[i] = np.asarray(image)[:]
-    return Image(data, grid)
+    return Image(data, coordmap)
 
-def _grid_from_affine(affine, orientation, shape):
-    """Generate a SamplingGrid from an affine transform.
+def _coordmap_from_affine(affine, orientation, shape):
+    """Generate a CoordinateMap from an affine transform.
 
-    This is a convenience function to create a SamplingGrid from image
+    This is a convenience function to create a CoordinateMap from image
     attributes.  It uses the orientation field from pynifti IO to map
     to the nipy *names*, prepending *time* or *vector* depending on
     dimension.
 
     FIXME: This is an internal function and should be revisited when
-    the SamplingGrid is refactored.
+    the CoordinateMap is refactored.
     
     """
 
@@ -313,5 +312,5 @@ def _grid_from_affine(affine, orientation, shape):
     elif len(shape) == 5:
         names = ['vector', 'time'] + names
     affobj = Affine(affine)
-    grid = SamplingGrid.from_affine(affobj, names, shape)
-    return grid
+    coordmap = CoordinateMap.from_affine(affobj, names, shape)
+    return coordmap

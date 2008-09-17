@@ -92,7 +92,7 @@ class test_Protocol(test_ProtocolSetup):
     #     np.array(self.func(np.array([4.0,5.0,6]))) File
     #     "/Users/cburns/src/nipy-trunk/neuroimaging/modalities/fmri/protocol.py",
     #     line 305, in <lambda> f = lambda t: f(t)
-    @dec.skipknownfailure
+    @dec.knownfailure
     def testContrast2(self):
         self.setup_terms()
         drift_fn = functions.SplineConfound(4, window=(0,300))

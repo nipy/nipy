@@ -19,10 +19,10 @@ newimg = save_image(img, 'tempimage.nii.gz')
 
 
 # Example of creating a temporary image file from an existing image
-# with a matching grid.
+# with a matching comap.
 
 # from neuroimaging.core.api import load_image
 # img = load_image('foo.nii.gz')
-# zeroarray = np.zeros(img.grid.shape)
-# zeroimg = fromarray(zeroarray, grid=img.grid)
+# zeroarray = np.zeros(img.comap.shape)
+# zeroimg = fromarray(zeroarray, comap=img.comap)
 # newimg = save_image(zeroimg, 'tempimage.nii.gz')

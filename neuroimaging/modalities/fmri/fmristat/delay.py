@@ -268,12 +268,12 @@ class DelayContrastOutput(TOutput):
     TODO
     """
 
-    def __init__(self, grid, contrast, IRF=None, dt=0.01, delta=None, 
+    def __init__(self, coordmap, contrast, IRF=None, dt=0.01, delta=None, 
                  subpath='delays', clobber=False, path='.',
                  ext='.hdr', frametimes=[], **kw):
         """
         :Parameters:
-            `grid` : TODO
+            `coordmap` : TODO
                 TODO
             `contrast` : TODO
                 TODO
@@ -297,7 +297,7 @@ class DelayContrastOutput(TOutput):
                 Passed through to the constructor of `TContrastOutput`
             
         """
-        TContrastOutput.__init__(self, grid, contrast, subpath=subpath,
+        TContrastOutput.__init__(self, coordmap, contrast, subpath=subpath,
                                  clobber=clobber, frametimes=frametimes, **kw)
         self.IRF = IRF
         self.dt = dt

@@ -2,8 +2,10 @@
  How to write documentation
 ============================
 
-See numpy/doc/HOWTO_DOCUMENT.txt for a working example of how to ReST_
-format your documentation and other PEPs.
+See http://svn.scipy.org/svn/numpy/trunk/doc/HOWTO_DOCUMENT.txt
+for a working example of how to ReST_ format your documentation and
+other documentation standards.  We aim for the same standards in
+nipy_. 
 
 Using ReST_
 -----------
@@ -17,5 +19,6 @@ You may want to review:
 Consider using emacs `rst-mode` - rst.el for editing rst files, and
 ReST_ in docstrings - :ref:`tricked_out_emacs`. 
 
+.. _nipy: https://launchpad.net/nipy
 .. _ReST: http://docutils.sourceforge.net/rst.html
 

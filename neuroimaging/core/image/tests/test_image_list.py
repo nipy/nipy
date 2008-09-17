@@ -1,18 +1,18 @@
 from numpy import asarray
 
-from numpy.testing import *
+from neuroimaging.testing import *
 
 from neuroimaging.utils.tests.data import repository
 
 from neuroimaging.core.image.image_list import ImageList
 from neuroimaging.core.api import load_image
-from neuroimaging.modalities.fmri.api import FmriImage, fromimage
+from neuroimaging.modalities.fmri.api import FmriImageList, fromimage
 
 
 import numpy as np
 
 # FIXME: Write valid tests for fmri image list objects.
-@dec.skipknownfailure
+@dec.knownfailure
 def test_image_list():
     img_path = str(repository._fullpath("test_fmri.nii.gz"))
     ff = load_image(img_path)
