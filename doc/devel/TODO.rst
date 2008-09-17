@@ -37,6 +37,8 @@ Documentation
   <http://neuroimaging.scipy.org/neuroimaging/ni/wiki/PrincipalComponents>`_
   page.  Should also be a rest document.
 
+* Add analysis pipeline(s) blueprint.
+
 Bugs
 ====
 
@@ -73,14 +75,6 @@ were added here this summer, grouping until they can be input.
 
 * Fix .mat file IO.  See test_mapping.py
 
-* Verify documententation of the image generators. Create a simple
-  example using them.
-
-* Add test data where volumes contain intensity ramps.  Slice with
-  generator and test ramp values.
-
-* Use python 2.5 feature of being able to reset the generator?
-
 * Fix deprecation error in pynifti's swig generated extension code::
 
     /Users/cburns/src/nipy-trunk/neuroimaging/externals/pynifti/nifti/niftiformat.py:458
@@ -110,6 +104,8 @@ were added here this summer, grouping until they can be input.
 
 * import neuroimaging.algorithms is very slow!  Find and fix.  The
   shared library is slow.
+
+* base class for all new-style classes should be *object*
 
 Data
 ====
@@ -189,6 +185,18 @@ Refactorings
 * Automated test for modalities.fmri.pca, check for covariance
   diagonal structure, post pca.
 
+* FmriImageList.emptycopy() - Is there a better way to do this?
+  Matthew proposed possibly implementing Gael's dress/undress metadata
+  example.
+
+* Verify documentation of the image generators. Create a simple
+  example using them.
+
+* Use python 2.5 feature of being able to reset the generator?
+
+* Add test data where volumes contain intensity ramps.  Slice with
+  generator and test ramp values.
+
 Code Design Thoughts
 ====================
 
@@ -248,6 +256,8 @@ next week.*
   by Wednesday PM.  Share with Jonathan.
 
 * Fix image saving bug with pixdims.
+
+* Fix memory error in pynifti when running tests via nosetests.
 
 * Document pynifti development in nipy.
 
