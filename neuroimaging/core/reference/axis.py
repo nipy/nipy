@@ -17,10 +17,11 @@ The current class hierarchy looks like this::
 There is currently no support for irregularly spaced axes, however
 this could easily be added.
 """
+import numpy as np
+
 
 __docformat__ = 'restructuredtext'
 
-import numpy as np
 
 class Axis(object):
     """

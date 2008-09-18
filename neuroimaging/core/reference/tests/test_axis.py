@@ -12,7 +12,7 @@ class test_Axis(TestCase):
     # FIXME: Persumably we would have a defined set of valid axis
     # names.  There should be a test for setting valid and invalid
     # names.
-    @dec.skipknownfailure    
+    @dec.knownfailure    
     def test_init(self):
         # an invalid name shou;d raise an error
         self.fail("the valid names of axes has been removed so this doesn't raise an exception anymore")
