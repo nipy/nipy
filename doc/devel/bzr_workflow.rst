@@ -140,7 +140,7 @@ In order to do code reviews, each developer should propose their
 developer branch for merging into the nipy mainline.  We have decided
 to keep these proposed merges open indefinitely so the code reviewer
 can use Launchpad to view branch changes prior to pulling the branch.
-*You only need to do this procedure one.*
+*You only need to do this procedure once.*
 
 In your developer code directory, select the **Propose for merging
 into another branch** link and choose these options:
