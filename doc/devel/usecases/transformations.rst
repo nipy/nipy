@@ -6,12 +6,54 @@
 
 Use cases for defining and using transforms on images.
 
+I have an image *Img*.  
 
-I have an image **Img**.  I would like to know what the voxel sizes
-are.  I would like to determine whether it was acquired axially,
+Image Orientation
+-----------------
+
+I would like to know what the voxel sizes are
+I would like to determine whether it was acquired axially,
 coronally or sagittally.  What is the brain orientation in relation to
 the voxels?  Has it been acquired at an oblique angle?  What are the
-voxel dimensions?
+voxel dimensions?::
+
+  img = load_image(file)
+  cm = img.coordmap
+  print cm
+  
+  input_coords axis0: Inferior -> Superior
+	       axis1: Posterior -> Anterior
+	       axis2: Right -> Left
+ 	       
+	       effective pixel dimensions
+			      axis0: 4mm
+			      axis1: 2mm
+			      axis2: 2mm
+
+  input/output mapping
+		 <Affine Matrix>
+
+		 input axis0 maps exactly to output axis2
+		 input axis1 maps exactly to output axis1
+		 input axis2 maps exactly to output axis0
+
+  output_coords axis0: Left -> Right
+		axis1: Posterior -> Anterior
+		axis2: Inferior -> Superior
+
+
+In the case of a mapping that does not exactly align the input and
+output axes, something like::
+
+  ...
+  input/output mapping
+		 <Affine Matrix>
+
+		 input axis0 maps closest to output axis2
+		 input axis1 maps closest to output axis1
+		 input axis2 maps closest to output axis0
+  ...
+
 
 I have an array that represents voxels in an image and have a
 matrix/transform which represents the relation between the voxel
