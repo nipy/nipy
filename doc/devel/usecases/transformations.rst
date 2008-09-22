@@ -54,18 +54,48 @@ output axes, something like::
 		 input axis2 maps closest to output axis0
   ...
 
+Creating transformations / co-ordinate maps
+-------------------------------------------
 
-I have an array that represents voxels in an image and have a
-matrix/transform which represents the relation between the voxel
+I have an array *pixelarray* that represents voxels in an image and have a
+matrix/transform *mat* which represents the relation between the voxel
 coordinates and the coordinates in scanner space, *world coordinates*.
-I want to associate the array with the matrix.
+I want to associate the array with the matrix::
+
+  img = load_image(infile)
+  pixelarray = np.asarray(img)
+
+(*pixelarray* is an array and does not have a coordinate map.)::
+
+  pixelarray.shape
+  (40,256,256)
+
+So, now I have some arbitrary transformation matrix::
+
+  mat = np.zeros((4,4))
+  mat[0,2] = 2 # giving x mm scaling
+  mat[1,1] = 2 # giving y mm scaling
+  mat[2,0] = 4 # giving z mm scaling
+  mat[3,3] = 1 # because it must be so
+  # Note inverse diagonal for zyx->xyz coordinate flip
+  
+I want to make an ``Image`` with these two::
+
+  coordmap = voxel2mm(pixelarray.shape, mat)
+  img = Image(pixelarray, coordmap)
 
 I have two images, ImageA and ImageB.  Each image has a voxel-to-world
 transform associated with it.  (The *world* for these two transforms
 could be similar or even identical in the case of an fmri series.)  I would
 like to get from voxel coordinates in ImageA to voxel coordinates in
-ImageB.  This would result in a voxel-to-voxel transform.  (This is a
-rigid-body transformation.)
+ImageB.  This could result in a voxel-to-voxel transform, or in a
+world-to-world transform.::
+
+  imgA = load_image(infile_A)
+  imgB = load_image(infile_B)
+
+  (imgA.coordmap.inotherworld(imgB, (coord1, coord2, coord3))
+
 
 I have done a coregistration between two images, ImageA and ImageB.
 This has given me a voxel-to-voxel transformation and I want to store
