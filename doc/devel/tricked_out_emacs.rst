@@ -8,11 +8,43 @@ Various ways to configure your emacs that you might find useful.
 
 See emacs_python_mode_ for a good summary.
 
+.. _rst_emacs:
+
 ReST mode
 ---------
 
 For editing ReST documents like this one.  You may need a recent
-version of the ``rst.el`` file from the docutils_ site.
+version of the rst.el_ file from the docutils_ site.
+
+.. _rst.el: http://docutils.sourceforge.net/tools/editors/emacs/rst.el
+
+``rst`` mode automates many important ReST tasks like building and updateing
+table-of-contents, and promoting or demoting section headings.  Here
+is the basic ``.emacs`` configuration::
+
+    (require 'rst)
+    (setq auto-mode-alist
+          (append '(("\\.txt$" . rst-mode)
+                    ("\\.rst$" . rst-mode)
+                    ("\\.rest$" . rst-mode)) auto-mode-alist))
+
+Some helpful functions::
+
+    C-c TAB - rst-toc-insert
+
+      Insert table of contents at point
+
+    C-c C-u - rst-toc-update
+
+        Update the table of contents at point
+
+    C-c C-l rst-shift-region-left
+
+        Shift region to the left
+
+    C-c C-r rst-shift-region-right
+
+        Shift region to the right
 
 On - for example - Ubuntu, the default ``M-x rst-compile`` command
 uses ``rst2html.py`` whereas the command installed is ``rst2html``.
