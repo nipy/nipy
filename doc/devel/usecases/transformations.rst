@@ -59,7 +59,7 @@ Creating transformations / co-ordinate maps
 
 I have an array *pixelarray* that represents voxels in an image and have a
 matrix/transform *mat* which represents the relation between the voxel
-coordinates and the coordinates in scanner space, *world coordinates*.
+coordinates and the coordinates in scanner space (world coordinates).
 I want to associate the array with the matrix::
 
   img = load_image(infile)
@@ -84,18 +84,46 @@ I want to make an ``Image`` with these two::
   coordmap = voxel2mm(pixelarray.shape, mat)
   img = Image(pixelarray, coordmap)
 
+The ``voxel2mm`` function allows separation of the image *array* from
+the size of the array, e.g.::
+
+  coordmap = voxel2mm((40,256,256), mat)
+
+We could have another way of constructing image which allows passing
+of *mat* directly::
+
+  img = Image(pixelarray, mat=mat)  
+
+or::
+
+  img = Image.from_data_and_mat(pixelarray, mat)
+
+but there should be "only one (obvious) way to do it".
+
 I have two images, ImageA and ImageB.  Each image has a voxel-to-world
-transform associated with it.  (The *world* for these two transforms
-could be similar or even identical in the case of an fmri series.)  I would
-like to get from voxel coordinates in ImageA to voxel coordinates in
-ImageB.  This could result in a voxel-to-voxel transform, or in a
-world-to-world transform.::
+transform associated with it.  (The "world" for these two transforms
+could be similar or even identical in the case of an fmri series.)  I
+would like to get from voxel coordinates in ImageA to voxel
+coordinates in ImageB, for resampling::
 
   imgA = load_image(infile_A)
+  cmA = imgA.coordmap
   imgB = load_image(infile_B)
+  cmB = imgB.coordmap
+  # I want to first apply transform implied in 
+  # cmA, then the inverse of transform implied in 
+  # cmB.  If these are matrices then this would be
+  # np.dot(cm.inverse(cmB), cmA)
+  voxA_to_voxB = cm.compose(cm.inverse(cmB), cmA)
 
-  (imgA.coordmap.inotherworld(imgB, (coord1, coord2, coord3))
+(rather than this, on the basis that people need to understand the
+mathematics of function composition to some degree)::
 
+  voxA_to_voxB = cm.firsta_thenb(cmA, cm.inverse(cmB))
+
+see wikipedia_function_composition_.
+
+.. _wikipedia_function_composition: http://en.wikipedia.org/wiki/Function_composition
 
 I have done a coregistration between two images, ImageA and ImageB.
 This has given me a voxel-to-voxel transformation and I want to store
