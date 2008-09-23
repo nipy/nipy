@@ -18,6 +18,6 @@
    bzr_administration.rst
    virtualenv-tutor.rst
    tricked_out_emacs.rst
-
+   usecases/index.rst
    roadmap.rst
    TODO.rst

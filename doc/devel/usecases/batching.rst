@@ -9,3 +9,4 @@ datasets, for example movement correction, coregistration of
 functional to structural (intermodality), smoothing, statistics,
 inference.
 
+.. _nipy: https://launchpad.net/nipy
