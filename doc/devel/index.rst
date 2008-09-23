@@ -20,3 +20,4 @@
    tricked_out_emacs.rst
 
    roadmap.rst
+   TODO.rst
