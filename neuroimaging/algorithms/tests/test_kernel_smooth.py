@@ -4,8 +4,7 @@ from neuroimaging.testing import *
 
 from neuroimaging.algorithms.kernel_smooth import LinearFilter
 from neuroimaging.core.api import Image
-from neuroimaging.utils.tests.data import repository
-from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.reference.coordinate_map import CoordinateMap
 
 from neuroimaging.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 
@@ -55,15 +54,16 @@ class test_SigmaFWHM(TestCase):
             ii, jj, kk = nprand.random_integers(11,17, (3,))
 
             space = ('zspace', 'yspace', 'xspace')
-            grid = SamplingGrid.from_start_step(names=space, shape=shape,
+            coordmap = CoordinateMap.from_start_step(names=space, shape=shape,
                                                 step=nprand.random_integers(5,10,(3,))*0.5,
                                                 start=nprand.random_integers(5,20,(3,))*0.25)
 
             signal = np.zeros(shape)
             signal[ii,jj,kk] = 1.
-            signal = Image(signal, grid=grid)
+            signal = Image(signal, coordmap=coordmap)
     
-            kernel = LinearFilter(grid, fwhm=nprand.random_integers(50,100)/10.)
+            kernel = LinearFilter(coordmap,
+                                  fwhm=nprand.random_integers(50,100)/10.)
             ssignal = kernel.smooth(signal)
             ssignal = np.asarray(ssignal)
             ssignal[:] *= kernel.norms[kernel.normalization]
@@ -74,8 +74,7 @@ class test_SigmaFWHM(TestCase):
 
             self.assertTrue((i,j,k) == (ii,jj,kk))
 
-            II = np.copy(I)
-            Z = kernel.grid.mapping(I) - kernel.grid.mapping([[i],[j],[k]])
+            Z = kernel.coordmap.mapping(I) - kernel.coordmap.mapping([[i],[j],[k]])
 
             _k = kernel(Z)
             _k.shape = ssignal.shape
@@ -91,15 +90,15 @@ class test_SigmaFWHM(TestCase):
                 return I
 
             vx = ssignal[i,j,(k-10):(k+10)]
-            vvx = grid.mapping(_indices(i,j,k,2)) - grid.mapping([[i],[j],[k]])
+            vvx = coordmap.mapping(_indices(i,j,k,2)) - coordmap.mapping([[i],[j],[k]])
             self.assertTrue(np.corrcoef(vx, kernel(vvx))[0,1] > tol)
 
             vy = ssignal[i,(j-10):(j+10),k]
-            vvy = grid.mapping(_indices(i,j,k,1)) - grid.mapping([[i],[j],[k]])
+            vvy = coordmap.mapping(_indices(i,j,k,1)) - coordmap.mapping([[i],[j],[k]])
             self.assertTrue(np.corrcoef(vy, kernel(vvy))[0,1] > tol)
 
             vz = ssignal[(i-10):(i+10),j,k]
-            vvz = grid.mapping(_indices(i,j,k,0)) - grid.mapping([[i],[j],[k]])
+            vvz = coordmap.mapping(_indices(i,j,k,0)) - coordmap.mapping([[i],[j],[k]])
             self.assertTrue(np.corrcoef(vz, kernel(vvz))[0,1] > tol)
 
 

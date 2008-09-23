@@ -13,9 +13,9 @@ from neuroimaging.io.api import Cache
 class ImageInterpolator(object):
     """
     A class that enables interpolation of an Image instance
-    at arbitrary points in the Image's world space (image.grid.output_coords).
+    at arbitrary points in the Image's world space (image.coordmap.output_coords).
 
-    The resampling is down with scipy.ndimage.
+    The resampling is done with scipy.ndimage.
     """
 
     def __init__(self, image, order=3):
@@ -66,7 +66,7 @@ class ImageInterpolator(object):
     def evaluate(self, points):
         """
         :Parameters:
-            points : values in self.image.grid.output_coords 
+            points : values in self.image.coordmap.output_coords 
 
         :Returns: 
             V: ndarray
@@ -76,7 +76,7 @@ class ImageInterpolator(object):
         points = np.array(points, np.float64)
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], np.product(output_shape))
-        voxels = self.image.grid.mapping.inverse()(points)
+        voxels = self.image.coordmap.mapping.inverse()(points)
         V = ndimage.map_coordinates(self.data, 
                                      voxels,
                                      order=self.order,

@@ -4,11 +4,9 @@ import numpy as np
 from neuroimaging.testing import *
 
 import neuroimaging.core.reference.axis as axis
-import neuroimaging.core.reference.grid as grid
+import neuroimaging.core.reference.coordinate_map as coordinate_map
 
-
-
-from neuroimaging.modalities.fmri.api import FmriImage, fmri_generator, fromimage
+from neuroimaging.modalities.fmri.api import FmriImageList, fmri_generator, fromimage
 from neuroimaging.core.api import Image, load_image, data_generator, parcels, save_image
 from neuroimaging.testing import anatfile, funcfile
 
@@ -29,7 +27,7 @@ class test_fMRI(TestCase):
         fp, fname = mkstemp('.nii')
         save_image(self.img, fname)
         test = fromimage(load_image(fname))
-        self.assertEquals(test[0].grid.shape, self.img[0].grid.shape)
+        self.assertEquals(test[0].coordmap.shape, self.img[0].coordmap.shape)
         os.remove(fname)
 
     def test_iter(self):
@@ -40,8 +38,8 @@ class test_fMRI(TestCase):
             del(i); gc.collect()
         self.assertEquals(j, 20)
 
-    def test_subgrid(self):
-        subgrid = self.img.grid[3]
+    def test_subcoordmap(self):
+        subcoordmap = self.img.coordmap[3]
 
         xform = np.array([[ 0., 0., 0., 10.35363007],
                           [-7.,  0., 0., 7.],
@@ -49,7 +47,7 @@ class test_fMRI(TestCase):
                           [ 0.,  0., -2.34375, 53.90625],
                           [ 0.,  0., 0., 1.]])
         
-        assert_almost_equal(subgrid.mapping.transform, xform)
+        assert_almost_equal(subcoordmap.mapping.transform, xform)
         
     def test_labels1(self):
         parcelmap = (np.asarray(self.parcels) * 100).astype(np.int32)

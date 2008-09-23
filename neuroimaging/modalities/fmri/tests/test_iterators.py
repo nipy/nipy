@@ -4,8 +4,8 @@ from neuroimaging.testing import *
 
 import neuroimaging.core.reference.axis as axis
 from neuroimaging.core.api import Image
-import neuroimaging.core.reference.grid as grid
-from neuroimaging.modalities.fmri.api import FmriImage
+import neuroimaging.core.reference.coordinate_map as coordinate_map
+from neuroimaging.modalities.fmri.api import FmriImageList
 """
 Comment out since these are slated for deletion and currently are broken.
 Keep for reference until generators are working.
@@ -15,8 +15,8 @@ class test_Iterators(TestCase):
     def setUp(self):
         spacetime = ['time', 'zspace', 'yspace', 'xspace']
         im = Image(np.zeros((3,4,5,6)),
-                   grid = grid.SamplingGrid.identity((3,4,5,6), spacetime))
-        self.img = FmriImage(im)
+                   coordinate_map = coordinate_map.CoordinateMap.identity((3,4,5,6), spacetime))
+        self.img = FmriImageList(im)
 
     def test_fmri_parcel(self):
         parcelmap = np.zeros(self.img.shape[1:])
@@ -82,7 +82,7 @@ class test_Iterators(TestCase):
         parcelseq = (0, 1, 2, 3)
         expected = [np.product(self.img.shape[1:]) - 6, 3, 3, 0]
         iterator = parcel_iterator(self.img, parcelmap, parcelseq)
-        tmp = FmriImage(self.img[:] * 1., self.img.grid)
+        tmp = FmriImageList(self.img[:] * 1., self.img.coordmap)
 
         new_iterator = iterator.copy(tmp)
 
