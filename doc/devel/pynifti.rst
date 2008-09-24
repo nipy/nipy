@@ -1,4 +1,4 @@
-.. _pynifti:
+.. _pynifti-io:
 
 ============
  Pynifti IO
@@ -53,15 +53,15 @@ interact with in the git repository:
 A nipy development path would look like this:
 
 #. In the master branch, merge with the server to get any updates from
- other pynifti developers.
+   other pynifti developers.
 
 #. Checkout the cb/master branch and merge from the local master branch.
 
 #. Make any code edits that should be pushed upstream in the cb/master
- branch.  Michael cherry-picks changes into the master branch.
+   branch.  Michael cherry-picks changes into the master branch.
 
 #. Checkout the cb/nipy branch and merge from the cb/master.  The
- cb/nipy branch is used as the source for nipy.
+   cb/nipy branch is used as the source for nipy.
 
 To update the nipy source:
 
@@ -70,8 +70,8 @@ To update the nipy source:
     cd trunk-dev/neuroimaging/externals/pynifti/utils
 
 #. Run the ``update_source.py`` script to update the source.  This
- assumes a directory structure the pynifti sources are in the
- directory ``$HOME/src/pynifti``.  Run the script::
+   assumes a directory structure the pynifti sources are in the
+   directory ``$HOME/src/pynifti``.  Run the script::
 
     python update_source.py
 
