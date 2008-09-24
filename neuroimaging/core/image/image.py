@@ -117,12 +117,12 @@ class Image(object):
         """Return data as a numpy array."""
         return np.asarray(self._data)
 
-def _open(filename, coordmap=None, mode="r"):
+def _open(source, coordmap=None, mode="r"):
     """Create an `Image` from the given filename
 
     Parameters
     ----------
-    filename : ``string``
+    source : filename or a numpy array
     coordmap : `reference.coordinate_map.CoordinateMap`
         The coordinate map for the file
     mode : ``string``
@@ -135,7 +135,7 @@ def _open(filename, coordmap=None, mode="r"):
     """
 
     try:
-        ioimg = PyNiftiIO(filename, mode)
+        ioimg = PyNiftiIO(source, mode)
         if coordmap is None:
             coordmap = _coordmap_from_affine(ioimg.affine, ioimg.orientation,
                                     ioimg.shape)
@@ -143,7 +143,7 @@ def _open(filename, coordmap=None, mode="r"):
         img = Image(ioimg, coordmap)
         return img
     except IOError:
-        raise IOError, 'Unable to open file %s' % filename
+        raise IOError, 'Unable to create image from source %s' % str(source)
         
 def load(filename, mode='r'):
     """Load an image from the given filename.
@@ -222,8 +222,10 @@ def save(img, filename):
         
     """
 
-    data = np.asarray(img)
+    data = np.asarray(img) # This operation will scale the data
     outimage = _open(data, coordmap=img.coordmap, mode='w')
+    # At this point _data is a pyniftiio object.  _data.save delegates
+    # the save to pynifti.
     outimage._data.save(filename)
     return outimage
     
