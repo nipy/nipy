@@ -76,7 +76,7 @@ class TestImage(TestCase):
     # FIXME: AssertionError: Arrays are not equal
     #    I believe this is due to an error in pyniftio, not writing out
     #    values correctly to file on disk.  Fix upstream.
-    @dec.knownfailure
+    #@dec.knownfailure
     def test_file_roundtrip(self):
         save_image(self.img, self.tmpfile.name)
         img2 = load_image(self.tmpfile.name)
@@ -93,8 +93,25 @@ class TestImage(TestCase):
         # verify affine
         assert_equal(img2.affine, self.img.affine)
 
+    def test_roundtrip_fromarray(self):
+        data = np.random.rand(10,20,30)
+        img = fromarray(data)
+        save_image(img, self.tmpfile.name)
+        img2 = load_image(self.tmpfile.name)
+        data2 = np.asarray(img2)
+        # verify data
+        assert_almost_equal(data2, data)
+        assert_almost_equal(data2.mean(), data.mean())
+        assert_almost_equal(data2.min(), data.min())
+        assert_almost_equal(data2.max(), data.max())
+        # verify shape and ndims
+        assert_equal(img2.shape, img.shape)
+        assert_equal(img2.ndim, img.ndim)
+        # verify affine
+        assert_equal(img2.affine, img.affine)
+
     # FIXME: AssertionError: Arrays are not almost equal
-    @dec.knownfailure
+    #@dec.knownfailure
     def test_nondiag(self):
         self.img.coordmap.mapping.transform[0,1] = 3.0
         save_image(self.img, self.tmpfile.name)
