@@ -20,3 +20,4 @@
 
    roadmap.rst
    TODO.rst
+   pynifti.rst
