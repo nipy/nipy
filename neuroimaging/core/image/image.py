@@ -226,7 +226,7 @@ def save(img, filename):
     outimage = _open(data, coordmap=img.coordmap, mode='w')
     # At this point _data is a pyniftiio object.  _data.save delegates
     # the save to pynifti.
-    outimage._data.save(filename)
+    outimage._data.save(img.affine, filename)
     return outimage
     
 def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):

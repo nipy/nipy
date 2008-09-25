@@ -121,10 +121,16 @@ class PyNiftiIO(object):
         self._nim.setFilename(filename)
     filename = property(fget=_get_filename, fset=_set_filename)
 
-    def save(self, filename=None):
+    def save(self, affine, filename=None):
         if filename is not None:
             # update filename
             self.filename = filename
+        # We are setting both the sform and qform to the same affine
+        # transform.  And setting the sform_code and qform_codes to be
+        # aligned to another file, NIFTI_XFORM_ALIGNED_ANAT in the
+        # Nifti standard.  This writing method matches that of SPM5.
+        self._nim.setSForm(affine, code='aligned')
+        self._nim.setQForm(affine, code='aligned')
         self._nim.save()
         
 def getaffine(img):
