@@ -6,6 +6,11 @@
 
 Use cases for defining and using transforms on images.
 
+We should be very careful to only use the terms ``x, y, z`` to refer to
+physical space.  For voxels, we should use ``i, j, k``, or ``i', j', k'`` (i
+prime, j prime k prime).
+
+
 I have an image *Img*.  
 
 Image Orientation
@@ -53,6 +58,13 @@ output axes, something like::
 		 input axis1 maps closest to output axis1
 		 input axis2 maps closest to output axis0
   ...
+
+
+If the best matching axis is reversed compared to input axis::
+
+  ...
+  input axis0 maps [closest|exactly to negative output axis2 
+
 
 Creating transformations / co-ordinate maps
 -------------------------------------------
