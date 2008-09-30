@@ -174,31 +174,45 @@ class TestImage(TestCase):
 
         self.assertEquals(v, np.product(test.shape))
 
-    def test_scaling_dtype_uint8_up(self):
+    def uint8_to_dtype(self, dtype):
+        dtype = dtype
         shape = (2,3,4)
-        # uint8 to uint8
         dmax = np.iinfo(np.uint8).max
         data = np.random.randint(0, dmax, size=shape)
         data[0,0,0] = 0
         data[1,0,0] = dmax
         data = data.astype(np.uint8) # randint returns np.int32
         img = fromarray(data)
-        newimg = save_image(img, self.tmpfile.name, dtype=np.uint8)
+        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
         newdata = np.asarray(newimg)
+        return newdata, data
+        
+    def test_scaling_uint8_to_uint8(self):
+        dtype = np.uint8
+        newdata, data = self.uint8_to_dtype(dtype)
         assert_equal(newdata, data)
 
-        # uint8 to uint16
-        newimg = save_image(img, self.tmpfile.name, dtype=np.uint16)
-        newdata = np.asarray(newimg)
+    def test_scaling_uint8_to_uint16(self):
+        dtype = np.uint16
+        newdata, data = self.uint8_to_dtype(dtype)
         assert_equal(newdata, data)
 
-        # uint8 to float32
-        newimg = save_image(img, self.tmpfile.name, dtype=np.float32)
-        newdata = np.asarray(newimg)
+    def test_scaling_uint8_to_float32(self):
+        dtype = np.float32
+        newdata, data = self.uint8_to_dtype(dtype)
         assert_equal(newdata, data)
 
+    def test_scaling_uint8_to_int32(self):
+        dtype = np.int32
+        newdata, data = self.uint8_to_dtype(dtype)
+        assert_equal(newdata, data)
+    
     def float32_to_dtype(self, dtype):
-        dtype=dtype
+        # Utility function for the float32_to_<dtype> functions
+        # below. There is a lot of shared functionality, split up so
+        # the function names are unique so it's clear which dtypes are
+        # involved in a failure.
+        dtype = dtype
         shape = (2,3,4)
         # set some value value for scaling our data
         scale = np.iinfo(np.uint16).max * 2.0
@@ -215,49 +229,21 @@ class TestImage(TestCase):
     def test_scaling_float32_to_uint8(self):
         dtype = np.uint8
         newdata, data = self.float32_to_dtype(dtype)
-        """
-        shape = (2,3,4)
-        # set some value value for scaling our data
-        scale = np.iinfo(np.uint16).max * 2.0
-        data = np.random.normal(size=(2,3,4), scale=scale)
-        data[0,0,0] = np.finfo(np.float32).max
-        data[1,0,0] = np.finfo(np.float32).min
-        # random.normal will return data as native machine type
-        data = data.astype(np.float32)
-        img = fromarray(data)
-        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
-        newdata = np.asarray(newimg)
-        """
         assert_equal(newdata, data)
 
     def test_scaling_float32_to_uint16(self):
         dtype = np.uint16
-        shape = (2,3,4)
-        # set some value value for scaling our data
-        scale = np.iinfo(np.uint16).max * 2.0
-        data = np.random.normal(size=(2,3,4), scale=scale)
-        data[0,0,0] = np.finfo(np.float32).min
-        data[1,0,0] = np.finfo(np.float32).max
-        # random.normal will return data as native machine type
-        data = data.astype(np.float32)
-        img = fromarray(data)
-        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
-        newdata = np.asarray(newimg)
+        newdata, data = self.float32_to_dtype(dtype)
         assert_equal(newdata, data)
         
     def test_scaling_float32_to_int16(self):
         dtype = np.int16
-        shape = (2,3,4)
-        # set some value value for scaling our data
-        scale = np.iinfo(np.uint16).max * 2.0
-        data = np.random.normal(size=(2,3,4), scale=scale)
-        data[0,0,0] = np.finfo(np.float32).min
-        data[1,0,0] = np.finfo(np.float32).max
-        # random.normal will return data as native machine type
-        data = data.astype(np.float32)
-        img = fromarray(data)
-        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
-        newdata = np.asarray(newimg)
+        newdata, data = self.float32_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_scaling_float32_to_float32(self):
+        dtype = np.float32
+        newdata, data = self.float32_to_dtype(dtype)
         assert_equal(newdata, data)
         
         # int16 to float32
