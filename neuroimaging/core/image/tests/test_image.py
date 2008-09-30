@@ -174,6 +174,96 @@ class TestImage(TestCase):
 
         self.assertEquals(v, np.product(test.shape))
 
+    def test_scaling_dtype_uint8_up(self):
+        shape = (2,3,4)
+        # uint8 to uint8
+        dmax = np.iinfo(np.uint8).max
+        data = np.random.randint(0, dmax, size=shape)
+        data[0,0,0] = 0
+        data[1,0,0] = dmax
+        data = data.astype(np.uint8) # randint returns np.int32
+        img = fromarray(data)
+        newimg = save_image(img, self.tmpfile.name, dtype=np.uint8)
+        newdata = np.asarray(newimg)
+        assert_equal(newdata, data)
+
+        # uint8 to uint16
+        newimg = save_image(img, self.tmpfile.name, dtype=np.uint16)
+        newdata = np.asarray(newimg)
+        assert_equal(newdata, data)
+
+        # uint8 to float32
+        newimg = save_image(img, self.tmpfile.name, dtype=np.float32)
+        newdata = np.asarray(newimg)
+        assert_equal(newdata, data)
+
+    def float32_to_dtype(self, dtype):
+        dtype=dtype
+        shape = (2,3,4)
+        # set some value value for scaling our data
+        scale = np.iinfo(np.uint16).max * 2.0
+        data = np.random.normal(size=(2,3,4), scale=scale)
+        data[0,0,0] = np.finfo(np.float32).max
+        data[1,0,0] = np.finfo(np.float32).min
+        # random.normal will return data as native machine type
+        data = data.astype(np.float32)
+        img = fromarray(data)
+        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
+        newdata = np.asarray(newimg)
+        return newdata, data
+        
+    def test_scaling_float32_to_uint8(self):
+        dtype = np.uint8
+        newdata, data = self.float32_to_dtype(dtype)
+        """
+        shape = (2,3,4)
+        # set some value value for scaling our data
+        scale = np.iinfo(np.uint16).max * 2.0
+        data = np.random.normal(size=(2,3,4), scale=scale)
+        data[0,0,0] = np.finfo(np.float32).max
+        data[1,0,0] = np.finfo(np.float32).min
+        # random.normal will return data as native machine type
+        data = data.astype(np.float32)
+        img = fromarray(data)
+        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
+        newdata = np.asarray(newimg)
+        """
+        assert_equal(newdata, data)
+
+    def test_scaling_float32_to_uint16(self):
+        dtype = np.uint16
+        shape = (2,3,4)
+        # set some value value for scaling our data
+        scale = np.iinfo(np.uint16).max * 2.0
+        data = np.random.normal(size=(2,3,4), scale=scale)
+        data[0,0,0] = np.finfo(np.float32).min
+        data[1,0,0] = np.finfo(np.float32).max
+        # random.normal will return data as native machine type
+        data = data.astype(np.float32)
+        img = fromarray(data)
+        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
+        newdata = np.asarray(newimg)
+        assert_equal(newdata, data)
+        
+    def test_scaling_float32_to_int16(self):
+        dtype = np.int16
+        shape = (2,3,4)
+        # set some value value for scaling our data
+        scale = np.iinfo(np.uint16).max * 2.0
+        data = np.random.normal(size=(2,3,4), scale=scale)
+        data[0,0,0] = np.finfo(np.float32).min
+        data[1,0,0] = np.finfo(np.float32).max
+        # random.normal will return data as native machine type
+        data = data.astype(np.float32)
+        img = fromarray(data)
+        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
+        newdata = np.asarray(newimg)
+        assert_equal(newdata, data)
+        
+        # int16 to float32
+        # uint16 to uint8
+
+        
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
     img = fromarray(data)
