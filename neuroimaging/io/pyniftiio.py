@@ -40,14 +40,75 @@ In [78]: funcimg.getQOrientation(as_string=True)
 Out[78]: ['Left-to-Right', 'Posterior-to-Anterior', 'Inferior-to-Superior']
 """
 
+def _dtype_maxval(dtype):
+    """Return maximum value for the dtype."""
+    if type(dtype) in np.sctypes['float']:
+        # float32, float64
+        return np.finfo(dtype).max
+    elif type(dtype) in np.sctypes['complex']:
+        # complex128
+        raise NotImplementedError, 'BUG: Not handling complex128 types yet!'
+    else:
+        # uint8, int8, uint16, int16, uint32, int32, uint64, int64
+        return np.iinfo(dtype).max
 
 class PyNiftiIO(object):
     """Wrapper around the PyNifit image class.
     """
 
-    def __init__(self, data, mode='r'):
+    def __init__(self, data, mode='r', dtype=None):
+        """Create a PyNiftiIO object.
+
+        Parameters
+        ----------
+        data : {array_like, filename}
+            Data should be either a filename (string), a numpy array
+            or an object that implements the __array__ interface from
+            which we get an array.
+        mode : {'r', 'w'}, optional
+            File access mode.  Read-only or read-write mode.
+        dtype : numpy.dtype
+            The dtype to save the data array as.  An exception is
+            raised if the requested dtype is not a valid nifti data
+            type.
+
+        Returns
+        -------
+        pyniftiio : A ``PyNiftiIO`` object
+        
+        """
+        
+        # If data is not an ndarray and not a filename (str)
+        if not hasattr(data, 'dtype') and not hasattr(data, 'endswith'):
+            # convert data to ndarray
+            
+            # Note: Let's say `data` is an Image that was loaded from a
+            # file and it's dtype is uint8 with a non-zero slope.
+            # Getting the data as an array will caused the data to
+            # scale into our native dtype... float32/float64.
+            # data = np.asarray(data)
+
+            if dtype is None:
+                # Get native dtype for this machine
+                dtype = np.array([1.0]).dtype
+            else:
+                # Validate the requested dtype is a nifti type
+                try:
+                    nifti.utils.N2nifti_dtype_map[dtype]
+                except KeyError:
+                    msg = "The requested dtype '%s' is not a valid nifti type"\
+                          % dtype
+                    raise KeyError, msg
+                
+            data = np.asarray(data).astype(dtype)
+            
+        # Create NiftiImage
         self._nim = nifti.NiftiImage(data)
         self.mode = mode
+
+        #print self._nim.data.dtype
+        #print 'slope:', self._nim.slope
+        #print 'intercept:', self._nim.intercept
 
     # image attributes
     # ----------------

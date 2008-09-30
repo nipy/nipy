@@ -117,7 +117,7 @@ class Image(object):
         """Return data as a numpy array."""
         return np.asarray(self._data)
 
-def _open(source, coordmap=None, mode="r"):
+def _open(source, coordmap=None, mode="r", dtype=None):
     """Create an `Image` from the given filename
 
     Parameters
@@ -135,7 +135,7 @@ def _open(source, coordmap=None, mode="r"):
     """
 
     try:
-        ioimg = PyNiftiIO(source, mode)
+        ioimg = PyNiftiIO(source, mode, dtype=dtype)
         if coordmap is None:
             coordmap = _coordmap_from_affine(ioimg.affine, ioimg.orientation,
                                     ioimg.shape)
@@ -181,7 +181,7 @@ def load(filename, mode='r'):
         raise ValueError, 'image opening mode must be either "r" or "r+"'
     return _open(filename, mode=mode)
 
-def save(img, filename):
+def save(img, filename, dtype=None):
     """Write the image to a file.
 
     Parameters
@@ -222,10 +222,11 @@ def save(img, filename):
         
     """
 
-    data = np.asarray(img) # This operation will scale the data
-    outimage = _open(data, coordmap=img.coordmap, mode='w')
-    # At this point _data is a pyniftiio object.  _data.save delegates
-    # the save to pynifti.
+    # Pass the image object to the low-level IO class so it can handle
+    # any data scaling.
+    outimage = _open(img, coordmap=img.coordmap, mode='w', dtype=dtype)
+    # At this point _data is a file-io object (like PyNiftiIO).
+    # _data.save delegates the save to pynifti.
     outimage._data.save(img.affine, filename)
     return outimage
     

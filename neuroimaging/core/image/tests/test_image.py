@@ -246,10 +246,6 @@ class TestImage(TestCase):
         newdata, data = self.float32_to_dtype(dtype)
         assert_equal(newdata, data)
         
-        # int16 to float32
-        # uint16 to uint8
-
-        
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
     img = fromarray(data)
