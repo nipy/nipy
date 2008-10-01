@@ -227,7 +227,14 @@ def save(img, filename, dtype=None):
     outimage = _open(img, coordmap=img.coordmap, mode='w', dtype=dtype)
     # At this point _data is a file-io object (like PyNiftiIO).
     # _data.save delegates the save to pynifti.
-    outimage._data.save(img.affine, filename)
+    
+    # FIXME:  HACK? Is this the correct way to handle saving fmri images?
+    if img.affine.shape == (5, 5):
+        # pull spatial transforms out of 5x5 fmri affine
+        affine = img.affine[1:, 1:]
+    else:
+        affine = img.affine
+    outimage._data.save(affine, filename)
     return outimage
     
 def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
