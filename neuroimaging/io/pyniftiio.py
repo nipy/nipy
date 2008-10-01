@@ -242,8 +242,6 @@ def getaffine(img):
     trans = np.fliplr(np.eye(4, k=1))
     trans[3,3] = 1
     trans2 = trans.copy()
-    trans2[:,3] = 1  # Q: Why do we add a pixdim step to our translation?
-                     # A: for the 0-based vs 1-based indexing
     baseaffine = np.dot(np.dot(trans, transform), trans2)
     # deal with 4D+ dimensions
     ndim = img.header['dim'][0]
