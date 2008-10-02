@@ -7,6 +7,8 @@ Welcome to nipy's documentation!
    :Release: |version|
    :Date: |today|
 
+   Download `pdf <../nipy.pdf>`_
+
    Contents:
 
 .. toctree::
