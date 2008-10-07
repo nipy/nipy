@@ -26,9 +26,9 @@ voxel dimensions?::
   cm = img.coordmap
   print cm
   
-  input_coords axis0: Inferior -> Superior
-	       axis1: Posterior -> Anterior
-	       axis2: Right -> Left
+  input_coords axis0:
+	       axis1: 
+	       axis2: 
  	       
 	       effective pixel dimensions
 			      axis0: 4mm
@@ -63,8 +63,9 @@ output axes, something like::
 If the best matching axis is reversed compared to input axis::
 
   ...
-  input axis0 maps [closest|exactly to negative output axis2 
+  input axis0 maps [closest|exactly] to negative output axis2 
 
+and so on.
 
 Creating transformations / co-ordinate maps
 -------------------------------------------
