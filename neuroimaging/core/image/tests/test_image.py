@@ -245,6 +245,22 @@ class TestImage(TestCase):
         dtype = np.float32
         newdata, data = self.float32_to_dtype(dtype)
         assert_equal(newdata, data)
+
+    def test_header_roundtrip(self):
+        hdr = self.img.header
+        # Update some header values and make sure they're saved
+        hdr['slice_duration'] = 0.200
+        hdr['intent_p1'] = 2.0
+        hdr['descrip'] = 'descrip for TestImage:test_header_roundtrip'
+        hdr['slice_end'] = 12
+        self.img.header = hdr
+        save_image(self.img, self.tmpfile.name)
+        newimg = load_image(self.tmpfile.name)
+        newhdr = newimg.header
+        assert_almost_equal(newhdr['slice_duration'], hdr['slice_duration'])
+        assert_equal(newhdr['intent_p1'], hdr['intent_p1'])
+        assert_equal(newhdr['descrip'], hdr['descrip'])
+        assert_equal(newhdr['slice_end'], hdr['slice_end'])
         
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
