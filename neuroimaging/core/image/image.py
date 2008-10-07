@@ -47,6 +47,13 @@ class Image(object):
 
     """
 
+    # Dictionary to store docs for attributes that are properties.  We
+    # want these docs to conform with our documentation standard, but
+    # they need to be passed into the property function.  Defining
+    # them separately allows us to do this without a lot of clutter
+    # int he property line.
+    _doc = {}
+    
     def __init__(self, data, coordmap):
         """Create an `Image` object from array and ``CoordinateMap`` object.
         
@@ -104,8 +111,22 @@ class Image(object):
         else:
             raise AttributeError, \
                   'Image created from arrays do not have headers.'
-    header = property(_getheader, _setheader,
-                      doc="Image header, if the image has one.")
+    _doc['header'] = \
+    """The file header dictionary for this image.  In order to update
+    the header, you must first make a copy of the header, set the
+    values you wish to change, then set the image header to the
+    updated header.
+
+    Example
+    -------
+
+    hdr = img.header
+    hdr['slice_duration'] = 0.200
+    hdr['descrip'] = 'My image registered with MNI152.'
+    img.header = hdr
+    
+    """
+    header = property(_getheader, _setheader, doc=_doc['header'])
 
     def __getitem__(self, index):
         """Slicing an image returns a new image."""
