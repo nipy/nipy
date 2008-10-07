@@ -56,7 +56,7 @@ class PyNiftiIO(object):
     """Wrapper around the PyNifit image class.
     """
 
-    def __init__(self, data, mode='r', dtype=None):
+    def __init__(self, data, mode='r', dtype=None, header={}):
         """Create a PyNiftiIO object.
 
         Parameters
@@ -103,7 +103,7 @@ class PyNiftiIO(object):
             data = np.asarray(data).astype(dtype)
             
         # Create NiftiImage
-        self._nim = nifti.NiftiImage(data)
+        self._nim = nifti.NiftiImage(data, header=header)
         self.mode = mode
 
         #print self._nim.data.dtype
@@ -127,7 +127,10 @@ class PyNiftiIO(object):
 
     def _get_header(self):
         return self._nim.header
-    header = property(_get_header)
+    def _set_header(self, header):
+        self._nim.updateFromDict(header)
+    header = property(_get_header, _set_header,
+                      doc='Get or set the pynifti header.')
 
     def _getdata(self, index):
         """Apply slicing and return data."""

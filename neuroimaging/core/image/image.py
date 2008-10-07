@@ -98,7 +98,14 @@ class Image(object):
         if hasattr(self._data, 'header'):
             return self._data.header
         raise AttributeError, 'Image created from arrays do not have headers.'
-    header = property(_getheader, doc="Image header if loaded from disk")
+    def _setheader(self, header):
+        if hasattr(self._data, 'header'):
+            self._data.header = header
+        else:
+            raise AttributeError, \
+                  'Image created from arrays do not have headers.'
+    header = property(_getheader, _setheader,
+                      doc="Image header, if the image has one.")
 
     def __getitem__(self, index):
         """Slicing an image returns a new image."""
@@ -135,7 +142,11 @@ def _open(source, coordmap=None, mode="r", dtype=None):
     """
 
     try:
-        ioimg = PyNiftiIO(source, mode, dtype=dtype)
+        if hasattr(source, 'header'):
+            hdr = source.header
+        else:
+            hdr = {}
+        ioimg = PyNiftiIO(source, mode, dtype=dtype, header=hdr)
         if coordmap is None:
             coordmap = _coordmap_from_affine(ioimg.affine, ioimg.orientation,
                                     ioimg.shape)
