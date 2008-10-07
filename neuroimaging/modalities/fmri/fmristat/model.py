@@ -29,14 +29,14 @@ def _create_outfile(filename, coordmap):
     img = fromarray(np.zeros(coordmap.shape), coordmap=coordmap)
     return save_image(img, filename)
 
-def model_generator(formula, data, frametimes, iterable=None, slicetimes=None,
+def model_generator(formula, data, volume_start_times, iterable=None, slicetimes=None,
                     model_type=OLSModel, model_params = lambda x: ()):
     """
     Generator for the models for a pass of fmristat analysis.
     """
     for i, d in matrix_generator(fmri_generator(data, iterable=iterable)):
         model_args = model_params(i) # model may depend on i
-        rmodel = model_type(formula.design(frametimes), *model_args)
+        rmodel = model_type(formula.design(volume_start_times), *model_args)
         yield i, d, rmodel
 
 def results_generator(model_iterable):
@@ -68,7 +68,7 @@ class OLS:
 
     def execute(self):
         m = model_generator(self.formula, self.data,
-                            self.fmri_image.frametimes,
+                            self.fmri_image.volume_start_times,
                             model_type=OLSModel)
         r = results_generator(m)
 
@@ -112,7 +112,7 @@ class AR1:
         def model_params(i):
             return (np.asarray(self.rho)[i].mean(),)
         m = model_generator(self.formula, self.data,
-                            self.fmri_image.frametimes,
+                            self.fmri_image.volume_start_times,
                             iterable=iterable,
                             model_type=ARModel,
                             model_params=model_params)
@@ -198,7 +198,7 @@ def output_resid(outfile, fmri_image, clobber=False):
         T = np.zeros((5,5))
         g = fmri_image[0].coordmap
         T[1:,1:] = fmri_image[0].coordmap.affine
-        T[0,0] = fmri_image.TR
+        T[0,0] = (fmri_image.volume_start_times[1:] - fmri_volume_start_times[:-1]).mean()
         anames = ["time"] + [a.name for a in g.input_coords.axes()]
         coordmap = CoordinateMap.from_affine(Affine(T),
                                         anames,

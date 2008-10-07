@@ -1,4 +1,4 @@
-from numpy import asarray, arange
+from numpy import asarray, arange, empty
 
 from neuroimaging.core.api import ImageList, Image
 
@@ -13,8 +13,8 @@ class FmriImageList(ImageList):
     Allows metadata such as volume and slice times
     """
 
-    def __init__(self, images=None, TR=0., slicetimes=None,
-                 frametimes=None):
+    def __init__(self, images=None, volume_start_times=None, slice_times=None):
+
         """
         A lightweight implementation of an fMRI image as in ImageList
         
@@ -22,10 +22,13 @@ class FmriImageList(ImageList):
         ----------
         images: a sliceable object whose items are meant to be images,
                 this is checked by asserting that each has a `coordmap` attribute
-        TR:     time between frames in fMRI acquisition
-        slicetimes: ndarray specifying offset for each slice of each frame
-        frametimes: optional way of overriding TR if frames are not evenly
-                    sampled in time
+        volume_start_times: start time of each frame. It can be specified
+                            either as an ndarray with len(images) elements
+                            or as a single float, the TR. Defaults
+                            to arange(len(images)).astype(np.float)
+
+        slice_times: ndarray specifying offset for each slice of each frame
+
         See Also
         --------
         neuroimaging.core.image_list.ImageList
@@ -48,8 +51,17 @@ class FmriImageList(ImageList):
         """
 
         ImageList.__init__(self, images=images)
-        self.TR = TR
-        self.slicetimes = slicetimes
+        if volume_start_times is None:
+            volume_start_times = 1.
+
+        v = asarray(volume_start_times)
+        if v.shape == (len(self.list),):
+            self.volume_start_times = volume_start_times
+        else:
+            v = float(volume_start_times)
+            self.volume_start_times = arange(len(self.list)) * v
+
+        self.slice_times = slice_times
 
     def __getitem__(self, index):
         """
@@ -60,25 +72,19 @@ class FmriImageList(ImageList):
         if type(index) is type(1):
             return self.list[index]
         else:
-            return FmriImageList(images=self.list[index], TR=self.TR,
-                             slicetimes=self.slicetimes)
+            return FmriImageList(images=self.list[index], 
+                                 volume_start_times=self.volume_start_times[index],
+                             slice_times=self.slice_times)
 
     def __setitem__(self, index, value):
         self.list[index] = value
         
     def __array__(self):
-        return asarray([asarray(i) for i in self.list])
-
-    def emptycopy(self):
-        return FmriImageList(images=[], TR=self.TR, slicetimes=self.slicetimes)
-
-    def _getframetimes(self):
-        if hasattr(self, "_frametimes"):
-            return self._frametimes
-        else:
-            return arange(len(self.list)) * self.TR
-
-    frametimes = property(_getframetimes)
+        v = empty((len(self.list),) + self.list[0].shape)
+        print 'here;', v.shape
+        for i, im in enumerate(self.list):
+            v[i] = asarray(im)
+        return v
 
 def fmri_generator(data, iterable=None):
     """
@@ -101,7 +107,7 @@ def fmri_generator(data, iterable=None):
         yield item, data[:,item]
 
 
-def fromimage(fourdimage, TR=None, slicetimes=None):
+def fromimage(fourdimage, volume_start_times=None, slice_times=None):
     """Create an FmriImageList from a 4D Image.
 
     Load an image from the file specified by ``url`` and ``datasource``.
@@ -112,11 +118,14 @@ def fromimage(fourdimage, TR=None, slicetimes=None):
     Parameters
     ----------
     fourdimage: a 4D Image 
-    TR:     time between frames in fMRI acquisition, defaults to
-            the diagonal entry of slowest moving dimension
-            of Affine transform
-    slicetimes: ndarray specifying offset for each slice of each frame
+    volume_start_times: start time of each frame. It can be specified
+                            either as an ndarray with len(images) elements
+                            or as a single float, the TR. Defaults to
+                            the diagonal entry of slowest moving dimension
+                            of Affine transform
+    slice_times: ndarray specifying offset for each slice of each frame
 
+    TODO: watch out for reordering the output coordinates to (x,y,z,t)
 
     """
     images = []
@@ -132,7 +141,9 @@ def fromimage(fourdimage, TR=None, slicetimes=None):
         newg = CoordinateMap(a, im.coordmap.input_coords, oc)
         images.append(Image(asarray(im), newg))
 
-    if TR is None:
-        TR = fourdimage.coordmap.mapping.transform[0,0]
+    if volume_start_times is None:
+        volume_start_times = fourdimage.coordmap.mapping.transform[0,0]
         
-    return FmriImageList(images=images, TR=TR, slicetimes=slicetimes)
+    return FmriImageList(images=images, 
+                         volume_start_times=volume_start_times,
+                         slice_times=slice_times)
