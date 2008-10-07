@@ -13,6 +13,7 @@ from struct import unpack
 
 import numpy as np
 from numpy.linalg import inv
+from scipy.io import loadmat
 
 def _2matvec(transform):
     """ Split a tranform into it's matrix and vector components. """
@@ -45,6 +46,23 @@ def permutation_matrix(order=range(3)[2::-1]):
     for i in range(n): 
         matrix[i, order[i]] = 1
     return matrix
+
+def frommat(matfile):
+    """
+    Create a 4x4 transformation matrix from a matfile 
+    containing such a matrix 'M' in SPM order.
+
+    The matrix output takes a (0-based) C-ordered voxel
+    and outputs (z,y,x) world coordinates.
+
+    NOTE: When we switch from (z,y,x) world to (x,y,z) the
+    matrix B can removed.
+    """
+    A = permutation_transform([2,1,0])
+    A[:3,-1] = 1
+    B = permutation_transform([2,1,0])
+    M = loadmat(matfile)['M']
+    return np.dot(B, np.dot(M, A))
 
 
 def permutation_transform(order=range(3)[2::-1]):

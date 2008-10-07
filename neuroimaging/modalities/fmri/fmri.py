@@ -81,7 +81,6 @@ class FmriImageList(ImageList):
         
     def __array__(self):
         v = empty((len(self.list),) + self.list[0].shape)
-        print 'here;', v.shape
         for i, im in enumerate(self.list):
             v[i] = asarray(im)
         return v
