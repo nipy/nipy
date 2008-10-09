@@ -70,11 +70,17 @@ class PyNiftiIO(object):
 
     def _getdata(self, index):
         """Apply slicing and return data."""
+        # Note: We need to return the data as a copy of the array,
+        # otherwise it may be freed in the C Extension code while
+        # we're holding a reference to it.  This will cause a
+        # Segmentation Fault.
+
         # Only apply if scl_slope is nonzero
         if self._nim.slope != 0.0:
-            return self._nim.data[index] * self._nim.slope + self._nim.intercept
+            return self._nim.data[index].copy() * self._nim.slope \
+                   + self._nim.intercept
         else:
-            return self._nim.data[index]
+            return self._nim.data[index].copy()
 
     # array-like interface
     # --------------------
