@@ -63,7 +63,6 @@ use ``x, y, z`` to refer to real-world coordinates.
 
 Real-world coordinates
 ``````````````````````
-
 Real-world coordinates are coordinates where the values refer to
 real-world axes.  A real-world axis is an axis that refers to some
 real physical space, like low to high position in an MRI scanner, or
