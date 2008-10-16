@@ -19,6 +19,7 @@
    virtualenv-tutor.rst
    tricked_out_emacs.rst
    usecases/index.rst
+   pynifti.rst
+   registration_api.rst
    roadmap.rst
    TODO.rst
-   pynifti.rst
