@@ -15,10 +15,11 @@ def test_affine_analyze():
     img = PyNiftiIO(data)
     pdim = [2.0, 3.0, 4.0, 1.0, 1.0, 1.0, 1.0]
     img._nim.pixdim = pdim
-    xform = np.array([[4.0, 0.0, 0.0, 4.0],
-                     [0.0, 3.0, 0.0, 3.0],
-                     [0.0, 0.0, 2.0, 2.0],
-                     [0.0, 0.0, 0.0, 1.0]])
+    # flip our pixdims so it's in zyx order and create diagonal 3x3 transform
+    diag = np.diag(pdim[2::-1])
+    xform = np.zeros((4,4))
+    xform[:3, :3] = diag
+    xform[3, 3] = 1
     assert img._nim.header['sform_code'] == 0
     assert img._nim.header['qform_code'] == 0
     assert np.allclose(img.affine, xform)
@@ -37,10 +38,11 @@ def test_affine_qform():
                       [0.0, 0.0, 0.0, 1.0]])
     img._nim.setQForm(qform)
     # zyx order transform
-    xform = np.array([[3.0, 0.0, 0.0, 33.0],
-                      [0.0, 2.0, 0.0, 22.0],
-                      [0.0, 0.0, 1.0, 11.0],
-                      [0.0, 0.0, 0.0, 1.0]])
+    xform = qform.copy()
+    # flipud to put z-axis in first row
+    xform[:3,:] = np.flipud(xform[:3,:].copy())
+    # fliplr to put pixdims on diagonal
+    xform[:3,:3] = np.fliplr(xform[:3,:3].copy())
     assert np.all(img.affine == xform)
 
 def test_affine_sform():
@@ -58,9 +60,13 @@ def test_affine_sform():
                           [0.0, 0.0, 0.0, 1.0]])
     img._nim.setSForm(mni_xform)
     # Create a zyx ordered MNI transform
-    xform = np.array([[2.0, 0.0, 0.0, -70.0],
-                      [0.0, 2.0, 0.0, -124.0],
-                      [0.0, 0.0, -2.0, 88.0],
-                      [0.0, 0.0, 0.0, 1.0]])
+    xform = mni_xform.copy()
+    # flipud to put z-axis in first row
+    xform[:3,:] = np.flipud(xform[:3,:].copy())
+    # fliplr to put pixdims on diagonal
+    xform[:3,:3] = np.fliplr(xform[:3,:3].copy())
+    #print mni_xform
+    #print '*'*40
+    #print xform
     assert np.all(img.affine == xform)
 

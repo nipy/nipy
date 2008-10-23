@@ -73,9 +73,10 @@ class TestImage(TestCase):
         self.assertEquals(x.shape, self.img.shape)
         self.assertEquals(x.ndim, self.img.ndim)
         
-    # FIXME: AssertionError: Arrays are not equal
-    #    I believe this is due to an error in pyniftio, not writing out
-    #    values correctly to file on disk.  Fix upstream.
+    # FIXME: AssertionError: Arrays are not equal.
+    # This is a bug in the pyniftiio.py file where a one-voxel offset
+    # is added to the affine.  This does not conform with the nifti1.h
+    # standard and will be removed asap.
     @dec.knownfailure
     def test_file_roundtrip(self):
         save_image(self.img, self.tmpfile.name)
@@ -93,7 +94,31 @@ class TestImage(TestCase):
         # verify affine
         assert_equal(img2.affine, self.img.affine)
 
+    # This is a bug in the pyniftiio.py file where a one-voxel offset
+    # is added to the affine.  This does not conform with the nifti1.h
+    # standard and will be removed asap.
+    @dec.knownfailure
+    def test_roundtrip_fromarray(self):
+        data = np.random.rand(10,20,30)
+        img = fromarray(data)
+        save_image(img, self.tmpfile.name)
+        img2 = load_image(self.tmpfile.name)
+        data2 = np.asarray(img2)
+        # verify data
+        assert_almost_equal(data2, data)
+        assert_almost_equal(data2.mean(), data.mean())
+        assert_almost_equal(data2.min(), data.min())
+        assert_almost_equal(data2.max(), data.max())
+        # verify shape and ndims
+        assert_equal(img2.shape, img.shape)
+        assert_equal(img2.ndim, img.ndim)
+        # verify affine
+        assert_equal(img2.affine, img.affine)
+
     # FIXME: AssertionError: Arrays are not almost equal
+    # This is a bug in the pyniftiio.py file where a one-voxel offset
+    # is added to the affine.  This does not conform with the nifti1.h
+    # standard and will be removed asap.
     @dec.knownfailure
     def test_nondiag(self):
         self.img.coordmap.mapping.transform[0,1] = 3.0
@@ -149,6 +174,94 @@ class TestImage(TestCase):
 
         self.assertEquals(v, np.product(test.shape))
 
+    def uint8_to_dtype(self, dtype):
+        dtype = dtype
+        shape = (2,3,4)
+        dmax = np.iinfo(np.uint8).max
+        data = np.random.randint(0, dmax, size=shape)
+        data[0,0,0] = 0
+        data[1,0,0] = dmax
+        data = data.astype(np.uint8) # randint returns np.int32
+        img = fromarray(data)
+        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
+        newdata = np.asarray(newimg)
+        return newdata, data
+        
+    def test_scaling_uint8_to_uint8(self):
+        dtype = np.uint8
+        newdata, data = self.uint8_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_scaling_uint8_to_uint16(self):
+        dtype = np.uint16
+        newdata, data = self.uint8_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_scaling_uint8_to_float32(self):
+        dtype = np.float32
+        newdata, data = self.uint8_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_scaling_uint8_to_int32(self):
+        dtype = np.int32
+        newdata, data = self.uint8_to_dtype(dtype)
+        assert_equal(newdata, data)
+    
+    def float32_to_dtype(self, dtype):
+        # Utility function for the float32_to_<dtype> functions
+        # below. There is a lot of shared functionality, split up so
+        # the function names are unique so it's clear which dtypes are
+        # involved in a failure.
+        dtype = dtype
+        shape = (2,3,4)
+        # set some value value for scaling our data
+        scale = np.iinfo(np.uint16).max * 2.0
+        data = np.random.normal(size=(2,3,4), scale=scale)
+        data[0,0,0] = np.finfo(np.float32).max
+        data[1,0,0] = np.finfo(np.float32).min
+        # random.normal will return data as native machine type
+        data = data.astype(np.float32)
+        img = fromarray(data)
+        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
+        newdata = np.asarray(newimg)
+        return newdata, data
+        
+    def test_scaling_float32_to_uint8(self):
+        dtype = np.uint8
+        newdata, data = self.float32_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_scaling_float32_to_uint16(self):
+        dtype = np.uint16
+        newdata, data = self.float32_to_dtype(dtype)
+        assert_equal(newdata, data)
+        
+    def test_scaling_float32_to_int16(self):
+        dtype = np.int16
+        newdata, data = self.float32_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_scaling_float32_to_float32(self):
+        dtype = np.float32
+        newdata, data = self.float32_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_header_roundtrip(self):
+        hdr = self.img.header
+        # Update some header values and make sure they're saved
+        hdr['slice_duration'] = 0.200
+        hdr['intent_p1'] = 2.0
+        hdr['descrip'] = 'descrip for TestImage:test_header_roundtrip'
+        hdr['slice_end'] = 12
+        self.img.header = hdr
+        save_image(self.img, self.tmpfile.name)
+        newimg = load_image(self.tmpfile.name)
+        newhdr = newimg.header
+        assert_almost_equal(newhdr['slice_duration'], hdr['slice_duration'])
+        assert_equal(newhdr['intent_p1'], hdr['intent_p1'])
+        assert_equal(newhdr['descrip'], hdr['descrip'])
+        assert_equal(newhdr['slice_end'], hdr['slice_end'])
+        
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
     img = fromarray(data)
