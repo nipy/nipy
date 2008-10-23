@@ -99,9 +99,15 @@ class PyNiftiIO(object):
                     msg = "The requested dtype '%s' is not a valid nifti type"\
                           % dtype
                     raise KeyError, msg
-                
-            data = np.asarray(data).astype(dtype)
             
+            # FIXME: Until we implement scaling, don't use the dtype,
+            # casting like this will loose information.
+            #data = np.asarray(data).astype(dtype)
+
+            # np.asarray will return the array in the native type
+            # (float32 or float64)
+            data = np.asarray(data)
+
         # Create NiftiImage
         self._nim = nifti.NiftiImage(data, header=header)
         self.mode = mode
