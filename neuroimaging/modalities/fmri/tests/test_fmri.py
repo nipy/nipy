@@ -40,11 +40,11 @@ class test_fMRI(TestCase):
 
     def test_subcoordmap(self):
         subcoordmap = self.img.coordmap[3]
-
+        
         xform = np.array([[ 0., 0., 0., 10.35363007],
-                          [-7.,  0., 0., 7.],
-                          [ 0.,  -2.34375, 0., 53.90625],
-                          [ 0.,  0., -2.34375, 53.90625],
+                          [-7.,  0., 0., 14.],
+                          [ 0.,  -2.34375, 0., 56.25],
+                          [ 0.,  0., -2.34375, 56.25],
                           [ 0.,  0., 0., 1.]])
         
         assert_almost_equal(subcoordmap.mapping.transform, xform)
