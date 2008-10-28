@@ -18,7 +18,7 @@ parcels: return binary array of the unique components of data
 
 from numpy import unique, asarray, equal, product, cumprod, bool
 
-def parcels(data, labels=None):
+def parcels(data, labels=None, exclude=[]):
     """
     Take data and return a generator for
 
@@ -57,6 +57,12 @@ def parcels(data, labels=None):
     data = asarray(data)
     if labels is None:
         labels = unique(data)
+    if exclude:
+        labels = set(labels)
+        for e in exclude:
+            if e in labels:
+                labels.remove(e)
+                
     for label in labels:
         if type(label) not in [type(()), type([])]:
             yield equal(data, label)
