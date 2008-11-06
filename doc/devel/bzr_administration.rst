@@ -15,7 +15,7 @@ changes into the trunk, from development branches::
  cd trunk-lp
  bzr pull lp:nipy
  bzr merge ../trunk-dev
- bzr ci --author:"user name"
+ bzr ci --author="user name"
  # enter detailed commit message in a docstring format
  bzr push lp:nipy
 

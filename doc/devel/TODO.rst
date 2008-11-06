@@ -28,11 +28,6 @@ Documentation
 
 * Add list of dependencies in the INSTALL.
 
-* Post sphinx generated docs to update neuroimaging.scipy.org.
-
-* Document nipy development process with pynifti.  Use of git branches
-  and updating the source in nipy (update_source.py).
-
 * Create working example out of this TRAC `pca
   <http://neuroimaging.scipy.org/neuroimaging/ni/wiki/PrincipalComponents>`_
   page.  Should also be a rest document.
@@ -86,7 +81,9 @@ were added here this summer, grouping until they can be input.
     PyArray_NewFromDescr.  return
     nifticlib.mat442array(self.__nimg.sto_xyz)
 
-* Nifti image saving bug.  PixDims not being saved correctly.
+* Nifti image saving does not preserve the header values.  image.save
+  looses this information as the PyNiftiIO constructor pulls the data
+  array out of the Nipy Image and saves that only.
 
 * Fix fmri.pca module.  Internally it's referencing old image api that
   no longer exists like Image.slice_iterator.  Currently all tests are
@@ -169,8 +166,6 @@ Refactorings
   img._data is a PyNIftiIO object.  It works, but we should verify
   it's harmless otherwise prevent it from happening.
 
-* Rename SamplingGrid to CoordinateMap.  Image.grid to Image.coordmap?
-
 * Consider removing class ConcatenatedGrid in grid.py.  Is this
   functionality provided in the ImageList class?
 
@@ -231,6 +226,7 @@ Questions
 =========
 
 * Should millimeter coordinates be expressed in xyz or zyx order?
+  **Answer:** xyz order.
 
 Weekly Sprint
 =============
@@ -243,6 +239,7 @@ work through the backlog.
 *Fix bugs and implement any functionality needed to begin registration
 next week.*
 
+
 * Implement `fmriimagelist blueprint
   <https://blueprints.launchpad.net/nipy/+spec/fmriimagelist>`_.
 
@@ -250,21 +247,24 @@ next week.*
   * FmriImageList has a frametimes attr.  Document it and consider
     renaming to volume_start_times.
 
-* Rename SamplingGrid to CoordinateMap.  image.grid to image.coordmap
+* CoordinateMap API: Create a blueprint for the public api.  Implement
+  any needed functionality for registration.
 
-* Create a blueprint for the public api of CoordinateMap.  Have done
-  by Wednesday PM.  Share with Jonathan.
+* Image saving with dtype support.  Handle slope and intercept
+  correctly for dtype downcasting.
 
-* Fix image saving bug with pixdims.
+* Image.affine in xyz millimeter ordering.  Reading is working, need
+  to fix writing and add tests for roundtrip.  Test various ijk
+  orderings.
 
-* Fix memory error in pynifti when running tests via nosetests.
+* Fix memory error in pynifti when running tests via nosetests. (Only
+  happens on Matthew's machine.)
 
-* Document pynifti development in nipy.
-
-* **Thursday:** Focus on spline Unser code and using Jonathan's resample.
-
-* **Friday:** Work on viewer.  Merge Tom and Chris versions.  Make
-    overlay's work.  Lightbox/montage viewer if time permitting.
+* Work on viewer:
+  
+  * Review Mike's code.
+  * Merge Tom and Chris versions.  Make overlay's work.
+    Lightbox/montage viewer if time permitting.
 
 * Should image.load have an optional squeeze keyword to squeeze a 4D
   image with one frame into a 3D image?

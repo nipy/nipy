@@ -47,6 +47,13 @@ class Image(object):
 
     """
 
+    # Dictionary to store docs for attributes that are properties.  We
+    # want these docs to conform with our documentation standard, but
+    # they need to be passed into the property function.  Defining
+    # them separately allows us to do this without a lot of clutter
+    # int he property line.
+    _doc = {}
+    
     def __init__(self, data, coordmap):
         """Create an `Image` object from array and ``CoordinateMap`` object.
         
@@ -98,7 +105,28 @@ class Image(object):
         if hasattr(self._data, 'header'):
             return self._data.header
         raise AttributeError, 'Image created from arrays do not have headers.'
-    header = property(_getheader, doc="Image header if loaded from disk")
+    def _setheader(self, header):
+        if hasattr(self._data, 'header'):
+            self._data.header = header
+        else:
+            raise AttributeError, \
+                  'Image created from arrays do not have headers.'
+    _doc['header'] = \
+    """The file header dictionary for this image.  In order to update
+    the header, you must first make a copy of the header, set the
+    values you wish to change, then set the image header to the
+    updated header.
+
+    Example
+    -------
+
+    hdr = img.header
+    hdr['slice_duration'] = 0.200
+    hdr['descrip'] = 'My image registered with MNI152.'
+    img.header = hdr
+    
+    """
+    header = property(_getheader, _setheader, doc=_doc['header'])
 
     def __getitem__(self, index):
         """Slicing an image returns a new image."""
@@ -117,12 +145,12 @@ class Image(object):
         """Return data as a numpy array."""
         return np.asarray(self._data)
 
-def _open(filename, coordmap=None, mode="r"):
+def _open(source, coordmap=None, mode="r", dtype=None):
     """Create an `Image` from the given filename
 
     Parameters
     ----------
-    filename : ``string``
+    source : filename or a numpy array
     coordmap : `reference.coordinate_map.CoordinateMap`
         The coordinate map for the file
     mode : ``string``
@@ -135,7 +163,11 @@ def _open(filename, coordmap=None, mode="r"):
     """
 
     try:
-        ioimg = PyNiftiIO(filename, mode)
+        if hasattr(source, 'header'):
+            hdr = source.header
+        else:
+            hdr = {}
+        ioimg = PyNiftiIO(source, mode, dtype=dtype, header=hdr)
         if coordmap is None:
             coordmap = _coordmap_from_affine(ioimg.affine, ioimg.orientation,
                                     ioimg.shape)
@@ -143,7 +175,7 @@ def _open(filename, coordmap=None, mode="r"):
         img = Image(ioimg, coordmap)
         return img
     except IOError:
-        raise IOError, 'Unable to open file %s' % filename
+        raise IOError, 'Unable to create image from source %s' % str(source)
         
 def load(filename, mode='r'):
     """Load an image from the given filename.
@@ -181,7 +213,7 @@ def load(filename, mode='r'):
         raise ValueError, 'image opening mode must be either "r" or "r+"'
     return _open(filename, mode=mode)
 
-def save(img, filename):
+def save(img, filename, dtype=None):
     """Write the image to a file.
 
     Parameters
@@ -222,9 +254,19 @@ def save(img, filename):
         
     """
 
-    data = np.asarray(img)
-    outimage = _open(data, coordmap=img.coordmap, mode='w')
-    outimage._data.save(filename)
+    # Pass the image object to the low-level IO class so it can handle
+    # any data scaling.
+    outimage = _open(img, coordmap=img.coordmap, mode='w', dtype=dtype)
+    # At this point _data is a file-io object (like PyNiftiIO).
+    # _data.save delegates the save to pynifti.
+    
+    # FIXME:  HACK? Is this the correct way to handle saving fmri images?
+    if img.affine.shape == (5, 5):
+        # pull spatial transforms out of 5x5 fmri affine
+        affine = img.affine[1:, 1:]
+    else:
+        affine = img.affine
+    outimage._data.save(affine, filename)
     return outimage
     
 def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
