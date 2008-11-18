@@ -26,12 +26,12 @@ from neuroimaging.core.api import Image
 
 class Resels(object):
     
-    def __init__(self, grid, normalized=False, fwhm=None, resels=None,
+    def __init__(self, coordmap, normalized=False, fwhm=None, resels=None,
                  mask=None, clobber=False, D=3):
         """
         :Parameters:
-            grid : ``SamplingGrid``
-                 SamplingGrid over which fwhm and resels are to be estimated.                
+            coordmap : ``CoordinateMap``
+                 CoordinateMap over which fwhm and resels are to be estimated.                
                  Used in fwhm/resel conversion.
             fwhm : ``Image``
                 Optional Image of FWHM. Used to convert
@@ -51,10 +51,10 @@ class Resels(object):
         self.resels = resels
         self.mask = mask
         self.clobber = clobber
-        self.grid = grid
+        self.coordmap = coordmap
         self.D = D
 
-        _transform = self.grid.mapping.transform
+        _transform = self.coordmap.mapping.transform
         self.wedge = np.power(np.fabs(det(_transform)), 1./self.D)
 
     def integrate(self, mask=None):
@@ -89,7 +89,7 @@ class Resels(object):
         :Parameters:
             resels : ``float``
                 Convert a resel value to an equivalent isotropic FWHM based on
-                step sizes in self.grid.
+                step sizes in self.coordmap.
         
         :Returns: FWHM
         """
@@ -100,7 +100,7 @@ class Resels(object):
         :Parameters:
             fwhm : ``float``
                 Convert an FWHM value to an equivalent resels per voxel based on
-                step sizes in self.grid.
+                step sizes in self.coordmap.
 
 
         :Returns: resels
@@ -112,17 +112,17 @@ class Resels(object):
         :Returns: ``self``
         """
         if not self.fwhm:
-            im = Image(np.zeros(self.grid.shape), grid=self.grid)
+            im = Image(np.zeros(self.coordmap.shape), coordmap=self.coordmap)
         else:
             im = \
-              Image(self.fwhm, clobber=self.clobber, mode='w', grid=self.grid)
+              Image(self.fwhm, clobber=self.clobber, mode='w', coordmap=self.coordmap)
         self.fwhm = im
 
         if not self.resels:
-            im = Image(np.zeros(self.grid.shape), grid=self.grid)
+            im = Image(np.zeros(self.coordmap.shape), coordmap=self.coordmap)
         else:
             im = \
-              Image(self.resels, clobber=self.clobber, mode='w', grid=self.grid)
+              Image(self.resels, clobber=self.clobber, mode='w', coordmap=self.coordmap)
         self.resels = im
 
         return self
@@ -152,11 +152,11 @@ class ReselImage(Resels):
 
         if not self.fwhm:
             self.fwhm = Image(self.resel2fwhm(self.resels[:]),
-                              grid=self.grid, **keywords)
+                              coordmap=self.coordmap, **keywords)
 
         if not self.resels:
             self.resels = Image(self.fwhm2resel(self.fwhm[:]),
-                                grid=self.grid, **keywords)
+                                coordmap=self.coordmap, **keywords)
 
     def __iter__(self): 
         """
@@ -174,12 +174,12 @@ class iterFWHM(Resels):
 
     FWHMmax=50.
 
-    def __init__(self, grid, normalized=False, df_resid=5.0, mask=None, **keywords):
+    def __init__(self, coordmap, normalized=False, df_resid=5.0, mask=None, **keywords):
         """Setup a FWHM estimator.
         
         :Parameters:
-            grid : ``SamplingGrid``
-                 SamplingGrid over which fwhm and resels are to be estimated.                
+            coordmap : ``CoordinateMap``
+                 CoordinateMap over which fwhm and resels are to be estimated.                
                  Used in fwhm/resel conversion.
             normalized : ``bool``
                 Are residuals normalized to have length 1? If False, residuals
@@ -193,10 +193,10 @@ class iterFWHM(Resels):
                 Passed as keyword parameters to `Resels.__init__`
         """
 
-        Resels.__init__(self, grid, mask=mask, **keywords)
+        Resels.__init__(self, coordmap, mask=mask, **keywords)
         self.normalized = normalized
-        self.Y = grid.shape[1]
-        self.X = grid.shape[2]
+        self.Y = coordmap.shape[1]
+        self.X = coordmap.shape[2]
         self._setup_nneigh()
         self._fwhm = np.zeros((self.Y, self.X))
         self._resels = np.zeros((self.Y, self.X))
@@ -209,7 +209,7 @@ class iterFWHM(Resels):
         self.Xweight = -np.array([1,1,-1,-1.])
 
         self.slices = []
-        self.nslices = grid.shape[0]
+        self.nslices = coordmap.shape[0]
         iter(self)
         if df_resid <= self.D + 1:
             raise ValueError, 'insufficient residual degrees of freedom to estimate FWHM'
@@ -423,7 +423,7 @@ class iterFWHM(Resels):
         """
         :Returns: ``None``
         """
-        value = self.grid.next()
+        value = self.coordmap.next()
 
         self.fwhm[value.slice] =  np.clip(self._fwhm, 0, self.FWHMmax)
         self.resels[value.slice] = np.clip(self._resels, 0, self.FWHMmax)
@@ -442,8 +442,8 @@ class fastFWHM(Resels):
         :Returns: ``None``
         """
 
-        Resels.__init__(self, resid.grid.subgrid(0), **keywords)
-        self.n = resid.grid.shape[0]
+        Resels.__init__(self, resid.coordmap.subcoordmap(0), **keywords)
+        self.n = resid.coordmap.shape[0]
         self.resid = Image(resid)
 
     def __call__(self):
@@ -500,7 +500,7 @@ class fastFWHM(Resels):
         resels = np.sqrt(detlam * test)
         fwhm = self.resel2fwhm(resels)
 
-        fullslice = [slice(0, x) for x in self.grid.shape]
+        fullslice = [slice(0, x) for x in self.coordmap.shape]
         self.resels[:] = resels
         self.fwhm[:] = fwhm
 

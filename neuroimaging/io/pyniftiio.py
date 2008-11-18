@@ -40,14 +40,81 @@ In [78]: funcimg.getQOrientation(as_string=True)
 Out[78]: ['Left-to-Right', 'Posterior-to-Anterior', 'Inferior-to-Superior']
 """
 
+def _dtype_maxval(dtype):
+    """Return maximum value for the dtype."""
+    if type(dtype) in np.sctypes['float']:
+        # float32, float64
+        return np.finfo(dtype).max
+    elif type(dtype) in np.sctypes['complex']:
+        # complex128
+        raise NotImplementedError, 'BUG: Not handling complex128 types yet!'
+    else:
+        # uint8, int8, uint16, int16, uint32, int32, uint64, int64
+        return np.iinfo(dtype).max
 
 class PyNiftiIO(object):
     """Wrapper around the PyNifit image class.
     """
 
-    def __init__(self, data, mode='r'):
-        self._nim = nifti.NiftiImage(data)
+    def __init__(self, data, mode='r', dtype=None, header={}):
+        """Create a PyNiftiIO object.
+
+        Parameters
+        ----------
+        data : {array_like, filename}
+            Data should be either a filename (string), a numpy array
+            or an object that implements the __array__ interface from
+            which we get an array.
+        mode : {'r', 'w'}, optional
+            File access mode.  Read-only or read-write mode.
+        dtype : numpy.dtype
+            The dtype to save the data array as.  An exception is
+            raised if the requested dtype is not a valid nifti data
+            type.
+
+        Returns
+        -------
+        pyniftiio : A ``PyNiftiIO`` object
+        
+        """
+        
+        # If data is not an ndarray and not a filename (str)
+        if not hasattr(data, 'dtype') and not hasattr(data, 'endswith'):
+            # convert data to ndarray
+            
+            # Note: Let's say `data` is an Image that was loaded from a
+            # file and it's dtype is uint8 with a non-zero slope.
+            # Getting the data as an array will caused the data to
+            # scale into our native dtype... float32/float64.
+            # data = np.asarray(data)
+
+            if dtype is None:
+                # Get native dtype for this machine
+                dtype = np.array([1.0]).dtype
+            else:
+                # Validate the requested dtype is a nifti type
+                try:
+                    nifti.utils.N2nifti_dtype_map[dtype]
+                except KeyError:
+                    msg = "The requested dtype '%s' is not a valid nifti type"\
+                          % dtype
+                    raise KeyError, msg
+            
+            # FIXME: Until we implement scaling, don't use the dtype,
+            # casting like this will loose information.
+            #data = np.asarray(data).astype(dtype)
+
+            # np.asarray will return the array in the native type
+            # (float32 or float64)
+            data = np.asarray(data)
+
+        # Create NiftiImage
+        self._nim = nifti.NiftiImage(data, header=header)
         self.mode = mode
+
+        #print self._nim.data.dtype
+        #print 'slope:', self._nim.slope
+        #print 'intercept:', self._nim.intercept
 
     # image attributes
     # ----------------
@@ -66,15 +133,24 @@ class PyNiftiIO(object):
 
     def _get_header(self):
         return self._nim.header
-    header = property(_get_header)
+    def _set_header(self, header):
+        self._nim.updateFromDict(header)
+    header = property(_get_header, _set_header,
+                      doc='Get or set the pynifti header.')
 
     def _getdata(self, index):
         """Apply slicing and return data."""
+        # Note: We need to return the data as a copy of the array,
+        # otherwise it may be freed in the C Extension code while
+        # we're holding a reference to it.  This will cause a
+        # Segmentation Fault.
+
         # Only apply if scl_slope is nonzero
         if self._nim.slope != 0.0:
-            return self._nim.data[index] * self._nim.slope + self._nim.intercept
+            return self._nim.data[index].copy() * self._nim.slope \
+                   + self._nim.intercept
         else:
-            return self._nim.data[index]
+            return self._nim.data[index].copy()
 
     # array-like interface
     # --------------------
@@ -121,10 +197,16 @@ class PyNiftiIO(object):
         self._nim.setFilename(filename)
     filename = property(fget=_get_filename, fset=_set_filename)
 
-    def save(self, filename=None):
+    def save(self, affine, filename=None):
         if filename is not None:
             # update filename
             self.filename = filename
+        # We are setting both the sform and qform to the same affine
+        # transform.  And setting the sform_code and qform_codes to be
+        # aligned to another file, NIFTI_XFORM_ALIGNED_ANAT in the
+        # Nifti standard.  This writing method matches that of SPM5.
+        self._nim.setSForm(affine, code='aligned')
+        self._nim.setQForm(affine, code='aligned')
         self._nim.save()
         
 def getaffine(img):
@@ -175,8 +257,6 @@ def getaffine(img):
     trans = np.fliplr(np.eye(4, k=1))
     trans[3,3] = 1
     trans2 = trans.copy()
-    trans2[:,3] = 1  # Q: Why do we add a pixdim step to our translation?
-                     # A: for the 0-based vs 1-based indexing
     baseaffine = np.dot(np.dot(trans, transform), trans2)
     # deal with 4D+ dimensions
     ndim = img.header['dim'][0]

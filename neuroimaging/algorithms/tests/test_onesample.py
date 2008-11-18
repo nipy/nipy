@@ -5,7 +5,7 @@ from neuroimaging.core.api import load_image
 from neuroimaging.utils.tests.data import repository
 
 class test_OneSample(TestCase):
-    @dec.skipknownfailure
+    @dec.knownfailure
     @dec.slow
     @dec.data
     def test_onesample1(self):

@@ -12,7 +12,7 @@ class test_Axis(TestCase):
     # FIXME: Persumably we would have a defined set of valid axis
     # names.  There should be a test for setting valid and invalid
     # names.
-    @dec.skipknownfailure    
+    @dec.knownfailure    
     def test_init(self):
         # an invalid name shou;d raise an error
         self.fail("the valid names of axes has been removed so this doesn't raise an exception anymore")
@@ -25,7 +25,7 @@ class test_Axis(TestCase):
         self.assertFalse(self.axis == ax2)
 
     def test_valid(self):
-        self.assertRaises(NotImplementedError, self.axis.valid, 0)
+        self.assertRaises(NotImplementedError, self.axis.isvalidvalue, 0)
 
     def test_max(self):
         self.assertRaises(NotImplementedError, self.axis.max)
@@ -48,7 +48,11 @@ class test_ContinuousAxis(TestCase):
         self.assertTrue(self.finite.high == 10)
         self.assertTrue(self.infinite.low == -np.inf)
         self.assertTrue(self.infinite.high == np.inf)
-
+        self.assertRaises(ValueError, ContinuousAxis,
+                          name='xspace', low=0,high=0)
+        self.assertRaises(ValueError, ContinuousAxis,
+                          name='xspace', low=1,high=0)
+        
     def test_eq(self):
         fin_ax1 = ContinuousAxis(name='xspace', low=0, high=10)
         fin_ax2 = ContinuousAxis(name='xspace', low=1, high=11)
@@ -62,17 +66,17 @@ class test_ContinuousAxis(TestCase):
 
 
     def test_valid(self):
-        self.assertFalse(self.finite.valid(-1))
-        self.assertTrue(self.finite.valid(0))
-        self.assertTrue(self.finite.valid(5))
-        self.assertFalse(self.finite.valid(10))
-        self.assertFalse(self.finite.valid(15))
+        self.assertFalse(self.finite.isvalidvalue(-1))
+        self.assertTrue(self.finite.isvalidvalue(0))
+        self.assertTrue(self.finite.isvalidvalue(5))
+        self.assertFalse(self.finite.isvalidvalue(10))
+        self.assertFalse(self.finite.isvalidvalue(15))
 
-        self.assertTrue(self.infinite.valid(-np.inf))
-        self.assertTrue(self.infinite.valid(-100))
-        self.assertTrue(self.infinite.valid(0))
-        self.assertTrue(self.infinite.valid(100))
-        self.assertFalse(self.infinite.valid(np.inf))
+        self.assertTrue(self.infinite.isvalidvalue(-np.inf))
+        self.assertTrue(self.infinite.isvalidvalue(-100))
+        self.assertTrue(self.infinite.isvalidvalue(0))
+        self.assertTrue(self.infinite.isvalidvalue(100))
+        self.assertFalse(self.infinite.isvalidvalue(np.inf))
 
     def test_max(self):
         self.assertEqual(self.finite.max(), 10)
@@ -123,21 +127,21 @@ class test_RegularAxis(TestCase):
         self.assertFalse(self.infinite == inf_ax4)
 
     def test_valid(self):
-        self.assertFalse(self.finite.valid(-2))
-        self.assertTrue(self.finite.valid(0))
-        self.assertTrue(self.finite.valid(2))
-        self.assertTrue(self.finite.valid(18))
-        self.assertFalse(self.finite.valid(20))
-        self.assertFalse(self.finite.valid(200))
-        self.assertFalse(self.finite.valid(2.5))
+        self.assertFalse(self.finite.isvalidvalue(-2))
+        self.assertTrue(self.finite.isvalidvalue(0))
+        self.assertTrue(self.finite.isvalidvalue(2))
+        self.assertTrue(self.finite.isvalidvalue(18))
+        self.assertFalse(self.finite.isvalidvalue(20))
+        self.assertFalse(self.finite.isvalidvalue(200))
+        self.assertFalse(self.finite.isvalidvalue(2.5))
 
-        self.assertFalse(self.infinite.valid(-2))
-        self.assertTrue(self.infinite.valid(0))
-        self.assertTrue(self.infinite.valid(2))
-        self.assertFalse(self.infinite.valid(2.5))
-        self.assertTrue(self.infinite.valid(2000))
-        self.assertFalse(self.infinite.valid(np.inf))
-        self.assertFalse(self.infinite.valid(-np.inf))
+        self.assertFalse(self.infinite.isvalidvalue(-2))
+        self.assertTrue(self.infinite.isvalidvalue(0))
+        self.assertTrue(self.infinite.isvalidvalue(2))
+        self.assertFalse(self.infinite.isvalidvalue(2.5))
+        self.assertTrue(self.infinite.isvalidvalue(2000))
+        self.assertFalse(self.infinite.isvalidvalue(np.inf))
+        self.assertFalse(self.infinite.isvalidvalue(-np.inf))
 
 
     def test_max(self):

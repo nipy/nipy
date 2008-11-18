@@ -3,7 +3,7 @@ The Axis family of classes are used to represent a named axis within a
 coordinate system. Axes can be regular discrete or continuous, finite or
 infinite.
 
-The current class hirachy looks like this::
+The current class hierarchy looks like this::
 
                  `Axis`
                    |
@@ -14,13 +14,14 @@ The current class hirachy looks like this::
    `VoxelAxis`
 
 
-There is currently no support for irregularly spaced axes, however this
-could easily be added.
+There is currently no support for irregularly spaced axes, however
+this could easily be added.
 """
+import numpy as np
+
 
 __docformat__ = 'restructuredtext'
 
-import numpy as np
 
 class Axis(object):
     """
@@ -35,9 +36,7 @@ class Axis(object):
         :Parameters:
             name : ``string``
                 The name for the axis.
-
         """
-        
         self.name = name
 
     def __eq__(self, other):
@@ -51,7 +50,7 @@ class Axis(object):
         """
         return self.name == other.name
 
-    def valid(self, x):
+    def isvalidvalue(self, x):
         """ Test if x is a point on the axis. 
 
         :Parameters:
@@ -108,13 +107,10 @@ class ContinuousAxis(Axis):
 
         Notes
         -----
-
-        If ``low`` > ``high``, the behaviour of the class is undefined, though
-        this can be changed if a particular choice of behaviour is clearly
-        useful.
-        
+        At the moment, ``low`` >= ``high`` generates an error.
         """
-
+        if low >= high:
+            raise ValueError('Low value should be lower than high value')
         self.low = low
         self.high = high
         Axis.__init__(self, name)
@@ -131,7 +127,7 @@ class ContinuousAxis(Axis):
         return self.range() == other.range() and \
                Axis.__eq__(self, other)
 
-    def valid(self, x):
+    def isvalidvalue(self, x):
         """ Test if x is a point on the axis. 
 
         The axis is defined as the range ``[low:high)``.
@@ -159,7 +155,7 @@ class ContinuousAxis(Axis):
         return self.low
 
             
-class RegularAxis (Axis):
+class RegularAxis(Axis):
     """
     This class represents a regularly spaced axis. Axes are used in the
     definition of Coordinate systems. 
@@ -210,7 +206,7 @@ class RegularAxis (Axis):
                self.step == other.step and \
                Axis.__eq__(self, other)
 
-    def valid(self, x):
+    def isvalidvalue(self, x):
         """ Test if x is a point on the axis. 
 
         :Parameters:
@@ -271,9 +267,7 @@ class VoxelAxis(RegularAxis):
                 The name for the axis
             length : ``numpy.float``
                 The overall length of the axis
-
         """    
-
         RegularAxis.__init__(self, name, length, start=0, step=1)
 
 

@@ -90,7 +90,6 @@ def isdiagonal(matrix):
     masked = np.ma.array(matrix, mask=mask, fill_value=0.).filled()
     return np.all(masked == matrix)
 
-
 class Mapping(object):
     """
     A generic mapping class that allows composition, inverses, etc. A mapping
@@ -125,6 +124,17 @@ class Mapping(object):
         '%s:inverse=%s\n' % (self.name, self._inverse)
 
 
+    @staticmethod
+    def from_callable(c):
+        """
+        Construct a Mapping from a callable. If the
+        callable is an instance of Mapping, return it.
+        """
+        if isinstance(c, Mapping):
+            return c
+        else:
+            return Mapping(c)
+
     def __ne__(self, other): 
         """
         :SeeAlso:
@@ -148,7 +158,6 @@ class Mapping(object):
         """
         return other.__rmul__(self)
     
-
     def __rmul__(self, other):
         """ mapping composition
 
@@ -157,14 +166,15 @@ class Mapping(object):
                 The mapping to compose with.
         :Returns: `Mapping`
         """
-        def map(coords): 
+        other = Mapping.from_callable(other)
+        def _map(coords): 
             return other(self(coords))
         if self.isinvertible() and other.isinvertible():
             def inverse(coords): 
                 return self.inverse()(other.inverse()(coords))
         else: 
             inverse = None
-        return Mapping(map, inverse=inverse)
+        return Mapping(_map, inverse=inverse)
 
     def isinvertible(self):
         """
@@ -263,7 +273,7 @@ class Mapping(object):
         >>> SLOW = True
         >>> from neuroimaging.core.api import Image
         >>> zimage = Image('http://nifti.nimh.nih.gov/nifti-1/data/zstat1.nii.gz')
-        >>> mapping = zimage.grid.mapping
+        >>> mapping = zimage.coordmap.mapping
         >>> mapping([1,2,3])
         array([ 12.,  12., -16.])
 
@@ -358,6 +368,10 @@ class Affine(Mapping):
         ndim = transform.shape[0] - 1
         self._fmatrix, self._fvector = _2matvec(transform)
         Mapping.__init__(self, None, name=name, ndim=ndim)
+
+    def get_params(self):
+        return self._fmatrix, self._fvector
+    params = property(get_params,doc='Matrix, vector representation of affine')
 
     def __call__(self, coords):
         """ Apply this mapping to the given coordinates. 

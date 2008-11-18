@@ -1,8 +1,10 @@
+import numpy as np
+
 from neuroimaging.testing import *
 
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
-     VoxelCoordinateSystem
-from neuroimaging.core.reference.axis import Axis
+     VoxelCoordinateSystem, DiagonalCoordinateSystem
+from neuroimaging.core.reference.axis import Axis, RegularAxis
 
 class test_CoordinateSystem(TestCase):
 
@@ -62,7 +64,7 @@ class test_CoordinateSystem(TestCase):
 
     def test_sub_coords(self):
         new_c = self.c.sub_coords()
-        self.assertEquals(new_c.name, self.c.name + "-subgrid")
+        self.assertEquals(new_c.name, self.c.name + "-subcoordmap")
         self.assertEquals(new_c.axes(), self.c.axes()[1:])
         
 
@@ -80,11 +82,19 @@ class test_VoxelCoordinateSystem(TestCase):
         self.assertEquals(self.shape, self.v.shape)
 
     def test_isvalid(self):
-        self.assertTrue(self.v.isvalid([0,0,0]))
-        self.assertTrue(not self.v.isvalid(self.shape))
+        self.assertTrue(self.v.isvalidpoint([0,0,0]))
+        self.assertTrue(not self.v.isvalidpoint(self.shape))
 
 
-
+def test_diagonal():
+    ''' Test diagonal coordinate system '''
+    dcs = DiagonalCoordinateSystem(
+        'diag test', # Name
+        [RegularAxis(n, start=5, step=2) for n in ['zspace', 'yspace', 'xspace']])
+    assert np.allclose(dcs.transform(), [[2,0,0,5],
+                                         [0,2,0,5],
+                                         [0,0,2,5],
+                                         [0,0,0,1]])
 
 
 

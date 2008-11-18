@@ -4,8 +4,10 @@
  The nipy user guide
 =====================
 
-:Release: |version|
-:Date: |today|
+.. htmlonly::
+
+   :Release: |version|
+   :Date: |today|
 
 .. toctree::
 

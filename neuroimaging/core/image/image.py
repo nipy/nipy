@@ -2,7 +2,7 @@
 Functions are provided to load, save and create image objects, along with
 iterators to easily slice through volumes.
 
-    load : load an image from a file or url
+    load : load an image from a file
 
     save : save an image to a file
 
@@ -13,17 +13,15 @@ Examples
 See documentation for load and save functions for 'working' examples.
 
 """
+import numpy as np
+
+from neuroimaging.core.reference.coordinate_map import CoordinateMap
+from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
+
 
 __docformat__ = 'restructuredtext'
 __all__ = ['load', 'save', 'fromarray']
-
-import numpy as np
-
-from neuroimaging.io.datasource import DataSource, splitzipext
-from neuroimaging.core.reference.grid import SamplingGrid
-from neuroimaging.core.reference.mapping import Affine
-
-from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
 
 class Image(object):
     """
@@ -49,8 +47,15 @@ class Image(object):
 
     """
 
-    def __init__(self, data, grid):
-        """Create an `Image` object from a numpy array and a `Grid` object.
+    # Dictionary to store docs for attributes that are properties.  We
+    # want these docs to conform with our documentation standard, but
+    # they need to be passed into the property function.  Defining
+    # them separately allows us to do this without a lot of clutter
+    # int he property line.
+    _doc = {}
+    
+    def __init__(self, data, coordmap):
+        """Create an `Image` object from array and ``CoordinateMap`` object.
         
         Images should be created through the module functions load and
         fromarray.
@@ -58,7 +63,7 @@ class Image(object):
         Parameters
         ----------
         data : A numpy.ndarray
-        grid : A `SamplingGrid` Object
+        coordmap : A `CoordinateMap` Object
         
         See Also
         --------
@@ -68,13 +73,13 @@ class Image(object):
 
         """
 
-        if data is None or grid is None:
-            raise ValueError, 'expecting an array and SamplingGrid instance'
+        if data is None or coordmap is None:
+            raise ValueError, 'expecting an array and CoordinateMap instance'
 
         # self._data is an array-like object.  It must implement a subset of
         # array methods  (Need to specify these, for now implied in pyniftio)
         self._data = data
-        self._grid = grid
+        self._coordmap = coordmap
 
     def _getshape(self):
         return self._data.shape
@@ -84,14 +89,14 @@ class Image(object):
         return self._data.ndim
     ndim = property(_getndim, doc="Number of data dimensions")
 
-    def _getgrid(self):
-        return self._grid
-    grid = property(_getgrid,
+    def _getcoordmap(self):
+        return self._coordmap
+    coordmap = property(_getcoordmap,
                     doc="Coordinate mapping from input coords to output coords")
 
     def _getaffine(self):
-        if hasattr(self.grid, "affine"):
-            return self.grid.affine
+        if hasattr(self.coordmap, "affine"):
+            return self.coordmap.affine
         raise AttributeError, 'Nonlinear transform does not have an affine.'
     affine = property(_getaffine, doc="Affine transformation is one exists")
 
@@ -100,16 +105,37 @@ class Image(object):
         if hasattr(self._data, 'header'):
             return self._data.header
         raise AttributeError, 'Image created from arrays do not have headers.'
-    header = property(_getheader, doc="Image header if loaded from disk")
+    def _setheader(self, header):
+        if hasattr(self._data, 'header'):
+            self._data.header = header
+        else:
+            raise AttributeError, \
+                  'Image created from arrays do not have headers.'
+    _doc['header'] = \
+    """The file header dictionary for this image.  In order to update
+    the header, you must first make a copy of the header, set the
+    values you wish to change, then set the image header to the
+    updated header.
+
+    Example
+    -------
+
+    hdr = img.header
+    hdr['slice_duration'] = 0.200
+    hdr['descrip'] = 'My image registered with MNI152.'
+    img.header = hdr
+    
+    """
+    header = property(_getheader, _setheader, doc=_doc['header'])
 
     def __getitem__(self, index):
         """Slicing an image returns a new image."""
         data = self._data[index]
-        grid = self.grid[index]
+        coordmap = self.coordmap[index]
         # BUG: If it's a zero-dimension array we should return a numpy scalar
         # like np.int32(data[index])
         # Need to figure out elegant way to handle this
-        return Image(data, grid)
+        return Image(data, coordmap)
 
     def __setitem__(self, index, value):
         """Setting values of an image, set values in the data array."""
@@ -119,69 +145,48 @@ class Image(object):
         """Return data as a numpy array."""
         return np.asarray(self._data)
 
-def _open(url, datasource=DataSource(), format=None, grid=None, mode="r",
-          clobber=False, **keywords):
-    """Create an `Image` from the given url/filename
+def _open(source, coordmap=None, mode="r", dtype=None):
+    """Create an `Image` from the given filename
 
     Parameters
     ----------
-    url : ``string``
-        a url or filename
-    datasource : `DataSource`
-        The datasource to be used for caching
-    format : `Format`
-        The file format to use. If ``None`` then all possible formats will
-        be tried.
-    grid : `reference.grid.SamplingGrid`
-        The sampling grid for the file
+    source : filename or a numpy array
+    coordmap : `reference.coordinate_map.CoordinateMap`
+        The coordinate map for the file
     mode : ``string``
         The mode ot open the file in ('r', 'w', etc)
 
     Returns
     -------
-    image : A new `Image` object created from the url.
+    image : A new `Image` object created from the filename.
 
-    Notes
-    -----
-    Raises IOError : If the specified format, or those tried by default
-        all raise IOErrors.
-    Raises NotImplementedError : If the specified format, or those tried by
-        default are unable to open the file, an exception is raised.
-
-    The raising of an exception can be misleading. If for example, a
-    bad url is given, it will appear as if that file's format has not
-    been implemented.
-    
     """
 
     try:
-        ioimg = PyNiftiIO(url, mode)
-        if grid is None:
-            grid = grid_from_affine(ioimg.affine, ioimg.orientation,
+        if hasattr(source, 'header'):
+            hdr = source.header
+        else:
+            hdr = {}
+        ioimg = PyNiftiIO(source, mode, dtype=dtype, header=hdr)
+        if coordmap is None:
+            coordmap = _coordmap_from_affine(ioimg.affine, ioimg.orientation,
                                     ioimg.shape)
-        # Build nipy image from array-like object and sampling grid
-        img = Image(ioimg, grid)
+        # Build nipy image from array-like object and coordinate map
+        img = Image(ioimg, coordmap)
         return img
     except IOError:
-        raise IOError, 'Unable to open file %s' % url
+        raise IOError, 'Unable to create image from source %s' % str(source)
         
-def load(url, datasource=DataSource(), format=None, mode='r', **keywords):
-    """Load an image from the given url.
+def load(filename, mode='r'):
+    """Load an image from the given filename.
 
-    Load an image from the file specified by ``url`` and ``datasource``.
+    Load an image from the file specified by ``filename``.
 
     Parameters
     ----------
-    url : string
-        Should resolve to a complete filename path, possibly with the provided
-        datasource.
-    datasource : A `DataSource` object
-        A datasource for the image to load.
-    format : A `Format` object
-        The file format to use when opening the image file.  If ``None``, the
-        default, all supported formats are tried.
+    filename : string
+        Should resolve to a complete filename path.
     mode : Either 'r' or 'r+'
-    keywords : Keyword arguments passed to `Format` initialization call.
 
     Returns
     -------
@@ -190,35 +195,25 @@ def load(url, datasource=DataSource(), format=None, mode='r', **keywords):
 
     See Also
     --------
-    save : function for saving images
+    save_image : function for saving images
     fromarray : function for creating images from numpy arrays
-
-    Notes
-    -----
-    The raising of an exception can be misleading. If for example, a bad url 
-    is given, it will appear as if that file's format has not been implemented.
 
     Examples
     --------
 
-    >>> from neuroimaging.core.image import image
-    >>> from neuroimaging.testing import funcfile
-    >>> img = image.load(funcfile)
+    >>> from neuroimaging.core.api import load_image
+    >>> from neuroimaging.testing import anatfile
+    >>> img = load_image(anatfile)
     >>> img.shape
-    (20, 2, 20, 20)
+    (25, 35, 25)
 
     """
 
-    # BUG: Should DataSource here be a Repository?  So the Repository
-    # would be a 'base url' and the url would be the filename.
-    # Fix when porting code to numpy-trunk that now includes DataSource.
-    # and update documentation above.
-
     if mode not in ['r', 'r+']:
         raise ValueError, 'image opening mode must be either "r" or "r+"'
-    return _open(url, datasource=datasource, format=format, mode=mode, **keywords)
+    return _open(filename, mode=mode)
 
-def save(img, filename, datasource=DataSource()):
+def save(img, filename, dtype=None):
     """Write the image to a file.
 
     Parameters
@@ -226,9 +221,6 @@ def save(img, filename, datasource=DataSource()):
     img : An `Image` object
     filename : string
         Should be a valid filename.
-    datasource : A `DataSource` object
-        A datasource to specify the location of the file.
-        NOTE: This is currently ignored!
 
     Returns
     -------
@@ -236,8 +228,21 @@ def save(img, filename, datasource=DataSource()):
 
     See Also
     --------
-    load : function for loading images
+    load_image : function for loading images
     fromarray : function for creating images from numpy arrays
+
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> from tempfile import NamedTemporaryFile
+    >>> from neuroimaging.core.api import save_image, fromarray
+    >>> data = np.zeros((91,109,91), dtype=np.uint8)
+    >>> img = fromarray(data)
+    >>> tmpfile = NamedTemporaryFile(suffix='.nii.gz')
+    >>> saved_img = save_image(img, tmpfile.name)
+    >>> saved_img.shape
+    (91, 109, 91)
 
     Notes
     -----
@@ -249,12 +254,22 @@ def save(img, filename, datasource=DataSource()):
         
     """
 
-    data = np.asarray(img)
-    outimage = _open(data, grid=img.grid, mode='w')
-    outimage._data.save(filename)
+    # Pass the image object to the low-level IO class so it can handle
+    # any data scaling.
+    outimage = _open(img, coordmap=img.coordmap, mode='w', dtype=dtype)
+    # At this point _data is a file-io object (like PyNiftiIO).
+    # _data.save delegates the save to pynifti.
+    
+    # FIXME:  HACK? Is this the correct way to handle saving fmri images?
+    if img.affine.shape == (5, 5):
+        # pull spatial transforms out of 5x5 fmri affine
+        affine = img.affine[1:, 1:]
+    else:
+        affine = img.affine
+    outimage._data.save(affine, filename)
     return outimage
     
-def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
+def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
     """Create an image from a numpy array.
 
     Parameters
@@ -262,8 +277,8 @@ def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
     data : numpy array
         A numpy array of three dimensions.
     names : a list of axis names
-    grid : A `SamplingGrid`
-        If not specified, a uniform sampling grid is created.
+    coordmap : A `CoordinateMap`
+        If not specified, a uniform coordinate map is created.
 
     Returns
     -------
@@ -277,51 +292,14 @@ def fromarray(data, names=['zspace', 'yspace', 'xspace'], grid=None):
     """
 
     ndim = len(data.shape)
-    if not grid:
-        grid = SamplingGrid.from_start_step(names,
+    if not coordmap:
+        coordmap = CoordinateMap.from_start_step(names,
                                             (0,)*ndim,
                                             (1,)*ndim,
                                             data.shape)
 
-    return Image(data, grid)
+    return Image(data, coordmap)
 
-def create_outfile(filename, grid, dtype=np.float32, clobber=False):
-    """Create a zero-filled Image, saved to filename and opened in 'r+' mode.
-
-    Parameters
-    ----------
-    filename : string
-        Filename or path to file to create output file.
-    grid : `SamplingGrid`
-        The `SamplingGrid` for the `Image`.
-    dtype : numpy dtype
-        The data-type of the `Image` data.
-    clobber : boolean
-        Currently ignored!
-
-    Returns
-    -------
-    image : An `Image` object.
-        This image is linked to a file, opened for reading and writing.
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from tempfile import NamedTemporaryFile
-    >>> from neuroimaging.core.api import create_outfile
-    >>> from neuroimaging.core.image.image import grid_from_affine
-    >>> fp = NamedTemporaryFile(suffix='.nii.gz')
-    >>> grid = grid_from_affine(np.eye(4), [1,3,5], (10,20,30))
-    >>> img = create_outfile(fp.name, grid)
-    >>> fp.close()
-    
-    """
-    
-    data = np.zeros(grid.shape, dtype)
-    img = _open(data, mode='r+')
-    img._data.save(filename)
-    return img
-    
 def merge_images(filename, images, cls=Image, clobber=False,
                  axis='time'):
     """
@@ -348,29 +326,25 @@ def merge_images(filename, images, cls=Image, clobber=False,
     
     n = len(images)
     im0 = images[0]
-    grid = im0.grid.replicate(n, axis)
-    data = np.empty(shape=grid.shape)
+    coordmap = im0.coordmap.replicate(n, axis)
+    data = np.empty(shape=coordmap.shape)
     for i, image in enumerate(images):
         data[i] = np.asarray(image)[:]
-    return Image(data, grid)
+    return Image(data, coordmap)
 
-def zeros(grid):
-    """
-    Return an Image of zeros with a given grid.
-    """
-    return Image(np.zeros(grid.shape), grid)
+def _coordmap_from_affine(affine, orientation, shape):
+    """Generate a CoordinateMap from an affine transform.
 
+    This is a convenience function to create a CoordinateMap from image
+    attributes.  It uses the orientation field from pynifti IO to map
+    to the nipy *names*, prepending *time* or *vector* depending on
+    dimension.
 
-def grid_from_affine(affine, orientation, shape):
-    """Generate a SamplingGrid from an affine transform."""
+    FIXME: This is an internal function and should be revisited when
+    the CoordinateMap is refactored.
+    
+    """
 
-    """
-    spaces = ['vector','time','zspace','yspace','xspace']
-    space = tuple(spaces[-ndim:])
-    shape = tuple(img.header['dim'][1:ndim+1])
-    grid = SamplingGrid.from_affine(Affine(affine),space,shape)
-    return grid        
-    """
     names = []
     for ornt in orientation:
         names.append(orientation_to_names.get(ornt))
@@ -380,5 +354,5 @@ def grid_from_affine(affine, orientation, shape):
     elif len(shape) == 5:
         names = ['vector', 'time'] + names
     affobj = Affine(affine)
-    grid = SamplingGrid.from_affine(affobj, names, shape)
-    return grid
+    coordmap = CoordinateMap.from_affine(affobj, names, shape)
+    return coordmap

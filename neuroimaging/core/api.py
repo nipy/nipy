@@ -5,17 +5,17 @@ system.  Use this module for importing core names into your namespace. For examp
 """
 
 # Note: The order of imports is important here.
-from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.reference.coordinate_map import CoordinateMap
 
 from neuroimaging.core.reference.mapping import Mapping, Affine
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
      DiagonalCoordinateSystem
 from neuroimaging.core.reference.axis import VoxelAxis
 
-from neuroimaging.core.image.image import Image, merge_images, zeros
+from neuroimaging.core.image.image import Image, merge_images
 from neuroimaging.core.image.image import load as load_image
 from neuroimaging.core.image.image import save as save_image
-from neuroimaging.core.image.image import fromarray, create_outfile
+from neuroimaging.core.image.image import fromarray
 
 from neuroimaging.core.image.image_list import ImageList
 

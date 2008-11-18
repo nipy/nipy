@@ -11,7 +11,7 @@ from neuroimaging.core.image import image
 from neuroimaging.core.api import Image, load_image, save_image, fromarray
 from neuroimaging.core.api import parcels, data_generator, write_data
 
-from neuroimaging.core.reference.grid import SamplingGrid
+from neuroimaging.core.reference.coordinate_map import CoordinateMap
 from neuroimaging.core.reference.mapping import Affine
 
 class TestImage(TestCase):
@@ -21,7 +21,7 @@ class TestImage(TestCase):
         self.tmpfile = NamedTemporaryFile(suffix='.nii.gz')
         
     def test_init(self):
-        new = Image(np.asarray(self.img), self.img.grid)
+        new = Image(np.asarray(self.img), self.img.coordmap)
         assert_equal(np.asarray(self.img)[:], np.asarray(new)[:])
 
         self.assertRaises(ValueError, Image, None, None)
@@ -32,31 +32,31 @@ class TestImage(TestCase):
 
     def test_maxmin_values(self):
         y = np.asarray(self.img)
-        self.assertEquals(y.shape, tuple(self.img.grid.shape))
+        self.assertEquals(y.shape, tuple(self.img.coordmap.shape))
         np.allclose(y.max(), 437336.36, rtol=1.0e-8)
         self.assertEquals(y.min(), 0.0)
 
     def test_slice_plane(self):
         x = self.img[3]
         self.assertEquals(x.shape, self.img.shape[1:])
-        self.assertEquals(x.shape, x.grid.shape)
+        self.assertEquals(x.shape, x.coordmap.shape)
 
     def test_slice_block(self):
         x = self.img[3:5]
-        self.assertEquals(x.shape, (2,) + tuple(self.img.grid.shape[1:]))
-        self.assertEquals(x.shape, x.grid.shape)
+        self.assertEquals(x.shape, (2,) + tuple(self.img.coordmap.shape[1:]))
+        self.assertEquals(x.shape, x.coordmap.shape)
 
     def test_slice_step(self):
         s = slice(0,20,2)
         x = self.img[s]
-        self.assertEquals(x.shape, (10,) + tuple(self.img.grid.shape[1:]))
-        self.assertEquals(x.shape, x.grid.shape)
+        self.assertEquals(x.shape, (10,) + tuple(self.img.coordmap.shape[1:]))
+        self.assertEquals(x.shape, x.coordmap.shape)
 
     def test_slice_type(self):
-        s = slice(0,self.img.grid.shape[0])
+        s = slice(0,self.img.coordmap.shape[0])
         x = self.img[s]
-        self.assertEquals(x.shape, tuple((self.img.grid.shape)))
-        self.assertEquals(x.shape, x.grid.shape)
+        self.assertEquals(x.shape, tuple((self.img.coordmap.shape)))
+        self.assertEquals(x.shape, x.coordmap.shape)
 
     def test_slice_steps(self):
         zdim, ydim, xdim = self.img.shape
@@ -73,10 +73,11 @@ class TestImage(TestCase):
         self.assertEquals(x.shape, self.img.shape)
         self.assertEquals(x.ndim, self.img.ndim)
         
-    # FIXME: AssertionError: Arrays are not equal
-    #    I believe this is due to an error in pyniftio, not writing out
-    #    values correctly to file on disk.  Fix upstream.
-    @dec.skipknownfailure
+    # FIXME: AssertionError: Arrays are not equal.
+    # This is a bug in the pyniftiio.py file where a one-voxel offset
+    # is added to the affine.  This does not conform with the nifti1.h
+    # standard and will be removed asap.
+    @dec.knownfailure
     def test_file_roundtrip(self):
         save_image(self.img, self.tmpfile.name)
         img2 = load_image(self.tmpfile.name)
@@ -93,14 +94,38 @@ class TestImage(TestCase):
         # verify affine
         assert_equal(img2.affine, self.img.affine)
 
+    # This is a bug in the pyniftiio.py file where a one-voxel offset
+    # is added to the affine.  This does not conform with the nifti1.h
+    # standard and will be removed asap.
+    @dec.knownfailure
+    def test_roundtrip_fromarray(self):
+        data = np.random.rand(10,20,30)
+        img = fromarray(data)
+        save_image(img, self.tmpfile.name)
+        img2 = load_image(self.tmpfile.name)
+        data2 = np.asarray(img2)
+        # verify data
+        assert_almost_equal(data2, data)
+        assert_almost_equal(data2.mean(), data.mean())
+        assert_almost_equal(data2.min(), data.min())
+        assert_almost_equal(data2.max(), data.max())
+        # verify shape and ndims
+        assert_equal(img2.shape, img.shape)
+        assert_equal(img2.ndim, img.ndim)
+        # verify affine
+        assert_equal(img2.affine, img.affine)
+
     # FIXME: AssertionError: Arrays are not almost equal
-    @dec.skipknownfailure
+    # This is a bug in the pyniftiio.py file where a one-voxel offset
+    # is added to the affine.  This does not conform with the nifti1.h
+    # standard and will be removed asap.
+    @dec.knownfailure
     def test_nondiag(self):
-        self.img.grid.mapping.transform[0,1] = 3.0
+        self.img.coordmap.mapping.transform[0,1] = 3.0
         save_image(self.img, self.tmpfile.name)
         img2 = load_image(self.tmpfile.name)
-        assert_almost_equal(img2.grid.mapping.transform,
-                                       self.img.grid.mapping.transform)
+        assert_almost_equal(img2.coordmap.mapping.transform,
+                                       self.img.coordmap.mapping.transform)
 
     def test_generator(self):
         gen = data_generator(self.img)
@@ -113,7 +138,7 @@ class TestImage(TestCase):
             self.assertEquals(data.shape, (109,91))
 
     def test_iter4(self):
-        tmp = Image(np.zeros(self.img.shape), self.img.grid)
+        tmp = Image(np.zeros(self.img.shape), self.img.coordmap)
         write_data(tmp, data_generator(self.img, range(self.img.shape[0])))
         assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
 
@@ -121,7 +146,7 @@ class TestImage(TestCase):
         #This next test seems like it could be deprecated with
         #simplified iterator options
         
-        tmp = Image(np.zeros(self.img.shape), self.img.grid)
+        tmp = Image(np.zeros(self.img.shape), self.img.coordmap)
         g = data_generator(self.img)
         write_data(tmp, g)
         assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
@@ -149,6 +174,94 @@ class TestImage(TestCase):
 
         self.assertEquals(v, np.product(test.shape))
 
+    def uint8_to_dtype(self, dtype):
+        dtype = dtype
+        shape = (2,3,4)
+        dmax = np.iinfo(np.uint8).max
+        data = np.random.randint(0, dmax, size=shape)
+        data[0,0,0] = 0
+        data[1,0,0] = dmax
+        data = data.astype(np.uint8) # randint returns np.int32
+        img = fromarray(data)
+        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
+        newdata = np.asarray(newimg)
+        return newdata, data
+        
+    def test_scaling_uint8_to_uint8(self):
+        dtype = np.uint8
+        newdata, data = self.uint8_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_scaling_uint8_to_uint16(self):
+        dtype = np.uint16
+        newdata, data = self.uint8_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_scaling_uint8_to_float32(self):
+        dtype = np.float32
+        newdata, data = self.uint8_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_scaling_uint8_to_int32(self):
+        dtype = np.int32
+        newdata, data = self.uint8_to_dtype(dtype)
+        assert_equal(newdata, data)
+    
+    def float32_to_dtype(self, dtype):
+        # Utility function for the float32_to_<dtype> functions
+        # below. There is a lot of shared functionality, split up so
+        # the function names are unique so it's clear which dtypes are
+        # involved in a failure.
+        dtype = dtype
+        shape = (2,3,4)
+        # set some value value for scaling our data
+        scale = np.iinfo(np.uint16).max * 2.0
+        data = np.random.normal(size=(2,3,4), scale=scale)
+        data[0,0,0] = np.finfo(np.float32).max
+        data[1,0,0] = np.finfo(np.float32).min
+        # random.normal will return data as native machine type
+        data = data.astype(np.float32)
+        img = fromarray(data)
+        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
+        newdata = np.asarray(newimg)
+        return newdata, data
+        
+    def test_scaling_float32_to_uint8(self):
+        dtype = np.uint8
+        newdata, data = self.float32_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_scaling_float32_to_uint16(self):
+        dtype = np.uint16
+        newdata, data = self.float32_to_dtype(dtype)
+        assert_equal(newdata, data)
+        
+    def test_scaling_float32_to_int16(self):
+        dtype = np.int16
+        newdata, data = self.float32_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_scaling_float32_to_float32(self):
+        dtype = np.float32
+        newdata, data = self.float32_to_dtype(dtype)
+        assert_equal(newdata, data)
+
+    def test_header_roundtrip(self):
+        hdr = self.img.header
+        # Update some header values and make sure they're saved
+        hdr['slice_duration'] = 0.200
+        hdr['intent_p1'] = 2.0
+        hdr['descrip'] = 'descrip for TestImage:test_header_roundtrip'
+        hdr['slice_end'] = 12
+        self.img.header = hdr
+        save_image(self.img, self.tmpfile.name)
+        newimg = load_image(self.tmpfile.name)
+        newhdr = newimg.header
+        assert_almost_equal(newhdr['slice_duration'], hdr['slice_duration'])
+        assert_equal(newhdr['intent_p1'], hdr['intent_p1'])
+        assert_equal(newhdr['descrip'], hdr['descrip'])
+        assert_equal(newhdr['slice_end'], hdr['slice_end'])
+        
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
     img = fromarray(data)
@@ -189,13 +302,13 @@ class ArrayLikeObj(object):
 
 def test_ArrayLikeObj():
     obj = ArrayLikeObj()
-    # create simple grid
+    # create simple coordmap
     xform = np.eye(4)
     affine = Affine(xform)
-    grid = SamplingGrid.from_affine(affine, ['zspace', 'yspace', 'xspace'],
+    coordmap = CoordinateMap.from_affine(affine, ['zspace', 'yspace', 'xspace'],
                                     (2,3,4))
-    # create image form array-like object and grid
-    img = image.Image(obj, grid)
+    # create image form array-like object and coordmap
+    img = image.Image(obj, coordmap)
     assert img.ndim == 3
     assert img.shape == (2,3,4)
     assert np.allclose(np.asarray(img), 1)

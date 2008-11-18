@@ -9,7 +9,7 @@ from neuroimaging.utils.tests.data import repository
 from  neuroimaging.core.api import Image
 from neuroimaging.fixes.scipy.stats.models.contrast import Contrast
 
-from neuroimaging.modalities.fmri.api import FmriImage
+from neuroimaging.modalities.fmri.api import FmriImageList
 from neuroimaging.modalities.fmri.protocol import ExperimentalFactor,\
   ExperimentalQuantitative
 from neuroimaging.modalities.fmri.functions import SplineConfound
@@ -48,12 +48,12 @@ class test_FmriStat(TestCase):
 
     # FIXME: data_setUp is never called!  As a result, self.img is not
     #     defined.  Need to verify the data file exists (try
-    #     test_fmri.nii.gz) and the calling convention for FmriImage
+    #     test_fmri.nii.gz) and the calling convention for FmriImageList
     def data_setUp(self):
         frametimes = np.arange(120)*3.
         slicetimes = np.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
 
-        self.img = FmriImage("test_fmri.hdr", datasource=repository, frametimes=frametimes,
+        self.img = FmriImageList("test_fmri.hdr", datasource=repository, frametimes=frametimes,
                                   slicetimes=slicetimes, usematfile=False)
 
     def tearDown(self):
@@ -66,7 +66,7 @@ class test_FmriStat(TestCase):
 
 class test_SliceTimes(test_FmriStat):
     # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
-    @dec.skipknownfailure
+    @dec.knownfailure
     @dec.slow
     @dec.data
     def test_model_slicetimes(self):
@@ -83,7 +83,7 @@ class test_SliceTimes(test_FmriStat):
 
 class test_Resid1(test_FmriStat):
     # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
-    @dec.skipknownfailure    
+    @dec.knownfailure    
     @dec.slow
     @dec.data
     def test_model_resid1(self):
@@ -100,7 +100,7 @@ class test_Resid1(test_FmriStat):
 
 class test_Resid2(test_FmriStat):
     # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
-    @dec.skipknownfailure
+    @dec.knownfailure
     @dec.slow
     @dec.data
     def test_model_resid2(self):
@@ -117,7 +117,7 @@ class test_Resid2(test_FmriStat):
 
 class test_HRFDeriv(test_FmriStat):
     # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
-    @dec.skipknownfailure
+    @dec.knownfailure
     @dec.slow
     @dec.data
     def test_hrf_deriv(self):
@@ -143,7 +143,7 @@ class test_HRFDeriv(test_FmriStat):
         
 class test_Contrast(test_FmriStat):
     # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
-    @dec.skipknownfailure
+    @dec.knownfailure
     @dec.slow
     @dec.data
     def test_contrast(self):
