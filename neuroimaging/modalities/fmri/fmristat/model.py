@@ -3,7 +3,7 @@ This module defines the two default
 GLM passes of fmristat
 """
 
-import gc, copy
+import os.path as path
 
 import numpy as np
 from scipy.linalg import toeplitz
@@ -14,7 +14,7 @@ from neuroimaging.fixes.scipy.stats.models.utils import recipr
 # nipy core imports
 
 from neuroimaging.core.api import Image, data_generator, parcels, matrix_generator
-from neuroimaging.core.api import f_generator, Image
+from neuroimaging.core.api import f_generator, Image, save_image
 from neuroimaging.core.reference.api import Affine, CoordinateMap
 
 # fmri imports
@@ -22,11 +22,56 @@ from neuroimaging.core.reference.api import Affine, CoordinateMap
 from neuroimaging.modalities.fmri.api import FmriImageList, fmri_generator
 from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
      DelayContrastOutput
-from neuroimaging.modalities.fmri.fmristat.npzimage import NPZBuffer
 
 import neuroimaging.algorithms.statistics.regression as regression
 from neuroimaging.algorithms.fwhm import fastFWHM
 import neuroimaging.algorithms.statistics.regression as regression
+
+class ModelOutputImage:
+
+    """
+    These images have their values filled in as the model is fit, and
+    are saved to disk after being completely filled in.
+
+    They are saved to disk by calling the 'save' method.
+
+    The __getitem__ and __setitem__ calls are delegated to a private Image.
+    An exception is raised if trying to get/set data after the data has been saved to disk.
+    
+    """
+
+    def __init__(self, filename, coordmap, clobber=False):
+        self.filename = filename
+        self._im = Image(np.zeros(coordmap.shape), coordmap)
+        self.clobber = clobber
+        self._flushed = False
+
+    def save(self):
+        """
+        Save current Image data to disk as a .nii file.
+        """
+
+        if not self.clobber and path.exists(self.filename):
+            raise ValueError, 'trying to clobber existing file'
+        print self._im.coordmap.affine, 'before'
+        save_image(self._im, self.filename)
+        print load_image(self.filename).coordmap.affine, 'after'
+
+        self._flushed = True
+        del(self._im)
+
+    def __getitem__(self, item):
+        if not self._flushed:
+            return self._im[item]
+        else:
+            raise ValueError, 'trying to read value from a saved ModelOutputImage'
+
+    def __setitem__(self, item, value):
+        if not self._flushed:
+            self._im[item] = value
+        else:
+            raise ValueError, 'trying to set value on saved ModelOutputImage'
+        
 
 def model_generator(formula, data, volume_start_times, iterable=None, slicetimes=None,
                     model_type=OLSModel, model_params = lambda x: ()):
@@ -209,19 +254,20 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
     outbase: a string interpolator object with key %(stat)s
     contrast: a TContrast
     """
+    print 'here', fmri_image[0].coordmap.affine
     if effect:
-        effectim = NPZBuffer(outbase % {'stat':'effect'}, fmri_image[0].coordmap, clobber=clobber)
+        effectim = ModelOutputImage(outbase % {'stat':'effect'}, fmri_image[0].coordmap, clobber=clobber)
     else:
         effectim = None
 
     if sd:
-        sdim = NPZBuffer(outbase % {'stat':'sd'}, fmri_image[0].coordmap,
+        sdim = ModelOutputImage(outbase % {'stat':'sd'}, fmri_image[0].coordmap,
                               clobber=clobber)
     else:
         sdim = None
 
     if t:
-        tim = NPZBuffer(outbase % {'stat':'t'}, fmri_image[0].coordmap,
+        tim = ModelOutputImage(outbase % {'stat':'t'}, fmri_image[0].coordmap,
                              clobber=clobber)
     else:
         tim = None
@@ -229,7 +275,7 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
                               sd=sdim, t=tim)
 
 def output_F(outfile, contrast, fmri_image, clobber=False):
-    f = NPZBuffer(outfile, fmri_image[0].coordmap, clobber=clobber)
+    f = ModelOutputImage(outfile, fmri_image[0].coordmap, clobber=clobber)
     return regression.RegressionOutput(f, lambda x: regression.output_F(x, contrast))
                              
 def output_AR1(outfile, fmri_image, clobber=False):
@@ -240,7 +286,7 @@ def output_AR1(outfile, fmri_image, clobber=False):
     image: FmriImageList 
 
     """
-    outim = NPZBuffer(outfile, fmri_image[0].coordmap, clobber=clobber)
+    outim = ModelOutputImage(outfile, fmri_image[0].coordmap, clobber=clobber)
     return regression.RegressionOutput(outim, regression.output_AR1)
 
 def output_resid(outfile, fmri_image, clobber=False):
@@ -267,7 +313,8 @@ def output_resid(outfile, fmri_image, clobber=False):
         grid = fmri_image.coordmap
     else:
         raise ValueError, "expecting FmriImageList or 4d Image"
-    outim = NPZBuffer(outfile, grid, clobber=clobber)
+
+    outim = ModelOutputImage(outfile, grid, clobber=clobber)
     return regression.RegressionOutput(outim, regression.output_resid)
 
 def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
@@ -292,9 +339,9 @@ def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
 
     for output in outputs:
         if isinstance(output, regression.RegressionOutput):
-            if hasattr(output.img, 'flush'):
-                output.img.flush()
+            if hasattr(output.img, 'save'):
+                output.img.save()
         elif isinstance(output, regression.RegressionOutputList):
             for im in output.list:
-                if hasattr(im, 'flush'):
-                    im.flush()
+                if hasattr(im, 'save'):
+                    im.save()
