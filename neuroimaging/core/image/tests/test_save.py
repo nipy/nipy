@@ -28,12 +28,16 @@ def test_save2():
     """
 
     shape = (13,5,7,3)
-    output_axes = [api.RegularAxis(s, step=i+1) for i, s in enumerate('xyzt')][::-1]
+    step = np.array([3.45,2.3,4.5,6.93])
+
+    output_axes = [api.RegularAxis(s, step=step[::-1][i]) for i, s in enumerate('xyzt')][::-1]
     output_coords = api.DiagonalCoordinateSystem('output', output_axes)
 
     input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ijkl')][::-1]
     input_coords = api.VoxelCoordinateSystem('input', input_axes)
+    print 'here'
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
+    print 'now'
 
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
@@ -42,6 +46,42 @@ def test_save2():
     assert np.allclose(img.affine, img2.affine)
     assert img.shape == img2.shape
     assert np.allclose(np.asarray(img2), np.asarray(img))
+    return img, img2
+
+def test_save2a():
+    """
+    A test to ensure that when a file is saved, the affine
+    and the data agree. This image comes from a NIFTI file
+
+    This example has a non-diagonal affine matrix for the
+    spatial part, but is 'diagonal' for the space part.
+
+    this should raise no warnings.
+    """
+
+    # make a 5x5 transformatio
+    step = np.array([3.45,2.3,4.5,6.9])
+    A = np.random.standard_normal((3,3))
+    B = np.diag(list(step)+[1])
+    B[1:4,1:4] = A
+
+    shape = (13,5,7,3)
+    output_axes = [api.RegularAxis(s, step=step[::-1][i]) for i, s in enumerate('xyzt')][::-1]
+    output_coords = api.DiagonalCoordinateSystem('output', output_axes)
+
+    input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ijkl')][::-1]
+    input_coords = api.VoxelCoordinateSystem('input', input_axes)
+
+    cmap = api.CoordinateMap(api.Affine(B), input_coords, output_coords)
+
+    data = np.random.standard_normal(shape)
+    img = api.Image(data, cmap)
+    save_image(img, 'tmp.nii')
+    img2 = load_image('tmp.nii')
+    assert np.allclose(img.affine, img2.affine)
+    assert img.shape == img2.shape
+    assert np.allclose(np.asarray(img2), np.asarray(img))
+    return img, img2
 
 def test_save3():
     """
@@ -105,3 +145,4 @@ def test_save4():
     assert img2.coordmap.input_coords.axisnames() == ['l', 'j', 'k', 'i']
 
 
+test_save2()
