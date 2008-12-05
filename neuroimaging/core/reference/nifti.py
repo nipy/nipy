@@ -7,6 +7,40 @@ In particular, it allows one to check if a `CoordinateMap` instance
 can be coerced into a valid NIFTI CoordinateMap instance. For a 
 valid NIFTI coordmap, we can then ask which axes correspond to time,
 slice, phase and frequency.
+
+Axes:
+-----
+
+NIFTI files can have up to seven dimensions. We take the convention that
+the output coordinate names are ['x','y','z','t','u','v','w']
+and the input coordinate names are ['i','j','k','l','m','n','o'].
+
+In the NIFTI specification, the order of the output coordinates (at least the 
+first 3) are fixed to be ['x','y','z'] and their order is not mean to change. 
+As for input coordinates, the first three can be reordered, so 
+['j','k','i','l'] is valid, for instance.
+
+NIFTI has a 'diminfo' header attribute that optionally specifies the
+order of the ['i', 'j', 'k'] axes. To use similar
+terms to those in the nifti1.h header, 'phase' corresponds to 'i';
+'frequency' to 'j' and 'slice' to 'k'. We use ['i','j','k'] instead because
+there are images for which the terms 'phase' and 'frequency' have no proper
+meaning. See the functions `get_freq_axes`, `get_phase_axis` for how this
+is dealt with.
+
+Voxel coordinates:
+------------------
+
+NIFTI's voxel convention is what can best be described as 0-based
+FORTRAN indexing (confirm this). For example: suppose we want the
+x=20-th, y=10-th pixel of the third slice of an image with 30 64x64 slices. This
+
+>>> nifti_ijk = [19,9,2]
+>>> d = np.load('data.img', dtype=np.float, shape=(30,64,64))
+>>> request = d[nifti_ijk[::-1]]
+
+FIXME: For this reason, we have to consider whether we should transpose the
+memmap from pynifti. 
 """
 
 import warnings
@@ -15,7 +49,6 @@ from string import join
 import numpy as np
 
 from neuroimaging.core.api import CoordinateSystem, Affine, CoordinateMap, VoxelCoordinateSystem
-
 
 valid_input = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
 valid_output = list('xyztuvw')
