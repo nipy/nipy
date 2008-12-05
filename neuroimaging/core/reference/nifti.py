@@ -36,10 +36,17 @@ FORTRAN indexing (confirm this). For example: suppose we want the
 x=20-th, y=10-th pixel of the third slice of an image with 30 64x64 slices. This
 
 >>> nifti_ijk = [19,9,2]
+>>> fortran_ijk = [20,10,3]
+>>> c_kji = [2,9,19]
 >>> d = np.load('data.img', dtype=np.float, shape=(30,64,64))
->>> request = d[nifti_ijk[::-1]]
+>>> request1 = d[nifti_ijk[::-1]]
+>>> request2 = d[fortran_ijk[2]-1,fortran_ijk[1]-1, fortran_ijk[0]-1]
+>>> request3 = d[c_kji]
+>>> assert request1 == request2
+>>> assert request2 == request3
 
-FIXME: For this reason, we have to consider whether we should transpose the
+FIXME: (finish this thought.... Are we going to open NIFTI files with NIFTI input coordinates?)
+For this reason, we have to consider whether we should transpose the
 memmap from pynifti. 
 """
 
@@ -56,6 +63,19 @@ from mapping import Affine
 valid_input = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
 valid_output = list('xyztuvw')
 
+
+def iscoerceable(coordmap):
+    """
+    Determine if a given CoordinateMap instance can be used as 
+    a valid coordmap for a NIFTI image, so that an Image can be saved.
+    
+    This may raise various warnings about the coordmap.
+    """
+    try: 
+        coerce_coordmap(coordmap)
+        return True
+    except:
+        return False
 
 def coerce_coordmap(coordmap):
     """
@@ -91,13 +111,13 @@ def coerce_coordmap(coordmap):
         raise ValueError, 'affine must be square to save as a NIFTI file'
 
     ndim = affine.shape[0] - 1
-    inaxes = coordmap.input_coords.axisnames()
+    inaxes = coordmap.input_coords.axisnames
     vinput = valid_input[:ndim]
     if set(vinput) != set(inaxes):
         raise ValueError, 'input coordinate axisnames of a %d-dimensional Image must come from %s' % (ndim, `vinput`)
 
     voutput = valid_output[:ndim]
-    outaxes = coordmap.output_coords.axisnames()
+    outaxes = coordmap.output_coords.axisnames
     if set(voutput) != set(outaxes):
         raise ValueError, 'output coordinate axisnames of a %d-dimensional Image must come from %s' % (ndim, `voutput`)
 
@@ -167,10 +187,10 @@ def coerce_coordmap(coordmap):
     else:
         outname = coordmap.output_coords.name
 
-    axes = coordmap.input_coords.axes()
+    axes = coordmap.input_coords.axes
     newincoords = VoxelCoordinateSystem(inname, [axes[i] for i in intrans])
 
-    axes = coordmap.output_coords.axes()
+    axes = coordmap.output_coords.axes
     newoutcoords = CoordinateSystem(outname, [axes[i] for i in outtrans])
 
     return CoordinateMap(Affine(A), newincoords, newoutcoords), intrans
@@ -202,7 +222,7 @@ def get_pixdim(coordmap, full_length=False):
     # as non-negative).
     # since we will save the actual 4x4 affine in the NIFTI header,
     # we set the spatial pixdims to 0, UNLESS the corresponding
-    # coordmap.output_coords.axes() using
+    # coordmap.output_coords.axes using
     # the NIFTI order 'xyztuvw', i.e. the pixdim
     # order comes from the OUTPUT coordinates and should
     # always represent 'xyztuvw' and not necessarily know anything
@@ -231,7 +251,6 @@ def get_pixdim(coordmap, full_length=False):
         return v
     return pixdim
 
-
 def get_diminfo(coordmap):
     """
     Get diminfo byte from a coordmap, after validating it as a
@@ -256,7 +275,7 @@ def get_diminfo(coordmap):
 
     newcoordmap, _ = coerce_coordmap(coordmap)
 
-    ii, jj, kk = [newcoordmap.input_coords.axisnames().index(l) for l in 'ijk']
+    ii, jj, kk = [newcoordmap.input_coords.axisnames.index(l) for l in 'ijk']
     return _diminfo_from_fps(ii, jj, kk)
 
 def ijk_from_diminfo(diminfo):
@@ -307,8 +326,8 @@ def get_slice_axis(coordmap):
     --------
     axis: which axis of the array corresponds to 'slice'
     """
-    coerce_coordmap(coordmap)
-    return coordmap.input_coords.axisnames().index('k')
+    if iscoerceable(coordmap):
+        return coordmap.input_coords.axisnames.index('k')
 
 def get_time_axis(coordmap):
     """
@@ -323,8 +342,8 @@ def get_time_axis(coordmap):
     axis: which axis of the array corresponds to 'time'
 
     """
-    coerce_coordmap(coordmap)
-    return coordmap.input_coords.axisnames().index('l')
+    if iscoerceable(coordmap):
+        return coordmap.input_coords.axisnames.index('l')
 
 def get_freq_axis(coordmap):
     """
@@ -345,8 +364,8 @@ def get_freq_axis(coordmap):
     the axis of 'j' in the NIFTI coordmap, which corresponds to 
     'frequency' if it is defined in the diminfo byte of a NIFTI header.
     """
-    coerce_coordmap(coordmap)
-    return coordmap.input_coords.axisnames().index('j')
+    if iscoerceable(coordmap):
+        return coordmap.input_coords.axisnames.index('j')
 
 def get_phase_axis(coordmap):
     """
@@ -367,8 +386,8 @@ def get_phase_axis(coordmap):
     the axis of 'i' in the NIFTI coordmap, which corresponds to 
     'phase' if it is defined in the diminfo byte of a NIFTI header.
     """
-    coerce_coordmap(coordmap)
-    return coordmap.input_coords.axisnames().index('i')
+    if iscoerceable(coordmap):
+        return coordmap.input_coords.axisnames.index('i')
 
 
 def _fps_from_diminfo(diminfo):
@@ -382,13 +401,15 @@ def _fps_from_diminfo(diminfo):
     Because NIFTI expects values from 1-3 with 0 being 'undefined',
     we have to subtract 1 from each, making a return value of -1 'undefined'
     """
-    try:
-        diminfo = int(diminfo)
-    except:
-        warnings.warn('invalid diminfo entry in pynifti header')
-        diminfo = _diminfo_from_fps(0,1,2)
-
-    f = int(diminfo) & 0x03 
+    if type(diminfo) == type(''):
+        try:
+            diminfo = ord(diminfo)
+        except:
+            warnings.warn('invalid diminfo entry in pynifti header')
+            diminfo = _diminfo_from_fps(0,1,2)
+            pass
+    diminfo = int(diminfo)
+    f = diminfo & 0x03 
     p = int(diminfo >> 2) & 0x03
     s = int(diminfo >> 4) & 0x03
 
@@ -410,7 +431,7 @@ def _diminfo_from_fps(f, p, s):
     defed = filter(lambda x: x >= 0, (f,p,s))
     if len(defed) != len(set(defed)):
         raise ValueError, 'f,p,s axes must be different'
-    return ((f+1) & 0x03) + (((p+1) & 0x03) << 2) + (((s+1) & 0x03) << 4)
+    return chr(((f+1) & 0x03) + (((p+1) & 0x03) << 2) + (((s+1) & 0x03) << 4))
 
 def coordmap4io(coordmap):
     """
@@ -475,6 +496,5 @@ def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
     outaxes = [RegularAxis(n, step=s) for n, s in zip(outnames, pixdim[1:(ndim+1)])]
     outcoords = CoordinateSystem('output', outaxes)
             
-    #TODO: make sure pynifti doesn't reorder the axes now
     coordmap = CoordinateMap(affine, incoords, outcoords)
     return coordmap.reorder_input().reorder_output()
