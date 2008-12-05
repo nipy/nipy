@@ -22,13 +22,15 @@ class CoordinateMap(object):
     """
     
     @staticmethod
-    def from_start_step(names, start, step, shape):
+    def from_start_step(innames, outnames, start, step, shape):
         """
         Create a `CoordinateMap` instance from sequences of names, shape, start
         and step.
 
         :Parameters:
-            names : ``tuple`` of ``string``
+            innames : ``tuple`` of ``string``
+                TODO
+            outnames : ``tuple`` of ``string``
                 TODO
             start : ``tuple`` of ``float``
                 TODO
@@ -40,13 +42,15 @@ class CoordinateMap(object):
         
         :Predcondition: ``len(names) == len(shape) == len(start) == len(step)``
         """
-        ndim = len(names)
+        ndim = len(innames)
+        if len(outnames) != ndim:
+            raise ValueError, 'len(innames) != len(outnames)'
         # fill in default step size
         step = np.asarray(step)
-        axes = [RegularAxis(name=names[i], length=shape[i],
-          start=start[i], step=step[i]) for i in range(ndim)]
-        input_coords = VoxelCoordinateSystem('voxel', axes)
-        output_coords = DiagonalCoordinateSystem('world', axes)
+        inaxes = [VoxelAxis(name=innames[i], length=shape[i]) for i in range(ndim)]
+        outaxes = [RegularAxis(name=outnames[i], start=start[i], step=step[i]) for i in range(ndim)]
+        input_coords = VoxelCoordinateSystem('voxel', inaxes)
+        output_coords = DiagonalCoordinateSystem('world', outaxes)
         transform = output_coords.affine
         
         mapping = Affine(transform)
@@ -75,7 +79,7 @@ class CoordinateMap(object):
         if len(names) != ndim:
             raise ValueError('shape and number of axis names do not agree')
         iaxes = [VoxelAxis(name, l) for l, name in zip(shape, names)]
-        oaxes = [VoxelAxis(name) for name in names]
+        oaxes = [Axis(name) for name in names]
 
         input_coords = VoxelCoordinateSystem('voxel', iaxes)
         output_coords = DiagonalCoordinateSystem('world', oaxes)
@@ -83,15 +87,19 @@ class CoordinateMap(object):
         return CoordinateMap(aff_ident, input_coords, output_coords)
 
     @staticmethod
-    def from_affine(mapping, names, shape):
+    def from_affine(innames, outnames, mapping, shape):
         """
         Return coordmap using a given `Affine` mapping
         
         :Parameters:
+            innames : ``tuple`` of ``string``
+                The names of the axes of the input coordinate systems
+
+            outnames : ``tuple`` of ``string``
+                The names of the axes of the output coordinate systems
+
             mapping : `Affine`
                 An affine mapping between the input and output coordinate systems.
-            names : ``tuple`` of ``string``
-                The names of the axes of the coordinate systems
             shape : ''tuple'' of ''int''
                 The shape of the coordmap
         :Returns: `CoordinateMap`
@@ -100,12 +108,13 @@ class CoordinateMap(object):
         
         :Raises ValueError: ``if len(shape) != len(names)``
         """
-        ndim = len(names)
-        if mapping.ndim != ndim:
+        ndim = (len(innames) + 1, len(outnames) + 1)
+        if mapping.transform.shape != ndim:
             raise ValueError('shape and number of axis names do not agree')
-        axes = [VoxelAxis(name, length=l) for name, l in zip(names, shape)]
-        input_coords = VoxelCoordinateSystem("voxel", axes)
-        output_coords = DiagonalCoordinateSystem('world', axes)
+        inaxes = [VoxelAxis(name, length=l) for name, l in zip(innames, shape)]
+        outaxes = [Axis(name) for name in outnames]
+        input_coords = VoxelCoordinateSystem("voxel", inaxes)
+        output_coords = DiagonalCoordinateSystem('world', outaxes)
         return CoordinateMap(Affine(mapping.transform), input_coords, output_coords)
 
     def __init__(self, mapping, input_coords, output_coords):
@@ -125,14 +134,14 @@ class CoordinateMap(object):
 
     def _getshape(self):
         if isinstance(self.input_coords, VoxelCoordinateSystem):
-            s = tuple([a.length for a in self.input_coords.axes()])
+            s = tuple([a.length for a in self.input_coords.axes])
             return s
         else:
             raise AttributeError, "input_coords must be a VoxelCoordinateSystem to have a shape"
     shape = property(_getshape)
 
     def _getndim(self):
-        return (len(self.input_coords.axes()), len(self.output_coords.axes()))
+        return (len(self.input_coords.axes), len(self.output_coords.axes))
     ndim = property(_getndim)
 
     def isaffine(self):
@@ -175,7 +184,7 @@ class CoordinateMap(object):
 
         if isinstance(self.input_coords, VoxelCoordinateSystem):
             varcoords, mapping, shape = self.mapping._slice_mapping(index, self.shape)
-            ia = self.input_coords.axes()
+            ia = self.input_coords.axes
             newia = []
             for i in range(self.ndim[0]):
                 if i in varcoords:
@@ -249,7 +258,7 @@ class CoordinateMap(object):
         if order is None:
             order = range(ndim)[::-1]
 
-        newaxes = [self.input_coords.axes()[i] for i in order]
+        newaxes = [self.input_coords.axes[i] for i in order]
         try:
             shape = self.shape
             hasshape = True
@@ -291,7 +300,7 @@ class CoordinateMap(object):
         if order is None:
             order = range(ndim)[::-1]
 
-        newaxes = [self.output_coords.axes()[i] for i in order]
+        newaxes = [self.output_coords.axes[i] for i in order]
         newoutcoords = CoordinateSystem(self.output_coords.name + '-reordered', newaxes)
     
         perm = np.zeros((ndim+1,)*2)
@@ -428,10 +437,10 @@ class ConcatenatedComaps(CoordinateMap):
         newaxis = Axis(name=self.concataxis)
         in_coords = self.coordmaps[0].input_coords
         newin = CoordinateSystem('%s:%s'%(in_coords.name, self.concataxis), \
-                                 [newaxis] + list(in_coords.axes()))
+                                 [newaxis] + list(in_coords.axes))
         out_coords = self.coordmaps[0].output_coords
         newout = CoordinateSystem('%s:%s'%(out_coords.name, self.concataxis), \
-                                  [newaxis] + list(out_coords.axes()))
+                                  [newaxis] + list(out_coords.axes))
         return Mapping(mapfunc), newin, newout
 
 
@@ -474,11 +483,11 @@ class ConcatenatedIdenticalComaps(ConcatenatedComaps):
         in_coords = self.coordmaps[0].input_coords
         newin = CoordinateSystem(
             '%s:%s'%(in_coords.name, self.concataxis), \
-               [newaxis] + list(in_coords.axes()))
+               [newaxis] + list(in_coords.axes))
         out_coords = self.coordmaps[0].output_coords
         newout = CoordinateSystem(
             '%s:%s'%(out_coords.name, self.concataxis), \
-               [newaxis] + list(out_coords.axes()))
+               [newaxis] + list(out_coords.axes))
 
         in_trans = self.coordmaps[0].mapping.transform
         ndim = in_trans.shape[0]-1
