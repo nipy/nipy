@@ -48,65 +48,13 @@ from string import join
 
 import numpy as np
 
-from neuroimaging.core.api import CoordinateSystem, Affine, CoordinateMap, VoxelCoordinateSystem
+from coordinate_system import CoordinateSystem, VoxelCoordinateSystem
+from coordinate_map import CoordinateMap
+from axis import RegularAxis, VoxelAxis
+from mapping import Affine
 
 valid_input = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
 valid_output = list('xyztuvw')
-
-def reverse_input(coordmap):
-    """
-    Create a new coordmap with reversed input_coords.
-
-    Inputs:
-    -------
-    coordmap: `CoordinateMap`
-
-    Returns:
-    --------
-
-    newcoordmap: `CoordinateMap`
-         a new CoordinateMap with reversed input_coords.
-    """
-    newaxes = coordmap.input_coords.axes()[::-1]
-    newincoords = VoxelCoordinateSystem(coordmap.input_coords.name + '-reordered',
-                                   newaxes)
-    
-    ndim = coordmap.ndim[0]
-    perm = np.zeros((ndim+1,)*2)
-    perm[-1,-1] = 1.
-
-    for i, j in enumerate(transpose):
-        perm[i,ndim-1-i] = 1.
-
-    return CoordinateMap(Affine(A), newincoords, coordmap.output_coords.copy())
-
-def reverse_output(coordmap):
-    """
-    Create a new coordmap with reversed output_coords.
-
-    Inputs:
-    -------
-    coordmap: `CoordinateMap`
-
-    Returns:
-    --------
-
-    newcoordmap: `CoordinateMap`
-         a new CoordinateMap with reversed output_coords.
-    """
-    newaxes = coordmap.input_coords.axes()[::-1]
-    newincoords = VoxelCoordinateSystem(coordmap.input_coords.name + '-reordered',
-                                   newaxes)
-    
-    ndim = coordmap.ndim[0]
-    perm = np.zeros((ndim+1,)*2)
-    perm[-1,-1] = 1.
-
-    for i, j in enumerate(transpose):
-        perm[i,ndim-1-i] = 1.
-
-    return CoordinateMap(Affine(A), newincoords, coordmap.output_coords.copy())
-
 
 
 def coerce_coordmap(coordmap):
@@ -227,7 +175,7 @@ def coerce_coordmap(coordmap):
 
     return CoordinateMap(Affine(A), newincoords, newoutcoords), intrans
 
-def get_pixdim(coordmap):
+def get_pixdim(coordmap, full_length=False):
     """
     Get pixdim from a coordmap, after validating
     it as a valid NIFTI coordmap. The pixdims 
@@ -239,6 +187,10 @@ def get_pixdim(coordmap):
     -------
     coordmap: `CoordinateMap`
 
+    full_length: boolean
+           If True, return a 7-dimensional pixdim, instead of only the
+           non-zero ones.
+ 
     Returns:
     --------
     pixdim: np.ndarray(dtype=np.float)
@@ -272,7 +224,13 @@ def get_pixdim(coordmap):
         warnings.warn("pixdims from output_coords:%s, do not agree with pixdim from (coerced) affine matrix:%s. using those from output_coords" % (`pixdim[3:]`, `opixdim`))
 
 
-    return np.fabs(pixdim)
+    pixdim = np.fabs(pixdim)
+    if full_length:
+        v = np.zeros(7)
+        v[:pixdim.shape[0]] = pixdim
+        return v
+    return pixdim
+
 
 def get_diminfo(coordmap):
     """
@@ -335,7 +293,7 @@ def ijk_from_diminfo(diminfo):
     for l in range(3):
         if l not  in used:
             out[l] = remaining.pop(0)
-    return join(out, '')
+    return out
 
 def get_slice_axis(coordmap):
     """
@@ -424,6 +382,12 @@ def _fps_from_diminfo(diminfo):
     Because NIFTI expects values from 1-3 with 0 being 'undefined',
     we have to subtract 1 from each, making a return value of -1 'undefined'
     """
+    try:
+        diminfo = int(diminfo)
+    except:
+        warnings.warn('invalid diminfo entry in pynifti header')
+        diminfo = _diminfo_from_fps(0,1,2)
+
     f = int(diminfo) & 0x03 
     p = int(diminfo >> 2) & 0x03
     s = int(diminfo >> 4) & 0x03
@@ -487,3 +451,30 @@ def coordmap4io(coordmap):
     pixdim = get_pixdim(coordmap)
     diminfo = get_diminfo(coordmap)
     return newcmap, order, pixdim, diminfo
+
+def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
+    """Generate a CoordinateMap from an affine transform.
+
+    This is a convenience function to create a CoordinateMap from image
+    attributes.  It uses the orientation field from pynifti IO to map
+    to the nipy *names*, prepending *time* or *vector* depending on
+    dimension.
+
+    FIXME: This is an internal function and should be revisited when
+    the CoordinateMap is refactored.
+    
+    """
+    
+    ndim = len(shape)
+    ijk = ijk_from_diminfo(diminfo)
+    innames = ijk + valid_input[3:ndim]
+    inaxes = [VoxelAxis(n, length=l) for n, l in zip(innames, shape[::-1])]
+    incoords = CoordinateSystem('input', inaxes)
+
+    outnames = valid_output[:ndim]
+    outaxes = [RegularAxis(n, step=s) for n, s in zip(outnames, pixdim[1:(ndim+1)])]
+    outcoords = CoordinateSystem('output', outaxes)
+            
+    #TODO: make sure pynifti doesn't reorder the axes now
+    coordmap = CoordinateMap(affine, incoords, outcoords)
+    return coordmap.reorder_input().reorder_output()

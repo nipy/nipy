@@ -1,6 +1,7 @@
 import numpy as np
 from neuroimaging.testing import *
 
+from neuroimaging.core.api import VoxelAxis, RegularAxis, VoxelCoordinateSystem, CoordinateSystem
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, ConcatenatedComaps, \
      ConcatenatedIdenticalComaps
 from neuroimaging.core.reference.mapping import Affine
@@ -84,10 +85,5 @@ class test_coordmap(TestCase):
     def test_from_affine(self):
         a = Affine.identity(2)
         g = CoordinateMap.from_affine(a, ['zspace', 'xspace'], (20,30))
-
-
-
-
-
 
 

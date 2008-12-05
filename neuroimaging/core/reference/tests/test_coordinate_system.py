@@ -91,10 +91,10 @@ def test_diagonal():
     dcs = DiagonalCoordinateSystem(
         'diag test', # Name
         [RegularAxis(n, start=5, step=2) for n in ['zspace', 'yspace', 'xspace']])
-    assert np.allclose(dcs.transform(), [[2,0,0,5],
-                                         [0,2,0,5],
-                                         [0,0,2,5],
-                                         [0,0,0,1]])
+    assert np.allclose(dcs.affine, [[2,0,0,5],
+                                    [0,2,0,5],
+                                    [0,0,2,5],
+                                    [0,0,0,1]])
 
 
 

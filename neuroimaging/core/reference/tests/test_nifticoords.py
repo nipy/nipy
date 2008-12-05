@@ -200,7 +200,7 @@ def test_validate7():
     a warning about negative pixdim
     """
 
-    output_axes = [api.RegularAxis(s, step=-i) for i, s in enumerate('xyztuvw')]
+    output_axes = [api.RegularAxis(s, step=-i-1) for i, s in enumerate('xyztuvw')]
     ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
     input_coords = api.VoxelCoordinateSystem('input', ninput_axes)
     output_coords = api.DiagonalCoordinateSystem('output', output_axes[:4])
@@ -215,11 +215,12 @@ def test_validate7():
     assert(X.shape, newcmap.shape)
 
     assert newcmap.input_coords.axisnames() == ['j','k','i','l']
+    print pixdim, 'pixdim'
     assert np.allclose(pixdim, np.arange(4)+1)
 
 def test_ijk1():
-    assert(nifti.ijk_from_diminfo(nifti._diminfo_from_fps(-1,-1,-1)) == 'ijk')
-    assert(nifti.ijk_from_diminfo(nifti._diminfo_from_fps(2,-1,-1)) == 'jki')
+    assert(nifti.ijk_from_diminfo(nifti._diminfo_from_fps(-1,-1,-1)) == list('ijk'))
+    assert(nifti.ijk_from_diminfo(nifti._diminfo_from_fps(2,-1,-1)) == list('jki'))
 
 def test_ijk2():
     """
@@ -241,7 +242,6 @@ def test_ijk3():
     '''
     Same as test_ijk2, but the order of the output coordinates is reversed
     '''
-
 
     ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
     input_coords = api.VoxelCoordinateSystem('input', ninput_axes)

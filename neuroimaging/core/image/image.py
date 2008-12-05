@@ -18,7 +18,7 @@ import numpy as np
 from neuroimaging.core.reference.coordinate_map import CoordinateMap
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
-
+from neuroimaging.core.reference.nifti import coordmap_from_ioimg, coerce_coordmap, get_pixdim, get_diminfo
 
 __docformat__ = 'restructuredtext'
 __all__ = ['load', 'save', 'fromarray']
@@ -169,8 +169,8 @@ def _open(source, coordmap=None, mode="r", dtype=None):
             hdr = {}
         ioimg = PyNiftiIO(source, mode, dtype=dtype, header=hdr)
         if coordmap is None:
-            coordmap = _coordmap_from_affine(ioimg.affine, ioimg.orientation,
-                                    ioimg.shape)
+            coordmap = coordmap_from_ioimg(Affine(ioimg.affine), ioimg.header['dim_info'], ioimg.header['pixdim'], ioimg.shape)
+
         # Build nipy image from array-like object and coordinate map
         img = Image(ioimg, coordmap)
         return img
@@ -254,21 +254,47 @@ def save(img, filename, dtype=None):
         
     """
 
+    # Reorder the image to 'fortran'-like input and output coordinates
+    # before trying to coerce to a NIFTI like image
+
+    rimg = Image(np.transpose(np.asarray(img)), 
+                 img.coordmap.reorder_input().reorder_output())
+    newimg = coerce2nifti(rimg)
+    newimg2 = Image(np.transpose(np.asarray(newimg)), newimg.coordmap.reorder_input().reorder_output())
+
     # Pass the image object to the low-level IO class so it can handle
     # any data scaling.
-    outimage = _open(img, coordmap=img.coordmap, mode='w', dtype=dtype)
+
+    # FIXME: this bad... to save it using PyNiftiIO
+    # the array should be in C ['k','j','i'] order,
+    # but the easiest way to specify the affine seems to be the
+    # ['i','j','k'] order
+    outimage = _open(newimg2, coordmap=newimg2.coordmap, mode='w', dtype=dtype)
+
     # At this point _data is a file-io object (like PyNiftiIO).
     # _data.save delegates the save to pynifti.
     
-    # FIXME:  HACK? Is this the correct way to handle saving fmri images?
-    if img.affine.shape == (5, 5):
-        # pull spatial transforms out of 5x5 fmri affine
-        affine = img.affine[1:, 1:]
-    else:
-        affine = img.affine
+    # Now that the affine has the proper order,
+    # it can be saved to the NIFTI header
+
+    affine = np.identity(4)
+    affine[:3,:3] = newimg.affine[:3,:3]
+    
+    pixdim = get_pixdim(newimg.coordmap, full_length=1)
+    outimage._data._nim.setPixDims(pixdim)
+    outimage._data._nim.updateFromDict({'diminfo':get_diminfo(newimg.coordmap)})
     outimage._data.save(affine, filename)
     return outimage
     
+def coerce2nifti(img):
+    """
+    Coerce an Image into a new Image with a valid NIFTI coordmap
+    so that it can be saved.
+    """
+    newcmap, order = coerce_coordmap(img.coordmap)
+    return Image(np.transpose(np.asarray(img), order), newcmap)
+
+
 def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
     """Create an image from a numpy array.
 
@@ -332,27 +358,3 @@ def merge_images(filename, images, cls=Image, clobber=False,
         data[i] = np.asarray(image)[:]
     return Image(data, coordmap)
 
-def _coordmap_from_affine(affine, orientation, shape):
-    """Generate a CoordinateMap from an affine transform.
-
-    This is a convenience function to create a CoordinateMap from image
-    attributes.  It uses the orientation field from pynifti IO to map
-    to the nipy *names*, prepending *time* or *vector* depending on
-    dimension.
-
-    FIXME: This is an internal function and should be revisited when
-    the CoordinateMap is refactored.
-    
-    """
-
-    names = []
-    for ornt in orientation:
-        names.append(orientation_to_names.get(ornt))
-    names = names[::-1]
-    if len(shape) == 4:
-        names = ['time'] + names
-    elif len(shape) == 5:
-        names = ['vector', 'time'] + names
-    affobj = Affine(affine)
-    coordmap = CoordinateMap.from_affine(affobj, names, shape)
-    return coordmap

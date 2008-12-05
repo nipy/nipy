@@ -47,7 +47,7 @@ class CoordinateMap(object):
           start=start[i], step=step[i]) for i in range(ndim)]
         input_coords = VoxelCoordinateSystem('voxel', axes)
         output_coords = DiagonalCoordinateSystem('world', axes)
-        transform = output_coords.transform()
+        transform = output_coords.affine
         
         mapping = Affine(transform)
         return CoordinateMap(mapping, input_coords, output_coords)
@@ -215,38 +215,6 @@ class CoordinateMap(object):
         """
         self.mapping = mapping * self.mapping
 
-    def matlab2python(self):
-        """
-        Convert a coordmap in matlab-ordered voxels to python ordered voxels
-        if input_coords is an instance of VoxelCoordinateSystem.
-        See `Mapping.matlab2python` for more details.
-
-
-        """
-        if isinstance(self.input_coords, VoxelCoordinateSystem):
-            mapping = self.mapping.matlab2python()
-            newi = self.input_coords.reverse()
-            return CoordinateMap(mapping, 
-                                VoxelCoordinateSystem(newi.name, newi.axes()),
-                                self.output_coords.reverse())
-        else:
-            raise ValueError, 'input_coords must be VoxelCoordinateSystem for self.matlab2python to make sense'
-
-    def python2matlab(self):
-        """
-        Convert a coordmap in python ordered voxels to matlab ordered voxels
-        if input_coords is an instance of VoxelCoordinateSystem.
-        See `Mapping.python2matlab` for more details.
-        """
-        if isinstance(self.input_coords, VoxelCoordinateSystem):
-            mapping = self.mapping.python2matlab()
-            newi = self.input_coords.reverse()
-            return CoordinateMap(mapping, 
-                                VoxelCoordinateSystem(newi.name, newi.axes()),
-                                self.output_coords.reverse())
-        else:
-            raise ValueError, 'input_coords must be VoxelCoordinateSystem for self.python2matlab to make sense'
-
     def replicate(self, n, concataxis="concat"):
         """
         Duplicate self n times, returning a `ConcatenatedComaps` with
@@ -259,6 +227,82 @@ class CoordinateMap(object):
                 The name of the new dimension formed by concatenation
         """
         return ConcatenatedIdenticalComaps(self, n, concataxis=concataxis)
+
+    def reorder_input(self, order=None):
+        """
+        Create a new coordmap with reversed input_coords.
+        Default behaviour is to reverse the order of the input_coords.
+        If the coordmap has a shape, the resulting one will as well.
+
+        Inputs:
+        -------
+        order: sequence
+               Order to use, defaults to reverse
+
+        Returns:
+        --------
+
+        newcoordmap: `CoordinateMap`
+               A new CoordinateMap with reversed input_coords.
+        """
+        ndim = self.ndim[0]
+        if order is None:
+            order = range(ndim)[::-1]
+
+        newaxes = [self.input_coords.axes()[i] for i in order]
+        try:
+            shape = self.shape
+            hasshape = True
+        except:
+            hasshape = False
+            pass
+        if hasshape:
+            newincoords = VoxelCoordinateSystem(self.input_coords.name + '-reordered', newaxes)
+        else:
+            newincoords = CoordinateSystem(self.input_coords.name + '-reordered', newaxes)
+
+        perm = np.zeros((ndim+1,)*2)
+        perm[-1,-1] = 1.
+
+        for i, j in enumerate(order):
+            perm[i,j] = 1.
+        A = np.dot(self.affine, perm)
+        return CoordinateMap(Affine(A), newincoords, self.output_coords)
+
+    def reorder_output(self, order=None):
+        """
+        Create a new coordmap with reversed output_coords.
+        Default behaviour is to reverse the order of the input_coords.
+
+        Inputs:
+        -------
+
+        order: sequence
+               Order to use, defaults to reverse
+
+        Returns:
+        --------
+
+        newcoordmap: `CoordinateMap`
+             A new CoordinateMap with reversed output_coords.
+        """
+
+        ndim = self.ndim[1]
+        if order is None:
+            order = range(ndim)[::-1]
+
+        newaxes = [self.output_coords.axes()[i] for i in order]
+        newoutcoords = CoordinateSystem(self.output_coords.name + '-reordered', newaxes)
+    
+        perm = np.zeros((ndim+1,)*2)
+        perm[-1,-1] = 1.
+
+        for i, j in enumerate(order):
+            perm[i,j] = 1.
+        A = np.dot(perm, self.affine)
+        return CoordinateMap(Affine(A), self.input_coords, newoutcoords)
+
+
 
 def centered_coordmap(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
     """
@@ -295,7 +339,7 @@ def centered_coordmap(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
                         start=start[i], step=step[i]) for i in range(ndim)]
     input_coords = VoxelCoordinateSystem('voxel', axes)
     output_coords = DiagonalCoordinateSystem('world', axes)
-    transform = output_coords.transform()
+    transform = output_coords.affine
         
     mapping = Affine(transform)
     return CoordinateMap(mapping, input_coords, output_coords)
