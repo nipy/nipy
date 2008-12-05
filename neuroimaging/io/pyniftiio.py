@@ -197,7 +197,7 @@ class PyNiftiIO(object):
         self._nim.setFilename(filename)
     filename = property(fget=_get_filename, fset=_set_filename)
 
-    def save(self, affine, filename=None):
+    def save(self, affine, pixdim, diminfo, filename=None):
         if filename is not None:
             # update filename
             self.filename = filename
@@ -205,9 +205,29 @@ class PyNiftiIO(object):
         # transform.  And setting the sform_code and qform_codes to be
         # aligned to another file, NIFTI_XFORM_ALIGNED_ANAT in the
         # Nifti standard.  This writing method matches that of SPM5.
+        self.pixdim = pixdim
+        self.diminfo = diminfo
         self._nim.setSForm(affine, code='aligned')
         self._nim.setQForm(affine, code='aligned')
         self._nim.save()
+
+    # These two properties of the header are important for saving
+    # Images with the correct dimension info
+
+    def _getpixdim(self):
+        return self._nim.getPixDims()
+    def _setpixdim(self, pixdim):
+        self._nim.setPixDims(pixdim)
+    pixdim = property(_getpixdim, _setpixdim)
+
+    # FIXME: setting the diminfo is not 
+    # working quite right 
+
+    def _getdiminfo(self):
+        return self._nim.header['dim_info']
+    def _setdiminfo(self, diminfo):
+        self._nim.updateFromDict({'dim_info': diminfo})
+    diminfo = property(_getdiminfo, _setdiminfo)
         
 def getaffine(img):
     """Get affine transform from a NiftiImage.
@@ -248,12 +268,6 @@ def getaffine(img):
         transform = np.identity(4)
         transform[:-1, :-1] = np.diag(pixdims[1:4])
         
-    """
-    generate transforms to flip data from 
-    matlabish (nifti header default fortran ordered)
-    to nipyish (c ordered)
-    to correctly correspond with c-ordered image data
-    """
     # deal with 4D+ dimensions
     ndim = img.header['dim'][0]
     if ndim > 3:

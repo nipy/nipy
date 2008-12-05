@@ -259,17 +259,35 @@ def save(img, filename, dtype=None):
 
     rimg = Image(np.transpose(np.asarray(img)), 
                  img.coordmap.reorder_input().reorder_output())
-    newimg = coerce2nifti(rimg)
-    newimg2 = Image(np.transpose(np.asarray(newimg)), newimg.coordmap.reorder_input().reorder_output())
+    Fimg = coerce2nifti(rimg) # F for '0-based Fortran', 'ijklmno' to
+                              # 'xyztuvw' coordinate map
+    Cimg = Image(np.transpose(np.asarray(Fimg)), Fimg.coordmap.reorder_input().reorder_output()) # C for 'C-based' 'omnlkji' to 'wvutzyx' coordinate map
 
-    # Pass the image object to the low-level IO class so it can handle
-    # any data scaling.
+    # FIXME: this smells a little bad... to save it using PyNiftiIO
+    # the array should be from Cimg
+    # but the easiest way to specify the affine in PyNiftiIO seems to be 
+    # from Fimg
+    # 
+    # One possible fix, have the array in PyNiftiIO expecting FORTRAN ordering?
+    # BUT, pynifti doesn't let you 'transpose' its array naturally...
 
-    # FIXME: this bad... to save it using PyNiftiIO
-    # the array should be in C ['k','j','i'] order,
-    # but the easiest way to specify the affine seems to be the
-    # ['i','j','k'] order
-    outimage = _open(newimg2, coordmap=newimg2.coordmap, mode='w', dtype=dtype)
+    # The image we will ultimately save the data in
+
+    outimage = _open(Cimg, coordmap=Cimg.coordmap, mode='w', dtype=dtype)
+
+    # Cimg (the one that saves the array correctly has a 
+    # 'older-nipy' standard affine
+    #
+    # This seems reasonable for use with pyniftiy because the 
+    # ndarray of outimage._data
+    # is contiguous or "C-ordered"
+    # BUT, Cimg.affine reflects the 'lkji' to 'txyz' coordinate map
+    # so, the save through PyNiftIO uses the affine from Fimg
+    # and the data from Cimg
+
+    v = np.identity(Cimg.ndim+1)
+    v[:Cimg.ndim,:Cimg.ndim] = np.fliplr(np.identity(Cimg.ndim))
+    assert np.allclose(np.dot(v, np.dot(Cimg.affine, v)), Fimg.affine)
 
     # At this point _data is a file-io object (like PyNiftiIO).
     # _data.save delegates the save to pynifti.
@@ -277,13 +295,15 @@ def save(img, filename, dtype=None):
     # Now that the affine has the proper order,
     # it can be saved to the NIFTI header
 
+    # PyNiftiIO only ever wants a 4x4 affine matrix...
     affine = np.identity(4)
-    affine[:3,:3] = newimg.affine[:3,:3]
+    affine[:3,:3] = Fimg.affine[:3,:3]
     
-    pixdim = get_pixdim(newimg.coordmap, full_length=1)
-    outimage._data._nim.setPixDims(pixdim)
-    outimage._data._nim.updateFromDict({'diminfo':get_diminfo(newimg.coordmap)})
-    outimage._data.save(affine, filename)
+    # PyNiftiIO save uses the 4x4 affine, pixdim and diminfo
+    # to save the file
+
+    outimage._data.save(affine, get_pixdim(Fimg.coordmap, full_length=1),
+                        get_diminfo(Fimg.coordmap), filename)
     return outimage
     
 def coerce2nifti(img):
@@ -320,9 +340,10 @@ def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
     ndim = len(data.shape)
     if not coordmap:
         coordmap = CoordinateMap.from_start_step(names,
-                                            (0,)*ndim,
-                                            (1,)*ndim,
-                                            data.shape)
+                                                 names,
+                                                 (0,)*ndim,
+                                                 (1,)*ndim,
+                                                 data.shape)
 
     return Image(data, coordmap)
 
