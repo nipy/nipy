@@ -125,7 +125,7 @@ def fromimage(fourdimage, TR=None, slicetimes=None):
     
     for im in [fourdimage[i] for i in range(fourdimage.shape[0])]:
         g = im.coordmap
-        oa = g.output_coords.axes()[1:]
+        oa = g.output_coords.axes[1:]
         oc = VoxelCoordinateSystem("world", oa)
         t = im.coordmap.mapping.transform[1:]
         a = Affine(t)

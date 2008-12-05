@@ -22,8 +22,8 @@ def test_coerce():
     shape, cmap = setup_cmap()
     img = api.Image(np.zeros(shape), cmap)
     newimg = coerce2nifti(img)
-    assert newimg.coordmap.input_coords.axisnames() == img.coordmap.input_coords.axisnames() 
-    assert newimg.coordmap.output_coords.axisnames() == img.coordmap.output_coords.axisnames()
+    assert newimg.coordmap.input_coords.axisnames == img.coordmap.input_coords.axisnames 
+    assert newimg.coordmap.output_coords.axisnames == img.coordmap.output_coords.axisnames
     assert newimg.shape == shape
     assert np.allclose(newimg.affine, img.affine)
     assert np.asarray(newimg).shape == shape
@@ -39,8 +39,8 @@ def test_coerce2():
     cmap = cmap.reorder_input(lorder)
     img = api.Image(np.zeros(shape), cmap)
     newimg = coerce2nifti(img)
-    assert img.coordmap.input_coords.axisnames() == [newimg.coordmap.input_coords.axisnames()[i] for i in lorder]
-    assert newimg.coordmap.output_coords.axisnames() == img.coordmap.output_coords.axisnames()
+    assert img.coordmap.input_coords.axisnames == [newimg.coordmap.input_coords.axisnames[i] for i in lorder]
+    assert newimg.coordmap.output_coords.axisnames == img.coordmap.output_coords.axisnames
     assert shape == tuple([newimg.shape[i] for i in lorder])
     assert tuple([np.asarray(newimg).shape[i] for i in lorder]) == shape
 
@@ -56,8 +56,8 @@ def test_coerce3():
     cmap = cmap.reorder_output(lorder)
     img = api.Image(np.zeros(shape), cmap)
     newimg = coerce2nifti(img)
-    assert img.coordmap.output_coords.axisnames() == [newimg.coordmap.output_coords.axisnames()[i] for i in lorder]
-    assert newimg.coordmap.input_coords.axisnames() == img.coordmap.input_coords.axisnames()
+    assert img.coordmap.output_coords.axisnames == [newimg.coordmap.output_coords.axisnames[i] for i in lorder]
+    assert newimg.coordmap.input_coords.axisnames == img.coordmap.input_coords.axisnames
     assert shape == newimg.shape
     assert np.asarray(newimg).shape == shape
 

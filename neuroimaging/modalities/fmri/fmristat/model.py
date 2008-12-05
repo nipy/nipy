@@ -199,7 +199,7 @@ def output_resid(outfile, fmri_image, clobber=False):
         g = fmri_image[0].coordmap
         T[1:,1:] = fmri_image[0].coordmap.affine
         T[0,0] = fmri_image.TR
-        anames = ["time"] + [a.name for a in g.input_coords.axes()]
+        anames = ["time"] + [a.name for a in g.input_coords.axes]
         coordmap = CoordinateMap.from_affine(Affine(T),
                                         anames,
                                         (n,) + g.shape)

@@ -305,7 +305,7 @@ def test_ArrayLikeObj():
     # create simple coordmap
     xform = np.eye(4)
     affine = Affine(xform)
-    coordmap = CoordinateMap.from_affine(affine, ['zspace', 'yspace', 'xspace'],
+    coordmap = CoordinateMap.from_affine('xyz', 'ijk', affine,
                                     (2,3,4))
     # create image form array-like object and coordmap
     img = image.Image(obj, coordmap)

@@ -35,9 +35,7 @@ def test_save2():
 
     input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ijkl')][::-1]
     input_coords = api.VoxelCoordinateSystem('input', input_axes)
-    print 'here'
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
-    print 'now'
 
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
@@ -81,6 +79,44 @@ def test_save2a():
     assert np.allclose(img.affine, img2.affine)
     assert img.shape == img2.shape
     assert np.allclose(np.asarray(img2), np.asarray(img))
+    assert not np.allclose(nifti.get_pixdim(img2.coordmap), nifti.get_pixdim(img.coordmap)) # pynifti figures out pixdims from affine when saving, so
+             # we cannot expect it get the steps from img.coordmap
+             # which has the step information
+    return img, img2
+
+def test_save2b():
+    """
+    A test to ensure that when a file is saved, the affine
+    and the data agree. This image comes from a NIFTI file
+
+    This example has a non-diagonal affine matrix for the
+    spatial part, but is 'diagonal' for the space part.
+
+    this should raise a warnings about 'non-diagonal' affine matrix
+    """
+
+    # make a 5x5 transformatio
+    step = np.array([3.45,2.3,4.5,6.9])
+    A = np.random.standard_normal((4,4))
+    B = np.diag(list(step)+[1])
+    B[:4,:4] = A
+
+    shape = (13,5,7,3)
+    output_axes = [api.RegularAxis(s, step=step[::-1][i]) for i, s in enumerate('xyzt')][::-1]
+    output_coords = api.DiagonalCoordinateSystem('output', output_axes)
+
+    input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ijkl')][::-1]
+    input_coords = api.VoxelCoordinateSystem('input', input_axes)
+
+    cmap = api.CoordinateMap(api.Affine(B), input_coords, output_coords)
+
+    data = np.random.standard_normal(shape)
+    img = api.Image(data, cmap)
+    save_image(img, 'tmp.nii')
+    img2 = load_image('tmp.nii')
+    assert not np.allclose(img.affine, img2.affine)
+    assert img.shape == img2.shape
+    assert np.allclose(np.asarray(img2), np.asarray(img))
     return img, img2
 
 def test_save3():
@@ -118,7 +154,6 @@ def teardown():
 
 def test_save4():
     """
-    Failing (at least partly) because diminfo is not being set properly.
     Same as test_save3 except we have reordered the 'ijk' input axes.
 
     """
@@ -138,11 +173,11 @@ def test_save4():
     assert np.allclose(img.affine, img2.affine)
     assert img.shape == img2.shape
     assert np.allclose(np.asarray(img2), np.asarray(img))
-    print img2.coordmap.input_coords.axisnames(), img.coordmap.input_coords.axisnames()
+    print img2.coordmap.input_coords.axisnames, img.coordmap.input_coords.axisnames
     print nifti.get_diminfo(img.coordmap), nifti.get_diminfo(img2.coordmap)
     print img2.header['dim_info']
-    assert img2.coordmap.input_coords.axisnames() == img.coordmap.input_coords.axisnames()
-    assert img2.coordmap.input_coords.axisnames() == ['l', 'j', 'k', 'i']
+    assert img2.coordmap.input_coords.axisnames == img.coordmap.input_coords.axisnames
+    assert img2.coordmap.input_coords.axisnames == ['l', 'j', 'k', 'i']
 
 
-test_save2()
+test_save2b()
