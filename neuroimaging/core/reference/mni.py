@@ -23,5 +23,5 @@ MNI_voxel = VoxelCoordinateSystem('MNI_voxel', MNI_axes)
 MNI_world = DiagonalCoordinateSystem('MNI_world', MNI_axes)
 """ Standard real space coordinate system for MNI template """
 
-MNI_mapping = Affine(MNI_world.transform())
+MNI_mapping = Affine(MNI_world.affine)
 """ A mapping between the MNI voxel space and the MNI real space """

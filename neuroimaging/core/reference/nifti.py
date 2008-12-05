@@ -257,7 +257,7 @@ def get_pixdim(coordmap):
     # about the 'ijklmno' order
 
     ndim = coordmap.ndim[0]
-    coerce_coordmap(coordmap)
+    newcmap, _ = coerce_coordmap(coordmap)
     pixdim = np.zeros(ndim)
     for i, l in enumerate('xyztuvw'[:ndim]):
         ll = coordmap.output_coords[l]
@@ -266,6 +266,12 @@ def get_pixdim(coordmap):
 
     if not np.alltrue(np.greater_equal(pixdim, 0)):
         warnings.warn("NIFTI expectes non-negative pixdims, taking absolute value")
+    A = newcmap.affine
+    opixdim = np.diag(A)[3:-1]
+    if not np.allclose(opixdim, pixdim[3:]):
+        warnings.warn("pixdims from output_coords:%s, do not agree with pixdim from (coerced) affine matrix:%s. using those from output_coords" % (`pixdim[3:]`, `opixdim`))
+
+
     return np.fabs(pixdim)
 
 def get_diminfo(coordmap):

@@ -222,7 +222,7 @@ class DiagonalCoordinateSystem(CoordinateSystem):
     matrix (tranform method)
     """
 
-    def transform(self):
+    def _getaffine(self):
         """
         Return an orthogonal homogeneous transformation matrix based on the
         step, start attributes of each axis.
@@ -237,6 +237,7 @@ class DiagonalCoordinateSystem(CoordinateSystem):
             # Translations in last column
             xform[i, -1] = self.axes()[i].start
         return xform
+    affine = property(_getaffine)
 
 def _reorder(seq, order):
     """ Reorder a sequence. """
