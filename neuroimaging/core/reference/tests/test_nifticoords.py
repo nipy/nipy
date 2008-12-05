@@ -190,7 +190,7 @@ def test_validate6():
     X = np.transpose(x, order)
     assert(X.shape, newcmap.shape)
 
-    assert newcmap.input_coords.axisnames() == ['j','k','i','l']
+    assert newcmap.input_coords.axisnames == ['j','k','i','l']
     assert np.allclose(pixdim, np.arange(4)+1)
 
 
@@ -214,7 +214,7 @@ def test_validate7():
     X = np.transpose(x, order)
     assert(X.shape, newcmap.shape)
 
-    assert newcmap.input_coords.axisnames() == ['j','k','i','l']
+    assert newcmap.input_coords.axisnames == ['j','k','i','l']
     print pixdim, 'pixdim'
     assert np.allclose(pixdim, np.arange(4)+1)
 

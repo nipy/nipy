@@ -68,7 +68,7 @@ class CoordinateSystem(odict):
 
         :Returns: ``bool``
         """
-        return (self.name, self.axes()) == (other.name, other.axes())
+        return (self.name, self.axes) == (other.name, other.axes)
 
 
     def __str__(self):
@@ -85,22 +85,24 @@ class CoordinateSystem(odict):
         
         :Returns: ``int``
         """
-        return len(self.axes())
+        return len(self.axes)
     
-    def axisnames(self):
+    def _getaxisnames(self):
         """ A list of the names of the coordinate system's axes. 
         
         :Returns: ``string``
         """
         return self.keys()
+    axisnames = property(_getaxisnames)
         
-    def axes(self):
+    def _getaxes(self):
         """ A list of the coordinate system's axes. 
         
         :Returns: ``[`axis.Axis`]``
         """
         return self.values()
-    
+    axes = property(_getaxes)
+
     def reorder(self, name, order):
         """
         Given a name for the reordered coordinates, and a new order, return a
@@ -117,7 +119,7 @@ class CoordinateSystem(odict):
         """
         if name is None:
             name = self.name
-        return CoordinateSystem(name, _reorder(self.axes(), order))
+        return CoordinateSystem(name, _reorder(self.axes, order))
 
 
     def reverse(self, name=None):
@@ -131,7 +133,7 @@ class CoordinateSystem(odict):
         """
         if name is None:
             name = self.name
-        return CoordinateSystem(name, _reverse(self.axes()))
+        return CoordinateSystem(name, _reverse(self.axes))
 
 
     def hasaxis(self, name):
@@ -169,7 +171,7 @@ class CoordinateSystem(odict):
 
         :Returns: ``bool``
         """
-        return np.all([self.axes()[i].isvalidvalue(x[i])
+        return np.all([self.axes[i].isvalidvalue(x[i])
                        for i in range(self.ndim())])
 
 
@@ -179,7 +181,7 @@ class CoordinateSystem(odict):
 
         :Returns: ``CoordinateSystem``
         """
-        return CoordinateSystem(self.name + "-subcoordmap", self.axes()[1:])
+        return CoordinateSystem(self.name + "-subcoordmap", self.axes[1:])
 
 
 class VoxelCoordinateSystem(CoordinateSystem):
@@ -233,9 +235,9 @@ class DiagonalCoordinateSystem(CoordinateSystem):
         xform = np.eye((ndim+1))
         for i in range(ndim):
             # Scaling values on diagonal
-            xform[i, i] = self.axes()[i].step
+            xform[i, i] = self.axes[i].step
             # Translations in last column
-            xform[i, -1] = self.axes()[i].start
+            xform[i, -1] = self.axes[i].start
         return xform
     affine = property(_getaffine)
 

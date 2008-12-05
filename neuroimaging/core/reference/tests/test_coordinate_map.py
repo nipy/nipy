@@ -84,6 +84,6 @@ class test_coordmap(TestCase):
 
     def test_from_affine(self):
         a = Affine.identity(2)
-        g = CoordinateMap.from_affine(a, ['zspace', 'xspace'], (20,30))
+        g = CoordinateMap.from_affine('ij', 'xy', a, (20,30))
 
 
