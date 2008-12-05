@@ -76,4 +76,32 @@ def test_save3():
 def teardown():
     os.remove('tmp.nii')
 
-test_save3()
+def test_save4():
+    """
+    Failing (at least partly) because diminfo is not being set properly.
+    Same as test_save3 except we have reordered the 'ijk' input axes.
+
+    """
+
+    shape = (13,5,7,3)
+    output_axes = [api.RegularAxis(s, step=i+1) for i, s in enumerate('xyzt')][::-1]
+    output_coords = api.DiagonalCoordinateSystem('output', output_axes)
+
+    input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ikjl')][::-1]
+    input_coords = api.VoxelCoordinateSystem('input', input_axes)
+    cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
+
+    data = np.random.standard_normal(shape)
+    img = api.Image(data, cmap)
+    save_image(img, 'tmp.nii')
+    img2 = load_image('tmp.nii')
+    assert np.allclose(img.affine, img2.affine)
+    assert img.shape == img2.shape
+    assert np.allclose(np.asarray(img2), np.asarray(img))
+    print img2.coordmap.input_coords.axisnames(), img.coordmap.input_coords.axisnames()
+    print nifti.get_diminfo(img.coordmap), nifti.get_diminfo(img2.coordmap)
+    print img2.header['dim_info']
+    assert img2.coordmap.input_coords.axisnames() == img.coordmap.input_coords.axisnames()
+    assert img2.coordmap.input_coords.axisnames() == ['l', 'j', 'k', 'i']
+
+
