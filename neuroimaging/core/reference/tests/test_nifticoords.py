@@ -11,10 +11,51 @@ input_coords = api.VoxelCoordinateSystem('input', input_axes)
 
 def test_validate1():
 
+    """
+    this should work without any warnings
+    """
+
     output_coords = api.DiagonalCoordinateSystem('output', output_axes[:4])
     input_coords = api.CoordinateSystem('input', input_axes[:4])
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
-    print nifti.coordmap4io(cmap)
+    newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
+    assert newcmap.input_coords.name == 'input'
+    assert newcmap.output_coords.name == 'output'
+    assert order == (0,1,2,3)
+    assert np.allclose(pixdim, np.arange(4)+1)
+
+def test_validate1a():
+
+    """
+    this should work without any warnings
+    """
+
+    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:3])
+    input_coords = api.CoordinateSystem('input', input_axes[:3][::-1])
+    cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
+    newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
+    assert newcmap.input_coords.name == 'input'
+    assert newcmap.output_coords.name == 'output'
+    assert order == (0,1,2)
+    assert np.allclose(pixdim, np.arange(3)+1)
+
+def test_validate1b():
+
+    """
+    this should work without any warnings
+    """
+
+    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:4])
+    input_coords = api.CoordinateSystem('input', [input_axes[2],
+                                                  input_axes[0],
+                                                  input_axes[1],
+                                                  input_axes[3]])
+    cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
+    newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
+    assert newcmap.input_coords.name == 'input'
+    assert newcmap.output_coords.name == 'output'
+    assert order == (0,1,2,3)
+    assert np.allclose(pixdim, np.arange(4)+1)
 
 def test_validate2():
     """
