@@ -278,6 +278,47 @@ def get_diminfo(coordmap):
     ii, jj, kk = [newcoordmap.input_coords.axisnames.index(l) for l in 'ijk']
     return _diminfo_from_fps(ii, jj, kk)
 
+def standard_order(coordmap):
+    """
+    Take a valid NIFTI coordmap, and return
+    a coordmap with input_coordinates in the standard order, i.e. with
+    names 'ijklmno'[:coordmap.ndim[0]] and the order of coordinates
+    that put the coordmap into standard order.
+
+    NOTE: If the coordmap is only 'coerceable' and not 'valid' (i.e.
+    warnings are raised, then this may give unexpected results
+    because it only checks the reordering of the first 3 coordinates.
+
+    >>> cmap = CoordinateMap.from_affine('ikjl', 'xyzt', Affine(np.identity(5)), (64,30,64,200))
+    >>> sorder, scmap = standard_order(cmap)
+    >>> print cmap.shape
+    (64, 30, 64, 200)
+    >>> print scmap.shape
+    (64, 64, 30, 200)
+    >>> print cmap.input_coords.axisnames
+    ['i', 'k', 'j', 'l']
+    >>> print scmap.input_coords.axisnames
+    ['i', 'j', 'k', 'l']
+    >>> print scmap.output_coords.axisnames
+    ['x', 'y', 'z', 't']
+    >>> print cmap.output_coords.axisnames
+    ['x', 'y', 'z', 't']
+
+    """
+
+    if not iscoerceable(coordmap):
+        raise ValueError, 'coordmap cannot be interpreted as a NIFTI coordmap'
+
+    # find the ordering necessary to get 'ijk' order
+    ijk = _fps_from_diminfo(get_diminfo(coordmap))
+    perm = np.zeros((3,3))
+    for i, j in enumerate(ijk):
+        perm[j,i] = 1
+    ijk_inv = np.dot(perm, [0,1,2]).astype(np.int)
+    o = range(coordmap.ndim[0])
+    o[:3] = ijk_inv
+    return o, coordmap.reorder_input(o)
+
 def ijk_from_diminfo(diminfo):
     """
     Determine the order of the 'ijk' dimensions from the diminfo byte

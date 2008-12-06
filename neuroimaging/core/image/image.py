@@ -306,14 +306,19 @@ def save(img, filename, dtype=None):
                         get_diminfo(Fimg.coordmap), filename)
     return outimage
     
-def coerce2nifti(img):
+def coerce2nifti(img, standard=False):
     """
     Coerce an Image into a new Image with a valid NIFTI coordmap
     so that it can be saved.
+
+    If standard is True, the resulting image has 'standard'-ordered
+    input_coordinates, i.e. 'ijklmno'[:img.ndim]
     """
     newcmap, order = coerce_coordmap(img.coordmap)
-    return Image(np.transpose(np.asarray(img), order), newcmap)
-
+    nimg = Image(np.transpose(np.asarray(img), order), newcmap)
+    if standard:
+        sorder, scmap = standard_order(nimg.coordmap)
+        return Image(np.transpose(np.asarray(nimg), sorder), scmap)
 
 def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
     """Create an image from a numpy array.
