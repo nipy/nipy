@@ -240,6 +240,45 @@ class CoordinateMap(object):
         """
         return ConcatenatedIdenticalComaps(self, n, concataxis=concataxis)
 
+    def rename_input(self, **kwargs):
+        """
+        Rename the input_coords in place.
+
+        >>> import numpy as np
+        >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+        >>> outaxes = [Axis(x) for x in 'xyz']
+        >>> inc = CoordinateSystem('input', inaxes)
+        >>> outc = CoordinateSystem('output', outaxes)
+        >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
+        >>> print cm.input_coords.values()
+        [<VoxelAxis:"i", dtype=[('i', '<f8')], length=10>, <VoxelAxis:"j", dtype=[('j', '<f8')], length=20>, <VoxelAxis:"k", dtype=[('k', '<f8')], length=30>]
+        >>> cm.rename_input(i='x')
+        >>> print cm.input_coords
+        {'axes': [<VoxelAxis:"x", dtype=[('x', '<f8')], length=10>, <VoxelAxis:"j", dtype=[('j', '<f8')], length=20>, <VoxelAxis:"k", dtype=[('k', '<f8')], length=30>], 'name': 'input-renamed'}
+        
+        """
+        self.input_coords = self.input_coords.rename(**kwargs)
+
+    def rename_output(self, **kwargs):
+        """
+        Rename the output_coords in place.
+
+        >>> import numpy as np
+        >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+        >>> outaxes = [Axis(x) for x in 'xyz']
+        >>> inc = CoordinateSystem('input', inaxes)
+        >>> outc = CoordinateSystem('output', outaxes)
+        >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
+        >>> print cm.output_coords.values()
+        [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>]
+        >>> cm.rename_output(y='a')
+        >>> print cm.output_coords
+        {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"a", dtype=[('a', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>], 'name': 'output-renamed'}
+
+        >>>                             
+        """
+        self.output_coords = self.output_coords.rename(**kwargs)
+
     def reorder_input(self, order=None):
         """
         Create a new coordmap with reversed input_coords.
@@ -249,17 +288,31 @@ class CoordinateMap(object):
         Inputs:
         -------
         order: sequence
-               Order to use, defaults to reverse
+               Order to use, defaults to reverse. The elements
+               can be integers, strings or 2-tuples of strings.
+               If they are strings, they should be in self.input_coords.axisnames.
 
         Returns:
         --------
 
         newcoordmap: `CoordinateMap`
                A new CoordinateMap with reversed input_coords.
+
+        >>> inc = CoordinateSystem('input', inaxes)
+        >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+        >>> inc = CoordinateSystem('input', inaxes)
+        >>> outaxes = [Axis(x) for x in 'xyz']
+        >>> outc = CoordinateSystem('output', outaxes)
+        >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
+        >>> cm.reorder_input('ikj').shape
+        (10, 30, 20)
+
         """
         ndim = self.ndim[0]
         if order is None:
             order = range(ndim)[::-1]
+        elif type(order[0]) == type(''):
+            order = [self.input_coords.axisnames.index(s) for s in order]
 
         newaxes = [self.input_coords.axes[i] for i in order]
         try:
@@ -290,18 +343,40 @@ class CoordinateMap(object):
         -------
 
         order: sequence
-               Order to use, defaults to reverse
+               Order to use, defaults to reverse. The elements
+               can be integers, strings or 2-tuples of strings.
+               If they are strings, they should be in self.output_coords.axisnames.
 
         Returns:
         --------
 
         newcoordmap: `CoordinateMap`
              A new CoordinateMap with reversed output_coords.
+
+        >>> inc = CoordinateSystem('input', inaxes)
+        >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+        >>> inc = CoordinateSystem('input', inaxes)
+        >>> outaxes = [Axis(x) for x in 'xyz']
+        >>> outc = CoordinateSystem('output', outaxes)
+        >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
+        >>> cm.reorder_output('xzy').shape
+        (10, 20, 30)
+        >>> cm.reorder_output([0,2,1]).shape
+        (10, 20, 30)
+        >>>                             
+
+        >>> newcm = cm.reorder_output('yzx')
+        >>> newcm.output_coords.axisnames
+        ['y', 'z', 'x']
+        >>>                              
+
         """
 
         ndim = self.ndim[1]
         if order is None:
             order = range(ndim)[::-1]
+        elif type(order[0]) == type(''):
+            order = [self.output_coords.axisnames.index(s) for s in order]
 
         newaxes = [self.output_coords.axes[i] for i in order]
         newoutcoords = CoordinateSystem(self.output_coords.name + '-reordered', newaxes)

@@ -8,6 +8,8 @@ within the coordinate system.  For example a 3D coordinate system contains 3 axe
 
 __docformat__ = 'restructuredtext'
 
+import copy
+
 import numpy as np
 
 from neuroimaging.core.reference.axis import VoxelAxis
@@ -62,6 +64,24 @@ class CoordinateSystem(odict):
         except KeyError:
             raise KeyError(
               "axis '%s' not found, names are %s"%(axisname,self.keys()))
+
+    def rename(self, **kwargs):
+        """
+        Return a new CoordinateSystem with the values renamed.
+
+        >>> axes = [Axis(n) for n in 'abc']
+        >>> coords = CoordinateSystem('input', axes)
+        >>> print coords.rename(a='x')
+        {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"b", dtype=[('b', '<f8')]>, <Axis:"c", dtype=[('c', '<f8')]>], 'name': 'input-renamed'}
+        >>>                                               
+        """
+        axes = []
+        for a in self.axisnames:
+            axis = copy.copy(self[a])
+            if a in kwargs.keys():
+                axis.name = kwargs[a]
+            axes.append(axis)
+        return CoordinateSystem(self.name + '-renamed', axes)
 
     def __setitem__(self, name, value):
         """
