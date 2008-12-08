@@ -133,11 +133,7 @@ class CoordinateMap(object):
         self.output_coords = output_coords
 
     def _getshape(self):
-        if isinstance(self.input_coords, VoxelCoordinateSystem):
-            s = tuple([a.length for a in self.input_coords.axes])
-            return s
-        else:
-            raise AttributeError, "input_coords must be a VoxelCoordinateSystem to have a shape"
+        return tuple([a.length for a in self.input_coords.axes])
     shape = property(_getshape)
 
     def _getndim(self):
@@ -155,11 +151,18 @@ class CoordinateMap(object):
         raise AttributeError
     affine = property(_getaffine)
 
-    def __call__(self, x):
+    def __call__(self, x, view=False):
         """
         Return self.mapping(x)
+
+        If view, then return a view of the result with dtype of self.output_coords.dtype.
+
         """
-        return self.mapping(x)
+        x = np.asarray(x)
+        y = self.mapping(x)
+        if view:
+            y = y.view(self.output_coords.dtype)
+        return y
 
     def copy(self):
         """

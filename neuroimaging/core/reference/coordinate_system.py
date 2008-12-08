@@ -29,6 +29,20 @@ class CoordinateSystem(odict):
         self.name = name
         odict.__init__(self, [(ax.name, ax) for ax in axes])
 
+    def _getdtype(self):
+        return np.dtype([(ax.name, ax.builtin) for ax in self.axes])
+    dtype = property(_getdtype)
+
+    def _getbuiltin(self):
+        d = self.dtype.descr
+        different = filter(lambda x: x[1] != d[0][1], d)
+        if not different:
+            d = np.dtype(d[0][1])
+            if d.isbuiltin:
+                return d
+            else:
+                raise ValueError('could not work out a builtin dtype for this coordinate system')
+    builtin = property(_getbuiltin)
 
     def __getitem__(self, axisname):
         """
@@ -221,7 +235,7 @@ class DiagonalCoordinateSystem(CoordinateSystem):
     The orthogonality of the axes is assumed by the use of this class
     to define the coordinate system.  Assuming orthogonality allows
     the definition of a method to return an orthogonal transformation
-    matrix (tranform method)
+    matrix (tranform method) from the start, step attributes
     """
 
     def _getaffine(self):
