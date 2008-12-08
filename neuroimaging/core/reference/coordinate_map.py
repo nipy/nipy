@@ -117,6 +117,14 @@ class CoordinateMap(object):
         output_coords = StartStepCoordinateSystem('world', outaxes)
         return CoordinateMap(Affine(mapping.transform), input_coords, output_coords)
 
+    def _getinverse(self):
+        """
+        Return the inverse coordinate map.
+        """
+        if self.mapping.isinvertible:
+            return CoordinateMap(self.mapping.inverse(), self.output_coords, self.input_coords)
+    inverse = property(_getinverse)
+
     def __init__(self, mapping, input_coords, output_coords):
         """
         :Parameters:
@@ -157,6 +165,17 @@ class CoordinateMap(object):
 
         If view, then return a view of the result with dtype of self.output_coords.dtype.
 
+        >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+        >>> inc = CoordinateSystem('input', inaxes)
+        >>> outaxes = [Axis(x) for x in 'xyz']
+        >>> outc = CoordinateSystem('output', outaxes)
+        >>> cm = CoordinateMap(Affine(np.diag([1,2,3,1])), inc, outc)
+        >>> cm([2,3,4], view=True)
+        array([(2.0, 6.0, 12.0)], dtype=[('x', '<f8'), ('y', '<f8'), ('z', '<f8')])
+        >>> cmi = cm.inverse
+        >>> cmi([2,6,12], view=True)
+        array([(2.0, 3.0, 4.0)], dtype=[('i', '<f8'), ('j', '<f8'), ('k', '<f8')])
+        >>>                                    
         """
         x = np.asarray(x)
         y = self.mapping(x)
