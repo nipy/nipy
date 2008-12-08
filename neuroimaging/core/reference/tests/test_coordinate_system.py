@@ -3,7 +3,7 @@ import numpy as np
 from neuroimaging.testing import *
 
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
-     VoxelCoordinateSystem, DiagonalCoordinateSystem
+     VoxelCoordinateSystem, StartStepCoordinateSystem
 from neuroimaging.core.reference.axis import Axis, RegularAxis
 
 class test_CoordinateSystem(TestCase):
@@ -88,7 +88,7 @@ class test_VoxelCoordinateSystem(TestCase):
 
 def test_diagonal():
     ''' Test diagonal coordinate system '''
-    dcs = DiagonalCoordinateSystem(
+    dcs = StartStepCoordinateSystem(
         'diag test', # Name
         [RegularAxis(n, start=5, step=2) for n in ['zspace', 'yspace', 'xspace']])
     assert np.allclose(dcs.affine, [[2,0,0,5],

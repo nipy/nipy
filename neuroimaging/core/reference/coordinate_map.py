@@ -8,7 +8,7 @@ import numpy as np
 
 from neuroimaging.core.reference.axis import RegularAxis, Axis, VoxelAxis
 from neuroimaging.core.reference.coordinate_system import \
-  VoxelCoordinateSystem, DiagonalCoordinateSystem, CoordinateSystem
+  VoxelCoordinateSystem, StartStepCoordinateSystem, CoordinateSystem
 from neuroimaging.core.reference.mapping import Mapping, Affine
 
 __docformat__ = 'restructuredtext'
@@ -50,7 +50,7 @@ class CoordinateMap(object):
         inaxes = [VoxelAxis(name=innames[i], length=shape[i]) for i in range(ndim)]
         outaxes = [RegularAxis(name=outnames[i], start=start[i], step=step[i]) for i in range(ndim)]
         input_coords = VoxelCoordinateSystem('voxel', inaxes)
-        output_coords = DiagonalCoordinateSystem('world', outaxes)
+        output_coords = StartStepCoordinateSystem('world', outaxes)
         transform = output_coords.affine
         
         mapping = Affine(transform)
@@ -82,7 +82,7 @@ class CoordinateMap(object):
         oaxes = [Axis(name) for name in names]
 
         input_coords = VoxelCoordinateSystem('voxel', iaxes)
-        output_coords = DiagonalCoordinateSystem('world', oaxes)
+        output_coords = StartStepCoordinateSystem('world', oaxes)
         aff_ident = Affine.identity(ndim)
         return CoordinateMap(aff_ident, input_coords, output_coords)
 
@@ -114,7 +114,7 @@ class CoordinateMap(object):
         inaxes = [VoxelAxis(name, length=l) for name, l in zip(innames, shape)]
         outaxes = [Axis(name) for name in outnames]
         input_coords = VoxelCoordinateSystem("voxel", inaxes)
-        output_coords = DiagonalCoordinateSystem('world', outaxes)
+        output_coords = StartStepCoordinateSystem('world', outaxes)
         return CoordinateMap(Affine(mapping.transform), input_coords, output_coords)
 
     def __init__(self, mapping, input_coords, output_coords):
@@ -350,7 +350,7 @@ def centered_coordmap(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
     axes = [RegularAxis(name=names[i], length=ashape[i],
                         start=start[i], step=step[i]) for i in range(ndim)]
     input_coords = VoxelCoordinateSystem('voxel', axes)
-    output_coords = DiagonalCoordinateSystem('world', axes)
+    output_coords = StartStepCoordinateSystem('world', axes)
     transform = output_coords.affine
         
     mapping = Affine(transform)

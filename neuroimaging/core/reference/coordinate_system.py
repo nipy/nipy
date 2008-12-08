@@ -228,7 +228,7 @@ class VoxelCoordinateSystem(CoordinateSystem):
         CoordinateSystem.__init__(self, name, axes)
 
 
-class DiagonalCoordinateSystem(CoordinateSystem):
+class StartStepCoordinateSystem(CoordinateSystem):
     """
     Coordinate system with orthogonal axes
 

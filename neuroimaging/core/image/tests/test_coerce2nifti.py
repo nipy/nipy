@@ -7,7 +7,7 @@ from neuroimaging.core.reference.nifti import coerce_coordmap
 def setup_cmap():
     shape = (64,64,30,191)
     output_axes = [api.RegularAxis(s, step=i+1) for i, s in enumerate('xyzt')]
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:4])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:4])
 
     input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ijkl')]
     input_coords = api.VoxelCoordinateSystem('input', input_axes)

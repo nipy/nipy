@@ -31,7 +31,7 @@ def test_save2():
     step = np.array([3.45,2.3,4.5,6.93])
 
     output_axes = [api.RegularAxis(s, step=step[::-1][i]) for i, s in enumerate('xyzt')][::-1]
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes)
+    output_coords = api.StartStepCoordinateSystem('output', output_axes)
 
     input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ijkl')][::-1]
     input_coords = api.VoxelCoordinateSystem('input', input_axes)
@@ -65,7 +65,7 @@ def test_save2a():
 
     shape = (13,5,7,3)
     output_axes = [api.RegularAxis(s, step=step[::-1][i]) for i, s in enumerate('xyzt')][::-1]
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes)
+    output_coords = api.StartStepCoordinateSystem('output', output_axes)
 
     input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ijkl')][::-1]
     input_coords = api.VoxelCoordinateSystem('input', input_axes)
@@ -103,7 +103,7 @@ def test_save2b():
 
     shape = (13,5,7,3)
     output_axes = [api.RegularAxis(s, step=step[::-1][i]) for i, s in enumerate('xyzt')][::-1]
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes)
+    output_coords = api.StartStepCoordinateSystem('output', output_axes)
 
     input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ijkl')][::-1]
     input_coords = api.VoxelCoordinateSystem('input', input_axes)
@@ -132,7 +132,7 @@ def test_save3():
     3,13,5,7
     shape = (13,5,7,3)
     output_axes = [api.RegularAxis(s, step=i+1) for i, s in enumerate('tzyx')]
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes)
+    output_coords = api.StartStepCoordinateSystem('output', output_axes)
 
     input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('jkli')]
     input_coords = api.VoxelCoordinateSystem('input', input_axes)
@@ -161,7 +161,7 @@ def test_save4():
 
     shape = (13,5,7,3)
     output_axes = [api.RegularAxis(s, step=i+1) for i, s in enumerate('xyzt')][::-1]
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes)
+    output_coords = api.StartStepCoordinateSystem('output', output_axes)
 
     input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ikjl')][::-1]
     input_coords = api.VoxelCoordinateSystem('input', input_axes)

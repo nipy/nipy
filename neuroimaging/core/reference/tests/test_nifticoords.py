@@ -15,7 +15,7 @@ def test_validate1():
     this should work without any warnings
     """
 
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:4])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:4])
     input_coords = api.CoordinateSystem('input', input_axes[:4])
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
@@ -30,7 +30,7 @@ def test_validate1a():
     this should work without any warnings
     """
 
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:3])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:3])
     input_coords = api.CoordinateSystem('input', input_axes[:3][::-1])
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
@@ -45,7 +45,7 @@ def test_validate1b():
     this should work without any warnings
     """
 
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:4])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:4])
     input_coords = api.CoordinateSystem('input', [input_axes[2],
                                                   input_axes[0],
                                                   input_axes[1],
@@ -66,7 +66,7 @@ def test_validate2():
 
     ninput_axes = [input_axes[0], input_axes[3], input_axes[1], input_axes[2]]
     input_coords = api.VoxelCoordinateSystem('input', ninput_axes)
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:4])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:4])
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
     assert newcmap.input_coords.name == 'input-reordered'
@@ -87,7 +87,7 @@ def test_validate3():
 
     ninput_axes = [input_axes[0], input_axes[1], input_axes[2], input_axes[5]]
     input_coords = api.VoxelCoordinateSystem('input', ninput_axes)
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:4])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:4])
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
     try:
         nifti.coordmap4io(cmap)
@@ -105,7 +105,7 @@ def test_validate4():
     ninput_axes = [input_axes[0], input_axes[1], input_axes[2], input_axes[4],
                    input_axes[3]]
     input_coords = api.VoxelCoordinateSystem('input', ninput_axes)
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:5])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:5])
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
 
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
@@ -140,7 +140,7 @@ def test_validate5():
     ninput_axes = [input_axes[0], input_axes[1], input_axes[2], input_axes[4],
                    input_axes[3]]
     input_coords = api.VoxelCoordinateSystem('input', ninput_axes)
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:5][::-1])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:5][::-1])
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
     assert newcmap.input_coords.name == 'input-reordered'
@@ -179,7 +179,7 @@ def test_validate6():
 
     ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
     input_coords = api.VoxelCoordinateSystem('input', ninput_axes)
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:4])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:4])
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
     assert newcmap.input_coords.name == 'input'
@@ -203,7 +203,7 @@ def test_validate7():
     output_axes = [api.RegularAxis(s, step=-i-1) for i, s in enumerate('xyztuvw')]
     ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
     input_coords = api.VoxelCoordinateSystem('input', ninput_axes)
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:4])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:4])
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
     assert newcmap.input_coords.name == 'input'
@@ -230,7 +230,7 @@ def test_ijk2():
 
     ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
     input_coords = api.VoxelCoordinateSystem('input', ninput_axes)
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:4])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:4])
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
 
     assert nifti.get_time_axis(cmap) == 3
@@ -245,7 +245,7 @@ def test_ijk3():
 
     ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
     input_coords = api.VoxelCoordinateSystem('input', ninput_axes)
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:4][::-1])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:4][::-1])
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
 
     assert nifti.get_time_axis(cmap) == 3
@@ -261,7 +261,7 @@ def test_ijk4():
     ninput_axes = [input_axes[0], input_axes[1], input_axes[2], input_axes[4],
                    input_axes[3]]
     input_coords = api.VoxelCoordinateSystem('input', ninput_axes)
-    output_coords = api.DiagonalCoordinateSystem('output', output_axes[:5][::-1])
+    output_coords = api.StartStepCoordinateSystem('output', output_axes[:5][::-1])
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
 
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)

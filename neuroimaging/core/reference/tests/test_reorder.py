@@ -1,6 +1,6 @@
 import numpy as np
 
-from neuroimaging.core.api import VoxelAxis, RegularAxis, VoxelCoordinateSystem, CoordinateSystem, DiagonalCoordinateSystem
+from neuroimaging.core.api import VoxelAxis, RegularAxis, VoxelCoordinateSystem, CoordinateSystem, StartStepCoordinateSystem
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, ConcatenatedComaps, \
      ConcatenatedIdenticalComaps
 from neuroimaging.core.reference.mapping import Affine
@@ -10,7 +10,7 @@ def setup_cmap():
     output_axes = [RegularAxis(s, step=i+1) for i, s in enumerate('xyz')]
     input_axes = [VoxelAxis(s, length=shape[i]) for i, s in enumerate('ijk')]
     input_coords = VoxelCoordinateSystem('input', input_axes)
-    output_coords = DiagonalCoordinateSystem('output', output_axes)
+    output_coords = StartStepCoordinateSystem('output', output_axes)
     cmap = CoordinateMap(Affine(output_coords.affine), input_coords,
                          output_coords)
     return cmap

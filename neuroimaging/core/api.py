@@ -9,7 +9,7 @@ from neuroimaging.core.reference.coordinate_map import CoordinateMap
 
 from neuroimaging.core.reference.mapping import Mapping, Affine
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
-     DiagonalCoordinateSystem, VoxelCoordinateSystem
+     StartStepCoordinateSystem, VoxelCoordinateSystem
 from neuroimaging.core.reference.axis import VoxelAxis, RegularAxis, Axis
 
 from neuroimaging.core.image.image import Image, merge_images
