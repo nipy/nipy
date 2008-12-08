@@ -37,12 +37,12 @@ def test_coerce2():
     lorder = [0,2,3,1]
     shape, cmap = setup_cmap()
     cmap = cmap.reorder_input(lorder)
-    img = api.Image(np.zeros(shape), cmap)
+    img = api.Image(np.zeros(cmap.shape), cmap)
     newimg = coerce2nifti(img)
     assert img.coordmap.input_coords.axisnames == [newimg.coordmap.input_coords.axisnames[i] for i in lorder]
     assert newimg.coordmap.output_coords.axisnames == img.coordmap.output_coords.axisnames
-    assert shape == tuple([newimg.shape[i] for i in lorder])
-    assert tuple([np.asarray(newimg).shape[i] for i in lorder]) == shape
+    assert shape == newimg.shape
+    assert np.asarray(newimg).shape == shape
 
 def test_coerce3():
     """
@@ -54,7 +54,7 @@ def test_coerce3():
     shape = (64,64,191,30)
     shape, cmap = setup_cmap()
     cmap = cmap.reorder_output(lorder)
-    img = api.Image(np.zeros(shape), cmap)
+    img = api.Image(np.zeros(cmap.shape), cmap)
     newimg = coerce2nifti(img)
     assert img.coordmap.output_coords.axisnames == [newimg.coordmap.output_coords.axisnames[i] for i in lorder]
     assert newimg.coordmap.input_coords.axisnames == img.coordmap.input_coords.axisnames

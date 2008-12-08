@@ -37,7 +37,7 @@ def test_save2():
     input_coords = api.VoxelCoordinateSystem('input', input_axes)
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
 
-    data = np.random.standard_normal(shape)
+    data = np.random.standard_normal(cmap.shape)
     img = api.Image(data, cmap)
     save_image(img, 'tmp.nii')
     img2 = load_image('tmp.nii')
@@ -72,7 +72,7 @@ def test_save2a():
 
     cmap = api.CoordinateMap(api.Affine(B), input_coords, output_coords)
 
-    data = np.random.standard_normal(shape)
+    data = np.random.standard_normal(cmap.shape)
     img = api.Image(data, cmap)
     save_image(img, 'tmp.nii')
     img2 = load_image('tmp.nii')
@@ -109,9 +109,10 @@ def test_save2b():
     input_coords = api.VoxelCoordinateSystem('input', input_axes)
 
     cmap = api.CoordinateMap(api.Affine(B), input_coords, output_coords)
+    data = np.random.standard_normal(cmap.shape)
 
-    data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
+
     save_image(img, 'tmp.nii')
     img2 = load_image('tmp.nii')
     assert not np.allclose(img.affine, img2.affine)
@@ -137,7 +138,7 @@ def test_save3():
     input_coords = api.VoxelCoordinateSystem('input', input_axes)
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
 
-    data = np.random.standard_normal(shape)
+    data = np.random.standard_normal(cmap.shape)
     img = api.Image(data, cmap)
     save_image(img, 'tmp.nii')
     img2 = load_image('tmp.nii')
@@ -166,7 +167,8 @@ def test_save4():
     input_coords = api.VoxelCoordinateSystem('input', input_axes)
     cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
 
-    data = np.random.standard_normal(shape)
+    data = np.random.standard_normal(cmap.shape)
+
     img = api.Image(data, cmap)
     save_image(img, 'tmp.nii')
     img2 = load_image('tmp.nii')

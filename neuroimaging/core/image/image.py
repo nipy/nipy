@@ -74,7 +74,14 @@ class Image(object):
         """
 
         if data is None or coordmap is None:
-            raise ValueError, 'expecting an array and CoordinateMap instance'
+            raise ValueError('expecting an array and CoordinateMap instance')
+
+        # This ensures two things
+        # i) each axis in coordmap.input_coords has a length and
+        # ii) the shapes are consistent
+
+        if data.shape != coordmap.shape:
+            raise ValueError('data.shape does not agree with coordmap.shape')
 
         # self._data is an array-like object.  It must implement a subset of
         # array methods  (Need to specify these, for now implied in pyniftio)
@@ -319,6 +326,8 @@ def coerce2nifti(img, standard=False):
     if standard:
         sorder, scmap = standard_order(nimg.coordmap)
         return Image(np.transpose(np.asarray(nimg), sorder), scmap)
+    else:
+        return nimg
 
 def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
     """Create an image from a numpy array.
