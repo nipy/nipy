@@ -94,7 +94,7 @@ class CoordinateSystem(odict):
 
     def __eq__(self, other):
         """
-        Equality is defined by he axes and the name.
+        Equality is defined by self.dtype.
 
         :Parameters:
             other : `CoordinateSystem`
@@ -102,7 +102,7 @@ class CoordinateSystem(odict):
 
         :Returns: ``bool``
         """
-        return (self.name, self.axes) == (other.name, other.axes)
+        return self.dtype == other.dtype
 
 
     def __str__(self):
