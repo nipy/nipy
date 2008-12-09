@@ -261,7 +261,7 @@ class CoordinateMap(object):
 
     def rename_input(self, **kwargs):
         """
-        Rename the input_coords in place.
+        Rename the input_coords, returning a new CoordinateMap
 
         >>> import numpy as np
         >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
@@ -271,16 +271,17 @@ class CoordinateMap(object):
         >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
         >>> print cm.input_coords.values()
         [<VoxelAxis:"i", dtype=[('i', '<f8')], length=10>, <VoxelAxis:"j", dtype=[('j', '<f8')], length=20>, <VoxelAxis:"k", dtype=[('k', '<f8')], length=30>]
-        >>> cm.rename_input(i='x')
-        >>> print cm.input_coords
+        >>> cm2 = cm.rename_input(i='x')
+        >>> print cm2.input_coords
         {'axes': [<VoxelAxis:"x", dtype=[('x', '<f8')], length=10>, <VoxelAxis:"j", dtype=[('j', '<f8')], length=20>, <VoxelAxis:"k", dtype=[('k', '<f8')], length=30>], 'name': 'input-renamed'}
         
         """
-        self.input_coords = self.input_coords.rename(**kwargs)
+        input_coords = self.input_coords.rename(**kwargs)
+        return CoordinateMap(self.mapping, input_coords, self.output_coords)
 
     def rename_output(self, **kwargs):
         """
-        Rename the output_coords in place.
+        Rename the output_coords, returning a new CoordinateMap.
 
         >>> import numpy as np
         >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
@@ -290,13 +291,14 @@ class CoordinateMap(object):
         >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
         >>> print cm.output_coords.values()
         [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>]
-        >>> cm.rename_output(y='a')
-        >>> print cm.output_coords
+        >>> cm2 = cm.rename_output(y='a')
+        >>> print cm2.output_coords
         {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"a", dtype=[('a', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>], 'name': 'output-renamed'}
 
         >>>                             
         """
-        self.output_coords = self.output_coords.rename(**kwargs)
+        output_coords = self.output_coords.rename(**kwargs)
+        return CoordinateMap(self.mapping, self.input_coords, output_coords)
 
     def reorder_input(self, order=None):
         """

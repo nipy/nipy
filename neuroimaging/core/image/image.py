@@ -18,7 +18,7 @@ import numpy as np
 from neuroimaging.core.reference.coordinate_map import CoordinateMap
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
-from neuroimaging.core.reference.nifti import coordmap_from_ioimg, coerce_coordmap, get_pixdim, get_diminfo
+from neuroimaging.core.reference.nifti import coordmap_from_ioimg, coerce_coordmap, get_pixdim, get_diminfo, standard_order
 
 __docformat__ = 'restructuredtext'
 __all__ = ['load', 'save', 'fromarray']
