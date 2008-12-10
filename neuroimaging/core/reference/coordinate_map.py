@@ -658,45 +658,18 @@ class ConcatenatedComaps(CoordinateMap):
         """
         return self.coordmaps[i]
 
-# TODO: this can be replaced with the function "product" above
+def replicate(cmap, n):
+    """
+    Create a CoordinateMap by taking the product
+    of coordmap with a 1-dimensional 'concat' CoordinateSystem
 
-class ConcatenatedIdenticalComaps(ConcatenatedComaps):
-    """
-    A set of concatenated coordmaps, which are all identical.
-    """
-    
-    def __init__(self, coordmap, n, concataxis="concat"):
-        """
-        :Parameters:
-            coordmap : `CoordinateMap`
+    :Parameters:
+         coordmap : `CoordinateMap`
                 The coordmap to be used
-            n : ``int``
+         n : ``int``
                 The number of tiems to concatenate the coordmap
-            concataxis : ``string``
+         concataxis : ``string``
                 The name of the new dimension formed by concatenation
-        """
-        ConcatenatedComaps.__init__(self, [coordmap]*n , concataxis)
-
-    def _mapping(self):
-        """
-        Set up the mapping and coordinate systems.
-        """
-        newaxis = Axis(name=self.concataxis)
-        in_coords = self.coordmaps[0].input_coords
-        newin = CoordinateSystem(
-            '%s:%s'%(in_coords.name, self.concataxis), \
-               [newaxis] + list(in_coords.axes))
-        out_coords = self.coordmaps[0].output_coords
-        newout = CoordinateSystem(
-            '%s:%s'%(out_coords.name, self.concataxis), \
-               [newaxis] + list(out_coords.axes))
-
-        in_trans = self.coordmaps[0].mapping.transform
-        ndim = in_trans.shape[0]-1
-        out_trans = np.zeros((ndim+2,)*2)
-        out_trans[0:ndim, 0:ndim] = in_trans[0:ndim, 0:ndim]
-        out_trans[0:ndim, -1] = in_trans[0:ndim, -1]
-        out_trans[ndim, ndim] = 1.
-        out_trans[(ndim+1), (ndim+1)] = 1.
-        return Affine(out_trans), newin, newout
-
+    """
+    concat = CoordinateMap.affine(concataxis, concataxis, Affine(np.identity(2)), (n,))
+    return product(concat, coordmap)

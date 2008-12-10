@@ -2,8 +2,8 @@ import numpy as np
 from neuroimaging.testing import *
 
 from neuroimaging.core.api import VoxelAxis, RegularAxis, VoxelCoordinateSystem, CoordinateSystem
-from neuroimaging.core.reference.coordinate_map import CoordinateMap, ConcatenatedComaps, \
-     ConcatenatedIdenticalComaps
+from neuroimaging.core.reference.coordinate_map import CoordinateMap, ConcatenatedComaps, 
+
 from neuroimaging.core.reference.mapping import Affine
 
 from neuroimaging.testing import anatfile, funcfile
@@ -49,16 +49,6 @@ class test_coordmap(TestCase):
         coordmaps = self.img.coordmap.replicate(4)
         coordmaps.python2matlab()
 
-    # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
-    @dec.knownfailure
-    def test_concat2(self):
-        """
-        Test passing
-        """
-        self.fail("concatenated and replicated CoordinateMaps need to be fixed")
-        
-        coordmaps = ConcatenatedIdenticalComaps(self.img.coordmap, 4)
-        coordmaps.python2matlab()
 
     # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
     @dec.knownfailure

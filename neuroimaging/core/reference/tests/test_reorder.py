@@ -1,8 +1,7 @@
 import numpy as np
 
 from neuroimaging.core.api import VoxelAxis, RegularAxis, VoxelCoordinateSystem, CoordinateSystem, StartStepCoordinateSystem
-from neuroimaging.core.reference.coordinate_map import CoordinateMap, ConcatenatedComaps, \
-     ConcatenatedIdenticalComaps
+from neuroimaging.core.reference.coordinate_map import CoordinateMap
 from neuroimaging.core.reference.mapping import Affine
 
 def setup_cmap():
