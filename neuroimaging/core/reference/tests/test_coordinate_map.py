@@ -2,7 +2,7 @@ import numpy as np
 from neuroimaging.testing import *
 
 from neuroimaging.core.api import VoxelAxis, RegularAxis, VoxelCoordinateSystem, CoordinateSystem
-from neuroimaging.core.reference.coordinate_map import CoordinateMap, ConcatenatedComaps, 
+from neuroimaging.core.reference.coordinate_map import CoordinateMap
 
 from neuroimaging.core.reference.mapping import Affine
 
@@ -17,48 +17,7 @@ class test_coordmap(TestCase):
     def setUp(self):
         self.img = load_image(anatfile)
 
-    # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
-    @dec.knownfailure
-    def test_concat(self):
-        self.fail("concatenated and replicated CoordinateMaps need to be fixed")
 
-        coordmaps = ConcatenatedComaps([self.img.coordmap]*5)
-        self.assertEquals(tuple(coordmaps.shape), (5,) + tuple(self.img.coordmap.shape))
-        z = coordmaps.mapping([4,5,6,7])
-        a = coordmaps.subcoordmap(0)
-        x = a.mapping([5,6,7])
-
-    # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
-    @dec.knownfailure
-    def test_replicate(self):
-        self.fail("concatenated and replicated CoordinateMaps need to be fixed")
-
-        coordmaps = self.img.coordmap.replicate(4)
-        self.assertEquals(tuple(coordmaps.shape), (4,) + tuple(self.img.coordmap.shape))
-        z = coordmaps.mapping([2,5,6,7])
-        a = coordmaps.subcoordmap(0)
-        x = a.mapping([5,6,7])
-
-    # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
-    @dec.knownfailure
-    def test_replicate2(self):
-        """
-        Test passing
-        """
-        self.fail("concatenated and replicated CoordinateMaps need to be fixed")
-        coordmaps = self.img.coordmap.replicate(4)
-        coordmaps.python2matlab()
-
-
-    # FIXME: "concatenated and replicated CoordinateMaps need to be fixed"
-    @dec.knownfailure
-    def test_concat3(self):
-        """
-        Test failing
-        """
-        self.fail("concatenated and replicated CoordinateMaps need to be fixed")
-        coordmaps = ConcatenatedComaps([self.img.coordmap]*4)
-        coordmaps.python2matlab()
 
     def test_identity(self):
         shape = (30,40,50)

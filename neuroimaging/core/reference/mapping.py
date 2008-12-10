@@ -388,6 +388,10 @@ class Affine(Mapping):
         
         :Returns: ``numpy.ndarray``
         """
+        coords = np.asarray(coords)
+        if len(coords.shape) == 1:
+            if self._fmatrix.shape == (1,1):
+                coords = coords.reshape((1,) + coords.shape)
         value = np.dot(self._fmatrix, coords) 
         value += np.multiply.outer(self._fvector, np.ones(value.shape[1:]))
         return value

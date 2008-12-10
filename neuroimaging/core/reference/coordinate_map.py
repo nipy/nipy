@@ -395,8 +395,6 @@ class CoordinateMap(object):
         A = np.dot(perm, self.affine)
         return CoordinateMap(Affine(A), self.input_coords, newoutcoords)
 
-
-
 def centered_coordmap(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
     """
     creates a simple centered coordmap that centers matrix on zero
@@ -514,7 +512,6 @@ def product(*cmaps):
     return CoordinateMap(mapping, CoordinateSystem(innames, inaxes),
                          CoordinateSystem(outnames, outaxes))
 
-
 def compose(*cmaps):
     """
     Return the (right) composition of two or more CoordinateMaps.
@@ -534,7 +531,7 @@ def compose(*cmaps):
     >>> id1 = compose(cmap,cmapi)
     >>> print id1.affine
     [[ 1.  0.]
-    [ 0.  1.]]
+     [ 0.  1.]]
     >>> assert not hasattr(id1, 'shape')
     >>> id2 = compose(cmapi,cmap)
     >>> assert id2.shape == (10,)
@@ -543,7 +540,6 @@ def compose(*cmaps):
     >>> id2.input_coords.axisnames
     ['i']
     >>> 
-
 
     """
 
@@ -557,108 +553,8 @@ def compose(*cmaps):
 
     
 
-class ConcatenatedComaps(CoordinateMap):
-    """
-    Return a coordmap formed by concatenating a sequence of coordmaps. Checks are done
-    to ensure that the coordinate systems are consistent, as is the shape.
-    It returns a coordmap with the proper shape but no inverse.
-    This is most likely the kind of coordmap to be used for fMRI images.
-    """
 
-
-    def __init__(self, coordmaps, concataxis="concat"):
-        """
-        :Parameters:
-            coordmap : ``[`CoordinateMap`]``
-                The coordmaps to be used.
-            concataxis : ``string``
-                The name of the new dimension formed by concatenation
-        """        
-        self.coordmaps = self._coordmaps(coordmaps)
-        self.concataxis = concataxis
-        mapping, input_coords, output_coords = self._mapping()
-        CoordinateMap.__init__(self, mapping, input_coords, output_coords)
-
-
-    def _getshape(self):
-        return (len(self.coordmaps),) + self.coordmaps[0].shape
-    shape = property(_getshape)
-
-    def _coordmaps(self, coordmaps):
-        """
-        Setup the coordmaps.
-        """
-        # check mappings are affine
-        check = np.any([not isinstance(coordmap.mapping, Affine)\
-                          for coordmap in coordmaps])
-        if check:
-            raise ValueError('must all be affine mappings!')
-
-        # check shapes are identical
-        s = coordmaps[0].shape
-        check = np.any([coordmap.shape != s for coordmap in coordmaps])
-        if check:
-            raise ValueError('subcoordmaps must have same shape')
-
-        # check input coordinate systems are identical
-        in_coords = coordmaps[0].input_coords
-        check = np.any([coordmap.input_coords != in_coords\
-                           for coordmap in coordmaps])
-        if check:
-            raise ValueError(
-              'subcoordmaps must have same input coordinate systems')
-
-        # check output coordinate systems are identical
-        out_coords = coordmaps[0].output_coords
-        check = np.any([coordmap.output_coords != out_coords\
-                           for coordmap in coordmaps])
-        if check:
-            raise ValueError(
-              'subcoordmaps must have same output coordinate systems')
-        return tuple(coordmaps)
-
-    def _mapping(self):
-        """
-        Set up the mapping and coordinate systems.
-        """
-        def mapfunc(x):
-            try:
-                I = x[0].view(np.int32)
-                X = x[1:]
-                v = np.zeros(x.shape[1:])
-                for j in I.shape[0]:
-                    v[j] = self.coordmaps[I[j]].mapping(X[j])
-                return v
-            except:
-                i = int(x[0])
-                x = x[1:]
-                return self.coordmaps[i].mapping(x)
-                
-        newaxis = Axis(name=self.concataxis)
-        in_coords = self.coordmaps[0].input_coords
-        newin = CoordinateSystem('%s:%s'%(in_coords.name, self.concataxis), \
-                                 [newaxis] + list(in_coords.axes))
-        out_coords = self.coordmaps[0].output_coords
-        newout = CoordinateSystem('%s:%s'%(out_coords.name, self.concataxis), \
-                                  [newaxis] + list(out_coords.axes))
-        return Mapping(mapfunc), newin, newout
-
-
-    def subcoordmap(self, i):
-        """
-        Return the i'th coordmap from the sequence of coordmaps.
-
-        :Parameters:
-           i : ``int``
-               The index of the coordmap to return
-
-        :Returns: `CoordinateMap`
-        
-        :Raises IndexError: if i in out of range.
-        """
-        return self.coordmaps[i]
-
-def replicate(cmap, n):
+def replicate(coordmap, n, concataxis='string'):
     """
     Create a CoordinateMap by taking the product
     of coordmap with a 1-dimensional 'concat' CoordinateSystem
@@ -671,5 +567,70 @@ def replicate(cmap, n):
          concataxis : ``string``
                 The name of the new dimension formed by concatenation
     """
-    concat = CoordinateMap.affine(concataxis, concataxis, Affine(np.identity(2)), (n,))
+    concat = CoordinateMap.from_affine([concataxis], [concataxis], Affine(np.identity(2)), (n,))
     return product(concat, coordmap)
+
+def vstack(*cmaps):
+    """
+    Return a "vstacked" CoordinateMap. That is,
+    take the result of a number of cmaps, and return np.vstack(results)
+    with an additional first row being the 'concat' axis values.
+
+    If the cmaps are identical
+    the resulting map is essentially
+    replicate(cmaps[0], len(cmaps)) but the mapping is not Affine.
+
+    Some simple modifications of this function would allow 'interpolation'
+    along the 'concataxis'. 
+
+    Inputs:
+    -------
+    cmaps : sequence of CoordinateMaps
+          Each cmap should have the same input_coords, output_coords and shape.
+
+    Returns:
+    --------
+    cmap : ``CoordinateMap``
+
+    >>> inc1 = CoordinateMap.from_affine('ab', 'cd', Affine(np.diag([2,3,1])), (10,20))
+    >>> inc2 = CoordinateMap.from_affine('ab', 'cd', Affine(np.diag([3,2,1])), (10,20))
+    >>> inc3 = CoordinateMap.from_affine('ab', 'cd', Affine(np.diag([1,1,1])), (10,20))
+    >>> stacked = vstack(inc1, inc2, inc3)
+
+    >>> stacked(np.array([[0,1,2],[1,1,2],[2,1,2], [1,1,2]]).T)
+    array([[ 0.,  2.,  6.],
+           [ 1.,  3.,  4.],
+           [ 2. , 1.,  2.],
+           [ 1.,  3.,  4.]])
+    >>> 
+
+    """
+
+    # Ensure that they all have the same coordinate systems
+
+    notinput = filter(lambda i: cmaps[i].input_coords != cmaps[0].input_coords, range(len(cmaps)))
+    notoutput = filter(lambda i: cmaps[i].output_coords != cmaps[0].output_coords, range(len(cmaps)))
+    notshape = filter(lambda i: cmaps[i].shape != cmaps[0].shape, range(len(cmaps)))
+
+    if notinput or notoutput or notshape:
+        raise ValueError("input and output coordinates as well as shape of each CoordinateMap should be the same in order to stack them")
+
+    def mapping(x, return_index=False):
+        r = []
+        for i in range(x.shape[1]):
+            ii = int(x[0,i])
+            y = cmaps[ii](x[1:,i])
+            r.append(np.hstack([x[0,i], y]))
+        return np.vstack(r)
+
+    stackin = VoxelAxis('stack-input', length=len(cmaps))
+    stackout = Axis('stack-output')
+
+    inaxes = [stackin] + cmaps[0].input_coords.axes
+    incoords = CoordinateSystem('stackin-%s' % cmaps[0].input_coords.name, 
+                                inaxes)
+    outaxes = [stackout] + cmaps[0].output_coords.axes
+    outcoords = CoordinateSystem('stackout-%s' % cmaps[0].output_coords.name, 
+                                 outaxes)
+    return CoordinateMap(mapping, incoords, outcoords)
+
