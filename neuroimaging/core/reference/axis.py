@@ -186,7 +186,7 @@ class RegularAxis(Axis):
     >>>
     """
 
-    def __init__(self, name, length=np.inf, start=0, step=1):
+    def __init__(self, name, length=np.inf, start=0, step=1, dtype=np.float):
         """
         Create a regularly spaced axis with a given name.
 
@@ -205,7 +205,7 @@ class RegularAxis(Axis):
         self.length = length
         self.start = start
         self.step = step        
-        Axis.__init__(self, name)
+        Axis.__init__(self, name, dtype=dtype)
 
     def __str__(self):
         return '<RegularAxis:"%(name)s", dtype=%(dtype)s, start=%(start)f, step=%(step)f, length=%(length)d>' % {'name':self.name, 'dtype':`self.dtype.descr`, 'start':self.start, 'step':self.step, 'length':self.length}
@@ -292,7 +292,7 @@ class VoxelAxis(RegularAxis):
     def __str__(self):
         return '<VoxelAxis:"%(name)s", dtype=%(dtype)s, length=%(length)d>' % {'name':self.name, 'dtype':`self.dtype.descr`, 'length':self.length}
 
-    def __init__(self, name, length=np.inf):
+    def __init__(self, name, length=np.inf, dtype=np.float):
         """
         Create a voxel axis with a given name.
 
@@ -302,7 +302,7 @@ class VoxelAxis(RegularAxis):
             length : ``numpy.float``
                 The overall length of the axis
         """    
-        RegularAxis.__init__(self, name, length, start=0, step=1)
+        RegularAxis.__init__(self, name, length, start=0, step=1, dtype=dtype)
 
 
 
