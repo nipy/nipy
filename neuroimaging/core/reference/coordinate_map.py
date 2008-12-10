@@ -2,7 +2,7 @@
 Coordinate maps store all the details about how an image translates to space.
 They also provide mechanisms for iterating over that space.
 """
-import copy
+import copy, string
 
 import numpy as np
 
@@ -460,9 +460,125 @@ def centered_coordmap(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
         
     mapping = Affine(transform)
     return CoordinateMap(mapping, input_coords, output_coords)
-   
         
-        
+def product(*cmaps):
+    """
+    Return the "topological" product of two or more CoordinateMaps.
+
+    Inputs:
+    -------
+    cmaps : sequence of CoordinateMaps
+
+    Returns:
+    --------
+    cmap : ``CoordinateMap``
+
+    >>> inc1 = CoordinateMap.from_affine('i', 'x', Affine(np.diag([2,1])), (10,))
+    >>> inc2 = CoordinateMap.from_affine('j', 'y', Affine(np.diag([3,1])), (20,))
+    >>> inc3 = CoordinateMap.from_affine('k', 'z', Affine(np.diag([4,1])), (30,))
+
+    >>> cmap = product(inc1, inc3, inc2)
+    >>> cmap.shape
+    (10, 30, 20)
+    >>> cmap.input_coords.axisnames
+    ['i', 'k', 'j']
+    >>> cmap.output_coords.axisnames
+    ['x', 'z', 'y']
+    >>> cmap.affine
+    array([[ 2.,  0.,  0.,  0.],
+           [ 0.,  4.,  0.,  0.],
+           [ 0.,  0.,  3.,  0.],
+           [ 0.,  0.,  0.,  1.]])
+
+    """
+    inaxes = []
+    outaxes = []
+    innames = []
+    outnames = []
+    mappings = []
+    ndimin = []
+
+    for cmap in cmaps:
+        inaxes += cmap.input_coords.axes
+        outaxes += cmap.output_coords.axes
+        innames += cmap.input_coords.name
+        outnames += cmap.output_coords.name
+        mappings.append(cmap.mapping)
+        ndimin.append(cmap.ndim[0])
+
+    ndimin.insert(0,0)
+    ndimin = np.cumsum(ndimin)
+    innames = string.join(innames, ' x ')
+    outnames = string.join(outnames, ' x ')
+
+    def mapping(x):
+        x = np.asarray(x)
+        y = []
+        for i in range(len(ndimin)-1):
+            cmap = cmaps[i]
+            y.append(mappings[i](x[ndimin[i]:ndimin[i+1]]))
+        return np.vstack(y)
+
+    notaffine = filter(lambda x: not isinstance(x, Affine), mappings)
+    if not notaffine:
+        Y = np.vstack([np.identity(ndimin[-1]), np.zeros(ndimin[-1])]).T
+        d = mapping(Y)
+        dd = mapping(np.zeros((ndimin[-1],ndimin[-1]+1)))
+        dd[:,-1] = 0.
+        C = np.identity(d.shape[1]).astype(np.complex)
+        C[:d.shape[0],:d.shape[1]] = d - dd
+        if np.allclose(C.real, C):
+            C = C.astype(np.float)
+        mapping = Affine(C)
+        for a in inaxes:
+            a.dtype = mapping.transform.dtype
+        for a in outaxes:
+            a.dtype = mapping.transform.dtype
+
+    return CoordinateMap(mapping, CoordinateSystem(innames, inaxes),
+                         CoordinateSystem(outnames, outaxes))
+
+
+def compose(*cmaps):
+    """
+    Return the (right) composition of two or more CoordinateMaps.
+
+    Inputs:
+    -------
+    cmaps : sequence of CoordinateMaps
+
+    Returns:
+    --------
+    cmap : ``CoordinateMap``
+         The resulting CoordinateMap has input_coords == cmaps[-1].input_coords
+         and output_coords == cmaps[0].output_coords
+
+    >>> cmap = CoordinateMap.from_affine('i', 'x', Affine(np.diag([2,1])), (10,))
+    >>> cmapi = cmap.inverse
+    >>> id1 = compose(cmap,cmapi)
+    >>> print id1.affine
+    [[ 1.  0.]
+    [ 0.  1.]]
+    >>> assert not hasattr(id1, 'shape')
+    >>> id2 = compose(cmapi,cmap)
+    >>> assert id2.shape == (10,)
+    >>> id1.input_coords.axisnames
+    ['x']
+    >>> id2.input_coords.axisnames
+    ['i']
+    >>> 
+
+
+    """
+
+    cmap = cmaps[-1]
+    for m in cmaps[:-1]:
+        if m.input_coords == cmap.output_coords:
+            cmap = CoordinateMap(m.mapping * cmap.mapping, cmap.input_coords, m.output_coords)
+        else:
+            raise ValueError, 'input and output coordinates do not match: input=%s, output=%s' % (`input_coords.dtype`, `output_coords.dtype`)
+    return cmap
+
     
 
 class ConcatenatedComaps(CoordinateMap):
@@ -565,6 +681,8 @@ class ConcatenatedComaps(CoordinateMap):
         :Raises IndexError: if i in out of range.
         """
         return self.coordmaps[i]
+
+# TODO: this can be replaced with the function "product" above
 
 class ConcatenatedIdenticalComaps(ConcatenatedComaps):
     """
