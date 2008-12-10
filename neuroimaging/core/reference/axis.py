@@ -52,7 +52,9 @@ class Axis(object):
 
     def _getdtype(self):
         return np.dtype([(self.name, self._dtype)])
-    dtype = property(_getdtype)
+    def _setdtype(self, dtype):
+        self._dtype = dtype
+    dtype = property(_getdtype, _setdtype)
 
     def _getbuiltin(self):
         return self._dtype

@@ -60,8 +60,8 @@ from coordinate_map import CoordinateMap
 from axis import RegularAxis, VoxelAxis
 from mapping import Affine
 
-valid_input = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
-valid_output = list('xyztuvw')
+valid_input_axisnames = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
+valid_output_axisnames = list('xyztuvw')
 
 
 def iscoerceable(coordmap):
@@ -112,11 +112,11 @@ def coerce_coordmap(coordmap):
 
     ndim = affine.shape[0] - 1
     inaxes = coordmap.input_coords.axisnames
-    vinput = valid_input[:ndim]
+    vinput = valid_input_axisnames[:ndim]
     if set(vinput) != set(inaxes):
         raise ValueError, 'input coordinate axisnames of a %d-dimensional Image must come from %s' % (ndim, `vinput`)
 
-    voutput = valid_output[:ndim]
+    voutput = valid_output_axisnames[:ndim]
     outaxes = coordmap.output_coords.axisnames
     if set(voutput) != set(outaxes):
         raise ValueError, 'output coordinate axisnames of a %d-dimensional Image must come from %s' % (ndim, `voutput`)
@@ -134,7 +134,7 @@ def coerce_coordmap(coordmap):
     if inaxes != vinput:
         ndimm = min(ndim, 3)
         if set(inaxes[:ndimm]) != set(vinput[:ndimm]):
-            warnings.warn('an Image with this coordmap has to be transposed to be saved because the first three input axes are not from %s' % `set(vinput[:ndimm])`)
+            warnings.warn('an Image with this coordmap has to be transposed to be saved because the first %d input axes are not from %s' % (ndimm, `set(vinput[:ndimm])`))
             reinput = True
         if inaxes[ndimm:] != vinput[ndimm:]:
             warnings.warn('an Image with this coordmap has to be transposed because the last %d axes are not in the NIFTI order' % (ndim-3,))
@@ -529,11 +529,11 @@ def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
     
     ndim = len(shape)
     ijk = ijk_from_diminfo(diminfo)
-    innames = ijk + valid_input[3:ndim]
+    innames = ijk + valid_input_axisnames[3:ndim]
     inaxes = [VoxelAxis(n, length=l) for n, l in zip(innames, shape[::-1])]
     incoords = CoordinateSystem('input', inaxes)
 
-    outnames = valid_output[:ndim]
+    outnames = valid_output_axisnames[:ndim]
     outaxes = [RegularAxis(n, step=s) for n, s in zip(outnames, pixdim[1:(ndim+1)])]
     outcoords = CoordinateSystem('output', outaxes)
             

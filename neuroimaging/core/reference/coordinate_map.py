@@ -111,11 +111,15 @@ class CoordinateMap(object):
         ndim = (len(innames) + 1, len(outnames) + 1)
         if mapping.transform.shape != ndim:
             raise ValueError('shape and number of axis names do not agree')
-        inaxes = [VoxelAxis(name, length=l) for name, l in zip(innames, shape)]
-        outaxes = [Axis(name) for name in outnames]
+        A = Affine(mapping.transform) # NOTE: this Affine's matrix
+                                      # will be either a 'float' or 'complex'
+                                      # dtype
+        dtype = A.transform.dtype
+        inaxes = [VoxelAxis(name, length=l, dtype=dtype) for name, l in zip(innames, shape)]
+        outaxes = [Axis(name, dtype=dtype) for name in outnames]
         input_coords = VoxelCoordinateSystem("voxel", inaxes)
-        output_coords = StartStepCoordinateSystem('world', outaxes)
-        return CoordinateMap(Affine(mapping.transform), input_coords, output_coords)
+        output_coords = CoordinateSystem('world', outaxes)
+        return CoordinateMap(A, input_coords, output_coords)
 
     def _getinverse(self):
         """
@@ -180,7 +184,12 @@ class CoordinateMap(object):
         x = np.asarray(x)
         y = self.mapping(x)
         if view:
-            y = y.view(self.output_coords.dtype)
+            # Need to copy the transposed data
+            # for the order of the data to be correct
+            # for np.recarray
+            yc = np.array(y.T, copy=True, order='C')
+            y = np.recarray(buf=yc, dtype=self.output_coords.dtype, shape=np.product(y.shape[1:]))
+
         return y
 
     def copy(self):
