@@ -243,30 +243,6 @@ class CoordinateMap(object):
         else:
             raise AttributeError, 'range of coordmap only makes sense if input_coords are VoxelCoordinateSystem'
 
-    def transform(self, mapping): 
-        """        
-        Apply a transformation (mapping) to this coordmap.
-        
-        :Parameters:
-            mapping : `mapping.Mapping`
-                The mapping to be applied.
-        
-        :Returns: ``None``
-        """
-        self.mapping = mapping * self.mapping
-
-    def replicate(self, n, concataxis="concat"):
-        """
-        Duplicate self n times, returning a `ConcatenatedComaps` with
-        shape == (n,)+self.shape.
-        
-        :Parameters:
-            n : ``int``
-                TODO
-            concataxis : ``string``
-                The name of the new dimension formed by concatenation
-        """
-        return ConcatenatedIdenticalComaps(self, n, concataxis=concataxis)
 
     def rename_input(self, **kwargs):
         """
