@@ -12,12 +12,12 @@ class test_Generator(TestCase):
     def setUp(self):
         names = ['zspace', 'yspace', 'xspace']
         shape = (10,20,30)
-        self.img = Image(np.zeros(shape), coordinate_map.CoordinateMap.from_start_step(names, (0,)*3, (1,)*3, shape))
-        self.img2 = Image(np.ones(shape), coordinate_map.CoordinateMap.from_start_step(names, (0,)*3, (1,)*3, shape))
+        self.img = Image(np.zeros(shape), coordinate_map.CoordinateMap.from_start_step(names, names, (0,)*3, (1,)*3, shape))
+        self.img2 = Image(np.ones(shape), coordinate_map.CoordinateMap.from_start_step(names, names, (0,)*3, (1,)*3, shape))
                        
         shape = (3,5,4)
-        self.img3 = Image(np.zeros(shape), coordinate_map.CoordinateMap.from_start_step(names, (0,)*3, (1,)*3, shape))
-        self.img4 = Image(np.zeros(shape), coordinate_map.CoordinateMap.from_start_step(names, (0,)*3, (1,)*3, shape))
+        self.img3 = Image(np.zeros(shape), coordinate_map.CoordinateMap.from_start_step(names, names, (0,)*3, (1,)*3, shape))
+        self.img4 = Image(np.zeros(shape), coordinate_map.CoordinateMap.from_start_step(names, names, (0,)*3, (1,)*3, shape))
 
 
     def test_read_slices(self):

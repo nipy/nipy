@@ -3,7 +3,7 @@ import numpy as np
 from neuroimaging.testing import *
 
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
-     VoxelCoordinateSystem, DiagonalCoordinateSystem
+     VoxelCoordinateSystem, StartStepCoordinateSystem
 from neuroimaging.core.reference.axis import Axis, RegularAxis
 
 class test_CoordinateSystem(TestCase):
@@ -16,7 +16,7 @@ class test_CoordinateSystem(TestCase):
     def test_CoordinateSystem(self):
         self.assertEquals(self.name, self.c.name)
         self.assertEquals([ax.name for ax in self.axes],
-                          [ax.name for ax in self.c.axes()])
+                          [ax.name for ax in self.c.axes])
 
     def test_hasaxis(self):
         for ax in self.axes:
@@ -28,7 +28,7 @@ class test_CoordinateSystem(TestCase):
 
     def test_axisnames(self):
         self.assertEquals([ax.name for ax in self.axes],
-                            self.c.axisnames())
+                            self.c.axisnames)
 
     def test___getitem__(self):
         for ax in self.axes:
@@ -44,7 +44,7 @@ class test_CoordinateSystem(TestCase):
         self.assertRaises(TypeError, eval, 'self.c.__setitem__("any_name", None)')
 
     def test___eq__(self):
-        c1 = CoordinateSystem(self.c.name, self.c.axes())
+        c1 = CoordinateSystem(self.c.name, self.c.axes)
         self.assertTrue(c1 == self.c)
 
     def test_reorder(self):
@@ -65,7 +65,7 @@ class test_CoordinateSystem(TestCase):
     def test_sub_coords(self):
         new_c = self.c.sub_coords()
         self.assertEquals(new_c.name, self.c.name + "-subcoordmap")
-        self.assertEquals(new_c.axes(), self.c.axes()[1:])
+        self.assertEquals(new_c.axes, self.c.axes[1:])
         
 
 class test_VoxelCoordinateSystem(TestCase):
@@ -78,7 +78,7 @@ class test_VoxelCoordinateSystem(TestCase):
     def test_VoxelCoordinateSystem(self):
         self.assertEqual(self.name, self.v.name)
         self.assertEquals([ax.name for ax in self.axes],
-                          [ax.name for ax in self.v.axes()])
+                          [ax.name for ax in self.v.axes])
         self.assertEquals(self.shape, self.v.shape)
 
     def test_isvalid(self):
@@ -88,13 +88,13 @@ class test_VoxelCoordinateSystem(TestCase):
 
 def test_diagonal():
     ''' Test diagonal coordinate system '''
-    dcs = DiagonalCoordinateSystem(
+    dcs = StartStepCoordinateSystem(
         'diag test', # Name
         [RegularAxis(n, start=5, step=2) for n in ['zspace', 'yspace', 'xspace']])
-    assert np.allclose(dcs.transform(), [[2,0,0,5],
-                                         [0,2,0,5],
-                                         [0,0,2,5],
-                                         [0,0,0,1]])
+    assert np.allclose(dcs.affine, [[2,0,0,5],
+                                    [0,2,0,5],
+                                    [0,0,2,5],
+                                    [0,0,0,1]])
 
 
 

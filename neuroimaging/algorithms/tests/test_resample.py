@@ -9,8 +9,8 @@ def test_rotate2d():
     # Rotate an image in 2d on a square grid,
     # should result in transposed image
     
-    g = CoordinateMap.from_affine(Affine(np.diag([0.7,0.5,1])), ['x', 'y'], (100,100))
-    g2 = CoordinateMap.from_affine(Affine(np.diag([0.5,0.7,1])), ['y', 'x'], (100,100))
+    g = CoordinateMap.from_affine('ij', 'xy', Affine(np.diag([0.7,0.5,1])), (100,100))
+    g2 = CoordinateMap.from_affine('ij', 'xy', Affine(np.diag([0.5,0.7,1])), (100,100))
 
     i = Image(np.ones((100,100)), g)
     i[50:55,40:55] = 3.
@@ -26,8 +26,8 @@ def test_rotate2d2():
     # Rotate an image in 2d on a non-square grid,
     # should result in transposed image
     
-    g = CoordinateMap.from_affine(Affine(np.diag([0.7,0.5,1])), ['x', 'y'], (100,80))
-    g2 = CoordinateMap.from_affine(Affine(np.diag([0.5,0.7,1])), ['y', 'x'], (80,100))
+    g = CoordinateMap.from_affine('ij', 'xy', Affine(np.diag([0.7,0.5,1])), (100,80))
+    g2 = CoordinateMap.from_affine('ij', 'xy', Affine(np.diag([0.5,0.7,1])), (80,100))
 
     i = Image(np.ones((100,80)), g)
     i[50:55,40:55] = 3.
@@ -49,14 +49,14 @@ def test_rotate2d3():
     # is to be transposed but one wanted to keep the NIFTI order of output coords
     # this would do the trick
 
-    g = CoordinateMap.from_affine(Affine(np.diag([0.5,0.7,1])), ['x', 'y'], (100,80))
+    g = CoordinateMap.from_affine('xy', 'ij', Affine(np.diag([0.5,0.7,1])), (100,80))
     i = Image(np.ones((100,80)), g)
     i[50:55,40:55] = 3.
 
     a = np.identity(3)
-    g2 = CoordinateMap.from_affine(Affine(np.array([[0,0.5,0],
+    g2 = CoordinateMap.from_affine('xy', 'ij', Affine(np.array([[0,0.5,0],
                                                    [0.7,0,0],
-                                                   [0,0,1]])), ['x', 'y'], (80,100))
+                                                   [0,0,1]])), (80,100))
     ir = resample(i, g2, Affine(a))
     v2v = g.mapping.inverse() * g2.mapping
     print v2v.params
@@ -68,9 +68,9 @@ def test_rotate3d():
 
     # Rotate / transpose a 3d image on a non-square grid
 
-    g = CoordinateMap.from_affine(Affine(np.diag([0.5,0.6,0.7,1])), ['x', 'y', 'z'],
+    g = CoordinateMap.from_affine('ijk', 'xyz', Affine(np.diag([0.5,0.6,0.7,1])), 
                                  (100,90,80))
-    g2 = CoordinateMap.from_affine(Affine(np.diag([0.5,0.7,0.6,1])), ['x', 'z', 'y'],
+    g2 = CoordinateMap.from_affine('ijk', 'xyz', Affine(np.diag([0.5,0.7,0.6,1])), 
                                  (100,80,90))
 
     i = Image(np.ones(g.shape), g)
@@ -86,7 +86,7 @@ def test_rotate3d():
 
 def test_resample2d():
 
-    g = CoordinateMap.from_affine(Affine(np.diag([0.5,0.5,1])), ['x', 'y'], (100,90))
+    g = CoordinateMap.from_affine('ij', 'xy', Affine(np.diag([0.5,0.5,1])), (100,90))
     i = Image(np.ones((100,90)), g)
     i[50:55,40:55] = 3.
     
@@ -116,7 +116,7 @@ def test_resample2d1():
     # Tests the same as test_resample2d, only using a callable instead of
     # an Affine instance
     
-    g = CoordinateMap.from_affine(Affine(np.diag([0.5,0.5,1])), ['x', 'y'], (100,90))
+    g = CoordinateMap.from_affine('ij', 'xy', Affine(np.diag([0.5,0.5,1])), (100,90))
     i = Image(np.ones((100,90)), g)
     i[50:55,40:55] = 3.
     
@@ -134,7 +134,7 @@ def test_resample2d1():
 
 def test_resample2d2():
 
-    g = CoordinateMap.from_affine(Affine(np.diag([0.5,0.5,1])), ['x', 'y'], (100,90))
+    g = CoordinateMap.from_affine('ij', 'xy', Affine(np.diag([0.5,0.5,1])), (100,90))
     i = Image(np.ones((100,90)), g)
     i[50:55,40:55] = 3.
     
@@ -153,7 +153,7 @@ def test_resample2d3():
     # Same as test_resample2d, only a different way of specifying
     # the transform: here it is an (A,b) pair
 
-    g = CoordinateMap.from_affine(Affine(np.diag([0.5,0.5,1])), ['x', 'y'], (100,90))
+    g = CoordinateMap.from_affine('ij', 'xy', Affine(np.diag([0.5,0.5,1])), (100,90))
     i = Image(np.ones((100,90)), g)
     i[50:55,40:55] = 3.
     
@@ -168,7 +168,7 @@ def test_resample2d3():
 
 def test_resample3d():
 
-    g = CoordinateMap.from_affine(Affine(np.diag([0.5,0.5,0.5,1])), ['x', 'y', 'z'],
+    g = CoordinateMap.from_affine('ijk', 'xyz', Affine(np.diag([0.5,0.5,0.5,1])),
                                  (100,90,80))
     i = Image(np.ones(g.shape), g)
     i[50:55,40:55,30:33] = 3.
@@ -198,11 +198,11 @@ def test_nonaffine():
 
     """
     
-    g = CoordinateMap.from_affine(Affine(np.identity(3)), ['x', 'y'], (100,90))
+    g = CoordinateMap.from_affine('xy', 'ij', Affine(np.identity(3)), (100,90))
     i = Image(np.ones((100,90)), g)
     i[50:55,40:55] = 3.
 
-    tcoordmap = CoordinateMap.from_start_step(['t'], [0], [np.pi*1.8/100], (100,))
+    tcoordmap = CoordinateMap.from_start_step('t', 'u', [0], [np.pi*1.8/100], (100,))
     def curve(x):
         return (np.vstack([5*np.sin(x),5*np.cos(x)]).T + [52,47]).T
 
@@ -225,12 +225,12 @@ def test_nonaffine2():
 
     """
     
-    g = CoordinateMap.from_affine(Affine(np.identity(3)), ['x', 'y'], (100,90))
+    g = CoordinateMap.from_affine('ij', 'xy', Affine(np.identity(3)), (100,90))
     i = Image(np.ones((100,90)), g)
     i[50:55,40:55] = 3.
 
 
-    tcoordmap = CoordinateMap.from_start_step(['t'], [0], [np.pi*1.8/100], (100,))
+    tcoordmap = CoordinateMap.from_start_step('t', 's', [0], [np.pi*1.8/100], (100,))
     print tcoordmap.range()
     print choke
     def curve(x):
@@ -248,7 +248,7 @@ def test_2d_from_3d():
     # the 10th slice of an image, and checks that
     # resampling agrees with the data in the 10th slice.
 
-    g = CoordinateMap.from_affine(Affine(np.diag([0.5,0.5,0.5,1])), ['x', 'y', 'z'],
+    g = CoordinateMap.from_affine('ijk', 'xyz', Affine(np.diag([0.5,0.5,0.5,1])), 
                                  (100,90,80))
     i = Image(np.ones(g.shape), g)
     i[50:55,40:55,30:33] = 3.
@@ -267,7 +267,7 @@ def test_slice_from_3d():
     # the 10th slice of an image, and checks that
     # resampling agrees with the data in the 10th slice.
 
-    g = CoordinateMap.from_affine(Affine(np.diag([0.5,0.5,0.5,1])), ['x', 'y', 'z'],
+    g = CoordinateMap.from_affine('ijk', 'xyz', Affine(np.diag([0.5,0.5,0.5,1])), 
                                  (100,90,80))
     i = Image(np.ones(g.shape), g)
     i[50:55,40:55,30:33] = 3

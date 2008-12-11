@@ -356,14 +356,20 @@ class Affine(Mapping):
         tmatrix[:-1,-1] = startvector
         return varcoords, Affine(tmatrix), shape
 
-    def __init__(self, transform, name="affine"):
+    def __init__(self, transform, name="affine", dtype=np.float):
         """
         :Parameters:
             transform : ``numpy.ndarray``
                 A transformation matrix
             name : ``string``
                 The name of the mapping
+            dtype : ``numpy.ndtype``
+                If transform.dtype is not in np.sctypes['float'] + np.sctypes['complex'],
+                it will be typecast to this dtype. 
+
         """
+        if transform.dtype not in np.sctypes['float'] + np.sctypes['complex']:
+            transform = np.asarray(transform, dtype=dtype)
         self.transform = transform
         ndim = transform.shape[0] - 1
         self._fmatrix, self._fvector = _2matvec(transform)
@@ -382,6 +388,10 @@ class Affine(Mapping):
         
         :Returns: ``numpy.ndarray``
         """
+        coords = np.asarray(coords)
+        if len(coords.shape) == 1:
+            if self._fmatrix.shape == (1,1):
+                coords = coords.reshape((1,) + coords.shape)
         value = np.dot(self._fmatrix, coords) 
         value += np.multiply.outer(self._fvector, np.ones(value.shape[1:]))
         return value

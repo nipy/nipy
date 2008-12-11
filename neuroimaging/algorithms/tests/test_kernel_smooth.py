@@ -53,10 +53,8 @@ class test_SigmaFWHM(TestCase):
             shape = nprand.random_integers(30,60,(3,))
             ii, jj, kk = nprand.random_integers(11,17, (3,))
 
-            space = ('zspace', 'yspace', 'xspace')
-            coordmap = CoordinateMap.from_start_step(names=space, shape=shape,
-                                                step=nprand.random_integers(5,10,(3,))*0.5,
-                                                start=nprand.random_integers(5,20,(3,))*0.25)
+            coordmap = CoordinateMap.from_start_step('ijk', 'xyz', nprand.random_integers(5,20,(3,))*0.25,
+                                                     nprand.random_integers(5,10,(3,))*0.5, shape)
 
             signal = np.zeros(shape)
             signal[ii,jj,kk] = 1.

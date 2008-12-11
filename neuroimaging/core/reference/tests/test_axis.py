@@ -28,13 +28,16 @@ class test_Axis(TestCase):
         self.assertRaises(NotImplementedError, self.axis.isvalidvalue, 0)
 
     def test_max(self):
-        self.assertRaises(NotImplementedError, self.axis.max)
+        assert not hasattr(self.axis, 'max')
+#       self.assertRaises(NotImplementedError, self.axis.max)
 
     def test_min(self):
-        self.assertRaises(NotImplementedError, self.axis.min)
+        assert not hasattr(self.axis, 'min')
+#        self.assertRaises(NotImplementedError, self.axis.min)
 
     def test_range(self):
-        self.assertRaises(NotImplementedError, self.axis.range)
+        assert not hasattr(self.axis, 'min')
+#        self.assertRaises(NotImplementedError, self.axis.range)
 
 
 class test_ContinuousAxis(TestCase):
@@ -79,16 +82,16 @@ class test_ContinuousAxis(TestCase):
         self.assertFalse(self.infinite.isvalidvalue(np.inf))
 
     def test_max(self):
-        self.assertEqual(self.finite.max(), 10)
-        self.assertEqual(self.infinite.max(), np.inf)
+        self.assertEqual(self.finite.max, 10)
+        self.assertEqual(self.infinite.max, np.inf)
 
     def test_min(self):
-        self.assertEqual(self.finite.min(), 0)
-        self.assertEqual(self.infinite.min(), -np.inf)
+        self.assertEqual(self.finite.min, 0)
+        self.assertEqual(self.infinite.min, -np.inf)
 
     def test_range(self):
-        self.assertEqual(self.finite.range(), (0, 10))
-        self.assertEqual(self.infinite.range(), (-np.inf, np.inf))
+        self.assertEqual(self.finite.range, (0, 10))
+        self.assertEqual(self.infinite.range, (-np.inf, np.inf))
 
 
 class test_RegularAxis(TestCase):
@@ -145,22 +148,22 @@ class test_RegularAxis(TestCase):
 
 
     def test_max(self):
-        self.assertEqual(self.finite.max(), 18)
-        self.assertEqual(self.infinite.max(), np.inf)
+        self.assertEqual(self.finite.max, 18)
+        self.assertEqual(self.infinite.max, np.inf)
 
     def test_min(self):
-        self.assertEqual(self.finite.min(), 0)
-        self.assertEqual(self.infinite.min(), 0)
+        self.assertEqual(self.finite.min, 0)
+        self.assertEqual(self.infinite.min, 0)
 
     def test_range(self):
-        self.assertEqual(self.finite.range(), (0, 18))
-        self.assertEqual(self.infinite.range(), (0, np.inf))
+        self.assertEqual(self.finite.range, (0, 18))
+        self.assertEqual(self.infinite.range, (0, np.inf))
 
     def test_values(self):
-        self.assertTrue((self.finite.values() == [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]).all())
-        v = self.infinite.values()
+        self.assertTrue((self.finite.values == [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]).all)
+        v = self.infinite.values
         self.assertTrue([v.next() for _ in range(10)] == [0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
-        self.assertEqual(type(self.infinite.values()), types.GeneratorType)
+        self.assertEqual(type(self.infinite.values), types.GeneratorType)
 
 
 

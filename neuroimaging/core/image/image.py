@@ -18,7 +18,7 @@ import numpy as np
 from neuroimaging.core.reference.coordinate_map import CoordinateMap
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
-
+from neuroimaging.core.reference.nifti import coordmap_from_ioimg, coerce_coordmap, get_pixdim, get_diminfo, standard_order
 
 __docformat__ = 'restructuredtext'
 __all__ = ['load', 'save', 'fromarray']
@@ -74,7 +74,14 @@ class Image(object):
         """
 
         if data is None or coordmap is None:
-            raise ValueError, 'expecting an array and CoordinateMap instance'
+            raise ValueError('expecting an array and CoordinateMap instance')
+
+        # This ensures two things
+        # i) each axis in coordmap.input_coords has a length and
+        # ii) the shapes are consistent
+
+        if data.shape != coordmap.shape:
+            raise ValueError('data.shape does not agree with coordmap.shape')
 
         # self._data is an array-like object.  It must implement a subset of
         # array methods  (Need to specify these, for now implied in pyniftio)
@@ -169,8 +176,8 @@ def _open(source, coordmap=None, mode="r", dtype=None):
             hdr = {}
         ioimg = PyNiftiIO(source, mode, dtype=dtype, header=hdr)
         if coordmap is None:
-            coordmap = _coordmap_from_affine(ioimg.affine, ioimg.orientation,
-                                    ioimg.shape)
+            coordmap = coordmap_from_ioimg(Affine(ioimg.affine), ioimg.header['dim_info'], ioimg.header['pixdim'], ioimg.shape)
+
         # Build nipy image from array-like object and coordinate map
         img = Image(ioimg, coordmap)
         return img
@@ -254,21 +261,74 @@ def save(img, filename, dtype=None):
         
     """
 
-    # Pass the image object to the low-level IO class so it can handle
-    # any data scaling.
-    outimage = _open(img, coordmap=img.coordmap, mode='w', dtype=dtype)
+    # Reorder the image to 'fortran'-like input and output coordinates
+    # before trying to coerce to a NIFTI like image
+
+    rimg = Image(np.transpose(np.asarray(img)), 
+                 img.coordmap.reorder_input().reorder_output())
+    Fimg = coerce2nifti(rimg) # F for '0-based Fortran', 'ijklmno' to
+                              # 'xyztuvw' coordinate map
+    Cimg = Image(np.transpose(np.asarray(Fimg)), Fimg.coordmap.reorder_input().reorder_output()) # C for 'C-based' 'omnlkji' to 'wvutzyx' coordinate map
+
+    # FIXME: this smells a little bad... to save it using PyNiftiIO
+    # the array should be from Cimg
+    # but the easiest way to specify the affine in PyNiftiIO seems to be 
+    # from Fimg
+    # 
+    # One possible fix, have the array in PyNiftiIO expecting FORTRAN ordering?
+    # BUT, pynifti doesn't let you 'transpose' its array naturally...
+
+    # The image we will ultimately save the data in
+
+    outimage = _open(Cimg, coordmap=Cimg.coordmap, mode='w', dtype=dtype)
+
+    # Cimg (the one that saves the array correctly has a 
+    # 'older-nipy' standard affine
+    #
+    # This seems reasonable for use with pyniftiy because the 
+    # ndarray of outimage._data
+    # is contiguous or "C-ordered"
+    # BUT, Cimg.affine reflects the 'lkji' to 'txyz' coordinate map
+    # so, the save through PyNiftIO uses the affine from Fimg
+    # and the data from Cimg
+
+    v = np.identity(Cimg.ndim+1)
+    v[:Cimg.ndim,:Cimg.ndim] = np.fliplr(np.identity(Cimg.ndim))
+    assert np.allclose(np.dot(v, np.dot(Cimg.affine, v)), Fimg.affine)
+
     # At this point _data is a file-io object (like PyNiftiIO).
     # _data.save delegates the save to pynifti.
     
-    # FIXME:  HACK? Is this the correct way to handle saving fmri images?
-    if img.affine.shape == (5, 5):
-        # pull spatial transforms out of 5x5 fmri affine
-        affine = img.affine[1:, 1:]
-    else:
-        affine = img.affine
-    outimage._data.save(affine, filename)
+    # Now that the affine has the proper order,
+    # it can be saved to the NIFTI header
+
+    # PyNiftiIO only ever wants a 4x4 affine matrix...
+    affine = np.identity(4)
+    affine[:3,:3] = Fimg.affine[:3,:3]
+    
+    # PyNiftiIO save uses the 4x4 affine, pixdim and diminfo
+    # to save the file
+
+    outimage._data.save(affine, get_pixdim(Fimg.coordmap, full_length=1),
+                        get_diminfo(Fimg.coordmap), filename)
     return outimage
     
+def coerce2nifti(img, standard=False):
+    """
+    Coerce an Image into a new Image with a valid NIFTI coordmap
+    so that it can be saved.
+
+    If standard is True, the resulting image has 'standard'-ordered
+    input_coordinates, i.e. 'ijklmno'[:img.ndim]
+    """
+    newcmap, order = coerce_coordmap(img.coordmap)
+    nimg = Image(np.transpose(np.asarray(img), order), newcmap)
+    if standard:
+        sorder, scmap = standard_order(nimg.coordmap)
+        return Image(np.transpose(np.asarray(nimg), sorder), scmap)
+    else:
+        return nimg
+
 def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
     """Create an image from a numpy array.
 
@@ -294,9 +354,10 @@ def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
     ndim = len(data.shape)
     if not coordmap:
         coordmap = CoordinateMap.from_start_step(names,
-                                            (0,)*ndim,
-                                            (1,)*ndim,
-                                            data.shape)
+                                                 names,
+                                                 (0,)*ndim,
+                                                 (1,)*ndim,
+                                                 data.shape)
 
     return Image(data, coordmap)
 
@@ -332,27 +393,3 @@ def merge_images(filename, images, cls=Image, clobber=False,
         data[i] = np.asarray(image)[:]
     return Image(data, coordmap)
 
-def _coordmap_from_affine(affine, orientation, shape):
-    """Generate a CoordinateMap from an affine transform.
-
-    This is a convenience function to create a CoordinateMap from image
-    attributes.  It uses the orientation field from pynifti IO to map
-    to the nipy *names*, prepending *time* or *vector* depending on
-    dimension.
-
-    FIXME: This is an internal function and should be revisited when
-    the CoordinateMap is refactored.
-    
-    """
-
-    names = []
-    for ornt in orientation:
-        names.append(orientation_to_names.get(ornt))
-    names = names[::-1]
-    if len(shape) == 4:
-        names = ['time'] + names
-    elif len(shape) == 5:
-        names = ['vector', 'time'] + names
-    affobj = Affine(affine)
-    coordmap = CoordinateMap.from_affine(affobj, names, shape)
-    return coordmap

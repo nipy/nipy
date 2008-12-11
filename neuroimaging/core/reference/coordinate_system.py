@@ -8,6 +8,8 @@ within the coordinate system.  For example a 3D coordinate system contains 3 axe
 
 __docformat__ = 'restructuredtext'
 
+import copy
+
 import numpy as np
 
 from neuroimaging.core.reference.axis import VoxelAxis
@@ -29,6 +31,20 @@ class CoordinateSystem(odict):
         self.name = name
         odict.__init__(self, [(ax.name, ax) for ax in axes])
 
+    def _getdtype(self):
+        return np.dtype([(ax.name, ax.builtin) for ax in self.axes])
+    dtype = property(_getdtype)
+
+    def _getbuiltin(self):
+        d = self.dtype.descr
+        different = filter(lambda x: x[1] != d[0][1], d)
+        if not different:
+            d = np.dtype(d[0][1])
+            if d.isbuiltin:
+                return d
+            else:
+                raise ValueError('could not work out a builtin dtype for this coordinate system')
+    builtin = property(_getbuiltin)
 
     def __getitem__(self, axisname):
         """
@@ -49,6 +65,24 @@ class CoordinateSystem(odict):
             raise KeyError(
               "axis '%s' not found, names are %s"%(axisname,self.keys()))
 
+    def rename(self, **kwargs):
+        """
+        Return a new CoordinateSystem with the values renamed.
+
+        >>> axes = [Axis(n) for n in 'abc']
+        >>> coords = CoordinateSystem('input', axes)
+        >>> print coords.rename(a='x')
+        {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"b", dtype=[('b', '<f8')]>, <Axis:"c", dtype=[('c', '<f8')]>], 'name': 'input-renamed'}
+        >>>                                               
+        """
+        axes = []
+        for a in self.axisnames:
+            axis = copy.copy(self[a])
+            if a in kwargs.keys():
+                axis.name = kwargs[a]
+            axes.append(axis)
+        return CoordinateSystem(self.name + '-renamed', axes)
+
     def __setitem__(self, name, value):
         """
         Setting of index values is not allowed.
@@ -60,7 +94,7 @@ class CoordinateSystem(odict):
 
     def __eq__(self, other):
         """
-        Equality is defined by he axes and the name.
+        Equality is defined by self.dtype.
 
         :Parameters:
             other : `CoordinateSystem`
@@ -68,7 +102,7 @@ class CoordinateSystem(odict):
 
         :Returns: ``bool``
         """
-        return (self.name, self.axes()) == (other.name, other.axes())
+        return self.dtype == other.dtype
 
 
     def __str__(self):
@@ -85,22 +119,24 @@ class CoordinateSystem(odict):
         
         :Returns: ``int``
         """
-        return len(self.axes())
+        return len(self.axes)
     
-    def axisnames(self):
+    def _getaxisnames(self):
         """ A list of the names of the coordinate system's axes. 
         
         :Returns: ``string``
         """
         return self.keys()
+    axisnames = property(_getaxisnames)
         
-    def axes(self):
+    def _getaxes(self):
         """ A list of the coordinate system's axes. 
         
         :Returns: ``[`axis.Axis`]``
         """
         return self.values()
-    
+    axes = property(_getaxes)
+
     def reorder(self, name, order):
         """
         Given a name for the reordered coordinates, and a new order, return a
@@ -117,7 +153,7 @@ class CoordinateSystem(odict):
         """
         if name is None:
             name = self.name
-        return CoordinateSystem(name, _reorder(self.axes(), order))
+        return CoordinateSystem(name, _reorder(self.axes, order))
 
 
     def reverse(self, name=None):
@@ -131,7 +167,7 @@ class CoordinateSystem(odict):
         """
         if name is None:
             name = self.name
-        return CoordinateSystem(name, _reverse(self.axes()))
+        return CoordinateSystem(name, _reverse(self.axes))
 
 
     def hasaxis(self, name):
@@ -169,7 +205,7 @@ class CoordinateSystem(odict):
 
         :Returns: ``bool``
         """
-        return np.all([self.axes()[i].isvalidvalue(x[i])
+        return np.all([self.axes[i].isvalidvalue(x[i])
                        for i in range(self.ndim())])
 
 
@@ -179,7 +215,7 @@ class CoordinateSystem(odict):
 
         :Returns: ``CoordinateSystem``
         """
-        return CoordinateSystem(self.name + "-subcoordmap", self.axes()[1:])
+        return CoordinateSystem(self.name + "-subcoordmap", self.axes[1:])
 
 
 class VoxelCoordinateSystem(CoordinateSystem):
@@ -212,17 +248,17 @@ class VoxelCoordinateSystem(CoordinateSystem):
         CoordinateSystem.__init__(self, name, axes)
 
 
-class DiagonalCoordinateSystem(CoordinateSystem):
+class StartStepCoordinateSystem(CoordinateSystem):
     """
     Coordinate system with orthogonal axes
 
     The orthogonality of the axes is assumed by the use of this class
     to define the coordinate system.  Assuming orthogonality allows
     the definition of a method to return an orthogonal transformation
-    matrix (tranform method)
+    matrix (tranform method) from the start, step attributes
     """
 
-    def transform(self):
+    def _getaffine(self):
         """
         Return an orthogonal homogeneous transformation matrix based on the
         step, start attributes of each axis.
@@ -233,10 +269,11 @@ class DiagonalCoordinateSystem(CoordinateSystem):
         xform = np.eye((ndim+1))
         for i in range(ndim):
             # Scaling values on diagonal
-            xform[i, i] = self.axes()[i].step
+            xform[i, i] = self.axes[i].step
             # Translations in last column
-            xform[i, -1] = self.axes()[i].start
+            xform[i, -1] = self.axes[i].start
         return xform
+    affine = property(_getaffine)
 
 def _reorder(seq, order):
     """ Reorder a sequence. """
