@@ -167,16 +167,19 @@ class CoordinateMap(object):
         array([(2.0, 3.0, 4.0)], dtype=[('i', '<f8'), ('j', '<f8'), ('k', '<f8')])
         >>>                                    
         """
-        x = np.asarray(x)
+        x = self.input_coords.typecast(x, dtype=self.input_coords.dtype)
         y = self.mapping(x)
         if view:
-            # Need to copy the transposed data
-            # for the order of the data to be correct
-            # for np.recarray
-            yc = np.array(y.T, copy=True, order='C')
-            y = np.recarray(buf=yc, dtype=self.output_coords.dtype, shape=np.product(y.shape[1:]))
-
+            y = self.output_coords.typecast(y, dtype=self.output_coords.dtype)
         return y
+#         if view:
+#             # Need to copy the transposed data
+#             # for the order of the data to be correct
+#             # for np.recarray
+#             yc = np.array(y.T, copy=True, order='C')
+#             y = np.recarray(buf=yc, dtype=self.output_coords.dtype, shape=np.product(y.shape[1:]))
+
+#         return y
 
     def copy(self):
         """

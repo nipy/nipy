@@ -8,7 +8,7 @@ within the coordinate system.  For example a 3D coordinate system contains 3 axe
 
 __docformat__ = 'restructuredtext'
 
-import copy
+import copy, warnings
 
 import numpy as np
 
@@ -123,6 +123,49 @@ class CoordinateSystem(odict):
         """
         return len(self.axes)
     
+    def typecast(self, x, dtype=None):
+        """
+        Try to safely typecast x into
+        an ndarray with a numpy builtin dtype
+        with the correct shape, or
+        typecast it as an ndarray with self.dtype.
+
+        TODO: Ensure that we can always find a builtin. This
+              means modification of the dtypes of all the Axes
+              at construction time.
+     
+        """
+        x = np.asarray(x)
+
+        if dtype not in [self.dtype, self.builtin]:
+            raise ValueError, 'only safe to cast to either %s or %s' % (`self.dtype`, `self.builtin`)
+        if x.dtype not in [self.dtype, self.builtin]:
+            raise ValueError, 'only safe to cast from either %s or %s' % (`self.dtype`, `self.builtin`)
+
+        if dtype == self.dtype:
+            if x.dtype == self.dtype: # do nothing
+                return x
+            
+            # this presumes
+            # we are given an ndarray
+            # with dtype = self.builtin
+            # so we typecast, to be safe we make a copy!
+
+            x = np.array(x, dtype=self.builtin).ravel()
+
+            # The last shape entry should match the length
+            # of self.dtype
+
+            if x.shape[-1] != len(self.dtype.names):
+                warnings.warn("dangerous typecast, shape is unexpected: %d, %d" % (x.shape[-1], len(self.dtype.names)))
+            y = x.view(self.dtype)
+            return y
+        else:
+            if x.dtype == self.builtin: # do nothing
+                return x
+            y = x.view(self.builtin)
+            return y
+
     def _getaxisnames(self):
         """ A list of the names of the coordinate system's axes. 
         

@@ -388,7 +388,7 @@ class Affine(Mapping):
         
         :Returns: ``numpy.ndarray``
         """
-        coords = np.asarray(coords)
+        coords = np.asarray(coords, dtype=self._fmatrix.dtype)
         if len(coords.shape) == 1:
             if self._fmatrix.shape == (1,1):
                 coords = coords.reshape((1,) + coords.shape)
