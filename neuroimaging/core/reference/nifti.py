@@ -55,9 +55,9 @@ from string import join
 
 import numpy as np
 
-from coordinate_system import CoordinateSystem, VoxelCoordinateSystem
+from coordinate_system import CoordinateSystem
 from coordinate_map import CoordinateMap, reorder_input, reorder_output
-from axis import RegularAxis, VoxelAxis
+from axis import Axis
 from mapping import Affine
 
 
@@ -189,7 +189,7 @@ def coerce_coordmap(coordmap):
         outname = coordmap.output_coords.name
 
     axes = coordmap.input_coords.axes
-    newincoords = VoxelCoordinateSystem(inname, [axes[i] for i in intrans])
+    newincoords = CoordinateSystem(inname, [axes[i] for i in intrans])
 
     axes = coordmap.output_coords.axes
     newoutcoords = CoordinateSystem(outname, [axes[i] for i in outtrans])
@@ -531,11 +531,11 @@ def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
     ndim = len(shape)
     ijk = ijk_from_diminfo(diminfo)
     innames = ijk + valid_input_axisnames[3:ndim]
-    inaxes = [VoxelAxis(n, length=l) for n, l in zip(innames, shape[::-1])]
+    inaxes = [Axis(n, length=l) for n, l in zip(innames, shape[::-1])]
     incoords = CoordinateSystem('input', inaxes)
 
     outnames = valid_output_axisnames[:ndim]
-    outaxes = [RegularAxis(n, step=s) for n, s in zip(outnames, pixdim[1:(ndim+1)])]
+    outaxes = [Axis(n) for n in outnames]
     outcoords = CoordinateSystem('output', outaxes)
             
     coordmap = CoordinateMap(affine, incoords, outcoords)
