@@ -12,7 +12,7 @@ import copy
 
 import numpy as np
 
-from neuroimaging.core.reference.axis import VoxelAxis
+from neuroimaging.core.reference.axis import Axis
 from neuroimaging.utils.odict import odict
 
 class CoordinateSystem(odict):
@@ -139,10 +139,10 @@ class CoordinateSystem(odict):
         return self.values()
     axes = property(_getaxes)
 
-    def reorder(self, name, order):
+    def reorder(self, name, order=None):
         """
         Given a name for the reordered coordinates, and a new order, return a
-        reordered coordinate system.
+        reordered coordinate system. Defaults to reversal.
 
         :Parameters:
             name : ``string``
@@ -153,129 +153,11 @@ class CoordinateSystem(odict):
         :Returns:
             `CoordinateSystem`
         """
+        if order is None:
+            order = range(len(self.axes))[::-1]
         if name is None:
             name = self.name
         return CoordinateSystem(name, _reorder(self.axes, order))
-
-
-    def reverse(self, name=None):
-        """ Create a new coordinate system with the axes reversed. 
-
-        :Parameters:
-            name : ``string``
-                The name for the new coordinate system
-
-        :Returns: ``CoordinateSystem``
-        """
-        if name is None:
-            name = self.name
-        return CoordinateSystem(name, _reverse(self.axes))
-
-
-    def hasaxis(self, name):
-        """
-        Does self contain an axis with the given name
-
-        :Parameters:
-            name : ``string``
-                The name to be tested for
-
-        :Returns: ``bool``
-        """
-        return self.has_key(name)
-
-
-    def getaxis(self, name):
-        """ Return the axis with a given name
-
-        :Parameters:
-            name : ``string``
-                The name of the axis to return
-
-        :Returns: `axis.Axis`
-        """
-        return self.get(name)
-
-
-    def isvalidpoint(self, x):
-        """
-        Verify whether x is a valid coordinate in this system
-
-        :Parameters:
-            x : ``tuple`` or ``list`` of ``int`` or ``float``
-                A voxel
-
-        :Returns: ``bool``
-        """
-        return np.all([self.axes[i].isvalidvalue(x[i])
-                       for i in range(self.ndim())])
-
-
-    def sub_coords(self):
-        """
-        Return a subset of the coordinate system to be used as part of a subcoordmap.
-
-        :Returns: ``CoordinateSystem``
-        """
-        return CoordinateSystem(self.name + "-subcoordmap", self.axes[1:])
-
-
-class VoxelCoordinateSystem(CoordinateSystem):
-    """
-    Coordinates with a shape -- assumed to be
-    voxel coordinates, i.e. if shape = (3, 4, 5) then valid range
-    interpreted as [0,2] X [0,3] X [0,4].
-    """
-
-    def __init__(self, name, axes, shape=None):
-        """
-        :Parameters:
-            name : ``string``
-                The name of the coordinate system
-            axes : ``[`axis.Axis`]``
-                The axes which make up the coordinate system
-            shape : ``tuple`` of ``int``
-                The shape of the coordinate system. If ``None`` then the shape
-                is determined by the lengths of the ``axes``
-        
-        :Precondition: ``len(axes) == len(shape)``
-        """
-
-        if shape is None:
-            self.shape = [dim.length for dim in axes]
-        else:
-            self.shape = list(shape)
-        axes = \
-          [VoxelAxis(ax.name, length) for (ax, length) in zip(axes, self.shape)]
-        CoordinateSystem.__init__(self, name, axes)
-
-
-class StartStepCoordinateSystem(CoordinateSystem):
-    """
-    Coordinate system with orthogonal axes
-
-    The orthogonality of the axes is assumed by the use of this class
-    to define the coordinate system.  Assuming orthogonality allows
-    the definition of a method to return an orthogonal transformation
-    matrix (tranform method) from the start, step attributes
-    """
-
-    def _getaffine(self):
-        """
-        Return an orthogonal homogeneous transformation matrix based on the
-        step, start attributes of each axis.
-
-        :Returns: ``[[numpy.float]]``
-        """
-        ndim = self.ndim()
-        xform = np.eye((ndim+1))
-        for i in range(ndim):
-            # Scaling values on diagonal
-            xform[i, i] = self.axes[i].step
-            # Translations in last column
-            xform[i, -1] = self.axes[i].start
-        return xform
-    affine = property(_getaffine)
 
 def _reorder(seq, order):
     """ Reorder a sequence. """
