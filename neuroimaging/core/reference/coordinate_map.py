@@ -6,13 +6,11 @@ import copy, string
 
 import numpy as np
 
-from neuroimaging.core.reference.axis import RegularAxis, Axis, VoxelAxis
-from neuroimaging.core.reference.coordinate_system import \
-  VoxelCoordinateSystem, StartStepCoordinateSystem, CoordinateSystem
+from neuroimaging.core.reference.axis import Axis
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem
 from neuroimaging.core.reference.mapping import Mapping, Affine
 
 __docformat__ = 'restructuredtext'
-
 
 class CoordinateMap(object):
     """
@@ -45,17 +43,13 @@ class CoordinateMap(object):
         ndim = len(innames)
         if len(outnames) != ndim:
             raise ValueError, 'len(innames) != len(outnames)'
-        # fill in default step size
-        step = np.asarray(step)
-        inaxes = [VoxelAxis(name=innames[i], length=shape[i]) for i in range(ndim)]
-        outaxes = [RegularAxis(name=outnames[i], start=start[i], step=step[i]) for i in range(ndim)]
-        input_coords = VoxelCoordinateSystem('voxel', inaxes)
-        output_coords = StartStepCoordinateSystem('world', outaxes)
-        transform = output_coords.affine
-        
-        mapping = Affine(transform)
-        return CoordinateMap(mapping, input_coords, output_coords)
 
+        cmaps = []
+        for i in range(ndim):
+            A = np.array([[step[i], start[i]],
+                          [0, 1]])
+            cmaps.append(CoordinateMap.from_affine([innames[i]], [outnames[i]], Affine(A), (shape[i],)))
+        return product(*cmaps)
 
     @staticmethod
     def identity(names, shape):
@@ -68,23 +62,15 @@ class CoordinateMap(object):
             names : ``tuple`` of ``string``
                 TODO
 
-        :Returns: `CoordinateMap` with `VoxelCoordinateSystem` input
+        :Returns: `CoordinateMap` with `CoordinateSystem` input
                   and an identity transform 
         
         :Precondition: ``len(shape) == len(names)``
         
         :Raises ValueError: ``if len(shape) != len(names)``
         """
-        ndim = len(shape)
-        if len(names) != ndim:
-            raise ValueError('shape and number of axis names do not agree')
-        iaxes = [VoxelAxis(name, l) for l, name in zip(shape, names)]
-        oaxes = [Axis(name) for name in names]
-
-        input_coords = VoxelCoordinateSystem('voxel', iaxes)
-        output_coords = StartStepCoordinateSystem('world', oaxes)
-        aff_ident = Affine.identity(ndim)
-        return CoordinateMap(aff_ident, input_coords, output_coords)
+        return CoordinateMap.from_start_step(names, names, [0]*len(names),
+                                             [1]*len(names), shape)
 
     @staticmethod
     def from_affine(innames, outnames, mapping, shape):
@@ -115,10 +101,10 @@ class CoordinateMap(object):
                                       # will be either a 'float' or 'complex'
                                       # dtype
         dtype = A.transform.dtype
-        inaxes = [VoxelAxis(name, length=l, dtype=dtype) for name, l in zip(innames, shape)]
+        inaxes = [Axis(name, length=l, dtype=dtype) for name, l in zip(innames, shape)]
         outaxes = [Axis(name, dtype=dtype) for name in outnames]
-        input_coords = VoxelCoordinateSystem("voxel", inaxes)
-        output_coords = CoordinateSystem('world', outaxes)
+        input_coords = CoordinateSystem("input", inaxes)
+        output_coords = CoordinateSystem('output', outaxes)
         return CoordinateMap(A, input_coords, output_coords)
 
     def _getinverse(self):
@@ -145,7 +131,7 @@ class CoordinateMap(object):
         self.output_coords = output_coords
 
     def _getshape(self):
-        return tuple([a.length for a in self.input_coords.axes])
+        return tuple([len(a) for a in self.input_coords.axes])
     shape = property(_getshape)
 
     def _getndim(self):
@@ -169,7 +155,7 @@ class CoordinateMap(object):
 
         If view, then return a view of the result with dtype of self.output_coords.dtype.
 
-        >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+        >>> inaxes = [Axis(x, length=l) for x, l in zip('ijk', (10,20,30))]
         >>> inc = CoordinateSystem('input', inaxes)
         >>> outaxes = [Axis(x) for x in 'xyz']
         >>> outc = CoordinateSystem('output', outaxes)
@@ -203,7 +189,7 @@ class CoordinateMap(object):
 
     def __getitem__(self, index):
         """
-        If all input coordinates are VoxelCoordinateSystem, return
+        If all input coordinates have a len, return
         a slice through the coordmap.
 
         Parameters
@@ -213,18 +199,15 @@ class CoordinateMap(object):
         
         """
 
-        if isinstance(self.input_coords, VoxelCoordinateSystem):
-            varcoords, mapping, shape = self.mapping._slice_mapping(index, self.shape)
-            ia = self.input_coords.axes
-            newia = []
-            for i in range(self.ndim[0]):
-                if i in varcoords:
-                    a = copy.deepcopy(ia[i])
-                    newia.append(a)
-            newic = VoxelCoordinateSystem(self.input_coords.name, newia, shape=shape)
-            return CoordinateMap(mapping, newic, self.output_coords)
-        else:
-            raise ValueError, 'input_coords must be VoxelCoordinateSystem for slice of coordmap to make sense'
+        varcoords, mapping, shape = self.mapping._slice_mapping(index, self.shape)
+        ia = self.input_coords.axes
+        newia = []
+        for i in range(self.ndim[0]):
+            if i in varcoords:
+                a = copy.deepcopy(ia[i])
+                newia.append(a)
+        newic = CoordinateSystem(self.input_coords.name, newia, shape=shape)
+        return CoordinateMap(mapping, newic, self.output_coords)
 
     def range(self):
         """
@@ -232,16 +215,14 @@ class CoordinateMap(object):
         
         :Returns: TODO
         """
-        if hasattr(self, 'shape'):
-            indices = np.indices(self.shape)
-            tmp_shape = indices.shape
+      
+        indices = np.indices(self.shape)
+        tmp_shape = indices.shape
             # reshape indices to be a sequence of coordinates
-            indices.shape = (self.ndim[0], np.product(self.shape))
-            _range = self.mapping(indices)
-            _range.shape = tmp_shape
-            return _range 
-        else:
-            raise AttributeError, 'range of coordmap only makes sense if hasattr(self, "shape")'
+        indices.shape = (self.ndim[0], np.product(self.shape))
+        _range = self.mapping(indices)
+        _range.shape = tmp_shape
+        return _range 
 
 
 def rename_input(coordmap, **kwargs):
@@ -249,16 +230,16 @@ def rename_input(coordmap, **kwargs):
     Rename the input_coords, returning a new CoordinateMap
 
     >>> import numpy as np
-    >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+    >>> inaxes = [Axis(x, length=l) for x, l in zip('ijk', (10,20,30))]
     >>> outaxes = [Axis(x) for x in 'xyz']
     >>> inc = CoordinateSystem('input', inaxes)
     >>> outc = CoordinateSystem('output', outaxes)
     >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
     >>> print cm.input_coords.values()
-    [<VoxelAxis:"i", dtype=[('i', '<f8')], length=10>, <VoxelAxis:"j", dtype=[('j', '<f8')], length=20>, <VoxelAxis:"k", dtype=[('k', '<f8')], length=30>]
+    [<Axis:"i", dtype=[('i', '<f8')], length=10>, <Axis:"j", dtype=[('j', '<f8')], length=20>, <Axis:"k", dtype=[('k', '<f8')], length=30>]
     >>> cm2 = rename_input(cm, i='x')
     >>> print cm2.input_coords
-    {'axes': [<VoxelAxis:"x", dtype=[('x', '<f8')], length=10>, <VoxelAxis:"j", dtype=[('j', '<f8')], length=20>, <VoxelAxis:"k", dtype=[('k', '<f8')], length=30>], 'name': 'input-renamed'}
+    {'axes': [<Axis:"x", dtype=[('x', '<f8')], length=10>, <Axis:"j", dtype=[('j', '<f8')], length=20>, <Axis:"k", dtype=[('k', '<f8')], length=30>], 'name': 'input-renamed'}
         
     """
     input_coords = coordmap.input_coords.rename(**kwargs)
@@ -269,7 +250,7 @@ def rename_output(coordmap, **kwargs):
     Rename the output_coords, returning a new CoordinateMap.
     
     >>> import numpy as np
-    >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+    >>> inaxes = [Axis(x, length=l) for x, l in zip('ijk', (10,20,30))]
     >>> outaxes = [Axis(x) for x in 'xyz']
     >>> inc = CoordinateSystem('input', inaxes)
     >>> outc = CoordinateSystem('output', outaxes)
@@ -305,7 +286,7 @@ def reorder_input(coordmap, order=None):
          A new CoordinateMap with reversed input_coords.
 
     >>> inc = CoordinateSystem('input', inaxes)
-    >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+    >>> inaxes = [Axis(x, length=l) for x, l in zip('ijk', (10,20,30))]
     >>> inc = CoordinateSystem('input', inaxes)
     >>> outaxes = [Axis(x) for x in 'xyz']
     >>> outc = CoordinateSystem('output', outaxes)
@@ -321,24 +302,15 @@ def reorder_input(coordmap, order=None):
         order = [coordmap.input_coords.axisnames.index(s) for s in order]
 
     newaxes = [coordmap.input_coords.axes[i] for i in order]
-    try:
-        shape = coordmap.shape
-        hasshape = True
-    except:
-        hasshape = False
-        pass
-    if hasshape:
-        newincoords = VoxelCoordinateSystem(coordmap.input_coords.name + '-reordered', newaxes)
-    else:
-        newincoords = CoordinateSystem(coordmap.input_coords.name + '-reordered', newaxes)
-
+    newincoords = CoordinateSystem(coordmap.input_coords.name + '-reordered', newaxes)
     perm = np.zeros((ndim+1,)*2)
     perm[-1,-1] = 1.
 
     for i, j in enumerate(order):
-        perm[i,j] = 1.
-    A = np.dot(coordmap.affine, perm)
-    return CoordinateMap(Affine(A), newincoords, coordmap.output_coords)
+        perm[j,i] = 1.
+
+    A = CoordinateMap(Affine(perm), newincoords, coordmap.input_coords)
+    return compose(coordmap, A)
 
 def reorder_output(coordmap, order=None):
     """
@@ -360,7 +332,7 @@ def reorder_output(coordmap, order=None):
          A new CoordinateMap with reversed output_coords.
 
     >>> inc = CoordinateSystem('input', inaxes)
-    >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+    >>> inaxes = [Axis(x, length=l) for x, l in zip('ijk', (10,20,30))]
     >>> inc = CoordinateSystem('input', inaxes)
     >>> outaxes = [Axis(x) for x in 'xyz']
     >>> outc = CoordinateSystem('output', outaxes)
@@ -391,10 +363,10 @@ def reorder_output(coordmap, order=None):
     perm[-1,-1] = 1.
 
     for i, j in enumerate(order):
-        perm[i,j] = 1.
-    A = np.dot(perm, coordmap.affine)
-    return CoordinateMap(Affine(A), coordmap.input_coords, newoutcoords)
+        perm[j,i] = 1.
 
+    A = CoordinateMap(Affine(perm), coordmap.output_coords, newoutcoords)
+    return compose(A, coordmap)
 
 def product(*cmaps):
     """
@@ -436,15 +408,15 @@ def product(*cmaps):
     for cmap in cmaps:
         inaxes += cmap.input_coords.axes
         outaxes += cmap.output_coords.axes
-        innames += cmap.input_coords.name
-        outnames += cmap.output_coords.name
+        innames += [cmap.input_coords.name]
+        outnames += [cmap.output_coords.name]
         mappings.append(cmap.mapping)
         ndimin.append(cmap.ndim[0])
 
     ndimin.insert(0,0)
     ndimin = np.cumsum(ndimin)
-    innames = string.join(innames, ' x ')
-    outnames = string.join(outnames, ' x ')
+    innames = string.join(innames, ' * ')
+    outnames = string.join(outnames, ' * ')
 
     def mapping(x):
         x = np.asarray(x)
@@ -509,11 +481,8 @@ def compose(*cmaps):
         if m.input_coords == cmap.output_coords:
             cmap = CoordinateMap(m.mapping * cmap.mapping, cmap.input_coords, m.output_coords)
         else:
-            raise ValueError, 'input and output coordinates do not match: input=%s, output=%s' % (`input_coords.dtype`, `output_coords.dtype`)
+            raise ValueError, 'input and output coordinates do not match: input=%s, output=%s' % (`m.input_coords.dtype`, `cmap.output_coords.dtype`)
     return cmap
-
-    
-
 
 def replicate(coordmap, n, concataxis='string'):
     """
@@ -531,10 +500,10 @@ def replicate(coordmap, n, concataxis='string'):
     concat = CoordinateMap.from_affine([concataxis], [concataxis], Affine(np.identity(2)), (n,))
     return product(concat, coordmap)
 
-def vstack(*cmaps):
+def hstack(*cmaps):
     """
-    Return a "vstacked" CoordinateMap. That is,
-    take the result of a number of cmaps, and return np.vstack(results)
+    Return a "hstacked" CoordinateMap. That is,
+    take the result of a number of cmaps, and return np.hstack(results)
     with an additional first row being the 'concat' axis values.
 
     If the cmaps are identical
@@ -556,7 +525,7 @@ def vstack(*cmaps):
     >>> inc1 = CoordinateMap.from_affine('ab', 'cd', Affine(np.diag([2,3,1])), (10,20))
     >>> inc2 = CoordinateMap.from_affine('ab', 'cd', Affine(np.diag([3,2,1])), (10,20))
     >>> inc3 = CoordinateMap.from_affine('ab', 'cd', Affine(np.diag([1,1,1])), (10,20))
-    >>> stacked = vstack(inc1, inc2, inc3)
+    >>> stacked = hstack(inc1, inc2, inc3)
 
     >>> stacked(np.array([[0,1,2],[1,1,2],[2,1,2], [1,1,2]]).T)
     array([[ 0.,  2.,  6.],
@@ -584,7 +553,7 @@ def vstack(*cmaps):
             r.append(np.hstack([x[0,i], y]))
         return np.vstack(r)
 
-    stackin = VoxelAxis('stack-input', length=len(cmaps))
+    stackin = Axis('stack-input', length=len(cmaps))
     stackout = Axis('stack-output')
 
     inaxes = [stackin] + cmaps[0].input_coords.axes
