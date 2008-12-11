@@ -1,100 +1,63 @@
 import numpy as np
 
+import nose.tools
+
 from neuroimaging.testing import *
 
-from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
-     VoxelCoordinateSystem, StartStepCoordinateSystem
-from neuroimaging.core.reference.axis import Axis, RegularAxis
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem
+from neuroimaging.core.reference.axis import Axis
 
-class test_CoordinateSystem(TestCase):
+class empty:
+    pass
 
-    def setUp(self):
-        self.name = "test"
-        self.axes = [Axis(n) for n in ['zspace', 'yspace', 'xspace']]
-        self.c = CoordinateSystem(self.name, self.axes)
+E = empty()
 
-    def test_CoordinateSystem(self):
-        self.assertEquals(self.name, self.c.name)
-        self.assertEquals([ax.name for ax in self.axes],
-                          [ax.name for ax in self.c.axes])
+def setup():
+    E.name = "test"
+    E.axes = [Axis(n) for n in ['zspace', 'yspace', 'xspace']]
+    E.c = CoordinateSystem(E.name, E.axes)
 
-    def test_hasaxis(self):
-        for ax in self.axes:
-            self.assertTrue(self.c.hasaxis(ax.name))
+def test_CoordinateSystem():
+    nose.tools.assert_equal(E.name, E.c.name)
+    nose.tools.assert_equal([ax.name for ax in E.axes],
+                            [ax.name for ax in E.c.axes])
 
-    def test_getaxis(self):
-        for ax in self.axes:
-            self.assertEquals(self.c.getaxis(ax.name), ax)
+def test_axisnames():
+    nose.tools.assert_equal([ax.name for ax in E.axes],
+                            E.c.axisnames)
 
-    def test_axisnames(self):
-        self.assertEquals([ax.name for ax in self.axes],
-                            self.c.axisnames)
+def test___getitem__():
+    for ax in E.axes:
+        nose.tools.assert_equal(E.c[ax.name], ax)
+    nose.tools.assert_raises(KeyError, E.c.__getitem__, "bad_name")
 
-    def test___getitem__(self):
-        for ax in self.axes:
-            self.assertEquals(self.c[ax.name], ax)
+def test___setitem__():
+    nose.tools.assert_raises(TypeError, eval, 'E.c.__setitem__("any_name", None)')
 
-        # this is kinda ugly...
-        f = lambda s: self.c[s]
-        self.assertRaises(KeyError, f, "bad_name")
+def test___eq__():
+    c1 = CoordinateSystem(E.c.name, E.c.axes)
+    nose.tools.assertTrue(c1 == E.c)
 
-    def test___setitem__(self):
-        # FIXME: how do we make something like this work?
-        #self.assertRaises(TypeError, eval, 'self.c["any_name"] = 1')
-        self.assertRaises(TypeError, eval, 'self.c.__setitem__("any_name", None)')
+def test_reorder():
+    new_order = [1, 2, 0]
+    new_c = E.c.reorder("new", new_order)
+    nose.tools.assert_equal(new_c.name, "new")
+    generic = [Axis(n) for n in ['zspace', 'yspace', 'xspace']]
+    print E.c
+    print generic
+    for i in range(3):
+        nose.tools.assert_equal(E.c[generic[i].name],
+                                new_c[generic[[i]].name])
 
-    def test___eq__(self):
-        c1 = CoordinateSystem(self.c.name, self.c.axes)
-        self.assertTrue(c1 == self.c)
+    new_c = E.c.reorder(None, new_order)
+    nose.tools.assert_equal(new_c.name, E.c.name)
 
-    def test_reorder(self):
-        new_order = [1, 2, 0]
-        new_c = self.c.reorder("new", new_order)
-        self.assertEquals(new_c.name, "new")
-        generic = [Axis(n) for n in ['zspace', 'yspace', 'xspace']]
-        for i in range(3):
-            self.assertEquals(self.c.getaxis(generic[i]),
-                              new_c.getaxis(generic[new_order[i]]))
+def test___str__():
+    s = str(E.c)
 
-        new_c = self.c.reorder(None, new_order)
-        self.assertEquals(new_c.name, self.c.name)
-
-    def test___str__(self):
-        s = str(self.c)
-
-    def test_sub_coords(self):
-        new_c = self.c.sub_coords()
-        self.assertEquals(new_c.name, self.c.name + "-subcoordmap")
-        self.assertEquals(new_c.axes, self.c.axes[1:])
         
 
-class test_VoxelCoordinateSystem(TestCase):
-    def setUp(self):
-        self.name = "voxel_test"
-        self.axes = [Axis(n) for n in ['zspace', 'yspace', 'xspace']]
-        self.shape = [3,4,5]
-        self.v = VoxelCoordinateSystem(self.name, self.axes, self.shape)
 
-    def test_VoxelCoordinateSystem(self):
-        self.assertEqual(self.name, self.v.name)
-        self.assertEquals([ax.name for ax in self.axes],
-                          [ax.name for ax in self.v.axes])
-        self.assertEquals(self.shape, self.v.shape)
-
-    def test_isvalid(self):
-        self.assertTrue(self.v.isvalidpoint([0,0,0]))
-        self.assertTrue(not self.v.isvalidpoint(self.shape))
-
-
-def test_diagonal():
-    ''' Test diagonal coordinate system '''
-    dcs = StartStepCoordinateSystem(
-        'diag test', # Name
-        [RegularAxis(n, start=5, step=2) for n in ['zspace', 'yspace', 'xspace']])
-    assert np.allclose(dcs.affine, [[2,0,0,5],
-                                    [0,2,0,5],
-                                    [0,0,2,5],
-                                    [0,0,0,1]])
 
 
 
