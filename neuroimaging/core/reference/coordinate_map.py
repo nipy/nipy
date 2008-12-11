@@ -241,200 +241,161 @@ class CoordinateMap(object):
             _range.shape = tmp_shape
             return _range 
         else:
-            raise AttributeError, 'range of coordmap only makes sense if input_coords are VoxelCoordinateSystem'
+            raise AttributeError, 'range of coordmap only makes sense if hasattr(self, "shape")'
 
 
-    def rename_input(self, **kwargs):
-        """
-        Rename the input_coords, returning a new CoordinateMap
+def rename_input(coordmap, **kwargs):
+    """
+    Rename the input_coords, returning a new CoordinateMap
 
-        >>> import numpy as np
-        >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
-        >>> outaxes = [Axis(x) for x in 'xyz']
-        >>> inc = CoordinateSystem('input', inaxes)
-        >>> outc = CoordinateSystem('output', outaxes)
-        >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
-        >>> print cm.input_coords.values()
-        [<VoxelAxis:"i", dtype=[('i', '<f8')], length=10>, <VoxelAxis:"j", dtype=[('j', '<f8')], length=20>, <VoxelAxis:"k", dtype=[('k', '<f8')], length=30>]
-        >>> cm2 = cm.rename_input(i='x')
-        >>> print cm2.input_coords
-        {'axes': [<VoxelAxis:"x", dtype=[('x', '<f8')], length=10>, <VoxelAxis:"j", dtype=[('j', '<f8')], length=20>, <VoxelAxis:"k", dtype=[('k', '<f8')], length=30>], 'name': 'input-renamed'}
+    >>> import numpy as np
+    >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+    >>> outaxes = [Axis(x) for x in 'xyz']
+    >>> inc = CoordinateSystem('input', inaxes)
+    >>> outc = CoordinateSystem('output', outaxes)
+    >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
+    >>> print cm.input_coords.values()
+    [<VoxelAxis:"i", dtype=[('i', '<f8')], length=10>, <VoxelAxis:"j", dtype=[('j', '<f8')], length=20>, <VoxelAxis:"k", dtype=[('k', '<f8')], length=30>]
+    >>> cm2 = rename_input(cm, i='x')
+    >>> print cm2.input_coords
+    {'axes': [<VoxelAxis:"x", dtype=[('x', '<f8')], length=10>, <VoxelAxis:"j", dtype=[('j', '<f8')], length=20>, <VoxelAxis:"k", dtype=[('k', '<f8')], length=30>], 'name': 'input-renamed'}
         
-        """
-        input_coords = self.input_coords.rename(**kwargs)
-        return CoordinateMap(self.mapping, input_coords, self.output_coords)
+    """
+    input_coords = coordmap.input_coords.rename(**kwargs)
+    return CoordinateMap(coordmap.mapping, input_coords, coordmap.output_coords)
 
-    def rename_output(self, **kwargs):
-        """
-        Rename the output_coords, returning a new CoordinateMap.
-
-        >>> import numpy as np
-        >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
-        >>> outaxes = [Axis(x) for x in 'xyz']
-        >>> inc = CoordinateSystem('input', inaxes)
-        >>> outc = CoordinateSystem('output', outaxes)
-        >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
-        >>> print cm.output_coords.values()
-        [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>]
-        >>> cm2 = cm.rename_output(y='a')
-        >>> print cm2.output_coords
-        {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"a", dtype=[('a', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>], 'name': 'output-renamed'}
-
-        >>>                             
-        """
-        output_coords = self.output_coords.rename(**kwargs)
-        return CoordinateMap(self.mapping, self.input_coords, output_coords)
-
-    def reorder_input(self, order=None):
-        """
-        Create a new coordmap with reversed input_coords.
-        Default behaviour is to reverse the order of the input_coords.
-        If the coordmap has a shape, the resulting one will as well.
-
-        Inputs:
-        -------
-        order: sequence
-               Order to use, defaults to reverse. The elements
-               can be integers, strings or 2-tuples of strings.
-               If they are strings, they should be in self.input_coords.axisnames.
-
-        Returns:
-        --------
-
-        newcoordmap: `CoordinateMap`
-               A new CoordinateMap with reversed input_coords.
-
-        >>> inc = CoordinateSystem('input', inaxes)
-        >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
-        >>> inc = CoordinateSystem('input', inaxes)
-        >>> outaxes = [Axis(x) for x in 'xyz']
-        >>> outc = CoordinateSystem('output', outaxes)
-        >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
-        >>> cm.reorder_input('ikj').shape
-        (10, 30, 20)
-
-        """
-        ndim = self.ndim[0]
-        if order is None:
-            order = range(ndim)[::-1]
-        elif type(order[0]) == type(''):
-            order = [self.input_coords.axisnames.index(s) for s in order]
-
-        newaxes = [self.input_coords.axes[i] for i in order]
-        try:
-            shape = self.shape
-            hasshape = True
-        except:
-            hasshape = False
-            pass
-        if hasshape:
-            newincoords = VoxelCoordinateSystem(self.input_coords.name + '-reordered', newaxes)
-        else:
-            newincoords = CoordinateSystem(self.input_coords.name + '-reordered', newaxes)
-
-        perm = np.zeros((ndim+1,)*2)
-        perm[-1,-1] = 1.
-
-        for i, j in enumerate(order):
-            perm[i,j] = 1.
-        A = np.dot(self.affine, perm)
-        return CoordinateMap(Affine(A), newincoords, self.output_coords)
-
-    def reorder_output(self, order=None):
-        """
-        Create a new coordmap with reversed output_coords.
-        Default behaviour is to reverse the order of the input_coords.
-
-        Inputs:
-        -------
-
-        order: sequence
-               Order to use, defaults to reverse. The elements
-               can be integers, strings or 2-tuples of strings.
-               If they are strings, they should be in self.output_coords.axisnames.
-
-        Returns:
-        --------
-
-        newcoordmap: `CoordinateMap`
-             A new CoordinateMap with reversed output_coords.
-
-        >>> inc = CoordinateSystem('input', inaxes)
-        >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
-        >>> inc = CoordinateSystem('input', inaxes)
-        >>> outaxes = [Axis(x) for x in 'xyz']
-        >>> outc = CoordinateSystem('output', outaxes)
-        >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
-        >>> cm.reorder_output('xzy').shape
-        (10, 20, 30)
-        >>> cm.reorder_output([0,2,1]).shape
-        (10, 20, 30)
-        >>>                             
-
-        >>> newcm = cm.reorder_output('yzx')
-        >>> newcm.output_coords.axisnames
-        ['y', 'z', 'x']
-        >>>                              
-
-        """
-
-        ndim = self.ndim[1]
-        if order is None:
-            order = range(ndim)[::-1]
-        elif type(order[0]) == type(''):
-            order = [self.output_coords.axisnames.index(s) for s in order]
-
-        newaxes = [self.output_coords.axes[i] for i in order]
-        newoutcoords = CoordinateSystem(self.output_coords.name + '-reordered', newaxes)
+def rename_output(coordmap, **kwargs):
+    """
+    Rename the output_coords, returning a new CoordinateMap.
     
-        perm = np.zeros((ndim+1,)*2)
-        perm[-1,-1] = 1.
+    >>> import numpy as np
+    >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+    >>> outaxes = [Axis(x) for x in 'xyz']
+    >>> inc = CoordinateSystem('input', inaxes)
+    >>> outc = CoordinateSystem('output', outaxes)
+    >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
+    >>> print cm.output_coords.values()
+    [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>]
+    >>> cm2 = cm.rename_output(y='a')
+    >>> print cm2.output_coords
+    {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"a", dtype=[('a', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>], 'name': 'output-renamed'}
 
-        for i, j in enumerate(order):
-            perm[i,j] = 1.
-        A = np.dot(perm, self.affine)
-        return CoordinateMap(Affine(A), self.input_coords, newoutcoords)
-
-def centered_coordmap(shape, pixdims=(1,1,1),names=('zdim','ydim', 'xdim')):
+    >>>                             
     """
-    creates a simple centered coordmap that centers matrix on zero
-
-    If you have a nd-array and just want a simple coordmap that puts the center of
-    your data matrix at approx (0,0,0)...this will generate the coordmap you need
-
-    Parameters
-    _________
-    shape   : tuple
-        shape of the data matrix (90, 109, 90)
-    pixdims : tuple
-        tuple if ints maps voxel to real-world  mm size (2,2,2)
-    names   : tuple 
-        tuple of names describing axis ('zaxis', 'yaxis', 'xaxis')
-
-    :Returns: `CoordinateMap`
+    output_coords = coordmap.output_coords.rename(**kwargs)
+    return CoordinateMap(coordmap.mapping, coordmap.input_coords, output_coords)
         
-        :Predcondition: ``len(shape) == len(pixdims) == len(names)``
-
-    Put in a catch for ndims > 3 as time vectors are rarely start < 0
+def reorder_input(coordmap, order=None):
     """
-    if not len(shape) == len(pixdims) == len(names):
-        print 'Error: len(shape) == len(pixdims) == len(names)'
-        return None
-    ndim = len(names)
-    # fill in default step size
-    step = np.asarray(pixdims)
-    ashape = np.asarray(shape)
-    # start = 
-    start = ashape * np.abs(step) /2 * np.sign(step)*-1
-    axes = [RegularAxis(name=names[i], length=ashape[i],
-                        start=start[i], step=step[i]) for i in range(ndim)]
-    input_coords = VoxelCoordinateSystem('voxel', axes)
-    output_coords = StartStepCoordinateSystem('world', axes)
-    transform = output_coords.affine
+    Create a new coordmap with reversed input_coords.
+    Default behaviour is to reverse the order of the input_coords.
+    If the coordmap has a shape, the resulting one will as well.
+
+    Inputs:
+    -------
+    order: sequence
+         Order to use, defaults to reverse. The elements
+         can be integers, strings or 2-tuples of strings.
+         If they are strings, they should be in coordmap.input_coords.axisnames.
+
+    Returns:
+    --------
+
+    newcoordmap: `CoordinateMap`
+         A new CoordinateMap with reversed input_coords.
+
+    >>> inc = CoordinateSystem('input', inaxes)
+    >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+    >>> inc = CoordinateSystem('input', inaxes)
+    >>> outaxes = [Axis(x) for x in 'xyz']
+    >>> outc = CoordinateSystem('output', outaxes)
+    >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
+    >>> reorder_input(cm, 'ikj').shape
+    (10, 30, 20)
+
+    """
+    ndim = coordmap.ndim[0]
+    if order is None:
+        order = range(ndim)[::-1]
+    elif type(order[0]) == type(''):
+        order = [coordmap.input_coords.axisnames.index(s) for s in order]
+
+    newaxes = [coordmap.input_coords.axes[i] for i in order]
+    try:
+        shape = coordmap.shape
+        hasshape = True
+    except:
+        hasshape = False
+        pass
+    if hasshape:
+        newincoords = VoxelCoordinateSystem(coordmap.input_coords.name + '-reordered', newaxes)
+    else:
+        newincoords = CoordinateSystem(coordmap.input_coords.name + '-reordered', newaxes)
+
+    perm = np.zeros((ndim+1,)*2)
+    perm[-1,-1] = 1.
+
+    for i, j in enumerate(order):
+        perm[i,j] = 1.
+    A = np.dot(coordmap.affine, perm)
+    return CoordinateMap(Affine(A), newincoords, coordmap.output_coords)
+
+def reorder_output(coordmap, order=None):
+    """
+    Create a new coordmap with reversed output_coords.
+    Default behaviour is to reverse the order of the input_coords.
+    
+    Inputs:
+    -------
+
+    order: sequence
+         Order to use, defaults to reverse. The elements
+         can be integers, strings or 2-tuples of strings.
+         If they are strings, they should be in coordmap.output_coords.axisnames.
+
+    Returns:
+    --------
         
-    mapping = Affine(transform)
-    return CoordinateMap(mapping, input_coords, output_coords)
-        
+    newcoordmap: `CoordinateMap`
+         A new CoordinateMap with reversed output_coords.
+
+    >>> inc = CoordinateSystem('input', inaxes)
+    >>> inaxes = [VoxelAxis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+    >>> inc = CoordinateSystem('input', inaxes)
+    >>> outaxes = [Axis(x) for x in 'xyz']
+    >>> outc = CoordinateSystem('output', outaxes)
+    >>> cm = CoordinateMap(Affine(np.identity(4)), inc, outc)
+    >>> reorder_output(cm, 'xzy').shape
+    (10, 20, 30)
+    >>> reorder_output(cm, [0,2,1]).shape
+    (10, 20, 30)
+    >>>                             
+
+    >>> newcm = reorder_output(cm, 'yzx')
+    >>> newcm.output_coords.axisnames
+    ['y', 'z', 'x']
+    >>>                              
+
+    """
+
+    ndim = coordmap.ndim[1]
+    if order is None:
+        order = range(ndim)[::-1]
+    elif type(order[0]) == type(''):
+        order = [coordmap.output_coords.axisnames.index(s) for s in order]
+
+    newaxes = [coordmap.output_coords.axes[i] for i in order]
+    newoutcoords = CoordinateSystem(coordmap.output_coords.name + '-reordered', newaxes)
+    
+    perm = np.zeros((ndim+1,)*2)
+    perm[-1,-1] = 1.
+
+    for i, j in enumerate(order):
+        perm[i,j] = 1.
+    A = np.dot(perm, coordmap.affine)
+    return CoordinateMap(Affine(A), coordmap.input_coords, newoutcoords)
+
+
 def product(*cmaps):
     """
     Return the "topological" product of two or more CoordinateMaps.

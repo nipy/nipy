@@ -3,6 +3,7 @@ import numpy as np
 from neuroimaging.core.api import VoxelAxis, RegularAxis, VoxelCoordinateSystem, CoordinateSystem, StartStepCoordinateSystem
 from neuroimaging.core.reference.coordinate_map import CoordinateMap
 from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.core.reference.coordinate_map import reorder_input, reorder_output
 
 def setup_cmap():
     shape = (3,4,5)
@@ -16,7 +17,7 @@ def setup_cmap():
 
 def test_reorder1():
     cmap = setup_cmap()
-    cmap2 = cmap.reorder_input()
+    cmap2 = reorder_input(cmap)
     assert hasattr(cmap2, 'shape')
     assert cmap2.input_coords.name == 'input-reordered'
     assert cmap2.output_coords.name == 'output'
@@ -25,7 +26,7 @@ def test_reorder1():
 def test_reorder2():
 
     cmap = setup_cmap()
-    cmap2 = cmap.reorder_output()
+    cmap2 = reorder_output(cmap)
     assert hasattr(cmap2, 'shape')
     assert cmap2.input_coords.name == 'input'
     assert cmap2.output_coords.name == 'output-reordered'

@@ -15,7 +15,7 @@ See documentation for load and save functions for 'working' examples.
 """
 import numpy as np
 
-from neuroimaging.core.reference.coordinate_map import CoordinateMap
+from neuroimaging.core.reference.coordinate_map import CoordinateMap, reorder_input, reorder_output
 from neuroimaging.core.reference.mapping import Affine
 from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
 from neuroimaging.core.reference.nifti import coordmap_from_ioimg, coerce_coordmap, get_pixdim, get_diminfo, standard_order
@@ -265,10 +265,10 @@ def save(img, filename, dtype=None):
     # before trying to coerce to a NIFTI like image
 
     rimg = Image(np.transpose(np.asarray(img)), 
-                 img.coordmap.reorder_input().reorder_output())
+                 reorder_input(reorder_output(img.coordmap)))
     Fimg = coerce2nifti(rimg) # F for '0-based Fortran', 'ijklmno' to
                               # 'xyztuvw' coordinate map
-    Cimg = Image(np.transpose(np.asarray(Fimg)), Fimg.coordmap.reorder_input().reorder_output()) # C for 'C-based' 'omnlkji' to 'wvutzyx' coordinate map
+    Cimg = Image(np.transpose(np.asarray(Fimg)), reorder_input(reorder_output(Fimg.coordmap))) # C for 'C-based' 'omnlkji' to 'wvutzyx' coordinate map
 
     # FIXME: this smells a little bad... to save it using PyNiftiIO
     # the array should be from Cimg

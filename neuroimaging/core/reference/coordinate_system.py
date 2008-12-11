@@ -29,6 +29,8 @@ class CoordinateSystem(odict):
                 The axes which make up the coordinate system
         """
         self.name = name
+        if len(set([ax.name for ax in axes])) != len(axes):
+            raise ValueError, 'axes must have distinct names'
         odict.__init__(self, [(ax.name, ax) for ax in axes])
 
     def _getdtype(self):

@@ -2,7 +2,7 @@ import numpy as np
 from neuroimaging.core import api
 from neuroimaging.core.image.image import coerce2nifti
 from neuroimaging.core.reference.nifti import coerce_coordmap
-
+from neuroimaging.core.reference.coordinate_map import reorder_input, reorder_output
 
 def setup_cmap():
     shape = (64,64,30,191)
@@ -36,7 +36,7 @@ def test_coerce2():
 
     lorder = [0,2,3,1]
     shape, cmap = setup_cmap()
-    cmap = cmap.reorder_input(lorder)
+    cmap = reorder_input(cmap, lorder)
     img = api.Image(np.zeros(cmap.shape), cmap)
     newimg = coerce2nifti(img)
     assert img.coordmap.input_coords.axisnames == [newimg.coordmap.input_coords.axisnames[i] for i in lorder]
@@ -53,7 +53,7 @@ def test_coerce3():
     lorder = [0,2,3,1]
     shape = (64,64,191,30)
     shape, cmap = setup_cmap()
-    cmap = cmap.reorder_output(lorder)
+    cmap = reorder_output(cmap, lorder)
     img = api.Image(np.zeros(cmap.shape), cmap)
     newimg = coerce2nifti(img)
     assert img.coordmap.output_coords.axisnames == [newimg.coordmap.output_coords.axisnames[i] for i in lorder]

@@ -56,9 +56,10 @@ from string import join
 import numpy as np
 
 from coordinate_system import CoordinateSystem, VoxelCoordinateSystem
-from coordinate_map import CoordinateMap
+from coordinate_map import CoordinateMap, reorder_input, reorder_output
 from axis import RegularAxis, VoxelAxis
 from mapping import Affine
+
 
 valid_input_axisnames = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
 valid_output_axisnames = list('xyztuvw')
@@ -317,7 +318,7 @@ def standard_order(coordmap):
     ijk_inv = np.dot(perm, [0,1,2]).astype(np.int)
     o = range(coordmap.ndim[0])
     o[:3] = ijk_inv
-    return o, coordmap.reorder_input(o)
+    return o, reorder_input(coordmap, o)
 
 def ijk_from_diminfo(diminfo):
     """
@@ -538,4 +539,4 @@ def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
     outcoords = CoordinateSystem('output', outaxes)
             
     coordmap = CoordinateMap(affine, incoords, outcoords)
-    return coordmap.reorder_input().reorder_output()
+    return reorder_input(reorder_output(coordmap))
