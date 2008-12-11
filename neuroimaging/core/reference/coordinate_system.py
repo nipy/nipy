@@ -151,19 +151,24 @@ class CoordinateSystem(odict):
             # with dtype = self.builtin
             # so we typecast, to be safe we make a copy!
 
-            x = np.array(x, dtype=self.builtin).ravel()
+            x = np.asarray(x)
+            shape = x.shape
 
             # The last shape entry should match the length
             # of self.dtype
 
             if x.shape[-1] != len(self.dtype.names):
                 warnings.warn("dangerous typecast, shape is unexpected: %d, %d" % (x.shape[-1], len(self.dtype.names)))
+
+            x = np.asarray(x, dtype=self.builtin).ravel()
             y = x.view(self.dtype)
+            y.shape = shape[:-1]
             return y
         else:
             if x.dtype == self.builtin: # do nothing
                 return x
-            y = x.view(self.builtin)
+            y = x.ravel().view(self.builtin)
+            y.shape = x.shape + (y.shape[0] / np.product(x.shape),)
             return y
 
     def _getaxisnames(self):

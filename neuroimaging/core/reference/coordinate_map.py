@@ -149,11 +149,11 @@ class CoordinateMap(object):
         raise AttributeError
     affine = property(_getaffine)
 
-    def __call__(self, x, view=False):
+    def __call__(self, x, typecast=True):
         """
         Return self.mapping(x)
 
-        If view, then return a view of the result with dtype of self.output_coords.dtype.
+        If typecast, then return a view of the result with dtype of self.output_coords.dtype.
 
         >>> inaxes = [Axis(x, length=l) for x, l in zip('ijk', (10,20,30))]
         >>> inc = CoordinateSystem('input', inaxes)
@@ -169,8 +169,10 @@ class CoordinateMap(object):
         """
         x = self.input_coords.typecast(x, dtype=self.input_coords.dtype)
         y = self.mapping(x)
-        if view:
+        if typecast:
             y = self.output_coords.typecast(y, dtype=self.output_coords.dtype)
+        if len(x.shape) in [0,1]:
+            y = np.squeeze(y)
         return y
 #         if view:
 #             # Need to copy the transposed data
@@ -417,7 +419,7 @@ def product(*cmaps):
         ndimin.append(cmap.ndim[0])
 
     ndimin.insert(0,0)
-    ndimin = np.cumsum(ndimin)
+    ndimin = tuple(np.cumsum(ndimin))
     innames = string.join(innames, ' * ')
     outnames = string.join(outnames, ' * ')
 
@@ -426,14 +428,16 @@ def product(*cmaps):
         y = []
         for i in range(len(ndimin)-1):
             cmap = cmaps[i]
-            y.append(mappings[i](x[ndimin[i]:ndimin[i+1]]))
-        return np.vstack(y)
+            yy = mappings[i](x[:,ndimin[i]:ndimin[i+1]])
+            y.append(yy)
+        yy = np.hstack(y)
+        return yy
 
     notaffine = filter(lambda x: not isinstance(x, Affine), mappings)
     if not notaffine:
         Y = np.vstack([np.identity(ndimin[-1]), np.zeros(ndimin[-1])]).T
-        d = mapping(Y)
-        dd = mapping(np.zeros((ndimin[-1],ndimin[-1]+1)))
+        d = mapping(Y.T).T
+        dd = mapping(np.zeros((ndimin[-1]+1,ndimin[-1]))).T
         dd[:,-1] = 0.
         C = np.identity(d.shape[1]).astype(np.complex)
         C[:d.shape[0],:d.shape[1]] = d - dd

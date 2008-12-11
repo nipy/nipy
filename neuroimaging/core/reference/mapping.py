@@ -12,7 +12,7 @@ import urllib
 from struct import unpack
 
 import numpy as np
-from numpy.linalg import inv
+from numpy.linalg import inv, pinv
 
 def _2matvec(transform):
     """ Split a tranform into it's matrix and vector components. """
@@ -106,8 +106,8 @@ class Mapping(object):
                 An inverse function to ``map``
             name : ``string``
                 The name of the mapping
-            ndim : ``int``
-                The number of dimensions of the mapping.
+            ndim : (``int``, ``int``)
+                The number of (input, output) dimensions of the mapping.
         """
         self._map = map
         self._inverse = inverse
@@ -258,50 +258,6 @@ class Mapping(object):
                 raise ValueError, 'expecting a tuple or sequence of integers or slices'
         return varcoords, tuple(maps), sstarts, ssteps, shape
 
-    def matlab2python(self):
-        """
-        Take that maps matlab voxels to (matlab-ordered) world coordinates and
-        make it python-oriented. This means that if
-        mapping(v_x,v_y,v_z)=(w_x,w_y,w_z), then the return will send
-        (v_z-1,v_y-1,v_x-1) to (w_z,w_y,w_x).
-
-        :Returns: `Mapping`
-
-        Examples
-        --------
-
-        >>> SLOW = True
-        >>> from neuroimaging.core.api import Image
-        >>> zimage = Image('http://nifti.nimh.nih.gov/nifti-1/data/zstat1.nii.gz')
-        >>> mapping = zimage.coordmap.mapping
-        >>> mapping([1,2,3])
-        array([ 12.,  12., -16.])
-
-        >>> matlab = mapping.python2matlab()
-        >>> matlab([4,3,2])
-        array([-16.,  12.,  12.])
-        >>>
-
-        """
-        return self._f(1.0)
-
-    def python2matlab(self):
-        """ Inverse of `matlab2python` -- see this function for help.
-
-        :Returns: `Mapping`
-        """
-        return self._f(-1.0)
-
-    def _f(self, x):
-        """ helper function for `matlab2python` and `python2matlab` """
-        ndim = self.ndim
-        mat = permutation_matrix(range(ndim)[::-1])
-        t1 = _2transform(mat, x)
-        t2 = _2transform(mat, np.zeros(ndim))
-        w1 = Affine(t1)
-        w2 = Affine(t2)
-        return (w2 * self) * w1
-
     def _slice_mapping(self, index, gshape):
         """
         TODO: this has to be tested for nonaffine mappings...
@@ -371,16 +327,30 @@ class Affine(Mapping):
         if transform.dtype not in np.sctypes['float'] + np.sctypes['complex']:
             transform = np.asarray(transform, dtype=dtype)
         self.transform = transform
-        ndim = transform.shape[0] - 1
+        ndimin = transform.shape[0] - 1
+        ndimout = transform.shape[1] - 1
         self._fmatrix, self._fvector = _2matvec(transform)
-        Mapping.__init__(self, None, name=name, ndim=ndim)
+        Mapping.__init__(self, None, name=name, ndim=(ndimin, ndimout))
 
     def get_params(self):
         return self._fmatrix, self._fvector
     params = property(get_params,doc='Matrix, vector representation of affine')
 
+    def typecast(self, x):
+        """
+        Typecast x to have the same dtype as self.transform.
+        
+        BIG NOTE: If x.dtype is not a built in, it returns
+        x.ravel().view(self.transform.dtype).
+        """
+        if x.dtype.isbuiltin:
+            return x # do nothing
+        return x.ravel().view(self.transform.dtype)
+
     def __call__(self, coords):
         """ Apply this mapping to the given coordinates. 
+        It expects a coordinate array of shape (*, self.ndim)
+        as it multiplies the coords on the right by the transformation matrix.
         
         :Parameters:
             coords : ``numpy.ndarray``
@@ -388,12 +358,20 @@ class Affine(Mapping):
         
         :Returns: ``numpy.ndarray``
         """
-        coords = np.asarray(coords, dtype=self._fmatrix.dtype)
-        if len(coords.shape) == 1:
-            if self._fmatrix.shape == (1,1):
-                coords = coords.reshape((1,) + coords.shape)
-        value = np.dot(self._fmatrix, coords) 
-        value += np.multiply.outer(self._fvector, np.ones(value.shape[1:]))
+
+        # Typecasting explicitly here:
+        # it expects an ndarray with shape (*, self._fmatrix.shape[0])
+        # of the same dtype as self._matrix
+
+        coords = np.asarray(coords)
+
+        tcoords = self.typecast(coords)
+        tcoords.shape = (tcoords.shape[0] / self.ndim[0], self.ndim[0])
+        value = np.dot(tcoords, self._fmatrix.T) 
+
+        value += np.multiply.outer(np.ones(value.shape[0]), self._fvector)
+        if coords.shape == ():
+            value.shape == ()
         return value
 
     def __eq__(self, other):
@@ -452,6 +430,6 @@ class Affine(Mapping):
 
         :Returns: `Affine`
         """
-        return Affine(inv(self.transform))
+        return Affine(pinv(self.transform))
 
     
