@@ -6,7 +6,7 @@ A set of methods to get coordinate maps which represent slices in space.
 __docformat__ = 'restructuredtext'
 
 from neuroimaging.core.reference import coordinate_map, axis, mapping, mni
-from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem
 import numpy.linalg as L
 import numpy as np
 import numpy.random as R
@@ -37,8 +37,8 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
     f[0:nout,-1] = origin
     f[nout, nin] = 1.
 
-    input_coords = VoxelCoordinateSystem('slice', \
-       [axis.VoxelAxis('voxel%d' % d, length=shape[d])
+    input_coords = CoordinateSystem('slice', \
+       [axis.Axis('voxel%d' % d, length=shape[d])
         for d in range(len(shape))])
 
     w = mapping.Affine(f)

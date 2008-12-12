@@ -150,26 +150,6 @@ class test_Mapping2(TestCase):
         vox_d = self.d.tovoxel(value2)
         assert_almost_equal(vox_d, [[4., 8., 12.], [4,8,12]])        
 
-    def test_python2matlab1(self):
-        v = R.standard_normal((3,))
-        z = self.a(v)
-        p = self.a.python2matlab()
-        z_ = p(np.array(v[::-1])+1)[::-1]
-        assert_almost_equal(z, z_)
-        
-    def test_python2matlab2(self):
-        value = np.array([1., 2., 3.])
-        for mat_ in [self.a, self.b, self.c, self.d]:
-            p = mat_.python2matlab()
-            q = p.matlab2python()
-            assert_almost_equal(q(value), mat_(value))
-        
-    def test_python2matlab3(self):
-        value = np.array([1., 2., 3.])
-        for mat_ in [self.a, self.b, self.c, self.d]:
-            p = mat_.matlab2python()
-            q = p.python2matlab()
-            assert_almost_equal(q(value), mat_(value))
 
 
 class test_Identity(TestCase):
@@ -231,22 +211,6 @@ class test_Mapping(TestCase):
                                                 [ 4,  5,  6,  7],
                                                 [ 8,  9, 10, 11],
                                                 [ 8,  9, 10, 11]]))
-    def test_python2matlab1(self):
-        v = R.standard_normal((3,))
-        z = self.mapping(v)
-        p = self.mapping.python2matlab()
-        z_ = p(np.array(v[::-1])+1)[::-1]
-        assert_almost_equal(z, z_)
-        
-    def test_python2matlab2(self):
-        p = self.mapping.python2matlab()
-        q = p.matlab2python()
-        assert_almost_equal(q.transform, self.mapping.transform)
-        
-    def test_python2matlab3(self):
-        p = self.mapping.matlab2python()
-        q = p.python2matlab()
-        assert_almost_equal(q.transform, self.mapping.transform)
 
     def test_matvec_trasform(self):
         m1 = R.standard_normal((3, 3))
