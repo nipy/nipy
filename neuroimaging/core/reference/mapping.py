@@ -97,7 +97,7 @@ class Mapping(object):
     and an optional inverse.
     """
 
-    def __init__(self, map, inverse=None, name="mapping", ndim=3):
+    def __init__(self, map, inverse=None, name="mapping", ndim=(None,None)):
         """
         :Parameters:
             map : callable
@@ -125,7 +125,7 @@ class Mapping(object):
 
 
     @staticmethod
-    def from_callable(c):
+    def from_callable(c, ndim=(None, None)):
         """
         Construct a Mapping from a callable. If the
         callable is an instance of Mapping, return it.
@@ -133,7 +133,7 @@ class Mapping(object):
         if isinstance(c, Mapping):
             return c
         else:
-            return Mapping(c)
+            return Mapping(c, ndim=ndim)
 
     def __ne__(self, other): 
         """
@@ -174,7 +174,7 @@ class Mapping(object):
                 return self.inverse()(other.inverse()(coords))
         else: 
             inverse = None
-        return Mapping(_map, inverse=inverse)
+        return Mapping(_map, inverse=inverse, ndim=(self.ndim[0], other.ndim[1]))
 
     def isinvertible(self):
         """
@@ -191,7 +191,7 @@ class Mapping(object):
         :Returns: `Mapping`
         """
         if self.isinvertible():
-            return Mapping(self._inverse, self)
+            return Mapping(self._inverse, self, ndim=self.ndim[::-1])
         else: 
             raise AttributeError("non-invertible mapping")
 
@@ -260,7 +260,7 @@ class Mapping(object):
 
     def _slice_mapping(self, index, gshape):
         """
-        TODO: this has to be tested for nonaffine mappings...
+        TODO: this has to be tested for nonaffine mappings... check the ndim below
         """
         varcoords, maps, _, _, shape = self._preslice_mapping(index, gshape)
         mapc = copy.deepcopy(self._map)
@@ -269,7 +269,7 @@ class Mapping(object):
             o = np.ones(x.shape)
             for i in range(nvar):
                 y[i] = maps[i](y[i])
-            for i in range(self.ndim):
+            for i in range(self.ndim[0]):
                 if i not in varcoords:
                     o = np.vstack([o, np.ones(x.shape) * np.ones[i]])
                 else:
@@ -336,20 +336,30 @@ class Affine(Mapping):
         return self._fmatrix, self._fvector
     params = property(get_params,doc='Matrix, vector representation of affine')
 
-    def typecast(self, x):
+    def ravel(self, x):
         """
-        Typecast x to have the same dtype as self.transform.
+        Typecast x to have the same dtype as self.transform
+        and return a ravel'ed version.
         
-        BIG NOTE: If x.dtype is not a built in, it returns
+        If x.dtype is not a built in, it returns
         x.ravel().view(self.transform.dtype).
+
+        If x.dtype is builtin it returns
+        x.ravel(). 
         """
+
         if x.dtype.isbuiltin:
-            return x # do nothing
+            if x.ndim > 2:
+                raise ValueError, 'if dtype is builtin, expecting a 2-d array of shape (*,%d) or a 1-d array of shape (%d,)' % (self.ndim[0], self.ndim[0])
+            return x.ravel() # do nothing except ravel(), probably not necessary with this check above?
+
+        if x.ndim > 1:
+            raise ValueError, 'if dtype is not builtin, expecting 1-d array, or a 0-d array' 
         return x.ravel().view(self.transform.dtype)
 
     def __call__(self, coords):
         """ Apply this mapping to the given coordinates. 
-        It expects a coordinate array of shape (*, self.ndim)
+        It expects a coordinate array of shape (*, self.ndim[0])
         as it multiplies the coords on the right by the transformation matrix.
         
         :Parameters:
@@ -365,7 +375,7 @@ class Affine(Mapping):
 
         coords = np.asarray(coords)
 
-        tcoords = self.typecast(coords)
+        tcoords = self.ravel(coords)
         tcoords.shape = (tcoords.shape[0] / self.ndim[0], self.ndim[0])
         value = np.dot(tcoords, self._fmatrix.T) 
 

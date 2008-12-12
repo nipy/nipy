@@ -129,6 +129,8 @@ class CoordinateMap(object):
         self.mapping = mapping
         self.input_coords = input_coords
         self.output_coords = output_coords
+        if mapping.ndim != (input_coords.ndim, output_coords.ndim):
+            raise ValueError, 'mapping dimensions do not agree with input and output coords'
 
     def _getshape(self):
         return tuple([len(a) for a in self.input_coords.axes])
@@ -484,7 +486,8 @@ def compose(*cmaps):
     """
 
     cmap = cmaps[-1]
-    for m in cmaps[:-1]:
+    for i in range(len(cmaps)-2,-1,-1):
+        m = cmaps[i]
         if m.input_coords == cmap.output_coords:
             cmap = CoordinateMap(m.mapping * cmap.mapping, cmap.input_coords, m.output_coords)
         else:

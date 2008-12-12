@@ -116,12 +116,13 @@ class CoordinateSystem(odict):
         _dict = {'name': self.name, 'axes':self.axes}
         return `_dict`
    
-    def ndim(self):
+    def _getndim(self):
         """ Number of dimensions 
         
         :Returns: ``int``
         """
         return len(self.axes)
+    ndim = property(_getndim)
     
     def typecast(self, x, dtype=None):
         """
