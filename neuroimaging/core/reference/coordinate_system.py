@@ -67,6 +67,12 @@ class CoordinateSystem(odict):
             raise KeyError(
               "axis '%s' not found, names are %s"%(axisname,self.keys()))
 
+    def index(self, name):
+        """
+        Return the index of a given axisname.
+        """
+        return self.keys().index(name)
+
     def rename(self, **kwargs):
         """
         Return a new CoordinateSystem with the values renamed.
@@ -93,7 +99,6 @@ class CoordinateSystem(odict):
         """
         raise TypeError, "CoordinateSystem does not support axis assignment"
 
-
     def __eq__(self, other):
         """
         Equality is defined by self.dtype.
@@ -105,7 +110,6 @@ class CoordinateSystem(odict):
         :Returns: ``bool``
         """
         return self.dtype == other.dtype
-
 
     def __str__(self):
         """
@@ -212,6 +216,3 @@ def _reorder(seq, order):
     """ Reorder a sequence. """
     return [seq[i] for i in order]
 
-def _reverse(seq):
-    """ Reverse a sequence. """
-    return _reorder(seq, range(len(seq)-1, -1, -1))
