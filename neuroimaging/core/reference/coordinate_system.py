@@ -31,7 +31,7 @@ class CoordinateSystem(odict):
         self.name = name
         if len(set([ax.name for ax in axes])) != len(axes):
             raise ValueError, 'axes must have distinct names'
-        dtype = _safe_dtype(*tuple([ax.builtin for ax in axes]))
+        dtype = safe_dtype(*tuple([ax.builtin for ax in axes]))
         values = []
         for ax in axes:
             ax = copy.copy(ax)
@@ -222,7 +222,7 @@ def _reorder(seq, order):
     """ Reorder a sequence. """
     return [seq[i] for i in order]
 
-def _safe_dtype(*dtypes):
+def safe_dtype(*dtypes):
     """
     Try to determine a dtype to which all of the dtypes can safely be
     typecast by creating an array with elements of all of these dtypes.
