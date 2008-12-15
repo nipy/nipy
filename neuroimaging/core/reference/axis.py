@@ -24,7 +24,6 @@ import numpy as np
 
 __docformat__ = 'restructuredtext'
 
-
 class Axis(object):
     """
     This class represents a generic axis. Axes are used in the definition

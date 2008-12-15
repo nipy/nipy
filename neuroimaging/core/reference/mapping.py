@@ -45,8 +45,6 @@ class Mapping(object):
                 A function which takes a coordinate vector and returns a new coordinate vector
             inverse : callable
                 An inverse function to ``map``
-            ndim : (``int``, ``int``)
-                The number of (input, output) dimensions of the mapping.
         """
         self._map = map
         if inverse is not None:
@@ -111,7 +109,7 @@ class Affine(Mapping):
     """
 
     @staticmethod
-    def identity(ndim=3):
+    def identity(ndim):
         """ Return an identity affine transformation.
 
         :Returns: `Affine`
