@@ -8,7 +8,8 @@ import numpy as np
 
 from neuroimaging.core.reference.axis import Axis
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem
-from neuroimaging.core.reference.mapping import Mapping, Affine
+from neuroimaging.core.reference.mapping import Mapping, Affine, linearize, transform_from_matvec
+from neuroimaging.core.reference.mapping import compose as map_compose
 
 __docformat__ = 'restructuredtext'
 
@@ -19,8 +20,24 @@ class CoordinateMap(object):
     image from voxel space to real space.
     """
     
+    def __init__(self, mapping, input_coords, output_coords):
+        """
+        :Parameters:
+            mapping : `mapping.Mapping`
+                The mapping between input and output coordinates
+            input_coords : `CoordinateSystem`
+                The input coordinate system
+            output_coords : `CoordinateSystem`
+                The output coordinate system
+        """
+        # These guys define the structure of the coordmap.
+        self.mapping = mapping
+        self.input_coords = input_coords
+        self.output_coords = output_coords
+        self._checkmapping()
+
     @staticmethod
-    def from_start_step(innames, outnames, start, step, shape):
+    def from_start_step(innames, outnames, start, step, shape=None):
         """
         Create a `CoordinateMap` instance from sequences of names, shape, start
         and step.
@@ -38,7 +55,7 @@ class CoordinateMap(object):
 
         :Returns: `CoordinateMap`
         
-        :Predcondition: ``len(names) == len(shape) == len(start) == len(step)``
+        :Predcondition: ``len(names) == len(start) == len(step)``
         """
         ndim = len(innames)
         if len(outnames) != ndim:
@@ -48,18 +65,23 @@ class CoordinateMap(object):
         for i in range(ndim):
             A = np.array([[step[i], start[i]],
                           [0, 1]])
-            cmaps.append(CoordinateMap.from_affine([innames[i]], [outnames[i]], Affine(A), (shape[i],)))
+            if shape:
+                cmaps.append(CoordinateMap.from_affine([innames[i]], [outnames[i]], Affine(A), (shape[i],)))
+            else:
+                cmaps.append(CoordinateMap.from_affine([innames[i]], [outnames[i]], Affine(A)))
         return product(*cmaps)
 
     @staticmethod
-    def identity(names, shape):
+    def identity(names, shape=None):
         """
         Return an identity coordmap of the given shape.
         
         :Parameters:
-            shape : ``tuple`` of ``int``
-                TODO
             names : ``tuple`` of ``string``
+                TODO
+            dim :  ``int``
+                TODO
+            shape : ``tuple`` of ``int``
                 TODO
 
         :Returns: `CoordinateMap` with `CoordinateSystem` input
@@ -70,10 +92,10 @@ class CoordinateMap(object):
         :Raises ValueError: ``if len(shape) != len(names)``
         """
         return CoordinateMap.from_start_step(names, names, [0]*len(names),
-                                             [1]*len(names), shape)
+                                             [1]*len(names), shape=shape)
 
     @staticmethod
-    def from_affine(innames, outnames, mapping, shape):
+    def from_affine(innames, outnames, mapping, shape=None):
         """
         Return coordmap using a given `Affine` mapping
         
@@ -84,8 +106,11 @@ class CoordinateMap(object):
             outnames : ``tuple`` of ``string``
                 The names of the axes of the output coordinate systems
 
-            mapping : `Affine`
+            mapping : `Affine`, `ndarray` or `(ndarray, ndarray)`
                 An affine mapping between the input and output coordinate systems.
+                This can be represented as an instance of Affine,
+                an ndarray (which is interpreted as the representation of the
+                mapping in homogeneous coordinates) or an A,b tuple.
             shape : ''tuple'' of ''int''
                 The shape of the coordmap
         :Returns: `CoordinateMap`
@@ -94,6 +119,12 @@ class CoordinateMap(object):
         
         :Raises ValueError: ``if len(shape) != len(names)``
         """
+        if type(mapping) == type(()):
+            A, b = mapping
+            mapping = Affine(transform_from_matvec(A, b))
+        elif type(mapping) == type(np.identity(3)):
+            mapping = Affine(mapping)
+
         ndim = (len(innames) + 1, len(outnames) + 1)
         if mapping.transform.shape != ndim:
             raise ValueError('shape and number of axis names do not agree')
@@ -101,36 +132,35 @@ class CoordinateMap(object):
                                       # will be either a 'float' or 'complex'
                                       # dtype
         dtype = A.transform.dtype
-        inaxes = [Axis(name, length=l, dtype=dtype) for name, l in zip(innames, shape)]
+        if shape:
+            inaxes = [Axis(name, length=l, dtype=dtype) for name, l in zip(innames, shape)]
+        else:
+            inaxes = [Axis(name, dtype=dtype) for name in innames]
         outaxes = [Axis(name, dtype=dtype) for name in outnames]
         input_coords = CoordinateSystem("input", inaxes)
         output_coords = CoordinateSystem('output', outaxes)
         return CoordinateMap(A, input_coords, output_coords)
 
+    @staticmethod
+    def from_callable(innames, outnames, f, shape=None, inverse=None):
+        """
+        Construct a Mapping from a callable. If the
+        callable is an instance of Mapping, return it.
+        """
+        if not isinstance(f, Mapping):
+            f = Mapping(f, inverse=inverse)
+        if shape is None:
+            shape = [None]*len(innames)
+        return CoordinateMap(f, [Axis(n, length=l) for n, l in zip(innames, shape)],
+                             [Axis(n) for n in outnames])
+
     def _getinverse(self):
         """
         Return the inverse coordinate map.
         """
-        if self.mapping.isinvertible:
-            return CoordinateMap(self.mapping.inverse(), self.output_coords, self.input_coords)
+        if self.mapping.isinvertible():
+            return CoordinateMap(self.mapping.inverse, self.output_coords, self.input_coords)
     inverse = property(_getinverse)
-
-    def __init__(self, mapping, input_coords, output_coords):
-        """
-        :Parameters:
-            mapping : `mapping.Mapping`
-                The mapping between input and output coordinates
-            input_coords : `CoordinateSystem`
-                The input coordinate system
-            output_coords : `CoordinateSystem`
-                The output coordinate system
-        """
-        # These guys define the structure of the coordmap.
-        self.mapping = mapping
-        self.input_coords = input_coords
-        self.output_coords = output_coords
-        if mapping.ndim != (input_coords.ndim, output_coords.ndim):
-            raise ValueError, 'mapping dimensions do not agree with input and output coords'
 
     def _getshape(self):
         return tuple([len(a) for a in self.input_coords.axes])
@@ -151,10 +181,26 @@ class CoordinateMap(object):
         raise AttributeError
     affine = property(_getaffine)
 
-    def __call__(self, x, typecast=True):
-        """
-        Return self.mapping(x)
+    def _checkshape(self, x):
+        if x.dtype.isbuiltin:
+            if x.ndim > 2 or x.shape[-1] != ndim[0]:
+                raise ValueError('if dtype is builtin, expecting a 2-d array of shape (*,%d) or a 1-d array of shape (%d,)' % (ndim[0], ndim[0]))
+        elif x.ndim > 1:
+            raise ValueError, 'if dtype is not builtin, expecting 1-d array, or a 0-d array' 
 
+    def _checkmapping(self):
+        """
+        Verify that the input and output dimensions of self.mapping work.
+        """
+        input = np.zeros((10, self.ndim[0]), dtype=self.input_coords.builtin)
+        output = self.mapping(input).astype(self.output_coords.builtin)
+        if output.shape != (10, self.ndim[1]):
+            raise ValueError('input and output dimensions of mapping do not agree with specified CoordinateSystems')
+
+    def __call__(self, x):
+        """
+        Return mapping evaluated at x
+        
         If typecast, then return a view of the result with dtype of self.output_coords.dtype.
 
         >>> inaxes = [Axis(x, length=l) for x, l in zip('ijk', (10,20,30))]
@@ -169,20 +215,12 @@ class CoordinateMap(object):
         array([(2.0, 3.0, 4.0)], dtype=[('i', '<f8'), ('j', '<f8'), ('k', '<f8')])
         >>>                                    
         """
-        x = self.input_coords.typecast(x, dtype=self.input_coords.dtype)
-        y = self.mapping(x)
-        if typecast:
-            y = self.output_coords.typecast(y, dtype=self.output_coords.dtype)
-        if len(x.shape) in [0,1]:
-            y = np.squeeze(y)
-        return y
-#         if view:
-#             # Need to copy the transposed data
-#             # for the order of the data to be correct
-#             # for np.recarray
-#             yc = np.array(y.T, copy=True, order='C')
-#             y = np.recarray(buf=yc, dtype=self.output_coords.dtype, shape=np.product(y.shape[1:]))
-
+        return self.mapping(x)
+#         x = self.input_coords.typecast(x, dtype=self.input_coords.dtype)
+#         if typecast:
+#             y = self.output_coords.typecast(y, dtype=self.output_coords.dtype)
+#         if len(x.shape) in [0,1]:
+#             y = np.squeeze(y)
 #         return y
 
     def copy(self):
@@ -192,7 +230,7 @@ class CoordinateMap(object):
         :Returns: `CoordinateMap`
         """
         return CoordinateMap(self.mapping, self.input_coords,
-                            self.output_coords)
+                             self.output_coords)
 
     def __getitem__(self, index):
         """
@@ -216,21 +254,78 @@ class CoordinateMap(object):
         newic = CoordinateSystem(self.input_coords.name, newia, shape=shape)
         return CoordinateMap(mapping, newic, self.output_coords)
 
-    def range(self):
-        """
-        Return the coordinate values in the same format as numpy.indices.
-        
-        :Returns: TODO
-        """
-      
-        indices = np.indices(self.shape)
-        tmp_shape = indices.shape
-            # reshape indices to be a sequence of coordinates
-        indices.shape = (self.ndim[0], np.product(self.shape))
-        _range = self.mapping(indices)
-        _range.shape = tmp_shape
-        return _range 
+def _slice(coordmap, *slices):
+    """
+    Slice a 'voxel' CoordinateMap's input_coords with slices. A 'voxel' CoordinateMap
+    is interpreted as a coordmap having a shape.
 
+    """
+    
+    if len(slices) < coordmap.ndim[0]:
+        slices = list(slices) + [slice(None,None,None)] * (coordmap.ndim[0] - len(slices))
+
+    if not hasattr(coordmap, 'shape'):
+        raise ValueError('CoordinateMap needs a shape to be sliced')
+
+    ranges = [np.arange(len(a)) for a in coordmap.input_coords.axes]
+    cmaps = []
+    lengood = []
+    for i, _slice in enumerate(slices):
+        ranges[i] = ranges[i][_slice]
+        if ranges[i].shape[0] > 0:
+            start = ranges[i][0]
+        if ranges[i].shape[0] > 1:
+            step = ranges[i][1] - ranges[i][0]
+        else:
+            step = 0.
+        l = ranges[i].shape[0]
+        if l > 1:
+            lengood.append(i)
+        if l == 0:
+            raise ValueError('empty slice for dimension %d, coordinate' % (i, coordmap.input_coords.axisnames[i]))
+        cmaps.append(CoordinateMap.from_affine([coordmap.input_coords.axisnames[i] + '-slice'],
+                                               [coordmap.input_coords.axisnames[i]],
+                                               np.array([[step, start],
+                                                         [0, 1]]), shape=(l,)))
+    slice_cmap = product(*cmaps)
+
+    # Reduce the size of the matrix
+
+    if squeeze:
+        innames = slice_cmap.input_coords.axisnames
+        inaxes = slice_cmap.input_coords.axes
+        inmat = []
+        input_coords = CoordinateSystem('input-slice', [Axis(innames[i], length=len(inaxes[i])) for i in lengood])
+        A = np.zeros((coordmap.ndim[0]+1, len(lengood)+1))
+        for j, i in enumerate(lengood):
+            A[:,j] = slice_cmap.affine[:,i]
+        A[:,-1] = slice_cmap.affine[:,-1]
+        slice_cmap = CoordinateMap(Affine(A), input_coords, coordmap.input_coords)
+    return compose(coordmap, slice_cmap)
+                   
+def values(coordmap):
+    """
+    If the coordmap has a shape (so that it can be thought of as 
+    a map from voxels to some output space), return
+    the range of the coordmap, i.e. the value at all the voxels.
+
+    :Inputs: `CoordinateMap`
+
+    :Returns: `ndarray`
+
+    """
+
+    if not hasattr(coordmap, 'shape'):
+        raise ValueError('CoordinateMap needs a shape to compute the range')
+
+    indices = np.indices(coordmap.shape)
+    tmp_shape = indices.shape
+
+    # reshape indices to be a sequence of coordinates
+    indices.shape = (coordmap.ndim[0], np.product(coordmap.shape))
+    _range = coordmap(indices.T).T
+    _range.shape = tmp_shape
+    return _range 
 
 def rename_input(coordmap, **kwargs):
     """
@@ -430,22 +525,18 @@ def product(*cmaps):
         y = []
         for i in range(len(ndimin)-1):
             cmap = cmaps[i]
-            yy = mappings[i](x[:,ndimin[i]:ndimin[i+1]])
+            if x.ndim == 2:
+                yy = mappings[i](x[:,ndimin[i]:ndimin[i+1]])
+            else:
+                yy = mappings[i](x[ndimin[i]:ndimin[i+1]])
             y.append(yy)
         yy = np.hstack(y)
         return yy
 
+    print map(lambda x: isinstance(x, Affine), mappings)
     notaffine = filter(lambda x: not isinstance(x, Affine), mappings)
     if not notaffine:
-        Y = np.vstack([np.identity(ndimin[-1]), np.zeros(ndimin[-1])]).T
-        d = mapping(Y.T).T
-        dd = mapping(np.zeros((ndimin[-1]+1,ndimin[-1]))).T
-        dd[:,-1] = 0.
-        C = np.identity(d.shape[1]).astype(np.complex)
-        C[:d.shape[0],:d.shape[1]] = d - dd
-        if np.allclose(C.real, C):
-            C = C.astype(np.float)
-        mapping = Affine(C)
+        mapping = linearize(mapping, ndimin[-1])
         for a in inaxes:
             a.dtype = mapping.transform.dtype
         for a in outaxes:
@@ -489,7 +580,7 @@ def compose(*cmaps):
     for i in range(len(cmaps)-2,-1,-1):
         m = cmaps[i]
         if m.input_coords == cmap.output_coords:
-            cmap = CoordinateMap(m.mapping * cmap.mapping, cmap.input_coords, m.output_coords)
+            cmap = CoordinateMap(map_compose(m.mapping, cmap.mapping), cmap.input_coords, m.output_coords)
         else:
             raise ValueError, 'input and output coordinates do not match: input=%s, output=%s' % (`m.input_coords.dtype`, `cmap.output_coords.dtype`)
     return cmap
@@ -510,6 +601,7 @@ def replicate(coordmap, n, concataxis='string'):
     concat = CoordinateMap.from_affine([concataxis], [concataxis], Affine(np.identity(2)), (n,))
     return product(concat, coordmap)
 
+#TODO: renames this interpolate? And implement interpolation?
 def hstack(*cmaps):
     """
     Return a "hstacked" CoordinateMap. That is,
