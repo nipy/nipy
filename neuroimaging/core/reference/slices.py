@@ -122,5 +122,5 @@ def bounding_box(coordmap):
         coordmap : `coordinate_map.CoordinateMap`
             TODO
     """
-    return [[r.min(), r.max()] for r in coordmap.range()]
+    return [[r.min(), r.max()] for r in coordinate_map.values(coordmap)]
     
