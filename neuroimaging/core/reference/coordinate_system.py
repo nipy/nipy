@@ -31,7 +31,13 @@ class CoordinateSystem(odict):
         self.name = name
         if len(set([ax.name for ax in axes])) != len(axes):
             raise ValueError, 'axes must have distinct names'
-        odict.__init__(self, [(ax.name, ax) for ax in axes])
+        dtype = _safe_dtype(*tuple([ax.builtin for ax in axes]))
+        values = []
+        for ax in axes:
+            ax = copy.copy(ax)
+            ax.dtype = dtype
+            values.append((ax.name, ax))
+        odict.__init__(self, values)
 
     def _getdtype(self):
         return np.dtype([(ax.name, ax.builtin) for ax in self.axes])
@@ -216,3 +222,20 @@ def _reorder(seq, order):
     """ Reorder a sequence. """
     return [seq[i] for i in order]
 
+def _safe_dtype(*dtypes):
+    """
+    Try to determine a dtype to which all of the dtypes can safely be
+    typecast by creating an array with elements of all of these dtypes.
+
+    :Inputs: 
+    dtypes: sequence of builtin ``np.dtype``s
+
+    :Returns:
+    dtype: ``np.dtype``
+         
+    """
+    arrays = [np.zeros(2, dtype) for dtype in dtypes]
+    notbuiltin = filter(lambda x: not x.dtype.isbuiltin, arrays)
+    if notbuiltin:
+        raise ValueError('dtypes must be builtin')
+    return np.array(arrays).dtype
