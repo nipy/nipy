@@ -194,6 +194,9 @@ class Affine(CoordinateMap):
         self.output_coords = CoordinateSystem(output_coords.name, outaxes)
         self.affine = affine.astype(dtype)
 
+        if self.affine.shape != (self.ndim[1]+1, self.ndim[0]+1):
+            raise ValueError('coordinate lengths do not match affine matrix shape')
+
     def _getinverse_mapping(self):
         A, b = self.inverse.params
         def _mapping(x):
@@ -803,7 +806,7 @@ def linearize(mapping, ndimin, step=np.array(1.), origin=None):
     
     :Inputs: 
         mapping: ``Mapping``
-              A Mapping to linearize
+              A function to linearize
         ndimin: ``int``
               Number of input dimensions to mapping
         origin: ``ndarray``
@@ -846,3 +849,39 @@ def linearize(mapping, ndimin, step=np.array(1.), origin=None):
     C[:ndimout,:ndimin] = (y1 - y0).T / step
     return C
 
+class Grid():
+    """
+    Simple class to construct Affine instances with slice notation like np.ogrid/np.mgrid
+
+    """
+
+    def __init__(self, coords):
+
+        """
+        :Inputs: 
+           coords: ``CoordinateSystem``
+               A coordinate system to be 'sliced' into
+        """
+
+        self.coords = coords
+
+    def __getitem__(self, index):
+        """
+        Create an Affine coordinate map with into self.coords with
+        slices created as in np.mgrid/np.ogrid.
+        """
+        results = [a.ravel() for a in np.ogrid[index]]
+        if len(results) != len(self.coords.axisnames):
+            raise ValueError('must slice all axes to create a grid')
+
+        cmaps = []
+        for i, result in enumerate(results):
+            if result.shape[0] > 1:
+                step = result[1] - result[0]
+            else:
+                step = 0
+            start = result[0]
+            cmaps.append(Affine(np.array([[start, step],[0,1]]), 
+                                CoordinateSystem('i%d' % i, [Axis('i%d' % i, length=result.shape[0])]),
+                                CoordinateSystem(self.coords.axisnames[i], [self.coords.axes[i]])))
+        return product(*cmaps)
