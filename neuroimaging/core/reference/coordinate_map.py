@@ -8,8 +8,6 @@ import numpy as np
 
 from neuroimaging.core.reference.axis import Axis
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem
-from neuroimaging.core.reference.mapping import Mapping, Affine, linearize, transform_from_matvec
-from neuroimaging.core.reference.mapping import compose as map_compose
 
 __docformat__ = 'restructuredtext'
 
@@ -20,146 +18,59 @@ class CoordinateMap(object):
     image from voxel space to real space.
     """
     
-    def __init__(self, mapping, input_coords, output_coords):
+    def __init__(self, mapping, input_coords, output_coords, inverse=None):
         """
         :Parameters:
-            mapping : `mapping.Mapping`
+            mapping : `callable`
                 The mapping between input and output coordinates
             input_coords : `CoordinateSystem`
                 The input coordinate system
             output_coords : `CoordinateSystem`
                 The output coordinate system
+            inverse : `callable`
+                The optional 'inverse' of mapping, with the intention being
+                x = inverse(mapping(x)). If the mapping is affine and invertible,
+                then this is true for all x.
+              
         """
         # These guys define the structure of the coordmap.
-        self.mapping = mapping
+        self._mapping = mapping
+
         self.input_coords = input_coords
         self.output_coords = output_coords
+        self._inverse_mapping = inverse
+
+        if not callable(mapping):
+            raise ValueError('mapping should be callable')
+
+        if inverse is not None:
+            if not callable(inverse):
+                raise ValueError('if not None, inverse should be callable')
         self._checkmapping()
 
-    @staticmethod
-    def from_start_step(innames, outnames, start, step, shape=None):
-        """
-        Create a `CoordinateMap` instance from sequences of names, shape, start
-        and step.
+#     @staticmethod
+#     def from_callable(innames, outnames, f, shape=None, inverse=None):
+#         """
+#         Construct a Mapping from a callable. If the
+#         callable is an instance of Mapping, return it.
+#         """
+#         if not isinstance(f, Mapping):
+#             f = Mapping(f, inverse=inverse)
+#         if shape is None:
+#             shape = [None]*len(innames)
+#         return CoordinateMap(f, [Axis(n, length=l) for n, l in zip(innames, shape)],
+#                              [Axis(n) for n in outnames])
 
-        :Parameters:
-            innames : ``tuple`` of ``string``
-                TODO
-            outnames : ``tuple`` of ``string``
-                TODO
-            start : ``tuple`` of ``float``
-                TODO
-            step : ``tuple`` of ``float``
-                TODO
-            shape: ''tuple'' of ''int''
-
-        :Returns: `CoordinateMap`
-        
-        :Predcondition: ``len(names) == len(start) == len(step)``
-        """
-        ndim = len(innames)
-        if len(outnames) != ndim:
-            raise ValueError, 'len(innames) != len(outnames)'
-
-        cmaps = []
-        for i in range(ndim):
-            A = np.array([[step[i], start[i]],
-                          [0, 1]])
-            if shape:
-                cmaps.append(CoordinateMap.from_affine([innames[i]], [outnames[i]], Affine(A), (shape[i],)))
-            else:
-                cmaps.append(CoordinateMap.from_affine([innames[i]], [outnames[i]], Affine(A)))
-        return product(*cmaps)
-
-    @staticmethod
-    def identity(names, shape=None):
-        """
-        Return an identity coordmap of the given shape.
-        
-        :Parameters:
-            names : ``tuple`` of ``string``
-                TODO
-            dim :  ``int``
-                TODO
-            shape : ``tuple`` of ``int``
-                TODO
-
-        :Returns: `CoordinateMap` with `CoordinateSystem` input
-                  and an identity transform 
-        
-        :Precondition: ``len(shape) == len(names)``
-        
-        :Raises ValueError: ``if len(shape) != len(names)``
-        """
-        return CoordinateMap.from_start_step(names, names, [0]*len(names),
-                                             [1]*len(names), shape=shape)
-
-    @staticmethod
-    def from_affine(innames, outnames, mapping, shape=None):
-        """
-        Return coordmap using a given `Affine` mapping
-        
-        :Parameters:
-            innames : ``tuple`` of ``string``
-                The names of the axes of the input coordinate systems
-
-            outnames : ``tuple`` of ``string``
-                The names of the axes of the output coordinate systems
-
-            mapping : `Affine`, `ndarray` or `(ndarray, ndarray)`
-                An affine mapping between the input and output coordinate systems.
-                This can be represented as an instance of Affine,
-                an ndarray (which is interpreted as the representation of the
-                mapping in homogeneous coordinates) or an A,b tuple.
-            shape : ''tuple'' of ''int''
-                The shape of the coordmap
-        :Returns: `CoordinateMap`
-        
-        :Precondition: ``len(shape) == len(names)``
-        
-        :Raises ValueError: ``if len(shape) != len(names)``
-        """
-        if type(mapping) == type(()):
-            A, b = mapping
-            mapping = Affine(transform_from_matvec(A, b))
-        elif type(mapping) == type(np.identity(3)):
-            mapping = Affine(mapping)
-
-        ndim = (len(innames) + 1, len(outnames) + 1)
-        if mapping.transform.shape != ndim:
-            raise ValueError('shape and number of axis names do not agree')
-        A = Affine(mapping.transform) # NOTE: this Affine's matrix
-                                      # will be either a 'float' or 'complex'
-                                      # dtype
-        dtype = A.transform.dtype
-        if shape:
-            inaxes = [Axis(name, length=l, dtype=dtype) for name, l in zip(innames, shape)]
-        else:
-            inaxes = [Axis(name, dtype=dtype) for name in innames]
-        outaxes = [Axis(name, dtype=dtype) for name in outnames]
-        input_coords = CoordinateSystem("input", inaxes)
-        output_coords = CoordinateSystem('output', outaxes)
-        return CoordinateMap(A, input_coords, output_coords)
-
-    @staticmethod
-    def from_callable(innames, outnames, f, shape=None, inverse=None):
-        """
-        Construct a Mapping from a callable. If the
-        callable is an instance of Mapping, return it.
-        """
-        if not isinstance(f, Mapping):
-            f = Mapping(f, inverse=inverse)
-        if shape is None:
-            shape = [None]*len(innames)
-        return CoordinateMap(f, [Axis(n, length=l) for n, l in zip(innames, shape)],
-                             [Axis(n) for n in outnames])
+    def _getmapping(self):
+        return self._mapping
+    mapping = property(_getmapping)
 
     def _getinverse(self):
         """
         Return the inverse coordinate map.
         """
-        if self.mapping.isinvertible():
-            return CoordinateMap(self.mapping.inverse, self.output_coords, self.input_coords)
+        if self._inverse_mapping is not None:
+            return CoordinateMap(self._inverse_mapping, self.output_coords, self.input_coords, inverse=self.mapping)
     inverse = property(_getinverse)
 
     def _getshape(self):
@@ -170,18 +81,12 @@ class CoordinateMap(object):
         return (len(self.input_coords.axes), len(self.output_coords.axes))
     ndim = property(_getndim)
 
-    def isaffine(self):
-        if isinstance(self.mapping, Affine):
-            return True
-        return False
-
-    def _getaffine(self):
-        if hasattr(self.mapping, "transform"):
-            return self.mapping.transform
-        raise AttributeError
-    affine = property(_getaffine)
-
     def _checkshape(self, x):
+        """
+        Verify that x has the proper shape for evaluating the mapping
+        """
+        ndim = A.shape[::-1]
+
         if x.dtype.isbuiltin:
             if x.ndim > 2 or x.shape[-1] != ndim[0]:
                 raise ValueError('if dtype is builtin, expecting a 2-d array of shape (*,%d) or a 1-d array of shape (%d,)' % (ndim[0], ndim[0]))
@@ -216,12 +121,14 @@ class CoordinateMap(object):
         >>>                                    
         """
         return self.mapping(x)
-#         x = self.input_coords.typecast(x, dtype=self.input_coords.dtype)
-#         if typecast:
-#             y = self.output_coords.typecast(y, dtype=self.output_coords.dtype)
-#         if len(x.shape) in [0,1]:
-#             y = np.squeeze(y)
-#         return y
+
+    def call_enforcing_dtypes(self, x):
+        """
+        Evaluate the mapping at x, enforcing the input and output dtypes.
+        """
+        x = self.input_coords.typecast(x, dtype=self.input_coords.dtype)
+        y = self.mapping(x)
+        y = self.output_coords.typecast(y, dtype=self.output_coords.dtype)
 
     def copy(self):
         """
@@ -234,8 +141,8 @@ class CoordinateMap(object):
 
     def __getitem__(self, index):
         """
-        If all input coordinates have a len, return
-        a slice through the coordmap.
+        If hasattr(self, 'shape'), implying that input_coordinates
+        are 'voxel coordinates', return a slice through the coordmap.
 
         Parameters
         ----------
@@ -244,15 +151,155 @@ class CoordinateMap(object):
         
         """
 
-        varcoords, mapping, shape = self.mapping._slice_mapping(index, self.shape)
-        ia = self.input_coords.axes
-        newia = []
-        for i in range(self.ndim[0]):
-            if i in varcoords:
-                a = copy.deepcopy(ia[i])
-                newia.append(a)
-        newic = CoordinateSystem(self.input_coords.name, newia, shape=shape)
-        return CoordinateMap(mapping, newic, self.output_coords)
+        if hasattr(self, 'shape'):
+            return = _slice(self, index)
+        else:
+            raise AttributeError('CoordinateMap should have a shape in order to be sliced')
+
+class Affine(CoordinateMap):
+    """
+    A class representing an affine transformation from an input coordinate system
+    to an output coordinate system.
+    
+    This class has an affine property, which is a matrix representing
+    the affine transformation in homogeneous coordinates. 
+    This matrix is used to perform mappings,
+    rather than having an explicit mapping function. 
+
+    """
+
+    def __init__(self, affine, input_coords, output_coords):
+        """
+        Return an CoordinateMap specified by an affine transformation in
+        homogeneous coordinates.
+        
+        """
+        self.affine = affine
+        self.input_coords = input_coords
+        self.output_coords = output_coords
+
+    def _getmapping(self):
+        A, b = self.params
+        def _mapping(x):
+            value = np.dot(x, A.T)
+            value += np.multiply.outer(np.ones(value.shape[0]), b)
+            return value
+        return _mapping
+    mapping = property(_getmapping)
+
+    def _getinverse(self):
+        """
+        Return the inverse coordinate map.
+        """
+        try:
+            Affine(np.linalg.inv(self.affine), self.output_coords, self.input_coords)
+        except np.linalg.linalg.LinAlgError:
+            pass
+
+    @staticmethod
+    def from_params(innames, outnames, params, shape=None):
+        """
+        Create an `Affine` instance from sequences of innames and outnames,
+        as an optional shape.
+
+        :Parameters:
+            innames : ``tuple`` of ``string``
+                The names of the axes of the input coordinate systems
+
+            outnames : ``tuple`` of ``string``
+                The names of the axes of the output coordinate systems
+
+            params : `Affine`, `ndarray` or `(ndarray, ndarray)`
+                An affine mapping between the input and output coordinate systems.
+                This can be represented either by a single
+                ndarray (which is interpreted as the representation of the
+                mapping in homogeneous coordinates) or an (A,b) tuple.
+            shape : ''tuple'' of ''int''
+                The shape of the coordmap
+
+        :Returns: `Affine`
+        
+        :Precondition: ``len(shape) == len(names)``
+        
+        :Raises ValueError: ``if len(shape) != len(names)``
+        """
+        if type(params) == type(()):
+            A, b = params
+            params = transform_from_matvec(A, b)
+
+        ndim = (len(innames) + 1, len(outnames) + 1)
+        if params.shape != ndim:
+            raise ValueError('shape and number of axis names do not agree')
+        dtype = params.dtype
+        if shape:
+            inaxes = [Axis(name, length=l, dtype=dtype) for name, l in zip(innames, shape)]
+        else:
+            inaxes = [Axis(name, dtype=dtype) for name in innames]
+        outaxes = [Axis(name, dtype=dtype) for name in outnames]
+        input_coords = CoordinateSystem("input", inaxes)
+        output_coords = CoordinateSystem('output', outaxes)
+        return Affine(A, input_coords, output_coords)
+
+    @staticmethod
+    def from_start_step(innames, outnames, start, step, shape=None):
+        """
+        Create an `Affine` instance from sequences of names, shape, start
+        and step.
+
+        :Parameters:
+            innames : ``tuple`` of ``string``
+                The names of the axes of the input coordinate systems
+
+            outnames : ``tuple`` of ``string``
+                The names of the axes of the output coordinate systems
+
+            start : ``tuple`` of ``float``
+                Start vector used in constructing affine transformation
+            step : ``tuple`` of ``float``
+                Step vector used in constructing affine transformation
+            shape : ''tuple'' of ''int''
+                The shape of the coordmap
+
+        :Returns: `CoordinateMap`
+        
+        :Predcondition: ``len(names) == len(start) == len(step)``
+        """
+        ndim = len(innames)
+        if len(outnames) != ndim:
+            raise ValueError, 'len(innames) != len(outnames)'
+
+        cmaps = []
+        for i in range(ndim):
+            A = np.array([[step[i], start[i]],
+                          [0, 1]])
+            if shape:
+                cmaps.append(Affine.from_params([innames[i]], [outnames[i]], A, (shape[i],)))
+            else:
+                cmaps.append(Affine.from_params([innames[i]], [outnames[i]], A))
+        return product(*cmaps)
+
+    @staticmethod
+    def identity(names, shape=None):
+        """
+        Return an identity coordmap of the given shape.
+        
+        :Parameters:
+            names : ``tuple`` of ``string``
+                TODO
+            dim :  ``int``
+                TODO
+            shape : ``tuple`` of ``int``
+                TODO
+
+        :Returns: `CoordinateMap` with `CoordinateSystem` input
+                  and an identity transform 
+        
+        :Precondition: ``len(shape) == len(names)``
+        
+        :Raises ValueError: ``if len(shape) != len(names)``
+        """
+        return Affine.from_start_step(names, names, [0]*len(names),
+                                      [1]*len(names), shape=shape)
 
 def _slice(coordmap, *slices):
     """
@@ -665,4 +712,104 @@ def hstack(*cmaps):
     outcoords = CoordinateSystem('stackout-%s' % cmaps[0].output_coords.name, 
                                  outaxes)
     return CoordinateMap(mapping, incoords, outcoords)
+
+def matvec_from_transform(transform):
+    """ Split a tranformation represented in homogeneous
+    coordinates into it's matrix and vector components. """
+    ndimin = transform.shape[0] - 1
+    ndimout = transform.shape[1] - 1
+    matrix = transform[0:ndimin, 0:ndimout]
+    vector = transform[0:ndimin, ndimout]
+    return matrix, vector
+
+def transform_from_matvec(matrix, vector):
+    """ Combine a matrix and vector into its representation in homogeneous coordinates. """
+    nin, nout = matrix.shape
+    t = np.zeros((nin+1,nout+1), matrix.dtype)
+    t[0:nin, 0:nout] = matrix
+    t[nin,   nout] = 1.
+    t[0:nin, nout] = vector
+    return t
+
+
+def map_compose(*mappings):
+    """ Mapping composition
+
+    :Parameters:
+         mappings: sequence of Mappings
+                The mapping to compose with.
+    :Returns: `Mapping`
+
+    :Note: If all mappings are Affine, return an Affine instance.
+
+    """
+    def _compose2(map1, map2):
+        forward = lambda input: map1(map2(input))
+        if map1.isinvertible and map2.isinvertible:
+            backward = lambda output: map2.inverse(map1.inverse(output))
+        else:
+            backward = None
+        return Mapping(forward, inverse=backward)
+    mapping = mappings[-1]
+    for i in range(len(mappings)-2,-1,-1):
+        mapping = _compose2(mappings[i], mapping)
+
+    notaffine = filter(lambda mapping: not isinstance(mapping, Affine), mappings)
+    if not notaffine:
+        mapping = linearize(mapping, mappings[-1].transform.shape[1]-1)
+    return mapping
+    
+def linearize(mapping, ndimin, step=np.array(1.), origin=None):
+    """
+    Given a Mapping of ndimin variables, 
+    with an input builtin dtype, return the linearization
+    of mapping at origin based on a given step size
+    in each coordinate axis.
+
+    If not specified, origin defaults to np.zeros(ndimin, dtype=dtype).
+    
+    :Inputs: 
+        mapping: ``Mapping``
+              A Mapping to linearize
+        ndimin: ``int``
+              Number of input dimensions to mapping
+        origin: ``ndarray``
+              Origin at which to linearize mapping
+        step: ``ndarray``
+              Step size, an ndarray with step.shape == ().
+
+    :Returns:
+        A: ``ndarray``
+            Linearization of mapping in homogeneous coordinates, i.e. 
+            an array of size (ndimout+1, ndimin+1) where
+            ndimout = mapping(origin).shape[0].
+
+    :Notes: The dtype of the resulting Affine mapping
+            will be the dtype of mapping(origin)/step, regardless
+            of the input dtype.
+
+    """
+    step = np.asarray(step)
+    if step.shape != ():
+        raise ValueError('step should be a scalar value')
+    if origin is None:
+        origin = np.zeros(ndimin, step.dtype)
+    else:
+        if origin.dtype != step.dtype:
+            warnings.warn('origin.dtype != step.dtype in function linearize, using step.dtype')
+        origin = np.asarray(origin, dtype=step.dtype)
+        if origin.shape != (ndimin,):
+            raise ValueError('origin.shape != (%d,)' % ndimin)
+    b = mapping(origin)
+
+    origin = np.multiply.outer(np.ones(ndimin), origin)
+    y1 = mapping(step*np.identity(ndimin) + origin)
+    y0 = mapping(origin)
+
+    ndimout = y1.shape[1]
+    C = np.zeros((ndimout+1, ndimin+1), (y0/step).dtype)
+    C[-1,-1] = 1
+    C[:ndimout,-1] = b
+    C[:ndimout,:ndimin] = (y1 - y0).T / step
+    return Affine(C)
 
