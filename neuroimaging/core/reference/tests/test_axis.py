@@ -19,6 +19,15 @@ def test_len():
         nose.tools.assert_raises(ValueError, len, ax2)
         nose.tools.assert_equal(len(ax1), 20)
 
+def test_dtype():
+	ax = Axis(name='x', dtype=np.int32)
+        nose.tools.assert_equal(ax.dtype, np.dtype([('x', np.int32)]))
+        nose.tools.assert_equal(ax.builtin, np.dtype(np.int32))
+
+	ax.dtype = np.float
+        nose.tools.assert_equal(ax.dtype, np.dtype([('x', np.float)]))
+        nose.tools.assert_equal(ax.builtin, np.dtype(np.float))
+
 
 
 
