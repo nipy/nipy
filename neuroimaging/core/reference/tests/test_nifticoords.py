@@ -22,10 +22,10 @@ def test_validate1():
     input_coords = api.CoordinateSystem('input', input_axes[:4])
     cmap = api.CoordinateMap(api.Affine(np.diag(list(step[:4]) + [1])), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield nose.tools.assert_true(newcmap.input_coords.name == 'input')
-    yield nose.tools.assert_true(newcmap.output_coords.name == 'output')
-    yield nose.tools.assert_true(order == (0,1,2,3))
-    yield nose.tools.assert_true(np.allclose(pixdim, np.arange(4)+1))
+    nose.tools.assert_true(newcmap.input_coords.name == 'input')
+    nose.tools.assert_true(newcmap.output_coords.name == 'output')
+    nose.tools.assert_true(order == (0,1,2,3))
+    nose.tools.assert_true(np.allclose(pixdim, np.arange(4)+1))
 
 def test_validate1a():
 
@@ -37,10 +37,10 @@ def test_validate1a():
     input_coords = api.CoordinateSystem('input', input_axes[:3][::-1])
     cmap = api.CoordinateMap(api.Affine(np.diag(list(step[:3]) + [1])), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield nose.tools.assert_true(newcmap.input_coords.name == 'input')
-    yield nose.tools.assert_true(newcmap.output_coords.name == 'output')
-    yield nose.tools.assert_true(order == (0,1,2))
-    yield nose.tools.assert_true(np.allclose(pixdim, np.arange(3)+1))
+    nose.tools.assert_true(newcmap.input_coords.name == 'input')
+    nose.tools.assert_true(newcmap.output_coords.name == 'output')
+    nose.tools.assert_true(order == (0,1,2))
+    nose.tools.assert_true(np.allclose(pixdim, np.arange(3)+1))
 
 def test_validate1b():
 
@@ -55,10 +55,10 @@ def test_validate1b():
                                                   input_axes[3]])
     cmap = api.CoordinateMap(api.Affine(np.identity(6)), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield nose.tools.assert_true(newcmap.input_coords.name == 'input')
-    yield nose.tools.assert_true(newcmap.output_coords.name == 'output')
-    yield nose.tools.assert_true(order == (0,1,2,3))
-    yield nose.tools.assert_true(np.allclose(pixdim, np.arange(4)+1))
+    nose.tools.assert_true(newcmap.input_coords.name == 'input')
+    nose.tools.assert_true(newcmap.output_coords.name == 'output')
+    nose.tools.assert_true(order == (0,1,2,3))
+    nose.tools.assert_true(np.allclose(pixdim, np.arange(4)+1))
 
 def test_validate2():
     """
@@ -72,12 +72,12 @@ def test_validate2():
     output_coords = api.CoordinateSystem('output', output_axes[:4])
     cmap = api.CoordinateMap(api.Affine(np.identity(5)), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield nose.tools.assert_true(newcmap.input_coords.name == 'input-reordered')
-    yield nose.tools.assert_true(order == (0,2,3,1))
+    nose.tools.assert_true(newcmap.input_coords.name == 'input-reordered')
+    nose.tools.assert_true(order == (0,2,3,1))
     x = np.zeros(cmap.shape)
     X = np.transpose(x, order)
     assert(X.shape, newcmap.shape)
-    yield nose.tools.assert_true(np.allclose(pixdim, np.arange(4)+1))
+    nose.tools.assert_true(np.allclose(pixdim, np.arange(4)+1))
 #    return newcmap, order, pixdim, diminfo
 
 def test_validate3():
@@ -112,9 +112,9 @@ def test_validate4():
     cmap = api.CoordinateMap(api.Affine(np.identity(5)), input_coords, output_coords)
 
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield nose.tools.assert_true(newcmap.input_coords.name == 'input-reordered')
-    yield nose.tools.assert_true(order == (0,1,2,4,3))
-    yield nose.tools.assert_true(np.allclose(pixdim, np.arange(5)+1))
+    nose.tools.assert_true(newcmap.input_coords.name == 'input-reordered')
+    nose.tools.assert_true(order == (0,1,2,4,3))
+    nose.tools.assert_true(np.allclose(pixdim, np.arange(5)+1))
     x = np.zeros(cmap.shape)
     X = np.transpose(x, order)
     assert(X.shape, newcmap.shape)
@@ -126,10 +126,10 @@ def test_validate4():
         perm[i,j] = 1
     B = np.dot(np.identity(5), perm)
 
-    yield nose.tools.assert_true(np.allclose(newcmap.affine, B))
+    nose.tools.assert_true(np.allclose(newcmap.affine, B))
     X = np.random.standard_normal((5,))
     Xr = [X[i] for i in order]
-    yield nose.tools.assert_true(np.allclose(newcmap(Xr), cmap(X)))
+    nose.tools.assert_true(np.allclose(newcmap(Xr), cmap(X)))
 #    return newcmap, order, pixdim, diminfo
 
 def test_validate5():
@@ -146,10 +146,10 @@ def test_validate5():
     output_coords = api.CoordinateSystem('output', output_axes[:5][::-1])
     cmap = api.CoordinateMap(api.Affine(np.identity(5)), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield nose.tools.assert_true(newcmap.input_coords.name == 'input-reordered')
-    yield nose.tools.assert_true(newcmap.output_coords.name == 'output-reordered')
-    yield nose.tools.assert_true(order == (0,1,2,4,3))
-    yield nose.tools.assert_true(np.allclose(pixdim, np.arange(5)+1))
+    nose.tools.assert_true(newcmap.input_coords.name == 'input-reordered')
+    nose.tools.assert_true(newcmap.output_coords.name == 'output-reordered')
+    nose.tools.assert_true(order == (0,1,2,4,3))
+    nose.tools.assert_true(np.allclose(pixdim, np.arange(5)+1))
 
     x = np.zeros(cmap.shape)
     X = np.transpose(x, order)
@@ -167,11 +167,11 @@ def test_validate5():
     for i in range(5):
         r[i, 4-i] = 1.
 
-    yield nose.tools.assert_true(np.allclose(newcmap.affine, 
+    nose.tools.assert_true(np.allclose(newcmap.affine, 
                                        np.dot(r, B)))
     X = np.random.standard_normal((5,))
     Xr = [X[i] for i in order]
-    yield nose.tools.assert_true(np.allclose(newcmap(Xr)[::-1], cmap(X)))
+    nose.tools.assert_true(np.allclose(newcmap(Xr)[::-1], cmap(X)))
 
 
 def test_validate6():
@@ -185,16 +185,16 @@ def test_validate6():
     output_coords = api.CoordinateSystem('output', output_axes[:4])
     cmap = api.CoordinateMap(api.Affine(np.identity(5)), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield nose.tools.assert_true(newcmap.input_coords.name == 'input')
-    yield nose.tools.assert_true(newcmap.output_coords.name == 'output')
-    yield nose.tools.assert_true(order == (0,1,2,3))
+    nose.tools.assert_true(newcmap.input_coords.name == 'input')
+    nose.tools.assert_true(newcmap.output_coords.name == 'output')
+    nose.tools.assert_true(order == (0,1,2,3))
 
     x = np.zeros(cmap.shape)
     X = np.transpose(x, order)
     assert(X.shape, newcmap.shape)
 
-    yield nose.tools.assert_true(newcmap.input_coords.axisnames == ['j','k','i','l'])
-    yield nose.tools.assert_true(np.allclose(pixdim, np.arange(4)+1))
+    nose.tools.assert_true(newcmap.input_coords.axisnames == ['j','k','i','l'])
+    nose.tools.assert_true(np.allclose(pixdim, np.arange(4)+1))
 
 
 def test_validate7():
@@ -209,17 +209,17 @@ def test_validate7():
     output_coords = api.CoordinateSystem('output', output_axes[:4])
     cmap = api.CoordinateMap(api.Affine(np.diag(list(step[:4]) + [1])), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield nose.tools.assert_true(newcmap.input_coords.name == 'input')
-    yield nose.tools.assert_true(newcmap.output_coords.name == 'output')
-    yield nose.tools.assert_true(order == (0,1,2,3))
+    nose.tools.assert_true(newcmap.input_coords.name == 'input')
+    nose.tools.assert_true(newcmap.output_coords.name == 'output')
+    nose.tools.assert_true(order == (0,1,2,3))
 
     x = np.zeros(cmap.shape)
     X = np.transpose(x, order)
     assert(X.shape, newcmap.shape)
 
-    yield nose.tools.assert_true(newcmap.input_coords.axisnames == ['j','k','i','l'])
+    nose.tools.assert_true(newcmap.input_coords.axisnames == ['j','k','i','l'])
     print pixdim, 'pixdim'
-    yield nose.tools.assert_true(np.allclose(pixdim, np.arange(4)+1))
+    nose.tools.assert_true(np.allclose(pixdim, np.arange(4)+1))
 
 def test_ijk1():
     assert(nifti.ijk_from_diminfo(nifti._diminfo_from_fps(-1,-1,-1)) == list('ijk'))
@@ -236,10 +236,10 @@ def test_ijk2():
     output_coords = api.CoordinateSystem('output', output_axes[:4])
     cmap = api.CoordinateMap(api.Affine(np.identity(5)), input_coords, output_coords)
 
-    yield nose.tools.assert_true(nifti.get_time_axis(cmap) == 3)
-    yield nose.tools.assert_true(nifti.get_freq_axis(cmap) == 0)
-    yield nose.tools.assert_true(nifti.get_slice_axis(cmap) == 1)
-    yield nose.tools.assert_true(nifti.get_phase_axis(cmap) == 2)
+    nose.tools.assert_true(nifti.get_time_axis(cmap) == 3)
+    nose.tools.assert_true(nifti.get_freq_axis(cmap) == 0)
+    nose.tools.assert_true(nifti.get_slice_axis(cmap) == 1)
+    nose.tools.assert_true(nifti.get_phase_axis(cmap) == 2)
 
 def test_ijk3():
     '''
@@ -251,10 +251,10 @@ def test_ijk3():
     output_coords = api.CoordinateSystem('output', output_axes[:4][::-1])
     cmap = api.CoordinateMap(api.Affine(np.identity(6)), input_coords, output_coords)
 
-    yield nose.tools.assert_true(nifti.get_time_axis(cmap) == 3)
-    yield nose.tools.assert_true(nifti.get_freq_axis(cmap) == 0)
-    yield nose.tools.assert_true(nifti.get_slice_axis(cmap) == 1)
-    yield nose.tools.assert_true(nifti.get_phase_axis(cmap) == 2)
+    nose.tools.assert_true(nifti.get_time_axis(cmap) == 3)
+    nose.tools.assert_true(nifti.get_freq_axis(cmap) == 0)
+    nose.tools.assert_true(nifti.get_slice_axis(cmap) == 1)
+    nose.tools.assert_true(nifti.get_phase_axis(cmap) == 2)
 
 def test_ijk4():
     """
@@ -269,14 +269,14 @@ def test_ijk4():
 
     cmap = api.CoordinateMap(api.Affine(np.identity(6)), input_coords, output_coords)
 
-    yield nose.tools.assert_true(nifti.get_time_axis(cmap) == 4)
-    yield nose.tools.assert_true(nifti.get_freq_axis(cmap) == 1)
-    yield nose.tools.assert_true(nifti.get_slice_axis(cmap) == 2)
-    yield nose.tools.assert_true(nifti.get_phase_axis(cmap) == 0)
+    nose.tools.assert_true(nifti.get_time_axis(cmap) == 4)
+    nose.tools.assert_true(nifti.get_freq_axis(cmap) == 1)
+    nose.tools.assert_true(nifti.get_slice_axis(cmap) == 2)
+    nose.tools.assert_true(nifti.get_phase_axis(cmap) == 0)
 
     newcmap, _ = nifti.coerce_coordmap(cmap)
 
-    yield nose.tools.assert_true(nifti.get_time_axis(newcmap) == 3)
-    yield nose.tools.assert_true(nifti.get_freq_axis(newcmap) == 1)
-    yield nose.tools.assert_true(nifti.get_slice_axis(newcmap) == 2)
-    yield nose.tools.assert_true(nifti.get_phase_axis(newcmap) == 0)
+    nose.tools.assert_true(nifti.get_time_axis(newcmap) == 3)
+    nose.tools.assert_true(nifti.get_freq_axis(newcmap) == 1)
+    nose.tools.assert_true(nifti.get_slice_axis(newcmap) == 2)
+    nose.tools.assert_true(nifti.get_phase_axis(newcmap) == 0)
