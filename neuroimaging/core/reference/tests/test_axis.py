@@ -13,12 +13,6 @@ def test_eq():
         nose.tools.assert_false(ax1 == ax2)
         nose.tools.assert_false(ax1 == ax3)
 
-def test_len():
-        ax1 = Axis(name='xspace', length=20)
-        ax2 = Axis(name='yspace')
-        nose.tools.assert_raises(ValueError, len, ax2)
-        nose.tools.assert_equal(len(ax1), 20)
-
 def test_dtype():
 	ax = Axis(name='x', dtype=np.int32)
         nose.tools.assert_equal(ax.dtype, np.dtype([('x', np.int32)]))

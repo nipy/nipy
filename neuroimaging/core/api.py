@@ -8,7 +8,8 @@ system.  Use this module for importing core names into your namespace. For examp
 
 from neuroimaging.core.reference.axis import Axis
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem
-from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, Grid, values
+from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine
+from neuroimaging.core.reference.evaluate import Grid, Evaluator
 
 
 from neuroimaging.core.image.image import Image, merge_images

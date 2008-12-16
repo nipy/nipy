@@ -141,10 +141,6 @@ class CoordinateSystem(odict):
         with the correct shape, or
         typecast it as an ndarray with self.dtype.
 
-        TODO: Ensure that we can always find a builtin. This
-              means modification of the dtypes of all the Axes
-              at construction time.
-     
         """
         x = np.asarray(x)
 

@@ -3,29 +3,9 @@ Polar coordinate systems using a CoordinateMap
 """
 
 import numpy as np
-from scipy.linalg import expm
 
 from neuroimaging.core.api import CoordinateMap, CoordinateSystem, Axis, Affine
-from neuroimaging.core.reference.coordinate_map import Grid, values
-
-"""
-A parametric representation of a sphere
-"""
-
-tp = CoordinateSystem('input', [Axis(l) for l in ['theta', 'phi']])
-xyz = CoordinateSystem('output', [Axis(l) for l in ['x', 'y', 'z']])
-
-def sphere(vals, r=3.):
-    vals = tp.typecast(vals, tp.dtype)
-    theta = vals['theta']
-    phi = vals['phi']
-
-    o = np.array([r*np.cos(theta)*np.sin(phi),
-                  r*np.sin(theta)*np.sin(phi),
-                  r*np.cos(phi)]).T
-    return o
-
-sphere_parametrization = CoordinateMap(sphere, tp, xyz)
+from neuroimaging.core.api import Grid
 
 uv = CoordinateSystem('input', [Axis(l) for l in ['u', 'v']])
 def parametric(vals):
@@ -39,7 +19,6 @@ def parametric(vals):
     o = np.array([v*(u**2-v**2),
                   u,
                   u**2-v**2]).T
-
     return o
 
 """
@@ -54,9 +33,16 @@ def implicit(vals):
 surface_param = CoordinateMap(parametric, uv, xyz)
 assert np.allclose(implicit(parametric(np.random.standard_normal((40,2)))), 0)
 
+def test_grid():
+    g = Grid(surface_param)
+    xyz_grid = g[-1:1:201j,-1:1:101j]
+    x, y, z = xyz_grid.transposed_values
+    nose.tools.assert_equal(x.shape, (201,101))
+    nose.tools.assert_equal(y.shape, (201,101))
+    nose.tools.assert_equal(z.shape, (201,101))
+    return x, y, z
+
 if __name__ == '__main__':
     from enthought.mayavi import mlab
-    g = Grid(uv)
-    x, y, z = values(g[-1:1:101j,-2:2:101j], transpose=True)
-    mlab.mesh(x,y,z)
+    mlab.mesh(*test_grid())
     mlab.draw()

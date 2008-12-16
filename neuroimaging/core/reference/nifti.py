@@ -193,7 +193,7 @@ def coerce_coordmap(coordmap):
     axes = coordmap.output_coords.axes
     newoutcoords = CoordinateSystem(outname, [axes[i] for i in outtrans])
 
-    return CoordinateMap(Affine(A), newincoords, newoutcoords), intrans
+    return Affine(A, newincoords, newoutcoords), intrans
 
 def get_pixdim(coordmap, full_length=False):
     """
@@ -217,6 +217,8 @@ def get_pixdim(coordmap, full_length=False):
            non-negative pixdim values to be saved as NIFTI
 
     """
+
+    # FIXME: Axis instances don't have steps now.... get pixdim from the affine transform
 
     # NIFTI header specifies pixdim should be positive (we take this
     # as non-negative).
@@ -242,7 +244,6 @@ def get_pixdim(coordmap, full_length=False):
     opixdim = np.diag(A)[3:-1]
     if not np.allclose(opixdim, pixdim[3:]):
         warnings.warn("pixdims from output_coords:%s, do not agree with pixdim from (coerced) affine matrix:%s. using those from output_coords" % (`pixdim[3:]`, `opixdim`))
-
 
     pixdim = np.fabs(pixdim)
     if full_length:

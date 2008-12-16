@@ -11,8 +11,7 @@ from neuroimaging.core.reference.coordinate_map import Affine
 
 MNI_mapping = Affine.from_start_step(['xspace', 'yspace', 'zspace'],
                                      ['xspace', 'yspace', 'zspace'],
-                                     [-72,-126,-90], [2,2,2], 
-                                     (91, 109,91))
+                                     [-72,-126,-90], [2,2,2]) 
 MNI_voxel = MNI_mapping.input_coords
 MNI_world = MNI_mapping.output_coords
 

@@ -33,16 +33,10 @@ class Axis(object):
     def __str__(self):
         return '<Axis:"%(name)s", dtype=%(dtype)s>' % {'name':self.name, 'dtype':`self.dtype.descr`}
 
-    def __len__(self):
-        if self._length > 0:
-            return self._length
-        else:
-            raise ValueError, '%s has no length' % `self`
-
     def __repr__(self):
         return self.__str__()
 
-    def __init__(self, name, dtype=np.float, length=None):
+    def __init__(self, name, dtype=np.float):
         """
         Create an axis with a given name.
 
@@ -52,7 +46,6 @@ class Axis(object):
         """
         self.name = name
         self._dtype = np.dtype(dtype)
-        self._length = length
 
         # verify that the dtype is builtin for sanity
         if not self._dtype.isbuiltin:
