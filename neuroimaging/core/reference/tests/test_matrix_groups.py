@@ -3,6 +3,7 @@ from scipy.linalg import expm
 import nose.tools
 
 import matrix_groups as MG
+from neuroimaging.core.api import Evaluator
 
 A = np.array([[0,1],
               [1,0]])
@@ -136,3 +137,6 @@ def test_32():
     B = O32(random_orth(3).matrix.astype(np.float32), 'xyz')
     C = MG.product(A, B)
     nose.tools.assert_equals(C.dtype, np.float32)
+
+    ev = Evaluator.from_shape(C, (20,30,40))
+    nose.tools.assert_equals(ev.values.dtype, np.float32)
