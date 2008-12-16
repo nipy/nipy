@@ -562,7 +562,7 @@ def compose(*cmaps):
                       cmap.output_coords)
     return cmap
     
-def replicate(coordmap, n, concataxis='string'):
+def replicate(coordmap, n, concataxis='concat'):
     """
     Create a CoordinateMap by taking the product
     of coordmap with a 1-dimensional 'concat' CoordinateSystem
