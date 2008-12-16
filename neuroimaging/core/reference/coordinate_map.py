@@ -93,16 +93,16 @@ class CoordinateMap(object):
         """
         Return mapping evaluated at x
         
-        >>> inaxes = [Axis(x, length=l) for x, l in zip('ijk', (10,20,30))]
+        >>> inaxes = [Axis(x) for x in 'ijk']
         >>> inc = CoordinateSystem('input', inaxes)
         >>> outaxes = [Axis(x) for x in 'xyz']
         >>> outc = CoordinateSystem('output', outaxes)
-        >>> cm = Affine(np.diag([1,2,3,1])), inc, outc)
+        >>> cm = Affine(np.diag([1,2,3,1]), inc, outc)
         >>> cm([2,3,4])
-        array([(2.0, 6.0, 12.0)])
+        array([  2.,   6.,  12.])
         >>> cmi = cm.inverse
         >>> cmi([2,6,12])
-        array([(2.0, 3.0, 4.0)])
+        array([ 2.,  3.,  4.])
         >>>                                    
         """
         return self.mapping(x)
@@ -314,14 +314,14 @@ def rename_output(coordmap, **kwargs):
     Rename the output_coords, returning a new CoordinateMap.
     
     >>> import numpy as np
-    >>> inaxes = [Axis(x, length=l) for x in 'ijk']
+    >>> inaxes = [Axis(x) for x in 'ijk']
     >>> outaxes = [Axis(x) for x in 'xyz']
     >>> inc = CoordinateSystem('input', inaxes)
     >>> outc = CoordinateSystem('output', outaxes)
     >>> cm = Affine(np.identity(4), inc, outc)
     >>> print cm.output_coords.values()
     [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>]
-    >>> cm2 = cm.rename_output(y='a')
+    >>> cm2 = rename_output(cm, y='a')
     >>> print cm2.output_coords
     {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"a", dtype=[('a', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>], 'name': 'output-renamed'}
 
@@ -349,13 +349,13 @@ def reorder_input(coordmap, order=None):
     newcoordmap: `CoordinateMap`
          A new CoordinateMap with reversed input_coords.
 
-    >>> inc = CoordinateSystem('input', inaxes)
-    >>> inaxes = [Axis(x) for x 'ijk']
+    >>> inaxes = [Axis(x) for x in 'ijk']
     >>> inc = CoordinateSystem('input', inaxes)
     >>> outaxes = [Axis(x) for x in 'xyz']
     >>> outc = CoordinateSystem('output', outaxes)
     >>> cm = Affine(np.identity(4), inc, outc)
     >>> print reorder_input(cm, 'ikj').input_coords
+    {'axes': [<Axis:"i", dtype=[('i', '<f8')]>, <Axis:"k", dtype=[('k', '<f8')]>, <Axis:"j", dtype=[('j', '<f8')]>], 'name': 'input-reordered'}
 
     """
     ndim = coordmap.ndim[0]
@@ -394,15 +394,14 @@ def reorder_output(coordmap, order=None):
     newcoordmap: `CoordinateMap`
          A new CoordinateMap with reversed output_coords.
 
-    >>> inc = CoordinateSystem('input', inaxes)
     >>> inaxes = [Axis(x) for x in 'ijk']
     >>> inc = CoordinateSystem('input', inaxes)
     >>> outaxes = [Axis(x) for x in 'xyz']
     >>> outc = CoordinateSystem('output', outaxes)
     >>> cm = Affine(np.identity(4), inc, outc)
     >>> print reorder_output(cm, 'xzy').output_coords
-
-    >>> print reorder_output(cm, [0,2,1]).axisnames
+    {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>], 'name': 'output-reordered'}
+    >>> print reorder_output(cm, [0,2,1]).output_coords.axisnames
     ['x', 'z', 'y']
     >>>                             
 
@@ -443,13 +442,11 @@ def product(*cmaps):
     --------
     cmap : ``CoordinateMap``
 
-    >>> inc1 = Affine.from_affine('i', 'x', np.diag([2,1]), (10,))
-    >>> inc2 = Affine.from_affine('j', 'y', np.diag([3,1]), (20,))
-    >>> inc3 = Affine.from_affine('k', 'z', np.diag([4,1]), (30,))
+    >>> inc1 = Affine.from_params('i', 'x', np.diag([2,1]))
+    >>> inc2 = Affine.from_params('j', 'y', np.diag([3,1]))
+    >>> inc3 = Affine.from_params('k', 'z', np.diag([4,1]))
 
     >>> cmap = product(inc1, inc3, inc2)
-    >>> cmap.shape
-    (10, 30, 20)
     >>> cmap.input_coords.axisnames
     ['i', 'k', 'j']
     >>> cmap.output_coords.axisnames
@@ -514,15 +511,14 @@ def compose(*cmaps):
          The resulting CoordinateMap has input_coords == cmaps[-1].input_coords
          and output_coords == cmaps[0].output_coords
 
-    >>> cmap = CoordinateMap.from_affine('i', 'x', Affine(np.diag([2,1])), (10,))
+    >>> cmap = Affine.from_params('i', 'x', np.diag([2.,1.]))
     >>> cmapi = cmap.inverse
     >>> id1 = compose(cmap,cmapi)
     >>> print id1.affine
     [[ 1.  0.]
      [ 0.  1.]]
-    >>> assert not hasattr(id1, 'shape')
+
     >>> id2 = compose(cmapi,cmap)
-    >>> assert id2.shape == (10,)
     >>> id1.input_coords.axisnames
     ['x']
     >>> id2.input_coords.axisnames
@@ -595,9 +591,9 @@ def hstack(*cmaps):
     --------
     cmap : ``CoordinateMap``
 
-    >>> inc1 = CoordinateMap.from_affine('ab', 'cd', Affine(np.diag([2,3,1])))
-    >>> inc2 = CoordinateMap.from_affine('ab', 'cd', Affine(np.diag([3,2,1])))
-    >>> inc3 = CoordinateMap.from_affine('ab', 'cd', Affine(np.diag([1,1,1])))
+    >>> inc1 = Affine.from_params('ab', 'cd', np.diag([2,3,1]))
+    >>> inc2 = Affine.from_params('ab', 'cd', np.diag([3,2,1]))
+    >>> inc3 = Affine.from_params('ab', 'cd', np.diag([1,1,1]))
     >>> stacked = hstack(inc1, inc2, inc3)
 
     >>> stacked(np.array([[0,1,2],[1,1,2],[2,1,2], [1,1,2]]).T)
@@ -614,7 +610,7 @@ def hstack(*cmaps):
     notinput = filter(lambda i: cmaps[i].input_coords != cmaps[0].input_coords, range(len(cmaps)))
     notoutput = filter(lambda i: cmaps[i].output_coords != cmaps[0].output_coords, range(len(cmaps)))
 
-    if notinput or notoutput or notshape:
+    if notinput or notoutput:
         raise ValueError("input and output coordinates of each CoordinateMap should be the same in order to stack them")
 
     def mapping(x, return_index=False):

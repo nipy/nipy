@@ -3,12 +3,16 @@ Polar coordinate systems using a CoordinateMap
 """
 
 import numpy as np
+import nose.tools
 
 from neuroimaging.core.api import CoordinateMap, CoordinateSystem, Axis, Affine
 from neuroimaging.core.api import Grid
 
 uv = CoordinateSystem('input', [Axis(l) for l in ['u', 'v']])
+xyz = CoordinateSystem('output', [Axis(l) for l in 'xyz'])
+
 def parametric(vals):
+
     """
     Parametrization of the surface x**2-y**2*z**2+z**3=0
     """

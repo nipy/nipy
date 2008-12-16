@@ -16,6 +16,8 @@ class Evaluator(object):
     When the input_coords of a CoordinateMap can be thought of as 'array'
     coordinates, i.e. an 'input_shape' makes sense. We can than evaluate the
     CoordinateMap at np.indices(input_shape)
+
+
     """
 
     def __init__(self, coordmap, shape):
@@ -30,7 +32,7 @@ class Evaluator(object):
         
         """
         self.coordmap = coordmap
-        self.shape = shape
+        self.shape = tuple(shape)
 
     def _evaluate(self, transpose=False):
         """
@@ -167,22 +169,22 @@ class Grid(object):
     >>> c = CoordinateSystem('input', [Axis(n) for n in 'xy'])
     >>> g = Grid(c)
     >>> points = g[-1:1:21j,-2:4:31j]
-    >>> points.affine
+    >>> points.coordmap.affine
     array([[ 0.1,  0. , -1. ],
            [ 0. ,  0.2, -2. ],
            [ 0. ,  0. ,  1. ]])
 
-    >>> print points.input_coords
+    >>> print points.coordmap.input_coords
     {'axes': [<Axis:"i0", dtype=[('i0', '<f8')]>, <Axis:"i1", dtype=[('i1', '<f8')]>], 'name': 'i0 * i1'}
-    >>> print points.output_coords
-    {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>], 'name': 'x * y'}
+    >>> print points.coordmap.output_coords
+    {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>], 'name': 'input'}
     >>>                                                  
 
     >>> points.shape
     (21, 31)
-    >>> print values(points, transpose=True).shape
+    >>> print points.transposed_values.shape
     (2, 21, 31)
-    >>> print values(points, transpose=False).shape
+    >>> print points.values.shape
     (651, 2)
     """
 
@@ -227,4 +229,4 @@ class Grid(object):
                                 CoordinateSystem(self.coordmap.input_coords.axisnames[i], [self.coordmap.input_coords.axes[i]])))
         shape = [result.shape[0] for result in results]
         cmap = cmap_product(*cmaps)
-        return Evaluator(compose(self.coordmap, cmap), shape)
+        return Evaluator(compose(self.coordmap, cmap), tuple(shape))

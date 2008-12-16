@@ -35,13 +35,15 @@ NIFTI's voxel convention is what can best be described as 0-based
 FORTRAN indexing (confirm this). For example: suppose we want the
 x=20-th, y=10-th pixel of the third slice of an image with 30 64x64 slices. This
 
+>>> from neuroimaging.testing import anatfile
+>>> from neuroimaging.core.api import load_image
 >>> nifti_ijk = [19,9,2]
 >>> fortran_ijk = [20,10,3]
 >>> c_kji = [2,9,19]
->>> d = np.load('data.img', dtype=np.float, shape=(30,64,64))
->>> request1 = d[nifti_ijk[::-1]]
+>>> d = np.asarray(load_image(anatfile))
+>>> request1 = d[nifti_ijk[2],nifti_ijk[1],nifti_ijk[0]]
 >>> request2 = d[fortran_ijk[2]-1,fortran_ijk[1]-1, fortran_ijk[0]-1]
->>> request3 = d[c_kji]
+>>> request3 = d[c_kji[0],c_kji[1],c_kji[2]]
 >>> assert request1 == request2
 >>> assert request2 == request3
 
@@ -290,12 +292,8 @@ def standard_order(coordmap):
     warnings are raised, then this may give unexpected results
     because it only checks the reordering of the first 3 coordinates.
 
-    >>> cmap = CoordinateMap.from_affine('ikjl', 'xyzt', Affine(np.identity(5)), (64,30,64,200))
+    >>> cmap = Affine.from_params('ikjl', 'xyzt', np.identity(5))
     >>> sorder, scmap = standard_order(cmap)
-    >>> print cmap.shape
-    (64, 30, 64, 200)
-    >>> print scmap.shape
-    (64, 64, 30, 200)
     >>> print cmap.input_coords.axisnames
     ['i', 'k', 'j', 'l']
     >>> print scmap.input_coords.axisnames
@@ -531,12 +529,12 @@ def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
     ndim = len(shape)
     ijk = ijk_from_diminfo(diminfo)
     innames = ijk + valid_input_axisnames[3:ndim]
-    inaxes = [Axis(n, length=l) for n, l in zip(innames, shape[::-1])]
+    inaxes = [Axis(n) for n in innames]
     incoords = CoordinateSystem('input', inaxes)
 
     outnames = valid_output_axisnames[:ndim]
     outaxes = [Axis(n) for n in outnames]
     outcoords = CoordinateSystem('output', outaxes)
             
-    coordmap = CoordinateMap(affine, incoords, outcoords)
+    coordmap = Affine(affine, incoords, outcoords)
     return reorder_input(reorder_output(coordmap))

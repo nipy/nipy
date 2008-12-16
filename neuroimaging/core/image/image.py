@@ -79,9 +79,6 @@ class Image(object):
         # i) each axis in coordmap.input_coords has a length and
         # ii) the shapes are consistent
 
-        if data.shape != coordmap.shape:
-            raise ValueError('data.shape does not agree with coordmap.shape')
-
         # self._data is an array-like object.  It must implement a subset of
         # array methods  (Need to specify these, for now implied in pyniftio)
         self._data = data
@@ -175,7 +172,7 @@ def _open(source, coordmap=None, mode="r", dtype=None):
             hdr = {}
         ioimg = PyNiftiIO(source, mode, dtype=dtype, header=hdr)
         if coordmap is None:
-            coordmap = coordmap_from_ioimg(Affine(ioimg.affine), ioimg.header['dim_info'], ioimg.header['pixdim'], ioimg.shape)
+            coordmap = coordmap_from_ioimg(ioimg.affine, ioimg.header['dim_info'], ioimg.header['pixdim'], ioimg.shape)
 
         # Build nipy image from array-like object and coordinate map
         img = Image(ioimg, coordmap)
