@@ -55,7 +55,7 @@ class Evaluator(object):
                 Values of self.coordmap evaluated at np.indices(self.shape).
         """
 
-        indices = np.indices(self.shape)
+        indices = np.indices(self.shape).astype(self.coordmap.input_coords.builtin)
         tmp_shape = indices.shape
 
         # reshape indices to be a sequence of coordinates
@@ -156,11 +156,12 @@ def _slice(coordmap, shape, *slices):
     innames = slice_cmap.input_coords.axisnames
     inaxes = slice_cmap.input_coords.axes
     inmat = []
-    input_coords = CoordinateSystem('input-slice', [Axis(innames[i]) for i in keep_in_output])
+    input_coords = CoordinateSystem('input-slice', [Axis(innames[i], dtype=coordmap.input_coords.builtin) for i in keep_in_output])
     A = np.zeros((coordmap.ndim[0]+1, len(keep_in_output)+1))
     for j, i in enumerate(keep_in_output):
         A[:,j] = slice_cmap.affine[:,i]
     A[:,-1] = slice_cmap.affine[:,-1]
+    A = A.astype(input_coords.builtin)
     slice_cmap = Affine(A, input_coords, coordmap.input_coords)
     return Evaluator(compose(coordmap, slice_cmap), tuple(newshape))
                    
@@ -215,7 +216,8 @@ class Grid(object):
         Create an Affine coordinate map with into self.coords with
         slices created as in np.mgrid/np.ogrid.
         """
-        results = [a.ravel() for a in np.ogrid[index]]
+        dtype = self.coordmap.input_coords.builtin
+        results = [a.ravel().astype(dtype) for a in np.ogrid[index]]
         if len(results) != len(self.coordmap.input_coords.axisnames):
             raise ValueError('the number of slice objects must match the number of input dimensions')
 
@@ -226,8 +228,8 @@ class Grid(object):
             else:
                 step = 0
             start = result[0]
-            cmaps.append(Affine(np.array([[step, start],[0,1]]), 
-                                CoordinateSystem('i%d' % i, [Axis('i%d' % i)]),
+            cmaps.append(Affine(np.array([[step, start],[0,1]], dtype), 
+                                CoordinateSystem('i%d' % i, [Axis('i%d' % i, dtype=dtype)]),
                                 CoordinateSystem(self.coordmap.input_coords.axisnames[i], [self.coordmap.input_coords.axes[i]])))
         shape = [result.shape[0] for result in results]
         cmap = cmap_product(*cmaps)

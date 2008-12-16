@@ -80,12 +80,17 @@ class CoordinateMap(object):
         elif x.ndim > 1:
             raise ValueError, 'if dtype is not builtin, expecting 1-d array, or a 0-d array' 
 
-    def _checkmapping(self):
+    def _checkmapping(self, check_outdtype=True):
         """
         Verify that the input and output dimensions of self.mapping work.
+
+        Also
         """
         input = np.zeros((10, self.ndim[0]), dtype=self.input_coords.builtin)
-        output = self.mapping(input).astype(self.output_coords.builtin)
+        output = self.mapping(input)
+        if output.dtype != self.output_coords.builtin and check_outdtype:
+            warnings.warn('output.dtype != self.output_coords.builtin')
+        output = output.astype(self.output_coords.builtin)
         if output.shape != (10, self.ndim[1]):
             raise ValueError('input and output dimensions of mapping do not agree with specified CoordinateSystems')
 
@@ -500,12 +505,14 @@ def product(*cmaps):
         return yy
 
     notaffine = filter(lambda x: not isinstance(x, Affine), cmaps)
+
+    incoords, outcoords = CoordinateSystem(innames, inaxes), CoordinateSystem(outnames, outaxes)
     if not notaffine:
-        affine = linearize(mapping, ndimin[-1])
-        return Affine(affine, CoordinateSystem(innames, inaxes),
-                      CoordinateSystem(outnames, outaxes))
-    return CoordinateMap(mapping, CoordinateSystem(innames, inaxes),
-                      CoordinateSystem(outnames, outaxes))
+
+        affine = linearize(mapping, ndimin[-1], step=np.array(1, incoords.builtin))
+        print affine.dtype, outcoords.builtin, incoords.builtin, 'product'
+        return Affine(affine, incoords, outcoords)
+    return CoordinateMap(mapping, incoords, outcoords)
 
 def compose(*cmaps):
     """
@@ -557,7 +564,8 @@ def compose(*cmaps):
     notaffine = filter(lambda cmap: not isinstance(cmap, Affine), cmaps)
 
     if not notaffine:
-        affine = linearize(cmap, cmap.ndim[0])
+        affine = linearize(cmap, cmap.ndim[0], step=np.array(1, cmaps[0].output_coords.builtin))
+        print affine.dtype, 'compose'
         return Affine(affine, cmap.input_coords,
                       cmap.output_coords)
     return cmap
@@ -692,10 +700,11 @@ def linearize(mapping, ndimin, step=np.array(1.), origin=None):
 
     """
     step = np.asarray(step)
+    dtype = step.dtype
     if step.shape != ():
         raise ValueError('step should be a scalar value')
     if origin is None:
-        origin = np.zeros(ndimin, step.dtype)
+        origin = np.zeros(ndimin, dtype)
     else:
         if origin.dtype != step.dtype:
             warnings.warn('origin.dtype != step.dtype in function linearize, using step.dtype')
@@ -704,7 +713,7 @@ def linearize(mapping, ndimin, step=np.array(1.), origin=None):
             raise ValueError('origin.shape != (%d,)' % ndimin)
     b = mapping(origin)
 
-    origin = np.multiply.outer(np.ones(ndimin), origin)
+    origin = np.multiply.outer(np.ones(ndimin, dtype), origin)
     y1 = mapping(step*np.identity(ndimin) + origin)
     y0 = mapping(origin)
 
