@@ -16,6 +16,7 @@ See documentation for load and save functions for 'working' examples.
 import numpy as np
 
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, reorder_input, reorder_output, Affine
+from neuroimaging.core.reference.evaluate import Grid, Evaluator
 from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
 from neuroimaging.core.reference.nifti import coordmap_from_ioimg, coerce_coordmap, get_pixdim, get_diminfo, standard_order
 
@@ -42,7 +43,7 @@ class Image(object):
 
     >>> import numpy as np
     >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'),
-    ...                       ['zspace', 'yspace', 'xspace'])
+    ...                       'kji', 'zxy')
 
     """
 
@@ -134,7 +135,8 @@ class Image(object):
     def __getitem__(self, index):
         """Slicing an image returns a new image."""
         data = self._data[index]
-        coordmap = self.coordmap[index]
+        g = Evaluator(self.coordmap, self._data.shape)[index]
+        coordmap = g.coordmap
         # BUG: If it's a zero-dimension array we should return a numpy scalar
         # like np.int32(data[index])
         # Need to figure out elegant way to handle this
@@ -241,7 +243,7 @@ def save(img, filename, dtype=None):
     >>> from tempfile import NamedTemporaryFile
     >>> from neuroimaging.core.api import save_image, fromarray
     >>> data = np.zeros((91,109,91), dtype=np.uint8)
-    >>> img = fromarray(data)
+    >>> img = fromarray(data, 'kji', 'zxy')
     >>> tmpfile = NamedTemporaryFile(suffix='.nii.gz')
     >>> saved_img = save_image(img, tmpfile.name)
     >>> saved_img.shape
@@ -325,7 +327,7 @@ def coerce2nifti(img, standard=False):
     else:
         return nimg
 
-def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
+def fromarray(data, innames, outnames, coordmap=None):
     """Create an image from a numpy array.
 
     Parameters
@@ -349,12 +351,11 @@ def fromarray(data, names=['zspace', 'yspace', 'xspace'], coordmap=None):
 
     ndim = len(data.shape)
     if not coordmap:
-        coordmap = CoordinateMap.from_start_step(names,
-                                                 names,
-                                                 (0,)*ndim,
-                                                 (1,)*ndim,
-                                                 data.shape)
-
+        coordmap = Affine.from_start_step(innames,
+                                          outnames,
+                                          (0,)*ndim,
+                                          (1,)*ndim)
+                                          
     return Image(data, coordmap)
 
 def merge_images(filename, images, cls=Image, clobber=False,

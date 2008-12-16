@@ -1,6 +1,8 @@
 import os
 import numpy as np
 
+import nose.tools
+
 from neuroimaging.testing import funcfile
 from neuroimaging.core.api import load_image, save_image
 from neuroimaging.core import api
@@ -14,9 +16,9 @@ def test_save1():
     img = load_image(funcfile)
     save_image(img, 'tmp.nii')
     img2 = load_image('tmp.nii')
-    assert np.allclose(img.affine, img2.affine)
-    assert img.shape == img2.shape
-    assert np.allclose(np.asarray(img2), np.asarray(img))
+    nose.tools.assert_true(np.allclose(img.affine, img2.affine))
+    nose.tools.assert_true(img.shape == img2.shape)
+    nose.tools.assert_true(np.allclose(np.asarray(img2), np.asarray(img)))
 
 def test_save2():
     """
@@ -30,20 +32,15 @@ def test_save2():
     shape = (13,5,7,3)
     step = np.array([3.45,2.3,4.5,6.93])
 
-    output_axes = [api.RegularAxis(s, step=step[::-1][i]) for i, s in enumerate('xyzt')][::-1]
-    output_coords = api.StartStepCoordinateSystem('output', output_axes)
+    cmap = api.Affine.from_start_step('lkji', 'tzyx', [0]*4, step)
 
-    input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ijkl')][::-1]
-    input_coords = api.VoxelCoordinateSystem('input', input_axes)
-    cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
-
-    data = np.random.standard_normal(cmap.shape)
+    data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
     save_image(img, 'tmp.nii')
     img2 = load_image('tmp.nii')
-    assert np.allclose(img.affine, img2.affine)
-    assert img.shape == img2.shape
-    assert np.allclose(np.asarray(img2), np.asarray(img))
+    nose.tools.assert_true(np.allclose(img.affine, img2.affine))
+    nose.tools.assert_true(img.shape == img2.shape)
+    nose.tools.assert_true(np.allclose(np.asarray(img2), np.asarray(img)))
     return img, img2
 
 def test_save2a():
@@ -64,24 +61,15 @@ def test_save2a():
     B[1:4,1:4] = A
 
     shape = (13,5,7,3)
-    output_axes = [api.RegularAxis(s, step=step[::-1][i]) for i, s in enumerate('xyzt')][::-1]
-    output_coords = api.StartStepCoordinateSystem('output', output_axes)
+    cmap = api.Affine.from_start_step('lkji', 'tzyx', [0]*4, step)
 
-    input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ijkl')][::-1]
-    input_coords = api.VoxelCoordinateSystem('input', input_axes)
-
-    cmap = api.CoordinateMap(api.Affine(B), input_coords, output_coords)
-
-    data = np.random.standard_normal(cmap.shape)
+    data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
     save_image(img, 'tmp.nii')
     img2 = load_image('tmp.nii')
-    assert np.allclose(img.affine, img2.affine)
-    assert img.shape == img2.shape
-    assert np.allclose(np.asarray(img2), np.asarray(img))
-    assert not np.allclose(nifti.get_pixdim(img2.coordmap), nifti.get_pixdim(img.coordmap)) # pynifti figures out pixdims from affine when saving, so
-             # we cannot expect it get the steps from img.coordmap
-             # which has the step information
+    nose.tools.assert_true(np.allclose(img.affine, img2.affine))
+    nose.tools.assert_true(img.shape == img2.shape)
+    nose.tools.assert_true(np.allclose(np.asarray(img2), np.asarray(img)))
     return img, img2
 
 def test_save2b():
@@ -102,22 +90,17 @@ def test_save2b():
     B[:4,:4] = A
 
     shape = (13,5,7,3)
-    output_axes = [api.RegularAxis(s, step=step[::-1][i]) for i, s in enumerate('xyzt')][::-1]
-    output_coords = api.StartStepCoordinateSystem('output', output_axes)
-
-    input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ijkl')][::-1]
-    input_coords = api.VoxelCoordinateSystem('input', input_axes)
-
-    cmap = api.CoordinateMap(api.Affine(B), input_coords, output_coords)
-    data = np.random.standard_normal(cmap.shape)
+    cmap = api.Affine.from_start_step('lkji', 'tzyx', [0]*4, step)
+    cmap.affine = B
+    data = np.random.standard_normal(shape)
 
     img = api.Image(data, cmap)
 
     save_image(img, 'tmp.nii')
     img2 = load_image('tmp.nii')
-    assert not np.allclose(img.affine, img2.affine)
-    assert img.shape == img2.shape
-    assert np.allclose(np.asarray(img2), np.asarray(img))
+    nose.tools.assert_true(not np.allclose(img.affine, img2.affine))
+    nose.tools.assert_true(img.shape == img2.shape)
+    nose.tools.assert_true(np.allclose(np.asarray(img2), np.asarray(img)))
     return img, img2
 
 def test_save3():
@@ -129,25 +112,18 @@ def test_save3():
 
     """
 
-    3,13,5,7
+    step = np.array([3.45,2.3,4.5,6.9])
     shape = (13,5,7,3)
-    output_axes = [api.RegularAxis(s, step=i+1) for i, s in enumerate('tzyx')]
-    output_coords = api.StartStepCoordinateSystem('output', output_axes)
+    cmap = api.Affine.from_start_step('jkli', 'tzyx', [0]*4, step)
 
-    input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('jkli')]
-    input_coords = api.VoxelCoordinateSystem('input', input_axes)
-    cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
-
-    data = np.random.standard_normal(cmap.shape)
+    data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
     save_image(img, 'tmp.nii')
     img2 = load_image('tmp.nii')
-    assert tuple([img.shape[l] for l in [2,1,0,3]]) == img2.shape
+    nose.tools.assert_true(tuple([img.shape[l] for l in [2,1,0,3]]) == img2.shape)
     a = np.transpose(np.asarray(img), [2,1,0,3])
-    assert not np.allclose(img.affine, img2.affine)
-    assert not np.allclose(nifti.get_pixdim(img.coordmap),
-                           nifti.get_pixdim(img2.coordmap))
-    assert np.allclose(a, np.asarray(img2))
+    nose.tools.assert_true(not np.allclose(img.affine, img2.affine))
+    nose.tools.assert_true(np.allclose(a, np.asarray(img2)))
 
 
 def teardown():
@@ -160,26 +136,21 @@ def test_save4():
     """
 
     shape = (13,5,7,3)
-    output_axes = [api.RegularAxis(s, step=i+1) for i, s in enumerate('xyzt')][::-1]
-    output_coords = api.StartStepCoordinateSystem('output', output_axes)
+    step = np.array([3.45,2.3,4.5,6.9])
+    cmap = api.Affine.from_start_step('ljki', 'tzyx', [0]*4, step)
 
-    input_axes = [api.VoxelAxis(s, length=shape[i]) for i, s in enumerate('ikjl')][::-1]
-    input_coords = api.VoxelCoordinateSystem('input', input_axes)
-    cmap = api.CoordinateMap(api.Affine(output_coords.affine), input_coords, output_coords)
-
-    data = np.random.standard_normal(cmap.shape)
+    data = np.random.standard_normal(shape)
 
     img = api.Image(data, cmap)
     save_image(img, 'tmp.nii')
     img2 = load_image('tmp.nii')
-    assert np.allclose(img.affine, img2.affine)
-    assert img.shape == img2.shape
-    assert np.allclose(np.asarray(img2), np.asarray(img))
+    nose.tools.assert_true(np.allclose(img.affine, img2.affine))
+    nose.tools.assert_true(img.shape == img2.shape)
+    nose.tools.assert_true(np.allclose(np.asarray(img2), np.asarray(img)))
     print img2.coordmap.input_coords.axisnames, img.coordmap.input_coords.axisnames
     print nifti.get_diminfo(img.coordmap), nifti.get_diminfo(img2.coordmap)
     print img2.header['dim_info']
-    assert img2.coordmap.input_coords.axisnames == img.coordmap.input_coords.axisnames
-    assert img2.coordmap.input_coords.axisnames == ['l', 'j', 'k', 'i']
+    nose.tools.assert_true(img2.coordmap.input_coords.axisnames == img.coordmap.input_coords.axisnames)
+    nose.tools.assert_true(img2.coordmap.input_coords.axisnames == ['l', 'j', 'k', 'i'])
 
 
-test_save2b()

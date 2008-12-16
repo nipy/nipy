@@ -235,6 +235,9 @@ def get_pixdim(coordmap, full_length=False):
     ndim = coordmap.ndim[0]
     newcmap, _ = coerce_coordmap(coordmap)
     pixdim = np.zeros(ndim)
+
+    #FIXME: here is what needs to be fixed
+
     for i, l in enumerate('xyztuvw'[:ndim]):
         ll = coordmap.output_coords[l]
         if hasattr(ll, 'step'):
@@ -242,12 +245,11 @@ def get_pixdim(coordmap, full_length=False):
 
     if not np.alltrue(np.greater_equal(pixdim, 0)):
         warnings.warn("NIFTI expectes non-negative pixdims, taking absolute value")
+
     A = newcmap.affine
     opixdim = np.diag(A)[3:-1]
-    if not np.allclose(opixdim, pixdim[3:]):
-        warnings.warn("pixdims from output_coords:%s, do not agree with pixdim from (coerced) affine matrix:%s. using those from output_coords" % (`pixdim[3:]`, `opixdim`))
 
-    pixdim = np.fabs(pixdim)
+    pixdim[3:] = opixdim
     if full_length:
         v = np.zeros(7)
         v[:pixdim.shape[0]] = pixdim

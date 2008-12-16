@@ -88,6 +88,8 @@ class Evaluator(object):
 
         if type(index) == type(slice(None,None,None)):
             index = (index,)
+        elif type(index) == type(3):
+            index = (slice(index, index+1, 1),)
         return _slice(self.coordmap, self.shape, *index)
 
     @staticmethod

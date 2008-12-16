@@ -3,16 +3,12 @@ from tempfile import NamedTemporaryFile
 import numpy as np
 from neuroimaging.testing import *
 
-
-from neuroimaging.utils.tests.data import repository
-
 from neuroimaging.core.image import image
-
+from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.api import Image, load_image, save_image, fromarray
 from neuroimaging.core.api import parcels, data_generator, write_data
 
-from neuroimaging.core.reference.coordinate_map import CoordinateMap
-from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine
 
 class TestImage(TestCase):
 
@@ -22,7 +18,7 @@ class TestImage(TestCase):
         
     def test_init(self):
         new = Image(np.asarray(self.img), self.img.coordmap)
-        assert_equal(np.asarray(self.img)[:], np.asarray(new)[:])
+        assert_equal(np.asarray(self.img), np.asarray(new))
 
         self.assertRaises(ValueError, Image, None, None)
 
@@ -32,31 +28,27 @@ class TestImage(TestCase):
 
     def test_maxmin_values(self):
         y = np.asarray(self.img)
-        self.assertEquals(y.shape, tuple(self.img.coordmap.shape))
+        self.assertEquals(y.shape, tuple(self.img.shape))
         np.allclose(y.max(), 437336.36, rtol=1.0e-8)
         self.assertEquals(y.min(), 0.0)
 
     def test_slice_plane(self):
         x = self.img[3]
         self.assertEquals(x.shape, self.img.shape[1:])
-        self.assertEquals(x.shape, x.coordmap.shape)
 
     def test_slice_block(self):
         x = self.img[3:5]
-        self.assertEquals(x.shape, (2,) + tuple(self.img.coordmap.shape[1:]))
-        self.assertEquals(x.shape, x.coordmap.shape)
+        self.assertEquals(x.shape, (2,) + tuple(self.img.shape[1:]))
 
     def test_slice_step(self):
         s = slice(0,20,2)
         x = self.img[s]
-        self.assertEquals(x.shape, (10,) + tuple(self.img.coordmap.shape[1:]))
-        self.assertEquals(x.shape, x.coordmap.shape)
+        self.assertEquals(x.shape, (10,) + tuple(self.img.shape[1:]))
 
     def test_slice_type(self):
-        s = slice(0,self.img.coordmap.shape[0])
+        s = slice(0,self.img.shape[0])
         x = self.img[s]
-        self.assertEquals(x.shape, tuple((self.img.coordmap.shape)))
-        self.assertEquals(x.shape, x.coordmap.shape)
+        self.assertEquals(x.shape, self.img.shape)
 
     def test_slice_steps(self):
         zdim, ydim, xdim = self.img.shape
@@ -97,6 +89,7 @@ class TestImage(TestCase):
     # This is a bug in the pyniftiio.py file where a one-voxel offset
     # is added to the affine.  This does not conform with the nifti1.h
     # standard and will be removed asap.
+
     @dec.knownfailure
     def test_roundtrip_fromarray(self):
         data = np.random.rand(10,20,30)
@@ -182,7 +175,7 @@ class TestImage(TestCase):
         data[0,0,0] = 0
         data[1,0,0] = dmax
         data = data.astype(np.uint8) # randint returns np.int32
-        img = fromarray(data)
+        img = fromarray(data, 'kji', 'zxy')
         newimg = save_image(img, self.tmpfile.name, dtype=dtype)
         newdata = np.asarray(newimg)
         return newdata, data
@@ -221,7 +214,7 @@ class TestImage(TestCase):
         data[1,0,0] = np.finfo(np.float32).min
         # random.normal will return data as native machine type
         data = data.astype(np.float32)
-        img = fromarray(data)
+        img = fromarray(data, 'kji', 'zyx')
         newimg = save_image(img, self.tmpfile.name, dtype=dtype)
         newdata = np.asarray(newimg)
         return newdata, data
@@ -264,7 +257,7 @@ class TestImage(TestCase):
         
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
-    img = fromarray(data)
+    img = fromarray(data, 'kji', 'zyx')
     assert isinstance(img, Image)
     assert img.ndim == 3
     # 2D slice
@@ -304,9 +297,8 @@ def test_ArrayLikeObj():
     obj = ArrayLikeObj()
     # create simple coordmap
     xform = np.eye(4)
-    affine = Affine(xform)
-    coordmap = CoordinateMap.from_affine('xyz', 'ijk', affine,
-                                    (2,3,4))
+    coordmap = Affine.from_params('xyz', 'ijk', xform)
+    
     # create image form array-like object and coordmap
     img = image.Image(obj, coordmap)
     assert img.ndim == 3
@@ -325,7 +317,7 @@ class TestFromArray(TestCase):
 
     def test_defaults_2D(self):
         data = np.ones(self.array2D_shape)
-        img = image.fromarray(data, names=['yspace', 'xspace'])
+        img = image.fromarray(data, 'kj', 'yx')
         assert isinstance(img._data, np.ndarray)
         assert img.ndim == 2
         assert img.shape == self.array2D_shape
@@ -334,7 +326,7 @@ class TestFromArray(TestCase):
         assert img.affine.diagonal().all() == 1
         
     def test_defaults_3D(self):
-        img = image.fromarray(np.ones(self.array3D_shape))
+        img = image.fromarray(np.ones(self.array3D_shape), 'kji', 'zyx')
         assert isinstance(img._data, np.ndarray)
         assert img.ndim == 3
         assert img.shape == self.array3D_shape
@@ -346,7 +338,7 @@ class TestFromArray(TestCase):
     def test_defaults_4D(self):
         data = np.ones(self.array4D_shape)
         names = ['time', 'zspace', 'yspace', 'xspace']
-        img = image.fromarray(data, names=names)
+        img = image.fromarray(data, names, names)
         assert isinstance(img._data, np.ndarray)
         assert img.ndim == 4
         assert img.shape == self.array4D_shape
