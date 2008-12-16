@@ -6,9 +6,9 @@ from scipy.ndimage import affine_transform
 import numpy as np
 
 from neuroimaging.algorithms.interpolation import ImageInterpolator
-from neuroimaging.core.api import Image, CoordinateMap, Mapping, Affine 
+from neuroimaging.core.api import Image, CoordinateMap, Affine, Evaluator, Grid, compose
 
-def resample(image, target, mapping, order=3):
+def resample(image, target, mapping, shape, order=3):
     """
     Resample an image to a target CoordinateMap with a "world-to-world" mapping
     and spline interpolation of a given order.
@@ -26,6 +26,7 @@ def resample(image, target, mapping, order=3):
                Can be specified in three ways: a callable, a
                tuple (A, b) representing the mapping y=dot(A,x)+b
                or a representation of this in homogeneous coordinates. 
+    shape -- shape of output array, in target.input_coords
     order -- what order of interpolation to use in `scipy.ndimage`
 
     OUTPUTS:
@@ -43,42 +44,41 @@ def resample(image, target, mapping, order=3):
             mapping[:ndimout,:ndimin] = A
             mapping[:ndimout,-1] = b
             mapping[-1,-1] = 1.
-        mapping = Affine(mapping)
+
+     # image world to target world mapping
+
+        TW2IW = Affine(mapping, target.output_coords, image.coordmap.output_coords)
+    else:
+        TW2IW = CoordinateMap(mapping, target.output_coords, image.coordmap.output_coords)
 
     input_coords = target.input_coords
     output_coords = image.coordmap.output_coords
 
-    # image world to target world mapping
-    
-    TW2IW = Mapping.from_callable(mapping)
-
     # target voxel to image world mapping
-    TV2IW = TW2IW * target.mapping
+    TV2IW = compose(TW2IW, target)
 
     # CoordinateMap describing mapping from target voxel to
     # image world coordinates
-
-    output_coordmap = CoordinateMap(TV2IW,
-                               target.input_coords,
-                               image.coordmap.output_coords)
 
     if not isinstance(TV2IW, Affine):
         # interpolator evaluates image at values image.coordmap.output_coords,
         # i.e. physical coordinates rather than voxel coordinates
 
+        grid = Evaluator.from_shape(TV2IW, shape)
         interp = ImageInterpolator(image, order=order)
-        idata = interp.evaluate(output_coordmap.range())
+        idata = interp.evaluate(grid.transposed_values)
         del(interp)
     else:
-        TV2IV = image.coordmap.mapping.inverse() * TV2IW
+        TV2IV = compose(image.coordmap.inverse, TV2IW)
         if isinstance(TV2IV, Affine):
             A, b = TV2IV.params
             idata = affine_transform(np.asarray(image), A,
                                      offset=b,
-                                     output_shape=output_coordmap.shape)
+                                     output_shape=shape)
         else:
             interp = ImageInterpolator(image, order=order)
-            idata = interp.evaluate(output_coordmap.range())
+            grid = Evaluator.from_shape(TV2IV, shape)
+            idata = interp.evaluate(grid.values)
             del(interp)
             
     return Image(idata, target.copy())

@@ -76,7 +76,7 @@ class ImageInterpolator(object):
         points = np.array(points, np.float64)
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], np.product(output_shape))
-        voxels = self.image.coordmap.mapping.inverse()(points)
+        voxels = self.image.coordmap.inverse(points.T).T
         V = ndimage.map_coordinates(self.data, 
                                      voxels,
                                      order=self.order,

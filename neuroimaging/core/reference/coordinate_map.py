@@ -172,6 +172,16 @@ class Affine(CoordinateMap):
         return _mapping
     inverse_mapping = property(_getinverse_mapping)
 
+    def copy(self):
+        """
+        Create a copy of the coordmap.
+
+        :Returns: `CoordinateMap`
+        """
+        return Affine(self.affine, self.input_coords,
+                      self.output_coords)
+
+
     def _getmapping(self):
         A, b = self.params
         def _mapping(x):
