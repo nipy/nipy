@@ -403,13 +403,21 @@ def _slice(coordmap, *slices):
     slice_cmap = Affine(A, input_coords, coordmap.input_coords)
     return compose(coordmap, slice_cmap)
                    
-def values(coordmap):
+def values(coordmap, transpose=False):
     """
     If the coordmap has a shape (so that it can be thought of as 
     a map from voxels to some output space), return
     the range of the coordmap, i.e. the value at all the voxels.
 
-    :Inputs: `CoordinateMap`
+    :Inputs: 
+        coordmap: `CoordinateMap`
+        
+        transposed: `bool`
+            If False, the result is a 2-dimensional ndarray
+            with shape[1] == coordmap.ndim[1]. That is,
+            the result is a list of output values.
+
+            Otherwise, the shape is (coordmap.ndim[1],) + coordmap.shape.
 
     :Returns: `ndarray`
 
@@ -423,8 +431,10 @@ def values(coordmap):
 
     # reshape indices to be a sequence of coordinates
     indices.shape = (coordmap.ndim[0], np.product(coordmap.shape))
-    _range = coordmap(indices.T).T
-    _range.shape = tmp_shape
+    _range = coordmap(indices.T)
+    if transpose:
+        _range = _range.T
+        _range.shape = tmp_shape
     return _range 
 
 def rename_input(coordmap, **kwargs):
@@ -853,6 +863,26 @@ class Grid():
     """
     Simple class to construct Affine instances with slice notation like np.ogrid/np.mgrid
 
+    >>> c = CoordinateSystem('input', [Axis(n) for n in 'xy'])
+    >>> g = Grid(c)
+    >>> points = g[-1:1:21j,-2:4:31j]
+    >>> points.affine
+    array([[ 0.1,  0. , -1. ],
+           [ 0. ,  0.2, -2. ],
+           [ 0. ,  0. ,  1. ]])
+
+    >>> print points.input_coords
+    {'axes': [<Axis:"i0", dtype=[('i0', '<f8')]>, <Axis:"i1", dtype=[('i1', '<f8')]>], 'name': 'i0 * i1'}
+    >>> print points.output_coords
+    {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>], 'name': 'x * y'}
+    >>>                                                  
+
+    >>> points.shape
+    (21, 31)
+    >>> print values(points, transpose=True).shape
+    (2, 21, 31)
+    >>> print values(points, transpose=False).shape
+    (651, 2)
     """
 
     def __init__(self, coords):
@@ -881,7 +911,7 @@ class Grid():
             else:
                 step = 0
             start = result[0]
-            cmaps.append(Affine(np.array([[start, step],[0,1]]), 
+            cmaps.append(Affine(np.array([[step, start],[0,1]]), 
                                 CoordinateSystem('i%d' % i, [Axis('i%d' % i, length=result.shape[0])]),
                                 CoordinateSystem(self.coords.axisnames[i], [self.coords.axes[i]])))
         return product(*cmaps)
