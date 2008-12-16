@@ -510,7 +510,6 @@ def product(*cmaps):
     if not notaffine:
 
         affine = linearize(mapping, ndimin[-1], step=np.array(1, incoords.builtin))
-        print affine.dtype, outcoords.builtin, incoords.builtin, 'product'
         return Affine(affine, incoords, outcoords)
     return CoordinateMap(mapping, incoords, outcoords)
 
@@ -565,7 +564,6 @@ def compose(*cmaps):
 
     if not notaffine:
         affine = linearize(cmap, cmap.ndim[0], step=np.array(1, cmaps[0].output_coords.builtin))
-        print affine.dtype, 'compose'
         return Affine(affine, cmap.input_coords,
                       cmap.output_coords)
     return cmap

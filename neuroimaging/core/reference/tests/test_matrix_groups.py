@@ -102,3 +102,37 @@ def test_homomorphism():
     # have the same axisnames, an exception will be raised
     nose.tools.assert_raises(ValueError, MG.product_homomorphism, GLZ_C, GLZ_B)
 
+    E = np.array([[7,8],
+                  [8,9]])
+    GLZ_E = MG.GLZ(E, 'ij')
+
+    F = np.array([[6,7],
+                  [5,6]])
+    GLZ_F = MG.GLZ(E, 'xy')
+
+    GLZ_FE = MG.product_homomorphism(GLZ_F, GLZ_E)
+
+    test1 = MG.product(GLZ_FE, GLZ_BD)
+    test2 = MG.product_homomorphism(MG.product(GLZ_F, GLZ_B), MG.product(GLZ_E, GLZ_D))
+    nose.tools.assert_true(np.allclose(test1.matrix, test2.matrix))
+
+
+def test_32():
+    class O32(MG.O):
+        dtype = np.float32
+
+        def validate(self, M=None):
+            """
+            Check that the matrix is (almost) orthogonal.
+            """
+        
+            if M is None:
+                M = self.matrix
+            return np.allclose(np.identity(self.ndim[0], dtype=self.dtype), np.dot(M.T, M), atol=1.0e-06)
+
+    a = random_orth(3).matrix.astype(np.float32)
+
+    A = O32(a, 'xyz')
+    B = O32(random_orth(3).matrix.astype(np.float32), 'xyz')
+    C = MG.product(A, B)
+    nose.tools.assert_equals(C.dtype, np.float32)
