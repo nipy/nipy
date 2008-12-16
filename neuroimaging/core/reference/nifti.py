@@ -56,9 +56,8 @@ from string import join
 import numpy as np
 
 from coordinate_system import CoordinateSystem
-from coordinate_map import CoordinateMap, reorder_input, reorder_output
+from coordinate_map import CoordinateMap, reorder_input, reorder_output, Affine
 from axis import Axis
-from mapping import Affine
 
 
 valid_input_axisnames = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
