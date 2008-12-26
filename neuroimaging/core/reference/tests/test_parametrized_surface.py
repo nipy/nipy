@@ -1,11 +1,11 @@
 """
 Parametrized surfaces using a CoordinateMap
 """
-
 import numpy as np
 import nose.tools
 
-from neuroimaging.core.api import CoordinateMap, CoordinateSystem, Coordinate, Affine
+from neuroimaging.core.api import CoordinateMap, CoordinateSystem, Affine, \
+    Coordinate
 from neuroimaging.core.api import Grid
 
 uv = CoordinateSystem('input', [Coordinate(l, dtype=np.float) for l in ['u', 'v']])

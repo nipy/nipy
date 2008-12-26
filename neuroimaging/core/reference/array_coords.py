@@ -11,12 +11,10 @@ at np.indices(shape).
 The class Grid is meant to take a CoordinateMap and an np.mgrid-like notation 
 to create an ArrayCoordMap.
 """
-
 import numpy as np
 from coordinate_map import CoordinateMap, Affine, compose
 from coordinate_map import product as cmap_product
-from coordinate_system import CoordinateSystem
-from axis import Coordinate
+from coordinate_system import CoordinateSystem, Coordinate
 
 class ArrayCoordMap(object):
     """

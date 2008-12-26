@@ -2,8 +2,7 @@ import types
 import numpy as np
 import nose.tools
 from neuroimaging.testing import *
-
-from neuroimaging.core.reference.axis import Coordinate
+from neuroimaging.core.api import Coordinate
 
 def test_eq():
         ax1 = Coordinate(name='xspace')

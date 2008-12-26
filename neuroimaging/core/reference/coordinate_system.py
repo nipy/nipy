@@ -1,39 +1,88 @@
 """
 Coordinate systems are used to represent the spaces in which the images reside.
 
-A coordinate system contains axes; the axes define the coordinates
-within the coordinate system.  For example a 3D coordinate system contains 3 axes.
+A coordinate system contains coordinates.  For example a 3D coordinate system contains 3 coordinates: the first, second and third.
 
 """
-
 __docformat__ = 'restructuredtext'
 
 import copy, warnings
 
 import numpy as np
-
-from neuroimaging.core.reference.axis import Coordinate
 from neuroimaging.utils.odict import odict
 
-class CoordinateSystem(odict):
-    """A simple class to carry around coordinate information in one bundle."""
+class Coordinate(object):
+    """
+    This class represents a generic coordinate. 
+    A coordinate has a name and a builtin dtype, i.e. ('x', np.float).
+    `Coordinate`s 
+    are used in the definition of ``CoordinateSystem``.
+    """
 
-    def __init__(self, name, axes):
+    def __str__(self):
+        return '<Coordinate:"%(name)s", dtype=%(dtype)s>' % {'name':self.name, 'dtype':`self.dtype.descr`}
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __init__(self, name, dtype=np.float):
+        """
+        Create a Coordinate with a given name and dtype.
+
+        :Parameters:
+            name : ``string``
+                The name for the coordinate.
+            dtype : ``np.dtype``
+                The dtype of the axis. Must be a builtin dtype.
+        """
+        self.name = name
+        self._dtype = np.dtype(dtype)
+
+        # verify that the dtype is builtin for sanity
+        if not self._dtype.isbuiltin:
+            raise ValueError, 'Coordinate dtypes should be numpy builtin dtypes'
+    def _getdtype(self):
+        return np.dtype([(self.name, self._dtype)])
+    def _setdtype(self, dtype):
+        self._dtype = dtype
+    dtype = property(_getdtype, _setdtype, doc='Named dtype of a Coordinate.')
+
+    def _getbuiltin(self):
+        return self._dtype
+    builtin = property(_getbuiltin, doc='Numpy builtin dtype of a Coordinate.')
+
+    def __eq__(self, other):
+        """ Equality is defined by dtype.
+
+        :Parameters:
+            other : `Coordinate`
+                The object to be compared with.
+
+        :Returns: ``bool``
+        """
+        return self.dtype == other.dtype
+
+class CoordinateSystem(odict):
+    """
+    A CoordinateSystem is a (named) ordered sequence of `Coordinate`s.
+    """
+
+    def __init__(self, name, coordinates):
         """
         Create a coordinate system with a given name and axes.
 
         :Parameters:
             name : ``string``
                 The name of the coordinate system
-            axes : ``[`axis.Axis`]``
-                The axes which make up the coordinate system
+            coordinates : ``[Coordinate`]``
+                The coordinates which make up the coordinate system
         """
         self.name = name
-        if len(set([ax.name for ax in axes])) != len(axes):
-            raise ValueError, 'axes must have distinct names'
-        dtype = safe_dtype(*tuple([ax.builtin for ax in axes]))
+        if len(set([ax.name for ax in coordinates])) != len(coordinates):
+            raise ValueError, 'coordinates must have distinct names'
+        dtype = safe_dtype(*tuple([ax.builtin for ax in coordinates]))
         values = []
-        for ax in axes:
+        for ax in coordinates:
             ax = copy.copy(ax)
             ax.dtype = dtype
             values.append((ax.name, ax))
@@ -62,7 +111,7 @@ class CoordinateSystem(odict):
             axisname : ``string``
                 The name of the axis to return
 
-        :Returns: `axis.Axis`
+        :Returns: `axis.Coordinate`
         
         :Raises KeyError: If axisname is not the name of an axis in this 
             coordinate system.
@@ -83,10 +132,10 @@ class CoordinateSystem(odict):
         """
         Return a new CoordinateSystem with the values renamed.
 
-        >>> axes = [Axis(n) for n in 'abc']
+        >>> axes = [Coordinate(n) for n in 'abc']
         >>> coords = CoordinateSystem('input', axes)
         >>> print coords.rename(a='x')
-        {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"b", dtype=[('b', '<f8')]>, <Axis:"c", dtype=[('c', '<f8')]>], 'name': 'input-renamed'}
+        {'axes': [<Coordinate:"x", dtype=[('x', '<f8')]>, <Coordinate:"b", dtype=[('b', '<f8')]>, <Coordinate:"c", dtype=[('c', '<f8')]>], 'name': 'input-renamed'}
         >>>                                               
         """
         axes = []
@@ -189,7 +238,7 @@ class CoordinateSystem(odict):
     def _getaxes(self):
         """ A list of the coordinate system's axes. 
         
-        :Returns: ``[`axis.Axis`]``
+        :Returns: ``[`axis.Coordinate`]``
         """
         return self.values()
     axes = property(_getaxes)

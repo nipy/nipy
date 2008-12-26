@@ -5,9 +5,7 @@ They also provide mechanisms for iterating over that space.
 import copy, string
 
 import numpy as np
-
-from neuroimaging.core.reference.axis import Coordinate
-from neuroimaging.core.reference.coordinate_system import CoordinateSystem, safe_dtype
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem, Coordinate, safe_dtype 
 
 __docformat__ = 'restructuredtext'
 

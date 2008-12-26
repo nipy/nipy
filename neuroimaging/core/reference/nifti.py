@@ -51,16 +51,13 @@ FIXME: (finish this thought.... Are we going to open NIFTI files with NIFTI inpu
 For this reason, we have to consider whether we should transpose the
 memmap from pynifti. 
 """
-
 import warnings
 from string import join
 
 import numpy as np
 
-from coordinate_system import CoordinateSystem
+from coordinate_system import CoordinateSystem, Coordinate
 from coordinate_map import CoordinateMap, reorder_input, reorder_output, Affine
-from axis import Coordinate
-
 
 valid_input_axisnames = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
 valid_output_axisnames = list('xyztuvw')

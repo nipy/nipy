@@ -1,7 +1,7 @@
 import numpy as np
 
 import nose.tools
-from neuroimaging.core.api import Coordinate, CoordinateSystem
+from neuroimaging.core.api import CoordinateSystem, Coordinate
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine
 from neuroimaging.core.reference.coordinate_map import reorder_input, reorder_output
 

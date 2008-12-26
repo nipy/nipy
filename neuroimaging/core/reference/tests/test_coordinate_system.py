@@ -1,11 +1,7 @@
 import numpy as np
-
 import nose.tools
-
 from neuroimaging.testing import *
-
-from neuroimaging.core.reference.coordinate_system import CoordinateSystem
-from neuroimaging.core.reference.axis import Coordinate
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem, Coordinate
 
 class empty:
     pass
