@@ -59,7 +59,7 @@ import numpy as np
 
 from coordinate_system import CoordinateSystem
 from coordinate_map import CoordinateMap, reorder_input, reorder_output, Affine
-from axis import Axis
+from axis import Coordinate
 
 
 valid_input_axisnames = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
@@ -531,11 +531,11 @@ def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
     ndim = len(shape)
     ijk = ijk_from_diminfo(diminfo)
     innames = ijk + valid_input_axisnames[3:ndim]
-    inaxes = [Axis(n) for n in innames]
+    inaxes = [Coordinate(n) for n in innames]
     incoords = CoordinateSystem('input', inaxes)
 
     outnames = valid_output_axisnames[:ndim]
-    outaxes = [Axis(n) for n in outnames]
+    outaxes = [Coordinate(n) for n in outnames]
     outcoords = CoordinateSystem('output', outaxes)
             
     coordmap = Affine(affine, incoords, outcoords)

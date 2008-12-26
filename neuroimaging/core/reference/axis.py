@@ -21,10 +21,9 @@ this could easily be added.
 """
 import numpy as np
 
-
 __docformat__ = 'restructuredtext'
 
-class Axis(object):
+class Coordinate(object):
     """
     This class represents a generic axis. Axes are used in the definition
     of ``CoordinateSystem``.

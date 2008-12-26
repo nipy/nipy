@@ -16,7 +16,7 @@ import numpy as np
 from coordinate_map import CoordinateMap, Affine, compose
 from coordinate_map import product as cmap_product
 from coordinate_system import CoordinateSystem
-from axis import Axis
+from axis import Coordinate
 
 class ArrayCoordMap(object):
     """
@@ -163,7 +163,7 @@ def _slice(coordmap, shape, *slices):
     innames = slice_cmap.input_coords.axisnames
     inaxes = slice_cmap.input_coords.axes
     inmat = []
-    input_coords = CoordinateSystem('input-slice', [Axis(innames[i], dtype=coordmap.input_coords.builtin) for i in keep_in_output])
+    input_coords = CoordinateSystem('input-slice', [Coordinate(innames[i], dtype=coordmap.input_coords.builtin) for i in keep_in_output])
     A = np.zeros((coordmap.ndim[0]+1, len(keep_in_output)+1))
     for j, i in enumerate(keep_in_output):
         A[:,j] = slice_cmap.affine[:,i]
@@ -236,7 +236,7 @@ class Grid(object):
                 step = 0
             start = result[0]
             cmaps.append(Affine(np.array([[step, start],[0,1]], dtype), 
-                                CoordinateSystem('i%d' % i, [Axis('i%d' % i, dtype=dtype)]),
+                                CoordinateSystem('i%d' % i, [Coordinate('i%d' % i, dtype=dtype)]),
                                 CoordinateSystem(self.coordmap.input_coords.axisnames[i], [self.coordmap.input_coords.axes[i]])))
         shape = [result.shape[0] for result in results]
         cmap = cmap_product(*cmaps)

@@ -5,7 +5,7 @@ import nose.tools
 from neuroimaging.testing import *
 
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem
-from neuroimaging.core.reference.axis import Axis
+from neuroimaging.core.reference.axis import Coordinate
 
 class empty:
     pass
@@ -14,7 +14,7 @@ E = empty()
 
 def setup():
     E.name = "test"
-    E.axes = [Axis(n) for n in ['zspace', 'yspace', 'xspace']]
+    E.axes = [Coordinate(n) for n in ['zspace', 'yspace', 'xspace']]
     E.c = CoordinateSystem(E.name, E.axes)
 
 def test_CoordinateSystem():
@@ -42,7 +42,7 @@ def test_reorder():
     new_order = [1, 2, 0]
     new_c = E.c.reorder("new", new_order)
     nose.tools.assert_equal(new_c.name, "new")
-    generic = [Axis(n) for n in ['zspace', 'yspace', 'xspace']]
+    generic = [Coordinate(n) for n in ['zspace', 'yspace', 'xspace']]
     print E.c
     print generic
     for i in range(3):
@@ -57,8 +57,8 @@ def test___str__():
 
 def test_dtype():
 
-    ax1 = Axis('x', dtype=np.int32)
-    ax2 = Axis('y', dtype=np.int64)
+    ax1 = Coordinate('x', dtype=np.int32)
+    ax2 = Coordinate('y', dtype=np.int64)
 
     cs = CoordinateSystem('input', [ax1, ax2])
     nose.tools.assert_equal(cs.builtin, np.dtype(np.int64))

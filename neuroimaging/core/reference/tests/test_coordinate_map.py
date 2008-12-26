@@ -3,7 +3,7 @@ from neuroimaging.testing import *
 
 import nose.tools
 
-from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, compose, Axis, CoordinateSystem
+from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, compose, Coordinate, CoordinateSystem
 from neuroimaging.core.reference.coordinate_map import matvec_from_transform, transform_from_matvec
 from neuroimaging.testing import anatfile, funcfile
 from neuroimaging.core.api import load_image
@@ -39,7 +39,7 @@ def setup():
         return 2*x
     def g(x):
         return x/2.0
-    x = CoordinateSystem('x', [Axis('x')])
+    x = CoordinateSystem('x', [Coordinate('x')])
     E.a = CoordinateMap(f, x, x)
     E.b = CoordinateMap(f, x, x, inverse=g)
     E.c = CoordinateMap(g, x, x)        

@@ -8,8 +8,8 @@ reload(nifti)
 shape = range(1,8)
 step = np.arange(1,8)
 
-output_axes = [api.Axis(s) for i, s in enumerate('xyztuvw')]
-input_axes = [api.Axis(s) for i, s in enumerate('ijklmno')]
+output_axes = [api.Coordinate(s) for i, s in enumerate('xyztuvw')]
+input_axes = [api.Coordinate(s) for i, s in enumerate('ijklmno')]
 input_coords = api.CoordinateSystem('input', input_axes)
 
 def test_validate1():
@@ -187,7 +187,7 @@ def test_validate7():
     a warning about negative pixdim
     """
 
-    output_axes = [api.Axis(s) for i, s in enumerate('xyztuvw')]
+    output_axes = [api.Coordinate(s) for i, s in enumerate('xyztuvw')]
     ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
     input_coords = api.CoordinateSystem('input', ninput_axes)
     output_coords = api.CoordinateSystem('output', output_axes[:4])

@@ -1,7 +1,7 @@
 import numpy as np
 import nose.tools
 
-from neuroimaging.core.api import Axis, CoordinateSystem, Affine
+from neuroimaging.core.api import Coordinate, CoordinateSystem, Affine
 from neuroimaging.core.reference.coordinate_map import compose
 from neuroimaging.core.reference.coordinate_map import product as cmap_product
 
@@ -36,9 +36,9 @@ class MatrixGroup(Linear):
     def __init__(self, matrix, coords, dtype=None):
         dtype = dtype or self.dtype
         if not isinstance(coords, CoordinateSystem):
-            coords = CoordinateSystem('space', [Axis(cname, dtype=dtype) for cname in coords])
+            coords = CoordinateSystem('space', [Coordinate(cname, dtype=dtype) for cname in coords])
         else:
-            coords = CoordinateSystem('space', [Axis(cname, dtype=dtype) for cname in coords.axisnames])
+            coords = CoordinateSystem('space', [Coordinate(cname, dtype=dtype) for cname in coords.axisnames])
         Linear.__init__(self, matrix.astype(dtype), coords, coords)
         if not self.validate():
             raise ValueError('this matrix is not an element of %s' % `self.__class__`)

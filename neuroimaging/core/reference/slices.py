@@ -39,7 +39,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
     f[nout, nin] = 1.
 
     input_coords = CoordinateSystem('slice', \
-       [axis.Axis('i%d' % d)
+       [axis.Coordinate('i%d' % d)
         for d in range(len(shape))])
 
     g = coordinate_map.Affine(f, input_coords, output_coords)

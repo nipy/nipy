@@ -6,7 +6,7 @@ import copy, string
 
 import numpy as np
 
-from neuroimaging.core.reference.axis import Axis
+from neuroimaging.core.reference.axis import Coordinate
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem, safe_dtype
 
 __docformat__ = 'restructuredtext'
@@ -249,8 +249,8 @@ class Affine(CoordinateMap):
             raise ValueError('shape and number of axis names do not agree')
         dtype = params.dtype
 
-        inaxes = [Axis(name, dtype=dtype) for name in innames]
-        outaxes = [Axis(name, dtype=dtype) for name in outnames]
+        inaxes = [Coordinate(name, dtype=dtype) for name in innames]
+        outaxes = [Coordinate(name, dtype=dtype) for name in outnames]
         input_coords = CoordinateSystem("input", inaxes)
         output_coords = CoordinateSystem('output', outaxes)
         return Affine(params, input_coords, output_coords)
@@ -637,8 +637,8 @@ def hstack(*cmaps):
             r.append(np.hstack([x[0,i], y]))
         return np.vstack(r)
 
-    stackin = Axis('stack-input')
-    stackout = Axis('stack-output')
+    stackin = Coordinate('stack-input')
+    stackout = Coordinate('stack-output')
 
     inaxes = [stackin] + cmaps[0].input_coords.axes
     incoords = CoordinateSystem('stackin-%s' % cmaps[0].input_coords.name, 

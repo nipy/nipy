@@ -12,7 +12,7 @@ import copy, warnings
 
 import numpy as np
 
-from neuroimaging.core.reference.axis import Axis
+from neuroimaging.core.reference.axis import Coordinate
 from neuroimaging.utils.odict import odict
 
 class CoordinateSystem(odict):

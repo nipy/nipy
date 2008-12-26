@@ -4,7 +4,7 @@ A set of reference object which represent the MNI space.
 
 __docformat__ = 'restructuredtext'
 
-from neuroimaging.core.reference.axis import Axis
+from neuroimaging.core.reference.axis import Coordinate
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem
 from neuroimaging.core.reference.coordinate_map import Affine
 

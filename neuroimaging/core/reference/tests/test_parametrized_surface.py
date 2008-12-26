@@ -5,11 +5,11 @@ Parametrized surfaces using a CoordinateMap
 import numpy as np
 import nose.tools
 
-from neuroimaging.core.api import CoordinateMap, CoordinateSystem, Axis, Affine
+from neuroimaging.core.api import CoordinateMap, CoordinateSystem, Coordinate, Affine
 from neuroimaging.core.api import Grid
 
-uv = CoordinateSystem('input', [Axis(l, dtype=np.float) for l in ['u', 'v']])
-xyz = CoordinateSystem('output', [Axis(l, dtype=np.float) for l in 'xyz'])
+uv = CoordinateSystem('input', [Coordinate(l, dtype=np.float) for l in ['u', 'v']])
+xyz = CoordinateSystem('output', [Coordinate(l, dtype=np.float) for l in 'xyz'])
 
 def parametric(vals):
 
@@ -52,8 +52,8 @@ def test_grid32():
     Check that we can use a float32 input and output
     """
 
-    uv32 = CoordinateSystem('input', [Axis(l, dtype=np.float32) for l in ['u', 'v']])
-    xyz32 = CoordinateSystem('output', [Axis(l, dtype=np.float32) for l in 'xyz'])
+    uv32 = CoordinateSystem('input', [Coordinate(l, dtype=np.float32) for l in ['u', 'v']])
+    xyz32 = CoordinateSystem('output', [Coordinate(l, dtype=np.float32) for l in 'xyz'])
 
     def par32(vals):
         """
@@ -82,8 +82,8 @@ def test_grid32_c128():
     Check that we can use a float32 input and complex128 output
     """
 
-    uv32 = CoordinateSystem('input', [Axis(l, dtype=np.float32) for l in ['u', 'v']])
-    xyz128 = CoordinateSystem('output', [Axis(l, dtype=np.complex128) for l in 'xyz'])
+    uv32 = CoordinateSystem('input', [Coordinate(l, dtype=np.float32) for l in ['u', 'v']])
+    xyz128 = CoordinateSystem('output', [Coordinate(l, dtype=np.complex128) for l in 'xyz'])
 
     def par32_c128(vals):
         """
