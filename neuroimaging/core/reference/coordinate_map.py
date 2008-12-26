@@ -385,6 +385,7 @@ def reorder_input(coordmap, order=None):
     for i, j in enumerate(order):
         perm[j,i] = 1.
 
+    perm = perm.astype(coordmap.input_coords.builtin)
     A = Affine(perm, newincoords, coordmap.input_coords)
     return compose(coordmap, A)
 
@@ -440,6 +441,7 @@ def reorder_output(coordmap, order=None):
     for i, j in enumerate(order):
         perm[j,i] = 1.
 
+    perm = perm.astype(coordmap.output_coords.builtin)
     A = Affine(perm, coordmap.output_coords, newoutcoords)
     return compose(A, coordmap)
 

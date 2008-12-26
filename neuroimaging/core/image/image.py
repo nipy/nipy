@@ -353,8 +353,8 @@ def fromarray(data, innames, outnames, coordmap=None):
     if not coordmap:
         coordmap = Affine.from_start_step(innames,
                                           outnames,
-                                          (0,)*ndim,
-                                          (1,)*ndim)
+                                          (0.,)*ndim,
+                                          (1.,)*ndim)
                                           
     return Image(data, coordmap)
 
