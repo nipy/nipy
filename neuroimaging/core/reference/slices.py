@@ -7,7 +7,7 @@ __docformat__ = 'restructuredtext'
 
 from neuroimaging.core.reference import coordinate_map, axis, mni
 from neuroimaging.core.reference.coordinate_system import CoordinateSystem
-from neuroimaging.core.reference.evaluate import Evaluator
+from neuroimaging.core.reference.array_coords import ArrayCoordMap
 import numpy.linalg as L
 import numpy as np
 import numpy.random as R
@@ -43,7 +43,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
         for d in range(len(shape))])
 
     g = coordinate_map.Affine(f, input_coords, output_coords)
-    return Evaluator.from_shape(g, shape)
+    return ArrayCoordMap.from_shape(g, shape)
 
 def xslice(x, zlim, ylim, output_coords, shape):
     """
@@ -122,6 +122,6 @@ def bounding_box(coordmap, shape):
         coordmap : `coordinate_map.CoordinateMap`
 
     """
-    e = Evaluator.from_shape(coordmap, shape)
+    e = ArrayCoordMap.from_shape(coordmap, shape)
     return [[r.min(), r.max()] for r in e.transposed_values]
     

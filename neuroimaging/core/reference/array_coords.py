@@ -11,7 +11,7 @@ from coordinate_map import product as cmap_product
 from coordinate_system import CoordinateSystem
 from axis import Axis
 
-class Evaluator(object):
+class ArrayCoordMap(object):
     """
     When the input_coords of a CoordinateMap can be thought of as 'array'
     coordinates, i.e. an 'input_shape' makes sense. We can than evaluate the
@@ -68,11 +68,11 @@ class Evaluator(object):
 
     def _getvalues(self):
         return self._evaluate(transpose=False)
-    values = property(_getvalues, doc='Get values of Evaluator in a 2-dimensional array of shape (product(self.shape), self.coordmap.ndim[1]))')
+    values = property(_getvalues, doc='Get values of ArrayCoordMap in a 2-dimensional array of shape (product(self.shape), self.coordmap.ndim[1]))')
 
     def _getindices_values(self):
         return self._evaluate(transpose=True)
-    transposed_values = property(_getindices_values, doc='Get values of Evaluator in a self.coordmap.ndim[0]+1 of shape (self.coordmap.ndim[1],) + self.shape)')
+    transposed_values = property(_getindices_values, doc='Get values of ArrayCoordMap in a self.coordmap.ndim[0]+1 of shape (self.coordmap.ndim[1],) + self.shape)')
 
     def __getitem__(self, index):
         """
@@ -163,7 +163,7 @@ def _slice(coordmap, shape, *slices):
     A[:,-1] = slice_cmap.affine[:,-1]
     A = A.astype(input_coords.builtin)
     slice_cmap = Affine(A, input_coords, coordmap.input_coords)
-    return Evaluator(compose(coordmap, slice_cmap), tuple(newshape))
+    return ArrayCoordMap(compose(coordmap, slice_cmap), tuple(newshape))
                    
 class Grid(object):
     """
@@ -233,4 +233,4 @@ class Grid(object):
                                 CoordinateSystem(self.coordmap.input_coords.axisnames[i], [self.coordmap.input_coords.axes[i]])))
         shape = [result.shape[0] for result in results]
         cmap = cmap_product(*cmaps)
-        return Evaluator(compose(self.coordmap, cmap), tuple(shape))
+        return ArrayCoordMap(compose(self.coordmap, cmap), tuple(shape))

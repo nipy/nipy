@@ -6,7 +6,7 @@ from scipy.ndimage import affine_transform
 import numpy as np
 
 from neuroimaging.algorithms.interpolation import ImageInterpolator
-from neuroimaging.core.api import Image, CoordinateMap, Affine, Evaluator, Grid, compose
+from neuroimaging.core.api import Image, CoordinateMap, Affine, ArrayCoordMap, Grid, compose
 
 def resample(image, target, mapping, shape, order=3):
     """
@@ -64,7 +64,7 @@ def resample(image, target, mapping, shape, order=3):
         # interpolator evaluates image at values image.coordmap.output_coords,
         # i.e. physical coordinates rather than voxel coordinates
 
-        grid = Evaluator.from_shape(TV2IW, shape)
+        grid = ArrayCoordMap.from_shape(TV2IW, shape)
         interp = ImageInterpolator(image, order=order)
         idata = interp.evaluate(grid.transposed_values)
         del(interp)
@@ -77,7 +77,7 @@ def resample(image, target, mapping, shape, order=3):
                                      output_shape=shape)
         else:
             interp = ImageInterpolator(image, order=order)
-            grid = Evaluator.from_shape(TV2IV, shape)
+            grid = ArrayCoordMap.from_shape(TV2IV, shape)
             idata = interp.evaluate(grid.values)
             del(interp)
             

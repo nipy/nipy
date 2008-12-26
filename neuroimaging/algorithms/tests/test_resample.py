@@ -1,6 +1,6 @@
 
 import numpy as np
-from neuroimaging.core.api import Affine, Image, CoordinateMap, Evaluator, compose
+from neuroimaging.core.api import Affine, Image, CoordinateMap, ArrayCoordMap, compose
 from neuroimaging.core.reference import slices
 
 from neuroimaging.algorithms.resample import resample
@@ -233,7 +233,7 @@ def test_nonaffine2():
 
 
     tcoordmap = Affine.from_start_step('t', 's', [0], [np.pi*1.8/100])
-    print Evaluator.from_shape(tcoordmap, (100, 90)).transposed_values.shape
+    print ArrayCoordMap.from_shape(tcoordmap, (100, 90)).transposed_values.shape
     print choke
     def curve(x):
         return (np.vstack([5*np.sin(x),5*np.cos(x)]).T + [52,47]).T
@@ -258,7 +258,7 @@ def test_2d_from_3d():
     
     a = np.identity(4)
 
-    g2 = Evaluator.from_shape(g, shape)[10]
+    g2 = ArrayCoordMap.from_shape(g, shape)[10]
     ir = resample(i, g2.coordmap, a, g2.shape)
     assert(np.allclose(np.asarray(ir), np.asarray(i[10])))
 

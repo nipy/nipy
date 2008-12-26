@@ -1,4 +1,4 @@
-from neuroimaging.core.api import CoordinateSystem, CoordinateMap, Grid, Evaluator, Axis
+from neuroimaging.core.api import CoordinateSystem, CoordinateMap, Grid, ArrayCoordMap, Axis
 import numpy as np
 import nose.tools
 
@@ -11,8 +11,8 @@ def test_grid():
         return np.array([i**2+j,j**3+i]).T
     cmap = CoordinateMap(f, input, output)
     grid = Grid(cmap)
-    eval = Evaluator.from_shape(cmap, (50,40))
-    np.allclose(grid[0:50,0:40].values, eval.values)
+    eval = ArrayCoordMap.from_shape(cmap, (50,40))
+    nose.tools.assert_true(np.allclose(grid[0:50,0:40].values, eval.values))
 
 def test_eval_slice():
     input = CoordinateSystem('input', [Axis(n) for n in 'ij'])
@@ -29,11 +29,11 @@ def test_eval_slice():
     e = grid[0:50,0:40]
     ee = e[0:20:3]
 
-    nose.tools.assert_equal(ee.shape, (7,40))
-    nose.tools.assert_equal(ee.values.shape, (280,2))
-    nose.tools.assert_equal(ee.transposed_values.shape, (2,7,40))
+    yield nose.tools.assert_equal, ee.shape, (7,40)
+    yield nose.tools.assert_equal, ee.values.shape, (280,2)
+    yield nose.tools.assert_equal, ee.transposed_values.shape, (2,7,40)
 
     ee = e[0:20:2,3]
-    nose.tools.assert_equal(ee.values.shape, (10,2))
-    nose.tools.assert_equal(ee.transposed_values.shape, (2,10))
-    nose.tools.assert_equal(ee.shape, (10,))
+    yield nose.tools.assert_equal, ee.values.shape, (10,2)
+    yield nose.tools.assert_equal, ee.transposed_values.shape, (2,10)
+    yield nose.tools.assert_equal, ee.shape, (10,)

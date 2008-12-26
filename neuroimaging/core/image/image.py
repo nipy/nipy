@@ -16,7 +16,7 @@ See documentation for load and save functions for 'working' examples.
 import numpy as np
 
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, reorder_input, reorder_output, Affine
-from neuroimaging.core.reference.evaluate import Grid, Evaluator
+from neuroimaging.core.reference.array_coords import ArrayCoordMap
 from neuroimaging.io.pyniftiio import PyNiftiIO, orientation_to_names
 from neuroimaging.core.reference.nifti import coordmap_from_ioimg, coerce_coordmap, get_pixdim, get_diminfo, standard_order
 
@@ -135,7 +135,7 @@ class Image(object):
     def __getitem__(self, index):
         """Slicing an image returns a new image."""
         data = self._data[index]
-        g = Evaluator(self.coordmap, self._data.shape)[index]
+        g = ArrayCoordMap(self.coordmap, self._data.shape)[index]
         coordmap = g.coordmap
         # BUG: If it's a zero-dimension array we should return a numpy scalar
         # like np.int32(data[index])
