@@ -2,7 +2,14 @@
 Some CoordinateMaps have input_coords that are 'array' coordinates, hence
 the function of the CoordinateMap can be evaluated at these 'array' points.
 
-This module tries to make these operations easier.
+This module tries to make these operations easier by defining a class
+ArrayCoordMap that is essentially a CoordinateMap and a shape.
+
+This class has two properties: values, transposed_values the CoordinateMap
+at np.indices(shape).
+
+The class Grid is meant to take a CoordinateMap and an np.mgrid-like notation 
+to create an ArrayCoordMap.
 """
 
 import numpy as np
@@ -72,7 +79,7 @@ class ArrayCoordMap(object):
 
     def _getindices_values(self):
         return self._evaluate(transpose=True)
-    transposed_values = property(_getindices_values, doc='Get values of ArrayCoordMap in a self.coordmap.ndim[0]+1 of shape (self.coordmap.ndim[1],) + self.shape)')
+    transposed_values = property(_getindices_values, doc='Get values of ArrayCoordMap in an array of shape (self.coordmap.ndim[1],) + self.shape)')
 
     def __getitem__(self, index):
         """
