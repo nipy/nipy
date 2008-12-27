@@ -1,10 +1,7 @@
 from numpy import asarray, arange, empty
 
-from neuroimaging.core.api import ImageList, Image
-
-from neuroimaging.core.reference.coordinate_map import CoordinateMap
-from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem
-from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.core.api import ImageList, Image, \
+    CoordinateMap, Affine, CoordinateSystem
 
 class FmriImageList(ImageList):
     """
@@ -128,20 +125,19 @@ def fromimage(fourdimage, volume_start_times=None, slice_times=None):
 
     """
     images = []
-    if not isinstance(fourdimage.coordmap.mapping, Affine):
+    if not isinstance(fourdimage.coordmap, Affine):
         raise ValueError, 'fourdimage must have an Affine mapping'
     
     for im in [fourdimage[i] for i in range(fourdimage.shape[0])]:
-        g = im.coordmap
-        oa = g.output_coords.axes[1:]
-        oc = VoxelCoordinateSystem("world", oa)
-        t = im.coordmap.mapping.transform[1:]
-        a = Affine(t)
-        newg = CoordinateMap(a, im.coordmap.input_coords, oc)
-        images.append(Image(asarray(im), newg))
+        cmap = im.coordmap
+        oa = cmap.output_coords.axes[1:]
+        oc = CoordinateSystem("world", oa)
+        t = im.coordmap.affine[1:]
+        a = Affine(t, im.coordmap.input_coords, oc)
+        images.append(Image(asarray(im), a))
 
     if volume_start_times is None:
-        volume_start_times = fourdimage.coordmap.mapping.transform[0,0]
+        volume_start_times = fourdimage.coordmap.affine[0,0]
         
     return FmriImageList(images=images, 
                          volume_start_times=volume_start_times,

@@ -14,8 +14,8 @@ from neuroimaging.fixes.scipy.stats.models.utils import recipr
 # nipy core imports
 
 from neuroimaging.core.api import Image, data_generator, parcels, matrix_generator
-from neuroimaging.core.api import f_generator, Image, save_image
-from neuroimaging.core.reference.api import Affine, CoordinateMap
+from neuroimaging.core.api import f_generator, Image, save_image, load_image
+from neuroimaging.core.api import Affine, CoordinateMap
 
 # fmri imports
 
@@ -40,9 +40,9 @@ class ModelOutputImage:
     
     """
 
-    def __init__(self, filename, coordmap, clobber=False):
+    def __init__(self, filename, coordmap, shape, clobber=False):
         self.filename = filename
-        self._im = Image(np.zeros(coordmap.shape), coordmap)
+        self._im = Image(np.zeros(shape), coordmap)
         self.clobber = clobber
         self._flushed = False
 
@@ -53,9 +53,8 @@ class ModelOutputImage:
 
         if not self.clobber and path.exists(self.filename):
             raise ValueError, 'trying to clobber existing file'
-        print self._im.coordmap.affine, 'before'
+
         save_image(self._im, self.filename)
-        print load_image(self.filename).coordmap.affine, 'after'
 
         self._flushed = True
         del(self._im)
@@ -256,18 +255,18 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
     """
     print 'here', fmri_image[0].coordmap.affine
     if effect:
-        effectim = ModelOutputImage(outbase % {'stat':'effect'}, fmri_image[0].coordmap, clobber=clobber)
+        effectim = ModelOutputImage(outbase % {'stat':'effect'}, fmri_image[0].coordmap, fmri_image[0].shape, clobber=clobber)
     else:
         effectim = None
 
     if sd:
-        sdim = ModelOutputImage(outbase % {'stat':'sd'}, fmri_image[0].coordmap,
+        sdim = ModelOutputImage(outbase % {'stat':'sd'}, fmri_image[0].coordmap, fmri_image[0].shape, 
                               clobber=clobber)
     else:
         sdim = None
 
     if t:
-        tim = ModelOutputImage(outbase % {'stat':'t'}, fmri_image[0].coordmap,
+        tim = ModelOutputImage(outbase % {'stat':'t'}, fmri_image[0].coordmap,fmri_image[0].shape, 
                              clobber=clobber)
     else:
         tim = None
@@ -275,7 +274,7 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
                               sd=sdim, t=tim)
 
 def output_F(outfile, contrast, fmri_image, clobber=False):
-    f = ModelOutputImage(outfile, fmri_image[0].coordmap, clobber=clobber)
+    f = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape, clobber=clobber)
     return regression.RegressionOutput(f, lambda x: regression.output_F(x, contrast))
                              
 def output_AR1(outfile, fmri_image, clobber=False):
@@ -286,7 +285,7 @@ def output_AR1(outfile, fmri_image, clobber=False):
     image: FmriImageList 
 
     """
-    outim = ModelOutputImage(outfile, fmri_image[0].coordmap, clobber=clobber)
+    outim = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape, clobber=clobber)
     return regression.RegressionOutput(outim, regression.output_AR1)
 
 def output_resid(outfile, fmri_image, clobber=False):
@@ -305,16 +304,19 @@ def output_resid(outfile, fmri_image, clobber=False):
         g = fmri_image[0].coordmap
         T[1:,1:] = fmri_image[0].affine
         T[0,0] = (fmri_image.volume_start_times[1:] - fmri_image.volume_start_times[:-1]).mean()
-        anames = ["time"] + [a.name for a in g.input_coords.axes()]
-        grid = CoordinateMap.from_affine(Affine(T),
-                                        anames,
-                                        (n,) + g.shape)
+        # FIXME: NIFTI specific naming here
+        innames = ["l"] + [a.name for a in g.input_coords.axes]
+        outnames = ["t"] + [a.name for a in g.output_coords.axes]
+        cmap = Affine.from_params(innames,
+                                  outnames, T)
+        shape = (n,) + fmri_image[0].shape
     elif isinstance(fmri_image, Image):
-        grid = fmri_image.coordmap
+        cmap = fmri_image.coordmap
+        shape = fmri_image.shape
     else:
         raise ValueError, "expecting FmriImageList or 4d Image"
 
-    outim = ModelOutputImage(outfile, grid, clobber=clobber)
+    outim = ModelOutputImage(outfile, cmap, shape, clobber=clobber)
     return regression.RegressionOutput(outim, regression.output_resid)
 
 def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
