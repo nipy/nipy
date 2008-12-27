@@ -81,8 +81,7 @@ class ArrayCoordMap(object):
 
     def __getitem__(self, index):
         """
-        If hasattr(self, 'shape'), implying that input_coordinates
-        are 'voxel coordinates', return a slice through the coordmap.
+        Return a slice through the coordmap.
 
         Parameters
         ----------
@@ -91,10 +90,8 @@ class ArrayCoordMap(object):
         
         """
 
-        if type(index) == type(slice(None,None,None)):
+        if type(index) != type(()):
             index = (index,)
-        elif type(index) == type(3):
-            index = (slice(index, index+1, 1),)
         return _slice(self.coordmap, self.shape, *index)
 
     @staticmethod
@@ -148,7 +145,12 @@ def _slice(coordmap, shape, *slices):
             l = 1
             keep_in_output.append(i)
 
-        cmaps.append(Affine.from_start_step([coordmap.input_coords.axisnames[i] + '-slice'],
+
+        if step > 1:
+            name = coordmap.input_coords.axisnames[i] + '-slice'
+        else:
+            name = coordmap.input_coords.axisnames[i]
+        cmaps.append(Affine.from_start_step([name],
                                             [coordmap.input_coords.axisnames[i]],
                                             [start],
                                             [step]))
