@@ -18,7 +18,6 @@ class TestImage:
     def setUp(self):
         self.img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
         self.tmpfile = NamedTemporaryFile(suffix='.nii.gz')
-        print self.img, self.tmpfile
         
     def test_init(self):
         new = Image(np.asarray(self.img), self.img.coordmap)
