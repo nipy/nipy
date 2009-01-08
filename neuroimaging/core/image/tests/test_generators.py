@@ -3,7 +3,6 @@ from neuroimaging.testing import *
 
 from neuroimaging.core.api import data_generator, parcels, write_data, slice_generator
 from neuroimaging.core.api import Image, load_image, save_image
-import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.reference.coordinate_map as coordinate_map
 import neuroimaging.core.image.generators as g
 

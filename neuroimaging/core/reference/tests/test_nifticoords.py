@@ -2,7 +2,7 @@ import numpy as np
 import nose.tools
 
 import neuroimaging.core.api as api
-from neuroimaging.core.reference import nifti, axis, coordinate_system
+from neuroimaging.core.reference import nifti, coordinate_system
 reload(nifti)
 
 shape = range(1,8)
