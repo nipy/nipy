@@ -99,6 +99,9 @@ class CoordinateSystem(object):
             name = ''
         return CoordinateSystem(coords, name, self.builtin)
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __eq__(self, other):
         """
         Equality is defined by self.dtype.
@@ -109,7 +112,7 @@ class CoordinateSystem(object):
 
         :Returns: ``bool``
         """
-        return self.dtype == other.dtype
+        return (self.dtype == other.dtype)
 
     def __str__(self):
         """
