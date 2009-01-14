@@ -147,10 +147,10 @@ def test_save4():
     nose.tools.assert_true(np.allclose(img.affine, img2.affine))
     nose.tools.assert_true(img.shape == img2.shape)
     nose.tools.assert_true(np.allclose(np.asarray(img2), np.asarray(img)))
-    print img2.coordmap.input_coords.axisnames, img.coordmap.input_coords.axisnames
+    print img2.coordmap.input_coords.coordinates, img.coordmap.input_coords.coordinates
     print nifti.get_diminfo(img.coordmap), nifti.get_diminfo(img2.coordmap)
     print img2.header['dim_info']
-    nose.tools.assert_true(img2.coordmap.input_coords.axisnames == img.coordmap.input_coords.axisnames)
-    nose.tools.assert_true(img2.coordmap.input_coords.axisnames == ['l', 'j', 'k', 'i'])
+    nose.tools.assert_true(img2.coordmap.input_coords.coordinates == img.coordmap.input_coords.coordinates)
+    nose.tools.assert_true(img2.coordmap.input_coords.coordinates == ['l', 'j', 'k', 'i'])
 
 
