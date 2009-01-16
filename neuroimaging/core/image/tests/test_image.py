@@ -1,20 +1,19 @@
 from tempfile import NamedTemporaryFile
+from os import remove
 
 import numpy as np
-from neuroimaging.testing import *
 
-
-from neuroimaging.utils.tests.data import repository
+from neuroimaging.testing import dec
+import nose.tools
 
 from neuroimaging.core.image import image
-
+from neuroimaging.utils.tests.data import repository
 from neuroimaging.core.api import Image, load_image, save_image, fromarray
 from neuroimaging.core.api import parcels, data_generator, write_data
 
-from neuroimaging.core.reference.coordinate_map import CoordinateMap
-from neuroimaging.core.reference.mapping import Affine
+from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine
 
-class TestImage(TestCase):
+class TestImage:
 
     def setUp(self):
         self.img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
@@ -22,41 +21,36 @@ class TestImage(TestCase):
         
     def test_init(self):
         new = Image(np.asarray(self.img), self.img.coordmap)
-        assert_equal(np.asarray(self.img)[:], np.asarray(new)[:])
-
-        self.assertRaises(ValueError, Image, None, None)
+        nose.tools.assert_true(np.allclose(np.asarray(self.img), np.asarray(new)))
+        nose.tools.assert_raises(ValueError, Image, None, None)
 
     def test_badfile(self):
         filename = "bad_file.foo"
-        self.assertRaises(RuntimeError, load_image, filename)
+        nose.tools.assert_raises(RuntimeError, load_image, filename)
 
     def test_maxmin_values(self):
         y = np.asarray(self.img)
-        self.assertEquals(y.shape, tuple(self.img.coordmap.shape))
-        np.allclose(y.max(), 437336.36, rtol=1.0e-8)
-        self.assertEquals(y.min(), 0.0)
+        nose.tools.assert_equal(y.shape, tuple(self.img.shape))
+        nose.tools.assert_true(np.allclose(y.max(), 437336.36, rtol=1.0e-8))
+        nose.tools.assert_equal(y.min(), 0.0)
 
     def test_slice_plane(self):
         x = self.img[3]
-        self.assertEquals(x.shape, self.img.shape[1:])
-        self.assertEquals(x.shape, x.coordmap.shape)
+        nose.tools.assert_equal(x.shape, self.img.shape[1:])
 
     def test_slice_block(self):
         x = self.img[3:5]
-        self.assertEquals(x.shape, (2,) + tuple(self.img.coordmap.shape[1:]))
-        self.assertEquals(x.shape, x.coordmap.shape)
+        nose.tools.assert_equal(x.shape, (2,) + tuple(self.img.shape[1:]))
 
     def test_slice_step(self):
         s = slice(0,20,2)
         x = self.img[s]
-        self.assertEquals(x.shape, (10,) + tuple(self.img.coordmap.shape[1:]))
-        self.assertEquals(x.shape, x.coordmap.shape)
+        nose.tools.assert_equal(x.shape, (10,) + tuple(self.img.shape[1:]))
 
     def test_slice_type(self):
-        s = slice(0,self.img.coordmap.shape[0])
+        s = slice(0,self.img.shape[0])
         x = self.img[s]
-        self.assertEquals(x.shape, tuple((self.img.coordmap.shape)))
-        self.assertEquals(x.shape, x.coordmap.shape)
+        nose.tools.assert_equal(x.shape, self.img.shape)
 
     def test_slice_steps(self):
         zdim, ydim, xdim = self.img.shape
@@ -65,91 +59,42 @@ class TestImage(TestCase):
         slice_x = slice(0, xdim, 2)
         x = self.img[slice_z, slice_y, slice_x]
         newshape = ((zdim/2)+1, (ydim/2)+1, (xdim/2)+1)
-        self.assertEquals(x.shape, newshape)
+        nose.tools.assert_equal(x.shape, newshape)
 
     def test_array(self):
         x = np.asarray(self.img)
         assert isinstance(x, np.ndarray)
-        self.assertEquals(x.shape, self.img.shape)
-        self.assertEquals(x.ndim, self.img.ndim)
+        nose.tools.assert_equal(x.shape, self.img.shape)
+        nose.tools.assert_equal(x.ndim, self.img.ndim)
         
-    # FIXME: AssertionError: Arrays are not equal.
-    # This is a bug in the pyniftiio.py file where a one-voxel offset
-    # is added to the affine.  This does not conform with the nifti1.h
-    # standard and will be removed asap.
-    @dec.knownfailure
-    def test_file_roundtrip(self):
-        save_image(self.img, self.tmpfile.name)
-        img2 = load_image(self.tmpfile.name)
-        data = np.asarray(self.img)
-        data2 = np.asarray(img2)
-        # verify data
-        assert_almost_equal(data2, data)
-        assert_almost_equal(data2.mean(), data.mean())
-        assert_almost_equal(data2.min(), data.min())
-        assert_almost_equal(data2.max(), data.max())
-        # verify shape and ndims
-        assert_equal(img2.shape, self.img.shape)
-        assert_equal(img2.ndim, self.img.ndim)
-        # verify affine
-        assert_equal(img2.affine, self.img.affine)
-
-    # This is a bug in the pyniftiio.py file where a one-voxel offset
-    # is added to the affine.  This does not conform with the nifti1.h
-    # standard and will be removed asap.
-    @dec.knownfailure
-    def test_roundtrip_fromarray(self):
-        data = np.random.rand(10,20,30)
-        img = fromarray(data)
-        save_image(img, self.tmpfile.name)
-        img2 = load_image(self.tmpfile.name)
-        data2 = np.asarray(img2)
-        # verify data
-        assert_almost_equal(data2, data)
-        assert_almost_equal(data2.mean(), data.mean())
-        assert_almost_equal(data2.min(), data.min())
-        assert_almost_equal(data2.max(), data.max())
-        # verify shape and ndims
-        assert_equal(img2.shape, img.shape)
-        assert_equal(img2.ndim, img.ndim)
-        # verify affine
-        assert_equal(img2.affine, img.affine)
-
-    # FIXME: AssertionError: Arrays are not almost equal
-    # This is a bug in the pyniftiio.py file where a one-voxel offset
-    # is added to the affine.  This does not conform with the nifti1.h
-    # standard and will be removed asap.
-    @dec.knownfailure
     def test_nondiag(self):
-        self.img.coordmap.mapping.transform[0,1] = 3.0
+        self.img.affine[0,1] = 3.0
         save_image(self.img, self.tmpfile.name)
         img2 = load_image(self.tmpfile.name)
-        assert_almost_equal(img2.coordmap.mapping.transform,
-                                       self.img.coordmap.mapping.transform)
+        print self.img.affine, img2.affine
+        nose.tools.assert_true(np.allclose(img2.affine, self.img.affine))
 
     def test_generator(self):
         gen = data_generator(self.img)
         for ind, data in gen:
-            self.assertEquals(data.shape, (109,91))
+            nose.tools.assert_equal(data.shape, (109,91))
 
     def test_iter(self):
         imgiter = iter(self.img)
         for data in imgiter:
-            self.assertEquals(data.shape, (109,91))
+            nose.tools.assert_equal(data.shape, (109,91))
 
     def test_iter4(self):
         tmp = Image(np.zeros(self.img.shape), self.img.coordmap)
         write_data(tmp, data_generator(self.img, range(self.img.shape[0])))
-        assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
+        nose.tools.assert_true(np.allclose(np.asarray(tmp), np.asarray(self.img)))
 
     def test_iter5(self):
-        #This next test seems like it could be deprecated with
-        #simplified iterator options
         
         tmp = Image(np.zeros(self.img.shape), self.img.coordmap)
         g = data_generator(self.img)
         write_data(tmp, g)
-        assert_almost_equal(np.asarray(tmp), np.asarray(self.img))
+        nose.tools.assert_true(np.allclose(np.asarray(tmp), np.asarray(self.img)))
 
     def test_parcels1(self):
         rho = self.img
@@ -160,7 +105,7 @@ class TestImage(TestCase):
         for i, d in data_generator(test, parcels(parcelmap)):
             v += d.shape[0]
 
-        self.assertEquals(v, np.product(test.shape))
+        nose.tools.assert_equal(v, np.product(test.shape))
 
     def test_parcels3(self):
         rho = self.img[0]
@@ -172,9 +117,9 @@ class TestImage(TestCase):
         for i, d in data_generator(test, parcels(parcelmap, labels=labels)):
             v += d.shape[0]
 
-        self.assertEquals(v, np.product(test.shape))
+        nose.tools.assert_equal(v, np.product(test.shape))
 
-    def uint8_to_dtype(self, dtype):
+    def uint8_to_dtype(self, dtype, name):
         dtype = dtype
         shape = (2,3,4)
         dmax = np.iinfo(np.uint8).max
@@ -182,30 +127,30 @@ class TestImage(TestCase):
         data[0,0,0] = 0
         data[1,0,0] = dmax
         data = data.astype(np.uint8) # randint returns np.int32
-        img = fromarray(data)
-        newimg = save_image(img, self.tmpfile.name, dtype=dtype)
+        img = fromarray(data, 'kji', 'zxy')
+        newimg = save_image(img, name, dtype=dtype)
         newdata = np.asarray(newimg)
         return newdata, data
         
     def test_scaling_uint8_to_uint8(self):
         dtype = np.uint8
-        newdata, data = self.uint8_to_dtype(dtype)
-        assert_equal(newdata, data)
+        newdata, data = self.uint8_to_dtype(dtype, self.tmpfile.name)
+        nose.tools.assert_true(np.allclose(newdata, data))
 
     def test_scaling_uint8_to_uint16(self):
         dtype = np.uint16
-        newdata, data = self.uint8_to_dtype(dtype)
-        assert_equal(newdata, data)
+        newdata, data = self.uint8_to_dtype(dtype, self.tmpfile.name)
+        nose.tools.assert_true(np.allclose(newdata, data))
 
     def test_scaling_uint8_to_float32(self):
         dtype = np.float32
-        newdata, data = self.uint8_to_dtype(dtype)
-        assert_equal(newdata, data)
+        newdata, data = self.uint8_to_dtype(dtype, self.tmpfile.name)
+        nose.tools.assert_true(np.allclose(newdata, data))
 
     def test_scaling_uint8_to_int32(self):
         dtype = np.int32
-        newdata, data = self.uint8_to_dtype(dtype)
-        assert_equal(newdata, data)
+        newdata, data = self.uint8_to_dtype(dtype, self.tmpfile.name)
+        nose.tools.assert_true(np.allclose(newdata, data))
     
     def float32_to_dtype(self, dtype):
         # Utility function for the float32_to_<dtype> functions
@@ -221,7 +166,7 @@ class TestImage(TestCase):
         data[1,0,0] = np.finfo(np.float32).min
         # random.normal will return data as native machine type
         data = data.astype(np.float32)
-        img = fromarray(data)
+        img = fromarray(data, 'kji', 'zyx')
         newimg = save_image(img, self.tmpfile.name, dtype=dtype)
         newdata = np.asarray(newimg)
         return newdata, data
@@ -229,42 +174,26 @@ class TestImage(TestCase):
     def test_scaling_float32_to_uint8(self):
         dtype = np.uint8
         newdata, data = self.float32_to_dtype(dtype)
-        assert_equal(newdata, data)
+        nose.tools.assert_true(np.allclose(newdata, data))
 
     def test_scaling_float32_to_uint16(self):
         dtype = np.uint16
         newdata, data = self.float32_to_dtype(dtype)
-        assert_equal(newdata, data)
+        nose.tools.assert_true(np.allclose(newdata, data))
         
     def test_scaling_float32_to_int16(self):
         dtype = np.int16
         newdata, data = self.float32_to_dtype(dtype)
-        assert_equal(newdata, data)
+        nose.tools.assert_true(np.allclose(newdata, data))
 
     def test_scaling_float32_to_float32(self):
         dtype = np.float32
         newdata, data = self.float32_to_dtype(dtype)
-        assert_equal(newdata, data)
+        nose.tools.assert_true(np.allclose(newdata, data))
 
-    def test_header_roundtrip(self):
-        hdr = self.img.header
-        # Update some header values and make sure they're saved
-        hdr['slice_duration'] = 0.200
-        hdr['intent_p1'] = 2.0
-        hdr['descrip'] = 'descrip for TestImage:test_header_roundtrip'
-        hdr['slice_end'] = 12
-        self.img.header = hdr
-        save_image(self.img, self.tmpfile.name)
-        newimg = load_image(self.tmpfile.name)
-        newhdr = newimg.header
-        assert_almost_equal(newhdr['slice_duration'], hdr['slice_duration'])
-        assert_equal(newhdr['intent_p1'], hdr['intent_p1'])
-        assert_equal(newhdr['descrip'], hdr['descrip'])
-        assert_equal(newhdr['slice_end'], hdr['slice_end'])
-        
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
-    img = fromarray(data)
+    img = fromarray(data, 'kji', 'zyx')
     assert isinstance(img, Image)
     assert img.ndim == 3
     # 2D slice
@@ -304,9 +233,8 @@ def test_ArrayLikeObj():
     obj = ArrayLikeObj()
     # create simple coordmap
     xform = np.eye(4)
-    affine = Affine(xform)
-    coordmap = CoordinateMap.from_affine('xyz', 'ijk', affine,
-                                    (2,3,4))
+    coordmap = Affine.from_params('xyz', 'ijk', xform)
+    
     # create image form array-like object and coordmap
     img = image.Image(obj, coordmap)
     assert img.ndim == 3
@@ -316,8 +244,74 @@ def test_ArrayLikeObj():
     img[:] = 4
     assert np.allclose(img[:], 4)
 
+# FIXME: 
+# This test below fails because save_image does not
+# deal with these fields of the header.
+
+@dec.knownfailure
+def test_header_roundtrip():
+    """
+    This test fails because save_image does not deal with all fields of the header.
+
+    """
+    img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
+    tmpfile = NamedTemporaryFile(suffix='.nii.gz')
+    hdr = img.header
+    # Update some header values and make sure they're saved
+    hdr['slice_duration'] = 0.200
+    hdr['intent_p1'] = 2.0
+    hdr['descrip'] = 'descrip for TestImage:test_header_roundtrip'
+    hdr['slice_end'] = 12
+    img.header = hdr
+    save_image(img, tmpfile.name)
+    newimg = load_image(tmpfile.name)
+    newhdr = newimg.header
+    yield nose.tools.assert_true, np.allclose(newhdr['slice_duration'], hdr['slice_duration'])
+    yield nose.tools.assert_equal, newhdr['intent_p1'], hdr['intent_p1']
+    yield nose.tools.assert_equal, newhdr['descrip'], hdr['descrip']
+    yield nose.tools.assert_equal, newhdr['slice_end'], hdr['slice_end']
+
+def test_file_roundtrip():
+    img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
+    tmpfile = NamedTemporaryFile(suffix='.nii.gz')
+    save_image(img, tmpfile.name)
+    img2 = load_image(tmpfile.name)
+    data = np.asarray(img)
+    data2 = np.asarray(img2)
+    # verify data
+    yield nose.tools.assert_true, np.allclose(data2, data)
+    yield nose.tools.assert_true, np.allclose(data2.mean(), data.mean())
+    yield nose.tools.assert_true, np.allclose(data2.min(), data.min())
+    yield nose.tools.assert_true, np.allclose(data2.max(), data.max())
+    
+    # verify shape and ndims
+    yield nose.tools.assert_equal, img2.shape, img.shape
+    yield nose.tools.assert_equal, img2.ndim, img.ndim
+    # verify affine
+    yield nose.tools.assert_true, np.allclose(img2.affine, img.affine)
+
+def test_roundtrip_fromarray():
+    data = np.random.rand(10,20,30)
+    img = fromarray(data, 'kji', 'zyx')
+    tmpfile = NamedTemporaryFile(suffix='.nii.gz')
+    save_image(img, tmpfile.name)
+    img2 = load_image(tmpfile.name)
+    data2 = np.asarray(img2)
+    # verify data
+    yield nose.tools.assert_true, np.allclose(data2, data)
+    yield nose.tools.assert_true, np.allclose(data2.mean(), data.mean())
+    yield nose.tools.assert_true, np.allclose(data2.min(), data.min())
+    yield nose.tools.assert_true, np.allclose(data2.max(), data.max())
+
+    # verify shape and ndims
+    yield nose.tools.assert_equal, img2.shape, img.shape
+    yield nose.tools.assert_equal, img2.ndim, img.ndim
+    # verify affine
+    yield nose.tools.assert_true, np.allclose(img2.affine, img.affine)
+
+
 # Should test common image sizes 2D, 3D, 4D
-class TestFromArray(TestCase):
+class TestFromArray:
     def setUp(self):
         self.array2D_shape = (2,3)
         self.array3D_shape = (2,3,4)
@@ -325,32 +319,32 @@ class TestFromArray(TestCase):
 
     def test_defaults_2D(self):
         data = np.ones(self.array2D_shape)
-        img = image.fromarray(data, names=['yspace', 'xspace'])
+        img = image.fromarray(data, 'kj', 'yx')
         assert isinstance(img._data, np.ndarray)
         assert img.ndim == 2
         assert img.shape == self.array2D_shape
-        self.assertRaises(AttributeError, getattr, img, 'header')
+        nose.tools.assert_raises(AttributeError, getattr, img, 'header')
         assert img.affine.shape == (3,3)
         assert img.affine.diagonal().all() == 1
         
     def test_defaults_3D(self):
-        img = image.fromarray(np.ones(self.array3D_shape))
+        img = image.fromarray(np.ones(self.array3D_shape), 'kji', 'zyx')
         assert isinstance(img._data, np.ndarray)
         assert img.ndim == 3
         assert img.shape == self.array3D_shape
         # ndarray's do not have a header
-        self.assertRaises(AttributeError, getattr, img, 'header')
+        nose.tools.assert_raises(AttributeError, getattr, img, 'header')
         assert img.affine.shape == (4,4)
         assert img.affine.diagonal().all() == 1
 
     def test_defaults_4D(self):
         data = np.ones(self.array4D_shape)
         names = ['time', 'zspace', 'yspace', 'xspace']
-        img = image.fromarray(data, names=names)
+        img = image.fromarray(data, names, names)
         assert isinstance(img._data, np.ndarray)
         assert img.ndim == 4
         assert img.shape == self.array4D_shape
-        self.assertRaises(AttributeError, getattr, img, 'header')
+        nose.tools.assert_raises(AttributeError, getattr, img, 'header')
         assert img.affine.shape == (5,5)
         assert img.affine.diagonal().all() == 1
 

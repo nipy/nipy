@@ -3,40 +3,83 @@ This module defines the two default
 GLM passes of fmristat
 """
 
-import gc, copy
+import os.path as path
 
 import numpy as np
+from scipy.linalg import toeplitz
+
 from neuroimaging.fixes.scipy.stats.models.regression import OLSModel, ARModel
-from neuroimaging.core.api import data_generator, parcels, matrix_generator
+from neuroimaging.fixes.scipy.stats.models.utils import recipr
+
+# nipy core imports
+
+from neuroimaging.core.api import Image, data_generator, parcels, matrix_generator
+from neuroimaging.core.api import f_generator, Image, save_image, load_image
+from neuroimaging.core.api import Affine, CoordinateMap
+
+# fmri imports
 
 from neuroimaging.modalities.fmri.api import FmriImageList, fmri_generator
-from neuroimaging.core.api import f_generator, fromarray, save_image, Image
-from neuroimaging.core.reference.api import Affine, CoordinateMap
 from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
      DelayContrastOutput
-import neuroimaging.algorithms.statistics.regression as regression
 
+import neuroimaging.algorithms.statistics.regression as regression
 from neuroimaging.algorithms.fwhm import fastFWHM
 import neuroimaging.algorithms.statistics.regression as regression
 
+class ModelOutputImage:
 
-# FIXME: Is there a clean, generic way to handle these temporary
-# files?  We removed create_outfile from image.py because we'd like to
-# minimize the number of ways users create and deal with files.
-# Simplify the api.  But perhaps there is a need for a create_outfile
-# type function?
-def _create_outfile(filename, coordmap):
-    img = fromarray(np.zeros(coordmap.shape), coordmap=coordmap)
-    return save_image(img, filename)
+    """
+    These images have their values filled in as the model is fit, and
+    are saved to disk after being completely filled in.
 
-def model_generator(formula, data, frametimes, iterable=None, slicetimes=None,
+    They are saved to disk by calling the 'save' method.
+
+    The __getitem__ and __setitem__ calls are delegated to a private Image.
+    An exception is raised if trying to get/set data after the data has been saved to disk.
+    
+    """
+
+    def __init__(self, filename, coordmap, shape, clobber=False):
+        self.filename = filename
+        self._im = Image(np.zeros(shape), coordmap)
+        self.clobber = clobber
+        self._flushed = False
+
+    def save(self):
+        """
+        Save current Image data to disk as a .nii file.
+        """
+
+        if not self.clobber and path.exists(self.filename):
+            raise ValueError, 'trying to clobber existing file'
+
+        save_image(self._im, self.filename)
+
+        self._flushed = True
+        del(self._im)
+
+    def __getitem__(self, item):
+        if not self._flushed:
+            return self._im[item]
+        else:
+            raise ValueError, 'trying to read value from a saved ModelOutputImage'
+
+    def __setitem__(self, item, value):
+        if not self._flushed:
+            self._im[item] = value
+        else:
+            raise ValueError, 'trying to set value on saved ModelOutputImage'
+        
+
+def model_generator(formula, data, volume_start_times, iterable=None, slicetimes=None,
                     model_type=OLSModel, model_params = lambda x: ()):
     """
     Generator for the models for a pass of fmristat analysis.
     """
     for i, d in matrix_generator(fmri_generator(data, iterable=iterable)):
         model_args = model_params(i) # model may depend on i
-        rmodel = model_type(formula.design(frametimes), *model_args)
+        rmodel = model_type(formula.design(volume_start_times), *model_args)
         yield i, d, rmodel
 
 def results_generator(model_iterable):
@@ -58,17 +101,22 @@ class OLS:
     fmri_image : `FmriImageList`
     formula :  `neuroimaging.modalities.fmri.protocol.Formula`
 
-
     """
-    def __init__(self, fmri_image, formula, outputs=[]):
+
+    def __init__(self, fmri_image, formula, outputs=[], volume_start_times=None):
         self.fmri_image = fmri_image
         self.data = np.asarray(fmri_image)
         self.formula = formula
         self.outputs = outputs
 
+        if volume_start_times is None:
+            self.volume_start_times = self.fmri_image.volume_start_times
+        else:
+            self.volume_start_times = volume_start_times
+            
     def execute(self):
         m = model_generator(self.formula, self.data,
-                            self.fmri_image.frametimes,
+                            self.volume_start_times,
                             model_type=OLSModel)
         r = results_generator(m)
 
@@ -88,6 +136,44 @@ class OLS:
 
         o = generate_output(self.outputs, r, reshape=reshape)
 
+def estimateAR(resid, design, order=1):
+    """
+    Estimate AR parameters using bias correction from fMRIstat.
+
+    Inputs:
+    -------
+
+    resid:  residual image
+    model:  an OLS model used to estimate residuals
+    """
+
+    p = order
+
+    R = np.identity(design.shape[0]) - np.dot(design, np.linalg.pinv(design))
+    M = np.zeros((p+1,)*2)
+    I = np.identity(R.shape[0])
+
+    for i in range(p+1):
+        Di = np.dot(R, toeplitz(I[i]))
+        for j in range(p+1):
+            Dj = np.dot(R, toeplitz(I[j]))
+            M[i,j] = np.diagonal((np.dot(Di, Dj))/(1.+(i>0))).sum()
+                    
+    invM = np.linalg.inv(M)
+
+    rresid = np.asarray(resid).reshape(resid.shape[0], np.product(resid.shape[1:]))
+    sum_sq = np.sum(rresid**2, axis=0)
+
+    cov = np.zeros((p + 1,) + sum_sq.shape)
+    cov[0] = sum_sq
+    for i in range(1, p+1):
+        cov[i] = np.add.reduce(rresid[i:] * rresid[0:-i], 0)
+    cov = np.dot(invM, cov)
+    output = cov[1:] * recipr(cov[0])
+    output = np.squeeze(output)
+    output.shape = resid.shape[1:]
+    return output
+
 class AR1:
 
     """
@@ -100,48 +186,66 @@ class AR1:
     rho : Image of AR(1) coefficients.
     """
 
-    def __init__(self, fmri_image, formula, rho, outputs=[]):
+    def __init__(self, fmri_image, formula, rho, outputs=[],
+                 volume_start_times=None):
         self.fmri_image = fmri_image
+
+
         self.data = np.asarray(fmri_image)
+
         self.formula = formula
         self.outputs = outputs
-        self.rho = rho
+
+        # Cleanup rho values, truncate them to a scale of 0.01
+        g = rho.coordmap.copy()
+        rho = np.asarray(rho)
+        m = np.isnan(rho)
+        r = (np.clip(rho,-1,1) * 100).astype(np.int) / 100.
+        r[m] = np.inf
+        self.rho = Image(r, g)
+
+        if volume_start_times is None:
+            self.volume_start_times = self.fmri_image.volume_start_times
+        else:
+            self.volume_start_times = volume_start_times
 
     def execute(self):
-        iterable = parcels((np.asarray(self.rho)*100).astype(np.int) / 100.)
+
+        iterable = parcels(self.rho, exclude=[np.inf])
         def model_params(i):
             return (np.asarray(self.rho)[i].mean(),)
         m = model_generator(self.formula, self.data,
-                            self.fmri_image.frametimes,
+                            self.volume_start_times,
                             iterable=iterable,
                             model_type=ARModel,
                             model_params=model_params)
         r = results_generator(m)
 
+        def reshape(i, x):
+            """
+            To write output, arrays have to be reshaped --
+            this function does the appropriate reshaping for the two
+            passes of fMRIstat.
+
+            These passes are i) 'slices through the z-axis'
+                            ii) 'parcels of approximately constant AR1 coefficient'
+            """
+    
+            if len(x.shape) == 2:
+                if type(i) is type(1):
+                    x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]                        
+                if type(i) not in [type([]), type(())]:
+                    i = (i,)
+                else:
+                    i = tuple(i)
+                i = (slice(None,None,None),) + tuple(i)
+            else:
+                if type(i) is type(1):
+                    x.shape = self.fmri_image[0].shape[1:]
+            return i, x
+
         o = generate_output(self.outputs, r, reshape=reshape)
 
-def reshape(i, x):
-    """
-    To write output, arrays have to be reshaped --
-    this function does the appropriate reshaping for the two
-    passes of fMRIstat.
-
-    These passes are i) 'slices through the z-axis'
-                     ii) 'parcels of approximately constant AR1 coefficient'
-    """
-    
-    if len(x.shape) == 2:
-        if type(i) is type(1):
-            x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]                        
-        if type(i) not in [type([]), type(())]:
-            i = (i,)
-        else:
-            i = tuple(i)
-        i = (slice(None,None,None),) + tuple(i)
-    else:
-        if type(i) is type(1):
-            x.shape = self.fmri_image[0].shape[1:]
-    return i, x
 
 def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
              clobber=False):
@@ -149,28 +253,29 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
     outbase: a string interpolator object with key %(stat)s
     contrast: a TContrast
     """
+    print 'here', fmri_image[0].coordmap.affine
     if effect:
-        effectim = _create_outfile(outbase % {'stat':'effect'},
-                                   fmri_image[0].coordmap)
+        effectim = ModelOutputImage(outbase % {'stat':'effect'}, fmri_image[0].coordmap, fmri_image[0].shape, clobber=clobber)
     else:
         effectim = None
 
     if sd:
-        sdim = _create_outfile(outbase % {'stat':'sd'}, fmri_image[0].coordmap)
+        sdim = ModelOutputImage(outbase % {'stat':'sd'}, fmri_image[0].coordmap, fmri_image[0].shape, 
+                              clobber=clobber)
     else:
         sdim = None
 
     if t:
-        tim = _create_outfile(outbase % {'stat':'t'}, fmri_image[0].coordmap)
+        tim = ModelOutputImage(outbase % {'stat':'t'}, fmri_image[0].coordmap,fmri_image[0].shape, 
+                             clobber=clobber)
     else:
         tim = None
     return regression.TOutput(contrast, effect=effectim,
                               sd=sdim, t=tim)
 
 def output_F(outfile, contrast, fmri_image, clobber=False):
-    f = _create_outfile(outfile, fmri_image[0].coordmap)
-    c = copy.deepcopy(contrast)
-    return regression.RegressionOutput(f, lambda x: regression.output_F(x, c))
+    f = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape, clobber=clobber)
+    return regression.RegressionOutput(f, lambda x: regression.output_F(x, contrast))
                              
 def output_AR1(outfile, fmri_image, clobber=False):
     """
@@ -180,7 +285,7 @@ def output_AR1(outfile, fmri_image, clobber=False):
     image: FmriImageList 
 
     """
-    outim = _create_outfile(outfile, fmri_image[0].coordmap)
+    outim = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape, clobber=clobber)
     return regression.RegressionOutput(outim, regression.output_AR1)
 
 def output_resid(outfile, fmri_image, clobber=False):
@@ -197,18 +302,22 @@ def output_resid(outfile, fmri_image, clobber=False):
         n = len(fmri_image.list)
         T = np.zeros((5,5))
         g = fmri_image[0].coordmap
-        T[1:,1:] = fmri_image[0].coordmap.affine
-        T[0,0] = fmri_image.TR
-        anames = ["time"] + [a.name for a in g.input_coords.axes]
-        coordmap = CoordinateMap.from_affine(Affine(T),
-                                        anames,
-                                        (n,) + g.shape)
+        T[1:,1:] = fmri_image[0].affine
+        T[0,0] = (fmri_image.volume_start_times[1:] - fmri_image.volume_start_times[:-1]).mean()
+        # FIXME: NIFTI specific naming here
+        innames = ["l"] + [a.name for a in g.input_coords.axes]
+        outnames = ["t"] + [a.name for a in g.output_coords.axes]
+        cmap = Affine.from_params(innames,
+                                  outnames, T)
+        shape = (n,) + fmri_image[0].shape
     elif isinstance(fmri_image, Image):
-        coordmap = fmri_image.coordmap
+        cmap = fmri_image.coordmap
+        shape = fmri_image.shape
     else:
         raise ValueError, "expecting FmriImageList or 4d Image"
-    outim = _create_outfile(outfile, coordmap)
-    return regression.ArrayOutput(outim, regression.output_resid)
+
+    outim = ModelOutputImage(outfile, cmap, shape, clobber=clobber)
+    return regression.RegressionOutput(outim, regression.output_resid)
 
 def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
     """
@@ -220,14 +329,21 @@ def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
     for i, results in iterable:
         for output in outputs:
             if not hasattr(output, "list"): # lame test here
-                i, d = reshape(i, output(results))
-                output[i] = d
+                k, d = reshape(i, output(results))
+                output[k] = d
             else:
                 r = output(results)
                 for j, l in enumerate(output.list):
-                    i, d = reshape(i, r[j])
-                    l[i] = d
+                    k, d = reshape(i, r[j])
+                    l[k] = d
 
+    # flush outputs, if necessary
 
-
-
+    for output in outputs:
+        if isinstance(output, regression.RegressionOutput):
+            if hasattr(output.img, 'save'):
+                output.img.save()
+        elif isinstance(output, regression.RegressionOutputList):
+            for im in output.list:
+                if hasattr(im, 'save'):
+                    im.save()

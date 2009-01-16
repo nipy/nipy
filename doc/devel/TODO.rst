@@ -227,6 +227,9 @@ Questions
 
 * Should millimeter coordinates be expressed in xyz or zyx order?
   **Answer:** xyz order.
+  **Note:** we should probably change the names of the "VoxelAxes" to 
+            something other than 'x,y,z', at least in creating 
+            CoordinateMaps
 
 Weekly Sprint
 =============

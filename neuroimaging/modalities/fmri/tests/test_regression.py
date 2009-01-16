@@ -9,7 +9,7 @@ from neuroimaging.fixes.scipy.stats.models.contrast import Contrast
 # Load in the data
 
 funcim = load_image(funcfile)
-fmriims = fromimage(funcim, TR=2.)
+fmriims = fromimage(funcim, volume_start_times=2.)
 
 f1 = ExperimentalQuantitative("f1", lambda t:t)
 f2 = ExperimentalQuantitative("f1", lambda t:t**2)
@@ -17,9 +17,10 @@ f3 = ExperimentalQuantitative("f1", lambda t:t**3)
 
 f = f1 + f2 + f3
 c = Contrast(f1, f)
-c.compute_matrix(fmriims.frametimes)
+c.compute_matrix(fmriims.volume_start_times)
 c2 = Contrast(f1 + f2, f)
-c2.compute_matrix(fmriims.frametimes)
+c2.compute_matrix(fmriims.volume_start_times)
+
 
 outputs = []
 outputs.append(model.output_AR1("ar1.nii", fmriims, clobber=True))

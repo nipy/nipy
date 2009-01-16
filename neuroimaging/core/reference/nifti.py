@@ -35,13 +35,15 @@ NIFTI's voxel convention is what can best be described as 0-based
 FORTRAN indexing (confirm this). For example: suppose we want the
 x=20-th, y=10-th pixel of the third slice of an image with 30 64x64 slices. This
 
+>>> from neuroimaging.testing import anatfile
+>>> from neuroimaging.core.api import load_image
 >>> nifti_ijk = [19,9,2]
 >>> fortran_ijk = [20,10,3]
 >>> c_kji = [2,9,19]
->>> d = np.load('data.img', dtype=np.float, shape=(30,64,64))
->>> request1 = d[nifti_ijk[::-1]]
+>>> d = np.asarray(load_image(anatfile))
+>>> request1 = d[nifti_ijk[2],nifti_ijk[1],nifti_ijk[0]]
 >>> request2 = d[fortran_ijk[2]-1,fortran_ijk[1]-1, fortran_ijk[0]-1]
->>> request3 = d[c_kji]
+>>> request3 = d[c_kji[0],c_kji[1],c_kji[2]]
 >>> assert request1 == request2
 >>> assert request2 == request3
 
@@ -49,16 +51,13 @@ FIXME: (finish this thought.... Are we going to open NIFTI files with NIFTI inpu
 For this reason, we have to consider whether we should transpose the
 memmap from pynifti. 
 """
-
 import warnings
 from string import join
 
 import numpy as np
 
-from coordinate_system import CoordinateSystem, VoxelCoordinateSystem
-from coordinate_map import CoordinateMap
-from axis import RegularAxis, VoxelAxis
-from mapping import Affine
+from coordinate_system import CoordinateSystem, Coordinate
+from coordinate_map import CoordinateMap, reorder_input, reorder_output, Affine
 
 valid_input_axisnames = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
 valid_output_axisnames = list('xyztuvw')
@@ -188,12 +187,12 @@ def coerce_coordmap(coordmap):
         outname = coordmap.output_coords.name
 
     axes = coordmap.input_coords.axes
-    newincoords = VoxelCoordinateSystem(inname, [axes[i] for i in intrans])
+    newincoords = CoordinateSystem(inname, [axes[i] for i in intrans])
 
     axes = coordmap.output_coords.axes
     newoutcoords = CoordinateSystem(outname, [axes[i] for i in outtrans])
 
-    return CoordinateMap(Affine(A), newincoords, newoutcoords), intrans
+    return Affine(A, newincoords, newoutcoords), intrans
 
 def get_pixdim(coordmap, full_length=False):
     """
@@ -218,6 +217,8 @@ def get_pixdim(coordmap, full_length=False):
 
     """
 
+    # FIXME: Axis instances don't have steps now.... get pixdim from the affine transform
+
     # NIFTI header specifies pixdim should be positive (we take this
     # as non-negative).
     # since we will save the actual 4x4 affine in the NIFTI header,
@@ -231,6 +232,9 @@ def get_pixdim(coordmap, full_length=False):
     ndim = coordmap.ndim[0]
     newcmap, _ = coerce_coordmap(coordmap)
     pixdim = np.zeros(ndim)
+
+    #FIXME: here is what needs to be fixed
+
     for i, l in enumerate('xyztuvw'[:ndim]):
         ll = coordmap.output_coords[l]
         if hasattr(ll, 'step'):
@@ -238,13 +242,11 @@ def get_pixdim(coordmap, full_length=False):
 
     if not np.alltrue(np.greater_equal(pixdim, 0)):
         warnings.warn("NIFTI expectes non-negative pixdims, taking absolute value")
+
     A = newcmap.affine
     opixdim = np.diag(A)[3:-1]
-    if not np.allclose(opixdim, pixdim[3:]):
-        warnings.warn("pixdims from output_coords:%s, do not agree with pixdim from (coerced) affine matrix:%s. using those from output_coords" % (`pixdim[3:]`, `opixdim`))
 
-
-    pixdim = np.fabs(pixdim)
+    pixdim[3:] = opixdim
     if full_length:
         v = np.zeros(7)
         v[:pixdim.shape[0]] = pixdim
@@ -289,12 +291,8 @@ def standard_order(coordmap):
     warnings are raised, then this may give unexpected results
     because it only checks the reordering of the first 3 coordinates.
 
-    >>> cmap = CoordinateMap.from_affine('ikjl', 'xyzt', Affine(np.identity(5)), (64,30,64,200))
+    >>> cmap = Affine.from_params('ikjl', 'xyzt', np.identity(5))
     >>> sorder, scmap = standard_order(cmap)
-    >>> print cmap.shape
-    (64, 30, 64, 200)
-    >>> print scmap.shape
-    (64, 64, 30, 200)
     >>> print cmap.input_coords.axisnames
     ['i', 'k', 'j', 'l']
     >>> print scmap.input_coords.axisnames
@@ -317,7 +315,7 @@ def standard_order(coordmap):
     ijk_inv = np.dot(perm, [0,1,2]).astype(np.int)
     o = range(coordmap.ndim[0])
     o[:3] = ijk_inv
-    return o, coordmap.reorder_input(o)
+    return o, reorder_input(coordmap, o)
 
 def ijk_from_diminfo(diminfo):
     """
@@ -530,12 +528,12 @@ def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
     ndim = len(shape)
     ijk = ijk_from_diminfo(diminfo)
     innames = ijk + valid_input_axisnames[3:ndim]
-    inaxes = [VoxelAxis(n, length=l) for n, l in zip(innames, shape[::-1])]
+    inaxes = [Coordinate(n) for n in innames]
     incoords = CoordinateSystem('input', inaxes)
 
     outnames = valid_output_axisnames[:ndim]
-    outaxes = [RegularAxis(n, step=s) for n, s in zip(outnames, pixdim[1:(ndim+1)])]
+    outaxes = [Coordinate(n) for n in outnames]
     outcoords = CoordinateSystem('output', outaxes)
             
-    coordmap = CoordinateMap(affine, incoords, outcoords)
-    return coordmap.reorder_input().reorder_output()
+    coordmap = Affine(affine, incoords, outcoords)
+    return reorder_input(reorder_output(coordmap))

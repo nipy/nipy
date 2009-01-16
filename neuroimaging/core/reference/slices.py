@@ -2,21 +2,21 @@
 A set of methods to get coordinate maps which represent slices in space.
 
 """
-
-__docformat__ = 'restructuredtext'
-
-from neuroimaging.core.reference import coordinate_map, axis, mapping, mni
-from neuroimaging.core.reference.coordinate_system import VoxelCoordinateSystem
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
+    Coordinate
+from neuroimaging.core.reference.coordinate_map import Affine
+from neuroimaging.core.reference.array_coords import ArrayCoordMap
 import numpy.linalg as L
 import numpy as np
 import numpy.random as R
 
+__docformat__ = 'restructuredtext'
+
+
 def from_origin_and_columns(origin, colvectors, shape, output_coords):
     """
-    Return a coordinate_map representing a slice based on a given origin, a pair of direction
-    vectors which span the slice, and a shape.
-
-    By default the output coordinate system is the MNI world.
+    Return a CoordinateMap representing a slice based on a given origin, 
+    a pair of direction vectors which span the slice, and a shape.
 
     :Parameters:
         origin : the corner of the output coordinates, i.e. the [0]*ndimin
@@ -25,7 +25,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
         shape : how many steps in each voxel direction
         output_coords : a CoordinateSystem for the output
 
-    :Returns: `coordinate_map.CoordinateMap`
+    :Returns: `CoordinateMap`
     """
     colvectors = np.asarray(colvectors)
     nout = colvectors.shape[1]
@@ -37,13 +37,12 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
     f[0:nout,-1] = origin
     f[nout, nin] = 1.
 
-    input_coords = VoxelCoordinateSystem('slice', \
-       [axis.VoxelAxis('voxel%d' % d, length=shape[d])
+    input_coords = CoordinateSystem('slice', \
+       [Coordinate('i%d' % d)
         for d in range(len(shape))])
 
-    w = mapping.Affine(f)
-    g = coordinate_map.CoordinateMap(w, input_coords, output_coords)
-    return g
+    g = Affine(f, input_coords, output_coords)
+    return ArrayCoordMap.from_shape(g, shape)
 
 def xslice(x, zlim, ylim, output_coords, shape):
     """
@@ -114,13 +113,14 @@ def zslice(z, ylim, xlim, output_coords, shape):
 
 
 
-def bounding_box(coordmap):
+def bounding_box(coordmap, shape):
     """
     Determine a valid bounding box from a CoordinateMap instance.
 
     :Parameters:
-        coordmap : `coordinate_map.CoordinateMap`
-            TODO
+        coordmap : `CoordinateMap`
+
     """
-    return [[r.min(), r.max()] for r in coordmap.range()]
+    e = ArrayCoordMap.from_shape(coordmap, shape)
+    return [[r.min(), r.max()] for r in e.transposed_values]
     

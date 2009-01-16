@@ -50,10 +50,10 @@ class test_FmriStat(TestCase):
     #     defined.  Need to verify the data file exists (try
     #     test_fmri.nii.gz) and the calling convention for FmriImageList
     def data_setUp(self):
-        frametimes = np.arange(120)*3.
+        volume_start_times = np.arange(120)*3.
         slicetimes = np.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
 
-        self.img = FmriImageList("test_fmri.hdr", datasource=repository, frametimes=frametimes,
+        self.img = FmriImageList("test_fmri.hdr", datasource=repository, volume_start_times=volume_start_times,
                                   slicetimes=slicetimes, usematfile=False)
 
     def tearDown(self):

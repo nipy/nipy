@@ -3,7 +3,6 @@ from neuroimaging.testing import *
 
 from neuroimaging.core.api import data_generator, parcels, write_data, slice_generator
 from neuroimaging.core.api import Image, load_image, save_image
-import neuroimaging.core.reference.axis as axis
 import neuroimaging.core.reference.coordinate_map as coordinate_map
 import neuroimaging.core.image.generators as g
 
@@ -12,12 +11,12 @@ class test_Generator(TestCase):
     def setUp(self):
         names = ['zspace', 'yspace', 'xspace']
         shape = (10,20,30)
-        self.img = Image(np.zeros(shape), coordinate_map.CoordinateMap.from_start_step(names, names, (0,)*3, (1,)*3, shape))
-        self.img2 = Image(np.ones(shape), coordinate_map.CoordinateMap.from_start_step(names, names, (0,)*3, (1,)*3, shape))
+        self.img = Image(np.zeros(shape), coordinate_map.Affine.from_start_step(names, names, (0,)*3, (1,)*3))
+        self.img2 = Image(np.ones(shape), coordinate_map.Affine.from_start_step(names, names, (0,)*3, (1,)*3))
                        
         shape = (3,5,4)
-        self.img3 = Image(np.zeros(shape), coordinate_map.CoordinateMap.from_start_step(names, names, (0,)*3, (1,)*3, shape))
-        self.img4 = Image(np.zeros(shape), coordinate_map.CoordinateMap.from_start_step(names, names, (0,)*3, (1,)*3, shape))
+        self.img3 = Image(np.zeros(shape), coordinate_map.Affine.from_start_step(names, names, (0,)*3, (1,)*3))
+        self.img4 = Image(np.zeros(shape), coordinate_map.Affine.from_start_step(names, names, (0,)*3, (1,)*3))
 
 
     def test_read_slices(self):
