@@ -6,7 +6,7 @@ import nose.tools
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, compose, CoordinateSystem
 from neuroimaging.core.reference.coordinate_map import matvec_from_transform, transform_from_matvec
 from neuroimaging.testing import anatfile, funcfile
-from neuroimaging.core.api import load_image
+from neuroimaging.io.api import load_image
 
 def test_identity():
     i = Affine.identity(['zspace', 'yspace', 'xshape'])

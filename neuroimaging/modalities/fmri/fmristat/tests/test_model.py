@@ -3,7 +3,7 @@ from neuroimaging.testing import *
 import neuroimaging.modalities.fmri.fmristat.model as model
 from neuroimaging.testing import funcfile
 from neuroimaging.modalities.fmri.api import fromimage
-from neuroimaging.core.api import load_image
+from neuroimaging.io.api import load_image
 
 from neuroimaging.modalities.fmri.protocol import Formula, ExperimentalQuantitative
 from neuroimaging.fixes.scipy.stats.models.contrast import Contrast

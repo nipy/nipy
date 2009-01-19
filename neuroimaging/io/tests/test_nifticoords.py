@@ -2,8 +2,8 @@ import numpy as np
 import nose.tools
 
 import neuroimaging.core.api as api
-from neuroimaging.core.reference import nifti, coordinate_system
-reload(nifti)
+from neuroimaging.core.reference import coordinate_system
+import neuroimaging.io.nifti_ref as nifti
 
 shape = range(1,8)
 step = np.arange(1,8)

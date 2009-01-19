@@ -4,9 +4,9 @@ import numpy as np
 import nose.tools
 
 from neuroimaging.testing import funcfile
-from neuroimaging.core.api import load_image, save_image
+from neuroimaging.io.api import load_image, save_image
 from neuroimaging.core import api
-from neuroimaging.core.reference import nifti
+from neuroimaging.io import nifti_ref as nifti
 
 def test_save1():
     """

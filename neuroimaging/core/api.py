@@ -9,10 +9,7 @@ from neuroimaging.core.reference.coordinate_system import CoordinateSystem
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, compose
 from neuroimaging.core.reference.array_coords import Grid, ArrayCoordMap
 
-from neuroimaging.core.image.image import Image, merge_images
-from neuroimaging.core.image.image import load as load_image
-from neuroimaging.core.image.image import save as save_image
-from neuroimaging.core.image.image import fromarray
+from neuroimaging.core.image.image import Image, merge_images, fromarray
 
 from neuroimaging.core.image.image_list import ImageList
 

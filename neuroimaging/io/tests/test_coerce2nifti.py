@@ -1,7 +1,7 @@
 import numpy as np
 from neuroimaging.core import api
-from neuroimaging.core.image.image import coerce2nifti
-from neuroimaging.core.reference.nifti import coerce_coordmap
+from neuroimaging.io.files import coerce2nifti
+from neuroimaging.io.nifti_ref import coerce_coordmap
 from neuroimaging.core.reference.coordinate_map import reorder_input, reorder_output
 
 def setup_cmap():

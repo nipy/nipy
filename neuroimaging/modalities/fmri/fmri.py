@@ -33,7 +33,7 @@ class FmriImageList(ImageList):
         >>> from numpy import asarray
         >>> from neuroimaging.testing import funcfile
         >>> from neuroimaging.modalities.fmri.api import FmriImageList, fromimage
-        >>> from neuroimaging.core.api import load_image
+        >>> from neuroimaging.io.api import load_image
         
         >>> # fmrilist and ilist represent the same data
 
@@ -130,7 +130,7 @@ def fromimage(fourdimage, volume_start_times=None, slice_times=None):
     
     for im in [fourdimage[i] for i in range(fourdimage.shape[0])]:
         cmap = im.coordmap
-        oa = cmap.output_coords.axes[1:]
+        oa = cmap.output_coords.coordinates[1:]
         oc = CoordinateSystem(oa, "world")
         t = im.coordmap.affine[1:]
         a = Affine(t, im.coordmap.input_coords, oc)
