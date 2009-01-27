@@ -17,7 +17,7 @@ class test_fMRIstat_model(TestCase):
 
     def testrun(self):
         funcim = load_image(funcfile)
-        fmriims = fromimage(funcim, TR=2.)
+        fmriims = fromimage(funcim, volume_start_times=2.)
 
         f1 = ExperimentalQuantitative("f1", lambda t:t)
         f2 = ExperimentalQuantitative("f1", lambda t:t**2)
@@ -25,9 +25,9 @@ class test_fMRIstat_model(TestCase):
 
         f = f1 + f2 + f3
         c = Contrast(f1, f)
-        c.compute_matrix(fmriims.frametimes)
+        c.compute_matrix(fmriims.volume_start_times)
         c2 = Contrast(f1 + f2, f)
-        c2.compute_matrix(fmriims.frametimes)
+        c2.compute_matrix(fmriims.volume_start_times)
 
         outputs = []
         outputs.append(model.output_AR1("ar1.nii", fmriims, clobber=True))

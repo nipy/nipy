@@ -277,7 +277,7 @@ class PCA(object):
 ##             if self.image_results is None:
 ##                 raise ValueError, 'run "images" before time_series'
 ##             try:
-##                 t = self.image.frametimes
+##                 t = self.image.volume_start_times
 ##             except:
 ##                 t = np.arange(self.image.coordmap.shape[0])
 ##             self.time_plot = MultiPlot(self.components[self.image_which],
