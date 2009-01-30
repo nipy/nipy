@@ -148,14 +148,14 @@ script to generate the plot in the :file:`pyplots` directory, and
 refer to it using the ``plot`` directive.  To include the source code
 for the plot in the document, pass the ``include-source`` parameter::
 
-  .. plot:: elegant.py
+  .. plot:: pyplots/elegant.py
      :include-source:
 
 In the HTML version of the document, the plot includes links to the
 original source code, a high-resolution PNG and a PDF.  In the PDF
 mversion of the document, the plot is included as a scalable PDF.
 
-.. plot:: elegant.py
+.. plot:: pyplots/elegant.py
    :include-source:
 
 Emacs helpers
