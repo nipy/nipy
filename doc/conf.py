@@ -153,7 +153,7 @@ htmlhelp_basename = project
 # [howto/manual]).
 
 latex_documents = [
-  ('user', 'nipy_user.tex', 'Neuroimaging in Python User Documentation',
+  ('users/index', 'nipy_user.tex', 'Neuroimaging in Python User Documentation',
    ur'The Neuroimaging in Python documentation team.','manual'),
   ('devel/index', 'nipy_devel.tex',
    'Neuroimaging in Python Developer Documentation',
