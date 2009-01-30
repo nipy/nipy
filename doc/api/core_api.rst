@@ -2,8 +2,8 @@
 Neuroimaging core
 *****************
 
-.. .. inheritance-diagram:: neuroimaging.core
-..    :parts: 2
+.. inheritance-diagram:: neuroimaging.core.reference.coordinate_map
+   :parts: 2
 
 :mod:`neuroimaging.core`
 ========================
@@ -12,4 +12,3 @@ Neuroimaging core
    :members:
    :undoc-members:
    :show-inheritance:
-

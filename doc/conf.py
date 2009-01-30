@@ -38,7 +38,7 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'contents'
 
 # General substitutions.
 project = 'nipy'
@@ -65,6 +65,9 @@ today_fmt = '%B %d, %Y'
 # for source files.
 #exclude_dirs = []
 
+# what to put into API doc (just class doc, just init, or both)
+autoclass_content = 'both'
+
 # If true, '()' will be appended to :func: etc. cross-reference text.
 #add_function_parentheses = True
 
@@ -90,7 +93,7 @@ html_style = 'nipy.css'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = 'NIPY Home'
 
 # The name of an image file (within the static path) to place at the top of
 # the sidebar.
@@ -147,11 +150,15 @@ htmlhelp_basename = project
 # (source start file, target name, title, author, document class
 # [howto/manual]).
 
-main_manual_tex = project + '.tex'
 latex_documents = [
-  ('index', main_manual_tex, 'Neuroimaging in Python Documentation',
-   ur'The Neuroimaging in Python documentation team.',
-   'manual'),
+  ('user', 'nipy_user.tex', 'Neuroimaging in Python User Documentation',
+   ur'The Neuroimaging in Python documentation team.','manual'),
+  ('devel/index', 'nipy_devel.tex',
+   'Neuroimaging in Python Developer Documentation',
+   ur'The Neuroimaging in Python documentation team.','manual'),
+  ('api/index', 'nipy_ref.tex',
+   'Neuroimaging in Python Reference Guide',
+   ur'The Neuroimaging in Python documentation team.','manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -160,7 +167,7 @@ latex_documents = [
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
-#latex_use_parts = False
+latex_use_parts = False
 
 # Additional stuff for the LaTeX preamble.
 #latex_preamble = ''
@@ -169,4 +176,4 @@ latex_documents = [
 #latex_appendices = []
 
 # If false, no module index is generated.
-#latex_use_modindex = True
+latex_use_modindex = True

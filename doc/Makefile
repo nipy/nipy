@@ -28,7 +28,7 @@ help:
 	@echo "dist         all, and then puts the results in dist/"
 
 clean:
-	-rm -rf build/* dist/*
+	-rm -rf build/* dist/* *~
 
 pdf: latex
 	cd build/latex && make all-pdf
@@ -37,7 +37,7 @@ all: html pdf
 
 dist: clean all
 	mkdir -p dist
-	ln build/latex/nipy.pdf dist/
+	ln build/latex/nipy_*.pdf dist/
 	cp -al build/html dist/
 	@echo "Build finished.  Final docs are in dist/"
 

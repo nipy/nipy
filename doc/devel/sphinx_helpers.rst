@@ -143,10 +143,11 @@ way.
 Inserting matplotlib plots
 ==========================
 
-Inserting automatically-generated plots is easy.  Simply put the
-script to generate the plot in the :file:`pyplots` directory, and
-refer to it using the ``plot`` directive.  To include the source code
-for the plot in the document, pass the ``include-source`` parameter::
+Inserting automatically-generated plots is easy.  Simply put the script to
+generate the plot in any directory you want, and refer to it using the ``plot``
+directive.  All paths are considered relative to the top-level of the
+documentation tree.  To include the source code for the plot in the document,
+pass the ``include-source`` parameter::
 
   .. plot:: pyplots/elegant.py
      :include-source:
