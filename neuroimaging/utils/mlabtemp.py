@@ -13,14 +13,20 @@ def mlab_tempfile(dir=None):
     The caller is responsible for closing the returned object, at which time
     the underlying file gets deleted from the filesystem.
 
-    Parameters:
+    Parameters
+    ==========
     
       dir : str
         A path to use as the starting directory.  Note that this directory must
         already exist, it is NOT created if it doesn't (in that case, OSError
         is raised instead).
 
-    Examples:
+    Returns
+    =======
+      f : A file-like object.
+
+    Examples
+    ========
 
     >>> f = mlab_tempfile()
     >>> '-' not in f.name
