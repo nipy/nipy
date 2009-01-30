@@ -1,0 +1,26 @@
+{% extends "!layout.html" %}
+
+{% block extrahead %}
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience">
+{% endblock %}
+
+{% block rootrellink %}
+  <li><a href="https://launchpad.net/nipy" target="_blank">Nipy Project</a> |&nbsp;</li>
+  <li><a href="{{ pathto('index') }}">Nipy Home</a> |&nbsp;</li>
+  <li><a href="{{ pathto('contents') }}">Documentation</a> &raquo;</li>
+{% endblock %}
+
+{% block relbar1 %}
+  <div id="header">
+  <table width="100%">
+  <tr><td style="text-align:left;vertical-align:middle"><img src="_static/logo_blue.png" /></td>
+  <td style="text-align:right;vertical-align:bottom">Neuroimaging in Python</td></tr>
+  </table>
+  </div>
+{{ super() }}
+{% endblock %}
+
+
+{% block sidebar1 %}{{ sidebar() }}{% endblock %}
+{% block sidebar2 %}{% endblock %}
+
