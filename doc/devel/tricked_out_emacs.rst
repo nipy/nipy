@@ -160,9 +160,9 @@ Install
   install pymacs``
 - ropemacs_ - download from link, ``python setup.py install``
 
-You may need to put the rope stuff into your *system* python path, if
-you (like me) run into problems with gnome launchers not getting my
-own pythonpath from ``.bashrc``.
+You may need to make sure your gnome etc sessions have the correct
+python path settings - for example settings in ``.gnomerc`` as well as
+the usual ``.bashrc``.
 
 Make sure you can `import ropemacs` from python (which should drop you
 into something lispey).  Add these lines somewhere in your `.emacs` file::
