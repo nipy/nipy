@@ -17,7 +17,6 @@
    faq/index.rst
    api/index.rst
 
-
 .. htmlonly::
 
   * :ref:`genindex`
