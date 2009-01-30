@@ -42,7 +42,8 @@ master_doc = 'contents'
 
 # General substitutions.
 project = 'nipy'
-copyright = '2008, Neuroimaging in Python team'
+#copyright = ':ref:`2005-2009, Neuroimaging in Python team. <nipy-software-license>`' 
+copyright = '2005-2009, Neuroimaging in Python team' 
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -124,6 +125,7 @@ html_sidebars = {'index': 'indexsidebar.html'}
 
 # If true, the reST sources are included in the HTML build as _sources/<name>.
 #html_copy_source = True
+html_copy_source = False
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
