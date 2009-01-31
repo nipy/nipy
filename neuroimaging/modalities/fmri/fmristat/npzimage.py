@@ -9,8 +9,7 @@ At the time, NifTi file writing is broken -- that's why NifTi files are not writ
 import numpy as np
 import os
 
-from neuroimaging.core.api import Image
-from neuroimaging.core.reference.api import Affine, CoordinateMap
+from neuroimaging.core.api import Image, Affine, CoordinateMap
 
 def _fixext(filename):
     a, b = os.path.splitext(filename)
