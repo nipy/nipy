@@ -11,7 +11,7 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean html web pickle htmlhelp latex changes linkcheck
+.PHONY: help clean html web pickle htmlhelp latex changes linkcheck api
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -21,6 +21,7 @@ help:
 	@echo "  latex     to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
 	@echo "  changes   to make an overview over all changed/added/deprecated items"
 	@echo "  linkcheck to check all external links for integrity"
+	@echo "  api       to generate the API reference files"
 	@echo
 	@echo "Compound utility targets:"
 	@echo "pdf          latex and then runs the PDF generation"
@@ -28,9 +29,9 @@ help:
 	@echo "dist         all, and then puts the results in dist/"
 
 clean:
-	-rm -rf build/* dist/* *~
+	-rm -rf build/* dist/* *~ api/generated
 
-pdf: latex
+pdf: latex api
 	cd build/latex && make all-pdf
 
 all: html pdf
@@ -41,11 +42,15 @@ dist: clean all
 	cp -al build/html dist/
 	@echo "Build finished.  Final docs are in dist/"
 
-html:
+html: api
 	mkdir -p build/html build/doctrees
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) build/html
 	@echo
 	@echo "Build finished. The HTML pages are in build/html."
+
+api:
+	-ln -s ../neuroimaging
+	python ../tools/build_modref_templates.py
 
 pickle:
 	mkdir -p build/pickle build/doctrees

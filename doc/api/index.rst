@@ -9,6 +9,4 @@
    :Release: |version|
    :Date: |today|
 
-.. toctree::
-
-   core_api.rst
+.. include:: generated/gen.rst
