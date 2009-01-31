@@ -49,7 +49,6 @@ html: api
 	@echo "Build finished. The HTML pages are in build/html."
 
 api:
-	-ln -s ../neuroimaging
 	python ../tools/build_modref_templates.py
 
 pickle:
