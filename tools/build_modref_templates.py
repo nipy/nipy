@@ -266,8 +266,8 @@ class ApiDocWriter(object):
         else:
             raise ValueError('Cannot interpret match type "%s"' 
                              % match_type)
-        for P in patterns:
-            if P.search(matchstr):
+        for pat in patterns:
+            if pat.search(matchstr):
                 return False
         return True
 
@@ -279,7 +279,7 @@ class ApiDocWriter(object):
             # Check directory names for packages
             root_uri = self._path2uri(os.path.join(self.root_path,
                                                    dirpath))
-            for dirname in dirnames:
+            for dirname in dirnames[:]:
                 package_uri = '.'.join((root_uri, dirname))
                 if (self._uri2path(package_uri) and
                     self._survives_exclude(dirname, 'package')):
