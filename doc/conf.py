@@ -30,7 +30,7 @@ import ipython_console_highlighting
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['mathmpl', 'ipython_console_highlighting', 'sphinx.ext.autodoc',
               'inheritance_diagram', 'only_directives', 'plot_directive',
-              'numpydoc']
+              'numpydoc', 'sphinx.ext.doctest']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
