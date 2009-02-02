@@ -263,6 +263,9 @@ class ApiDocWriter(object):
             patterns = self.module_skip_patterns
         elif match_type == 'package':
             patterns = self.package_skip_patterns
+        else:
+            raise ValueError('Cannot interpret match type "%s"' 
+                             % match_type)
         for P in patterns:
             if P.search(matchstr):
                 return False
