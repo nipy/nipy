@@ -17,6 +17,7 @@
    :maxdepth: 2
 
    introduction.rst
+   installation.rst
    tutorial.rst
    ../faq/index
 

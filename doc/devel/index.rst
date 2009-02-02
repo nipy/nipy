@@ -12,6 +12,7 @@
 .. toctree::
    :maxdepth: 2
 
+   getting_started.rst
    howto_document.rst
    sphinx_helpers.rst
    bzr_workflow.rst
