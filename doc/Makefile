@@ -43,7 +43,7 @@ dist: clean all
 	cp -al build/html dist/
 	@echo "Build finished.  Final docs are in dist/"
 
-html: api
+htmlonly:
 	mkdir -p build/html build/doctrees
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) build/html
 	@echo
@@ -51,6 +51,8 @@ html: api
 
 api:
 	python ../tools/build_modref_templates.py
+
+html: api htmlonly
 
 pickle:
 	mkdir -p build/pickle build/doctrees
