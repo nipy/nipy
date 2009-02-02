@@ -279,7 +279,7 @@ class ApiDocWriter(object):
             # Check directory names for packages
             root_uri = self._path2uri(os.path.join(self.root_path,
                                                    dirpath))
-            for dirname in dirnames[:]:
+            for dirname in dirnames[:]: # copy list - we modify inplace
                 package_uri = '.'.join((root_uri, dirname))
                 if (self._uri2path(package_uri) and
                     self._survives_exclude(dirname, 'package')):

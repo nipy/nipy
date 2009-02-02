@@ -12,7 +12,9 @@ imaging (fMRI).
 News
 ----
 
-(1-30-2009) New Website!
+.. include:: latest_news.rst
+
+For more news, see :ref:`news`
 
 Funding
 -------
