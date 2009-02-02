@@ -9,9 +9,6 @@ of structural and functional neuroimaging data. It currently has a full
 system for general linear modeling of functional magnetic resonance
 imaging (fMRI).
 
-News
-----
-
 .. include:: latest_news.rst
 
 For more news, see :ref:`news`
