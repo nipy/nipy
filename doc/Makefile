@@ -22,6 +22,7 @@ help:
 	@echo "  changes   to make an overview over all changed/added/deprecated items"
 	@echo "  linkcheck to check all external links for integrity"
 	@echo "  api       to generate the API reference files"
+	@echo "  doctest   to run doctests in reST files"
 	@echo
 	@echo "Compound utility targets:"
 	@echo "pdf          latex and then runs the PDF generation"
@@ -88,3 +89,10 @@ linkcheck:
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in build/linkcheck/output.txt."
+
+doctest:
+	mkdir -p build/doctest build/doctrees
+	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) build/doctest
+	@echo
+	@echo "The overview file is in build/doctest."
+
