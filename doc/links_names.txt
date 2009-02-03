@@ -10,6 +10,8 @@
 .. _`Sphinx reST`: http://sphinx.pocoo.org/rest.html
 .. _reST: http://docutils.sourceforge.net/rst.html
 .. _docutils: http://docutils.sourceforge.net
+.. Licenses
+.. _GPL: http://www.gnu.org/licenses/gpl.html
 .. Working process
 .. _pynifti: http://niftilib.sourceforge.net/
 .. _nifticlibs: http://nifti.nimh.nih.gov/
@@ -33,8 +35,10 @@
 .. Not so python projects
 .. _matlab: http://www.mathworks.com
 .. _spm: http://www.fil.ion.ucl.ac.uk/spm
-.. _`functional imaging laboratory`: http://www.fil.ion.ucl.ac.uk
 .. _eeglab: http://sccn.ucsd.edu/eeglab
 .. _AFNI: http://afni.nimh.nih.gov/afni
 .. _FSL: http://www.fmrib.ox.ac.uk/fsl
 .. _FreeSurfer: http://surfer.nmr.mgh.harvard.edu
+.. Functional imaging labs
+.. _`functional imaging laboratory`: http://www.fil.ion.ucl.ac.uk
+.. _FMRIB: http://www.fmrib.ox.ac.uk

@@ -10,7 +10,7 @@
       Cox.  Like :term:`FSL`, it is written in C, and it's very common
       to use shell scripting of AFNI command line utilities to
       automate analyses.  Users often describe liking AFNI's
-      scriptability, and image visualization. It uses the GPL
+      scriptability, and image visualization. It uses the :term:`GPL`
       license.
 
    DTI
@@ -36,18 +36,18 @@
       and uses a :term:`GPL` license.
 
    FSL
-      FSL_ is the FMRIB_ software library.  Like :term:`AFNI`, it is a
-      large collection of C / C++ command line utilities that can be
-      scripted with a custom GUI / batch system, or using shell
+      FSL_ is the FMRIB_ software library, written by the FMRIB_
+      analysis group, and directed by Steve Smith.  Like :term:`AFNI`,
+      it is a large collection of C / C++ command line utilities that
+      can be scripted with a custom GUI / batch system, or using shell
       scripting.  Its particular strength is analysis of :term:`DWI`
       data, and :term:`ICA` functional data analysis, although it has
-      strong tools for registration, the standard :term:`SPM approach`
-      to FMRI. It is free for academic use, and open-source, but not
-      free for commercial use. 
+      strong tools for the standard :term:`SPM approach` to FMRI. It
+      is free for academic use, and open-source, but not free for
+      commercial use.
 
    GPL
-      The GNU general public license:
-      http://www.gnu.org/licenses/gpl.html.  It is one of the most
+      The GPL_ is the GNU general public license.  It is one of the most
       commonly-used open-source sofware licenses.  The distinctive
       feature of the GPL license is that it requires that any code
       derived from GPL code also uses a GPL license.  See also:
@@ -63,15 +63,19 @@
       including :term:`SPM software`, and :term:`EEGlab`.
 
    SPM
-      SPM (statistical parametric mapping) refers to either the
-      :term:`SPM analysis approach` or :term:`SPM software`
+      SPM (statistical parametric mapping) refers either to the
+      :term:`SPM approach` to analysis or the :term:`SPM software`
+      package.
 
-   SPM analysis approach
+   SPM approach
        Statistical parametric mapping is a way of analyzing data, that
-       involves creating an image (the *map*) containing statistics.
-       For example, we often create a t statistic image where each
-       :term:`voxel` contains a t statistic value for the time-series
-       from the voxel.
+       involves creating an image (the *map*) containing statistics,
+       and then doing tests on this statistic image.  For example, we
+       often create a t statistic image where each :term:`voxel`
+       contains a t statistic value for the time-series from that
+       voxel.  The :term:`SPM software` package implements this
+       approach - as do several others, including :term:`FSL` and
+       :term:`AFNI`.
       
    SPM software
        SPM_ (statistical parametric mapping) is the name of the
