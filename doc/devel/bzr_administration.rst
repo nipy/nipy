@@ -65,9 +65,6 @@ Matthew Brett performed this merge on his machine.
     bzr push bzr+ssh://matthew-brett@bazaar.launchpad.net/~nipy-developers/nipy/trunk --remember
 
 
-.. _nipy: https://launchpad.net/nipy
-.. _matplotlib: http://matplotlib.sourceforge.net/
-.. _sphinx: http://sphinx.pocoo.org/
-.. _launchpad: https://launchpad.net/
+.. include:: ../links_names.txt
 
 

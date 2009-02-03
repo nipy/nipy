@@ -1,8 +1,7 @@
 .. _users-guide-index:
 
 .. This is the source doc for the nipy users guide. The users guide
-   includes the FAQ (a directory below)
-
+   includes the FAQ (a directory below), and glossary.
 
 =====================
  The nipy user guide
@@ -20,7 +19,7 @@
    installation
    tutorial.rst
    ../faq/index
-   glossary
+   ../glossary
 
 .. htmlonly::
 

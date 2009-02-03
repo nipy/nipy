@@ -2,20 +2,20 @@
  How to write documentation
 ============================
 
-nipy_ documentation uses sphinx_.  sphinx_ in turn uses ReST_.  
-
-.. _sphinx: http://sphinx.pocoo.org/
+nipy_ documentation uses sphinx_.  sphinx_ in turn uses reST_.  All
+our docs and docstrings are in reST_ format. 
 
 Please have a look at  :ref:`sphinx_helpers` for information on using
 both sphinx_ and ReST_.  
 
-See the numpy_doc_howto_ for a nice example of how to ReST_ format
-your documentation and other documentation standards.  We aim for the
-same standards in nipy_.
+See the `numpy doc howto`_ for a nice example of how to format your
+documentation and other documentation standards.  We aim for the same
+standards in nipy_.
 
-.. _numpy_doc_howto: http://svn.scipy.org/svn/numpy/trunk/doc/HOWTO_DOCUMENT.txt
+.. _`numpy doc howto`: http://svn.scipy.org/svn/numpy/trunk/doc/HOWTO_DOCUMENT.txt
 
-For more information on ReST_ You may also want to look at:
+For more information on reST_ in sphinx_, start at the excellent
+`sphinx rest`_ pages.  You may also want to look at:
 
 - ReST_ - ReST main page
 - `ReST primer <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`_
@@ -23,6 +23,4 @@ For more information on ReST_ You may also want to look at:
 
 Consider using emacs for editing rst files - see :ref:`rst_emacs`
 
-.. _nipy: https://launchpad.net/nipy
-.. _ReST: http://docutils.sourceforge.net/rst.html
-
+.. include:: ../links_names.txt

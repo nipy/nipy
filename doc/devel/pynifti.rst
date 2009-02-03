@@ -164,6 +164,4 @@ To update the nipy source:
     python update_source.py
 
 
-.. _git: http://git.or.cz/
-.. _pynifti: http://niftilib.sourceforge.net/
-.. _nifticlibs: http://nifti.nimh.nih.gov/
+.. include:: ../links_names.txt

@@ -276,4 +276,4 @@ next week.*
 
 * Create a rst doc for *Request a review* process.
 
-.. _nipy: https://launchpad.net/nipy
+.. include:: ../links_names.txt

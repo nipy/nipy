@@ -3,19 +3,38 @@
    have nothing but link targets and name substitutions
    Try grin "^\.\. _" to find plausible candidates for this list
 
+.. _nipy: http://neuroimaging.scipy.org
+.. Documentation tools
 .. _graphviz: http://www.graphviz.org/
 .. _Sphinx: http://sphinx.pocoo.org/
 .. _`Sphinx reST`: http://sphinx.pocoo.org/rest.html
 .. _reST: http://docutils.sourceforge.net/rst.html
-.. _git: http://git.or.cz/
+.. _docutils: http://docutils.sourceforge.net
+.. Working process
 .. _pynifti: http://niftilib.sourceforge.net/
 .. _nifticlibs: http://nifti.nimh.nih.gov/
 .. _`nipy launchpad`: https://launchpad.net/nipy
 .. _launchpad: https://launchpad.net/
 .. _bazaar: http://bazaar-vcs.org/
 .. _`nipy trunk`: https://code.launchpad.net/~nipy-developers/nipy/trunk
-.. _`numpy documentation howto`: http://svn.scipy.org/svn/numpy/trunk/doc/HOWTO_DOCUMENT.txt
-.. _docutils: http://docutils.sourceforge.net
+.. Code support stuff
+.. _pychecker: http://pychecker.sourceforge.net/
+.. _pylint: http://www.logilab.org/project/pylint
+.. _pyflakes: http://divmod.org/trac/wiki/DivmodPyflakes
+.. _virtualenv: http://pypi.python.org/pypi/virtualenv
+.. _git: http://git.or.cz/
+.. Other python projects
+.. _numpy: http://www.scipy.org/NumPy
+.. _scipy: http://www.scipy.org
+.. _ipython: http://ipython.scipy.org
+.. _matplotlib: http://matplotlib.sourceforge.net
+.. _ETS: http://code.enthought.com/projects/tool-suite.php
+.. _`Enthought Tool Suite`: http://code.enthought.com/projects/tool-suite.php
+.. Not so python projects
 .. _matlab: http://www.mathworks.com
 .. _spm: http://www.fil.ion.ucl.ac.uk/spm
 .. _`functional imaging laboratory`: http://www.fil.ion.ucl.ac.uk
+.. _eeglab: http://sccn.ucsd.edu/eeglab
+.. _AFNI: http://afni.nimh.nih.gov/afni
+.. _FSL: http://www.fmrib.ox.ac.uk/fsl
+.. _FreeSurfer: http://surfer.nmr.mgh.harvard.edu/

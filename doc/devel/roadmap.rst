@@ -119,7 +119,6 @@ Questions
 
 
 
-
-.. _nipy: https://launchpad.net/nipy
+.. include:: ../links_names.txt
 
    

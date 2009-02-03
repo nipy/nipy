@@ -196,11 +196,10 @@ from our ets-3.0.0 virtual environment::
   (ets-3.0.0)cburns@~ 15:31:48 $ easy_install ETS
 
 
-.. _virtualenv: http://pypi.python.org/pypi/virtualenv
+.. include:: ../links_names.txt
 .. _Prabhu: http://prabhuramachandran.blogspot.com/2008/03/using-virtualenv-under-linux.html
 .. _Gael: http://gael-varoquaux.info/blog/
 .. _Jarrod: http://jarrodmillman.blogspot.com/
 .. _Fernando: http://fdoperez.blogspot.com/search/label/scipy
 .. _Scipy2008: http://conference.scipy.org/
-.. _ETS: http://code.enthought.com/projects/tool-suite.php
 .. _prerequisites: https://svn.enthought.com/enthought/wiki/Install

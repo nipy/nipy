@@ -172,8 +172,4 @@ Click on the **Change branch** button to finalize.
 Look at `Chris' branch
 <https://code.launchpad.net/~cburns/nipy/trunk-dev>`_ for an example.
 
-
-.. _nipy: https://launchpad.net/nipy
-.. _launchpad: https://launchpad.net/
-.. _bazaar: http://bazaar-vcs.org/
-.. _`nipy trunk`: https://code.launchpad.net/~nipy-developers/nipy/trunk
+.. include:: ../links_names.txt
