@@ -37,4 +37,4 @@
 .. _eeglab: http://sccn.ucsd.edu/eeglab
 .. _AFNI: http://afni.nimh.nih.gov/afni
 .. _FSL: http://www.fmrib.ox.ac.uk/fsl
-.. _FreeSurfer: http://surfer.nmr.mgh.harvard.edu/
+.. _FreeSurfer: http://surfer.nmr.mgh.harvard.edu

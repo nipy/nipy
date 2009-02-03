@@ -4,10 +4,46 @@
 
 .. glossary::
 
+   AFNI
+      AFNI_ is a functional imaging analysis package.  It is funded by
+      the NIMH, based in Bethesda, Maryland, and directed by Robert
+      Cox.  Like :term:`FSL`, it is written in C, and it's very common
+      to use shell scripting of AFNI command line utilities to
+      automate analyses.  Users often describe liking AFNI's
+      scriptability, and image visualization. It uses the GPL
+      license.
+
+   DTI
+      Diffusion tensor imaging.  DTI is rather poorly named, because
+      it is a model of the diffusion signal, and an analysis method,
+      rather than an imaging method.  The simplest and most common
+      diffusion tensor model assumes that diffusion direction and
+      velocity at every voxel can be modeled by a single tensor - that
+      is, by an ellipse of regular shape, fully described by the length
+      and orientation of its three orthogonal axes.  This model can
+      easily fail in fairly common situations, such as white-matter
+      fiber track crossings.
+
+   DWI
+      Diffusion-weighted imaging.  DWI is the general term for MRI
+      imaging designed to image diffusion processes.  Sometimes
+      reseachers use :term:`DTI` to have the same meaning, but
+      :term:`DTI` is a common DWI signal model and analysis method.
+
    EEGlab
       The most widely-used open-source package for analyzing
       electrophysiological data.  EEGlab_ is written in :term:`matlab`
       and uses a :term:`GPL` license.
+
+   FSL
+      FSL_ is the FMRIB_ software library.  Like :term:`AFNI`, it is a
+      large collection of C / C++ command line utilities that can be
+      scripted with a custom GUI / batch system, or using shell
+      scripting.  Its particular strength is analysis of :term:`DWI`
+      data, and :term:`ICA` functional data analysis, although it has
+      strong tools for registration, the standard :term:`SPM approach`
+      to FMRI. It is free for academic use, and open-source, but not
+      free for commercial use. 
 
    GPL
       The GNU general public license:
@@ -28,7 +64,7 @@
 
    SPM
       SPM (statistical parametric mapping) refers to either the
-      :term:`SPM analysis approach` or the :term:`SPM software`
+      :term:`SPM analysis approach` or :term:`SPM software`
 
    SPM analysis approach
        Statistical parametric mapping is a way of analyzing data, that
@@ -38,13 +74,13 @@
        from the voxel.
       
    SPM software
-       SPM_ (statistical parametric mapping) software is the name of
-       the matlab_ based package written by John Ashburner, Karl
-       Friston and others at the `Functional Imaging Laboratory`_ in
+       SPM_ (statistical parametric mapping) is the name of the
+       matlab_ based package written by John Ashburner, Karl Friston
+       and others at the `Functional Imaging Laboratory`_ in
        London. More people use the SPM package to analyze :term:`FMRI`
        and :term:`PET` data than any other.  It has good lab and
        community support, and the :term:`matlab` source code is
-       available under the :term:`GPL` license.  
+       available under the :term:`GPL` license.
 
    voxel
       Voxels are volumetric pixels - that is, they are values in a
