@@ -24,11 +24,15 @@ Consider using emacs for editing rst files - see :ref:`rst_emacs`
 Style
 -----
 
-Nipy_ has adopted the numpy_ documentation standards.  The `numpy doc
-howto`_ is the reference for how to format your code documentation.
+Nipy_ has adopted the numpy_ documentation standards.  The `numpy
+coding style guideline`_ is the main reference for how to format the
+documentation in your code.  It's also useful to look at the `source
+reST file
+<http://svn.scipy.org/svn/numpy/trunk/doc/HOWTO_DOCUMENT.txt>`_ that
+generates the coding style guideline.
 
-.. _`numpy doc howto`:
-    http://svn.scipy.org/svn/numpy/trunk/doc/HOWTO_DOCUMENT.txt
+.. _`numpy coding style guideline`:
+   http://scipy.org/scipy/numpy/wiki/CodingStyleGuidelines
 
 External hyperlinks
 -------------------
