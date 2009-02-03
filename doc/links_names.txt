@@ -1,17 +1,23 @@
-.. This (-*- rst -*-) format file contains commonly use link targets
-   and name subsitutions.  It may be included in many files, so should
-   have nothing but link targets and name substitutions
-   Try grin "^\.\. _" to find plausible candidates for this list
+.. This (-*- rst -*-) format file contains commonly used link targets
+   and name substitutions.  It may be included in many files,
+   therefore it should only contain link targets and name
+   substitutions.  Try grin "^\.\. _" to find plausible candidates for
+   this list.  
+   NOTE: reST targets are __not_case_sensitive__, so only one target
+   definition is needed for nipy, NIPY, Nipy, etc...
 
 .. _nipy: http://neuroimaging.scipy.org
+
 .. Documentation tools
 .. _graphviz: http://www.graphviz.org/
 .. _Sphinx: http://sphinx.pocoo.org/
 .. _`Sphinx reST`: http://sphinx.pocoo.org/rest.html
 .. _reST: http://docutils.sourceforge.net/rst.html
 .. _docutils: http://docutils.sourceforge.net
+
 .. Licenses
 .. _GPL: http://www.gnu.org/licenses/gpl.html
+
 .. Working process
 .. _pynifti: http://niftilib.sourceforge.net/
 .. _nifticlibs: http://nifti.nimh.nih.gov/
@@ -19,12 +25,14 @@
 .. _launchpad: https://launchpad.net/
 .. _bazaar: http://bazaar-vcs.org/
 .. _`nipy trunk`: https://code.launchpad.net/~nipy-developers/nipy/trunk
+
 .. Code support stuff
 .. _pychecker: http://pychecker.sourceforge.net/
 .. _pylint: http://www.logilab.org/project/pylint
 .. _pyflakes: http://divmod.org/trac/wiki/DivmodPyflakes
 .. _virtualenv: http://pypi.python.org/pypi/virtualenv
 .. _git: http://git.or.cz/
+
 .. Other python projects
 .. _numpy: http://www.scipy.org/NumPy
 .. _scipy: http://www.scipy.org
@@ -32,6 +40,7 @@
 .. _matplotlib: http://matplotlib.sourceforge.net
 .. _ETS: http://code.enthought.com/projects/tool-suite.php
 .. _`Enthought Tool Suite`: http://code.enthought.com/projects/tool-suite.php
+
 .. Not so python projects
 .. _matlab: http://www.mathworks.com
 .. _spm: http://www.fil.ion.ucl.ac.uk/spm
@@ -39,6 +48,7 @@
 .. _AFNI: http://afni.nimh.nih.gov/afni
 .. _FSL: http://www.fmrib.ox.ac.uk/fsl
 .. _FreeSurfer: http://surfer.nmr.mgh.harvard.edu
+
 .. Functional imaging labs
 .. _`functional imaging laboratory`: http://www.fil.ion.ucl.ac.uk
 .. _FMRIB: http://www.fmrib.ox.ac.uk
