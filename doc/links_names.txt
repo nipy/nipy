@@ -1,0 +1,21 @@
+.. This (-*- rst -*-) format file contains commonly use link targets
+   and name subsitutions.  It may be included in many files, so should
+   have nothing but link targets and name substitutions
+   Try grin "^\.\. _" to find plausible candidates for this list
+
+.. _graphviz: http://www.graphviz.org/
+.. _Sphinx: http://sphinx.pocoo.org/
+.. _`Sphinx reST`: http://sphinx.pocoo.org/rest.html
+.. _reST: http://docutils.sourceforge.net/rst.html
+.. _git: http://git.or.cz/
+.. _pynifti: http://niftilib.sourceforge.net/
+.. _nifticlibs: http://nifti.nimh.nih.gov/
+.. _`nipy launchpad`: https://launchpad.net/nipy
+.. _launchpad: https://launchpad.net/
+.. _bazaar: http://bazaar-vcs.org/
+.. _`nipy trunk`: https://code.launchpad.net/~nipy-developers/nipy/trunk
+.. _`numpy documentation howto`: http://svn.scipy.org/svn/numpy/trunk/doc/HOWTO_DOCUMENT.txt
+.. _docutils: http://docutils.sourceforge.net
+.. _matlab: http://www.mathworks.com
+.. _spm: http://www.fil.ion.ucl.ac.uk/spm
+.. _`functional imaging laboratory`: http://www.fil.ion.ucl.ac.uk

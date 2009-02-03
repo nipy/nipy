@@ -16,10 +16,11 @@
 .. toctree::
    :maxdepth: 2
 
-   introduction.rst
-   installation.rst
+   introduction
+   installation
    tutorial.rst
    ../faq/index
+   glossary
 
 .. htmlonly::
 
