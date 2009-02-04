@@ -1,11 +1,11 @@
 .. _tutorial-index:
 
-==========
- Tutorial
-==========
+===========
+ Tutorials
+===========
 
 .. toctree::
    :maxdepth: 2
 
    analysis_pipeline
-   
+   glm_spec
