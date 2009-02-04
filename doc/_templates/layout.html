@@ -14,8 +14,14 @@
 {% block relbar1 %}
   <div id="header">
   <table width="100%">
-  <tr><td style="text-align:left;vertical-align:middle"><img src="_static/logo_blue.png" /></td>
-  <td style="text-align:right;vertical-align:bottom">Neuroimaging in Python</td></tr>
+  <tr>
+    <td style="text-align:left;vertical-align:middle">
+    <a href="{{pathto('index') }}">
+    <img src="{{pathto("_static/reggie2.png", 1)}}" border="0", alt="NIPY"/>
+    </td>
+    <td style="text-align:right;vertical-align:bottom">Neuroimaging in Python
+    </td>
+  </tr>
   </table>
   </div>
 {{ super() }}
