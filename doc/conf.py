@@ -61,10 +61,10 @@ release = '0.1'
 today_fmt = '%B %d, %Y'
 
 # List of documents that shouldn't be included in the build.
-#unused_docs = []
+unused_docs = ['funding', 'generated/gen', 'latest_news']
 
-# List of directories, relative to source directories, that shouldn't be searched
-# for source files.
+# List of directories, relative to source directories, that shouldn't
+# be searched for source files.
 #exclude_dirs = []
 
 # what to put into API doc (just class doc, just init, or both)
