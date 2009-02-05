@@ -237,8 +237,9 @@ class ApiDocWriter(object):
             # must NOT exclude from index to keep cross-refs working
             ad += '  :members:\n' \
                   '  :undoc-members:\n' \
-                  '  :show-inheritance:\n'
-            #      '  :noindex:\n\n'
+                  '  :show-inheritance:\n' \
+                  '\n' \
+                  '  .. automethod:: __init__\n'
         if multi_fx:
             ad += '\n' + 'Functions' + '\n' + \
                   self.rst_section_levels[2] * 9 + '\n\n'

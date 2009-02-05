@@ -68,7 +68,7 @@ unused_docs = ['funding', 'generated/gen', 'latest_news']
 #exclude_dirs = []
 
 # what to put into API doc (just class doc, just init, or both)
-autoclass_content = 'both'
+autoclass_content = 'class'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 #add_function_parentheses = True
