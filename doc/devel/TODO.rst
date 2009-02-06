@@ -11,6 +11,17 @@ It will include current sprint items, future feature ideas and sprint
 items, and design discussions.  This should contain more details than
 the :ref:`roadmap`.
 
+
+Decomissioning Trac
+===================
+
+A few pages from Trac we probably want to keep:
+
+* http://projects.scipy.org/neuroimaging/ni/wiki/CodingSprintOne
+* http://projects.scipy.org/neuroimaging/ni/wiki/CodingSprintTwo
+* http://projects.scipy.org/neuroimaging/ni/wiki/SprintCodeSharing
+
+
 Documentation
 =============
 

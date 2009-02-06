@@ -1,7 +1,7 @@
 # Makefile for Sphinx documentation
 #
 
-WWW=fperez@cirl.berkeley.edu:www/nipy
+WWW=neuroimaging@neuroimaging.scipy.org:www
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
@@ -45,8 +45,8 @@ dist: clean all
 	cp -al build/html dist/
 	@echo "Build finished.  Final docs are in dist/"
 
-public_html: html
-	rsync -avH --delete build/html/ $(WWW)/doc/stable
+public_html: dist
+	rsync -avH --delete dist/ $(WWW)/doc/manual/
 
 htmlonly:
 	mkdir -p build/html build/doctrees

@@ -1,7 +1,7 @@
 # Makefile for Sphinx-generated website
 #
 
-WWW=fperez@cirl.berkeley.edu:www/nipy
+WWW=neuroimaging@neuroimaging.scipy.org:www
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
