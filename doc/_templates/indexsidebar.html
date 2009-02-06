@@ -1,13 +1,11 @@
+{% block quicklinks %}
 <h3>Quick links</h3>
 
 <ul>
-<li><a href="{{ pathto('about') }}"> About</a></li>
 <li><a href="http://projects.scipy.org/mailman/listinfo/nipy-devel">Mailing list</a></li>
-<li><a href="{{ pathto('license') }}"> License</a></li>
-<li><a href="{{ pathto('funding') }}"> Funding</a></li>
-<li><a href="{{ pathto('publications') }}"> Publications</a></li>
 </ul>
 
+{% endblock %}
 
 <h3>Search mailing list archive</h3>
 <script type="text/javascript">
@@ -20,5 +18,3 @@
 <input name="userquery" size="18" type="text" /> <input type="submit" value="Go" />
 <input name="q" type="hidden" />
 </form>
-
-

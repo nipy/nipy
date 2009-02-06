@@ -1,6 +1,8 @@
 # Makefile for Sphinx documentation
 #
 
+WWW=fperez@cirl.berkeley.edu:www/nipy
+
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
@@ -11,7 +13,7 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean html web pickle htmlhelp latex changes linkcheck api
+.PHONY: help clean html web pickle htmlhelp latex changes linkcheck api public_html
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -39,9 +41,12 @@ all: html pdf
 
 dist: clean all
 	mkdir -p dist
-	ln build/latex/nipy_*.pdf dist/
+	ln build/latex/nipy*.pdf dist/
 	cp -al build/html dist/
 	@echo "Build finished.  Final docs are in dist/"
+
+public_html: html
+	rsync -avH --delete build/html/ $(WWW)/doc/stable
 
 htmlonly:
 	mkdir -p build/html build/doctrees
