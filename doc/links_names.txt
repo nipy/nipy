@@ -1,10 +1,12 @@
 .. This (-*- rst -*-) format file contains commonly used link targets
    and name substitutions.  It may be included in many files,
    therefore it should only contain link targets and name
-   substitutions.  Try grin "^\.\. _" to find plausible candidates for
-   this list.  
-   NOTE: reST targets are __not_case_sensitive__, so only one target
-   definition is needed for nipy, NIPY, Nipy, etc...
+   substitutions.  Try grepping for "^\.\. _" to find plausible
+   candidates for this list.  
+
+.. NOTE: reST targets are
+   __not_case_sensitive__, so only one target definition is needed for
+   nipy, NIPY, Nipy, etc...
 
 .. _nipy: http://neuroimaging.scipy.org
 
@@ -23,7 +25,6 @@
 .. _nifticlibs: http://nifti.nimh.nih.gov/
 .. _`nipy launchpad`: https://launchpad.net/nipy
 .. _launchpad: https://launchpad.net/
-.. _bazaar: http://bazaar-vcs.org/
 .. _`nipy trunk`: https://code.launchpad.net/~nipy-developers/nipy/trunk
 
 .. Code support stuff
@@ -32,6 +33,7 @@
 .. _pyflakes: http://divmod.org/trac/wiki/DivmodPyflakes
 .. _virtualenv: http://pypi.python.org/pypi/virtualenv
 .. _git: http://git.or.cz/
+.. _bazaar: http://bazaar-vcs.org/
 
 .. Other python projects
 .. _numpy: http://www.scipy.org/NumPy
