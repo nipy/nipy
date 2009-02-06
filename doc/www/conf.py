@@ -42,7 +42,7 @@ html_title = 'NIPY Home'
 html_static_path = ['../_static']
 
 # If true, the reST sources are included in the HTML build as _sources/<name>.
-html_copy_source = True
+html_copy_source = False
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = project
