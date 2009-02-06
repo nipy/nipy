@@ -13,7 +13,8 @@ imaging (fMRI).
 
 For more news, see :ref:`news`
 
+=======
 Funding
--------
+=======
 
 Grant :ref:`5R01MH081909-02 <desposito-r01>` from National Institute Of Mental Health, IRG: ZRG1
