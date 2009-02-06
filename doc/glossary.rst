@@ -13,6 +13,17 @@
       scriptability, and image visualization. It uses the :term:`GPL`
       license.
 
+   BOLD
+      Contrast that is blood oxygen level dependent.  When a brain
+      area becomes active, blood flow increases to that area.  It
+      turns out that, with the blood flow increase, there is a change
+      in the relative concentrations of oxygenated and deoxygenated
+      hemoglobin.  Oxy- and deoxy- hemoglobin have different magnetic
+      properties.  This in turn leads to a change in MRI signal that
+      can be detected by collecting suitably sensitive MRI images at
+      regular short intervals during the blood flow chance.  See the
+      the `wikipedia FMRI`_ article for more detail.
+
    DTI
       Diffusion tensor imaging.  DTI is rather poorly named, because
       it is a model of the diffusion signal, and an analysis method,
@@ -35,6 +46,13 @@
       electrophysiological data.  EEGlab_ is written in :term:`matlab`
       and uses a :term:`GPL` license.
 
+   FMRI
+      Functional magnetic resonance imaging!  It refers to MRI image
+      acquisitions and analysis designed to look at brain function
+      rather than structure.  Most people use FMRI to refer to
+      :term:`BOLD` imaging in particular.  See the `wikipedia FMRI`_
+      article for more detail.
+
    FSL
       FSL_ is the FMRIB_ software library, written by the FMRIB_
       analysis group, and directed by Steve Smith.  Like :term:`AFNI`,
@@ -53,6 +71,15 @@
       derived from GPL code also uses a GPL license.  See also:
       http://en.wikipedia.org/wiki/GNU_General_Public_License
 
+   ICA
+      Independent component analysis is a multivariate technique
+      related to :term:`PCA`, to estimate independent components of
+      signal from multiple sensors.  In functional imaging, this
+      usually means detecting underlying spatial and temporal
+      components within the brain, where the brain voxels can be
+      considered to be different sensors of the signal. See the
+      `wikipedia ICA`_ page.
+
    Matlab
       matlab_ began as a high-level programming language for working
       with matrices.  Over time it has expanded to become a fairly
@@ -61,6 +88,22 @@
       algorithms, 2D graphics, and documentation.  There are several
       large neuroscience software projects wtitten in matlab,
       including :term:`SPM software`, and :term:`EEGlab`.
+
+   PCA
+      Principal component analysis is a multivariate technique to
+      determine orthogonal components across multiple sources (or
+      sensors).  See :term:`ICA` and the `wikipedia PCA` page.
+
+   PET
+      Positron emission tomography is a nethod of detecting the
+      spatial distributions of certain radiolabeled compounds -
+      usually in the brain.  PET was the first mainstream technique
+      used for detection regional changes in blood-flow as an index of
+      which brain areas were active when the subject is doing various
+      tasks, or at rest.  These studies used radiolabeled water to
+      mark blood flow.  This use has been almost completely replaced
+      by the less invasive :term:`BOLD` :term:`FMRI` technique.  See
+      the `wikipedia PET`_ entry.
 
    SPM
       SPM (statistical parametric mapping) refers either to the

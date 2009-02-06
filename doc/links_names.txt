@@ -52,3 +52,11 @@
 .. Functional imaging labs
 .. _`functional imaging laboratory`: http://www.fil.ion.ucl.ac.uk
 .. _FMRIB: http://www.fmrib.ox.ac.uk
+
+.. General information links
+.. _`wikipedia FMRI`: http://en.wikipedia.org/wiki/Functional_magnetic_resonance_imaging
+.. _`wikipedia PET`: http://en.wikipedia.org/wiki/Positron_emission_tomography
+
+.. Mathematical methods
+.. _`wikipedia ICA`: http://en.wikipedia.org/wiki/Independent_component_analysis
+.. _`wikipedia PCA`: http://en.wikipedia.org/wiki/Principal_component_analysis
