@@ -31,6 +31,10 @@ reST file
 <http://svn.scipy.org/svn/numpy/trunk/doc/HOWTO_DOCUMENT.txt>`_ that
 generates the coding style guideline.
 
+Numpy has a `detailed example
+<http://svn.scipy.org/svn/numpy/trunk/doc/EXAMPLE_DOCSTRING.txt>`_ for
+writing docstrings.
+
 .. _`numpy coding style guideline`:
    http://scipy.org/scipy/numpy/wiki/CodingStyleGuidelines
 
