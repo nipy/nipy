@@ -13,16 +13,10 @@
    :maxdepth: 2
 
    getting_started
-   debugging
-   howto_document
-   sphinx_helpers
-   bzr_workflow
-   bzr_administration
-   virtualenv-tutor
-   tricked_out_emacs
-   usecases/index
+   guidelines/index
+   planning/index
+   software_design/index
+   software_design/usecases/index
+   tools/index
+
    pynifti
-   registration_api
-   understanding_affines
-   roadmap
-   TODO

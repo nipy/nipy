@@ -65,6 +65,6 @@ Matthew Brett performed this merge on his machine.
     bzr push bzr+ssh://matthew-brett@bazaar.launchpad.net/~nipy-developers/nipy/trunk --remember
 
 
-.. include:: ../links_names.txt
+.. include:: ../../links_names.txt
 
 

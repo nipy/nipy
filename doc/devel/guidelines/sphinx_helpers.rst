@@ -105,7 +105,7 @@ You can represent code blocks fairly easily::
 
 Or literally include code:
 
-.. literalinclude:: ../pyplots/elegant.py
+.. literalinclude:: ../../pyplots/elegant.py
 
 
 .. _using-math:

@@ -172,4 +172,4 @@ Click on the **Change branch** button to finalize.
 Look at `Chris' branch
 <https://code.launchpad.net/~cburns/nipy/trunk-dev>`_ for an example.
 
-.. include:: ../links_names.txt
+.. include:: ../../links_names.txt

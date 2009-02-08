@@ -9,4 +9,4 @@ datasets, for example movement correction, coregistration of
 functional to structural (intermodality), smoothing, statistics,
 inference.
 
-.. include:: ../../links_names.txt
+.. include:: ../../../links_names.txt

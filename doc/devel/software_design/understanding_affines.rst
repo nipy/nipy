@@ -1,3 +1,5 @@
+.. _understanding_affines:
+
 =============================================
  Understanding voxel and real world mappings
 =============================================
@@ -42,7 +44,7 @@ and the value ``23`` is at array coordinate ``1,2,3``::
   assert A[1,2,3] == 23
 
 (remembering python's zero-based indexing). If we now say that our
-array is a 3D volume element array - an array of :ref: voxels_, then
+array is a 3D volume element array - an array of voxels, then
 the array coordinate is also a voxel coordinate.
 
 If we want to use ``numpy`` to index our array, then we need integer

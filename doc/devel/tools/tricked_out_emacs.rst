@@ -194,11 +194,4 @@ Not really python specific, but a rather nice set of windows for
 browsing code directories, and code - see the ECB_ page.  Again, your
 package manager may help you (``apt-get install ecb``).
 
-.. include:: ../links_names.txt
-.. _emacs_python_mode: http://www.emacswiki.org/cgi-bin/wiki/PythonMode
-.. _doctest-mode: http://www.cis.upenn.edu/~edloper/projects/doctestmode/
-.. _flymake: http://flymake.sourceforge.net/
-.. _rope: http://rope.sourceforge.net/
-.. _pymacs: http://pymacs.progiciels-bpi.ca/pymacs.html
-.. _ropemacs: http://rope.sourceforge.net/ropemacs.html
-.. _ECB: http://ecb.sourceforge.net/
+.. include:: ../../links_names.txt

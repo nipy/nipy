@@ -56,4 +56,4 @@ and refer to the hyperlink target::
     blah blah blah targetname_ more blah
 
 
-.. include:: ../links_names.txt
+.. include:: ../../links_names.txt
