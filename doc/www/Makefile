@@ -32,7 +32,7 @@ html:
 	@echo
 	@echo "Build finished. The HTML pages are in build/html."
 
-public_html: html
+public_html: clean html
 	rsync -avH --delete index_redirect.html $(WWW)/index.html
 	rsync -avH --delete build/html/ $(WWW)/site
 

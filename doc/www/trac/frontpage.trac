@@ -1,0 +1,9 @@
+= Welcome to the Neuroimaging tools for Python developer's wiki =
+We are in the process of heavily revamping the nipy code and documentation. At this point, this info is useful for core developers only.
+
+== Starting points ==
+ * DeveloperDocumentation
+ * GetCode
+ * [http://projects.scipy.org/mailman/listinfo/nipy-devel Mailing List]
+ * ReadMe
+ * CodeSprints

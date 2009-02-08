@@ -39,6 +39,7 @@
 .. _numpy: http://www.scipy.org/NumPy
 .. _scipy: http://www.scipy.org
 .. _ipython: http://ipython.scipy.org
+.. _`ipython manual`: http://ipython.scipy.org/doc/manual/html
 .. _matplotlib: http://matplotlib.sourceforge.net
 .. _ETS: http://code.enthought.com/projects/tool-suite.php
 .. _`Enthought Tool Suite`: http://code.enthought.com/projects/tool-suite.php

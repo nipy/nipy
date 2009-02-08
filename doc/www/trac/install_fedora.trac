@@ -1,0 +1,110 @@
+= Installing NIPY for development on Fedora Linux =
+
+'''NOTE:'''
+The following installation instructions assume you have superuser privilege on your Fedora system.
+If you do not, you will not be able to use yum to install prebuilt binary RPMs from the Fedora yum
+repository, since they install into filesystem locations that you cannot write to.  Some of these
+RPMs may be relocatable, meaning you can install them directly with the '''rpm''' command (after
+manually downloading them from the Fedora repository) specifying
+an install prefix in your home directory.  Others will probably need to be built from source.  In
+addition, the yum commands shown below will automatically install other dependencies for a number of these
+packages.  So, if you must forgo yum, then you will also have to manually discover and install these
+other dependencies.  To install Python packages locally (rather than system-wide), set your PYTHONPATH environment
+variable to ${HOME}/lib/python2.4/site-packages/:
+{{{
+export PYTHONPATH=${HOME}/lib/python2.4/site-packages/
+}}}
+then install as follows:
+{{{
+python setup.py install --prefix=${HOME}
+}}}
+This should replace any "sudo python setup.py install" seen below.  Non-Python packages will have their own
+unique ways to specify install prefix, often with the configure script.  Good Luck!
+----
+
+{{{
+#!/bin/sh
+# NIPY developer’s install script
+# Fedora (tested on Fedora 4, 5 and 6)
+#  - make sure you don't have compat-gcc-3.2 installed
+#
+# You should run this installation script logged in as a regular user.
+# However, it does assume you have sudoer privileges.
+
+## preliminary setup
+# install development tools
+sudo yum -y install  subversion gcc-gfortran gcc-c++
+# install python
+sudo yum -y install python-devel
+# install
+sudo yum -y install  fftw-devel swig
+# create source directory
+mkdir -p ~/src
+
+## numpy installation
+# install numerical libraries
+sudo yum -y install atlas-devel blas-devel lapack-devel ufsparse-devel
+# install numpy from source
+cd ~/src
+svn co http://svn.scipy.org/svn/numpy/tags/1.0.3.1 ./numpy-trunk
+cd numpy-trunk
+python setup.py build
+sudo python setup.py install
+
+## scipy installation
+# install scipy from source
+cd ~/src
+svn co http://svn.scipy.org/svn/scipy/tags/0.5.2.1 ./scipy-trunk
+cd scipy-trunk
+echo models > Lib/sandbox/enabled_packages.txt
+cat > site.cfg << EOF
+[amd]
+library_dirs = /usr/lib
+include_dirs = /usr/include/ufsparse
+amd_libs = amd
+
+[umfpack]
+library_dirs = /usr/lib
+include_dirs = /usr/include/ufsparse
+umfpack_libs = umfpack
+EOF
+python setup.py build
+sudo python setup.py install
+
+## matplotlib installation
+# install widget libraries
+sudo yum -y install wxPython-devel zlib-devel freetype-devel tk-devel tkinter gtk2-devel pygtk2-devel libpng-devel
+#sudo yum –y install agg
+# install matplotlib from source
+cd ~/src
+svn co https://matplotlib.svn.sourceforge.net/svnroot/matplotlib/trunk/matplotlib ./matplotlib-trunk
+cd matplotlib-trunk
+python setup.py build
+sudo python setup.py install
+
+## nipy installation
+# install minc libraries
+#sudo yum –y install netcdf-devel
+#cd ~/src
+#wget http://packages.bic.mni.mcgill.ca/tgz/minc-1.5.1.tar.gz
+#tar xvzf minc-1.5.1.tar.gz
+#cd minc-1.5.1/
+#make
+#sudo make install
+# install nipy from source
+cd ~/src
+svn co http://neuroimaging.scipy.org/svn/ni/ni/trunk nipy-trunk
+cd nipy-trunk
+python setup.py build_ext --inplace
+./test
+#python setup.py build
+#sudo python setup.py install
+# install nipy data
+cd ~/src
+svn co http://neuroimaging.scipy.org/svn/ni/data/trunk nipy-data
+cd nipy-data/fmri
+python setup.py
+# run nipy tests
+cd ~/src/nipy-trunk
+./test --data
+}}}

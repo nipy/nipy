@@ -1,0 +1,49 @@
+[[PageOutline]]
+= NIPY Code Base =
+NIPY is open source and the development version is freely available. The development code is '''ALPHA''' quality. If you are trying to get some work done wait until we have a stable release. For now, the code will only be of interest to developers.
+
+= Nipy Code  =
+'''News'''
+
+During the recent [http://neuroimaging.scipy.org/neuroimaging/ni/wiki/SprintOne Nipy Sprint], we switched our source control from [http://subversion.tigris.org/ subversion] to [http://bazaar-vcs.org/ bazaar] and moved our source tree over to [https://code.launchpad.net/nipy/ nipy launchpad]. 
+
+''Be warned'', the code is under heavy development and is ''guaranteed'' to change much over the next couple of months. This will involve ''major changes to the public API'', not just a refactoring of the underlying code. Downloads of the source code should only be done by developers. 
+
+Here are some quick and dirty instructions for getting and installing the source code. Currently we depend on (or at least many of us are developing with) the numpy-trunk, scipy-trunk and matplotlib-0.91.2 with [https://cirl.berkeley.edu/twiki/pub/User/NipyCode/mpl_wx_scroll.patch this patch] applied for wx to work and mouse scrolling. In the near future we will set our dependencies on numpy 1.0.5 and scipy 0.7, when they are released. 
+
+[https://launchpad.net/nipy The main nipy page on launchpad.] 
+
+=== Getting the source from launchpad  ===
+{{{
+ cburns temp$ pwd
+ /Users/cburns/src/temp
+
+ cburns temp$ bzr branch lp:nipy
+ lp:nipy is redirected to http://bazaar.launchpad.net/~nipy-developers/nipy/trunk/
+ Branched 1534 revision(s).
+
+ cburns temp$ ls
+ nipy
+}}}
+=== Build and install  ===
+{{{
+ cburns nipy$ python setup.py build
+ ...
+
+ # I install in a local directory.
+ cburns nipy$ python setup.py install --prefix=$HOME/local
+
+ # Others may install in the default site-packages directory
+ cburns nipy$ sudo python setup.py install
+}}}
+
+=== Applying the matplotlib patch  ===
+I checked out the release tag using svn, then applied the patch. Then I can use ''svn diff'' to keep track of my local edits. ''I agree, this should be handled better, but it's what we've got for the moment.'' 
+{{{
+ cburns temp$ svn co https://matplotlib.svn.sourceforge.net/svnroot/matplotlib/tags/v0_91_2 matplotlib-0.91.2
+
+ cburns matplotlib-0.91.2$ patch -p0 < mpl_wx_scroll.patch
+}}}
+-- [https://cirl.berkeley.edu/view/User/ChristopherBurns ChristopherBurns] -- 28 Mar 2008
+
+

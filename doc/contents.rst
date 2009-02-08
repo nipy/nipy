@@ -7,6 +7,8 @@
    :Release: |version|
    :Date: |today|
 
+   Download `PDF <http://neuroimaging.scipy.org/site/doc/manual/nipy.pdf>`_
+
    Contents:
 
 .. toctree::
@@ -16,6 +18,8 @@
    devel/index.rst
    faq/index.rst
    api/index.rst
+   publications
+   license
 
 .. htmlonly::
 

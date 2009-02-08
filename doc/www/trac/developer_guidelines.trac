@@ -1,0 +1,79 @@
+[[PageOutline]]
+= NiPy Developer Guidelines =
+
+== Code style ==
+We will follow the numpy and scipy coding style:
+ * [http://scipy.org/scipy/numpy/wiki/CodingStyleGuidelines Coding Style Guidelines]
+
+== The !ChangeLog is very important ==
+
+If you are a developer with commit access, ''please'' fill a proper !ChangeLog entry per significant change.  The SVN commit messages may be shorter (though a brief summary is appreciated), but a detailed !ChangeLog is critical.  It gives us a history of what has happened, allows us to write release notes at each new release, and is often the only way to backtrack on the rationale for a change (as the diff will only show the change, not ''why'' it happened).  
+
+Please skim the existing !ChangeLog for an idea of the proper level of detail (you don't have to write a novel about a patch).
+
+The existing !ChangeLog is generated using (X)Emacs' fantastic !ChangeLog mode: all you have to do is position the cursor in the function/method where the change was made, and hit 'C-x 4 a'.  XEmacs automatically opens the !ChangeLog file, mark a dated/named point, and creates an entry pre-titled with the file and function name.  It doesn't get any better than this.  If you are not using (X)Emacs, please try to follow the same convention so we have a readable, organized !ChangeLog.
+
+To get your name in the !ChangeLog, set this in your .emacs file:
+
+(setq user-full-name "Your Name")
+(setq user-mail-address "youradddress@domain.com")
+
+Feel free to obfuscate or omit the address, but at least leave your name in.  For user contributions, try to give credit by name on patches or significant ideas, but please do an @ -> -AT- replacement in the email addresses (users have asked for this in the past).
+
+
+== Patches ==
+
+This is just a set of simple guidelines aimed at ensuring that we all spend our limited time on the code itself and not struggling with patch management.  Any comments on this are very much welcome (except for any discussion on !#1).
+
+
+  ''1''. '''NEVER, EVER, EVER''' USE HARD TABS.  USE 4 SPACES FOR INDENTATION.
+
+    I want to make sure that this one is as loudly and clearly spelled out as
+    possible.  It is absolutely not open to discussion.  I've already had bugs
+    creep in because of patches with hard tabs in them, so in the future I'll
+    simply reject any patch with a single tab in it.
+
+    NiPy is indented (following python.org policy) with 4 spaces per level.
+
+    With the vim editor, this can be achieved by inserting those line on ~/.vimrc :
+{{{
+filetype on
+au FileType python set shiftwidth=4 " pour les commandes < et >
+au FileType python set sts=4    "permet de faire backspace sur 8espaces
+au FileType python set expandtab "remplace les tabs par des espaces
+au FileType python set autoindent
+}}}
+
+  ''2''. Please send patches as attachments, with a .diff extension.
+
+    This way, there are no issues with manual copy/pasting from a mail client's
+    window.  And they load nicely into XEmacs with syntax highlighting.
+
+  ''3''. Make your patches against current SVN.
+
+That's it.
+
+== Optimization ==
+
+I (MB) like this list from Tim Hochberg, from the Numpy list:
+{{{
+ 0. Think about your algorithm.
+ 1. Vectorize your inner loop.
+ 2. Eliminate temporaries
+ 3. Ask for help
+ 4. Recode in C.
+ 5. Accept that your code will never be fast.
+
+ Step zero should probably be repeated after every other step ;)
+}}}
+
+== External resources ==
+
+For those interested in more info about contributing to an open source
+project, Here are some links I've found.  They are probably no better or worse
+than other similar documents:
+
+ * [http://www.linux.com/howtos/Software-Release-Practice-HOWTO/index.shtml]
+ * [http://www.kegel.com/academy/opensource.html]
+
+You might also be interested in the [http://projects.edgewall.com/python-sidebar/html/toc-tutorial.html Python sidebar]
