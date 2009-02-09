@@ -1,4 +1,4 @@
-.. _development_guidelines::
+.. _development_guidelines:
 
 ========================
  Development Guidelines
