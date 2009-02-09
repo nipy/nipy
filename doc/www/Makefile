@@ -28,7 +28,7 @@ clean:
 html:
 	mkdir -p build/html build/doctrees
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) build/html
-	-cd build/html && ln -s ../doc doc
+	-cd build && ln -s ../.. doc && cd html && ln -s ../doc doc
 	@echo
 	@echo "Build finished. The HTML pages are in build/html."
 
