@@ -14,4 +14,6 @@
 .. toctree::
    :maxdepth: 2
 
-   nipy_faq.rst
+   why
+   
+   
