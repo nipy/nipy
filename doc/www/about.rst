@@ -1,7 +1,0 @@
-.. contents:
-
-Mission
--------
-
-History
--------
