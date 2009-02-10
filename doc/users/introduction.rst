@@ -1,8 +1,8 @@
 .. _introduction:
 
-=====================================
- Introduction to the NIPY user guide
-=====================================
+==============
+ Introduction
+==============
 
 As you can see, we do not yet have much of a user guide for NIPY.  We
 are spending all our effort in developing the building blocks of the
