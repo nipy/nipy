@@ -1,11 +1,36 @@
 #!/usr/bin/env python
 
-"""Simple script to quickly change the symbolic link to your nipy source branch.
+"""
+Simple script to quickly change the symbolic link to your nipy source branch.
 
-Usage:
-    # From your nipy-repo, which has several nipy bzr branches as subdirectories
-    # This will make the 'trunk-mbrett' my current neuroimaging
-    mynipy trunk-mbrett
+When you build your source branch, perform an inplace build.  Then
+mynipy will update the symlink in your site-packages directory to
+point to the branch you specify.  This allows you to quickly switch
+your working version of nipy without having to reinstall to your
+site-packages or modify your PYTHONPATH.
+
+Install
+-------
+
+    We don't have a proper installer yet, simply copy this into a bin
+    directory and make sure it's permissions are executable.  For
+    instance, I installed mynipy in my local bin directory:
+
+    $HOME/local/bin/mynipy
+
+Usage
+-----
+
+    From your nipy-repo, which has several nipy bzr branches as
+    subdirectories like this:
+
+    nipy-repo/trunk-lp
+    nipy-repo/trunk-dev
+    nipy-repo/trunk-mbrett
+
+    This will make the 'trunk-mbrett' my current neuroimaging package:
+    
+    $ mynipy trunk-mbrett
     
 """
 
