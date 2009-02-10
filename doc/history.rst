@@ -16,7 +16,7 @@ submitted the first NIPY grant to the NIH.  It was not successful.
 
 In 2006, Jarrod and Mark submitted a second grant, based on the first.
 The NIH gave us 3 years of funding for two programmers.  We hired two
-programmers in 2007 - Chris Burns and Tom Waite - and began work on
+programmers in 2007 - Christopher Burns and Tom Waite - and began work on
 refactoring the code.
 
 Meanwhile, the team at Neurospin, Paris, started to refactor their FFF
@@ -24,11 +24,6 @@ code to work better with python and NIPY.  This work was by Alexis
 Roche, Bertrand Thirion, and Benjamin Thyreau, with some help and
 advice from Fernando Perez.
 
-In 2008, Fernando Perez and Matthew Brett started work full-time in
-the Berkeley brain imaging center.  Matthew in particular came to work
-on NIPY.  Tom Waite left at the end of the year for a better paid job,
-but lost out on the great fast-food opportunities that Berkeley
-affords.
-
-
-
+In 2008, Fernando Perez and Matthew Brett started work full-time at
+the UC Berkeley `Brain Imaging Center <http://bic.berkeley.edu/>`_.
+Matthew in particular came to work on NIPY.
