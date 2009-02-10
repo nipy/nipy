@@ -1,3 +1,5 @@
+.. _howto_document:
+
 ============================
  How to write documentation
 ============================

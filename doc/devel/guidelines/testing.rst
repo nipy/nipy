@@ -1,8 +1,8 @@
 .. _testing:
 
-==============
- Code Testing
-==============
+=========
+ Testing
+=========
 
 Nipy uses the Numpy_ test framework which is based on nose_.  If you
 plan to do much development you should familiarize yourself with nose

@@ -71,3 +71,4 @@ Pipe it into colordiff for colored output::
 
   cburns@formats 19:53:18 $ bzr diff -r1516..1538 analyze.py | colordiff
 
+.. include:: ../../links_names.txt

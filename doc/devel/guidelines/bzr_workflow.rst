@@ -1,5 +1,5 @@
 
-.. _bazaar_workflow:
+.. _bzr_workflow:
 
 ======================
  nipy bazaar workflow
@@ -61,7 +61,7 @@ and a `Decentralized with human gatekeeper workflows
 <http://bazaar-vcs.org/Workflows>`_.  The basic process is as follows:
 
 #. Create an account on launchpad_, if you don't have one already.
- Follow the *Log in / Register* link on the top of the page.
+   Follow the *Log in / Register* link on the top of the page.
 
 #. Create a shared repository::
 

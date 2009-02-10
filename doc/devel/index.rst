@@ -1,8 +1,8 @@
 .. _developers-guide-index:
 
-==============================
-  The nipy Developers' Guide
-==============================
+=================
+ Developer Guide
+=================
 
 .. htmlonly::
 
