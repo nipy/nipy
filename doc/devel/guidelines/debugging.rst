@@ -4,9 +4,8 @@
 
 Some options are:
 
-================
- Run in ipython
-================
+Run in ipython
+--------------
 
 As in::
 
@@ -31,9 +30,8 @@ See the `ipython manual`_ , and
 `debugging in ipython <http://ipython.scipy.org/doc/manual/html/interactive/reference.html#using-the-python-debugger-pdb>`_ 
 for more detail.
 
-================================
- Embed ipython in crashing code
-================================
+Embed ipython in crashing code
+------------------------------
 
 Often it is not possible to run the code directly from ipython using
 the ``run`` command.  For example, the code may be called from some
