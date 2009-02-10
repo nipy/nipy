@@ -12,6 +12,6 @@
 .. toctree::
    :maxdepth: 2
 
-   tricked_out_emacs.rst
-   virtualenv-tutor.rst
-
+   tricked_out_emacs
+   virtualenv-tutor
+   ssh_windows

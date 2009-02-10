@@ -26,6 +26,8 @@
 .. _`nipy launchpad`: https://launchpad.net/nipy
 .. _launchpad: https://launchpad.net/
 .. _`nipy trunk`: https://code.launchpad.net/~nipy-developers/nipy/trunk
+.. _`nipy mailing list`: http://projects.scipy.org/mailman/listinfo/nipy-devel
+.. _`nipy bugs`: https://bugs.launchpad.net/nipy
 
 .. Code support stuff
 .. _pychecker: http://pychecker.sourceforge.net/
@@ -52,6 +54,7 @@
 .. _`Enthought Tool Suite`: http://code.enthought.com/projects/tool-suite.php
 .. _python: http://www.python.org
 .. _mayavi: http://mayavi.sourceforge.net/
+.. _nose: http://www.somethingaboutorange.com/mrl/projects/nose/
 
 .. Not so python projects
 .. _matlab: http://www.mathworks.com

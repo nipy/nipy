@@ -16,4 +16,6 @@
    sphinx_helpers
    bzr_workflow
    bzr_administration
+   bzr_tips
+   testing
    debugging

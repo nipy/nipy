@@ -1,3 +1,6 @@
+
+.. _bazaar_workflow:
+
 ======================
  nipy bazaar workflow
 ======================
@@ -47,10 +50,18 @@ Your development directory will contain at least one branch:
 where *trunk-dev* is a branch from your user directory on launchpad_
 and is your working development branch.
 
+.. _init_trunk_dev:
+
 Initializing your development environment
 -----------------------------------------
 
-We're using the `shared repository <http://bazaar-vcs.org/SharedRepositoryTutorial>`_ feature of bazaar_.
+We're using the `shared repository
+<http://bazaar-vcs.org/SharedRepositoryTutorial>`_ feature of Bazaar
+and a `Decentralized with human gatekeeper workflows
+<http://bazaar-vcs.org/Workflows>`_.  The basic process is as follows:
+
+#. Create an account on launchpad_, if you don't have one already.
+ Follow the *Log in / Register* link on the top of the page.
 
 #. Create a shared repository::
 
@@ -73,7 +84,9 @@ We're using the `shared repository <http://bazaar-vcs.org/SharedRepositoryTutori
      bzr push bzr+ssh://cburns@bazaar.launchpad.net/~cburns/nipy/trunk-dev --remember
 
 You now have your own branch, stored on launchpad, and on your
-machine, in which you can develop nipy_ code.
+machine, in which you can develop nipy_ code.  If you get an error
+while trying to push, see the :ref:`bzr_ssh_push_error` document for
+instructions on launchpad and your ssh key.
 
 .. _daily-development-cycle:
 
@@ -171,5 +184,17 @@ Click on the **Change branch** button to finalize.
 
 Look at `Chris' branch
 <https://code.launchpad.net/~cburns/nipy/trunk-dev>`_ for an example.
+
+Bazaar Documentation
+====================
+
+The `bzr documentation <http://bazaar-vcs.org/Documentation>`_
+is thorough and excellent.
+
+Gael also posted a `bzr tutorial in French
+<http://cirl.berkeley.edu/mb312/nipy-docs/tutoriel_bzr.pdf>`_.
+
+And we've start a collection of :ref:`bzr_ssh_push_error` for some
+common questions.
 
 .. include:: ../../links_names.txt
