@@ -52,7 +52,8 @@ installation method is to download the source tarball and follow the
 Building from source code
 -------------------------
 
-Developers should look through the :ref:`development-quickstart`
+Developers should look through the 
+:ref:`development quickstart <development-quickstart>` 
 documentation.  There you will find information on building NIPY, the
 required software packages and our developer guidelines.
 
