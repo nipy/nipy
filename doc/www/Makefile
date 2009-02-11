@@ -13,7 +13,7 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean html web pickle changes linkcheck
+.PHONY: help clean html public_html pickle changes linkcheck
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -25,7 +25,11 @@ help:
 clean:
 	-rm -rf *~ build
 
-html:
+# BUG: Sometimes 'make html' hangs when running the SPHINXBUILD on the
+# 'updating environment' step.  Since the www directory contains few
+# files, I added a 'clean' dependencies to the 'html' target which
+# prevents the hanging.
+html: clean
 	mkdir -p build/html build/doctrees
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) build/html
 	-cd build && ln -s ../.. doc && cd html && ln -s ../doc doc
@@ -43,8 +47,6 @@ pickle:
 	@echo "Build finished; now you can process the pickle files or run"
 	@echo "  sphinx-web build/pickle"
 	@echo "to start the sphinx-web server."
-
-web: pickle
 
 changes:
 	mkdir -p build/changes build/doctrees

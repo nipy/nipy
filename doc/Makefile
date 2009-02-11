@@ -13,23 +13,32 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean html web pickle htmlhelp latex changes linkcheck api public_html
+.PHONY: help clean pdf all dist public_html web web_public htmlonly api html pickle htmlhelp latex changes linkcheck doctest
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  html      to make standalone HTML files"
-	@echo "  pickle    to make pickle files (usable by e.g. sphinx-web)"
-	@echo "  htmlhelp  to make HTML files and a HTML help project"
-	@echo "  latex     to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
-	@echo "  changes   to make an overview over all changed/added/deprecated items"
-	@echo "  linkcheck to check all external links for integrity"
-	@echo "  api       to generate the API reference files"
-	@echo "  doctest   to run doctests in reST files"
+	@echo "  html      	make HTML and API documents"
+	@echo "  htmlonly  	make HTML documents only"
+	@echo "  api       	make API documents only"
+	@echo "  latex     	make LaTeX documents (you can set\
+					PAPER=a4 or PAPER=letter)"
+	@echo "  all		make HTML, API and PDF documents"
+	@echo "  clean		remove all generated documents"
+	@echo "  web		make full HTML website locally here:\
+					www/build/html/index.html"
 	@echo
-	@echo "Compound utility targets:"
-	@echo "pdf          latex and then runs the PDF generation"
-	@echo "all          html and pdf"
-	@echo "dist         all, and then puts the results in dist/"
+	@echo "  linkcheck 	check all external links for integrity"
+	@echo "  doctest   	run doctests in reST files"
+	@echo "  pdf		make <latex> and run the PDF generation"
+	@echo "  dist		make <all> and put results in dist/"
+	@echo "  public_html	make <dist> and rsync with public website"
+	@echo "  web_public	make <public_html> for both doc and www\
+					directories."
+
+# Commented these out, wasn't clear if we'd use these targets or not.
+# @echo "  pickle    to make pickle files (usable by e.g. sphinx-web)"
+# @echo "  htmlhelp  to make HTML files and a HTML help project"
+# @echo "  changes   to make an overview over all changed/added/deprecated items"
 
 clean:
 	-rm -rf build/* dist/* *~ api/generated
@@ -48,6 +57,13 @@ dist: clean all
 public_html: dist
 	rsync -avH --delete dist/ $(WWW)/doc/manual/
 
+web: html
+	cd www && make html
+	@echo "Build web finished."
+
+web_public: public_html
+	cd www && make public_html
+
 htmlonly:
 	mkdir -p build/html build/doctrees
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) build/html
@@ -56,9 +72,12 @@ htmlonly:
 
 api:
 	python ../tools/build_modref_templates.py
+	@echo "Build API docs finished."
 
 html: api htmlonly
-	ln -sf build manual
+	-ln -s build manual
+	@echo "Build HTML and API finished."
+
 pickle:
 	mkdir -p build/pickle build/doctrees
 	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) build/pickle
@@ -66,8 +85,6 @@ pickle:
 	@echo "Build finished; now you can process the pickle files or run"
 	@echo "  sphinx-web build/pickle"
 	@echo "to start the sphinx-web server."
-
-web: pickle
 
 htmlhelp:
 	mkdir -p build/htmlhelp build/doctrees
