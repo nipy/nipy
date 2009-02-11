@@ -58,7 +58,7 @@ api:
 	python ../tools/build_modref_templates.py
 
 html: api htmlonly
-	ln -s build manual
+	ln -sf build manual
 pickle:
 	mkdir -p build/pickle build/doctrees
 	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) build/pickle
