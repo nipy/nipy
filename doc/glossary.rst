@@ -24,6 +24,15 @@
       regular short intervals during the blood flow chance.  See the
       the `wikipedia FMRI`_ article for more detail.
 
+   BrainVisa
+      BrainVISA_ is a sister project to NIPY.  It also uses Python,
+      and provides a carefully designed framework and automatic GUI
+      for defining imaging processing workflows. It has tools to
+      integrate command line and other utilities into these
+      workflows. Its particular strength is anatomical image
+      processing but it also supports FMRI and other imaging
+      modalities.  BrainVISA is based in NeuroSpin, outside Paris.
+
    DTI
       Diffusion tensor imaging.  DTI is rather poorly named, because
       it is a model of the diffusion signal, and an analysis method,
@@ -127,8 +136,18 @@
        London. More people use the SPM package to analyze :term:`FMRI`
        and :term:`PET` data than any other.  It has good lab and
        community support, and the :term:`matlab` source code is
-       available under the :term:`GPL` license.
+       available under the :term:`GPL` license. 
 
+   VoxBo
+      Quoting from the Voxbo_ webpage - "VoxBo is a software package
+      for the processing, analysis, and display of data from
+      functional neuroimaging experiments".  Like :term:`SPM`,
+      :term:`FSL` and :term:`AFNI`, VoxBo provides algorithms for a
+      full FMRI analysis, including statistics.  It also provides
+      software for lesion-symptom analysis, and has a parallel
+      scripting engine.  VoxBo has a :term:`GPL` license. Dan Kimberg
+      leads development.
+ 
    voxel
       Voxels are volumetric pixels - that is, they are values in a
       regular grid in three dimensional space - see

@@ -8,7 +8,8 @@ Python version of Keith Worsley's FmriSTAT package.
 In 2004, Jarrod Millman and Matthew Brett decided that they wanted to
 write a grant to build a new neuoimaging analysis package in Python.
 Soon afterwards, they found that Jonathan had already started, and
-merged efforts; so began NIPY.
+merged efforts.  At first we called this project *BrainPy*.  Later we
+changed the name to NIPY.
 
 In 2005, Jarrod, Matthew and Jonathan, along with Mark D'Esposito,
 Fernando Perez, John Hunter, Jean-Baptiste Poline, and Tom Nichols,

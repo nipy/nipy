@@ -56,6 +56,11 @@
 .. _mayavi: http://mayavi.sourceforge.net/
 .. _nose: http://www.somethingaboutorange.com/mrl/projects/nose/
 
+.. Python imaging projects
+.. _PyMVPA: http://www.pymvpa.org
+.. _BrainVISA: http://brainvisa.info
+.. _anatomist: http://brainvisa.info
+
 .. Not so python imaging projects
 .. _matlab: http://www.mathworks.com
 .. _spm: http://www.fil.ion.ucl.ac.uk/spm
@@ -63,6 +68,7 @@
 .. _AFNI: http://afni.nimh.nih.gov/afni
 .. _FSL: http://www.fmrib.ox.ac.uk/fsl
 .. _FreeSurfer: http://surfer.nmr.mgh.harvard.edu
+.. _voxbo: http://www.voxbo.org
 
 .. General software
 .. _gcc: http://gcc.gnu.org
