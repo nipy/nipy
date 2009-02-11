@@ -12,7 +12,7 @@
 .. toctree::
    :maxdepth: 2
 
-   getting_started
+   development_quickstart
    guidelines/index
    planning/index
    software_design/index

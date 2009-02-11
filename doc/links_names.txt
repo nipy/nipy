@@ -56,13 +56,18 @@
 .. _mayavi: http://mayavi.sourceforge.net/
 .. _nose: http://www.somethingaboutorange.com/mrl/projects/nose/
 
-.. Not so python projects
+.. Not so python imaging projects
 .. _matlab: http://www.mathworks.com
 .. _spm: http://www.fil.ion.ucl.ac.uk/spm
 .. _eeglab: http://sccn.ucsd.edu/eeglab
 .. _AFNI: http://afni.nimh.nih.gov/afni
 .. _FSL: http://www.fmrib.ox.ac.uk/fsl
 .. _FreeSurfer: http://surfer.nmr.mgh.harvard.edu
+
+.. General software
+.. _gcc: http://gcc.gnu.org
+.. _xcode: http://developer.apple.com/TOOLS/xcode
+.. _mingw: http://www.mingw.org
 
 .. Functional imaging labs
 .. _`functional imaging laboratory`: http://www.fil.ion.ucl.ac.uk

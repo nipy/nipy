@@ -1,8 +1,8 @@
 .. _installation:
 
-============
-Installation
-============
+====================
+Download and Install
+====================
 
 This page covers the necessary steps to install and run NIPY.  Below
 is a list of required dependencies, along with additional software
@@ -25,11 +25,10 @@ Must Have
   SciPy_ 0.7 or later
     Numpy and Scipy are high-level, optimized scientific computing libraries.
 
-  gcc
- 
+  gcc_
     NIPY does contain a few C extensions for optimized
     routines. Therefore, you must have a compiler to build from
-    source.  XCode (OSX) and MinGW (Windows) both include gcc.  (*Once
+    source.  XCode_ (OSX) and MinGW_ (Windows) both include gcc.  (*Once
     we have binary packages, this requirement will not be necessary.*)
 
 Strong Recommendations
@@ -53,7 +52,7 @@ installation method is to download the source tarball and follow the
 Building from source code
 -------------------------
 
-Developers should look through the :ref:`getting_started`
+Developers should look through the :ref:`development-quickstart`
 documentation.  There you will find information on building NIPY, the
 required software packages and our developer guidelines.
 
