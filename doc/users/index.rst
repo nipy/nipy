@@ -18,7 +18,6 @@
    introduction
    installation
    tutorial.rst
-   ../faq/index
    ../glossary
 
 .. htmlonly::
