@@ -80,11 +80,12 @@
       commercial use.
 
    GPL
-      The GPL_ is the GNU general public license.  It is one of the most
-      commonly-used open-source sofware licenses.  The distinctive
-      feature of the GPL license is that it requires that any code
-      derived from GPL code also uses a GPL license.  It also requires
-      that any code linked to GPL code use the same license. See also:
+      The GPL_ is the GNU general public license.  It is one of the
+      most commonly-used open-source sofware licenses.  The
+      distinctive feature of the GPL license is that it requires that
+      any code derived from GPL code also uses a GPL license.  It also
+      requires that any code that is statically or dynamically linked
+      to GPL code has a GPL-compatible license. See also:
       http://en.wikipedia.org/wiki/GNU_General_Public_License
 
    ICA

@@ -15,44 +15,40 @@ Our license
 We have chosen BSD licensing, for compatibility with SciPy, and to
 increase input from developers in industry.  Wherever possible we will
 keep packages that can have BSD licensing separate from packages
-needing a GPL license.  These packages will of course have dual GPL,
-BSD licenses.
+needing a GPL license.  
 
-Background
-----------
-Licensing is a difficult issue.  Our choices were between:
+Why did you choose BSD?
+-----------------------
 
-* `BSD <http://www.opensource.org/licenses/bsd-license.php>`_ or similar 
-* `GPL <http://www.opensource.org/licenses/gpl-license.php>`_
+Our choices were between:
+
+* :term:`BSD`
+* :term:`GPL`
 
 John Hunter made the argument for the BSD license in
-:ref:`johns-bsd-pitch`.
+:ref:`johns-bsd-pitch`, and we agree.  Richard Stallman makes the case
+for the GPL here: http://www.gnu.org/licenses/why-not-lgpl.html
 
-Richard Stallman, as you might imagine, thinks we should all be using
-the `GPL <http://www.gnu.org/licenses/why-not-lgpl.html>`_.
+How does the BSD license affect our relationship to other projects?
+-------------------------------------------------------------------
 
-The primary advantage of a BSD license is that we are far more
-likely to get real support from companies, including open-source
-software companies.  `Enthought <http://www.enthought.com>`_ and
-`Kitware <http://www.kitware.com>`_ are the most obvious example.
+The BSD license allows other projects with virtually any license,
+including GPL, to use our code.  BSD makes it more likely that we will
+attract support from companies, including open-source software
+companies, such as Enthought_ and Kitware_. 
 
-The primary advantage of the GPL license is that we can use other GPL
-software such as SPM, AFNI and VoxBo.  Another advantage is that it
-may make it more difficult for our respective employers to try and
-reduce access to the software by insisting on a change of license.
-
-We need to make sure that we can separate out parts of our code that
-depend on other GPL software and parts that do not.  The main NIPY
-trunk will be a BSD licensed package of code.  But we will also have
-separate trees with GPL code, including code that depends on GPL
-software.
+Any part of our code that uses (links to) GPL code, will have to be in
+a separable package, with a GPL license.
 
 Note that we do not have this problem with :term:`LGPL`, which allows
 us to link without ourselves having a GPL.
 
-The NIH appears to (formally) have a preference for software than can
-be "commercialized".  Quoting from: `NIH NATIONAL CENTERS FOR
-BIOMEDICAL COMPUTING
+What license does the NIH prefer?
+---------------------------------
+
+The NIH asks that software written with NIH money can be
+commercialized.  Quoting from: `NIH NATIONAL CENTERS FOR BIOMEDICAL
+COMPUTING
 <http://grants1.nih.gov/grants/guide/rfa-files/RFA-RM-04-003.html>`_
 grant application document:
 
@@ -79,7 +75,9 @@ See also these links (from the presentation):
 * http://www.opensource.org
 * http://wiki.na-mic.org/Wiki/index.php/NAMIC_Wiki:Community_Licensing
 
-What NIH-funded agencies actually do seems to differ though. For
-example, AFNI is the major NIH-supported imaging package, and uses the
-GPL.
+So far this might suggest that the NIH would prefer at least a
+BSD-like license, but the NIH has supported several GPL'd projects in
+imaging, :term:`AFNI` being the most obvious example.
 
+
+.. include:: ../links_names.txt
