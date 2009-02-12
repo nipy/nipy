@@ -4,7 +4,7 @@
 WWW=neuroimaging@neuroimaging.scipy.org:www
 
 # You can set these variables from the command line.
-SPHINXOPTS    = -q
+SPHINXOPTS    = #-q # suppress all output but warnings
 SPHINXBUILD   = sphinx-build
 PAPER         =
 
