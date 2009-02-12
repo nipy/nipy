@@ -19,3 +19,4 @@
    bzr_tips
    testing
    debugging
+   coverage_testing

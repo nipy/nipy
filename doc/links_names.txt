@@ -45,6 +45,8 @@
 .. _emacs_python_mode: http://www.emacswiki.org/cgi-bin/wiki/PythonMode
 .. _doctest-mode: http://www.cis.upenn.edu/~edloper/projects/doctestmode/
 .. _bazaar: http://bazaar-vcs.org/
+.. _nose: http://somethingaboutorange.com/mrl/projects/nose
+.. _`python coverage tester`: http://nedbatchelder.com/code/modules/coverage.html
 
 .. Other python projects
 .. _numpy: http://www.scipy.org/NumPy
@@ -56,7 +58,6 @@
 .. _`Enthought Tool Suite`: http://code.enthought.com/projects/tool-suite.php
 .. _python: http://www.python.org
 .. _mayavi: http://mayavi.sourceforge.net/
-.. _nose: http://www.somethingaboutorange.com/mrl/projects/nose/
 
 .. Python imaging projects
 .. _PyMVPA: http://www.pymvpa.org

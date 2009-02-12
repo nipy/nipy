@@ -96,7 +96,9 @@
       considered to be different sensors of the signal. See the
       `wikipedia ICA`_ page.
 
-   LGPL The lesser GNU public license.  LGPL_ differs from the
+   LGPL 
+      
+      The lesser GNU public license.  LGPL_ differs from the
       :term:`GPL` in that you can link to LGPL code from non-LGPL code
       without having to adopt the LGPL or GPL license.  However, if
       you modify the code (create a "derivative work"), that
