@@ -1,22 +1,22 @@
 .. _sphinx_helpers:
 
-******************
-Sphinx Cheat Sheet
-******************
+====================
+ Sphinx Cheat Sheet
+====================
 
 Wherein I show by example how to do some things in Sphinx (you can see
-a literal version of this file below in :ref:`sphinx-literal`)
+a literal version of this file below in :ref:`sphinx_literal`)
 
 
-.. _making-a-list:
+.. _making_a_list:
 
 Making a list
-=============
+-------------
 
 It is easy to make lists in rest
 
 Bullet points
--------------
+^^^^^^^^^^^^^
 
 This is a subsection making bullet points
 
@@ -28,7 +28,7 @@ This is a subsection making bullet points
 
 
 Enumerated points
-------------------
+^^^^^^^^^^^^^^^^^
 
 This is a subsection making numbered points
 
@@ -39,12 +39,13 @@ This is a subsection making numbered points
 #. point C
 
 
-.. _making-a-table:
+.. _making_a_table:
 
 Making a table
-==============
+--------------
 
-This shows you how to make a table -- if you only want to make a list see :ref:`making-a-list`.
+This shows you how to make a table -- if you only want to make a list
+see :ref:`making_a_list`.
 
 ==================   ============
 Name                 Age
@@ -54,14 +55,81 @@ Cast of Thousands    41
 And Still More       42
 ==================   ============
 
-.. _making-links:
+.. _making_links:
 
 Making links
-============
+------------
 
-It is easy to make a link to `yahoo <http://yahoo.com>`_ or to some
-section inside this document (see :ref:`making-a-table`) or another
-document (see :ref:`tricked_out_emacs`).
+Cross-references sections and documents
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use reST labels to cross-reference sections and other documents. The
+mechanism for referencing another reST document or a subsection in any
+document, including within a document are identical. Place a
+*reference label* above the section heading, like this::
+
+	.. _sphinx_helpers:
+
+	====================
+	 Sphinx Cheat Sheet
+	====================
+
+Note the blank line between the *reference label* and the section
+heading is important!
+
+Then refer to the *reference label* in another
+document like this::
+
+     :ref:`sphinx_helpers`
+
+The reference is replaced with the section title when Sphinx builds
+the document while maintaining the linking mechanism.  For example,
+the above reference will appear as :ref:`sphinx_helpers`.  As the
+documentation grows there are many references to keep track of.
+
+For documents, please use a *reference label* that matches the file
+name.  For sections, please try and make the *refence label* something
+meaningful and try to keep abbreviations limited.  Along these lines,
+we are using *underscores* for multiple-word *reference labels*
+instead of hyphens.
+
+Sphinx documentation on `Cross-referencing arbitrary locations
+<http://sphinx.pocoo.org/markup/inline.html#cross-referencing-arbitrary-locations>`_
+has more details.
+
+External links
+^^^^^^^^^^^^^^
+
+For external links you are likely to use only once, simple include the
+like in the text.  This link to `google <http://www.google.com>`_ was
+made like this::
+
+     `google <http://www.google.com>`_
+
+For external links you will reference frequently, we have created a
+``links_names.txt`` file.  These links can then be used throughout the
+documentation.  Links in the ``links_names.txt`` file are created
+using the `reST reference
+<http://docutils.sourceforge.net/docs/user/rst/quickref.html#hyperlink-targets>`_
+syntax::
+
+	.. _targetname: http://www.external_website.org
+
+To refer to the reference in a separate reST file, include the
+``links_names.txt`` file and refer to the link through it's target
+name.  For example, put this include at the bottom of your reST
+document::
+     
+     .. include:: ../links_names.txt
+
+and refer to the hyperlink target::
+
+    blah blah blah targetname_ more blah
+
+
+
+Links to classes, modules and functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can also reference classes, modules, functions, etc that are
 documented using the sphinx `autodoc
@@ -70,10 +138,10 @@ see the module :mod:`matplotlib.backend_bases` documentation, or the
 class :class:`~matplotlib.backend_bases.LocationEvent`, or the method
 :meth:`~matplotlib.backend_bases.FigureCanvasBase.mpl_connect`.
 
-.. _ipython-highlighting:
+.. _ipython_highlighting:
 
 ipython sessions
-================
+----------------
 
 Michael Droettboom contributed a sphinx extension which does pygments
 syntax highlighting on ipython sessions
@@ -91,10 +159,10 @@ syntax highlighting on ipython sessions
 This support is included in this template, but will also be included
 in a future version of Pygments by default.
 
-.. _formatting-text:
+.. _formatting_text:
 
 Formatting text
-===============
+---------------
 
 You use inline markup to make text *italics*, **bold**, or ``monotype``.
 
@@ -108,10 +176,10 @@ Or literally include code:
 .. literalinclude:: elegant.py
 
 
-.. _using-math:
+.. _using_math:
 
 Using math
-==========
+----------
 
 In sphinx you can include inline math :math:`x\leftarrow y\ x\forall
 y\ x-y` or display math
@@ -141,7 +209,7 @@ All three of these options for math are designed to behave in the same
 way.
 
 Inserting matplotlib plots
-==========================
+--------------------------
 
 Inserting automatically-generated plots is easy.  Simply put the script to
 generate the plot in any directory you want, and refer to it using the ``plot``
@@ -160,12 +228,12 @@ version of the document, the plot is included as a scalable PDF.
    :include-source:
 
 Emacs helpers
-=============
+-------------
 
 See :ref:`rst_emacs`
 
 Inheritance diagrams
-====================
+--------------------
 
 Inheritance diagrams can be inserted directly into the document by
 providing a list of class or module names to the
@@ -179,10 +247,10 @@ produces:
 
 .. inheritance-diagram:: codecs
 
-.. _sphinx-literal:
+.. _sphinx_literal:
 
 This file
-=========
+---------
 
 .. literalinclude:: sphinx_helpers.rst
 
