@@ -15,5 +15,5 @@
    :maxdepth: 2
 
    why
-   
+   licensing   
    

@@ -13,6 +13,12 @@
       scriptability, and image visualization. It uses the :term:`GPL`
       license.
 
+   BSD
+      Berkeley software distribution license. The BSD_ license is
+      permissive, in that it allows you to modify and use the code
+      without requiring that you use the same license.  It allows
+      you to distribute closed-source binaries.  
+
    BOLD
       Contrast that is blood oxygen level dependent.  When a brain
       area becomes active, blood flow increases to that area.  It
@@ -77,7 +83,8 @@
       The GPL_ is the GNU general public license.  It is one of the most
       commonly-used open-source sofware licenses.  The distinctive
       feature of the GPL license is that it requires that any code
-      derived from GPL code also uses a GPL license.  See also:
+      derived from GPL code also uses a GPL license.  It also requires
+      that any code linked to GPL code use the same license. See also:
       http://en.wikipedia.org/wiki/GNU_General_Public_License
 
    ICA
@@ -88,6 +95,15 @@
       components within the brain, where the brain voxels can be
       considered to be different sensors of the signal. See the
       `wikipedia ICA`_ page.
+
+   LGPL The lesser GNU public license.  LGPL_ differs from the
+      :term:`GPL` in that you can link to LGPL code from non-LGPL code
+      without having to adopt the LGPL or GPL license.  However, if
+      you modify the code (create a "derivative work"), that
+      modification has to be released under the LGPL. See `wikipedia
+      LGPL
+      <http://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License>`_
+      for more discussion.
 
    Matlab
       matlab_ began as a high-level programming language for working

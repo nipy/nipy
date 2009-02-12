@@ -19,6 +19,8 @@
 
 .. Licenses
 .. _GPL: http://www.gnu.org/licenses/gpl.html
+.. _BSD: http://www.opensource.org/licenses/bsd-license.php
+.. _LGPL: http://www.gnu.org/copyleft/lesser.html
 
 .. Working process
 .. _pynifti: http://niftilib.sourceforge.net/
@@ -78,6 +80,9 @@
 .. Functional imaging labs
 .. _`functional imaging laboratory`: http://www.fil.ion.ucl.ac.uk
 .. _FMRIB: http://www.fmrib.ox.ac.uk
+
+.. Other organizations
+.. _enthought: <http://www.enthought.com>
 
 .. General information links
 .. _`wikipedia FMRI`: http://en.wikipedia.org/wiki/Functional_magnetic_resonance_imaging
