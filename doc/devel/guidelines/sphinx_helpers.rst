@@ -1,4 +1,4 @@
-08.. _sphinx_helpers:
+.. _sphinx_helpers:
 
 ******************
 Sphinx Cheat Sheet
