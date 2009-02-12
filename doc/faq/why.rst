@@ -17,8 +17,8 @@ There are several good FMRI analysis packages already - for example
 :term:`SPM`, :term:`FSL` and :term:`AFNI`.  For each of these you
 can download the source code.
 
-Like SPM, AFNI and FSL, we think it's essential for understanding and
-development that you can download the source code.
+Like SPM, AFNI and FSL, we think source code is essential for understanding and
+development.
 
 With these packages you can do many analyses.  Some problems are that:
 
@@ -39,7 +39,8 @@ a good choice for common, shared development.  In particular, we think
 that Python is the obvious choice for a large open-source software
 project.  By comparison, matlab is not sufficiently general or
 well-designed as a programming language, and C / C++ are too hard and
-slow for scientific programmers to read or write. 
+slow for scientific programmers to read or write. See why-python_ for
+this argument in more detail.
 
 We started NIPY because we want to be able to:
 
@@ -58,6 +59,8 @@ We started NIPY because we want to be able to:
   your analyses.  We also hope this will make analyses easier to run
   in parallel, and therefore much faster.
 
+.. _why-python:
+
 Why python?
 -----------
 
@@ -75,7 +78,7 @@ Low level languages are a particularly ill-suited for exploratory
 scientific computing, because they present a high barrier to access by
 scientists that are not specialist programmers. Low-level code is
 difficult to read and write, which slows development
-[Prechelt:2000:ECS, boehm1981, Walston:1977:MPM], and makes it more
+([Prechelt2000ECS]_, [boehm1981]_, [Walston1977MPM]_) and makes it more
 difficult to understand the implementation of analysis
 algorithms. Ultimately this makes it less likely that scientists will
 use these languages for development, as their time for learning a new
@@ -118,3 +121,14 @@ has weak GUI tools, which are crucial to researchers for productive
 interactions with their data.
 
 
+.. [boehm1981]
+   Boehm, Barry W. (1981) *Software Engineering Economics*. Englewood
+   Cliffs, NJ: Prentice-Hall.
+
+.. [Prechelt2000ECS]
+   Prechelt, Lutz. 2000. An Empirical Comparison of Seven Programming
+   Languages. *IEEE Computer* 33, 23--29.
+
+.. [Walston1977MPM]
+   Walston, C E, and C P Felix. 1977. A Method of Programming
+   Measurement and Estimation. *IBM Syst J* 16, 54-73.
