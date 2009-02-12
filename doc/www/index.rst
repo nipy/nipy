@@ -9,7 +9,7 @@ of structural and functional neuroimaging data. It currently has a full
 system for general linear modeling of functional magnetic resonance
 imaging (fMRI).
 
-For more information, please see `About nipy <../doc/manual/html/about.html>`_
+For more information, please see `About NIPY <doc/manual/html/about.html>`_
 
 In this site you will find documentation and downloads, while code hosting and
 bug tracking can be found at our `Launchpad project page`_.
@@ -17,6 +17,7 @@ bug tracking can be found at our `Launchpad project page`_.
 .. include:: latest_news.rst
 
 For more news, see :ref:`news`
+
 
 =======
 Funding
