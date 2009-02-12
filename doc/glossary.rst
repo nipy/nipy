@@ -97,7 +97,6 @@
       `wikipedia ICA`_ page.
 
    LGPL 
-      
       The lesser GNU public license.  LGPL_ differs from the
       :term:`GPL` in that you can link to LGPL code from non-LGPL code
       without having to adopt the LGPL or GPL license.  However, if

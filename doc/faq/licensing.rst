@@ -26,7 +26,7 @@ Licensing is a difficult issue.  Our choices were between:
 * `GPL <http://www.opensource.org/licenses/gpl-license.php>`_
 
 John Hunter made the argument for the BSD license in
-:ref:`Why we should be using BSD <johns-bsd-pitch>`.
+:ref:`johns-bsd-pitch`.
 
 Richard Stallman, as you might imagine, thinks we should all be using
 the `GPL <http://www.gnu.org/licenses/why-not-lgpl.html>`_.

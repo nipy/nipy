@@ -6,12 +6,12 @@ In this tutorial we will discuss NiPy's specification
 of a typical event-related fMRI model.
 
 This involves:
-* experimental model: a description of the experimental protocol (function of
-  experimental time)
+* experimental model: a description of the experimental protocol
+  (function of experimental time)
 * neuronal model: a model of how a particular neuron responds to the
   experimental protocol (function of the experimental model)
-* hemodynamic model: a model of the BOLD signal at a particular voxel, 
-(function of the neuronal model)
+* hemodynamic model: a model of the BOLD signal at a particular voxel,
+  (function of the neuronal model)
 
 Experimental model
 ==================
@@ -32,9 +32,8 @@ E` where *E* is the set of all event types.  Practically speaking, we can read
 this as saying that our experiment has *10* events, occurring at times
 :math:`t_1,\dots,t_{10}` with event types :math:`a_1,\dots,a_{10}`.
 
-Typically, the events occur
-in groups, say odd events are labelled *a*, even ones *b*. We might rewrite
-this as
+Typically, the events occur in groups, say odd events are labelled
+*a*, even ones *b*. We might rewrite this as
 
 .. math::
    
