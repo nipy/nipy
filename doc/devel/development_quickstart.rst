@@ -1,3 +1,3 @@
 .. _development-quickstart:
 
-.. include::  ../../INSTALL
+.. include:: ../../INSTALL

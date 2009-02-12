@@ -1,4 +1,0 @@
-We are in the process of heavily revamping the nipy code and documentation.  At this point, this info is useful for core developers only. 
- * BazaarTips: some useful pointers in using bzr and launchpad for development.
- * [http://scipy.org/scipy/numpy/wiki/CodingStyleGuidelines Coding Style Guidelines]
- * VirtualEnv tutorial - [[ReST(/ni/trunk/virtualenv-tutor.txt)]]

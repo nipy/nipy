@@ -1,5 +1,8 @@
-Coverage Testing
-================
+.. _coverage:
+
+==================
+ Coverage Testing
+==================
 
 Coverage testing is a technique used to see how much of the code is
 exercised by the unit tests. It is important to remember that a high

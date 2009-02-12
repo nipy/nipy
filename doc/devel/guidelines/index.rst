@@ -19,4 +19,7 @@
    bzr_tips
    testing
    debugging
+   optimization
    coverage_testing
+   open_source_devel
+   changelog
