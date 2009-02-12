@@ -1,7 +1,0 @@
-    *
-
-We have moved the NIPY code repository to Launchpad. You can browse the current code here: http://bazaar.launchpad.net/~nipy-developers/nipy/trunk/files
-
-You can download the code using Bazaar (http://bazaar-vcs.org/) by typing: bzr branch lp:nipy
-
-For more information, please refer to the README and INSTALL files, which can be retrieved via either of the above methods.

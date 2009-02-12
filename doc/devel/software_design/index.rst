@@ -12,6 +12,11 @@
 .. toctree::
    :maxdepth: 2
 
-   understanding_affines.rst
-   registration_api.rst
-   usecases/index.rst
+   understanding_affines
+   image_ordering
+   registration_api
+   repository_design
+   brainvisa_repositories
+   repository_api
+   pipelining_api
+   usecases/index

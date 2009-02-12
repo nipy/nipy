@@ -85,7 +85,7 @@
       distinctive feature of the GPL license is that it requires that
       any code derived from GPL code also uses a GPL license.  It also
       requires that any code that is statically or dynamically linked
-      to GPL code has a GPL-compatible license. See also:
+      to GPL code has a GPL-compatible license. See:
       http://en.wikipedia.org/wiki/GNU_General_Public_License
 
    ICA
@@ -100,7 +100,7 @@
    LGPL 
       The lesser GNU public license.  LGPL_ differs from the
       :term:`GPL` in that you can link to LGPL code from non-LGPL code
-      without having to adopt the LGPL or GPL license.  However, if
+      without having to adopt a GPL-compatible license.  However, if
       you modify the code (create a "derivative work"), that
       modification has to be released under the LGPL. See `wikipedia
       LGPL
