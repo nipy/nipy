@@ -14,6 +14,30 @@ sys.path.append(os.path.abspath('../sphinxext'))
 
 execfile('../conf.py')
 
+# I was testing intersphinx to see if it could be used to
+# cross-reference arbitrary locations through the :ref: roles.  It
+# cannot. However, I did get intersphinx to work for Python objects,
+# which is what it is designed to do.  Keeping this here for future
+# reference.
+#
+#extensions.append('sphinx.ext.intersphinx')
+#
+# Intersphinx dictionary:
+# key is relative path to find the mapped objects from the objects.inv file
+# value is where to find the objects.inv file
+# The objects.inv file has this info for each mapped object:
+#   label-name classifier path-to-html
+# Examples:
+#   neuroimaging.core.image.image.Image class api/generated/neuroimaging.core.image.image.html
+#   neuroimaging.core.image.generators mod api/generated/neuroimaging.core.image.generators.html
+#
+#intersphinx_mapping = {'../html/doc/manual/html': '../build/html/objects.inv'}
+#
+# In reST documents, I can then link to Python objects in the API like this:
+#
+#This is the image class: :class:`neuroimaging.core.image.image`
+#This is the Image.affine method: :meth:`neuroimaging.core.image.image.Image.affine`
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
