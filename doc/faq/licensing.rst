@@ -1,5 +1,8 @@
-Licensing
-=========
+.. _licensing:
+
+===========
+ Licensing
+===========
 
 How do you spell licence?
 -------------------------
@@ -8,17 +11,16 @@ If you are British you spell it differently from Americans, sometimes:
 
 http://www.tiscali.co.uk/reference/dictionaries/english/data/d0082350.html
 
-As usual the American spelling rule (always use *s*) was less painful and arbitrary, so I (MB) went for that. 
+As usual the American spelling rule (always use *s*) was less painful
+and arbitrary, so I (MB) went for that.
 
-Our license
------------
+Why did you choose BSD?
+-----------------------
+
 We have chosen BSD licensing, for compatibility with SciPy, and to
 increase input from developers in industry.  Wherever possible we will
 keep packages that can have BSD licensing separate from packages
 needing a GPL license.  
-
-Why did you choose BSD?
------------------------
 
 Our choices were between:
 

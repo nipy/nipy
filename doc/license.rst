@@ -4,8 +4,6 @@
 NIPY License Information
 ========================
 
-.. contents:
-
 .. _nipy-software-license:
 
 Software License
@@ -13,6 +11,8 @@ Software License
 
 Except where otherwise noted, all NIPY software is licensed under a
 `revised BSD license <http://www.opensource.org/licenses/bsd-license.php>`_.
+
+See our :ref:`licensing` page for more details.
 
 .. _nipy-documentation-license:
 
