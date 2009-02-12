@@ -2,8 +2,6 @@
 NIPY Funding
 ============
 
-.. contents:
-
 .. _desposito-r01:
 
 Continued Development And Maintenance Of The Neuroimaging In Python Project

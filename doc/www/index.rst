@@ -2,8 +2,6 @@
 Welcome
 =======
 
-.. contents:
-
 The neuroimaging in python (NIPY) project is an environment for the analysis
 of structural and functional neuroimaging data. It currently has a full
 system for general linear modeling of functional magnetic resonance

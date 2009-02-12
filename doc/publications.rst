@@ -2,8 +2,6 @@
 Publications
 ============
 
-.. contents:
-
 Peer-reviewed Publications
 --------------------------
 
