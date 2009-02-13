@@ -1,14 +1,12 @@
 .. _api-index:
 
-################
-  The nipy API
-################
+#####
+ API
+#####
 
 .. htmlonly::
 
    :Release: |version|
    :Date: |today|
 
-.. toctree::
-
-   core_api.rst
+.. include:: generated/gen.rst

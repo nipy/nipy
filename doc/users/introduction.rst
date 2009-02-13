@@ -1,30 +1,18 @@
-.. _model-introduction:
+.. _introduction:
 
-******************
-Model Introduction
-******************
+==============
+ Introduction
+==============
 
-Wherein I describe my fancy model  :math:`E=MC^2`
-and also
+As you can see, we do not yet have much of a user guide for NIPY.  We
+are spending all our effort in developing the building blocks of the
+code, and we have not yet returned to a guide to how to use it.
 
-.. math::
+We are starting to write general :ref:`tutorial-index`, that include
+introductions to how to use NIPY code to run analyses. 
 
-    \frac{5 - \frac{1}{x}}{4}
-
-For more details, see :ref:`using-math`.
-
-.. _other-models:
-
-Other Models
-============
-
-Where in I describe
-
-* model A
-
-* model B
-
-* model C
-
-and why they all suck
-
+.. toctree::
+   :maxdepth: 2
+   
+   ../mission
+   ../history

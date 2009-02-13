@@ -450,7 +450,7 @@ class DelayHRF(hrf.SpectralHRF):
         hrf.SpectralHRF.__init__(self, input_hrf, spectral=spectral,
                                  names=['hrf'], **keywords)
 
-    def deltaPCA(self, tmax=50., lower=-15.0, delta=np.arange(-4.5,4.6,0.1)):
+    def deltaPCA(self, tmax=50., lower=-15.0, delta=None):
         """
         Perform an expansion of fn, shifted over the values in delta.
         Effectively, a Taylor series approximation to fn(t+delta), in delta,
@@ -501,6 +501,8 @@ class DelayHRF(hrf.SpectralHRF):
         >>>
         """
 
+        if delta is None: delta = np.arange(-4.5,4.6,0.1)
+        
         time = np.arange(lower, tmax, self.dt)
         irf = self.IRF
 

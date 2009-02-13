@@ -150,8 +150,12 @@ class ExperimentalQuantitative(ExperimentalRegressor, Quantitative):
             names = name
 
         Quantitative.__init__(self, names, func=fn, termname=termname, **keywords)
-            
-class Time(ExperimentalQuantitative):
+
+# XXX - This is dead code.  Talk to J. Taylor about its origin, but it needs to
+# be renamed from 'Time' because otherwise the doc generation tools get
+# confused.  We need to clarify if this is needed or if the instance below (an
+# ExperimentalQuantitative instance) does the job.
+class __XXX_Time(ExperimentalQuantitative):
     
     def __call__(self, time, **ignored):
         """
