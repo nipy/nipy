@@ -13,6 +13,7 @@
    :maxdepth: 2
 
    development_quickstart
+   install/index
    guidelines/index
    planning/index
    software_design/index

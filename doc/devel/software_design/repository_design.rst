@@ -41,12 +41,14 @@ Technologies of particular interest include:
   that data.
 * The notion of `URI <http://www.w3.org/Addressing/>`_ developed under
   the guidance of the w3c.  Briefly, a URI consists of:
+
    * An authority (i.e. a domain name controlled by a particular
      entity)
    * A path - a particular resource specified by that authority
    * Abstraction from storage (as opposed to a URL) - a URI does not
      necessarily include the information necessary for retrieving the
      data referred to, though it may.
+
 * Ways of dealing with hierarchical data as developed in the XML field
   (though these strategies could be implemented potentially in other
   hierarchical data formats - even filesystems).
