@@ -194,7 +194,7 @@ is thorough and excellent.
 Gael also posted a `bzr tutorial in French
 <http://cirl.berkeley.edu/mb312/nipy-docs/tutoriel_bzr.pdf>`_.
 
-And we've start a collection of :ref:`bzr_tips` for some
+And we've start a collection of :ref:`bazaar_tips` for some
 common questions.
 
 .. include:: ../../links_names.txt
