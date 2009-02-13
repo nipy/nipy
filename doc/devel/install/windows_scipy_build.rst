@@ -13,7 +13,7 @@ The following has been tested on Windows Vista Enterprise 32bit only,
 but should theoretically work on other Windows platforms. It also used
 Python 2.5.
 
-Ideally, a big chunk of this wiki should move to the scipy/numpy
+Ideally, a big chunk of this page should move to the scipy/numpy
 site. And also ideally should become a single script. But it's also
 good to know exactly how you got there.
 
@@ -134,6 +134,12 @@ Compiling UMFPACK
 
 Compiling fftw
 ^^^^^^^^^^^^^^
+
+.. note::
+
+   The latest versions of scipy do not link to FFTW, so this step is
+   no longer useful for scipy
+
 * Stay in msys shell
 * Goto fftw_XX
 * `mkdir build; cd build`
@@ -147,6 +153,12 @@ Compiling fftw
 
 Compling numpy/scipy
 ^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+
+   As above, note that the FFTW linking here is no longer useful for
+   the scipy install
+
 * Open a Windows cmd window and make sure you can execute python.
 * Make a copy of each of the libs in BUILDS/lib and rename them from libname.a to name.lib
 * Rename lapack.lib to flapack.lib
@@ -185,14 +197,6 @@ Compling numpy/scipy
       python setup.py config --compiler=mingw32 build --compiler=mingw32 bdist_wininst
 
 * Install numpy from the numpy/dist folder
-* Create a file called `enabled_packages.txt` in scipy/Lib/sandbox and insert the following (only models is necessary for NiPy but the others may be useful)::
-
-      models
-      rbf
-      svm
-      timeseries
-      wavelet
-
 * Compile scipy::
 
       cd scipy

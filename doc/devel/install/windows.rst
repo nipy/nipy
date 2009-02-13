@@ -22,8 +22,8 @@ Options:
 Alternatively, if you are very brave, you may want to install numpy / scipy from
 source - see our maybe out of date :ref:`windows_scipy_build` for details.
 
-Whether you used ETS_ or the instructions above, you next need to get
-the code via version control:
+Whether you used ETS_ or the instructions above, you will next need to get
+the NIPY code via version control:
 
 * Download and install the windows binary for bazaar_
 * Go to the windows menu, find the `bazaar` menu, and run ``bzr`` in a

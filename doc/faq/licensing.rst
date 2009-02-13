@@ -39,8 +39,8 @@ including GPL, to use our code.  BSD makes it more likely that we will
 attract support from companies, including open-source software
 companies, such as Enthought_ and Kitware_. 
 
-Any part of our code that uses (links to) GPL code, will have to be in
-a separable package, with a GPL license.
+Any part of our code that uses (links to) GPL code, should be in
+a separable package.
 
 Note that we do not have this problem with :term:`LGPL`, which allows
 us to link without ourselves having a GPL.
