@@ -34,6 +34,7 @@ Prerequisites
   <http://downloads.sourceforge.net/mingw/msysCORE-1.0.11-2007.01.19-1.tar.bz2?modtime=1169236772&big_mirror=1>`_
   environment installed. You will need to download the following
   packages for msys:
+
   * bzip2-1.0.3-MSYS-1.0.11-snapshot.tar.bz2
   * coreutils-5.97-MSYS-1.0.11-snapshot.tar.bz2
   * diffutils-2.8.7-MSYS-1.0.11-snapshot.tar.bz2
