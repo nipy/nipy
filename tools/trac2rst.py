@@ -6,56 +6,80 @@ import re
 
 rst_section_levels = ['*', '=', '-', '~', '^']
 heading_re = re.compile('^(=+) +([^=]+) +(=+)')
-enumerate_re = re.compile('^( +\\d+\\))')
+enumerate_re = re.compile(r'^ +(\d+\)) +(.*)')
 link_re = re.compile(r'\[+ *(http://[\w.\-~/]+) +(.+?) *\]+')
 italic_re = re.compile(r"'''(.+?)'''")
 bold_re = re.compile(r"''(.+?)''")
 inpre_re = re.compile(r"{{{(.+?)}}}")
 outprestart_re = re.compile(r"^ *{{{ *$")
 outprestop_re = re.compile(r"^ *}}} *$")
+define_re = re.compile("^([^ ])(.*?)::")
 
 
-def preformatted_state(line, lines):
+class state_object(object):
+    def __init__(self, lines, indent=''):
+        self.lines = lines
+        self.indent = indent
+
+    def add_line(self, line):
+        self.lines.append(self.indent+line)
+
+    def __call__(self, line):
+        raise NotImplementedError
+
+    def __iter__(self):
+        for line in self.lines:
+            yield line
+
+
+class preformatted_state(state_object):
     ''' State function for within preformatted blocks '''
-    if outprestop_re.match(line):
-        lines.append('')
-        return standard_state
-    lines.append('   ' + line)
-    return preformatted_state
+    def __call__(self, line):
+        if outprestop_re.match(line):
+            self.add_line('')
+            return standard_state(self.lines)
+        self.add_line('   ' + line)
+        return self
 
 
-def standard_state(line, lines):
-    ''' State function for within normal text '''
-    # beginning preformat block?
-    if outprestart_re.match(line):
-        lines.append('::')
-        return preformatted_state
-    # Heading
-    hmatch = heading_re.match(line)
-    if hmatch:
-        eq1, heading, eq2 = hmatch.groups()
-        if len(eq1) == len(eq2):
-            lines.append(heading)
-            lines.append(rst_section_levels[len(eq1)] * len(heading))
-            return standard_state
-    if line.startswith(' *'):
-        line = line[1:]
-    ematch = enumerate_re.match(line)
-    if ematch:
-        start = ematch.groups()[0]
-        line = '#.' + line[len(start):]
+def std_subs(line):
+    ''' standard in-line substitutions '''
     line = link_re.sub(r'`\2 <\1>`_', line)
     line = italic_re.sub(r'*\1*', line)
     line = bold_re.sub(r'**\1**', line)
     line = inpre_re.sub(r'``\1``', line)
-    lines.append(line)
-    return standard_state
+    return line
+
+
+class standard_state(state_object):
+    def __call__(self, line):
+        ''' State function for within normal text '''
+        # beginning preformat block?
+        if outprestart_re.match(line):
+            self.add_line('::')
+            self.add_line('')
+            return preformatted_state(self.lines)
+        # Heading
+        hmatch = heading_re.match(line)
+        if hmatch:
+            eq1, heading, eq2 = hmatch.groups()
+            if len(eq1) == len(eq2):
+                self.add_line(heading)
+                self.add_line(rst_section_levels[len(eq1)] * len(heading))
+                return self
+        if line.startswith(' *'):
+            line = line[1:]
+        line = enumerate_re.sub(r'#. \2', line)
+        line = define_re.sub(r'\1\2', line)
+        line = std_subs(line)
+        self.add_line(line)
+        return self
 
 
 def trac2rst(linesource):
     ''' Process trac line source 
 
-    A small simple finite state machine
+    A simple finite state machine
 
     >>> lines = ['Hello', '= Heading1 =', '=Heading2=', '== Heading 3 ==']
     >>> trac2rst(lines)
@@ -82,14 +106,16 @@ def trac2rst(linesource):
     ['here is some ``preformatted text`` (end)']
     >>> # multiline preformatted
     >>> trac2rst(['','{{{','= preformatted =', ' * text', '}}}'])
-    ['', '::', '   = preformatted =', '    * text', '']
+    ['', '::', '', '   = preformatted =', '    * text', '']
+    >>> # define
+    >>> trac2rst(['a definition::', '  some explanation'])
+    ['a definition', '  some explanation']
     '''
-    lines = []
-    processor = standard_state
+    processor = standard_state([])
     for line in linesource:
         line = line.rstrip()
-        processor = processor(line, lines)
-    return lines
+        processor = processor(line)
+    return processor.lines
 
 
 if __name__ == '__main__':
