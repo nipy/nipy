@@ -60,7 +60,8 @@ class ArrayCoordMap(object):
                 Values of self.coordmap evaluated at np.indices(self.shape).
         """
 
-        indices = np.indices(self.shape).astype(self.coordmap.input_coords.builtin)
+        indices = np.indices(self.shape).astype(
+            self.coordmap.input_coords.value_dtype)
         tmp_shape = indices.shape
 
         # reshape indices to be a sequence of coordinates
@@ -163,12 +164,14 @@ def _slice(coordmap, shape, *slices):
     innames = slice_cmap.input_coords.axisnames
     inaxes = slice_cmap.input_coords.axes
     inmat = []
-    input_coords = CoordinateSystem('input-slice', [Coordinate(innames[i], dtype=coordmap.input_coords.builtin) for i in keep_in_output])
+    coords = [Coordinate(innames[i], dtype=coordmap.input_coords.value_dtype)
+              for i in keep_in_output]
+    input_coords = CoordinateSystem('input-slice', coords)
     A = np.zeros((coordmap.ndim[0]+1, len(keep_in_output)+1))
     for j, i in enumerate(keep_in_output):
         A[:,j] = slice_cmap.affine[:,i]
     A[:,-1] = slice_cmap.affine[:,-1]
-    A = A.astype(input_coords.builtin)
+    A = A.astype(input_coords.value_dtype)
     slice_cmap = Affine(A, input_coords, coordmap.input_coords)
     return ArrayCoordMap(compose(coordmap, slice_cmap), tuple(newshape))
                    
@@ -223,7 +226,7 @@ class Grid(object):
         Create an Affine coordinate map with into self.coords with
         slices created as in np.mgrid/np.ogrid.
         """
-        dtype = self.coordmap.input_coords.builtin
+        dtype = self.coordmap.input_coords.value_dtype
         results = [a.ravel().astype(dtype) for a in np.ogrid[index]]
         if len(results) != len(self.coordmap.input_coords.axisnames):
             raise ValueError('the number of slice objects must match the number of input dimensions')

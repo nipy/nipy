@@ -35,33 +35,54 @@ class Coordinate(object):
            The name for the coordinate.
         dtype : np.dtype
            The dtype of the axis. Must be a builtin dtype.
+
+        Examples
+        --------
+        >>> cs = Coordinate('x')
+        >>> cs.dtype == np.dtype([('x', np.float)])
+        True
+        >>> cs = Coordinate('y', np.complex)
+        >>> cs.dtype == np.dtype([('y', np.complex)])
+        True
+        >>> cs.value_dtype == np.complex
+        True
+        >>> cs.value_dtype = np.float
+        >>> cs.dtype == np.dtype([('y', np.float)])
+        True
+        >>> # But, you can't set the dtype directly
+        >>> cs.dtype = np.float
+        Traceback (most recent call last):
+           ...
+        AttributeError: you cannot set the dtype directly - use value_dtype instead
+        >>> cs = Coordinate('z', [('field1', np.float)])
+        Traceback (most recent call last):
+           ...
+        ValueError: Coordinate dtypes should be numpy builtin dtypes
         """
         self.name = name
         self._dtype = np.dtype(dtype)
-
         # verify that the dtype is builtin for sanity
         if not self._dtype.isbuiltin:
-            raise ValueError, 'Coordinate dtypes should be numpy builtin dtypes'
+            raise ValueError(
+                'Coordinate dtypes should be numpy builtin dtypes')
+
     def _getdtype(self):
         return np.dtype([(self.name, self._dtype)])
     def _setdtype(self, dtype):
-        self._dtype = dtype
-    dtype = property(_getdtype, _setdtype, doc='Named dtype of a Coordinate.')
+        raise AttributeError('you cannot set the dtype directly '
+                             '- use value_dtype instead')
+    dtype = property(_getdtype,
+                     _setdtype,
+                     doc='Named dtype of a Coordinate.')
 
-    def _getbuiltin(self):
+    def _getvalue_dtype(self):
         return self._dtype
-    builtin = property(_getbuiltin, doc='Numpy builtin dtype of a Coordinate.')
+    def _setvalue_dtype(self, dtype):
+        self._dtype = np.dtype(dtype)
+    value_dtype = property(_getvalue_dtype,
+                            _setvalue_dtype, 
+                           doc='dtype of the value in the Coordinate.')
 
-    def _getndim(self):
-        """ Number of dimensions 
-        
-        Returns
-        -------
-        ndims : int
-        """
-        return len(self.axes)
-    ndim = property(_getndim)
-    
     def __eq__(self, other):
         """ Equality is defined by dtype.
 
@@ -96,19 +117,19 @@ class CoordinateSystem(object):
         self.name = name
         if len(set([ax.name for ax in coordinates])) != len(coordinates):
             raise ValueError, 'coordinates must have distinct names'
-        dtype = safe_dtype(*tuple([ax.builtin for ax in coordinates]))
+        dtype = safe_dtype(*tuple([ax.value_dtype for ax in coordinates]))
         values = []
         for ax in coordinates:
             ax = copy.copy(ax)
-            ax.dtype = dtype
+            ax.value_dtype = dtype
             values.append(ax)
         self.coordinates = tuple(values)
 
     def _getdtype(self):
-        return np.dtype([(ax.name, ax.builtin) for ax in self.axes])
+        return np.dtype([(ax.name, ax.value_dtype) for ax in self.axes])
     dtype = property(_getdtype)
 
-    def _getbuiltin(self):
+    def _getvalue_dtype(self):
         d = self.dtype.descr
         different = filter(lambda x: x[1] != d[0][1], d)
         if not different:
@@ -118,7 +139,7 @@ class CoordinateSystem(object):
             else:
                 raise ValueError(
                     'could not work out a builtin dtype for this coordinate system')
-    builtin = property(_getbuiltin)
+    value_dtype = property(_getvalue_dtype)
 
     def _getaxisnames(self):
         """ A list of the names of the coordinate system's axes. 
@@ -140,6 +161,16 @@ class CoordinateSystem(object):
         return self.coordinates
     axes = property(_getaxes)
 
+    def _getndim(self):
+        """ Number of dimensions 
+        
+        Returns
+        -------
+        ndims : int
+        """
+        return len(self.axes)
+    ndim = property(_getndim)
+    
     def __getitem__(self, axisname):
         """
         Return an axis indexed by name
@@ -240,10 +271,10 @@ class CoordinateSystem(object):
         """
         x = np.asarray(x)
 
-        if dtype not in [self.dtype, self.builtin]:
-            raise ValueError, 'only safe to cast to either %s or %s' % (`self.dtype`, `self.builtin`)
-        if x.dtype not in [self.dtype, self.builtin]:
-            raise ValueError, 'only safe to cast from either %s or %s' % (`self.dtype`, `self.builtin`)
+        if dtype not in [self.dtype, self.value_dtype]:
+            raise ValueError, 'only safe to cast to either %s or %s' % (`self.dtype`, `self.value_dtype`)
+        if x.dtype not in [self.dtype, self.value_dtype]:
+            raise ValueError, 'only safe to cast from either %s or %s' % (`self.dtype`, `self.value_dtype`)
 
         if dtype == self.dtype:
             if x.dtype == self.dtype: # do nothing
@@ -251,7 +282,7 @@ class CoordinateSystem(object):
             
             # this presumes
             # we are given an ndarray
-            # with dtype = self.builtin
+            # with dtype = self.value_dtype
             # so we typecast, to be safe we make a copy!
 
             x = np.asarray(x)
@@ -263,14 +294,14 @@ class CoordinateSystem(object):
             if x.shape[-1] != len(self.dtype.names):
                 warnings.warn("dangerous typecast, shape is unexpected: %d, %d" % (x.shape[-1], len(self.dtype.names)))
 
-            x = np.asarray(x, dtype=self.builtin).ravel()
+            x = np.asarray(x, dtype=self.value_dtype).ravel()
             y = x.view(self.dtype)
             y.shape = shape[:-1]
             return y
         else:
-            if x.dtype == self.builtin: # do nothing
+            if x.dtype == self.value_dtype: # do nothing
                 return x
-            y = x.ravel().view(self.builtin)
+            y = x.ravel().view(self.value_dtype)
             y.shape = x.shape + (y.shape[0] / np.product(x.shape),)
             return y
 

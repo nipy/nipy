@@ -36,14 +36,20 @@ class MatrixGroup(Linear):
     def __init__(self, matrix, coords, dtype=None):
         dtype = dtype or self.dtype
         if not isinstance(coords, CoordinateSystem):
-            coords = CoordinateSystem('space', [Coordinate(cname, dtype=dtype) for cname in coords])
+            coords = CoordinateSystem('space',
+                                      [Coordinate(cname, dtype=dtype)
+                                       for cname in coords])
         else:
-            coords = CoordinateSystem('space', [Coordinate(cname, dtype=dtype) for cname in coords.axisnames])
+            coords = CoordinateSystem('space',
+                                      [Coordinate(cname, dtype=dtype)
+                                       for cname in coords.axisnames])
         Linear.__init__(self, matrix.astype(dtype), coords, coords)
         if not self.validate():
-            raise ValueError('this matrix is not an element of %s' % `self.__class__`)
-        if not self.coords.builtin == self.dtype:
-            raise ValueError('the input coordinates builtin dtype should agree with self.dtype')
+            raise ValueError('this matrix is not an element of %s'
+                             % `self.__class__`)
+        if not self.coords.value_dtype == self.dtype:
+            raise ValueError('the input coordinates value_dtype '
+                             'should agree with self.dtype')
 
     def validate(self, M=None):
         """
