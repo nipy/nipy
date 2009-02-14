@@ -133,9 +133,6 @@ Refactorings
 * Rewrite weave code in algorithms/statistics/intrinsic_volumes.py as
   C extension.
 
-* Determine need for odict.py.  Verify origin and license if we
-  determine we need it.
-
 * Cleanup neuroimaging.testing directory.  Possibly rename 'testing'
   to 'tests'.  Move utils.tests.data.__init__.py to tests and update
   import statements in all test modules.
