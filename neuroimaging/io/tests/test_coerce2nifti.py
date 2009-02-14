@@ -1,7 +1,7 @@
 import numpy as np
 from neuroimaging.core import api
-from neuroimaging.core.image.image import coerce2nifti
-from neuroimaging.core.reference.nifti import coerce_coordmap
+from neuroimaging.io.files import coerce2nifti
+from neuroimaging.io.nifti_ref import coerce_coordmap
 from neuroimaging.core.reference.coordinate_map import reorder_input, reorder_output
 
 def setup_cmap():
@@ -16,8 +16,8 @@ def test_coerce():
     shape, cmap = setup_cmap()
     img = api.Image(np.zeros(shape), cmap)
     newimg = coerce2nifti(img)
-    assert newimg.coordmap.input_coords.axisnames == img.coordmap.input_coords.axisnames 
-    assert newimg.coordmap.output_coords.axisnames == img.coordmap.output_coords.axisnames
+    assert newimg.coordmap.input_coords.coordinates == img.coordmap.input_coords.coordinates 
+    assert newimg.coordmap.output_coords.coordinates == img.coordmap.output_coords.coordinates
     assert newimg.shape == shape
     assert np.allclose(newimg.affine, img.affine)
     assert np.asarray(newimg).shape == shape
@@ -33,8 +33,8 @@ def test_coerce2():
     cmap = reorder_input(cmap, lorder)
     img = api.Image(np.zeros(tuple([shape[i] for i in lorder])), cmap)
     newimg = coerce2nifti(img)
-    assert img.coordmap.input_coords.axisnames == [newimg.coordmap.input_coords.axisnames[i] for i in lorder]
-    assert newimg.coordmap.output_coords.axisnames == img.coordmap.output_coords.axisnames
+    assert img.coordmap.input_coords.coordinates == [newimg.coordmap.input_coords.coordinates[i] for i in lorder]
+    assert newimg.coordmap.output_coords.coordinates == img.coordmap.output_coords.coordinates
     assert shape == newimg.shape
     assert np.asarray(newimg).shape == shape
 
@@ -50,8 +50,8 @@ def test_coerce3():
     cmap = reorder_output(cmap, lorder)
     img = api.Image(np.zeros(shape), cmap)
     newimg = coerce2nifti(img)
-    assert img.coordmap.output_coords.axisnames == [newimg.coordmap.output_coords.axisnames[i] for i in lorder]
-    assert newimg.coordmap.input_coords.axisnames == img.coordmap.input_coords.axisnames
+    assert img.coordmap.output_coords.coordinates == [newimg.coordmap.output_coords.coordinates[i] for i in lorder]
+    assert newimg.coordmap.input_coords.coordinates == img.coordmap.input_coords.coordinates
     assert shape == newimg.shape
     assert np.asarray(newimg).shape == shape
 

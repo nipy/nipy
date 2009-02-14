@@ -3,10 +3,10 @@ from neuroimaging.testing import *
 
 import nose.tools
 
-from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, compose, CoordinateSystem, Coordinate
+from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, compose, CoordinateSystem
 from neuroimaging.core.reference.coordinate_map import matvec_from_transform, transform_from_matvec
 from neuroimaging.testing import anatfile, funcfile
-from neuroimaging.core.api import load_image
+from neuroimaging.io.api import load_image
 
 def test_identity():
     i = Affine.identity(['zspace', 'yspace', 'xshape'])
@@ -37,7 +37,7 @@ def setup():
         return 2*x
     def g(x):
         return x/2.0
-    x = CoordinateSystem('x', [Coordinate('x')])
+    x = CoordinateSystem('x', 'x')
     E.a = CoordinateMap(f, x, x)
     E.b = CoordinateMap(f, x, x, inverse=g)
     E.c = CoordinateMap(g, x, x)        

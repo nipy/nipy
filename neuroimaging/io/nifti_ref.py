@@ -36,7 +36,7 @@ FORTRAN indexing (confirm this). For example: suppose we want the
 x=20-th, y=10-th pixel of the third slice of an image with 30 64x64 slices. This
 
 >>> from neuroimaging.testing import anatfile
->>> from neuroimaging.core.api import load_image
+>>> from neuroimaging.io.api import load_image
 >>> nifti_ijk = [19,9,2]
 >>> fortran_ijk = [20,10,3]
 >>> c_kji = [2,9,19]
@@ -56,8 +56,8 @@ from string import join
 
 import numpy as np
 
-from coordinate_system import CoordinateSystem, Coordinate
-from coordinate_map import CoordinateMap, reorder_input, reorder_output, Affine
+from neuroimaging.core.api import CoordinateSystem, CoordinateMap, Affine
+from neuroimaging.core.reference.coordinate_map import reorder_input, reorder_output
 
 valid_input_axisnames = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
 valid_output_axisnames = list('xyztuvw')
@@ -110,14 +110,14 @@ def coerce_coordmap(coordmap):
         raise ValueError, 'affine must be square to save as a NIFTI file'
 
     ndim = affine.shape[0] - 1
-    inaxes = coordmap.input_coords.axisnames
+    innames = coordmap.input_coords.coordinates
     vinput = valid_input_axisnames[:ndim]
-    if set(vinput) != set(inaxes):
+    if set(vinput) != set(innames):
         raise ValueError, 'input coordinate axisnames of a %d-dimensional Image must come from %s' % (ndim, `vinput`)
 
     voutput = valid_output_axisnames[:ndim]
-    outaxes = coordmap.output_coords.axisnames
-    if set(voutput) != set(outaxes):
+    outnames = coordmap.output_coords.coordinates
+    if set(voutput) != set(outnames):
         raise ValueError, 'output coordinate axisnames of a %d-dimensional Image must come from %s' % (ndim, `voutput`)
 
     # if the input coordinates do not have the proper order,
@@ -130,12 +130,12 @@ def coerce_coordmap(coordmap):
     # the phase, freq, slice values all have to be less than 3
 
     reinput = False
-    if inaxes != vinput:
+    if innames != vinput:
         ndimm = min(ndim, 3)
-        if set(inaxes[:ndimm]) != set(vinput[:ndimm]):
+        if set(innames[:ndimm]) != set(vinput[:ndimm]):
             warnings.warn('an Image with this coordmap has to be transposed to be saved because the first %d input axes are not from %s' % (ndimm, `set(vinput[:ndimm])`))
             reinput = True
-        if inaxes[ndimm:] != vinput[ndimm:]:
+        if innames[ndimm:] != vinput[ndimm:]:
             warnings.warn('an Image with this coordmap has to be transposed because the last %d axes are not in the NIFTI order' % (ndim-3,))
             reinput = True
 
@@ -144,7 +144,7 @@ def coerce_coordmap(coordmap):
     # the affine matrix
 
     reoutput = False
-    if outaxes != voutput:
+    if outnames != voutput:
         warnings.warn('The order of the output coordinates is not the NIFTI order, this will change the affine transformation by reordering the output coordinates.')
         reoutput = True
 
@@ -152,14 +152,14 @@ def coerce_coordmap(coordmap):
 
     inperm = np.identity(ndim+1)
     if reinput:
-        inperm[:ndim,:ndim] = np.array([[int(vinput[i] == inaxes[j]) 
+        inperm[:ndim,:ndim] = np.array([[int(vinput[i] == innames[j]) 
                                       for j in range(ndim)] 
                                      for i in range(ndim)])
     intrans = tuple(np.dot(inperm, range(ndim+1)).astype(np.int))[:-1]
 
     outperm = np.identity(ndim+1)
     if reoutput:
-        outperm[:ndim,:ndim] = np.array([[int(voutput[i] == outaxes[j]) 
+        outperm[:ndim,:ndim] = np.array([[int(voutput[i] == outnames[j]) 
                                        for j in range(ndim)] 
                                       for i in range(ndim)])
     outtrans = tuple(np.dot(outperm, range(ndim+1)).astype(np.int))[:-1]
@@ -186,11 +186,11 @@ def coerce_coordmap(coordmap):
     else:
         outname = coordmap.output_coords.name
 
-    axes = coordmap.input_coords.axes
-    newincoords = CoordinateSystem(inname, [axes[i] for i in intrans])
+    coords = coordmap.input_coords.coordinates
+    newincoords = CoordinateSystem([coords[i] for i in intrans], inname)
 
-    axes = coordmap.output_coords.axes
-    newoutcoords = CoordinateSystem(outname, [axes[i] for i in outtrans])
+    coords = coordmap.output_coords.coordinates
+    newoutcoords = CoordinateSystem([coords[i] for i in outtrans], outname)
 
     return Affine(A, newincoords, newoutcoords), intrans
 
@@ -233,15 +233,7 @@ def get_pixdim(coordmap, full_length=False):
     newcmap, _ = coerce_coordmap(coordmap)
     pixdim = np.zeros(ndim)
 
-    #FIXME: here is what needs to be fixed
-
-    for i, l in enumerate('xyztuvw'[:ndim]):
-        ll = coordmap.output_coords[l]
-        if hasattr(ll, 'step'):
-            pixdim[i] = ll.step
-
-    if not np.alltrue(np.greater_equal(pixdim, 0)):
-        warnings.warn("NIFTI expectes non-negative pixdims, taking absolute value")
+    #FIXME: here is what needs to be fixed, should use the shears, etc. to get pixdim
 
     A = newcmap.affine
     opixdim = np.diag(A)[3:-1]
@@ -277,7 +269,7 @@ def get_diminfo(coordmap):
 
     newcoordmap, _ = coerce_coordmap(coordmap)
 
-    ii, jj, kk = [newcoordmap.input_coords.axisnames.index(l) for l in 'ijk']
+    ii, jj, kk = [newcoordmap.input_coords.index(l) for l in 'ijk']
     return _diminfo_from_fps(ii, jj, kk)
 
 def standard_order(coordmap):
@@ -293,13 +285,13 @@ def standard_order(coordmap):
 
     >>> cmap = Affine.from_params('ikjl', 'xyzt', np.identity(5))
     >>> sorder, scmap = standard_order(cmap)
-    >>> print cmap.input_coords.axisnames
+    >>> print cmap.input_coords.coordinates
     ['i', 'k', 'j', 'l']
-    >>> print scmap.input_coords.axisnames
+    >>> print scmap.input_coords.coordinates
     ['i', 'j', 'k', 'l']
-    >>> print scmap.output_coords.axisnames
+    >>> print scmap.output_coords.coordinates
     ['x', 'y', 'z', 't']
-    >>> print cmap.output_coords.axisnames
+    >>> print cmap.output_coords.coordinates
     ['x', 'y', 'z', 't']
 
     """
@@ -366,7 +358,7 @@ def get_slice_axis(coordmap):
     axis: which axis of the array corresponds to 'slice'
     """
     if iscoerceable(coordmap):
-        return coordmap.input_coords.axisnames.index('k')
+        return coordmap.input_coords.index('k')
 
 def get_time_axis(coordmap):
     """
@@ -382,7 +374,7 @@ def get_time_axis(coordmap):
 
     """
     if iscoerceable(coordmap):
-        return coordmap.input_coords.axisnames.index('l')
+        return coordmap.input_coords.index('l')
 
 def get_freq_axis(coordmap):
     """
@@ -404,7 +396,7 @@ def get_freq_axis(coordmap):
     'frequency' if it is defined in the diminfo byte of a NIFTI header.
     """
     if iscoerceable(coordmap):
-        return coordmap.input_coords.axisnames.index('j')
+        return coordmap.input_coords.index('j')
 
 def get_phase_axis(coordmap):
     """
@@ -426,7 +418,7 @@ def get_phase_axis(coordmap):
     'phase' if it is defined in the diminfo byte of a NIFTI header.
     """
     if iscoerceable(coordmap):
-        return coordmap.input_coords.axisnames.index('i')
+        return coordmap.input_coords.index('i')
 
 
 def _fps_from_diminfo(diminfo):
@@ -528,12 +520,10 @@ def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
     ndim = len(shape)
     ijk = ijk_from_diminfo(diminfo)
     innames = ijk + valid_input_axisnames[3:ndim]
-    inaxes = [Coordinate(n) for n in innames]
-    incoords = CoordinateSystem('input', inaxes)
+    incoords = CoordinateSystem(innames, 'input')
 
     outnames = valid_output_axisnames[:ndim]
-    outaxes = [Coordinate(n) for n in outnames]
-    outcoords = CoordinateSystem('output', outaxes)
+    outcoords = CoordinateSystem(outnames, 'output')
             
     coordmap = Affine(affine, incoords, outcoords)
     return reorder_input(reorder_output(coordmap))

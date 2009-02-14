@@ -1,16 +1,16 @@
 import numpy as np
 
 import nose.tools
-from neuroimaging.core.api import CoordinateSystem, Coordinate
+from neuroimaging.core.api import CoordinateSystem
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine
 from neuroimaging.core.reference.coordinate_map import reorder_input, reorder_output
 
 def setup_cmap():
     step = [1,2,3]
-    output_axes = [Coordinate(s) for i, s in enumerate('xyz')]
-    input_axes = [Coordinate(s) for i, s in enumerate('ijk')]
-    input_coords = CoordinateSystem('input', input_axes)
-    output_coords = CoordinateSystem('output', output_axes)
+    output_axes = 'xyz'
+    input_axes = 'ijk'
+    input_coords = CoordinateSystem(input_axes, 'input')
+    output_coords = CoordinateSystem(output_axes, 'output')
     cmap = Affine(np.diag([1,2,3,1]), input_coords, output_coords)
     return cmap
 
