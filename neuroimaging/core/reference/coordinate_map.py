@@ -85,11 +85,11 @@ class CoordinateMap(object):
 
         Also
         """
-        input = np.zeros((10, self.ndim[0]), dtype=self.input_coords.builtin)
+        input = np.zeros((10, self.ndim[0]), dtype=self.input_coords.value_dtype)
         output = self.mapping(input)
-        if output.dtype != self.output_coords.builtin and check_outdtype:
-            warnings.warn('output.dtype != self.output_coords.builtin')
-        output = output.astype(self.output_coords.builtin)
+        if output.dtype != self.output_coords.value_dtype and check_outdtype:
+            warnings.warn('output.dtype != self.output_coords.value_dtype')
+        output = output.astype(self.output_coords.value_dtype)
         if output.shape != (10, self.ndim[1]):
             raise ValueError('input and output dimensions of mapping do not agree with specified CoordinateSystems')
 
@@ -146,7 +146,7 @@ class Affine(CoordinateMap):
 
         """
 
-        dtype = safe_dtype(affine.dtype, input_coords.builtin, output_coords.builtin)
+        dtype = safe_dtype(affine.dtype, input_coords.value_dtype, output_coords.value_dtype)
 
         inaxes = copy.copy(input_coords.coordinates)
         outaxes = copy.copy(output_coords.coordinates)
@@ -368,14 +368,14 @@ def reorder_input(coordmap, order=None):
         order = [coordmap.input_coords.coordinates.index(s) for s in order]
 
     newaxes = [coordmap.input_coords.coordinates[i] for i in order]
-    newincoords = CoordinateSystem(newaxes, coordmap.input_coords.name + '-reordered', dtype=coordmap.input_coords.builtin)
+    newincoords = CoordinateSystem(newaxes, coordmap.input_coords.name + '-reordered', dtype=coordmap.input_coords.value_dtype)
     perm = np.zeros((ndim+1,)*2)
     perm[-1,-1] = 1.
 
     for i, j in enumerate(order):
         perm[j,i] = 1.
 
-    perm = perm.astype(coordmap.input_coords.builtin)
+    perm = perm.astype(coordmap.input_coords.value_dtype)
     A = Affine(perm, newincoords, coordmap.input_coords)
     return compose(coordmap, A)
 
@@ -423,7 +423,7 @@ def reorder_output(coordmap, order=None):
         order = [coordmap.output_coords.coordinates.index(s) for s in order]
 
     newaxes = [coordmap.output_coords.coordinates[i] for i in order]
-    newoutcoords = CoordinateSystem(newaxes, coordmap.output_coords.name + '-reordered', coordmap.output_coords.builtin)
+    newoutcoords = CoordinateSystem(newaxes, coordmap.output_coords.name + '-reordered', coordmap.output_coords.value_dtype)
     
     perm = np.zeros((ndim+1,)*2)
     perm[-1,-1] = 1.
@@ -431,7 +431,7 @@ def reorder_output(coordmap, order=None):
     for i, j in enumerate(order):
         perm[j,i] = 1.
 
-    perm = perm.astype(coordmap.output_coords.builtin)
+    perm = perm.astype(coordmap.output_coords.value_dtype)
     A = Affine(perm, coordmap.output_coords, newoutcoords)
     return compose(A, coordmap)
 
@@ -487,7 +487,7 @@ def product(*cmaps):
 
     if not notaffine:
 
-        affine = linearize(mapping, ndimin[-1], step=np.array(1, incoords.builtin))
+        affine = linearize(mapping, ndimin[-1], step=np.array(1, incoords.value_dtype))
         return Affine(affine, incoords, outcoords)
     return CoordinateMap(mapping, incoords, outcoords)
 
@@ -541,7 +541,7 @@ def compose(*cmaps):
     notaffine = filter(lambda cmap: not isinstance(cmap, Affine), cmaps)
 
     if not notaffine:
-        affine = linearize(cmap, cmap.ndim[0], step=np.array(1, cmaps[0].output_coords.builtin))
+        affine = linearize(cmap, cmap.ndim[0], step=np.array(1, cmaps[0].output_coords.value_dtype))
         return Affine(affine, cmap.input_coords,
                       cmap.output_coords)
     return cmap

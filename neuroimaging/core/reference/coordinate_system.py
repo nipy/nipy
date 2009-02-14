@@ -21,14 +21,14 @@ class CoordinateSystem(object):
         """
         Create a coordinate system with a given name and coordinate names.
         There are also two dtypes associated to the CoordinateSystem:
-        one, self.builtin, which should be a numpy scalar dtype. The other,
+        one, self.value_dtype, which should be a numpy scalar dtype. The other,
         self.dtype, which is basically a description of the CoordinateSystem.
 
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
         {'dtype': dtype('float64'), 'name': 'input', 'coordinates': ['i', 'j']}
 
-        >>> c.builtin
+        >>> c.value_dtype
         dtype('float64')
         >>> c.dtype
         dtype([('i', '<f8'), ('j', '<f8')])
@@ -40,13 +40,13 @@ class CoordinateSystem(object):
             name : ``string``
                 The name of the coordinate system (optional)
             dtype : ``np.dtype``
-                The dtype of the coordinates, should be a builtin scalar dtype.
+                The dtype of the coordinates, should be a value_dtype scalar dtype.
         """
         self.name = name
         if len(set(coordinates)) != len(coordinates):
             raise ValueError, 'coordinates must have distinct names'
 
-        # verify that the dtype is builtin for sanity
+        # verify that the dtype is value_dtype for sanity
         sctypes = (np.sctypes['int'] + np.sctypes['float'] + 
                    np.sctypes['complex'] + np.sctypes['uint'])
         dtype = np.dtype(dtype)
@@ -59,9 +59,9 @@ class CoordinateSystem(object):
         return np.dtype([(name, self._dtype) for name in self.coordinates])
     dtype = property(_getdtype, doc='dtype of CoordinateSystem with named fields')
 
-    def _getbuiltin(self):
+    def _getvalue_dtype(self):
         return self._dtype
-    builtin = property(_getbuiltin, doc='builtin scalar dtype of CoordinateSystem')
+    value_dtype = property(_getvalue_dtype, doc='value_dtype scalar dtype of CoordinateSystem')
 
     def index(self, name):
         """
@@ -97,7 +97,7 @@ class CoordinateSystem(object):
             name = self.name + '-renamed'
         else:
             name = ''
-        return CoordinateSystem(coords, name, self.builtin)
+        return CoordinateSystem(coords, name, self.value_dtype)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -120,7 +120,7 @@ class CoordinateSystem(object):
 
         :Returns: ``string``
         """
-        _dict = {'name': self.name, 'coordinates':self.coordinates, 'dtype':self.builtin}
+        _dict = {'name': self.name, 'coordinates':self.coordinates, 'dtype':self.value_dtype}
         return `_dict`
    
     def _getndim(self):
@@ -134,17 +134,17 @@ class CoordinateSystem(object):
     def typecast(self, x, dtype=None):
         """
         Try to safely typecast x into
-        an ndarray with a numpy builtin dtype
+        an ndarray with a numpy value_dtype dtype
         with the correct shape, or
         typecast it as an ndarray with self.dtype.
 
         """
         x = np.asarray(x)
 
-        if dtype not in [self.dtype, self.builtin]:
-            raise ValueError, 'only safe to cast to either %s or %s' % (`self.dtype`, `self.builtin`)
-        if x.dtype not in [self.dtype, self.builtin]:
-            raise ValueError, 'only safe to cast from either %s or %s' % (`self.dtype`, `self.builtin`)
+        if dtype not in [self.dtype, self.value_dtype]:
+            raise ValueError, 'only safe to cast to either %s or %s' % (`self.dtype`, `self.value_dtype`)
+        if x.dtype not in [self.dtype, self.value_dtype]:
+            raise ValueError, 'only safe to cast from either %s or %s' % (`self.dtype`, `self.value_dtype`)
 
         if dtype == self.dtype:
             if x.dtype == self.dtype: # do nothing
@@ -152,7 +152,7 @@ class CoordinateSystem(object):
             
             # this presumes
             # we are given an ndarray
-            # with dtype = self.builtin
+            # with dtype = self.value_dtype
             # so we typecast, to be safe we make a copy!
 
             x = np.asarray(x)
@@ -164,14 +164,14 @@ class CoordinateSystem(object):
             if x.shape[-1] != len(self.dtype.names):
                 warnings.warn("dangerous typecast, shape is unexpected: %d, %d" % (x.shape[-1], len(self.dtype.names)))
 
-            x = np.asarray(x, dtype=self.builtin).ravel()
+            x = np.asarray(x, dtype=self.value_dtype).ravel()
             y = x.view(self.dtype)
             y.shape = shape[:-1]
             return y
         else:
-            if x.dtype == self.builtin: # do nothing
+            if x.dtype == self.value_dtype: # do nothing
                 return x
-            y = x.ravel().view(self.builtin)
+            y = x.ravel().view(self.value_dtype)
             y.shape = x.shape + (y.shape[0] / np.product(x.shape),)
             return y
 
@@ -198,7 +198,7 @@ class CoordinateSystem(object):
             order = range(len(self.coordinates))[::-1]
         if name is None:
             name = self.name
-        return CoordinateSystem(_reorder(self.coordinates, order), name, self.builtin)
+        return CoordinateSystem(_reorder(self.coordinates, order), name, self.value_dtype)
 
 def _reorder(seq, order):
     """ Reorder a sequence. """
@@ -211,7 +211,7 @@ def safe_dtype(*dtypes):
 
     >>> c1 = CoordinateSystem('ij', 'input', dtype=np.float32)
     >>> c2 = CoordinateSystem('kl', 'input', dtype=np.complex)
-    >>> safe_dtype(c1.builtin, c2.builtin)
+    >>> safe_dtype(c1.value_dtype, c2.value_dtype)
     dtype('complex128')
     >>>                           
 
@@ -227,13 +227,13 @@ def safe_dtype(*dtypes):
     arrays = [np.zeros(2, dtype) for dtype in dtypes]
     notbuiltin = filter(lambda x: not x.dtype.isbuiltin, arrays)
     if notbuiltin:
-        raise ValueError('dtypes must be builtin')
+        raise ValueError('dtypes must be value_dtype')
     return np.array(arrays).dtype
 
 def product(*coord_systems):
     """
     Create the product of a sequence of CoordinateSystems.
-    The builtin dtype of the result will be determined by safe_dtype.
+    The value_dtype dtype of the result will be determined by safe_dtype.
 
     >>> c1 = CoordinateSystem('ij', 'input', dtype=np.float32)
     >>> c2 = CoordinateSystem('kl', 'input', dtype=np.complex)
@@ -264,5 +264,5 @@ def product(*coord_systems):
     coords = []
     for c in coord_systems:
         coords += c.coordinates
-    dtype = safe_dtype(*[c.builtin for c in coord_systems])
+    dtype = safe_dtype(*[c.value_dtype for c in coord_systems])
     return CoordinateSystem(coords, 'product', dtype=dtype)
