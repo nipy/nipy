@@ -6,12 +6,15 @@ In this tutorial we will discuss NiPy's model and specification
 of a fMRI experiment.
 
 This involves:
-* experimental model: a description of the experimental protocol (function of
-  experimental time)
-* neuronal model: a model of how a particular neuron responds to the
+
+* an experimental model: a description of the experimental protocol
+  (function of experimental time)
+
+* a neuronal model: a model of how a particular neuron responds to the
   experimental protocol (function of the experimental model)
-* hemodynamic model: a model of the BOLD signal at a particular voxel, 
-(function of the neuronal model)
+
+* a hemodynamic model: a model of the BOLD signal at a particular
+voxel, (function of the neuronal model)
 
 
 Experimental model
@@ -44,8 +47,8 @@ and infinite height.
 .. plot:: users/plots/event.py
 
 
-In this example, there *Face* event types are presented at times [0,2,4,6,8]
-and *Object* event types at times [1,3,5,7,9].
+In this example, there *Face* event types are presented at times [0,4,8,12,16]
+and *Object* event types at times [2,6,10,14,18].
 
 More generally, given a set of event types *V*, an event type experiment
 can be modelled as a sum of delta functions (point masses) at pairs of times and event types:
@@ -61,10 +64,10 @@ we can think of the experiment as a measure :math:`E` on :math:`\mathbb{R} \time
 
 .. math::
 
-   E([t_1,t_2] \times A) = \int_{t_1}^{t_2} \int_A dE(t,v)
+   E([t_1,t_2] \times A) = \int_{t_1}^{t_2} \int_A dE(v,t)
 
 This intensity measure determines, in words, "the amount of stimulus
-within *A* delivered in the interval :math:`[t_1,t_2]`. In this categorical
+within *A* delivered in the interval :math:`[t_1,t_2]`". In this categorical
 design, stimuli :math:`a_j` are delivered as point masses at the times 
 :math:`t_j`.
 
@@ -79,7 +82,7 @@ this as
 .. math::
    
    E = \delta_{(t_1,a)} + \delta_{(t_2,b)} + \delta_{(t_3,a)} + \dots +
-   \delta_{t_{10},b}
+   \delta_{(t_{10},b)}
 
 This type of experiment can be represented by two counting processes, i.e. measures on :math:`mathbb{R}`,
 :math:`(E_a, E_b)` defined as
@@ -87,9 +90,9 @@ This type of experiment can be represented by two counting processes, i.e. measu
 .. math::
 
    \begin{aligned}
-   E_a(t) &= \sum_{t_j, \text{$j$ odd}} 1_{\{t_j \leq t\}} \\
+   E_a(t) &= \sum_{t_j, \text{$j$ odd}} 1_{(-\infty,t_j]}(t) \\
           &= E((-\infty,t], \{a\}) \\
-   E_b(t) &= \sum_{t_j, \text{$j$ even}} 1_{\{t_j \leq t\}} 
+   E_b(t) &= \sum_{t_j, \text{$j$ even}} 1_{(-\infty,t_j]}(t) \\
           &= E((-\infty,t], \{b\}) \\
    \end{aligned}
 
@@ -126,6 +129,7 @@ graphically as follows,
 .. plot:: users/plots/block.py
 
 and the intensity measure for the experiment could be expressed in terms of
+
 .. math::
 
    \begin{aligned}
@@ -147,7 +151,15 @@ Some experiments do not fit well into this "event-type" paradigm but are,
 rather, more continuous in nature. For instance,  a rotating checkerboard,
 for which orientation, contrast, are functions of experiment time *t*.
 This experiment can be represented in terms of a state vector :math:`(O(t),
-C(t))`.
+C(t))`. In this example we have set
+
+.. testcode::
+
+   import numpy as np
+
+   t = np.linspace(0,10,1000)
+   o = np.sin(2*np.pi*(t+1)) * np.exp(-t/10)
+   c = np.sin(2*np.pi*(t+0.2)/4) * np.exp(-t/12)
 
 .. plot:: users/plots/sinusoidal.py
 
@@ -218,8 +230,9 @@ intensity to be
 .. plot :: users/plots/random_amplitudes_times.py
 
 
-Neuronal model
-==============
+================
+ Neuronal model
+================
 
 The neuronal model is a model of the activity as a function of *t* at
 a neuron *x* given the experimental model :math:`E`.  It is most
@@ -232,7 +245,7 @@ Typically, the neuronal model with an experiment model :math:`E` has the form
 
 .. math::
 
-   N([t_1,t_2]) = \int_{t_1}^{t_2}\int_V f(t,v) \; dE(t,v)
+   N([t_1,t_2]) = \int_{t_1}^{t_2}\int_V f(v,t) \; dE(v,t)
 
 Unlike the experimental model, which can look somewhat abstract, the
 neuronal model can be directly modelled.  For example, take the
@@ -251,12 +264,11 @@ Thus, the cumulative neuronal model can be expressed as
 .. testcode::
 
    from sympy import Symbol, Heaviside
-   ta = [0,2,4,6,8]; tb = [1,3,5,7,9]
+   ta = [0,4,8,12,16]; tb = [2,6,10,14,18]
    ba = Symbol('ba'); bb = Symbol('bb')
    fa = sum([Heaviside(t-_t) for _t in ta]) * ba
    fb = sum([Heaviside(t-_t) for _t in tb]) * bb
    N = fa+fb
-   print N
 
 Or, graphically, if we set :math:`\beta_a=1` and :math:`\beta_b=-2`, as
 
@@ -267,7 +279,7 @@ In the block design, we might have the same form for the neuronal model (i.e. th
 .. testcode::
    
    from sympy import Symbol, Heaviside
-   ta = [0,2,4,6,8]; tb = [1,3,5,7,9]
+   ta = [0,4,8,12,16]; tb = [2,6,10,14,18]
    ba = Symbol('ba'); bb = Symbol('bb')
    fa = sum([Piecewise((0, (t<_t)), ((t-_t)/0.5, (t<_t+0.5)), (1, (t >= _t+0.5))) for _t in ta])*ba
    fb = sum([Piecewise((0, (t<_t)), ((t-_t)/0.5, (t<_t+0.5)), (1, (t >= _t+0.5))) for _t in tb])*bb
@@ -283,37 +295,40 @@ The function :math:`f` above can be expressed as
 
 .. math::
 
-   f(t,v) = \beta_a 1_{\{a\}}(v) + \beta_b 1_{\{b\}}(v) = \beta_a
-   f_a(t,v) + \beta_b f_b(t,v)
+   f(v,t) = \beta_a 1_{\{a\}}(v) + \beta_b 1_{\{b\}}(v) = \beta_a
+   f_a(v,t) + \beta_b f_b(v,t)
 
 Hence, our typical neuronal model can be expressed as a sum
 
 .. math::
 
    \begin{aligned}
-   N([t_1,t_2]) &= \sum_i \beta_i \int_{t_1}^{t_2} \int_V f_i(t,v) \; dE(t,v) \\
+   N([t_1,t_2]) &= \sum_i \beta_i \int_{t_1}^{t_2} \int_V f_i(v,t) \; dE(v,t) \\
    &= \sum_i \beta_i \tilde{N}_{f_i}([t_1,t_2])
    \end{aligned}
 
 for arbitrary functions :math:`\tilde{N}_{f_i}`.  Above,
-:\math:`\tilde{N}_{f_i}` represents the stimulus contributed to
+:math:`\tilde{N}_{f_i}` represents the stimulus contributed to
 :math:`N` from the function :math:`f_i`. In the *Face* vs. *Object*
 example :ref:`face-object`, these cumulative intensities are related
 to the more common of neuronal model of intensities in terms of delta
 functions
 
 .. math::
+
    \frac{\partial}{\partial t} \tilde{N}_{f_a}(t) = 
    \beta_a \sum_{t_i: \text{$i$ odd}} \delta_{t_i}(t)
 
 .. testcode::
 
    from sympy import Symbol, Heaviside
-   ta = [0,2,4,6,8]
+   ta = [0,4,8,12,16]
    t = Symbol('t')
    ba = Symbol('ba')
    fa = sum([Heaviside(t-_t) for _t in ta]) * ba
    print fa.diff(t)
+
+.. plot:: users/plots/hrf_delta.py
 
 
 Convolution
@@ -330,6 +345,7 @@ contrast, we might take
    \end{aligned}
 
 yielding a neuronal model
+
 .. math::
 
    N([t_1,t_2]) = \beta_{O} O(t) + \beta_{C} C(t)
@@ -364,27 +380,23 @@ yielding
    N^{\text{decay}}([t_1,t_2]) = (N * D)[t_1, t_2]
 
 
-Events with amplitudes
-======================
+========================
+ Events with amplitudes
+========================
 
-We described a model above :ref:`event-amplitude` with events
-that each have a continuous value :math:`a` attached to them. In terms
-of a neuronal model, it seems reasonable to suppose
-that the (cumulative) neuronal activity is related to some function
-:math:`h(a)`, perhaps expressed in a basis expansion, perhaps
-polynomial, as
-
-.. math::
-   h(a) = \sum_j \alpha_j a^j
-
-and a neuronal model
+We described a model above :ref:`event-amplitude` with events that
+each have a continuous value :math:`a` attached to them. In terms of a
+neuronal model, it seems reasonable to suppose that the (cumulative)
+neuronal activity is related to some function, perhaps expressed as a
+polynomial :math:`h(a)=\sum_j \beta_j a^j`
+yielding  a neuronal model
 
 .. math::
 
    N([t_1, t_2]) = \sum_j \beta_j \tilde{N}_{a^j}([t_1, t_2])
 
 Hemodynamic model
-+++++++++++++++++
+=================
 
 The hemodynamic model is a model for the BOLD signal, expressed
 as some function of the neuronal model. The most common
@@ -396,14 +408,14 @@ neuronal model with some hemodynamic response function, :math:`HRF`
    \begin{aligned}
    HRF((-\infty,t]) &= \int_{-\infty}^t h_{can}(s) \; ds \\
    H([t_1,t_2]) & = (N * HRF)[t_1,t_2]
+   \end{aligned}
 
 The canonical one is a difference of two Gamma densities
 
 .. plot:: users/plots/hrf.py
 
-=============
- Intensities
-=============
+Intensities
+===========
 
 Hemodynamic models are, as mentioned above, most commonly
 expressed in terms of instantaneous intensities rather
@@ -430,18 +442,29 @@ is a sum of delta functions
    n(t) = \beta_a \sum_{t_i: \text{$i$ odd}} \delta_{t_i}(t) + \beta_b
    \sum_{t_i: \text{$i$ even}} \delta_{t_i}(t)   
 
-PLOT THE DELTA FUNCTIONS WITH LITTLE SPIKES
-
-In this experiment we may want to allow
-different hemodynamic response functions within each group, say :math:`h_a` within group :math:`a` and :math:`h_b` within group :math:`b`. This yields
-a hemodynamic model
+In this experiment we may want to allow different hemodynamic response
+functions within each group, say :math:`h_a` within group :math:`a`
+and :math:`h_b` within group :math:`b`. This yields a hemodynamic
+model
 
 .. math::
 
   h(t) = \beta_a \sum_{t_i: \text{$i$ odd}} h_a(t-t_i) + \beta_b
   \sum_{t_i: \text{$i$ even}} h_b(t-t_i)
 
-PLOT WITH TWO DIFFERENT HRFS, PLOT THE MEAN
+.. testcode::
+
+   from neuroimaging.modalities.fmri import hrf
+   glover = hrf.glover_sympy
+   afni = hrf.afni_sympy
+
+   ta = [0,4,8,12,16]; tb = [2,6,10,14,18]
+   ba = 1; bb = -2
+   na = ba * sum([glover(hrf.t - t) for t in ta])
+   nb = bb * sum([afni(hrf.t - t) for t in tb])
+   n = na + nb
+
+.. plot:: users/plots/hrf_different.py
 
 Applying the simple model to the events with amplitude model and
 the canonical HRF yields
@@ -464,14 +487,19 @@ For example
 .. math::
 
    h(t) = \beta_{O,0} \tilde{n}_{f_O}(t) + \beta_{O,1}
-   \dot{\tilde{n}}_{f_O}(t) + \beta_{C,0} \tilde{n}_{f_C}(t) +
-   \beta_{C,1} \dot{\tilde{n}}_{f_C}(t)
+   \frac{\partial}{\partial t}\tilde{n}_{f_O}(t) + \beta_{C,0}
+   \tilde{n}_{f_C}(t) + \beta_{C,1} \frac{\partial}
+   {\partial t}\tilde{n}_{f_C}(t)
 
 where 
 
 .. math::
 
-   \tilde{n}_f(t) = \frac{\partial}{\partial t} \tilde{N}_f((-\infty,t])
+   \begin{aligned}
+   \tilde{n}_f(t) &= \frac{\partial}{\partial t} \tilde{N}_f((-\infty,t]) \\
+    &= \frac{\partial}{\partial t} \left(
+    \int_{-\infty}^t \int_V f(v,t) \; dE(v,t) \right)
+   \end{aligned}
 
 =============
 Design matrix
@@ -508,7 +536,7 @@ In order to fit the regression model, we must find the matrix
 
    X_{ij} = \frac{\partial}{\partial \beta_j} \left(\beta_1 \sum_{t_k:
   \text{$k$ odd}} h_{can}(s_i-t_k) + \beta_b \sum_{t_k: \text{$k$ even}}
-  h_{can}(s_i-t_k)
+  h_{can}(s_i-t_k) \right)
 
 PUT IN PLOTS OF COLUMNS OF DESIGN HERE
 

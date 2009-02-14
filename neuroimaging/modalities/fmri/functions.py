@@ -1,16 +1,7 @@
 """
 This module defines some convenience functions of time.
 
-Stimulus: a class to implement square-wave protocol based on
-          a pair of sequences [times,values]
-
-PeriodicStimulus: periodic Stimulus
-
 Events: subclass of Stimulus to which events can be appended
-
-DeltaFunction: an approximate delta function
-
-SplineConfound: generate natural cubic splines with given knots
 
 InterpolatedConfound: based on a sequence of [times, values], return
                       a linearly interpolated confound
@@ -29,265 +20,195 @@ from scipy.interpolate import interp1d
 # -Event inherits from Stimulus so most functionality is in Stimulus
 # -changes are just in specifying parameters of self.fn
 
-def window(f, r):
+from sympy import Symbol, Function, lambdify, DeferredVector, DiracDelta
+#from sympy.decorator import deprecated
+
+vector_t = DeferredVector('vt')
+t = Symbol('t')
+
+def generic_function(name, function):
     """
-    Decorator to window a function between r[0] and r[1] (inclusive)
+    Create a named, generic function of time
+    for functions that do not have efficient
+    sympy representations.
+
+    Inputs:
+    =======
+
+    name : str
+        name of function
+
+    function : callable
+        function of one variable
+
+    Outputs:
+    ========
+
+    f(t)
+
+    Examples:
+    =========
+
+    >>> from scipy.interpolate import interp1d
+    >>> s = interp1d([0,3,5.],[2,4,6.], kind='linear')
+    >>> g = generic_function('f', s)
+    >>> gv = vectorize_generic(g)
+    >>> print g
+    f(t)
+    >>> gv([0,3,5])
+    array([ 2.,  4.,  6.])
+    >>>                                 
+
     """
-    def h(f):
-        def g(x):
-            return np.greater_equal(x, r[0]) * np.less_equal(x, r[1]) * f(x)
-        g.window = r
-        return g
-    return h
+    new = Function(name, dummy=True)(t)
+    new._name = name
+    new._generic_callable = function
+    return new
 
-class Stimulus:
+def vectorize_generic(f):
     """
-    TODO
+    Take a sympy expression that contains the symbol 't'
+    and return a lambda with a vectorized time.
     """
+    return lambdify(vector_t, f.subs(t, vector_t), {f._name:f._generic_callable})        
 
-    def __init__(self, name='stimulus', times=None, values=None):
-        """
-        :Parameters:
-            `fn` : TODO
-                TODO
-            `times` : TODO
-                TODO
-            `values` : TODO
-                TODO
-        """
-        if times is None:
-            self.times = []
-        else:
-            self.times = times
-
-        if values is None:
-            self.values = []
-        else:
-            self.values = values
-
-        if self.times:
-            a = np.argsort(self.times)
-            self.values = self.values[a]
-            self.times = self.times[a]
-
-        self.fn = StepFunction(self.times, self.values, sorted=True)
-
-    def __call__(self, t):
-        """
-        Right continuous stimulus.
-        """
-        return self.fn(t)
-
-class PeriodicStimulus(Stimulus):
+def step_function(times, values, fill=0):
     """
-    TODO
-    """
+    Right-continuous step function such that
 
-    def __init__(self, n=1, start=0.0, duration=3.0, step=6.0, height=1.0,
-                 name='periodic stimulus'):
+    f(times[i]) = values[i]
 
-        """
-        :Parameters:
-            `n` : int
-                TODO
-            `start` : float
-                TODO
-            `duration` : float
-                TODO
-            `step` : float
-                TODO
-            `height` : float
-                TODO
-        """
-        self.n = n
-        self.start = start
-        self.duration = duration
-        self.step = step
-        self.height = height
+    if t < times[0]:
+        f(t) = fill
 
-        times = [start-1.0e-07]
-        values = [0.]
+    Inputs:
+    =======
 
-        for i in range(self.n):
-            times = times + [self.step*i + self.start,
-                             self.step*i + self.start + self.duration]
-            values = values + [self.height, 0.]
-        Stimulus.__init__(self, times=times, values=values, name=name)
+    times : ndarray
+        Increasing sequence of times
 
-class Events(Stimulus):
-    """
-    TODO
-    """
+    values : ndarray
+        Values at the specified times
 
-    def append(self, start, duration, height=1.0):
-        """
-        Append a square wave to an Event. No checking is made
-        to ensure that there is no overlap with previously defined
-        intervals -- the assumption is that this new interval
-        has empty intersection with all other previously defined intervals.
+    fill : float
+        Value on the interval (-np.inf, times[0])
         
-        :Parameters:
-            `start` : TODO
-                TODO
-            `duration` : TODO
-                TODO
-            `height` : float
-                TODO
-                
-        :Returns: ``None``
-        """
-        
-        if self.times is None:
-            self.times = []
-            self.values = []
-            self.fn = lambda x: 0.
+    Outputs:
+    ========
 
-        times = np.array(list(self.times) + [start, start + duration])
-        asort = np.argsort(times)
-        values = np.array(list(self.values) + [height, 0.])
+    f : sympy.Add
+        A sympy expression for a step function.
 
-        self.times = times[asort]
-        self.values = values[asort]
+    Examples:
+    =========
 
-        self.fn = StepFunction(self.times, self.values, sorted=True)
-
-class DeltaFunction:
+    >>> f = step_function([0,4,5],[1,-1,3])
+    >>> print f
+    -2*(4 <= t) + 4*(5 <= t) + (0 <= t)
+    >>>
 
     """
-    A square wave approximate delta function returning
-    1/dt in interval [start, start+dt).
+    times = np.asarray(times)
+    values = np.asarray(values)
+    d = values[1:] - values[:-1]
+    f = (t < times[0]) * fill + (t >= times[0]) * values[0]
+    for i in range(d.shape[0]):
+        f = f + (t >= times[i+1]) * d[i]
+    return f
+
+def events(generator):
     """
+    Return a sum of DiracDelta functions
+    based on a generator of times.
 
-    def __init__(self, start=0.0, dt=0.02):
-        """
-        :Parameters:
-            `start` : float
-                Beginning of delta function approximation.
-            `dt` : float
-                Width of delta function approximation.
-        """
-        self.start = start
-        self.dt = dt
+    Inputs:
+    =======
 
-    def __call__(self, time):
-        """
-        :Parameters:
-            `time` : TODO
-                TODO
-        
-        :Returns: TODO
-        """
-        return np.greater_equal(time, self.start) * \
-               np.less(time, self.start + self.dt) / self.dt
+    generator : [float]
 
-class SplineConfound:
+    Examples:
+    =========
+
+    >>> events([3,6,9])
+    DiracDelta(-9 + t) + DiracDelta(-6 + t) + DiracDelta(-3 + t)
 
     """
-    A natural spline confound with df degrees of freedom.
+    e = 0
+    for _t in generator:
+        e = e + DiracDelta(t-_t)
+    return e
+
+def events_and_amplitudes(generator):
     """
-    
-    def __init__(self, df=4, knots=None, window=[0,1]):
-        """
-        :Parameters:
-            `df` : int
-                TODO
-            `knots` : TODO
-                TODO
-        """
+    Return a sum of DiracDelta functions
+    based on a generator of times.
 
-        self.df = df
-        if knots is None:
-            self.knots = []
-        else:
-            self.knots = knots
-        tmax = window[1]
-        tmin = window[0]
-        trange = tmax - tmin
+    Inputs:
+    =======
 
-        self.fn = []
+    generator : [(float, float)]
 
-        def getpoly(j):
-            def _poly(time=None):
-                return time**j
-            return _poly
+    Examples:
+    =========
 
-        for i in range(min(self.df, 4)):
-            self.fn.append(getpoly(i))
+    >>> events_and_amplitudes(np.array([[2,3],[1,6],[-1,9]]))
+    -DiracDelta(-9 + t) + 2*DiracDelta(-3 + t) + DiracDelta(-6 + t)
 
-        # FIXME: This trange is calculated different than above!  Do
-        # this calculation correctly and do it once.
-        trange = window[0] - window[1]
-        tmin = window[0]
+    >>> from sympy import Symbol
+    >>> b = [Symbol('b%d' % i, dummy=True) for i in range(3)]
+    >>> a = Symbol('a')
+    >>> p = b[0] + b[1]*a + b[2]*a**2
+    >>> events_and_amplitudes(np.array([[p.subs(a,2),3],[p.subs(a,1),6],[p.subs(a,-1),9]]))
+    (2*_b1 + 4*_b2 + _b0)*DiracDelta(-3 + t) + (-_b1 + _b0 + _b2)*DiracDelta(-9 + t) + (_b0 + _b1 + _b2)*DiracDelta(-6 + t)
+    >>>                              
+    """
+    e = 0
+    for a, _t in generator:
+        e = e + a * DiracDelta(t-_t)
+    return e
+
+def linear_interp(times, values, fill=0):
+    """
+    Linear interpolation function such that
+
+    f(times[i]) = values[i]
+
+    if t < times[0]:
+        f(t) = fill
+
+    Inputs:
+    =======
+
+    times : ndarray
+        Increasing sequence of times
+
+    values : ndarray
+        Values at the specified times
+
+    fill : float
+        Value on the interval (-np.inf, times[0])
         
-        if self.df >= 4 and not self.knots:
-            self.knots = list(trange * np.arange(1, self.df - 2) / (self.df - 3.0) + tmin)
-        self.knots[-1] = np.inf 
+    Outputs:
+    ========
 
-        def _getspline(a, b):
-            def _spline(time):
-                return np.power(time - a, 3.0) * np.greater(time, a) 
-            return _spline
+    f : sympy.Add
+        A sympy expression for a linear interpolant.
 
-        for i in range(len(self.knots) - 1):
-            self.fn.append(_getspline(self.knots[i], self.knots[i+1]))
+    Examples:
+    =========
 
-        self.nout = self.df
+    >>> f = linear_interp([0,1,2],[0,2,0])
+    >>> f
+    (2 - 2*t)*(1 <= t)*(t <= 2) + 2*t*(0 <= t)*(t <= 1)
 
-    def __call__(self, t):
-        if type(self.fn) in [type([]), type(())]:
-            return np.asarray([f(t) for f in self.fn])
-        else:
-            return self.fn(t)
-
-class InterpolatedConfound:
-
-    def __init__(self, times=None, values=None, name='confound'):
-        """
-        :Parameters:
-        `times` : TODO
-        TODO
-        `values` : TODO
-        TODO
-        `name` : TODO
-        TODO
-
-        """
-        if times is None:
-            self.times = []
-        else:
-            self.times = times
-            
-        if values is None:
-            self.values = []
-        else:
-            self.values = values
-
-        if len(np.asarray(self.values).shape) == 1:
-            self.f = interp1d(self.times, self.values, bounds_error=0)
-        else:
-            self.f = []
-            values = np.asarray(self.values)
-            for i in range(values.shape[0]):
-                f = interp1d(self.times, self.values[i, :], bounds_error=0)
-                self.f.append(f)
-
-    def __call__(self, time):
-        """
-        :Parameters:
-        `time` : TODO
-        TODO
-        
-        :Returns: TODO
-        """
-        
-        if isinstance(self.f, (list, tuple)):
-            columns = []
-            for f in self.f:
-                columns.append(f(time))
-        else:
-            columns = self.f(time)
-            
-        return np.squeeze(np.asarray(columns))
-
-
+    """
+    a = np.asarray(values[:-1])
+    b = np.asarray(values[1:])
+    f = values[0]
+    for i in range(a.shape[0]):
+        g = ((t  - times[i]) * (t >= times[i]) * (t <= times[i+1]) /
+             (times[i+1] - times[i]) * (values[i+1] - values[i]))
+        g = g + (values[i+1] - values[i]) * (t > times[i+1])
+        f = f + g
+    return f
 

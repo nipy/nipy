@@ -11,46 +11,91 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 import numpy.linalg as L
+from sympy import Symbol, lambdify, DeferredVector, exp, Derivative
 
 from neuroimaging.modalities.fmri import filters
 from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
 
-def glover2GammaDENS(peak_hrf, fwhm_hrf):
+# Sympy symbols used below
+
+vector_t = DeferredVector('vt')
+t = Symbol('t')
+
+
+def gamma_params(peak_location, peak_fwhm):
     """
+    TODO: where does the coef come from again.... check fmristat code
+
+    From a peak location and peak fwhm,
+    determine the parameters of a Gamma density
+
+    f(x) = coef * x**(alpha-1) * exp(-x*beta)
+
+    The coefficient returned ensures that
+    the f has integral 1 over [0,np.inf]
+
     :Parameters:
-        `peak_hfr` : TODO
-            TODO
-        `fwhm_hrf` : TODO
-            TODO
-    
-    :Returns: TODO
+        peak_location : float
+            Location of the peak of the Gamma density
+        peak_fwhm : float
+            FWHM at the peak
+
+    :Returns: 
+        alpha : float
+            Shape parameter in the Gamma density
+        beta : float
+            Scale parameter in the Gamma density
+        coef : float
+            Coefficient needed to ensure the density has integral 1.
     """
-    alpha = np.power(peak_hrf / fwhm_hrf, 2) * 8 * np.log(2.0)
-    beta = np.power(fwhm_hrf, 2) / peak_hrf / 8 / np.log(2.0)
-    coef = peak_hrf**(-alpha) * np.exp(peak_hrf / beta)
-    return coef, filters.GammaDENS(alpha + 1., 1. / beta)
+    alpha = np.power(peak_location / peak_fwhm, 2) * 8 * np.log(2.0)
+    beta = np.power(peak_fwhm, 2) / peak_location / 8 / np.log(2.0)
+    coef = peak_location**(-alpha) * np.exp(peak_location / beta)
+    return coef * ((t > 0) * t)**(alpha-1) * exp(-beta*t) 
 
-def _glover(peak_hrf=(5.4, 10.8), fwhm_hrf=(5.2, 7.35), dip=0.35):
-    coef1, gamma1 = glover2GammaDENS(peak_hrf[0], fwhm_hrf[0])
-    coef2, gamma2 = glover2GammaDENS(peak_hrf[1], fwhm_hrf[1])
-    f = filters.GammaCOMB([[coef1, gamma1], [-dip*coef2, gamma2]])
-    dt = 0.02
-    t = np.arange(0, 50 + dt, dt)
-    c = (f(t) * dt).sum()
-    return filters.GammaCOMB([[coef1/c, gamma1], [-dip*coef2/c, gamma2]])
+# Glover canonical HRF models
+# they are both Sympy objects
 
-# Glover, 'canonical HRF'
+def vectorize_time(f):
+    """
+    Take a sympy expression that contains the symbol 't'
+    and return a lambda with a vectorized time.
+    """
+    return lambdify(vector_t, f.subs(t, vector_t), 'numpy')
 
-glover = filters.Filter(_glover(), names=['glover'])
-glover_deriv = filters.Filter([_glover(), _glover().deriv(const=-1.)],
-                              names=['glover', 'dglover'])
-canonical = glover
+def _getint(f, dt=0.02, t=50):
+    lf = vectorize_time(f)
+    tt = np.arange(dt,t+dt,dt)
+    return lf(tt).sum() * dt 
 
+glover_sympy = gamma_params(5.4, 5.2) - 0.35 * gamma_params(10.8,7.35)
+glover_sympy = glover_sympy / _getint(glover_sympy)
+
+dglover_sympy = glover_sympy.diff(t)
+
+dpos = Derivative((t > 0), t)
+dglover_sympy = dglover_sympy.subs(dpos, 0)
+dglover_sympy = dglover_sympy / _getint(dglover_sympy)
+
+# This is callable
+
+glover = vectorize_time(glover_sympy)
+glover.__doc__ = """
+Canonical HRF
+"""
+canonical = glover #TODO :get rid of 'canonical'
+
+dglover = vectorize_time(dglover_sympy)
+dglover.__doc__ = """
+Derivative of canonical HRF
+"""
 
 # AFNI's default HRF (at least at some point in the past)
 
-afni = filters.Filter(filters.GammaDENS(9.6, 1.0/0.547), ['gamma'])
+afni_sympy = ((t > 0) * t)**8.6 * exp(-t/0.547)
+afni_sympy =  afni_sympy / _getint(afni_sympy)
+afni = vectorize_time(afni_sympy)
 
 class SpectralHRF(filters.Filter):
     '''
@@ -60,7 +105,7 @@ class SpectralHRF(filters.Filter):
     Liao et al. (2002).
     '''
 
-    def __init__(self, input_hrf=canonical, spectral=True, ncomp=2,
+    def __init__(self, input_hrf=glover, spectral=True, ncomp=2,
                  names=['glover'], deriv=False, **keywords):
         """
         :Parameters:
@@ -130,9 +175,7 @@ class SpectralHRF(filters.Filter):
         H = []
         for i in range(delta.shape[0]):
             H.append(irf(time - delta[i]))
-        H = np.array(H)
-
-
+        H = np.nan_to_num(np.asarray(H))
         U, S, V = L.svd(H.T, full_matrices=0)
 
         basis = []

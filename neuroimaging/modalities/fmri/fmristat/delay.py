@@ -437,7 +437,7 @@ class DelayHRF(hrf.SpectralHRF):
     Liao et al. (2002).
     '''
 
-    def __init__(self, input_hrf=hrf.canonical, spectral=True, **keywords):
+    def __init__(self, input_hrf=hrf.glover, spectral=True, **keywords):
         """
         :Parameters:
             `input_hrf` : TODO
@@ -467,6 +467,7 @@ class DelayHRF(hrf.SpectralHRF):
 
         :Returns: ``None``
 
+
         Example
         -------
 
@@ -482,7 +483,7 @@ class DelayHRF(hrf.SpectralHRF):
         >>> time = np.arange(0,20,0.2)
         >>> hrf = HRF.SpectralHRF(deriv=True)
         >>>
-        >>> canonical = HRF.canonical
+        >>> canonical = HRF.glover
         >>> taylor = hrf.deltaPCA(delta=delta)
         >>> curplot = plot(time, taylor.components[1](time))
         >>> curplot = plot(time, taylor.components[0](time))

@@ -4,7 +4,7 @@ TODO
 
 __docformat__ = 'restructuredtext'
 
-import filters, fmri, hrf, pca, protocol, utils
+import filters, fmri, hrf, utils
 import fmristat
 
 from neuroimaging.testing import Tester
