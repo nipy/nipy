@@ -9,3 +9,4 @@
 
    analysis_pipeline
    glm_spec
+   coordinate_map
