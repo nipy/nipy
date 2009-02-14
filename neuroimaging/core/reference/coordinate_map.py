@@ -85,7 +85,8 @@ class CoordinateMap(object):
 
         Also
         """
-        input = np.zeros((10, self.ndim[0]), dtype=self.input_coords.value_dtype)
+        input = np.zeros((10, self.ndim[0]),
+                         dtype=self.input_coords.value_dtype)
         output = self.mapping(input)
         if output.dtype != self.output_coords.value_dtype and check_outdtype:
             warnings.warn('output.dtype != self.output_coords.value_dtype')
@@ -146,13 +147,19 @@ class Affine(CoordinateMap):
 
         """
 
-        dtype = safe_dtype(affine.dtype, input_coords.value_dtype, output_coords.value_dtype)
+        dtype = safe_dtype(affine.dtype,
+                           input_coords.value_dtype,
+                           output_coords.value_dtype)
 
         inaxes = copy.copy(input_coords.coordinates)
         outaxes = copy.copy(output_coords.coordinates)
 
-        self.input_coords = CoordinateSystem(inaxes, input_coords.name, dtype)
-        self.output_coords = CoordinateSystem(outaxes, output_coords.name, dtype)
+        self.input_coords = CoordinateSystem(inaxes,
+                                             input_coords.name,
+                                             dtype)
+        self.output_coords = CoordinateSystem(outaxes,
+                                              output_coords.name,
+                                              dtype)
         self.affine = affine.astype(dtype)
 
         if self.affine.shape != (self.ndim[1]+1, self.ndim[0]+1):

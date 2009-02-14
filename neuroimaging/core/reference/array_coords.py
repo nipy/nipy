@@ -60,7 +60,8 @@ class ArrayCoordMap(object):
                 Values of self.coordmap evaluated at np.indices(self.shape).
         """
 
-        indices = np.indices(self.shape).astype(self.coordmap.input_coords.value_dtype)
+        indices = np.indices(self.shape).astype(
+            self.coordmap.input_coords.value_dtype)
         tmp_shape = indices.shape
 
         # reshape indices to be a sequence of coordinates
@@ -162,7 +163,10 @@ def _slice(coordmap, shape, *slices):
 
     innames = slice_cmap.input_coords.coordinates
     inmat = []
-    input_coords = CoordinateSystem([innames[i] for i in keep_in_output], 'input-slice', coordmap.input_coords.value_dtype)
+    input_coords = CoordinateSystem(
+        [innames[i] for i in keep_in_output],
+        'input-slice',
+        coordmap.input_coords.value_dtype)
     A = np.zeros((coordmap.ndim[0]+1, len(keep_in_output)+1))
     for j, i in enumerate(keep_in_output):
         A[:,j] = slice_cmap.affine[:,i]

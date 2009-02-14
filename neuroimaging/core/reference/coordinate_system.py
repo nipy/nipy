@@ -7,12 +7,13 @@ A coordinate system contains coordinates.  For example a 3D coordinate system co
 __docformat__ = 'restructuredtext'
 
 import copy, warnings
-
 import numpy as np
+
 
 class CoordinateSystem(object):
     """
-    A CoordinateSystem is a (named) ordered sequence of coordinates, along with a dtype.
+    A CoordinateSystem is a (named) ordered sequence of coordinates,
+    along with a dtype.
 
 
     """
@@ -24,6 +25,19 @@ class CoordinateSystem(object):
         one, self.value_dtype, which should be a numpy scalar dtype. The other,
         self.dtype, which is basically a description of the CoordinateSystem.
 
+        Parameters
+        ----------
+        coordinates : ``[Coordinate`]``
+           The coordinates which make up the coordinate system
+        name : ``string``
+           The name of the coordinate system (optional)
+        dtype : ``np.dtype``
+        
+           The dtype of the coordinates, should be a value_dtype
+           scalar dtype.
+
+        Examples
+        --------
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
         {'dtype': dtype('float64'), 'name': 'input', 'coordinates': ['i', 'j']}
@@ -32,15 +46,7 @@ class CoordinateSystem(object):
         dtype('float64')
         >>> c.dtype
         dtype([('i', '<f8'), ('j', '<f8')])
-        >>>                                        
 
-        :Parameters:
-            coordinates : ``[Coordinate`]``
-                The coordinates which make up the coordinate system
-            name : ``string``
-                The name of the coordinate system (optional)
-            dtype : ``np.dtype``
-                The dtype of the coordinates, should be a value_dtype scalar dtype.
         """
         self.name = name
         if len(set(coordinates)) != len(coordinates):
@@ -61,9 +67,11 @@ class CoordinateSystem(object):
 
     def _getvalue_dtype(self):
         return self._dtype
-    value_dtype = property(_getvalue_dtype, doc='value_dtype scalar dtype of CoordinateSystem')
+    value_dtype = property(
+        _getvalue_dtype,
+        doc='value_dtype scalar dtype of CoordinateSystem')
 
-    def index(self, name):
+    def index(self, axisname):
         """
         Return the index of a given named coordinate.
 
@@ -72,7 +80,7 @@ class CoordinateSystem(object):
         0
 
         """
-        return self.coordinates.index(name)
+        return self.coordinates.index(axisname)
 
     def rename(self, **kwargs):
         """
@@ -83,7 +91,6 @@ class CoordinateSystem(object):
         {'dtype': dtype('float64'), 'name': 'input', 'coordinates': ['i', 'j']}
         >>> print c.rename(i='w')
         {'dtype': dtype('float64'), 'name': 'input-renamed', 'coordinates': ['w', 'j']}
-        >>>                                               
         """
         coords = []
         for a in self.coordinates:
@@ -106,11 +113,14 @@ class CoordinateSystem(object):
         """
         Equality is defined by self.dtype.
 
-        :Parameters:
-            other : `CoordinateSystem`
-                The object to be compared with
+        Parameters
+        ----------
+        other : CoordinateSystem
+           The object to be compared with
 
-        :Returns: ``bool``
+        Returns
+        -------
+        tf: bool
         """
         return (self.dtype == other.dtype)
 
@@ -118,9 +128,13 @@ class CoordinateSystem(object):
         """
         Create a string representation of the coordinate system
 
-        :Returns: ``string``
+        Returns
+        -------
+        repr : string
         """
-        _dict = {'name': self.name, 'coordinates':self.coordinates, 'dtype':self.value_dtype}
+        _dict = {'name': self.name,
+                 'coordinates':self.coordinates,
+                 'dtype':self.value_dtype}
         return `_dict`
    
     def _getndim(self):
@@ -180,25 +194,31 @@ class CoordinateSystem(object):
         Given a name for the reordered coordinates, and a new order, return a
         reordered coordinate system. Defaults to reversal.
 
+        Parameters
+        ----------
+        name : string
+           The name for the new coordinate system
+        order : sequence of int
+           The order of the axes, e.g. [2, 0, 1]
+
+        Returns
+        -------
+        reordered : CoordinateSystem
+
+        Examples
+        --------
         >>> c = CoordinateSystem('ijk', name='input')
         >>> print c.reorder(order=[2,0,1])
         {'dtype': dtype('float64'), 'name': 'input', 'coordinates': ['k', 'i', 'j']}
-        >>>                                                                                   
 
-        :Parameters:
-            name : ``string``
-                The name for the new coordinate system
-            order : ``[int]``
-                The order of the axes, e.g. [2, 0, 1]
-
-        :Returns:
-            `CoordinateSystem`
         """
         if order is None:
             order = range(len(self.coordinates))[::-1]
         if name is None:
             name = self.name
-        return CoordinateSystem(_reorder(self.coordinates, order), name, self.value_dtype)
+        return CoordinateSystem(_reorder(self.coordinates, order),
+                                name,
+                                self.value_dtype)
 
 def _reorder(seq, order):
     """ Reorder a sequence. """
@@ -209,20 +229,19 @@ def safe_dtype(*dtypes):
     Try to determine a dtype to which all of the dtypes can safely be
     typecast by creating an array with elements of all of these dtypes.
 
+    Parameters
+    ----------
+    dtypes : sequence of builtin ``np.dtype``s
+
+    Returns
+    -------
+    dtype: np.dtype
+
     >>> c1 = CoordinateSystem('ij', 'input', dtype=np.float32)
     >>> c2 = CoordinateSystem('kl', 'input', dtype=np.complex)
     >>> safe_dtype(c1.value_dtype, c2.value_dtype)
     dtype('complex128')
-    >>>                           
 
-    :Inputs: 
-    --------
-    dtypes: sequence of ``np.dtype``s
-
-    :Returns:
-    ---------
-    dtype: ``np.dtype``
-         
     """
     arrays = [np.zeros(2, dtype) for dtype in dtypes]
     notbuiltin = filter(lambda x: not x.dtype.isbuiltin, arrays)
