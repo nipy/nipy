@@ -1,7 +1,8 @@
 """
 Coordinate systems are used to represent the spaces in which the images reside.
 
-A coordinate system contains coordinates.  For example a 3D coordinate system contains 3 coordinates: the first, second and third.
+A coordinate system contains coordinates.  For example a 3D coordinate
+system contains 3 coordinates: the first, second and third.
 
 """
 __docformat__ = 'restructuredtext'
@@ -14,13 +15,14 @@ from neuroimaging.utils.odict import odict
 class Coordinate(object):
     """
     This class represents a generic coordinate. 
+
     A coordinate has a name and a builtin dtype, i.e. ('x', np.float).
-    `Coordinate`s 
-    are used in the definition of ``CoordinateSystem``.
+    ``Coordinate``s are used in the definition of ``CoordinateSystem``.
     """
 
     def __str__(self):
-        return '<Coordinate:"%(name)s", dtype=%(dtype)s>' % {'name':self.name, 'dtype':`self.dtype.descr`}
+        return '<Coordinate:"%(name)s", dtype=%(dtype)s>' % \
+            {'name':self.name, 'dtype':`self.dtype.descr`}
 
     def __repr__(self):
         return self.__str__()
@@ -166,13 +168,15 @@ class CoordinateSystem(odict):
         """
         return self.dtype == other.dtype
 
-    def __str__(self):
+    def __repr__(self):
         """
         Create a string representation of the coordinate system
 
         :Returns: ``string``
         """
-        _dict = {'name': self.name, 'axes':self.axes}
+        
+        _dict = {'name': self.name,
+                 'axes':[item for item in self.items()]}
         return `_dict`
    
     def _getndim(self):
