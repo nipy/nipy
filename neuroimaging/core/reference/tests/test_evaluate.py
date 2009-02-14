@@ -1,10 +1,10 @@
-from neuroimaging.core.api import CoordinateSystem, CoordinateMap, Grid, ArrayCoordMap, Coordinate
+from neuroimaging.core.api import CoordinateSystem, CoordinateMap, Grid, ArrayCoordMap
 import numpy as np
 import nose.tools
 
 def test_grid():
-    input = CoordinateSystem('input', [Coordinate(n) for n in 'ij'])
-    output = CoordinateSystem('output', [Coordinate(n) for n in 'xy'])
+    input = CoordinateSystem('ij', 'input')
+    output = CoordinateSystem('xy', 'output')
     def f(ij):
         i = ij[:,0]
         j = ij[:,1]
@@ -15,8 +15,8 @@ def test_grid():
     nose.tools.assert_true(np.allclose(grid[0:50,0:40].values, eval.values))
 
 def test_eval_slice():
-    input = CoordinateSystem('input', [Coordinate(n) for n in 'ij'])
-    output = CoordinateSystem('input', [Coordinate(n) for n in 'xy'])
+    input = CoordinateSystem('ij', 'input')
+    output = CoordinateSystem('xy', 'output')
     def f(ij):
         i = ij[:,0]
         j = ij[:,1]

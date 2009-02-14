@@ -14,7 +14,7 @@ to create an ArrayCoordMap.
 import numpy as np
 from coordinate_map import CoordinateMap, Affine, compose
 from coordinate_map import product as cmap_product
-from coordinate_system import CoordinateSystem, Coordinate
+from coordinate_system import CoordinateSystem
 
 class ArrayCoordMap(object):
     """
@@ -60,7 +60,7 @@ class ArrayCoordMap(object):
                 Values of self.coordmap evaluated at np.indices(self.shape).
         """
 
-        indices = np.indices(self.shape).astype(self.coordmap.input_coords.builtin)
+        indices = np.indices(self.shape).astype(self.coordmap.input_coords.value_dtype)
         tmp_shape = indices.shape
 
         # reshape indices to be a sequence of coordinates
@@ -118,6 +118,7 @@ def _slice(coordmap, shape, *slices):
     cmaps = []
     keep_in_output = []
 
+    dtype = coordmap.input_coords.value_dtype
     newshape = []
     for i, __slice in enumerate(slices):
         ranges[i] = ranges[i][__slice]
@@ -128,7 +129,7 @@ def _slice(coordmap, shape, *slices):
             try:
                 start = int(ranges[i])
             except TypeError:
-                raise ValueError('empty slice for dimension %d, coordinate %s' % (i, coordmap.input_coords.axisnames[i]))
+                raise ValueError('empty slice for dimension %d, coordinate %s' % (i, coordmap.input_coords.coordinates[i]))
 
         if ranges[i].shape == ():
             step = 0
@@ -147,28 +148,26 @@ def _slice(coordmap, shape, *slices):
 
 
         if step > 1:
-            name = coordmap.input_coords.axisnames[i] + '-slice'
+            name = coordmap.input_coords.coordinates[i] + '-slice'
         else:
-            name = coordmap.input_coords.axisnames[i]
-        cmaps.append(Affine.from_start_step([name],
-                                            [coordmap.input_coords.axisnames[i]],
-                                            [start],
-                                            [step]))
+            name = coordmap.input_coords.coordinates[i]
+        cmaps.append(Affine(np.array([[step, start],[0,1]], dtype=dtype), 
+                                CoordinateSystem([name], dtype=dtype),
+                                CoordinateSystem([coordmap.input_coords.coordinates[i]])))
         if i in keep_in_output:
             newshape.append(l)
     slice_cmap = cmap_product(*cmaps)
 
     # Reduce the size of the matrix
 
-    innames = slice_cmap.input_coords.axisnames
-    inaxes = slice_cmap.input_coords.axes
+    innames = slice_cmap.input_coords.coordinates
     inmat = []
-    input_coords = CoordinateSystem('input-slice', [Coordinate(innames[i], dtype=coordmap.input_coords.builtin) for i in keep_in_output])
+    input_coords = CoordinateSystem([innames[i] for i in keep_in_output], 'input-slice', coordmap.input_coords.value_dtype)
     A = np.zeros((coordmap.ndim[0]+1, len(keep_in_output)+1))
     for j, i in enumerate(keep_in_output):
         A[:,j] = slice_cmap.affine[:,i]
     A[:,-1] = slice_cmap.affine[:,-1]
-    A = A.astype(input_coords.builtin)
+    A = A.astype(input_coords.value_dtype)
     slice_cmap = Affine(A, input_coords, coordmap.input_coords)
     return ArrayCoordMap(compose(coordmap, slice_cmap), tuple(newshape))
                    
@@ -176,7 +175,7 @@ class Grid(object):
     """
     Simple class to construct Affine instances with slice notation like np.ogrid/np.mgrid.
 
-    >>> c = CoordinateSystem('input', [Axis(n) for n in 'xy'])
+    >>> c = CoordinateSystem('xy', 'input')
     >>> g = Grid(c)
     >>> points = g[-1:1:21j,-2:4:31j]
     >>> points.coordmap.affine
@@ -223,9 +222,9 @@ class Grid(object):
         Create an Affine coordinate map with into self.coords with
         slices created as in np.mgrid/np.ogrid.
         """
-        dtype = self.coordmap.input_coords.builtin
+        dtype = self.coordmap.input_coords.value_dtype
         results = [a.ravel().astype(dtype) for a in np.ogrid[index]]
-        if len(results) != len(self.coordmap.input_coords.axisnames):
+        if len(results) != len(self.coordmap.input_coords.coordinates):
             raise ValueError('the number of slice objects must match the number of input dimensions')
 
         cmaps = []
@@ -235,9 +234,9 @@ class Grid(object):
             else:
                 step = 0
             start = result[0]
-            cmaps.append(Affine(np.array([[step, start],[0,1]], dtype), 
-                                CoordinateSystem('i%d' % i, [Coordinate('i%d' % i, dtype=dtype)]),
-                                CoordinateSystem(self.coordmap.input_coords.axisnames[i], [self.coordmap.input_coords.axes[i]])))
+            cmaps.append(Affine(np.array([[step, start],[0,1]], dtype=dtype), 
+                                CoordinateSystem(['i%d' % i], dtype=dtype),
+                                CoordinateSystem([self.coordmap.input_coords.coordinates[i]], dtype=dtype)))
         shape = [result.shape[0] for result in results]
         cmap = cmap_product(*cmaps)
         return ArrayCoordMap(compose(self.coordmap, cmap), tuple(shape))
