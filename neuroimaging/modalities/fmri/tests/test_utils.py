@@ -5,34 +5,6 @@ from neuroimaging.modalities.fmri.utils import CutPoly, WaveFunction, ConvolveFu
 
 class test_util(TestCase):
     
-    def test_CutPoly(self):
-        f = CutPoly(2.0)
-        t = np.arange(0, 10.0, 0.1)
-        y = f(t)
-        assert_almost_equal(y, [x*x for x in t])
-
-        f = CutPoly(2.0, (5, 7))
-        y = f(t)
-        assert_almost_equal(y, [x*x*(x >= 5 and x < 7) for x in t])
-
-        f = CutPoly(2.0, (None, 7))
-        y = f(t)
-        assert_almost_equal(y, [x*x*(x < 7) for x in t])
-
-        f = CutPoly(2.0, (5, None))
-        y = f(t)
-        assert_almost_equal(y, [x*x*(x >= 5) for x in t])
-
-
-    def test_WaveFunction(self):
-        start = 5.0
-        duration = 2.0
-        height = 3.0
-        f = WaveFunction(5, 2, 3)
-        t = np.arange(0, 10.0, 0.1)
-        y = f(t)
-        assert_almost_equal(y, [height*(x >= start and x < start + duration) for x in t])
-
 
     def test_ConvolveFunctions(self):
         """

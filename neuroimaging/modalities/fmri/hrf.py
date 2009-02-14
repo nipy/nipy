@@ -14,7 +14,6 @@ import numpy.linalg as L
 from sympy import Symbol, lambdify, DeferredVector, exp, Derivative
 
 from neuroimaging.modalities.fmri import filters
-from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
 
 # Sympy symbols used below
