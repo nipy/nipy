@@ -1,4 +1,4 @@
-.. coordinate_map:
+.. _coordinate_map:
 
 ==============================
  Basics of the Coordinate Map
@@ -13,8 +13,9 @@ When you load an image it will have an associated Coordinate Map
   myimg = load_image(infile)
   coordmap = myimg.coordmap
 
-The coordinate map contains information defining the Coordinate System
-of the image
+The Coordinate Map contains information defining the input and output
+Coordinate Systems of the image, and the mapping between the two
+Coordinate systems.
 
 For more on Coordinate Systems, Coordinates and thier properties
 :mod:`neuroimaging.core.reference.coordinate_system`
@@ -46,7 +47,7 @@ You can introspect a coordinate map
    fortran ordered reading of the data.
    
    Numpy's default ordering is C ordered which is why in this case (k,j,i)
-   maps to (z,y,k)
+   maps to (z,y,x)
 
 A Coordinate Map has a mapping from the *input* Coordinate System to the
 *output* Coordinate System
@@ -128,4 +129,4 @@ this work for you)
 
 .. Note::
 
-   The answer is the same as abover (except for the added 1)
+   The answer is the same as above (except for the added 1)
