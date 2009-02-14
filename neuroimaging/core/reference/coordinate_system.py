@@ -7,172 +7,134 @@ A coordinate system contains coordinates.  For example a 3D coordinate system co
 __docformat__ = 'restructuredtext'
 
 import copy, warnings
-
 import numpy as np
-from neuroimaging.utils.odict import odict
 
-class Coordinate(object):
+
+class CoordinateSystem(object):
     """
-    This class represents a generic coordinate. 
-    A coordinate has a name and a builtin dtype, i.e. ('x', np.float).
-    `Coordinate`s 
-    are used in the definition of ``CoordinateSystem``.
-    """
+    A CoordinateSystem is a (named) ordered sequence of coordinates,
+    along with a dtype.
 
-    def __str__(self):
-        return '<Coordinate:"%(name)s", dtype=%(dtype)s>' % {'name':self.name, 'dtype':`self.dtype.descr`}
 
-    def __repr__(self):
-        return self.__str__()
-
-    def __init__(self, name, dtype=np.float):
-        """
-        Create a Coordinate with a given name and dtype.
-
-        :Parameters:
-            name : ``string``
-                The name for the coordinate.
-            dtype : ``np.dtype``
-                The dtype of the axis. Must be a builtin dtype.
-        """
-        self.name = name
-        self._dtype = np.dtype(dtype)
-
-        # verify that the dtype is builtin for sanity
-        if not self._dtype.isbuiltin:
-            raise ValueError, 'Coordinate dtypes should be numpy builtin dtypes'
-    def _getdtype(self):
-        return np.dtype([(self.name, self._dtype)])
-    def _setdtype(self, dtype):
-        self._dtype = dtype
-    dtype = property(_getdtype, _setdtype, doc='Named dtype of a Coordinate.')
-
-    def _getbuiltin(self):
-        return self._dtype
-    builtin = property(_getbuiltin, doc='Numpy builtin dtype of a Coordinate.')
-
-    def __eq__(self, other):
-        """ Equality is defined by dtype.
-
-        :Parameters:
-            other : `Coordinate`
-                The object to be compared with.
-
-        :Returns: ``bool``
-        """
-        return self.dtype == other.dtype
-
-class CoordinateSystem(odict):
-    """
-    A CoordinateSystem is a (named) ordered sequence of `Coordinate`s.
     """
 
-    def __init__(self, name, coordinates):
+    def __init__(self, coordinates, name= '', dtype=np.float):
         """
-        Create a coordinate system with a given name and axes.
+        Create a coordinate system with a given name and coordinate names.
+        There are also two dtypes associated to the CoordinateSystem:
+        one, self.value_dtype, which should be a numpy scalar dtype. The other,
+        self.dtype, which is basically a description of the CoordinateSystem.
 
-        :Parameters:
-            name : ``string``
-                The name of the coordinate system
-            coordinates : ``[Coordinate`]``
-                The coordinates which make up the coordinate system
-        """
-        self.name = name
-        if len(set([ax.name for ax in coordinates])) != len(coordinates):
-            raise ValueError, 'coordinates must have distinct names'
-        dtype = safe_dtype(*tuple([ax.builtin for ax in coordinates]))
-        values = []
-        for ax in coordinates:
-            ax = copy.copy(ax)
-            ax.dtype = dtype
-            values.append((ax.name, ax))
-        odict.__init__(self, values)
-
-    def _getdtype(self):
-        return np.dtype([(ax.name, ax.builtin) for ax in self.axes])
-    dtype = property(_getdtype)
-
-    def _getbuiltin(self):
-        d = self.dtype.descr
-        different = filter(lambda x: x[1] != d[0][1], d)
-        if not different:
-            d = np.dtype(d[0][1])
-            if d.isbuiltin:
-                return d
-            else:
-                raise ValueError('could not work out a builtin dtype for this coordinate system')
-    builtin = property(_getbuiltin)
-
-    def __getitem__(self, axisname):
-        """
-        Return an axis indexed by name
-
-        :Parameters:
-            axisname : ``string``
-                The name of the axis to return
-
-        :Returns: `axis.Coordinate`
+        Parameters
+        ----------
+        coordinates : ``[Coordinate`]``
+           The coordinates which make up the coordinate system
+        name : ``string``
+           The name of the coordinate system (optional)
+        dtype : ``np.dtype``
         
-        :Raises KeyError: If axisname is not the name of an axis in this 
-            coordinate system.
-        """
-        try:
-            return odict.__getitem__(self, axisname)
-        except KeyError:
-            raise KeyError(
-              "axis '%s' not found, names are %s"%(axisname,self.keys()))
+           The dtype of the coordinates, should be a value_dtype
+           scalar dtype.
 
-    def index(self, name):
+        Examples
+        --------
+        >>> c = CoordinateSystem('ij', name='input')
+        >>> print c
+        {'dtype': dtype('float64'), 'name': 'input', 'coordinates': ['i', 'j']}
+
+        >>> c.value_dtype
+        dtype('float64')
+        >>> c.dtype
+        dtype([('i', '<f8'), ('j', '<f8')])
+
         """
-        Return the index of a given axisname.
+        self.name = name
+        if len(set(coordinates)) != len(coordinates):
+            raise ValueError, 'coordinates must have distinct names'
+
+        # verify that the dtype is value_dtype for sanity
+        sctypes = (np.sctypes['int'] + np.sctypes['float'] + 
+                   np.sctypes['complex'] + np.sctypes['uint'])
+        dtype = np.dtype(dtype)
+        if dtype not in sctypes:
+            raise ValueError, 'Coordinate dtype should be one of %s' % `sctypes`
+        self._dtype = dtype
+        self.coordinates = list(coordinates)
+
+    def _getdtype(self):
+        return np.dtype([(name, self._dtype) for name in self.coordinates])
+    dtype = property(_getdtype, doc='dtype of CoordinateSystem with named fields')
+
+    def _getvalue_dtype(self):
+        return self._dtype
+    value_dtype = property(
+        _getvalue_dtype,
+        doc='value_dtype scalar dtype of CoordinateSystem')
+
+    def index(self, axisname):
         """
-        return self.keys().index(name)
+        Return the index of a given named coordinate.
+
+        >>> c = CoordinateSystem('ij', name='input')
+        >>> c.index('i')
+        0
+
+        """
+        return self.coordinates.index(axisname)
 
     def rename(self, **kwargs):
         """
-        Return a new CoordinateSystem with the values renamed.
+        Return a new CoordinateSystem with the coordinates renamed.
 
-        >>> axes = [Coordinate(n) for n in 'abc']
-        >>> coords = CoordinateSystem('input', axes)
-        >>> print coords.rename(a='x')
-        {'axes': [<Coordinate:"x", dtype=[('x', '<f8')]>, <Coordinate:"b", dtype=[('b', '<f8')]>, <Coordinate:"c", dtype=[('c', '<f8')]>], 'name': 'input-renamed'}
-        >>>                                               
+        >>> c = CoordinateSystem('ij', name='input')
+        >>> print c
+        {'dtype': dtype('float64'), 'name': 'input', 'coordinates': ['i', 'j']}
+        >>> print c.rename(i='w')
+        {'dtype': dtype('float64'), 'name': 'input-renamed', 'coordinates': ['w', 'j']}
         """
-        axes = []
-        for a in self.axisnames:
-            axis = copy.copy(self[a])
+        coords = []
+        for a in self.coordinates:
             if a in kwargs.keys():
-                axis.name = kwargs[a]
-            axes.append(axis)
-        return CoordinateSystem(self.name + '-renamed', axes)
+                coords.append(kwargs[a])
+            else:
+                coords.append(a)
 
-    def __setitem__(self, name, value):
-        """
-        Setting of index values is not allowed.
-        
-        :Raises TypeError: Always.
-        """
-        raise TypeError, "CoordinateSystem does not support axis assignment"
+
+        if self.name:
+            name = self.name + '-renamed'
+        else:
+            name = ''
+        return CoordinateSystem(coords, name, self.value_dtype)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __eq__(self, other):
         """
         Equality is defined by self.dtype.
 
-        :Parameters:
-            other : `CoordinateSystem`
-                The object to be compared with
+        Parameters
+        ----------
+        other : CoordinateSystem
+           The object to be compared with
 
-        :Returns: ``bool``
+        Returns
+        -------
+        tf: bool
         """
-        return self.dtype == other.dtype
+        return (self.dtype == other.dtype)
 
     def __str__(self):
         """
         Create a string representation of the coordinate system
 
-        :Returns: ``string``
+        Returns
+        -------
+        repr : string
         """
-        _dict = {'name': self.name, 'axes':self.axes}
+        _dict = {'name': self.name,
+                 'coordinates':self.coordinates,
+                 'dtype':self.value_dtype}
         return `_dict`
    
     def _getndim(self):
@@ -180,23 +142,23 @@ class CoordinateSystem(odict):
         
         :Returns: ``int``
         """
-        return len(self.axes)
+        return len(self.coordinates)
     ndim = property(_getndim)
     
     def typecast(self, x, dtype=None):
         """
         Try to safely typecast x into
-        an ndarray with a numpy builtin dtype
+        an ndarray with a numpy value_dtype dtype
         with the correct shape, or
         typecast it as an ndarray with self.dtype.
 
         """
         x = np.asarray(x)
 
-        if dtype not in [self.dtype, self.builtin]:
-            raise ValueError, 'only safe to cast to either %s or %s' % (`self.dtype`, `self.builtin`)
-        if x.dtype not in [self.dtype, self.builtin]:
-            raise ValueError, 'only safe to cast from either %s or %s' % (`self.dtype`, `self.builtin`)
+        if dtype not in [self.dtype, self.value_dtype]:
+            raise ValueError, 'only safe to cast to either %s or %s' % (`self.dtype`, `self.value_dtype`)
+        if x.dtype not in [self.dtype, self.value_dtype]:
+            raise ValueError, 'only safe to cast from either %s or %s' % (`self.dtype`, `self.value_dtype`)
 
         if dtype == self.dtype:
             if x.dtype == self.dtype: # do nothing
@@ -204,7 +166,7 @@ class CoordinateSystem(odict):
             
             # this presumes
             # we are given an ndarray
-            # with dtype = self.builtin
+            # with dtype = self.value_dtype
             # so we typecast, to be safe we make a copy!
 
             x = np.asarray(x)
@@ -216,52 +178,47 @@ class CoordinateSystem(odict):
             if x.shape[-1] != len(self.dtype.names):
                 warnings.warn("dangerous typecast, shape is unexpected: %d, %d" % (x.shape[-1], len(self.dtype.names)))
 
-            x = np.asarray(x, dtype=self.builtin).ravel()
+            x = np.asarray(x, dtype=self.value_dtype).ravel()
             y = x.view(self.dtype)
             y.shape = shape[:-1]
             return y
         else:
-            if x.dtype == self.builtin: # do nothing
+            if x.dtype == self.value_dtype: # do nothing
                 return x
-            y = x.ravel().view(self.builtin)
+            y = x.ravel().view(self.value_dtype)
             y.shape = x.shape + (y.shape[0] / np.product(x.shape),)
             return y
 
-    def _getaxisnames(self):
-        """ A list of the names of the coordinate system's axes. 
-        
-        :Returns: ``string``
-        """
-        return self.keys()
-    axisnames = property(_getaxisnames)
-        
-    def _getaxes(self):
-        """ A list of the coordinate system's axes. 
-        
-        :Returns: ``[`axis.Coordinate`]``
-        """
-        return self.values()
-    axes = property(_getaxes)
-
-    def reorder(self, name, order=None):
+    def reorder(self, name=None, order=None):
         """
         Given a name for the reordered coordinates, and a new order, return a
         reordered coordinate system. Defaults to reversal.
 
-        :Parameters:
-            name : ``string``
-                The name for the new coordinate system
-            order : ``[int]``
-                The order of the axes, e.g. [2, 0, 1]
+        Parameters
+        ----------
+        name : string
+           The name for the new coordinate system
+        order : sequence of int
+           The order of the axes, e.g. [2, 0, 1]
 
-        :Returns:
-            `CoordinateSystem`
+        Returns
+        -------
+        reordered : CoordinateSystem
+
+        Examples
+        --------
+        >>> c = CoordinateSystem('ijk', name='input')
+        >>> print c.reorder(order=[2,0,1])
+        {'dtype': dtype('float64'), 'name': 'input', 'coordinates': ['k', 'i', 'j']}
+
         """
         if order is None:
-            order = range(len(self.axes))[::-1]
+            order = range(len(self.coordinates))[::-1]
         if name is None:
             name = self.name
-        return CoordinateSystem(name, _reorder(self.axes, order))
+        return CoordinateSystem(_reorder(self.coordinates, order),
+                                name,
+                                self.value_dtype)
 
 def _reorder(seq, order):
     """ Reorder a sequence. """
@@ -272,15 +229,59 @@ def safe_dtype(*dtypes):
     Try to determine a dtype to which all of the dtypes can safely be
     typecast by creating an array with elements of all of these dtypes.
 
-    :Inputs: 
-    dtypes: sequence of builtin ``np.dtype``s
+    Parameters
+    ----------
+    dtypes : sequence of builtin ``np.dtype``s
 
-    :Returns:
-    dtype: ``np.dtype``
-         
+    Returns
+    -------
+    dtype: np.dtype
+
+    >>> c1 = CoordinateSystem('ij', 'input', dtype=np.float32)
+    >>> c2 = CoordinateSystem('kl', 'input', dtype=np.complex)
+    >>> safe_dtype(c1.value_dtype, c2.value_dtype)
+    dtype('complex128')
+
     """
     arrays = [np.zeros(2, dtype) for dtype in dtypes]
     notbuiltin = filter(lambda x: not x.dtype.isbuiltin, arrays)
     if notbuiltin:
-        raise ValueError('dtypes must be builtin')
+        raise ValueError('dtypes must be value_dtype')
     return np.array(arrays).dtype
+
+def product(*coord_systems):
+    """
+    Create the product of a sequence of CoordinateSystems.
+    The value_dtype dtype of the result will be determined by safe_dtype.
+
+    >>> c1 = CoordinateSystem('ij', 'input', dtype=np.float32)
+    >>> c2 = CoordinateSystem('kl', 'input', dtype=np.complex)
+    >>> c3 = CoordinateSystem('ik', 'in3')
+
+    >>> print product(c1,c2)
+    {'dtype': dtype('complex128'), 'name': 'product', 'coordinates': ['i', 'j', 'k', 'l']}
+
+    >>> try:
+    ...     product(c2,c3)
+    ... except ValueError, msg:
+    ...     print 'Error: %s' % msg
+    ...     pass
+    ...
+    Error: coordinates must have distinct names
+    >>>                     
+
+
+    :Inputs:
+    --------
+    coord_systems: sequence of ``CoordinateSystem``s
+    
+    :Returns:
+    ---------
+    product_coord_system: CoordinateSystem
+
+    """
+    coords = []
+    for c in coord_systems:
+        coords += c.coordinates
+    dtype = safe_dtype(*[c.value_dtype for c in coord_systems])
+    return CoordinateSystem(coords, 'product', dtype=dtype)

@@ -1,7 +1,7 @@
 from neuroimaging.testing import *
 
 from neuroimaging.algorithms.onesample import ImageOneSample
-from neuroimaging.core.api import load_image
+from neuroimaging.io.api import load_image
 from neuroimaging.utils.tests.data import repository
 
 class test_OneSample(TestCase):

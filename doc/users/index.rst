@@ -3,9 +3,9 @@
 .. This is the source doc for the nipy users guide. The users guide
    includes the FAQ (a directory below), and glossary.
 
-=====================
- The nipy user guide
-=====================
+============
+ User Guide
+============
 	
 .. htmlonly::
 
@@ -18,7 +18,6 @@
    introduction
    installation
    tutorial.rst
-   ../faq/index
    ../glossary
 
 .. htmlonly::

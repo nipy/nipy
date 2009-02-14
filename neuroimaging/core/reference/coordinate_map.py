@@ -5,7 +5,8 @@ They also provide mechanisms for iterating over that space.
 import copy, string
 
 import numpy as np
-from neuroimaging.core.reference.coordinate_system import CoordinateSystem, Coordinate, safe_dtype 
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem, safe_dtype 
+from neuroimaging.core.reference.coordinate_system import product as coordsys_product
 
 __docformat__ = 'restructuredtext'
 
@@ -63,7 +64,7 @@ class CoordinateMap(object):
     inverse = property(_getinverse)
 
     def _getndim(self):
-        return (len(self.input_coords.axes), len(self.output_coords.axes))
+        return (self.input_coords.ndim, self.output_coords.ndim)
     ndim = property(_getndim)
 
     def _checkshape(self, x):
@@ -84,11 +85,12 @@ class CoordinateMap(object):
 
         Also
         """
-        input = np.zeros((10, self.ndim[0]), dtype=self.input_coords.builtin)
+        input = np.zeros((10, self.ndim[0]),
+                         dtype=self.input_coords.value_dtype)
         output = self.mapping(input)
-        if output.dtype != self.output_coords.builtin and check_outdtype:
-            warnings.warn('output.dtype != self.output_coords.builtin')
-        output = output.astype(self.output_coords.builtin)
+        if output.dtype != self.output_coords.value_dtype and check_outdtype:
+            warnings.warn('output.dtype != self.output_coords.value_dtype')
+        output = output.astype(self.output_coords.value_dtype)
         if output.shape != (10, self.ndim[1]):
             raise ValueError('input and output dimensions of mapping do not agree with specified CoordinateSystems')
 
@@ -97,9 +99,9 @@ class CoordinateMap(object):
         Return mapping evaluated at x
         
         >>> inaxes = [Axis(x) for x in 'ijk']
-        >>> inc = CoordinateSystem('input', inaxes)
+        >>> inc = CoordinateSystem(inaxes, 'input')
         >>> outaxes = [Axis(x) for x in 'xyz']
-        >>> outc = CoordinateSystem('output', outaxes)
+        >>> outc = CoordinateSystem(outaxes, 'output')
         >>> cm = Affine(np.diag([1,2,3,1]), inc, outc)
         >>> cm([2,3,4])
         array([  2.,   6.,  12.])
@@ -145,22 +147,19 @@ class Affine(CoordinateMap):
 
         """
 
-        dtype = safe_dtype(affine.dtype, input_coords.builtin, output_coords.builtin)
+        dtype = safe_dtype(affine.dtype,
+                           input_coords.value_dtype,
+                           output_coords.value_dtype)
 
-        inaxes = []
-        for n in input_coords.axisnames:
-            a = copy.copy(input_coords[n])
-            a.dtype = dtype
-            inaxes.append(a)
+        inaxes = copy.copy(input_coords.coordinates)
+        outaxes = copy.copy(output_coords.coordinates)
 
-        outaxes = []
-        for n in output_coords.axisnames:
-            a = copy.copy(output_coords[n])
-            a.dtype = dtype
-            outaxes.append(a)
-
-        self.input_coords = CoordinateSystem(input_coords.name, inaxes)
-        self.output_coords = CoordinateSystem(output_coords.name, outaxes)
+        self.input_coords = CoordinateSystem(inaxes,
+                                             input_coords.name,
+                                             dtype)
+        self.output_coords = CoordinateSystem(outaxes,
+                                              output_coords.name,
+                                              dtype)
         self.affine = affine.astype(dtype)
 
         if self.affine.shape != (self.ndim[1]+1, self.ndim[0]+1):
@@ -247,10 +246,8 @@ class Affine(CoordinateMap):
             raise ValueError('shape and number of axis names do not agree')
         dtype = params.dtype
 
-        inaxes = [Coordinate(name, dtype=dtype) for name in innames]
-        outaxes = [Coordinate(name, dtype=dtype) for name in outnames]
-        input_coords = CoordinateSystem("input", inaxes)
-        output_coords = CoordinateSystem('output', outaxes)
+        input_coords = CoordinateSystem(innames, "input")
+        output_coords = CoordinateSystem(outnames, 'output')
         return Affine(params, input_coords, output_coords)
 
     @staticmethod
@@ -309,8 +306,8 @@ def rename_input(coordmap, **kwargs):
     >>> import numpy as np
     >>> inaxes = [Axis(x) for x in 'ijk']
     >>> outaxes = [Axis(x) for x in 'xyz']
-    >>> inc = CoordinateSystem('input', inaxes)
-    >>> outc = CoordinateSystem('output', outaxes)
+    >>> inc = CoordinateSystem(inaxes, 'input')
+    >>> outc = CoordinateSystem(outaxes, 'output')
     >>> cm = Affine(np.identity(4), inc, outc)
     >>> print cm.input_coords.values()
     [<Axis:"i", dtype=[('i', '<f8')]>, <Axis:"j", dtype=[('j', '<f8')]>, <Axis:"k", dtype=[('k', '<f8')]>]
@@ -329,8 +326,8 @@ def rename_output(coordmap, **kwargs):
     >>> import numpy as np
     >>> inaxes = [Axis(x) for x in 'ijk']
     >>> outaxes = [Axis(x) for x in 'xyz']
-    >>> inc = CoordinateSystem('input', inaxes)
-    >>> outc = CoordinateSystem('output', outaxes)
+    >>> inc = CoordinateSystem(inaxes, 'input')
+    >>> outc = CoordinateSystem(outaxes, 'output')
     >>> cm = Affine(np.identity(4), inc, outc)
     >>> print cm.output_coords.values()
     [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>]
@@ -354,7 +351,7 @@ def reorder_input(coordmap, order=None):
     order: sequence
          Order to use, defaults to reverse. The elements
          can be integers, strings or 2-tuples of strings.
-         If they are strings, they should be in coordmap.input_coords.axisnames.
+         If they are strings, they should be in coordmap.input_coords.coordinates.
 
     Returns:
     --------
@@ -363,9 +360,9 @@ def reorder_input(coordmap, order=None):
          A new CoordinateMap with reversed input_coords.
 
     >>> inaxes = [Axis(x) for x in 'ijk']
-    >>> inc = CoordinateSystem('input', inaxes)
+    >>> inc = CoordinateSystem(inaxes, 'input')
     >>> outaxes = [Axis(x) for x in 'xyz']
-    >>> outc = CoordinateSystem('output', outaxes)
+    >>> outc = CoordinateSystem(outaxes, 'output')
     >>> cm = Affine(np.identity(4), inc, outc)
     >>> print reorder_input(cm, 'ikj').input_coords
     {'axes': [<Axis:"i", dtype=[('i', '<f8')]>, <Axis:"k", dtype=[('k', '<f8')]>, <Axis:"j", dtype=[('j', '<f8')]>], 'name': 'input-reordered'}
@@ -375,17 +372,17 @@ def reorder_input(coordmap, order=None):
     if order is None:
         order = range(ndim)[::-1]
     elif type(order[0]) == type(''):
-        order = [coordmap.input_coords.axisnames.index(s) for s in order]
+        order = [coordmap.input_coords.coordinates.index(s) for s in order]
 
-    newaxes = [coordmap.input_coords.axes[i] for i in order]
-    newincoords = CoordinateSystem(coordmap.input_coords.name + '-reordered', newaxes)
+    newaxes = [coordmap.input_coords.coordinates[i] for i in order]
+    newincoords = CoordinateSystem(newaxes, coordmap.input_coords.name + '-reordered', dtype=coordmap.input_coords.value_dtype)
     perm = np.zeros((ndim+1,)*2)
     perm[-1,-1] = 1.
 
     for i, j in enumerate(order):
         perm[j,i] = 1.
 
-    perm = perm.astype(coordmap.input_coords.builtin)
+    perm = perm.astype(coordmap.input_coords.value_dtype)
     A = Affine(perm, newincoords, coordmap.input_coords)
     return compose(coordmap, A)
 
@@ -400,7 +397,7 @@ def reorder_output(coordmap, order=None):
     order: sequence
          Order to use, defaults to reverse. The elements
          can be integers, strings or 2-tuples of strings.
-         If they are strings, they should be in coordmap.output_coords.axisnames.
+         If they are strings, they should be in coordmap.output_coords.coordinates.
 
     Returns:
     --------
@@ -409,18 +406,18 @@ def reorder_output(coordmap, order=None):
          A new CoordinateMap with reversed output_coords.
 
     >>> inaxes = [Axis(x) for x in 'ijk']
-    >>> inc = CoordinateSystem('input', inaxes)
+    >>> inc = CoordinateSystem(inaxes, 'input')
     >>> outaxes = [Axis(x) for x in 'xyz']
-    >>> outc = CoordinateSystem('output', outaxes)
+    >>> outc = CoordinateSystem(outaxes, 'output')
     >>> cm = Affine(np.identity(4), inc, outc)
     >>> print reorder_output(cm, 'xzy').output_coords
     {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>], 'name': 'output-reordered'}
-    >>> print reorder_output(cm, [0,2,1]).output_coords.axisnames
+    >>> print reorder_output(cm, [0,2,1]).output_coords.coordinates
     ['x', 'z', 'y']
     >>>                             
 
     >>> newcm = reorder_output(cm, 'yzx')
-    >>> newcm.output_coords.axisnames
+    >>> newcm.output_coords.coordinates
     ['y', 'z', 'x']
     >>>                              
 
@@ -430,10 +427,10 @@ def reorder_output(coordmap, order=None):
     if order is None:
         order = range(ndim)[::-1]
     elif type(order[0]) == type(''):
-        order = [coordmap.output_coords.axisnames.index(s) for s in order]
+        order = [coordmap.output_coords.coordinates.index(s) for s in order]
 
-    newaxes = [coordmap.output_coords.axes[i] for i in order]
-    newoutcoords = CoordinateSystem(coordmap.output_coords.name + '-reordered', newaxes)
+    newaxes = [coordmap.output_coords.coordinates[i] for i in order]
+    newoutcoords = CoordinateSystem(newaxes, coordmap.output_coords.name + '-reordered', coordmap.output_coords.value_dtype)
     
     perm = np.zeros((ndim+1,)*2)
     perm[-1,-1] = 1.
@@ -441,7 +438,7 @@ def reorder_output(coordmap, order=None):
     for i, j in enumerate(order):
         perm[j,i] = 1.
 
-    perm = perm.astype(coordmap.output_coords.builtin)
+    perm = perm.astype(coordmap.output_coords.value_dtype)
     A = Affine(perm, coordmap.output_coords, newoutcoords)
     return compose(A, coordmap)
 
@@ -462,9 +459,9 @@ def product(*cmaps):
     >>> inc3 = Affine.from_params('k', 'z', np.diag([4,1]))
 
     >>> cmap = product(inc1, inc3, inc2)
-    >>> cmap.input_coords.axisnames
+    >>> cmap.input_coords.coordinates
     ['i', 'k', 'j']
-    >>> cmap.output_coords.axisnames
+    >>> cmap.output_coords.coordinates
     ['x', 'z', 'y']
     >>> cmap.affine
     array([[ 2.,  0.,  0.,  0.],
@@ -473,23 +470,9 @@ def product(*cmaps):
            [ 0.,  0.,  0.,  1.]])
 
     """
-    inaxes = []
-    outaxes = []
-    innames = []
-    outnames = []
-    ndimin = []
-
-    for cmap in cmaps:
-        inaxes += cmap.input_coords.axes
-        outaxes += cmap.output_coords.axes
-        innames += [cmap.input_coords.name]
-        outnames += [cmap.output_coords.name]
-        ndimin.append(cmap.ndim[0])
-
+    ndimin = [cmap.ndim[0] for cmap in cmaps]
     ndimin.insert(0,0)
     ndimin = tuple(np.cumsum(ndimin))
-    innames = string.join(innames, ' * ')
-    outnames = string.join(outnames, ' * ')
 
     def mapping(x):
         x = np.asarray(x)
@@ -506,10 +489,12 @@ def product(*cmaps):
 
     notaffine = filter(lambda x: not isinstance(x, Affine), cmaps)
 
-    incoords, outcoords = CoordinateSystem(innames, inaxes), CoordinateSystem(outnames, outaxes)
+    incoords = coordsys_product(*[cmap.input_coords for cmap in cmaps])
+    outcoords = coordsys_product(*[cmap.output_coords for cmap in cmaps])
+
     if not notaffine:
 
-        affine = linearize(mapping, ndimin[-1], step=np.array(1, incoords.builtin))
+        affine = linearize(mapping, ndimin[-1], step=np.array(1, incoords.value_dtype))
         return Affine(affine, incoords, outcoords)
     return CoordinateMap(mapping, incoords, outcoords)
 
@@ -535,9 +520,9 @@ def compose(*cmaps):
      [ 0.  1.]]
 
     >>> id2 = compose(cmapi,cmap)
-    >>> id1.input_coords.axisnames
+    >>> id1.input_coords.coordinates
     ['x']
-    >>> id2.input_coords.axisnames
+    >>> id2.input_coords.coordinates
     ['i']
     >>> 
 
@@ -563,7 +548,7 @@ def compose(*cmaps):
     notaffine = filter(lambda cmap: not isinstance(cmap, Affine), cmaps)
 
     if not notaffine:
-        affine = linearize(cmap, cmap.ndim[0], step=np.array(1, cmaps[0].output_coords.builtin))
+        affine = linearize(cmap, cmap.ndim[0], step=np.array(1, cmaps[0].output_coords.value_dtype))
         return Affine(affine, cmap.input_coords,
                       cmap.output_coords)
     return cmap
@@ -637,15 +622,11 @@ def hstack(*cmaps):
             r.append(np.hstack([x[0,i], y]))
         return np.vstack(r)
 
-    stackin = Coordinate('stack-input')
-    stackout = Coordinate('stack-output')
+    inaxes = ['stack-input'] + cmaps[0].input_coords.coordinates
+    incoords = CoordinateSystem(inaxes, 'stackin-%s' % cmaps[0].input_coords.name)
 
-    inaxes = [stackin] + cmaps[0].input_coords.axes
-    incoords = CoordinateSystem('stackin-%s' % cmaps[0].input_coords.name, 
-                                inaxes)
-    outaxes = [stackout] + cmaps[0].output_coords.axes
-    outcoords = CoordinateSystem('stackout-%s' % cmaps[0].output_coords.name, 
-                                 outaxes)
+    outaxes = ['stack-output'] + cmaps[0].output_coords.coordinates
+    outcoords = CoordinateSystem(outaxes, 'stackout-%s' % cmaps[0].output_coords.name)
     return CoordinateMap(mapping, incoords, outcoords)
 
 def matvec_from_transform(transform):

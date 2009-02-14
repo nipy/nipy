@@ -213,12 +213,15 @@ class ApiDocWriter(object):
             print 'WARNING: Empty -',uri  # dbg
             return ''
         ad = '.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n'
-        if len(classes):
-            ad += 'Inheritance diagram for: %s\n\n' % uri
-            ad += '.. inheritance-diagram:: %s \n' % uri
-            ad += '   :parts: 2\n\n'
+
         title = ':mod:`' + uri + '`'
         ad += title + '\n' + self.rst_section_levels[1] * len(title)
+
+        if len(classes):
+            ad += '\nInheritance diagram for: %s\n\n' % uri
+            ad += '.. inheritance-diagram:: %s \n' % uri
+            ad += '   :parts: 2\n\n'
+
         ad += '\n.. automodule:: ' + uri + '\n'
         ad += '\n.. currentmodule:: ' + uri + '\n'
         multi_class = len(classes) > 1
@@ -237,8 +240,9 @@ class ApiDocWriter(object):
             # must NOT exclude from index to keep cross-refs working
             ad += '  :members:\n' \
                   '  :undoc-members:\n' \
-                  '  :show-inheritance:\n'
-            #      '  :noindex:\n\n'
+                  '  :show-inheritance:\n' \
+                  '\n' \
+                  '  .. automethod:: __init__\n'
         if multi_fx:
             ad += '\n' + 'Functions' + '\n' + \
                   self.rst_section_levels[2] * 9 + '\n\n'

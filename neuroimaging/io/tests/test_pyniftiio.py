@@ -10,13 +10,13 @@ from neuroimaging.io.pyniftiio import PyNiftiIO
 
 def test_affine_analyze():
     # Test method1 from nifti1.h, Analyze 7.5 mapping.
-    # pynifti stores numpy array's in zyx order
+    # pynifti stores numpy array's in xyz order
     data = np.zeros((4,3,2))
     img = PyNiftiIO(data)
     pdim = [2.0, 3.0, 4.0, 1.0, 1.0, 1.0, 1.0]
     img._nim.pixdim = pdim
     # flip our pixdims so it's in zyx order and create diagonal 3x3 transform
-    diag = np.diag(pdim[2::-1])
+    diag = np.diag(pdim[:3])
     xform = np.zeros((4,4))
     xform[:3, :3] = diag
     xform[3, 3] = 1
@@ -39,10 +39,6 @@ def test_affine_qform():
     img._nim.setQForm(qform)
     # zyx order transform
     xform = qform.copy()
-    # flipud to put z-axis in first row
-    xform[:3,:] = np.flipud(xform[:3,:].copy())
-    # fliplr to put pixdims on diagonal
-    xform[:3,:3] = np.fliplr(xform[:3,:3].copy())
     assert np.all(img.affine == xform)
 
 def test_affine_sform():
@@ -61,10 +57,6 @@ def test_affine_sform():
     img._nim.setSForm(mni_xform)
     # Create a zyx ordered MNI transform
     xform = mni_xform.copy()
-    # flipud to put z-axis in first row
-    xform[:3,:] = np.flipud(xform[:3,:].copy())
-    # fliplr to put pixdims on diagonal
-    xform[:3,:3] = np.fliplr(xform[:3,:3].copy())
     #print mni_xform
     #print '*'*40
     #print xform

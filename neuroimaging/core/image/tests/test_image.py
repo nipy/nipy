@@ -2,18 +2,20 @@ from tempfile import NamedTemporaryFile
 from os import remove
 
 import numpy as np
+import numpy.testing as nptest
 
 from neuroimaging.testing import dec
 import nose.tools
 
 from neuroimaging.core.image import image
 from neuroimaging.utils.tests.data import repository
-from neuroimaging.core.api import Image, load_image, save_image, fromarray
+from neuroimaging.io.api import load_image, save_image
+from neuroimaging.core.api import Image, fromarray, merge_images
 from neuroimaging.core.api import parcels, data_generator, write_data
 
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine
 
-class TestImage:
+class TestImage(object):
 
     def setUp(self):
         self.img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
@@ -190,6 +192,31 @@ class TestImage:
         dtype = np.float32
         newdata, data = self.float32_to_dtype(dtype)
         nose.tools.assert_true(np.allclose(newdata, data))
+
+def test_merge_images():
+    """
+    Check that merge_images works, and that the CoordinateMap instance is
+    from the first one in the list.
+    """
+    img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
+    mimg = merge_images([img for i in range(4)])
+    yield nose.tools.assert_equal, mimg.shape, (4,) + img.shape
+    yield nptest.assert_almost_equal, mimg.affine[1:,1:], img.affine
+    yield nptest.assert_almost_equal, mimg.affine[0], np.array([1,0,0,0,0])
+    yield nptest.assert_almost_equal, mimg.affine[:,0], np.array([1,0,0,0,0])
+
+    # A list with different CoordinateMaps -- the merged images
+    # takes the first one
+
+    naffine = Affine(np.diag([-2,-4,-6,1.]),
+                     img.coordmap.input_coords,
+                     img.coordmap.output_coords)
+    nimg = Image(np.asarray(img), naffine)
+    mimg = merge_images([nimg, img, img, img])
+    yield nose.tools.assert_equal, mimg.shape, (4,) + img.shape
+    yield nptest.assert_almost_equal, mimg.affine[1:,1:], nimg.affine
+    yield nptest.assert_almost_equal, mimg.affine[0], np.array([1,0,0,0,0])
+    yield nptest.assert_almost_equal, mimg.affine[:,0], np.array([1,0,0,0,0])
 
 def test_slicing_returns_image():
     data = np.ones((2,3,4))

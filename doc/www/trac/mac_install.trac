@@ -1,0 +1,189 @@
+= Installing NiPy for development on Mac using Darwin Ports =
+
+----
+
+'''Xcode Tools'''
+
+Installed Xcode Tools 1.5 (for Panther: used latest tools if installing on 10.4 Tiger)
+
+Xcode Legacy Tools
+
+Available from Apple development site
+
+''drink a cup of coffee/beer''
+
+**Make sure X11SDK is installed
+
+**X11 issue: add
+{{{
+export DISPLAY=":0.0"
+}}} 
+to your .bashrc file
+
+----
+
+'''Darwin Ports'''
+
+http://darwinports.opendarwin.org/
+
+Install Darwin Ports
+Grabbed from this page:
+
+http://darwinports.opendarwin.org/getdp/
+
+{{{
+http://darwinports.opendarwin.org/downloads/DarwinPorts-1.3.1-10.3.dmg
+}}}
+----
+'''Subversion'''
+
+You will need subversion to get recent copies of numpy and matplotlib
+
+{{{
+sudo port install subversion
+}}}
+
+----
+
+== Start NiPy Dependencies Install ==
+
+So.. Once you have Darwin Ports installed, open a terminal
+
+
+----
+
+'''wxpython'''
+
+{{{
+sudo port install py-wxpython
+}}}
+''
+This took a while, so code on something else, or get another cup of coffee (beer)''
+
+
+----
+'''numpy'''
+
+{{{
+svn co http://svn.scipy.org/svn/numpy/trunk/ ./numpy-trunk
+cd numpy-trunk/
+python setup.py build
+sudo python setup.py install
+cd ..
+}}}
+
+----
+'''zlib-devel'''
+{{{
+sudo port install zlib
+}}}
+
+----
+'''freetype'''
+{{{
+sudo port install freetype
+}}}
+
+----
+'''agg'''
+{{{
+sudo port install antigraingeometry
+}}}
+----
+'''tk'''
+{{{
+sudo port install tk
+}}}
+
+----
+'''py-tkinter''
+{{{
+sudo port install py-tkinter
+}}}
+
+----
+'''gtk2'''
+{{{
+sudo port install gtk2
+}}}
+
+''Note: gtk2 failed on install so I installed and used FINK''
+
+
+https://fink.sourceforge.net/download/index.php
+
+''(Make sure to add . /sw/bin/init.sh to your .profile, .bashrc, or .bash_profile file)''
+{{{
+fink install pkgconfig
+fink install gtk+2
+}}}
+----
+'''py-gtk2'''
+{{{
+sudo port install py-gtk2
+}}}
+or
+{{{
+fink install pygtk
+}}}
+----
+'''matplotlib''' (intall from svn)
+{{{
+svn co https://svn.sourceforge.net/svnroot/matplotlib/trunk matplotlib-trunk
+cd matplotlib-trunk
+python setup.py build
+sudo python setup.py install
+cd ..
+}}}
+
+----
+'''scipy''' (install from svn)
+{{{
+svn co http://svn.scipy.org/svn/scipy/trunk ./scipy-trunk
+cd scipy-trunk/
+}}}
+''NOTE: We are using Jonathan Taylor's models package in the scipy sandbox. To include them create a file in Lib/sandbox/ called enabled_packages.txt containing the just the word 'models'.''
+{{{
+echo models > Lib/sandbox/enabled_packages.txt
+}}}
+
+I also had to install a fortran compiler, gfortran caused errors, but g77 worked fine.
+
+You can now build '''scipy''':
+''(This also takes a while...a watched compile always fails)''
+{{{
+python setup.py build
+sudo python setup.py install
+cd ..
+}}}
+Install '''netcdf''':
+{{{
+sudo port install netcdf
+}}}
+
+''This failed so I used FINK again:''
+{{{
+sudo fink install netcdf
+}}}
+
+Install '''MINC''':
+
+''NOTE: include and lib point to fink location of netcdf''
+
+[http://packages.bic.mni.mcgill.ca/tgz/minc-1.4.1.tar.gz]
+{{{
+download http://packages.bic.mni.mcgill.ca/tgz/minc-1.4.1.tar.gz
+tar xvzf minc-1.4.tar.gz (if it is not automatic)
+CFLAGS=-I/sw/include LDFLAGS=-L/sw/lib ./configure
+perl -pi -e 's/CLK_TCK/CLOCKS_PER_SEC/g' volume_io/Prog_utils/time.c
+make
+sudo make install
+}}}
+
+install '''NIPY''':
+
+''Note: netcdf installed by fink so netcdf include files are in /sw/include''
+{{{
+svn co http://neuroimaging.scipy.org/svn/ni/ni/trunk ./nipy-trunk
+cd nipy-trunk
+python setup.py build_ext -I/sw/include --inplace

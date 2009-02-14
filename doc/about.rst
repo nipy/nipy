@@ -1,7 +1,11 @@
-.. contents:
+.. _about_nipy:
 
-Mission
--------
+============
+ About NIPY
+============
 
-History
--------
+.. toctree::
+   :maxdepth: 2
+
+   mission
+   history

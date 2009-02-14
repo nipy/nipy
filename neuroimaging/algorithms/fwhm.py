@@ -22,7 +22,7 @@ import numpy as np
 from numpy.linalg import det
 from neuroimaging.fixes.scipy.stats.models.utils import recipr
 
-from neuroimaging.core.api import Image
+from neuroimaging.core.api import Image, Affine, CoordinateSystem
 
 class Resels(object):
     """The Resels class.
@@ -54,8 +54,8 @@ class Resels(object):
         self.clobber = clobber
         self.coordmap = coordmap
         self.D = D
-
-        _transform = self.coordmap.mapping.transform
+        self.normalized = normalized
+        _transform = self.coordmap.affine
         self.wedge = np.power(np.fabs(det(_transform)), 1./self.D)
 
     def integrate(self, mask=None):
@@ -94,7 +94,7 @@ class Resels(object):
         
         :Returns: FWHM
         """
-        return np.sqrt(4*np.log(2.)) * self.wedge * recipr(np.power(x, 1./self.D))
+        return np.sqrt(4*np.log(2.)) * self.wedge * recipr(np.power(resels, 1./self.D))
 
     def fwhm2resel(self, fwhm):
         """
@@ -106,21 +106,21 @@ class Resels(object):
 
         :Returns: resels
         """
-        return recipr(np.power(x / np.sqrt(4*np.log(2)) * self.wedge, self.D))
+        return recipr(np.power(fwhm / np.sqrt(4*np.log(2)) * self.wedge, self.D))
 
     def __iter__(self):
         """
         :Returns: ``self``
         """
         if not self.fwhm:
-            im = Image(np.zeros(self.coordmap.shape), coordmap=self.coordmap)
+            im = Image(np.zeros(self.resid.shape), coordmap=self.coordmap)
         else:
             im = \
               Image(self.fwhm, clobber=self.clobber, mode='w', coordmap=self.coordmap)
         self.fwhm = im
 
         if not self.resels:
-            im = Image(np.zeros(self.coordmap.shape), coordmap=self.coordmap)
+            im = Image(np.zeros(self.resid.shape), coordmap=self.coordmap)
         else:
             im = \
               Image(self.resels, clobber=self.clobber, mode='w', coordmap=self.coordmap)
@@ -443,9 +443,14 @@ class fastFWHM(Resels):
         :Returns: ``None``
         """
 
-        Resels.__init__(self, resid.coordmap.subcoordmap(0), **keywords)
-        self.n = resid.coordmap.shape[0]
-        self.resid = Image(resid)
+        cm = Affine(resid.coordmap.affine[1:,1:], 
+                    CoordinateSystem(resid.coordmap.input_coords.coordinates[1:]), 
+                    CoordinateSystem(resid.coordmap.output_coords.coordinates[1:]))
+
+        Resels.__init__(self, cm, **keywords)
+        self.n = resid.shape[0]
+        self.rarray = np.asarray(resid)
+        self.resid = Image(self.rarray, resid.coordmap)
 
     def __call__(self):
         """
@@ -461,7 +466,7 @@ class fastFWHM(Resels):
 
         if not self.normalized:
             for i in range(self.n):
-                _frame = self.rimage[slice(i, i+1)]
+                _frame = self.rarray[slice(i, i+1)]
                 _mu += _frame
                 _sumsq += _frame**2
 
@@ -474,9 +479,10 @@ class fastFWHM(Resels):
 
         Lzz = Lzy = Lzx = Lyy = Lyx = Lxx = 0.        
         for i in range(self.n):
+            verbose = True
             if verbose:
                 print 'Slice: [%d]' % i
-            _frame = self.rimage[slice(i, i+1)]
+            _frame = self.rarray[slice(i, i+1)]
             _frame = (_frame - _mu) * _invnorm
             _frame.shape = _frame.shape[1:]
 
@@ -496,14 +502,17 @@ class fastFWHM(Resels):
             del(dz); del(dy); del(dx); del(g) ; gc.collect()
             
         detlam = _calc_detlam(Lxx, Lyy, Lzz, Lyx, Lzx, Lzy)
+        print detlam.shape
+
 
         test = np.greater(detlam, 0)
         resels = np.sqrt(detlam * test)
+        print resels.shape, self.resels.shape
         fwhm = self.resel2fwhm(resels)
 
-        fullslice = [slice(0, x) for x in self.coordmap.shape]
-        self.resels[:] = resels
-        self.fwhm[:] = fwhm
+        fullslice = [slice(0, x) for x in self.resid.shape]
+        self.resels = Image(resels, self.coordmap)
+        self.fwhm = Image(fwhm, self.coordmap)
 
 
 def _calc_detlam(xx, yy, zz, yx, zx, zy):

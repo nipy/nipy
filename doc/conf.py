@@ -61,14 +61,14 @@ release = '0.1'
 today_fmt = '%B %d, %Y'
 
 # List of documents that shouldn't be included in the build.
-#unused_docs = []
+unused_docs = []
 
-# List of directories, relative to source directories, that shouldn't be searched
-# for source files.
-#exclude_dirs = []
+# List of directories, relative to source directories, that shouldn't
+# be searched for source files.
+exclude_trees = ['www']
 
 # what to put into API doc (just class doc, just init, or both)
-autoclass_content = 'both'
+autoclass_content = 'class'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 #add_function_parentheses = True
@@ -95,7 +95,7 @@ html_style = 'nipy.css'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = 'NIPY Home'
+html_title = 'NIPY Documentation'
 
 # The name of an image file (within the static path) to place at the top of
 # the sidebar.
@@ -113,6 +113,9 @@ html_last_updated_fmt = '%b %d, %Y'
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
 #html_use_smartypants = True
+
+# Content template for the index page.
+html_index = 'www/index.html'
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {'index': 'indexsidebar.html'}
@@ -153,14 +156,14 @@ htmlhelp_basename = project
 # [howto/manual]).
 
 latex_documents = [
-  ('users/index', 'nipy_user.tex', 'Neuroimaging in Python User Documentation',
+  ('contents', 'nipy.tex', 'Neuroimaging in Python Documentation',
    ur'The Neuroimaging in Python documentation team.','manual'),
-  ('devel/index', 'nipy_devel.tex',
-   'Neuroimaging in Python Developer Documentation',
-   ur'The Neuroimaging in Python documentation team.','manual'),
-  ('api/index', 'nipy_ref.tex',
-   'Neuroimaging in Python Reference Guide',
-   ur'The Neuroimaging in Python documentation team.','manual'),
+  ## ('devel/index', 'nipy_devel.tex',
+  ##  'Neuroimaging in Python Developer Documentation',
+  ##  ur'The Neuroimaging in Python documentation team.','manual'),
+  ## ('api/index', 'nipy_ref.tex',
+  ##  'Neuroimaging in Python Reference Guide',
+  ##  ur'The Neuroimaging in Python documentation team.','manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -169,7 +172,7 @@ latex_documents = [
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
-latex_use_parts = False
+latex_use_parts = True
 
 # Additional stuff for the LaTeX preamble.
 latex_preamble = """
