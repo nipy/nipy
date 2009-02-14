@@ -25,13 +25,19 @@ class CoordinateSystem(object):
         one, self.value_dtype, which should be a numpy scalar dtype. The other,
         self.dtype, which is basically a description of the CoordinateSystem.
 
-        :Parameters:
-            coordinates : ``[Coordinate`]``
-                The coordinates which make up the coordinate system
-            name : ``string``
-                The name of the coordinate system (optional)
-            dtype : ``np.dtype``
-                The dtype of the coordinates, should be a value_dtype scalar dtype.
+        Parameters
+        ----------
+        coordinates : ``[Coordinate`]``
+           The coordinates which make up the coordinate system
+        name : ``string``
+           The name of the coordinate system (optional)
+        dtype : ``np.dtype``
+        
+           The dtype of the coordinates, should be a value_dtype
+           scalar dtype.
+
+        Examples
+        --------
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
         {'dtype': dtype('float64'), 'name': 'input', 'coordinates': ['i', 'j']}
@@ -40,7 +46,6 @@ class CoordinateSystem(object):
         dtype('float64')
         >>> c.dtype
         dtype([('i', '<f8'), ('j', '<f8')])
-        >>>                                        
 
         """
         self.name = name
@@ -75,7 +80,7 @@ class CoordinateSystem(object):
         0
 
         """
-        return self.coordinates.index(name)
+        return self.coordinates.index(axisname)
 
     def rename(self, **kwargs):
         """
