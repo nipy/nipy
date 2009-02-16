@@ -428,7 +428,184 @@ class DelayContrastOutput(TOutput):
             if self.sd:
                 self.sdimg_iters[i].next().set(data.sd[i])
 
-class DelayHRF(hrf.SpectralHRF):
+class SpectralHRF(object):
+    '''
+    Delay filter with spectral or Taylor series decomposition
+    for estimating delays.
+
+    Liao et al. (2002).
+    '''
+
+    def __init__(self, input_hrf=glover, spectral=True, ncomp=2,
+                 names=['glover'], deriv=False, **keywords):
+        """
+        :Parameters:
+            `input_hrf` : TODO
+                TODO
+            `spectral` : bool
+                TODO
+            `ncomp` : int
+                TODO
+            `names` : TODO
+                TODO
+            `deriv` : bool
+                TODO
+        """
+
+        self.deriv = deriv
+        self.ncomp = ncomp
+        self.spectral = spectral
+        if self.n != 1:
+            raise ValueError, 'expecting one HRF for spectral decomposition'
+        self.deltaPCA()
+
+    def deltaPCA(self, tmax=50., lower=-15.0, delta=None):
+        """
+        Perform an expansion of fn, shifted over the values in delta.
+        Effectively, a Taylor series approximation to fn(t+delta), in delta,
+        with basis given by the filter elements. If fn is None, it assumes
+        fn=IRF[0], that is the first filter.
+
+        >>> GUI = True
+        >>> import numpy as np
+        >>> from pylab import plot, title, show
+        >>> from neuroimaging.modalities.fmri.hrf import glover, glover_deriv, SpectralHRF
+        >>>
+        >>> ddelta = 0.25
+        >>> delta = np.arange(-4.5,4.5+ddelta, ddelta)
+        >>> time = np.arange(0,20,0.2)
+        >>>
+        >>> hrf = SpectralHRF(glover)
+        >>>
+        >>> taylor = hrf.deltaPCA(delta=delta)
+        >>> curplot = plot(time, taylor.components[1](time))
+        >>> curplot = plot(time, taylor.components[0](time))
+        >>> curtitle=title('Shift using Taylor series -- components')
+        >>> show()
+        >>>
+        >>> curplot = plot(delta, taylor.coef[1](delta))
+        >>> curplot = plot(delta, taylor.coef[0](delta))
+        >>> curtitle = title('Shift using Taylor series -- coefficients')
+        >>> show()
+        >>>
+        >>> curplot = plot(delta, taylor.inverse(delta))
+        >>> curplot = plot(taylor.coef[1](delta) / taylor.coef[0](delta), delta)
+        >>> curtitle = title('Shift using Taylor series -- inverting w1/w0')
+        >>> show()
+        """
+
+        if delta is None: delta = np.arange(-4.5, 4.6, 0.1)
+        time = np.arange(lower, tmax, self.dt)
+        if callable(self.IRF):
+            irf = self.IRF
+        else:
+            irf = self.IRF[0]
+
+        H = []
+        for i in range(delta.shape[0]):
+            H.append(irf(time - delta[i]))
+        H = np.nan_to_num(np.asarray(H))
+        U, S, V = L.svd(H.T, full_matrices=0)
+
+        basis = []
+        for i in range(self.ncomp):
+            b = interpolant(time, U[:, i])
+
+            if i == 0:
+                d = np.fabs((b(time) * self.dt).sum())
+            b.f.y /= d
+            basis.append(b)
+
+
+        W = np.array([b(time) for b in basis[:self.ncomp]])
+
+        WH = np.dot(L.pinv(W.T), H.T)
+        
+        coef = [interpolant(delta, w) for w in WH]
+            
+        if coef[0](0) < 0:
+            coef[0].f.y *= -1.
+            basis[0].f.y *= -1.
+
+        def approx(time, delta):
+            value = 0
+            for i in range(self.ncomp):
+                value += coef[i](delta) * basis[i](time)
+            return value
+
+        approx.coef = coef
+        approx.components = basis
+
+        self.approx = approx
+        self.IRF = approx.components
+        self.n = len(approx.components)
+        self.names = ['%s_%d' % (self.names[0], i) for i in range(self.n)]
+
+        if self.n == 1:
+            self.IRF = self.IRF[0]
+
+        (self.approx.theta,
+         self.approx.inverse,
+         self.approx.dinverse,
+         self.approx.forward,
+         self.approx.dforward) = invertR(delta, self.approx.coef)
+        return approx
+
+    def __getitem__(self, i):
+        """
+        :Parameters:
+            `i` : int
+                TODO
+        
+        :Returns: `Filter`
+        
+        :Raises ValueError: if ``i`` is not an int
+        :Raises IndexError: if ``i`` is not a valid index
+        """
+        if not isinstance(i, int):
+            raise ValueError, 'integer needed'
+        if self.n == 1:
+            if i != 0:
+                raise IndexError, 'invalid index'
+            try:
+                IRF = self.IRF[0]
+            except:
+                IRF = self.IRF
+            return Filter(IRF, names=[self.names[0]])
+        else:
+            return Filter(self.IRF[i], names=[self.names[i]])
+
+    def convolve(self, fn, interval=None, dt=None):
+        """
+        Take a (possibly vector-valued) function fn of time and return
+        a linearly interpolated function after convolving with the filter.
+        """
+        if dt is None:
+            dt = self.dt
+        if interval is None:
+            interval = [self.tmin, self.tmax]
+        if self.n > 1:
+            value = []
+            for _IRF in self.IRF:
+                value.append(convolve_functions(fn, _IRF, interval, dt))
+            return value
+        else:
+            return convolve_functions(fn, self.IRF, interval, dt)
+
+    def __call__(self, time):
+        """
+        Return the values of the IRFs of the filter.
+        """
+        if self.n > 1:
+            value = np.zeros((self.n,) + time.shape)
+            for i in range(self.n):
+                value[i] = self.IRF[i](time)
+        else:
+            value = self.IRF(time)
+        return value
+
+
+class DelayHRF(SpectralHRF):
 
     '''
     Delay filter with spectral or Taylor series decomposition
