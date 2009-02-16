@@ -191,7 +191,7 @@ Bazaar Documentation
 The `bzr documentation <http://bazaar-vcs.org/Documentation>`_
 is thorough and excellent.
 
-Gael also posted a `bzr tutorial in French
+Benjamin Thyreau also kindly posted a `bzr tutorial in French
 <http://cirl.berkeley.edu/mb312/nipy-docs/tutoriel_bzr.pdf>`_.
 
 And we've start a collection of :ref:`bazaar_tips` for some
