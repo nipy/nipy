@@ -6,7 +6,7 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 
-from neuroimaging.modalities.fmri.utils import ConvolveFunctions
+from neuroimaging.modalities.fmri.utils import convolve_functions
 
 class Filter(object):
     '''
@@ -64,7 +64,6 @@ class Filter(object):
         else:
             return Filter(self.IRF[i], names=[self.names[i]])
 
-
     def __add__(self, other):
         """
         Take two Filters with the same number of outputs and create a new one
@@ -92,8 +91,8 @@ class Filter(object):
         newIRF = []
         interval = (self.tmin, self.tmax + other.tmax)
         for i in range(self.n):
-            curfn = ConvolveFunctions(self.IRF[i], other.IRF[i], interval,
-                                      self.dt)
+            curfn = convolve_functions(self.IRF[i], other.IRF[i], interval,
+                                       self.dt)
             newIRF.append(curfn)
         return Filter(newIRF)
 
@@ -109,10 +108,10 @@ class Filter(object):
         if self.n > 1:
             value = []
             for _IRF in self.IRF:
-                value.append(ConvolveFunctions(fn, _IRF, interval, dt))
+                value.append(convolve_functions(fn, _IRF, interval, dt))
             return value
         else:
-            return ConvolveFunctions(fn, self.IRF, interval, dt)
+            return convolve_functions(fn, self.IRF, interval, dt)
 
     def __call__(self, time):
         """
