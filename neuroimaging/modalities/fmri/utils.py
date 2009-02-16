@@ -7,15 +7,15 @@ linear_interp : a Formula for a linearly interpolated function of time
 
 events : a convenience function to generate sums of events
 
-events_and_amplitudes : a convenience function to generate sums of events,
-                        paired with amplitudes
-                 
+blocks : a convenience function to generate sums of blocks
+
+convolve_functions : numerically convolve two functions of time
 """
 
 __docformat__ = 'restructuredtext'
 
 import numpy as np
-
+import numpy.fft as FFT
 from scipy.interpolate import interp1d
 
 from sympy import Function, DiracDelta, Symbol
@@ -66,9 +66,9 @@ def linear_interp(times, values, fill=0, **kw):
     kw['kind'] = 'linear'
     i = interp1d(times, values, **kw)
     s = Function('interp%d' % linear_interp.counter, dummy=True)
-    linear_interp.counter += 1
     ff = Formula([s(t)])
-    ff['interp'] = i
+    ff.aliases['interp%d' % linear_interp.counter] = i
+    linear_interp.counter += 1
     return ff
 linear_interp.counter = 0
 
@@ -121,27 +121,36 @@ def step_function(times, values, fill=0):
         for i in range(d.shape[0]):
             f = f + np.greater(x, times[i+1]) * d[i]
         return f
+
     s = Symbol('step%d' % step_function.counter, dummy=True)
-    step_function.counter += 1
     ff = Formula([s(t)])
-    ff['step'] = anon
+    ff.aliases['step%d' % step_function.counter] = anon
+    step_function.counter += 1
+
     return ff
 step_function.counter = 0
 
-def events(generator, f=DiracDelta):
+def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
     """
     Return a sum of functions
-    based on a generator of times.
+    based on a sequence of times.
 
     Inputs:
     =======
 
-    generator : [float]
+    times : [float]
+
+    amplitudes : [float]
+        Optional sequence of amplitudes. Default to 1.
 
     f : sympy.Function
         Optional function. Defaults to DiracDelta, can be replaced with
         another function, f, in which case the result is the convolution
         with f.
+
+    g : sympy.Basic
+        Optional sympy expression function involving 'a', which
+        will be substituted by the values of in the generator.
 
     Examples:
     =========
@@ -153,84 +162,141 @@ def events(generator, f=DiracDelta):
     hrf(-9 + t) + hrf(-6 + t) + hrf(-3 + t)
     >>>
 
-    """
-    e = 0
-    for _t in generator:
-        e = e + f(t-_t)
-    return e
-
-def events_and_amplitudes(generator, f=DiracDelta, g=None):
-    """
-    Return a sum of DiracDelta functions (optionally convolved with f)
-    based on a generator of times.
-
-    Inputs:
-    =======
-
-    generator : [(float, float)]
-
-    f : sympy.Function
-        Optional function, can be replaced with HRF. Defaults to DiracDelta
-
-    g : sympy.Basic
-        Optional sympy expression function involving 'a', which
-        will be substituted by the values of in the generator.
-
-    Examples:
-    =========
-
-    >>> events_and_amplitudes(np.array([[2,3],[1,6],[-1,9]]))
+    >>> events([3,6,9], amplitudes=[2,1,-1])
     -DiracDelta(-9 + t) + 2*DiracDelta(-3 + t) + DiracDelta(-6 + t)
-    >>> from sympy import Symbol
+
     >>> b = [Symbol('b%d' % i, dummy=True) for i in range(3)]
     >>> a = Symbol('a')
     >>> p = b[0] + b[1]*a + b[2]*a**2
-    >>> events_and_amplitudes(np.array([[2,3],[1,6],[-1,9]]), g=p)
+    >>> events([3,6,9], amplitudes=[2,1,-1], g=p)
     (2*_b1 + 4*_b2 + _b0)*DiracDelta(-3 + t) + (-_b1 + _b0 + _b2)*DiracDelta(-9 + t) + (_b0 + _b1 + _b2)*DiracDelta(-6 + t)
-    >>>
+
     >>> h = Symbol('hrf')
-    >>> events_and_amplitudes(np.array([[2,3],[1,6],[-1,9]]), g=p, f=h)
+    >>> events([3,6,9], amplitudes=[2,1,-1], g=p, f=h)
     (2*_b1 + 4*_b2 + _b0)*hrf(-3 + t) + (-_b1 + _b0 + _b2)*hrf(-9 + t) + (_b0 + _b1 + _b2)*hrf(-6 + t)
-    
+
     """
     e = 0
     asymb = Symbol('a')
-    if g is None:
-        for a, _t in generator:
-            e = e + a * f(t-_t)
-    else:
-        for a, _t in generator:
-            e = e + g.subs(asymb, a) * f(t-_t)
+
+    if amplitudes is None:
+        def _amplitudes():
+            while True:
+                yield 1
+        amplitudes = _amplitudes()
+
+    for _t, a in zip(times, amplitudes):
+        e = e + g.subs(asymb, a) * f(t-_t)
     return e
 
-def blocks(generator):
+def blocks(intervals, amplitudes=None, g=Symbol('a')):
     """
     Return a step function
-    based on a generator of times.
+    based on a sequence of intervals.
 
     Inputs:
     =======
 
-    generator : [(float, float)]
+    intervals : [(float, float)]
+        "On" intervals for the block.
 
-    f : sympy.Function
-        Optional function, can be replaced with HRF. Defaults to DiracDelta
+    amplitudes : [float]
+        Optional amplitudes for each block. Defaults to 1.
 
     g : sympy.Basic
         Optional sympy expression function involving 'a', which
-        will be substituted by the values of in the generator.
+        will be substituted for 'a' in the generator.
 
     Examples:
     =========
     
-    """
-    e = 0
-    asymb = Symbol('a')
-    if g is None:
-        for a, _t in generator:
-            e = e + a * f(t-_t)
-    else:
-        for a, _t in generator:
-            e = e + g.subs(asymb, a) * f(t-_t)
-    return e
+    >>> tval = np.array([0.4,1.4,2.4,3.4]).view(np.dtype([('t', np.float)]))
+    >>> b = blocks([[1,2],[3,4]])
+    >>> from formula import Design
+    >>> d = Design(b)
+    >>> d(tval)
+    array([(0.0,), (1.0,), (0.0,), (1.0,)], 
+          dtype=[('step0(t)', '<f8')])
 
+    >>> b = blocks([[1,2],[3,4]], amplitudes=[3,5])
+    >>> d = Design(b)
+    >>> d(tval)
+    array([(0.0,), (3.0,), (0.0,), (5.0,)], 
+          dtype=[('step1(t)', '<f8')])
+
+    >>> a = Symbol('a')
+    >>> b = blocks([[1,2],[3,4]], amplitudes=[3,5], g=a+1)
+    >>> d = Design(b)
+    >>> d(tval)
+    array([(0.0,), (4.0,), (0.0,), (6.0,)], 
+          dtype=[('step2(t)', '<f8')])
+
+    """
+    t = [-np.inf]
+    v = [0]
+    asymb = Symbol('a')
+    if amplitudes is None:
+        def _amplitudes():
+            while True:
+                yield 1
+        amplitudes = _amplitudes()
+
+    for _t, a in zip(intervals, amplitudes):
+        t += list(_t)
+        v += [g.subs(asymb, a), 0]
+
+    t.append(np.inf)
+    v.append(0)
+
+    return step_function(t, v)
+
+def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, normalize=(0, 0)):
+    """
+    Convolve fn1 with fn2 -- where fn1 may return a multidimensional output.
+    
+    :Parameters:
+        `fn1` : TODO
+            TODO
+        `fn2` : TODO
+            TODO
+        `interval` : TODO
+            TODO
+        `dt` : TODO
+            TODO
+        `padding_f` : float
+            TODO
+        `normalize` : TODO
+            TODO
+            
+    :Returns: TODO
+    """
+
+    max_interval, min_interval = max(interval), min(interval)
+    ltime = max_interval - min_interval
+    time = np.arange(min_interval, max_interval + padding_f * ltime, dt)
+
+    _fn1 = np.array(fn1(time))
+    _fn2 = np.array(fn2(time))
+
+    if normalize[0]:
+        _fn1 /= np.sqrt(np.add.reduce(_fn1**2))
+    _fft1 = FFT.rfft(_fn1)
+
+    if normalize[1]:
+        _fn2 /= np.sqrt(np.add.reduce(_fn2**2))
+    _fft2 = FFT.rfft(_fn2)
+
+    value = FFT.irfft(_fft1 * _fft2)
+    _minshape = min(time.shape[0], value.shape[-1])
+    time = time[0:_minshape]
+    value = value[0:_minshape]
+    
+    if len(value.shape) == 2:
+        fns = []
+        for i in range(value.shape[0]):
+            fns.append(interp1d(time + min_interval, value[i]))
+
+        return fns
+    else:
+        newf = interp1d(time + min_interval, value)
+        return newf
