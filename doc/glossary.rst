@@ -79,14 +79,15 @@
       is free for academic use, and open-source, but not free for
       commercial use.
 
-   GPL
+   GPL 
       The GPL_ is the GNU general public license.  It is one of the
       most commonly-used open-source sofware licenses.  The
       distinctive feature of the GPL license is that it requires that
       any code derived from GPL code also uses a GPL license.  It also
       requires that any code that is statically or dynamically linked
       to GPL code has a GPL-compatible license. See:
-      http://en.wikipedia.org/wiki/GNU_General_Public_License
+      http://en.wikipedia.org/wiki/GNU_General_Public_License and
+      http://www.gnu.org/licenses/gpl-faq.html
 
    ICA
       Independent component analysis is a multivariate technique
