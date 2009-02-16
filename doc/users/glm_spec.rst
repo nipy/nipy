@@ -6,6 +6,7 @@ In this tutorial we will discuss NiPy's specification
 of a typical event-related fMRI model.
 
 This involves:
+
 * experimental model: a description of the experimental protocol
   (function of experimental time)
 * neuronal model: a model of how a particular neuron responds to the

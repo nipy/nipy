@@ -4,8 +4,9 @@
 
 You can load images in NIPY
 
-.. testcode::
+.. plot::
 
+   import matplotlib.pylab as plt
    from neuroimaging.core.api import load_image
    print 'Hello'
 
@@ -16,6 +17,8 @@ You can load images in NIPY
 
    for x in range(10):
       print f(x)
+
+   plt.plot(range(10))
 
 That probably worked.
 

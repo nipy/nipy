@@ -24,7 +24,8 @@
 
 .. Working process
 .. _pynifti: http://niftilib.sourceforge.net/
-.. _nifticlibs: http://nifti.nimh.nih.gov/
+.. _nifticlibs: http://nifti.nimh.nih.gov
+.. _nifti: http://nifti.nimh.nih.gov
 .. _`nipy launchpad`: https://launchpad.net/nipy
 .. _launchpad: https://launchpad.net/
 .. _`nipy trunk`: https://code.launchpad.net/~nipy-developers/nipy/trunk
