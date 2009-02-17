@@ -120,18 +120,20 @@
    PCA
       Principal component analysis is a multivariate technique to
       determine orthogonal components across multiple sources (or
-      sensors).  See :term:`ICA` and the `wikipedia PCA` page.
+      sensors).  See :term:`ICA` and the `wikipedia PCA`_ page.
 
-   PET
+   PET 
       Positron emission tomography is a nethod of detecting the
       spatial distributions of certain radiolabeled compounds -
-      usually in the brain.  PET was the first mainstream technique
-      used for detection regional changes in blood-flow as an index of
-      which brain areas were active when the subject is doing various
-      tasks, or at rest.  These studies used radiolabeled water to
-      mark blood flow.  This use has been almost completely replaced
-      by the less invasive :term:`BOLD` :term:`FMRI` technique.  See
-      the `wikipedia PET`_ entry.
+      usually in the brain.  The scanner detectors pick up the spatial
+      distribution of emitted radiation from within the body.  From
+      this pattern, it is possible to reconstruct the distribution of
+      radiactivity in the body, using techniques such as filtered back
+      projection.  PET was the first mainstream technique used for
+      detecting regional changes in blood-flow as an index of which
+      brain areas were active when the subject is doing various tasks,
+      or at rest. These studies nearly all used :term:`water
+      activation PET`. See the `wikipedia PET`_ entry.
 
    SPM
       SPM (statistical parametric mapping) refers either to the
@@ -172,5 +174,15 @@
       regular grid in three dimensional space - see
       http://en.wikipedia.org/wiki/Voxel
 
+   water activation PET
+      A :term:`PET` technique to detect regional changes in blood
+      flow. Before each scan, we inject the subject with radiolabeled
+      water.  The radiolabeled water reaches the arterial blood, and
+      then distributes (to some extent) in the brain.  The
+      concentration of radioactive water increases in brain areas with
+      higher blood flow.  Thus, the image of estimated counts in the
+      brain has an intensity that is influenced by blood flow.  This
+      use has been almost completely replaced by the less invasive
+      :term:`BOLD` :term:`FMRI` technique.
 
 .. include:: links_names.txt
