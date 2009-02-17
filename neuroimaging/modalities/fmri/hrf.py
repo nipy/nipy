@@ -85,7 +85,7 @@ class SpectralHRF(filters.Filter):
             raise ValueError, 'expecting one HRF for spectral decomposition'
         self.deltaPCA()
 
-    def deltaPCA(self, tmax=50., lower=-15.0, delta=np.arange(-4.5, 4.6, 0.1)):
+    def deltaPCA(self, tmax=50., lower=-15.0, delta=None):
         """
         Perform an expansion of fn, shifted over the values in delta.
         Effectively, a Taylor series approximation to fn(t+delta), in delta,
@@ -118,10 +118,9 @@ class SpectralHRF(filters.Filter):
         >>> curplot = plot(taylor.coef[1](delta) / taylor.coef[0](delta), delta)
         >>> curtitle = title('Shift using Taylor series -- inverting w1/w0')
         >>> show()
-
-
         """
 
+        if delta is None: delta = np.arange(-4.5, 4.6, 0.1)
         time = np.arange(lower, tmax, self.dt)
         if callable(self.IRF):
             irf = self.IRF

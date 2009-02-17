@@ -1,17 +1,23 @@
-#
-# A pair of directives for inserting content that will only appear in
-# either html or latex.
-#
+"""Sphinx directives for selective inclusion of contents.
 
+A pair of directives for inserting content that will only appear in
+either html or latex.
+"""
+
+# Required modules
 from docutils.nodes import Body, Element
-from docutils.writers.html4css1 import HTMLTranslator
-from sphinx.latexwriter import LaTeXTranslator
 from docutils.parsers.rst import directives
 
-class html_only(Body, Element):
+
+# Code begins
+class only_base(Body, Element):
+    def dont_traverse(self, *args, **kwargs):
+        return []
+
+class html_only(only_base):
     pass
 
-class latex_only(Body, Element):
+class latex_only(only_base):
     pass
 
 def run(content, node_class, state, content_offset):
@@ -20,51 +26,30 @@ def run(content, node_class, state, content_offset):
     state.nested_parse(content, content_offset, node)
     return [node]
 
-try:
-    from docutils.parsers.rst import Directive
-except ImportError:
-    from docutils.parsers.rst.directives import _directives
+def html_only_directive(name, arguments, options, content, lineno,
+                        content_offset, block_text, state, state_machine):
+    return run(content, html_only, state, content_offset)
 
-    def html_only_directive(name, arguments, options, content, lineno,
-                            content_offset, block_text, state, state_machine):
-        return run(content, html_only, state, content_offset)
+def latex_only_directive(name, arguments, options, content, lineno,
+                         content_offset, block_text, state, state_machine):
+    return run(content, latex_only, state, content_offset)
 
-    def latex_only_directive(name, arguments, options, content, lineno,
-                             content_offset, block_text, state, state_machine):
-        return run(content, latex_only, state, content_offset)
-
-    for func in (html_only_directive, latex_only_directive):
-        func.content = 1
-        func.options = {}
-        func.arguments = None
-
-    _directives['htmlonly'] = html_only_directive
-    _directives['latexonly'] = latex_only_directive
-else:
-    class OnlyDirective(Directive):
-        has_content = True
-        required_arguments = 0
-        optional_arguments = 0
-        final_argument_whitespace = True
-        option_spec = {}
-
-        def run(self):
-            self.assert_has_content()
-            return run(self.content, self.node_class,
-                       self.state, self.content_offset)
-
-    class HtmlOnlyDirective(OnlyDirective):
-        node_class = html_only
-
-    class LatexOnlyDirective(OnlyDirective):
-        node_class = latex_only
-
-    directives.register_directive('htmlonly', HtmlOnlyDirective)
-    directives.register_directive('latexonly', LatexOnlyDirective)
+def builder_inited(app):
+    if app.builder.name == 'html':
+        latex_only.traverse = only_base.dont_traverse
+    else:
+        html_only.traverse = only_base.dont_traverse
 
 def setup(app):
+    app.add_directive('htmlonly', html_only_directive, True, (0, 0, 0))
+    app.add_directive('latexonly', latex_only_directive, True, (0, 0, 0))
     app.add_node(html_only)
     app.add_node(latex_only)
+
+    # This will *really* never see the light of day As it turns out,
+    # this results in "broken" image nodes since they never get
+    # processed, so best not to do this.
+    # app.connect('builder-inited', builder_inited)
 
     # Add visit/depart methods to HTML-Translator:
     def visit_perform(self, node):
@@ -76,12 +61,7 @@ def setup(app):
     def depart_ignore(self, node):
         node.children = []
 
-    HTMLTranslator.visit_html_only = visit_perform
-    HTMLTranslator.depart_html_only = depart_perform
-    HTMLTranslator.visit_latex_only = visit_ignore
-    HTMLTranslator.depart_latex_only = depart_ignore
-
-    LaTeXTranslator.visit_html_only = visit_ignore
-    LaTeXTranslator.depart_html_only = depart_ignore
-    LaTeXTranslator.visit_latex_only = visit_perform
-    LaTeXTranslator.depart_latex_only = depart_perform
+    app.add_node(html_only, html=(visit_perform, depart_perform))
+    app.add_node(html_only, latex=(visit_ignore, depart_ignore))
+    app.add_node(latex_only, latex=(visit_perform, depart_perform))
+    app.add_node(latex_only, html=(visit_ignore, depart_ignore))

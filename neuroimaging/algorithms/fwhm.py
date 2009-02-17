@@ -25,7 +25,8 @@ from neuroimaging.fixes.scipy.stats.models.utils import recipr
 from neuroimaging.core.api import Image
 
 class Resels(object):
-    
+    """The Resels class.
+    """
     def __init__(self, coordmap, normalized=False, fwhm=None, resels=None,
                  mask=None, clobber=False, D=3):
         """

@@ -17,8 +17,8 @@ def resample(image, target, mapping, shape, order=3):
     a callable that takes a physical coordinate in "target"
     and gives a physical coordinate in "image". 
 
-    INPUTS:
-    -------
+    INPUTS
+    ------
     image -- Image instance that is to be resampled
     target -- target CoordinateMap for output image
     mapping -- transformation from target.output_coords
@@ -29,8 +29,8 @@ def resample(image, target, mapping, shape, order=3):
     shape -- shape of output array, in target.input_coords
     order -- what order of interpolation to use in `scipy.ndimage`
 
-    OUTPUTS:
-    --------
+    OUTPUTS
+    -------
     output -- Image instance with interpolated data and output.coordmap == target
                   
     """
