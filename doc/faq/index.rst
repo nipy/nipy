@@ -1,8 +1,8 @@
 .. _faq-index:
 
-================
-  The nipy FAQ
-================
+=====
+ FAQ
+=====
 
 .. htmlonly::
 
@@ -14,4 +14,6 @@
 .. toctree::
    :maxdepth: 2
 
-   nipy_faq.rst
+   why
+   licensing   
+   documentation_faq   

@@ -1,0 +1,13 @@
+{% extends "../../_templates/indexsidebar.html" %}
+
+{% block quicklinks %}
+<h3>Quick links</h3>
+
+<ul>
+<li><a href="{{ pathto('doc/manual/html/about') }}"> About</a></li>
+<li><a href="http://projects.scipy.org/mailman/listinfo/nipy-devel">Mailing list</a></li>
+<li><a href="{{ pathto('doc/manual/html/license') }}"> License</a></li>
+<li><a href="{{ pathto('funding') }}"> Funding</a></li>
+<li><a href="{{ pathto('doc/manual/html/publications') }}"> Publications</a></li>
+</ul>
+{% endblock %}

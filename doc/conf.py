@@ -28,8 +28,14 @@ import ipython_console_highlighting
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['mathmpl', 'ipython_console_highlighting', 'sphinx.ext.autodoc',
-              'inheritance_diagram', 'only_directives', 'plot_directive']
+extensions = ['matplotlib.sphinxext.mathmpl', 
+              'matplotlib.sphinxext.only_directives',
+              'matplotlib.sphinxext.plot_directive',
+              'sphinx.ext.autodoc',
+              'sphinx.ext.doctest',
+              'ipython_console_highlighting', 
+              'inheritance_diagram', 
+              'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -38,11 +44,12 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'contents'
 
 # General substitutions.
 project = 'nipy'
-copyright = '2008, Neuroimaging in Python team'
+#copyright = ':ref:`2005-2009, Neuroimaging in Python team. <nipy-software-license>`' 
+copyright = '2005-2009, Neuroimaging in Python team' 
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -59,11 +66,14 @@ release = '0.1'
 today_fmt = '%B %d, %Y'
 
 # List of documents that shouldn't be included in the build.
-#unused_docs = []
+unused_docs = []
 
-# List of directories, relative to source directories, that shouldn't be searched
-# for source files.
-#exclude_dirs = []
+# List of directories, relative to source directories, that shouldn't
+# be searched for source files.
+exclude_trees = ['www']
+
+# what to put into API doc (just class doc, just init, or both)
+autoclass_content = 'class'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 #add_function_parentheses = True
@@ -86,11 +96,11 @@ pygments_style = 'sphinx'
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-html_style = 'default.css'
+html_style = 'nipy.css'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = 'NIPY Documentation'
 
 # The name of an image file (within the static path) to place at the top of
 # the sidebar.
@@ -109,8 +119,11 @@ html_last_updated_fmt = '%b %d, %Y'
 # typographically correct entities.
 #html_use_smartypants = True
 
+# Content template for the index page.
+html_index = 'www/index.html'
+
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {'index': 'indexsidebar.html'}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -120,7 +133,7 @@ html_last_updated_fmt = '%b %d, %Y'
 #html_use_modindex = True
 
 # If true, the reST sources are included in the HTML build as _sources/<name>.
-#html_copy_source = True
+html_copy_source = True
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
@@ -147,11 +160,15 @@ htmlhelp_basename = project
 # (source start file, target name, title, author, document class
 # [howto/manual]).
 
-main_manual_tex = project + '.tex'
 latex_documents = [
-  ('index', main_manual_tex, 'Neuroimaging in Python Documentation',
-   ur'The Neuroimaging in Python documentation team.',
-   'manual'),
+  ('contents', 'nipy.tex', 'Neuroimaging in Python Documentation',
+   ur'The Neuroimaging in Python documentation team.','manual'),
+  ## ('devel/index', 'nipy_devel.tex',
+  ##  'Neuroimaging in Python Developer Documentation',
+  ##  ur'The Neuroimaging in Python documentation team.','manual'),
+  ## ('api/index', 'nipy_ref.tex',
+  ##  'Neuroimaging in Python Reference Guide',
+  ##  ur'The Neuroimaging in Python documentation team.','manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -160,13 +177,19 @@ latex_documents = [
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
-#latex_use_parts = False
+latex_use_parts = True
 
 # Additional stuff for the LaTeX preamble.
-#latex_preamble = ''
+latex_preamble = """
+   \usepackage{amsmath}
+   \usepackage{amssymb}
+   % Uncomment these two if needed
+   %\usepackage{amsfonts}
+   %\usepackage{txfonts}
+"""
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []
 
 # If false, no module index is generated.
-#latex_use_modindex = True
+latex_use_modindex = True

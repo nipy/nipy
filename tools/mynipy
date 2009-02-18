@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+
+"""
+Simple script to quickly change the symbolic link to your nipy source branch.
+
+When you build your source branch, perform an inplace build.  Then
+mynipy will update the symlink in your site-packages directory to
+point to the branch you specify.  This allows you to quickly switch
+your working version of nipy without having to reinstall to your
+site-packages or modify your PYTHONPATH.
+
+Install
+-------
+
+    We don't have a proper installer yet, simply copy this into a bin
+    directory and make sure it's permissions are executable.  For
+    instance, I installed mynipy in my local bin directory:
+
+    $HOME/local/bin/mynipy
+
+Usage
+-----
+
+    From your nipy-repo, which has several nipy bzr branches as
+    subdirectories like this:
+
+    nipy-repo/trunk-lp
+    nipy-repo/trunk-dev
+    nipy-repo/trunk-mbrett
+
+    This will make the 'trunk-mbrett' my current neuroimaging package:
+    
+    $ mynipy trunk-mbrett
+    
+"""
+
+import os
+import sys
+import subprocess
+
+try:
+    nipypath = sys.argv[1]
+except IndexError:
+    # The curdir option doesn't appear to work.  Matthew?
+    # If we're in a source branch directory, the 'import neuroimaging'
+    # below gives us the source dir, not the site-packages directory.
+    # So the symlink results in an error.
+    #nipypath = os.curdir
+    print __doc__
+    raise ValueError
+
+nipypath = os.path.abspath(nipypath)
+neuroimaging_path = os.path.join(nipypath, 'neuroimaging')
+
+if not os.path.isdir(neuroimaging_path):
+    raise OSError('No neuroimaging path in input path ' + nipypath)
+
+print "Changing 'neuroimaging' path to: \n  ", neuroimaging_path, "\n"
+
+# Find where neuroimaging is now
+try:
+    import neuroimaging
+    site_pkgs, nipy_ln  = os.path.split(neuroimaging.__path__[0])
+except ImportError:
+    # first time this script is run, we'll place it where numpy is installed
+    try:
+        print 'First developer install of neuroimaging,'
+        print '\t installing neuroimaging link with numpy is installed.'
+        import numpy
+        site_pkgs, numpy_ln  = os.path.split(numpy.__path__[0])
+        site_pkgs = os.path.join(site_pkgs, 'neuroimaging')
+    except ImportError:
+        raise ImportError('Unable to determine where to install neuroimaging.')
+
+cmd = 'ln -sf %s %s' % (neuroimaging_path, site_pkgs)
+print cmd
+subprocess.call(cmd, shell=True)

@@ -2,9 +2,15 @@
  Nipy Documentation
 ====================
 
-This is the top level build directory for the sphinx nipy documentation.  All
-of the documentation is written using sphinx_, a python documentation system
-built on top of ReST_.  This directory contains
+This is the top level build directory for the nipy documentation.  All
+of the documentation is written using Sphinx_, a python documentation
+system built on top of reST_.  In order to build the documentation,
+you must have Sphinx v0.5 or greater installed.
+
+This directory contains:
+
+* Makefile - the build script to build the HTML or PDF docs. Type
+  ``make help`` for a list of options.
 
 * users - the user documentation.
 
@@ -14,41 +20,35 @@ built on top of ReST_.  This directory contains
 
 * api - placeholders to automatically generate the api documentation
 
-* index.rst - the top level include document for sampledocs document.
+* www - source files for website only reST documentss which should not
+  go in the generated PDF documentation.
+
+* links_names.txt - reST document with hyperlink targets for common
+  links used throughout the documentation
+
+* .rst files - some top-level documentation source files
 
 * conf.py - the sphinx configuration.
 
-* make.py - the build script to build the html or PDF docs.
-
 * sphinxext - some extensions to sphinx to handle math, ipython syntax
-  highlighting, autodocs.
+  highlighting, numpy_ docstring
+  parsing, and autodocs.
 
 * _static - used by the sphinx build system.
 
 * _templates - used by the sphinx build system.
 
+
 Building the documentation
 --------------------------
 
-Once the documentation is built, the **Developer's Guide** has
-sections on *How to write documentation* and a *Sphinx Cheat Sheet*.
-You need to have sphinx_ and graphviz_ installed in order to build the
-documentation.
+Instructions for building the documentation are in the file:
+``devel/guidelines/howto_document.rst``
 
-The ``make.py`` script is used to build all of the documentation. For
-html documentation do::
+.. Since this README.txt is not processed by Sphinx during the
+.. documentation build, I've included the links directly so it is at
+.. least a valid reST doc.
 
-  python make.py html
-
-For PDF documentation do::
-
-  python make.py latex
-
-The built documentation is then placed in a ``build/html`` or
-``build/latex`` subdirectories.
-
-.. _graphviz: http://www.graphviz.org/
-.. _sphinx: http://sphinx.pocoo.org/
-.. _ReST: http://docutils.sourceforge.net/rst.html
-
-
+.. _Sphinx: http://sphinx.pocoo.org/
+.. _reST: http://docutils.sourceforge.net/rst.html
+.. _numpy: http://www.scipy.org/NumPy

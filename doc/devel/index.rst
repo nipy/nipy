@@ -1,8 +1,8 @@
 .. _developers-guide-index:
 
-==============================
-  The nipy Developers' Guide
-==============================
+=================
+ Developer Guide
+=================
 
 .. htmlonly::
 
@@ -12,14 +12,12 @@
 .. toctree::
    :maxdepth: 2
 
-   howto_document.rst
-   sphinx_helpers.rst
-   bzr_workflow.rst
-   bzr_administration.rst
-   virtualenv-tutor.rst
-   tricked_out_emacs.rst
-   usecases/index.rst
-   pynifti.rst
-   registration_api.rst
-   roadmap.rst
-   TODO.rst
+   development_quickstart
+   install/index
+   guidelines/index
+   planning/index
+   software_design/index
+   software_design/usecases/index
+   tools/index
+
+   pynifti
