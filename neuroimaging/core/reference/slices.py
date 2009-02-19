@@ -37,7 +37,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
     f[nout, nin] = 1.
 
     input_coords = CoordinateSystem(['i%d' % d for d in range(len(shape))], 
-                                    'slice', output_coords.value_dtype)
+                                    'slice', output_coords.coord_dtype)
 
     g = Affine(f, input_coords, output_coords)
     return ArrayCoordMap.from_shape(g, shape)

@@ -50,7 +50,7 @@ def test_dtype():
     ax2 = CoordinateSystem('y', dtype=np.int64)
 
     cs = product(ax1, ax2)
-    yield assert_equal, cs.value_dtype, np.dtype(np.int64)
+    yield assert_equal, cs.coord_dtype, np.dtype(np.int64)
     yield assert_equal, cs.dtype, np.dtype([('x', np.int64), ('y', np.int64)])
 
     # the axes should be typecast in the CoordinateSystem
