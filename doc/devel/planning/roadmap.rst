@@ -4,119 +4,17 @@
  Nipy roadmap
 ==============
 
-Registration
-------------
+We plan to release a protoype of NIPY_ by the Summer of 2009.  This
+will include a full FMRI analysis, 2D visualization, and integration
+with other packages for spatial processing (SPM_ and FSL_).  We will
+continue to improve our documentation and tutorials with the aim of
+providing a full introduction to neuroimaging analysis.
 
-Matthew wants:
-
-- A collection of standard images for testing on, from different
-  scanners, with different levels of noise, or movement.  Possibly
-  lesions.  Provenance and licensing from get-go.  Maybe some fruit.
-
-Tom's plans / work:
-
-Current state is:
-
-- Actual code for rigid body registration with a variety of cost
-  functions is in `neuroimaging.fixes.scipy.ndimage`.  Methods take
-  two ndarrays as input for registration, with associated affine
-  mappings into real space.
-- Various higher-level wrapper functions for automating movement
-  correction, anatomical to functional registration.  This is
-  currently in `lp:~twaite/+junk/registration`.
-- Segmentation similarly in `fixes.scipy.ndimage`, basic routines,
-  whereas some higher level and more specialized code in
-  `lp:~twaite/+junk/segmentation`.
-- There is some normalization code in the
-  `lp:~twaite/+junk/registration` in `normz`.  This is a port of the
-  SPM linear and non-linear normalization.
-
-Plan is:
-
-#. Complete testing of moving interpolation to Unser spline algorithm
-   (implemented already in `ndimage` interpolation) - from Tom's custom
-   interpolation.
-#. Put Tom's custom cubic interpolation algorithm somewhere for
-   reference, and because it is quick.
-#. Complete / integrate rigid body registration into nipy_, by using
-   nipy_ image IO, image registration.  This is work in
-   `lp:~twaite/+junk/registration`.  It will probably end up somewhere
-   like `neuroimaging.algorithms.spatialprocessing`. 
-#. Review general framework for spatial normalization code (for
-   documentation and better code understanding)
-#. Refactor SPM elastic deformation code for greater clarity and maybe
-   greater potential for parallel implementation. 
-#. Design test case images / arrays for components of spatial
-   normalization - phantoms for example.
-#. In due course we need to think more carefully about validation
-   algorithms. 
-#. Document implementing resampling using the Unser ndimage interpolate.
-#. Work on smoothing spline code with Jonathan (Ruppert and Carrol's work to be discussed)
-
-In long term:
-
-#. HAMMER with Karl Young
-#. Work with Karl on gradient-based rigid body registration.
-#. Bias field correction (see Karl).
-#. Segmentation
-
-Chris' plans / work:
-
-Current state is:
-
-Plan is:
-
-#. Fix NiftiIO.
-   - Fix pixdim.
-   - Support dtype on file saving. Specify a dtype keyword in image.save.
-#. Document and automate nipy's use of PyNifti source.
-#. Review of Rick Reynold's (AFNI) changes to Nifti per Chris's request.
-#. Clean up SamplingGrid code.
-   - Rename to CoordinateMap.
-   - Affine is 5x4 in time volume slicing. Needs to be fixed.
-   - 1 voxel offset in affine (possible mat to python functions - ask Jonathan)
-   - Orientation/names issue.
-#. Fix the viewer and install in nipy-viz.
-#. Install instructions/example script for Mayavi.
-#. Clean up user documentation and website.
-#. Give Jonathan his FIAC examples from nipy-sandbox.
-
-
-General Plan:
-
-#. Diagnostics.
-
-Jonathan
---------
-- Cleanup the FIAC examples and make sure it's understandable for the
-  general audience.
-- Once we have nipy registration, remove the FSL preprocessing from
-  the FIAC examples.
-
-
-Questions
----------
-- Iterators to Generators status.  There should be no Iterators anymore.
-
-- Smoothing splines.  Not necessary in the near term... have a
-  smoothers sprint at a later date.
-
-- Intrinsic volume weave code and algorithm understanding.
-
-- Statistics code.
-
-- fmristat status.  Focus on getting the FIAC examples working.  Use
-  this to gear refactoring of public api.
-
-- FmriImageList. what is it and how do we make it work.
-  Once this is working can remove the concatenate coordinate map.
-
-- Jonathan's current projects and availability to be at Berkeley.
-    - Participate in Monday morning meetings via conference call.
-    - Try and join coding sprints once a week or every other week,
-      either at UCB or Stanford.
-
-
+We will also extend our collaborations with other neuroimaging groups,
+integrating more functionality into NIPY and providing better
+interoperability with other packages.  This will include the design
+and implementation of a pipeline/batching system, integration of
+registration algorithms, and improved 2D and 3D visualization.
 
 
 .. include:: ../../links_names.txt
