@@ -1,7 +1,8 @@
 """
 Coordinate systems are used to represent the spaces in which the images reside.
 
-A coordinate system contains coordinates.  For example a 3D coordinate system contains 3 coordinates: the first, second and third.
+A coordinate system contains coordinates.  For example a 3D coordinate
+system contains 3 coordinates: the first, second and third.
 
 """
 __docformat__ = 'restructuredtext'
@@ -18,7 +19,7 @@ class CoordinateSystem(object):
 
     """
 
-    def __init__(self, coordinates, name= '', dtype=np.float):
+    def __init__(self, coord_names, name= '', coord_dtype=np.float):
         """
         Create a coordinate system with a given name and coordinate names.
         There are also two dtypes associated to the CoordinateSystem:
@@ -27,20 +28,19 @@ class CoordinateSystem(object):
 
         Parameters
         ----------
-        coordinates : ``[Coordinate`]``
-           The coordinates which make up the coordinate system
-        name : ``string``
-           The name of the coordinate system (optional)
-        dtype : ``np.dtype``
-        
-           The dtype of the coordinates, should be a value_dtype
-           scalar dtype.
+        coord_names : iterable
+           A sequence of coordinate names.
+        name : string, optional
+           The name of the coordinate system
+        dtype : np.dtype, optional
+           The dtype of the coord_names.  This should be a built-in numpy
+           scalar dtype. (default is np.float)
 
         Examples
         --------
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
-        {'dtype': dtype('float64'), 'name': 'input', 'coordinates': ['i', 'j']}
+        {'dtype': dtype('float64'), 'name': 'input', 'coord_names': ['i', 'j']}
 
         >>> c.value_dtype
         dtype('float64')
@@ -49,24 +49,29 @@ class CoordinateSystem(object):
 
         """
         self.name = name
-        if len(set(coordinates)) != len(coordinates):
-            raise ValueError, 'coordinates must have distinct names'
+        # this allows coord_names to be an iterator and have a length
+        coord_names = list(coord_names)
+        # Make sure each coordinate is unique
+        if len(set(coord_names)) != len(coord_names):
+            raise ValueError, 'coord_names must have distinct names'
 
         # verify that the dtype is value_dtype for sanity
         sctypes = (np.sctypes['int'] + np.sctypes['float'] + 
                    np.sctypes['complex'] + np.sctypes['uint'])
-        dtype = np.dtype(dtype)
-        if dtype not in sctypes:
+        coord_dtype = np.dtype(coord_dtype)
+        if coord_dtype not in sctypes:
             raise ValueError, 'Coordinate dtype should be one of %s' % `sctypes`
-        self._dtype = dtype
-        self.coordinates = list(coordinates)
+        self._coord_dtype = coord_dtype
+        self.coord_names = coord_names
 
     def _getdtype(self):
-        return np.dtype([(name, self._dtype) for name in self.coordinates])
-    dtype = property(_getdtype, doc='dtype of CoordinateSystem with named fields')
+        return np.dtype([(name, self._coord_dtype) 
+                         for name in self.coord_names])
+    dtype = property(_getdtype, 
+                     doc='dtype of CoordinateSystem with named fields')
 
     def _getvalue_dtype(self):
-        return self._dtype
+        return self._coord_dtype
     value_dtype = property(
         _getvalue_dtype,
         doc='value_dtype scalar dtype of CoordinateSystem')
@@ -80,20 +85,20 @@ class CoordinateSystem(object):
         0
 
         """
-        return self.coordinates.index(axisname)
+        return self.coord_names.index(axisname)
 
     def rename(self, **kwargs):
         """
-        Return a new CoordinateSystem with the coordinates renamed.
+        Return a new CoordinateSystem with the coord_names renamed.
 
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
-        {'dtype': dtype('float64'), 'name': 'input', 'coordinates': ['i', 'j']}
+        {'dtype': dtype('float64'), 'name': 'input', 'coord_names': ['i', 'j']}
         >>> print c.rename(i='w')
-        {'dtype': dtype('float64'), 'name': 'input-renamed', 'coordinates': ['w', 'j']}
+        {'dtype': dtype('float64'), 'name': 'input-renamed', 'coord_names': ['w', 'j']}
         """
         coords = []
-        for a in self.coordinates:
+        for a in self.coord_names:
             if a in kwargs.keys():
                 coords.append(kwargs[a])
             else:
@@ -133,7 +138,7 @@ class CoordinateSystem(object):
         repr : string
         """
         _dict = {'name': self.name,
-                 'coordinates':self.coordinates,
+                 'coord_names':self.coord_names,
                  'dtype':self.value_dtype}
         return `_dict`
    
@@ -142,7 +147,7 @@ class CoordinateSystem(object):
         
         :Returns: ``int``
         """
-        return len(self.coordinates)
+        return len(self.coord_names)
     ndim = property(_getndim)
     
     def typecast(self, x, dtype=None):
@@ -191,7 +196,7 @@ class CoordinateSystem(object):
 
     def reorder(self, name=None, order=None):
         """
-        Given a name for the reordered coordinates, and a new order, return a
+        Given a name for the reordered coord_names, and a new order, return a
         reordered coordinate system. Defaults to reversal.
 
         Parameters
@@ -209,14 +214,14 @@ class CoordinateSystem(object):
         --------
         >>> c = CoordinateSystem('ijk', name='input')
         >>> print c.reorder(order=[2,0,1])
-        {'dtype': dtype('float64'), 'name': 'input', 'coordinates': ['k', 'i', 'j']}
+        {'dtype': dtype('float64'), 'name': 'input', 'coord_names': ['k', 'i', 'j']}
 
         """
         if order is None:
-            order = range(len(self.coordinates))[::-1]
+            order = range(len(self.coord_names))[::-1]
         if name is None:
             name = self.name
-        return CoordinateSystem(_reorder(self.coordinates, order),
+        return CoordinateSystem(_reorder(self.coord_names, order),
                                 name,
                                 self.value_dtype)
 
@@ -259,7 +264,7 @@ def product(*coord_systems):
     >>> c3 = CoordinateSystem('ik', 'in3')
 
     >>> print product(c1,c2)
-    {'dtype': dtype('complex128'), 'name': 'product', 'coordinates': ['i', 'j', 'k', 'l']}
+    {'dtype': dtype('complex128'), 'name': 'product', 'coord_names': ['i', 'j', 'k', 'l']}
 
     >>> try:
     ...     product(c2,c3)
@@ -267,7 +272,7 @@ def product(*coord_systems):
     ...     print 'Error: %s' % msg
     ...     pass
     ...
-    Error: coordinates must have distinct names
+    Error: coord_names must have distinct names
     >>>                     
 
 
@@ -282,6 +287,6 @@ def product(*coord_systems):
     """
     coords = []
     for c in coord_systems:
-        coords += c.coordinates
+        coords += c.coord_names
     dtype = safe_dtype(*[c.value_dtype for c in coord_systems])
     return CoordinateSystem(coords, 'product', dtype=dtype)

@@ -14,6 +14,14 @@ def setup():
     E.axes = ['zspace', 'yspace', 'xspace']
     E.c = CoordinateSystem(E.axes, E.name)
 
+def test_iterator_coordinate():
+    def gen():
+        yield 'i'
+        yield 'j'
+        yield 'k'
+    coordsys = CoordinateSystem(gen(), name='test_iter')
+    assert_equal(coordsys.coord_names, ['i','j','k'])
+
 def test_CoordinateSystem():
     yield assert_equal, E.name, E.c.name
     yield assert_equal, E.c.coordinates, E.axes
