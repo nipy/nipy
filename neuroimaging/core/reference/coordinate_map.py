@@ -151,8 +151,8 @@ class Affine(CoordinateMap):
                            input_coords.coord_dtype,
                            output_coords.coord_dtype)
 
-        inaxes = copy.copy(input_coords.coordinates)
-        outaxes = copy.copy(output_coords.coordinates)
+        inaxes = copy.copy(input_coords.coord_names)
+        outaxes = copy.copy(output_coords.coord_names)
 
         self.input_coords = CoordinateSystem(inaxes,
                                              input_coords.name,
@@ -351,7 +351,7 @@ def reorder_input(coordmap, order=None):
     order: sequence
          Order to use, defaults to reverse. The elements
          can be integers, strings or 2-tuples of strings.
-         If they are strings, they should be in coordmap.input_coords.coordinates.
+         If they are strings, they should be in coordmap.input_coords.coord_names.
 
     Returns:
     --------
@@ -372,10 +372,12 @@ def reorder_input(coordmap, order=None):
     if order is None:
         order = range(ndim)[::-1]
     elif type(order[0]) == type(''):
-        order = [coordmap.input_coords.coordinates.index(s) for s in order]
+        order = [coordmap.input_coords.coord_names.index(s) for s in order]
 
-    newaxes = [coordmap.input_coords.coordinates[i] for i in order]
-    newincoords = CoordinateSystem(newaxes, coordmap.input_coords.name + '-reordered', dtype=coordmap.input_coords.coord_dtype)
+    newaxes = [coordmap.input_coords.coord_names[i] for i in order]
+    newincoords = CoordinateSystem(newaxes, 
+                                   coordmap.input_coords.name + '-reordered', 
+                                   coord_dtype=coordmap.input_coords.coord_dtype)
     perm = np.zeros((ndim+1,)*2)
     perm[-1,-1] = 1.
 
@@ -397,7 +399,7 @@ def reorder_output(coordmap, order=None):
     order: sequence
          Order to use, defaults to reverse. The elements
          can be integers, strings or 2-tuples of strings.
-         If they are strings, they should be in coordmap.output_coords.coordinates.
+         If they are strings, they should be in coordmap.output_coords.coord_names.
 
     Returns:
     --------
@@ -412,12 +414,12 @@ def reorder_output(coordmap, order=None):
     >>> cm = Affine(np.identity(4), inc, outc)
     >>> print reorder_output(cm, 'xzy').output_coords
     {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"z", dtype=[('z', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>], 'name': 'output-reordered'}
-    >>> print reorder_output(cm, [0,2,1]).output_coords.coordinates
+    >>> print reorder_output(cm, [0,2,1]).output_coords.coord_names
     ['x', 'z', 'y']
     >>>                             
 
     >>> newcm = reorder_output(cm, 'yzx')
-    >>> newcm.output_coords.coordinates
+    >>> newcm.output_coords.coord_names
     ['y', 'z', 'x']
     >>>                              
 
@@ -427,9 +429,9 @@ def reorder_output(coordmap, order=None):
     if order is None:
         order = range(ndim)[::-1]
     elif type(order[0]) == type(''):
-        order = [coordmap.output_coords.coordinates.index(s) for s in order]
+        order = [coordmap.output_coords.coord_names.index(s) for s in order]
 
-    newaxes = [coordmap.output_coords.coordinates[i] for i in order]
+    newaxes = [coordmap.output_coords.coord_names[i] for i in order]
     newoutcoords = CoordinateSystem(newaxes, coordmap.output_coords.name + '-reordered', coordmap.output_coords.coord_dtype)
     
     perm = np.zeros((ndim+1,)*2)
@@ -459,9 +461,9 @@ def product(*cmaps):
     >>> inc3 = Affine.from_params('k', 'z', np.diag([4,1]))
 
     >>> cmap = product(inc1, inc3, inc2)
-    >>> cmap.input_coords.coordinates
+    >>> cmap.input_coords.coord_names
     ['i', 'k', 'j']
-    >>> cmap.output_coords.coordinates
+    >>> cmap.output_coords.coord_names
     ['x', 'z', 'y']
     >>> cmap.affine
     array([[ 2.,  0.,  0.,  0.],
@@ -520,9 +522,9 @@ def compose(*cmaps):
      [ 0.  1.]]
 
     >>> id2 = compose(cmapi,cmap)
-    >>> id1.input_coords.coordinates
+    >>> id1.input_coords.coord_names
     ['x']
-    >>> id2.input_coords.coordinates
+    >>> id2.input_coords.coord_names
     ['i']
     >>> 
 
@@ -622,10 +624,10 @@ def hstack(*cmaps):
             r.append(np.hstack([x[0,i], y]))
         return np.vstack(r)
 
-    inaxes = ['stack-input'] + cmaps[0].input_coords.coordinates
+    inaxes = ['stack-input'] + cmaps[0].input_coords.coord_names
     incoords = CoordinateSystem(inaxes, 'stackin-%s' % cmaps[0].input_coords.name)
 
-    outaxes = ['stack-output'] + cmaps[0].output_coords.coordinates
+    outaxes = ['stack-output'] + cmaps[0].output_coords.coord_names
     outcoords = CoordinateSystem(outaxes, 'stackout-%s' % cmaps[0].output_coords.name)
     return CoordinateMap(mapping, incoords, outcoords)
 

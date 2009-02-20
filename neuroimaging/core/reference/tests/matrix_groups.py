@@ -36,9 +36,9 @@ class MatrixGroup(Linear):
     def __init__(self, matrix, coords, dtype=None):
         dtype = dtype or self.dtype
         if not isinstance(coords, CoordinateSystem):
-            coords = CoordinateSystem(coords, 'space', dtype=dtype)
+            coords = CoordinateSystem(coords, 'space', coord_dtype=dtype)
         else:
-            coords = CoordinateSystem(coords.coordinates, 'space', dtype)
+            coords = CoordinateSystem(coords.coord_names, 'space', dtype)
         Linear.__init__(self, matrix.astype(dtype), coords, coords)
         if not self.validate():
             raise ValueError('this matrix is not an element of %s'

@@ -130,7 +130,7 @@ def _slice(coordmap, shape, *slices):
             try:
                 start = int(ranges[i])
             except TypeError:
-                raise ValueError('empty slice for dimension %d, coordinate %s' % (i, coordmap.input_coords.coordinates[i]))
+                raise ValueError('empty slice for dimension %d, coordinate %s' % (i, coordmap.input_coords.coord_names[i]))
 
         if ranges[i].shape == ():
             step = 0
@@ -149,19 +149,19 @@ def _slice(coordmap, shape, *slices):
 
 
         if step > 1:
-            name = coordmap.input_coords.coordinates[i] + '-slice'
+            name = coordmap.input_coords.coord_names[i] + '-slice'
         else:
-            name = coordmap.input_coords.coordinates[i]
+            name = coordmap.input_coords.coord_names[i]
         cmaps.append(Affine(np.array([[step, start],[0,1]], dtype=dtype), 
-                                CoordinateSystem([name], dtype=dtype),
-                                CoordinateSystem([coordmap.input_coords.coordinates[i]])))
+                                CoordinateSystem([name], coord_dtype=dtype),
+                                CoordinateSystem([coordmap.input_coords.coord_names[i]])))
         if i in keep_in_output:
             newshape.append(l)
     slice_cmap = cmap_product(*cmaps)
 
     # Reduce the size of the matrix
 
-    innames = slice_cmap.input_coords.coordinates
+    innames = slice_cmap.input_coords.coord_names
     inmat = []
     input_coords = CoordinateSystem(
         [innames[i] for i in keep_in_output],
@@ -228,7 +228,7 @@ class Grid(object):
         """
         dtype = self.coordmap.input_coords.coord_dtype
         results = [a.ravel().astype(dtype) for a in np.ogrid[index]]
-        if len(results) != len(self.coordmap.input_coords.coordinates):
+        if len(results) != len(self.coordmap.input_coords.coord_names):
             raise ValueError('the number of slice objects must match the number of input dimensions')
 
         cmaps = []
@@ -239,8 +239,8 @@ class Grid(object):
                 step = 0
             start = result[0]
             cmaps.append(Affine(np.array([[step, start],[0,1]], dtype=dtype), 
-                                CoordinateSystem(['i%d' % i], dtype=dtype),
-                                CoordinateSystem([self.coordmap.input_coords.coordinates[i]], dtype=dtype)))
+                                CoordinateSystem(['i%d' % i], coord_dtype=dtype),
+                                CoordinateSystem([self.coordmap.input_coords.coord_names[i]], coord_dtype=dtype)))
         shape = [result.shape[0] for result in results]
         cmap = cmap_product(*cmaps)
         return ArrayCoordMap(compose(self.coordmap, cmap), tuple(shape))

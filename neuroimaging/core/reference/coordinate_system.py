@@ -32,7 +32,7 @@ class CoordinateSystem(object):
            A sequence of coordinate names.
         name : string, optional
            The name of the coordinate system
-        dtype : np.dtype, optional
+        coord_dtype : np.dtype, optional
            The dtype of the coord_names.  This should be a built-in numpy
            scalar dtype. (default is np.float)
 
@@ -40,7 +40,7 @@ class CoordinateSystem(object):
         --------
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
-        {'dtype': dtype('float64'), 'name': 'input', 'coord_names': ['i', 'j']}
+        {'coord_dtype': dtype('float64'), 'name': 'input', 'coord_names': ['i', 'j']}
 
         >>> c.coord_dtype
         dtype('float64')
@@ -93,9 +93,9 @@ class CoordinateSystem(object):
 
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
-        {'dtype': dtype('float64'), 'name': 'input', 'coord_names': ['i', 'j']}
+        {'coord_dtype': dtype('float64'), 'name': 'input', 'coord_names': ['i', 'j']}
         >>> print c.rename(i='w')
-        {'dtype': dtype('float64'), 'name': 'input-renamed', 'coord_names': ['w', 'j']}
+        {'coord_dtype': dtype('float64'), 'name': 'input-renamed', 'coord_names': ['w', 'j']}
         """
         coords = []
         for a in self.coord_names:
@@ -139,7 +139,7 @@ class CoordinateSystem(object):
         """
         _dict = {'name': self.name,
                  'coord_names':self.coord_names,
-                 'dtype':self.coord_dtype}
+                 'coord_dtype':self.coord_dtype}
         return `_dict`
    
     def _getndim(self):
@@ -214,7 +214,7 @@ class CoordinateSystem(object):
         --------
         >>> c = CoordinateSystem('ijk', name='input')
         >>> print c.reorder(order=[2,0,1])
-        {'dtype': dtype('float64'), 'name': 'input', 'coord_names': ['k', 'i', 'j']}
+        {'coord_dtype': dtype('float64'), 'name': 'input', 'coord_names': ['k', 'i', 'j']}
 
         """
         if order is None:
@@ -289,4 +289,4 @@ def product(*coord_systems):
     for c in coord_systems:
         coords += c.coord_names
     dtype = safe_dtype(*[c.coord_dtype for c in coord_systems])
-    return CoordinateSystem(coords, 'product', dtype=dtype)
+    return CoordinateSystem(coords, 'product', coord_dtype=dtype)

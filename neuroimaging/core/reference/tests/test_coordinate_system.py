@@ -24,19 +24,19 @@ def test_iterator_coordinate():
 
 def test_CoordinateSystem():
     yield assert_equal, E.name, E.c.name
-    yield assert_equal, E.c.coordinates, E.axes
+    yield assert_equal, E.c.coord_names, E.axes
 
 def test___eq__():
-    c1 = CoordinateSystem(E.c.coordinates, E.c.name)
+    c1 = CoordinateSystem(E.c.coord_names, E.c.name)
     assert_true(c1 == E.c)
 
 def test_reorder():
     new_order = [1, 2, 0]
     new_c = E.c.reorder("new", new_order)
     yield assert_equal, new_c.name, "new"
-    print new_c.coordinates
+    print new_c.coord_names
     for i in range(3):
-        yield assert_equal, E.c.index(new_c.coordinates[i]), new_order[i]
+        yield assert_equal, E.c.index(new_c.coord_names[i]), new_order[i]
 
     new_c = E.c.reorder(None, new_order)
     yield assert_equal, new_c.name, E.c.name
@@ -46,8 +46,8 @@ def test___str__():
 
 def test_dtype():
 
-    ax1 = CoordinateSystem('x', dtype=np.int32)
-    ax2 = CoordinateSystem('y', dtype=np.int64)
+    ax1 = CoordinateSystem('x', coord_dtype=np.int32)
+    ax2 = CoordinateSystem('y', coord_dtype=np.int64)
 
     cs = product(ax1, ax2)
     yield assert_equal, cs.coord_dtype, np.dtype(np.int64)
