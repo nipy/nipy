@@ -6,13 +6,10 @@
 
 Accessing images using nipy:
 
-Nifti is the primary file format
-
-'http://nifti.nimh.nih.gov/'_
-
+Nifti_ is the primary file format
 
 Load Image from File
-===========
+====================
 
 .. sourcecode::  ipython
 
@@ -41,7 +38,6 @@ This allows user to access data in a numpy array.
 
 Save image to a File
 ====================
-
 
 .. sourcecode::  ipython
 
@@ -78,3 +74,5 @@ Here is an examples file image_fromarray.py that shows the use of io
 and Coordinate Maps.
 
 .. literalinclude:: ../../examples/image_fromarray.py
+
+.. include:: ../links_names.txt
