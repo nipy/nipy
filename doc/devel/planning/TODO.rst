@@ -4,29 +4,50 @@
 TODO for nipy development
 =========================
 
-.. contents::
-
 This document will serve to organize current development work on nipy.
-It will include current sprint items, future feature ideas and sprint
-items, and design discussions.  This should contain more details than
-the :ref:`roadmap`.
+It will include current sprint items, future feature ideas, and design
+discussions, etc...
+
+Current Sprint
+=============
+
+**Goal for Feb 27**
+
+Cleanup and document the Image and CoordinateMap classes.  There have
+been various changed to the CoordinateMap classes lately, merge
+Jonathan's branch, finish remaining changes, update docstrings and
+doctests.  Write tutorials explaining these base classes.
+
+Working prototype for interfacing with SPM.
+
+Working prototype for registration visualization.
+
+**Goal for March 20**
+
+Review fff2.neuro code and prepare for sprint.
 
 Documentation
 =============
 
-* There have been many changes to nipy_, the documentation here, on
-  Launchpad and the TRAC site should be organized and updated.
- 
 * Create NIPY sidebar with links to all project related websites.
-
 * Create a Best Practices document.
+* Create a rst doc for *Request a review* process.
 
-* Update the README and INSTALL on the Trac Wiki.  These should
-  reference a reST formatted version committed to the repository.
-  Include information on downloading the fmri data and running the
-  tests.
+Tutorials
+---------
 
-* Add list of dependencies in the INSTALL.
+Tutorials are an excellent way to document and test the software.
+Some ideas for tutorials to write in our Sphinx documentation (in no
+specific order):
+
+* Slice timing
+* Image resampling
+* Image IO
+* Registration using SPM/FSL
+* FMRI analysis
+* Making one 4D image from many 3D images, and vice versa.  Document
+  ImageList and FmriImageList.
+* Apply SPM registration .mat to a NIPY image.
 
 * Create working example out of this TRAC `pca
   <http://neuroimaging.scipy.org/neuroimaging/ni/wiki/PrincipalComponents>`_
@@ -34,11 +55,12 @@ Documentation
 
 * Add analysis pipeline(s) blueprint.
 
+
 Bugs
 ====
 
-These should be moved to the nipy_ bug section on launchpad.  Many
-were added here this summer, grouping until they can be input.
+These should be moved to the nipy_ bug section on launchpad.  Placed
+here until they can be input.
 
 * Resolve differences between running tests via nose on command line
   and ni.test().
@@ -60,16 +82,6 @@ were added here this summer, grouping until they can be input.
   * modalities/fmri/tests/test_regression.py 
   * modalities/fmri/fmristat/tests/test_model.py
 
-* Cleanup and standardize the axis names and pynifti orientation
-  codes.  See failing test in test_axis:test_Axis.test_init,
-  presumably the Axis initializer use to check for a valid name before
-  assigning.  It now blindly assigns the name.
-
-* Fix test errors for concatenation and replication of sampling grids.
-  See test_grid.py.
-
-* Fix .mat file IO.  See test_mapping.py
-
 * Fix deprecation error in pynifti's swig generated extension code::
 
     /Users/cburns/src/nipy-trunk/neuroimaging/externals/pynifti/nifti/niftiformat.py:458
@@ -81,9 +93,6 @@ were added here this summer, grouping until they can be input.
     PyArray_NewFromDescr.  return
     nifticlib.mat442array(self.__nimg.sto_xyz)
 
-* Nifti image saving does not preserve the header values.  image.save
-  looses this information as the PyNiftiIO constructor pulls the data
-  array out of the Nipy Image and saves that only.
 
 * Fix fmri.pca module.  Internally it's referencing old image api that
   no longer exists like Image.slice_iterator.  Currently all tests are
@@ -163,16 +172,8 @@ Refactorings
   img._data is a PyNIftiIO object.  It works, but we should verify
   it's harmless otherwise prevent it from happening.
 
-* Consider removing class ConcatenatedGrid in grid.py.  Is this
-  functionality provided in the ImageList class?
-
 * Look at image.merge_image function.  Is it still needed?  Does it
   fit into the current api?
-
-* Provide clear documentation and examples for how to use Image,
-  ImageList, and FmriImageList classes with 3D and 4D images.  It
-  should be clear to the user when to use each and we should provide a
-  clean api to move images between them.
 
 * Automated test for modalities.fmri.pca, check for covariance
   diagonal structure, post pca.
@@ -189,6 +190,10 @@ Refactorings
 * Add test data where volumes contain intensity ramps.  Slice with
   generator and test ramp values.
 
+
+* Implement `fmriimagelist blueprint
+  <https://blueprints.launchpad.net/nipy/+spec/fmriimagelist>`_.
+
 Code Design Thoughts
 ====================
 
@@ -202,76 +207,14 @@ Put ideas here for features nipy should have but are not part of our
 current development.  These features will eventually be added to a
 weekly sprint log.
 
-* Egg support.  Look to revno 1642, a setup_egg.py that Gael had
-  added.  This was removed as it did not work.  It did appear to allow
-  this development install option, which we should restore when eggs
-  are working::
-
-    sudo python setup_egg.py develop --prefix /usr/local
-
-* Create a nipy tools repos that can be shared by the team.  Include
-  tools for building like makepkg, tools from the old utils directory,
-  header_utils and analyze_to_nifti, etc...
-
 * Auto backup script for nipy repos to run as weekly cron job.  We
   should setup a machine to perform regular branch builds and tests.
   This would also provide an on-site backup.
 
 * See if we can add bz2 support to nifticlib.
 
-Questions
-=========
-
-* Should millimeter coordinates be expressed in xyz or zyx order?
-
-  **Answer:** xyz order.
-
-  **Note:** we should probably change the names of the "VoxelAxes" to
-    something other than 'x,y,z', at least in creating CoordinateMaps
-
-Weekly Sprint
-=============
-
-This will hold our current sprint items and be updated weekly as we
-work through the backlog.
-
-**Goal:**
-
-*Fix bugs and implement any functionality needed to begin registration
-next week.*
-
-
-* Implement `fmriimagelist blueprint
-  <https://blueprints.launchpad.net/nipy/+spec/fmriimagelist>`_.
-
-  * Requires some changes to CoordinateMap?
-  * FmriImageList has a frametimes attr.  Document it and consider
-    renaming to volume_start_times.
-
-* CoordinateMap API: Create a blueprint for the public api.  Implement
-  any needed functionality for registration.
-
-* Image saving with dtype support.  Handle slope and intercept
-  correctly for dtype downcasting.
-
-* Image.affine in xyz millimeter ordering.  Reading is working, need
-  to fix writing and add tests for roundtrip.  Test various ijk
-  orderings.
-
-* Fix memory error in pynifti when running tests via nosetests. (Only
-  happens on Matthew's machine.)
-
-* Work on viewer:
-  
-  * Review Mike's code.
-  * Merge Tom and Chris versions.  Make overlay's work.
-    Lightbox/montage viewer if time permitting.
-
 * Should image.load have an optional squeeze keyword to squeeze a 4D
   image with one frame into a 3D image?
 
-* Add *bzr whoami* to bzr_workflow.
-
-* Create a rst doc for *Request a review* process.
 
 .. include:: ../../links_names.txt
