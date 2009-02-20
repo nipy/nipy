@@ -43,7 +43,7 @@ help:
 clean:
 	-rm -rf build/* dist/* *~ api/generated
 
-pdf: latex api
+pdf: api latex
 	cd build/latex && make all-pdf
 
 all: html pdf
