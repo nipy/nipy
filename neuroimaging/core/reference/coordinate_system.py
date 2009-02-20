@@ -79,7 +79,7 @@ class CoordinateSystem(object):
         _getcoord_dtype,
         doc='coord_dtype scalar dtype of CoordinateSystem')
 
-    def index(self, axisname):
+    def index(self, coord_name):
         """
         Return the index of a given named coordinate.
 
@@ -88,7 +88,7 @@ class CoordinateSystem(object):
         0
 
         """
-        return self.coord_names.index(axisname)
+        return self.coord_names.index(coord_name)
 
     def rename(self, **kwargs):
         """
@@ -202,7 +202,7 @@ class CoordinateSystem(object):
             y.shape = x.shape + (y.shape[0] / np.product(x.shape),)
             return y
 
-    def reorder(self, name=None, order=None):
+    def reordered(self, name=None, order=None):
         """
         Given a name for the reordered coord_names, and a new order, return a
         reordered coordinate system. Defaults to reversal.
@@ -212,7 +212,7 @@ class CoordinateSystem(object):
         name : string
            The name for the new coordinate system
         order : sequence of int
-           The order of the axes, e.g. [2, 0, 1]
+           The order of the coordinates, e.g. [2, 0, 1]
 
         Returns
         -------
@@ -221,7 +221,7 @@ class CoordinateSystem(object):
         Examples
         --------
         >>> c = CoordinateSystem('ijk', name='input')
-        >>> print c.reorder(order=[2,0,1])
+        >>> print c.reordered(order=[2,0,1])
         name: input, coord_names: ['k', 'i', 'j'], coord_dtype: float64
         
         """

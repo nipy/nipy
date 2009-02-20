@@ -30,15 +30,15 @@ def test___eq__():
     c1 = CoordinateSystem(E.c.coord_names, E.c.name)
     assert_true(c1 == E.c)
 
-def test_reorder():
+def test_reordered():
     new_order = [1, 2, 0]
-    new_c = E.c.reorder("new", new_order)
+    new_c = E.c.reordered("new", new_order)
     yield assert_equal, new_c.name, "new"
     print new_c.coord_names
     for i in range(3):
         yield assert_equal, E.c.index(new_c.coord_names[i]), new_order[i]
 
-    new_c = E.c.reorder(None, new_order)
+    new_c = E.c.reordered(None, new_order)
     yield assert_equal, new_c.name, E.c.name
 
 def test___str__():
