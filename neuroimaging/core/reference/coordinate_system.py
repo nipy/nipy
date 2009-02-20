@@ -75,9 +75,8 @@ class CoordinateSystem(object):
 
     def _getcoord_dtype(self):
         return self._coord_dtype
-    coord_dtype = property(
-        _getcoord_dtype,
-        doc='coord_dtype scalar dtype of CoordinateSystem')
+    coord_dtype = property(_getcoord_dtype,
+                           doc='coord_dtype scalar dtype of CoordinateSystem')
 
     def index(self, coord_name):
         """
@@ -87,7 +86,11 @@ class CoordinateSystem(object):
         >>> c.index('i')
         0
 
+        >>> c.index('j')
+        1
+
         """
+
         return self.coord_names.index(coord_name)
 
     def rename(self, **kwargs):
