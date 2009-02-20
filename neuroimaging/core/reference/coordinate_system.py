@@ -22,9 +22,12 @@ class CoordinateSystem(object):
     def __init__(self, coord_names, name= '', coord_dtype=np.float):
         """
         Create a coordinate system with a given name and coordinate names.
-        There are also two dtypes associated to the CoordinateSystem:
-        one, self.coord_dtype, which should be a numpy scalar dtype. The other,
-        self.dtype, which is basically a description of the CoordinateSystem.
+        The CoordinateSystem has two dtype attributes:
+        
+        #. self.coord_dtype is the dtype of the individual coordinate values
+        #. self.dtype is the recarray dtype for the CoordinateSystem
+           which combines the coord_names and the coord_dtype.  This
+           functions as the description of the CoordinateSystem.
 
         Parameters
         ----------
