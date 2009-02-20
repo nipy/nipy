@@ -40,8 +40,8 @@ class CoordinateSystem(object):
         --------
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
-        {'coord_dtype': dtype('float64'), 'name': 'input', 'coord_names': ['i', 'j']}
-
+        name: input, coord_names: ['i', 'j'], coord_dtype: float64
+        
         >>> c.coord_dtype
         dtype('float64')
         >>> c.dtype
@@ -93,10 +93,13 @@ class CoordinateSystem(object):
 
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
-        {'coord_dtype': dtype('float64'), 'name': 'input', 'coord_names': ['i', 'j']}
+        name: input, coord_names: ['i', 'j'], coord_dtype: float64
+        
         >>> print c.rename(i='w')
-        {'coord_dtype': dtype('float64'), 'name': 'input-renamed', 'coord_names': ['w', 'j']}
+        name: input-renamed, coord_names: ['w', 'j'], coord_dtype: float64
+
         """
+
         coords = []
         for a in self.coord_names:
             if a in kwargs.keys():
@@ -137,11 +140,13 @@ class CoordinateSystem(object):
         -------
         repr : string
         """
-        _dict = {'name': self.name,
-                 'coord_names':self.coord_names,
-                 'coord_dtype':self.coord_dtype}
-        return `_dict`
-   
+        
+        attrs = ['name', 'coord_names', 'coord_dtype']
+        vals = []
+        for attr in attrs:
+            vals.append('%s: %s' % (attr, getattr(self, attr)))
+        return ', '.join(vals)
+
     def _getndim(self):
         """ Number of dimensions 
         
@@ -214,8 +219,8 @@ class CoordinateSystem(object):
         --------
         >>> c = CoordinateSystem('ijk', name='input')
         >>> print c.reorder(order=[2,0,1])
-        {'coord_dtype': dtype('float64'), 'name': 'input', 'coord_names': ['k', 'i', 'j']}
-
+        name: input, coord_names: ['k', 'i', 'j'], coord_dtype: float64
+        
         """
         if order is None:
             order = range(len(self.coord_names))[::-1]
@@ -242,8 +247,8 @@ def safe_dtype(*dtypes):
     -------
     dtype: np.dtype
 
-    >>> c1 = CoordinateSystem('ij', 'input', dtype=np.float32)
-    >>> c2 = CoordinateSystem('kl', 'input', dtype=np.complex)
+    >>> c1 = CoordinateSystem('ij', 'input', coord_dtype=np.float32)
+    >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex)
     >>> safe_dtype(c1.coord_dtype, c2.coord_dtype)
     dtype('complex128')
 
@@ -259,12 +264,12 @@ def product(*coord_systems):
     Create the product of a sequence of CoordinateSystems.
     The coord_dtype dtype of the result will be determined by safe_dtype.
 
-    >>> c1 = CoordinateSystem('ij', 'input', dtype=np.float32)
-    >>> c2 = CoordinateSystem('kl', 'input', dtype=np.complex)
+    >>> c1 = CoordinateSystem('ij', 'input', coord_dtype=np.float32)
+    >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex)
     >>> c3 = CoordinateSystem('ik', 'in3')
 
     >>> print product(c1,c2)
-    {'dtype': dtype('complex128'), 'name': 'product', 'coord_names': ['i', 'j', 'k', 'l']}
+    name: product, coord_names: ['i', 'j', 'k', 'l'], coord_dtype: complex128
 
     >>> try:
     ...     product(c2,c3)
