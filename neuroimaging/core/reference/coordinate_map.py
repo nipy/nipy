@@ -299,6 +299,16 @@ class Affine(CoordinateMap):
         return Affine.from_start_step(names, names, [0]*len(names),
                                       [1]*len(names))
 
+def _rename_coords(coord_names, **kwargs):
+    coords = coord_names[:]
+    for name, newname in kwargs:
+        if name in coords:
+            coords[coords.index(name)] = newname
+        else:
+            raise ValueError('coordinate name %s not found.'%name)
+    return coords
+
+
 def rename_input(coordmap, **kwargs):
     """
     Rename the input_coords, returning a new CoordinateMap
@@ -316,7 +326,11 @@ def rename_input(coordmap, **kwargs):
     {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"j", dtype=[('j', '<f8')]>, <Axis:"k", dtype=[('k', '<f8')]>], 'name': 'input-renamed'}
         
     """
-    input_coords = coordmap.input_coords.rename(**kwargs)
+
+    #input_coords = coordmap.input_coords.rename(**kwargs)
+    coord_names = _rename_coords(coordmap.input_coords.coord_names, kwargs)
+    input_coords = CoordinateSystem(coord_names, coordmap.input_coords.name,
+                                    coordmap.input_coords.coord_dtype)
     return CoordinateMap(coordmap.mapping, input_coords, coordmap.output_coords)
 
 def rename_output(coordmap, **kwargs):

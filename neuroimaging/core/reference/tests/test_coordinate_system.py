@@ -11,8 +11,16 @@ E = empty()
 
 def setup():
     E.name = "test"
-    E.axes = ['zspace', 'yspace', 'xspace']
-    E.c = CoordinateSystem(E.axes, E.name)
+    E.axes = ['i', 'j', 'k']
+    E.coord_dtype = np.float32
+    E.cs = CoordinateSystem(E.axes, E.name, E.coord_dtype)
+
+
+def test_CoordinateSystem():
+    yield assert_equal, E.cs.name, E.name
+    yield assert_equal, E.cs.coord_names, E.axes
+    yield assert_equal, E.cs.coord_dtype, E.coord_dtype
+
 
 def test_iterator_coordinate():
     def gen():
@@ -48,7 +56,18 @@ def test_dtypes():
         yield assert_equal, cs.dtype, np.dtype(cs_dt)
     # verify assignment fails
     yield assert_raises, AttributeError, setattr, cs, 'dtype', np.dtype(cs_dt)
-    yield (assert_raises, AttributeError, setattr, cs, 'coord_dtype', np.float)
+    yield assert_raises, AttributeError, setattr, cs, 'coord_dtype', np.float
+
+
+def test_readonly_attrs():
+    cs = E.cs
+    yield (assert_raises, AttributeError, setattr, cs, 'coord_dtype', 
+           np.dtype(np.int32))
+    yield (assert_raises, AttributeError, setattr, cs, 'coord_names',
+           ['a','b','c'])
+    yield (assert_raises, AttributeError, setattr, cs, 'dtype',
+           np.dtype([('i', '<f4'), ('j', '<f4'), ('k', '<f4')]))
+    yield assert_raises, AttributeError, setattr, cs, 'ndim', 4
 
 
 def test_index():
@@ -59,30 +78,17 @@ def test_index():
     yield assert_raises, ValueError, cs.index, 'x'
 
 
-def test_CoordinateSystem():
-    yield assert_equal, E.name, E.c.name
-    yield assert_equal, E.c.coord_names, E.axes
-
-
 def test___eq__():
-    c1 = CoordinateSystem(E.c.coord_names, E.c.name)
-    assert_true(c1 == E.c)
+    c1 = CoordinateSystem(E.cs.coord_names, E.cs.name, E.coord_dtype)
+    assert_true(c1 == E.cs)
 
 
-def test_reordered():
-    new_order = [1, 2, 0]
-    new_c = E.c.reordered("new", new_order)
-    yield assert_equal, new_c.name, "new"
-    print new_c.coord_names
-    for i in range(3):
-        yield assert_equal, E.c.index(new_c.coord_names[i]), new_order[i]
-
-    new_c = E.c.reordered(None, new_order)
-    yield assert_equal, new_c.name, E.c.name
-
+# WHAT THE?!>!
 def test___str__():
-    s = str(E.c)
+    s = str(E.cs)
 
+
+# PRODUCT TEST
 def test_dtype():
 
     ax1 = CoordinateSystem('x', coord_dtype=np.int32)

@@ -19,7 +19,7 @@ class CoordinateSystem(object):
 
     """
 
-    def __init__(self, coord_names, name= '', coord_dtype=np.float):
+    def __init__(self, coord_names, name=None, coord_dtype=np.float):
         """
         Create a coordinate system with a given name and coordinate names.
         The CoordinateSystem has two dtype attributes:
@@ -53,7 +53,7 @@ class CoordinateSystem(object):
         """
         self.name = name
         # this allows coord_names to be an iterator and have a length
-        coord_names = list(coord_names)
+        coord_names = tuple(coord_names)
         # Make sure each coordinate is unique
         if len(set(coord_names)) != len(coord_names):
             raise ValueError, 'coord_names must have distinct names'
@@ -65,22 +65,31 @@ class CoordinateSystem(object):
         if coord_dtype not in sctypes:
             raise ValueError, 'Coordinate dtype should be one of %s' % `sctypes`
         self._coord_dtype = coord_dtype
-        self.coord_names = coord_names
+        self._coord_names = coord_names
 
-    def _getdtype(self):
+    def _get_dtype(self):
         return np.dtype([(name, self._coord_dtype) 
                          for name in self.coord_names])
-    dtype = property(_getdtype, 
-                     doc='dtype of CoordinateSystem with named fields')
+    dtype = property(_get_dtype, 
+                     doc='The dtype of the CoordinateSystem.')
 
-    def _getcoord_dtype(self):
+    def _get_coord_dtype(self):
         return self._coord_dtype
-    coord_dtype = property(_getcoord_dtype,
-                           doc='coord_dtype scalar dtype of CoordinateSystem')
+    coord_dtype = property(_get_coord_dtype,
+                           doc='The dtype of the coordinates in the CoordinateSytem')
 
+    def _get_coord_names(self):
+        return self._coord_names
+    coord_names = property(_get_coord_names,
+                           doc='The coordinate names in the CoordinateSystem')
+
+    def _get_ndim(self):
+        return len(self.coord_names)
+    ndim = property(_get_ndim,
+                    doc='The number of coordinates in the CoordinateSystem')
+    
     def index(self, coord_name):
-        """
-        Return the index of a given named coordinate.
+        """Return the index of a given named coordinate.
 
         >>> c = CoordinateSystem('ij', name='input')
         >>> c.index('i')
@@ -91,34 +100,7 @@ class CoordinateSystem(object):
 
         """
 
-        return self.coord_names.index(coord_name)
-
-    def rename(self, **kwargs):
-        """
-        Return a new CoordinateSystem with the coord_names renamed.
-
-        >>> c = CoordinateSystem('ij', name='input')
-        >>> print c
-        name: input, coord_names: ['i', 'j'], coord_dtype: float64
-        
-        >>> print c.rename(i='w')
-        name: input-renamed, coord_names: ['w', 'j'], coord_dtype: float64
-
-        """
-
-        coords = []
-        for a in self.coord_names:
-            if a in kwargs.keys():
-                coords.append(kwargs[a])
-            else:
-                coords.append(a)
-
-
-        if self.name:
-            name = self.name + '-renamed'
-        else:
-            name = ''
-        return CoordinateSystem(coords, name, self.coord_dtype)
+        return list(self.coord_names).index(coord_name)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -153,14 +135,6 @@ class CoordinateSystem(object):
             vals.append('%s: %s' % (attr, getattr(self, attr)))
         return ', '.join(vals)
 
-    def _getndim(self):
-        """ Number of dimensions 
-        
-        :Returns: ``int``
-        """
-        return len(self.coord_names)
-    ndim = property(_getndim)
-    
     def typecast(self, x, dtype=None):
         """
         Try to safely typecast x into
@@ -205,40 +179,6 @@ class CoordinateSystem(object):
             y.shape = x.shape + (y.shape[0] / np.product(x.shape),)
             return y
 
-    def reordered(self, name=None, order=None):
-        """
-        Given a name for the reordered coord_names, and a new order, return a
-        reordered coordinate system. Defaults to reversal.
-
-        Parameters
-        ----------
-        name : string
-           The name for the new coordinate system
-        order : sequence of int
-           The order of the coordinates, e.g. [2, 0, 1]
-
-        Returns
-        -------
-        reordered : CoordinateSystem
-
-        Examples
-        --------
-        >>> c = CoordinateSystem('ijk', name='input')
-        >>> print c.reordered(order=[2,0,1])
-        name: input, coord_names: ['k', 'i', 'j'], coord_dtype: float64
-        
-        """
-        if order is None:
-            order = range(len(self.coord_names))[::-1]
-        if name is None:
-            name = self.name
-        return CoordinateSystem(_reorder(self.coord_names, order),
-                                name,
-                                self.coord_dtype)
-
-def _reorder(seq, order):
-    """ Reorder a sequence. """
-    return [seq[i] for i in order]
 
 def safe_dtype(*dtypes):
     """
