@@ -9,6 +9,5 @@
 
    basic_io
    coordinate_map	
-   analysis_pipeline
    glm_spec
   
