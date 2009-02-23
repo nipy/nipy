@@ -78,9 +78,18 @@ def test_index():
     yield assert_raises, ValueError, cs.index, 'x'
 
 
+def test__ne__():
+    cs1 = CoordinateSystem('ijk')
+    cs2 = CoordinateSystem('xyz')
+    yield assert_true, cs1 != cs2
+    cs1 = CoordinateSystem('ijk', coord_dtype='float')
+    cs2 = CoordinateSystem('ijk', coord_dtype='int')
+    yield assert_true, cs1 != cs2
+
+
 def test___eq__():
     c1 = CoordinateSystem(E.cs.coord_names, E.cs.name, E.coord_dtype)
-    assert_true(c1 == E.cs)
+    yield assert_true, c1 == E.cs
 
 
 # WHAT THE?!>!
