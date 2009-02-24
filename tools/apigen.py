@@ -13,10 +13,9 @@ might involve changing ``discover_modules`` (which determines which
 files are modules, and therefore which module URIs will be passed to
 ``_parse_module``).
 
-NOTE: this is a modified version of a script originally shipped with
-the PyMVPA project, which we've adapted for NIPY use.  PyMVPA and NIPY
-are both BSD-licensed projects.
-"""
+NOTE: this is a modified version of a script originally shipped with the
+PyMVPA project, which we've adapted for NIPY use.  PyMVPA is an MIT-licensed
+project."""
 
 # Stdlib imports
 import os
