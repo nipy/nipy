@@ -31,6 +31,13 @@ def test_iterator_coordinate():
     assert_equal(coordsys.coord_names, ['i','j','k'])
 
 
+def test_ndim():
+    cs = CoordinateSystem('xy')
+    yield assert_equal, cs.ndim, 2
+    cs = CoordinateSystem('ijk')
+    yield assert_equal, cs.ndim, 3
+
+
 def test_unique_coord_names():
     unique = ['i','j','k']
     notuniq = ['i','i','k']
@@ -92,20 +99,40 @@ def test___eq__():
     yield assert_true, c1 == E.cs
 
 
-# WHAT THE?!>!
 def test___str__():
     s = str(E.cs)
+    assert_equal(s, "name: test, coord_names: ('i', 'j', 'k'), coord_dtype: float32")
 
+def test_typecast():
+    pass
 
-# PRODUCT TEST
-def test_dtype():
-
+def test_product():
+    # int32 + int64 => int64
     ax1 = CoordinateSystem('x', coord_dtype=np.int32)
     ax2 = CoordinateSystem('y', coord_dtype=np.int64)
-
     cs = product(ax1, ax2)
+    # assert up-casting of dtype
     yield assert_equal, cs.coord_dtype, np.dtype(np.int64)
+    # assert composed dtype 
     yield assert_equal, cs.dtype, np.dtype([('x', np.int64), ('y', np.int64)])
-
-    # the axes should be typecast in the CoordinateSystem
+    # the axes should be typecast in the CoordinateSystem but
+    # uneffected themselves
     yield assert_equal, ax1.dtype, np.dtype([('x', np.int32)])
+    yield assert_equal, ax2.dtype, np.dtype([('y', np.int64)])
+
+    # float32 + int64 => float64
+    ax1 = CoordinateSystem('x', coord_dtype=np.float32)
+    cs = product(ax1, ax2)
+    yield assert_equal, cs.coord_dtype, np.dtype(np.float64)
+    yield assert_equal, cs.dtype, np.dtype([('x', np.float64), 
+                                            ('y', np.float64)])
+
+    # int16 + complex64 => complex64
+    ax1 = CoordinateSystem('x', coord_dtype=np.int16)
+    ax2 = CoordinateSystem('y', coord_dtype=np.complex64)
+    # Order of the params effects order of dtype but not resulting value type
+    cs = product(ax2, ax1)
+    yield assert_equal, cs.coord_dtype, np.complex64
+    yield assert_equal, cs.dtype, np.dtype([('y', np.complex64),
+                                            ('x', np.complex64)])
+    
