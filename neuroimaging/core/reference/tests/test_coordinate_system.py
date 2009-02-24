@@ -2,7 +2,8 @@
 import numpy as np
 
 from neuroimaging.testing import *
-from neuroimaging.core.reference.coordinate_system import CoordinateSystem, product
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
+    product, safe_dtype
 
 class empty:
     pass
@@ -106,6 +107,26 @@ def test___str__():
 def test_typecast():
     pass
     # FAIL
+
+
+def test_safe_dtype():
+    yield assert_raises, TypeError, safe_dtype, type('foo')
+    yield assert_raises, TypeError, safe_dtype, type('foo'), np.float64
+    yield assert_raises, TypeError, safe_dtype, [('x', 'f8')]
+    valid_dtypes = []
+    valid_dtypes.extend(np.sctypes['complex'])
+    valid_dtypes.extend(np.sctypes['float'])
+    valid_dtypes.extend(np.sctypes['int'])
+    valid_dtypes.extend(np.sctypes['uint'])
+    for dt in valid_dtypes:
+        sdt = safe_dtype(dt)
+        yield assert_equal, sdt, dt
+    # test a few upcastings
+    dt = safe_dtype(np.float32, np.int16, np.bool)
+    yield assert_equal, dt, np.float32
+    dt = safe_dtype(np.float32, np.int64, np.uint32)
+    yield assert_equal, dt, np.float64
+
 
 def test_product():
     # int32 + int64 => int64

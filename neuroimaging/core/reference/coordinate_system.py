@@ -12,15 +12,12 @@ import numpy as np
 
 
 class CoordinateSystem(object):
-    """
-    A CoordinateSystem is an ordered sequence of named coordinates,
-    along with a numpy dtype for the coordinate values.
+    """An ordered sequence of named coordinates of a specified dtype.
 
     A coordinate system is defined by the names of the coordinates,
-    (attribute ``coord_name``) and the coordinate numpy dtype
-    (attribute ``coord_dtype``).
-
-    It can also have a name.
+    (attribute ``coord_names``) and the numpy dtype of each coordinate
+    value (attribute ``coord_dtype``).  The coordinate system can also
+    have a name.
 
     >>> names = ['first', 'second', 'third']
     >>> cs = CoordinateSystem(names, 'a coordinate system', np.float)
@@ -31,15 +28,16 @@ class CoordinateSystem(object):
     >>> cs.coord_dtype
     dtype('float64')
 
-    The attribute ``dtype`` gives the composite numpy type, made from
-    the (``names``, ``coord_dtype``).
+    The coordinate system also has a ``dtype`` which is the composite
+    numpy dtype, made from the (``names``, ``coord_dtype``).
 
     >>> dtype_template = [(name, np.float) for name in cs.coord_names]
     >>> dtype_should_be = np.dtype(dtype_template)
     >>> cs.dtype == dtype_should_be
     True
 
-    By "defines the coordinate system", we mean, defines equality.
+    Two CoordinateSystems are equal if they have the same dtype.  The
+    CoordinateSystem names may be different.
 
     >>> another_cs = CoordinateSystem(names, 'irrelevant', np.float)
     >>> cs == another_cs
@@ -48,11 +46,12 @@ class CoordinateSystem(object):
     True
     >>> cs.name == another_cs.name
     False
+
     """
 
     def __init__(self, coord_names, name='', coord_dtype=np.float):
-        """
-        Create a coordinate system with a given name and coordinate names.
+        """Create a coordinate system with a given name and coordinate names.
+        
         The CoordinateSystem has two dtype attributes:
         
         #. self.coord_dtype is the dtype of the individual coordinate values
@@ -83,6 +82,7 @@ class CoordinateSystem(object):
         dtype('float64')
 
         """
+
         self.name = name
         # this allows coord_names to be an iterator and have a length
         coord_names = tuple(coord_names)
@@ -131,14 +131,14 @@ class CoordinateSystem(object):
         1
 
         """
+
         return list(self.coord_names).index(coord_name)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __eq__(self, other):
-        """
-        Equality is defined by self.dtype.
+        """Equality is defined by self.dtype.
 
         Parameters
         ----------
@@ -148,16 +148,18 @@ class CoordinateSystem(object):
         Returns
         -------
         tf: bool
+
         """
+
         return (self.dtype == other.dtype)
 
     def __str__(self):
-        """
-        Create a string representation of the coordinate system
+        """Create a string representation of the coordinate system
 
         Returns
         -------
         s : string
+
         """
         
         attrs = ('name', 'coord_names', 'coord_dtype')
@@ -255,9 +257,15 @@ class CoordinateSystem(object):
 
 
 def safe_dtype(*dtypes):
-    """
-    Try to determine a dtype to which all of the dtypes can safely be
-    typecast by creating an array with elements of all of these dtypes.
+    """Determine a dtype to safely cast all of the given dtypes to.
+
+    Safe dtypes are valid numpy dtypes or python types which can be
+    cast to numpy dtypes.  See numpy.sctypes for a list of valid
+    dtypes.  Composite dtypes and string dtypes are not safe dtypes.
+
+    To see if your dtypes are valid, build a numpy array of each dtype
+    and the resulting object should return *1* from the
+    varname.dtype.isbuiltin attribute.
 
     Parameters
     ----------
@@ -265,27 +273,47 @@ def safe_dtype(*dtypes):
 
     Returns
     -------
-    dtype: np.dtype
+    dtype : np.dtype
 
     >>> c1 = CoordinateSystem('ij', 'input', coord_dtype=np.float32)
     >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex)
     >>> safe_dtype(c1.coord_dtype, c2.coord_dtype)
     dtype('complex128')
 
+    >>> # Strings are invalid dtypes
+    >>> safe_dtype(type('foo'))
+    Traceback (most recent call last):
+    ...
+    TypeError: dtype must be valid numpy dtype int, uint, float or complex
+
+    >>> # Check for a valid dtype
+    >>> myarr = np.zeros(2, np.float32)
+    >>> myarr.dtype.isbuiltin
+    1
+
+    >>> # Composite dtypes are invalid
+    >>> mydtype = np.dtype([('name', 'S32'), ('age', 'i4')])
+    >>> myarr = np.zeros(2, mydtype)
+    >>> myarr.dtype.isbuiltin
+    0
+    >>> safe_dtype(mydtype)
+    Traceback (most recent call last):
+    ...
+    TypeError: dtype must be valid numpy dtype int, uint, float or complex
+
     """
+
     arrays = [np.zeros(2, dtype) for dtype in dtypes]
     notbuiltin = filter(lambda x: not x.dtype.isbuiltin, arrays)
     if notbuiltin:
-        raise ValueError('dtypes must be a numpy dtype int, uint, float or complex')
+        raise TypeError('dtype must be valid numpy dtype int, uint, float or complex')
     return np.array(arrays).dtype
 
 
 def product(*coord_systems):
-    """
-    Create the product of a sequence of CoordinateSystems.
+    """Create the product of a sequence of CoordinateSystems.
 
-    The coord_dtype dtype of the result will be determined by
-    ``safe_dtype``.
+    The coord_dtype of the result will be determined by ``safe_dtype``.
 
     >>> c1 = CoordinateSystem('ij', 'input', coord_dtype=np.float32)
     >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex)
@@ -300,16 +328,16 @@ def product(*coord_systems):
     ValueError: coord_names must have distinct names
     >>>                     
 
-
-    :Inputs:
-    --------
+    Parameters
+    ----------
     coord_systems: sequence of ``CoordinateSystem``s
     
-    :Returns:
-    ---------
+    Returns
+    -------
     product_coord_system: CoordinateSystem
 
     """
+
     coords = []
     for c in coord_systems:
         coords += c.coord_names
