@@ -77,7 +77,7 @@ class CoordinateSystem(object):
         --------
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
-        name: input, coord_names: ('i', 'j'), coord_dtype: float64
+        name: 'input', coord_names: ('i', 'j'), coord_dtype: float64
         
         >>> c.coord_dtype
         dtype('float64')
@@ -162,9 +162,8 @@ class CoordinateSystem(object):
         
         attrs = ('name', 'coord_names', 'coord_dtype')
         vals = []
-        for attr in attrs:
-            vals.append('%s: %s' % (attr, getattr(self, attr)))
-        return ', '.join(vals)
+        return ("name: '%s', coord_names: %s, coord_dtype: %s" %
+                (self.name, self.coord_names, self.coord_dtype))
 
     def typecast_values(self, x, dtype=None):
         """ Try to safely typecast array-like object x 
@@ -293,7 +292,7 @@ def product(*coord_systems):
     >>> c3 = CoordinateSystem('ik', 'in3')
 
     >>> print product(c1,c2)
-    name: product, coord_names: ('i', 'j', 'k', 'l'), coord_dtype: complex128
+    name: 'product', coord_names: ('i', 'j', 'k', 'l'), coord_dtype: complex128
 
     >>> product(c2,c3)
     Traceback (most recent call last):

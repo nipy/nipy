@@ -171,8 +171,8 @@ class Affine(CoordinateMap):
                            input_coords.coord_dtype,
                            output_coords.coord_dtype)
 
-        inaxes = copy.copy(input_coords.coord_names)
-        outaxes = copy.copy(output_coords.coord_names)
+        inaxes = input_coords.coord_names
+        outaxes = output_coords.coord_names
 
         self.input_coords = CoordinateSystem(inaxes,
                                              input_coords.name,
@@ -337,10 +337,10 @@ def rename_input(coordmap, **kwargs):
     >>> output_cs = CoordinateSystem('xyz')
     >>> cm = Affine(np.identity(4), input_cs, output_cs)
     >>> print cm.input_coords
-
+    name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float64
     >>> cm2 = rename_input(cm, i='x')
     >>> print cm2.input_coords
-        
+    name: '', coord_names: ('x', 'j', 'k'), coord_dtype: float64
     """
     coord_names = _rename_coords(coordmap.input_coords.coord_names, **kwargs)
     input_coords = CoordinateSystem(coord_names, coordmap.input_coords.name,
@@ -355,10 +355,10 @@ def rename_output(coordmap, **kwargs):
     >>> output_cs = CoordinateSystem('xyz')
     >>> cm = Affine(np.identity(4), input_cs, output_cs)
     >>> print cm.output_coords
-
+    name: '', coord_names: ('x', 'y', 'z'), coord_dtype: float64
     >>> cm2 = rename_output(cm, y='a')
     >>> print cm2.output_coords
-
+    name: '', coord_names: ('x', 'a', 'z'), coord_dtype: float64
     >>>                             
     """
     coord_names = _rename_coords(coordmap.output_coords.coord_names, **kwargs)
@@ -389,7 +389,7 @@ def reorder_input(coordmap, order=None):
     >>> output_cs = CoordinateSystem('xyz')
     >>> cm = Affine(np.identity(4), input_cs, output_cs)
     >>> print reorder_input(cm, 'ikj').input_coords
-
+    name: '-reordered', coord_names: ('i', 'k', 'j'), coord_dtype: float64
     """
     ndim = coordmap.ndim[0]
     if order is None:
@@ -434,7 +434,7 @@ def reorder_output(coordmap, order=None):
     >>> output_cs = CoordinateSystem('xyz')
     >>> cm = Affine(np.identity(4), input_cs, output_cs)
     >>> print reorder_output(cm, 'xzy').output_coords
-
+    name: '-reordered', coord_names: ('x', 'z', 'y'), coord_dtype: float64
     >>> print reorder_output(cm, [0,2,1]).output_coords.coord_names
     ('x', 'z', 'y')
 
