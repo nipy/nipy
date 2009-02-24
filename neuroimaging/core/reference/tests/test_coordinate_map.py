@@ -39,9 +39,9 @@ def setup():
         return x/2.0
     x = CoordinateSystem('x', 'x')
     E.a = CoordinateMap(f, x, x)
-    E.b = CoordinateMap(f, x, x, inverse=g)
+    E.b = CoordinateMap(f, x, x, inverse_mapping=g)
     E.c = CoordinateMap(g, x, x)        
-    E.d = CoordinateMap(g, x, x, inverse=f)        
+    E.d = CoordinateMap(g, x, x, inverse_mapping=f)        
     E.e = Affine.identity('ijk')
 
     A = np.identity(4)
