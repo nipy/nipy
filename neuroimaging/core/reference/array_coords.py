@@ -188,10 +188,9 @@ class Grid(object):
            [ 0. ,  0. ,  1. ]])
 
     >>> print points.coordmap.input_coords
-    {'axes': [<Axis:"i0", dtype=[('i0', '<f8')]>, <Axis:"i1", dtype=[('i1', '<f8')]>], 'name': 'i0 * i1'}
+    name: 'product', coord_names: ('i0', 'i1'), coord_dtype: float64
     >>> print points.coordmap.output_coords
-    {'axes': [<Axis:"x", dtype=[('x', '<f8')]>, <Axis:"y", dtype=[('y', '<f8')]>], 'name': 'input'}
-    >>>                                                  
+    name: 'input', coord_names: ('x', 'y'), coord_dtype: float64
 
     >>> points.shape
     (21, 31)
@@ -214,7 +213,7 @@ class Grid(object):
         """
 
         if isinstance(coords, CoordinateSystem):
-            coordmap = Affine(np.identity(len(coords.axes)+1), coords, coords)
+            coordmap = Affine(np.identity(len(coords.coord_names)+1), coords, coords)
         elif not isinstance(coords, CoordinateMap):
             raise ValueError('expecting either a CoordinateMap or a CoordinateSystem for Grid')
         else:

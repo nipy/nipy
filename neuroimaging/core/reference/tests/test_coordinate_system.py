@@ -101,10 +101,11 @@ def test___eq__():
 
 def test___str__():
     s = str(E.cs)
-    assert_equal(s, "name: test, coord_names: ('i', 'j', 'k'), coord_dtype: float32")
+    assert_equal(s, "name: 'test', coord_names: ('i', 'j', 'k'), coord_dtype: float32")
 
 def test_typecast():
     pass
+    # FAIL
 
 def test_product():
     # int32 + int64 => int64
