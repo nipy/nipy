@@ -7,7 +7,7 @@ system contains 3 coordinates: the first, second and third.
 """
 __docformat__ = 'restructuredtext'
 
-import copy, warnings
+import copy
 import numpy as np
 
 

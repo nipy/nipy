@@ -2,6 +2,7 @@
 Coordinate maps store all the details about how an image translates to
 space.  They also provide mechanisms for iterating over that space.
 """
+
 import copy
 import warnings
 
@@ -14,59 +15,95 @@ from neuroimaging.core.reference.coordinate_system import product as coordsys_pr
 __docformat__ = 'restructuredtext'
 
 class CoordinateMap(object):
-    """
-    Defines a set of input and output coordinate systems and a mapping
-    between the two, which represents the mapping of (for example) an
-    image from voxel space to real space.
+    """A set of input and output CoordinateSystems and a mapping between them.
 
+    For example, the mapping may represent the mapping of an image
+    from voxel space (the input coordinates) to real space (the output
+    coordinates).  The mapping may be an affine or non-affine
+    transformation.
+
+    Attributes
+    ----------
+    input_coords : ``CoordinateSystem``
+        The input coordinate system.
+    output_coords : ``CoordinateSystem``
+        The output coordinate system.
+    mapping : callable
+        A callable that maps the input_coords to the output_coords.
+    inverse_mapping : callable
+        A callable that maps the output_coords to the input_coords.
+        Not all mappings have an inverse, in which case
+        inverse_mapping is None.
+        
+    Examples
+    --------
     >>> input_coords = CoordinateSystem('ijk')
     >>> output_coords = CoordinateSystem('xyz')
-    >>> mapping = lambda x: np.array(x)+1
-    >>> inverse_mapping = lambda x: np.array(x)-1
+    >>> mni_orig = np.array([-90.0, -126.0, -72.0])
+    >>> mapping = lambda x: np.array(x) + mni_orig
+    >>> inverse_mapping = lambda x: np.array(x) - mni_orig
     >>> cm = CoordinateMap(mapping, input_coords, output_coords, inverse_mapping)
+
+    Map the first 3 voxel coordinates, along the x-axis, to mni space:
+
+    >>> x = np.array([[0,0,0], [1,0,0], [2,0,0]])
+    >>> cm.mapping(x)
+    array([[ -90., -126.,  -72.],
+           [ -89., -126.,  -72.],
+           [ -88., -126.,  -72.]])
+
+
     """
     
     def __init__(self, mapping, 
                  input_coords, 
                  output_coords, 
                  inverse_mapping=None):
-        """
-        :Parameters:
-            mapping : `callable`
-                The mapping between input and output coordinates
-            input_coords : `CoordinateSystem`
-                The input coordinate system
-            output_coords : `CoordinateSystem`
-                The output coordinate system
-            inverse_mapping : `callable`
-                The optional inverse of mapping, with the intention
-                being ``x = inverse_mapping(mapping(x))``.  If the
-                mapping is affine and invertible, then this is true
-                for all x.
-              
-        """
-        # These guys define the structure of the coordmap.
-        self._mapping = mapping
+        """Create a CoordinateMap given the input/output coords and mappings.
 
+        Parameters
+        ----------
+        mapping : callable
+            The mapping between input and output coordinates
+        input_coords : ``CoordinateSystem``
+            The input coordinate system
+        output_coords : ``CoordinateSystem``
+            The output coordinate system
+        inverse_mapping : callable, optional
+            The optional inverse of mapping, with the intention
+            being ``x = inverse_mapping(mapping(x))``.  If the
+            mapping is affine and invertible, then this is true
+            for all x.
+
+        Returns
+        -------
+        coordmap : CoordinateMap
+
+        """
+
+        # These attrs define the structure of the coordmap.
+        self._mapping = mapping
         self.input_coords = input_coords
         self.output_coords = output_coords
         self._inverse_mapping = inverse_mapping
 
         if not callable(mapping):
-            raise ValueError('mapping should be callable')
+            raise ValueError('The mapping must be callable.')
 
         if inverse_mapping is not None:
             if not callable(inverse_mapping):
-                raise ValueError('if not None, inverse should be callable')
+                raise ValueError('The inverse_mapping must be callable.')
         self._checkmapping()
 
     def _getmapping(self):
         return self._mapping
-    mapping = property(_getmapping)
+    mapping = property(_getmapping,
+                       doc='The mapping from input_coords to output_coords.')
 
     def _getinverse_mapping(self):
         return self._inverse_mapping
-    inverse_mapping = property(_getinverse_mapping)
+    inverse_mapping = property(_getinverse_mapping,
+                               doc='The mapping from output_coords to input_coords')
 
     def _getinverse(self):
         """
@@ -77,16 +114,19 @@ class CoordinateMap(object):
                                  self.output_coords, 
                                  self.input_coords, 
                                  inverse_mapping=self.mapping)
-    inverse = property(_getinverse)
+    inverse = property(_getinverse,
+                       doc='Return a new CoordinateMap with the mappings reversed.')
 
     def _getndim(self):
         return (self.input_coords.ndim, self.output_coords.ndim)
-    ndim = property(_getndim)
+    ndim = property(_getndim,
+                    doc='Number of dimensions of input and output coordinates.')
 
     def _checkshape(self, x):
+        """Verify that x has the proper shape for evaluating the mapping
+
         """
-        Verify that x has the proper shape for evaluating the mapping
-        """
+
         ndim = self.ndim
         if x.dtype.isbuiltin:
             if x.ndim > 2 or x.shape[-1] != ndim[0]:
@@ -99,10 +139,10 @@ class CoordinateMap(object):
                              'expecting 1-d array, or a 0-d array')
 
     def _checkmapping(self, check_outdtype=True):
-        """
-        Verify that the input and output dimensions of self.mapping work.
+        """Verify that the input and output dimensions of self.mapping work.
 
         """
+
         input = np.zeros((10, self.ndim[0]),
                          dtype=self.input_coords.coord_dtype)
         output = self.mapping(input)
@@ -113,9 +153,10 @@ class CoordinateMap(object):
             raise ValueError('input and output dimensions of mapping do not agree with specified CoordinateSystems')
 
     def __call__(self, x):
-        """
-        Return mapping evaluated at x
-        
+        """Return mapping evaluated at x
+
+        Examples
+        --------
         >>> input_cs = CoordinateSystem('ijk')
         >>> output_cs = CoordinateSystem('xyz')
         >>> mapping = lambda x:np.array(x)+1
@@ -131,11 +172,14 @@ class CoordinateMap(object):
         return self.mapping(x)
 
     def copy(self):
-        """
-        Create a copy of the coordmap.
+        """Create a copy of the coordmap.
 
-        :Returns: `CoordinateMap`
+        Returns
+        -------
+        coordmap : CoordinateMap
+
         """
+
         return CoordinateMap(self.mapping, 
                              self.input_coords,
                              self.output_coords, 
