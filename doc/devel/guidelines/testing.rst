@@ -60,6 +60,16 @@ installed::
 
     nosetests -sv --with-coverage test_module.py   
 
+The coverage report will cover any python source module imported after
+the start of the test.  This can be noisy and difficult to focus on
+the specific module for which you are writing nosetests.  To focus the
+coverage report, you can provide nose with the specific package you
+would like output from using the ``--cover-package``.  For example, in
+writing tests for the coordinate_map module::
+
+    nosetests --with-coverage --cover-package=neuroimaging.core.reference.coordinate_map test_coordinate_map.py
+
+
 For details on all the command line options::
 
     nosetests --help
