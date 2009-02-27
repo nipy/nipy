@@ -25,9 +25,54 @@ Tests can be run on the package::
     import neuroimaging as ni
     ni.test()
 
-Or on individual modules and functions from the command line::
+You can also run nose from the command line with a variety of options.
+To test an individual module::
 
     nosetests test_image.py
+
+To test an individual function::
+
+    nosetests test_module:test_function
+
+To test a class::
+
+    nosetests test_module:TestClass
+
+To test a class method::
+
+   nosetests test_module:TestClass.test_method
+
+Verbose mode (*-v* option) will print out the function names as they
+are executed.  Standard output is normally supressed by nose, to see
+any print statements you must include the *-s* option.  In order to
+get a "full verbose" output, call nose like this::
+
+    nosetests -sv test_module.py
+
+To include doctests in the nose test::
+
+   nosetests -sv --with-doctest test_module.py
+
+Nose will also investigate your test coverage. This requires `Ned
+Batchelder's coverage module
+<http://nedbatchelder.com/code/modules/coverage.html>`_ to be
+installed::
+
+    nosetests -sv --with-coverage test_module.py   
+
+The coverage report will cover any python source module imported after
+the start of the test.  This can be noisy and difficult to focus on
+the specific module for which you are writing nosetests.  To focus the
+coverage report, you can provide nose with the specific package you
+would like output from using the ``--cover-package``.  For example, in
+writing tests for the coordinate_map module::
+
+    nosetests --with-coverage --cover-package=neuroimaging.core.reference.coordinate_map test_coordinate_map.py
+
+
+For details on all the command line options::
+
+    nosetests --help
 
 
 .. include:: ../../links_names.txt
