@@ -104,13 +104,6 @@ def test___str__():
     s = str(E.cs)
     assert_equal(s, "name: 'test', coord_names: ('i', 'j', 'k'), coord_dtype: float32")
 
-def test_typecast():
-    # array is already same dtype as coordinate system
-    cs = CoordinateSystem('ijk', coord_dtype=np.float32)
-    arr = np.empty((10,3), dtype=np.float32)
-    tcarr = cs.typecast_values(arr)
-    yield assert_equal, tcarr.dtype, cs.coord_dtype
-
 
 def test_safe_dtype():
     yield assert_raises, TypeError, safe_dtype, type('foo')

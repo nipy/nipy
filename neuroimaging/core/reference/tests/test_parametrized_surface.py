@@ -14,10 +14,8 @@ def parametric(vals):
     """
     Parametrization of the surface x**2-y**2*z**2+z**3=0
     """
-    vals = uv.typecast_values(vals, uv.dtype)
-    u = vals['u']
-    v = vals['v']
-    
+    u = vals[:,0]
+    v = vals[:, 1]
     o = np.array([v*(u**2-v**2),
                   u,
                   u**2-v**2]).T
@@ -28,8 +26,7 @@ Let's check that indeed this is a parametrization of that surface
 """
 
 def implicit(vals):
-    vals = xyz.typecast_values(vals, xyz.dtype)
-    x = vals['x']; y = vals['y']; z = vals['z']
+    x = vals[:,0]; y = vals[:,1]; z = vals[:,2]
     return x**2-y**2*z**2+z**3
 
 surface_param = CoordinateMap(parametric, uv, xyz)
@@ -57,9 +54,8 @@ def test_grid32():
         """
         float32 version of the same thing
         """
-        vals = uv32.typecast_values(vals, uv32.dtype)
-        u = vals['u']
-        v = vals['v']
+        u = vals[:,0]
+        v = vals[:,1]
     
         o = np.array([v*(u**2-v**2),
                       u,
@@ -87,9 +83,8 @@ def test_grid32_c128():
         """
         float32 version of the same thing
         """
-        vals = uv32.typecast_values(vals, uv32.dtype)
-        u = vals['u']
-        v = vals['v']
+        u = vals[:,0]
+        v = vals[:,1]
     
         o = np.array([v*(u**2-v**2),
                       u,
