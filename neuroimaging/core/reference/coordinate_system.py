@@ -177,7 +177,8 @@ class CoordinateSystem(object):
         precision) to ``self.coord_dtype``.  We use numpy ``can_cast``
         for this check.
 
-	The last axis of ``arr`` should be of length ``self.ndim``
+	The last (or only) axis of ``arr`` should be of length
+	``self.ndim``.
 
 	Parameters
 	----------
@@ -204,7 +205,7 @@ class CoordinateSystem(object):
         >>> cs.checked_values(arr[0:2]) # wrong length
         Traceback (most recent call last):
            ...
-        ValueError: Array shape[-1] should be 3
+        ValueError: 1D input should have be length 3 for this coordinate system
 
         The dtype has to be castable:
 
@@ -213,7 +214,7 @@ class CoordinateSystem(object):
            ...
         ValueError: Cannot cast array dtype float64 to coordinate system coord_dtype float32
 
-        The input array is unchanged, even if reshape has
+        The input array is unchanged, even if a reshape has
         occurred. The returned array points to the same data.
 
         >>> checked = cs.checked_values(arr)
@@ -226,11 +227,34 @@ class CoordinateSystem(object):
         >>> checked[0,0] = 10
         >>> arr[0]
         10
+
+        For a 1D CoordinateSystem, passing a 1D vector length N could be a
+        mistake (you were expecting an N-dimensional coordinate
+        system), or it could be N points in 1D.  Because it is
+        ambiguous, this is an error.
+
+        >>> cs = CoordinateSystem('x')
+        >>> cs.checked_values(1)
+        array([[1]])
+        >>> cs.checked_values([1, 2])
+        Traceback (most recent call last):
+           ...
+        ValueError: 1D input should have be length 1 for this coordinate system
+
+        But of course 2D, N by 1 is OK
+
+        >>> cs.checked_values(np.array([1,2,3]).reshape(3, 1))
+        array([[1],
+               [2],
+               [3]])
         '''
         arr = np.asanyarray(arr)
+        our_ndim = len(self._coord_names)
         if len(arr.shape) < 2:
+            if arr.size != our_ndim:
+                raise ValueError('1D input should have be length %d for '
+                                 'this coordinate system' % our_ndim)
             arr = arr.reshape((1, arr.size))
-        arr = np.atleast_2d(arr)
         if arr.shape[-1] != len(self._coord_names):
             raise ValueError('Array shape[-1] should be %d' % self.ndim)
         if not np.can_cast(arr.dtype, self._coord_dtype):

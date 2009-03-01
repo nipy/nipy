@@ -138,19 +138,14 @@ class CoordinateMap(object):
             raise ValueError('if dtype is not builtin, '
                              'expecting 1-d array, or a 0-d array')
 
-    def _checkmapping(self, check_outdtype=True):
+    def _checkmapping(self):
         """Verify that the input and output dimensions of self.mapping work.
 
+        We do this by passing something that should work, through __call__
         """
-
-        input = np.zeros((10, self.ndim[0]),
-                         dtype=self.input_coords.coord_dtype)
-        output = self.mapping(input)
-        if output.dtype != self.output_coords.coord_dtype and check_outdtype:
-            warnings.warn('output.dtype != self.output_coords.coord_dtype')
-        output = output.astype(self.output_coords.coord_dtype)
-        if output.shape != (10, self.ndim[1]):
-            raise ValueError('input and output dimensions of mapping do not agree with specified CoordinateSystems')
+        inp = np.zeros((10, self.ndim[0]),
+                       dtype=self.input_coords.coord_dtype)
+        out = self(inp)
 
     def __call__(self, x):
         """Return mapping evaluated at x

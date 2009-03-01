@@ -63,36 +63,31 @@ def test_call():
     result_b = E.b(value)
     result_c = E.c(value)
     result_d = E.d(value)        
-    assert_true(np.allclose(result_a, 2*value))
-    assert_true(np.allclose(result_b, 2*value))
-    assert_true(np.allclose(result_c, value/2))
-    assert_true(np.allclose(result_d, value/2) )       
+    yield assert_true, np.allclose(result_a, 2*value)
+    yield assert_true, np.allclose(result_b, 2*value)
+    yield assert_true, np.allclose(result_c, value/2)
+    yield assert_true, np.allclose(result_d, value/2)
         
 def test_str():
     s_a = str(E.a)
     s_b = str(E.b)
     s_c = str(E.c)
     s_d = str(E.d)                
-        
+
+
 def test_compose():
-    value = np.array([1., 2., 3.])
-    
+    value = np.array([[1., 2., 3.]]).T
     aa = compose(E.a, E.a)
-    assert_false(aa.inverse)
-    assert_true(np.allclose(aa(value), 4*value))
-
+    yield assert_true, aa.inverse is None
+    yield assert_true, np.allclose(aa(value), 4*value)
     ab = compose(E.a,E.b)
-    assert_false(ab.inverse)
-    assert_true(np.allclose(ab(value), 4*value))
-
+    yield assert_true, ab.inverse is None
+    assert_true, np.allclose(ab(value), 4*value)
     ac = compose(E.a,E.c)
-    assert_false(ac.inverse)
-    assert_true(np.allclose(ac(value), value))
-
-
+    yield assert_true, ac.inverse is None
+    yield assert_true, np.allclose(ac(value), value)
     bb = compose(E.b,E.b)
-    assert_true(bb.inverse)
-
+    yield assert_true, bb.inverse is not None
   
 
 def test_isinvertible():
@@ -103,16 +98,15 @@ def test_isinvertible():
         
 def test_inverse1():
     inv = lambda a: a.inverse
-    assert_false(inv(E.a))
-    assert_false(inv(E.c))
+    yield assert_true, inv(E.a) is None
+    yield assert_true, inv(E.c) is None
     inv_b = E.b.inverse
     inv_d = E.d.inverse
     ident_b = compose(inv_b,E.b)
     ident_d = compose(inv_d,E.d)
-    value = np.array([1., 2., 3.])
-    print ident_d(value)
-    assert_true(np.allclose(ident_b(value), value))
-    assert_true(np.allclose(ident_d(value), value))
+    value = np.array([[1., 2., 3.]]).T    
+    yield assert_true, np.allclose(ident_b(value), value)
+    yield assert_true, np.allclose(ident_d(value), value)
         
       
 
