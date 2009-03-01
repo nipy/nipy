@@ -1,5 +1,4 @@
 import numpy as np
-import nose.tools
 
 from neuroimaging.core.api import CoordinateSystem, Affine
 from neuroimaging.core.reference.coordinate_map import compose
@@ -180,22 +179,24 @@ def product(*elements):
 
 def change_basis(element, bchange_linear):
     """
-    Matrices can be thought of as representations of
-    linear mappings between two (coordinate-free) vector spaces
-    represented in particular bases.
+    Matrices can be thought of as representations of linear mappings
+    between two (coordinate-free) vector spaces represented in
+    particular bases.
 
-    Hence, a MatrixGroup instance with matrix.shape = (ndim, ndim) 
-    represents a linear transformation L on a vector space of dimension
-    ndim, in a given coordinate system.
+    Hence, a MatrixGroup instance with matrix.shape = (ndim, ndim)
+    represents a linear transformation L on a vector space of
+    dimension ndim, in a given coordinate system.
 
     If we change the basis in which we represent L, 
     the matrix that represents L should also change. 
 
-    A change of basis is represented as a mapping between two coordinate systems
-    and is also represented by a change of basis matrix.
-    This is expressed in this function as bchange_linear.output_coords == element.coords
+    A change of basis is represented as a mapping between two
+    coordinate systems and is also represented by a change of basis
+    matrix.  This is expressed in this function as
+    bchange_linear.output_coords == element.coords
     
-    This function expresses the same transformation L in a different basis.
+    This function expresses the same transformation L in a different
+    basis.
 
     """
 
@@ -209,19 +210,19 @@ def change_basis(element, bchange_linear):
 
 def same_transformation(element1, element2, basis_change):
     """
-    Matrices can be thought of as representations of
-    linear mappings between two (coordinate-free) vector spaces
-    represented in particular bases.
+    Matrices can be thought of as representations of linear mappings
+    between two (coordinate-free) vector spaces represented in
+    particular bases.
 
-    Hence, a MatrixGroup instance with matrix.shape = (ndim, ndim) 
-    represents a linear transformation L on a vector space of dimension
-    ndim, in a given coordinate system.
+    Hence, a MatrixGroup instance with matrix.shape = (ndim, ndim)
+    represents a linear transformation L on a vector space of
+    dimension ndim, in a given coordinate system.
 
     This function asks the question:
 
     Do the two elements of a MatrixGroup (element1, element2)
-    represent the same linear mapping if basis_change 
-    represents the change of basis between the two?
+    represent the same linear mapping if basis_change represents the
+    change of basis between the two?
 
     element1.coords = change_basis(element2, basis_change).coords
 
@@ -233,16 +234,15 @@ def same_transformation(element1, element2, basis_change):
 
 def product_homomorphism(*elements):
     """
-    Given a sequence of elements of the same subclass of MatrixGroup, they
-    can be thought of as an element of the topological product,
+    Given a sequence of elements of the same subclass of MatrixGroup,
+    they can be thought of as an element of the topological product,
     which has a natural group structure.
 
-    If all of the elements are of the same subclass, then there is 
-    a natural group homomorphism from the product space
-    to a larger MatrixGroup. The matrices of the elements
-    of the larger group will be block diagonal with blocks
-    of the size corresponding to the dimensions of each
-    corresponding element.
+    If all of the elements are of the same subclass, then there is a
+    natural group homomorphism from the product space to a larger
+    MatrixGroup. The matrices of the elements of the larger group will
+    be block diagonal with blocks of the size corresponding to the
+    dimensions of each corresponding element.
 
     This function is that homomorphism.
     """

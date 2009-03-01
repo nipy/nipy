@@ -30,7 +30,7 @@ class CoordinateMap(object):
         The output coordinate system.
     mapping : callable
         A callable that maps the input_coords to the output_coords.
-    inverse_mapping : callable
+    inverse_mapping : None or callable
         A callable that maps the output_coords to the input_coords.
         Not all mappings have an inverse, in which case
         inverse_mapping is None.
@@ -69,11 +69,11 @@ class CoordinateMap(object):
             The input coordinate system
         output_coords : ``CoordinateSystem``
             The output coordinate system
-        inverse_mapping : callable, optional
+        inverse_mapping : None or callable, optional
             The optional inverse of mapping, with the intention
             being ``x = inverse_mapping(mapping(x))``.  If the
             mapping is affine and invertible, then this is true
-            for all x.
+            for all x.  The default is Nones
 
         Returns
         -------
@@ -122,22 +122,6 @@ class CoordinateMap(object):
     ndim = property(_getndim,
                     doc='Number of dimensions of input and output coordinates.')
 
-    def _checkshape(self, x):
-        """Verify that x has the proper shape for evaluating the mapping
-
-        """
-
-        ndim = self.ndim
-        if x.dtype.isbuiltin:
-            if x.ndim > 2 or x.shape[-1] != ndim[0]:
-                raise ValueError('if dtype is builtin, expecting a 2-d '
-                                 'array of shape (*,%d) or '
-                                 'a 1-d array of shape (%d,)' % 
-                                 (ndim[0], ndim[0]))
-        elif x.ndim > 1:
-            raise ValueError('if dtype is not builtin, '
-                             'expecting 1-d array, or a 0-d array')
-
     def _checkmapping(self):
         """Verify that the input and output dimensions of self.mapping work.
 
@@ -150,6 +134,9 @@ class CoordinateMap(object):
     def __call__(self, x):
         """Return mapping evaluated at x
 
+        Check input and output of mapping for compatiblity with input
+        and output coordinate systems respectively.s
+
         Examples
         --------
         >>> input_cs = CoordinateSystem('ijk')
@@ -158,10 +145,10 @@ class CoordinateMap(object):
         >>> inverse = lambda x:np.array(x)-1
         >>> cm = CoordinateMap(mapping, input_cs, output_cs, inverse)
         >>> cm([2,3,4])
-        array([3, 4, 5])
+        array([[3, 4, 5]])
         >>> cmi = cm.inverse
         >>> cmi([2,6,12])
-        array([ 1,  5, 11])
+        array([[ 1,  5, 11]])
         >>>                                    
         """
         in_vals = self.input_coords.checked_values(x)
@@ -184,8 +171,8 @@ class CoordinateMap(object):
 
 class Affine(CoordinateMap):
     """
-    A class representing an affine transformation from an input coordinate system
-    to an output coordinate system.
+    A class representing an affine transformation from an input
+    coordinate system to an output coordinate system.
     
     This class has an affine property, which is a matrix representing
     the affine transformation in homogeneous coordinates. 
@@ -267,12 +254,6 @@ class Affine(CoordinateMap):
     def _getparams(self):
         return matvec_from_transform(self.affine)
     params = property(_getparams, doc='Get (matrix, vector) representation of affine.')
-
-    def __call__(self, x):
-        A, b = self.params
-        value = np.dot(x, A.T)
-        value += b
-        return value
 
     @staticmethod
     def from_params(innames, outnames, params):
@@ -556,7 +537,7 @@ def product(*cmaps):
 
     if not notaffine:
 
-        affine = linearize(mapping, ndimin[-1], step=np.array(1, incoords.coord_dtype))
+        affine = linearize(mapping, ndimin[-1], dtype=incoords.coord_dtype)
         return Affine(affine, incoords, outcoords)
     return CoordinateMap(mapping, incoords, outcoords)
 
@@ -608,12 +589,16 @@ def compose(*cmaps):
                                  m.output_coords, 
                                  inverse_mapping=backward)
         else:
-            raise ValueError, 'input and output coordinates do not match: input=%s, output=%s' % (`m.input_coords.dtype`, `cmap.output_coords.dtype`)
+            raise ValueError(
+                'input and output coordinates do not match: '
+                'input=%s, output=%s' % 
+                (`m.input_coords.dtype`, `cmap.output_coords.dtype`))
 
     notaffine = filter(lambda cmap: not isinstance(cmap, Affine), cmaps)
-
     if not notaffine:
-        affine = linearize(cmap, cmap.ndim[0], step=np.array(1, cmaps[0].output_coords.coord_dtype))
+        affine = linearize(cmap, 
+                           cmap.ndim[0], 
+                           dtype=cmap.output_coords.coord_dtype)
         return Affine(affine, cmap.input_coords,
                       cmap.output_coords)
     return cmap
@@ -660,6 +645,12 @@ def hstack(*cmaps):
     >>> inc1 = Affine.from_params('ab', 'cd', np.diag([2,3,1]))
     >>> inc2 = Affine.from_params('ab', 'cd', np.diag([3,2,1]))
     >>> inc3 = Affine.from_params('ab', 'cd', np.diag([1,1,1]))
+    """
+
+    """
+    These guys are failing, and I don't understand what the code is
+    meant to do
+
     >>> stacked = hstack(inc1, inc2, inc3)
 
     >>> stacked(np.array([[0,1,2],[1,1,2],[2,1,2], [1,1,2]]).T)
@@ -667,12 +658,8 @@ def hstack(*cmaps):
            [ 1.,  3.,  4.],
            [ 2. , 1.,  2.],
            [ 1.,  3.,  4.]])
-    >>> 
-
     """
-
     # Ensure that they all have the same coordinate systems
-
     notinput = filter(lambda i: cmaps[i].input_coords != cmaps[0].input_coords, 
                       range(len(cmaps)))
     notoutput = filter(lambda i: cmaps[i].output_coords != cmaps[0].output_coords,
@@ -681,13 +668,13 @@ def hstack(*cmaps):
         raise ValueError("input and output coordinates of each CoordinateMap "
                          "should be the same in order to stack them")
 
-    def mapping(x, return_index=False):
-        r = []
+    def mapping(x):
+        results = []
         for i in range(x.shape[1]):
             ii = int(x[0,i])
             y = cmaps[ii](x[1:,i])
-            r.append(np.hstack([x[0,i], y]))
-        return np.vstack(r)
+            results.append(np.hstack([x[0,i], y]))
+        return np.vstack(results)
 
     inaxes = ('stack-input',) + cmaps[0].input_coords.coord_names
     incoords = CoordinateSystem(inaxes, 'stackin-%s' % cmaps[0].input_coords.name)
@@ -714,52 +701,55 @@ def transform_from_matvec(matrix, vector):
     return t
 
 
-def linearize(mapping, ndimin, step=np.array(1.), origin=None):
+def linearize(mapping, ndimin, step=1, origin=None, dtype=None):
     """
-    Given a Mapping of ndimin variables, 
-    with an input builtin dtype, return the linearization
-    of mapping at origin based on a given step size
-    in each coordinate axis.
+    Given a Mapping of ndimin variables, return the linearization of
+    mapping at origin based on a given step size in each coordinate
+    axis.
 
     If not specified, origin defaults to np.zeros(ndimin, dtype=dtype).
     
-    :Inputs: 
-        mapping: ``Mapping``
-              A function to linearize
-        ndimin: ``int``
-              Number of input dimensions to mapping
-        origin: ``ndarray``
-              Origin at which to linearize mapping
-        step: ``ndarray``
-              Step size, an ndarray with step.shape == ().
+    Parameters
+    ----------
+    mapping : callable
+       A function to linearize
+    ndimin : int
+       Number of input dimensions to mapping
+    step : scalar, optional
+       step size over which to calculate linear components.  Default 1
+    origin : None or array, optional
+       Origin at which to linearize mapping.  If None, origin is
+       ``np.zeros(ndimin)``
+    dtype : None or np.dtype, optional
+       dtype for return.  Default is None.  If ``dtype`` is None, and
+       ``step`` is an ndarray, use ``step.dtype``.  Otherwise use
+       np.float.
 
-    :Returns:
-        C: ``ndarray``
-            Linearization of mapping in homogeneous coordinates, i.e. 
-            an array of size (ndimout+1, ndimin+1) where
-            ndimout = mapping(origin).shape[0].
-
-    :Notes: The dtype of the resulting Affine mapping
-            will be the dtype of mapping(origin)/step, regardless
-            of the input dtype.
-
+    Returns
+    -------
+    C : array 
+       Linearization of mapping in homogeneous coordinates, i.e.  an
+       array of size (ndimout+1, ndimin+1) where ndimout =
+       mapping(origin).shape[0].
     """
-    step = np.asarray(step)
-    dtype = step.dtype
-    if step.shape != ():
-        raise ValueError('step should be a scalar value')
+    if dtype is None:
+        try:
+            dtype = step.dtype
+        except AttributeError:
+            dtype = np.float
+    step = np.array(step, dtype=dtype)
     if origin is None:
         origin = np.zeros(ndimin, dtype)
     else:
-        if origin.dtype != step.dtype:
-            warnings.warn('origin.dtype != step.dtype in function linearize, using step.dtype')
-        origin = np.asarray(origin, dtype=step.dtype)
+        if origin.dtype != dtype:
+            warnings.warn('origin.dtype != dtype in function linearize, using input dtype')
+        origin = np.asarray(origin, dtype=dtype)
         if origin.shape != (ndimin,):
             raise ValueError('origin.shape != (%d,)' % ndimin)
     b = mapping(origin)
 
     origin = np.multiply.outer(np.ones(ndimin, dtype), origin)
-    y1 = mapping(step*np.identity(ndimin) + origin)
+    y1 = mapping(step*np.eye(ndimin, dtype=dtype) + origin)
     y0 = mapping(origin)
 
     ndimout = y1.shape[1]
