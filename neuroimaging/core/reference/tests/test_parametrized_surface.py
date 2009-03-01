@@ -10,7 +10,7 @@ from neuroimaging.core.api import Grid
 uv = CoordinateSystem('uv', 'input')
 xyz = CoordinateSystem('xyz', 'output')
 
-def parametric(vals):
+def parametric_mapping(vals):
     """
     Parametrization of the surface x**2-y**2*z**2+z**3=0
     """
@@ -32,7 +32,7 @@ def implicit(vals):
     x = vals['x']; y = vals['y']; z = vals['z']
     return x**2-y**2*z**2+z**3
 
-surface_param = CoordinateMap(parametric, uv, xyz)
+surface_param = CoordinateMap(parametric_mapping, uv, xyz)
 
 assert np.allclose(implicit(parametric(np.random.standard_normal((40,2)))), 0)
 
