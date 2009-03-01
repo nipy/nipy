@@ -167,93 +167,101 @@ class CoordinateSystem(object):
         return ("name: '%s', coord_names: %s, coord_dtype: %s" %
                 (self.name, self.coord_names, self.coord_dtype))
 
-    def typecast_values(self, x, dtype=None):
-        """ Try to safely typecast array-like object x 
 
-        Typecast ``x`` into an ndarray with numpy dtype
-        ``coord_dtype``, and with the correct shape, or typecast it as
-        an ndarray with the composite coordinate system dtype,
-        ``self.dtype``.
+    def checked_values(self, arr):
+        ''' Check ``arr`` for valid dtype and shape as coordinate values.
 
-        Parameters
-        ----------
-        x : array-like
-           array of coordinate values
-        dtype : np.dtype, optional
-           Requested output dtype of array.  If no dtype is specified,
-           use ``self.coord_dtype``.
-        
-        Returns
-        -------
-        tca : array
-           numpy array with correct shape, and dtype
+        Raise Errors for failed checks.
 
-        Examples
-        --------
-        >>> cs = CoordinateSystem('ijk', coord_dtype=np.float)
-        >>> arr = np.zeros((10,3),dtype=np.float)
+        The dtype of ``arr`` has to be castable (without loss of
+        precision) to ``self.coord_dtype``.  We use numpy ``can_cast``
+        for this check.
 
-        If the array is already the right shape and type, we pass it
-        through unmodified.
+	The last (or only) axis of ``arr`` should be of length
+	``self.ndim``.
 
-        >>> tcarr = cs.typecast_values(arr)
-        >>> np.all(tcarr == arr)
-        True
-        >>> tcarr is arr
-        True
+	Parameters
+	----------
+	arr : array-like
+	   array to check
+	
+	Returns
+	-------
+	checked_arr : array
+           Possibly reshaped array
 
-        If the cast array is of dtype ``coord_dtype``, then the last
-        element of the shape of ``x`` should match the number of
-        dimensions of the coordinate system.
-
-        >>> arr = np.zeros((5,6),dtype=np.float)
-        >>> tcarr = cs.typecast_values(arr)
+	Examples
+	--------
+	>>> cs = CoordinateSystem('ijk', coord_dtype=np.float32)
+        >>> arr = np.array([1, 2, 3], dtype=np.int16)
+        >>> cs.checked_values(arr.reshape(1,3)) 
+        array([[1, 2, 3]], dtype=int16)
+        >>> cs.checked_values(arr) # 1D is OK with matching dimensions 
+        array([[1, 2, 3]], dtype=int16)
+        >>> cs.checked_values(arr.reshape(3,1)) # wrong shape
         Traceback (most recent call last):
            ...
-        ValueError: value arrays should be 2d with final dimension matching coordinate system dimension
-        """
-        x = np.asarray(x)
-        if dtype is None:
-            dtype = self.coord_dtype
-        else:
-            # we need a numpy dtype to do the comparison
-            dtype = np.dtype(dtype)
-            if dtype not in [self.dtype, self.coord_dtype]:
-                raise ValueError('only safe to cast to either %s or %s' 
-                                 % (`self.dtype`, `self.coord_dtype`))
-        if x.dtype not in [self.dtype, self.coord_dtype]:
-            raise ValueError('only safe to cast from either %s or %s'
-                             % (`self.dtype`, `self.coord_dtype`))
-        # Check input shape
-        if x.dtype == self.coord_dtype: # coordinate dtype
-            if len(x.shape) !=2 or x.shape[1] != self.ndim:
-                raise ValueError('value arrays should be 2d '
-                                 'with final dimension matching '
-                                 'coordinate system dimension')
-        else: # coordinate system dtype
-            if len(x.shape) != 1:
-                raise ValueError('structured arrays should be 1d')
-        if dtype == self.dtype:
-            # we want a composite type
-            if x.dtype == self.dtype:
-                # x is already a structured array (composite dtype)
-                return x
-            # we need to cast x to the composite dtype
-            # this presumes we are given an ndarray with dtype =
-            # self.coord_dtype so we typecast, to be safe we make a
-            # copy!
-            shape = x.shape
-            x = np.asarray(x, dtype=self.coord_dtype).ravel()
-            y = x.view(self.dtype)
-            y.shape = shape[:-1]
-            return y
-        else: # casting to the builtin coord_dtype
-            if x.dtype == dtype: 
-                return x
-            # we need to cast to coord_dtype
-            y = x.ravel().view(self.coord_dtype)
-            y.shape = x.shape + (y.shape[0] / np.product(x.shape),)
-            return y
+        ValueError: Array shape[-1] should be 3
+        >>> cs.checked_values(arr[0:2]) # wrong length
+        Traceback (most recent call last):
+           ...
+        ValueError: 1D input should have be length 3 for this coordinate system
+
+        The dtype has to be castable:
+
+        >>> cs.checked_values(np.array([1, 2, 3], dtype=np.float64))
+        Traceback (most recent call last):
+           ...
+        ValueError: Cannot cast array dtype float64 to coordinate system coord_dtype float32
+
+        The input array is unchanged, even if a reshape has
+        occurred. The returned array points to the same data.
+
+        >>> checked = cs.checked_values(arr)
+        >>> checked.shape == arr.shape
+        False
+        >>> checked is arr
+        False
+        >>> arr[0]
+        1
+        >>> checked[0,0] = 10
+        >>> arr[0]
+        10
+
+        For a 1D CoordinateSystem, passing a 1D vector length N could be a
+        mistake (you were expecting an N-dimensional coordinate
+        system), or it could be N points in 1D.  Because it is
+        ambiguous, this is an error.
+
+        >>> cs = CoordinateSystem('x')
+        >>> cs.checked_values(1)
+        array([[1]])
+        >>> cs.checked_values([1, 2])
+        Traceback (most recent call last):
+           ...
+        ValueError: 1D input should have be length 1 for this coordinate system
+
+        But of course 2D, N by 1 is OK
+
+        >>> cs.checked_values(np.array([1,2,3]).reshape(3, 1))
+        array([[1],
+               [2],
+               [3]])
+        '''
+        arr = np.asanyarray(arr)
+        our_ndim = len(self._coord_names)
+        if len(arr.shape) < 2:
+            if arr.size != our_ndim:
+                raise ValueError('1D input should have be length %d for '
+                                 'this coordinate system' % our_ndim)
+            arr = arr.reshape((1, arr.size))
+        if arr.shape[-1] != len(self._coord_names):
+            raise ValueError('Array shape[-1] should be %d' % self.ndim)
+        if not np.can_cast(arr.dtype, self._coord_dtype):
+            raise ValueError('Cannot cast array dtype %s to '
+                             'coordinate system coord_dtype %s' %
+                             (arr.dtype, self._coord_dtype))
+        return arr
 
 
 def safe_dtype(*dtypes):
