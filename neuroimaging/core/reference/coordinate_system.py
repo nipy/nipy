@@ -255,8 +255,8 @@ class CoordinateSystem(object):
                 raise ValueError('1D input should have be length %d for '
                                  'this coordinate system' % our_ndim)
             arr = arr.reshape((1, arr.size))
-        if arr.shape[-1] != len(self._coord_names):
-            raise ValueError('Array shape[-1] should be %d' % self.ndim)
+        elif arr.shape[-1] != our_ndim:
+            raise ValueError('Array shape[-1] should be %d' % our_ndim)
         if not np.can_cast(arr.dtype, self._coord_dtype):
             raise ValueError('Cannot cast array dtype %s to '
                              'coordinate system coord_dtype %s' %
