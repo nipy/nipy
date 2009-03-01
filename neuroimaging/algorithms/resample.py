@@ -17,21 +17,21 @@ def resample(image, target, mapping, shape, order=3):
     a callable that takes a physical coordinate in "target"
     and gives a physical coordinate in "image". 
 
-    INPUTS
-    ------
-    image -- Image instance that is to be resampled
-    target -- target CoordinateMap for output image
-    mapping -- transformation from target.output_coords
+    Parameters
+    ----------
+    image : Image instance that is to be resampled
+    target :target CoordinateMap for output image
+    mapping : transformation from target.output_coords
                to image.coordmap.output_coords, i.e. 'world-to-world mapping'
                Can be specified in three ways: a callable, a
                tuple (A, b) representing the mapping y=dot(A,x)+b
                or a representation of this in homogeneous coordinates. 
-    shape -- shape of output array, in target.input_coords
-    order -- what order of interpolation to use in `scipy.ndimage`
+    shape : shape of output array, in target.input_coords
+    order : what order of interpolation to use in `scipy.ndimage`
 
-    OUTPUTS
+    Returns
     -------
-    output -- Image instance with interpolated data and output.coordmap == target
+    output : Image instance with interpolated data and output.coordmap == target
                   
     """
 
