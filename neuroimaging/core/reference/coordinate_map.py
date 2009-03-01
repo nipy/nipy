@@ -274,7 +274,7 @@ class Affine(CoordinateMap):
             pass
 
     @property
-    def params(self):
+    def matvec(self):
         ''' Get (matrix, vector) representation of affine.'''
         return matvec_from_transform(self.affine)
 

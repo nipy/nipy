@@ -40,14 +40,16 @@ def test_rotate2d2():
     assert(np.allclose(np.asarray(ir).T, i))
 
 def test_rotate2d3():
-    # Another way to rotate/transpose the image, similar to test_rotate2d2 and test_rotate2d
-    # except the output_coords of the output coordmap are the same as the output_coords of
-    # the original image. That is, the data is transposed on disk, but the output
-    # coordinates are still 'x,'y' order, not 'y', 'x' order as above
+    # Another way to rotate/transpose the image, similar to
+    # test_rotate2d2 and test_rotate2d except the output_coords of the
+    # output coordmap are the same as the output_coords of the
+    # original image. That is, the data is transposed on disk, but the
+    # output coordinates are still 'x,'y' order, not 'y', 'x' order as
+    # above
 
-    # this functionality may or may not be used a lot. if data
-    # is to be transposed but one wanted to keep the NIFTI order of output coords
-    # this would do the trick
+    # this functionality may or may not be used a lot. if data is to
+    # be transposed but one wanted to keep the NIFTI order of output
+    # coords this would do the trick
 
     g = Affine.from_params('xy', 'ij', np.diag([0.5,0.7,1]))
     i = Image(np.ones((100,80)), g)
@@ -59,7 +61,7 @@ def test_rotate2d3():
                                                   [0,0,1]]))
     ir = resample(i, g2, a, (80,100))
     v2v = compose(g.inverse, g2)
-    print v2v.params
+    print v2v.matvec
     print g.inverse, g2
     print ir.coordmap.affine
     assert(np.allclose(np.asarray(ir).T, i))
