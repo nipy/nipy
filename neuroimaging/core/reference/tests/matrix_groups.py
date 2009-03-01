@@ -59,7 +59,7 @@ class MatrixGroup(Linear):
     coords = property(_getcoords)
 
     def _getinverse(self):
-        cmapi = Affine._getinverse(self)
+        cmapi = super(MatrixGroup, self).inverse
         return self.__class__(cmapi.affine[:-1,:-1], self.coords)
     inverse = property(_getinverse)
 
