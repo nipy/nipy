@@ -341,6 +341,7 @@ class Affine(CoordinateMap):
         return Affine.from_start_step(names, names, [0]*len(names),
                                       [1]*len(names))
 
+
 def _rename_coords(coord_names, **kwargs):
     coords = list(coord_names)
     for name, newname in kwargs.items():
@@ -369,6 +370,7 @@ def rename_input(coordmap, **kwargs):
                                     coordmap.input_coords.coord_dtype)
     return CoordinateMap(coordmap.mapping, input_coords, coordmap.output_coords)
 
+
 def rename_output(coordmap, **kwargs):
     """
     Rename the output_coords, returning a new CoordinateMap.
@@ -388,6 +390,7 @@ def rename_output(coordmap, **kwargs):
                                     coordmap.output_coords.coord_dtype)
     return CoordinateMap(coordmap.mapping, coordmap.input_coords, output_coords)
         
+
 def reorder_input(coordmap, order=None):
     """
     Create a new coordmap with reversed input_coords.
@@ -432,6 +435,7 @@ def reorder_input(coordmap, order=None):
     perm = perm.astype(coordmap.input_coords.coord_dtype)
     A = Affine(perm, newincoords, coordmap.input_coords)
     return compose(coordmap, A)
+
 
 def reorder_output(coordmap, order=None):
     """
@@ -484,6 +488,7 @@ def reorder_output(coordmap, order=None):
     perm = perm.astype(coordmap.output_coords.coord_dtype)
     A = Affine(perm, coordmap.output_coords, newoutcoords)
     return compose(A, coordmap)
+
 
 def product(*cmaps):
     """
@@ -540,6 +545,7 @@ def product(*cmaps):
         affine = linearize(mapping, ndimin[-1], dtype=incoords.coord_dtype)
         return Affine(affine, incoords, outcoords)
     return CoordinateMap(mapping, incoords, outcoords)
+
 
 def compose(*cmaps):
     """
@@ -603,6 +609,7 @@ def compose(*cmaps):
                       cmap.output_coords)
     return cmap
     
+
 def replicate(coordmap, n, concataxis='concat'):
     """
     Create a CoordinateMap by taking the product
@@ -619,68 +626,6 @@ def replicate(coordmap, n, concataxis='concat'):
     concat = CoordinateMap.from_affine([concataxis], [concataxis], Affine(np.identity(2)), (n,))
     return product(concat, coordmap)
 
-#TODO: renames this interpolate? And implement interpolation?
-def hstack(*cmaps):
-    """
-    Return a "hstacked" CoordinateMap. That is,
-    take the result of a number of cmaps, and return np.hstack(results)
-    with an additional first row being the 'concat' axis values.
-
-    If the cmaps are identical
-    the resulting map is essentially
-    replicate(cmaps[0], len(cmaps)) but the mapping is not Affine.
-
-    Some simple modifications of this function would allow 'interpolation'
-    along the 'concataxis'. 
-
-    Inputs:
-    -------
-    cmaps : sequence of CoordinateMaps
-          Each cmap should have the same input_coords and output_coords.
-
-    Returns:
-    --------
-    cmap : ``CoordinateMap``
-
-    >>> inc1 = Affine.from_params('ab', 'cd', np.diag([2,3,1]))
-    >>> inc2 = Affine.from_params('ab', 'cd', np.diag([3,2,1]))
-    >>> inc3 = Affine.from_params('ab', 'cd', np.diag([1,1,1]))
-    """
-
-    """
-    These guys are failing, and I don't understand what the code is
-    meant to do
-
-    >>> stacked = hstack(inc1, inc2, inc3)
-
-    >>> stacked(np.array([[0,1,2],[1,1,2],[2,1,2], [1,1,2]]).T)
-    array([[ 0.,  2.,  6.],
-           [ 1.,  3.,  4.],
-           [ 2. , 1.,  2.],
-           [ 1.,  3.,  4.]])
-    """
-    # Ensure that they all have the same coordinate systems
-    notinput = filter(lambda i: cmaps[i].input_coords != cmaps[0].input_coords, 
-                      range(len(cmaps)))
-    notoutput = filter(lambda i: cmaps[i].output_coords != cmaps[0].output_coords,
-                       range(len(cmaps)))
-    if notinput or notoutput:
-        raise ValueError("input and output coordinates of each CoordinateMap "
-                         "should be the same in order to stack them")
-
-    def mapping(x):
-        results = []
-        for i in range(x.shape[1]):
-            ii = int(x[0,i])
-            y = cmaps[ii](x[1:,i])
-            results.append(np.hstack([x[0,i], y]))
-        return np.vstack(results)
-
-    inaxes = ('stack-input',) + cmaps[0].input_coords.coord_names
-    incoords = CoordinateSystem(inaxes, 'stackin-%s' % cmaps[0].input_coords.name)
-    outaxes = ('stack-output',) + cmaps[0].output_coords.coord_names
-    outcoords = CoordinateSystem(outaxes, 'stackout-%s' % cmaps[0].output_coords.name)
-    return CoordinateMap(mapping, incoords, outcoords)
 
 def matvec_from_transform(transform):
     """ Split a tranformation represented in homogeneous
@@ -690,6 +635,7 @@ def matvec_from_transform(transform):
     matrix = transform[0:ndimin, 0:ndimout]
     vector = transform[0:ndimin, ndimout]
     return matrix, vector
+
 
 def transform_from_matvec(matrix, vector):
     """ Combine a matrix and vector into its representation in homogeneous coordinates. """
