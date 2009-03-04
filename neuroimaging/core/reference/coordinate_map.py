@@ -44,6 +44,7 @@ import warnings
 
 import numpy as np
 
+import neuroimaging.core.transforms.affines as affines
 from neuroimaging.core.reference.coordinate_system import \
     CoordinateSystem, safe_dtype 
 from neuroimaging.core.reference.coordinate_system import product as coordsys_product
@@ -73,12 +74,12 @@ class CoordinateMap(object):
         
     Examples
     --------
-    >>> input_coords = CoordinateSystem('ijk')
-    >>> output_coords = CoordinateSystem('xyz')
+    >>> input_coords = CoordinateSystem('ijk', 'voxels')
+    >>> output_coords = CoordinateSystem('xyz' 'world')
     >>> mni_orig = np.array([-90.0, -126.0, -72.0])
-    >>> mapping = lambda x: np.array(x) + mni_orig
-    >>> inverse_mapping = lambda x: np.array(x) - mni_orig
-    >>> cm = CoordinateMap(mapping, input_coords, output_coords, inverse_mapping)
+    >>> mapping = lambda x: x + mni_orig
+    >>> inv_mapping = lambda x: x - mni_orig
+    >>> cm = CoordinateMap(mapping, input_coords, output_coords, inv_mapping)
 
     Map the first 3 voxel coordinates, along the x-axis, to mni space:
 
@@ -283,7 +284,7 @@ class Affine(CoordinateMap):
             raise ValueError('coordinate lengths do not match '
                              'affine matrix shape')
         self._affine = affine
-        A, b = matvec_from_transform(affine)
+        A, b = affines.to_matrix_vector(affine)
         def _mapping(x):
             value = np.dot(x, A.T)
             value += b
@@ -318,11 +319,6 @@ class Affine(CoordinateMap):
         except np.linalg.linalg.LinAlgError:
             pass
 
-    @property
-    def matvec(self):
-        ''' Get (matrix, vector) representation of affine.'''
-        return matvec_from_transform(self.affine)
-
     @staticmethod
     def from_params(innames, outnames, params):
         """
@@ -352,7 +348,7 @@ class Affine(CoordinateMap):
         """
         if type(params) == type(()):
             A, b = params
-            params = transform_from_matvec(A, b)
+            params = affines.from_matrix_vector(A, b)
 
         ndim = (len(innames) + 1, len(outnames) + 1)
         if params.shape != ndim[::-1]:
@@ -747,25 +743,6 @@ def replicate(coordmap, n, concataxis='concat'):
     concat = CoordinateMap.from_affine([concataxis], [concataxis], Affine(np.identity(2)), (n,))
     return product(concat, coordmap)
 
-
-def matvec_from_transform(transform):
-    """ Split a tranformation represented in homogeneous
-    coordinates into it's matrix and vector components. """
-    ndimin = transform.shape[0] - 1
-    ndimout = transform.shape[1] - 1
-    matrix = transform[0:ndimin, 0:ndimout]
-    vector = transform[0:ndimin, ndimout]
-    return matrix, vector
-
-
-def transform_from_matvec(matrix, vector):
-    """ Combine a matrix and vector into its representation in homogeneous coordinates. """
-    nin, nout = matrix.shape
-    t = np.zeros((nin+1,nout+1), matrix.dtype)
-    t[0:nin, 0:nout] = matrix
-    t[nin,   nout] = 1.
-    t[0:nin, nout] = vector
-    return t
 
 
 def linearize(mapping, ndimin, step=1, origin=None, dtype=None):

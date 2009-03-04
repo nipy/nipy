@@ -4,7 +4,7 @@ from neuroimaging.testing import *
 from nose.tools import assert_true, assert_false, assert_equal
 
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, compose, CoordinateSystem
-from neuroimaging.core.reference.coordinate_map import matvec_from_transform, transform_from_matvec
+
 from neuroimaging.testing import anatfile, funcfile
 from neuroimaging.io.api import load_image
 
@@ -127,16 +127,6 @@ def test_invertible():
     
 def test_inverse2():
     assert_true(np.allclose(E.e.affine, E.e.inverse.inverse.affine))
-        
-       
-
-def test_matvec_trasform():
-    m1 = np.random.standard_normal((3, 3))
-    v1 = np.random.standard_normal((3,))
-    m2, v2 = matvec_from_transform(transform_from_matvec(m1, v1))
-    assert_true(np.allclose(m1, m2))
-    assert_true(np.allclose(v1, v2))
-
 
 
 def test_isinvertible():

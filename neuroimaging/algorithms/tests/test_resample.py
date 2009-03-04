@@ -61,9 +61,6 @@ def test_rotate2d3():
                                                   [0,0,1]]))
     ir = resample(i, g2, a, (80,100))
     v2v = compose(g.inverse, g2)
-    print v2v.matvec
-    print g.inverse, g2
-    print ir.coordmap.affine
     assert(np.allclose(np.asarray(ir).T, i))
     
 

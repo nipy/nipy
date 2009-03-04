@@ -7,6 +7,7 @@ import numpy as np
 
 from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.core.api import Image, CoordinateMap, Affine, ArrayCoordMap, Grid, compose
+import neuroimaging.core.transforms.affines as affines
 
 def resample(image, target, mapping, shape, order=3):
     """
@@ -71,7 +72,7 @@ def resample(image, target, mapping, shape, order=3):
     else:
         TV2IV = compose(image.coordmap.inverse, TV2IW)
         if isinstance(TV2IV, Affine):
-            A, b = TV2IV.matvec
+            A, b = affines.to_matrix_vector(TV2IV.affine)
             idata = affine_transform(np.asarray(image), A,
                                      offset=b,
                                      output_shape=shape)
