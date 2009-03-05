@@ -26,8 +26,6 @@ We might think, that if we have a matrix ``arr`` with points in, then
 ``arr[0]`` should be the first point [x,y,z], rather then the first coordinate
 value of all the points - N values of [x]
 
-Maybe remove rename_input, rename_output; they aren't used, and are very simple.
-
 Consider renaming reorder_input to self.input_reordered() or
 something.  reorder_output similarly.
 
@@ -453,55 +451,6 @@ class Affine(CoordinateMap):
         return Affine(self._affine.copy(), self._input_coords,
                       self._output_coords)
 
-
-def _rename_coords(coord_names, **kwargs):
-    coords = list(coord_names)
-    for name, newname in kwargs.items():
-        if name in coords:
-            coords[coords.index(name)] = newname
-        else:
-            raise ValueError('coordinate name %s not found.'%name)
-    return tuple(coords)
-
-
-def rename_input(coordmap, **kwargs):
-    """
-    Rename the input_coords, returning a new CoordinateMap
-
-    >>> input_cs = CoordinateSystem('ijk')
-    >>> output_cs = CoordinateSystem('xyz')
-    >>> cm = Affine(np.identity(4), input_cs, output_cs)
-    >>> print cm.input_coords
-    name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float64
-    >>> cm2 = rename_input(cm, i='x')
-    >>> print cm2.input_coords
-    name: '', coord_names: ('x', 'j', 'k'), coord_dtype: float64
-    """
-    coord_names = _rename_coords(coordmap.input_coords.coord_names, **kwargs)
-    input_coords = CoordinateSystem(coord_names, coordmap.input_coords.name,
-                                    coordmap.input_coords.coord_dtype)
-    return CoordinateMap(coordmap.mapping, input_coords, coordmap.output_coords)
-
-
-def rename_output(coordmap, **kwargs):
-    """
-    Rename the output_coords, returning a new CoordinateMap.
-    
-    >>> input_cs = CoordinateSystem('ijk')
-    >>> output_cs = CoordinateSystem('xyz')
-    >>> cm = Affine(np.identity(4), input_cs, output_cs)
-    >>> print cm.output_coords
-    name: '', coord_names: ('x', 'y', 'z'), coord_dtype: float64
-    >>> cm2 = rename_output(cm, y='a')
-    >>> print cm2.output_coords
-    name: '', coord_names: ('x', 'a', 'z'), coord_dtype: float64
-    >>>                             
-    """
-    coord_names = _rename_coords(coordmap.output_coords.coord_names, **kwargs)
-    output_coords = CoordinateSystem(coord_names, coordmap.output_coords.name,
-                                    coordmap.output_coords.coord_dtype)
-    return CoordinateMap(coordmap.mapping, coordmap.input_coords, output_coords)
-        
 
 def reorder_input(coordmap, order=None):
     """
