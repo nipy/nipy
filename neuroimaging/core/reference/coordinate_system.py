@@ -88,14 +88,14 @@ class CoordinateSystem(object):
         coord_names = tuple(coord_names)
         # Make sure each coordinate is unique
         if len(set(coord_names)) != len(coord_names):
-            raise ValueError, 'coord_names must have distinct names'
+            raise ValueError('coord_names must have distinct names')
 
         # verify that the dtype is coord_dtype for sanity
         sctypes = (np.sctypes['int'] + np.sctypes['float'] + 
                    np.sctypes['complex'] + np.sctypes['uint'])
         coord_dtype = np.dtype(coord_dtype)
         if coord_dtype not in sctypes:
-            raise ValueError, 'Coordinate dtype should be one of %s' % `sctypes`
+            raise ValueError('Coordinate dtype should be one of %s' % `sctypes`)
         self._coord_dtype = coord_dtype
         self._coord_names = coord_names
 
@@ -201,18 +201,22 @@ class CoordinateSystem(object):
         >>> cs.checked_values(arr.reshape(3,1)) # wrong shape
         Traceback (most recent call last):
            ...
-        ValueError: Array shape[-1] should be 3
+        ValueError: Array shape[-1] must match CoordinateSystem shape 3.
+          name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32
+
         >>> cs.checked_values(arr[0:2]) # wrong length
         Traceback (most recent call last):
            ...
-        ValueError: 1D input should have be length 3 for this coordinate system
+        ValueError: 1D input should have length 3 for CoordinateSystem:
+          name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32
 
         The dtype has to be castable:
 
         >>> cs.checked_values(np.array([1, 2, 3], dtype=np.float64))
         Traceback (most recent call last):
            ...
-        ValueError: Cannot cast array dtype float64 to coordinate system coord_dtype float32
+        ValueError: Cannot cast array dtype float64 to CoordinateSystem coord_dtype float32.
+          name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32
 
         The input array is unchanged, even if a reshape has
         occurred. The returned array points to the same data.
@@ -239,7 +243,8 @@ class CoordinateSystem(object):
         >>> cs.checked_values([1, 2])
         Traceback (most recent call last):
            ...
-        ValueError: 1D input should have be length 1 for this coordinate system
+        ValueError: 1D input should have length 1 for CoordinateSystem:
+          name: '', coord_names: ('x',), coord_dtype: float64
 
         But of course 2D, N by 1 is OK
 
@@ -252,15 +257,17 @@ class CoordinateSystem(object):
         our_ndim = len(self._coord_names)
         if len(arr.shape) < 2:
             if arr.size != our_ndim:
-                raise ValueError('1D input should have be length %d for '
-                                 'this coordinate system' % our_ndim)
+                raise ValueError('1D input should have length %d for '
+                                 'CoordinateSystem:\n  %s' % 
+                                 (our_ndim, str(self)))
             arr = arr.reshape((1, arr.size))
         elif arr.shape[-1] != our_ndim:
-            raise ValueError('Array shape[-1] should be %d' % our_ndim)
+            raise ValueError('Array shape[-1] must match CoordinateSystem '
+                             'shape %d.\n  %s' % (our_ndim, str(self)))
         if not np.can_cast(arr.dtype, self._coord_dtype):
             raise ValueError('Cannot cast array dtype %s to '
-                             'coordinate system coord_dtype %s' %
-                             (arr.dtype, self._coord_dtype))
+                             'CoordinateSystem coord_dtype %s.\n  %s' %
+                             (arr.dtype, self._coord_dtype, str(self)))
         return arr
 
 

@@ -16,9 +16,6 @@ CoordinateMap.ndim should be renamed to CoordinateMap.ndims, because it returns 
 
 Affine should be renamed to AffineMap, or AffineCoordMap, or something
 
-Mat2vec seems like a bad name.  Can we think of a better one?  It's
-apparently only used in algorithms.resample.py. Does it need to be here or there?
-
 We need to think about whether coordinate values should be N by 3
 (where 3 is the number of coordinates in the coordinate system), or 3
 by N.
@@ -75,7 +72,7 @@ class CoordinateMap(object):
     Examples
     --------
     >>> input_coords = CoordinateSystem('ijk', 'voxels')
-    >>> output_coords = CoordinateSystem('xyz' 'world')
+    >>> output_coords = CoordinateSystem('xyz', 'world')
     >>> mni_orig = np.array([-90.0, -126.0, -72.0])
     >>> mapping = lambda x: x + mni_orig
     >>> inv_mapping = lambda x: x - mni_orig
@@ -204,8 +201,9 @@ class CoordinateMap(object):
         >>> cmi = cm.inverse
         >>> cmi([2,6,12])
         array([[ 1,  5, 11]])
-        >>>                                    
+
         """
+
         in_vals = self._input_coords.checked_values(x)
         out_vals = self._mapping(in_vals)
         return self._output_coords.checked_values(out_vals)
