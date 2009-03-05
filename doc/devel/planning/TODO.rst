@@ -1,15 +1,15 @@
 .. _todo:
 
-=========================
-TODO for nipy development
-=========================
+===========================
+ TODO for nipy development
+===========================
 
 This document will serve to organize current development work on nipy.
 It will include current sprint items, future feature ideas, and design
 discussions, etc...
 
 Current Sprint
-=============
+==============
 
 **Goal for Feb 27**
 
