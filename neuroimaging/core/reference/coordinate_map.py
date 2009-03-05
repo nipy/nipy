@@ -684,9 +684,14 @@ def replicate(coordmap, n, concataxis='concat'):
          concataxis : ``string``
                 The name of the new dimension formed by concatenation
     """
-    concat = CoordinateMap.from_affine([concataxis], [concataxis], Affine(np.identity(2)), (n,))
-    return product(concat, coordmap)
 
+    raise NotImplementedError('The method this function depends on' 
+                              'no longer exists.')
+    """
+    concat = CoordinateMap.from_affine([concataxis], [concataxis], 
+                                       Affine(np.identity(2)), (n,))
+    return product(concat, coordmap)
+    """
 
 
 def linearize(mapping, ndimin, step=1, origin=None, dtype=None):

@@ -2,7 +2,8 @@ import numpy as np
 from neuroimaging.testing import *
 
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, \
-    compose, CoordinateSystem, reorder_input, reorder_output, product
+    compose, CoordinateSystem, reorder_input, reorder_output, product, \
+    replicate, linearize
 
 
 class empty:
@@ -280,4 +281,24 @@ def test_compose():
     yield assert_raises, ValueError, compose, cm1, cm2
 
 
-    
+def test_replicate():
+    # FIXME: Implement test when this function works
+    yield assert_raises, NotImplementedError, replicate, 'foo', 'bar'
+
+
+def test_linearize():
+    aff = np.diag([1,2,3,1])
+    cm = Affine.from_params('ijk', 'xyz', aff)
+    lincm = linearize(cm.mapping, cm.ndim[0])
+    yield assert_equal, lincm, aff
+    origin = np.array([10, 20, 30], dtype=cm.input_coords.coord_dtype)
+    lincm = linearize(cm.mapping, cm.ndim[0], origin=origin)
+    xform = np.array([[  1.,   0.,   0.,  10.],
+                      [  0.,   2.,   0.,  40.],
+                      [  0.,   0.,   3.,  90.],
+                      [  0.,   0.,   0.,   1.]])
+    yield assert_equal, lincm, xform
+    # dtype mismatch
+    #origin = np.array([10, 20, 30], dtype=np.int16)
+    #yield assert_raises, UserWarning, linearize, cm.mapping, cm.ndim[0], \
+    #    1, origin
