@@ -291,15 +291,12 @@ class Affine(CoordinateMap):
 
     @property
     def affine(self):
-        ''' Affine matrix '''
+        """The affine transform matrix of the Affine CoordinateMap."""
         return self._affine
     
     @property
     def inverse_mapping(self):
-        ''' inverse mapping from affine 
-
-        >>> cm = Affine
-        '''
+        """The inverse affine mapping from the Affine CoordinateMap."""
         inverse = self.inverse
         if inverse is None:
             raise ValueError('There is no inverse for this affine')

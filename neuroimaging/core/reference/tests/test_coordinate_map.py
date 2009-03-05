@@ -1,30 +1,7 @@
 import numpy as np
 from neuroimaging.testing import *
 
-from nose.tools import assert_true, assert_false, assert_equal
-
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, compose, CoordinateSystem
-
-from neuroimaging.testing import anatfile, funcfile
-from neuroimaging.io.api import load_image
-
-def test_identity():
-    i = Affine.identity(['zspace', 'yspace', 'xshape'])
-    y = i.mapping([3,4,5])
-    assert_true(np.allclose(y, np.array([3,4,5])))
-
-
-def test_from_affine():
-    a = Affine.identity('ij')
-    assert_equal(a.input_coords, a.output_coords)
-
-def test_start_step():
-    ''' Test from_start_step '''
-    dcs = Affine.from_start_step('ijk', 'xyz', [5,5,5],[2,2,2])
-    assert_true(np.allclose(dcs.affine, [[2,0,0,5],
-                                                    [0,2,0,5],
-                                                    [0,0,2,5],
-                                                    [0,0,0,1]]))
 
 
 class empty:
@@ -130,11 +107,116 @@ def test_inverse2():
 
 
 def test_isinvertible():
-    assert_true(E.mapping.inverse)
-    assert_false(E.singular.inverse)
+    yield assert_true, E.mapping.inverse
+    yield assert_false, E.singular.inverse
 
 
+def voxel_to_world():
+    # utility function for generating trivial CoordinateMap
+    incs = CoordinateSystem('ijk', 'voxels')
+    outcs = CoordinateSystem('xyz', 'world')
+    map = lambda x: x + 1
+    inv = lambda x: x - 1
+    return incs, outcs, map, inv
 
-        
+def test_comap_init():
+    # Test mapping and non-mapping functions
+    incs, outcs, map, inv = voxel_to_world()
+    cm = CoordinateMap(map, incs, outcs, inv)
+    yield assert_equal, cm.mapping, map
+    yield assert_equal, cm.input_coords, incs
+    yield assert_equal, cm.output_coords, outcs
+    yield assert_equal, cm.inverse_mapping, inv
+    yield assert_raises, ValueError, CoordinateMap, 'foo', incs, outcs, inv
+    yield assert_raises, ValueError, CoordinateMap, map, incs, outcs, 'bar'
+
+
+def test_comap_copy():
+    incs, outcs, map, inv = voxel_to_world()
+    cm = CoordinateMap(map, incs, outcs, inv)
+    cmcp = cm.copy()
+    yield assert_equal, cmcp.mapping, cm.mapping
+    yield assert_equal, cmcp.input_coords, cm.input_coords
+    yield assert_equal, cmcp.output_coords, cm.output_coords
+    yield assert_equal, cmcp.inverse_mapping, cm.inverse_mapping
+
+
+#
+# Affine tests
+#
+
+def affine_v2w():
+    # utility function
+    incs = CoordinateSystem('ijk', 'voxels')
+    outcs = CoordinateSystem('xyz', 'world')
+    aff = np.diag([1, 2, 4, 1])
+    aff[:3, 3] = [11, 12, 13]
+    """array([[ 1,  0,  0, 11],
+       [ 0,  2,  0, 12],
+       [ 0,  0,  4, 13],
+       [ 0,  0,  0,  1]])
+    """
+    return incs, outcs, aff
+
+
+def test_affine_init():
+    incs, outcs, aff = affine_v2w()
+    cm = Affine(aff, incs, outcs)
+    yield assert_equal, cm.input_coords, incs
+    yield assert_equal, cm.output_coords, outcs
+    yield assert_equal, cm.affine, aff
+    badaff = np.diag([1,2])
+    yield assert_raises, ValueError, Affine, badaff, incs, outcs
+
+
+def test_affine_inverse():
+    incs, outcs, aff = affine_v2w()
+    inv = np.linalg.inv(aff)
+    cm = Affine(aff, incs, outcs)
+    invmap = cm.inverse_mapping
+    x = np.array([10, 20, 30])
+    x_roundtrip = cm.mapping(invmap(x))
+    yield assert_equal, x_roundtrip, x
+    badaff = np.array([[1,2,3],[4,5,6]])
+    badcm = Affine(aff, incs, outcs)
+    badcm._affine = badaff
+    yield assert_raises, ValueError, getattr, badcm, 'inverse_mapping'
+
+
+def test_affine_from_params():
+    incs, outcs, aff = affine_v2w()
+    cm = Affine.from_params('ijk', 'xyz', aff)
+    yield assert_equal, cm.affine, aff
+    badaff = np.array([[1,2,3],[4,5,6]])
+    yield assert_raises, ValueError, Affine.from_params, 'ijk', 'xyz', badaff
+
+
+def test_affine_start_step():
+    incs, outcs, aff = affine_v2w()
+    start = aff[:3, 3]
+    step = aff.diagonal()[:3]
+    cm = Affine.from_start_step(incs.coord_names, outcs.coord_names,
+                                start, step)
+    yield assert_equal, cm.affine, aff
+    yield assert_raises, ValueError, Affine.from_start_step, 'ijk', 'xy', \
+        start, step
+
+
+def test_affine_identity():
+    aff = Affine.identity('ijk')
+    yield assert_equal, aff.affine, np.eye(4)
+    yield assert_equal, aff.input_coords, aff.output_coords
+    x = np.array([3, 4, 5])
+    y = aff.mapping(x)
+    yield assert_equal, y, x
+
+
+def test_affine_copy():
+    incs, outcs, aff = affine_v2w()
+    cm = Affine(aff, incs, outcs)
+    cmcp = cm.copy()
+    yield assert_equal, cmcp.affine, cm.affine
+    yield assert_equal, cmcp.input_coords, cm.input_coords
+    yield assert_equal, cmcp.output_coords, cm.output_coords
 
 
