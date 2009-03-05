@@ -1,7 +1,8 @@
 import numpy as np
 from neuroimaging.testing import *
 
-from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, compose, CoordinateSystem
+from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, \
+    compose, CoordinateSystem, reorder_input, reorder_output, product
 
 
 class empty:
@@ -220,3 +221,63 @@ def test_affine_copy():
     yield assert_equal, cmcp.output_coords, cm.output_coords
 
 
+#
+# Module level functions
+#
+
+def test_reorder_input():
+    incs, outcs, map, inv = voxel_to_world()
+    cm = CoordinateMap(map, incs, outcs, inv)
+    recm = reorder_input(cm, 'jki')
+    yield assert_equal, recm.input_coords.coord_names, ('j', 'k', 'i')
+    yield assert_equal, recm.output_coords.coord_names, outcs.coord_names
+    yield assert_equal, recm.input_coords.name, incs.name+'-reordered'
+    yield assert_equal, recm.output_coords.name, outcs.name
+    # default reverse reorder
+    recm = reorder_input(cm)
+    yield assert_equal, recm.input_coords.coord_names, ('k', 'j', 'i')
+    # reorder with order as indices
+    recm = reorder_input(cm, [2,0,1])
+    yield assert_equal, recm.input_coords.coord_names, ('k', 'i', 'j')
+
+
+def test_reorder_output():
+    incs, outcs, map, inv = voxel_to_world()
+    cm = CoordinateMap(map, incs, outcs, inv)
+    recm = reorder_output(cm, 'yzx')
+    yield assert_equal, recm.input_coords.coord_names, incs.coord_names
+    yield assert_equal, recm.output_coords.coord_names, ('y', 'z', 'x')
+    yield assert_equal, recm.input_coords.name, incs.name
+    yield assert_equal, recm.output_coords.name, outcs.name+'-reordered'
+    # default reverse order
+    recm = reorder_output(cm)
+    yield assert_equal, recm.output_coords.coord_names, ('z', 'y', 'x')
+    # reorder with indicies
+    recm = reorder_output(cm, [2,0,1])
+    yield assert_equal, recm.output_coords.coord_names, ('z', 'x', 'y')    
+
+
+def test_product():
+    cm1 = Affine.from_params('i', 'x', np.diag([2, 1]))
+    cm2 = Affine.from_params('j', 'y', np.diag([3, 1]))
+    cm = product(cm1, cm2)
+    yield assert_equal, cm.input_coords.coord_names, ('i', 'j')
+    yield assert_equal, cm.output_coords.coord_names, ('x', 'y')
+    yield assert_equal, cm.affine, np.diag([2, 3, 1])
+
+
+def test_compose():
+    aff1 = np.diag([1,2,3,1])
+    cm1 = Affine.from_params('ijk', 'xyz', aff1)
+    aff2 = np.diag([4,5,6,1])
+    cm2 = Affine.from_params('xyz', 'abc', aff2)
+    # compose mapping from 'ijk' to 'abc'
+    compcm = compose(cm2, cm1)
+    yield assert_equal, compcm.input_coords.coord_names, ('i', 'j', 'k')
+    yield assert_equal, compcm.output_coords.coord_names, ('a', 'b', 'c')
+    yield assert_equal, compcm.affine, np.dot(aff2, aff1)
+    # check invalid coordinate mappings
+    yield assert_raises, ValueError, compose, cm1, cm2
+
+
+    
