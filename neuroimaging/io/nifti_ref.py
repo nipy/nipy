@@ -110,13 +110,13 @@ def coerce_coordmap(coordmap):
         raise ValueError, 'affine must be square to save as a NIFTI file'
 
     ndim = affine.shape[0] - 1
-    innames = coordmap.input_coords.coordinates
+    innames = coordmap.input_coords.coord_names
     vinput = valid_input_axisnames[:ndim]
     if set(vinput) != set(innames):
         raise ValueError, 'input coordinate axisnames of a %d-dimensional Image must come from %s' % (ndim, `vinput`)
 
     voutput = valid_output_axisnames[:ndim]
-    outnames = coordmap.output_coords.coordinates
+    outnames = coordmap.output_coords.coord_names
     if set(voutput) != set(outnames):
         raise ValueError, 'output coordinate axisnames of a %d-dimensional Image must come from %s' % (ndim, `voutput`)
 
@@ -186,10 +186,10 @@ def coerce_coordmap(coordmap):
     else:
         outname = coordmap.output_coords.name
 
-    coords = coordmap.input_coords.coordinates
+    coords = coordmap.input_coords.coord_names
     newincoords = CoordinateSystem([coords[i] for i in intrans], inname)
 
-    coords = coordmap.output_coords.coordinates
+    coords = coordmap.output_coords.coord_names
     newoutcoords = CoordinateSystem([coords[i] for i in outtrans], outname)
 
     return Affine(A, newincoords, newoutcoords), intrans

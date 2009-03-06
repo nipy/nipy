@@ -90,8 +90,8 @@ def test_save2b():
     B[:4,:4] = A
 
     shape = (13,5,7,3)
-    cmap = api.Affine.from_start_step('lkji', 'tzyx', [0]*4, step)
-    cmap.affine = B
+    cmap = api.Affine.from_params('lkji', 'tzyx', B)
+
     data = np.random.standard_normal(shape)
 
     img = api.Image(data, cmap)
