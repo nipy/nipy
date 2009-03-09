@@ -53,6 +53,15 @@ use either of these two methods:
    closed.  There are parameters for specifying the filename *prefix*
    and *suffix*.
 
+   .. Note::
+
+       *NamedTemporaryFile* has limited functionality on MS Windows.
+        Files opened with NamedTemporaryFile cannot be re-opened as
+        they can on Unix-based platforms.  If this becomes a problem,
+        we should consider using ``tempfile.mkstemp`` instead.  The
+        downside being the developer has to remove the file
+        explicitly.
+
 Both of the above libraries are preferred over creating a file in the
 test directory and then removing them with a call to ``os.remove``.
 For various reasons, sometimes ``os.remove`` doesn't get called and
@@ -84,6 +93,9 @@ This test function executes four independent tests::
 Running tests
 -------------
 
+Running the full test suite
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 For our tests, we have collected a set of fmri imaging data which are
 required for the tests to run. The data must be downloaded separately
 and installed in your home directory ``$HOME/.nipy/tests/data``.  From
@@ -96,6 +108,10 @@ Tests can be run on the package::
 
     import neuroimaging as ni
     ni.test()
+
+
+Running individual tests
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can also run nose from the command line with a variety of options.
 To test an individual module::
@@ -125,26 +141,12 @@ To include doctests in the nose test::
 
    nosetests -sv --with-doctest test_module.py
 
-Nose will also investigate your test coverage. This requires `Ned
-Batchelder's coverage module
-<http://nedbatchelder.com/code/modules/coverage.html>`_ to be
-installed::
-
-    nosetests -sv --with-coverage test_module.py   
-
-The coverage report will cover any python source module imported after
-the start of the test.  This can be noisy and difficult to focus on
-the specific module for which you are writing nosetests.  To focus the
-coverage report, you can provide nose with the specific package you
-would like output from using the ``--cover-package``.  For example, in
-writing tests for the coordinate_map module::
-
-    nosetests --with-coverage --cover-package=neuroimaging.core.reference.coordinate_map test_coordinate_map.py
-
-
 For details on all the command line options::
 
     nosetests --help
 
+.. _coverage:
+
+.. include:: ./coverage_testing.rst
 
 .. include:: ../../links_names.txt
