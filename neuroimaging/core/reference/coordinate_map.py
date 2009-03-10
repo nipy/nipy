@@ -1,6 +1,14 @@
 """
-Coordinate maps store all the details about how an image translates to
-space.  They also provide mechanisms for iterating over that space.
+CoordinateMaps map (transform) an image from an input space to an output space.
+
+A CoordinateMap object contains all the details about an input
+CoordinateSystem, an output CoordinateSystem and the mappings between
+them.  The *mapping* transforms an image from the input coordinate
+system to the output coordinate system.  And the *inverse_mapping*
+performs the opposite transformation.  The *inverse_mapping* can be
+specified explicity when creating the CoordinateMap or implicitly in the
+case of an Affine coordinatemap.
+
 """
 
 """
