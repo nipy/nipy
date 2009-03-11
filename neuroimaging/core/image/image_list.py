@@ -13,18 +13,31 @@ class ImageList:
                 this is checked by asserting that each has a `coordmap` attribute
 
         >>> from numpy import asarray
-        >>> from neuroimaging.testing funcfile
-        >>> from neuroimaging.core.image.image_list import ImageList
-        >>> from neuroimaging.modalities.fmri.api import load_image
-
+        >>> from neuroimaging.testing import funcfile
+        >>> from neuroimaging.core.api import Image, ImageList
+        >>> from neuroimaging.io.api import load_image
         >>> funcim = load_image(funcfile)
         >>> ilist = ImageList(funcim)
-        >>> print ilist[2:5]
+        >>> sublist = ilist[2:5]
         
-        >>> print ilist[2]
+        Slicing an ImageList returns a new ImageList
+
+        >>> isinstance(sublist, ImageList)
+        True
+
+        Indexing an ImageList returns a new Image
+
+        >>> newimg = ilist[2]
+        >>> isinstance(newimg, Image)
+        True
+        >>> isinstance(newimg, ImageList)
+        False
         
-        >>> print asarray(ilist).shape
-        >>> print asarray(ilist[4]).shape
+        >>> asarray(sublist).shape
+        (3, 20, 2, 20)
+
+        >>> asarray(newimg).shape
+        (20, 2, 20)
 
         """
         if images is not None:
@@ -65,12 +78,13 @@ class ImageList:
         Examples
         --------
         >>> from numpy import asarray
-        >>> from neuroimaging.testing funcfile
-        >>> from neuroimaging.core.image.image_list import ImageList
-        >>> from neuroimaging.modalities.fmri.api import load_image
-
-        >>> print asarray(ilist).shape
-
+        >>> from neuroimaging.testing import funcfile
+        >>> from neuroimaging.core.api import ImageList
+        >>> from neuroimaging.io.api import load_image
+        >>> funcim = load_image(funcfile)
+        >>> ilist = ImageList(funcim)
+        >>> asarray(ilist).shape
+        (20, 20, 2, 20)
 
         """
 
