@@ -40,12 +40,14 @@ x=20-th, y=10-th pixel of the third slice of an image with 30 64x64 slices. This
 >>> nifti_ijk = [19,9,2]
 >>> fortran_ijk = [20,10,3]
 >>> c_kji = [2,9,19]
->>> d = np.asarray(load_image(anatfile))
->>> request1 = d[nifti_ijk[2],nifti_ijk[1],nifti_ijk[0]]
->>> request2 = d[fortran_ijk[2]-1,fortran_ijk[1]-1, fortran_ijk[0]-1]
->>> request3 = d[c_kji[0],c_kji[1],c_kji[2]]
->>> assert request1 == request2
->>> assert request2 == request3
+>>> imgarr = np.asarray(load_image(anatfile))
+>>> request1 = imgarr[nifti_ijk[2], nifti_ijk[1], nifti_ijk[0]]
+>>> request2 = imgarr[fortran_ijk[2]-1,fortran_ijk[1]-1, fortran_ijk[0]-1]
+>>> request3 = imgarr[c_kji[0],c_kji[1],c_kji[2]]
+>>> request1 == request2
+True
+>>> request2 == request3
+True
 
 FIXME: (finish this thought.... Are we going to open NIFTI files with NIFTI input coordinates?)
 For this reason, we have to consider whether we should transpose the
@@ -285,14 +287,14 @@ def standard_order(coordmap):
 
     >>> cmap = Affine.from_params('ikjl', 'xyzt', np.identity(5))
     >>> sorder, scmap = standard_order(cmap)
-    >>> print cmap.input_coords.coordinates
-    ['i', 'k', 'j', 'l']
-    >>> print scmap.input_coords.coordinates
-    ['i', 'j', 'k', 'l']
-    >>> print scmap.output_coords.coordinates
-    ['x', 'y', 'z', 't']
-    >>> print cmap.output_coords.coordinates
-    ['x', 'y', 'z', 't']
+    >>> print cmap.input_coords.coord_names
+    ('i', 'k', 'j', 'l')
+    >>> print scmap.input_coords.coord_names
+    ('i', 'j', 'k', 'l')
+    >>> print scmap.output_coords.coord_names
+    ('x', 'y', 'z', 't')
+    >>> print cmap.output_coords.coord_names
+    ('x', 'y', 'z', 't')
 
     """
 
