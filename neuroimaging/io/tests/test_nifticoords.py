@@ -13,36 +13,40 @@ output_axes = 'xyztuvw'
 input_axes = 'ijklmno'
 input_coords = CoordinateSystem(input_axes, 'input')
 
-def test_validate1():
-    # this should work without any warnings
-
+def test_ijkl_to_xyzt():
     output_coords = CoordinateSystem(output_axes[:4], 'output')
     input_coords = CoordinateSystem(input_axes[:4], 'input')
-    cmap = Affine(np.diag(list(step[:4]) + [1]), input_coords, output_coords)
+    aff = np.diag(list(step[:4]) + [1])
+    cmap = Affine(aff, input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
     yield assert_equal, newcmap.input_coords.name, 'input'
     yield assert_equal, newcmap.output_coords.name, 'output'
     yield assert_equal, order, (0,1,2,3)
+    yield assert_equal, aff, newcmap.affine
+
 
 #@dec.knownfailure
-def test_validate1a():
-    #this should work without any warnings, except PIXDIM will fail
-
+def test_kji_to_xyz():
     output_coords = CoordinateSystem(output_axes[:3], 'output')
     input_coords = CoordinateSystem(input_axes[:3][::-1], 'input')
     cmap = Affine(np.diag(list(step[:3]) + [1]), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield assert_equal, newcmap.input_coords.name, 'input'
+    yield assert_equal, newcmap.input_coords.name, 'input-reordered'
     yield assert_equal, newcmap.output_coords.name, 'output'
-    yield assert_equal, order, (0,1,2)
+    aff = np.array([[ 0,  0,  1,  0,],
+                    [ 0,  2,  0,  0,],
+                    [ 3,  0,  0,  0,],
+                    [ 0,  0,  0,  1,]])
+    yield assert_equal, newcmap.affine, aff
+    yield assert_equal, order, (2, 1, 0)
+
+    # FIXME: Should we be testing the returned diminfo also?
 
     # One last test to remind us of the FIXME in pixdims
     yield assert_true, np.allclose(pixdim, np.arange(3)+1)
 
 
-def test_validate1b():
-    # this should work without any warnings
-
+def test_kijl_to_xyzt():
     output_coords = CoordinateSystem(output_axes[:4], 'output')
     input_coords = CoordinateSystem([input_axes[2],
                                                   input_axes[0],
@@ -50,9 +54,19 @@ def test_validate1b():
                                                   input_axes[3]], 'input')
     cmap = Affine(np.identity(5), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield assert_equal, newcmap.input_coords.name, 'input'
+    # the affine should come back reordered so the input coords map to
+    # output coords
+    aff = np.array([[ 0,  1,  0,  0,  0,],
+                    [ 0,  0,  1,  0,  0,],
+                    [ 1,  0,  0,  0,  0,],
+                    [ 0,  0,  0,  1,  0,],
+                    [ 0,  0,  0,  0,  1,]])
+
+    yield assert_equal, newcmap.input_coords.name, 'input-reordered'
     yield assert_equal, newcmap.output_coords.name, 'output'
-    yield assert_equal, order, (0,1,2,3)
+    yield assert_equal, order, (1, 2, 0, 3)
+    yield assert_equal, newcmap.affine, aff
+
 
 def test_validate2():
     """
@@ -185,7 +199,7 @@ def test_validate7():
 
     cmap = Affine(np.diag(list(step[:4]) + [1]), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield assert_true(newcmap.input_coords.name == 'input')
+    yield assert_true(newcmap.input_coords.name == 'input-reordered')
     yield assert_true(newcmap.output_coords.name == 'output')
     yield assert_true(order == (0,1,2,3))
     yield assert_true(newcmap.input_coords.coordinates == ['j','k','i','l'])

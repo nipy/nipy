@@ -16,7 +16,7 @@ the output coordinate names are ['x','y','z','t','u','v','w']
 and the input coordinate names are ['i','j','k','l','m','n','o'].
 
 In the NIFTI specification, the order of the output coordinates (at least the 
-first 3) are fixed to be ['x','y','z'] and their order is not mean to change. 
+first 3) are fixed to be ['x','y','z'] and their order is not meant to change. 
 As for input coordinates, the first three can be reordered, so 
 ['j','k','i','l'] is valid, for instance.
 
@@ -112,15 +112,19 @@ def coerce_coordmap(coordmap):
         raise ValueError, 'affine must be square to save as a NIFTI file'
 
     ndim = affine.shape[0] - 1
+    # Verify input coordinates are a valid set (independent of order)
     innames = coordmap.input_coords.coord_names
     vinput = valid_input_axisnames[:ndim]
     if set(vinput) != set(innames):
-        raise ValueError, 'input coordinate axisnames of a %d-dimensional Image must come from %s' % (ndim, `vinput`)
+        raise ValueError('input coordinate axisnames of a %d-dimensional'
+                         'Image must come from %s' % (ndim, `vinput`))
 
+    # Verify output coordinates are a valid set (independent of order)
     voutput = valid_output_axisnames[:ndim]
     outnames = coordmap.output_coords.coord_names
     if set(voutput) != set(outnames):
-        raise ValueError, 'output coordinate axisnames of a %d-dimensional Image must come from %s' % (ndim, `voutput`)
+        raise ValueError('output coordinate axisnames of a %d-dimensional'
+                         'Image must come from %s' % (ndim, `voutput`))
 
     # if the input coordinates do not have the proper order,
     # the image would have to be transposed to be saved
@@ -132,11 +136,14 @@ def coerce_coordmap(coordmap):
     # the phase, freq, slice values all have to be less than 3
 
     reinput = False
+    # Check if the first 3 input coordinates need to be reordered
     if innames != vinput:
         ndimm = min(ndim, 3)
+        # Check if first 3 coords are valid input nifti coords set('ijk')
         if set(innames[:ndimm]) != set(vinput[:ndimm]):
             warnings.warn('an Image with this coordmap has to be transposed to be saved because the first %d input axes are not from %s' % (ndimm, `set(vinput[:ndimm])`))
             reinput = True
+        # Check if first 3 coords match the correct nifti order ('ijk')
         if innames[ndimm:] != vinput[ndimm:]:
             warnings.warn('an Image with this coordmap has to be transposed because the last %d axes are not in the NIFTI order' % (ndim-3,))
             reinput = True
