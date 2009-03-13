@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 
 from neuroimaging.testing import *
@@ -11,7 +12,15 @@ step = np.arange(1,8)
 
 output_axes = 'xyztuvw'
 input_axes = 'ijklmno'
-input_coords = CoordinateSystem(input_axes, 'input')
+
+def setup():
+    # Suppress warnings during tests
+    warnings.simplefilter("ignore")
+
+def teardown():
+    # Clear list of warning filters
+    warnings.resetwarnings()
+
 
 def test_ijkl_to_xyzt():
     output_coords = CoordinateSystem(output_axes[:4], 'output')
@@ -68,56 +77,56 @@ def test_kijl_to_xyzt():
     yield assert_equal, newcmap.affine, aff
 
 
-def test_validate2():
-    """
-    this should raise a warning about the first three input coordinates,
-    and one about the last axis not being in the correct order. this also
-    will give a warning about the pixdim.
-    """
+def test_iljk_to_xyzt():
+    # this should raise a warning about the first three input
+    # coordinates, and one about the last axis not being in the
+    # correct order. this also will give a warning about the pixdim.
 
+    # ninput_axes = list('iljk')
     ninput_axes = [input_axes[0], input_axes[3], input_axes[1], input_axes[2]]
     input_coords = CoordinateSystem(ninput_axes, 'input')
     output_coords = CoordinateSystem(output_axes[:4], 'output')
     cmap = Affine(np.identity(5), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield assert_true(newcmap.input_coords.name == 'input-reordered')
-    yield assert_true(order == (0,2,3,1))
+    aff = np.array([[ 1,  0,  0,  0,  0,],
+                    [ 0,  0,  1,  0,  0,],
+                    [ 0,  0,  0,  1,  0,],
+                    [ 0,  1,  0,  0,  0,],
+                    [ 0,  0,  0,  0,  1,]])
+    yield assert_equal, newcmap.affine, aff
+    yield assert_equal, newcmap.input_coords.name, 'input-reordered'
+    # order should match a reorder to 'ijkl'
+    yield assert_equal, order, (0,2,3,1)
 
-def test_validate3():
-    """
-    this should raise an exception about
-    not having axis names ['ijkl'].
 
-    some warnings are printed during the try/except
-    """
+def test_ijkn_to_xyzt():
+    # This should raise an exception about not having axis names
+    # ['ijkl'].  Some warnings are printed during the try/except
 
+    # ninput_axes = list('ijkn')
     ninput_axes = [input_axes[0], input_axes[1], input_axes[2], input_axes[5]]
     input_coords = CoordinateSystem(ninput_axes, 'input')
     output_coords = CoordinateSystem(output_axes[:4], 'output')
     cmap = Affine(np.identity(5), input_coords, output_coords)
-    try:
-        nifti.coordmap4io(cmap)
-    except:
-        return
-    raise ValueError, 'an exception should have been raised earlier' 
+    assert_raises, ValueError, nifti.coordmap4io, cmap
 
-def test_validate4():
-    """
-    this should raise a warning about the last 2 axes not being in order,
-    and one about the loss of information from a non-diagonal
-    matrix. this also means that the pixdim will be wrong
-    """
 
+def test_ijkml_to_xyztu():
+    # This should raise a warning about the last 2 axes not being in
+    # order, and one about the loss of information from a non-diagonal
+    # matrix. This also means that the pixdim will be wrong
+    
+    # ninput_axes = list('ijkml')
     ninput_axes = [input_axes[0], input_axes[1], input_axes[2], input_axes[4],
                    input_axes[3]]
     input_coords = CoordinateSystem(ninput_axes, 'input')
     output_coords = CoordinateSystem(output_axes[:5], 'output')
     cmap = Affine(np.identity(6), input_coords, output_coords)
-
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield assert_true(newcmap.input_coords.name == 'input-reordered')
-    yield assert_true(order == (0,1,2,4,3))
+    yield assert_equal, newcmap.input_coords.name, 'input-reordered'
+    yield assert_equal, order, (0,1,2,4,3)
 
+    # build an affine xform that should match newcmap.affine
     ndim = cmap.ndim[0]
     perm = np.zeros((ndim+1,ndim+1))
     perm[-1,-1] = 1
@@ -125,47 +134,49 @@ def test_validate4():
         perm[i,j] = 1
     B = np.dot(np.identity(6), perm)
 
-    yield assert_true(np.allclose(newcmap.affine, B))
-    X = np.random.standard_normal((5,))
+    yield assert_true, np.allclose(newcmap.affine, B)
+
+    # Compare applying the original cmap to a vector against applying
+    # the reordered cmap to a reordered vector.
+    X = np.arange(10, 15)
     Xr = [X[i] for i in order]
-    yield assert_true(np.allclose(newcmap(Xr), cmap(X)))
-    #return newcmap, order, pixdim, diminfo
+    yield assert_true, np.allclose(newcmap(Xr), cmap(X))
 
-def test_validate5():
-    """
-    this should raise a warning about the last 2 axes not being in order,
-    and one about the loss of information from a non-diagonal
-    matrix, and also one about the nifti output coordinates. 
-    again, this will have a pixdim warning like test_validate4
-    """
 
+def test_ijkml_to_utzyx():
+    # This should raise a warning about the last 2 axes not being in
+    # order, and one about the loss of information from a non-diagonal
+    # matrix, and also one about the nifti output coordinates.  Again,
+    # this will have a pixdim warning
+
+    # ninput_axes = list('ijkml')
     ninput_axes = [input_axes[0], input_axes[1], input_axes[2], input_axes[4],
                    input_axes[3]]
     input_coords = CoordinateSystem(ninput_axes, 'input')
     output_coords = CoordinateSystem(output_axes[:5][::-1], 'output')
     cmap = Affine(np.identity(6), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield assert_true(newcmap.input_coords.name == 'input-reordered')
-    yield assert_true(newcmap.output_coords.name == 'output-reordered')
-    yield assert_true(order == (0,1,2,4,3))
+    yield assert_equal, newcmap.input_coords.name, 'input-reordered'
+    yield assert_equal, newcmap.output_coords.name, 'output-reordered'
+    yield assert_equal, order, (0,1,2,4,3)
 
+    # Generate an affine that matches the order of the input coords 'ijkml'
     ndim = cmap.ndim[0]
     perm = np.zeros((ndim+1,ndim+1))
     perm[-1,-1] = 1
     for i, j in enumerate(order):
         perm[i,j] = 1
-    B = np.dot(np.identity(6), perm)
+    r = np.zeros_like(perm)
+    r[5, 5] = 1.0
 
-    r = np.zeros((6,6))
-    r[5,5] =1.
-    for i in range(5):
-        r[i, 4-i] = 1.
-
-    yield assert_true(np.allclose(newcmap.affine, 
-                                       np.dot(r, B)))
-    X = np.random.standard_normal((5,))
+    # The rotation part (5x5) of the newcmap affine will be flipped
+    # vertically to account for the reverse order of the output coords
+    # 'utzyx'
+    r[:5, :5] = np.flipud(perm[:5,:5])
+    yield assert_true, np.allclose(newcmap.affine, r)
+    X = np.arange(10, 15)
     Xr = [X[i] for i in order]
-    yield assert_true(np.allclose(newcmap(Xr)[::-1], cmap(X)))
+    yield assert_true, np.allclose(np.fliplr(newcmap(Xr)), cmap(X))
 
 
 def test_validate6():
