@@ -1,10 +1,6 @@
 import sympy
 import numpy as np
 
-from neuroimaging.utils.odict import odict
-
-Rmode = False
-
 class Term(sympy.Symbol):
 
     """
@@ -24,12 +20,6 @@ class Term(sympy.Symbol):
         else:
             return sympy.Symbol.__add__(self, other)
         
-# R emulation -- is it worth it?
-#     def __mul__(self, other):
-#         if self == other and Rmode:
-#             return self
-#         else:
-#             return sympy.Symbol.__mul__(self, other)
 
 class FactorTerm(Term):
     """
@@ -41,6 +31,13 @@ class FactorTerm(Term):
         new.level = level
         new.factor_name = name
         return new
+
+    def __mul__(self, other):
+
+        if self == other:
+            return self
+        else:
+            return sympy.Symbol.__mul__(self, other)
 
 class Beta(sympy.symbol.Dummy):
 
@@ -100,35 +97,6 @@ class Formula(object):
 
     """
 
-    def __setitem__(self, key, fn):
-        """
-        Set a substitution that will be applied when
-        the Formula
-        """
-        if not callable(fn):
-            raise ValueError('expecting a callable for substitution')
-        self._subs[key] = fn
-
-    def __getitem__(self, key):
-        return self._subs[key] 
-
-    def _getcoefs(self):
-        if not hasattr(self, '_coefs'):
-            self._coefs = odict()
-            for term in self.terms:
-                self._coefs.setdefault(term, Beta("%s%d" % (self.char, self._counter), term))
-                self._counter += 1
-        return self._coefs
-    coefs = property(_getcoefs, doc='Coefficients in the linear regression formula.')
-
-    def _getterms(self):
-        t = self._terms
-        if Rmode:
-            if sympy.Number(1) not in self._terms:
-                t = np.array(list(t) + [sympy.Number(1)])
-        return t
-    terms = property(_getterms, doc='Terms in the linear regression formula.')
-
     def __init__(self, seq, char = 'b', ignore=[]):
         """
         Inputs:
@@ -143,17 +111,82 @@ class Formula(object):
 
         """
 
-        self._subs = {}
+        self._aliases = {}
         self._terms = np.asarray(seq)
         self._counter = 0
         self.char = char
         self.ignore = ignore
 
+    def subs(self, old, new):
+        """
+        Perform a sympy substitution on all terms in the Formula,
+        returning a new Formula.
+
+        Inputs:
+        =======
+
+        old : sympy.Basic
+            The expression to be changed
+
+        new : sympy.Basic
+            The value to change it to.
+        
+        Outputs: 
+        ========
+        
+        newf : Formula
+
+        
+        >>> s, t= [Term(l) for l in 'st']
+        >>> f, g = [sympy.Function(l) for l in 'sg']
+        >>> ff = Formula([f(t),f(s)])
+        >>> ff.mean
+        _b0*f(t) + _b1*f(s)
+        >>> gf = ff.subs(f,g)
+        >>> gf.mean
+        _b0*g(t) + _b1*g(s)
+
+        """
+        return Formula([term.subs(old, new) for term in self.terms])
+
+    def _getcoefs(self):
+        if not hasattr(self, '_coefs'):
+            self._coefs = {}
+            for term in self.terms:
+                self._coefs.setdefault(term, Beta("%s%d" % (self.char, self._counter), term))
+                self._counter += 1
+        return self._coefs
+    coefs = property(_getcoefs, doc='Coefficients in the linear regression formula.')
+
+    def _getterms(self):
+        t = self._terms
+        Rmode = False
+        if Rmode:
+            if sympy.Number(1) not in self._terms:
+                t = np.array(list(t) + [sympy.Number(1)])
+        return t
+    terms = property(_getterms, doc='Terms in the linear regression formula.')
+
+    def _getaliases(self):
+        return self._aliases
+    aliases = property(_getaliases, doc="The aliases in the formula, to be used when the formula is lambdified.")
+
     def __add__(self, other):
-        if hasattr(other, 'terms'):
-            return Formula(np.hstack([self.terms, other.terms]))
-        else:
-            raise ValueError('must have terms to be added')
+        if not isinstance(other, Formula):
+            raise ValueError('only Formula objects can be added together')
+        f = Formula(np.hstack([self.terms, other.terms]))
+
+        keys1 = self.aliases.keys()
+        keys2 = other.aliases.keys()
+        if set(keys1).intersection(keys2) != set([]):
+            warnings.warn('two formulae have overlapping aliases')
+
+        aliases = {}
+        for key, value in self.aliases.items():
+            f.aliases[key] = value
+        for key, value in other.aliases.items():
+            f.aliases[key] = value
+        return f
 
     def __array__(self):
         return self.terms
@@ -269,7 +302,7 @@ def natural_spline(t, knots=[], order=3, intercept=False):
 
     ff = Formula(symbols)
     for n, l in fns:
-        ff[n] = l
+        ff.aliases[n] = l
     return ff
 
 I = Formula([sympy.Number(1)])
@@ -285,7 +318,7 @@ class Factor(Formula):
     # here.... this is like R's contr.sum
 
     def _getmaineffect(self, ref=-1):
-        v = list(self._terms)
+        v = list(self._terms.copy())
         ref_term = v[ref]
         v.pop(ref)
         return Formula([vv - ref_term for vv in v])
@@ -323,7 +356,7 @@ class Design:
         terms = getterms(self.formula.mean)
         newterms = []
         for i, t in enumerate(terms):
-            newt = sympy.Symbol("t%d" % i, dummy=True)
+            newt = sympy.DeferredVector("t%d" % i)
             for j, _ in enumerate(d):
                 d[j] = d[j].subs(t, newt)
             newterms.append(newt)
@@ -336,7 +369,7 @@ class Design:
                 d[j] = d[j].subs(p, newp)
             newparams.append(newp)
 
-        self._f = sympy.lambdify(newterms + newparams, d, (self.formula._subs, "math", "mpmath", "sympy", "numpy"))
+        self._f = sympy.lambdify(newparams + newterms, d, (self.formula._aliases, "numpy"))
 
         ptnames = []
         for t in terms:
@@ -346,7 +379,7 @@ class Design:
                 ptnames.append(t.factor_name)
         ptnames = list(set(ptnames))
 
-        self._dtypes = {'param':np.dtype([(str(p), np.float) for p in params]),
+        self.dtypes = {'param':np.dtype([(str(p), np.float) for p in params]),
                         'term':np.dtype([(str(t), np.float) for t in terms]),
                         'preterm':np.dtype([(n, np.float) for n in ptnames])}
         self._terms = terms
@@ -358,16 +391,15 @@ class Design:
         self._return_float = return_float
 
     def __call__(self, preterm_recarray, param_recarray=None, return_float=False):
-        if not set(preterm_recarray.dtype.names).issuperset(self._dtypes['preterm'].names):
-            raise ValueError("for term, expecting a recarray with dtype having the following names: %s" % `self._dtypes['preterm'].names`)
+        if not set(preterm_recarray.dtype.names).issuperset(self.dtypes['preterm'].names):
+            raise ValueError("for term, expecting a recarray with dtype having the following names: %s" % `self.dtypes['preterm'].names`)
 
         if param_recarray is not None:
-            if not set(param_recarray.dtype.names).issuperset(self._dtypes['param'].names):
-                raise ValueError("for param, expecting a recarray with dtype having the following names: %s" % `self._dtypes['param'].names`)
-
+            if not set(param_recarray.dtype.names).issuperset(self.dtypes['param'].names):
+                raise ValueError("for param, expecting a recarray with dtype having the following names: %s" % `self.dtypes['param'].names`)
 
         term_recarray = np.zeros(preterm_recarray.shape[0], 
-                                 dtype=self._dtypes['term'])
+                                 dtype=self.dtypes['term'])
         for t in self._terms:
             if not isinstance(t, FactorTerm):
                 term_recarray[t.name] = preterm_recarray[t.name]
@@ -376,20 +408,48 @@ class Design:
                     np.array(map(lambda x: x == t.level, preterm_recarray[t.factor_name]))
 
         tnames = list(term_recarray.dtype.names)
-        torder = [tnames.index(term) for term in self._dtypes['term'].names]
+        torder = [tnames.index(term) for term in self.dtypes['term'].names]
+
+        float_array = term_recarray.view(np.float)
+        float_array.shape = (term_recarray.shape[0], len(torder))
+        float_tuple = tuple([float_array[:,i] for i in range(float_array.shape[1])])
 
         if param_recarray is not None:
-            param = tuple(param_recarray[n] for n in self._dtypes['param'].names)
+            param = tuple(float(param_recarray[n]) for n in self.dtypes['param'].names)
         else:
             param = ()
 
-        v = []
-        for row in term_recarray:
-            v.append(tuple([float(x) for x in self._f(*(tuple([row[i] for i in torder]) + param))]))
+        v = np.array(self._f(*(param+float_tuple))).T
         if return_float or self._return_float:
-            return np.array(v)
+            return np.squeeze(v.astype(np.float))
         else:
-            return np.array(v, self.formula.dtype)
+            return np.array([tuple(r) for r in v], self.formula.dtype)
+
+class Vectorize(Design):
+    """
+    This class can be used to take a (single-valued) sympy
+    expression with only 't' as a Symbol and return a 
+    callable that can be evaluated at an array of floats.
+
+    Inputs:
+    =======
+
+    expr : sympy.Basic or Formula
+        Expression with 't' the only Symbol. If it is a 
+        Formula, then the only unknown symbol (besides 
+        the coefficients) should be 't'.
+
+    """
+
+    def __init__(self, expr):
+        if not isinstance(expr, Formula):
+            expr = Formula([expr])
+        Design.__init__(self, expr, return_float=True)
+
+    def __call__(self, t):
+        t = np.asarray(t).astype(np.float)
+        tval = t.view(np.dtype([('t', np.float)]))
+        return Design.__call__(self, tval)
 
 ###########################################################
         
