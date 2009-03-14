@@ -34,7 +34,7 @@ def test_ijkl_to_xyzt():
     yield assert_equal, aff, newcmap.affine
 
 
-#@dec.knownfailure
+@dec.knownfailure
 def test_kji_to_xyz():
     output_coords = CoordinateSystem(output_axes[:3], 'output')
     input_coords = CoordinateSystem(input_axes[:3][::-1], 'input')
@@ -179,81 +179,65 @@ def test_ijkml_to_utzyx():
     yield assert_true, np.allclose(np.fliplr(newcmap(Xr)), cmap(X))
 
 
-def test_validate6():
-    """
-    this should not raise any warnings
-    """
+def test_jkil_to_xyzt():
+    # This will issue a warning about the pixdims
 
-
+    # ninput_axes = list('jkil')
     ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
     input_coords = CoordinateSystem(ninput_axes, 'input')
     output_coords = CoordinateSystem(output_axes[:4], 'output')
-    cmap = Affine(np.identity(5), input_coords, output_coords)
+    cmap = Affine(np.diag(range(1,5) + [1]), input_coords, output_coords)
     newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield assert_true(newcmap.input_coords.name == 'input')
-    yield assert_true(newcmap.output_coords.name == 'output')
-    yield assert_true(order == (0,1,2,3))
-
-    yield assert_true(newcmap.input_coords.coordinates == ['j','k','i','l'])
-
-
-def test_validate7():
-    """
-    same as test_validate6, but should raise
-    a warning about negative pixdim
-    """
-
-    output_axes = 'xyztuvw'
-    ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
-    input_coords = CoordinateSystem(ninput_axes, 'input')
-    output_coords = CoordinateSystem(output_axes[:4], 'output')
-
-    cmap = Affine(np.diag(list(step[:4]) + [1]), input_coords, output_coords)
-    newcmap, order, pixdim, diminfo = nifti.coordmap4io(cmap)
-    yield assert_true(newcmap.input_coords.name == 'input-reordered')
-    yield assert_true(newcmap.output_coords.name == 'output')
-    yield assert_true(order == (0,1,2,3))
-    yield assert_true(newcmap.input_coords.coordinates == ['j','k','i','l'])
-
-def test_ijk1():
-    assert(nifti.ijk_from_diminfo(nifti._diminfo_from_fps(-1,-1,-1)) == list('ijk'))
-    assert(nifti.ijk_from_diminfo(nifti._diminfo_from_fps(2,-1,-1)) == list('jki'))
-
-def test_ijk2():
-    """
-    Test that the phase, freq, time, slice axes work for valid NIFTI headers
-    """
+    yield assert_equal, newcmap.input_coords.name, 'input-reordered'
+    yield assert_equal, newcmap.output_coords.name, 'output'
+    yield assert_equal, order, (2,0,1,3)
+    yield assert_equal, newcmap.input_coords.coord_names, tuple('ijkl')
+    aff = np.array([[ 0,  0,  1,  0,  0,],
+                    [ 2,  0,  0,  0,  0,],
+                    [ 0,  3,  0,  0,  0,],
+                    [ 0,  0,  0,  4,  0,],
+                    [ 0,  0,  0,  0,  1,]])
+    yield assert_equal, newcmap.affine, aff
 
 
+def test_ijk_from_diminfo():
+    x = nifti._diminfo_from_fps(-1,-1,-1)
+    yield assert_equal, nifti.ijk_from_diminfo(x), list('ijk')
+    x = nifti._diminfo_from_fps(2,-1,-1)
+    yield assert_equal, nifti.ijk_from_diminfo(x), list('jki')
+
+
+def test_phase_freq_slice_axes():
+    # Test that the phase, freq, time, slice axes work for valid NIFTI headers
     ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
     input_coords = CoordinateSystem(ninput_axes, 'input')
     output_coords = CoordinateSystem(output_axes[:4], 'output')
     cmap = Affine(np.identity(5), input_coords, output_coords)
 
-    yield assert_true(nifti.get_time_axis(cmap) == 3)
-    yield assert_true(nifti.get_freq_axis(cmap) == 0)
-    yield assert_true(nifti.get_slice_axis(cmap) == 1)
-    yield assert_true(nifti.get_phase_axis(cmap) == 2)
+    yield assert_equal, nifti.get_time_axis(cmap), 3
+    yield assert_equal, nifti.get_freq_axis(cmap), 0
+    yield assert_equal, nifti.get_slice_axis(cmap), 1
+    yield assert_equal, nifti.get_phase_axis(cmap), 2
 
-def test_ijk3():
-    '''
-    Same as test_ijk2, but the order of the output coordinates is reversed
-    '''
+
+def test_phase_freq_slice_axes_rev():
+    # Same test_phase_freq_slice_axes, but the order of the output
+    # coordinates is reversed
 
     ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
     input_coords = CoordinateSystem(ninput_axes, 'input')
     output_coords = CoordinateSystem(output_axes[:4][::-1], 'output')
     cmap = Affine(np.identity(5), input_coords, output_coords)
 
-    yield assert_true(nifti.get_time_axis(cmap) == 3)
-    yield assert_true(nifti.get_freq_axis(cmap) == 0)
-    yield assert_true(nifti.get_slice_axis(cmap) == 1)
-    yield assert_true(nifti.get_phase_axis(cmap) == 2)
+    yield assert_equal, nifti.get_time_axis(cmap), 3
+    yield assert_equal, nifti.get_freq_axis(cmap), 0
+    yield assert_equal, nifti.get_slice_axis(cmap), 1
+    yield assert_equal, nifti.get_phase_axis(cmap), 2
 
-def test_ijk4():
-    """
-    Test that the phase, freq, time, slice axes work for coercable NIFTI headers
-    """
+
+def test_phase_freq_slice_axes_coerce():
+    # Test that the phase, freq, time, slice axes work for coercable
+    # NIFTI headers
 
     ninput_axes = [input_axes[0], input_axes[1], input_axes[2], input_axes[4],
                    input_axes[3]]
@@ -263,14 +247,14 @@ def test_ijk4():
 
     cmap = Affine(np.identity(6), input_coords, output_coords)
 
-    yield assert_true(nifti.get_time_axis(cmap) == 4)
-    yield assert_true(nifti.get_freq_axis(cmap) == 1)
-    yield assert_true(nifti.get_slice_axis(cmap) == 2)
-    yield assert_true(nifti.get_phase_axis(cmap) == 0)
+    yield assert_equal, nifti.get_time_axis(cmap), 4
+    yield assert_equal, nifti.get_freq_axis(cmap), 1
+    yield assert_equal, nifti.get_slice_axis(cmap), 2
+    yield assert_equal, nifti.get_phase_axis(cmap), 0
 
     newcmap, _ = nifti.coerce_coordmap(cmap)
 
-    yield assert_true(nifti.get_time_axis(newcmap) == 3)
-    yield assert_true(nifti.get_freq_axis(newcmap) == 1)
-    yield assert_true(nifti.get_slice_axis(newcmap) == 2)
-    yield assert_true(nifti.get_phase_axis(newcmap) == 0)
+    yield assert_equal, nifti.get_time_axis(newcmap), 3
+    yield assert_equal, nifti.get_freq_axis(newcmap), 1
+    yield assert_equal, nifti.get_slice_axis(newcmap), 2
+    yield assert_equal, nifti.get_phase_axis(newcmap), 0
