@@ -5,7 +5,8 @@ from neuroimaging.testing import *
 
 from neuroimaging.modalities.fmri.api import FmriImageList, fromimage
 from neuroimaging.modalities.fmri.pca import PCA
-from neuroimaging.core.api import Image, load_image
+from neuroimaging.core.api import Image
+from neuroimaging.io.api import  load_image
 from neuroimaging.testing import funcfile
 
 class test_PCA(TestCase):

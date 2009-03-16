@@ -2,7 +2,7 @@ import numpy as np
 from numpy.random import standard_normal as noise
 
 from neuroimaging.testing import funcfile, anatfile
-from neuroimaging.core.api import load_image
+from neuroimaging.io.api import load_image
 from neuroimaging.modalities.fmri.api import fromimage, fmri_generator
 from neuroimaging.core.image.generators import *
 from neuroimaging.fixes.scipy.stats.models.regression import OLSModel as ols_model
