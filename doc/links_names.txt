@@ -24,7 +24,8 @@
 
 .. Working process
 .. _pynifti: http://niftilib.sourceforge.net/
-.. _nifticlibs: http://nifti.nimh.nih.gov/
+.. _nifticlibs: http://nifti.nimh.nih.gov
+.. _nifti: http://nifti.nimh.nih.gov
 .. _`nipy launchpad`: https://launchpad.net/nipy
 .. _launchpad: https://launchpad.net/
 .. _`nipy trunk`: https://code.launchpad.net/~nipy-developers/nipy/trunk
@@ -77,6 +78,7 @@
 .. _gcc: http://gcc.gnu.org
 .. _xcode: http://developer.apple.com/TOOLS/xcode
 .. _mingw: http://www.mingw.org
+.. _macports: http://www.macports.org/
 
 .. Functional imaging labs
 .. _`functional imaging laboratory`: http://www.fil.ion.ucl.ac.uk

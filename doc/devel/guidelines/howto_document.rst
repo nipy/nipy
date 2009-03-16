@@ -4,17 +4,56 @@
  How to write documentation
 ============================
 
-Syntax
-------
-
 Nipy_ uses the Sphinx_ documentation generating tool.  Sphinx
 translates reST_ formatted documents into html and pdf documents.  All
 our documents and docstrings are in reST format, this allows us to
 have both human-readable docstrings when viewed in ipython_, and
 web and print quality documentation.
 
+
+Building the documentation
+--------------------------
+
+You need to have Sphinx_ (version 0.5 or greater), graphviz_ (version
+2.20 or greater) and the svn of matplotlib_ (0.98.6svn) installed in
+order to build the documentation.  (*Note: The svn requirement of
+matplotlib will go away after the next release of matplotlib.*)
+
+The ``Makefile`` (in the top-level doc directory) automates the
+generation of the documents.  To make the HTML documents::
+
+  make html
+
+For PDF documentation do::
+
+  make pdf
+
+The built documentation is then placed in a ``build/html`` or
+``build/latex`` subdirectories.
+
+For more options, type::
+
+  make help
+
+Viewing the documentation
+-------------------------
+
+We also build our website using sphinx_.  All of the documentation in
+the ``docs`` directory is included on the website.  There are a few
+files that are website only and these are placed in the ``www``
+directory.  The easiest way to view the documentation while editing
+is to build the website and open the local build in your browser::
+
+  make web
+
+Then open ``www/build/html/index.html`` in your browser.
+
+
+Syntax
+------
+
 Please have a look at our :ref:`sphinx_helpers` for examples on using
-Sphinx and reST in our documentation.
+Sphinx_ and reST_ in our documentation.
 
 The Sphinx website also has an excellent `sphinx rest`_ primer.
 
@@ -40,5 +79,11 @@ writing docstrings.
 
 .. _`numpy coding style guideline`:
    http://scipy.org/scipy/numpy/wiki/CodingStyleGuidelines
+
+Documentation Problems
+----------------------
+
+See our :ref:`documentation_faq` if you are havimg problems building
+the documentation.
 
 .. include:: ../../links_names.txt
