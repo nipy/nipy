@@ -1,12 +1,22 @@
 """This test module is primarily to test nipy's use of pynifti.  Adding tests to
 pynifti code for the low-level functionality.
 """
+import warnings
 
 import numpy as np
 
 from neuroimaging.testing import *
 
 from neuroimaging.io.pyniftiio import PyNiftiIO
+
+def setup():
+    # Suppress warnings during tests to reduce noise
+    warnings.simplefilter("ignore")
+
+def teardown():
+    # Clear list of warning filters
+    warnings.resetwarnings()
+
 
 def test_affine_analyze():
     # Test method1 from nifti1.h, Analyze 7.5 mapping.

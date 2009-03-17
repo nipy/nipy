@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 from neuroimaging.testing import *
 
@@ -5,6 +6,15 @@ from neuroimaging.core import api
 from neuroimaging.io.files import coerce2nifti
 from neuroimaging.io.nifti_ref import coerce_coordmap
 from neuroimaging.core.reference.coordinate_map import reorder_input, reorder_output
+
+def setup():
+    # Suppress warnings during tests to reduce noise
+    warnings.simplefilter("ignore")
+
+def teardown():
+    # Clear list of warning filters
+    warnings.resetwarnings()
+
 
 def setup_cmap():
     shape = (64,64,30,191)
