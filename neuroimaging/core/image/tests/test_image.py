@@ -1,5 +1,6 @@
 from tempfile import NamedTemporaryFile
 from os import remove
+import warnings
 
 import numpy as np
 import numpy.testing as nptest
@@ -14,6 +15,15 @@ from neuroimaging.core.api import Image, fromarray, merge_images
 from neuroimaging.core.api import parcels, data_generator, write_data
 
 from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine
+
+def setup():
+    # Suppress warnings during tests to reduce noise
+    warnings.simplefilter("ignore")
+
+def teardown():
+    # Clear list of warning filters
+    warnings.resetwarnings()
+
 
 class TestImage(object):
 
