@@ -1,7 +1,23 @@
 import math
+import warnings
+
 import numpy as np
-import neuroimaging.fixes.scipy.ndimage._registration as reg
-from numpy.testing import *
+
+from neuroimaging.testing import *
+
+reg = None
+
+def setup():
+    # Suppress warnings during tests to reduce noise
+    warnings.simplefilter("ignore")
+    # Import registration module after suppressing the UserWarnings
+    global reg
+    import neuroimaging.fixes.scipy.ndimage._registration as reg
+
+def teardown():
+    # Clear list of warning filters
+    warnings.resetwarnings()
+
 
 def load_desc():
     # this is for a 256x256x90 volume with 0.9375 x 0.9375 * 1.5 mm voxel sizes 
