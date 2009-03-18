@@ -1,5 +1,4 @@
-"""Information used for locating nipy test data.
-
+"""
 Nipy uses a set of test data that is installed separately.  The test
 data should be located in the directory ``~/.nipy/tests/data``.
 
@@ -12,11 +11,13 @@ from os.path import expanduser, exists, join
 
 from neuroimaging.io.datasource import Repository
 
+repo_doc = __doc__
+
 # data directory should be: $HOME/.nipy/tests/data
 datapath = expanduser(join('~', '.nipy', 'tests', 'data'))
 
 if not exists(datapath):
-    raise IOError, 'Nipy data directory is not found!'
+    raise IOError('Nipy data directory is not found!\n%s' % repo_doc)
 
 repository = Repository(datapath)
 
