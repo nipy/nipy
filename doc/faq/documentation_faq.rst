@@ -45,4 +45,32 @@ Try installing graphviz using MacPorts_.  See the
 :ref:`installing_graphviz_on_OSX` for instructions.
 
 
+Sphinx and reST gotchas
+-----------------------
+
+Docstrings
+^^^^^^^^^^
+
+Sphinx_ and reST_ can be very picky about whitespace.  For example, in
+the docstring below the *Parameters* section will render correctly,
+where the *Returns* section will not.  By correctly I mean Sphinx will
+insert a link to the CoordinateSystem class in place of the
+cross-reference *:class:`CoordinateSystem`*.  The *Returns* section
+will be rendered exactly as shown below with the *:class:* identifier
+and the backticks around CoordinateSystem.  This section fails because
+of the missing whitespace between ``product_coord_system`` and the
+colon ``:``.
+
+::
+
+    Parameters
+    ----------
+    coord_systems : sequence of :class:`CoordinateSystem`
+    
+    Returns
+    -------
+    product_coord_system: :class:`CoordinateSystem`
+
+
+
 .. include:: ../links_names.txt
