@@ -6,12 +6,11 @@ import numpy as np
 
 from neuroimaging.core.api import fromarray, Affine
 from neuroimaging.io.api import save_image, load_image
-from neuroimaging.utils.tests.data import repository, repo_doc
+from neuroimaging.utils.tests.data import repository
 
 # Load an image to get the array and affine
 filename = str(repository._fullpath('avg152T1.nii.gz'))
-if not path.exists(filename):
-    raise IOError('File does not exist: %s\n %s' % (filename, repo_doc))
+assert path.exists(filename)
 
 # Use one of our test files to get an array and affine (as numpy array) from.
 img = load_image(filename)
