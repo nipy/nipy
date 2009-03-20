@@ -170,7 +170,7 @@ class CoordinateSystem(object):
                 (self.name, self.coord_names, self.coord_dtype))
 
 
-    def checked_values(self, arr):
+    def _checked_values(self, arr):
         ''' Check ``arr`` for valid dtype and shape as coordinate values.
 
         Raise Errors for failed checks.

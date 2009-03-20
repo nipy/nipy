@@ -210,9 +210,9 @@ class CoordinateMap(object):
 
         """
 
-        in_vals = self._input_coords.checked_values(x)
+        in_vals = self._input_coords._checked_values(x)
         out_vals = self._mapping(in_vals)
-        return self._output_coords.checked_values(out_vals)
+        return self._output_coords._checked_values(out_vals)
 
     def copy(self):
         """Create a copy of the coordmap.

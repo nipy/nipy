@@ -107,15 +107,15 @@ def test___str__():
 def test_checked_values():
     cs = CoordinateSystem('ijk', name='voxels', coord_dtype=np.float32)
     x = np.array([1, 2, 3], dtype=np.int16)
-    xc = cs.checked_values(x)
+    xc = cs._checked_values(x)
     yield np.allclose, xc, x
     # wrong shape
-    yield assert_raises, ValueError, cs.checked_values, x.reshape(3,1)
+    yield assert_raises, ValueError, cs._checked_values, x.reshape(3,1)
     # wrong length
-    yield assert_raises, ValueError, cs.checked_values, x[0:2]
+    yield assert_raises, ValueError, cs._checked_values, x[0:2]
     # wrong dtype
     x = np.array([1,2,3], dtype=np.float64)
-    yield assert_raises, ValueError, cs.checked_values, x
+    yield assert_raises, ValueError, cs._checked_values, x
 
 def test_safe_dtype():
     yield assert_raises, TypeError, safe_dtype, type('foo')
