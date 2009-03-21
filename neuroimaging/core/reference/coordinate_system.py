@@ -144,7 +144,7 @@ class CoordinateSystem(object):
 
         Parameters
         ----------
-        other : CoordinateSystem
+        other : :class:`CoordinateSystem`
            The object to be compared with
 
         Returns

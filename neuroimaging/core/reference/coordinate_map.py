@@ -261,9 +261,9 @@ class Affine(CoordinateMap):
         ----------
         affine : array-like
            affine homogenous coordinate matrix
-        input_coords : CoordinateSystem
+        input_coords : :class:`CoordinateSystem`
            input coordinates
-        output_coords : CoordinateSystem
+        output_coords : :class:`CoordinateSystem`
            output coordinates
 
         Notes
