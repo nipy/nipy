@@ -103,10 +103,6 @@ def perl_dash_pie(oldstr, newstr):
 
 
 def main():
-    print 'Results from parse_args'
-    print 'options:', options
-    print 'args:', args
-
     if check_deps():
         oldstr = args[0]
         newstr = args[1]
