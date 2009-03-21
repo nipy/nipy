@@ -57,11 +57,6 @@ Remove all occurences of importing make_doctest_suite::
 from optparse import OptionParser
 import subprocess
 
-param_index = __doc__.index('Parameters')
-description = __doc__[:param_index]
-usage = "usage: %prog [options] oldstring newstring"
-parser = OptionParser(usage=usage, description=description)
-(options, args) = parser.parse_args()
 
 def check_deps():
     try:
@@ -103,6 +98,16 @@ def perl_dash_pie(oldstr, newstr):
 
 
 def main():
+    param_index = __doc__.index('Parameters')
+    description = __doc__[:param_index]
+    usage = "usage: %prog [options] oldstring newstring"
+    parser = OptionParser(usage=usage, description=description)
+    (options, args) = parser.parse_args()
+
+    if not args:
+        parser.print_help()
+        return
+
     if check_deps():
         oldstr = args[0]
         newstr = args[1]
