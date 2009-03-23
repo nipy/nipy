@@ -54,7 +54,7 @@ def test_kji_to_xyz():
     # One last test to remind us of the FIXME in pixdims
     yield assert_true, np.allclose(pixdim, np.arange(3)+1)
 
-
+@dec.needs_review('Needs review of coordmap4io function')
 def test_kijl_to_xyzt():
     output_coords = CoordinateSystem(output_axes[:4], 'output')
     input_coords = CoordinateSystem([input_axes[2],
@@ -77,6 +77,7 @@ def test_kijl_to_xyzt():
     yield assert_equal, newcmap.affine, aff
 
 
+@dec.needs_review('Needs review of coordmap4io function')
 def test_iljk_to_xyzt():
     # this should raise a warning about the first three input
     # coordinates, and one about the last axis not being in the
@@ -99,6 +100,7 @@ def test_iljk_to_xyzt():
     yield assert_equal, order, (0,2,3,1)
 
 
+@dec.needs_review('Needs review of coordmap4io function')
 def test_ijkn_to_xyzt():
     # This should raise an exception about not having axis names
     # ['ijkl'].  Some warnings are printed during the try/except
@@ -111,6 +113,7 @@ def test_ijkn_to_xyzt():
     assert_raises, ValueError, nifti.coordmap4io, cmap
 
 
+@dec.needs_review('Needs review of coordmap4io function')
 def test_ijkml_to_xyztu():
     # This should raise a warning about the last 2 axes not being in
     # order, and one about the loss of information from a non-diagonal
@@ -143,6 +146,7 @@ def test_ijkml_to_xyztu():
     yield assert_true, np.allclose(newcmap(Xr), cmap(X))
 
 
+@dec.needs_review('Needs review of coordmap4io function')
 def test_ijkml_to_utzyx():
     # This should raise a warning about the last 2 axes not being in
     # order, and one about the loss of information from a non-diagonal
@@ -179,6 +183,7 @@ def test_ijkml_to_utzyx():
     yield assert_true, np.allclose(np.fliplr(newcmap(Xr)), cmap(X))
 
 
+@dec.needs_review('Needs review of coordmap4io function')
 def test_jkil_to_xyzt():
     # This will issue a warning about the pixdims
 
