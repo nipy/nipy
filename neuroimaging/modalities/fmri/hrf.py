@@ -12,14 +12,12 @@ __docformat__ = 'restructuredtext'
 import numpy as np
 import numpy.linalg as L
 from sympy import Symbol, lambdify, DeferredVector, exp, Derivative
+from formula import Vectorize, Term
 
-from neuroimaging.modalities.fmri import filters
+t = Term('t')
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
 
 # Sympy symbols used below
-
-vector_t = DeferredVector('vt')
-t = Symbol('t')
 
 def gamma_params(peak_location, peak_fwhm):
     """
@@ -47,51 +45,51 @@ def gamma_params(peak_location, peak_fwhm):
         coef : float
             Coefficient needed to ensure the density has integral 1.
     """
+    t = Term('t')
     alpha = np.power(peak_location / peak_fwhm, 2) * 8 * np.log(2.0)
     beta = np.power(peak_fwhm, 2) / peak_location / 8 / np.log(2.0)
     coef = peak_location**(-alpha) * np.exp(peak_location / beta)
-    return coef * ((t > 0) * t)**(alpha-1) * exp(-beta*t) 
+    return coef * ((t > 0) * t)**(alpha) * exp(-t/beta)
 
 # Glover canonical HRF models
 # they are both Sympy objects
 
-def vectorize_time(f):
-    """
-    Take a sympy expression that contains the symbol 't'
-    and return a lambda with a vectorized time.
-    """
-    return lambdify(vector_t, f.subs(t, vector_t), 'numpy')
-
 def _getint(f, dt=0.02, t=50):
-    lf = vectorize_time(f)
+    lf = Vectorize(f)
     tt = np.arange(dt,t+dt,dt)
     return lf(tt).sum() * dt 
 
-glover_sympy = gamma_params(5.4, 5.2) - 0.35 * gamma_params(10.8,7.35)
-glover_sympy = glover_sympy / _getint(glover_sympy)
+class Subs(object):
 
-dglover_sympy = glover_sympy.diff(t)
+    def __call__(self, s):
+        return self._expr.subs(t, s)
 
-dpos = Derivative((t > 0), t)
-dglover_sympy = dglover_sympy.subs(dpos, 0)
-dglover_sympy = dglover_sympy / _getint(dglover_sympy)
 
-# This is callable
+class Glover(Subs):
 
-glover = vectorize_time(glover_sympy)
-glover.__doc__ = """
-Canonical HRF
-"""
-canonical = glover #TODO :get rid of 'canonical'
+    _expr = gamma_params(5.4, 5.2) - 0.35 * gamma_params(10.8,7.35)
+    _expr = _expr / _getint(_expr)
 
-dglover = vectorize_time(dglover_sympy)
-dglover.__doc__ = """
-Derivative of canonical HRF
-"""
+glover_sympy = Glover()
+glover = Vectorize(glover_sympy._expr)
 
-# AFNI's default HRF (at least at some point in the past)
+class DGlover(Subs):
 
-afni_sympy = ((t > 0) * t)**8.6 * exp(-t/0.547)
-afni_sympy =  afni_sympy / _getint(afni_sympy)
-afni = vectorize_time(afni_sympy)
+    dglover_sympy = Glover._expr.diff(t)
+    dpos = Derivative((t > 0), t)
+    dglover_sympy = dglover_sympy.subs(dpos, 0)
+    _expr = dglover_sympy / _getint(dglover_sympy)
+    del(dglover_sympy); del(dpos)
+
+dglover_sympy = DGlover()
+dglover = Vectorize(dglover_sympy._expr)
+
+class AFNI(Subs):
+    # AFNI's default HRF (at least at some point in the past)
+
+    _expr = ((t > 0) * t)**8.6 * exp(-t/0.547)
+    _expr = _expr / _getint(_expr)
+
+afni_sympy =  AFNI()
+afni = Vectorize(afni_sympy._expr)
 

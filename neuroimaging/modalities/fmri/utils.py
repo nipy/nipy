@@ -23,7 +23,7 @@ from formula import Formula, Term
 
 t = Term('t')
 
-def linear_interp(times, values, fill=0, **kw):
+def linear_interp(times, values, fill=0, name=None, **kw):
     """
     Linear interpolation function such that
 
@@ -44,6 +44,10 @@ def linear_interp(times, values, fill=0, **kw):
     fill : float
         Value on the interval (-np.inf, times[0])
         
+    name : str
+        Name of symbolic expression to use. If None,
+        a default is used.
+
     Outputs:
     ========
 
@@ -65,14 +69,18 @@ def linear_interp(times, values, fill=0, **kw):
     """
     kw['kind'] = 'linear'
     i = interp1d(times, values, **kw)
-    s = Function('interp%d' % linear_interp.counter, dummy=True)
+
+    if name is None:
+        name = 'interp%d' % linear_interp.counter
+        linear_interp.counter += 1
+
+    s = Symbol(name)
     ff = Formula([s(t)])
-    ff.aliases['interp%d' % linear_interp.counter] = i
-    linear_interp.counter += 1
+    ff.aliases[name] = i
     return ff
 linear_interp.counter = 0
 
-def step_function(times, values, fill=0):
+def step_function(times, values, name=None, fill=0):
     """
     Right-continuous step function such that
 
@@ -93,6 +101,10 @@ def step_function(times, values, fill=0):
     fill : float
         Value on the interval (-np.inf, times[0])
         
+    name : str
+        Name of symbolic expression to use. If None,
+        a default is used.
+
     Outputs:
     ========
 
@@ -122,11 +134,13 @@ def step_function(times, values, fill=0):
             f = f + np.greater(x, times[i+1]) * d[i]
         return f
 
-    s = Symbol('step%d' % step_function.counter, dummy=True)
-    ff = Formula([s(t)])
-    ff.aliases['step%d' % step_function.counter] = anon
-    step_function.counter += 1
+    if name is None:
+        name = 'step%d' % step_function.counter
+        step_function.counter += 1
 
+    s = Symbol(name)
+    ff = Formula([s(t)])
+    ff.aliases[name] = anon
     return ff
 step_function.counter = 0
 
@@ -250,9 +264,9 @@ def blocks(intervals, amplitudes=None, g=Symbol('a')):
 
     return step_function(t, v)
 
-def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, normalize=(0, 0)):
+def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1):
     """
-    Convolve fn1 with fn2 -- where fn1 may return a multidimensional output.
+    Convolve fn1 with fn2.
     
     :Parameters:
         `fn1` : TODO
@@ -265,8 +279,6 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, normalize=(0, 0)):
             TODO
         `padding_f` : float
             TODO
-        `normalize` : TODO
-            TODO
             
     :Returns: TODO
     """
@@ -275,15 +287,10 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, normalize=(0, 0)):
     ltime = max_interval - min_interval
     time = np.arange(min_interval, max_interval + padding_f * ltime, dt)
 
-    _fn1 = np.array(fn1(time))
-    _fn2 = np.array(fn2(time))
+    _fn1 = np.array(Vectorize(fn1)(time))
+    _fn2 = np.array(Vectorize(fn2)(time))
 
-    if normalize[0]:
-        _fn1 /= np.sqrt(np.add.reduce(_fn1**2))
     _fft1 = FFT.rfft(_fn1)
-
-    if normalize[1]:
-        _fn2 /= np.sqrt(np.add.reduce(_fn2**2))
     _fft2 = FFT.rfft(_fn2)
 
     value = FFT.irfft(_fft1 * _fft2)
@@ -291,12 +298,5 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, normalize=(0, 0)):
     time = time[0:_minshape]
     value = value[0:_minshape]
     
-    if len(value.shape) == 2:
-        fns = []
-        for i in range(value.shape[0]):
-            fns.append(interp1d(time + min_interval, value[i]))
-
-        return fns
-    else:
-        newf = interp1d(time + min_interval, value)
-        return newf
+    l = linear_interp(time + min_interval, value)
+    print l

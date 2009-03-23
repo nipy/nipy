@@ -147,7 +147,14 @@ class Formula(object):
         _b0*g(t) + _b1*g(s)
 
         """
-        return Formula([term.subs(old, new) for term in self.terms])
+        aliases = self.aliases.copy()
+        if old in self.aliases.keys():
+            aliases[new] = aliases[old]
+            del(aliases[old])
+        f = Formula([term.subs(old, new) for term in self.terms])
+        for k, i in aliases.items():
+            f.aliases[k] = i
+        return f
 
     def _getcoefs(self):
         if not hasattr(self, '_coefs'):
