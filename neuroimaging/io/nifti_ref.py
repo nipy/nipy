@@ -16,7 +16,7 @@ the output coordinate names are ['x','y','z','t','u','v','w']
 and the input coordinate names are ['i','j','k','l','m','n','o'].
 
 In the NIFTI specification, the order of the output coordinates (at least the 
-first 3) are fixed to be ['x','y','z'] and their order is not mean to change. 
+first 3) are fixed to be ['x','y','z'] and their order is not meant to change. 
 As for input coordinates, the first three can be reordered, so 
 ['j','k','i','l'] is valid, for instance.
 
@@ -40,12 +40,14 @@ x=20-th, y=10-th pixel of the third slice of an image with 30 64x64 slices. This
 >>> nifti_ijk = [19,9,2]
 >>> fortran_ijk = [20,10,3]
 >>> c_kji = [2,9,19]
->>> d = np.asarray(load_image(anatfile))
->>> request1 = d[nifti_ijk[2],nifti_ijk[1],nifti_ijk[0]]
->>> request2 = d[fortran_ijk[2]-1,fortran_ijk[1]-1, fortran_ijk[0]-1]
->>> request3 = d[c_kji[0],c_kji[1],c_kji[2]]
->>> assert request1 == request2
->>> assert request2 == request3
+>>> imgarr = np.asarray(load_image(anatfile))
+>>> request1 = imgarr[nifti_ijk[2], nifti_ijk[1], nifti_ijk[0]]
+>>> request2 = imgarr[fortran_ijk[2]-1,fortran_ijk[1]-1, fortran_ijk[0]-1]
+>>> request3 = imgarr[c_kji[0],c_kji[1],c_kji[2]]
+>>> request1 == request2
+True
+>>> request2 == request3
+True
 
 FIXME: (finish this thought.... Are we going to open NIFTI files with NIFTI input coordinates?)
 For this reason, we have to consider whether we should transpose the
@@ -110,15 +112,19 @@ def coerce_coordmap(coordmap):
         raise ValueError, 'affine must be square to save as a NIFTI file'
 
     ndim = affine.shape[0] - 1
-    innames = coordmap.input_coords.coordinates
+    # Verify input coordinates are a valid set (independent of order)
+    innames = coordmap.input_coords.coord_names
     vinput = valid_input_axisnames[:ndim]
     if set(vinput) != set(innames):
-        raise ValueError, 'input coordinate axisnames of a %d-dimensional Image must come from %s' % (ndim, `vinput`)
+        raise ValueError('input coordinate axisnames of a %d-dimensional'
+                         'Image must come from %s' % (ndim, `vinput`))
 
+    # Verify output coordinates are a valid set (independent of order)
     voutput = valid_output_axisnames[:ndim]
-    outnames = coordmap.output_coords.coordinates
+    outnames = coordmap.output_coords.coord_names
     if set(voutput) != set(outnames):
-        raise ValueError, 'output coordinate axisnames of a %d-dimensional Image must come from %s' % (ndim, `voutput`)
+        raise ValueError('output coordinate axisnames of a %d-dimensional'
+                         'Image must come from %s' % (ndim, `voutput`))
 
     # if the input coordinates do not have the proper order,
     # the image would have to be transposed to be saved
@@ -130,11 +136,14 @@ def coerce_coordmap(coordmap):
     # the phase, freq, slice values all have to be less than 3
 
     reinput = False
+    # Check if the first 3 input coordinates need to be reordered
     if innames != vinput:
         ndimm = min(ndim, 3)
+        # Check if first 3 coords are valid input nifti coords set('ijk')
         if set(innames[:ndimm]) != set(vinput[:ndimm]):
             warnings.warn('an Image with this coordmap has to be transposed to be saved because the first %d input axes are not from %s' % (ndimm, `set(vinput[:ndimm])`))
             reinput = True
+        # Check if first 3 coords match the correct nifti order ('ijk')
         if innames[ndimm:] != vinput[ndimm:]:
             warnings.warn('an Image with this coordmap has to be transposed because the last %d axes are not in the NIFTI order' % (ndim-3,))
             reinput = True
@@ -186,10 +195,10 @@ def coerce_coordmap(coordmap):
     else:
         outname = coordmap.output_coords.name
 
-    coords = coordmap.input_coords.coordinates
+    coords = coordmap.input_coords.coord_names
     newincoords = CoordinateSystem([coords[i] for i in intrans], inname)
 
-    coords = coordmap.output_coords.coordinates
+    coords = coordmap.output_coords.coord_names
     newoutcoords = CoordinateSystem([coords[i] for i in outtrans], outname)
 
     return Affine(A, newincoords, newoutcoords), intrans
@@ -285,14 +294,14 @@ def standard_order(coordmap):
 
     >>> cmap = Affine.from_params('ikjl', 'xyzt', np.identity(5))
     >>> sorder, scmap = standard_order(cmap)
-    >>> print cmap.input_coords.coordinates
-    ['i', 'k', 'j', 'l']
-    >>> print scmap.input_coords.coordinates
-    ['i', 'j', 'k', 'l']
-    >>> print scmap.output_coords.coordinates
-    ['x', 'y', 'z', 't']
-    >>> print cmap.output_coords.coordinates
-    ['x', 'y', 'z', 't']
+    >>> print cmap.input_coords.coord_names
+    ('i', 'k', 'j', 'l')
+    >>> print scmap.input_coords.coord_names
+    ('i', 'j', 'k', 'l')
+    >>> print scmap.output_coords.coord_names
+    ('x', 'y', 'z', 't')
+    >>> print cmap.output_coords.coord_names
+    ('x', 'y', 'z', 't')
 
     """
 

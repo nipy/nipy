@@ -14,7 +14,7 @@ def mlab_tempfile(dir=None):
     the underlying file gets deleted from the filesystem.
 
     Parameters
-    ==========
+    ----------
     
       dir : str
         A path to use as the starting directory.  Note that this directory must
@@ -22,11 +22,11 @@ def mlab_tempfile(dir=None):
         is raised instead).
 
     Returns
-    =======
+    -------
       f : A file-like object.
 
     Examples
-    ========
+    --------
 
     >>> f = mlab_tempfile()
     >>> '-' not in f.name

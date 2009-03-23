@@ -1,4 +1,6 @@
 import numpy as np
+from neuroimaging.testing import *
+
 from neuroimaging.core import api
 from neuroimaging.io.files import coerce2nifti
 from neuroimaging.io.nifti_ref import coerce_coordmap
@@ -10,39 +12,39 @@ def setup_cmap():
     return shape, cmap
 
 def test_coerce():
-    """
-    this test just creates an image that is already ready for nifti output
-    """
+    #this test just creates an image that is already ready for nifti output
+
     shape, cmap = setup_cmap()
     img = api.Image(np.zeros(shape), cmap)
     newimg = coerce2nifti(img)
-    assert newimg.coordmap.input_coords.coordinates == img.coordmap.input_coords.coordinates 
-    assert newimg.coordmap.output_coords.coordinates == img.coordmap.output_coords.coordinates
-    assert newimg.shape == shape
-    assert np.allclose(newimg.affine, img.affine)
-    assert np.asarray(newimg).shape == shape
+    yield assert_equal, newimg.coordmap.input_coords.coord_names, \
+        img.coordmap.input_coords.coord_names 
+    yield assert_equal, newimg.coordmap.output_coords.coord_names, \
+        img.coordmap.output_coords.coord_names
+    yield assert_equal, newimg.shape, shape
+    yield assert_true, np.allclose(newimg.affine, img.affine)
+    yield assert_equal, np.asarray(newimg).shape, shape
 
 def test_coerce2():
-    """
-    this example has to be coerced, which means that there will be a 
-    warning about non-diagonal and pixdims not agreeing
-    """
+    # this example has to be coerced, which means that there will be a
+    # warning about non-diagonal and pixdims not agreeing
 
     lorder = [0,2,3,1]
     shape, cmap = setup_cmap()
     cmap = reorder_input(cmap, lorder)
     img = api.Image(np.zeros(tuple([shape[i] for i in lorder])), cmap)
     newimg = coerce2nifti(img)
-    assert img.coordmap.input_coords.coordinates == [newimg.coordmap.input_coords.coordinates[i] for i in lorder]
-    assert newimg.coordmap.output_coords.coordinates == img.coordmap.output_coords.coordinates
-    assert shape == newimg.shape
-    assert np.asarray(newimg).shape == shape
+    neworder = [newimg.coordmap.input_coords.coord_names[i] for i in lorder]
+    yield assert_equal, neworder, img.coordmap.input_coords.coord_names
+    yield assert_equal, newimg.coordmap.output_coords.coord_names, \
+        img.coordmap.output_coords.coord_names
+    yield assert_equal, shape, newimg.shape
+    yield assert_equal, np.asarray(newimg).shape, shape
 
 def test_coerce3():
-    """
-    this example has to be coerced, which means that there will be a 
-    warning about non-diagonal and pixdims not agreeing
-    """
+    # this example has to be coerced, which means that there will be a
+    # warning about non-diagonal and pixdims not agreeing
+
 
     lorder = [0,2,3,1]
     shape = (64,64,191,30)
@@ -50,10 +52,12 @@ def test_coerce3():
     cmap = reorder_output(cmap, lorder)
     img = api.Image(np.zeros(shape), cmap)
     newimg = coerce2nifti(img)
-    assert img.coordmap.output_coords.coordinates == [newimg.coordmap.output_coords.coordinates[i] for i in lorder]
-    assert newimg.coordmap.input_coords.coordinates == img.coordmap.input_coords.coordinates
-    assert shape == newimg.shape
-    assert np.asarray(newimg).shape == shape
+    neworder = [newimg.coordmap.output_coords.coord_names[i] for i in lorder]
+    yield assert_equal, neworder, img.coordmap.output_coords.coord_names
+    yield assert_equal, newimg.coordmap.input_coords.coord_names, \
+        img.coordmap.input_coords.coord_names
+    yield assert_equal, shape, newimg.shape
+    yield assert_equal, np.asarray(newimg).shape, shape
 
 
 

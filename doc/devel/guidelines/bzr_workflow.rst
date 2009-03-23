@@ -68,6 +68,9 @@ and a `Decentralized with human gatekeeper workflows
      bzr init-repo --trees nipy-repo
      cd nipy-repo
 
+#. Tell bazaar who you are::
+     bzr whoami "Barack Obama <bobama@whitehouse.gov>"
+
 #. Create your own personal development branch, named `trunk-dev`, by
    replicating the nipy_ trunk::
 

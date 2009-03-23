@@ -42,43 +42,13 @@ This directory contains:
 Building the documentation
 --------------------------
 
-Once the documentation is built, the **Developer's Guide** has
-sections on *How to write documentation* and a *Sphinx Cheat Sheet*.
-You need to have Sphinx_ and graphviz_
-installed in order to build the documentation.
-
-The ``Makefile`` automates the generation of the documents.  To
-make the HTML documents::
-
-  make html
-
-For PDF documentation do::
-
-  make pdf
-
-The built documentation is then placed in a ``build/html`` or
-``build/latex`` subdirectories.
-
-
-Viewing the documentation
--------------------------
-
-We also build our website using sphinx_.  All of the documentation in
-the ``docs`` directory is included on the website.  There are a few
-files that are *website only* and these are placed in the ``www``
-directory.  The easiest way to view the documentation while editing it
-is to build the website and open the local build in your browser::
-
-  make web
-
-Then open ``www/build/html/index.html`` in your browser.
-
+Instructions for building the documentation are in the file:
+``devel/guidelines/howto_document.rst``
 
 .. Since this README.txt is not processed by Sphinx during the
 .. documentation build, I've included the links directly so it is at
 .. least a valid reST doc.
 
-.. _graphviz: http://www.graphviz.org/
 .. _Sphinx: http://sphinx.pocoo.org/
 .. _reST: http://docutils.sourceforge.net/rst.html
 .. _numpy: http://www.scipy.org/NumPy

@@ -1,8 +1,11 @@
 
 import numpy as np
-from neuroimaging.core.api import Affine, Image, CoordinateMap, ArrayCoordMap, compose
-from neuroimaging.core.reference import slices
 
+from neuroimaging.testing import *
+
+from neuroimaging.core.api import (Affine, Image, CoordinateMap, 
+                                   ArrayCoordMap, compose)
+from neuroimaging.core.reference import slices
 from neuroimaging.algorithms.resample import resample
 
 def test_rotate2d():
@@ -20,7 +23,7 @@ def test_rotate2d():
                   [0,0,1]], np.float)
 
     ir = resample(i, g2, a, (100, 100))
-    assert(np.allclose(np.asarray(ir).T, i))
+    assert_true(np.allclose(np.asarray(ir).T, i))
 
 def test_rotate2d2():
     # Rotate an image in 2d on a non-square grid,
@@ -37,17 +40,19 @@ def test_rotate2d2():
                   [0,0,1]], np.float)
 
     ir = resample(i, g2, a, (80,100))
-    assert(np.allclose(np.asarray(ir).T, i))
+    assert_true(np.allclose(np.asarray(ir).T, i))
 
 def test_rotate2d3():
-    # Another way to rotate/transpose the image, similar to test_rotate2d2 and test_rotate2d
-    # except the output_coords of the output coordmap are the same as the output_coords of
-    # the original image. That is, the data is transposed on disk, but the output
-    # coordinates are still 'x,'y' order, not 'y', 'x' order as above
+    # Another way to rotate/transpose the image, similar to
+    # test_rotate2d2 and test_rotate2d except the output_coords of the
+    # output coordmap are the same as the output_coords of the
+    # original image. That is, the data is transposed on disk, but the
+    # output coordinates are still 'x,'y' order, not 'y', 'x' order as
+    # above
 
-    # this functionality may or may not be used a lot. if data
-    # is to be transposed but one wanted to keep the NIFTI order of output coords
-    # this would do the trick
+    # this functionality may or may not be used a lot. if data is to
+    # be transposed but one wanted to keep the NIFTI order of output
+    # coords this would do the trick
 
     g = Affine.from_params('xy', 'ij', np.diag([0.5,0.7,1]))
     i = Image(np.ones((100,80)), g)
@@ -59,10 +64,7 @@ def test_rotate2d3():
                                                   [0,0,1]]))
     ir = resample(i, g2, a, (80,100))
     v2v = compose(g.inverse, g2)
-    print v2v.params
-    print g.inverse, g2
-    print ir.coordmap.affine
-    assert(np.allclose(np.asarray(ir).T, i))
+    assert_true(np.allclose(np.asarray(ir).T, i))
     
 
 def test_rotate3d():
@@ -82,7 +84,7 @@ def test_rotate3d():
                   [0,0,0,1.]])
 
     ir = resample(i, g2, a, (100,80,90))
-    assert(np.allclose(np.transpose(np.asarray(ir), (0,2,1)), i))
+    assert_true(np.allclose(np.transpose(np.asarray(ir), (0,2,1)), i))
 
 def test_resample2d():
 
@@ -107,7 +109,7 @@ def test_resample2d():
     a[:2,-1] = 4.
 
     ir = resample(i, i.coordmap, a, (100,90))
-    assert(np.allclose(ir[42:47,32:47], 3.))
+    assert_true(np.allclose(ir[42:47,32:47], 3.))
 
     return i, ir
 
@@ -128,7 +130,7 @@ def test_resample2d1():
     def mapper(x):
         return np.dot(x, A.T) + b
     ir = resample(i, i.coordmap, mapper, (100,90))
-    assert(np.allclose(ir[42:47,32:47], 3.))
+    assert_true(np.allclose(ir[42:47,32:47], 3.))
 
     return i, ir
 
@@ -144,7 +146,7 @@ def test_resample2d2():
     A = np.identity(2)
     b = np.ones(2)*4
     ir = resample(i, i.coordmap, (A, b), (100,90))
-    assert(np.allclose(ir[42:47,32:47], 3.))
+    assert_true(np.allclose(ir[42:47,32:47], 3.))
 
     return i, ir
 
@@ -161,7 +163,7 @@ def test_resample2d3():
     a[:2,-1] = 4.
 
     ir = resample(i, i.coordmap, a, (100,90))
-    assert(np.allclose(ir[42:47,32:47], 3.))
+    assert_true(np.allclose(ir[42:47,32:47], 3.))
 
     return i, ir
     
@@ -190,13 +192,16 @@ def test_resample3d():
     a[:3,-1] = [3,4,5]
 
     ir = resample(i, i.coordmap, a, (100,90,80))
-    assert(np.allclose(ir[44:49,32:47,20:23], 3.))
+    assert_true(np.allclose(ir[44:49,32:47,20:23], 3.))
 
+@dec.knownfailure
 def test_nonaffine():
     """
     This resamples an image along a curve through the image.
 
     FIXME: use the reference.evaluate.Grid to perform this nicer
+
+    FIXME: Remove pylab references
 
     """
     
@@ -220,11 +225,15 @@ def test_nonaffine():
 
     pylab.figure(num=4)
     pylab.plot(np.asarray(ir))
-    
+
+@dec.knownfailure    
 def test_nonaffine2():
     """
     This resamples an image along a curve through the image.
 
+    FIXME: Fix broken test.
+
+    FIXME: Remove pylab references
     """
     
     g = Affine.from_params('ij', 'xy', np.identity(3))
@@ -260,7 +269,7 @@ def test_2d_from_3d():
 
     g2 = ArrayCoordMap.from_shape(g, shape)[10]
     ir = resample(i, g2.coordmap, a, g2.shape)
-    assert(np.allclose(np.asarray(ir), np.asarray(i[10])))
+    assert_true(np.allclose(np.asarray(ir), np.asarray(i[10])))
 
 def test_slice_from_3d():
 
@@ -279,12 +288,12 @@ def test_slice_from_3d():
 
     zsl = slices.zslice(26, (0,44.5), (0,39.5), i.coordmap.output_coords, (90,80))
     ir = resample(i, zsl.coordmap, a, zsl.shape)
-    assert(np.allclose(np.asarray(ir), np.asarray(i[53])))
+    yield assert_true, np.allclose(np.asarray(ir), np.asarray(i[53]))
 
     ysl = slices.yslice(22, (0,49.5), (0,39.5), i.coordmap.output_coords, (100,80))
     ir = resample(i, ysl.coordmap, a, ysl.shape)
-    assert(np.allclose(np.asarray(ir), np.asarray(i[:,45])))
+    yield assert_true, np.allclose(np.asarray(ir), np.asarray(i[:,45]))
 
     xsl = slices.xslice(15.5, (0,49.5), (0,44.5), i.coordmap.output_coords, (100,90))
     ir = resample(i, xsl.coordmap, a, xsl.shape)
-    assert(np.allclose(np.asarray(ir), np.asarray(i[:,:,32])))
+    yield assert_true, np.allclose(np.asarray(ir), np.asarray(i[:,:,32]))

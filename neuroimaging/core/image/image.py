@@ -32,7 +32,8 @@ class Image(object):
 
     >>> from neuroimaging.core.image import image
     >>> from neuroimaging.testing import anatfile
-    >>> img = image.load(anatfile)
+    >>> from neuroimaging.io.api import load_image
+    >>> img = load_image(anatfile)
 
     >>> import numpy as np
     >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'),
