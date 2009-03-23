@@ -474,7 +474,18 @@ a hemodynamic model
 
    h(t) = \sum_{i,j} \beta_j a_i^j h_{can}(t-t_i)
 
-PLOT OF THIS AMPLITUDE MODEL
+.. testcode::
+
+   from neuroimaging.modalities.fmri.utils import events, Symbol
+   from neuroimaging.modalities.fmri.hrf import glover_sympy
+   import numpy as np
+
+   a = Symbol('a')
+   b = np.linspace(0,50,6)
+   amp = b*([-1,1]*3)
+   d = events(b, amplitudes=amp, g=a+0.5*a**2, f=glover_sympy)
+
+.. plots:: users/plots/event_amplitude.py
 
 Derivative information
 ======================
