@@ -70,7 +70,22 @@ def make_label_dec(label, ds=None):
 gui = make_label_dec('gui')
 data = make_label_dec('data')
 
-# We have a lot of known failures, sadly
+# For tests that need further review
+def needs_review(msg):
+   """Skip a test that needs further review.
+   
+   Parameters
+   ----------
+   msg : string
+       msg regarding the review that needs to be done
+
+   """
+
+   def skip_func(func):
+      return skipif(True, msg)(func)
+   return skip_func
+
+# Easier version of the numpy knowfailure
 def knownfailure(f):
    return knownfailureif(True)(f)
 
