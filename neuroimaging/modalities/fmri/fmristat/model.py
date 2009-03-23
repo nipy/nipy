@@ -14,8 +14,12 @@ from neuroimaging.fixes.scipy.stats.models.utils import recipr
 # nipy core imports
 
 from neuroimaging.core.api import Image, data_generator, parcels, matrix_generator
-from neuroimaging.core.api import f_generator, Image, save_image, load_image
+from neuroimaging.core.api import f_generator, Image
 from neuroimaging.core.api import Affine, CoordinateMap
+
+# nipy IO imports
+
+from neuroimaging.io.api import  save_image, load_image
 
 # fmri imports
 
@@ -253,7 +257,7 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
     outbase: a string interpolator object with key %(stat)s
     contrast: a TContrast
     """
-    print 'here', fmri_image[0].coordmap.affine
+
     if effect:
         effectim = ModelOutputImage(outbase % {'stat':'effect'}, fmri_image[0].coordmap, fmri_image[0].shape, clobber=clobber)
     else:
@@ -305,8 +309,8 @@ def output_resid(outfile, fmri_image, clobber=False):
         T[1:,1:] = fmri_image[0].affine
         T[0,0] = (fmri_image.volume_start_times[1:] - fmri_image.volume_start_times[:-1]).mean()
         # FIXME: NIFTI specific naming here
-        innames = ["l"] + [a.name for a in g.input_coords.axes]
-        outnames = ["t"] + [a.name for a in g.output_coords.axes]
+        innames = ["l"] + list(g.input_coords.coord_names)
+        outnames = ["t"] + list(g.output_coords.coord_names)
         cmap = Affine.from_params(innames,
                                   outnames, T)
         shape = (n,) + fmri_image[0].shape

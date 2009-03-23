@@ -37,11 +37,10 @@ __docformat__ = 'restructuredtext'
 
 import coordinate_system
 import coordinate_map
-import mni
 import slices
 
-__all__ = ["axis", "coordinate_system", "coordinate_map", 
-           "mni", "slices"]
+__all__ = ["coordinate_system", "coordinate_map", 
+           "slices"]
 
 from neuroimaging.testing import Tester
 test = Tester().test

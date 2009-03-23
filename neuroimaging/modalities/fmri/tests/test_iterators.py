@@ -2,7 +2,6 @@
 import numpy as np
 from neuroimaging.testing import *
 
-import neuroimaging.core.reference.axis as axis
 from neuroimaging.core.api import Image
 import neuroimaging.core.reference.coordinate_map as coordinate_map
 from neuroimaging.modalities.fmri.api import FmriImageList

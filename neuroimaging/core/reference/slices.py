@@ -2,8 +2,7 @@
 A set of methods to get coordinate maps which represent slices in space.
 
 """
-from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
-    Coordinate
+from neuroimaging.core.reference.coordinate_system import CoordinateSystem
 from neuroimaging.core.reference.coordinate_map import Affine
 from neuroimaging.core.reference.array_coords import ArrayCoordMap
 import numpy.linalg as L
@@ -37,9 +36,8 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
     f[0:nout,-1] = origin
     f[nout, nin] = 1.
 
-    input_coords = CoordinateSystem('slice', \
-       [Coordinate('i%d' % d)
-        for d in range(len(shape))])
+    input_coords = CoordinateSystem(['i%d' % d for d in range(len(shape))], 
+                                    'slice', output_coords.coord_dtype)
 
     g = Affine(f, input_coords, output_coords)
     return ArrayCoordMap.from_shape(g, shape)
