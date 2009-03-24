@@ -19,9 +19,10 @@ import numpy.fft as FFT
 from scipy.interpolate import interp1d
 
 from sympy import Function, DiracDelta, Symbol
-from formula import Formula, Term
+from formula import Formula, Term, Design
 
 t = Term('t')
+
 
 def linear_interp(times, values, fill=0, name=None, **kw):
     """
@@ -297,6 +298,32 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1):
     _minshape = min(time.shape[0], value.shape[-1])
     time = time[0:_minshape]
     value = value[0:_minshape]
-    
+
     l = linear_interp(time + min_interval, value)
     print l
+
+class Vectorize(Design):
+    """
+    This class can be used to take a (single-valued) sympy
+    expression with only 't' as a Symbol and return a 
+    callable that can be evaluated at an array of floats.
+
+    Inputs:
+    =======
+
+    expr : sympy.Basic or Formula
+        Expression with 't' the only Symbol. If it is a 
+        Formula, then the only unknown symbol (besides 
+        the coefficients) should be 't'.
+
+    """
+
+    def __init__(self, expr):
+        if not isinstance(expr, Formula):
+            expr = Formula([expr])
+        Design.__init__(self, expr, return_float=True)
+
+    def __call__(self, t):
+        t = np.asarray(t).astype(np.float)
+        tval = t.view(np.dtype([('t', np.float)]))
+        return Design.__call__(self, tval)

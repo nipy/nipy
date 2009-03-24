@@ -12,9 +12,9 @@ __docformat__ = 'restructuredtext'
 import numpy as np
 import numpy.linalg as L
 from sympy import Symbol, lambdify, DeferredVector, exp, Derivative
-from formula import Vectorize, Term
+from formula import Term
+from utils import Vectorize, t
 
-t = Term('t')
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
 
 # Sympy symbols used below

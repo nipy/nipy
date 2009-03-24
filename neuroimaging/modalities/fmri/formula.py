@@ -432,31 +432,6 @@ class Design:
         else:
             return np.array([tuple(r) for r in v], self.formula.dtype)
 
-class Vectorize(Design):
-    """
-    This class can be used to take a (single-valued) sympy
-    expression with only 't' as a Symbol and return a 
-    callable that can be evaluated at an array of floats.
-
-    Inputs:
-    =======
-
-    expr : sympy.Basic or Formula
-        Expression with 't' the only Symbol. If it is a 
-        Formula, then the only unknown symbol (besides 
-        the coefficients) should be 't'.
-
-    """
-
-    def __init__(self, expr):
-        if not isinstance(expr, Formula):
-            expr = Formula([expr])
-        Design.__init__(self, expr, return_float=True)
-
-    def __call__(self, t):
-        t = np.asarray(t).astype(np.float)
-        tval = t.view(np.dtype([('t', np.float)]))
-        return Design.__call__(self, tval)
 
 ###########################################################
         
