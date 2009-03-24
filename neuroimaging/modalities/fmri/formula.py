@@ -1,4 +1,5 @@
 import sympy
+import warnings
 import numpy as np
 
 class Term(sympy.Symbol):

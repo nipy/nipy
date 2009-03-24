@@ -10,6 +10,9 @@ events : a convenience function to generate sums of events
 blocks : a convenience function to generate sums of blocks
 
 convolve_functions : numerically convolve two functions of time
+
+fourier_basis : a convenience function to generate a Fourier basis
+
 """
 
 __docformat__ = 'restructuredtext'
@@ -19,10 +22,47 @@ import numpy.fft as FFT
 from scipy.interpolate import interp1d
 
 from sympy import Function, DiracDelta, Symbol
+from sympy import sin as sympy_sin
+from sympy import cos as sympy_cos
+from sympy import pi as sympy_pi
+
 from formula import Formula, Term, Design
 
 t = Term('t')
 
+def fourier_basis(freq):
+    """
+    Formula for Fourier drift, consisting of sine and
+    cosine waves of given frequencies.
+
+    Inputs:
+    =======
+
+    freq : [float]
+        Frequencies for the terms in the Fourier basis.
+
+    Outputs:
+    ========
+
+    f : Formula
+
+    Examples:
+    =========
+    
+    >>> f=fourier_basis([1,2,3])
+    >>> f.terms
+    array([cos(2*pi*t), sin(2*pi*t), cos(4*pi*t), sin(4*pi*t), cos(6*pi*t),
+           sin(6*pi*t)], dtype=object)
+    >>> f.mean
+    _b0*cos(2*pi*t) + _b1*sin(2*pi*t) + _b2*cos(4*pi*t) + _b3*sin(4*pi*t) + _b4*cos(6*pi*t) + _b5*sin(6*pi*t)
+    >>>               
+    """
+
+    r = []
+    for f in freq:
+        r += [sympy_cos((2*sympy_pi*f*t)),
+              sympy_sin((2*sympy_pi*f*t))]
+    return Formula(r)
 
 def linear_interp(times, values, fill=0, name=None, **kw):
     """
@@ -80,6 +120,19 @@ def linear_interp(times, values, fill=0, name=None, **kw):
     ff.aliases[name] = i
     return ff
 linear_interp.counter = 0
+
+def event_factor(times_labels, f=DiracDelta):
+    """
+    Create a factor from a generator of
+    pairs of event times and labels.
+    """
+    val = {}
+    for time, label in times_labels:
+        val[label].setdefault(k, []).append(time)
+    regressors = []
+    for label in val.keys():
+        regressors.append(events(val[label]))
+    return Formula(regressors)
 
 def step_function(times, values, name=None, fill=0):
     """
@@ -150,8 +203,8 @@ def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
     Return a sum of functions
     based on a sequence of times.
 
-    Inputs:
-    =======
+    Parameters
+    ----------
 
     times : [float]
 
@@ -167,8 +220,8 @@ def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
         Optional sympy expression function involving 'a', which
         will be substituted by the values of in the generator.
 
-    Examples:
-    =========
+    Examples
+    --------
 
     >>> events([3,6,9])
     DiracDelta(-9 + t) + DiracDelta(-6 + t) + DiracDelta(-3 + t)
