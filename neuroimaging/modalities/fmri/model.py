@@ -28,11 +28,36 @@ class LinearModel:
         self._extra_regressors = {}
         
     def condition(self, term, onsets, amplitudes=None, durations=None):
+        """
+        specify a new condition from the 
+        NOTE:
+        add condition-specific hrf ?
+        """
         hrf_sym = [sym.Function(h) for h in self.hrf]
         self._conditions[term] = Formula([events(onsets, amplitudes=amplitudes, f=f) for f in hrf_sym])
         # or blocks(...)
 
-    def drift(self, order, expression=None): 
+    def polynomial_drift(self,order):
+        """
+        create the drift terms as polynomials
+        """
+        t = Term('t')
+        monom=t
+        aux = [monom**(i+1) for i in range(order)]
+
+    def cosine_drift(self,hfcut,duration):
+        """
+        create the dirft terms as cosine functiona of time
+        """
+        t = Term('t')
+        # create the DCT basis
+        
+    def drift(self, order, expression=None):
+        """
+        Create the drift terms
+        seems to be consistent only for polynomial drifts
+        -> rename 'polynomial drift ?'
+        """
         t = Term('t')
         if isinstance(expression, sym.function.FunctionClass): 
             monom = expression(t)
@@ -86,7 +111,7 @@ class LinearModel:
 
         cont is a linear combination of terms (a symbolic expression).
         Return a matrix pxq where p is the number of columns of the
-        design matrix and q is the "dimensionality" of the contrast. 
+        design matrix and q is the 'dimensionality' of the contrast. 
         """
         nregressors = len(self.formula().terms)
         nhrfs = len(self.hrf)
@@ -98,6 +123,7 @@ class LinearModel:
             J = np.arange(nhrfs)
             for (c,i) in zip(coeffs, indices):
                 mat[nhrfs*i+J, J] = c
+        
         # Otherwise try contrast on extra regressors
         else:
             coeffs, indices = _contrast(cont, self.extra_regressors()) 

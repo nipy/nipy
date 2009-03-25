@@ -4,6 +4,22 @@ import sympy as sym
 from neuroimaging.modalities.fmri.model import LinearModel
 from neuroimaging.modalities.fmri import formula, hrf
 
+"""
+Fixes
+- Drift model is wrong
+- opposite of the derivative
+- contrast definition is wrong
+
+toAdd
+- deal with block designs
+- deal with multiple session
+- specification of the time functions (motion etc)
+- FIR model has to be done
+- columns identifiers
+- instantiate from a .csv file
+
+- normalization of the amplitude -> check SPM
+"""
 
 # Define symbolic regressors
 m1 = formula.Term('visual')
@@ -18,15 +34,6 @@ c3 = m1*w3
 c4 = m2*w1
 c5 = m2*w2
 c6 = m2*w3
-
-"""
-c1 = formula.Term('visual word1')
-c2 = formula.Term('visual word2')
-c3 = formula.Term('visual word3')
-c4 = formula.Term('audio word1')
-c5 = formula.Term('audio word2')
-c6 = formula.Term('audio word3')
-"""
 
 hb = formula.Term('heartbeat')
 ux = formula.Term('translation x')
@@ -52,8 +59,13 @@ lm.drift(order=3, expression=sym.Function('cos'))
 
 timestamps = np.linspace(0, 25)
 X = lm.design_matrix(timestamps)
+X = X/np.sqrt(np.sum(X**2,0))
 
-print X
+import matplotlib.pylab as mp
+mp.figure()
+mp.imshow(X,interpolation='nearest')
+mp.colorbar()
+mp.show()
 
 """
 con_vect = lm.contrast(c1-c2, params)
