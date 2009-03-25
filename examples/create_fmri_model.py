@@ -33,23 +33,21 @@ ux = formula.Term('translation x')
 uy = formula.Term('translation y')
 uz = formula.Term('translation z')
 
-# The abstract model is essentially a list of symbols
-m = [c1, c2, c3, c4, c5, c6, hb, ux, uy, uz]
 
 # We can define contrasts symbolically
 con = c1-c2 
 
 # Instantiate a model 
-lm = LinearModel(m, hrf=[hrf.glover_sympy, hrf.dglover_sympy])
+lm = LinearModel(hrf=['glover','dglover'])
 
-lm.set_condition(c1, onsets=np.array([3,9,15]))
-lm.set_condition(c2, onsets=np.array([6,12,18]))
+lm.condition(c1, onsets=np.array([3,9,15]))
+lm.condition(c2, onsets=np.array([6,12,18]))
 
 ## This creates a list of symbolic expressions in lm.regressors[c1]
 
 #lm.set_regressor(ux, val=array, timestamps=timestamps, interp=cubic_spline, units='tr')
 
-lm.set_drift(order=3, expression=sym.Function('cos'))
+lm.drift(order=3, expression=sym.Function('cos'))
 ##lm.set_drift(order=3)
 
 timestamps = np.linspace(0, 25)
