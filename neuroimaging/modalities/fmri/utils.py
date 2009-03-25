@@ -17,11 +17,12 @@ fourier_basis : a convenience function to generate a Fourier basis
 
 __docformat__ = 'restructuredtext'
 
+import warnings
 import numpy as np
 import numpy.fft as FFT
 from scipy.interpolate import interp1d
 
-from sympy import Function, DiracDelta, Symbol
+from sympy import Function, DiracDelta, Symbol, FunctionClass
 from sympy import sin as sympy_sin
 from sympy import cos as sympy_cos
 from sympy import pi as sympy_pi
@@ -322,27 +323,32 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1):
     """
     Convolve fn1 with fn2.
     
-    :Parameters:
-        `fn1` : TODO
-            TODO
-        `fn2` : TODO
-            TODO
-        `interval` : TODO
-            TODO
-        `dt` : TODO
-            TODO
-        `padding_f` : float
-            TODO
+    Parameters
+    ----------
+        fn1 : callable
+            A function that takes one argument, an array of time points
+        fn2 : sympy expression
+            A function that takes one argument, an array of time points
+        interval : [float, float]
+            The interval over which to convolve the two functions.
+        dt : float
+            Time step for discretization 
+        padding_f : float
+            Padding added to the left and right in the convolution.
             
-    :Returns: TODO
+    Returns
+    -------
+    f : Formula
+        A Formula with one term, a linearly interpolator
+        derived from the values of the convolution. 
     """
 
     max_interval, min_interval = max(interval), min(interval)
     ltime = max_interval - min_interval
     time = np.arange(min_interval, max_interval + padding_f * ltime, dt)
 
-    _fn1 = np.array(Vectorize(fn1)(time))
-    _fn2 = np.array(Vectorize(fn2)(time))
+    _fn1 = np.array(fn1(time))
+    _fn2 = np.array(fn2(time))
 
     _fft1 = FFT.rfft(_fn1)
     _fft2 = FFT.rfft(_fn2)
@@ -352,8 +358,59 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1):
     time = time[0:_minshape]
     value = value[0:_minshape]
 
-    l = linear_interp(time + min_interval, value)
-    print l
+    l = linear_interp(time + min_interval, value, bounds_error=False)
+    return Vectorize(l)
+
+def set_alias(func, alias):
+    """
+    For a sympy expression that is a Function,
+    set its alias. This is to 
+    be used with add_aliases_to_namespace when lambdifying
+    an expression.
+
+    Parameters
+    ----------
+
+    func : sympy expression with is_Function==True
+
+    alias : callable
+         When lambdifying an expression with func in it,
+         func will be replaced by alias.
+
+    Returns
+    -------
+
+    None
+
+    """
+    if isinstance(func, FunctionClass):
+        func.alias = staticmethod(alias)
+    else:
+        raise ValueError('can only add an alias to a FunctionClass')
+
+def add_aliases_to_namespace(expr, namespace):
+    """
+    Given a sympy expression,
+    find all aliases in it and add them to the namespace.
+    """
+
+    if isinstance(expr, FunctionClass) and hasattr(expr, 'alias'):
+        if namespace.has_key(str(expr)):
+            warnings.warn('two aliases with the same name were found')
+        namespace[str(expr)] = lambda x: expr.alias(x)
+
+    if hasattr(expr, 'func'):
+        if isinstance(expr.func, FunctionClass) and hasattr(expr.func, 'alias'):
+            if namespace.has_key(expr.func.__name__):
+                warnings.warn('two aliases with the same name were found')
+            namespace[expr.func.__name__] = lambda x: expr.func.alias(x)
+    if hasattr(expr, 'args'):
+        try:
+            for arg in expr.args:
+                add_aliases_to_namespace(arg, namespace)
+        except TypeError:
+            pass
+    return namespace
 
 class Vectorize(Design):
     """

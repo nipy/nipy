@@ -11,7 +11,7 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 import numpy.linalg as L
-from sympy import Symbol, lambdify, DeferredVector, exp, Derivative
+from sympy import Symbol, lambdify, DeferredVector, exp, Derivative, abs
 from formula import Term
 from utils import Vectorize, t
 
@@ -45,11 +45,10 @@ def gamma_params(peak_location, peak_fwhm):
         coef : float
             Coefficient needed to ensure the density has integral 1.
     """
-    t = Term('t')
     alpha = np.power(peak_location / peak_fwhm, 2) * 8 * np.log(2.0)
     beta = np.power(peak_fwhm, 2) / peak_location / 8 / np.log(2.0)
     coef = peak_location**(-alpha) * np.exp(peak_location / beta)
-    return coef * ((t > 0) * t)**(alpha) * exp(-t/beta)
+    return coef * ((t >= 0) * (t+1.0e-14))**(alpha) * exp(-(t+1.0e-14)/beta)
 
 # Glover canonical HRF models
 # they are both Sympy objects
@@ -59,13 +58,21 @@ def _getint(f, dt=0.02, t=50):
     tt = np.arange(dt,t+dt,dt)
     return lf(tt).sum() * dt 
 
-class Subs(object):
+class SymbolicHRF(object):
 
     def __call__(self, s):
         return self._expr.subs(t, s)
 
+def symbolic(expr):
+    """
+    Create a SymbolicHRF from a given expression that
+    is a function of Term('t') only.
+    """
+    s = SymbolicHRF()
+    s._expr = expr
+    return s
 
-class Glover(Subs):
+class Glover(SymbolicHRF):
 
     _expr = gamma_params(5.4, 5.2) - 0.35 * gamma_params(10.8,7.35)
     _expr = _expr / _getint(_expr)
@@ -73,21 +80,21 @@ class Glover(Subs):
 glover_sympy = Glover()
 glover = Vectorize(glover_sympy._expr)
 
-class DGlover(Subs):
+class DGlover(SymbolicHRF):
 
     dglover_sympy = Glover._expr.diff(t)
-    dpos = Derivative((t > 0), t)
+    dpos = Derivative((t >= 0), t)
     dglover_sympy = dglover_sympy.subs(dpos, 0)
-    _expr = dglover_sympy / _getint(dglover_sympy)
+    _expr = dglover_sympy / _getint(abs(dglover_sympy))
     del(dglover_sympy); del(dpos)
 
 dglover_sympy = DGlover()
 dglover = Vectorize(dglover_sympy._expr)
 
-class AFNI(Subs):
+class AFNI(SymbolicHRF):
     # AFNI's default HRF (at least at some point in the past)
 
-    _expr = ((t > 0) * t)**8.6 * exp(-t/0.547)
+    _expr = ((t >= 0) * t)**8.6 * exp(-t/0.547)
     _expr = _expr / _getint(_expr)
 
 afni_sympy =  AFNI()
