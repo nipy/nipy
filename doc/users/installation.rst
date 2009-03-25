@@ -25,6 +25,9 @@ Must Have
   SciPy_ 0.7 or later
     Numpy and Scipy are high-level, optimized scientific computing libraries.
 
+  PyNifti_
+    We are using pynifti for the underlying file IO for nifti files.
+
   gcc_
     NIPY does contain a few C extensions for optimized
     routines. Therefore, you must have a compiler to build from
