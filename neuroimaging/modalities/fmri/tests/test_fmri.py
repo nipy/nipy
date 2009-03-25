@@ -1,5 +1,7 @@
 import gc, os
 from tempfile import mkstemp
+import warnings
+
 import numpy as np
 
 import nose.tools
@@ -13,9 +15,17 @@ from neuroimaging.testing import anatfile, funcfile
 edict = {}
 
 def setup():
+    # Suppress warnings during tests to reduce noise
+    warnings.simplefilter("ignore")
+    # load images
     edict['parcelmap'] = load_image(funcfile)[0]
     edict['img'] = load_image(funcfile)
     edict['fmri'] = fromimage(edict['img'])
+
+def teardown():
+    # Clear list of warning filters
+    warnings.resetwarnings()
+
 
 def test_write():
     fp, fname = mkstemp('.nii')
@@ -46,7 +56,6 @@ def test_subcoordmap():
                       [ 0.,  0., -2.34375, 0.],
                       [ 0.,  0., 0., 1.]])
         
-    print img.affine
     nose.tools.assert_true(np.allclose(subcoordmap.affine, xform))
         
 def test_labels1():

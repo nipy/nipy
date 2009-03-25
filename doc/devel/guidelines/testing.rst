@@ -67,6 +67,12 @@ test directory and then removing them with a call to ``os.remove``.
 For various reasons, sometimes ``os.remove`` doesn't get called and
 temp files get left around.
 
+NamedTemporaryFile Example::
+
+  from tempfile import NamedTemporaryFile
+  tmp = NamedTemporaryFile(suffix='.nii.gz')
+  save_image(fake_image, tmp.file.name)
+
 
 Many tests in one test function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -88,6 +94,25 @@ This test function executes four independent tests::
         yield assert_equal, cs.index('j'), 1
         yield assert_equal, cs.index('k'), 2
         yield assert_raises, ValueError, cs.index, 'x'
+
+
+Suppress *warnings* on test output
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In order to reduce noise when running the tests, consider suppressing
+*warnings* in your test modules.  This can be done in the module-level
+setup and teardown functions::
+
+      import warnings
+      ...
+
+      def setup():
+      	  # Suppress warnings during tests to reduce noise
+          warnings.simplefilter("ignore")
+
+      def teardown():
+          # Clear list of warning filters
+          warnings.resetwarnings()
 
 
 Running tests
