@@ -75,7 +75,8 @@ def resample(image, target, mapping, shape, order=3):
             A, b = affines.to_matrix_vector(TV2IV.affine)
             idata = affine_transform(np.asarray(image), A,
                                      offset=b,
-                                     output_shape=shape)
+                                     output_shape=shape,
+                                     order=order)
         else:
             interp = ImageInterpolator(image, order=order)
             grid = ArrayCoordMap.from_shape(TV2IV, shape)
