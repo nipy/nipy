@@ -38,7 +38,7 @@ class LinearModel:
             monom = expression(t)
         else: 
             monom = t
-        aux = [monom**(i+1) for i in range(order)] 
+        aux = [monom**(i+1) for i in range(order)]
         self._extra_regressors[Term('drift')] = Formula(aux)
 
     def regressor(self): 
@@ -88,7 +88,7 @@ class LinearModel:
         Return a matrix pxq where p is the number of columns of the
         design matrix and q is the "dimensionality" of the contrast. 
         """
-        nregressors = len(self.terms())
+        nregressors = len(self.formula().terms)
         nhrfs = len(self.hrf)
         mat = np.zeros([nregressors, nhrfs])
 
