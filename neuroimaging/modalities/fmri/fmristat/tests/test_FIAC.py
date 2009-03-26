@@ -11,6 +11,7 @@ Taylor, J.E. & Worsley, K.J. (2005). \'Inference for
 """
 
 import numpy as np
+from scipy.interpolate import interp1d
 
 from test_FIACdata import descriptions, designs
 from StringIO import StringIO
@@ -70,14 +71,17 @@ class Protocol(object):
         else:
             keep = np.greater(np.arange(len(times)), 0)
 
-
-
         # This first frame was used to model out a potentially
         # 'bad' first frame....
 
         _begin = np.array(times)[~keep]
-        s = utils.events(_begin, f=hrf.glover_sympy)
-        self.first_frame = interpolize(s, 'first_frame')
+
+        # We have two representations of the formula
+        self.formula_mapping = {}
+
+        s = utils.events(_begin, f=hrf.glover)
+        begin = sympy.Function('begin')
+        self.formula_mapping[begin(formula.t)] = s
 
         # After removing the first frame, keep the remaining
         # events and times
@@ -85,7 +89,7 @@ class Protocol(object):
         self.times = np.array(times)[keep]
         self.events = np.array(events)[keep]
 
-    def effect(self, key, hrf=hrf.glover_sympy, name=None, **aliases):
+    def effect(self, key, hrf=hrf.glover, name=None):
         """
         For a given event type, specified by key, return the
         column of the design matrix that consists of that
@@ -107,8 +111,6 @@ class Protocol(object):
         name : str
             A name for the resulting object in the Formula
 
-        aliases : 
-            Aliases to be used in evaluating the Formula.
 
         Examples
         --------
@@ -118,25 +120,28 @@ class Protocol(object):
         """
         k = np.array([self.events[i] == key for i in 
                       range(self.times.shape[0])])
-        s = utils.events(self.times[k], f=f)
+        s = utils.events(self.times[k], f=hrf)
         name = name or key
-        return interpolize(s, name, **aliases)
+        f = sympy.Function(name)
+
+        self.formula_mapping[f(formula.t)] = s
 
     def _getformula(self):
-        hrf1 = sympy.Function('hrf0')
-        hrf2 = sympy.Function('hrf1')
         if not hasattr(self, "_formula"):
-            ff = self.begin
             for e in ['DSt_DSp', 'SSt_DSp', 'DSt_SSp', 'SSt_SSp']:
-                for i, f in zip((0,1), (hrf1, 
-                                        hrf2)):
-                    ff = ff + self.effect(e, name='%s%d' % (e, i), f=f,
-                                          hrf0=delay.spectral[0],
-                                          hrf1=delay.spectral[1])
-            ff = ff + formula.natural_spline(formula.Term('t'), knots=[191/2.+1.25], intercept=True)
-            self._formula = ff
-        return self._formula
-    formula = property(_getformula)
+                for i, f in zip((0,1), delay.spectral):
+                    self.effect(e, name='%s%d' % (e, i), hrf=f)
+
+            self.drift = formula.natural_spline(formula.t, knots=[191/2.+1.25], intercept=True)
+            
+        return self.drift + formula.Formula(self.formula_mapping.keys())
+    formal_formula = property(_getformula)
+    
+    def _getcompformula(self):
+        if not hasattr(self, '_formula'):
+            self._getformula()
+        return self.drift + formula.Formula(self.formula_mapping.values())
+    formula = property(_getcompformula)
 
     def design(self, t, return_float=False):
         """
@@ -145,21 +150,6 @@ class Protocol(object):
         """
         d = formula.Design(self.formula, return_float=return_float)
         return d(t.view(np.dtype([('t', np.float)])))
-
-def interpolize(s, name, t=np.linspace(0, 500, 5001), **aliases):
-    """
-    Take a symbolic function of time and create an interpolated
-    version. 
-    """
-    f = formula.Formula([s])
-    for key, value in aliases.items():
-        f.aliases[key] = value
-    d = formula.Design(f, return_float=True)
-    l = utils.linear_interp(t, d(t.view(np.dtype([('t', np.float)]))),
-                            name=name,
-                            bounds_error=False,
-                            fill_value=0.)
-    return l
 
 def matchcol(col, X):
     """
@@ -173,13 +163,22 @@ def matchcol(col, X):
     c = np.nan_to_num(c)
     return np.argmax(c), c.max()
 
+def interpolate(name, col, t):
+    i = interp1d(t, formula.vectorize(col)(t))
+    return formula.aliased_function(name, i)(formula.t)
+
 def test_agreement():
     """
     The test: does Protocol manage to recreate the design of fMRIstat?
     """
     for dtype in ['event', 'block']:
         p = Protocol(dtype)
+        dd = p.design(np.arange(191)*2.5+1.25)
+
         for i in range(p.nipy.shape[0]):
             _, cmax = matchcol(p.nipy[i], p.fmristat)
-            if not p.design(np.arange(191)*2.5+1.25).dtype.names[i].startswith('ns'):
-                yield nose.tools.assert_true, np.greater(cmax, 0.999)
+            print cmax
+            if not dd.dtype.names[i].startswith('ns'):
+                print 'here'
+#                yield nose.tools.assert_true, np.greater(cmax, 0.999)
+                nose.tools.assert_true(np.greater(cmax, 0.999))

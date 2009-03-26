@@ -10,12 +10,8 @@ __docformat__ = 'restructuredtext'
 
 
 import numpy as np
-import numpy.linalg as L
-from sympy import Symbol, lambdify, DeferredVector, exp, Derivative, abs
-from formula import Term
-from utils import Vectorize, t
-
-from neuroimaging.modalities.fmri.fmristat.invert import invertR
+from sympy import Symbol, lambdify, DeferredVector, exp, Derivative, abs, Function
+from formula import Term, vectorize, add_aliases_to_namespace, t, aliased_function
 
 # Sympy symbols used below
 
@@ -31,13 +27,15 @@ def gamma_params(peak_location, peak_fwhm):
     The coefficient returned ensures that
     the f has integral 1 over [0,np.inf]
 
-    :Parameters:
+    Parameters
+    ----------
         peak_location : float
             Location of the peak of the Gamma density
         peak_fwhm : float
             FWHM at the peak
 
-    :Returns: 
+    Returns
+    -------
         alpha : float
             Shape parameter in the Gamma density
         beta : float
@@ -54,49 +52,36 @@ def gamma_params(peak_location, peak_fwhm):
 # they are both Sympy objects
 
 def _getint(f, dt=0.02, t=50):
-    lf = Vectorize(f)
+    lf = vectorize(f)
     tt = np.arange(dt,t+dt,dt)
     return lf(tt).sum() * dt 
 
-class SymbolicHRF(object):
+deft = DeferredVector('t')
+_gexpr = gamma_params(5.4, 5.2) - 0.35 * gamma_params(10.8,7.35)
+_gexpr = _gexpr / _getint(_gexpr)
+_glover = vectorize(_gexpr)
+glover = aliased_function('glover', _glover)
+n = {}
+glovert = lambdify(deft, glover(deft), add_aliases_to_namespace(glover, n))
 
-    def __call__(self, s):
-        return self._expr.subs(t, s)
+# Derivative of Glover HRF
 
-def symbolic(expr):
-    """
-    Create a SymbolicHRF from a given expression that
-    is a function of Term('t') only.
-    """
-    s = SymbolicHRF()
-    s._expr = expr
-    return s
+_dgexpr = _gexpr.diff(t)
+dpos = Derivative((t >= 0), t)
+_dgexpr = _dgexpr.subs(dpos, 0)
+_dgexpr = _dgexpr / _getint(abs(_dgexpr))
+_dglover = vectorize(_dgexpr)
+dglover = aliased_function('dglover', _dglover)
+dglovert = lambdify(deft, dglover(deft), add_aliases_to_namespace(dglover, n))
 
-class Glover(SymbolicHRF):
+del(_glover); del(_gexpr); del(dpos); del(_dgexpr); del(_dglover)
 
-    _expr = gamma_params(5.4, 5.2) - 0.35 * gamma_params(10.8,7.35)
-    _expr = _expr / _getint(_expr)
+# AFNI's HRF
 
-glover_sympy = Glover()
-glover = Vectorize(glover_sympy._expr)
-
-class DGlover(SymbolicHRF):
-
-    dglover_sympy = Glover._expr.diff(t)
-    dpos = Derivative((t >= 0), t)
-    dglover_sympy = dglover_sympy.subs(dpos, 0)
-    _expr = dglover_sympy / _getint(abs(dglover_sympy))
-    del(dglover_sympy); del(dpos)
-
-dglover_sympy = DGlover()
-dglover = Vectorize(dglover_sympy._expr)
-
-class AFNI(SymbolicHRF):
-    # AFNI's default HRF (at least at some point in the past)
-
-    _expr = ((t >= 0) * t)**8.6 * exp(-t/0.547)
-    _expr = _expr / _getint(_expr)
-
-afni_sympy =  AFNI()
-afni = Vectorize(afni_sympy._expr)
+_aexpr = ((t >= 0) * t)**8.6 * exp(-t/0.547)
+_aexpr = _aexpr / _getint(_aexpr)
+_afni = lambdify(deft, _aexpr.subs(t, deft), 'numpy')
+afni = aliased_function('afni', _afni)
+del(_afni)
+afnit = lambdify(deft, afni(deft), add_aliases_to_namespace(afni, n))
 

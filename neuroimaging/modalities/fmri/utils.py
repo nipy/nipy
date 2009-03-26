@@ -22,14 +22,13 @@ import numpy as np
 import numpy.fft as FFT
 from scipy.interpolate import interp1d
 
-from sympy import Function, DiracDelta, Symbol, FunctionClass
+from sympy import Function, DiracDelta, Symbol 
 from sympy import sin as sympy_sin
 from sympy import cos as sympy_cos
 from sympy import pi as sympy_pi
 
-from formula import Formula, Term, Design
-
-t = Term('t')
+from formula import Formula, Term, Design, vectorize, aliased_function, \
+    add_aliases_to_namespace, t
 
 def fourier_basis(freq):
     """
@@ -93,8 +92,8 @@ def linear_interp(times, values, fill=0, name=None, **kw):
     Outputs:
     ========
 
-    f : Formula
-        A Formula with only a linear interpolator, as a function of t.
+    f : sympy expression 
+        A Function of t.
 
     Examples:
     =========
@@ -116,10 +115,8 @@ def linear_interp(times, values, fill=0, name=None, **kw):
         name = 'interp%d' % linear_interp.counter
         linear_interp.counter += 1
 
-    s = Symbol(name)
-    ff = Formula([s(t)])
-    ff.aliases[name] = i
-    return ff
+    s = aliased_function(name, i)
+    return s(t)
 linear_interp.counter = 0
 
 def event_factor(times_labels, f=DiracDelta):
@@ -193,10 +190,8 @@ def step_function(times, values, name=None, fill=0):
         name = 'step%d' % step_function.counter
         step_function.counter += 1
 
-    s = Symbol(name)
-    ff = Formula([s(t)])
-    ff.aliases[name] = anon
-    return ff
+    s = aliased_function(name, anon)
+    return s(t)
 step_function.counter = 0
 
 def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
@@ -325,10 +320,10 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1):
     
     Parameters
     ----------
-        fn1 : callable
-            A function that takes one argument, an array of time points
-        fn2 : sympy expression
-            A function that takes one argument, an array of time points
+        fn1 : sympy expr
+            An expression that is a function of t only.
+        fn2 : sympy expr
+            An expression that is a function of t only.
         interval : [float, float]
             The interval over which to convolve the two functions.
         dt : float
@@ -338,17 +333,18 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1):
             
     Returns
     -------
-    f : Formula
-        A Formula with one term, a linearly interpolator
-        derived from the values of the convolution. 
+    f : sympy expr
+            An expression that is a function of t only.
     """
 
     max_interval, min_interval = max(interval), min(interval)
     ltime = max_interval - min_interval
     time = np.arange(min_interval, max_interval + padding_f * ltime, dt)
 
-    _fn1 = np.array(fn1(time))
-    _fn2 = np.array(fn2(time))
+    f1 = vectorize(fn1)
+    f2 = vectorize(fn2)
+    _fn1 = np.array(f1(time))
+    _fn2 = np.array(f2(time))
 
     _fft1 = FFT.rfft(_fn1)
     _fft2 = FFT.rfft(_fn2)
@@ -358,82 +354,5 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1):
     time = time[0:_minshape]
     value = value[0:_minshape]
 
-    l = linear_interp(time + min_interval, value, bounds_error=False)
-    return Vectorize(l)
+    return linear_interp(time + min_interval, value, bounds_error=False)
 
-def set_alias(func, alias):
-    """
-    For a sympy expression that is a Function,
-    set its alias. This is to 
-    be used with add_aliases_to_namespace when lambdifying
-    an expression.
-
-    Parameters
-    ----------
-
-    func : sympy expression with is_Function==True
-
-    alias : callable
-         When lambdifying an expression with func in it,
-         func will be replaced by alias.
-
-    Returns
-    -------
-
-    None
-
-    """
-    if isinstance(func, FunctionClass):
-        func.alias = staticmethod(alias)
-    else:
-        raise ValueError('can only add an alias to a FunctionClass')
-
-def add_aliases_to_namespace(expr, namespace):
-    """
-    Given a sympy expression,
-    find all aliases in it and add them to the namespace.
-    """
-
-    if isinstance(expr, FunctionClass) and hasattr(expr, 'alias'):
-        if namespace.has_key(str(expr)):
-            warnings.warn('two aliases with the same name were found')
-        namespace[str(expr)] = lambda x: expr.alias(x)
-
-    if hasattr(expr, 'func'):
-        if isinstance(expr.func, FunctionClass) and hasattr(expr.func, 'alias'):
-            if namespace.has_key(expr.func.__name__):
-                warnings.warn('two aliases with the same name were found')
-            namespace[expr.func.__name__] = lambda x: expr.func.alias(x)
-    if hasattr(expr, 'args'):
-        try:
-            for arg in expr.args:
-                add_aliases_to_namespace(arg, namespace)
-        except TypeError:
-            pass
-    return namespace
-
-class Vectorize(Design):
-    """
-    This class can be used to take a (single-valued) sympy
-    expression with only 't' as a Symbol and return a 
-    callable that can be evaluated at an array of floats.
-
-    Inputs:
-    =======
-
-    expr : sympy.Basic or Formula
-        Expression with 't' the only Symbol. If it is a 
-        Formula, then the only unknown symbol (besides 
-        the coefficients) should be 't'.
-
-    """
-
-    def __init__(self, expr):
-        if not isinstance(expr, Formula):
-            expr = Formula([expr])
-        Design.__init__(self, expr, return_float=True)
-
-    def __call__(self, t):
-        t = np.asarray(t).astype(np.float)
-        tval = t.view(np.dtype([('t', np.float)]))
-        return Design.__call__(self, tval)

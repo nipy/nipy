@@ -20,7 +20,6 @@ class Term(sympy.Symbol):
             return self
         else:
             return sympy.Symbol.__add__(self, other)
-        
 
 class FactorTerm(Term):
     """
@@ -112,7 +111,6 @@ class Formula(object):
 
         """
 
-        self._aliases = {}
         self._terms = np.asarray(seq)
         self._counter = 0
         self.char = char
@@ -148,13 +146,7 @@ class Formula(object):
         _b0*g(t) + _b1*g(s)
 
         """
-        aliases = self.aliases.copy()
-        if old in self.aliases.keys():
-            aliases[new] = aliases[old]
-            del(aliases[old])
         f = Formula([term.subs(old, new) for term in self.terms])
-        for k, i in aliases.items():
-            f.aliases[k] = i
         return f
 
     def _getcoefs(self):
@@ -175,25 +167,10 @@ class Formula(object):
         return t
     terms = property(_getterms, doc='Terms in the linear regression formula.')
 
-    def _getaliases(self):
-        return self._aliases
-    aliases = property(_getaliases, doc="The aliases in the formula, to be used when the formula is lambdified.")
-
     def __add__(self, other):
         if not isinstance(other, Formula):
             raise ValueError('only Formula objects can be added together')
         f = Formula(np.hstack([self.terms, other.terms]))
-
-        keys1 = self.aliases.keys()
-        keys2 = other.aliases.keys()
-        if set(keys1).intersection(keys2) != set([]):
-            warnings.warn('two formulae have overlapping aliases')
-
-        aliases = {}
-        for key, value in self.aliases.items():
-            f.aliases[key] = value
-        for key, value in other.aliases.items():
-            f.aliases[key] = value
         return f
 
     def __array__(self):
@@ -288,29 +265,21 @@ def natural_spline(t, knots=[], order=3, intercept=False):
     """
     if not isinstance(t, Term):
         raise ValueError('expecting a Term')
-    fns = []; symbols = []
+    fns = []
     for i in range(order+1):
         n = 'ns_%d' % i
-        s = sympy.Function(n)
-        symbols.append(s(t))
-        def anon(x,i=i):
-            return x**i
-        fns.append((n, anon))
+        s = aliased_function(n, lambda x: x**i)
+        fns.append(s(t))
 
     for j, k in enumerate(knots):
         n = 'ns_%d' % (j+i+1,)
-        s = sympy.Function(n)
-        symbols.append(s(t))
-        def anon(x,k=k):
-            return np.greater(x, k) * (x-k)**order
-        fns.append((n, anon))
+        s = aliased_function(n, lambda x: np.greater(x, k) * (x-k)**order)
+        fns.append(s(t))
 
     if not intercept:
-        fns.pop(0); symbols.pop(0)
+        fns.pop(0)
 
-    ff = Formula(symbols)
-    for n, l in fns:
-        ff.aliases[n] = l
+    ff = Formula(fns)
     return ff
 
 I = Formula([sympy.Number(1)])
@@ -377,8 +346,14 @@ class Design:
                 d[j] = d[j].subs(p, newp)
             newparams.append(newp)
 
-        self._f = sympy.lambdify(newparams + newterms, d, (self.formula._aliases, "numpy"))
-
+        from utils import add_aliases_to_namespace
+        self.n = {}; 
+        for _d in d:
+            add_aliases_to_namespace(_d, self.n)
+            print self.n, _d
+        print self.n
+        self._f = sympy.lambdify(newparams + newterms, d, (self.n, "numpy"))
+        print 'what'
         ptnames = []
         for t in terms:
             if not isinstance(t, FactorTerm):
@@ -389,7 +364,7 @@ class Design:
 
         self.dtypes = {'param':np.dtype([(str(p), np.float) for p in params]),
                         'term':np.dtype([(str(t), np.float) for t in terms]),
-                        'preterm':np.dtype([(n, np.float) for n in ptnames])}
+                        'preterm':np.dtype([(na, np.float) for na in ptnames])}
         self._terms = terms
 
     def __init__(self, formula, return_float=False):        
@@ -433,13 +408,111 @@ class Design:
         else:
             return np.array([tuple(r) for r in v], self.formula.dtype)
 
+# def set_alias(func, str, alias):
+#     """
+#     For a sympy expression that is a Function,
+#     set its alias. This is to 
+#     be used with add_aliases_to_namespace when lambdifying
+#     an expression.
+
+#     Parameters
+#     ----------
+
+#     func : sympy expression with is_Function==True
+
+#     alias : callable
+#          When lambdifying an expression with func in it,
+#          func will be replaced by alias.
+
+#     Returns
+#     -------
+
+#     None
+
+#     """
+#     if isinstance(func, sympy.FunctionClass):
+#         if not hasattr(func, 'alias'):
+#             func.alias = {}
+#         func.alias = staticmethod(alias)
+#     else:
+#         raise ValueError('can only add an alias to a Function')
+
+
+def add_aliases_to_namespace(expr, namespace):
+    """
+    Given a sympy expression,
+    find all aliases in it and add them to the namespace.
+    """
+
+    if hasattr(expr, 'alias') and isinstance(expr, sympy.FunctionClass):
+        if namespace.has_key(str(expr)):
+            if namespace[str(expr)] != expr.alias:
+                warnings.warn('two aliases with the same name were found')
+        namespace[str(expr)] = expr.alias
+
+    if hasattr(expr, 'func'):
+        if isinstance(expr.func, sympy.FunctionClass) and hasattr(expr.func, 'alias'):
+            if namespace.has_key(expr.func.__name__):
+                if namespace[expr.func.__name__] != expr.func.alias:
+                    warnings.warn('two aliases with the same name were found')
+            namespace[expr.func.__name__] = expr.func.alias
+    if hasattr(expr, 'args'):
+        try:
+            for arg in expr.args:
+                add_aliases_to_namespace(arg, namespace)
+        except TypeError:
+            pass
+    return namespace
+
+class vectorize(object):
+    """
+    This function can be used to take a (single-valued) sympy
+    expression with only 't' as a Symbol and return a 
+    callable that can be evaluated at an array of floats.
+
+    Parameters
+    ----------
+
+    expr : sympy expr
+        Expression with 't' the only Symbol. If it is 
+        an instance of sympy.FunctionClass, 
+        then vectorize expr(t) instead.
+
+    Returns
+    -------
+
+    f : callable
+        A function that can be evaluated at an array of time points.
+
+    """
+    counter = 0
+    nn = {}
+    def __init__(self, expr):
+        if isinstance(expr, sympy.FunctionClass):
+            expr = expr(t)
+        n = {}; 
+        add_aliases_to_namespace(expr, n)
+
+        nexpr = expr
+        for k, v in n.items():
+            s = aliased_function('vec%d' % vectorize.counter, v)
+            nexpr = nexpr.subs(sympy.Function(k), s)
+            self.nn['vec%d' % vectorize.counter] = v
+            vectorize.counter += 1
+        deft = sympy.DeferredVector('t');
+        self._f = sympy.lambdify(deft, nexpr.subs(t, deft), (self.nn, 'numpy'))
+        
+    def __call__(self, _t):
+        return self._f(_t)
+vectorize.counter = 0
+
 
 ###########################################################
         
 """
 fMRI specific stuff
 """
-t = sympy.Symbol('t')
+t = Term('t')
 
 
 # theta = sympy.Symbol('th')
@@ -477,3 +550,18 @@ t = sympy.Symbol('t')
 # Z =  dd(data, param)
 
 # f3 = (a+b)*fac + I
+
+class AliasedFunctionClass(sympy.FunctionClass):
+
+    _new = type.__new__
+
+    def __new__(cls, arg1, arg2, arg3=None, alias=None):
+        r = sympy.FunctionClass.__new__(cls, arg1, arg2, arg3)
+        if alias is not None:
+            r.alias = staticmethod(alias)
+        return r
+
+def aliased_function(name, alias):
+    return AliasedFunctionClass(sympy.Function, name, alias=alias)
+
+

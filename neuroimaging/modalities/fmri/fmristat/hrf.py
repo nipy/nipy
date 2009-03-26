@@ -16,7 +16,8 @@ import numpy as np
 import numpy.linalg as L
 from scipy.interpolate import interp1d
 
-from neuroimaging.modalities.fmri import hrf
+from sympy import Function
+from neuroimaging.modalities.fmri import hrf, formula
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
 
 def spectral_decomposition(hrf, ncomp=2, tmax=50, tmin=-15, dt=0.02,
@@ -31,19 +32,21 @@ def spectral_decomposition(hrf, ncomp=2, tmax=50, tmin=-15, dt=0.02,
     Parameters
     ==========
 
-    hrf : callable function of one parameter
-        HRF to be expanded in PCA
+    hrf : sympy expression 
+        An expression that can be vectorized
+        as a function of 't'. This is the HRF to be expanded in PCA
 
     ncomp : int
         Number of principal components to retain.
 
     """
 
+    hrft = formula.vectorize(hrf(formula.t))
     time = np.arange(tmin, tmax, dt)
 
     H = []
     for i in range(delta.shape[0]):
-        H.append(hrf(time - delta[i]))
+        H.append(hrft(time - delta[i]))
     H = np.nan_to_num(np.asarray(H))
     U, S, V = L.svd(H.T, full_matrices=0)
 
@@ -77,7 +80,11 @@ def spectral_decomposition(hrf, ncomp=2, tmax=50, tmin=-15, dt=0.02,
      approx.dinverse,
      approx.forward,
      approx.dforward) = invertR(delta, approx.coef)
-    return basis, approx
+
+    symbasis = []
+    for i, b in enumerate(basis):
+        symbasis.append(formula.aliased_function('%s%d' % (str(hrf), i), b))
+    return symbasis, approx
 
 
 def taylor_approx(hrf, tmax=50, tmin=-15, dt=0.02,
@@ -90,16 +97,17 @@ def taylor_approx(hrf, tmax=50, tmin=-15, dt=0.02,
     approximation.
 
     Parameters
-    ==========
+    ----------
 
-    hrf : callable function of one parameter
-        HRF to be expanded in PCA
+    hrf : sympy expression 
+        An expression that can be vectorized
+        as a function of 't'. This is the HRF to be expanded in PCA
 
     ncomp : int
         Number of principal components to retain.
 
     References
-    ==========
+    ----------
 
     Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H.,
     Evans, A.C. (2002). \'Estimating the delay of the response in fMRI
@@ -107,13 +115,15 @@ def taylor_approx(hrf, tmax=50, tmin=-15, dt=0.02,
 
     """
 
+    hrft = formula.vectorize(hrf(formula.t))
     time = np.arange(tmin, tmax, dt)
 
-    dhrf = interp1d(time, -np.gradient(hrf(time), dt), bounds_error=False,
+    dhrft = interp1d(time, -np.gradient(hrft(time), dt), bounds_error=False,
                     fill_value=0.)
 
-    H = np.array([hrf(time - d) for d in delta])
-    W = np.array([hrf(time), dhrf(time)])
+    dhrft.y *= 2
+    H = np.array([hrft(time - d) for d in delta])
+    W = np.array([hrft(time), dhrft(time)])
     W = W.T
 
     WH = np.dot(L.pinv(W), H.T)
@@ -122,13 +132,12 @@ def taylor_approx(hrf, tmax=50, tmin=-15, dt=0.02,
                      fill_value=0.) for w in WH]
             
     def approx(time, delta):
-        value = (coef[0](delta) * hrf(time)
-                 + coef[1](delta) * dhrf(time))
+        value = (coef[0](delta) * hrft(time)
+                 + coef[1](delta) * dhrft(time))
         return value
 
     approx.coef = coef
-    approx.components = [hrf, dhrf]
-
+    approx.components = [hrft, dhrft]
 
     (approx.theta,
      approx.inverse,
@@ -136,6 +145,8 @@ def taylor_approx(hrf, tmax=50, tmin=-15, dt=0.02,
      approx.forward,
      approx.dforward) = invertR(delta, approx.coef)
      
+    dhrf = formula.aliased_function('d%s' % str(hrf), dhrft)
+
     return [hrf, dhrf], approx
 
 canonical, canonical_approx = taylor_approx(hrf.glover)
