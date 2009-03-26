@@ -26,7 +26,7 @@ Distributed under the terms of the BSD License.
 import __config__
 import bindings
 #import utils 
-#import glm
+import glm
 import registration
 #import neuro
 

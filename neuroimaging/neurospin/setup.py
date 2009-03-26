@@ -51,7 +51,7 @@ def configuration(parent_package='',top_path=None):
     ## config.add_subpackage('clustering')
     ## config.add_subpackage('data')
     ## config.add_subpackage('eda')
-    ## config.add_subpackage('glm')
+    config.add_subpackage('glm')
     config.add_subpackage('graph')
     ## config.add_subpackage('group')
     ## config.add_subpackage('neuro')
