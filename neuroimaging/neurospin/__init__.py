@@ -27,7 +27,7 @@ import __config__
 import bindings
 #import utils 
 #import glm
-#import registration
+import registration
 #import neuro
 
 try:
