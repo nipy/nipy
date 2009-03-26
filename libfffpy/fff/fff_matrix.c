@@ -1,7 +1,7 @@
 #include "fff_base.h"
 #include "fff_matrix.h"
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 

@@ -5,7 +5,7 @@
 #include "fff_base.h"
 
 #include <stdlib.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
 #include <errno.h>
 

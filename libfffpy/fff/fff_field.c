@@ -2,7 +2,7 @@
 #include "fff_routines.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
 #include <errno.h>
 
