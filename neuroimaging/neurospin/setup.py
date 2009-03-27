@@ -45,7 +45,7 @@ def configuration(parent_package='',top_path=None):
     lapack_info = get_info('lapack_opt', 0)
     if 'libraries' not in lapack_info:
         # But on OSX that may not give us what we need, so try with 'lapack'
-        # instead.
+        # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
         lapack_info = get_info('lapack',0)
 
     if not lapack_info:
@@ -69,7 +69,7 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('eda')
     config.add_subpackage('glm')
     config.add_subpackage('graph')
-    ## config.add_subpackage('group')
+    config.add_subpackage('group')
     ## config.add_subpackage('neuro')
     config.add_subpackage('registration')
     ## config.add_subpackage('scripts')
