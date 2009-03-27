@@ -31,29 +31,41 @@ def configuration(parent_package='',top_path=None):
 
     # Link with lapack if found on the system
 
-    # NOTE: On OSX get_info('lapack_opt') does not return the keys:
-    # 'libraries' and 'library_dirs', but get_info('lapack') does.
-    # get_info('lapack') returns the same keys on OSX and Linux!
-    lapack_info = get_info('lapack', 0)
+    # XXX: We need to better sort out the use of get_info() for Lapack, because
+    # using 'lapack' and 'lapack_opt' returns different things even comparing
+    # Ubuntu 8.10 machines on 32 vs 64 bit setups.  On OSX
+    # get_info('lapack_opt') does not return the keys: 'libraries' and
+    # 'library_dirs', but get_info('lapack') does.
+    #
+    # For now this code should do the right thing on OSX and linux, but we
+    # should ask on the numpy list for clarification on the proper approach.
+
+    # First, try 'lapack_info', as that seems to provide more details on Linux
+    # (both 32 and 64 bits):
+    lapack_info = get_info('lapack_opt', 0)
+    if 'libraries' not in lapack_info:
+        # But on OSX that may not give us what we need, so try with 'lapack'
+        # instead.
+        lapack_info = get_info('lapack',0)
+
     if not lapack_info:
-        raise  NotFoundError, 'no lapack installation found on this system' 
-    else:
-        library_dirs = lapack_info['library_dirs']
-        libraries = lapack_info['libraries']
-        if lapack_info.has_key('include_dirs'):
-            config.add_include_dirs(lapack_info['include_dirs'])    
+        raise  NotFoundError('no lapack installation found on this system')
+
+    # OK, we found lapack, continue
+    library_dirs = lapack_info['library_dirs']
+    libraries = lapack_info['libraries']
+    if 'include_dirs' in lapack_info:
+        config.add_include_dirs(lapack_info['include_dirs'])    
 
     config.add_library('fffpy',
-                           sources=sources,
-                           library_dirs=library_dirs,
-                           libraries=libraries,
-                           extra_info=lapack_info)
-
+                       sources=sources,
+                       library_dirs=library_dirs,
+                       libraries=libraries,
+                       extra_info=lapack_info)
 
     # Subpackages
     config.add_subpackage('bindings')
     config.add_subpackage('clustering')
-    ## config.add_subpackage('data')
     config.add_subpackage('eda')
     config.add_subpackage('glm')
     config.add_subpackage('graph')
@@ -64,7 +76,14 @@ def configuration(parent_package='',top_path=None):
     ## config.add_subpackage('spatial_models')
     config.add_subpackage('utils')
     ## config.add_subpackage('viz')
-    
+
+
+    # ----------------------------------------------------------------------
+    # Packages likely not to be moved over into nipy
+    ## Data will be handled separately (nipy already has tools for this)
+    ## config.add_subpackage('data')
+    # ----------------------------------------------------------------------
+
     ## # Unitary tests 
     ## config.add_data_dir('tests')
     ## config.add_data_dir(os.path.join('tests', 'data'))
