@@ -1,8 +1,10 @@
-import fff2
-import fff2.graph.field as field
-from fff2.utils import emp_null
-import fff2.registration.transform_affine as affine
-import fff2.group.permutation_test as permutt
+import neuroimaging.neurospin as fff2
+
+import neuroimaging.neurospin.graph.field as field
+import neuroimaging.neurospin.registration.transform_affine as affine
+import neuroimaging.neurospin.group.permutation_test as permutt
+
+from neuroimaging.neurospin.utils import emp_null
 
 import numpy as np
 import scipy.stats as sps
