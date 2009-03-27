@@ -1,7 +1,10 @@
 import numpy as np
 import scipy.special as sp
-from fff2.group.routines import add_lines
-from displacement_field import displacement_field
+
+# Do inter-package imports the right way (this will become mandatory in py2.6)
+from ..group.routines import add_lines
+
+from .displacement_field import displacement_field
 
 # some useful functions
 

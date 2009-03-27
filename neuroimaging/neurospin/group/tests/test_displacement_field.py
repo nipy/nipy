@@ -1,6 +1,8 @@
 import unittest
+
 import numpy as np
-import fff2.group.displacement_field as df
+
+import neuroimaging.neurospin.group.displacement_field as df
 
 def make_data(n=10, dim=20, r=5, mdim=15, maskdim=20, amplitude=10, noise=1, jitter=None, activation=False):
     XYZvol = np.zeros((dim,dim,dim),int)

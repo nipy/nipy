@@ -1,13 +1,15 @@
-import numpy as np
-
-DEFAULT_IOLIB = 'pynifti'
-
 """
 Input/output functions. This 'high-level' module is not meant to stay
 permanently in fff, but is supplied to fff users so that they can
 process data for real until fff is properly integrated into nipy.
 """
 
+
+import numpy as np
+
+from neuroimaging.neurospin.utils import slice_time
+
+DEFAULT_IOLIB = 'pynifti'
 
 class image:
     def __init__(self, obj=None, transform=None, voxsize=None, iolib=DEFAULT_IOLIB):
@@ -134,7 +136,6 @@ AIMS
 NIPY
 ##imIt.tofile(outfile+'.nii', clobber=True)
 """
-from fff2.utils import slice_time
 
 class fmri_image(image):
 

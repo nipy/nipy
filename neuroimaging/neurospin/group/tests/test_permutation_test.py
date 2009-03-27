@@ -1,6 +1,9 @@
 import unittest
+
 import numpy as np
-from fff2.group import permutation_test as PT
+
+from neuroimaging.neurospin.group import permutation_test as PT
+import neuroimaging.neurospin.graph as fg
 
 nperms = 2
 ndraws = 10
@@ -32,7 +35,6 @@ class test_permutation_test(unittest.TestCase):
         
     def test_onesample_graph(self):
         data, vardata, XYZ = make_data()
-        import fff2.graph as fg
         A, B, D = fg.graph_3d_grid(XYZ.transpose())
         V = max(A) + 1
         E = len(A)

@@ -1,7 +1,9 @@
 import unittest
+
 import numpy as np
 import scipy.stats as st
-import fff2.group.spatial_relaxation_onesample as os
+
+import neuroimaging.neurospin.group.spatial_relaxation_onesample as os
 
 def make_data(n=10, dim=20, r=5, mdim=15, maskdim=20, amplitude=10, noise=1, jitter=None, activation=False):
     XYZvol = np.zeros((dim,dim,dim),int)
@@ -33,8 +35,6 @@ def make_data(n=10, dim=20, r=5, mdim=15, maskdim=20, amplitude=10, noise=1, jit
         vardata[i,I] = np.square(np.random.randn(len(I)))*noise**2
         data[i,I] = X[i,I] + np.random.randn(len(I))*np.sqrt(vardata[i,I])
     return data, XYZ, mask, XYZvol, vardata, signal
-
-
 
 
 class test_multivariate_stat_saem(unittest.TestCase):
@@ -71,6 +71,7 @@ class test_multivariate_stat_saem(unittest.TestCase):
         proposal_mean = P.mean_U
         proposal_std = np.sqrt(np.clip(P.var_U, 1e-4, 4))
         P.evaluate(10, 0, [P.D.XYZ_vol[10,10,10]], False, 'fixed', proposal_std, proposal_mean)
+
 
 class test_multivariate_stat_mcmc(unittest.TestCase):
     
