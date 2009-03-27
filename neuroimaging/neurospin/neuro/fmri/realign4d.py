@@ -1,5 +1,5 @@
-import fff2
-import fff2.registration.transform_affine as affine 
+import neuroimaging.neurospin as fff2
+import neuroimaging.neurospin.registration.transform_affine as affine 
 
 import numpy as np
 import scipy as sp
@@ -7,7 +7,6 @@ import scipy.optimize
         
 RADIUS_MM = 10 
 RIGID = affine.transformation_types['rigid 3D']
-
 
 
 def grid_coords(xyz, params, r2v, v2r, transform=None):

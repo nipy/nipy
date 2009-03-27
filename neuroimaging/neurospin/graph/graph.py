@@ -31,7 +31,7 @@ class Graph:
             self.E = 0
 
         self.vertices =  [a for a in range(self.V)]
-        self.edges = np.zeros((self.E,2),'i')
+        self.edges = np.zeros((self.E,2),np.int)
 
     def set_edges(self,edges):
         """
@@ -99,8 +99,8 @@ class Graph:
         if self.E>0:
             right,left = graph_degrees(self.edges[:,0],self.edges[:,1],self.V)
         else:
-            right = np.zeros(self.V,'i')
-            left = np.zeros(self.V,'i')
+            right = np.zeros(self.V,np.int)
+            left = np.zeros(self.V,np.int)
         return right,left
 
     def main_cc(self):
@@ -174,12 +174,12 @@ class WeightedGraph(Graph):
         """
         INPUT: None
         OUTPUT:
-        -A : an ((self.V*self.V),'d') array
+        -A : an ((self.V*self.V),np.double) array
         that represents the adjacency matrix of the graph
         NOTE:
         Future version should allow sparse matrix coding
         """
-        A = np.zeros((self.V,self.V),'d')
+        A = np.zeros((self.V,self.V),np.double)
         for e in range(self.E):
             i = self.edges[e][0]
             j = self.edges[e][1]
@@ -238,7 +238,7 @@ class WeightedGraph(Graph):
             raise TypeError, 'Creating graph from grid failed. '\
                 'Maybe the grid is too big'
         self.E = np.size(i)
-        self.edges = np.zeros((self.E,2),'i')
+        self.edges = np.zeros((self.E,2),np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
@@ -251,7 +251,7 @@ class WeightedGraph(Graph):
         """
         i,j,d = graph_complete(self.V)
         self.E = self.V*self.V
-        self.edges = np.zeros((self.E,2),'i')
+        self.edges = np.zeros((self.E,2),np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
@@ -288,7 +288,7 @@ class WeightedGraph(Graph):
             raise ValueError, 'eps is inf'
         i,j,d = graph_eps(X,eps)
         self.E = np.size(i)
-        self.edges = np.zeros((self.E,2),'i')
+        self.edges = np.zeros((self.E,2),np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
@@ -327,7 +327,7 @@ class WeightedGraph(Graph):
             raise ValueError, 'k is inf'
         i,j,d = graph_knn(X,k)
         self.E = np.size(i)
-        self.edges = np.zeros((self.E,2),'i')
+        self.edges = np.zeros((self.E,2),np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
@@ -356,7 +356,7 @@ class WeightedGraph(Graph):
             raise ValueError, 'X.shape[0] != self.V'
         i,j,d = graph_mst(X)
         self.E = np.size(i)
-        self.edges = np.zeros((self.E,2),'i')
+        self.edges = np.zeros((self.E,2),np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
@@ -375,7 +375,7 @@ class WeightedGraph(Graph):
         if self.E>0:
             i,j,d = graph_cut_redundancies(self.edges[:,0],self.edges[:,1],self.weights,self.V)
             self.E = np.size(i)
-            self.edges = np.zeros((self.E,2),'i')
+            self.edges = np.zeros((self.E,2),np.int)
             self.edges[:,0] = i
             self.edges[:,1] = j
             self.weights = np.array(d)
@@ -473,7 +473,7 @@ class WeightedGraph(Graph):
             i,j,d,s,t = graph_normalize(self.edges[:,0],self.edges[:,1],self.weights,c,self.V)
             
         self.E = np.size(i)
-        self.edges = np.zeros((self.E,2),'i')
+        self.edges = np.zeros((self.E,2),np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = d
@@ -502,7 +502,7 @@ class WeightedGraph(Graph):
         if self.E>0:
             i,j,d = graph_reorder(self.edges[:,0],self.edges[:,1],self.weights,c,self.V)
             self.E = np.size(i)
-            self.edges = np.zeros((self.E,2),'i')
+            self.edges = np.zeros((self.E,2),np.int)
             self.edges[:,0] = i
             self.edges[:,1] = j
             self.weights = d
@@ -556,7 +556,7 @@ class WeightedGraph(Graph):
         if self.E>0:
             i,j,d = graph_symmeterize(self.edges[:,0],self.edges[:,1],self.weights,self.V)
             self.E = np.size(i)
-            self.edges = np.zeros((self.E,2),'i')
+            self.edges = np.zeros((self.E,2),np.int)
             self.edges[:,0] = i
             self.edges[:,1] = j
             self.weights = d
@@ -575,7 +575,7 @@ class WeightedGraph(Graph):
         if self.E>0:
             i,j,d = graph_antisymmeterize(self.edges[:,0],self.edges[:,1],self.weights,self.V)
             self.E = np.size(i)
-            self.edges = np.zeros((self.E,2),'i')
+            self.edges = np.zeros((self.E,2),np.int)
             self.edges[:,0] = i
             self.edges[:,1] = j
             self.weights = d
@@ -613,7 +613,7 @@ class WeightedGraph(Graph):
             raise ValueError, 'empty seed'
         if seed.max()>self.V-1:
             raise ValueError, 'seed.max()>self.V-1'
-        labels = -np.ones(self.V,'i')
+        labels = -np.ones(self.V,np.int)
         labels[seed] = np.arange(np.size(seed))
         if self.E>0:
             labels = graph_voronoi(self.edges[:,0],self.edges[:,1],self.weights,seed,self.V)
@@ -686,7 +686,7 @@ class WeightedGraph(Graph):
         k = self.cc().max()+1
         E = 2*self.V-2
         V = self.V
-        Kedges = np.zeros((E,2)).astype('i')
+        Kedges = np.zeros((E,2)).astype(np.int)
         Kweights = np.zeros(E)
         
         iw = np.argsort(self.weights)
@@ -728,7 +728,7 @@ class WeightedGraph(Graph):
         k = self.cc().max()+1
         E = 2*self.V-2
         V = self.V
-        Kedges = np.zeros((E,2)).astype('i')
+        Kedges = np.zeros((E,2)).astype(np.int)
         Kweights = np.zeros(E)
         
         iw = np.argsort(self.weights)
@@ -916,7 +916,7 @@ class WeightedGraph(Graph):
         ci,ne,we = self.to_neighb()
         li = self.left_incidence()
         ri = self.right_incidence()
-        tag = -np.ones(self.E,'i')
+        tag = -np.ones(self.E,np.int)
         for v in range(self.V):
             # e = (vw)
             for e in li[v]:
@@ -979,7 +979,7 @@ class WeightedGraph(Graph):
             raise ValueError, "cannot create the skeleton for unconnected graphs"
         i,j,d = graph_skeleton(self.edges[:,0],self.edges[:,1],self.weights,self.V)
         E = np.size(i)
-        edges = np.zeros((E,2),'i')
+        edges = np.zeros((E,2),np.int)
         edges[:,0] = i
         edges[:,1] = j
         weights = np.array(d)
@@ -1090,13 +1090,13 @@ class BipartiteGraph(WeightedGraph):
         
         self.E = 0
         if (edges==None)&(weights==None):
-            self.edges = np.array([],'i')
+            self.edges = np.array([],np.int)
             self.weights = np.array([])
         else:
             if edges.shape[0]==np.size(weights):
                 E = edges.shape[0]
                 self.E = E
-                self.edges = -np.ones((E,2),'i')
+                self.edges = -np.ones((E,2),np.int)
                 self.set_edges(edges)
                 #print np.shape(weights),self.E
                 WeightedGraph.set_weights(self,weights)
@@ -1176,7 +1176,7 @@ class BipartiteGraph(WeightedGraph):
             raise ValueError, 'eps is inf'
         i,j,d = graph_cross_eps(X,Y,eps)
         self.E = np.size(i)
-        self.edges = np.zeros((self.E,2),'i')
+        self.edges = np.zeros((self.E,2),np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
@@ -1212,7 +1212,7 @@ class BipartiteGraph(WeightedGraph):
             raise ValueError, 'eps is inf'
         i,j,d = graph_cross_eps_robust(X,Y,eps)
         self.E = np.size(i)
-        self.edges = np.zeros((self.E,2),'i')
+        self.edges = np.zeros((self.E,2),np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
@@ -1245,7 +1245,7 @@ class BipartiteGraph(WeightedGraph):
             raise ValueError, 'k is inf'
         i,j,d = graph_cross_knn(X,Y,k)
         self.E = np.size(i)
-        self.edges = np.zeros((self.E,2),'i')
+        self.edges = np.zeros((self.E,2),np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
@@ -1474,7 +1474,7 @@ class Forest(WeightedGraph):
         which is 0 for the leaves, 1 for their parents etc
         and maximal for the roots
         """
-        depth = 1-self.isleaf().astype('i')
+        depth = 1-self.isleaf().astype(np.int)
         depth[depth>0]=-1
         q = 0
         while np.sum(depth>-1)<self.V:

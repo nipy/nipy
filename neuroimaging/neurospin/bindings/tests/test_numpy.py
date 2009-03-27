@@ -7,6 +7,12 @@ from numpy.testing import assert_equal, assert_almost_equal
 import numpy as np
 import neuroimaging.neurospin.bindings as fb
 
+def time_ratio(t0,t1):
+    if t1==0:
+        return np.inf
+    else:
+        return t0/t1
+
 
 MAX_TEST_SIZE = 30
 def random_shape(size):
@@ -53,7 +59,7 @@ def _test_copy_vector(x):
     dt1 = time.clock()-t1
     assert_equal(y0, x)
     assert_equal(y1, x)
-    ratio = dt0/dt1
+    ratio = time_ratio(dt0,dt1)
     print('  using fff_array: %f sec' % dt0)
     print('  using numpy C API: %f sec' % dt1)
     print('  ratio: %f' % ratio)

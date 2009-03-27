@@ -23,17 +23,14 @@ Distributed under the terms of the BSD License.
 (c) Copyright CEA-INRIA-INSERM, 2003-2008. 
 """
 
+from numpy.testing import Tester
+
 import __config__
 import bindings
-#import utils 
 import glm
-import registration
 #import neuro
+import registration
+import utils 
 
-try:
-    from numpy.testing import Tester
-except ImportError:
-    from fff2.utils.nosetester import NoseTester as Tester
 test = Tester().test
 bench = Tester().bench 
-

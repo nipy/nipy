@@ -1,19 +1,15 @@
-#============================================#
-#============================================#
-#=== ONE AND TWO SAMPLE PERMUTATION TESTS ===#
-#============================================#
-#============================================#
-
-
-
+"""One and two sample permutation tests.
+"""
+# Third-party imports
 import numpy as np
-import fff2.graph as fg
-import fff2.graph.field as ff
-import onesample as os
-import twosample as ts
 import scipy.misc as sm
 
+# Our own imports
+import neuroimaging.neurospin.graph as fg
+import neuroimaging.neurospin.graph.field as ff
 
+import onesample as os
+import twosample as ts
 
 # Default parameters
 DEF_NDRAWS = int(1e6)
@@ -23,13 +19,11 @@ DEF_STAT_ONESAMPLE = 'student'
 DEF_STAT_TWOSAMPLE = 'student'
 
 
-
 #===========================================
 #===========================================
 # Cluster extraction functions
 #===========================================
 #===========================================
-
 
 
 def extract_clusters_from_thresh(T,XYZ,th,k=18):
@@ -545,12 +539,12 @@ class permutation_test:
         Return z score corresponding to the uncorrected
         voxel-level pseudo p-value.
         """
-        import fff2.utils.zscore 
+        from neuroimaging.neurospin.utils import zscore 
         if Tvalues == None: 
             Tvalues = self.Tvalues
-        return fff2.utils.zscore(self.pvalue(Tvalues))
+        return zscore(self.pvalue(Tvalues))
  
-    
+
 #======================================
 #======================================
 # One sample permutation test class
