@@ -70,13 +70,12 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('glm')
     config.add_subpackage('graph')
     config.add_subpackage('group')
-    ## config.add_subpackage('neuro')
+    config.add_subpackage('neuro')
     config.add_subpackage('registration')
     ## config.add_subpackage('scripts')
     config.add_subpackage('spatial_models')
     config.add_subpackage('utils')
     ## config.add_subpackage('viz')
-
 
     # ----------------------------------------------------------------------
     # Packages likely not to be moved over into nipy
