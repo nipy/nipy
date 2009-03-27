@@ -26,8 +26,8 @@ Distributed under the terms of the BSD License.
 import __config__
 import bindings
 #import utils 
-#import glm
-#import registration
+import glm
+import registration
 #import neuro
 
 try:

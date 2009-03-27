@@ -2,7 +2,7 @@
 #include "fff_vector.h"
 #include "fff_array.h"
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>

@@ -3,7 +3,7 @@
 #include "fff_blas.h"
 
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 /* Declaration of static functions */
 static void _fff_glm_RKF_iterate_Vb( fff_matrix* Vb, const fff_matrix* Vb0, const fff_matrix* Hspp, 

@@ -30,7 +30,11 @@ def configuration(parent_package='',top_path=None):
     sources.append(os.path.join(LIBS,'randomkit','*.c'))
 
     # Link with lapack if found on the system
-    lapack_info = get_info('lapack_opt', 0)
+
+    # NOTE: On OSX get_info('lapack_opt') does not return the keys:
+    # 'libraries' and 'library_dirs', but get_info('lapack') does.
+    # get_info('lapack') returns the same keys on OSX and Linux!
+    lapack_info = get_info('lapack', 0)
     if not lapack_info:
         raise  NotFoundError, 'no lapack installation found on this system' 
     else:
@@ -48,17 +52,17 @@ def configuration(parent_package='',top_path=None):
 
     # Subpackages
     config.add_subpackage('bindings')
-    ## config.add_subpackage('clustering')
+    config.add_subpackage('clustering')
     ## config.add_subpackage('data')
-    ## config.add_subpackage('eda')
-    ## config.add_subpackage('glm')
+    config.add_subpackage('eda')
+    config.add_subpackage('glm')
     config.add_subpackage('graph')
     ## config.add_subpackage('group')
     ## config.add_subpackage('neuro')
-    ## config.add_subpackage('registration')
+    config.add_subpackage('registration')
     ## config.add_subpackage('scripts')
     ## config.add_subpackage('spatial_models')
-    ## config.add_subpackage('utils')
+    config.add_subpackage('utils')
     ## config.add_subpackage('viz')
     
     ## # Unitary tests 

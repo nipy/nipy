@@ -2,7 +2,7 @@
 #include "fff_base.h"
 #include "fff_blas.h"
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
 #include <stdlib.h>
 
