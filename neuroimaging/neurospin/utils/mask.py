@@ -8,7 +8,13 @@ from numpy import array, sort, floor, where, shape, sum, transpose, \
 
 # Neuroimaging libraries imports
 from nifti import NiftiImage
-from nifti.nifticlib import NIFTI_INTENT_LABEL
+# In different versions of pynifti, this symbol lived in different places
+try:
+    from nifti.nifticlib import NIFTI_INTENT_LABEL
+except ImportError:
+    from nifti.clib import NIFTI_INTENT_LABEL
+
+
 import neuroimaging.neurospin.graph as fg
 
 
