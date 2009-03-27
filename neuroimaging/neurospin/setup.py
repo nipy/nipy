@@ -75,7 +75,7 @@ def configuration(parent_package='',top_path=None):
     ## config.add_subpackage('scripts')
     config.add_subpackage('spatial_models')
     config.add_subpackage('utils')
-    ## config.add_subpackage('viz')
+    config.add_subpackage('viz')
 
     # ----------------------------------------------------------------------
     # Packages likely not to be moved over into nipy
