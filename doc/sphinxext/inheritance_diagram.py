@@ -123,6 +123,8 @@ class InheritanceGraph(object):
                 if inspect.isclass(cls) and cls.__module__ == todoc.__name__:
                     classes.append(cls)
             return classes
+
+        print 'todoc?',todoc
         raise ValueError(
             "'%s' does not resolve to a class or module" % name)
 
