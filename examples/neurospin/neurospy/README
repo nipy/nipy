@@ -1,0 +1,8 @@
+This is a temporary and somewhat unclean set of functions wich is not
+intended to remain in fff2, and put in this repository only
+temporarily.
+Some of the tools may be used to develop GLM models
+
+These functions (or most of them) are called within the
+script_first_level_fiac.py script
+
