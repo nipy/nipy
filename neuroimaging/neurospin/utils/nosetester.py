@@ -1,8 +1,8 @@
-''' Nose test running
+'''Nose test running
 
 Implements test and bench functions for modules.
-
 '''
+
 import os
 import sys
 import warnings
@@ -39,7 +39,7 @@ def skipif(skip_condition, msg=None):
     ''' Make function raise SkipTest exception if skip_condition is true
 
     Parameters
-    ---------
+    ----------
     skip_condition : bool
         Flag to determine whether to skip test (True) or not (False)
     msg : string
