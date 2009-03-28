@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.linalg import expm
-import nose.tools
+
+from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 import matrix_groups as MG
 from neuroimaging.core.api import ArrayCoordMap
@@ -29,14 +30,14 @@ def test_init():
     SO_B = MG.O(B, 'xy')
 
     B[1] = -B[1]
-    nose.tools.assert_raises(ValueError, MG.SO, B, 'xy')
+    assert_raises(ValueError, MG.SO, B, 'xy')
     O_B = MG.O(B, 'xy')
 
 def test2():
     Z = np.random.standard_normal((3,3))
     GL_Z = MG.GLR(Z, 'xyz')
 
-    nose.tools.assert_raises(ValueError, MG.SO, Z, 'zxy')
+    assert_raises(ValueError, MG.SO, Z, 'zxy')
 
     detZ = np.linalg.det(Z)
     if detZ < 0:
@@ -64,10 +65,10 @@ def test_basis_change():
     basis2 = random_orth(names='uvw')
     
     bchange = MG.Linear(random_orth(dim=3).matrix, basis2.coords, basis1.coords)
-    print basis1.coords
+    #print basis1.coords
     new = MG.change_basis(basis1, bchange)
 
-    nose.tools.assert_true(MG.same_transformation(basis1, new, bchange))
+    assert_true(MG.same_transformation(basis1, new, bchange))
 
 def test_product():
 
@@ -76,17 +77,17 @@ def test_product():
     GLZ_C = MG.GLZ(B, 'ij')
 
     GLZ_AB = MG.product(GLZ_A, GLZ_B)
-    nose.tools.assert_true(np.allclose(GLZ_AB.matrix, np.dot(GLZ_A.matrix, GLZ_B.matrix)))
+    yield (assert_true, 
+           np.allclose(GLZ_AB.matrix, np.dot(GLZ_A.matrix, GLZ_B.matrix)))
 
     # different coordinates: can't make the product
-    nose.tools.assert_raises(ValueError, MG.product, GLZ_A, GLZ_C)
-    return GLZ_A, GLZ_B, GLZ_C
+    yield assert_raises, ValueError, MG.product, GLZ_A, GLZ_C
 
 def test_product2():
     O_1 = random_orth(names='xyz')
     O_2 = random_orth(names='xyz')
     O_21 = MG.product(O_2, O_1)
-    print type(O_21)
+    #print type(O_21)
 
 def test_homomorphism():
 
@@ -94,14 +95,14 @@ def test_homomorphism():
     GLZ_D = MG.GLZ(D, 'ij')
     GLZ_BD = MG.product_homomorphism(GLZ_B, GLZ_D)
 
-    nose.tools.assert_true(np.allclose(GLZ_BD.matrix[:2,:2], GLZ_B.matrix))
-    nose.tools.assert_true(np.allclose(GLZ_BD.matrix[2:,2:], GLZ_D.matrix))
-    nose.tools.assert_true(np.allclose(GLZ_BD.matrix[2:,:2], 0))
-    nose.tools.assert_true(np.allclose(GLZ_BD.matrix[:2,2:], 0))
+    yield assert_true, np.allclose(GLZ_BD.matrix[:2,:2], GLZ_B.matrix)
+    yield assert_true, np.allclose(GLZ_BD.matrix[2:,2:], GLZ_D.matrix)
+    yield assert_true, np.allclose(GLZ_BD.matrix[2:,:2], 0)
+    yield assert_true, np.allclose(GLZ_BD.matrix[:2,2:], 0)
 
     GLZ_C = MG.GLZ(D, 'xy')
     # have the same axisnames, an exception will be raised
-    nose.tools.assert_raises(ValueError, MG.product_homomorphism, GLZ_C, GLZ_B)
+    yield assert_raises, ValueError, MG.product_homomorphism, GLZ_C, GLZ_B
 
     E = np.array([[7,8],
                   [8,9]])
@@ -115,7 +116,7 @@ def test_homomorphism():
 
     test1 = MG.product(GLZ_FE, GLZ_BD)
     test2 = MG.product_homomorphism(MG.product(GLZ_F, GLZ_B), MG.product(GLZ_E, GLZ_D))
-    nose.tools.assert_true(np.allclose(test1.matrix, test2.matrix))
+    yield assert_true, np.allclose(test1.matrix, test2.matrix)
 
 
 def test_32():
@@ -126,7 +127,6 @@ def test_32():
             """
             Check that the matrix is (almost) orthogonal.
             """
-        
             if M is None:
                 M = self.matrix
             return np.allclose(np.identity(self.ndim[0], dtype=self.dtype), np.dot(M.T, M), atol=1.0e-06)
@@ -136,7 +136,7 @@ def test_32():
     A = O32(a, 'xyz')
     B = O32(random_orth(3).matrix.astype(np.float32), 'xyz')
     C = MG.product(A, B)
-    nose.tools.assert_equals(C.dtype, np.float32)
+    yield assert_equal, C.dtype, np.float32
 
     ev = ArrayCoordMap.from_shape(C, (20,30,40))
-    nose.tools.assert_equals(ev.values.dtype, np.float32)
+    yield assert_equal, ev.values.dtype, np.float32

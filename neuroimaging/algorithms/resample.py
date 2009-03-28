@@ -7,6 +7,7 @@ import numpy as np
 
 from neuroimaging.algorithms.interpolation import ImageInterpolator
 from neuroimaging.core.api import Image, CoordinateMap, Affine, ArrayCoordMap, Grid, compose
+import neuroimaging.core.transforms.affines as affines
 
 def resample(image, target, mapping, shape, order=3):
     """
@@ -17,21 +18,21 @@ def resample(image, target, mapping, shape, order=3):
     a callable that takes a physical coordinate in "target"
     and gives a physical coordinate in "image". 
 
-    INPUTS
-    ------
-    image -- Image instance that is to be resampled
-    target -- target CoordinateMap for output image
-    mapping -- transformation from target.output_coords
+    Parameters
+    ----------
+    image : Image instance that is to be resampled
+    target :target CoordinateMap for output image
+    mapping : transformation from target.output_coords
                to image.coordmap.output_coords, i.e. 'world-to-world mapping'
                Can be specified in three ways: a callable, a
                tuple (A, b) representing the mapping y=dot(A,x)+b
                or a representation of this in homogeneous coordinates. 
-    shape -- shape of output array, in target.input_coords
-    order -- what order of interpolation to use in `scipy.ndimage`
+    shape : shape of output array, in target.input_coords
+    order : what order of interpolation to use in `scipy.ndimage`
 
-    OUTPUTS
+    Returns
     -------
-    output -- Image instance with interpolated data and output.coordmap == target
+    output : Image instance with interpolated data and output.coordmap == target
                   
     """
 
@@ -71,10 +72,11 @@ def resample(image, target, mapping, shape, order=3):
     else:
         TV2IV = compose(image.coordmap.inverse, TV2IW)
         if isinstance(TV2IV, Affine):
-            A, b = TV2IV.params
+            A, b = affines.to_matrix_vector(TV2IV.affine)
             idata = affine_transform(np.asarray(image), A,
                                      offset=b,
-                                     output_shape=shape)
+                                     output_shape=shape,
+                                     order=order)
         else:
             interp = ImageInterpolator(image, order=order)
             grid = ArrayCoordMap.from_shape(TV2IV, shape)

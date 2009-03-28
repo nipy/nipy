@@ -1,20 +1,48 @@
+import os
+import warnings
+from shutil import rmtree
+from tempfile import mkstemp, mkdtemp
+
 from neuroimaging.testing import *
 
 import neuroimaging.modalities.fmri.fmristat.model as model
-from neuroimaging.testing import funcfile
 from neuroimaging.modalities.fmri.api import fromimage
-from neuroimaging.core.api import load_image
+from neuroimaging.io.api import load_image
 
-from neuroimaging.modalities.fmri.protocol import Formula, ExperimentalQuantitative
+from neuroimaging.modalities.fmri.protocol import Formula, \
+    ExperimentalQuantitative
 from neuroimaging.fixes.scipy.stats.models.contrast import Contrast
 
-# Load in the data
+def setup():
+    # Suppress warnings during tests to reduce noise
+    warnings.simplefilter("ignore")
+
+def teardown():
+    # Clear list of warning filters
+    warnings.resetwarnings()
+
 
 class test_fMRIstat_model(TestCase):
 
     def setUp(self):
-        pass
+        # Using mkstemp instead of NamedTemporaryFile.  MS Windows
+        # cannot reopen files created with NamedTemporaryFile.
+        _, self.ar1 = mkstemp(prefix='ar1_', suffix='.nii')
+        _, self.resid_OLS = mkstemp(prefix='resid_OSL_', suffix='.nii')
+        _, self.F = mkstemp(prefix='F_', suffix='.nii')
+        _, self.resid = mkstemp(prefix='resid_', suffix='.nii')
+        # Use a temp directory for the model.output_T images
+        self.out_dir = mkdtemp()
 
+    def tearDown(self):
+        os.remove(self.ar1)
+        os.remove(self.resid_OLS)
+        os.remove(self.F)
+        os.remove(self.resid)
+        rmtree(self.out_dir)
+
+    # FIXME: This does many things, but it does not test any values
+    # with asserts.
     def testrun(self):
         funcim = load_image(funcfile)
         fmriims = fromimage(funcim, volume_start_times=2.)
@@ -30,26 +58,20 @@ class test_fMRIstat_model(TestCase):
         c2.compute_matrix(fmriims.volume_start_times)
 
         outputs = []
-        outputs.append(model.output_AR1("ar1.nii", fmriims, clobber=True))
-        outputs.append(model.output_resid("resid_OLS.nii", fmriims, clobber=True))
+        outputs.append(model.output_AR1(self.ar1, fmriims, clobber=True))
+        outputs.append(model.output_resid(self.resid_OLS, fmriims, 
+                                          clobber=True))
         ols = model.OLS(fmriims, f, outputs)
         ols.execute()
 
         outputs = []
-        outputs.append(model.output_T("out_%(stat)s.nii", c, fmriims, clobber=True))
-        outputs.append(model.output_F("F.nii", c2, fmriims, clobber=True))
-        outputs.append(model.output_resid("resid.nii", fmriims, clobber=True))
-        rho = load_image("ar1.nii")
+        out_fn = os.path.join(self.out_dir, 'out.nii')
+        outputs.append(model.output_T(out_fn, c, fmriims, clobber=True))
+        outputs.append(model.output_F(self.F, c2, fmriims, clobber=True))
+        outputs.append(model.output_resid(self.resid, fmriims, clobber=True))
+        rho = load_image(self.ar1)
         ar = model.AR1(fmriims, f, rho, outputs)
         ar.execute()
-
-        os.remove('ar1.nii')
-        os.remove('F.nii')
-        os.remove('resid.nii')
-        os.remove('resid_OLS.nii')
-        os.remove('out_t.nii')
-        os.remove('out_sd.nii')
-        os.remove('out_effect.nii')
 
 
 

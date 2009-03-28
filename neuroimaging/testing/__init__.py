@@ -31,3 +31,5 @@ anatfile = os.path.join(basedir, 'anatomical.nii.gz')
 
 from numpy.testing import *
 import decorators as dec
+from nose.tools import assert_true, assert_false
+

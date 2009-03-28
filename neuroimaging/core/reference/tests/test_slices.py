@@ -12,7 +12,7 @@ class test_Slice(TestCase):
     def test_bounding_box(self):
         shape = (10, 10, 10)
         coordmap = Affine.identity(names)
-        print coordmap.affine.dtype, 'affine'
+        #print coordmap.affine.dtype, 'affine'
         self.assertEqual(bounding_box(coordmap, shape), [[0., 9.], [0, 9], [0, 9]])
 
     def test_box_slice(self):

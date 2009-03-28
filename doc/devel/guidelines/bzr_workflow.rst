@@ -23,6 +23,11 @@ objectives.
 #. Provide a clear process for code reviews.
 #. Minimize damage to the trunk during large code transitions.
 
+The diagram describes the usual workflow:
+
+.. image:: images/developer_bzr.png
+
+We describe the various parts of this diagram in the following sections.
 
 Launchpad structure
 -------------------

@@ -14,8 +14,12 @@ from neuroimaging.fixes.scipy.stats.models.utils import recipr
 # nipy core imports
 
 from neuroimaging.core.api import Image, data_generator, parcels, matrix_generator
-from neuroimaging.core.api import f_generator, Image, save_image, load_image
+from neuroimaging.core.api import f_generator, Image
 from neuroimaging.core.api import Affine, CoordinateMap
+
+# nipy IO imports
+
+from neuroimaging.io.api import  save_image, load_image
 
 # fmri imports
 
@@ -26,6 +30,7 @@ from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
 import neuroimaging.algorithms.statistics.regression as regression
 from neuroimaging.algorithms.fwhm import fastFWHM
 import neuroimaging.algorithms.statistics.regression as regression
+
 
 class ModelOutputImage:
 
@@ -72,8 +77,9 @@ class ModelOutputImage:
             raise ValueError, 'trying to set value on saved ModelOutputImage'
         
 
-def model_generator(formula, data, volume_start_times, iterable=None, slicetimes=None,
-                    model_type=OLSModel, model_params = lambda x: ()):
+def model_generator(formula, data, volume_start_times, iterable=None, 
+                    slicetimes=None, model_type=OLSModel, 
+                    model_params = lambda x: ()):
     """
     Generator for the models for a pass of fmristat analysis.
     """
@@ -81,6 +87,7 @@ def model_generator(formula, data, volume_start_times, iterable=None, slicetimes
         model_args = model_params(i) # model may depend on i
         rmodel = model_type(formula.design(volume_start_times), *model_args)
         yield i, d, rmodel
+
 
 def results_generator(model_iterable):
     """
@@ -91,6 +98,7 @@ def results_generator(model_iterable):
     """
     for i, d, m in model_iterable:
         yield i, m.fit(d)
+
 
 class OLS:
     """
@@ -103,7 +111,8 @@ class OLS:
 
     """
 
-    def __init__(self, fmri_image, formula, outputs=[], volume_start_times=None):
+    def __init__(self, fmri_image, formula, outputs=[], 
+                 volume_start_times=None):
         self.fmri_image = fmri_image
         self.data = np.asarray(fmri_image)
         self.formula = formula
@@ -136,6 +145,7 @@ class OLS:
 
         o = generate_output(self.outputs, r, reshape=reshape)
 
+
 def estimateAR(resid, design, order=1):
     """
     Estimate AR parameters using bias correction from fMRIstat.
@@ -161,7 +171,8 @@ def estimateAR(resid, design, order=1):
                     
     invM = np.linalg.inv(M)
 
-    rresid = np.asarray(resid).reshape(resid.shape[0], np.product(resid.shape[1:]))
+    rresid = np.asarray(resid).reshape(resid.shape[0], 
+                                       np.product(resid.shape[1:]))
     sum_sq = np.sum(rresid**2, axis=0)
 
     cov = np.zeros((p + 1,) + sum_sq.shape)
@@ -173,6 +184,7 @@ def estimateAR(resid, design, order=1):
     output = np.squeeze(output)
     output.shape = resid.shape[1:]
     return output
+
 
 class AR1:
 
@@ -227,13 +239,14 @@ class AR1:
             this function does the appropriate reshaping for the two
             passes of fMRIstat.
 
-            These passes are i) 'slices through the z-axis'
-                            ii) 'parcels of approximately constant AR1 coefficient'
+            These passes are:
+              i) 'slices through the z-axis'
+              ii) 'parcels of approximately constant AR1 coefficient'
             """
     
             if len(x.shape) == 2:
                 if type(i) is type(1):
-                    x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]                        
+                    x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]
                 if type(i) not in [type([]), type(())]:
                     i = (i,)
                 else:
@@ -250,32 +263,52 @@ class AR1:
 def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
              clobber=False):
     """
-    outbase: a string interpolator object with key %(stat)s
-    contrast: a TContrast
+    Parameters
+    ----------
+    outbase : string
+        
+        Base filename that will be used to construct a set of files
+        for the TContrast.  For example, outbase='output.nii' will
+        result in the following files (assuming defaults for all other
+        params): output_effect.nii, output_sd.nii, output_t.nii
+
+    contrast : a TContrast
+
     """
-    print 'here', fmri_image[0].coordmap.affine
+
+    def build_filename(label):
+        index = outbase.find('.')
+        return ''.join([outbase[:index], '_', label, outbase[index:]])
+
     if effect:
-        effectim = ModelOutputImage(outbase % {'stat':'effect'}, fmri_image[0].coordmap, fmri_image[0].shape, clobber=clobber)
+        effectim = ModelOutputImage(build_filename('effect'),
+                                    fmri_image[0].coordmap, 
+                                    fmri_image[0].shape, clobber=clobber)
     else:
         effectim = None
 
     if sd:
-        sdim = ModelOutputImage(outbase % {'stat':'sd'}, fmri_image[0].coordmap, fmri_image[0].shape, 
-                              clobber=clobber)
+        sdim = ModelOutputImage(build_filename('sd'),
+                                fmri_image[0].coordmap, fmri_image[0].shape, 
+                                clobber=clobber)
     else:
         sdim = None
 
     if t:
-        tim = ModelOutputImage(outbase % {'stat':'t'}, fmri_image[0].coordmap,fmri_image[0].shape, 
-                             clobber=clobber)
+        tim = ModelOutputImage(build_filename('t'),
+                               fmri_image[0].coordmap,fmri_image[0].shape, 
+                               clobber=clobber)
     else:
         tim = None
-    return regression.TOutput(contrast, effect=effectim,
-                              sd=sdim, t=tim)
+    return regression.TOutput(contrast, effect=effectim, sd=sdim, t=tim)
+
 
 def output_F(outfile, contrast, fmri_image, clobber=False):
-    f = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape, clobber=clobber)
-    return regression.RegressionOutput(f, lambda x: regression.output_F(x, contrast))
+    f = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape, 
+                         clobber=clobber)
+    return regression.RegressionOutput(f, lambda x: 
+                                       regression.output_F(x, contrast))
+
                              
 def output_AR1(outfile, fmri_image, clobber=False):
     """
@@ -285,8 +318,10 @@ def output_AR1(outfile, fmri_image, clobber=False):
     image: FmriImageList 
 
     """
-    outim = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape, clobber=clobber)
+    outim = ModelOutputImage(outfile, fmri_image[0].coordmap, 
+                             fmri_image[0].shape, clobber=clobber)
     return regression.RegressionOutput(outim, regression.output_AR1)
+
 
 def output_resid(outfile, fmri_image, clobber=False):
     """
@@ -303,10 +338,11 @@ def output_resid(outfile, fmri_image, clobber=False):
         T = np.zeros((5,5))
         g = fmri_image[0].coordmap
         T[1:,1:] = fmri_image[0].affine
-        T[0,0] = (fmri_image.volume_start_times[1:] - fmri_image.volume_start_times[:-1]).mean()
+        T[0,0] = (fmri_image.volume_start_times[1:] - 
+                  fmri_image.volume_start_times[:-1]).mean()
         # FIXME: NIFTI specific naming here
-        innames = ["l"] + [a.name for a in g.input_coords.axes]
-        outnames = ["t"] + [a.name for a in g.output_coords.axes]
+        innames = ["l"] + list(g.input_coords.coord_names)
+        outnames = ["t"] + list(g.output_coords.coord_names)
         cmap = Affine.from_params(innames,
                                   outnames, T)
         shape = (n,) + fmri_image[0].shape
@@ -318,6 +354,7 @@ def output_resid(outfile, fmri_image, clobber=False):
 
     outim = ModelOutputImage(outfile, cmap, shape, clobber=clobber)
     return regression.RegressionOutput(outim, regression.output_resid)
+
 
 def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
     """

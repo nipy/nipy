@@ -1,4 +1,3 @@
-import os
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
@@ -6,7 +5,6 @@ def configuration(parent_package='',top_path=None):
 
     config.add_subpackage('algorithms')
     config.add_subpackage('core')
-    config.add_subpackage('externals')
     config.add_subpackage('fixes')
     config.add_subpackage('io')
     config.add_subpackage('modalities')

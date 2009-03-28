@@ -1,33 +1,31 @@
+import warnings
 import numpy as np
 from numpy.random import standard_normal as noise
 
-from neuroimaging.testing import funcfile, anatfile
-from neuroimaging.core.api import load_image
+from neuroimaging.testing import *
+from neuroimaging.io.api import load_image
 from neuroimaging.modalities.fmri.api import fromimage, fmri_generator
 from neuroimaging.core.image.generators import *
 from neuroimaging.fixes.scipy.stats.models.regression import OLSModel as ols_model
 
-fd = np.asarray(load_image(funcfile))
-fi = fromimage(load_image(funcfile)) # I think it makes more
-                                     # sense to use fd instead of fi
-                                     # for GLM purposes -- reduces some
-                                     # noticeable overhead in creating
-                                     # the array from FmriImage.list
+def setup():
+    # Suppress warnings during tests to reduce noise
+    warnings.simplefilter("ignore")
 
-# create a design matrix, model and contrast matrix
+def teardown():
+    # Clear list of warning filters
+    warnings.resetwarnings()
 
-design = noise((fd.shape[0],3))
-model = ols_model(design)
-cmatrix = np.array([[1,0,0],[0,1,0]])
 
 # two prototypical functions in a GLM analysis
-
 def fit(input):
     return model.fit(input).resid
 
 def contrast(results):
     return results.Fcontrast(cmatrix)
 
+
+# generators
 def result_generator(datag):
     for i, fdata in datag:
         yield i, model.fit(fdata)
@@ -45,34 +43,44 @@ def unflatten_generator(ing):
 def contrast_generator(resultg):
     for i, r in resultg:
         yield i, np.asarray(contrast(r))
+
+
+class TestIters(TestCase):
+    def setUp(self):
+        self.fd = np.asarray(load_image(funcfile))
+        self.fi = fromimage(load_image(funcfile))
+        # I think it makes more sense to use fd instead of fi for GLM
+        # purposes -- reduces some noticeable overhead in creating the
+        # array from FmriImage.list
+
+        # create a design matrix, model and contrast matrix
+
+        self.design = noise((self.fd.shape[0],3))
+        self.model = ols_model(self.design)
+        self.cmatrix = np.array([[1,0,0],[0,1,0]])
+
+    def test_iterate_over_image(self):
+        # Fit a model, iterating over the slices of an array
+        # associated to an FmriImage.
+        c = np.zeros(self.fd.shape[1:]) + 0.5
+        res_gen = result_generator(flatten_generator(fmri_generator(fd)))
+        write_data(c, unflatten_generator(contrast_generator(res_gen)))
+
+        # Fit a model, iterating over the array associated to an
+        # FmriImage, iterating over a list of ROIs defined by binary
+        # regions of the same shape as a frame of FmriImage
         
-"""
-Fit a model, iterating over the slices of an array
-associated to an FmriImage.
-"""
+        # this might really be an anatomical image or AR(1) coefficients 
+        a = np.asarray(fd[0]) 
+        p = np.greater(a, a.mean())
+        d = np.ones(fd.shape[1:]) * 2.0
+        flat_gen = flatten_generator(fmri_generator(fd, parcels(p)))
+        write_data(d, contrast_generator(result_generator(flat_gen)))
 
-c = np.zeros(fd.shape[1:]) + 0.5
-write_data(c, unflatten_generator(contrast_generator(result_generator(flatten_generator(fmri_generator(fd))))))
+        yield assert_array_almost_equal, d, c
 
-"""
-Fit a model, iterating over the array associated to an FmriImage,
-iterating over a list of ROIs defined by binary regions
-of the same shape as a frame of FmriImage
-"""
+        e = np.zeros(fd.shape[1:]) + 3.0
+        flat_gen2 = flatten_generator(fmri_generator(fd, parcels(p)))
+        write_data(e, f_generator(contrast, result_generator(flat_gen2)))
 
-a = np.asarray(fd[0]) # this might really be an anatomical image or
-                      # AR(1) coefficients 
-
-p = np.greater(a, a.mean())
-
-d = np.ones(fd.shape[1:]) * 2.
-write_data(d, contrast_generator(result_generator(flatten_generator(fmri_generator(fd, parcels(p))))))
-
-assert np.allclose(d, c)
-
-e = np.zeros(fd.shape[1:]) + 3.
-write_data(e, f_generator(contrast, result_generator(flatten_generator(fmri_generator(fd, parcels(p))))))
-
-assert np.allclose(d, e)
-
-    
+        yield assert_array_almost_equal, d, e
