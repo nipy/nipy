@@ -293,39 +293,39 @@ class permutation_test:
         Calibrate cluster and region summary statistics using permutation test
 
         Parameters
-        -----------
+        ----------
         nperms : int, optional    
             Number of random permutations generated.
             Exhaustive permutations are used only if nperms=None,
-            or exceeds total number of possible permutations,
+            or exceeds total number of possible permutations
+            
         clusters : list [(thresh1,diam1),(thresh2,diam2),...], optional
-            List of cluster extraction pairs::
-
-                (thresh: T values threshold, 
-                 diam: maximum cluster diameter, in voxels)
-                 
-            diam = None yields classical suprathreshold clusters
+            List of cluster extraction pairs: (thresh,diam).  *thresh* provides
+            T values threshold, *diam* is the maximum cluster diameter, in
+            voxels.  Using *diam*==None yields classical suprathreshold
+            clusters.
+            
         cluster_stats : list [stat1,...], optional
             List of cluster summary statistics id (either 'size' or 'Fisher')
+            
         regions : list [Labels1,Labels2,...] 
             List of region labels arrays, of size (p,) where p is the number 
             of voxels
+            
         region_stats : list [stat1,...], optional
             List of cluster summary statistics id (only 'Fisher' supported 
             for now)
+            
         verbose : boolean, optional
             "Chatterbox" mode switch
 
         Returns
-        --------
+        -------
         voxel_results : dict 
-            A dictionary containing the following keys::
-
-                "p_values" (p,) Uncorrected p-values
-                "Corr_p_values" (p,) Corrected p-values, computed by the 
-                                     Tmax procedure
-                "perm_maxT_values" (nperms) values of the maximum statistic 
-                                     under permutation
+            A dictionary containing the following keys: ``p_values`` (p,)
+            Uncorrected p-values.``Corr_p_values`` (p,) Corrected p-values,
+            computed by the Tmax procedure.  ``perm_maxT_values`` (nperms)
+            values of the maximum statistic under permutation.
         cluster_results : list [results1,results2,...] 
             List of permutation test results for each cluster extraction pair. 
             These are dictionaries with the following keys "thresh", "diam", 
@@ -774,7 +774,3 @@ class permutation_test_twosample(permutation_test):
             perm_vardata2 = perm_vardata[n1:]
         self.random_Tvalues = twosample_stat(perm_data1, perm_vardata1, perm_data2, perm_vardata2, stat_id, axis).squeeze()
         self.random_Tvalues.sort()
-
-
-
-

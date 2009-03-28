@@ -25,10 +25,8 @@ Distributed under the terms of the BSD License.
 
 from numpy.testing import Tester
 
-import __config__
 import bindings
 import glm
-#import neuro
 import registration
 import utils 
 
