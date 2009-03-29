@@ -9,8 +9,13 @@
 Submit reviewed code
 --------------------
 
-The administrator (at the moment, this is Chris Burns), will merge
-changes into the trunk, from development branches::
+The administrator (at the moment, this is Chris Burns), will merge changes into
+the trunk, from development branches.  The diagram shows the *administrator*
+workflow:
+
+.. image:: images/core_dev_bzr.png
+
+The process looks something like this on the command line::
 
  cd trunk-lp
  bzr pull lp:nipy
