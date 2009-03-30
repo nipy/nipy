@@ -72,6 +72,7 @@ def test_reordering():
         yield np.testing.assert_almost_equal, reordered_im.get_data(), \
                                     data
 
+
 def test_eq():
     """ Test copy and equality for AffineImages.
     """
@@ -92,6 +93,19 @@ def test_eq():
     copy_im = copy.copy(ref_im)
     copy_im.coord_sys = 'other'
     yield nose.tools.assert_not_equal, ref_im, copy_im
+
+
+def test_values_in_world():
+    """ Test the evaluation of the data in world coordinate.
+    """
+    shape = (5., 5., 5.)
+    data = np.random.random(shape)
+    affine = np.eye(4)
+    ref_im = AffineImage(data, affine, 'mine')
+    x, y, z = np.indices(ref_im.get_data().shape)
+    values = ref_im.values_in_world(x, y, z)
+    np.testing.assert_almost_equal(values, data)
+
 
 if __name__ == "__main__":
     nose.run(argv=['', __file__])

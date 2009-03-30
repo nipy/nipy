@@ -240,7 +240,7 @@ class AffineImage(BaseImage):
         y = y.ravel()
         z = z.ravel()
         xyz = np.c_[x, y, z, np.ones_like(x)]
-        ijk = np.dot(np.linalg.inv(self.affine), xyz)
+        ijk = np.dot(np.linalg.inv(self.affine), xyz.T)[:3]
         values = ndimage.map_coordinates(self.get_data(), ijk,
                                     order=interpolation_order)
         values = np.reshape(values, shape)
