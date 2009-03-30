@@ -3,6 +3,7 @@ The base image interface.
 """
 
 import numpy as np
+import nose
 
 from neuroimaging.core.transforms.affines import from_matrix_vector
 from neuroimaging.core.image.affine_image import AffineImage
@@ -71,9 +72,28 @@ def test_reordering():
         yield np.testing.assert_almost_equal, reordered_im.get_data(), \
                                     data
 
+def test_eq():
+    """ Test copy and equality for AffineImages.
+    """
+    import copy
+    shape = (5., 5., 5.)
+    data = np.random.random(shape)
+    affine = np.random.random((4, 4))
+    ref_im = AffineImage(data, affine, 'mine')
+    yield nose.tools.assert_equal, ref_im, ref_im
+    yield nose.tools.assert_equal, ref_im, copy.copy(ref_im)
+    yield nose.tools.assert_equal, ref_im, copy.deepcopy(ref_im)
+    copy_im = copy.copy(ref_im)
+    copy_im.get_data()[0, 0, 0] *= -1
+    yield nose.tools.assert_not_equal, ref_im, copy_im
+    copy_im = copy.copy(ref_im)
+    copy_im.affine[0, 0] *= -1
+    yield nose.tools.assert_not_equal, ref_im, copy_im
+    copy_im = copy.copy(ref_im)
+    copy_im.coord_sys = 'other'
+    yield nose.tools.assert_not_equal, ref_im, copy_im
 
 if __name__ == "__main__":
-    import nose
     nose.run(argv=['', __file__])
 
 

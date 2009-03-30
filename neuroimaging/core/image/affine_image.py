@@ -296,9 +296,6 @@ class AffineImage(BaseImage):
     # Private methods
     #---------------------------------------------------------------------------
     
-    # TODO: We need to implement (or check if implemented) hashing,
-    # copy, pickling, and __eq__? 
-    
     def __repr__(self):
         options = np.get_printoptions()
         np.set_printoptions(precision=6, threshold=64, edgeitems=2)
@@ -310,5 +307,30 @@ class AffineImage(BaseImage):
         np.set_printoptions(**options)
         return representation
 
+
+    def __copy__(self):
+        """ Copy the Image and the arrays and metadata it contains.
+        """
+        return self.__class__(data=self.get_data().copy(), 
+                              affine=self.affine.copy(),
+                              coord_sys=self.coord_sys,
+                              metadata=self.metadata.copy())
+
+
+    def __deepcopy__(self, option):
+        """ Copy the Image and the arrays and metadata it contains.
+        """
+        import copy
+        return self.__class__(data=self.get_data().copy(), 
+                              affine=self.affine.copy(),
+                              coord_sys=self.coord_sys,
+                              metadata=copy.deepcopy(self.metadata))
+
+
+    def __eq__(self, other):
+        return (    isinstance(other, self.__class__)
+                and np.all(self.get_data() == other.get_data())
+                and np.all(self.affine == other.affine)
+                and (self.coord_sys == other.coord_sys))
 
 
