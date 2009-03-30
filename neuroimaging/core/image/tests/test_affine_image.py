@@ -106,6 +106,19 @@ def test_values_in_world():
     values = ref_im.values_in_world(x, y, z)
     np.testing.assert_almost_equal(values, data)
 
+# XXX: We probably need a helper function 'images_almost_equal'
+
+def test_resampled_to_img():
+    """ Trivial test of resampled_to_img.
+    """
+    shape = (5., 5., 5.)
+    data = np.random.random(shape)
+    affine = np.random.random((4, 4))
+    ref_im = AffineImage(data, affine, 'mine')
+    yield np.testing.assert_almost_equal, data, \
+                        ref_im.resampled_to_affine(ref_im.affine).get_data()
+    yield np.testing.assert_almost_equal, data, \
+                        ref_im.resampled_to_img(ref_im).get_data()
 
 if __name__ == "__main__":
     nose.run(argv=['', __file__])

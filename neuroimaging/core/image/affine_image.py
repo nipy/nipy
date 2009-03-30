@@ -66,6 +66,9 @@ class AffineImage(BaseImage):
     # The data (ndarray)
     _data = None
 
+    # XXX: Need an attribute to determine in a clever way the
+    # interplation order/method
+
     #---------------------------------------------------------------------------
     # Attributes, AffineImage interface
     #---------------------------------------------------------------------------
@@ -145,7 +148,13 @@ class AffineImage(BaseImage):
         """
         if affine is None:
             return self
-        transform_affine = np.dot(np.linalg.inv(self.affine), affine)
+        if affine.shape == (4, 4) and np.all(affine == self.affine):
+            # Small trick to be more numericaly stable
+            # XXX: The trick should be implemented to work for
+            # affine.shape = (3, 3)
+            transform_affine = np.eye(4)
+        else:
+            transform_affine = np.dot(np.linalg.inv(self.affine), affine)
         if transform_affine.shape == (3, 3):
             A = transform_affine
             # XXX: implement the algorithm to find out optimal b, 
@@ -195,9 +204,19 @@ class AffineImage(BaseImage):
                 'The two images do not point to the same coordinate system')
         target_shape = target_image.get_data().shape[:3]
         if hasattr(target_image, 'affine'):
-            return self.resampled_to_grid(target_image.affine,
-                                    target_shape,
+            new_im = self.resampled_to_affine(target_image.affine,
                                     interpolation_order=interpolation_order)
+            # Some massaging to get the shape right
+            new_data = np.zeros(target_image.get_data().shape)
+            x_new, y_new, z_new = new_data.shape
+            old_data = new_im.get_data() 
+            x_old, y_old, z_old = old_data.shape
+            new_data[:min(x_old, x_new), :min(y_old, y_new), 
+                     :min(z_old, z_new)] = \
+                    old_data[:min(x_old, x_new), :min(y_old, y_new), 
+                            :min(z_old, z_new)]
+            new_im._data = new_data
+            return new_im
         else:
             # XXX: we need a dispatcher pattern or to encode the
             # information in the transform
