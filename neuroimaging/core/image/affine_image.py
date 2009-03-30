@@ -297,7 +297,7 @@ class AffineImage(BaseImage):
     #---------------------------------------------------------------------------
     
     # TODO: We need to implement (or check if implemented) hashing,
-    # weakref, copy, pickling, and __eq__? 
+    # copy, pickling, and __eq__? 
     
     def __repr__(self):
         options = np.get_printoptions()
@@ -307,7 +307,7 @@ class AffineImage(BaseImage):
                 '\n       '.join(repr(self._data).split('\n')),
                 '\n         '.join(repr(self.affine).split('\n')),
                 repr(self.coord_sys))
-        np.set_printoptions(*options)
+        np.set_printoptions(**options)
         return representation
 
 
