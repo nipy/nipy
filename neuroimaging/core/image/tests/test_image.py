@@ -26,7 +26,6 @@ def teardown():
 class TestImage(TestCase):
 
     def setUp(self):
-        print 'in setup'
         self.img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
         self.tmpfile = NamedTemporaryFile(suffix='.nii.gz')
         
