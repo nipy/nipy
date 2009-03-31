@@ -2,7 +2,7 @@
 YAMILA = Yet Another Mutual Information-Like Aligner
 """
 import _yamila
-import transform_affine as affine
+import affine_transform
 
 import numpy as np  
 import scipy as sp 
@@ -134,23 +134,23 @@ class iconic():
         """
         
         # Constants
-        precond = affine.preconditioner(radius)
+        precond = affine_transform.preconditioner(radius)
         if start == None: 
             t0 = np.array([0, 0, 0, 0, 0, 0, 1., 1., 1., 0, 0, 0])
         else:
             t0 = np.asarray(start)
 
         # Search space
-        stamp = affine.transformation_types[search]
-        tc0 = affine.vector12_to_param(t0, precond, stamp)
+        stamp = affine_transform.transformation_types[search]
+        tc0 = affine_transform.vector12_to_param(t0, precond, stamp)
 
         # Loss function to minimize
         def loss(tc):
-            t = affine.param_to_vector12(tc, t0, precond, stamp)
-            return(-self.eval(affine.matrix44(t)))
+            t = affine_transform.param_to_vector12(tc, t0, precond, stamp)
+            return(-self.eval(affine_transform.matrix44(t)))
     
         def print_vector12(tc):
-            t = affine.param_to_vector12(tc, t0, precond, stamp)
+            t = affine_transform.param_to_vector12(tc, t0, precond, stamp)
             print('')
             print ('  translation : %s' % t[0:3].__str__())
             print ('  rotation    : %s' % t[3:6].__str__())
@@ -175,8 +175,8 @@ class iconic():
             raise ValueError, 'Unrecognized optimizer'
         
         # Output
-        t = affine.param_to_vector12(tc, t0, precond, stamp)
-        T = affine.matrix44(t)
+        t = affine_transform.param_to_vector12(tc, t0, precond, stamp)
+        T = affine_transform.matrix44(t)
         return (T, t)
 
     # Return a set of similarity
@@ -210,7 +210,7 @@ class iconic():
                           SX[i], SY[i], SZ[i],
                           QX[i], QY[i], QZ[i]])
 
-            similarities[i] = self.eval(affine.matrix44(t))
+            similarities[i] = self.eval(affine_transform.matrix44(t))
             params[:, i] = t 
 
         return similarities, params
@@ -219,11 +219,11 @@ class iconic():
     def resample(self, T, toresample='source', dtype=None):
         if toresample is 'target': 
             Tv = self.voxel_transform(T)
-            out = affine.resample(self.target, self.source.shape, Tv, 
+            out = affine_transform.resample(self.target, self.source.shape, Tv, 
                                   datatype=dtype)
         else:
             Tv_inv = np.linalg.inv(self.voxel_transform(T))
-            out = affine.resample(self.source, self.target.shape, Tv_inv, 
+            out = affine_transform.resample(self.source, self.target.shape, Tv_inv, 
                                   datatype=dtype)
 
         return out

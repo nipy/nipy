@@ -21,8 +21,8 @@ def configuration(parent_package='',top_path=None):
                 extra_info=lapack_info,
                 )
     config.add_extension(
-                '_transform_affine',
-                sources=['_transform_affine.c'],
+                '_affine_transform',
+                sources=['_affine_transform.c'],
                 )
 
     return config

@@ -1,18 +1,18 @@
 import neuroimaging.neurospin as fff2
-import neuroimaging.neurospin.registration.transform_affine as affine 
+import affine_transform 
 
 import numpy as np
 import scipy as sp
 import scipy.optimize
         
 RADIUS_MM = 10 
-RIGID = affine.transformation_types['rigid 3D']
+RIGID = affine_transform.transformation_types['rigid 3D']
 
 
 def grid_coords(xyz, params, r2v, v2r, transform=None):
-    T = affine.matrix44(params)
+    T = affine_transform.matrix44(params)
     Tv = np.dot(r2v, np.dot(T, v2r))
-    XYZ = affine.transform(xyz, Tv)
+    XYZ = affine_transform.transform(xyz, Tv)
     return XYZ[0,:], XYZ[1,:], XYZ[2,:]
 
 
@@ -94,7 +94,7 @@ class Realign4d:
 
     def correct_motion(self):
         optimizer = self.optimizer
-        precond = affine.preconditioner(RADIUS_MM)[0:6]
+        precond = affine_transform.preconditioner(RADIUS_MM)[0:6]
 
         def callback(pc):
             p = pc*precond
@@ -186,7 +186,7 @@ def params_to_mat44(transfo_run, transform=None):
         transform = np.eye(4)
     transforms = []
     for t in range(transfo_run.shape[0]):
-        T = np.dot(transform, affine.matrix44(transfo_run[t,:]))
+        T = np.dot(transform, affine_transform.matrix44(transfo_run[t,:]))
         transforms.append(T)
     transforms = np.asarray(transforms)
     return transforms
@@ -225,7 +225,7 @@ def realign4d(runs, within_loops=2, between_loops=5, speedup=4, optimizer='powel
     # Compose transformations for each run
     for idx in run_idx:
         run = corr_runs[idx]
-        transforms = params_to_mat44(transfo_runs[idx], transform=affine.matrix44(transfo_mean[idx]))
+        transforms = params_to_mat44(transfo_runs[idx], transform=affine_transform.matrix44(transfo_mean[idx]))
         corr_runs[idx] = _resample4d(run, transforms=transforms)
         transfo_runs[idx] = transforms
         
