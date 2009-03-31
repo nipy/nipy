@@ -35,6 +35,9 @@ def test_write():
     yield nose.tools.assert_equal, test[0].affine.shape, (4,4)
     yield nose.tools.assert_equal, img[0].affine.shape, (5,4)
     yield nose.tools.assert_true, np.allclose(test[0].affine, img[0].affine[1:])
+    # Under windows, if you don't close before delete, you get a
+    # locking error.
+    os.close(fp)
     os.remove(fname)
 
 def test_iter():
