@@ -1,6 +1,4 @@
-#include "fff_iconic_match.h"
-#include "fff_base.h"
-#include "fff_cubic_spline.h" 
+#include "joint_histogram.h"
 
 #include <randomkit.h>
 
@@ -8,6 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+#define SQR(a) ((a)*(a))
+#define FLOOR(a)((a)>0.0 ? (int)(a):(((int)(a)-a)!= 0.0 ? (int)(a)-1 : (int)(a)))  
+#define UNNSIGNED_FLOOR(a) ((int)(a))
 
 
 static double _marginalize(double* h, const double* H, int clampI, int clampJ, int axis); 
@@ -40,21 +42,6 @@ static inline void _rand_interpolation(int i,
 
 
 
-unsigned int fff_imatch_source_npoints(const fff_array* imI)
-{
-  unsigned int size = 0; 
-  fff_array_iterator iterI = fff_array_iterator_init(imI); 
-  int i; 
-  
-  while(iterI.idx < iterI.size) {
-    i = (int)fff_array_get_from_iterator(imI, iterI); 
-    if (i>=0) 
-      size ++; 
-    fff_array_iterator_update(&iterI); 
-  }
-
-  return size; 
-}
 
 /* =========================================================================
    JOINT HISTOGRAM COMPUTATION 
@@ -62,7 +49,7 @@ unsigned int fff_imatch_source_npoints(const fff_array* imI)
 
 /*
   
-imI : assumed signed short encoded, possibly non-contiguous.
+iterI : assumed to iterate over a signed short encoded, possibly non-contiguous array.
 
 imJ_padded : assumed C-contiguous (last index varies faster) & signed
 short encoded.
@@ -83,18 +70,19 @@ Negative intensities are ignored.
     nn ++; }
 
 
-void fff_imatch_joint_hist(double* H, int clampI, int clampJ,  
-			    const fff_array* imI,
-			    const fff_array* imJ_padded, 
-			    const double* Tvox, 
-			    int interp)
+void joint_histogram(double* H, 
+		     int clampI, 
+		     int clampJ,  
+		     PyArrayIterObject* iterI,
+		     const PyArrayObject* imJ_padded, 
+		     const double* Tvox, 
+		     int interp)
 {
-  fff_array_iterator iterI = fff_array_iterator_init(imI); 
   const signed short* J=(signed short*)imJ_padded->data; 
   size_t dimJX=imJ_padded->dimX-2, dimJY=imJ_padded->dimY-2, dimJZ=imJ_padded->dimZ-2;  
   signed short Jnn[8]; 
   double W[8]; 
-  signed short *bufJnn; 
+  signed short *bufI, *bufJnn; 
   double *bufW; 
   int i, j;
   size_t off;
@@ -113,6 +101,9 @@ void fff_imatch_joint_hist(double* H, int clampI, int clampJ,
   void* interp_params = NULL; 
   rk_state rng; 
 
+  /* Reset the source image iterator */
+  PyArray_ITER_RESET(iterI);
+
   /* Set interpolation method */ 
   if (interp==0) 
     interpolate = &_pv_interpolation;
@@ -128,15 +119,16 @@ void fff_imatch_joint_hist(double* H, int clampI, int clampJ,
   memset((void*)H, 0, clampI*clampJ*sizeof(double));
 
   /* Looop over source voxels */
-  while(iterI.idx < iterI.size) {
+  while(iterI->idx < iterI->size) {
   
     /* Source voxel intensity */
-    i = (int)fff_array_get_from_iterator(imI, iterI); 
+    bufI = (signed short*)PyArray_ITER_DATA(iterI); 
+    i = (int)bufI[0];
 
     /* Source voxel coordinates */
-    x = iterI.x;
-    y = iterI.y;
-    z = iterI.z;
+    x = iterI->coordinates[0];
+    y = iterI->coordinates[1];
+    z = iterI->coordinates[2];
     
     /* Compute the transformed grid coordinates of current voxel */ 
     _apply_affine_transformation(&Tx, &Ty, &Tz, Tvox, x, y, z); 
@@ -145,9 +137,9 @@ void fff_imatch_joint_hist(double* H, int clampI, int clampJ,
        threshold, or the transformed point is completly outside
        the reference grid */
     if ((i>=0) && 
-	 (Tx>-1) && (Tx<dimJX) && 
-	 (Ty>-1) && (Ty<dimJY) && 
-	 (Tz>-1) && (Tz<dimJZ)) {
+	(Tx>-1) && (Tx<dimJX) && 
+	(Ty>-1) && (Ty<dimJY) && 
+	(Tz>-1) && (Tz<dimJZ)) {
 	
       /* 
 	 Nearest neighbor (floor coordinates in the padded
@@ -157,9 +149,9 @@ void fff_imatch_joint_hist(double* H, int clampI, int clampJ,
 	 
 	 FIXME: see if we can replace this with assembler instructions. 
       */
-      nx = FFF_FLOOR(Tx) + 1;
-      ny = FFF_FLOOR(Ty) + 1;
-      nz = FFF_FLOOR(Tz) + 1;
+      nx = FLOOR(Tx) + 1;
+      ny = FLOOR(Ty) + 1;
+      nz = FLOOR(Tz) + 1;
       
       /* The convention for neighbor indexing is as follows:
        *
@@ -224,10 +216,11 @@ void fff_imatch_joint_hist(double* H, int clampI, int clampJ,
     } /* End of IF TRANSFORMS INSIDE */
     
     /* Update source index */ 
-    fff_array_iterator_update(&iterI); 
+    PyArray_ITER_NEXT(iterI); 
     
   } /* End of loop over voxels */ 
   
+
   return; 
 }
 
@@ -271,7 +264,7 @@ static inline void _tri_interpolation(int i,
   }
   if (sumW > 0.0) {
     jm /= sumW;
-    H[FFF_UNSIGNED_ROUND(jm)+clampJ_i] += 1;
+    H[UNSIGNED_ROUND(jm)+clampJ_i] += 1;
   }
   return; 
 }
@@ -389,19 +382,11 @@ static double _supervised_mi(const double* H, const double* F,
 			      double* fI, int clampI, double* fJ, int clampJ, 
 			      double* n); 
 
-double fff_imatch_cc(const double* H, int clampI, int clampJ)
+double correlation_coefficient(const double* H, int clampI, int clampJ)
 {
   double n; 
   return(_cc(H, clampI, clampJ, &n));
 }
-
-double fff_imatch_n_cc(const double* H, int clampI, int clampJ, double norma)
-{
-  double n, x;  
-  x = 1 - _cc(H, clampI, clampJ, &n);
-  return(-.5 * (n/norma) * NICELOG(x));
-}
-
 
 static double _cc(const double* H, int clampI, int clampJ, double* n)
 {
@@ -451,7 +436,7 @@ static double _cc(const double* H, int clampI, int clampJ, double* n)
   
   /* Compute covariance and variance */
   covij = mij - mj * mi;
-  covij = FFF_SQR(covij);
+  covij = SQR(covij);
   varj  = mj2 - mj * mj;
   vari  = mi2 - mi * mi;
   aux = varj * vari;
@@ -471,19 +456,11 @@ static double _cc(const double* H, int clampI, int clampJ, double* n)
 }
 
 
-double fff_imatch_cr(const double* H, int clampI, int clampJ)
+double correlation_ratio(const double* H, int clampI, int clampJ)
 {
   double n; 
   return(_cr(H, clampI, clampJ, &n));
 }
-
-double fff_imatch_n_cr(const double* H, int clampI, int clampJ, double norma)
-{
-  double n, x;  
-  x = 1 - _cr(H, clampI, clampJ, &n);
-  return(-.5 * (n/norma) * NICELOG(x));
-}
-
 
 static double _cr(const double* H, int clampI, int clampJ, double* n)
 {
@@ -541,17 +518,10 @@ static double _cr(const double* H, int clampI, int clampJ, double* n)
 }
 
 
-double fff_imatch_crL1(const double* H, double* hI, int clampI, int clampJ)
+double correlation_ratio_L1(const double* H, double* hI, int clampI, int clampJ)
 {
   double n; 
   return(_crL1(H, hI, clampI, clampJ, &n));
-}
-
-double fff_imatch_n_crL1(const double* H, double* hI, int clampI, int clampJ, double norma)
-{
-  double n, x;  
-  x = 1 - _crL1(H, hI, clampI, clampJ, &n);
-  return(-.5 * (n/norma) * NICELOG(x));
 }
 
 
@@ -587,12 +557,12 @@ static double _crL1(const double* H, double* hI, int clampI, int clampJ, double*
   if (dev==0.0)
     return 0.0;
   else
-    return(1 - FFF_SQR(cdev)/FFF_SQR(dev)); /* Squaring for comparison with CR(L2) */  
+    return(1 - SQR(cdev)/SQR(dev)); /* Squaring for comparison with CR(L2) */  
 }
 
 
 
-double fff_imatch_joint_ent(const double* H, int clampI, int clampJ)
+double joint_entropy(const double* H, int clampI, int clampJ)
 {
   double n; 
   double entIJ = _entropy(H, clampI*clampJ, &n); 
@@ -600,7 +570,7 @@ double fff_imatch_joint_ent(const double* H, int clampI, int clampJ)
 }
 
 
-double fff_imatch_cond_ent(const double* H, double* hJ, int clampI, int clampJ)
+double conditional_entropy(const double* H, double* hJ, int clampI, int clampJ)
 {
   double n; 
   double entIJ, entJ;  
@@ -611,17 +581,10 @@ double fff_imatch_cond_ent(const double* H, double* hJ, int clampI, int clampJ)
 }
 
 
-double fff_imatch_mi(const double* H, double* hI, int clampI, double* hJ, int clampJ)
+double mutual_information(const double* H, double* hI, int clampI, double* hJ, int clampJ)
 {
   double n; 
   return(_mi(H, hI, clampI, hJ, clampJ, &n)); 
-}
-
-double fff_imatch_n_mi(const double* H, double* hI, int clampI, double* hJ, int clampJ, double norma)
-{
-  double n, x; 
-  x = _mi(H, hI, clampI, hJ, clampJ, &n); 
-  return((n/norma)*x); 
 }
 
 static double _mi(const double* H, double* hI, int clampI, double* hJ, int clampJ, double* n)
@@ -642,7 +605,7 @@ static double _mi(const double* H, double* hI, int clampI, double* hJ, int clamp
   
 */
 
-double fff_imatch_norma_mi(const double* H, double* hI, int clampI, double* hJ, int clampJ)
+double normalized_mutual_information(const double* H, double* hI, int clampI, double* hJ, int clampJ)
 {
   double n; 
   double entIJ, entI, entJ, aux; 
@@ -662,12 +625,12 @@ double fff_imatch_norma_mi(const double* H, double* hI, int clampI, double* hJ, 
 /*
 
 Supervised mutual information. 
-See Roche, PhD dissertation, Université de Nice-Sophia Antipolis, 2001. 
+See Roche, PhD dissertation, University of Nice-Sophia Antipolis, 2001. 
 
 */ 
 
-double fff_imatch_supervised_mi(const double* H, const double* F, 
-				 double* fI, int clampI, double* fJ, int clampJ)
+double supervised_mutual_information(const double* H, const double* F, 
+				     double* fI, int clampI, double* fJ, int clampJ)
 {
   double x, n; 
   x = _supervised_mi(H, F, fI, clampI, fJ, clampJ, &n); 
@@ -676,13 +639,6 @@ double fff_imatch_supervised_mi(const double* H, const double* F,
   return(x); 
 }
 
-double fff_imatch_n_supervised_mi(const double* H, const double* F, 
-				   double* fI, int clampI, double* fJ, int clampJ, 
-				   double norma)
-{
-  double n; 
-  return( _supervised_mi(H, F, fI, clampI, fJ, clampJ, &n) / norma);   
-}
 
 static double _supervised_mi(const double* H, const double* F, 
 			      double* fI, int clampI, double* fJ, int clampJ, 
@@ -835,12 +791,14 @@ static void _L1_moments (const double * h, int clamp, int stride,
 
 /* Tvox is the voxel transformation from source to target 
    Resample a 2d-3d image undergoing an affine transformation. */
-void fff_imatch_resample(fff_array* im_resampled, 
-			  const fff_array* im, 
-			  const double* Tvox)
+
+#if 0 
+void cubic_spline_resample(PyArrayObject* im_resampled, 
+			   const PyArrayObject* im, 
+			   const double* Tvox)
 {
   double i1;
-  fff_array* im_spline_coeff;
+  PyArrayObject* im_spline_coeff;
   fff_array_iterator imIter = fff_array_iterator_init(im_resampled); 
   size_t x, y, z;
   size_t ddimX=im->dimX-1, ddimY=im->dimY-1, ddimZ=im->dimZ-1; 
@@ -882,82 +840,4 @@ void fff_imatch_resample(fff_array* im_resampled,
 }
 
 
-
-
-/* =========================================================================
-   MEMORY ALLOCATION
-   ========================================================================= */
-
-fff_imatch* fff_imatch_new (const fff_array* imI,
-			     const fff_array* imJ,
-			     double thI,
-			     double thJ,
-			     int clampI, 
-			     int clampJ)
-{
-  fff_imatch* imatch;
-  
-  /* Verify that input images are not 4D */ 
-  if ((imI->ndims == FFF_ARRAY_4D) ||
-       (imJ->ndims == FFF_ARRAY_4D)) {
-    FFF_WARNING("Input images cannot be 4D.\n"); 
-    return NULL; 
-  }
-
-
-  /* Start with allocating the object */
-  imatch = (fff_imatch*)calloc(1, sizeof(fff_imatch));
-  if (imatch == NULL) 
-    return NULL;
-
-  /** Create SSHORT images, clamp and possibly padd original images **/
-  
-  /* Source image */ 
-  imatch->imI = fff_array_new3d(FFF_SSHORT, imI->dimX, imI->dimY, imI->dimZ);
-  fff_array_clamp(imatch->imI, imI, thI, &clampI);
-  
-
-  /* Target image: enlarge to padd borders with negative values */ 
-  imatch->imJ_padded = fff_array_new3d(FFF_SSHORT, imJ->dimX+2, imJ->dimY+2, imJ->dimZ+2);
-  fff_array_set_all(imatch->imJ_padded, -1); 
-  imatch->imJ = (fff_array*)malloc(sizeof(fff_array)); 
-  *(imatch->imJ) = fff_array_get_block3d(imatch->imJ_padded, 
-					 1, imJ->dimX, 1,  
-					 1, imJ->dimY, 1,
-					 1, imJ->dimZ, 1);
-  fff_array_clamp(imatch->imJ, imJ, thJ, &clampJ);
-  
-
-  /* Create the joint histogram structure. Important notice: in all
-     computations, H will be assumed C-contiguous. 
-
-     i (source intensities) are row indices
-     j (target intensities) are column indices
-  */ 
-  imatch->clampI = clampI; 
-  imatch->clampJ = clampJ; 
-  imatch->H = calloc(clampI*clampJ, sizeof(double)); 
-  imatch->hI = calloc(clampI, sizeof(double)); 
-  imatch->hJ = calloc(clampJ, sizeof(double)); 
-
-  imatch->owner_images = 1;
-  imatch->owner_histograms = 1;
-
-  return imatch;
-}
-
-void fff_imatch_delete(fff_imatch* imatch)
-{
-  free(imatch->imJ); /* This image is just a view on imJ_padded */ 
-  if (imatch->owner_images) {
-    fff_array_delete(imatch->imI); 
-    fff_array_delete(imatch->imJ_padded);
-  } 
-  if (imatch->owner_histograms) {
-    free(imatch->H); 
-    free(imatch->hI); 
-    free(imatch->hJ); 
-  }
-  free(imatch);
-  return;
-}
+#endif 

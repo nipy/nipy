@@ -15,16 +15,14 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('registration', parent_package, top_path)
     config.add_data_dir('tests')
     config.add_extension(
-                '_iconic',
-                sources=['_iconic.c'],
-                libraries=['fffpy'],
+                '_yamila',
+                sources=['_yamila.c', 'joint_histogram.c'],
+                libraries = ['fffpy'],
                 extra_info=lapack_info,
                 )
     config.add_extension(
                 '_transform_affine',
                 sources=['_transform_affine.c'],
-                libraries=['fffpy'],
-                extra_info=lapack_info,
                 )
 
     return config

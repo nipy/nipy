@@ -1,4 +1,7 @@
-import _iconic
+"""
+YAMILA = Yet Another Mutual Information-Like Aligner
+"""
+import _yamila
 import transform_affine as affine
 
 import numpy as np  
@@ -51,7 +54,7 @@ def _similarity(similarity, normalize):
         k = 1
     elif normalize == 'saclay':
         k = 2
-    flag = _iconic.similarity_measures[similarity][k] ## FIXME: may not exist, should check! 
+    flag = _yamila.similarity_measures[similarity][k] ## FIXME: may not exist, should check! 
     return flag
 
 
@@ -69,7 +72,7 @@ class iconic():
         self.target, t_thres, t_nbins, t_transform = _format(target)
         self.source_clamped, self.target_clamped, \
             self.joint_hist, self.source_hist, self.target_hist = \
-            _iconic.imatch(self.source, self.target, s_thres, t_thres, 
+            _yamila.imatch(self.source, self.target, s_thres, t_thres, 
                             s_nbins, t_nbins)
         self.source_transform = s_transform
         self.target_transform_inv = np.linalg.inv(t_transform)
@@ -93,7 +96,7 @@ class iconic():
         self.similarity = similarity
         self.normalize = normalize
         self._similarity = _similarity(similarity, normalize)
-        self.block_npoints = _iconic.block_npoints(self.source_clamped, 
+        self.block_npoints = _yamila.block_npoints(self.source_clamped, 
                     self.block_subsampling, self.block_corner, self.block_size)
         self.pdf = np.array(pdf)        
 
@@ -112,12 +115,12 @@ class iconic():
         seed = self._interp
         if self._interp < 0:
             seed = - np.random.randint(maxint)
-        _iconic.joint_hist(self.joint_hist, self.source_clamped, 
+        _yamila.joint_hist(self.joint_hist, self.source_clamped, 
                            self.target_clamped, Tb, self.block_subsampling, 
                            self.block_corner, self.block_size, seed)
         #self.source_hist = np.sum(self.joint_histo, 1)
         #self.target_hist = np.sum(self.joint_histo, 0)
-        return _iconic.similarity(self.joint_hist, self.source_hist, 
+        return _yamila.similarity(self.joint_hist, self.source_hist, 
                                   self.target_hist, self._similarity, 
                                   self.block_npoints, self.pdf)
 

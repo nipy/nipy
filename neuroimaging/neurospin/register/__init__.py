@@ -1,4 +1,4 @@
-from registration import *
+import yamila
 import transform_affine 
 
 from numpy.testing import Tester
