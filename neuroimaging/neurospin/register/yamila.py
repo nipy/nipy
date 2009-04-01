@@ -1,5 +1,7 @@
 """
 YAMILA = Yet Another Mutual Information-Like Aligner
+
+Questions: alexis.roche@gmail.com
 """
 import _yamila
 import affine_transform
@@ -22,7 +24,6 @@ transform: (4,4) numpy array, voxel to real spatial transformation
 TODO: type checking. implement proper masking.
 
 For the time being, any transformation is assumed to be a 4x4 matrix. 
-
 """
 
 
@@ -32,18 +33,53 @@ interp_methods = {'partial volume': 0,
                   'random': -1}
 
 
-def _format(im, mask=0, nbins=256):
 
-    array = im.array
-    transform = im.transform
+def clamp(x, th=0, mask=None, bins=256): 
+    """
+    Define a mask as the intersection of the input mask and
+    (x>=th). Then, clamp in-mask array values in the range [0..bins-1]
+    and reset out-of-mask values to -1.
+    """
+    # Mask 
+    if mask == None: 
+        mask = np.ones(x.shape, dtype='bool')
+    mask *= (x>=th)
 
-    # Convert mask to intensity threshold
-    if isinstance(mask, int) or isinstance(mask, long) or isinstance(mask, float):
-        thres = float(mask)
-    else:
-        thres = 0.0 ## FIXME!!
+    # Create output array to allow in-place operations
+    y = np.zeros(x.shape, dtype='short')
+    dmaxmax = 2**(8*y.dtype.itemsize-1)-1
 
-    return array, thres, nbins, transform
+    # Threshold
+    dmax = bins-1 ## default output maximum value
+    if dmax > dmaxmax: 
+        raise ValueError("Excessive number of bins.")
+    xmin = float(x[mask].min())
+    xmax = float(x[mask].max())
+    th = np.maximum(th, xmin)
+    if th > xmax:
+        th = xmin  
+        print("Warning: Inconsistent threshold %f, ignored." % th) 
+    
+    # Input array dynamic
+    d = xmax-th
+
+    """
+    If the image dynamic is small, no need for compression: just
+    downshift image values and re-estimate the dynamic range (hence
+    xmax is translated to xmax-tth casted to dtype='short'. Otherwise,
+    compress after downshifting image values (values equal to the
+    threshold are reset to zero). 
+    """
+    y[mask==False] = -1
+    if np.issubdtype(x.dtype, int) and d<=dmax:
+        y[mask] = x[mask]-th
+        bins = int(d)+1
+    else: 
+        a = dmax/d
+        y[mask] = np.round(a*(x[mask]-th))
+ 
+    return y, bins 
+
 
 
 def _similarity(similarity, normalize): 
@@ -65,17 +101,41 @@ def _interp(interp):
     return flag
 
 
-class iconic():
 
-    def __init__(self, source, target):
-        self.source, s_thres, s_nbins, s_transform = _format(source)
-        self.target, t_thres, t_nbins, t_transform = _format(target)
-        self.source_clamped, self.target_clamped, \
-            self.joint_hist, self.source_hist, self.target_hist = \
-            _yamila.imatch(self.source, self.target, s_thres, t_thres, 
-                            s_nbins, t_nbins)
-        self.source_transform = s_transform
-        self.target_transform_inv = np.linalg.inv(t_transform)
+
+class JointHistogram():
+
+    def __init__(self, source, target, 
+                 source_transform, target_transform,
+                 source_threshold=0, target_threshold=0,  
+                 source_mask=None, target_mask=None,
+                 bins=256):
+
+        """
+        JointHistogram class for intensity-based image registration. 
+        """
+        ## FIXME: test that input images are 3d
+
+        # Source image binning
+        self.source = source
+        self.source_clamped, s_bins = clamp(source, th=source_threshold, mask=source_mask, bins)
+
+        # Target image padding + binning
+        self.target = target 
+        self.target_clamped = -np.ones(np.array(target.shape)+2)
+        self.target_clamped[1:target.shape[0]-1:, 1:target.shape[1]-1:, 1:target.shape[2]-1:], \
+            t_bins = clamp(target, th=target_threshold, mask=target_mask, bins)
+        
+        # Histograms
+        self.joint_hist = np.zeros([s_bins, t_bins])
+        self.source_hist = np.zeros(s_bins)
+        self.target_hist = np.zeros(t_bins)
+        
+        # Image-to-world transforms 
+        self.source_transform = source_transform
+        self.target_transform_inv = np.linalg.inv(target_transform)
+
+        # Set default registration parameters
         self.set()
 
     # Use array rather than asarray to ensure contiguity 
@@ -87,6 +147,11 @@ class iconic():
         if size == None:
             size = self.source.shape
         self.block_size = np.array(size, dtype='uint')
+        self.source_block = self.source_clamped[corner[0]:corner[0]+size[0]-1:subsampling[0],
+                                                corner[1]:corner[1]+size[1]-1:subsampling[1],
+                                                corner[2]:corner[2]+size[2]-1:subsampling[2]]
+        self.block_npoints = (self.source_block >= 0).sum()
+
         ## Taux: block to full array transformation
         Taux = np.diag(np.concatenate((self.block_subsampling,[1]),1))
         Taux[0:3,3] = self.block_corner
@@ -96,35 +161,35 @@ class iconic():
         self.similarity = similarity
         self.normalize = normalize
         self._similarity = _similarity(similarity, normalize)
-        self.block_npoints = _yamila.block_npoints(self.source_clamped, 
-                    self.block_subsampling, self.block_corner, self.block_size)
         self.pdf = np.array(pdf)        
 
     # T is the 4x4 transformation between the real coordinate systems
     # The corresponding voxel transformation is: Tv = Tt^-1 o T o Ts
     def voxel_transform(self, T):
         return np.dot(self.target_transform_inv, 
-                    np.dot(T, self.source_transform)) ## C-contiguity ensured
+                      np.dot(T, self.source_transform)) ## C-contiguity ensured
 
     def block_voxel_transform(self, T): 
         return np.dot(self.target_transform_inv, 
-                    np.dot(T, self.block_transform)) ## C-contiguity ensured 
+                      np.dot(T, self.block_transform)) ## C-contiguity ensured 
 
     def eval(self, T):
-        Tb = self.block_voxel_transform(T)
+        Tv = self.block_voxel_transform(T)
         seed = self._interp
         if self._interp < 0:
             seed = - np.random.randint(maxint)
-        _yamila.joint_hist(self.joint_hist, self.source_clamped, 
-                           self.target_clamped, Tb, self.block_subsampling, 
-                           self.block_corner, self.block_size, seed)
+        _yamila.joint_hist(self.joint_hist, 
+                           self.source_block.flat, ## array iterator
+                           self.target_clamped, 
+                           Tv, 
+                           seed)
         #self.source_hist = np.sum(self.joint_histo, 1)
         #self.target_hist = np.sum(self.joint_histo, 0)
         return _yamila.similarity(self.joint_hist, self.source_hist, 
                                   self.target_hist, self._similarity, 
                                   self.block_npoints, self.pdf)
 
-    ## TODO : check that the dimension of start is consistent with the search space. 
+    ## FIXME: check that the dimension of start is consistent with the search space. 
     def optimize(self, search='rigid 3D', method='powell', start=None, radius=10):
         """
         radius: a parameter for the 'typical size' in mm of the object

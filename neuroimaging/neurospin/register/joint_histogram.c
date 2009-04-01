@@ -15,8 +15,8 @@
 static double _marginalize(double* h, const double* H, int clampI, int clampJ, int axis); 
 static void _L1_moments (const double * h, int clamp, int stride, double* median, double* dev, double* sumh);
 
-static inline void _apply_affine_transformation(double* Tx, double* Ty, double* Tz, 
-						const double* Tvox, size_t x, size_t y, size_t z); 
+static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz, 
+					   const double* Tvox, size_t x, size_t y, size_t z); 
 
 static inline void _pv_interpolation(int i, 
 				     double* H, int clampJ, 
@@ -131,7 +131,7 @@ void joint_histogram(double* H,
     z = iterI->coordinates[2];
     
     /* Compute the transformed grid coordinates of current voxel */ 
-    _apply_affine_transformation(&Tx, &Ty, &Tz, Tvox, x, y, z); 
+    _apply_affine_transform(&Tx, &Ty, &Tz, Tvox, x, y, z); 
     
     /* Test whether the current voxel is below the intensity
        threshold, or the transformed point is completly outside
@@ -301,8 +301,8 @@ static inline void _rand_interpolation(int i,
 
 
 
-static inline void _apply_affine_transformation(double* Tx, double* Ty, double* Tz, 
-						const double* Tvox, size_t x, size_t y, size_t z)
+static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz, 
+					   const double* Tvox, size_t x, size_t y, size_t z)
 {
   double* bufTvox = (double*)Tvox; 
 
@@ -819,7 +819,7 @@ void cubic_spline_resample(PyArrayObject* im_resampled,
     x = imIter.x;
     y = imIter.y; 
     z = imIter.z; 
-    _apply_affine_transformation(&Tx, &Ty, &Tz, Tvox, x, y, z); 
+    _apply_affine_transform(&Tx, &Ty, &Tz, Tvox, x, y, z); 
     if ((Tx<0) || (Tx>ddimX) ||
 	(Ty<0) || (Ty>ddimY) ||
 	(Tz<0) || (Tz>ddimZ))

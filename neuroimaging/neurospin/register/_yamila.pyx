@@ -12,7 +12,7 @@ __version__ = '0.1'
 
 
 # Includes
-include "fff.pxi"
+include "numpy.pxi"
 
 # Additional exports from fff_iconic_match.h
 cdef extern from "fff_iconic_match.h":
@@ -91,106 +91,23 @@ similarity_measures = {'correlation coefficient': [CORRELATION_COEFFICIENT, N_CO
 
 
 
-def imatch(ImI, ImJ, double thI=0, double thJ=0, int clampI=256, int clampJ=256):
-    """
-    imI_clamped, imJ_clamped, h, hI, hJ = imatch(imI, imJ, thI=0, thJ=0, clampI=256, clampJ=256).
-    Comments to follow.
-    """
-    cdef fff_array *imI, *imJ
-    cdef fff_imatch *imatch
-    
-    # Fetch input arrays 
-    imI = fff_array_fromPyArray(ImI) 
-    imJ = fff_array_fromPyArray(ImJ)
-
-    # Create "imatch" C structure, which involves allocating arrays,
-    # clamping input images, padding the target image with -1, etc...
-    imatch = fff_imatch_new(imI, imJ, thI, thJ, clampI, clampJ)
-
-    # Transfer clamped images to Python
-    ImI_clamped = fff_array_toPyArray(imatch.imI) 
-    ImJ_clamped = fff_array_toPyArray(imatch.imJ_padded)
-
-    # Transfer joint histograms 
-    H = np.zeros([imatch.clampI, imatch.clampJ])
-    HI = np.zeros(imatch.clampI)
-    HJ = np.zeros(imatch.clampJ)
-    
-    # Delete local structures
-    fff_array_delete(imI) 
-    fff_array_delete(imJ) 
-    imatch.owner_images = 0 
-    fff_imatch_delete( imatch ) 
-
-    # Return a tuple
-    return ImI_clamped, ImJ_clamped, H, HI, HJ
-
-
-def block_npoints(ImI, np.ndarray[np.uint_t, ndim=1] subsampling, 
-                       np.ndarray[np.uint_t, ndim=1] corner, 
-                       np.ndarray[np.uint_t, ndim=1] size):
-    cdef fff_array *imI
-    cdef fff_array imI_block
-    cdef unsigned int npoints
-
-    imI = fff_array_fromPyArray(ImI)
-    if (    subsampling[0] == 0 or 
-            subsampling[1] == 0 or
-            subsampling[2] == 0):
-        raise ValueError('subsampling cannot be null')
-    imI_block = fff_array_get_block3d(imI,
-                                      corner[0], corner[0]+size[0]-1, 
-                                      subsampling[0],
-                                      corner[1], corner[1]+size[1]-1, 
-                                      subsampling[1],
-                                      corner[2], corner[2]+size[2]-1, 
-                                      subsampling[2])
-    npoints = fff_imatch_source_npoints(&imI_block)
-    fff_array_delete(imI)
-    return npoints
-
-
-def joint_hist(ndarray H, ImI, ImJ, ndarray Tvox,
-               ndarray[np.uint_t, ndim=1] subsampling, 
-               ndarray[np.uint_t, ndim=1] corner, 
-               ndarray[np.uint_t, ndim=1] size, int interp):
+def joint_hist(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
 
     """
     joint_hist(H, imI, imJ, Tvox, subsampling, corner, size)
     Comments to follow.
     """
     cdef double *h, *tvox
-    cdef fff_array *imI, *imJ
-    cdef fff_array imI_block
     cdef int clampI, clampJ
 
     # Views
     clampI = <int>H.dimensions[0]
     clampJ = <int>H.dimensions[1]    
     h = <double*>H.data
-    imI = fff_array_fromPyArray(ImI)
-    imJ = fff_array_fromPyArray(ImJ)
     tvox = <double*>Tvox.data
-        
-    # Define source image block
-    if (    subsampling[0] == 0 or 
-            subsampling[1] == 0 or
-            subsampling[2] == 0):
-        raise ValueError('subsampling cannot be null')
-    imI_block =  fff_array_get_block3d(imI,
-                                       corner[0], corner[0]+size[0]-1, 
-                                       subsampling[0],
-                                       corner[1], corner[1]+size[1]-1, 
-                                       subsampling[1],
-                                       corner[2], corner[2]+size[2]-1, 
-                                       subsampling[2])
 
     # Compute joint histogram 
-    fff_imatch_joint_hist(h, clampI, clampJ, &imI_block, imJ, tvox, interp)
-
-    # Delete local array views
-    fff_array_delete(imI) 
-    fff_array_delete(imJ)
+    joint_histogram(h, clampI, clampJ, iterI, imJ, tvox, interp)
 
     return 
 
