@@ -12,6 +12,8 @@ todo
 - add modulations of the regressors
 - add FIR model 
 - normalization of the amplitude -> check SPM
+- contrasts based on fatcors (lm.contrast(m1))
+- convolution of regressors with hrf
 
 question
 - First-level (time) versus second-level(no time)  model ?
@@ -76,6 +78,8 @@ con_vect = lm.contrast(c2-c3,'glover')
 con_vect = lm.contrast(c1-c3,'glover')
 con_vect = lm.contrast(c1-c3)
 con_vect = lm.contrast(2*c1-c2-c3)
+
+
 
 X = X/np.sqrt(np.sum(X**2,0))
 import matplotlib.pylab as mp
