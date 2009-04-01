@@ -65,7 +65,7 @@ def test_basis_change():
     basis2 = random_orth(names='uvw')
     
     bchange = MG.Linear(random_orth(dim=3).matrix, basis2.coords, basis1.coords)
-    print basis1.coords
+    #print basis1.coords
     new = MG.change_basis(basis1, bchange)
 
     assert_true(MG.same_transformation(basis1, new, bchange))
@@ -87,7 +87,7 @@ def test_product2():
     O_1 = random_orth(names='xyz')
     O_2 = random_orth(names='xyz')
     O_21 = MG.product(O_2, O_1)
-    print type(O_21)
+    #print type(O_21)
 
 def test_homomorphism():
 

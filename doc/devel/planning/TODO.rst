@@ -62,37 +62,6 @@ Bugs
 These should be moved to the nipy_ bug section on launchpad.  Placed
 here until they can be input.
 
-* Resolve differences between running tests via nose on command line
-  and ni.test().
-
-  ::
-  
-    cburns@nipy 11:32:32 $ nosetests -sv 
-    Ran 216 tests in 135.606s
-    FAILED (SKIP=35, errors=3)
-    
-    In [2]: ni.test()
-    Ran 146 tests in 10.874s
-    FAILED (SKIP=18, errors=12)
-    Out[2]: <nose.result.TextTestResult run=146 errors=12 failures=0>
-
-* Remove creation of named temporary files "\*.nii", use NamedTemporaryFile 
-  instead in test modules:
-
-  * modalities/fmri/tests/test_regression.py 
-  * modalities/fmri/fmristat/tests/test_model.py
-
-* Fix deprecation error in pynifti's swig generated extension code::
-
-    /Users/cburns/src/nipy-trunk/neuroimaging/externals/pynifti/nifti/niftiformat.py:458
-    DeprecationWarning: PyArray_FromDims: use PyArray_SimpleNew.  return
-    nifticlib.mat442array(self.__nimg.sto_xyz)
-    ...
-    /Users/cburns/src/nipy-trunk/neuroimaging/externals/pynifti/nifti/niftiformat.py:458
-    DeprecationWarning: PyArray_FromDimsAndDataAndDescr: use
-    PyArray_NewFromDescr.  return
-    nifticlib.mat442array(self.__nimg.sto_xyz)
-
 
 * Fix fmri.pca module.  Internally it's referencing old image api that
   no longer exists like Image.slice_iterator.  Currently all tests are
@@ -145,9 +114,6 @@ Refactorings
 * Cleanup neuroimaging.testing directory.  Possibly rename 'testing'
   to 'tests'.  Move utils.tests.data.__init__.py to tests and update
   import statements in all test modules.
-
-* Remove neuroimaging.utils dir. (path.py and odict.py should be in
-  externals)
 
 * image.save function should accept filename or file-like object.  If
   I have an open file I would like to be able to pass that in also,

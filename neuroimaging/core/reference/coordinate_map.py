@@ -7,7 +7,7 @@ them.  The *mapping* transforms an image from the input coordinate
 system to the output coordinate system.  And the *inverse_mapping*
 performs the opposite transformation.  The *inverse_mapping* can be
 specified explicity when creating the CoordinateMap or implicitly in the
-case of an Affine coordinatemap.
+case of an Affine CoordinateMap.
 
 """
 
@@ -42,14 +42,13 @@ That's as far as we got.
 """
 
 
-import copy
 import warnings
 
 import numpy as np
 
 import neuroimaging.core.transforms.affines as affines
-from neuroimaging.core.reference.coordinate_system import \
-    CoordinateSystem, safe_dtype 
+from neuroimaging.core.reference.coordinate_system import(CoordinateSystem, 
+                                                          safe_dtype)
 from neuroimaging.core.reference.coordinate_system import product as coordsys_product
 
 __docformat__ = 'restructuredtext'
@@ -64,9 +63,9 @@ class CoordinateMap(object):
 
     Attributes
     ----------
-    input_coords : ``CoordinateSystem``
+    input_coords : :class:`CoordinateSystem`
         The input coordinate system.
-    output_coords : ``CoordinateSystem``
+    output_coords : :class:`CoordinateSystem`
         The output coordinate system.
     mapping : callable
         A callable that maps the input_coords to the output_coords.
@@ -104,9 +103,9 @@ class CoordinateMap(object):
         ----------
         mapping : callable
            The mapping between input and output coordinates
-        input_coords : ``CoordinateSystem``
+        input_coords : :class:`CoordinateSystem`
            The input coordinate system
-        output_coords : ``CoordinateSystem``
+        output_coords : :class:`CoordinateSystem`
            The output coordinate system
         inverse_mapping : None or callable, optional
            The optional inverse of mapping, with the intention being
@@ -210,9 +209,9 @@ class CoordinateMap(object):
 
         """
 
-        in_vals = self._input_coords.checked_values(x)
+        in_vals = self._input_coords._checked_values(x)
         out_vals = self._mapping(in_vals)
-        return self._output_coords.checked_values(out_vals)
+        return self._output_coords._checked_values(out_vals)
 
     def copy(self):
         """Create a copy of the coordmap.
@@ -262,9 +261,9 @@ class Affine(CoordinateMap):
         ----------
         affine : array-like
            affine homogenous coordinate matrix
-        input_coords : CoordinateSystem
+        input_coords : :class:`CoordinateSystem`
            input coordinates
-        output_coords : CoordinateSystem
+        output_coords : :class:`CoordinateSystem`
            output coordinates
 
         Notes

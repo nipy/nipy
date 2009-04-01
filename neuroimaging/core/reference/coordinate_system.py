@@ -1,13 +1,15 @@
 """
-Coordinate systems are used to represent the spaces in which the images reside.
+CoordinateSystems are used to represent the space in which the image resides.
 
-A coordinate system contains coordinates.  For example a 3D coordinate
-system contains 3 coordinates: the first, second and third.
+A CoordinateSystem contains named coordinates, one for each dimension
+and a coordinate dtype.  The purpose of the CoordinateSystem is to
+specify the name and order of the coordinate axes for a particular
+space.  This allows one to compare two CoordinateSystems to determine
+if they are equal.
 
 """
 __docformat__ = 'restructuredtext'
 
-import copy
 import numpy as np
 
 
@@ -142,7 +144,7 @@ class CoordinateSystem(object):
 
         Parameters
         ----------
-        other : CoordinateSystem
+        other : :class:`CoordinateSystem`
            The object to be compared with
 
         Returns
@@ -168,7 +170,7 @@ class CoordinateSystem(object):
                 (self.name, self.coord_names, self.coord_dtype))
 
 
-    def checked_values(self, arr):
+    def _checked_values(self, arr):
         ''' Check ``arr`` for valid dtype and shape as coordinate values.
 
         Raise Errors for failed checks.
@@ -284,11 +286,14 @@ def safe_dtype(*dtypes):
 
     Parameters
     ----------
-    dtypes : sequence of builtin ``np.dtype``s
+    dtypes : sequence of builtin ``np.dtype``
 
     Returns
     -------
     dtype : np.dtype
+
+    Examples
+    --------
 
     >>> c1 = CoordinateSystem('ij', 'input', coord_dtype=np.float32)
     >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex)
@@ -330,6 +335,17 @@ def product(*coord_systems):
 
     The coord_dtype of the result will be determined by ``safe_dtype``.
 
+    Parameters
+    ----------
+    coord_systems : sequence of :class:`CoordinateSystem`
+    
+    Returns
+    -------
+    product_coord_system : :class:`CoordinateSystem`
+
+    Examples
+    --------
+
     >>> c1 = CoordinateSystem('ij', 'input', coord_dtype=np.float32)
     >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex)
     >>> c3 = CoordinateSystem('ik', 'in3')
@@ -342,14 +358,6 @@ def product(*coord_systems):
        ...
     ValueError: coord_names must have distinct names
     >>>                     
-
-    Parameters
-    ----------
-    coord_systems: sequence of ``CoordinateSystem``s
-    
-    Returns
-    -------
-    product_coord_system: CoordinateSystem
 
     """
 

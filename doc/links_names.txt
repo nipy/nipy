@@ -23,7 +23,7 @@
 .. _LGPL: http://www.gnu.org/copyleft/lesser.html
 
 .. Working process
-.. _pynifti: http://niftilib.sourceforge.net/
+.. _pynifti: http://niftilib.sourceforge.net/pynifti/
 .. _nifticlibs: http://nifti.nimh.nih.gov
 .. _nifti: http://nifti.nimh.nih.gov
 .. _`nipy launchpad`: https://launchpad.net/nipy

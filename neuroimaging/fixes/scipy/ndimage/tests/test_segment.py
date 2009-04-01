@@ -1,7 +1,23 @@
 import math
+import warnings
+
 import numpy as np
-import neuroimaging.fixes.scipy.ndimage._segmenter as seg
-from numpy.testing import *
+
+from neuroimaging.testing import *
+
+seg = None
+
+def setup():
+    # Suppress warnings during tests to reduce noise
+    warnings.simplefilter("ignore")
+    # Import segmenter module after suppressing the UserWarnings
+    global seg
+    import neuroimaging.fixes.scipy.ndimage._segmenter as seg
+
+def teardown():
+    # Clear list of warning filters
+    warnings.resetwarnings()
+
 
 def run_sobel():
     img    = seg.build_test_discs()

@@ -6,7 +6,7 @@ Use PyNifti to open files and extract necessary data to generate a Nipy Image.
 
 import numpy as np
 
-from neuroimaging.externals.pynifti import nifti
+import nifti
 
 NIFTI_UNKNOWN = 0
 # Nifti orientation codes from nifti1_io.h
