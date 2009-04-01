@@ -24,6 +24,8 @@ def configuration(parent_package='',top_path=None):
     
     config = Configuration('bindings', parent_package, top_path)
     config.add_data_dir('tests')
+    config.add_data_dir('benchmarks')
+
     # We need this because lapack fffpy.a is linked to lapack, which can be a 
     # fortran library, and the linker needs this information.
     from numpy.distutils.system_info import get_info

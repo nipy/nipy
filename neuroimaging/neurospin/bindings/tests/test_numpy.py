@@ -4,28 +4,6 @@ from neuroimaging.testing import *
 import numpy as np
 import neuroimaging.neurospin.bindings as fb
 
-def time_ratio(t0,t1):
-    if t1==0:
-        return np.inf
-    else:
-        return t0/t1
-
-# This provides useful timing information but should not be run as
-# part of the daily test suite.
-def time_copy_vector(x):
-    import time
-    t0 = time.clock()
-    y0 = fb.copy_vector(x, 0) 
-    dt0 = time.clock()-t0
-    t1 = time.clock()
-    y1 = fb.copy_vector(x, 1) 
-    dt1 = time.clock()-t1
-    assert_equal(y0, x)
-    assert_equal(y1, x)
-    ratio = time_ratio(dt0,dt1)
-    print('  using fff_array: %f sec' % dt0)
-    print('  using numpy C API: %f sec' % dt1)
-    print('  ratio: %f' % ratio)
 
 
 MAX_TEST_SIZE = 30
@@ -78,13 +56,11 @@ def _test_copy_vector(x):
 
 def test_copy_vector_contiguous(): 
     x = (1000*np.random.rand(1e6)).astype('int32')
-    #print('Contiguous buffer copy (int32-->double)')
     _test_copy_vector(x)
 
 def test_copy_vector_strided(): 
     x0 = (1000*np.random.rand(2e6)).astype('int32')
     x = x0[::2]
-    #print('Non-contiguous buffer copy (int32-->double)')
     _test_copy_vector(x)
 
 """
