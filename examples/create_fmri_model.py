@@ -1,25 +1,35 @@
 import numpy as np 
 import sympy as sym
+from numpy.random import randn
 
 from neuroimaging.modalities.fmri.model import LinearModel
 from neuroimaging.modalities.fmri import formula, hrf
 
 """
-Fixes
-- Drift model is wrong
-- opposite of the derivative
-- contrast definition is wrong
-
-toAdd
-- deal with block designs
+todo
 - deal with multiple session
-- specification of the time functions (motion etc)
-- FIR model has to be done
-- columns identifiers
 - instantiate from a .csv file
-
+- add modulations of the regressors
+- add FIR model 
 - normalization of the amplitude -> check SPM
+- contrasts based on fatcors (lm.contrast(m1))
+- convolution of regressors with hrf
+
+question
+- First-level (time) versus second-level(no time)  model ?
+
+Fixes
+- blocks should be handled more cleanly
+- higher-order (spline) interpolation for functiona of time
 """
+
+n=50
+tr = 0.6
+offset = tr/2
+timestamps = np.linspace(offset,offset+tr*(n-1),n)
+# caveat : time units can only be seconds 
+
+ux_values = np.cumsum(randn(np.size(timestamps)))
 
 # Define symbolic regressors
 m1 = formula.Term('visual')
@@ -41,33 +51,39 @@ uy = formula.Term('translation y')
 uz = formula.Term('translation z')
 
 
-# We can define contrasts symbolically
-con = c1-c2 
-
 # Instantiate a model 
 lm = LinearModel(hrf=['glover','dglover'])
 
-lm.condition(c1, onsets=np.array([3,9,15]))
-lm.condition(c2, onsets=np.array([6,12,18]))
+# event regressors
+lm.add_condition(c1, onsets=np.array([3,9,15]),amplitudes = np.array([1.5,1,2]), hrf=['glover'])
+lm.add_condition(c2, onsets=np.array([1,12,18]))
 
-## This creates a list of symbolic expressions in lm.regressors[c1]
+# block regressor
+lm.add_condition(c3, onsets=np.array([5,14,22]),durations = np.array([4,4,4]))
 
-#lm.set_regressor(ux, val=array, timestamps=timestamps, interp=cubic_spline, units='tr')
+## This creates a list of symbolic expressions in lm.regressors
+lm.add_regressor(ux,values=ux_values,timestamps=timestamps, order=1)
 
-lm.drift(order=3, expression=sym.Function('cos'))
-##lm.set_drift(order=3)
+# add drifts (NB : normally, either polynomial or cosine, not both)
+lm.polynomial_drift(order=3)
+lm.cosine_drift(duration=30,hfcut=12)
 
-timestamps = np.linspace(0, 25)
+# create the design matrix
 X = lm.design_matrix(timestamps)
-X = X/np.sqrt(np.sum(X**2,0))
 
+# We can define contrasts symbolically
+# notion of retriction
+con_vect = lm.contrast(c2-c3)
+con_vect = lm.contrast(c2-c3,'glover')
+con_vect = lm.contrast(c1-c3,'glover')
+con_vect = lm.contrast(c1-c3)
+con_vect = lm.contrast(2*c1-c2-c3)
+
+
+
+X = X/np.sqrt(np.sum(X**2,0))
 import matplotlib.pylab as mp
 mp.figure()
 mp.imshow(X,interpolation='nearest')
 mp.colorbar()
 mp.show()
-
-"""
-con_vect = lm.contrast(c1-c2, params)
-"""
-

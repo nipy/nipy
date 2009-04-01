@@ -11,9 +11,10 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 import numpy.linalg as L
-from sympy import Symbol, lambdify, DeferredVector, exp, Derivative
+from sympy import Symbol, lambdify, DeferredVector, exp, Derivative, Integral, uppergamma
 from formula import Term
 from utils import Vectorize, t
+
 
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
 
@@ -49,15 +50,48 @@ def gamma_params(peak_location, peak_fwhm):
     alpha = np.power(peak_location / peak_fwhm, 2) * 8 * np.log(2.0)
     beta = np.power(peak_fwhm, 2) / peak_location / 8 / np.log(2.0)
     coef = peak_location**(-alpha) * np.exp(peak_location / beta)
-    return coef * ((t > 0) * t)**(alpha) * exp(-t/beta)
+    return coef * ((t > 1.e-14) * (t+1.e-14))**(alpha) * exp(-t/beta)
 
+def igamma_params(peak_location, peak_fwhm):
+    """
+    From a peak location and peak fwhm,
+    determine the paramteres of a Gamma density
+    and return an approximate (accurate) approximation of its integral
+    f(x) = int_0^x  coef * t**(alpha-1) * exp(-t*beta) dt
+    so that lim_{x->infty} f(x)=1
+    
+    :Parameters:
+        peak_location : float
+            Location of the peak of the Gamma density
+        peak_fwhm : float
+            FWHM at the peak
+
+    :Returns:
+         the function of t
+
+    NOTE: this is only a temporary fix,
+    and will have to be removed in the long term
+    """
+    import scipy.special as sp
+    t = Term('t')
+    alpha = np.power(peak_location / peak_fwhm, 2) * 8 * np.log(2.0)
+    beta = np.power(peak_fwhm, 2) / peak_location / 8 / np.log(2.0)
+    #coef = peak_location**(-alpha) * np.exp(peak_location / beta)
+    #return uppergamma(alpha+1,t/beta)
+    # fixme: approximation
+    #return (t > 0) * (1-exp(-t/(beta)))
+    ak = int(np.round(alpha+1))
+    P = np.sum([1./sp.gamma(k+1)*((t/beta)**k) for k in range(ak)],0)
+    return (t > 0) * (1-exp(-t/beta)*P)
+    
+    
 # Glover canonical HRF models
 # they are both Sympy objects
 
 def _getint(f, dt=0.02, t=50):
     lf = Vectorize(f)
     tt = np.arange(dt,t+dt,dt)
-    return lf(tt).sum() * dt 
+    return np.sqrt((lf(tt)**2).sum() * dt )
 
 class Subs(object):
 
@@ -83,6 +117,15 @@ class DGlover(Subs):
 
 dglover_sympy = DGlover()
 dglover = Vectorize(dglover_sympy._expr)
+
+
+# not the following is here only temporarily to handle blocks
+class IGlover(Subs):    
+    _expr = igamma_params(5.4, 5.2) - 0.35 * igamma_params(10.8,7.35)
+
+iglover_sympy = IGlover()
+iglover = Vectorize(iglover_sympy._expr)
+
 
 class AFNI(Subs):
     # AFNI's default HRF (at least at some point in the past)
