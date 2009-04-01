@@ -47,10 +47,10 @@ class Amers:
             OK = OK &(coord.shape[0]==k)
 
         if np.size(subj)==k:
-            self.subj =  subj.astype('i')
+            self.subj =  subj.astype(np.int)
                 
         if np.size(idx)==k:
-            self.idx =  idx.astype('i')
+            self.idx =  idx.astype(np.int)
                         
         if coord.shape[0]==k:
             self.coord = coord
@@ -146,7 +146,7 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
     Sess = np.size(BFLs)
     sqdmax = 2*dmax*dmax
     nvox = xyz.shape[0]
-    nlm = np.array([BFLs[s].get_k() for s in range(Sess)]).astype('i')
+    nlm = np.array([BFLs[s].get_k() for s in range(Sess)]).astype(np.int)
  
     if verbose>0: print nlm
     Nlm = np.sum(nlm)
@@ -243,7 +243,7 @@ def clean_density(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsamples=10):
     Sess = np.size(BFLs)
     sqdmax = 2*dmax*dmax
     nvox = xyz.shape[0]
-    nlm = np.array([BFLs[s].get_k() for s in range(Sess)]).astype('i')
+    nlm = np.array([BFLs[s].get_k() for s in range(Sess)]).astype(np.int)
  
     if verbose>0: print nlm
     Nlm = np.sum(nlm)
@@ -397,7 +397,7 @@ def compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
     for it in range(nsamples):
         for s in range(Sess):
             if nlm[s]>0:
-                js = (nvox*nr.rand(nlm[s])).astype('i')
+                js = (nvox*nr.rand(nlm[s])).astype(np.int)
                 for i in range(nlm[s]):         
                     dxyz = xyz-xyz[js[i],:]
                     dw = np.exp(-np.sum(dxyz*dxyz,1)/sqdmax)
@@ -417,7 +417,7 @@ def compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples=1):
     for s in range(Sess):
         if nlm[s]>0:
             for it in range(nsamples):
-                js = (nvox*nr.rand(nlm[s])).astype('i')
+                js = (nvox*nr.rand(nlm[s])).astype(np.int)
                 aux[js,s*nsamples+it] = 1
 
     aux = smoothing.cartesian_smoothing(np.transpose(xyz),aux,dmax)
@@ -475,7 +475,7 @@ def hierarchical_asso(BF,dmax):
                         eD = np.hstack((eD,ed))
         
     if np.size(eA)>0:
-        edges = np.transpose([eA,eB]).astype('i')
+        edges = np.transpose([eA,eB]).astype(np.int)
         Gcorr = fg.WeightedGraph(cnlm[Sess],edges,eD)
     else:
         Gcorr = []
