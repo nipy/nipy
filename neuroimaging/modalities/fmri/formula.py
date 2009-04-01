@@ -428,6 +428,7 @@ class Design:
             param = ()
 
         v = np.array(self._f(*(param+float_tuple))).T
+        
         if return_float or self._return_float:
             return np.squeeze(v.astype(np.float))
         else:
