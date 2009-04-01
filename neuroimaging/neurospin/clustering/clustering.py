@@ -54,7 +54,7 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001,verbose=0):
 
     if Labels != None:
         if np.size(Labels) == nbitems:
-            Labels = Labels.astype('i')
+            Labels = Labels.astype(np.int)
             OK = (Labels.min()>-1)&(Labels.max()<nbclusters+1)
             if OK:
                 nolabel = 0
@@ -79,7 +79,7 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001,verbose=0):
                 print "incompatible number of labels provided - ignored"
     
     if nolabel:
-        Labels = (rand(nbitems)*nbclusters).astype('i')
+        Labels = (rand(nbitems)*nbclusters).astype(np.int)
 
     Centers,labels,J = cmeans(X, nbclusters, Labels, maxiter, delta)
          

@@ -395,7 +395,7 @@ class test_GMM(TestCase):
         g1 =g0
         alpha = 0.5;
         prior_precision = 5*np.ones((1,1))
-        sub = (nr.rand(100)*10).astype('i')
+        sub = (nr.rand(100)*10).astype(np.int)
         bf1 = np.ones(100)
         spatial_coords = gd
         burnin = 100
@@ -446,7 +446,7 @@ class test_GMM(TestCase):
         g1 =g0
         alpha = 0.5;
         prior_precision = 5*np.ones((1,1))
-        sub = (nr.rand(100)*10).astype('i')
+        sub = (nr.rand(100)*10).astype(np.int)
         bf1 = np.ones(100)
         spatial_coords = gd
         burnin = 100
@@ -493,7 +493,7 @@ class test_GMM(TestCase):
         prior_precision = 5*np.ones((1,dim))
         prior_means = np.reshape(X.mean(0),(1,dim))
         prior_mean_scale = np.ones((1,dim))
-        sub = (nr.rand(100)*10).astype('i')
+        sub = (nr.rand(100)*10).astype(np.int)
         spatial_coords = gd
         burnin = 100
         nis = 1000 # number of iterations for grid sampling

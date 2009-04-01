@@ -369,7 +369,7 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
 	Ranat = []
 	# browse the data
 	for s in range(Sess):
-		lxyz = xyz[Pa.label[:,s]>-1].astype('i')
+		lxyz = xyz[Pa.label[:,s]>-1].astype(np.int)
 		lnvox = np.sum(Pa.label[:,s]>-1)
 		lac = anat_coord[Pa.label[:,s]>-1]
 		g = fg.WeightedGraph(lnvox)
@@ -390,7 +390,7 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
 	U,proto_anat = optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb, dmax,niter=niter,verbose=verbose)
 
 	# write the individual labelling
-	Labels = -1*np.ones((nbvox,Sess)).astype('i')
+	Labels = -1*np.ones((nbvox,Sess)).astype(np.int)
 	for s in range(Sess):
 		Labels[Pa.label[:,s]>-1,s] = U[s]
 		
@@ -442,7 +442,7 @@ def perm_prfx(Pa,Gs,F0, ldata,anat_coord,nbperm=100,niter=5,dmax = 10., lamb = 1
 		# optimization part
 		U,proto_anat = optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb, dmax,niter=niter)
 		
-		Labels = -1*np.ones((Pa.nbvox,Sess)).astype('i')
+		Labels = -1*np.ones((Pa.nbvox,Sess)).astype(np.int)
 		for s in range(Sess):
 			Labels[Pa.label[:,s]>-1,s] = U[s]
 		

@@ -1,7 +1,7 @@
 """
 Example of script to parcellate the data from one subject
 And of various processing that can be applied then
-author: Bertrand Thirion, 2005-2008
+author: Bertrand Thirion, 2005-2009
 """
 
 
@@ -59,7 +59,7 @@ Beta = np.transpose(np.array(Beta))
 g = fg.WeightedGraph(nbvox)
 # nn=6 yields a quicker solution than nn=18
 nn = 6
-g.from_3d_grid(np.transpose(xyz.astype('i')),nn)
+g.from_3d_grid(np.transpose(xyz.astype(np.int)),nn)
 # get the main cc of the graph in order to remove spurious regions
 aux = np.zeros(g.V).astype('bool')
 imc = g.main_cc()
@@ -117,40 +117,4 @@ Label = -np.ones(ref_dim,'int16')
 Label[mask>0] = w
 nim = nifti.NiftiImage(np.transpose(Label),rbeta.header)
 nim.description='Intra-subject parcellation'
-nim.save(LabelImage)
-
-# ------------------------------------
-#5. Compute networks of mutually correlated parcels
-
-X = np.array([np.mean(Beta[w==k,:],0) for k in range(nbparcel)])
-
-# normalization
-X = (X.T/np.sqrt(np.sum(X**2,1))).T
-
-from fff2.clustering.hierarchical_clustering import Ward_simple
-t = Ward_simple(X)
-t.plot()
-#t.plot_height()
-
-from fff2.clustering.bootstrap_hc import ward_msb
-t,cpval,upval = ward_msb(X, niter=1000)
-t.plot()
-import matplotlib.pylab as MP
-MP.figure()
-MP.plot(upval,'o')
-MP.plot(cpval,'o')
-MP.show()
-
-l = t.list_of_subtrees()
-iz = np.squeeze(np.nonzero(cpval>0.9999))
-nnet = np.size(iz)
-netmap = - np.ones(nbparcel,'i')
-for i in range(nnet-1,-1,-1): netmap[l[iz[i]]] = i
-
-
-LabelImage = op.join("/tmp","net.nii")
-Label = -np.ones(ref_dim,'int16')
-Label[mask>0] = netmap[w]
-nim = nifti.NiftiImage(np.transpose(Label),rbeta.header)
-nim.description='Intra-subject networks'
 nim.save(LabelImage)

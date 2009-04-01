@@ -297,7 +297,7 @@ class Field(fg.WeightedGraph):
         """
         if (np.size(self.field)==0):
             raise ValueError, 'No field has been defined so far'
-        seed = seed.astype('i')
+        seed = seed.astype(np.int)
         label = field_voronoi(self.edges[:,0],self.edges[:,1],self.field,seed)
         return label
 

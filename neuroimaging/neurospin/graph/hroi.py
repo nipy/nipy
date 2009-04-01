@@ -189,7 +189,7 @@ class ROI_Hierarchy:
         create a  new set of rois which are only the leaves of self
         """
         isleaf = self.isleaf()
-        k = np.sum(isleaf.astype('i'))
+        k = np.sum(isleaf.astype(np.int))
         if self.k>0:
             seed = self.seed[isleaf]
             parents = np.arange(k)
@@ -327,8 +327,8 @@ class ROI_Hierarchy:
                 
                 iconvert = np.nonzero(valid)
                 iconvert = np.reshape(iconvert, np.size(iconvert))
-                convert = -np.ones(self.k).astype('i')
-                aux = np.cumsum(valid.astype('i'))-1
+                convert = -np.ones(self.k).astype(np.int)
+                aux = np.cumsum(valid.astype(np.int))-1
                 convert[valid] = aux[valid]
                 #print valid,iconvert,aux,convert
                 self.k = np.size(iconvert)

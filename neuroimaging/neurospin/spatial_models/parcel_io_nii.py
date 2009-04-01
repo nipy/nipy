@@ -156,7 +156,7 @@ def Parcellation_output(Pa,Mask_Images,learning_images,Talairach,nbru,verbose=1,
 		LabelImage = os.path.join(swd,"parcel%s.nii" % nbru[s])
 		JacobImage = os.path.join(swd,"jacob%s.nii" % nbru[s])		
 
-		Label = np.zeros(ref_dim).astype('i')
+		Label = np.zeros(ref_dim).astype(np.int)
 		Label[Pa.ijk[:,0],Pa.ijk[:,1],Pa.ijk[:,2]]=labs+1
 		nim = nifti.NiftiImage(np.transpose(Label),rmask.header)
 		nim.description = 'individual Label image obtained from a parcellation procedure'

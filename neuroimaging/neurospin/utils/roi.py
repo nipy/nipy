@@ -79,7 +79,7 @@ class ROI():
         # finally derive the mask of the ROI
         dx = coord - position
         sqra = radius**2
-        self.discrete = tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype('i'))
+        self.discrete = tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype(np.int))
         
 
     def from_labelled_image(self,image,label):
@@ -110,7 +110,7 @@ class ROI():
         # get the coordinates of the regions
         sform = self.header['sform']
         nim = nifti.NiftiImage(image)
-        data = nim.data.T.astype('i')
+        data = nim.data.T.astype(np.int)
         k = data.max()+1
         cent = np.array([np.mean(np.where(data==i),1) for i in range(k)])
         cent = np.hstack((cent,np.ones((k,1))))
@@ -349,7 +349,7 @@ class MultipleROI():
         for k in range(self.k):
             dx = coord - position[k]
             sqra = radius[k]**2
-            self.discrete.append(tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype('i')))
+            self.discrete.append(tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype(np.int)))
         self.set_roi_feature('position',position)
         self.set_roi_feature('radius',radius)
         self.check_features()
@@ -384,7 +384,7 @@ class MultipleROI():
         for k in range(np.size(radius)):
             dx = coord - position[k]
             sqra = radius[k]**2
-            self.discrete.append(tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype('i')))
+            self.discrete.append(tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype(np.int)))
 
         if self.features.has_key('position'):
             self.complete_feature('position',position)
@@ -476,7 +476,7 @@ class MultipleROI():
             raise ValueError, "the valid marker does not have the correct size"
 
         self.discrete = [self.discrete[k] for k in range(self.k) if valid[k]]
-        self.k = np.sum(valid.astype('i'))
+        self.k = np.sum(valid.astype(np.int))
         for fid in self.features.keys():
             f = self.features.pop(fid)
             f = f[valid]
