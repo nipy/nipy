@@ -43,7 +43,8 @@ extensions = ['sphinx.ext.autodoc',
 # since most people install releases.  Once theses extensions have
 # been released for a while we should remove this hack.  I'm assuming
 # any modifications to these extensions will be done upstream in
-# matplotlib!
+# matplotlib!  The matplotlib trunk will have more bug fixes and
+# feature updates so we'll try to use that one first.
 try:
     import matplotlib.sphinxext
     extensions.append('matplotlib.sphinxext.mathmpl')
