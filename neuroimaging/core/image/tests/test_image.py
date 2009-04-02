@@ -34,9 +34,11 @@ class TestImage(TestCase):
         yield assert_array_almost_equal, np.asarray(self.img), np.asarray(new)
         yield assert_raises, ValueError(Image, None, None)
 
-    def test_badfile(self):
-        filename = "bad_file.foo"
-        assert_raises(RuntimeError, load_image, filename)
+    # This test causes output in the nifticlibs that we cannot suppress.
+    # Comment out so there's less noise in test output
+    #def test_badfile(self):
+    #    filename = "bad_file.foo"
+    #    assert_raises(RuntimeError, load_image, filename)
 
     def test_maxmin_values(self):
         y = np.asarray(self.img)
