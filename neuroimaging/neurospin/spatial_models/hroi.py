@@ -1,13 +1,64 @@
 import numpy as np
-import graph as fg
+import neuroimaging.neurospin.graph.graph as fg
+import neuroimaging.neurospin.graph.field as ff
 
-from graph import Forest
+from neuroimaging.neurospin.graph.graph import Forest
 from neuroimaging.neurospin.utils.roi import MultipleROI
+
+def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
+    """
+    Instantiate an NROI structure from a given Field and a header
+    
+    INPUT
+    - th is a threshold so that only values above th are considered
+    by default, th = -infty (numpy)
+    - smin is the minimum size (in number of nodes) of the blobs to 
+    keep.
+    
+    NOTE
+    - when no region is produced (no Nroi can be defined),
+    the return value is None
+    """
+    if Field.field[:,refdim].max()>th:
+        idx,height,parents,label = Field.threshold_bifurcations(refdim,th)
+    else:
+        idx = []
+        parents = []
+        label = -np.ones(Field.V)
+        
+    k = np.size(idx)
+    if k==0: return None
+    nroi = NROI(parents,header)
+    discrete = [xyz[label==i] for i in range(k)]
+    nroi.set_discrete(discrete)
+    
+    #define the voxels
+    # as an mroi, it should have a method to be instantiated
+    #from a field/masked array ?
+    k = 2* nroi.get_k()
+    if k>0:
+        while k>nroi.get_k():
+            k = nroi.get_k()
+            size = nroi.get_size()
+            nroi.merge_ascending(size>smin,None)
+            nroi.merge_descending(None)
+            size = nroi.get_size()
+            if size.max()<smin: return None
+            
+            nroi.clean(size>smin)
+            nroi.check()
+    return nroi
+
 
 class NROI(MultipleROI,Forest):
     """
     Class for ntested ROIs.
-    This inherits from both the Forest and MultipleROI 
+    This inherits from both the Forest and MultipleROI
+    - self.k (int): number of nodes/structures included into it
+    - parents = None: array of shape(self.k) describing the
+    hierarchical relationship
+    - header (temporary): space-defining image header
+    to embed the structure in an image space
     """
 
     def __init__(self,parents=None,header=None,id=None):
@@ -19,13 +70,30 @@ class NROI(MultipleROI,Forest):
 
     def clean(self, valid):
         """
+        remove the rois for which valid==0
+        and update the hierarchy accordingly
         """
-        MultipleROI.clean(self, valid)
-        Forest.subgraph(self,valid)
+        
+        #Forest.subgraph(self,valid)
+        #update the parent information
+        for j in range(self.k):
+            if valid[self.parents[j]]==0:
+                self.parents[j]=j
+                                
+        iconvert = np.squeeze(np.nonzero(valid))
+        convert = -np.ones(self.k).astype(np.int)
+        aux = np.cumsum(valid.astype(np.int))-1
+        convert[valid] = aux[valid]
+        self.parents = convert[self.parents[iconvert]]
+        k = np.sum(valid>0)
+        Forest.__init__(self,k,self.parents)
 
+        # then clean as a multiple ROI
+        MultipleROI.clean(self, valid)
+        
     def make_graph(self):
         """
-        output an fff.graph stracture to represent the ROI hierarchy
+        output an fff.graph structure to represent the ROI hierarchy
         """
         weights = np.ones(self.k)
         edges = np.transpose(np.vstack((np.arange(self.k), self.parents)))
@@ -42,32 +110,65 @@ class NROI(MultipleROI,Forest):
     def merge_ascending(self,valid,methods=None):
         """
         self.merge_ascending(valid)
+
         Remove the non-valid items by including them in
         their parents when it exists
-        methods indicates the way possible features are dealt with
+        methods indicates the way possible features are dealt with.
+        (not implemented yet)
+
+        INPUT:
+        - valid array of shape(self.k)
         """
         for j in range(self.k):
             if valid[j]==0:
                 fj =  self.parents[j]
                 if fj!=j:
                     self.parents[self.parents==j]=fj
-                    self.label[self.label==j]=fj
+                    #self.label[self.label==j]=fj
+                    self.discrete[fj] = np.vstack((self.discrete[fj],self.discrete[j]))
                 else:
                     valid[j]=1
-        
+                # todo : update the features !
         self.clean(valid)
-        
-        #for j in range(self.k):
-        #    if valid[j]==0:
-        #        fj =  self.parents[j]
-        #        if fj!=j:
-        #            self.parents[self.parents==j]=fj
-        #            self.label[self.label==j]=fj
-        #        else:
-        #            valid[j]=1
-        #
-        #self.clean(valid)        
 
+    def merge_descending(self,methods=None):
+        """
+        self.merge_descending()
+        Remove the items with only one son
+        by including them in their son
+        methods indicates the way possible features are dealt with
+        (not implemented yet)
+        """
+        valid = np.ones(self.k).astype('bool')
+        for j in range(self.k):
+            i = np.nonzero(self.parents==j)
+            i = i[0]
+            if np.sum(i!=j)==1:
+                i = int(i[i!=j])
+                
+                #self.label[self.label==j]=i
+                self.discrete[i] = np.vstack((self.discrete[i],self.discrete[j]))
+                self.parents[i] = self.parents[j]
+                valid[j] = 0
+                # todo : update the features!!!
+
+        # finally remove  the non-valid items
+        self.clean(valid)
+             
+    def isfield(self,id):
+        """
+        tests whether a given id is among the current list of ROI_features
+        """
+        aux = [int(s==id) for s in self.ROI_feature_ids]
+        return np.array(aux).max()
+    
+    def get_parents(self):
+        return self.parents
+
+    def get_k(self):
+       return self.k
+
+ 
     
 class HROI():
     """

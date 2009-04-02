@@ -487,10 +487,23 @@ class MultipleROI():
         """
         return the number of voxels per ROI in one array
         """
-        size = np.zeros(self.k)
+        size = np.zeros(self.k).astype(np.int)
         for k in range(self.k):
-            size[k] = np.shape(self.discrete[k],0)
+            size[k] = np.shape(self.discrete[k])[0]
         return size
+
+    def set_discrete(self,discrete):
+        """
+        set manually the values of discrete
+        discrete is a list of arrays that contains
+        the coordinates of all ROIs voxels
+        len(discrete) must be equal to self.k
+        """
+        if len(discrete)!= self.k:
+            raise ValueError, "the provided values for discrete \
+            do not match self.k" 
+        self.discrete = discrete
+        
 
 def test1(verbose = 0):
     nim = nifti.NiftiImage("/tmp/spmT_0024.img")
