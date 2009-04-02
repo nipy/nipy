@@ -262,9 +262,12 @@ class Field(fg.WeightedGraph):
         - th is a threshold so that only values above th are considered
         by default, th = -infty (numpy)
         - smin is the minimum size (in number of nodes) of the blobs to 
-        keep.  
+        keep.
+
+        NOTE/FIXME
+        This function should not remain here and will be moved womewhere else in the library
         """
-        import hroi
+        from neuroimaging.neurospin.spatial_models import hroi 
         if self.field.max()>th:
             idx,height,parents,label = self.threshold_bifurcations(refdim,th)
         else:
