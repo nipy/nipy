@@ -10,6 +10,7 @@ if not release:
         # directory as this file.
         dir = os.path.dirname(__file__)
         proc = subprocess.Popen(['bzr', 'revno'], stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
                                 cwd=dir)
         revno, errcode = proc.communicate()
         if revno:
