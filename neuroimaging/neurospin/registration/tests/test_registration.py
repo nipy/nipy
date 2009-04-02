@@ -3,7 +3,11 @@
 from numpy.testing import TestCase, assert_equal, assert_almost_equal, \
     assert_raises
 import numpy as np
+from scipy.ndimage import affine_transform
+
 from neuroimaging.neurospin import registration 
+from neuroimaging.neurospin.registration.transform_affine import (
+    rvector_to_matrix, resample)
 
 class Image(object):
     """ 
@@ -106,30 +110,18 @@ def _test_resampling(Tv):
     Adding this new test to check whether resample
     may be replaced with scipy.ndimage.affine_transform    
     """
-    from neuroimaging.neurospin.registration.transform_affine import resample
-    from scipy.ndimage import affine_transform
-    import time
     I = Image(make_data_int16())
     matrix = Tv[0:3,0:3]
     offset = Tv[0:3,3]
     output_shape = I.array.shape
-    t0 = time.clock()
     I1 = resample(I.array, output_shape, Tv)
-    dt1 = time.clock()-t0
-    t0 = time.clock()
-    I2 = affine_transform(I.array, matrix, offset=offset, output_shape=output_shape)
-    dt2 = time.clock()-t0
+    I2 = affine_transform(I.array, matrix, offset=offset, 
+                          output_shape=output_shape)
     assert_almost_equal(I1, I2)
-    print('3d array resampling')
-    print('  using fff: %f sec' % dt1)
-    print('  using scipy.ndimage: %f sec' % dt2)
-
 
 def test_resampling():
-    """
-    Generate a random similarity transformation
-    """
-    from neuroimaging.neurospin.registration.transform_affine import rvector_to_matrix
+    # Generate a random similarity transformation
+
     rot = .1*np.random.rand(3) 
     sca = 1+.2*np.random.rand()
     matrix = sca*rvector_to_matrix(rot)
