@@ -98,13 +98,13 @@ class JointHistogram():
 
         # Source image binning
         self.source = source
-        self.source_clamped, s_bins = clamp(source, th=source_threshold, mask=source_mask, bins)
+        self.source_clamped, s_bins = clamp(source, th=source_threshold, mask=source_mask, bins=bins)
 
         # Target image padding + binning
         self.target = target 
         self.target_clamped = -np.ones(np.array(target.shape)+2)
         self.target_clamped[1:target.shape[0]-1:, 1:target.shape[1]-1:, 1:target.shape[2]-1:], \
-            t_bins = clamp(target, th=target_threshold, mask=target_mask, bins)
+            t_bins = clamp(target, th=target_threshold, mask=target_mask, bins=bins)
         
         # Histograms
         self.joint_hist = np.zeros([s_bins, t_bins])
@@ -121,7 +121,7 @@ class JointHistogram():
     # Use array rather than asarray to ensure contiguity 
     def set(self, 
             interp='pv', 
-            similarity='cc', normalize=None, pdf=None
+            similarity='cc', normalize=None, pdf=None,
             subsampling=[1,1,1], corner=[0,0,0], size=None):
         self.block_subsampling = np.array(subsampling, dtype='uint')
         self.block_corner = np.array(corner, dtype='uint')

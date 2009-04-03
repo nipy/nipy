@@ -12,7 +12,7 @@ def configuration(parent_package='',top_path=None):
         # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
         lapack_info = get_info('lapack',0)
 
-    config = Configuration('registration', parent_package, top_path)
+    config = Configuration('register', parent_package, top_path)
     config.add_data_dir('tests')
     config.add_extension(
                 'routines',
