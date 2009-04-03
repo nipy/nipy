@@ -2,14 +2,15 @@
   @author Alexis Roche
   @date 1997-2009
   
-  Intensity-based image registration for 2D or 3D images [BETA VERSION]. 
+  Intensity-based image registration for 2D or 3D images
+  [BETA VERSION].
  
   All computations are fed with the voxel-to-voxel transformation
   relating two images, so you do not need the voxel sizes.
 */
 
-#ifndef JOINT_HISTOGRAM
-#define JOINT_HISTOGRAM
+#ifndef ICONIC
+#define ICONIC
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +20,7 @@ extern "C" {
 #include <numpy/arrayobject.h>
 
   /* Numpy import */
-  extern void yamila_import_array(void);
+  extern void joint_histogram_import_array(void);
 
   /* 
      Update a pre-allocated joint histogram. Important notice: in all
@@ -52,7 +53,6 @@ extern "C" {
   extern double conditional_entropy(const double* H, double* hJ, int clampI, int clampJ); 
   extern double mutual_information(const double* H, double* hI, int clampI, double* hJ, int clampJ);
   extern double normalized_mutual_information(const double* H, double* hI, int clampI, double* hJ, int clampJ); 
-  
   extern double supervised_mutual_information(const double* H, const double* F, 
 					      double* fI, int clampI, double* fJ, int clampJ); 
 
@@ -65,7 +65,7 @@ extern "C" {
 
     If \a Tvox goes from source to target, use this function to
     resample the target.  Otherwise, pass the inverse of \a Tvox. Tvox
-    assumed contiguous 16-sized. 
+    assumed C-contiguous 16-sized. 
   */ 
   extern void cubic_spline_resample(PyArrayObject* im_resampled, 
 				    const PyArrayObject* im, 

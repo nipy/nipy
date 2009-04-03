@@ -1,4 +1,5 @@
-#include "yamila.h"
+#include "iconic.h"
+#include "cubic_spline.h"
 
 #include <randomkit.h>
 
@@ -42,7 +43,7 @@ static inline void _rand_interpolation(int i,
 
 
 /* Numpy import */
-void yamila_import_array(void) { 
+void iconic_import_array(void) { 
   import_array(); 
   return;
 }
@@ -787,6 +788,55 @@ static void _L1_moments (const double * h, int clamp, int stride,
   *dev = auxdev/sum; 
 
   return;           
+}
+
+
+
+/* Tvox is the voxel transformation from source to target 
+   Resample a 3d image undergoing an affine transformation. */
+void cubic_spline_resample(PyArrayObject* im_resampled, 
+			   const PyArrayObject* im, 
+			   const double* Tvox)
+{
+  double i1;
+  PyArrayObject* im_spline_coeff;
+  PyArrayIterObject* imIter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)im_resampled); 
+  unsigned int x, y, z;
+  unsigned dimX = PyArray_DIM(im, 0);
+  unsigned dimY = PyArray_DIM(im, 1);
+  unsigned dimZ = PyArray_DIM(im, 2);
+  unsigned ddimX=dimX-1, ddimY=dimY-1, ddimZ=dimZ-1; 
+  npy_intp dims[3] =  {dimX, dimY, dimZ}; 
+  double Tx, Ty, Tz;
+
+  /* Compute the spline coefficient image */
+  im_spline_coeff = (PyArrayObject*)PyArray_SimpleNew(3, dims, NPY_DOUBLE);
+  cubic_spline_transform(im_spline_coeff, im);
+
+  /* Resampling loop */
+  while(imIter->index < imIter->size) {
+    x = imIter->coordinates[0];
+    y = imIter->coordinates[1]; 
+    z = imIter->coordinates[2]; 
+    _apply_affine_transform(&Tx, &Ty, &Tz, Tvox, x, y, z); 
+    if ((Tx<0) || (Tx>ddimX) ||
+	(Ty<0) || (Ty>ddimY) ||
+	(Tz<0) || (Tz>ddimZ))
+      i1 = 0.0; 
+    else 
+      i1 = cubic_spline_sample3d(Tx, Ty, Tz, im_spline_coeff); 
+
+    PyArray_SETITEM(im_resampled, PyArray_ITER_DATA(imIter), PyFloat_FromDouble(i1)); 
+    PyArray_ITER_NEXT(imIter); 
+  }
+
+  /* Free memory */
+  Py_DECREF(imIter);
+  Py_DECREF(im_spline_coeff); 
+    
+
+  return;
+	 
 }
 
 

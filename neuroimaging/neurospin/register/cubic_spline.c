@@ -1,35 +1,48 @@
-#include "fff_cubic_spline.h"
-#include "fff_base.h"
+#include "cubic_spline.h"
 
+#include <randomkit.h>
+
+#include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
+#define ABS(a) ( (a) > 0.0 ? (a) : (-(a)) )
 
 #define CUBIC_SPLINE_MIRROR(x, n, p) \
-  ( (x)<0.0 ? (-(x)) : ( (x)>(n) ? ((p)-(x)) : (x) ) )
+  ((x)<0.0 ? (-(x)) : ((x)>(n) ? ((p)-(x)) : (x)))
 
-static void _fff_cubic_spline_transform( fff_vector* res, void* par ); 
 
-static double _fff_cubic_spline_sample1d ( double x, double *coef, int dim, int stride );
-static double _fff_cubic_spline_sample2d ( double x, double y, double *imcoef, int dimX, int dimY, int offX, int offY );
-static double _fff_cubic_spline_sample3d ( double x, double y, double z, double *imcoef, 
-					   int dimX, int dimY, int dimZ, int offX, int offY, int offZ );
-static double _fff_cubic_spline_sample4d ( double x, double y, double z, double t, double *imcoef,
-					   int dimX, int dimY, int dimZ, int dimT,
-					   int offX, int offY, int offZ, int offT );
+
+
+static void _cubic_spline_transform1d(double* res, double* src, unsigned int dim, 
+				      unsigned int res_stride, unsigned int src_stride); 
+static void _cubic_spline_transform(PyArrayObject* res, int axis, double* work); 
+static inline void _copy_double_buffer(double* res, double* src, unsigned int dim, unsigned int src_stride);
+
+
+
+
+
+
+/* Numpy import */
+void cubic_spline_import_array(void) { 
+  import_array(); 
+  return;
+}
 
 
 /* Returns the value of the cubic B-spline function at x */
-double fff_cubic_spline_basis ( double x )
+double cubic_spline_basis (double x)
 {
 
   double y, absx, aux;
 
-  absx = FFF_ABS(x);
+  absx = ABS(x);
 
-  if ( absx >= 2 ) 
+  if (absx >= 2) 
     return 0.0;
 
-  if ( absx < 1 ) {
+  if (absx < 1) {
     aux = absx*absx;
     y = 0.66666666666667 - aux + 0.5*absx*aux;
   }  
@@ -42,29 +55,19 @@ double fff_cubic_spline_basis ( double x )
 }
 
 
-static void _fff_cubic_spline_transform( fff_vector* res, void* par ) 
-{
-  fff_vector *src = (fff_vector*)par; 
-  
-  fff_vector_memcpy( src, res );
-  fff_cubic_spline_transform ( res, src ); 
 
-  return; 
-}
+/* 
+   Assumes that src and res are same size and both point to DOUBLE buffers. 
+*/
 
-void fff_cubic_spline_transform ( fff_vector* res_vect, const fff_vector* src_vect )
+static void _cubic_spline_transform1d(double* res, double* src, unsigned int dim, 
+				      unsigned int res_stride, unsigned int src_stride)
 {
-  int k, dim = src_vect->size; 
-  int res_stride = res_vect->stride, src_stride = src_vect->stride; 
+  int k; 
   double cp, cm, z1_k;
-  double *res = res_vect->data, *src = src_vect->data; 
   double *buf_src, *buf_res;
   const double z1 = -0.26794919243112; /* -2 + sqrt(3) */
   const double cz1 = 0.28867513459481; /* z1/(z1^2-1) */
-
-  /* Check vector size */ 
-  if (res_vect->size != dim) 
-    return;
 
   /* 
      Initial value for the causal recursion.
@@ -75,18 +78,17 @@ void fff_cubic_spline_transform ( fff_vector* res_vect, const fff_vector* src_ve
      
      where we set: s(N)=s(N-2), s(N+1)=s(N-3), ..., s(2N-3)=s(1).
   */
-
   buf_src = src;
   cp = *buf_src;
   z1_k = 1;
-  for ( k=1; k<dim; k++ ) {
+  for (k=1; k<dim; k++) {
     z1_k = z1 * z1_k;   /* == z1^k */
     buf_src += src_stride;            /* points towards s[k] */
     cp += (*buf_src) * z1_k;
   }
 
   /* At this point, we have: z1_k = z1^(N-1) */
-  for ( k=2; k<dim; k++ ) {
+  for (k=2; k<dim; k++) {
     z1_k = z1 * z1_k;  
     buf_src -= src_stride;
     cp += (*buf_src) * z1_k;
@@ -94,7 +96,7 @@ void fff_cubic_spline_transform ( fff_vector* res_vect, const fff_vector* src_ve
   
   /* At this point, we have: z1_k = z1^(2N-3) */
   z1_k = z1 * z1_k;
-  cp = cp / ( 1 - z1_k );
+  cp = cp / (1 - z1_k);
 
 
   /* Storing the first causal coefficient */ 
@@ -103,7 +105,7 @@ void fff_cubic_spline_transform ( fff_vector* res_vect, const fff_vector* src_ve
 
   /* Do the causal recursion : [0..N-2]*/
   buf_src = src;
-  for ( k=1; k<dim; k++ ) {
+  for (k=1; k<dim; k++) {
     buf_src += src_stride; 
     cp = *buf_src + z1 * cp;
     buf_res += res_stride;
@@ -111,102 +113,91 @@ void fff_cubic_spline_transform ( fff_vector* res_vect, const fff_vector* src_ve
   }
 
   /* Initial value for the anticausal recursion */
-  cm = cz1 * ( 2.0 * cp - *buf_src );
+  cm = cz1 * (2.0 * cp - *buf_src);
   *buf_res = 6.0 * cm;
  
   /* Do the anti causal recursion : [N-2..0] */
-  /* for ( k=(dim-2); ((int)k)>=0; k-- ) { */
-  for ( k=1; k<dim; k++ ) {
+  /* for (k=(dim-2); ((int)k)>=0; k--) { */
+  for (k=1; k<dim; k++) {
     buf_res -= res_stride;     /* buf_res points towards the k-th index */
-    cm = z1 * ( cm - *buf_res );
+    cm = z1 * (cm - *buf_res);
     *buf_res = 6.0 * cm;
   }
 
   return;
 }
 
-/*
-  work needs be allocated with at least the maximum dimension of "res" 
-*/
-void fff_cubic_spline_transform_image ( fff_array* res, const fff_array* src, fff_vector* work )
+
+
+static inline void _copy_double_buffer(double* res, double* src, unsigned int dim, unsigned int src_stride)
 {
-  int axis; 
-  fff_vector v; 
+  unsigned int i; 
+  double *buf_res=res, *buf_src=src; 
 
-  if ( res->datatype != FFF_DOUBLE )  {
-    FFF_WARNING("Aborting. Output image encoding type must be double."); 
-    return;
-  }  
-  if ( ( res->dimX != src->dimX ) ||
-       ( res->dimY != src->dimY ) ||
-       ( res->dimZ != src->dimZ ) ||
-       ( res->dimT != src->dimT ) ) {
-    FFF_WARNING("Aborting. Inconsistent dimensions between input and output.");     
-    return;
+  for (i=0; i<dim; i++, buf_res++, buf_src+=src_stride)
+    *buf_res = *buf_src; 
+
+  return; 
+}
+
+/*
+  res array must be double. 
+  res and src must be of the same size. 
+  work needs be 1d C-style contiguous double with size (at least) equal to res in the axis direction
+*/
+
+static void _cubic_spline_transform(PyArrayObject* res, int axis, double* work)
+{
+  PyArrayIterObject* iter;
+  unsigned int dim, stride;
+
+  /* Instantiate iterator and views */ 
+  iter = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)res, &axis);
+  dim = PyArray_DIM((PyArrayObject*)iter->ao, axis); 
+  stride = sizeof(double)*PyArray_STRIDE((PyArrayObject*)iter->ao, axis); 
+
+  /* Apply the cubic spline transform along given axis */ 
+  while(iter->index < iter->size) {
+    _copy_double_buffer(work, PyArray_ITER_DATA(iter), dim, stride); 
+    _cubic_spline_transform1d(PyArray_ITER_DATA(iter), work, dim, stride, 1); 
+    PyArray_ITER_NEXT(iter); 
   }
 
-  /* Start with copying the src to the res image, forcing conversion to DOUBLE */ 
-  fff_array_copy( res, src ); 
-
-  /* Apply separable cubic spline transforms */ 
-  for ( axis=0; axis<res->ndims; axis ++ ) {
-    v = fff_vector_view( work->data, fff_array_dim(res, axis), work->stride ); 
-    fff_array_iterate_vector_function( res, axis, &_fff_cubic_spline_transform, (void*)(&v) );
-  }
+  /* Free local structures */ 
+  free(work); 
+  Py_DECREF(iter); 
 
   return; 
 }
 
 
-double fff_cubic_spline_sample ( double x, const fff_vector* coef )
+void cubic_spline_transform(PyArrayObject* res, const PyArrayObject* src)
 {
-  double res; 
-  res = _fff_cubic_spline_sample1d ( x, coef->data, coef->size, coef->stride );
-  return res; 
-}
+  double* work; 
+  unsigned int axis, aux=0, dimmax=0; 
+  
+  /* Copy src into res */ 
+  PyArray_CastTo(res, (PyArrayObject*)src); 
 
-
-
-double fff_cubic_spline_sample_image ( double x, double y, double z, double t, const fff_array* coef )
-{
-  double res = 0.0; 
-  double* buf = (double*)coef->data; 
-
-  /* Check format */ 
-  if ( coef->datatype != FFF_DOUBLE ) {
-    FFF_WARNING("Coeff image encoding type must be double.");  
-    return 0.0; 
+  /* Compute the maximum array dimension over axes */ 
+  for(axis=0; axis<res->nd; axis++) {
+    aux = PyArray_DIM(res, axis);
+    if (aux > dimmax) 
+      dimmax = aux; 
   }
 
+  /* Allocate auxiliary buffer */ 
+  work = malloc(sizeof(double)*dimmax); 
 
-  switch( coef->ndims ) {
+  /* Apply separable cubic spline transforms */ 
+  for(axis=0; axis<res->nd; axis++) 
+    _cubic_spline_transform(res, axis, work);
 
-  case FFF_ARRAY_2D:
-    res = _fff_cubic_spline_sample2d ( x, y, buf, 
-				       coef->dimX, coef->dimY, 
-				       coef->offsetX, coef->offsetY );
-    break;
-    
-  case FFF_ARRAY_3D:
-    res = _fff_cubic_spline_sample3d ( x, y, z, buf,
-				       coef->dimX, coef->dimY, coef->dimZ,
-				       coef->offsetX, coef->offsetY, coef->offsetZ );
-    break;
-    
-  case FFF_ARRAY_4D:
-    res = _fff_cubic_spline_sample4d ( x, y, z, t, buf,
-				       coef->dimX, coef->dimY, coef->dimZ, coef->dimT, 
-				       coef->offsetX, coef->offsetY, coef->offsetZ, coef->offsetT );
-    break;
+  /* Free auxiliary buffer */ 
+  free(work); 
 
-  default:
-    break;
-
-  }
-
-  return res; 
+  return; 
 }
-
 
 
 /* 
@@ -218,12 +209,15 @@ Returns 0 otherwise.
 
 */
 
-
-double _fff_cubic_spline_sample1d ( double x, double *coef, int dim, int stride )
+double cubic_spline_sample1d (double x, const PyArrayObject* Coef) 
 {
 
-  const int ddim = dim-1;
-  const int two_ddim = 2*ddim;
+  unsigned int dim = PyArray_DIM(Coef, 0); 
+  unsigned int offset = sizeof(double)*PyArray_STRIDE(Coef, 0); 
+  double *coef = PyArray_DATA(Coef); 
+
+  const unsigned int ddim = dim-1;
+  const unsigned int two_ddim = 2*ddim;
 
   double *buf;
   int nx, px, xx;
@@ -235,7 +229,7 @@ double _fff_cubic_spline_sample1d ( double x, double *coef, int dim, int stride 
 
   /* Right up superior point */
   aux = x + ddim; 
-  if ( (aux<0) || (aux>3*ddim) ) 
+  if ((aux<0) || (aux>3*ddim)) 
     return 0.0;
   px = (int)(aux+2) - ddim;
 
@@ -246,9 +240,9 @@ double _fff_cubic_spline_sample1d ( double x, double *coef, int dim, int stride 
      where to find the B-spline coefficients (including mirror conditions) */ 
   buf_bspx = (double*)bspx;
   buf_posx = (int*)posx;
-  for ( xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++ ) {
-    *buf_bspx = fff_cubic_spline_basis( x-(double)xx );
-    *buf_posx = CUBIC_SPLINE_MIRROR( xx, ddim, two_ddim );
+  for (xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++) {
+    *buf_bspx = cubic_spline_basis(x-(double)xx);
+    *buf_posx = CUBIC_SPLINE_MIRROR(xx, ddim, two_ddim);
   }
 
   /* Compute the interpolated value incrementally */
@@ -256,10 +250,10 @@ double _fff_cubic_spline_sample1d ( double x, double *coef, int dim, int stride 
   buf_bspx = (double*)bspx;
   buf_posx = (int*)posx;
   
-  for ( xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++ ) {
+  for (xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++) {
     
     /* Point towards the coefficient value at position xx */
-    buf = coef + (*buf_posx)*stride;
+    buf = coef + (*buf_posx)*offset;
     
     /* Update signal value */
     s += (*buf) * (*buf_bspx);
@@ -273,15 +267,19 @@ double _fff_cubic_spline_sample1d ( double x, double *coef, int dim, int stride 
 
 
 
-static double _fff_cubic_spline_sample2d ( double x, double y, 
-					   double *imcoef,
-					   int dimX, int dimY, 
-					   int offX, int offY )
+double cubic_spline_sample2d (double x, double y, const PyArrayObject* Coef)
 {
-  const int ddimX = dimX-1;
-  const int ddimY = dimY-1;
-  const int two_ddimX = 2*ddimX;
-  const int two_ddimY = 2*ddimY;
+
+  unsigned int dimX = PyArray_DIM(Coef, 0);
+  unsigned int dimY = PyArray_DIM(Coef, 1);
+  unsigned int offX = sizeof(double)*PyArray_STRIDE(Coef, 0); 
+  unsigned int offY = sizeof(double)*PyArray_STRIDE(Coef, 1); 
+  double *coef = PyArray_DATA(Coef); 
+
+  const unsigned int ddimX = dimX-1;
+  const unsigned int ddimY = dimY-1;
+  const unsigned int two_ddimX = 2*ddimX;
+  const unsigned int two_ddimY = 2*ddimY;
 
   double *buf;
   int nx, ny, px, py, xx, yy;
@@ -295,12 +293,12 @@ static double _fff_cubic_spline_sample2d ( double x, double y,
 
   /* Right up superior point */
   aux = x + ddimX; 
-  if ( (aux<0) || (aux>3*ddimX) ) 
+  if ((aux<0) || (aux>3*ddimX)) 
     return 0.0;
   px = (int)(aux+2) - ddimX;
 
   aux = y + ddimY; 
-  if ( (aux<0) || (aux>3*ddimY) ) 
+  if ((aux<0) || (aux>3*ddimY)) 
     return 0.0;
   py = (int)(aux+2) - ddimY;
 
@@ -313,16 +311,16 @@ static double _fff_cubic_spline_sample2d ( double x, double y,
      where to find the B-spline coefficients (including mirror conditions) */ 
   buf_bspx = (double*)bspx;
   buf_posx = (int*)posx;
-  for ( xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++ ) {
-    *buf_bspx = fff_cubic_spline_basis( x-(double)xx );
-    *buf_posx = CUBIC_SPLINE_MIRROR( xx, ddimX, two_ddimX );
+  for (xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++) {
+    *buf_bspx = cubic_spline_basis(x-(double)xx);
+    *buf_posx = CUBIC_SPLINE_MIRROR(xx, ddimX, two_ddimX);
   }
 
   buf_bspy = (double*)bspy;
   buf_posy = (int*)posy;
-  for ( yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++ ) {
-    *buf_bspy = fff_cubic_spline_basis( y-(double)yy );
-    *buf_posy = CUBIC_SPLINE_MIRROR( yy, ddimY, two_ddimY );
+  for (yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++) {
+    *buf_bspy = cubic_spline_basis(y-(double)yy);
+    *buf_posy = CUBIC_SPLINE_MIRROR(yy, ddimY, two_ddimY);
   }
 
 
@@ -331,17 +329,17 @@ static double _fff_cubic_spline_sample2d ( double x, double y,
   buf_bspy = (double*)bspy;
   buf_posy = (int*)posy;
     
-  for ( yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++ ) {
+  for (yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++) {
     
     aux = 0.0;
     buf_bspx = (double*)bspx;
     buf_posx = (int*)posx;
     shfty = offY*(*buf_posy);
 
-    for ( xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++ ) {
+    for (xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++) {
     
       /* Point towards the coefficient value at position (xx, yy, zz) */
-      buf = imcoef + offX*(*buf_posx) + shfty;
+      buf = coef + offX*(*buf_posx) + shfty;
 
       /* Update signal value */
       aux += (*buf) * (*buf_bspx);
@@ -357,18 +355,22 @@ static double _fff_cubic_spline_sample2d ( double x, double y,
 }
 
 
-static double _fff_cubic_spline_sample3d ( double x, double y, double z,
-					   double *imcoef,
-					   int dimX, int dimY, int dimZ, 
-					   int offX, int offY, int offZ )
+double cubic_spline_sample3d (double x, double y, double z, const PyArrayObject* Coef)
 {
-  
-  const int ddimX = dimX-1;
-  const int ddimY = dimY-1;
-  const int ddimZ = dimZ-1;
-  const int two_ddimX = 2*ddimX;
-  const int two_ddimY = 2*ddimY;
-  const int two_ddimZ = 2*ddimZ;
+  unsigned int dimX = PyArray_DIM(Coef, 0);
+  unsigned int dimY = PyArray_DIM(Coef, 1);
+  unsigned int dimZ = PyArray_DIM(Coef, 2);
+  unsigned int offX = sizeof(double)*PyArray_STRIDE(Coef, 0); 
+  unsigned int offY = sizeof(double)*PyArray_STRIDE(Coef, 1); 
+  unsigned int offZ = sizeof(double)*PyArray_STRIDE(Coef, 2); 
+  double *coef = PyArray_DATA(Coef); 
+
+  const unsigned int ddimX = dimX-1;
+  const unsigned int ddimY = dimY-1;
+  const unsigned int ddimZ = dimZ-1;
+  const unsigned int two_ddimX = 2*ddimX;
+  const unsigned int two_ddimY = 2*ddimY;
+  const unsigned int two_ddimZ = 2*ddimZ;
 
   double *buf;
   int nx, ny, nz, px, py, pz;
@@ -382,17 +384,17 @@ static double _fff_cubic_spline_sample3d ( double x, double y, double z,
 
   /* Right up superior point */
   aux = x + ddimX; 
-  if ( (aux<0) || (aux>3*ddimX) ) 
+  if ((aux<0) || (aux>3*ddimX)) 
     return 0.0;
   px = (int)(aux+2) - ddimX;
 
   aux = y + ddimY; 
-  if ( (aux<0) || (aux>3*ddimY) ) 
+  if ((aux<0) || (aux>3*ddimY)) 
     return 0.0;
   py = (int)(aux+2) - ddimY;
 
   aux = z + ddimZ; 
-  if ( (aux<0) || (aux>3*ddimZ) ) 
+  if ((aux<0) || (aux>3*ddimZ)) 
     return 0.0;
   pz = (int)(aux+2) - ddimZ;
 
@@ -405,23 +407,23 @@ static double _fff_cubic_spline_sample3d ( double x, double y, double z,
      where to find the B-spline coefficients (including mirror conditions) */ 
   buf_bspx = (double*)bspx;
   buf_posx = (int*)posx;
-  for ( xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++ ) {
-    *buf_bspx = fff_cubic_spline_basis( x-(double)xx );
-    *buf_posx = CUBIC_SPLINE_MIRROR( xx, ddimX, two_ddimX );
+  for (xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++) {
+    *buf_bspx = cubic_spline_basis(x-(double)xx);
+    *buf_posx = CUBIC_SPLINE_MIRROR(xx, ddimX, two_ddimX);
   }
 
   buf_bspy = (double*)bspy;
   buf_posy = (int*)posy;
-  for ( yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++ ) {
-    *buf_bspy = fff_cubic_spline_basis( y-(double)yy );
-    *buf_posy = CUBIC_SPLINE_MIRROR( yy, ddimY, two_ddimY );
+  for (yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++) {
+    *buf_bspy = cubic_spline_basis(y-(double)yy);
+    *buf_posy = CUBIC_SPLINE_MIRROR(yy, ddimY, two_ddimY);
   }
 
   buf_bspz = (double*)bspz;
   buf_posz = (int*)posz;
-  for ( zz = nz; zz <= pz; zz ++, buf_bspz ++, buf_posz ++ ) {
-    *buf_bspz = fff_cubic_spline_basis( z-(double)zz );
-    *buf_posz = CUBIC_SPLINE_MIRROR( zz, ddimZ, two_ddimZ );
+  for (zz = nz; zz <= pz; zz ++, buf_bspz ++, buf_posz ++) {
+    *buf_bspz = cubic_spline_basis(z-(double)zz);
+    *buf_posz = CUBIC_SPLINE_MIRROR(zz, ddimZ, two_ddimZ);
   }
 
   /* Compute the interpolated value incrementally */
@@ -429,24 +431,24 @@ static double _fff_cubic_spline_sample3d ( double x, double y, double z,
   buf_bspz = (double*)bspz;
   buf_posz = (int*)posz;
 
-  for ( zz = nz; zz <= pz; zz ++, buf_bspz ++, buf_posz ++ ) {
+  for (zz = nz; zz <= pz; zz ++, buf_bspz ++, buf_posz ++) {
 
     aux2 = 0.0;
     buf_bspy = (double*)bspy;
     buf_posy = (int*)posy;
     shftz = offZ*(*buf_posz);
     
-    for ( yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++ ) {
+    for (yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++) {
       
       aux = 0.0;
       buf_bspx = (double*)bspx;
       buf_posx = (int*)posx;
       shftyz = offY*(*buf_posy) + shftz;
 
-      for ( xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++ ) {
+      for (xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++) {
 	
 	/* Point towards the coefficient value at position (xx, yy, zz) */
-	buf = imcoef + offX*(*buf_posx) + shftyz;
+	buf = coef + offX*(*buf_posx) + shftyz;
 	
 	/* Update signal value */
 	aux += (*buf) * (*buf_bspx);
@@ -466,20 +468,26 @@ static double _fff_cubic_spline_sample3d ( double x, double y, double z,
 
 
 
-static double _fff_cubic_spline_sample4d ( double x, double y, double z, double t,
-					   double *imcoef,
-					   int dimX, int dimY, int dimZ, int dimT, 
-					   int offX, int offY, int offZ, int offT )
+double cubic_spline_sample4d (double x, double y, double z, double t, const PyArrayObject* Coef)
 {
-  
-  const int ddimX = dimX-1;
-  const int ddimY = dimY-1;
-  const int ddimZ = dimZ-1;
-  const int ddimT = dimT-1;
-  const int two_ddimX = 2*ddimX;
-  const int two_ddimY = 2*ddimY;
-  const int two_ddimZ = 2*ddimZ;
-  const int two_ddimT = 2*ddimT;
+  unsigned int dimX = PyArray_DIM(Coef, 0);
+  unsigned int dimY = PyArray_DIM(Coef, 1);
+  unsigned int dimZ = PyArray_DIM(Coef, 2);
+  unsigned int dimT = PyArray_DIM(Coef, 3);
+  unsigned int offX = sizeof(double)*PyArray_STRIDE(Coef, 0); 
+  unsigned int offY = sizeof(double)*PyArray_STRIDE(Coef, 1); 
+  unsigned int offZ = sizeof(double)*PyArray_STRIDE(Coef, 2); 
+  unsigned int offT = sizeof(double)*PyArray_STRIDE(Coef, 3); 
+  double *coef = PyArray_DATA(Coef); 
+
+  const unsigned int ddimX = dimX-1;
+  const unsigned int ddimY = dimY-1;
+  const unsigned int ddimZ = dimZ-1;
+  const unsigned int ddimT = dimT-1;
+  const unsigned int two_ddimX = 2*ddimX;
+  const unsigned int two_ddimY = 2*ddimY;
+  const unsigned int two_ddimZ = 2*ddimZ;
+  const unsigned int two_ddimT = 2*ddimT;
 
   double *buf;
   int nx, ny, nz, nt, px, py, pz, pt;
@@ -494,22 +502,22 @@ static double _fff_cubic_spline_sample4d ( double x, double y, double z, double 
 
   /* Right up superior point */
   aux = x + ddimX; 
-  if ( (aux<0) || (aux>3*ddimX) ) 
+  if ((aux<0) || (aux>3*ddimX)) 
     return 0.0;
   px = (int)(aux+2) - ddimX;
 
   aux = y + ddimY; 
-  if ( (aux<0) || (aux>3*ddimY) ) 
+  if ((aux<0) || (aux>3*ddimY)) 
     return 0.0;
   py = (int)(aux+2) - ddimY;
 
   aux = z + ddimZ; 
-  if ( (aux<0) || (aux>3*ddimZ) ) 
+  if ((aux<0) || (aux>3*ddimZ)) 
     return 0.0;
   pz = (int)(aux+2) - ddimZ;
 
   aux = t + ddimT; 
-  if ( (aux<0) || (aux>3*ddimT) ) 
+  if ((aux<0) || (aux>3*ddimT)) 
     return 0.0;
   pt = (int)(aux+2) - ddimT;
 
@@ -523,30 +531,30 @@ static double _fff_cubic_spline_sample4d ( double x, double y, double z, double 
      where to find the B-spline coefficients (including mirror conditions) */ 
   buf_bspx = (double*)bspx;
   buf_posx = (int*)posx;
-  for ( xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++ ) {
-    *buf_bspx = fff_cubic_spline_basis( x-(double)xx );
-    *buf_posx = CUBIC_SPLINE_MIRROR( xx, ddimX, two_ddimX );
+  for (xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++) {
+    *buf_bspx = cubic_spline_basis(x-(double)xx);
+    *buf_posx = CUBIC_SPLINE_MIRROR(xx, ddimX, two_ddimX);
   }
 
   buf_bspy = (double*)bspy;
   buf_posy = (int*)posy;
-  for ( yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++ ) {
-    *buf_bspy = fff_cubic_spline_basis( y-(double)yy );
-    *buf_posy = CUBIC_SPLINE_MIRROR( yy, ddimY, two_ddimY );
+  for (yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++) {
+    *buf_bspy = cubic_spline_basis(y-(double)yy);
+    *buf_posy = CUBIC_SPLINE_MIRROR(yy, ddimY, two_ddimY);
   }
 
   buf_bspz = (double*)bspz;
   buf_posz = (int*)posz;
-  for ( zz = nz; zz <= pz; zz ++, buf_bspz ++, buf_posz ++ ) {
-    *buf_bspz = fff_cubic_spline_basis( z-(double)zz );
-    *buf_posz = CUBIC_SPLINE_MIRROR( zz, ddimZ, two_ddimZ );
+  for (zz = nz; zz <= pz; zz ++, buf_bspz ++, buf_posz ++) {
+    *buf_bspz = cubic_spline_basis(z-(double)zz);
+    *buf_posz = CUBIC_SPLINE_MIRROR(zz, ddimZ, two_ddimZ);
   }
 
   buf_bspt = (double*)bspt;
   buf_post = (int*)post;
-  for ( tt = nt; tt <= pt; tt ++, buf_bspt ++, buf_post ++ ) {
-    *buf_bspt = fff_cubic_spline_basis( t-(double)tt );
-    *buf_post = CUBIC_SPLINE_MIRROR( tt, ddimT, two_ddimT );
+  for (tt = nt; tt <= pt; tt ++, buf_bspt ++, buf_post ++) {
+    *buf_bspt = cubic_spline_basis(t-(double)tt);
+    *buf_post = CUBIC_SPLINE_MIRROR(tt, ddimT, two_ddimT);
   }
   
 
@@ -555,31 +563,31 @@ static double _fff_cubic_spline_sample4d ( double x, double y, double z, double 
   buf_bspt = (double*)bspt;
   buf_post = (int*)post;
   
-  for ( tt = nt; tt <= pt; tt ++, buf_bspt ++, buf_post ++ ) {
+  for (tt = nt; tt <= pt; tt ++, buf_bspt ++, buf_post ++) {
     
     aux3 = 0.0;
     buf_bspz = (double*)bspz;
     buf_posz = (int*)posz;
     shftt = offT*(*buf_post);
     
-    for ( zz = nz; zz <= pz; zz ++, buf_bspz ++, buf_posz ++ ) {
+    for (zz = nz; zz <= pz; zz ++, buf_bspz ++, buf_posz ++) {
       
       aux2 = 0.0;
       buf_bspy = (double*)bspy;
       buf_posy = (int*)posy;
       shftzt =  offZ*(*buf_posz) + shftt;
       
-      for ( yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++ ) {
+      for (yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++) {
 	
 	aux = 0.0;
 	buf_bspx = (double*)bspx;
 	buf_posx = (int*)posx;
 	shftyzt = offY*(*buf_posy) + shftzt;
 
-	for ( xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++ ) {
+	for (xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++) {
 	  
 	  /* Point towards the coefficient value at position (xx, yy, zz, tt) */
-	  buf = imcoef + offX*(*buf_posx) + shftyzt;
+	  buf = coef + offX*(*buf_posx) + shftyzt;
 	  
 	  /* Update signal value */
 	  aux += (*buf) * (*buf_bspx);
