@@ -63,9 +63,10 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
         
     k = np.size(idx)
     if k==0: return None
-    nroi = NROI(parents,header)
     discrete = [xyz[label==i] for i in range(k)]
-    nroi.set_discrete(discrete)
+    #nroi = NROI(parents,header)
+    #nroi.set_discrete(discrete)
+    nroi = NROI(parents,header,discrete)
     
     #define the voxels
     # as an mroi, it should have a method to be instantiated
@@ -82,6 +83,7 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
             
             nroi.clean(size>smin)
             nroi.check()
+    #fixme : add some data as a field 
     return nroi
 
 
@@ -96,12 +98,25 @@ class NROI(MultipleROI,Forest):
     to embed the structure in an image space
     """
 
-    def __init__(self,parents=None,header=None,id=None):
+    def __init__(self,parents=None,header=None,discrete=None,id=None):
         """
+        Building the NROI
+        - parents=None: array of shape(k) providing
+        the hierachical structure
+        if parent==None, None is returned
+        - header=None: space defining information
+        (to be replaced by a more adequate structure)
+        - discrete=None list of position arrays
+        that yield the grid position of each grid guy. 
         """
+        if parents==None:
+            return None
         k = np.size(parents)
         Forest.__init__(self,k,parents)
         MultipleROI.__init__(self,id, k,header)
+        if discrete!=None: self.set_discrete(discrete)
+        # fixme: discrete could be integrated
+        # within the builder of MultipleROI
 
     def clean(self, valid):
         """
@@ -109,19 +124,20 @@ class NROI(MultipleROI,Forest):
         and update the hierarchy accordingly
         """
         
-        #Forest.subgraph(self,valid)
-        #update the parent information
-        for j in range(self.k):
-            if valid[self.parents[j]]==0:
-                self.parents[j]=j
-                                
-        iconvert = np.squeeze(np.nonzero(valid))
-        convert = -np.ones(self.k).astype(np.int)
-        aux = np.cumsum(valid.astype(np.int))-1
-        convert[valid] = aux[valid]
-        self.parents = convert[self.parents[iconvert]]
-        k = np.sum(valid>0)
-        Forest.__init__(self,k,self.parents)
+        #fixme: use Forest.subforest(valid) ?
+        sf = self.subforest(valid)
+        #for j in range(self.k):
+        #    if valid[self.parents[j]]==0:
+        #        self.parents[j]=j
+        #                        
+        #iconvert = np.squeeze(np.nonzero(valid))
+        #convert = -np.ones(self.k).astype(np.int)
+        #aux = np.cumsum(valid.astype(np.int))-1
+        #convert[valid] = aux[valid]
+        #self.parents = convert[self.parents[iconvert]]
+        #k = np.sum(valid>0)
+        #Forest.__init__(self,k,self.parents)
+        Forest.__init__(self,sf.V,sf.parents)
 
         # then clean as a multiple ROI
         MultipleROI.clean(self, valid)
@@ -159,7 +175,6 @@ class NROI(MultipleROI,Forest):
                 fj =  self.parents[j]
                 if fj!=j:
                     self.parents[self.parents==j]=fj
-                    #self.label[self.label==j]=fj
                     self.discrete[fj] = np.vstack((self.discrete[fj],self.discrete[j]))
                 else:
                     valid[j]=1
@@ -180,8 +195,6 @@ class NROI(MultipleROI,Forest):
             i = i[0]
             if np.sum(i!=j)==1:
                 i = int(i[i!=j])
-                
-                #self.label[self.label==j]=i
                 self.discrete[i] = np.vstack((self.discrete[i],self.discrete[j]))
                 self.parents[i] = self.parents[j]
                 valid[j] = 0
@@ -196,39 +209,37 @@ class NROI(MultipleROI,Forest):
     def get_k(self):
        return self.k
 
- 
-    
-class HROI():
-    """
-    Tentative alternative definition of multiple ROI class
-    """
-
-    def __init__(self,parents=None,header=None,id=None):
+    def reduce_to_leaves(self):
         """
+        h2 = reduce_to_leaves(self)
+        create a  new set of rois which are only the leaves of self
+        if there is none (this should not happen),
+        None is returned
         """
-        k = np.size(parents)
-        f = Forest(self,k,parents)
-        self.Forest = f
-        mroi = MultipleROI(self,id, k,header)
-        self.MROI = mroi
+        isleaf = self.isleaf()
+        k = np.sum(isleaf.astype(np.int))
+        if self.k==0: return None
+        parents = np.arange(k)
+        discrete = [self.discrete[k].copy() for k in np.nonzero(isleaf)[0]]
+        nroi = NROI(parents,self.header,discrete)
+        fids = self.features.keys()
+        for fid in fids:
+            # fixme : works only as long as self.feature(fid) is an array
+            # which should not remain the case
+            nroi.set_roi_feature(fid,self.feature(fid)[isleaf])
+        return nroi
 
-
-def test_nroi(verbose=0):
-    """
-    """
-    import nifti
-    nim =  nifti.NiftiImage("/tmp/blob.nii")
-    header = nim.header
-    k = np.size(np.unique(nim.data))-2
-    nroi = NROI(parents=np.arange(k),header=header)
-    nroi.from_labelled_image("/tmp/blob.nii",add=False)
-    nroi.make_image("/tmp/mroi.nii")
-    nroi.clean(np.arange(k)>k/5)
-    nroi.set_feature_from_image('activ',"/tmp/spmT_0024.img")
-    if verbose: nroi.plot_feature('activ')
-    return nroi
-
-
+    def copy(self):
+        """ returns a copy of self
+        """
+        discrete = [self.discrete[k].copy() for k in range(self.k)]
+        nroi = NROI(self.parents.copy(),self.header,discrete)
+        fids = self.features.keys()
+        for fid in fids:
+            # fixme : works only as long as self.feature(fid) is an array
+            # which should not remain the case
+            nroi.set_roi_feature(fid,self.feature(fid).copy())
+        return nroi
     
 
 class ROI_Hierarchy:

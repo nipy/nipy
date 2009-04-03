@@ -2,7 +2,7 @@
 Example of a script that crates a 'hierarchical roi' structure
 from the blob model of an image
 
-Used mainly for debugging at the moment
+Used mainly for debugging at the moment (befiore unittests are created)
 
 This example is based on a (simplistic) simulated image.
 
@@ -36,3 +36,6 @@ Fbeta.from_3d_grid(xyz.astype(np.int), 18)
 beta = np.reshape(dataset,(nbvox,1))
 Fbeta.set_field(beta)
 nroi = hroi.NROI_from_field(Fbeta,None,xyz,th=2.0,smin = 5)
+if n1 != None:
+    n1 = nroi.copy()
+    n2 = nroi.reduce_to_leaves()
