@@ -18,7 +18,8 @@ extern "C" {
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
-  
+  /* Numpy import */
+  extern void yamila_import_array(void);
 
   /* 
      Update a pre-allocated joint histogram. Important notice: in all
@@ -35,11 +36,14 @@ extern "C" {
        1 - TRILINEAR interpolation 
        <0 - RANDOM interpolation with seed=-interp
   */ 
-  extern void joint_histogram(double* H, int clampI, int clampJ,  
-			      const PyArrayObject* imI,
+  extern void joint_histogram(double* H, 
+			      int clampI, 
+			      int clampJ,  
+			      PyArrayIterObject* iterI,
 			      const PyArrayObject* imJ_padded, 
 			      const double* Tvox, 
 			      int interp); 
+
 
   extern double correlation_coefficient(const double* H, int clampI, int clampJ);
   extern double correlation_ratio(const double* H, int clampI, int clampJ); 

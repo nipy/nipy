@@ -1,4 +1,4 @@
-#include "joint_histogram.h"
+#include "yamila.h"
 
 #include <randomkit.h>
 
@@ -9,7 +9,7 @@
 
 #define SQR(a) ((a)*(a))
 #define FLOOR(a)((a)>0.0 ? (int)(a):(((int)(a)-a)!= 0.0 ? (int)(a)-1 : (int)(a)))  
-#define UNNSIGNED_FLOOR(a) ((int)(a))
+#define UROUND(a) ((int)(a+0.5))
 
 
 static double _marginalize(double* h, const double* H, int clampI, int clampJ, int axis); 
@@ -41,6 +41,11 @@ static inline void _rand_interpolation(int i,
 
 
 
+/* Numpy import */
+void yamila_import_array(void) { 
+  import_array(); 
+  return;
+}
 
 
 /* =========================================================================
@@ -79,16 +84,16 @@ void joint_histogram(double* H,
 		     int interp)
 {
   const signed short* J=(signed short*)imJ_padded->data; 
-  size_t dimJX=imJ_padded->dimX-2, dimJY=imJ_padded->dimY-2, dimJZ=imJ_padded->dimZ-2;  
+  size_t dimJX=imJ_padded->dimensions[0]-2, dimJY=imJ_padded->dimensions[1]-2, dimJZ=imJ_padded->dimensions[2]-2;  
   signed short Jnn[8]; 
   double W[8]; 
   signed short *bufI, *bufJnn; 
   double *bufW; 
   int i, j;
   size_t off;
-  size_t u2 = imJ_padded->dimZ; 
+  size_t u2 = imJ_padded->dimensions[2]; 
   size_t u3 = u2+1; 
-  size_t u4 = (imJ_padded->dimY)*u2;
+  size_t u4 = imJ_padded->dimensions[1]*u2;
   size_t u5 = u4+1; 
   size_t u6 = u4+u2; 
   size_t u7 = u6+1; 
@@ -119,7 +124,7 @@ void joint_histogram(double* H,
   memset((void*)H, 0, clampI*clampJ*sizeof(double));
 
   /* Looop over source voxels */
-  while(iterI->idx < iterI->size) {
+  while(iterI->index < iterI->size) {
   
     /* Source voxel intensity */
     bufI = (signed short*)PyArray_ITER_DATA(iterI); 
@@ -264,7 +269,7 @@ static inline void _tri_interpolation(int i,
   }
   if (sumW > 0.0) {
     jm /= sumW;
-    H[UNSIGNED_ROUND(jm)+clampJ_i] += 1;
+    H[UROUND(jm)+clampJ_i] += 1;
   }
   return; 
 }
@@ -785,59 +790,3 @@ static void _L1_moments (const double * h, int clamp, int stride,
 }
 
 
-/* =========================================================================
-   RESAMPLING ROUTINES
-   ========================================================================= */
-
-/* Tvox is the voxel transformation from source to target 
-   Resample a 2d-3d image undergoing an affine transformation. */
-
-#if 0 
-void cubic_spline_resample(PyArrayObject* im_resampled, 
-			   const PyArrayObject* im, 
-			   const double* Tvox)
-{
-  double i1;
-  PyArrayObject* im_spline_coeff;
-  fff_array_iterator imIter = fff_array_iterator_init(im_resampled); 
-  size_t x, y, z;
-  size_t ddimX=im->dimX-1, ddimY=im->dimY-1, ddimZ=im->dimZ-1; 
-  double Tx, Ty, Tz;
-  fff_vector* work; 
-  size_t work_size; 
-
-  /* Compute the spline coefficient image */
-  im_spline_coeff = fff_array_new3d(FFF_DOUBLE, im->dimX, im->dimY, im->dimZ);
-  work_size = FFF_MAX(im->dimX, im->dimY); 
-  work_size = FFF_MAX(work_size, im->dimZ); 
-  work = fff_vector_new(work_size);   
-  fff_cubic_spline_transform_image(im_spline_coeff, im, work);
-  fff_vector_delete(work); 
-
-  /* Resampling loop */
-  while(imIter.idx < imIter.size) {
-    x = imIter.x;
-    y = imIter.y; 
-    z = imIter.z; 
-    _apply_affine_transform(&Tx, &Ty, &Tz, Tvox, x, y, z); 
-    if ((Tx<0) || (Tx>ddimX) ||
-	(Ty<0) || (Ty>ddimY) ||
-	(Tz<0) || (Tz>ddimZ))
-      i1 = 0.0; 
-    else 
-      i1 = fff_cubic_spline_sample_image(Tx, Ty, Tz, 0, im_spline_coeff); 
-
-    /* fff_array_set3d(im_resampled, x, y, z, i1); */
-    fff_array_set_from_iterator(im_resampled, imIter, i1); 
-    fff_array_iterator_update(&imIter); 
-  }
-
-  /* Free coefficient image */
-  fff_array_delete(im_spline_coeff); 
-
-  return;
-	 
-}
-
-
-#endif 

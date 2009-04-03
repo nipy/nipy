@@ -16,7 +16,7 @@ def configuration(parent_package='',top_path=None):
     config.add_data_dir('tests')
     config.add_extension(
                 '_yamila',
-                sources=['_yamila.c', 'joint_histogram.c'],
+                sources=['_yamila.c', 'yamila.c'],
                 libraries = ['fffpy'],
                 extra_info=lapack_info,
                 )

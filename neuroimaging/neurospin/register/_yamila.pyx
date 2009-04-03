@@ -2,8 +2,7 @@
 
 
 """
-Image registration routines. Joint histogram computation, similarity
-measures.
+Joint histogram computation, similarity measures.
 
 Author: Alexis Roche, 2008.
 """
@@ -14,50 +13,33 @@ __version__ = '0.1'
 # Includes
 include "numpy.pxi"
 
-# Additional exports from fff_iconic_match.h
-cdef extern from "fff_iconic_match.h":
+# Externals
+cdef extern from "yamila.h":
 
-    ctypedef struct fff_imatch:
-        fff_array* imI
-        fff_array* imJ
-        fff_array* imJ_padded
-        int clampI
-        int clampJ
-        double* H
-        double* hI
-        double* hJ
-        int owner_images
-        int owner_histograms
-        
-
-    fff_imatch* fff_imatch_new(fff_array* imI, fff_array* imJ,
-                               double thI, double thJ, int clampI, int clampJ)
-    void fff_imatch_delete(fff_imatch* imatch)
-    unsigned int fff_imatch_source_npoints( fff_array* imI )
-    void fff_imatch_joint_hist(double* H, int clampI, int clampJ,
-                               fff_array* imI, fff_array* imJ_padded, double* Tvox,
-                               int interp) 
-    double fff_imatch_cc(double* H, int clampI, int clampJ)
-    double fff_imatch_cr(double* H, int clampI, int clampJ) 
-    double fff_imatch_crL1(double* H, double* hI, int clampI, int clampJ) 
-    double fff_imatch_mi(double* H, double* hI, int clampI, double* hJ, int clampJ)
-    double fff_imatch_joint_ent(double* H, int clampI, int clampJ)
-    double fff_imatch_cond_ent(double* H, double* hJ, int clampI, int clampJ) 
-    double fff_imatch_norma_mi(double* H, double* hI, int clampI, double* hJ, int clampJ) 
-    double fff_imatch_n_cc(double* H, int clampI, int clampJ, double norma)
-    double fff_imatch_n_cr(double* H, int clampI, int clampJ, double norma) 
-    double fff_imatch_n_crL1(double* H, double* hI, int clampI, int clampJ, double norma) 
-    double fff_imatch_n_mi(double* H, double* hI, int clampI, double* hJ, int clampJ, double norma)
-    double fff_imatch_supervised_mi(double* H, double* F, 
-                                    double* fI, int clampI, double* fJ, int clampJ)
-    double fff_imatch_n_supervised_mi(double* H, double* F, 
-                                      double* fI, int clampI, double* fJ, int clampJ, double norma) 
+    void yamila_import_array()
+    void joint_histogram(double* H, int clampI, int clampJ,  
+                         flatiter iterI, ndarray imJ_padded, 
+                         double* Tvox, int interp)
+    double correlation_coefficient(double* H, int clampI, int clampJ)
+    double correlation_ratio(double* H, int clampI, int clampJ) 
+    double correlation_ratio_L1(double* H, double* hI, int clampI, int clampJ) 
+    double joint_entropy(double* H, int clampI, int clampJ)
+    double conditional_entropy(double* H, double* hJ, int clampI, int clampJ) 
+    double mutual_information(double* H, 
+                              double* hI, int clampI, 
+                              double* hJ, int clampJ)
+    double normalized_mutual_information(double* H, 
+                                         double* hI, int clampI, 
+                                         double* hJ, int clampJ) 
+    double supervised_mutual_information(double* H, double* F, 
+                                         double* fI, int clampI, 
+                                         double* fJ, int clampJ) 
 
 
 
 
 # Initialize numpy
-fffpy_import_array()
+yamila_import_array()
 import_array()
 import numpy as np
 cimport numpy as np
@@ -73,25 +55,19 @@ cdef enum similarity_measure:
     MUTUAL_INFORMATION,
     NORMALIZED_MUTUAL_INFORMATION,
     SUPERVISED_MUTUAL_INFORMATION,
-    N_CORRELATION_COEFFICIENT,
-    N_CORRELATION_RATIO,
-    N_CORRELATION_RATIO_L1,
-    N_MUTUAL_INFORMATION,
-    N_SUPERVISED_MUTUAL_INFORMATION
 
 # Corresponding Python dictionary 
-similarity_measures = {'correlation coefficient': [CORRELATION_COEFFICIENT, N_CORRELATION_COEFFICIENT],
-                       'correlation ratio': [CORRELATION_RATIO, N_CORRELATION_RATIO],  
-                       'correlation ratio L1': [CORRELATION_RATIO_L1, N_CORRELATION_RATIO_L1],
-                       'mutual information': [MUTUAL_INFORMATION, N_MUTUAL_INFORMATION],
-                       'joint entropy': [JOINT_ENTROPY],
-                       'conditional entropy': [CONDITIONAL_ENTROPY],
-                       'normalized mutual information': [NORMALIZED_MUTUAL_INFORMATION],
-                       'supervised mutual information': [SUPERVISED_MUTUAL_INFORMATION, N_SUPERVISED_MUTUAL_INFORMATION]}
+similarity_measures = {'cc': CORRELATION_COEFFICIENT,
+                       'cr': CORRELATION_RATIO,
+                       'crl1': CORRELATION_RATIO_L1, 
+                       'mi': MUTUAL_INFORMATION, 
+                       'je': JOINT_ENTROPY,
+                       'ce': CONDITIONAL_ENTROPY,
+                       'nmi': NORMALIZED_MUTUAL_INFORMATION,
+                       'smi': SUPERVISED_MUTUAL_INFORMATION}
 
 
-
-def joint_hist(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
+def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
 
     """
     joint_hist(H, imI, imJ, Tvox, subsampling, corner, size)
@@ -112,7 +88,7 @@ def joint_hist(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp)
     return 
 
 
-def similarity(ndarray H, ndarray HI, ndarray HJ, int simitype=MUTUAL_INFORMATION, double norma=1.0, ndarray F=None):
+def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, ndarray F=None):
     """
     similarity(H, hI, hJ).
     Comments to follow
@@ -134,31 +110,21 @@ def similarity(ndarray H, ndarray HI, ndarray HJ, int simitype=MUTUAL_INFORMATIO
 
     # Switch 
     if simitype == CORRELATION_COEFFICIENT:
-        simi = fff_imatch_cc(h, clampI, clampJ)
-    elif simitype == N_CORRELATION_COEFFICIENT:
-        simi = fff_imatch_n_cc(h, clampI, clampJ, norma) 
+        simi = correlation_coefficient(h, clampI, clampJ)
     elif simitype == CORRELATION_RATIO: 
-        simi = fff_imatch_cr(h, clampI, clampJ) 
-    elif simitype == N_CORRELATION_RATIO: 
-        simi = fff_imatch_n_cr(h, clampI, clampJ, norma)  
+        simi = correlation_ratio(h, clampI, clampJ) 
     elif simitype == CORRELATION_RATIO_L1:
-        simi = fff_imatch_crL1(h, hI, clampI, clampJ) 
-    elif simitype == N_CORRELATION_RATIO_L1:
-        simi = fff_imatch_n_crL1(h, hI, clampI, clampJ, norma)  
+        simi = correlation_ratio_L1(h, hI, clampI, clampJ) 
     elif simitype == MUTUAL_INFORMATION: 
-        simi = fff_imatch_mi(h, hI, clampI, hJ, clampJ) 
-    elif simitype == N_MUTUAL_INFORMATION: 
-        simi = fff_imatch_n_mi(h, hI, clampI, hJ, clampJ, norma) 
+        simi = mutual_information(h, hI, clampI, hJ, clampJ) 
     elif simitype == JOINT_ENTROPY:
-        simi = fff_imatch_joint_ent(h, clampI, clampJ) 
+        simi = joint_entropy(h, clampI, clampJ) 
     elif simitype == CONDITIONAL_ENTROPY:
-        simi = fff_imatch_cond_ent(h, hJ, clampI, clampJ) 
+        simi = conditional_entropy(h, hJ, clampI, clampJ) 
     elif simitype == NORMALIZED_MUTUAL_INFORMATION:
-        simi = fff_imatch_norma_mi(h, hI, clampI, hJ, clampJ) 
+        simi = normalized_mutual_information(h, hI, clampI, hJ, clampJ) 
     elif simitype == SUPERVISED_MUTUAL_INFORMATION:
-        simi = fff_imatch_supervised_mi(h, f, hI, clampI, hJ, clampJ)
-    elif simitype == N_SUPERVISED_MUTUAL_INFORMATION:
-        simi = fff_imatch_n_supervised_mi(h, f, hI, clampI, hJ, clampJ, norma) 
+        simi = supervised_mutual_information(h, f, hI, clampI, hJ, clampJ)
     else:
         simi = 0.0
         

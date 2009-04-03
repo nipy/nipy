@@ -3,7 +3,7 @@ YAMILA = Yet Another Mutual Information-Like Aligner
 
 Questions: alexis.roche@gmail.com
 """
-import _yamila
+from _yamila import _joint_histogram, _similarity, similarity_measures
 import affine_transform
 
 import numpy as np  
@@ -26,11 +26,11 @@ TODO: type checking. implement proper masking.
 For the time being, any transformation is assumed to be a 4x4 matrix. 
 """
 
-
 # Dictionary of interpolation methods
-interp_methods = {'partial volume': 0,
-                  'trilinear': 1,
-                  'random': -1}
+# pv: Partial volume 
+# tri: Trilinear 
+# rand: Random interpolation
+interp_methods = {'pv': 0, 'tri': 1, 'rand': -1}
 
 
 
@@ -82,26 +82,6 @@ def clamp(x, th=0, mask=None, bins=256):
 
 
 
-def _similarity(similarity, normalize): 
-
-    if normalize == None:
-        k = 0
-    elif normalize == 'sophia':
-        k = 1
-    elif normalize == 'saclay':
-        k = 2
-    flag = _yamila.similarity_measures[similarity][k] ## FIXME: may not exist, should check! 
-    return flag
-
-
-
-def _interp(interp):
-
-    flag = interp_methods[interp]
-    return flag
-
-
-
 
 class JointHistogram():
 
@@ -139,9 +119,10 @@ class JointHistogram():
         self.set()
 
     # Use array rather than asarray to ensure contiguity 
-    def set(self, interp='partial volume', 
-            similarity='correlation coefficient', normalize=None, 
-            subsampling=[1,1,1], corner=[0,0,0], size=None, pdf=None):
+    def set(self, 
+            interp='pv', 
+            similarity='cc', normalize=None, pdf=None
+            subsampling=[1,1,1], corner=[0,0,0], size=None):
         self.block_subsampling = np.array(subsampling, dtype='uint')
         self.block_corner = np.array(corner, dtype='uint')
         if size == None:
@@ -157,10 +138,10 @@ class JointHistogram():
         Taux[0:3,3] = self.block_corner
         self.block_transform = np.dot(self.source_transform, Taux)
         self.interp = interp
-        self._interp = _interp(interp)
+        self._interp = interp_methods[interp]
         self.similarity = similarity
+        self._similarity = similarity_measures[similarity]
         self.normalize = normalize
-        self._similarity = _similarity(similarity, normalize)
         self.pdf = np.array(pdf)        
 
     # T is the 4x4 transformation between the real coordinate systems
@@ -178,16 +159,18 @@ class JointHistogram():
         seed = self._interp
         if self._interp < 0:
             seed = - np.random.randint(maxint)
-        _yamila.joint_hist(self.joint_hist, 
-                           self.source_block.flat, ## array iterator
-                           self.target_clamped, 
-                           Tv, 
-                           seed)
+        _joint_histogram(self.joint_hist, 
+                         self.source_block.flat, ## array iterator
+                         self.target_clamped, 
+                         Tv, 
+                         seed)
         #self.source_hist = np.sum(self.joint_histo, 1)
         #self.target_hist = np.sum(self.joint_histo, 0)
-        return _yamila.similarity(self.joint_hist, self.source_hist, 
-                                  self.target_hist, self._similarity, 
-                                  self.block_npoints, self.pdf)
+        return _similarity(self.joint_hist, 
+                           self.source_hist, 
+                           self.target_hist, 
+                           self._similarity, 
+                           self.pdf)
 
     ## FIXME: check that the dimension of start is consistent with the search space. 
     def optimize(self, search='rigid 3D', method='powell', start=None, radius=10):
@@ -280,7 +263,7 @@ class JointHistogram():
 
         return similarities, params
         
-
+    """
     def resample(self, T, toresample='source', dtype=None):
         if toresample is 'target': 
             Tv = self.voxel_transform(T)
@@ -293,4 +276,4 @@ class JointHistogram():
 
         return out
 
-
+    """
