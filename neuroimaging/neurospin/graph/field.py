@@ -254,41 +254,6 @@ class Field(fg.WeightedGraph):
             idx,height, parents,label = threshold_bifurcations(self.edges[:,0],self.edges[:,1],self.field[:,refdim],th)
         return idx,height,parents,label
 
-    def generate_blobs(self,refdim=0,th=-np.infty,smin = 0):
-        """
-        NROI = threshold_bifurcations(refdim = 0,th=-infty,smin=0)
-
-        INPUT
-        - th is a threshold so that only values above th are considered
-        by default, th = -infty (numpy)
-        - smin is the minimum size (in number of nodes) of the blobs to 
-        keep.
-
-        NOTE/FIXME
-        This function should not remain here and will be moved womewhere else in the library
-        """
-        from neuroimaging.neurospin.spatial_models import hroi 
-        if self.field.max()>th:
-            idx,height,parents,label = self.threshold_bifurcations(refdim,th)
-        else:
-            idx = []
-            parents = []
-            label = -np.ones(self.V)
-        
-        k = np.size(idx)
-        nroi = hroi.ROI_Hierarchy(k,idx, parents,label)      
-        k = 2* nroi.get_k()
-        if k>0:
-            while k>nroi.get_k():
-                k = nroi.get_k()
-                size = nroi.compute_size()
-                nroi.merge_ascending(size>smin,None)
-                nroi.merge_descending(None)
-                size = nroi.compute_size()
-                nroi.clean(size>smin)
-                nroi.check()
-        return nroi
-
     def constrained_voronoi(self,seed):
         """
         label = self.constrained_voronoi(seed)

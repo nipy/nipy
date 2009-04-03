@@ -652,6 +652,9 @@ class WeightedGraph(Graph):
         and with the correponding set of edges
         INPUT:
         - valid of shape (self.V): nonzero for vertices to be retained
+        OUTPUT:
+        - a graph G that is a subgraph
+        
         CAVEAT:
         - the vertices are renumbered as [1..p] where p = sum(valid>0)
         - when sum(valid==0) then None is returned 
@@ -1420,10 +1423,12 @@ class Forest(WeightedGraph):
 
     def subforest(self,valid):
         """
-        creates a subforest with the vertices for which valid>0
+        creates a subforest with the vertices
+        for which valid>0
         and with the correponding set of edges
-        the children of deleted vertices become their own parent
-        a new forest is created
+        the children of deleted vertices become
+        their own parent
+        a new forest is returned
         """
         if np.size(valid)!= self.V:
             raise ValueError, "incompatible size for self anf valid"

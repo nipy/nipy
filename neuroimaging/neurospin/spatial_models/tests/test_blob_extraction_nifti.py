@@ -23,7 +23,7 @@ import scipy.stats as st
 
 # Our own imports
 from neuroimaging.neurospin.graph import field as ff
-
+import neuroimaging.neurospin.spatial_models.hroi as hroi
 
 # This isn't really a standalone test, so mark it as such for nose.  Eventually
 # it will be hopefully refactored into a proper test.
@@ -63,7 +63,7 @@ def main():
     # compute the blobs
     th = float(st.t.isf(0.01,100))
     smin = 5
-    nroi = F.generate_blobs(refdim=0,th=th,smin = smin)
+    nroi = hroi.generate_blobs(F,refdim=0,th=th,smin = smin)
 
     # compute the average signal within each blob
     idx = nroi.get_seed()
