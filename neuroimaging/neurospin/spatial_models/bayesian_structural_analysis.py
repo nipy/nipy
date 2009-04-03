@@ -650,7 +650,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        nroi = Fbeta.generate_blobs(refdim=0,th=theta,smin = smin)
+        nroi = hroi.generate_blobs(Fbeta,refdim=0,th=theta,smin = smin)
         BF.append(nroi) 
         
         if nroi.k>0:
@@ -804,7 +804,7 @@ def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, the
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        nroi = Fbeta.generate_blobs(refdim=0,th=theta,smin = smin)
+        nroi = hroi.generate_blobs(Fbeta,refdim=0,th=theta,smin = smin)
 
         # consider only the rois associated with maxima
         # hence with no hierrachy

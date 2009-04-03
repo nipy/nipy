@@ -5,6 +5,41 @@ import neuroimaging.neurospin.graph.field as ff
 from neuroimaging.neurospin.graph.graph import Forest
 from neuroimaging.neurospin.utils.roi import MultipleROI
 
+
+def  generate_blobs(Field,refdim=0,th=-np.infty,smin = 0):
+        """
+        NROI = threshold_bifurcations(refdim = 0,th=-infty,smin=0)
+
+        INPUT
+        - th is a threshold so that only values above th are considered
+        by default, th = -infty (numpy)
+        - smin is the minimum size (in number of nodes) of the blobs to 
+        keep.
+
+         """
+        if Field.field.max()>th:
+            idx,height,parents,label = Field.threshold_bifurcations(refdim,th)
+        else:
+            idx = []
+            parents = []
+            label = -np.ones(Field.V)
+        
+        k = np.size(idx)
+        nroi = ROI_Hierarchy(k,idx, parents,label)      
+        k = 2* nroi.get_k()
+        if k>0:
+            while k>nroi.get_k():
+                k = nroi.get_k()
+                size = nroi.compute_size()
+                nroi.merge_ascending(size>smin,None)
+                nroi.merge_descending(None)
+                size = nroi.compute_size()
+                nroi.clean(size>smin)
+                nroi.check()
+        return nroi
+
+
+
 def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
     """
     Instantiate an NROI structure from a given Field and a header
@@ -154,13 +189,6 @@ class NROI(MultipleROI,Forest):
 
         # finally remove  the non-valid items
         self.clean(valid)
-             
-    def isfield(self,id):
-        """
-        tests whether a given id is among the current list of ROI_features
-        """
-        aux = [int(s==id) for s in self.ROI_feature_ids]
-        return np.array(aux).max()
     
     def get_parents(self):
         return self.parents
