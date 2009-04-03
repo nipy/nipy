@@ -1,4 +1,4 @@
-from routines import cubic_spline_transform, cubic_spline_sample
+from routines import cspline_transform, cspline_sample4d
 
 import affine_transform 
 
@@ -38,12 +38,12 @@ class Realign4d:
         self.space_params = np.zeros([self.nscans, 6])
         self.time_params = img.tr*np.array(range(self.nscans))
         # Compute the 4d cubic spline transform
-        self.cbspline = cubic_spline_transform(img.array)
+        self.cbspline = cspline_transform(img.array)
               
     def resample_inmask(self, t):
         X, Y, Z = grid_coords(self.xyz, self.space_params[t,:], self.r2v, self.v2r)
         T = self.inverse_time_transform(Z, self.time_params[t])
-        cubic_spline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T)
+        cspline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T)
 
     def resample_all_inmask(self):
         for t in range(self.nscans):
@@ -144,7 +144,7 @@ class Realign4d:
                 transform = transforms[t,:]
             X, Y, Z = grid_coords(XYZ, self.space_params[t,:], self.r2v, self.v2r, transform=transform)
             T = self.inverse_time_transform(Z, self.time_params[t])
-            cubic_spline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T)
+            cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T)
         return res
     
 

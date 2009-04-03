@@ -267,11 +267,11 @@ class JointHistogram():
     def resample(self, T, toresample='source', dtype=None):
         if toresample is 'target': 
             Tv = self.voxel_transform(T)
-            out = cubic_spline_resample(self.target, self.source.shape, Tv, 
+            out = cspline_resample(self.target, self.source.shape, Tv, 
                                         datatype=dtype)
         else:
             Tv_inv = np.linalg.inv(self.voxel_transform(T))
-            out = cubic_spline_resample(self.source, self.target.shape, Tv_inv, 
+            out = cspline_resample(self.source, self.target.shape, Tv_inv, 
                                         datatype=dtype)
 
         return out
