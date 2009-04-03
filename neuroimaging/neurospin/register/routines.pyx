@@ -41,7 +41,7 @@ cdef extern from "iconic.h":
 cdef extern from "cubic_spline.h":
     
     void cubic_spline_import_array()
-    cubic_spline_transform(ndarray res, ndarray src)
+    void cubic_spline_transform(ndarray res, ndarray src)
     double cubic_spline_sample1d(double x, ndarray coef) 
     double cubic_spline_sample2d(double x, double y, ndarray coef) 
     double cubic_spline_sample3d(double x, double y, double z, ndarray coef) 
@@ -143,10 +143,81 @@ def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, ndarray F=None)
 
 
 
+def cubic_spline_transform(ndarray x):
+    c = np.zeros(x.shape)
+    cubic_spline_transform(c, x)
+    return c
 
-def resample(ndarray im, dims, ndarray Tvox, datatype=None):
+def cubic_spline_sample1d(ndarray R, ndarray C, X=0):
+    cdef double *r, *x
+    cdef broadcast multi
+    Xa = np.resize(X, R.shape)
+    multi = PyArray_MultiIterNew(2, <void*>R, <void*>Xa)
+    while(multi.index < multi.size):
+        r = <double*>PyArray_MultiIter_DATA(multi, 0)
+        x = <double*>PyArray_MultiIter_DATA(multi, 1)
+        r[0] = cubic_spline_sample1d(x[0], c)
+        PyArray_MultiIter_NEXT(multi)
+    return R
+
+def cubic_spline_sample2d(ndarray R, ndarray C, X=0, Y=0):
+    cdef double *r, *x, *y
+    cdef broadcast multi
+    Xa = np.resize(X, R.shape)
+    Ya = np.resize(Y, R.shape)
+    multi = PyArray_MultiIterNew(3, <void*>R, <void*>Xa, <void*>Ya)
+    while(multi.index < multi.size):
+        r = <double*>PyArray_MultiIter_DATA(multi, 0)
+        x = <double*>PyArray_MultiIter_DATA(multi, 1)
+        y = <double*>PyArray_MultiIter_DATA(multi, 2)
+        r[0] = cubic_spline_sample2d(x[0], y[0], c)
+        PyArray_MultiIter_NEXT(multi)
+    return R
+
+def cubic_spline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0):
+    cdef double *r, *x, *y, *z
+    cdef broadcast multi
+    Xa = np.resize(X, R.shape)
+    Ya = np.resize(Y, R.shape)
+    Za = np.resize(Z, R.shape)
+    multi = PyArray_MultiIterNew(4, <void*>R, <void*>Xa, <void*>Ya, <void*>Za)
+    while(multi.index < multi.size):
+        r = <double*>PyArray_MultiIter_DATA(multi, 0)
+        x = <double*>PyArray_MultiIter_DATA(multi, 1)
+        y = <double*>PyArray_MultiIter_DATA(multi, 2)
+        z = <double*>PyArray_MultiIter_DATA(multi, 3)
+        r[0] = cubic_spline_sample3d(x[0], y[0], z[0], c)
+        PyArray_MultiIter_NEXT(multi)
+    return R
+
+
+def cubic_spline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0):
     """
-    Resample(im, dims, Tvox, datatype=None)
+    cubic_spline_sample4d(R, C, X=0, Y=0, Z=0, T=0):
+
+    In-place cubic spline sampling. 
+    """
+    cdef double *r, *x, *y, *z, *t
+    cdef broadcast multi
+    Xa = np.resize(X, R.shape)
+    Ya = np.resize(Y, R.shape)
+    Za = np.resize(Z, R.shape)
+    Ta = np.resize(T, R.shape)
+    multi = PyArray_MultiIterNew(5, <void*>R, <void*>Xa, <void*>Ya, <void*>Za, <void*>Ta)
+    while(multi.index < multi.size):
+        r = <double*>PyArray_MultiIter_DATA(multi, 0)
+        x = <double*>PyArray_MultiIter_DATA(multi, 1)
+        y = <double*>PyArray_MultiIter_DATA(multi, 2)
+        z = <double*>PyArray_MultiIter_DATA(multi, 3)
+        t = <double*>PyArray_MultiIter_DATA(multi, 4)
+        r[0] = cubic_spline_sample4d(x[0], y[0], z[0], t[0], c)
+        PyArray_MultiIter_NEXT(multi)
+    return R
+
+
+def cubic_spline_resample(ndarray im, dims, ndarray Tvox, datatype=None):
+    """
+    cubic_spline_resample(im, dims, Tvox, datatype=None)
 
     Note that the input transformation Tvox will be re-ordered in C
     convention if needed.
@@ -210,12 +281,12 @@ cdef enum transformation_type:
     RIGID3D, SIMILARITY3D, AFFINE3D
 
 # Corresponding Python constants 
-transformation_types = {'rigid 2D': RIGID2D,
-                        'similarity 2D': SIMILARITY2D,
-                        'affine 2D': AFFINE2D, 
-                        'rigid 3D': RIGID3D,
-                        'similarity 3D': SIMILARITY3D,
-                        'affine 3D': AFFINE3D}
+transform_types = {'rigid 2D': RIGID2D,
+                   'similarity 2D': SIMILARITY2D,
+                   'affine 2D': AFFINE2D, 
+                   'rigid': RIGID3D,
+                   'similarity': SIMILARITY3D,
+                   'affine': AFFINE3D}
 
 def rotation_vector_to_matrix(r):
 

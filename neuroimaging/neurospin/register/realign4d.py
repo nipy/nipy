@@ -1,4 +1,5 @@
-import neuroimaging.neurospin as fff2
+from routines import cubic_spline_transform, cubic_spline_sample
+
 import affine_transform 
 
 import numpy as np
@@ -6,7 +7,7 @@ import scipy as sp
 import scipy.optimize
         
 RADIUS_MM = 10 
-RIGID = affine_transform.transformation_types['rigid 3D']
+RIGID = affine_transform.transform_types['rigid']
 
 
 def grid_coords(xyz, params, r2v, v2r, transform=None):
@@ -37,12 +38,12 @@ class Realign4d:
         self.space_params = np.zeros([self.nscans, 6])
         self.time_params = img.tr*np.array(range(self.nscans))
         # Compute the 4d cubic spline transform
-        self.cbspline = fff2.utils.cubic_spline_transform(img.array)
+        self.cbspline = cubic_spline_transform(img.array)
               
     def resample_inmask(self, t):
         X, Y, Z = grid_coords(self.xyz, self.space_params[t,:], self.r2v, self.v2r)
         T = self.inverse_time_transform(Z, self.time_params[t])
-        fff2.utils.cubic_spline_sample(self.data[:,t], self.cbspline, X, Y, Z, T)
+        cubic_spline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T)
 
     def resample_all_inmask(self):
         for t in range(self.nscans):
@@ -143,7 +144,7 @@ class Realign4d:
                 transform = transforms[t,:]
             X, Y, Z = grid_coords(XYZ, self.space_params[t,:], self.r2v, self.v2r, transform=transform)
             T = self.inverse_time_transform(Z, self.time_params[t])
-            fff2.utils.cubic_spline_sample(res[:,:,:,t], self.cbspline, X, Y, Z, T)
+            cubic_spline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T)
         return res
     
 

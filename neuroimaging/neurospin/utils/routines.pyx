@@ -20,14 +20,6 @@ cdef extern from "fff_gen_stats.h":
     void fff_combination(unsigned int* x, unsigned int k, unsigned int n,
                          unsigned long magic)
 
-
-# Exports from fff_cubic_spline.h
-cdef extern from "fff_cubic_spline.h":
-
-    void fff_cubic_spline_transform_image (fff_array* res, fff_array* src, fff_vector* work)
-    double fff_cubic_spline_sample_image (double x, double y, double z, double t, 
-                                          fff_array* coef)
-
 # Exports from fff_specfun.h
 cdef extern from "fff_specfun.h":
 
@@ -172,53 +164,6 @@ def combinations(unsigned int k, unsigned int n, unsigned int m=1, unsigned long
 
     C = fff_array_toPyArray(p)
     return C
-
-
-def cubic_spline_transform(ndarray X):
-    cdef fff_array *x, *c
-    cdef fff_vector *work
-    x = fff_array_fromPyArray(X)
-    c = fff_array_new(FFF_DOUBLE, x.dimX, x.dimY, x.dimZ, x.dimT)
-    cdef nmax = <int>max(X.shape)
-    work = fff_vector_new(nmax)
-    fff_cubic_spline_transform_image(c, x, work)
-    C = fff_array_toPyArray(c)
-    fff_array_delete(x)
-    fff_vector_delete(work)
-    return C
-
-
-
-def cubic_spline_sample(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0):
-    """
-    cubic_spline_sample(R, C, X=0, Y=0, Z=0, T=0):
-
-    In-place cubic spline sampling. 
-    """
-    cdef fff_array *c
-    cdef double *x, *y, *z, *t, *r
-    cdef broadcast multi
-
-    Xa = np.resize(X, R.shape)
-    Ya = np.resize(Y, R.shape)
-    Za = np.resize(Z, R.shape)
-    Ta = np.resize(T, R.shape)
-    c = fff_array_fromPyArray(C)
-
-    multi = PyArray_MultiIterNew(5, <void*>Xa, <void*>Ya, <void*>Za, <void*>Ta, <void*>R)
-    while(multi.index < multi.size):
-        x = <double*>PyArray_MultiIter_DATA(multi, 0)
-        y = <double*>PyArray_MultiIter_DATA(multi, 1)
-        z = <double*>PyArray_MultiIter_DATA(multi, 2)
-        t = <double*>PyArray_MultiIter_DATA(multi, 3)
-        r = <double*>PyArray_MultiIter_DATA(multi, 4)
-        r[0] = fff_cubic_spline_sample_image(x[0], y[0], z[0], t[0], c)
-        PyArray_MultiIter_NEXT(multi)
-        
-    fff_array_delete(c)
-    return R
-
-
 
 
 def gamln(double x):

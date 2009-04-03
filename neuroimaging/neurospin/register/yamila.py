@@ -3,7 +3,7 @@ YAMILA = Yet Another Mutual Information-Like Aligner
 
 Questions: alexis.roche@gmail.com
 """
-from _yamila import _joint_histogram, _similarity, similarity_measures
+from routines import _joint_histogram, _similarity, similarity_measures
 import affine_transform
 
 import numpy as np  
@@ -173,7 +173,7 @@ class JointHistogram():
                            self.pdf)
 
     ## FIXME: check that the dimension of start is consistent with the search space. 
-    def optimize(self, search='rigid 3D', method='powell', start=None, radius=10):
+    def optimize(self, search='rigid', method='powell', start=None, radius=10):
         """
         radius: a parameter for the 'typical size' in mm of the object
         being registered. This is used to reformat the parameter vector
@@ -267,12 +267,12 @@ class JointHistogram():
     def resample(self, T, toresample='source', dtype=None):
         if toresample is 'target': 
             Tv = self.voxel_transform(T)
-            out = affine_transform.resample(self.target, self.source.shape, Tv, 
-                                  datatype=dtype)
+            out = cubic_spline_resample(self.target, self.source.shape, Tv, 
+                                        datatype=dtype)
         else:
             Tv_inv = np.linalg.inv(self.voxel_transform(T))
-            out = affine_transform.resample(self.source, self.target.shape, Tv_inv, 
-                                  datatype=dtype)
+            out = cubic_spline_resample(self.source, self.target.shape, Tv_inv, 
+                                        datatype=dtype)
 
         return out
 

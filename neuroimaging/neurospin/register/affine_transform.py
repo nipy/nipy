@@ -1,4 +1,5 @@
-from _affine_transform import * 
+from routines import rotation_vector_to_matrix, param_to_vector12, matrix44, transform_types
+
 
 
 def preconditioner(radius):
@@ -20,15 +21,15 @@ def vector12_to_param(t, precond, stamp):
     """
     param = t/precond
 
-    if stamp == transformation_types['rigid 3D']:
+    if stamp == transform_types['rigid']:
         param = param[0:6]
-    elif stamp == transformation_types['similarity 3D']:
+    elif stamp == transform_types['similarity']:
         param = param[0:7] 
-    elif stamp == transformation_types['rigid 2D']:
+    elif stamp == transform_types['rigid 2D']:
         param = param[[0,1,5]]
-    elif stamp == transformation_types['similarity 2D']:
+    elif stamp == transform_types['similarity 2D']:
         param = param[[0,1,5,6,7]]
-    elif stamp == transformation_types['affine 2D']:
+    elif stamp == transform_types['affine 2D']:
         param = param[[0,1,5,6,7,11]]
 
     return param
