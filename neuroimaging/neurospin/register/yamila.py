@@ -34,12 +34,33 @@ interp_methods = {'pv': 0, 'tri': 1, 'rand': -1}
 
 
 
-def clamp(x, th=0, mask=None, bins=256): 
+def clamp(x, th=0, mask=None, bins=256):
+    """ 
+    Define a mask as the intersection of an initial mask and those
+    indices for which array values are above a given threshold. Then,
+    clamp in-mask array values in the range [0..bins-1] and reset
+    out-of-mask values to -1.
+    
+    Parameters
+    ----------
+    x : ndarray
+        The input array
+    th : number
+         Low threshold
+    mask : ndarray
+           Mask 
+    bins : number 
+           Desired number of bins. 
+    
+    Returns
+    -------
+    y : ndarray
+        Clamped array
+    bins : number 
+           Adjusted number of bins. 
+
     """
-    Define a mask as the intersection of the input mask and
-    (x>=th). Then, clamp in-mask array values in the range [0..bins-1]
-    and reset out-of-mask values to -1.
-    """
+ 
     # Mask 
     if mask == None: 
         mask = np.ones(x.shape, dtype='bool')
