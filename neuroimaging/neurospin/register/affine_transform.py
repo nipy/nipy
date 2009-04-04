@@ -1,4 +1,4 @@
-from routines import rotation_vector_to_matrix, param_to_vector12, matrix44, transform_types
+from routines import rotation_vector_to_matrix, param_to_vector12, matrix44, affine_types
 
 
 
@@ -15,21 +15,21 @@ def preconditioner(radius):
     return np.array([1,1,1,rad,rad,rad,sca,sca,sca,rad,rad,rad])
 
 
-def vector12_to_param(t, precond, stamp): 
+def vector12_to_param(t, precond, afftype): 
     """
-    param = vector12_to_param(t, precond, stamp)
+    param = vector12_to_param(t, precond, afftype)
     """
     param = t/precond
 
-    if stamp == transform_types['rigid']:
+    if afftype == affine_types['rigid']:
         param = param[0:6]
-    elif stamp == transform_types['similarity']:
+    elif afftype == affine_types['similarity']:
         param = param[0:7] 
-    elif stamp == transform_types['rigid 2D']:
+    elif afftype == affine_types['rigid 2D']:
         param = param[[0,1,5]]
-    elif stamp == transform_types['similarity 2D']:
+    elif afftype == affine_types['similarity 2D']:
         param = param[[0,1,5,6,7]]
-    elif stamp == transform_types['affine 2D']:
+    elif afftype == affine_types['affine 2D']:
         param = param[[0,1,5,6,7,11]]
 
     return param

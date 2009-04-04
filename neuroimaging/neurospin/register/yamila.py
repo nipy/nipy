@@ -210,16 +210,16 @@ class JointHistogram():
             t0 = np.asarray(start)
 
         # Search space
-        stamp = affine_transform.transformation_types[search]
-        tc0 = affine_transform.vector12_to_param(t0, precond, stamp)
+        afftype = affine_transform.affine_types[search]
+        tc0 = affine_transform.vector12_to_param(t0, precond, afftype)
 
         # Loss function to minimize
         def loss(tc):
-            t = affine_transform.param_to_vector12(tc, t0, precond, stamp)
+            t = affine_transform.param_to_vector12(tc, t0, precond, afftype)
             return(-self.eval(affine_transform.matrix44(t)))
     
         def print_vector12(tc):
-            t = affine_transform.param_to_vector12(tc, t0, precond, stamp)
+            t = affine_transform.param_to_vector12(tc, t0, precond, afftype)
             print('')
             print ('  translation : %s' % t[0:3].__str__())
             print ('  rotation    : %s' % t[3:6].__str__())
@@ -244,7 +244,7 @@ class JointHistogram():
             raise ValueError, 'Unrecognized optimizer'
         
         # Output
-        t = affine_transform.param_to_vector12(tc, t0, precond, stamp)
+        t = affine_transform.param_to_vector12(tc, t0, precond, afftype)
         T = affine_transform.matrix44(t)
         return (T, t)
 

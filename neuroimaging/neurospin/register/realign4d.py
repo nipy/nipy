@@ -7,7 +7,7 @@ import scipy as sp
 import scipy.optimize
         
 RADIUS_MM = 10 
-RIGID = affine_transform.transform_types['rigid']
+RIGID = affine_transform.affine_types['rigid']
 
 
 def grid_coords(xyz, params, r2v, v2r, transform=None):

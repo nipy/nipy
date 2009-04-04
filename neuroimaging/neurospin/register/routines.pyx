@@ -281,12 +281,12 @@ cdef enum transformation_type:
     RIGID3D, SIMILARITY3D, AFFINE3D
 
 # Corresponding Python constants 
-transform_types = {'rigid 2D': RIGID2D,
-                   'similarity 2D': SIMILARITY2D,
-                   'affine 2D': AFFINE2D, 
-                   'rigid': RIGID3D,
-                   'similarity': SIMILARITY3D,
-                   'affine': AFFINE3D}
+affine_types = {'rigid 2D': RIGID2D,
+                'similarity 2D': SIMILARITY2D,
+                'affine 2D': AFFINE2D, 
+                'rigid': RIGID3D,
+                'similarity': SIMILARITY3D,
+                'affine': AFFINE3D}
 
 def rotation_vector_to_matrix(r):
 
