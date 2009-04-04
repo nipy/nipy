@@ -1,5 +1,6 @@
-from tempfile import NamedTemporaryFile
+import os
 import warnings
+from tempfile import mkstemp, NamedTemporaryFile
 
 import numpy as np
 import numpy.testing as nptest
@@ -27,8 +28,14 @@ class TestImage(TestCase):
 
     def setUp(self):
         self.img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
-        self.tmpfile = NamedTemporaryFile(suffix='.nii.gz')
+        fd, self.filename = mkstemp(suffix='.nii.gz')
+        self.tmpfile = open(self.filename)
         
+    def tearDown(self):
+        self.tmpfile.close()
+        os.unlink(self.filename)
+
+
     def test_init(self):
         new = Image(np.asarray(self.img), self.img.coordmap)
         yield assert_array_almost_equal, np.asarray(self.img), np.asarray(new)
@@ -290,7 +297,8 @@ def test_header_roundtrip():
     # of the header.
 
     img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
-    tmpfile = NamedTemporaryFile(suffix='.nii.gz')
+    fd, name = mkstemp(suffix='.nii.gz')
+    tmpfile = open(name)
     hdr = img.header
     # Update some header values and make sure they're saved
     hdr['slice_duration'] = 0.200
@@ -301,6 +309,9 @@ def test_header_roundtrip():
     save_image(img, tmpfile.name)
     newimg = load_image(tmpfile.name)
     newhdr = newimg.header
+    tmpfile.close()
+    os.unlink(name)
+
     yield assert_true, np.allclose(newhdr['slice_duration'], hdr['slice_duration'])
     yield assert_equal, newhdr['intent_p1'], hdr['intent_p1']
     yield assert_equal, newhdr['descrip'], hdr['descrip']
@@ -308,11 +319,15 @@ def test_header_roundtrip():
 
 def test_file_roundtrip():
     img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
-    tmpfile = NamedTemporaryFile(suffix='.nii.gz')
+    fd, name = mkstemp(suffix='.nii.gz')
+    tmpfile = open(name)
     save_image(img, tmpfile.name)
     img2 = load_image(tmpfile.name)
     data = np.asarray(img)
     data2 = np.asarray(img2)
+    tmpfile.close()
+    os.unlink(name)
+
     # verify data
     yield assert_true, np.allclose(data2, data)
     yield assert_true, np.allclose(data2.mean(), data.mean())
@@ -328,10 +343,14 @@ def test_file_roundtrip():
 def test_roundtrip_fromarray():
     data = np.random.rand(10,20,30)
     img = fromarray(data, 'kji', 'zyx')
-    tmpfile = NamedTemporaryFile(suffix='.nii.gz')
+    fd, name = mkstemp(suffix='.nii.gz')
+    tmpfile = open(name)
     save_image(img, tmpfile.name)
     img2 = load_image(tmpfile.name)
     data2 = np.asarray(img2)
+    tmpfile.close()
+    os.unlink(name)
+
     # verify data
     yield assert_true, np.allclose(data2, data)
     yield assert_true, np.allclose(data2.mean(), data.mean())
