@@ -1,6 +1,6 @@
 import os
 import warnings
-from tempfile import mkstemp, NamedTemporaryFile
+from tempfile import mkstemp
 
 import numpy as np
 import numpy.testing as nptest
