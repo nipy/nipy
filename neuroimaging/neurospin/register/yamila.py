@@ -50,14 +50,14 @@ def clamp(x, th=0, mask=None, bins=256):
     mask : ndarray
            Mask 
     bins : number 
-           Desired number of bins. 
+           Desired number of bins
     
     Returns
     -------
     y : ndarray
         Clamped array
     bins : number 
-           Adjusted number of bins. 
+           Adjusted number of bins 
 
     """
  

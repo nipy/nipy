@@ -799,6 +799,7 @@ void cubic_spline_resample(PyArrayObject* im_resampled,
 			   const double* Tvox)
 {
   double i1;
+  PyObject* py_i1;
   PyArrayObject* im_spline_coeff;
   PyArrayIterObject* imIter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)im_resampled); 
   unsigned int x, y, z;
@@ -819,6 +820,7 @@ void cubic_spline_resample(PyArrayObject* im_resampled,
     y = imIter->coordinates[1]; 
     z = imIter->coordinates[2]; 
     _apply_affine_transform(&Tx, &Ty, &Tz, Tvox, x, y, z); 
+
     if ((Tx<0) || (Tx>ddimX) ||
 	(Ty<0) || (Ty>ddimY) ||
 	(Tz<0) || (Tz>ddimZ))
@@ -826,8 +828,10 @@ void cubic_spline_resample(PyArrayObject* im_resampled,
     else 
       i1 = cubic_spline_sample3d(Tx, Ty, Tz, im_spline_coeff); 
 
-    PyArray_SETITEM(im_resampled, PyArray_ITER_DATA(imIter), PyFloat_FromDouble(i1)); 
+    py_i1 = PyFloat_FromDouble(i1); 
+    PyArray_SETITEM(im_resampled, PyArray_ITER_DATA(imIter), py_i1); 
     PyArray_ITER_NEXT(imIter); 
+    Py_DECREF(py_i1); 
   }
 
   /* Free memory */

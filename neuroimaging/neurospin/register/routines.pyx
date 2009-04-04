@@ -215,9 +215,9 @@ def cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0):
     return R
 
 
-def cspline_resample(ndarray im, dims, ndarray Tvox, datatype=None):
+def cspline_resample(ndarray im, dims, ndarray Tvox, dtype=None):
     """
-    cspline_resample(im, dims, Tvox, datatype=None)
+    cspline_resample(im, dims, Tvox, dtype=None)
 
     Note that the input transformation Tvox will be re-ordered in C
     convention if needed.
@@ -225,12 +225,12 @@ def cspline_resample(ndarray im, dims, ndarray Tvox, datatype=None):
     cdef double *tvox
     
     # Create output array
-    if datatype == None:
-        datatype = im.dtype
-    im_resampled = np.zeros(tuple(dims)).astype(datatype)
+    if dtype == None:
+        dtype = im.dtype
+    im_resampled = np.zeros(tuple(dims), dtype=dtype)
 
     # Ensure that the Tvox array is C-contiguous (required by the
-    # underlying fff routine)
+    # underlying C routine)
     Tvox = np.asarray(Tvox, order='C')
     tvox = <double*>Tvox.data
 
