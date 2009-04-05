@@ -102,9 +102,52 @@ def clamp(x, th=0, mask=None, bins=256):
     return y, bins 
 
 
+def fixed_npoints_subsampling(source, npoints):
+    """  
+    Tune subsampling factors so that the number of voxels involved in
+    registration match a given number.
+    
+    Parameters
+    ----------
+    source : ndarray or sequence  
+             Source image to subsample
+    
+    npoints : number
+              Target number of voxels (negative values will be ignored)
+
+    Returns
+    -------
+    subsampling: ndarray 
+                 Subsampling factors
+                 
+    sub_source: ndarray 
+                Subsampled source 
+
+    actual_size: number 
+                 Actual size of the subsampled array 
+
+    """
+    actual_size = (source >= 0).sum()
+    subsampling = np.ones(3, dtype='uint')
+    sub_source = source
+
+    while actual_size < size:
+        # Subsample the direction with the highest number of samples
+        ddims = dims/subsampling
+        if ddims[0] >= ddims[1] and ddims[0] >= ddims[2]:
+            dir = 0
+        elif ddims[1] > ddims[0] and ddims[1] >= ddims[2]:
+            dir = 1
+        else:
+            dir = 2
+        subsampling[dir] += 1
+        sub_source = source[::subsampling[0], ::subsampling[1], ::subsampling[2]]
+        actual_size = (source >= 0).sum()
+            
+    return subsampling, sub_source, actual_size
 
 
-class JointHistogram():
+class IconicMatcher():
 
     def __init__(self, source, target, 
                  source_transform, target_transform,
@@ -113,7 +156,7 @@ class JointHistogram():
                  bins=256):
 
         """
-        JointHistogram class for intensity-based image registration. 
+        IconicMatcher class for intensity-based image registration. 
         """
         ## FIXME: test that input images are 3d
 
@@ -137,43 +180,55 @@ class JointHistogram():
         self.target_transform_inv = np.linalg.inv(target_transform)
 
         # Set default registration parameters
-        self.set()
+        self.set_interpolation()
+        self.set_field_of_view()
+        self.set_similarity()
 
-    # Use array rather than asarray to ensure contiguity 
-    def set(self, 
-            interp='pv', 
-            similarity='cc', normalize=None, pdf=None,
-            subsampling=[1,1,1], corner=[0,0,0], size=None):
-        self.block_subsampling = np.array(subsampling, dtype='uint')
+    def set_interpolation(method='pv'):
+        self.interp = interp
+        self._interp = interp_methods[interp]
+
+    def set_field_of_view(subsampling=[1,1,1], corner=[0,0,0], size=None, fixed_npoints=None):
         self.block_corner = np.array(corner, dtype='uint')
         if size == None:
             size = self.source.shape
         self.block_size = np.array(size, dtype='uint')
-        self.source_block = self.source_clamped[corner[0]:corner[0]+size[0]-1:subsampling[0],
-                                                corner[1]:corner[1]+size[1]-1:subsampling[1],
-                                                corner[2]:corner[2]+size[2]-1:subsampling[2]]
-        self.block_npoints = (self.source_block >= 0).sum()
-
+        if isinstance(fixed_npoints, int):
+            self.block_subsampling, self.source_block, self.block_npoints = \
+                fixed_npoints_subsampling(self.source_clamped[corner[0]:corner[0]+size[0]-1,
+                                                              corner[1]:corner[1]+size[1]-1,
+                                                              corner[2]:corner[2]+size[2]-1], 
+                                          npoints=fixed_npoints)
+        else: 
+            self.block_subsampling = np.array(subsampling, dtype='uint')
+            self.source_block = self.source_clamped[corner[0]:corner[0]+size[0]-1:subsampling[0],
+                                                    corner[1]:corner[1]+size[1]-1:subsampling[1],
+                                                    corner[2]:corner[2]+size[2]-1:subsampling[2]]
+            self.block_npoints = (self.source_block >= 0).sum()
         ## Taux: block to full array transformation
         Taux = np.diag(np.concatenate((self.block_subsampling,[1]),1))
         Taux[0:3,3] = self.block_corner
         self.block_transform = np.dot(self.source_transform, Taux)
-        self.interp = interp
-        self._interp = interp_methods[interp]
+
+    def set_similarity(similarity='cc', normalize=None, pdf=None): 
         self.similarity = similarity
         self._similarity = similarity_measures[similarity]
-        self.normalize = normalize
-        self.pdf = np.array(pdf)        
+        self.normalize = normaliz
+        ## Use array rather than asarray to ensure contiguity 
+        self.pdf = np.array(pdf)  
+        
 
-    # T is the 4x4 transformation between the real coordinate systems
-    # The corresponding voxel transformation is: Tv = Tt^-1 o T o Ts
     def voxel_transform(self, T):
-        return np.dot(self.target_transform_inv, 
-                      np.dot(T, self.source_transform)) ## C-contiguity ensured
+        """ 
+        T is the 4x4 transformation between the real coordinate systems
+        The corresponding voxel transformation is: Tv = Tt^-1 * T * Ts
+        """
+        ## C-contiguity required
+        return np.dot(self.target_transform_inv, np.dot(T, self.source_transform)) 
 
     def block_voxel_transform(self, T): 
-        return np.dot(self.target_transform_inv, 
-                      np.dot(T, self.block_transform)) ## C-contiguity ensured 
+        ## C-contiguity ensured 
+        return np.dot(self.target_transform_inv, np.dot(T, self.block_transform)) 
 
     def eval(self, T):
         Tv = self.block_voxel_transform(T)
@@ -298,3 +353,59 @@ class JointHistogram():
         return out
 
     """
+
+
+
+def imatch(source, 
+           target, 
+           source_transform, 
+           target_transform,
+           similarity='cr',
+           interp='pv',
+           subsampling=None,
+           normalize=None, 
+           search='affine',
+           graduate_search=False,
+           optimizer='powell',
+           resample=True):
+
+    """
+    Three-dimensional intensity-based image registration. 
+    
+    Parameters
+    ----------
+    source : ndarray 
+             Source image array 
+    target : ndarray 
+             Target image array 
+
+    """
+    
+    matcher = IconicMatcher(source, target, source_transform, target_transform)
+    if subsampling == None: 
+        matcher.set_field_of_view(fixed_npoints=64**3)
+    else:
+        matcher.set_field_of_view(subsampling=subsampling)
+    matcher.set_interpolation(method=interp)
+    matcher.set_similarity(similarity=similarity, normalize=normalize)
+
+    # Register
+    print('Starting registration...')
+    print('Similarity: %s' % matcher.similarity)
+    print('Normalize: %s' % matcher.normalize) 
+    print('Interpolation: %s' % matcher.interp)
+    tic = time.time()
+
+    t1 = t2 = None
+    if graduate_search or search=='rigid':
+        T, t1 = matcher.optimize(method=optimizer, search='rigid')
+    if graduate_search or search=='similarity':
+        T, t2 = matcher.optimize(method=optimizer, search='similarity', start=t1)
+    if graduate_search or search=='affine':
+        T, t3 = matcher.optimize(method=optimizer, search='affine', start=t2)
+
+    toc = time.time()
+    print('  Registration time: %f sec' % (toc-tic))
+    
+    return T
+
