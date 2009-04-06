@@ -349,10 +349,8 @@ class Design:
         self.n = {}; 
         for _d in d:
             add_aliases_to_namespace(_d, self.n)
-            print self.n, _d
-        print self.n
+
         self._f = sympy.lambdify(newparams + newterms, d, (self.n, "numpy"))
-        print 'what'
         ptnames = []
         for t in terms:
             if not isinstance(t, FactorTerm):
@@ -463,59 +461,28 @@ def add_aliases_to_namespace(expr, namespace):
             pass
     return namespace
 
-class vectorize(object):
+class lambdify(object):
     """
-    This function can be used to take a (single-valued) sympy
-    expression with only 't' as a Symbol and return a 
-    callable that can be evaluated at an array of floats.
-
-    Parameters
-    ----------
-
-    expr : sympy expr
-        Expression with 't' the only Symbol. If it is 
-        an instance of sympy.FunctionClass, 
-        then vectorize expr(t) instead.
-
-    Returns
-    -------
-
-    f : callable
-        A function that can be evaluated at an array of time points.
-
+    TODO
     """
-    counter = 0
-    nn = {}
-    def __init__(self, expr):
+
+    def __init__(self, args, expr):
         if isinstance(expr, sympy.FunctionClass):
             expr = expr(t)
-        n = {}; 
+        self.n = {} 
+        n = {}
         add_aliases_to_namespace(expr, n)
+        self.n = n.copy()
 
-        nexpr = expr
-        for k, v in n.items():
-            s = aliased_function('vec%d' % vectorize.counter, v)
-            nexpr = nexpr.subs(sympy.Function(k), s)
-            self.nn['vec%d' % vectorize.counter] = v
-            vectorize.counter += 1
-        deft = sympy.DeferredVector('t');
-        try:
-            print self.nn['glover']
-        except:
-            pass
-        self._f = sympy.lambdify(deft, nexpr.subs(t, deft), (self.nn, 'numpy'))
+        from sympy.utilities.lambdify import _get_namespace
+        for k, v in  _get_namespace('numpy').items():
+            self.n[k] = v
+
+        self._f = sympy.lambdify(args, expr, self.n)
+        self.expr = expr
         
     def __call__(self, _t):
         return self._f(_t)
-vectorize.counter = 0
-
-
-###########################################################
-        
-"""
-fMRI specific stuff
-"""
-t = Term('t')
 
 
 # theta = sympy.Symbol('th')
@@ -557,13 +524,33 @@ t = Term('t')
 import new
 class AliasedFunctionClass(sympy.FunctionClass):
 
+    """
+
+    This class allows 'anonymous' sympy Functions
+    that can be replaed with an appropriate callable
+    function when lambdifying.
+
+    No checking is done on the signature of the alias.
+
+    This is not meant to be called by users, rather
+    use 'aliased_function'.
+
+    """
     def __new__(cls, arg1, arg2, arg3=None, alias=None):
         r = sympy.FunctionClass.__new__(cls, arg1, arg2, arg3)
         if alias is not None:
-            r.alias = new.instancemethod(alias, r, cls)
+            r.alias = new.instancemethod(lambda self, x: alias(x), r, cls)
         return r
 
-def aliased_function(name, alias):
-    return AliasedFunctionClass(sympy.Function, name, alias=alias)
+
+
+
+def aliased_function(symbol, alias):
+    """
+    Create an aliased function with a given symbol
+    and alias.
+
+    """
+    return AliasedFunctionClass(sympy.Function, symbol, alias=alias)
 
 

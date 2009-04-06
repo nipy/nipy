@@ -20,7 +20,7 @@ from sympy import Function
 from neuroimaging.modalities.fmri import hrf, formula
 from neuroimaging.modalities.fmri.fmristat.invert import invertR
 
-def spectral_decomposition(hrf, ncomp=2, tmax=50, tmin=-15, dt=0.02,
+def spectral_decomposition(hrf2decompose, ncomp=2, tmax=50, tmin=-15, dt=0.02,
                            delta=np.arange(-4.5, 4.6, 0.1)):
     """
 
@@ -32,7 +32,7 @@ def spectral_decomposition(hrf, ncomp=2, tmax=50, tmin=-15, dt=0.02,
     Parameters
     ==========
 
-    hrf : sympy expression 
+    hrf2decompose : sympy expression 
         An expression that can be vectorized
         as a function of 't'. This is the HRF to be expanded in PCA
 
@@ -41,7 +41,7 @@ def spectral_decomposition(hrf, ncomp=2, tmax=50, tmin=-15, dt=0.02,
 
     """
 
-    hrft = formula.vectorize(hrf(formula.t))
+    hrft = hrf.vectorize(hrf2decompose(hrf.t))
     time = np.arange(tmin, tmax, dt)
 
     H = []
@@ -87,7 +87,7 @@ def spectral_decomposition(hrf, ncomp=2, tmax=50, tmin=-15, dt=0.02,
     return symbasis, approx
 
 
-def taylor_approx(hrf, tmax=50, tmin=-15, dt=0.02,
+def taylor_approx(hrf2decompose, tmax=50, tmin=-15, dt=0.02,
                   delta=np.arange(-4.5, 4.6, 0.1)):
     """
 
@@ -99,7 +99,7 @@ def taylor_approx(hrf, tmax=50, tmin=-15, dt=0.02,
     Parameters
     ----------
 
-    hrf : sympy expression 
+    hrf2decompose : sympy expression 
         An expression that can be vectorized
         as a function of 't'. This is the HRF to be expanded in PCA
 
@@ -115,7 +115,7 @@ def taylor_approx(hrf, tmax=50, tmin=-15, dt=0.02,
 
     """
 
-    hrft = formula.vectorize(hrf(formula.t))
+    hrft = hrf.vectorize(hrf2decompose(hrf.t))
     time = np.arange(tmin, tmax, dt)
 
     dhrft = interp1d(time, -np.gradient(hrft(time), dt), bounds_error=False,
@@ -145,9 +145,9 @@ def taylor_approx(hrf, tmax=50, tmin=-15, dt=0.02,
      approx.forward,
      approx.dforward) = invertR(delta, approx.coef)
      
-    dhrf = formula.aliased_function('d%s' % str(hrf), dhrft)
+    dhrf = formula.aliased_function('d%s' % str(hrf2decompose), dhrft)
 
-    return [hrf, dhrf], approx
+    return [hrf2decompose, dhrf], approx
 
 canonical, canonical_approx = taylor_approx(hrf.glover)
 spectral, spectral_approx = spectral_decomposition(hrf.glover)

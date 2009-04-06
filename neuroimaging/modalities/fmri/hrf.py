@@ -10,10 +10,40 @@ __docformat__ = 'restructuredtext'
 
 
 import numpy as np
-from sympy import Symbol, lambdify, DeferredVector, exp, Derivative, abs, Function
-from formula import Term, vectorize, add_aliases_to_namespace, t, aliased_function
+from sympy import Symbol, DeferredVector, exp, Derivative, abs, FunctionClass
+from formula import Term, aliased_function, lambdify
 
 # Sympy symbols used below
+
+t = Term('t')
+deft = DeferredVector('t')
+
+class vectorize(lambdify):
+    """
+    This class can be used to take a (single-valued) sympy
+    expression with only 't' as a Symbol and return a 
+    callable that can be evaluated at an array of floats.
+
+    Parameters
+    ----------
+
+    expr : sympy expr
+        Expression with 't' the only Symbol. If it is 
+        an instance of sympy.FunctionClass, 
+        then vectorize expr(t) instead.
+
+    Returns
+    -------
+
+    f : callable
+        A function that can be evaluated at an array of time points.
+
+    """
+
+    def __init__(self, expr):
+        if isinstance(expr, FunctionClass):
+            expr = expr(t)
+        lambdify.__init__(self, deft, expr.subs(t, deft))
 
 def gamma_params(peak_location, peak_fwhm):
     """
@@ -62,7 +92,7 @@ _gexpr = _gexpr / _getint(_gexpr)
 _glover = vectorize(_gexpr)
 glover = aliased_function('glover', _glover)
 n = {}
-glovert = lambdify(deft, glover(deft), add_aliases_to_namespace(glover, n))
+glovert = vectorize(glover(deft))
 
 # Derivative of Glover HRF
 
@@ -72,7 +102,7 @@ _dgexpr = _dgexpr.subs(dpos, 0)
 _dgexpr = _dgexpr / _getint(abs(_dgexpr))
 _dglover = vectorize(_dgexpr)
 dglover = aliased_function('dglover', _dglover)
-dglovert = lambdify(deft, dglover(deft), add_aliases_to_namespace(dglover, n))
+dglovert = vectorize(dglover(deft))
 
 del(_glover); del(_gexpr); del(dpos); del(_dgexpr); del(_dglover)
 
@@ -80,8 +110,7 @@ del(_glover); del(_gexpr); del(dpos); del(_dgexpr); del(_dglover)
 
 _aexpr = ((t >= 0) * t)**8.6 * exp(-t/0.547)
 _aexpr = _aexpr / _getint(_aexpr)
-_afni = lambdify(deft, _aexpr.subs(t, deft), 'numpy')
+_afni = vectorize(_aexpr)
 afni = aliased_function('afni', _afni)
-del(_afni)
-afnit = lambdify(deft, afni(deft), add_aliases_to_namespace(afni, n))
+afnit = vectorize(afni(deft))
 
