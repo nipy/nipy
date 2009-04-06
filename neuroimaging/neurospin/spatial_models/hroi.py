@@ -2,7 +2,7 @@ import numpy as np
 import neuroimaging.neurospin.graph.graph as fg
 import neuroimaging.neurospin.graph.field as ff
 
-from neuroimaging.neurospin.graph.graph import Forest
+from neuroimaging.neurospin.graph.forest import Forest
 from neuroimaging.neurospin.utils.roi import MultipleROI
 
 
@@ -123,20 +123,8 @@ class NROI(MultipleROI,Forest):
         remove the rois for which valid==0
         and update the hierarchy accordingly
         """
-        
-        #fixme: use Forest.subforest(valid) ?
+        # first clean as a forest
         sf = self.subforest(valid)
-        #for j in range(self.k):
-        #    if valid[self.parents[j]]==0:
-        #        self.parents[j]=j
-        #                        
-        #iconvert = np.squeeze(np.nonzero(valid))
-        #convert = -np.ones(self.k).astype(np.int)
-        #aux = np.cumsum(valid.astype(np.int))-1
-        #convert[valid] = aux[valid]
-        #self.parents = convert[self.parents[iconvert]]
-        #k = np.sum(valid>0)
-        #Forest.__init__(self,k,self.parents)
         Forest.__init__(self,sf.V,sf.parents)
 
         # then clean as a multiple ROI
@@ -222,11 +210,17 @@ class NROI(MultipleROI,Forest):
         parents = np.arange(k)
         discrete = [self.discrete[k].copy() for k in np.nonzero(isleaf)[0]]
         nroi = NROI(parents,self.header,discrete)
-        fids = self.features.keys()
+
+        # now copy the roi_features
+        fids = self.roi_features.keys()
         for fid in fids:
-            # fixme : works only as long as self.feature(fid) is an array
-            # which should not remain the case
-            nroi.set_roi_feature(fid,self.feature(fid)[isleaf])
+            nroi.set_roi_feature(fid,self.roi_features(fid)[isleaf])
+            
+        # now copy the discrete_features
+        fids = self.discrete_features.keys()
+        for fid in fids:
+            df = [self.discrete_feature(fid)[k][isleaf] for k in range(self.k)]
+            nroi.set_discrete_feature(fid,df)
         return nroi
 
     def copy(self):
@@ -234,11 +228,17 @@ class NROI(MultipleROI,Forest):
         """
         discrete = [self.discrete[k].copy() for k in range(self.k)]
         nroi = NROI(self.parents.copy(),self.header,discrete)
-        fids = self.features.keys()
+
+        # now copy the roi_features
+        fids = self.roi_features.keys()
         for fid in fids:
-            # fixme : works only as long as self.feature(fid) is an array
-            # which should not remain the case
-            nroi.set_roi_feature(fid,self.feature(fid).copy())
+            nroi.set_roi_feature(fid,self.roi_feature(fid).copy())
+
+        # now copy the discrete_features
+        fids = self.discrete_features.keys()
+        for fid in fids:
+            df = [self.discrete_feature(fid)[k].copy() for k in range(self.k)]
+            nroi.set_discrete_feature(fid,df)
         return nroi
     
 
@@ -557,6 +557,7 @@ class ROI_Hierarchy:
         are labelled by 0
         and depth[i] = max_{j \in ch[i]} depth[j] + 1
         recursively
+        # depth_from_leaves
         """
         depth = -np.ones(self.k,'i')
         depth[self.isleaf()]=0
@@ -586,6 +587,7 @@ class ROI_Hierarchy:
         propagates some binary property in the tree
         that is defined in the leaves
         so that prop[parents] = AND(prop[children])
+        # propagate_upward_and
         """
         if np.size(prop)!=self.k:
             raise ValueError,"incoherent size for prop"
@@ -629,6 +631,7 @@ class ROI_Hierarchy:
         """
         l = self.subtree(k)
         returns an array of the nodes included in the subtree rooted in k
+        #rooted_subtree
         """
         if k>self.k:
             raise ValueError,"incoherent value for k"
@@ -664,5 +667,4 @@ class ROI_Hierarchy:
 
         idx = [np.argmax(dmap*(self.label==i)) for i in range(self.k)]
         return np.array(idx)
-
 
