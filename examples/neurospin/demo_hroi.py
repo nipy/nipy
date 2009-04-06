@@ -35,7 +35,15 @@ Fbeta = ff.Field(nbvox)
 Fbeta.from_3d_grid(xyz.astype(np.int), 18)
 beta = np.reshape(dataset,(nbvox,1))
 Fbeta.set_field(beta)
-nroi = hroi.NROI_from_field(Fbeta,None,xyz,th=2.0,smin = 5)
-if n1 != None:
+nroi = hroi.NROI_from_field(Fbeta,None,xyz,th=2.0,smin = 0)
+if nroi != None:
     n1 = nroi.copy()
     n2 = nroi.reduce_to_leaves()
+
+td = n1.depth_from_leaves()
+a = np.argmax(td)
+lv = n1.rooted_subtree(a)
+u = nroi.cc()
+u = np.nonzero(u == u[0])[0]
+err = np.sum((u-lv)**2)
+
