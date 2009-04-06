@@ -73,7 +73,7 @@ def clamp(x, th=0, mask=None, bins=256):
     # Threshold
     dmax = bins-1 ## default output maximum value
     if dmax > dmaxmax: 
-        raise ValueError("Excessive number of bins.")
+        raise ValueError('Excess number of bins')
     xmin = float(x[mask].min())
     xmax = float(x[mask].max())
     th = np.maximum(th, xmin)
@@ -252,60 +252,48 @@ class IconicMatcher():
     def optimize(self, search='rigid', method='powell', start=None, radius=10):
         """
         radius: a parameter for the 'typical size' in mm of the object
-        being registered. This is used to reformat the parameter vector
-        (translation+rotation+scaling+shearing) so that each element
-        represents a variation in mm.
+        being registered. This is used to reformat the parameter
+        vector (translation+rotation+scaling+shearing) so that each
+        element roughly represents a variation in mm.
         """
         
-        # Constants
-        precond = affine_transform.preconditioner(radius)
-        if start == None: 
-            t0 = np.array([0, 0, 0, 0, 0, 0, 1., 1., 1., 0, 0, 0])
-        else:
-            t0 = np.asarray(start)
-
-        # Search space
-        afftype = affine_transform.affine_types[search]
-        tc0 = affine_transform.vector12_to_param(t0, precond, afftype)
+        T = AffineTransform(subtype=search, vec12=start.vec12, radius=radius)
+        tc0 = T.to_param()
 
         # Loss function to minimize
         def loss(tc):
-            t = affine_transform.param_to_vector12(tc, t0, precond, afftype)
-            return(-self.eval(affine_transform.matrix44(t)))
+            T.from_param(tc)
+            return(-self.eval(T.mat44))
     
-        def print_vector12(tc):
-            t = affine_transform.param_to_vector12(tc, t0, precond, afftype)
-            print('')
-            print ('  translation : %s' % t[0:3].__str__())
-            print ('  rotation    : %s' % t[3:6].__str__())
-            print ('  scaling     : %s' % t[6:9].__str__())
-            print ('  shearing    : %s' % t[9:12].__str__())
-            print('')
-
+        def callback(tc):
+            print(T)
+            
         # Switching to the appropriate optimizer
         print('Initial guess...')
-        print_vector12(tc0)
+        print(T)
 
         if method=='simplex':
             print ('Optimizing using the simplex method...')
-            tc = sp.optimize.fmin(loss, tc0, callback=print_vector12)
+            tc = sp.optimize.fmin(loss, tc0, callback=callback)
         elif method=='powell':
             print ('Optimizing using Powell method...') 
-            tc = sp.optimize.fmin_powell(loss, tc0, callback=print_vector12)
+            tc = sp.optimize.fmin_powell(loss, tc0, callback=callback)
         elif method=='conjugate gradient':
             print ('Optimizing using conjugate gradient descent...')
-            tc = sp.optimize.fmin_cg(loss, tc0, callback=print_vector12)
+            tc = sp.optimize.fmin_cg(loss, tc0, callback=callback)
         else:
-            raise ValueError, 'Unrecognized optimizer'
+            raise ValueError('Unrecognized optimizer')
         
         # Output
-        t = affine_transform.param_to_vector12(tc, t0, precond, afftype)
-        T = affine_transform.matrix44(t)
-        return (T, t)
+        T.from_param(tc)
+        return T 
 
     # Return a set of similarity
-    def explore(self, ux=[0], uy=[0], uz=[0], rx=[0], ry=[0], rz=[0], 
-                sx=[1], sy=[1], sz=[1], qx=[0], qy=[0], qz=[0]):
+    def explore(self, 
+                ux=[0], uy=[0], uz=[0],
+                rx=[0], ry=[0], rz=[0], 
+                sx=[1], sy=[1], sz=[1],
+                qx=[0], qy=[0], qz=[0]):
 
         grids = np.mgrid[0:len(ux), 0:len(uy), 0:len(uz), 
                          0:len(rx), 0:len(ry), 0:len(rz), 
@@ -325,19 +313,20 @@ class IconicMatcher():
         QX = np.asarray(qx)[grids[9,:]].ravel()
         QY = np.asarray(qy)[grids[10,:]].ravel()
         QZ = np.asarray(qz)[grids[11,:]].ravel()
-        similarities = np.zeros(ntrials)
-        params = np.zeros([12, ntrials])
+        simis = np.zeros(ntrials)
+        vec12s = np.zeros([12, ntrials])
 
+        T = AffineTransform()
         for i in range(ntrials):
             t = np.array([UX[i], UY[i], UZ[i],
                           RX[i], RY[i], RZ[i],
                           SX[i], SY[i], SZ[i],
                           QX[i], QY[i], QZ[i]])
+            T.set_vec12(t)
+            simis[i] = self.eval(T.mat44)
+            vec12s[:, i] = t 
 
-            similarities[i] = self.eval(affine_transform.matrix44(t))
-            params[:, i] = t 
-
-        return similarities, params
+        return simis, vec12s
         
     """
     def resample(self, T, toresample='source', dtype=None):
@@ -396,13 +385,13 @@ def imatch(source,
     print('Interpolation: %s' % matcher.interp)
     tic = time.time()
 
-    t1 = t2 = None
+    T = None
     if graduate_search or search=='rigid':
-        T, t1 = matcher.optimize(method=optimizer, search='rigid')
+        T = matcher.optimize(method=optimizer, search='rigid')
     if graduate_search or search=='similarity':
-        T, t2 = matcher.optimize(method=optimizer, search='similarity', start=t1)
+        T = matcher.optimize(method=optimizer, search='similarity', start=T)
     if graduate_search or search=='affine':
-        T, t3 = matcher.optimize(method=optimizer, search='affine', start=t2)
+        T = matcher.optimize(method=optimizer, search='affine', start=T)
 
     toc = time.time()
     print('  Registration time: %f sec' % (toc-tic))

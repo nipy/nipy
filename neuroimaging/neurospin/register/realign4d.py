@@ -7,23 +7,83 @@ import scipy as sp
 import scipy.optimize
         
 RADIUS_MM = 10 
-RIGID = affine_transform.affine_types['rigid']
+RIGID = affine_transform.affine_types['3d']['rigid']
 
 
 def grid_coords(xyz, params, r2v, v2r, transform=None):
     T = affine_transform.matrix44(params)
     Tv = np.dot(r2v, np.dot(T, v2r))
-    XYZ = affine_transform.transform(xyz, Tv)
+    XYZ = affine_transform.apply(xyz, Tv)
     return XYZ[0,:], XYZ[1,:], XYZ[2,:]
+
+
+
+class TimeTransform:
+
+    def __init__(self, nslices, tr, tr_slices=None, start=0.0, 
+                 slice_axis=2, reversed_slices=False, slice_order='ascending', interleaved=False):
+        """
+        Configure fMRI acquisition time parameters.
+        
+        tr  : inter-scan repetition time, i.e. the time elapsed between two consecutive scans
+        tr_slices : inter-slice repetition time, same as tr for slices
+        start   : starting acquisition time respective to the implicit time origin
+        slice_order : string or array 
+        """
+        
+        # Default slice repetition time (no silence)
+        if tr_slices == None:
+            tr_slices = tr/float(nslices)
+
+        # Set slice order
+        if isinstance(slice_order, str): 
+            if not interleaved:
+                aux = range(nslices)
+            else:
+                p = nslices/2
+                aux = []
+                for i in range(p):
+                    aux.extend([i,p+i])
+                if nslices%2:
+                    aux.append(nslices-1)
+            if slice_order == 'descending':
+                aux.reverse()
+            slice_order = aux
+            
+        # Set timing values
+        self.nslices = int(nslices)
+        self.tr = float(tr)
+        self.tr_slices = float(tr_slices)
+        self.start = float(start)
+        self.slice_order = np.asarray(slice_order)
+        self.reversed_slices = bool(reversed_slices)
+
+    def z_to_slice(self, z):
+        """
+        Account for the fact that slices may be stored in reverse
+        order wrt the scanner coordinate system convention (slice 0 ==
+        bottom of the head)
+        """
+        if self.reversed_slices:
+            return self.nslices - 1 - z
+        else:
+            return z
+
+    def __call__(self, z, t):
+        return(self.start + self.tr*t + slice_time(self.z_to_slice(z), self.tr_slices, self.slice_order))
+
+
+    def inverse(self, z, t):
+        return((t - self.start - slice_time(self.z_to_slice(z), self.tr_slices, self.slice_order))/self.tr)
 
 
 class Realign4d:
 
-    def __init__(self, img, speedup=4, optimizer='powell'):
+    def __init__(self, img, transform, time_transform, speedup=4, optimizer='powell'):
         self.speedup = speedup
         self.optimizer = optimizer
-        dims = img.array.shape
-        self.inverse_time_transform = img.inverse_time_transform
+        dims = img.shape
+        self.time_transform = time_transform
         self.dims = dims 
         self.nscans = self.dims[3]
         # Define mask
@@ -33,16 +93,16 @@ class Realign4d:
         self.masksize = self.xyz.shape[1]
         self.data = np.zeros([self.masksize, self.nscans], dtype='double')
         # Initialize space/time transformation parameters 
-        self.v2r = img.transform
-        self.r2v = np.linalg.inv(img.transform)
+        self.v2r = transform
+        self.r2v = np.linalg.inv(transform)
         self.space_params = np.zeros([self.nscans, 6])
         self.time_params = img.tr*np.array(range(self.nscans))
         # Compute the 4d cubic spline transform
-        self.cbspline = cspline_transform(img.array)
+        self.cbspline = cspline_transform(img)
               
     def resample_inmask(self, t):
         X, Y, Z = grid_coords(self.xyz, self.space_params[t,:], self.r2v, self.v2r)
-        T = self.inverse_time_transform(Z, self.time_params[t])
+        T = self.time_transform.inverse(Z, self.time_params[t])
         cspline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T)
 
     def resample_all_inmask(self):
@@ -73,6 +133,9 @@ class Realign4d:
         self.beta = (self.nscans-1.0)/self.nscans**2
             
     def msid(self, t):
+        """
+        Mean square intensity difference
+        """
         self.resample_inmask(t)
         self.d2[:] = self.data[:,t]
         self.d2 -= self.m1
@@ -137,34 +200,36 @@ class Realign4d:
         XYZ = np.mgrid[0:dims[0], 0:dims[1], 0:dims[2]]
         XYZ = XYZ.reshape(3, np.prod(XYZ.shape[1::]))
         res = np.zeros(dims)
-        transform = None
         for t in range(self.nscans):
             print('Fully resampling scan %d/%d' % (t+1, self.nscans))
-            if not transforms == None: 
+            if transforms == None: 
+                transform = None
+            else:
                 transform = transforms[t,:]
             X, Y, Z = grid_coords(XYZ, self.space_params[t,:], self.r2v, self.v2r, transform=transform)
-            T = self.inverse_time_transform(Z, self.time_params[t])
+            T = self.time_transform.inverse(Z, self.time_params[t])
             cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T)
         return res
     
 
 
-def _realign4d(img, loops=2, speedup=4, optimizer='powell'): 
+def _realign4d(img, transform, time_transform, loops=2, speedup=4, optimizer='powell'): 
     """
-    corr_img, transfo_img = realign4d(runs, loops=2, speedup=4, optimizer='powell')
 
-    Assumes img is a fff2.neuro.fmri_image instance. 
-    """
-    if not isinstance(img, fff2.neuro.fmri_image):
-        raise ValueError, 'Wrong input object type.'
- 
-    r = Realign4d(img, speedup=speedup, optimizer=optimizer)
+    Parameters
+    ----------
+    img : ndarray
+          4d image data
+
+    transform : ndarray 
+                Voxel-to-world affine (4x4 matrix)
+
+    """ 
+    r = Realign4d(img, transform, time_transform, speedup=speedup, optimizer=optimizer)
     for loop in range(loops): 
         r.correct_motion()
+    return r.resample(), r.space_params
 
-    corr_img = fff2.neuro.fmri_image(fff2.neuro.image(img), tr=img.tr, tr_slices=0.0)
-    corr_img.set_array(r.resample())
-    return corr_img, r.space_params
 
 
 def _resample4d(img, transforms=None): 

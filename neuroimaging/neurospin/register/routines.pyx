@@ -281,12 +281,19 @@ cdef enum transformation_type:
     RIGID3D, SIMILARITY3D, AFFINE3D
 
 # Corresponding Python constants 
-affine_types = {'rigid 2D': RIGID2D,
-                'similarity 2D': SIMILARITY2D,
-                'affine 2D': AFFINE2D, 
-                'rigid': RIGID3D,
-                'similarity': SIMILARITY3D,
-                'affine': AFFINE3D}
+_rigid2d = [0,1,5]
+_similarity2d = [0,1,5,6,7]
+_affine2d = [0,1,5,6,7,11]
+_rigid3d = range(6)
+_similarity3d = range(9)
+_affine3d = range(12)
+
+affine_types = {'2d': {'rigid': RIGID2D, 'similarity': SIMILARITY2D, 'affine': AFFINE2D}, 
+                '3d': {'rigid': RIGID3D, 'similarity': SIMILARITY3D, 'affine': AFFINE3D}}
+
+affine_indices = {'2d': {'rigid': _rigid2d, 'similarity': _similarity2d[0:4], 'affine': _affine2d}, 
+                  '3d': {'rigid': _rigid3d, 'similarity': _similarity3d[0:7], 'affine': _affine3d}}
+
 
 def rotation_vector_to_matrix(r):
 
@@ -343,17 +350,17 @@ def param_to_vector12(ndarray param, ndarray t0, ndarray precond, int stamp=AFFI
 
     # Switch on transformation type
     if stamp == RIGID3D:
-        t[0:6] = param*precond[0:6]
+        t[_rigid3d] = param*precond[_rigid3d]
     elif stamp == SIMILARITY3D:
-        t[0:9] = param[[0,1,2,3,4,5,6,6,6]]*precond[0:9]
+        t[_similarity3d] = param[[0,1,2,3,4,5,6,6,6]]*precond[_similarity3d]
     elif stamp == AFFINE3D:
         t = param*precond
     elif stamp == RIGID2D:
-        t[[0,1,5]] = param*precond[[0,1,5]]
+        t[_rigid2d] = param*precond[_rigid2d]
     elif stamp == SIMILARITY2D:
-        t[[0,1,5,6,7]] = param[[0,1,2,3,3]]*precond[[0,1,5,6,7]]
+        t[_similarity2d] = param[[0,1,2,3,3]]*precond[_similarity2d]
     elif stamp == AFFINE2D:
-        t[[0,1,5,6,7,11]] = param*precond[[0,1,5,6,7,11]]
+        t[_affine2d] = param*precond[_affine2d]
     
     return t
     
