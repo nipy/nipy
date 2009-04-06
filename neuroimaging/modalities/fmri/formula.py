@@ -346,7 +346,6 @@ class Design:
                 d[j] = d[j].subs(p, newp)
             newparams.append(newp)
 
-        from utils import add_aliases_to_namespace
         self.n = {}; 
         for _d in d:
             add_aliases_to_namespace(_d, self.n)
@@ -500,6 +499,10 @@ class vectorize(object):
             self.nn['vec%d' % vectorize.counter] = v
             vectorize.counter += 1
         deft = sympy.DeferredVector('t');
+        try:
+            print self.nn['glover']
+        except:
+            pass
         self._f = sympy.lambdify(deft, nexpr.subs(t, deft), (self.nn, 'numpy'))
         
     def __call__(self, _t):
@@ -551,14 +554,13 @@ t = Term('t')
 
 # f3 = (a+b)*fac + I
 
+import new
 class AliasedFunctionClass(sympy.FunctionClass):
-
-    _new = type.__new__
 
     def __new__(cls, arg1, arg2, arg3=None, alias=None):
         r = sympy.FunctionClass.__new__(cls, arg1, arg2, arg3)
         if alias is not None:
-            r.alias = staticmethod(alias)
+            r.alias = new.instancemethod(alias, r, cls)
         return r
 
 def aliased_function(name, alias):
