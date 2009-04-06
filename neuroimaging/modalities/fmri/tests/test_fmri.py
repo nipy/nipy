@@ -8,19 +8,14 @@ import nose.tools
 
 import neuroimaging.core.reference.coordinate_map as coordinate_map
 from neuroimaging.modalities.fmri.api import FmriImageList, fmri_generator, fromimage
-from neuroimaging.core.api import Image, data_generator, parcels
+from neuroimaging.core.api import Image, data_generator, parcels, fromarray
 from neuroimaging.io.api import  load_image, save_image
 from neuroimaging.testing import anatfile, funcfile
 
-edict = {}
 
 def setup():
     # Suppress warnings during tests to reduce noise
     warnings.simplefilter("ignore")
-    # load images
-    edict['parcelmap'] = load_image(funcfile)[0]
-    edict['img'] = load_image(funcfile)
-    edict['fmri'] = fromimage(edict['img'])
 
 def teardown():
     # Clear list of warning filters
@@ -29,7 +24,7 @@ def teardown():
 
 def test_write():
     fp, fname = mkstemp('.nii')
-    img = edict['img']
+    img = load_image(funcfile)
     save_image(img, fname)
     test = fromimage(load_image(fname))
     yield nose.tools.assert_equal, test[0].affine.shape, (4,4)
@@ -41,7 +36,7 @@ def test_write():
     os.remove(fname)
 
 def test_iter():
-    img = edict['img']
+    img = load_image(funcfile)
     j = 0
     for i, d in fmri_generator(img):
         j += 1
@@ -50,7 +45,7 @@ def test_iter():
     nose.tools.assert_equal(j, 20)
 
 def test_subcoordmap():
-    img = edict['img']
+    img = load_image(funcfile)
     subcoordmap = img[3].coordmap
         
     xform = np.array([[ 0., 0., 0., 10.35363007],
@@ -62,19 +57,11 @@ def test_subcoordmap():
     nose.tools.assert_true(np.allclose(subcoordmap.affine, xform))
         
 def test_labels1():
-    parcelmap = edict['parcelmap']
-    img = edict['img']
+    img = load_image(funcfile)
+    parcelmap = fromarray(np.asarray(img[0]), 'kji', 'zyx')    
     parcelmap = (np.asarray(parcelmap) * 100).astype(np.int32)
         
     v = 0
     for i, d in fmri_generator(img, parcels(parcelmap)):
         v += d.shape[1]
     nose.tools.assert_equal(v, parcelmap.size)
-
-
-
-
-
-
-
-
