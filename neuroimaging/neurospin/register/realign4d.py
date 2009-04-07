@@ -93,7 +93,7 @@ class Realign4d:
         # Initialize space/time transformation parameters 
         self.toworld = time_series.toworld
         self.fromworld = np.linalg.inv(self.toworld)
-        if transforms = None: 
+        if transforms == None: 
             self.transforms = [Affine('rigid', radius=brain_radius_mm) for scan in range(self.nscans)]
         else: 
             self.transforms = transforms
