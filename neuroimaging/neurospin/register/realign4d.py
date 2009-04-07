@@ -1,5 +1,5 @@
 from routines import cspline_transform, cspline_sample4d
-from transform import Affine, apply, brain_radius_mm
+from transform import Affine, apply, BRAIN_RADIUS_MM
 
 import numpy as np
 import scipy as sp

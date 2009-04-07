@@ -4,7 +4,7 @@ YAMILA = Yet Another Mutual Information-Like Aligner
 Questions: alexis.roche@gmail.com
 """
 from routines import _joint_histogram, _similarity, similarity_measures
-from transform import Affine, brain_radius_mm
+from transform import Affine, BRAIN_RADIUS_MM
 
 import numpy as np  
 import scipy as sp 
@@ -103,8 +103,7 @@ def clamp(x, th=0, mask=None, bins=256):
  
     return y, bins 
 
-
-def fixed_npoints_subsampling(source, npoints):
+def controlled_subsampling(source, npoints):
     """  
     Tune subsampling factors so that the number of voxels involved in
     registration match a given number.
@@ -125,15 +124,15 @@ def fixed_npoints_subsampling(source, npoints):
     sub_source: ndarray 
                 Subsampled source 
 
-    actual_size: number 
+    actual_npoints: number 
                  Actual size of the subsampled array 
 
     """
-    actual_size = (source >= 0).sum()
+    dims = source.shape
+    actual_npoints = (source >= 0).sum()
     subsampling = np.ones(3, dtype='uint')
-    sub_source = source
 
-    while actual_size < size:
+    while actual_npoints > npoints:
         # Subsample the direction with the highest number of samples
         ddims = dims/subsampling
         if ddims[0] >= ddims[1] and ddims[0] >= ddims[2]:
@@ -144,9 +143,10 @@ def fixed_npoints_subsampling(source, npoints):
             dir = 2
         subsampling[dir] += 1
         sub_source = source[::subsampling[0], ::subsampling[1], ::subsampling[2]]
-        actual_size = (source >= 0).sum()
+        actual_npoints = (sub_source >= 0).sum()
             
-    return subsampling, sub_source, actual_size
+    return subsampling, sub_source, actual_npoints
+
 
 
 class IconicMatcher():
@@ -198,9 +198,9 @@ class IconicMatcher():
         self.block_size = np.array(size, dtype='uint')
         if isinstance(fixed_npoints, int):
             self.block_subsampling, self.source_block, self.block_npoints = \
-                fixed_npoints_subsampling(self.source_clamped[corner[0]:corner[0]+size[0]-1,
-                                                              corner[1]:corner[1]+size[1]-1,
-                                                              corner[2]:corner[2]+size[2]-1], 
+                controlled_subsampling(self.source_clamped[corner[0]:corner[0]+size[0]-1,
+                                                           corner[1]:corner[1]+size[1]-1,
+                                                           corner[2]:corner[2]+size[2]-1], 
                                           npoints=fixed_npoints)
         else: 
             self.block_subsampling = np.array(subsampling, dtype='uint')
@@ -251,15 +251,17 @@ class IconicMatcher():
                            self.pdf)
 
     ## FIXME: check that the dimension of start is consistent with the search space. 
-    def optimize(self, search='rigid', method='powell', start=None, radius=brain_radius_mm):
+    def optimize(self, search='rigid', method='powell', start=None, radius=BRAIN_RADIUS_MM):
         """
         radius: a parameter for the 'typical size' in mm of the object
         being registered. This is used to reformat the parameter
         vector (translation+rotation+scaling+shearing) so that each
         element roughly represents a variation in mm.
         """
-        
-        T = Affine(subtype=search, vec12=start.vec12, radius=radius)
+        if start == None: 
+            T = Affine(subtype=search, radius=radius)
+        else:
+            T = Affine(subtype=search, vec12=start.vec12, radius=radius)
         tc0 = T.to_param()
 
         # Loss function to minimize
@@ -270,7 +272,10 @@ class IconicMatcher():
         def callback(tc):
             T.from_param(tc)
             print(T)
-            
+            print(self.similarity + ' = %s' % self.eval(T.mat44()))
+            print('')
+                  
+
         # Switching to the appropriate optimizer
         print('Initial guess...')
         print(T)
@@ -358,8 +363,7 @@ def imatch(source,
            normalize=None, 
            search='affine',
            graduate_search=False,
-           optimizer='powell',
-           resample=True):
+           optimizer='powell'):
 
     """
     Three-dimensional intensity-based image registration. 
@@ -386,7 +390,6 @@ def imatch(source,
     print('Similarity: %s' % matcher.similarity)
     print('Normalize: %s' % matcher.normalize) 
     print('Interpolation: %s' % matcher.interp)
-    tic = time.time()
 
     T = None
     if graduate_search or search=='rigid':
@@ -395,9 +398,6 @@ def imatch(source,
         T = matcher.optimize(method=optimizer, search='similarity', start=T)
     if graduate_search or search=='affine':
         T = matcher.optimize(method=optimizer, search='affine', start=T)
-
-    toc = time.time()
-    print('  Registration time: %f sec' % (toc-tic))
     
     return T
 

@@ -3,7 +3,7 @@ from routines import rotation_vec2mat, param_to_vector12, matrix44, affines, _af
 import numpy as np
 
 # Some constants 
-brain_radius_mm = 10 ## used for pre-conditioning in optimization context
+BRAIN_RADIUS_MM = 10 ## used for pre-conditioning in optimization context
 
 
 def rotation_mat2vec(R):
@@ -116,7 +116,12 @@ class Affine:
         return matrix44(self.vec12)
 
     def __str__(self): 
-        return self.vec12[_affines[self._subtype]].__str__()
+        str  = 'translation : %s\n' % self.vec12[0:3].__str__()
+        str += 'rotation    : %s\n' % self.vec12[3:6].__str__()
+        str += 'scaling     : %s\n' % self.vec12[6:9].__str__()
+        str += 'shearing    : %s' % self.vec12[9:12].__str__()
+        return str
+        #return self.vec12[_affines[self._subtype]].__str__()
 
     def __mul__(self, other): 
         """

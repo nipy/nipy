@@ -1,7 +1,7 @@
 import neuroimaging.neurospin as fff2
 
 import neuroimaging.neurospin.graph.field as field
-import neuroimaging.neurospin.registration.transform_affine as affine
+##import neuroimaging.neurospin.registration.transform_affine as affine
 import neuroimaging.neurospin.group.permutation_test as permutt
 
 from neuroimaging.neurospin.utils import emp_null

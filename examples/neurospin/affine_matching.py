@@ -1,6 +1,8 @@
 #!/usr/bin/env python 
 
-import fff2
+from neuroimaging.neurospin import register 
+from neuroimaging.neurospin import neuro
+
 
 from os.path import join
 import sys
@@ -21,10 +23,10 @@ else:
 print('Scanning data directory...')
 source = sys.argv[1]
 target = sys.argv[2]
-similarity = 'correlation ratio'
+similarity = 'cr'
 if len(sys.argv)>3: 
 	similarity = sys.argv[3]
-interp = 'partial volume'
+interp = 'pv'
 if len(sys.argv)>4: 
 	interp = sys.argv[4]
 normalize = None
@@ -45,20 +47,32 @@ print ('Optimizer: %s' % optimizer)
 
 # Get data
 print('Fetching image data...')
-I = fff2.neuro.image(join(rootpath,'nobias_'+source+'.nii'), iolib=iolib)
-J = fff2.neuro.image(join(rootpath,'nobias_'+target+'.nii'), iolib=iolib)
+I = neuro.image(join(rootpath,'nobias_'+source+'.nii'), iolib=iolib)
+J = neuro.image(join(rootpath,'nobias_'+target+'.nii'), iolib=iolib)
 
 # Perform affine normalization 
-T, It = fff2.neuro.affine_registration(I, J, similarity=similarity, interp=interp, 
-				       normalize=normalize, optimizer=optimizer, resample=True)
+print('Setting up registration...')
 
+tic = time.time()
+
+T = register.imatch(I.array, J.array, I.transform, J.transform, 
+		    similarity=similarity, 
+		    interp=interp, 
+		    normalize=normalize, 
+		    optimizer=optimizer)
+
+toc = time.time()
+print('  Registration time: %f sec' % (toc-tic))
 
 # Save resampled source
+"""
 outfile =  source+'_TO_'+target+'.nii'
 print ('Saving resampled source in: %s' % outfile)
 It.save(outfile)
+"""
 
 # Save transformation matrix
+"""
 import numpy as np
 np.save(outfile, T)
-
+"""
