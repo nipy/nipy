@@ -1,27 +1,25 @@
 from routines import cspline_transform, cspline_sample4d
-
-import affine_transform 
+from transform import Affine, apply 
 
 import numpy as np
 import scipy as sp
 import scipy.optimize
         
 RADIUS_MM = 10 
-RIGID = affine_transform.affine_types['3d']['rigid']
 
 
-def grid_coords(xyz, params, r2v, v2r, transform=None):
-    T = affine_transform.matrix44(params)
-    Tv = np.dot(r2v, np.dot(T, v2r))
+def grid_coords(xyz, affine, r2v, v2r, transform=None):
+    Tv = np.dot(r2v, np.dot(affine.mat44(), v2r))
     XYZ = affine_transform.apply(xyz, Tv)
     return XYZ[0,:], XYZ[1,:], XYZ[2,:]
 
 
 
-class TimeTransform:
+class ToTime:
 
     def __init__(self, nslices, tr, tr_slices=None, start=0.0, 
-                 slice_axis=2, reversed_slices=False, slice_order='ascending', interleaved=False):
+                 slice_axis=2, reversed_slices=False, 
+                 slice_order='ascending', interleaved=False):
         """
         Configure fMRI acquisition time parameters.
         
@@ -79,13 +77,13 @@ class TimeTransform:
 
 class Realign4d:
 
-    def __init__(self, img, transform, time_transform, speedup=4, optimizer='powell'):
+    def __init__(self, img, toworld, totime, speedup=4, optimizer='powell'):
         self.speedup = speedup
         self.optimizer = optimizer
         dims = img.shape
-        self.time_transform = time_transform
+        self.totime = totime
         self.dims = dims 
-        self.nscans = self.dims[3]
+        self.nscans = dims[3]
         # Define mask
         speedup = max(1, int(speedup))
         xyz = np.mgrid[0:dims[0]:speedup, 0:dims[1]:speedup, 0:dims[2]:speedup]
@@ -93,16 +91,16 @@ class Realign4d:
         self.masksize = self.xyz.shape[1]
         self.data = np.zeros([self.masksize, self.nscans], dtype='double')
         # Initialize space/time transformation parameters 
-        self.v2r = transform
-        self.r2v = np.linalg.inv(transform)
-        self.space_params = np.zeros([self.nscans, 6])
+        self.v2r = toworld
+        self.r2v = np.linalg.inv(toworld)
+        self.transforms = [Affine('rigid', radius=RADIUS_MM) for scan in range(self.nscans)]
         self.time_params = img.tr*np.array(range(self.nscans))
         # Compute the 4d cubic spline transform
         self.cbspline = cspline_transform(img)
               
     def resample_inmask(self, t):
-        X, Y, Z = grid_coords(self.xyz, self.space_params[t,:], self.r2v, self.v2r)
-        T = self.time_transform.inverse(Z, self.time_params[t])
+        X, Y, Z = grid_coords(self.xyz, self.transforms[t], self.r2v, self.v2r)
+        T = self.totime.inverse(Z, self.time_params[t])
         cspline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T)
 
     def resample_all_inmask(self):
@@ -158,7 +156,6 @@ class Realign4d:
 
     def correct_motion(self):
         optimizer = self.optimizer
-        precond = affine_transform.preconditioner(RADIUS_MM)[0:6]
 
         def callback(pc):
             p = pc*precond
@@ -182,16 +179,15 @@ class Realign4d:
         # Optimize motion parameters 
         for t in range(self.nscans):
             print('Correcting motion of scan %d/%d...' % (t+1, self.nscans))
-           
+
             def loss(pc):
-                p = pc*precond
-                self.space_params[t,:] = p
+                self.transforms[t].from_param(pc)
                 return self.msid(t)
         
             self.init_motion_detection(t)
-            pc0 = self.space_params[t,:]/precond
+            pc0 = self.transforms[t].to_param()
             pc = fmin(loss, pc0, callback=callback)
-            self.space_params[t,:] = pc*precond
+            self.transforms[t].from_param(pc)
 
 
     def resample(self, transforms=None):
@@ -205,15 +201,15 @@ class Realign4d:
             if transforms == None: 
                 transform = None
             else:
-                transform = transforms[t,:]
-            X, Y, Z = grid_coords(XYZ, self.space_params[t,:], self.r2v, self.v2r, transform=transform)
-            T = self.time_transform.inverse(Z, self.time_params[t])
+                transform = transforms[t]
+            X, Y, Z = grid_coords(XYZ, self.transforms[t], self.r2v, self.v2r, transform=transform)
+            T = self.totime.inverse(Z, self.time_params[t])
             cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T)
         return res
     
 
 
-def _realign4d(img, transform, time_transform, loops=2, speedup=4, optimizer='powell'): 
+def _realign4d(img, toworld, totime, loops=2, speedup=4, optimizer='powell'): 
     """
 
     Parameters
@@ -221,41 +217,25 @@ def _realign4d(img, transform, time_transform, loops=2, speedup=4, optimizer='po
     img : ndarray
           4d image data
 
-    transform : ndarray 
+    toworld : ndarray 
                 Voxel-to-world affine (4x4 matrix)
 
     """ 
-    r = Realign4d(img, transform, time_transform, speedup=speedup, optimizer=optimizer)
+    r = Realign4d(img, toworld, totime, speedup=speedup, optimizer=optimizer)
     for loop in range(loops): 
         r.correct_motion()
-    return r.resample(), r.space_params
+    return r.resample(), r.transforms
 
 
 
-def _resample4d(img, transforms=None): 
+def _resample4d(img, toworld, totime, transforms=None): 
     """
-    corr_img, transfo_img = realign4d(runs, loops=2, speedup=4, optimizer='powell')
-
-    Assumes img is a fff2.neuro.fmri_image instance. 
+    corr_img = _resample4d(img, transforms=None)
     """
-    if not isinstance(img, fff2.neuro.fmri_image):
-        raise ValueError, 'Wrong input object type: ' + str(type(img))
-
-    r = Realign4d(img)
-    corr_img = fff2.neuro.fmri_image(fff2.neuro.image(img), tr=img.tr, tr_slices=0.0)
-    corr_img.set_array(r.resample(transforms=transforms))
-    return corr_img
+    r = Realign4d(img, toworld, totime)
+    return r.resample(transforms=transforms)
 
 
-def params_to_mat44(transfo_run, transform=None):
-    if transform == None:
-        transform = np.eye(4)
-    transforms = []
-    for t in range(transfo_run.shape[0]):
-        T = np.dot(transform, affine_transform.matrix44(transfo_run[t,:]))
-        transforms.append(T)
-    transforms = np.asarray(transforms)
-    return transforms
 
 
 def realign4d(runs, within_loops=2, between_loops=5, speedup=4, optimizer='powell'): 
@@ -268,7 +248,7 @@ def realign4d(runs, within_loops=2, between_loops=5, speedup=4, optimizer='powel
     # Single-session case
     if not isinstance(runs, list): 
         corr_run, transfo_run = _realign4d(runs, loops=within_loops, speedup=speedup, optimizer=optimizer)
-        return corr_run, params_to_mat44(transfo_run)
+        return corr_run, transfo_run
     
     # Correct motion and slice timing in each sequence separately
     corr_runs = []
@@ -284,8 +264,7 @@ def realign4d(runs, within_loops=2, between_loops=5, speedup=4, optimizer='powel
     for idx in run_idx:
         run = corr_runs[idx]
         aux.append(run.array.mean(3))
-    aux = np.rollaxis(np.asarray(aux), 0, 4)
-    mean_img = fff2.neuro.fmri_image(fff2.neuro.image(aux, transform=run.transform), tr_slices=0.0)
+    mean_img = np.rollaxis(np.asarray(aux), 0, 4)
     corr_mean, transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, optimizer=optimizer)
     
     # Compose transformations for each run

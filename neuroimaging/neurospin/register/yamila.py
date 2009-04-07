@@ -4,7 +4,7 @@ YAMILA = Yet Another Mutual Information-Like Aligner
 Questions: alexis.roche@gmail.com
 """
 from routines import _joint_histogram, _similarity, similarity_measures
-import affine_transform
+from transform import Affine
 
 import numpy as np  
 import scipy as sp 
@@ -150,7 +150,7 @@ def fixed_npoints_subsampling(source, npoints):
 class IconicMatcher():
 
     def __init__(self, source, target, 
-                 source_transform, target_transform,
+                 source_toworld, target_toworld,
                  source_threshold=0, target_threshold=0,  
                  source_mask=None, target_mask=None,
                  bins=256):
@@ -176,8 +176,8 @@ class IconicMatcher():
         self.target_hist = np.zeros(t_bins)
         
         # Image-to-world transforms 
-        self.source_transform = source_transform
-        self.target_transform_inv = np.linalg.inv(target_transform)
+        self.source_toworld = source_toworld
+        self.target_fromworld = np.linalg.inv(target_toworld)
 
         # Set default registration parameters
         self.set_interpolation()
@@ -208,7 +208,7 @@ class IconicMatcher():
         ## Taux: block to full array transformation
         Taux = np.diag(np.concatenate((self.block_subsampling,[1]),1))
         Taux[0:3,3] = self.block_corner
-        self.block_transform = np.dot(self.source_transform, Taux)
+        self.block_transform = np.dot(self.source_toworld, Taux)
 
     def set_similarity(similarity='cc', normalize=None, pdf=None): 
         self.similarity = similarity
@@ -224,11 +224,11 @@ class IconicMatcher():
         The corresponding voxel transformation is: Tv = Tt^-1 * T * Ts
         """
         ## C-contiguity required
-        return np.dot(self.target_transform_inv, np.dot(T, self.source_transform)) 
+        return np.dot(self.target_fromworld, np.dot(T, self.source_toworld)) 
 
     def block_voxel_transform(self, T): 
         ## C-contiguity ensured 
-        return np.dot(self.target_transform_inv, np.dot(T, self.block_transform)) 
+        return np.dot(self.target_fromworld, np.dot(T, self.block_transform)) 
 
     def eval(self, T):
         Tv = self.block_voxel_transform(T)
@@ -257,15 +257,16 @@ class IconicMatcher():
         element roughly represents a variation in mm.
         """
         
-        T = AffineTransform(subtype=search, vec12=start.vec12, radius=radius)
+        T = Affine(subtype=search, vec12=start.vec12, radius=radius)
         tc0 = T.to_param()
 
         # Loss function to minimize
         def loss(tc):
             T.from_param(tc)
-            return(-self.eval(T.mat44))
+            return -self.eval(T.mat44()) 
     
         def callback(tc):
+            T.from_param(tc)
             print(T)
             
         # Switching to the appropriate optimizer
@@ -316,14 +317,14 @@ class IconicMatcher():
         simis = np.zeros(ntrials)
         vec12s = np.zeros([12, ntrials])
 
-        T = AffineTransform()
+        T = Affine()
         for i in range(ntrials):
             t = np.array([UX[i], UY[i], UZ[i],
                           RX[i], RY[i], RZ[i],
                           SX[i], SY[i], SZ[i],
                           QX[i], QY[i], QZ[i]])
             T.set_vec12(t)
-            simis[i] = self.eval(T.mat44)
+            simis[i] = self.eval(T.mat44())
             vec12s[:, i] = t 
 
         return simis, vec12s
@@ -347,8 +348,8 @@ class IconicMatcher():
 
 def imatch(source, 
            target, 
-           source_transform, 
-           target_transform,
+           source_toworld, 
+           target_toworld,
            similarity='cr',
            interp='pv',
            subsampling=None,
@@ -370,7 +371,7 @@ def imatch(source,
 
     """
     
-    matcher = IconicMatcher(source, target, source_transform, target_transform)
+    matcher = IconicMatcher(source, target, source_toworld, target_toworld)
     if subsampling == None: 
         matcher.set_field_of_view(fixed_npoints=64**3)
     else:

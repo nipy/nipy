@@ -79,7 +79,6 @@ similarity_measures = {'cc': CORRELATION_COEFFICIENT,
 
 
 def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
-
     """
     joint_hist(H, imI, imJ, Tvox, subsampling, corner, size)
     Comments to follow.
@@ -277,10 +276,12 @@ def slice_time(Z, double tr_slices, slice_order):
 
 # Enumerate transformation types
 cdef enum transformation_type:
-    RIGID2D, SIMILARITY2D, AFFINE2D,
-    RIGID3D, SIMILARITY3D, AFFINE3D
+    RIGID2D=0, SIMILARITY2D=1, AFFINE2D=2,
+    RIGID3D=3, SIMILARITY3D=4, AFFINE3D=5
 
 # Corresponding Python constants 
+affines = ['rigid', 'similarity', 'affine']
+
 _rigid2d = [0,1,5]
 _similarity2d = [0,1,5,6,7]
 _affine2d = [0,1,5,6,7,11]
@@ -288,17 +289,14 @@ _rigid3d = range(6)
 _similarity3d = range(9)
 _affine3d = range(12)
 
-affine_types = {'2d': {'rigid': RIGID2D, 'similarity': SIMILARITY2D, 'affine': AFFINE2D}, 
-                '3d': {'rigid': RIGID3D, 'similarity': SIMILARITY3D, 'affine': AFFINE3D}}
-
-affine_indices = {'2d': {'rigid': _rigid2d, 'similarity': _similarity2d[0:4], 'affine': _affine2d}, 
-                  '3d': {'rigid': _rigid3d, 'similarity': _similarity3d[0:7], 'affine': _affine3d}}
+_affines = [_rigid2d, _similarity2d[0:4], _affine2d, 
+            _rigid3d, _similarity3d[0:7], _affine3d]
 
 
-def rotation_vector_to_matrix(r):
 
+def rotation_vec2mat(r):
     """
-    R = rotation_vector_to_matrix(r)
+    R = rotation_vec2mat(r)
 
     The rotation matrix is given by the Rodrigues formula:
     
@@ -333,6 +331,7 @@ def rotation_vector_to_matrix(r):
         theta2 = theta*theta
         R = np.eye(3) + (1-theta2/6.)*Sr + (.5-theta2/24.)*np.dot(Sr,Sr)
     return R
+
 
 
 
@@ -383,14 +382,14 @@ def matrix44(ndarray t):
     size = <int>PyArray_SIZE(t)
 
     T = np.eye(4)
-    R = rotation_vector_to_matrix(t[3:6])
+    R = rotation_vec2mat(t[3:6])
     if size == 6:
         T[0:3,0:3] = R
     elif size == 7:
         T[0:3,0:3] = t[6]*R
     else:
         S = np.diag(t[6:9]) 
-        Q = rotation_vector_to_matrix(t[9:12]) 
+        Q = rotation_vec2mat(t[9:12]) 
         T[0:3,0:3] = np.dot(Q,np.dot(S,R))
     T[0:3,3] = t[0:3] 
     return T 

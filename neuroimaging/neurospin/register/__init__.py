@@ -1,7 +1,6 @@
 import yamila
 import realign4d
-import affine_transform
-import cubic_spline 
+import transform
 
 from numpy.testing import Tester
 
