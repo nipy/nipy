@@ -260,7 +260,9 @@ def realign4d(runs, within_loops=2, between_loops=5, speedup=4, optimizer='powel
     # Correct between-session motion using the mean image of each corrected run 
     corr_run = [resample4d(run, transforms=transfo_runs) for run in runs]
     aux = np.rollaxis(np.asarray([corr_run.array.mean(3) for corr_run in corr_runs]), 0, 4)
-    mean_img = TimeSeries(aux, toworld=run[0].toworld, tr_slices=0.0) ## fake time series using the first run's toworld
+    ## fake time series using the first run's to-world transform
+    ## FIXME: check that all runs have the same to-world transform
+    mean_img = TimeSeries(aux, toworld=run[0].toworld, tr_slices=0.0) 
     transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, optimizer=optimizer)
     corr_mean = resample4d(mean_img, transforms=transfo_mean)
     

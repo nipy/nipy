@@ -26,6 +26,8 @@ TODO: type checking. implement proper masking.
 For the time being, any transformation is assumed to be a 4x4 matrix. 
 """
 
+CLAMP_DTYPE = 'short'
+
 # Dictionary of interpolation methods
 # pv: Partial volume 
 # tri: Trilinear 
@@ -67,7 +69,7 @@ def clamp(x, th=0, mask=None, bins=256):
     mask *= (x>=th)
 
     # Create output array to allow in-place operations
-    y = np.zeros(x.shape, dtype='short')
+    y = np.zeros(x.shape, dtype=CLAMP_DTYPE)
     dmaxmax = 2**(8*y.dtype.itemsize-1)-1
 
     # Threshold
@@ -87,9 +89,9 @@ def clamp(x, th=0, mask=None, bins=256):
     """
     If the image dynamic is small, no need for compression: just
     downshift image values and re-estimate the dynamic range (hence
-    xmax is translated to xmax-tth casted to dtype='short'. Otherwise,
-    compress after downshifting image values (values equal to the
-    threshold are reset to zero). 
+    xmax is translated to xmax-tth casted to the appropriate
+    dtype. Otherwise, compress after downshifting image values (values
+    equal to the threshold are reset to zero).
     """
     y[mask==False] = -1
     if np.issubdtype(x.dtype, int) and d<=dmax:
@@ -167,9 +169,9 @@ class IconicMatcher():
 
         # Target image padding + binning
         self.target = target 
-        self.target_clamped = -np.ones(np.array(target.shape)+2)
-        self.target_clamped[1:target.shape[0]-1:, 1:target.shape[1]-1:, 1:target.shape[2]-1:], \
-            t_bins = clamp(target, th=target_threshold, mask=target_mask, bins=bins)
+        self.target_clamped = -np.ones(np.array(target.shape)+2, dtype=CLAMP_DTYPE)
+        aux, t_bins = clamp(target, th=target_threshold, mask=target_mask, bins=bins)
+        self.target_clamped[1:target.shape[0]+1:, 1:target.shape[1]+1:, 1:target.shape[2]+1:] = aux
         
         # Histograms
         self.joint_hist = np.zeros([s_bins, t_bins])
@@ -185,11 +187,11 @@ class IconicMatcher():
         self.set_field_of_view()
         self.set_similarity()
 
-    def set_interpolation(method='pv'):
-        self.interp = interp
-        self._interp = interp_methods[interp]
+    def set_interpolation(self, method='pv'):
+        self.interp = method
+        self._interp = interp_methods[method]
 
-    def set_field_of_view(subsampling=[1,1,1], corner=[0,0,0], size=None, fixed_npoints=None):
+    def set_field_of_view(self, subsampling=[1,1,1], corner=[0,0,0], size=None, fixed_npoints=None):
         self.block_corner = np.array(corner, dtype='uint')
         if size == None:
             size = self.source.shape
@@ -211,10 +213,10 @@ class IconicMatcher():
         Taux[0:3,3] = self.block_corner
         self.block_transform = np.dot(self.source_toworld, Taux)
 
-    def set_similarity(similarity='cc', normalize=None, pdf=None): 
+    def set_similarity(self, similarity='cc', normalize=None, pdf=None): 
         self.similarity = similarity
         self._similarity = similarity_measures[similarity]
-        self.normalize = normaliz
+        self.normalize = normalize
         ## Use array rather than asarray to ensure contiguity 
         self.pdf = np.array(pdf)  
 

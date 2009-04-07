@@ -1,4 +1,4 @@
-import yamila
+from yamila import IconicMatcher, imatch
 import realign4d
 import transform
 
