@@ -35,7 +35,7 @@ Fbeta = ff.Field(nbvox)
 Fbeta.from_3d_grid(xyz.astype(np.int), 18)
 beta = np.reshape(dataset,(nbvox,1))
 Fbeta.set_field(beta)
-nroi = hroi.NROI_from_field(Fbeta,None,xyz,th=2.0,smin = 0)
+nroi = hroi.NROI_from_field(Fbeta,None,xyz,th=2.0,smin = 5)
 if nroi != None:
     n1 = nroi.copy()
     n2 = nroi.reduce_to_leaves()
@@ -47,3 +47,4 @@ u = nroi.cc()
 u = np.nonzero(u == u[0])[0]
 err = np.sum((u-lv)**2)
 nroi.feature_argmax('activation')
+nroi.discrete_to_roi_features('activation')

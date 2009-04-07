@@ -24,10 +24,12 @@ Author : Bertrand Thirion,Pamela Guevara, 2006-2009
 
 import numpy as np
 import neuroimaging.neurospin.graph.graph as fg
+import neuroimaging.neurospin.graph.forest as fo
+
 from neuroimaging.neurospin.eda.dimension_reduction import Euclidian_distance
 from neuroimaging.neurospin.clustering.clustering import ward
 
-class WeightedForest(fg.Forest):
+class WeightedForest(fo.Forest):
     """
     This is a weighted Forest structure, i.e. a tree
     - ecah node has one parent and children
