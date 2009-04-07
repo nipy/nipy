@@ -351,7 +351,7 @@ def compute_density(BFLs,xyz,dmax):
     nlm = np.array([BFLs[s].k for s in range(Sess)])
     for s in range(Sess):
         if nlm[s]>0:
-            coord = BFLs[s].get_ROI_feature('coord')
+            coord = BFLs[s].get_roi_feature('coord')
             for i in range(nlm[s]):
                 dxyz = xyz - coord[i,:]
                 dw = np.exp(-np.sum(dxyz**2,1)/sqdmax)
@@ -454,8 +454,8 @@ def hierarchical_asso(BF,dmax):
         if (BF[s].k>0):
             for t in range(s):
                 if (BF[t].k>0):
-                    cs =  BF[s].get_ROI_feature('coord')
-                    ct = BF[t].get_ROI_feature('coord')
+                    cs =  BF[s].get_roi_feature('coord')
+                    ct = BF[t].get_roi_feature('coord')
                     Gs = BF[s].make_graph()
                     Gs.symmeterize()
                     Gs = Gs.adjacency()
@@ -666,7 +666,7 @@ def Build_Amers(BF,u,ths=0):
                     sja = subj[j[a]]
                     isja = intrasubj[j[a]]
                     idx[a] = BF[sja].seed[isja]
-                    coord[a,:] = BF[sja].get_ROI_feature('coord')[isja]
+                    coord[a,:] = BF[sja].get_roi_feature('coord')[isja]
 
                 amers = Amers(sj, subj[j], idx,coord)
                 AF.append(amers)

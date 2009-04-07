@@ -529,17 +529,48 @@ class MultipleROI():
         INPUT:
         - fid(string) the discrete feature under consideration
         - method='average' the assessment method
+        OUPUT:
+        the computed roi-feature is returned
         """
-        df = self.roi_features[fid]
+        df = self.discrete_features[fid]
         ldata = np.zeros((self.k,1))
+        data = self.discrete_features[fid]
         for k in range(self.k):
             if method=='average':
-                ldata[k] = np.mean(data[self.discrete[k]])
-            else:
+                ldata[k] = np.mean(data[k],0)
+            if method == 'min':
+                ldata[k] = np.min(data[k],0)
+            if method == 'max':
+                ldata[k] = np.max(data[k],0)
+            if method not in['min','max','average']:
                 print 'not implemented yet'
         self.set_roi_feature(fid,ldata)   
-       
-        
+        return ldata
+
+    def get_roi_feature(self,fid):
+        """return sthe serached feature
+        """
+        return self.roi_features[fid]
+
+    def remove_roi_feature(self,fid):
+        """removes the specified feature
+        """
+        self.roi_features.pop(fid)
+    
+    def feature_argmax(self,fid):
+        """
+        Returns for each roi the index of the discrete element
+        that is the within-ROI for the fid feature
+        this makes sense only if the corresponding feature has dimension 1
+        """
+        df = self.discrete_features[fid]
+        if np.size(df[0])>np.shape(df[0])[0]:
+            print "multidimensional feature; argmax is ambiguous"
+        idx = -np.ones(self.k).astype(np.int)
+        for k in range(self.k):
+            idx[k] = np.argmax(df[k])
+        return idx
+            
     def plot_roi_feature(self,fid):
         """
         boxplot the feature within the ROI
@@ -563,8 +594,9 @@ class MultipleROI():
             raise ValueError, "the valid marker does not have the correct size"
 
         self.discrete = [self.discrete[k] for k in range(self.k) if valid[k]]
+        kold = self.k
         self.k = np.sum(valid.astype(np.int))
-
+        
         for fid in self.roi_features.keys():
             f = self.roi_features.pop(fid)
             f = f[valid]
@@ -572,8 +604,9 @@ class MultipleROI():
 
         for fid in self.discrete_features.keys():
             f = self.discrete_features.pop(fid)
-            nf = [f[k] for k in range(self.k) if valid[k]]
-            self.set_discrete_feature(fid,f)
+            nf = [f[k] for k in range(kold) if valid[k]]
+            self.set_discrete_feature(fid,nf)
+
         self.check_features()
 
     def get_size(self):

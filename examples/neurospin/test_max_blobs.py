@@ -42,7 +42,7 @@ idx = nroi.get_seed()
 parents = nroi.get_parents()
 label = nroi.get_label()
 nroi.make_feature(beta, 'height','mean')
-bfm = nroi.get_ROI_feature('height')
+bfm = nroi.get_roi_feature('height')
 
 # plot the input image
 bmap = np.zeros(nbvox)

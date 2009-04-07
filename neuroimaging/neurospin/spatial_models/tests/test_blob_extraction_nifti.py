@@ -70,7 +70,7 @@ def main():
     parent = nroi.get_parent()
     label = nroi.get_label()
     nroi.make_feature(beta, 'height','mean')
-    Bfm = nroi.get_ROI_feature('height')
+    Bfm = nroi.get_roi_feature('height')
 
     #write the resulting blob and signal-per-blob images
     Label = -np.ones(ref_dim,'i')
