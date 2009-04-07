@@ -64,9 +64,9 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
     k = np.size(idx)
     if k==0: return None
     discrete = [xyz[label==i] for i in range(k)]
-    #nroi = NROI(parents,header)
-    #nroi.set_discrete(discrete)
     nroi = NROI(parents,header,discrete)
+    feature = [Field.get_field()[label==i] for i in range(k)]
+    nroi.set_discrete_feature('activation', feature)
     
     #define the voxels
     # as an mroi, it should have a method to be instantiated
@@ -219,7 +219,7 @@ class NROI(MultipleROI,Forest):
         # now copy the discrete_features
         fids = self.discrete_features.keys()
         for fid in fids:
-            df = [self.discrete_feature(fid)[k][isleaf] for k in range(self.k)]
+            df = [self.discrete_features[fid][k] for k in range(self.k) if isleaf[k]]
             nroi.set_discrete_feature(fid,df)
         return nroi
 
@@ -237,7 +237,7 @@ class NROI(MultipleROI,Forest):
         # now copy the discrete_features
         fids = self.discrete_features.keys()
         for fid in fids:
-            df = [self.discrete_feature(fid)[k].copy() for k in range(self.k)]
+            df = [self.discrete_features[fid][k].copy() for k in range(self.k)]
             nroi.set_discrete_feature(fid,df)
         return nroi
     

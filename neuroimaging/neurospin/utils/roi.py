@@ -538,8 +538,21 @@ class MultipleROI():
             else:
                 print 'not implemented yet'
         self.set_roi_feature(fid,ldata)   
-       
-        
+
+    def feature_argmax(self,fid):
+        """
+        Returns for each roi the index of the discrete element
+        that is the within-ROI for the fid feature
+        this makes sense only if the corresponding feature has dimension 1
+        """
+        df = self.discrete_features[fid]
+        if np.size(df[0])>np.shape(df[0])[0]:
+            print "multidimensional feature; argmax is ambiguous"
+        idx = -np.ones(self.k).astype(np.int)
+        for k in range(self.k):
+            idx[k] = np.argmax(df[k])
+        return idx
+            
     def plot_roi_feature(self,fid):
         """
         boxplot the feature within the ROI

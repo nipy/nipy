@@ -46,4 +46,4 @@ lv = n1.rooted_subtree(a)
 u = nroi.cc()
 u = np.nonzero(u == u[0])[0]
 err = np.sum((u-lv)**2)
-
+nroi.feature_argmax('activation')
