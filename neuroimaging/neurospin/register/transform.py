@@ -2,6 +2,8 @@ from routines import rotation_vec2mat, param_to_vector12, matrix44, affines, _af
 
 import numpy as np
 
+# Some constants 
+brain_radius_mm = 10 ## used for pre-conditioning in optimization context
 
 
 def rotation_mat2vec(R):

@@ -4,7 +4,7 @@ YAMILA = Yet Another Mutual Information-Like Aligner
 Questions: alexis.roche@gmail.com
 """
 from routines import _joint_histogram, _similarity, similarity_measures
-from transform import Affine
+from transform import Affine, brain_radius_mm
 
 import numpy as np  
 import scipy as sp 
@@ -149,7 +149,8 @@ def fixed_npoints_subsampling(source, npoints):
 
 class IconicMatcher():
 
-    def __init__(self, source, target, 
+    def __init__(self, 
+                 source, target, 
                  source_toworld, target_toworld,
                  source_threshold=0, target_threshold=0,  
                  source_mask=None, target_mask=None,
@@ -216,7 +217,6 @@ class IconicMatcher():
         self.normalize = normaliz
         ## Use array rather than asarray to ensure contiguity 
         self.pdf = np.array(pdf)  
-        
 
     def voxel_transform(self, T):
         """ 
@@ -249,7 +249,7 @@ class IconicMatcher():
                            self.pdf)
 
     ## FIXME: check that the dimension of start is consistent with the search space. 
-    def optimize(self, search='rigid', method='powell', start=None, radius=10):
+    def optimize(self, search='rigid', method='powell', start=None, radius=brain_radius_mm):
         """
         radius: a parameter for the 'typical size' in mm of the object
         being registered. This is used to reformat the parameter
