@@ -107,18 +107,15 @@ def _test_resampling(Tv):
     from scipy.ndimage import affine_transform
     import time
     I = Image(make_data_int16())
-    matrix = Tv[0:3,0:3]
-    offset = Tv[0:3,3]
-    output_shape = I.array.shape
     t0 = time.clock()
-    I1 = resample(I.array, output_shape, Tv)
+    I1 = resample(Tv, I.array, I.array, np.eye(4), np.eye(4), toresample='target')
     dt1 = time.clock()-t0
     t0 = time.clock()
-    I2 = affine_transform(I.array, matrix, offset=offset, output_shape=output_shape)
+    I2 = affine_transform(I.array, Tv[0:3,0:3], offset=Tv[0:3,3], output_shape=I.array.shape)
     dt2 = time.clock()-t0
     assert_almost_equal(I1, I2)
     print('3d array resampling')
-    print('  using fff: %f sec' % dt1)
+    print('  using neuroimaging.neurospin: %f sec' % dt1)
     print('  using scipy.ndimage: %f sec' % dt2)
 
 
@@ -131,13 +128,10 @@ def test_resampling():
     sca = 1+.2*np.random.rand()
     matrix = sca*rotation_vec2mat(rot)
     offset = 10*np.random.rand(3)
-    Tv = np.eye(4) 
+    Tv = np.eye(4)
     Tv[0:3,0:3] = matrix
     Tv[0:3,3] = offset
-    """
-    DESACTIVATED UNTIL RESAMPLING IS PUT BACK
     _test_resampling(Tv)
-    """
 
 if __name__ == "__main__":
         import nose

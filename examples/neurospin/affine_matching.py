@@ -52,24 +52,28 @@ J = neuro.image(join(rootpath,'nobias_'+target+'.nii'), iolib=iolib)
 
 # Perform affine normalization 
 print('Setting up registration...')
-
 tic = time.time()
-
 T = register.imatch(I.array, J.array, I.transform, J.transform, 
 		    similarity=similarity, 
 		    interp=interp, 
 		    normalize=normalize, 
 		    optimizer=optimizer)
-
 toc = time.time()
 print('  Registration time: %f sec' % (toc-tic))
 
+# Resample source image
+print('Resampling source image...')
+tic = time.time()
+It = neuro.image(J)
+It.set_array(register.transform.resample(T, I.array, J.array, I.transform, J.transform))
+toc = time.time()
+print('  Subsampling time: %f sec' % (toc-tic))
+
+
 # Save resampled source
-"""
 outfile =  source+'_TO_'+target+'.nii'
 print ('Saving resampled source in: %s' % outfile)
 It.save(outfile)
-"""
 
 # Save transformation matrix
 """

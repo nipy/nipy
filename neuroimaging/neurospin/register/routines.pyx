@@ -35,7 +35,7 @@ cdef extern from "iconic.h":
     double supervised_mutual_information(double* H, double* F, 
                                          double* fI, int clampI, 
                                          double* fJ, int clampJ) 
-    void cubic_spline_resample(ndarray im_resampled, ndarray im, double* Tvox)
+    void cubic_spline_resample(ndarray im_resampled, ndarray im, double* Tvox, int cast_integer)
 
 
 cdef extern from "cubic_spline.h":
@@ -150,7 +150,7 @@ def cspline_transform(ndarray x):
 def cspline_sample1d(ndarray R, ndarray C, X=0):
     cdef double *r, *x
     cdef broadcast multi
-    Xa = np.resize(X, R.shape)
+    Xa = np.resize(X, R.shape).astype('double')
     multi = PyArray_MultiIterNew(2, <void*>R, <void*>Xa)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -162,8 +162,8 @@ def cspline_sample1d(ndarray R, ndarray C, X=0):
 def cspline_sample2d(ndarray R, ndarray C, X=0, Y=0):
     cdef double *r, *x, *y
     cdef broadcast multi
-    Xa = np.resize(X, R.shape)
-    Ya = np.resize(Y, R.shape)
+    Xa = np.resize(X, R.shape).astype('double')
+    Ya = np.resize(Y, R.shape).astype('double')
     multi = PyArray_MultiIterNew(3, <void*>R, <void*>Xa, <void*>Ya)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -176,9 +176,9 @@ def cspline_sample2d(ndarray R, ndarray C, X=0, Y=0):
 def cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0):
     cdef double *r, *x, *y, *z
     cdef broadcast multi
-    Xa = np.resize(X, R.shape)
-    Ya = np.resize(Y, R.shape)
-    Za = np.resize(Z, R.shape)
+    Xa = np.resize(X, R.shape).astype('double')
+    Ya = np.resize(Y, R.shape).astype('double')
+    Za = np.resize(Z, R.shape).astype('double')
     multi = PyArray_MultiIterNew(4, <void*>R, <void*>Xa, <void*>Ya, <void*>Za)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -198,10 +198,10 @@ def cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0):
     """
     cdef double *r, *x, *y, *z, *t
     cdef broadcast multi
-    Xa = np.resize(X, R.shape)
-    Ya = np.resize(Y, R.shape)
-    Za = np.resize(Z, R.shape)
-    Ta = np.resize(T, R.shape)
+    Xa = np.resize(X, R.shape).astype('double')
+    Ya = np.resize(Y, R.shape).astype('double')
+    Za = np.resize(Z, R.shape).astype('double')
+    Ta = np.resize(T, R.shape).astype('double')
     multi = PyArray_MultiIterNew(5, <void*>R, <void*>Xa, <void*>Ya, <void*>Za, <void*>Ta)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -222,7 +222,8 @@ def cspline_resample(ndarray im, dims, ndarray Tvox, dtype=None):
     convention if needed.
     """
     cdef double *tvox
-    
+    cdef int cast_integer
+
     # Create output array
     if dtype == None:
         dtype = im.dtype
@@ -234,7 +235,8 @@ def cspline_resample(ndarray im, dims, ndarray Tvox, dtype=None):
     tvox = <double*>Tvox.data
 
     # Actual resampling 
-    cubic_spline_resample(im_resampled, im, tvox)
+    cast_integer = np.issubdtype(dtype, int)
+    cubic_spline_resample(im_resampled, im, tvox, cast_integer)
 
     return im_resampled
 
@@ -364,7 +366,7 @@ def param_to_vector12(ndarray param, ndarray t0, ndarray precond, int stamp=AFFI
     return t
     
 
-def matrix44(ndarray t):
+def matrix44(ndarray t, dtype):
     """
     T = matrix44(t)
 
@@ -378,10 +380,8 @@ def matrix44(ndarray t):
     size >= 12 ==> t is interpreted as translation + rotation + scaling + shearing 
     """
     cdef int size
-
     size = <int>PyArray_SIZE(t)
-
-    T = np.eye(4)
+    T = np.eye(4, dtype=dtype)
     R = rotation_vec2mat(t[3:6])
     if size == 6:
         T[0:3,0:3] = R

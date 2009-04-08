@@ -1,4 +1,5 @@
-from routines import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
+from routines import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines, cspline_resample
+
 
 import numpy as np
 
@@ -80,6 +81,15 @@ def apply(xyz, T):
     return XYZ 
 
 
+def resample(T, source, target, source_toworld, target_toworld, 
+             toresample='source', dtype=None):
+    Tv = np.dot(np.linalg.inv(target_toworld), np.dot(T, source_toworld))
+    if toresample is 'target': 
+        return cspline_resample(target, source.shape, Tv, dtype=dtype)
+    else:
+        return cspline_resample(source, target.shape, np.linalg.inv(Tv), dtype=dtype)
+
+
 class Affine: 
 
     def __init__(self, subtype='affine', vec12=None, radius=1, flag3d=True):
@@ -90,8 +100,7 @@ class Affine:
         self.set_vec12(vec12)
 
     def __call__(self, xyz): 
-        return apply(xyz, self.mat44())
-
+        return apply(xyz, self.__array__())
 
     def subtype(self): 
         subtype = affines[self._subtype%len(affines)]
@@ -112,8 +121,8 @@ class Affine:
         # Specify dtype to allow in-place operations
         self.vec12 = np.asarray(vec12, dtype='double') 
         
-    def mat44(self): 
-        return matrix44(self.vec12)
+    def __array__(self, dtype='double'): 
+        return matrix44(self.vec12, dtype=dtype)
 
     def __str__(self): 
         str  = 'translation : %s\n' % self.vec12[0:3].__str__()
@@ -127,8 +136,10 @@ class Affine:
         """
         Affine composition: T1oT2(x)
         """
-        vec12 = vector12(np.dot(self.mat44(), other.mat44()))
+        vec12 = vector12(np.dot(self.__array__(), other.__array__()))
         a = Affine(vec12=vec12)
         a._subtype = max(self._subtype, other._subtype)
         a.precond = self.precond
         return a
+
+

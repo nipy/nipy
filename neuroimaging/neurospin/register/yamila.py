@@ -267,12 +267,12 @@ class IconicMatcher():
         # Loss function to minimize
         def loss(tc):
             T.from_param(tc)
-            return -self.eval(T.mat44()) 
+            return -self.eval(T) 
     
         def callback(tc):
             T.from_param(tc)
             print(T)
-            print(self.similarity + ' = %s' % self.eval(T.mat44()))
+            print(self.similarity + ' = %s' % self.eval(T))
             print('')
                   
 
@@ -331,25 +331,11 @@ class IconicMatcher():
                           SX[i], SY[i], SZ[i],
                           QX[i], QY[i], QZ[i]])
             T.set_vec12(t)
-            simis[i] = self.eval(T.mat44())
+            simis[i] = self.eval(T)
             vec12s[:, i] = t 
 
         return simis, vec12s
         
-    """
-    def resample(self, T, toresample='source', dtype=None):
-        if toresample is 'target': 
-            Tv = self.voxel_transform(T)
-            out = cspline_resample(self.target, self.source.shape, Tv, 
-                                        datatype=dtype)
-        else:
-            Tv_inv = np.linalg.inv(self.voxel_transform(T))
-            out = cspline_resample(self.source, self.target.shape, Tv_inv, 
-                                        datatype=dtype)
-
-        return out
-
-    """
 
 
 

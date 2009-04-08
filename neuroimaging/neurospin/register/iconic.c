@@ -11,6 +11,7 @@
 #define SQR(a) ((a)*(a))
 #define FLOOR(a)((a)>0.0 ? (int)(a):(((int)(a)-a)!= 0.0 ? (int)(a)-1 : (int)(a)))  
 #define UROUND(a) ((int)(a+0.5))
+#define ROUND(a)(FLOOR(a+0.5))
 
 
 static double _marginalize(double* h, const double* H, int clampI, int clampJ, int axis); 
@@ -796,7 +797,8 @@ static void _L1_moments (const double * h, int clamp, int stride,
    Resample a 3d image undergoing an affine transformation. */
 void cubic_spline_resample(PyArrayObject* im_resampled, 
 			   const PyArrayObject* im, 
-			   const double* Tvox)
+			   const double* Tvox, 
+			   int cast_integer)
 {
   double i1;
   PyObject* py_i1;
@@ -814,6 +816,13 @@ void cubic_spline_resample(PyArrayObject* im_resampled,
   im_spline_coeff = (PyArrayObject*)PyArray_SimpleNew(3, dims, NPY_DOUBLE);
   cubic_spline_transform(im_spline_coeff, im);
 
+  /* 
+     The following forces numpy to consider the iterator
+     non-contiguous. Otherwise, coordinates won't be updated,
+     apparently for computation time reasons.
+  */
+  imIter->contiguous = 0;
+
   /* Resampling loop */
   while(imIter->index < imIter->size) {
     x = imIter->coordinates[0];
@@ -825,22 +834,27 @@ void cubic_spline_resample(PyArrayObject* im_resampled,
 	(Ty<0) || (Ty>ddimY) ||
 	(Tz<0) || (Tz>ddimZ))
       i1 = 0.0; 
-    else 
+    else{ 
       i1 = cubic_spline_sample3d(Tx, Ty, Tz, im_spline_coeff); 
+      if (cast_integer)
+	i1 = ROUND(i1); 
+    }
 
+    /* Copy interpolated value into numpy array */
     py_i1 = PyFloat_FromDouble(i1); 
     PyArray_SETITEM(im_resampled, PyArray_ITER_DATA(imIter), py_i1); 
-    PyArray_ITER_NEXT(imIter); 
     Py_DECREF(py_i1); 
+    
+    /* Increment iterator */
+    PyArray_ITER_NEXT(imIter); 
+
   }
 
   /* Free memory */
   Py_DECREF(imIter);
   Py_DECREF(im_spline_coeff); 
     
-
   return;
-	 
 }
 
 

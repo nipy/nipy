@@ -69,7 +69,8 @@ extern "C" {
   */ 
   extern void cubic_spline_resample(PyArrayObject* im_resampled, 
 				    const PyArrayObject* im, 
-				    const double* Tvox); 
+				    const double* Tvox, 
+				    int cast_integer); 
 
 
 

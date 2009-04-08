@@ -7,7 +7,7 @@ import scipy.optimize
         
 
 def grid_coords(xyz, affine, fromworld, toworld):
-    Tv = np.dot(fromworld, np.dot(affine.mat44(), toworld))
+    Tv = np.dot(fromworld, np.dot(affine, toworld))
     XYZ = affine_transform.apply(xyz, Tv)
     return XYZ[0,:], XYZ[1,:], XYZ[2,:]
 

@@ -154,7 +154,7 @@ static void _cubic_spline_transform(PyArrayObject* res, int axis, double* work)
   /* Instantiate iterator and views */ 
   iter = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)res, &axis);
   dim = PyArray_DIM((PyArrayObject*)iter->ao, axis); 
-  stride = sizeof(double)*PyArray_STRIDE((PyArrayObject*)iter->ao, axis); 
+  stride = PyArray_STRIDE((PyArrayObject*)iter->ao, axis)/sizeof(double); 
 
   /* Apply the cubic spline transform along given axis */ 
   while(iter->index < iter->size) {
@@ -164,7 +164,6 @@ static void _cubic_spline_transform(PyArrayObject* res, int axis, double* work)
   }
 
   /* Free local structures */ 
-  free(work); 
   Py_DECREF(iter); 
 
   return; 
@@ -175,7 +174,7 @@ void cubic_spline_transform(PyArrayObject* res, const PyArrayObject* src)
 {
   double* work; 
   unsigned int axis, aux=0, dimmax=0; 
-  
+
   /* Copy src into res */ 
   PyArray_CastTo(res, (PyArrayObject*)src); 
 
@@ -187,7 +186,7 @@ void cubic_spline_transform(PyArrayObject* res, const PyArrayObject* src)
   }
 
   /* Allocate auxiliary buffer */ 
-  work = malloc(sizeof(double)*dimmax); 
+  work = (double*)malloc(sizeof(double)*dimmax); 
 
   /* Apply separable cubic spline transforms */ 
   for(axis=0; axis<res->nd; axis++) 
@@ -213,7 +212,7 @@ double cubic_spline_sample1d (double x, const PyArrayObject* Coef)
 {
 
   unsigned int dim = PyArray_DIM(Coef, 0); 
-  unsigned int offset = sizeof(double)*PyArray_STRIDE(Coef, 0); 
+  unsigned int offset = PyArray_STRIDE(Coef, 0)/sizeof(double); 
   double *coef = PyArray_DATA(Coef); 
 
   const unsigned int ddim = dim-1;
@@ -272,8 +271,8 @@ double cubic_spline_sample2d (double x, double y, const PyArrayObject* Coef)
 
   unsigned int dimX = PyArray_DIM(Coef, 0);
   unsigned int dimY = PyArray_DIM(Coef, 1);
-  unsigned int offX = sizeof(double)*PyArray_STRIDE(Coef, 0); 
-  unsigned int offY = sizeof(double)*PyArray_STRIDE(Coef, 1); 
+  unsigned int offX = PyArray_STRIDE(Coef, 0)/sizeof(double); 
+  unsigned int offY = PyArray_STRIDE(Coef, 1)/sizeof(double); 
   double *coef = PyArray_DATA(Coef); 
 
   const unsigned int ddimX = dimX-1;
@@ -360,9 +359,9 @@ double cubic_spline_sample3d (double x, double y, double z, const PyArrayObject*
   unsigned int dimX = PyArray_DIM(Coef, 0);
   unsigned int dimY = PyArray_DIM(Coef, 1);
   unsigned int dimZ = PyArray_DIM(Coef, 2);
-  unsigned int offX = sizeof(double)*PyArray_STRIDE(Coef, 0); 
-  unsigned int offY = sizeof(double)*PyArray_STRIDE(Coef, 1); 
-  unsigned int offZ = sizeof(double)*PyArray_STRIDE(Coef, 2); 
+  unsigned int offX = PyArray_STRIDE(Coef, 0)/sizeof(double); 
+  unsigned int offY = PyArray_STRIDE(Coef, 1)/sizeof(double); 
+  unsigned int offZ = PyArray_STRIDE(Coef, 2)/sizeof(double); 
   double *coef = PyArray_DATA(Coef); 
 
   const unsigned int ddimX = dimX-1;
@@ -474,10 +473,10 @@ double cubic_spline_sample4d (double x, double y, double z, double t, const PyAr
   unsigned int dimY = PyArray_DIM(Coef, 1);
   unsigned int dimZ = PyArray_DIM(Coef, 2);
   unsigned int dimT = PyArray_DIM(Coef, 3);
-  unsigned int offX = sizeof(double)*PyArray_STRIDE(Coef, 0); 
-  unsigned int offY = sizeof(double)*PyArray_STRIDE(Coef, 1); 
-  unsigned int offZ = sizeof(double)*PyArray_STRIDE(Coef, 2); 
-  unsigned int offT = sizeof(double)*PyArray_STRIDE(Coef, 3); 
+  unsigned int offX = PyArray_STRIDE(Coef, 0)/sizeof(double); 
+  unsigned int offY = PyArray_STRIDE(Coef, 1)/sizeof(double); 
+  unsigned int offZ = PyArray_STRIDE(Coef, 2)/sizeof(double); 
+  unsigned int offT = PyArray_STRIDE(Coef, 3)/sizeof(double); 
   double *coef = PyArray_DATA(Coef); 
 
   const unsigned int ddimX = dimX-1;
