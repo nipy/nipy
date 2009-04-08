@@ -79,7 +79,7 @@ class ROI():
         # finally derive the mask of the ROI
         dx = coord - position
         sqra = radius**2
-        self.discrete = tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype('i'))
+        self.discrete = tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype(np.int))
         
 
     def from_labelled_image(self,image,label):
@@ -110,7 +110,7 @@ class ROI():
         # get the coordinates of the regions
         sform = self.header['sform']
         nim = nifti.NiftiImage(image)
-        data = nim.data.T.astype('i')
+        data = nim.data.T.astype(np.int)
         k = data.max()+1
         cent = np.array([np.mean(np.where(data==i),1) for i in range(k)])
         cent = np.hstack((cent,np.ones((k,1))))
@@ -234,12 +234,18 @@ class MultipleROI():
     mroi.header is assumed to provide all the referential information
     (this should be changed in the future),
     so that the mroi is basically defined as a multiple sets of 3D coordinates
-    finally, there is an associated feature dictionary.
-    Typically it is assumed that each feature is an
+    finally, there is two associated feature dictionaries:
+
+    roi.roi_features: roi-level features
+    it is assumed that each feature is an
     (roi,feature_dim) array, i.e. each roi is assumed homogeneous
     wrt the feature
-    In the future, it might be possible to complexify the structure
-    to model within-ROI variance
+    
+    roi.discrete_features is a dictionary of informations sampled
+    on the discrete membre of the rois (voxels or vertices)
+    each feature os thus a list of self.k arrays of shape
+    (roi_size, feature_simension)
+
     """
 
     def __init__(self, id="roi", k=0,header=None):
@@ -253,18 +259,36 @@ class MultipleROI():
         self.k = k
         self.header = header
         self.discrete = []
-        self.features = dict()
+        self.roi_features = dict()
+        self.discrete_features = dict()
 
     def check_features(self):
         """
-        check that self.features have the coorect size
-        i.e; f.shape[0]=self.k for f in self.features
+        check that self.roi_features have the coorect size
+        i.e. f.shape[0]=self.k for f in self.roi_features
+        and that self.discrete features have the correct size
+        i.e.  for f in self.roi_features:
+        - f is a list of length self.k
+        - f[i] is an array with dimensions consistent with discrete
+
+        caveat: features that are not found consistent are removed
         """
-        fids = self.features.keys()
+        fids = self.roi_features.keys()
         for fid in fids:
-            if self.features[fid].shape[0]!=self.k:
-                print "removing feature %s, which has incorect size" %fid 
-                self.features.pop(fid)
+            if self.roi_features[fid].shape[0]!=self.k:
+                print "removing feature %s, which has incorrect size" %fid 
+                self.roi_features.pop(fid)
+
+        fids = self.discrete_features.keys()
+        for fid in fids:
+            dff = self.discrete_features[fid]
+            if len(dff)!=self.k:
+                print "removing feature %s, which has incorrect length" %fid 
+                self.discrete_features.pop(fid)
+            for k in range(self.k):
+                if dff[k].shape[0]!=self.discrete[k].shape[0]:
+                    print "removing feature %s, incorrectly shaped" %fid 
+                    self.discrete_features.pop(fid)
 
     def check_header(self, image):
         """
@@ -294,22 +318,24 @@ class MultipleROI():
         -labels=None : the set of image labels that
         shall be used as ROI definitions
         By default, all the image labels are used
-        note that this can be used to append features,
+        note that this can be used to append roi_features,
         when rois are already defined
         """
         self.check_header(image)
         nim = nifti.NiftiImage(image)
         data = nim.data.T
-        if labels==None:
-            udata = np.unique(data[data>0])
+        udata = np.unique(data[data>0])
+        if labels==None:    
             if add: self.k+=np.size(udata)
             for k in range(np.size(udata)):
-                self.discrete.append(np.where(data==udata[k]))
+                dk = np.array(np.where(data==udata[k])).T
+                self.discrete.append(dk)
         else:
             if add: self.k+=np.size(labels)
             for k in range(np.size(labels)):
                 if np.sum(data==labels[k])>0:
-                    self.discrete.append(np.where(data==labels[k]))
+                    dk = np.array(np.where(data==udata[k])).T
+                    self.discrete.append(dk)
                 else:
                     raise ValueError, "Sorry I don't take empty ROIs"
         self.check_features()
@@ -349,7 +375,8 @@ class MultipleROI():
         for k in range(self.k):
             dx = coord - position[k]
             sqra = radius[k]**2
-            self.discrete.append(tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype('i')))
+            dk = grid[np.sum(dx**2,1)<sqra,:3].astype(np.int)
+            self.discrete.append(dk)
         self.set_roi_feature('position',position)
         self.set_roi_feature('radius',radius)
         self.check_features()
@@ -384,31 +411,32 @@ class MultipleROI():
         for k in range(np.size(radius)):
             dx = coord - position[k]
             sqra = radius[k]**2
-            self.discrete.append(tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype('i')))
+            dk = grid[np.sum(dx**2,1)<sqra,:3].astype(np.int)
+            self.discrete.append(dk)
 
-        if self.features.has_key('position'):
-            self.complete_feature('position',position)
-        if self.features.has_key('radius'):
-            self.complete_feature('radius',radius)
+        if self.roi_features.has_key('position'):
+            self.complete_roi_feature('position',position)
+        if self.roi_features.has_key('radius'):
+            self.complete_roi_feature('radius',radius)
 
         self.check_features()
 
-    def complete_feature(self,fid,values):
+    def complete_roi_feature(self,fid,values):
         """
-        completes a feature by appending the values
+        completes roi_feature by appending the values
         """
-        f = self.features.pop(fid)
+        f = self.roi_features.pop(fid)
         if values.shape[0]==np.size(values):
             values = np.reshape(values,(np.size(values),1))
         if f.shape[1]!=values.shape[1]:
-            raise ValueError, "incompatible dimensions for the features"
+            raise ValueError, "incompatible dimensions for the roi_features"
         f = np.vstack((f,values))
         self.set_roi_feature(fid,f)
         
         
     def make_image(self,name):
         """
-        write a int nifty image where the nonzero values are the ROIs
+        write a int nifti image where the nonzero values are the ROIs
         INPUT:
         - the desired image name
         NOTE:
@@ -417,7 +445,8 @@ class MultipleROI():
         """
         data = -np.ones(tuple(self.header['dim'][1:4]),'i')
         for k in range(self.k):
-            data[self.discrete[k]]=k
+            dk = self.discrete[k].T
+            data[dk[0],dk[1],dk[2]]=k
         data = np.reshape(data,tuple(self.header['dim'][1:4])).T
         nim = nifti.NiftiImage(data,self.header)
         nim.description = "ROI image"
@@ -435,9 +464,28 @@ class MultipleROI():
             raise ValueError, "Incompatible information of the provided data"
         if np.size(data)==self.k:
             data = np.reshape(data,(self.k,1))
-        self.features.update({fid:data})
+        self.roi_features.update({fid:data})
 
-    def set_feature_from_image(self,fid,image,method='average'):
+    def set_discrete_feature(self,fid,data):
+        """
+        INPUT:
+        - fid (string): feature identifier, e.g.
+        - data: list of self.k arrays with shape(nk,p),with p>0
+        nk = self.discrete[k].shape[0] (number of elements in ROI k)
+        this function simply stores data 
+        """
+        if len(data)!=self.k:
+            print len(data),self.k,fid
+            raise ValueError, "Incompatible information of the provided data"
+        for k in range(self.k):
+            datak = data[k]
+            if datak.shape[0]!=self.discrete[k].shape[0]:
+                raise ValueError, "badly shaped data"
+            if np.size(datak)==self.discrete[k].shape[0]:
+                datak = np.reshape(datak,(np.size(datak),1))
+        self.discrete_features.update({fid:data})
+
+    def set_roi_feature_from_image(self,fid,image,method='average'):
         """
         extract some roi-related information from an image
         INPUT:
@@ -445,6 +493,9 @@ class MultipleROI():
         - image(string): image name
         - method='average' (string) : take the roi feature as
         the average feature over the ROI
+        CAVEAT : deprecated
+        use set_discrete_feature_from_image()
+        and discrete_to_roi_fetaures() instead
         """
         self.check_header(image)
         nim = nifti.NiftiImage(image)  
@@ -452,15 +503,82 @@ class MultipleROI():
         data = nim.asarray().T
         ldata = np.zeros((self.k,1))
         for k in range(self.k):
-            ldata[k] = np.mean(data[self.discrete[k]])
+            dk = self.discrete[k].T
+            ldata[k] = np.mean(data[dk[0],dk[1],dk[2]])
         self.set_roi_feature(fid,ldata)
 
-    def plot_feature(self,fid):
+    def set_discrete_feature_from_image(self,fid,image):
+        """
+        extract some discrete information from an image
+        INPUT:
+        - fid: feature id
+        - image(string): image name
+        """
+        self.check_header(image)
+        nim = nifti.NiftiImage(image)  
+        header = nim.header
+        data = nim.asarray().T
+        ldata = []
+        for k in range(self.k):
+            ldata.append(data[self.discrete[k]])
+        self.set_discrete_feature(fid,ldata)    
+
+    def discrete_to_roi_features(self,fid,method='average'):
+        """
+        Compute an ROI-level feature given the discrete features
+        INPUT:
+        - fid(string) the discrete feature under consideration
+        - method='average' the assessment method
+        OUPUT:
+        the computed roi-feature is returned
+        """
+        df = self.discrete_features[fid]
+        ldata = np.zeros((self.k,1))
+        data = self.discrete_features[fid]
+        for k in range(self.k):
+            if method=='average':
+                ldata[k] = np.mean(data[k],0)
+            if method == 'min':
+                ldata[k] = np.min(data[k],0)
+            if method == 'max':
+                ldata[k] = np.max(data[k],0)
+            if method not in['min','max','average']:
+                print 'not implemented yet'
+        self.set_roi_feature(fid,ldata)   
+        return ldata
+
+    def get_roi_feature(self,fid):
+        """return sthe serached feature
+        """
+        return self.roi_features[fid]
+
+    def remove_roi_feature(self,fid):
+        """removes the specified feature
+        """
+        self.roi_features.pop(fid)
+    
+    def feature_argmax(self,fid):
+        """
+        Returns for each roi the index of the discrete element
+        that is the within-ROI for the fid feature
+        this makes sense only if the corresponding feature has dimension 1
+        """
+        df = self.discrete_features[fid]
+        if np.size(df[0])>np.shape(df[0])[0]:
+            print "multidimensional feature; argmax is ambiguous"
+        idx = -np.ones(self.k).astype(np.int)
+        for k in range(self.k):
+            idx[k] = np.argmax(df[k])
+        return idx
+            
+    def plot_roi_feature(self,fid):
         """
         boxplot the feature within the ROI
         Note that this assumes a 1-d feature
+        INPUT:
+        - fid the feature identifier
         """
-        f = self.features[fid]
+        f = self.roi_features[fid]
         if f.shape[1]>1:
             raise ValueError, "cannot plot multi-dimensional feature for the moment"
         import matplotlib.pylab as mp
@@ -476,21 +594,42 @@ class MultipleROI():
             raise ValueError, "the valid marker does not have the correct size"
 
         self.discrete = [self.discrete[k] for k in range(self.k) if valid[k]]
-        self.k = np.sum(valid.astype('i'))
-        for fid in self.features.keys():
-            f = self.features.pop(fid)
+        kold = self.k
+        self.k = np.sum(valid.astype(np.int))
+        
+        for fid in self.roi_features.keys():
+            f = self.roi_features.pop(fid)
             f = f[valid]
             self.set_roi_feature(fid,f)
+
+        for fid in self.discrete_features.keys():
+            f = self.discrete_features.pop(fid)
+            nf = [f[k] for k in range(kold) if valid[k]]
+            self.set_discrete_feature(fid,nf)
+
         self.check_features()
 
     def get_size(self):
         """
         return the number of voxels per ROI in one array
         """
-        size = np.zeros(self.k)
+        size = np.zeros(self.k).astype(np.int)
         for k in range(self.k):
-            size[k] = np.shape(self.discrete[k],0)
+            size[k] = np.shape(self.discrete[k])[0]
         return size
+
+    def set_discrete(self,discrete):
+        """
+        set manually the values of discrete
+        discrete is a list of arrays that contains
+        the coordinates of all ROIs voxels
+        len(discrete) must be equal to self.k
+        """
+        if len(discrete)!= self.k:
+            raise ValueError, "the provided values for discrete \
+            do not match self.k" 
+        self.discrete = discrete
+        
 
 def test1(verbose = 0):
     nim = nifti.NiftiImage("/tmp/spmT_0024.img")
@@ -525,7 +664,7 @@ def test_mroi1(verbose=0):
     mroi = MultipleROI(header=header)
     mroi.from_labelled_image("/tmp/blob.nii")
     mroi.make_image("/tmp/mroi.nii")
-    mroi.set_feature_from_image('activ',"/tmp/spmT_0024.img")
+    mroi.set_roi_feature_from_image('activ',"/tmp/spmT_0024.img")
     if verbose: mroi.plot_feature('activ')
     return mroi
 
@@ -538,7 +677,7 @@ def test_mroi2(verbose=0):
     mroi.as_multiple_balls(pos,rad)
     mroi.append_balls(np.array([[-10.,0.,10.]]),np.array([7.0]))
     mroi.make_image("/tmp/mroi.nii")
-    mroi.set_feature_from_image('activ',"/tmp/spmT_0024.img")
+    mroi.set_roi_feature_from_image('activ',"/tmp/spmT_0024.img")
     if verbose: mroi.plot_feature('activ')
     return mroi
 
@@ -550,7 +689,7 @@ def test_mroi3(verbose=0):
     mroi.from_labelled_image("/tmp/blob.nii",np.arange(1,20))
     mroi.from_labelled_image("/tmp/blob.nii",np.arange(31,50))
     mroi.make_image("/tmp/mroi.nii")
-    mroi.set_feature_from_image('activ',"/tmp/spmT_0024.img")
+    mroi.set_roi_feature_from_image('activ',"/tmp/spmT_0024.img")
     if verbose: mroi.plot_feature('activ')
     valid = np.random.randn(mroi.k)>0.1
     mroi.clean(valid)

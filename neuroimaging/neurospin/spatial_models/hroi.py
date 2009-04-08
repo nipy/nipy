@@ -1,31 +1,138 @@
 import numpy as np
-import graph as fg
+import neuroimaging.neurospin.graph.graph as fg
+import neuroimaging.neurospin.graph.field as ff
 
-from graph import Forest
+from neuroimaging.neurospin.graph.forest import Forest
 from neuroimaging.neurospin.utils.roi import MultipleROI
+
+
+def  generate_blobs(Field,refdim=0,th=-np.infty,smin = 0):
+        """
+        NROI = threshold_bifurcations(refdim = 0,th=-infty,smin=0)
+
+        INPUT
+        - th is a threshold so that only values above th are considered
+        by default, th = -infty (numpy)
+        - smin is the minimum size (in number of nodes) of the blobs to 
+        keep.
+
+         """
+        if Field.field.max()>th:
+            idx,height,parents,label = Field.threshold_bifurcations(refdim,th)
+        else:
+            idx = []
+            parents = []
+            label = -np.ones(Field.V)
+        
+        k = np.size(idx)
+        nroi = ROI_Hierarchy(k,idx, parents,label)      
+        k = 2* nroi.get_k()
+        if k>0:
+            while k>nroi.get_k():
+                k = nroi.get_k()
+                size = nroi.compute_size()
+                nroi.merge_ascending(size>smin,None)
+                nroi.merge_descending(None)
+                size = nroi.compute_size()
+                nroi.clean(size>smin)
+                nroi.check()
+        return nroi
+
+
+
+def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
+    """
+    Instantiate an NROI structure from a given Field and a header
+    
+    INPUT
+    - th is a threshold so that only values above th are considered
+    by default, th = -infty (numpy)
+    - smin is the minimum size (in number of nodes) of the blobs to 
+    keep.
+    
+    NOTE
+    - when no region is produced (no Nroi can be defined),
+    the return value is None
+    """
+    if Field.field[:,refdim].max()>th:
+        idx,height,parents,label = Field.threshold_bifurcations(refdim,th)
+    else:
+        idx = []
+        parents = []
+        label = -np.ones(Field.V)
+        
+    k = np.size(idx)
+    if k==0: return None
+    discrete = [xyz[label==i] for i in range(k)]
+    nroi = NROI(parents,header,discrete)
+    feature = [Field.get_field()[label==i] for i in range(k)]
+    nroi.set_discrete_feature('activation', feature)
+    
+    #define the voxels
+    # as an mroi, it should have a method to be instantiated
+    #from a field/masked array ?
+    k = 2* nroi.get_k()
+    if k>0:
+        while k>nroi.get_k():
+            k = nroi.get_k()
+            size = nroi.get_size()
+            nroi.merge_ascending(size>smin,None)
+            nroi.merge_descending(None)
+            size = nroi.get_size()
+            if size.max()<smin: return None
+            
+            nroi.clean(size>smin)
+            nroi.check()
+    #fixme : add some data as a field 
+    return nroi
+
 
 class NROI(MultipleROI,Forest):
     """
     Class for ntested ROIs.
-    This inherits from both the Forest and MultipleROI 
+    This inherits from both the Forest and MultipleROI
+    - self.k (int): number of nodes/structures included into it
+    - parents = None: array of shape(self.k) describing the
+    hierarchical relationship
+    - header (temporary): space-defining image header
+    to embed the structure in an image space
     """
 
-    def __init__(self,parents=None,header=None,id=None):
+    def __init__(self,parents=None,header=None,discrete=None,id=None):
         """
+        Building the NROI
+        - parents=None: array of shape(k) providing
+        the hierachical structure
+        if parent==None, None is returned
+        - header=None: space defining information
+        (to be replaced by a more adequate structure)
+        - discrete=None list of position arrays
+        that yield the grid position of each grid guy. 
         """
+        if parents==None:
+            return None
         k = np.size(parents)
         Forest.__init__(self,k,parents)
         MultipleROI.__init__(self,id, k,header)
+        if discrete!=None: self.set_discrete(discrete)
+        # fixme: discrete could be integrated
+        # within the builder of MultipleROI
 
     def clean(self, valid):
         """
+        remove the rois for which valid==0
+        and update the hierarchy accordingly
         """
-        MultipleROI.clean(self, valid)
-        Forest.subgraph(self,valid)
+        # first clean as a forest
+        sf = self.subforest(valid)
+        Forest.__init__(self,sf.V,sf.parents)
 
+        # then clean as a multiple ROI
+        MultipleROI.clean(self, valid)
+        
     def make_graph(self):
         """
-        output an fff.graph stracture to represent the ROI hierarchy
+        output an fff.graph structure to represent the ROI hierarchy
         """
         weights = np.ones(self.k)
         edges = np.transpose(np.vstack((np.arange(self.k), self.parents)))
@@ -36,70 +143,128 @@ class NROI(MultipleROI,Forest):
         """
         output an fff.forest structure to represent the ROI hierarchy
         """
-        G = fg.Forest(self.k,self.parents)
+        G = Forest(self.k,self.parents)
         return G
 
     def merge_ascending(self,valid,methods=None):
         """
         self.merge_ascending(valid)
+
         Remove the non-valid items by including them in
         their parents when it exists
-        methods indicates the way possible features are dealt with
+        methods indicates the way possible features are dealt with.
+        (not implemented yet)
+
+        INPUT:
+        - valid array of shape(self.k)
+
+        CAVEAT:
+        if roi_features have been defined, they will be removed
         """
+        if np.size(valid)!= self.k:
+            raise ValueError,"not the correct dimension for valid"
         for j in range(self.k):
             if valid[j]==0:
                 fj =  self.parents[j]
                 if fj!=j:
                     self.parents[self.parents==j]=fj
-                    self.label[self.label==j]=fj
+                    dfj = self.discrete[fj]
+                    dj =  self.discrete[j]
+                    self.discrete[fj] = np.vstack((dfj,dj))
+                    fids = self.discrete_features.keys()
+                    for fid in fids:
+                        dfj = self.discrete_features[fid][fj]
+                        dj = self.discrete_features[fid][j]
+                        self.discrete_features[fid][fj] = np.vstack((dfj,dj))
                 else:
                     valid[j]=1
-        
+
+        fids = self.roi_features.keys()
+        for fid in fids: self.remove_roi_feature(fid)
+
         self.clean(valid)
-        
-        #for j in range(self.k):
-        #    if valid[j]==0:
-        #        fj =  self.parents[j]
-        #        if fj!=j:
-        #            self.parents[self.parents==j]=fj
-        #            self.label[self.label==j]=fj
-        #        else:
-        #            valid[j]=1
-        #
-        #self.clean(valid)        
 
+    def merge_descending(self,methods=None):
+        """
+        self.merge_descending()
+        Remove the items with only one son
+        by including them in their son
+        methods indicates the way possible features are dealt with
+        (not implemented yet)
+        CAVEAT:
+        if roi_features have been defined, they will be removed
+        """
+        valid = np.ones(self.k).astype('bool')
+        for j in range(self.k):
+            i = np.nonzero(self.parents==j)
+            i = i[0]
+            if np.sum(i!=j)==1:
+                i = int(i[i!=j])
+                di = self.discrete[i]
+                dj =  self.discrete[j]
+                self.discrete[i] = np.vstack((di,dj))
+                self.parents[i] = self.parents[j]
+                valid[j] = 0
+                fids = self.discrete_features.keys()
+                for fid in fids:
+                        di = self.discrete_features[fid][i]
+                        dj = self.discrete_features[fid][j]
+                        self.discrete_features[fid][i] = np.vstack((di,dj))
+
+        # finally remove  the non-valid items
+        fids = self.roi_features.keys()
+        for fid in fids: self.remove_roi_feature(fid)
+        self.clean(valid)
     
-class HROI():
-    """
-    Tentative alternative definition of multiple ROI class
-    """
+    def get_parents(self):
+        return self.parents
 
-    def __init__(self,parents=None,header=None,id=None):
+    def get_k(self):
+       return self.k
+
+    def reduce_to_leaves(self):
         """
+        h2 = reduce_to_leaves(self)
+        create a  new set of rois which are only the leaves of self
+        if there is none (this should not happen),
+        None is returned
         """
-        k = np.size(parents)
-        f = Forest(self,k,parents)
-        self.Forest = f
-        mroi = MultipleROI(self,id, k,header)
-        self.MROI = mroi
+        isleaf = self.isleaf()
+        k = np.sum(isleaf.astype(np.int))
+        if self.k==0: return None
+        parents = np.arange(k)
+        discrete = [self.discrete[k].copy() for k in np.nonzero(isleaf)[0]]
+        nroi = NROI(parents,self.header,discrete)
 
+        # now copy the roi_features
+        fids = self.roi_features.keys()
+        for fid in fids:
+            nroi.set_roi_feature(fid,self.roi_features(fid)[isleaf])
+            
+        # now copy the discrete_features
+        fids = self.discrete_features.keys()
+        for fid in fids:
+            df = [self.discrete_features[fid][k] for k in range(self.k) if isleaf[k]]
+            nroi.set_discrete_feature(fid,df)
+        return nroi
 
-def test_nroi(verbose=0):
-    """
-    """
-    import nifti
-    nim =  nifti.NiftiImage("/tmp/blob.nii")
-    header = nim.header
-    k = np.size(np.unique(nim.data))-2
-    nroi = NROI(parents=np.arange(k),header=header)
-    nroi.from_labelled_image("/tmp/blob.nii",add=False)
-    nroi.make_image("/tmp/mroi.nii")
-    nroi.clean(np.arange(k)>k/5)
-    nroi.set_feature_from_image('activ',"/tmp/spmT_0024.img")
-    if verbose: nroi.plot_feature('activ')
-    return nroi
+    def copy(self):
+        """ returns a copy of self
+        """
+        discrete = [self.discrete[k].copy() for k in range(self.k)]
+        nroi = NROI(self.parents.copy(),self.header,discrete)
 
+        # now copy the roi_features
+        fids = self.roi_features.keys()
+        for fid in fids:
+            nroi.set_roi_feature(fid,self.roi_feature(fid).copy())
 
+        # now copy the discrete_features
+        fids = self.discrete_features.keys()
+        for fid in fids:
+            df = [self.discrete_features[fid][k].copy() for k in range(self.k)]
+            nroi.set_discrete_feature(fid,df)
+        return nroi
     
 
 class ROI_Hierarchy:
@@ -189,7 +354,7 @@ class ROI_Hierarchy:
         create a  new set of rois which are only the leaves of self
         """
         isleaf = self.isleaf()
-        k = np.sum(isleaf.astype('i'))
+        k = np.sum(isleaf.astype(np.int))
         if self.k>0:
             seed = self.seed[isleaf]
             parents = np.arange(k)
@@ -210,11 +375,11 @@ class ROI_Hierarchy:
         RH = ROI_Hierarchy(self.k,self.seed.copy(),self.parents.copy(),
                            self.label.copy())
         for j in range(len(self.ROI_features)):
-            RH.set_ROI_feature(self.ROI_features[j], self.ROI_feature_ids[j])
+            RH.set_roi_feature(self.ROI_features[j], self.ROI_feature_ids[j])
         return RH
 
 
-    def set_ROI_feature(self, feature, feature_id):
+    def set_roi_feature(self, feature, feature_id):
         """
         add a new feature to the class
         """
@@ -222,7 +387,7 @@ class ROI_Hierarchy:
             self.ROI_features.append(feature)
             self.ROI_feature_ids.append(feature_id)
 
-    def get_ROI_feature(self, feature_id):
+    def get_roi_feature(self, feature_id):
         """
         give the feature associated with a given id, if it ecists
         """
@@ -238,7 +403,7 @@ class ROI_Hierarchy:
             print "amibiguous feature id"
             return []
 
-    def remove_feature(self, feature_id):
+    def remove_roi_feature(self, feature_id):
         """
         removes the feature associated with a given id, if it exists
         """
@@ -306,7 +471,7 @@ class ROI_Hierarchy:
         output an fff.forest structure to represent the ROI hierarchy
         """
         weights = np.ones(self.k)
-        G = fg.Forest(self.k,self.parents)
+        G = Forest(self.k,self.parents)
         return G
 
     def compute_size(self):
@@ -327,8 +492,8 @@ class ROI_Hierarchy:
                 
                 iconvert = np.nonzero(valid)
                 iconvert = np.reshape(iconvert, np.size(iconvert))
-                convert = -np.ones(self.k).astype('i')
-                aux = np.cumsum(valid.astype('i'))-1
+                convert = -np.ones(self.k).astype(np.int)
+                aux = np.cumsum(valid.astype(np.int))-1
                 convert[valid] = aux[valid]
                 #print valid,iconvert,aux,convert
                 self.k = np.size(iconvert)
@@ -417,6 +582,7 @@ class ROI_Hierarchy:
         are labelled by 0
         and depth[i] = max_{j \in ch[i]} depth[j] + 1
         recursively
+        # depth_from_leaves
         """
         depth = -np.ones(self.k,'i')
         depth[self.isleaf()]=0
@@ -440,12 +606,13 @@ class ROI_Hierarchy:
         return depth.max()+1
             
 
-    def propagate_AND_to_root(self,prop):
+    def propagate_upward_and(self,prop):
         """
         prop = self.propagate_to_root(prop)
         propagates some binary property in the tree
         that is defined in the leaves
         so that prop[parents] = AND(prop[children])
+        # propagate_upward_and
         """
         if np.size(prop)!=self.k:
             raise ValueError,"incoherent size for prop"
@@ -489,6 +656,7 @@ class ROI_Hierarchy:
         """
         l = self.subtree(k)
         returns an array of the nodes included in the subtree rooted in k
+        #rooted_subtree
         """
         if k>self.k:
             raise ValueError,"incoherent value for k"
@@ -508,7 +676,7 @@ class ROI_Hierarchy:
         i = np.reshape(i,np.size(i))
         return i
 
-    def argmax(self,dmap):
+    def feature_argmax(self,dmap):
         """
         idx = self.argmax(dmap)
         INPUT:
@@ -524,5 +692,4 @@ class ROI_Hierarchy:
 
         idx = [np.argmax(dmap*(self.label==i)) for i in range(self.k)]
         return np.array(idx)
-
 

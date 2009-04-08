@@ -41,20 +41,20 @@ class Parcellation:
 		Constructor
 		"""
 		self.k = k
-		self.ijk = ijk.astype('i')
+		self.ijk = ijk.astype(np.int)
 		self.nbvox = ijk.shape[0]
 		if np.size(ijk)==self.nbvox:
 			ijk = np.reshape(ijk, (self.nbvox, 1))
 
 		self.anatdim = ijk.shape[1]
-		self.label = label.astype('i')
+		self.label = label.astype(np.int)
 		if np.size(label)==self.nbvox:
 			label = np.reshape(label,(self.nbvox,1))
 			
 		self.nb_subj = label.shape[1]
 		
 		if group_labels==None:
-			self.group_labels = np.zeros(self.nbvox).astype('i')
+			self.group_labels = np.zeros(self.nbvox).astype(np.int)
 		else:
 			self.group_labels = group_labels
 			

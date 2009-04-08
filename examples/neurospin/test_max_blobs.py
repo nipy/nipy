@@ -9,6 +9,7 @@ Author : Bertrand Thirion, 2009
 import numpy as np
 import fff2.graph.field as ff
 import fff2.utils.simul_2d_multisubject_fmri_dataset as simul
+import neuroimaging.neurospin.spatial_models.hroi as hroi
 
 
 dimx=60
@@ -17,7 +18,7 @@ pos = 2*np.array([[6,7],[10,10],[15,10]])
 ampli = np.array([3,4,4])
 
 nbvox = dimx*dimy
-dataset = simul.make_surrogate_array(nbsubj=1,dimx=dimx,dimy=dimy,pos=pos,ampli=ampli,width=10.0,fid='dataset.dat')
+dataset = simul.make_surrogate_array(nbsubj=1,dimx=dimx,dimy=dimy,pos=pos,ampli=ampli,width=10.0,out_text_file='dataset.dat')
 dataset = np.fromfile('dataset.dat')
 x = np.reshape(dataset,(dimx,dimy,1))
 beta = np.reshape(x,(nbvox,1))
@@ -33,15 +34,15 @@ F.set_field(beta)
 # compute the blobs
 th = 2.36
 smin = 5
-nroi = F.generate_blobs(refdim=0,th=th,smin = smin)
+nroi = hroi.generate_blobs(F,refdim=0,th=th,smin = smin)
 
 # compute the average signal within each blob
 nroi = nroi.reduce_to_leaves()
 idx = nroi.get_seed()
-parent = nroi.get_parent()
+parents = nroi.get_parents()
 label = nroi.get_label()
 nroi.make_feature(beta, 'height','mean')
-bfm = nroi.get_ROI_feature('height')
+bfm = nroi.get_roi_feature('height')
 
 # plot the input image
 bmap = np.zeros(nbvox)

@@ -12,12 +12,12 @@ import numpy as np
 import scipy.stats as st
 
 import structural_bfls as sbf
-import fff2.graph.graph as fg
-from fff2.graph import hroi 
-from fff2.clustering import GGMixture
-import fff2.clustering.clustering as fc
-from fff2.graph import BPmatch
-from fff2.clustering.hierarchical_clustering import Average_Link_Graph_segment
+import neuroimaging.neurospin.graph.graph as fg
+from neuroimaging.neurospin.spatial_models import hroi 
+from neuroimaging.neurospin.clustering import GGMixture
+import neuroimaging.neurospin.clustering.clustering as fc
+from neuroimaging.neurospin.graph import BPmatch
+from neuroimaging.neurospin.clustering.hierarchical_clustering import Average_Link_Graph_segment
 
 #------------------------------------------------------------------
 #---------------- Auxiliary functions -----------------------------
@@ -50,8 +50,8 @@ def hierarchical_asso(bfl,dmax):
         if (bfl[s].k>0):
             for t in range(s):
                 if (bfl[t].k>0):
-                    cs =  bfl[s].get_ROI_feature('coord')
-                    ct = bfl[t].get_ROI_feature('coord')
+                    cs =  bfl[s].get_roi_feature('coord')
+                    ct = bfl[t].get_roi_feature('coord')
                     Gs = bfl[s].make_forest()
                     Gs.anti_symmeterize()
             
@@ -166,7 +166,7 @@ def _GMM_priors_(beta,bfm,theta = 0,alpha=0.01,prior_strength = 100,verbose=0):
         return None
 
     lnvox = np.size(beta)    
-    from fff2.clustering.gmm import BGMM,grid_descriptor
+    from neuroimaging.neurospin.clustering.gmm import BGMM,grid_descriptor
     bgmm = BGMM(3,1,1)
     sbeta = np.sort(beta)
     mb0 = np.mean(sbeta[:alpha*lnvox])
@@ -308,7 +308,7 @@ def infer_amers(BF,u,conf,thq=0.95,ths=0):
                 sja = subj[j[a]]
                 isja = intrasubj[j[a]]
                 idx[a] = BF[sja].seed[isja]
-                coord[a,:] = BF[sja].get_ROI_feature('coord')[isja]
+                coord[a,:] = BF[sja].get_roi_feature('coord')[isja]
 
             amers = sbf.Amers(sj, subj[j], idx,coord)
             AF.append(amers)
@@ -378,9 +378,9 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, thq=0.5, smin=5, ths=0,
             parents = nroi.get_parents()
             label = nroi.get_label()
             nroi.make_feature(beta, 'height','mean')
-            bfm = nroi.get_ROI_feature('height')
+            bfm = nroi.get_roi_feature('height')
             nroi.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            bfc = nroi.get_ROI_feature('coord')
+            bfc = nroi.get_roi_feature('coord')
 
             gfc.append(bfc)
 
@@ -436,10 +436,10 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, thq=0.5, smin=5, ths=0,
         bf = BF[s]
         if bf.k>0:
             valids = valid[sub==s]
-            valids = bf.propagate_AND_to_root(valids)
+            valids = bf.propagate_upward_and(valids)
             bf.clean(valids)
             bf.merge_descending()
-            bf.remove_feature('coord')
+            bf.remove_roi_feature('coord')
             bf.make_feature(tal.astype(np.float),'coord','cumulative_mean')
 
     # compute probabilitsic correspondences across subjects
@@ -523,12 +523,12 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax, thq=0.9, smin=5, ths=0,
             parents = nroi.get_parents()
             label = nroi.get_label()
             nroi.make_feature(beta, 'height','mean')
-            bfm = nroi.get_ROI_feature('height')
+            bfm = nroi.get_roi_feature('height')
             nroi.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            bfc = nroi.get_ROI_feature('coord')
+            bfc = nroi.get_roi_feature('coord')
             # Alan's choice
-            #bfc = tal[nroi.argmax(beta)]
-            #nroi.set_ROI_feature(bfc, 'coord')
+            #bfc = tal[nroi.feature_argmax(beta)]
+            #nroi.set_roi_feature(bfc, 'coord')
 
             gfc.append(bfc)
 
@@ -580,15 +580,15 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax, thq=0.9, smin=5, ths=0,
         bfs = BF[s]
         if bfs.k>0:
             valids = valid[sub==s]
-            valids = bfs.propagate_AND_to_root(valids)
+            valids = bfs.propagate_upward_and(valids)
             bfs.clean(valids)
             bfs.merge_descending()
-            bfs.remove_feature('coord')
+            bfs.remove_roi_feature('coord')
             bfs.make_feature(tal.astype(np.float),'coord','cumulative_mean')
             # Alan's choice
             #beta = np.reshape(lbeta[:,s],(nvox,1))
-            #bfsc = tal[bfs.argmax(beta)]
-            #bfs.set_ROI_feature(bfsc,'coord')
+            #bfsc = tal[bfs.feature_argmax(beta)]
+            #bfs.set_roi_feature(bfsc,'coord')
                     
     gc = hierarchical_asso(BF,np.sqrt(2)*dmax)
 
@@ -624,7 +624,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
     - theta = 3.0: first level threshold
     - g0 = 1.0 : constant values of the uniform density over the volume of interest
     - bdensity=0 if bdensity=1, the variable p in ouput contains the likelihood of the data under H1 on the set of input nodes
-    - verbose=1: verbosity mode
+    - verbose=0: verbosity mode
     OUTPUT:
     - crmap: resulting group map
     - AF: list of inter-subject related ROIs
@@ -650,15 +650,15 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        nroi = Fbeta.generate_blobs(refdim=0,th=theta,smin = smin)
+        nroi = hroi.generate_blobs(Fbeta,refdim=0,th=theta,smin = smin)
         BF.append(nroi) 
         
         if nroi.k>0:
             # find some way to avoid coordinate averaging
             nroi.make_feature(beta, 'height','mean')
-            bfm = nroi.get_ROI_feature('height')[nroi.isleaf()]#---
+            bfm = nroi.get_roi_feature('height')[nroi.isleaf()]#---
             nroi.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            bfc = nroi.get_ROI_feature('coord')[nroi.isleaf()]#---
+            bfc = nroi.get_roi_feature('coord')[nroi.isleaf()]#---
             #
             gfc.append(bfc)
 
@@ -674,7 +674,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
             #import scipy.stats as st
             #print s, st.norm.isf(bf0).mean(),
             # ... or the emp_null heuristic
-            import fff2.utils.emp_null as en
+            import neuroimaging.neurospin.utils.emp_null as en
             enn = en.ENN(beta)
             enn.learn()
             #bf0 = np.reshape(enn.fdr(bfm),np.size(bf0))
@@ -725,16 +725,16 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
     qf = []
     for s in range(nbsubj):
         bfs = BF[s]
-        bfs.remove_feature('coord')
+        bfs.remove_roi_feature('coord')
         if bfs.k>0:
             leaves = bfs.isleaf()
             us = -np.ones(bfs.k).astype(np.int)
             lq = np.zeros(bfs.k)
             lq[leaves] = q[sub==s]
             beta = np.reshape(lbeta[:,s],(nvox,1))
-            bfsc = tal[bfs.argmax(beta)]
-            bfs.set_ROI_feature(bfsc,'coord')
-            j = label[bfs.argmax(beta)]
+            bfsc = tal[bfs.feature_argmax(beta)]
+            bfs.set_roi_feature(bfsc,'coord')
+            j = label[bfs.feature_argmax(beta)]
             us[leaves] = j[leaves]
             us = bfs.propagate_upward(us)
             u.append(us)
@@ -766,7 +766,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
 # ----------------------------------------------------------------
 
 
-def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, theta=3.0, g0 = 1.0, bdensity=0,verbose=1):
+def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, theta=3.0, g0 = 1.0, bdensity=0,verbose=0):
     """
     Compute the  Bayesian Structural Activation paterns - simplified version  
     INPUT:
@@ -778,7 +778,7 @@ def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, the
     - theta = 3.0: first level threshold
     - g0 = 1.0 : constant values of the uniform density over the volume of interest
     - bdensity=0 if bdensity=1, the variable p in ouput contains the likelihood of the data under H1 on the set of input nodes
-    - verbose=1: verbosity mode
+    - verbose=0: verbosity mode
     OUTPUT:
     - crmap: resulting group map
     - AF: list of inter-subject related ROIs
@@ -804,7 +804,7 @@ def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, the
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        nroi = Fbeta.generate_blobs(refdim=0,th=theta,smin = smin)
+        nroi = hroi.generate_blobs(Fbeta,refdim=0,th=theta,smin = smin)
 
         # consider only the rois associated with maxima
         # hence with no hierrachy
@@ -818,9 +818,9 @@ def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, the
             parents = nroi.get_parents()
             label = nroi.get_label()
             nroi.make_feature(beta, 'height','mean')
-            bfm = nroi.get_ROI_feature('height')[nroi.isleaf()]#---
+            bfm = nroi.get_roi_feature('height')[nroi.isleaf()]#---
             nroi.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            bfc = nroi.get_ROI_feature('coord')[nroi.isleaf()]#---
+            bfc = nroi.get_roi_feature('coord')[nroi.isleaf()]#---
             #
             gfc.append(bfc)
 
@@ -836,7 +836,7 @@ def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, the
             #import scipy.stats as st
             #print s, st.norm.isf(bf0).mean(),
             # ... or the emp_null heuristic
-            import fff2.utils.emp_null as en
+            import neuroimaging.neurospin.utils.emp_null as en
             enn = en.ENN(beta)
             enn.learn()
             #bf0 = np.reshape(enn.fdr(bfm),np.size(bf0))
@@ -890,17 +890,17 @@ def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, the
             valids = np.zeros(bfs.k,'bool')
             #valids = valid[sub==s] # ---
             valids[bfs.isleaf()] = valid[sub==s] # ---
-            valids = bfs.propagate_AND_to_root(valids)
+            valids = bfs.propagate_upward_and(valids)
             bfs.clean(valids)
             bfs.merge_descending()
-            bfs.remove_feature('coord')
+            bfs.remove_roi_feature('coord')
             if bfs.k>0:
                 leaves = bfs.isleaf()
                 us = -np.ones(bfs.k).astype(np.int)
                 beta = np.reshape(lbeta[:,s],(nvox,1))
-                bfsc = tal[bfs.argmax(beta)]
-                bfs.set_ROI_feature(bfsc,'coord')
-                j = label[bfs.argmax(beta)]
+                bfsc = tal[bfs.feature_argmax(beta)]
+                bfs.set_roi_feature(bfsc,'coord')
+                j = label[bfs.feature_argmax(beta)]
                 us[leaves] = j[leaves]
                 us = bfs.propagate_upward(us)
                 u.append(us)

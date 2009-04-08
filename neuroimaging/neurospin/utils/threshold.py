@@ -37,7 +37,7 @@ def threshold_scalar_image(iimage, oimage, th=0., smin=0, mask_image=None):
     x = inim.asarray().T
     if mask_image==None:
         nvox = np.size(np.nonzero(x))
-        xyz = np.array(np.where(x)).T.astype('i')
+        xyz = np.array(np.where(x)).T.astype(np.int)
         m = (x!=0)
     else:
         mask = nifti.NiftiImage(mask_image)
@@ -45,7 +45,7 @@ def threshold_scalar_image(iimage, oimage, th=0., smin=0, mask_image=None):
 
     nvox = np.sum(m>0)
     x = x[np.where(m)]
-    xyz = np.array(np.where(m)).T.astype('i')
+    xyz = np.array(np.where(m)).T.astype(np.int)
 
     #2. threshold the map
     thx = np.zeros(nvox)

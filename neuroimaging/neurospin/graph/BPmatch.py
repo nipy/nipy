@@ -8,7 +8,8 @@ Comment (2009/03/24)
 """
 
 import numpy as np
-import neuroimaging.neurospin.graph.graph as fg
+import graph as fg
+import forest as fo
 from neuroimaging.neurospin.eda.dimension_reduction import Euclidian_distance
 
 
@@ -429,7 +430,7 @@ def _MP_algo_dev_(G1,G2,W,c1,c2,sqs,imax= 100, eta = 1.e-6 ):
 	if E1<1:
 		return W
 
-	tag = G1.converse_edge().astype('i')
+	tag = G1.converse_edge().astype(np.int)
 	
 	# make transition matrices
 	T = []
@@ -553,11 +554,11 @@ def _ya_testmatch_():
 	"""
 	c1 = np.array([[0],[-1],[1],[0.5],[1.5]])
 	parents = np.array([0, 0, 0, 2, 2])
-	g1 = fg.Forest(5,parents)
+	g1 = fo.Forest(5,parents)
 
 	c2 = np.array([[-1],[1],[0.5],[1.5]]) #c1 + 0.0
 	parents = np.array([0, 1, 1, 1])
-	g2 = fg.Forest(4,parents)
+	g2 = fo.Forest(4,parents)
 	
 	dmax = 1
 
