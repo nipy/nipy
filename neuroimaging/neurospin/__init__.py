@@ -27,7 +27,7 @@ from numpy.testing import Tester
 
 import bindings
 import glm
-import registration
+import register
 import utils 
 
 test = Tester().test

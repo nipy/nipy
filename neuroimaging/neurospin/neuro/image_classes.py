@@ -7,7 +7,6 @@ process data for real until fff is properly integrated into nipy.
 
 import numpy as np
 
-from neuroimaging.neurospin.utils import slice_time
 
 DEFAULT_IOLIB = 'pynifti'
 
@@ -137,76 +136,3 @@ NIPY
 ##imIt.tofile(outfile+'.nii', clobber=True)
 """
 
-class fmri_image(image):
-
-    def __init__(self, img, tr=1.0, tr_slices=None, start=0.0, \
-                 slice_axis=2, slice_order='ascending', interleaved=False):
-        self.array = img.array
-        self.transform = img.transform
-        self.iolib = img.iolib
-        self._image = img._image
-        self._set_timing(tr, tr_slices, start, slice_axis, slice_order, interleaved)
-
-    def _set_timing(self, tr, tr_slices, start, slice_axis, slice_order, interleaved):
-        """Configure fMRI acquisition time parameters.
-        
-        tr  : inter-scan repetition time, i.e. the time elapsed between two consecutive scans
-        tr_slices : inter-slice repetition time, same as tr for slices
-        start   : starting acquisition time respective to the implicit time origin
-        slice_order : string or array 
-        """
-        # Number of slices
-        nslices = self.array.shape[slice_axis]
-
-        # Default slice repetition time (no silence)
-        if tr_slices == None:
-            tr_slices = tr/float(nslices)
-
-        # Set slice order
-        if isinstance(slice_order, str): 
-            if not interleaved:
-                aux = range(nslices)
-            else:
-                p = nslices/2
-                aux = []
-                for i in range(p):
-                    aux.extend([i,p+i])
-                if nslices%2:
-                    aux.append(nslices-1)
-            if slice_order == 'descending':
-                aux.reverse()
-            slice_order = aux
-            
-        # Set timing values
-        self.nslices = nslices
-        self.tr = float(tr)
-        self.tr_slices = float(tr_slices)
-        self.start = float(start)
-        self.slice_order = np.asarray(slice_order)
-
-        # Check whether 3th array index z increases from the bottom to
-        # the top of the head, or the other way round
-        # FIXME: what if transform involves a non-transversal rotation? 
-        if self.transform[2,2] > 0:
-            self.reversed_slices = False
-        else:
-            self.reversed_slices = True
-
-
-    def z_to_slice(self, z):
-        """
-        Account for the fact that slices may be stored in reverse
-        order wrt the scanner coordinate system convention (slice 0 ==
-        bottom of the head)
-        """
-        if self.reversed_slices:
-            return self.nslices - 1 - z
-        else:
-            return z
-
-    def time_transform(self, z, t):
-        return(self.start + self.tr*t + slice_time(self.z_to_slice(z), self.tr_slices, self.slice_order))
-
-
-    def inverse_time_transform(self, z, tt):
-        return((tt - self.start - slice_time(self.z_to_slice(z), self.tr_slices, self.slice_order))/self.tr)
