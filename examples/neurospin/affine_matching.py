@@ -67,7 +67,7 @@ tic = time.time()
 It = neuro.image(J)
 It.set_array(register.transform.resample(T, I.array, J.array, I.transform, J.transform))
 toc = time.time()
-print('  Subsampling time: %f sec' % (toc-tic))
+print('  Resampling time: %f sec' % (toc-tic))
 
 
 # Save resampled source
