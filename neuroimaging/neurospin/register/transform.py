@@ -67,9 +67,9 @@ def preconditioner(radius):
     return np.array([1,1,1,rad,rad,rad,sca,sca,sca,rad,rad,rad])
 
 
-def apply(xyz, T):
+def apply_affine(T, xyz):
     """
-    XYZ = transform(xyz, T)
+    XYZ = apply_affine(T, xyz)
 
     T is a 4x4 matrix.
     xyz is a 3xN array of 3d coordinates stored row-wise.  
@@ -100,7 +100,7 @@ class Affine:
         self.set_vec12(vec12)
 
     def __call__(self, xyz): 
-        return apply(xyz, self.__array__())
+        return apply_affine(self.__array__(), xyz)
 
     def subtype(self): 
         subtype = affines[self._subtype%len(affines)]

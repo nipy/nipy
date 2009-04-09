@@ -1,8 +1,10 @@
 #!/usr/bin/env python 
 
 from neuroimaging.neurospin import register 
-from neuroimaging.neurospin import neuro
 
+# The following import provides image loading and saving
+# functionailities. They are to be replaced with nipy builtins.
+from neuroimaging.neurospin import neuro
 
 from os.path import join
 import sys
@@ -14,11 +16,11 @@ Example of running affine matching on the 'sulcal2000' database
 """
 
 # Dirty hack for me to be able to access data from my XP environment
+rootpath = '/neurospin/lnao/Panabase/roche/sulcal2000'
 from os import name
 if name == 'nt':
 	rootpath = 'D:\\data\\sulcal2000'
-else:
-	rootpath = '/neurospin/lnao/Panabase/roche/sulcal2000'
+
         
 print('Scanning data directory...')
 source = sys.argv[1]

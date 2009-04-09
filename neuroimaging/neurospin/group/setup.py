@@ -19,29 +19,29 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('group', parent_package, top_path)
     config.add_data_dir('tests')
     config.add_extension(
-                '_onesample',
-                sources=['_onesample.c'],
-                libraries=['fffpy'],
-                extra_info=lapack_info,
-                )
+        '_onesample',
+        sources=['_onesample.c'],
+        libraries=['fffpy'],
+        extra_info=lapack_info,
+        )
     config.add_extension(
-                '_twosample',
-                sources=['_twosample.c'],
-                libraries=['fffpy'],
-                extra_info=lapack_info,
-                )
+        '_twosample',
+        sources=['_twosample.c'],
+        libraries=['fffpy'],
+        extra_info=lapack_info,
+        )
     config.add_extension(
-                'routines',
-                sources=['routines.c'],
-                libraries=['fffpy'],
-                extra_info=lapack_info,
-                )
+        'routines',
+        sources=['routines.c'],
+        libraries=['fffpy'],
+        extra_info=lapack_info,
+        )
     config.add_extension(
         'glm_twolevel',
-                sources=['glm_twolevel.c'],
-                libraries=['fffpy'],
-                extra_info=lapack_info,
-                )
+        sources=['glm_twolevel.c'],
+        libraries=['fffpy'],
+        extra_info=lapack_info,
+        )
 
     return config
 
