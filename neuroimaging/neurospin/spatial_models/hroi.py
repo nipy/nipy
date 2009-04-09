@@ -53,6 +53,8 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
     NOTE
     - when no region is produced (no Nroi can be defined),
     the return value is None
+    - additionally a discrete_field is created, with the key 'activation',
+    which refers to the input data used to create the NROI
     """
     if Field.field[:,refdim].max()>th:
         idx,height,parents,label = Field.threshold_bifurcations(refdim,th)
@@ -67,6 +69,10 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
     nroi = NROI(parents,header,discrete)
     feature = [Field.get_field()[label==i] for i in range(k)]
     nroi.set_discrete_feature('activation', feature)
+    
+    # this should disappear in the future 
+    midx = [np.expand_dims(np.nonzero(label==i)[0],1) for i in range(k)]
+    nroi.set_discrete_feature('masked_index', midx)
     
     #define the voxels
     # as an mroi, it should have a method to be instantiated

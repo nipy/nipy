@@ -37,8 +37,8 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     g0 = 1.0/(1.0*nbvox)
     bdensity = 1
 
-    group_map, AF, BF, labels, likelyhood = \
-                    bsa.compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq, 
+    group_map, AF, BF, labels, likelihood = \
+                    bsa.compute_BSA_simple(Fbeta, lbeta, tal, dmax,xyz,None, thq, 
                             smin, ths, theta, g0, bdensity)
 
     labels[labels==-1] = np.size(AF)+2
@@ -49,24 +49,31 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     mp.title('Group-level label map')
     mp.colorbar()
 
-    likelyhood.shape = ref_dim
+    likelihood.shape = ref_dim
     mp.figure()
-    mp.imshow(likelyhood, interpolation='nearest')
-    mp.title('Data likelyhood')
+    mp.imshow(likelihood, interpolation='nearest')
+    mp.title('Data likelihood')
     mp.colorbar()
 
     sub = np.concatenate([s*np.ones(BF[s].k) for s in range(nbsubj)])
-    qq = 0
+    #qq = 0
     mp.figure()
     if nbsubj==10:
         for s in range(nbsubj):
             mp.subplot(2, 5, s+1)
-            lw = BF[s].label.astype(np.int)
-            us = labels[sub==s]
-            lw[lw>-1]= us[lw[lw>-1]]
-            lw = np.reshape(lw, ref_dim)
+            #lw = BF[s].label.astype(np.int)
+            #us = labels[sub==s]
+            #lw[lw>-1]= us[lw[lw>-1]]
+            #lw = np.reshape(lw, ref_dim)
+            lw = -np.ones(ref_dim)
+            nls = BF[s].get_roi_feature('label')
+            nls[nls==-1] = np.size(AF)+2
+            for k in range(BF[s].k):
+                xyzk = BF[s].discrete[k].T 
+                lw[xyzk[1],xyzk[2]] =  nls[k]
+
             mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=labels.max())
-            qq = qq + BF[s].get_k()
+            #qq = qq + BF[s].get_k()
             mp.axis('off')
 
     mp.figure()
