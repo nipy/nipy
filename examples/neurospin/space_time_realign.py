@@ -12,13 +12,9 @@ runnames = ['run1', 'run1']
 im1 = neuro.image(join(rootpath, runnames[0]+'.nii'))
 im2 = neuro.image(join(rootpath, runnames[1]+'.nii'))
 
-# Test hack
-dat1 = im1.array[:,:,:,0:5]
-dat2 = im2.array[:,:,:,5:10]
-
-run1 = register.TimeSeries(dat1, toworld=im1.transform, tr=2.5, 
+run1 = register.TimeSeries(im1.array, toworld=im1.transform, tr=2.5, 
                            slice_order='ascending', interleaved=True)
-run2 = register.TimeSeries(dat2, toworld=im2.transform, tr=2.5, 
+run2 = register.TimeSeries(im2.array, toworld=im2.transform, tr=2.5, 
                            slice_order='ascending', interleaved=True)
 
 """
