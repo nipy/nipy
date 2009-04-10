@@ -533,8 +533,12 @@ class MultipleROI():
         the computed roi-feature is returned
         """
         df = self.discrete_features[fid]
-        ldata = np.zeros((self.k,1))
         data = self.discrete_features[fid]
+        d0 = data[0]
+        if np.size(d0) == np.shape(d0)[0]:
+            np.reshape(d0,(np.size(d0),1))
+        fdim = d0.shape[1]
+        ldata = np.zeros((self.k,fdim))
         for k in range(self.k):
             if method=='average':
                 ldata[k] = np.mean(data[k],0)

@@ -253,37 +253,38 @@ def make_crmap(AF,tal,verbose=0):
         gscore = np.minimum(gscore,lscore)
     return crmap
 
-def infer_amers(BF,u,conf,thq=0.95,ths=0):
+def infer_amers(BF,thq=0.95,ths=0,verbose=0):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
     INPUT:
-    - BF is the list of hierarchical ROIs.
+    - BF is the list of NROIs (Nested ROIs).
     it is assumd that each list corresponds to one subject
-    - u is a labelling array of size the total number of ROIs
-    - ths=0 defines the condition (c):
-    (c) A label should be present in ths subjects in order to be valid
+    each NROI is assumed to have the roi_features
+    'position', 'label' and 'posterior_proba' defines
+    - thq=0.95,ths=0 defines the condition (c):
+    (c) A label should be present in ths subjects
+    with a probability>thq
+    in order to be valid
     OUTPUT:
     - AF : a list of Amers, each of which describing a cross-subject set of ROIs
     - newlabel :  a relabelling of the individual ROIs, similar to u, which discards
     labels that do not fulfill the condition (c)
     """
-    Sess = np.size(BF)
-    Nlm = np.size(u)
-
-    subj = np.concatenate([s*np.ones(BF[s].k, np.int) for s in range(Sess)])
+    nbsubj = np.size(BF)
+    subj = np.concatenate([s*np.ones(BF[s].k, np.int) for s in range(nbsubj)])
     nrois = np.size(subj)
-    if nrois != Nlm:
-        raise ValueError, "incompatiable estimates of the number of regions"
-    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(Sess)])
-    newlabel = -np.ones(np.size(u), np.int)
+    u = np.concatenate([BF[s].get_roi_feature('label') for s in range(nbsubj)])
+    u = np.squeeze(u)
+    conf =  np.concatenate([BF[s].get_roi_feature('posterior_proba') for s in range(nbsubj)])
+    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj)])
+    newlabel = -np.ones(nrois, np.int)
     AF = []
     nl = 0
     if np.size(u)==0:  return AF,newlabel
     
     Mu = u.max()+1
     for i in range(Mu):
-        
         j = np.nonzero(u==i)
         j = np.reshape(j,np.size(j))
         mp = 0.
@@ -307,14 +308,20 @@ def infer_amers(BF,u,conf,thq=0.95,ths=0):
             for a in range(sj):
                 sja = subj[j[a]]
                 isja = intrasubj[j[a]]
-                idx[a] = BF[sja].seed[isja]
-                coord[a,:] = BF[sja].get_roi_feature('coord')[isja]
+                idx[a] = 0 # deprecated feature #BF[sja].seed[isja]
+                coord[a,:] = BF[sja].get_roi_feature('position')[isja]
 
             amers = sbf.Amers(sj, subj[j], idx,coord)
             AF.append(amers)
             nl = nl+1
-                    
+
+    # relabel the ROIs
+    for s in range(nbsubj):
+        nls = np.expand_dims(newlabel[subj==s],1)
+        BF[s].set_roi_feature('label',nls)
+     
     return AF,newlabel
+
 
 #------------------------------------------------------------------
 #------------------- main functions ----------------------------------
@@ -611,14 +618,17 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax, thq=0.9, smin=5, ths=0,
 
 
 
-def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
-                        theta=3.0, g0=1.0, bdensity=0, verbose=0):
+def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
+                       thq=0.5, smin=5, ths=0, theta=3.0, g0=1.0,
+                       bdensity=0, verbose=0):
     """
     Compute the  Bayesian Structural Activation paterns - simplified version  
     INPUT:
     - Fbeta : an fff field class describing the spatial relationships in the dataset (nbnodes nodes)
     - lbeta: an array of size (nbnodes, subjects) with functional data
     - tal: spatial coordinates of the nodes
+    - xyz: the grid coordinates of the field
+    - header=None: the referential defining header
     - thq = 0.5: posterior significance threshold
     - smin = 5: minimal size of the regions to validate them
     - theta = 3.0: first level threshold
@@ -650,16 +660,20 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        nroi = hroi.generate_blobs(Fbeta,refdim=0,th=theta,smin = smin)
-        BF.append(nroi) 
+        #nroi = hroi.generate_blobs(Fbeta,refdim=0,th=theta,smin = smin)
+        nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,th=theta,smin=smin)
+        BF.append(nroi)
         
         if nroi.k>0:
-            # find some way to avoid coordinate averaging
-            nroi.make_feature(beta, 'height','mean')
-            bfm = nroi.get_roi_feature('height')[nroi.isleaf()]#---
-            nroi.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            bfc = nroi.get_roi_feature('coord')[nroi.isleaf()]#---
-            #
+            bfm = nroi.discrete_to_roi_features('activation','average')
+            bfm = bfm[nroi.isleaf()]#---
+            #fixme: masked_index should not be used
+            
+            idx = [nroi.discrete_features['masked_index'][k] for k in range(nroi.k)]
+            pdata = [tal[np.ravel(idx[k])] for k in range(nroi.k)]
+            nroi.set_discrete_feature('position',pdata)
+            bfc = nroi.discrete_to_roi_features('position','average')
+            bfc = bfc[nroi.isleaf()]#---
             gfc.append(bfc)
 
             # compute the prior proba of being null
@@ -671,8 +685,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
             prior_strength = 100
             bfp = _GMM_priors_(beta,bfm,theta,alpha,prior_strength,verbose)
             bf0 = bfp[:,1]/np.sum(bfp,1)
-            #import scipy.stats as st
-            #print s, st.norm.isf(bf0).mean(),
+
             # ... or the emp_null heuristic
             import neuroimaging.neurospin.utils.emp_null as en
             enn = en.ENN(beta)
@@ -700,7 +713,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
     burnin=100
     nis=100
     nii=1000
-
+    
     p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0, sub,burnin,spatial_coords,nis, nii)
 
     if verbose:
@@ -716,45 +729,46 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
         mp.show()
         print 'Number of candidate regions %i, regions found %i' % (
                     np.size(q), q.sum())
-
+    
     Fbeta.set_field(p)
     idx,depth, major,label = Fbeta.custom_watershed(0,g0)
 
-    # label the blobs
-    u = []
-    qf = []
+    # append some information to the hroi in each subject
     for s in range(nbsubj):
         bfs = BF[s]
-        bfs.remove_roi_feature('coord')
+        #bfs.remove_roi_feature('position')
         if bfs.k>0:
             leaves = bfs.isleaf()
             us = -np.ones(bfs.k).astype(np.int)
             lq = np.zeros(bfs.k)
             lq[leaves] = q[sub==s]
-            beta = np.reshape(lbeta[:,s],(nvox,1))
-            bfsc = tal[bfs.feature_argmax(beta)]
-            bfs.set_roi_feature(bfsc,'coord')
-            j = label[bfs.feature_argmax(beta)]
+            bfs.set_roi_feature('posterior_proba',lq)
+                   
+            idx = bfs.feature_argmax('activation')
+            midx = [bfs.discrete_features['masked_index'][k][idx[k]] for k in range(bfs.k)]
+            j = label[np.array(midx)]
             us[leaves] = j[leaves]
             us = bfs.propagate_upward(us)
-            u.append(us)
-            qf.append(lq)
             
-    u = np.concatenate(u)
-    qf = np.concatenate(qf)
+            # when parent regions has similarly labelled children,
+            # include it also
+            us = bfs.propagate_upward(us)
+            bfs.set_roi_feature('label',us)
+                        
+    u = np.concatenate([BF[s].get_roi_feature('label') for s in range(nbsubj)])
+    u = np.squeeze(u)
     
-    #valid = q>thq
-    #if verbose: print np.sum(valid),np.size(valid),thq
-   
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one 
-    AF,nl = infer_amers(BF,u,qf,thq,ths) 
+    #AF,nl = _infer_amers(BF,u,qf,thq,ths) 
+    AF,nl = infer_amers(BF,thq,ths)
 
     # make a group-level map of the landmark position
     #crmap = make_crmap(AF,tal,verbose)
     crmap = -np.ones(np.shape(label))
     q = 0
+    
     for i in range(u.max()+1):
         if np.unique(nl[u==i])>-1:
             crmap[label==i]= np.unique(nl[u==i])            
@@ -762,7 +776,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
     return crmap,AF,BF,nl,p
 
 # ----------------------------------------------------------------
-# ---------- Deprectaed stuff ------------------------------------
+# ---------- Deprecated stuff ------------------------------------
 # ----------------------------------------------------------------
 
 
@@ -919,3 +933,66 @@ def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, the
     crmap = make_crmap(AF,tal,verbose)
     
     return crmap,AF,BF,u,p
+
+def _infer_amers(BF,u,conf,thq=0.95,ths=0):
+    """
+    Given a list of hierarchical ROIs, and an associated labelling, this
+    creates an Amer structure wuch groups ROIs with the same label.
+    INPUT:
+    - BF is the list of NROIs (Nested ROIs).
+    it is assumd that each list corresponds to one subject
+    - u is a labelling array of size the total number of ROIs
+    - ths=0 defines the condition (c):
+    (c) A label should be present in ths subjects in order to be valid
+    OUTPUT:
+    - AF : a list of Amers, each of which describing a cross-subject set of ROIs
+    - newlabel :  a relabelling of the individual ROIs, similar to u, which discards
+    labels that do not fulfill the condition (c)
+    """
+    nbsubj = np.size(BF)
+    Nlm = np.size(u)
+
+    subj = np.concatenate([s*np.ones(BF[s].k, np.int) for s in range(nbsubj)])
+    nrois = np.size(subj)
+    if nrois != Nlm:
+        raise ValueError, "incompatiable estimates of the number of regions"
+    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj)])
+    newlabel = -np.ones(np.size(u), np.int)
+    AF = []
+    nl = 0
+    if np.size(u)==0:  return AF,newlabel
+    
+    Mu = u.max()+1
+    for i in range(Mu):
+        
+        j = np.nonzero(u==i)
+        j = np.reshape(j,np.size(j))
+        mp = 0.
+        vp = 0.
+        if np.size(j)>1:
+            subjj = subj[j]
+            for ls in np.unique(subjj):
+                lmj = 1-np.prod(1-conf[(u==i)*(subj==ls)])
+                lvj = lmj*(1-lmj)
+                mp = mp+lmj
+                vp = vp+lvj
+        # If noise is too low the variance is 0: ill-defined:
+        vp = max(vp, 1e-14)
+
+        if st.norm.sf(ths,mp,np.sqrt(vp)) >thq:
+            print nl,ths,mp,thq, st.norm.sf(ths,mp,np.sqrt(vp))
+            newlabel[j] = nl
+            sj = np.size(j)
+            idx = np.zeros(sj)
+            coord = np.zeros((sj,3), np.float)
+            for a in range(sj):
+                sja = subj[j[a]]
+                isja = intrasubj[j[a]]
+                idx[a] = BF[sja].seed[isja]
+                coord[a,:] = BF[sja].get_roi_feature('position')[isja]
+
+            amers = sbf.Amers(sj, subj[j], idx,coord)
+            AF.append(amers)
+            nl = nl+1
+                    
+    return AF,newlabel
