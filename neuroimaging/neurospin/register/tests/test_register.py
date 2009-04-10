@@ -3,15 +3,15 @@
 from neuroimaging.testing import TestCase, assert_equal, assert_almost_equal, \
     assert_raises
 import numpy as np
-from neuroimaging.neurospin import register 
 
+from neuroimaging.neurospin import register 
+from neuroimaging.neurospin.register.transform import resample, rotation_vec2mat
 
 
 class Image(object):
     """ 
     Empty object to easily create image objects independently from any I/O package.
     """
-
     def __init__(self, array, toworld=None, voxsize=[1, 1, 1]):
         self.array = array
         self.voxsize = np.asarray(voxsize)
@@ -31,7 +31,7 @@ def make_data_float64(dx=100, dy=100, dz=50):
     return (256*(np.random.rand(dx, dy, dz) - np.random.rand())).astype('float64')
 
 def _test_clamping(I, thI=0.0, clI=256):
-    IM = register.IconicMatcher(I.array, I.array, I.toworld, I.toworld, thI, thI, bins=clI);                
+    IM = register.IconicMatcher(I.array, I.array, I.toworld, I.toworld, thI, thI, bins=clI)
     Ic = IM.source_clamped
     Ic2 = IM.target_clamped[1:I.array.shape[0]+1,1:I.array.shape[1]+1,1:I.array.shape[2]+1].squeeze()
     assert_equal(Ic, Ic2)
@@ -97,41 +97,6 @@ def test_iconic():
     J = Image(I.array.copy())
     IM = register.IconicMatcher(I.array, J.array, I.toworld, J.toworld)
     assert_raises(ValueError, IM.set_field_of_view, subsampling=[0,1,3])
-
-def _test_resampling(Tv):
-    """
-    Adding this new test to check whether resample
-    may be replaced with scipy.ndimage.affine_transform    
-    """
-    from neuroimaging.neurospin.register.transform import resample
-    from scipy.ndimage import affine_transform
-    import time
-    I = Image(make_data_int16())
-    t0 = time.clock()
-    I1 = resample(Tv, I.array, I.array, np.eye(4), np.eye(4), toresample='target')
-    dt1 = time.clock()-t0
-    t0 = time.clock()
-    I2 = affine_transform(I.array, Tv[0:3,0:3], offset=Tv[0:3,3], output_shape=I.array.shape)
-    dt2 = time.clock()-t0
-    assert_almost_equal(I1, I2)
-    print('3d array resampling')
-    print('  using neuroimaging.neurospin: %f sec' % dt1)
-    print('  using scipy.ndimage: %f sec' % dt2)
-
-
-def test_resampling():
-    """
-    Generate a random similarity transformation
-    """
-    from neuroimaging.neurospin.register.transform import rotation_vec2mat
-    rot = .1*np.random.rand(3) 
-    sca = 1+.2*np.random.rand()
-    matrix = sca*rotation_vec2mat(rot)
-    offset = 10*np.random.rand(3)
-    Tv = np.eye(4)
-    Tv[0:3,0:3] = matrix
-    Tv[0:3,3] = offset
-    _test_resampling(Tv)
 
 if __name__ == "__main__":
         import nose
