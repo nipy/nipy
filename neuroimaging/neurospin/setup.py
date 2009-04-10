@@ -40,6 +40,8 @@ def configuration(parent_package='',top_path=None):
     # For now this code should do the right thing on OSX and linux, but we
     # should ask on the numpy list for clarification on the proper approach.
 
+    # XXX: If you modify these lines, remember to pass the information
+    # along to the different .so in the neurospin build system.
     # First, try 'lapack_info', as that seems to provide more details on Linux
     # (both 32 and 64 bits):
     lapack_info = get_info('lapack_opt', 0)
@@ -71,7 +73,7 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('graph')
     config.add_subpackage('group')
     config.add_subpackage('neuro')
-    config.add_subpackage('registration')
+    config.add_subpackage('register')
     config.add_subpackage('scripts')
     config.add_subpackage('spatial_models')
     config.add_subpackage('utils')

@@ -1,6 +1,10 @@
 #!/usr/bin/env python 
 
-import fff2
+from neuroimaging.neurospin import register 
+
+# The following import provides image loading and saving
+# functionailities. They are to be replaced with nipy builtins.
+from neuroimaging.neurospin import neuro
 
 from os.path import join
 import sys
@@ -12,19 +16,19 @@ Example of running affine matching on the 'sulcal2000' database
 """
 
 # Dirty hack for me to be able to access data from my XP environment
+rootpath = '/neurospin/lnao/Panabase/roche/sulcal2000'
 from os import name
 if name == 'nt':
 	rootpath = 'D:\\data\\sulcal2000'
-else:
-	rootpath = '/neurospin/lnao/Panabase/roche/sulcal2000'
+
         
 print('Scanning data directory...')
 source = sys.argv[1]
 target = sys.argv[2]
-similarity = 'correlation ratio'
+similarity = 'cr'
 if len(sys.argv)>3: 
 	similarity = sys.argv[3]
-interp = 'partial volume'
+interp = 'pv'
 if len(sys.argv)>4: 
 	interp = sys.argv[4]
 normalize = None
@@ -45,12 +49,27 @@ print ('Optimizer: %s' % optimizer)
 
 # Get data
 print('Fetching image data...')
-I = fff2.neuro.image(join(rootpath,'nobias_'+source+'.nii'), iolib=iolib)
-J = fff2.neuro.image(join(rootpath,'nobias_'+target+'.nii'), iolib=iolib)
+I = neuro.image(join(rootpath,'nobias_'+source+'.nii'), iolib=iolib)
+J = neuro.image(join(rootpath,'nobias_'+target+'.nii'), iolib=iolib)
 
 # Perform affine normalization 
-T, It = fff2.neuro.affine_registration(I, J, similarity=similarity, interp=interp, 
-				       normalize=normalize, optimizer=optimizer, resample=True)
+print('Setting up registration...')
+tic = time.time()
+T = register.imatch(I.array, J.array, I.transform, J.transform, 
+		    similarity=similarity, 
+		    interp=interp, 
+		    normalize=normalize, 
+		    optimizer=optimizer)
+toc = time.time()
+print('  Registration time: %f sec' % (toc-tic))
+
+# Resample source image
+print('Resampling source image...')
+tic = time.time()
+It = neuro.image(J)
+It.set_array(register.transform.resample(T, I.array, J.array, I.transform, J.transform))
+toc = time.time()
+print('  Resampling time: %f sec' % (toc-tic))
 
 
 # Save resampled source
@@ -59,6 +78,7 @@ print ('Saving resampled source in: %s' % outfile)
 It.save(outfile)
 
 # Save transformation matrix
+"""
 import numpy as np
 np.save(outfile, T)
-
+"""
