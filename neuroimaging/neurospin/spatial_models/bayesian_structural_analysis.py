@@ -271,13 +271,13 @@ def infer_amers(BF,thq=0.95,ths=0,verbose=0):
     - newlabel :  a relabelling of the individual ROIs, similar to u, which discards
     labels that do not fulfill the condition (c)
     """
-    Sess = np.size(BF)
-    subj = np.concatenate([s*np.ones(BF[s].k, np.int) for s in range(Sess)])
+    nbsubj = np.size(BF)
+    subj = np.concatenate([s*np.ones(BF[s].k, np.int) for s in range(nbsubj)])
     nrois = np.size(subj)
-    u = np.concatenate([BF[s].get_roi_feature('label') for s in range(Sess)])
+    u = np.concatenate([BF[s].get_roi_feature('label') for s in range(nbsubj)])
     u = np.squeeze(u)
-    conf =  np.concatenate([BF[s].get_roi_feature('posterior_proba') for s in range(Sess)])
-    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(Sess)])
+    conf =  np.concatenate([BF[s].get_roi_feature('posterior_proba') for s in range(nbsubj)])
+    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj)])
     newlabel = -np.ones(nrois, np.int)
     AF = []
     nl = 0
@@ -316,7 +316,7 @@ def infer_amers(BF,thq=0.95,ths=0,verbose=0):
             nl = nl+1
 
     # relabel the ROIs
-    for s in range(Sess):
+    for s in range(nbsubj):
         nls = np.expand_dims(newlabel[subj==s],1)
         BF[s].set_roi_feature('label',nls)
      
@@ -667,18 +667,13 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
         if nroi.k>0:
             bfm = nroi.discrete_to_roi_features('activation','average')
             bfm = bfm[nroi.isleaf()]#---
-            #fixme !!!
-            pdata = [nroi.discrete[k].astype(np.float) for k in range(nroi.k)]
+            #fixme: masked_index should not be used
+            
+            idx = [nroi.discrete_features['masked_index'][k] for k in range(nroi.k)]
+            pdata = [tal[np.ravel(idx[k])] for k in range(nroi.k)]
             nroi.set_discrete_feature('position',pdata)
             bfc = nroi.discrete_to_roi_features('position','average')
             bfc = bfc[nroi.isleaf()]#---
-            
-            ## find some way to avoid coordinate averaging
-            #nroi.make_feature(beta, 'height','mean')
-            #bfm = nroi.get_roi_feature('height')[nroi.isleaf()]#---
-            #nroi.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            #bfc = nroi.get_roi_feature('coord')[nroi.isleaf()]#---
-            #
             gfc.append(bfc)
 
             # compute the prior proba of being null
@@ -718,7 +713,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     burnin=100
     nis=100
     nii=1000
-
+    
     p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0, sub,burnin,spatial_coords,nis, nii)
 
     if verbose:
@@ -734,7 +729,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
         mp.show()
         print 'Number of candidate regions %i, regions found %i' % (
                     np.size(q), q.sum())
-
+    
     Fbeta.set_field(p)
     idx,depth, major,label = Fbeta.custom_watershed(0,g0)
 
@@ -781,7 +776,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     return crmap,AF,BF,nl,p
 
 # ----------------------------------------------------------------
-# ---------- Deprectaed stuff ------------------------------------
+# ---------- Deprecated stuff ------------------------------------
 # ----------------------------------------------------------------
 
 
@@ -954,14 +949,14 @@ def _infer_amers(BF,u,conf,thq=0.95,ths=0):
     - newlabel :  a relabelling of the individual ROIs, similar to u, which discards
     labels that do not fulfill the condition (c)
     """
-    Sess = np.size(BF)
+    nbsubj = np.size(BF)
     Nlm = np.size(u)
 
-    subj = np.concatenate([s*np.ones(BF[s].k, np.int) for s in range(Sess)])
+    subj = np.concatenate([s*np.ones(BF[s].k, np.int) for s in range(nbsubj)])
     nrois = np.size(subj)
     if nrois != Nlm:
         raise ValueError, "incompatiable estimates of the number of regions"
-    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(Sess)])
+    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj)])
     newlabel = -np.ones(np.size(u), np.int)
     AF = []
     nl = 0
