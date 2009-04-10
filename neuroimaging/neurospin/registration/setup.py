@@ -14,6 +14,8 @@ def configuration(parent_package='',top_path=None):
 
     config = Configuration('registration', parent_package, top_path)
     config.add_data_dir('tests')
+    config.add_data_dir('benchmarks')
+
     config.add_extension(
                 '_iconic',
                 sources=['_iconic.c'],

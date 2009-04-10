@@ -592,7 +592,8 @@ class permutation_test_onesample(permutation_test):
         self.Tvalues = onesample_stat(data, vardata, stat_id, base, axis, Magics=None, niter=niter).squeeze()
         self.nsamples = 1
         # Compute statistic values in random voxels and under random permutations
-        print "Computing average null distribution of test statistic..."
+        # Use a self.verbose flag for this output?
+        #print "Computing average null distribution of test statistic..."
         self.random_Tvalues = np.zeros(ndraws,float)
         # Random voxel selection
         I = np.random.randint(0,p,size=ndraws)
@@ -664,7 +665,8 @@ class permutation_test_onesample_graph(permutation_test):
         self.Tvalues = onesample_stat(data, vardata, stat_id, base, axis, Magics=None, niter=niter).squeeze()
         self.nsamples = 1
         # Compute statistic values in random voxels and under random permutations
-        print "Computing average null distribution of test statistic..."
+        # Use a self.verbose flag for this output?
+        #print "Computing average null distribution of test statistic..."
         self.random_Tvalues = np.zeros(ndraws,float)
         # Random voxel selection
         I = np.random.randint(0,p,size=ndraws)
@@ -734,7 +736,8 @@ class permutation_test_twosample(permutation_test):
         self.Tvalues = twosample_stat(data1, vardata1, data2, vardata2, stat_id, axis, Magics=None, niter=niter).squeeze()
         self.nsamples = 2
         # Compute statistic values in random voxels and under random permutations
-        print "Computing average null distribution of test statistic..."
+        # Use a self.verbose flag for this output?
+        #print "Computing average null distribution of test statistic..."
         self.random_Tvalues = np.zeros(ndraws,float)
         # Random voxel selection
         I = np.random.randint(0,p,size=ndraws)

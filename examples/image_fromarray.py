@@ -1,6 +1,6 @@
 """Create a nifti image from a numpy array and an affine transform."""
 
-from os import path
+import os
 
 import numpy as np
 
@@ -10,7 +10,7 @@ from neuroimaging.utils.tests.data import repository
 
 # Load an image to get the array and affine
 filename = str(repository._fullpath('avg152T1.nii.gz'))
-assert path.exists(filename)
+assert os.path.exists(filename)
 
 # Use one of our test files to get an array and affine (as numpy array) from.
 img = load_image(filename)
@@ -47,12 +47,13 @@ newimg = fromarray(arr, innames=innames, outnames=outnames,
 ################################################################################
 # Imports used just for development and testing.  User's typically
 # would not uses these when creating an image.
-from tempfile import NamedTemporaryFile
+from tempfile import mkstemp
 from neuroimaging.testing import assert_equal
 
 # We use a temporary file for this example so as to not create junk
 # files in the nipy directory.
-tmpfile = NamedTemporaryFile(suffix='.nii.gz')
+fd, name = mkstemp(suffix='.nii.gz')
+tmpfile = open(name)
 
 # Save the nipy image to the specified filename
 save_image(newimg, tmpfile.name)
@@ -64,3 +65,8 @@ assert_equal(tmpimg.affine, affine_coordmap.affine)
 assert_equal(np.mean(tmpimg), np.mean(img))
 assert_equal(np.std(tmpimg), np.std(img))
 assert_equal(np.asarray(tmpimg), np.asarray(img))
+
+# cleanup our tempfile
+tmpfile.close()
+os.unlink(name)
+
