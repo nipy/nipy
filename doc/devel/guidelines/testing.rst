@@ -47,31 +47,33 @@ use either of these two methods:
    is freed when the file is closed.  This is the preferred method for
    temporary files in tests.
 
-#. `tempfile.NamedTemporaryFile <http://docs.python.org/library/tempfile.html>`_
+#. `tempfile.mkstemp <http://docs.python.org/library/tempfile.html>`_
 
-   This will create a temporary file which is deleted when the file is
-   closed.  There are parameters for specifying the filename *prefix*
-   and *suffix*.
+   This will create a temporary file which can be used during testing.
+   There are parameters for specifying the filename *prefix* and
+   *suffix*.
 
    .. Note::
-
-       *NamedTemporaryFile* has limited functionality on MS Windows.
-        Files opened with NamedTemporaryFile cannot be re-opened as
-        they can on Unix-based platforms.  If this becomes a problem,
-        we should consider using ``tempfile.mkstemp`` instead.  The
-        downside being the developer has to remove the file
-        explicitly.
+      
+        The tempfile module includes a convenience function
+        *NamedTemporaryFile* which deletes the file automatically when
+        it is closed.  However, whether the files can be opened a
+        second time varies across platforms and there are problems
+        using this function *Windows*.
 
 Both of the above libraries are preferred over creating a file in the
 test directory and then removing them with a call to ``os.remove``.
 For various reasons, sometimes ``os.remove`` doesn't get called and
 temp files get left around.
 
-NamedTemporaryFile Example::
+mkstemp example::
 
-  from tempfile import NamedTemporaryFile
-  tmp = NamedTemporaryFile(suffix='.nii.gz')
-  save_image(fake_image, tmp.file.name)
+  from tempfile import mkstemp
+  fd, name = mkstemp(suffix='.nii.gz')
+  tmpfile = open(name)
+  save_image(fake_image, tmpfile.name)
+  tmpfile.close()
+  os.unlink(name)  # This deletes the temp file
 
 
 Many tests in one test function

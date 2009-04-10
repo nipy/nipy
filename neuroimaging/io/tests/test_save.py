@@ -1,5 +1,5 @@
 import os
-from tempfile import NamedTemporaryFile
+from tempfile import mkstemp
 import numpy as np
 
 from neuroimaging.testing import *
@@ -14,11 +14,13 @@ class Tempfile():
 tmpfile = Tempfile()
 
 def setup():
-    tmpfile.file = NamedTemporaryFile(suffix='.nii')
-    tmpfile.name = tmpfile.file.name
+    fd, tmpfile.name = mkstemp(suffix='.nii')
+    tmpfile.file = open(tmpfile.name)
 
-#def teardown():
-#    os.remove('tmp.nii')
+def teardown():
+    tmpfile.file.close()
+    os.unlink(tmpfile.name)
+
 
 def test_save1():
     # A test to ensure that when a file is saved, the affine and the

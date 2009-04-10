@@ -1,9 +1,19 @@
 """
 Test the empirical null estimator.
 """
+import warnings
+
 import numpy as np
 
 from neuroimaging.neurospin.utils.emp_null import ENN
+
+def setup():
+    # Suppress warnings during tests to reduce noise
+    warnings.simplefilter("ignore")
+
+def teardown():
+    # Clear list of warning filters
+    warnings.resetwarnings()
 
 def test_efdr():
     # generate the data

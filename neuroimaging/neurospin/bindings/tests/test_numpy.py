@@ -1,15 +1,9 @@
 # Test numpy bindings
 
-import time
-from numpy.testing import assert_equal, assert_almost_equal
+from neuroimaging.testing import *
 import numpy as np
 import neuroimaging.neurospin.bindings as fb
 
-def time_ratio(t0,t1):
-    if t1==0:
-        return np.inf
-    else:
-        return t0/t1
 
 
 MAX_TEST_SIZE = 30
@@ -30,47 +24,43 @@ def random_shape(size):
 #
 
 def test_type_conversions_to_fff():
-    print('')
-    print('Type conversions: numpy --> fff')
-    for npy_t in np.typeDict.values():
-        t, nbytes = fb.fff_type(np.dtype(npy_t))
-        print('%s --> %s (bytes=%d)' %  (npy_t, t, int(nbytes)))
-        if not t == 'unknown type': 
-            assert_equal(nbytes, np.dtype(npy_t).itemsize)
+    # use np.sctypes for testing numpy types, np.typeDict.values
+    # contains a lot of duplicates.  There are 140 values in
+    # np.typeDict, but only 21 unique numpy types.  But only 11 fff
+    # types in fb.c_types.
+    for type_key in np.sctypes:
+        for npy_t in np.sctypes[type_key]:
+            t, nbytes = fb.fff_type(np.dtype(npy_t))
+            if not t == 'unknown type':
+                yield assert_equal, nbytes, np.dtype(npy_t).itemsize
+
 
 def test_type_conversions_in_C():
     for t in fb.c_types:
         npy_t, nbytes = fb.npy_type(t)
-        assert_equal(npy_t, t)
+        yield assert_equal, npy_t, t
 
 
 #
 # Test bindings 
 #
 
-def _test_copy_vector(x): 
-    t0 = time.clock()
-    y0 = fb.copy_vector(x, 0) 
-    dt0 = time.clock()-t0
-    t1 = time.clock()
+def _test_copy_vector(x):
+    # use fff
+    y0 = fb.copy_vector(x, 0)
+    # use numpy
     y1 = fb.copy_vector(x, 1) 
-    dt1 = time.clock()-t1
-    assert_equal(y0, x)
-    assert_equal(y1, x)
-    ratio = time_ratio(dt0,dt1)
-    print('  using fff_array: %f sec' % dt0)
-    print('  using numpy C API: %f sec' % dt1)
-    print('  ratio: %f' % ratio)
+    yield assert_equal, y0, x
+    yield assert_equal, y1, x
+
 
 def test_copy_vector_contiguous(): 
     x = (1000*np.random.rand(1e6)).astype('int32')
-    print('Contiguous buffer copy (int32-->double)')
     _test_copy_vector(x)
 
 def test_copy_vector_strided(): 
     x0 = (1000*np.random.rand(2e6)).astype('int32')
     x = x0[::2]
-    print('Non-contiguous buffer copy (int32-->double)')
     _test_copy_vector(x)
 
 """
@@ -104,9 +94,9 @@ def test_pass_vector_uint8():
 
 def _test_pass_matrix(x):
     y = fb.pass_matrix(x)
-    assert_equal(y, x)
+    yield assert_equal, y, x
     y = fb.pass_matrix(x.T)
-    assert_equal(y, x.T)
+    yield assert_equal, y, x.T
 
 def test_pass_matrix():
     d0, d1 = random_shape(2)
@@ -126,9 +116,9 @@ def test_pass_matrix_uint8():
 
 def _test_pass_array(x):
     y = fb.pass_array(x)
-    assert_equal(y, x)
+    yield assert_equal, y, x
     y = fb.pass_array(x.T)
-    assert_equal(y, x.T)
+    yield assert_equal, y, x.T
 
 def test_pass_array():
     d0, d1, d2, d3 = random_shape(4)
@@ -157,10 +147,10 @@ def _test_pass_vector_via_iterator(X, pos=0):
     """
     # axis == 0 
     x = fb.pass_vector_via_iterator(X, axis=0, niters=pos)
-    assert_equal(x, X[:, pos])
+    yield assert_equal, x, X[:, pos]
     # axis == 1
     x = fb.pass_vector_via_iterator(X, axis=1, niters=pos)
-    assert_equal(x, X[pos, :])
+    yield assert_equal, x, X[pos, :]
 
 def test_pass_vector_via_iterator():
     d0, d1 = random_shape(2)
@@ -196,9 +186,9 @@ def test_pass_vector_via_iterator_shift_uint8():
 def _test_copy_via_iterators(Y):
     for axis in range(4):
         Z = fb.copy_via_iterators(Y, axis)
-        assert_equal(Z, Y) 
+        yield assert_equal, Z, Y
         ZT = fb.copy_via_iterators(Y.T, axis)
-        assert_equal(ZT, Y.T) 
+        yield assert_equal, ZT, Y.T 
 
 def test_copy_via_iterators():
     d0, d1, d2, d3 = random_shape(4)
@@ -218,9 +208,9 @@ def test_copy_via_iterators_uint8():
 def _test_sum_via_iterators(Y):
     for axis in range(4):
         Z = fb.sum_via_iterators(Y, axis)
-        assert_almost_equal(Z, Y.sum(axis)) 
+        yield assert_almost_equal, Z, Y.sum(axis)
         ZT = fb.sum_via_iterators(Y.T, axis)
-        assert_almost_equal(ZT, Y.T.sum(axis))
+        yield assert_almost_equal, ZT, Y.T.sum(axis)
 
 def test_sum_via_iterators():
     d0, d1, d2, d3 = random_shape(4)
