@@ -71,7 +71,7 @@ class Amers:
         if self.k>0:
             if self.k==1: return 0
             tcoord = np.transpose(self.coord)
-            
+        
             D = BPmatch.EDistance(tcoord,tcoord)
             d = D.sum()/(self.k*(self.k-1))
             return d
@@ -665,7 +665,7 @@ def Build_Amers(BF,u,ths=0):
                 for a in range(sj):
                     sja = subj[j[a]]
                     isja = intrasubj[j[a]]
-                    idx[a] = BF[sja].seed[isja]
+                    #idx[a] = BF[sja].seed[isja]
                     coord[a,:] = BF[sja].get_roi_feature('coord')[isja]
 
                 amers = Amers(sj, subj[j], idx,coord)

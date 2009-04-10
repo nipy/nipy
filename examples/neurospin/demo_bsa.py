@@ -37,10 +37,12 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     g0 = 1.0/(1.0*nbvox)
     bdensity = 1
 
+    #group_map, AF, BF, labels, likelihood = \
+    #           bsa.compute_BSA_simple(Fbeta, lbeta, tal, dmax,xyz, None, thq,
+    #                                  smin, ths, theta, g0, bdensity)
     group_map, AF, BF, labels, likelihood = \
-                    bsa.compute_BSA_simple(Fbeta, lbeta, tal, dmax,xyz,None, thq, 
-                            smin, ths, theta, g0, bdensity)
-
+               bsa.compute_BSA_dev(Fbeta, lbeta, tal, dmax,xyz, None, thq,
+                                      smin, ths, theta, g0, bdensity)
     labels[labels==-1] = np.size(AF)+2
   
     group_map.shape = ref_dim
