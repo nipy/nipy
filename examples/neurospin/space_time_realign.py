@@ -1,5 +1,7 @@
 from neuroimaging.neurospin import register 
-from neuroimaging.neurospin import neuro
+
+# Use Matthew's volumeimages for I/O. 
+import volumeimages
 
 import numpy as np
 from os.path import join
@@ -9,20 +11,26 @@ import time
 rootpath = 'D:\\data\\fiac'
 runnames = ['run1', 'run1']
 
-im1 = neuro.image(join(rootpath, runnames[0]+'.nii'))
-im2 = neuro.image(join(rootpath, runnames[1]+'.nii'))
+# Create Nifti1Image instances from both input files
+im1 = volumeimages.load(join(rootpath, runnames[0]+'.nii'))
+im2 = volumeimages.load(join(rootpath, runnames[1]+'.nii'))
 
-run1 = register.TimeSeries(im1.array, toworld=im1.transform, tr=2.5, 
+# Create TimeSeries instances -- this is a local class representing a
+# series of 3d images
+run1 = register.TimeSeries(im1.get_data(), toworld=im1.get_affine(), tr=2.5, 
                            slice_order='ascending', interleaved=True)
-run2 = register.TimeSeries(im2.array, toworld=im2.transform, tr=2.5, 
+run2 = register.TimeSeries(im2.get_data(), toworld=im2.get_affine(), tr=2.5, 
                            slice_order='ascending', interleaved=True)
 
-"""
-transforms = register.realign4d(run1, within_loops=1) 
-corr_run1 = register.resample4d(run1, transforms=transforms)
-"""
+# Correct motion within- and between-sessions
+transforms = register.realign4d([run1, run2]) 
 
-transforms = register.realign4d([run1, run2], within_loops=0) 
-corr_run1 = register.resample4d(run1, transforms=transforms[0])
-corr_run2 = register.resample4d(run2, transforms=transforms[1])
+# Resample data on a regular space+time lattice using 4d interpolation
+corr_im1 = volumeimages.nifti1.Nifti1Image(affine=im1.get_affine(), 
+                                           data=register.resample4d(run1, transforms=transforms[0]))
+corr_im2 = volumeimages.nifti1.Nifti1Image(affine=im2.get_affine(), 
+                                           data=register.resample4d(run2, transforms=transforms[1]))
 
+# Save images 
+corr_im1.to_files('corr_run1.nii')
+corr_im2.to_files('corr_run2.nii')
