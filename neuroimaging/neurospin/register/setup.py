@@ -3,8 +3,8 @@
 def configuration(parent_package='',top_path=None):
     
     from numpy.distutils.misc_util import Configuration
-    # We need this because lapack fffpy.a is linked to lapack, which can be a 
-    # fortran library, and the linker needs this information.
+    # We need this because libcstat.a is linked to lapack, which can
+    # be a fortran library, and the linker needs this information.
     from numpy.distutils.system_info import get_info
     lapack_info = get_info('lapack_opt',0)
     if 'libraries' not in lapack_info:
@@ -18,7 +18,7 @@ def configuration(parent_package='',top_path=None):
     config.add_extension(
                 'routines',
                 sources=['routines.c', 'iconic.c', 'cubic_spline.c'],
-                libraries = ['fffpy'],
+                libraries = ['cstat'],
                 extra_info=lapack_info,
                 )
 

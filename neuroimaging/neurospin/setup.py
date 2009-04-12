@@ -1,7 +1,7 @@
 import os
 
 # Global variables
-LIBS = os.path.realpath('libfffpy')
+LIBS = os.path.realpath('libcstat')
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
@@ -10,7 +10,7 @@ def configuration(parent_package='',top_path=None):
 
     config = Configuration('neurospin', parent_package, top_path)
 
-    # fffpy library
+    # cstat library
     config.add_include_dirs(os.path.join(LIBS,'fff'))
     config.add_include_dirs(os.path.join(LIBS,'randomkit'))
     config.add_include_dirs(os.path.join(LIBS,'wrapper'))
@@ -59,7 +59,7 @@ def configuration(parent_package='',top_path=None):
     if 'include_dirs' in lapack_info:
         config.add_include_dirs(lapack_info['include_dirs'])    
 
-    config.add_library('fffpy',
+    config.add_library('cstat',
                        sources=sources,
                        library_dirs=library_dirs,
                        libraries=libraries,
@@ -102,7 +102,7 @@ def configuration(parent_package='',top_path=None):
     ##     config.add_extension(
     ##         '_'+name,
     ##         sources=[Cfile],
-    ##         libraries=['fffpy']
+    ##         libraries=['cstat']
     ##         )
     
     config.make_config_py() # installs __config__.py
