@@ -126,7 +126,7 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
     INPUT:
     - BFLs : a list of ROIs hierarchies, putatively describing ROIs
     from different subjects
-    CAVEAT 1: The ROI_Hierarchy must have a 'position' feature defined
+    CAVEAT 1: The nested ROI (NROI) must have a 'position' feature defined
     beforehand
     CAVEAT 2: the structure is edited and modified by this function
     - dmax : the kernel width (std) for the spatial density estimator
@@ -143,16 +143,16 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
     performed again and so on
     19/02/07: new version without the monotonic exclusion heuristic 
     """
-    Sess = np.size(BFLs)
+    nbsubj = np.size(BFLs)
     sqdmax = 2*dmax*dmax
     nvox = xyz.shape[0]
-    nlm = np.array([BFLs[s].get_k() for s in range(Sess)]).astype(np.int)
+    nlm = np.array([BFLs[s].get_k() for s in range(nbsubj)]).astype(np.int)
  
     if verbose>0: print nlm
     Nlm = np.sum(nlm)
     nlm0 = 2*nlm
     q = 0
-    BFLc = [BFLs[s].copy() for s in range(Sess)]
+    BFLc = [BFLs[s].copy() for s in range(nbsubj)]
     while np.sum((nlm0-nlm)**2)>0:
         nlm0 = nlm.copy()
         
@@ -175,7 +175,7 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
         srw = np.sort(srweight)
         if verbose>0:
             thf = srw[int((1-min(pval,1))*nvox*nsamples)]
-            mnlm = max(1,float(Nlm)/Sess)
+            mnlm = max(1,float(Nlm)/nbsubj)
             imin = min(nvox*nsamples-1,int((1.-pval/mnlm)*nvox*nsamples))
             # print pval,mnlm, pval/mnlm, 1.-pval/mnlm,np.size(srw),imin
             thcf = srw[imin]
@@ -185,7 +185,7 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
             if verbose>1:
                 fig_density(sweight,surweight,pval,nlm)
                     
-        for s in range(Sess):
+        for s in range(nbsubj):
             if nlm[s]>0:
                 w1 = srweight-surweight[:,s]
                 sw1 = np.sort(w1)
@@ -193,9 +193,10 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
                 th1 = sw1[imin]
                 w1 = sweight-weight[:,s]
                 BFLc[s] = BFLs[s].copy()
-                targets = w1[BFLc[s].get_seed()]
+                #targets = w1[BFLc[s].get_seed()]
+                targets = w1[BFLc[s].roi_features['seed']]
                 valid = (targets>th1)
-                BFLc[s].clean(valid)
+                BFLc[s].clean(np.ravel(valid))#
                 nlm[s] = BFLc[s].get_k()
         
         
@@ -213,7 +214,7 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
 
     print q,nlm0,nlm
 
-    for s in range(Sess): BFLs[s]=BFLc[s].copy()
+    for s in range(nbsubj): BFLs[s]=BFLc[s].copy()
     return a,b
 
 def clean_density(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsamples=10):
@@ -224,7 +225,7 @@ def clean_density(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsamples=10):
     INPUT:
     - BFLs : a list of ROIs hierarchies, putatively describing ROIs
     from different subjects
-    CAVEAT 1: The ROI_Hierarchy must have a 'position' feature defined
+    CAVEAT 1: The nested ROI (NROI) must have a 'position' feature defined
     beforehand
     CAVEAT 2: the structure is edited and modified by this function
     - dmax : the kernel width (std) for the spatial density estimator
@@ -240,10 +241,10 @@ def clean_density(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsamples=10):
     significant at one step, the density is recomputed, and the test is
     performed again and so on
     """
-    Sess = np.size(BFLs)
+    nbsubj = np.size(BFLs)
     sqdmax = 2*dmax*dmax
     nvox = xyz.shape[0]
-    nlm = np.array([BFLs[s].get_k() for s in range(Sess)]).astype(np.int)
+    nlm = np.array([BFLs[s].get_k() for s in range(nbsubj)]).astype(np.int)
  
     if verbose>0: print nlm
     Nlm = np.sum(nlm)
@@ -270,7 +271,7 @@ def clean_density(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsamples=10):
         srw = np.sort(srweight)
         if verbose>0:
             thf = srw[int((1-min(pval,1))*nvox*nsamples)]
-            mnlm = max(1,float(Nlm)/Sess)
+            mnlm = max(1,float(Nlm)/nbsubj)
             imin = min(nvox*nsamples-1,int((1.-pval/mnlm)*nvox*nsamples))
             # print pval,mnlm, pval/mnlm, 1.-pval/mnlm,np.size(srw),imin
             thcf = srw[imin]
@@ -280,7 +281,7 @@ def clean_density(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsamples=10):
             if verbose>1:
                 fig_density(sweight,surweight,pval,nlm)
                     
-        for s in range(Sess):
+        for s in range(nbsubj):
             if nlm[s]>0:
                 w1 = srweight-surweight[:,s]
                 sw1 = np.sort(w1)
@@ -345,13 +346,13 @@ def compute_density(BFLs,xyz,dmax):
     dmax is a scale parameter
     """
     nvox = xyz.shape[0]
-    Sess = np.size(BFLs)
+    nbsubj = np.size(BFLs)
     sqdmax = 2*dmax*dmax
-    weight = np.zeros((nvox,Sess),'d')
-    nlm = np.array([BFLs[s].k for s in range(Sess)])
-    for s in range(Sess):
+    weight = np.zeros((nvox,nbsubj),'d')
+    nlm = np.array([BFLs[s].k for s in range(nbsubj)])
+    for s in range(nbsubj):
         if nlm[s]>0:
-            coord = BFLs[s].get_roi_feature('coord')
+            coord = BFLs[s].get_roi_feature('position')
             for i in range(nlm[s]):
                 dxyz = xyz - coord[i,:]
                 dw = np.exp(-np.sum(dxyz**2,1)/sqdmax)
@@ -366,10 +367,10 @@ def compute_density_dev(BFLs,xyz,dmax):
     """
     import neuroimaging.neurospin.utils.smoothing.smoothing as smoothing
     nvox = xyz.shape[0]
-    Sess = np.size(BFLs)
-    weight = np.zeros((nvox,Sess),'d')
-    nlm = np.array([BFLs[s].k for s in range(Sess)])
-    for s in range(Sess):
+    nbsubj = np.size(BFLs)
+    weight = np.zeros((nvox,nbsubj),'d')
+    nlm = np.array([BFLs[s].k for s in range(nbsubj)])
+    for s in range(nbsubj):
         if nlm[s]>0:
             weight[BFLs[s].seed,s] = 1
     weight = smoothing.cartesian_smoothing(np.transpose(xyz),weight,dmax)
@@ -390,12 +391,12 @@ def compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
     - surweight: a (gs*nsamples,nsubj) array of samples
     """
     nvox = xyz.shape[0]
-    Sess = np.size(BFLs)
+    nbsubj = np.size(BFLs)
     sqdmax = 2*dmax*dmax
-    nlm = np.array([BFLs[s].k for s in range(Sess)])
-    surweight = np.zeros((nvox*nsamples,Sess),'d')
+    nlm = np.array([BFLs[s].k for s in range(nbsubj)])
+    surweight = np.zeros((nvox*nsamples,nbsubj),'d')
     for it in range(nsamples):
-        for s in range(Sess):
+        for s in range(nbsubj):
             if nlm[s]>0:
                 js = (nvox*nr.rand(nlm[s])).astype(np.int)
                 for i in range(nlm[s]):         
@@ -411,10 +412,10 @@ def compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples=1):
     """
     import neuroimaging.neurospin.utils.smoothing.smoothing as smoothing
     nvox = xyz.shape[0]
-    Sess = np.size(BFLs)
-    nlm = np.array([BFLs[s].k for s in range(Sess)])
-    aux = np.zeros((nvox,nsamples*Sess),'d')
-    for s in range(Sess):
+    nbsubj = np.size(BFLs)
+    nlm = np.array([BFLs[s].k for s in range(nbsubj)])
+    aux = np.zeros((nvox,nsamples*nbsubj),'d')
+    for s in range(nbsubj):
         if nlm[s]>0:
             for it in range(nsamples):
                 js = (nvox*nr.rand(nlm[s])).astype(np.int)
@@ -422,8 +423,8 @@ def compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples=1):
 
     aux = smoothing.cartesian_smoothing(np.transpose(xyz),aux,dmax)
     
-    surweight = np.zeros((nvox*nsamples,Sess),'d')
-    for s in range(Sess):
+    surweight = np.zeros((nvox*nsamples,nbsubj),'d')
+    for s in range(nbsubj):
         surweight[:,s] = np.reshape(aux[:,s*nsamples:(s+1)*nsamples],(nvox*nsamples))
 
     surweight = surweight*(2*np.pi*dmax*dmax)**1.5
@@ -440,22 +441,22 @@ def hierarchical_asso(BF,dmax):
     cross-subject pairs of regions. Note that the probabilities are normalized
     on a within-subject basis.
     """
-    Sess = np.size(BF)
-    nlm = np.array([BF[i].k for i in range(Sess)])
+    nbsubj = np.size(BF)
+    nlm = np.array([BF[i].k for i in range(nbsubj)])
     cnlm = np.hstack(([0],np.cumsum(nlm)))
-    if cnlm[Sess]==0:
+    if cnlm[nbsubj]==0:
         Gcorr = []
         return Gcorr
 
     eA = []
     eB = []
     eD = []
-    for s in range(Sess):
+    for s in range(nbsubj):
         if (BF[s].k>0):
             for t in range(s):
                 if (BF[t].k>0):
-                    cs =  BF[s].get_roi_feature('coord')
-                    ct = BF[t].get_roi_feature('coord')
+                    cs =  BF[s].get_roi_feature('position')
+                    ct = BF[t].get_roi_feature('position')
                     Gs = BF[s].make_graph()
                     Gs.symmeterize()
                     Gs = Gs.adjacency()
@@ -476,7 +477,7 @@ def hierarchical_asso(BF,dmax):
         
     if np.size(eA)>0:
         edges = np.transpose([eA,eB]).astype(np.int)
-        Gcorr = fg.WeightedGraph(cnlm[Sess],edges,eD)
+        Gcorr = fg.WeightedGraph(cnlm[nbsubj],edges,eD)
     else:
         Gcorr = []
     return Gcorr
@@ -633,14 +634,14 @@ def Build_Amers(BF,u,ths=0):
     - newlabel :  a relabelling of the individual ROIs, similar to u, which discards
     labels that do not fulfill the condition (c)
     """
-    Sess = np.size(BF)
+    nbsubj = np.size(BF)
     Nlm = np.size(u)
 
-    subj = np.concatenate([s*np.ones(BF[s].k,'i') for s in range(Sess)])
+    subj = np.concatenate([s*np.ones(BF[s].k,'i') for s in range(nbsubj)])
     nrois = np.size(subj)
     if nrois != Nlm:
         raise ValueError, "incompatiable estimates of the number of regions"
-    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(Sess)])
+    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj)])
     newlabel = -np.ones(np.size(u),'i')
     AF = []
     nl = 0
@@ -666,7 +667,7 @@ def Build_Amers(BF,u,ths=0):
                     sja = subj[j[a]]
                     isja = intrasubj[j[a]]
                     #idx[a] = BF[sja].seed[isja]
-                    coord[a,:] = BF[sja].get_roi_feature('coord')[isja]
+                    coord[a,:] = BF[sja].get_roi_feature('position')[isja]
 
                 amers = Amers(sj, subj[j], idx,coord)
                 AF.append(amers)
@@ -674,12 +675,13 @@ def Build_Amers(BF,u,ths=0):
                 
     return AF,newlabel
 
-def Compute_Amers (Fbeta,Beta, tal,dmax = 10., thr=3.0, ths = 0,pval=0.2):
+def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pval=0.2):
     """
      This is the main function for contrsucting the BFLs
      INPUT
      - Fbeta : field structure that contains the spatial nodes of the dataset
      - Beta: functional data matrix of size (nbnodes,nbsubj)
+     - xyz: 
      - tal: spatial coordinates of the nodes (e.g. MNI coords)
      - dmax=10.: spatial relaxation allowed in the preocedure
      - thr = 3.0: thrshold at the first-level
@@ -693,27 +695,20 @@ def Compute_Amers (Fbeta,Beta, tal,dmax = 10., thr=3.0, ths = 0,pval=0.2):
     """
     BFLs = []
     LW = [] 
-    Sess = Beta.shape[1]
+    nbsubj = Beta.shape[1]
     nvox = Beta.shape[0]
-    for s in range(Sess):
+    for s in range(nbsubj):
         beta = np.reshape(Beta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        
-        if thr<beta.max():
-            idx,depth, major,label = Fbeta.custom_watershed(0,thr)
-        else:
-            idx = None
-            depth = None
-            major = None
-            label = -np.ones(nvox)
-    
-        if idx==None:
-            k = 0
-        else:
-            k = np.size(idx)
-
-        bfls = hroi.ROI_Hierarchy(k,idx,major,label)
-        bfls.make_feature(tal,'coord','mean')
+        bfls = hroi.NROI_from_watershed(Fbeta,header,xyz,refdim=0,th=thr)
+ 
+        if bfls.k>0:
+            idx = [bfls.discrete_features['masked_index'][k] for k in range(bfls.k)]
+            pdata = [tal[np.ravel(idx[k])] for k in range(bfls.k)]
+            bfls.set_discrete_feature('position',pdata)
+            bfls.discrete_to_roi_features('position','average')
+            
+        #bfls.make_feature(tal,'position','mean')
         BFLs.append(bfls)
 
     # clean_density(BFLs,dmax,tal,pval,verbose=1,dev=0,nrec=5)
@@ -725,7 +720,7 @@ def Compute_Amers (Fbeta,Beta, tal,dmax = 10., thr=3.0, ths = 0,pval=0.2):
     
     # building cliques
     #u = segment_graph_rd(Gc,1)
-    u,cost = Average_Link_Graph_segment(Gc,0.1,Gc.V*1.0/Sess)
+    u,cost = Average_Link_Graph_segment(Gc,0.1,Gc.V*1.0/nbsubj)
 
     AF,newlabel = Build_Amers(BFLs,u,ths)
 
@@ -738,7 +733,11 @@ def Compute_Amers (Fbeta,Beta, tal,dmax = 10., thr=3.0, ths = 0,pval=0.2):
         lscore[j] = score 
         crmap[gscore>lscore]=i+1
         gscore = np.minimum(gscore,lscore)
-        #crmap[j] = i+1
+
+    q = 0
+    for s in range(nbsubj):
+        BFLs[s].set_roi_feature('label',newlabel[q:q+BFLs[s].k])
+        q += BFLs[s].k
         
     return crmap, AF, BFLs,newlabel
 

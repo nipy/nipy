@@ -248,17 +248,19 @@ class MultipleROI():
 
     """
 
-    def __init__(self, id="roi", k=0,header=None):
+    def __init__(self, id="roi", k=0,header=None,discrete=None):
         """
         roi = MultipleROI(id='roi', header=None)
         - id (string): roi identifier
         - k: number of rois that are included in the structure 
         - header (nipy header) : referential-defining information
+        - discrete=None: list of index arrays
+        that represent the grid coordinates of the rois elements
         """
         self.id = id
         self.k = k
         self.header = header
-        self.discrete = []
+        self.discrete = discrete
         self.roi_features = dict()
         self.discrete_features = dict()
 
@@ -633,10 +635,42 @@ class MultipleROI():
             raise ValueError, "the provided values for discrete \
             do not match self.k" 
         self.discrete = discrete
+
+    def compute_discrete_position(self):
+        """
+        Create a 'position' feature based on self.header
+        and self.indexes, which is simply an affine transform
+        from self.discrete to the space of self
+        it is assumed that self.header has a sform
+        if not, the sform is assumed to be th identity
+
+        the computed position is returned
+        """
+        bproblem = 1
+        if isinstance(self.header,dict):
+            if self.header.has_key('sform'):
+                sform = self.header['sform']
+                bproblem=0
+                
+        if bproblem:
+            print "warning, no sform found for position definition"
+            print "assuming it is the identity"
+            sform = np.eye(4)
+
+        pos = []
+        for  k in range(self.k):
+            grid = self.discrete[k]
+            nvox = grid.shape[0]
+            grid = np.hstack((grid, np.ones((nvox, 1))))
+            coord = np.dot(grid, sform.T)[:,:3]
+            pos.append(coord)
+
+        self.set_discrete_feature('position',pos)   
+        return pos
         
 
 def test1(verbose = 0):
-    nim = nifti.NiftiImage("/tmp/spmT_0024.img")
+    nim = nifti.NiftiImage("/tmp/spmT_0024.nii")
     header = nim.header
     dat = nim.asarray().T
     roi = ROI("myroi",header)
@@ -647,7 +681,7 @@ def test1(verbose = 0):
     return roi
 
 def test2(verbose=0):
-    nim = nifti.NiftiImage("/tmp/spmT_0024.img")
+    nim = nifti.NiftiImage("/tmp/spmT_0024.nii")
     header = nim.header
     roi = ROI(header=header)
     roi.from_labelled_image("/tmp/blob.nii",1)
@@ -656,7 +690,7 @@ def test2(verbose=0):
     roi.from_position_and_image("/tmp/blob.nii",np.array([0,0,0]))
     roi.make_image("/tmp/roi3.nii")
 
-    roi.set_feature_from_image('activ',"/tmp/spmT_0024.img")
+    roi.set_feature_from_image('activ',"/tmp/spmT_0024.nii")
     mactiv = roi.representative_feature('activ')
     if verbose: roi.plot_feature('activ')
     return roi
@@ -668,7 +702,7 @@ def test_mroi1(verbose=0):
     mroi = MultipleROI(header=header)
     mroi.from_labelled_image("/tmp/blob.nii")
     mroi.make_image("/tmp/mroi.nii")
-    mroi.set_roi_feature_from_image('activ',"/tmp/spmT_0024.img")
+    mroi.set_roi_feature_from_image('activ',"/tmp/spmT_0024.nii")
     if verbose: mroi.plot_feature('activ')
     return mroi
 
@@ -681,7 +715,7 @@ def test_mroi2(verbose=0):
     mroi.as_multiple_balls(pos,rad)
     mroi.append_balls(np.array([[-10.,0.,10.]]),np.array([7.0]))
     mroi.make_image("/tmp/mroi.nii")
-    mroi.set_roi_feature_from_image('activ',"/tmp/spmT_0024.img")
+    mroi.set_roi_feature_from_image('activ',"/tmp/spmT_0024.nii")
     if verbose: mroi.plot_feature('activ')
     return mroi
 
@@ -693,7 +727,7 @@ def test_mroi3(verbose=0):
     mroi.from_labelled_image("/tmp/blob.nii",np.arange(1,20))
     mroi.from_labelled_image("/tmp/blob.nii",np.arange(31,50))
     mroi.make_image("/tmp/mroi.nii")
-    mroi.set_roi_feature_from_image('activ',"/tmp/spmT_0024.img")
+    mroi.set_roi_feature_from_image('activ',"/tmp/spmT_0024.nii")
     if verbose: mroi.plot_feature('activ')
     valid = np.random.randn(mroi.k)>0.1
     mroi.clean(valid)

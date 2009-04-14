@@ -30,7 +30,7 @@ def hierarchical_asso(bfl,dmax):
     Compting an association graph of the ROIs defined across different subjects
     INPUT:
     - bfl a list of ROI hierarchies, one for each subject
-    - dmax : spatial scale used xhen building associtations
+    - dmax : spatial scale used when building associtations
     OUPUT:
     - G a graph that represent probabilistic associations between all
     cross-subject pairs of regions. Note that the probabilities are normalized
@@ -50,8 +50,8 @@ def hierarchical_asso(bfl,dmax):
         if (bfl[s].k>0):
             for t in range(s):
                 if (bfl[t].k>0):
-                    cs =  bfl[s].get_roi_feature('coord')
-                    ct = bfl[t].get_roi_feature('coord')
+                    cs =  bfl[s].get_roi_feature('position')
+                    ct = bfl[t].get_roi_feature('position')
                     Gs = bfl[s].make_forest()
                     Gs.anti_symmeterize()
             
@@ -81,14 +81,14 @@ def hierarchical_asso(bfl,dmax):
 
 def _clean_size_(bf,smin=0):
     """
-    This function cleans the ROI_Hierarchy structure
+    This function cleans the nested ROI structure
     by merging small regions into their parent
     bf = _clean_size_(bf,smin)
     INPUT:
-    - bf the hroi.ROI_Hierarchy to be cleaned
+    - bf the hroi.NROI to be cleaned
     - smin=0 the minimal size for ROIs
     OUTPUT:
-    - bf the cleaned  hroi.ROI_Hierarchy
+    - bf the cleaned  hroi.NROI
     """
     k = 2* bf.get_k()
     if k>0:
@@ -104,16 +104,16 @@ def _clean_size_(bf,smin=0):
 
 def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
     """
-    This function cleans the ROI_Hierarchy structure
+    This function cleans the nested ROI structure
     by merging small regions into their parent
     bf = _clean_size_and_connectivity_(bf,Fbeta,smin)
     and by checking the simple connectivity of the areas in the hierarchy
     INPUT:
-    - bf the hroi.ROI_Hierarchy to be cleaned
+    - bf the hroi.NROI to be cleaned
     - Fbeta: fff.field class, the underlying field of data
     - smin=0 the minimal size for ROIs
     OUTPUT:
-    - bf the cleaned  hroi.ROI_Hierarchy
+    - bf the cleaned  hroi.NROI
     NOTE : it may be slow
     """
     bf = _clean_size_(bf,smin)
@@ -278,12 +278,14 @@ def infer_amers(BF,thq=0.95,ths=0,verbose=0):
     u = np.squeeze(u)
     conf =  np.concatenate([BF[s].get_roi_feature('posterior_proba') for s in range(nbsubj)])
     intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj)])
-    newlabel = -np.ones(nrois, np.int)
+    #newlabel = -np.ones(nrois, np.int)
+    
     AF = []
     nl = 0
-    if np.size(u)==0:  return AF,newlabel
+    if np.size(u)==0:  return AF,None
     
-    Mu = u.max()+1
+    Mu = int(u.max()+1)
+    valid = np.zeros(Mu).astype(np.int)
     for i in range(Mu):
         j = np.nonzero(u==i)
         j = np.reshape(j,np.size(j))
@@ -301,7 +303,7 @@ def infer_amers(BF,thq=0.95,ths=0,verbose=0):
 
         if st.norm.sf(ths,mp,np.sqrt(vp)) >thq:
             print nl,ths,mp,thq, st.norm.sf(ths,mp,np.sqrt(vp))
-            newlabel[j] = nl
+            valid[i]=1
             sj = np.size(j)
             idx = np.zeros(sj)
             coord = np.zeros((sj,3), np.float)
@@ -315,12 +317,17 @@ def infer_amers(BF,thq=0.95,ths=0,verbose=0):
             AF.append(amers)
             nl = nl+1
 
+    maplabel = -np.ones(Mu).astype(np.int)
+    maplabel[valid>0] = np.cumsum(valid[valid>0])-1
+       
     # relabel the ROIs
     for s in range(nbsubj):
-        nls = np.expand_dims(newlabel[subj==s],1)
-        BF[s].set_roi_feature('label',nls)
+        #nls = np.expand_dims(newlabel[subj==s],1)
+        us = BF[s].get_roi_feature('label')
+        us[us>-1] = maplabel[us[us>-1]]
+        BF[s].set_roi_feature('label',us)
      
-    return AF,newlabel
+    return AF,maplabel
 
 
 #------------------------------------------------------------------
@@ -329,8 +336,8 @@ def infer_amers(BF,thq=0.95,ths=0,verbose=0):
 
 
 
-def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, thq=0.5, smin=5, ths=0, 
-                     theta=3.0, g0=1.0, bdensity=0, verbose=0):
+def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
+                     smin=5, ths=0, theta=3.0, g0=1.0, bdensity=0, verbose=0):
     """
     Compute the  Bayesian Structural Activation paterns with approach described in IPMI'07 paper
     INPUT:
@@ -365,44 +372,26 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, thq=0.5, smin=5, ths=0,
     for s in range(nbsubj):
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-    
-        if theta<beta.max():
-            idx,height, parents,label = Fbeta.threshold_bifurcations(0,theta)
-        else:
-            idx = []
-            parents = []
-            label = -np.ones(np.shape(beta))
-        
-        k = np.size(idx)
-        nroi = hroi.ROI_Hierarchy(k,idx, parents,label)      
-        nroi = _clean_size_(nroi,smin)
+        nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,th=theta,smin=smin)
         BF.append(nroi)
-
-        # discard small regions
-        # merge them into higher levels of the hierarchy
+        
         if nroi.k>0:
-            idx = nroi.get_seed()
-            parents = nroi.get_parents()
-            label = nroi.get_label()
-            nroi.make_feature(beta, 'height','mean')
-            bfm = nroi.get_roi_feature('height')
-            nroi.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            bfc = nroi.get_roi_feature('coord')
-
+            sub.append(s*np.ones(nroi.k))
+            # find some way to avoid coordinate averaging
+            bfm = nroi.discrete_to_roi_features('activation','average')
+            nroi.compute_discrete_position()
+            bfc = nroi.discrete_to_roi_features('position','cumulated_average')            
             gfc.append(bfc)
 
             # get some prior on the significance of the regions
             beta = np.reshape(beta,(nvox))
             beta = beta[beta!=0]
 
-            # use a GGM
+            # use a Gamma-Gaussian Mixture Model
             bfp = _GGM_priors_(beta,bfm,verbose=0)
             bf0 = bfp[:,1]/np.sum(bfp,1)
-            
             gf0.append(bf0)
-            
-            sub.append(s*np.ones(nroi.k))
-            
+                      
     crmap = -np.ones(nvox, np.int)
     u = []
     AF = []
@@ -440,14 +429,16 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, thq=0.5, smin=5, ths=0,
 
     # remove non-significant regions
     for s in range(nbsubj):
-        bf = BF[s]
-        if bf.k>0:
+        bfs = BF[s]
+        if bfs.k>0:
             valids = valid[sub==s]
-            valids = bf.propagate_upward_and(valids)
-            bf.clean(valids)
-            bf.merge_descending()
-            bf.remove_roi_feature('coord')
-            bf.make_feature(tal.astype(np.float),'coord','cumulative_mean')
+            valids = bfs.propagate_upward_and(valids)
+            bfs.clean(valids)
+            
+        if bfs.k>0:
+            bfs.merge_descending()
+            nroi.compute_discrete_position()
+            bfc = bfs.discrete_to_roi_features('position','cumulated_average')
 
     # compute probabilitsic correspondences across subjects
     gc = hierarchical_asso(BF,np.sqrt(2)*dmax)
@@ -460,10 +451,15 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, thq=0.5, smin=5, ths=0,
             
         AF,u = sbf.Build_Amers(BF,u,ths) 
             
+    q = 0
+    for s in range(nbsubj):
+        BF[s].set_roi_feature('label',u[q:q+BF[s].k])
+        q += BF[s].k
+
     # Finally make the ouput map
     crmap = make_crmap(AF,tal,verbose)
     
-    return crmap,AF,BF,u,p
+    return crmap,AF,BF,p
 
 #------------------------------------------------------------------
 # --------------- dev part ----------------------------------------
@@ -510,37 +506,17 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-    
-        #if theta<beta.max():
-        #    idx,height, parents,label = Fbeta.threshold_bifurcations(0,theta)
-        #else:
-        #    idx = []
-        #    parents = []
-        #    label = -np.ones(np.shape(beta))
-        #
-        # remove the small regions
-        #k = np.size(idx)
-        #nroi = hroi.ROI_Hierarchy(k,idx, parents,label)      
-        #nroi = _clean_size_(nroi,smin)
-        #nroi = _clean_size_and_connectivity_(nroi,Fbeta,smin)
         nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,th=theta,smin=smin)
         BF.append(nroi)
         
         if nroi.k>0:
+            sub.append(s*np.ones(nroi.k))
             # find some way to avoid coordinate averaging
             bfm = nroi.discrete_to_roi_features('activation','average')
-            #idx = nroi.get_seed()
-            #parents = nroi.get_parents()
-            #label = nroi.get_label()
-            #nroi.make_feature(beta, 'height','mean')
-            #bfm = nroi.get_roi_feature('height')
-            #nroi.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            # fixme: use cumulated average instead
-            idx = [nroi.discrete_features['masked_index'][k] for k in range(nroi.k)]
-            pdata = [tal[np.ravel(idx[k])] for k in range(nroi.k)]
-            nroi.set_discrete_feature('coord',pdata)
-            bfc = nroi.discrete_to_roi_features('coord','average')
-            
+
+            # compute the region position
+            nroi.compute_discrete_position()
+            bfc = nroi.discrete_to_roi_features('position','cumulated_average')            
             gfc.append(bfc)
 
             # compute the prior proba of being null
@@ -552,8 +528,6 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
             bf0 = bfp[:,1]/np.sum(bfp,1)
             gf0.append(bf0)
             
-            sub.append(s*np.ones(nroi.k))
-
     crmap = -np.ones(nvox, np.int)
     u = []
     AF = []
@@ -586,7 +560,7 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
     valid = q>thq
     print np.sum(valid),np.size(valid)
 
-    # remove non-significant region
+    # remove non-significant regions
     for s in range(nbsubj):
         bfs = BF[s]
         if bfs.k>0:
@@ -595,17 +569,13 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
             bfs.clean(valids)
             bfs.merge_descending()
             
-            #bfs.remove_roi_feature('coord')
-            #bfs.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            idx = [bfs.discrete_features['masked_index'][k] for k in range(bfs.k)]
-            pdata = [tal[np.ravel(idx[k])] for k in range(bfs.k)]
-            # fixme: use cumulated average instead
-            bfs.set_discrete_feature('coord',pdata)
-            bfc = bfs.discrete_to_roi_features('coord','average')
+            # re-compute the region position
+            bfs.compute_discrete_position()
+            bfc = bfs.discrete_to_roi_features('position','cumulated_average')
             # Alan's choice
             #beta = np.reshape(lbeta[:,s],(nvox,1))
             #bfsc = tal[bfs.feature_argmax(beta)]
-            #bfs.set_roi_feature(bfsc,'coord')
+            #bfs.set_roi_feature(bfsc,'position')
                     
     gc = hierarchical_asso(BF,np.sqrt(2)*dmax)
 
@@ -624,7 +594,7 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
     # make the group-level label map
     crmap = make_crmap(AF,tal,verbose)
 
-    return crmap,AF,BF,u,p
+    return crmap,AF,BF,p
 
 
 def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
@@ -669,18 +639,15 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        #nroi = hroi.generate_blobs(Fbeta,refdim=0,th=theta,smin = smin)
         nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,th=theta,smin=smin)
         BF.append(nroi)
         
         if nroi.k>0:
             bfm = nroi.discrete_to_roi_features('activation','average')
             bfm = bfm[nroi.isleaf()]#---
+
             #fixme: masked_index should not be used
-            
-            idx = [nroi.discrete_features['masked_index'][k] for k in range(nroi.k)]
-            pdata = [tal[np.ravel(idx[k])] for k in range(nroi.k)]
-            nroi.set_discrete_feature('position',pdata)
+            nroi.compute_discrete_position()
             bfc = nroi.discrete_to_roi_features('position','average')
             bfc = bfc[nroi.isleaf()]#---
             gfc.append(bfc)
@@ -745,7 +712,6 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     # append some information to the hroi in each subject
     for s in range(nbsubj):
         bfs = BF[s]
-        #bfs.remove_roi_feature('position')
         if bfs.k>0:
             leaves = bfs.isleaf()
             us = -np.ones(bfs.k).astype(np.int)
@@ -770,20 +736,14 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one 
-    #AF,nl = _infer_amers(BF,u,qf,thq,ths) 
     AF,nl = infer_amers(BF,thq,ths)
 
     # make a group-level map of the landmark position
-    #crmap = make_crmap(AF,tal,verbose)
     crmap = -np.ones(np.shape(label))
-    q = 0
-    
-    for i in range(u.max()+1):
-        if np.unique(nl[u==i])>-1:
-            crmap[label==i]= np.unique(nl[u==i])            
+    crmap[label>-1]=nl[label[label>-1]]
+    #q=0
+    #for i in range(u.max()+1):crmap[label==i]=nl[label==i]
+        #if np.unique(nl[u==i])>-1:
+        #    crmap[label==i]= np.unique(nl[u==i])            
             
-    return crmap,AF,BF,nl,p
-
-# ----------------------------------------------------------------
-# ---------- Deprecated stuff ------------------------------------
-# ----------------------------------------------------------------
+    return crmap,AF,BF,p

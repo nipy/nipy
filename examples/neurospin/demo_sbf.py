@@ -11,7 +11,7 @@ import scipy.stats as st
 import matplotlib.pylab as mp
 import fff2.graph.field as ff
 import fff2.utils.simul_2d_multisubject_fmri_dataset as simul
-import fff2.spatial_models.bayesian_structural_analysis as bsa
+import fff2.spatial_models.structural_bfls as sbf
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
                         nbeta=[0]):
@@ -33,33 +33,18 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     # get the functional information
     lbeta = np.array([np.ravel(betas[k]) for k in range(nbsubj)]).T
 
-    # the voxel volume is 1.0
-    g0 = 1.0/(1.0*nbvox)
-    bdensity = 1
+    header = None
+    group_map, AF, BF, labels = sbf.Compute_Amers (Fbeta,lbeta,xyz,header, tal,dmax = 10., thr=3.0, ths = nbsubj/2,pval=0.2)
     
-    #group_map, AF, BF, likelihood = \
-    #           bsa.compute_BSA_ipmi(Fbeta, lbeta, tal, dmax,xyz, None, thq,
-    #                                  smin, ths, theta, g0, bdensity)
-    group_map, AF, BF, likelihood = \
-               bsa.compute_BSA_simple(Fbeta, lbeta, tal, dmax,xyz, None, thq,
-                                      smin, ths, theta, g0, bdensity)
-    #group_map, AF, BF, likelihood = \
-    #           bsa.compute_BSA_dev(Fbeta, lbeta, tal, dmax,xyz, None, thq,
-    #                                  smin, ths, theta, g0, bdensity)
-    lmax = np.size(AF)+2
+    labels[labels==-1] = np.size(AF)+2
   
     group_map.shape = ref_dim
     mp.figure()
-    mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
+    mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=labels.max())
     mp.title('Group-level label map')
     mp.colorbar()
 
-    likelihood.shape = ref_dim
-    mp.figure()
-    mp.imshow(likelihood, interpolation='nearest')
-    mp.title('Data likelihood')
-    mp.colorbar()
-
+    sub = np.concatenate([s*np.ones(BF[s].k) for s in range(nbsubj)])
     mp.figure()
     if nbsubj==10:
         for s in range(nbsubj):
@@ -71,7 +56,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                 xyzk = BF[s].discrete[k].T 
                 lw[xyzk[1],xyzk[2]] =  nls[k]
 
-            mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
+            mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=labels.max())
             mp.axis('off')
 
     mp.figure()
