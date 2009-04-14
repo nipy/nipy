@@ -6,7 +6,7 @@ from nipy.testing import *
 
 from nipy.utils.tests.data import repository
 
-from  neuroimaging.core.api import Image
+from  nipy.core.api import Image
 from nipy.fixes.scipy.stats.models.contrast import Contrast
 
 from nipy.modalities.fmri.api import FmriImageList

@@ -28,7 +28,7 @@ class FmriImageList(ImageList):
 
         See Also
         --------
-        neuroimaging.core.image_list.ImageList
+        nipy.core.image_list.ImageList
 
         >>> from numpy import asarray
         >>> from nipy.testing import funcfile

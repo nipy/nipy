@@ -1,5 +1,5 @@
 """
-A simple way of storing `neuroimaging.core.image.image.Image`'s in .npz files.
+A simple way of storing `nipy.core.image.image.Image`'s in .npz files.
 
 Also includes NPZBuffer that keeps data in an ndarray instance until flushed to an .npz file.
 

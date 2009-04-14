@@ -40,7 +40,7 @@ def Fmask(Fimg, dfnum, dfdenom, pvalue=1.0e-04):
     an F contrast.
     """
 
-    ## TODO check neuroimaging.fixes.scipy.stats.models.contrast to see if rank is
+    ## TODO check nipy.fixes.scipy.stats.models.contrast to see if rank is
     ## correctly set -- I don't think it is right now.
     
     print dfnum, dfdenom
@@ -83,7 +83,7 @@ class SecondStage:
     Parameters
     ----------
     fmri_image : `FmriImage`
-    formula :  `neuroimaging.modalities.fmri.protocol.Formula`
+    formula :  `nipy.modalities.fmri.protocol.Formula`
     rho : Image of AR(1) coefficients.
     """
 

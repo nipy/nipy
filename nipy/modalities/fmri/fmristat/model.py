@@ -107,7 +107,7 @@ class OLS:
     Parameters
     ----------
     fmri_image : `FmriImageList`
-    formula :  `neuroimaging.modalities.fmri.protocol.Formula`
+    formula :  `nipy.modalities.fmri.protocol.Formula`
 
     """
 
@@ -194,7 +194,7 @@ class AR1:
     Parameters
     ----------
     fmri_image : `FmriImageList`
-    formula :  `neuroimaging.modalities.fmri.protocol.Formula`
+    formula :  `nipy.modalities.fmri.protocol.Formula`
     rho : Image of AR(1) coefficients.
     """
 

@@ -83,14 +83,14 @@ class test_Protocol(test_ProtocolSetup):
 
     # FIXME: Fix recursion error: c =
     #     contrast.Contrast(self.p.main_effect(), formula) File
-    #     "/Users/cburns/src/nipy-trunk/neuroimaging/modalities/fmri/protocol.py",
+    #     "/Users/cburns/src/nipy-trunk/nipy/modalities/fmri/protocol.py",
     #     line 307, in main_effect return
     #     ExperimentalQuantitative('%s:maineffect' % self.termname, f)
     #     File
-    #     "/Users/cburns/src/nipy-trunk/neuroimaging/modalities/fmri/protocol.py",
+    #     "/Users/cburns/src/nipy-trunk/nipy/modalities/fmri/protocol.py",
     #     line 139, in __init__ test =
     #     np.array(self.func(np.array([4.0,5.0,6]))) File
-    #     "/Users/cburns/src/nipy-trunk/neuroimaging/modalities/fmri/protocol.py",
+    #     "/Users/cburns/src/nipy-trunk/nipy/modalities/fmri/protocol.py",
     #     line 305, in <lambda> f = lambda t: f(t)
     @dec.knownfailure
     def testContrast2(self):

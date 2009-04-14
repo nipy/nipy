@@ -26,7 +26,7 @@ Specifically, we aim to:
 
 Package Organization 
 ==================== 
-The neuroimaging package contains the following subpackages and modules: 
+The nipy package contains the following subpackages and modules: 
 
 .. packagetree:: 
    :style: UML  
@@ -61,7 +61,7 @@ except ImportError:
 
 
 def _test_local_install():
-    """ Warn the user that running with neuroimaging being
+    """ Warn the user that running with nipy being
         imported locally is a bad idea.
     """
     import os
