@@ -6,37 +6,6 @@ from neuroimaging.neurospin.graph.forest import Forest
 from neuroimaging.neurospin.utils.roi import MultipleROI
 
 
-def  generate_blobs(Field,refdim=0,th=-np.infty,smin = 0):
-        """
-        NROI = threshold_bifurcations(refdim = 0,th=-infty,smin=0)
-
-        INPUT
-        - th is a threshold so that only values above th are considered
-        by default, th = -infty (numpy)
-        - smin is the minimum size (in number of nodes) of the blobs to 
-        keep.
-
-         """
-        if Field.field.max()>th:
-            idx,height,parents,label = Field.threshold_bifurcations(refdim,th)
-        else:
-            idx = []
-            parents = []
-            label = -np.ones(Field.V)
-        
-        k = np.size(idx)
-        nroi = ROI_Hierarchy(k,idx, parents,label)      
-        k = 2* nroi.get_k()
-        if k>0:
-            while k>nroi.get_k():
-                k = nroi.get_k()
-                size = nroi.compute_size()
-                nroi.merge_ascending(size>smin,None)
-                nroi.merge_descending(None)
-                size = nroi.compute_size()
-                nroi.clean(size>smin)
-                nroi.check()
-        return nroi
 
 
 
@@ -89,7 +58,47 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
             
             nroi.clean(size>smin)
             nroi.check()
-    #fixme : add some data as a field 
+
+    return nroi
+
+def NROI_from_watershed(Field,header,xyz,refdim=0,th=-np.infty):
+    """
+    Instantiate an NROI structure from a given Field and a header
+    
+    INPUT
+    - Field is the field to be watershed
+    - header is a referential-defining argument
+    - xyz is a set of coordinate arrays that corresponds to array positions
+    - refdim=0: dimension fo the Field to consider (when multi-dimensional)
+    - th is a threshold so that only values above th are considered
+    by default, th = -infty (numpy)
+    
+    NOTE
+    - when no region is produced (no Nroi can be defined),
+    the return value is None
+    - additionally a discrete_field is created, with the key 'activation',
+    which refers to the input data used to create the NROI
+    """
+    if Field.field[:,refdim].max()>th:
+        idx,height,parents,label = Field.custom_watershed(refdim,th)
+    else:
+        idx = []
+        parents = []
+        label = -np.ones(Field.V)
+        
+    k = np.size(idx)
+    if k==0: return None
+    discrete = [xyz[label==i] for i in range(k)]
+    nroi = NROI(parents,header,discrete)
+    feature = [Field.get_field()[label==i] for i in range(k)]
+    nroi.set_discrete_feature('activation', feature)
+    
+    # this should disappear in the future 
+    midx = [np.expand_dims(np.nonzero(label==i)[0],1) for i in range(k)]
+    nroi.set_discrete_feature('masked_index', midx)
+
+    # this is  a custom thing, sorry
+    nroi.set_roi_feature('seed', idx)
     return nroi
 
 
@@ -113,22 +122,23 @@ class NROI(MultipleROI,Forest):
         - header=None: space defining information
         (to be replaced by a more adequate structure)
         - discrete=None list of position arrays
-        that yield the grid position of each grid guy. 
+        that yield the grid position of each grid guy.
+        -id=None: region identifier
         """
         if parents==None:
             return None
         k = np.size(parents)
         Forest.__init__(self,k,parents)
-        MultipleROI.__init__(self,id, k,header)
-        if discrete!=None: self.set_discrete(discrete)
-        # fixme: discrete could be integrated
-        # within the builder of MultipleROI
+        MultipleROI.__init__(self,id, k,header,discrete)
 
     def clean(self, valid):
         """
         remove the rois for which valid==0
         and update the hierarchy accordingly
+        In case sum(valid)==0, None is returned
         """
+        if np.sum(valid)==0:
+            return None
         # first clean as a forest
         sf = self.subforest(valid)
         Forest.__init__(self,sf.V,sf.parents)
@@ -263,7 +273,7 @@ class NROI(MultipleROI,Forest):
         # now copy the roi_features
         fids = self.roi_features.keys()
         for fid in fids:
-            nroi.set_roi_feature(fid,self.roi_feature(fid).copy())
+            nroi.set_roi_feature(fid,self.roi_features[fid].copy())
 
         # now copy the discrete_features
         fids = self.discrete_features.keys()
@@ -272,6 +282,73 @@ class NROI(MultipleROI,Forest):
             nroi.set_discrete_feature(fid,df)
         return nroi
     
+    def discrete_to_roi_features(self,fid,method='average'):
+        """
+        Compute an ROI-level feature given the discrete features
+        INPUT:
+        - fid(string) the discrete feature under consideration
+        - method='average' the assessment method
+        OUPUT:
+        the computed roi-feature is returned
+        """
+        if method not in['min','max','average','cumulated_average']:
+            raise  ValueError, 'unknown method'
+        if method=='cumulated_average':
+            df = self.discrete_features[fid]
+            data = self.discrete_features[fid]
+            d0 = data[0]
+            if np.size(d0) == np.shape(d0)[0]:
+                np.reshape(d0,(np.size(d0),1))
+            fdim = d0.shape[1]
+            ldata = np.zeros((self.k,fdim))
+            for k in range(self.k):
+                dk = self.get_descendents(k)
+                card = np.sum(self.get_size()[dk])
+                for ch in dk:
+                    ldata[k] += np.sum(data[ch],0)  
+                ldata[k]/=card
+            self.set_roi_feature(fid,ldata)
+        else:
+            ldata = MultipleROI.discrete_to_roi_features(self,fid,method)
+
+        return ldata
+
+# -----------------------------------------------------------------------
+# ----------- deprecated stuff ------------------------------------------
+# -----------------------------------------------------------------------
+
+def  _generate_blobs_(Field,refdim=0,th=-np.infty,smin = 0):
+        """
+        NROI = threshold_bifurcations(refdim = 0,th=-infty,smin=0)
+
+        INPUT
+        - th is a threshold so that only values above th are considered
+        by default, th = -infty (numpy)
+        - smin is the minimum size (in number of nodes) of the blobs to 
+        keep.
+
+         """
+        if Field.field.max()>th:
+            idx,height,parents,label = Field.threshold_bifurcations(refdim,th)
+        else:
+            idx = []
+            parents = []
+            label = -np.ones(Field.V)
+        
+        k = np.size(idx)
+        nroi = ROI_Hierarchy(k,idx, parents,label)      
+        k = 2* nroi.get_k()
+        if k>0:
+            while k>nroi.get_k():
+                k = nroi.get_k()
+                size = nroi.compute_size()
+                nroi.merge_ascending(size>smin,None)
+                nroi.merge_descending(None)
+                size = nroi.compute_size()
+                nroi.clean(size>smin)
+                nroi.check()
+        return nroi
+
 
 class ROI_Hierarchy:
     """

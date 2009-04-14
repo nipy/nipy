@@ -20,6 +20,7 @@ def make_bsa_nifti(nbsubj, Mask_Images, betas, nbru='1', theta=3., dmax =  5., t
     
     # Read the referential
     nim = nifti.NiftiImage(Mask_Images[0])
+    header = nim.header
     ref_dim = nim.getVolumeExtent()
     grid_size = np.prod(ref_dim)
     sform = nim.header['sform']
@@ -60,9 +61,9 @@ def make_bsa_nifti(nbsubj, Mask_Images, betas, nbru='1', theta=3., dmax =  5., t
 
     # choose the method  you prefer
     
-    crmap,AF,BF,u,p = bsa.compute_BSA_ipmi(Fbeta,lbeta,tal,dmax,thq, smin,ths, theta,g0,bdensity)
-    #crmap,AF,BF,u,p = bsa.compute_BSA_dev (Fbeta,lbeta,tal,dmax,thq, smin,ths, theta,g0,bdensity)
-    #crmap,AF,BF,u,p = bsa.compute_BSA_simple (Fbeta,lbeta,tal,dmax,xyz[:,:3],None,thq, smin,ths, theta,g0,bdensity)
+    #crmap,AF,BF,p = bsa.compute_BSA_ipmi(Fbeta,lbeta,tal,dmax,xyz[:,:3],header,thq, smin,ths, theta,g0,bdensity)
+    #crmap,AF,BF,p = bsa.compute_BSA_dev (Fbeta,lbeta,tal,dmax,xyz[:,:3],header,thq, smin,ths, theta,g0,bdensity,verbose=1)
+    crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta,lbeta,tal,dmax,xyz[:,:3],header,thq, smin,ths, theta,g0,bdensity)
 
     # Write the results
     LabelImage = op.join(swd,"CR_%04d.nii"%nbeta[0])
@@ -72,8 +73,6 @@ def make_bsa_nifti(nbsubj, Mask_Images, betas, nbru='1', theta=3., dmax =  5., t
     nim.description='group Level labels from bsa procedure'
     nim.save(LabelImage)    
     
-    u[u==-1] = np.size(AF)+2
-
     if bdensity:
         DensImage = op.join(swd,"density_%04d.nii"%nbeta[0])
         density = np.zeros(ref_dim)
@@ -82,23 +81,17 @@ def make_bsa_nifti(nbsubj, Mask_Images, betas, nbru='1', theta=3., dmax =  5., t
         nim.description='group-level spatial density of active regions'
         nim.save(DensImage)
         
-    #qq = 0
     sub = np.concatenate([s*np.ones(BF[s].k) for s in range(nbsubj)])
     for s in range(nbsubj):
         LabelImage = op.join(swd,"AR_s%04d_%04d.nii"%(nbru[s],nbeta[0]))
         Label = -2*np.ones(ref_dim,'int16')
-
+        Label[mask>nbsubj/2]=-1
+        
         nls = BF[s].get_roi_feature('label')
-        nls[nls==-1] = np.size(AF)+2
+        nls[nls==-1] = AF.k+2
         for k in range(BF[s].k):
             xyzk = BF[s].discrete[k].T 
             Label[xyzk[0],xyzk[1],xyzk[2]] =  nls[k]
-            
-        #lw = BF[s].label.astype('i')
-        #us = u[sub==s]
-        #lw[lw>-1]= us[lw[lw>-1]]
-        #Label[mask>nbsubj/2] = lw
-        #qq = qq + BF[s].get_k()
         
         nim = nifti.NiftiImage(np.transpose(Label),rbeta.header)
         nim.description='Individual label image from bsa procedure'
