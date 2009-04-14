@@ -16,11 +16,13 @@ See documentation for load and save functions for 'working' examples.
 
 import numpy as np
 
-from neuroimaging.core.reference.coordinate_map import reorder_input, reorder_output
+from neuroimaging.core.reference.coordinate_map import (reorder_input, 
+                                                        reorder_output)
 from neuroimaging.core.api import Image
 from pyniftiio import PyNiftiIO
-from nifti_ref import coordmap_from_ioimg, coerce_coordmap, get_pixdim, get_diminfo, standard_order
-
+from nifti_ref import (coordmap_from_ioimg, coerce_coordmap, get_pixdim, 
+                       get_diminfo, standard_order)
+                       
 def _open(source, coordmap=None, mode="r", dtype=None):
     """Create an `Image` from the given filename
 
@@ -110,15 +112,20 @@ def save(img, filename, dtype=None):
     Examples
     --------
 
+    >>> import os
     >>> import numpy as np
-    >>> from tempfile import NamedTemporaryFile
-    >>> from neuroimaging.core.api import save_image, fromarray
+    >>> from tempfile import mkstemp
+    >>> from neuroimaging.core.api import fromarray
+    >>> from neuroimaging.io.api import save_image
     >>> data = np.zeros((91,109,91), dtype=np.uint8)
     >>> img = fromarray(data, 'kji', 'zxy')
-    >>> tmpfile = NamedTemporaryFile(suffix='.nii.gz')
+    >>> fd, name = mkstemp(suffix='.nii.gz')
+    >>> tmpfile = open(name)
     >>> saved_img = save_image(img, tmpfile.name)
     >>> saved_img.shape
     (91, 109, 91)
+    >>> tmpfile.close()
+    >>> os.unlink(name)
 
     Notes
     -----

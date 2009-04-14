@@ -31,52 +31,34 @@ The neuroimaging package contains the following subpackages and modules:
 .. packagetree:: 
    :style: UML  
 """
-__docformat__ = 'restructuredtext en'
-
 
 
 from version import version as __version__
-# FIXME
-#__revision__ = int("$Rev$".split()[-2])
 __status__   = 'alpha'
-__date__    = "$LastChangedDate$"
 __url__     = 'http://neuroimaging.scipy.org'
 
-packages = (
-  'neuroimaging',
-  'neuroimaging.algorithms',
-  'neuroimaging.algorithms.tests',
-  'neuroimaging.algorithms.statistics',
-  'neuroimaging.algorithms.statistics.tests',
-  'neuroimaging.core',
-  'neuroimaging.core.image',
-  'neuroimaging.core.image.tests',
-  'neuroimaging.core.reference',
-  'neuroimaging.core.reference.tests',
-  'neuroimaging.io',
-  'neuroimaging.io.tests',
-  'neuroimaging.modalities',
-  'neuroimaging.modalities.fmri',
-  'neuroimaging.modalities.fmri.tests',
-  'neuroimaging.modalities.fmri.fmristat',
-  'neuroimaging.modalities.fmri.fmristat.tests',
-  'neuroimaging.utils',
-  'neuroimaging.utils.tests',
-  'neuroimaging.utils.tests.data',
-  'neuroimaging.testing')
+# We require numpy 1.2 for our test suite.  If Tester fails to import,
+# check the version of numpy the user has and inform them they need to
+# upgrade.
+try:
+    from neuroimaging.testing import Tester
+    test = Tester().test
+    bench = Tester().bench
+except ImportError:
+    # If the user has an older version of numpy which does not have
+    # the nose test framework, fail gracefully and prompt them to
+    # upgrade.
+    import numpy as np
+    npver = np.__version__.split('.')
+    npver = '.'.join((npver[0], npver[1]))
+    npver = float(npver)
+    if npver < 1.2:
+        raise ImportError('Nipy requires numpy version 1.2 or greater. '
+                          '\n    You have numpy version %s installed.'
+                          '\n    Please upgrade numpy:  '
+                          'http://www.scipy.org/NumPy' 
+                          % np.__version__)
 
-def import_from(modulename, objectname):
-    """Import and return objectname from modulename."""
-    module = __import__(modulename, {}, {}, (objectname,))
-    try:
-        return getattr(module, objectname)
-    except AttributeError:
-        return None
-
-from neuroimaging.testing import Tester
-
-test = Tester().test
-bench = Tester().bench
 
 def _test_local_install():
     """ Warn the user that running with neuroimaging being

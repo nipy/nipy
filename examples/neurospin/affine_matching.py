@@ -2,9 +2,8 @@
 
 from neuroimaging.neurospin import register 
 
-# The following import provides image loading and saving
-# functionailities. They are to be replaced with nipy builtins.
-from neuroimaging.neurospin import neuro
+# Use Matthew's volumeimages for I/O. 
+import volumeimages
 
 from os.path import join
 import sys
@@ -49,13 +48,14 @@ print ('Optimizer: %s' % optimizer)
 
 # Get data
 print('Fetching image data...')
-I = neuro.image(join(rootpath,'nobias_'+source+'.nii'), iolib=iolib)
-J = neuro.image(join(rootpath,'nobias_'+target+'.nii'), iolib=iolib)
+I = volumeimages.load(join(rootpath,'nobias_'+source+'.nii'))
+J = volumeimages.load(join(rootpath,'nobias_'+target+'.nii'))
 
 # Perform affine normalization 
 print('Setting up registration...')
 tic = time.time()
-T = register.imatch(I.array, J.array, I.transform, J.transform, 
+T = register.imatch(I.get_data(), J.get_data(), 
+		    I.get_affine(), J.get_affine(), 
 		    similarity=similarity, 
 		    interp=interp, 
 		    normalize=normalize, 
@@ -66,8 +66,8 @@ print('  Registration time: %f sec' % (toc-tic))
 # Resample source image
 print('Resampling source image...')
 tic = time.time()
-It = neuro.image(J)
-It.set_array(register.transform.resample(T, I.array, J.array, I.transform, J.transform))
+It_data = register.transform.resample(T, I.get_data(), J.get_data(), I.get_affine(), J.get_affine())
+It = volumeimages.nifti1.Nifti1Image(affine=J.get_affine(), data=It_data)
 toc = time.time()
 print('  Resampling time: %f sec' % (toc-tic))
 
@@ -75,7 +75,7 @@ print('  Resampling time: %f sec' % (toc-tic))
 # Save resampled source
 outfile =  source+'_TO_'+target+'.nii'
 print ('Saving resampled source in: %s' % outfile)
-It.save(outfile)
+It.to_files(outfile)
 
 # Save transformation matrix
 """

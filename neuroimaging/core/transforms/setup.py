@@ -1,10 +1,8 @@
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
-    config = Configuration('core', parent_package, top_path)
+    config = Configuration('transforms', parent_package, top_path)
 
-    config.add_subpackage('image')
-    config.add_subpackage('reference')
-    config.add_subpackage('transforms')
+    config.add_data_dir('tests')
 
     return config
 
