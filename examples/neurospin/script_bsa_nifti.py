@@ -85,9 +85,10 @@ def make_bsa_nifti(nbsubj, Mask_Images, betas, nbru='1', theta=3., dmax =  5., t
     for s in range(nbsubj):
         LabelImage = op.join(swd,"AR_s%04d_%04d.nii"%(nbru[s],nbeta[0]))
         Label = -2*np.ones(ref_dim,'int16')
-
+        Label[mask>nbsubj/2]=-1
+        
         nls = BF[s].get_roi_feature('label')
-        nls[nls==-1] = np.size(AF)+2
+        nls[nls==-1] = AF.k+2
         for k in range(BF[s].k):
             xyzk = BF[s].discrete[k].T 
             Label[xyzk[0],xyzk[1],xyzk[2]] =  nls[k]

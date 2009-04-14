@@ -122,7 +122,8 @@ class NROI(MultipleROI,Forest):
         - header=None: space defining information
         (to be replaced by a more adequate structure)
         - discrete=None list of position arrays
-        that yield the grid position of each grid guy. 
+        that yield the grid position of each grid guy.
+        -id=None: region identifier
         """
         if parents==None:
             return None

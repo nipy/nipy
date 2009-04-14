@@ -253,7 +253,7 @@ def make_crmap(AF,tal,verbose=0):
         gscore = np.minimum(gscore,lscore)
     return crmap
 
-def infer_amers(BF,thq=0.95,ths=0,verbose=0):
+def infer_LR(BF,thq=0.95,ths=0,verbose=0):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
@@ -271,6 +271,7 @@ def infer_amers(BF,thq=0.95,ths=0,verbose=0):
     - newlabel :  a relabelling of the individual ROIs, similar to u, which discards
     labels that do not fulfill the condition (c)
     """
+    # prepare various variables to ease information manipulation
     nbsubj = np.size(BF)
     subj = np.concatenate([s*np.ones(BF[s].k, np.int) for s in range(nbsubj)])
     nrois = np.size(subj)
@@ -278,14 +279,15 @@ def infer_amers(BF,thq=0.95,ths=0,verbose=0):
     u = np.squeeze(u)
     conf =  np.concatenate([BF[s].get_roi_feature('posterior_proba') for s in range(nbsubj)])
     intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj)])
-    #newlabel = -np.ones(nrois, np.int)
     
-    AF = []
-    nl = 0
     if np.size(u)==0:  return AF,None
-    
+
+    coords = []
+    subjs=[]
     Mu = int(u.max()+1)
     valid = np.zeros(Mu).astype(np.int)
+    
+    # do some computation to find which regions are worth reporting
     for i in range(Mu):
         j = np.nonzero(u==i)
         j = np.reshape(j,np.size(j))
@@ -301,8 +303,10 @@ def infer_amers(BF,thq=0.95,ths=0,verbose=0):
         # If noise is too low the variance is 0: ill-defined:
         vp = max(vp, 1e-14)
 
-        if st.norm.sf(ths,mp,np.sqrt(vp)) >thq:
-            print nl,ths,mp,thq, st.norm.sf(ths,mp,np.sqrt(vp))
+        # if above threshold, get some information to create the LR
+        if st.norm.sf(ths,mp,np.sqrt(vp)) >thq:         
+            if verbose:
+                print valid.sum(),ths,mp,thq, st.norm.sf(ths,mp,np.sqrt(vp))
             valid[i]=1
             sj = np.size(j)
             idx = np.zeros(sj)
@@ -310,24 +314,25 @@ def infer_amers(BF,thq=0.95,ths=0,verbose=0):
             for a in range(sj):
                 sja = subj[j[a]]
                 isja = intrasubj[j[a]]
-                idx[a] = 0 # deprecated feature #BF[sja].seed[isja]
                 coord[a,:] = BF[sja].get_roi_feature('position')[isja]
 
-            amers = sbf.Amers(sj, subj[j], idx,coord)
-            AF.append(amers)
-            nl = nl+1
+            coords.append(coord)
+            subjs.append(subj[j])   
 
     maplabel = -np.ones(Mu).astype(np.int)
     maplabel[valid>0] = np.cumsum(valid[valid>0])-1
+    
+    # create the landmark regions structure
+    k = np.sum(valid)
+    LR = sbf.landmark_regions(k,header=BF[0].header,subj=subjs,coord=coords)
        
     # relabel the ROIs
     for s in range(nbsubj):
-        #nls = np.expand_dims(newlabel[subj==s],1)
         us = BF[s].get_roi_feature('label')
         us[us>-1] = maplabel[us[us>-1]]
         BF[s].set_roi_feature('label',us)
      
-    return AF,maplabel
+    return LR,maplabel
 
 
 #------------------------------------------------------------------
@@ -443,23 +448,23 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
     # compute probabilitsic correspondences across subjects
     gc = hierarchical_asso(BF,np.sqrt(2)*dmax)
 
+    if gc == []:
+        return crmap,AF,BF,p
+
     # make hard clusters
-    if gc != []:
-        # choose one solution...
-        #u = sbf.segment_graph_rd(gc,1)
-        u,cost = Average_Link_Graph_segment(gc,0.2,gc.V*1.0/nbsubj)
-            
-        AF,u = sbf.Build_Amers(BF,u,ths) 
-            
+    # choose one solution...
+    #u = sbf.segment_graph_rd(gc,1)
+    u,cost = Average_Link_Graph_segment(gc,0.2,gc.V*1.0/nbsubj)
+
     q = 0
     for s in range(nbsubj):
         BF[s].set_roi_feature('label',u[q:q+BF[s].k])
         q += BF[s].k
-
-    # Finally make the ouput map
-    crmap = make_crmap(AF,tal,verbose)
     
-    return crmap,AF,BF,p
+    LR,mlabel = sbf.build_LR(BF,ths)
+    crmap = LR.map_label(tal,dmax=2*dmax)
+    
+    return crmap,LR,BF,p
 
 #------------------------------------------------------------------
 # --------------- dev part ----------------------------------------
@@ -580,21 +585,22 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
     gc = hierarchical_asso(BF,np.sqrt(2)*dmax)
 
     # Infer the group-level clusters
-    if gc != []:
-        # either replictor dynamics or agglomerative clustering
-        #u = sbf.segment_graph_rd(gc,1)
-        u,cost = Average_Link_Graph_segment(gc,0.1,gc.V*1.0/nbsubj)                       
-        AF,u = sbf.Build_Amers(BF,u,ths) 
+    if gc == []:
+        return crmap,AF,BF,p
+
+    # either replictor dynamics or agglomerative clustering
+    #u = sbf.segment_graph_rd(gc,1)
+    u,cost = Average_Link_Graph_segment(gc,0.1,gc.V*1.0/nbsubj)
 
     q = 0
     for s in range(nbsubj):
         BF[s].set_roi_feature('label',u[q:q+BF[s].k])
         q += BF[s].k
+    
+    LR,mlabel = sbf.build_LR(BF,ths)
+    crmap = LR.map_label(tal,dmax=2*dmax)
 
-    # make the group-level label map
-    crmap = make_crmap(AF,tal,verbose)
-
-    return crmap,AF,BF,p
+    return crmap,LR,BF,p
 
 
 def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
@@ -736,14 +742,16 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one 
-    AF,nl = infer_amers(BF,thq,ths)
+    LR,nl = infer_LR(BF,thq,ths)
 
     # make a group-level map of the landmark position
     crmap = -np.ones(np.shape(label))
     crmap[label>-1]=nl[label[label>-1]]
-    #q=0
-    #for i in range(u.max()+1):crmap[label==i]=nl[label==i]
-        #if np.unique(nl[u==i])>-1:
-        #    crmap[label==i]= np.unique(nl[u==i])            
+ 
             
-    return crmap,AF,BF,p
+    return crmap,LR,BF,p
+
+# --------------------------------------------------------------------
+# ------- Deprecated Stuff -------------------------------------------
+# --------------------------------------------------------------------
+

@@ -34,13 +34,14 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     lbeta = np.array([np.ravel(betas[k]) for k in range(nbsubj)]).T
 
     header = None
-    group_map, AF, BF, labels = sbf.Compute_Amers (Fbeta,lbeta,xyz,header, tal,dmax = 10., thr=3.0, ths = nbsubj/2,pval=0.2)
+    group_map, AF, BF = sbf.Compute_Amers (Fbeta,lbeta,xyz,header, tal,dmax = 5., thr=3.0, ths = nbsubj/2,pval=0.2)
     
-    labels[labels==-1] = np.size(AF)+2
-  
+    lmax = AF.k+2
+    AF.show()
+    
     group_map.shape = ref_dim
     mp.figure()
-    mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=labels.max())
+    mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
     mp.title('Group-level label map')
     mp.colorbar()
 
@@ -56,7 +57,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                 xyzk = BF[s].discrete[k].T 
                 lw[xyzk[1],xyzk[2]] =  nls[k]
 
-            mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=labels.max())
+            mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
             mp.axis('off')
 
     mp.figure()
