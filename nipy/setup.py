@@ -1,7 +1,7 @@
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
-    config = Configuration('neuroimaging', parent_package, top_path)
+    config = Configuration('nipy', parent_package, top_path)
 
     # List all packages to be loaded here
     config.add_subpackage('algorithms')

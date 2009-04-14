@@ -46,7 +46,7 @@ have to escape the @ symbol which has special meaning in perl::
 
 Remove all occurences of importing make_doctest_suite::
 
-    perlpie 'from\sneuroimaging\.utils\.testutils.*make_doctest_suite'
+    perlpie 'from\snipy\.utils\.testutils.*make_doctest_suite'
 
 """
 

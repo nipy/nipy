@@ -1,5 +1,5 @@
 """
-Package containing core neuroimaging classes.
+Package containing core nipy classes.
 """
 __docformat__ = 'restructuredtext'
 

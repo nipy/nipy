@@ -4,7 +4,7 @@ data should be located in the directory ``~/.nipy/tests/data``.
 
 If the test data is not installed the user should be prompted with the
 option to download and install it when they run the examples.  The
-module neuroimaging/utils/get_data.py performs this.
+module nipy/utils/get_data.py performs this.
 
 Alternatively one could install the data from the svn repository, but
 this is much slower::
