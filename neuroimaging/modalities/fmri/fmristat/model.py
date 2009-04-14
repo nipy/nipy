@@ -8,27 +8,27 @@ import os.path as path
 import numpy as np
 from scipy.linalg import toeplitz
 
-from neuroimaging.fixes.scipy.stats.models.regression import OLSModel, ARModel
-from neuroimaging.fixes.scipy.stats.models.utils import recipr
+from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
+from nipy.fixes.scipy.stats.models.utils import recipr
 
 # nipy core imports
 
-from neuroimaging.core.api import Image, data_generator, parcels, matrix_generator
-from neuroimaging.core.api import f_generator, Image
-from neuroimaging.core.api import Affine, CoordinateMap
+from nipy.core.api import Image, data_generator, parcels, matrix_generator
+from nipy.core.api import f_generator, Image
+from nipy.core.api import Affine, CoordinateMap
 
 # nipy IO imports
 
-from neuroimaging.io.api import  save_image, load_image
+from nipy.io.api import  save_image, load_image
 
 # fmri imports
 
-from neuroimaging.modalities.fmri.api import FmriImageList, fmri_generator
-from neuroimaging.modalities.fmri.fmristat.delay import DelayContrast, \
+from nipy.modalities.fmri.api import FmriImageList, fmri_generator
+from nipy.modalities.fmri.fmristat.delay import DelayContrast, \
      DelayContrastOutput
 
 import neuroimaging.algorithms.statistics.regression as regression
-from neuroimaging.algorithms.fwhm import fastFWHM
+from nipy.algorithms.fwhm import fastFWHM
 import neuroimaging.algorithms.statistics.regression as regression
 
 

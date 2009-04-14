@@ -1,7 +1,7 @@
 import numpy as np
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine, \
+from nipy.core.reference.coordinate_map import CoordinateMap, Affine, \
     compose, CoordinateSystem, reorder_input, reorder_output, product, \
     replicate, linearize
 

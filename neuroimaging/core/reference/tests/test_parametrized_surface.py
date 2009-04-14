@@ -5,8 +5,8 @@ import numpy as np
 
 from nose.tools import assert_true, assert_false, assert_equal
 
-from neuroimaging.core.api import CoordinateMap, CoordinateSystem, Affine
-from neuroimaging.core.api import Grid
+from nipy.core.api import CoordinateMap, CoordinateSystem, Affine
+from nipy.core.api import Grid
 
 uv = CoordinateSystem('uv', 'input')
 xyz = CoordinateSystem('xyz', 'output')

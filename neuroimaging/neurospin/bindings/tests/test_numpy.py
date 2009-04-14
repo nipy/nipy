@@ -1,6 +1,6 @@
 # Test numpy bindings
 
-from neuroimaging.testing import *
+from nipy.testing import *
 import numpy as np
 import neuroimaging.neurospin.bindings as fb
 

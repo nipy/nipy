@@ -42,6 +42,6 @@ import slices
 __all__ = ["coordinate_system", "coordinate_map", 
            "slices"]
 
-from neuroimaging.testing import Tester
+from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench

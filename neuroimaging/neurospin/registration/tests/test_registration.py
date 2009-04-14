@@ -5,8 +5,8 @@ from numpy.testing import TestCase, assert_equal, assert_almost_equal, \
 import numpy as np
 from scipy.ndimage import affine_transform
 
-from neuroimaging.neurospin import registration 
-from neuroimaging.neurospin.registration.transform_affine import (
+from nipy.neurospin import registration 
+from nipy.neurospin.registration.transform_affine import (
     rvector_to_matrix, resample)
 
 class Image(object):

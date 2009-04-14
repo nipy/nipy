@@ -2,7 +2,7 @@
 
 from numpy.testing import assert_almost_equal, TestCase
 import numpy as np
-from neuroimaging.neurospin.glm.glm import glm
+from nipy.neurospin.glm.glm import glm
 
 class TestFitting(TestCase):
 

@@ -16,8 +16,8 @@ this is much slower::
 
 import os
 
-from neuroimaging.io.datasource import Repository
-from neuroimaging.utils.get_data import get_data
+from nipy.io.datasource import Repository
+from nipy.utils.get_data import get_data
 
 # data directory should be: $HOME/.nipy/tests/data
 datapath = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))

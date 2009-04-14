@@ -3,8 +3,8 @@ __docformat__ = 'restructuredtext'
 import csv, copy
 import numpy as np
 
-from neuroimaging.modalities.fmri.functions import Events
-from neuroimaging.fixes.scipy.stats.models.formula import Factor, Quantitative, Formula, Term
+from nipy.modalities.fmri.functions import Events
+from nipy.fixes.scipy.stats.models.formula import Factor, Quantitative, Formula, Term
 
 namespace = {}
 downtime = 'None/downtime'

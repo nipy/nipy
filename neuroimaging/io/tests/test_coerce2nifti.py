@@ -1,11 +1,11 @@
 import warnings
 import numpy as np
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.core import api
-from neuroimaging.io.files import coerce2nifti
-from neuroimaging.io.nifti_ref import coerce_coordmap
-from neuroimaging.core.reference.coordinate_map import reorder_input, reorder_output
+from nipy.core import api
+from nipy.io.files import coerce2nifti
+from nipy.io.nifti_ref import coerce_coordmap
+from nipy.core.reference.coordinate_map import reorder_input, reorder_output
 
 def setup():
     # Suppress warnings during tests to reduce noise

@@ -7,7 +7,7 @@ process data for real until fff is properly integrated into nipy.
 
 import numpy as np
 
-from neuroimaging.neurospin.utils import slice_time
+from nipy.neurospin.utils import slice_time
 
 DEFAULT_IOLIB = 'pynifti'
 
@@ -74,7 +74,7 @@ class image:
         """
         iolib = self.iolib 
         if iolib == 'nipy':
-            from neuroimaging.core.api import Image
+            from nipy.core.api import Image
             self._image = Image.load(filename)
             self.array = self._image.buffer
             self.transform = self._image.grid.mapping.transform

@@ -6,7 +6,7 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 
-from neuroimaging.modalities.fmri.utils import ConvolveFunctions, WaveFunction
+from nipy.modalities.fmri.utils import ConvolveFunctions, WaveFunction
 
 class Filter(object):
     '''
@@ -280,7 +280,7 @@ class FIR(Filter):
     waves.
 
     >>> GUI = True
-    >>> from neuroimaging.modalities.fmri import filters
+    >>> from nipy.modalities.fmri import filters
     >>> from pylab import *
     >>> from numpy import *
     >>> parameters = array([[1., 2.], [2., 5.], [4., 8.]])

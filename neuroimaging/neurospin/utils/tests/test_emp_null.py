@@ -5,7 +5,7 @@ import warnings
 
 import numpy as np
 
-from neuroimaging.neurospin.utils.emp_null import ENN
+from nipy.neurospin.utils.emp_null import ENN
 
 def setup():
     # Suppress warnings during tests to reduce noise

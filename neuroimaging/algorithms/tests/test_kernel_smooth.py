@@ -1,20 +1,20 @@
 import numpy as np
 from numpy.random import random_integers as randint
 
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.algorithms.kernel_smooth import LinearFilter
-from neuroimaging.core.api import Image
-from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine
+from nipy.algorithms.kernel_smooth import LinearFilter
+from nipy.core.api import Image
+from nipy.core.reference.coordinate_map import CoordinateMap, Affine
 
-from neuroimaging.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
+from nipy.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 
 """
 # FIXME: Need to make an automated test for this!
 class test_Kernel(TestCase):
     @dec.gui
     import pylab
-    from neuroimaging.ui.visualization.viewer import BoxViewer
+    from nipy.ui.visualization.viewer import BoxViewer
     def test_smooth(self):
         rho = Image("rho.hdr", repository)
         smoother = LinearFilter(rho.grid)

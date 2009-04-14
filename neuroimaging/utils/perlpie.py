@@ -37,7 +37,7 @@ Replace all occurences of foo with bar::
 
 Replace numpy.testing with nipy's testing framework::
 
-    perlpie 'from\s+numpy\.testing.*' 'from neuroimaging.testing import *'
+    perlpie 'from\s+numpy\.testing.*' 'from nipy.testing import *'
 
 Replace all @slow decorators in my code with @dec.super_slow.  Here we
 have to escape the @ symbol which has special meaning in perl::
@@ -77,7 +77,7 @@ def perl_dash_pie(oldstr, newstr):
     --------
 
     # To replace all occurences of 'import numpy as N' with 'import numpy as np'
-    >>> from neuroimaging.utils import perlpie
+    >>> from nipy.utils import perlpie
     >>> perlpie.perl_dash_pie('import\s+numpy\s+as\s+N', 'import numpy as np')
     grind | xargs perl -pi -e 's/import\s+numpy\s+as\s+N/import numpy as np/g'
     

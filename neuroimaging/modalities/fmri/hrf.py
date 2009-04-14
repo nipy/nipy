@@ -12,9 +12,9 @@ __docformat__ = 'restructuredtext'
 import numpy as np
 import numpy.linalg as L
 
-from neuroimaging.modalities.fmri import filters
-from neuroimaging.modalities.fmri.utils import LinearInterpolant as interpolant
-from neuroimaging.modalities.fmri.fmristat.invert import invertR
+from nipy.modalities.fmri import filters
+from nipy.modalities.fmri.utils import LinearInterpolant as interpolant
+from nipy.modalities.fmri.fmristat.invert import invertR
 
 def glover2GammaDENS(peak_hrf, fwhm_hrf):
     """
@@ -95,7 +95,7 @@ class SpectralHRF(filters.Filter):
         >>> GUI = True
         >>> import numpy as np
         >>> from pylab import plot, title, show
-        >>> from neuroimaging.modalities.fmri.hrf import glover, glover_deriv, SpectralHRF
+        >>> from nipy.modalities.fmri.hrf import glover, glover_deriv, SpectralHRF
         >>>
         >>> ddelta = 0.25
         >>> delta = np.arange(-4.5,4.5+ddelta, ddelta)

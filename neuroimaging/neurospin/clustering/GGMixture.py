@@ -370,7 +370,7 @@ class GGGM:
         """
         # positive gamma
         i = np.nonzero(x>0)
-        from neuroimaging.neurospin.utils import emp_null as en
+        from nipy.neurospin.utils import emp_null as en
         lfdr = en.FDR(x)
         
         if np.size(i)>0:

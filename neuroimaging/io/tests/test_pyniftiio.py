@@ -5,9 +5,9 @@ import warnings
 
 import numpy as np
 
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.io.pyniftiio import PyNiftiIO
+from nipy.io.pyniftiio import PyNiftiIO
 
 def setup():
     # Suppress warnings during tests to reduce noise

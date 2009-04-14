@@ -2,7 +2,7 @@ import numpy as np
 import scipy.stats as sps
 
 import kalman
-from neuroimaging.neurospin.utils import mahalanobis
+from nipy.neurospin.utils import mahalanobis
 
 
 DEF_TINY = 1e-50
@@ -221,7 +221,7 @@ class contrast:
 		th = z[np.where(z<np.inf)].max()
 		z = np.minimum(z, int(th+1))
 		"""
-		from neuroimaging.neurospin.utils.zscore import zscore
+		from nipy.neurospin.utils.zscore import zscore
 		z = zscore(self._pvalue)		
 		return z
 

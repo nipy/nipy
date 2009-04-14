@@ -1,10 +1,10 @@
 import warnings
 import numpy as np
 
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.core.api import Affine, CoordinateSystem
-from neuroimaging.core.reference import coordinate_system
+from nipy.core.api import Affine, CoordinateSystem
+from nipy.core.reference import coordinate_system
 import neuroimaging.io.nifti_ref as nifti
 
 shape = range(1,8)

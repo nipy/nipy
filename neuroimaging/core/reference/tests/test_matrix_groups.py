@@ -4,7 +4,7 @@ from scipy.linalg import expm
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 import matrix_groups as MG
-from neuroimaging.core.api import ArrayCoordMap
+from nipy.core.api import ArrayCoordMap
 
 A = np.array([[0,1],
               [1,0]])

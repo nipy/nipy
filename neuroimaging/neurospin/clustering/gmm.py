@@ -150,7 +150,7 @@ class GMM:
         div = False
         if self.estimated:
             # get the minimal distance bteween data points
-            from neuroimaging.neurospin.graph import WeightedGraph as WG
+            from nipy.neurospin.graph import WeightedGraph as WG
             g = WG(data.shape[0])
             g.knn(data,1)
             d = g.weights.min()

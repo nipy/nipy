@@ -1,4 +1,4 @@
-from neuroimaging.testing import *
+from nipy.testing import *
 
 import numpy as np
 

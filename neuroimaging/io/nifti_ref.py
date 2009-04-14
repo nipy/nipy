@@ -35,8 +35,8 @@ NIFTI's voxel convention is what can best be described as 0-based
 FORTRAN indexing (confirm this). For example: suppose we want the
 x=20-th, y=10-th pixel of the third slice of an image with 30 64x64 slices. This
 
->>> from neuroimaging.testing import anatfile
->>> from neuroimaging.io.api import load_image
+>>> from nipy.testing import anatfile
+>>> from nipy.io.api import load_image
 >>> nifti_ijk = [19,9,2]
 >>> fortran_ijk = [20,10,3]
 >>> c_kji = [2,9,19]
@@ -58,8 +58,8 @@ from string import join
 
 import numpy as np
 
-from neuroimaging.core.api import CoordinateSystem, CoordinateMap, Affine
-from neuroimaging.core.reference.coordinate_map import reorder_input, reorder_output
+from nipy.core.api import CoordinateSystem, CoordinateMap, Affine
+from nipy.core.reference.coordinate_map import reorder_input, reorder_output
 
 valid_input_axisnames = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
 valid_output_axisnames = list('xyztuvw')

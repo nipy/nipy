@@ -1,10 +1,10 @@
 import numpy as np
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.core.api import (data_generator, parcels, write_data, 
+from nipy.core.api import (data_generator, parcels, write_data, 
                                    slice_generator)
-from neuroimaging.core.api import Image, Affine
-from neuroimaging.io.api import load_image, save_image
+from nipy.core.api import Image, Affine
+from nipy.io.api import load_image, save_image
 import neuroimaging.core.image.generators as gen
 
 class TestGenerator(TestCase):

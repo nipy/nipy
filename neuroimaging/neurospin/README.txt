@@ -13,5 +13,5 @@ typically will update an existing ``fff2`` code to use the new module:
 
 * import fff2. -> import neuroimaging.neurospin.
 * import fff2 -> import neuroimaging.neurospin as fff2
-* from fff2 -> from neuroimaging.neurospin
+* from fff2 -> from nipy.neurospin
 * fff2 -> neuroimaging.neurospin

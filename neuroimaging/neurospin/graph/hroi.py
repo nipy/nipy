@@ -2,7 +2,7 @@ import numpy as np
 import graph as fg
 
 from graph import Forest
-from neuroimaging.neurospin.utils.roi import MultipleROI
+from nipy.neurospin.utils.roi import MultipleROI
 
 class NROI(MultipleROI,Forest):
     """

@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from neuroimaging.neurospin.group import permutation_test as PT
+from nipy.neurospin.group import permutation_test as PT
 import neuroimaging.neurospin.graph as fg
 
 nperms = 2

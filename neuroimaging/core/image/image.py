@@ -8,10 +8,10 @@ merge_images : create an Image by merging a sequence of Image instance
 """
 import numpy as np
 
-from neuroimaging.core.reference.coordinate_map import reorder_input, reorder_output, Affine
-from neuroimaging.core.reference.coordinate_map import product as cmap_product
-from neuroimaging.core.reference.coordinate_system import CoordinateSystem
-from neuroimaging.core.reference.array_coords import ArrayCoordMap
+from nipy.core.reference.coordinate_map import reorder_input, reorder_output, Affine
+from nipy.core.reference.coordinate_map import product as cmap_product
+from nipy.core.reference.coordinate_system import CoordinateSystem
+from nipy.core.reference.array_coords import ArrayCoordMap
 
 __docformat__ = 'restructuredtext'
 __all__ = ['fromarray']
@@ -30,9 +30,9 @@ class Image(object):
     Examples
     --------
 
-    >>> from neuroimaging.core.image import image
-    >>> from neuroimaging.testing import anatfile
-    >>> from neuroimaging.io.api import load_image
+    >>> from nipy.core.image import image
+    >>> from nipy.testing import anatfile
+    >>> from nipy.io.api import load_image
     >>> img = load_image(anatfile)
 
     >>> import numpy as np

@@ -5,15 +5,15 @@ from tempfile import mkstemp
 import numpy as np
 import numpy.testing as nptest
 
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.core.image import image
-from neuroimaging.utils.tests.data import repository
-from neuroimaging.io.api import load_image, save_image
-from neuroimaging.core.api import Image, fromarray, merge_images
-from neuroimaging.core.api import parcels, data_generator, write_data
+from nipy.core.image import image
+from nipy.utils.tests.data import repository
+from nipy.io.api import load_image, save_image
+from nipy.core.api import Image, fromarray, merge_images
+from nipy.core.api import parcels, data_generator, write_data
 
-from neuroimaging.core.reference.coordinate_map import CoordinateMap, Affine
+from nipy.core.reference.coordinate_map import CoordinateMap, Affine
 
 def setup():
     # Suppress warnings during tests to reduce noise

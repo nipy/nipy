@@ -1,7 +1,7 @@
 import neuroimaging.neurospin as fff2
 
 import neuroimaging.neurospin.neuro
-from neuroimaging.neurospin.neuro.statistical_test import cluster_stats
+from nipy.neurospin.neuro.statistical_test import cluster_stats
 import numpy as np
 
 dx = 5

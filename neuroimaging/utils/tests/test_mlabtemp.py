@@ -6,7 +6,7 @@ import re
 import tempfile
 
 # Our own imports
-from neuroimaging.utils import mlabtemp
+from nipy.utils import mlabtemp
 
 # Functions, classes and other top-level code
 def check_mlab_tempfile(dir):

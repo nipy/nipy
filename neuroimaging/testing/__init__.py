@@ -5,8 +5,8 @@ a nipy-data-suite to be created later and downloaded separately.
 Examples
 --------
 
->>> from neuroimaging.testing import funcfile
->>> from neuroimaging.core.image import image
+>>> from nipy.testing import funcfile
+>>> from nipy.core.image import image
 >>> img = image.load(funcfile)
 >>> img.shape
 (20, 2, 20, 20)

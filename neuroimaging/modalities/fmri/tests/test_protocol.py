@@ -1,10 +1,10 @@
 import csv, os
 import numpy as np
-from neuroimaging.testing import *
-from neuroimaging.fixes.scipy.stats.models.utils import recipr0
-from neuroimaging.fixes.scipy.stats.models import contrast
+from nipy.testing import *
+from nipy.fixes.scipy.stats.models.utils import recipr0
+from nipy.fixes.scipy.stats.models import contrast
 
-from neuroimaging.modalities.fmri import hrf, protocol, functions
+from nipy.modalities.fmri import hrf, protocol, functions
 
 
 class test_ProtocolSetup(TestCase):

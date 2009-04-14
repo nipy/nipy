@@ -1,8 +1,8 @@
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.core.reference.slices import bounding_box, \
+from nipy.core.reference.slices import bounding_box, \
   zslice, yslice, xslice
-from neuroimaging.core.reference.coordinate_map import Affine
+from nipy.core.reference.coordinate_map import Affine
 
 # Names for a 3D axis set
 names = ['xspace','yspace','zspace']

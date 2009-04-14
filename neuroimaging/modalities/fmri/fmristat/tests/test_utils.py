@@ -2,21 +2,21 @@ import os, gc, shutil
 
 import numpy as np
 
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.utils.tests.data import repository
+from nipy.utils.tests.data import repository
 
 from  neuroimaging.core.api import Image
-from neuroimaging.fixes.scipy.stats.models.contrast import Contrast
+from nipy.fixes.scipy.stats.models.contrast import Contrast
 
-from neuroimaging.modalities.fmri.api import FmriImageList
-from neuroimaging.modalities.fmri.protocol import ExperimentalFactor,\
+from nipy.modalities.fmri.api import FmriImageList
+from nipy.modalities.fmri.protocol import ExperimentalFactor,\
   ExperimentalQuantitative
-from neuroimaging.modalities.fmri.functions import SplineConfound
-from neuroimaging.modalities.fmri.hrf import glover, glover_deriv
+from nipy.modalities.fmri.functions import SplineConfound
+from nipy.modalities.fmri.hrf import glover, glover_deriv
 
 # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
-#from neuroimaging.modalities.fmri.fmristat.utils import FmriStatAR, FmriStatOLS
+#from nipy.modalities.fmri.fmristat.utils import FmriStatAR, FmriStatOLS
 
 class test_FmriStat(TestCase):
 
@@ -157,7 +157,7 @@ class test_Contrast(test_FmriStat):
         rho = OLS.rho_estimator.img
         rho.tofile('rho.hdr', clobber=True)
         
-        from neuroimaging.ui.visualization import viewer
+        from nipy.ui.visualization import viewer
         v=viewer.BoxViewer(rho)
         v.draw()
 

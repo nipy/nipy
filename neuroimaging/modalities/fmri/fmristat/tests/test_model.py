@@ -3,15 +3,15 @@ import warnings
 from shutil import rmtree
 from tempfile import mkstemp, mkdtemp
 
-from neuroimaging.testing import *
+from nipy.testing import *
 
 import neuroimaging.modalities.fmri.fmristat.model as model
-from neuroimaging.modalities.fmri.api import fromimage
-from neuroimaging.io.api import load_image
+from nipy.modalities.fmri.api import fromimage
+from nipy.io.api import load_image
 
-from neuroimaging.modalities.fmri.protocol import Formula, \
+from nipy.modalities.fmri.protocol import Formula, \
     ExperimentalQuantitative
-from neuroimaging.fixes.scipy.stats.models.contrast import Contrast
+from nipy.fixes.scipy.stats.models.contrast import Contrast
 
 def setup():
     # Suppress warnings during tests to reduce noise

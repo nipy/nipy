@@ -2,7 +2,7 @@
 
 Example:
 
-from neuroimaging.utils.path import path
+from nipy.utils.path import path
 d = path('/home/guido/bin')
 for f in d.files('*.py'):
     f.chmod(0755)

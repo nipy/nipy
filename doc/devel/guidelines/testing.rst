@@ -18,7 +18,7 @@ Test files
 The numpy testing framework and nipy extensions are imported with one
 line in your test module::
 
-     from neuroimaging.testing import *
+     from nipy.testing import *
 
 This imports all the ``assert_*`` functions you need like
 ``assert_equal``, ``assert_raises``, ``assert_array_almost_equal``

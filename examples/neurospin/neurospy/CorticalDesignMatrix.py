@@ -13,8 +13,8 @@ from configobj import ConfigObj
 from soma import aims
 from neurospy.bvfunc import tio
 
-from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
-from neuroimaging.modalities.fmri import protocol, hrf
+from nipy.modalities.fmri.protocol import ExperimentalFactor
+from nipy.modalities.fmri import protocol, hrf
 
 
 def _loadProtocol(x, session, names = None):

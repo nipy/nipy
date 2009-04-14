@@ -1,8 +1,8 @@
 import numpy as np
 
-from neuroimaging.core.api import CoordinateSystem, Affine
-from neuroimaging.core.reference.coordinate_map import compose
-from neuroimaging.core.reference.coordinate_map import product as cmap_product
+from nipy.core.api import CoordinateSystem, Affine
+from nipy.core.reference.coordinate_map import compose
+from nipy.core.reference.coordinate_map import product as cmap_product
 
 ###################################################################################
 

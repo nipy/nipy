@@ -5,6 +5,6 @@ restricted to the neuroimaging community. This package may contain
 third-party software included here for convenience.
 """
 
-from neuroimaging.testing import Tester
+from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench

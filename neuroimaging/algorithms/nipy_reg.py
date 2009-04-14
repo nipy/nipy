@@ -6,7 +6,7 @@ import flat_file_IO as ffi
 import neuroimaging.fixes.scipy.ndimage._registration as reg
 import neuroimaging.fixes.scipy.ndimage._register as r
 import scipy.ndimage.interpolation as ndi
-from neuroimaging.core.image import image
+from nipy.core.image import image
 
 
 def volume_remap(a_f_affine, f_f_affine, fmri_series):

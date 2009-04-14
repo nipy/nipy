@@ -1,6 +1,6 @@
 
 import numpy as np
-from neuroimaging.neurospin.glm.glm import glm
+from nipy.neurospin.glm.glm import glm
 
 def make_data():
     dimt = 100

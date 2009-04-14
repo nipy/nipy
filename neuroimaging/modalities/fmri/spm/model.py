@@ -3,11 +3,11 @@ import gc, os, fpformat, time
 import numpy as np
 import numpy.linalg as L
 from scipy.stats import f as FDbn
-from neuroimaging.fixes.scipy.stats.models.regression import OLSModel, GLSModel
+from nipy.fixes.scipy.stats.models.regression import OLSModel, GLSModel
 
-from neuroimaging.core.api import Image
-from neuroimaging.modalities.fmri.fmristat import model as fmristat
-from neuroimaging.modalities.fmri.fmristat.model import OLS
+from nipy.core.api import Image
+from nipy.modalities.fmri.fmristat import model as fmristat
+from nipy.modalities.fmri.fmristat.model import OLS
 import correlation, reml
 
 def reshape(i, x):

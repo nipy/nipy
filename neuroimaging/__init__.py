@@ -41,7 +41,7 @@ __url__     = 'http://neuroimaging.scipy.org'
 # check the version of numpy the user has and inform them they need to
 # upgrade.
 try:
-    from neuroimaging.testing import Tester
+    from nipy.testing import Tester
     test = Tester().test
     bench = Tester().bench
 except ImportError:

@@ -13,9 +13,9 @@ class ImageList:
                 this is checked by asserting that each has a `coordmap` attribute
 
         >>> from numpy import asarray
-        >>> from neuroimaging.testing import funcfile
-        >>> from neuroimaging.core.api import Image, ImageList
-        >>> from neuroimaging.io.api import load_image
+        >>> from nipy.testing import funcfile
+        >>> from nipy.core.api import Image, ImageList
+        >>> from nipy.io.api import load_image
         >>> funcim = load_image(funcfile)
         >>> ilist = ImageList(funcim)
         >>> sublist = ilist[2:5]
@@ -78,9 +78,9 @@ class ImageList:
         Examples
         --------
         >>> from numpy import asarray
-        >>> from neuroimaging.testing import funcfile
-        >>> from neuroimaging.core.api import ImageList
-        >>> from neuroimaging.io.api import load_image
+        >>> from nipy.testing import funcfile
+        >>> from nipy.core.api import ImageList
+        >>> from nipy.io.api import load_image
         >>> funcim = load_image(funcfile)
         >>> ilist = ImageList(funcim)
         >>> asarray(ilist).shape

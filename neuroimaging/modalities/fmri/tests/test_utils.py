@@ -1,7 +1,7 @@
 import numpy as np
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.modalities.fmri.utils import CutPoly, WaveFunction, ConvolveFunctions
+from nipy.modalities.fmri.utils import CutPoly, WaveFunction, ConvolveFunctions
 
 class test_util(TestCase):
     

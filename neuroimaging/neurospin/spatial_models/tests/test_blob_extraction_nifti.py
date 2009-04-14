@@ -22,7 +22,7 @@ import numpy.testing.decorators as dec
 import scipy.stats as st
 
 # Our own imports
-from neuroimaging.neurospin.graph import field as ff
+from nipy.neurospin.graph import field as ff
 
 
 # This isn't really a standalone test, so mark it as such for nose.  Eventually

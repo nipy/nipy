@@ -8,7 +8,7 @@ Author : Bertrand Thirion, 2008-2009
 
 import numpy as np
 from numpy.random import rand, randn
-from neuroimaging.neurospin.clustering.hierarchical_clustering import *
+from nipy.neurospin.clustering.hierarchical_clustering import *
 import neuroimaging.neurospin.graph as fg
 from numpy.random import rand,randn
 

@@ -9,8 +9,8 @@ import numpy as np
 import numpy.fft as fft
 import numpy.linalg as L
 
-from neuroimaging.core.api import Image, Affine
-from neuroimaging.core.reference.coordinate_map import replicate
+from nipy.core.api import Image, Affine
+from nipy.core.reference.coordinate_map import replicate
 
 class LinearFilter(object):
     '''

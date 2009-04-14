@@ -1,4 +1,4 @@
-from neuroimaging.core.api import CoordinateSystem, CoordinateMap, Grid, ArrayCoordMap
+from nipy.core.api import CoordinateSystem, CoordinateMap, Grid, ArrayCoordMap
 import numpy as np
 import nose.tools
 

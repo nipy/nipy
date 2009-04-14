@@ -2,7 +2,7 @@ import time
 
 import numpy as np
 
-from neuroimaging.testing import *
+from nipy.testing import *
 import neuroimaging.neurospin.bindings as fb
 
 

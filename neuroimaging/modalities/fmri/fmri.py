@@ -1,6 +1,6 @@
 from numpy import asarray, arange, empty
 
-from neuroimaging.core.api import ImageList, Image, \
+from nipy.core.api import ImageList, Image, \
     CoordinateMap, Affine, CoordinateSystem
 
 class FmriImageList(ImageList):
@@ -31,9 +31,9 @@ class FmriImageList(ImageList):
         neuroimaging.core.image_list.ImageList
 
         >>> from numpy import asarray
-        >>> from neuroimaging.testing import funcfile
-        >>> from neuroimaging.modalities.fmri.api import FmriImageList, fromimage
-        >>> from neuroimaging.io.api import load_image
+        >>> from nipy.testing import funcfile
+        >>> from nipy.modalities.fmri.api import FmriImageList, fromimage
+        >>> from nipy.io.api import load_image
         
         >>> # fmrilist and ilist represent the same data
 

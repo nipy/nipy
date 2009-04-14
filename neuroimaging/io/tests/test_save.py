@@ -2,11 +2,11 @@ import os
 from tempfile import mkstemp
 import numpy as np
 
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.io.api import load_image, save_image
-from neuroimaging.core import api
-from neuroimaging.io import nifti_ref as nifti
+from nipy.io.api import load_image, save_image
+from nipy.core import api
+from nipy.io import nifti_ref as nifti
 
 class Tempfile():
     file = None

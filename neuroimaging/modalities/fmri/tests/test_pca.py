@@ -1,13 +1,13 @@
 import os
 
 import numpy as np
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.modalities.fmri.api import FmriImageList, fromimage
-from neuroimaging.modalities.fmri.pca import PCA
-from neuroimaging.core.api import Image
-from neuroimaging.io.api import  load_image
-from neuroimaging.testing import funcfile
+from nipy.modalities.fmri.api import FmriImageList, fromimage
+from nipy.modalities.fmri.pca import PCA
+from nipy.core.api import Image
+from nipy.io.api import  load_image
+from nipy.testing import funcfile
 
 class test_PCA(TestCase):
 
@@ -43,7 +43,7 @@ class test_PCAMontageNoMask(test_PCA):
     @dec.slow
     @dec.data
     def test_PCAmontage(self):
-        from neuroimaging.modalities.fmri.pca import PCAmontage
+        from nipy.modalities.fmri.pca import PCAmontage
         from pylab import savefig
         p = PCAmontage(self.fmridata)
         p.fit()
@@ -57,7 +57,7 @@ class test_PCAMontageMask(test_PCA):
     @dec.slow
     @dec.data
     def test_PCAmontage_nomask(self):
-        from neuroimaging.modalities.fmri.pca import PCAmontage
+        from nipy.modalities.fmri.pca import PCAmontage
         from pylab import savefig
         p = PCAmontage(self.fmridata, mask=self.mask)
         p.fit()

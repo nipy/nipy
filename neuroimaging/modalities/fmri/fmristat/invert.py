@@ -35,7 +35,7 @@ def invertR(delta, IRF, niter=20):
     else:
         c = -(delta.max() / (np.pi/2)) * 1.2
 
-    from neuroimaging.algorithms.statistics import nlsmodel
+    from nipy.algorithms.statistics import nlsmodel
     design = R.reshape(R.shape[0], 1)
     model = nlsmodel.NLSModel(Y=delta,
                               design=design,

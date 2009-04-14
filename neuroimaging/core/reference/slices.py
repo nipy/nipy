@@ -2,9 +2,9 @@
 A set of methods to get coordinate maps which represent slices in space.
 
 """
-from neuroimaging.core.reference.coordinate_system import CoordinateSystem
-from neuroimaging.core.reference.coordinate_map import Affine
-from neuroimaging.core.reference.array_coords import ArrayCoordMap
+from nipy.core.reference.coordinate_system import CoordinateSystem
+from nipy.core.reference.coordinate_map import Affine
+from nipy.core.reference.array_coords import ArrayCoordMap
 import numpy.linalg as L
 import numpy as np
 import numpy.random as R

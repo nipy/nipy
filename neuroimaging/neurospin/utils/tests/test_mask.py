@@ -2,7 +2,7 @@
 Test the mask-extracting utilities.
 """
 
-from neuroimaging.neurospin.utils.mask import _largest_cc
+from nipy.neurospin.utils.mask import _largest_cc
 from numpy.testing import assert_equal
 import numpy as np
 

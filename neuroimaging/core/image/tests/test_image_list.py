@@ -1,12 +1,12 @@
 from numpy import asarray
 
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.utils.tests.data import repository
+from nipy.utils.tests.data import repository
 
-from neuroimaging.core.image.image_list import ImageList
-from neuroimaging.io.api import load_image
-from neuroimaging.modalities.fmri.api import FmriImageList, fromimage
+from nipy.core.image.image_list import ImageList
+from nipy.io.api import load_image
+from nipy.modalities.fmri.api import FmriImageList, fromimage
 
 
 import numpy as np
@@ -26,9 +26,9 @@ def test_image_list():
     print fl[2].__class__
 
 ## from numpy import asarray
-## from neuroimaging.testing funcfile
-## from neuroimaging.core.image.image_list import ImageList
-## from neuroimaging.modalities.fmri.api import load_image
+## from nipy.testing funcfile
+## from nipy.core.image.image_list import ImageList
+## from nipy.modalities.fmri.api import load_image
 
 ## funcim = load_image(funcfile)
 ## ilist = ImageList(funcim)

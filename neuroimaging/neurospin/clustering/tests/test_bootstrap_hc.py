@@ -7,7 +7,7 @@ performance as these procedures are
 import numpy as np
 from numpy.random import rand, permutation
 
-from neuroimaging.neurospin.clustering.bootstrap_hc import _bootstrap_cols, \
+from nipy.neurospin.clustering.bootstrap_hc import _bootstrap_cols, \
      _compare_list_of_arrays
 
 def test_bootstrap_cols():

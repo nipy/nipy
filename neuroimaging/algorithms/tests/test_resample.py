@@ -1,12 +1,12 @@
 
 import numpy as np
 
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.core.api import (Affine, Image, CoordinateMap, 
+from nipy.core.api import (Affine, Image, CoordinateMap, 
                                    ArrayCoordMap, compose)
-from neuroimaging.core.reference import slices
-from neuroimaging.algorithms.resample import resample
+from nipy.core.reference import slices
+from nipy.algorithms.resample import resample
 
 def test_rotate2d():
     # Rotate an image in 2d on a square grid,

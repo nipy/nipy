@@ -16,9 +16,9 @@ See documentation for load and save functions for 'working' examples.
 
 import numpy as np
 
-from neuroimaging.core.reference.coordinate_map import (reorder_input, 
+from nipy.core.reference.coordinate_map import (reorder_input, 
                                                         reorder_output)
-from neuroimaging.core.api import Image
+from nipy.core.api import Image
 from pyniftiio import PyNiftiIO
 from nifti_ref import (coordmap_from_ioimg, coerce_coordmap, get_pixdim, 
                        get_diminfo, standard_order)
@@ -79,8 +79,8 @@ def load(filename, mode='r'):
     Examples
     --------
 
-    >>> from neuroimaging.io.api import load_image
-    >>> from neuroimaging.testing import anatfile
+    >>> from nipy.io.api import load_image
+    >>> from nipy.testing import anatfile
     >>> img = load_image(anatfile)
     >>> img.shape
     (25, 35, 25)
@@ -115,8 +115,8 @@ def save(img, filename, dtype=None):
     >>> import os
     >>> import numpy as np
     >>> from tempfile import mkstemp
-    >>> from neuroimaging.core.api import fromarray
-    >>> from neuroimaging.io.api import save_image
+    >>> from nipy.core.api import fromarray
+    >>> from nipy.io.api import save_image
     >>> data = np.zeros((91,109,91), dtype=np.uint8)
     >>> img = fromarray(data, 'kji', 'zxy')
     >>> fd, name = mkstemp(suffix='.nii.gz')

@@ -20,9 +20,9 @@ import gc
 
 import numpy as np
 from numpy.linalg import det
-from neuroimaging.fixes.scipy.stats.models.utils import recipr
+from nipy.fixes.scipy.stats.models.utils import recipr
 
-from neuroimaging.core.api import Image, Affine, CoordinateSystem
+from nipy.core.api import Image, Affine, CoordinateSystem
 
 class Resels(object):
     """The Resels class.

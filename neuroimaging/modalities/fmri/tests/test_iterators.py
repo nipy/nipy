@@ -1,10 +1,10 @@
 #TODO the iterators are deprecated
 import numpy as np
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.core.api import Image
+from nipy.core.api import Image
 import neuroimaging.core.reference.coordinate_map as coordinate_map
-from neuroimaging.modalities.fmri.api import FmriImageList
+from nipy.modalities.fmri.api import FmriImageList
 """
 Comment out since these are slated for deletion and currently are broken.
 Keep for reference until generators are working.

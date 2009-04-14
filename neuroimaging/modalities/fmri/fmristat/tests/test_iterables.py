@@ -2,11 +2,11 @@ import warnings
 import numpy as np
 from numpy.random import standard_normal as noise
 
-from neuroimaging.testing import *
-from neuroimaging.io.api import load_image
-from neuroimaging.modalities.fmri.api import fromimage, fmri_generator
-from neuroimaging.core.image.generators import *
-from neuroimaging.fixes.scipy.stats.models.regression import OLSModel as ols_model
+from nipy.testing import *
+from nipy.io.api import load_image
+from nipy.modalities.fmri.api import fromimage, fmri_generator
+from nipy.core.image.generators import *
+from nipy.fixes.scipy.stats.models.regression import OLSModel as ols_model
 
 def setup():
     # Suppress warnings during tests to reduce noise

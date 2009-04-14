@@ -4,7 +4,7 @@ import neuroimaging.neurospin.graph.field as field
 import neuroimaging.neurospin.registration.transform_affine as affine
 import neuroimaging.neurospin.group.permutation_test as permutt
 
-from neuroimaging.neurospin.utils import emp_null
+from nipy.neurospin.utils import emp_null
 
 import numpy as np
 import scipy.stats as sps

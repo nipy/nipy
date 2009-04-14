@@ -33,7 +33,7 @@ __docformat__ = 'restructuredtext'
 
 import image, roi, generators
 
-from neuroimaging.testing import Tester
+from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench
 

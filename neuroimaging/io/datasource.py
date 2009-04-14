@@ -5,7 +5,7 @@ from urlparse import urlparse
 from urllib2 import urlopen
 from tempfile import mkstemp
 
-from neuroimaging.utils.path import path
+from nipy.utils.path import path
 
 zipexts = (".gz",".bz2")
 file_openers = {".gz":gzip.open, ".bz2":bz2.BZ2File, None:file}

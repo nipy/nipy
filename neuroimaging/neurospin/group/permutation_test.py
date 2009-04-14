@@ -539,7 +539,7 @@ class permutation_test:
         Return z score corresponding to the uncorrected
         voxel-level pseudo p-value.
         """
-        from neuroimaging.neurospin.utils import zscore 
+        from nipy.neurospin.utils import zscore 
         if Tvalues == None: 
             Tvalues = self.Tvalues
         return zscore(self.pvalue(Tvalues))

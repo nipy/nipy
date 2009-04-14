@@ -5,8 +5,8 @@ Some simple examples and utility functions for resampling.
 from scipy.ndimage import affine_transform
 import numpy as np
 
-from neuroimaging.algorithms.interpolation import ImageInterpolator
-from neuroimaging.core.api import Image, CoordinateMap, Affine, ArrayCoordMap, Grid, compose
+from nipy.algorithms.interpolation import ImageInterpolator
+from nipy.core.api import Image, CoordinateMap, Affine, ArrayCoordMap, Grid, compose
 import neuroimaging.core.transforms.affines as affines
 
 def resample(image, target, mapping, shape, order=3):

@@ -5,14 +5,14 @@ import sys
 from tempfile import mktemp
 from textwrap import dedent
 
-from neuroimaging.neurospin.clustering.bootstrap_hc import ward_msb
+from nipy.neurospin.clustering.bootstrap_hc import ward_msb
 
 def bench_bootstrap_cols_perf(nb_repeat=200):
     """ Timing procedure for _bootstrap_cols.
     """
     # First do the timing test
     setup=dedent("""
-    from neuroimaging.neurospin.clustering.bootstrap_hc import _bootstrap_cols
+    from nipy.neurospin.clustering.bootstrap_hc import _bootstrap_cols
     from numpy.random import rand
     a = rand(100, 100)
     """)
@@ -26,7 +26,7 @@ def profile_ward_msb_perf(nb_repeat=2,verbose=0):
     """
     # First do the timing test
     setup=dedent("""
-    from neuroimaging.neurospin.clustering.bootstrap_hc import ward_msb 
+    from nipy.neurospin.clustering.bootstrap_hc import ward_msb 
     from numpy.random import rand
     a = rand(100, 100)
     """)

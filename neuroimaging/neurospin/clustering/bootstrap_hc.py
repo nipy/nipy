@@ -12,7 +12,7 @@ Author : Bertrand Thirion, 2008
 # --------------------------------------------------------------------------
 
 import numpy as np
-from neuroimaging.neurospin.clustering.hierarchical_clustering import Ward_simple
+from nipy.neurospin.clustering.hierarchical_clustering import Ward_simple
 from numpy.random import random_integers
 
 # -------------------------------------------------------------------

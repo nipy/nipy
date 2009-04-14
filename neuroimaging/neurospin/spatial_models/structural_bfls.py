@@ -19,7 +19,7 @@ import neuroimaging.neurospin.graph.BPmatch as BPmatch
 import neuroimaging.neurospin.graph.field as ff
 import neuroimaging.neurospin.graph.graph as fg
 import neuroimaging.neurospin.graph.hroi as hroi
-from neuroimaging.neurospin.clustering.hierarchical_clustering import \
+from nipy.neurospin.clustering.hierarchical_clustering import \
      Average_Link_Graph_segment
 
 

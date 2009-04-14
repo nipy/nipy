@@ -1,8 +1,8 @@
 import numpy as np
 
-from neuroimaging.testing import *
+from nipy.testing import *
 
-from neuroimaging.modalities.fmri import functions
+from nipy.modalities.fmri import functions
 
 
 

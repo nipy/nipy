@@ -1,8 +1,8 @@
 
 import numpy as np
 
-from neuroimaging.testing import *
-from neuroimaging.core.reference.coordinate_system import CoordinateSystem, \
+from nipy.testing import *
+from nipy.core.reference.coordinate_system import CoordinateSystem, \
     product, safe_dtype
 
 class empty:

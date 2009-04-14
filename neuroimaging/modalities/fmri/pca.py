@@ -16,9 +16,9 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 import numpy.linalg as L
-from neuroimaging.fixes.scipy.stats.models.utils import recipr
+from nipy.fixes.scipy.stats.models.utils import recipr
 
-from neuroimaging.core.api import Image
+from nipy.core.api import Image
 
 class PCA(object):
     """
@@ -219,10 +219,10 @@ class PCA(object):
         return [it.img for it in outiters]
 
 ##     import pylab
-##     from neuroimaging.ui.visualization.montage import Montage
-##     from neuroimaging.algorithms.interpolation import ImageInterpolator
-##     from neuroimaging.ui.visualization import slices
-##     from neuroimaging.ui.visualization.multiplot import MultiPlot
+##     from nipy.ui.visualization.montage import Montage
+##     from nipy.algorithms.interpolation import ImageInterpolator
+##     from nipy.ui.visualization import slices
+##     from nipy.ui.visualization.multiplot import MultiPlot
 
 ##     class PCAmontage(PCA):
 

@@ -21,8 +21,8 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 
-from neuroimaging.fixes.scipy.stats.models.utils import recipr0
-from neuroimaging.fixes.scipy.stats.models.utils import StepFunction
+from nipy.fixes.scipy.stats.models.utils import recipr0
+from nipy.fixes.scipy.stats.models.utils import StepFunction
 from scipy.interpolate import interp1d
 
 # Prototypical stimuli: "Event" (on/off) and "Stimuli" (step function)
