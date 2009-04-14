@@ -2,7 +2,7 @@
 
 from numpy.testing import *
 import numpy as np
-import neuroimaging.neurospin.graph.field as ff
+import nipy.neurospin.graph.field as ff
 
 def basic_field():
     dx = 10

@@ -1,7 +1,7 @@
 
-import neuroimaging.neurospin as fff2
-import neuroimaging.neurospin
-import neuroimaging.neurospin.glm as glm
+import nipy.neurospin as fff2
+import nipy.neurospin
+import nipy.neurospin.glm as glm
 
 import numpy as np 
 

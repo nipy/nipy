@@ -5,8 +5,8 @@ import numpy as np
 import scipy.misc as sm
 
 # Our own imports
-import neuroimaging.neurospin.graph as fg
-import neuroimaging.neurospin.graph.field as ff
+import nipy.neurospin.graph as fg
+import nipy.neurospin.graph.field as ff
 
 import onesample as os
 import twosample as ts

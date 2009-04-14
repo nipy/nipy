@@ -5,7 +5,7 @@ from tempfile import mkstemp, mkdtemp
 
 from nipy.testing import *
 
-import neuroimaging.modalities.fmri.fmristat.model as model
+import nipy.modalities.fmri.fmristat.model as model
 from nipy.modalities.fmri.api import fromimage
 from nipy.io.api import load_image
 

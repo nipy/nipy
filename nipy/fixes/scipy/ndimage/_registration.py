@@ -10,7 +10,7 @@ from scipy.special import erf
 from scipy.ndimage import correlate1d
 from scipy.optimize import fmin_powell, fmin_cg
 
-import neuroimaging.fixes.scipy.ndimage._register as reg
+import nipy.fixes.scipy.ndimage._register as reg
 
 import time
 import glob

@@ -3,8 +3,8 @@ import numpy as np
 import math
 import glob
 import flat_file_IO as ffi
-import neuroimaging.fixes.scipy.ndimage._registration as reg
-import neuroimaging.fixes.scipy.ndimage._register as r
+import nipy.fixes.scipy.ndimage._registration as reg
+import nipy.fixes.scipy.ndimage._register as r
 import scipy.ndimage.interpolation as ndi
 from nipy.core.image import image
 

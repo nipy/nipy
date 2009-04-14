@@ -2,7 +2,7 @@ from nipy.testing import *
 
 import numpy as np
 
-import neuroimaging.core.transforms.affines as affines
+import nipy.core.transforms.affines as affines
 
 
 def build_xform():

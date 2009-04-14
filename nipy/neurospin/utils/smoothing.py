@@ -8,7 +8,7 @@ Author : Bertrand Thirion, 2006-2009
 """
 
 import numpy as np
-import neuroimaging.neurospin.graph.field as ff
+import nipy.neurospin.graph.field as ff
 
 def cartesian_smoothing(ijk,data,sigma):
 	"""

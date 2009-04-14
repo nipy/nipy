@@ -8,7 +8,7 @@ Author : Bertrand Thirion, 2009
 #autoindent
 import numpy as np
 import scipy.stats as st
-import neuroimaging.neurospin.graph.field as ff
+import nipy.neurospin.graph.field as ff
 import nifti
 
 # FIXME: 1) these functions should operate on ndarrays.

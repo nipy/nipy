@@ -12,7 +12,7 @@ def setup():
     warnings.simplefilter("ignore")
     # Import registration module after suppressing the UserWarnings
     global reg
-    import neuroimaging.fixes.scipy.ndimage._registration as reg
+    import nipy.fixes.scipy.ndimage._registration as reg
 
 def teardown():
     # Clear list of warning filters

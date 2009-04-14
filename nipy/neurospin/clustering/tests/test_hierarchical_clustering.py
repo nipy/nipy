@@ -9,7 +9,7 @@ Author : Bertrand Thirion, 2008-2009
 import numpy as np
 from numpy.random import rand, randn
 from nipy.neurospin.clustering.hierarchical_clustering import *
-import neuroimaging.neurospin.graph as fg
+import nipy.neurospin.graph as fg
 from numpy.random import rand,randn
 
 def ALC_test(n=10,verbose=0):

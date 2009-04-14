@@ -5,7 +5,7 @@ from nipy.core.api import (data_generator, parcels, write_data,
                                    slice_generator)
 from nipy.core.api import Image, Affine
 from nipy.io.api import load_image, save_image
-import neuroimaging.core.image.generators as gen
+import nipy.core.image.generators as gen
 
 class TestGenerator(TestCase):
 

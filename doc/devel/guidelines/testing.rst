@@ -133,7 +133,7 @@ your home directory::
 
 Tests can be run on the package::
 
-    import neuroimaging as ni
+    import nipy as ni
     ni.test()
 
 

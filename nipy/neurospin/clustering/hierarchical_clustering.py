@@ -23,7 +23,7 @@ Author : Bertrand Thirion,Pamela Guevara, 2006-2009
 # --------------------------------------------------------------------------
 
 import numpy as np
-import neuroimaging.neurospin.graph.graph as fg
+import nipy.neurospin.graph.graph as fg
 from nipy.neurospin.eda.dimension_reduction import Euclidian_distance
 from nipy.neurospin.clustering.clustering import ward
 

@@ -7,7 +7,7 @@ import numpy as np
 
 from nipy.algorithms.interpolation import ImageInterpolator
 from nipy.core.api import Image, CoordinateMap, Affine, ArrayCoordMap, Grid, compose
-import neuroimaging.core.transforms.affines as affines
+import nipy.core.transforms.affines as affines
 
 def resample(image, target, mapping, shape, order=3):
     """

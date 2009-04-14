@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import neuroimaging.fixes.scipy.ndimage._segment as S
+import nipy.fixes.scipy.ndimage._segment as S
 
 _objstruct = np.dtype([('Left', 'i'),
                        ('Right', 'i'),

@@ -1,4 +1,4 @@
 from nipy.neurospin import * 
-import neuroimaging.neurospin
+import nipy.neurospin
 __doc__ = neuroimaging.neurospin.__doc__
 

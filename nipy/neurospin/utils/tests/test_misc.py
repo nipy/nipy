@@ -8,8 +8,8 @@ from numpy.random import rand, randint
 from numpy.linalg import inv
 from scipy import special
 
-import neuroimaging.neurospin.utils as fu
-import neuroimaging.neurospin.utils.routines as routines
+import nipy.neurospin.utils as fu
+import nipy.neurospin.utils.routines as routines
 
 class TestAll(TestCase):
 

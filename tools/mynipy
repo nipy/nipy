@@ -42,7 +42,7 @@ try:
     nipypath = sys.argv[1]
 except IndexError:
     # The curdir option doesn't appear to work.  Matthew?
-    # If we're in a source branch directory, the 'import neuroimaging'
+    # If we're in a source branch directory, the 'import nipy'
     # below gives us the source dir, not the site-packages directory.
     # So the symlink results in an error.
     #nipypath = os.curdir
@@ -59,7 +59,7 @@ print "Changing 'neuroimaging' path to: \n  ", neuroimaging_path, "\n"
 
 # Find where neuroimaging is now
 try:
-    import neuroimaging
+    import nipy
     site_pkgs, nipy_ln  = os.path.split(neuroimaging.__path__[0])
 except ImportError:
     # first time this script is run, we'll place it where numpy is installed

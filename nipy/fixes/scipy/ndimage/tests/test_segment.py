@@ -12,7 +12,7 @@ def setup():
     warnings.simplefilter("ignore")
     # Import segmenter module after suppressing the UserWarnings
     global seg
-    import neuroimaging.fixes.scipy.ndimage._segmenter as seg
+    import nipy.fixes.scipy.ndimage._segmenter as seg
 
 def teardown():
     # Clear list of warning filters

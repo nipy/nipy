@@ -1,8 +1,8 @@
-import neuroimaging.neurospin as fff2
+import nipy.neurospin as fff2
 
-import neuroimaging.neurospin.graph.field as field
-import neuroimaging.neurospin.registration.transform_affine as affine
-import neuroimaging.neurospin.group.permutation_test as permutt
+import nipy.neurospin.graph.field as field
+import nipy.neurospin.registration.transform_affine as affine
+import nipy.neurospin.group.permutation_test as permutt
 
 from nipy.neurospin.utils import emp_null
 

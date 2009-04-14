@@ -2,7 +2,7 @@
 
 from nipy.testing import *
 import numpy as np
-import neuroimaging.neurospin.bindings as fb
+import nipy.neurospin.bindings as fb
 
 
 

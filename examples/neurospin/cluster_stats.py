@@ -1,6 +1,6 @@
-import neuroimaging.neurospin as fff2
+import nipy.neurospin as fff2
 
-import neuroimaging.neurospin.neuro
+import nipy.neurospin.neuro
 from nipy.neurospin.neuro.statistical_test import cluster_stats
 import numpy as np
 

@@ -27,9 +27,9 @@ from nipy.modalities.fmri.api import FmriImageList, fmri_generator
 from nipy.modalities.fmri.fmristat.delay import DelayContrast, \
      DelayContrastOutput
 
-import neuroimaging.algorithms.statistics.regression as regression
+import nipy.algorithms.statistics.regression as regression
 from nipy.algorithms.fwhm import fastFWHM
-import neuroimaging.algorithms.statistics.regression as regression
+import nipy.algorithms.statistics.regression as regression
 
 
 class ModelOutputImage:

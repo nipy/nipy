@@ -59,7 +59,7 @@ Matthew Brett performed this merge on his machine.
     # Build and test.  # FIXME: Need a good system for doing this
     #python setup.py build
     #python setup.py install
-    #python -c "import neuroimaging as ni; ni.test()"
+    #python -c "import nipy as ni; ni.test()"
 
     # Merge Fernando branch
     bzr log -r last:

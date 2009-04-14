@@ -8,7 +8,7 @@ Comment (2009/03/24)
 """
 
 import numpy as np
-import neuroimaging.neurospin.graph.graph as fg
+import nipy.neurospin.graph.graph as fg
 from nipy.neurospin.eda.dimension_reduction import Euclidian_distance
 
 

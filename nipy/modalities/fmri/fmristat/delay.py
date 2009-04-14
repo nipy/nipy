@@ -474,7 +474,7 @@ class DelayHRF(hrf.SpectralHRF):
         >>> from pylab import *
         >>> from numpy import *
         >>>
-        >>> import neuroimaging.modalities.fmri.hrf as HRF
+        >>> import nipy.modalities.fmri.hrf as HRF
         >>> import numpy as np
         >>>
         >>> ddelta = 0.25

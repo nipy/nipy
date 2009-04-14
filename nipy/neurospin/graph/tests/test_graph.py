@@ -3,7 +3,7 @@
 from numpy.testing import *
 import numpy as np
 import numpy.random as nr
-import neuroimaging.neurospin.graph as fg
+import nipy.neurospin.graph as fg
 from unittest import TestCase
 
 def basicdata():

@@ -18,8 +18,8 @@ and the estimation of the latent dimension, at least in simple cases.
 import numpy as np
 import numpy.linalg as nl
 import numpy.random as nr
-import neuroimaging.neurospin.graph.graph as fg
-import neuroimaging.neurospin.graph.field as ff
+import nipy.neurospin.graph.graph as fg
+import nipy.neurospin.graph.field as ff
 
 # ------------------------------------------------------------------
 # ------------- Auxiliary functions --------------------------------

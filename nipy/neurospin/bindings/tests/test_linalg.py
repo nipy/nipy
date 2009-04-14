@@ -6,7 +6,7 @@
 
 from numpy.testing import assert_almost_equal, assert_equal
 import numpy as np
-import neuroimaging.neurospin.bindings as fb
+import nipy.neurospin.bindings as fb
 
 n = 15
 

@@ -14,11 +14,11 @@ import numpy as np
 import numpy.random as nr
 
 
-# import neuroimaging.neurospin.clustering.clustering as fc
-import neuroimaging.neurospin.graph.BPmatch as BPmatch
-import neuroimaging.neurospin.graph.field as ff
-import neuroimaging.neurospin.graph.graph as fg
-import neuroimaging.neurospin.graph.hroi as hroi
+# import nipy.neurospin.clustering.clustering as fc
+import nipy.neurospin.graph.BPmatch as BPmatch
+import nipy.neurospin.graph.field as ff
+import nipy.neurospin.graph.graph as fg
+import nipy.neurospin.graph.hroi as hroi
 from nipy.neurospin.clustering.hierarchical_clustering import \
      Average_Link_Graph_segment
 
@@ -364,7 +364,7 @@ def compute_density_dev(BFLs,xyz,dmax):
     Computation of the density of the BFLs points in the xyz volume
     dmax is a scale parameter
     """
-    import neuroimaging.neurospin.utils.smoothing.smoothing as smoothing
+    import nipy.neurospin.utils.smoothing.smoothing as smoothing
     nvox = xyz.shape[0]
     Sess = np.size(BFLs)
     weight = np.zeros((nvox,Sess),'d')
@@ -409,7 +409,7 @@ def compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples=1):
     caveat: does not work for nsamples>1
     This function computes a surrogate density using graph diffusion techniques
     """
-    import neuroimaging.neurospin.utils.smoothing.smoothing as smoothing
+    import nipy.neurospin.utils.smoothing.smoothing as smoothing
     nvox = xyz.shape[0]
     Sess = np.size(BFLs)
     nlm = np.array([BFLs[s].k for s in range(Sess)])

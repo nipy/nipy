@@ -8,8 +8,8 @@ from unittest import TestCase
 
 import numpy as np
 import numpy.random as nr
-import neuroimaging.neurospin.clustering.gmm as gmm
-import neuroimaging.neurospin.clustering.clustering as fc
+import nipy.neurospin.clustering.gmm as gmm
+import nipy.neurospin.clustering.clustering as fc
 
 
 sLabelMap = \

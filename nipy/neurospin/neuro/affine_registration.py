@@ -1,7 +1,7 @@
 import time
 import numpy as np 
 
-import neuroimaging.neurospin as fff2
+import nipy.neurospin as fff2
 
 def default_subsampling(dims):
     """  

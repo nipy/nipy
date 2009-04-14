@@ -46,7 +46,7 @@ import warnings
 
 import numpy as np
 
-import neuroimaging.core.transforms.affines as affines
+import nipy.core.transforms.affines as affines
 from nipy.core.reference.coordinate_system import(CoordinateSystem, 
                                                           safe_dtype)
 from nipy.core.reference.coordinate_system import product as coordsys_product

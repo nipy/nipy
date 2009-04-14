@@ -1,5 +1,5 @@
-import neuroimaging.neurospin as fff2
-import neuroimaging.neurospin.registration.transform_affine as affine 
+import nipy.neurospin as fff2
+import nipy.neurospin.registration.transform_affine as affine 
 
 import numpy as np
 import scipy as sp

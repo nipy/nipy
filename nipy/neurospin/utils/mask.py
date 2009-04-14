@@ -15,7 +15,7 @@ except ImportError:
     from nifti.clib import NIFTI_INTENT_LABEL
 
 
-import neuroimaging.neurospin.graph as fg
+import nipy.neurospin.graph as fg
 
 
 def _largest_cc(mask):

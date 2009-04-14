@@ -5,7 +5,7 @@ from nipy.testing import *
 
 from nipy.core.api import Affine, CoordinateSystem
 from nipy.core.reference import coordinate_system
-import neuroimaging.io.nifti_ref as nifti
+import nipy.io.nifti_ref as nifti
 
 shape = range(1,8)
 step = np.arange(1,8)

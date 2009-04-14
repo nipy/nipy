@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 
 from nipy.neurospin.group import permutation_test as PT
-import neuroimaging.neurospin.graph as fg
+import nipy.neurospin.graph as fg
 
 nperms = 2
 ndraws = 10

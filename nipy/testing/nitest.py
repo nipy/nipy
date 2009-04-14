@@ -5,7 +5,7 @@
 The purpose of this module is to get the same behaviour on the command
 line as we do when do the following from ipython:
 
-  import neuroimaging as ni
+  import nipy as ni
   ni.test()
 
 We need to register the nose plugins defined in numpy.  Currently

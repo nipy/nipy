@@ -3,7 +3,7 @@ import numpy as np
 from nipy.testing import *
 
 from nipy.core.api import Image
-import neuroimaging.core.reference.coordinate_map as coordinate_map
+import nipy.core.reference.coordinate_map as coordinate_map
 from nipy.modalities.fmri.api import FmriImageList
 """
 Comment out since these are slated for deletion and currently are broken.

@@ -3,7 +3,7 @@ import time
 import numpy as np
 
 from nipy.testing import *
-import neuroimaging.neurospin.bindings as fb
+import nipy.neurospin.bindings as fb
 
 
 def time_ratio(t0,t1):
