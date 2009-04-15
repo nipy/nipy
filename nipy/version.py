@@ -15,7 +15,7 @@ if not release:
         revno, errcode = proc.communicate()
         if revno:
             revno = int(revno)
-            version += 'r%d' % revno
+            version += 'dev%d' % revno
             have_revno = True
     except OSError:
         # Either bzr was not found or nipy was imported from a
