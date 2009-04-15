@@ -423,20 +423,21 @@ class WeightedGraph(Graph):
         seed. floyd's algo is not used (O(self.V)^3 complexity...)
         - by convention, infinte distances are coded with sum(self.wedges)+1
         """
+        if seed == None:
+            seed = np.arange(self.V)
+
+        if self.E==0:
+            dg = np.infty*np.ones((self.V,np.size(seed)))
+            for i in range(np.size(seed)): dg[seed[i],i] = 0 
+            return dg
+        
         try:
             if self.weights.min()<0:
                 raise ValueError, 'some weights are non-positive'
         except:
             raise ValueError,'undefined weights'
-        if seed == None:
-            seed = np.arange(self.V)
-        
-        if self.E>0:
-            dg = graph_floyd(self.edges[:,0],self.edges[:,1],self.weights,seed,self.V)
-        else:
-            dg = np.infty*np.ones(self.V,np.size(seed))
-            for i in range(np.size(seed)):
-                dg[seed[i],i] = 0 
+       
+        dg = graph_floyd(self.edges[:,0],self.edges[:,1],self.weights,seed,self.V)
         return dg
 
     def normalize(self,c=0):

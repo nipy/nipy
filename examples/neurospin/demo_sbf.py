@@ -13,8 +13,7 @@ import fff2.graph.field as ff
 import fff2.utils.simul_2d_multisubject_fmri_dataset as simul
 import fff2.spatial_models.structural_bfls as sbf
 
-def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
-                        nbeta=[0]):
+def make_bsa_2d(betas, theta=3., dmax=5., ths=0, pval=0.2):
     """ Function for performing bayesian structural analysis on a set of images.
     """
     ref_dim = np.shape(betas[0])
@@ -34,7 +33,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     lbeta = np.array([np.ravel(betas[k]) for k in range(nbsubj)]).T
 
     header = None
-    group_map, AF, BF = sbf.Compute_Amers (Fbeta,lbeta,xyz,header, tal,dmax = 5., thr=3.0, ths = nbsubj/2,pval=0.2)
+    group_map, AF, BF = sbf.Compute_Amers (Fbeta,lbeta,xyz,header, tal,dmax = dmax, thr=theta, ths = ths,pval=pval)
     
     lmax = AF.k+2
     AF.show()
@@ -91,12 +90,10 @@ betas = np.reshape(dataset, (nbsubj, dimx, dimy))
 # set various parameters
 theta = float(st.t.isf(0.01, 100))
 dmax = 5./1.5
-ths = 0#nbsubj/2-1
-thq = 0.9
-verbose = 1
-smin = 5
+ths = nbsubj/2-1
+pval = 0.2
 
 # run the algo
-AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin)
+AF, BF = make_bsa_2d(betas, theta, dmax, ths,pval)
 mp.show()
 
