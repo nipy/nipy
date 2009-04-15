@@ -54,12 +54,12 @@ J = volumeimages.load(join(rootpath,'nobias_'+target+'.nii'))
 # Perform affine normalization 
 print('Setting up registration...')
 tic = time.time()
-T = register.imatch(I.get_data(), J.get_data(), 
-		    I.get_affine(), J.get_affine(), 
-		    similarity=similarity, 
-		    interp=interp, 
-		    normalize=normalize, 
-		    optimizer=optimizer)
+T = register.iconic_matching(I.get_data(), J.get_data(), 
+			     I.get_affine(), J.get_affine(), 
+			     similarity=similarity, 
+			     interp=interp, 
+			     normalize=normalize, 
+			     optimizer=optimizer)
 toc = time.time()
 print('  Registration time: %f sec' % (toc-tic))
 

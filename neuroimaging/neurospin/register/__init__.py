@@ -1,4 +1,4 @@
-from yamila import IconicMatcher, imatch
+from iconic_matching import IconicMatcher, iconic_matching
 from realign4d import TimeSeries, realign4d, resample4d
 import transform
 
