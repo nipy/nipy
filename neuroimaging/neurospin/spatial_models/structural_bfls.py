@@ -754,9 +754,7 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pv
         bfls = hroi.NROI_from_watershed(Fbeta,header,xyz,refdim=0,th=thr)
  
         if bfls.k>0:
-            idx = [bfls.discrete_features['masked_index'][k] for k in range(bfls.k)]
-            pdata = [tal[np.ravel(idx[k])] for k in range(bfls.k)]
-            bfls.set_discrete_feature('position',pdata)
+            bfls.compute_discrete_position()
             bfls.discrete_to_roi_features('position','average')
             
         #bfls.make_feature(tal,'position','mean')
