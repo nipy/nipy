@@ -232,25 +232,15 @@ class Forest(WeightedGraph):
         which is 0 for the leaves, 1 for their parents etc
         and maximal for the roots
         """
-        #depth = 1-self.isleaf().astype(np.int)
-        #depth[depth>0]=-1
         depth = self.isleaf().astype(np.int)-1
         for j in range(self.V):
             dc = depth.copy()
-            for  i in range(self.V):
-             if self.parents[i]!=i:
-                 depth[self.parents[i]] = np.maximum(depth[i]+1,depth[self.parents[i]])
-             if dc.max()==depth.max():
-                 break
+            for i in range(self.V):
+                if self.parents[i]!=i:
+                    depth[self.parents[i]] = np.maximum(depth[i]+1,depth[self.parents[i]])
+            if dc.max()==depth.max():
+                break
         return depth   
-        #q = 0
-        #while np.sum(depth>-1)<self.V:
-        #    for i in np.flatnonzero(depth==q):
-        #        if depth[self.parents[i]]<0:
-        #            depth[self.parents[i]] = q+1
-        #    q+=1
-        #
-        #return depth
         
 
     def reorder_from_leaves_to_roots(self):

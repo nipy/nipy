@@ -48,24 +48,12 @@ class landmark_regions(hroi.NROI):
         discrete is used here for subject identification
         """
         k = int(k)
-        if k<1: return None
+        if k<1: raise ValueError, "cannot create an empty LR"
         if parents==None:
             parents = np.arange(k)
         hroi.NROI.__init__(self,parents,header,discrete=subj,id=id)
         self.set_discrete_feature('position',coord)
         self.subj = self.discrete
-
-    def append(self,subj,coord,parent=-1):
-        """
-        append a new region to self.
-        INPUT
-        - subj: array of shape(n), where n>0
-        is the number of source regions
-        - coord: array of shape(n, anat_dim)
-        that yields the coordinates of the corresponding source regions
-        - parent=-1 by default this is reset to
-        """
-        pass        
 
     def centers(self):
         """
@@ -140,17 +128,18 @@ class landmark_regions(hroi.NROI):
         OUPUT:
         i = set of entries of the coordinates that are within the cr
         """
-        aux = -np.ones((cs.shape[0],self.k))
         label = -np.ones(cs.shape[0])
-        for k in range(self.k):
-            aux[:,k] = self.HPD(k,cs,pval,dmax)
+        if self.k>0:
+            aux = -np.ones((cs.shape[0],self.k))
+            for k in range(self.k):
+                aux[:,k] = self.HPD(k,cs,pval,dmax)
 
-        maux = np.max(aux,1)
-        label[maux>0] = np.argmax(aux,1)[maux>0]
+            maux = np.max(aux,1)
+            label[maux>0] = np.argmax(aux,1)[maux>0]
         return label
 
     def show(self):
-        """
+        """function to print basic information on self
         """
         centers = self.discrete_to_roi_features('position')
         homogeneity = self.homogeneity()
@@ -168,19 +157,23 @@ def build_LR(BF,ths=0):
     - ths=0 defines the condition (c):
     A label should be present in ths subjects in order to be valid
     OUTPUT:
-    - AF : a list of Amers, each of which describing a cross-subject set of ROIs
-    - newlabel :  a relabelling of the individual ROIs, similar to u, which discards
-    labels that do not fulfill the condition (c)
+    - LR : a list of Amers, each of which describing
+    a cross-subject set of ROIs
+    - newlabel :  a relabelling of the individual ROIs,
+    similar to u, which converts old indexes to new ones
+
+    NOTE:
+    if no LR can be created then LR=None as an output argument
     """
     nbsubj = np.size(BF)
-    subj = [s*np.ones(BF[s].k).astype(np.int) for s in range(nbsubj)]
-    subj = np.concatenate(subj)
-    u = np.concatenate([BF[s].get_roi_feature('label') for s in range(nbsubj)])
-    u = np.squeeze(u)
+    subj = [s*np.ones(BF[s].k) for s in range(nbsubj) if BF[s]!=None]
+    subj = np.concatenate(subj).astype(np.int)
+    u = [BF[s].get_roi_feature('label') for s in range(nbsubj) if BF[s]!=None]
+    u = np.squeeze(np.concatenate(u))
 
     if np.size(u)==0: return None,None
     nrois = np.size(subj)
-    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj)])
+    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj) if BF[s]!=None])
    
     coords = []
     subjs = []
@@ -210,15 +203,20 @@ def build_LR(BF,ths=0):
     maplabel = -np.ones(Mu).astype(np.int)
     maplabel[valid>0] = np.cumsum(valid[valid>0])-1
     k = np.sum(valid)
-    LR = landmark_regions(k,header=BF[0].header,subj=subjs,coord=coords)
-
+    
     # relabel the ROIs
     for s in range(nbsubj):
-        us = BF[s].get_roi_feature('label')
-        us[us>-1] = maplabel[us[us>-1]]
-        BF[s].set_roi_feature('label',us)
-        
-    # create the class
+        if BF[s]!=None:
+            us = BF[s].get_roi_feature('label')
+            us[us>-1] = maplabel[us[us>-1]]
+            BF[s].set_roi_feature('label',us)
+            header = BF[s].header
+
+    if k>0:
+        # create the object
+        LR = landmark_regions(k,header=header,subj=subjs,coord=coords)  
+    else:
+        LR=None
     return LR,maplabel
 
 
@@ -252,13 +250,20 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
     nbsubj = np.size(BFLs)
     sqdmax = 2*dmax*dmax
     nvox = xyz.shape[0]
-    nlm = np.array([BFLs[s].get_k() for s in range(nbsubj)]).astype(np.int)
- 
+    nlm = np.zeros(nbsubj)
+    for s in range(nbsubj):
+        if BFLs[s]!=None:
+             nlm[s] = BFLs[s].get_k()
+        
     if verbose>0: print nlm
     Nlm = np.sum(nlm)
     nlm0 = 2*nlm
     q = 0
-    BFLc = [BFLs[s].copy() for s in range(nbsubj)]
+    BFLc = [None for s in range(nbsubj)]
+    for s in range(nbsubj):
+        if BFLs[s]!=None:
+            BFLc[s] = BFLs[s].copy()
+            
     while np.sum((nlm0-nlm)**2)>0:
         nlm0 = nlm.copy()
         
@@ -279,13 +284,12 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
         
         srweight = np.sum(surweight,1)
         srw = np.sort(srweight)
-        if verbose>0:
-            thf = srw[int((1-min(pval,1))*nvox*nsamples)]
-            mnlm = max(1,float(Nlm)/nbsubj)
-            imin = min(nvox*nsamples-1,int((1.-pval/mnlm)*nvox*nsamples))
-            # print pval,mnlm, pval/mnlm, 1.-pval/mnlm,np.size(srw),imin
-            thcf = srw[imin]
-            print thg,thf,thcf
+        
+        thf = srw[int((1-min(pval,1))*nvox*nsamples)]
+        mnlm = max(1,float(Nlm)/nbsubj)
+        imin = min(nvox*nsamples-1,int((1.-pval/mnlm)*nvox*nsamples))
+        thcf = srw[imin]
+        if verbose: print thg,thf,thcf
         
         if q<1:
             if verbose>1:
@@ -299,7 +303,6 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
                 th1 = sw1[imin]
                 w1 = sweight-weight[:,s]
                 BFLc[s] = BFLs[s].copy()
-                #targets = w1[BFLc[s].get_seed()]
                 targets = w1[BFLc[s].roi_features['seed']]
                 valid = (targets>th1)
                 BFLc[s].clean(np.ravel(valid))#
@@ -308,8 +311,7 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
         
         Nlm = sum(nlm);
         q = q+1
-        if verbose>0:
-            print nlm
+        if verbose>0: print nlm
         if q==1:
             b = pval/nlm.mean()
             a = np.sum(sweight[sweight>thf])/np.sum(sweight)
@@ -320,7 +322,9 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
 
     print q,nlm0,nlm
 
-    for s in range(nbsubj): BFLs[s]=BFLc[s].copy()
+    for s in range(nbsubj):
+        if BFLs[s]!=None:
+            BFLs[s]=BFLc[s].copy()
     return a,b
 
 def clean_density(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsamples=10):
@@ -455,7 +459,11 @@ def compute_density(BFLs,xyz,dmax):
     nbsubj = np.size(BFLs)
     sqdmax = 2*dmax*dmax
     weight = np.zeros((nvox,nbsubj),'d')
-    nlm = np.array([BFLs[s].k for s in range(nbsubj)])
+    nlm =np.zeros(nbsubj).astype('int')
+    for s in range(nbsubj):
+        if BFLs[s]!=None:
+            nlm[s] = BFLs[s].k
+ 
     for s in range(nbsubj):
         if nlm[s]>0:
             coord = BFLs[s].get_roi_feature('position')
@@ -753,7 +761,7 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pv
         Fbeta.set_field(beta)
         bfls = hroi.NROI_from_watershed(Fbeta,header,xyz,refdim=0,th=thr)
  
-        if bfls.k>0:
+        if bfls!=None:
             bfls.compute_discrete_position()
             bfls.discrete_to_roi_features('position','average')
             
@@ -761,7 +769,7 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pv
         BFLs.append(bfls)
 
     # clean_density(BFLs,dmax,tal,pval,verbose=1,dev=0,nrec=5)
-    clean_density_redraw(BFLs,dmax,tal,pval,verbose=1,dev=0,nrec=1,nsamples=10)
+    clean_density_redraw(BFLs,dmax,tal,pval,verbose=0,dev=0,nrec=1,nsamples=10)
     
     Gc = hierarchical_asso(BFLs,dmax)
     Gc.weights = np.log(Gc.weights)-np.log(Gc.weights.min())
@@ -779,7 +787,8 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pv
         q += BFLs[s].k
     
     LR,mlabel = build_LR(BFLs,ths)
-    crmap = LR.map_label(tal,dmax=2*dmax)
+    if LR!=None:
+        crmap = LR.map_label(tal,dmax=2*dmax)
         
     return crmap, LR, BFLs 
 

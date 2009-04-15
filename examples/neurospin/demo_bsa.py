@@ -107,7 +107,7 @@ betas = np.reshape(dataset, (nbsubj, dimx, dimy))
 # set various parameters
 theta = float(st.t.isf(0.01, 100))
 dmax = 5./1.5
-ths = 0#nbsubj/2-1
+ths = nbsubj/2
 thq = 0.9
 verbose = 1
 smin = 5

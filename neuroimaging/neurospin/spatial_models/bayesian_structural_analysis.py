@@ -37,9 +37,13 @@ def hierarchical_asso(bfl,dmax):
     on a within-subject basis.
     """
     nbsubj = np.size(bfl)
-    nlm = np.array([bfl[i].k for i in range(nbsubj)])
+    nlm = np.zeros(nbsubj)
+    for i in range(nbsubj):
+        if bfl[i]!=None:
+            nlm[i] = bfl[i].k
+    #nlm = np.array([bfl[i].k for i in range(nbsubj) if bfl[i]!=None])#
     cnlm = np.hstack(([0],np.cumsum(nlm)))
-    if cnlm[nbsubj]==0:
+    if cnlm.max()==0:
         gcorr = []
         return gcorr
 
@@ -47,9 +51,9 @@ def hierarchical_asso(bfl,dmax):
     geb = []
     ged = []
     for s in range(nbsubj):
-        if (bfl[s].k>0):
+        if (bfl[s]!=None):
             for t in range(s):
-                if (bfl[t].k>0):
+                if (bfl[t]!=None):
                     cs =  bfl[s].get_roi_feature('position')
                     ct = bfl[t].get_roi_feature('position')
                     Gs = bfl[s].make_forest()
@@ -384,7 +388,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
         nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,th=theta,smin=smin)
         BF.append(nroi)
         
-        if nroi.k!=None:
+        if nroi!=None:
             sub.append(s*np.ones(nroi.k))
             # find some way to avoid coordinate averaging
             bfm = nroi.discrete_to_roi_features('activation','average')
@@ -424,30 +428,27 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
         spatial_coords = gfc
 
     p,q =  fc.fdp(gfc, 0.5, g0, g1,dof, prior_precision, 1-gf0, sub, 100, spatial_coords,10,1000)
+    # inference
+    valid = q>thq
 
     if verbose>1:
         import matplotlib.pylab as mp
         mp.figure()
         mp.plot(1-gf0,q,'.')
-        #mp.show()
-
-    # inference
-    valid = q>thq
-    if verbose:
         print np.sum(valid),np.size(valid)
 
     # remove non-significant regions
     for s in range(nbsubj):
         bfs = BF[s]
-        if bfs.k>0:
+        if bfs!=None:
             valids = valid[sub==s]
             valids = bfs.propagate_upward_and(valids)
             bfs.clean(valids)
             
-        if bfs.k>0:
+        if bfs!=None:
             bfs.merge_descending()
-            nroi.compute_discrete_position()
-            bfc = bfs.discrete_to_roi_features('position','cumulated_average')
+            bfs.compute_discrete_position()
+            bfs.discrete_to_roi_features('position','cumulated_average')
 
     # compute probabilitsic correspondences across subjects
     gc = hierarchical_asso(BF,np.sqrt(2)*dmax)
@@ -462,11 +463,13 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
 
     q = 0
     for s in range(nbsubj):
-        BF[s].set_roi_feature('label',u[q:q+BF[s].k])
-        q += BF[s].k
+        if BF[s]!=None:
+            BF[s].set_roi_feature('label',u[q:q+BF[s].k])
+            q += BF[s].k
     
     LR,mlabel = sbf.build_LR(BF,ths)
-    crmap = LR.map_label(tal,dmax=2*dmax)
+    if LR!=None:
+        crmap = LR.map_label(tal,dmax=2*dmax)
     
     return crmap,LR,BF,p
 
@@ -560,18 +563,17 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
         spatial_coords = gfc
             
     p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0, sub, 100, spatial_coords,10,1000)
+    valid = q>thq
     if verbose:
         import matplotlib.pylab as mp
         mp.figure()
-        mp.plot(1-gf0,q,'.')
-
-    valid = q>thq
-    print np.sum(valid),np.size(valid)
+        mp.plot(1-gf0,q,'.')    
+        print np.sum(valid),np.size(valid)
 
     # remove non-significant regions
     for s in range(nbsubj):
         bfs = BF[s]
-        if bfs.k>0:
+        if bfs!=None:
             valids = valid[sub==s]
             valids = bfs.propagate_upward_and(valids)
             bfs.clean(valids)
@@ -584,24 +586,27 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
             #beta = np.reshape(lbeta[:,s],(nvox,1))
             #bfsc = tal[bfs.feature_argmax(beta)]
             #bfs.set_roi_feature(bfsc,'position')
-                    
+
+    # compute a model of between-regions associations
     gc = hierarchical_asso(BF,np.sqrt(2)*dmax)
 
     # Infer the group-level clusters
     if gc == []:
         return crmap,AF,BF,p
 
-    # either replictor dynamics or agglomerative clustering
+    # either replicator dynamics or agglomerative clustering
     #u = sbf.segment_graph_rd(gc,1)
     u,cost = Average_Link_Graph_segment(gc,0.1,gc.V*1.0/nbsubj)
 
     q = 0
     for s in range(nbsubj):
-        BF[s].set_roi_feature('label',u[q:q+BF[s].k])
-        q += BF[s].k
+        if BF[s]!=None:
+            BF[s].set_roi_feature('label',u[q:q+BF[s].k])
+            q += BF[s].k
     
     LR,mlabel = sbf.build_LR(BF,ths)
-    crmap = LR.map_label(tal,dmax=2*dmax)
+    if LR!=None:
+        crmap = LR.map_label(tal,dmax=2*dmax)
 
     return crmap,LR,BF,p
 
@@ -732,16 +737,12 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
             midx = [bfs.discrete_features['masked_index'][k][idx[k]] for k in range(bfs.k)]
             j = label[np.array(midx)]
             us[leaves] = j[leaves]
-            us = bfs.propagate_upward(us)
-            
+
             # when parent regions has similarly labelled children,
             # include it also
-            us = bfs.propagate_upward_and(us)
+            us = bfs.propagate_upward(us)
             bfs.set_roi_feature('label',us)
                         
-    #ucheck = np.concatenate([BF[s].get_roi_feature('label') for s in range(nbsubj) if BF[s]!=None])
-    #ucheck = np.squeeze(ucheck)
-    
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one 
