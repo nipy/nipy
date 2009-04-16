@@ -2,7 +2,7 @@
 # python compute_mask.py swa4D.nii.gz mask.nii.gz
 # python compute_mask.py swa*.nii mask.nii.gz
 
-from fff2.utils.mask import compute_mask_files
+from nipy.neurospin.utils.mask import compute_mask_files
 import sys
 
 if len(sys.argv) < 3:

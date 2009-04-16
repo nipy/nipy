@@ -1,7 +1,7 @@
 import numpy as np
 import os.path
 import nifti
-from fff2.spatial_models.parcellation import Parcellation
+from parcellation import Parcellation
 
 
 def parcel_input(Mask_Images,nbeta,learning_images,ths = .5,fdim=3,sform=None):

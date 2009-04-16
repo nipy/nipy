@@ -72,7 +72,6 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('glm')
     config.add_subpackage('graph')
     config.add_subpackage('group')
-    config.add_subpackage('neuro')
     config.add_subpackage('register')
     config.add_subpackage('scripts')
     config.add_subpackage('spatial_models')

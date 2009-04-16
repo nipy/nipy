@@ -12,12 +12,12 @@ import numpy as np
 import scipy.stats as st
 
 import structural_bfls as sbf
-import neuroimaging.neurospin.graph.graph as fg
-from neuroimaging.neurospin.spatial_models import hroi 
-from neuroimaging.neurospin.clustering import GGMixture
-import neuroimaging.neurospin.clustering.clustering as fc
-from neuroimaging.neurospin.graph import BPmatch
-from neuroimaging.neurospin.clustering.hierarchical_clustering import Average_Link_Graph_segment
+import nipy.neurospin.graph.graph as fg
+from nipy.neurospin.spatial_models import hroi 
+from nipy.neurospin.clustering import GGMixture
+import nipy.neurospin.clustering.clustering as fc
+from nipy.neurospin.graph import BPmatch
+from nipy.neurospin.clustering.hierarchical_clustering import Average_Link_Graph_segment
 
 #------------------------------------------------------------------
 #---------------- Auxiliary functions -----------------------------
@@ -170,7 +170,7 @@ def _GMM_priors_(beta,bfm,theta = 0,alpha=0.01,prior_strength = 100,verbose=0):
         return None
 
     lnvox = np.size(beta)    
-    from neuroimaging.neurospin.clustering.gmm import BGMM,grid_descriptor
+    from nipy.neurospin.clustering.gmm import BGMM,grid_descriptor
     bgmm = BGMM(3,1,1)
     sbeta = np.sort(beta)
     mb0 = np.mean(sbeta[:alpha*lnvox])
@@ -677,7 +677,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
             bf0 = bfp[:,1]/np.sum(bfp,1)
 
             # ... or the emp_null heuristic
-            import neuroimaging.neurospin.utils.emp_null as en
+            import nipy.neurospin.utils.emp_null as en
             enn = en.ENN(beta)
             enn.learn()
             #bf0 = np.reshape(enn.fdr(bfm),np.size(bf0))

@@ -66,7 +66,7 @@ class landmark_regions(hroi.NROI):
     def homogeneity(self):
         """ returns the mean distance between points within each LR
         """
-        import fff2.eda.dimension_reduction  as dr 
+        import nipy.neurospin.eda.dimension_reduction  as dr 
         coord = self.discrete_features['position']
         size = self.get_size()
         h = np.zeros(self.k)

@@ -1,9 +1,9 @@
 import numpy as np
 
-import fff2.graph.graph as fg
-import fff2.graph.field as ff
-import fff2.clustering.clustering as fc
-import fff2.spatial_models.parcellation as fp
+import nipy.neurospin.graph.graph as fg
+import nipy.neurospin.graph.field as ff
+import nipy.neurospin.clustering.clustering as fc
+import nipy.neurospin.spatial_models.parcellation as fp
 
 def _Field_Gradient_Jac(ref,target):
 	"""

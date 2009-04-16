@@ -12,9 +12,9 @@ This example is based on a (simplistic) simulated image.
 import numpy as np
 import scipy.stats as st
 import os.path as op
-import neuroimaging.neurospin.spatial_models.hroi as hroi
-import fff2.utils.simul_2d_multisubject_fmri_dataset as simul
-import fff2.graph.field as ff
+import nipy.neurospin.spatial_models.hroi as hroi
+import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.graph.field as ff
 
 ################################################################################
 # simulate the data

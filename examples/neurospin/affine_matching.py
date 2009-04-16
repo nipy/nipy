@@ -5,7 +5,7 @@ Example of running inter-subject affine matching on the sulcal2000
 database acquired at SHFJ, Orsay, France. 
 """
 
-from neuroimaging.neurospin.image_registration import affine_register, affine_resample
+from nipy.neurospin.image_registration import affine_register, affine_resample
 
 # Use Matthew's volumeimages for I/O. 
 import volumeimages as v
@@ -63,7 +63,7 @@ tic = time.time()
 It = affine_resample(I, J, T) 
 # To resample the target (and avoid inverting the transformation), do: 
 # >>> Jt = resample(I, J, T, toresample='target')
-# For now, It is an instance of a local image class defined in neuroimaging.neurospin 
+# For now, It is an instance of a local image class defined in nipy.neurospin 
 # The following line will be useless when a standard nipy image class is adopted
 It =  v.nifti1.Nifti1Image(affine=It.get_affine(), data=It.get_data())
 toc = time.time()

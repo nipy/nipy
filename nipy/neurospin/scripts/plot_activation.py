@@ -20,8 +20,8 @@ import os
 import sys
 
 # local imports
-from fff2.viz.activation_maps import plot_niftifile, SformError, \
-        NiftiIndexError
+from nipy.neurospin.viz.activation_maps import plot_niftifile, SformError, \
+    NiftiIndexError
 
 
 parser = OptionParser(__doc__)
