@@ -653,7 +653,8 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,th=theta,smin=smin)
+        nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,
+                                    th=theta,smin=smin)
         BF.append(nroi)
         
         if nroi!=None:
@@ -676,10 +677,10 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
             bfp = _GMM_priors_(beta,bfm,theta,alpha,prior_strength,verbose)
             bf0 = bfp[:,1]/np.sum(bfp,1)
 
-            # ... or the emp_null heuristic
-            import neuroimaging.neurospin.utils.emp_null as en
-            enn = en.ENN(beta)
-            enn.learn()
+            ## ... or the emp_null heuristic
+            #import neuroimaging.neurospin.utils.emp_null as en
+            #enn = en.ENN(beta)
+            #enn.learn()
             #bf0 = np.reshape(enn.fdr(bfm),np.size(bf0))
             
             gf0.append(bf0)
@@ -704,19 +705,19 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     nis=100
     nii=1000
     
-    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0, sub,burnin,spatial_coords,nis, nii)
+    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
+                  sub,burnin,spatial_coords,nis, nii)
 
     if verbose:
         import matplotlib.pylab as mp
         mp.figure()
         mp.plot(1-gf0,q,'.')
-        h1,c1,p1 = mp.hist((1-gf0),bins=100)
-        h2,c2,p2 = mp.hist(q,bins=100)
+        h1,c1 = mp.histogram((1-gf0),bins=100)
+        h2,c2 = mp.histogram(q,bins=100)
         mp.figure()
         # We use c1[:len(h1)] to be independant of the change in np.hist
         mp.bar(c1[:len(h1)],h1,width=0.005)
         mp.bar(c2[:len(h2)]+0.003,h2,width=0.005,color='r')
-        mp.show()
         print 'Number of candidate regions %i, regions found %i' % (
                     np.size(q), q.sum())
     
@@ -746,7 +747,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one 
-    LR,nl = infer_LR(BF,thq,ths)
+    LR,nl = infer_LR(BF,thq,ths,verbose=verbose)
 
     # make a group-level map of the landmark position
     crmap = -np.ones(np.shape(label))

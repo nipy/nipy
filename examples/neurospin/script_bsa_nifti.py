@@ -13,13 +13,13 @@ import fff2.graph.field as ff
 import nifti
 
 
-def make_bsa_nifti(nbsubj, Mask_Images, betas, nbru='1', theta=3., dmax =  5., ths = 0, thq = 0.5, smin = 0, swd = "/tmp/",nbeta = [0]):
+def make_bsa_nifti(nbsubj, mask_images, betas, nbru='1', theta=3., dmax =  5., ths = 0, thq = 0.5, smin = 0, swd = "/tmp/",nbeta = [0]):
     """
     main function for  performing bsa on a set of images
     """
     
     # Read the referential
-    nim = nifti.NiftiImage(Mask_Images[0])
+    nim = nifti.NiftiImage(mask_images[0])
     header = nim.header
     ref_dim = nim.getVolumeExtent()
     grid_size = np.prod(ref_dim)
@@ -29,7 +29,7 @@ def make_bsa_nifti(nbsubj, Mask_Images, betas, nbru='1', theta=3., dmax =  5., t
     # Read the masks and compute the "intersection"
     mask = np.zeros(ref_dim)
     for s in range(nbsubj):
-        nim = nifti.NiftiImage(Mask_Images[s])
+        nim = nifti.NiftiImage(mask_images[s])
         temp = np.transpose(nim.getDataArray())
         mask = mask+temp;
 
@@ -63,7 +63,7 @@ def make_bsa_nifti(nbsubj, Mask_Images, betas, nbru='1', theta=3., dmax =  5., t
     
     #crmap,AF,BF,p = bsa.compute_BSA_ipmi(Fbeta,lbeta,tal,dmax,xyz[:,:3],header,thq, smin,ths, theta,g0,bdensity)
     #crmap,AF,BF,p = bsa.compute_BSA_dev (Fbeta,lbeta,tal,dmax,xyz[:,:3],header,thq, smin,ths, theta,g0,bdensity,verbose=1)
-    crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta,lbeta,tal,dmax,xyz[:,:3],header,thq, smin,ths, theta,g0,bdensity)
+    crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta,lbeta,tal,dmax,xyz[:,:3],header,thq, smin,ths, theta,g0,verbose=0)
 
     # Write the results
     LabelImage = op.join(swd,"CR_%04d.nii"%nbeta[0])
@@ -81,7 +81,6 @@ def make_bsa_nifti(nbsubj, Mask_Images, betas, nbru='1', theta=3., dmax =  5., t
         nim.description='group-level spatial density of active regions'
         nim.save(DensImage)
         
-    sub = np.concatenate([s*np.ones(BF[s].k) for s in range(nbsubj)])
     for s in range(nbsubj):
         LabelImage = op.join(swd,"AR_s%04d_%04d.nii"%(nbru[s],nbeta[0]))
         Label = -2*np.ones(ref_dim,'int16')
@@ -104,11 +103,11 @@ def make_bsa_nifti(nbsubj, Mask_Images, betas, nbru='1', theta=3., dmax =  5., t
 # Get the data
 nbru = range(1,13)
 
-Sess = len(nbru)
+nbsubj = len(nbru)
 nbeta = [29]
 theta = float(st.t.isf(0.01,100))
 dmax = 5.
-ths = Sess/2
+ths = nbsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
@@ -116,14 +115,14 @@ smin = 5
 swd = "/tmp/"
 
 # a mask of the brain in each subject
-Mask_Images =["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysis_RNorm_S/mask.img" % bru for bru in nbru]
+mask_images =["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysis_RNorm_S/mask.img" % bru for bru in nbru]
 
 # activation image in each subject
 betas = [["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysis_RNorm_S/spmT_%04d.img" % (bru, n) for n in nbeta] for bru in nbru]
 
-AF,BF = make_bsa_nifti(Sess, Mask_Images, betas, nbru, theta, dmax, ths,thq,smin,swd,nbeta)
+AF,BF = make_bsa_nifti(nbsubj, mask_images, betas, nbru, theta, dmax, ths,thq,smin,swd,nbeta)
 
-# xrite the result. OK, this is only a temporary solution
+# Write the result. OK, this is only a temporary solution
 import cPickle
 picname = op.join(swd,"AF_%04d" %nbeta[0])
 cPickle.dump(AF, open(picname, 'w'), 2)
