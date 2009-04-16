@@ -5,7 +5,7 @@ Example of running inter-subject affine matching on the sulcal2000
 database acquired at SHFJ, Orsay, France. 
 """
 
-from neuroimaging.neurospin.affine_register import register, resample
+from neuroimaging.neurospin.image_registration import affine_register, affine_resample
 
 # Use Matthew's volumeimages for I/O. 
 import volumeimages as v
@@ -50,7 +50,9 @@ J = v.load(join(rootpath,'nobias_'+target+'.nii'))
 # Perform affine normalization 
 print('Setting up registration...')
 tic = time.time()
-T = register(I, J, similarity=similarity, interp=interp, normalize=normalize, optimizer=optimizer)
+T = affine_register(I, J, 
+		    similarity=similarity, interp=interp, 
+		    normalize=normalize, optimizer=optimizer)
 toc = time.time()
 print('  Registration time: %f sec' % (toc-tic))
 
@@ -58,19 +60,21 @@ print('  Registration time: %f sec' % (toc-tic))
 # Resample source image
 print('Resampling source image...')
 tic = time.time()
-It =  v.nifti1.Nifti1Image(affine=J.get_affine(), data=resample(I, J, T))
+It = affine_resample(I, J, T) 
+# To resample the target (and avoid inverting the transformation), do: 
+# >>> Jt = resample(I, J, T, toresample='target')
+# For now, It is an instance of a local image class defined in neuroimaging.neurospin 
+# The following line will be useless when a standard nipy image class is adopted
+It =  v.nifti1.Nifti1Image(affine=It.get_affine(), data=It.get_data())
 toc = time.time()
 print('  Resampling time: %f sec' % (toc-tic))
-
 
 # Save resampled source
 outfile =  source+'_TO_'+target+'.nii'
 print ('Saving resampled source in: %s' % outfile)
 v.save(It, outfile)
 
-
 # Save transformation matrix
-"""
 import numpy as np
-np.save(outfile, T)
-"""
+np.save(outfile, np.asarray(T))
+

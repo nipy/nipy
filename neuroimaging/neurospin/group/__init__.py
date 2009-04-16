@@ -1,5 +1,5 @@
-import onesample
-import twosample
+#import onesample
+#import twosample
 #import permutation_test
 #import spatial_relaxation_onesample
 

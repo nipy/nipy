@@ -130,6 +130,9 @@ class Image:
     def get_data(self):
         return self._array
 
+    def get_shape(self):
+        return self._array.shape
+
     def get_affine(self):
         return self._affine
 

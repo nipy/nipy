@@ -1,13 +1,16 @@
-import neuroimaging.neurospin as fff2
-
-import neuroimaging.neurospin.graph.field as field
-##import neuroimaging.neurospin.registration.transform_affine as affine
-import neuroimaging.neurospin.group.permutation_test as permutt
-
-from neuroimaging.neurospin.utils import emp_null
-
 import numpy as np
-import scipy.stats as sps
+import scipy.stats as sp_stats
+
+from neuroimaging.neurospin.graph.field import Field
+from neuroimaging.neurospin.register.transform import apply_affine
+from neuroimaging.neurospin.utils import emp_null
+from neuroimaging.neurospin.glm import glm
+from neuroimaging.neurospin.group.permutation_test import permutation_test_onesample
+# FIXME: rename permutation_test_onesample class so that name starts with upper case
+### FIXME LATER
+from neuroimaging.neurospin import Image
+
+
 
 
 ################################################################################
@@ -16,11 +19,11 @@ import scipy.stats as sps
 
 def z_threshold(height_th, height_control):
     if height_control == 'fpr':
-        return sps.norm.isf(height_th)
+        return sp_stats.norm.isf(height_th)
     elif height_control == 'fdr':
         return emp_null.FDR(zmap).threshold(height_th)
     elif height_control == 'bonferroni':
-        return sps.norm.isf(height_th/nvoxels)
+        return sp_stats.norm.isf(height_th/nvoxels)
     else: ## Brute-force thresholding 
         return height_th
 
@@ -51,18 +54,16 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0,
       null_smax -- cluster-level familywise error correction method: None|'rft'|array
       null_s -- cluster-level calibration method: None|'rft'|array
     """
-    if not isinstance(zimg, fff2.neuro.image) or not isinstance(mask, fff2.neuro.image): 
-        raise ValueError, 'Invalid input images.' 
     
     # Masking 
-    xyz = np.where(mask.array>0)
-    zmap = zimg.array[xyz]
+    xyz = np.where(mask.get_data()>0)
+    zmap = zimg.get_data()[xyz]
     xyz = np.array(xyz).T
     nvoxels = np.size(xyz, 0)
 
     # Thresholding 
     zth = z_threshold(height_th, height_control)
-    pth = sps.norm.sf(zth)
+    pth = sp_stats.norm.sf(zth)
     above_th = zmap>zth
     if np.where(above_th)[0].size == 0:
         return None ## FIXME
@@ -71,7 +72,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0,
 
     # Clustering
     ## Extract local maxima and connex components above some threshold
-    ff = field.Field(np.size(zmap_th), field=zmap_th)
+    ff = Field(np.size(zmap_th), field=zmap_th)
     ff.from_3d_grid(xyz_th, k=18)
     maxima, depth = ff.get_local_maxima(th=zth)
     labels = ff.cc()
@@ -98,9 +99,9 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0,
     for c in clusters:
         maxima = c['maxima']
         zscore = zmap_th[maxima]
-        pval = sps.norm.sf(zscore)
+        pval = sp_stats.norm.sf(zscore)
         # Replace array indices with real coordinates
-        c['maxima'] = affine.transform(xyz_th[maxima].T, zimg.transform).T 
+        c['maxima'] = apply_affine(zimg.get_affine(), xyz_th[maxima].T).T 
         c['zscore'] = zscore
         c['pvalue'] = pval
         c['fdr_pvalue'] = fdr_pvalue[maxima]
@@ -152,14 +153,14 @@ def mask_intersection(masks):
 def prepare_arrays(data_images, vardata_images, mask_images):
 
     # Compute mask intersection
-    mask = mask_intersection([mask.array for mask in mask_images])
+    mask = mask_intersection([mask.get_data() for mask in mask_images])
     
     # Compute xyz coordinates from mask 
     xyz = np.array(np.where(mask>0))
     
     # Prepare data & vardata arrays 
-    data = np.array([d.array[xyz[0],xyz[1],xyz[2]] for d in data_images])
-    vardata = np.array([d.array[xyz[0],xyz[1],xyz[2]] for d in vardata_images])
+    data = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in data_images])
+    vardata = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in vardata_images])
     
     return data, vardata, xyz, mask 
 
@@ -177,18 +178,15 @@ def onesample_test(data_images, vardata_images, mask_images, stat_id,
                                               vardata_images, mask_images)
 
     # Create one-sample permutation test instance
-    ptest = permutt.permutation_test_onesample(data, xyz, 
-                                            vardata=vardata, stat_id=stat_id)
+    ptest = permutt.permutation_test_onesample(data, xyz, vardata=vardata, stat_id=stat_id)
 
     # Compute z-map image 
-    zmap = np.zeros(data_images[0].array.shape)
+    zmap = np.zeros(data_images[0].get_shape())
     zmap[xyz[0,:],xyz[1,:],xyz[2,:]] = ptest.zscore()
-    zimg = fff2.neuro.image(data_images[0])
-    zimg.set_array(zmap)
+    zimg = Image(zmap, data_images[0].get_affine())
 
     # Compute mask image
-    maskimg = fff2.neuro.image(data_images[0])
-    maskimg.set_array(mask)
+    maskimg = Image(mask, data_images[0].get_affine())
     
     # Multiple comparisons
     if not comparisons:
@@ -205,6 +203,82 @@ def onesample_test(data_images, vardata_images, mask_images, stat_id,
         
         # Return z-map image, list of cluster dictionaries and info dictionary 
         return zimg, maskimg, null_zmax, null_smax, null_s
+
+
+################################################################################
+# Linear model
+################################################################################
+
+def affect_inmask(dest, src, xyz):
+    if xyz == None:
+        dest = src
+    else:
+        dest[xyz[0,:], xyz[1,:], xyz[2,:]] = src
+    return dest
+
+
+
+class LinearModel: 
+
+    def __init__(self, data=None, design_matrix=None, mask=None, formula=None, 
+                 model='spherical', method=None, niter=2):
+
+        if data == None:
+            self.data = None
+            self.xyz = None
+            self.glm = None
+
+        else:
+            if not isinstance(design_matrix, np.ndarray):
+                raise ValueError, 'Invalid design matrix.'
+            
+            self.data = data
+            if mask == None:
+                self.xyz = None
+                Y = data.get_data()
+                axis = 3
+            else:
+                self.xyz = np.where(mask.get_data()>0)
+                Y = data.get_data()[self.xyz]
+                axis = 1
+                
+            self.glm = glm(Y, design_matrix, formula=formula, axis=axis, model=model, method=method, niter=niter)
+
+
+    def dump(self, filename):
+        """
+        Dump GLM fit as NPZ file.  
+        """
+        self.glm.save(filename)
+
+
+    def contrast(self, vector):
+        """
+        Compute images of contrast and contrast variance.  
+        """
+        c = self.glm.contrast(vector)
+        
+        con = np.zeros(self.data.get_shape()[1:4])
+        con_img = Image(affect_inmask(con, c.effect, self.xyz), self.data.get_affine())
+
+        vcon = np.zeros(self.data.get_shape()[1:4])
+        vcon_img = Image(affect_inmask(vcon, c.variance, self.xyz), self.data.get_affine())
+
+        dof = c.dof
+        
+        return con_img, vcon_img, dof
+
+
+
+
+
+
+
+
+
+
+
+
 
 ################################################################################
 # Hack to have nose skip onesample_test, which is not a unit test

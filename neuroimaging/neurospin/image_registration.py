@@ -3,16 +3,18 @@ import numpy as np
 from neuroimaging.neurospin.register.iconic_matcher import IconicMatcher
 from neuroimaging.neurospin.register.routines import cspline_resample
 
+### FIXME LATER
+from neuroimaging.neurospin import Image
 
-def register(source, 
-             target, 
-             similarity='cr',
-             interp='pv',
-             subsampling=None,
-             normalize=None, 
-             search='affine',
-             graduate_search=False,
-             optimizer='powell'):
+def affine_register(source, 
+                    target, 
+                    similarity='cr',
+                    interp='pv',
+                    subsampling=None,
+                    normalize=None, 
+                    search='affine',
+                    graduate_search=False,
+                    optimizer='powell'):
     
     """
     Three-dimensional affine image registration. 
@@ -29,7 +31,6 @@ def register(source,
     T : source-to-target affine transformation 
         Object that can be casted to a numpy array. 
 
-    Images are assumed to have both get_data and get_affine methods. 
     """
     
     matcher = IconicMatcher(source.get_data(), 
@@ -60,9 +61,14 @@ def register(source,
     return T
 
 
-def resample(source, target, T, toresample='source', dtype=None, order=3, use_scipy=False): 
+def affine_resample(source, 
+                    target, 
+                    T, 
+                    toresample='source', 
+                    dtype=None, order=3, 
+                    use_scipy=False): 
     """
-    Spline resampling. 
+    Image resampling using spline interpolation. 
 
     Parameters
     ----------
@@ -78,26 +84,26 @@ def resample(source, target, T, toresample='source', dtype=None, order=3, use_sc
         from scipy.ndimage import affine_transform 
     if toresample is 'target': 
         if not use_scipy:
-            return cspline_resample(target.get_data(), 
-                                    source.get_data().shape, 
+            data = cspline_resample(target.get_data(), 
+                                    source.get_shape(), 
                                     Tv, 
                                     dtype=dtype)
         else: 
-            return affine_transform(target.get_data(), 
-                                    Tv[0:3,0:3], offset=Tv[0:3,3], 
-                                    output_shape=source.get_data().shape, 
-                                    order=order)
+            data = affine_transform(target.get_data(), 
+                                  Tv[0:3,0:3], offset=Tv[0:3,3], 
+                                  output_shape=source.get_shape(), 
+                                  order=order)
+        return Image(data, target.get_affine())
     else:
         if not use_scipy:
-            return cspline_resample(source.get_data(), 
-                                    target.get_data().shape, 
+            data = cspline_resample(source.get_data(), 
+                                    target.get_shape(), 
                                     np.linalg.inv(Tv), 
                                     dtype=dtype)
         else: 
             Tv = np.linalg.inv(Tv)
-            return affine_transform(source.get_data(), 
+            data = affine_transform(source.get_data(), 
                                     Tv[0:3,0:3], offset=Tv[0:3,3], 
-                                    output_shape=target.get_data().shape, 
+                                    output_shape=target.get_shape(), 
                                     order=order)
-
-
+        return Image(data, source.get_affine())

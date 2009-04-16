@@ -23,12 +23,15 @@ Distributed under the terms of the BSD License.
 from numpy.testing import Tester
 
 from image import Image 
-from affine_register import *
+import image_registration
+import statistical_mapping
 
+"""
 import bindings
 import glm
 import register
 import utils 
+"""
 
 test = Tester().test
 bench = Tester().bench 
