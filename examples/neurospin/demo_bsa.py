@@ -47,8 +47,9 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                bsa.compute_BSA_dev(Fbeta, lbeta, tal, dmax,xyz, None, thq,
                                       smin, ths, theta, g0, bdensity)
 
-    lmax = AF.k+2
-    AF.show()
+    if AF != None:
+        lmax = AF.k+2
+        AF.show()
   
     group_map.shape = ref_dim
     mp.figure()

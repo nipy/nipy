@@ -653,7 +653,7 @@ class MultipleROI():
                 bproblem=0
                 
         if bproblem:
-            print "warning, no sform found for position definition"
+            print "warning: no sform found for position definition, ",
             print "assuming it is the identity"
             sform = np.eye(4)
 
