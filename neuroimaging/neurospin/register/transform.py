@@ -1,4 +1,4 @@
-from routines import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines, cspline_resample
+from routines import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
 
 
 import numpy as np
@@ -79,15 +79,6 @@ def apply_affine(T, xyz):
     XYZ[1,:] += T[1,3]
     XYZ[2,:] += T[2,3]
     return XYZ 
-
-
-def resample(T, source, target, source_toworld, target_toworld, 
-             toresample='source', dtype=None):
-    Tv = np.dot(np.linalg.inv(target_toworld), np.dot(T, source_toworld))
-    if toresample is 'target': 
-        return cspline_resample(target, source.shape, Tv, dtype=dtype)
-    else:
-        return cspline_resample(source, target.shape, np.linalg.inv(Tv), dtype=dtype)
 
 
 class Affine: 

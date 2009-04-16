@@ -5,7 +5,7 @@ from neuroimaging.testing import TestCase, assert_equal, assert_almost_equal, \
 import numpy as np
 
 from neuroimaging.neurospin import register 
-from neuroimaging.neurospin.register.transform import resample, rotation_vec2mat
+from neuroimaging.neurospin.register.transform import rotation_vec2mat
 
 
 class Image(object):
