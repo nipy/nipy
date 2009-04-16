@@ -10,14 +10,15 @@ import numpy as np
 
 DEFAULT_IOLIB = 'pynifti'
 
-class image:
-    def __init__(self, obj=None, transform=None, voxsize=None, iolib=DEFAULT_IOLIB):
+class Image:
 
+    def __init__(self, obj=None, affine=None, voxsize=None, iolib=DEFAULT_IOLIB):
         """
-        Basic image class. 
+        Basic image class to be substituted with nipy's class when
+        ready.
         
-        transform: 4x4 transformation matrix from array to scanner coordinate
-        system.
+        affine: 4x4 transformation matrix from array to scanner
+        coordinate system.
         
         IMPORTANT NOTE: the image class assumes that the scanner
         coordinate system is ALWAYS right-handed and such that x
@@ -26,24 +27,25 @@ class image:
         direction. This transformation is thus exactly what the nifti
         norm calls the 'qform'.
         """
-        self.iolib = iolib
-
+       
+        self._iolib = iolib
+        
         # Case: initialize from array
         if isinstance(obj, np.ndarray):
-            self.array = obj
+            self._array = obj
             # Default transform: origin maps to real coordinates zero
-            if transform == None:
+            if affine == None:
                 if voxsize == None:
                     voxsize = np.ones(3)
-                transform = np.diag(np.concatenate((voxsize,[1]),1))
+                affine = np.diag(np.concatenate((voxsize,[1]),1))
                 origin = .5*(np.asarray(obj.shape)-1) 
-                transform[0:3,3] = -voxsize*origin
-            self.transform = transform
+                affine[0:3,3] = -voxsize*origin
+            self._affine = affine
             
-            if self.iolib == 'pynifti':
+            if self._iolib == 'pynifti':
                 import nifti
                 self._image = nifti.NiftiImage(obj.T)
-                self._image.setQForm(transform)
+                self._image.setQForm(affine)
             
         else:
             # Case: initialize from file
@@ -56,14 +58,14 @@ class image:
                 self._clone(obj)
             # Default 
             else:
-                self.array = None
-                self.transform = None
+                self._array = None
+                self._affine = None
                 self._image = None
         
     def _clone(self, model):
-        self.array = model.array
-        self.transform = model.transform
-        self.iolib = model.iolib
+        self._array = model._array
+        self._affine = model._affine
+        self._iolib = model._iolib
         self._image = model._image
 
     def _load(self, filename):
@@ -71,30 +73,30 @@ class image:
         Read an image file, and make a python dictionary based on array
         data and header info. 
         """
-        iolib = self.iolib 
+        iolib = self._iolib 
         if iolib == 'nipy':
             from neuroimaging.core.api import Image
             self._image = Image.load(filename)
-            self.array = self._image.buffer
-            self.transform = self._image.grid.mapping.transform
+            self._array = self._image.buffer
+            self._affine = self._image.grid.mapping.transform
         
         elif iolib == 'aims':
             from soma import aims
             reader = aims.Reader()
             self._image = reader.read(filename)
-            self.array = self._image.__array__().squeeze()
+            self._array = self._image.__array__().squeeze()
             header = self._image.header().get()
-            voxsize = np.asarray(header['voxel_size'])[0:np.minimum(3, self.array.ndim)]
+            voxsize = np.asarray(header['voxel_size'])[0:np.minimum(3, self._array.ndim)]
             if header.has_key('transformations'):
-                transform = np.asarray(header['transformations'][0]).reshape(4,4)
-                self.transform = np.dot(transform, np.diag(np.concatenate((voxsize,[1]))))      
+                affine = np.asarray(header['transformations'][0]).reshape(4,4)
+                self._affine = np.dot(affine, np.diag(np.concatenate((voxsize,[1]))))      
             
         elif iolib == 'pynifti':
             import nifti
             self._image = nifti.NiftiImage(filename)
-            self.array = self._image.data.T
+            self._array = self._image.data.T
             ##voxsize = self._image.voxdim
-            self.transform = self._image.qform
+            self._affine = self._image.qform
 
         else:
             print 'Unknown input/output library.'
@@ -109,24 +111,34 @@ class image:
             print('Dummy image: cannot save')
             return
 
-        if self.iolib == 'nipy':
+        if self._iolib == 'nipy':
             ##imIt = Image(It, grid=imJ.grid)
             return
         
-        elif self.iolib == 'aims':
+        elif self._iolib == 'aims':
             from soma import aims
             w = aims.Writer()
             # what if the two arrays are still the same object ?!
-            self._image.__array__().squeeze()[:] = self.array.squeeze()[:]
+            self._image.__array__().squeeze()[:] = self._array.squeeze()[:]
             w.write(self._image, filename)
 
-        elif self.iolib == 'pynifti':
-            self._image.data[:] = self.array.T[:]
+        elif self._iolib == 'pynifti':
+            self._image.data[:] = self._array.T[:]
             self._image.save(filename)
             
 
-    def set_array(self, array):
-        self.array = array
+    def get_data(self):
+        return self._array
+
+    def get_shape(self):
+        return self._array.shape
+
+    def get_affine(self):
+        return self._affine
+
+    def set_data(self, array):
+        self._array = array
+
 
 """
 AIMS

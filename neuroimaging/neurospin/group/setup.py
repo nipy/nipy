@@ -3,8 +3,8 @@ def configuration(parent_package='',top_path=None):
     
     from numpy.distutils.misc_util import Configuration
 
-    # We need this because lapack fffpy.a is linked to lapack, which can be a 
-    # fortran library, and the linker needs this information.
+    # We need this because libcstat.a is linked to lapack, which can
+    # be a fortran library, and the linker needs this information.
     from numpy.distutils.system_info import get_info
 
     # First, try 'lapack_info', as that seems to provide more details on Linux
@@ -21,25 +21,25 @@ def configuration(parent_package='',top_path=None):
     config.add_extension(
         '_onesample',
         sources=['_onesample.c'],
-        libraries=['fffpy'],
+        libraries=['cstat'],
         extra_info=lapack_info,
         )
     config.add_extension(
         '_twosample',
         sources=['_twosample.c'],
-        libraries=['fffpy'],
+        libraries=['cstat'],
         extra_info=lapack_info,
         )
     config.add_extension(
         'routines',
         sources=['routines.c'],
-        libraries=['fffpy'],
+        libraries=['cstat'],
         extra_info=lapack_info,
         )
     config.add_extension(
         'glm_twolevel',
         sources=['glm_twolevel.c'],
-        libraries=['fffpy'],
+        libraries=['cstat'],
         extra_info=lapack_info,
         )
 

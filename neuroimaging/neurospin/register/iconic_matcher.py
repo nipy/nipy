@@ -1,5 +1,5 @@
 """
-YAMILA = Yet Another Mutual Information-Like Aligner
+Intensity-based matching. 
 
 Questions: alexis.roche@gmail.com
 """
@@ -339,51 +339,4 @@ class IconicMatcher():
 
 
 
-def imatch(source, 
-           target, 
-           source_toworld, 
-           target_toworld,
-           similarity='cr',
-           interp='pv',
-           subsampling=None,
-           normalize=None, 
-           search='affine',
-           graduate_search=False,
-           optimizer='powell'):
-
-    """
-    Three-dimensional intensity-based image registration. 
-    
-    Parameters
-    ----------
-    source : ndarray 
-             Source image array 
-    target : ndarray 
-             Target image array 
-
-    """
-    
-    matcher = IconicMatcher(source, target, source_toworld, target_toworld)
-    if subsampling == None: 
-        matcher.set_field_of_view(fixed_npoints=64**3)
-    else:
-        matcher.set_field_of_view(subsampling=subsampling)
-    matcher.set_interpolation(method=interp)
-    matcher.set_similarity(similarity=similarity, normalize=normalize)
-
-    # Register
-    print('Starting registration...')
-    print('Similarity: %s' % matcher.similarity)
-    print('Normalize: %s' % matcher.normalize) 
-    print('Interpolation: %s' % matcher.interp)
-
-    T = None
-    if graduate_search or search=='rigid':
-        T = matcher.optimize(method=optimizer, search='rigid')
-    if graduate_search or search=='similarity':
-        T = matcher.optimize(method=optimizer, search='similarity', start=T)
-    if graduate_search or search=='affine':
-        T = matcher.optimize(method=optimizer, search='affine', start=T)
-    
-    return T
 
