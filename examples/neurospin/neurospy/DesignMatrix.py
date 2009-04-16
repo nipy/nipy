@@ -11,8 +11,8 @@ import numpy as np
 import pylab
 from configobj import ConfigObj
 
-from neuroimaging.modalities.fmri.protocol import ExperimentalFactor
-from neuroimaging.modalities.fmri import protocol, hrf
+from nipy.modalities.fmri.protocol import ExperimentalFactor
+from nipy.modalities.fmri import protocol, hrf
 
 
 def _loadProtocol(x, session, names = None):

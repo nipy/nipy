@@ -4,9 +4,9 @@ import os
 
 import numpy as np
 
-from neuroimaging.core.api import fromarray, Affine
-from neuroimaging.io.api import save_image, load_image
-from neuroimaging.utils.tests.data import repository
+from nipy.core.api import fromarray, Affine
+from nipy.io.api import save_image, load_image
+from nipy.utils.tests.data import repository
 
 # Load an image to get the array and affine
 filename = str(repository._fullpath('avg152T1.nii.gz'))
@@ -48,7 +48,7 @@ newimg = fromarray(arr, innames=innames, outnames=outnames,
 # Imports used just for development and testing.  User's typically
 # would not uses these when creating an image.
 from tempfile import mkstemp
-from neuroimaging.testing import assert_equal
+from nipy.testing import assert_equal
 
 # We use a temporary file for this example so as to not create junk
 # files in the nipy directory.
