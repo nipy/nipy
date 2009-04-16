@@ -74,13 +74,8 @@ class Image:
         data and header info. 
         """
         iolib = self._iolib 
-        if iolib == 'nipy':
-            from neuroimaging.core.api import Image
-            self._image = Image.load(filename)
-            self._array = self._image.buffer
-            self._affine = self._image.grid.mapping.transform
         
-        elif iolib == 'aims':
+        if iolib == 'aims':
             from soma import aims
             reader = aims.Reader()
             self._image = reader.read(filename)
@@ -110,12 +105,8 @@ class Image:
         if self._image == None: 
             print('Dummy image: cannot save')
             return
-
-        if self._iolib == 'nipy':
-            ##imIt = Image(It, grid=imJ.grid)
-            return
         
-        elif self._iolib == 'aims':
+        if self._iolib == 'aims':
             from soma import aims
             w = aims.Writer()
             # what if the two arrays are still the same object ?!

@@ -1,10 +1,10 @@
 import numpy as np
 
-from neuroimaging.neurospin.register.iconic_matcher import IconicMatcher
-from neuroimaging.neurospin.register.routines import cspline_resample
+from nipy.neurospin.register.iconic_matcher import IconicMatcher
+from nipy.neurospin.register.routines import cspline_resample
 
 ### FIXME LATER
-from neuroimaging.neurospin import Image
+from nipy.neurospin import Image
 
 def affine_register(source, 
                     target, 
