@@ -23,9 +23,9 @@ from scipy import ndimage, stats
 from nifti import NiftiImage
 
 # Local imports
-from fff2.utils.mask import compute_mask, _largest_cc
-from fff2.utils.emp_null import ENN
-import fff2.data
+from nipy.neurospin.utils.mask import compute_mask, _largest_cc
+from nipy.neurospin.utils.emp_null import ENN
+import nipy.neurospin.data
 
 # The sform for MNI templates
 mni_sform = np.array([[-1, 0, 0,   90],
@@ -210,7 +210,7 @@ class _AnatCache(object):
             return cls.anat, cls.anat_sform, cls.anat_max
         anat_im = NiftiImage(
                     os.path.join(os.path.dirname(
-                        os.path.realpath(fff2.data.__file__)),
+                        os.path.realpath(nipy.neurospin.data.__file__)),
                         'MNI152_T1_1mm_brain.nii.gz'
                     ))
         anat = anat_im.data.T
