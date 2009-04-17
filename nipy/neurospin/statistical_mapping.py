@@ -11,7 +11,6 @@ from nipy.neurospin.group.permutation_test import permutation_test_onesample
 from nipy.neurospin import Image
 
 
-
 ################################################################################
 # Cluster statistics 
 ################################################################################
@@ -33,8 +32,7 @@ def simulated_pvalue(t, simu_t):
     return 1 - np.searchsorted(simu_t, t)/float(np.size(simu_t))
 
 
-def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0,
-                  null_zmax='bonferroni', null_smax=None, null_s=None):
+def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nulls=None):
     """
     clusters =  cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0,
                               null_zmax='bonferroni', null_smax=None, null_s=None)
@@ -43,15 +41,16 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0,
     dictionary. Clusters are sorted by descending size order. Within
     each cluster, local maxima are sorted by descending depth order.
 
-    Input consist of the following: 
-      zimg -- z-score image
-      mask -- mask image 
-      height_th -- cluster forming threshold
-      height_control -- false positive control meaning of cluster forming threshold: 'fpr'|'fdr'|'fwer'
-      size_th -- cluster size threshold
-      null_zmax -- voxel-level familywise error correction method: 'bonferroni'|'rft'|array
-      null_smax -- cluster-level familywise error correction method: None|'rft'|array
-      null_s -- cluster-level calibration method: None|'rft'|array
+    Parameters
+    ----------
+      zimg : z-score image
+      mask : mask image 
+      height_th : cluster forming threshold
+      height_control : false positive control meaning of cluster forming threshold: 'fpr'|'fdr'|'fwer'
+      cluster_th : cluster size threshold
+      null_zmax : voxel-level familywise error correction method: 'bonferroni'|'rft'|array
+      null_smax : cluster-level familywise error correction method: None|'rft'|array
+      null_s : cluster-level calibration method: None|'rft'|array
     """
     
     # Masking 
@@ -106,23 +105,25 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0,
         c['fdr_pvalue'] = fdr_pvalue[maxima]
 
         # Voxel-level corrected p-values
+        if nulls == None: 
+            nulls = {'zmax':'bonferroni', 'smax':None, 's':None}
         p = None
-        if null_zmax == 'bonferroni':
+        if nulls['zmax'] == 'bonferroni':
             p = bonferroni(pval, nvoxels) 
-        elif isinstance(null_zmax, np.ndarray):
-            p = simulated_pvalue(zscore, null_zmax)
+        elif isinstance(nulls['zmax'], np.ndarray):
+            p = simulated_pvalue(zscore, nulls['zmax'])
         c['fwer_pvalue'] = p
 
         # Cluster-level p-values (corrected)
         p = None
-        if isinstance(null_smax, np.ndarray):
-            p = simulated_pvalue(c['size'], null_smax)
+        if isinstance(nulls['smax'], np.ndarray):
+            p = simulated_pvalue(c['size'], nulls['smax'])
         c['cluster_fwer_pvalue'] = p
 
         # Cluster-level p-values (uncorrected)
         p = None
-        if isinstance(null_s, np.ndarray):
-            p = simulated_pvalue(c['size'], null_s)
+        if isinstance(nulls['s'], np.ndarray):
+            p = simulated_pvalue(c['size'], nulls['s'])
         c['cluster_pvalue'] = p
 
     # General info
@@ -159,49 +160,51 @@ def prepare_arrays(data_images, vardata_images, mask_images):
     
     # Prepare data & vardata arrays 
     data = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in data_images])
-    vardata = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in vardata_images])
+    if vardata_images == None: 
+        vardata = None
+    else: 
+        vardata = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in vardata_images])
     
     return data, vardata, xyz, mask 
 
 
-def onesample_test(data_images, vardata_images, mask_images, stat_id,
-                   comparisons=False, cluster_forming_th=0.01, cluster_th=0):
+def onesample_test(data_images, vardata_images, mask_images, stat_id, 
+                   permutations=0, cluster_forming_th=0.01):
     """
-    zimg, clusters, info = onesample_test(data_images, vardata_images, mask_images, stat_id,
-                                          comparisons=False, cluster_forming_th=0.01, cluster_th=0)
-
+    Helper function for permutation-based mass univariate onesample group analysis. 
     """
 
     # Prepare arrays
-    data, vardata, xyz, mask = prepare_arrays(data_images, 
-                                              vardata_images, mask_images)
+    data, vardata, xyz, mask = prepare_arrays(data_images, vardata_images, mask_images)
 
     # Create one-sample permutation test instance
-    ptest = permutt.permutation_test_onesample(data, xyz, vardata=vardata, stat_id=stat_id)
+    ptest = permutation_test_onesample(data, xyz, vardata=vardata, stat_id=stat_id)
 
     # Compute z-map image 
     zmap = np.zeros(data_images[0].get_shape())
-    zmap[xyz[0,:],xyz[1,:],xyz[2,:]] = ptest.zscore()
+    zmap[list(xyz)] = ptest.zscore()
     zimg = Image(zmap, data_images[0].get_affine())
 
     # Compute mask image
     maskimg = Image(mask, data_images[0].get_affine())
     
     # Multiple comparisons
-    if not comparisons:
+    if permutations <= 0: 
         return zimg, maskimg
     else: 
         # Cluster definition: (threshold, diameter)
         cluster_def = (ptest.height_threshold(cluster_forming_th), None)
+  
         # Calibration 
         voxel_res, cluster_res, region_res = \
-            ptest.calibrate(nperms=self.permutations, clusters=[cluster_def])
-        null_zmax = ptest.zscore(voxel_res['perm_maxT_values'])
-        null_s = cluster_res[0]['perm_size_values']
-        null_smax = cluster_res[0]['perm_maxsize_values']
+            ptest.calibrate(nperms=permutations, clusters=[cluster_def])
+        nulls = {}
+        nulls['zmax'] = ptest.zscore(voxel_res['perm_maxT_values'])
+        nulls['s'] = cluster_res[0]['perm_size_values']
+        nulls['smax'] = cluster_res[0]['perm_maxsize_values']
         
         # Return z-map image, list of cluster dictionaries and info dictionary 
-        return zimg, maskimg, null_zmax, null_smax, null_s
+        return zimg, maskimg, nulls
 
 
 ################################################################################
@@ -229,7 +232,7 @@ class LinearModel:
 
         else:
             if not isinstance(design_matrix, np.ndarray):
-                raise ValueError, 'Invalid design matrix.'
+                raise ValueError('Invalid design matrix')
             
             self.data = data
             if mask == None:
@@ -241,7 +244,8 @@ class LinearModel:
                 Y = data.get_data()[self.xyz]
                 axis = 1
                 
-            self.glm = glm(Y, design_matrix, formula=formula, axis=axis, model=model, method=method, niter=niter)
+            self.glm = glm(Y, design_matrix, formula=formula, axis=axis, model=model, 
+                           method=method, niter=niter)
 
 
     def dump(self, filename):
