@@ -1,4 +1,4 @@
-from nipy.neurospin import register 
+from nipy.neurospin.image_registration import image4d, realign4d, resample4d
 
 # Use Matthew's volumeimages for I/O. 
 import volumeimages as v
@@ -15,22 +15,20 @@ runnames = ['run1', 'run1']
 im1 = v.load(join(rootpath, runnames[0]+'.nii'))
 im2 = v.load(join(rootpath, runnames[1]+'.nii'))
 
-# Create TimeSeries instances -- this is a local class representing a
+# Create Image4d instances -- this is a local class representing a
 # series of 3d images
-run1 = register.TimeSeries(im1.get_data(), toworld=im1.get_affine(), tr=2.5, 
-                           slice_order='ascending', interleaved=True)
-run2 = register.TimeSeries(im2.get_data(), toworld=im2.get_affine(), tr=2.5, 
-                           slice_order='ascending', interleaved=True)
+run1 = image4d(im1, tr=2.5, slice_order='ascending', interleaved=True)
+run2 = image4d(im2, tr=2.5, slice_order='ascending', interleaved=True)
 
 # Correct motion within- and between-sessions
-transforms = register.realign4d([run1, run2]) 
+transforms = realign4d([run1, run2]) 
 
 # Resample data on a regular space+time lattice using 4d interpolation
-corr_im1 = v.nifti1.Nifti1Image(affine=im1.get_affine(), 
-                                data=register.resample4d(run1, transforms=transforms[0]))
-corr_im2 = v.nifti1.Nifti1Image(affine=im2.get_affine(), 
-                                data=register.resample4d(run2, transforms=transforms[1]))
+corr_run1 = resample4d(run1, transforms=transforms[0])
+corr_run2 = resample4d(run2, transforms=transforms[0])
+corr_im1 = v.nifti1.Nifti1Image(corr_run1.get_data(), corr_run1.get_affine())
+corr_im2 = v.nifti1.Nifti1Image(corr_run2.get_data(), corr_run2.get_affine())
 
 # Save images 
-corr_im1.to_files('corr_run1.nii')
-corr_im2.to_files('corr_run2.nii')
+v.save(corr_im1, 'corr_run1.nii')
+v.save(corr_im2, 'corr_run2.nii')
