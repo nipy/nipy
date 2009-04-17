@@ -89,6 +89,12 @@ class Image4d:
         """
         return((t - self.start - slice_time(self.z_to_slice(z), self.tr_slices, self.slice_order))/self.tr)
 
+    def get_data(self):
+        return self.array
+
+    def get_affine(self):
+        return self.toworld
+
 
 class Realign4d:
 
