@@ -10,6 +10,7 @@ DEFAULT_OPTIMIZER = 'powell'
 DEFAULT_WITHIN_LOOPS = 2
 DEFAULT_BETWEEN_LOOPS = 5 
 
+
 def grid_coords(xyz, affine, fromworld, toworld):
     Tv = np.dot(fromworld, np.dot(affine, toworld))
     XYZ = apply_affine(Tv, xyz)
@@ -17,9 +18,9 @@ def grid_coords(xyz, affine, fromworld, toworld):
 
 
 
-class TimeSeries:
+class Image4d:
     """
-    Local class for code readability. Not to be exposed. 
+    Class to represent a sequence of 3d scans acquired on a slice-by-slice basis. 
     """
     def __init__(self, array, toworld, tr, tr_slices=None, start=0.0, 
                  slice_axis=2, reversed_slices=False, 
@@ -88,16 +89,22 @@ class TimeSeries:
         """
         return((t - self.start - slice_time(self.z_to_slice(z), self.tr_slices, self.slice_order))/self.tr)
 
+    def get_data(self):
+        return self.array
+
+    def get_affine(self):
+        return self.toworld
+
 
 class Realign4d:
 
     def __init__(self, 
-                 time_series, 
+                 im4d, 
                  speedup=DEFAULT_SPEEDUP,
                  optimizer=DEFAULT_OPTIMIZER, 
                  transforms=None):
         self.optimizer = optimizer
-        dims = time_series.array.shape
+        dims = im4d.array.shape
         self.dims = dims 
         self.nscans = dims[3]
         # Define mask
@@ -107,16 +114,16 @@ class Realign4d:
         masksize = self.xyz.shape[1]
         self.data = np.zeros([masksize, self.nscans], dtype='double')
         # Initialize space/time transformation parameters 
-        self.toworld = time_series.toworld
+        self.toworld = im4d.toworld
         self.fromworld = np.linalg.inv(self.toworld)
         if transforms == None: 
             self.transforms = [Affine('rigid', radius=BRAIN_RADIUS_MM) for scan in range(self.nscans)]
         else: 
             self.transforms = transforms
-        self.fromtime = time_series.fromtime
-        self.timestamps = time_series.tr*np.array(range(self.nscans))
+        self.fromtime = im4d.fromtime
+        self.timestamps = im4d.tr*np.array(range(self.nscans))
         # Compute the 4d cubic spline transform
-        self.cbspline = cspline_transform(time_series.array)
+        self.cbspline = cspline_transform(im4d.array)
               
     def resample_inmask(self, t):
         X, Y, Z = grid_coords(self.xyz, self.transforms[t], self.fromworld, self.toworld)
@@ -224,27 +231,41 @@ class Realign4d:
 
 
 
-def resample4d(time_series, transforms=None): 
+def _resample4d(im4d, transforms=None): 
     """
-    corr_time_series = resample4d(time_series, transforms=None)
+    corr_im4d_array = _resample4d(im4d, transforms=None)
     """
-    r = Realign4d(time_series, transforms=transforms)
+    r = Realign4d(im4d, transforms=transforms)
     return r.resample()
 
 
-def _realign4d(time_series, 
+def resample4d(im4d, transforms=None): 
+    """
+    corr_im4d = resample4d(im4d, transforms=None)
+    """
+    return Image4d(_resample(im4d, transforms),
+                   im4d.toworld, 
+                   im4d.tr, 
+                   tr_slices=0.0, 
+                   start=im4d.start,
+                   reversed_slices=im4.reversed_slices,
+                   slice_order=im4.slice_order, 
+                   interleaved=im4.interleaved)
+
+
+def _realign4d(im4d, 
                loops=DEFAULT_WITHIN_LOOPS, 
                speedup=DEFAULT_SPEEDUP, 
                optimizer=DEFAULT_OPTIMIZER): 
     """
-    transforms = _realign4d(time_series, loops=2, speedup=4, optimizer='powell')
+    transforms = _realign4d(im4d, loops=2, speedup=4, optimizer='powell')
 
     Parameters
     ----------
-    time_series : TimeSeries instance
+    im4d : Image4d instance
 
     """ 
-    r = Realign4d(time_series, speedup=speedup, optimizer=optimizer)
+    r = Realign4d(im4d, speedup=speedup, optimizer=optimizer)
     for loop in range(loops): 
         r.correct_motion()
     return r.transforms
@@ -260,7 +281,7 @@ def realign4d(runs,
     Parameters
     ----------
 
-    runs : list of TimeSeries objects
+    runs : list of Image4d objects
     
     Returns
     -------
@@ -279,13 +300,13 @@ def realign4d(runs,
         return transfo_runs[0]
 
     # Correct between-session motion using the mean image of each corrected run 
-    corr_runs = [resample4d(runs[i], transforms=transfo_runs[i]) for i in range(nruns)]
+    corr_runs = [_resample4d(runs[i], transforms=transfo_runs[i]) for i in range(nruns)]
     aux = np.rollaxis(np.asarray([corr_run.mean(3) for corr_run in corr_runs]), 0, 4)
     ## Fake time series using the first run's to-world transform
     ## FIXME: check that all runs have the same to-world transform
-    mean_img = TimeSeries(aux, toworld=runs[0].toworld, tr=1.0, tr_slices=0.0) 
+    mean_img = Image4d(aux, toworld=runs[0].toworld, tr=1.0, tr_slices=0.0) 
     transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, optimizer=optimizer)
-    corr_mean = resample4d(mean_img, transforms=transfo_mean)
+    corr_mean = _resample4d(mean_img, transforms=transfo_mean)
     
     # Compose transformations for each run
     for i in range(nruns):
