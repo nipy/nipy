@@ -8,5 +8,5 @@ setup(name='Nipy Tools',
       author='Nipy Developers',
       author_email='nipy-devel@neuroimaging.scipy.org',
       url='http://neuroimaging.scipy.org',
-      scripts=['./sneeze.py', './nitest', './perlpie']
+      scripts=['./sneeze.py', './nitest', './perlpie', './mynipy']
      )
