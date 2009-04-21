@@ -32,7 +32,7 @@ def simulated_pvalue(t, simu_t):
     return 1 - np.searchsorted(simu_t, t)/float(np.size(simu_t))
 
 
-def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nulls=None):
+def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nulls={}):
     """
     clusters =  cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0,
                               null_zmax='bonferroni', null_smax=None, null_s=None)
@@ -104,9 +104,15 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
         c['pvalue'] = pval
         c['fdr_pvalue'] = fdr_pvalue[maxima]
 
+        # Default "nulls"
+        if not nulls.has_key('zmax'):
+            nulls['zmax'] = 'bonferroni'
+        if not nulls.has_key('smax'):
+            nulls['smax'] = None
+        if not nulls.has_key('s'):
+            nulls['s'] = None
+
         # Voxel-level corrected p-values
-        if nulls == None: 
-            nulls = {'zmax':'bonferroni', 'smax':None, 's':None}
         p = None
         if nulls['zmax'] == 'bonferroni':
             p = bonferroni(pval, nvoxels) 

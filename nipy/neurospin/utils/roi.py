@@ -1,7 +1,7 @@
 import numpy as np
 import nifti
 
-class ROI():
+class ROI:
     """
     Temporary ROI class for fff
     Ultimately, it should be merged with the nipy class
@@ -228,7 +228,7 @@ class WeightedROI(ROI):
         
         pass
 
-class MultipleROI():
+class MultipleROI:
     """
     This is  a class to deal with multiple ROIs defined in a given space
     mroi.header is assumed to provide all the referential information
