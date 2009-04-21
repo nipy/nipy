@@ -99,10 +99,10 @@ class landmark_regions(hroi.NROI):
             raise ValueError, "incompatible dimensions"
         
         dx = coord-centers[k]
-        covariance = np.dot(np.transpose(dx),dx)/(self.k-1)
+        covariance = np.dot(np.transpose(dx),dx)/coord.shape[0]
         import numpy.linalg as L
         U,S,V = L.svd(covariance,0)
-        sqrtS = np.sqrt(1/np.maximum(S,dmax))
+        sqrtS = np.sqrt(1/np.maximum(S,dmax**2))
         dx = cs-centers[k]
         dx = np.dot(dx,U)
         dx = np.dot(dx,np.diag(sqrtS))

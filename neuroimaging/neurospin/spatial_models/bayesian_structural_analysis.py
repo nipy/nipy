@@ -661,7 +661,6 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
             bfm = nroi.discrete_to_roi_features('activation','average')
             bfm = bfm[nroi.isleaf()]#---
 
-            #fixme: masked_index should not be used
             nroi.compute_discrete_position()
             bfc = nroi.discrete_to_roi_features('position','average')
             bfc = bfc[nroi.isleaf()]#---
