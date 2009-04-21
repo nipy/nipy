@@ -9,7 +9,7 @@ from apigen import ApiDocWriter
 
 #*****************************************************************************
 if __name__ == '__main__':
-    package = 'neuroimaging'
+    package = 'nipy'
     outdir = os.path.join('api','generated')
     docwriter = ApiDocWriter(package)
     docwriter.package_skip_patterns += [r'\.fixes$',

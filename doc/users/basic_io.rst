@@ -13,7 +13,7 @@ Load Image from File
 
 .. sourcecode::  ipython
 
-  from neuroimaging.core.api import load_image
+  from nipy.core.api import load_image
   infile = 'myimage.nii'
   myimg = load_image(infile)
 
@@ -30,7 +30,7 @@ This allows user to access data in a numpy array.
 
 .. sourcecode::  ipython
 
-   from neuroimaging.core.api import load_image
+   from nipy.core.api import load_image
    import numpy as np
    myimg = load_file('myfile')
    mydata = np.asarray(myimg)
@@ -41,7 +41,7 @@ Save image to a File
 
 .. sourcecode::  ipython
 
-   from neuroimaging.core.api import load_image,save_image
+   from nipy.core.api import load_image,save_image
    import numpy as np
    myimg = load_file('myfile.nii')	
    newimg = save_file(myimg,'newmyfile.nii')
@@ -54,7 +54,7 @@ This will have a generic CoordinateMap with Unit step sizes
 
 .. sourcecode::  ipython
 
-   from neuroimaging.core.api import fromarray, save_image
+   from nipy.core.api import fromarray, save_image
    import numpy as np
    rawarray = np.zeros(43,128,128)
    innames='kij'

@@ -1,36 +1,38 @@
-from neuroimaging.neurospin import register 
-
-# Use Matthew's volumeimages for I/O. 
-import volumeimages
-
 import numpy as np
 from os.path import join
 import sys
 import time
+from glob import glob 
 
-rootpath = 'D:\\data\\fiac'
-runnames = ['run1', 'run1']
+from nipy.neurospin.image_registration import image4d, realign4d, resample4d
+
+# Use Matthew's volumeimages for I/O. 
+import volumeimages as v
 
 # Create Nifti1Image instances from both input files
-im1 = volumeimages.load(join(rootpath, runnames[0]+'.nii'))
-im2 = volumeimages.load(join(rootpath, runnames[1]+'.nii'))
+rootpath = 'D:\\data\\karla'
+runnames = glob(join(rootpath, '*.nii'))
+### HACK 
+runnames = runnames[0:2]
+print runnames
+images = [v.load(rname) for rname in runnames]
 
-# Create TimeSeries instances -- this is a local class representing a
+# Create Image4d instances -- this is a local class representing a
 # series of 3d images
-run1 = register.TimeSeries(im1.get_data(), toworld=im1.get_affine(), tr=2.5, 
-                           slice_order='ascending', interleaved=True)
-run2 = register.TimeSeries(im2.get_data(), toworld=im2.get_affine(), tr=2.5, 
-                           slice_order='ascending', interleaved=True)
+"""
+Pour l'ordre d'acquisition, il s'agit de sequential - ascending et
+pour l'enfant qui a le plus bougé, il s'agit de ms070149.
+Le TR est de 2,4. 
+"""
+runs = [image4d(im, tr=2.4, slice_order='ascending', interleaved=False) for im in images]
 
 # Correct motion within- and between-sessions
-transforms = register.realign4d([run1, run2]) 
+transforms = realign4d(runs)
 
 # Resample data on a regular space+time lattice using 4d interpolation
-corr_im1 = volumeimages.nifti1.Nifti1Image(affine=im1.get_affine(), 
-                                           data=register.resample4d(run1, transforms=transforms[0]))
-corr_im2 = volumeimages.nifti1.Nifti1Image(affine=im2.get_affine(), 
-                                           data=register.resample4d(run2, transforms=transforms[1]))
+corr_runs = [resample4d(runs[i], transforms=transforms[i]) for i in range(len(runs))]
+corr_images = [v.nifti1.Nifti1Image(run.get_data(), run.get_affine()) for run in corr_runs]
 
 # Save images 
-corr_im1.to_files('corr_run1.nii')
-corr_im2.to_files('corr_run2.nii')
+for i in range(len(runs)):
+    v.save(corr_images[i], 'corr_run'+str(i)+'.nii')

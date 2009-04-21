@@ -12,7 +12,7 @@ name.
 
 The nose command would look like this:
 
-nosetests -sv --with-coverage --cover-package=neuroimaging.core.reference.coordinate_system test_coordinate_system.py
+nosetests -sv --with-coverage --cover-package=nipy.core.reference.coordinate_system test_coordinate_system.py
 
 """
 

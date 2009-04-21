@@ -2,7 +2,7 @@
 """Special backwards-compatibility installer for standalone fff2 module.
 
 Only use this if you have existing code with top-level fff2 imports that you
-need to run without updating it to the new neuroimaging API.
+need to run without updating it to the new nipy API.
 """
 
 from distutils.core import setup

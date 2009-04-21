@@ -1,5 +1,7 @@
-import fff2.neuro
 import numpy as np
+
+from nipy.neurospin import Image
+from nipy.neurospin.statistical_mapping import LinearModel
 
 from datamind.core import DF
 
@@ -13,11 +15,11 @@ X = np.asarray(DF.read(design_matrix_path))
 
 # Get fMRI data as numpy array
 print('loading fmri data...')
-Y = fff2.neuro.image(fmri_dataset_path)
+Y = Image(fmri_dataset_path)
 
 # Get the mask
 print('loading mask...')
-##Mask = fff2.neuro.image(mask_image_path)
+##Mask = Image(mask_image_path)
 Mask = None
 
 # GLM options
@@ -26,7 +28,7 @@ model = 'spherical'
     
 # Fit 
 print('starting fit...')
-glm = fff2.neuro.linear_model(Y, X, Mask, model=model)
+glm = LinearModel(Y, X, Mask, model=model)
 
 # Compute aribtrary contrast image 
 print('computing test contrast image...')

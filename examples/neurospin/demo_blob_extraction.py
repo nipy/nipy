@@ -10,9 +10,9 @@ import numpy as np
 import pylab as pl
 import matplotlib
 
-import neuroimaging.neurospin.graph.field as ff
-import neuroimaging.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
-import neuroimaging.neurospin.spatial_models.hroi as hroi
+import nipy.neurospin.graph.field as ff
+import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.spatial_models.hroi as hroi
 
 dimx=60
 dimy=60
