@@ -122,9 +122,6 @@ def image4d(im, tr, tr_slices=None, start=0.0,
     Assumes that the input image referential is 'scanner' and that the
     third array index stands for 'z', i.e. the slice index. 
     """
-    toworld = im.get_affine()
-    reversed_slices = toworld[2][2]<0
-    return Image4d(im.get_data(), toworld, 
+    return Image4d(im.get_data(), im.get_affine(),
                    tr=tr, tr_slices=tr_slices, start=start,
-                   reversed_slices=reversed_slices, 
                    slice_order=slice_order, interleaved=interleaved)

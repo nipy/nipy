@@ -149,7 +149,7 @@ def controlled_subsampling(source, npoints):
 
 
 
-class IconicMatcher():
+class IconicMatcher:
 
     def __init__(self, 
                  source, target, 

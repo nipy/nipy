@@ -11,8 +11,8 @@ DEFAULT_WITHIN_LOOPS = 2
 DEFAULT_BETWEEN_LOOPS = 5 
 
 
-def grid_coords(xyz, affine, fromworld, toworld):
-    Tv = np.dot(fromworld, np.dot(affine, toworld))
+def grid_coords(xyz, affine, from_world, to_world):
+    Tv = np.dot(from_world, np.dot(affine, to_world))
     XYZ = apply_affine(Tv, xyz)
     return XYZ[0,:], XYZ[1,:], XYZ[2,:]
 
@@ -22,9 +22,8 @@ class Image4d:
     """
     Class to represent a sequence of 3d scans acquired on a slice-by-slice basis. 
     """
-    def __init__(self, array, toworld, tr, tr_slices=None, start=0.0, 
-                 slice_axis=2, reversed_slices=False, 
-                 slice_order='ascending', interleaved=False):
+    def __init__(self, array, to_world, tr, tr_slices=None, start=0.0, 
+                 slice_order='ascending', interleaved=False, slice_axis=2):
         """
         Configure fMRI acquisition time parameters.
         
@@ -34,7 +33,7 @@ class Image4d:
         slice_order : string or array 
         """
         self.array = array 
-        self.toworld = toworld 
+        self.to_world = to_world 
         nslices = array.shape[slice_axis]
 
         # Default slice repetition time (no silence)
@@ -62,7 +61,9 @@ class Image4d:
         self.tr_slices = float(tr_slices)
         self.start = float(start)
         self.slice_order = np.asarray(slice_order)
-        self.reversed_slices = bool(reversed_slices)
+        ## assume that the world referential is 'scanner' as defined
+        ## by the nifti norm
+        self.reversed_slices = to_world[slice_axis][slice_axis]<0 
 
     def z_to_slice(self, z):
         """
@@ -75,16 +76,16 @@ class Image4d:
         else:
             return z
 
-    def totime(self, z, t):
+    def to_time(self, z, t):
         """
-        t = totime(zv, tv)
+        t = to_time(zv, tv)
         zv, tv are grid coordinates; t is an actual time value. 
         """
         return(self.start + self.tr*t + slice_time(self.z_to_slice(z), self.tr_slices, self.slice_order))
 
-    def fromtime(self, z, t):
+    def from_time(self, z, t):
         """
-        tv = fromtime(zv, t)
+        tv = from_time(zv, t)
         zv, tv are grid coordinates; t is an actual time value. 
         """
         return((t - self.start - slice_time(self.z_to_slice(z), self.tr_slices, self.slice_order))/self.tr)
@@ -93,7 +94,7 @@ class Image4d:
         return self.array
 
     def get_affine(self):
-        return self.toworld
+        return self.to_world
 
 
 class Realign4d:
@@ -114,20 +115,20 @@ class Realign4d:
         masksize = self.xyz.shape[1]
         self.data = np.zeros([masksize, self.nscans], dtype='double')
         # Initialize space/time transformation parameters 
-        self.toworld = im4d.toworld
-        self.fromworld = np.linalg.inv(self.toworld)
+        self.to_world = im4d.to_world
+        self.from_world = np.linalg.inv(self.to_world)
         if transforms == None: 
             self.transforms = [Affine('rigid', radius=BRAIN_RADIUS_MM) for scan in range(self.nscans)]
         else: 
             self.transforms = transforms
-        self.fromtime = im4d.fromtime
+        self.from_time = im4d.from_time
         self.timestamps = im4d.tr*np.array(range(self.nscans))
         # Compute the 4d cubic spline transform
         self.cbspline = cspline_transform(im4d.array)
               
     def resample_inmask(self, t):
-        X, Y, Z = grid_coords(self.xyz, self.transforms[t], self.fromworld, self.toworld)
-        T = self.fromtime(Z, self.timestamps[t])
+        X, Y, Z = grid_coords(self.xyz, self.transforms[t], self.from_world, self.to_world)
+        T = self.from_time(Z, self.timestamps[t])
         cspline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T)
 
     def resample_all_inmask(self):
@@ -222,8 +223,8 @@ class Realign4d:
         res = np.zeros(dims)
         for t in range(self.nscans):
             print('Fully resampling scan %d/%d' % (t+1, self.nscans))
-            X, Y, Z = grid_coords(XYZ, self.transforms[t], self.fromworld, self.toworld)
-            T = self.fromtime(Z, self.timestamps[t])
+            X, Y, Z = grid_coords(XYZ, self.transforms[t], self.from_world, self.to_world)
+            T = self.from_time(Z, self.timestamps[t])
             cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T)
         return res
     
@@ -243,14 +244,13 @@ def resample4d(im4d, transforms=None):
     """
     corr_im4d = resample4d(im4d, transforms=None)
     """
-    return Image4d(_resample(im4d, transforms),
-                   im4d.toworld, 
+    return Image4d(_resample4d(im4d, transforms),
+                   im4d.to_world, 
                    im4d.tr, 
                    tr_slices=0.0, 
-                   start=im4d.start,
-                   reversed_slices=im4.reversed_slices,
-                   slice_order=im4.slice_order, 
-                   interleaved=im4.interleaved)
+                   start=0.0,
+                   slice_order=im4d.slice_order, 
+                   interleaved=im4d.interleaved)
 
 
 def _realign4d(im4d, 
@@ -304,14 +304,14 @@ def realign4d(runs,
     aux = np.rollaxis(np.asarray([corr_run.mean(3) for corr_run in corr_runs]), 0, 4)
     ## Fake time series using the first run's to-world transform
     ## FIXME: check that all runs have the same to-world transform
-    mean_img = Image4d(aux, toworld=runs[0].toworld, tr=1.0, tr_slices=0.0) 
+    mean_img = Image4d(aux, to_world=runs[0].to_world, tr=1.0, tr_slices=0.0) 
     transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, optimizer=optimizer)
     corr_mean = _resample4d(mean_img, transforms=transfo_mean)
     
     # Compose transformations for each run
     for i in range(nruns):
-        sess_toworld = transfo_mean[i]
-        transforms = [sess_toworld*T for T in transfo_runs[i]]
+        sess_to_world = transfo_mean[i]
+        transforms = [sess_to_world*T for T in transfo_runs[i]]
         transfo_runs[i] = transforms
         
     return transfo_runs

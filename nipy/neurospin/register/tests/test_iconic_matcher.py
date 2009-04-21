@@ -4,7 +4,7 @@ from neuroimaging.testing import TestCase, assert_equal, assert_almost_equal, \
     assert_raises
 import numpy as np
 
-from nipy.neurospin import register 
+from nipy.neurospin.register.iconic_matcher import IconicMatcher
 from nipy.neurospin.register.transform import rotation_vec2mat
 
 
@@ -31,7 +31,7 @@ def make_data_float64(dx=100, dy=100, dz=50):
     return (256*(np.random.rand(dx, dy, dz) - np.random.rand())).astype('float64')
 
 def _test_clamping(I, thI=0.0, clI=256):
-    IM = register.IconicMatcher(I.array, I.array, I.toworld, I.toworld, thI, thI, bins=clI)
+    IM = IconicMatcher(I.array, I.array, I.toworld, I.toworld, thI, thI, bins=clI)
     Ic = IM.source_clamped
     Ic2 = IM.target_clamped[1:I.array.shape[0]+1,1:I.array.shape[1]+1,1:I.array.shape[2]+1].squeeze()
     assert_equal(Ic, Ic2)
@@ -68,7 +68,7 @@ def test_clamping_float64_nonstd():
 def _test_similarity_measure(simi, val):
     I = Image(make_data_int16())
     J = Image(I.array.copy())
-    IM = register.IconicMatcher(I.array, J.array, I.toworld, J.toworld)
+    IM = IconicMatcher(I.array, J.array, I.toworld, J.toworld)
     IM.set_field_of_view(subsampling=[2,1,3])
     IM.set_similarity(simi)
     assert_almost_equal(IM.eval(np.eye(4)), val)
@@ -85,7 +85,7 @@ def test_normalized_mutual_information():
 def test_explore(): 
     I = Image(make_data_int16())
     J = Image(make_data_int16())
-    IM = register.IconicMatcher(I.array, J.array, I.toworld, J.toworld)
+    IM = IconicMatcher(I.array, J.array, I.toworld, J.toworld)
     T = np.eye(4)
     T[0:3,3] = np.random.rand(3)
     simi, params = IM.explore(ux=[-1,0,1],uy=[-1,0,1])
@@ -95,7 +95,7 @@ def test_iconic():
     """
     I = Image(make_data_int16())
     J = Image(I.array.copy())
-    IM = register.IconicMatcher(I.array, J.array, I.toworld, J.toworld)
+    IM = IconicMatcher(I.array, J.array, I.toworld, J.toworld)
     assert_raises(ValueError, IM.set_field_of_view, subsampling=[0,1,3])
 
 if __name__ == "__main__":
