@@ -19,7 +19,12 @@ images = [v.load(rname) for rname in runnames]
 
 # Create Image4d instances -- this is a local class representing a
 # series of 3d images
-runs = [image4d(im, tr=2.5, slice_order='ascending', interleaved=True) for im in images]
+"""
+Pour l'ordre d'acquisition, il s'agit de sequential - ascending et
+pour l'enfant qui a le plus bougé, il s'agit de ms070149.
+Le TR est de 2,4. 
+"""
+runs = [image4d(im, tr=2.4, slice_order='ascending', interleaved=False) for im in images]
 
 # Correct motion within- and between-sessions
 transforms = realign4d(runs)
