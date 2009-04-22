@@ -25,31 +25,69 @@ def rotation_mat2vec(R):
     TINY = 1e-15
 
     # Compute the trace of the rotation matrix plus one
-    aux = np.sqrt(np.maximum(R.trace()+1.0, TINY))
+    aux = np.sqrt(R.trace()+1.0)
     
-    # Compute the associated quaternion. Notice: trace(R) + 1 = 4w^2
-    quat = np.array([R[2,1]-R[1,2], R[0,2]-R[2,0], R[1,0]-R[0,1], .5*aux])
-    quat[0:3] *= .5/aux
-	
-    # Compute the angle between 0 and PI
-    if np.abs(quat[3])<1:
-        theta = 2*np.arccos(quat[3])
+    if aux > TINY: 
+
+        # Compute the associated quaternion. Notice: trace(R) + 1 = 4w^2
+        quat = np.array([R[2,1]-R[1,2], R[0,2]-R[2,0], R[1,0]-R[0,1], .5*aux])
+        quat[0:3] *= .5/aux
+    
+        # Compute the angle between 0 and PI
+        if np.abs(quat[3])<1:
+            theta = 2*np.arccos(quat[3])
+        else: 
+            return np.zeros(3)
+    
+        # Normalize the rotation axis
+        return (theta/np.sqrt((quat[0:3]**2).sum()))*quat[0:3]
+    
     else: 
-        return np.zeros(3)
+        
+        # Singularity case: theta == PI. In this case, the above
+        # identification is not possible since w=0. 
+        x2 = .25*(1 + R[0][0]-R[1][1]-R[2][2])
+        if x2 > TINY: 
+            xy = .5*R[1][0]
+            xz = .5*R[2][0]
+            n = np.array([x2,xy,xz])
+        else: 
+            y2 = .25*(1 + R[1][1]-R[0][0]-R[2][2])
+            if y2 > TINY: 
+                xy = .5*R[1][0]
+                yz = .5*R[2][1]
+                n = np.array([xy,y2,yz])
+            else: 
+                z2 = .25*(1 + R[2][2]-R[0][0]-R[1][1])
+                if z2 > TINY: 
+                    xz = .5*R[2][0]
+                    yz = .5*R[2][1]
+                    n = np.array([xz,yz,z2])
+        return np.pi*n/np.sqrt((n**2).sum())
 
-    # Normalize r
-    return theta/np.sqrt((quat[0:3]**2).sum())
 
-
-def vector12(mat): 
-    R, s, Q = np.linalg.svd(mat[0:3,0:3])
-    r = rotation_mat2vec(R)
-    q = rotation_mat2vec(Q)
+def vector12(mat, subtype='affine'):
     vec12 = np.zeros(12)
     vec12[0:3] = mat[0:3,3]
-    vec12[3:6] = r
-    vec12[6:9] = s
-    vec12[9:12] = q
+    A = mat[0:3,0:3]
+    if subtype == 'rigid': 
+        vec12[3:6] = rotation_mat2vec(A)
+        vec12[6:9] = 1
+    elif subtype == 'similarity':
+        ## A = s R ==> det A = (s)**3 ==> s = (det A)**(1/3)
+        s = np.linalg.det(A)**(1/3.)
+        vec12[3:6] = rotation_mat2vec(A/s)
+        vec12[6:9] = s
+    else: 
+        R, s, Q = np.linalg.svd(mat[0:3,0:3]) # mat == R*diag(s)*Q
+        if np.linalg.det(R) < 0: 
+            R = -R
+            Q = -Q
+        r = rotation_mat2vec(R)
+        q = rotation_mat2vec(Q)
+        vec12[3:6] = r
+        vec12[6:9] = s
+        vec12[9:12] = q
     return vec12
 
     
@@ -127,10 +165,10 @@ class Affine:
         """
         Affine composition: T1oT2(x)
         """
-        vec12 = vector12(np.dot(self.__array__(), other.__array__()))
-        a = Affine(vec12=vec12)
+        a = Affine()
         a._subtype = max(self._subtype, other._subtype)
         a.precond = self.precond
+        a.set_vec12(vector12(np.dot(self.__array__(), other.__array__()), a.subtype()))
         return a
 
 

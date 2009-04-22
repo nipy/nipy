@@ -390,7 +390,8 @@ def matrix44(ndarray t, dtype):
     else:
         S = np.diag(t[6:9]) 
         Q = rotation_vec2mat(t[9:12]) 
-        T[0:3,0:3] = np.dot(Q,np.dot(S,R))
+        # Beware: R*s*Q
+        T[0:3,0:3] = np.dot(R,np.dot(S,Q))
     T[0:3,3] = t[0:3] 
     return T 
 
