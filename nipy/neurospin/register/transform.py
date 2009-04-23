@@ -174,7 +174,7 @@ class Affine:
         a = Affine()
         a._subtype = max(self._subtype, other._subtype)
         a.precond = self.precond
-        a.set_vec12(vector12(np.dot(self.__array__(), other.__array__()), a.subtype()))
+        a.set_vec12(vector12(np.dot(self.__array__(), other.__array__()), a.subtype()[0]))
         return a
 
 

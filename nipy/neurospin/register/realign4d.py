@@ -308,7 +308,7 @@ def realign4d(runs,
     mean_img = Image4d(aux, to_world=runs[0].to_world, tr=1.0, tr_slices=0.0) 
     transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, optimizer=optimizer)
     corr_mean = _resample4d(mean_img, transforms=transfo_mean)
-    
+
     # Compose transformations for each run
     for i in range(nruns):
         run_to_world = transfo_mean[i]
@@ -316,6 +316,3 @@ def realign4d(runs,
         transfo_runs[i] = transforms
 
     return transfo_runs
-
-
-
