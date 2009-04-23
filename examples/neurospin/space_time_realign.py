@@ -33,7 +33,7 @@ runs = runs[0:2]
 
 
 # Correct motion within- and between-sessions
-transforms = realign4d(runs, within_loops=0)
+transforms = realign4d(runs)
 
 # Resample data on a regular space+time lattice using 4d interpolation
 corr_runs = [resample4d(runs[i], transforms=transforms[i]) for i in range(len(runs))]

@@ -21,6 +21,13 @@ def rotation_mat2vec(R):
       y = sin(theta/2) ny
       z = sin(theta/2) nz
       w = cos(theta/2)
+
+
+          |   1 - 2y^2 - 2z^2   2xy - 2zw          2xz+ 2yw         |
+      R = |   2xy + 2zw         1 - 2x^2 - 2z^2    2yz - 2xw	    |
+          |   2xz - 2 yw        2yz + 2xw          1 - 2x^2 - 2y^2  |
+
+	
     """
     TINY = 1e-15
 
@@ -33,14 +40,13 @@ def rotation_mat2vec(R):
         quat = np.array([R[2,1]-R[1,2], R[0,2]-R[2,0], R[1,0]-R[0,1], .5*aux])
         quat[0:3] *= .5/aux
     
-        # Compute the angle between 0 and PI
-        if np.abs(quat[3])<1:
-            theta = 2*np.arccos(quat[3])
-        else: 
-            return np.zeros(3)
-    
+        # Compute the angle between 0 and PI (ensure that the last
+        # quaternion element is in the range (-1,1))
+        theta = 2*np.arccos(max(-1., min(quat[3], 1.)))
+
         # Normalize the rotation axis
-        return (theta/np.sqrt((quat[0:3]**2).sum()))*quat[0:3]
+        norma = max(np.sqrt((quat[0:3]**2).sum()), TINY)
+        return (theta/norma)*quat[0:3]
     
     else: 
         
