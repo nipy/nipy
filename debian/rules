@@ -13,7 +13,6 @@ include /usr/share/cdbs/1/class/python-distutils.mk
 #
 doc: doc-stamp
 doc-stamp: build/python-nipy
-	# XXX make it nice
 	export PYTHONPATH=$$PWD/`/bin/ls -d build/lib.*`; cd doc; $(MAKE) html pdf
 	touch $@
 
@@ -25,7 +24,8 @@ install/python-nipy-doc::
 	-rm doc/build/html/_static/jquery.js
 
 #
-# Testing
+# Testing: TODO after unittests are ready to be ran without
+#          downloading data from online
 #
 #build/python-nipy::
 #ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
@@ -55,13 +55,6 @@ install/python-nipy-lib::
 	    d=$$(echo $$d | sed -e 's,python-nipy/,python-nipy-lib/,g'); \
 	    mkdir -p $$d; mv $$so $$d; \
 	  done
-#	mv debian/python-nipy/usr/lib debian/python-nipy-lib/usr/
-# assure that no arch-indep files are left over
-#	rm -rf debian/python-nipy-lib/usr/share/pyshared
-#	find debian/python-nipy-lib \
-#		! -type d ! -name '*.so' | xargs rm -f
-# Prune empty directories
-#	find debian/python-nipy-lib -depth -empty -exec rmdir \{\} \;
 
 #
 # Debugging version -lib-dbg
@@ -81,27 +74,6 @@ binary-predeb/python-nipy-lib-dbg::
 	mkdir -p debian/python-nipy-lib-dbg/usr/share/doc
 	ln -s python-nipy-lib debian/python-nipy-lib-dbg/usr/share/doc/python-nipy-lib-dbg
 
-
-#
-# Leftovers: XXX
-#
-
-#
-# Build and Tesselate out the library
-#
-#install/python-nipy::
-#		for i in $(cdbs_python_build_versions); do \
-#		  python$$i ./setup.py install --no-compile -O0 \
-#			--install-platlib $(CURDIR)/debian/python-nipy/usr/lib/pyshared/python$$i/ \
-#			--install-purelib $(CURDIR)/debian/python-nipy-lib; \
-#		done
-##
-## Populate -lib package
-##		mv $(CURDIR)/debian/python-nipy/usr/lib debian/python-nipy-lib/usr
-
-#install/python-nipy-lib-dbg:: install/python-nipy-lib
-#	mkdir -p debian/python-nipy-lib-dbg/usr/lib/debug
-#	cp -rp debian/python-nipy-lib/usr debian/python-nipy-lib-dbg/usr/lib/debug
 
 
 
