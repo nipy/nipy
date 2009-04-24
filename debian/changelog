@@ -1,0 +1,6 @@
+nipy (0.1.2+1741-1~preB) UNRELEASED; urgency=low
+
+  * Initial release (Closes: #522353)
+
+ -- Experimental Psychology Maintainers <pkg-exppsy-maintainers@lists.alioth.debian.org>  Tue, 14 Apr 2009 18:21:44 -0400
+

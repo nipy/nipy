@@ -1,0 +1,64 @@
+Source: nipy
+Section: python
+Priority: extra
+Maintainer: Experimental Psychology Maintainers <pkg-exppsy-maintainers@lists.alioth.debian.org>
+Uploaders: Yaroslav Halchenko <debian@onerussian.com>, Michael Hanke <michael.hanke@gmail.com>
+Build-Depends: cdbs, debhelper (>= 7), python-all-dev (>= 2.4), python-support (>= 0.6), python-scipy, python-numpy (>= 1.2), python-matplotlib (>= 0.98.3), python-sphinx (>= 0.6), python-nifti (>> 0.20090302), liblapack-dev, python-nose, liblapack-dev, python-dbg, python-numpy-dbg, texlive, texlive-latex-extra, graphviz
+Standards-Version: 3.8.1
+Homepage: http://neuroimaging.scipy.org
+Vcs-Browser: http://git.debian.org/?p=pkg-exppsy/nipy.git
+Vcs-Git: git://git.debian.org/git/pkg-exppsy/nipy.git
+DM-Upload-Allowed: yes
+
+
+Package: python-nipy
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-scipy, python-numpy (>=1.2), python-nifti (>> 0.20090302), python-nipy-lib (>= ${source:Version})
+Recommends: python-matplotlib
+Suggests: python-mvpa
+Provides: ${python:Provides}
+XB-Python-Version: ${python:Versions}
+Description: Analysis of structural and functional neuroimaging data
+ A Python-based framework for the analysis of structural and functional
+ neuroimaging data. It currently has a full system for general linear
+ modeling of functional magnetic resonance imaging (fMRI).
+
+
+Package: python-nipy-lib
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
+Provides: ${python:Provides}
+XB-Python-Version: ${python:Versions}
+Description: Analysis of structural and functional neuroimaging data
+ A Python-based framework for the analysis of structural and functional
+ neuroimaging data. It currently has a full system for general linear
+ modeling of functional magnetic resonance imaging (fMRI).
+ .
+ This package provides architecture-dependent builds of the libraries.
+
+
+Package: python-nipy-lib-dbg
+Architecture: any
+Section: debug
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-nipy-lib (= ${binary:Version})
+Provides: ${python:Provides}
+XB-Python-Version: ${python:Versions}
+Description: Analysis of structural and functional neuroimaging data
+ A Python-based framework for the analysis of structural and functional
+ neuroimaging data. It currently has a full system for general linear
+ modeling of functional magnetic resonance imaging (fMRI).
+ .
+ This package provides debugging symbols for architecture-dependent
+ builds of the libraries.
+
+
+Package: python-nipy-doc
+Architecture: all
+Section: doc
+Depends: ${misc:Depends}, libjs-jquery
+Recommends: python-nipy
+Description: documention and examples for NiPy
+ NiPy documentation in various formats (HTML, TXT, PDF) including
+  * User manual
+  * Developer guidelines
+  * API documentation
