@@ -469,7 +469,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
     
     LR,mlabel = sbf.build_LR(BF,ths)
     if LR!=None:
-        crmap = LR.map_label(tal,dmax=2*dmax)
+        crmap = LR.map_label(tal,pval=0.95,dmax=2*dmax)
     
     return crmap,LR,BF,p
 
@@ -606,7 +606,7 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
     
     LR,mlabel = sbf.build_LR(BF,ths)
     if LR!=None:
-        crmap = LR.map_label(tal,dmax=2*dmax)
+        crmap = LR.map_label(tal,pval = 0.95,dmax=2*dmax)
 
     return crmap,LR,BF,p
 

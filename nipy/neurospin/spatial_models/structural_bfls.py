@@ -8,7 +8,7 @@ Group Studies.  IEEE TMI 2007
 Author : Bertrand Thirion, 2006-2008
 """
 
-#autoindent
+#autoindent 
 
 import numpy as np
 import numpy.random as nr
@@ -788,7 +788,7 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pv
     
     LR,mlabel = build_LR(BFLs,ths)
     if LR!=None:
-        crmap = LR.map_label(tal,dmax=2*dmax)
+        crmap = LR.map_label(tal,pval = 0.95,dmax=2*dmax)
         
     return crmap, LR, BFLs 
 
