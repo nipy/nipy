@@ -1,4 +1,4 @@
-nipy (0.1.2+1741-1~preB) UNRELEASED; urgency=low
+nipy (0.1.2+1741-1) unstable; urgency=low
 
   * Initial release (Closes: #522353)
 
