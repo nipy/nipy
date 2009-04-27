@@ -1,5 +1,5 @@
 import numpy as np
-from os.path import join
+from os.path import join, split
 import sys
 import time
 from glob import glob 
@@ -28,12 +28,10 @@ v.save(corr_img, 'corr_run1.nii')
 # Create Image4d instances -- this is a local class representing a
 # series of 3d images
 runs = [image4d(im, tr=2.4, slice_order='ascending', interleaved=False) for im in images]
-## HACK
-runs = runs[0:2]
-
+##runs = runs[0:2]
 
 # Correct motion within- and between-sessions
-transforms = realign4d(runs, within_loops=0)
+transforms = realign4d(runs)
 
 # Resample data on a regular space+time lattice using 4d interpolation
 corr_runs = [resample4d(runs[i], transforms=transforms[i]) for i in range(len(runs))]
@@ -41,6 +39,7 @@ corr_images = [v.nifti1.Nifti1Image(run.get_data(), run.get_affine()) for run in
 
 # Save images 
 for i in range(len(runs)):
-    v.save(corr_images[i], 'corr_run'+str(i)+'.nii')
+    aux = split(runnames[i])
+    v.save(corr_images[i], join(aux[0], 'ra'+aux[1]))
 
 
