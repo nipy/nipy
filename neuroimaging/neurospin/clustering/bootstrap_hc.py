@@ -83,7 +83,7 @@ def ward_msb(X, niter=1000):
     t = Ward_simple(X)
     l = t.list_of_subtrees()
 
-    db = (d*np.exp((np.arange(7)-3)*np.log(1.1))).astype('i')
+    db = (d*np.exp((np.arange(7)-3)*np.log(1.1))).astype(np.int)
     pval = np.zeros((len(l),len(db)))
 
     # get the bootstrap samples

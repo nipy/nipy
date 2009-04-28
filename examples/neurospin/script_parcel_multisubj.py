@@ -1,10 +1,9 @@
 """
 Example of script to parcellate mutli-subject data
-author: Bertrand Thirion, 2005-2008
+author: Bertrand Thirion, 2005-2009
 """
 
 from fff2.spatial_models.parcellation import Parcellation
-import numpy as N
 import cPickle
 from fff2.spatial_models.parcel_io_nii import *
 from fff2.spatial_models.hierarchical_parcellation import hparcel

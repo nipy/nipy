@@ -12,12 +12,12 @@ import numpy as np
 import scipy.stats as st
 
 import structural_bfls as sbf
-import fff2.graph.graph as fg
-from fff2.graph import hroi 
-from fff2.clustering import GGMixture
-import fff2.clustering.clustering as fc
-from fff2.graph import BPmatch
-from fff2.clustering.hierarchical_clustering import Average_Link_Graph_segment
+import neuroimaging.neurospin.graph.graph as fg
+from neuroimaging.neurospin.spatial_models import hroi 
+from neuroimaging.neurospin.clustering import GGMixture
+import neuroimaging.neurospin.clustering.clustering as fc
+from neuroimaging.neurospin.graph import BPmatch
+from neuroimaging.neurospin.clustering.hierarchical_clustering import Average_Link_Graph_segment
 
 #------------------------------------------------------------------
 #---------------- Auxiliary functions -----------------------------
@@ -166,7 +166,7 @@ def _GMM_priors_(beta,bfm,theta = 0,alpha=0.01,prior_strength = 100,verbose=0):
         return None
 
     lnvox = np.size(beta)    
-    from fff2.clustering.gmm import BGMM,grid_descriptor
+    from neuroimaging.neurospin.clustering.gmm import BGMM,grid_descriptor
     bgmm = BGMM(3,1,1)
     sbeta = np.sort(beta)
     mb0 = np.mean(sbeta[:alpha*lnvox])
@@ -624,7 +624,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
     - theta = 3.0: first level threshold
     - g0 = 1.0 : constant values of the uniform density over the volume of interest
     - bdensity=0 if bdensity=1, the variable p in ouput contains the likelihood of the data under H1 on the set of input nodes
-    - verbose=1: verbosity mode
+    - verbose=0: verbosity mode
     OUTPUT:
     - crmap: resulting group map
     - AF: list of inter-subject related ROIs
@@ -674,7 +674,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
             #import scipy.stats as st
             #print s, st.norm.isf(bf0).mean(),
             # ... or the emp_null heuristic
-            import fff2.utils.emp_null as en
+            import neuroimaging.neurospin.utils.emp_null as en
             enn = en.ENN(beta)
             enn.learn()
             #bf0 = np.reshape(enn.fdr(bfm),np.size(bf0))
@@ -766,7 +766,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
 # ----------------------------------------------------------------
 
 
-def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, theta=3.0, g0 = 1.0, bdensity=0,verbose=1):
+def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, theta=3.0, g0 = 1.0, bdensity=0,verbose=0):
     """
     Compute the  Bayesian Structural Activation paterns - simplified version  
     INPUT:
@@ -778,7 +778,7 @@ def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, the
     - theta = 3.0: first level threshold
     - g0 = 1.0 : constant values of the uniform density over the volume of interest
     - bdensity=0 if bdensity=1, the variable p in ouput contains the likelihood of the data under H1 on the set of input nodes
-    - verbose=1: verbosity mode
+    - verbose=0: verbosity mode
     OUTPUT:
     - crmap: resulting group map
     - AF: list of inter-subject related ROIs
@@ -836,7 +836,7 @@ def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, the
             #import scipy.stats as st
             #print s, st.norm.isf(bf0).mean(),
             # ... or the emp_null heuristic
-            import fff2.utils.emp_null as en
+            import neuroimaging.neurospin.utils.emp_null as en
             enn = en.ENN(beta)
             enn.learn()
             #bf0 = np.reshape(enn.fdr(bfm),np.size(bf0))

@@ -429,7 +429,7 @@ def _MP_algo_dev_(G1,G2,W,c1,c2,sqs,imax= 100, eta = 1.e-6 ):
 	if E1<1:
 		return W
 
-	tag = G1.converse_edge().astype('i')
+	tag = G1.converse_edge().astype(np.int)
 	
 	# make transition matrices
 	T = []
