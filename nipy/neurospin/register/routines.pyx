@@ -150,7 +150,7 @@ def cspline_transform(ndarray x):
 def cspline_sample1d(ndarray R, ndarray C, X=0):
     cdef double *r, *x
     cdef broadcast multi
-    Xa = np.resize(X, R.shape).astype('double')
+    Xa = np.reshape(X, R.shape).astype('double')
     multi = PyArray_MultiIterNew(2, <void*>R, <void*>Xa)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -162,8 +162,8 @@ def cspline_sample1d(ndarray R, ndarray C, X=0):
 def cspline_sample2d(ndarray R, ndarray C, X=0, Y=0):
     cdef double *r, *x, *y
     cdef broadcast multi
-    Xa = np.resize(X, R.shape).astype('double')
-    Ya = np.resize(Y, R.shape).astype('double')
+    Xa = np.reshape(X, R.shape).astype('double')
+    Ya = np.reshape(Y, R.shape).astype('double')
     multi = PyArray_MultiIterNew(3, <void*>R, <void*>Xa, <void*>Ya)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -176,9 +176,9 @@ def cspline_sample2d(ndarray R, ndarray C, X=0, Y=0):
 def cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0):
     cdef double *r, *x, *y, *z
     cdef broadcast multi
-    Xa = np.resize(X, R.shape).astype('double')
-    Ya = np.resize(Y, R.shape).astype('double')
-    Za = np.resize(Z, R.shape).astype('double')
+    Xa = np.reshape(X, R.shape).astype('double')
+    Ya = np.reshape(Y, R.shape).astype('double')
+    Za = np.reshape(Z, R.shape).astype('double')
     multi = PyArray_MultiIterNew(4, <void*>R, <void*>Xa, <void*>Ya, <void*>Za)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -198,10 +198,10 @@ def cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0):
     """
     cdef double *r, *x, *y, *z, *t
     cdef broadcast multi
-    Xa = np.resize(X, R.shape).astype('double')
-    Ya = np.resize(Y, R.shape).astype('double')
-    Za = np.resize(Z, R.shape).astype('double')
-    Ta = np.resize(T, R.shape).astype('double')
+    Xa = np.reshape(X, R.shape).astype('double')
+    Ya = np.reshape(Y, R.shape).astype('double')
+    Za = np.reshape(Z, R.shape).astype('double')
+    Ta = np.reshape(T, R.shape).astype('double')
     multi = PyArray_MultiIterNew(5, <void*>R, <void*>Xa, <void*>Ya, <void*>Za, <void*>Ta)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -390,7 +390,8 @@ def matrix44(ndarray t, dtype):
     else:
         S = np.diag(t[6:9]) 
         Q = rotation_vec2mat(t[9:12]) 
-        T[0:3,0:3] = np.dot(Q,np.dot(S,R))
+        # Beware: R*s*Q
+        T[0:3,0:3] = np.dot(R,np.dot(S,Q))
     T[0:3,3] = t[0:3] 
     return T 
 
