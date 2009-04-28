@@ -1,30 +1,32 @@
 #!/usr/bin/env python 
 
-import fff2
+"""
+Example of running inter-subject affine matching on the sulcal2000
+database acquired at SHFJ, Orsay, France. 
+"""
+
+from nipy.neurospin.image_registration import affine_register, affine_resample
+
+# Use Matthew's volumeimages for I/O. 
+import volumeimages as v
 
 from os.path import join
 import sys
 import time
 
-
-"""
-Example of running affine matching on the 'sulcal2000' database
-"""
-
-# Dirty hack for me to be able to access data from my XP environment
+rootpath = '/neurospin/lnao/Panabase/roche/sulcal2000'
+# Unimportant hack...
 from os import name
 if name == 'nt':
 	rootpath = 'D:\\data\\sulcal2000'
-else:
-	rootpath = '/neurospin/lnao/Panabase/roche/sulcal2000'
         
 print('Scanning data directory...')
 source = sys.argv[1]
 target = sys.argv[2]
-similarity = 'correlation ratio'
+similarity = 'cr'
 if len(sys.argv)>3: 
 	similarity = sys.argv[3]
-interp = 'partial volume'
+interp = 'pv'
 if len(sys.argv)>4: 
 	interp = sys.argv[4]
 normalize = None
@@ -34,10 +36,7 @@ optimizer = 'powell'
 if len(sys.argv)>6: 
 	optimizer = sys.argv[6]
 
-# Change this to use another I/O package
-iolib = 'pynifti'
-
-## Info
+# Print messages 
 print ('Source brain: %s' % source)
 print ('Target brain: %s' % target)
 print ('Similarity measure: %s' % similarity)
@@ -45,20 +44,37 @@ print ('Optimizer: %s' % optimizer)
 
 # Get data
 print('Fetching image data...')
-I = fff2.neuro.image(join(rootpath,'nobias_'+source+'.nii'), iolib=iolib)
-J = fff2.neuro.image(join(rootpath,'nobias_'+target+'.nii'), iolib=iolib)
+I = v.load(join(rootpath,'nobias_'+source+'.nii'))
+J = v.load(join(rootpath,'nobias_'+target+'.nii'))
 
 # Perform affine normalization 
-T, It = fff2.neuro.affine_registration(I, J, similarity=similarity, interp=interp, 
-				       normalize=normalize, optimizer=optimizer, resample=True)
+print('Setting up registration...')
+tic = time.time()
+T = affine_register(I, J, 
+		    similarity=similarity, interp=interp, 
+		    normalize=normalize, optimizer=optimizer)
+toc = time.time()
+print('  Registration time: %f sec' % (toc-tic))
 
+
+# Resample source image
+print('Resampling source image...')
+tic = time.time()
+It = affine_resample(I, J, T) 
+# To resample the target (and avoid inverting the transformation), do: 
+# >>> Jt = resample(I, J, T, toresample='target')
+# For now, It is an instance of a local image class defined in nipy.neurospin 
+# The following line will be useless when a standard nipy image class is adopted
+It =  v.nifti1.Nifti1Image(affine=It.get_affine(), data=It.get_data())
+toc = time.time()
+print('  Resampling time: %f sec' % (toc-tic))
 
 # Save resampled source
 outfile =  source+'_TO_'+target+'.nii'
 print ('Saving resampled source in: %s' % outfile)
-It.save(outfile)
+v.save(It, outfile)
 
 # Save transformation matrix
 import numpy as np
-np.save(outfile, T)
+np.save(outfile, np.asarray(T))
 

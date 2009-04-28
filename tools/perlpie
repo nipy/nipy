@@ -3,6 +3,6 @@
 """Utility script for performing global search and replace with `perl -p ie`
 """
 
-from neuroimaging.utils import perlpie
+from nipy.utils import perlpie
 
 perlpie.main()

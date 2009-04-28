@@ -77,7 +77,7 @@ here until they can be input.
 * Fix error in test_segment test_texture2 functions
   (fixes.scipy.ndimage).  See FIXME.
 
-* import neuroimaging.algorithms is very slow!  Find and fix.  The
+* import nipy.algorithms is very slow!  Find and fix.  The
   shared library is slow.
 
 * base class for all new-style classes should be *object*

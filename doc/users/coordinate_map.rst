@@ -8,7 +8,7 @@ When you load an image it will have an associated Coordinate Map
 
 .. sourcecode::  ipython
 
-  from neuroimaging.core.api import load_image
+  from nipy.core.api import load_image
   infile = 'Talairach-labels-1mm.nii'
   myimg = load_image(infile)
   coordmap = myimg.coordmap
