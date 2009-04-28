@@ -61,6 +61,7 @@ class Image4d:
         self.tr_slices = float(tr_slices)
         self.start = float(start)
         self.slice_order = np.asarray(slice_order)
+        self.interleaved = bool(interleaved)
         ## assume that the world referential is 'scanner' as defined
         ## by the nifti norm
         self.reversed_slices = to_world[slice_axis][slice_axis]<0 
@@ -302,19 +303,16 @@ def realign4d(runs,
     # Correct between-session motion using the mean image of each corrected run 
     corr_runs = [_resample4d(runs[i], transforms=transfo_runs[i]) for i in range(nruns)]
     aux = np.rollaxis(np.asarray([corr_run.mean(3) for corr_run in corr_runs]), 0, 4)
-    ## Fake time series using the first run's to-world transform
+    ## Fake time series with zero inter-slice time 
     ## FIXME: check that all runs have the same to-world transform
     mean_img = Image4d(aux, to_world=runs[0].to_world, tr=1.0, tr_slices=0.0) 
     transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, optimizer=optimizer)
     corr_mean = _resample4d(mean_img, transforms=transfo_mean)
-    
+
     # Compose transformations for each run
     for i in range(nruns):
-        sess_to_world = transfo_mean[i]
-        transforms = [sess_to_world*T for T in transfo_runs[i]]
+        run_to_world = transfo_mean[i]
+        transforms = [run_to_world*to_run for to_run in transfo_runs[i]]
         transfo_runs[i] = transforms
-        
+
     return transfo_runs
-
-
-
