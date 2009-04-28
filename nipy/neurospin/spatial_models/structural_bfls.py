@@ -77,7 +77,7 @@ class landmark_regions(hroi.NROI):
              
     def HPD(self,k,cs,pval = 0.95,dmax=1.0):
         """
-        i = self.HPD(cs,dmax = 10,pval = 0.95)
+        hpd = self.HPD(k,cs,dmax = 10,pval = 0.95)
         Sample the postreior density of being in k
         on a grid defined by cs, assuming that the roi is an ellipsoid
         INPUT:
@@ -99,10 +99,11 @@ class landmark_regions(hroi.NROI):
             raise ValueError, "incompatible dimensions"
         
         dx = coord-centers[k]
-        covariance = np.dot(np.transpose(dx),dx)/coord.shape[0]
+        covariance = np.dot(dx.T,dx)/coord.shape[0]
         import numpy.linalg as L
         U,S,V = L.svd(covariance,0)
-        sqrtS = np.sqrt(1/np.maximum(S,dmax**2))
+        eps = (dmax**2)/coord.shape[0]
+        sqrtS = np.sqrt(1/np.maximum(S,eps))
         dx = cs-centers[k]
         dx = np.dot(dx,U)
         dx = np.dot(dx,np.diag(sqrtS))
@@ -113,6 +114,7 @@ class landmark_regions(hroi.NROI):
         import scipy.special as sp
         gamma = 2*sp.erfinv(pval)**2
         hpd[delta>gamma]=0
+        #print sqrtS,S,eps
         return hpd
 
     def map_label(self,cs,pval = 0.95,dmax=1.):
@@ -121,12 +123,14 @@ class landmark_regions(hroi.NROI):
         Sample the set of landmark regions
         on the proposed coordiante set cs, assuming a Gaussian shape
         INPUT:
-        - cs: an array of size(n*p) a set of input coordinates
-        - dmax=10 : an upper bound for the spatial variance
+        - cs: an array of size(n,dim) a set of input coordinates
+        - pval=0.95 (it should be in [0,1]) cutoff for the CR
+        (highest posterior density threshold)
+        - dmax=1. : an upper bound for the spatial variance
         to avoid degenerate variance
-        - pval=0.95 cutoff for the CR
+    
         OUPUT:
-        i = set of entries of the coordinates that are within the cr
+        label: array of shape (n): the posterior labelling
         """
         label = -np.ones(cs.shape[0])
         if self.k>0:
@@ -145,6 +149,45 @@ class landmark_regions(hroi.NROI):
         homogeneity = self.homogeneity()
         for i in range(self.k):
             print i, np.unique(self.subj[i]), homogeneity[i], centers[i]
+
+
+    def roi_confidence(self,ths=0,fid='confidence'):
+        """
+        assuming that fid='confidence' field has been set as a discrete feature,
+        this creates an approximate p-value that states how confident one might 
+        that the LR is defined in at least ths individuals
+        if conficence is not defined as a discrete_feature,
+        it is assumed to be 1.
+        INPUT:
+        - ths: an integer
+        OUTPUT:
+        - pvals: an array of shape self.k
+        the p-values corresponding to the ROIs
+        """
+        import scipy.stats as st
+        pvals = np.zeros(self.k)
+        if self.discrete_features.has_key(fid)==False:
+            for j in range(self.k):
+                subjj = self.subj[j]
+                pvals[j] = np.size(np.unique(subjj))
+            pvals = pvals>ths + 0.5*(pvals==ths)
+        else:
+            for j in range(self.k):
+                subjj = self.subj[j]
+                conf = self.discrete_features[fid][j]
+                mp = 0.
+                vp = 0.
+                for ls in np.unique(subjj):
+                    lmj = 1-np.prod(1-conf[subjj==ls])
+                    lvj = lmj*(1-lmj)
+                    mp = mp+lmj
+                    vp = vp+lvj
+                    # If noise is too low the variance is 0: ill-defined:
+                    vp = max(vp, 1e-14)
+                    
+                pvals[j] = st.norm.sf(ths,mp,np.sqrt(vp))
+                #print ths-mp, mp, np.sqrt(vp),pvals[j],len(np.unique(subjj))
+        return pvals
 
 def build_LR(BF,ths=0):
     """
@@ -788,7 +831,7 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pv
     
     LR,mlabel = build_LR(BFLs,ths)
     if LR!=None:
-        crmap = LR.map_label(tal,pval = 0.95,dmax=2*dmax)
+        crmap = LR.map_label(tal,pval = 0.95,dmax=dmax)
         
     return crmap, LR, BFLs 
 
