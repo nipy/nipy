@@ -729,7 +729,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
                     np.size(q), q.sum())
     
     Fbeta.set_field(p)
-    idx,depth, major,label = Fbeta.custom_watershed(0,g0)
+    idx,depth, major,label = Fbeta.custom_watershed(0,0)#(0,g0)
 
     # append some information to the hroi in each subject
     for s in range(nbsubj):
