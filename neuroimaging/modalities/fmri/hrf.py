@@ -11,39 +11,13 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 from sympy import Symbol, DeferredVector, exp, Derivative, abs, FunctionClass
-from formula import Term, aliased_function, lambdify
+from formula import Term, aliased_function
+from aliased import vectorize
 
 # Sympy symbols used below
 
 t = Term('t')
 deft = DeferredVector('t')
-
-class vectorize(lambdify):
-    """
-    This class can be used to take a (single-valued) sympy
-    expression with only 't' as a Symbol and return a 
-    callable that can be evaluated at an array of floats.
-
-    Parameters
-    ----------
-
-    expr : sympy expr
-        Expression with 't' the only Symbol. If it is 
-        an instance of sympy.FunctionClass, 
-        then vectorize expr(t) instead.
-
-    Returns
-    -------
-
-    f : callable
-        A function that can be evaluated at an array of time points.
-
-    """
-
-    def __init__(self, expr):
-        if isinstance(expr, FunctionClass):
-            expr = expr(t)
-        lambdify.__init__(self, deft, expr.subs(t, deft))
 
 def gamma_params(peak_location, peak_fwhm):
     """

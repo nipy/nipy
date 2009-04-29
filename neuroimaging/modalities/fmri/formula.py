@@ -1,6 +1,10 @@
 import sympy
 import warnings
 import numpy as np
+from scipy.linalg import svdvals
+from neuroimaging.fixes.scipy.stats.models import utils
+
+from aliased import aliased_function, _add_aliases_to_namespace, vectorize
 
 class Term(sympy.Symbol):
 
@@ -55,8 +59,10 @@ def getparams(expression):
     expression = np.array(expression)
     if expression.shape == ():
         expression.shape = (1,)
+    if expression.ndim > 1:
+        expression.shape = np.product(expression.shape)
     for term in expression:
-        atoms = atoms.union(term.atoms())
+        atoms = atoms.union(sympy.sympify(term).atoms())
 
     params = []
     for atom in atoms:
@@ -83,6 +89,93 @@ def getterms(expression):
     terms.sort()
     return terms
 
+def make_recarray(rows, names, dtypes=None):
+    """
+    Create a recarray with named column
+    from a list of rows and names for the
+    columns. If dtype is None,
+    the dtype is based on rows if it
+    is an np.ndarray, else
+    the data is cast as np.float. If dtypes
+    are supplied,
+    it uses the dtypes to create a np.dtype
+    unless rows is an np.ndarray, in which
+    case dtypes are ignored
+
+    Parameters:
+    -----------
+
+    rows: []
+        Rows that will be turned into an array.
+
+    names: [str]
+        Names for the columns.
+
+    dtypes: [str or np.dtype]
+        Used to create a np.dtype, can be np.dtypes or string.
+
+    Outputs:
+    --------
+
+    v : np.ndarray
+
+    >>> arr = np.array([[3,4],[4,6],[6,8]])
+    >>> make_recarray(arr, ['x','y'])
+    array([[(3, 4)],
+           [(4, 6)],
+           [(6, 8)]], 
+          dtype=[('x', '<i4'), ('y', '<i4')])
+    >>> r = make_recarray(arr, ['w', 'u'])
+    >>> make_recarray(r, ['x','y'])
+    array([[(3, 4)],
+           [(4, 6)],
+           [(6, 8)]], 
+          dtype=[('x', '<i4'), ('y', '<i4')])
+
+    >>> make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int])
+    array([(3.0, 4), (4.0, 6), (7.0, 9)], 
+          dtype=[('w', '<f8'), ('v', '<i4')])
+    >>> 
+
+    """
+
+    if isinstance(rows, np.ndarray):
+        if rows.dtype.isbuiltin:
+            dtype = np.dtype([(n, rows.dtype) for n in names])
+        else:
+            dtype = np.dtype([(n, d[1]) for n, d in zip(names, rows.dtype.descr)])
+        if dtypes is not None:
+            raise ValueError('dtypes not used if rows is an ndarray')
+        return rows.view(dtype)
+
+    if dtypes is None:
+        dtype = np.dtype([(n, np.float) for n in names])
+    else:
+        dtype = np.dtype([(n, d) for n, d in zip(names, dtypes)])
+
+    nrows = []
+    vector = -1
+    for r in rows:
+        if vector < 0:
+            a = np.array(r)
+            if a.shape == ():
+                vector = True
+            else:
+                vector = False
+
+        if not vector:
+            nrows.append(tuple(r))
+        else:
+            nrows.append(r)
+
+    if vector:
+        if len(names) != 1: # a 'row vector'
+            nrows = tuple(nrows)
+            return np.array(nrows, dtype)
+        else:
+            nrows = np.array([(r,) for r in nrows], dtype)
+    return np.array(nrows, dtype)
+
 class Formula(object):
     
     """
@@ -97,7 +190,7 @@ class Formula(object):
 
     """
 
-    def __init__(self, seq, char = 'b', ignore=[]):
+    def __init__(self, seq, char = 'b'):
         """
         Inputs:
         -------
@@ -105,16 +198,12 @@ class Formula(object):
 
         char : character for regression coefficient
 
-        ignore : [``sympy.Basic``]
-             Ignore these symbols when differentiating
-             to construct the design. 
 
         """
 
         self._terms = np.asarray(seq)
         self._counter = 0
         self.char = char
-        self.ignore = ignore
 
     def subs(self, old, new):
         """
@@ -190,14 +279,14 @@ class Formula(object):
 
     mean = property(_getmean, doc="Expression for the mean, expressed as a linear combination of terms, each with dummy variables in front.")
 
-    def _getdesign(self):
-        p = list(set(getparams(self.mean)).difference(self.ignore))
+    def _getdiff(self):
+        p = list(set(getparams(self.mean)))
         p.sort()
         return sympy.diff(self.mean, p)
-    design = property(_getdesign, doc='Derivative of the mean function with respect to the linear and nonlinear parts of the Formula.')
+    design_expr = property(_getdiff)
 
     def _getdtype(self):
-        vnames = [str(s) for s in self.design]
+        vnames = [str(s) for s in self.design_expr]
         return np.dtype([(n, np.float) for n in vnames])
     dtype = property(_getdtype, doc='The dtype of the design matrix of the Formula.')
 
@@ -227,6 +316,149 @@ class Formula(object):
             return False
         return np.alltrue(np.equal(np.array(self), np.array(other)))
 
+    def _setup_design(self):
+        """
+        Create a callable object to evaluate the design matrix
+        at a given set of parameter values and observed Term values.
+        """
+        d = self.design_expr
+
+        # Before evaluating, we 'recreate' the formula
+        # with numbered terms, and numbered parameters
+
+        terms = getterms(self.mean)
+        newterms = []
+        for i, t in enumerate(terms):
+            newt = sympy.DeferredVector("t%d" % i)
+            for j, _ in enumerate(d):
+                d[j] = d[j].subs(t, newt)
+            newterms.append(newt)
+
+        params = getparams(self.design_expr)
+        newparams = []
+        for i, p in enumerate(params):
+            newp = sympy.Symbol("p%d" % i, dummy=True)
+            for j, _ in enumerate(d):
+                d[j] = d[j].subs(p, newp)
+            newparams.append(newp)
+
+
+        self.n = {}; 
+        for _d in d:
+            _add_aliases_to_namespace(_d, self.n)
+
+        #TODO: use aliased.lambdify for this?
+        self._f = sympy.lambdify(newparams + newterms, d, (self.n, "numpy"))
+        ptnames = []
+        for t in terms:
+            if not isinstance(t, FactorTerm):
+                ptnames.append(str(t))
+            else:
+                ptnames.append(t.factor_name)
+        ptnames = list(set(ptnames))
+
+        self.dtypes = {'param':np.dtype([(str(p), np.float) for p in params]),
+                        'term':np.dtype([(str(t), np.float) for t in terms]),
+                        'preterm':np.dtype([(na, np.float) for na in ptnames])}
+        self.__terms = terms
+
+    def design(self, term, param=None, return_float=False,
+               contrasts={}):
+        """
+        Construct the design matrix, and optional
+        contrast matrices.
+
+        Parameters:
+        -----------
+
+        term : np.recarray
+             Recarray including fields corresponding to the Terms in 
+             getparams(self.design_expr).
+
+        param : np.recarray
+             Recarray including fields that are not Terms in 
+             getparams(self.design_expr)
+        
+        return_float : bool
+             Return a np.float array or an np.recarray
+
+        contrasts : {}
+             Contrasts. The items in this dictionary
+             should be (str, Formula) pairs where
+             a contrast matrix is constructed for each Formula
+             by evaluating its design at the same parameters as self.design.
+
+        """
+        if not hasattr(self, 'dtypes'):
+            self._setup_design()
+
+        preterm_recarray = term
+        param_recarray = param
+
+        if not set(preterm_recarray.dtype.names).issuperset(self.dtypes['preterm'].names):
+            raise ValueError("for term, expecting a recarray with dtype having the following names: %s" % `self.dtypes['preterm'].names`)
+
+        if param_recarray is not None:
+            if not set(param_recarray.dtype.names).issuperset(self.dtypes['param'].names):
+                raise ValueError("for param, expecting a recarray with dtype having the following names: %s" % `self.dtypes['param'].names`)
+
+        term_recarray = np.zeros(preterm_recarray.shape[0], 
+                                 dtype=self.dtypes['term'])
+        for t in self.__terms:
+            if not isinstance(t, FactorTerm):
+                term_recarray[t.name] = preterm_recarray[t.name]
+            else:
+                term_recarray['%s_%s' % (t.factor_name, t.level)] = \
+                    np.array(map(lambda x: x == t.level, preterm_recarray[t.factor_name]))
+
+        tnames = list(term_recarray.dtype.names)
+        torder = [tnames.index(_term) for _term in self.dtypes['term'].names]
+
+        float_array = term_recarray.view(np.float)
+        float_array.shape = (term_recarray.shape[0], len(torder))
+        float_tuple = tuple([float_array[:,i] for i in range(float_array.shape[1])])
+
+        if param_recarray is not None:
+            param = tuple(float(param_recarray[n]) for n in self.dtypes['param'].names)
+        else:
+            param = ()
+
+        v = self._f(*(param+float_tuple))
+        varr = [np.array(w) for w in v]
+        
+        m = []
+        l = []
+        for i, w in enumerate(varr):
+            if w.shape in [(),(1,)]:
+                m.append(i)
+            else:
+                l.append(w.shape[0])
+        if not np.alltrue(np.equal(l, l[0])):
+            raise ValueError, 'shape mismatch'
+
+        # Multiply all numbers by columns of 1s
+
+        for i in m:
+            varr[i] = varr[i] * np.ones(l[0])
+
+        v = np.array(varr).T
+        if return_float or contrasts:
+            D = np.squeeze(v.astype(np.float))
+            if contrasts:
+                pinvD = np.linalg.pinv(D)
+        else:
+            D = np.array([tuple(r) for r in v], self.dtype)
+
+        cmatrices = {}
+        for key, cf in contrasts.items():
+            L = cf.design(term, param=param_recarray, 
+                          return_float=True)
+            cmatrices[key] = contrast_from_cols_or_rows(L, D, pseudo=pinvD)
+            
+        if not contrasts:
+            return D
+        return D, cmatrices
+
 def natural_spline(t, knots=[], order=3, intercept=False):
     """
     Return a Formula containing a natural spline
@@ -234,9 +466,8 @@ def natural_spline(t, knots=[], order=3, intercept=False):
 
     >>> x = Term('x')
     >>> n = natural_spline(x, knots=[1,3,4], order=3)
-    >>> d = Design(n)
     >>> xval = np.array([3,5,7.]).view(np.dtype([('x', np.float)]))
-    >>> d(xval)
+    >>> n.design(xval)
     array([(3.0, 9.0, 27.0, 8.0, 0.0, -0.0),
            (5.0, 25.0, 125.0, 64.0, 8.0, 1.0),
            (7.0, 49.0, 343.0, 216.0, 64.0, 27.0)],
@@ -268,13 +499,19 @@ def natural_spline(t, knots=[], order=3, intercept=False):
     fns = []
     for i in range(order+1):
         n = 'ns_%d' % i
-        s = aliased_function(n, lambda x: x**i)
+        def f(x, i=i):
+            return x**i
+        s = aliased_function(n, f)
         fns.append(s(t))
 
     for j, k in enumerate(knots):
         n = 'ns_%d' % (j+i+1,)
-        s = aliased_function(n, lambda x: np.greater(x, k) * (x-k)**order)
+        def f(x, k=k, order=order):
+            return (x-k)**order * np.greater(x, k)
+        s = aliased_function(n, f)
         fns.append(s(t))
+
+    print [f.alias(3) for f in fns]
 
     if not intercept:
         fns.pop(0)
@@ -314,243 +551,192 @@ class Factor(Formula):
         f.name = self.name
         return f
 
-class Design:
+def contrast_from_cols_or_rows(L, D, pseudo=None):
+    """
+    Construct a contrast matrix from a design matrix D
+    (possibly with its pseudo inverse already computed)
+    and a matrix L that either specifies something in
+    the column space of D or the row space of D.
+
+    Parameters:
+    -----------
+
+    L : ndarray
+         Matrix used to try and construct a contrast.
+
+    D : ndarray
+         Design matrix used to create the contrast.
+
+    Outputs:
+    --------
+
+    C : ndarray
+         Matrix with C.shape[1] == D.shape[1] representing
+         an estimable contrast.
+
+    Notes:
+    ------
+
+    From an n x p design matrix D and a matrix L, tries
+    to determine a p x q contrast matrix C which
+    determines a contrast of full rank, i.e. the
+    n x q matrix
+
+    dot(transpose(C), pinv(D))
+
+    is full rank.
+
+    L must satisfy either L.shape[0] == n or L.shape[1] == p.
+
+    If L.shape[0] == n, then L is thought of as representing
+    columns in the column space of D.
+
+    If L.shape[1] == p, then L is thought of as what is known
+    as a contrast matrix. In this case, this function returns an estimable
+    contrast corresponding to the dot(D, L.T)
+
+    This always produces a meaningful contrast, not always
+    with the intended properties because q is always non-zero unless
+    L is identically 0. That is, it produces a contrast that spans
+    the column space of L (after projection onto the column space of D).
 
     """
-    Used to evaluate the design matrix.
-    """
 
-    def _setup(self):
-        """
-        Create a callable object to evaluate the design matrix
-        at a given set of parameter values and observed Term values.
-        """
-        d = self.formula.design
+    L = np.asarray(L)
+    D = np.asarray(D)
+    
+    n, p = D.shape
 
-        # Before evaluating, we 'recreate' the formula
-        # with numbered terms, and numbered parameters
+    if L.shape[0] != n and L.shape[1] != p:
+        raise ValueError, 'shape of L and D mismatched'
 
-        terms = getterms(self.formula.mean)
-        newterms = []
-        for i, t in enumerate(terms):
-            newt = sympy.DeferredVector("t%d" % i)
-            for j, _ in enumerate(d):
-                d[j] = d[j].subs(t, newt)
-            newterms.append(newt)
+    if pseudo is None:
+        pseudo = pinv(D)
 
-        params = getparams(self.formula.design)
-        newparams = []
-        for i, p in enumerate(params):
-            newp = sympy.Symbol("p%d" % i, dummy=True)
-            for j, _ in enumerate(d):
-                d[j] = d[j].subs(p, newp)
-            newparams.append(newp)
-
-        self.n = {}; 
-        for _d in d:
-            add_aliases_to_namespace(_d, self.n)
-
-        self._f = sympy.lambdify(newparams + newterms, d, (self.n, "numpy"))
-        ptnames = []
-        for t in terms:
-            if not isinstance(t, FactorTerm):
-                ptnames.append(str(t))
-            else:
-                ptnames.append(t.factor_name)
-        ptnames = list(set(ptnames))
-
-        self.dtypes = {'param':np.dtype([(str(p), np.float) for p in params]),
-                        'term':np.dtype([(str(t), np.float) for t in terms]),
-                        'preterm':np.dtype([(na, np.float) for na in ptnames])}
-        self._terms = terms
-
-    def __init__(self, formula, return_float=False):        
-
-        self.formula = formula
-        self._setup()
-        self._return_float = return_float
-
-    def __call__(self, preterm_recarray, param_recarray=None, return_float=False):
-        if not set(preterm_recarray.dtype.names).issuperset(self.dtypes['preterm'].names):
-            raise ValueError("for term, expecting a recarray with dtype having the following names: %s" % `self.dtypes['preterm'].names`)
-
-        if param_recarray is not None:
-            if not set(param_recarray.dtype.names).issuperset(self.dtypes['param'].names):
-                raise ValueError("for param, expecting a recarray with dtype having the following names: %s" % `self.dtypes['param'].names`)
-
-        term_recarray = np.zeros(preterm_recarray.shape[0], 
-                                 dtype=self.dtypes['term'])
-        for t in self._terms:
-            if not isinstance(t, FactorTerm):
-                term_recarray[t.name] = preterm_recarray[t.name]
-            else:
-                term_recarray['%s_%s' % (t.factor_name, t.level)] = \
-                    np.array(map(lambda x: x == t.level, preterm_recarray[t.factor_name]))
-
-        tnames = list(term_recarray.dtype.names)
-        torder = [tnames.index(term) for term in self.dtypes['term'].names]
-
-        float_array = term_recarray.view(np.float)
-        float_array.shape = (term_recarray.shape[0], len(torder))
-        float_tuple = tuple([float_array[:,i] for i in range(float_array.shape[1])])
-
-        if param_recarray is not None:
-            param = tuple(float(param_recarray[n]) for n in self.dtypes['param'].names)
-        else:
-            param = ()
-
-        v = np.array(self._f(*(param+float_tuple))).T
-        if return_float or self._return_float:
-            return np.squeeze(v.astype(np.float))
-        else:
-            return np.array([tuple(r) for r in v], self.formula.dtype)
-
-# def set_alias(func, str, alias):
-#     """
-#     For a sympy expression that is a Function,
-#     set its alias. This is to 
-#     be used with add_aliases_to_namespace when lambdifying
-#     an expression.
-
-#     Parameters
-#     ----------
-
-#     func : sympy expression with is_Function==True
-
-#     alias : callable
-#          When lambdifying an expression with func in it,
-#          func will be replaced by alias.
-
-#     Returns
-#     -------
-
-#     None
-
-#     """
-#     if isinstance(func, sympy.FunctionClass):
-#         if not hasattr(func, 'alias'):
-#             func.alias = {}
-#         func.alias = staticmethod(alias)
-#     else:
-#         raise ValueError('can only add an alias to a Function')
-
-
-def add_aliases_to_namespace(expr, namespace):
-    """
-    Given a sympy expression,
-    find all aliases in it and add them to the namespace.
-    """
-
-    if hasattr(expr, 'alias') and isinstance(expr, sympy.FunctionClass):
-        if namespace.has_key(str(expr)):
-            if namespace[str(expr)] != expr.alias:
-                warnings.warn('two aliases with the same name were found')
-        namespace[str(expr)] = expr.alias
-
-    if hasattr(expr, 'func'):
-        if isinstance(expr.func, sympy.FunctionClass) and hasattr(expr.func, 'alias'):
-            if namespace.has_key(expr.func.__name__):
-                if namespace[expr.func.__name__] != expr.func.alias:
-                    warnings.warn('two aliases with the same name were found')
-            namespace[expr.func.__name__] = expr.func.alias
-    if hasattr(expr, 'args'):
-        try:
-            for arg in expr.args:
-                add_aliases_to_namespace(arg, namespace)
-        except TypeError:
-            pass
-    return namespace
-
-class lambdify(object):
-    """
-    TODO
-    """
-
-    def __init__(self, args, expr):
-        if isinstance(expr, sympy.FunctionClass):
-            expr = expr(t)
-        self.n = {} 
-        n = {}
-        add_aliases_to_namespace(expr, n)
-        self.n = n.copy()
-
-        from sympy.utilities.lambdify import _get_namespace
-        for k, v in  _get_namespace('numpy').items():
-            self.n[k] = v
-
-        self._f = sympy.lambdify(args, expr, self.n)
-        self.expr = expr
+    if L.shape[0] == n:
+        C = np.dot(pseudo, L).T
+    else:
+        C = L
+        C = np.dot(pseudo, np.dot(D, C.T)).T
         
-    def __call__(self, _t):
-        return self._f(_t)
+    Lp = np.dot(D, C.T)
 
+    if len(Lp.shape) == 1:
+        Lp.shape = (n, 1)
+        
+    if rank(Lp) != Lp.shape[1]:
+        Lp = fullrank(Lp)
+        C = np.dot(pseudo, Lp).T
 
-# theta = sympy.Symbol('th')
-# x = Term('x')
-# y = Term('y')
+    return np.squeeze(C)
 
-# a = Formula([x])
-# b = Formula([y])
+def rank(X, cond=1.0e-12):
+    """
+    Return the rank of a matrix X based on its generalized inverse,
+    not the SVD.
+    """
+    X = np.asarray(X)
+    if len(X.shape) == 2:
+        D = svdvals(X)
+        return int(np.add.reduce(np.greater(D / D.max(), cond).astype(np.int32)))
+    else:
+        return int(not np.alltrue(np.equal(X, 0.)))
 
-# fac = Factor('f', 'ab')
-# fac2 = Factor('f', 'ab')
-# print fac.terms
+def fullrank(X, r=None):
+    """
+    Return a matrix whose column span is the same as X.
 
-
-# ff = (a + b)*fac + Formula([sympy.log(theta*x)])
-
-# d = Design(ff)
-
-# data = np.array([(3,4,'a'),(4,5,'b'), (5,6,'a')],
-#                 dtype=np.dtype([('x', np.float),
-#                                 ('y', np.float),
-#                                 ('f', 'S1')]))
-# param = np.array([(3.4,4.)], dtype=np.dtype([('th', np.float),
-#                                              ('_b4', np.float)]))
-# print d(data, param)
-
-# f2 = (a+b + I)*fac + I
-# dd = Design(f2)
-# X = np.random.standard_normal((2000,2))
-
-# data = np.zeros(2000, data.dtype)
-# data['x'] = np.random.standard_normal((2000,))
-# data['y'] = np.random.standard_normal((2000,))
-# data['f'] = ['c']*10 + ['a']*990 + ['b']*1000
-# Z =  dd(data, param)
-
-# f3 = (a+b)*fac + I
-
-import new
-class AliasedFunctionClass(sympy.FunctionClass):
+    If the rank of X is known it can be specified as r -- no check
+    is made to ensure that this really is the rank of X.
 
     """
 
-    This class allows 'anonymous' sympy Functions
-    that can be replaed with an appropriate callable
-    function when lambdifying.
+    if r is None:
+        r = rank(X)
 
-    No checking is done on the signature of the alias.
+    V, D, U = L.svd(X, full_matrices=0)
+    order = np.argsort(D)
+    order = order[::-1]
+    value = []
+    for i in range(r):
+        value.append(V[:,order[i]])
+    return np.asarray(np.transpose(value)).astype(np.float64)
 
-    This is not meant to be called by users, rather
-    use 'aliased_function'.
+class RandomEffects(Formula):
+    """
+    This class can be used to 
+    construct covariance matrices for common
+    random effects analyses.
+
+    >>> subj = make_recarray([2,2,2,3,3], 's')
+    >>> subj_factor = Factor('s', [2,3])
+    >>> c = RandomEffects(subj_factor.terms)
+    >>> c.cov(s)
+    array([[_s2_0, _s2_0, _s2_0, 0, 0],
+           [_s2_0, _s2_0, _s2_0, 0, 0],
+           [_s2_0, _s2_0, _s2_0, 0, 0],
+           [0, 0, 0, _s2_1, _s2_1],
+           [0, 0, 0, _s2_1, _s2_1]], dtype=object)
+    >>> c = RandomEffects(subj_factor.terms, sigma=np.array([[4,1],[1,6]]))
+    >>> c.cov(s)
+    array([[ 4.,  4.,  4.,  1.,  1.],
+           [ 4.,  4.,  4.,  1.,  1.],
+           [ 4.,  4.,  4.,  1.,  1.],
+           [ 1.,  1.,  1.,  6.,  6.],
+           [ 1.,  1.,  1.,  6.,  6.]])
+    >>> 
 
     """
-    def __new__(cls, arg1, arg2, arg3=None, alias=None):
-        r = sympy.FunctionClass.__new__(cls, arg1, arg2, arg3)
-        if alias is not None:
-            r.alias = new.instancemethod(lambda self, x: alias(x), r, cls)
-        return r
+    def __init__(self, seq, sigma=None, char = 'e'):
+        """
+        Inputs:
+        -------
+        seq : [``sympy.Basic``]
 
+        sigma : ndarray
+             Covariance of the random effects. Defaults
+             to a diagonal with entries for each random
+             effect.
 
+        char : character for regression coefficient
 
+        """
 
-def aliased_function(symbol, alias):
-    """
-    Create an aliased function with a given symbol
-    and alias.
+        self._terms = np.asarray(seq)
+        q = self._terms.shape[0]
 
-    """
-    return AliasedFunctionClass(sympy.Function, symbol, alias=alias)
+        self._counter = 0
+        if sigma is None:
+            self.sigma = np.diag([sympy.Symbol('s2_%d' % i, dummy=True) for i in 
+                                  range(q)])
+        else:
+            self.sigma = sigma
+        if self.sigma.shape != (q,q):
+            raise ValueError('incorrect shape for covariance of random effects, should have shape %s' % `(q,q)`)
+        self.char = char
 
+    def cov(self, term, param=None):
+        """
+        Compute the covariance matrix for
+        some given data.
 
+        Parameters:
+        -----------
+
+        term : np.recarray
+             Recarray including fields corresponding to the Terms in 
+             getparams(self.design_expr).
+
+        param : np.recarray
+             Recarray including fields that are not Terms in 
+             getparams(self.design_expr)
+        
+        Outputs:
+        --------
+
+        C : ndarray
+             Covariance matrix implied by design and self.sigma.
+
+        """
+        D = self.design(term, param=param, return_float=True)
+        return np.dot(D, np.dot(self.sigma, D.T))

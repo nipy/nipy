@@ -11,7 +11,7 @@ import numpy as np
 import scipy.interpolate
 import pylab
 import sympy
-from neuroimaging.modalities.fmri import formula
+from neuroimaging.modalities.fmri import formula, aliased
 
 def gen_BrownianMotion():
     X = np.arange(0,5,0.01)
@@ -26,8 +26,7 @@ def test_1d():
     Bs = formula.aliased_function("B", B)
     t = sympy.DeferredVector('t')
 
-    n={}; formula.add_aliases_to_namespace(Bs, n)
-    formula.add_aliases_to_namespace(Bs(t), n)
+    n={}; aliased._add_aliases_to_namespace(Bs, n)
 
     expr = 3*sympy.exp(Bs(t)) + 4
     ee = sympy.lambdify(t, expr, (n, 'numpy'))
@@ -44,7 +43,7 @@ def test_2d():
     s = sympy.DeferredVector('s')
 
     e = B1s(s)+B2s(t)
-    n={}; formula.add_aliases_to_namespace(e, n)
+    n={}; aliased._add_aliases_to_namespace(e, n)
 
     ee = sympy.lambdify((s,t), e, (n, 'numpy'))
     np.testing.assert_almost_equal(ee(B1.x, B2.x), B1.y + B2.y)

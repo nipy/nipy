@@ -27,8 +27,10 @@ from sympy import sin as sympy_sin
 from sympy import cos as sympy_cos
 from sympy import pi as sympy_pi
 
-from formula import Formula, Term, Design, vectorize, aliased_function, \
-    add_aliases_to_namespace, t
+from formula import Formula, Term
+from aliased import aliased_function, lambdify as alambdify
+
+t = Term('t')
 
 def fourier_basis(freq):
     """
@@ -99,10 +101,8 @@ def linear_interp(times, values, fill=0, name=None, **kw):
     =========
 
     >>> s=linear_interp([0,4,5.],[2.,4,6], bounds_error=False)
-    >>> from formula import Design
-    >>> d=Design(s)
     >>> tval = np.array([-0.1,0.1,3.9,4.1,5.1]).view(np.dtype([('t', np.float)]))
-    >>> d(tval)
+    >>> s.design(tval)
     array([(nan,), (2.0499999999999998,), (3.9500000000000002,),
            (4.1999999999999993,), (nan,)],
           dtype=[('interp0(t)', '<f8')])
@@ -168,9 +168,7 @@ def step_function(times, values, name=None, fill=0):
 
     >>> s=step_function([0,4,5],[2,4,6])
     >>> tval = np.array([-0.1,3.9,4.1,5.1]).view(np.dtype([('t', np.float)]))
-    >>> from formula import Design
-    >>> d=Design(s)
-    >>> d(tval)
+    >>> s.design(tval)
     array([(0.0,), (2.0,), (4.0,), (6.0,)],
           dtype=[('step0(t)', '<f8')])
     >>>
@@ -276,22 +274,18 @@ def blocks(intervals, amplitudes=None, g=Symbol('a')):
     
     >>> tval = np.array([0.4,1.4,2.4,3.4]).view(np.dtype([('t', np.float)]))
     >>> b = blocks([[1,2],[3,4]])
-    >>> from formula import Design
-    >>> d = Design(b)
-    >>> d(tval)
+    >>> b.design(tval)
     array([(0.0,), (1.0,), (0.0,), (1.0,)], 
           dtype=[('step0(t)', '<f8')])
 
     >>> b = blocks([[1,2],[3,4]], amplitudes=[3,5])
-    >>> d = Design(b)
-    >>> d(tval)
+    >>> b.design(tval)
     array([(0.0,), (3.0,), (0.0,), (5.0,)], 
           dtype=[('step1(t)', '<f8')])
 
     >>> a = Symbol('a')
     >>> b = blocks([[1,2],[3,4]], amplitudes=[3,5], g=a+1)
-    >>> d = Design(b)
-    >>> d(tval)
+    >>> b.design(tval)
     array([(0.0,), (4.0,), (0.0,), (6.0,)], 
           dtype=[('step2(t)', '<f8')])
 
@@ -313,6 +307,7 @@ def blocks(intervals, amplitudes=None, g=Symbol('a')):
     v.append(0)
 
     return step_function(t, v)
+
 
 def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1):
     """
