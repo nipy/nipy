@@ -271,23 +271,29 @@ def infer_LR(BF,thq=0.95,ths=0,verbose=0):
     with a probability>thq
     in order to be valid
     OUTPUT:
-    - AF : a list of Amers, each of which describing a cross-subject set of ROIs
-    - newlabel :  a relabelling of the individual ROIs, similar to u, which discards
+    - LR : a LR instance, describing a cross-subject set of ROIs
+    - newlabel :  a relabelling of the individual ROIs, similar to u,
+    which discards
     labels that do not fulfill the condition (c)
     """
     # prepare various variables to ease information manipulation
     nbsubj = np.size(BF)
-    subj = np.concatenate([s*np.ones(BF[s].k, np.int) for s in range(nbsubj) if BF[s]!=None])
+    subj = np.concatenate([s*np.ones(BF[s].k, np.int)
+                           for s in range(nbsubj) if BF[s]!=None])
     nrois = np.size(subj)
-    u = np.concatenate([BF[s].get_roi_feature('label') for s in range(nbsubj)if BF[s]!=None])
+    u = np.concatenate([BF[s].get_roi_feature('label')
+                        for s in range(nbsubj)if BF[s]!=None])
     u = np.squeeze(u)
-    conf =  np.concatenate([BF[s].get_roi_feature('posterior_proba') for s in range(nbsubj) if BF[s]!=None])
-    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj) if BF[s]!=None])
+    conf =  np.concatenate([BF[s].get_roi_feature('prior_proba')
+                            for s in range(nbsubj) if BF[s]!=None])
+    intrasubj = np.concatenate([np.arange(BF[s].k)
+                                for s in range(nbsubj) if BF[s]!=None])
     
     if np.size(u)==0:  return None,None
 
     coords = []
     subjs=[]
+    pps = []
     Mu = int(u.max()+1)
     valid = np.zeros(Mu).astype(np.int)
 
@@ -322,6 +328,7 @@ def infer_LR(BF,thq=0.95,ths=0,verbose=0):
 
             coords.append(coord)
             subjs.append(subj[j])   
+            pps.append(conf[j])
 
     maplabel = -np.ones(Mu).astype(np.int)
     maplabel[valid>0] = np.cumsum(valid[valid>0])-1
@@ -338,6 +345,7 @@ def infer_LR(BF,thq=0.95,ths=0,verbose=0):
     k = np.sum(valid)
     if k>0:
         LR = sbf.landmark_regions(k,header=header,subj=subjs,coord=coords)
+        LR.set_discrete_feature('confidence', pps)
     else:
         LR=None
     return LR,maplabel
@@ -469,7 +477,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
     
     LR,mlabel = sbf.build_LR(BF,ths)
     if LR!=None:
-        crmap = LR.map_label(tal,dmax=2*dmax)
+        crmap = LR.map_label(tal,pval=0.95,dmax=dmax)
     
     return crmap,LR,BF,p
 
@@ -606,7 +614,7 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
     
     LR,mlabel = sbf.build_LR(BF,ths)
     if LR!=None:
-        crmap = LR.map_label(tal,dmax=2*dmax)
+        crmap = LR.map_label(tal,pval = 0.95,dmax=dmax)
 
     return crmap,LR,BF,p
 
@@ -661,7 +669,6 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
             bfm = nroi.discrete_to_roi_features('activation','average')
             bfm = bfm[nroi.isleaf()]#---
 
-            #fixme: masked_index should not be used
             nroi.compute_discrete_position()
             bfc = nroi.discrete_to_roi_features('position','average')
             bfc = bfc[nroi.isleaf()]#---
@@ -722,7 +729,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
                     np.size(q), q.sum())
     
     Fbeta.set_field(p)
-    idx,depth, major,label = Fbeta.custom_watershed(0,g0)
+    idx,depth, major,label = Fbeta.custom_watershed(0,0)#(0,g0)
 
     # append some information to the hroi in each subject
     for s in range(nbsubj):
@@ -733,6 +740,9 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
             lq = np.zeros(bfs.k)
             lq[leaves] = q[sub==s]
             bfs.set_roi_feature('posterior_proba',lq)
+            lq = np.zeros(bfs.k)
+            lq[leaves] = 1-gf0[sub==s]
+            bfs.set_roi_feature('prior_proba',lq)
                    
             idx = bfs.feature_argmax('activation')
             midx = [bfs.discrete_features['masked_index'][k][idx[k]] for k in range(bfs.k)]
