@@ -227,8 +227,13 @@ def twosample_test(data_images, vardata_images, mask_images, labels, stat_id,
     data, vardata, xyz, mask = prepare_arrays(data_images, vardata_images, mask_images)
 
     # Create two-sample permutation test instance
-    ptest = permutation_test_twosample(data[labels==1], data[labels==2], 
-    xyz, vardata1=vardata[labels==1], vardata2=vardata[labels==2], stat_id=stat_id)
+    if vardata_images == None:
+        ptest = permutation_test_twosample(data[labels==1], data[labels==2], 
+        xyz, stat_id=stat_id)
+    else:
+        ptest = permutation_test_twosample(data[labels==1], data[labels==2], 
+        xyz, vardata1=vardata[labels==1], vardata2=vardata[labels==2], stat_id=stat_id)
+    
     # Compute z-map image 
     zmap = np.zeros(data_images[0].get_shape())
     zmap[list(xyz)] = ptest.zscore()
@@ -266,6 +271,28 @@ def affect_inmask(dest, src, xyz):
     else:
         dest[xyz[0,:], xyz[1,:], xyz[2,:]] = src
     return dest
+
+
+def linear_model_fit(data_images, mask_images, design_matrix, vector):
+    """
+    Helper function for group data analysis using arbitrary design matrix
+    """
+    
+    # Prepare arrays
+    data, vardata, xyz, mask = prepare_arrays(data_images, None, mask_images)
+    
+    # Create glm instance
+    G = glm(data, design_matrix)
+    
+    # Compute requested contrast
+    c = G.contrast(vector)
+    
+    # Compute z-map image 
+    zmap = np.zeros(data_images[0].get_shape())
+    zmap[list(xyz)] = c.zscore()
+    zimg = Image(zmap, data_images[0].get_affine())
+    
+    return zimg
 
 
 
@@ -315,10 +342,13 @@ class LinearModel:
 
         vcon = np.zeros(self.data.get_shape()[1:4])
         vcon_img = Image(affect_inmask(vcon, c.variance, self.xyz), self.data.get_affine())
-
+        
+        z = np.zeros(self.data.get_shape()[1:4])
+        z_img = Image(affect_inmask(z, c.zscore(), self.xyz), self.data.get_affine())
+        
         dof = c.dof
         
-        return con_img, vcon_img, dof
+        return con_img, vcon_img, z_img, dof
 
 
 

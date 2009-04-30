@@ -148,7 +148,7 @@ def extract_clusters_from_diam(T,XYZ,th,diam,k=18):
 
 def extract_clusters_from_graph(T, G, th):
     """
-    This returns a label vectorof same size as T,
+    This returns a label vector of same size as T,
     defining connected components for subgraph of
     weighted graph G containing vertices s.t. T >= th
     """
