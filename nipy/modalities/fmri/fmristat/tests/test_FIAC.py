@@ -20,8 +20,8 @@ import numpy.testing as nptest
 import nose.tools
 import sympy
 
-from neuroimaging.modalities.fmri import formula, utils, hrf
-from neuroimaging.modalities.fmri.fmristat import hrf as delay
+from nipy.modalities.fmri import formula, utils, hrf
+from nipy.modalities.fmri.fmristat import hrf as delay
 
 class Protocol(object):
 
@@ -179,6 +179,5 @@ def test_agreement():
             _, cmax = matchcol(p.nipy[i], p.fmristat)
             print cmax
             if not dd.dtype.names[i].startswith('ns'):
-                print 'here'
-#                yield nose.tools.assert_true, np.greater(cmax, 0.999)
-                nose.tools.assert_true(np.greater(cmax, 0.999))
+                yield nose.tools.assert_true, np.greater(cmax, 0.999)
+

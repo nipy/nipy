@@ -14,12 +14,12 @@ import os, fpformat
 
 import numpy as np
 import numpy.linalg as L
-from neuroimaging.fixes.scipy.stats.models.utils import recipr, recipr0
-from neuroimaging.fixes.scipy.stats.models.contrast import Contrast, ContrastResults
+from nipy.fixes.scipy.stats.models.utils import recipr, recipr0
+from nipy.fixes.scipy.stats.models.contrast import Contrast, ContrastResults
 
-from neuroimaging.modalities.fmri import hrf
-from neuroimaging.algorithms.statistics.regression import TOutput 
-from neuroimaging.modalities.fmri.fmristat.invert import invertR
+from nipy.modalities.fmri import hrf
+from nipy.algorithms.statistics.regression import TOutput 
+from nipy.modalities.fmri.fmristat.invert import invertR
 
 class DelayContrast(Contrast):
     """

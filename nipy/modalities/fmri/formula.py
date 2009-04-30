@@ -2,7 +2,6 @@ import sympy
 import warnings
 import numpy as np
 from scipy.linalg import svdvals
-from neuroimaging.fixes.scipy.stats.models import utils
 
 from aliased import aliased_function, _add_aliases_to_namespace, vectorize
 

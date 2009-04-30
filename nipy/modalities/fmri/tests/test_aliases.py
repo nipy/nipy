@@ -11,7 +11,7 @@ import numpy as np
 import scipy.interpolate
 import pylab
 import sympy
-from neuroimaging.modalities.fmri import formula, aliased
+from nipy.modalities.fmri import formula, aliased
 
 def gen_BrownianMotion():
     X = np.arange(0,5,0.01)

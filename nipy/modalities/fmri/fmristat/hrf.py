@@ -17,8 +17,8 @@ import numpy.linalg as L
 from scipy.interpolate import interp1d
 
 from sympy import Function
-from neuroimaging.modalities.fmri import hrf, formula
-from neuroimaging.modalities.fmri.fmristat.invert import invertR
+from nipy.modalities.fmri import hrf, formula
+from nipy.modalities.fmri.fmristat.invert import invertR
 
 def spectral_decomposition(hrf2decompose, ncomp=2, tmax=50, tmin=-15, dt=0.02,
                            delta=np.arange(-4.5, 4.6, 0.1)):

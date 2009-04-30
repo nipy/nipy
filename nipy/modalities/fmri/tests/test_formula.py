@@ -11,8 +11,8 @@ import numpy.testing as nptest
 import nose.tools
 import sympy
 
-from neuroimaging.modalities.fmri import formula as F
-from neuroimaging.modalities.fmri import aliased
+from nipy.modalities.fmri import formula as F
+from nipy.modalities.fmri import aliased
 
 def test_contrast1():
 
