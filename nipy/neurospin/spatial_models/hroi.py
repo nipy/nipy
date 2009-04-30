@@ -135,16 +135,19 @@ class NROI(MultipleROI,Forest):
         """
         remove the rois for which valid==0
         and update the hierarchy accordingly
-        In case sum(valid)==0, None is returned
+        In case sum(valid)==0, 0 is returned
         """
         if np.sum(valid)==0:
             return None
+        # fixme :this is not coherent !
         # first clean as a forest
         sf = self.subforest(valid)
         Forest.__init__(self,sf.V,sf.parents)
 
         # then clean as a multiple ROI
         MultipleROI.clean(self, valid)
+        return self.V
+        
         
     def make_graph(self):
         """
@@ -589,6 +592,7 @@ class ROI_Hierarchy:
 
                 self.seed = self.seed[:self.k]
                 self.parents = self.parents[:self.k]
+                self.V = self.k
 
                 self.ROI_features = [f[iconvert] for f in self.ROI_features]
                 self.ROI_features = [f[:self.k] for f in self.ROI_features]
