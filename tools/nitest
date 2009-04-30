@@ -3,6 +3,6 @@
 """Nipy Test Suite Runner.
 """
 
-from neuroimaging.testing import nitest
+from nipy.testing import nitest
 
 nitest.main()

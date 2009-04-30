@@ -9,8 +9,13 @@
 Submit reviewed code
 --------------------
 
-The administrator (at the moment, this is Chris Burns), will merge
-changes into the trunk, from development branches::
+The administrator (at the moment, this is Chris Burns), will merge changes into
+the trunk, from development branches.  The diagram shows the *administrator*
+workflow:
+
+.. image:: images/core_dev_bzr.png
+
+The process looks something like this on the command line::
 
  cd trunk-lp
  bzr pull lp:nipy
@@ -54,7 +59,7 @@ Matthew Brett performed this merge on his machine.
     # Build and test.  # FIXME: Need a good system for doing this
     #python setup.py build
     #python setup.py install
-    #python -c "import neuroimaging as ni; ni.test()"
+    #python -c "import nipy as ni; ni.test()"
 
     # Merge Fernando branch
     bzr log -r last:

@@ -6,7 +6,7 @@ You can load images in NIPY
 
 .. testcode::
 
-   from neuroimaging.core.api import load_image
+   from nipy.core.api import load_image
    print 'Hello'
 
    def f(x):

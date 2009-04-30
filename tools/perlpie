@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Utility script for performing global search and replace with `perl -p ie`
+"""
+
+from nipy.utils import perlpie
+
+perlpie.main()
