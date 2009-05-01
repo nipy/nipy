@@ -12,9 +12,13 @@ block = [(0,1),(0,2)] # Dictionaries with all the (subj, run) block designs
 root = "/home/jtaylo/FIACmiller"
 
 t = formula.make_recarray(np.arange(191)*2.5+1.25, 't')
-for subj, run in event:
+for subj, run in block + event:
+    if (subj, run) in event:
+        design = 'evt'
+    else:
+        design = 'bloc'
     contrasts = {}
-    p = Protocol(file("%(root)s/fiac%(subj)d/subj%(subj)d_evt_fonc%(run)d.txt" % {'root':root, 'subj':subj, 'run':run}), 'event', *delay.spectral)
+    p = Protocol(file("%(root)s/fiac%(subj)d/subj%(subj)d_%(design)s_fonc%(run)d.txt" % {'root':root, 'subj':subj, 'run':run, 'design':design}), 'event', *delay.spectral)
 
     contrasts['average'] = (p.termdict['SSt_SSp0'] + p.termdict['SSt_DSp0'] +
                             p.termdict['DSt_SSp0'] + p.termdict['DSt_DSp0']) / 4.
