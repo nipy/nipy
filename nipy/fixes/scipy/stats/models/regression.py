@@ -283,7 +283,7 @@ class ARModel(OLSModel):
         return _X
     
 
-def yule_walker(self, X, order=1, method="unbiased", df=None, inv=False):
+def yule_walker(X, order=1, method="unbiased", df=None, inv=False):
     """
     Estimate AR(p) parameters from a sequence X using Yule-Walker equation.
 
@@ -311,7 +311,7 @@ def yule_walker(self, X, order=1, method="unbiased", df=None, inv=False):
         raise ValueError, "ACF estimation method must be 'unbiased' \
         or 'MLE'"
     X = np.asarray(X, np.float64)
-    X -= X.mean()
+    X -= X.mean(0)
     n = df or X.shape[0]
 
     if method == "unbiased":

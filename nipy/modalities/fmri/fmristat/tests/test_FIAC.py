@@ -137,6 +137,7 @@ for p in [block, event]:
                             p.termdict['SSt_DSp0'] - p.termdict['SSt_SSp0']) * 0.5
     contrasts['interaction'] = (p.termdict['SSt_SSp0'] - p.termdict['SSt_DSp0'] -
                                 p.termdict['DSt_SSp0'] + p.termdict['DSt_DSp0'])
+
     X[p.design_type], c[p.design_type] = p.design(t, contrasts=contrasts)
     D[p.design_type] = p.design(t, return_float=False)
     f = np.array([float(x) for x in designs[p.design_type].strip().split('\t')])
