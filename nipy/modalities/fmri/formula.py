@@ -388,8 +388,7 @@ class Formula(object):
              by evaluating its design at the same parameters as self.design.
 
         """
-        if not hasattr(self, 'dtypes'):
-            self._setup_design()
+        self._setup_design()
 
         preterm_recarray = term
         param_recarray = param
@@ -450,6 +449,8 @@ class Formula(object):
 
         cmatrices = {}
         for key, cf in contrasts.items():
+            if not isinstance(cf, Formula):
+                cf = Formula([cf])
             L = cf.design(term, param=param_recarray, 
                           return_float=True)
             cmatrices[key] = contrast_from_cols_or_rows(L, D, pseudo=pinvD)
@@ -493,8 +494,6 @@ def natural_spline(t, knots=[], order=3, intercept=False):
          made up of the natural spline functions.
 
     """
-    if not isinstance(t, Term):
-        raise ValueError('expecting a Term')
     fns = []
     for i in range(order+1):
         n = 'ns_%d' % i
@@ -509,8 +508,6 @@ def natural_spline(t, knots=[], order=3, intercept=False):
             return (x-k)**order * np.greater(x, k)
         s = aliased_function(n, f)
         fns.append(s(t))
-
-    print [f.alias(3) for f in fns]
 
     if not intercept:
         fns.pop(0)

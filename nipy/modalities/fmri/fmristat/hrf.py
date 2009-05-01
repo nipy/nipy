@@ -83,7 +83,7 @@ def spectral_decomposition(hrf2decompose, ncomp=2, tmax=50, tmin=-15, dt=0.02,
 
     symbasis = []
     for i, b in enumerate(basis):
-        symbasis.append(formula.aliased_function('%s%d' % (str(hrf), i), b))
+        symbasis.append(formula.aliased_function('%s%d' % (str(hrf2decompose), i), b))
     return symbasis, approx
 
 
