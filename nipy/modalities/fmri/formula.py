@@ -517,6 +517,19 @@ def natural_spline(t, knots=[], order=3, intercept=False):
 
 I = Formula([sympy.Number(1)])
 
+# def factor(name, levels):
+#     """
+#     Experimenting with a different way of writing Factors...
+#     """
+#     t = Term(name)
+#     fs = []
+#     for l in levels:
+#         def f(x, l=l):
+#             return np.array([xx == l for xx in x])
+#         fs.append(aliased_function('ind_%s' % (str(l)), f)(t))
+#     return Formula(fs)
+
+
 class Factor(Formula):
 
     def __init__(self, name, levels, char='b'):

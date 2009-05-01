@@ -4,7 +4,7 @@ from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
 from nipy.modalities.fmri.fmristat import hrf as delay
 from nipy.modalities.fmri import formula 
 from nipy.io.files import load
-from test_FIAC import Protocol
+from test_FIAC import protocol
 
 event = [(0,3),(0,4)] # Dictionaries with all the (subj, run) event designs 
 block = [(0,1),(0,2)] # Dictionaries with all the (subj, run) block designs 
@@ -12,27 +12,18 @@ block = [(0,1),(0,2)] # Dictionaries with all the (subj, run) block designs
 root = "/home/jtaylo/FIACmiller"
 
 t = formula.make_recarray(np.arange(191)*2.5+1.25, 't')
-for subj, run in block + event:
-    if (subj, run) in event:
+for subj, r in block + event:
+    if (subj, r) in event:
         design = 'evt'
     else:
         design = 'bloc'
-    contrasts = {}
-    p = Protocol(file("%(root)s/fiac%(subj)d/subj%(subj)d_%(design)s_fonc%(run)d.txt" % {'root':root, 'subj':subj, 'run':run, 'design':design}), 'event', *delay.spectral)
-
-    contrasts['average'] = (p.termdict['SSt_SSp0'] + p.termdict['SSt_DSp0'] +
-                            p.termdict['DSt_SSp0'] + p.termdict['DSt_DSp0']) / 4.
-    contrasts['speaker'] = (p.termdict['SSt_DSp0'] - p.termdict['SSt_SSp0'] +
-                            p.termdict['DSt_DSp0'] - p.termdict['DSt_SSp0']) * 0.5
-    contrasts['sentence'] = (p.termdict['DSt_DSp0'] + p.termdict['DSt_SSp0'] -
-                            p.termdict['SSt_DSp0'] - p.termdict['SSt_SSp0']) * 0.5
-    contrasts['interaction'] = (p.termdict['SSt_SSp0'] - p.termdict['SSt_DSp0'] -
-                                p.termdict['DSt_SSp0'] + p.termdict['DSt_DSp0'])
-    X, c = p.design(t, contrasts=contrasts)
+    p, tcons, fcons = protocol(file("%(root)s/fiac%(subj)d/subj%(subj)d_%(design)s_fonc%(run)d.txt" % {'root':root, 'subj':subj, 'run':r, 'design':design}), 'event', *delay.spectral)
+    X, tcons = p.design(t, contrasts=tcons)
+    X, fcons = p.design(t, contrasts=fcons)
 
     m = OLSModel(X)
-    f = np.array(load("%(root)s/fiac%(subj)d/fonc%(run)d/fsl/filtered_func_data.img" % {'root':root, 'subj':subj, 'run':run}))
-
+    f = np.array(load("%(root)s/fiac%(subj)d/fonc%(run)d/fsl/filtered_func_data.img" % {'root':root, 'subj':subj, 'run':r}))
+    mm = np.array(load("%(root)s/fiac%(subj)d/fonc%(run)d/fsl/mask.img" % {'root':root, 'subj':subj, 'run':r}))
     ar = np.zeros(f.shape[1:])
 
     for s in range(f.shape[1]):
@@ -50,25 +41,31 @@ for subj, run in block + event:
     # ar = smooth(ar, 8.0)
     
     output = {}
-    for n in c.keys():
+    for n in tcons.keys():
         output[n] = {}
         output[n]['sd'] = np.zeros(f.shape[1:])
         output[n]['t'] = np.zeros(f.shape[1:])
         output[n]['effect'] = np.zeros(f.shape[1:])
 
+    for n in fcons.keys():
+        output[n] = np.zeros(f.shape[1:])
+
     arvals = np.unique(ar)
     for val in arvals:
         mask = np.equal(ar, val)
+        mask *= mm
         m = ARModel(X, val)
         d = f[:,mask]
         results = m.fit(d)
         print val, mask.sum()
 
-        for n in c.keys():
+        for n in tcons.keys():
             o = output[n]
-            resT = results.Tcontrast(c[n])
+            resT = results.Tcontrast(tcons[n])
             output[n]['sd'][mask] = resT.sd
             output[n]['t'][mask] = resT.t
             output[n]['effect'][mask] = resT.effect
         # Where should we save these? 
 
+        for n in fcons.keys():
+            output[n] = results.Fcontrast(fcons[n])
