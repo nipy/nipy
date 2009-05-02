@@ -766,7 +766,22 @@ def define(name, expr):
     --------
 
     nexpr: sympy expression
-    
+
+    >>> t = Term('t')
+    >>> expr = t**2 + 3*t
+    >>> print expr
+    3*t + t**2
+    >>> newexpr = define('f', expr)
+    >>> print newexpr
+    f(t)
+    >>> import aliased
+    >>> f = aliased.lambdify(t, newexpr)
+    >>> f(4)
+    28
+    >>> 3*4+4**2
+    28
+    >>> 
+
     """
     v = vectorize(expr)
     return aliased_function(name, v)(Term('t'))
