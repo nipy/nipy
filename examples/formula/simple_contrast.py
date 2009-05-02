@@ -1,41 +1,24 @@
 import numpy as np
+import nipy.testing as niptest
 import sympy
-from neuroimaging.modalities.fmri import formula, utils, hrf
+from nipy.modalities.fmri import formula, utils, hrf
+from nipy.modalities.fmri.fmristat import hrf as delay
 
-c1 = utils.events([3,7,10], f=hrf.glover_sympy) # Symbolic function of time
-c2 = utils.events([1,3,9], f=hrf.glover_sympy) # Symbolic function of time
+c1 = utils.events([3,7,10], f=hrf.glover) # Symbolic function of time
+c2 = utils.events([1,3,9], f=hrf.glover) # Symbolic function of time
+c3 = utils.events([3,4,6], f=delay.spectral[0])
 d = utils.fourier_basis([3,5,7]) # Formula
 
-f = formula.Formula([c1,c2]) + d
-
-# cleaner way
-h = sympy.Function('hrf')
-h2 =sympy.Function('hrf2')
-h3 =sympy.Function('hrf3')
-c1 = utils.events([3,7,10], f=h)
-e1 = utils.events([3,7,10], f=h2)
-c2 = utils.events([1,3,9], f=h)
-e2 = utils.events([3,7,10], f=h2)
-c3 = utils.events([2,4,8], f=h)
-d = utils.fourier_basis([3,5,7]) # Formula
-
-f = formula.Formula([c1,e1,c2,e2,c3]) + d
-f.aliases['hrf'] = hrf.glover
-f.aliases['hrf2'] = hrf.dglover
-
+f = formula.Formula([c1,c2,c3]) + d
 contrast = formula.Formula([c1-c2, c1-c3])
-contrast.aliases['hrf'] = hrf.glover
 
+t = formula.make_recarray(np.linspace(0,20,50), 't')
 
-tval = np.linspace(0,20,50).view(np.dtype([('t', np.float)]))
+X, c = f.design(t, return_float=True, contrasts={'C':contrast})
+preC = contrast.design(t, return_float=True)
 
-d = formula.Design(f, return_float=True)
-X = d(tval)
+C = np.dot(np.linalg.pinv(X), preC).T
+niptest.assert_almost_equal(C, c['C'])
 
-
-d2 = formula.Design(contrast, return_float=True)
-preC = d2(tval)
-
-C = np.dot(np.linalg.pinv(X), preC)
 print C
 
