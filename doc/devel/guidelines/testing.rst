@@ -18,7 +18,7 @@ Test files
 The numpy testing framework and nipy extensions are imported with one
 line in your test module::
 
-     from neuroimaging.testing import *
+     from nipy.testing import *
 
 This imports all the ``assert_*`` functions you need like
 ``assert_equal``, ``assert_raises``, ``assert_array_almost_equal``
@@ -47,25 +47,33 @@ use either of these two methods:
    is freed when the file is closed.  This is the preferred method for
    temporary files in tests.
 
-#. `tempfile.NamedTemporaryFile <http://docs.python.org/library/tempfile.html>`_
+#. `tempfile.mkstemp <http://docs.python.org/library/tempfile.html>`_
 
-   This will create a temporary file which is deleted when the file is
-   closed.  There are parameters for specifying the filename *prefix*
-   and *suffix*.
+   This will create a temporary file which can be used during testing.
+   There are parameters for specifying the filename *prefix* and
+   *suffix*.
 
    .. Note::
-
-       *NamedTemporaryFile* has limited functionality on MS Windows.
-        Files opened with NamedTemporaryFile cannot be re-opened as
-        they can on Unix-based platforms.  If this becomes a problem,
-        we should consider using ``tempfile.mkstemp`` instead.  The
-        downside being the developer has to remove the file
-        explicitly.
+      
+        The tempfile module includes a convenience function
+        *NamedTemporaryFile* which deletes the file automatically when
+        it is closed.  However, whether the files can be opened a
+        second time varies across platforms and there are problems
+        using this function *Windows*.
 
 Both of the above libraries are preferred over creating a file in the
 test directory and then removing them with a call to ``os.remove``.
 For various reasons, sometimes ``os.remove`` doesn't get called and
 temp files get left around.
+
+mkstemp example::
+
+  from tempfile import mkstemp
+  fd, name = mkstemp(suffix='.nii.gz')
+  tmpfile = open(name)
+  save_image(fake_image, tmpfile.name)
+  tmpfile.close()
+  os.unlink(name)  # This deletes the temp file
 
 
 Many tests in one test function
@@ -90,6 +98,25 @@ This test function executes four independent tests::
         yield assert_raises, ValueError, cs.index, 'x'
 
 
+Suppress *warnings* on test output
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In order to reduce noise when running the tests, consider suppressing
+*warnings* in your test modules.  This can be done in the module-level
+setup and teardown functions::
+
+      import warnings
+      ...
+
+      def setup():
+      	  # Suppress warnings during tests to reduce noise
+          warnings.simplefilter("ignore")
+
+      def teardown():
+          # Clear list of warning filters
+          warnings.resetwarnings()
+
+
 Running tests
 -------------
 
@@ -106,7 +133,7 @@ your home directory::
 
 Tests can be run on the package::
 
-    import neuroimaging as ni
+    import nipy as ni
     ni.test()
 
 
