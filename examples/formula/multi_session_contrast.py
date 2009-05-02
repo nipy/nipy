@@ -1,6 +1,6 @@
 import numpy as np
 import sympy
-from neuroimaging.modalities.fmri import formula, utils, hrf
+from nipy.modalities.fmri import formula, utils, hrf
 
 # hrf 
 
@@ -18,7 +18,7 @@ d1 = utils.fourier_basis([0.3,0.5,0.7]); d1 = d1.subs(t, t1)
 tval1 = np.linspace(0,20,101)
 
 f1 = formula.Formula([c11,c21,c31]) + d1
-f1.aliases['hrf1'] = hrf.glover
+f1 = f1.subs('hrf1', hrf.glover)
 
 # Session 2
 
@@ -30,7 +30,7 @@ d2 = utils.fourier_basis([0.3,0.5,0.7]); d2 = d2.subs(t, t2)
 tval2 = np.linspace(0,10,51)
 
 f2 = formula.Formula([c12,c22,c32]) + d2
-f2.aliases['hrf2'] = hrf.dglover
+f2 = f2.subs('hrf2', hrf.dglover)
 
 sess_factor = formula.Factor('sess', [1,2])
 
@@ -45,9 +45,8 @@ ttval1 = np.hstack([tval1, np.zeros(tval2.shape)])
 ttval2 = np.hstack([np.zeros(tval1.shape), tval2])
 session = np.array([1]*tval1.shape[0] + [2]*tval2.shape[0])
 
-f.aliases['hrf1'] = hrf.glover
-f.aliases['hrf2'] = hrf.dglover
-d = formula.Design(f)
+f.subs('hrf1', hrf.glover)
+f.subs('hrf2', hrf.dglover)
 
 # Create the recarray that will be used to create the design matrix
 
@@ -62,16 +61,16 @@ rec = np.array([(t1,t2, s) for t1, t2, s in zip(ttval1, ttval2, session)],
 # the contrast from the Formula, "f" above,
 # applying all of f's aliases to it....
 
-contrast = formula.Formula([c11-c12])
-contrast.aliases['hrf1'] = hrf.glover
-contrast.aliases['hrf2'] = hrf.dglover
+# contrast = formula.Formula([c11-c12])
+# contrast.aliases['hrf1'] = hrf.glover
+# contrast.aliases['hrf2'] = hrf.dglover
 
-# Create the design matrix
+# # Create the design matrix
 
-X = d(rec, return_float=True)
+# X = d(rec, return_float=True)
 
-d2 = formula.Design(contrast, return_float=True)
-preC = d2(rec)
+# d2 = formula.Design(contrast, return_float=True)
+# preC = d2(rec)
 
-C = np.dot(np.linalg.pinv(X), preC)
-print C
+# C = np.dot(np.linalg.pinv(X), preC)
+# print C

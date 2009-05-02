@@ -234,8 +234,7 @@ class Formula(object):
         _b0*g(t) + _b1*g(s)
 
         """
-        f = Formula([term.subs(old, new) for term in self.terms])
-        return f
+        return Formula([term.subs(old, new) for term in self.terms])
 
     def _getcoefs(self):
         if not hasattr(self, '_coefs'):
@@ -749,3 +748,26 @@ class RandomEffects(Formula):
         """
         D = self.design(term, param=param, return_float=True)
         return np.dot(D, np.dot(self.sigma, D.T))
+
+def define(name, expr):
+    """
+    Take an expression of 't' (possibly complicated)
+    and make it a '%s(t)' % name, such that
+    when it evaluates it has the right values.
+
+    Parameters:
+    -----------
+
+    expr : sympy expression, with only 't' as a Symbol
+
+    name : str
+
+    Outputs:
+    --------
+
+    nexpr: sympy expression
+    
+    """
+    v = vectorize(expr)
+    return aliased_function(name, v)(Term('t'))
+

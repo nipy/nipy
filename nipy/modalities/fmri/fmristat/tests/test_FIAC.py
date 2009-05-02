@@ -81,11 +81,8 @@ def protocol(fh, design_type, *hrfs):
 
         _begin = np.array(times)[~keep]
 
-        s = formula.vectorize(utils.events(_begin, f=hrf.glover))
-        begin = formula.aliased_function('begin', s)
-
         termdict = {}        
-        termdict['begin'] = begin(hrf.t)
+        termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
         drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
         for i, t in enumerate(drift.terms):
             termdict['drift%d' % i] = t
@@ -101,8 +98,8 @@ def protocol(fh, design_type, *hrfs):
             for l, h in enumerate(hrfs):
                 k = np.array([events[i] == v for i in 
                               range(times.shape[0])])
-                s = formula.vectorize(utils.events(times[k], f=h))
-                termdict['%s%d' % (v,l)] = formula.aliased_function("%s%d" % (v, l), s)(hrf.t)
+                termdict['%s%d' % (v,l)] = formula.define("%s%d" % (v, l), 
+							  utils.events(times[k], f=h))
 
         f = formula.Formula(termdict.values())
 
@@ -171,11 +168,8 @@ def altprotocol(fh, design_type, *hrfs):
         _begin = d.event[~keep]
 	d = d[keep]
 
-        s = formula.vectorize(utils.events(_begin, f=hrf.glover))
-        begin = formula.aliased_function('begin', s)
-
         termdict = {}        
-        termdict['begin'] = begin(hrf.t)
+        termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
         drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
         for i, t in enumerate(drift.terms):
             termdict['drift%d' % i] = t
@@ -198,8 +192,7 @@ def altprotocol(fh, design_type, *hrfs):
             for l, h in enumerate(hrfs):
                 signs = indic[key].design(d, return_float=True)
 		symb = utils.events(d.event, amplitudes=signs, f=h)
-		vec = formula.vectorize(symb)
-		termdict['%s%d' % (key, l)] = formula.aliased_function('%s%d' % (key, l), vec)(hrf.t)
+		termdict['%s%d' % (key, l)] = formula.define('%s%d' % (key, l), symb)
 
         f = formula.Formula(termdict.values())
 

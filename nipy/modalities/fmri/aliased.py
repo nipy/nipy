@@ -31,6 +31,7 @@ class lambdify(object):
     def __call__(self, _t):
         return self._f(_t)
 
+
 class vectorize(lambdify):
     """
     This class can be used to take a (single-valued) sympy

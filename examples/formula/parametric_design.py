@@ -15,32 +15,11 @@ from nipy.modalities.fmri import utils, formula, hrf
 dt = np.random.uniform(low=0, high=2.5, size=(50,))
 t = np.cumsum(dt)
 
-def alias(expr, name):
-    """
-    Take an expression of 't' (possibly complicated)
-    and make it a '%s(t)' % name, such that
-    when it evaluates it has the right values.
-
-    Parameters:
-    -----------
-
-    expr : sympy expression, with only 't' as a Symbol
-
-    name : str
-
-    Outputs:
-    --------
-
-    nexpr: sympy expression
-    
-    """
-    v = formula.vectorize(expr)
-    return formula.aliased_function(name, v)(formula.Term('t'))
 
 a = sympy.Symbol('a')
-linear = alias(utils.events(t, dt, f=hrf.glover), 'linear')
-quadratic = alias(utils.events(t, dt, f=hrf.glover, g=a**2), 'quad')
-cubic = alias(utils.events(t, dt, f=hrf.glover, g=a**3), 'cubic')
+linear = formula.define('linear', utils.events(t, dt, f=hrf.glover))
+quadratic = formula.define('quad', utils.events(t, dt, f=hrf.glover, g=a**2))
+cubic = formula.define('cubic', utils.events(t, dt, f=hrf.glover, g=a**3))
 
 f1 = formula.Formula([linear, quadratic, cubic])
 
