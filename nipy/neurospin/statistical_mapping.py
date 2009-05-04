@@ -5,7 +5,7 @@ from nipy.neurospin.graph.field import Field
 from nipy.neurospin.register.transform import apply_affine
 from nipy.neurospin.utils import emp_null
 from nipy.neurospin.glm import glm
-from nipy.neurospin.group.permutation_test import permutation_test_onesample
+from nipy.neurospin.group.permutation_test import permutation_test_onesample, permutation_test_twosample
 # FIXME: rename permutation_test_onesample class so that name starts with upper case
 ### FIXME LATER
 from nipy.neurospin import Image
@@ -209,9 +209,57 @@ def onesample_test(data_images, vardata_images, mask_images, stat_id,
         nulls['s'] = cluster_res[0]['perm_size_values']
         nulls['smax'] = cluster_res[0]['perm_maxsize_values']
         
-        # Return z-map image, list of cluster dictionaries and info dictionary 
+        # Return z-map image, mask image and dictionary of null distribution for cluster sizes (s),
+        # max cluster size (smax) and max z-score (zmax)
         return zimg, maskimg, nulls
 
+
+
+def twosample_test(data_images, vardata_images, mask_images, labels, stat_id, 
+                   permutations=0, cluster_forming_th=0.01):
+    """
+    Helper function for permutation-based mass univariate twosample group analysis. 
+    Labels is a binary vector (1-2). Regions more active for group 1 than group 2 are
+    inferred.
+    """
+
+    # Prepare arrays
+    data, vardata, xyz, mask = prepare_arrays(data_images, vardata_images, mask_images)
+
+    # Create two-sample permutation test instance
+    if vardata_images == None:
+        ptest = permutation_test_twosample(data[labels==1], data[labels==2], 
+        xyz, stat_id=stat_id)
+    else:
+        ptest = permutation_test_twosample(data[labels==1], data[labels==2], 
+        xyz, vardata1=vardata[labels==1], vardata2=vardata[labels==2], stat_id=stat_id)
+    
+    # Compute z-map image 
+    zmap = np.zeros(data_images[0].get_shape())
+    zmap[list(xyz)] = ptest.zscore()
+    zimg = Image(zmap, data_images[0].get_affine())
+
+    # Compute mask image
+    maskimg = Image(mask, data_images[0].get_affine())
+    
+    # Multiple comparisons
+    if permutations <= 0: 
+        return zimg, maskimg
+    else: 
+        # Cluster definition: (threshold, diameter)
+        cluster_def = (ptest.height_threshold(cluster_forming_th), None)
+  
+        # Calibration 
+        voxel_res, cluster_res, region_res = \
+            ptest.calibrate(nperms=permutations, clusters=[cluster_def])
+        nulls = {}
+        nulls['zmax'] = ptest.zscore(voxel_res['perm_maxT_values'])
+        nulls['s'] = cluster_res[0]['perm_size_values']
+        nulls['smax'] = cluster_res[0]['perm_maxsize_values']
+        
+        # Return z-map image, mask image and dictionary of null distribution for cluster sizes (s),
+        # max cluster size (smax) and max z-score (zmax)
+        return zimg, maskimg, nulls
 
 ################################################################################
 # Linear model
@@ -223,6 +271,28 @@ def affect_inmask(dest, src, xyz):
     else:
         dest[xyz[0,:], xyz[1,:], xyz[2,:]] = src
     return dest
+
+
+def linear_model_fit(data_images, mask_images, design_matrix, vector):
+    """
+    Helper function for group data analysis using arbitrary design matrix
+    """
+    
+    # Prepare arrays
+    data, vardata, xyz, mask = prepare_arrays(data_images, None, mask_images)
+    
+    # Create glm instance
+    G = glm(data, design_matrix)
+    
+    # Compute requested contrast
+    c = G.contrast(vector)
+    
+    # Compute z-map image 
+    zmap = np.zeros(data_images[0].get_shape())
+    zmap[list(xyz)] = c.zscore()
+    zimg = Image(zmap, data_images[0].get_affine())
+    
+    return zimg
 
 
 
@@ -272,10 +342,13 @@ class LinearModel:
 
         vcon = np.zeros(self.data.get_shape()[1:4])
         vcon_img = Image(affect_inmask(vcon, c.variance, self.xyz), self.data.get_affine())
-
+        
+        z = np.zeros(self.data.get_shape()[1:4])
+        z_img = Image(affect_inmask(z, c.zscore(), self.xyz), self.data.get_affine())
+        
         dof = c.dof
         
-        return con_img, vcon_img, dof
+        return con_img, vcon_img, z_img, dof
 
 
 

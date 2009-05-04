@@ -8,7 +8,7 @@ __doc__ = nipy.neurospin.__doc__
 
 import sys, os 
 
-ni = 'neuroimaging'
+ni = 'nipy'
 ns = 'neurospin'
 fff2 = __import__('fff2')
 sys.modules['fff2'] = fff2
@@ -18,7 +18,7 @@ subpackages = os.listdir(os.path.join(pydir, ni, ns))
 
 for sub in subpackages: 
     if os.path.isdir(os.path.join(pydir, ni, ns, sub)):
-        submodule = __import__('neuroimaging.neurospin.'+sub, 
+        submodule = __import__('nipy.neurospin.'+sub, 
                                fromlist=['neurospin.'+sub])
         sys.modules['fff2.'+sub] = submodule
         fff2.__setattr__(sub, submodule)

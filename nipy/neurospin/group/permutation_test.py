@@ -12,7 +12,7 @@ from _twosample import stat as ts_stat, stat_mfx as ts_stat_mfx
 
 
 # Default parameters
-DEF_NDRAWS = int(1e6)
+DEF_NDRAWS = int(1e5)
 DEF_NPERMS = int(1e4)
 DEF_NITER = 5
 DEF_STAT_ONESAMPLE = 'student'
@@ -148,7 +148,7 @@ def extract_clusters_from_diam(T,XYZ,th,diam,k=18):
 
 def extract_clusters_from_graph(T, G, th):
     """
-    This returns a label vectorof same size as T,
+    This returns a label vector of same size as T,
     defining connected components for subgraph of
     weighted graph G containing vertices s.t. T >= th
     """
@@ -281,7 +281,7 @@ class permutation_test:
     """
     This generic permutation test class contains the calibration method
     which is common to the derived classes permutation_test_onesample and 
-    permutation_test_twosample
+    permutation_test_twosample (as well as other common methods)
     """
     #=======================================================
     # Permutation test calibration of summary statistics
@@ -724,7 +724,7 @@ class permutation_test_twosample(permutation_test):
         # Create data fields
         n1,p = data1.shape[axis], data1.shape[1-axis]
         n2 = data2.shape[axis]
-        self.data1 = data2
+        self.data1 = data1
         self.data2 = data2
         self.stat_id = stat_id
         self.XYZ = XYZ
