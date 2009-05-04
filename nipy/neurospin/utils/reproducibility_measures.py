@@ -1,7 +1,9 @@
 """
-This script just create a list of subject matching a certain criterion,
-fetches and read their activation images for a certain contrast.
-Then the dataset is subject to jacknife subampling ('splitting'),
+These are several functions for computing reproducibility measures.
+A use script should be appended soon on the repository.
+
+In general thuis proceeds as follows:
+The dataset is subject to jacknife subampling ('splitting'),
 each subsample being analysed independently.
 A reproducibility measure is then derived;
 
@@ -14,7 +16,6 @@ Bertrand Thirion, 2009.
 import nifti
 import numpy as np
 import os.path as op
-from read_profil import read_profil
 import nipy.neurospin.graph as fg
 
 
