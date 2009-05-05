@@ -93,6 +93,14 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
     # FDR-corrected p-values
     fdr_pvalue = emp_null.FDR(zmap).all_fdr()[above_th]
 
+    # Default "nulls"
+    if not nulls.has_key('zmax'):
+        nulls['zmax'] = 'bonferroni'
+    if not nulls.has_key('smax'):
+        nulls['smax'] = None
+    if not nulls.has_key('s'):
+        nulls['s'] = None
+
     # Report significance levels in each cluster 
     for c in clusters:
         maxima = c['maxima']
@@ -103,14 +111,6 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
         c['zscore'] = zscore
         c['pvalue'] = pval
         c['fdr_pvalue'] = fdr_pvalue[maxima]
-
-        # Default "nulls"
-        if not nulls.has_key('zmax'):
-            nulls['zmax'] = 'bonferroni'
-        if not nulls.has_key('smax'):
-            nulls['smax'] = None
-        if not nulls.has_key('s'):
-            nulls['s'] = None
 
         # Voxel-level corrected p-values
         p = None

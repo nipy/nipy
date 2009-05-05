@@ -32,4 +32,6 @@ data_images, vardata_images, mask_images = remake_images()
 
 zimg, mask, nulls = sm.onesample_test(data_images, None, mask_images, 'wilcoxon', 
                                       permutations=1024, cluster_forming_th=0.01)
-clusters, info = sm.cluster_stats(zimg, mask, 0.01, nulls)
+clusters, info = sm.cluster_stats(zimg, mask, 0.01, nulls=nulls)
+
+
