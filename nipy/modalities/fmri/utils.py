@@ -30,10 +30,10 @@ from sympy import sin as sympy_sin
 from sympy import cos as sympy_cos
 from sympy import pi as sympy_pi
 
-from formula import Formula, Term, Factor, make_recarray, define, I # OK, I might as well import formula
+import formula
 from aliased import aliased_function, lambdify as alambdify, vectorize
 
-t = Term('t')
+t = formula.Term('t')
 
 def fourier_basis(freq):
     """
@@ -67,7 +67,7 @@ def fourier_basis(freq):
     for f in freq:
         r += [sympy_cos((2*sympy_pi*f*t)),
               sympy_sin((2*sympy_pi*f*t))]
-    return Formula(r)
+    return formula.Formula(r)
 
 def linear_interp(times, values, fill=0, name=None, **kw):
     """
@@ -423,7 +423,7 @@ def make_design(event_spec, t, order=2, hrfs=[DiracDelta]):
         raise ValueError('expecting a field called "time"')
 
     fields.pop(fields.index('time'))
-    e_factors = [Factor(n, np.unique(event_spec[n])) for n in fields]
+    e_factors = [formula.Factor(n, np.unique(event_spec[n])) for n in fields]
     
     e_formula = np.product(e_factors)
 
@@ -434,7 +434,7 @@ def make_design(event_spec, t, order=2, hrfs=[DiracDelta]):
             fs = [c[1].main_effect for c in comb]
             e_contrasts[sjoin(names, ':')] = np.product(fs).design(event_spec)
 
-    e_contrasts['constant'] = I.design(event_spec)
+    e_contrasts['constant'] = formula.I.design(event_spec)
 
     # Design and contrasts in event space
     # TODO: make it so I don't have to call design twice here
@@ -448,13 +448,13 @@ def make_design(event_spec, t, order=2, hrfs=[DiracDelta]):
     t_terms = []
     t_contrasts = {}
     for l, h in enumerate(hrfs):
-        t_terms += [define("f_%d_%d" % (i, l), events(event_spec['time'], \
-                  amplitudes=e_X[n], f=h)) for i, n in enumerate(e_dtype.names)]
+        t_terms += [events(event_spec['time'], \
+            amplitudes=e_X[n], f=h) for i, n in enumerate(e_dtype.names)]
         for n, c in e_contrasts.items():
-            t_contrasts["%s_%d" % (n, l)] = Formula([define("f_con_%d_%d" % (i, l), \
-                 events(event_spec['time'], amplitudes=c[nn], f=h)) for i, nn in enumerate(c.dtype.names)])
-    t_formula = Formula(t_terms)
+            t_contrasts["%s_%d" % (n, l)] = formula.Formula([ \
+                 events(event_spec['time'], amplitudes=c[nn], f=h) for i, nn in enumerate(c.dtype.names)])
+    t_formula = formula.Formula(t_terms)
     
-    tval = make_recarray(t, ['t'])
+    tval = formula.make_recarray(t, ['t'])
     X_t, c_t = t_formula.design(tval, contrasts=t_contrasts)
     return X_t, c_t
