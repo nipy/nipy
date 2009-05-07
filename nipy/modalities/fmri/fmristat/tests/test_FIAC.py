@@ -12,6 +12,7 @@ Taylor, J.E. & Worsley, K.J. (2005). \'Inference for
 
 import numpy as np
 from scipy.interpolate import interp1d
+from matplotlib.mlab import csv2rec
 
 from FIACdesigns import descriptions, designs, altdescr
 
@@ -125,66 +126,58 @@ def protocol(fh, design_type, *hrfs):
         return f, Tcontrasts, Fcontrasts
 
 def altprotocol(fh, design_type, t, *hrfs):
-        """
-        Create an object that can evaluate the FIAC.
-        Subclass of formula.Formula, but not necessary.
+	"""
+	Create an object that can evaluate the FIAC.
+	Subclass of formula.Formula, but not necessary.
 
-        Parameters:
-        -----------
+	Parameters:
+	-----------
 
-        fh : file handler
-            File-like object that reads in the FIAC design,
-            but has a different format (test_FIACdata.altdescr)
+	fh : file handler
+	    File-like object that reads in the FIAC design,
+	    but has a different format (test_FIACdata.altdescr)
 
-        design_type : str in ['event', 'block']
-            Handles how the 'begin' term is handled.
-            For 'block', the first event of each block
-            is put in this group. For the 'event', 
-            only the first event is put in this group.
+	design_type : str in ['event', 'block']
+	    Handles how the 'begin' term is handled.
+	    For 'block', the first event of each block
+	    is put in this group. For the 'event', 
+	    only the first event is put in this group.
 
-            The 'begin' events are convolved with hrf.glover.
+	    The 'begin' events are convolved with hrf.glover.
 
-        hrfs: symoblic HRFs
-            Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp')
-            is convolved with each of these HRFs in order.
+	hrfs: symoblic HRFs
+	    Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp')
+	    is convolved with each of these HRFs in order.
 
-        """
+	"""
 
-        fh = csv.reader(fh, delimiter=',')
+	fh = csv.reader(fh, delimiter=',')
 
-        d = []
+	d = csv2rec(fh)
 
-	# d = np.loadtxt(fh)??
-        for row in fh:
-            time, st, sp = row
-	    d.append((time, st, sp))
-	d = np.array(d, np.dtype([('eventtime', np.float),
-				  ('sentence', 'S3'),
-				  ('speaker', 'S3')])).view(np.recarray)
+	if design_type == 'block':
+	    keep = np.not_equal((np.arange(d.eventtime.shape[0])) % 6, 0)
+	else:
+	    keep = np.greater(np.arange(d.eventtime.shape[0]), 0)
 
-        if design_type == 'block':
-            keep = np.not_equal((np.arange(d.eventtime.shape[0])) % 6, 0)
-        else:
-            keep = np.greater(np.arange(d.eventtime.shape[0]), 0)
+	# This first frame was used to model out a potentially
+	# 'bad' first frame....
 
-        # This first frame was used to model out a potentially
-        # 'bad' first frame....
-
-        _begin = d.eventtime[~keep]
+	_begin = d.eventtime[~keep]
 	d = d[keep]
 
-        termdict = {}        
-        termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
-        drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
-        for i, t in enumerate(drift.terms):
-            termdict['drift%d' % i] = t
+	termdict = {}        
+	termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
+	drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
+	for i, t in enumerate(drift.terms):
+	    termdict['drift%d' % i] = t
 
-        # Now, specify the experimental conditions
+	# Now, specify the experimental conditions
 	# The elements of termdict are DiracDeltas, rather than HRFs
 
 	st = formula.Factor('sentence', ['DSt', 'SSt'])
 	sp = formula.Factor('speaker', ['DSp', 'SSp'])
-	
+
 	indic = {}
 	indic['sentence'] =  st.main_effect
 	indic['speaker'] =  sp.main_effect
@@ -192,11 +185,11 @@ def altprotocol(fh, design_type, t, *hrfs):
 	indic['average'] = formula.I
 
 	for key in indic.keys():
-            # The matrix signs will be populated with +- 1's
-            # d is the recarray having fields ('eventtime', 'sentence', 'speaker')
-            signs = indic[key].design(d, return_float=True)
+	    # The matrix signs will be populated with +- 1's
+	    # d is the recarray having fields ('eventtime', 'sentence', 'speaker')
+	    signs = indic[key].design(d, return_float=True)
 
-            for l, h in enumerate(hrfs):
+	    for l, h in enumerate(hrfs):
 
 		# symb is a sympy expression representing a sum
 		# of [h(t-_t) for _t in d.eventtime]
@@ -208,9 +201,9 @@ def altprotocol(fh, design_type, t, *hrfs):
 		# speaker1(t)
 		termdict['%s%d' % (key, l)] = formula.define('%s%d' % (key, l), symb)
 
-        f = formula.Formula(termdict.values())
+	f = formula.Formula(termdict.values())
 
- 	Tcontrasts = {}
+	Tcontrasts = {}
 	Tcontrasts['average'] = termdict['average0']
 	Tcontrasts['speaker'] = termdict['speaker0']
 	Tcontrasts['sentence'] = termdict['sentence0']
@@ -220,7 +213,7 @@ def altprotocol(fh, design_type, t, *hrfs):
 
 	Fcontrasts = {}
 	Fcontrasts['overall1'] = formula.Formula(Tcontrasts.values())
-	
+
 	nhrf = len(hrfs)
 	Fcontrasts['averageF'] = formula.Formula([termdict['average%d' % j] for j in range(nhrf)])
 	Fcontrasts['speakerF'] = formula.Formula([termdict['speaker%d' % j] for j in range(nhrf)])
@@ -229,7 +222,21 @@ def altprotocol(fh, design_type, t, *hrfs):
 
 	Fcontrasts['overall2'] = Fcontrasts['averageF'] + Fcontrasts['speakerF'] + Fcontrasts['sentenceF'] + Fcontrasts['interactionF']
 
-        return f, Tcontrasts, Fcontrasts
+	return f, Tcontrasts, Fcontrasts
+
+def test_make_design():
+
+	block = csv2rec(StringIO(altdescr['block']))
+	event = csv2rec(StringIO(altdescr['event']))
+	t = np.arange(191)*2.5+1.25
+			
+	bkeep = np.not_equal((np.arange(block.time.shape[0])) % 6, 0)
+	ekeep = np.greater(np.arange(event.time.shape[0]), 0)
+
+	Xblock, cblock = utils.make_design(block[bkeep], t, hrfs=delay.spectral)
+	Xevent, cevent = utils.make_design(event[ekeep], t, hrfs=delay.spectral)
+
+	return Xblock, cblock, Xevent, cevent
 
 block, bTcons, bFcons = protocol(StringIO(descriptions['block']), 'block', *delay.spectral)
 event, eTcons, eFcons = protocol(StringIO(descriptions['event']), 'event', *delay.spectral)
