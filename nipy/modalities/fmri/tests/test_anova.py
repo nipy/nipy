@@ -6,7 +6,7 @@ import scipy.stats
 import numpy as np
 
 from nipy.modalities.fmri import formula as F
-import nipy.testing as niptest
+from nipy.testing import *
 
 data = """0.0      1      1      1
     2.0      1      1      2
@@ -99,7 +99,7 @@ twoway = f1 * f2
 # with interpretable names
 
 X = twoway.design(D, return_float=False)
-niptest.assert_equal(set(X.dtype.names), set(('Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3')))
+assert_equal(set(X.dtype.names), set(('Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3')))
 
 # If we ask for contrasts, the resulting matrix is
 # of dtype np.float
@@ -172,11 +172,11 @@ A = anova(lm(Days~Duration*Weight, X))
              (n.index('Duration:Weight'), 'Interaction')]
 
     for i, j in pairs:
-        niptest.assert_almost_equal(F[j], r['F value'][i])
-        niptest.assert_almost_equal(p[j], r['Pr(>F)'][i])
-        niptest.assert_almost_equal(MS[j], r['Mean Sq'][i])
-        niptest.assert_almost_equal(df[j], r['Df'][i])
-        niptest.assert_almost_equal(SS[j], r['Sum Sq'][i])
+        assert_almost_equal(F[j], r['F value'][i])
+        assert_almost_equal(p[j], r['Pr(>F)'][i])
+        assert_almost_equal(MS[j], r['Mean Sq'][i])
+        assert_almost_equal(df[j], r['Df'][i])
+        assert_almost_equal(SS[j], r['Sum Sq'][i])
 except ImportError:
     pass
 
