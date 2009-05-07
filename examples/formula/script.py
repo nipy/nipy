@@ -1,10 +1,14 @@
 import numpy as np
+import os
 
 from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
 from nipy.modalities.fmri.fmristat import hrf as delay
 from nipy.modalities.fmri import formula 
-from nipy.io.files import load
-from test_FIAC import protocol
+import nipy.io.files
+reload(nipy.io.files)
+from nipy.io.files import load, save
+from nipy.core import api
+from nipy.modalities.fmri.fmristat.tests.test_FIAC import protocol
 
 event = [(0,3),(0,4)] # Dictionaries with all the (subj, run) event designs 
 block = [(0,1),(0,2)] # Dictionaries with all the (subj, run) block designs 
@@ -23,7 +27,8 @@ for subj, r in block + event:
 
     m = OLSModel(X)
     f = np.array(load("%(root)s/fiac%(subj)d/fonc%(run)d/fsl/filtered_func_data.img" % {'root':root, 'subj':subj, 'run':r}))
-    mm = np.array(load("%(root)s/fiac%(subj)d/fonc%(run)d/fsl/mask.img" % {'root':root, 'subj':subj, 'run':r}))
+    mm = load("%(root)s/fiac%(subj)d/fonc%(run)d/fsl/mask.img" % {'root':root, 'subj':subj, 'run':r})
+    mma = np.array(mm)
     ar = np.zeros(f.shape[1:])
 
     for s in range(f.shape[1]):
@@ -53,7 +58,7 @@ for subj, r in block + event:
     arvals = np.unique(ar)
     for val in arvals:
         mask = np.equal(ar, val)
-        mask *= mm
+        mask *= mma
         m = ARModel(X, val)
         d = f[:,mask]
         results = m.fit(d)
@@ -68,4 +73,22 @@ for subj, r in block + event:
         # Where should we save these? 
 
         for n in fcons.keys():
-            output[n] = results.Fcontrast(fcons[n])
+            output[n][mask] = results.Fcontrast(fcons[n]).F
+
+    odir = "script_test/subject%d/run%d" % (subj, r)
+    os.system('mkdir -p %s' % odir)
+    for n in fcons.keys():
+        im = api.Image(output[n], mm.coordmap.copy())
+        os.system('mkdir -p %s/%s' % (odir, n))
+        # this fails for me, with an error from my version of nifticlib
+        save(im, "%s/%s/F.nii" % (odir, n))
+        np.save('%s/%s/F' % (odir, n), output[n])
+
+    for n in tcons.keys():
+        im = api.Image(output[n], mm.coordmap.copy())
+        os.system('mkdir -p %s/%s' % (odir, n))
+        # this fails for me, with an error from my version of nifticlib
+        # save(im, "%s/%s/F.nii" % (odir, n))
+        np.save('%s/%s/t' % (odir, n), output[n]['t'])
+        np.save('%s/%s/sd' % (odir, n), output[n]['sd'])
+        np.save('%s/%s/effect' % (odir, n), output[n]['effect'])

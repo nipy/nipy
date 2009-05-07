@@ -12,6 +12,7 @@ Taylor, J.E. & Worsley, K.J. (2005). \'Inference for
 
 import numpy as np
 from scipy.interpolate import interp1d
+from matplotlib.mlab import csv2rec
 
 from FIACdesigns import descriptions, designs, altdescr
 
@@ -21,7 +22,7 @@ import numpy as np
 import nipy.testing as niptest
 import sympy
 
-from nipy.modalities.fmri import formula, utils, hrf
+from nipy.modalities.fmri import formula, utils, hrf, design
 from nipy.modalities.fmri.fmristat import hrf as delay
 
 from nipy.fixes.scipy.stats.models.regression import OLSModel
@@ -54,7 +55,7 @@ def protocol(fh, design_type, *hrfs):
 	--------
 
 	f: Formula
-	     Formula for constructind design matrices.
+	     Formula for constructing design matrices.
 
 	contrasts : dict
 	     Dictionary of the contrasts of the experiment.
@@ -62,7 +63,7 @@ def protocol(fh, design_type, *hrfs):
         """
         eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
 
-        fh = fh.read().strip().split('\n')
+        fh = fh.read().strip().splitlines()
 
         times = []
         events = []
@@ -83,6 +84,7 @@ def protocol(fh, design_type, *hrfs):
 
         termdict = {}        
         termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
+
         drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
         for i, t in enumerate(drift.terms):
             termdict['drift%d' % i] = t
@@ -93,6 +95,9 @@ def protocol(fh, design_type, *hrfs):
         events = np.array(events)[keep]
 
         # Now, specify the experimental conditions
+	# This creates expressions
+	# named SSt_SSp0, SSt_SSp1, etc.
+	# with one expression for each (eventtype, hrf) pair
 
         for v in eventdict.values():
             for l, h in enumerate(hrfs):
@@ -121,82 +126,82 @@ def protocol(fh, design_type, *hrfs):
         return f, Tcontrasts, Fcontrasts
 
 def altprotocol(fh, design_type, *hrfs):
-        """
-        Create an object that can evaluate the FIAC.
-        Subclass of formula.Formula, but not necessary.
+	"""
+	Create an object that can evaluate the FIAC.
+	Subclass of formula.Formula, but not necessary.
 
-        Parameters:
-        -----------
+	Parameters:
+	-----------
 
-        fh : file handler
-            File-like object that reads in the FIAC design,
-            but has a different format (test_FIACdata.altdescr)
+	fh : file handler
+	    File-like object that reads in the FIAC design,
+	    but has a different format (test_FIACdata.altdescr)
 
-        design_type : str in ['event', 'block']
-            Handles how the 'begin' term is handled.
-            For 'block', the first event of each block
-            is put in this group. For the 'event', 
-            only the first event is put in this group.
+	design_type : str in ['event', 'block']
+	    Handles how the 'begin' term is handled.
+	    For 'block', the first event of each block
+	    is put in this group. For the 'event', 
+	    only the first event is put in this group.
 
-            The 'begin' events are convolved with hrf.glover.
+	    The 'begin' events are convolved with hrf.glover.
 
-        hrfs: symoblic HRFs
-            Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp')
-            is convolved with each of these HRFs in order.
+	hrfs: symoblic HRFs
+	    Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp')
+	    is convolved with each of these HRFs in order.
 
-        """
+	"""
 
-        fh = csv.reader(fh, delimiter=',')
+	d = csv2rec(fh)
 
-        d = []
+	if design_type == 'block':
+	    keep = np.not_equal((np.arange(d.time.shape[0])) % 6, 0)
+	else:
+	    keep = np.greater(np.arange(d.time.shape[0]), 0)
 
-        for row in fh:
-            time, st, sp = row
-	    d.append((time, st, sp))
-	d = np.array(d, np.dtype([('event', np.float),
-				  ('sentence', 'S3'),
-				  ('speaker', 'S3')])).view(np.recarray)
+	# This first frame was used to model out a potentially
+	# 'bad' first frame....
 
-        if design_type == 'block':
-            keep = np.not_equal((np.arange(d.event.shape[0])) % 6, 0)
-        else:
-            keep = np.greater(np.arange(d.event.shape[0]), 0)
-
-        # This first frame was used to model out a potentially
-        # 'bad' first frame....
-
-        _begin = d.event[~keep]
+	_begin = d.time[~keep]
 	d = d[keep]
 
-        termdict = {}        
-        termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
-        drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
-        for i, t in enumerate(drift.terms):
-            termdict['drift%d' % i] = t
+	termdict = {}        
+	termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
+	drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
+	for i, t in enumerate(drift.terms):
+	    termdict['drift%d' % i] = t
 
-        # Now, specify the experimental conditions
+	# Now, specify the experimental conditions
 	# The elements of termdict are DiracDeltas, rather than HRFs
 
 	st = formula.Factor('sentence', ['DSt', 'SSt'])
 	sp = formula.Factor('speaker', ['DSp', 'SSp'])
-	ev = formula.Term('event')
-	
+
 	indic = {}
 	indic['sentence'] =  st.main_effect
 	indic['speaker'] =  sp.main_effect
 	indic['interaction'] = st.main_effect * sp.main_effect
-	indic['average'] = formula.Formula([(st.terms[0] + st.terms[1]) / 4.])
+	indic['average'] = formula.I
 
-        termdict = {}
 	for key in indic.keys():
-            for l, h in enumerate(hrfs):
-                signs = indic[key].design(d, return_float=True)
-		symb = utils.events(d.event, amplitudes=signs, f=h)
-		termdict['%s%d' % (key, l)] = formula.define('%s%d' % (key, l), symb)
+	    # The matrix signs will be populated with +- 1's
+	    # d is the recarray having fields ('time', 'sentence', 'speaker')
+	    signs = indic[key].design(d, return_float=True)
 
-        f = formula.Formula(termdict.values())
+	    for l, h in enumerate(hrfs):
 
- 	Tcontrasts = {}
+		# symb is a sympy expression representing a sum
+		# of [h(t-_t) for _t in d.time]
+		symb = utils.events(d.time, amplitudes=signs, f=h)
+
+		# the values of termdict will have keys like
+		# 'average0', 'speaker1'
+		# and values  that are sympy expressions like average0(t), 
+		# speaker1(t)
+		termdict['%s%d' % (key, l)] = formula.define("%s%d" % (key, l), symb)
+
+	f = formula.Formula(termdict.values())
+
+	Tcontrasts = {}
 	Tcontrasts['average'] = termdict['average0']
 	Tcontrasts['speaker'] = termdict['speaker0']
 	Tcontrasts['sentence'] = termdict['sentence0']
@@ -206,7 +211,7 @@ def altprotocol(fh, design_type, *hrfs):
 
 	Fcontrasts = {}
 	Fcontrasts['overall1'] = formula.Formula(Tcontrasts.values())
-	
+
 	nhrf = len(hrfs)
 	Fcontrasts['averageF'] = formula.Formula([termdict['average%d' % j] for j in range(nhrf)])
 	Fcontrasts['speakerF'] = formula.Formula([termdict['speaker%d' % j] for j in range(nhrf)])
@@ -215,7 +220,7 @@ def altprotocol(fh, design_type, *hrfs):
 
 	Fcontrasts['overall2'] = Fcontrasts['averageF'] + Fcontrasts['speakerF'] + Fcontrasts['sentenceF'] + Fcontrasts['interactionF']
 
-        return f, Tcontrasts, Fcontrasts
+	return f, Tcontrasts, Fcontrasts
 
 block, bTcons, bFcons = protocol(StringIO(descriptions['block']), 'block', *delay.spectral)
 event, eTcons, eFcons = protocol(StringIO(descriptions['event']), 'event', *delay.spectral)
@@ -307,4 +312,22 @@ def test_agreement():
             _, cmax = matchcol(X[design_type][:,i], fmristat[design_type])
             if not dd.dtype.names[i].startswith('ns'):
                 yield niptest.assert_true, np.greater(cmax, 0.999)
+
+
+
+def test_event_design():
+
+	block = csv2rec(StringIO(altdescr['block']))
+	event = csv2rec(StringIO(altdescr['event']))
+	t = np.arange(191)*2.5+1.25
+			
+	bkeep = np.not_equal((np.arange(block.time.shape[0])) % 6, 0)
+	ekeep = np.greater(np.arange(event.time.shape[0]), 0)
+
+	# Even though there is a FIAC block experiment
+	# the design is represented as an event design
+	# with the same event repeated several times in a row...
+
+	Xblock, cblock = design.event_design(block[bkeep], t, hrfs=delay.spectral)
+	Xevent, cevent = design.event_design(event[ekeep], t, hrfs=delay.spectral)
 

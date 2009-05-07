@@ -6,6 +6,9 @@ import scipy.stats
 import numpy as np
 
 from nipy.modalities.fmri import formula as F
+from nipy.fixes.scipy.stats.models.utils import rank
+from nipy.fixes.scipy.stats.models.regression import OLSModel
+reload(F)
 from nipy.testing import *
 
 data = """0.0      1      1      1
@@ -98,8 +101,10 @@ twoway = f1 * f2
 # return_float = False yields a recarray 
 # with interpretable names
 
-X = twoway.design(D, return_float=False)
-assert_equal(set(X.dtype.names), set(('Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3')))
+def test_names():
+    # Check that the design column names are what we expect
+    X = twoway.design(D, return_float=False)
+    assert_equal(set(X.dtype.names), set(('Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3')))
 
 # If we ask for contrasts, the resulting matrix is
 # of dtype np.float
@@ -107,15 +112,17 @@ assert_equal(set(X.dtype.names), set(('Duration_1*Weight_1', 'Duration_1*Weight_
 contrasts = {'Duration': f1.main_effect,
              'Weight': f2.main_effect,
              'Interaction': f1.main_effect * f2.main_effect,
-             'Duration1': f1.terms[0].formula}
+             'Duration1': f1.get_term(1)}
 X, cons = twoway.design(D, contrasts=contrasts)
+Y = D['Days']
+
 
 # Fit the model
 
-beta = np.dot(np.linalg.pinv(X), D['Days'])
+beta = np.dot(np.linalg.pinv(X), Y)
 XTXinv = np.linalg.pinv(np.dot(X.T, X))
-resid = D['Days'] - np.dot(X, beta)
-df_resid = (X.shape[0] - X.shape[1]) # residual degrees of freedom
+resid = Y - np.dot(X, beta)
+df_resid = (X.shape[0] - rank(X)) # residual degrees of freedom
 sigmasq = (resid**2).sum() / df_resid
 
 SS = {}
@@ -138,6 +145,7 @@ for n, c in cons.items():
         F[n] = MS[n] / sigmasq
     p[n] = scipy.stats.f.sf(F[n], df[n], df_resid)
 
+routput = \
 """
 Output of R:
 -----------
@@ -155,29 +163,67 @@ Residuals       54 1564.80   28.98
 ---
 """
 
-try:
-    import rpy
-    rpy.r("""
-X = read.table('http://www-stat.stanford.edu/~jtaylo/courses/stats191/data/kidney.table', header=T)
-names(X)
-X$Duration = factor(X$Duration)
-X$Weight = factor(X$Weight)
-lm(Days~Duration*Weight, X)
-A = anova(lm(Days~Duration*Weight, X))
-""")
-    r = rpy.r('A')
-    n = rpy.r('rownames(A)')
-    pairs = [(n.index('Duration'), 'Duration'),
-             (n.index('Weight'), 'Weight'),
-             (n.index('Duration:Weight'), 'Interaction')]
+
+def test_Ragreement():
+    # This code would fit the two-way ANOVA model in R
+
+
+    # X = read.table('http://www-stat.stanford.edu/~jtaylo/courses/stats191/data/kidney.table', header=T)
+    # names(X)
+    # X$Duration = factor(X$Duration)
+    # X$Weight = factor(X$Weight)
+    # lm(Days~Duration*Weight, X)
+    # A = anova(lm(Days~Duration*Weight, X))
+
+
+    # rA = rpy.r('A')
+    rA = {'Df': [1, 2, 2, 54],
+     'F value': [7.2147239263803673, 13.120973926380339, 1.8813266871165633, np.nan],
+     'Mean Sq': [209.06666666666663,
+                 380.21666666666584,
+                 54.51666666666663,
+                 28.977777777777778],
+     'Pr(>F)': [0.0095871255601553771,
+                2.2687781292164585e-05,
+                0.16224035152442268,
+                np.nan],
+     'Sum Sq': [209.06666666666663,
+                760.43333333333169,
+                109.03333333333326,
+                1564.8]}
+
+    # rn = rpy.r('rownames(A)')
+    rn= ['Duration', 'Weight', 'Duration:Weight', 'Residuals']
+
+    pairs = [(rn.index('Duration'), 'Duration'),
+             (rn.index('Weight'), 'Weight'),
+             (rn.index('Duration:Weight'), 'Interaction')]
 
     for i, j in pairs:
-        assert_almost_equal(F[j], r['F value'][i])
-        assert_almost_equal(p[j], r['Pr(>F)'][i])
-        assert_almost_equal(MS[j], r['Mean Sq'][i])
-        assert_almost_equal(df[j], r['Df'][i])
-        assert_almost_equal(SS[j], r['Sum Sq'][i])
-except ImportError:
-    pass
+        assert_almost_equal(F[j], rA['F value'][i])
+        assert_almost_equal(p[j], rA['Pr(>F)'][i])
+        assert_almost_equal(MS[j], rA['Mean Sq'][i])
+        assert_almost_equal(df[j], rA['Df'][i])
+        assert_almost_equal(SS[j], rA['Sum Sq'][i])
 
 
+def test_scipy_stats():
+    # Using scipy.stats.models
+
+    X, cons = twoway.design(D, contrasts=contrasts)
+    Y = D['Days']
+    m = OLSModel(X)
+    f = m.fit(Y)
+
+    F_m = {}
+    df_m = {}
+    p_m = {}
+
+    for n, c in cons.items():
+        r = f.Fcontrast(c)
+        F_m[n] = r.F
+        df_m[n] = r.df_num
+        p_m[n] = scipy.stats.f.sf(F_m[n], df_m[n], r.df_denom)
+        assert_almost_equal(F[n], F_m[n])
+        assert_almost_equal(df[n], df_m[n])
+        assert_almost_equal(p[n], p_m[n])

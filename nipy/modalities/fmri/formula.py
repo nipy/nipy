@@ -399,6 +399,12 @@ class Formula(object):
             if not set(param_recarray.dtype.names).issuperset(self.dtypes['param'].names):
                 raise ValueError("for param, expecting a recarray with dtype having the following names: %s" % `self.dtypes['param'].names`)
 
+        if self.dtypes['term'] == np.dtype([]):
+            a = np.ones(preterm_recarray.shape[0], np.float)
+            if not return_float:
+                a = a.view(np.dtype([('1', np.float)]))
+            return a
+            
         term_recarray = np.zeros(preterm_recarray.shape[0], 
                                  dtype=self.dtypes['term'])
         for t in self.__terms:
@@ -433,10 +439,11 @@ class Formula(object):
         if not np.alltrue(np.equal(l, l[0])):
             raise ValueError, 'shape mismatch'
 
-        # Multiply all numbers by columns of 1s
-
+        # Make sure that each array has the correct shape
+        # columns of what should be 1s will
+        
         for i in m:
-            varr[i] = varr[i] * np.ones(l[0])
+            varr[i].shape = (l[0],)
 
         v = np.array(varr).T
         if return_float or contrasts:
@@ -534,10 +541,18 @@ class Factor(Formula):
     def __init__(self, name, levels, char='b'):
         Formula.__init__(self, [FactorTerm(name, l) for l in levels], 
                         char=char)
+        self.levels = list(levels)
         self.name = name
 
     # TODO: allow different specifications of the contrasts
     # here.... this is like R's contr.sum
+
+    def get_term(self, level):
+        """
+        Retrieve a term of the Factor...
+        """
+        i = self.levels.index(level)
+        return Formula([self.terms[i]])
 
     def _getmaineffect(self, ref=-1):
         v = list(self._terms.copy())

@@ -1,6 +1,7 @@
 # subj3_evt_fonc1.txt
 
-altdescr = {'block':'''2.0,SSt,SSp
+altdescr = {'block':'''time,sentence,speaker
+2.0,SSt,SSp
 5.33,SSt,SSp
 8.67,SSt,SSp
 12.0,SSt,SSp
@@ -96,7 +97,8 @@ altdescr = {'block':'''2.0,SSt,SSp
 447.0,DSt,DSp
 450.33,DSt,DSp
 453.67,DSt,DSp''',
-'event':'''2.0,DSt,DSp
+'event':'''time,sentence,speaker
+2.0,DSt,DSp
 5.33,SSt,SSp
 8.67,DSt,SSp
 12.0,DSt,DSp
