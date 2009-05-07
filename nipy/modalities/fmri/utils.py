@@ -28,7 +28,7 @@ from sympy import cos as sympy_cos
 from sympy import pi as sympy_pi
 
 from formula import Formula, Term
-from aliased import aliased_function, lambdify as alambdify
+from aliased import aliased_function, lambdify as alambdify, vectorize
 
 t = Term('t')
 
@@ -309,7 +309,7 @@ def blocks(intervals, amplitudes=None, g=Symbol('a')):
     return step_function(t, v)
 
 
-def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1):
+def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     """
     Convolve fn1 with fn2.
     
@@ -325,11 +325,31 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1):
             Time step for discretization 
         padding_f : float
             Padding added to the left and right in the convolution.
-            
+        name : str
+            Name of the convolved function in the resulting expression. 
+            Defaults to one created by linear_interp.
     Returns
     -------
     f : sympy expr
             An expression that is a function of t only.
+
+    >>> t = sympy.Symbol('t')
+    >>> # This is a square wave on [0,1]
+    >>> f1 = (t > 0) * (t < 1)
+    >>> # The convolution of with itself is a triangular wave on [0,2], peaking at 1 with height 1
+    >>> tri = convolve_functions(f1, f1, [0,2], 1.0e-03, name='conv')
+    >>> print tri
+    conv(t)
+    >>> ftri = vectorize(tri)
+    >>> x = np.linspace(0,2,11)
+    >>> y = ftri(x)
+    >>> # This is the resulting y-value (which seem to be numerically off by dt
+    >>> y
+    array([ -3.90255908e-16,   1.99000000e-01,   3.99000000e-01,
+           5.99000000e-01,   7.99000000e-01,   9.99000000e-01,
+           7.99000000e-01,   5.99000000e-01,   3.99000000e-01,
+           1.99000000e-01,   6.74679706e-16])
+    >>> 
     """
 
     max_interval, min_interval = max(interval), min(interval)
@@ -344,10 +364,10 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1):
     _fft1 = FFT.rfft(_fn1)
     _fft2 = FFT.rfft(_fn2)
 
-    value = FFT.irfft(_fft1 * _fft2)
+    value = FFT.irfft(_fft1 * _fft2) * dt
     _minshape = min(time.shape[0], value.shape[-1])
     time = time[0:_minshape]
     value = value[0:_minshape]
 
-    return linear_interp(time + min_interval, value, bounds_error=False)
+    return linear_interp(time + min_interval, value, bounds_error=False, name=name)
 
