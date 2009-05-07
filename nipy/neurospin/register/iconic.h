@@ -20,7 +20,7 @@ extern "C" {
 #include <numpy/arrayobject.h>
 
   /* Numpy import */
-  extern void joint_histogram_import_array(void);
+  extern void iconic_import_array(void);
 
   /* 
      Update a pre-allocated joint histogram. Important notice: in all
