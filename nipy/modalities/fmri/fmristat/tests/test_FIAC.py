@@ -54,7 +54,7 @@ def protocol(fh, design_type, *hrfs):
 	--------
 
 	f: Formula
-	     Formula for constructind design matrices.
+	     Formula for constructing design matrices.
 
 	contrasts : dict
 	     Dictionary of the contrasts of the experiment.
@@ -62,7 +62,7 @@ def protocol(fh, design_type, *hrfs):
         """
         eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
 
-        fh = fh.read().strip().split('\n')
+        fh = fh.read().strip().splitlines()
 
         times = []
         events = []
@@ -83,6 +83,7 @@ def protocol(fh, design_type, *hrfs):
 
         termdict = {}        
         termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
+
         drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
         for i, t in enumerate(drift.terms):
             termdict['drift%d' % i] = t
@@ -93,6 +94,9 @@ def protocol(fh, design_type, *hrfs):
         events = np.array(events)[keep]
 
         # Now, specify the experimental conditions
+	# This creates expressions
+	# named SSt_SSp0, SSt_SSp1, etc.
+	# with one expression for each (eventtype, hrf) pair
 
         for v in eventdict.values():
             for l, h in enumerate(hrfs):
@@ -120,7 +124,7 @@ def protocol(fh, design_type, *hrfs):
 	
         return f, Tcontrasts, Fcontrasts
 
-def altprotocol(fh, design_type, *hrfs):
+def altprotocol(fh, design_type, t, *hrfs):
         """
         Create an object that can evaluate the FIAC.
         Subclass of formula.Formula, but not necessary.
@@ -150,22 +154,23 @@ def altprotocol(fh, design_type, *hrfs):
 
         d = []
 
+	# d = np.loadtxt(fh)??
         for row in fh:
             time, st, sp = row
 	    d.append((time, st, sp))
-	d = np.array(d, np.dtype([('event', np.float),
+	d = np.array(d, np.dtype([('eventtime', np.float),
 				  ('sentence', 'S3'),
 				  ('speaker', 'S3')])).view(np.recarray)
 
         if design_type == 'block':
-            keep = np.not_equal((np.arange(d.event.shape[0])) % 6, 0)
+            keep = np.not_equal((np.arange(d.eventtime.shape[0])) % 6, 0)
         else:
-            keep = np.greater(np.arange(d.event.shape[0]), 0)
+            keep = np.greater(np.arange(d.eventtime.shape[0]), 0)
 
         # This first frame was used to model out a potentially
         # 'bad' first frame....
 
-        _begin = d.event[~keep]
+        _begin = d.eventtime[~keep]
 	d = d[keep]
 
         termdict = {}        
@@ -179,19 +184,28 @@ def altprotocol(fh, design_type, *hrfs):
 
 	st = formula.Factor('sentence', ['DSt', 'SSt'])
 	sp = formula.Factor('speaker', ['DSp', 'SSp'])
-	ev = formula.Term('event')
 	
 	indic = {}
 	indic['sentence'] =  st.main_effect
 	indic['speaker'] =  sp.main_effect
 	indic['interaction'] = st.main_effect * sp.main_effect
-	indic['average'] = formula.Formula([(st.terms[0] + st.terms[1]) / 4.])
+	indic['average'] = formula.I
 
-        termdict = {}
 	for key in indic.keys():
+            # The matrix signs will be populated with +- 1's
+            # d is the recarray having fields ('eventtime', 'sentence', 'speaker')
+            signs = indic[key].design(d, return_float=True)
+
             for l, h in enumerate(hrfs):
-                signs = indic[key].design(d, return_float=True)
-		symb = utils.events(d.event, amplitudes=signs, f=h)
+
+		# symb is a sympy expression representing a sum
+		# of [h(t-_t) for _t in d.eventtime]
+		symb = utils.events(d.eventtime, amplitudes=signs, f=h)
+
+		# the values of termdict will have keys like
+		# 'average0', 'speaker1'
+		# and values  that are sympy expressions like average0(t), 
+		# speaker1(t)
 		termdict['%s%d' % (key, l)] = formula.define('%s%d' % (key, l), symb)
 
         f = formula.Formula(termdict.values())
