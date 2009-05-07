@@ -22,7 +22,7 @@ import numpy as np
 import nipy.testing as niptest
 import sympy
 
-from nipy.modalities.fmri import formula, utils, hrf
+from nipy.modalities.fmri import formula, utils, hrf, design
 from nipy.modalities.fmri.fmristat import hrf as delay
 
 from nipy.fixes.scipy.stats.models.regression import OLSModel
@@ -125,7 +125,7 @@ def protocol(fh, design_type, *hrfs):
 	
         return f, Tcontrasts, Fcontrasts
 
-def altprotocol(fh, design_type, t, *hrfs):
+def altprotocol(fh, design_type, *hrfs):
 	"""
 	Create an object that can evaluate the FIAC.
 	Subclass of formula.Formula, but not necessary.
@@ -151,19 +151,17 @@ def altprotocol(fh, design_type, t, *hrfs):
 
 	"""
 
-	fh = csv.reader(fh, delimiter=',')
-
 	d = csv2rec(fh)
 
 	if design_type == 'block':
-	    keep = np.not_equal((np.arange(d.eventtime.shape[0])) % 6, 0)
+	    keep = np.not_equal((np.arange(d.time.shape[0])) % 6, 0)
 	else:
-	    keep = np.greater(np.arange(d.eventtime.shape[0]), 0)
+	    keep = np.greater(np.arange(d.time.shape[0]), 0)
 
 	# This first frame was used to model out a potentially
 	# 'bad' first frame....
 
-	_begin = d.eventtime[~keep]
+	_begin = d.time[~keep]
 	d = d[keep]
 
 	termdict = {}        
@@ -186,20 +184,20 @@ def altprotocol(fh, design_type, t, *hrfs):
 
 	for key in indic.keys():
 	    # The matrix signs will be populated with +- 1's
-	    # d is the recarray having fields ('eventtime', 'sentence', 'speaker')
+	    # d is the recarray having fields ('time', 'sentence', 'speaker')
 	    signs = indic[key].design(d, return_float=True)
 
 	    for l, h in enumerate(hrfs):
 
 		# symb is a sympy expression representing a sum
-		# of [h(t-_t) for _t in d.eventtime]
-		symb = utils.events(d.eventtime, amplitudes=signs, f=h)
+		# of [h(t-_t) for _t in d.time]
+		symb = utils.events(d.time, amplitudes=signs, f=h)
 
 		# the values of termdict will have keys like
 		# 'average0', 'speaker1'
 		# and values  that are sympy expressions like average0(t), 
 		# speaker1(t)
-		termdict['%s%d' % (key, l)] = formula.define('%s%d' % (key, l), symb)
+		termdict['%s%d' % (key, l)] = formula.define("%s%d" % (key, l), symb)
 
 	f = formula.Formula(termdict.values())
 
@@ -223,20 +221,6 @@ def altprotocol(fh, design_type, t, *hrfs):
 	Fcontrasts['overall2'] = Fcontrasts['averageF'] + Fcontrasts['speakerF'] + Fcontrasts['sentenceF'] + Fcontrasts['interactionF']
 
 	return f, Tcontrasts, Fcontrasts
-
-def test_make_design():
-
-	block = csv2rec(StringIO(altdescr['block']))
-	event = csv2rec(StringIO(altdescr['event']))
-	t = np.arange(191)*2.5+1.25
-			
-	bkeep = np.not_equal((np.arange(block.time.shape[0])) % 6, 0)
-	ekeep = np.greater(np.arange(event.time.shape[0]), 0)
-
-	Xblock, cblock = utils.make_design(block[bkeep], t, hrfs=delay.spectral)
-	Xevent, cevent = utils.make_design(event[ekeep], t, hrfs=delay.spectral)
-
-	return Xblock, cblock, Xevent, cevent
 
 block, bTcons, bFcons = protocol(StringIO(descriptions['block']), 'block', *delay.spectral)
 event, eTcons, eFcons = protocol(StringIO(descriptions['event']), 'event', *delay.spectral)
@@ -328,4 +312,22 @@ def test_agreement():
             _, cmax = matchcol(X[design_type][:,i], fmristat[design_type])
             if not dd.dtype.names[i].startswith('ns'):
                 yield niptest.assert_true, np.greater(cmax, 0.999)
+
+
+
+def test_event_design():
+
+	block = csv2rec(StringIO(altdescr['block']))
+	event = csv2rec(StringIO(altdescr['event']))
+	t = np.arange(191)*2.5+1.25
+			
+	bkeep = np.not_equal((np.arange(block.time.shape[0])) % 6, 0)
+	ekeep = np.greater(np.arange(event.time.shape[0]), 0)
+
+	# Even though there is a FIAC block experiment
+	# the design is represented as an event design
+	# with the same event repeated several times in a row...
+
+	Xblock, cblock = design.event_design(block[bkeep], t, hrfs=delay.spectral)
+	Xevent, cevent = design.event_design(event[ekeep], t, hrfs=delay.spectral)
 
