@@ -8,7 +8,7 @@ from nipy.neurospin.image_registration import image4d, realign4d, resample4d
 import nifti as nf
 
 # Create Nifti1Image instances from both input files
-rootpath = 'D:\\data\\karla'
+rootpath = 'D:\\home\\AR203069\\data\\karla'
 runnames = glob(join(rootpath, '*.nii'))
 print runnames
 images = [nf.load(rname) for rname in runnames]
