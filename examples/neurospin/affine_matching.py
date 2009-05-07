@@ -6,9 +6,7 @@ database acquired at SHFJ, Orsay, France.
 """
 
 from nipy.neurospin.image_registration import affine_register, affine_resample
-
-# Use Matthew's volumeimages for I/O. 
-import volumeimages as v
+import nifti as nf
 
 from os.path import join
 import sys
@@ -18,7 +16,7 @@ rootpath = '/neurospin/lnao/Panabase/roche/sulcal2000'
 # Unimportant hack...
 from os import name
 if name == 'nt':
-	rootpath = 'D:\\data\\sulcal2000'
+	rootpath = 'D:\\home\\AR203069\\data\\sulcal2000'
         
 print('Scanning data directory...')
 source = sys.argv[1]
@@ -44,8 +42,8 @@ print ('Optimizer: %s' % optimizer)
 
 # Get data
 print('Fetching image data...')
-I = v.load(join(rootpath,'nobias_'+source+'.nii'))
-J = v.load(join(rootpath,'nobias_'+target+'.nii'))
+I = nf.load(join(rootpath,'nobias_'+source+'.nii'))
+J = nf.load(join(rootpath,'nobias_'+target+'.nii'))
 
 # Perform affine normalization 
 print('Setting up registration...')
@@ -65,14 +63,14 @@ It = affine_resample(I, J, T)
 # >>> Jt = resample(I, J, T, toresample='target')
 # For now, It is an instance of a local image class defined in nipy.neurospin 
 # The following line will be useless when a standard nipy image class is adopted
-It =  v.nifti1.Nifti1Image(affine=It.get_affine(), data=It.get_data())
+It =  nf.Nifti1Image(affine=It.get_affine(), data=It.get_data())
 toc = time.time()
 print('  Resampling time: %f sec' % (toc-tic))
 
 # Save resampled source
 outfile =  source+'_TO_'+target+'.nii'
 print ('Saving resampled source in: %s' % outfile)
-v.save(It, outfile)
+nf.save(It, outfile)
 
 # Save transformation matrix
 import numpy as np

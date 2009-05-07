@@ -44,8 +44,12 @@ class Image:
             
             if self._iolib == 'pynifti':
                 import nifti
-                self._image = nifti.NiftiImage(obj.T)
-                self._image.setQForm(affine)
+                # Deal with pynifti versions
+                if hasattr(nifti, 'Nifti1Image'): 
+                    self._image = nifti.Nifti1Image(affine=affine, data=obj)
+                else:
+                    self._image = nifti.NiftiImage(obj.T)
+                    self._image.setQForm(affine)
             
         else:
             # Case: initialize from file
@@ -88,10 +92,15 @@ class Image:
             
         elif iolib == 'pynifti':
             import nifti
-            self._image = nifti.NiftiImage(filename)
-            self._array = self._image.data.T
-            ##voxsize = self._image.voxdim
-            self._affine = self._image.qform
+            # Deal with pynifti versions
+            if hasattr(nifti, 'Nifti1Image'): 
+                self._image = nifti.load(filename)
+                self._array = self._image.get_data()
+                self._affine = self._image.get_affine()
+            else:
+                self._image = nifti.NiftiImage(filename)
+                self._array = self._image.data.T
+                self._affine = self._image.qform
 
         else:
             print 'Unknown input/output library.'
