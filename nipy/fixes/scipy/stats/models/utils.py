@@ -44,7 +44,7 @@ def rank(X, cond=1.0e-12):
     """
     X = np.asarray(X)
     if len(X.shape) == 2:
-        D = scipy.linalg.svdvals(X)
+        D = L.svd(X, compute_uv=False)
         return int(np.add.reduce(np.greater(D / D.max(), cond).astype(np.int32)))
     else:
         return int(not np.alltrue(np.equal(X, 0.)))

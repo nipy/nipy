@@ -162,7 +162,7 @@ class LikelihoodModelResults(object):
             _t = _effect * recipr(_sd)
         return ContrastResults(effect=_effect, t=_t, sd=_sd, df_denom=self.df_resid)
 
-    def Fcontrast(self, matrix, eff=True, t=True, sd=True, scale=None, invcov=None):
+    def Fcontrast(self, matrix, scale=None, invcov=None):
         """
         Compute an Fcontrast for a contrast matrix.
 
@@ -185,8 +185,17 @@ class LikelihoodModelResults(object):
 
         cbeta = np.dot(matrix, self.beta)
 
-        q = matrix.shape[0]
-        if invcov is None:
-            invcov = inv(self.cov_beta(matrix=matrix, scale=1.0))
-        F = np.add.reduce(np.dot(invcov, cbeta) * cbeta, 0) * recipr((q * self.scale))
-        return ContrastResults(F=F, df_denom=self.df_resid, df_num=invcov.shape[0])
+        if matrix.ndim == 1:
+            q = 1
+            if invcov is None:
+                invcov = 1. / self.cov_beta(matrix=matrix, scale=1.0)
+        else:
+            q = matrix.shape[0]
+            if invcov is None:
+                invcov = inv(self.cov_beta(matrix=matrix, scale=1.0))
+
+        if q > 1:
+            F = np.add.reduce(np.dot(invcov, cbeta) * cbeta, 0) * recipr((q * self.scale))
+        else:
+            F = (cbeta**2 * invcov) * recipr((q * self.scale))
+        return ContrastResults(F=F, df_denom=self.df_resid, df_num=q)
