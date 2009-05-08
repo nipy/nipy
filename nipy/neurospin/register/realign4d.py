@@ -241,18 +241,6 @@ def _resample4d(im4d, transforms=None):
     return r.resample()
 
 
-def resample4d(im4d, transforms=None): 
-    """
-    corr_im4d = resample4d(im4d, transforms=None)
-    """
-    return Image4d(_resample4d(im4d, transforms),
-                   im4d.to_world, 
-                   im4d.tr, 
-                   tr_slices=0.0, 
-                   start=0.0,
-                   slice_order=im4d.slice_order, 
-                   interleaved=im4d.interleaved)
-
 
 def _realign4d(im4d, 
                loops=DEFAULT_WITHIN_LOOPS, 
