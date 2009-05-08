@@ -10,6 +10,12 @@ import numpy as np
 
 DEFAULT_IOLIB = 'pynifti'
 
+# Test whether pynifti includes Matthew Brett's volumeimages
+def new_pynifti():
+    import nifti
+    return hasattr(nifti, 'Nifti1Image')
+
+
 class Image:
 
     def __init__(self, obj=None, affine=None, voxsize=None, iolib=DEFAULT_IOLIB):
@@ -29,7 +35,7 @@ class Image:
         """
        
         self._iolib = iolib
-        
+
         # Case: initialize from array
         if isinstance(obj, np.ndarray):
             self._array = obj
@@ -44,8 +50,7 @@ class Image:
             
             if self._iolib == 'pynifti':
                 import nifti
-                # Deal with pynifti versions
-                if hasattr(nifti, 'Nifti1Image'): 
+                if new_pynifti():
                     self._image = nifti.Nifti1Image(affine=affine, data=obj)
                 else:
                     self._image = nifti.NiftiImage(obj.T)
@@ -92,8 +97,7 @@ class Image:
             
         elif iolib == 'pynifti':
             import nifti
-            # Deal with pynifti versions
-            if hasattr(nifti, 'Nifti1Image'): 
+            if new_pynifti():
                 self._image = nifti.load(filename)
                 self._array = self._image.get_data()
                 self._affine = self._image.get_affine()
@@ -123,8 +127,13 @@ class Image:
             w.write(self._image, filename)
 
         elif self._iolib == 'pynifti':
-            self._image.data[:] = self._array.T[:]
-            self._image.save(filename)
+            import nifti
+            if new_pynifti():
+                self._image = nifti.Nifti1Image(self._array, self._affine)
+                nifti.save(self._image, filename)
+            else:
+                self._image.data[:] = self._array.T[:]
+                self._image.save(filename)
             
 
     def get_data(self):
