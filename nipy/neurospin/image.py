@@ -8,8 +8,13 @@ process data for real until fff is properly integrated into nipy.
 import numpy as np
 
 
-DEFAULT_IOLIB = 'aims'
-#DEFAULT_IOLIB = 'pynifti'
+DEFAULT_IOLIB = 'pynifti'
+
+# Test whether pynifti includes Matthew Brett's volumeimages
+def new_pynifti():
+    import nifti
+    return hasattr(nifti, 'Nifti1Image')
+
 
 class Image:
 
@@ -30,7 +35,7 @@ class Image:
         """
        
         self._iolib = iolib
-        
+
         # Case: initialize from array
         if isinstance(obj, np.ndarray):
             self._array = obj
@@ -45,8 +50,11 @@ class Image:
             
             if self._iolib == 'pynifti':
                 import nifti
-                self._image = nifti.NiftiImage(obj.T)
-                self._image.setQForm(affine)
+                if new_pynifti():
+                    self._image = nifti.Nifti1Image(affine=affine, data=obj)
+                else:
+                    self._image = nifti.NiftiImage(obj.T)
+                    self._image.setQForm(affine)
             
         else:
             # Case: initialize from file
@@ -89,10 +97,14 @@ class Image:
             
         elif iolib == 'pynifti':
             import nifti
-            self._image = nifti.NiftiImage(filename)
-            self._array = self._image.data.T
-            ##voxsize = self._image.voxdim
-            self._affine = self._image.qform
+            if new_pynifti():
+                self._image = nifti.load(filename)
+                self._array = self._image.get_data()
+                self._affine = self._image.get_affine()
+            else:
+                self._image = nifti.NiftiImage(filename)
+                self._array = self._image.data.T
+                self._affine = self._image.qform
 
         else:
             print 'Unknown input/output library.'
@@ -115,8 +127,13 @@ class Image:
             w.write(self._image, filename)
 
         elif self._iolib == 'pynifti':
-            self._image.data[:] = self._array.T[:]
-            self._image.save(filename)
+            import nifti
+            if new_pynifti():
+                self._image = nifti.Nifti1Image(self._array, self._affine)
+                nifti.save(self._image, filename)
+            else:
+                self._image.data[:] = self._array.T[:]
+                self._image.save(filename)
             
 
     def get_data(self):
