@@ -12,8 +12,8 @@ grouped all the information into one sprint doc.
 Venue
 =====
 
-The sprint was held at the `Brain Imaging Center
-<http://bic.berkeley.edu/>`_ at UC Berkeley, in 10 Gianinni Hall.
+The sprint was held at the `Brain Imaging Center`_ at UC Berkeley, in
+10 Gianinni Hall.
 
 
 Code Merge
@@ -167,9 +167,8 @@ Ariel, Mike and Paul worked on the time-series branch.
 Statistics
 ==========
 
-Jonathan has updated the stats code to use `sympy
-<http://code.google.com/p/sympy/>`_ for specifying the terms and
-generating the design matrix for the analysis.
+Jonathan has updated the stats code to use sympy_ for specifying the
+terms and generating the design matrix for the analysis.
 
 Debian Packaging
 ================
@@ -213,3 +212,5 @@ Paul Ivanov
 Satrajit Ghosh
 
 Yaroslav Halchenko
+
+.. include:: ../../links_names.txt
