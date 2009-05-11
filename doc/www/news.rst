@@ -12,6 +12,6 @@ decommissioned.
 Sprints
 =======
 
-:ref:`paris2008`
+Notes from our sprints are in our :ref:`sprints` page.
 
 .. _`Trac instance`: http://projects.scipy.org/neuroimaging/ni/wiki
