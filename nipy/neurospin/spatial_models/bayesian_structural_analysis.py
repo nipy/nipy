@@ -195,7 +195,7 @@ def _GMM_priors_(beta,bfm,theta = 0,alpha=0.01,prior_strength = 100,verbose=0):
     lj = bgmm.sample_on_data(gd.make_grid())
     lw = np.sum(lj[gdm>theta],0)
     bfp = lw/bgmm.weights*bgmm.sample_on_data(bfm)
-    #bfp = bgmm.sample_on_data(bfm)
+    bfp = bgmm.sample_on_data(bfm)#---
 
     if verbose>1:
         #bgmm.show(beta,gd,lj.sum(1))
@@ -729,7 +729,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
                     np.size(q), q.sum())
     
     Fbeta.set_field(p)
-    idx,depth, major,label = Fbeta.custom_watershed(0,0)#(0,g0)
+    idx,depth, major,label = Fbeta.custom_watershed(0,g0)
 
     # append some information to the hroi in each subject
     for s in range(nbsubj):
