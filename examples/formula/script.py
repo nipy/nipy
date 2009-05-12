@@ -1,30 +1,92 @@
+import pylab
 import numpy as np
-import os
+from StringIO import StringIO
+import os, csv
+
+from matplotlib.mlab import csv2rec
 
 from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
 from nipy.modalities.fmri.fmristat import hrf as delay
-from nipy.modalities.fmri import formula 
-import nipy.io.files
-reload(nipy.io.files)
+from nipy.modalities.fmri import formula, design, hrf
 from nipy.io.files import load, save
 from nipy.core import api
-from nipy.modalities.fmri.fmristat.tests.test_FIAC import protocol
 
-event = [(0,3),(0,4)] # Dictionaries with all the (subj, run) event designs 
-block = [(0,1),(0,2)] # Dictionaries with all the (subj, run) block designs 
+event = [(0,3),(0,4)] # Sequences with all the (subj, run) event designs 
+block = [(0,1),(0,2)] # Sequences with all the (subj, run) block designs 
+
+def rewrite_spec(specfile):
+    """
+    Take a FIAC specification file and get two specifications
+    (experiment, begin)
+    """
+    if (subj, r) in event:
+        designtype = 'evt'
+    else:
+        designtype = 'bloc'
+
+    eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
+    s = StringIO()
+    w = csv.writer(s)
+    w.writerow(['time', 'sentence', 'speaker'])
+    d = np.loadtxt(specfile)
+    for row in d:
+        w.writerow([row[0]] + eventdict[row[1]].split('_'))
+    s.seek(0)
+    d = csv2rec(s)
+
+    # Now, take care of the 'begin' event
+    # This is due to the FIAC design
+    if designtype == 'evt':
+        b = np.array([(d[0]['time'], 'begin')], np.dtype([('time', np.float),
+                                                          ('begin', 'S5')]))
+        d = d[1:]
+    else:
+        k = np.equal(np.arange(d.shape[0]) % 6, 0)
+        b = np.array([(tt, 'begin') for tt in d[k]['time']], np.dtype([('time', np.float),
+                                                                       ('begin', 'S5')]))
+        d = d[~k]
+    return d, b
 
 root = "/home/jtaylo/FIACmiller"
 
-t = formula.make_recarray(np.arange(191)*2.5+1.25, 't')
+tv = np.arange(191)*2.5+1.25
+t = formula.make_recarray(tv, 't')
 for subj, r in block + event:
     if (subj, r) in event:
-        design = 'evt'
+        designtype = 'evt'
     else:
-        design = 'bloc'
-    p, tcons, fcons = protocol(file("%(root)s/fiac%(subj)d/subj%(subj)d_%(design)s_fonc%(run)d.txt" % {'root':root, 'subj':subj, 'run':r, 'design':design}), 'event', *delay.spectral)
-    X, tcons = p.design(t, contrasts=tcons)
-    X, fcons = p.design(t, contrasts=fcons)
+        designtype = 'bloc'
 
+    # Fix the format of the specification so it is
+    # more in the form of a 2-way ANOVA
+
+    d, b = rewrite_spec("%(root)s/fiac%(subj)d/subj%(subj)d_%(design)s_fonc%(run)d.txt" % {'root':root, 'subj':subj, 'run':r, 'design':designtype})
+       
+    X_exper, cons_exper = design.event_design(d, t, hrfs=delay.spectral)
+
+    # ignore contrasts for 'begin' event type
+    X_begin, _ = design.event_design(b, t, hrfs=[hrf.glover]) 
+
+    pylab.clf(); pylab.plot(X_begin); pylab.show()
+    # drift
+
+    drift = np.array([tv**i for i in range(4)] + [(tv-tv.mean())**3 * (np.greater(tv, tv.mean()))])
+    for i in range(drift.shape[0]):
+        drift[i] /= drift[i].max()
+    drift = drift.T
+    X, cons = design.stack_designs((X_exper, cons_exper),
+                                   (X_begin, {}),
+                                   (drift, {}))
+    tcons = {}
+    fcons = {}
+    for k, v in cons.items():
+        if v.ndim > 1:
+            fcons[k] = v
+        else:
+            tcons[k] = v
+    del(cons)
+
+    print tcons, fcons
     m = OLSModel(X)
     f = np.array(load("%(root)s/fiac%(subj)d/fonc%(run)d/fsl/filtered_func_data.img" % {'root':root, 'subj':subj, 'run':r}))
     mm = load("%(root)s/fiac%(subj)d/fonc%(run)d/fsl/mask.img" % {'root':root, 'subj':subj, 'run':r})

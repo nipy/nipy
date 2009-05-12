@@ -436,20 +436,24 @@ class Formula(object):
                 m.append(i)
             else:
                 l.append(w.shape[0])
-        if not np.alltrue(np.equal(l, l[0])):
+        if l and not np.alltrue(np.equal(l, l[0])):
             raise ValueError, 'shape mismatch'
 
         # Make sure that each array has the correct shape
         # columns of what should be 1s will
         
         for i in m:
-            varr[i].shape = (l[0],)
+            varr[i].shape = (preterm_recarray.shape[0],)
 
         v = np.array(varr).T
         if return_float or contrasts:
             D = np.squeeze(v.astype(np.float))
             if contrasts:
-                pinvD = np.linalg.pinv(D)
+                if D.ndim == 1:
+                    _D = D.reshape((D.shape[0], 1))
+                else:
+                    _D = D
+                pinvD = np.linalg.pinv(_D)
         else:
             D = np.array([tuple(r) for r in v], self.dtype)
 
@@ -459,7 +463,7 @@ class Formula(object):
                 cf = Formula([cf])
             L = cf.design(term, param=param_recarray, 
                           return_float=True)
-            cmatrices[key] = contrast_from_cols_or_rows(L, D, pseudo=pinvD)
+            cmatrices[key] = contrast_from_cols_or_rows(L, _D, pseudo=pinvD)
             
         if not contrasts:
             return D

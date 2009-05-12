@@ -8,7 +8,6 @@ import numpy as np
 from nipy.modalities.fmri import formula as F
 from nipy.fixes.scipy.stats.models.utils import rank
 from nipy.fixes.scipy.stats.models.regression import OLSModel
-reload(F)
 import nipy.testing as niptest
 
 data = """0.0      1      1      1

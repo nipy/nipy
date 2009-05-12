@@ -67,11 +67,12 @@ def event_design(event_spec, t, order=2, hrfs=[glover]):
     e_formula = np.product(e_factors)
 
     e_contrasts = {}
-    for i in range(1, order+1):
-        for comb in combinations(zip(fields, e_factors), i):
-            names = [c[0] for c in comb]
-            fs = [c[1].main_effect for c in comb]
-            e_contrasts[sjoin(names, ':')] = np.product(fs).design(event_spec)
+    if len(e_factors) > 1:
+        for i in range(1, order+1):
+            for comb in combinations(zip(fields, e_factors), i):
+                names = [c[0] for c in comb]
+                fs = [c[1].main_effect for c in comb]
+                e_contrasts[sjoin(names, ':')] = np.product(fs).design(event_spec)
 
     e_contrasts['constant'] = formula.I.design(event_spec)
 
@@ -133,23 +134,67 @@ def stack2designs(old_X, new_X, old_contrasts={}, new_contrasts={}):
         The new contrast matrices reflecting changes to the columns.
 
     """
+
     contrasts = {}
+
+    if old_X.ndim == 1:
+        old_X = old_X.reshape((old_X.shape[0], 1))
+    if new_X.ndim == 1:
+        new_X = new_X.reshape((new_X.shape[0], 1))
+
     X = np.hstack([old_X, new_X])
 
     if set(old_contrasts.keys()).intersection(new_contrasts.keys()) != set([]):
         raise ValueError('old and new contrasts must have different names')
 
     for n, c in old_contrasts.items():
-        cm = np.zeros((c.shape[0], X.shape[1]))
-        cm[:,:old_X.shape[0]] = c
-        contrasts[n] = c
+        if c.ndim > 1:
+            cm = np.zeros((c.shape[0], X.shape[1]))
+            cm[:,:old_X.shape[1]] = c
+        else:
+            cm = np.zeros(X.shape[1])
+            cm[:old_X.shape[1]] = c
+        contrasts[n] = cm
 
     for n, c in new_contrasts.items():
-        cm = np.zeros((c.shape[0], X.shape[1]))
-        cm[:,old_X.shape[0]:] = c
-        contrasts[n] = c
+        if c.ndim > 1:
+            cm = np.zeros((c.shape[0], X.shape[1]))
+            cm[:,old_X.shape[1]:] = c
+        else:
+            cm = np.zeros(X.shape[1])
+            cm[old_X.shape[1]:] = c
+        contrasts[n] = cm
 
     return X, contrasts
+
+def stack_contrasts(contrasts, name, keys):
+    """
+    Create a new F-contrast matrix called 'name'
+    based on a sequence of keys. The contrast
+    is added to contrasts, in-place.
+
+    Parameters:
+    -----------
+
+    contrasts : dict
+        Dictionary of contrast matrices
+
+    name : str
+        Name of new contrast. Should not already be a key of contrasts.
+
+    keys : [str]
+        Keys of contrasts that are to be stacked.
+
+    Outputs:
+    --------
+
+    None
+
+    """
+    if name in contrasts.keys():
+        raise ValueError('contrast "%s" already exists' % name)
+
+    contrasts[name] = np.vstack([contrasts[k] for k in keys])
 
 def stack_designs(*pairs):
     """
