@@ -1,3 +1,7 @@
+#####################################################################################
+# BAYESIAN MODEL SELECTION FOR ACTIVATION DETECTION ON FMRI GROUP DATA
+# Merlin Keller, 2009
+
 import numpy as np
 import scipy.special as sp
 
@@ -11,6 +15,7 @@ from .displacement_field import displacement_field
 from routines import add_lines
 from displacement_field import displacement_field
 
+#####################################################################################
 # some useful functions
 
 def log_gammainv_pdf(x, a, b):
@@ -32,6 +37,8 @@ def log_gaussian_pdf(x, m, v):
     """
     return -0.5 * (np.log(2 * np.pi * v) + (x - m)**2 / v)
 
+#####################################################################################
+# Main class
 
 class multivariate_stat:
     def __init__(self, data, vardata=None, XYZ=None, std=None, sigma=None, 
@@ -421,7 +428,11 @@ class multivariate_stat:
                         print "Sampling posterior distribution"
             for i in xrange(niter[j]):
                 if self.verbose:
-                    print "Iteration", i+1, "out of", niter[j]
+                    if mode == 'saem':
+                        print "SAEM",
+                    else:
+                        print "Gibbs",
+                    print "iteration", i+1, "out of", niter[j]
                 # Gibbs iteration
                 #i += 1
                 if update_spatial and self.std != None:
@@ -470,7 +481,69 @@ class multivariate_stat:
                     self.mean_U = sum_U / float(self.nsimu)
                     self.var_U = sum_U_sq / float(self.nsimu) - self.mean_U**2
     
+    #####################################################################################
+    # MAP estimation of displacement fields
+    
+    def estimate_displacements_SA(self, nsimu=1e2, c=0.99, proposal_std=1.0, verbose=False):
+        """
+        MAP estimate of elementary displacements conditional on model parameters
+        """
+        for i in xrange(nsimu):
+            if verbose:
+                print "SA iteration", i+1, "out of", nsimu
+            self.update_displacements_SA(c**i, proposal_std, verbose)
+            self.update_summary_statistics(w=1.0, update_spatial=True)
+    
+    def update_displacements_SA(self, T=1.0, proposal_std=None, verbose=False):
+        n = self.data.shape[0]
+        B = len(self.D.block)
+        for i in xrange(n):
+            for b in np.random.permutation(range(B)):
+                block = self.D.block[b]
+                self.update_block_SA(i, b, T, proposal_std * self.std, verbose)
+        if self.verbose:
+            print "mean rejected displacements :", self.R.mean(axis=0)
+    
+    def update_block_SA(self, i, b, T=1.0, proposal_std=None, verbose=False):
+        """
+        Update displacement block using simulated annealing scheme 
+        with random-walk kernel
+        """
+        if proposal_std==None:
+            proposal_std=self/std
+        block = self.D.block[b]
+        if verbose:
+            print 'sampling field', i, 'block', b
+        # Propose new displacement
+        U, V, L, W, I = self.D.sample(i, b, 'rand_walk', proposal_std * T)
+        Uc = self.D.U[:, i, b]
+        Vc = self.D.V[:, i, block]
+        Wc = self.D.W[:, i, L]
+        Ic = self.D.I[i, L]
+        # log acceptance rate
+        fc = self.compute_log_voxel_likelihood().sum()
+        self.D.U[:, i, b] = U
+        self.D.V[:, i, block] = V
+        if len(L)> 0:
+            self.D.W[:, i, L] = W
+            self.D.I[i, L] = I
+        f = self.compute_log_voxel_likelihood().sum()
+        A = (f - fc + (Uc**2 - U**2).sum() / self.std**2)
+        self.R[i, b] = np.random.uniform() > np.exp(A / T)
+        if self.R[i, b] == 1:
+            self.D.U[:, i, b] = Uc
+            self.D.V[:, i, block] = Vc
+            if len(L)> 0:
+                self.D.W[:, i, L] = Wc
+                self.D.I[i, L] = Ic
+    
+    #####################################################################################
+    # Marginal likelihood computation for model selection
+    
     def compute_log_region_likelihood_slow(self, v=None, m_mean=None, m_var=None, verbose=False, J=None):
+        """
+        Essentially maintained for debug purposes
+        """
         if v == None:
             v = self.v
         if m_mean == None:
@@ -635,18 +708,6 @@ class multivariate_stat:
               log_gammainv_pdf(std**2, self.std_shape + 0.5 * 3 * n * B, self.std_scale + 0.5 * self.s4)
         return log_conditional_posterior
     
-    def compute_log_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False):
-        """
-        compute log posterior density of region parameters by Rao-Blackwell method
-        using a Gibbs sampler (assuming all hidden variables have been initialized)
-        """
-        log_conditional_posterior_values \
-            = self.sample_log_conditional_posterior(v, m_mean, m_var, nsimu, burnin, verbose)
-        max_log_conditional = log_conditional_posterior_values.max(axis=0)
-        ll_ratio = log_conditional_posterior_values - max_log_conditional
-        #return max_log_conditional + np.log(np.exp(ll_ratio).sum(axis=0)) - np.log(nsimu)
-        return max_log_conditional #+ ll_ratio.mean(axis=0)
-    
     def sample_log_conditional_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False):
         """
         sample log conditional posterior density of region parameters
@@ -691,4 +752,22 @@ class multivariate_stat:
                     log_conditional_posterior_values[i] = \
                     self.compute_log_conditional_posterior(v, m_mean, m_var)[:-1]
         return log_conditional_posterior_values
+    
+    def compute_log_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False):
+        """
+        compute log posterior density of region parameters by Rao-Blackwell method
+        using a Gibbs sampler (assuming all hidden variables have been initialized)
+        """
+        log_conditional_posterior_values \
+            = self.sample_log_conditional_posterior(v, m_mean, m_var, nsimu, burnin, verbose)
+        max_log_conditional = log_conditional_posterior_values.max(axis=0)
+        ll_ratio = log_conditional_posterior_values - max_log_conditional
+        return max_log_conditional + np.log(np.exp(ll_ratio).sum(axis=0)) - np.log(nsimu)
+        #return max_log_conditional #+ ll_ratio.mean(axis=0)
+    
+    def compute_marginal_likelihood(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False):
+        log_likelihood = self.compute_log_region_likelihood(v, m_mean, m_var)
+        log_prior = self.compute_log_prior(v, m_mean, m_var)
+        log_posterior = self.compute_log_posterior(v, m_mean, m_var, nsimu, burnin, verbose)
+        return log_likelihood + log_prior[:-1] - log_posterior
 
