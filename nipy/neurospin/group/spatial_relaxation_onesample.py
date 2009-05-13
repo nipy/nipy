@@ -38,7 +38,7 @@ def log_gaussian_pdf(x, m, v):
     return -0.5 * (np.log(2 * np.pi * v) + (x - m)**2 / v)
 
 #####################################################################################
-# Main class
+# spatial relaxation multivariate statistic class
 
 class multivariate_stat:
     def __init__(self, data, vardata=None, XYZ=None, std=None, sigma=None, 
@@ -121,11 +121,10 @@ class multivariate_stat:
         self.S2 = np.zeros(N, float)
         self.s3 = np.zeros(N, float)
         self.S3 = np.zeros(N, float)
-        if self.labels_prior != None:
-            self.s6 = np.zeros(N, float)
-        self.region_size = np.zeros(N, float)
+        self.s6 = np.zeros(N, float)
         for j in xrange(N):
-            self.region_size[j] = (self.labels == j).sum()
+            self.s6[j] = (self.labels == j).sum()
+        self.S6 = self.s6.copy()
         self.m_var_post_scale = np.zeros(N, float)
         if init_spatial and self.std != None:
             B = len(self.D.block)
@@ -146,7 +145,7 @@ class multivariate_stat:
             self.update_parameters_mcmc(init_spatial)
         self.std = std
     
-    def update_summary_statistics(self, w=1.0, update_spatial=True):
+    def update_summary_statistics(self, w=1.0, update_spatial=True, mode='saem'):
         n, p = self.data.shape
         if self.std == None:
             m = self.m
@@ -154,7 +153,8 @@ class multivariate_stat:
             m = self.m[self.D.I]
             if update_spatial:
                 self.s4 = (self.D.U**2).sum()
-                self.S4 += w * (self.s4 - self.S4)
+                if mode == 'saem':
+                    self.S4 += w * (self.s4 - self.S4)
         if self.vardata == None:
             SS = (self.data - m)**2 #/ self.v + np.log(2 * np.pi * self.v)
         else:
@@ -179,66 +179,80 @@ class multivariate_stat:
                 self.s3[j] = self.m[L].sum()
             if update_spatial and self.std != None:
                 self.s5[j] = self.N[L].sum()
-                self.S5 += w * (self.s5 - self.S5)
+                if mode == 'saem':
+                    self.S5 += w * (self.s5 - self.S5)
         #self.S0 += w * (self.s0 - self.S0)
-        self.S1 += w * (self.s1 - self.S1)
-        self.S2 += w * (self.s2 - self.S2)
-        self.S3 += w * (self.s3 - self.S3)
-        if self.labels_prior != None:
-            self.region_size += w * (self.s6 - self.region_size)
+        if mode == 'saem':
+            self.S1 += w * (self.s1 - self.S1)
+            self.S2 += w * (self.s2 - self.S2)
+            self.S3 += w * (self.s3 - self.S3)
+            if self.labels_prior != None:
+                self.S6 += w * (self.s6 - self.S6)
+            size = self.S6
+            sum_sq = self.S2
+            sum = self.S3
+        else:
+            size = self.S6
+            sum_sq = self.s2
+            sum = self.s3
+        # Update m_var post scale
+        # used to update parameters,
+        # and compute conditional posterior
+        rate = self.m_mean_rate
+        shape = self.m_var_shape
+        scale = self.m_var_scale
+        J = self.network == 1
+        post_rate = rate[J] + size[J]
+        self.m_var_post_scale[J] = scale + 0.5 * (sum_sq[J] - sum[J]**2 / post_rate)
+        self.m_var_post_scale[J==0] = scale + 0.5 * sum_sq[J==0]
     
     def update_parameters_saem(self, update_spatial=True):
         n, p = self.data.shape
         #self.v = (self.S1 + 2 * self.v_scale) / (n * p + 2 * (1 + self.v_shape))
-        for j in xrange(len(self.network)):
-            rate = self.m_mean_rate[j]
-            shape = self.m_var_shape[j]
-            scale = self.m_var_scale[j]
-            pj = self.region_size[j]
-            if self.std == None:
-                Nj = n * pj
-            else:
-                Nj = self.S5[j]
-            self.v[j] = (self.S1[j] + 2 * self.v_scale) / (Nj + 2 * (1 + self.v_shape))
-            if self.network[j] == 1:
-                self.m_mean[j] = self.S3[j] / (pj + rate)
-                self.m_var_post_scale[j] = scale + 0.5 * (self.S2[j] - self.S3[j]**2 / (pj + rate))
-                self.m_var[j] = 2 * self.m_var_post_scale[j] / (pj + 2 * shape + 3)
-            else:
-                self.m_var_post_scale[j] = scale + 0.5 * self.S2[j]
-                self.m_var[j] = 2 * self.m_var_post_scale[j] / (pj + 2 * shape + 2)
-        if update_spatial and self.std != None:
-            B = len(self.D.block)
-            self.std = np.sqrt((self.S4 + 2 * self.std_scale) / (3 * n * B + 2 * self.std_shape + 1))
+        size = self.S6
+        rate = self.m_mean_rate
+        shape = self.m_var_shape
+        scale = self.m_var_scale
+        if self.std == None:
+            N = n * size
+        else:
+            N = self.S5
+            if update_spatial:
+                B = len(self.D.block)
+                self.std = np.sqrt(
+                (self.S4 + 2 * self.std_scale) / (3 * n * B + 2 * self.std_shape + 1))
+        self.v = (self.S1 + 2 * self.v_scale) / (N + 2 * (1 + self.v_shape))
+        J = self.network == 1
+        self.m_mean[J] = self.S3[J] / (rate[J] + size[J])
+        #self.m_var_post_scale[J] = scale[J] + 0.5 * (self.S2[J] - self.S3[J]**2 / (size[J] + rate[J]))
+        self.m_var[J] = 2 * self.m_var_post_scale[J] / (size[J] + 2 * shape[J] + 3)
+        #self.m_var_post_scale[J==0] = scale + 0.5 * self.S2[J==0]
+        self.m_var[J==0] = 2 * self.m_var_post_scale[J==0] / (size[J==0] + 2 * shape[J==0] + 2)
     
     def update_parameters_mcmc(self, update_spatial=True):
         n, p = self.data.shape
         #self.v = (self.s1 + 2 * self.v_scale) / np.random.chisquare(df = n * p + 2 * self.v_shape)
+        size = self.s6
+        rate = self.m_mean_rate
+        shape = self.m_var_shape
+        scale = self.m_var_scale
+        if self.std == None:
+            N = n * size
+        else:
+            N = self.s5
+            if update_spatial:
+                B = len(self.D.block)
+                self.std = np.sqrt(
+                    (self.s4 + 2*self.std_scale) / np.random.chisquare(df=3*n*B + 2*self.std_shape))
+        J = self.network == 1
+        post_rate = rate[J] + size[J]
+        #self.m_var_post_scale[J] = scale + 0.5 * (self.s2[J] - self.s3[J]**2 / post_rate)
+        self.m_mean[J] = self.s3[J] / post_rate 
+        + np.random.randn(J.sum()) * np.sqrt(self.m_var[J] / post_rate)
+        #self.m_var_post_scale[J==0] = scale + 0.5 * self.s2[J==0]
         for j in xrange(len(self.network)):
-            rate = self.m_mean_rate[j]
-            shape = self.m_var_shape[j]
-            scale = self.m_var_scale[j]
-            if self.labels_prior == None:
-                pj = self.region_size[j]
-            else:
-                pj = self.s6[j]
-            if self.std == None:
-                Nj = n * pj
-            else:
-                Nj = self.s5[j]
-            self.v[j] = (self.s1[j] + 2 * self.v_scale) / np.random.chisquare(df = Nj + 2 * self.v_shape)
-            if self.network[j] == 1:
-                s3 = self.s3[j]
-                post_rate = rate + pj
-                self.m_var_post_scale[j] = scale + 0.5 * (self.s2[j] - s3**2 / post_rate)
-                self.m_var[j] = 2 * self.m_var_post_scale[j] / np.random.chisquare(df = pj + 2 * shape)
-                self.m_mean[j] = s3 / post_rate + np.random.randn() * np.sqrt(self.m_var[j] / post_rate)
-            else:
-                self.m_var_post_scale[j] = scale + 0.5 * self.s2[j]
-                self.m_var[j] = 2 * self.m_var_post_scale[j] / np.random.chisquare(df = pj + 2 * shape)
-        if update_spatial and self.std != None:
-            B = len(self.D.block)
-            self.std = np.sqrt((self.s4 + 2 * self.std_scale) / np.random.chisquare(df = 3 * n * B + 2 * self.std_shape))
+            self.v[j] = (self.s1[j] + 2 * self.v_scale) / np.random.chisquare(df = N[j] + 2 * self.v_shape)
+            self.m_var[j] = 2 * self.m_var_post_scale[j] / np.random.chisquare(df = size[j] + 2 * shape[j])
     
     def update_displacements(self):
         n, p = self.data.shape
@@ -449,7 +463,7 @@ class multivariate_stat:
                     self.update_labels()
                 if j == 1:
                     w = 1.0 / (i + 1)
-                self.update_summary_statistics(w, update_spatial)
+                self.update_summary_statistics(w, update_spatial, mode)
                 if mode == 'saem':
                     self.update_parameters_saem(update_spatial)
                 else:
@@ -676,12 +690,10 @@ class multivariate_stat:
             std = self.std
         N = len(self.network)
         log_prior_values = np.zeros(N + 1, float)
-        for j in xrange(N):
-            pj = self.region_size[j]
-            log_prior_values[j] = log_gammainv_pdf(v[j], self.v_shape, self.v_scale)
-            log_prior_values[j] += log_gammainv_pdf(m_var[j], self.m_var_shape[j], self.m_var_scale[j])
-            if self.network[j] == 1:
-                log_prior_values[j] += log_gaussian_pdf(m_mean[j], 0, m_var[j] / self.m_mean_rate[j])
+        log_prior_values[:-1] = log_gammainv_pdf(v, self.v_shape, self.v_scale)
+        log_prior_values[:-1] += log_gammainv_pdf(m_var, self.m_var_shape, self.m_var_scale)
+        J = self.network == 1
+        log_prior_values[J] += log_gaussian_pdf(m_mean[J], 0, m_var[J] / self.m_mean_rate[J])
         if self.std != None:
             log_prior_values[-1] = log_gammainv_pdf(std**2, self.std_shape, self.std_scale)
         return log_prior_values
@@ -701,43 +713,17 @@ class multivariate_stat:
             m_var = self.m_var
         if std == None:
             std = self.std
-        N = len(self.network)
-        log_conditional_posterior = np.zeros(N + 1, float)
-        self.update_summary_statistics(update_spatial=False)
-        #self.update_parameters_mcmc(update_spatial=False)
-        # update m_var_post_scale
-        for j in xrange(len(self.network)):
-            rate = self.m_mean_rate[j]
-            scale = self.m_var_scale[j]
-            if self.labels_prior == None:
-                pj = self.region_size[j]
-            else:
-                pj = self.s6[j]
-            if self.std == None:
-                Nj = n * pj
-            else:
-                Nj = self.s5[j]
-            if self.network[j] == 1:
-                s3 = self.s3[j]
-                post_rate = rate + pj
-                self.m_var_post_scale[j] = scale + 0.5 * (self.s2[j] - s3**2 / post_rate)
-            else:
-                self.m_var_post_scale[j] = scale + 0.5 * self.s2[j]
-        for j in xrange(N):
-            pj = self.region_size[j]
-            if self.std == None:
-                Nj = n * pj
-            else:
-                Nj = self.s5[j]
-            log_conditional_posterior[j] = \
-              log_gammainv_pdf(v[j], self.v_shape + 0.5 * Nj, self.v_scale + 0.5 * self.s1[j])
-            log_conditional_posterior[j] += \
-              log_gammainv_pdf(m_var[j], self.m_var_shape[j] + 0.5 * pj, self.m_var_post_scale[j])
-            if self.network[j] == 1:
-                post_rate = self.m_mean_rate[j] + pj
-                log_conditional_posterior[j] += \
-                  log_gaussian_pdf(m_mean[j], self.s3[j] / post_rate, m_var[j] / post_rate)
-        n, p = self.data.shape
+        log_conditional_posterior = np.zeros(len(self.network) + 1, float)
+        size = self.s6
+        if self.std == None:
+            N = n * size
+        else:
+            N = self.s5
+        log_conditional_posterior[:-1] = log_gammainv_pdf(v, self.v_shape + 0.5 * N, self.v_scale + 0.5 * self.s1)
+        log_conditional_posterior[:-1] += log_gammainv_pdf(m_var, self.m_var_shape + 0.5 * size, self.m_var_post_scale)
+        J = self.network == 1
+        post_rate = self.m_mean_rate[J] + size[J]
+        log_conditional_posterior[J] += log_gaussian_pdf(m_mean[J], self.s3[J] / post_rate, m_var[J] / post_rate)
         if self.std != None:
             B = len(self.D.block)
             log_conditional_posterior[-1] = \
@@ -778,31 +764,10 @@ class multivariate_stat:
                 if self.vardata != None:
                     self.update_effects()
                 self.update_mean_effect()
-                #if self.labels_prior != None:
-                    #self.update_labels()
-                #self.update_summary_statistics(update_spatial=False)
-                ##self.update_parameters_mcmc(update_spatial=False)
-                ## update m_var_post_scale
-                #for j in xrange(len(self.network)):
-                    #rate = self.m_mean_rate[j]
-                    #scale = self.m_var_scale[j]
-                    #if self.labels_prior == None:
-                        #pj = self.region_size[j]
-                    #else:
-                        #pj = self.s6[j]
-                    #if self.std == None:
-                        #Nj = n * pj
-                    #else:
-                        #Nj = self.s5[j]
-                    #if self.network[j] == 1:
-                        #s3 = self.s3[j]
-                        #post_rate = rate + pj
-                        #self.m_var_post_scale[j] = scale + 0.5 * (self.s2[j] - s3**2 / post_rate)
-                    #else:
-                        #self.m_var_post_scale[j] = scale + 0.5 * self.s2[j]
                 if self.verbose:
                     print "population effect min variance value :", self.m_var.min()
                 if k == 1:
+                    self.update_summary_statistics(update_spatial=False, mode='mcmc')
                     log_conditional_posterior_values[i] = \
                     self.compute_log_conditional_posterior(v, m_mean, m_var)[:-1]
         return log_conditional_posterior_values
