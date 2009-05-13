@@ -272,7 +272,7 @@ class multivariate_stat:
                 for i in xrange(n):
                     for b in np.random.permutation(range(B)):
                         block = self.D.block[b]
-                        self.update_block(i, b, 'rand_walk', self.proposal_std * self.std)
+                        self.update_block(i, b, 'rand_walk', self.proposal_std)
             else:
                 for i in xrange(n):
                     for b in np.random.permutation(range(B)):
@@ -469,6 +469,8 @@ class multivariate_stat:
                 #i += 1
                 if update_spatial and self.std != None:
                     self.update_displacements()
+                    if j == 0:
+                        self.proposal_std = np.clip(self.proposal_std * (1 + self.R.mean()) / (1 + 0.8), 0.2, 1.0)
                 if self.vardata != None:
                     self.update_effects()
                 self.update_mean_effect()
