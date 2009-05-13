@@ -96,7 +96,7 @@ class test_multivariate_stat_saem(unittest.TestCase):
     def test_model_selection_mfx_spatial_rand_walk(self):
         data, XYZ, mask, XYZvol, vardata, signal = make_data(n=20, dim=20, r=3, mdim=15, maskdim=15, amplitude=3, noise=1, jitter=1, activation=True)
         #verbose=True
-        P = os.multivariate_stat(data[:, mask], vardata[:, mask], XYZ[:, mask], std=1.0, sigma=5)
+        P = os.multivariate_stat(data[:, mask], vardata[:, mask], XYZ[:, mask], std=2.0, sigma=5)
         P.network[0] = 0
         P.init_hidden_variables()
         P.evaluate(nsimu=100, burnin=100, verbose=verbose, proposal='rand_walk', proposal_std=1.0)

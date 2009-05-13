@@ -167,13 +167,11 @@ class multivariate_stat:
                 Ii = self.D.I[i]
                 SSi = SS[i].reshape(p, 1)
                 add_lines(SSi, SS_sum.reshape(p, 1), Ii)
-        #self.s1 = ((self.X - m)**2).sum()
         for j in xrange(len(self.network)):
             L = np.where(self.labels == j)[0]
             self.s1[j] = SS_sum[L].sum()
             if self.labels_prior != None:
                 self.s6[j] = len(L)
-            #self.s0[j] = SS_sum[L].sum()
             self.s2[j] = (self.m[L]**2).sum()
             if self.network[j] == 1:
                 self.s3[j] = self.m[L].sum()
@@ -181,7 +179,6 @@ class multivariate_stat:
                 self.s5[j] = self.N[L].sum()
                 if mode == 'saem':
                     self.S5 += w * (self.s5 - self.S5)
-        #self.S0 += w * (self.s0 - self.S0)
         if mode == 'saem':
             self.S1 += w * (self.s1 - self.S1)
             self.S2 += w * (self.s2 - self.S2)
@@ -224,9 +221,7 @@ class multivariate_stat:
         self.v = (self.S1 + 2 * self.v_scale) / (N + 2 * (1 + self.v_shape))
         J = self.network == 1
         self.m_mean[J] = self.S3[J] / (rate[J] + size[J])
-        #self.m_var_post_scale[J] = scale[J] + 0.5 * (self.S2[J] - self.S3[J]**2 / (size[J] + rate[J]))
         self.m_var[J] = 2 * self.m_var_post_scale[J] / (size[J] + 2 * shape[J] + 3)
-        #self.m_var_post_scale[J==0] = scale + 0.5 * self.S2[J==0]
         self.m_var[J==0] = 2 * self.m_var_post_scale[J==0] / (size[J==0] + 2 * shape[J==0] + 2)
     
     def update_parameters_mcmc(self, update_spatial=True):
@@ -246,10 +241,8 @@ class multivariate_stat:
                     (self.s4 + 2*self.std_scale) / np.random.chisquare(df=3*n*B + 2*self.std_shape))
         J = self.network == 1
         post_rate = rate[J] + size[J]
-        #self.m_var_post_scale[J] = scale + 0.5 * (self.s2[J] - self.s3[J]**2 / post_rate)
         self.m_mean[J] = self.s3[J] / post_rate 
         + np.random.randn(J.sum()) * np.sqrt(self.m_var[J] / post_rate)
-        #self.m_var_post_scale[J==0] = scale + 0.5 * self.s2[J==0]
         for j in xrange(len(self.network)):
             self.v[j] = (self.s1[j] + 2 * self.v_scale) / np.random.chisquare(df = N[j] + 2 * self.v_shape)
             self.m_var[j] = 2 * self.m_var_post_scale[j] / np.random.chisquare(df = size[j] + 2 * shape[j])
@@ -317,7 +310,11 @@ class multivariate_stat:
                 self.D.W[:, i, L] = W
                 self.D.I[i, L] = I
     
-    def update_effects(self):
+    def update_effects(self, T=1.0):
+        """
+        T is a temperature used to compute log posterior density 
+        by simulated annealing
+        """
         n, p = self.data.shape
         if self.std == None:
             m = self.m
@@ -330,10 +327,14 @@ class multivariate_stat:
         #cond_var = self.v * self.vardata / tot_var
         tot_var = v + self.vardata
         cond_mean = (v * self.data + self.vardata * m) / tot_var
-        cond_var = v * self.vardata / tot_var
+        cond_var = T * v * self.vardata / tot_var
         self.X = cond_mean + np.random.randn(n, p) * np.sqrt(cond_var)
     
-    def update_mean_effect(self):
+    def update_mean_effect(self, T=1.0):
+        """
+        T is a temperature used to compute log posterior density 
+        by simulated annealing
+        """
         n, p = self.data.shape
         X_sum = np.zeros(p, float)
         if self.std == None:
@@ -348,8 +349,8 @@ class multivariate_stat:
                 #add_lines(ones, self.N.reshape(p, 1), Ii)
         for j in xrange(len(self.network)):
             L = np.where(self.labels == j)[0]
-            m_var = self.m_var[j]
-            v = self.v[j]
+            m_var = self.m_var[j] * T
+            v = self.v[j] * T
             if self.std == None:
                 #tot_var = self.v + m_var * n
                 tot_var = v + m_var * n
@@ -730,10 +731,12 @@ class multivariate_stat:
               log_gammainv_pdf(std**2, self.std_shape + 0.5 * 3 * n * B, self.std_scale + 0.5 * self.s4)
         return log_conditional_posterior
     
-    def sample_log_conditional_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False):
+    def sample_log_conditional_posterior(self, v=None, m_mean=None, m_var=None, 
+                                        nsimu=1e2, burnin=1e2, verbose=False, c=1.0):
         """
         sample log conditional posterior density of region parameters
-        using a Gibbs sampler (assuming all hidden variables have been initialized)
+        using a Gibbs sampler (assuming all hidden variables have been initialized).
+        A cooling schedule can also be implemented, choosing c < 1.
         """
         if v == None:
             v = self.v.copy()
@@ -757,13 +760,17 @@ class multivariate_stat:
                 else:
                     print "Sampling posterior distribution"
             for i in xrange(niter[k]):
+                if k == 0:
+                    T = 1.0
+                else:
+                    T = c**i
                 if self.verbose:
                     print "Iteration", i+1, "out of", niter[k]
                 # Gibbs iteration
                 #i += 1
                 if self.vardata != None:
-                    self.update_effects()
-                self.update_mean_effect()
+                    self.update_effects(T)
+                self.update_mean_effect(T)
                 if self.verbose:
                     print "population effect min variance value :", self.m_var.min()
                 if k == 1:
@@ -772,21 +779,24 @@ class multivariate_stat:
                     self.compute_log_conditional_posterior(v, m_mean, m_var)[:-1]
         return log_conditional_posterior_values
     
-    def compute_log_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False):
+    def compute_log_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False, c=1.0):
         """
-        compute log posterior density of region parameters by Rao-Blackwell method
-        using a Gibbs sampler (assuming all hidden variables have been initialized)
+        compute upper bound on log posterior density of region parameters
+        by Rao-Blackwell method, or simulated annealing (assuming all hidden variables have been initialized)
         """
         log_conditional_posterior_values \
-            = self.sample_log_conditional_posterior(v, m_mean, m_var, nsimu, burnin, verbose)
+            = self.sample_log_conditional_posterior(v, m_mean, m_var, nsimu, burnin, verbose, c)
         max_log_conditional = log_conditional_posterior_values.max(axis=0)
         ll_ratio = log_conditional_posterior_values - max_log_conditional
-        #return max_log_conditional + np.log(np.exp(ll_ratio).sum(axis=0)) - np.log(nsimu)
-        return max_log_conditional #+ ll_ratio.mean(axis=0)
+        if c < 1:
+            return log_conditional_posterior_values[-1]
+        else:
+            #return max_log_conditional + np.log(np.exp(ll_ratio).sum(axis=0)) - np.log(nsimu)
+            return max_log_conditional + ll_ratio.mean(axis=0)
     
-    def compute_marginal_likelihood(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False):
-        log_likelihood = self.compute_log_region_likelihood(v, m_mean, m_var)
+    def compute_marginal_likelihood(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False, c=1.0):
+        #log_likelihood = self.compute_log_region_likelihood(v, m_mean, m_var)
         log_prior = self.compute_log_prior(v, m_mean, m_var)
-        log_posterior = self.compute_log_posterior(v, m_mean, m_var, nsimu, burnin, verbose)
+        log_posterior = self.compute_log_posterior(v, m_mean, m_var, nsimu, burnin, verbose, c)
         return log_likelihood + log_prior[:-1] - log_posterior
 
