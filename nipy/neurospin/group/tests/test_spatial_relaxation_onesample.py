@@ -74,55 +74,59 @@ class test_multivariate_stat_saem(unittest.TestCase):
     def test_model_selection_exact(self):
         data, XYZ, mask, XYZvol, vardata, signal = make_data(n=30, dim=30, r=3, mdim=10, maskdim=10, amplitude=1, noise=1, jitter=1, activation=False)
         #verbose=False
-        P1 = os.multivariate_stat(data[:, mask])
+        labels = (signal > 0).astype(int)
+        P1 = os.multivariate_stat(data[:, mask], labels=labels)
         P1.init_hidden_variables()
         P1.evaluate(nsimu=100, burnin=10, verbose=verbose)
-        L1 = P1.compute_log_region_likelihood()[0]
-        Prior1 = P1.compute_log_prior()[0]
-        Post1 = P1.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)[0]
-        M1 = L1 + Prior1 - Post1
-        self.assertAlmostEqual(M1, P1.compute_marginal_likelihood()[0], 0)
-        P0 = os.multivariate_stat(data[:, mask])
-        P0.network[0] = 0
+        L1 = P1.compute_log_region_likelihood()
+        Prior1 = P1.compute_log_prior()
+        Post1 = P1.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
+        M1 = L1 + Prior1[:-1] - Post1
+        self.assertAlmostEqual(M1.mean(), P1.compute_marginal_likelihood().mean(), 0)
+        P0 = os.multivariate_stat(data[:, mask], labels=labels)
+        P0.network *= 0
         P0.init_hidden_variables()
-        P0.evaluate(nsimu=100, burnin=10, verbose=verbose)
-        L0 = P0.compute_log_region_likelihood()[0]
-        Prior0 = P0.compute_log_prior()[0]
-        Post0 = P0.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)[0]
-        M0 = L0 + Prior0 - Post0
-        self.assertAlmostEqual(M0, P0.compute_marginal_likelihood()[0], 0)
-        self.assertTrue(M1 > M0)
+        P0.evaluate(nsimu=100, burnin=100, verbose=verbose)
+        L0 = P0.compute_log_region_likelihood()
+        Prior0 = P0.compute_log_prior()
+        Post0 = P0.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
+        M0 = L0 + Prior0[:-1] - Post0
+        self.assertAlmostEqual(M0.mean(), P0.compute_marginal_likelihood().mean(), 0)
+        self.assertTrue(M1[1] > M0[1])
+        self.assertTrue(M1[0] < M0[0])
     
     def test_model_selection_mfx_spatial_rand_walk(self):
         data, XYZ, mask, XYZvol, vardata, signal = make_data(n=20, dim=20, r=3, mdim=15, maskdim=15, amplitude=3, noise=1, jitter=1, activation=True)
         #verbose=True
-        P = os.multivariate_stat(data[:, mask], vardata[:, mask], XYZ[:, mask], std=2.0, sigma=5)
-        P.network[0] = 0
+        labels = (signal > 0).astype(int)
+        P = os.multivariate_stat(data[:, mask], vardata[:, mask], XYZ[:, mask], std=2.0, sigma=5, labels=labels)
+        P.network *= 0
         P.init_hidden_variables()
         P.evaluate(nsimu=100, burnin=100, verbose=verbose, proposal='rand_walk', proposal_std=1.0)
         #P.evaluate(nsimu=100, burnin=10, verbose=verbose, proposal='prior')
-        L00 = P.compute_log_region_likelihood()[0]
+        L00 = P.compute_log_region_likelihood()
         # Test simulated annealing procedure
         P.estimate_displacements_SA(nsimu=10, c=0.99, proposal_std=0.5, verbose=verbose)
-        L0 = P.compute_log_region_likelihood()[0]
-        self.assertTrue(L0 > L00)
-        Prior0 = P.compute_log_prior()[0]
-        Post0 = P.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)[0]
-        M0 = L0 + Prior0 - Post0
-        self.assertAlmostEqual(M0, P.compute_marginal_likelihood(verbose=verbose)[0], 0)
+        L0 = P.compute_log_region_likelihood()
+        self.assertTrue(L0.mean() > L00.mean())
+        Prior0 = P.compute_log_prior()
+        Post0 = P.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
+        M0 = L0 + Prior0[:-1] - Post0
+        self.assertAlmostEqual(M0.mean(), P.compute_marginal_likelihood(verbose=verbose).mean(), 0)
         #P = os.multivariate_stat(data[:, mask], vardata[:, mask], XYZ[:, mask], std=1, sigma=3)
-        P.network[0] = 1
+        P.network += 1
         P.init_hidden_variables(init_spatial=False)
         P.evaluate(nsimu=100, burnin=100, verbose=verbose, update_spatial=False)
         #L10 = P.compute_log_region_likelihood()[0]
         #P.estimate_displacements_SA(nsimu=10, c=0.99, proposal_std=0.5, verbose=verbose)
-        L1 = P.compute_log_region_likelihood()[0]
+        L1 = P.compute_log_region_likelihood()
         #self.assertTrue(L1 > L10)
-        Prior1 = P.compute_log_prior()[0]
-        Post1 = P.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)[0]
-        M1 = L1 + Prior1 - Post1
-        self.assertAlmostEqual(M1, P.compute_marginal_likelihood(verbose=verbose)[0], 0)
-        self.assertTrue(M1 > M0)
+        Prior1 = P.compute_log_prior()
+        Post1 = P.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
+        M1 = L1 + Prior1[:-1] - Post1
+        self.assertAlmostEqual(M1.mean(), P.compute_marginal_likelihood(verbose=verbose).mean(), 0)
+        self.assertTrue(M1[1] > M0[1])
+        self.assertTrue(M1[0] < M0[0])
 
 
 class test_multivariate_stat_mcmc(unittest.TestCase):

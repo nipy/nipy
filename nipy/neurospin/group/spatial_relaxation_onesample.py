@@ -24,11 +24,16 @@ def log_gammainv_pdf(x, a, b):
     at point x, using Stirling's approximation for a > 100
     """
     L = a * np.log(b) - (a + 1) * np.log(x) - b / x
-    if a <= 100:
-        L -= np.log(sp.gamma(a))
+    if np.isscalar(a):
+        if a <= 100:
+            L -= np.log(sp.gamma(a))
+        else:
+            n = a - 1
+            L -= 0.5 * np.log(2 * np.pi * n) + n * (np.log(n) - 1)
     else:
-        n = a - 1
-        L -= 0.5 * np.log(2 * np.pi * n) + n * (np.log(n) - 1)
+        L[a <= 100] -= np.log(sp.gamma(a[a <= 100]))
+        n = a[a > 100] - 1
+        L[a > 100] -= 0.5 * np.log(2 * np.pi * n) + n * (np.log(n) - 1)
     return L
 
 def log_gaussian_pdf(x, m, v):
@@ -199,9 +204,12 @@ class multivariate_stat:
         shape = self.m_var_shape
         scale = self.m_var_scale
         J = self.network == 1
-        post_rate = rate[J] + size[J]
-        self.m_var_post_scale[J] = scale + 0.5 * (sum_sq[J] - sum[J]**2 / post_rate)
-        self.m_var_post_scale[J==0] = scale + 0.5 * sum_sq[J==0]
+        N1 = J.sum()
+        if N1 > 0:
+            post_rate = rate[J] + size[J]
+            self.m_var_post_scale[J] = scale + 0.5 * (sum_sq[J] - sum[J]**2 / post_rate)
+        if N1 < len(self.network):
+            self.m_var_post_scale[J==0] = scale + 0.5 * sum_sq[J==0]
     
     def update_parameters_saem(self, update_spatial=True):
         n, p = self.data.shape
@@ -220,9 +228,12 @@ class multivariate_stat:
                 (self.S4 + 2 * self.std_scale) / (3 * n * B + 2 * self.std_shape + 1))
         self.v = (self.S1 + 2 * self.v_scale) / (N + 2 * (1 + self.v_shape))
         J = self.network == 1
-        self.m_mean[J] = self.S3[J] / (rate[J] + size[J])
-        self.m_var[J] = 2 * self.m_var_post_scale[J] / (size[J] + 2 * shape[J] + 3)
-        self.m_var[J==0] = 2 * self.m_var_post_scale[J==0] / (size[J==0] + 2 * shape[J==0] + 2)
+        N1 = J.sum()
+        if N1 > 0:
+            self.m_mean[J] = self.S3[J] / (rate[J] + size[J])
+            self.m_var[J] = 2 * self.m_var_post_scale[J] / (size[J] + 2 * shape[J] + 3)
+        if N1 < len(self.network):
+            self.m_var[J==0] = 2 * self.m_var_post_scale[J==0] / (size[J==0] + 2 * shape[J==0] + 2)
     
     def update_parameters_mcmc(self, update_spatial=True):
         n, p = self.data.shape
@@ -240,9 +251,10 @@ class multivariate_stat:
                 self.std = np.sqrt(
                     (self.s4 + 2*self.std_scale) / np.random.chisquare(df=3*n*B + 2*self.std_shape))
         J = self.network == 1
-        post_rate = rate[J] + size[J]
-        self.m_mean[J] = self.s3[J] / post_rate 
-        + np.random.randn(J.sum()) * np.sqrt(self.m_var[J] / post_rate)
+        if J.sum() > 0:
+            post_rate = rate[J] + size[J]
+            self.m_mean[J] = self.s3[J] / post_rate 
+            + np.random.randn(J.sum()) * np.sqrt(self.m_var[J] / post_rate)
         for j in xrange(len(self.network)):
             self.v[j] = (self.s1[j] + 2 * self.v_scale) / np.random.chisquare(df = N[j] + 2 * self.v_shape)
             self.m_var[j] = 2 * self.m_var_post_scale[j] / np.random.chisquare(df = size[j] + 2 * shape[j])
@@ -672,9 +684,8 @@ class multivariate_stat:
                 add_lines(np.log(tot_var[i]).reshape(p, 1), SS2.reshape(p, 1), Ii)
                 add_lines((Z[i]**2 / tot_var[i]).reshape(p, 1), SS3.reshape(p, 1), Ii)
                 add_lines((Z[i] / tot_var[i]).reshape(p, 1), SS4.reshape(p, 1), Ii)
-        return - 0.5 * (\
-            N * np.log(2 * np.pi) + np.log(1 + m_var * SS1) \
-            + SS2 + SS3 - SS4**2 / (1 / m_var[self.labels] + SS1))
+        return - 0.5 * (N * np.log(2 * np.pi) + np.log(1 + m_var[self.labels] * SS1) \
+                + SS2 + SS3 - SS4**2 / (1 / m_var[self.labels] + SS1))
     
     def compute_log_prior(self, v=None, m_mean=None, m_var=None, std=None):
         """
@@ -694,7 +705,8 @@ class multivariate_stat:
         log_prior_values[:-1] = log_gammainv_pdf(v, self.v_shape, self.v_scale)
         log_prior_values[:-1] += log_gammainv_pdf(m_var, self.m_var_shape, self.m_var_scale)
         J = self.network == 1
-        log_prior_values[J] += log_gaussian_pdf(m_mean[J], 0, m_var[J] / self.m_mean_rate[J])
+        if J.sum() > 0:
+            log_prior_values[J] += log_gaussian_pdf(m_mean[J], 0, m_var[J] / self.m_mean_rate[J])
         if self.std != None:
             log_prior_values[-1] = log_gammainv_pdf(std**2, self.std_shape, self.std_scale)
         return log_prior_values
@@ -723,8 +735,9 @@ class multivariate_stat:
         log_conditional_posterior[:-1] = log_gammainv_pdf(v, self.v_shape + 0.5 * N, self.v_scale + 0.5 * self.s1)
         log_conditional_posterior[:-1] += log_gammainv_pdf(m_var, self.m_var_shape + 0.5 * size, self.m_var_post_scale)
         J = self.network == 1
-        post_rate = self.m_mean_rate[J] + size[J]
-        log_conditional_posterior[J] += log_gaussian_pdf(m_mean[J], self.s3[J] / post_rate, m_var[J] / post_rate)
+        if J.sum() > 0:
+            post_rate = self.m_mean_rate[J] + size[J]
+            log_conditional_posterior[J] += log_gaussian_pdf(m_mean[J], self.s3[J] / post_rate, m_var[J] / post_rate)
         if self.std != None:
             B = len(self.D.block)
             log_conditional_posterior[-1] = \
@@ -795,7 +808,7 @@ class multivariate_stat:
             return max_log_conditional + ll_ratio.mean(axis=0)
     
     def compute_marginal_likelihood(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False, c=1.0):
-        #log_likelihood = self.compute_log_region_likelihood(v, m_mean, m_var)
+        log_likelihood = self.compute_log_region_likelihood(v, m_mean, m_var)
         log_prior = self.compute_log_prior(v, m_mean, m_var)
         log_posterior = self.compute_log_posterior(v, m_mean, m_var, nsimu, burnin, verbose, c)
         return log_likelihood + log_prior[:-1] - log_posterior
