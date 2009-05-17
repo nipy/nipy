@@ -431,7 +431,9 @@ class multivariate_stat:
         if self.std != None:
             B = len(self.D.block)
             if update_spatial:
-                self.std_values = self.std_values = np.zeros(nsimu + burnin, float)
+                self.std_values = np.zeros(nsimu + burnin, float)
+                if proposal == 'rand_walk':
+                    self.proposal_std_values = np.zeros(nsimu + burnin, float)
         if self.labels_prior != None:
             self.labels_post = np.zeros(self.labels_prior.shape, float)
             #Il = np.array(np.where(self.labels_prior > 0))
@@ -469,8 +471,8 @@ class multivariate_stat:
                 #i += 1
                 if update_spatial and self.std != None:
                     self.update_displacements()
-                    if j == 0:
-                        self.proposal_std = np.clip(self.proposal_std * (1 + self.R.mean()) / (1 + 0.8), 0.2, 1.0)
+                    if j == 0 and self.proposal == 'rand_walk':
+                        self.proposal_std = np.clip(self.proposal_std * (1 + 0.7) / (1 + self.R.mean()), 0.2, 1.0)
                 if self.vardata != None:
                     self.update_effects()
                 self.update_mean_effect()
@@ -489,6 +491,8 @@ class multivariate_stat:
                 #self.v_values[i + self.burnin * j] = self.v
                 if update_spatial and self.std != None:
                     self.std_values[i + self.burnin * j] = self.std
+                    if proposal == 'rand_walk':
+                        self.proposal_std_values[i + self.burnin * j] = self.proposal_std
                 if self.J != None:
                     self.m_values[:, i + self.burnin * j] = self.m[self.J]
                 if j == 1 and self.labels_prior != None:
@@ -752,6 +756,7 @@ class multivariate_stat:
         sample log conditional posterior density of region parameters
         using a Gibbs sampler (assuming all hidden variables have been initialized).
         A cooling schedule can also be implemented, choosing c < 1.
+        Computes posterior mean
         """
         if v == None:
             v = self.v.copy()
@@ -763,6 +768,7 @@ class multivariate_stat:
         log_conditional_posterior_values = np.zeros((nsimu, N), float)
         #self.init_hidden_variables()
         n, p = self.data.shape
+        posterior_mean = np.zeros(p, float)
         self.nsimu = nsimu
         self.burnin = burnin
         #self.J = J
@@ -786,21 +792,23 @@ class multivariate_stat:
                 if self.vardata != None:
                     self.update_effects(T)
                 self.update_mean_effect(T)
+                posterior_mean += self.m
                 if self.verbose:
                     print "population effect min variance value :", self.m_var.min()
                 if k == 1:
                     self.update_summary_statistics(update_spatial=False, mode='mcmc')
                     log_conditional_posterior_values[i] = \
                     self.compute_log_conditional_posterior(v, m_mean, m_var)[:-1]
-        return log_conditional_posterior_values
+        posterior_mean /= nsimu
+        return log_conditional_posterior_values, posterior_mean
     
     def compute_log_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False, c=1.0):
         """
         compute upper bound on log posterior density of region parameters
-        by Rao-Blackwell method, or simulated annealing (assuming all hidden variables have been initialized)
+        by Rao-Blackwell method, or simulated annealing (assuming all hidden variables have been initialized).
         """
         log_conditional_posterior_values \
-            = self.sample_log_conditional_posterior(v, m_mean, m_var, nsimu, burnin, verbose, c)
+            = self.sample_log_conditional_posterior(v, m_mean, m_var, nsimu, burnin, verbose, c)[0]
         max_log_conditional = log_conditional_posterior_values.max(axis=0)
         ll_ratio = log_conditional_posterior_values - max_log_conditional
         if c < 1:
