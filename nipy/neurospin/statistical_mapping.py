@@ -66,7 +66,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
     if np.where(above_th)[0].size == 0:
         return None ## FIXME
     zmap_th = zmap[above_th]
-    xyz_th = xyz[above_th]
+    xyz_th = xyz[above_th.squeeze(),:]
 
     # Clustering
     ## Extract local maxima and connex components above some threshold
@@ -91,7 +91,15 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
     clusters.sort(cmp=smaller)
 
     # FDR-corrected p-values
-    fdr_pvalue = emp_null.FDR(zmap).all_fdr()[above_th]
+    fdr_pvalue = emp_null.FDR(zmap).all_fdr()[above_th.squeeze()]
+
+    # Default "nulls"
+    if not nulls.has_key('zmax'):
+        nulls['zmax'] = 'bonferroni'
+    if not nulls.has_key('smax'):
+        nulls['smax'] = None
+    if not nulls.has_key('s'):
+        nulls['s'] = None
 
     # Report significance levels in each cluster 
     for c in clusters:
@@ -103,14 +111,6 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
         c['zscore'] = zscore
         c['pvalue'] = pval
         c['fdr_pvalue'] = fdr_pvalue[maxima]
-
-        # Default "nulls"
-        if not nulls.has_key('zmax'):
-            nulls['zmax'] = 'bonferroni'
-        if not nulls.has_key('smax'):
-            nulls['smax'] = None
-        if not nulls.has_key('s'):
-            nulls['s'] = None
 
         # Voxel-level corrected p-values
         p = None
@@ -153,6 +153,7 @@ def mask_intersection(masks):
     mask = masks[0]
     for m in masks[1:]:
         mask = mask * m
+    mask[mask != 0] = 1
     return mask 
 
 
@@ -160,17 +161,14 @@ def prepare_arrays(data_images, vardata_images, mask_images):
 
     # Compute mask intersection
     mask = mask_intersection([mask.get_data() for mask in mask_images])
-    
     # Compute xyz coordinates from mask 
     xyz = np.array(np.where(mask>0))
-    
     # Prepare data & vardata arrays 
-    data = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in data_images])
+    data = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in data_images]).squeeze()
     if vardata_images == None: 
         vardata = None
     else: 
-        vardata = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in vardata_images])
-    
+        vardata = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in vardata_images]).squeeze()
     return data, vardata, xyz, mask 
 
 
@@ -187,7 +185,7 @@ def onesample_test(data_images, vardata_images, mask_images, stat_id,
     ptest = permutation_test_onesample(data, xyz, vardata=vardata, stat_id=stat_id)
 
     # Compute z-map image 
-    zmap = np.zeros(data_images[0].get_shape())
+    zmap = np.zeros(data_images[0].get_shape()).squeeze()
     zmap[list(xyz)] = ptest.zscore()
     zimg = Image(zmap, data_images[0].get_affine())
 
@@ -227,10 +225,15 @@ def twosample_test(data_images, vardata_images, mask_images, labels, stat_id,
     data, vardata, xyz, mask = prepare_arrays(data_images, vardata_images, mask_images)
 
     # Create two-sample permutation test instance
-    ptest = permutation_test_twosample(data[labels==1], data[labels==2], 
-    xyz, vardata1=vardata[labels==1], vardata2=vardata[labels==2], stat_id=stat_id)
+    if vardata_images == None:
+        ptest = permutation_test_twosample(data[labels==1], data[labels==2], 
+        xyz, stat_id=stat_id)
+    else:
+        ptest = permutation_test_twosample(data[labels==1], data[labels==2], 
+        xyz, vardata1=vardata[labels==1], vardata2=vardata[labels==2], stat_id=stat_id)
+    
     # Compute z-map image 
-    zmap = np.zeros(data_images[0].get_shape())
+    zmap = np.zeros(data_images[0].get_shape()).squeeze()
     zmap[list(xyz)] = ptest.zscore()
     zimg = Image(zmap, data_images[0].get_affine())
 
@@ -266,6 +269,28 @@ def affect_inmask(dest, src, xyz):
     else:
         dest[xyz[0,:], xyz[1,:], xyz[2,:]] = src
     return dest
+
+
+def linear_model_fit(data_images, mask_images, design_matrix, vector):
+    """
+    Helper function for group data analysis using arbitrary design matrix
+    """
+    
+    # Prepare arrays
+    data, vardata, xyz, mask = prepare_arrays(data_images, None, mask_images)
+    
+    # Create glm instance
+    G = glm(data, design_matrix)
+    
+    # Compute requested contrast
+    c = G.contrast(vector)
+    
+    # Compute z-map image 
+    zmap = np.zeros(data_images[0].get_shape()).squeeze()
+    zmap[list(xyz)] = c.zscore()
+    zimg = Image(zmap, data_images[0].get_affine())
+    
+    return zimg
 
 
 
@@ -315,10 +340,13 @@ class LinearModel:
 
         vcon = np.zeros(self.data.get_shape()[1:4])
         vcon_img = Image(affect_inmask(vcon, c.variance, self.xyz), self.data.get_affine())
-
+        
+        z = np.zeros(self.data.get_shape()[1:4])
+        z_img = Image(affect_inmask(z, c.zscore(), self.xyz), self.data.get_affine())
+        
         dof = c.dof
         
-        return con_img, vcon_img, dof
+        return con_img, vcon_img, z_img, dof
 
 
 

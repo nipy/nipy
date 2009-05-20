@@ -266,7 +266,7 @@ class Forest(WeightedGraph):
         if custom==true the behavior of the function is somewhat mroe bizare:
         - the different connected components are considered
         as being in a same greater tree
-        - when a node has more than two subbbranches,
+        - when a node has more than two subbranches,
         any subset of these children is considered as a subtree
         """
         leaves = self.isleaf().astype('bool')
@@ -275,6 +275,7 @@ class Forest(WeightedGraph):
                 raise ValueError, "some of the ids are not leaves"
         
         #1. find the highest node that is a common ancestor to all leaves
+        # if there is none, common ancestor is -1
         com_ancestor = ids[0]
         for i in ids:
             ca = i
@@ -286,41 +287,43 @@ class Forest(WeightedGraph):
                     ca=-1
                     break
             com_ancestor=ca
-        #print com_ancestor
-            
+                 
         #2. check whether all the children of this ancestor are within ids
         if com_ancestor>-1:
             st = self.get_descendents(com_ancestor)
             valid = [i in ids for i in st if leaves[i]]
-            bool = (np.sum(valid)==np.size(valid))
-            if custom==True:
-                kids = self.get_children(com_ancestor)
-                if np.size(kids)>2:
-                    bool=True
-                    for v in kids:
-                        st = np.array(self.get_descendents(v))
-                        st = st[leaves[st]]
-                        if np.size(st)>1:
-                            valid = [i in ids for i in st]
-                            bool *= ((np.sum(valid)==np.size(valid))+np.sum(valid==0))
-                            ## to be checked !!!
-        else:
+            bresult = (np.sum(valid)==np.size(valid))
             if custom==False:
-                st = np.squeeze(np.nonzero(leaves))
-                valid = [i in ids for i in st]
-                bool = (np.sum(valid)==np.size(valid))
-            else:
-                cc = self.cc()
-                bool = True
-                for i in ids:
-                    st = np.squeeze(np.nonzero((cc==cc[i])*leaves))
-                    #print type(st),ids
+                return bresult
+            # now, custom =True
+            # check that subtrees of ancestor are consistently labelled
+            kids = self.get_children(com_ancestor)
+            if np.size(kids)>2:
+                bresult=True
+                for v in kids:
+                    st = np.array(self.get_descendents(v))
+                    st = st[leaves[st]]
                     if np.size(st)>1:
                         valid = [i in ids for i in st]
-                        bool *= (np.sum(valid)==np.size(valid))
-                    else:
-                        bool*= (st in ids)
-        return bool
+                        bresult *= ((np.sum(valid)==np.size(valid))+np.sum(valid==0))
+            return bresult
+        
+        # now, common ancestor is -1
+        if custom==False:
+            st = np.squeeze(np.nonzero(leaves))
+            valid = [i in ids for i in st]
+            bresult = (np.sum(valid)==np.size(valid))
+        else:
+            cc = self.cc()
+            bresult = True
+            for i in ids:
+                st = np.squeeze(np.nonzero((cc==cc[i])*leaves))
+                if np.size(st)>1:
+                    valid = [i in ids for i in st]
+                    bresult *= (np.sum(valid)==np.size(valid))
+                else:
+                    bresult*= (st in ids)
+        return bresult
 
 
     def tree_depth(self):

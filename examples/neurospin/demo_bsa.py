@@ -14,7 +14,7 @@ import fff2.utils.simul_2d_multisubject_fmri_dataset as simul
 import fff2.spatial_models.bayesian_structural_analysis as bsa
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
-                        nbeta=[0]):
+                        nbeta=[0],verbose = 0):
     """ Function for performing bayesian structural analysis on a set of images.
     """
     ref_dim = np.shape(betas[0])
@@ -47,16 +47,19 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                bsa.compute_BSA_dev(Fbeta, lbeta, tal, dmax,xyz, None, thq,
                                       smin, ths, theta, g0, bdensity)
 
+    if verbose==0:
+        return AF,BF
+    
     if AF != None:
         lmax = AF.k+2
         AF.show()
-  
+
     group_map.shape = ref_dim
     mp.figure()
     mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
     mp.title('Group-level label map')
     mp.colorbar()
-
+        
     likelihood.shape = ref_dim
     mp.figure()
     mp.imshow(likelihood, interpolation='nearest')
@@ -114,6 +117,6 @@ verbose = 1
 smin = 5
 
 # run the algo
-AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin)
+AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,verbose=verbose)
 mp.show()
 
