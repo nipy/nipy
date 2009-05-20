@@ -241,7 +241,7 @@ class multivariate_stat:
             self.std = np.sqrt((self.s4 + 2 * self.std_scale) / np.random.chisquare(df = 3 * n * B + 2 * self.std_shape))
     
     def update_displacements(self):
-        n = self.data.shape[0]
+        n, p = self.data.shape
         B = len(self.D.block)
         if self.proposal == 'prior':
             for i in xrange(n):
@@ -264,6 +264,11 @@ class multivariate_stat:
                 for b in np.random.permutation(range(B)):
                     block = self.D.block[b]
                     self.update_block(i, b, 'fixed', self.proposal_std[:, i, b], self.proposal_mean[:, i, b])
+        self.N *= 0
+        ones = np.ones((p, 1), float)
+        for i in xrange(n):
+            Ii = self.D.I[i]
+            add_lines(ones, self.N.reshape(p, 1), Ii)
         if self.verbose:
             print "mean rejected displacements :", self.R.mean(axis=0)
     
@@ -320,13 +325,13 @@ class multivariate_stat:
         if self.std == None:
             X_sum = self.X.sum(axis=0)
         else:
-            self.N *= 0
-            ones = np.ones((p, 1), float)
+            #self.N *= 0
+            #ones = np.ones((p, 1), float)
             for i in xrange(n):
                 Ii = self.D.I[i]
                 XI = self.X[i].reshape(p, 1)
                 add_lines(XI, X_sum.reshape(p, 1), Ii)
-                add_lines(ones, self.N.reshape(p, 1), Ii)
+                #add_lines(ones, self.N.reshape(p, 1), Ii)
         for j in xrange(len(self.network)):
             L = np.where(self.labels == j)[0]
             m_var = self.m_var[j]
@@ -488,11 +493,11 @@ class multivariate_stat:
         """
         MAP estimate of elementary displacements conditional on model parameters
         """
+        self.log_likelihood = self.compute_log_region_likelihood().sum()
         for i in xrange(nsimu):
             if verbose:
                 print "SA iteration", i+1, "out of", nsimu
-            self.update_displacements_SA(c**i, proposal_std, verbose)
-            self.update_summary_statistics(w=1.0, update_spatial=True)
+            self.update_displacements_SA(c**i, proposal_std * self.std, verbose)
     
     def update_displacements_SA(self, T=1.0, proposal_std=None, verbose=False):
         n = self.data.shape[0]
@@ -500,7 +505,7 @@ class multivariate_stat:
         for i in xrange(n):
             for b in np.random.permutation(range(B)):
                 block = self.D.block[b]
-                self.update_block_SA(i, b, T, proposal_std * self.std, verbose)
+                self.update_block_SA(i, b, T, proposal_std, verbose)
         if self.verbose:
             print "mean rejected displacements :", self.R.mean(axis=0)
     
@@ -516,26 +521,37 @@ class multivariate_stat:
             print 'sampling field', i, 'block', b
         # Propose new displacement
         U, V, L, W, I = self.D.sample(i, b, 'rand_walk', proposal_std * T)
-        Uc = self.D.U[:, i, b]
-        Vc = self.D.V[:, i, block]
-        Wc = self.D.W[:, i, L]
-        Ic = self.D.I[i, L]
+        Uc = self.D.U[:, i, b].copy()
+        Vc = self.D.V[:, i, block].copy()
+        p = self.data.shape[1]
+        if len(L) > 0:
+            Wc = self.D.W[:, i, L].copy()
+            Ic = self.D.I[i, L].copy()
         # log acceptance rate
-        fc = self.compute_log_voxel_likelihood().sum()
+        fc = self.log_likelihood
         self.D.U[:, i, b] = U
         self.D.V[:, i, block] = V
         if len(L)> 0:
             self.D.W[:, i, L] = W
             self.D.I[i, L] = I
+            ones = np.ones((len(L), 1), float)
+            add_lines(-ones, self.N.reshape(p, 1), Ic)
+            add_lines(ones, self.N.reshape(p, 1), I)
+        self.update_summary_statistics(w=1.0, update_spatial=True)
         f = self.compute_log_voxel_likelihood().sum()
-        A = (f - fc + (Uc**2 - U**2).sum() / self.std**2)
+        A = f - fc + (Uc**2 - U**2).sum() / self.std**2
         self.R[i, b] = np.random.uniform() > np.exp(A / T)
         if self.R[i, b] == 1:
             self.D.U[:, i, b] = Uc
             self.D.V[:, i, block] = Vc
-            if len(L)> 0:
+            if len(L) > 0:
                 self.D.W[:, i, L] = Wc
                 self.D.I[i, L] = Ic
+                add_lines(-ones, self.N.reshape(p, 1), I)
+                add_lines(ones, self.N.reshape(p, 1), Ic)
+            self.update_summary_statistics(w=1.0, update_spatial=True)
+        else:
+            self.log_likelihood = f
     
     #####################################################################################
     # Marginal likelihood computation for model selection
@@ -687,6 +703,26 @@ class multivariate_stat:
             std = self.std
         N = len(self.network)
         log_conditional_posterior = np.zeros(N + 1, float)
+        self.update_summary_statistics(update_spatial=False)
+        #self.update_parameters_mcmc(update_spatial=False)
+        # update m_var_post_scale
+        for j in xrange(len(self.network)):
+            rate = self.m_mean_rate[j]
+            scale = self.m_var_scale[j]
+            if self.labels_prior == None:
+                pj = self.region_size[j]
+            else:
+                pj = self.s6[j]
+            if self.std == None:
+                Nj = n * pj
+            else:
+                Nj = self.s5[j]
+            if self.network[j] == 1:
+                s3 = self.s3[j]
+                post_rate = rate + pj
+                self.m_var_post_scale[j] = scale + 0.5 * (self.s2[j] - s3**2 / post_rate)
+            else:
+                self.m_var_post_scale[j] = scale + 0.5 * self.s2[j]
         for j in xrange(N):
             pj = self.region_size[j]
             if self.std == None:
@@ -728,15 +764,15 @@ class multivariate_stat:
         #self.J = J
         self.verbose = verbose
         niter = np.array([int(burnin), int(nsimu)])
-        for j in np.arange(2)[niter>0]:
+        for k in np.arange(2)[niter>0]:
             if self.verbose:
-                if j == 0:
+                if k == 0:
                     print "Burn-in"
                 else:
                     print "Sampling posterior distribution"
-            for i in xrange(niter[j]):
+            for i in xrange(niter[k]):
                 if self.verbose:
-                    print "Iteration", i+1, "out of", niter[j]
+                    print "Iteration", i+1, "out of", niter[k]
                 # Gibbs iteration
                 #i += 1
                 if self.vardata != None:
@@ -744,11 +780,29 @@ class multivariate_stat:
                 self.update_mean_effect()
                 #if self.labels_prior != None:
                     #self.update_labels()
-                self.update_summary_statistics(update_spatial=False)
-                #self.update_parameters_mcmc(update_spatial=False)
+                #self.update_summary_statistics(update_spatial=False)
+                ##self.update_parameters_mcmc(update_spatial=False)
+                ## update m_var_post_scale
+                #for j in xrange(len(self.network)):
+                    #rate = self.m_mean_rate[j]
+                    #scale = self.m_var_scale[j]
+                    #if self.labels_prior == None:
+                        #pj = self.region_size[j]
+                    #else:
+                        #pj = self.s6[j]
+                    #if self.std == None:
+                        #Nj = n * pj
+                    #else:
+                        #Nj = self.s5[j]
+                    #if self.network[j] == 1:
+                        #s3 = self.s3[j]
+                        #post_rate = rate + pj
+                        #self.m_var_post_scale[j] = scale + 0.5 * (self.s2[j] - s3**2 / post_rate)
+                    #else:
+                        #self.m_var_post_scale[j] = scale + 0.5 * self.s2[j]
                 if self.verbose:
                     print "population effect min variance value :", self.m_var.min()
-                if j == 1:
+                if k == 1:
                     log_conditional_posterior_values[i] = \
                     self.compute_log_conditional_posterior(v, m_mean, m_var)[:-1]
         return log_conditional_posterior_values
@@ -762,8 +816,8 @@ class multivariate_stat:
             = self.sample_log_conditional_posterior(v, m_mean, m_var, nsimu, burnin, verbose)
         max_log_conditional = log_conditional_posterior_values.max(axis=0)
         ll_ratio = log_conditional_posterior_values - max_log_conditional
-        return max_log_conditional + np.log(np.exp(ll_ratio).sum(axis=0)) - np.log(nsimu)
-        #return max_log_conditional #+ ll_ratio.mean(axis=0)
+        #return max_log_conditional + np.log(np.exp(ll_ratio).sum(axis=0)) - np.log(nsimu)
+        return max_log_conditional #+ ll_ratio.mean(axis=0)
     
     def compute_marginal_likelihood(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False):
         log_likelihood = self.compute_log_region_likelihood(v, m_mean, m_var)
