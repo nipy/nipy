@@ -98,7 +98,7 @@ def compute_mask_files(input_filename, output_filename=None, return_mean=False,
     if hasattr(input_filename, '__iter__'):
         imgliste = [NiftiImage(x) for x in input_filename]
         volume = array([x.data.squeeze() for x in imgliste])
-        volume = volume.squeeze()
+        #volume = volume.squeeze()
     else: # one single filename
         imgliste = [NiftiImage(input_filename)]
         volume = imgliste[0].data
