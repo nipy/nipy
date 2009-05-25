@@ -1,10 +1,11 @@
 import numpy as np
+from numpy.random import rand, randn
 
 import nipy.neurospin.graph.graph as fg
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.clustering.clustering as fc
 import nipy.neurospin.spatial_models.parcellation as fp
-from numpy.random import rand
+
 
 def _Field_Gradient_Jac(ref,target):
 	"""

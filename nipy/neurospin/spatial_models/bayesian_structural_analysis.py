@@ -24,7 +24,6 @@ from nipy.neurospin.clustering.hierarchical_clustering import Average_Link_Graph
 #------------------------------------------------------------------
 
 
-
 def hierarchical_asso(bfl,dmax):
     """
     Compting an association graph of the ROIs defined across different subjects
