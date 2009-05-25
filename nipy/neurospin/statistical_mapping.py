@@ -54,8 +54,8 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
     """
     
     # Masking 
-    xyz = np.where(mask.get_data()>0)
-    zmap = zimg.get_data()[xyz]
+    xyz = np.where(mask.get_data().squeeze()>0)
+    zmap = zimg.get_data().squeeze()[xyz]
     xyz = np.array(xyz).T
     nvoxels = np.size(xyz, 0)
 
@@ -66,7 +66,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
     if np.where(above_th)[0].size == 0:
         return None ## FIXME
     zmap_th = zmap[above_th]
-    xyz_th = xyz[above_th.squeeze(),:]
+    xyz_th = xyz[above_th,:]
 
     # Clustering
     ## Extract local maxima and connex components above some threshold
@@ -91,7 +91,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
     clusters.sort(cmp=smaller)
 
     # FDR-corrected p-values
-    fdr_pvalue = emp_null.FDR(zmap).all_fdr()[above_th.squeeze()]
+    fdr_pvalue = emp_null.FDR(zmap).all_fdr()[above_th]
 
     # Default "nulls"
     if not nulls.has_key('zmax'):
