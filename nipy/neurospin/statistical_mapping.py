@@ -54,8 +54,8 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
     """
     
     # Masking 
-    xyz = np.where(mask.get_data()>0)
-    zmap = zimg.get_data()[xyz]
+    xyz = np.where(mask.get_data().squeeze()>0)
+    zmap = zimg.get_data().squeeze()[xyz]
     xyz = np.array(xyz).T
     nvoxels = np.size(xyz, 0)
 
@@ -66,7 +66,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
     if np.where(above_th)[0].size == 0:
         return None ## FIXME
     zmap_th = zmap[above_th]
-    xyz_th = xyz[above_th]
+    xyz_th = xyz[above_th,:]
 
     # Clustering
     ## Extract local maxima and connex components above some threshold
@@ -153,6 +153,7 @@ def mask_intersection(masks):
     mask = masks[0]
     for m in masks[1:]:
         mask = mask * m
+    mask[mask != 0] = 1
     return mask 
 
 
@@ -160,17 +161,14 @@ def prepare_arrays(data_images, vardata_images, mask_images):
 
     # Compute mask intersection
     mask = mask_intersection([mask.get_data() for mask in mask_images])
-    
     # Compute xyz coordinates from mask 
     xyz = np.array(np.where(mask>0))
-    
     # Prepare data & vardata arrays 
-    data = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in data_images])
+    data = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in data_images]).squeeze()
     if vardata_images == None: 
         vardata = None
     else: 
-        vardata = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in vardata_images])
-    
+        vardata = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in vardata_images]).squeeze()
     return data, vardata, xyz, mask 
 
 
@@ -187,7 +185,7 @@ def onesample_test(data_images, vardata_images, mask_images, stat_id,
     ptest = permutation_test_onesample(data, xyz, vardata=vardata, stat_id=stat_id)
 
     # Compute z-map image 
-    zmap = np.zeros(data_images[0].get_shape())
+    zmap = np.zeros(data_images[0].get_shape()).squeeze()
     zmap[list(xyz)] = ptest.zscore()
     zimg = Image(zmap, data_images[0].get_affine())
 
@@ -235,7 +233,7 @@ def twosample_test(data_images, vardata_images, mask_images, labels, stat_id,
         xyz, vardata1=vardata[labels==1], vardata2=vardata[labels==2], stat_id=stat_id)
     
     # Compute z-map image 
-    zmap = np.zeros(data_images[0].get_shape())
+    zmap = np.zeros(data_images[0].get_shape()).squeeze()
     zmap[list(xyz)] = ptest.zscore()
     zimg = Image(zmap, data_images[0].get_affine())
 
@@ -288,7 +286,7 @@ def linear_model_fit(data_images, mask_images, design_matrix, vector):
     c = G.contrast(vector)
     
     # Compute z-map image 
-    zmap = np.zeros(data_images[0].get_shape())
+    zmap = np.zeros(data_images[0].get_shape()).squeeze()
     zmap[list(xyz)] = c.zscore()
     zimg = Image(zmap, data_images[0].get_affine())
     
