@@ -166,7 +166,7 @@ def save(img, filename, dtype=None):
     if ftype.startswith('nifti1'):
         klass = nf.Nifti1Image
     elif ftype == 'analyze':
-        klass == nf.Spm2Analyze
+        klass = nf.Spm2Analyze
     else:
         raise ValueError('Unusual file type "%s"' % ftype)
     out_img = klass(data=np.asarray(Fimg),
