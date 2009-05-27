@@ -535,4 +535,6 @@ def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
     outcoords = CoordinateSystem(outnames, 'output')
             
     coordmap = Affine(affine, incoords, outcoords)
-    return reorder_input(reorder_output(coordmap))
+    return coordmap
+    # previously return call was the following:
+    # return reorder_input(reorder_output(coordmap))
