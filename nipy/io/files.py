@@ -14,6 +14,8 @@ See documentation for load and save functions for 'working' examples.
 
 """
 
+import os
+
 import numpy as np
 
 import nifti as nf
@@ -154,19 +156,61 @@ def save(img, filename, dtype=None):
 
     # Reorder the image to 'fortran'-like input and output coordinates
     # before trying to coerce to a NIFTI like image
-    rimg = Image(np.transpose(np.asarray(img)), 
-                 reorder_input(reorder_output(img.coordmap)))
-    Fimg = coerce2nifti(rimg) # F for '0-based Fortran', 'ijklmno' to
+    #     rimg = Image(np.transpose(np.asarray(img)), 
+    #                  reorder_input(reorder_output(img.coordmap)))
+    Fimg = coerce2nifti(img) # F for '0-based Fortran', 'ijklmno' to
                               # 'xyztuvw' coordinate map
     aff = _match_affine(Fimg.affine, 3)
     dim_info = get_diminfo(Fimg.coordmap)
-    nifti_img = nf.Nifti1Image(data=np.asarray(Fimg),
+    ftype = _type_from_filename(filename)
+    if ftype.startswith('nifti1'):
+        klass = nf.Nifti1Image
+    elif ftype == 'analyze':
+        klass == nf.Spm2Analyze
+    else:
+        raise ValueError('Unusual file type "%s"' % ftype)
+    out_img = klass(data=np.asarray(Fimg),
                                affine=aff)
-    hdr = nifti_img.get_header()
+    hdr = out_img.get_header()
     hdr['dim_info'] = dim_info
-    nifti_img.to_filespec(filename)
+    out_img.to_filespec(filename)
     return Fimg
+
+
+def _type_from_filename(filename):
+    ''' Return image type determined from filename
     
+    Filetype is determined by the file extension in 'filename'.
+    Currently the following filetypes are supported:
+    
+    * Nifti single file : ['.nii', '.nii.gz']
+    * Nifti file pair : ['.hdr', '.hdr.gz']
+    * Analyze file pair : ['.img', 'img.gz']
+
+    >>> _type_from_filename('test.nii')
+    'nifti1single'
+    >>> _type_from_filename('test')
+    'nifti1single'
+    >>> _type_from_filename('test.hdr')
+    'nifti1pair'
+    >>> _type_from_filename('test.hdr.gz')
+    'nifti1pair'
+    >>> _type_from_filename('test.img.gz')
+    'analyze'
+    '''
+    if filename.endswith('.gz'):
+        filename = filename[:-3]
+    elif filename.endswith('.bz2'):
+        filename = filename[:-4]
+    _, ext = os.path.splitext(filename)
+    if ext in ('', '.nii'):
+        return 'nifti1single'
+    if ext in ('.hdr',):
+        return 'nifti1pair'
+    if ext in ('.img',):
+        return 'analyze'
+    raise ValueError('Strange file extension "%s"' % ext)
+
 
 def coerce2nifti(img, standard=False):
     """
