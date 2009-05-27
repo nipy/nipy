@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.random import rand,randn
 
 import nipy.neurospin.graph.graph as fg
 import nipy.neurospin.graph.field as ff
