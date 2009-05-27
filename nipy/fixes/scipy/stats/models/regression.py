@@ -34,7 +34,7 @@ class OLSModel(LikelihoodModel):
 
     Examples
     --------
-    >>> import numpy as N
+    >>> import numpy as np
     >>>
     >>> from nipy.fixes.scipy.stats.models.formula import Term, I
     >>> from nipy.fixes.scipy.stats.models.regression import OLSModel
@@ -199,7 +199,7 @@ class ARModel(OLSModel):
 
     Examples
     --------
-    >>> import numpy as N
+    >>> import numpy as np
     >>> import numpy.random as R
     >>>
     >>> from nipy.fixes.scipy.stats.models.formula import Term, I
@@ -341,7 +341,7 @@ class WLSModel(OLSModel):
     (proportional to the) inverse of the
     variance of the observations.
 
-    >>> import numpy as N
+    >>> import numpy as np
     >>>
     >>> from nipy.fixes.scipy.stats.models.formula import Term, I
     >>> from nipy.fixes.scipy.stats.models.regression import WLSModel
