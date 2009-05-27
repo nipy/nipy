@@ -144,7 +144,7 @@ def coerce_coordmap(coordmap):
             warnings.warn('an Image with this coordmap has to be transposed to be saved because the first %d input axes are not from %s' % (ndimm, `set(vinput[:ndimm])`))
             reinput = True
         # Check if first 3 coords match the correct nifti order ('ijk')
-        if innames[ndimm:] != vinput[ndimm:]:
+        if tuple(innames[ndimm:]) != tuple(vinput[ndimm:]):
             warnings.warn('an Image with this coordmap has to be transposed because the last %d axes are not in the NIFTI order' % (ndim-3,))
             reinput = True
 
@@ -153,7 +153,7 @@ def coerce_coordmap(coordmap):
     # the affine matrix
 
     reoutput = False
-    if outnames != voutput:
+    if tuple(outnames) != tuple(voutput):
         warnings.warn('The order of the output coordinates is not the NIFTI order, this will change the affine transformation by reordering the output coordinates.')
         reoutput = True
 
@@ -535,4 +535,6 @@ def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
     outcoords = CoordinateSystem(outnames, 'output')
             
     coordmap = Affine(affine, incoords, outcoords)
-    return reorder_input(reorder_output(coordmap))
+    return coordmap
+    # previously return call was the following:
+    # return reorder_input(reorder_output(coordmap))

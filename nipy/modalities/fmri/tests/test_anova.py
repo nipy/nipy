@@ -8,7 +8,8 @@ import numpy as np
 from nipy.modalities.fmri import formula as F
 from nipy.fixes.scipy.stats.models.utils import rank
 from nipy.fixes.scipy.stats.models.regression import OLSModel
-import nipy.testing as niptest
+reload(F)
+from nipy.testing import *
 
 data = """0.0      1      1      1
     2.0      1      1      2
@@ -103,7 +104,7 @@ twoway = f1 * f2
 def test_names():
     # Check that the design column names are what we expect
     X = twoway.design(D, return_float=False)
-    niptest.assert_equal(set(X.dtype.names), set(('Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3')))
+    assert_equal(set(X.dtype.names), set(('Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3')))
 
 # If we ask for contrasts, the resulting matrix is
 # of dtype np.float
@@ -166,14 +167,14 @@ Residuals       54 1564.80   28.98
 def test_Ragreement():
     # This code would fit the two-way ANOVA model in R
 
-    """
-    X = read.table('http://www-stat.stanford.edu/~jtaylo/courses/stats191/data/kidney.table', header=T)
-    names(X)
-    X$Duration = factor(X$Duration)
-    X$Weight = factor(X$Weight)
-    lm(Days~Duration*Weight, X)
-    A = anova(lm(Days~Duration*Weight, X))
-    """
+
+    # X = read.table('http://www-stat.stanford.edu/~jtaylo/courses/stats191/data/kidney.table', header=T)
+    # names(X)
+    # X$Duration = factor(X$Duration)
+    # X$Weight = factor(X$Weight)
+    # lm(Days~Duration*Weight, X)
+    # A = anova(lm(Days~Duration*Weight, X))
+
 
     # rA = rpy.r('A')
     rA = {'Df': [1, 2, 2, 54],
@@ -199,11 +200,11 @@ def test_Ragreement():
              (rn.index('Duration:Weight'), 'Interaction')]
 
     for i, j in pairs:
-        niptest.assert_almost_equal(F[j], rA['F value'][i])
-        niptest.assert_almost_equal(p[j], rA['Pr(>F)'][i])
-        niptest.assert_almost_equal(MS[j], rA['Mean Sq'][i])
-        niptest.assert_almost_equal(df[j], rA['Df'][i])
-        niptest.assert_almost_equal(SS[j], rA['Sum Sq'][i])
+        assert_almost_equal(F[j], rA['F value'][i])
+        assert_almost_equal(p[j], rA['Pr(>F)'][i])
+        assert_almost_equal(MS[j], rA['Mean Sq'][i])
+        assert_almost_equal(df[j], rA['Df'][i])
+        assert_almost_equal(SS[j], rA['Sum Sq'][i])
 
 
 def test_scipy_stats():
@@ -223,6 +224,6 @@ def test_scipy_stats():
         F_m[n] = r.F
         df_m[n] = r.df_num
         p_m[n] = scipy.stats.f.sf(F_m[n], df_m[n], r.df_denom)
-        niptest.assert_almost_equal(F[n], F_m[n])
-        niptest.assert_almost_equal(df[n], df_m[n])
-        niptest.assert_almost_equal(p[n], p_m[n])
+        assert_almost_equal(F[n], F_m[n])
+        assert_almost_equal(df[n], df_m[n])
+        assert_almost_equal(p[n], p_m[n])
