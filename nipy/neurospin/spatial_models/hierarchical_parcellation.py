@@ -6,6 +6,7 @@ import nipy.neurospin.graph.field as ff
 import nipy.neurospin.clustering.clustering as fc
 import nipy.neurospin.spatial_models.parcellation as fp
 
+
 def _Field_Gradient_Jac(ref,target):
 	"""
 	Given a reference field ref and a target field target

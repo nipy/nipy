@@ -6,12 +6,11 @@ author: Bertrand Thirion, 2005-2009
 
 
 import numpy as np
-import fff2.graph as fg
-from fff2.clustering.hierarchical_clustering import Ward_segment, Ward_quick_segment
+import nipy.neurospin.graph as fg
+from nipy.neurospin.clustering.hierarchical_clustering import Ward_segment, Ward_quick_segment
 import os.path as op
 import time
-#import fff.parcellation as Pa
-import fff2.spatial_models.parcellation as Pa
+import nipy.neurospin.spatial_models.parcellation as Pa
 
 # ------------------------------------
 # 1. Get the data (mask+functional image)
