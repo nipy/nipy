@@ -36,9 +36,7 @@ def test_save1():
 
 def test_save2():
     # A test to ensure that when a file is saved, the affine and the
-    # data agree. This image comes from a NIFTI file The axes have to
-    # be reordered because save_image first does the usual
-    # 'python2matlab' reorder
+    # data agree. This image comes from a NIFTI file 
 
     shape = (13,5,7,3)
     step = np.array([3.45,2.3,4.5,6.93])
@@ -76,6 +74,7 @@ def test_save2a():
     yield assert_true, np.allclose(img.affine, img2.affine)
     yield assert_equal, img.shape, img2.shape
     yield assert_true, np.allclose(np.asarray(img2), np.asarray(img))
+
 
 def test_save2b():
     # A test to ensure that when a file is saved, the affine and the

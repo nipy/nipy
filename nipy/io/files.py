@@ -20,17 +20,14 @@ import numpy as np
 
 import nifti as nf
 
-from nipy.core.reference.coordinate_map import (reorder_input, 
-                                                reorder_output)
 from nipy.core.api import Image
-from nifti_ref import (coordmap_from_ioimg, coerce_coordmap, get_pixdim, 
-                       get_diminfo, standard_order)
+from nifti_ref import (coordmap_from_ioimg, coerce_coordmap, 
+                       get_diminfo, standard_order,
+                       ijk_from_diminfo)
                        
 
 def load(filename):
     """Load an image from the given filename.
-
-    Load an image from the file specified by ``filename``.
 
     Parameters
     ----------
@@ -61,9 +58,16 @@ def load(filename):
     shape = img.get_shape()
     aff = _match_affine(aff, len(shape))
     hdr = img.get_header()
+    # Get byte from NIFTI header, if present, to tell which axes are
+    # which.  This is a NIFTI-specific kludge, that might be abstracted
+    # out into the image backend in a general way
+    try:
+        dim_info = hdr['dim_info']
+    except (TypeError, KeyError):
+        dim_info = 0
+    ijk = ijk_from_diminfo(dim_info)
     coordmap = coordmap_from_ioimg(aff,
-                                   hdr['dim_info'],
-                                   hdr['pixdim'],
+                                   ijk,
                                    img.get_shape())
     return Image(img.get_data(), coordmap)
 
@@ -136,43 +140,41 @@ def save(img, filename, dtype=None):
     >>> from nipy.io.api import save_image
     >>> data = np.zeros((91,109,91), dtype=np.uint8)
     >>> img = fromarray(data, 'kji', 'zxy')
-    >>> fd, name = mkstemp(suffix='.nii.gz')
-    >>> tmpfile = open(name)
-    >>> saved_img = save_image(img, tmpfile.name)
+    >>> fd, fname = mkstemp(suffix='.nii.gz')
+    >>> saved_img = save_image(img, fname)
     >>> saved_img.shape
     (91, 109, 91)
-    >>> tmpfile.close()
-    >>> os.unlink(name)
+    >>> os.unlink(fname)
+    >>> fd, fname = mkstemp(suffix='.img.gz')
+    >>> saved_img = save_image(img, fname)
+    >>> saved_img.shape
+    (91, 109, 91)
+    >>> os.unlink(fname)
 
     Notes
     -----
     Filetype is determined by the file extension in 'filename'.  Currently the
     following filetypes are supported:
-        Nifti single file : ['.nii', '.nii.gz']
-        Nifti file pair : ['.hdr', '.hdr.gz']
-        Analyze file pair : ['.img', 'img.gz']
-        
+    
+    * Nifti single file : ['.nii', '.nii.gz']
+    * Nifti file pair : ['.hdr', '.hdr.gz']
+    * Analyze file pair : ['.img', 'img.gz']
     """
-
-    # Reorder the image to 'fortran'-like input and output coordinates
-    # before trying to coerce to a NIFTI like image
-    #     rimg = Image(np.transpose(np.asarray(img)), 
-    #                  reorder_input(reorder_output(img.coordmap)))
-    Fimg = coerce2nifti(img) # F for '0-based Fortran', 'ijklmno' to
-                              # 'xyztuvw' coordinate map
+    # Make NIFTI compatible version of image
+    newcmap, order = coerce_coordmap(img.coordmap)
+    Fimg = Image(np.transpose(np.asarray(img), order), newcmap)
+    # Expand or contract affine to 4x4 (3 dimensions)
     aff = _match_affine(Fimg.affine, 3)
-    dim_info = get_diminfo(Fimg.coordmap)
     ftype = _type_from_filename(filename)
     if ftype.startswith('nifti1'):
-        klass = nf.Nifti1Image
+        dim_info = get_diminfo(Fimg.coordmap)
+        out_img = nf.Nifti1Image(data=np.asarray(Fimg), affine=aff)
+        hdr = out_img.get_header()
+        hdr['dim_info'] = ord(dim_info)
     elif ftype == 'analyze':
-        klass == nf.Spm2Analyze
+        out_img = nf.Spm2AnalyzeImage(data=np.asarray(Fimg), affine=aff)
     else:
-        raise ValueError('Unusual file type "%s"' % ftype)
-    out_img = klass(data=np.asarray(Fimg),
-                               affine=aff)
-    hdr = out_img.get_header()
-    hdr['dim_info'] = dim_info
+        raise ValueError('Cannot save file type "%s"' % ftype)
     out_img.to_filespec(filename)
     return Fimg
 
@@ -185,7 +187,7 @@ def _type_from_filename(filename):
     
     * Nifti single file : ['.nii', '.nii.gz']
     * Nifti file pair : ['.hdr', '.hdr.gz']
-    * Analyze file pair : ['.img', 'img.gz']
+    * Analyze file pair : ['.img', '.img.gz']
 
     >>> _type_from_filename('test.nii')
     'nifti1single'
@@ -197,6 +199,8 @@ def _type_from_filename(filename):
     'nifti1pair'
     >>> _type_from_filename('test.img.gz')
     'analyze'
+    >>> _type_from_filename('test.mnc')
+    'minc'
     '''
     if filename.endswith('.gz'):
         filename = filename[:-3]
@@ -205,10 +209,12 @@ def _type_from_filename(filename):
     _, ext = os.path.splitext(filename)
     if ext in ('', '.nii'):
         return 'nifti1single'
-    if ext in ('.hdr',):
+    if ext == '.hdr':
         return 'nifti1pair'
-    if ext in ('.img',):
+    if ext == '.img':
         return 'analyze'
+    if ext == '.mnc':
+        return 'minc'
     raise ValueError('Strange file extension "%s"' % ext)
 
 
