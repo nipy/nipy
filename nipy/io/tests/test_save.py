@@ -41,7 +41,7 @@ def test_save2():
     shape = (13,5,7,3)
     step = np.array([3.45,2.3,4.5,6.93])
 
-    cmap = api.Affine.from_start_step('lkji', 'tzyx', [0]*4, step)
+    cmap = api.Affine.from_start_step('ijkl', 'xyzt', [1,3,5,0], step)
 
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
@@ -51,29 +51,6 @@ def test_save2():
     yield assert_equal, img.shape, img2.shape
     yield assert_true, np.allclose(np.asarray(img2), np.asarray(img))
 
-
-def test_save2a():
-    # A test to ensure that when a file is saved, the affine and the
-    # data agree. This image comes from a NIFTI file This example has
-    # a non-diagonal affine matrix for the spatial part, but is
-    # 'diagonal' for the space part.  This should raise no warnings.
-
-    # make a 5x5 transformatio
-    step = np.array([3.45,2.3,4.5,6.9])
-    A = np.random.standard_normal((3,3))
-    B = np.diag(list(step)+[1])
-    B[1:4,1:4] = A
-
-    shape = (13,5,7,3)
-    cmap = api.Affine.from_start_step('lkji', 'tzyx', [0]*4, step)
-
-    data = np.random.standard_normal(shape)
-    img = api.Image(data, cmap)
-    save_image(img, tmpfile.name)
-    img2 = load_image(tmpfile.name)
-    yield assert_true, np.allclose(img.affine, img2.affine)
-    yield assert_equal, img.shape, img2.shape
-    yield assert_true, np.allclose(np.asarray(img2), np.asarray(img))
 
 
 def test_save2b():
@@ -90,7 +67,7 @@ def test_save2b():
     B[:4,:4] = A
 
     shape = (13,5,7,3)
-    cmap = api.Affine.from_params('lkji', 'tzyx', B)
+    cmap = api.Affine.from_params('ijkl', 'xyzt', B)
 
     data = np.random.standard_normal(shape)
 
@@ -99,6 +76,7 @@ def test_save2b():
     save_image(img, tmpfile.name)
     img2 = load_image(tmpfile.name)
     yield assert_false, np.allclose(img.affine, img2.affine)
+    yield assert_true, np.allclose(img.affine[:3,:3], img2.affine[:3,:3])
     yield assert_equal, img.shape, img2.shape
     yield assert_true, np.allclose(np.asarray(img2), np.asarray(img))
 
@@ -111,14 +89,15 @@ def test_save3():
 
     step = np.array([3.45,2.3,4.5,6.9])
     shape = (13,5,7,3)
-    cmap = api.Affine.from_start_step('jkli', 'tzyx', [0]*4, step)
+    cmap = api.Affine.from_start_step('jkli', 'tzyx', [0,3,5,1], step)
 
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
     save_image(img, tmpfile.name)
     img2 = load_image(tmpfile.name)
-    yield assert_equal, tuple([img.shape[l] for l in [2,1,0,3]]), img2.shape
-    a = np.transpose(np.asarray(img), [2,1,0,3])
+
+    yield assert_equal, tuple([img.shape[l] for l in [3,0,1,2]]), img2.shape
+    a = np.transpose(np.asarray(img), [3,0,1,2])
     yield assert_false, np.allclose(img.affine, img2.affine)
     yield assert_true, np.allclose(a, np.asarray(img2))
 
@@ -131,9 +110,7 @@ def test_save4():
     # When the input coords are in the 'ljki' order, the affines get
     #rearranged 
     
-    #cmap = api.Affine.from_start_step('ljki', 'tzyx', [0]*4, step)
-
-    cmap = api.Affine.from_start_step('lkji', 'tzyx', [0]*4, step)
+    cmap = api.Affine.from_start_step('lkji', 'tzyx', [1,5,3,0], step)
 
     data = np.random.standard_normal(shape)
 
@@ -141,14 +118,20 @@ def test_save4():
     save_image(img, tmpfile.name)
     img2 = load_image(tmpfile.name)
 
-    yield assert_true, np.allclose(img.affine, img2.affine)
-    yield assert_equal, img.shape, img2.shape
-    yield assert_true, np.allclose(np.asarray(img2), np.asarray(img))
+    P = np.array([[0,0,0,1,0],
+                  [0,0,1,0,0],
+                  [0,1,0,0,0],
+                  [1,0,0,0,0],
+                  [0,0,0,0,1]])
+    yield assert_true, np.allclose(np.dot(P, np.dot(img.affine, P.T)), img2.affine)
+    yield assert_equal, img.shape[::-1], img2.shape
+    yield assert_true, np.allclose(np.transpose(np.asarray(img2),[3,2,1,0]), np.asarray(img))
+
     #print img2.coordmap.input_coords.coord_names, img.coordmap.input_coords.coord_names
     #print nifti.get_diminfo(img.coordmap), nifti.get_diminfo(img2.coordmap)
     #print img2.header['dim_info']
     
     yield assert_equal, img2.coordmap.input_coords.coord_names, \
-        img.coordmap.input_coords.coord_names
+        img.coordmap.input_coords.coord_names[::-1]
     yield assert_equal, img2.coordmap.input_coords.coord_names, \
-        ['l', 'k', 'j', 'i']
+        ['i', 'j', 'k', 'l']
