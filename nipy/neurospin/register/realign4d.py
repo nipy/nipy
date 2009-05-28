@@ -263,7 +263,8 @@ def realign4d(runs,
               within_loops=DEFAULT_WITHIN_LOOPS, 
               between_loops=DEFAULT_BETWEEN_LOOPS, 
               speedup=DEFAULT_SPEEDUP, 
-              optimizer=DEFAULT_OPTIMIZER): 
+              optimizer=DEFAULT_OPTIMIZER, 
+              align_runs=True): 
     """
     transforms = realign4d(runs, within_loops=2, bewteen_loops=5, speedup=4, optimizer='powell')
 
@@ -288,6 +289,9 @@ def realign4d(runs,
     if nruns==1: 
         return transfo_runs[0]
 
+    if align_runs==False:
+        return transfo_runs
+
     # Correct between-session motion using the mean image of each corrected run 
     corr_runs = [_resample4d(runs[i], transforms=transfo_runs[i]) for i in range(nruns)]
     aux = np.rollaxis(np.asarray([corr_run.mean(3) for corr_run in corr_runs]), 0, 4)
@@ -303,4 +307,6 @@ def realign4d(runs,
         transforms = [run_to_world*to_run for to_run in transfo_runs[i]]
         transfo_runs[i] = transforms
 
-    return transfo_runs
+    # DEBUG
+    ##return transfo_runs
+    return transfo_runs, transfo_mean
