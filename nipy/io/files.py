@@ -22,8 +22,7 @@ import nifti as nf
 
 from nipy.core.api import Image
 from nifti_ref import (coordmap_from_ioimg, coerce_coordmap, 
-                       get_diminfo, standard_order,
-                       ijk_from_diminfo)
+                       ijk_from_fps, fps_from_ijk)
                        
 
 def load(filename):
@@ -57,15 +56,15 @@ def load(filename):
     aff = img.get_affine()
     shape = img.get_shape()
     hdr = img.get_header()
-    # Get byte from NIFTI header, if present, to tell which axes are
+    # Get info from NIFTI header, if present, to tell which axes are
     # which.  This is a NIFTI-specific kludge, that might be abstracted
     # out into the image backend in a general way.  Similarly for
-    # getting zooms 
+    # getting zooms
     try:
-        dim_info = hdr['dim_info']
+        fps = hdr.get_dim_info()
     except (TypeError, KeyError):
-        dim_info = 0
-    ijk = ijk_from_diminfo(dim_info)
+        fps = (None, None, None)
+    ijk = ijk_from_fps(fps)
     try:
         zooms = hdr.get_zooms()
     except AttributeError:
@@ -177,17 +176,25 @@ def save(img, filename, dtype=None):
     aff = _match_affine(Fimg.affine, 3, zooms)
     ftype = _type_from_filename(filename)
     if ftype.startswith('nifti1'):
-        dim_info = get_diminfo(Fimg.coordmap)
-        out_img = nf.Nifti1Image(data=np.asarray(Fimg), affine=aff)
-        hdr = out_img.get_header()
-        hdr['dim_info'] = ord(dim_info)
-        hdr.set_zooms(zooms)
+        klass = nf.Nifti1Image
     elif ftype == 'analyze':
-        out_img = nf.Spm2AnalyzeImage(data=np.asarray(Fimg), affine=aff)
-        hdr = out_img.get_header()
-        hdr.set_zooms(zooms)        
+        klass = nf.Spm2AnalyzeImage
     else:
         raise ValueError('Cannot save file type "%s"' % ftype)
+    # make new image, get header
+    out_img = klass(data=np.asarray(Fimg), affine=aff)
+    hdr = out_img.get_header()
+    # work out phase, freqency, slice from coordmap names
+    ijk = newcmap.input_coords.coord_names
+    fps = fps_from_ijk(ijk)
+    # put fps into header if possible
+    try:
+        hdr.set_dim_info(*fps)
+    except AttributeError:
+        pass
+    # Set zooms
+    hdr.set_zooms(zooms)
+    # save to disk
     out_img.to_filespec(filename)
     return Fimg
 

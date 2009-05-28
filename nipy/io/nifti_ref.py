@@ -15,18 +15,16 @@ NIFTI files can have up to seven dimensions. We take the convention that
 the output coordinate names are ['x','y','z','t','u','v','w']
 and the input coordinate names are ['i','j','k','l','m','n','o'].
 
-In the NIFTI specification, the order of the output coordinates (at least the 
-first 3) are fixed to be ['x','y','z'] and their order is not meant to change. 
-As for input coordinates, the first three can be reordered, so 
-['j','k','i','l'] is valid, for instance.
+In the NIFTI specification, the order of the output coordinates (at
+least the first 3) are fixed to be ['x','y','z'] and their order is not
+meant to change.  As for input coordinates, the first three can be
+reordered, so ['j','k','i','l'] is valid, for instance.
 
 NIFTI has a 'diminfo' header attribute that optionally specifies the
-order of the ['i', 'j', 'k'] axes. To use similar
-terms to those in the nifti1.h header, 'phase' corresponds to 'i';
-'frequency' to 'j' and 'slice' to 'k'. We use ['i','j','k'] instead because
-there are images for which the terms 'phase' and 'frequency' have no proper
-meaning. See the functions `get_freq_axes`, `get_phase_axis` for how this
-is dealt with.
+order of the ['i', 'j', 'k'] axes. To use similar terms to those in the
+nifti1.h header, 'phase' corresponds to 'i'; 'frequency' to 'j' and
+'slice' to 'k'. We use ['i','j','k'] instead because there are images
+for which the terms 'phase' and 'frequency' have no proper meaning.
 
 Voxel coordinates:
 ------------------
@@ -193,230 +191,6 @@ def coerce_coordmap(coordmap):
     return Affine(A, newincoords, newoutcoords), intrans
 
 
-def get_diminfo(coordmap):
-    """
-    Get diminfo byte from a coordmap, after validating it as a
-    valid NIFTI coordmap.
-
-    Inputs:
-    -------
-    coordmap: `CoordinateMap`
-
-    Returns:
-    --------
-    nifti_diminfo: int
-           a valid NIFIT diminfo value, based on the order
-           of i(='phase'), j(='freq'), k(='slice') in the
-           input_coords of newcmap
-           
-    Notes:
-    ------
-    This is the diminfo of the REORDERED  (if necessary) coordmap
-
-    """
-    newcoordmap, _ = coerce_coordmap(coordmap)
-
-    ii, jj, kk = [newcoordmap.input_coords.index(l) for l in 'ijk']
-    return _diminfo_from_fps(ii, jj, kk)
-
-
-def standard_order(coordmap):
-    """
-    Take a valid NIFTI coordmap, and return
-    a coordmap with input_coordinates in the standard order, i.e. with
-    names 'ijklmno'[:coordmap.ndim[0]] and the order of coordinates
-    that put the coordmap into standard order.
-
-    NOTE: If the coordmap is only 'coerceable' and not 'valid' (i.e.
-    warnings are raised, then this may give unexpected results
-    because it only checks the reordering of the first 3 coordinates.
-
-    >>> cmap = Affine.from_params('ikjl', 'xyzt', np.identity(5))
-    >>> sorder, scmap = standard_order(cmap)
-    >>> print cmap.input_coords.coord_names
-    ('i', 'k', 'j', 'l')
-    >>> print scmap.input_coords.coord_names
-    ('i', 'j', 'k', 'l')
-    >>> print scmap.output_coords.coord_names
-    ('x', 'y', 'z', 't')
-    >>> print cmap.output_coords.coord_names
-    ('x', 'y', 'z', 't')
-    """
-    if not iscoerceable(coordmap):
-        raise ValueError, 'coordmap cannot be interpreted as a NIFTI coordmap'
-
-    # find the ordering necessary to get 'ijk' order
-    ijk = _fps_from_diminfo(get_diminfo(coordmap))
-    perm = np.zeros((3,3))
-    for i, j in enumerate(ijk):
-        perm[j,i] = 1
-    ijk_inv = np.dot(perm, [0,1,2]).astype(np.int)
-    o = range(coordmap.ndim[0])
-    o[:3] = ijk_inv
-    return o, niref.coordinate_map.reorder_input(coordmap, o)
-
-
-def ijk_from_diminfo(diminfo):
-    """
-    Determine the order of the 'ijk' dimensions from the diminfo byte
-    of a NIFTI header. If any of them are 'undefined', set the order
-    alphabetically, after having set the ones that are defined.
-    
-    Inputs:
-    -------
-    diminfo: int
-
-    Returns:
-    --------
-    ijk: str
-         A string reflecting the order of the 'ijk' coordinates. 
-         
-    Notes:
-    ------
-    Because the 'k' coordinate is the slice coordinate axis in NIFTI,
-    where 'k' is in the string determines the slice axis.
-
-    """
-    i, j, k = _fps_from_diminfo(diminfo)
-    out = list('aaa')
-    if i >= 0: out[i] = 'i'
-    if j >= 0: out[j] = 'j'
-    if k >= 0: out[k] = 'k'
-
-    remaining = list(set('ijk').difference(set(out)))
-    remaining.sort()
-    used = filter(lambda x: x >= 0, (i,j,k))
-
-    for l in range(3):
-        if l not  in used:
-            out[l] = remaining.pop(0)
-    return out
-
-
-def get_slice_axis(coordmap):
-    """
-    Determine the slice axis of a valid NIFTI coordmap.
-
-    Inputs:
-    -------
-    coordmap: `CoordinateMap`
-
-    Returns: 
-    --------
-    axis: which axis of the array corresponds to 'slice'
-    """
-    if iscoerceable(coordmap):
-        return coordmap.input_coords.index('k')
-
-
-def get_time_axis(coordmap):
-    """
-    Determine the time axis of a valid NIFTI coordmap.
-
-    Inputs:
-    -------
-    coordmap: `CoordinateMap`
-
-    Returns: 
-    --------
-    axis: which axis of the array corresponds to 'time'
-
-    """
-    if iscoerceable(coordmap):
-        return coordmap.input_coords.index('l')
-
-
-def get_freq_axis(coordmap):
-    """
-    Determine the freq axis of a valid NIFTI coordmap.
-
-    Inputs:
-    -------
-    coordmap: `CoordinateMap`
-
-    Returns: 
-    --------
-    axis: which axis of the array corresponds to 'time'
-
-    Notes:
-    ------
-    As described in nifti1.h, 'frequency' axis may not make sense for 
-    some pulse sequences (i.e. spin gradient). This function returns
-    the axis of 'j' in the NIFTI coordmap, which corresponds to 
-    'frequency' if it is defined in the diminfo byte of a NIFTI header.
-    """
-    if iscoerceable(coordmap):
-        return coordmap.input_coords.index('j')
-
-
-def get_phase_axis(coordmap):
-    """
-    Determine the freq axis of a valid NIFTI coordmap.
-
-    Inputs:
-    -------
-    coordmap: `CoordinateMap`
-
-    Returns: 
-    --------
-    axis: which axis of the array corresponds to 'time'
-
-    Notes:
-    ------
-    As described in nifti1.h, 'phase' axis may not make sense for 
-    some pulse sequences (i.e. spin gradient). This function returns
-    the axis of 'i' in the NIFTI coordmap, which corresponds to 
-    'phase' if it is defined in the diminfo byte of a NIFTI header.
-    """
-    if iscoerceable(coordmap):
-        return coordmap.input_coords.index('i')
-
-
-def _fps_from_diminfo(diminfo):
-    """
-    Taken from nifti1.h
-
-    #define DIM_INFO_TO_FREQ_DIM(di)   ( ((di)     ) & 0x03 )
-    #define DIM_INFO_TO_PHASE_DIM(di)  ( ((di) >> 2) & 0x03 )
-    #define DIM_INFO_TO_SLICE_DIM(di)  ( ((di) >> 4) & 0x03 )
-
-    Because NIFTI expects values from 1-3 with 0 being 'undefined',
-    we have to subtract 1 from each, making a return value of -1 'undefined'
-    """
-    if type(diminfo) == type(''):
-        try:
-            diminfo = ord(diminfo)
-        except:
-            warnings.warn('invalid diminfo entry in pynifti header')
-            diminfo = _diminfo_from_fps(0,1,2)
-            pass
-    diminfo = int(diminfo)
-    f = diminfo & 0x03 
-    p = int(diminfo >> 2) & 0x03
-    s = int(diminfo >> 4) & 0x03
-
-    return f-1, p-1, s-1
-
-
-def _diminfo_from_fps(f, p, s):
-    """
-    Taken from nifti1.h
-
-    #define FPS_INTO_DIM_INFO(fd,pd,sd) ( ( ( ((char)(fd)) & 0x03)      ) |  \
-    ( ( ((char)(pd)) & 0x03) << 2 ) |  \
-    ( ( ((char)(sd)) & 0x03) << 4 )  )
-
-    Because NIFTI expects values from 1-3 with 0 being 'undefined',
-    we have to add 1 to each of (f,p,s).
-    """
-    if f not in [-1,0,1,2] or p not in [-1,0,1,2] or s not in [-1,0,1,2]:
-        raise ValueError, 'f,p,s must be in [-1,0,1,2]'
-    defed = filter(lambda x: x >= 0, (f,p,s))
-    if len(defed) != len(set(defed)):
-        raise ValueError, 'f,p,s axes must be different'
-    return chr(((f+1) & 0x03) + (((p+1) & 0x03) << 2) + (((s+1) & 0x03) << 4))
-
-
 def coordmap_from_ioimg(affine, ijk, shape):
     """Generate a CoordinateMap from an affine transform.
 
@@ -437,3 +211,79 @@ def coordmap_from_ioimg(affine, ijk, shape):
             
     coordmap = Affine(affine, incoords, outcoords)
     return coordmap
+
+
+def ijk_from_fps(fps):
+    ''' Get names 'ijk' from freqency, phase, slice axis indices
+
+    Parameters
+    ----------
+    fps : sequence
+       sequence of ints in range(0,3), or None, specifying frequency,
+       phase and slice axis respectively.  Integers outside this range
+       raise an error.
+
+    Returns
+    -------
+    ijk : sequence
+       sequence of names (characters), some permutation of 'ijk'
+
+    Examples
+    --------
+    >>> ijk_from_fps((None,None,None))
+    'ijk'
+    >>> ijk_from_fps((None,None,0))
+    'kij'
+    >>> ijk_from_fps((2,None,0))
+    'kij'
+    '''
+    remaining = []
+    ijk = [' '] * 3
+    for name, pos in zip('jik', fps):
+        if pos is None:
+            remaining.append(name)
+        else:
+            ijk[pos] = name
+    remaining.sort() # to ijk order for replacement
+    for pos in range(len(ijk)):
+        if ijk[pos] == ' ':
+            ijk[pos] = remaining.pop(0)
+    return ''.join(ijk)
+
+
+def fps_from_ijk(ijk):
+    ''' Get axis indices for frequency, phase, slice from ijk string
+
+    Parameters
+    ----------
+    ijk : sequence
+       sequence of names (characters), some permutation of 'ijk'
+
+    Returns
+    -------
+    fps : sequence
+       sequence of ints in range(0,3), or None, specifying frequency,
+       phase and slice axis respectively
+
+    Examples
+    --------
+    >>> fps_from_ijk('ijk')
+    (1, 0, 2)
+    >>> fps_from_ijk('kij')
+    (2, 1, 0)
+    >>> fps_from_ijk('qrs')
+    (None, None, None)
+    >>> fps_from_ijk('qrsi')
+    (None, 3, None)
+    '''
+    ijk = list(ijk)
+    fps = []
+    for name in 'jik':
+        try:
+            ind = ijk.index(name)
+        except ValueError:
+            fps.append(None)
+        else:
+            fps.append(ind)
+    return tuple(fps)
+
