@@ -72,7 +72,7 @@ def load(filename):
     return Image(img.get_data(), coordmap)
 
 
-def _match_affine(aff, ndim):
+def _match_affine(aff, ndim, zooms=None):
     ''' Fill or prune affine to given number of dimensions
 
     >>> aff = np.arange(16).reshape(4,4)
@@ -102,7 +102,11 @@ def _match_affine(aff, ndim):
     aff_dim = aff.shape[0] - 1
     if ndim == aff_dim:
         return aff
-    mod_aff = np.eye(ndim+1)
+    aff_diag = np.ones(ndim+1)
+    if not zooms is None:
+        n = min(len(zooms), ndim)
+        aff_diag[:n] = zooms[:n]
+    mod_aff = np.diag(aff_diag)
     if ndim > aff_dim:
         mod_aff[:aff_dim,:aff_dim] = aff[:aff_dim,:aff_dim]
         mod_aff[:aff_dim,-1] = aff[:aff_dim,-1]
@@ -164,7 +168,9 @@ def save(img, filename, dtype=None):
     newcmap, order = coerce_coordmap(img.coordmap)
     Fimg = Image(np.transpose(np.asarray(img), order), newcmap)
     # Expand or contract affine to 4x4 (3 dimensions)
-    aff = _match_affine(Fimg.affine, 3)
+    rzs = Fimg.affine[:-1,:-1]
+    zooms = np.sqrt(np.sum(rzs * rzs, axis=0))
+    aff = _match_affine(Fimg.affine, 3, zooms)
     ftype = _type_from_filename(filename)
     if ftype.startswith('nifti1'):
         dim_info = get_diminfo(Fimg.coordmap)
@@ -216,21 +222,3 @@ def _type_from_filename(filename):
     if ext == '.mnc':
         return 'minc'
     raise ValueError('Strange file extension "%s"' % ext)
-
-
-def coerce2nifti(img, standard=False):
-    """
-    Coerce an Image into a new Image with a valid NIFTI coordmap
-    so that it can be saved.
-
-    If standard is True, the resulting image has 'standard'-ordered
-    input_coordinates, i.e. 'ijklmno'[:img.ndim]
-    """
-    newcmap, order = coerce_coordmap(img.coordmap)
-    nimg = Image(np.transpose(np.asarray(img), order), newcmap)
-    if standard:
-        sorder, scmap = standard_order(nimg.coordmap)
-        return Image(np.transpose(np.asarray(nimg), sorder), scmap)
-    else:
-        return nimg
-
