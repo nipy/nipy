@@ -2,11 +2,12 @@ import os
 from tempfile import mkstemp
 import numpy as np
 
-from nipy.testing import *
+from nipy.testing import assert_true, assert_false, assert_equal, \
+    assert_array_almost_equal, funcfile
+
 
 from nipy.io.api import load_image, save_image
 from nipy.core import api
-from nipy.io import nifti_ref as nifti
 
 class Tempfile():
     file = None
@@ -36,9 +37,7 @@ def test_save1():
 
 def test_save2():
     # A test to ensure that when a file is saved, the affine and the
-    # data agree. This image comes from a NIFTI file The axes have to
-    # be reordered because save_image first does the usual
-    # 'python2matlab' reorder
+    # data agree. This image comes from a NIFTI file 
 
     shape = (13,5,7,3)
     step = np.array([3.45,2.3,4.5,6.93])
@@ -105,33 +104,51 @@ def test_save3():
 
 def test_save4():
     # Same as test_save3 except we have reordered the 'ijk' input axes.
-
     shape = (13,5,7,3)
     step = np.array([3.45,2.3,4.5,6.9])
     # When the input coords are in the 'ljki' order, the affines get
-    #rearranged 
-    
-    cmap = api.Affine.from_start_step('lkji', 'tzyx', [1,5,3,0], step)
-
+    # rearranged.  Note that the 'start' below, must be 0 for
+    # non-spatial dimensions, because we have no way to store them in
+    # most cases.  For example, a 'start' of [1,5,3,1] would be lost on
+    # reload
+    cmap = api.Affine.from_start_step('lkji', 'tzyx', [2,5,3,1], step)
     data = np.random.standard_normal(shape)
-
     img = api.Image(data, cmap)
     save_image(img, tmpfile.name)
     img2 = load_image(tmpfile.name)
-
     P = np.array([[0,0,0,1,0],
                   [0,0,1,0,0],
                   [0,1,0,0,0],
                   [1,0,0,0,0],
                   [0,0,0,0,1]])
-    yield assert_true, np.allclose(np.dot(P, np.dot(img.affine, P.T)), img2.affine)
-    yield assert_equal, img.shape[::-1], img2.shape
-    yield assert_true, np.allclose(np.transpose(np.asarray(img2),[3,2,1,0]), np.asarray(img))
+    res = np.dot(P, np.dot(img.affine, P.T))
 
-    #print img2.coordmap.input_coords.coord_names, img.coordmap.input_coords.coord_names
-    #print nifti.get_diminfo(img.coordmap), nifti.get_diminfo(img2.coordmap)
-    #print img2.header['dim_info']
-    
+    # the step part of the affine should be set correctly
+    yield assert_array_almost_equal, res[:4,:4], img2.affine[:4,:4]
+
+    # start in the spatial dimensions should be set correctly
+    yield assert_array_almost_equal, res[:3,-1], img2.affine[:3,-1]
+
+    # start in the time dimension should not be 2 as in img, but 0
+    # because NIFTI dosen't have a time start
+
+    yield assert_false, (res[3,-1] == img2.affine[3,-1])
+    yield assert_true, (res[3,-1] == 2)
+    yield assert_true, (img2.affine[3,-1] == 0)
+
+    # shapes should be reversed because img has coordinates reversed
+
+
+    yield assert_equal, img.shape[::-1], img2.shape
+
+    # data should be transposed because coordinates are reversed
+
+    yield (assert_array_almost_equal, 
+           np.transpose(np.asarray(img2),[3,2,1,0]),
+           np.asarray(img))
+
+    # coordinate names should be reversed as well
+
     yield assert_equal, img2.coordmap.input_coords.coord_names, \
         img.coordmap.input_coords.coord_names[::-1]
     yield assert_equal, img2.coordmap.input_coords.coord_names, \

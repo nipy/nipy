@@ -32,8 +32,8 @@ Voxel coordinates:
 ------------------
 
 NIFTI's voxel convention is what can best be described as 0-based
-FORTRAN indexing (confirm this). For example: suppose we want the
-x=20-th, y=10-th pixel of the third slice of an image with 30 64x64 slices. This
+FORTRAN indexing. For example: suppose we want the x=20-th, y=10-th
+pixel of the third slice of an image with 30 64x64 slices. This
 
 >>> from nipy.testing import anatfile
 >>> from nipy.io.api import load_image
@@ -49,20 +49,20 @@ True
 >>> request2 == request3
 True
 
-FIXME: (finish this thought.... Are we going to open NIFTI files with NIFTI input coordinates?)
-For this reason, we have to consider whether we should transpose the
-memmap from pynifti. 
+FIXME: (finish this thought.... Are we going to open NIFTI files with
+NIFTI input coordinates?)  For this reason, we have to consider whether
+we should transpose the memmap from pynifti.
 """
 import warnings
-from string import join
 
 import numpy as np
 
-from nipy.core.api import CoordinateSystem, CoordinateMap, Affine
-from nipy.core.reference.coordinate_map import reorder_input, reorder_output
+from nipy.core.api import CoordinateSystem, Affine
+import nipy.core.reference as niref
 
-valid_input_axisnames = list('ijklmno') # (i,j,k) = ('phase', 'frequency', 'slice')
-valid_output_axisnames = list('xyztuvw')
+# (i,j,k) = ('phase', 'frequency', 'slice')
+valid_input_axisnames = tuple('ijklmno')
+valid_output_axisnames = tuple('xyztuvw')
 
 
 def iscoerceable(coordmap):
@@ -78,47 +78,42 @@ def iscoerceable(coordmap):
     except:
         return False
 
+
 def coerce_coordmap(coordmap):
     """
-    Determine if a given CoordinateMap instance can be used as 
-    a valid coordmap for a NIFTI image, so that an Image can be saved.
+    If necessary, reorder CoordinateMap as valid for a NIFTI image
 
-    If the input coordinates must be reordered, the order defaults
+    NIFTI images have the first 3 dimensions as spatial, and the
+    remaining as non-spatial, with the 4th typically being time.
+
+    If the input coordinates must be reordered, then the order defaults
     to the NIFTI order ['i','j','k','l','m','n','o'].
 
-    Inputs:
+    Parameters
+    ----------
+    coordmap : `CoordinateMap`
+
+    Returns
     -------
-
-    coordmap: `CoordinateMap`
-
-    Returns: (newcmap, transp_order)
-    --------
-
     newcmap: `CoordinateMap`
-           a new CoordinateMap that can be used with a (possibly
-           transposed array) in a proper Image. 
-
-    transp_order: `list`
-           a list that should be used to transpose any Image
-           with this coordmap to allow it to be saved as NIFTI
-
+       a new CoordinateMap that can be used with a (possibly transposed
+       array) in a proper Image.
+    transp_order : list
+       a list that should be used to transpose any Image with this
+       coordmap to allow it to be saved as NIFTI
     """
-
     if not hasattr(coordmap, 'affine'):
         raise ValueError, 'coordmap must be affine to save as a NIFTI file'
-
     affine = coordmap.affine
     if affine.shape[0] != affine.shape[1]:
         raise ValueError, 'affine must be square to save as a NIFTI file'
-
     ndim = affine.shape[0] - 1
     # Verify input coordinates are a valid set (independent of order)
     innames = coordmap.input_coords.coord_names
     vinput = valid_input_axisnames[:ndim]
     if set(vinput) != set(innames):
         raise ValueError('input coordinate axisnames of a %d-dimensional'
-                         'Image must come from %s' % (ndim, `vinput`))
-
+                         'Image must come from %s' % (ndim, vinput))
     # Verify output coordinates are a valid set (independent of order)
     voutput = valid_output_axisnames[:ndim]
     outnames = coordmap.output_coords.coord_names
@@ -126,65 +121,59 @@ def coerce_coordmap(coordmap):
         raise ValueError('output coordinate axisnames of a %d-dimensional'
                          'Image must come from %s' % (ndim, `voutput`))
 
-    # if the input coordinates do not have the proper order,
-    # the image would have to be transposed to be saved
-    # the i,j,k can be in any order in the first 
-    # three slots, but the remaining ones
-    # should be in order because there is no NIFTI
-    # header attribute that can tell us
-    # anything about this order. also, the NIFTI header says that
-    # the phase, freq, slice values all have to be less than 3
-
+    # if the input coordinates do not have the proper order, the image
+    # would have to be transposed to be saved. The i,j,k can be in any
+    # order in the first three slots, but the remaining ones should be
+    # in order because there is no NIFTI header attribute that can tell
+    # us anything about this order. Also, the NIFTI header says that the
+    # phase, freq, slice values all have to be less than 3
     reinput = False
     # Check if the first 3 input coordinates need to be reordered
     if innames != vinput:
         ndimm = min(ndim, 3)
         # Check if first 3 coords are valid input nifti coords set('ijk')
         if set(innames[:ndimm]) != set(vinput[:ndimm]):
-            warnings.warn('an Image with this coordmap has to be transposed to be saved because the first %d input axes are not from %s' % (ndimm, `set(vinput[:ndimm])`))
+            warnings.warn('an Image with this coordmap has to be '
+                          'transposed to be saved because the first '
+                          '%d input axes are not from %s' %
+                          (ndimm, set(vinput[:ndimm])))
             reinput = True
-        # Check if first 3 coords match the correct nifti order ('ijk')
-        if tuple(innames[ndimm:]) != tuple(vinput[ndimm:]):
-            warnings.warn('an Image with this coordmap has to be transposed because the last %d axes are not in the NIFTI order' % (ndim-3,))
+        # Check if subsequent coords match the correct nifti order ('lmno')
+        if innames[ndimm:] != vinput[ndimm:]:
+            warnings.warn('an Image with this coordmap has to be '
+                          'transposed because the last %d axes are '
+                          'not in the NIFTI order' % (ndim-3,))
             reinput = True
-
-    # if the output coordinates are not in the NIFTI order,
-    # they will have to be put in NIFTI order, affecting
-    # the affine matrix
-
+    # if the output coordinates are not in the NIFTI order, they will
+    # have to be put in NIFTI order, affecting the affine matrix
     reoutput = False
-    if tuple(outnames) != tuple(voutput):
-        warnings.warn('The order of the output coordinates is not the NIFTI order, this will change the affine transformation by reordering the output coordinates.')
+    if outnames != voutput:
+        warnings.warn('The order of the output coordinates is not the '
+                      'NIFTI order, this will change the affine '
+                      'transformation by reordering the output coordinates.')
         reoutput = True
-
     # Create the appropriate reorderings, if necessary
-
     inperm = np.identity(ndim+1)
     if reinput:
         inperm[:ndim,:ndim] = np.array([[int(vinput[i] == innames[j]) 
                                       for j in range(ndim)] 
                                      for i in range(ndim)])
     intrans = tuple(np.dot(inperm, range(ndim+1)).astype(np.int))[:-1]
-
     outperm = np.identity(ndim+1)
     if reoutput:
         outperm[:ndim,:ndim] = np.array([[int(voutput[i] == outnames[j]) 
                                        for j in range(ndim)] 
                                       for i in range(ndim)])
     outtrans = tuple(np.dot(outperm, range(ndim+1)).astype(np.int))[:-1]
-
     # Create the new affine
-
     A = np.dot(outperm, np.dot(affine, inperm))
-
     # If the affine beyond the 3 coordinate is not diagonal
     # some information will be lost saving to NIFTI
-
     if not np.allclose(np.diag(np.diag(A))[3:,3:], A[3:,3:]):
-        warnings.warn("the affine is not diagonal in the non 'ijk','xyz' coordinates, information will be lost in saving to NIFTI")
-        
+        warnings.warn("the affine is not diagonal in the "
+                      "non 'ijk','xyz' coordinates, information "
+                      "will be lost in saving to NIFTI")
     # Create new coordinate systems
-
     if not np.allclose(inperm, np.identity(ndim+1)):
         inname = coordmap.input_coords.name + '-reordered'
     else:
@@ -203,56 +192,6 @@ def coerce_coordmap(coordmap):
 
     return Affine(A, newincoords, newoutcoords), intrans
 
-def get_pixdim(coordmap, full_length=False):
-    """
-    Get pixdim from a coordmap, after validating
-    it as a valid NIFTI coordmap. The pixdims 
-    are taken from the output_coords. Specifically, 
-    for each axis 'xyztuvw', if the corresponding
-    output_coord has a step, use it, otherwise use 0.
-
-    Inputs:
-    -------
-    coordmap: `CoordinateMap`
-
-    full_length: boolean
-           If True, return a 7-dimensional pixdim, instead of only the
-           non-zero ones.
- 
-    Returns:
-    --------
-    pixdim: np.ndarray(dtype=np.float)
-           non-negative pixdim values to be saved as NIFTI
-
-    """
-
-    # FIXME: Axis instances don't have steps now.... get pixdim from the affine transform
-
-    # NIFTI header specifies pixdim should be positive (we take this
-    # as non-negative).
-    # since we will save the actual 4x4 affine in the NIFTI header,
-    # we set the spatial pixdims to 0, UNLESS the corresponding
-    # coordmap.output_coords.axes using
-    # the NIFTI order 'xyztuvw', i.e. the pixdim
-    # order comes from the OUTPUT coordinates and should
-    # always represent 'xyztuvw' and not necessarily know anything
-    # about the 'ijklmno' order
-
-    ndim = coordmap.ndim[0]
-    newcmap, _ = coerce_coordmap(coordmap)
-    pixdim = np.zeros(ndim)
-
-    #FIXME: here is what needs to be fixed, should use the shears, etc. to get pixdim
-
-    A = newcmap.affine
-    opixdim = np.diag(A)[3:-1]
-
-    pixdim[3:] = opixdim
-    if full_length:
-        v = np.zeros(7)
-        v[:pixdim.shape[0]] = pixdim
-        return v
-    return pixdim
 
 def get_diminfo(coordmap):
     """
@@ -275,11 +214,11 @@ def get_diminfo(coordmap):
     This is the diminfo of the REORDERED  (if necessary) coordmap
 
     """
-
     newcoordmap, _ = coerce_coordmap(coordmap)
 
     ii, jj, kk = [newcoordmap.input_coords.index(l) for l in 'ijk']
     return _diminfo_from_fps(ii, jj, kk)
+
 
 def standard_order(coordmap):
     """
@@ -302,9 +241,7 @@ def standard_order(coordmap):
     ('x', 'y', 'z', 't')
     >>> print cmap.output_coords.coord_names
     ('x', 'y', 'z', 't')
-
     """
-
     if not iscoerceable(coordmap):
         raise ValueError, 'coordmap cannot be interpreted as a NIFTI coordmap'
 
@@ -316,7 +253,8 @@ def standard_order(coordmap):
     ijk_inv = np.dot(perm, [0,1,2]).astype(np.int)
     o = range(coordmap.ndim[0])
     o[:3] = ijk_inv
-    return o, reorder_input(coordmap, o)
+    return o, niref.coordinate_map.reorder_input(coordmap, o)
+
 
 def ijk_from_diminfo(diminfo):
     """
@@ -354,6 +292,7 @@ def ijk_from_diminfo(diminfo):
             out[l] = remaining.pop(0)
     return out
 
+
 def get_slice_axis(coordmap):
     """
     Determine the slice axis of a valid NIFTI coordmap.
@@ -368,6 +307,7 @@ def get_slice_axis(coordmap):
     """
     if iscoerceable(coordmap):
         return coordmap.input_coords.index('k')
+
 
 def get_time_axis(coordmap):
     """
@@ -384,6 +324,7 @@ def get_time_axis(coordmap):
     """
     if iscoerceable(coordmap):
         return coordmap.input_coords.index('l')
+
 
 def get_freq_axis(coordmap):
     """
@@ -406,6 +347,7 @@ def get_freq_axis(coordmap):
     """
     if iscoerceable(coordmap):
         return coordmap.input_coords.index('j')
+
 
 def get_phase_axis(coordmap):
     """
@@ -455,6 +397,7 @@ def _fps_from_diminfo(diminfo):
 
     return f-1, p-1, s-1
 
+
 def _diminfo_from_fps(f, p, s):
     """
     Taken from nifti1.h
@@ -473,47 +416,8 @@ def _diminfo_from_fps(f, p, s):
         raise ValueError, 'f,p,s axes must be different'
     return chr(((f+1) & 0x03) + (((p+1) & 0x03) << 2) + (((s+1) & 0x03) << 4))
 
-def coordmap4io(coordmap):
-    """
-    Create a valid coordmap for saving with a NIFTI file.
-    Also returns the NIFTI diminfo and pixdim header
-    attributes.
 
-    Inputs:
-    -------
-
-    coordmap: `CoordinateMap`
-
-    Returns: (newcmap, transp_order, pixdim, nifti_diminfo)
-    --------
-
-    newcmap: `CoordinateMap`
-           a new CoordinateMap that can be used with a (possibly
-           transposed array) in a proper Image. 
-
-    transp_order: `list`
-           a list that should be used to transpose any Image
-           with this coordmap to allow it to be saved as NIFTI
-
-    pixdim: np.ndarray(dtype=np.float)
-           non-negative pixdim values to be saved as NIFTI
-
-    nifti_diminfo: int
-           a valid NIFIT diminfo value, based on the order
-           of i(='phase'), j(='freq'), k(='slice') in the
-           input_coords of newcmap
-           
-
-    """
-    # This is slightly silly because it calls coerce_coordmap 3 times...
-    # but this has very small overhead
-
-    newcmap, order = coerce_coordmap(coordmap)
-    pixdim = get_pixdim(coordmap)
-    diminfo = get_diminfo(coordmap)
-    return newcmap, order, pixdim, diminfo
-
-def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
+def coordmap_from_ioimg(affine, ijk, shape):
     """Generate a CoordinateMap from an affine transform.
 
     This is a convenience function to create a CoordinateMap from image
@@ -523,12 +427,9 @@ def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
 
     FIXME: This is an internal function and should be revisited when
     the CoordinateMap is refactored.
-    
     """
-    
     ndim = len(shape)
-    ijk = ijk_from_diminfo(diminfo)
-    innames = ijk + valid_input_axisnames[3:ndim]
+    innames = tuple(ijk) + valid_input_axisnames[3:ndim]
     incoords = CoordinateSystem(innames, 'input')
 
     outnames = valid_output_axisnames[:ndim]
@@ -536,5 +437,3 @@ def coordmap_from_ioimg(affine, diminfo, pixdim, shape):
             
     coordmap = Affine(affine, incoords, outcoords)
     return coordmap
-    # previously return call was the following:
-    # return reorder_input(reorder_output(coordmap))
