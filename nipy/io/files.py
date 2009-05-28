@@ -177,11 +177,12 @@ def save(img, filename, dtype=None):
     
     # Now that the affine has the proper order,
     # it can be saved to the NIFTI header
-
+    
     # PyNiftiIO only ever wants a 4x4 affine matrix...
     affine = np.identity(4)
     affine[:3,:3] = Fimg.affine[:3,:3]
-    
+    affine[:3,-1] = Fimg.affine[:3,-1]
+
     # PyNiftiIO save uses the 4x4 affine, pixdim and diminfo
     # to save the file
 

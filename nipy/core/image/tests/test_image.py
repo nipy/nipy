@@ -318,7 +318,7 @@ def test_header_roundtrip():
     yield assert_equal, newhdr['slice_end'], hdr['slice_end']
 
 def test_file_roundtrip():
-    img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
+    img = load_image(str(repository._fullpath('MNI152_T1_2mm.nii.gz')))
     fd, name = mkstemp(suffix='.nii.gz')
     tmpfile = open(name)
     save_image(img, tmpfile.name)
