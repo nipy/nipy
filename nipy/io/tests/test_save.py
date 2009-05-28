@@ -2,11 +2,12 @@ import os
 from tempfile import mkstemp
 import numpy as np
 
-from nipy.testing import *
+from nipy.testing import assert_true, assert_false, assert_equal, \
+    assert_array_almost_equal, funcfile
+
 
 from nipy.io.api import load_image, save_image
 from nipy.core import api
-from nipy.io import nifti_ref as nifti
 
 class Tempfile():
     file = None
@@ -50,7 +51,6 @@ def test_save2():
     yield assert_true, np.allclose(img.affine, img2.affine)
     yield assert_equal, img.shape, img2.shape
     yield assert_true, np.allclose(np.asarray(img2), np.asarray(img))
-
 
 
 def test_save2b():
@@ -104,33 +104,32 @@ def test_save3():
 
 def test_save4():
     # Same as test_save3 except we have reordered the 'ijk' input axes.
-
     shape = (13,5,7,3)
     step = np.array([3.45,2.3,4.5,6.9])
     # When the input coords are in the 'ljki' order, the affines get
-    #rearranged 
-    
-    cmap = api.Affine.from_start_step('lkji', 'tzyx', [1,5,3,0], step)
-
+    # rearranged.  Note that the 'start' below, must be 0 for
+    # non-spatial dimensions, because we have no way to store them in
+    # most cases.  For example, a 'start' of [1,5,3,1] would be lost on
+    # reload
+    cmap = api.Affine.from_start_step('lkji', 'tzyx', [0,5,3,1], step)
     data = np.random.standard_normal(shape)
-
     img = api.Image(data, cmap)
     save_image(img, tmpfile.name)
     img2 = load_image(tmpfile.name)
-
     P = np.array([[0,0,0,1,0],
                   [0,0,1,0,0],
                   [0,1,0,0,0],
                   [1,0,0,0,0],
                   [0,0,0,0,1]])
-    yield assert_true, np.allclose(np.dot(P, np.dot(img.affine, P.T)), img2.affine)
+    res = np.dot(P, np.dot(img.affine, P.T))
+    yield assert_array_almost_equal, res, img2.affine
     yield assert_equal, img.shape[::-1], img2.shape
-    yield assert_true, np.allclose(np.transpose(np.asarray(img2),[3,2,1,0]), np.asarray(img))
-
+    yield (assert_array_almost_equal, 
+           np.transpose(np.asarray(img2),[3,2,1,0]),
+           np.asarray(img))
     #print img2.coordmap.input_coords.coord_names, img.coordmap.input_coords.coord_names
     #print nifti.get_diminfo(img.coordmap), nifti.get_diminfo(img2.coordmap)
     #print img2.header['dim_info']
-    
     yield assert_equal, img2.coordmap.input_coords.coord_names, \
         img.coordmap.input_coords.coord_names[::-1]
     yield assert_equal, img2.coordmap.input_coords.coord_names, \

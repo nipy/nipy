@@ -56,16 +56,21 @@ def load(filename):
     img = nf.load(filename)
     aff = img.get_affine()
     shape = img.get_shape()
-    aff = _match_affine(aff, len(shape))
     hdr = img.get_header()
     # Get byte from NIFTI header, if present, to tell which axes are
     # which.  This is a NIFTI-specific kludge, that might be abstracted
-    # out into the image backend in a general way
+    # out into the image backend in a general way.  Similarly for
+    # getting zooms 
     try:
         dim_info = hdr['dim_info']
     except (TypeError, KeyError):
         dim_info = 0
     ijk = ijk_from_diminfo(dim_info)
+    try:
+        zooms = hdr.get_zooms()
+    except AttributeError:
+        zooms = np.ones(len(shape))
+    aff = _match_affine(aff, len(shape), zooms)
     coordmap = coordmap_from_ioimg(aff,
                                    ijk,
                                    img.get_shape())
@@ -107,12 +112,11 @@ def _match_affine(aff, ndim, zooms=None):
         n = min(len(zooms), ndim)
         aff_diag[:n] = zooms[:n]
     mod_aff = np.diag(aff_diag)
-    if ndim > aff_dim:
-        mod_aff[:aff_dim,:aff_dim] = aff[:aff_dim,:aff_dim]
-        mod_aff[:aff_dim,-1] = aff[:aff_dim,-1]
-    else: # required smaller than given
-        mod_aff[:ndim,:ndim] = aff[:ndim,:ndim]
-        mod_aff[:ndim,-1] = aff[:ndim,-1]
+    n = min(ndim, aff_dim)
+    # rotations zooms shears
+    mod_aff[:n,:n] = aff[:n,:n]
+    # translations
+    mod_aff[:n,-1] = aff[:n,-1]
     return mod_aff
 
 
@@ -177,8 +181,11 @@ def save(img, filename, dtype=None):
         out_img = nf.Nifti1Image(data=np.asarray(Fimg), affine=aff)
         hdr = out_img.get_header()
         hdr['dim_info'] = ord(dim_info)
+        hdr.set_zooms(zooms)
     elif ftype == 'analyze':
         out_img = nf.Spm2AnalyzeImage(data=np.asarray(Fimg), affine=aff)
+        hdr = out_img.get_header()
+        hdr.set_zooms(zooms)        
     else:
         raise ValueError('Cannot save file type "%s"' % ftype)
     out_img.to_filespec(filename)
