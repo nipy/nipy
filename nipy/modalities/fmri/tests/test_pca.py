@@ -1,13 +1,10 @@
-import os
-
 import numpy as np
-from nipy.testing import *
 
-from nipy.modalities.fmri.api import FmriImageList, fromimage
+from nipy.modalities.fmri.api import fromimage
 from nipy.modalities.fmri.pca import PCA
 from nipy.core.api import Image
 from nipy.io.api import  load_image
-from nipy.testing import funcfile
+from nipy.testing import funcfile, TestCase, dec
 
 class test_PCA(TestCase):
 
