@@ -71,7 +71,9 @@ def load(filename):
         zooms = np.ones(len(shape))
     aff = _match_affine(aff, len(shape), zooms)
     coordmap = coordmap_from_affine(aff, ijk)
-    return Image(img.get_data(), coordmap)
+    img = Image(img.get_data(), coordmap)
+    img.header = hdr
+    return img
 
 
 def _match_affine(aff, ndim, zooms=None):
@@ -155,7 +157,12 @@ def save(img, filename, dtype=None):
     >>> saved_img.shape
     (91, 109, 91)
     >>> os.unlink(fname)
-
+    >>> fname = 'test.mnc'
+    >>> saved_image = save_image(img, fname)
+    Traceback (most recent call last):
+       ...
+    ValueError: Cannot save file type "minc"
+    
     Notes
     -----
     Filetype is determined by the file extension in 'filename'.  Currently the
@@ -165,6 +172,11 @@ def save(img, filename, dtype=None):
     * Nifti file pair : ['.hdr', '.hdr.gz']
     * Analyze file pair : ['.img', 'img.gz']
     """
+    # Get header from image
+    try:
+        original_hdr = img.header
+    except AttributeError:
+        original_hdr = None
     # Make NIFTI compatible version of image
     newcmap, order = coerce_coordmap(img.coordmap)
     Fimg = Image(np.transpose(np.asarray(img), order), newcmap)
@@ -179,8 +191,10 @@ def save(img, filename, dtype=None):
         klass = nf.Spm2AnalyzeImage
     else:
         raise ValueError('Cannot save file type "%s"' % ftype)
-    # make new image, get header
-    out_img = klass(data=np.asarray(Fimg), affine=aff)
+    # make new image
+    out_img = klass(data=np.asarray(Fimg),
+                    affine=aff,
+                    header=original_hdr)
     hdr = out_img.get_header()
     # work out phase, freqency, slice from coordmap names
     ijk = newcmap.input_coords.coord_names
