@@ -6,11 +6,10 @@ import numpy as np
 
 import nose.tools
 
-import nipy.core.reference.coordinate_map as coordinate_map
-from nipy.modalities.fmri.api import FmriImageList, fmri_generator, fromimage
-from nipy.core.api import Image, data_generator, parcels, fromarray
+from nipy.modalities.fmri.api import fmri_generator, fromimage
+from nipy.core.api import parcels, fromarray
 from nipy.io.api import  load_image, save_image
-from nipy.testing import anatfile, funcfile
+from nipy.testing import funcfile
 
 
 def setup():

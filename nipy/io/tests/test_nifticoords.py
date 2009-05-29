@@ -111,60 +111,11 @@ def test_ijkml_to_utzyx():
     yield assert_true, np.allclose(np.fliplr(newcmap(Xr)), cmap(X))
 
 
-def test_ijk_from_diminfo():
-    x = niref._diminfo_from_fps(-1,-1,-1)
-    yield assert_equal, niref.ijk_from_diminfo(x), list('ijk')
-    x = niref._diminfo_from_fps(2,-1,-1)
-    yield assert_equal, niref.ijk_from_diminfo(x), list('jki')
-
-
-def test_phase_freq_slice_axes():
-    # Test that the phase, freq, time, slice axes work for valid NIFTI headers
-    ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
-    input_coords = CoordinateSystem(ninput_axes, 'input')
-    output_coords = CoordinateSystem(output_axes[:4], 'output')
-    cmap = Affine(np.identity(5), input_coords, output_coords)
-    yield assert_equal, niref.get_time_axis(cmap), 3
-    yield assert_equal, niref.get_freq_axis(cmap), 0
-    yield assert_equal, niref.get_slice_axis(cmap), 1
-    yield assert_equal, niref.get_phase_axis(cmap), 2
-
-
-def test_phase_freq_slice_axes_rev():
-    # Same test_phase_freq_slice_axes, but the order of the output
-    # coordinates is reversed
-    ninput_axes = [input_axes[1], input_axes[2], input_axes[0], input_axes[3]]
-    input_coords = CoordinateSystem(ninput_axes, 'input')
-    output_coords = CoordinateSystem(output_axes[:4][::-1], 'output')
-    cmap = Affine(np.identity(5), input_coords, output_coords)
-
-    yield assert_equal, niref.get_time_axis(cmap), 3
-    yield assert_equal, niref.get_freq_axis(cmap), 0
-    yield assert_equal, niref.get_slice_axis(cmap), 1
-    yield assert_equal, niref.get_phase_axis(cmap), 2
-
-
-def test_phase_freq_slice_axes_coerce():
-    # Test that the phase, freq, time, slice axes work for coercable
-    # NIFTI headers
-
-    ninput_axes = [input_axes[0], input_axes[1], input_axes[2], input_axes[4],
-                   input_axes[3]]
-    input_coords = CoordinateSystem(ninput_axes, 'input')
-    output_coords = CoordinateSystem(output_axes[:5][::-1], 'output')
-    cmap = Affine(np.identity(6), input_coords, output_coords)
-
-    yield assert_equal, niref.get_time_axis(cmap), 4
-    yield assert_equal, niref.get_freq_axis(cmap), 1
-    yield assert_equal, niref.get_slice_axis(cmap), 2
-    yield assert_equal, niref.get_phase_axis(cmap), 0
-
-    newcmap, _ = niref.coerce_coordmap(cmap)
-
-    yield assert_equal, niref.get_time_axis(newcmap), 3
-    yield assert_equal, niref.get_freq_axis(newcmap), 1
-    yield assert_equal, niref.get_slice_axis(newcmap), 2
-    yield assert_equal, niref.get_phase_axis(newcmap), 0
+def test_ijk_from_fps():
+    x = niref.fps_from_ijk('ijk')
+    yield assert_equal, niref.ijk_from_fps(x), 'ijk'
+    x = niref.fps_from_ijk('jki')
+    yield assert_equal, niref.ijk_from_fps(x), 'jki'
 
 
 def test_general_coercion():
