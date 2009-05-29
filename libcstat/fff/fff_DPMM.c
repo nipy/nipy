@@ -565,12 +565,13 @@ extern int fff_FDP_sampling(fff_vector *density, fff_FDP* FDP, fff_array *Z, con
 
 extern int fff_FDP_inference(fff_FDP* FDP, fff_array *Z, fff_vector* posterior, const fff_matrix *data, const fff_vector * pvals, const fff_array * labels, const long niter)
 {
-  int i,n;
+  int i,j,n;
   double aux;
   fff_vector_set_all(posterior,0);
 
   for (i=0 ; i<niter;i++){
-	_recompute_and_redraw(FDP,Z,data,pvals,labels,i); 
+        for (j=0 ; j<10;j++)
+	  _recompute_and_redraw(FDP,Z,data,pvals,labels,i+j); 
 	for (n=0 ; n<data->size1 ; n++){
 	  aux = (fff_array_get1d(Z,n)>0) + fff_vector_get(posterior,n);
 	  fff_vector_set(posterior,n,aux);
