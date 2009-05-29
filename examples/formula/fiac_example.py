@@ -11,9 +11,6 @@ from nipy.modalities.fmri import formula, design, hrf
 from nipy.io.api import load_image, save_image
 from nipy.core import api
 
-event = [(0,3),(0,4)] # Sequences with all the (subj, run) event designs 
-block = [(0,1),(0,2)] # Sequences with all the (subj, run) block designs 
-
 def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
     """
     Take a FIAC specification file and get two specifications
@@ -30,9 +27,9 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
     """
 
     if (subj, run) in event:
-        designtype = 'evt'
+        designtype = 'event'
     else:
-        designtype = 'bloc'
+        designtype = 'block'
 
     # Fix the format of the specification so it is
     # more in the form of a 2-way ANOVA
@@ -63,15 +60,18 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
         d = d[~k]
 
 
-    fname = "fiac_example_data/fiac%(subj)d/experiment_%(run)d_%(design)s.csv" % {'root':root, 'subj':subj, 'run':run, 'design':designtype}
+    fname = "fiac_example_data/fiac_%(subj)02d/%(design)s/experiment_%(run)02d.csv" % {'root':root, 'subj':subj, 'run':run, 'design':designtype}
     rec2csv(d, fname)
     experiment = csv2rec(fname)
 
-    fname = "fiac_example_data/fiac%(subj)d/initial_%(run)d_%(design)s.csv" % {'root':root, 'subj':subj, 'run':run, 'design':designtype}
+    fname = "fiac_example_data/fiac_%(subj)02d/%(design)s/initial_%(run)02d.csv" % {'root':root, 'subj':subj, 'run':run, 'design':designtype}
     rec2csv(b, fname)
     initial = csv2rec(fname)
 
     return d, b
+
+event = [(0,3),(0,4)] # Sequences with all the (subj, run) event designs 
+block = [(0,1),(0,2)] # Sequences with all the (subj, run) block designs 
 
 def fit(subj, run):
     """
@@ -81,19 +81,26 @@ def fit(subj, run):
     tv = np.arange(191)*2.5+1.25
     t = formula.make_recarray(tv, 't')
 
-    path_dict = {'root':root, 'subj':subj, 'run':r, 'design':designtype}
-    fname = "fiac_example_data/fiac%(subj)d/experiment_%(run)d_%(design)s.csv" % path_dict
-    experiment = csv2rec(fname)
+    path_dict = {'subj':subj, 'run':run}
+    if os.path.exists("fiac_example_data/fiac_%(subj)02d/block/initial_%(run)02d.csv" % path_dict):
+        path_dict['design'] = 'block'
+    else:
+        path_dict['design'] = 'event'
 
-    fname = "fiac_example_data/fiac%(subj)d/initial_%(run)d_%(design)s.csv" % path_dict
-    initial = csv2rec(fname)
+    experiment = csv2rec("fiac_example_data/fiac_%(subj)02d/%(design)s/experiment_%(run)02d.csv" % path_dict)
+    initial = csv2rec("fiac_example_data/fiac_%(subj)02d/%(design)s/initial_%(run)02d.csv" % path_dict)
 
-    X_exper, cons_exper = design.event_design(experiment, t, hrfs=delay.spectral)
+    # Create design matrices for the "initial" and "experiment" factors,
+    # saving the default experimental contrasts.
 
     # Ignore the contrasts for 'initial' event type
     # as they are "uninteresting"
 
+    X_exper, cons_exper = design.event_design(experiment, t, hrfs=delay.spectral)
     X_initial, _ = design.event_design(initial, t, hrfs=[hrf.glover]) 
+
+
+
 
     stop 
 #    pylab.clf(); pylab.plot(X_begin); pylab.show()
