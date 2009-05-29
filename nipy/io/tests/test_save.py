@@ -111,7 +111,7 @@ def test_save4():
     # non-spatial dimensions, because we have no way to store them in
     # most cases.  For example, a 'start' of [1,5,3,1] would be lost on
     # reload
-    cmap = api.Affine.from_start_step('lkji', 'tzyx', [0,5,3,1], step)
+    cmap = api.Affine.from_start_step('lkji', 'tzyx', [2,5,3,1], step)
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
     save_image(img, tmpfile.name)
@@ -122,14 +122,33 @@ def test_save4():
                   [1,0,0,0,0],
                   [0,0,0,0,1]])
     res = np.dot(P, np.dot(img.affine, P.T))
-    yield assert_array_almost_equal, res, img2.affine
+
+    # the step part of the affine should be set correctly
+    yield assert_array_almost_equal, res[:4,:4], img2.affine[:4,:4]
+
+    # start in the spatial dimensions should be set correctly
+    yield assert_array_almost_equal, res[:3,-1], img2.affine[:3,-1]
+
+    # start in the time dimension should not be 2 as in img, but 0
+    # because NIFTI dosen't have a time start
+
+    yield assert_false, (res[3,-1] == img2.affine[3,-1])
+    yield assert_true, (res[3,-1] == 2)
+    yield assert_true, (img2.affine[3,-1] == 0)
+
+    # shapes should be reversed because img has coordinates reversed
+
+
     yield assert_equal, img.shape[::-1], img2.shape
+
+    # data should be transposed because coordinates are reversed
+
     yield (assert_array_almost_equal, 
            np.transpose(np.asarray(img2),[3,2,1,0]),
            np.asarray(img))
-    #print img2.coordmap.input_coords.coord_names, img.coordmap.input_coords.coord_names
-    #print nifti.get_diminfo(img.coordmap), nifti.get_diminfo(img2.coordmap)
-    #print img2.header['dim_info']
+
+    # coordinate names should be reversed as well
+
     yield assert_equal, img2.coordmap.input_coords.coord_names, \
         img.coordmap.input_coords.coord_names[::-1]
     yield assert_equal, img2.coordmap.input_coords.coord_names, \

@@ -48,9 +48,6 @@ def test_iljk_to_xyzt():
 def test_ijkn_to_xyzt():
     # This should raise an exception about not having axis names
     # ['ijkl'].  Some warnings are printed during the try/except
-
-    # ninput_axes = list('ijkn')
-    ninput_axes = [input_axes[0], input_axes[1], input_axes[2], input_axes[5]]
     input_coords = CoordinateSystem('ijkn', 'input')
     output_coords = CoordinateSystem('xyzt', 'output')
     cmap = Affine(np.identity(5), input_coords, output_coords)
