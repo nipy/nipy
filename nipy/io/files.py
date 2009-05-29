@@ -21,7 +21,7 @@ import numpy as np
 import nifti as nf
 
 from nipy.core.api import Image
-from nifti_ref import (coordmap_from_ioimg, coerce_coordmap, 
+from nifti_ref import (coordmap_from_affine, coerce_coordmap, 
                        ijk_from_fps, fps_from_ijk)
                        
 
@@ -70,9 +70,7 @@ def load(filename):
     except AttributeError:
         zooms = np.ones(len(shape))
     aff = _match_affine(aff, len(shape), zooms)
-    coordmap = coordmap_from_ioimg(aff,
-                                   ijk,
-                                   img.get_shape())
+    coordmap = coordmap_from_affine(aff, ijk)
     return Image(img.get_data(), coordmap)
 
 
