@@ -62,7 +62,7 @@ def load(filename):
     # getting zooms
     try:
         fps = hdr.get_dim_info()
-    except (TypeError, KeyError):
+    except (TypeError, KeyError, AttributeError):
         fps = (None, None, None)
     ijk = ijk_from_fps(fps)
     try:
