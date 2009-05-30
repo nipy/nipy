@@ -7,7 +7,6 @@ from nipy.testing import TestCase, dec
 
 from nipy.utils.tests.data import datapjoin
 
-from nipy.core.api import Image
 from nipy.io.api import load_image
 from nipy.fixes.scipy.stats.models.contrast import Contrast
 
@@ -164,7 +163,7 @@ class test_Contrast(test_FmriStat):
         AR.fit()
         del(OLS); del(AR); gc.collect()
 
-        t = Image('fmristat_run/contrasts/pain/F.hdr')
+        t = load_image('fmristat_run/contrasts/pain/F.hdr')
         v=viewer.BoxViewer(t)
         v.draw()
 
