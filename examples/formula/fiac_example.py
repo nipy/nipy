@@ -181,6 +181,7 @@ def fit(subj, run):
 
     fmri = np.array(load_image("fiac_example_data/fiac_%(subj)02d/%(design)s/swafunctional_%(run)02d.nii" % path_dict))
     fmri = np.transpose(fmri, [3,2,1,0])
+    anat = load_image("fiac_example_data/fiac_%(subj)02d/wanatomical.nii")
                    
     nvol, volshape = fmri.shape[0], fmri.shape[1:] 
     nslice, sliceshape = volshape[0], volshape[1:]
@@ -263,12 +264,12 @@ def fit(subj, run):
     os.system('mkdir -p %s' % odir)
     for n in fcons:
         # XXX This is going to fail because we don't have a mask right now
-        im = api.Image(output[n], mask.coordmap.copy())
+        im = api.Image(output[n], anat.coordmap.copy())
         os.system('mkdir -p %s/%s' % (odir, n))
         save_image(im, "%s/%s/F.nii" % (odir, n))
 
     for n in tcons:
-        im = api.Image(output[n], mask.coordmap.copy())
+        im = api.Image(output[n], anat.coordmap.copy())
         os.system('mkdir -p %s/%s' % (odir, n))
         save_image('%s/%s/t.nii' % (odir, n), output[n]['t'])
         save_image('%s/%s/sd.nii' % (odir, n), output[n]['sd'])
