@@ -100,15 +100,13 @@ class Image(object):
 
     def _getheader(self):
         # data loaded from a file should have a header
-        if hasattr(self._data, 'header'):
-            return self._data.header
-        raise AttributeError, 'Image created from arrays do not have headers.'
+        try:
+            return self._header
+        except AttributeError:
+            raise AttributeError('Image created from arrays '
+                                 'may not have headers.')
     def _setheader(self, header):
-        if hasattr(self._data, 'header'):
-            self._data.header = header
-        else:
-            raise AttributeError, \
-                  'Image created from arrays do not have headers.'
+        self._header = header
     _doc['header'] = \
     """The file header dictionary for this image.  In order to update
     the header, you must first make a copy of the header, set the

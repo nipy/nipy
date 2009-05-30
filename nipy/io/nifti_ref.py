@@ -22,7 +22,7 @@ reordered, so ['j','k','i','l'] is valid, for instance.
 
 NIFTI has a 'diminfo' header attribute that optionally specifies the
 order of the ['i', 'j', 'k'] axes. To use similar terms to those in the
-nifti1.h header, 'phase' corresponds to 'i'; 'frequency' to 'j' and
+nifti1.h header, 'frequency' corresponds to 'i'; 'phase' to 'j' and
 'slice' to 'k'. We use ['i','j','k'] instead because there are images
 for which the terms 'phase' and 'frequency' have no proper meaning.
 
@@ -56,7 +56,6 @@ import warnings
 import numpy as np
 
 from nipy.core.api import CoordinateSystem, Affine
-import nipy.core.reference as niref
 
 # (i,j,k) = ('phase', 'frequency', 'slice')
 valid_input_axisnames = tuple('ijklmno')
@@ -69,13 +68,34 @@ def iscoerceable(coordmap):
     a valid coordmap for a NIFTI image, so that an Image can be saved.
     
     This may raise various warnings about the coordmap.
+
+    Parameters
+    ----------
+    coordmap : ``CoordinateMap``
+
+    Returns
+    -------
+    tf : bool
+       True if `coordmap` is coerceable to NIFTI
+
+    Examples
+    --------
+    >>> from nipy.core.api import CoordinateSystem as CS, Affine
+    >>> cmap = Affine(np.eye(5), CS('kjil'), CS('xyzt'))
+    >>> iscoerceable(cmap)
+    True
+    >>> cmap = Affine(np.eye(5), CS('lijk'), CS('xyzt'))
+    >>> iscoerceable(cmap)
+    True
+    >>> cmap = Affine(np.eye(5), CS('ijkq'), CS('xyzt'))
+    >>> iscoerceable(cmap)
+    False
     """
     try: 
         coerce_coordmap(coordmap)
-        return True
-    except:
+    except ValueError:
         return False
-
+    return True
 
 def coerce_coordmap(coordmap):
     """
@@ -85,7 +105,7 @@ def coerce_coordmap(coordmap):
     remaining as non-spatial, with the 4th typically being time.
 
     If the input coordinates must be reordered, then the order defaults
-    to the NIFTI order ['i','j','k','l','m','n','o'].
+    to the standard NIFTI order ['i','j','k','l','m','n','o'].
 
     Parameters
     ----------
@@ -97,8 +117,17 @@ def coerce_coordmap(coordmap):
        a new CoordinateMap that can be used with a (possibly transposed
        array) in a proper Image.
     transp_order : list
-       a list that should be used to transpose any Image with this
+       a list that should be used to transpose data matching this
        coordmap to allow it to be saved as NIFTI
+
+    Notes
+    -----
+    If the input coordinates do not have the proper order, the image
+    would have to be transposed to be saved. The i,j,k can be in any
+    order in the first three slots, but the remaining ones should be in
+    order because there is no NIFTI header attribute that can tell us
+    anything about this order. Also, the NIFTI header says that the
+    phase, freq, slice values all have to be less than 3 in position.
     """
     if not hasattr(coordmap, 'affine'):
         raise ValueError, 'coordmap must be affine to save as a NIFTI file'
@@ -117,14 +146,9 @@ def coerce_coordmap(coordmap):
     outnames = coordmap.output_coords.coord_names
     if set(voutput) != set(outnames):
         raise ValueError('output coordinate axisnames of a %d-dimensional'
-                         'Image must come from %s' % (ndim, `voutput`))
-
+                         'Image must come from %s' % (ndim, voutput))
     # if the input coordinates do not have the proper order, the image
-    # would have to be transposed to be saved. The i,j,k can be in any
-    # order in the first three slots, but the remaining ones should be
-    # in order because there is no NIFTI header attribute that can tell
-    # us anything about this order. Also, the NIFTI header says that the
-    # phase, freq, slice values all have to be less than 3
+    # would have to be transposed to be saved
     reinput = False
     # Check if the first 3 input coordinates need to be reordered
     if innames != vinput:
@@ -154,14 +178,14 @@ def coerce_coordmap(coordmap):
     inperm = np.identity(ndim+1)
     if reinput:
         inperm[:ndim,:ndim] = np.array([[int(vinput[i] == innames[j]) 
-                                      for j in range(ndim)] 
-                                     for i in range(ndim)])
+                                         for j in range(ndim)] 
+                                        for i in range(ndim)])
     intrans = tuple(np.dot(inperm, range(ndim+1)).astype(np.int))[:-1]
     outperm = np.identity(ndim+1)
     if reoutput:
         outperm[:ndim,:ndim] = np.array([[int(voutput[i] == outnames[j]) 
-                                       for j in range(ndim)] 
-                                      for i in range(ndim)])
+                                          for j in range(ndim)] 
+                                         for i in range(ndim)])
     outtrans = tuple(np.dot(outperm, range(ndim+1)).astype(np.int))[:-1]
     # Create the new affine
     A = np.dot(outperm, np.dot(affine, inperm))
@@ -176,45 +200,72 @@ def coerce_coordmap(coordmap):
         inname = coordmap.input_coords.name + '-reordered'
     else:
         inname = coordmap.input_coords.name
-
     if not np.allclose(outperm, np.identity(ndim+1)):
         outname = coordmap.output_coords.name + '-reordered'
     else:
         outname = coordmap.output_coords.name
-
     coords = coordmap.input_coords.coord_names
     newincoords = CoordinateSystem([coords[i] for i in intrans], inname)
-
     coords = coordmap.output_coords.coord_names
     newoutcoords = CoordinateSystem([coords[i] for i in outtrans], outname)
-
     return Affine(A, newincoords, newoutcoords), intrans
 
 
-def coordmap_from_ioimg(affine, ijk, shape):
+def coordmap_from_affine(affine, ijk):
     """Generate a CoordinateMap from an affine transform.
 
     This is a convenience function to create a CoordinateMap from image
-    attributes.  It uses the orientation field from pynifti IO to map
-    to the nipy *names*, prepending *time* or *vector* depending on
-    dimension.
+    attributes.  It assumes that the first three axes in the image (and
+    therefore affine) are spatial (in 'ijk' in input and equal to 'xyz'
+    in output), and appends the standard names for further dimensions
+    (e.g. 'l' as the 4th in input, 't' as the 4th in output).
 
+    Parameters
+    ----------
+    affine : array
+       affine for coordmap
+    ijk : sequence
+       sequence, some permutation of 'ijk', giving spatial axis
+       ordering.  These are the spatial input axis names
+
+    Returns
+    -------
+    coordmap : ``CoordinateMap``
+       coordinate map corresponding to `affine` and `ijk`
+
+    Examples
+    --------
+    >>> cmap = coordmap_from_affine(np.eye(4), 'ijk')
+    >>> cmap.input_coords.coord_names
+    ('i', 'j', 'k')
+    >>> cmap.output_coords.coord_names
+    ('x', 'y', 'z')
+    >>> cmap = coordmap_from_affine(np.eye(5), 'kij')
+    >>> cmap.input_coords.coord_names
+    ('k', 'i', 'j', 'l')
+    >>> cmap.output_coords.coord_names
+    ('x', 'y', 'z', 't')
+    
     FIXME: This is an internal function and should be revisited when
     the CoordinateMap is refactored.
     """
-    ndim = len(shape)
-    innames = tuple(ijk) + valid_input_axisnames[3:ndim]
+    if len(ijk) != 3:
+        raise valueError('ijk input should be length 3')
+    ndim_out = affine.shape[0] - 1
+    ndim_in = affine.shape[1] - 1
+    if ndim_in < 3:
+        raise ValueError('Input number of dimensions should >=3')
+    innames = tuple(ijk) + valid_input_axisnames[3:ndim_in]
     incoords = CoordinateSystem(innames, 'input')
-
-    outnames = valid_output_axisnames[:ndim]
+    outnames = valid_output_axisnames[:ndim_out]
     outcoords = CoordinateSystem(outnames, 'output')
-            
-    coordmap = Affine(affine, incoords, outcoords)
-    return coordmap
+    return Affine(affine, incoords, outcoords)
 
 
 def ijk_from_fps(fps):
     ''' Get names 'ijk' from freqency, phase, slice axis indices
+
+    'frequency' corresponds to 'i'; 'phase' to 'j' and 'slice' to 'k'
 
     Parameters
     ----------
@@ -225,8 +276,8 @@ def ijk_from_fps(fps):
 
     Returns
     -------
-    ijk : sequence
-       sequence of names (characters), some permutation of 'ijk'
+    ijk : string
+       string giving names (characters), some permutation of 'ijk'
 
     Examples
     --------
@@ -235,16 +286,15 @@ def ijk_from_fps(fps):
     >>> ijk_from_fps((None,None,0))
     'kij'
     >>> ijk_from_fps((2,None,0))
-    'kij'
+    'kji'
     '''
     remaining = []
     ijk = [' '] * 3
-    for name, pos in zip('jik', fps):
+    for name, pos in zip('ijk', fps):
         if pos is None:
             remaining.append(name)
         else:
             ijk[pos] = name
-    remaining.sort() # to ijk order for replacement
     for pos in range(len(ijk)):
         if ijk[pos] == ' ':
             ijk[pos] = remaining.pop(0)
@@ -254,31 +304,34 @@ def ijk_from_fps(fps):
 def fps_from_ijk(ijk):
     ''' Get axis indices for frequency, phase, slice from ijk string
 
+    'frequency' corresponds to 'i'; 'phase' to 'j' and 'slice' to 'k'
+
     Parameters
     ----------
     ijk : sequence
-       sequence of names (characters), some permutation of 'ijk'
-
+       sequence of names (characters), usually some permutation of 'ijk'.
     Returns
     -------
     fps : sequence
-       sequence of ints in range(0,3), or None, specifying frequency,
-       phase and slice axis respectively
+       sequence of {ints in range(0,3), or None}, specifying frequency,
+       phase and slice axis respectively.  If any of 'i','j' or 'k' are
+       missing from `ijk` input, return None for corresponding phase
+       frequency slice values.
 
     Examples
     --------
     >>> fps_from_ijk('ijk')
-    (1, 0, 2)
+    (0, 1, 2)
     >>> fps_from_ijk('kij')
-    (2, 1, 0)
+    (1, 2, 0)
     >>> fps_from_ijk('qrs')
     (None, None, None)
     >>> fps_from_ijk('qrsi')
-    (None, 3, None)
+    (3, None, None)
     '''
     ijk = list(ijk)
     fps = []
-    for name in 'jik':
+    for name in 'ijk':
         try:
             ind = ijk.index(name)
         except ValueError:

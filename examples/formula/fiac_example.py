@@ -189,7 +189,7 @@ def fit(subj, run):
 
     # The contrasts, cons_exper,
     # is a dictionary with keys: ['constant_0', 'constant_1', 'speaker_0', speaker_1',
-    # 'sentence_0', 'sentence_1', 'speaker:sentence_0', 'speaker:sentence_1']
+    # 'sentence_0', 'sentence_1', 'sentence:speaker_0', 'sentence:speaker_1']
     # representing the four default contrasts: constant, main effects + interactions,
     # each convolved with 2 HRFs in delay.spectral. Its values
     # are matrices with 8 columns.
@@ -224,6 +224,16 @@ def fit(subj, run):
     X, cons = design.stack_designs((X_exper, cons_exper),
                                    (X_initial, {}),
                                    (drift, {}))
+
+    # The default contrasts are all t-statistics.
+    # We may want to output F-statistics for
+    # 'speaker', 'sentence', 'speaker:sentence' based
+    # on the two coefficients, one for each HRF in delay.spectral
+
+    cons['speaker'] = np.vstack([cons['speaker_0'], cons['speaker_1']])
+    cons['sentence'] = np.vstack([cons['sentence_0'], cons['sentence_1']])
+    cons['sentence:speaker'] = np.vstack([cons['sentence:speaker_0'], 
+                                          cons['sentence:speaker_1']])
 
     # At this point, we're almost ready to fit a model
     # Load in the fMRI data, saving it as an array
@@ -271,7 +281,8 @@ def fit(subj, run):
 
     fcons = {}; tcons = {}
     for n, v in cons.items():
-        if cons[n].shape[0] == 1:
+        v = np.squeeze(v)
+        if v.ndim == 1:
             tcons[n] = v
         else:
             fcons[n] = v
@@ -311,7 +322,7 @@ def fit(subj, run):
     # Dump output to disk
 
             
-    odir = "fiac_example_data/fiac_%(subj)02d/%(design)s/results_%(run)%02d"  \
+    odir = "fiac_example_data/fiac_%(subj)02d/%(design)s/results_%(run)02d"  \
         % path_dict
     os.system('mkdir -p %s' % odir)
 
@@ -321,8 +332,8 @@ def fit(subj, run):
         save_image(im, "%s/%s/F.nii" % (odir, n))
 
     for n in tcons:
-        im = api.Image(output[n], anat.coordmap.copy())
         os.system('mkdir -p %s/%s' % (odir, n))
-        save_image('%s/%s/t.nii' % (odir, n), output[n]['t'])
-        save_image('%s/%s/sd.nii' % (odir, n), output[n]['sd'])
-        save_image('%s/%s/effect.nii' % (odir, n), output[n]['effect'])
+        for v in ['t', 'sd', 'effect']:
+            im = api.Image(output[n][v], anat.coordmap.copy())
+            save_image(im, '%s/%s/%s.nii' % (odir, n, v))
+
