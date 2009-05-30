@@ -3,13 +3,14 @@ import warnings
 from shutil import rmtree
 from tempfile import mkstemp, mkdtemp
 
-from nipy.testing import *
+from nipy.testing import TestCase, funcfile
+
+from nipy.io.api import load_image
 
 import nipy.modalities.fmri.fmristat.model as model
 from nipy.modalities.fmri.api import FmriImageList
-from nipy.io.api import load_image
 
-from nipy.modalities.fmri.protocol import Formula, \
+from nipy.modalities.fmri.formula import \
     ExperimentalQuantitative
 from nipy.fixes.scipy.stats.models.contrast import Contrast
 

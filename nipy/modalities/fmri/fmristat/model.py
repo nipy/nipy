@@ -98,7 +98,7 @@ class OLS(object):
        object returning 4D data from np.asarray, with first
        (``object[0]``) axis being the independent variable of the model;
        object[0] returns an object with attribute ``shape``.
-    formula :  ``nipy.modalities.fmri.protocol.Formula``
+    formula :  :class:`nipy.modalities.fmri.formula.Formula`
     outputs :
     volume_start_times : 
     """

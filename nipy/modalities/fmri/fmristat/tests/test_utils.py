@@ -1,22 +1,24 @@
-import os, gc, shutil
+import gc
+import shutil
 
 import numpy as np
 
-from nipy.testing import *
+from nipy.testing import TestCase, dec
 
 from nipy.utils.tests.data import datapjoin
 
-from  nipy.core.api import Image
+from nipy.core.api import Image
+from nipy.io.api import load_image
 from nipy.fixes.scipy.stats.models.contrast import Contrast
 
 from nipy.modalities.fmri.api import FmriImageList
-from nipy.modalities.fmri.protocol import ExperimentalFactor,\
+from nipy.modalities.fmri.formula import ExperimentalFactor,\
   ExperimentalQuantitative
 from nipy.modalities.fmri.functions import SplineConfound
 from nipy.modalities.fmri.hrf import glover, glover_deriv
+from nipy.modalities.fmri.fmristat.model import AR1 as FmriStatAR, \
+    OLS as FmriStatOLS
 
-# FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
-#from nipy.modalities.fmri.fmristat.utils import FmriStatAR, FmriStatOLS
 
 class test_FmriStat(TestCase):
 
@@ -66,7 +68,6 @@ class test_FmriStat(TestCase):
             shutil.rmtree(rhofile, ignore_errors=True)
 
 class test_SliceTimes(test_FmriStat):
-    # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
     @dec.knownfailure
     @dec.slow
     @dec.data
@@ -83,7 +84,6 @@ class test_SliceTimes(test_FmriStat):
         del(OLS); del(AR); gc.collect()
 
 class test_Resid1(test_FmriStat):
-    # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
     @dec.knownfailure    
     @dec.slow
     @dec.data
@@ -100,7 +100,6 @@ class test_Resid1(test_FmriStat):
         del(OLS); del(AR); gc.collect()
 
 class test_Resid2(test_FmriStat):
-    # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
     @dec.knownfailure
     @dec.slow
     @dec.data
@@ -117,7 +116,6 @@ class test_Resid2(test_FmriStat):
         del(OLS); del(AR); gc.collect()
 
 class test_HRFDeriv(test_FmriStat):
-    # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
     @dec.knownfailure
     @dec.slow
     @dec.data
@@ -142,8 +140,8 @@ class test_HRFDeriv(test_FmriStat):
         AR.fit()
         del(OLS); del(AR); gc.collect()
         
+
 class test_Contrast(test_FmriStat):
-    # FIXME: FmriStatOLS and FmriStatAR _not_ undefined!
     @dec.knownfailure
     @dec.slow
     @dec.data
