@@ -49,13 +49,11 @@ def test_iter():
 def test_subcoordmap():
     img = load_image(funcfile)
     subcoordmap = img[3].coordmap
-        
     xform = np.array([[ 0., 0., 0., 10.35363007],
                       [-7.,  0., 0., 0.],
                       [ 0.,  -2.34375, 0., 0.],
                       [ 0.,  0., -2.34375, 0.],
                       [ 0.,  0., 0., 1.]])
-        
     nose.tools.assert_true(np.allclose(subcoordmap.affine, xform))
         
 
@@ -63,7 +61,6 @@ def test_labels1():
     img = load_image(funcfile)
     parcelmap = fromarray(np.asarray(img[0]), 'kji', 'zyx')    
     parcelmap = (np.asarray(parcelmap) * 100).astype(np.int32)
-        
     v = 0
     for i, d in fmri_generator(img, parcels(parcelmap)):
         v += d.shape[1]
