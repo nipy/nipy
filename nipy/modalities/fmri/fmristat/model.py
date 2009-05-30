@@ -189,7 +189,7 @@ class AR1(object):
        object returning 4D array from ``np.asarray``, having attribute
        ``volume_start_times`` (if `volume_start_times` is None), and
        such that ``object[0]`` returns something with attributes ``shape``
-    formula :  `nipy.modalities.fmri.protocol.Formula`
+    formula :  :class:`nipy.modalities.fmri.formula.Formula`
     rho : ``Image``
        image of AR(1) coefficients.  Returning data from
        ``np.asarray(rho)``, and having attribute ``coordmap``

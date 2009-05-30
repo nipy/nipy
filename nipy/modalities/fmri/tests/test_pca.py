@@ -1,16 +1,16 @@
 import numpy as np
 
-from nipy.modalities.fmri.api import fromimage
+from nipy.modalities.fmri.api import FmriImageList
 from nipy.modalities.fmri.pca import PCA
 from nipy.core.api import Image
 from nipy.io.api import  load_image
 from nipy.testing import funcfile, TestCase, dec
 
-class test_PCA(TestCase):
 
+class test_PCA(TestCase):
     def setUp(self):
         self.img = load_image(funcfile)
-        self.fmridata = fromimage(self.img)
+        self.fmridata = FmriImageList.from_image(self.img)
 
         frame = self.fmridata[0]
         self.mask = Image(np.greater(np.asarray(frame), 500).astype(np.float64),
@@ -23,6 +23,7 @@ class test_PCAMask(test_PCA):
         p = PCA(self.fmridata, self.mask)
         p.fit()
         output = p.images(which=range(4))
+
 
 class test_PCANoMask(test_PCA):
     # FIXME: Fix slice_iterator errors in pca modules.

@@ -6,7 +6,7 @@ from tempfile import mkstemp, mkdtemp
 from nipy.testing import *
 
 import nipy.modalities.fmri.fmristat.model as model
-from nipy.modalities.fmri.api import fromimage
+from nipy.modalities.fmri.api import FmriImageList
 from nipy.io.api import load_image
 
 from nipy.modalities.fmri.protocol import Formula, \
@@ -45,7 +45,7 @@ class test_fMRIstat_model(TestCase):
     # with asserts.
     def testrun(self):
         funcim = load_image(funcfile)
-        fmriims = fromimage(funcim, volume_start_times=2.)
+        fmriims = FmriImageList.from_image(funcim, volume_start_times=2.)
 
         f1 = ExperimentalQuantitative("f1", lambda t:t)
         f2 = ExperimentalQuantitative("f1", lambda t:t**2)
@@ -72,10 +72,3 @@ class test_fMRIstat_model(TestCase):
         rho = load_image(self.ar1)
         ar = model.AR1(fmriims, f, rho, outputs)
         ar.execute()
-
-
-
-
-
-
-
