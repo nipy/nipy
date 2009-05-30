@@ -3,9 +3,7 @@ import shutil
 
 import numpy as np
 
-from nipy.testing import TestCase, dec
-
-from nipy.utils.tests.data import datapjoin
+from nipy.testing import TestCase, dec, datapjoin
 
 from nipy.io.api import load_image
 from nipy.fixes.scipy.stats.models.contrast import Contrast

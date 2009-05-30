@@ -5,9 +5,8 @@ from tempfile import mkstemp
 import numpy as np
 
 from nipy.testing import assert_true, assert_equal, assert_raises, \
-    assert_array_almost_equal
+    assert_array_almost_equal, datapjoin
 
-from nipy.utils.tests.data import datapjoin
 from nipy.io.api import load_image, save_image
 from nipy.core.api import fromarray
 

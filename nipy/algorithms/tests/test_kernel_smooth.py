@@ -1,11 +1,11 @@
 import numpy as np
 from numpy.random import random_integers as randint
 
-from nipy.testing import *
+from nipy.testing import assert_true, assert_equal, dec
 
 from nipy.algorithms.kernel_smooth import LinearFilter
 from nipy.core.api import Image
-from nipy.core.reference.coordinate_map import CoordinateMap, Affine
+from nipy.core.reference.coordinate_map import Affine
 
 from nipy.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 
@@ -13,8 +13,8 @@ from nipy.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 # FIXME: Need to make an automated test for this!
 class test_Kernel(TestCase):
     @dec.gui
-    import pylab
-    from nipy.utils.tests.data import datapjoin
+    import pylab as plt
+    from nipy.testing import datapjoin
     from nipy.io import load_image
     from nipy.ui.visualization.viewer import BoxViewer
     def test_smooth(self):
@@ -29,7 +29,7 @@ class test_Kernel(TestCase):
         sview.m = view.m
         sview.M = view.M
         sview.draw()
-        pylab.show()
+        plt.show()
 """
 
 

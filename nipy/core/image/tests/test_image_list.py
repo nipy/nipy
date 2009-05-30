@@ -1,8 +1,6 @@
 import numpy as np
 
-from nipy.testing import *
-
-from nipy.utils.tests.data import datapjoin
+from nipy.testing import datapjoin, assert_true, assert_equal, dec
 
 from nipy.core.image.image_list import ImageList
 from nipy.io.api import load_image

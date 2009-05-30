@@ -6,7 +6,7 @@ import numpy as np
 
 from nipy.core.api import fromarray, Affine
 from nipy.io.api import save_image, load_image
-from nipy.utils.tests.data import datapjoin
+from nipy.testing import datapjoin
 
 # Load an image to get the array and affine
 filename = datapjoin('avg152T1.nii.gz')
