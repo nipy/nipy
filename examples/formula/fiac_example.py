@@ -189,7 +189,7 @@ def fit(subj, run):
     # having to fit the model everywhere
     #     mask = np.array(load_image("fiac_example_data/fiac_%(subj)02d/mask.nii" % path_dict))
     #     mask_a = np.transpose(np.array(mask), [2,1,0])
-    mask = 1 # XXX change this once we have a mask
+    mask_a = 1 # XXX change this once we have a mask
 
     # The model is a two-stage model, the first stage being an OLS (ordinary least squares) fit,
     # whose residuals are used to estimate an AR(1) parameter for each voxel.
@@ -259,7 +259,7 @@ def fit(subj, run):
     # Dump output to disk
 
             
-    odir = "fiac_example_data/fiac_%(subj)02d/%(design)s/results_%(run)%02d" % (subj, r)
+    odir = "fiac_example_data/fiac_%(subj)02d/%(design)s/results_%(run)%02d" % (subj, run)
     os.system('mkdir -p %s' % odir)
     for n in fcons:
         # XXX This is going to fail because we don't have a mask right now
