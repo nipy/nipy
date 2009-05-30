@@ -1,6 +1,5 @@
 """
-This module defines the two default
-GLM passes of fmristat
+This module defines the two default GLM passes of fmristat
 """
 
 import os.path as path
@@ -12,37 +11,27 @@ from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
 from nipy.fixes.scipy.stats.models.utils import recipr
 
 # nipy core imports
-
-from nipy.core.api import Image, data_generator, parcels, matrix_generator
-from nipy.core.api import f_generator, Image
-from nipy.core.api import Affine, CoordinateMap
+from nipy.core.api import Image, parcels, matrix_generator, Affine
 
 # nipy IO imports
-
-from nipy.io.api import  save_image, load_image
+from nipy.io.api import save_image
 
 # fmri imports
-
 from nipy.modalities.fmri.api import FmriImageList, fmri_generator
-from nipy.modalities.fmri.fmristat.delay import DelayContrast, \
-     DelayContrastOutput
 
 import nipy.algorithms.statistics.regression as regression
-from nipy.algorithms.fwhm import fastFWHM
-import nipy.algorithms.statistics.regression as regression
 
 
-class ModelOutputImage:
-
+class ModelOutputImage(object):
     """
     These images have their values filled in as the model is fit, and
     are saved to disk after being completely filled in.
 
     They are saved to disk by calling the 'save' method.
 
-    The __getitem__ and __setitem__ calls are delegated to a private Image.
-    An exception is raised if trying to get/set data after the data has been saved to disk.
-    
+    The __getitem__ and __setitem__ calls are delegated to a private
+    Image.  An exception is raised if trying to get/set data after the
+    data has been saved to disk.
     """
 
     def __init__(self, filename, coordmap, shape, clobber=False):
@@ -53,14 +42,11 @@ class ModelOutputImage:
 
     def save(self):
         """
-        Save current Image data to disk as a .nii file.
+        Save current Image data to disk
         """
-
         if not self.clobber and path.exists(self.filename):
-            raise ValueError, 'trying to clobber existing file'
-
+            raise ValueError('trying to clobber existing file')
         save_image(self._im, self.filename)
-
         self._flushed = True
         del(self._im)
 
@@ -68,13 +54,15 @@ class ModelOutputImage:
         if not self._flushed:
             return self._im[item]
         else:
-            raise ValueError, 'trying to read value from a saved ModelOutputImage'
+            raise ValueError('trying to read value from a '
+                             'saved ModelOutputImage')
 
     def __setitem__(self, item, value):
         if not self._flushed:
             self._im[item] = value
         else:
-            raise ValueError, 'trying to set value on saved ModelOutputImage'
+            raise ValueError('trying to set value on saved'
+                             'ModelOutputImage')
         
 
 def model_generator(formula, data, volume_start_times, iterable=None, 
@@ -100,15 +88,19 @@ def results_generator(model_iterable):
         yield i, m.fit(d)
 
 
-class OLS:
+class OLS(object):
     """
     First pass through fmri_image.
 
     Parameters
     ----------
-    fmri_image : `FmriImageList`
-    formula :  `nipy.modalities.fmri.protocol.Formula`
-
+    fmri_image : `FmriImageList` or 4D image
+       object returning 4D data from np.asarray, with first
+       (``object[0]``) axis being the independent variable of the model;
+       object[0] returns an object with attribute ``shape``.
+    formula :  ``nipy.modalities.fmri.protocol.Formula``
+    outputs :
+    volume_start_times : 
     """
 
     def __init__(self, fmri_image, formula, outputs=[], 
@@ -117,7 +109,6 @@ class OLS:
         self.data = np.asarray(fmri_image)
         self.formula = formula
         self.outputs = outputs
-
         if volume_start_times is None:
             self.volume_start_times = self.fmri_image.volume_start_times
         else:
@@ -150,13 +141,15 @@ def estimateAR(resid, design, order=1):
     """
     Estimate AR parameters using bias correction from fMRIstat.
 
-    Inputs:
-    -------
-
+    Parameters
+    ----------
     resid:  residual image
     model:  an OLS model used to estimate residuals
-    """
 
+    Returns
+    -------
+    output : 
+    """
     p = order
 
     R = np.identity(design.shape[0]) - np.dot(design, np.linalg.pinv(design))
@@ -186,28 +179,30 @@ def estimateAR(resid, design, order=1):
     return output
 
 
-class AR1:
-
+class AR1(object):
     """
     Second pass through fmri_image.
 
     Parameters
     ----------
     fmri_image : `FmriImageList`
+       object returning 4D array from ``np.asarray``, having attribute
+       ``volume_start_times`` (if `volume_start_times` is None), and
+       such that ``object[0]`` returns something with attributes ``shape``
     formula :  `nipy.modalities.fmri.protocol.Formula`
-    rho : Image of AR(1) coefficients.
+    rho : ``Image``
+       image of AR(1) coefficients.  Returning data from
+       ``np.asarray(rho)``, and having attribute ``coordmap``
+    outputs :
+    volume_start_times : 
     """
 
     def __init__(self, fmri_image, formula, rho, outputs=[],
                  volume_start_times=None):
         self.fmri_image = fmri_image
-
-
         self.data = np.asarray(fmri_image)
-
         self.formula = formula
         self.outputs = outputs
-
         # Cleanup rho values, truncate them to a scale of 0.01
         g = rho.coordmap.copy()
         rho = np.asarray(rho)
@@ -215,7 +210,6 @@ class AR1:
         r = (np.clip(rho,-1,1) * 100).astype(np.int) / 100.
         r[m] = np.inf
         self.rho = Image(r, g)
-
         if volume_start_times is None:
             self.volume_start_times = self.fmri_image.volume_start_times
         else:
@@ -266,20 +260,19 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
     Parameters
     ----------
     outbase : string
-        
         Base filename that will be used to construct a set of files
         for the TContrast.  For example, outbase='output.nii' will
         result in the following files (assuming defaults for all other
         params): output_effect.nii, output_sd.nii, output_t.nii
-
     contrast : a TContrast
+    fmri_image : ``FmriImageList``
+        object such that ``object[0]`` has attributes ``shape`` and
+        ``coordmap``
 
     """
-
     def build_filename(label):
         index = outbase.find('.')
         return ''.join([outbase[:index], '_', label, outbase[index:]])
-
     if effect:
         effectim = ModelOutputImage(build_filename('effect'),
                                     fmri_image[0].coordmap, 
@@ -304,6 +297,18 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
 
 
 def output_F(outfile, contrast, fmri_image, clobber=False):
+    ''' output F
+
+    Parameters
+    ----------
+    outfile :
+    contrast : 
+    fmri_image : ``FmriImageList``
+        object such that ``object[0]`` has attributes ``shape`` and
+        ``coordmap``
+    clobber : bool
+        if True, overwrites previous output; if False, raises error
+    '''    
     f = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape, 
                          clobber=clobber)
     return regression.RegressionOutput(f, lambda x: 
@@ -315,8 +320,17 @@ def output_AR1(outfile, fmri_image, clobber=False):
     Create an output file of the AR1 parameter from the OLS pass of
     fmristat.
 
-    image: FmriImageList 
-
+    Parameters
+    ----------
+    outfile :
+    fmri_image : ``FmriImageList`` or 4D image
+       object such that ``object[0]`` has attributes ``coordmap`` and ``shape``
+    clobber : bool
+       if True, overwrite previous output
+    
+    Returns
+    -------
+    regression_output : 
     """
     outim = ModelOutputImage(outfile, fmri_image[0].coordmap, 
                              fmri_image[0].shape, clobber=clobber)
@@ -331,6 +345,21 @@ def output_resid(outfile, fmri_image, clobber=False):
     Uses affine part of the first image to output resids unless
     fmri_image is an Image.
 
+    Parameters
+    ----------
+    outfile :
+    fmri_image : ``FmriImageList`` or 4D image
+       If ``FmriImageList``, needs attributes ``volume_start_times``,
+       supports len(), and object[0] has attributes ``affine``,
+       ``coordmap`` and ``shape``, from which we create a new 4D
+       coordmap and shape
+       If 4D image, use the images coordmap and shape
+    clobber : bool
+       if True, overwrite previous output
+
+    Returns
+    -------
+    regression_output : 
     """
 
     if isinstance(fmri_image, FmriImageList):
@@ -360,8 +389,9 @@ def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
     """
     Write out results of a given output.
 
-    In the regression setting, results is generally
-    going to be a scipy.stats.models.model.LikelihoodModelResults instance.
+    In the regression setting, results is generally going to be a
+    scipy.stats.models.model.LikelihoodModelResults instance.
+    
     """
     for i, results in iterable:
         for output in outputs:
