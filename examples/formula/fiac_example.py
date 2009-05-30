@@ -241,7 +241,7 @@ def fit(subj, run):
     # i.e. fmri[t] gives the t-th volume.
 
     fmri = np.array(load_image("fiac_example_data/fiac_%(subj)02d/%(design)s/swafunctional_%(run)02d.nii" % path_dict))
-    fmri = np.transpose(fmri, [3,2,1,0])
+    fmri = np.transpose(fmri, [3,0,1,2])
     anat = load_image("fiac_example_data/fiac_%(subj)02d/wanatomical.nii" % path_dict)
                    
     nvol, volshape = fmri.shape[0], fmri.shape[1:] 
@@ -328,8 +328,31 @@ def fit(subj, run):
 
     for n in fcons:
         im = api.Image(output[n], anat.coordmap.copy())
+        # XXX Is this a bug? 
+        # I thought we checked the shape of array and coordmap somewhere
+
+        # In an earlier version, I had used tranpose [3,2,1,0]
+        # instead of [3,0,1,2] above, resulting in Output shapes as 
+        # commented below, but the Images saved fine even with
+        # coordmap whose shape doesn't match the array's shape.
+        #
+        #         Output shape: (69, 95, 79)
+        #         Anatomy shape: (79, 95, 69)
+        #         Saved succesffuly. Are shapes equal? False
+        #         Output shape: (69, 95, 79)
+        #         Anatomy shape: (79, 95, 69)
+        #         Saved succesffuly. Are shapes equal? False
+        #         Output shape: (69, 95, 79)
+        #         Anatomy shape: (79, 95, 69)
+        #         Saved succesffuly. Are shapes equal? False
+
+
+        print "Output shape:", output[n].shape
+        print "Anatomy shape:", anat.shape
+
         os.system('mkdir -p %s/%s' % (odir, n))
         save_image(im, "%s/%s/F.nii" % (odir, n))
+        print "Saved succesffuly. Are shapes equal?", anat.shape == output[n].shape
 
     for n in tcons:
         os.system('mkdir -p %s/%s' % (odir, n))
