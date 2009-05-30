@@ -181,7 +181,7 @@ def fit(subj, run):
 
     fmri = np.array(load_image("fiac_example_data/fiac_%(subj)02d/%(design)s/swafunctional_%(run)02d.nii" % path_dict))
     fmri = np.transpose(fmri, [3,2,1,0])
-    anat = load_image("fiac_example_data/fiac_%(subj)02d/wanatomical.nii")
+    anat = load_image("fiac_example_data/fiac_%(subj)02d/wanatomical.nii" % path_dict)
                    
     nvol, volshape = fmri.shape[0], fmri.shape[1:] 
     nslice, sliceshape = volshape[0], volshape[1:]
