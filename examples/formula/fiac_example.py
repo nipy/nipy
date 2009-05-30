@@ -27,9 +27,9 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
     """
 
     if (subj, run) in event:
-        designtype = 'event'
+        designtype = 'evt'
     else:
-        designtype = 'block'
+        designtype = 'bloc'
 
     # Fix the format of the specification so it is
     # more in the form of a 2-way ANOVA
@@ -50,15 +50,16 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
     # This is due to the FIAC design
 
     if designtype == 'evt':
-        b = np.array([(d[0]['time'], 'initial')], np.dtype([('time', np.float),
-                                                            ('initial', 'S7')]))
+        b = np.array([(d[0]['time'], 1)], np.dtype([('time', np.float),
+                                                    ('initial', np.int)]))
         d = d[1:]
     else:
         k = np.equal(np.arange(d.shape[0]) % 6, 0)
-        b = np.array([(tt, 'initial') for tt in d[k]['time']], np.dtype([('time', np.float),
-                                                                         ('initial', 'S7')]))
+        b = np.array([(tt, 1) for tt in d[k]['time']], np.dtype([('time', np.float),
+                                                                 ('initial', np.int)]))
         d = d[~k]
 
+    designtype = {'bloc':'block', 'evt':'event'}[designtype]
 
     fname = "fiac_example_data/fiac_%(subj)02d/%(design)s/experiment_%(run)02d.csv" % {'root':root, 'subj':subj, 'run':run, 'design':designtype}
     rec2csv(d, fname)
@@ -78,8 +79,30 @@ def fit(subj, run):
     Single subject fitting of FIAC model
     """
 
-    tv = np.arange(191)*2.5+1.25
-    t = formula.make_recarray(tv, 't')
+    # Number of volumes in the fMRI data
+    nvol = 191
+
+    # The TR of the experiment
+    TR = 2.5 
+
+    # The time of the first volume
+    # XXX Matthew: FSL slicetimes the data so that the first
+    # time point is in the midpoint [0,TR]. What does SPM do?
+    Tstart = 1.25
+
+    # The array of times corresponding to each 
+    # volume in the fMRI data
+
+    volume_times = np.arange(nvol)*TR + Tstart
+
+    # This recarray of times has one column named 't'
+    # It is used in the function design.event_design
+    # to create the design matrices.
+
+    volume_times_rec = formula.make_recarray(volume_times, 't')
+
+    # This few lines find the .csv files that 
+    # describe the experiment
 
     path_dict = {'subj':subj, 'run':run}
     if os.path.exists("fiac_example_data/fiac_%(subj)02d/block/initial_%(run)02d.csv" % path_dict):
@@ -87,108 +110,166 @@ def fit(subj, run):
     else:
         path_dict['design'] = 'event'
 
+    # XXX -- fix the paths with this template
+    path_tpl = "fiac_example_data/fiac_%(subj)02d/%(design)s"
+
+    # The following two lines read in the .csv files
+    # and return recarrays, with fields
+    # experiment: ['time', 'sentence', 'speaker']
+    # initial: ['time', 'initial']
+
     experiment = csv2rec("fiac_example_data/fiac_%(subj)02d/%(design)s/experiment_%(run)02d.csv" % path_dict)
     initial = csv2rec("fiac_example_data/fiac_%(subj)02d/%(design)s/initial_%(run)02d.csv" % path_dict)
 
     # Create design matrices for the "initial" and "experiment" factors,
-    # saving the default experimental contrasts.
+    # saving the default contrasts. 
 
-    # Ignore the contrasts for 'initial' event type
-    # as they are "uninteresting"
+    # The function event_design will create
+    # design matrices, which in the case of "experiment"
+    # will have num_columns = (# levels of speaker) * (# levels of sentence) * len(delay.spectral) = 2 * 2 * 2 = 8
+    # For "initial", there will be (# levels of initial) * len([hrf.glover]) = 1 * 1 = 1
 
-    X_exper, cons_exper = design.event_design(experiment, t, hrfs=delay.spectral)
-    X_initial, _ = design.event_design(initial, t, hrfs=[hrf.glover]) 
+    # Here, delay.spectral is a sequence of 2 symbolic HRFs that 
+    # are described in 
+    # 
+    # Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H.,
+    #    Evans, A.C. (2002). \'Estimating the delay of the response in fMRI
+    #    data.\' NeuroImage, 16:593-606.
 
+    # The contrasts, cons_exper,
+    # is a dictionary with keys: ['constant_0', 'constant_1', 'speaker_0', speaker_1',
+    # 'sentence_0', 'sentence_1', 'speaker:sentence_0', 'speaker:sentence_1']
+    # representing the four default contrasts: constant, main effects + interactions,
+    # each convolved with 2 HRFs in delay.spectral. Its values
+    # are matrices with 8 columns.
 
+    X_exper, cons_exper = design.event_design(experiment, volume_times_rec, hrfs=delay.spectral)
 
+    # The contrasts for 'initial' are ignored 
+    # as they are "uninteresting" and are included
+    # in the model as confounds.
 
-    stop 
-#    pylab.clf(); pylab.plot(X_begin); pylab.show()
+    X_initial, _ = design.event_design(initial, volume_times_rec, hrfs=[hrf.glover]) 
 
-    # drift
+    # In addition to factors, there is typically a "drift" term
+    # In this case, the drift is a natural cubic spline with
+    # a not at the midpoint (volume_times.mean())
 
-    drift = np.array([tv**i for i in range(4)] + [(tv-tv.mean())**3 * (np.greater(tv, tv.mean()))])
+    vt = volume_times # shorthand
+    drift = np.array([vt**i for i in range(4)] + [(vt-vt.mean())**3 * (np.greater(vt, vt.mean()))])
     for i in range(drift.shape[0]):
         drift[i] /= drift[i].max()
+
+    # We transpose the drift so that its shape is (nvol,5) so that it will have
+    # the same number of rows as X_initial and X_exper.
+        
     drift = drift.T
+
+    # Stack all the designs, keeping the new contrasts
+    # which has the same keys as cons_exper, but its
+    # values are arrays with 15 columns, with the non-zero
+    # entries matching the columns of X corresponding to X_exper
+
     X, cons = design.stack_designs((X_exper, cons_exper),
-                                   (X_begin, {}),
+                                   (X_initial, {}),
                                    (drift, {}))
-    tcons = {}
-    fcons = {}
-    for k, v in cons.items():
-        if v.ndim > 1:
-            fcons[k] = v
-        else:
-            tcons[k] = v
-    del(cons)
 
-    print tcons, fcons
+    # At this point, we're almost ready to fit a model
+    # Load in the fMRI data, saving it as an array
+    # It is transposed to have time as the first dimension,
+    # i.e. fmri[t] gives the t-th volume.
+
+    fmri = np.array(load_image("fiac_example_data/fiac_%(subj)02d/%(design)s/swafunctional_%(run)02d.nii" % path_dict))
+    fmri = np.transpose(fmri, [3,2,1,0])
+                   
+    nvol, volshape = fmri.shape[0], fmri.shape[1:] 
+    nslice, sliceshape = volshape[0], volshape[1:]
+
+    # XXX Matthew: can you output a brain mask -- it would save
+    # having to fit the model everywhere
+    #     mask = np.array(load_image("fiac_example_data/fiac_%(subj)02d/mask.nii" % path_dict))
+    #     mask_a = np.transpose(np.array(mask), [2,1,0])
+    mask = 1 # XXX change this once we have a mask
+
+    # The model is a two-stage model, the first stage being an OLS (ordinary least squares) fit,
+    # whose residuals are used to estimate an AR(1) parameter for each voxel.
+
     m = OLSModel(X)
-    f = np.array(load_image("%(root)s/fiac%(subj)d/fonc%(run)d/fsl/filtered_func_data.img" % {'root':root, 'subj':subj, 'run':r}))
-    f = np.transpose(f, [3,2,1,0])
-    mm = load_image("%(root)s/fiac%(subj)d/fonc%(run)d/fsl/mask.img" % {'root':root, 'subj':subj, 'run':r})
-    mma = np.transpose(np.array(mm), [2,1,0])
-    ar = np.zeros(f.shape[1:])
+    ar1 = np.zeros(volshape)
 
-    for s in range(f.shape[1]):
-        print s
-        d = np.array(f[:,s])
+    # Fit the model, storing an estimate of an AR(1) parameter at each voxel
+
+    for s in range(nslice):
+        d = np.array(fmri[:,s])
         flatd = d.reshape((d.shape[0], np.product(d.shape[1:])))
         result = m.fit(flatd)
-        ar[s] = ((result.resid[1:] * result.resid[:-1]).sum(0) / (result.resid**2).sum(0)).reshape(ar.shape[1:])
+        ar1[s] = ((result.resid[1:] * result.resid[:-1]).sum(0) / (result.resid**2).sum(0)).reshape(sliceshape)
 
-    # round AR to nearest one-hundredth
+    # We round ar1 to nearest one-hundredth
+    # and group voxels by their rounded ar1 value,
+    # fitting an AR(1) model to each batch of voxels.
 
-    ar *= 100
-    ar = ar.astype(np.int) / 100.
-    # smooth here?
+    # XXX smooth here?
     # ar = smooth(ar, 8.0)
 
+    ar1 *= 100
+    ar1 = ar1.astype(np.int) / 100.
+
+    # We split the contrasts into F-tests and t-tests.
+
+    fcons = {}; tcons = {}
+    for n, v in cons.items():
+        if cons[n].shape[0] == 1:
+            tcons[n] = v
+        else:
+            fcons[n] = v
+
+    # Setup a dictionary to hold all the output
+
     output = {}
-    for n in tcons.keys():
-        output[n] = {}
-        output[n]['sd'] = np.zeros(f.shape[1:])
-        output[n]['t'] = np.zeros(f.shape[1:])
-        output[n]['effect'] = np.zeros(f.shape[1:])
+    for n in tcons:
+        tempdict = {}
+        for v in ['sd', 't', 'effect']:
+            tempdict[v] = np.zeros(volshape)
+        output[n] = tempdict
+    
+    for n in fcons:
+        output[n] = np.zeros(volshape)
 
-    for n in fcons.keys():
-        output[n] = np.zeros(f.shape[1:])
+    # Loop over the unique values of ar1
 
-    arvals = np.unique(ar)
-    for val in arvals:
-        mask = np.equal(ar, val)
-        mask *= mma
+    for val in np.unique(ar1):
+        armask = np.equal(ar1, val)
+        armask *= mask_a
         m = ARModel(X, val)
-        d = f[:,mask]
+        d = fmri[:,armask]
         results = m.fit(d)
-        print val, mask.sum()
 
-        for n in tcons.keys():
-            o = output[n]
+        # Output the results for each contrast
+
+        for n in tcons:
             resT = results.Tcontrast(tcons[n])
-            output[n]['sd'][mask] = resT.sd
-            output[n]['t'][mask] = resT.t
-            output[n]['effect'][mask] = resT.effect
-        # Where should we save these? 
+            output[n]['sd'][armask] = resT.sd
+            output[n]['t'][armask] = resT.t
+            output[n]['effect'][armask] = resT.effect
 
-        for n in fcons.keys():
-            output[n][mask] = results.Fcontrast(fcons[n]).F
+        for n in fcons:
+            output[n][armask] = results.Fcontrast(fcons[n]).F
 
-    odir = "script_test/subject%d/run%d" % (subj, r)
+    # Dump output to disk
+
+            
+    odir = "fiac_example_data/fiac_%(subj)02d/%(design)s/results_%(run)%02d" % (subj, r)
     os.system('mkdir -p %s' % odir)
-    for n in fcons.keys():
-        im = api.Image(output[n], mm.coordmap.copy())
+    for n in fcons:
+        # XXX This is going to fail because we don't have a mask right now
+        im = api.Image(output[n], mask.coordmap.copy())
         os.system('mkdir -p %s/%s' % (odir, n))
-        # this fails for me, with an error from my version of nifticlib
-        save(im, "%s/%s/F.nii" % (odir, n))
-        np.save('%s/%s/F' % (odir, n), output[n])
+        save_image(im, "%s/%s/F.nii" % (odir, n))
 
-    for n in tcons.keys():
-        im = api.Image(output[n], mm.coordmap.copy())
+    for n in tcons:
+        im = api.Image(output[n], mask.coordmap.copy())
         os.system('mkdir -p %s/%s' % (odir, n))
-        # this fails for me, with an error from my version of nifticlib
-        # save(im, "%s/%s/F.nii" % (odir, n))
         save_image('%s/%s/t.nii' % (odir, n), output[n]['t'])
         save_image('%s/%s/sd.nii' % (odir, n), output[n]['sd'])
         save_image('%s/%s/effect.nii' % (odir, n), output[n]['effect'])
