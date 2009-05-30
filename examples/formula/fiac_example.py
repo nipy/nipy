@@ -8,8 +8,59 @@ from matplotlib.mlab import csv2rec, rec2csv
 from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
 from nipy.modalities.fmri.fmristat import hrf as delay
 from nipy.modalities.fmri import formula, design, hrf
+import nipy.testing as nitest
 from nipy.io.api import load_image, save_image
 from nipy.core import api
+
+def test_sanity():
+    from nipy.modalities.fmri.fmristat.tests import FIACdesigns
+
+    """
+    Single subject fitting of FIAC model
+    """
+
+    # Based on file
+    # subj3_evt_fonc1.txt
+    # subj3_bloc_fonc3.txt
+
+    for subj, run, dtype in [(3,1,'event'),
+                             (3,3,'block')]:
+        nvol = 191
+        TR = 2.5 
+        Tstart = 1.25
+
+        volume_times = np.arange(nvol)*TR + Tstart
+        volume_times_rec = formula.make_recarray(volume_times, 't')
+
+        path_dict = {'subj':subj, 'run':run}
+        if os.path.exists("fiac_example_data/fiac_%(subj)02d/block/initial_%(run)02d.csv" % path_dict):
+            path_dict['design'] = 'block'
+        else:
+            path_dict['design'] = 'event'
+
+        experiment = csv2rec("fiac_example_data/fiac_%(subj)02d/%(design)s/experiment_%(run)02d.csv" % path_dict)
+        initial = csv2rec("fiac_example_data/fiac_%(subj)02d/%(design)s/initial_%(run)02d.csv" % path_dict)
+
+        X_exper, cons_exper = design.event_design(experiment, volume_times_rec, hrfs=delay.spectral)
+        X_initial, _ = design.event_design(initial, volume_times_rec, hrfs=[hrf.glover]) 
+        X, cons = design.stack_designs((X_exper, cons_exper),
+                                       (X_initial, {}))
+
+        Xf = np.loadtxt(StringIO(FIACdesigns.designs[dtype]))
+        for i in range(X.shape[1]):
+            yield nitest.assert_true, (matchcol(X[:,i], Xf.T)[1] > 0.999)
+        
+def matchcol(col, X):
+    """
+    Find the column in X with the highest correlation with col.
+
+    Used to find matching columns in fMRIstat's design with
+    the design created by Protocol. Not meant as a generic
+    helper function.
+    """
+    c = np.array([np.corrcoef(col, X[i])[0,1] for i in range(X.shape[0])])
+    c = np.nan_to_num(c)
+    return np.argmax(c), c.max()
 
 def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
     """
@@ -26,7 +77,7 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
 
     """
 
-    if (subj, run) in event:
+    if os.path.exists("%(root)s/fiac%(subj)d/subj%(subj)d_evt_fonc%(run)d.txt" % {'root':root, 'subj':subj, 'run':run}):
         designtype = 'evt'
     else:
         designtype = 'bloc'
@@ -260,10 +311,11 @@ def fit(subj, run):
     # Dump output to disk
 
             
-    odir = "fiac_example_data/fiac_%(subj)02d/%(design)s/results_%(run)%02d" % (subj, run)
+    odir = "fiac_example_data/fiac_%(subj)02d/%(design)s/results_%(run)%02d"  \
+        % path_dict
     os.system('mkdir -p %s' % odir)
+
     for n in fcons:
-        # XXX This is going to fail because we don't have a mask right now
         im = api.Image(output[n], anat.coordmap.copy())
         os.system('mkdir -p %s/%s' % (odir, n))
         save_image(im, "%s/%s/F.nii" % (odir, n))
