@@ -14,9 +14,11 @@ from nipy.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 class test_Kernel(TestCase):
     @dec.gui
     import pylab
+    from nipy.utils.tests.data import datapjoin
+    from nipy.io import load_image
     from nipy.ui.visualization.viewer import BoxViewer
     def test_smooth(self):
-        rho = Image("rho.hdr", repository)
+        rho = load_image(datapjoin("rho.hdr"))
         smoother = LinearFilter(rho.grid)
 
         srho = smoother.smooth(rho)

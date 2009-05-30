@@ -4,7 +4,7 @@ import numpy as np
 
 from nipy.testing import *
 
-from nipy.utils.tests.data import repository
+from nipy.utils.tests.data import datapjoin
 
 from  nipy.core.api import Image
 from nipy.fixes.scipy.stats.models.contrast import Contrast
@@ -52,9 +52,10 @@ class test_FmriStat(TestCase):
     def data_setUp(self):
         volume_start_times = np.arange(120)*3.
         slicetimes = np.array([0.14, 0.98, 0.26, 1.10, 0.38, 1.22, 0.50, 1.34, 0.62, 1.46, 0.74, 1.58, 0.86])
-
-        self.img = FmriImageList("test_fmri.hdr", datasource=repository, volume_start_times=volume_start_times,
-                                  slicetimes=slicetimes, usematfile=False)
+        img = load_image(datapjoin("test_fmri.hdr"))
+        self.img = FmriImageList.from_image(img,
+                                            volume_start_times=volume_start_times,
+                                            slicetimes=slicetimes)
 
     def tearDown(self):
         # FIXME: Use NamedTemporaryFile (import from tempfile) instead

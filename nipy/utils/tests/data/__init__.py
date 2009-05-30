@@ -22,6 +22,9 @@ from nipy.utils.get_data import get_data
 # data directory should be: $HOME/.nipy/tests/data
 datapath = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
 
+def datapjoin(filename):
+    return os.path.join(datapath, filename)
+
 # If the data directory does not exist, download it.
 if not os.path.exists(datapath):
     get_data()

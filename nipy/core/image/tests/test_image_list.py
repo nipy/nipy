@@ -2,7 +2,7 @@ import numpy as np
 
 from nipy.testing import *
 
-from nipy.utils.tests.data import repository
+from nipy.utils.tests.data import datapjoin
 
 from nipy.core.image.image_list import ImageList
 from nipy.io.api import load_image
@@ -12,7 +12,7 @@ from nipy.io.api import load_image
 # FIXME: Write valid tests for fmri image list objects.
 @dec.knownfailure
 def test_image_list():
-    img_path = str(repository._fullpath("test_fmri.nii.gz"))
+    img_path = datapjoin("test_fmri.nii.gz")
     ff = load_image(img_path)
     f = ImageList.from_image(ff)
 
