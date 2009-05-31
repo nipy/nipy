@@ -20,7 +20,7 @@ def ensuredirs(path):
     >>> os.rmdir(dirname)
     '''
     if not os.path.exists(path):
-        os.mkdir(path)
+        os.makedirs(path)
     elif not os.path.isdir(path):
         raise OSError('"%s" is a file not a directory' % path)
 
@@ -29,6 +29,8 @@ class Cache(object):
     """
     A file cache. The path of the cache can be specified
     or else use ~/.nipy/cache by default.
+
+    The main purpose of the Cache is to cache the contents of URLs.
     """
 
     def __init__(self, cachepath=None):
@@ -98,11 +100,34 @@ class Cache(object):
         """
         return self.filepath(uri)
     
+    def iscached(self, uri):
+        """ Check if a file exists in the cache.
+
+        Parameters
+        ----------
+        uri : string
+           fname relative to the repository
+        
+        Returns
+        -------
+        tf : bool
+           True if the fname is in the repository
+        """
+        return os.path.exists(self.filepath(uri))
+        
     def cache(self, uri):
         """
         Copy a file into the cache.
 
-        :Returns: ``None``
+        Check if the file is in the cache first.  
+
+        Parameters
+        ----------
+        uri : filename
+
+        Returns
+        -------
+        None
         """
         if self.iscached(uri):
             return
@@ -118,8 +143,6 @@ class Cache(object):
     def clear(self):
         """ Delete all files in the cache.
 
-        :Returns: ``None``
-        
         Examples
         --------
         >>> import tempfile, shutil
@@ -134,15 +157,9 @@ class Cache(object):
         >>> shutil.rmtree(dirname)
         """
         for f in os.listdir(self.path):
-            if os.path.isfile(f):
-                os.unlink(f)
-        
-    def iscached(self, uri):
-        """ Check if a file exists in the cache.
-
-        :Returns: ``bool``
-        """
-        return os.path.exists(self.filepath(uri))
+            fname = pjoin(self.path, f)
+            if os.path.isfile(fname):
+                os.unlink(fname)
         
     def retrieve(self, uri):
         """
@@ -154,5 +171,3 @@ class Cache(object):
         """
         self.cache(uri)
         return file(self.filename(uri))
-
-
