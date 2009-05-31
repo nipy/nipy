@@ -6,8 +6,9 @@ from scipy.ndimage import affine_transform
 import numpy as np
 
 from nipy.algorithms.interpolation import ImageInterpolator
-from nipy.core.api import Image, CoordinateMap, Affine, ArrayCoordMap, Grid, compose
+from nipy.core.api import Image, CoordinateMap, Affine, ArrayCoordMap, compose
 import nipy.core.transforms.affines as affines
+
 
 def resample(image, target, mapping, shape, order=3):
     """
