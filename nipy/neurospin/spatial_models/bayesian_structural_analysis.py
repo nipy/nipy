@@ -639,7 +639,6 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     - crmap: resulting group map
     - AF: list of inter-subject related ROIs
     - BF: List of individual ROIs
-    - u: labelling of the individual ROIs
     - p: likelihood of the data under H1 over some sampling grid
     NOTE:
     In that case, the DPMM is used to derive a spatial density of
@@ -697,7 +696,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     AF = []
     p = np.zeros(nvox)
     if len(sub)<1:
-        return crmap,AF,BF,u,p
+        return crmap,AF,BF,p
 
     # prepare the DPMM
     sub = np.concatenate(sub).astype(np.int) 
@@ -709,7 +708,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     spatial_coords = tal
     burnin=100
     nis=100
-    nii=1000
+    nii=100
     
     p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
                   sub,burnin,spatial_coords,nis, nii)
