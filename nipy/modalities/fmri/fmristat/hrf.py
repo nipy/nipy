@@ -5,7 +5,7 @@ and the Taylor series approximation, to a shifted
 version of the canonical Glover HRF.
 
 References
-==========
+----------
 
 Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H.,
     Evans, A.C. (2002). \'Estimating the delay of the response in fMRI
@@ -20,17 +20,18 @@ from sympy import Function
 from nipy.modalities.fmri import hrf, formula
 from nipy.modalities.fmri.fmristat.invert import invertR
 
-def spectral_decomposition(hrf2decompose, ncomp=2, tmax=50, tmin=-15, dt=0.02,
-                           delta=np.arange(-4.5, 4.6, 0.1)):
+def spectral_decomposition(hrf2decompose, ncomp=2, time=None,
+                           delta=None):
     """
 
-    Perform a PCA expansion of fn, shifted over the values in delta,
+    Perform a PCA expansion of a symbolic HRF, evshifted over the values in delta,
     returning the first ncomp components.
+
     This smooths out the HRF as compared to using a Taylor series
     approximation.
 
     Parameters
-    ==========
+    ----------
 
     hrf2decompose : sympy expression 
         An expression that can be vectorized
@@ -39,10 +40,35 @@ def spectral_decomposition(hrf2decompose, ncomp=2, tmax=50, tmin=-15, dt=0.02,
     ncomp : int
         Number of principal components to retain.
 
+    time : np.ndarray
+        Default value of np.linspace(-15,50,3751)
+        chosen to match fMRIstat implementation.
+        Presumed to be equally spaced.
+
+    delta : np.ndarray
+        Default value of np.arange(-4.5, 4.6, 0.1)
+        chosen to match fMRIstat implementation.
+
+    Returns
+    -------
+
+    hrf : [sympy expressions]
+        A sequence of symbolic HRFs that are the principal
+        components.
+
+    approx : 
+        TODO
+
     """
 
+    if time is None:
+        time = np.linspace(-15,50,3751)
+    dt = time[1] - time[0]
+
+    if delta is None:
+        delta = np.arange(-4.5, 4.6, 0.1)
+
     hrft = hrf.vectorize(hrf2decompose(hrf.t))
-    time = np.arange(tmin, tmax, dt)
 
     H = []
     for i in range(delta.shape[0]):
@@ -50,6 +76,7 @@ def spectral_decomposition(hrf2decompose, ncomp=2, tmax=50, tmin=-15, dt=0.02,
     H = np.nan_to_num(np.asarray(H))
     U, S, V = L.svd(H.T, full_matrices=0)
 
+    
     basis = []
     for i in range(ncomp):
         b = interp1d(time, U[:, i], bounds_error=False, fill_value=0.)
