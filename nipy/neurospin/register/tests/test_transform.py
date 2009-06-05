@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from neuroimaging.testing import TestCase, assert_equal, assert_almost_equal
+from nipy.testing import TestCase, assert_equal, assert_almost_equal
 import numpy as np
 
 from nipy.neurospin.register.transform import Affine, rotation_mat2vec, rotation_vec2mat, vector12

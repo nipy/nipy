@@ -163,7 +163,7 @@ def test_bsa_simple():
     # set various parameters
     theta = float(st.t.isf(0.01, 100))
     dmax = 5./1.5
-    ths = nbsubj/2
+    ths = 1
     thq = 0.9
     verbose = 1
     smin = 5
@@ -172,6 +172,7 @@ def test_bsa_simple():
     AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin)
 
     #make sure that nothing is detected
+   
     assert(AF.k==3)
 
 def test_bsa_dev():
@@ -193,7 +194,7 @@ def test_bsa_dev():
     # set various parameters
     theta = float(st.t.isf(0.01, 100))
     dmax = 5./1.5
-    ths = nbsubj/2
+    ths = 1
     thq = 0.9
     verbose = 1
     smin = 5
@@ -201,8 +202,10 @@ def test_bsa_dev():
     # run the algo
     AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method='dev')
 
-    #make sure that nothing is detected
-    assert(AF.k==3)
+    #make sure that 3 spots get detected
+    import pickle
+    pickle.dump(AF, open('/tmp/bsa.pic', 'w'))
+    assert(AF.k>1)
 
 def test_bsa_ipmi():
     # generate the data
@@ -223,7 +226,7 @@ def test_bsa_ipmi():
     # set various parameters
     theta = float(st.t.isf(0.01, 100))
     dmax = 5./1.5
-    ths = nbsubj/2
+    ths = 1
     thq = 0.9
     verbose = 1
     smin = 5
