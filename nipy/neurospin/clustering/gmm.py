@@ -353,12 +353,13 @@ class GMM:
         if gd.dim==1:
             import matplotlib.pylab as mp
             step = 3.5*np.std(X)/np.exp(np.log(np.size(X))/3)
-            bins = max(10,(X.max()-X.min())/step)
+            bins = max(10,int((X.max()-X.min())/step))
 
             xmin = 1.1*X.min() - 0.1*X.max()
             xmax = 1.1*X.max() - 0.1*X.min()
-            h,c = np.histogram(X, bins, [xmin,xmax], normed=True)
+            h,c = np.histogram(X, bins, [xmin,xmax], normed=True,new=False)
             offset = (xmax-xmin)/(2*bins)
+            c+= offset/2
             grid = gd.make_grid()
             if nbf>-1:
                 mp.figure(nbf)

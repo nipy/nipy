@@ -36,20 +36,21 @@ F.set_field(beta)
 # compute the blobs
 th = 2.36
 smin = 5
-nroi = hroi.generate_blobs(F,refdim=0, th=th, smin=smin)
+nroi = hroi.NROI_from_field(F,None,xyz.T,refdim=0,th=th,smin = smin)
 
-# compute the average signal within each blob
-idx = nroi.get_seed()
-parent = nroi.get_parents()
-label = nroi.get_label()
-nroi.make_feature(beta, 'height', 'mean')
-bfm = nroi.get_roi_feature('height')
-
-# plot the input image
 bmap = np.zeros(nbvox)
-if nroi.k>0:
-    bmap[label>-1]= bfm[label[label>-1]]
+label = -np.ones(nbvox)
 
+if nroi!=None:
+    # compute the average signal within each blob
+    bfm = nroi.discrete_to_roi_features('activation')
+
+    # plot the input image 
+    idx = nroi.discrete_features['masked_index']
+    for k in range(nroi.k):
+        bmap[idx[k]] = bfm[k]
+        label[idx[k]] = k
+        
 label = np.reshape(label,(dimx,dimy))
 bmap = np.reshape(bmap,(dimx,dimy))
 
@@ -59,14 +60,14 @@ cdict = {'red': ((0.0, 0.0, 0.7),
                  (aux1, 0.7, 0.7),
                  (aux2, 1.0, 1.0),
                  (1.0, 1.0, 1.0)),
-       'green': ((0.0, 0.0, 0.7),
-                 (aux1, 0.7, 0.0),
-                 (aux2, 1.0, 1.0),
-                 (1.0, 1.0, 1.0)),
-        'blue': ((0.0, 0.0, 0.7),
-                 (aux1, 0.7, 0.0),
-                 (aux2, 0.5, 0.5),
-                 (1.0, 1.0, 1.0))}
+         'green': ((0.0, 0.0, 0.7),
+                   (aux1, 0.7, 0.0),
+                   (aux2, 1.0, 1.0),
+                   (1.0, 1.0, 1.0)),
+         'blue': ((0.0, 0.0, 0.7),
+                  (aux1, 0.7, 0.0),
+                  (aux2, 0.5, 0.5),
+                  (1.0, 1.0, 1.0))}
 my_cmap = matplotlib.colors.LinearSegmentedColormap('my_colormap',cdict,256)
 
 pl.figure(figsize=(12, 3))
@@ -74,7 +75,8 @@ pl.subplot(1, 3, 1)
 pl.imshow(np.squeeze(x), interpolation='nearest', cmap=my_cmap)
 cb = pl.colorbar()
 for t in cb.ax.get_yticklabels():
-     t.set_fontsize(16)
+    t.set_fontsize(16)
+    
 pl.axis('off')
 pl.title('Thresholded data')
 
@@ -87,15 +89,15 @@ pl.title('Blob labels')
 # plot the blob-averaged signal image
 aux = 0.01#(th-bmap.min())/(bmap.max()-bmap.min())
 cdict = {'red': ((0.0, 0.0, 0.7), (aux, 0.7, 0.7), (1.0, 1.0, 1.0)),
-       'green': ((0.0, 0.0, 0.7), (aux, 0.7, 0.0), (1.0, 1.0, 1.0)),
-        'blue': ((0.0, 0.0, 0.7), (aux, 0.7, 0.0), (1.0, 0.5, 1.0))}
+         'green': ((0.0, 0.0, 0.7), (aux, 0.7, 0.0), (1.0, 1.0, 1.0)),
+         'blue': ((0.0, 0.0, 0.7), (aux, 0.7, 0.0), (1.0, 0.5, 1.0))}
 my_cmap = matplotlib.colors.LinearSegmentedColormap('my_colormap',cdict, 256)
 
 pl.subplot(1, 3, 3)
 pl.imshow(bmap, interpolation='nearest', cmap=my_cmap)
 cb = pl.colorbar()
 for t in cb.ax.get_yticklabels():
-     t.set_fontsize(16)
+    t.set_fontsize(16)
 pl.axis('off')
 pl.title('Blob average')
 pl.show()

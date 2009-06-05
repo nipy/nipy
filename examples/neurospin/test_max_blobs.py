@@ -1,6 +1,6 @@
 """
 This scipt generates a noisy activation image image
-and extracts the blob from it.
+and extracts the blobs from it.
 
 Author : Bertrand Thirion, 2009
 """
@@ -34,20 +34,20 @@ F.set_field(beta)
 # compute the blobs
 th = 2.36
 smin = 5
-nroi = hroi.generate_blobs(F,refdim=0,th=th,smin = smin)
+nroi = hroi.NROI_from_field(F,None,xyz.T,refdim=0,th=th,smin = smin)
 
-# compute the average signal within each blob
-nroi = nroi.reduce_to_leaves()
-idx = nroi.get_seed()
-parents = nroi.get_parents()
-label = nroi.get_label()
-nroi.make_feature(beta, 'height','mean')
-bfm = nroi.get_roi_feature('height')
-
-# plot the input image
 bmap = np.zeros(nbvox)
-if nroi.k>0:
-    bmap[label>-1]= bfm[label[label>-1]]
+label = -np.ones(nbvox)
+
+if nroi!=None:
+    # compute the average signal within each blob
+    bfm = nroi.discrete_to_roi_features('activation')
+
+    # plot the input image 
+    idx = nroi.discrete_features['masked_index']
+    for k in range(nroi.k):
+        bmap[idx[k]] = bfm[k]
+        label[idx[k]] = k
 
 label = np.reshape(label,(dimx,dimy))
 bmap = np.reshape(bmap,(dimx,dimy))

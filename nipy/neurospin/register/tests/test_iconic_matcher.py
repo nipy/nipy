@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from neuroimaging.testing import TestCase, assert_equal, assert_almost_equal, \
+from nipy.testing import TestCase, assert_equal, assert_almost_equal, \
     assert_raises
 import numpy as np
 
