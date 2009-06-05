@@ -14,9 +14,9 @@ This example is based on a (simplistic) simulated image.
 import numpy as np
 import scipy.stats as st
 import os.path as op
-import fff2.spatial_models.bayesian_structural_analysis as bsa
-import fff2.utils.simul_2d_multisubject_fmri_dataset as simul
-from fff2.utils.zscore import zscore
+import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
+import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+from nipy.neurospin.utils.zscore import zscore
 
 ################################################################################
 # simulate the data
@@ -45,15 +45,15 @@ gam_gaus_zscore = np.reshape(gam_gaus_zscore, (dimx, dimy, 3))
 pl.figure(fig.number)
 pl.subplot(3, 3, 4)
 pl.imshow(gam_gaus_zscore[..., 0], cmap=pl.cm.hot)
-pl.title('Gamme-Gaussian mixture,\n first component Z-score')
+pl.title('Gamma-Gaussian mixture,\n first component Z-score')
 pl.colorbar()
 pl.subplot(3, 3, 5)
 pl.imshow(gam_gaus_zscore[..., 1], cmap=pl.cm.hot)
-pl.title('Gamme-Gaussian mixture,\n second component Z-score')
+pl.title('Gamma-Gaussian mixture,\n second component Z-score')
 pl.colorbar()
 pl.subplot(3, 3, 6)
 pl.imshow(gam_gaus_zscore[..., 2], cmap=pl.cm.hot)
-pl.title('Gamme-Gaussian mixture,\n third component Z-score')
+pl.title('Gamma-Gaussian mixture,\n third component Z-score')
 pl.colorbar()
 
 ################################################################################
@@ -77,12 +77,12 @@ pl.title('Gaussian mixture,\n second component Z-score')
 pl.colorbar()
 pl.subplot(3, 3, 9)
 pl.imshow(gaus_mix_zscore[..., 2], cmap=pl.cm.hot)
-pl.title('Gamme-Gaussian mixture,\n third component Z-score')
+pl.title('Gamma-Gaussian mixture,\n third component Z-score')
 pl.colorbar()
 
 ################################################################################
 # Fit the null mode of Beta with an empirical normal null
-import fff2.utils.emp_null as en
+import nipy.neurospin.utils.emp_null as en
 efdr = en.ENN(Beta)
 emp_null_zcore = zscore(efdr.fdr(Beta))
 emp_null_zcore = emp_null_zcore.reshape((dimx, dimy))

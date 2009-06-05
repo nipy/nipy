@@ -88,23 +88,7 @@ class test_GMM(TestCase):
         """
         Computing the BIC value for different configurations
         """
-        # generate some data
-        dim = 2
-        X = np.concatenate((nr.randn(1000,2),3+2*nr.randn(1000,2)))
-
-        # estimate different GMMs of that data
-        k = 2
-        prec_type = 0
-        lgmm = gmm.GMM(k,dim,prec_type)
-        maxiter = 300
-        delta = 0.001
-        ninit = 5
-        La,LL,bic1 = lgmm.estimate(X,None,maxiter,delta,ninit)
         
-        lgmm.prec_type=1
-        La,LL,bic2 = lgmm.estimate(X,None,maxiter,delta,ninit)
-        
-
         # generate some data
         dim = 2
         X = np.concatenate((nr.randn(100,dim),5*nr.randn(100,dim)))
@@ -128,7 +112,7 @@ class test_GMM(TestCase):
         lgmm.prec_type=1
         La,LL,bic4 = lgmm.estimate(X,None,maxiter,delta,ninit)
         
-        lgmm.set_k(3)
+        lgmm.set_k(10)
         La,LL,bic5 = lgmm.estimate(X,None,maxiter,delta,ninit)
 
         if verbose:
@@ -143,10 +127,10 @@ class test_GMM(TestCase):
         # generate some data
         dim = 2
     
-        X = np.concatenate((nr.randn(1000,dim),3+2*nr.randn(1000,dim)))
-        x = np.concatenate((nr.randn(100,dim),3+2*nr.randn(100,dim)))
+        xtrain = np.concatenate((nr.randn(100,dim),3+2*nr.randn(100,dim)))
+        xtest = np.concatenate((nr.randn(1000,dim),3+2*nr.randn(1000,dim)))
 
-        #estimate different GMMs for X, and test it on x
+        #estimate different GMMs for xtrain, and test it on xtest
         maxiter = 300
         prec_type = 0
         k = 2
@@ -154,34 +138,36 @@ class test_GMM(TestCase):
         maxiter = 300
         delta = 0.001
         ninit = 5
-        La,LL,bic = lgmm.estimate(X,None,maxiter,delta,ninit)
-        LL1 = lgmm.test(x).mean()
+
+        La,LL,bic = lgmm.estimate(xtrain,None,maxiter,delta,ninit)
+        LL1 = lgmm.test(xtest).mean()
         
         lgmm.prec_type=1
-        La,LL,bic = lgmm.estimate(X,None,maxiter,delta,ninit)
-        LL2 = lgmm.test(x).mean()
+        La,LL,bic = lgmm.estimate(xtrain,None,maxiter,delta,ninit)
+        LL2 = lgmm.test(xtest).mean()
 
         lgmm.prec_type=2
-        La,LL,bic = lgmm.estimate(X,None,maxiter,delta,ninit)
-        LL3 = lgmm.test(x).mean()
+        La,LL,bic = lgmm.estimate(xtrain,None,maxiter,delta,ninit)
+        LL3 = lgmm.test(xtest).mean()
 
         lgmm.set_k(1)
         lgmm.prec_type=1
-        La,LL,bic = lgmm.estimate(X,None,maxiter,delta,ninit)
-        LL4 = lgmm.test(x).mean()
+        La,LL,bic = lgmm.estimate(xtrain,None,maxiter,delta,ninit)
+        LL4 = lgmm.test(xtest).mean()
 
         lgmm.set_k(3)
-        La,LL,bic = lgmm.estimate(X,None,maxiter,delta,ninit)
-        LL5 = lgmm.test(x).mean()
+        La,LL,bic = lgmm.estimate(xtrain,None,maxiter,delta,ninit)
+        LL5 = lgmm.test(xtest).mean()
         
         lgmm.set_k(10)
-        La,LL,bic = lgmm.estimate(X,None,maxiter,delta,ninit)
-        LL6 = lgmm.test(x).mean()
+        La,LL,bic = lgmm.estimate(xtrain,None,maxiter,delta,ninit)
+        LL6 = lgmm.test(xtest).mean()
 
         if verbose:
-            print lgmm.assess_divergence(X)
+            print lgmm.assess_divergence(xtrain)
         
-        #print LL1,LL2,LL3,LL4,LL5,LL6
+        if LL6>LL2:
+            print "writing the testlikelihoods:", LL1,LL2,LL3,LL4,LL5,LL6
         self.assert_(LL6<LL2)
 
         

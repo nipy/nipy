@@ -8,8 +8,8 @@ import numpy as np
 import scipy.stats as st
 import os.path as op
 
-import fff2.spatial_models.bayesian_structural_analysis as bsa
-import fff2.graph.field as ff
+import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
+import nipy.neurospin.graph.field as ff
 import nifti
 
 
@@ -123,9 +123,9 @@ betas = [["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysis_RN
 AF,BF = make_bsa_nifti(nbsubj, mask_images, betas, nbru, theta, dmax, ths,thq,smin,swd,nbeta)
 
 # Write the result. OK, this is only a temporary solution
-import cPickle
-picname = op.join(swd,"AF_%04d" %nbeta[0])
-cPickle.dump(AF, open(picname, 'w'), 2)
-picname = op.join(swd,"BF_%04d" %nbeta[0])
-cPickle.dump(BF, open(picname, 'w'), 2)
+import pickle
+picname = op.join(swd,"AF_%04d.pic" %nbeta[0])
+pickle.dump(AF, open(picname, 'w'), 2)
+picname = op.join(swd,"BF_%04d.pic" %nbeta[0])
+pickle.dump(BF, open(picname, 'w'), 2)
 
