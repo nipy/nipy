@@ -103,19 +103,55 @@ class landmark_regions(hroi.NROI):
         import numpy.linalg as L
         U,S,V = L.svd(covariance,0)
         eps = (dmax**2)/coord.shape[0]
-        sqrtS = np.sqrt(1/np.maximum(S,eps))
+        sqrts = np.sqrt(1/np.maximum(S,eps))
         dx = cs-centers[k]
         dx = np.dot(dx,U)
-        dx = np.dot(dx,np.diag(sqrtS))
+        dx = np.dot(dx,np.diag(sqrts))
         delta = np.sum(dx**2,1)
-        lcst = -np.log(2*np.pi)*dim/2+(np.log(sqrtS)).sum()
+        lcst = -np.log(2*np.pi)*dim/2+(np.log(sqrts)).sum()
         hpd = np.exp(lcst-delta/2)
 
         import scipy.special as sp
         gamma = 2*sp.erfinv(pval)**2
+        #
+        #--- all the following is to solve the equation
+        #--- erf(x/sqrt(2))-x*exp(-x**2/2)/sqrt(pi/2) = alpha
+        #--- should better be put elsewhere
+        #
+        def dicho_solve_lfunc(alpha,eps = 1.e-7):
+            if alpha>1:
+                raise ValueError, "no solution for alpha>1"
+            if alpha>1-1.e-15:
+                return np.infty
+            if alpha<0:
+                raise ValueError, "no solution for alpha<0" 
+            if alpha<1.e-15:
+                return 0
+    
+            xmin = sp.erfinv(alpha)*np.sqrt(2)
+            xmax = 2*xmin
+            while lfunc(xmax)<alpha:
+                xmax*=2
+                xmin*=2
+            return (dichomain_lfunc(xmin,xmax,eps,alpha))
+
+        def dichomain_lfunc(xmin,xmax,eps,alpha):
+            x =  (xmin+xmax)/2
+            if xmax<xmin+eps:
+                return x
+            else:
+                print xmin,x,xmax
+                if lfunc(x)>alpha:
+                    return dichomain_lfunc(xmin,x,eps,alpha)
+                else:
+                    return dichomain_lfunc(x,xmax,eps,alpha)
+        
+        def lfunc(x):
+            return sp.erf(x/np.sqrt(2))-x*np.exp(-x**2/2)/np.sqrt(np.pi/2)
+
+        gamma = dicho_solve_lfunc(pval)**2
         hpd[delta>gamma]=0
-        #print sqrtS,S,eps
-        return hpd
+         return hpd
 
     def map_label(self,cs,pval = 0.95,dmax=1.):
         """
