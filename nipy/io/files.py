@@ -18,7 +18,7 @@ import os
 
 import numpy as np
 
-import nifti as nf
+import nipy.io.imageformats as formats
 
 from nipy.core.api import Image
 from nifti_ref import (coordmap_from_affine, coerce_coordmap, 
@@ -52,7 +52,7 @@ def load(filename):
     >>> img.shape
     (25, 35, 25)
     """
-    img = nf.load(filename)
+    img = formats.load(filename)
     aff = img.get_affine()
     shape = img.get_shape()
     hdr = img.get_header()
@@ -186,9 +186,9 @@ def save(img, filename, dtype=None):
     aff = _match_affine(Fimg.affine, 3, zooms)
     ftype = _type_from_filename(filename)
     if ftype.startswith('nifti1'):
-        klass = nf.Nifti1Image
+        klass = formats.Nifti1Image
     elif ftype == 'analyze':
-        klass = nf.Spm2AnalyzeImage
+        klass = formats.Spm2AnalyzeImage
     else:
         raise ValueError('Cannot save file type "%s"' % ftype)
     # make new image
