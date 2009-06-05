@@ -151,7 +151,7 @@ class landmark_regions(hroi.NROI):
 
         gamma = dicho_solve_lfunc(pval)**2
         hpd[delta>gamma]=0
-         return hpd
+        return hpd
 
     def map_label(self,cs,pval = 0.95,dmax=1.):
         """
