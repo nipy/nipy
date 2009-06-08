@@ -140,7 +140,6 @@ class landmark_regions(hroi.NROI):
             if xmax<xmin+eps:
                 return x
             else:
-                print xmin,x,xmax
                 if lfunc(x)>alpha:
                     return dichomain_lfunc(xmin,x,eps,alpha)
                 else:
