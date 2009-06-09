@@ -23,17 +23,17 @@ def log_gammainv_pdf(x, a, b):
     log density of the inverse gamma distribution with shape a and scale b,
     at point x, using Stirling's approximation for a > 100
     """
-    L = a * np.log(b) - (a + 1) * np.log(x) - b / x
-    if np.isscalar(a):
-        if a <= 100:
-            L -= np.log(sp.gamma(a))
-        else:
-            n = a - 1
-            L -= 0.5 * np.log(2 * np.pi * n) + n * (np.log(n) - 1)
-    else:
-        L[a <= 100] -= np.log(sp.gamma(a[a <= 100]))
-        n = a[a > 100] - 1
-        L[a > 100] -= 0.5 * np.log(2 * np.pi * n) + n * (np.log(n) - 1)
+    L = a * np.log(b) - sp.gammaln(a) - (a + 1) * np.log(x) - b / x
+    #if np.isscalar(a):
+        #if a <= 100:
+            #L -= np.log(sp.gamma(a))
+        #else:
+            #n = a - 1
+            #L -= 0.5 * np.log(2 * np.pi * n) + n * (np.log(n) - 1)
+    #else:
+        #L[a <= 100] -= np.log(sp.gamma(a[a <= 100]))
+        #n = a[a > 100] - 1
+        #L[a > 100] -= 0.5 * np.log(2 * np.pi * n) + n * (np.log(n) - 1)
     return L
 
 def log_gaussian_pdf(x, m, v):

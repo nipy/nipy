@@ -100,7 +100,7 @@ class test_multivariate_stat_saem(unittest.TestCase):
         #verbose=True
         labels = (signal > 0).astype(int)
         P = os.multivariate_stat(data[:, mask], vardata[:, mask], XYZ[:, mask], std=2.0, sigma=5, labels=labels)
-        P.network *= 0
+        P.network[:] = 0
         P.init_hidden_variables()
         P.evaluate(nsimu=100, burnin=100, verbose=verbose, proposal='rand_walk', proposal_std=1.0)
         #P.evaluate(nsimu=100, burnin=10, verbose=verbose, proposal='prior')
@@ -114,7 +114,7 @@ class test_multivariate_stat_saem(unittest.TestCase):
         M0 = L0 + Prior0[:-1] - Post0
         self.assertAlmostEqual(M0.mean(), P.compute_marginal_likelihood(verbose=verbose).mean(), 0)
         #P = os.multivariate_stat(data[:, mask], vardata[:, mask], XYZ[:, mask], std=1, sigma=3)
-        P.network += 1
+        P.network[:] = 1
         P.init_hidden_variables(init_spatial=False)
         P.evaluate(nsimu=100, burnin=100, verbose=verbose, update_spatial=False)
         #L10 = P.compute_log_region_likelihood()[0]
