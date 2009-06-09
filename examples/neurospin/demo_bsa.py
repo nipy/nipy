@@ -9,12 +9,12 @@ Author : Bertrand Thirion, 2009
 import numpy as np
 import scipy.stats as st
 import matplotlib.pylab as mp
-import fff2.graph.field as ff
-import fff2.utils.simul_2d_multisubject_fmri_dataset as simul
-import fff2.spatial_models.bayesian_structural_analysis as bsa
+import nipy.neurospin.graph.field as ff
+import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
-                        nbeta=[0],verbose = 0):
+                        nbeta=[0],method='simple',verbose = 0):
     """ Function for performing bayesian structural analysis on a set of images.
     """
     ref_dim = np.shape(betas[0])
@@ -36,17 +36,23 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     # the voxel volume is 1.0
     g0 = 1.0/(1.0*nbvox)
     bdensity = 1
-    
-    group_map, AF, BF, likelihood = \
-               bsa.compute_BSA_ipmi(Fbeta, lbeta, tal, dmax,xyz, None, thq,
-                                      smin, ths, theta, g0, bdensity)
-    group_map, AF, BF, likelihood = \
-               bsa.compute_BSA_simple(Fbeta, lbeta, tal, dmax,xyz, None, thq,
-                                      smin, ths, theta, g0)
-    group_map, AF, BF, likelihood = \
-               bsa.compute_BSA_dev(Fbeta, lbeta, tal, dmax,xyz, None, thq,
-                                      smin, ths, theta, g0, bdensity)
 
+    if method=='ipmi':
+        group_map, AF, BF, likelihood = \
+                   bsa.compute_BSA_ipmi(Fbeta, lbeta, tal, dmax,xyz, None, thq,
+                                        smin, ths, theta, g0, bdensity)
+    if method=='simple':
+        group_map, AF, BF, likelihood = \
+                   bsa.compute_BSA_simple(Fbeta, lbeta, tal, dmax,xyz,
+                                          None, thq, smin, ths, theta, g0)
+    if method=='dev':
+        group_map, AF, BF, likelihood = \
+                   bsa.compute_BSA_dev(Fbeta, lbeta, tal, dmax,xyz, None, thq,
+                                      smin, ths, theta, g0, bdensity)
+        
+    if method not in['dev','simple','ipmi']:
+        raise ValueError,'method is not ocrreactly defined'
+    
     if verbose==0:
         return AF,BF
     
@@ -111,12 +117,13 @@ betas = np.reshape(dataset, (nbsubj, dimx, dimy))
 # set various parameters
 theta = float(st.t.isf(0.01, 100))
 dmax = 5./1.5
-ths = nbsubj/2
+ths = 1#nbsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
+method = 'ipmi'
 
 # run the algo
-AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,verbose=verbose)
+AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method,verbose=verbose)
 mp.show()
 

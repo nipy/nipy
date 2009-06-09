@@ -164,7 +164,7 @@ class WeightedForest(fo.Forest):
         cM = 1.05*self.height.max()-0.05*self.height.min()
         cm = 1.05*self.height.min()-0.05*self.height.max()
         mp.axis([-1,idx.max()+1,cm,cM])
-        mp.show()
+        #mp.show()
         return rank
 
     def partition(self,threshold):
@@ -202,7 +202,7 @@ class WeightedForest(fo.Forest):
         sh = np.sort(self.height[self.isleaf()==False])
         n = np.sum(self.isleaf()==False)
         mp.bar(np.arange(n),sh)
-        mp.show()
+        #mp.show()
 
     def list_of_subtrees(self):
         """
@@ -292,7 +292,7 @@ class WeightedForest(fo.Forest):
         cM = 1.05*self.height.max()-0.05*self.height.min()
         cm = 1.05*self.height.min()-0.05*self.height.max()
         mp.axis([-1,idx.max()+1,cm,cM])
-        mp.show()
+        #mp.show()
         
         if addNodes:
             for i in range(self.V):
@@ -305,7 +305,7 @@ class WeightedForest(fo.Forest):
                 text = str(cl_size[i])
                 mp.text(idx[i]+0.5, h1+0.05, text, fontsize = font_size)
         
-        mp.show()
+        #mp.show()
         return rank
 
     def fancy_plot_(self,valid):
@@ -361,7 +361,7 @@ class WeightedForest(fo.Forest):
         cM = 1.05*self.height.max()-0.05*self.height.min()
         cm = 1.05*self.height.min()-0.05*self.height.max()
         mp.axis([-1,idx.max()+1,cm,cM])
-        mp.show()
+        #mp.show()
         return rank
     
     def fancy_plot(self,validleaves):

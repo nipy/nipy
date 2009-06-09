@@ -3,10 +3,10 @@ Example of script to parcellate mutli-subject data
 author: Bertrand Thirion, 2005-2009
 """
 
-from fff2.spatial_models.parcellation import Parcellation
+from nipy.neurospin.spatial_models.parcellation import Parcellation
 import cPickle
-from fff2.spatial_models.parcel_io_nii import *
-from fff2.spatial_models.hierarchical_parcellation import hparcel
+from nipy.neurospin.spatial_models.parcel_io_nii import *
+from nipy.neurospin.spatial_models.hierarchical_parcellation import hparcel
 
 # number of subjects
 nbru = range(1,13)

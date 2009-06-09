@@ -1,5 +1,9 @@
-import csv, os
+import os
+import csv
+from tempfile import mkstemp
+
 import numpy as np
+
 from nipy.testing import *
 from nipy.fixes.scipy.stats.models.utils import recipr0
 from nipy.fixes.scipy.stats.models import contrast
@@ -7,7 +11,7 @@ from nipy.fixes.scipy.stats.models import contrast
 from nipy.modalities.fmri import hrf, protocol, functions
 
 
-class test_ProtocolSetup(TestCase):
+class TestProtocolSetup(TestCase):
 
     def setUp(self):
         """
@@ -57,28 +61,39 @@ class test_ProtocolSetup(TestCase):
 
         self.t = np.arange(0,300,1)
 
-class test_Protocol(test_ProtocolSetup):
+class TestProtocol(TestProtocolSetup):
+
+    def setUp(self):
+        super(TestProtocol, self).setUp()
+        _, self.filename = mkstemp(suffix='.csv')
+
+    def tearDown(self):
+        try:
+            self.fp.close()
+            os.unlink(self.filename)
+        except:
+            # If we're unable to unlink the file, just ignore it and
+            # let the system clean it up.  At least on Windows this is
+            # a problem.
+            pass
 
     def testFromFile(self):
-        out = file('tmp.csv', 'w')
-        writer = csv.writer(out)
+        self.fp = open(self.filename, 'w')
+        writer = csv.writer(self.fp)
         for row in self.all:
             writer.writerow(row)
-        out.close()
-        
-        p = protocol.ExperimentalFactor('pain', file('tmp.csv'), delta=False)
-        os.remove('tmp.csv')
-
+        self.fp.close()
+        self.fp = open(self.filename)
+        p = protocol.ExperimentalFactor('pain', self.fp, delta=False)
 
     def testFromFileName(self):
-        out = file('tmp.csv', 'w')
-        writer = csv.writer(out)
+        self.fp = file(self.filename, 'w')
+        writer = csv.writer(self.fp)
         for row in self.all:
             writer.writerow(row)
-        out.close()
+        self.fp.close()
         
-        p = protocol.ExperimentalFactor('pain', 'tmp.csv', delta=False)
-        os.remove('tmp.csv')
+        p = protocol.ExperimentalFactor('pain', self.filename, delta=False)
 
 
     # FIXME: Fix recursion error: c =
