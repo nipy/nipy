@@ -13,6 +13,10 @@ import nipy.testing as nitest
 from nipy.io.api import load_image, save_image
 from nipy.core import api
 
+# For group analysis
+
+from nipy.algorithms.statistics import onesample 
+
 def test_sanity():
     from nipy.modalities.fmri.fmristat.tests import FIACdesigns
 
@@ -129,7 +133,7 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
 event = [(0,3),(0,4)] # Sequences with all the (subj, run) event designs 
 block = [(0,1),(0,2)] # Sequences with all the (subj, run) block designs 
 
-def fit(subj, run):
+def run_model(subj, run):
     """
     Single subject fitting of FIAC model
     """
@@ -341,7 +345,7 @@ def fit(subj, run):
             im = api.Image(output[n][v], anat.coordmap.copy())
             save_image(im, pjoin(odir, n, '%s.nii' % v))
 
-def fixed(subj, design):
+def fixed_effects(subj, design):
     """
     Fixed effects (within subject) for FIAC model
     """
@@ -414,3 +418,53 @@ def fixed(subj, design):
             im = api.Image(a, coordmap.copy())
             save_image(im, pjoin(odir, '%s.nii' % n))
 
+def group_analysis(design, contrast):
+    """
+    Compute group analysis effect, sd and t
+    for a given contrast and design type
+    """
+
+    rootdir = "fiac_example_data"
+    odir = pjoin(rootdir, 'group', design, contrast)
+    if not exists(odir): makedirs(odir)
+
+    # Which subjects have this (contrast, design) pair?
+
+    subjects = filter(lambda f: exists(f), [pjoin(rootdir, "fiac_%02d" % s, design, "fixed", contrast) for s in range(16)])
+
+    sd = np.array([np.array(load_image(pjoin(s, "sd.nii"))) for s in subjects])
+    Y = np.array([np.array(load_image(pjoin(s, "effect.nii"))) for s in subjects])
+
+    # This function estimates the ratio of the
+    # fixed effects variance (sum(1/sd**2, 0))
+    # to the estimated random effects variance
+    # (sum(1/(sd+rvar)**2, 0)) where
+    # rvar is the random effects variance.
+
+    # The EM algorithm used is described in 
+    #
+    # Worsley, K.J., Liao, C., Aston, J., Petre, V., Duncan, G.H., 
+    #    Morales, F., Evans, A.C. (2002). \'A general statistical 
+    #    analysis for fMRI data\'. NeuroImage, 15:1-15
+
+    varatio = onesample.estimate_varatio(Y, sd)
+    random_var = varatio['random']
+
+    # XXX - if we have a smoother, use random_var = varatio['fixed'] * smooth(varatio['ratio'])
+
+    # Having estimated the random effects variance (and
+    # possibly smoothed it), the corresponding
+    # estimate of the effect and its variance is
+    # computed and saved.
+
+    # This is the coordmap we will use
+
+    coordmap = load_image(pjoin("fiac_example_data", "fiac_00", "wanatomical.nii")).coordmap
+
+    adjusted_var = sd**2 + random_var
+    adjusted_sd = np.sqrt(adjusted_var)
+
+    results = onesample.estimate_mean(Y, adjusted_sd) 
+    for n in ['effect', 'sd', 't']:
+        im = api.Image(results[n], coordmap.copy())
+        save_image(im, pjoin(odir, "%s.nii" % n))
