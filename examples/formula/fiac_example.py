@@ -1,7 +1,8 @@
 import pylab
 import numpy as np
 from StringIO import StringIO
-import os, csv
+from os.path import exists, abspath, join as pjoin
+from os import makedirs, listdir
 
 from matplotlib.mlab import csv2rec, rec2csv
 
@@ -11,6 +12,10 @@ from nipy.modalities.fmri import formula, design, hrf
 import nipy.testing as nitest
 from nipy.io.api import load_image, save_image
 from nipy.core import api
+
+# For group analysis
+
+from nipy.algorithms.statistics import onesample 
 
 def test_sanity():
     from nipy.modalities.fmri.fmristat.tests import FIACdesigns
@@ -33,13 +38,16 @@ def test_sanity():
         volume_times_rec = formula.make_recarray(volume_times, 't')
 
         path_dict = {'subj':subj, 'run':run}
-        if os.path.exists("fiac_example_data/fiac_%(subj)02d/block/initial_%(run)02d.csv" % path_dict):
+        if exists(pjoin("fiac_example_data", "fiac_%(subj)02d",
+                        "block", "initial_%(run)02d.csv") % path_dict):
             path_dict['design'] = 'block'
         else:
             path_dict['design'] = 'event'
 
-        experiment = csv2rec("fiac_example_data/fiac_%(subj)02d/%(design)s/experiment_%(run)02d.csv" % path_dict)
-        initial = csv2rec("fiac_example_data/fiac_%(subj)02d/%(design)s/initial_%(run)02d.csv" % path_dict)
+        experiment = csv2rec(pjoin("fiac_example_data", "fiac_%(subj)02d", "%(design)s", "experiment_%(run)02d.csv")
+                             % path_dict)
+        initial = csv2rec(pjoin("fiac_example_data", "fiac_%(subj)02d", "%(design)s", "initial_%(run)02d.csv")
+                                % path_dict)
 
         X_exper, cons_exper = design.event_design(experiment, volume_times_rec, hrfs=delay.spectral)
         X_initial, _ = design.event_design(initial, volume_times_rec, hrfs=[hrf.glover]) 
@@ -77,7 +85,7 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
 
     """
 
-    if os.path.exists("%(root)s/fiac%(subj)d/subj%(subj)d_evt_fonc%(run)d.txt" % {'root':root, 'subj':subj, 'run':run}):
+    if exists(pjoin("%(root)s", "fiac%(subj)d", "subj%(subj)d_evt_fonc%(run)d.txt") % {'root':root, 'subj':subj, 'run':run}):
         designtype = 'evt'
     else:
         designtype = 'bloc'
@@ -90,7 +98,7 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
     w = csv.writer(s)
     w.writerow(['time', 'sentence', 'speaker'])
 
-    specfile = "%(root)s/fiac%(subj)d/subj%(subj)d_%(design)s_fonc%(run)d.txt" % {'root':root, 'subj':subj, 'run':run, 'design':designtype}
+    specfile = pjoin("%(root)s", "fiac%(subj)d", "subj%(subj)d_%(design)s_fonc%(run)d.txt") % {'root':root, 'subj':subj, 'run':run, 'design':designtype}
     d = np.loadtxt(specfile)
     for row in d:
         w.writerow([row[0]] + eventdict[row[1]].split('_'))
@@ -112,11 +120,11 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
 
     designtype = {'bloc':'block', 'evt':'event'}[designtype]
 
-    fname = "fiac_example_data/fiac_%(subj)02d/%(design)s/experiment_%(run)02d.csv" % {'root':root, 'subj':subj, 'run':run, 'design':designtype}
+    fname = pjoin("fiac_example_data", "fiac_%(subj)02d", "%(design)s", "experiment_%(run)02d.csv") % {'root':root, 'subj':subj, 'run':run, 'design':designtype}
     rec2csv(d, fname)
     experiment = csv2rec(fname)
 
-    fname = "fiac_example_data/fiac_%(subj)02d/%(design)s/initial_%(run)02d.csv" % {'root':root, 'subj':subj, 'run':run, 'design':designtype}
+    fname = pjoin("fiac_example_data", "fiac_%(subj)02d", "%(design)s", "initial_%(run)02d.csv") % {'root':root, 'subj':subj, 'run':run, 'design':designtype}
     rec2csv(b, fname)
     initial = csv2rec(fname)
 
@@ -125,7 +133,7 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
 event = [(0,3),(0,4)] # Sequences with all the (subj, run) event designs 
 block = [(0,1),(0,2)] # Sequences with all the (subj, run) block designs 
 
-def fit(subj, run):
+def run_model(subj, run):
     """
     Single subject fitting of FIAC model
     """
@@ -156,21 +164,21 @@ def fit(subj, run):
     # describe the experiment
 
     path_dict = {'subj':subj, 'run':run}
-    if os.path.exists("fiac_example_data/fiac_%(subj)02d/block/initial_%(run)02d.csv" % path_dict):
+    if exists(pjoin("fiac_example_data", "fiac_%(subj)02d",
+                    "block", "initial_%(run)02d.csv") % path_dict):
         path_dict['design'] = 'block'
     else:
         path_dict['design'] = 'event'
 
-    # XXX -- fix the paths with this template
-    path_tpl = "fiac_example_data/fiac_%(subj)02d/%(design)s"
+    rootdir = pjoin("fiac_example_data", "fiac_%(subj)02d", "%(design)s" % path_dict)
 
     # The following two lines read in the .csv files
     # and return recarrays, with fields
     # experiment: ['time', 'sentence', 'speaker']
     # initial: ['time', 'initial']
 
-    experiment = csv2rec("fiac_example_data/fiac_%(subj)02d/%(design)s/experiment_%(run)02d.csv" % path_dict)
-    initial = csv2rec("fiac_example_data/fiac_%(subj)02d/%(design)s/initial_%(run)02d.csv" % path_dict)
+    experiment = csv2rec(pjoin(rootdir, "experiment_%(run)02d.csv" % path_dict))
+    initial = csv2rec(pjoin(rootdir, "initial_%(run)02d.csv" % path_dict))
 
     # Create design matrices for the "initial" and "experiment" factors,
     # saving the default contrasts. 
@@ -188,9 +196,11 @@ def fit(subj, run):
     #    data.\' NeuroImage, 16:593-606.
 
     # The contrasts, cons_exper,
-    # is a dictionary with keys: ['constant_0', 'constant_1', 'speaker_0', speaker_1',
+    # is a dictionary with keys: ['constant_0', 'constant_1', 'speaker_0', 
+    # 'speaker_1',
     # 'sentence_0', 'sentence_1', 'sentence:speaker_0', 'sentence:speaker_1']
-    # representing the four default contrasts: constant, main effects + interactions,
+    # representing the four default contrasts: constant, main effects + 
+    # interactions,
     # each convolved with 2 HRFs in delay.spectral. Its values
     # are matrices with 8 columns.
 
@@ -240,16 +250,16 @@ def fit(subj, run):
     # It is transposed to have time as the first dimension,
     # i.e. fmri[t] gives the t-th volume.
 
-    fmri = np.array(load_image("fiac_example_data/fiac_%(subj)02d/%(design)s/swafunctional_%(run)02d.nii" % path_dict))
+    fmri = np.array(load_image(pjoin(rootdir, "swafunctional_%(run)02d.nii" % path_dict)))
     fmri = np.transpose(fmri, [3,0,1,2])
-    anat = load_image("fiac_example_data/fiac_%(subj)02d/wanatomical.nii" % path_dict)
+    anat = load_image(pjoin("fiac_example_data", "fiac_%(subj)02d", "wanatomical.nii") % path_dict)
                    
     nvol, volshape = fmri.shape[0], fmri.shape[1:] 
     nslice, sliceshape = volshape[0], volshape[1:]
 
     # XXX Matthew: can you output a brain mask -- it would save
     # having to fit the model everywhere
-    #     mask = np.array(load_image("fiac_example_data/fiac_%(subj)02d/mask.nii" % path_dict))
+    #     mask = np.array(load_image(pjoin("fiac_example_data", "fiac_%(subj)02d", "mask.nii") % path_dict))
     #     mask_a = np.transpose(np.array(mask), [2,1,0])
     mask_a = 1 # XXX change this once we have a mask
 
@@ -321,42 +331,140 @@ def fit(subj, run):
 
     # Dump output to disk
 
-            
-    odir = "fiac_example_data/fiac_%(subj)02d/%(design)s/results_%(run)02d"  \
-        % path_dict
-    os.system('mkdir -p %s' % odir)
+    odir = pjoin(rootdir, "results_%(run)02d" % path_dict)
+    if not exists(odir): makedirs(odir)
 
     for n in fcons:
         im = api.Image(output[n], anat.coordmap.copy())
-        # XXX Is this a bug? 
-        # I thought we checked the shape of array and coordmap somewhere
-
-        # In an earlier version, I had used tranpose [3,2,1,0]
-        # instead of [3,0,1,2] above, resulting in Output shapes as 
-        # commented below, but the Images saved fine even with
-        # coordmap whose shape doesn't match the array's shape.
-        #
-        #         Output shape: (69, 95, 79)
-        #         Anatomy shape: (79, 95, 69)
-        #         Saved succesffuly. Are shapes equal? False
-        #         Output shape: (69, 95, 79)
-        #         Anatomy shape: (79, 95, 69)
-        #         Saved succesffuly. Are shapes equal? False
-        #         Output shape: (69, 95, 79)
-        #         Anatomy shape: (79, 95, 69)
-        #         Saved succesffuly. Are shapes equal? False
-
-
-        print "Output shape:", output[n].shape
-        print "Anatomy shape:", anat.shape
-
-        os.system('mkdir -p %s/%s' % (odir, n))
-        save_image(im, "%s/%s/F.nii" % (odir, n))
-        print "Saved succesffuly. Are shapes equal?", anat.shape == output[n].shape
+        if not exists(pjoin(odir, n)): makedirs(pjoin(odir, n))
+        save_image(im, pjoin(odir, n, "F.nii"))
 
     for n in tcons:
-        os.system('mkdir -p %s/%s' % (odir, n))
+        if not exists(pjoin(odir, n)): makedirs(pjoin(odir, n))
         for v in ['t', 'sd', 'effect']:
             im = api.Image(output[n][v], anat.coordmap.copy())
-            save_image(im, '%s/%s/%s.nii' % (odir, n, v))
+            save_image(im, pjoin(odir, n, '%s.nii' % v))
 
+def fixed_effects(subj, design):
+    """
+    Fixed effects (within subject) for FIAC model
+    """
+
+    # First, find all the effect and standard deviation images
+    # for the subject and this design type
+
+    path_dict = {'subj':subj, 'design':design}
+    rootdir = pjoin("fiac_example_data", "fiac_%(subj)02d", "%(design)s") % path_dict
+
+    # Which runs correspond to this design type?
+
+    runs = filter(lambda f: exists(pjoin(rootdir, f)), ['results_%02d' % i for i in range(1,5)])
+
+    # Find out which contrasts have t-statistics,
+    # storing the filenames for reading below
+
+    results = {}
+
+    for rundir in runs:
+        rundir = pjoin(rootdir, rundir)
+        for condir in listdir(rundir):
+            for stat in ['sd', 'effect']:
+                fname_effect = abspath(pjoin(rundir, condir, 'effect.nii'))
+                fname_sd = abspath(pjoin(rundir, condir, 'sd.nii'))
+            if exists(fname_effect) and exists(fname_sd):
+                results.setdefault(condir, []).append([fname_effect,
+                                                       fname_sd])
+
+    # Get our hands on the relevant coordmap to
+    # save our results
+
+    coordmap = load_image(pjoin("fiac_example_data", "fiac_%(subj)02d", "wanatomical.nii") % path_dict).coordmap
+
+    # The output directory
+
+    fixdir = pjoin(rootdir, "fixed")
+
+    # Compute the "fixed" effects for each type of contrast
+
+    for con in results:
+        fixed_effect = 0
+        fixed_var = 0
+        for effect, sd in results[con]:
+            effect = load_image(effect); sd = load_image(sd)
+            var = np.array(sd)**2
+
+            # The optimal, in terms of minimum variance,
+            # combination of the effects has weights 1 / var
+            # XXX regions with 0 variance are set to 0
+            # XXX do we want this or np.nan?
+
+            ivar = np.nan_to_num(1. / var)
+            fixed_effect += effect * ivar
+            fixed_var += ivar
+
+        # Now, compute the fixed effects variance
+        # and t statistic
+
+        fixed_sd = np.sqrt(fixed_var)
+        isd = np.nan_to_num(1. / fixed_sd)
+        fixed_t = fixed_effect * isd
+
+        # Save the results
+
+        odir = pjoin(fixdir, con)
+        if not exists(odir): makedirs(odir)
+        for a, n in zip([fixed_effect, fixed_sd, fixed_t],
+                        ['effect', 'sd', 't']):
+            im = api.Image(a, coordmap.copy())
+            save_image(im, pjoin(odir, '%s.nii' % n))
+
+def group_analysis(design, contrast):
+    """
+    Compute group analysis effect, sd and t
+    for a given contrast and design type
+    """
+
+    rootdir = "fiac_example_data"
+    odir = pjoin(rootdir, 'group', design, contrast)
+    if not exists(odir): makedirs(odir)
+
+    # Which subjects have this (contrast, design) pair?
+
+    subjects = filter(lambda f: exists(f), [pjoin(rootdir, "fiac_%02d" % s, design, "fixed", contrast) for s in range(16)])
+
+    sd = np.array([np.array(load_image(pjoin(s, "sd.nii"))) for s in subjects])
+    Y = np.array([np.array(load_image(pjoin(s, "effect.nii"))) for s in subjects])
+
+    # This function estimates the ratio of the
+    # fixed effects variance (sum(1/sd**2, 0))
+    # to the estimated random effects variance
+    # (sum(1/(sd+rvar)**2, 0)) where
+    # rvar is the random effects variance.
+
+    # The EM algorithm used is described in 
+    #
+    # Worsley, K.J., Liao, C., Aston, J., Petre, V., Duncan, G.H., 
+    #    Morales, F., Evans, A.C. (2002). \'A general statistical 
+    #    analysis for fMRI data\'. NeuroImage, 15:1-15
+
+    varatio = onesample.estimate_varatio(Y, sd)
+    random_var = varatio['random']
+
+    # XXX - if we have a smoother, use random_var = varatio['fixed'] * smooth(varatio['ratio'])
+
+    # Having estimated the random effects variance (and
+    # possibly smoothed it), the corresponding
+    # estimate of the effect and its variance is
+    # computed and saved.
+
+    # This is the coordmap we will use
+
+    coordmap = load_image(pjoin("fiac_example_data", "fiac_00", "wanatomical.nii")).coordmap
+
+    adjusted_var = sd**2 + random_var
+    adjusted_sd = np.sqrt(adjusted_var)
+
+    results = onesample.estimate_mean(Y, adjusted_sd) 
+    for n in ['effect', 'sd', 't']:
+        im = api.Image(results[n], coordmap.copy())
+        save_image(im, pjoin(odir, "%s.nii" % n))
