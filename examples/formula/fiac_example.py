@@ -1,7 +1,8 @@
 import pylab
 import numpy as np
 from StringIO import StringIO
-import os, csv
+from os.path import exists, join as pjoin
+from os import makedirs
 
 from matplotlib.mlab import csv2rec, rec2csv
 
@@ -33,7 +34,7 @@ def test_sanity():
         volume_times_rec = formula.make_recarray(volume_times, 't')
 
         path_dict = {'subj':subj, 'run':run}
-        if os.path.exists("fiac_example_data/fiac_%(subj)02d/block/initial_%(run)02d.csv" % path_dict):
+        if exists("fiac_example_data/fiac_%(subj)02d/block/initial_%(run)02d.csv" % path_dict):
             path_dict['design'] = 'block'
         else:
             path_dict['design'] = 'event'
@@ -77,7 +78,7 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
 
     """
 
-    if os.path.exists("%(root)s/fiac%(subj)d/subj%(subj)d_evt_fonc%(run)d.txt" % {'root':root, 'subj':subj, 'run':run}):
+    if exists("%(root)s/fiac%(subj)d/subj%(subj)d_evt_fonc%(run)d.txt" % {'root':root, 'subj':subj, 'run':run}):
         designtype = 'evt'
     else:
         designtype = 'bloc'
@@ -156,21 +157,21 @@ def fit(subj, run):
     # describe the experiment
 
     path_dict = {'subj':subj, 'run':run}
-    if os.path.exists("fiac_example_data/fiac_%(subj)02d/block/initial_%(run)02d.csv" % path_dict):
+    if exists("fiac_example_data/fiac_%(subj)02d/block/initial_%(run)02d.csv" % path_dict):
         path_dict['design'] = 'block'
     else:
         path_dict['design'] = 'event'
 
     # XXX -- fix the paths with this template
-    path_tpl = "fiac_example_data/fiac_%(subj)02d/%(design)s"
+    rootdir = "fiac_example_data/fiac_%(subj)02d/%(design)s" % path_dict
 
     # The following two lines read in the .csv files
     # and return recarrays, with fields
     # experiment: ['time', 'sentence', 'speaker']
     # initial: ['time', 'initial']
 
-    experiment = csv2rec("fiac_example_data/fiac_%(subj)02d/%(design)s/experiment_%(run)02d.csv" % path_dict)
-    initial = csv2rec("fiac_example_data/fiac_%(subj)02d/%(design)s/initial_%(run)02d.csv" % path_dict)
+    experiment = csv2rec(pjoin(rootdir, "experiment_%(run)02d.csv" % path_dict))
+    initial = csv2rec(pjoin(rootdir, "initial_%(run)02d.csv" % path_dict))
 
     # Create design matrices for the "initial" and "experiment" factors,
     # saving the default contrasts. 
@@ -188,9 +189,11 @@ def fit(subj, run):
     #    data.\' NeuroImage, 16:593-606.
 
     # The contrasts, cons_exper,
-    # is a dictionary with keys: ['constant_0', 'constant_1', 'speaker_0', speaker_1',
+    # is a dictionary with keys: ['constant_0', 'constant_1', 'speaker_0', 
+    # 'speaker_1',
     # 'sentence_0', 'sentence_1', 'sentence:speaker_0', 'sentence:speaker_1']
-    # representing the four default contrasts: constant, main effects + interactions,
+    # representing the four default contrasts: constant, main effects + 
+    # interactions,
     # each convolved with 2 HRFs in delay.spectral. Its values
     # are matrices with 8 columns.
 
@@ -240,7 +243,7 @@ def fit(subj, run):
     # It is transposed to have time as the first dimension,
     # i.e. fmri[t] gives the t-th volume.
 
-    fmri = np.array(load_image("fiac_example_data/fiac_%(subj)02d/%(design)s/swafunctional_%(run)02d.nii" % path_dict))
+    fmri = np.array(load_image(pjoin(rootdir, "swafunctional_%(run)02d.nii" % path_dict)))
     fmri = np.transpose(fmri, [3,0,1,2])
     anat = load_image("fiac_example_data/fiac_%(subj)02d/wanatomical.nii" % path_dict)
                    
@@ -321,41 +324,16 @@ def fit(subj, run):
 
     # Dump output to disk
 
-            
-    odir = "fiac_example_data/fiac_%(subj)02d/%(design)s/results_%(run)02d"  \
-        % path_dict
-    os.system('mkdir -p %s' % odir)
+    odir = pjoin(rootdir, "results_%(run)02d" % path_dict)
+    if not exists(odir): makedirs(odir)
 
     for n in fcons:
         im = api.Image(output[n], anat.coordmap.copy())
-        # XXX Is this a bug? 
-        # I thought we checked the shape of array and coordmap somewhere
-
-        # In an earlier version, I had used tranpose [3,2,1,0]
-        # instead of [3,0,1,2] above, resulting in Output shapes as 
-        # commented below, but the Images saved fine even with
-        # coordmap whose shape doesn't match the array's shape.
-        #
-        #         Output shape: (69, 95, 79)
-        #         Anatomy shape: (79, 95, 69)
-        #         Saved succesffuly. Are shapes equal? False
-        #         Output shape: (69, 95, 79)
-        #         Anatomy shape: (79, 95, 69)
-        #         Saved succesffuly. Are shapes equal? False
-        #         Output shape: (69, 95, 79)
-        #         Anatomy shape: (79, 95, 69)
-        #         Saved succesffuly. Are shapes equal? False
-
-
-        print "Output shape:", output[n].shape
-        print "Anatomy shape:", anat.shape
-
-        os.system('mkdir -p %s/%s' % (odir, n))
+        if not exists('%s/%s' % (odir, n)): makedirs('%s/%s' % (odir, n))
         save_image(im, "%s/%s/F.nii" % (odir, n))
-        print "Saved succesffuly. Are shapes equal?", anat.shape == output[n].shape
 
     for n in tcons:
-        os.system('mkdir -p %s/%s' % (odir, n))
+        if not exists('%s/%s' % (odir, n)): makedirs('%s/%s' % (odir, n))
         for v in ['t', 'sd', 'effect']:
             im = api.Image(output[n][v], anat.coordmap.copy())
             save_image(im, '%s/%s/%s.nii' % (odir, n, v))
