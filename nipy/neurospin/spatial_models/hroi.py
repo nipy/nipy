@@ -1,3 +1,13 @@
+"""
+This module contains the specification of 'heierarchical ROI' object,
+Which is used in spatial models of the library such as structural analysis
+
+The connection with other classes is not completely satisfactory at the moment:
+there should be some intermediate classes between 'Fields' and 'hroi'
+
+Author : Bertrand Thirion, 2009
+"""
+
 import numpy as np
 import nipy.neurospin.graph.graph as fg
 import nipy.neurospin.graph.field as ff
@@ -14,6 +24,11 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
     Instantiate an NROI structure from a given Field and a header
     
     INPUT
+    - Field : the Field structure on which the nested structure is extracted
+    - header : a referential-describing information
+    (in the  future this should become a standard nipy transformation)
+    - xyz: array of shape (Field.V,3) that represents grid coordinates
+    of the object
     - th is a threshold so that only values above th are considered
     by default, th = -infty (numpy)
     - smin is the minimum size (in number of nodes) of the blobs to 
@@ -353,7 +368,7 @@ def  _generate_blobs_(Field,refdim=0,th=-np.infty,smin = 0):
         return nroi
 
 
-class ROI_Hierarchy:
+class _ROI_Hierarchy_:
     """
     Class for the modelling of hierarchical ROIs
     main attributes:

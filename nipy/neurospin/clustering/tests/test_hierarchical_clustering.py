@@ -71,13 +71,18 @@ def ward_new_test(n=100,k=5, verbose=0):
         mp.figure()
         for i in range(u.max()+1):
             mp.plot(X[u==i,0],X[u==i,1],'o',color=(rand(),rand(),rand()))
-        mp.show()
+            mp.axis('tight')
+            mp.axis('off')
 
     u = t.split(k)
     if verbose:
         mp.figure()
+        for e in range(G.E):
+            mp.plot([X[G.edges[e,0],0],X[G.edges[e,1],0]],[X[G.edges[e,0],1],X[G.edges[e,1],1]],'k')
         for i in range(u.max()+1):
             mp.plot(X[u==i,0],X[u==i,1],'o',color=(rand(),rand(),rand()))
+        mp.axis('tight')
+        mp.axis('off')
         mp.show()
 
 def ward_test(n=100,k=5,verbose=0):

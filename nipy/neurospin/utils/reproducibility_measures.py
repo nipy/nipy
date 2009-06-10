@@ -217,6 +217,40 @@ def voxel_reproducibility(data,vardata,groupsize,xyz,method='rfx',niter=0,verbos
     nvox = data.shape[0]
     samples = splitgroup(nbsubj,groupsize)
     subgroups = len(samples)
+    rmap = map_reproducibility(data,vardata,groupsize,xyz,method,niter,verbose,kwargs)
+
+    import two_binomial_mixture as mtb
+    MB = mtb.TwoBinomialMixture()
+    MB.estimate_parameters(rmap,subgroups)
+    if verbose:
+        h = np.array([np.sum(rmap==i) for i in range(subgroups+1)])
+        MB.show(h)
+    return MB.kappa()
+
+def map_reproducibility(data,vardata,groupsize,xyz,method='rfx',niter=0,verbose=0,**kwargs):
+    """
+    return a reproducibility map for the given method
+
+    INPUT:
+    - data: array of shape (nvox,nsubj)
+    the input data from which everything is computed
+    - vardata: the corresponding variance information
+    (same size) 
+    - groupsize (int): the size of each subrgoup to be studied
+    - threshold (float): binarization threshold
+    (makes sense only if method==rfx)
+    - method='rfx' inference method under study
+    or 'crfx'
+    - niter=0: number of iterations. potentially used to store
+    intermediate data
+    - verbose=0 : verbosity mode
+    OUPUT:
+    - rmap: array of shape(nvox) : the reproducibility map
+    """
+    nbsubj = data.shape[1]
+    nvox = data.shape[0]
+    samples = splitgroup(nbsubj,groupsize)
+    subgroups = len(samples)
     rmap = np.zeros(nvox)
     for i in range(subgroups):
         x = data[:,samples[i]]
@@ -242,13 +276,7 @@ def voxel_reproducibility(data,vardata,groupsize,xyz,method='rfx',niter=0,verbos
         if method not in['rfx','crfx','cmfx','cffx']:
             raise ValueError, 'unknown method'
 
-    import two_binomial_mixture as mtb
-    MB = mtb.TwoBinomialMixture()
-    MB.estimate_parameters(rmap,subgroups)
-    if verbose:
-        h = np.array([np.sum(rmap==i) for i in range(subgroups+1)])
-        MB.show(h)
-    return MB.kappa()
+    return rmap
 
 
 def cluster_reproducibility(data,vardata,groupsize,xyz,coord,sigma, method='crfx', niter=0,verbose=0,**kwargs):

@@ -9,9 +9,9 @@ Author : Bertrand Thirion, 2009
 import numpy as np
 import scipy.stats as st
 import matplotlib.pylab as mp
-import fff2.graph.field as ff
-import fff2.utils.simul_2d_multisubject_fmri_dataset as simul
-import fff2.spatial_models.structural_bfls as sbf
+import nipy.neurospin.graph.field as ff
+import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.spatial_models.structural_bfls as sbf
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, pval=0.2):
     """ Function for performing bayesian structural analysis on a set of images.

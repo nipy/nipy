@@ -7,8 +7,8 @@ Author : Bertrand Thirion, 2009
 #autoindent
 
 import numpy as np
-import fff2.graph.field as ff
-import fff2.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.graph.field as ff
+import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 import matplotlib
 import matplotlib.pylab as mp
 

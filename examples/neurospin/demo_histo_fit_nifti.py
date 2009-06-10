@@ -11,7 +11,7 @@ Author : Bertrand Thirion, 2008-2009
 import numpy as np
 import scipy.stats as st
 import os.path as op
-import fff2.spatial_models.bayesian_structural_analysis as bsa
+import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nifti
 
 nbru = range(1,13)
@@ -61,7 +61,7 @@ Bfm = np.reshape(Bfm,(np.size(Bfm),1))
 Bfq = bsa._GMM_priors_(np.squeeze(Beta),Bfm,theta,alpha,prior_strength,verbose=2)
 
 # fit the null mode of Beta with the robust method
-import fff2.utils.emp_null as en
+import nipy.neurospin.utils.emp_null as en
 efdr = en.ENN(Beta)
 efdr.learn()
 #Bfr = efdr.fdr(Bfm)

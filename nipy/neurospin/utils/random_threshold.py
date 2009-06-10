@@ -166,6 +166,7 @@ def randthresh_connex(Y,K,XYZ,p=np.inf,stop=False,verbose=False,varwind=True,kno
         iso = isolated(XYZ[:, detect])
         detect[iso] = -1
         detect = detect[detect != -1]
+        D["C"] = C
         D["thresh"] = thresh
         D["detect"] = detect
         if knownull == False:

@@ -256,12 +256,12 @@ def make_crmap(AF,tal,verbose=0):
         gscore = np.minimum(gscore,lscore)
     return crmap
 
-def infer_LR(BF,thq=0.95,ths=0,verbose=0):
+def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
     INPUT:
-    - BF is the list of NROIs (Nested ROIs).
+    - bf is the list of NROIs (Nested ROIs).
     it is assumd that each list corresponds to one subject
     each NROI is assumed to have the roi_features
     'position', 'label' and 'posterior_proba' defines
@@ -271,22 +271,23 @@ def infer_LR(BF,thq=0.95,ths=0,verbose=0):
     in order to be valid
     OUTPUT:
     - LR : a LR instance, describing a cross-subject set of ROIs
+    if inference yields a null results, LR is set to None
     - newlabel :  a relabelling of the individual ROIs, similar to u,
     which discards
     labels that do not fulfill the condition (c)
     """
     # prepare various variables to ease information manipulation
-    nbsubj = np.size(BF)
-    subj = np.concatenate([s*np.ones(BF[s].k, np.int)
-                           for s in range(nbsubj) if BF[s]!=None])
+    nbsubj = np.size(bf)
+    subj = np.concatenate([s*np.ones(bf[s].k, np.int)
+                           for s in range(nbsubj) if bf[s]!=None])
     nrois = np.size(subj)
-    u = np.concatenate([BF[s].get_roi_feature('label')
-                        for s in range(nbsubj)if BF[s]!=None])
+    u = np.concatenate([bf[s].get_roi_feature('label')
+                        for s in range(nbsubj)if bf[s]!=None])
     u = np.squeeze(u)
-    conf =  np.concatenate([BF[s].get_roi_feature('prior_proba')
-                            for s in range(nbsubj) if BF[s]!=None])
-    intrasubj = np.concatenate([np.arange(BF[s].k)
-                                for s in range(nbsubj) if BF[s]!=None])
+    conf =  np.concatenate([bf[s].get_roi_feature('prior_proba')
+                            for s in range(nbsubj) if bf[s]!=None])
+    intrasubj = np.concatenate([np.arange(bf[s].k)
+                                for s in range(nbsubj) if bf[s]!=None])
     
     if np.size(u)==0:  return None,None
 
@@ -323,7 +324,7 @@ def infer_LR(BF,thq=0.95,ths=0,verbose=0):
             for a in range(sj):
                 sja = subj[j[a]]
                 isja = intrasubj[j[a]]
-                coord[a,:] = BF[sja].get_roi_feature('position')[isja]
+                coord[a,:] = bf[sja].get_roi_feature('position')[isja]
 
             coords.append(coord)
             subjs.append(subj[j])   
@@ -334,11 +335,11 @@ def infer_LR(BF,thq=0.95,ths=0,verbose=0):
        
     # relabel the ROIs
     for s in range(nbsubj):
-        if BF[s]!=None:
-            us = BF[s].get_roi_feature('label')
+        if bf[s]!=None:
+            us = bf[s].get_roi_feature('label')
             us[us>-1] = maplabel[us[us>-1]]
-            BF[s].set_roi_feature('label',us)
-            header = BF[s].header
+            bf[s].set_roi_feature('label',us)
+            header = bf[s].header
 
     # create the landmark regions structure
     k = np.sum(valid)
@@ -372,14 +373,14 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
     OUTPUT:
     - crmap: resulting group map
     - AF: list of inter-subject related ROIs
-    - BF: List of individual ROIs
+    - bf: List of individual ROIs
     - u: labelling of the individual ROIs
     - p: likelihood of the data under H1 over some sampling grid
     NOTE:
     This is historically the first verion, but probably not the  most opimal
     It should not be changed for historical reason
     """
-    BF = []
+    bf = []
     gfc = []
     gf0 = []
     sub = []
@@ -393,7 +394,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
         nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,th=theta,smin=smin)
-        BF.append(nroi)
+        bf.append(nroi)
         
         if nroi!=None:
             sub.append(s*np.ones(nroi.k))
@@ -417,7 +418,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
     AF = []
     p = np.zeros(nvox)
     if len(sub)<1:
-        return crmap,AF,BF,u,p
+        return crmap,AF,bf,u,p
 
     # inter-subject analysis
     # use the DPMM (core part)
@@ -446,7 +447,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
 
     # remove non-significant regions
     for s in range(nbsubj):
-        bfs = BF[s]
+        bfs = bf[s]
         if bfs!=None:
             valids = valid[sub==s]
             valids = bfs.propagate_upward_and(valids)
@@ -458,10 +459,10 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
             bfs.discrete_to_roi_features('position','cumulated_average')
 
     # compute probabilitsic correspondences across subjects
-    gc = hierarchical_asso(BF,np.sqrt(2)*dmax)
+    gc = hierarchical_asso(bf,np.sqrt(2)*dmax)
 
     if gc == []:
-        return crmap,AF,BF,p
+        return crmap,AF,bf,p
 
     # make hard clusters
     # choose one solution...
@@ -470,15 +471,15 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
 
     q = 0
     for s in range(nbsubj):
-        if BF[s]!=None:
-            BF[s].set_roi_feature('label',u[q:q+BF[s].k])
-            q += BF[s].k
+        if bf[s]!=None:
+            bf[s].set_roi_feature('label',u[q:q+bf[s].k])
+            q += bf[s].k
     
-    LR,mlabel = sbf.build_LR(BF,ths)
+    LR,mlabel = sbf.build_LR(bf,ths)
     if LR!=None:
         crmap = LR.map_label(tal,pval=0.95,dmax=dmax)
     
-    return crmap,LR,BF,p
+    return crmap,LR,bf,p
 
 #------------------------------------------------------------------
 # --------------- dev part ----------------------------------------
@@ -503,7 +504,7 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
     OUTPUT:
     - crmap: resulting group map
     - AF: list of inter-subject related ROIs
-    - BF: List of individual ROIs
+    - bf: List of individual ROIs
     - u: labelling of the individual ROIs
     - p: likelihood of the data under H1 over some sampling grid
     NOTE:
@@ -511,7 +512,7 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
     the intra subject Gamma-Gaussian MM has been replaces by a Gaussian MM
     which is probably mroe robust
     """
-    BF = []
+    bf = []
     gfc = []
     gf0 = []
     sub = []
@@ -526,7 +527,7 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
         nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,th=theta,smin=smin)
-        BF.append(nroi)
+        bf.append(nroi)
         
         if nroi!=None:
             sub.append(s*np.ones(nroi.k))
@@ -552,7 +553,7 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
     AF = []
     p = np.zeros(nvox)
     if len(sub)<1:
-        return crmap,AF,BF,u,p
+        return crmap,AF,bf,u,p
 
     # inter-subject analysis
     # use the DPMM (core part)
@@ -579,7 +580,7 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
 
     # remove non-significant regions
     for s in range(nbsubj):
-        bfs = BF[s]
+        bfs = bf[s]
         if bfs!=None:
             valids = valid[sub==s]
             valids = bfs.propagate_upward_and(valids)
@@ -595,11 +596,11 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
             #bfs.set_roi_feature(bfsc,'position')
 
     # compute a model of between-regions associations
-    gc = hierarchical_asso(BF,np.sqrt(2)*dmax)
+    gc = hierarchical_asso(bf,np.sqrt(2)*dmax)
 
     # Infer the group-level clusters
     if gc == []:
-        return crmap,AF,BF,p
+        return crmap,AF,bf,p
 
     # either replicator dynamics or agglomerative clustering
     #u = sbf.segment_graph_rd(gc,1)
@@ -607,15 +608,15 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
 
     q = 0
     for s in range(nbsubj):
-        if BF[s]!=None:
-            BF[s].set_roi_feature('label',u[q:q+BF[s].k])
-            q += BF[s].k
+        if bf[s]!=None:
+            bf[s].set_roi_feature('label',u[q:q+bf[s].k])
+            q += bf[s].k
     
-    LR,mlabel = sbf.build_LR(BF,ths)
+    LR,mlabel = sbf.build_LR(bf,ths)
     if LR!=None:
         crmap = LR.map_label(tal,pval = 0.95,dmax=dmax)
 
-    return crmap,LR,BF,p
+    return crmap,LR,bf,p
 
 
 def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
@@ -637,9 +638,10 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     - verbose=0: verbosity mode
     OUTPUT:
     - crmap: resulting group map
-    - AF: list of inter-subject related ROIs
-    - BF: List of individual ROIs
-    - u: labelling of the individual ROIs
+    - LR: a instance of sbf.Landmrak_regions that describes the ROIs found
+    in inter-subject inference
+    If no such thing can be defined LR is set to None
+    - bf: List of individual ROIs
     - p: likelihood of the data under H1 over some sampling grid
     NOTE:
     In that case, the DPMM is used to derive a spatial density of
@@ -647,7 +649,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     region which is a posteriori significant enough is assigned to the
     nearest mode of theis distribution
     """
-    BF = []
+    bf = []
     gfc = []
     gf0 = []
     sub = []
@@ -662,7 +664,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
         Fbeta.set_field(beta)
         nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,
                                     th=theta,smin=smin)
-        BF.append(nroi)
+        bf.append(nroi)
         
         if nroi!=None:
             bfm = nroi.discrete_to_roi_features('activation','average')
@@ -694,10 +696,10 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
 
     crmap = -np.ones(nvox, np.int)
     u = []
-    AF = []
+    LR = None
     p = np.zeros(nvox)
     if len(sub)<1:
-        return crmap,AF,BF,u,p
+        return crmap,LR,bf,p
 
     # prepare the DPMM
     sub = np.concatenate(sub).astype(np.int) 
@@ -709,7 +711,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     spatial_coords = tal
     burnin=100
     nis=100
-    nii=1000
+    nii=100
     
     p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
                   sub,burnin,spatial_coords,nis, nii)
@@ -732,7 +734,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
 
     # append some information to the hroi in each subject
     for s in range(nbsubj):
-        bfs = BF[s]
+        bfs = bf[s]
         if bfs!=None:
             leaves = bfs.isleaf()
             us = -np.ones(bfs.k).astype(np.int)
@@ -756,7 +758,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one 
-    LR,nl = infer_LR(BF,thq,ths,verbose=verbose)
+    LR,nl = infer_LR(bf,thq,ths,verbose=verbose)
 
     # make a group-level map of the landmark position
     crmap = -np.ones(np.shape(label))
@@ -766,7 +768,9 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
         crmap[label>-1]=aux[label[label>-1]]
  
             
-    return crmap,LR,BF,p
+    return crmap,LR,bf,p
+
+
 
 # --------------------------------------------------------------------
 # ------- Deprecated Stuff -------------------------------------------
