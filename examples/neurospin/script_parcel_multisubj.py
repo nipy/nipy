@@ -44,7 +44,6 @@ fpa,ldata,Talairach = parcel_input(Mask_Images,nbeta,learn_images,ths,fdim)
 fpa.k = nbparcel
 
 # run the algorithm
-
 fpa = hparcel(fpa,ldata,Talairach)
 #fpa,prfx0 = hparcel(fpa,ldata,Talairach,nbperm=200,niter=5,verbose)
 
