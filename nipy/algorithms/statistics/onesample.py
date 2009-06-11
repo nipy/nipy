@@ -9,32 +9,24 @@ import numpy as np
 from nipy.fixes.scipy.stats.models.utils import recipr
 
 def estimate_mean(Y, sd):
-    """
-    
-    Estimate the mean of a sample given information about
+    """ Estimate the mean of a sample given information about
     the standard deviations of each entry. 
    
     Parameters
     ----------
-
-    Y : np.ndarray
-        Data for which mean is to be estimated.
-        Should have shape[0] == number of subjects.
-
-    sd : np.ndarray
-        Standard deviation (subject specific) 
-        of the data for which the mean is to be estimated.
-        Should have shape[0] == number of subjects.
+    Y : ndarray
+       Data for which mean is to be estimated.  Should have shape[0] ==
+       number of subjects.
+    sd : ndarray
+       Standard deviation (subject specific) of the data for which the
+       mean is to be estimated.  Should have shape[0] == number of
+       subjects.
 
     Returns
     -------
-
     value : dict
-
-        This dictionary has keys ['effect', 'scale', 't', 'resid', 'sd']
-
+       This dictionary has keys ['effect', 'scale', 't', 'resid', 'sd']
     """
-
     nsubject = Y.shape[0]
     squeeze = False
     if Y.ndim == 1:
@@ -49,7 +41,6 @@ def estimate_mean(Y, sd):
     W.shape = Y.shape
 
     # Compute the mean using the optimal weights
-
     effect = (Y * W).sum(0) / W.sum(0)
     resid = (Y - _stretch(effect)) * np.sqrt(W)
 
@@ -81,33 +72,25 @@ def estimate_varatio(Y, sd, df=None, niter=10):
     Y : np.ndarray
         Data for which mean is to be estimated.
         Should have shape[0] == number of subjects.
-
-    sd : np.ndarray
+    sd : array
         Standard deviation (subject specific) 
         of the data for which the mean is to be estimated.
         Should have shape[0] == number of subjects.
-
-    df : [int]
+    df : int or None, optional
         If supplied, these are used as weights when
         deriving the fixed effects variance. Should have
         length == number of subjects.
-
-    niter : int
-        Number of EM iterations to perform.
+    niter : int, optional
+        Number of EM iterations to perform (default 10)
     
     Returns
     -------
-
     value : dict
-
-        This dictionary has keys ['fixed', 'ratio', 'random'], where
-        'fixed' is the fixed effects variance implied by the
-        input parameter 'sd'; 'random' is the random effects variance
-        and 'ratio' is the estimated ratio of variances: 
-        'random'/'fixed'.
-
+       This dictionary has keys ['fixed', 'ratio', 'random'], where
+       'fixed' is the fixed effects variance implied by the input
+       parameter 'sd'; 'random' is the random effects variance and
+       'ratio' is the estimated ratio of variances: 'random'/'fixed'.
     """
-
     nsubject = Y.shape[0]
     squeeze = False
     if Y.ndim == 1:
