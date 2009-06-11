@@ -14,6 +14,7 @@ import sympy
 from nipy.modalities.fmri import formula as F
 from nipy.modalities.fmri import aliased
 
+
 def test_contrast1():
 
     x = F.Term('x')
@@ -44,6 +45,7 @@ def test_contrast1():
     yield nptest.assert_almost_equal, C['sum'], np.array([1,1,0])
     yield nptest.assert_almost_equal, C['both'], np.array([[1,-1,0],[1,1,0]])
 
+
 def test_random_effects():
     subj = F.make_recarray([2,2,2,3,3], 's')
     subj_factor = F.Factor('s', [2,3])
@@ -67,6 +69,7 @@ def test_random_effects():
                      [0,0,0,b,b],
                      [0,0,0,b,b]])
     yield nose.tools.assert_true, np.alltrue(t)
+
 
 def test_design_expression():
     t1 = F.Term("x")
@@ -121,6 +124,7 @@ def test_design():
     yield nptest.assert_almost_equal, ff.design(n)['f_b*x'], n['x']*[0,1,0]
     yield nptest.assert_almost_equal, ff.design(n)['1'], 1
 
+
 def test_alias2():
     f = F.aliased_function('f', lambda x: 2*x)
     g = F.aliased_function('f', lambda x: np.sqrt(x))
@@ -144,11 +148,11 @@ def test_alias():
     yield nptest.assert_almost_equal, ff.design(n)['f(x)'], n['x']*2
     yield nptest.assert_almost_equal, ff.design(n)['g(x)**2'], n['x']
 
+
 def test_nonlin1():
-    """
-    Fit an exponential curve, with the exponent stratified by a factor with a common intercept
-    and multiplicative factor in front of the exponential
-    """
+    # Fit an exponential curve, with the exponent stratified by a factor
+    # with a common intercept and multiplicative factor in front of the
+    # exponential
     x = F.Term('x')
     fac = F.Factor('f', 'ab')
     f = F.Formula([sympy.exp(fac.stratify(x).mean)]) + F.I
@@ -171,6 +175,7 @@ def test_nonlin1():
     A = f.design(n, p)
     print A, A.dtype
 
+
 def test_Rintercept():
 
     x = F.Term('x')
@@ -191,6 +196,7 @@ def test_return_float():
 
     dtype = f.design(xx, return_float=True).dtype
     yield nose.tools.assert_equal, dtype, np.float
+
 
 def test_natural_spline():
 

@@ -3,7 +3,7 @@ import sympy as sym
 from string import join
 
 from utils import events, linear_interp
-from formula import Term, Formula
+from formula import Term, Formula, Design
 import hrf
 from nipy.utils.odict import OrderedDict
 
@@ -292,7 +292,7 @@ class LinearModel(object):
              self._add_baseline()
              
         tval = np.asarray(timestamps, dtype=np.float).view(np.dtype([('t', np.float)]))
-        D = self.formula.design(return_float=True)
+        D = Design(self.formula, return_float=True)
         X = D(tval)
         nreg = X.shape[1]
         
