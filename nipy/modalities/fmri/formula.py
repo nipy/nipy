@@ -5,8 +5,8 @@ from scipy.linalg import svdvals
 
 from aliased import aliased_function, _add_aliases_to_namespace, vectorize
 
-class Term(sympy.Symbol):
 
+class Term(sympy.Symbol):
     """
     A Term is a term in a linear regression model. Terms can be added
     to other sympy expressions with the single convention that a 

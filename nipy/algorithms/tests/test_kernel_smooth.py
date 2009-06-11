@@ -34,9 +34,7 @@ class test_Kernel(TestCase):
 
 
 def test_sigma_fwhm():
-    """
-    ensure that fwhm2sigma and sigma2fwhm are inverses of each other        
-    """
+    # ensure that fwhm2sigma and sigma2fwhm are inverses of each other        
     fwhm = np.arange(1.0, 5.0, 0.1)
     sigma = np.arange(1.0, 5.0, 0.1)
     yield assert_true, np.allclose(sigma2fwhm(fwhm2sigma(fwhm)), fwhm)
@@ -45,12 +43,8 @@ def test_sigma_fwhm():
 @dec.knownfailure
 @dec.slow
 def test_kernel():
-    """
-    Verify the the convolution with a delta function
-    gives the correct answer.
-
-    """
-
+    # Verify the the convolution with a delta function
+    # gives the correct answer.
     tol = 0.9999
     sdtol = 1.0e-8
     for x in range(6):

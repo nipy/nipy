@@ -6,13 +6,12 @@ import copy
 
 import numpy as np
 from numpy.linalg import pinv
-from neuroimaging.fixes.scipy.stats.models import utils
+from nipy.fixes.scipy.stats.models import utils
 
-class ContrastResults:
-    """
-    Results from looking at a particular contrast of coefficients in
-    a parametric model. The class does nothing, it is a container
-    for the results from T and F contrasts.
+class ContrastResults(object):
+    """ Results from looking at a particular contrast of coefficients in
+    a parametric model. The class does nothing, it is a container for
+    the results from T and F contrasts.
     """
 
     def __init__(self, t=None, F=None, sd=None, effect=None, df_denom=None,
@@ -42,13 +41,12 @@ class ContrastResults:
                    (`self.effect`, `self.sd`, `self.t`, self.df_denom)
 
 class Contrast(object):
-    """
-    This class is used to construct contrast matrices in regression models.
-    They are specified by a (term, formula) pair.
+    """ Class to construct contrast matrices in regression models
 
-    The term, T,  is a linear combination of columns of the design
-    matrix D=formula(). The matrix attribute is 
-    a contrast matrix C so that
+    Models are specified by a (term, formula) pair.
+
+    The term, T, is a linear combination of columns of the design matrix
+    D=formula(). The matrix attribute is a contrast matrix C so that
 
     colspan(dot(D, C)) = colspan(dot(D, dot(pinv(D), T)))
 
@@ -62,10 +60,22 @@ class Contrast(object):
 
     In a regression model, the contrast tests that E(dot(Tnew, Y)) = 0
     for each column of Tnew.
-
     """
 
     def __init__(self, term, formula, name=''):
+        """ Create contrast instance
+
+        Parameters
+        ----------
+        term : ``Term``
+        formula : ``Formula``
+        name : string, optional
+
+        Notes
+        -----
+        The formula object should have attributes ``namespace`` and
+        ``design``
+        """
         self.term = term
         self.formula = formula
         if name is '':
@@ -74,8 +84,7 @@ class Contrast(object):
             self.name = name
 
     def __str__(self):
-        return '<contrast:%s>' % \
-               `{'term':str(self.term), 'formula':str(self.formula)}`
+        return '<contrast: term: %s; formula: %s>' % (self.term, self.formula)
 
     def _compute_matrix(self, *args, **kw):
         """
@@ -85,10 +94,9 @@ class Contrast(object):
 
         where pinv(D) is the generalized inverse of D=self.D=self.formula().
 
-        If the design, self.D is already set,
-        then evaldesign can be set to False.
+        If the design, self.D is already set, then evaldesign can be set
+        to False.
         """
-
         t = copy.copy(self.term)
         t.namespace = self.formula.namespace
         T = np.transpose(np.array(t(*args, **kw)))
@@ -99,49 +107,49 @@ class Contrast(object):
         self.T = utils.clean0(T)
 
         self.D = self.formula.design(*args, **kw)
-
-        self._matrix = contrastfromcols(self.T, self.D)
+        # This line below changed from contrastfromcols
+        self._matrix = contrast_from_cols_or_rows(self.T, self.D)
         try:
             self.rank = self.matrix.shape[1]
-        except:
+        except IndexError:
             self.rank = 1
 
-    def _get_matrix(self):
-        """
+    @property
+    def matrix(self):
+        """ Return matrix
+        
         This will fail if the formula needs arguments to construct
         the design.
         """
         if not hasattr(self, "_matrix"):
-            self.compute_matrix()
+            self._compute_matrix()
         return self._matrix
-    matrix = property(_get_matrix)
+
 
 def contrast_from_cols_or_rows(L, D, pseudo=None):
-    """
-    Construct a contrast matrix from a design matrix D
+    """ Construct a contrast matrix from a design matrix D
+    
     (possibly with its pseudo inverse already computed)
     and a matrix L that either specifies something in
     the column space of D or the row space of D.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
+    L : array
+       Matrix used to try and construct a contrast.
+    D : array
+       Design matrix used to create the contrast.
+    pseudo : array or None, optional
+       pre-computed pseudoinverse of `D` (design matrix)
 
-    L : ndarray
-         Matrix used to try and construct a contrast.
+    Returns
+    -------
+    C : array
+       Matrix with C.shape[1] == D.shape[1] representing an estimable
+       contrast.
 
-    D : ndarray
-         Design matrix used to create the contrast.
-
-    Outputs:
-    --------
-
-    C : ndarray
-         Matrix with C.shape[1] == D.shape[1] representing
-         an estimable contrast.
-
-    Notes:
-    ------
-
+    Notes
+    -----
     From an n x p design matrix D and a matrix L, tries
     to determine a p x q contrast matrix C which
     determines a contrast of full rank, i.e. the
@@ -166,7 +174,6 @@ def contrast_from_cols_or_rows(L, D, pseudo=None):
     the column space of L (after projection onto the column space of D).
 
     """
-
     L = np.asarray(L)
     D = np.asarray(D)
     
