@@ -1,3 +1,10 @@
+nipy (0.1.2+1741-2) unstable; urgency=low
+
+  * Adjusted long descriptions to follow the guidelines and to become
+    complete sentences with redundant prefixes (closes: #532860)
+
+ -- Yaroslav Halchenko <debian@onerussian.com>  Fri, 12 Jun 2009 16:56:54 -0400
+
 nipy (0.1.2+1741-1) unstable; urgency=low
 
   * Initial release (Closes: #522353)

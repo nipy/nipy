@@ -19,9 +19,10 @@ Suggests: python-mvpa
 Provides: ${python:Provides}
 XB-Python-Version: ${python:Versions}
 Description: Analysis of structural and functional neuroimaging data
- A Python-based framework for the analysis of structural and functional
- neuroimaging data. It currently has a full system for general linear
- modeling of functional magnetic resonance imaging (fMRI).
+ NiPy is a Python-based framework for the analysis of structural and
+ functional neuroimaging data. It currently has a full system for
+ general linear modeling of functional magnetic resonance imaging
+ (fMRI).
 
 
 Package: python-nipy-lib
@@ -30,9 +31,10 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
 Provides: ${python:Provides}
 XB-Python-Version: ${python:Versions}
 Description: Analysis of structural and functional neuroimaging data
- A Python-based framework for the analysis of structural and functional
- neuroimaging data. It currently has a full system for general linear
- modeling of functional magnetic resonance imaging (fMRI).
+ NiPy is a Python-based framework for the analysis of structural and
+ functional neuroimaging data. It currently has a full system for
+ general linear modeling of functional magnetic resonance imaging
+ (fMRI).
  .
  This package provides architecture-dependent builds of the libraries.
 
@@ -44,9 +46,10 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-nipy-lib 
 Provides: ${python:Provides}
 XB-Python-Version: ${python:Versions}
 Description: Analysis of structural and functional neuroimaging data
- A Python-based framework for the analysis of structural and functional
- neuroimaging data. It currently has a full system for general linear
- modeling of functional magnetic resonance imaging (fMRI).
+ NiPy is a Python-based framework for the analysis of structural and
+ functional neuroimaging data. It currently has a full system for
+ general linear modeling of functional magnetic resonance imaging
+ (fMRI).
  .
  This package provides debugging symbols for architecture-dependent
  builds of the libraries.
@@ -58,7 +61,8 @@ Section: doc
 Depends: ${misc:Depends}, libjs-jquery
 Recommends: python-nipy
 Description: documention and examples for NiPy
- NiPy documentation in various formats (HTML, TXT, PDF) including
+ This package contains NiPy documentation in various formats (HTML,
+ TXT, PDF) including
   * User manual
   * Developer guidelines
   * API documentation
