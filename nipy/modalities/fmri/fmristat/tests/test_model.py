@@ -46,7 +46,7 @@ class test_fMRIstat_model(TestCase):
 
     # FIXME: This does many things, but it does not test any values
     # with asserts.
-    @dec.knownfailure
+    @dec.skipif(True)
     def testrun(self):
         funcim = load_image(funcfile)
         fmriims = FmriImageList.from_image(funcim, volume_start_times=2.)
