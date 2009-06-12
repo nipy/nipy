@@ -431,10 +431,13 @@ class Formula(object):
             raise ValueError, 'shape mismatch'
 
         # Make sure that each array has the correct shape
-        # columns of what should be 1s will
+        # The columns in m will be usually just
+        # be the intercept column, which evaluates to have shape == ().
+        # This makes sure that it has the correct number of rows
         
         for i in m:
-            varr[i].shape = (preterm_recarray.shape[0],)
+            varr[i].shape = ()
+            varr[i] = np.multiply.outer(varr[i], np.ones(preterm_recarray.shape[0]))
 
         v = np.array(varr).T
         if return_float or contrasts:
