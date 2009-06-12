@@ -2,8 +2,10 @@
 Plot of the canonical Glover HRF
 """
 
-from neuroimaging.modalities.fmri import hrf
 import numpy as np
+
+from nipy.modalities.fmri import hrf
+
 import pylab
 
 

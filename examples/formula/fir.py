@@ -1,17 +1,15 @@
-import pylab
-
 import numpy as np
 import sympy
-from neuroimaging.modalities.fmri import formula, utils, hrf
+from nipy.modalities.fmri import formula, utils, hrf
+
+import pylab
 
 t = formula.Term('t')
 
 def linBspline(t, knots):
+    """ Create a linear B spline that is zero outside [knots[0],
+    knots[-1]] (knots is assumed to be sorted).
     """
-    Create a linear B spline that is zero 
-    outside [knots[0], knots[-1]] (knots is assumed to be sorted).
-    """
-
     fns = []; symbols=[]
     knots = np.array(knots)
     for i in range(knots.shape[0]-2):
@@ -45,7 +43,6 @@ for k, v in bsp.aliases.items():
 d = formula.Design(f, return_float=True)
 X = d(tval)
 
-import pylab
 pylab.plot(X[:,0])
 pylab.plot(X[:,1])
 pylab.plot(X[:,2])

@@ -2,10 +2,13 @@
 This example uses a different HRF for different event types
 """
 
-import pylab
 import numpy as np
+
+import pylab
+
 from sympy import lambdify
-from neuroimaging.modalities.fmri import hrf
+
+from nipy.modalities.fmri import hrf
 
 glover = hrf.glover_sympy
 afni = hrf.afni_sympy

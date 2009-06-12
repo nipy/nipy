@@ -1,7 +1,8 @@
-from neuroimaging.modalities.fmri.utils import events, Symbol, Vectorize
-from neuroimaging.modalities.fmri.hrf import glover_sympy
 import numpy as np
 import pylab
+
+from nipy.modalities.fmri.utils import events, Symbol, Vectorize
+from nipy.modalities.fmri.hrf import glover_sympy
 
 a = Symbol('a')
 b = np.linspace(0,50,6)
