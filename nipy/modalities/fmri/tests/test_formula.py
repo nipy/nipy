@@ -2,21 +2,17 @@
 Test functions for models.formula
 """
 
-import string
-
 import numpy as np
-import numpy.random as R
-import numpy.linalg as L
-import numpy.testing as nptest
-import nose.tools
 import sympy
 
 from nipy.modalities.fmri import formula as F
 from nipy.modalities.fmri import aliased
 
+from nipy.testing import assert_almost_equal, assert_true, \
+    assert_equal
+
 
 def test_contrast1():
-
     x = F.Term('x')
     y = F.Term('y')
     z = F.Term('z')
@@ -28,10 +24,10 @@ def test_contrast1():
                                     'diff':F.Formula([x-y]),
                                     'sum':F.Formula([x+y]),
                                     'both':F.Formula([x-y,x+y])})
-    yield nptest.assert_almost_equal, C['x'], np.array([1,0])
-    yield nptest.assert_almost_equal, C['diff'], np.array([1,-1])
-    yield nptest.assert_almost_equal, C['sum'], np.array([1,1])
-    yield nptest.assert_almost_equal, C['both'], np.array([[1,-1],[1,1]])
+    yield assert_almost_equal, C['x'], np.array([1,0])
+    yield assert_almost_equal, C['diff'], np.array([1,-1])
+    yield assert_almost_equal, C['sum'], np.array([1,1])
+    yield assert_almost_equal, C['both'], np.array([[1,-1],[1,1]])
 
     f = F.Formula([x,y,z])
     arr = F.make_recarray([[3,5,4],[8,21,-1],[4,6,-2]], 'xyz')
@@ -40,10 +36,10 @@ def test_contrast1():
                                     'diff':F.Formula([x-y]),
                                     'sum':F.Formula([x+y]),
                                     'both':F.Formula([x-y,x+y])})
-    yield nptest.assert_almost_equal, C['x'], np.array([1,0,0])
-    yield nptest.assert_almost_equal, C['diff'], np.array([1,-1,0])
-    yield nptest.assert_almost_equal, C['sum'], np.array([1,1,0])
-    yield nptest.assert_almost_equal, C['both'], np.array([[1,-1,0],[1,1,0]])
+    yield assert_almost_equal, C['x'], np.array([1,0,0])
+    yield assert_almost_equal, C['diff'], np.array([1,-1,0])
+    yield assert_almost_equal, C['sum'], np.array([1,1,0])
+    yield assert_almost_equal, C['both'], np.array([[1,-1,0],[1,1,0]])
 
 
 def test_random_effects():
@@ -52,7 +48,7 @@ def test_random_effects():
 
     c = F.RandomEffects(subj_factor.terms, sigma=np.array([[4,1],[1,6]]))
     C = c.cov(subj)
-    yield nptest.assert_almost_equal, C, [[4,4,4,1,1],
+    yield assert_almost_equal, C, [[4,4,4,1,1],
                                           [4,4,4,1,1],
                                           [4,4,4,1,1],
                                           [1,1,1,6,6],
@@ -68,14 +64,14 @@ def test_random_effects():
                      [a,a,a,0,0],
                      [0,0,0,b,b],
                      [0,0,0,b,b]])
-    yield nose.tools.assert_true, np.alltrue(t)
+    yield assert_true, np.alltrue(t)
 
 
 def test_design_expression():
     t1 = F.Term("x")
     t2 = F.Term('y')
     f = t1.formula + t2.formula
-    nose.tools.assert_true(str(f.design_expr) in ['[x, y]', '[y, x]'])
+    assert_true(str(f.design_expr) in ['[x, y]', '[y, x]'])
 
 ###########################################################
 """
@@ -85,44 +81,40 @@ Tests for formula
 
 
 def test_formula_property():
-    """
-    Check that you can create a Formula with one term
-    """
+    # Check that you can create a Formula with one term
     t1 = F.Term("x")
     f = t1.formula
-    nose.tools.assert_equal(f.design_expr, [t1])
+    assert_equal(f.design_expr, [t1])
 
 
 def test_design():
-    """
-    Check that you get the design matrix we expect
-    """
+    # Check that you get the design matrix we expect
     t1 = F.Term("x")
     t2 = F.Term('y')
 
     n = F.make_recarray([2,4,5], 'x')
-    yield nptest.assert_almost_equal, t1.formula.design(n)['x'], n['x']
+    yield assert_almost_equal, t1.formula.design(n)['x'], n['x']
 
     f = t1.formula + t2.formula
     n = F.make_recarray([(2,3),(4,5),(5,6)], 'xy')
 
-    yield nptest.assert_almost_equal, f.design(n)['x'], n['x']
-    yield nptest.assert_almost_equal, f.design(n)['y'], n['y']
+    yield assert_almost_equal, f.design(n)['x'], n['x']
+    yield assert_almost_equal, f.design(n)['y'], n['y']
 
     f = t1.formula + t2.formula + F.I + t1.formula * t2.formula
-    yield nptest.assert_almost_equal, f.design(n)['x'], n['x']
-    yield nptest.assert_almost_equal, f.design(n)['y'], n['y']
-    yield nptest.assert_almost_equal, f.design(n)['1'], 1
-    yield nptest.assert_almost_equal, f.design(n)['x*y'], n['x']*n['y']
+    yield assert_almost_equal, f.design(n)['x'], n['x']
+    yield assert_almost_equal, f.design(n)['y'], n['y']
+    yield assert_almost_equal, f.design(n)['1'], 1
+    yield assert_almost_equal, f.design(n)['x*y'], n['x']*n['y']
 
     n = np.array([(2,3,'a'),(4,5,'b'),(5,6,'a')], np.dtype([('x', np.float),
                                                             ('y', np.float),
                                                             ('f', 'S1')]))
     f = F.Factor('f', ['a','b'])
     ff = t1.formula * f + F.I
-    yield nptest.assert_almost_equal, ff.design(n)['f_a*x'], n['x']*[1,0,1]
-    yield nptest.assert_almost_equal, ff.design(n)['f_b*x'], n['x']*[0,1,0]
-    yield nptest.assert_almost_equal, ff.design(n)['1'], 1
+    yield assert_almost_equal, ff.design(n)['f_a*x'], n['x']*[1,0,1]
+    yield assert_almost_equal, ff.design(n)['f_b*x'], n['x']*[0,1,0]
+    yield assert_almost_equal, ff.design(n)['1'], 1
 
 
 def test_alias2():
@@ -133,9 +125,9 @@ def test_alias2():
     l1 = aliased.lambdify(x, f(x))
     l2 = aliased.lambdify(x, g(x))
 
-    yield nose.tools.assert_equal, str(f(x)), str(g(x))
-    yield nose.tools.assert_equal, l1(3), 6
-    yield nose.tools.assert_equal, l2(3), np.sqrt(3)
+    yield assert_equal, str(f(x)), str(g(x))
+    yield assert_equal, l1(3), 6
+    yield assert_equal, l2(3), np.sqrt(3)
 
 
 def test_alias():
@@ -145,8 +137,8 @@ def test_alias():
 
     ff = F.Formula([f(x), g(x)**2])
     n = F.make_recarray([2,4,5], 'x')
-    yield nptest.assert_almost_equal, ff.design(n)['f(x)'], n['x']*2
-    yield nptest.assert_almost_equal, ff.design(n)['g(x)**2'], n['x']
+    yield assert_almost_equal, ff.design(n)['f(x)'], n['x']*2
+    yield assert_almost_equal, ff.design(n)['g(x)**2'], n['x']
 
 
 def test_nonlin1():
@@ -158,7 +150,7 @@ def test_nonlin1():
     f = F.Formula([sympy.exp(fac.stratify(x).mean)]) + F.I
 
     params = F.getparams(f.mean)
-    yield nose.tools.assert_equal, set([str(p) for p in params]), set(['_x0', '_x1', '_b0', '_b1'])
+    yield assert_equal, set([str(p) for p in params]), set(['_x0', '_x1', '_b0', '_b1'])
     
     test1 = set(['1',
                  'exp(_x0*f_a + _x1*f_b)',
@@ -168,7 +160,7 @@ def test_nonlin1():
                  'exp(_x0*f_a + _x1*f_b)',
                  '_b1*f_a*exp(_x0*f_a + _x1*f_b)',
                  '_b1*f_b*exp(_x0*f_a + _x1*f_b)'])
-    yield nose.tools.assert_true, test1 or test2
+    yield assert_true, test1 or test2
 
     n = F.make_recarray([(2,3,'a'),(4,5,'b'),(5,6,'a')], 'xyf', ['d','d','S1'])
     p = F.make_recarray([1,2,3,4], ['_x0', '_x1', '_b0', '_b1'])
@@ -183,7 +175,7 @@ def test_Rintercept():
     xf = x.formula
     yf = y.formula
     newf = (xf+F.I)*(yf+F.I)
-    nose.tools.assert_equal(set(newf.terms), set([x,y,x*y,sympy.Number(1)]))
+    assert_equal(set(newf.terms), set([x,y,x*y,sympy.Number(1)]))
     
 
 def test_return_float():
@@ -192,10 +184,10 @@ def test_return_float():
     f = F.Formula([x,x**2])
     xx= F.make_recarray(np.linspace(0,10,11), 'x')
     dtype = f.design(xx).dtype
-    yield nose.tools.assert_equal, set(dtype.names), set(['x', 'x**2'])
+    yield assert_equal, set(dtype.names), set(['x', 'x**2'])
 
     dtype = f.design(xx, return_float=True).dtype
-    yield nose.tools.assert_equal, dtype, np.float
+    yield assert_equal, dtype, np.float
 
 
 def test_natural_spline():
@@ -206,24 +198,24 @@ def test_natural_spline():
     xx= F.make_recarray(np.linspace(0,10,101), 'x')
     dd=ns.design(xx, return_float=True)
     xx = xx['x']
-    yield nptest.assert_almost_equal, dd[:,0], xx
-    yield nptest.assert_almost_equal, dd[:,1], xx**2
-    yield nptest.assert_almost_equal, dd[:,2], xx**3
-    yield nptest.assert_almost_equal, dd[:,3], (xx-2)**3*np.greater_equal(xx,2)
-    yield nptest.assert_almost_equal, dd[:,4], (xx-6)**3*np.greater_equal(xx,6)
-    yield nptest.assert_almost_equal, dd[:,5], (xx-9)**3*np.greater_equal(xx,9)
+    yield assert_almost_equal, dd[:,0], xx
+    yield assert_almost_equal, dd[:,1], xx**2
+    yield assert_almost_equal, dd[:,2], xx**3
+    yield assert_almost_equal, dd[:,3], (xx-2)**3*np.greater_equal(xx,2)
+    yield assert_almost_equal, dd[:,4], (xx-6)**3*np.greater_equal(xx,6)
+    yield assert_almost_equal, dd[:,5], (xx-9)**3*np.greater_equal(xx,9)
 
     ns=F.natural_spline(xt, knots=[2,9,6], intercept=True)
     xx= F.make_recarray(np.linspace(0,10,101), 'x')
     dd=ns.design(xx, return_float=True)
     xx = xx['x']
-    yield nptest.assert_almost_equal, dd[:,0], 1
-    yield nptest.assert_almost_equal, dd[:,1], xx
-    yield nptest.assert_almost_equal, dd[:,2], xx**2
-    yield nptest.assert_almost_equal, dd[:,3], xx**3
-    yield nptest.assert_almost_equal, dd[:,4], (xx-2)**3*np.greater_equal(xx,2)
-    yield nptest.assert_almost_equal, dd[:,5], (xx-9)**3*np.greater_equal(xx,9)
-    yield nptest.assert_almost_equal, dd[:,6], (xx-6)**3*np.greater_equal(xx,6)
+    yield assert_almost_equal, dd[:,0], 1
+    yield assert_almost_equal, dd[:,1], xx
+    yield assert_almost_equal, dd[:,2], xx**2
+    yield assert_almost_equal, dd[:,3], xx**3
+    yield assert_almost_equal, dd[:,4], (xx-2)**3*np.greater_equal(xx,2)
+    yield assert_almost_equal, dd[:,5], (xx-9)**3*np.greater_equal(xx,9)
+    yield assert_almost_equal, dd[:,6], (xx-6)**3*np.greater_equal(xx,6)
 
 
 
