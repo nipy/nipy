@@ -6,7 +6,7 @@ import numpy as np
 
 import nose.tools
 
-from nipy.modalities.fmri.api import fmri_generator, fromimage
+from nipy.modalities.fmri.api import fmri_generator, FmriImageList
 from nipy.core.api import parcels, fromarray
 from nipy.io.api import  load_image, save_image
 from nipy.testing import funcfile
@@ -15,6 +15,7 @@ from nipy.testing import funcfile
 def setup():
     # Suppress warnings during tests to reduce noise
     warnings.simplefilter("ignore")
+
 
 def teardown():
     # Clear list of warning filters
@@ -25,7 +26,7 @@ def test_write():
     fp, fname = mkstemp('.nii')
     img = load_image(funcfile)
     save_image(img, fname)
-    test = fromimage(load_image(fname))
+    test = FmriImageList.from_image(load_image(fname))
     yield nose.tools.assert_equal, test[0].affine.shape, (4,4)
     yield nose.tools.assert_equal, img[0].affine.shape, (5,4)
     yield nose.tools.assert_true, np.allclose(test[0].affine, img[0].affine[1:])
@@ -33,6 +34,7 @@ def test_write():
     # locking error.
     os.close(fp)
     os.remove(fname)
+
 
 def test_iter():
     img = load_image(funcfile)
@@ -43,23 +45,22 @@ def test_iter():
         del(i); gc.collect()
     nose.tools.assert_equal(j, 20)
 
+
 def test_subcoordmap():
     img = load_image(funcfile)
     subcoordmap = img[3].coordmap
-        
     xform = np.array([[ 0., 0., 0., 10.35363007],
                       [-7.,  0., 0., 0.],
                       [ 0.,  -2.34375, 0., 0.],
                       [ 0.,  0., -2.34375, 0.],
                       [ 0.,  0., 0., 1.]])
-        
     nose.tools.assert_true(np.allclose(subcoordmap.affine, xform))
         
+
 def test_labels1():
     img = load_image(funcfile)
     parcelmap = fromarray(np.asarray(img[0]), 'kji', 'zyx')    
     parcelmap = (np.asarray(parcelmap) * 100).astype(np.int32)
-        
     v = 0
     for i, d in fmri_generator(img, parcels(parcelmap)):
         v += d.shape[1]

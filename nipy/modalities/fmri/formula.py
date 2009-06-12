@@ -5,8 +5,8 @@ from scipy.linalg import svdvals
 
 from aliased import aliased_function, _add_aliases_to_namespace, vectorize
 
-class Term(sympy.Symbol):
 
+class Term(sympy.Symbol):
     """
     A Term is a term in a linear regression model. Terms can be added
     to other sympy expressions with the single convention that a 
@@ -101,23 +101,23 @@ def make_recarray(rows, names, dtypes=None):
     unless rows is an np.ndarray, in which
     case dtypes are ignored
 
-    Parameters:
-    -----------
-
+    Parameters
+    ----------
     rows: []
         Rows that will be turned into an array.
-
     names: [str]
         Names for the columns.
-
     dtypes: [str or np.dtype]
         Used to create a np.dtype, can be np.dtypes or string.
 
-    Outputs:
-    --------
-
+    Returns
+    -------
     v : np.ndarray
 
+    Examples
+    --------
+    The following tests depend on machine byte order to pass
+    
     >>> arr = np.array([[3,4],[4,6],[6,8]])
     >>> make_recarray(arr, ['x','y'])
     array([[(3, 4)],
@@ -130,7 +130,6 @@ def make_recarray(rows, names, dtypes=None):
            [(4, 6)],
            [(6, 8)]], 
           dtype=[('x', '<i4'), ('y', '<i4')])
-
     >>> make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int])
     array([(3.0, 4), (4.0, 6), (7.0, 9)], 
           dtype=[('w', '<f8'), ('v', '<i4')])
@@ -194,36 +193,30 @@ class Formula(object):
         Inputs:
         -------
         seq : [``sympy.Basic``]
-
         char : character for regression coefficient
 
-
         """
-
         self._terms = np.asarray(seq)
         self._counter = 0
         self.char = char
 
     def subs(self, old, new):
-        """
-        Perform a sympy substitution on all terms in the Formula,
+        """ Perform a sympy substitution on all terms in the Formula,
         returning a new Formula.
 
-        Inputs:
-        =======
-
+        Parameters
+        ----------
         old : sympy.Basic
-            The expression to be changed
-
+           The expression to be changed
         new : sympy.Basic
-            The value to change it to.
+           The value to change it to.
         
-        Outputs: 
-        ========
-        
+        Returns
+        -------
         newf : Formula
 
-        
+        Examples
+        --------
         >>> s, t= [Term(l) for l in 'st']
         >>> f, g = [sympy.Function(l) for l in 'sg']
         >>> ff = Formula([f(t),f(s)])
@@ -360,33 +353,31 @@ class Formula(object):
                         'preterm':np.dtype([(na, np.float) for na in ptnames])}
         self.__terms = terms
 
-    def design(self, term, param=None, return_float=False,
-               contrasts={}):
-        """
-        Construct the design matrix, and optional
-        contrast matrices.
+    def design(self,
+               term,
+               param=None,
+               return_float=False,
+               contrasts=None):
+        """ Construct the design matrix, and optional contrast matrices.
 
-        Parameters:
-        -----------
-
+        Parameters
+        ----------
         term : np.recarray
-             Recarray including fields corresponding to the Terms in 
-             getparams(self.design_expr).
-
-        param : np.recarray
-             Recarray including fields that are not Terms in 
-             getparams(self.design_expr)
-        
-        return_float : bool
-             Return a np.float array or an np.recarray
-
-        contrasts : {}
-             Contrasts. The items in this dictionary
-             should be (str, Formula) pairs where
-             a contrast matrix is constructed for each Formula
-             by evaluating its design at the same parameters as self.design.
-
+           Recarray including fields corresponding to the Terms in
+           getparams(self.design_expr).
+        param : None or np.recarray
+           Recarray including fields that are not Terms in
+           getparams(self.design_expr)
+        return_float : bool, optional
+           If True, return a np.float array rather than a np.recarray
+        contrasts : None or dict, optional
+           Contrasts. The items in this dictionary should be (str,
+           Formula) pairs where a contrast matrix is constructed for
+           each Formula by evaluating its design at the same parameters
+           as self.design.
         """
+        if contrasts is None:
+            contrasts = {}
         self._setup_design()
 
         preterm_recarray = term
@@ -469,11 +460,34 @@ class Formula(object):
             return D
         return D, cmatrices
 
-def natural_spline(t, knots=[], order=3, intercept=False):
-    """
-    Return a Formula containing a natural spline
-    for a Term with specified knots and order.
 
+def natural_spline(t, knots=None, order=3, intercept=False):
+    """ Return a Formula containing a natural spline
+
+    Spline for a Term with specified `knots` and `order`.
+
+    Parameters
+    ----------
+    t : ``Term``
+    knots : None or sequence, optional
+       Sequence of float.  Default None (same as empty list)
+    order : int, optional
+       Order of the spline. Defaults to a cubic (==3)
+    intercept : bool, optional
+       If True, include a constant function in the natural
+       spline. Default is False
+
+    Returns
+    -------
+    formula : Formula
+         A Formula with (len(knots) + order) Terms
+         (if intercept=False, otherwise includes one more Term), 
+         made up of the natural spline functions.
+
+    Examples
+    --------
+    The following results depend on machine byte order
+       
     >>> x = Term('x')
     >>> n = natural_spline(x, knots=[1,3,4], order=3)
     >>> xval = np.array([3,5,7.]).view(np.dtype([('x', np.float)]))
@@ -482,28 +496,10 @@ def natural_spline(t, knots=[], order=3, intercept=False):
            (5.0, 25.0, 125.0, 64.0, 8.0, 1.0),
            (7.0, 49.0, 343.0, 216.0, 64.0, 27.0)],
           dtype=[('ns_1(x)', '<f8'), ('ns_2(x)', '<f8'), ('ns_3(x)', '<f8'), ('ns_4(x)', '<f8'), ('ns_5(x)', '<f8'), ('ns_6(x)', '<f8')])
-    >>>
                     
-    Inputs:
-    =======
-    t : Term
-
-    knots : [float]
-
-    order : int
-         Order of the spline. Defaults to a cubic.
-
-    intercept : bool
-         If True, include a constant function in the natural spline.
-
-    Outputs:
-    --------
-    formula : Formula
-         A Formula with (len(knots) + order) Terms
-         (if intercept=False, otherwise includes one more Term), 
-         made up of the natural spline functions.
-
     """
+    if knots is None:
+        knots = {}
     fns = []
     for i in range(order+1):
         n = 'ns_%d' % i
@@ -579,31 +575,27 @@ class Factor(Formula):
         return f
 
 def contrast_from_cols_or_rows(L, D, pseudo=None):
-    """
-    Construct a contrast matrix from a design matrix D
+    """ Construct a contrast matrix from a design matrix D
+    
     (possibly with its pseudo inverse already computed)
     and a matrix L that either specifies something in
     the column space of D or the row space of D.
 
-    Parameters:
-    -----------
-
+    Parameters
+    ----------
     L : ndarray
-         Matrix used to try and construct a contrast.
-
+       Matrix used to try and construct a contrast.
     D : ndarray
-         Design matrix used to create the contrast.
+       Design matrix used to create the contrast.
 
-    Outputs:
-    --------
-
+    Returns
+    -------
     C : ndarray
-         Matrix with C.shape[1] == D.shape[1] representing
-         an estimable contrast.
+       Matrix with C.shape[1] == D.shape[1] representing an estimable
+       contrast.
 
-    Notes:
-    ------
-
+    Notes
+    -----
     From an n x p design matrix D and a matrix L, tries
     to determine a p x q contrast matrix C which
     determines a contrast of full rank, i.e. the
@@ -657,10 +649,11 @@ def contrast_from_cols_or_rows(L, D, pseudo=None):
 
     return np.squeeze(C)
 
+
 def rank(X, cond=1.0e-12):
-    """
-    Return the rank of a matrix X based on its generalized inverse,
-    not the SVD.
+    """ Return the rank of a matrix X
+
+    Rank based on its generalized inverse, not the SVD.
     """
     X = np.asarray(X)
     if len(X.shape) == 2:
@@ -670,14 +663,11 @@ def rank(X, cond=1.0e-12):
         return int(not np.alltrue(np.equal(X, 0.)))
 
 def fullrank(X, r=None):
+    """ Return a matrix whose column span is the same as X.
+
+    If the rank of X is known it can be specified as r -- no check is
+    made to ensure that this really is the rank of X.
     """
-    Return a matrix whose column span is the same as X.
-
-    If the rank of X is known it can be specified as r -- no check
-    is made to ensure that this really is the rank of X.
-
-    """
-
     if r is None:
         r = rank(X)
 
@@ -690,11 +680,10 @@ def fullrank(X, r=None):
     return np.asarray(np.transpose(value)).astype(np.float64)
 
 class RandomEffects(Formula):
-    """
-    This class can be used to 
-    construct covariance matrices for common
-    random effects analyses.
-
+    """ Covariance matrices for common random effects analyses.
+    
+    Examples
+    --------
     >>> subj = make_recarray([2,2,2,3,3], 's')
     >>> subj_factor = Factor('s', [2,3])
     >>> c = RandomEffects(subj_factor.terms)
@@ -711,22 +700,18 @@ class RandomEffects(Formula):
            [ 4.,  4.,  4.,  1.,  1.],
            [ 1.,  1.,  1.,  6.,  6.],
            [ 1.,  1.,  1.,  6.,  6.]])
-    >>> 
 
     """
     def __init__(self, seq, sigma=None, char = 'e'):
         """
-        Inputs:
-        -------
+        Parameters
+        ----------
         seq : [``sympy.Basic``]
-
         sigma : ndarray
              Covariance of the random effects. Defaults
              to a diagonal with entries for each random
              effect.
-
         char : character for regression coefficient
-
         """
 
         self._terms = np.asarray(seq)
@@ -739,7 +724,9 @@ class RandomEffects(Formula):
         else:
             self.sigma = sigma
         if self.sigma.shape != (q,q):
-            raise ValueError('incorrect shape for covariance of random effects, should have shape %s' % `(q,q)`)
+            raise ValueError('incorrect shape for covariance '
+                             'of random effects, '
+                             'should have shape %s' % repr(q,q))
         self.char = char
 
     def cov(self, term, param=None):
@@ -768,24 +755,24 @@ class RandomEffects(Formula):
         D = self.design(term, param=param, return_float=True)
         return np.dot(D, np.dot(self.sigma, D.T))
 
+
 def define(name, expr):
     """
     Take an expression of 't' (possibly complicated)
     and make it a '%s(t)' % name, such that
     when it evaluates it has the right values.
 
-    Parameters:
-    -----------
-
+    Parameters
+    ----------
     expr : sympy expression, with only 't' as a Symbol
-
     name : str
 
-    Outputs:
-    --------
-
+    Returns
+    -------
     nexpr: sympy expression
 
+    Examples
+    --------
     >>> t = Term('t')
     >>> expr = t**2 + 3*t
     >>> print expr

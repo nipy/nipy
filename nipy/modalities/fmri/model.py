@@ -2,10 +2,10 @@ import numpy as np
 import sympy as sym
 from string import join
 
-from utils import events,linear_interp, blocks
-from formula import Term, Formula, Design, natural_spline
+from utils import events, linear_interp
+from formula import Term, Formula, Design
 import hrf
-from odict import OrderedDict
+from nipy.utils.odict import OrderedDict
 
 aliases = {'glover': hrf.glover, 'dglover':hrf.dglover, 'iglover':hrf.iglover}
 
@@ -54,13 +54,9 @@ def _contrast(cont, terms):
     return coeffs, indices
 
 
-
-
-class LinearModel:
-    
+class LinearModel(object):
     def __init__(self, hrf):
-        """
-        Init th elinear models by creating ordered dictionaries
+        """ Init linear models by creating ordered dictionaries
         that include conditions and regressors
         Also sepcify an hrf model
 
@@ -239,7 +235,7 @@ class LinearModel:
     
     def conditions(self):
         """
-        return the terms correponding to the conditions of the model
+        return the terms corresponding to the conditions of the model
         """
         conditions = self._conditions.keys()
         conditions.sort()
@@ -296,7 +292,7 @@ class LinearModel:
              self._add_baseline()
              
         tval = np.asarray(timestamps, dtype=np.float).view(np.dtype([('t', np.float)]))
-        D = Design(self.formula(), return_float=True)
+        D = Design(self.formula, return_float=True)
         X = D(tval)
         nreg = X.shape[1]
         

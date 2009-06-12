@@ -13,10 +13,8 @@ this is much slower::
   $ svn co http://neuroimaging.scipy.org/svn/ni/data/trunk/fmri .nipy/tests/data
 
 """
-
 import os
 
-from nipy.io.datasource import Repository
 from nipy.utils.get_data import get_data
 
 # data directory should be: $HOME/.nipy/tests/data
@@ -26,4 +24,8 @@ datapath = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
 if not os.path.exists(datapath):
     get_data()
 
-repository = Repository(datapath)
+
+def datapjoin(filename):
+    ''' Return result of os.path.join of `filename` to NIPY data path '''
+    return os.path.join(datapath, filename)
+

@@ -2,8 +2,8 @@ import numpy as np
 import sympy as sym
 from numpy.random import randn
 
-from neuroimaging.modalities.fmri.model import LinearModel
-from neuroimaging.modalities.fmri import formula, hrf
+from nipy.modalities.fmri.model import LinearModel
+from nipy.modalities.fmri import formula, hrf
 
 """
 todo

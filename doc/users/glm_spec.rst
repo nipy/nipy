@@ -454,7 +454,7 @@ model
 
 .. testcode::
 
-   from neuroimaging.modalities.fmri import hrf
+   from nipy.modalities.fmri import hrf
    glover = hrf.glover_sympy
    afni = hrf.afni_sympy
 
@@ -476,8 +476,8 @@ a hemodynamic model
 
 .. testcode::
 
-   from neuroimaging.modalities.fmri.utils import events, Symbol
-   from neuroimaging.modalities.fmri.hrf import glover_sympy
+   from nipy.modalities.fmri.utils import events, Symbol
+   from nipy.modalities.fmri.hrf import glover_sympy
    import numpy as np
 
    a = Symbol('a')

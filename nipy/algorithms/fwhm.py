@@ -165,35 +165,42 @@ class ReselImage(Resels):
         """
         return self
 
+
 class iterFWHM(Resels):
-    """
-    Estimate FWHM on an image of residuals sequentially. This is handy when,
-    say, residuals from a linear model are written out slice-by-slice.
+    """Estimate FWHM on an image of residuals sequentially.
+
+    This is handy when, say, residuals from a linear model are written
+    out slice-by-slice.
 
     Resulting FWHM is clipped at self.FWHMmax, which defaults to 50.
     """
 
     FWHMmax=50.
 
-    def __init__(self, coordmap, normalized=False, df_resid=5.0, mask=None, **keywords):
+    def __init__(self,
+                 coordmap,
+                 normalized=False,
+                 df_resid=5.0,
+                 mask=None,
+                 **keywords):
         """Setup a FWHM estimator.
         
-        :Parameters:
-            coordmap : ``CoordinateMap``
-                 CoordinateMap over which fwhm and resels are to be estimated.                
-                 Used in fwhm/resel conversion.
-            normalized : ``bool``
-                Are residuals normalized to have length 1? If False, residuals
-                are normalized before estimating FWHM.
-            df_resid : ``float``
-                How many degrees of freedom are there in the residuals?
-                Must be greater than self.D + 1.
-            mask : ``Image``
-                  Optional mask over which to integrate (add) resels.
-            keywords : ``dict``
-                Passed as keyword parameters to `Resels.__init__`
+        Parameters
+        ----------
+        coordmap : ``CoordinateMap``
+           CoordinateMap over which fwhm and resels are to be estimated.
+           Used in fwhm/resel conversion.
+        normalized : bool, optional
+           Are residuals normalized to have length 1? If False, residuals
+           are normalized before estimating FWHM.
+        df_resid : float, optional
+           How many degrees of freedom are there in the residuals?
+           Must be greater than self.D + 1.
+        mask : ``Image``, optional
+           Optional mask over which to integrate (add) resels.
+        keywords : dict, optional
+           Passed as keyword parameters to `Resels.__init__`
         """
-
         Resels.__init__(self, coordmap, mask=mask, **keywords)
         self.normalized = normalized
         self.Y = coordmap.shape[1]
@@ -213,17 +220,20 @@ class iterFWHM(Resels):
         self.nslices = coordmap.shape[0]
         iter(self)
         if df_resid <= self.D + 1:
-            raise ValueError, 'insufficient residual degrees of freedom to estimate FWHM'
+            raise ValueError('insufficient residual degrees of '
+                             'freedom to estimate FWHM')
         
     def __call__(self, resid):
         """
         Estimate FWHM and resels per voxel.
 
-        :Parameters:
-            resid : ``Image``
-                Image of residuals used for estimating FWHM and resels per voxel.
+        Parameters
+        ----------
+        resid : ``Image``
+            Image of residuals used for estimating FWHM and resels per
+            voxel.
         
-        :Returns: ``None``
+        Returns : None
         """
         resid = resid.slice_iterator()
         iter(self)
@@ -238,10 +248,15 @@ class iterFWHM(Resels):
         """
         Normalize residuals subtracting mean, and fixing length to 1.
 
-        :Parameters:
-            resid : Array of residuals.
+        Parameters
+        ----------
+        resid : array
+           Array of residuals.
                 
-        :Returns: Normalized residuals.
+        Returns
+        -------
+        nresid : array
+           Normalized residuals.
         """
         _mu = 0.
         _sumsq = 0.
@@ -305,13 +320,17 @@ class iterFWHM(Resels):
         """
         Pass a slice of residuals into slicewise estimate of FWHM.
 
-        :Parameters:
-            resid : ``array``
-                 slice of residuals
+        Parameters
+        ----------
+        resid : array
+           slice of residuals
         
-        :Returns: ``None``
+        Returns
+        -------
+        None
         """
-
+        # The following line appears to assume a particular array index
+        # ordering for the image data (e.g. t, z, y, x).
         wresid = 1.0 * np.transpose(data, (1,2,0))
         if not self.normalized:
             wresid = self.normalize(wresid)

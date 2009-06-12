@@ -5,9 +5,8 @@ from tempfile import mkstemp
 import numpy as np
 
 from nipy.testing import assert_true, assert_equal, assert_raises, \
-    assert_array_almost_equal
+    assert_array_almost_equal, datapjoin
 
-from nipy.utils.tests.data import repository
 from nipy.io.api import load_image, save_image
 from nipy.core.api import fromarray
 
@@ -18,7 +17,7 @@ gtmpfile = None
 def setup_module():
     warnings.simplefilter("ignore")
     global gimg, gfilename, gtmpfile
-    gimg = load_image(str(repository._fullpath('avg152T1.nii.gz')))
+    gimg = load_image(datapjoin('avg152T1.nii.gz'))
     fd, gfilename = mkstemp(suffix='.nii.gz')
     gtmpfile = open(gfilename)
 
@@ -113,7 +112,7 @@ def test_scaling_float32():
 
 
 def test_header_roundtrip():
-    img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
+    img = load_image(datapjoin('avg152T1.nii.gz'))
     fd, name = mkstemp(suffix='.nii.gz')
     tmpfile = open(name)
     hdr = img.header
@@ -137,7 +136,7 @@ def test_header_roundtrip():
 
 
 def test_file_roundtrip():
-    img = load_image(str(repository._fullpath('avg152T1.nii.gz')))
+    img = load_image(datapjoin('avg152T1.nii.gz'))
     fd, name = mkstemp(suffix='.nii.gz')
     tmpfile = open(name)
     save_image(img, tmpfile.name)
