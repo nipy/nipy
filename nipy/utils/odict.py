@@ -412,8 +412,8 @@ class OrderedDict(dict):
         OrderedDict([(1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1), (7, 0)])
         >>> b[2:5]
         OrderedDict([(5, 2), (4, 3), (3, 4)])
-        >>> type(b[2:4])
-        <class '__main__.OrderedDict'>
+        >>> isinstance(b[2:4], OrderedDict)
+        True
         """
         if isinstance(key, types.SliceType):
             # FIXME: does this raise the error we want?
