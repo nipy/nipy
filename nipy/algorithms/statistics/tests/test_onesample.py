@@ -29,7 +29,7 @@ def test_estimate_varatio(p=1.0e-04, sigma2=1):
 
     W = 1. / (sd**2 + results['random'])
     mu = onesample.estimate_mean(Y, np.sqrt(sd**2 + results['random']))['effect']
-    yield assert_almost_equal(mu, (W*Y).sum(0) / W.sum(0))
+    yield assert_almost_equal, mu, (W*Y).sum(0) / W.sum(0)
 
     rsd = np.sqrt((rsd**2).mean() / ntrial)
     T = np.fabs((random.mean() - sigma2) / (rsd / np.sqrt(n)))
