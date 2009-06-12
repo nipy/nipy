@@ -38,23 +38,22 @@ def test_write():
 
 def test_iter():
     img = load_image(funcfile)
+
     j = 0
     for i, d in fmri_generator(img):
         j += 1
-        nose.tools.assert_equal(d.shape, (20,2,20))
+        nose.tools.assert_equal(d.shape, (20,20,20))
         del(i); gc.collect()
-    nose.tools.assert_equal(j, 20)
+    nose.tools.assert_equal(j, 2)
 
 
 def test_subcoordmap():
     img = load_image(funcfile)
     subcoordmap = img[3].coordmap
-    xform = np.array([[ 0., 0., 0., 10.35363007],
-                      [-7.,  0., 0., 0.],
-                      [ 0.,  -2.34375, 0., 0.],
-                      [ 0.,  0., -2.34375, 0.],
-                      [ 0.,  0., 0., 1.]])
-    nose.tools.assert_true(np.allclose(subcoordmap.affine, xform))
+    xform = img.coordmap.affine[:,1:]
+    nose.tools.assert_true(np.allclose(subcoordmap.affine[1:], xform[1:]))
+    ## XXX FIXME: why is it [0,0] entry instead of [0] below?
+    nose.tools.assert_true(np.allclose(subcoordmap.affine[0], [0,0,0,img.coordmap([3,0,0,0])[0,0]]))
         
 
 def test_labels1():

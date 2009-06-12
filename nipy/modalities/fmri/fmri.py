@@ -130,6 +130,7 @@ def fmri_generator(data, iterable=None):
     data : array-like
        object such that ``arr = np.asarray(data)`` returns an array of
        at least 2 dimensions.
+
     iterable : None or sequence
        seqence of objects that can be used to index array ``arr``
        returned from data.  If None, default is
