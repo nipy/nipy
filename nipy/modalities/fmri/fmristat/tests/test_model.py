@@ -9,10 +9,12 @@ from nipy.io.api import load_image
 
 import nipy.modalities.fmri.fmristat.model as model
 from nipy.modalities.fmri.api import FmriImageList
+from nipy.testing import funcfile, TestCase, dec
 
-from nipy.modalities.fmri.formula import \
-    ExperimentalQuantitative
-from nipy.fixes.scipy.stats.models.contrast import Contrast
+# FIXME: these things are obsolete
+# from nipy.modalities.fmri.formula import \
+#     ExperimentalQuantitative
+# from nipy.fixes.scipy.stats.models.contrast import Contrast
 
 def setup():
     # Suppress warnings during tests to reduce noise
@@ -44,6 +46,7 @@ class test_fMRIstat_model(TestCase):
 
     # FIXME: This does many things, but it does not test any values
     # with asserts.
+    @dec.knownfailure
     def testrun(self):
         funcim = load_image(funcfile)
         fmriims = FmriImageList.from_image(funcim, volume_start_times=2.)
