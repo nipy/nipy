@@ -177,8 +177,8 @@ def run_model(subj, run):
     # experiment: ['time', 'sentence', 'speaker']
     # initial: ['time', 'initial']
 
-    experiment = csv2rec(pjoin(rootdir, "experiment_%(run)02d.csv" % path_dict))
-    initial = csv2rec(pjoin(rootdir, "initial_%(run)02d.csv" % path_dict))
+    experiment = csv2rec(pjoin(rootdir, "experiment_%(run)02d.csv") % path_dict)
+    initial = csv2rec(pjoin(rootdir, "initial_%(run)02d.csv") % path_dict)
 
     # Create design matrices for the "initial" and "experiment" factors,
     # saving the default contrasts. 
