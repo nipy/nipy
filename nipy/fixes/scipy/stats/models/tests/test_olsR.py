@@ -121,12 +121,6 @@ F-statistic: 9.399e+05 on 14 and 112 DF,  p-value: < 2.2e-16
 
 """
 
-def myround(f, decimals=4):
-    """
-    Round to 4 decimal places, but 
-    avoid 0.12399999999 stuff
-    """
-    v = np.round(f, decimals=decimals)
 
 
 m = OLSModel(x)
@@ -160,6 +154,10 @@ def test_results():
     sds = []
     ts = []
     ps = []
+
+    # the model has an intercept
+
+    yield niptest.assert_true, r.model.has_intercept
 
     # entries with '*****' are not tested as they were a different format
 
