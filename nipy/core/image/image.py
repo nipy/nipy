@@ -8,7 +8,7 @@ merge_images : create an Image by merging a sequence of Image instance
 """
 import numpy as np
 
-from nipy.core.reference.coordinate_map import reorder_input, reorder_output, Affine
+from nipy.core.reference.coordinate_map import Affine
 from nipy.core.reference.coordinate_map import product as cmap_product
 from nipy.core.reference.coordinate_system import CoordinateSystem
 from nipy.core.reference.array_coords import ArrayCoordMap
