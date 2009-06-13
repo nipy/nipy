@@ -27,6 +27,8 @@ MST = SST / (length(d$Y) - 1)
 MSR = SSR / (length(d$Y) - y.lm$df.resid - 1)
 
 print(data.frame(MSE, MST, MSR))
+print(AIC(y.lm))
+print(AIC(y.lm2))
 '''
 
 # lines about "Signif. codes" were deleted due to a character encoding issue
@@ -116,17 +118,17 @@ F-statistic: 9.399e+05 on 14 and 112 DF,  p-value: < 2.2e-16
 1 72.02328 168.9401 96.91685
        MSE      MST      MSR
 1 0.643065 1.351521 7.455142
-> 
+[1] "AIC"
+[1] 317.1017
+[1] "BIC"
+[1] 359.6459
 
 
 """
 
-
-
-m = OLSModel(x)
-r = m.fit(y)
-
 def test_results():
+    m = OLSModel(x)
+    r = m.fit(y)
     # results hand compared with R's printout
 
     yield niptest.assert_equal, '%0.4f' % r.R2, '0.5737'
@@ -244,6 +246,13 @@ X14 -1.044e-05  7.215e-06  -1.448   0.1505
     yield niptest.assert_equal, "%0.6f" % r.MSR, "7.455142"
 
     yield niptest.assert_equal, "%0.4f" % np.sqrt(r.MSE), "0.8019"
+    
+    # the difference here comes from the fact that
+    # we've treated sigma as a nuisance parameter,
+    # so our AIC is the AIC of the profiled log-likelihood...
+
+    yield niptest.assert_equal, '%0.4f'% (r.AIC + 2,), '317.1017'
+    yield niptest.assert_equal, '%0.4f'% (r.BIC + np.log(126),), '359.6459'
 
 
 # this is the file "data.csv" referred to in Rscript above

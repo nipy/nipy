@@ -225,7 +225,7 @@ class OLSModel(LikelihoodModel):
         n = self.df_total
         SSE = (r**2).sum(0)
         if nuisance is None:
-            sigmasq = SSE / self.n
+            sigmasq = SSE / n
         else:
             sigmasq = nuisance['sigma']
         loglf = -n/2.*np.log(2*np.pi*sigmasq) - SSE / (2*sigmasq)
