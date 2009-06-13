@@ -219,8 +219,9 @@ class OLSModel(LikelihoodModel):
         ----------
         .. [1] W. Green.  "Econometric Analysis," 5th ed., Pearson, 2003.
         '''
-        X = self.design
-        r = Y - np.dot(X, beta)
+        X = self.wdesign
+        wY = self.whiten(Y)
+        r = wY - np.dot(X, beta)
         n = self.df_total
         SSE = (r**2).sum(0)
         if nuisance is None:
@@ -260,8 +261,9 @@ class OLSModel(LikelihoodModel):
         -------
         The gradient of the loglikelihood function.
         '''
-        X = self.design
-        r = Y - np.dot(X, beta)
+        X = self.wdesign
+        wY = self.whiten(Y)
+        r = wY - np.dot(X, beta)
         n = self.df_total
         if nuisance is None:
             SSE = (r**2).sum(0)
@@ -305,7 +307,8 @@ class OLSModel(LikelihoodModel):
 
         '''
         X = self.design
-        r = Y - np.dot(X, beta)
+        wY = self.whiten(Y)
+        r = wY - np.dot(X, beta)
         n = self.df_total
         if nuisance is None:
             SSE = (r**2).sum(0)
@@ -381,6 +384,11 @@ class OLSModel(LikelihoodModel):
 class ARModel(OLSModel):
     """
     A regression model with an AR(p) covariance structure.
+
+    In terms of a LikelihoodModel, the parameters
+    are beta, the usual regression parameters,
+    and sigma, a scalar nuisance parameter that
+    shows up as multiplier in front of the AR(p) covariance.
 
     The linear autoregressive process of order p--AR(p)--is defined as:
         TODO
@@ -470,7 +478,6 @@ class ARModel(OLSModel):
             _X[(i+1):] = _X[(i+1):] - self.rho[i] * X[0:-(i+1)]
         return _X
     
-
 def yule_walker(X, order=1, method="unbiased", df=None, inv=False):    
     """
     Estimate AR(p) parameters from a sequence X using Yule-Walker equation.
