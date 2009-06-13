@@ -129,9 +129,6 @@ class LikelihoodModelResults(object):
 
         """
 
-        if self.cov is None:
-            raise ValueError, 'need covariance of parameters for computing T statistics'
-
         if column is None:
             column = range(self.theta.shape[0])
 
@@ -152,7 +149,7 @@ class LikelihoodModelResults(object):
         The covariance of
         interest is either specified as a (set of) column(s) or a matrix.
         """
-        if self.normalized_cov_theta is None:
+        if self.cov is None:
             raise ValueError, 'need covariance of parameters for computing (unnormalized) covariances'
 
         if dispersion is None:
@@ -161,18 +158,18 @@ class LikelihoodModelResults(object):
         if column is not None:
             column = np.asarray(column)
             if column.shape == ():
-                return self.normalized_cov_theta[column, column] * dispersion
+                return self.cov[column, column] * dispersion
             else:
-                return self.normalized_cov_theta[column][:,column] * dispersion
+                return self.cov[column][:,column] * dispersion
 
         elif matrix is not None:
             if other is None:
                 other = matrix
-            tmp = np.dot(matrix, np.dot(self.normalized_cov_theta, np.transpose(other)))
+            tmp = np.dot(matrix, np.dot(self.cov, np.transpose(other)))
             return tmp * dispersion
 
         if matrix is None and column is None:
-            return self.normalized_cov_theta * dispersion
+            return self.cov * dispersion
 
 # need to generalize for the case when dispersion is not a scalar
 # and we have robust estimates of \Omega the error covariance matrix
@@ -192,9 +189,6 @@ class LikelihoodModelResults(object):
         Compute a Tcontrast for a row vector matrix. To get the t-statistic
         for a single column, use the 't' method.
         """
-
-        if self.normalized_cov_theta is None:
-            raise ValueError, 'need covariance of parameters for computing T statistics'
 
         _t = _sd = None
 
@@ -227,9 +221,6 @@ class LikelihoodModelResults(object):
         non-singular in the sense above.
 
         """
-
-        if self.normalized_cov_theta is None:
-            raise ValueError, 'need covariance of parameters for computing F statistics'
 
         ctheta = np.dot(matrix, self.theta)
 

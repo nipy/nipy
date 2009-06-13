@@ -343,7 +343,8 @@ class OLSModel(LikelihoodModel):
         Check if column of 1s is in column space of design
         """
         o = np.ones(self.design.shape[0])
-        ohat = np.dot(self.wdesign, self.calc_beta)
+        obeta = np.dot(self.calc_beta, o)
+        ohat = np.dot(self.wdesign, obeta)
         if np.allclose(ohat, o):
             return True
         return False
@@ -376,7 +377,7 @@ class OLSModel(LikelihoodModel):
         beta = np.dot(self.calc_beta, wY)
         wresid = wY - np.dot(self.wdesign, beta)
         dispersion = np.sum(wresid**2, 0) / (self.wdesign.shape[0] - self.wdesign.shape[1])
-        lfit = RegressionResults(np.dot(self.calc_beta, wY), Y,
+        lfit = RegressionResults(beta, Y, self,
                                  wY, wresid, dispersion=dispersion,
                                  cov=self.normalized_cov_beta)
         return lfit
@@ -647,7 +648,7 @@ class RegressionResults(LikelihoodModelResults):
         return np.dot(X, beta)
 
     @setattr_on_read 
-    def R2(self):
+    def R2_adj(self):
         """
         Return the R^2 value for each row of the response Y.
         
@@ -659,8 +660,22 @@ class RegressionResults(LikelihoodModelResults):
         """
         if not self.model.has_intercept:
             warnings.warn("model does not have intercept term, SST inappropriate")
-        d = 1 - self.R2_adj
-        d *= ((self.df_total - 1) / self.df_resid)
+        d = 1. - self.R2
+        d *= ((self.df_total - 1.) / self.df_resid)
+        return 1 - d
+
+    @setattr_on_read 
+    def R2(self):
+        """
+        Return the adjusted R^2 value for each row of the response Y.
+        
+        Notes
+        -----
+        Changed to the textbook definition of R^2.
+        
+        See: Davidson and MacKinnon p 74
+        """
+        d = self.SSE / self.SST
         return 1 - d
 
     @setattr_on_read
@@ -671,7 +686,7 @@ class RegressionResults(LikelihoodModelResults):
         """
         if not self.model.has_intercept:
             warnings.warn("model does not have intercept term, SST inappropriate")
-        return np.std(self.wY,axis=0)**2
+        return ((self.wY - self.wY.mean(0))**2).sum(0)
 
     @setattr_on_read
     def SSE(self):
@@ -679,7 +694,7 @@ class RegressionResults(LikelihoodModelResults):
         Error sum of squares. If not from an OLS model
         this is "pseudo"-SSE.
         """
-        return np.sum(self.wresid**2, 0)
+        return (self.wresid**2).sum(0)
 
     @setattr_on_read
     def SSR(self):
@@ -693,7 +708,7 @@ class RegressionResults(LikelihoodModelResults):
         """
         Mean square (regression)
         """        
-        return self.SSR / self.df_model
+        return self.SSR / (self.df_model - 1)
 
     @setattr_on_read
     def MSE(self):
@@ -717,22 +732,9 @@ class RegressionResults(LikelihoodModelResults):
         model this is a pseudo-F.
         """
         F = self.MSR / self.MSE
-        Fp = stats.f.pdf(F, self.df_model, self.df_resid)
-        return {'F':F, 'p-value':Fp, 'df_num': self.df_model, 'df_den': self.df_resid}
+        Fp = stats.f.sf(F, self.df_model - 1, self.df_resid)
+        return {'F':F, 'p_value':Fp, 'df_num': self.df_model-1, 'df_den': self.df_resid}
 
-    @setattr_on_read 
-    def R2_adj(self):
-        """
-        Return the adjusted R^2 value for each row of the response Y.
-        
-        Notes
-        -----
-        Changed to the textbook definition of R^2.
-        
-        See: Davidson and MacKinnon p 74
-        """
-        d = self.SSE / self.SST
-        return 1 - d
 
 class GLSModel(OLSModel):
 
