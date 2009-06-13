@@ -234,7 +234,6 @@ class LikelihoodModelResults(object):
 
         q = matrix.shape[0]
         if invcov is None:
-            print matrix
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
         F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) * recipr((q * dispersion))
         return FContrastResults(F=F, df_den=self.df_resid, df_num=invcov.shape[0])
