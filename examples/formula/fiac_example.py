@@ -250,7 +250,7 @@ def run_model(subj, run):
     # It is transposed to have time as the first dimension,
     # i.e. fmri[t] gives the t-th volume.
 
-    fmri = np.array(load_image(pjoin(rootdir, "swafunctional_%(run)02d.nii" % path_dict)))
+    fmri = np.array(load_image(pjoin(rootdir, "swafunctional_%(run)02d.nii") % path_dict))
     fmri = np.transpose(fmri, [3,0,1,2])
     anat = load_image(pjoin("fiac_example_data", "fiac_%(subj)02d", "wanatomical.nii") % path_dict)
                    
