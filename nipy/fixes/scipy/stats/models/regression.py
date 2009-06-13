@@ -272,7 +272,7 @@ class OLSModel(LikelihoodModel):
             sigmasq = nuisance['sigma']
         return np.dot(X, r) / sigmasq
 
-    def information(self, beta, Y, nuisance=None):
+    def information(self, beta, nuisance=None):
         # Jonathan: this is overwriting an abstract method of LikelihoodModel
         '''
         Returns the information matrix at (beta, Y, nuisance).
@@ -285,11 +285,8 @@ class OLSModel(LikelihoodModel):
         beta : ndarray
             The parameter estimates.  Must be of length df_model.
 
-        Y : ndarray
-            The dependent variable.
-
-        nuisance : dict, optional
-            A dict with key 'sigma', which is an optional 
+        nuisance : dict
+            A dict with key 'sigma', which is an 
             estimate of sigma. If None, defaults to its
             maximum likelihood estimate (with beta fixed)
             as
@@ -307,14 +304,7 @@ class OLSModel(LikelihoodModel):
 
         '''
         X = self.design
-        wY = self.whiten(Y)
-        r = wY - np.dot(X, beta)
-        n = self.df_total
-        if nuisance is None:
-            SSE = (r**2).sum(0)
-            sigmasq = SSE / n
-        else:
-            sigmasq = nuisance['sigma']
+        sigmasq = nuisance['sigma']
         C = sigmasq * np.dot(X.T, X)
         return C
 
@@ -348,6 +338,13 @@ class OLSModel(LikelihoodModel):
         if np.allclose(ohat, o):
             return True
         return False
+
+    @setattr_on_read
+    def rank(self):
+        """
+        Compute rank of design matrix
+        """
+        return utils.rank(self.wdesign)
 
     def fit(self, Y):
 #    def fit(self, Y, robust=None):

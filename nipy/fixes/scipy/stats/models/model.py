@@ -53,9 +53,9 @@ class LikelihoodModel(Model):
         """
         raise NotImplementedError
 
-    def information(self, theta, Y, nuisance=None):
+    def information(self, theta, nuisance=None):
         """
-        Fisher information matrix: the inverse of the -d^2 logL/dtheta^2.
+        Fisher information matrix: the inverse of the expected value of -d^2 logL/dtheta^2.
         """
         raise NotImplementedError
 
@@ -66,7 +66,7 @@ class LikelihoodModelResults(object):
 # not computed in, say, the fit method of OLSModel
 
     ''' Class to contain results from likelihood models '''
-    def __init__(self, theta, Y, model, cov=None, dispersion=1., nuisance=None):
+    def __init__(self, theta, Y, model, cov=None, dispersion=1., nuisance=None, rank=None):
         ''' Set up results structure
         theta     - parameter estimates from estimated model
         Y - data
@@ -82,19 +82,20 @@ class LikelihoodModelResults(object):
         For (some subset of models) scale will typically be the
         mean square error from the estimated model (sigma^2)
 
+        If rank is not None, it is used for df_model instead of the usual counting of parameters.
         '''
         self.theta = theta
         self.Y = Y
         self.model = model
         if cov is None:
-            self.cov = self.model.information(self.theta, self.Y, nuisance=self.nuisance)
+            self.cov = self.model.information(self.theta, nuisance=self.nuisance)
         else:
             self.cov = cov
         self.dispersion = dispersion
         self.nuisance = nuisance
 
         self.df_total = Y.shape[0]
-        self.df_model = theta.shape[0]
+        self.df_model = model.df_model # put this as a parameter of LikelihoodModel
         self.df_resid = self.df_total - self.df_model
 
     @setattr_on_read
