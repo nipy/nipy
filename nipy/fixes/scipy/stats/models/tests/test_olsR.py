@@ -144,6 +144,18 @@ def test_results():
     yield niptest.assert_equal, f['df_den'], 112
     yield niptest.assert_equal, '%0.3e' % f['p_value'], '1.818e-15'
 
+    # test Fcontrast, the 8th column of m.design is all 1s
+    # let's construct a contrast matrix that tests everything
+    # but column 8 is zero
+
+
+    M = np.identity(14)
+    M = np.array([M[i] for i in [0,1,2,3,4,5,6,8,9,10,11,12,13]])
+    Fc = r.Fcontrast(M)
+    yield niptest.assert_almost_equal, Fc.F, f['F']
+    yield niptest.assert_almost_equal, Fc.df_num, f['df_num']
+    yield niptest.assert_almost_equal, Fc.df_den, f['df_den']
+
     thetas = []
     sds = []
     ts = []
@@ -199,6 +211,17 @@ X14 -1.044e-05  7.215e-06  -1.448   0.1505
 
     for t, tstr in zip([r.t(column=i) for i in range(14)], ts):
         yield niptest.assert_equal, '%0.3f' % t, tstr
+
+    for i, t in enumerate([r.t(column=i) for i in range(14)]):
+        m = np.zeros((14,))
+        m[i] = 1.
+        tv = r.Tcontrast(m)
+        e = r.theta[i]
+        sd = np.sqrt(r.vcov(column=i))
+        yield niptest.assert_almost_equal, tv.t, t
+        yield niptest.assert_almost_equal, tv.sd, sd
+        yield niptest.assert_almost_equal, tv.effect, e
+
 
     for p, pstr in zip([2*scipy.stats.t.sf(np.fabs(r.t(column=i)), r.df_resid) for i in range(14)], ps):
         if pstr.find('*') < 0:
