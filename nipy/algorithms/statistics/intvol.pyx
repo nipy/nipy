@@ -519,7 +519,6 @@ def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
     D = np.zeros((8,8))
 
     for i in range(s0-1):
-        print i
         for j in range(s1-1):
             for k in range(s2-1):
 
