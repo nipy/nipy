@@ -159,6 +159,16 @@ def test_results():
 
     yield niptest.assert_true, r.model.has_intercept
 
+    # design matrix has full rank
+
+    yield niptest.assert_equal, r.model.rank, 14
+
+    # design matrix has full rank
+
+    yield niptest.assert_equal, r.df_model, 14
+    yield niptest.assert_equal, r.df_total, 126
+    yield niptest.assert_equal, r.df_resid, 112
+
     # entries with '*****' are not tested as they were a different format
 
     resultstr = \

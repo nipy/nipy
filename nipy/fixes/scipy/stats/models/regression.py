@@ -141,9 +141,9 @@ class OLSModel(LikelihoodModel):
     >>> results.t()
     array([ 0.98019606,  1.87867287])
     >>> print results.Tcontrast([0,1])
-    <T contrast: effect=2.14285714286, sd=1.14062281591, t=1.87867287326, df_denom=5>
+    <T contrast: effect=2.14285714286, sd=1.14062281591, t=1.87867287326, df_den=5>
     >>> print results.Fcontrast(np.identity(2))
-    <F contrast: F=19.4607843137, df_denom=5, df_num=2>
+    <F contrast: F=19.4607843137, df_den=5, df_num=2>
     """
 
     def __init__(self, design, hascons=True):
@@ -422,9 +422,9 @@ class ARModel(OLSModel):
     >>> results.t()
     array([ 30.796394  ,  -2.66543144])
     >>> print results.Tcontrast([0,1])
-    <T contrast: effect=-0.561454972239, sd=0.210643186553, t=-2.66543144085, df_denom=5>
+    <T contrast: effect=-0.561454972239, sd=0.210643186553, t=-2.66543144085, df_den=5>
     >>> print results.Fcontrast(np.identity(2))
-    <F contrast: F=2762.42812716, df_denom=5, df_num=2>
+    <F contrast: F=2762.42812716, df_den=5, df_num=2>
     >>>
     >>> model.rho = np.array([0,0])
     >>> model.iterative_fit(data['Y'], niter=3)
@@ -508,16 +508,16 @@ def yule_walker(X, order=1, method="unbiased", df=None, inv=False):
     n = df or X.shape[0]
 
     if method == "unbiased":
-        denom = lambda k: n - k
+        den = lambda k: n - k
     else:
-        denom = lambda k: n
+        den = lambda k: n
 
     if len(X.shape) != 1:
         raise ValueError, "expecting a vector to estimate AR parameters"
     r = np.zeros(order+1, np.float64)
-    r[0] = (X**2).sum() / denom(0)
+    r[0] = (X**2).sum() / den(0)
     for k in range(1,order+1):
-        r[k] = (X[0:-k]*X[k:]).sum() / denom(k)
+        r[k] = (X[0:-k]*X[k:]).sum() / den(k)
     R = toeplitz(r[:-1])
 
     rho = np.linalg.solve(R, r[1:])
@@ -552,9 +552,9 @@ class WLSModel(OLSModel):
     >>> results.t()
     array([ 0.35684428,  2.0652652 ])
     >>> print results.Tcontrast([0,1])
-    <T contrast: effect=2.91666666667, sd=1.41224801095, t=2.06526519708, df_denom=5>
+    <T contrast: effect=2.91666666667, sd=1.41224801095, t=2.06526519708, df_den=5>
     >>> print results.Fcontrast(np.identity(2))
-    <F contrast: F=26.9986072423, df_denom=5, df_num=2>
+    <F contrast: F=26.9986072423, df_den=5, df_num=2>
     """
     def __init__(self, design, weights=1):
         weights = np.array(weights)

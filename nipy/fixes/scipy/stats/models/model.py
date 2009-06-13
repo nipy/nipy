@@ -194,11 +194,12 @@ class LikelihoodModelResults(object):
         _t = _sd = None
 
         _effect = np.dot(matrix, self.theta)
+
         if sd:
             _sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
         if t:
             _t = _effect * recipr(_sd)
-        return ContrastResults(effect=_effect, t=_t, sd=_sd, df_denom=self.df_resid)
+        return TContrastResults(effect=_effect, t=_t, sd=_sd, df_den=self.df_resid)
 
 # Jonathan: for an F-statistic, the options 't', 'sd' do not make sense. The 'effect' option
 # does make sense, but is rarely looked at in practice.
@@ -225,11 +226,18 @@ class LikelihoodModelResults(object):
 
         ctheta = np.dot(matrix, self.theta)
 
+        if matrix.ndim == 1:
+            matrix = matrix.reshape((1, matrix.shape[0]))
+
+        if dispersion is None:
+            dispersion = self.dispersion
+
         q = matrix.shape[0]
         if invcov is None:
+            print matrix
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
         F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) * recipr((q * dispersion))
-        return ContrastResults(F=F, df_denom=self.df_resid, df_num=invcov.shape[0])
+        return FContrastResults(F=F, df_den=self.df_resid, df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):
         '''
@@ -287,20 +295,20 @@ class TContrastResults(object):
     when np.asarray is called.
     """
 
-    def __init__(self, t, sd, effect, df_denom=None):
-        if df_denom is None:
-            df_denom = np.inf
+    def __init__(self, t, sd, effect, df_den=None):
+        if df_den is None:
+            df_den = np.inf
         self.t = t
         self.sd = sd
         self.effect = effect
-        self.df_denom = df_denom
+        self.df_den = df_den
 
     def __array__(self):
         return np.asarray(self.t)
         
     def __str__(self):
-        return '<T contrast: effect=%s, sd=%s, t=%s, df_denom=%d>' % \
-            (`self.effect`, `self.sd`, `self.t`, self.df_denom)
+        return '<T contrast: effect=%s, sd=%s, t=%s, df_den=%d>' % \
+            (`self.effect`, `self.sd`, `self.t`, self.df_den)
 
 
 
@@ -312,17 +320,17 @@ class FContrastResults(object):
     when np.asarray is called.
     """
 
-    def __init__(self, F, df_num, df_denom=None):
-        if df_denom is None:
-            df_denom = np.inf
+    def __init__(self, F, df_num, df_den=None):
+        if df_den is None:
+            df_den = np.inf
         self.F = F
-        self.df_denom = df_denom
+        self.df_den = df_den
         self.df_num = df_num
 
     def __array__(self):
         return np.asarray(self.F)
         
     def __str__(self):
-        return '<F contrast: F=%s, df_denom=%d, df_num=%d>' % \
-            (`self.F`, self.df_denom, self.df_num)
+        return '<F contrast: F=%s, df_den=%d, df_num=%d>' % \
+            (`self.F`, self.df_den, self.df_num)
 
