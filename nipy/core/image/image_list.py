@@ -43,7 +43,9 @@ class ImageList(object):
         (3, 2, 20, 20)
         >>> np.asarray(newimg).shape
         (2, 20, 20)
+
         """
+
         if images is None:
             self.list = []
             return
@@ -76,6 +78,7 @@ class ImageList(object):
         """
         self.list[index]
         """
+
         if type(index) is type(1):
             return self.list[index]
         else:
@@ -104,6 +107,7 @@ class ImageList(object):
         (20, 2, 20, 20)
 
         """
+
         return np.asarray([np.asarray(im) for im in self.list])
 
     def __iter__(self):
