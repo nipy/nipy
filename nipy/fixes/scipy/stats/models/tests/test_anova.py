@@ -223,7 +223,7 @@ def test_scipy_stats():
         r = f.Fcontrast(c)
         F_m[n] = r.F
         df_m[n] = r.df_num
-        p_m[n] = scipy.stats.f.sf(F_m[n], df_m[n], r.df_denom)
+        p_m[n] = scipy.stats.f.sf(F_m[n], df_m[n], r.df_den)
         assert_almost_equal(F[n], F_m[n])
         assert_almost_equal(df[n], df_m[n])
         assert_almost_equal(p[n], p_m[n])
