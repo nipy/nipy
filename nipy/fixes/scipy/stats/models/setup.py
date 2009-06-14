@@ -4,7 +4,6 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('models',parent_package,top_path)
 
     config.add_subpackage('family')
-    config.add_subpackage('robust')
 
     config.add_data_dir('tests')
 
