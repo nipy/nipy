@@ -52,7 +52,6 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
       null_smax : cluster-level familywise error correction method: None|'rft'|array
       null_s : cluster-level calibration method: None|'rft'|array
     """
-    
     # Masking 
     xyz = np.where(mask.get_data().squeeze()>0)
     zmap = zimg.get_data().squeeze()[xyz]
@@ -63,8 +62,8 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
     zth = z_threshold(height_th, height_control)
     pth = sp_stats.norm.sf(zth)
     above_th = zmap>zth
-    if np.where(above_th)[0].size == 0:
-        return None ## FIXME
+    if len(np.where(above_th)[0]) == 0:
+        return None, None ## FIXME
     zmap_th = zmap[above_th]
     xyz_th = xyz[above_th,:]
 
