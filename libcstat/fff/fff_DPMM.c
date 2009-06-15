@@ -881,7 +881,8 @@ static int _redraw(fff_array *Z, fff_matrix* W,const fff_array * valid, int nit)
 {
   int n,j; 
   rk_state state; 
-  rk_seed(nit, &state);
+  /*rk_seed(nit, &state);*/
+  rk_randomseed(&state);
   double sp,h;
 
   for (n=0 ; n<valid->dimX ; n++) {
