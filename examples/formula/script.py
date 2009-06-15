@@ -2,9 +2,6 @@ from IPython.kernel import client
 
 mec = client.MultiEngineClient()
 
-mec.scatter('subjects', range(16))
-
-
 def fitruns():
     def getruns():
         for i in range(16):
@@ -17,7 +14,7 @@ import fiac_example
 for subj, run in runs:
     try:
         fiac_example.run_model(subj, run)
-    except:
+    except IOError:
         pass
 
     ''')

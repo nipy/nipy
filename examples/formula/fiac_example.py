@@ -182,6 +182,9 @@ def run_model(subj, run):
     # experiment: ['time', 'sentence', 'speaker']
     # initial: ['time', 'initial']
 
+    if not exists(pjoin(rootdir, "experiment_%(run)02d.csv") % path_dict):
+        raise IOError, "can't find design for subject=%d,run=%d" % (subj, run)
+
     experiment = csv2rec(pjoin(rootdir, "experiment_%(run)02d.csv") % path_dict)
     initial = csv2rec(pjoin(rootdir, "initial_%(run)02d.csv") % path_dict)
 
