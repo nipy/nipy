@@ -15,7 +15,7 @@ from nipy.core import api
 
 # data
 
-datadir = "/home/fperez/research/data/fiac"
+datadir = "/home/jtaylo/fiac-curated"
 
 # For group analysis
 
@@ -175,7 +175,7 @@ def run_model(subj, run):
     else:
         path_dict['design'] = 'event'
 
-    rootdir = pjoin(datadir, "fiac_%(subj)02d", "%(design)s" % path_dict)
+    rootdir = pjoin(datadir, "fiac_%(subj)02d", "%(design)s") % path_dict
 
     # The following two lines read in the .csv files
     # and return recarrays, with fields
