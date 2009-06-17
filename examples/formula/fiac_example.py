@@ -6,7 +6,7 @@ from os import makedirs, listdir
 
 from matplotlib.mlab import csv2rec, rec2csv
 
-from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
+from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel, isestimable
 from nipy.modalities.fmri.fmristat import hrf as delay
 from nipy.modalities.fmri import formula, design, hrf
 import nipy.testing as nitest
@@ -16,6 +16,7 @@ from nipy.core import api
 # data
 
 datadir = "/home/jtaylo/fiac-curated"
+#datadir = '/home/fperez/research/data/fiac'
 
 # For group analysis
 
@@ -152,6 +153,7 @@ def run_model(subj, run):
     # The time of the first volume
     # XXX Matthew: FSL slicetimes the data so that the first
     # time point is in the midpoint [0,TR]. What does SPM do?
+    # Answer: Tstart should be 0
     Tstart = 1.25
 
     # The array of times corresponding to each 
@@ -211,6 +213,8 @@ def run_model(subj, run):
     # interactions,
     # each convolved with 2 HRFs in delay.spectral. Its values
     # are matrices with 8 columns.
+
+    # XXX use the hrf __repr__ for naming contrasts
 
     X_exper, cons_exper = design.event_design(experiment, volume_times_rec, hrfs=delay.spectral)
 
@@ -279,9 +283,14 @@ def run_model(subj, run):
 
     # Fit the model, storing an estimate of an AR(1) parameter at each voxel
 
+    for k in cons.keys():
+        if not isestimable(X, cons[k]):
+            del(cons[k])
+            warnings.warn("contrast %s not estimable for this run" % k)
+
     for s in range(nslice):
         d = np.array(fmri[:,s])
-        flatd = d.reshape((d.shape[0], np.product(d.shape[1:])))
+        flatd = d.reshape((d.shape[0], -1))
         result = m.fit(flatd)
         ar1[s] = ((result.resid[1:] * result.resid[:-1]).sum(0) / (result.resid**2).sum(0)).reshape(sliceshape)
 
@@ -290,13 +299,14 @@ def run_model(subj, run):
     # fitting an AR(1) model to each batch of voxels.
 
     # XXX smooth here?
-    # ar = smooth(ar, 8.0)
+    # ar1 = smooth(ar1, 8.0)
 
     ar1 *= 100
     ar1 = ar1.astype(np.int) / 100.
 
     # We split the contrasts into F-tests and t-tests.
-
+    # XXX helper function should do this
+    
     fcons = {}; tcons = {}
     for n, v in cons.items():
         v = np.squeeze(v)
@@ -306,6 +316,7 @@ def run_model(subj, run):
             fcons[n] = v
 
     # Setup a dictionary to hold all the output
+    # XXX ideally these would be memmap'ed Image instances
 
     output = {}
     for n in tcons:
@@ -342,16 +353,16 @@ def run_model(subj, run):
     odir = pjoin(rootdir, "results_%(run)02d" % path_dict)
     if not exists(odir): makedirs(odir)
 
-    for n in fcons:
-        im = api.Image(output[n], anat.coordmap.copy())
-        if not exists(pjoin(odir, n)): makedirs(pjoin(odir, n))
-        save_image(im, pjoin(odir, n, "F.nii"))
-
     for n in tcons:
         if not exists(pjoin(odir, n)): makedirs(pjoin(odir, n))
         for v in ['t', 'sd', 'effect']:
             im = api.Image(output[n][v], anat.coordmap.copy())
             save_image(im, pjoin(odir, n, '%s.nii' % v))
+
+    for n in fcons:
+        im = api.Image(output[n], anat.coordmap.copy())
+        if not exists(pjoin(odir, n)): makedirs(pjoin(odir, n))
+        save_image(im, pjoin(odir, n, "F.nii"))
 
 def fixed_effects(subj, design):
     """
@@ -366,7 +377,7 @@ def fixed_effects(subj, design):
 
     # Which runs correspond to this design type?
 
-    runs = filter(lambda f: exists(pjoin(rootdir, f)), ['results_%02d' % i for i in range(1,5)])
+    runs = ['results_%02d' % i for i in range(1,5) if exists(pjoin(rootdir, f))]
 
     # Find out which contrasts have t-statistics,
     # storing the filenames for reading below
@@ -376,12 +387,13 @@ def fixed_effects(subj, design):
     for rundir in runs:
         rundir = pjoin(rootdir, rundir)
         for condir in listdir(rundir):
+            results[condir] = []
             for stat in ['sd', 'effect']:
                 fname_effect = abspath(pjoin(rundir, condir, 'effect.nii'))
                 fname_sd = abspath(pjoin(rundir, condir, 'sd.nii'))
             if exists(fname_effect) and exists(fname_sd):
-                results.setdefault(condir, []).append([fname_effect,
-                                                       fname_sd])
+                results[condir].append([fname_effect,
+                                        fname_sd])
 
     # Get our hands on the relevant coordmap to
     # save our results

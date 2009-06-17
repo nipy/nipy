@@ -49,6 +49,8 @@ def fitgroup():
                 yield design, con
 
     group_vals = [v for v in getvals()]
+    #ipvars('group_vals')  # dbg
+    
     mec.scatter('group_vals', group_vals)
     mec.execute('''
 import fiac_example
