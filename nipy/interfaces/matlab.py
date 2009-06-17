@@ -1,9 +1,26 @@
-"""Create matlab-compatible temporary files."""
+""" General matlab interface code """
 
 # Stdlib imports
 import os
 import re
 import tempfile
+import subprocess
+
+
+matlab_cmd = 'matlab -nojvm -nosplash'
+
+def run_matlab(cmd):
+    subprocess.call('%s -r \"%s;exit\" ' % (matlab_cmd, cmd),
+                    shell=True)
+    
+
+def run_matlab_script(script_lines, script_name='pyscript'):
+    ''' Put multiline matlab script into script file and run '''
+    mfile = file(script_name + '.m', 'wt')
+    mfile.write(script_lines)
+    mfile.close()
+    return run_matlab(script_name)
+
 
 # Functions, classes and other top-level code
 def mlab_tempfile(dir=None):

@@ -2,11 +2,10 @@
 
 # Stdlib imports
 import os
-import re
 import tempfile
 
 # Our own imports
-from nipy.utils import mlabtemp
+from nipy.interfaces.matlab import mlabtemp
 
 # Functions, classes and other top-level code
 def check_mlab_tempfile(dir):
