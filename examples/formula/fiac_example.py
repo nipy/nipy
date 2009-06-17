@@ -426,6 +426,8 @@ def fixed_effects(subj, design):
             im = api.Image(a, coordmap.copy())
             save_image(im, pjoin(odir, '%s.nii' % n))
 
+group_mask = load_image(pjoin(datadir, 'group', 'mask.nii'))
+
 def group_analysis(design, contrast):
     """
     Compute group analysis effect, sd and t
@@ -455,10 +457,10 @@ def group_analysis(design, contrast):
     #    Morales, F., Evans, A.C. (2002). \'A general statistical 
     #    analysis for fMRI data\'. NeuroImage, 15:1-15
 
-    varatio = onesample.estimate_varatio(Y, sd)
-    random_var = varatio['random']
+    varest = onesample.estimate_varatio(Y, sd)
+    random_var = varest['random']
 
-    # XXX - if we have a smoother, use random_var = varatio['fixed'] * smooth(varatio['ratio'])
+    # XXX - if we have a smoother, use random_var = varest['fixed'] * smooth(varest['ratio'])
 
     # Having estimated the random effects variance (and
     # possibly smoothed it), the corresponding
@@ -476,3 +478,53 @@ def group_analysis(design, contrast):
     for n in ['effect', 'sd', 't']:
         im = api.Image(results[n], coordmap.copy())
         save_image(im, pjoin(odir, "%s.nii" % n))
+
+def group_analysis_signs(design, contrast, signs, mask):
+    """
+    This function refits the EM model with a vector of signs.
+    Used in the permutation tests.
+
+    Returns the maximum of the T-statistic within mask
+
+    Parameters
+    ----------
+
+    design: one of 'block', 'event'
+
+    contrast: str
+
+    signs: ndarray
+
+    mask: ndarray
+
+    Returns
+    -------
+
+    minT: float, minimum of T statistic within mask
+
+    maxT: float, maximum of T statistic within mask
+    
+    """
+
+    rootdir = datadir
+
+    # Which subjects have this (contrast, design) pair?
+
+    subjects = filter(lambda f: exists(f), [pjoin(rootdir, "fiac_%02d" % s, design, "fixed", contrast) for s in range(16)])
+
+    sd = np.array([np.array(load_image(pjoin(s, "sd.nii")))[:,mask] for s in subjects])
+    Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,mask] for s in subjects])
+    signY = signs[:,np.newaxis,np.newaxis,np.newaxis] * Y
+
+    varest = onesample.estimate_varatio(Y, sd)
+    random_var = varest['random']
+
+    adjusted_var = sd**2 + random_var
+    adjusted_sd = np.sqrt(adjusted_var)
+
+    results = onesample.estimate_mean(Y, adjusted_sd) 
+    T = results['t']
+
+    return np.nanmin(T), np.nanmax(T)
+    
+    
