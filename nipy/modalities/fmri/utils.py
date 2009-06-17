@@ -118,19 +118,6 @@ def linear_interp(times, values, fill=0, name=None, **kw):
     return s(t)
 linear_interp.counter = 0
 
-# def event_factor(times_labels, f=DiracDelta):
-#     """
-#     Create a factor from a generator of
-#     pairs of event times and labels.
-#     """
-#     val = {}
-#     for time, label in times_labels:
-#         val[label].setdefault(k, []).append(time)
-#     regressors = []
-#     for label in val.keys():
-#         regressors.append(events(val[label]))
-#     return Formula(regressors)
-
 def step_function(times, values, name=None, fill=0):
     """
     Right-continuous step function such that
