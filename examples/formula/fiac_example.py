@@ -54,8 +54,8 @@ def test_sanity():
         initial = csv2rec(pjoin(datadir, "fiac_%(subj)02d", "%(design)s", "initial_%(run)02d.csv")
                                 % path_dict)
 
-        X_exper, cons_exper = design.event_design(experiment, volume_times_rec, hrfs=delay.spectral)
-        X_initial, _ = design.event_design(initial, volume_times_rec, hrfs=[hrf.glover]) 
+        X_exper, cons_exper = design.event_design(experiment, volume_times, hrfs=delay.spectral)
+        X_initial, _ = design.event_design(initial, volume_times, hrfs=[hrf.glover]) 
         X, cons = design.stack_designs((X_exper, cons_exper),
                                        (X_initial, {}))
 
@@ -237,6 +237,13 @@ def run_model(subj, run):
     # the same number of rows as X_initial and X_exper.
         
     drift = drift.T
+
+    # There are helper functions to create these drifts,
+    # design.fourier_basis, design.natural_spline
+
+    # The above is equivalent (except for the normalization by max 
+    # for numerical stability) to
+    # >>> drift = design.natural_spline(t, [volume_times.mean()])
 
     # Stack all the designs, keeping the new contrasts
     # which has the same keys as cons_exper, but its
