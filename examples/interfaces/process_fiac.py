@@ -1,4 +1,5 @@
 ''' Single subject analysis script for SPM / FIAC '''
+import sys
 from os.path import join as pjoin
 from glob import glob
 import numpy as np
@@ -7,12 +8,9 @@ from nipy.interfaces.spm import spm_info, make_job, scans_for_fnames, \
     run_jobdef, fnames_presuffix, fname_presuffix, fltcols
 
 
-data_path = '/home/mb312/data/FIAC'
-
-
-def get_data(subject_no):
+def get_data(data_path, subj_id):
     data_def = {}
-    subject_path = pjoin(data_path, 'fiac%s' % subject_no)
+    subject_path = pjoin(data_path, 'fiac%s' % subj_id)
     data_def['functionals'] = sorted(
         glob(pjoin(subject_path, 'functional_*.nii')))
     anatomicals = glob(pjoin(subject_path, 'anatomical.nii'))
@@ -173,8 +171,7 @@ def smooth(data_def, fwhm=8.0):
     run_jobdef(sinfo)
     
 
-def process_subject(subj_id):
-    ddef = get_data(subj_id)
+def process_subject(ddef):
     if not ddef['anatomical']:
         return
     slicetime(ddef)
@@ -186,11 +183,19 @@ def process_subject(subj_id):
     smooth(ddef)
 
 
-def process_subjects(subj_ids):
-    for subject in subj_ids:
-        process_subject(subject)
+def process_subjects(data_path, subj_ids):
+    for subj_id in subj_ids:
+        ddef = get_data(data_path, subj_id)
+        process_subject(ddef)
 
 
 if __name__ == '__main__':
-    slicetime(get_data(1))
-    pass
+    try:
+        data_path = sys.argv[1]
+    except IndexError:
+        raise OSError('Need FIAC data path as input')
+    try:
+        subj_ids = sys.argv[2:]
+    except IndexError:
+        subj_ids = range(16)
+    process_subjects(data_path, subj_ids)

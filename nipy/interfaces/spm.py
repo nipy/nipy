@@ -7,28 +7,23 @@ import numpy as np
 
 from scipy.io import savemat
 
-from nipy.utils.tmpdirs import InTemporaryDirectory
+from nipy.utils import InTemporaryDirectory, setattr_on_read
 from nipy.io.imageformats import load
 from nipy.interfaces.matlab import run_matlab_script
 
 
 class SpmInfo(object):
-    def __init__(self):
-        self._spm_path = None
-        
-    @property
+    @setattr_on_read
     def spm_path(self):
-        if self._spm_path is None:
-            with InTemporaryDirectory() as tmpdir:
-                run_matlab_script("""
+        with InTemporaryDirectory() as tmpdir:
+            run_matlab_script("""
 spm_path = spm('dir');
 fid = fopen('spm_path.txt', 'wt');
 fprintf(fid, '%s', spm_path);
 fclose(fid);
 """)
-                spm_path = file('spm_path.txt', 'rt').read()
-            self._spm_path = spm_path
-        return self._spm_path
+            spm_path = file('spm_path.txt', 'rt').read()
+        return spm_path
 
 spm_info = SpmInfo()
 
