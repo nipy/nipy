@@ -9,9 +9,85 @@ from string import join as sjoin
 from nipy.algorithms.statistics.utils import combinations
 
 import formula
-from utils import events
+from utils import events, fourier_basis as fourier_basis_sym
+    
 
 from hrf import glover, dglover
+
+def fourier_basis(t, freq):
+    """
+    Create a design matrix with columns given by the Fourier
+    basis with a given set of frequencies.
+
+    Parameters
+    ----------
+
+    t : np.ndarray
+        An array of np.float values at which to evaluate
+        the design. Common examples would be the acquisition
+        times of an fMRI image.
+
+    freq : [float]
+        Frequencies for the terms in the Fourier basis.
+
+    Returns
+    -------
+
+    X : np.ndarray
+
+    Examples
+    --------
+
+    >>> t = np.linspace(0,50,101)
+    >>> drift = fourier_basis(t, np.array([4,6,8]))
+    >>> drift.shape
+    (101, 6)
+    >>> 
+
+    """
+    tval = formula.make_recarray(t, ['t'])
+    f = fourier_basis_sym(freq)
+    return f.design(tval, return_float=True)
+
+def natural_spline(t, knots=None, order=3, intercept=True):
+    """
+    Create a design matrix with columns given by a
+    natural spline of a given order and a specified set of knots.
+
+    Parameters
+    ----------
+    t : np.array
+
+    knots : None or sequence, optional
+       Sequence of float.  Default None (same as empty list)
+
+    order : int, optional
+       Order of the spline. Defaults to a cubic (==3)
+
+    intercept : bool, optional
+       If True, include a constant function in the natural
+       spline. Default is False
+
+    Returns
+    -------
+
+    X : np.ndarray
+
+    Examples
+    --------
+
+    >>> t = np.linspace(0,50,101)
+    >>> drift = natural_spline(t, knots=[10,20,30,40])
+    >>> drift.shape
+    (101, 8)
+    >>> 
+
+    """
+    tval = formula.make_recarray(t, ['t'])
+    t = formula.Term('t')
+    f = formula.natural_spline(t, knots=knots, order=order, 
+                               intercept=intercept)
+    return f.design(tval, return_float=True)
 
 def event_design(event_spec, t, order=2, hrfs=[glover]):
     """
