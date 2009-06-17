@@ -36,19 +36,19 @@ def fourier_basis(freq):
     Formula for Fourier drift, consisting of sine and
     cosine waves of given frequencies.
 
-    Inputs:
-    =======
+    Parameters
+    ----------
 
     freq : [float]
         Frequencies for the terms in the Fourier basis.
 
-    Outputs:
-    ========
+    Outputs
+    -------
 
     f : Formula
 
-    Examples:
-    =========
+    Examples
+    --------
     
     >>> f=fourier_basis([1,2,3])
     >>> f.terms

@@ -445,8 +445,6 @@ def fixed_effects(subj, design):
             im = api.Image(a, coordmap.copy())
             save_image(im, pjoin(odir, '%s.nii' % n))
 
-group_mask = load_image(pjoin(datadir, 'group', 'mask.nii'))
-
 def group_analysis(design, contrast):
     """
     Compute group analysis effect, sd and t
@@ -546,4 +544,45 @@ def group_analysis_signs(design, contrast, signs, mask):
 
     return np.nanmin(T), np.nanmax(T)
     
-    
+group_mask = load_image(pjoin(datadir, 'group', 'mask.nii'))
+
+def permutation_test(design, contrast, mask, nsample=1000,
+                     mask=group_mask):
+    """
+    Perform a permutation (sign) test for a given design type and
+    contrast. It is a Monte Carlo test because we only sample nsample
+    possible sign arrays.
+
+    Parameters
+    ----------
+
+    design: one of ['block', 'event']
+
+    contrast: str
+
+    nsample: int
+
+    Returns
+    -------
+
+    min_vals: np.ndarray
+
+    max_vals: np.ndarray
+    """
+
+    rootdir = datadir
+    subjects = filter(lambda f: exists(f), [pjoin(rootdir, "fiac_%02d" % s, design, "fixed", contrast) for s in range(16)])
+    Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,mask] for s in subjects])
+    nsubj = Y.shape[0]
+
+    signs_sample = 2*(np.greater(np.random.sample(size=(nsample, nsign)), 
+                                0.5) - 1)
+    min_vals = np.array(nsample)
+    max_vals = np.array(nsample)
+
+    for i, signs in enumerate(signs_sample):
+         min_vals[i], max_vals[i] = group_analysis_signs(design, 
+                                                         contrast, 
+                                                         signs, 
+                                                         mask)
+    return min_vals, max_vals
