@@ -24,7 +24,7 @@ from nipy.algorithms.statistics import onesample
 
 # Local
 import fiac_util as futil
-reload(futil)
+reload(futil)  # while developing interactively
 
 #-----------------------------------------------------------------------------
 # Globals

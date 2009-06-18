@@ -1,14 +1,25 @@
+"""A quick and dirty example of using Mayavi to overlay anatomy and activation.
+"""
+#-----------------------------------------------------------------------------
+# Imports
+#-----------------------------------------------------------------------------
+
 import numpy as np
 
-from os.path import join as pjoin
-from nipy.io.api import load_image
-from nipy.core import api
 import enthought.mayavi.mlab as ML
 
-from fiac_example import datadir
+from fiac_util import load_image_fiac
 
-mask = load_image(pjoin(datadir, 'group', 'mask.nii'))
-avganat = load_image(pjoin(datadir, 'group', 'avganat.nii'))
+#-----------------------------------------------------------------------------
+# Globals
+#-----------------------------------------------------------------------------
+
+MASK = load_image_fiac('group', 'mask.nii')
+AVGANAT = load_image_fiac('group', 'avganat.nii')
+
+#-----------------------------------------------------------------------------
+# Functions
+#-----------------------------------------------------------------------------
 
 def view_thresholdedT(design, contrast, threshold, inequality=np.greater):
     """
@@ -27,20 +38,30 @@ def view_thresholdedT(design, contrast, threshold, inequality=np.greater):
 
     """
 
-    maska = np.asarray(mask)
-    tmap = np.array(load_image(pjoin(datadir, 'group', design, contrast, 't.nii')))
+    maska = np.asarray(MASK)
+    tmap = np.array(load_image_fiac('group', design, contrast, 't.nii'))
     test = inequality(tmap, threshold)
     tval = np.zeros(tmap.shape)
     tval[test] = tmap[test]
-    tval[~test]
 
     # XXX make the array axes agree with mayavi2
-
-    avganata = np.array(avganat)
-    avganat_iso = ML.contour3d(avganata * maska, opacity=0.3, contours=[3600], color=(0.8,0.8,0.8))
+    avganata = np.array(AVGANAT)
+    avganat_iso = ML.contour3d(avganata * maska, opacity=0.3, contours=[3600],
+                               color=(0.8,0.8,0.8))
 
     avganat_iso.actor.property.backface_culling = True
     avganat_iso.actor.property.ambient = 0.3
 
-    tval_iso = ML.contour3d(tval * mask, color=(0.8,0.3,0.3), contours=[threshold])
+    tval_iso = ML.contour3d(tval * MASK, color=(0.8,0.3,0.3),
+                            contours=[threshold])
     return avganat_iso, tval_iso
+
+
+#-----------------------------------------------------------------------------
+# Script entry point
+#-----------------------------------------------------------------------------
+if __name__ == '__main__':
+    design = 'block'
+    contrast = 'sentence_0'
+    threshold = 0.3
+    view_thresholdedT(design, contrast, threshold)
