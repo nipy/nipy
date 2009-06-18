@@ -15,8 +15,8 @@ from nipy.core import api
 
 # data
 
-datadir = "/home/jtaylo/fiac-curated"
-#datadir = '/home/fperez/research/data/fiac'
+#datadir = "/home/jtaylo/fiac-curated"
+datadir = '/home/fperez/research/data/fiac'
 
 # For group analysis
 
