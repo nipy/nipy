@@ -496,7 +496,7 @@ def group_analysis(design, contrast):
         im = api.Image(results[n], coordmap.copy())
         save_image(im, pjoin(odir, "%s.nii" % n))
 
-def group_analysis_signs(design, contrast, signs, mask):
+def group_analysis_signs(design, contrast, mask, signs=None):
     """
     This function refits the EM model with a vector of signs.
     Used in the permutation tests.
@@ -510,9 +510,10 @@ def group_analysis_signs(design, contrast, signs, mask):
 
     contrast: str
 
-    signs: ndarray
+    mask: array-like
 
-    mask: ndarray
+    signs: ndarray, optional
+         Defaults to np.ones
 
     Returns
     -------
@@ -523,17 +524,23 @@ def group_analysis_signs(design, contrast, signs, mask):
     
     """
 
+    maska = np.asarray(mask).astype(np.bool)
+
     rootdir = datadir
 
     # Which subjects have this (contrast, design) pair?
 
     subjects = filter(lambda f: exists(f), [pjoin(rootdir, "fiac_%02d" % s, design, "fixed", contrast) for s in range(16)])
 
-    sd = np.array([np.array(load_image(pjoin(s, "sd.nii")))[:,mask] for s in subjects])
-    Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,mask] for s in subjects])
-    signY = signs[:,np.newaxis,np.newaxis,np.newaxis] * Y
+    sd = np.array([np.array(load_image(pjoin(s, "sd.nii")))[:,maska] for s in subjects])
+    Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,maska] for s in subjects])
 
-    varest = onesample.estimate_varatio(Y, sd)
+    if signs is not None:
+        signY = signs[:,np.newaxis] * Y
+    else:
+        signY = Y
+
+    varest = onesample.estimate_varatio(signY, sd)
     random_var = varest['random']
 
     adjusted_var = sd**2 + random_var
@@ -545,9 +552,11 @@ def group_analysis_signs(design, contrast, signs, mask):
     return np.nanmin(T), np.nanmax(T)
     
 group_mask = load_image(pjoin(datadir, 'group', 'mask.nii'))
+tiny_mask = np.zeros(group_mask.shape, np.bool)
+tiny_mask[30:32,40:42,30:32] = 1
 
-def permutation_test(design, contrast, mask, nsample=1000,
-                     mask=group_mask):
+def permutation_test(design, contrast, mask=group_mask,
+                     nsample=1000):
     """
     Perform a permutation (sign) test for a given design type and
     contrast. It is a Monte Carlo test because we only sample nsample
@@ -570,19 +579,21 @@ def permutation_test(design, contrast, mask, nsample=1000,
     max_vals: np.ndarray
     """
 
+    maska = np.asarray(mask).astype(np.bool)
+
     rootdir = datadir
     subjects = filter(lambda f: exists(f), [pjoin(rootdir, "fiac_%02d" % s, design, "fixed", contrast) for s in range(16)])
-    Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,mask] for s in subjects])
+    Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,maska] for s in subjects])
     nsubj = Y.shape[0]
 
-    signs_sample = 2*(np.greater(np.random.sample(size=(nsample, nsign)), 
-                                0.5) - 1)
-    min_vals = np.array(nsample)
-    max_vals = np.array(nsample)
+    signs_sample = 2*np.greater(np.random.sample(size=(nsample, nsubj)), 
+                                0.5) - 1
+    min_vals = np.zeros(nsample)
+    max_vals = np.zeros(nsample)
 
     for i, signs in enumerate(signs_sample):
          min_vals[i], max_vals[i] = group_analysis_signs(design, 
                                                          contrast, 
-                                                         signs, 
-                                                         mask)
+                                                         maska, 
+                                                         signs)                                                         
     return min_vals, max_vals
