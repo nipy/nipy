@@ -513,14 +513,17 @@ def group_analysis_signs(design, contrast, mask, signs=None):
     mask: array-like
 
     signs: ndarray, optional
-         Defaults to np.ones
+         Defaults to np.ones. Should have shape (*,nsubj)
+         where nsubj is the number of effects combined in the group analysis.
 
     Returns
     -------
 
-    minT: float, minimum of T statistic within mask
+    minT: np.ndarray, minima of T statistic within mask, one for each
+         vector of signs
 
-    maxT: float, maximum of T statistic within mask
+    maxT: np.ndarray, maxima of T statistic within mask, one for each
+         vector of signs
     
     """
 
@@ -535,22 +538,25 @@ def group_analysis_signs(design, contrast, mask, signs=None):
     sd = np.array([np.array(load_image(pjoin(s, "sd.nii")))[:,maska] for s in subjects])
     Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,maska] for s in subjects])
 
-    if signs is not None:
-        signY = signs[:,np.newaxis] * Y
-    else:
-        signY = Y
+    if signs is None:
+        signs = np.ones((1, Y.shape[0]))
 
-    varest = onesample.estimate_varatio(signY, sd)
-    random_var = varest['random']
+    maxT = np.empty(signs.shape[0])
+    minT = np.empty(signs.shape[0])
 
-    adjusted_var = sd**2 + random_var
-    adjusted_sd = np.sqrt(adjusted_var)
+    for i, sign in enumerate(signs):
+        signY = sign[:,np.newaxis] * Y
+        varest = onesample.estimate_varatio(signY, sd)
+        random_var = varest['random']
 
-    results = onesample.estimate_mean(Y, adjusted_sd) 
-    T = results['t']
+        adjusted_var = sd**2 + random_var
+        adjusted_sd = np.sqrt(adjusted_var)
 
-    return np.nanmin(T), np.nanmax(T)
-    
+        results = onesample.estimate_mean(Y, adjusted_sd) 
+        T = results['t']
+        minT[i], maxT[i] = np.nanmin(T), np.nanmax(T)
+    return minT, maxT
+
 group_mask = load_image(pjoin(datadir, 'group', 'mask.nii'))
 tiny_mask = np.zeros(group_mask.shape, np.bool)
 tiny_mask[30:32,40:42,30:32] = 1
@@ -586,14 +592,13 @@ def permutation_test(design, contrast, mask=group_mask,
     Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,maska] for s in subjects])
     nsubj = Y.shape[0]
 
-    signs_sample = 2*np.greater(np.random.sample(size=(nsample, nsubj)), 
-                                0.5) - 1
+    signs = 2*np.greater(np.random.sample(size=(nsample, nsubj)), 
+                         0.5) - 1
     min_vals = np.zeros(nsample)
     max_vals = np.zeros(nsample)
 
-    for i, signs in enumerate(signs_sample):
-         min_vals[i], max_vals[i] = group_analysis_signs(design, 
-                                                         contrast, 
-                                                         maska, 
-                                                         signs)                                                         
+    min_vals, max_vals = group_analysis_signs(design, 
+                                              contrast, 
+                                              maska, 
+                                              signs)                                                         
     return min_vals, max_vals
