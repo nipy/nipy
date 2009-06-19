@@ -39,6 +39,10 @@ sLabelMap = \
 def stringToNarray(s):
     return np.array([int(c) for c in s])
 
+
+
+
+
 class test_GMM(TestCase):
 
     def test_EM_gmm_1(self,verbose=0):
@@ -365,12 +369,12 @@ class test_GMM(TestCase):
         """
         # create the data
         dim = 1
-        X = nr.randn(100,dim)
-        X [-30:,:]= X [-30:,:]+5
+        x = nr.randn(100,dim)
+        x [-30:,:]= x [-30:,:]+5
 
         #create the sampling grid
-        xmin = 1.2*X[:,0].min() - 0.2*X[:,0].max()
-        xmax = 1.2*X[:,0].max() - 0.2*X[:,0].min()
+        xmin = 1.2*x[:,0].min() - 0.2*x[:,0].max()
+        xmax = 1.2*x[:,0].max() - 0.2*x[:,0].min()
         gd = gmm.grid_descriptor(1)
         gd.getinfo([xmin,xmax],100)
         mygrid = gd.make_grid()
@@ -389,10 +393,10 @@ class test_GMM(TestCase):
         nii = 1 # number of ietrations to compute the posterior
         dof = 0
         # to get the  data log-like
-        p0,q0 = fc.fdp(X, alpha, g0, g1, dof,prior_precision, bf1, sub, burnin,X,10,1000)
+        p0,q0 = fc.fdp(x, alpha, g0, g1, dof,prior_precision, bf1, sub, burnin,x,nis,nii)
         
         # to sample ona  grid
-        p,q = fc.fdp(X, alpha, g0, g1, dof,prior_precision, bf1, sub, burnin, mygrid,10,1000)
+        p,q = fc.fdp(x, alpha, g0, g1, dof,prior_precision, bf1, sub, burnin, mygrid,nis,nii)
         if verbose:
             import matplotlib.pylab as MP
             MP.figure()

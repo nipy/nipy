@@ -842,6 +842,7 @@ def _remap(K,i,j,k,Features,linc,rinc):
     return linc,rinc
 
 
+
 def Ward_quick(G,feature,verbose = 0):
     """
     Agglomerative function based on a topology-defining graph
@@ -858,7 +859,7 @@ def Ward_quick(G,feature,verbose = 0):
     """
     # basic check
     if np.size(feature)==feature.shape[0]:
-        feature = np.reshape(feature, np.size(feature),1)
+        feature = np.reshape(feature, (np.size(feature),1))
 
     if feature.shape[0]!=G.V:
         raise ValueError, "Incompatible dimension for the feature matrix and the graph"
@@ -937,6 +938,25 @@ def Ward_quick(G,feature,verbose = 0):
     
     return t
 
+def Ward_field_segment(F,stop=-1, qmax=-1,verbose=0):
+    """
+    Agglomerative function based on a field structure
+    INPUT:
+    - F the input field (graph+feature)
+     - stop = -1: the stopping crterion
+    if stop==-1, then no stopping criterion is used
+    - qmax=1: the maximum number of desired clusters
+    (in the limit of the stopping criterion)
+    OUPUT:
+    -u: a labelling of the graph vertices according to the criterion
+    -cost the cost of each merge step during the clustering procedure
+    CAVEAT : only approximate
+    NOTE:
+    look Ward_quick_segment for more information 
+    """
+    u,cost = Ward_quick_segment(F,F.field,stop,qmax,verbose)
+    return u,cost
+
 def Ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     """
     Agglomerative function based on a topology-defining graph
@@ -958,12 +978,11 @@ def Ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     """
     # basic check
     if np.size(feature)==feature.shape[0]:
-        feature = np.reshape(feature, np.size(feature),1)
+        feature = np.reshape(feature, (np.size(feature),1))
 
     if feature.shape[0]!=G.V:
         raise ValueError, "Incompatible dimension for the feature matrix and the graph"
     
-
     n = G.V
     if stop==-1: stop = np.infty    
     qmax = int(np.minimum(qmax,n-1))
