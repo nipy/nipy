@@ -95,18 +95,20 @@ for d, c in group_vals:
 ''')
 
 
-def run_permut_test(design, contrast, mask=GROUP_MASK,
-                     nsample=1000):
+def run_permute_test(design, contrast, nsample=1000):
     mec = setup_mec()
     nnod = len(mec.get_ids())
     ns_nod = nsample/nnod
-    mec.push(ns_nod=ns_nod, design=design,...) # XXX
+    mec.push(ns_nod=ns_nod, design=design,contrast=contrast)
     mec.execute('''
 import fiac_example
-# load mask here
+from fiac_example import GROUP_MASK
 min_vals, max_vals = fiac_example.permutation_test(design, contrast,
-                               mask, ns_nod)
+                               GROUP_MASK, ns_nod)
     ''')
+    min_vals = mec.gather('min_vals')
+    max_vals = mec.gather('max_vals')
+    return min_vals, max_vals
 
     
 #-----------------------------------------------------------------------------
