@@ -7,6 +7,7 @@ author: Bertrand Thirion, 2005-2009
 
 import numpy as np
 import nipy.neurospin.graph as fg
+import nipy.neurospin.graph.field as ff
 from nipy.neurospin.clustering.hierarchical_clustering import Ward_segment, Ward_quick_segment
 import os.path as op
 import time
@@ -56,6 +57,7 @@ Beta = np.transpose(np.array(Beta))
 #3. Build the 3D model of the data
 # remove the small connected components
 g = fg.WeightedGraph(nbvox)
+#g = ff.Field(nbvox)
 # nn=6 yields a quicker solution than nn=18
 nn = 6
 g.from_3d_grid(np.transpose(xyz.astype(np.int)),nn)
@@ -72,6 +74,7 @@ xyz = xyz[:,aux]
 nbvox = np.size(xyz,1)
 tal = tal[aux,:]
 
+
 # ------------------------------------
 #4. Parcel the data
 # 4.a.
@@ -79,9 +82,12 @@ tal = tal[aux,:]
 #
 mu = 10.0 # weight of anatomical ionformation
 feature = np.hstack((Beta,mu*tal/np.std(tal)))
+g = ff.Field(nbvox,g.edges,g.weights,feature)
+
 
 t1 = time.time()
-w,cost = Ward_quick_segment(g, feature, stop=-1, qmax=nbparcel)
+#w,cost = Ward_quick_segment(g, feature, stop=-1, qmax=nbparcel)
+w,J0 = g.ward(nbparcel)
 t2 = time.time()
 lpa = Pa.Parcellation(nbparcel,np.transpose(xyz),np.reshape(w,(nbvox,1)))
 pi = np.reshape(lpa.population(),nbparcel)
@@ -90,7 +96,19 @@ vf = np.dot(pi,vi)/nbvox
 va =  np.dot(pi,np.sum(lpa.var_feature_intra([tal])[0],1))/nbvox
 print nbparcel, "functional variance", vf, "anatomical variance",va
 
+
 ## 4.b. "random Voronoi" approach: sample with different random seeds
+#from numpy.random import rand
+#seeds = np.argsort(rand(g.V))[:nbparcel]
+#seeds, u, J1 = g.geodesic_kmeans(seeds)
+seeds, u, J1 = g.geodesic_kmeans(label=w)
+lpa = Pa.Parcellation(nbparcel,np.transpose(xyz),np.reshape(u,(nbvox,1)))
+pi = np.reshape(lpa.population(),nbparcel)
+vi = np.sum(lpa.var_feature_intra([Beta])[0],1)
+va =  np.dot(pi,np.sum(lpa.var_feature_intra([tal])[0],1))/nbvox
+vf = np.dot(pi,vi)/nbvox
+print  nbparcel, "functional variance", vf, "anatomical variance",va
+
 ## yields less homogeneous results
 ##
 #V = np.infty
@@ -106,7 +124,7 @@ print nbparcel, "functional variance", vf, "anatomical variance",va
 #	vf = np.dot(pi,vi)/nbvox
 #	print  nbparcel, "functional variance", vf, "anatomical variance",va
 
-print t2-t1
+#print t2-t1
 
 # ------------------------------------
 #5. write the resulting label image
