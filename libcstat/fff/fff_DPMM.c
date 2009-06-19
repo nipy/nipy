@@ -19,6 +19,7 @@ static double _theoretical_pval_student(fff_vector * proba, const fff_vector * X
 static int _redraw(fff_array *Z, fff_matrix* W,const fff_array * valid, int nit);
 
 static int _compute_P_under_H1(fff_vector *density, const fff_FDP* FDP, const fff_matrix *grid);
+static int _FDP_show(fff_FDP* FDP,int i);
 
 /**---------------------------------------**/
 
@@ -557,12 +558,39 @@ extern int fff_FDP_sampling(fff_vector *density, fff_FDP* FDP, fff_array *Z, con
     for(j=0;j<10;j++)
       _recompute_and_redraw(FDP,Z,data,pvals,labels,i*10+j);
 	_compute_P_under_H1(W, FDP, grid);
-	fff_vector_add(density,W);
+    _FDP_show(FDP, i);
+    fff_vector_add(density,W);
   }
   fff_vector_scale(density,1./niter);
   fff_vector_delete(W);
  
   return FDP->k;
+}
+
+static int _FDP_show(fff_FDP* FDP,int i)
+{   
+  double tmp,sw = fff_vector_sum(FDP->weights);
+  printf("%d %ld %f ",i,FDP->k,FDP->alpha); 
+  printf("%f \n",sw);
+  int j,k;
+  for (k=0;k<FDP->k-2;k++){
+    sw = 0;
+    for (j=0 ; j<FDP->dim ; j++){
+      tmp = fff_matrix_get(FDP->means,k,j);
+      sw += (tmp*tmp);
+    }
+    sw = sqrt(sw);
+    printf("%f ",sw);
+  }
+   printf("\n");
+   
+   for (j =0;j<FDP->pop->dimX;j++){
+     k = fff_array_get1d(FDP->pop,j);
+     printf("%ld ",k);
+   } 
+   printf("\n");
+  
+  return 0;
 }
 
 extern int fff_FDP_inference(fff_FDP* FDP, fff_array *Z, fff_vector* posterior, const fff_matrix *data, const fff_vector * pvals, const fff_array * labels, const long niter)
@@ -664,8 +692,8 @@ static int _withdraw (fff_FDP* FDP, fff_array *Z, const fff_matrix *data,  const
 	if (fff_array_get1d(valid,i)==0){
 	  l = fff_array_get1d(Z,i);
 	  if (l>0){
-		l = fff_array_get1d(relabel,l);
-		fff_array_set1d(Z,i,l);
+		j = fff_array_get1d(relabel,l);
+		fff_array_set1d(Z,i,j);
 	  }
 	}
   }
@@ -708,9 +736,9 @@ static int _withdraw (fff_FDP* FDP, fff_array *Z, const fff_matrix *data,  const
   FDP->weights = fff_vector_new(FDP->k-1);
   fff_vector_set_all(FDP->weights, FDP->alpha);
   double w,sw = FDP->alpha;
-  for (i=1 ; i<FDP->k-1 ; i++){
-	w = (double) fff_array_get1d(FDP->pop,i);
-	fff_vector_set(FDP->weights,i-1,w);
+  for (i=0 ; i<FDP->k-2 ; i++){
+	w = (double) fff_array_get1d(FDP->pop,i+1);
+	fff_vector_set(FDP->weights,i,w);
 	sw +=w;
   }
   fff_vector_scale(FDP->weights,1./sw);
@@ -790,6 +818,7 @@ static int _compute_P_under_H1(fff_vector *density, const fff_FDP* FDP, const ff
   int i;
   fff_vector * x = fff_vector_new(FDP->dim);
   fff_vector * w = fff_vector_new(FDP->k);
+  fff_vector * tmp = fff_vector_new(FDP->k);
   double sw;
 
   for (i=0 ; i<grid->size1 ; i++) {
@@ -799,12 +828,52 @@ static int _compute_P_under_H1(fff_vector *density, const fff_FDP* FDP, const ff
 	else
 	  sw = _theoretical_pval_student(w,x,FDP);
 	fff_vector_set(density,i,sw);
+    fff_vector_add(tmp,w);
   }
-  
+
+  /**/
+  printf("density: ");
+  for (i=0 ; i<FDP->k;i++)
+    printf("%f ",fff_vector_get(tmp,i));
+  printf("\n");
+  /**/
+
   fff_vector_delete(x);
   fff_vector_delete(w);
   return 0;
 }
+
+static double _theoretical_pval_gaussian(fff_vector * proba, const fff_vector * X,const fff_FDP* FDP)
+{
+  int i,j;
+  double m,w,p,x;
+  double sw=0;
+
+  for (i=0 ; i<FDP->k-2 ; i++){
+	w = 0;
+	for (j=0 ; j<FDP->dim ; j++){
+	  m = fff_matrix_get(FDP->means,i,j);
+	  p = fff_matrix_get(FDP->precisions,i,j);
+	  x = fff_vector_get(X,j);
+	  w = w + log(p) - log(2*M_PI) - (m-x)*(m-x)*p; 
+	}
+	w = w/2;
+	w = exp(w);
+	fff_vector_set(proba,i,w);
+  }
+  fff_vector_set(proba,FDP->k-2,FDP->g1);
+
+  for (i=0 ; i<FDP->k-1 ; i++){
+	w = fff_vector_get(proba,i);
+	w = w * fff_vector_get(FDP->weights,i);
+	sw += w;
+	fff_vector_set(proba,i,w);
+  }
+  
+  return(sw);
+}
+
+
 
 static double _theoretical_pval_student(fff_vector * proba, const fff_vector * X,const fff_FDP* FDP)
 {
@@ -847,35 +916,6 @@ static double _theoretical_pval_student(fff_vector * proba, const fff_vector * X
   return(sw);
 }
 
-static double _theoretical_pval_gaussian(fff_vector * proba, const fff_vector * X,const fff_FDP* FDP)
-{
-  int i,j;
-  double m,w,p,x;
-  double sw=0;
-
-  for (i=0 ; i<FDP->k-2 ; i++){
-	w = 0;
-	for (j=0 ; j<FDP->dim ; j++){
-	  m = fff_matrix_get(FDP->means,i,j);
-	  p = fff_matrix_get(FDP->precisions,i,j);
-	  x = fff_vector_get(X,j);
-	  w = w + log(p) - log(2*M_PI) - (m-x)*(m-x)*p; 
-	}
-	w = w/2;
-	w = exp(w);
-	fff_vector_set(proba,i,w);
-  }
-  fff_vector_set(proba,FDP->k-2,FDP->g1);
-
-  for (i=0 ; i<FDP->k-1 ; i++){
-	w = fff_vector_get(proba,i);
-	w = w * fff_vector_get(FDP->weights,i);
-	sw += w;
-	fff_vector_set(proba,i,w);
-  }
-  
-  return(sw);
-}
 
 static int _redraw(fff_array *Z, fff_matrix* W,const fff_array * valid, int nit)
 {
@@ -897,7 +937,7 @@ static int _redraw(fff_array *Z, fff_matrix* W,const fff_array * valid, int nit)
 		sp +=fff_matrix_get(W,n,j);
 		if (sp>h) break;
 	  }
-	  j = FFF_MIN(j,W->size2-1);
+	  /* j = FFF_MIN(j,W->size2-1); */
 	  fff_array_set1d(Z,n,j);
 	}
   }
