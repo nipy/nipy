@@ -142,10 +142,11 @@ def run_model(subj, run):
                                    (drift, {}))
 
     # Sanity check: delete any non-estimable contrasts
-    for k in cons.keys():
-        if not isestimable(X, cons[k]):
-            #del(cons[k])
-            warnings.warn("contrast %s not estimable for this run" % k)
+    # XXX - this seems to be broken right now, it's producing bogus warnings.
+    ## for k in cons.keys():
+    ##     if not isestimable(X, cons[k]):
+    ##         del(cons[k])
+    ##         warnings.warn("contrast %s not estimable for this run" % k)
 
     # The default contrasts are all t-statistics.  We may want to output
     # F-statistics for 'speaker', 'sentence', 'speaker:sentence' based on the
@@ -458,9 +459,7 @@ def permutation_test(design, contrast, mask=GROUP_MASK,
 
     signs = 2*np.greater(np.random.sample(size=(nsample, nsubj)), 
                          0.5) - 1
-    min_vals = np.zeros(nsample)
-    max_vals = np.zeros(nsample)
-
+    ipvars('signs')
     min_vals, max_vals = group_analysis_signs(design, 
                                               contrast, 
                                               maska, 

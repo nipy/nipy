@@ -11,6 +11,15 @@ In order to run the examples in this directory, you will need a copy of the
 curated data, available here_.
 
 
+ToDo
+====
+
+- Provide the raw data repository, with design csv files.
+- Integrate the scripts for curating the raw data.
+- Separate input from output directories.
+- Change ':' in contrast directory names to - or something else, as ':' is not
+  a valid character in directory names under Windows and OSX.
+
 
 
 .. _here: http://FIXME/MISSING/DATA/ACCESS
