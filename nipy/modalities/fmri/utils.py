@@ -36,19 +36,19 @@ def fourier_basis(freq):
     Formula for Fourier drift, consisting of sine and
     cosine waves of given frequencies.
 
-    Inputs:
-    =======
+    Parameters
+    ----------
 
     freq : [float]
         Frequencies for the terms in the Fourier basis.
 
-    Outputs:
-    ========
+    Outputs
+    -------
 
     f : Formula
 
-    Examples:
-    =========
+    Examples
+    --------
     
     >>> f=fourier_basis([1,2,3])
     >>> f.terms
@@ -117,19 +117,6 @@ def linear_interp(times, values, fill=0, name=None, **kw):
     s = aliased_function(name, i)
     return s(t)
 linear_interp.counter = 0
-
-# def event_factor(times_labels, f=DiracDelta):
-#     """
-#     Create a factor from a generator of
-#     pairs of event times and labels.
-#     """
-#     val = {}
-#     for time, label in times_labels:
-#         val[label].setdefault(k, []).append(time)
-#     regressors = []
-#     for label in val.keys():
-#         regressors.append(events(val[label]))
-#     return Formula(regressors)
 
 def step_function(times, values, name=None, fill=0):
     """
