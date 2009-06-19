@@ -40,52 +40,7 @@ def stringToNarray(s):
     return np.array([int(c) for c in s])
 
 
-def test_hdp(verbose=1):
-    """
-    test the homoscedastic fdp model
-    """
-    # create the data
-    dim = 1
-    x = nr.randn(100,dim)
-    x [-30:,:]= x [-30:,:]+5
-    
-    #create the sampling grid
-    xmin = 1.2*x[:,0].min() - 0.2*x[:,0].max()
-    xmax = 1.2*x[:,0].max() - 0.2*x[:,0].min()
-    gd = gmm.grid_descriptor(1)
-    gd.getinfo([xmin,xmax],100)
-    mygrid = gd.make_grid()
-    
-    # create the HDP structure
-    g0 = 1.0/(xmax-xmin);
-    g1 =g0
-    alpha = 0.5;
-    prior_precision = 5*np.ones((1,1))
-    sub = (nr.rand(100)*10).astype(np.int)
-    bf1 = np.ones(100)
-    spatial_coords = gd
-    burnin = 100
-    nis = 10 # number of iterations for grid sampling
-    nii = 1 # number of ietrations to compute the posterior
-    dof = 0
-    # to get the  data log-like
-    #p0,q0 = fc.fdp(x, alpha, g0, g1, dof,prior_precision, bf1, sub, burnin,x,nis,nii)
-    
-    # to sample ona  grid
-    p,q = fc.fdp(x, alpha, g0, g1, dof,prior_precision, bf1, sub, burnin, mygrid,nis,nii)
-    if verbose:
-        import matplotlib.pylab as MP
-        MP.figure()
-        MP.plot(np.squeeze(mygrid),p)
-        MP.show()
-        
-    sp = np.sum(p)*(mygrid[1]-mygrid[0])
-    if verbose:
-        print "Infinite GMM ",#"Average LL: ", np.mean(np.log(p0)),
-        print "denisty sum: ",sp, np.sum(p),g0*100
-        
-    sp = (sp<1.01)*(sp>0.9)
-    assert(sp)
+
 
 
 class test_GMM(TestCase):
