@@ -140,31 +140,26 @@ def step_function(times, values, name=None, fill=0):
     if t < times[0]:
         f(t) = fill
 
-    Inputs:
-    =======
-
+    Parameters
+    ----------
     times : ndarray
         Increasing sequence of times
-
     values : ndarray
         Values at the specified times
-
     fill : float
         Value on the interval (-np.inf, times[0])
-        
     name : str
         Name of symbolic expression to use. If None,
         a default is used.
 
-    Outputs:
-    ========
-
+    Returns
+    -------
     f : Formula
         A Formula with only a step function, as a function of t.
 
-    Examples:
-    =========
-
+    Examples
+    --------
+    
     >>> s=step_function([0,4,5],[2,4,6])
     >>> tval = np.array([-0.1,3.9,4.1,5.1]).view(np.dtype([('t', np.float)]))
     >>> s.design(tval)
@@ -189,7 +184,10 @@ def step_function(times, values, name=None, fill=0):
 
     s = aliased_function(name, anon)
     return s(t)
+
+# Initialize counter for step function
 step_function.counter = 0
+
 
 def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
     """
@@ -221,7 +219,6 @@ def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
     >>> h = Symbol('hrf')
     >>> events([3,6,9], f=h)
     hrf(-9 + t) + hrf(-6 + t) + hrf(-3 + t)
-    >>>
 
     >>> events([3,6,9], amplitudes=[2,1,-1])
     -DiracDelta(-9 + t) + 2*DiracDelta(-3 + t) + DiracDelta(-6 + t)
@@ -332,6 +329,7 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     f : sympy expr
             An expression that is a function of t only.
 
+    >>> import sympy
     >>> t = sympy.Symbol('t')
     >>> # This is a square wave on [0,1]
     >>> f1 = (t > 0) * (t < 1)
