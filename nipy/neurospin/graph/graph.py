@@ -9,7 +9,8 @@ WeightedGraph (Graph): Idem plus values asociated with vertices
 BipartiteGraph (WeightedGraph): Idem but the graph is Bipartite
 
 
-Author:Bertrand Thirion
+Author: Bertrand Thirion, 2006--2009
+Fixme : add graph creation routines that are more practical than current procedures
 """
 
 class Graph:

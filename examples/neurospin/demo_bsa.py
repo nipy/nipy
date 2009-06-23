@@ -28,26 +28,28 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 
     # Get  coordinates in mm
     xyz = np.transpose(xyz)
-    tal = xyz.astype(np.float)
+    coord = xyz.astype(np.float)
 
     # get the functional information
     lbeta = np.array([np.ravel(betas[k]) for k in range(nbsubj)]).T
 
     # the voxel volume is 1.0
-    g0 = 1.0/(1.0*nbvox)
+    #g0 = 1.0/(1.0*nbvox)
+    g0 = 1.0/(1.0*nbvox)*1./np.sqrt(2*np.pi*dmax**2)
+    
     bdensity = 1
 
     if method=='ipmi':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_ipmi(Fbeta, lbeta, tal, dmax,xyz, None, thq,
+                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax,xyz, None, thq,
                                         smin, ths, theta, g0, bdensity)
     if method=='simple':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_simple(Fbeta, lbeta, tal, dmax,xyz,
+                   bsa.compute_BSA_simple(Fbeta, lbeta, coord, dmax,xyz,
                                           None, thq, smin, ths, theta, g0)
     if method=='dev':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_dev(Fbeta, lbeta, tal, dmax,xyz, None, thq,
+                   bsa.compute_BSA_dev(Fbeta, lbeta, coord, dmax,xyz, None, thq,
                                       smin, ths, theta, g0, bdensity)
         
     if method not in['dev','simple','ipmi']:
@@ -62,16 +64,27 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 
     group_map.shape = ref_dim
     mp.figure()
+    mp.subplot(1,3,1)
     mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
-    mp.title('Group-level label map')
+    mp.title('Blob separation map')
     mp.colorbar()
-        
-    likelihood.shape = ref_dim
+    
+    group_map = AF.map_label(coord,0.95,dmax)
+    group_map.shape = ref_dim
     mp.figure()
-    mp.imshow(likelihood, interpolation='nearest')
-    mp.title('Data likelihood')
+    mp.subplot(1,3,2)
+    mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
+    mp.title('group-level position 95%confidence regions')
     mp.colorbar()
 
+    mp.subplot(1,3,3)
+    likelihood.shape = ref_dim
+    mp.figure()    
+    mp.imshow(likelihood, interpolation='nearest')
+    mp.title('Spatial density under h1')
+    mp.colorbar()
+
+    
     mp.figure()
     if nbsubj==10:
         for s in range(nbsubj):

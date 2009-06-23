@@ -140,7 +140,6 @@ class landmark_regions(hroi.NROI):
             if xmax<xmin+eps:
                 return x
             else:
-                print xmin,x,xmax
                 if lfunc(x)>alpha:
                     return dichomain_lfunc(xmin,x,eps,alpha)
                 else:
@@ -151,7 +150,7 @@ class landmark_regions(hroi.NROI):
 
         gamma = dicho_solve_lfunc(pval)**2
         hpd[delta>gamma]=0
-         return hpd
+        return hpd
 
     def map_label(self,cs,pval = 0.95,dmax=1.):
         """

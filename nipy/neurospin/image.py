@@ -8,7 +8,8 @@ process data for real until fff is properly integrated into nipy.
 import numpy as np
 
 
-DEFAULT_IOLIB = 'pynifti'
+#DEFAULT_IOLIB = 'pynifti'
+DEFAULT_IOLIB = 'aims'
 
 # Test whether pynifti includes Matthew Brett's volumeimages
 def new_pynifti():

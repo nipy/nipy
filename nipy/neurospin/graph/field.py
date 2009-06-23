@@ -3,6 +3,14 @@ from _field import __doc__
 import numpy as np
 import graph as fg
 
+"""
+This module implements the field structure of nipy.neurospin
+
+Author:Bertrand Thirion, 2006--2009
+
+Fixme : add a subfield method, similar to subgraph
+"""
+
 class Field(fg.WeightedGraph):
     """
     This is the basic field structure,
@@ -262,6 +270,8 @@ class Field(fg.WeightedGraph):
         seed: int array of shape(p), the input seeds
         OUTPUT:
         label: The resulting labelling of the data
+
+        FIXME : what happens if there are several ccs in the graph ?
         """
         if (np.size(self.field)==0):
             raise ValueError, 'No field has been defined so far'
@@ -269,6 +279,87 @@ class Field(fg.WeightedGraph):
         label = field_voronoi(self.edges[:,0],self.edges[:,1],self.field,seed)
         return label
 
+    def geodesic_kmeans(self, seeds=None, label=None, maxiter=100,eps=1.e-4,verbose = 0):
+        """
+        Geodesic k-means algorithms: i.e. obtention of clusters that are topologically
+        connected and minimally variable concerning the information of self.field
+        INPUT:
+        - seeds : array of shape (p) proviing the initial indices of the seeds within the field
+        if seeds==None the labels are used as initialization
+        - labels = array of shape(self.V) initial labels
+        it is expected that labels take their values in a certain range (0..lmax)
+        if Labels==None, this is not used
+        if seeds==None and labels==None,  an error is returned
+        - maxiter=100: maximal number of iterations
+        - eps=1.e-4: increase of inertia at which convergence is declared
+
+        Ouput:
+        - seeds: array of shape (p) the final seeds
+        - label : array of shape (self.V) the resulting field label
+        - J: inertia value
+        """
+        if (np.size(self.field)==0):
+            raise ValueError, 'No field has been defined so far'
+
+        if (seeds==None) and (label==None):
+            raise ValueError, 'No initialization has been provided'
+        k = np.size(seeds)
+        inertia_old = np.infty
+        if seeds==None:
+            k = label.max()+1
+            if np.size(np.unique(label))!=k:
+                raise ValueError, 'missing values, I cannot proceed'
+            seeds = np.zeros(k).astype(np.int)
+            for  j in range(k):
+                lj = np.nonzero(label==j)[0]
+                cent = np.mean(self.field[lj],0)
+                tj = np.argmin(np.sum((cent-self.field[lj])**2,1))
+                seeds[j] = lj[tj]
+        else:
+            k = np.size(seeds)
+            
+        for i in range(maxiter):
+            label = field_voronoi(self.edges[:,0],self.edges[:,1],self.field,seeds)
+            #update the seeds
+            inertia = 0
+            pinteria = 0
+            for  j in range(k):
+                lj = np.nonzero(label==j)[0]
+                pinteria += np.sum((self.field[seeds[j]]-self.field[lj])**2)
+                cent = np.mean(self.field[lj],0)
+                tj = np.argmin(np.sum((cent-self.field[lj])**2,1))
+                seeds[j] = lj[tj]
+                #inertia += np.sum((self.field[seeds[j]]-self.field[lj])**2)
+                inertia += np.sum((cent-self.field[lj])**2)
+            if verbose:
+                print i, inertia
+            if np.absolute(inertia_old-inertia)<eps:
+                break
+            inertia_old = inertia
+        return seeds, label, inertia
+
+    def ward(self,nbcluster):
+        """
+        Ward's clsutering of self
+
+        INPUT:
+        - nbcluster (int):
+        the number of desired clusters
+        OUPUT:
+        - label : array of shape (self.V) the resulting field label
+        - j (float): the resulting inertia
+        """
+        from nipy.neurospin.clustering.hierarchical_clustering import Ward_field_segment
+        label,J = Ward_field_segment(self,qmax=nbcluster)
+
+        # compute the resulting inertia
+        inertia = 0
+        for  j in range(nbcluster):
+            lj = np.nonzero(label==j)[0]
+            cent = np.mean(self.field[lj],0)
+            inertia += np.sum((cent-self.field[lj])**2)
+        return label, inertia
+        
     def copy(self):
         """
         copy function
