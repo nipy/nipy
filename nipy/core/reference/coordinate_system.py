@@ -325,7 +325,7 @@ def safe_dtype(*dtypes):
 
     arrays = [np.zeros(2, dtype) for dtype in dtypes]
     notbuiltin = filter(lambda x: not x.dtype.isbuiltin, arrays)
-    if notbuiltin:
+    if np.any(notbuiltin):
         raise TypeError('dtype must be valid numpy dtype int, uint, float or complex')
     return np.array(arrays).dtype
 
