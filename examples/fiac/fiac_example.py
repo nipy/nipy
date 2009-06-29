@@ -6,7 +6,7 @@
 
 # Stdlib
 import warnings
-
+from tempfile import NamedTemporaryFile
 from os.path import join as pjoin
 
 # Third party
@@ -164,18 +164,12 @@ def run_model(subj, run):
     # Load in the fMRI data, saving it as an array
     # It is transposed to have time as the first dimension,
     # i.e. fmri[t] gives the t-th volume.
+
     fmri, anat = futil.get_fmri_anat(path_info)
     fmri = np.transpose(fmri, [3,0,1,2])
 
     nvol, volshape = fmri.shape[0], fmri.shape[1:] 
     nslice, sliceshape = volshape[0], volshape[1:]
-
-    # XXX Matthew: can you output a brain mask -- it would save
-    # having to fit the model everywhere
-    #     mask = np.array(load_image(pjoin(DATADIR,
-    #                     "fiac_%(subj)02d", "mask.nii") % path_dict))
-    #     mask_a = np.transpose(np.array(mask), [2,1,0])
-    mask_a = 1 # XXX change this once we have a mask
 
     #----------------------------------------------------------------------
     # Model fit
@@ -224,17 +218,20 @@ def run_model(subj, run):
     for n in tcons:
         tempdict = {}
         for v in ['sd', 't', 'effect']:
-            tempdict[v] = np.zeros(volshape)
+            tempdict[v] = np.memmap(NamedTemporaryFile(prefix='%s%s.nii' \
+                                    % (n,v)), dtype=np.float, 
+                                    shape=volshape, mode='w+')
         output[n] = tempdict
     
     for n in fcons:
-        output[n] = np.zeros(volshape)
+        output[n] = np.memmap(NamedTemporaryFile(prefix='%s%s.nii' \
+                                    % (n,v)), dtype=np.float, 
+                                    shape=volshape, mode='w+')
 
     # Loop over the unique values of ar1
 
     for val in np.unique(ar1):
         armask = np.equal(ar1, val)
-        armask *= mask_a
         m = ARModel(X, val)
         d = fmri[:,armask]
         results = m.fit(d)
@@ -277,7 +274,7 @@ def fixed_effects(subj, design):
     fixdir = pjoin(rootdir, "fixed")
 
     results = futil.results_table(path_dict)
-    ipvars('results')  # dbg
+
     # Get our hands on the relevant coordmap to
     # save our results
     coordmap = futil.load_image_fiac("fiac_%02d" % subj,
@@ -311,7 +308,6 @@ def fixed_effects(subj, design):
                         ['effect', 'sd', 't']):
             im = api.Image(a, coordmap.copy())
             save_image(im, pjoin(odir, '%s.nii' % n))
-
 
 def group_analysis(design, contrast):
     """
