@@ -47,11 +47,7 @@ def test_em_gmm_full(verbose=0):
         bic[k-1] = lgmm.estimate(x,None,maxiter,delta,verbose)
         if verbose: print "bic of the %d-classes model"%k, bic
 
-    if verbose:
-        # plot the result
-        z = lgmm.map_label(x)
-        from test_bgmm import plot2D
-        plot2D(x,lgmm,z,show = 1,verbose=0)
+    z = lgmm.map_label(x)
     assert(bic[4]<bic[1])
 
 
@@ -77,13 +73,9 @@ def test_em_gmm_diag(verbose=0):
         bic[k-1] = lgmm.estimate(x,None,maxiter,delta,verbose)
         if verbose: print "bic of the %d-classes model"%k, bic
 
-    if verbose:
-        # plot the result
-        z = lgmm.map_label(x)
-        from test_bgmm import plot2D
-        plot2D(x,lgmm,z,show = 1,verbose=0)
+    z = lgmm.map_label(x)
 
-    assert(bic[4]<bic[1])
+    assert((z.max()+1==lgmm.k)&(bic[4]<bic[1]))
 
 def test_em_gmm_multi(verbose=0):
     """
@@ -141,7 +133,7 @@ def test_em_gmm_largedim(verbose=0):
     #check the correlation between the true labelling
     # and the computed one
     eta = np.absolute(np.dot(z-z.mean(),u-u.mean())/(np.std(z)*np.std(u)*100))
-    assert (eta>0.5)
+    assert (eta>0.3)
 
 def test_em_gmm_heterosc(verbose=0):
     """
