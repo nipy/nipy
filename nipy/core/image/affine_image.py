@@ -190,7 +190,7 @@ class AffineImage(Image):
 
             Parameters
             ----------
-            target_image : nipy image
+            target_image : AffineImage
                 Nipy image onto the grid of which the data will be
                 resampled.
             XXX In the proposal, target_image was assumed to be a matrix if it had no attribute "affine". It now has to have a spatial_coordmap attribute.
@@ -214,7 +214,8 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
         """
         return self.resampled_to_affine(target_image.spatial_coordmap,
                                         interpolation_order=interpolation_order,
-                                        shape=target.shape)
+                                        shape=target_image.shape)
+
 
     def values_in_world(self, x, y, z, interpolation_order=3):
         """ Return the values of the data at the world-space positions given by 

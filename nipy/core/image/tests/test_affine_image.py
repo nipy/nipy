@@ -1,5 +1,5 @@
 from nipy.core.image import affine_image, affine_imageII
-import nipy.io.api as A
+import nipy.io.api as io
 import numpy as np
 import nipy.testing as niptest
 
@@ -10,7 +10,7 @@ def test_affine_image():
     # http://kff.stanford.edu/~jtaylo/affine_image_testfiles
 
 
-    im=A.load_image('/home/jtaylo/dummy.mnc')
+    im=io.load_image('/home/jtaylo/dummy.mnc')
 
     a = affine_image.AffineImage(np.array(im), im.affine, im.coordmap.input_coords.name)
     aII = affine_imageII.AffineImage(np.array(im), im.affine, im.coordmap.input_coords.coord_names)
@@ -57,4 +57,37 @@ def test_affine_image():
     yield niptest.assert_true,  b.shape == im.shape[::-1]
     yield niptest.assert_true,  bII.shape == im.shape[::-1]
 
+def test_resample():
+    im = io.load_image('/home/jtaylo/dummy.mnc')
+
+    affine_im = affine_imageII.AffineImage(np.array(im), im.affine, ['i','j','k'])
+
+    affine_im_resampled = affine_im.resampled_to_affine(affine_im.spatial_coordmap)
+    yield niptest.assert_almost_equal, np.array(affine_im_resampled), np.array(affine_im)
+
+    affine_im_resampled2 = affine_im.resampled_to_img(affine_im)
+    yield niptest.assert_almost_equal, np.array(affine_im_resampled2), np.array(affine_im)
+
+    affine_im = affine_image.AffineImage(np.array(im), im.affine, 'voxel')
+    affine_im_resampled = affine_im.resampled_to_affine(affine_im.spatial_coordmap)
+    yield niptest.assert_almost_equal, np.array(affine_im_resampled), np.array(affine_im)
+
+    affine_im_resampled2 = affine_im.resampled_to_img(affine_im)
+    yield niptest.assert_almost_equal, np.array(affine_im_resampled2), np.array(affine_im)
+
+    # first call xyz_ordered
+
+    affine_im_xyz = affine_im.xyz_ordered()
+    affine_im_resampled = affine_im_xyz.resampled_to_affine(affine_im_xyz.spatial_coordmap)
+    yield niptest.assert_almost_equal, np.array(affine_im_resampled), np.array(affine_im_xyz)
+
+    affine_im_resampled2 = affine_im_xyz.resampled_to_img(affine_im_xyz)
+    yield niptest.assert_almost_equal, np.array(affine_im_resampled2), np.array(affine_im_xyz)
+
+    affine_im_xyz = affine_image.AffineImage(np.array(im), im.affine, 'voxel')
+    affine_im_resampled = affine_im_xyz.resampled_to_affine(affine_im_xyz.spatial_coordmap)
+    yield niptest.assert_almost_equal, np.array(affine_im_resampled), np.array(affine_im_xyz)
+
+    affine_im_resampled2 = affine_im_xyz.resampled_to_img(affine_im_xyz)
+    yield niptest.assert_almost_equal, np.array(affine_im_resampled2), np.array(affine_im_xyz)
 

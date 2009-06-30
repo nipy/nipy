@@ -189,15 +189,16 @@ class AffineImage(Image):
         target = affine_transform
         target_world_to_self_world = compose(self.spatial_coordmap,
                                              target.inverse)
+        print interpolation_order, 'order'
         return resample(self, target, target_world_to_self_world,
-                        shape, interpolation_order)
+                        shape, order=interpolation_order)
 
     def resampled_to_img(self, target_image, interpolation_order=3):
         """ Resample the image to be on the same grid than the target image.
 
             Parameters
             ----------
-            target_image : nipy image
+            target_image : AffineImage
                 Nipy image onto the grid of which the data will be
                 resampled.
             XXX In the proposal, target_image was assumed to be a matrix if it had no attribute "affine". It now has to have a spatial_coordmap attribute.
@@ -221,7 +222,8 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
         """
         return self.resampled_to_affine(target_image.spatial_coordmap,
                                         interpolation_order=interpolation_order,
-                                        shape=target.shape)
+                                        shape=target_image.shape)
+                                        
 
     def values_in_world(self, x, y, z, interpolation_order=3):
         """ Return the values of the data at the world-space positions given by 
