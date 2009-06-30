@@ -25,17 +25,10 @@ class AffineImage(Image):
 
         **Attributes**
 
-        :affine: 4x4 ndarray
+        :axis_names: sequence of strings
+        
+            Names of the axes of the data.
 
-            Affine mapping from voxel axes to world coordinates
-            (world coordinates are always forced to be 'x', 'y', 'z').
-
-        :coordmap: AffineTransform
-
-            Coordinate map describing the spatial coordinates 
-            (always forced to be 'x', 'y', 'z') and the coordinate
-            axes with names axis_names.
-           
         :metadata: dictionnary
 
             Optional, user-defined, dictionnary used to carry around
@@ -46,6 +39,25 @@ class AffineImage(Image):
         :_data: 
 
             Private pointer to the data.
+
+        **Properties**
+
+        :affine: 4x4 ndarray
+
+            Affine mapping from voxel axes to world coordinates
+            (world coordinates are always forced to be 'x', 'y', 'z').
+
+        :spatial_coordmap: AffineTransform
+
+            Coordinate map describing the spatial coordinates 
+            (always forced to be 'x', 'y', 'z') and the coordinate
+            axes with names axis_names[:3].
+           
+        :coordmap: AffineTransform
+
+            Coordinate map describing the relationship between
+            all coordinates and axis_names.
+
 
         **Notes**
 
@@ -58,7 +70,7 @@ class AffineImage(Image):
 
 
     #---------------------------------------------------------------------------
-    # Attributes, BaseImage interface
+    # Attributes
     #---------------------------------------------------------------------------
 
     # The name of the reference coordinate system
@@ -86,6 +98,7 @@ class AffineImage(Image):
             axis_names : [string]
                 names of the axes in the coordinate system.
         """
+
         if len(axis_names) < 3:
             raise ValueError('AffineImage must have a minimum of 3 axes')
 
@@ -95,7 +108,7 @@ class AffineImage(Image):
         spatial_coordmap = AffineTransform(affine, input_coords, output_coords)
 
         nonspatial_names = axis_names[3:]
-
+        
         if nonspatial_names:
             nonspatial_coordmap = AffineTransform.from_start_step(nonspatial_names, nonspatial_names, [0]*(data.ndim-3), [1]*(data.ndim-3))
             full_coordmap = cmap_product(spatial_coordmap, nonspatial_coordmap)
@@ -104,6 +117,7 @@ class AffineImage(Image):
 
         self._spatial_coordmap = spatial_coordmap
 
+        self.axis_names = axis_names
         Image.__init__(self, data, full_coordmap)
         if metadata is not None:
             self.metadata = metadata
@@ -116,13 +130,13 @@ class AffineImage(Image):
         return self._spatial_coordmap
     spatial_coordmap = property(_get_spatial_coordmap)
 
-    def _get_spatial_affine(self):
+    def _get_affine(self):
         """
         Returns the affine of the spatial coordmap which will
         always be a 4x4 matrix.
         """
         return self._spatial_coordmap.affine
-    affine = property(_get_spatial_affine)
+    affine = property(_get_affine)
 
     def get_data(self):
         # XXX What's wrong with __array__? Wouldn't that be closer to numpy?
@@ -306,6 +320,6 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
         return (    isinstance(other, self.__class__)
                 and np.all(self.get_data() == other.get_data())
                 and np.all(self.affine == other.affine)
-                and (self.coord_sys == other.coord_sys))
+                and (self.axis_names == other.axis_names))
 
 

@@ -25,17 +25,6 @@ class AffineImage(Image):
 
         **Attributes**
 
-        :affine: 4x4 ndarray
-
-            Affine mapping from voxel axes to world coordinates
-            (world coordinates are always forced to be 'x', 'y', 'z').
-
-        :coordmap: AffineTransform
-
-            Coordinate map describing the spatial coordinates 
-            (always forced to be 'x', 'y', 'z') and the coordinate
-            axes with names axis_names.
-           
         :metadata: dictionnary
 
             Optional, user-defined, dictionnary used to carry around
@@ -46,6 +35,25 @@ class AffineImage(Image):
         :_data: 
 
             Private pointer to the data.
+
+        **Properties**
+
+        :affine: 4x4 ndarray
+
+            Affine mapping from voxel axes to world coordinates
+            (world coordinates are always forced to be 'x', 'y', 'z').
+
+        :spatial_coordmap: AffineTransform
+
+            Coordinate map describing the spatial coordinates 
+            (always forced to be 'x', 'y', 'z') and the coordinate
+            axes with names axis_names[:3].
+           
+        :coordmap: AffineTransform
+
+            Coordinate map describing the relationship between
+            all coordinates and axis_names.
+
 
         **Notes**
 
@@ -61,7 +69,7 @@ class AffineImage(Image):
     #---------------------------------------------------------------------------
 
     # The name of the reference coordinate system
-    axis_names = ['i', 'j', 'k']
+    coord_sys = ''
 
     # User defined meta data
     metadata = dict()
@@ -71,6 +79,7 @@ class AffineImage(Image):
 
     # XXX: Need an attribute to determine in a clever way the
     # interplation order/method
+
 
 
     def __init__(self, data, affine, coord_sys, metadata=None):
@@ -100,6 +109,8 @@ class AffineImage(Image):
             full_coordmap = spatial_coordmap 
 
         self._spatial_coordmap = spatial_coordmap
+
+        self.coord_sys = coord_sys
         Image.__init__(self, data, full_coordmap) 
         if metadata is not None:
             self.metadata = metadata
