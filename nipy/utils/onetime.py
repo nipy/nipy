@@ -28,13 +28,12 @@ class OneTimeProperty(object):
             The method that will be called the first time to compute a value.
             Afterwards, the method's name will be a standard attribute holding
             the value of this computation.
-            """
+       """
        self.getter = func
        self.name = func.func_name
 
    def __get__(self, obj, type=None):
-       """This will be called on attribute access on the class or instance. """
-
+       """ Called on attribute access on the class or instance.  """
        if obj is None:
            # Being called on the class, return the original function. This way,
            # introspection works on the class.
