@@ -77,12 +77,13 @@ try:
     class MyBuildDoc(BuildDoc):
         
         def run(self):
-            if not os.path.exists(os.path.join('doc', 'api', 'generated')):
-                APIDocs.run(self)
-            # We need to be in the doc directory for to plot_directive to
-            # work
+            # We need to be in the doc directory for to plot_directive
+            # and API generation to work
             os.chdir('doc')
             try:
+                if not os.path.exists(os.path.join('api', 'generated')):
+                    os.system('%s ../tools/build_modref_templates.py' 
+                                                        % sys.executable)
                 BuildDoc.run(self)
             finally:
                 os.chdir('..')
