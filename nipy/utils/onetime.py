@@ -18,7 +18,7 @@ Hettinger. http://users.rcn.com/python/download/Descriptor.htm
 class OneTimeProperty(object):
    """A descriptor to make special properties that become normal attributes.
    """
-   def __init__(self,func):
+   def __init__(self, func):
        """Create a OneTimeProperty instance.
 
         Parameters
@@ -32,13 +32,13 @@ class OneTimeProperty(object):
        self.getter = func
        self.name = func.func_name
 
-   def __get__(self,obj,type=None):
+   def __get__(self, obj, type=None):
        """This will be called on attribute access on the class or instance. """
 
        if obj is None:
            # Being called on the class, return the original function. This way,
            # introspection works on the class.
-           return func
+           return self.getter
 
        val = self.getter(obj)
        #print "** setattr_on_read - loading '%s'" % self.name  # dbg
