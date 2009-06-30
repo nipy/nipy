@@ -80,8 +80,6 @@ class AffineImage(Image):
     # XXX: Need an attribute to determine in a clever way the
     # interplation order/method
 
-
-
     def __init__(self, data, affine, coord_sys, metadata=None):
         """ Creates a new nipy image with an affine mapping.
 
@@ -123,13 +121,13 @@ class AffineImage(Image):
         return self._spatial_coordmap
     spatial_coordmap = property(_get_spatial_coordmap)
 
-    def _get_spatial_affine(self):
+    def _get_affine(self):
         """
         Returns the affine of the spatial coordmap which will
         always be a 4x4 matrix.
         """
         return self._spatial_coordmap.affine
-    affine = property(_get_spatial_affine)
+    affine = property(_get_affine)
 
     def get_data(self):
         # XXX What's wrong with __array__? Wouldn't that be closer to numpy?
@@ -146,8 +144,12 @@ class AffineImage(Image):
             ----------
             affine_transform : AffineTransform
 
-                Affine of the new grid. It must have the same
-                axes as self.
+                Affine of the new grid. 
+
+                XXX In the original proposal, it said something about "if only 3x3 it is assumed
+                to be a rotation", but this wouldn't work the way the code was written becuase
+                it was written as if affine was the affine of an AffineImage. So, if you input
+                a "rotation matrix" that is assuming you have voxels of size 1.... 
 
             interpolation_order : int, optional
                 Order of the spline interplation. If 0, nearest-neighboor 
@@ -155,6 +157,9 @@ class AffineImage(Image):
 
             shape: tuple
                 Shape of the resulting image. Defaults to self.shape.
+
+                XXX This default only makes sense if the "voxels" in affine_transform
+                are roughly the same size as those in self.spatial_coordmap.
 
             Returns
             -------
@@ -178,7 +183,7 @@ class AffineImage(Image):
         target_world_to_self_world = compose(self.spatial_coordmap,
                                              target.inverse)
         return resample(self, target, target_world_to_self_world,
-                        self.shape, interpolation_order)
+                        shape, interpolation_order)
 
     def resampled_to_img(self, target_image, interpolation_order=3):
         """ Resample the image to be on the same grid than the target image.
