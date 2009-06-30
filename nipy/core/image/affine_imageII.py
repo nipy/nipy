@@ -104,17 +104,25 @@ class AffineImage(Image):
 
         self._spatial_coordmap = spatial_coordmap
 
-        Image.__init__(self, data, full_coordmap) # XXX currently, Image would have to not
-                                 # check the dimensions of coordmap...
+        Image.__init__(self, data, full_coordmap)
         if metadata is not None:
             self.metadata = metadata
 
-    def get_spatial_coordmap(self):
+    def _get_spatial_coordmap(self):
         """
         Returns 3 dimensional AffineTransform, which is the same
         as self.coordmap if self.ndim == 3. 
         """
         return self._spatial_coordmap
+    spatial_coordmap = property(_get_spatial_coordmap)
+
+    def _get_spatial_affine(self):
+        """
+        Returns the affine of the spatial coordmap which will
+        always be a 4x4 matrix.
+        """
+        return self._spatial_coordmap.affine
+    affine = property(_get_spatial_affine)
 
     def get_data(self):
         # XXX What's wrong with __array__? Wouldn't that be closer to numpy?
@@ -122,18 +130,7 @@ class AffineImage(Image):
         """
         return np.asarray(self._data)
 
-    def get_transform(self):
-        """ Returns the transform object associated with the image which is a 
-            general description of the mapping from the voxel grid to the 
-            world space.
-
-            Returns
-            -------
-            transform : nipy.core.Transform object
-        """
-        return self.coordmap
-
-    def resampled_to_affine(self, affine=None, interpolation_order=3, 
+    def resampled_to_affine(self, affine_transform, interpolation_order=3, 
                             shape=None):
         """ Resample the image to be an affine image.
 
@@ -170,7 +167,7 @@ class AffineImage(Image):
 
         shape = shape or self.shape
         target = affine_transform
-        target_world_to_self_world = compose(self.coordmap,
+        target_world_to_self_world = compose(self.spatial_coordmap,
                                              target.inverse)
         return resample(self, target, target_world_to_self_world,
                         self.shape, interpolation_order)
@@ -202,7 +199,7 @@ class AffineImage(Image):
 XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is embedded in the same coordinate system (i.e. 'x','y','z'), but images can have different coordinate axes. Here it should say that the coordinate axes are the same. The term "embedding" refers to something in the range of a function, not its domain. 
 
         """
-        return self.resampled_to_affine(target_image.coordmap,
+        return self.resampled_to_affine(target_image.spatial_coordmap,
                                         interpolation_order=interpolation_order,
                                         shape=target.shape)
 
@@ -241,7 +238,7 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
         y = y.ravel()
         z = z.ravel()
         xyz = np.c_[x, y, z]
-        world_to_voxel = self.coordmap.inverse
+        world_to_voxel = self.spatial_coordmap.inverse
         ijk = world_to_voxel(xyz)
         values = ndimage.map_coordinates(self.get_data(), ijk,
                                          order=interpolation_order)
@@ -261,14 +258,14 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
             raise CoordSystemError(
                 'Cannot reorder the axis: the image affine contains rotations'
                 )
-        img = self
-        axis_numbers = np.argmax(np.abs(A), axis=0)
-        axis_names = [self.coordmap.input_coords.coord_names[a] for a in axis_numbers]
-        reordered_coordmap = reorder_input(self.coordmap, axis_names)
+        axis_numbers = list(np.argmax(np.abs(A), axis=1))
+        axis_names = [self.spatial_coordmap.input_coords.coord_names[a] for a in axis_numbers]
+        reordered_coordmap = reorder_input(self.spatial_coordmap, axis_names)
         data = self.get_data()
-        transposed_data = np.transpose(data, axis_numbers)
+        transposed_data = np.transpose(data, axis_numbers + range(3, self.ndim))
         return AffineImage(transposed_data, reordered_coordmap.affine,
-                           reordered_coordmap.input_coords.coord_names)
+                           reordered_coordmap.input_coords.coord_names + 
+                           self.coordmap.input_coords.coord_names[3:])
     
     #---------------------------------------------------------------------------
     # Private methods
@@ -278,10 +275,10 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
         options = np.get_printoptions()
         np.set_printoptions(precision=6, threshold=64, edgeitems=2)
         representation = \
-                'AffineImage(\n  data=%s,\n  affine=%s,\n  coord_sys=%s)' % (
+                'AffineImage(\n  data=%s,\n  affine=%s,\n  axis_names=%s)' % (
                 '\n       '.join(repr(self._data).split('\n')),
                 '\n         '.join(repr(self.affine).split('\n')),
-                repr(self.coord_sys))
+                repr(self.coordmap.input_coords.coord_names))
         np.set_printoptions(**options)
         return representation
 

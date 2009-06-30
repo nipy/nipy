@@ -86,10 +86,11 @@ class AffineImage(Image):
             coord_system : string
                 name of the reference coordinate system.
         """
+
         input_coords = CoordinateSystem(['axis%d' % i for i in range(3)], 
                                         name=coord_sys)
         output_coords = CoordinateSystem(['x','y','z'], name='world')
-        coordmap = AffineTransform(affine, input_coords, output_coords)
+        spatial_coordmap = AffineTransform(affine, input_coords, output_coords)
 
         nonspatial_names = ['axis%d' % i for i in range(3, data.ndim)]
         if nonspatial_names:
@@ -97,47 +98,45 @@ class AffineImage(Image):
             full_coordmap = cmap_product(coordmap, nonspatial_coordmap)
         else:
             full_coordmap = spatial_coordmap 
-        self._3dcoordmap = coordmap
-        Image.__init__(self, data, full_coordmap) # XXX currently, Image would have to not
-                                 # check the dimensions of coordmap...
+
+        self._spatial_coordmap = spatial_coordmap
+        Image.__init__(self, data, full_coordmap) 
         if metadata is not None:
             self.metadata = metadata
 
-    def get_3dcoordmap(self):
+    def _get_spatial_coordmap(self):
         """
         Returns 3 dimensional AffineTransform, which is the same
         as self.coordmap if self.ndim == 3. 
         """
-        return self._3dcoordmap
+        return self._spatial_coordmap
+    spatial_coordmap = property(_get_spatial_coordmap)
+
+    def _get_spatial_affine(self):
+        """
+        Returns the affine of the spatial coordmap which will
+        always be a 4x4 matrix.
+        """
+        return self._spatial_coordmap.affine
+    affine = property(_get_spatial_affine)
 
     def get_data(self):
+        # XXX What's wrong with __array__? Wouldn't that be closer to numpy?
         """ Return data as a numpy array.
         """
         return np.asarray(self._data)
 
-    def get_transform(self):
-        """ Returns the transform object associated with the image which is a 
-            general description of the mapping from the voxel grid to the 
-            world space.
-
-            Returns
-            -------
-            transform : nipy.core.Transform object
-        """
-        return self.coordmap
-
-    def resampled_to_affine(self, affine=None, interpolation_order=3, 
+    def resampled_to_affine(self, affine_transform, interpolation_order=3, 
                             shape=None):
+
         """ Resample the image to be an affine image.
 
             Parameters
             ----------
-            affine : AffineTransform
+            affine_transform : AffineTransform
 
-                Affine of the new grid or transform object pointing
-                to the new grid. If a 3x3 ndarray is given, it is
-                considered to be the rotation part of the affine, and the 
-                best possible bounding box is calculated.
+                Affine of the new grid. It must have the same
+                axes as self.
 
             interpolation_order : int, optional
                 Order of the spline interplation. If 0, nearest-neighboor 
@@ -157,11 +156,15 @@ class AffineImage(Image):
             The coordinate system of the image is not changed: the
             returned image points to the same world space.
 
+            XXX This is because the "coordinate system" of EVERY image
+            is ('x', 'y', 'z') and we have forced the axes of affine
+            to be the same as self.
+
         """
 
         shape = shape or self.shape
-        target = affine
-        target_world_to_self_world = compose(self.coordmap,
+        target = affine_transform
+        target_world_to_self_world = compose(self.spatial_coordmap,
                                              target.inverse)
         return resample(self, target, target_world_to_self_world,
                         self.shape, interpolation_order)
@@ -193,7 +196,7 @@ class AffineImage(Image):
 XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is embedded in the same coordinate system (i.e. 'x','y','z'), but images can have different coordinate axes. Here it should say that the coordinate axes are the same. The term "embedding" refers to something in the range of a function, not its domain. 
 
         """
-        return self.resampled_to_affine(target_image.coordmap,
+        return self.resampled_to_affine(target_image.spatial_coordmap,
                                         interpolation_order=interpolation_order,
                                         shape=target.shape)
 
@@ -232,7 +235,7 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
         y = y.ravel()
         z = z.ravel()
         xyz = np.c_[x, y, z]
-        world_to_voxel = self.coordmap.inverse
+        world_to_voxel = self.spatial_coordmap.inverse
         ijk = world_to_voxel(xyz)
         values = ndimage.map_coordinates(self.get_data(), ijk,
                                     order=interpolation_order)
@@ -252,12 +255,11 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
             raise CoordSystemError(
                 'Cannot reorder the axis: the image affine contains rotations'
                 )
-        img = self
-        axis_numbers = np.argmax(np.abs(A), axis=0)
-        axis_names = [self.coordmap.input_coords.coord_names[a] for a in axis_numbers]
-        reordered_coordmap = reorder_input(self.coordmap, axis_names)
+        axis_numbers = list(np.argmax(np.abs(A), axis=1))
+        axis_names = [self.spatial_coordmap.input_coords.coord_names[a] for a in axis_numbers]
+        reordered_coordmap = reorder_input(self.spatial_coordmap, axis_names)
         data = self.get_data()
-        transposed_data = np.transpose(data, axis_numbers)
+        transposed_data = np.transpose(data, axis_numbers + range(3, self.ndim))
         return AffineImage(transposed_data, reordered_coordmap.affine,
                            reordered_coordmap.input_coords.name)
     
