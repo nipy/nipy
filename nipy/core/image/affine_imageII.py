@@ -180,7 +180,7 @@ class AffineImage(Image):
             target_image : nipy image
                 Nipy image onto the grid of which the data will be
                 resampled.
-            XXX In the proposal, target_image was assumed to be a matrix if it had no attribute "affine". It now has to have a coordmap attribute.
+            XXX In the proposal, target_image was assumed to be a matrix if it had no attribute "affine". It now has to have a spatial_coordmap attribute.
             
             interpolation_order : int, optional
                 Order of the spline interplation. If 0, nearest neighboor 
