@@ -43,6 +43,7 @@ if not 'extra_setuptools_args' in globals():
 # Extra command class, for building and shipping documentation
 ################################################################################
 try:
+    DOC_BUILD_DIR = os.path.join('build', 'html')
     from sphinx.setup_command import BuildDoc
     from distutils.cmd import Command
 
@@ -88,10 +89,16 @@ try:
             finally:
                 os.chdir('..')
     
+        def finalize_options(self):
+            """ Override the default for the documentation build
+                directory.
+            """
+            self.build_dir = os.path.join(*DOC_BUILD_DIR.split(os.sep)[:-1])
+            BuildDoc.finalize_options(self)
+
 
     ##############################################################################
     # Code to copy the sphinx-generated html docs in the distribution.
-    DOC_BUILD_DIR = os.path.join('build', 'sphinx', 'html')
 
     def relative_path(filename):
         """ Return the relative path to the file, assuming the file is
