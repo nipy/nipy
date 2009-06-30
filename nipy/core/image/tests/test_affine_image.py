@@ -19,7 +19,9 @@ def test_affine_image():
     aII_cmap = aII.spatial_coordmap
 
     yield niptest.assert_true,  a_cmap.input_coords.coord_names == ('axis0', 'axis1', 'axis2')
+    yield niptest.assert_equal, a.coord_sys, 'input'
     yield niptest.assert_true,  aII_cmap.input_coords.coord_names == ('i','j','k')
+    yield niptest.assert_equal,  aII.axis_names, ('i','j','k')
 
     yield niptest.assert_true,  a_cmap.output_coords.coord_names == ('x','y','z')
     yield niptest.assert_true,  aII_cmap.output_coords.coord_names == ('x','y','z')
@@ -40,6 +42,8 @@ def test_affine_image():
 
     yield niptest.assert_true,  b_cmap.input_coords.coord_names == ('axis0', 'axis1', 'axis2')
     yield niptest.assert_true,  bII_cmap.input_coords.coord_names == ('k','j','i')
+    yield niptest.assert_equal, bII.axis_names, ('k', 'j', 'i')
+    yield niptest.assert_equal, b.coord_sys, 'input-reordered' # XXX tagging on "reordered" is probably overkill
 
     yield niptest.assert_true,  b_cmap.output_coords.coord_names == ('x','y','z')
     yield niptest.assert_true,  bII_cmap.output_coords.coord_names == ('x','y','z')
