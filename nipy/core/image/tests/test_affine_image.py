@@ -5,9 +5,10 @@ import nipy.testing as niptest
 
 def test_affine_image():
 
-    # The file dummy.mnc was created with this commang 
+    # The file dummy.mnc is available here:
+    #
+    # http://kff.stanford.edu/~jtaylo/affine_image_testfiles
 
-    # rawtominc -input ../empty.raw dummy.mnc 30 40 50 -xstart 30 -xstep 3 -ystart 40 -ystep 4 -zstart 50 -zstep 5     
 
     im=A.load_image('/home/jtaylo/dummy.mnc')
 
