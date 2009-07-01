@@ -22,7 +22,8 @@ def test_em_selection():
     x = np.concatenate((nr.randn(100,dim),3+2*nr.randn(100,dim)))
 
     krange = range(1,10)
-    lgmm = gmm.best_fitting_GMM(x,krange,prec_type='full',niter=100,delta = 1.e-4,ninit=1,verbose=0)
+    lgmm = gmm.best_fitting_GMM(x,krange,prec_type='full',
+                                niter=100,delta = 1.e-4,ninit=1,verbose=0)
     assert (lgmm.k<4)
     
 

@@ -1,3 +1,12 @@
+"""
+Test the Bayesian GMM.
+
+fixme : some of these tests take too much time at the moment
+to be real unit tests
+
+Author : Bertrand Thirion, 2009 
+"""
+
 #!/usr/bin/env python
 
 # to run only the simple tests:
@@ -44,7 +53,7 @@ def test_bgmm_gibbs(verbose=0):
     n=100
     k=2
     dim=2
-    niter = 10000
+    niter = 1000
     x = nr.randn(n,dim)
     x[:30] += 2
     
@@ -59,7 +68,7 @@ def test_bgmm_gibbs(verbose=0):
     # fixme : find a less trivial test
     assert(z.max()+1==b.k)
 
-def test_gmm_bf(kmax=4,verbose = 0):
+def test_gmm_bf(kmax=5,verbose = 0):
     """
     perform a model selection procedure on a  gmm
     with Bayes factor estimations
@@ -68,7 +77,7 @@ def test_gmm_bf(kmax=4,verbose = 0):
     n=100
     dim=2
     x = nr.randn(n,dim)
-    x[:30] += 2
+    #x[:30] += 2
     niter = 1000
 
     bbf = -np.infty
@@ -82,11 +91,11 @@ def test_gmm_bf(kmax=4,verbose = 0):
         bplugin.guess_priors(x)
         bfk = bplugin.Bfactor(x,pz.astype(np.int),1)
         if verbose:
-            print k, bplugin.Bfactor(x,pz.astype(np.int),1)
+            print k, bfk
         if bfk>bbf:
             bestk = k
             bbf = bfk
-    assert(bestk<3)
+    assert(bestk<4)
     
 
 def test_vbgmm(verbose=0):
@@ -134,6 +143,7 @@ def test_evidence(verbose=0,k=1):
     """
     Compare the evidence estimated by Chib's method
     with the variational evidence (free energy)
+    fixme : this one really takes time
     """
     n=100
     dim=2
@@ -149,7 +159,7 @@ def test_evidence(verbose=0,k=1):
     if verbose:
         print 'vb: ',vbe, 
 
-    niter = 10000
+    niter = 1000
     b = BGMM(k,dim)
     b.guess_priors(x)
     b.init(x)

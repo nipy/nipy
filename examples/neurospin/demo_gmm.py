@@ -62,8 +62,7 @@ def plot2D(x,my_gmm,z = None,show = 0,verbose=0):
            
     mp.axis([xm,xs,ym,ys])
     mp.colorbar()
-    if show:
-        mp.show()
+    if show: mp.show()
 
 
 dim = 2

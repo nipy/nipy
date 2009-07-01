@@ -674,14 +674,14 @@ class BGMM(GMM):
         for i in range(niter):
             if nperm==0:
                 for j in range(perm.shape[0]):
-                    z = apply_perm(perm[j],z[:,i])
-                    temp = self.conditional_posterior_proba(z,x)
+                    pz = apply_perm(perm[j],z[:,i])
+                    temp = self.conditional_posterior_proba(pz,x)
                     p.append(temp)
             else:
                 drand = np.argsort(np.random.rand(perm.shape[0]))[:nperm]
                 for j in drand:
-                    z = apply_perm(perm[j],z[:,i])
-                    temp = self.conditional_posterior_proba(z,x)
+                    pz = apply_perm(perm[j],z[:,i])
+                    temp = self.conditional_posterior_proba(pz,x)
                     p.append(temp)
 
         p = np.array(p)
