@@ -51,7 +51,10 @@ def resample(image, target, mapping, shape, order=3):
 
         TW2IW = Affine(mapping, target.output_coords, image.coordmap.output_coords)
     else:
-        TW2IW = CoordinateMap(mapping, target.output_coords, image.coordmap.output_coords)
+        if isinstance(mapping, Affine):
+            TW2IW = mapping
+        else:
+            TW2IW = CoordinateMap(mapping, target.output_coords, image.coordmap.output_coords)
 
     input_coords = target.input_coords
     output_coords = image.coordmap.output_coords
@@ -69,6 +72,7 @@ def resample(image, target, mapping, shape, order=3):
         grid = ArrayCoordMap.from_shape(TV2IW, shape)
         interp = ImageInterpolator(image, order=order)
         idata = interp.evaluate(grid.transposed_values)
+
         del(interp)
     else:
         TV2IV = compose(image.coordmap.inverse, TV2IW)

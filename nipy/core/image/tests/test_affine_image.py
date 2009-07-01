@@ -2,6 +2,8 @@ from nipy.core.image import affine_image, affine_imageII
 import nipy.io.api as io
 import numpy as np
 import nipy.testing as niptest
+from nipy.core.reference.coordinate_map import compose, Affine as AffineTransform
+from nipy.algorithms.resample import resample
 
 def test_affine_image():
 
@@ -59,6 +61,7 @@ def test_affine_image():
 
 def test_resample():
     im = io.load_image('/home/jtaylo/dummy.mnc')
+    im._data = np.random.standard_normal(im._data.shape)
 
     affine_im = affine_imageII.AffineImage(np.array(im), im.affine, ['i','j','k'])
 
@@ -90,4 +93,65 @@ def test_resample():
 
     affine_im_resampled2 = affine_im_xyz.resampled_to_img(affine_im_xyz)
     yield niptest.assert_almost_equal, np.array(affine_im_resampled2), np.array(affine_im_xyz)
+
+    # What we can't do is resample to
+    # an array with axes ['k','j','i'], (i.e. transpose the data using resample_*) because we've assumed that
+    # the axes (i.e. input_coords) are the same for these methods
+
+    # It can be done with nipy.algorithms.resample, but not the resample_* methods of AffineImage
+
+def test_subsample():
+    # We can't even do subsampling with these methods because
+    # in the proposal the axes of the affine are always assumed to be the same
+    # as self in the resample_* methods.
+
+    # This is how you would subsample with nipy.algorithms.resample
+    # On the first axis, we'll take every 2nd,
+    # on the second axis every 3rd, and on the 3rd every 4th
+
+    im = io.load_image('/home/jtaylo/dummy.mnc')
+    im._data = np.random.standard_normal(im._data.shape)
+
+    affine_im = affine_imageII.AffineImage(np.array(im), im.affine, ['i','j','k'])
+    subsample_matrix = np.array([[2,0,0,0],
+                                 [0,3,0,0],
+                                 [0,0,4,0],
+                                 [0,0,0,1]])
+                                
+    subsampled_shape = affine_im[::2,::3,::4].shape
+    subsample_coordmap = AffineTransform(subsample_matrix, affine_im.spatial_coordmap.input_coords,
+                                         affine_im.spatial_coordmap.input_coords)
+    target_coordmap = compose(affine_im.spatial_coordmap, 
+                              subsample_coordmap)
+
+    # The images have the same output coordinates
+
+    world_to_world_coordmap = AffineTransform(np.identity(4), affine_im.spatial_coordmap.output_coords,
+                                              affine_im.spatial_coordmap.output_coords)
+
+    im_subsampled = resample(affine_im, target_coordmap,
+                             world_to_world_coordmap,
+                             shape=subsampled_shape)
+    affine_im_subsampled = affine_imageII.AffineImage(np.array(im_subsampled),
+                                                      im_subsampled.affine,
+                                                      im_subsampled.coordmap.input_coords.coord_names)
+
+    yield niptest.assert_almost_equal, np.array(affine_im_subsampled), np.array(affine_im)[::2,::3,::4]
+    
+def test_values_in_world():
+    im = io.load_image('/home/jtaylo/dummy.mnc')
+    im._data = np.random.standard_normal(im._data.shape)
+
+    affine_im = affine_imageII.AffineImage(np.array(im), im.affine, ['i','j','k'])
+
+    xyz_vals = affine_im.spatial_coordmap(np.array([[3,4,5],
+                                                    [4,7,8]]))
+    x = xyz_vals[:,0]
+    y = xyz_vals[:,1]
+    z = xyz_vals[:,2]
+
+    v1, v2 = affine_im.values_in_world(x,y,z)
+    yield niptest.assert_almost_equal, v1, np.array(affine_im)[3,4,5]
+    yield niptest.assert_almost_equal, v2, np.array(affine_im)[4,7,8]
+
 

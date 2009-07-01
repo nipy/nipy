@@ -3,6 +3,7 @@ The base image interface.
 """
 
 import numpy as np
+from scipy.ndimage import map_coordinates
 
 # Local imports
 from nipy.core.transforms.affines import from_matrix_vector, \
@@ -10,6 +11,8 @@ from nipy.core.transforms.affines import from_matrix_vector, \
 from nipy.core.api import Affine as AffineTransform, Image, CoordinateSystem
 from nipy.core.reference.coordinate_map import compose, product as cmap_product, reorder_input
 from nipy.algorithms.resample import resample
+
+
 
 ################################################################################
 # class `AffineImage`
@@ -185,13 +188,41 @@ class AffineImage(Image):
 
         """
 
-        shape = shape or self.shape
+        shape = shape or self.shape[:3]
         target = affine_transform
         target_world_to_self_world = compose(self.spatial_coordmap,
                                              target.inverse)
-        print interpolation_order, 'order'
-        return resample(self, target, target_world_to_self_world,
-                        shape, order=interpolation_order)
+        if self.ndim == 3:
+            im = resample(self, target, target_world_to_self_world,
+                          shape, order=interpolation_order)
+            return AffineImage(np.array(im), target.affine,
+                               target.input_coords.coord_names)
+
+        # XXX this below wasn't included in the original AffineImage proposal
+        # and it would fail for an AffineImage with ndim == 4.
+        # I don't know if it should be included as a special case in the AffineImage,
+        # but then we should at least raise an exception saying that these resample_* methods
+        # only work for AffineImage's with ndim==3.
+        #
+        # This is part of the reason nipy.core.image.Image does not have
+        # resample_* methods...
+
+        elif self.ndim == 4:
+
+            result = np.empty(shape + (self.shape[3],))
+            data = self.get_data()
+            for i in range(self.shape[3]):
+                tmp_affine_im = AffineImage(data[...,i], self.affine,
+                                            self.axis_names[:-1])
+                tmp_im = tmp_affine_im.resampled_to_affine(target, 
+                                                          shape=shape,
+                                                          interpolation_order=interpolation_order)
+
+                result[...,i] = np.array(tmp_im)
+            return AffineImage(result, target.affine,
+                               target.input_coords.coord_names)
+        else:
+            raise ValueError('resampling only defined for 3d and 4d AffineImage')
 
     def resampled_to_img(self, target_image, interpolation_order=3):
         """ Resample the image to be on the same grid than the target image.
@@ -262,8 +293,8 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
         xyz = np.c_[x, y, z]
         world_to_voxel = self.spatial_coordmap.inverse
         ijk = world_to_voxel(xyz)
-        values = ndimage.map_coordinates(self.get_data(), ijk,
-                                         order=interpolation_order)
+        values = map_coordinates(self.get_data(), ijk.T,
+                                 order=interpolation_order)
         values = np.reshape(values, shape)
         return values
     

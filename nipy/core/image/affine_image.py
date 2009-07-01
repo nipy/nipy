@@ -254,7 +254,7 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
         xyz = np.c_[x, y, z]
         world_to_voxel = self.spatial_coordmap.inverse
         ijk = world_to_voxel(xyz)
-        values = ndimage.map_coordinates(self.get_data(), ijk,
+        values = ndimage.map_coordinates(self.get_data(), ijk.T,
                                     order=interpolation_order)
         values = np.reshape(values, shape)
         return values
