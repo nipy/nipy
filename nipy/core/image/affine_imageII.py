@@ -12,8 +12,6 @@ from nipy.core.api import Affine as AffineTransform, Image, CoordinateSystem
 from nipy.core.reference.coordinate_map import compose, product as cmap_product, reorder_input
 from nipy.algorithms.resample import resample
 
-
-
 ################################################################################
 # class `AffineImage`
 ################################################################################
@@ -147,7 +145,7 @@ class AffineImage(Image):
         """
         return np.asarray(self._data)
 
-    def resampled_to_affine(self, affine_transform, interpolation_order=3, 
+    def resampled_to_affine(self, affine_transform, world_to_world=None, interpolation_order=3, 
                             shape=None):
         """ Resample the image to be an affine image.
 
@@ -161,6 +159,11 @@ class AffineImage(Image):
                 to be a rotation", but this wouldn't work the way the code was written becuase
                 it was written as if affine was the affine of an AffineImage. So, if you input
                 a "rotation matrix" that is assuming you have voxels of size 1....
+                This rotation can be expressed with the world_to_world argument.
+
+            world_to_world: 4x4 ndarray, optional
+                A matrix representing a mapping from the target's "world"
+                to self's "world". Defaults to np.identity(4)
 
             interpolation_order : int, optional
                 Order of the spline interplation. If 0, nearest-neighbour
@@ -191,14 +194,17 @@ class AffineImage(Image):
         shape = shape or self.shape
         shape = shape[:3]
 
-        target = affine_transform
-        target_world_to_self_world = compose(self.spatial_coordmap,
-                                             target.inverse)
+        if world_to_world is None:
+            world_to_world = np.identity(4)
+        world_to_world_transform = AffineTransform(world_to_world,
+                                                   affine_transform.output_coords,
+                                                   self.spatial_coordmap.output_coords)
+
         if self.ndim == 3:
-            im = resample(self, target, target_world_to_self_world,
+            im = resample(self, affine_transform, world_to_world_transform,
                           shape, order=interpolation_order)
-            return AffineImage(np.array(im), target.affine,
-                               target.input_coords.coord_names)
+            return AffineImage(np.array(im), affine_transform.affine,
+                               affine_transform.input_coords.coord_names)
 
         # XXX this below wasn't included in the original AffineImage proposal
         # and it would fail for an AffineImage with ndim == 4.
@@ -216,17 +222,18 @@ class AffineImage(Image):
             for i in range(self.shape[3]):
                 tmp_affine_im = AffineImage(data[...,i], self.affine,
                                             self.axis_names[:-1])
-                tmp_im = tmp_affine_im.resampled_to_affine(target, 
-                                                          shape=shape,
-                                                          interpolation_order=interpolation_order)
+                tmp_im = tmp_affine_im.resampled_to_affine(affine_transform, 
+                                                           world_to_world,
+                                                           interpolation_order,
+                                                           shape)
 
                 result[...,i] = np.array(tmp_im)
-            return AffineImage(result, target.affine,
-                               target.input_coords.coord_names)
+            return AffineImage(result, affine_transform.affine,
+                               affine_transform.input_coords.coord_names)
         else:
             raise ValueError('resampling only defined for 3d and 4d AffineImage')
 
-    def resampled_to_img(self, target_image, interpolation_order=3):
+    def resampled_to_img(self, target_image, world_to_world=None, interpolation_order=3):
         """ Resample the image to be on the same grid than the target image.
 
             Parameters
@@ -236,6 +243,10 @@ class AffineImage(Image):
                 resampled.
             XXX In the proposal, target_image was assumed to be a matrix if it had no attribute "affine". It now has to have a spatial_coordmap attribute.
             
+            world_to_world: 4x4 ndarray, optional
+                A matrix representing a mapping from the target's "world"
+                to self's "world". Defaults to np.identity(4)
+
             interpolation_order : int, optional
                 Order of the spline interplation. If 0, nearest neighboor 
                 interpolation is performed.
@@ -255,8 +266,8 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
         """
         return self.resampled_to_affine(target_image.spatial_coordmap,
                                         interpolation_order=interpolation_order,
-                                        shape=target_image.shape)
-                                        
+                                        shape=target_image.shape,
+                                        world_to_world=world_to_world)
 
     def values_in_world(self, x, y, z, interpolation_order=3):
         """ Return the values of the data at the world-space positions given by 

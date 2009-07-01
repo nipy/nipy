@@ -101,9 +101,6 @@ def test_resample():
     # It can be done with nipy.algorithms.resample, but not the resample_* methods of AffineImage
 
 def test_subsample():
-    # We can't even do subsampling with these methods because
-    # in the proposal the axes of the affine are always assumed to be the same
-    # as self in the resample_* methods.
 
     # This is how you would subsample with nipy.algorithms.resample
     # On the first axis, we'll take every 2nd,
@@ -119,7 +116,8 @@ def test_subsample():
                                  [0,0,0,1]])
                                 
     subsampled_shape = affine_im[::2,::3,::4].shape
-    subsample_coordmap = AffineTransform(subsample_matrix, affine_im.spatial_coordmap.input_coords,
+    subsample_coordmap = AffineTransform(subsample_matrix, 
+                                         affine_im.spatial_coordmap.input_coords,
                                          affine_im.spatial_coordmap.input_coords)
     target_coordmap = compose(affine_im.spatial_coordmap, 
                               subsample_coordmap)
@@ -137,6 +135,12 @@ def test_subsample():
                                                       im_subsampled.coordmap.input_coords.coord_names)
 
     yield niptest.assert_almost_equal, np.array(affine_im_subsampled), np.array(affine_im)[::2,::3,::4]
+
+    # We can now do subsampling with these methods.
+    affine_im_subsampled2 = affine_im.resampled_to_affine(target_coordmap, 
+                                                         shape=subsampled_shape)
+    yield niptest.assert_almost_equal, np.array(affine_im_subsampled2), np.array(affine_im_subsampled)
+    yield niptest.assert_true, affine_im_subsampled2 == affine_im_subsampled
     
 def test_values_in_world():
     im = io.load_image('/home/jtaylo/dummy.mnc')
