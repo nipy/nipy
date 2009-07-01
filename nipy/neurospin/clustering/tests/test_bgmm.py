@@ -68,7 +68,7 @@ def test_bgmm_gibbs(verbose=0):
     # fixme : find a less trivial test
     assert(z.max()+1==b.k)
 
-def test_gmm_bf(kmax=5,verbose = 0):
+def test_gmm_bf(kmax=4,verbose = 0):
     """
     perform a model selection procedure on a  gmm
     with Bayes factor estimations
@@ -78,7 +78,7 @@ def test_gmm_bf(kmax=5,verbose = 0):
     dim=2
     x = nr.randn(n,dim)
     #x[:30] += 2
-    niter = 1000
+    niter = 10000
 
     bbf = -np.infty
     for k in range(1,kmax):
@@ -95,7 +95,7 @@ def test_gmm_bf(kmax=5,verbose = 0):
         if bfk>bbf:
             bestk = k
             bbf = bfk
-    assert(bestk<4)
+    assert(bestk<3)
     
 
 def test_vbgmm(verbose=0):

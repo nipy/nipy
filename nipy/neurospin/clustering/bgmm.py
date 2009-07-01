@@ -257,93 +257,62 @@ class BGMM(GMM):
     this class contains the follwing fields
     - k (int): the number of components in the mixture
     - dim (int): is the dimension of the data
-    - centers array of shape (k,dim):
-    all the centers of the components
-    - precision array of shape (k,dim,dim):
-    the precision of the componenets    
+    - means array of shape (k,dim):
+    all the means of the components
+    - precisions array of shape (k,dim,dim):
+    the precisions of the componenets    
     - weights: array of shsape (k) weights of the mixture
+     - shrinkage : array of shape (k):
+    scaling factor of the posterior precisions on the mean
+    - dof : array of shape (k): the posterior dofs
     
-    - prior_centers : array of shape (k,dim):
+    - prior_means : array of shape (k,dim):
     the prior on the components means
     - prior_scale : array of shape (k,dim):
     the prior on the components precisions
     - prior_dof : array of shape (k):
     the prior on the dof (should be at least equal to dim)
     - prior_shrinkage : array of shape (k):
-    scaling factor of the prior precision on the mean
+    scaling factor of the prior precisions on the mean
     - prior_weights  : array of shape (k)
     the prior on the components weights
     - shrinkage : array of shape (k):
-    scaling factor of the posterior precision on the mean
+    scaling factor of the posterior precisions on the mean
     - dof : array of shape (k): the posterior dofs
 
     fixme :
     - several methods inherited from GMM require a specific implementation
-    - centers should be renamed to means
     - only 'full' is supported
     - initialization of scales is singular
     """
     
-    def __init__(self, k=1, dim=1, centers=None, precision=None,
+    def __init__(self, k=1, dim=1, means=None, precisions=None,
                  weights=None, shrinkage=None, dof=None):
         """
         Initialize the structure, at least with the dimensions of the problem
         At most, with what is necessary to compute the likelihood of a point
         under the model
         """
-        self.k = k
-        self.dim = dim
-        self.centers = centers
-        self.precision = precision
-        self.weights = weights
+        GMM.__init__(self, k, dim, 'full', means, precisions, weights)
         self.shrinkage = shrinkage
         self.dof = dof
 
-        if self.centers==None:
-            self.centers = np.zeros((self.k,self.dim))
+        if self.shrinkage==None:
+            self.shrinkage = np.ones(self.k)
 
-        if self.precision==None:
-             prec = np.reshape(np.eye(self.dim),(1,self.dim,self.dim))
-             self.precision = np.repeat(prec,self.k,0)
-
-        if self.weights==None:
-            self.weights = np.ones(self.k)*1.0/self.k
+        if self.dof==None:
+            self.dof = np.ones(self.k)
         
-    def set_priors(self,prior_centers = None, prior_weights = None, prior_scale = None, prior_dof = None,prior_shrinkage = None ):
-        """
-        Set the prior of the BGMM
-        """
-        self.prior_centers = prior_centers
-        self.prior_weights = prior_weights
-        self.prior_scale = prior_scale
-        self.prior_dof = prior_dof
-        self.prior_shrinkage = prior_shrinkage
-        self.check()
-
     def check(self):
         """
         Checking the shape of sifferent matrices involved in the model
         """
-        if self.centers.shape[0] != self.k:
-            raise ValueError," self.centers does not have correct dimensions"
-            
-        if self.centers.shape[1] != self.dim:
-            raise ValueError," self.centers does not have correct dimensions"
-
-        if self.weights.size != self.k:
-            raise ValueError," self.weights does not have correct dimensions"
+        GMM.check(self)
         
-        if self.dim !=  self.precision.shape[1]:
-            raise ValueError, "self.precision does not have correct dimensions"
-        if self.dim !=  self.precision.shape[2]:
-            raise ValueError, "self.precision does not have correct dimensions"
-        if self.precision.shape[0] != self.k:
-            raise ValueError,"self.precision does not have correct dimensions"
-
-        if self.prior_centers.shape[0]!=self.k:
-            raise ValueError,"Incorrect dimension for self.prior_centers"
-        if self.prior_centers.shape[1]!=self.dim:
-            raise ValueError,"Incorrect dimension for self.prior_centers"
+        if self.prior_means.shape[0]!=self.k:
+            raise ValueError,"Incorrect dimension for self.prior_means"
+        if self.prior_means.shape[1]!=self.dim:
+            raise ValueError,"Incorrect dimension for self.prior_means"
         if self.prior_scale.shape[0]!=self.k:
             raise ValueError,"Incorrect dimension for self.prior_scale"
         if self.prior_scale.shape[1]!=self.dim:
@@ -352,19 +321,33 @@ class BGMM(GMM):
             raise ValueError,"Incorrect dimension for self.prior_dof"
         if self.prior_weights.shape[0]!=self.k:
             raise ValueError,"Incorrect dimension for self.prior_weights"
+        
+    def set_priors(self,prior_means, prior_weights,
+                   prior_scale, prior_dof, prior_shrinkage ):
+        """
+        Set the prior of the BGMM
+        """
+        self.prior_means = prior_means
+        self.prior_weights = prior_weights
+        self.prior_scale = prior_scale
+        self.prior_dof = prior_dof
+        self.prior_shrinkage = prior_shrinkage       
+        self.check()
 
     def guess_priors(self,x,bcheck=1):
         """
-        Set the priors in order of having them uninformative but 
+        Set the priors in order of having them weakly uninformative
+        this is from  Fraley and raftery;
+        Journal of Classification 24:155-181 (2007)
         """
         small = 0.01
         mx = np.reshape(x.mean(0),(1,self.dim))
         dx = x-mx
-        vx = np.dot(np.transpose(dx),dx)/x.shape[0]
+        vx = np.dot(dx.T,dx)/x.shape[0]
         px = np.reshape(np.diag(1.0/np.diag(vx)),(1,self.dim,self.dim))
         px *= np.exp(2.0/self.dim*np.log(self.k))
         #px *= 4
-        self.prior_centers = np.repeat(mx,self.k,0)
+        self.prior_means = np.repeat(mx,self.k,0)
         self.prior_weights = np.ones(self.k)
         self.prior_scale = np.repeat(px,self.k,0)
         self.prior_dof = np.ones(self.k)*(self.dim+2)
@@ -398,7 +381,7 @@ class BGMM(GMM):
         weights = pop+self.prior_weights
         self.weights = np.random.dirichlet(weights)
 
-    def update_centers(self,z,x):
+    def update_means(self,z,x):
         """
         Given the allocation vector z,
         and the corresponding data x,
@@ -406,18 +389,18 @@ class BGMM(GMM):
         """
         pop = self.pop(z)
         self.shrinkage = self.prior_shrinkage + pop
-        empmeans = np.zeros(np.shape(self.centers))
+        empmeans = np.zeros(np.shape(self.means))
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1))
         shrinkage = np.reshape(self.shrinkage,(self.k,1))
 
         for k in range(self.k):
             empmeans[k] = np.sum(x[z==k],0)
                 
-        centers = empmeans + self.prior_centers*prior_shrinkage
-        centers/= shrinkage
+        means = empmeans + self.prior_means*prior_shrinkage
+        means/= shrinkage
         for k in range(self.k):
-            self.centers[k] = generate_normals(\
-                centers[k],self.precision[k]*self.shrinkage[k])
+            self.means[k] = generate_normals(\
+                means[k],self.precisions[k]*self.shrinkage[k])
         
         
             
@@ -433,7 +416,7 @@ class BGMM(GMM):
         self.dof = self.prior_dof + pop +1
 
         #computing the empirical covariance
-        empmeans = np.zeros(np.shape(self.centers))
+        empmeans = np.zeros(np.shape(self.means))
         for k in range(self.k):
             empmeans[k] = np.sum(x[z==k],0)
  
@@ -441,7 +424,7 @@ class BGMM(GMM):
 
         empmeans= np.transpose(np.transpose(empmeans)/rpop)
 
-        empcov = np.zeros(np.shape(self.precision))
+        empcov = np.zeros(np.shape(self.precisions))
         for k in range(self.k):
             dx = np.reshape(x[z==k]-empmeans[k],(pop[k],self.dim))
             empcov[k] += np.dot(dx.T,dx)
@@ -450,7 +433,7 @@ class BGMM(GMM):
                                for k in range(self.k)])
         covariance += empcov
                         
-        dx = np.reshape(empmeans-self.prior_centers,(self.k,self.dim,1))
+        dx = np.reshape(empmeans-self.prior_means,(self.k,self.dim,1))
         addcov = np.array([np.dot(dx[k],np.transpose(dx[k]))
                            for k in range(self.k)])
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
@@ -458,7 +441,7 @@ class BGMM(GMM):
                 
         scale = np.array([pinv(covariance[k]) for k in range(self.k)])
         for k in range(self.k):
-            self.precision[k] = generate_Wishart(self.dof[k],scale[k])
+            self.precisions[k] = generate_Wishart(self.dof[k],scale[k])
 
         
     def update(self,z,x):
@@ -467,9 +450,8 @@ class BGMM(GMM):
         """
         self.update_weights(z)
         self.update_precisions(z,x)
-        self.update_centers(z,x)
+        self.update_means(z,x)
         
-        pass
 
     def likelihood(self,x):
         """
@@ -491,8 +473,8 @@ class BGMM(GMM):
         n = x.shape[0]
         L = np.zeros((n,self.k))
         for k in range(self.k):
-            m = np.reshape(self.centers[k],(1,self.dim))
-            b = self.precision[k]
+            m = np.reshape(self.means[k],(1,self.dim))
+            b = self.precisions[k]
             w0 = np.log(det(b/(2*np.pi)))
             w0/=2
             q = np.sum(np.dot(m-x,b)*(m-x),1)
@@ -500,7 +482,7 @@ class BGMM(GMM):
             L[:,k] = np.exp(w)
         return L
 
-    def mixture_like(self,x):
+    def mixture_likelihood(self,x):
         """
         returns the likelihodd of the mixture for x
         """
@@ -547,8 +529,8 @@ class BGMM(GMM):
             if sll>score:
                 score = sll
                 best_weights = self.weights.copy()
-                best_centers = self.centers.copy()
-                best_precision = self.precision.copy()
+                best_means = self.means.copy()
+                best_precisions = self.precisions.copy()
 
             z = self.sample_indicator(L)
             if mem:
@@ -564,28 +546,28 @@ class BGMM(GMM):
             aux = possibleZ[:,0].copy()
             possibleZ[:,0] = possibleZ[:,ibz].copy()
             possibleZ[:,ibz] = aux
-            return best_weights, best_centers,best_precision,possibleZ
+            return best_weights, best_means,best_precisions,possibleZ
 
     def sample_and_average(self,x,niter=1,verbose=0):
         """
         sample the indicator and parameters
         perform niter iterations
-        the average values for weights,centers, precisions are returned
+        the average values for weights,means, precisions are returned
         """
-        aprec  = np.zeros(np.shape(self.precision))
+        aprec  = np.zeros(np.shape(self.precisions))
         aweights  = np.zeros(np.shape(self.weights))
-        acenters  = np.zeros(np.shape(self.centers))
+        ameans  = np.zeros(np.shape(self.means))
         for i in range(niter):
             L = self.likelihood(x)
             z = self.sample_indicator(L)
             self.update(z,x)
-            aprec += self.precision
+            aprec += self.precisions
             aweights += self.weights
-            acenters += self.centers
+            ameans += self.means
         aprec/=niter
-        acenters/=niter
+        ameans/=niter
         aweights/=niter
-        return aweights, acenters, aprec
+        return aweights, ameans, aprec
 
 
     def probability_under_prior(self):
@@ -595,10 +577,10 @@ class BGMM(GMM):
         p0 = 1
         p0 = dirichlet_eval(self.weights,self.prior_weights)
         for k in range(self.k):
-            mp = self.precision[k]*self.prior_shrinkage[k]
-            p0 *= normal_eval(self.prior_centers[k],mp,self.centers[k])
+            mp = self.precisions[k]*self.prior_shrinkage[k]
+            p0 *= normal_eval(self.prior_means[k],mp,self.means[k])
             p0 *= Wishart_eval(self.prior_dof[k],self.prior_scale[k],
-                               self.precision[k])
+                               self.precisions[k])
         return p0
 
     def conditional_posterior_proba(self,z,x):
@@ -608,7 +590,7 @@ class BGMM(GMM):
         pop = self.pop(z)
 
         #0. Compute the empirical means
-        empmeans = np.zeros(np.shape(self.centers))
+        empmeans = np.zeros(np.shape(self.means))
         for k in range(self.k):
             empmeans[k] = np.sum(x[z==k],0)
  
@@ -617,7 +599,7 @@ class BGMM(GMM):
             
         #1. the precisions
         dof = self.prior_dof + pop +1
-        empcov = np.zeros(np.shape(self.precision))
+        empcov = np.zeros(np.shape(self.precisions))
 
         for k in range(self.k):
             dx = np.reshape(x[z==k]-empmeans[k],(pop[k],self.dim))
@@ -629,7 +611,7 @@ class BGMM(GMM):
                                for k in range(self.k)])
         covariance += empcov
                         
-        dx = np.reshape(self.centers-self.prior_centers,
+        dx = np.reshape(self.means-self.prior_means,
                         (self.k,self.dim,1))
         addcov = np.array([np.dot(dx[k],dx[k].T) for k in range(self.k)])
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
@@ -637,13 +619,13 @@ class BGMM(GMM):
         scale = np.array([pinv(covariance[k]) for k in range(self.k)])
     
 
-        #2. the centers
+        #2. the means
         empmeans= (empmeans.T*rpop).T
         shrinkage = self.prior_shrinkage + pop   
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1))
         shrinkage = np.reshape(shrinkage,(self.k,1))        
-        centers = empmeans + self.prior_centers*prior_shrinkage
-        centers/= shrinkage
+        means = empmeans + self.prior_means*prior_shrinkage
+        means/= shrinkage
 
         #3. the weights
         weights = np.array([np.sum(z==k) for k in range(len(self.weights))])
@@ -653,12 +635,12 @@ class BGMM(GMM):
         pp = 1
         pp = dirichlet_eval(self.weights,weights)
         for k in range(self.k):
-            pp*= Wishart_eval(dof[k],scale[k],self.precision[k])
+            pp*= Wishart_eval(dof[k],scale[k],self.precisions[k])
 
         for k in range(self.k):
-            #mp = self.precision[k]*shrinkage[k]
+            #mp = self.precisions[k]*shrinkage[k]
             mp = scale[k]*shrinkage[k]
-            pp *= normal_eval(centers[k],mp,self.centers[k])
+            pp *= normal_eval(means[k],mp,self.means[k])
         return pp
     
     
@@ -718,7 +700,7 @@ class BGMM(GMM):
                     w0 += gammaln((a+n-j)/2)
                     w0 -= gammaln((a-j)/2)
 
-                m = np.reshape(self.prior_centers[k],(1,self.dim))
+                m = np.reshape(self.prior_means[k],(1,self.dim))
                 b = self.prior_scale[k]
                 ib = inv(b)
                 Q = np.dot(np.transpose(x),x)
@@ -732,12 +714,12 @@ class BGMM(GMM):
                 w += w0
         return w
 
-    def plugin(self,centers=None,precision=None,weights = None):
+    def plugin(self,means=None,precisions=None,weights = None):
         """
         sets manually the main fields of the bgmm
         """
-        self.centers = centers
-        self.precision = precision
+        self.means = means
+        self.precisions = precisions
         self.weights = weights
 
     def map_label(self,x):
@@ -762,10 +744,10 @@ class VBGMM(BGMM):
     and computation of evidence
     """
     
-    def __init__(self, k=1, dim=1, centers=None, precision=None,
+    def __init__(self, k=1, dim=1, means=None, precisions=None,
                  weights=None, shrinkage=None, dof=None):
-        BGMM.__init__(self, k, dim, centers, precision, weights,shrinkage, dof)
-        self.scale = self.precision.copy()
+        BGMM.__init__(self, k, dim, means, precisions, weights,shrinkage, dof)
+        self.scale = self.precisions.copy()
         
     def Estep(self,x):
         """VB-E step
@@ -785,7 +767,7 @@ class VBGMM(BGMM):
             w0 += 0.5*np.log(2)*self.dim
             for i in range (self.dim):
                 w0 += 0.5*psi((self.dof[k]-i)/2) 
-            m = np.reshape(self.centers[k],(1,self.dim))
+            m = np.reshape(self.means[k],(1,self.dim))
             b = self.dof[k]*self.scale[k]
             q = np.sum(np.dot(m-x,b)*(m-x),1)
             w = w0 - q/2
@@ -840,7 +822,7 @@ class VBGMM(BGMM):
                                self.prior_dof[k],prior_covariance[k])
             nc = self.scale[k]*(self.dof[k]*self.shrinkage[k])
             nc0 = self.scale[k]*(self.dof[k]*self.prior_shrinkage[k])
-            Dkl += dkl_gaussian(self.centers[k],nc,self.prior_centers[k],nc0)
+            Dkl += dkl_gaussian(self.means[k],nc,self.prior_means[k],nc0)
             
         return F-Dkl
 
@@ -865,11 +847,11 @@ class VBGMM(BGMM):
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1))
         shrinkage = np.reshape(self.shrinkage,(self.k,1))
 
-        # centers
-        centers = np.dot(L.T,x)+ self.prior_centers*prior_shrinkage
-        self.centers= centers/shrinkage
+        # means
+        means = np.dot(L.T,x)+ self.prior_means*prior_shrinkage
+        self.means= means/shrinkage
         
-        #precision
+        #precisions
         empmeans = np.dot(L.T,x)/np.maximum(pop,tiny)
         empcov = np.zeros(np.shape(self.prior_scale))
         for k in range(self.k):
@@ -880,7 +862,7 @@ class VBGMM(BGMM):
                                for k in range(self.k)])
         covariance += empcov
 
-        dx = np.reshape(empmeans-self.prior_centers,(self.k,self.dim,1))
+        dx = np.reshape(empmeans-self.prior_means,(self.k,self.dim,1))
         addcov = np.array([np.dot(dx[k],dx[k].T) for k in range(self.k)])
         apms =  np.reshape(prior_shrinkage*pop/shrinkage,(self.k,1,1))
         covariance += addcov*apms
@@ -916,14 +898,14 @@ class VBGMM(BGMM):
         # initialization -> Cmeans
         # alternation of E/M step until convergence
         tiny = 1.e-15
-        cc = np.zeros(np.shape(self.centers))
-        nc = np.var(self.centers)
+        cc = np.zeros(np.shape(self.means))
+        nc = np.var(self.means)
 
         for i in range(niter):
-            if np.var(cc-self.centers)<delta*nc:
+            if np.var(cc-self.means)<delta*nc:
                 # print i
                 break
-            cc = self.centers.copy()
+            cc = self.means.copy()
             L = self.Estep(x)
             if verbose:
                 print i,self.evidence(x)
@@ -947,30 +929,30 @@ class BGMM_old(GMM):
     This class implements Bayesian diagonal GMMs (prec_type = 1)
     Besides the standard fiels of GMMs,
     this class contains the follwing fields
-    - prior_centers : array of shape (k,dim):
+    - prior_means : array of shape (k,dim):
     the prior on the components means
-    - prior_precision : array of shape (k,dim):
+    - prior_precisions : array of shape (k,dim):
     the prior on the components precisions
     - prior_dof : array of shape (k):
     the prior on the dof (should be at least equal to dim)
     - prior_shrinkage : array of shape (k):
-    scaling factor of the prior precision on the mean
+    scaling factor of the prior precisions on the mean
     - prior_weights  : array of shape (k)
     the prior on the components weights
     - shrinkage : array of shape (k):
-    scaling factor of the posterior precision on the mean
+    scaling factor of the posterior precisions on the mean
     - dof : array of shape (k): the posterior dofs
     
     fixme : needs renaming
     """
 
-    def set_priors(self,prior_centers = None, prior_weights = None, prior_precision = None, prior_dof = None,prior_shrinkage = None ):
+    def set_priors(self,prior_means = None, prior_weights = None, prior_precisions = None, prior_dof = None,prior_shrinkage = None ):
         """
         Set the prior of the BGMM
         """
-        self.prior_centers = prior_centers
+        self.prior_means = prior_means
         self.prior_weights = prior_weights
-        self.prior_precision = prior_precision
+        self.prior_precisions = prior_precisions
         self.prior_dof = prior_dof
         self.prior_shrinkage = prior_shrinkage
         self.prec_type = 1
@@ -980,14 +962,14 @@ class BGMM_old(GMM):
         """
         Check that the meain fields have correct dimensions
         """
-        if self.prior_centers.shape[0]!=self.k:
-            raise ValueError,"Incorrect dimension for self.prior_centers"
-        if self.prior_centers.shape[1]!=self.dim:
-            raise ValueError,"Incorrect dimension for self.prior_centers"
-        if self.prior_precision.shape[0]!=self.k:
-            raise ValueError,"Incorrect dimension for self.prior_precision"
-        if self.prior_precision.shape[1]!=self.dim:
-            raise ValueError,"Incorrect dimension for self.prior_precision"
+        if self.prior_means.shape[0]!=self.k:
+            raise ValueError,"Incorrect dimension for self.prior_means"
+        if self.prior_means.shape[1]!=self.dim:
+            raise ValueError,"Incorrect dimension for self.prior_means"
+        if self.prior_precisions.shape[0]!=self.k:
+            raise ValueError,"Incorrect dimension for self.prior_precisions"
+        if self.prior_precisions.shape[1]!=self.dim:
+            raise ValueError,"Incorrect dimension for self.prior_precisions"
         if self.prior_dof.shape[0]!=self.k:
             raise ValueError,"Incorrect dimension for self.prior_dof"
         if self.prior_weights.shape[0]!=self.k:
@@ -1004,8 +986,8 @@ class BGMM_old(GMM):
         self.prior_dof = self.dim*np.ones(self.k)
         self.prior_weights = 1./self.k*np.ones(self.k)
         self.prior_shrinkage = np.ones(self.k)
-        self.prior_centers = np.repeat(np.reshape(x.mean(0),(1,self.dim)),self.k,0)
-        self.prior_precision = np.repeat(np.reshape(1./x.var(0),(1,self.dim)),self.k,0)
+        self.prior_means = np.repeat(np.reshape(x.mean(0),(1,self.dim)),self.k,0)
+        self.prior_precisions = np.repeat(np.reshape(1./x.var(0),(1,self.dim)),self.k,0)
 
     def VB_estimate(self,x,niter = 100,delta = 0.0001):
         """
@@ -1024,9 +1006,9 @@ class BGMM_old(GMM):
         nit = 10
         mean,label,J = fc.cmeans(x,self.k,label,nit)
 
-        label, mean, meansc, prec, we,dof,Li = fc.bayesian_gmm (x,self.prior_centers,self.prior_precision,self.prior_shrinkage,self.prior_weights, self.prior_dof,label,niter,delta)
+        label, mean, meansc, prec, we,dof,Li = fc.bayesian_gmm (x,self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,label,niter,delta)
         self.estimated = 1
-        self.centers = mean
+        self.means = mean
         self.shrinkage = meansc
         self.precisions = prec
         self.weights = we
@@ -1046,7 +1028,7 @@ class BGMM_old(GMM):
         """
         if self.estimated:
             grid = gd.make_grid()
-            Li = fc.bayesian_gmm_sampling(self.prior_centers,self.prior_precision,self.prior_shrinkage,self.prior_weights, self.prior_dof,self.centers,self.precisions,self.shrinkage,self.weights, self.dof,grid)
+            Li = fc.bayesian_gmm_sampling(self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,self.means,self.precisions,self.shrinkage,self.weights, self.dof,grid)
         else:
             raise ValueError, "the model has not been estimated"
 
@@ -1086,9 +1068,9 @@ class BGMM_old(GMM):
         else:
             grid = gd.make_grid()
         
-        label, mean, meansc, prec, we,dof,Li = fc.bayesian_gmm (x,self.prior_centers,self.prior_precision,self.prior_shrinkage,self.prior_weights, self.prior_dof,label,niter,delta,grid)
+        label, mean, meansc, prec, we,dof,Li = fc.bayesian_gmm (x,self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,label,niter,delta,grid)
         self.estimated = 1
-        self.centers = mean
+        self.means = mean
         self.shrinkage = meansc
         self.precisions = prec
         self.weights = we
@@ -1107,7 +1089,7 @@ class BGMM_old(GMM):
         - Li : array of shape (nbnodes,self.k): the posterior for each node and component
         """
         if self.estimated:
-            Li = fc.bayesian_gmm_sampling(self.prior_centers,self.prior_precision,self.prior_shrinkage,self.prior_weights, self.prior_dof,self.centers,self.precisions,self.shrinkage,self.weights, self.dof,grid)
+            Li = fc.bayesian_gmm_sampling(self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,self.means,self.precisions,self.shrinkage,self.weights, self.dof,grid)
         else:
             raise ValueError, "the model has not been estimated"
 
@@ -1125,9 +1107,9 @@ class BGMM_old(GMM):
         - label: array of shape nbitems: resulting MAP labelling
         """
         x = self.check_data(x)
-        label, mean, meansc, prec, we,dof,Li = fc.gibbs_gmm (x,self.prior_centers,self.prior_precision,self.prior_shrinkage,self.prior_weights, self.prior_dof,niter,method)
+        label, mean, meansc, prec, we,dof,Li = fc.gibbs_gmm (x,self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,niter,method)
         self.estimated = 1
-        self.centers = mean
+        self.means = mean
         self.shrinkage = meansc
         self.precisions = prec
         self.weights = we
@@ -1159,9 +1141,9 @@ class BGMM_old(GMM):
         else:
             grid = gd.make_grid()
             
-        label, mean, meansc, prec, we,dof,Li = fc.gibbs_gmm (x,self.prior_centers,self.prior_precision,self.prior_shrinkage,self.prior_weights, self.prior_dof,niter,method,grid,nsamp)
+        label, mean, meansc, prec, we,dof,Li = fc.gibbs_gmm (x,self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,niter,method,grid,nsamp)
         self.estimated = 1
-        self.centers = mean
+        self.means = mean
         self.shrinkage = meansc
         self.precisions = prec
         self.weights = we

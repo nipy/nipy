@@ -109,12 +109,12 @@ class GMM():
     - k (int): the number of components in the mixture
     - dim (int): is the dimension of the data
     - prec_type='full' (string) is the parameterization
-    of the precision/covariance matrices:
+    of the precisions/covariance matrices:
     either 'full' or 'diagonal'.
-    - centers array of shape (k,dim):
-    all the centers (mean parameters) of the components
-    - precision array of shape (k,dim,dim):
-    the precision (inverse covariance matrix) of the components    
+    - means array of shape (k,dim):
+    all the means (mean parameters) of the components
+    - precisions array of shape (k,dim,dim):
+    the precisions (inverse covariance matrix) of the components    
     - weights: array of shape(k): weights of the mixture
 
     fixme :
@@ -123,7 +123,8 @@ class GMM():
     - leave open the possibility to  call the c library
     """
 
-    def __init__(self, k=1, dim = 1, prec_type='full',centers = None, precision = None, weights = None,means_scale = None, dof = None):
+    def __init__(self, k=1, dim=1, prec_type='full', means = None,
+                 precisions=None, weights=None):
         """
         Initialize the structure, at least with the dimensions of the problem
         At most, with what is necessary to compute the likelihood of a point
@@ -132,30 +133,29 @@ class GMM():
         self.k = k
         self.dim = dim
         self.prec_type=prec_type
-        self.centers = centers
-        self.precision = precision
+        self.means = means
+        self.precisions = precisions
         self.weights = weights
 
+        if self.means==None:
+            self.means = np.zeros((self.k,self.dim))
 
-        if self.centers==None:
-            self.centers = np.zeros((self.k,self.dim))
-
-        if self.precision==None:
+        if self.precisions==None:
             if prec_type=='full':
                 prec = np.reshape(np.eye(self.dim),(1,self.dim,self.dim))
-                self.precision = np.repeat(prec,self.k,0)
+                self.precisions = np.repeat(prec,self.k,0)
             else:
-                self.precision = np.ones((self.k,self.dim))
+                self.precisions = np.ones((self.k,self.dim))
             
         if self.weights==None:
             self.weights = np.ones(self.k)*1.0/self.k
 
-    def plugin(self,centers=None,precision=None,weights = None):
+    def plugin(self,means=None,precisions=None,weights = None):
         """
         sets manually the main fields of the bgmm
         """
-        self.centers = centers
-        self.precision = precision
+        self.means = means
+        self.precisions = precisions
         self.weights = weights
         self.check()
     
@@ -163,31 +163,31 @@ class GMM():
         """
         Checking the shape of sifferent matrices involved in the model
         """
-        if self.centers.shape[0] != self.k:
-            raise ValueError," self.centers does not have correct dimensions"
+        if self.means.shape[0] != self.k:
+            raise ValueError," self.means does not have correct dimensions"
             
-        if self.centers.shape[1] != self.dim:
-            raise ValueError," self.centers does not have correct dimensions"
+        if self.means.shape[1] != self.dim:
+            raise ValueError," self.means does not have correct dimensions"
 
         if self.weights.size != self.k:
             raise ValueError," self.weights does not have correct dimensions"
         
-        if self.dim !=  self.precision.shape[1]:
-            raise ValueError, "self.precision does not have correct dimensions"
+        if self.dim !=  self.precisions.shape[1]:
+            raise ValueError, "self.precisions does not have correct dimensions"
 
         if self.prec_type=='full':
-            if self.dim !=  self.precision.shape[2]:
-                raise ValueError, "self.precision does not have correct dimensions"
+            if self.dim !=  self.precisions.shape[2]:
+                raise ValueError, "self.precisions does not have correct dimensions"
 
         if self.prec_type=='diag':
-            if np.shape(self.precision) !=  np.shape(self.centers):
-                raise ValueError, "self.precision does not have correct dimensions"
+            if np.shape(self.precisions) !=  np.shape(self.means):
+                raise ValueError, "self.precisions does not have correct dimensions"
 
-        if self.precision.shape[0] != self.k:
-            raise ValueError,"self.precision does not have correct dimensions"
+        if self.precisions.shape[0] != self.k:
+            raise ValueError,"self.precisions does not have correct dimensions"
 
         if self.prec_type not in ['full','diag']:
-            raise ValueError, 'unknown precision type'
+            raise ValueError, 'unknown precisions type'
 
     def check_x(self,x):
         """
@@ -240,9 +240,9 @@ class GMM():
         
     def update(self,x,l):
         """
-        Identical to self.Mstep(x,l)
+        Identical to self._Mstep(x,l)
         """
-        self.Mstep(x,l)
+        self._Mstep(x,l)
         
 
     def likelihood(self,x):
@@ -279,8 +279,8 @@ class GMM():
         for k in range(self.k):
             # compute the data-independent factor first
             w = - np.log(2*np.pi)*self.dim
-            m = np.reshape(self.centers[k],(1,self.dim))
-            b = self.precision[k]
+            m = np.reshape(self.means[k],(1,self.dim))
+            b = self.precisions[k]
             if self.prec_type=='full':
                 w += np.log(det(b))
                 q = np.sum(np.dot(m-x,b)*(m-x),1)
@@ -292,7 +292,7 @@ class GMM():
             l[:,k] = np.exp(w)   
         return l
     
-    def mixture_like(self,x):
+    def mixture_likelihood(self,x):
         """
         returns the likelihood of the mixture for x
          INPUT:
@@ -354,7 +354,7 @@ class GMM():
         bicc = bicc-np.log(n)*eta
         return bicc
 
-    def Estep(self,x):
+    def _Estep(self,x):
         """
         E step
         returns the likelihood per class of each data item
@@ -378,25 +378,25 @@ class GMM():
         mx = np.reshape(x.mean(0),(1,self.dim))
 
         dx = x-mx
-        vx = np.dot(np.transpose(dx),dx)/x.shape[0]
+        vx = np.dot(dx.T,dx)/x.shape[0]
         if self.prec_type=='full':
             px = np.reshape(np.diag(1.0/np.diag(vx)),(1,self.dim,self.dim))
         else:
             px =  np.reshape(1.0/np.diag(vx),(1,self.dim))
         px *= np.exp(2.0/self.dim*np.log(self.k))
-        self.prior_centers = np.repeat(mx,self.k,0)
+        self.prior_means = np.repeat(mx,self.k,0)
         self.prior_weights = np.ones(self.k)/self.k
-        self.prior_precision = np.repeat(px,self.k,0)
+        self.prior_scale = np.repeat(px,self.k,0)
         self.prior_dof = self.dim+2
         self.prior_shrinkage = small
         self.weights = np.ones(self.k)*1.0/self.k
         if bcheck:
             self.check()
     
-    def Mstep(self,x,l):
+    def _Mstep(self,x,l):
         """
         M step regularized according to the procedure of
-        Raftery et al. 2007
+        Fraley et al. 2007
         - x: array of shape(nbitem,self.dim)
         the data from which the model is estimated
         - l: array of shape(nbitem,self.k)
@@ -408,62 +408,62 @@ class GMM():
         sl = np.maximum(tiny,np.sum(l,1))
         l = (l.T/sl).T
         
-        # means_scale,weights,dof
+        # shrinkage,weights,dof
         self.weights = self.prior_weights + pop
         self.weights = self.weights/(self.weights.sum())
         
         #reshape
         pop = np.reshape(pop,(self.k,1))
         prior_shrinkage = self.prior_shrinkage
-        means_scale = pop + prior_shrinkage
+        shrinkage = pop + prior_shrinkage
 
-        # centers
-        centers = np.dot(l.T,x)+ self.prior_centers*prior_shrinkage
-        self.centers= centers/means_scale
+        # means
+        means = np.dot(l.T,x)+ self.prior_means*prior_shrinkage
+        self.means= means/shrinkage
         
-        #precision
+        #precisions
         empmeans = np.dot(l.T,x)/np.maximum(pop,tiny)
-        empcov = np.zeros(np.shape(self.precision))
+        empcov = np.zeros(np.shape(self.precisions))
         
         if self.prec_type=='full':
             for k in range(self.k):
                 dx = x-empmeans[k]
                 empcov[k] = np.dot(dx.T,l[:,k:k+1]*dx) 
                     
-            covariance = np.array([pinv(self.prior_precision[k])
+            covariance = np.array([pinv(self.prior_scale[k])
                                    for k in range(self.k)])
             covariance += empcov
 
-            dx = np.reshape(empmeans-self.prior_centers,(self.k,self.dim,1))
+            dx = np.reshape(empmeans-self.prior_means,(self.k,self.dim,1))
             addcov = np.array([np.dot(dx[k],dx[k].T) for k in range(self.k)])
         
-            apms =  np.reshape(prior_shrinkage*pop/means_scale,(self.k,1,1))
+            apms =  np.reshape(prior_shrinkage*pop/shrinkage,(self.k,1,1))
             covariance += addcov*apms
 
             dof = self.prior_dof+pop+self.dim+2
             covariance /= np.reshape(dof,(self.k,1,1))
         
-            self.precision = np.array([pinv(covariance[k]) \
+            self.precisions = np.array([pinv(covariance[k]) \
                                        for k in range(self.k)])
         else:
             for k in range(self.k):
                 dx = x-empmeans[k]
                 empcov[k] = np.sum(dx**2*l[:,k:k+1],0) 
                     
-            covariance = np.array([1.0/(self.prior_precision[k])
+            covariance = np.array([1.0/(self.prior_scale[k])
                                    for k in range(self.k)])
             covariance += empcov
 
-            dx = np.reshape(empmeans-self.prior_centers,(self.k,self.dim,1))
+            dx = np.reshape(empmeans-self.prior_means,(self.k,self.dim,1))
             addcov = np.array([np.sum(dx[k]**2,0) for k in range(self.k)])
 
-            apms =  np.reshape(prior_shrinkage*pop/means_scale,(self.k,1))
+            apms =  np.reshape(prior_shrinkage*pop/shrinkage,(self.k,1))
             covariance += addcov*apms
 
             dof = self.prior_dof+pop+self.dim+2
             covariance /= np.reshape(dof,(self.k,1))
         
-            self.precision = np.array([1.0/covariance[k] \
+            self.precisions = np.array([1.0/covariance[k] \
                                        for k in range(self.k)])
 
     def map_label(self,x,l=None):
@@ -480,7 +480,7 @@ class GMM():
         of the rows of x
         """
         if l== None:
-            l = self.Estep(x)
+            l = self._Estep(x)
         z = np.argmax(l,1)
         return z
 
@@ -506,14 +506,14 @@ class GMM():
         # initialization -> Cmeans
         # alternation of E/M step until convergence
         tiny = 1.e-15
-        cc = np.zeros(np.shape(self.centers))
-        nc = np.var(self.centers)
+        cc = np.zeros(np.shape(self.means))
+        nc = np.var(self.means)
         allOld = -np.infty
         for i in range(niter):
-            #if np.var(cc-self.centers)<delta*nc:
+            #if np.var(cc-self.means)<delta*nc:
             #    break
-            cc = self.centers.copy()
-            l = self.Estep(x)
+            cc = self.means.copy()
+            l = self._Estep(x)
             all = np.mean(np.log(np.maximum( np.sum(l,1),tiny)))
             if all<allOld+delta:
                 if verbose:
@@ -524,7 +524,7 @@ class GMM():
                 allOld = all
             if verbose:
                 print i, all, self.bic(l)
-            self.Mstep(x,l)
+            self._Mstep(x,l)
             
         return self.bic(l)
 
@@ -561,7 +561,7 @@ class GMM():
             bic = self.estimate(x,niter=niter,delta=delta,verbose=0)
             if bic>bestbic:
                 bestbic= bic
-                bestgmm.plugin(self.centers,self.precision,self.weights)
+                bestgmm.plugin(self.means,self.precisions,self.weights)
         
         return bestgmm
 
@@ -584,7 +584,7 @@ class GMM():
         - ll: array of shape(nbitems)
         the log-likelihood of the rows of x
         """
-        return np.log(np.maximum(self.mixture_like(x),tiny)) 
+        return np.log(np.maximum(self.mixture_likelihood(x),tiny)) 
 
     
     def show_components(self,x,gd,density=None,nbf = -1):
@@ -593,7 +593,7 @@ class GMM():
         Currently, works only in 1D and 2D
         """
         if density==None:
-            density = self.mixture_like(gd.make_grid())
+            density = self.mixture_likelihood(gd.make_grid())
                 
         if gd.dim==1:
             import matplotlib.pylab as mp
@@ -639,7 +639,7 @@ class GMM():
         Currently, works only in 1D and 2D
         """
         if density==None:
-            density = self.mixture_like(gd,x)
+            density = self.mixture_likelihood(gd,x)
                 
         if gd.dim==1:
             import matplotlib.pylab as mp
@@ -689,7 +689,7 @@ class GMM_old(GMM):
     and should be preferred in general
     
     caveat:
-    - GMM_old.precision has shape (self.k, self.dim**2)
+    - GMM_old.precisions has shape (self.k, self.dim**2)
     -> a reshape is needed
     """
     
@@ -733,23 +733,23 @@ class GMM_old(GMM):
             
             if bic>bic_ref:
                 kopt = k
-                C = self.centers.copy()
-                P = self.precision.copy()
+                C = self.means.copy()
+                P = self.precisions.copy()
                 W = self.weights.copy()
                 bic_ref = bic
             if verbose:
                 print k,LL,bic,kopt
             
-        self.centers = C
-        self.precision = P
+        self.means = C
+        self.precisions = P
         self.weights = W
         self.k = kopt
         
         if self.prec_type=='full':
-            precision = np.reshape(self.precision,(self.k,self.dim*self.dim))
+            precisions = np.reshape(self.precisions,(self.k,self.dim*self.dim))
         else:
-            precision = self.precision
-        Labels, LogLike  = fc.gmm_partition(data,self.centers,precision,\
+            precisions = self.precisions
+        Labels, LogLike  = fc.gmm_partition(data,self.means,precisions,\
                                             self.weights)
 
         return Labels, LogLike, self.bic_from_ll(LogLike)
@@ -790,11 +790,11 @@ class GMM_old(GMM):
         
         C, P, W, Labels, bll = fc.gmm(data,self.k,Labels,prec_type,
                                      maxiter,delta)
-        self.centers = C
+        self.means = C
         if self.prec_type=='diag':
-            self.precision = P
+            self.precisions = P
         if self.prec_type=='full':
-            self.precision = np.reshape(P,(self.k,self.dim,self.dim))
+            self.precisions = np.reshape(P,(self.k,self.dim,self.dim))
         self.weights = W
         self.check()
         
@@ -803,11 +803,11 @@ class GMM_old(GMM):
             C, P, W, labels, ll = fc.gmm(data,self.k,Labels,
                                          prec_type,maxiter,delta)
             if ll>bll:
-                self.centers = C
+                self.means = C
                 if self.prec_type=='diag':
-                    self.precision = P
+                    self.precisions = P
                 if self.prec_type=='full':
-                    self.precision = np.reshape(P,(self.k,self.dim,self.dim))
+                    self.precisions = np.reshape(P,(self.k,self.dim,self.dim))
                 self.weights = W
                 self.check()
                 bll = ll
@@ -832,11 +832,11 @@ class GMM_old(GMM):
         data = self.check_x(data)
 
         if self.prec_type=='full':
-            precision = np.reshape(self.precision,(self.k,self.dim*self.dim))
+            precisions = np.reshape(self.precisions,(self.k,self.dim*self.dim))
         else:
-            precision = self.precision
+            precisions = self.precisions
         Labels, LogLike  = fc.gmm_partition\
-                           (data,self.centers,precision, self.weights)
+                           (data,self.means,precisions, self.weights)
 
         return Labels, LogLike, self.bic_from_ll(LogLike)
         
@@ -854,12 +854,12 @@ class GMM_old(GMM):
         """
         data = self.check_x(data)
         if self.prec_type=='full':
-            precision = np.reshape(self.precision,(self.k,self.dim*self.dim))
+            precisions = np.reshape(self.precisions,(self.k,self.dim*self.dim))
         else:
-            precision = self.precision
+            precisions = self.precisions
             
         Labels, LogLike  = fc.gmm_partition\
-                           (data, self.centers,precision, self.weights)
+                           (data, self.means,precisions, self.weights)
         return LogLike
         
 
@@ -873,12 +873,12 @@ class GMM_old(GMM):
         """
         data = gd.make_grid()
         if self.prec_type=='full':
-            precision = np.reshape(self.precision,(self.k,self.dim*self.dim))
+            precisions = np.reshape(self.precisions,(self.k,self.dim*self.dim))
         else:
-            precision = self.precision
+            precisions = self.precisions
             
         Labels, LogLike  = fc.gmm_partition(\
-            data,self.centers,precision, self.weights)
+            data,self.means,precisions, self.weights)
         if verbose:
             self.show(x,gd,np.exp(LogLike))
         return LogLike
