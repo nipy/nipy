@@ -196,17 +196,17 @@ class CoordinateSystem(object):
 	--------
 	>>> cs = CoordinateSystem('ijk', coord_dtype=np.float32)
         >>> arr = np.array([1, 2, 3], dtype=np.int16)
-        >>> cs.checked_values(arr.reshape(1,3)) 
+        >>> cs._checked_values(arr.reshape(1,3)) 
         array([[1, 2, 3]], dtype=int16)
-        >>> cs.checked_values(arr) # 1D is OK with matching dimensions 
+        >>> cs._checked_values(arr) # 1D is OK with matching dimensions 
         array([[1, 2, 3]], dtype=int16)
-        >>> cs.checked_values(arr.reshape(3,1)) # wrong shape
+        >>> cs._checked_values(arr.reshape(3,1)) # wrong shape
         Traceback (most recent call last):
            ...
         ValueError: Array shape[-1] must match CoordinateSystem shape 3.
           name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32
 
-        >>> cs.checked_values(arr[0:2]) # wrong length
+        >>> cs._checked_values(arr[0:2]) # wrong length
         Traceback (most recent call last):
            ...
         ValueError: 1D input should have length 3 for CoordinateSystem:
@@ -214,7 +214,7 @@ class CoordinateSystem(object):
 
         The dtype has to be castable:
 
-        >>> cs.checked_values(np.array([1, 2, 3], dtype=np.float64))
+        >>> cs._checked_values(np.array([1, 2, 3], dtype=np.float64))
         Traceback (most recent call last):
            ...
         ValueError: Cannot cast array dtype float64 to CoordinateSystem coord_dtype float32.
@@ -223,7 +223,7 @@ class CoordinateSystem(object):
         The input array is unchanged, even if a reshape has
         occurred. The returned array points to the same data.
 
-        >>> checked = cs.checked_values(arr)
+        >>> checked = cs._checked_values(arr)
         >>> checked.shape == arr.shape
         False
         >>> checked is arr
@@ -240,9 +240,9 @@ class CoordinateSystem(object):
         ambiguous, this is an error.
 
         >>> cs = CoordinateSystem('x')
-        >>> cs.checked_values(1)
+        >>> cs._checked_values(1)
         array([[1]])
-        >>> cs.checked_values([1, 2])
+        >>> cs._checked_values([1, 2])
         Traceback (most recent call last):
            ...
         ValueError: 1D input should have length 1 for CoordinateSystem:
@@ -250,7 +250,7 @@ class CoordinateSystem(object):
 
         But of course 2D, N by 1 is OK
 
-        >>> cs.checked_values(np.array([1,2,3]).reshape(3, 1))
+        >>> cs._checked_values(np.array([1,2,3]).reshape(3, 1))
         array([[1],
                [2],
                [3]])
@@ -325,7 +325,7 @@ def safe_dtype(*dtypes):
 
     arrays = [np.zeros(2, dtype) for dtype in dtypes]
     notbuiltin = filter(lambda x: not x.dtype.isbuiltin, arrays)
-    if notbuiltin:
+    if np.any(notbuiltin):
         raise TypeError('dtype must be valid numpy dtype int, uint, float or complex')
     return np.array(arrays).dtype
 

@@ -6,10 +6,10 @@ import numpy as np
 
 from nipy.core.api import fromarray, Affine
 from nipy.io.api import save_image, load_image
-from nipy.utils.tests.data import repository
+from nipy.testing import datapjoin
 
 # Load an image to get the array and affine
-filename = str(repository._fullpath('avg152T1.nii.gz'))
+filename = datapjoin('avg152T1.nii.gz')
 assert os.path.exists(filename)
 
 # Use one of our test files to get an array and affine (as numpy array) from.
@@ -45,7 +45,7 @@ newimg = fromarray(arr, innames=innames, outnames=outnames,
 ################################################################################
 # END HERE, for testing purposes only.
 ################################################################################
-# Imports used just for development and testing.  User's typically
+# Imports used just for development and testing.  Users typically
 # would not uses these when creating an image.
 from tempfile import mkstemp
 from nipy.testing import assert_equal

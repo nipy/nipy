@@ -6,6 +6,7 @@ third-party software included here for convenience.
 """
 
 from onetime import OneTimeProperty, setattr_on_read
+from tmpdirs import TemporaryDirectory, InTemporaryDirectory
 
 from nipy.testing import Tester
 test = Tester().test

@@ -77,8 +77,8 @@ def perl_dash_pie(oldstr, newstr):
     --------
 
     # To replace all occurences of 'import numpy as N' with 'import numpy as np'
-    >>> from nipy.utils import perlpie
-    >>> perlpie.perl_dash_pie('import\s+numpy\s+as\s+N', 'import numpy as np')
+    from nipy.utils import perlpie
+    perlpie.perl_dash_pie('import\s+numpy\s+as\s+N', 'import numpy as np')
     grind | xargs perl -pi -e 's/import\s+numpy\s+as\s+N/import numpy as np/g'
     
     """

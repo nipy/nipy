@@ -10,29 +10,6 @@ from nipy.modalities.fmri.fmristat import model as fmristat
 from nipy.modalities.fmri.fmristat.model import OLS
 import correlation, reml
 
-def reshape(i, x):
-    """
-    To write output, arrays have to be reshaped --
-    this function does the appropriate reshaping for the two
-    passes of fMRIstat.
-
-    These passes are i) 'slices through the z-axis'
-                     ii) 'parcels of approximately constant AR1 coefficient'
-    """
-    
-    if len(x.shape) == 2:
-        if type(i) is type(1):
-            x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]                        
-        if type(i) not in [type([]), type(())]:
-            i = (i,)
-        else:
-            i = tuple(i)
-        i = (slice(None,None,None),) + tuple(i)
-    else:
-        if type(i) is type(1):
-            x.shape = self.fmri_image[0].shape[1:]
-    return i, x
-
 
 def Fmask(Fimg, dfnum, dfdenom, pvalue=1.0e-04):
     """
@@ -46,6 +23,7 @@ def Fmask(Fimg, dfnum, dfdenom, pvalue=1.0e-04):
     print dfnum, dfdenom
     thresh = FDbn.ppf(pvalue, dfnum, dfdenom)
     return Image(np.greater(np.asarray(Fimg), thresh), Fimg.grid.copy())
+
 
 def estimate_pooled_covariance(resid, ARtarget=[0.3], mask=None):
     """
@@ -75,36 +53,38 @@ def estimate_pooled_covariance(resid, ARtarget=[0.3], mask=None):
                         n=nvox)
     return C
 
-class SecondStage:
-
+class SecondStage(object):
     """
-    Second pass through fmri_image.
-
     Parameters
     ----------
-    fmri_image : `FmriImage`
-    formula :  `nipy.modalities.fmri.protocol.Formula`
-    rho : Image of AR(1) coefficients.
+    fmri_image : `FmriImageList`
+       object returning 4D array from ``np.asarray``, having attribute
+       ``volume_start_times`` (if `volume_start_times` is None), and
+       such that ``object[0]`` returns something with attributes ``shape``
+    formula :  :class:`nipy.modalities.fmri.formula.Formula`
+    sigma : 
+    outputs :
+    volume_start_times : 
     """
 
     def __init__(self, fmri_image, formula, sigma, outputs=[],
-                 frametimes=None):
+                 volume_start_times=None):
         self.fmri_image = fmri_image
         self.data = np.asarray(fmri_image)
         self.formula = formula
         self.outputs = outputs
         self.sigma = sigma
 
-        if frametimes is None:
-            self.frametimes = self.fmri_image.frametimes
+        if volume_start_times is None:
+            self.volume_start_times = self.fmri_image.volume_start_times
         else:
-            self.frametimes = frametimes
+            self.volume_start_times = volume_start_times
 
     def execute(self):
         def model_params(*args):
             return (self.sigma,)
         m = fmristat.model_generator(self.formula, self.data,
-                                     self.frametimes,
+                                     self.volume_start_times,
                                      model_type=GLSModel,
                                      model_params=model_params)
         r = fmristat.results_generator(m)
@@ -133,4 +113,5 @@ class SecondStage:
             return i, x
 
         o = fmristat.generate_output(self.outputs, r, reshape=reshape)
-            
+
+

@@ -238,7 +238,7 @@ def shape_generator(img, shape):
     (i, r.reshape(shape))
     
     """
-    for i, r in ing:
+    for i, r in img:
         r.shape = shape
         yield i, r
 
