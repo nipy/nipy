@@ -171,8 +171,7 @@ class AffineImage(Image):
 
             shape: tuple
                 Shape of the resulting image. Defaults to self.shape.
-                XXX This only makes sense if the "voxels" in affine_transform
-                are roughly the same size as those in self.spatial_coordmap.
+
 
             Returns
             -------
@@ -182,12 +181,11 @@ class AffineImage(Image):
 
             Notes
             -----
-            The coordinate system of the image is not changed: the
+            The coordinate system of the output image is the world
+            of affine_transform. Therefore, if world_to_world=np.identity(4),
+            the coordinate system is not changed: the
             returned image points to the same world space.
 
-            XXX This is because the "coordinate system" of EVERY image
-            is ('x', 'y', 'z') and we have forced the axes of affine
-            to be the same as self.
 
         """
 

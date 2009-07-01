@@ -153,7 +153,7 @@ class AffineImage(Image):
                 This rotation can now be expressed with the world_to_world argument.
 
             world_to_world: 4x4 ndarray, optional
-                A matrix representing a mapping from the target's "world"
+                A matrix representing a mapping from the target's (affine_transform) "world"
                 to self's "world". Defaults to np.identity(4)
 
             interpolation_order : int, optional
@@ -162,8 +162,6 @@ class AffineImage(Image):
 
             shape: tuple
                 Shape of the resulting image. Defaults to self.shape.
-                XXX This only makes sense if the "voxels" in affine_transform
-                are roughly the same size as those in self.spatial_coordmap.
 
             Returns
             -------
@@ -173,12 +171,10 @@ class AffineImage(Image):
 
             Notes
             -----
-            The coordinate system of the image is not changed: the
+            The coordinate system of the resampled_image is the world
+            of affine_transform. Therefore, if world_to_world=np.identity(4),
+            the coordinate system is not changed: the
             returned image points to the same world space.
-
-            XXX This is because the "coordinate system" of EVERY image
-            is ('x', 'y', 'z') and we have forced the axes of affine
-            to be the same as self.
 
         """
 
@@ -251,16 +247,20 @@ class AffineImage(Image):
 
             Notes
             -----
-            Both the target image and the original image should be
-            embedded in the same coordinate system.
+            The coordinate system of the resampled_image is the world
+            of target_image. Therefore, if world_to_world=np.identity(4),
+            the coordinate system is not changed: the
+            returned image points to the same world space.
 
-XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is embedded in the same coordinate system (i.e. 'x','y','z'), but images can have different coordinate axes. Here it should say that the coordinate axes are the same. The term "embedding" refers to something in the range of a function, not its domain. 
+
+XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is embedded in the same coordinate system (i.e. 'x','y','z'), but images can have different coordinate axes. The term "embedding" that was here in the proposal refers to something in the range of a function, not its domain. By adding a world_to_world transformation, i.e. a rotation or something, we
+now change the coordinate system of the resampled_image
 
         """
         return self.resampled_to_affine(target_image.spatial_coordmap,
-                                        interpolation_order=interpolation_order,
-                                        shape=target_image.shape,
-                                        world_to_world=world_to_world)
+                                        world_to_world,
+                                        interpolation_order,
+                                        target_image.shape)
 
 
     def values_in_world(self, x, y, z, interpolation_order=3):
