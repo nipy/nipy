@@ -295,9 +295,20 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
         xyz = np.c_[x, y, z]
         world_to_voxel = self.spatial_coordmap.inverse
         ijk = world_to_voxel(xyz)
-        values = map_coordinates(self.get_data(), ijk.T,
-                                 order=interpolation_order)
-        values = np.reshape(values, shape)
+
+        data = self.get_data()
+
+        if self.ndim == 3:
+            values = map_coordinates(data, ijk.T,
+                                     order=interpolation_order)
+            values = np.reshape(values, shape)
+        elif self.ndim == 4:
+            values = np.empty(shape + (self.shape[3],))
+            for i in range(self.shape[3]):
+                tmp_values = map_coordinates(data[...,i], ijk.T,
+                                             order=interpolation_order)
+                tmp_values = np.reshape(tmp_values, shape)
+                values[...,i] = tmp_values
         return values
     
     #---------------------------------------------------------------------------
