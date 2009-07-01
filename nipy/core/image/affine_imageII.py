@@ -188,7 +188,9 @@ class AffineImage(Image):
 
         """
 
-        shape = shape or self.shape[:3]
+        shape = shape or self.shape
+        shape = shape[:3]
+
         target = affine_transform
         target_world_to_self_world = compose(self.spatial_coordmap,
                                              target.inverse)
