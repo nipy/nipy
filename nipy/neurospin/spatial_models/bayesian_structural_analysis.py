@@ -14,7 +14,7 @@ import scipy.stats as st
 import structural_bfls as sbf
 import nipy.neurospin.graph.graph as fg
 from nipy.neurospin.spatial_models import hroi 
-from nipy.neurospin.clustering import GGMixture
+
 import nipy.neurospin.clustering.clustering as fc
 from nipy.neurospin.graph import BPmatch
 from nipy.neurospin.clustering.hierarchical_clustering import Average_Link_Graph_segment
@@ -145,12 +145,14 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
     return bf
 
                     
-def _GMM_priors_(beta,bfm,theta = 0,alpha=0.01,prior_strength = 100,verbose=0):
+def _GMM_priors_(beta,bfm,theta = 0,alpha=0.01,prior_strength = 100,verbose=0,bias=0):
     """
     bfp = _GMM_priors_(beta,bfm,alpha=0.01,prior_strength = 100,verbose=0)
     Computing somr prior probabilities that the voxels of a certain map
     are in class disactivated, null or active
+
     INPUT:
+    ------
     - beta array os shape (nvox): the map to be analysed
     - bfm array of shape(nbitems):
     the test values for which the p-value needs to be computed
@@ -161,44 +163,53 @@ def _GMM_priors_(beta,bfm,theta = 0,alpha=0.01,prior_strength = 100,verbose=0):
     - prior_strength = 100 the confidence on the prior
     (should be compared to size(beta))
     - verbose=0 : verbosity mode
-    OUPUT:
+    - bias = 0: allows a recaling of the posterior probability
+    that takes into account the thershold theta. Not rigorous.
+
+    OUTPUT:
+    -------
     bfp : array of shape (nbitems,3):
     the probability of each component in the MM for each test value
     """
     if np.size(bfm)==0:
         return None
-
-    lnvox = np.size(beta)    
-    from nipy.neurospin.clustering.gmm import BGMM,grid_descriptor
-    bgmm = BGMM(3,1,1)
+    from nipy.neurospin.clustering.bgmm import BGMM,VBGMM
+    from nipy.neurospin.clustering.gmm import grid_descriptor
+    
+    lnvox = np.size(beta)
     sbeta = np.sort(beta)
+    beta = np.reshape(beta,(lnvox,1))   
+    nclasses=3
+    
+    # set the priors from a reasonable model of the data (!)
     mb0 = np.mean(sbeta[:alpha*lnvox])
     mb2 = np.mean(sbeta[(1-alpha)*lnvox:])
-    prior_centers = np.reshape(np.array([mb0,0,mb2]),(3,1))
-    prior_precision = np.ones((3,1))*1./prior_strength
-    prior_dof = np.ones(3)*prior_strength
+    prior_centers = np.reshape(np.array([mb0,0,mb2]),(nclasses,1))
+    prior_scale = np.ones((nclasses,1,1))*1./prior_strength
+    prior_dof = np.ones(nclasses)*prior_strength
     prior_weights = np.array([alpha,1-2*alpha,alpha])*prior_strength
-    prior_mean_scale = np.ones(3)*prior_strength
-    bgmm.set_priors(prior_centers, prior_weights, prior_precision, prior_dof, prior_mean_scale)
+    prior_shrinkage = np.ones(nclasses)*prior_strength
+    BayesianGMM = VBGMM(nclasses,1,prior_centers,prior_scale,prior_weights, prior_shrinkage,prior_dof)
+    BayesianGMM.set_priors(prior_centers, prior_weights, prior_scale, prior_dof, prior_shrinkage)
 
-    beta = np.reshape(beta,(lnvox,1))
+    # estimate the model
+    BayesianGMM.estimate(beta)
 
-    # only a few iterations are sufficient
-    l = bgmm.Gibbs_estimate(beta,10)
-
-    # estimate the prior weights
+    # create a sampling grid
     gd = grid_descriptor(1) 
     gd.getinfo([beta.min(),beta.max()],100)
     gdm = gd.make_grid().squeeze()
 
-    lj = bgmm.sample_on_data(gd.make_grid())
-    lw = np.sum(lj[gdm>theta],0)
-    bfp = lw/bgmm.weights*bgmm.sample_on_data(bfm)
-    bfp = bgmm.sample_on_data(bfm)#---
-
+    # estimate the prior weights
+    bfp = BayesianGMM.likelihood(bfm)
+    if bias:
+        lj = BayesianGMM.likelihood(gd.make_grid())
+        lw = np.sum(lj[gdm>theta],0)
+        weights = BayesianGMM.weights/(BayesianGMM.weights.sum())
+        bfp = (lw/weights)*BayesianGMM.slikelihood(bfm)
+    
     if verbose>1:
-        #bgmm.show(beta,gd,lj.sum(1))
-        bgmm.show_components(beta,gd,lj)
+        BayesianGMM.show_components(beta,gd,lj)
     
     return bfp
 
@@ -216,6 +227,7 @@ def _GGM_priors_(beta,bfm,verbose=0):
     bfp : array of shape (nbitems,3):
     the probability of each component in the MM for each test value
     """
+    from nipy.neurospin.clustering import GGMixture
     Ggg = GGMixture.GGGM()
     Ggg.init_fdr(beta)
     Ggg.estimate(beta,100,1.e-8,1.0,0)
@@ -710,8 +722,8 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     dof = 100
     spatial_coords = tal
     burnin=100
-    nis=100
-    nii=100
+    nis = 1000
+    nii = 100
     
     p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
                   sub,burnin,spatial_coords,nis, nii)
