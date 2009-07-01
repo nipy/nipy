@@ -94,10 +94,11 @@ class Image(object):
                     doc="Coordinate mapping from input coords to output coords")
 
     def _getaffine(self):
+        warnings.warn('the affine property of Images may be deprecated if AffineImage is adopted')
         if hasattr(self.coordmap, "affine"):
             return self.coordmap.affine
         raise AttributeError, 'Nonlinear transform does not have an affine.'
-    affine = property(_getaffine, doc="Affine transformation is one exists")
+    affine = property(_getaffine, doc="Affine transformation if one exists")
 
     def _getheader(self):
         # data loaded from a file should have a header
