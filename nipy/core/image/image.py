@@ -7,6 +7,7 @@ merge_images : create an Image by merging a sequence of Image instance
 
 """
 import numpy as np
+import warnings
 
 from nipy.core.reference.coordinate_map import Affine
 from nipy.core.reference.coordinate_map import product as cmap_product
@@ -124,16 +125,6 @@ class Image(object):
     """
     header = property(_getheader, _setheader, doc=_doc['header'])
 
-    def __getitem__(self, index):
-        """Slicing an image returns a new image."""
-        data = self._data[index]
-        g = ArrayCoordMap(self.coordmap, self._data.shape)[index]
-        coordmap = g.coordmap
-        # BUG: If it's a zero-dimension array we should return a numpy scalar
-        # like np.int32(data[index])
-        # Need to figure out elegant way to handle this
-        return Image(data, coordmap)
-
     def __setitem__(self, index, value):
         """Setting values of an image, set values in the data array."""
         self._data[index] = value
@@ -141,6 +132,66 @@ class Image(object):
     def __array__(self):
         """Return data as a numpy array."""
         return np.asarray(self._data)
+
+    # XXX FIXME: slicing Images can be done
+    # with the subsample function
+    def __getitem__(self, slice_object):
+        """
+        Slicing an image returns an Image.
+        Just calls the function subsample.
+        """
+        warnings.warn('slicing Images is deprecated, use subsample instead')
+        return subsample(self, slice_object)
+
+class SliceConstructor(object):
+    """
+    This class just creates slice objects to be used
+    in resampling images. It only has a __getitem__ method
+    that returns its argument.
+    """
+    def __getitem__(self, index):
+        return index
+
+make_slices = SliceConstructor()
+
+def subsample(img, slice_object):
+    """
+    Subsample an image. 
+
+    Parameters
+    ----------
+
+    img: Image
+
+    slice_object: int, slice or [slice]
+         An object representing a numpy 'slice'.
+    
+    Returns
+    -------
+
+    img_subsampled: Image
+         An Image with data np.array(img)[slice_object] and an appropriately
+         corrected CoordinateMap.
+
+    Examples
+    --------
+
+    >>> from nipy.io.api import load_image
+    >>> from nipy.testing import funcfile
+    >>> from nipy.core.api import subsample, make_slices
+    >>> im = load_image(funcfile)
+    >>> frame3 = subsample(im, make_slices[:,:,:,3])
+    >>> from nipy.testing import funcfile, assert_almost_equal
+    >>> assert_almost_equal(np.array(frame3), np.array(im)[:,:,:,3])
+
+    """
+    data = np.array(img)[slice_object]
+    g = ArrayCoordMap(img.coordmap, img.shape)[slice_object]
+    coordmap = g.coordmap
+    # BUG: If it's a zero-dimension array we should return a numpy scalar
+    # like np.int32(data[index])
+    # Need to figure out elegant way to handle this
+    return Image(data, coordmap)
 
 def fromarray(data, innames, outnames, coordmap=None):
     """Create an image from a numpy array.
