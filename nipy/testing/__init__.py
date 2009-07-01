@@ -6,8 +6,8 @@ Examples
 --------
 
 >>> from nipy.testing import funcfile
->>> from nipy.core.image import image
->>> img = image.load(funcfile)
+>>> from nipy.io.api import load_image
+>>> img = load_image(funcfile)
 >>> img.shape
 (20, 2, 20, 20)
 
@@ -32,4 +32,5 @@ anatfile = os.path.join(basedir, 'anatomical.nii.gz')
 from numpy.testing import *
 import decorators as dec
 from nose.tools import assert_true, assert_false
-
+import data
+from data import datapjoin

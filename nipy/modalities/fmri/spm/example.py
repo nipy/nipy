@@ -3,7 +3,10 @@ sys.path.insert(0, "..")
 
 import model
 
-model.run()
+'''
+The following line does not match the ``model`` module - is it outdated?
+'''
+#model.run()
 ## from io import data_path
 
 ## study = Study(root=io.data_path)

@@ -1,4 +1,4 @@
-import numpy as N
+import numpy as np
 from numpy.linalg import inv
 
 def ARcovariance(rho, n, cor=False, sigma=1.):
@@ -12,16 +12,16 @@ def ARcovariance(rho, n, cor=False, sigma=1.):
     sigma    -- standard deviation of the white noise
     """
 
-    rho = N.asarray(rho)
+    rho = np.asarray(rho)
     p = rho.shape[0] 
-    invK = N.identity(n)
+    invK = np.identity(n)
     for i in range(p):
-        invK -= N.diag((rho[i] / sigma) * N.ones(n-i-1), k=-i-1)
+        invK -= np.diag((rho[i] / sigma) * np.ones(n-i-1), k=-i-1)
     K = inv(invK)
-    Q = N.dot(K, K.T)
+    Q = np.dot(K, K.T)
     if cor:
-        sd = N.sqrt(N.diag(Q))
-        sdout = N.multiply.outer(sd, sd)
+        sd = np.sqrt(np.diag(Q))
+        sdout = np.multiply.outer(sd, sd)
         Q /= sd
     return Q
 
@@ -35,23 +35,23 @@ def ARcomponents(rho, n, drho=0.05, cor=False, sigma=1):
     differentiation.
     """
 
-    rho = N.asarray(rho)
-    drho = N.asarray(drho)
+    rho = np.asarray(rho)
+    drho = np.asarray(drho)
 
     p = rho.shape[0]
     value = []
 
     if drho.shape == ():
-        drho = N.ones(p, N.float) * drho
-    drho = N.diag(drho)
+        drho = np.ones(p, np.float) * drho
+    drho = np.diag(drho)
 
     Q = ARcovariance(rho, n, cor=cor, sigma=sigma)
     value = [Q]
     for i in range(p):
         value.append((ARcovariance(rho + drho[i], n, cor=cor) - Q) / drho[i,i])
-    return N.asarray(value)
+    return np.asarray(value)
 
 
 if __name__ == "__main__":
-    #print N.diag(ARcovariance([0.3], 100, cor=True), k=0)
+    #print np.diag(ARcovariance([0.3], 100, cor=True), k=0)
     print len(ARcomponents([0.321],8, drho=0.02))
