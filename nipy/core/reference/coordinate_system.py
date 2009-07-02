@@ -78,7 +78,7 @@ class CoordinateSystem(object):
         --------
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
-        name: 'input', coord_names: ('i', 'j'), coord_dtype: float64
+        CoordinateSystem(name: 'input', coord_names: ('i', 'j'), coord_dtype: float64)
         
         >>> c.coord_dtype
         dtype('float64')
@@ -155,7 +155,7 @@ class CoordinateSystem(object):
 
         return (self.dtype == other.dtype)
 
-    def __str__(self):
+    def __repr__(self):
         """Create a string representation of the coordinate system
 
         Returns
@@ -166,7 +166,7 @@ class CoordinateSystem(object):
         
         attrs = ('name', 'coord_names', 'coord_dtype')
         vals = []
-        return ("name: '%s', coord_names: %s, coord_dtype: %s" %
+        return ("CoordinateSystem(name: '%s', coord_names: %s, coord_dtype: %s)" %
                 (self.name, self.coord_names, self.coord_dtype))
 
 
@@ -204,13 +204,13 @@ class CoordinateSystem(object):
         Traceback (most recent call last):
            ...
         ValueError: Array shape[-1] must match CoordinateSystem shape 3.
-          name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32
+          CoordinateSystem(name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32)
 
         >>> cs._checked_values(arr[0:2]) # wrong length
         Traceback (most recent call last):
            ...
         ValueError: 1D input should have length 3 for CoordinateSystem:
-          name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32
+          CoordinateSystem(name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32)
 
         The dtype has to be castable:
 
@@ -218,7 +218,7 @@ class CoordinateSystem(object):
         Traceback (most recent call last):
            ...
         ValueError: Cannot cast array dtype float64 to CoordinateSystem coord_dtype float32.
-          name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32
+          CoordinateSystem(name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32)
 
         The input array is unchanged, even if a reshape has
         occurred. The returned array points to the same data.
@@ -246,7 +246,7 @@ class CoordinateSystem(object):
         Traceback (most recent call last):
            ...
         ValueError: 1D input should have length 1 for CoordinateSystem:
-          name: '', coord_names: ('x',), coord_dtype: float64
+          CoordinateSystem(name: '', coord_names: ('x',), coord_dtype: float64)
 
         But of course 2D, N by 1 is OK
 
@@ -351,7 +351,7 @@ def product(*coord_systems):
     >>> c3 = CoordinateSystem('ik', 'in3')
 
     >>> print product(c1,c2)
-    name: 'product', coord_names: ('i', 'j', 'k', 'l'), coord_dtype: complex128
+    CoordinateSystem(name: 'product', coord_names: ('i', 'j', 'k', 'l'), coord_dtype: complex128)
 
     >>> product(c2,c3)
     Traceback (most recent call last):

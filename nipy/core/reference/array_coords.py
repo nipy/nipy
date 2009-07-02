@@ -191,9 +191,9 @@ class Grid(object):
            [ 0. ,  0. ,  1. ]])
 
     >>> print points.coordmap.input_coords
-    name: 'product', coord_names: ('i0', 'i1'), coord_dtype: float64
+    CoordinateSystem(name: 'product', coord_names: ('i0', 'i1'), coord_dtype: float64)
     >>> print points.coordmap.output_coords
-    name: 'input', coord_names: ('x', 'y'), coord_dtype: float64
+    CoordinateSystem(name: 'input', coord_names: ('x', 'y'), coord_dtype: float64)
 
     >>> points.shape
     (21, 31)

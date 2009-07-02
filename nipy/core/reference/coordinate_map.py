@@ -253,7 +253,7 @@ class CoordinateMap(object):
         >>> output_cs = CoordinateSystem('xyz')
         >>> cm = Affine(np.identity(4), input_cs, output_cs)
         >>> print cm.reordered_input('ikj', name='neworder').input_coords
-        name: 'neworder', coord_names: ('i', 'k', 'j'), coord_dtype: float64
+        CoordinateSystem(name: 'neworder', coord_names: ('i', 'k', 'j'), coord_dtype: float64)
         """
 
         name = name or self.input_coords.name
@@ -278,6 +278,136 @@ class CoordinateMap(object):
         A = Affine(perm, newincoords, self.input_coords)
         return compose(self, A)
 
+
+    def renamed_input(self, newnames, name=''):
+        """
+        Create a new coordmap with reversed input_coords.
+        Default behaviour is to reverse the order of the input_coords.
+
+        Inputs:
+        -------
+        newnames: dictionary
+
+             A dictionary whose keys are in
+             self.input_coords.coord_names
+             and whose values are the new names.
+
+        name: string, optional
+             Name of new input_coords, defaults to self.input_coords.name.
+
+        Returns:
+        --------
+
+        newcoordmap: `CoordinateMap`
+             A new CoordinateMap with renamed input_coords.
+
+        >>> domain = CoordinateSystem('ijk')
+        >>> range = CoordinateSystem('xyz')
+        >>> affine = np.identity(4)
+        >>> affine_mapping = Affine(affine, domain, range)
+
+        >>> new_affine_mapping = affine_mapping.renamed_input({'i':'phase','k':'freq','j':'slice'})
+        >>> print new_affine_mapping.input_coords
+        CoordinateSystem(name: '', coord_names: ('phase', 'slice', 'freq'), coord_dtype: float64)
+
+        >>> new_affine_mapping = affine_mapping.renamed_input({'i':'phase','k':'freq','l':'slice'})
+        Traceback (most recent call last):
+           ...
+        ValueError: no input coordinate named l
+
+        >>> 
+
+        """
+
+        name = name or self.input_coords.name
+
+        for n in newnames:
+            if n not in self.input_coords.coord_names:
+                raise ValueError('no input coordinate named %s' % str(n))
+
+        new_coord_names = []
+        for n in self.input_coords.coord_names:
+            if n in newnames:
+                new_coord_names.append(newnames[n])
+            else:
+                new_coord_names.append(n)
+
+        new_input_coords = CoordinateSystem(new_coord_names,
+                                            name, 
+                                            coord_dtype=self.input_coords.coord_dtype)
+        
+
+        ndim = self.ndim[0]
+        ident_map = Affine(np.identity(ndim+1),
+                           new_input_coords,
+                           self.input_coords)
+
+        return compose(self, ident_map)
+
+
+    def renamed_output(self, newnames, name=''):
+        """
+        Create a new coordmap with reversed input_coords.
+        Default behaviour is to reverse the order of the input_coords.
+
+        Inputs:
+        -------
+        newnames: dictionary
+
+             A dictionary whose keys are in
+             self.output_coords.coord_names
+             and whose values are the new names.
+
+        name: string, optional
+             Name of new input_coords, defaults to self.output_coords.name.
+
+        Returns:
+        --------
+
+        newcoordmap: `CoordinateMap`
+             A new CoordinateMap with renamed output_coords.
+
+        >>> domain = CoordinateSystem('ijk')
+        >>> range = CoordinateSystem('xyz')
+        >>> affine = np.identity(4)
+        >>> affine_mapping = Affine(affine, domain, range)
+
+        >>> new_affine_mapping = affine_mapping.renamed_output({'x':'u'})
+        >>> print new_affine_mapping.output_coords
+        CoordinateSystem(name: '', coord_names: ('u', 'y', 'z'), coord_dtype: float64)
+
+        >>> new_affine_mapping = affine_mapping.renamed_output({'w':'u'})
+        Traceback (most recent call last):
+           ...
+        ValueError: no output coordinate named w
+
+        >>> 
+
+        """
+
+        name = name or self.input_coords.name
+
+        for n in newnames:
+            if n not in self.output_coords.coord_names:
+                raise ValueError('no output coordinate named %s' % str(n))
+
+        new_coord_names = []
+        for n in self.output_coords.coord_names:
+            if n in newnames:
+                new_coord_names.append(newnames[n])
+            else:
+                new_coord_names.append(n)
+
+        new_output_coords = CoordinateSystem(new_coord_names,
+                                             name, 
+                                             coord_dtype=self.output_coords.coord_dtype)
+        
+        ndim = self.ndim[1]
+        ident_map = Affine(np.identity(ndim+1),
+                           self.output_coords,
+                           new_output_coords)
+
+        return compose(ident_map, self)
 
     def reordered_output(self, order=None, name=''):
         """
@@ -306,7 +436,7 @@ class CoordinateMap(object):
         >>> output_cs = CoordinateSystem('xyz')
         >>> cm = Affine(np.identity(4), input_cs, output_cs)
         >>> print cm.reordered_output('xzy', name='neworder').output_coords
-        name: 'neworder', coord_names: ('x', 'z', 'y'), coord_dtype: float64
+        CoordinateSystem(name: 'neworder', coord_names: ('x', 'z', 'y'), coord_dtype: float64)
         >>> print cm.reordered_output([0,2,1]).output_coords.coord_names
         ('x', 'z', 'y')
 
@@ -537,9 +667,9 @@ class Affine(CoordinateMap):
                [ 0.,  0.,  1.,  0.],
                [ 0.,  0.,  0.,  1.]])
         >>> print cm.input_coords
-        name: 'input', coord_names: ('i', 'j', 'k'), coord_dtype: float64
+        CoordinateSystem(name: 'input', coord_names: ('i', 'j', 'k'), coord_dtype: float64)
         >>> print cm.output_coords
-        name: 'output', coord_names: ('i', 'j', 'k'), coord_dtype: float64
+        CoordinateSystem(name: 'output', coord_names: ('i', 'j', 'k'), coord_dtype: float64)
         """
         return Affine.from_start_step(names, names, [0]*len(names),
                                       [1]*len(names))
