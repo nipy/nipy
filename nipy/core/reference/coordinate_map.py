@@ -770,7 +770,6 @@ def product(*cmaps):
     outcoords = coordsys_product(*[cmap.output_coords for cmap in cmaps])
 
     if not notaffine:
-
         affine = linearize(mapping, ndimin[-1], dtype=incoords.coord_dtype)
         return Affine(affine, incoords, outcoords)
     return CoordinateMap(mapping, incoords, outcoords)
@@ -839,27 +838,61 @@ def compose(*cmaps):
     return cmap
     
 
-def replicate(coordmap, n, concataxis='concat'):
+def concat(coordmap, axis_name='concat', append=False):
     """
-    Create a CoordinateMap by taking the product
-    of coordmap with a 1-dimensional 'concat' CoordinateSystem
+    Create a CoordinateMap by adding prepending or appending a new
+    coordinate named axis_name to both input and output
+    coordinates.
 
-    :Parameters:
-         coordmap : `CoordinateMap`
-                The coordmap to be used
-         n : ``int``
-                The number of tiems to concatenate the coordmap
-         concataxis : ``string``
-                The name of the new dimension formed by concatenation
+    Parameters
+    ----------
+
+    coordmap : CoordinateMap
+       The coordmap to be used
+
+    axis_name : str
+       The name of the new dimension formed by concatenation
+
+    append : bool
+       If True, append the coordinate, else prepend it.
+
+    >>> domain = CoordinateSystem('ijk')
+    >>> range = CoordinateSystem('xyz')
+    >>> affine = np.diag([3,4,5,1])
+    >>> affine_mapping = Affine(affine, domain, range)
+    >>> concat(affine_mapping, 't')
+    Affine(
+       affine=array([[ 1.,  0.,  0.,  0.,  0.],
+                     [ 0.,  3.,  0.,  0.,  0.],
+                     [ 0.,  0.,  4.,  0.,  0.],
+                     [ 0.,  0.,  0.,  5.,  0.],
+                     [ 0.,  0.,  0.,  0.,  1.]]),
+       input_coords=CoordinateSystem(coord_names=('t', 'i', 'j', 'k'), name='product', coord_dtype=float64),
+       output_coords=CoordinateSystem(coord_names=('t', 'x', 'y', 'z'), name='product', coord_dtype=float64)
+    )
+
+    >>> concat(affine_mapping, 't', append=True)
+    Affine(
+       affine=array([[ 3.,  0.,  0.,  0.,  0.],
+                     [ 0.,  4.,  0.,  0.,  0.],
+                     [ 0.,  0.,  5.,  0.,  0.],
+                     [ 0.,  0.,  0.,  1.,  0.],
+                     [ 0.,  0.,  0.,  0.,  1.]]),
+       input_coords=CoordinateSystem(coord_names=('i', 'j', 'k', 't'), name='product', coord_dtype=float64),
+       output_coords=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='product', coord_dtype=float64)
+    )
+    >>> 
+
     """
 
-    raise NotImplementedError('The method this function depends on' 
-                              'no longer exists.')
-    """
-    concat = CoordinateMap.from_affine([concataxis], [concataxis], 
-                                       Affine(np.identity(2)), (n,))
-    return product(concat, coordmap)
-    """
+    coords = CoordinateSystem([axis_name])
+    concat = Affine(np.identity(2),
+                    coords,
+                    coords)
+    if not append:
+        return product(concat, coordmap)
+    else:
+        return product(coordmap, concat)
 
 
 def linearize(mapping, ndimin, step=1, origin=None, dtype=None):

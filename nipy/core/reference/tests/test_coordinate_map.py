@@ -3,7 +3,7 @@ from nipy.testing import *
 
 from nipy.core.reference.coordinate_map import CoordinateMap, Affine, \
     compose, CoordinateSystem, product, \
-    replicate, linearize
+    concat, linearize
 
 
 class empty:
@@ -280,9 +280,24 @@ def test_product():
     yield assert_equal, cm.affine, np.diag([2, 3, 1])
 
 
-def test_replicate():
-    # FIXME: Implement test when this function works
-    yield assert_raises, NotImplementedError, replicate, 'foo', 'bar'
+def test_concat():
+    cm1 = Affine.from_params('i', 'x', np.diag([2, 1]))
+    cm2 = concat(cm1, 'j')
+    cm3 = concat(cm1, 'j', append=True)
+
+    yield assert_equal, cm2.input_coords.coord_names, ('j','i')
+    yield assert_equal, cm2.output_coords.coord_names, ('j','x')
+
+    yield assert_equal, cm3.output_coords.coord_names, ('x', 'j')
+    yield assert_equal, cm3.input_coords.coord_names, ('i', 'j')
+
+    yield assert_almost_equal, cm2.affine, np.array([[1,0,0],
+                                                     [0,2,0],
+                                                     [0,0,1]])
+
+    yield assert_almost_equal, cm3.affine, np.array([[2,0,0],
+                                                     [0,1,0],
+                                                     [0,0,1]])
 
 
 def test_linearize():
