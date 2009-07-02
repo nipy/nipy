@@ -21,7 +21,7 @@ When you load an image it will have an associated Coordinate Map
   coordmap = myimg.coordmap
 
 
-For more on Coordinate Systems, Coordinates and thier properties
+For more on Coordinate Systems and thier properties
 :mod:`neuroimaging.core.reference.coordinate_system`
 
 You can introspect a coordinate map
@@ -56,7 +56,7 @@ space (i,j,k) to the millimeter space (x,y,z)
 
   
 We can also get the name of the respective Coordinate Systems that our
-Coordinate Map maps between
+Coordinate Map maps between.
 
 
 A Coordinate Map is two Coordinate Systems with a mapping between
@@ -128,3 +128,322 @@ ourselves using dot product.
 .. Note::
 
    The answer is the same as above (except for the added 1)
+
+===============================================
+ Use of the Coordinate Map for normalization
+===============================================
+
+The Coordinate Map can be used to describe the transformations
+needed to perform spatial normalization. Suppose we have an
+anatomical Image from one subject *subject_img* and we want to create
+an Image in a standard space like Tailarach space. An
+affine registration algorithm will produce a 4-by-4 matrix
+representing the affine transformation, *T*, that takes a
+point in the subject's coordinates *subject_world* to a point in Tailarach
+space *tailarach_world*. The subject's Image has its own Coordinate Map, 
+*subject_cmap* and there
+is a Coordinate Map for Tailarach space which we will call *tailarach_cmap*.
+
+Having found the transformation matrix *T*, the next step in 
+spatial normalization is usually to resample the array of
+*subject_img* so that it has the same shape as some atlas
+*atlas_img*. Note that because it is an atlas Image, 
+*tailarach_camp=atlas_img.coordmap*.
+
+
+A resampling algorithm uses an interpolator which needs to know
+which voxel of *subject_img* corresponds to which voxel of *atlas_img*.
+This is therefore a function from *atlas_voxel* to *subject_voxel*.
+
+This function, paired with the information
+that it is a map from atlas-voxel to subject-voxel is another example of a Coordinate Map. The code to do this looks something like the following 
+
+.. sourcecode::
+
+   >>> T = register_affine(subject_im, atlas_im)
+   >>> subject_cmap = subject_im.coordmap
+   >>> tailarach_cmap = atlas_im.coordmap
+   >>> subject_world_to_tailarach_world = Affine(subject_cmap.output_coords,
+                                                 tailarach_cmap.output_coords,
+                                                 T)
+   
+   >>> normalized_subject_im = resample(subject_im, tailarach_cmap,
+                                        subject_world_to_tailarach_world,
+		     		        atlas_im.shape)
+   >>> assert normalized_subject_im.shape == atlas_im.shape
+   >>> assert normalized_subject.coordmap == atlas_im.coordmap
+   >>> np.testing.assert_equal(normalized_subject.affine,
+                               atlas_im.affine)
+
+===============================================
+ Mathematical formulation of the Coordinate Map
+===============================================
+
+Using the *CoordinateMap* can be a little hard to get used to. 
+For some users, a mathematical description, free of any python
+syntax and code design and snippets may be helpful. After following
+through this description, the code design and usage should hopefully
+be clearer.
+
+We return to the normalization example and try to write
+it out mathematically. Conceptually, to
+do normalization, we need to be able to answer
+each of these three questions:
+
+
+* *Voxel-to-world (subject)* Given the subjects' anatomical image read off the scanner: which physical location, expressed in :math:`(x_s,y_s,z_s)` coordinates (:math:`s` for subject), corresponds to the voxel of data :math:`(i_s,j_s,k_s)`?
+This question is answered by *subject_im.coordmap*. The actual function that computes this, i.e that takes 3 floats and returns 3 floats, is *subject_im.coordmap.mapping*.
+
+* *World-to-world (subject to Tailarach)* Given a location :math:`(x_s,y_s,z_s)` in an anatomical image of the subject, where does it 
+lie in the Tailarach coordinates :math:`(x_a,y_a, z_a)`? This is answered by
+the matrix *T* and knowing that *T* maps 
+a point in the subject's world to Tailarach world. Hence, this question is answered by *subject_world_to_tailarach_world* above. 
+
+* *Voxel-to-world (Tailarach)* Since we want to produce a resampled Image that has the same shape and coordinate information as *atlas_im*, we need to know 
+what location in Tailarach space, :math:`(x_a,y_a,z_a)` (:math:`a` for atlas)
+corresponds to the voxel :math:`(i_a,j_a,k_a)`. This question is answered
+by *tailarach_cmap*. 
+
+Each of these three questions are answered by what we called Coordinate Maps.
+Mathematically, let's define a *mapping* as a tuple :math:`(D,R,f)` where
+:math:`D` is the *domain*, :math:`R` is the *range* and :math:`f:D\rightarrow R` is a function. 
+
+Since these mappings are going to be used and called with
+modules like :mod:`numpy`, we should restrict our definition a little bit. We assume the following:
+
+* :math:`D` is isomorphic to one of :math:`\mathbb{Z}^n, \mathbb{R}^n, \mathbb{C}^n` for some :math:`n`. This isomorphism is determined by
+a basis :math:`[u_1,\dots,u_n]` of :math:`D` which maps :math:`u_i` to :math:`e_i` the
+canonical i-th coordinate vector of whichever of :math:`\mathbb{Z}^n, \mathbb{R}^n, \mathbb{C}^n`. This isomorphism is denoted 
+by :math:`I_D`. Strictly speaking, if :math:`D` is isomorphic to :math:`\mathbb{Z}^n` then we  the term basis is possibly misleading because :math:`D` because it is not a vector space, but it is a group.
+
+* :math:`R` is similarly isomorphic to one of  :math:`\mathbb{Z}^m, \mathbb{R}^m, \mathbb{C}^m` for some :math:`m` with isomorphism :math:`I_R` and basis :math:`[v_1,\dots,v_m]`.
+
+
+These isomorphisms are just fancy ways of saying that the point
+:math:`x=3,y=4,z=5` is represented by the 3 real numbers (3,4,5). In this 
+case the basis is :math:`[x,y,z]` and for any real :math:`a,b,c`
+
+.. math::
+
+   I_D(a\cdot x + b \cdot y + c \cdot z) = a \cdot e_1 + b \cdot e_2 + c \cdot e_3
+
+We call the pairs :math:`([u_1,...,u_n], I_D), ([v_1,...,v_m], I_R)`  *coordinate systems*. Actually, the bases in effect determine the maps :math:`I_D,I_R`
+as long as we know which of :math:`\mathbb{Z},\mathbb{R},\mathbb{C}` we are talking about so in effect, :math:`([u_1,...,u_n], \mathbb{R})` is also a coordinate system. This is how it is implemented in the code with :math:`[u_1, \dots, u_n]` being replaced by a list of strings naming the basis vectors
+and :math:`\mathbb{R}` replaced by a builtin numpy.dtype.
+
+In our normalization example, we therefore have 3 mappings:
+
+* *Voxel-to-world (subject)* In standard notation for functions, we can write
+
+.. math::
+
+   (i_s,j_s,k_s) \overset{f}{\mapsto} (x_s,y_s,z_s).
+
+The domain is :math:`D=[i_s,j_s,k_s]`, the range is :math:`R=[x_s,y_s,z_s]` and the function is :math:`f:D \rightarrow R`.
+
+* *World-to-world (subject to Tailarach)* Again, we can write
+
+.. math::
+   (x_s,y_s,z_s) \overset{g}{\mapsto} (x_a,y_a,z_a)
+
+The domain is :math:`D=[x_s,y_s,z_s]`, the range is :math:`R=[x_a,y_a,z_a]` and the function is :math:`g:D \rightarrow R`.
+
+* *Voxel-to-world (Tailarach)* Again, we can write
+
+.. math::
+
+(i_a,j_a,k_a) \overset{h}{\mapsto} (x_a,y_a, z_a).
+
+The domain is :math:`D=[i_a,j_a,k_a]`, the range is :math:`R=[x_a,y_a,z_a]` and the function is :math:`h:D \rightarrow R`.
+
+Note that each of the functions :math:`f,g,h` can, with some abuse of notation, 
+be thought of as functions from :math:`\mathbb{R}^3` to itself. Formally, 
+these functions look like :math:`\tilde{f}=I_R^{-1} \circ f \circ I_D^{-1}`.
+In the code, it is actually the functions 
+:math:`\tilde{f}, \tilde{g}, \tilde{h}` we specify, rather then :math:`f,g,h`.
+
+Because :math:`\tilde{f}, \tilde{g}, \tilde{h}` are just functions from :math:`mathbb{R}^3` to itself, they can all be composed with one another. But,
+from our description of the functions above, we know that
+only certain compositions make sense and others do not, like
+:math:`g \circ h`. Compositions that do make sense include
+
+* :math:`h^{-1} \circ g` which :math:`(i_a,j_a, k_a)` voxel corresponds to the point :math:`(x_s,y_s,z_s)`?
+
+* :math:`g \circ f` which :math:`(x_a,y_a,z_a)` corresponds to the voxel :math:`(i,j,k)`?
+
+
+
+Manipulating mappings and coordinate systems
+============================================
+
+In order to solve our normalization
+problem, we will definitely need to compose functions. We may want
+to carry out other formal operations as well. Before describing
+operations on mappings, we describe the operations you might
+want to consider on coordinate systems.
+
+Coordinate systems
+==================
+
+* *Reorder* This is just a reordering of the basis, i.e. :math:`([u_1,u_2,u_3], \mathbb{R}) \mapsto ([u_2,u_3,u_1], \mathbb{R})`
+
+* *Product* Topological product of the coordinate systems (with a small twist). Given two coordinate systems :math:`([u_1,u_2,u_3], \mathbb{R}), ([v_1, v_2], \mathbb{Z}) \mapsto ([u_1,u_2,u_3,v_1,v_2], \mathbb{R})`. Note that the resulting
+coordinate system is real valued whereas one of the input coordinate systems
+was integer valued. We can always embed :math:`\mathbb{Z}` into :math:`\mathbb{R}`. If one of them is complex valued, the resulting coordinate system is complex valued. In the code, this is handled by attempting to find a safe builtin numpy.dtype for the two (or more) given coordinate systems.
+
+Mappings
+========
+
+* *Inverse* Given a mapping :math:`M=(D,R,f)` if the function :math:`f` is invertible, this is just the obvious :math:`M^{-1}=(R, D, f^{-1})`.
+
+
+* *Composition* Given two mappings, :math:`M_f=(D_f, R_f, f)` and :math:`M_g=(D_g, R_g, g)` if 
+:math:`D_f == R_g` then the composition is well defined and the composition of the mappings :math:`[M_f,M_g]` is just
+:math:`(D_g, R_f, f \circ g)`.
+
+* *Reorder domain / range* Given a mapping :math:`M=(D=[i,j,k], R=[x,y,z], f)` 
+you might want to specify that we've changed the domain by changing the ordering
+of its basis to :math:`[k,i,j]`. Call the new domain :math:`D'`. This is represented by the composition
+of the mappings :math:`[M, O]` where :math:`O=(D', D,I_D^{-1} \circ f_O \circ I_{D'})` and
+for  :math:`a,b,c \in \mathbb{R}`:
+
+.. math::
+
+f_O(a,b,c) = (b,c,a).
+
+* *Linearize* Possibly less used, since we know that :math:`f` must map
+one of :math:`\mathbb{Z}^n, \mathbb{R}^n, \mathbb{C}^n` to 
+one of :math:`\mathbb{Z}^m, \mathbb{R}^m, \mathbb{C}^m`,
+we might be able differentiate it at a point :math:`p \in D`, yielding
+its 1st order Taylor approximation
+
+.. math::
+
+f_p(d) = f(d) + Df_p(d-p)
+
+which is  an affine  function, thus
+creating an affine mapping :math:`(D, R, f_p)`. Affine functions
+are discussed in more detail below.
+
+* *Product* Given two mappings :math:`M_1=(D_1,R_1,f_1), M_2=(D_2, R_2, f_2)`
+we define their product as the mapping :math:`(D_1 + D_2, R_1 + R_2, f_1 \otimes f_2)` where
+
+.. math::
+
+(f_1 \otimes f_2)(d_1, d_2) = (f_1(d_1), f_2(d_2)).
+
+Above, we have taken the liberty of expressing the product of the coordinate
+systems, say, :math:`D_1=([u_1, \dots, u_n], \mathbb{R}), D_2=([v_1, \dots, v_m], \mathbb{C})` as
+ a python addition of lists. 
+
+The name *product* for this operation is not necessarily
+canonical. If the two coordinate systems are  vector spaces
+and the function is linear, then
+ we might call this map the *direct sum* (?) because
+its domain are direct sums of vector spaces. The term *product* here refers
+to the fact that the domain and range are true topological products.
+
+Affine mappings
+===============
+
+An *affine mapping* is one in which the function :math:`f:D \rightarrow R` is an affine function. That is, it can be written as
+`f(d) = Ad + b` for :math:`d \in D` for some :math:`n_R \times n_D` matrix :math:`A` 
+with entries that are in one of :math:`\mathbb{Z}, \mathbb{R}, \mathbb{C}`.
+
+This is a little abuse of notation because :math:`d` is a point in :math:`D` not a tuple of real (or integer or complex) numbers. The matrix :math:`A`
+represents a linear transformation from :math:`D` to :math:`R` in a particular choice of bases for :math:`D` and :math:`R`.
+
+Let us revisit
+some of the operations on a mapping as applied to *affine mappings*
+which we write as a tuple :math:`M=(D, R, T)` with :math:`T` the representation of the :math:`(A,b)` in homogeneous coordinates.
+
+* *Inverse* If :math:`T` is invertible, this is just the tuple :math:`M^{-1}=(R, D, T^{-1})`.
+
+* *Composition* The composition of two affine mappings :math:`[(D_2, R_2, T_2), (D_1,R_1,T_1)]` is defined whenever :math:`R_1==D_2` and is the tuple :math:`(D_1, R_2, T_2 T_1)`.
+
+* *Reorder domain* A reordering of the domain of an affine mapping :math:`M=(D, R, T)` can be represented by a
+:math:`(n_D+1) \times (n_D+1)` permutation matrix :math:`P` 
+(in which the last coordinate is unchanged -- remember we are in homogeneous
+coordinates). Hence a reordering of :math:`D` to :math:`D'` can be represented as :math:`(D', R, TP)`. Alternatively, 
+it is the composition of the affine mappings :math:`[M,(\tilde{D}, D, P)]`.
+
+* *Reorder range*  A reordering of the range can  be represented by a
+:math:`(n_R+1) \times (n_R+1)` permutation matrix :math:`\tilde{P}`. Hence a reordering of :math:`R` to :math:`R'` can be represented as :math:`(D, \tilde{R}, \tilde{P}T)`. Alternatively, 
+it is the composition of the affine mappings :math:`[(R, \tilde{R}, \tilde{P}), M]`.
+
+* *Linearize* Because the mapping :math:`M=(D,R,T)` is already affine, this leaves it unchanged.
+
+* *Product* Given two affine mappings :math:`M_1=(D_1,R_1,T_1)` and :math:`M_2=(D_2,R_2,T_2)` the product is the tuple
+
+.. math::
+
+
+\left(D_1+D_2,R_1+R_2,
+  \begin{pmatrix}
+    T_1 & 0 \\
+0 & T_2
+  \end{pmatrix} \right).
+
+
+
+3-dimensional affine mappings
+==============================
+
+For an Image, by far the most common mappings associated to it are affine, 
+and these are usually maps from a real 3-dimensional domain to a 
+real 3-dimensional 
+range. These can be
+represented by the ubiquitous :math:`4 \times 4` matrix (the representation
+of the affine mapping in homogeneous coordinates), along with
+choices for the axes, i.e. :math:`[i,j,k]` and the spatial
+coordinates, i.e. :math:`[x,y,z]`. 
+
+We will revisit
+some of the operations on mappings  as applied specifically to 
+3-dimensional affine mappings
+which we write as a tuple :math:`A=(D, R, T)` where :math:`T` is an invertible :math:`4 \times 4`  transformation matrix with real entries.
+
+
+* *Inverse* Because we have assumed that :math:`T` is invertible this is just  tuple :math:`(([x,y,z], \mathbb{R}), ([i,j,k], \mathbb{R}), T^{-1})`.
+
+* *Composition* Given two 3-dimensional affine mappings :math:`M_1=(D_1,R_1, T_1), M_2=(D_2,R_2,T_2)` the composition of :math:`[M_2,M_1]` yields another
+3-dimensional affine mapping whenever :math:`R_1 == D_2`. That is, it yields :math:`(D_1, R_2, T_2T_1)`.
+
+* *Reorder domain* A reordering of the domain can be represented by a
+:math:`4 \times 4` permutation matrix :math:`P` (with its last coordinate 
+not changing). Hence the reordering of :math:`D=([i,j,k], \mathbb{R})` to 
+:math:`([k,i,j], \mathbb{R})` can be represented as 
+:math:`(([k,i,j], \mathbb{R}), R, TP)`. 
+
+* *Reorder range* A reordering of the range can also be represented by a
+:math:`4 \times 4` permutation matrix :math:`\tilde{P}` (with its last 
+coordinate not changing). Hence the reordering of :math:`R=([x,y,z], \mathbb{R})` to :math:`([z,x,y], \mathbb{R})` can be represented as :math:`(D, ([z,x,y], \mathbb{R}), \tilde{P}, T)`.
+
+* *Linearize* Just as for a general affine mapping, this does nothing.
+
+* *Product* Because we are dealing with only 3-dimensional mappings here,
+it is impossible to use the product because that would give a mapping between
+spaces of dimension higher than 3.
+
+Implementation
+==============
+
+Going from this mathematical description to code is fairly straightforward.
+
+* A *coordinate system* is implemented by the class *CoordinateSystem*
+in the module :mod:`nipy.core.reference.coordinate_system`. Its 
+constructor takes a list of names, naming the basis vectors of the *coordinate system* and an optional built-in numpy scalar dtype such as np.float32. 
+It has no interesting methods of any kind. But there is a module level function
+*product* which implements the notion of the product of *coordinate systems*.
+
+* A *mapping* is implemented by the class *CoordinateMap* in the 
+module :mod:`nipy.core.reference.coordinate_map`. Its constructor
+takes two coordinate has a signature *(mapping, input_coords(=domain), 
+output_coords(=range))* along with an optional argument *inverse_mapping* 
+specifying the inverse of *mapping*. This is a slightly different order 
+from the :math:`(D, R, f)` order of this document. It has an *inverse* property
+and there are module level functions called *product, compose, linearize, reorder_input, reorder_output*. (XXX "reorder" should be changed to "reordered").
+
+
+
+
