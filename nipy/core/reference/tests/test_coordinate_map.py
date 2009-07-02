@@ -2,7 +2,7 @@ import numpy as np
 from nipy.testing import *
 
 from nipy.core.reference.coordinate_map import CoordinateMap, Affine, \
-    compose, CoordinateSystem, reorder_input, reorder_output, product, \
+    compose, CoordinateSystem, product, \
     replicate, linearize
 
 
@@ -215,35 +215,35 @@ def test_affine_copy():
 # Module level functions
 #
 
-def test_reorder_input():
+def test_reordered_input():
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(map, incs, outcs, inv)
-    recm = reorder_input(cm, 'jki')
+    recm = cm.reordered_input('jki')
     yield assert_equal, recm.input_coords.coord_names, ('j', 'k', 'i')
     yield assert_equal, recm.output_coords.coord_names, outcs.coord_names
-    yield assert_equal, recm.input_coords.name, incs.name+'-reordered'
+    yield assert_equal, recm.input_coords.name, incs.name
     yield assert_equal, recm.output_coords.name, outcs.name
     # default reverse reorder
-    recm = reorder_input(cm)
+    recm = cm.reordered_input()
     yield assert_equal, recm.input_coords.coord_names, ('k', 'j', 'i')
     # reorder with order as indices
-    recm = reorder_input(cm, [2,0,1])
+    recm = cm.reordered_input([2,0,1])
     yield assert_equal, recm.input_coords.coord_names, ('k', 'i', 'j')
 
 
-def test_reorder_output():
+def test_reordered_output():
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(map, incs, outcs, inv)
-    recm = reorder_output(cm, 'yzx')
+    recm = cm.reordered_output('yzx')
     yield assert_equal, recm.input_coords.coord_names, incs.coord_names
     yield assert_equal, recm.output_coords.coord_names, ('y', 'z', 'x')
     yield assert_equal, recm.input_coords.name, incs.name
-    yield assert_equal, recm.output_coords.name, outcs.name+'-reordered'
+    yield assert_equal, recm.output_coords.name, outcs.name
     # default reverse order
-    recm = reorder_output(cm)
+    recm = cm.reordered_output()
     yield assert_equal, recm.output_coords.coord_names, ('z', 'y', 'x')
     # reorder with indicies
-    recm = reorder_output(cm, [2,0,1])
+    recm = cm.reordered_output([2,0,1])
     yield assert_equal, recm.output_coords.coord_names, ('z', 'x', 'y')    
 
 

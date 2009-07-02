@@ -124,7 +124,8 @@ def test_subsample():
 
     # The images have the same output coordinates
 
-    world_to_world_coordmap = AffineTransform(np.identity(4), affine_im.spatial_coordmap.output_coords,
+    world_to_world_coordmap = AffineTransform(np.identity(4), 
+                                              affine_im.spatial_coordmap.output_coords,
                                               affine_im.spatial_coordmap.output_coords)
 
     im_subsampled = resample(affine_im, target_coordmap,

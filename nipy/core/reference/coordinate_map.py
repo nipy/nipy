@@ -227,6 +227,117 @@ class CoordinateMap(object):
                              self._output_coords, 
                              inverse_mapping=self._inverse_mapping)
 
+    def reordered_input(self, order=None, name=''):
+        """
+        Create a new coordmap with reversed input_coords.
+        Default behaviour is to reverse the order of the input_coords.
+
+        Inputs:
+        -------
+        order: sequence
+             Order to use, defaults to reverse. The elements
+             can be integers, strings or 2-tuples of strings.
+             If they are strings, they should be in 
+             self.input_coords.coord_names.
+
+        name: string, optional
+             Name of new input_coords, defaults to self.input_coords.name.
+
+        Returns:
+        --------
+
+        newcoordmap: `CoordinateMap`
+             A new CoordinateMap with reversed input_coords.
+
+        >>> input_cs = CoordinateSystem('ijk')
+        >>> output_cs = CoordinateSystem('xyz')
+        >>> cm = Affine(np.identity(4), input_cs, output_cs)
+        >>> print cm.reordered_input('ikj', name='neworder').input_coords
+        name: 'neworder', coord_names: ('i', 'k', 'j'), coord_dtype: float64
+        """
+
+        name = name or self.input_coords.name
+
+        ndim = self.ndim[0]
+        if order is None:
+            order = range(ndim)[::-1]
+        elif type(order[0]) == type(''):
+            order = [self.input_coords.index(s) for s in order]
+
+        newaxes = [self.input_coords.coord_names[i] for i in order]
+        newincoords = CoordinateSystem(newaxes, 
+                                       name,
+                                       coord_dtype=self.input_coords.coord_dtype)
+        perm = np.zeros((ndim+1,)*2)
+        perm[-1,-1] = 1.
+
+        for i, j in enumerate(order):
+            perm[j,i] = 1.
+
+        perm = perm.astype(self.input_coords.coord_dtype)
+        A = Affine(perm, newincoords, self.input_coords)
+        return compose(self, A)
+
+
+    def reordered_output(self, order=None, name=''):
+        """
+        Create a new coordmap with reversed output_coords.
+        Default behaviour is to reverse the order of the input_coords.
+
+        Inputs:
+        -------
+
+        order: sequence
+             Order to use, defaults to reverse. The elements
+             can be integers, strings or 2-tuples of strings.
+             If they are strings, they should be in 
+             self.output_coords.coord_names.
+
+        name: string, optional
+             Name of new output_coords, defaults to self.output_coords.name.
+
+        Returns:
+        --------
+
+        newcoordmap: `CoordinateMap`
+             A new CoordinateMap with reversed output_coords.
+
+        >>> input_cs = CoordinateSystem('ijk')
+        >>> output_cs = CoordinateSystem('xyz')
+        >>> cm = Affine(np.identity(4), input_cs, output_cs)
+        >>> print cm.reordered_output('xzy', name='neworder').output_coords
+        name: 'neworder', coord_names: ('x', 'z', 'y'), coord_dtype: float64
+        >>> print cm.reordered_output([0,2,1]).output_coords.coord_names
+        ('x', 'z', 'y')
+
+        >>> newcm = cm.reordered_output('yzx')
+        >>> newcm.output_coords.coord_names
+        ('y', 'z', 'x')
+
+        """
+
+        name = name or self.output_coords.name
+
+        ndim = self.ndim[1]
+        if order is None:
+            order = range(ndim)[::-1]
+        elif type(order[0]) == type(''):
+            order = [self.output_coords.index(s) for s in order]
+
+        newaxes = [self.output_coords.coord_names[i] for i in order]
+        newoutcoords = CoordinateSystem(newaxes, name, 
+                                        self.output_coords.coord_dtype)
+
+        perm = np.zeros((ndim+1,)*2)
+        perm[-1,-1] = 1.
+
+        for i, j in enumerate(order):
+            perm[j,i] = 1.
+
+        perm = perm.astype(self.output_coords.coord_dtype)
+        A = Affine(perm, self.output_coords, newoutcoords)
+        return compose(A, self)
+
 class Affine(CoordinateMap):
     """
     A class representing an affine transformation from an input
@@ -459,103 +570,6 @@ class Affine(CoordinateMap):
                       self._output_coords)
 
 
-def reorder_input(coordmap, order=None):
-    """
-    Create a new coordmap with reversed input_coords.
-    Default behaviour is to reverse the order of the input_coords.
-    If the coordmap has a shape, the resulting one will as well.
-
-    Inputs:
-    -------
-    order: sequence
-         Order to use, defaults to reverse. The elements
-         can be integers, strings or 2-tuples of strings.
-         If they are strings, they should be in coordmap.input_coords.coord_names.
-
-    Returns:
-    --------
-
-    newcoordmap: `CoordinateMap`
-         A new CoordinateMap with reversed input_coords.
-
-    >>> input_cs = CoordinateSystem('ijk')
-    >>> output_cs = CoordinateSystem('xyz')
-    >>> cm = Affine(np.identity(4), input_cs, output_cs)
-    >>> print reorder_input(cm, 'ikj').input_coords
-    name: '-reordered', coord_names: ('i', 'k', 'j'), coord_dtype: float64
-    """
-    ndim = coordmap.ndim[0]
-    if order is None:
-        order = range(ndim)[::-1]
-    elif type(order[0]) == type(''):
-        order = [coordmap.input_coords.index(s) for s in order]
-
-    newaxes = [coordmap.input_coords.coord_names[i] for i in order]
-    newincoords = CoordinateSystem(newaxes, 
-                                   coordmap.input_coords.name + '-reordered', 
-                                   coord_dtype=coordmap.input_coords.coord_dtype)
-    perm = np.zeros((ndim+1,)*2)
-    perm[-1,-1] = 1.
-
-    for i, j in enumerate(order):
-        perm[j,i] = 1.
-
-    perm = perm.astype(coordmap.input_coords.coord_dtype)
-    A = Affine(perm, newincoords, coordmap.input_coords)
-    return compose(coordmap, A)
-
-
-def reorder_output(coordmap, order=None):
-    """
-    Create a new coordmap with reversed output_coords.
-    Default behaviour is to reverse the order of the input_coords.
-    
-    Inputs:
-    -------
-
-    order: sequence
-         Order to use, defaults to reverse. The elements
-         can be integers, strings or 2-tuples of strings.
-         If they are strings, they should be in coordmap.output_coords.coord_names.
-
-    Returns:
-    --------
-        
-    newcoordmap: `CoordinateMap`
-         A new CoordinateMap with reversed output_coords.
-
-    >>> input_cs = CoordinateSystem('ijk')
-    >>> output_cs = CoordinateSystem('xyz')
-    >>> cm = Affine(np.identity(4), input_cs, output_cs)
-    >>> print reorder_output(cm, 'xzy').output_coords
-    name: '-reordered', coord_names: ('x', 'z', 'y'), coord_dtype: float64
-    >>> print reorder_output(cm, [0,2,1]).output_coords.coord_names
-    ('x', 'z', 'y')
-
-    >>> newcm = reorder_output(cm, 'yzx')
-    >>> newcm.output_coords.coord_names
-    ('y', 'z', 'x')
-
-    """
-
-    ndim = coordmap.ndim[1]
-    if order is None:
-        order = range(ndim)[::-1]
-    elif type(order[0]) == type(''):
-        order = [coordmap.output_coords.index(s) for s in order]
-
-    newaxes = [coordmap.output_coords.coord_names[i] for i in order]
-    newoutcoords = CoordinateSystem(newaxes, coordmap.output_coords.name + '-reordered', coordmap.output_coords.coord_dtype)
-    
-    perm = np.zeros((ndim+1,)*2)
-    perm[-1,-1] = 1.
-
-    for i, j in enumerate(order):
-        perm[j,i] = 1.
-
-    perm = perm.astype(coordmap.output_coords.coord_dtype)
-    A = Affine(perm, coordmap.output_coords, newoutcoords)
-    return compose(A, coordmap)
 
 
 def product(*cmaps):
