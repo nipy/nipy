@@ -1,8 +1,12 @@
+"""
+This module is essentially a test of the Affine object to 
+see if it can succinctly describe an object like a matrix group.
+"""
+
 import numpy as np
 
 from nipy.core.api import CoordinateSystem, Affine
-from nipy.core.reference.coordinate_map import compose
-from nipy.core.reference.coordinate_map import product as cmap_product
+from nipy.core.reference.coordinate_map import compose, product as cmap_product
 
 ###################################################################################
 
@@ -118,7 +122,7 @@ class O(GLR):
         
         if M is None:
             M = self.matrix
-        return np.allclose(np.identity(self.ndim[0], dtype=self.dtype), np.dot(M.T, M))
+        return np.allclose(np.identity(self.ndims[0], dtype=self.dtype), np.dot(M.T, M))
 
 ###################################################################################
 

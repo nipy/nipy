@@ -8,7 +8,7 @@ import numpy as np
 from nipy.core.transforms.affines import from_matrix_vector, \
                      to_matrix_vector
 from nipy.core.api import Affine as AffineTransform, Image, CoordinateSystem
-from nipy.core.reference.coordinate_map import compose, product as cmap_product, reorder_input
+from nipy.core.reference.coordinate_map import compose, product as cmap_product
 from nipy.algorithms.resample import resample
 
 ################################################################################
@@ -320,7 +320,7 @@ now change the coordinate system of the resampled_image
                 )
         axis_numbers = list(np.argmax(np.abs(A), axis=1))
         axis_names = [self.spatial_coordmap.input_coords.coord_names[a] for a in axis_numbers]
-        reordered_coordmap = reorder_input(self.spatial_coordmap, axis_names)
+        reordered_coordmap = self.spatial_coordmap.reordered_input(axis_names)
         data = self.get_data()
         transposed_data = np.transpose(data, axis_numbers + range(3, self.ndim))
         return AffineImage(transposed_data, reordered_coordmap.affine,

@@ -48,9 +48,9 @@ class ArrayCoordMap(object):
         coordmap : `CoordinateMap`
         transpose : bool, optional
            If False (the default), the result is a 2-dimensional
-           ndarray with shape[1] == coordmap.ndim[1]. That is, the
+           ndarray with shape[1] == coordmap.ndims[1]. That is, the
            result is a list of output values.  Otherwise, the shape is
-           (coordmap.ndim[1],) + coordmap.shape.
+           (coordmap.ndims[1],) + coordmap.shape.
 
         Returns
         -------
@@ -63,7 +63,7 @@ class ArrayCoordMap(object):
         tmp_shape = indices.shape
 
         # reshape indices to be a sequence of coordinates
-        indices.shape = (self.coordmap.ndim[0], np.product(self.shape))
+        indices.shape = (self.coordmap.ndims[0], np.product(self.shape))
         _range = self.coordmap(indices.T)
         if transpose:
             _range = _range.T
@@ -75,11 +75,11 @@ class ArrayCoordMap(object):
     values = property(_getvalues, 
                       doc='Get values of ArrayCoordMap in a '
                       '2-dimensional array of shape '
-                      '(product(self.shape), self.coordmap.ndim[1]))')
+                      '(product(self.shape), self.coordmap.ndims[1]))')
 
     def _getindices_values(self):
         return self._evaluate(transpose=True)
-    transposed_values = property(_getindices_values, doc='Get values of ArrayCoordMap in an array of shape (self.coordmap.ndim[1],) + self.shape)')
+    transposed_values = property(_getindices_values, doc='Get values of ArrayCoordMap in an array of shape (self.coordmap.ndims[1],) + self.shape)')
 
     def __getitem__(self, index):
         """
@@ -112,9 +112,9 @@ def _slice(coordmap, shape, *slices):
     'voxel' CoordinateMap is interpreted as a coordmap having a shape.
     """
     
-    if len(slices) < coordmap.ndim[0]:
+    if len(slices) < coordmap.ndims[0]:
         slices = (list(slices) +
-                  [slice(None,None,None)] * (coordmap.ndim[0] - len(slices)))
+                  [slice(None,None,None)] * (coordmap.ndims[0] - len(slices)))
 
     ranges = [np.arange(s) for s in shape]
     cmaps = []
@@ -169,7 +169,7 @@ def _slice(coordmap, shape, *slices):
         [innames[i] for i in keep_in_output],
         'input-slice',
         coordmap.input_coords.coord_dtype)
-    A = np.zeros((coordmap.ndim[0]+1, len(keep_in_output)+1))
+    A = np.zeros((coordmap.ndims[0]+1, len(keep_in_output)+1))
     for j, i in enumerate(keep_in_output):
         A[:,j] = slice_cmap.affine[:,i]
     A[:,-1] = slice_cmap.affine[:,-1]

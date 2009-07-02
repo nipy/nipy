@@ -1,3 +1,4 @@
+
 import numpy as np
 from scipy.linalg import expm
 
@@ -129,7 +130,7 @@ def test_32():
             """
             if M is None:
                 M = self.matrix
-            return np.allclose(np.identity(self.ndim[0], dtype=self.dtype), np.dot(M.T, M), atol=1.0e-06)
+            return np.allclose(np.identity(self.ndims[0], dtype=self.dtype), np.dot(M.T, M), atol=1.0e-06)
 
     a = random_orth(3).matrix.astype(np.float32)
 

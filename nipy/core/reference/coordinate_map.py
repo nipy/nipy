@@ -163,7 +163,7 @@ class CoordinateMap(object):
                              inverse_mapping=self._mapping)
 
     @property
-    def ndim(self):
+    def ndims(self):
         'Number of dimensions of input and output coordinates.'
         return (self._input_coords.ndim, self._output_coords.ndim)
 
@@ -172,7 +172,7 @@ class CoordinateMap(object):
 
         We do this by passing something that should work, through __call__
         """
-        inp = np.zeros((10, self.ndim[0]),
+        inp = np.zeros((10, self.ndims[0]),
                        dtype=self._input_coords.coord_dtype)
         out = self(inp)
 
@@ -258,7 +258,7 @@ class CoordinateMap(object):
 
         name = name or self.input_coords.name
 
-        ndim = self.ndim[0]
+        ndim = self.ndims[0]
         if order is None:
             order = range(ndim)[::-1]
         elif type(order[0]) == type(''):
@@ -337,7 +337,7 @@ class CoordinateMap(object):
                                             coord_dtype=self.input_coords.coord_dtype)
         
 
-        ndim = self.ndim[0]
+        ndim = self.ndims[0]
         ident_map = Affine(np.identity(ndim+1),
                            new_input_coords,
                            self.input_coords)
@@ -402,7 +402,7 @@ class CoordinateMap(object):
                                              name, 
                                              coord_dtype=self.output_coords.coord_dtype)
         
-        ndim = self.ndim[1]
+        ndim = self.ndims[1]
         ident_map = Affine(np.identity(ndim+1),
                            self.output_coords,
                            new_output_coords)
@@ -448,7 +448,7 @@ class CoordinateMap(object):
 
         name = name or self.output_coords.name
 
-        ndim = self.ndim[1]
+        ndim = self.ndims[1]
         if order is None:
             order = range(ndim)[::-1]
         elif type(order[0]) == type(''):
@@ -538,7 +538,7 @@ class Affine(CoordinateMap):
                                                output_coords.name,
                                                dtype)
         affine = np.asarray(affine, dtype=dtype)
-        if affine.shape != (self.ndim[1]+1, self.ndim[0]+1):
+        if affine.shape != (self.ndims[1]+1, self.ndims[0]+1):
             raise ValueError('coordinate lengths do not match '
                              'affine matrix shape')
         self._affine = affine
@@ -747,7 +747,7 @@ def product(*cmaps):
            [ 0.,  0.,  0.,  1.]])
 
     """
-    ndimin = [cmap.ndim[0] for cmap in cmaps]
+    ndimin = [cmap.ndims[0] for cmap in cmaps]
     ndimin.insert(0,0)
     ndimin = tuple(np.cumsum(ndimin))
 
@@ -831,7 +831,7 @@ def compose(*cmaps):
     notaffine = filter(lambda cmap: not isinstance(cmap, Affine), cmaps)
     if not notaffine:
         affine = linearize(cmap, 
-                           cmap.ndim[0], 
+                           cmap.ndims[0], 
                            dtype=cmap.output_coords.coord_dtype)
         return Affine(affine, cmap.input_coords,
                       cmap.output_coords)

@@ -10,7 +10,7 @@ import numpy.fft as fft
 import numpy.linalg as L
 
 from nipy.core.api import Image, Affine
-from nipy.core.reference.coordinate_map import replicate
+from nipy.core.reference.coordinate_map import concat
 
 class LinearFilter(object):
     '''
@@ -159,7 +159,7 @@ class LinearFilter(object):
         if inimage.ndim == 3:
             return Image(_out, coordmap=self.coordmap)
         else:
-            return Image(_out, coordmap=replicate(self.coordmap, inimage.shape[0]))
+            return Image(_out, coordmap=concat(self.coordmap, 'concat')
 
 
     def _presmooth(self, indata):

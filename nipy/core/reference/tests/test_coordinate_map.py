@@ -303,10 +303,10 @@ def test_concat():
 def test_linearize():
     aff = np.diag([1,2,3,1])
     cm = Affine.from_params('ijk', 'xyz', aff)
-    lincm = linearize(cm.mapping, cm.ndim[0])
+    lincm = linearize(cm.mapping, cm.ndims[0])
     yield assert_equal, lincm, aff
     origin = np.array([10, 20, 30], dtype=cm.input_coords.coord_dtype)
-    lincm = linearize(cm.mapping, cm.ndim[0], origin=origin)
+    lincm = linearize(cm.mapping, cm.ndims[0], origin=origin)
     xform = np.array([[  1.,   0.,   0.,  10.],
                       [  0.,   2.,   0.,  40.],
                       [  0.,   0.,   3.,  90.],
@@ -314,5 +314,5 @@ def test_linearize():
     yield assert_equal, lincm, xform
     # dtype mismatch
     #origin = np.array([10, 20, 30], dtype=np.int16)
-    #yield assert_raises, UserWarning, linearize, cm.mapping, cm.ndim[0], \
+    #yield assert_raises, UserWarning, linearize, cm.mapping, cm.ndims[0], \
     #    1, origin
