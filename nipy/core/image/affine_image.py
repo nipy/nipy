@@ -3,6 +3,7 @@ The base image interface.
 """
 
 import numpy as np
+from scipy import ndimage
 
 # Local imports
 from nipy.core.transforms.affines import from_matrix_vector, \
