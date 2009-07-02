@@ -492,7 +492,7 @@ class Affine(CoordinateMap):
                      [ 0.,  0.,  0.,  1.]]),
        input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
        output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
-    ))
+    )
 
     >>> cm.affine
     array([[ 1.,  0.,  0.,  0.],
@@ -715,7 +715,7 @@ class Affine(CoordinateMap):
 
 
     def __repr__(self):
-        return "Affine(\n   affine=%s,\n   input_coords=%s,\n   output_coords=%s\n))" % ('\n          '.join(repr(self.affine).split('\n')), 
+        return "Affine(\n   affine=%s,\n   input_coords=%s,\n   output_coords=%s\n)" % ('\n          '.join(repr(self.affine).split('\n')), 
          self.input_coords, self.output_coords)
 
 

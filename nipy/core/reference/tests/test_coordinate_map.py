@@ -239,7 +239,7 @@ def test_str():
                  [ 0.,  0.,  0.,  1.]]),
    input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
    output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
-))"""
+)"""
     domain = CoordinateSystem('ijk')
     range = CoordinateSystem('xyz')
     affine = np.identity(4)
