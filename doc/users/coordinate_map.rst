@@ -258,7 +258,7 @@ The domain is :math:`D=[i_a,j_a,k_a]`, the range is :math:`R=[x_a,y_a,z_a]` and 
 
 Note that each of the functions :math:`f,g,h` can, with some abuse of notation, 
 be thought of as functions from :math:`\mathbb{R}^3` to itself. Formally, 
-these functions look like :math:`\tilde{f}=I_R^{-1} \circ f \circ I_D^{-1}`.
+these functions look like :math:`\tilde{f}=I_R \circ f \circ I_D^{-1}`.
 In the code, it is actually the functions 
 :math:`\tilde{f}, \tilde{g}, \tilde{h}` we specify, rather then :math:`f,g,h`.
 
@@ -304,7 +304,7 @@ Mappings
 * *Reorder domain / range* Given a mapping :math:`M=(D=[i,j,k], R=[x,y,z], f)` 
 you might want to specify that we've changed the domain by changing the ordering
 of its basis to :math:`[k,i,j]`. Call the new domain :math:`D'`. This is represented by the composition
-of the mappings :math:`[M, O]` where :math:`O=(D', D,I_D^{-1} \circ f_O \circ I_{D'})` and
+of the mappings :math:`[M, O]` where :math:`O=(D', D, I_D^{-1} \circ f_O \circ I_{D'})` and
 for  :math:`a,b,c \in \mathbb{R}`:
 
 .. math::
@@ -441,7 +441,26 @@ module :mod:`nipy.core.reference.coordinate_map`. Its constructor
 takes two coordinate has a signature *(mapping, input_coords(=domain), 
 output_coords(=range))* along with an optional argument *inverse_mapping* 
 specifying the inverse of *mapping*. This is a slightly different order 
-from the :math:`(D, R, f)` order of this document. It has an *inverse* property
+from the :math:`(D, R, f)` order of this document. As noted above, 
+it is impossible to really pass :math:`f` to the constructor so mapping 
+is actually a callable that represents the function :math:`\tilde{f} = I_R \circ f \circ I_D^{-1}`. Of course, the function :math:`f` can be recovered as
+:math:`f` = I_R^{-1} \circ \tilde{f} I_D`. In code, :math:`f` is 
+roughly equivalent to 
+
+.. sourcecode:: python
+
+   domain = coordmap.input_coords
+   range = coordmap.output_coords
+   f_tilde = coordmap.mapping
+
+   in_dtype = domain.coord_dtype
+   out_dtype = range.coord_dtype
+
+   def f(d):
+       return f_tilde(d.view(in_dtype)).view(out_dtype)
+
+   
+The class *CoordinateMap* has an *inverse* property
 and there are module level functions called *product, compose, linearize, reorder_input, reorder_output*. (XXX "reorder" should be changed to "reordered").
 
 
