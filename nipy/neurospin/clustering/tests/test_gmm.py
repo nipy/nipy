@@ -44,7 +44,7 @@ def test_em_gmm_full(verbose=0):
     bic = np.zeros(5)
     for k in range(1,6):
         lgmm = GMM(k,dim)
-        lgmm.init(x)
+        lgmm.initialize(x)
         bic[k-1] = lgmm.estimate(x,None,maxiter,delta,verbose)
         if verbose: print "bic of the %d-classes model"%k, bic
 
@@ -70,7 +70,7 @@ def test_em_gmm_diag(verbose=0):
     bic = np.zeros(5)
     for k in range(1,6):
         lgmm = GMM(k,dim,prec_type)
-        lgmm.init(x)
+        lgmm.initialize(x)
         bic[k-1] = lgmm.estimate(x,None,maxiter,delta,verbose)
         if verbose: print "bic of the %d-classes model"%k, bic
 
@@ -121,7 +121,7 @@ def test_em_gmm_largedim(verbose=0):
     
     for k in range(1,3):
         lgmm = GMM(k,dim)
-        lgmm.init(x)
+        lgmm.initialize(x)
         bic = lgmm.estimate(x,None,maxiter,delta,verbose)
         if verbose: print "bic of the %d-classes model"%k, bic
         
@@ -155,7 +155,7 @@ def test_em_gmm_heterosc(verbose=0):
     bic = np.zeros(5)
     for k in range(1,6):
         lgmm = GMM(k,dim)
-        lgmm.init(x)
+        lgmm.initialize(x)
         bic[k-1] = lgmm.estimate(x,None,maxiter,delta,0)
         if verbose: print "bic of the %d-classes model"%k, bic
 
@@ -185,20 +185,20 @@ def test_em_gmm_cv(verbose=0):
     
     # model 1
     lgmm = GMM(k,dim,prec_type)
-    lgmm.init(xtrain)
+    lgmm.initialize(xtrain)
     bic = lgmm.estimate(xtrain,None,maxiter,delta)
     ll.append(lgmm.test(xtest).mean())
     
     prec_type='diag'
     # model 2
     lgmm = GMM(k,dim,prec_type)
-    lgmm.init(xtrain)
+    lgmm.initialize(xtrain)
     bic = lgmm.estimate(xtrain,None,maxiter,delta)
     ll.append(lgmm.test(xtest).mean())
         
     for  k in [1,3,10]:
         lgmm = GMM(k,dim,prec_type)
-        lgmm.init(xtrain)
+        lgmm.initialize(xtrain)
         bic = lgmm.estimate(xtrain,None,maxiter,delta)
         ll.append(lgmm.test(xtest).mean())
             
