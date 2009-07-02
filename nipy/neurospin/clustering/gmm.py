@@ -609,34 +609,32 @@ class GMM():
         z = np.argmax(l,1)
         return z
 
-    def estimate(self,x,z=None,niter=100,delta = 1.e-4,verbose=0):
+    def estimate(self,x,niter=100,delta = 1.e-4,verbose=0):
         """
-        estimation of self given x
+        estimation of self given a dataset x
+
         INPUT:
+        ------
          - x array of shape (nbitem,dim)
         the data from which the model is estimated
-        - z = None: array of shape (nbitem)
-        a prior labelling of the data to initialize the computation
         - niter=100: maximal number of iterations in the estimation process
         - delta = 1.e-4: increment of data likelihood at which
         convergence is declared
         - verbose=0:
         verbosity mode
+
         OUTPUT:
+        -------
         - bic : an asymptotic approximation of model evidence
         """
         # check that the data is OK
         x = self.check_x(x)
         
-        # initialization -> Cmeans
         # alternation of E/M step until convergence
         tiny = 1.e-15
         cc = np.zeros(np.shape(self.means))
-        nc = np.var(self.means)
         allOld = -np.infty
         for i in range(niter):
-            #if np.var(cc-self.means)<delta*nc:
-            #    break
             cc = self.means.copy()
             l = self._Estep(x)
             all = np.mean(np.log(np.maximum( np.sum(l,1),tiny)))

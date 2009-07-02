@@ -933,7 +933,7 @@ class VBGMM(BGMM):
             
         return F-Dkl
 
-    def __Mstep(self,x,L):
+    def _Mstep(self,x,L):
         """
         VB-M step
 
@@ -990,51 +990,103 @@ class VBGMM(BGMM):
     def initialize(self,x):
         """
         initialize z using a k-means algorithm, then upate the parameters
+
+        INPUT:
+        ------
+        - x:array of shape (nbitems,self.dim)
+        the data used in the estimation process
         """
         n = x.shape[0]
         if self.k>1:
             cent,z,J = fc.cmeans(x,self.k)
         else:
-            z = np.zeros(x.shape[0]).astype('i')
+            z = np.zeros(x.shape[0]).astype(np.int)
         L = np.zeros((n,self.k))
         L[np.arange(n),z]=1
         self._Mstep(x,L)
 
-    def map_label(self,x,L=None):
+    def map_label(self,x,l=None):
         """
         return the MAP labelling of x 
+        INPUT:
+        - x array of shape (nbitem,dim)
+        the data under study
+        - l=None array of shape(nbitem,self.k)
+        component-wise likelihood
+        if l==None, it is recomputed
+        OUTPUT:
+        - z: array of shape(nbitem): the resulting MAP labelling
+        of the rows of x
         """
-        if L== None:
-            L = self._Estep(x)
-        z = np.argmax(L,1)
-        return z
+        if l== None:
+            l = self.likelihood(x)
+        z = np.argmax(l,1)
+        return z   
 
-    def estimate(self,x,niter=100,delta = 1.e-8,verbose=0):
+    def estimate(self,x,niter=100,delta = 1.e-4,verbose=0):
         """
-        estimation of self given x
+         estimation of self given x
+        INPUT:
+         - x array of shape (nbitem,dim)
+        the data from which the model is estimated
+        - z = None: array of shape (nbitem)
+        a prior labelling of the data to initialize the computation
+        - niter=100: maximal number of iterations in the estimation process
+        - delta = 1.e-4: increment of data likelihood at which
+        convergence is declared
+        - verbose=0:
+        verbosity mode
         """
-        # initialization -> Cmeans
         # alternation of E/M step until convergence
         tiny = 1.e-15
         cc = np.zeros(np.shape(self.means))
-        nc = np.var(self.means)
-
+        allOld = -np.infty
         for i in range(niter):
-            if np.var(cc-self.means)<delta*nc:
-                # print i
-                break
             cc = self.means.copy()
-            L = self._Estep(x)
+            l = self._Estep(x)
+            all = np.mean(np.log(np.maximum( np.sum(l,1),tiny)))
+            if all<allOld+delta:
+                if verbose:
+                    print 'iteration:',i, 'log-likelihood:',all,\
+                          'old value:',allOld
+                break
+            else:
+                allOld = all
             if verbose:
-                print i,self.evidence(x)
-            L = (L.T/np.maximum(L.sum(1),tiny)).T
-            self._Mstep(x,L)
-
+                print i, all, self.bic(l)
+            l = (l.T/np.maximum(l.sum(1),tiny)).T
+            self._Mstep(x,l)
+            
     def likelihood(self,x):
+        """
+        return the likelihood of the model for the data x
+        the values are weighted by the components weights
+
+        INPUT:
+        ------
+        - x:array of shape (nbitems,self.dim)
+        the data used in the estimation process
+
+        OUTPUT:
+        ------
+        - l array of shape(nbitem,self.k)
+        component-wise likelihood
+        """
         return self._Estep(x) 
             
 
+def pop(self,l,tiny = 1.e-15):
+        """
+        compute the population, i.e. the statistics of allocation
 
+        INPUT:
+        ------
+        - l array of shape (nbitem,self.k):
+        the likelihood of each item being in each class
+        """
+        sl = np.maximum(tiny,np.sum(l,1))
+        nl = (l.T/sl).T
+        return np.sum(nl,0)
 
 
 # ------------------------------------------

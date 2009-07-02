@@ -45,7 +45,7 @@ def test_em_gmm_full(verbose=0):
     for k in range(1,6):
         lgmm = GMM(k,dim)
         lgmm.initialize(x)
-        bic[k-1] = lgmm.estimate(x,None,maxiter,delta,verbose)
+        bic[k-1] = lgmm.estimate(x,maxiter,delta,verbose)
         if verbose: print "bic of the %d-classes model"%k, bic
 
     z = lgmm.map_label(x)
@@ -71,7 +71,7 @@ def test_em_gmm_diag(verbose=0):
     for k in range(1,6):
         lgmm = GMM(k,dim,prec_type)
         lgmm.initialize(x)
-        bic[k-1] = lgmm.estimate(x,None,maxiter,delta,verbose)
+        bic[k-1] = lgmm.estimate(x,maxiter,delta,verbose)
         if verbose: print "bic of the %d-classes model"%k, bic
 
     z = lgmm.map_label(x)
@@ -93,7 +93,7 @@ def test_em_gmm_multi(verbose=0):
     k = 2
     
     lgmm = GMM(k,dim)
-    bgmm = lgmm.initialize_and_estimate(x,None,maxiter,delta,ninit,verbose)
+    bgmm = lgmm.initialize_and_estimate(x,maxiter,delta,ninit,verbose)
     bic = bgmm.evidence(x)
     
     if verbose: print "bic of the best model", bic
@@ -122,7 +122,7 @@ def test_em_gmm_largedim(verbose=0):
     for k in range(1,3):
         lgmm = GMM(k,dim)
         lgmm.initialize(x)
-        bic = lgmm.estimate(x,None,maxiter,delta,verbose)
+        bic = lgmm.estimate(x,maxiter,delta,verbose)
         if verbose: print "bic of the %d-classes model"%k, bic
         
     z = lgmm.map_label(x)
@@ -156,7 +156,7 @@ def test_em_gmm_heterosc(verbose=0):
     for k in range(1,6):
         lgmm = GMM(k,dim)
         lgmm.initialize(x)
-        bic[k-1] = lgmm.estimate(x,None,maxiter,delta,0)
+        bic[k-1] = lgmm.estimate(x,maxiter,delta,0)
         if verbose: print "bic of the %d-classes model"%k, bic
 
     if verbose:
@@ -186,20 +186,20 @@ def test_em_gmm_cv(verbose=0):
     # model 1
     lgmm = GMM(k,dim,prec_type)
     lgmm.initialize(xtrain)
-    bic = lgmm.estimate(xtrain,None,maxiter,delta)
+    bic = lgmm.estimate(xtrain,maxiter,delta)
     ll.append(lgmm.test(xtest).mean())
     
     prec_type='diag'
     # model 2
     lgmm = GMM(k,dim,prec_type)
     lgmm.initialize(xtrain)
-    bic = lgmm.estimate(xtrain,None,maxiter,delta)
+    bic = lgmm.estimate(xtrain,maxiter,delta)
     ll.append(lgmm.test(xtest).mean())
         
     for  k in [1,3,10]:
         lgmm = GMM(k,dim,prec_type)
         lgmm.initialize(xtrain)
-        bic = lgmm.estimate(xtrain,None,maxiter,delta)
+        bic = lgmm.estimate(xtrain,maxiter,delta)
         ll.append(lgmm.test(xtest).mean())
             
     assert(ll[4]<ll[1])

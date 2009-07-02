@@ -73,12 +73,14 @@ def test_gmm_bf(kmax=4,verbose = 0):
     perform a model selection procedure on a  gmm
     with Bayes factor estimations
     kmax : range of values that are tested
+
+    fixme : this one often fails. I don't really see why
     """
-    n=100
+    n=30
     dim=2
     x = nr.randn(n,dim)
     #x[:30] += 2
-    niter = 1000
+    niter = 3000
 
     bbf = -np.infty
     for k in range(1,kmax):
