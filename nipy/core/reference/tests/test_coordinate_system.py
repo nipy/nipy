@@ -102,7 +102,7 @@ def test___eq__():
 
 def test___str__():
     s = str(E.cs)
-    assert_equal(s, "CoordinateSystem(name: 'test', coord_names: ('i', 'j', 'k'), coord_dtype: float32)")
+    assert_equal(s, "CoordinateSystem(coord_names=('i', 'j', 'k'), name='test', coord_dtype=float32)")
 
 def test_checked_values():
     cs = CoordinateSystem('ijk', name='voxels', coord_dtype=np.float32)

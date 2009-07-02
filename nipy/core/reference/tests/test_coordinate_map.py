@@ -231,6 +231,30 @@ def test_reordered_input():
     yield assert_equal, recm.input_coords.coord_names, ('k', 'i', 'j')
 
 
+def test_str():
+    result = """Affine(
+   affine=array([[ 1.,  0.,  0.,  0.],
+                 [ 0.,  1.,  0.,  0.],
+                 [ 0.,  0.,  1.,  0.],
+                 [ 0.,  0.,  0.,  1.]]),
+   input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
+   output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
+))"""
+    domain = CoordinateSystem('ijk')
+    range = CoordinateSystem('xyz')
+    affine = np.identity(4)
+    affine_mapping = Affine(affine, domain, range)
+    yield assert_equal, result, str(affine_mapping)
+
+    result="""CoordinateMap(
+   mapping,
+   input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
+   output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
+  )"""
+    yield assert_equal, result, CoordinateMap.__repr__(affine_mapping)
+
+
+
 def test_reordered_output():
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(map, incs, outcs, inv)

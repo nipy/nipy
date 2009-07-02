@@ -253,7 +253,7 @@ class CoordinateMap(object):
         >>> output_cs = CoordinateSystem('xyz')
         >>> cm = Affine(np.identity(4), input_cs, output_cs)
         >>> print cm.reordered_input('ikj', name='neworder').input_coords
-        CoordinateSystem(name: 'neworder', coord_names: ('i', 'k', 'j'), coord_dtype: float64)
+        CoordinateSystem(coord_names=('i', 'k', 'j'), name='neworder', coord_dtype=float64)
         """
 
         name = name or self.input_coords.name
@@ -308,7 +308,7 @@ class CoordinateMap(object):
 
         >>> new_affine_mapping = affine_mapping.renamed_input({'i':'phase','k':'freq','j':'slice'})
         >>> print new_affine_mapping.input_coords
-        CoordinateSystem(name: '', coord_names: ('phase', 'slice', 'freq'), coord_dtype: float64)
+        CoordinateSystem(coord_names=('phase', 'slice', 'freq'), name='', coord_dtype=float64)
 
         >>> new_affine_mapping = affine_mapping.renamed_input({'i':'phase','k':'freq','l':'slice'})
         Traceback (most recent call last):
@@ -374,7 +374,7 @@ class CoordinateMap(object):
 
         >>> new_affine_mapping = affine_mapping.renamed_output({'x':'u'})
         >>> print new_affine_mapping.output_coords
-        CoordinateSystem(name: '', coord_names: ('u', 'y', 'z'), coord_dtype: float64)
+        CoordinateSystem(coord_names=('u', 'y', 'z'), name='', coord_dtype=float64)
 
         >>> new_affine_mapping = affine_mapping.renamed_output({'w':'u'})
         Traceback (most recent call last):
@@ -436,7 +436,7 @@ class CoordinateMap(object):
         >>> output_cs = CoordinateSystem('xyz')
         >>> cm = Affine(np.identity(4), input_cs, output_cs)
         >>> print cm.reordered_output('xzy', name='neworder').output_coords
-        CoordinateSystem(name: 'neworder', coord_names: ('x', 'z', 'y'), coord_dtype: float64)
+        CoordinateSystem(coord_names=('x', 'z', 'y'), name='neworder', coord_dtype=float64)
         >>> print cm.reordered_output([0,2,1]).output_coords.coord_names
         ('x', 'z', 'y')
 
@@ -468,6 +468,9 @@ class CoordinateMap(object):
         A = Affine(perm, self.output_coords, newoutcoords)
         return compose(A, self)
 
+    def __repr__(self):
+        return "CoordinateMap(\n   mapping,\n   input_coords=%s,\n   output_coords=%s\n  )" % (self.input_coords, self.output_coords)
+
 class Affine(CoordinateMap):
     """
     A class representing an affine transformation from an input
@@ -481,6 +484,16 @@ class Affine(CoordinateMap):
     >>> inp_cs = CoordinateSystem('ijk')
     >>> out_cs = CoordinateSystem('xyz')
     >>> cm = Affine(np.diag([1, 2, 3, 1]), inp_cs, out_cs)
+    >>> cm
+    Affine(
+       affine=array([[ 1.,  0.,  0.,  0.],
+                     [ 0.,  2.,  0.,  0.],
+                     [ 0.,  0.,  3.,  0.],
+                     [ 0.,  0.,  0.,  1.]]),
+       input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
+       output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
+    ))
+
     >>> cm.affine
     array([[ 1.,  0.,  0.,  0.],
            [ 0.,  2.,  0.,  0.],
@@ -491,6 +504,7 @@ class Affine(CoordinateMap):
     >>> icm = cm.inverse
     >>> icm([1,2,3])
     array([[ 1.,  1.,  1.]])
+    
     """
 
     def __init__(self, affine, input_coords, output_coords):
@@ -667,9 +681,9 @@ class Affine(CoordinateMap):
                [ 0.,  0.,  1.,  0.],
                [ 0.,  0.,  0.,  1.]])
         >>> print cm.input_coords
-        CoordinateSystem(name: 'input', coord_names: ('i', 'j', 'k'), coord_dtype: float64)
+        CoordinateSystem(coord_names=('i', 'j', 'k'), name='input', coord_dtype=float64)
         >>> print cm.output_coords
-        CoordinateSystem(name: 'output', coord_names: ('i', 'j', 'k'), coord_dtype: float64)
+        CoordinateSystem(coord_names=('i', 'j', 'k'), name='output', coord_dtype=float64)
         """
         return Affine.from_start_step(names, names, [0]*len(names),
                                       [1]*len(names))
@@ -700,6 +714,9 @@ class Affine(CoordinateMap):
                       self._output_coords)
 
 
+    def __repr__(self):
+        return "Affine(\n   affine=%s,\n   input_coords=%s,\n   output_coords=%s\n))" % ('\n          '.join(repr(self.affine).split('\n')), 
+         self.input_coords, self.output_coords)
 
 
 def product(*cmaps):
