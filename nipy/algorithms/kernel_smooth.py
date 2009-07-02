@@ -159,7 +159,7 @@ class LinearFilter(object):
         if inimage.ndim == 3:
             return Image(_out, coordmap=self.coordmap)
         else:
-            return Image(_out, coordmap=concat(self.coordmap, 'concat')
+            return Image(_out, coordmap=concat(self.coordmap, 'concat'))
 
 
     def _presmooth(self, indata):
