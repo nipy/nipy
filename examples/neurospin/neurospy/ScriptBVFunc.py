@@ -18,12 +18,12 @@ import os
 #########
 
 def save_volume(volume, file, header, mask=None, data=None):
-  if mask != None and data != None:
-    if size(data.shape) == 1:
-      volume[mask > 0] = data
-    else:
-      for i in range(data.shape[0]):
-        volume[i][mask[0] > 0] = data[i]
+    if mask != None and data != None:
+        if size(data.shape) == 1:
+            volume[mask > 0] = data
+        else:
+            for i in range(data.shape[0]):
+                volume[i][mask[0] > 0] = data[i]
     nifti.NiftiImage(volume,header).save(file)
 
 def saveall(contrast, design, ContrastId, dim, kargs):

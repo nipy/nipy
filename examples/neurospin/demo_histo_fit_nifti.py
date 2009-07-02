@@ -11,8 +11,9 @@ Author : Bertrand Thirion, 2008-2009
 import numpy as np
 import scipy.stats as st
 import os.path as op
-import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nifti
+
+import nipy.neurospin.utils.emp_null as en
 
 nbru = range(1,13)
 
@@ -38,31 +39,25 @@ sform = nim.header['sform']
 voxsize = nim.getVoxDims()
 
 # Read the masks and compute the "intersection"
-mask = np.transpose(nim.asarray())
+mask = nim.asarray().T
 xyz = np.array(np.where(mask))
 nbvox = np.size(xyz,1)
 
-# read the functional images
-Beta = []
+# read the functional image
 rbeta = nifti.NiftiImage(betas[s][0])
-beta = np.transpose(rbeta.asarray())
+beta = rbeta.asarray().T
 beta = beta[mask>0]
-Beta.append(beta)
-Beta = np.transpose(np.array(Beta))
 
-# fit Beta's histogram with a Gamma-Gaussian mixture
-Bfm = np.array([2.5,3.0,3.5,4.0,4.5])
-Bfp = bsa._GGM_priors_(np.squeeze(Beta),Bfm,verbose=2)
+# fit beta's histogram with a Gamma-Gaussian mixture
+bfm = np.array([2.5,3.0,3.5,4.0,4.5])
+bfp = en.Gamma_Gaussian_fit(np.squeeze(beta),bfm,verbose=2)
 
-# fit Beta's histogram with a mixture of Gaussians
+# fit beta's histogram with a mixture of Gaussians
 alpha = 0.01
 prior_strength = 100
-Bfm = np.reshape(Bfm,(np.size(Bfm),1))
-Bfq = bsa._GMM_priors_(np.squeeze(Beta),Bfm,theta,alpha,prior_strength,verbose=2)
+bfq = en.three_classes_GMM_fit(beta, bfm, alpha, prior_strength,verbose=2)
 
-# fit the null mode of Beta with the robust method
-import nipy.neurospin.utils.emp_null as en
-efdr = en.ENN(Beta)
+# fit the null mode of beta with the robust method
+efdr = en.ENN(beta)
 efdr.learn()
-#Bfr = efdr.fdr(Bfm)
 efdr.plot(bar=0)

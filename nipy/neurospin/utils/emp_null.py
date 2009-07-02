@@ -376,3 +376,124 @@ class ENN:
     
 
  
+def three_classes_GMM_fit(x,test=None,alpha=0.01,prior_strength = 100,verbose=0,bias=0, theta = 0):
+    """
+     Fit the data with a 3-classes Gaussian Mixture Model,
+    i.e. computing some probability that the voxels of a certain map
+    are in class disactivated, null or active
+
+    INPUT:
+    ------
+    - x array of shape (nvox,1): the map to be analysed
+    - test=None array of shape(nbitems,1):
+    the test values for which the p-value needs to be computed
+    by default, test=x
+    - alpha = 0.01 the prior weights of the positive and negative classes
+    - prior_strength = 100 the confidence on the prior
+    (should be compared to size(x))
+    - verbose=0 : verbosity mode
+    - bias = 0: allows a recaling of the posterior probability
+    that takes into account the thershold theta. Not rigorous.
+    - theta = 0 the threshold used to correct the posterior p-values
+    when bias=1; normally, it is such that test>theta
+    note that if theta = -np.infty, then the method has a standard behaviour
+    
+    OUTPUT:
+    -------
+    bfp : array of shape (nbitems,3):
+    the posteriri probability of each test item belonging to each component
+    in the GMM (sum to 1 across the 3 classes)
+    if np.size(test)==0,i.e. nbitem==0, None is returned
+
+    NOTE:
+    -----
+    Our convention is that
+    - class 1 represents the negative class
+    - class 2 represenst the null class
+    - class 3 represents the positsive class
+
+    """
+    nvox = np.size(x)
+    x = np.reshape(x,(nvox,1))
+    if test==None:
+        test = x
+    if np.size(test)==0:
+        return None
+    
+    from nipy.neurospin.clustering.bgmm import VBGMM
+    from nipy.neurospin.clustering.gmm import grid_descriptor
+    
+    sx = np.sort(x,0)   
+    nclasses=3
+    
+    # set the priors from a reasonable model of the data (!)
+
+    # prior means 
+    mb0 = np.mean(sx[:alpha*nvox])
+    mb2 = np.mean(sx[(1-alpha)*nvox:])
+    prior_means = np.reshape(np.array([mb0,0,mb2]),(nclasses,1))
+    prior_scale = np.ones((nclasses,1,1))*1./prior_strength
+    prior_dof = np.ones(nclasses)*prior_strength
+    prior_weights = np.array([alpha,1-2*alpha,alpha])*prior_strength
+    prior_shrinkage = np.ones(nclasses)*prior_strength
+
+    # instantiate the class and set the priors
+    BayesianGMM = VBGMM(nclasses,1,prior_means,prior_scale,
+                        prior_weights, prior_shrinkage,prior_dof)
+    BayesianGMM.set_priors(prior_means, prior_weights, prior_scale,
+                           prior_dof, prior_shrinkage)
+
+    # estimate the model
+    BayesianGMM.estimate(x,delta = 1.e-8,verbose=verbose)
+
+    # create a sampling grid
+    if (verbose or bias):
+        gd = grid_descriptor(1) 
+        gd.getinfo([x.min(),x.max()],100)
+        gdm = gd.make_grid().squeeze()
+        lj = BayesianGMM.likelihood(gd.make_grid())
+    
+    # estimate the prior weights
+    bfp = BayesianGMM.likelihood(test)
+    if bias:
+        lw = np.sum(lj[gdm>theta],0)
+        weights = BayesianGMM.weights/(BayesianGMM.weights.sum())
+        bfp = (lw/weights)*BayesianGMM.slikelihood(test)
+    
+    if verbose>1:
+        BayesianGMM.show_components(x,gd,lj)
+
+    bfp = (bfp.T/bfp.sum(1)).T
+    return bfp
+
+def Gamma_Gaussian_fit(x,test=None,verbose=0):
+    """
+    Computing some prior probabilities that the voxels of a certain map
+    are in class disactivated, null or active uning a gamma-Gaussian mixture
+    
+    INPUT:
+    ------
+    - x array os shape (nvox): the map to be analysed
+    - test=None array of shape(nbitems):
+    the test values for which the p-value needs to be computed
+    by default, test = x
+    - verbose=0 : verbosity mode
+    
+    OUTPUT:
+    -----
+    bfp : array of shape (nbitems,3):
+    the probability of each component in the MM for each test value
+    """
+    from nipy.neurospin.clustering import GGMixture
+    Ggg = GGMixture.GGGM()
+    Ggg.init_fdr(x)
+    Ggg.estimate(x,100,1.e-8,1.0,0)
+    if verbose>1:
+        # hyper-verbose mode
+        Ggg.show(x)
+        Ggg.parameters()
+
+    test = np.reshape(test,np.size(test))
+   
+    bfp = np.array(Ggg.component_likelihood(test)).T
+    return bfp

@@ -1,15 +1,15 @@
 #from soma import aims
-import fff2.neuro as neurospy 
+import nipy.neurospin.image as fff2image 
 
 def ComputeResultsContents(zmap_file_path, mask_file_path, output_html_path, threshold=0.001, method='fpr', cluster=0,
 			   null_zmax='bonferroni', null_smax=None, null_s=None, nmaxima=4):
 
 	# Read data: z-map and mask 
-	zmap = neurospy.image(zmap_file_path)
-	mask = neurospy.image(mask_file_path)
+	zmap = fff2image.image(zmap_file_path)
+	mask = fff2image.image(mask_file_path)
 
 	# Compute cluster statistics 
-	clusters, info = neurospy.cluster_stats(zmap, mask, height_th=threshold, height_control=method, cluster_th=cluster,
+	clusters, info = fff2image.cluster_stats(zmap, mask, height_th=threshold, height_control=method, cluster_th=cluster,
 						null_zmax=null_zmax, null_smax=null_smax, null_s=null_s)
 
 	# Make HTML page 

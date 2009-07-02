@@ -1026,7 +1026,9 @@ class VBGMM(BGMM):
     def estimate(self,x,niter=100,delta = 1.e-4,verbose=0):
         """
          estimation of self given x
+
         INPUT:
+        ------
          - x array of shape (nbitem,dim)
         the data from which the model is estimated
         - z = None: array of shape (nbitem)
@@ -1072,6 +1074,7 @@ class VBGMM(BGMM):
         - l array of shape(nbitem,self.k)
         component-wise likelihood
         """
+        x = self.check_x(x)
         return self._Estep(x) 
             
 
