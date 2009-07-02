@@ -20,8 +20,6 @@ CoordinateMap(input_coords, output_coords, mapping, inverse_mapping=None)
 or keep as
 CoordinateMap(mapping, input_coords, output_coords, inverse_mapping=None)
 
-CoordinateMap.ndim should be renamed to CoordinateMap.ndims, because it returns more than one value.
-
 Affine should be renamed to AffineMap, or AffineCoordMap, or something
 
 We need to think about whether coordinate values should be N by 3
@@ -33,9 +31,6 @@ by N.
 We might think, that if we have a matrix ``arr`` with points in, then
 ``arr[0]`` should be the first point [x,y,z], rather then the first coordinate
 value of all the points - N values of [x]
-
-Consider renaming reorder_input to self.input_reordered() or
-something.  reorder_output similarly.
 
 That's as far as we got.
 
