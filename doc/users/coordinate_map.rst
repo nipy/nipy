@@ -442,8 +442,10 @@ takes two coordinate has a signature *(mapping, input_coords(=domain),
 output_coords(=range))* along with an optional argument *inverse_mapping* 
 specifying the inverse of *mapping*. This is a slightly different order 
 from the :math:`(D, R, f)` order of this document. As noted above, 
-it is impossible to really pass :math:`f` to the constructor so mapping 
-is actually a callable that represents the function :math:`\tilde{f} = I_R \circ f \circ I_D^{-1}`. Of course, the function :math:`f` can be recovered as
+it is impossible to really pass :math:`f` to the constructor so *mapping* 
+is actually a callable that represents the function 
+:math:`\tilde{f} = I_R \circ f \circ I_D^{-1}`. Of course, 
+the function :math:`f` can be recovered as
 :math:`f` = I_R^{-1} \circ \tilde{f} I_D`. In code, :math:`f` is 
 roughly equivalent to 
 
@@ -454,7 +456,7 @@ roughly equivalent to
    f_tilde = coordmap.mapping
 
    in_dtype = domain.coord_dtype
-   out_dtype = range.coord_dtype
+   out_dtype = range.dtype
 
    def f(d):
        return f_tilde(d.view(in_dtype)).view(out_dtype)
