@@ -206,7 +206,13 @@ by *tailarach_cmap*.
 
 Each of these three questions are answered by what we called Coordinate Maps.
 Mathematically, let's define a *mapping* as a tuple :math:`(D,R,f)` where
-:math:`D` is the *domain*, :math:`R` is the *range* and :math:`f:D\rightarrow R` is a function. 
+:math:`D` is the *domain*, :math:`R` is the *range* and 
+:math:`f:D\rightarrow R` is a function. It may seem redundant to pair 
+:math:`(D,R)` with :math:`f` because a function must surely know its domain 
+and hence, implicitly, its range.
+However, we will see that when it comes time to implement the notion of 
+*mapping*, the tuple we do use to construct *CoordinateMap* is almost, but 
+not quite :math:`(D,R,f)`.
 
 Since these mappings are going to be used and called with
 modules like :mod:`numpy`, we should restrict our definition a little bit. We assume the following:
@@ -214,14 +220,18 @@ modules like :mod:`numpy`, we should restrict our definition a little bit. We as
 * :math:`D` is isomorphic to one of :math:`\mathbb{Z}^n, \mathbb{R}^n, \mathbb{C}^n` for some :math:`n`. This isomorphism is determined by
 a basis :math:`[u_1,\dots,u_n]` of :math:`D` which maps :math:`u_i` to :math:`e_i` the
 canonical i-th coordinate vector of whichever of :math:`\mathbb{Z}^n, \mathbb{R}^n, \mathbb{C}^n`. This isomorphism is denoted 
-by :math:`I_D`. Strictly speaking, if :math:`D` is isomorphic to :math:`\mathbb{Z}^n` then we  the term basis is possibly misleading because :math:`D` because it is not a vector space, but it is a group.
+by :math:`I_D`. Strictly speaking, if :math:`D` is isomorphic to :math:`\mathbb{Z}^n` then we  the term basis is possibly misleading because :math:`D` because it is not a vector space, but it is a group so we might call the basis a set of generators instead. In any case, the implication is that whatever
+properties the appropriate :math:`\mathbb{Z},\mathbb{R},\mathbb{C}`, so 
+:math:`D` (and :math:`R`) has as well. 
 
 * :math:`R` is similarly isomorphic to one of  :math:`\mathbb{Z}^m, \mathbb{R}^m, \mathbb{C}^m` for some :math:`m` with isomorphism :math:`I_R` and basis :math:`[v_1,\dots,v_m]`.
 
+Above, and throughout, the brackets "[","]" represent things interpretable 
+as python lists, i.e. sequences.
 
 These isomorphisms are just fancy ways of saying that the point
 :math:`x=3,y=4,z=5` is represented by the 3 real numbers (3,4,5). In this 
-case the basis is :math:`[x,y,z]` and for any real :math:`a,b,c`
+case the basis is :math:`[x,y,z]` and for any :math:`a,b,c \in \mathbb{R}`
 
 .. math::
 
@@ -442,7 +452,10 @@ takes two coordinate has a signature *(mapping, input_coords(=domain),
 output_coords(=range))* along with an optional argument *inverse_mapping* 
 specifying the inverse of *mapping*. This is a slightly different order 
 from the :math:`(D, R, f)` order of this document. As noted above, 
-it is impossible to really pass :math:`f` to the constructor so *mapping* 
+the tuple :math:`(D, R, f)` has some redundancy because the function
+:math:`f` must know its domain, and, implicitly its range.
+In :mod:`numpy`, it is impractical to really pass :math:`f` 
+to the constructor because :math:`f` would expect something of *dtype* :math:`D` and should return someting of *dtype* :math:`R`. Therefore, *mapping* 
 is actually a callable that represents the function 
 :math:`\tilde{f} = I_R \circ f \circ I_D^{-1}`. Of course, 
 the function :math:`f` can be recovered as
