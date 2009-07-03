@@ -6,17 +6,20 @@
 
 Accessing images using nipy:
 
-Nifti_ is the primary file format
+While Nifti_ is the primary file format Analyze images (with
+associated .mat file), and MINC files can also 
+be read.
 
 Load Image from File
 ====================
 
 .. sourcecode::  ipython
 
-  from nipy.core.api import load_image
+  from nipy.io.api import load_image
   infile = 'myimage.nii'
   myimg = load_image(infile)
-
+  myimg.shape
+  myimg.affine
 
 Access Data into an Array
 =========================
@@ -30,7 +33,7 @@ This allows user to access data in a numpy array.
 
 .. sourcecode::  ipython
 
-   from nipy.core.api import load_image
+   from nipy.io.api import load_image
    import numpy as np
    myimg = load_file('myfile')
    mydata = np.asarray(myimg)
@@ -41,10 +44,10 @@ Save image to a File
 
 .. sourcecode::  ipython
 
-   from nipy.core.api import load_image,save_image
+   from nipy.io.api import load_image,save_image
    import numpy as np
    myimg = load_file('myfile.nii')	
-   newimg = save_file(myimg,'newmyfile.nii')
+   newimg = save_image(myimg,'newmyfile.nii')
    
 
 Create Image from an Array
@@ -54,11 +57,12 @@ This will have a generic CoordinateMap with Unit step sizes
 
 .. sourcecode::  ipython
 
-   from nipy.core.api import fromarray, save_image
+   from nipy.core.api import fromarray
+   from nipy.io.api import save_image
    import numpy as np
    rawarray = np.zeros(43,128,128)
-   innames='kij'
-   outnames='zyx'
+   innames='ijk'
+   outnames='xyz'
    newimg = fromarray(rawarray, innames, outnames)
 
 
@@ -70,9 +74,6 @@ Coordinate systems.
 
 :ref:`coordinate_map`
 
-Here is an examples file image_fromarray.py that shows the use of io
-and Coordinate Maps.
 
-.. literalinclude:: ../../examples/image_fromarray.py
 
 .. include:: ../links_names.txt

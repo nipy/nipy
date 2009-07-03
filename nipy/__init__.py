@@ -72,3 +72,15 @@ def _test_local_install():
                      'trigger some failures')
 
 _test_local_install()
+
+
+# Add to top-level namespace
+from nipy.io.api import load_image
+from nipy.io.api import save_image
+
+# Cleanup namespace
+del _test_local_install
+del version
+del testing, Tester
+
+

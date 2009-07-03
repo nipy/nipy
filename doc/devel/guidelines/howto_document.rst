@@ -14,10 +14,8 @@ web and print quality documentation.
 Building the documentation
 --------------------------
 
-You need to have Sphinx_ (version 0.5 or greater), graphviz_ (version
-2.20 or greater) and the svn of matplotlib_ (0.98.6svn) installed in
-order to build the documentation.  (*Note: The svn requirement of
-matplotlib will go away after the next release of matplotlib.*)
+You need to have Sphinx_ (version 0.6.2 or above) and graphviz_ (version
+2.20 or greater).
 
 The ``Makefile`` (in the top-level doc directory) automates the
 generation of the documents.  To make the HTML documents::

@@ -9,6 +9,7 @@
    nipy, NIPY, Nipy, etc...
 
 .. _nipy: http://neuroimaging.scipy.org
+.. _`Brain Imaging Center`: http://bic.berkeley.edu/
 
 .. Documentation tools
 .. _graphviz: http://www.graphviz.org/
@@ -59,6 +60,7 @@
 .. _`Enthought Tool Suite`: http://code.enthought.com/projects/tool-suite.php
 .. _python: http://www.python.org
 .. _mayavi: http://mayavi.sourceforge.net/
+.. _sympy: http://code.google.com/p/sympy/
 
 .. Python imaging projects
 .. _PyMVPA: http://www.pymvpa.org
