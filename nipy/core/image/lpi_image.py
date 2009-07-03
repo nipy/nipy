@@ -70,7 +70,7 @@ class LPIImage(Image):
 
        **Attributes**
 
-       :metadata: dictionnary
+       :metadata: dictionary
 
            Optional, user-defined, dictionnary used to carry around
            extra information about the data as it goes through
@@ -182,20 +182,13 @@ class LPIImage(Image):
 
       self._lpi_coordmap = lpi_coordmap
 
-      Image.__init__(self, data, full_coordmap)
+      Image.__init__(self, data, full_coordmap,
+                     metadata=metadata)
 
-#      self.axis_names = self.coordmap.input_coords.coord_names
-      self.metadata = metadata
+   #---------------------------------------------------------------------------
+   # Overwriting some parts of the Image interface
+   #---------------------------------------------------------------------------
 
-   def _get_lpi_coordmap(self):
-      """
-      Returns 3-dimensional LPITransform, which is the same
-      as self.coordmap if self.ndim == 3. 
-      """
-      return self._lpi_coordmap
-   lpi_coordmap = property(_get_lpi_coordmap)
-
-   # For LPIImage, "world" always refers to three dimensions ['x', 'y', 'z']
    def _getworld(self):
       return self.lpi_coordmap.output_coords # == LPITransform.range
    world = property(_getworld, doc="World space.")
@@ -205,14 +198,8 @@ class LPIImage(Image):
       Returns the affine of the spatial coordmap which will
       always be a 4x4 matrix.
       """
-      return self._lpi_coordmap.affine
-   affine = property(_get_affine)
-
-   def get_data(self):
-      # XXX What's wrong with __array__? Wouldn't that be closer to numpy?
-      """ Return data as a numpy array.
-      """
-      return np.asarray(self._data)
+      return self.lpi_coordmap.affine
+   affine = property(_get_affine, doc="4x4 Affine matrix")
 
    def reordered_world(self, order):
       raise NotImplementedError("the world coordinates are always ['x','y','z'] and can't be reordered")
@@ -221,6 +208,8 @@ class LPIImage(Image):
 
       """
       Return a new LPIImage whose axes have been reordered.
+      The reordering must be such that the first 3
+      coordinates remain the same.
 
       Parameters
       ----------
@@ -284,6 +273,24 @@ class LPIImage(Image):
       return LPIImage(np.array(im), A, im.axes.coord_names,
                       metadata=self.metadata)
 
+   #---------------------------------------------------------------------------
+   # LPIImage interface
+   #---------------------------------------------------------------------------
+
+   def get_data(self):
+      # XXX What's wrong with __array__? Wouldn't that be closer to numpy?
+      """ Return data as a numpy array.
+      """
+      return np.asarray(self._data)
+
+   def _get_lpi_coordmap(self):
+      """
+      Returns 3-dimensional LPITransform, which is the same
+      as self.coordmap if self.ndim == 3. 
+      """
+      return self._lpi_coordmap
+   lpi_coordmap = property(_get_lpi_coordmap)
+
 
    def resampled_to_affine(self, affine_transform, world_to_world=None, interpolation_order=3, 
                            shape=None):
@@ -292,14 +299,7 @@ class LPIImage(Image):
       Parameters
       ----------
       affine_transform : LPITransform
-
          Affine of the new grid. 
-
-         XXX In the original proposal, it said something about "if only 3x3 it is assumed
-         to be a rotation", but this wouldn't work the way the code was written becuase
-         it was written as if affine was the affine of an LPIImage. So, if you input
-         a "rotation matrix" that is assuming you have voxels of size 1....
-         This rotation can be expressed with the world_to_world argument.
 
       world_to_world: 4x4 ndarray, optional
          A matrix representing a mapping from the target's "world"
@@ -311,7 +311,6 @@ class LPIImage(Image):
 
       shape: tuple
          Shape of the resulting image. Defaults to self.shape.
-
 
       Returns
       -------
@@ -470,10 +469,6 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
             values[...,i] = tmp_values
       return values
     
-    #---------------------------------------------------------------------------
-    # LPIImage interface
-    #---------------------------------------------------------------------------
-
    def xyz_ordered(self):
       """ Returns an image with the affine diagonal and positive
       in its coordinate system.
