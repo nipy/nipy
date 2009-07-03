@@ -96,19 +96,19 @@ def test_lpi_image_fmri():
     
     yield niptest.assert_equal, a3.coordmap.output_coords.coord_names , ('x', 'y', 'z', 'l')
 
-    # But it lpi_coordmap is ony a 3d coordmap
+    # But it lpi_transform is ony a 3d coordmap
 
-    yield niptest.assert_equal, a.lpi_coordmap.input_coords.coord_names , ('i', 'j', 'k')
+    yield niptest.assert_equal, a.lpi_transform.input_coords.coord_names , ('i', 'j', 'k')
     
-    yield niptest.assert_equal, a.lpi_coordmap.output_coords.coord_names , ('x', 'y', 'z')
+    yield niptest.assert_equal, a.lpi_transform.output_coords.coord_names , ('x', 'y', 'z')
 
-    yield niptest.assert_equal, a2.lpi_coordmap.input_coords.coord_names , ('j', 'k', 'i')
+    yield niptest.assert_equal, a2.lpi_transform.input_coords.coord_names , ('j', 'k', 'i')
     
-    yield niptest.assert_equal, a2.lpi_coordmap.output_coords.coord_names , ('x', 'y', 'z')
+    yield niptest.assert_equal, a2.lpi_transform.output_coords.coord_names , ('x', 'y', 'z')
 
-    yield niptest.assert_equal, a3.lpi_coordmap.input_coords.coord_names , ('i', 'j', 'k')
+    yield niptest.assert_equal, a3.lpi_transform.input_coords.coord_names , ('i', 'j', 'k')
     
-    yield niptest.assert_equal, a3.lpi_coordmap.output_coords.coord_names , ('x', 'y', 'z')
+    yield niptest.assert_equal, a3.lpi_transform.output_coords.coord_names , ('x', 'y', 'z')
 
 
 
@@ -118,7 +118,7 @@ def test_resample():
 
     im, lpi_im = generate_im()
 
-    lpi_im_resampled = lpi_im.resampled_to_affine(lpi_im.lpi_coordmap)
+    lpi_im_resampled = lpi_im.resampled_to_affine(lpi_im.lpi_transform)
     yield niptest.assert_almost_equal, np.array(lpi_im_resampled), np.array(lpi_im)
 
     lpi_im_resampled2 = lpi_im.resampled_to_img(lpi_im)
@@ -130,7 +130,7 @@ def test_values_in_world():
 
     im, lpi_im = generate_im()
 
-    xyz_vals = lpi_im.lpi_coordmap(np.array([[3,4,5],
+    xyz_vals = lpi_im.lpi_transform(np.array([[3,4,5],
                                                     [4,7,8]]))
     x = xyz_vals[:,0]
     y = xyz_vals[:,1]

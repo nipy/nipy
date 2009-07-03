@@ -88,7 +88,7 @@ class LPIImage(Image):
            Affine mapping from voxel axes to world coordinates
            (world coordinates are always forced to be 'x', 'y', 'z').
 
-       :lpi_coordmap: LPITransform
+       :lpi_transform: LPITransform
 
            A CoordinateMap that relates all the spatial axes of the data
            to LPI 'xyz' coordinates.
@@ -122,7 +122,7 @@ class LPIImage(Image):
    CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64)
    >>> im.axes
    CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64)
-   >>> im.lpi_coordmap
+   >>> im.lpi_transform
    LPITransform(
       affine=array([[ 3.,  0.,  0.,  0.],
                     [ 0.,  4.,  0.,  0.],
@@ -171,16 +171,16 @@ class LPIImage(Image):
 
       # The first three axes are assumed to be the
       # spatial ones
-      lpi_coordmap = LPITransform(affine, axis_names[:3])
+      lpi_transform = LPITransform(affine, axis_names[:3])
       nonspatial_names = axis_names[3:]
         
       if nonspatial_names:
          nonspatial_coordmap = AffineTransform.from_start_step(nonspatial_names, nonspatial_names, [0]*(data.ndim-3), [1]*(data.ndim-3))
-         full_coordmap = cmap_product(lpi_coordmap, nonspatial_coordmap)
+         full_coordmap = cmap_product(lpi_transform, nonspatial_coordmap)
       else:
-         full_coordmap = lpi_coordmap 
+         full_coordmap = lpi_transform 
 
-      self._lpi_coordmap = lpi_coordmap
+      self._lpi_transform = lpi_transform
 
       Image.__init__(self, data, full_coordmap,
                      metadata=metadata)
@@ -190,7 +190,7 @@ class LPIImage(Image):
    #---------------------------------------------------------------------------
 
    def _getworld(self):
-      return self.lpi_coordmap.output_coords # == LPITransform.range
+      return self.lpi_transform.output_coords # == LPITransform.range
    world = property(_getworld, doc="World space.")
 
    def _get_affine(self):
@@ -198,7 +198,7 @@ class LPIImage(Image):
       Returns the affine of the spatial coordmap which will
       always be a 4x4 matrix.
       """
-      return self.lpi_coordmap.affine
+      return self.lpi_transform.affine
    affine = property(_get_affine, doc="4x4 Affine matrix")
 
    def reordered_world(self, order):
@@ -283,13 +283,13 @@ class LPIImage(Image):
       """
       return np.asarray(self._data)
 
-   def _get_lpi_coordmap(self):
+   def _get_lpi_transform(self):
       """
       Returns 3-dimensional LPITransform, which is the same
       as self.coordmap if self.ndim == 3. 
       """
-      return self._lpi_coordmap
-   lpi_coordmap = property(_get_lpi_coordmap)
+      return self._lpi_transform
+   lpi_transform = property(_get_lpi_transform)
 
 
    def resampled_to_affine(self, affine_transform, world_to_world=None, interpolation_order=3, 
@@ -337,7 +337,7 @@ class LPIImage(Image):
          world_to_world = np.identity(4)
       world_to_world_transform = AffineTransform(world_to_world,
                                                  affine_transform.output_coords,
-                                                 self.lpi_coordmap.output_coords)
+                                                 self.lpi_transform.output_coords)
 
       if self.ndim == 3:
          im = resample(self, affine_transform, world_to_world_transform,
@@ -384,7 +384,7 @@ class LPIImage(Image):
          Nipy image onto the grid of which the data will be
          resampled.
 
-            XXX In the proposal, target_image was assumed to be a matrix if it had no attribute "affine". It now has to have a lpi_coordmap attribute.
+            XXX In the proposal, target_image was assumed to be a matrix if it had no attribute "affine". It now has to have a lpi_transform attribute.
             
       world_to_world: 4x4 ndarray, optional
          A matrix representing a mapping from the target's "world"
@@ -407,7 +407,7 @@ class LPIImage(Image):
 XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is embedded in the same coordinate system (i.e. 'x','y','z'), but images can have different coordinate axes. Here it should say that the coordinate axes are the same. The term "embedding" refers to something in the range of a function, not its domain. 
 
    """
-      return self.resampled_to_affine(target_image.lpi_coordmap,
+      return self.resampled_to_affine(target_image.lpi_transform,
                                       interpolation_order=interpolation_order,
                                       shape=target_image.shape,
                                       world_to_world=world_to_world)
@@ -451,7 +451,7 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
       y = y.ravel()
       z = z.ravel()
       xyz = np.c_[x, y, z]
-      world_to_voxel = self.lpi_coordmap.inverse
+      world_to_voxel = self.lpi_transform.inverse
       ijk = world_to_voxel(xyz)
 
       data = self.get_data()

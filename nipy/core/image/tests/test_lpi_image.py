@@ -42,8 +42,8 @@ def test_affine_shape():
 def test_reordered_etc():
 
     _, lpi_im = generate_im()
-    yield niptest.assert_raises, NotImplementedError, lpi_im.lpi_coordmap.reordered_output, ()
-    yield niptest.assert_raises, NotImplementedError, lpi_im.lpi_coordmap.renamed_output, ()
+    yield niptest.assert_raises, NotImplementedError, lpi_im.lpi_transform.reordered_output, ()
+    yield niptest.assert_raises, NotImplementedError, lpi_im.lpi_transform.renamed_output, ()
     yield niptest.assert_raises, NotImplementedError, lpi_im.reordered_world, ()
 
     data = np.random.standard_normal((3,4,5))
@@ -84,7 +84,7 @@ def test_lpi_image():
 
     im, lpi_im = generate_im()
 
-    lpi_cmap = lpi_im.lpi_coordmap
+    lpi_cmap = lpi_im.lpi_transform
 
     yield niptest.assert_true,  lpi_cmap.input_coords.coord_names == ('i','j','k')
     yield niptest.assert_equal,  lpi_im.axes.coord_names, ('i','j','k')
@@ -92,7 +92,7 @@ def test_lpi_image():
     yield niptest.assert_true,  lpi_cmap.output_coords.coord_names == ('x','y','z')
 
     b = lpi_im.xyz_ordered()
-    b_cmap = b.lpi_coordmap
+    b_cmap = b.lpi_transform
 
 
     yield niptest.assert_true,  b_cmap.input_coords.coord_names == ('k','j','i')
@@ -106,7 +106,7 @@ def test_lpi_image():
 def test_resample():
     im, lpi_im = generate_im()
 
-    lpi_im_resampled = lpi_im.resampled_to_affine(lpi_im.lpi_coordmap)
+    lpi_im_resampled = lpi_im.resampled_to_affine(lpi_im.lpi_transform)
     yield niptest.assert_almost_equal, np.array(lpi_im_resampled), np.array(lpi_im)
     yield niptest.assert_equal, lpi_im.metadata, lpi_im_resampled.metadata
 
@@ -116,7 +116,7 @@ def test_resample():
     # first call xyz_ordered
 
     lpi_im_xyz = lpi_im.xyz_ordered()
-    lpi_im_resampled = lpi_im_xyz.resampled_to_affine(lpi_im_xyz.lpi_coordmap)
+    lpi_im_resampled = lpi_im_xyz.resampled_to_affine(lpi_im_xyz.lpi_transform)
     yield niptest.assert_almost_equal, np.array(lpi_im_resampled), np.array(lpi_im_xyz)
 
     lpi_im_resampled2 = lpi_im_xyz.resampled_to_img(lpi_im_xyz)
@@ -142,16 +142,16 @@ def test_subsample():
                                 
     subsampled_shape = np.array(lpi_im)[::2,::3,::4].shape
     subsample_coordmap = AffineTransform(subsample_matrix, 
-                                         lpi_im.lpi_coordmap.input_coords,
-                                         lpi_im.lpi_coordmap.input_coords)
-    target_coordmap = compose(lpi_im.lpi_coordmap, 
+                                         lpi_im.lpi_transform.input_coords,
+                                         lpi_im.lpi_transform.input_coords)
+    target_coordmap = compose(lpi_im.lpi_transform, 
                               subsample_coordmap)
 
     # The images have the same output coordinates
 
     world_to_world_coordmap = AffineTransform(np.identity(4), 
-                                              lpi_im.lpi_coordmap.output_coords,
-                                              lpi_im.lpi_coordmap.output_coords)
+                                              lpi_im.lpi_transform.output_coords,
+                                              lpi_im.lpi_transform.output_coords)
 
     im_subsampled = resample(lpi_im, target_coordmap,
                              world_to_world_coordmap,
@@ -171,7 +171,7 @@ def test_subsample():
 def test_values_in_world():
     im, lpi_im = generate_im()
 
-    xyz_vals = lpi_im.lpi_coordmap(np.array([[3,4,5],
+    xyz_vals = lpi_im.lpi_transform(np.array([[3,4,5],
                                              [4,7,8]]))
     x = xyz_vals[:,0]
     y = xyz_vals[:,1]
