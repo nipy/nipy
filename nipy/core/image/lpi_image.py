@@ -381,11 +381,9 @@ class LPIImage(Image):
       Parameters
       ----------
       target_image : LPIImage
-         Nipy image onto the grid of which the data will be
+         LPIImage onto the grid of which the data will be
          resampled.
 
-            XXX In the proposal, target_image was assumed to be a matrix if it had no attribute "affine". It now has to have a lpi_transform attribute.
-            
       world_to_world: 4x4 ndarray, optional
          A matrix representing a mapping from the target's "world"
          to self's "world". Defaults to np.identity(4)
@@ -399,14 +397,7 @@ class LPIImage(Image):
       resampled_image : LPIImage
          New LPIImage with the data resampled.
 
-      Notes
-      -----
-      Both the target image and the original image should be
-      embedded in the same coordinate system.
-
-XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is embedded in the same coordinate system (i.e. 'x','y','z'), but images can have different coordinate axes. Here it should say that the coordinate axes are the same. The term "embedding" refers to something in the range of a function, not its domain. 
-
-   """
+      """
       return self.resampled_to_affine(target_image.lpi_transform,
                                       interpolation_order=interpolation_order,
                                       shape=target_image.shape,

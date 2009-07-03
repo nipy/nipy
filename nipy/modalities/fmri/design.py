@@ -117,8 +117,8 @@ def event_design(event_spec, t, order=2, hrfs=[glover]):
         A sequence of (symbolic) HRF that will be convolved
         with each event. If empty, glover is used.
 
-    Outputs: 
-    --------
+    Outputs 
+    -------
     
     X : np.ndarray
         The design matrix with X.shape[0] == t.shape[0]. The number
@@ -200,8 +200,8 @@ def stack2designs(old_X, new_X, old_contrasts={}, new_contrasts={}):
     new_contrasts : dict
         Dictionary of contrasts in the new_X column space
     
-    Outputs:
-    --------
+    Outputs
+    -------
 
     X : np.ndarray
         A new design matrix:  np.hstack([old_X, new_X])
@@ -261,8 +261,8 @@ def stack_contrasts(contrasts, name, keys):
     keys : [str]
         Keys of contrasts that are to be stacked.
 
-    Outputs:
-    --------
+    Outputs
+    -------
 
     None
 
@@ -282,8 +282,8 @@ def stack_designs(*pairs):
 
     pairs : sequence filled with (np.ndarray, dict) or np.ndarray
 
-    Outputs:
-    --------
+    Outputs
+    -------
 
     X : np.ndarray
         A new design matrix:  np.hstack([old_X, new_X])
