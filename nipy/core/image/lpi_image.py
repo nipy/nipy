@@ -480,7 +480,7 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
       """
       A, b = to_matrix_vector(self.affine)
       if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
-         raise CoordSystemError(
+         raise ValueError(
             'Cannot reorder the axis: the image affine contains rotations'
             )
       axis_numbers = list(np.argmax(np.abs(A), axis=1))
