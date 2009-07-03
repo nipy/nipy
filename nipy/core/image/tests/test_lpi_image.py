@@ -15,12 +15,14 @@ def generate_im():
     affine_mapping = AffineTransform(affine,
                                      CoordinateSystem('ijk'),
                                      CoordinateSystem('xyz'))
-    lpi_im = lpi_image.LPIImage(data, affine, 'ijk')
+    lpi_im = lpi_image.LPIImage(data, affine, 'ijk',
+                                metadata={'abc':np.random.standard_normal(4)})
     im = Image(data, affine_mapping)
     return im, lpi_im
 
-@niptest.decorators.skipif(True, msg='equality needs to be fixed')
+@niptest.decorators.knownfailure
 def test__eq__():
+    # equality needs to be fixed
     _, lpi_im = generate_im()
     new_lpi_im = lpi_image.LPIImage(lpi_im.get_data(), 
                                     lpi_im.affine.copy(),
@@ -30,6 +32,45 @@ def test__eq__():
     yield niptest.assert_equal, lpi_im, copy.deepcopy(lpi_im)
 
 
+def test_affine_shape():
+
+    data = np.random.standard_normal((30,40,50))
+    affine = np.random.standard_normal((5,4))
+    yield niptest.assert_raises, ValueError, lpi_image.LPIImage, data, affine, 'ijk'
+
+def test_reordered_etc():
+
+    _, lpi_im = generate_im()
+    yield niptest.assert_raises, NotImplementedError, lpi_im.lpi_coordmap.reordered_output, ()
+    yield niptest.assert_raises, NotImplementedError, lpi_im.lpi_coordmap.renamed_output, ()
+    yield niptest.assert_raises, NotImplementedError, lpi_im.reordered_world, ()
+
+    data = np.random.standard_normal((3,4,5))
+    affine = np.random.standard_normal((4,4))
+    yield niptest.assert_raises, ValueError, lpi_image.LPIImage, data, affine, 'ij'
+
+    data = np.random.standard_normal((3,4,5,6,7))
+    affine = np.random.standard_normal((4,4))
+    lpi_im = lpi_image.LPIImage(data, affine, 'ijklm')
+    yield niptest.assert_raises, ValueError, lpi_im.resampled_to_img, lpi_im
+
+def test_reordered_axes():
+
+    _, lpi_im = generate_im()
+
+    lpi_reordered = lpi_im.reordered_axes([2,0,1])
+    yield (niptest.assert_equal, np.array(lpi_reordered), 
+           np.transpose(np.array(lpi_im), [2,0,1]))
+
+    lpi_reordered = lpi_im.reordered_axes('kij')
+    yield (niptest.assert_equal, np.array(lpi_reordered), 
+           np.transpose(np.array(lpi_im), [2,0,1]))
+
+    lpi_reordered = lpi_im.reordered_axes()
+    yield (niptest.assert_equal, np.array(lpi_reordered), 
+           np.transpose(np.array(lpi_im), [2,1,0]))
+
+    yield niptest.assert_equal, lpi_im.metadata, lpi_reordered.metadata
 
 def test_lpi_world_axes():
 
@@ -45,7 +86,7 @@ def test_lpi_image():
     lpi_cmap = lpi_im.lpi_coordmap
 
     yield niptest.assert_true,  lpi_cmap.input_coords.coord_names == ('i','j','k')
-    yield niptest.assert_equal,  lpi_im.axis_names, ('i','j','k')
+    yield niptest.assert_equal,  lpi_im.axes.coord_names, ('i','j','k')
 
     yield niptest.assert_true,  lpi_cmap.output_coords.coord_names == ('x','y','z')
 
@@ -54,7 +95,7 @@ def test_lpi_image():
 
 
     yield niptest.assert_true,  b_cmap.input_coords.coord_names == ('k','j','i')
-    yield niptest.assert_equal, b.axis_names, ('k', 'j', 'i')
+    yield niptest.assert_equal, b.axes.coord_names, ('k', 'j', 'i')
 
     yield niptest.assert_true,  b_cmap.output_coords.coord_names == ('x','y','z')
 
@@ -66,10 +107,11 @@ def test_resample():
 
     lpi_im_resampled = lpi_im.resampled_to_affine(lpi_im.lpi_coordmap)
     yield niptest.assert_almost_equal, np.array(lpi_im_resampled), np.array(lpi_im)
+    yield niptest.assert_equal, lpi_im.metadata, lpi_im_resampled.metadata
 
     lpi_im_resampled2 = lpi_im.resampled_to_img(lpi_im)
     yield niptest.assert_almost_equal, np.array(lpi_im_resampled2), np.array(lpi_im)
-
+    yield niptest.assert_equal, lpi_im.metadata, lpi_im_resampled2.metadata
     # first call xyz_ordered
 
     lpi_im_xyz = lpi_im.xyz_ordered()

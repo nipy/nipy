@@ -26,10 +26,28 @@ def generate_im():
     affine_mapping = AffineTransform(full_affine,
                                      CoordinateSystem('ijkl'),
                                      CoordinateSystem('xyzl'))
-    lpi_im = lpi_image.LPIImage(data, affine, 'ijkl')
+    lpi_im = lpi_image.LPIImage(data, affine, 'ijkl',
+                                metadata={'abc':np.random.standard_normal(4)})
     im = Image(data, affine_mapping)
     return im, lpi_im
 
+
+def test_reordered_axes():
+
+    _, lpi_im = generate_im()
+
+    lpi_reordered = lpi_im.reordered_axes([2,0,1,3])
+    yield (niptest.assert_equal, np.array(lpi_reordered), 
+           np.transpose(np.array(lpi_im), [2,0,1,3]))
+
+    lpi_reordered = lpi_im.reordered_axes('kijl')
+    yield (niptest.assert_equal, np.array(lpi_reordered), 
+           np.transpose(np.array(lpi_im), [2,0,1,3]))
+
+    yield niptest.assert_equal, lpi_im.metadata, lpi_reordered.metadata
+    yield niptest.assert_equal, lpi_im.metadata, lpi_reordered.metadata
+
+    yield niptest.assert_raises, ValueError, lpi_im.reordered_axes, [3,0,1,2]
 
 def test_lpi_image_fmri():
 
