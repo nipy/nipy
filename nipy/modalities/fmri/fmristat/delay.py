@@ -15,7 +15,7 @@ import os, fpformat
 import numpy as np
 import numpy.linalg as L
 from nipy.fixes.scipy.stats.models.utils import recipr, recipr0
-#from nipy.fixes.scipy.stats.models.contrast import Contrast, ContrastResults
+from nipy.fixes.scipy.stats.models.contrast import Contrast, ContrastResults
 
 from nipy.modalities.fmri import hrf
 from nipy.algorithms.statistics.regression import TOutput 
