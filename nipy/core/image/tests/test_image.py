@@ -7,7 +7,7 @@ from nipy.testing import assert_true, assert_equal, assert_raises, \
     assert_array_almost_equal, TestCase
 
 from nipy.core.image import image
-from nipy.core.api import Image, fromarray, merge_images
+from nipy.core.api import Image, fromarray
 from nipy.core.api import parcels, data_generator, write_data
 
 from nipy.core.reference.coordinate_map import Affine
@@ -115,28 +115,6 @@ def test_parcels3():
         v += d.shape[0]
     yield assert_equal, v, np.product(test.shape)
 
-
-def test_merge_images():
-    #  Check that merge_images works, and that the CoordinateMap
-    #  instance is first one in the list.
-    data = np.ones((2,3,4))
-    img = image.fromarray(data, 'ijk', 'xyz')
-    mimg = merge_images([img for i in range(4)])
-    yield assert_equal, mimg.shape, (4,) + img.shape
-    yield nptest.assert_almost_equal, mimg.affine[1:,1:], img.affine
-    yield nptest.assert_almost_equal, mimg.affine[0], np.array([1,0,0,0,0])
-    yield nptest.assert_almost_equal, mimg.affine[:,0], np.array([1,0,0,0,0])
-    # A list with different CoordinateMaps -- the merged images
-    # takes the first one
-    naffine = Affine(np.diag([-2,-4,-6,1.]),
-                     img.coordmap.input_coords,
-                     img.coordmap.output_coords)
-    nimg = Image(np.asarray(img), naffine)
-    mimg = merge_images([nimg, img, img, img])
-    yield assert_equal, mimg.shape, (4,) + img.shape
-    yield nptest.assert_almost_equal, mimg.affine[1:,1:], nimg.affine
-    yield nptest.assert_almost_equal, mimg.affine[0], np.array([1,0,0,0,0])
-    yield nptest.assert_almost_equal, mimg.affine[:,0], np.array([1,0,0,0,0])
 
 
 def test_slicing_returns_image():

@@ -3,8 +3,6 @@ This module defines the Image class, as well as two functions that create Image 
 
 fromarray : create an Image instance from an ndarray
 
-merge_images : create an Image by merging a sequence of Image instance
-
 """
 import numpy as np
 import warnings
@@ -26,7 +24,8 @@ class Image(object):
 
     Notes
     -----
-    Images should be created through the module functions load and fromarray.
+    Images are most easily created through the module functions 
+    load and fromarray.
 
     Examples
     --------
@@ -49,16 +48,17 @@ class Image(object):
     # int he property line.
     _doc = {}
     
-    def __init__(self, data, coordmap):
+    def __init__(self, data, coordmap, metadata={}):
         """Create an `Image` object from array and ``CoordinateMap`` object.
         
-        Images should be created through the module functions load and
+        Images are most easily created through the module functions load and
         fromarray.
 
         Parameters
         ----------
         data : A numpy.ndarray
         coordmap : A `CoordinateMap` Object
+        metadata : dictionary
         
         See Also
         --------
@@ -79,6 +79,7 @@ class Image(object):
         # array methods  (Need to specify these, for now implied in pyniftio)
         self._data = data
         self._coordmap = coordmap
+        self.metadata = metadata
 
     def _getshape(self):
         return self._data.shape
@@ -137,7 +138,7 @@ class Image(object):
             order = [self.world.index(s) for s in order]
 
         new_cmap = self.coordmap.reordered_output(order)
-        return Image(np.asarray(self), new_cmap)
+        return Image(np.asarray(self), new_cmap, metadata=self.metadata)
 
     def reordered_axes(self, order=None):
         """
@@ -177,7 +178,8 @@ class Image(object):
         elif type(order[0]) == type(''):
             order = [self.axes.index(s) for s in order]
         new_cmap = self.coordmap.reordered_input(order)
-        return Image(np.transpose(np.array(self), order), new_cmap)
+        return Image(np.transpose(np.array(self), order), new_cmap,
+                     metadata=metadata)
 
     def _getheader(self):
         # data loaded from a file should have a header
@@ -216,7 +218,8 @@ class Image(object):
         return np.asarray(self._data)
 
     # XXX FIXME: slicing Images can be done
-    # with the subsample function
+    # with the subsample function,
+    # this should be deprecated
     def __getitem__(self, slice_object):
         """
         Slicing an image returns an Image.
@@ -285,7 +288,7 @@ def subsample(img, slice_object):
     # BUG: If it's a zero-dimension array we should return a numpy scalar
     # like np.int32(data[index])
     # Need to figure out elegant way to handle this
-    return Image(data, coordmap)
+    return Image(data, coordmap, metadata=img.metadata)
 
 def fromarray(data, innames, outnames, coordmap=None):
     """Create an image from a numpy array.
@@ -316,39 +319,5 @@ def fromarray(data, innames, outnames, coordmap=None):
                                           (0.,)*ndim,
                                           (1.,)*ndim)
                                           
-    return Image(data, coordmap)
-
-def merge_images(images, cls=Image, clobber=False,
-                 axis='merge'):
-    """
-    Create a new file based image by combining a series of images together.
-    The resulting CoordinateMap are essentially copies of images[0].coordmap
-
-    Parameters
-    ----------
-    images : [`Image`]
-        The list of images to be merged
-    cls : ``class``
-        The class of image to create
-    clobber : ``bool``
-        Overwrite the file if it already exists
-    axis : ``string``
-        Name of the concatenated axis.
-        
-    Returns
-    -------
-    ``cls``
-    
-    """
-    
-    n = len(images)
-    im0 = images[0]
-    coordmap = cmap_product(Affine(np.identity(2), 
-                                   CoordinateSystem([axis]), 
-                                   CoordinateSystem([axis])),
-                            im0.coordmap)
-    data = np.empty(shape=(n,) + im0.shape)
-    for i, image in enumerate(images):
-        data[i] = np.asarray(image)[:]
     return Image(data, coordmap)
 
