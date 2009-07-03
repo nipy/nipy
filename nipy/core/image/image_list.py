@@ -3,7 +3,8 @@ from copy import copy
 import numpy as np
 
 from nipy.core.image.image import Image
-
+from nipy.core.reference.coordinate_map import CoordinateSystem, \
+    Affine, compose
 
 class ImageList(object):
     ''' Class to contain ND image as list of (N-1)D images '''
@@ -56,13 +57,45 @@ class ImageList(object):
         self.list = images
 
     @classmethod
-    def from_image(klass, image, axis=-1):
-        if axis is None:
-            raise ValueError('axis must be array axis no or -1')
+    def from_image(klass, image, axis=0):
+        if axis not in [-1] + range(image.axes.ndim):
+            raise ValueError('axis must be an axis number or -1')
+
+        if axis == -1:
+            axis += image.axes.ndim
+        order = range(image.axes.ndim)
+        order.remove(axis)
+        order.insert(0, axis)
+
+        # Now, reorder the axes and world
+
+        image = image.reordered_world(order).reordered_axes(order)
+
         imlist = []
         coordmap = image.coordmap
+
+        # We drop the first output coordinate of image's coordmap
+
+        drop1st = np.identity(coordmap.ndims[1]+1)[1:]
+        drop1st_domain = image.world
+        drop1st_range = CoordinateSystem(image.world.coord_names[1:],
+                                 name=image.world.name,
+                                 coord_dtype=image.world.coord_dtype)
+        drop1st_coordmap = Affine(drop1st, drop1st_domain, drop1st_range)
+
+        # And arbitrarily add a 0 for the first axis
+
+        add0 = np.vstack([np.zeros(image.axes.ndim),
+                          np.identity(image.axes.ndim)])
+        add0_domain = CoordinateSystem(image.axes.coord_names[1:],
+                                 name=image.axes.name,
+                                 coord_dtype=image.axes.coord_dtype)
+        add0_range = image.axes
+        add0_coordmap = Affine(add0, add0_domain, add0_range)
+
+        coordmap = compose(drop1st_coordmap, image.coordmap, add0_coordmap)
+                                         
         data = np.asarray(image)
-        data = np.rollaxis(data, axis)
         imlist = [Image(dataslice, copy(coordmap))
                   for dataslice in data]
         return klass(imlist)

@@ -370,7 +370,7 @@ class LPIImage(Image):
 
             result[...,i] = np.array(tmp_im)
          return LPIImage(result, affine_transform.affine,
-                         affine_transform.input_coords.coord_names,
+                         self.axes.coord_names,
                          metadata=self.metadata)
       else:
          raise ValueError('resampling only defined for 3d and 4d LPIImage')

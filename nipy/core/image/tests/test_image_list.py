@@ -1,16 +1,16 @@
 import numpy as np
 
-from nipy.testing import datapjoin, assert_true, assert_equal, assert_raises
+from nipy.testing import datapjoin, assert_true, assert_equal, assert_raises, \
+    assert_almost_equal
 
 from nipy.core.image.image_list import ImageList
 from nipy.core.image.image import Image
 from nipy.io.api import load_image
 
-
 def test_image_list():
     img_path = datapjoin("test_fmri.nii.gz")
     img = load_image(img_path)
-    imglst = ImageList.from_image(img)
+    imglst = ImageList.from_image(img, axis=-1)
     
     # Test empty ImageList
     emplst = ImageList()
@@ -22,10 +22,32 @@ def test_image_list():
 
     yield assert_raises, ValueError, ImageList.from_image, img, None
 
+    # check all the axes
+
+    for i in range(4):
+        order = range(4)
+        order.remove(i)
+        order.insert(0,i)
+        img_re_i = img.reordered_world(order).reordered_axes(order)
+        imglst_i = ImageList.from_image(img, axis=i)
+
+        yield assert_equal, imglst_i.list[0].shape, img_re_i.shape[1:]
+        
+        # check the affine as well
+
+        yield assert_almost_equal, imglst_i.list[0].affine, \
+            img_re_i.affine[1:,1:]
+
     yield assert_equal, img.shape, (128, 128, 13, 120)
 
     # length of image list should match number of frames
     yield assert_equal, len(imglst.list), img.shape[3]
+
+    # check the affine
+    A = np.identity(4)
+    A[:3,:3] = img.affine[:3,:3]
+    A[:3,-1] = img.affine[:3,-1]
+    yield assert_almost_equal, imglst.list[0].affine, A
 
     # Slicing an ImageList should return an ImageList
     sublist = imglst[2:5]

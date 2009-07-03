@@ -460,7 +460,7 @@ class CoordinateMap(object):
             perm[j,i] = 1.
 
         perm = perm.astype(self.output_coords.coord_dtype)
-        A = Affine(perm, self.output_coords, newoutcoords)
+        A = Affine(perm.T, self.output_coords, newoutcoords)
         return compose(A, self)
 
     def __repr__(self):

@@ -1,7 +1,8 @@
+from nipy.testing import *
+
 from nipy.core.image import affine_image
 from nipy.core.api import Image
 import numpy as np
-import nipy.testing as niptest
 from nipy.core.reference.coordinate_map import compose, Affine as AffineTransform, CoordinateSystem
 from nipy.algorithms.resample import resample
 
@@ -29,10 +30,10 @@ def test_affine_image():
 
     a_cmap = a.spatial_coordmap
 
-    yield niptest.assert_true,  a_cmap.input_coords.coord_names == ('axis0', 'axis1', 'axis2')
-    yield niptest.assert_equal, a.coord_sys, 'input'
+    yield assert_true,  a_cmap.input_coords.coord_names == ('axis0', 'axis1', 'axis2')
+    yield assert_equal, a.coord_sys, 'input'
 
-    yield niptest.assert_true,  a_cmap.output_coords.coord_names == ('x','y','z')
+    yield assert_true,  a_cmap.output_coords.coord_names == ('x','y','z')
 
     b=a.xyz_ordered()
 
@@ -46,32 +47,32 @@ def test_affine_image():
     # Just using a name for the coordinate system
     # loses this information
 
-    yield niptest.assert_true,  b_cmap.input_coords.coord_names == ('axis0', 'axis1', 'axis2')
-    yield niptest.assert_equal, b.coord_sys, 'input' 
+    yield assert_true,  b_cmap.input_coords.coord_names == ('axis0', 'axis1', 'axis2')
+    yield assert_equal, b.coord_sys, 'input' 
 
-    yield niptest.assert_true,  b_cmap.output_coords.coord_names == ('x','y','z')
+    yield assert_true,  b_cmap.output_coords.coord_names == ('x','y','z')
 
-    yield niptest.assert_true,  a.shape == im.shape
+    yield assert_true,  a.shape == im.shape
 
-    yield niptest.assert_true,  b.shape == im.shape[::-1]
+    yield assert_true,  b.shape == im.shape[::-1]
 
 def test_resample():
     im, affine_im = generate_im()
 
     affine_im_resampled = affine_im.resampled_to_affine(affine_im.spatial_coordmap)
-    yield niptest.assert_almost_equal, np.array(affine_im_resampled), np.array(affine_im)
+    yield assert_almost_equal, np.array(affine_im_resampled), np.array(affine_im)
 
     affine_im_resampled2 = affine_im.resampled_to_img(affine_im)
-    yield niptest.assert_almost_equal, np.array(affine_im_resampled2), np.array(affine_im)
+    yield assert_almost_equal, np.array(affine_im_resampled2), np.array(affine_im)
 
     # first call xyz_ordered
 
     affine_im_xyz = affine_im.xyz_ordered()
     affine_im_resampled = affine_im_xyz.resampled_to_affine(affine_im_xyz.spatial_coordmap)
-    yield niptest.assert_almost_equal, np.array(affine_im_resampled), np.array(affine_im_xyz)
+    yield assert_almost_equal, np.array(affine_im_resampled), np.array(affine_im_xyz)
 
     affine_im_resampled2 = affine_im_xyz.resampled_to_img(affine_im_xyz)
-    yield niptest.assert_almost_equal, np.array(affine_im_resampled2), np.array(affine_im_xyz)
+    yield assert_almost_equal, np.array(affine_im_resampled2), np.array(affine_im_xyz)
 
 def test_subsample():
 
@@ -105,12 +106,12 @@ def test_subsample():
                                                  im_subsampled.affine,
                                                  im_subsampled.coordmap.input_coords.coord_names)
 
-    yield niptest.assert_almost_equal, np.array(affine_im_subsampled), np.array(affine_im)[::2,::3,::4]
+    yield assert_almost_equal, np.array(affine_im_subsampled), np.array(affine_im)[::2,::3,::4]
 
     # We can now do subsampling with these methods.
     affine_im_subsampled2 = affine_im.resampled_to_affine(target_coordmap, 
                                                          shape=subsampled_shape)
-    yield niptest.assert_almost_equal, np.array(affine_im_subsampled2), np.array(affine_im_subsampled)
+    yield assert_almost_equal, np.array(affine_im_subsampled2), np.array(affine_im_subsampled)
     
 def test_values_in_world():
     im, affine_im = generate_im()
@@ -122,7 +123,7 @@ def test_values_in_world():
     z = xyz_vals[:,2]
 
     v1, v2 = affine_im.values_in_world(x,y,z)
-    yield niptest.assert_almost_equal, v1, np.array(affine_im)[3,4,5]
-    yield niptest.assert_almost_equal, v2, np.array(affine_im)[4,7,8]
+    yield assert_almost_equal, v1, np.array(affine_im)[3,4,5]
+    yield assert_almost_equal, v2, np.array(affine_im)[4,7,8]
 
 
