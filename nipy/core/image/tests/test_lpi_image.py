@@ -20,16 +20,17 @@ def generate_im():
     im = Image(data, affine_mapping)
     return im, lpi_im
 
-@niptest.decorators.knownfailure
 def test__eq__():
-    # equality needs to be fixed
     _, lpi_im = generate_im()
     new_lpi_im = lpi_image.LPIImage(lpi_im.get_data(), 
                                     lpi_im.affine.copy(),
-                                    'ijk')
-    yield niptest.assert_equal, lpi_im, new_lpi_im
-    yield niptest.assert_equal, lpi_im, copy.copy(lpi_im)
-    yield niptest.assert_equal, lpi_im, copy.deepcopy(lpi_im)
+                                    'ijk',
+                                    metadata=lpi_im.metadata)
+
+    yield niptest.assert_true, lpi_im == lpi_im
+    yield niptest.assert_true, lpi_im == new_lpi_im
+    yield niptest.assert_true, lpi_im == copy.copy(lpi_im)
+    yield niptest.assert_true, lpi_im == copy.deepcopy(lpi_im)
 
 
 def test_affine_shape():
