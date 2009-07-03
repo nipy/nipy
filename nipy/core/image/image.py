@@ -7,13 +7,16 @@ fromarray : create an Image instance from an ndarray
 import numpy as np
 import warnings
 
-from nipy.core.reference.coordinate_map import Affine
-from nipy.core.reference.coordinate_map import product as cmap_product
-from nipy.core.reference.coordinate_system import CoordinateSystem
+from nipy.utils.onetime import setattr_on_read
+
+# These imports are used in the fromarray and subsample 
+# functions only, not in Image
+
+from nipy.core.reference.coordinate_map import Affine as AffineTransform
 from nipy.core.reference.array_coords import ArrayCoordMap
 
 __docformat__ = 'restructuredtext'
-__all__ = ['fromarray']
+__all__ = ['fromarray', 'subsample']
 
 class Image(object):
     """
@@ -24,7 +27,7 @@ class Image(object):
 
     Notes
     -----
-    Images are most easily created through the module functions 
+    Images are most often created through the module functions 
     load and fromarray.
 
     Examples
@@ -41,17 +44,100 @@ class Image(object):
 
     """
 
+    _doc = {}
+
     # Dictionary to store docs for attributes that are properties.  We
     # want these docs to conform with our documentation standard, but
     # they need to be passed into the property function.  Defining
     # them separately allows us to do this without a lot of clutter
-    # int he property line.
-    _doc = {}
+    # in the property line.
+
+    # XXX: I have no idea if _doc will work with setattr_on_read?
+
+    ###################################################################
+    #
+    # Attributes
+    #
+    ###################################################################
+
+    metadata = {}
+    _doc['metadata'] = "Dictionary containing additional information."
+
+    coordmap = AffineTransform.from_params('ijk', 'xyz', np.identity(4))
+    _doc['coordmap'] = "Mapping from axes coordinates to world coordinates."
+
+    @setattr_on_read
+    def shape(self):
+        return self._data.shape
+    _doc['shape'] = "Shape of data array."
+
+    @setattr_on_read
+    def ndim(self):
+        return self._data.ndim
+    _doc['ndim'] = "Number of data dimensions."
+
+    @setattr_on_read
+    def world(self):
+        return self.coordmap.output_coords
+    _doc['world'] = "World coordinate system."
+
+    @setattr_on_read
+    def axes(self):
+        return self.coordmap.input_coords
+    _doc['axes'] = "Axes of image."
+
+    @setattr_on_read
+    def affine(self):
+        if hasattr(self.coordmap, "affine"):
+            return self.coordmap.affine
+        raise AttributeError, 'Nonlinear transform does not have an affine.'
+    _doc['affine'] = "Affine transformation if one exists."
     
+    ###################################################################
+    #
+    # Properties
+    #
+    ###################################################################
+
+
+    def _getheader(self):
+        # data loaded from a file should have a header
+        warnings.warn('Image.header  may be deprecated if load_image returns an LPIImage')
+        try:
+            return self._header
+        except AttributeError:
+            raise AttributeError('Image created from arrays '
+                                 'may not have headers.')
+    def _setheader(self, header):
+        warnings.warn('Image.header may be deprecated if load_image returns an LPIImage')
+        self._header = header
+    _doc['header'] = \
+    """The file header dictionary for this image.  In order to update
+    the header, you must first make a copy of the header, set the
+    values you wish to change, then set the image header to the
+    updated header.
+
+    Example
+    -------
+
+    hdr = img.header
+    hdr['slice_duration'] = 0.200
+    hdr['descrip'] = 'My image registered with MNI152.'
+    img.header = hdr
+    
+    """
+    header = property(_getheader, _setheader, doc=_doc['header'])
+
+    ###################################################################
+    #
+    # Constructor
+    #
+    ###################################################################
+
     def __init__(self, data, coordmap, metadata={}):
-        """Create an `Image` object from array and ``CoordinateMap`` object.
+        """Create an `Image` object from array and `CoordinateMap` object.
         
-        Images are most easily created through the module functions load and
+        Images are most often created through the module functions load and
         fromarray.
 
         Parameters
@@ -78,35 +164,18 @@ class Image(object):
         # self._data is an array-like object.  It must implement a subset of
         # array methods  (Need to specify these, for now implied in pyniftio)
         self._data = data
-        self._coordmap = coordmap
+
+        self.coordmap = coordmap
+        if self.axes.ndim != self._data.ndim:
+            raise ValueError('the number axes do not match')
         self.metadata = metadata
 
-    def _getshape(self):
-        return self._data.shape
-    shape = property(_getshape, doc="Shape of data array")
+    ###################################################################
+    #
+    # Methods
+    #
+    ###################################################################
 
-    def _getndim(self):
-        return self._data.ndim
-    ndim = property(_getndim, doc="Number of data dimensions")
-
-    def _getcoordmap(self):
-        return self._coordmap
-    coordmap = property(_getcoordmap,
-                    doc="Coordinate mapping from input coords to output coords")
-
-    def _getworld(self):
-        return self.coordmap.output_coords
-    world = property(_getworld, doc="World space.")
-
-    def _getaxes(self):
-        return self.coordmap.input_coords
-    axes = property(_getaxes, doc="Axes of image.")
-
-    def _getaffine(self):
-        if hasattr(self.coordmap, "affine"):
-            return self.coordmap.affine
-        raise AttributeError, 'Nonlinear transform does not have an affine.'
-    affine = property(_getaffine, doc="Affine transformation if one exists")
 
     def reordered_world(self, order=None):
         """
@@ -181,45 +250,19 @@ class Image(object):
         return Image(np.transpose(np.array(self), order), new_cmap,
                      metadata=self.metadata)
 
-    def _getheader(self):
-        # data loaded from a file should have a header
-        warnings.warn('Image.header  may be deprecated if load_image returns an LPIImage')
-        try:
-            return self._header
-        except AttributeError:
-            raise AttributeError('Image created from arrays '
-                                 'may not have headers.')
-    def _setheader(self, header):
-        warnings.warn('Image.header may be deprecated if load_image returns an LPIImage')
-        self._header = header
-    _doc['header'] = \
-    """The file header dictionary for this image.  In order to update
-    the header, you must first make a copy of the header, set the
-    values you wish to change, then set the image header to the
-    updated header.
-
-    Example
-    -------
-
-    hdr = img.header
-    hdr['slice_duration'] = 0.200
-    hdr['descrip'] = 'My image registered with MNI152.'
-    img.header = hdr
-    
-    """
-    header = property(_getheader, _setheader, doc=_doc['header'])
-
     def __setitem__(self, index, value):
         """Setting values of an image, set values in the data array."""
         self._data[index] = value
 
     def __array__(self):
         """Return data as a numpy array."""
+        warnings.warn('may be deprecated, use get_data instead')
+        return self.get_data()
+
+    def get_data(self):
+        """Return data as a numpy array."""
         return np.asarray(self._data)
 
-    # XXX FIXME: slicing Images can be done
-    # with the subsample function,
-    # this should be deprecated
     def __getitem__(self, slice_object):
         """
         Slicing an image returns an Image.
@@ -238,13 +281,17 @@ class Image(object):
         np.set_printoptions(**options)
         return representation
 
-
-
 class SliceConstructor(object):
     """
     This class just creates slice objects to be used
     in resampling images. It only has a __getitem__ method
     that returns its argument.
+
+    XXX Wouldn't need this if there was a way
+    XXX to do this
+    XXX subsample(img, [::2,::3,10:1:-1])
+    XXX
+    XXX Could be something like this Subsample(img)[::2,::3,10:1:-1]
     """
     def __getitem__(self, index):
         return index
@@ -285,10 +332,10 @@ def subsample(img, slice_object):
     data = np.array(img)[slice_object]
     g = ArrayCoordMap(img.coordmap, img.shape)[slice_object]
     coordmap = g.coordmap
-    # BUG: If it's a zero-dimension array we should return a numpy scalar
-    # like np.int32(data[index])
-    # Need to figure out elegant way to handle this
-    return Image(data, coordmap, metadata=img.metadata)
+    if coordmap.input_coords.ndim > 0:
+        return Image(data, coordmap, metadata=img.metadata)
+    else:
+        return data
 
 def fromarray(data, innames, outnames, coordmap=None):
     """Create an image from a numpy array.
@@ -314,10 +361,10 @@ def fromarray(data, innames, outnames, coordmap=None):
 
     ndim = len(data.shape)
     if not coordmap:
-        coordmap = Affine.from_start_step(innames,
-                                          outnames,
-                                          (0.,)*ndim,
-                                          (1.,)*ndim)
+        coordmap = AffineTransform.from_start_step(innames,
+                                                   outnames,
+                                                   (0.,)*ndim,
+                                                   (1.,)*ndim)
                                           
     return Image(data, coordmap)
 
