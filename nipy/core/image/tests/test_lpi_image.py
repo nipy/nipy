@@ -182,7 +182,7 @@ def test_values_in_world():
     yield niptest.assert_almost_equal, v2, np.array(lpi_im)[4,7,8]
 
     x2 = np.array([3,4,5])
-    yield niptest.assert_raises, ValueError, lpi_im.values_in_world, (x2,y,z)
+    yield niptest.assert_raises, ValueError, lpi_im.values_in_world, x2,y,z
 
 def test_xyz_ordered():
     data = np.random.standard_normal((30,40,50))
@@ -191,6 +191,6 @@ def test_xyz_ordered():
                        [1.3,0,0,2],
                        [0,0,0,1]])
     lpi_im = lpi_image.LPIImage(data, affine, 'ijk')
-    yield niptest.assert_raises, ValueError, lpi_im.xyz_ordered, ()
+    yield niptest.assert_raises, ValueError, lpi_im.xyz_ordered
 
     

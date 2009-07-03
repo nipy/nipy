@@ -179,7 +179,7 @@ class Image(object):
             order = [self.axes.index(s) for s in order]
         new_cmap = self.coordmap.reordered_input(order)
         return Image(np.transpose(np.array(self), order), new_cmap,
-                     metadata=metadata)
+                     metadata=self.metadata)
 
     def _getheader(self):
         # data loaded from a file should have a header
