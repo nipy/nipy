@@ -7,6 +7,7 @@ import numpy as np
 from nipy.core.reference.coordinate_map import compose, Affine as AffineTransform, CoordinateSystem
 from nipy.algorithms.resample import resample
 
+
 def generate_im():
     data = np.random.standard_normal((30,40,50))
     affine = np.array([[0,0,4,3],
@@ -194,4 +195,41 @@ def test_xyz_ordered():
     lpi_im = lpi_image.LPIImage(data, affine, 'ijk')
     yield assert_raises, ValueError, lpi_im.xyz_ordered
 
-    
+    affine = np.array([[-3,0,0,4],
+                       [0,2,0,10],
+                       [0,0,-4,13],
+                       [0,0,0,1]])
+
+    im = lpi_image.LPIImage(data, affine, 'ijk')
+    im_re = im.reordered_axes('kji')
+    im_re_xyz = im_re.xyz_ordered()
+    yield assert_true, im_re_xyz == im
+
+    im_re_xyz_positive = im_re.xyz_ordered(positive=True)
+
+
+    # the xyz_ordered with positive=True
+    # option is not as simple as just multiplying flipping
+    # the signs of the affine
+
+    # first, it will flip the data.
+    # in this case, the 'i/x' and 'k/z' coordinates have negative
+    # diagonal entries in the original affine
+    # so the 'i' and the 'k' axis will be flipped
+
+    yield assert_almost_equal, im_re_xyz_positive.get_data(), im.get_data()[::-1,:,::-1]
+
+    # as for the affine, for the scalings on the diagonal
+    # it does just change the signs,
+    # but the last column changes, too
+
+    T = np.dot(np.diag([-1,1,-1,1]), im.affine)
+    yield assert_false, np.all(np.equal(im_re_xyz_positive.affine, T))
+    yield assert_almost_equal, im_re_xyz_positive.affine[:3,:3], T[:3,:3]
+
+    step_x, step_y, step_z = np.diag(T)[:3]
+    n_x, n_y, n_z = im.shape
+    start_x, start_y, start_z = affine[:3,-1]
+    b = [start_x+(n_x-1)*(-step_x), start_y, start_z+(n_z-1)*(-step_z)]
+    yield assert_almost_equal, b, im_re_xyz_positive.affine[:3,-1]
+

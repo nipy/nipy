@@ -277,11 +277,10 @@ class LPIImage(Image):
    # LPIImage interface
    #---------------------------------------------------------------------------
 
-   def get_data(self):
-      # XXX What's wrong with __array__? Wouldn't that be closer to numpy?
-      """ Return data as a numpy array.
-      """
-      return np.asarray(self._data)
+
+   #---------------------------------------------------------------------------
+   # Properties
+   #---------------------------------------------------------------------------
 
    def _get_lpi_transform(self):
       """
@@ -291,6 +290,10 @@ class LPIImage(Image):
       return self._lpi_transform
    lpi_transform = property(_get_lpi_transform)
 
+
+   #---------------------------------------------------------------------------
+   # Methods
+   #---------------------------------------------------------------------------
 
    def resampled_to_affine(self, affine_transform, world_to_world=None, interpolation_order=3, 
                            shape=None):
@@ -460,9 +463,27 @@ class LPIImage(Image):
             values[...,i] = tmp_values
       return values
     
-   def xyz_ordered(self):
-      """ Returns an image with the affine diagonal and positive
-      in its coordinate system.
+   def xyz_ordered(self, positive=False):
+      """ 
+      Returns an image with the affine diagonal, (optionally
+      with positive entries),
+      in the LPI coordinate system.
+
+      Parameters
+      ----------
+      
+      positive : bool
+         If True, also ensures that the diagonal entries are positive.
+
+      Notes
+      -----
+      This may possibly transpose the data array.
+
+      If positive is True, this may involve
+      creating a new array with data
+      
+      self.get_data()[::-1,::-1]
+
       """
       A, b = to_matrix_vector(self.affine)
       if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
@@ -470,8 +491,27 @@ class LPIImage(Image):
             'Cannot reorder the axis: the image affine contains rotations'
             )
       axis_numbers = list(np.argmax(np.abs(A), axis=1))
-      return self.reordered_axes(axis_numbers + range(3, self.ndim))
-    
+      im = self.reordered_axes(axis_numbers + range(3, self.ndim))
+
+      if not positive:
+         return im
+      else:
+         # Determine which axes, if any, have to be flipped in the array
+         slice_list = []
+         diag_values = np.diag(im.affine)
+         for value in np.diag(im.affine)[:-1]:
+            if value < 0:
+               slice_list.append(slice(None,None,-1))
+            else:
+               slice_list.append(slice(None,None,None))
+
+         if slice_list == [slice(None,None,None)]*3:
+            # do nothing
+            return im
+         else:
+            from nipy.core.image.image import subsample
+            return subsample(im, tuple(slice_list))
+
     #---------------------------------------------------------------------------
     # Private methods
     #---------------------------------------------------------------------------

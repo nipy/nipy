@@ -167,7 +167,7 @@ class Image(object):
 
         self.coordmap = coordmap
         if self.axes.ndim != self._data.ndim:
-            raise ValueError('the number axes do not match')
+            raise ValueError('the number of axes implied by the coordmap do not match the number of axes of the data')
         self.metadata = metadata
 
     ###################################################################
@@ -281,7 +281,7 @@ class Image(object):
         np.set_printoptions(**options)
         return representation
 
-class SliceConstructor(object):
+class SliceMaker(object):
     """
     This class just creates slice objects to be used
     in resampling images. It only has a __getitem__ method
@@ -294,9 +294,10 @@ class SliceConstructor(object):
     XXX Could be something like this Subsample(img)[::2,::3,10:1:-1]
     """
     def __getitem__(self, index):
+        print index
         return index
 
-make_slices = SliceConstructor()
+slice_maker = SliceMaker()
 
 def subsample(img, slice_object):
     """
