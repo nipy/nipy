@@ -14,57 +14,24 @@ See documentation for load and save functions for 'working' examples.
 
 """
 
+import os
+
 import numpy as np
 
-from nipy.core.reference.coordinate_map import (reorder_input, 
-                                                        reorder_output)
+import nipy.io.imageformats as formats
+
 from nipy.core.api import Image
-from pyniftiio import PyNiftiIO
-from nifti_ref import (coordmap_from_ioimg, coerce_coordmap, get_pixdim, 
-                       get_diminfo, standard_order)
+from nifti_ref import (coordmap_from_affine, coerce_coordmap, 
+                       ijk_from_fps, fps_from_ijk)
                        
-def _open(source, coordmap=None, mode="r", dtype=None):
-    """Create an `Image` from the given filename
 
-    Parameters
-    ----------
-    source : filename or a numpy array
-    coordmap : `reference.coordinate_map.CoordinateMap`
-        The coordinate map for the file
-    mode : ``string``
-        The mode ot open the file in ('r', 'w', etc)
-
-    Returns
-    -------
-    image : A new `Image` object created from the filename.
-
-    """
-
-    try:
-        if hasattr(source, 'header'):
-            hdr = source.header
-        else:
-            hdr = {}
-        ioimg = PyNiftiIO(source, mode, dtype=dtype, header=hdr)
-        if coordmap is None:
-            coordmap = coordmap_from_ioimg(ioimg.affine, ioimg.header['dim_info'], ioimg.header['pixdim'], ioimg.shape)
-
-        # Build nipy image from array-like object and coordinate map
-        img = Image(ioimg, coordmap)
-        return img
-    except IOError:
-        raise IOError, 'Unable to create image from source %s' % str(source)
-        
-def load(filename, mode='r'):
+def load(filename):
     """Load an image from the given filename.
-
-    Load an image from the file specified by ``filename``.
 
     Parameters
     ----------
     filename : string
         Should resolve to a complete filename path.
-    mode : Either 'r' or 'r+'
 
     Returns
     -------
@@ -84,12 +51,73 @@ def load(filename, mode='r'):
     >>> img = load_image(anatfile)
     >>> img.shape
     (25, 35, 25)
-
     """
+    img = formats.load(filename)
+    aff = img.get_affine()
+    shape = img.get_shape()
+    hdr = img.get_header()
+    # Get info from NIFTI header, if present, to tell which axes are
+    # which.  This is a NIFTI-specific kludge, that might be abstracted
+    # out into the image backend in a general way.  Similarly for
+    # getting zooms
+    try:
+        fps = hdr.get_dim_info()
+    except (TypeError, AttributeError):
+        fps = (None, None, None)
+    ijk = ijk_from_fps(fps)
+    try:
+        zooms = hdr.get_zooms()
+    except AttributeError:
+        zooms = np.ones(len(shape))
+    aff = _match_affine(aff, len(shape), zooms)
+    coordmap = coordmap_from_affine(aff, ijk)
+    img = Image(img.get_data(), coordmap)
+    img.header = hdr
+    return img
 
-    if mode not in ['r', 'r+']:
-        raise ValueError, 'image opening mode must be either "r" or "r+"'
-    return _open(filename, mode=mode)
+
+def _match_affine(aff, ndim, zooms=None):
+    ''' Fill or prune affine to given number of dimensions
+
+    >>> aff = np.arange(16).reshape(4,4)
+    >>> _match_affine(aff, 3)
+    array([[ 0,  1,  2,  3],
+           [ 4,  5,  6,  7],
+           [ 8,  9, 10, 11],
+           [12, 13, 14, 15]])
+    >>> _match_affine(aff, 2)
+    array([[ 0.,  1.,  3.],
+           [ 4.,  5.,  7.],
+           [ 0.,  0.,  1.]])
+    >>> _match_affine(aff, 4)
+    array([[  0.,   1.,   2.,   0.,   3.],
+           [  4.,   5.,   6.,   0.,   7.],
+           [  8.,   9.,  10.,   0.,  11.],
+           [  0.,   0.,   0.,   1.,   0.],
+           [  0.,   0.,   0.,   0.,   1.]])
+    >>> aff = np.arange(9).reshape(3,3)
+    >>> _match_affine(aff, 2)
+    array([[0, 1, 2],
+           [3, 4, 5],
+           [6, 7, 8]])
+    '''
+    if aff.shape[0] != aff.shape[1]:
+        raise ValueError('Need square affine')
+    aff_dim = aff.shape[0] - 1
+    if ndim == aff_dim:
+        return aff
+    aff_diag = np.ones(ndim+1)
+    if not zooms is None:
+        n = min(len(zooms), ndim)
+        aff_diag[:n] = zooms[:n]
+    mod_aff = np.diag(aff_diag)
+    n = min(ndim, aff_dim)
+    # rotations zooms shears
+    mod_aff[:n,:n] = aff[:n,:n]
+    # translations
+    mod_aff[:n,-1] = aff[:n,-1]
+    return mod_aff
+
 
 def save(img, filename, dtype=None):
     """Write the image to a file.
@@ -119,90 +147,104 @@ def save(img, filename, dtype=None):
     >>> from nipy.io.api import save_image
     >>> data = np.zeros((91,109,91), dtype=np.uint8)
     >>> img = fromarray(data, 'kji', 'zxy')
-    >>> fd, name = mkstemp(suffix='.nii.gz')
-    >>> tmpfile = open(name)
-    >>> saved_img = save_image(img, tmpfile.name)
+    >>> fd, fname = mkstemp(suffix='.nii.gz')
+    >>> saved_img = save_image(img, fname)
     >>> saved_img.shape
     (91, 109, 91)
-    >>> tmpfile.close()
-    >>> os.unlink(name)
-
+    >>> os.unlink(fname)
+    >>> fd, fname = mkstemp(suffix='.img.gz')
+    >>> saved_img = save_image(img, fname)
+    >>> saved_img.shape
+    (91, 109, 91)
+    >>> os.unlink(fname)
+    >>> fname = 'test.mnc'
+    >>> saved_image = save_image(img, fname)
+    Traceback (most recent call last):
+       ...
+    ValueError: Cannot save file type "minc"
+    
     Notes
     -----
     Filetype is determined by the file extension in 'filename'.  Currently the
     following filetypes are supported:
-        Nifti single file : ['.nii', '.nii.gz']
-        Nifti file pair : ['.hdr', '.hdr.gz']
-        Analyze file pair : ['.img', 'img.gz']
-        
-    """
-
-    # Reorder the image to 'fortran'-like input and output coordinates
-    # before trying to coerce to a NIFTI like image
-
-    rimg = Image(np.transpose(np.asarray(img)), 
-                 reorder_input(reorder_output(img.coordmap)))
-    Fimg = coerce2nifti(rimg) # F for '0-based Fortran', 'ijklmno' to
-                              # 'xyztuvw' coordinate map
-    Cimg = Image(np.transpose(np.asarray(Fimg)), reorder_input(reorder_output(Fimg.coordmap))) # C for 'C-based' 'omnlkji' to 'wvutzyx' coordinate map
-
-    # FIXME: this smells a little bad... to save it using PyNiftiIO
-    # the array should be from Cimg
-    # but the easiest way to specify the affine in PyNiftiIO seems to be 
-    # from Fimg
-    # 
-    # One possible fix, have the array in PyNiftiIO expecting FORTRAN ordering?
-    # BUT, pynifti doesn't let you 'transpose' its array naturally...
-
-    # The image we will ultimately save the data in
-
-    outimage = _open(Cimg, coordmap=Cimg.coordmap, mode='w', dtype=dtype)
-
-    # Cimg (the one that saves the array correctly has a 
-    # 'older-nipy' standard affine
-    #
-    # This seems reasonable for use with pyniftiy because the 
-    # ndarray of outimage._data
-    # is contiguous or "C-ordered"
-    # BUT, Cimg.affine reflects the 'lkji' to 'txyz' coordinate map
-    # so, the save through PyNiftIO uses the affine from Fimg
-    # and the data from Cimg
-
-    v = np.identity(Cimg.ndim+1)
-    v[:Cimg.ndim,:Cimg.ndim] = np.fliplr(np.identity(Cimg.ndim))
-    assert np.allclose(np.dot(v, np.dot(Cimg.affine, v)), Fimg.affine)
-
-    # At this point _data is a file-io object (like PyNiftiIO).
-    # _data.save delegates the save to pynifti.
     
-    # Now that the affine has the proper order,
-    # it can be saved to the NIFTI header
-    
-    # PyNiftiIO only ever wants a 4x4 affine matrix...
-    affine = np.identity(4)
-    affine[:3,:3] = Fimg.affine[:3,:3]
-    affine[:3,-1] = Fimg.affine[:3,-1]
-
-    # PyNiftiIO save uses the 4x4 affine, pixdim and diminfo
-    # to save the file
-
-    outimage._data.save(affine, get_pixdim(Fimg.coordmap, full_length=1),
-                        get_diminfo(Fimg.coordmap), filename)
-    return outimage
-    
-def coerce2nifti(img, standard=False):
+    * Nifti single file : ['.nii', '.nii.gz']
+    * Nifti file pair : ['.hdr', '.hdr.gz']
+    * Analyze file pair : ['.img', 'img.gz']
     """
-    Coerce an Image into a new Image with a valid NIFTI coordmap
-    so that it can be saved.
-
-    If standard is True, the resulting image has 'standard'-ordered
-    input_coordinates, i.e. 'ijklmno'[:img.ndim]
-    """
+    # Get header from image
+    try:
+        original_hdr = img.header
+    except AttributeError:
+        original_hdr = None
+    # Make NIFTI compatible version of image
     newcmap, order = coerce_coordmap(img.coordmap)
-    nimg = Image(np.transpose(np.asarray(img), order), newcmap)
-    if standard:
-        sorder, scmap = standard_order(nimg.coordmap)
-        return Image(np.transpose(np.asarray(nimg), sorder), scmap)
+    Fimg = Image(np.transpose(np.asarray(img), order), newcmap)
+    # Expand or contract affine to 4x4 (3 dimensions)
+    rzs = Fimg.affine[:-1,:-1]
+    zooms = np.sqrt(np.sum(rzs * rzs, axis=0))
+    aff = _match_affine(Fimg.affine, 3, zooms)
+    ftype = _type_from_filename(filename)
+    if ftype.startswith('nifti1'):
+        klass = formats.Nifti1Image
+    elif ftype == 'analyze':
+        klass = formats.Spm2AnalyzeImage
     else:
-        return nimg
+        raise ValueError('Cannot save file type "%s"' % ftype)
+    # make new image
+    out_img = klass(data=np.asarray(Fimg),
+                    affine=aff,
+                    header=original_hdr)
+    hdr = out_img.get_header()
+    # work out phase, freqency, slice from coordmap names
+    ijk = newcmap.input_coords.coord_names
+    fps = fps_from_ijk(ijk)
+    # put fps into header if possible
+    try:
+        hdr.set_dim_info(*fps)
+    except AttributeError:
+        pass
+    # Set zooms
+    hdr.set_zooms(zooms)
+    # save to disk
+    out_img.to_filespec(filename)
+    return Fimg
 
+
+def _type_from_filename(filename):
+    ''' Return image type determined from filename
+    
+    Filetype is determined by the file extension in 'filename'.
+    Currently the following filetypes are supported:
+    
+    * Nifti single file : ['.nii', '.nii.gz']
+    * Nifti file pair : ['.hdr', '.hdr.gz']
+    * Analyze file pair : ['.img', '.img.gz']
+
+    >>> _type_from_filename('test.nii')
+    'nifti1single'
+    >>> _type_from_filename('test')
+    'nifti1single'
+    >>> _type_from_filename('test.hdr')
+    'nifti1pair'
+    >>> _type_from_filename('test.hdr.gz')
+    'nifti1pair'
+    >>> _type_from_filename('test.img.gz')
+    'analyze'
+    >>> _type_from_filename('test.mnc')
+    'minc'
+    '''
+    if filename.endswith('.gz'):
+        filename = filename[:-3]
+    elif filename.endswith('.bz2'):
+        filename = filename[:-4]
+    _, ext = os.path.splitext(filename)
+    if ext in ('', '.nii'):
+        return 'nifti1single'
+    if ext == '.hdr':
+        return 'nifti1pair'
+    if ext == '.img':
+        return 'analyze'
+    if ext == '.mnc':
+        return 'minc'
+    raise ValueError('Strange file extension "%s"' % ext)

@@ -14,7 +14,7 @@ image exists and also functions for manipulating and traversing this space.
 
 The basic class which defines an image space is a CoordinateMap (coordinate_map.py). A 
 CoordinateMap consists of an input CoordinateSystem (coordinate_system.py), an
-output CoordinateSystem, and a Mapping (mapping.py) which converts point in the
+output CoordinateSystem, and a mapping which converts points in the
 input space to points in the output space.
 
 A `CoordinateSystem` consists of a set of ordered `Coordinate` objects. Each

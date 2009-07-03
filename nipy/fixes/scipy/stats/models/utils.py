@@ -37,14 +37,6 @@ def recipr0(X):
     test = np.equal(np.asarray(X), 0)
     return np.where(test, 0, 1. / X)
 
-def clean0(matrix):
-    """
-    Erase columns of zeros: can save some time in pseudoinverse.
-    """
-    colsum = np.add.reduce(matrix**2, 0)
-    val = [matrix[:,i] for i in np.flatnonzero(colsum)]
-    return np.array(np.transpose(val))
-
 def rank(X, cond=1.0e-12):
     """
     Return the rank of a matrix X based on its generalized inverse,
@@ -52,7 +44,7 @@ def rank(X, cond=1.0e-12):
     """
     X = np.asarray(X)
     if len(X.shape) == 2:
-        D = scipy.linalg.svdvals(X)
+        D = L.svd(X, compute_uv=False)
         return int(np.add.reduce(np.greater(D / D.max(), cond).astype(np.int32)))
     else:
         return int(not np.alltrue(np.equal(X, 0.)))
