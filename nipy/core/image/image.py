@@ -225,6 +225,18 @@ class Image(object):
         warnings.warn('slicing Images is deprecated, use subsample instead')
         return subsample(self, slice_object)
 
+    def __repr__(self):
+        options = np.get_printoptions()
+        np.set_printoptions(precision=6, threshold=64, edgeitems=2)
+        representation = \
+            'Image(\n  data=%s,\n  coordmap=%s)' % (
+            '\n       '.join(repr(self._data).split('\n')),
+            '\n         '.join(repr(self.coordmap).split('\n')))
+        np.set_printoptions(**options)
+        return representation
+
+
+
 class SliceConstructor(object):
     """
     This class just creates slice objects to be used
