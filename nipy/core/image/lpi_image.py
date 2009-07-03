@@ -70,10 +70,6 @@ class LPIImage(Image):
 
        **Attributes**
 
-       :axis_names: sequence of strings
-        
-           Names of the axes of the data.
-
        :metadata: dictionnary
 
            Optional, user-defined, dictionnary used to carry around
@@ -145,9 +141,6 @@ class LPIImage(Image):
    # Attributes
    #---------------------------------------------------------------------------
    
-   # The name of the reference coordinate system
-   axis_names = ['i', 'j', 'k']
-
    # User defined meta data
    metadata = dict()
 
@@ -191,7 +184,7 @@ class LPIImage(Image):
 
       Image.__init__(self, data, full_coordmap)
 
-      self.axis_names = self.coordmap.input_coords.coord_names
+#      self.axis_names = self.coordmap.input_coords.coord_names
       self.metadata = metadata
 
    def _get_lpi_coordmap(self):
@@ -202,8 +195,9 @@ class LPIImage(Image):
       return self._lpi_coordmap
    lpi_coordmap = property(_get_lpi_coordmap)
 
+   # For LPIImage, "world" always refers to three dimensions ['x', 'y', 'z']
    def _getworld(self):
-      return self.lpi_coordmap.output_coords
+      return self.lpi_coordmap.output_coords # == LPITransform.range
    world = property(_getworld, doc="World space.")
 
    def _get_affine(self):
@@ -219,6 +213,77 @@ class LPIImage(Image):
       """ Return data as a numpy array.
       """
       return np.asarray(self._data)
+
+   def reordered_world(self, order):
+      raise NotImplementedError("the world coordinates are always ['x','y','z'] and can't be reordered")
+
+   def reordered_axes(self, order=None):
+
+      """
+      Return a new LPIImage whose axes have been reordered.
+
+      Parameters
+      ----------
+
+      order : sequence
+          Order to use, defaults to reverse. The elements
+          can be integers, strings or 2-tuples of strings.
+          If they are strings, they should be in 
+          self.axes.coord_names.
+
+      name: string, optional
+          Name of new input_coords, defaults to self.input_coords.name.
+
+      Returns:
+      --------
+
+      im_reordered: LPIImage
+
+      Examples:
+      ---------
+
+      >>> im = LPIImage(np.empty((30,40,50)), np.diag([2,3,4,1]), 'ijk')
+      >>> im_reordered = im.reordered_axes([2,0,1])
+      >>> im_reordered.shape
+      (50, 30, 40)
+      >>> im_reordered.affine
+      array([[ 0.,  2.,  0.,  0.],
+             [ 0.,  0.,  3.,  0.],
+             [ 4.,  0.,  0.,  0.],
+             [ 0.,  0.,  0.,  1.]])
+
+      >>> im_reordered2 = im.reordered_axes('kij')
+      >>> im_reordered2.shape
+      (50, 30, 40)
+      >>> im_reordered2.affine
+      array([[ 0.,  2.,  0.,  0.],
+             [ 0.,  0.,  3.,  0.],
+             [ 4.,  0.,  0.,  0.],
+             [ 0.,  0.,  0.,  1.]])
+      >>> 
+
+      """
+
+      if order is None:
+         order = range(self.ndim)[::-1]
+      elif type(order[0]) == type(''):
+         order = [self.axes.index(s) for s in order]
+
+      if set(order[:3]) != set(range(3)):
+         raise ValueError('the reordering must keep the first three axes unchanged')
+
+      # Reordering the input
+      # will transpose the data, so we will have accessed the data.
+
+      im = Image.reordered_axes(self, order)
+      
+      A = np.identity(4)
+      A[:3,:3] = im.affine[:3,:3]
+      A[:3,-1] = im.affine[:3,-1]
+
+      return LPIImage(np.array(im), A, im.axes.coord_names,
+                      metadata=self.metadata)
+
 
    def resampled_to_affine(self, affine_transform, world_to_world=None, interpolation_order=3, 
                            shape=None):
@@ -279,7 +344,8 @@ class LPIImage(Image):
          im = resample(self, affine_transform, world_to_world_transform,
                        shape, order=interpolation_order)
          return LPIImage(np.array(im), affine_transform.affine,
-                         affine_transform.input_coords.coord_names)
+                         affine_transform.input_coords.coord_names,
+                         metadata=self.metadata)
 
         # XXX this below wasn't included in the original LPIImage proposal
         # and it would fail for an LPIImage with ndim == 4.
@@ -296,7 +362,8 @@ class LPIImage(Image):
          data = self.get_data()
          for i in range(self.shape[3]):
             tmp_affine_im = LPIImage(data[...,i], self.affine,
-                                     self.axis_names[:-1])
+                                     self.axes.coord_names[:-1],
+                                     metadata=self.metadata)
             tmp_im = tmp_affine_im.resampled_to_affine(affine_transform, 
                                                        world_to_world,
                                                        interpolation_order,
@@ -304,7 +371,8 @@ class LPIImage(Image):
 
             result[...,i] = np.array(tmp_im)
          return LPIImage(result, affine_transform.affine,
-                         affine_transform.input_coords.coord_names)
+                         affine_transform.input_coords.coord_names,
+                         metadata=self.metadata)
       else:
          raise ValueError('resampling only defined for 3d and 4d LPIImage')
 
@@ -416,13 +484,7 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
             'Cannot reorder the axis: the image affine contains rotations'
             )
       axis_numbers = list(np.argmax(np.abs(A), axis=1))
-      axis_names = [self.lpi_coordmap.input_coords.coord_names[a] for a in axis_numbers]
-      reordered_coordmap = self.lpi_coordmap.reordered_input(axis_names)
-      data = self.get_data()
-      transposed_data = np.transpose(data, axis_numbers + range(3, self.ndim))
-      return LPIImage(transposed_data, reordered_coordmap.affine,
-                      reordered_coordmap.input_coords.coord_names + 
-                      self.coordmap.input_coords.coord_names[3:])
+      return self.reordered_axes(axis_numbers + range(3, self.ndim))
     
     #---------------------------------------------------------------------------
     # Private methods
@@ -463,5 +525,7 @@ XXX Since you've enforced the outputs always to be 'x','y','z' -- EVERY image is
       return (    isinstance(other, self.__class__)
                   and np.all(self.get_data() == other.get_data())
                   and np.all(self.affine == other.affine)
-                  and (self.axis_names == other.axis_names))
+                  and (self.axes.coord_names == other.axes.coord_names))
+# XXX why not check the metadata? 
+#                  and (self.metadata == other.metadata))
 
