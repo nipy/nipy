@@ -93,6 +93,10 @@ class Image(object):
     coordmap = property(_getcoordmap,
                     doc="Coordinate mapping from input coords to output coords")
 
+    def _getworld(self):
+        return self.coordmap.output_coords
+    world = property(_getworld, doc="World space.")
+
     def _getaxes(self):
         return self.coordmap.input_coords
     axes = property(_getaxes, doc="Axes of image.")
@@ -103,15 +107,15 @@ class Image(object):
         raise AttributeError, 'Nonlinear transform does not have an affine.'
     affine = property(_getaffine, doc="Affine transformation if one exists")
 
-    def reordered_output(self, order=None):
+    def reordered_world(self, order=None):
         """
         Return a new Image with its coordmap
         having reordered output coordinates. This
         does not transpose the data.
 
-        >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6])
+        >>> cmap = Affine.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6])
         >>> im = Image(np.empty((30,40,50)), cmap)
-        >>> im_reordered = im.reordered_output([2,0,1])
+        >>> im_reordered = im.reordered_world([2,0,1])
         >>> im_reordered.shape
         (30, 40, 50)
         >>> im_reordered.coordmap
@@ -130,17 +134,18 @@ class Image(object):
         if order is None:
             order = range(self.ndim)[::-1]
         elif type(order[0]) == type(''):
-            order = [self.output_coords.index(s) for s in order]
+            order = [self.world.index(s) for s in order]
+
         new_cmap = self.coordmap.reordered_output(order)
         return Image(np.asarray(self), new_cmap)
 
-    def reordered_input(self, order=None):
+    def reordered_axes(self, order=None):
         """
         Return a new Image with its coordmap
         having reordered input coordinates. This
         transposes the data as well.
 
-        >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6])
+        >>> cmap = Affine.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6])
         >>> cmap
         Affine(
            affine=array([[ 4.,  0.,  0.,  1.],
@@ -151,9 +156,7 @@ class Image(object):
            output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='output', coord_dtype=float64)
         )
         >>> im = Image(np.empty((30,40,50)), cmap)
-        >>> im_reordered = im.reorde
-        im.reordered_input   im.reordered_output  
-        >>> im_reordered = im.reordered_input([2,0,1])
+        >>> im_reordered = im.reordered_axes([2,0,1])
         >>> im_reordered.shape
         (50, 30, 40)
         >>> im_reordered.coordmap
@@ -172,18 +175,20 @@ class Image(object):
         if order is None:
             order = range(self.ndim)[::-1]
         elif type(order[0]) == type(''):
-            order = [self.output_coords.index(s) for s in order]
+            order = [self.axes.index(s) for s in order]
         new_cmap = self.coordmap.reordered_input(order)
         return Image(np.transpose(np.array(self), order), new_cmap)
 
     def _getheader(self):
         # data loaded from a file should have a header
+        warnings.warn('this may be deprecated if load_image returns an LPIImage')
         try:
             return self._header
         except AttributeError:
             raise AttributeError('Image created from arrays '
                                  'may not have headers.')
     def _setheader(self, header):
+        warnings.warn('this may be deprecated if load_image returns an LPIImage')
         self._header = header
     _doc['header'] = \
     """The file header dictionary for this image.  In order to update
