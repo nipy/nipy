@@ -7,7 +7,7 @@ from nipy.testing import assert_true, assert_equal, assert_raises, \
     assert_array_almost_equal, TestCase
 
 from nipy.core.image import image
-from nipy.core.api import Image, fromarray
+from nipy.core.api import Image, fromarray, subsample, make_slices
 from nipy.core.api import parcels, data_generator, write_data
 
 from nipy.core.reference.coordinate_map import Affine
@@ -38,24 +38,24 @@ def test_maxmin_values():
 
 
 def test_slice_plane():
-    x = gimg[1]
+    x = subsample(gimg, make_slices[1])
     yield assert_equal, x.shape, gimg.shape[1:]
 
 
 def test_slice_block():
-    x = gimg[1:3]
+    x = subsample(gimg, make_slices[1:3])
     yield assert_equal, x.shape, (2,) + tuple(gimg.shape[1:])
 
 
 def test_slice_step():
     s = slice(0,4,2)
-    x = gimg[s]
+    x = subsample(gimg, make_slices[s])
     yield assert_equal, x.shape, (2,) + tuple(gimg.shape[1:])
 
 
 def test_slice_type():
     s = slice(0,gimg.shape[0])
-    x = gimg[s]
+    x = subsample(gimg, make_slices[s])
     yield assert_equal, x.shape, gimg.shape
 
 
@@ -64,7 +64,7 @@ def test_slice_steps():
     slice_z = slice(0, dim0, 2)
     slice_y = slice(0, dim1, 2)
     slice_x = slice(0, dim2, 2)
-    x = gimg[slice_z, slice_y, slice_x]
+    x = subsample(gimg, make_slices[slice_z, slice_y, slice_x])
     newshape = tuple(np.floor((np.array(gimg.shape) - 1)/2) + 1)
     yield assert_equal, x.shape, newshape
 
@@ -106,7 +106,7 @@ def test_parcels1():
 
 
 def test_parcels3():
-    rho = gimg[0]
+    rho = subsample(gimg, make_slices[0])
     parcelmap = np.asarray(rho).astype(np.int32)
     labels = np.unique(parcelmap)
     test = np.zeros(rho.shape)
@@ -123,11 +123,11 @@ def test_slicing_returns_image():
     assert isinstance(img, Image)
     assert img.ndim == 3
     # 2D slice
-    img2D = img[:,:,0]
+    img2D = subsample(img, make_slices[:,:,0])
     assert isinstance(img2D, Image)
     assert img2D.ndim == 2
     # 1D slice
-    img1D = img[:,0,0]
+    img1D = subsample(img, make_slices[:,0,0])
     assert isinstance(img1D, Image)
     assert img1D.ndim == 1
 
@@ -166,9 +166,9 @@ def test_ArrayLikeObj():
     yield assert_true, img.ndim == 3
     yield assert_true, img.shape == (2,3,4)
     yield assert_true, np.allclose(np.asarray(img), 1)
-    yield assert_true, np.allclose(img[:], 1)
+    yield assert_true, np.allclose(np.asarray(img), 1)
     img[:] = 4
-    yield assert_true, np.allclose(img[:], 4)
+    yield assert_true, np.allclose(np.asarray(img), 4)
 
 
 array2D_shape = (2,3)

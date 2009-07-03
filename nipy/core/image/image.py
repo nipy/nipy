@@ -190,7 +190,7 @@ class Image(object):
             raise AttributeError('Image created from arrays '
                                  'may not have headers.')
     def _setheader(self, header):
-        warnings.warn('this may be deprecated if load_image returns an LPIImage')
+        warnings.warn('Image.header may be deprecated if load_image returns an LPIImage')
         self._header = header
     _doc['header'] = \
     """The file header dictionary for this image.  In order to update

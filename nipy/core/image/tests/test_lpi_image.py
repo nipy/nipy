@@ -140,7 +140,7 @@ def test_subsample():
                                  [0,0,4,0],
                                  [0,0,0,1]])
                                 
-    subsampled_shape = lpi_im[::2,::3,::4].shape
+    subsampled_shape = np.array(lpi_im)[::2,::3,::4].shape
     subsample_coordmap = AffineTransform(subsample_matrix, 
                                          lpi_im.lpi_coordmap.input_coords,
                                          lpi_im.lpi_coordmap.input_coords)
