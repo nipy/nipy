@@ -19,6 +19,7 @@ from nipy.modalities.fmri.fmristat import hrf as delay
 from nipy.modalities.fmri import formula, design, hrf
 from nipy.io.api import load_image, save_image
 from nipy.core import api
+from nipy.core.image.image import rollaxis as image_rollaxis
 
 from nipy.algorithms.statistics import onesample 
 
@@ -165,8 +166,11 @@ def run_model(subj, run):
     # It is transposed to have time as the first dimension,
     # i.e. fmri[t] gives the t-th volume.
 
-    fmri, anat = futil.get_fmri_anat(path_info)
-    fmri = np.transpose(fmri, [3,0,1,2])
+    fmri_lpi = futil.get_fmri(path_info) # an LPIImage
+    fmri_im = Image(fmri_lpi._data, fmri_lpi.coordmap)
+    fmri_im = image_rollaxis(fmri_im, 't')
+
+    fmri = fmri_im.get_data() # now, it's an ndarray
 
     nvol, volshape = fmri.shape[0], fmri.shape[1:] 
     nslice, sliceshape = volshape[0], volshape[1:]
@@ -252,11 +256,16 @@ def run_model(subj, run):
 
     for n in tcons:
         for v in ['t', 'sd', 'effect']:
-            im = api.Image(output[n][v], anat.coordmap.copy())
+            lpi_im = LPIImage(output[n][v], fmri_lpi.affine,
+                              fmri_lpi.axes.coord_names[:3])
+            im = Image(lpi_im._data, lpi_im.coordmap) # This is necessary to save the results for now
             save_image(im, pjoin(odir, n, '%s.nii' % v))
 
     for n in fcons:
-        im = api.Image(output[n], anat.coordmap.copy())
+        lpi_im = LPIImage(output[n], fmri_lpi.affine,
+                          fmri_lpi.axes.coord_names[:3])
+        im = Image(lpi_im._data, lpi_im.coordmap) # This is necessary to save the results for now
+        im = api.Image(output[n], affine_coordmap)
         save_image(im, pjoin(odir, n, "F.nii"))
 
 

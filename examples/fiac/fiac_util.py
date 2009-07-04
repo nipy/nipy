@@ -21,6 +21,7 @@ from matplotlib.mlab import csv2rec, rec2csv
 
 # From NIPY
 from nipy.io.api import load_image, save_image
+from nipy.core.image.lpi_image import LPIImage
 
 #-----------------------------------------------------------------------------
 # Globals
@@ -130,7 +131,7 @@ def get_experiment_initial(path_dict):
     return experiment, initial
 
 
-def get_fmri_anat(path_dict):
+def get_fmri(path_dict):
     """Get the images for a given subject/run.
 
     Returns
@@ -139,12 +140,23 @@ def get_fmri_anat(path_dict):
     
     anat : NIPY image
     """
-    fmri = np.array(load_image(
-        pjoin("%(rootdir)s/swafunctional_%(run)02d.nii") % path_dict) )
-    anat = load_image(
-        pjoin(DATADIR, "fiac_%(subj)02d", "wanatomical.nii") % path_dict)
-    return fmri, anat
+    fmri = load_image(
+        pjoin("%(rootdir)s/swafunctional_%(run)02d.nii") % path_dict) 
 
+    # XXX Return an LPIImage instead. Right now, load_image
+    # returns an Image
+    # These are the steps
+
+    # Make sure we know the order of the coordinates
+
+    fmri = fmri.reordered_world('xyzt').reordered_axes('ijkl')
+
+    # Make the affine
+    A = np.identity(4)
+    A[:3,:3] = fmri.affine[:3,:3]
+    A[:3,-1] = fmri_affine[:3,-1]
+    
+    return LPIImage(fmri.get_data(), A, fmri.axes.coord_names)
 
 def ensure_dir(*path):
     """Ensure a directory exists, making it if necessary.
