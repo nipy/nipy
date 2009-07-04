@@ -256,10 +256,10 @@ def test_str():
 
     cmap = CoordinateMap(np.exp, domain, range, np.log)
     result="""CoordinateMap(
-   <ufunc 'exp'>,
+   function=<ufunc 'exp'>,
    function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
    function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
-   <ufunc 'log'>
+   inverse_function=<ufunc 'log'>
   )"""
 
     yield assert_equal, result, repr(cmap)

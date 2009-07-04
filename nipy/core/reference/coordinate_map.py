@@ -507,9 +507,9 @@ class CoordinateMap(object):
 
     def __repr__(self):
         if not hasattr(self, "inverse_function"):
-            return "CoordinateMap(\n   %s,\n   function_domain=%s,\n   function_range=%s\n  )" % (repr(self.function), self.function_domain, self.function_range)
+            return "CoordinateMap(\n   function=%s,\n   function_domain=%s,\n   function_range=%s\n  )" % (repr(self.function), self.function_domain, self.function_range)
         else:
-            return "CoordinateMap(\n   %s,\n   function_domain=%s,\n   function_range=%s,\n   %s\n  )" % (repr(self.function), self.function_domain, self.function_range, repr(self.inverse_function))
+            return "CoordinateMap(\n   function=%s,\n   function_domain=%s,\n   function_range=%s,\n   inverse_function=%s\n  )" % (repr(self.function), self.function_domain, self.function_range, repr(self.inverse_function))
 
 
     def _checkfunction(self):
