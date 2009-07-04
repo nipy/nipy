@@ -70,6 +70,21 @@ def test_compose():
     # check invalid coordinate mappings
     yield assert_raises, ValueError, compose, cm1, cm2
   
+def test__eq__():
+    yield assert_true, E.a == E.a
+    yield assert_false, E.a != E.a
+
+    yield assert_false, E.a == E.b
+    yield assert_true, E.a != E.b
+
+    yield assert_true, E.singular == E.singular
+    yield assert_false, E.singular != E.singular
+    
+    A = AffineTransform.from_params('ijk', 'xyz', np.diag([4,3,2,1]))
+    B = AffineTransform.from_params('ijk', 'xyz', np.diag([4,3,2,1]))
+
+    yield assert_true, A == B
+    yield assert_false, A != B
 
 def test_isinvertible():
     yield assert_false, E.a.inverse

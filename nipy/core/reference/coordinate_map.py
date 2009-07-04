@@ -521,6 +521,18 @@ class CoordinateMap(object):
                        dtype=self.function_domain.coord_dtype)
         out = self(inp)
 
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__)
+                and (self.function == other.function)
+                and (self.function_domain == 
+                     other.function_domain)
+                and (self.function_range == 
+                     other.function_range)
+                and (self.inverse_function ==
+                     other.inverse_function))
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 class AffineTransform(CoordinateMap):
     """
@@ -832,6 +844,15 @@ class AffineTransform(CoordinateMap):
     def __repr__(self):
         return "AffineTransform(\n   affine=%s,\n   function_domain=%s,\n   function_range=%s\n)" % ('\n          '.join(repr(self.affine).split('\n')), 
          self.function_domain, self.function_range)
+
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__)
+                and np.all(self.affine == other.affine)
+                and (self.function_domain == 
+                     other.function_domain)
+                and (self.function_range == 
+                     other.function_range))
+
 
 
 def product(*cmaps):
