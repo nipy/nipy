@@ -9,6 +9,7 @@ To use this code, run::
 # Standard library imports
 import sys
 import os
+from os.path import join as pjoin
 import zipfile
 import warnings
 import shutil
@@ -25,7 +26,7 @@ DOC_BUILD_DIR = os.path.join('build', 'html')
 class TempInstall(Command):
     temp_install_dir = os.path.join('build', 'install')
 
-    def run():
+    def run(self):
         """ build and install nipy in a temporary location. """
         install = self.distribution.get_command_obj('install')
         install.install_scripts = self.temp_install_dir
@@ -41,7 +42,7 @@ class TempInstall(Command):
         for key in sys.modules.keys():
             if key.startswith('nipy'):
                 sys.modules.pop(key, None)
-        sys.path.append(os.path.abspath(TEMP_INSTALL))
+        sys.path.append(os.path.abspath(self.temp_install_dir))
         # Pop the cwd
         sys.path.pop(0)
         import nipy
@@ -65,16 +66,20 @@ class APIDocs(TempInstall):
 
 
     def run(self):
-        # First build the project and instal it to a temporary location.
+        # First build the project and install it to a temporary location.
         TempInstall.run(self)
         os.chdir('doc')
         try:
             # We are running the API-building script via an
             # system call, but overriding the import path.
-            os.system("""%s -c 'import sys; sys.path.append("%s"); sys.path.append("%s"); execfile("../tools/build_modref_templates.py", dict(__name__="__main__"))'"""
-                                % (sys.executable, 
-                                   os.path.abspath('../tools'),
-                                   os.path.abspath(TEMP_INSTALL)))
+            toolsdir = os.path.abspath(pjoin('..', 'tools'))
+            build_templates = pjoin(toolsdir, 'build_modref_templates.py')
+            cmd = """%s -c 'import sys; sys.path.append("%s"); sys.path.append("%s"); execfile("%s", dict(__name__="__main__"))'""" \
+                % (sys.executable, 
+                   toolsdir,
+                   self.temp_install_dir,
+                   build_templates)
+            os.system(cmd)
         finally:
             os.chdir('..')
 
