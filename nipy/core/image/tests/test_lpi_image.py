@@ -235,3 +235,18 @@ def test_xyz_ordered():
     b = [start_x+(n_x-1)*(-step_x), start_y, start_z+(n_z-1)*(-step_z)]
     yield assert_almost_equal, b, im_re_xyz_positive.affine[:3,-1]
 
+def test_lpi_transform():
+
+    T = lpi_image.LPITransform(np.diag([3,4,5,1]), ['slice', 'frequency', 'phase'])
+    
+    yield assert_equal, T.function_domain.coord_names, ('slice', 'frequency', 'phase')
+    yield assert_equal, T.function_range.coord_names, ('x','y','z')
+
+    Tinv = T.inverse
+
+    # The inverse doesn't map a voxel to 'xyz', it maps
+    # 'xyz' to a voxel, so it's not an LPITransform
+
+    yield assert_false, isinstance(Tinv, lpi_image.LPITransform)
+    yield assert_true, Tinv.__class__ == AffineTransform
+    yield assert_almost_equal, Tinv.affine, np.diag([1/3., 1/4., 1/5., 1])
