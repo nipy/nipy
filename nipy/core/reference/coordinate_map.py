@@ -41,6 +41,7 @@ import warnings
 
 import numpy as np
 
+from nipy.utils.onetime import setattr_on_read
 import nipy.core.transforms.affines as affines
 from nipy.core.reference.coordinate_system import(CoordinateSystem, 
                                                           safe_dtype)
@@ -86,8 +87,47 @@ class CoordinateMap(object):
            [ -89., -126.,  -72.],
            [ -88., -126.,  -72.]])
 
+    >>> x = CoordinateSystem('x')
+    >>> y = CoordinateSystem('y')
+    >>> m = CoordinateMap(np.exp, x, y, np.log)
+    >>> m
+    CoordinateMap(
+       <ufunc 'exp'>,
+       function_domain=CoordinateSystem(coord_names=('x',), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('y',), name='', coord_dtype=float64),
+       <ufunc 'log'>
+      )
+    >>> m.inverse
+    CoordinateMap(
+       <ufunc 'log'>,
+       function_domain=CoordinateSystem(coord_names=('y',), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x',), name='', coord_dtype=float64),
+       <ufunc 'exp'>
+      )
+    >>> 
 
     """
+
+    _doc = {}
+    function = np.exp
+    _doc['function'] = 'The function from function_domain to function_range.'
+
+
+    function_domain = CoordinateSystem('x')
+    _doc['function_domain'] = 'The domain of the function, a CoordinateSystem.'
+
+
+    function_range = CoordinateSystem('y')
+    _doc['function_range'] = 'The range of the function, a CoordinateSystem.'
+
+
+    inverse_function = np.log
+    _doc['inverse_function'] = 'The inverse function from function_range' + \
+                               'to function_domain, if supplied.'
+
+    ndims = (1,1)
+    _doc['ndims'] = 'Number of dimensions of domain and range, respectively.'
+
     def __init__(self, function, 
                  function_domain, 
                  function_range, 
@@ -113,10 +153,12 @@ class CoordinateMap(object):
         coordmap : CoordinateMap
         """
         # These attrs define the structure of the coordmap.
-        self._function = function
-        self._function_domain = function_domain
-        self._function_range = function_range
-        self._inverse_function = inverse_function
+
+        self.function = function
+        self.function_domain = function_domain
+        self.function_range = function_range
+        self.inverse_function = inverse_function
+        self.ndims = (function_domain.ndim, function_range.ndim)
 
         if not callable(function):
             raise ValueError('The function must be callable.')
@@ -125,51 +167,38 @@ class CoordinateMap(object):
                 raise ValueError('The inverse_function must be callable.')
         self._checkfunction()
 
-    @property
-    def function_domain(self):
-        'input coordinate system'
-        return self._function_domain
+    # All attributes are read only
 
-    @property
-    def function_range(self):
-        'output coordinate system'
-        return self._function_range
+    def __setattr__(self, key, value):
+        if key in self.__dict__:
+            raise AttributeError('the value of %s has already been set and all attributes are read-only' % key)
+        object.__setattr__(self, key, value)
 
-    @property
-    def function(self):
-        'The function from function_domain to function_range.'
-        return self._function
+    ###################################################################
+    #
+    # Properties
+    #
+    ###################################################################
 
-    @property
-    def inverse_function(self):
-        'The function from function_range to function_domain'
-        return self._inverse_function
 
     @property
     def inverse(self):
         """
         Return a new CoordinateMap with the functions reversed
         """
-        if self._inverse_function is None:
+        if self.inverse_function is None:
             return None
-        return CoordinateMap(self._inverse_function, 
-                             self._function_range, 
-                             self._function_domain, 
-                             inverse_function=self._function)
+        return CoordinateMap(self.inverse_function, 
+                             self.function_range, 
+                             self.function_domain, 
+                             inverse_function=self.function)
 
-    @property
-    def ndims(self):
-        'Number of dimensions of input and output coordinates.'
-        return (self._function_domain.ndim, self._function_range.ndim)
+    ###################################################################
+    #
+    # Methods
+    #
+    ###################################################################
 
-    def _checkfunction(self):
-        """Verify that the input and output dimensions of self.function work.
-
-        We do this by passing something that should work, through __call__
-        """
-        inp = np.zeros((10, self.ndims[0]),
-                       dtype=self._function_domain.coord_dtype)
-        out = self(inp)
 
     def __call__(self, x):
         """Return mapping evaluated at x
@@ -205,9 +234,9 @@ class CoordinateMap(object):
         """
 
         x = np.asarray(x)
-        in_vals = self._function_domain._checked_values(x)
-        out_vals = self._function(in_vals)
-        final_vals = self._function_range._checked_values(out_vals)
+        in_vals = self.function_domain._checked_values(x)
+        out_vals = self.function(in_vals)
+        final_vals = self.function_range._checked_values(out_vals)
 
         # Try to set the shape reasonably for self.ndims[0] == 1
         if x.ndim == 1:
@@ -217,12 +246,7 @@ class CoordinateMap(object):
         else:
             return final_vals
 
-
-#         in_vals = self.function_domain._checked_values(x)
-#         out_vals = self.function(in_vals)
-#         return self.function_range._checked_values(out_vals)
-
-    def copy(self):
+    def __copy__(self):
         """Create a copy of the coordmap.
 
         Returns
@@ -231,15 +255,15 @@ class CoordinateMap(object):
 
         """
 
-        return CoordinateMap(self._function, 
-                             self._function_domain,
-                             self._function_range, 
-                             inverse_function=self._inverse_function)
+        return CoordinateMap(self.function, 
+                             self.function_domain,
+                             self.function_range, 
+                             inverse_function=self.inverse_function)
 
     def reordered_input(self, order=None, name=''):
         """
-        Create a new coordmap with reversed function_domain.
-        Default behaviour is to reverse the order of the function_domain.
+        Create a new coordmap with the coordinates of function_domain reordered.
+        Default behaviour is to reverse the order of the coordinates.
 
         Inputs:
         -------
@@ -290,8 +314,7 @@ class CoordinateMap(object):
 
     def renamed_input(self, newnames, name=''):
         """
-        Create a new coordmap with reversed function_domain.
-        Default behaviour is to reverse the order of the function_domain.
+        Create a new coordmap with the coordinates of function_domain renamed.
 
         Inputs:
         -------
@@ -356,8 +379,7 @@ class CoordinateMap(object):
 
     def renamed_output(self, newnames, name=''):
         """
-        Create a new coordmap with reversed function_domain.
-        Default behaviour is to reverse the order of the function_domain.
+        Create a new coordmap with the coordinates of function_domain renamed.
 
         Inputs:
         -------
@@ -374,7 +396,7 @@ class CoordinateMap(object):
         --------
 
         newcoordmap: `CoordinateMap`
-             A new CoordinateMap with renamed function_range.
+             A new CoordinateMap with the coordinates of function_range renamed.
 
         >>> affine_domain = CoordinateSystem('ijk')
         >>> affine_range = CoordinateSystem('xyz')
@@ -420,8 +442,8 @@ class CoordinateMap(object):
 
     def reordered_output(self, order=None, name=''):
         """
-        Create a new coordmap with reversed function_range.
-        Default behaviour is to reverse the order of the function_domain.
+        Create a new coordmap with the coordinates of function_range reordered.
+        Defaults to reversing the coordinates of function_range.
 
         Inputs:
         -------
@@ -477,18 +499,35 @@ class CoordinateMap(object):
         A = AffineTransform(perm.T, self.function_range, newoutcoords)
         return compose(A, self)
 
+    ###################################################################
+    #
+    # Private methods
+    #
+    ###################################################################
+
     def __repr__(self):
-        if not hasattr(self, "_inverse_function"):
-            return "CoordinateMap(\n   function,\n   function_domain=%s,\n   function_range=%s\n  )" % (self.function_domain, self.function_range)
+        if not hasattr(self, "inverse_function"):
+            return "CoordinateMap(\n   %s,\n   function_domain=%s,\n   function_range=%s\n  )" % (repr(self.function), self.function_domain, self.function_range)
         else:
-            return "CoordinateMap(\n   function,\n   function_domain=%s,\n   function_range=%s,\n   inverse_function\n  )" % (self.function_domain, self.function_range)
+            return "CoordinateMap(\n   %s,\n   function_domain=%s,\n   function_range=%s,\n   %s\n  )" % (repr(self.function), self.function_domain, self.function_range, repr(self.inverse_function))
+
+
+    def _checkfunction(self):
+        """Verify that the input and output dimensions of self.function work.
+
+        We do this by passing something that should work, through __call__
+        """
+        inp = np.zeros((10, self.ndims[0]),
+                       dtype=self.function_domain.coord_dtype)
+        out = self(inp)
+
 
 class AffineTransform(CoordinateMap):
     """
     A class representing an affine transformation from an input
     coordinate system to an output coordinate system.
     
-    This class has an affine property, which is a matrix representing
+    This class has an affine attribute, which is a matrix representing
     the affine transformation in homogeneous coordinates.  This matrix
     is used to evaluate the function, rather than having an explicit
     function.
@@ -519,6 +558,25 @@ class AffineTransform(CoordinateMap):
     
     """
 
+    _doc = {}
+    affine = np.diag([3,4,5,1])
+    _doc['affine'] = 'The matrix representing an affine transformation ' + \
+                       'homogeneous form.'
+
+
+    function_domain = CoordinateSystem('x')
+    _doc['function_domain'] = 'The domain of the affine transformation, ' + \
+                              'a CoordinateSystem.'
+
+
+    function_range = CoordinateSystem('y')
+    _doc['function_range'] = 'The range of the affine transformation, ' + \
+                             'a CoordinateSystem.'
+
+    ndims = (3,3)
+    _doc['ndims'] = 'Number of dimensions of domain and range, respectively.'
+
+
     def __init__(self, affine, function_domain, function_range):
         """
         Return an CoordinateMap specified by an affine transformation
@@ -543,48 +601,85 @@ class AffineTransform(CoordinateMap):
                            function_range.coord_dtype)
         inaxes = function_domain.coord_names
         outaxes = function_range.coord_names
-        self._function_domain = CoordinateSystem(inaxes,
-                                              function_domain.name,
-                                              dtype)
-        self._function_range = CoordinateSystem(outaxes,
+
+        self.function_domain = CoordinateSystem(inaxes,
+                                                function_domain.name,
+                                                dtype)
+
+        self.function_range = CoordinateSystem(outaxes,
                                                function_range.name,
                                                dtype)
+
+        self.ndims = (self.function_domain.ndim,
+                      self.function_range.ndim)
         affine = np.asarray(affine, dtype=dtype)
         if affine.shape != (self.ndims[1]+1, self.ndims[0]+1):
             raise ValueError('coordinate lengths do not match '
                              'affine matrix shape')
-        self._affine = affine
-        A, b = affines.to_matrix_vector(affine)
+
+        # Test that it is actually an affine mapping in homogeneous
+        # form
+
+        bottom_row = np.array([0]*self.ndims[0] + [1])
+        if not np.all(affine[-1] == bottom_row):
+            raise ValueError('the homogeneous transform should have bottom=' + \
+                             'row %s' % repr(bottom_row))
+
+        self.affine = affine
+
+#     @property
+#     def affine(self):
+#         """The affine transform matrix of an AffineTransform."""
+#         return self._affine
+    
+    ###################################################################
+    #
+    # Properties
+    #
+    ###################################################################
+
+    @setattr_on_read
+    def function(self):
+        A, b = affines.to_matrix_vector(self.affine)
         def _function(x):
             value = np.dot(x, A.T)
             value += b
             return value
-        self._function = _function
+        return _function
+    _doc['function'] = 'The function of the AffineTransform.'
 
-    @property
-    def affine(self):
-        """The affine transform matrix of the AffineTransform CoordinateMap."""
-        return self._affine
-    
-    @property
+    @setattr_on_read
     def inverse_function(self):
-        """The inverse affine function from the AffineTransform CoordinateMap."""
+        """The inverse affine function from the AffineTransform."""
         inverse = self.inverse
-        if inverse is None:
-            raise ValueError('There is no inverse for this affine')
-        return inverse.function
+        if inverse is not None:
+            return inverse.function
+        raise AttributeError('There is no inverse function for this affine ' + 
+                             'because the transformation is not invertible.')
 
-    @property
+    _doc['inverse function'] = 'The inverse affine function of the ' + \
+                               'AffineTransform, when appropriate.'
+
+    @setattr_on_read
     def inverse(self):
         """
         Return the inverse coordinate map.
         """
         try:
             return AffineTransform(np.linalg.inv(self.affine), 
-                          self.function_range, 
-                          self.function_domain)
+                                   self.function_range, 
+                                   self.function_domain)
         except np.linalg.linalg.LinAlgError:
-            pass
+            return None
+    _doc['inverse function'] = 'The inverse of the ' + \
+                               'AffineTransform, when appropriate, or None.'
+
+    ###################################################################
+    #
+    # Helper constructors
+    #
+    ###################################################################
+
 
     @staticmethod
     def from_params(innames, outnames, params):
@@ -700,7 +795,14 @@ class AffineTransform(CoordinateMap):
         return AffineTransform.from_start_step(names, names, [0]*len(names),
                                       [1]*len(names))
 
-    def copy(self):
+
+    ###################################################################
+    #
+    # Private methods
+    #
+    ###################################################################
+
+    def __copy__(self):
         """
         Create a copy of the coordmap.
 
@@ -710,8 +812,9 @@ class AffineTransform(CoordinateMap):
 
         Examples
         --------
+        >>> import copy
         >>> cm = AffineTransform(np.eye(4), CoordinateSystem('ijk'), CoordinateSystem('xyz'))
-        >>> cm_copy = cm.copy()
+        >>> cm_copy = copy.copy(cm)
         >>> cm is cm_copy
         False
 
@@ -722,8 +825,8 @@ class AffineTransform(CoordinateMap):
         >>> cm_copy.affine[0,0]
         1.0
         """
-        return AffineTransform(self._affine.copy(), self._function_domain,
-                      self._function_range)
+        return AffineTransform(self.affine.copy(), self.function_domain,
+                      self.function_range)
 
 
     def __repr__(self):
