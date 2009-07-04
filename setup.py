@@ -30,8 +30,9 @@ if len(set(('develop', 'bdist_egg', 'bdist_rpm', 'bdist', 'bdist_dumb',
             )).intersection(sys.argv)) > 0:
     from setup_egg import extra_setuptools_args
 
-# extra_setuptools_args is injected by the setupegg.py script, for
-# running the setup with setuptools.
+# extra_setuptools_args can be defined from the line above, but it can
+# also be defined here because setup.py has been exec'ed from
+# setup_egg.py.
 if not 'extra_setuptools_args' in globals():
     extra_setuptools_args = dict()
 
@@ -42,7 +43,7 @@ if not 'extra_setuptools_args' in globals():
 try:
     from build_docs import cmdclass
 except ImportError:
-    """ Fail gracefully if sphinx is not installed """
+    """ Pass by the doc build gracefully if sphinx is not installed """
     print "Sphinx is not installed, docs cannot be built"
     cmdclass = {}
 

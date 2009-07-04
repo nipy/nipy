@@ -7,9 +7,9 @@ from setuptools import setup
 # Call the setup.py script, injecting the setuptools-specific arguments.
 
 extra_setuptools_args = dict(
-                            tests_require=['nose', 'coverage'],
+                            tests_require=['nose'],
                             test_suite='nose.collector',
-                           zip_safe=False,
+                            zip_safe=False,
                             )
 
 
