@@ -4,7 +4,7 @@ from scipy.linalg import expm
 
 from nose.tools import assert_true, assert_equal, assert_raises
 
-import nipy.core.reference.matrix_groups as MG
+import nipy.core.reference.tests.matrix_groups as MG
 from nipy.core.api import ArrayCoordMap
 
 A = np.array([[0,1],

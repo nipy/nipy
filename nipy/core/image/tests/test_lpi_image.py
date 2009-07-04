@@ -44,8 +44,8 @@ def test_affine_shape():
 def test_reordered_etc():
 
     _, lpi_im = generate_im()
-    yield assert_raises, NotImplementedError, lpi_im.lpi_transform.reordered_output, ()
-    yield assert_raises, NotImplementedError, lpi_im.lpi_transform.renamed_output, ()
+    yield assert_raises, NotImplementedError, lpi_im.lpi_transform.reordered_range, ()
+    yield assert_raises, NotImplementedError, lpi_im.lpi_transform.renamed_range, ()
     yield assert_raises, NotImplementedError, lpi_im.reordered_world, ()
 
     data = np.random.standard_normal((3,4,5))
@@ -242,7 +242,7 @@ def test_lpi_transform():
     yield assert_equal, T.function_domain.coord_names, ('slice', 'frequency', 'phase')
     yield assert_equal, T.function_range.coord_names, ('x','y','z')
 
-    Tinv = T.inverse
+    Tinv = T.inverse()
 
     # The inverse doesn't map a voxel to 'xyz', it maps
     # 'xyz' to a voxel, so it's not an LPITransform

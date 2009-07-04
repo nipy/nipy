@@ -44,11 +44,11 @@ class LPITransform(AffineTransform):
       range = CoordinateSystem('xyz', name='world')
       AffineTransform.__init__(self, affine, domain, self.range)
 
-   def reordered_output(self, order, name=''):
-       raise NotImplementedError("the output coordinates are always ['x','y','z'] and can't be reordered")
+   def reordered_range(self, order, name=''):
+       raise NotImplementedError("the LPI world coordinates are always ['x','y','z'] and can't be reordered")
 
-   def renamed_output(self, newnames, name=''):
-       raise NotImplementedError("the output coordinates are always ['x','y','z'] and can't be renamed")
+   def renamed_range(self, newnames, name=''):
+       raise NotImplementedError("the LPI world coordinates are always ['x','y','z'] and can't be renamed")
 
    def __repr__(self):
        s_split = AffineTransform.__repr__(self).split('\n')
@@ -202,7 +202,7 @@ class LPIImage(Image):
    affine = property(_get_affine, doc="4x4 Affine matrix")
 
    def reordered_world(self, order):
-      raise NotImplementedError("the world coordinates are always ['x','y','z'] and can't be reordered")
+      raise NotImplementedError("the LPI world coordinates are always ['x','y','z'] and can't be reordered")
 
    def reordered_axes(self, order=None):
 
@@ -445,7 +445,7 @@ class LPIImage(Image):
       y = y.ravel()
       z = z.ravel()
       xyz = np.c_[x, y, z]
-      world_to_voxel = self.lpi_transform.inverse
+      world_to_voxel = self.lpi_transform.inverse()
       ijk = world_to_voxel(xyz)
 
       data = self.get_data()
@@ -547,11 +547,4 @@ class LPIImage(Image):
                             metadata=copy.deepcopy(self.metadata))
 
 
-   def __eq__(self, other):
-      return (    isinstance(other, self.__class__)
-                  and np.all(self.get_data() == other.get_data())
-                  and np.all(self.affine == other.affine)
-                  and (self.axes.coord_names == other.axes.coord_names))
-# XXX why not check the metadata? 
-#                  and (self.metadata == other.metadata))
 

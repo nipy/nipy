@@ -63,7 +63,7 @@ def test_lpi_image_fmri():
     # that is not-diagonal
 
     cm = im.coordmap
-    cm_reordered = cm.reordered_input(['j','k','i', 'l'])
+    cm_reordered = cm.reordered_domain(['j','k','i', 'l'])
     transposed_data = np.transpose(np.array(im), [1,2,0,3])
 
     im_reordered = Image(transposed_data, cm_reordered)

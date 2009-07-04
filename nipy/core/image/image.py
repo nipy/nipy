@@ -190,8 +190,8 @@ class Image(object):
                          [ 4.,  0.,  0.,  1.],
                          [ 0.,  5.,  0.,  2.],
                          [ 0.,  0.,  0.,  1.]]),
-           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='input', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('z', 'x', 'y'), name='output', coord_dtype=float64)
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('z', 'x', 'y'), name='range', coord_dtype=float64)
         )
 
         >>> 
@@ -203,8 +203,8 @@ class Image(object):
         elif type(order[0]) == type(''):
             order = [self.world.index(s) for s in order]
 
-        new_cmap = self.coordmap.reordered_output(order)
-        return Image(np.asarray(self), new_cmap, metadata=self.metadata)
+        new_cmap = self.coordmap.reordered_range(order)
+        return Image(self._data, new_cmap, metadata=self.metadata)
 
     def reordered_axes(self, order=None):
         """
@@ -219,8 +219,8 @@ class Image(object):
                          [ 0.,  5.,  0.,  2.],
                          [ 0.,  0.,  6.,  3.],
                          [ 0.,  0.,  0.,  1.]]),
-           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='input', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='output', coord_dtype=float64)
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='range', coord_dtype=float64)
         )
         >>> im = Image(np.empty((30,40,50)), cmap)
         >>> im_reordered = im.reordered_axes([2,0,1])
@@ -232,8 +232,8 @@ class Image(object):
                          [ 0.,  0.,  5.,  2.],
                          [ 6.,  0.,  0.,  3.],
                          [ 0.,  0.,  0.,  1.]]),
-           function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='input', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='output', coord_dtype=float64)
+           function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='domain', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='range', coord_dtype=float64)
         )
         >>> 
 
@@ -243,8 +243,16 @@ class Image(object):
             order = range(self.ndim)[::-1]
         elif type(order[0]) == type(''):
             order = [self.axes.index(s) for s in order]
-        new_cmap = self.coordmap.reordered_input(order)
-        return Image(np.transpose(np.array(self), order), new_cmap,
+        new_cmap = self.coordmap.reordered_domain(order)
+
+        # Only transpose if we have to
+        # so as to avoid calling self.get_data
+
+        if order != range(self.ndim):
+            new_data = np.transpose(self.get_data(), order)
+        else:
+            new_data = self._data
+        return Image(new_data, new_cmap,
                      metadata=self.metadata)
 
     def __setitem__(self, index, value):
@@ -267,6 +275,15 @@ class Image(object):
         """
         warnings.warn('slicing Images is deprecated, use subsample instead')
         return subsample(self, slice_object)
+
+    def __eq__(self, other):
+        return (    isinstance(other, self.__class__)
+                    and np.all(self.get_data() == other.get_data())
+                    and np.all(self.affine == other.affine)
+                    and (self.axes.coord_names == other.axes.coord_names))
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __repr__(self):
         options = np.get_printoptions()
@@ -311,7 +328,7 @@ def subsample(img, slice_object):
     -------
 
     img_subsampled: Image
-         An Image with data np.array(img)[slice_object] and an appropriately
+         An Image with data img.get_data()[slice_object] and an appropriately
          corrected CoordinateMap.
 
     Examples
@@ -323,10 +340,10 @@ def subsample(img, slice_object):
     >>> im = load_image(funcfile)
     >>> frame3 = subsample(im, slice_maker[:,:,:,3])
     >>> from nipy.testing import funcfile, assert_almost_equal
-    >>> assert_almost_equal(np.array(frame3), np.array(im)[:,:,:,3])
+    >>> assert_almost_equal(frame3.get_data(), im.get_data()[:,:,:,3])
 
     """
-    data = np.array(img)[slice_object]
+    data = img.get_data()[slice_object]
     g = ArrayCoordMap(img.coordmap, img.shape)[slice_object]
     coordmap = g.coordmap
     if coordmap.function_domain.ndim > 0:
@@ -365,19 +382,30 @@ def fromarray(data, innames, outnames, coordmap=None):
                                           
     return Image(data, coordmap)
 
-def rollaxis(img, axis):
+def rollaxis(img, axis, inverse=False):
     """
     Roll the specified axis backwards, until it lies in the first position.
 
     It also reorders the world coordinates by the same ordering.
-    This is done to preserve a diagonal affine matrix.
+    This is done to preserve a diagonal affine matrix if image.affine
+    is diagonal. It also makes it possible to unambiguously specify
+    an axis to roll along in terms of either a world name (i.e. 'z')
+    or an axis name (i.e. 'slice').
 
     Parameters
     ----------
 
+    img : Image
+        Image whose axes and world coordinates are to be reordered
+        by rolling.
+
     axis : str or int
         Axis to be rolled, can be specified by name or 
         as an integer.
+
+    inverse : bool, optional
+        If inverse is True, then axis must be an integer and the first axis
+        is returned to the position axis.
 
     Returns
     -------
@@ -398,6 +426,9 @@ def rollaxis(img, axis):
         raise ValueError('axis must be an axis number, -1, an axis name or a world name')
 
     # Find out which index axis corresonds to
+
+    if inverse and type(axis) != type(0):
+        raise ValueError('if carrying out inverse rolling, axis must be an integer')
 
     in_index = out_index = -1
     if type(axis) == type(''):
@@ -420,8 +451,159 @@ def rollaxis(img, axis):
     if axis == -1:
         axis += img.axes.ndim
 
-    order = range(img.ndim)
-    order.remove(axis)
-    order.insert(0, axis)
+    if not inverse:
+        order = range(img.ndim)
+        order.remove(axis)
+        order.insert(0, axis)
+    else:
+        order = range(img.ndim)
+        order.remove(0)
+        order.insert(axis, 0)
+
     return img.reordered_axes(order).reordered_world(order)
 
+def synchronized_order(img, target_img,
+                       axes=True,
+                       world=True):
+    """
+    Take an Image, and reorder its world and
+    axes to match target_img.
+
+    Parameters
+    ----------
+
+    img : Image
+
+    target_img : Image
+
+    axes : bool, optional
+        If True, synchronize the order of the axes.
+
+    world : bool, optional
+        If True, synchronize the order of the world coordinates.
+
+    Returns
+    -------
+
+    newimg : Image
+        An Image satisfying newimg.axes == target.axes (if axes == True), 
+        newimg.world == target.world (if world == True).
+    
+    Examples
+    --------
+
+    >>> data = np.random.standard_normal((3,4,7,5))
+    >>> im = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
+    >>> im_scrambled = im.reordered_axes('iljk').reordered_world('txyz')
+    >>> im == im_scrambled
+    False
+    >>> im_unscrambled = synchronized_order(im_scrambled, im)
+    >>> im == im_unscrambled
+    True
+    >>> 
+
+    >>> # the images don't have to be the same shape
+    >>> 
+    >>> data2 = np.random.standard_normal((3,11,9,4))
+    >>> im2 = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
+    >>> 
+    >>> im_scrambled2 = im2.reordered_axes('iljk').reordered_world('xtyz')
+    >>> im_unscrambled2 = synchronized_order(im_scrambled2, im)
+    >>> 
+    >>> print im_unscrambled2.coordmap == im.coordmap
+    True
+    >>> 
+    >>> # or have the same coordmap
+    >>> 
+    >>> data3 = np.random.standard_normal((3,11,9,4))
+    >>> im3 = Image(data3, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,9,3,-2,1])))
+    >>> 
+    >>> im_scrambled3 = im3.reordered_axes('iljk').reordered_world('xtyz')
+    >>> im_unscrambled3 = synchronized_order(im_scrambled3, im)
+    >>> 
+    >>> print im_unscrambled3.axes == im.axes
+    True
+    >>> print im_unscrambled3.world == im.world
+    True
+    >>> im_unscrambled4 = synchronized_order(im_scrambled3, im, axes=False)
+    >>> print im_unscrambled4.axes == im.axes
+    False
+    >>> print im_unscrambled4.axes == im_scrambled3.axes
+    True
+    >>> print im_unscrambled4.world == im.world
+    True
+
+    """
+    # Caution, we can't just use
+    # target_img.world because it's always 3-dimensional
+    # if isinstance(target_img, LPIImage)
+
+    target_axes = target_img.axes # = target_img.coordmap.function_domain
+    target_world = target_img.coordmap.function_range # not always = target_image.world
+    if axes:
+        img = img.reordered_axes(target_axes.coord_names)
+    if world:
+        img = img.reordered_world(target_world.coord_names)
+    return img
+
+def renamed_axes(img, **names_dict):
+    """
+    Return a new image with its axes renamed according
+    to the dictionary.
+
+    Parameters
+    ----------
+
+    img : Image
+
+    names_dict : dictionary
+
+    Returns
+    -------
+
+    newimg : Image
+        An Image with the same data, having its axes renamed.
+
+    >>> data = np.random.standard_normal((11,9,4))
+    >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4)))
+    >>> im_renamed = renamed_axes(im, i='slice')
+    >>> print im_renamed.axes
+    CoordinateSystem(coord_names=('slice', 'j', 'k'), name='domain', coord_dtype=float64)
+
+    """
+
+    newcmap = img.coordmap.renamed_domain(names_dict)
+    return Image(img._data, newcmap)
+
+def renamed_world(img, **names_dict):
+    """
+    Return a new image with its world coordinates renamed according
+    to the dictionary.
+
+    Parameters
+    ----------
+
+    img : Image
+
+    names_dict : dictionary
+
+    Returns
+    -------
+
+    newimg : Image
+        An Image with the same data, having its world coordinates renamed.
+
+    Examples
+    --------
+
+    >>> data = np.random.standard_normal((11,9,4))
+    >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4)))
+    >>> im_renamed_world = renamed_world(im, x='newx', y='newy')
+    >>> print im_renamed_world.world
+    CoordinateSystem(coord_names=('newx', 'newy', 'z'), name='range', coord_dtype=float64)
+
+
+    """
+
+    newcmap = img.coordmap.renamed_range(names_dict)
+    return Image(img._data, newcmap)

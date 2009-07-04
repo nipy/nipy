@@ -62,10 +62,9 @@ class MatrixGroup(Linear):
         return self.function_domain
     coords = property(_getcoords)
 
-    def _getinverse(self):
+    def inverse(self):
         inv_matrix = np.linalg.inv(self.affine[:-1,:-1])
         return self.__class__(inv_matrix, self.coords)
-    inverse = property(_getinverse)
 
 ###################################################################################
 
@@ -204,7 +203,7 @@ def change_basis(element, bchange_linear):
 
     """
 
-    newcm = compose(bchange_linear.inverse, element, bchange_linear)
+    newcm = compose(bchange_linear.inverse(), element, bchange_linear)
     matrix = newcm.affine[:-1,:-1]
     if bchange_linear.function_range != element.coords:
         raise ValueError('expecting the basis change mapping to have the same output coords as element')

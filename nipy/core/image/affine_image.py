@@ -299,7 +299,7 @@ now change the coordinate system of the resampled_image
         y = y.ravel()
         z = z.ravel()
         xyz = np.c_[x, y, z]
-        world_to_voxel = self.spatial_coordmap.inverse
+        world_to_voxel = self.spatial_coordmap.inverse()
         ijk = world_to_voxel(xyz)
         values = ndimage.map_coordinates(self.get_data(), ijk.T,
                                     order=interpolation_order)
@@ -321,7 +321,7 @@ now change the coordinate system of the resampled_image
                 )
         axis_numbers = list(np.argmax(np.abs(A), axis=1))
         axis_names = [self.spatial_coordmap.function_domain.coord_names[a] for a in axis_numbers]
-        reordered_coordmap = self.spatial_coordmap.reordered_input(axis_names)
+        reordered_coordmap = self.spatial_coordmap.reordered_domain(axis_names)
         data = self.get_data()
         transposed_data = np.transpose(data, axis_numbers + range(3, self.ndim))
         return AffineImage(transposed_data, reordered_coordmap.affine,

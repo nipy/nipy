@@ -35,6 +35,23 @@ def setup():
                                               [ 0,  0,  0,  1]]))
 
 
+def test_renamed():
+
+    A = AffineTransform.from_params('ijk', 'xyz', np.identity(4))
+
+    A_re = A.renamed_domain({'i':'foo'})
+    yield assert_equal, A_re.function_domain.coord_names, ('foo', 'j', 'k')
+
+    A_re = A.renamed_domain({'i':'foo','j':'bar'})
+    yield assert_equal, A_re.function_domain.coord_names, ('foo', 'bar', 'k')
+
+    A_re = A.renamed_range({'y':'foo'})
+    yield assert_equal, A_re.function_range.coord_names, ('x', 'foo', 'z')
+
+    A_re = A.renamed_range({'y':'foo','x':'bar'})
+    yield assert_equal, A_re.function_range.coord_names, ('bar', 'foo', 'z')
+
+
 
 def test_call():
     value = 10
@@ -48,16 +65,16 @@ def test_call():
 def test_compose():
     value = np.array([[1., 2., 3.]]).T
     aa = compose(E.a, E.a)
-    yield assert_true, aa.inverse is None
+    yield assert_true, aa.inverse() is None
     yield assert_true, np.allclose(aa(value), 4*value)
     ab = compose(E.a,E.b)
-    yield assert_true, ab.inverse is None
+    yield assert_true, ab.inverse() is None
     assert_true, np.allclose(ab(value), 4*value)
     ac = compose(E.a,E.c)
-    yield assert_true, ac.inverse is None
+    yield assert_true, ac.inverse() is None
     yield assert_true, np.allclose(ac(value), value)
     bb = compose(E.b,E.b)
-    yield assert_true, bb.inverse is not None
+    yield assert_true, bb.inverse() is not None
     aff1 = np.diag([1,2,3,1])
     cm1 = AffineTransform.from_params('ijk', 'xyz', aff1)
     aff2 = np.diag([4,5,6,1])
@@ -87,20 +104,20 @@ def test__eq__():
     yield assert_false, A != B
 
 def test_isinvertible():
-    yield assert_false, E.a.inverse
-    yield assert_true, E.b.inverse
-    yield assert_false, E.c.inverse
-    yield assert_true, E.d.inverse
-    yield assert_true, E.e.inverse
-    yield assert_true, E.mapping.inverse
-    yield assert_false, E.singular.inverse
+    yield assert_false, E.a.inverse()
+    yield assert_true, E.b.inverse()
+    yield assert_false, E.c.inverse()
+    yield assert_true, E.d.inverse()
+    yield assert_true, E.e.inverse()
+    yield assert_true, E.mapping.inverse()
+    yield assert_false, E.singular.inverse()
 
 def test_inverse1():
-    inv = lambda a: a.inverse
+    inv = lambda a: a.inverse()
     yield assert_true, inv(E.a) is None
     yield assert_true, inv(E.c) is None
-    inv_b = E.b.inverse
-    inv_d = E.d.inverse
+    inv_b = E.b.inverse()
+    inv_d = E.d.inverse()
     ident_b = compose(inv_b,E.b)
     ident_d = compose(inv_d,E.d)
     value = np.array([[1., 2., 3.]]).T    
@@ -115,7 +132,7 @@ def test_mul():
 
     
 def test_inverse2():
-    assert_true(np.allclose(E.e.affine, E.e.inverse.inverse.affine))
+    assert_true(np.allclose(E.e.affine, E.e.inverse().inverse().affine))
 
 def voxel_to_world():
     # utility function for generating trivial CoordinateMap
@@ -238,19 +255,19 @@ def test_affine_copy():
 # Module level functions
 #
 
-def test_reordered_input():
+def test_reordered_domain():
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(map, incs, outcs, inv)
-    recm = cm.reordered_input('jki')
+    recm = cm.reordered_domain('jki')
     yield assert_equal, recm.function_domain.coord_names, ('j', 'k', 'i')
     yield assert_equal, recm.function_range.coord_names, outcs.coord_names
     yield assert_equal, recm.function_domain.name, incs.name
     yield assert_equal, recm.function_range.name, outcs.name
     # default reverse reorder
-    recm = cm.reordered_input()
+    recm = cm.reordered_domain()
     yield assert_equal, recm.function_domain.coord_names, ('k', 'j', 'i')
     # reorder with order as indices
-    recm = cm.reordered_input([2,0,1])
+    recm = cm.reordered_domain([2,0,1])
     yield assert_equal, recm.function_domain.coord_names, ('k', 'i', 'j')
 
 
@@ -281,19 +298,19 @@ def test_str():
 
 
 
-def test_reordered_output():
+def test_reordered_range():
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(map, incs, outcs, inv)
-    recm = cm.reordered_output('yzx')
+    recm = cm.reordered_range('yzx')
     yield assert_equal, recm.function_domain.coord_names, incs.coord_names
     yield assert_equal, recm.function_range.coord_names, ('y', 'z', 'x')
     yield assert_equal, recm.function_domain.name, incs.name
     yield assert_equal, recm.function_range.name, outcs.name
     # default reverse order
-    recm = cm.reordered_output()
+    recm = cm.reordered_range()
     yield assert_equal, recm.function_range.coord_names, ('z', 'y', 'x')
     # reorder with indicies
-    recm = cm.reordered_output([2,0,1])
+    recm = cm.reordered_range([2,0,1])
     yield assert_equal, recm.function_range.coord_names, ('z', 'x', 'y')    
 
 
