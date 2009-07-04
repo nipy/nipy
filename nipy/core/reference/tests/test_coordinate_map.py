@@ -3,7 +3,7 @@ from nipy.testing import *
 
 from nipy.core.reference.coordinate_map import CoordinateMap, AffineTransform, \
     compose, CoordinateSystem, product, \
-    concat, linearize
+    concat
 
 
 class empty:
@@ -345,19 +345,3 @@ def test_concat():
                                                      [0,0,1]])
 
 
-def test_linearize():
-    aff = np.diag([1,2,3,1])
-    cm = AffineTransform.from_params('ijk', 'xyz', aff)
-    lincm = linearize(cm.function, cm.ndims[0])
-    yield assert_equal, lincm, aff
-    origin = np.array([10, 20, 30], dtype=cm.function_domain.coord_dtype)
-    lincm = linearize(cm.function, cm.ndims[0], origin=origin)
-    xform = np.array([[  1.,   0.,   0.,  10.],
-                      [  0.,   2.,   0.,  40.],
-                      [  0.,   0.,   3.,  90.],
-                      [  0.,   0.,   0.,   1.]])
-    yield assert_equal, lincm, xform
-    # dtype mismatch
-    #origin = np.array([10, 20, 30], dtype=np.int16)
-    #yield assert_raises, UserWarning, linearize, cm.function, cm.ndims[0], \
-    #    1, origin
