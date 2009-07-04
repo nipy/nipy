@@ -197,16 +197,30 @@ class CoordinateMap(object):
         >>> inverse = lambda x:x-1
         >>> cm = CoordinateMap(mapping, input_cs, output_cs, inverse)
         >>> cm([2,3,4])
-        array([[3, 4, 5]])
+        array([3, 4, 5])
         >>> cmi = cm.inverse
         >>> cmi([2,6,12])
-        array([[ 1,  5, 11]])
+        array([ 1,  5, 11])
 
         """
 
-        in_vals = self.function_domain._checked_values(x)
-        out_vals = self.function(in_vals)
-        return self.function_range._checked_values(out_vals)
+        x = np.asarray(x)
+        in_vals = self._function_domain._checked_values(x)
+        out_vals = self._function(in_vals)
+        final_vals = self._function_range._checked_values(out_vals)
+
+        # Try to set the shape reasonably for self.ndims[0] == 1
+        if x.ndim == 1:
+            return final_vals.reshape(-1)
+        elif x.ndim == 0:
+            return np.squeeze(final_vals)
+        else:
+            return final_vals
+
+
+#         in_vals = self.function_domain._checked_values(x)
+#         out_vals = self.function(in_vals)
+#         return self.function_range._checked_values(out_vals)
 
     def copy(self):
         """Create a copy of the coordmap.
@@ -498,10 +512,10 @@ class AffineTransform(CoordinateMap):
            [ 0.,  0.,  3.,  0.],
            [ 0.,  0.,  0.,  1.]])
     >>> cm([1,1,1])
-    array([[ 1.,  2.,  3.]])
+    array([ 1.,  2.,  3.])
     >>> icm = cm.inverse
     >>> icm([1,2,3])
-    array([[ 1.,  1.,  1.]])
+    array([ 1.,  1.,  1.])
     
     """
 

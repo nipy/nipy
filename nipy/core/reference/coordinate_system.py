@@ -222,7 +222,7 @@ class CoordinateSystem(object):
         >>> cs._checked_values(arr[0:2]) # wrong length
         Traceback (most recent call last):
            ...
-        ValueError: 1D input should have length 3 for CoordinateSystem:
+        ValueError: 1D array as input should have shape (3,) for CoordinateSystem:
           CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
 
         The dtype has to be castable:
@@ -258,7 +258,7 @@ class CoordinateSystem(object):
         >>> cs._checked_values([1, 2])
         Traceback (most recent call last):
            ...
-        ValueError: 1D input should have length 1 for CoordinateSystem:
+        ValueError: 1D array as input should have shape (1,) for CoordinateSystem:
           CoordinateSystem(coord_names=('x',), name='', coord_dtype=float64)
 
         But of course 2D, N by 1 is OK
@@ -271,7 +271,7 @@ class CoordinateSystem(object):
         arr = np.asanyarray(arr)
         if len(arr.shape) < 2:
             if arr.size != self.ndim:
-                raise ValueError('1D input should have length %d for '
+                raise ValueError('1D array as input should have shape (%d,) for '
                                  'CoordinateSystem:\n  %s' % 
                                  (self.ndim, str(self)))
             arr = arr.reshape((1, arr.size))
