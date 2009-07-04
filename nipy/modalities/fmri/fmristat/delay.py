@@ -17,9 +17,8 @@ import numpy.linalg as L
 from nipy.fixes.scipy.stats.models.utils import recipr, recipr0
 from nipy.fixes.scipy.stats.models.contrast import Contrast, ContrastResults
 
-from nipy.modalities.fmri import hrf
 from nipy.algorithms.statistics.regression import TOutput 
-from nipy.modalities.fmri.fmristat.invert import invertR
+
 
 class DelayContrast(Contrast):
     """
