@@ -5,7 +5,7 @@ from nipy.testing import assert_true, assert_equal, dec
 
 from nipy.algorithms.kernel_smooth import LinearFilter
 from nipy.core.api import Image
-from nipy.core.reference.coordinate_map import Affine
+from nipy.core.reference.coordinate_map import AffineTransform
 
 from nipy.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 
@@ -51,7 +51,7 @@ def test_kernel():
         shape = randint(30,60,(3,))
         ii, jj, kk = randint(11,17, (3,))
 
-        coordmap = Affine.from_start_step('ijk', 'xyz', 
+        coordmap = AffineTransform.from_start_step('ijk', 'xyz', 
                                           randint(5,20,(3,))*0.25,
                                           randint(5,10,(3,))*0.5)
 
