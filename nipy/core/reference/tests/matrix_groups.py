@@ -21,11 +21,11 @@ class Linear(AffineTransform):
         return self.affine[:-1,:-1]
     matrix = property(_getmatrix)
 
-    def __init__(self, matrix, function_domain, function_range):
+    def __init__(self, function_domain, function_range, matrix):
         ndim = matrix.shape[0]
         T = np.identity(ndim+1, dtype=matrix.dtype)
         T[:-1,:-1] = matrix
-        AffineTransform.__init__(self, T, function_domain, function_range)
+        AffineTransform.__init__(self, function_domain, function_range, T)
 
 ###################################################################################
 
@@ -42,7 +42,7 @@ class MatrixGroup(Linear):
             coords = CoordinateSystem(coords, 'space', coord_dtype=dtype)
         else:
             coords = CoordinateSystem(coords.coord_names, 'space', dtype)
-        Linear.__init__(self, matrix.astype(dtype), coords, coords)
+        Linear.__init__(self, coords, coords, matrix.astype(dtype))
         if not self.validate():
             raise ValueError('this matrix is not an element of %s'
                              % `self.__class__`)
@@ -65,6 +65,7 @@ class MatrixGroup(Linear):
     def inverse(self):
         inv_matrix = np.linalg.inv(self.affine[:-1,:-1])
         return self.__class__(inv_matrix, self.coords)
+#    inverse = property(_getinverse)
 
 ###################################################################################
 

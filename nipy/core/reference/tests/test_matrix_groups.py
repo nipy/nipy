@@ -65,7 +65,7 @@ def test_basis_change():
     basis1 = random_orth(names='xyz')
     basis2 = random_orth(names='uvw')
     
-    bchange = MG.Linear(random_orth(dim=3).matrix, basis2.coords, basis1.coords)
+    bchange = MG.Linear(basis2.coords, basis1.coords, random_orth(dim=3).matrix)
     #print basis1.coords
     new = MG.change_basis(basis1, bchange)
 

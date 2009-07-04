@@ -140,23 +140,14 @@ def get_fmri(path_dict):
     
     anat : NIPY image
     """
-    fmri = load_image(
+    fmri_im = load_image(
         pjoin("%(rootdir)s/swafunctional_%(run)02d.nii") % path_dict) 
-
-    # XXX Return an LPIImage instead. Right now, load_image
-    # returns an Image
-    # These are the steps
 
     # Make sure we know the order of the coordinates
 
-    fmri = fmri.reordered_world('xyzt').reordered_axes('ijkl')
+    fmri_im = fmri_im.reordered_world('xyzt').reordered_axes('ijkl')
 
-    # Make the affine
-    A = np.identity(4)
-    A[:3,:3] = fmri.affine[:3,:3]
-    A[:3,-1] = fmri_affine[:3,-1]
-    
-    return LPIImage(fmri.get_data(), A, fmri.axes.coord_names)
+    return LPIImage.from_image(fmri_im)
 
 def ensure_dir(*path):
     """Ensure a directory exists, making it if necessary.

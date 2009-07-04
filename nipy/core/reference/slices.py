@@ -37,7 +37,7 @@ def from_origin_and_columns(origin, colvectors, shape, function_range):
     function_domain = CoordinateSystem(['i%d' % d for d in range(len(shape))], 
                                     'slice', function_range.coord_dtype)
 
-    g = AffineTransform(f, function_domain, function_range)
+    g = AffineTransform(function_domain, function_range, f)
     return ArrayCoordMap.from_shape(g, shape)
 
 def xslice(x, zlim, ylim, function_range, shape):

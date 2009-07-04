@@ -67,7 +67,7 @@ def test_rotate2d3():
                                                   [0.7,0,0],
                                                   [0,0,1]]))
     ir = resample(i, g2, a, (80,100))
-    v2v = compose(g.inverse, g2)
+    v2v = compose(g.inverse(), g2)
     yield assert_array_almost_equal, np.asarray(ir).T, i
     
 

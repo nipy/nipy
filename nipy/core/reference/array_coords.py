@@ -155,9 +155,10 @@ def _slice(coordmap, shape, *slices):
         else:
             name = coordmap.function_domain.coord_names[i]
         cmaps.append(AffineTransform(
-                np.array([[step, start],[0,1]], dtype=dtype), 
                 CoordinateSystem([name], coord_dtype=dtype),
-                CoordinateSystem([coordmap.function_domain.coord_names[i]])))
+                CoordinateSystem([coordmap.function_domain.coord_names[i]]),
+                np.array([[step, start],[0,1]], dtype=dtype))) 
+
         if i in keep_in_output:
             newshape.append(l)
     slice_cmap = cmap_product(*cmaps)
@@ -174,7 +175,7 @@ def _slice(coordmap, shape, *slices):
         A[:,j] = slice_cmap.affine[:,i]
     A[:,-1] = slice_cmap.affine[:,-1]
     A = A.astype(function_domain.coord_dtype)
-    slice_cmap = AffineTransform(A, function_domain, coordmap.function_domain)
+    slice_cmap = AffineTransform(function_domain, coordmap.function_domain, A)
     return ArrayCoordMap(compose(coordmap, slice_cmap), tuple(newshape))
                    
 class Grid(object):
@@ -193,7 +194,7 @@ class Grid(object):
     >>> print points.coordmap.function_domain
     CoordinateSystem(coord_names=('i0', 'i1'), name='product', coord_dtype=float64)
     >>> print points.coordmap.function_range
-    CoordinateSystem(coord_names=('x', 'y'), name='input', coord_dtype=float64)
+    CoordinateSystem(coord_names=('x', 'y'), name='range', coord_dtype=float64)
 
     >>> points.shape
     (21, 31)
@@ -217,7 +218,7 @@ class Grid(object):
         """
 
         if isinstance(coords, CoordinateSystem):
-            coordmap = AffineTransform(np.identity(len(coords.coord_names)+1), coords, coords)
+            coordmap = AffineTransform.identity(coords.coord_names)
         elif not isinstance(coords, CoordinateMap):
             raise ValueError('expecting either a CoordinateMap or a CoordinateSystem for Grid')
         else:
@@ -242,10 +243,11 @@ class Grid(object):
                 step = 0
             start = result[0]
             cmaps.append(AffineTransform(
-                    np.array([[step, start],[0,1]], dtype=dtype), 
                     CoordinateSystem(['i%d' % i], coord_dtype=dtype),
                     CoordinateSystem([self.coordmap.function_domain.coord_names[i]],
-                                     coord_dtype=dtype)))
+                                     coord_dtype=dtype),
+                    np.array([[step, start],[0,1]], dtype=dtype)))
+
         shape = [result.shape[0] for result in results]
         cmap = cmap_product(*cmaps)
         return ArrayCoordMap(compose(self.coordmap, cmap), tuple(shape))

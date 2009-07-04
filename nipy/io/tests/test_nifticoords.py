@@ -32,7 +32,7 @@ def test_iljk_to_xyzt():
     # ninput_axes = list('iljk')
     function_domain = CoordinateSystem('iljk', 'input')
     function_range = CoordinateSystem('xyzt', 'output')
-    cmap = AffineTransform(np.identity(5), function_domain, function_range)
+    cmap = AffineTransform(function_domain, function_range, np.identity(5))
     newcmap, order = niref.coerce_coordmap(cmap)
     aff = np.array([[ 1,  0,  0,  0,  0,],
                     [ 0,  0,  1,  0,  0,],
@@ -50,7 +50,7 @@ def test_ijkn_to_xyzt():
     # ['ijkl'].  Some warnings are printed during the try/except
     function_domain = CoordinateSystem('ijkn', 'input')
     function_range = CoordinateSystem('xyzt', 'output')
-    cmap = AffineTransform(np.identity(5), function_domain, function_range)
+    cmap = AffineTransform(function_domain, function_range, np.identity(5))
     assert_raises, ValueError, niref.coerce_coordmap, cmap
 
 
@@ -60,7 +60,7 @@ def test_ijkml_to_xyztu():
     # matrix. This also means that the pixdim will be wrong
     function_domain = CoordinateSystem('ijkml', 'input')
     function_range = CoordinateSystem('xyztu', 'output')
-    cmap = AffineTransform(np.identity(6), function_domain, function_range)
+    cmap = AffineTransform(function_domain, function_range ,np.identity(6))
     newcmap, order = niref.coerce_coordmap(cmap)
     yield assert_equal, newcmap.function_domain.name, 'input-reordered'
     yield assert_equal, order, (0,1,2,4,3)
@@ -85,7 +85,7 @@ def test_ijkml_to_utzyx():
     # matrix, and also one about the nifti output coordinates.  
     function_domain = CoordinateSystem('ijkml', 'input')
     function_range = CoordinateSystem('utzyx', 'output')
-    cmap = AffineTransform(np.identity(6), function_domain, function_range)
+    cmap = AffineTransform(function_domain, function_range, np.identity(6))
     newcmap, order = niref.coerce_coordmap(cmap)
     yield assert_equal, newcmap.function_domain.name, 'input-reordered'
     yield assert_equal, newcmap.function_range.name, 'output-reordered'
@@ -119,46 +119,47 @@ def test_ijk_from_fps():
 def test_general_coercion():
     # General test of coormap coercion
     cmap = AffineTransform(
-        np.eye(4),
         CoordinateSystem('ijk'),
-        CoordinateSystem('xyz'))
+        CoordinateSystem('xyz'), np.eye(4))
     ncmap, order = niref.coerce_coordmap(cmap)
     yield assert_equal, ncmap.function_range, cmap.function_range
     yield assert_equal, order, (0, 1, 2)
     cmap = CoordinateMap(
-        lambda x : x,
         CoordinateSystem('ijk'),
-        CoordinateSystem('xyz'))
+        CoordinateSystem('xyz'),
+        lambda x : x)
     yield assert_raises, ValueError, niref.coerce_coordmap, cmap
     cmap = AffineTransform(
-        np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,1]]),
         CoordinateSystem('ij'),
-        CoordinateSystem('xyz'))
+        CoordinateSystem('xyz'),
+        np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,1]]))
     yield assert_raises, ValueError, niref.coerce_coordmap, cmap
     cmap = AffineTransform(
-        np.eye(4),
         CoordinateSystem('ijq'),
-        CoordinateSystem('xyz'))
+        CoordinateSystem('xyz'),
+        np.eye(4))
     yield assert_raises, ValueError, niref.coerce_coordmap, cmap
     cmap = AffineTransform(
-        np.eye(4),
         CoordinateSystem('ijk'),
-        CoordinateSystem('xyq'))
+        CoordinateSystem('xyq'),
+        np.eye(4))
+
     yield assert_raises, ValueError, niref.coerce_coordmap, cmap
     # Space order should not matter if no time reordering required
     cmap = AffineTransform(
-        np.eye(4),
         CoordinateSystem('kji'),
-        CoordinateSystem('xyz'))
+        CoordinateSystem('xyz'),
+        np.eye(4))
     ncmap, order = niref.coerce_coordmap(cmap)
     yield assert_equal, ncmap.function_range, cmap.function_range
     yield assert_equal, order, (0, 1, 2)
     yield assert_array_equal, np.eye(4), ncmap.affine
     # Even if time is present but in the right place
     cmap = AffineTransform(
-        np.eye(5),
         CoordinateSystem('kjil'),
-        CoordinateSystem('xyzt'))
+        CoordinateSystem('xyzt'),
+        np.eye(5))
+
     ncmap, order = niref.coerce_coordmap(cmap)
     yield assert_equal, ncmap.function_range, cmap.function_range
     yield assert_equal, order, (0, 1, 2, 3)

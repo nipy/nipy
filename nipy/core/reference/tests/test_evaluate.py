@@ -9,7 +9,7 @@ def test_grid():
         i = ij[:,0]
         j = ij[:,1]
         return np.array([i**2+j,j**3+i]).T
-    cmap = CoordinateMap(f, input, output)
+    cmap = CoordinateMap(input, output, f)
     grid = Grid(cmap)
     eval = ArrayCoordMap.from_shape(cmap, (50,40))
     nose.tools.assert_true(np.allclose(grid[0:50,0:40].values, eval.values))
@@ -22,9 +22,9 @@ def test_eval_slice():
         j = ij[:,1]
         return np.array([i**2+j,j**3+i]).T
 
-    cmap = CoordinateMap(f, input, output)
+    cmap = CoordinateMap(input, output, f)
 
-    cmap = CoordinateMap(f, input, output)
+    cmap = CoordinateMap(input, output, f)
     grid = Grid(cmap)
     e = grid[0:50,0:40]
     ee = e[0:20:3]

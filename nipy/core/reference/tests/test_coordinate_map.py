@@ -17,10 +17,10 @@ def setup():
     def g(x):
         return x/2.0
     x = CoordinateSystem('x', 'x')
-    E.a = CoordinateMap(f, x, x)
-    E.b = CoordinateMap(f, x, x, inverse_function=g)
-    E.c = CoordinateMap(g, x, x)        
-    E.d = CoordinateMap(g, x, x, inverse_function=f)        
+    E.a = CoordinateMap(x, x, f)
+    E.b = CoordinateMap(x, x, f, inverse_function=g)
+    E.c = CoordinateMap(x, x, g)        
+    E.d = CoordinateMap(x, x, g, inverse_function=f)        
     E.e = AffineTransform.identity('ijk')
 
     A = np.identity(4)
@@ -145,19 +145,19 @@ def voxel_to_world():
 def test_comap_init():
     # Test mapping and non-mapping functions
     incs, outcs, map, inv = voxel_to_world()
-    cm = CoordinateMap(map, incs, outcs, inv)
+    cm = CoordinateMap(incs, outcs, map, inv)
     yield assert_equal, cm.function, map
     yield assert_equal, cm.function_domain, incs
     yield assert_equal, cm.function_range, outcs
     yield assert_equal, cm.inverse_function, inv
-    yield assert_raises, ValueError, CoordinateMap, 'foo', incs, outcs, inv
-    yield assert_raises, ValueError, CoordinateMap, map, incs, outcs, 'bar'
+    yield assert_raises, ValueError, CoordinateMap, incs, outcs, 'foo', inv
+    yield assert_raises, ValueError, CoordinateMap, incs, outcs, map, 'bar'
 
 
 def test_comap_copy():
     import copy
     incs, outcs, map, inv = voxel_to_world()
-    cm = CoordinateMap(map, incs, outcs, inv)
+    cm = CoordinateMap(incs, outcs, inv, map)
     cmcp = copy.copy(cm)
     yield assert_equal, cmcp.function, cm.function
     yield assert_equal, cmcp.function_domain, cm.function_domain
@@ -185,12 +185,13 @@ def affine_v2w():
 
 def test_affine_init():
     incs, outcs, aff = affine_v2w()
-    cm = AffineTransform(aff, incs, outcs)
+    print aff, incs, outcs
+    cm = AffineTransform(incs, outcs, aff)
     yield assert_equal, cm.function_domain, incs
     yield assert_equal, cm.function_range, outcs
     yield assert_equal, cm.affine, aff
     badaff = np.diag([1,2])
-    yield assert_raises, ValueError, AffineTransform, badaff, incs, outcs
+    yield assert_raises, ValueError, AffineTransform, incs, outcs, badaff
 
 
 def test_affine_bottom_row():
@@ -202,14 +203,15 @@ def test_affine_bottom_row():
 def test_affine_inverse():
     incs, outcs, aff = affine_v2w()
     inv = np.linalg.inv(aff)
-    cm = AffineTransform(aff, incs, outcs)
+    cm = AffineTransform(incs, outcs, aff)
     invmap = cm.inverse_function
     x = np.array([10, 20, 30])
     x_roundtrip = cm.function(invmap(x))
     yield assert_equal, x_roundtrip, x
     badaff = np.array([[1,2,3],[0,0,1]])
-    badcm = AffineTransform(badaff, CoordinateSystem('ij'),
-                            CoordinateSystem('x'))
+    badcm = AffineTransform(CoordinateSystem('ij'),
+                            CoordinateSystem('x'),
+                            badaff)
     yield assert_raises, AttributeError, getattr, badcm, 'inverse_function'
 
 
@@ -243,7 +245,7 @@ def test_affine_identity():
 
 def test_affine_copy():
     incs, outcs, aff = affine_v2w()
-    cm = AffineTransform(aff, incs, outcs)
+    cm = AffineTransform(incs, outcs, aff)
     import copy
     cmcp = copy.copy(cm)
     yield assert_equal, cmcp.affine, cm.affine
@@ -257,7 +259,7 @@ def test_affine_copy():
 
 def test_reordered_domain():
     incs, outcs, map, inv = voxel_to_world()
-    cm = CoordinateMap(map, incs, outcs, inv)
+    cm = CoordinateMap(incs, outcs, map, inv)
     recm = cm.reordered_domain('jki')
     yield assert_equal, recm.function_domain.coord_names, ('j', 'k', 'i')
     yield assert_equal, recm.function_range.coord_names, outcs.coord_names
@@ -273,24 +275,24 @@ def test_reordered_domain():
 
 def test_str():
     result = """AffineTransform(
+   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
    affine=array([[ 1.,  0.,  0.,  0.],
                  [ 0.,  1.,  0.,  0.],
                  [ 0.,  0.,  1.,  0.],
-                 [ 0.,  0.,  0.,  1.]]),
-   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
+                 [ 0.,  0.,  0.,  1.]])
 )"""
     domain = CoordinateSystem('ijk')
     range = CoordinateSystem('xyz')
     affine = np.identity(4)
-    affine_mapping = AffineTransform(affine, domain, range)
+    affine_mapping = AffineTransform(domain, range, affine)
     yield assert_equal, result, str(affine_mapping)
 
-    cmap = CoordinateMap(np.exp, domain, range, np.log)
+    cmap = CoordinateMap(domain, range, np.exp, np.log)
     result="""CoordinateMap(
-   function=<ufunc 'exp'>,
    function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
    function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+   function=<ufunc 'exp'>,
    inverse_function=<ufunc 'log'>
   )"""
 
@@ -300,7 +302,7 @@ def test_str():
 
 def test_reordered_range():
     incs, outcs, map, inv = voxel_to_world()
-    cm = CoordinateMap(map, incs, outcs, inv)
+    cm = CoordinateMap(incs, outcs, inv, map)
     recm = cm.reordered_range('yzx')
     yield assert_equal, recm.function_domain.coord_names, incs.coord_names
     yield assert_equal, recm.function_range.coord_names, ('y', 'z', 'x')
