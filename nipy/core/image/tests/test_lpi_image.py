@@ -50,10 +50,10 @@ def test_reordered_etc():
 
     data = np.random.standard_normal((3,4,5))
     affine = np.random.standard_normal((4,4))
+    affine[-1] = [0,0,0,1]
     yield assert_raises, ValueError, lpi_image.LPIImage, data, affine, 'ij'
 
     data = np.random.standard_normal((3,4,5,6,7))
-    affine = np.random.standard_normal((4,4))
     lpi_im = lpi_image.LPIImage(data, affine, 'ijklm')
     yield assert_raises, ValueError, lpi_im.resampled_to_img, lpi_im
 
