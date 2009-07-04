@@ -80,7 +80,12 @@ from nipy.io.api import save_image
 
 # Cleanup namespace
 del _test_local_install
-del version
-del testing, Tester
+# If this file is exec after being imported, the following lines will
+# fail
+try:
+    del version
+    del Tester
+except:
+    pass
 
 
