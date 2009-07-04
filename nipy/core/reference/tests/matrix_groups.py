@@ -63,8 +63,8 @@ class MatrixGroup(Linear):
     coords = property(_getcoords)
 
     def _getinverse(self):
-        cmapi = super(MatrixGroup, self).inverse
-        return self.__class__(cmapi.affine[:-1,:-1], self.coords)
+        inv_matrix = np.linalg.inv(self.affine[:-1,:-1])
+        return self.__class__(inv_matrix, self.coords)
     inverse = property(_getinverse)
 
 ###################################################################################
