@@ -8,7 +8,7 @@ from scipy import ndimage
 # Local imports
 from nipy.core.transforms.affines import from_matrix_vector, \
                      to_matrix_vector
-from nipy.core.api import Affine as AffineTransform, Image, CoordinateSystem
+from nipy.core.api import AffineTransform, Image, CoordinateSystem
 from nipy.core.reference.coordinate_map import compose, product as cmap_product
 from nipy.algorithms.resample import resample
 

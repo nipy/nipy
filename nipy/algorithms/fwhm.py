@@ -22,7 +22,7 @@ import numpy as np
 from numpy.linalg import det
 from nipy.fixes.scipy.stats.models.utils import recipr
 
-from nipy.core.api import Image, Affine, CoordinateSystem
+from nipy.core.api import Image
 
 class Resels(object):
     """The Resels class.

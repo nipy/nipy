@@ -1,19 +1,19 @@
 """
-This module is essentially a test of the Affine object to 
+This module is essentially a test of the AffineTransform object to 
 see if it can succinctly describe an object like a matrix group.
 """
 
 import numpy as np
 
-from nipy.core.api import CoordinateSystem, Affine
+from nipy.core.api import CoordinateSystem, AffineTransform
 from nipy.core.reference.coordinate_map import compose, product as cmap_product
 
 ###################################################################################
 
-class Linear(Affine):
+class Linear(AffineTransform):
 
     """
-    Subclass of Affine that is Linear as opposed to Affine, i.e. the translation is 0.
+    Subclass of AffineTransform that is Linear as opposed to AffineTransform, i.e. the translation is 0.
 
     It is instantiated with an matrix of shape (ndim,ndim) instead of (ndim+1,ndim+1)
     """
@@ -25,7 +25,7 @@ class Linear(Affine):
         ndim = matrix.shape[0]
         T = np.identity(ndim+1, dtype=matrix.dtype)
         T[:-1,:-1] = matrix
-        Affine.__init__(self, T, input_coords, output_coords)
+        AffineTransform.__init__(self, T, input_coords, output_coords)
 
 ###################################################################################
 

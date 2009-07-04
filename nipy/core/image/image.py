@@ -12,7 +12,7 @@ from nipy.utils.onetime import setattr_on_read
 # These imports are used in the fromarray and subsample 
 # functions only, not in Image
 
-from nipy.core.reference.coordinate_map import Affine as AffineTransform
+from nipy.core.reference.coordinate_map import AffineTransform
 from nipy.core.reference.array_coords import ArrayCoordMap
 
 __docformat__ = 'restructuredtext'
@@ -189,7 +189,7 @@ class Image(object):
         >>> im_reordered.shape
         (30, 40, 50)
         >>> im_reordered.coordmap
-        Affine(
+        AffineTransform(
            affine=array([[ 0.,  0.,  6.,  3.],
                          [ 4.,  0.,  0.,  1.],
                          [ 0.,  5.,  0.,  2.],
@@ -218,7 +218,7 @@ class Image(object):
 
         >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6])
         >>> cmap
-        Affine(
+        AffineTransform(
            affine=array([[ 4.,  0.,  0.,  1.],
                          [ 0.,  5.,  0.,  2.],
                          [ 0.,  0.,  6.,  3.],
@@ -231,7 +231,7 @@ class Image(object):
         >>> im_reordered.shape
         (50, 30, 40)
         >>> im_reordered.coordmap
-        Affine(
+        AffineTransform(
            affine=array([[ 0.,  4.,  0.,  1.],
                          [ 0.,  0.,  5.,  2.],
                          [ 6.,  0.,  0.,  3.],

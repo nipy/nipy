@@ -13,7 +13,7 @@ The class Grid is meant to take a CoordinateMap and an np.mgrid-like
 notation to create an ArrayCoordMap.
 """
 import numpy as np
-from coordinate_map import CoordinateMap, Affine, compose
+from coordinate_map import CoordinateMap, AffineTransform, compose
 from coordinate_map import product as cmap_product
 from coordinate_system import CoordinateSystem
 
@@ -154,7 +154,7 @@ def _slice(coordmap, shape, *slices):
             name = coordmap.input_coords.coord_names[i] + '-slice'
         else:
             name = coordmap.input_coords.coord_names[i]
-        cmaps.append(Affine(
+        cmaps.append(AffineTransform(
                 np.array([[step, start],[0,1]], dtype=dtype), 
                 CoordinateSystem([name], coord_dtype=dtype),
                 CoordinateSystem([coordmap.input_coords.coord_names[i]])))
@@ -174,12 +174,12 @@ def _slice(coordmap, shape, *slices):
         A[:,j] = slice_cmap.affine[:,i]
     A[:,-1] = slice_cmap.affine[:,-1]
     A = A.astype(input_coords.coord_dtype)
-    slice_cmap = Affine(A, input_coords, coordmap.input_coords)
+    slice_cmap = AffineTransform(A, input_coords, coordmap.input_coords)
     return ArrayCoordMap(compose(coordmap, slice_cmap), tuple(newshape))
                    
 class Grid(object):
     """
-    Simple class to construct Affine instances with slice notation
+    Simple class to construct AffineTransform instances with slice notation
     like np.ogrid/np.mgrid.
 
     >>> c = CoordinateSystem('xy', 'input')
@@ -212,12 +212,12 @@ class Grid(object):
         coords: ``CoordinateMap`` or ``CoordinateSystem``
            A coordinate map to be 'sliced' into. If
            coords is a CoordinateSystem, then an
-           Affine instance is created with coords
+           AffineTransform instance is created with coords
            with identity transformation.
         """
 
         if isinstance(coords, CoordinateSystem):
-            coordmap = Affine(np.identity(len(coords.coord_names)+1), coords, coords)
+            coordmap = AffineTransform(np.identity(len(coords.coord_names)+1), coords, coords)
         elif not isinstance(coords, CoordinateMap):
             raise ValueError('expecting either a CoordinateMap or a CoordinateSystem for Grid')
         else:
@@ -226,7 +226,7 @@ class Grid(object):
 
     def __getitem__(self, index):
         """
-        Create an Affine coordinate map with into self.coords with
+        Create an AffineTransform coordinate map with into self.coords with
         slices created as in np.mgrid/np.ogrid.
         """
         dtype = self.coordmap.input_coords.coord_dtype
@@ -241,7 +241,7 @@ class Grid(object):
             else:
                 step = 0
             start = result[0]
-            cmaps.append(Affine(
+            cmaps.append(AffineTransform(
                     np.array([[step, start],[0,1]], dtype=dtype), 
                     CoordinateSystem(['i%d' % i], coord_dtype=dtype),
                     CoordinateSystem([self.coordmap.input_coords.coord_names[i]],

@@ -7,7 +7,7 @@ from nipy.core.image import image
 from nipy.core.api import Image, fromarray, subsample, slice_maker
 from nipy.core.api import parcels, data_generator, write_data
 
-from nipy.core.reference.coordinate_map import Affine
+from nipy.core.reference.coordinate_map import AffineTransform
 
 def setup():
     # Suppress warnings during tests to reduce noise
@@ -156,7 +156,7 @@ def test_ArrayLikeObj():
     obj = ArrayLikeObj()
     # create simple coordmap
     xform = np.eye(4)
-    coordmap = Affine.from_params('xyz', 'ijk', xform)
+    coordmap = AffineTransform.from_params('xyz', 'ijk', xform)
     
     # create image form array-like object and coordmap
     img = image.Image(obj, coordmap)
@@ -208,7 +208,7 @@ def test_defaults_4D():
 
 def test_rollaxis():
     data = np.random.standard_normal((3,4,7,5))
-    im = Image(data, Affine.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
+    im = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
 
     for i, o, n in zip('ijkl', 'xyzt', range(4)):
         im_i = image.rollaxis(im, i)

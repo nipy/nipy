@@ -4,7 +4,7 @@ import numpy as np
 
 from nipy.core.image.image import Image, rollaxis
 from nipy.core.reference.coordinate_map import CoordinateSystem, \
-    Affine, compose
+    AffineTransform, compose
 
 class ImageList(object):
     ''' Class to contain ND image as list of (N-1)D images '''
@@ -73,7 +73,7 @@ class ImageList(object):
         drop1st_range = CoordinateSystem(image.world.coord_names[1:],
                                  name=image.world.name,
                                  coord_dtype=image.world.coord_dtype)
-        drop1st_coordmap = Affine(drop1st, drop1st_domain, drop1st_range)
+        drop1st_coordmap = AffineTransform(drop1st, drop1st_domain, drop1st_range)
 
         # And arbitrarily add a 0 for the first axis
 
@@ -83,7 +83,7 @@ class ImageList(object):
                                  name=image.axes.name,
                                  coord_dtype=image.axes.coord_dtype)
         add0_range = image.axes
-        add0_coordmap = Affine(add0, add0_domain, add0_range)
+        add0_coordmap = AffineTransform(add0, add0_domain, add0_range)
 
         coordmap = compose(drop1st_coordmap, image.coordmap, add0_coordmap)
                                          

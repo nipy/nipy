@@ -4,7 +4,7 @@ import numpy as np
 from nipy.io.api import load_image
 from nipy.core.image import lpi_image
 from nipy.core.api import Image
-from nipy.core.reference.coordinate_map import Affine as AffineTransform, CoordinateSystem
+from nipy.core.reference.coordinate_map import AffineTransform, CoordinateSystem
 
 
 fmri_file = 'filtered_func_data.img'

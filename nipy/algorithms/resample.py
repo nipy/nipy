@@ -6,7 +6,7 @@ from scipy.ndimage import affine_transform
 import numpy as np
 
 from nipy.algorithms.interpolation import ImageInterpolator
-from nipy.core.api import Image, CoordinateMap, Affine, ArrayCoordMap, compose
+from nipy.core.api import Image, CoordinateMap, AffineTransform, ArrayCoordMap, compose
 import nipy.core.transforms.affines as affines
 
 
@@ -49,9 +49,9 @@ def resample(image, target, mapping, shape, order=3):
 
      # image world to target world mapping
 
-        TW2IW = Affine(mapping, target.output_coords, image.coordmap.output_coords)
+        TW2IW = AffineTransform(mapping, target.output_coords, image.coordmap.output_coords)
     else:
-        if isinstance(mapping, Affine):
+        if isinstance(mapping, AffineTransform):
             TW2IW = mapping
         else:
             TW2IW = CoordinateMap(mapping, target.output_coords, image.coordmap.output_coords)
@@ -65,7 +65,7 @@ def resample(image, target, mapping, shape, order=3):
     # CoordinateMap describing mapping from target voxel to
     # image world coordinates
 
-    if not isinstance(TV2IW, Affine):
+    if not isinstance(TV2IW, AffineTransform):
         # interpolator evaluates image at values image.coordmap.output_coords,
         # i.e. physical coordinates rather than voxel coordinates
 
@@ -76,7 +76,7 @@ def resample(image, target, mapping, shape, order=3):
         del(interp)
     else:
         TV2IV = compose(image.coordmap.inverse, TV2IW)
-        if isinstance(TV2IV, Affine):
+        if isinstance(TV2IV, AffineTransform):
             A, b = affines.to_matrix_vector(TV2IV.affine)
             idata = affine_transform(np.asarray(image), A,
                                      offset=b,

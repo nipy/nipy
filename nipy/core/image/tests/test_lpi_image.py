@@ -4,7 +4,7 @@ from nipy.testing import *
 from nipy.core.image import lpi_image
 from nipy.core.api import Image
 import numpy as np
-from nipy.core.reference.coordinate_map import compose, Affine as AffineTransform, CoordinateSystem
+from nipy.core.reference.coordinate_map import compose, AffineTransform, CoordinateSystem
 from nipy.algorithms.resample import resample
 
 

@@ -1,7 +1,7 @@
 import numpy as np
 from nipy.testing import *
 
-from nipy.core.reference.coordinate_map import CoordinateMap, Affine, \
+from nipy.core.reference.coordinate_map import CoordinateMap, AffineTransform, \
     compose, CoordinateSystem, product, \
     concat, linearize
 
@@ -18,16 +18,16 @@ def setup():
         return x/2.0
     x = CoordinateSystem('x', 'x')
     E.a = CoordinateMap(f, x, x)
-    E.b = CoordinateMap(f, x, x, inverse_mapping=g)
+    E.b = CoordinateMap(f, x, x, inverse_function=g)
     E.c = CoordinateMap(g, x, x)        
-    E.d = CoordinateMap(g, x, x, inverse_mapping=f)        
-    E.e = Affine.identity('ijk')
+    E.d = CoordinateMap(g, x, x, inverse_function=f)        
+    E.e = AffineTransform.identity('ijk')
 
     A = np.identity(4)
     A[0:3] = np.random.standard_normal((3,4))
-    E.mapping = Affine.from_params('ijk' ,'xyz', A)
+    E.mapping = AffineTransform.from_params('ijk' ,'xyz', A)
     
-    E.singular = Affine.from_params('ijk', 'xyzt',
+    E.singular = AffineTransform.from_params('ijk', 'xyzt',
                                     np.array([[ 0,  1,  2,  3],
                                               [ 4,  5,  6,  7],
                                               [ 8,  9, 10, 11],
@@ -59,9 +59,9 @@ def test_compose():
     bb = compose(E.b,E.b)
     yield assert_true, bb.inverse is not None
     aff1 = np.diag([1,2,3,1])
-    cm1 = Affine.from_params('ijk', 'xyz', aff1)
+    cm1 = AffineTransform.from_params('ijk', 'xyz', aff1)
     aff2 = np.diag([4,5,6,1])
-    cm2 = Affine.from_params('xyz', 'abc', aff2)
+    cm2 = AffineTransform.from_params('xyz', 'abc', aff2)
     # compose mapping from 'ijk' to 'abc'
     compcm = compose(cm2, cm1)
     yield assert_equal, compcm.input_coords.coord_names, ('i', 'j', 'k')
@@ -114,10 +114,10 @@ def test_comap_init():
     # Test mapping and non-mapping functions
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(map, incs, outcs, inv)
-    yield assert_equal, cm.mapping, map
+    yield assert_equal, cm.function, map
     yield assert_equal, cm.input_coords, incs
     yield assert_equal, cm.output_coords, outcs
-    yield assert_equal, cm.inverse_mapping, inv
+    yield assert_equal, cm.inverse_function, inv
     yield assert_raises, ValueError, CoordinateMap, 'foo', incs, outcs, inv
     yield assert_raises, ValueError, CoordinateMap, map, incs, outcs, 'bar'
 
@@ -126,14 +126,14 @@ def test_comap_copy():
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(map, incs, outcs, inv)
     cmcp = cm.copy()
-    yield assert_equal, cmcp.mapping, cm.mapping
+    yield assert_equal, cmcp.function, cm.function
     yield assert_equal, cmcp.input_coords, cm.input_coords
     yield assert_equal, cmcp.output_coords, cm.output_coords
-    yield assert_equal, cmcp.inverse_mapping, cm.inverse_mapping
+    yield assert_equal, cmcp.inverse_function, cm.inverse_function
 
 
 #
-# Affine tests
+# AffineTransform tests
 #
 
 def affine_v2w():
@@ -152,59 +152,59 @@ def affine_v2w():
 
 def test_affine_init():
     incs, outcs, aff = affine_v2w()
-    cm = Affine(aff, incs, outcs)
+    cm = AffineTransform(aff, incs, outcs)
     yield assert_equal, cm.input_coords, incs
     yield assert_equal, cm.output_coords, outcs
     yield assert_equal, cm.affine, aff
     badaff = np.diag([1,2])
-    yield assert_raises, ValueError, Affine, badaff, incs, outcs
+    yield assert_raises, ValueError, AffineTransform, badaff, incs, outcs
 
 
 def test_affine_inverse():
     incs, outcs, aff = affine_v2w()
     inv = np.linalg.inv(aff)
-    cm = Affine(aff, incs, outcs)
-    invmap = cm.inverse_mapping
+    cm = AffineTransform(aff, incs, outcs)
+    invmap = cm.inverse_function
     x = np.array([10, 20, 30])
-    x_roundtrip = cm.mapping(invmap(x))
+    x_roundtrip = cm.function(invmap(x))
     yield assert_equal, x_roundtrip, x
     badaff = np.array([[1,2,3],[4,5,6]])
-    badcm = Affine(aff, incs, outcs)
+    badcm = AffineTransform(aff, incs, outcs)
     badcm._affine = badaff
-    yield assert_raises, ValueError, getattr, badcm, 'inverse_mapping'
+    yield assert_raises, ValueError, getattr, badcm, 'inverse_function'
 
 
 def test_affine_from_params():
     incs, outcs, aff = affine_v2w()
-    cm = Affine.from_params('ijk', 'xyz', aff)
+    cm = AffineTransform.from_params('ijk', 'xyz', aff)
     yield assert_equal, cm.affine, aff
     badaff = np.array([[1,2,3],[4,5,6]])
-    yield assert_raises, ValueError, Affine.from_params, 'ijk', 'xyz', badaff
+    yield assert_raises, ValueError, AffineTransform.from_params, 'ijk', 'xyz', badaff
 
 
 def test_affine_start_step():
     incs, outcs, aff = affine_v2w()
     start = aff[:3, 3]
     step = aff.diagonal()[:3]
-    cm = Affine.from_start_step(incs.coord_names, outcs.coord_names,
+    cm = AffineTransform.from_start_step(incs.coord_names, outcs.coord_names,
                                 start, step)
     yield assert_equal, cm.affine, aff
-    yield assert_raises, ValueError, Affine.from_start_step, 'ijk', 'xy', \
+    yield assert_raises, ValueError, AffineTransform.from_start_step, 'ijk', 'xy', \
         start, step
 
 
 def test_affine_identity():
-    aff = Affine.identity('ijk')
+    aff = AffineTransform.identity('ijk')
     yield assert_equal, aff.affine, np.eye(4)
     yield assert_equal, aff.input_coords, aff.output_coords
     x = np.array([3, 4, 5])
-    y = aff.mapping(x)
+    y = aff.function(x)
     yield assert_equal, y, x
 
 
 def test_affine_copy():
     incs, outcs, aff = affine_v2w()
-    cm = Affine(aff, incs, outcs)
+    cm = AffineTransform(aff, incs, outcs)
     cmcp = cm.copy()
     yield assert_equal, cmcp.affine, cm.affine
     yield assert_equal, cmcp.input_coords, cm.input_coords
@@ -232,7 +232,7 @@ def test_reordered_input():
 
 
 def test_str():
-    result = """Affine(
+    result = """AffineTransform(
    affine=array([[ 1.,  0.,  0.,  0.],
                  [ 0.,  1.,  0.,  0.],
                  [ 0.,  0.,  1.,  0.],
@@ -243,11 +243,11 @@ def test_str():
     domain = CoordinateSystem('ijk')
     range = CoordinateSystem('xyz')
     affine = np.identity(4)
-    affine_mapping = Affine(affine, domain, range)
+    affine_mapping = AffineTransform(affine, domain, range)
     yield assert_equal, result, str(affine_mapping)
 
     result="""CoordinateMap(
-   mapping,
+   function,
    input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
    output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
   )"""
@@ -272,8 +272,8 @@ def test_reordered_output():
 
 
 def test_product():
-    cm1 = Affine.from_params('i', 'x', np.diag([2, 1]))
-    cm2 = Affine.from_params('j', 'y', np.diag([3, 1]))
+    cm1 = AffineTransform.from_params('i', 'x', np.diag([2, 1]))
+    cm2 = AffineTransform.from_params('j', 'y', np.diag([3, 1]))
     cm = product(cm1, cm2)
     yield assert_equal, cm.input_coords.coord_names, ('i', 'j')
     yield assert_equal, cm.output_coords.coord_names, ('x', 'y')
@@ -281,7 +281,7 @@ def test_product():
 
 
 def test_concat():
-    cm1 = Affine.from_params('i', 'x', np.diag([2, 1]))
+    cm1 = AffineTransform.from_params('i', 'x', np.diag([2, 1]))
     cm2 = concat(cm1, 'j')
     cm3 = concat(cm1, 'j', append=True)
 
@@ -302,11 +302,11 @@ def test_concat():
 
 def test_linearize():
     aff = np.diag([1,2,3,1])
-    cm = Affine.from_params('ijk', 'xyz', aff)
-    lincm = linearize(cm.mapping, cm.ndims[0])
+    cm = AffineTransform.from_params('ijk', 'xyz', aff)
+    lincm = linearize(cm.function, cm.ndims[0])
     yield assert_equal, lincm, aff
     origin = np.array([10, 20, 30], dtype=cm.input_coords.coord_dtype)
-    lincm = linearize(cm.mapping, cm.ndims[0], origin=origin)
+    lincm = linearize(cm.function, cm.ndims[0], origin=origin)
     xform = np.array([[  1.,   0.,   0.,  10.],
                       [  0.,   2.,   0.,  40.],
                       [  0.,   0.,   3.,  90.],
@@ -314,5 +314,5 @@ def test_linearize():
     yield assert_equal, lincm, xform
     # dtype mismatch
     #origin = np.array([10, 20, 30], dtype=np.int16)
-    #yield assert_raises, UserWarning, linearize, cm.mapping, cm.ndims[0], \
+    #yield assert_raises, UserWarning, linearize, cm.function, cm.ndims[0], \
     #    1, origin

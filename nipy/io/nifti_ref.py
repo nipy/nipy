@@ -55,7 +55,7 @@ import warnings
 
 import numpy as np
 
-from nipy.core.api import CoordinateSystem, Affine
+from nipy.core.api import CoordinateSystem, AffineTransform
 
 # (i,j,k) = ('phase', 'frequency', 'slice')
 valid_input_axisnames = tuple('ijklmno')
@@ -80,14 +80,14 @@ def iscoerceable(coordmap):
 
     Examples
     --------
-    >>> from nipy.core.api import CoordinateSystem as CS, Affine
-    >>> cmap = Affine(np.eye(5), CS('kjil'), CS('xyzt'))
+    >>> from nipy.core.api import CoordinateSystem as CS, AffineTransform
+    >>> cmap = AffineTransform(np.eye(5), CS('kjil'), CS('xyzt'))
     >>> iscoerceable(cmap)
     True
-    >>> cmap = Affine(np.eye(5), CS('lijk'), CS('xyzt'))
+    >>> cmap = AffineTransform(np.eye(5), CS('lijk'), CS('xyzt'))
     >>> iscoerceable(cmap)
     True
-    >>> cmap = Affine(np.eye(5), CS('ijkq'), CS('xyzt'))
+    >>> cmap = AffineTransform(np.eye(5), CS('ijkq'), CS('xyzt'))
     >>> iscoerceable(cmap)
     False
     """
@@ -208,7 +208,7 @@ def coerce_coordmap(coordmap):
     newincoords = CoordinateSystem([coords[i] for i in intrans], inname)
     coords = coordmap.output_coords.coord_names
     newoutcoords = CoordinateSystem([coords[i] for i in outtrans], outname)
-    return Affine(A, newincoords, newoutcoords), intrans
+    return AffineTransform(A, newincoords, newoutcoords), intrans
 
 
 def coordmap_from_affine(affine, ijk):
@@ -259,7 +259,7 @@ def coordmap_from_affine(affine, ijk):
     incoords = CoordinateSystem(innames, 'input')
     outnames = valid_output_axisnames[:ndim_out]
     outcoords = CoordinateSystem(outnames, 'output')
-    return Affine(affine, incoords, outcoords)
+    return AffineTransform(affine, incoords, outcoords)
 
 
 def ijk_from_fps(fps):
