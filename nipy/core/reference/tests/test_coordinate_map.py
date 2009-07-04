@@ -64,8 +64,8 @@ def test_compose():
     cm2 = AffineTransform.from_params('xyz', 'abc', aff2)
     # compose mapping from 'ijk' to 'abc'
     compcm = compose(cm2, cm1)
-    yield assert_equal, compcm.input_coords.coord_names, ('i', 'j', 'k')
-    yield assert_equal, compcm.output_coords.coord_names, ('a', 'b', 'c')
+    yield assert_equal, compcm.function_domain.coord_names, ('i', 'j', 'k')
+    yield assert_equal, compcm.function_range.coord_names, ('a', 'b', 'c')
     yield assert_equal, compcm.affine, np.dot(aff2, aff1)
     # check invalid coordinate mappings
     yield assert_raises, ValueError, compose, cm1, cm2
@@ -115,8 +115,8 @@ def test_comap_init():
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(map, incs, outcs, inv)
     yield assert_equal, cm.function, map
-    yield assert_equal, cm.input_coords, incs
-    yield assert_equal, cm.output_coords, outcs
+    yield assert_equal, cm.function_domain, incs
+    yield assert_equal, cm.function_range, outcs
     yield assert_equal, cm.inverse_function, inv
     yield assert_raises, ValueError, CoordinateMap, 'foo', incs, outcs, inv
     yield assert_raises, ValueError, CoordinateMap, map, incs, outcs, 'bar'
@@ -127,8 +127,8 @@ def test_comap_copy():
     cm = CoordinateMap(map, incs, outcs, inv)
     cmcp = cm.copy()
     yield assert_equal, cmcp.function, cm.function
-    yield assert_equal, cmcp.input_coords, cm.input_coords
-    yield assert_equal, cmcp.output_coords, cm.output_coords
+    yield assert_equal, cmcp.function_domain, cm.function_domain
+    yield assert_equal, cmcp.function_range, cm.function_range
     yield assert_equal, cmcp.inverse_function, cm.inverse_function
 
 
@@ -153,8 +153,8 @@ def affine_v2w():
 def test_affine_init():
     incs, outcs, aff = affine_v2w()
     cm = AffineTransform(aff, incs, outcs)
-    yield assert_equal, cm.input_coords, incs
-    yield assert_equal, cm.output_coords, outcs
+    yield assert_equal, cm.function_domain, incs
+    yield assert_equal, cm.function_range, outcs
     yield assert_equal, cm.affine, aff
     badaff = np.diag([1,2])
     yield assert_raises, ValueError, AffineTransform, badaff, incs, outcs
@@ -196,7 +196,7 @@ def test_affine_start_step():
 def test_affine_identity():
     aff = AffineTransform.identity('ijk')
     yield assert_equal, aff.affine, np.eye(4)
-    yield assert_equal, aff.input_coords, aff.output_coords
+    yield assert_equal, aff.function_domain, aff.function_range
     x = np.array([3, 4, 5])
     y = aff.function(x)
     yield assert_equal, y, x
@@ -207,8 +207,8 @@ def test_affine_copy():
     cm = AffineTransform(aff, incs, outcs)
     cmcp = cm.copy()
     yield assert_equal, cmcp.affine, cm.affine
-    yield assert_equal, cmcp.input_coords, cm.input_coords
-    yield assert_equal, cmcp.output_coords, cm.output_coords
+    yield assert_equal, cmcp.function_domain, cm.function_domain
+    yield assert_equal, cmcp.function_range, cm.function_range
 
 
 #
@@ -219,16 +219,16 @@ def test_reordered_input():
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(map, incs, outcs, inv)
     recm = cm.reordered_input('jki')
-    yield assert_equal, recm.input_coords.coord_names, ('j', 'k', 'i')
-    yield assert_equal, recm.output_coords.coord_names, outcs.coord_names
-    yield assert_equal, recm.input_coords.name, incs.name
-    yield assert_equal, recm.output_coords.name, outcs.name
+    yield assert_equal, recm.function_domain.coord_names, ('j', 'k', 'i')
+    yield assert_equal, recm.function_range.coord_names, outcs.coord_names
+    yield assert_equal, recm.function_domain.name, incs.name
+    yield assert_equal, recm.function_range.name, outcs.name
     # default reverse reorder
     recm = cm.reordered_input()
-    yield assert_equal, recm.input_coords.coord_names, ('k', 'j', 'i')
+    yield assert_equal, recm.function_domain.coord_names, ('k', 'j', 'i')
     # reorder with order as indices
     recm = cm.reordered_input([2,0,1])
-    yield assert_equal, recm.input_coords.coord_names, ('k', 'i', 'j')
+    yield assert_equal, recm.function_domain.coord_names, ('k', 'i', 'j')
 
 
 def test_str():
@@ -237,8 +237,8 @@ def test_str():
                  [ 0.,  1.,  0.,  0.],
                  [ 0.,  0.,  1.,  0.],
                  [ 0.,  0.,  0.,  1.]]),
-   input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
-   output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
+   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
 )"""
     domain = CoordinateSystem('ijk')
     range = CoordinateSystem('xyz')
@@ -248,8 +248,8 @@ def test_str():
 
     result="""CoordinateMap(
    function,
-   input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
-   output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
+   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
   )"""
     yield assert_equal, result, CoordinateMap.__repr__(affine_mapping)
 
@@ -259,24 +259,24 @@ def test_reordered_output():
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(map, incs, outcs, inv)
     recm = cm.reordered_output('yzx')
-    yield assert_equal, recm.input_coords.coord_names, incs.coord_names
-    yield assert_equal, recm.output_coords.coord_names, ('y', 'z', 'x')
-    yield assert_equal, recm.input_coords.name, incs.name
-    yield assert_equal, recm.output_coords.name, outcs.name
+    yield assert_equal, recm.function_domain.coord_names, incs.coord_names
+    yield assert_equal, recm.function_range.coord_names, ('y', 'z', 'x')
+    yield assert_equal, recm.function_domain.name, incs.name
+    yield assert_equal, recm.function_range.name, outcs.name
     # default reverse order
     recm = cm.reordered_output()
-    yield assert_equal, recm.output_coords.coord_names, ('z', 'y', 'x')
+    yield assert_equal, recm.function_range.coord_names, ('z', 'y', 'x')
     # reorder with indicies
     recm = cm.reordered_output([2,0,1])
-    yield assert_equal, recm.output_coords.coord_names, ('z', 'x', 'y')    
+    yield assert_equal, recm.function_range.coord_names, ('z', 'x', 'y')    
 
 
 def test_product():
     cm1 = AffineTransform.from_params('i', 'x', np.diag([2, 1]))
     cm2 = AffineTransform.from_params('j', 'y', np.diag([3, 1]))
     cm = product(cm1, cm2)
-    yield assert_equal, cm.input_coords.coord_names, ('i', 'j')
-    yield assert_equal, cm.output_coords.coord_names, ('x', 'y')
+    yield assert_equal, cm.function_domain.coord_names, ('i', 'j')
+    yield assert_equal, cm.function_range.coord_names, ('x', 'y')
     yield assert_equal, cm.affine, np.diag([2, 3, 1])
 
 
@@ -285,11 +285,11 @@ def test_concat():
     cm2 = concat(cm1, 'j')
     cm3 = concat(cm1, 'j', append=True)
 
-    yield assert_equal, cm2.input_coords.coord_names, ('j','i')
-    yield assert_equal, cm2.output_coords.coord_names, ('j','x')
+    yield assert_equal, cm2.function_domain.coord_names, ('j','i')
+    yield assert_equal, cm2.function_range.coord_names, ('j','x')
 
-    yield assert_equal, cm3.output_coords.coord_names, ('x', 'j')
-    yield assert_equal, cm3.input_coords.coord_names, ('i', 'j')
+    yield assert_equal, cm3.function_range.coord_names, ('x', 'j')
+    yield assert_equal, cm3.function_domain.coord_names, ('i', 'j')
 
     yield assert_almost_equal, cm2.affine, np.array([[1,0,0],
                                                      [0,2,0],
@@ -305,7 +305,7 @@ def test_linearize():
     cm = AffineTransform.from_params('ijk', 'xyz', aff)
     lincm = linearize(cm.function, cm.ndims[0])
     yield assert_equal, lincm, aff
-    origin = np.array([10, 20, 30], dtype=cm.input_coords.coord_dtype)
+    origin = np.array([10, 20, 30], dtype=cm.function_domain.coord_dtype)
     lincm = linearize(cm.function, cm.ndims[0], origin=origin)
     xform = np.array([[  1.,   0.,   0.,  10.],
                       [  0.,   2.,   0.,  40.],

@@ -10,7 +10,7 @@ import numpy as np
 __docformat__ = 'restructuredtext'
 
 
-def from_origin_and_columns(origin, colvectors, shape, output_coords):
+def from_origin_and_columns(origin, colvectors, shape, function_range):
     """
     Return a CoordinateMap representing a slice based on a given origin, 
     a pair of direction vectors which span the slice, and a shape.
@@ -20,7 +20,7 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
                  point
         colvectors : the steps in each voxel direction
         shape : how many steps in each voxel direction
-        output_coords : a CoordinateSystem for the output
+        function_range : a CoordinateSystem for the output
 
     :Returns: `CoordinateMap`
     """
@@ -34,13 +34,13 @@ def from_origin_and_columns(origin, colvectors, shape, output_coords):
     f[0:nout,-1] = origin
     f[nout, nin] = 1.
 
-    input_coords = CoordinateSystem(['i%d' % d for d in range(len(shape))], 
-                                    'slice', output_coords.coord_dtype)
+    function_domain = CoordinateSystem(['i%d' % d for d in range(len(shape))], 
+                                    'slice', function_range.coord_dtype)
 
-    g = AffineTransform(f, input_coords, output_coords)
+    g = AffineTransform(f, function_domain, function_range)
     return ArrayCoordMap.from_shape(g, shape)
 
-def xslice(x, zlim, ylim, output_coords, shape):
+def xslice(x, zlim, ylim, function_range, shape):
     """
     Return a slice through a 3d box with x fixed.
 
@@ -55,15 +55,15 @@ def xslice(x, zlim, ylim, output_coords, shape):
             TODO
         shape : TODO
             TODO
-        output_coords : TODO
+        function_range : TODO
             TODO
     """
     origin = [zlim[0],ylim[0],x]
     colvectors = [[(zlim[1]-zlim[0])/(shape[0] - 1.),0,0],
                   [0,(ylim[1]-ylim[0])/(shape[1] - 1.),0]]
-    return from_origin_and_columns(origin, colvectors, shape, output_coords)
+    return from_origin_and_columns(origin, colvectors, shape, function_range)
 
-def yslice(y, zlim, xlim, output_coords, shape):
+def yslice(y, zlim, xlim, function_range, shape):
     """
     Return a slice through a 3d box with y fixed.
 
@@ -78,15 +78,15 @@ def yslice(y, zlim, xlim, output_coords, shape):
             TODO
         shape : TODO
             TODO
-        output_coords : TODO
+        function_range : TODO
             TODO
     """
     origin = [zlim[0],y,xlim[0]]
     colvectors = [[(zlim[1]-zlim[0])/(shape[0] - 1.),0,0],
                   [0,0,(xlim[1]-xlim[0])/(shape[1] - 1.)]]
-    return from_origin_and_columns(origin, colvectors, shape, output_coords)
+    return from_origin_and_columns(origin, colvectors, shape, function_range)
 
-def zslice(z, ylim, xlim, output_coords, shape):    
+def zslice(z, ylim, xlim, function_range, shape):    
     """
     Return a slice through a 3d box with z fixed.
 
@@ -99,13 +99,13 @@ def zslice(z, ylim, xlim, output_coords, shape):
             TODO
         shape : TODO
             TODO
-        output_coords : TODO
+        function_range : TODO
             TODO
     """
     origin = [z,xlim[0],ylim[0]]
     colvectors = [[0,(ylim[1]-ylim[0])/(shape[0] - 1.),0],
                   [0,0,(xlim[1]-xlim[0])/(shape[1] - 1.)]]
-    return from_origin_and_columns(origin, colvectors, shape, output_coords)
+    return from_origin_and_columns(origin, colvectors, shape, function_range)
 
 
 

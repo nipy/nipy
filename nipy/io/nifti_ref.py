@@ -136,14 +136,14 @@ def coerce_coordmap(coordmap):
         raise ValueError, 'affine must be square to save as a NIFTI file'
     ndim = affine.shape[0] - 1
     # Verify input coordinates are a valid set (independent of order)
-    innames = coordmap.input_coords.coord_names
+    innames = coordmap.function_domain.coord_names
     vinput = valid_input_axisnames[:ndim]
     if set(vinput) != set(innames):
         raise ValueError('input coordinate axisnames of a %d-dimensional'
                          'Image must come from %s' % (ndim, vinput))
     # Verify output coordinates are a valid set (independent of order)
     voutput = valid_output_axisnames[:ndim]
-    outnames = coordmap.output_coords.coord_names
+    outnames = coordmap.function_range.coord_names
     if set(voutput) != set(outnames):
         raise ValueError('output coordinate axisnames of a %d-dimensional'
                          'Image must come from %s' % (ndim, voutput))
@@ -197,16 +197,16 @@ def coerce_coordmap(coordmap):
                       "will be lost in saving to NIFTI")
     # Create new coordinate systems
     if not np.allclose(inperm, np.identity(ndim+1)):
-        inname = coordmap.input_coords.name + '-reordered'
+        inname = coordmap.function_domain.name + '-reordered'
     else:
-        inname = coordmap.input_coords.name
+        inname = coordmap.function_domain.name
     if not np.allclose(outperm, np.identity(ndim+1)):
-        outname = coordmap.output_coords.name + '-reordered'
+        outname = coordmap.function_range.name + '-reordered'
     else:
-        outname = coordmap.output_coords.name
-    coords = coordmap.input_coords.coord_names
+        outname = coordmap.function_range.name
+    coords = coordmap.function_domain.coord_names
     newincoords = CoordinateSystem([coords[i] for i in intrans], inname)
-    coords = coordmap.output_coords.coord_names
+    coords = coordmap.function_range.coord_names
     newoutcoords = CoordinateSystem([coords[i] for i in outtrans], outname)
     return AffineTransform(A, newincoords, newoutcoords), intrans
 
@@ -236,14 +236,14 @@ def coordmap_from_affine(affine, ijk):
     Examples
     --------
     >>> cmap = coordmap_from_affine(np.eye(4), 'ijk')
-    >>> cmap.input_coords.coord_names
+    >>> cmap.function_domain.coord_names
     ('i', 'j', 'k')
-    >>> cmap.output_coords.coord_names
+    >>> cmap.function_range.coord_names
     ('x', 'y', 'z')
     >>> cmap = coordmap_from_affine(np.eye(5), 'kij')
-    >>> cmap.input_coords.coord_names
+    >>> cmap.function_domain.coord_names
     ('k', 'i', 'j', 'l')
-    >>> cmap.output_coords.coord_names
+    >>> cmap.function_range.coord_names
     ('x', 'y', 'z', 't')
     
     FIXME: This is an internal function and should be revisited when

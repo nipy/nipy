@@ -21,11 +21,11 @@ class Linear(AffineTransform):
         return self.affine[:-1,:-1]
     matrix = property(_getmatrix)
 
-    def __init__(self, matrix, input_coords, output_coords):
+    def __init__(self, matrix, function_domain, function_range):
         ndim = matrix.shape[0]
         T = np.identity(ndim+1, dtype=matrix.dtype)
         T[:-1,:-1] = matrix
-        AffineTransform.__init__(self, T, input_coords, output_coords)
+        AffineTransform.__init__(self, T, function_domain, function_range)
 
 ###################################################################################
 
@@ -59,7 +59,7 @@ class MatrixGroup(Linear):
         raise NotImplementedError
 
     def _getcoords(self):
-        return self.input_coords
+        return self.function_domain
     coords = property(_getcoords)
 
     def _getinverse(self):
@@ -197,7 +197,7 @@ def change_basis(element, bchange_linear):
     A change of basis is represented as a mapping between two
     coordinate systems and is also represented by a change of basis
     matrix.  This is expressed in this function as
-    bchange_linear.output_coords == element.coords
+    bchange_linear.function_range == element.coords
     
     This function expresses the same transformation L in a different
     basis.
@@ -206,9 +206,9 @@ def change_basis(element, bchange_linear):
 
     newcm = compose(bchange_linear.inverse, element, bchange_linear)
     matrix = newcm.affine[:-1,:-1]
-    if bchange_linear.output_coords != element.coords:
+    if bchange_linear.function_range != element.coords:
         raise ValueError('expecting the basis change mapping to have the same output coords as element')
-    return element.__class__(matrix, newcm.input_coords)
+    return element.__class__(matrix, newcm.function_domain)
 
 ###################################################################################
 
@@ -256,5 +256,5 @@ def product_homomorphism(*elements):
 
     newcmap = cmap_product(*elements)
     matrix = newcmap.affine[:-1,:-1]
-    return elements[0].__class__(matrix, newcmap.input_coords)
+    return elements[0].__class__(matrix, newcmap.function_domain)
 

@@ -16,9 +16,9 @@ Matthew, Cindee thoughts
 
 Should we change the order of input args to CoordinateMap to:
 
-CoordinateMap(input_coords, output_coords, mapping, inverse_mapping=None)
+CoordinateMap(function_domain, function_range, mapping, inverse_mapping=None)
 or keep as
-CoordinateMap(mapping, input_coords, output_coords, inverse_mapping=None)
+CoordinateMap(mapping, function_domain, function_range, inverse_mapping=None)
 
 Affine should be renamed to AffineMap, or AffineCoordMap, or something
 
@@ -58,25 +58,25 @@ class CoordinateMap(object):
 
     Attributes
     ----------
-    input_coords : :class:`CoordinateSystem`
+    function_domain : :class:`CoordinateSystem`
         The input coordinate system.
-    output_coords : :class:`CoordinateSystem`
+    function_range : :class:`CoordinateSystem`
         The output coordinate system.
     function : callable
-        A callable that maps the input_coords to the output_coords.
+        A callable that maps the function_domain to the function_range.
     inverse_function : None or callable
-        A callable that maps the output_coords to the input_coords.
+        A callable that maps the function_range to the function_domain.
         Not all functions have an inverse, in which case
         inverse_function is None.
         
     Examples
     --------
-    >>> input_coords = CoordinateSystem('ijk', 'voxels')
-    >>> output_coords = CoordinateSystem('xyz', 'world')
+    >>> function_domain = CoordinateSystem('ijk', 'voxels')
+    >>> function_range = CoordinateSystem('xyz', 'world')
     >>> mni_orig = np.array([-90.0, -126.0, -72.0])
     >>> function = lambda x: x + mni_orig
     >>> inv_function = lambda x: x - mni_orig
-    >>> cm = CoordinateMap(function, input_coords, output_coords, inv_function)
+    >>> cm = CoordinateMap(function, function_domain, function_range, inv_function)
 
     Map the first 3 voxel coordinates, along the x-axis, to mni space:
 
@@ -89,8 +89,8 @@ class CoordinateMap(object):
 
     """
     def __init__(self, function, 
-                 input_coords, 
-                 output_coords, 
+                 function_domain, 
+                 function_range, 
                  inverse_function=None):
         """Create a CoordinateMap given the input/output coords and functions.
 
@@ -98,9 +98,9 @@ class CoordinateMap(object):
         ----------
         function : callable
            The function between input and output coordinates
-        input_coords : :class:`CoordinateSystem`
+        function_domain : :class:`CoordinateSystem`
            The input coordinate system
-        output_coords : :class:`CoordinateSystem`
+        function_range : :class:`CoordinateSystem`
            The output coordinate system
         inverse_function : None or callable, optional
            The optional inverse of function, with the intention being
@@ -114,8 +114,8 @@ class CoordinateMap(object):
         """
         # These attrs define the structure of the coordmap.
         self._function = function
-        self._input_coords = input_coords
-        self._output_coords = output_coords
+        self._function_domain = function_domain
+        self._function_range = function_range
         self._inverse_function = inverse_function
 
         if not callable(function):
@@ -126,23 +126,23 @@ class CoordinateMap(object):
         self._checkfunction()
 
     @property
-    def input_coords(self):
+    def function_domain(self):
         'input coordinate system'
-        return self._input_coords
+        return self._function_domain
 
     @property
-    def output_coords(self):
+    def function_range(self):
         'output coordinate system'
-        return self._output_coords
+        return self._function_range
 
     @property
     def function(self):
-        'The function from input_coords to output_coords.'
+        'The function from function_domain to function_range.'
         return self._function
 
     @property
     def inverse_function(self):
-        'The function from output_coords to input_coords'
+        'The function from function_range to function_domain'
         return self._inverse_function
 
     @property
@@ -153,14 +153,14 @@ class CoordinateMap(object):
         if self._inverse_function is None:
             return None
         return CoordinateMap(self._inverse_function, 
-                             self._output_coords, 
-                             self._input_coords, 
+                             self._function_range, 
+                             self._function_domain, 
                              inverse_function=self._function)
 
     @property
     def ndims(self):
         'Number of dimensions of input and output coordinates.'
-        return (self._input_coords.ndim, self._output_coords.ndim)
+        return (self._function_domain.ndim, self._function_range.ndim)
 
     def _checkfunction(self):
         """Verify that the input and output dimensions of self.function work.
@@ -168,13 +168,13 @@ class CoordinateMap(object):
         We do this by passing something that should work, through __call__
         """
         inp = np.zeros((10, self.ndims[0]),
-                       dtype=self._input_coords.coord_dtype)
+                       dtype=self._function_domain.coord_dtype)
         out = self(inp)
 
     def __call__(self, x):
-        """Return function evaluated at x
+        """Return mapping evaluated at x
 
-        Check input and output of function for compatiblity with input
+        Check input and output of mapping for compatiblity with input
         and output coordinate systems respectively.
 
         Parameters
@@ -182,7 +182,7 @@ class CoordinateMap(object):
         x : array-like
            Values in input coordinate system space that will be mapped
            to the output coordinate system space, using
-           ``self.function``
+           ``self.mapping``
            
         Returns
         -------
@@ -193,9 +193,9 @@ class CoordinateMap(object):
         --------
         >>> input_cs = CoordinateSystem('ijk')
         >>> output_cs = CoordinateSystem('xyz')
-        >>> function = lambda x:x+1
+        >>> mapping = lambda x:x+1
         >>> inverse = lambda x:x-1
-        >>> cm = CoordinateMap(function, input_cs, output_cs, inverse)
+        >>> cm = CoordinateMap(mapping, input_cs, output_cs, inverse)
         >>> cm([2,3,4])
         array([[3, 4, 5]])
         >>> cmi = cm.inverse
@@ -204,9 +204,9 @@ class CoordinateMap(object):
 
         """
 
-        in_vals = self._input_coords._checked_values(x)
-        out_vals = self._function(in_vals)
-        return self._output_coords._checked_values(out_vals)
+        in_vals = self.function_domain._checked_values(x)
+        out_vals = self.function(in_vals)
+        return self.function_range._checked_values(out_vals)
 
     def copy(self):
         """Create a copy of the coordmap.
@@ -218,14 +218,14 @@ class CoordinateMap(object):
         """
 
         return CoordinateMap(self._function, 
-                             self._input_coords,
-                             self._output_coords, 
+                             self._function_domain,
+                             self._function_range, 
                              inverse_function=self._inverse_function)
 
     def reordered_input(self, order=None, name=''):
         """
-        Create a new coordmap with reversed input_coords.
-        Default behaviour is to reverse the order of the input_coords.
+        Create a new coordmap with reversed function_domain.
+        Default behaviour is to reverse the order of the function_domain.
 
         Inputs:
         -------
@@ -233,68 +233,68 @@ class CoordinateMap(object):
              Order to use, defaults to reverse. The elements
              can be integers, strings or 2-tuples of strings.
              If they are strings, they should be in 
-             self.input_coords.coord_names.
+             self.function_domain.coord_names.
 
         name: string, optional
-             Name of new input_coords, defaults to self.input_coords.name.
+             Name of new function_domain, defaults to self.function_domain.name.
 
         Returns:
         --------
 
         newcoordmap: `CoordinateMap`
-             A new CoordinateMap with reversed input_coords.
+             A new CoordinateMap with reversed function_domain.
 
         >>> input_cs = CoordinateSystem('ijk')
         >>> output_cs = CoordinateSystem('xyz')
         >>> cm = AffineTransform(np.identity(4), input_cs, output_cs)
-        >>> print cm.reordered_input('ikj', name='neworder').input_coords
+        >>> print cm.reordered_input('ikj', name='neworder').function_domain
         CoordinateSystem(coord_names=('i', 'k', 'j'), name='neworder', coord_dtype=float64)
         """
 
-        name = name or self.input_coords.name
+        name = name or self.function_domain.name
 
         ndim = self.ndims[0]
         if order is None:
             order = range(ndim)[::-1]
         elif type(order[0]) == type(''):
-            order = [self.input_coords.index(s) for s in order]
+            order = [self.function_domain.index(s) for s in order]
 
-        newaxes = [self.input_coords.coord_names[i] for i in order]
+        newaxes = [self.function_domain.coord_names[i] for i in order]
         newincoords = CoordinateSystem(newaxes, 
                                        name,
-                                       coord_dtype=self.input_coords.coord_dtype)
+                                       coord_dtype=self.function_domain.coord_dtype)
         perm = np.zeros((ndim+1,)*2)
         perm[-1,-1] = 1.
 
         for i, j in enumerate(order):
             perm[j,i] = 1.
 
-        perm = perm.astype(self.input_coords.coord_dtype)
-        A = AffineTransform(perm, newincoords, self.input_coords)
+        perm = perm.astype(self.function_domain.coord_dtype)
+        A = AffineTransform(perm, newincoords, self.function_domain)
         return compose(self, A)
 
 
     def renamed_input(self, newnames, name=''):
         """
-        Create a new coordmap with reversed input_coords.
-        Default behaviour is to reverse the order of the input_coords.
+        Create a new coordmap with reversed function_domain.
+        Default behaviour is to reverse the order of the function_domain.
 
         Inputs:
         -------
         newnames: dictionary
 
              A dictionary whose keys are in
-             self.input_coords.coord_names
+             self.function_domain.coord_names
              and whose values are the new names.
 
         name: string, optional
-             Name of new input_coords, defaults to self.input_coords.name.
+             Name of new function_domain, defaults to self.function_domain.name.
 
         Returns:
         --------
 
         newcoordmap: `CoordinateMap`
-             A new CoordinateMap with renamed input_coords.
+             A new CoordinateMap with renamed function_domain.
 
         >>> affine_domain = CoordinateSystem('ijk')
         >>> affine_range = CoordinateSystem('xyz')
@@ -302,7 +302,7 @@ class CoordinateMap(object):
         >>> affine_mapping = AffineTransform(affine_matrix, affine_domain, affine_range)
 
         >>> new_affine_mapping = affine_mapping.renamed_input({'i':'phase','k':'freq','j':'slice'})
-        >>> print new_affine_mapping.input_coords
+        >>> print new_affine_mapping.function_domain
         CoordinateSystem(coord_names=('phase', 'slice', 'freq'), name='', coord_dtype=float64)
 
         >>> new_affine_mapping = affine_mapping.renamed_input({'i':'phase','k':'freq','l':'slice'})
@@ -314,53 +314,53 @@ class CoordinateMap(object):
 
         """
 
-        name = name or self.input_coords.name
+        name = name or self.function_domain.name
 
         for n in newnames:
-            if n not in self.input_coords.coord_names:
+            if n not in self.function_domain.coord_names:
                 raise ValueError('no input coordinate named %s' % str(n))
 
         new_coord_names = []
-        for n in self.input_coords.coord_names:
+        for n in self.function_domain.coord_names:
             if n in newnames:
                 new_coord_names.append(newnames[n])
             else:
                 new_coord_names.append(n)
 
-        new_input_coords = CoordinateSystem(new_coord_names,
+        new_function_domain = CoordinateSystem(new_coord_names,
                                             name, 
-                                            coord_dtype=self.input_coords.coord_dtype)
+                                            coord_dtype=self.function_domain.coord_dtype)
         
 
         ndim = self.ndims[0]
         ident_map = AffineTransform(np.identity(ndim+1),
-                           new_input_coords,
-                           self.input_coords)
+                           new_function_domain,
+                           self.function_domain)
 
         return compose(self, ident_map)
 
 
     def renamed_output(self, newnames, name=''):
         """
-        Create a new coordmap with reversed input_coords.
-        Default behaviour is to reverse the order of the input_coords.
+        Create a new coordmap with reversed function_domain.
+        Default behaviour is to reverse the order of the function_domain.
 
         Inputs:
         -------
         newnames: dictionary
 
              A dictionary whose keys are in
-             self.output_coords.coord_names
+             self.function_range.coord_names
              and whose values are the new names.
 
         name: string, optional
-             Name of new input_coords, defaults to self.output_coords.name.
+             Name of new function_domain, defaults to self.function_range.name.
 
         Returns:
         --------
 
         newcoordmap: `CoordinateMap`
-             A new CoordinateMap with renamed output_coords.
+             A new CoordinateMap with renamed function_range.
 
         >>> affine_domain = CoordinateSystem('ijk')
         >>> affine_range = CoordinateSystem('xyz')
@@ -368,7 +368,7 @@ class CoordinateMap(object):
         >>> affine_mapping = AffineTransform(affine_matrix, affine_domain, affine_range)
 
         >>> new_affine_mapping = affine_mapping.renamed_output({'x':'u'})
-        >>> print new_affine_mapping.output_coords
+        >>> print new_affine_mapping.function_range
         CoordinateSystem(coord_names=('u', 'y', 'z'), name='', coord_dtype=float64)
 
         >>> new_affine_mapping = affine_mapping.renamed_output({'w':'u'})
@@ -380,34 +380,34 @@ class CoordinateMap(object):
 
         """
 
-        name = name or self.input_coords.name
+        name = name or self.function_domain.name
 
         for n in newnames:
-            if n not in self.output_coords.coord_names:
+            if n not in self.function_range.coord_names:
                 raise ValueError('no output coordinate named %s' % str(n))
 
         new_coord_names = []
-        for n in self.output_coords.coord_names:
+        for n in self.function_range.coord_names:
             if n in newnames:
                 new_coord_names.append(newnames[n])
             else:
                 new_coord_names.append(n)
 
-        new_output_coords = CoordinateSystem(new_coord_names,
+        new_function_range = CoordinateSystem(new_coord_names,
                                              name, 
-                                             coord_dtype=self.output_coords.coord_dtype)
+                                             coord_dtype=self.function_range.coord_dtype)
         
         ndim = self.ndims[1]
         ident_map = AffineTransform(np.identity(ndim+1),
-                           self.output_coords,
-                           new_output_coords)
+                           self.function_range,
+                           new_function_range)
 
         return compose(ident_map, self)
 
     def reordered_output(self, order=None, name=''):
         """
-        Create a new coordmap with reversed output_coords.
-        Default behaviour is to reverse the order of the input_coords.
+        Create a new coordmap with reversed function_range.
+        Default behaviour is to reverse the order of the function_domain.
 
         Inputs:
         -------
@@ -416,42 +416,42 @@ class CoordinateMap(object):
              Order to use, defaults to reverse. The elements
              can be integers, strings or 2-tuples of strings.
              If they are strings, they should be in 
-             self.output_coords.coord_names.
+             self.function_range.coord_names.
 
         name: string, optional
-             Name of new output_coords, defaults to self.output_coords.name.
+             Name of new function_range, defaults to self.function_range.name.
 
         Returns:
         --------
 
         newcoordmap: `CoordinateMap`
-             A new CoordinateMap with reversed output_coords.
+             A new CoordinateMap with reversed function_range.
 
         >>> input_cs = CoordinateSystem('ijk')
         >>> output_cs = CoordinateSystem('xyz')
         >>> cm = AffineTransform(np.identity(4), input_cs, output_cs)
-        >>> print cm.reordered_output('xzy', name='neworder').output_coords
+        >>> print cm.reordered_output('xzy', name='neworder').function_range
         CoordinateSystem(coord_names=('x', 'z', 'y'), name='neworder', coord_dtype=float64)
-        >>> print cm.reordered_output([0,2,1]).output_coords.coord_names
+        >>> print cm.reordered_output([0,2,1]).function_range.coord_names
         ('x', 'z', 'y')
 
         >>> newcm = cm.reordered_output('yzx')
-        >>> newcm.output_coords.coord_names
+        >>> newcm.function_range.coord_names
         ('y', 'z', 'x')
 
         """
 
-        name = name or self.output_coords.name
+        name = name or self.function_range.name
 
         ndim = self.ndims[1]
         if order is None:
             order = range(ndim)[::-1]
         elif type(order[0]) == type(''):
-            order = [self.output_coords.index(s) for s in order]
+            order = [self.function_range.index(s) for s in order]
 
-        newaxes = [self.output_coords.coord_names[i] for i in order]
+        newaxes = [self.function_range.coord_names[i] for i in order]
         newoutcoords = CoordinateSystem(newaxes, name, 
-                                        self.output_coords.coord_dtype)
+                                        self.function_range.coord_dtype)
 
         perm = np.zeros((ndim+1,)*2)
         perm[-1,-1] = 1.
@@ -459,12 +459,15 @@ class CoordinateMap(object):
         for i, j in enumerate(order):
             perm[j,i] = 1.
 
-        perm = perm.astype(self.output_coords.coord_dtype)
-        A = AffineTransform(perm.T, self.output_coords, newoutcoords)
+        perm = perm.astype(self.function_range.coord_dtype)
+        A = AffineTransform(perm.T, self.function_range, newoutcoords)
         return compose(A, self)
 
     def __repr__(self):
-        return "CoordinateMap(\n   function,\n   input_coords=%s,\n   output_coords=%s\n  )" % (self.input_coords, self.output_coords)
+        if not hasattr(self, "_inverse_function"):
+            return "CoordinateMap(\n   function,\n   function_domain=%s,\n   function_range=%s\n  )" % (self.function_domain, self.function_range)
+        else:
+            return "CoordinateMap(\n   function,\n   function_domain=%s,\n   function_range=%s,\n   inverse_function\n  )" % (self.function_domain, self.function_range)
 
 class AffineTransform(CoordinateMap):
     """
@@ -485,8 +488,8 @@ class AffineTransform(CoordinateMap):
                      [ 0.,  2.,  0.,  0.],
                      [ 0.,  0.,  3.,  0.],
                      [ 0.,  0.,  0.,  1.]]),
-       input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
-       output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
     )
 
     >>> cm.affine
@@ -502,7 +505,7 @@ class AffineTransform(CoordinateMap):
     
     """
 
-    def __init__(self, affine, input_coords, output_coords):
+    def __init__(self, affine, function_domain, function_range):
         """
         Return an CoordinateMap specified by an affine transformation
         in homogeneous coordinates.
@@ -511,26 +514,26 @@ class AffineTransform(CoordinateMap):
         ----------
         affine : array-like
            affine homogenous coordinate matrix
-        input_coords : :class:`CoordinateSystem`
+        function_domain : :class:`CoordinateSystem`
            input coordinates
-        output_coords : :class:`CoordinateSystem`
+        function_range : :class:`CoordinateSystem`
            output coordinates
 
         Notes
         -----
         The dtype of the resulting matrix is determined by finding a
-        safe typecast for the input_coords, output_coords and affine.
+        safe typecast for the function_domain, function_range and affine.
         """
         dtype = safe_dtype(affine.dtype,
-                           input_coords.coord_dtype,
-                           output_coords.coord_dtype)
-        inaxes = input_coords.coord_names
-        outaxes = output_coords.coord_names
-        self._input_coords = CoordinateSystem(inaxes,
-                                              input_coords.name,
+                           function_domain.coord_dtype,
+                           function_range.coord_dtype)
+        inaxes = function_domain.coord_names
+        outaxes = function_range.coord_names
+        self._function_domain = CoordinateSystem(inaxes,
+                                              function_domain.name,
                                               dtype)
-        self._output_coords = CoordinateSystem(outaxes,
-                                               output_coords.name,
+        self._function_range = CoordinateSystem(outaxes,
+                                               function_range.name,
                                                dtype)
         affine = np.asarray(affine, dtype=dtype)
         if affine.shape != (self.ndims[1]+1, self.ndims[0]+1):
@@ -564,8 +567,8 @@ class AffineTransform(CoordinateMap):
         """
         try:
             return AffineTransform(np.linalg.inv(self.affine), 
-                          self.output_coords, 
-                          self.input_coords)
+                          self.function_range, 
+                          self.function_domain)
         except np.linalg.linalg.LinAlgError:
             pass
 
@@ -605,9 +608,9 @@ class AffineTransform(CoordinateMap):
             raise ValueError('shape and number of axis names do not agree')
         dtype = params.dtype
 
-        input_coords = CoordinateSystem(innames, "input")
-        output_coords = CoordinateSystem(outnames, 'output')
-        return AffineTransform(params, input_coords, output_coords)
+        function_domain = CoordinateSystem(innames, "input")
+        function_range = CoordinateSystem(outnames, 'output')
+        return AffineTransform(params, function_domain, function_range)
 
     @staticmethod
     def from_start_step(innames, outnames, start, step):
@@ -675,9 +678,9 @@ class AffineTransform(CoordinateMap):
                [ 0.,  1.,  0.,  0.],
                [ 0.,  0.,  1.,  0.],
                [ 0.,  0.,  0.,  1.]])
-        >>> print cm.input_coords
+        >>> print cm.function_domain
         CoordinateSystem(coord_names=('i', 'j', 'k'), name='input', coord_dtype=float64)
-        >>> print cm.output_coords
+        >>> print cm.function_range
         CoordinateSystem(coord_names=('i', 'j', 'k'), name='output', coord_dtype=float64)
         """
         return AffineTransform.from_start_step(names, names, [0]*len(names),
@@ -705,13 +708,13 @@ class AffineTransform(CoordinateMap):
         >>> cm_copy.affine[0,0]
         1.0
         """
-        return AffineTransform(self._affine.copy(), self._input_coords,
-                      self._output_coords)
+        return AffineTransform(self._affine.copy(), self._function_domain,
+                      self._function_range)
 
 
     def __repr__(self):
-        return "AffineTransform(\n   affine=%s,\n   input_coords=%s,\n   output_coords=%s\n)" % ('\n          '.join(repr(self.affine).split('\n')), 
-         self.input_coords, self.output_coords)
+        return "AffineTransform(\n   affine=%s,\n   function_domain=%s,\n   function_range=%s\n)" % ('\n          '.join(repr(self.affine).split('\n')), 
+         self.function_domain, self.function_range)
 
 
 def product(*cmaps):
@@ -731,9 +734,9 @@ def product(*cmaps):
     >>> inc3 = AffineTransform.from_params('k', 'z', np.diag([4,1]))
 
     >>> cmap = product(inc1, inc3, inc2)
-    >>> cmap.input_coords.coord_names
+    >>> cmap.function_domain.coord_names
     ('i', 'k', 'j')
-    >>> cmap.output_coords.coord_names
+    >>> cmap.function_range.coord_names
     ('x', 'z', 'y')
     >>> cmap.affine
     array([[ 2.,  0.,  0.,  0.],
@@ -761,8 +764,8 @@ def product(*cmaps):
 
     notaffine = filter(lambda x: not isinstance(x, AffineTransform), cmaps)
 
-    incoords = coordsys_product(*[cmap.input_coords for cmap in cmaps])
-    outcoords = coordsys_product(*[cmap.output_coords for cmap in cmaps])
+    incoords = coordsys_product(*[cmap.function_domain for cmap in cmaps])
+    outcoords = coordsys_product(*[cmap.function_range for cmap in cmaps])
 
     if not notaffine:
         affine = linearize(function, ndimin[-1], dtype=incoords.coord_dtype)
@@ -781,8 +784,8 @@ def compose(*cmaps):
     Returns:
     --------
     cmap : ``CoordinateMap``
-         The resulting CoordinateMap has input_coords == cmaps[-1].input_coords
-         and output_coords == cmaps[0].output_coords
+         The resulting CoordinateMap has function_domain == cmaps[-1].function_domain
+         and function_range == cmaps[0].function_range
 
     >>> cmap = AffineTransform.from_params('i', 'x', np.diag([2.,1.]))
     >>> cmapi = cmap.inverse
@@ -792,9 +795,9 @@ def compose(*cmaps):
      [ 0.  1.]]
 
     >>> id2 = compose(cmapi,cmap)
-    >>> id1.input_coords.coord_names
+    >>> id1.function_domain.coord_names
     ('x',)
-    >>> id2.input_coords.coord_names
+    >>> id2.function_domain.coord_names
     ('i',)
     >>> 
 
@@ -811,25 +814,25 @@ def compose(*cmaps):
     cmap = cmaps[-1]
     for i in range(len(cmaps)-2,-1,-1):
         m = cmaps[i]
-        if m.input_coords == cmap.output_coords:
+        if m.function_domain == cmap.function_range:
             forward, backward = _compose2(m, cmap)
             cmap = CoordinateMap(forward, 
-                                 cmap.input_coords, 
-                                 m.output_coords, 
+                                 cmap.function_domain, 
+                                 m.function_range, 
                                  inverse_function=backward)
         else:
             raise ValueError(
                 'input and output coordinates do not match: '
                 'input=%s, output=%s' % 
-                (`m.input_coords.dtype`, `cmap.output_coords.dtype`))
+                (`m.function_domain.dtype`, `cmap.function_range.dtype`))
 
     notaffine = filter(lambda cmap: not isinstance(cmap, AffineTransform), cmaps)
     if not notaffine:
         affine = linearize(cmap, 
                            cmap.ndims[0], 
-                           dtype=cmap.output_coords.coord_dtype)
-        return AffineTransform(affine, cmap.input_coords,
-                      cmap.output_coords)
+                           dtype=cmap.function_range.coord_dtype)
+        return AffineTransform(affine, cmap.function_domain,
+                      cmap.function_range)
     return cmap
     
 
@@ -862,8 +865,8 @@ def concat(coordmap, axis_name='concat', append=False):
                      [ 0.,  0.,  4.,  0.,  0.],
                      [ 0.,  0.,  0.,  5.,  0.],
                      [ 0.,  0.,  0.,  0.,  1.]]),
-       input_coords=CoordinateSystem(coord_names=('t', 'i', 'j', 'k'), name='product', coord_dtype=float64),
-       output_coords=CoordinateSystem(coord_names=('t', 'x', 'y', 'z'), name='product', coord_dtype=float64)
+       function_domain=CoordinateSystem(coord_names=('t', 'i', 'j', 'k'), name='product', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('t', 'x', 'y', 'z'), name='product', coord_dtype=float64)
     )
 
     >>> concat(affine_mapping, 't', append=True)
@@ -873,8 +876,8 @@ def concat(coordmap, axis_name='concat', append=False):
                      [ 0.,  0.,  5.,  0.,  0.],
                      [ 0.,  0.,  0.,  1.,  0.],
                      [ 0.,  0.,  0.,  0.,  1.]]),
-       input_coords=CoordinateSystem(coord_names=('i', 'j', 'k', 't'), name='product', coord_dtype=float64),
-       output_coords=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='product', coord_dtype=float64)
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 't'), name='product', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='product', coord_dtype=float64)
     )
     >>> 
 

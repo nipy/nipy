@@ -17,20 +17,20 @@ class test_Slice(TestCase):
 
     def test_box_slice(self):
         coordmap = AffineTransform.identity(names)
-        t = zslice(5, [0, 9], [0, 9], coordmap.output_coords, (10,10))
+        t = zslice(5, [0, 9], [0, 9], coordmap.function_range, (10,10))
         assert_almost_equal(t.coordmap.affine, [[ 0.,  0.,  5.],
                                                 [ 1.,  0.,  0.],
                                                 [ 0.,  1.,  0.],
                                                 [ 0.,  0.,  1.]])
         
 
-        t = yslice(4, [0, 9], [0, 9], coordmap.output_coords, (10,10))
+        t = yslice(4, [0, 9], [0, 9], coordmap.function_range, (10,10))
         assert_almost_equal(t.coordmap.affine, [[ 1.,  0.,  0.],
                                                 [ 0.,  0.,  4.],
                                                 [ 0.,  1.,  0.],
                                                 [ 0.,  0.,  1.]])
         
-        t = xslice(3, [0, 9], [0, 9], coordmap.output_coords, (10,10))
+        t = xslice(3, [0, 9], [0, 9], coordmap.function_range, (10,10))
         assert_almost_equal(t.coordmap.affine, [[ 1.,  0.,  0.],
                                                 [ 0.,  1.,  0.],
                                                 [ 0.,  0.,  3.],

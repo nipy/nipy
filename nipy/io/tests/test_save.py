@@ -42,7 +42,7 @@ def test_save2():
     shape = (13,5,7,3)
     step = np.array([3.45,2.3,4.5,6.93])
 
-    cmap = api.Affine.from_start_step('ijkl', 'xyzt', [1,3,5,0], step)
+    cmap = api.AffineTransform.from_start_step('ijkl', 'xyzt', [1,3,5,0], step)
 
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
@@ -67,7 +67,7 @@ def test_save2b():
     B[:4,:4] = A
 
     shape = (13,5,7,3)
-    cmap = api.Affine.from_params('ijkl', 'xyzt', B)
+    cmap = api.AffineTransform.from_params('ijkl', 'xyzt', B)
 
     data = np.random.standard_normal(shape)
 
@@ -89,7 +89,7 @@ def test_save3():
 
     step = np.array([3.45,2.3,4.5,6.9])
     shape = (13,5,7,3)
-    cmap = api.Affine.from_start_step('jkli', 'tzyx', [0,3,5,1], step)
+    cmap = api.AffineTransform.from_start_step('jkli', 'tzyx', [0,3,5,1], step)
 
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
@@ -111,7 +111,7 @@ def test_save4():
     # non-spatial dimensions, because we have no way to store them in
     # most cases.  For example, a 'start' of [1,5,3,1] would be lost on
     # reload
-    cmap = api.Affine.from_start_step('lkji', 'tzyx', [2,5,3,1], step)
+    cmap = api.AffineTransform.from_start_step('lkji', 'tzyx', [2,5,3,1], step)
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
     save_image(img, tmpfile.name)
@@ -149,7 +149,7 @@ def test_save4():
 
     # coordinate names should be reversed as well
 
-    yield assert_equal, img2.coordmap.input_coords.coord_names, \
-        img.coordmap.input_coords.coord_names[::-1]
-    yield assert_equal, img2.coordmap.input_coords.coord_names, \
+    yield assert_equal, img2.coordmap.function_domain.coord_names, \
+        img.coordmap.function_domain.coord_names[::-1]
+    yield assert_equal, img2.coordmap.function_domain.coord_names, \
         ['i', 'j', 'k', 'l']

@@ -72,7 +72,7 @@ def test_lpi_image_fmri():
     B[:3,-1] = im_reordered.affine[:3,-1]
 
     a2=lpi_image.LPIImage(np.array(im_reordered), B,
-                                  im_reordered.coordmap.input_coords.coord_names)
+                                  im_reordered.coordmap.function_domain.coord_names)
     # Now, reorder it
 
     a3 = a2.xyz_ordered()
@@ -83,31 +83,31 @@ def test_lpi_image_fmri():
     # describing ALL its axes
 
 
-    yield assert_equal, a.coordmap.input_coords.coord_names , ('i', 'j', 'k', 'l')
+    yield assert_equal, a.coordmap.function_domain.coord_names , ('i', 'j', 'k', 'l')
     
-    yield assert_equal, a.coordmap.output_coords.coord_names , ('x', 'y', 'z', 'l')
+    yield assert_equal, a.coordmap.function_range.coord_names , ('x', 'y', 'z', 'l')
 
-    yield assert_equal, a2.coordmap.input_coords.coord_names , ('j', 'k', 'i', 'l')
+    yield assert_equal, a2.coordmap.function_domain.coord_names , ('j', 'k', 'i', 'l')
     
-    yield assert_equal, a2.coordmap.output_coords.coord_names , ('x', 'y', 'z', 'l')
+    yield assert_equal, a2.coordmap.function_range.coord_names , ('x', 'y', 'z', 'l')
 
-    yield assert_equal, a3.coordmap.input_coords.coord_names , ('i', 'j', 'k', 'l')
+    yield assert_equal, a3.coordmap.function_domain.coord_names , ('i', 'j', 'k', 'l')
     
-    yield assert_equal, a3.coordmap.output_coords.coord_names , ('x', 'y', 'z', 'l')
+    yield assert_equal, a3.coordmap.function_range.coord_names , ('x', 'y', 'z', 'l')
 
     # But it lpi_transform is ony a 3d coordmap
 
-    yield assert_equal, a.lpi_transform.input_coords.coord_names , ('i', 'j', 'k')
+    yield assert_equal, a.lpi_transform.function_domain.coord_names , ('i', 'j', 'k')
     
-    yield assert_equal, a.lpi_transform.output_coords.coord_names , ('x', 'y', 'z')
+    yield assert_equal, a.lpi_transform.function_range.coord_names , ('x', 'y', 'z')
 
-    yield assert_equal, a2.lpi_transform.input_coords.coord_names , ('j', 'k', 'i')
+    yield assert_equal, a2.lpi_transform.function_domain.coord_names , ('j', 'k', 'i')
     
-    yield assert_equal, a2.lpi_transform.output_coords.coord_names , ('x', 'y', 'z')
+    yield assert_equal, a2.lpi_transform.function_range.coord_names , ('x', 'y', 'z')
 
-    yield assert_equal, a3.lpi_transform.input_coords.coord_names , ('i', 'j', 'k')
+    yield assert_equal, a3.lpi_transform.function_domain.coord_names , ('i', 'j', 'k')
     
-    yield assert_equal, a3.lpi_transform.output_coords.coord_names , ('x', 'y', 'z')
+    yield assert_equal, a3.lpi_transform.function_range.coord_names , ('x', 'y', 'z')
 
 
 

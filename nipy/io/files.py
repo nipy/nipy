@@ -197,7 +197,7 @@ def save(img, filename, dtype=None):
                     header=original_hdr)
     hdr = out_img.get_header()
     # work out phase, freqency, slice from coordmap names
-    ijk = newcmap.input_coords.coord_names
+    ijk = newcmap.function_domain.coord_names
     fps = fps_from_ijk(ijk)
     # put fps into header if possible
     try:

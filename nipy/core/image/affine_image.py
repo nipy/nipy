@@ -95,10 +95,10 @@ class AffineImage(Image):
                 name of the reference coordinate system.
         """
 
-        input_coords = CoordinateSystem(['axis%d' % i for i in range(3)], 
+        function_domain = CoordinateSystem(['axis%d' % i for i in range(3)], 
                                         name=coord_sys)
-        output_coords = CoordinateSystem(['x','y','z'], name='world')
-        spatial_coordmap = AffineTransform(affine, input_coords, output_coords)
+        function_range = CoordinateSystem(['x','y','z'], name='world')
+        spatial_coordmap = AffineTransform(affine, function_domain, function_range)
 
         nonspatial_names = ['axis%d' % i for i in range(3, data.ndim)]
         if nonspatial_names:
@@ -185,14 +185,14 @@ class AffineImage(Image):
         if world_to_world is None:
             world_to_world = np.identity(4)
         world_to_world_transform = AffineTransform(world_to_world,
-                                                   affine_transform.output_coords,
-                                                   self.spatial_coordmap.output_coords)
+                                                   affine_transform.function_range,
+                                                   self.spatial_coordmap.function_range)
 
         if self.ndim == 3:
             im = resample(self, affine_transform, world_to_world_transform,
                           shape, order=interpolation_order)
             return AffineImage(np.array(im), affine_transform.affine,
-                               affine_transform.input_coords.name)
+                               affine_transform.function_domain.name)
 
         # XXX this below wasn't included in the original AffineImage proposal
         # and it would fail for an AffineImage with ndim == 4.
@@ -217,7 +217,7 @@ class AffineImage(Image):
 
                 result[...,i] = np.array(tmp_im)
             return AffineImage(result, affine_transform.affine,
-                               affine_transform.input_coords.name)
+                               affine_transform.function_domain.name)
         else:
             raise ValueError('resampling only defined for 3d and 4d AffineImage')
 
@@ -320,12 +320,12 @@ now change the coordinate system of the resampled_image
                 'Cannot reorder the axis: the image affine contains rotations'
                 )
         axis_numbers = list(np.argmax(np.abs(A), axis=1))
-        axis_names = [self.spatial_coordmap.input_coords.coord_names[a] for a in axis_numbers]
+        axis_names = [self.spatial_coordmap.function_domain.coord_names[a] for a in axis_numbers]
         reordered_coordmap = self.spatial_coordmap.reordered_input(axis_names)
         data = self.get_data()
         transposed_data = np.transpose(data, axis_numbers + range(3, self.ndim))
         return AffineImage(transposed_data, reordered_coordmap.affine,
-                           reordered_coordmap.input_coords.name)
+                           reordered_coordmap.function_domain.name)
     
     #---------------------------------------------------------------------------
     # Private methods

@@ -32,8 +32,8 @@ class LPITransform(AffineTransform):
                        [ 0.,  4.,  0.,  0.],
                        [ 0.,  0.,  5.,  0.],
                        [ 0.,  0.,  0.,  1.]]),
-         input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
-         output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64)
+         function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
+         function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64)
       )
       >>> 
       """
@@ -128,8 +128,8 @@ class LPIImage(Image):
                     [ 0.,  4.,  0.,  0.],
                     [ 0.,  0.,  5.,  0.],
                     [ 0.,  0.,  0.,  1.]]),
-      input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
-      output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64)
+      function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
+      function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64)
    )
    >>> 
 
@@ -190,7 +190,7 @@ class LPIImage(Image):
    #---------------------------------------------------------------------------
 
    def _getworld(self):
-      return self.lpi_transform.output_coords # == LPITransform.range
+      return self.lpi_transform.function_range # == LPITransform.range
    world = property(_getworld, doc="World space.")
 
    def _get_affine(self):
@@ -221,7 +221,7 @@ class LPIImage(Image):
           self.axes.coord_names.
 
       name: string, optional
-          Name of new input_coords, defaults to self.input_coords.name.
+          Name of new function_domain, defaults to self.function_domain.name.
 
       Returns:
       --------
@@ -339,14 +339,14 @@ class LPIImage(Image):
       if world_to_world is None:
          world_to_world = np.identity(4)
       world_to_world_transform = AffineTransform(world_to_world,
-                                                 affine_transform.output_coords,
-                                                 self.lpi_transform.output_coords)
+                                                 affine_transform.function_range,
+                                                 self.lpi_transform.function_range)
 
       if self.ndim == 3:
          im = resample(self, affine_transform, world_to_world_transform,
                        shape, order=interpolation_order)
          return LPIImage(np.array(im), affine_transform.affine,
-                         affine_transform.input_coords.coord_names,
+                         affine_transform.function_domain.coord_names,
                          metadata=self.metadata)
 
         # XXX this below wasn't included in the original LPIImage proposal
@@ -523,7 +523,7 @@ class LPIImage(Image):
           'LPIImage(\n  data=%s,\n  affine=%s,\n  axis_names=%s)' % (
          '\n       '.join(repr(self._data).split('\n')),
          '\n         '.join(repr(self.affine).split('\n')),
-         repr(self.coordmap.input_coords.coord_names))
+         repr(self.coordmap.function_domain.coord_names))
       np.set_printoptions(**options)
       return representation
 

@@ -88,19 +88,19 @@ def test_lpi_image():
 
     lpi_cmap = lpi_im.lpi_transform
 
-    yield assert_true,  lpi_cmap.input_coords.coord_names == ('i','j','k')
+    yield assert_true,  lpi_cmap.function_domain.coord_names == ('i','j','k')
     yield assert_equal,  lpi_im.axes.coord_names, ('i','j','k')
 
-    yield assert_true,  lpi_cmap.output_coords.coord_names == ('x','y','z')
+    yield assert_true,  lpi_cmap.function_range.coord_names == ('x','y','z')
 
     b = lpi_im.xyz_ordered()
     b_cmap = b.lpi_transform
 
 
-    yield assert_true,  b_cmap.input_coords.coord_names == ('k','j','i')
+    yield assert_true,  b_cmap.function_domain.coord_names == ('k','j','i')
     yield assert_equal, b.axes.coord_names, ('k', 'j', 'i')
 
-    yield assert_true,  b_cmap.output_coords.coord_names == ('x','y','z')
+    yield assert_true,  b_cmap.function_range.coord_names == ('x','y','z')
 
     yield assert_true,  lpi_im.shape == im.shape
     yield assert_true,  b.shape == im.shape[::-1]
@@ -126,7 +126,7 @@ def test_resample():
 
     # What we can't do is resample to
     # an array with axes ['k','j','i'], (i.e. transpose the data using resample_*) because we've assumed that
-    # the axes (i.e. input_coords) are the same for these methods
+    # the axes (i.e. function_domain) are the same for these methods
 
 
 def test_subsample():
@@ -144,23 +144,23 @@ def test_subsample():
                                 
     subsampled_shape = np.array(lpi_im)[::2,::3,::4].shape
     subsample_coordmap = AffineTransform(subsample_matrix, 
-                                         lpi_im.lpi_transform.input_coords,
-                                         lpi_im.lpi_transform.input_coords)
+                                         lpi_im.lpi_transform.function_domain,
+                                         lpi_im.lpi_transform.function_domain)
     target_coordmap = compose(lpi_im.lpi_transform, 
                               subsample_coordmap)
 
     # The images have the same output coordinates
 
     world_to_world_coordmap = AffineTransform(np.identity(4), 
-                                              lpi_im.lpi_transform.output_coords,
-                                              lpi_im.lpi_transform.output_coords)
+                                              lpi_im.lpi_transform.function_range,
+                                              lpi_im.lpi_transform.function_range)
 
     im_subsampled = resample(lpi_im, target_coordmap,
                              world_to_world_coordmap,
                              shape=subsampled_shape)
     lpi_im_subsampled = lpi_image.LPIImage(np.array(im_subsampled),
-                                                      im_subsampled.affine,
-                                                      im_subsampled.coordmap.input_coords.coord_names)
+                                           im_subsampled.affine,
+                                           im_subsampled.coordmap.function_domain.coord_names)
 
     yield assert_almost_equal, np.array(lpi_im_subsampled), np.array(lpi_im)[::2,::3,::4]
 

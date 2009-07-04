@@ -4,7 +4,7 @@ import numpy as np
 from nipy.testing import assert_equal, assert_true, assert_false, \
     assert_raises, assert_array_equal, dec
 
-from nipy.core.api import CoordinateMap, Affine, CoordinateSystem
+from nipy.core.api import CoordinateMap, AffineTransform, CoordinateSystem
 
 import nipy.io.nifti_ref as niref
 
@@ -30,9 +30,9 @@ def test_iljk_to_xyzt():
     # coordinates, and one about the last axis not being in the
     # correct order. this also will give a warning about the pixdim.
     # ninput_axes = list('iljk')
-    input_coords = CoordinateSystem('iljk', 'input')
-    output_coords = CoordinateSystem('xyzt', 'output')
-    cmap = Affine(np.identity(5), input_coords, output_coords)
+    function_domain = CoordinateSystem('iljk', 'input')
+    function_range = CoordinateSystem('xyzt', 'output')
+    cmap = AffineTransform(np.identity(5), function_domain, function_range)
     newcmap, order = niref.coerce_coordmap(cmap)
     aff = np.array([[ 1,  0,  0,  0,  0,],
                     [ 0,  0,  1,  0,  0,],
@@ -40,7 +40,7 @@ def test_iljk_to_xyzt():
                     [ 0,  1,  0,  0,  0,],
                     [ 0,  0,  0,  0,  1,]])
     yield assert_equal, newcmap.affine, aff
-    yield assert_equal, newcmap.input_coords.name, 'input-reordered'
+    yield assert_equal, newcmap.function_domain.name, 'input-reordered'
     # order should match a reorder to 'ijkl'
     yield assert_equal, order, (0,2,3,1)
 
@@ -48,9 +48,9 @@ def test_iljk_to_xyzt():
 def test_ijkn_to_xyzt():
     # This should raise an exception about not having axis names
     # ['ijkl'].  Some warnings are printed during the try/except
-    input_coords = CoordinateSystem('ijkn', 'input')
-    output_coords = CoordinateSystem('xyzt', 'output')
-    cmap = Affine(np.identity(5), input_coords, output_coords)
+    function_domain = CoordinateSystem('ijkn', 'input')
+    function_range = CoordinateSystem('xyzt', 'output')
+    cmap = AffineTransform(np.identity(5), function_domain, function_range)
     assert_raises, ValueError, niref.coerce_coordmap, cmap
 
 
@@ -58,14 +58,14 @@ def test_ijkml_to_xyztu():
     # This should raise a warning about the last 2 axes not being in
     # order, and one about the loss of information from a non-diagonal
     # matrix. This also means that the pixdim will be wrong
-    input_coords = CoordinateSystem('ijkml', 'input')
-    output_coords = CoordinateSystem('xyztu', 'output')
-    cmap = Affine(np.identity(6), input_coords, output_coords)
+    function_domain = CoordinateSystem('ijkml', 'input')
+    function_range = CoordinateSystem('xyztu', 'output')
+    cmap = AffineTransform(np.identity(6), function_domain, function_range)
     newcmap, order = niref.coerce_coordmap(cmap)
-    yield assert_equal, newcmap.input_coords.name, 'input-reordered'
+    yield assert_equal, newcmap.function_domain.name, 'input-reordered'
     yield assert_equal, order, (0,1,2,4,3)
     # build an affine xform that should match newcmap.affine
-    ndim = cmap.ndim[0]
+    ndim = cmap.ndims[0]
     perm = np.zeros((ndim+1,ndim+1))
     perm[-1,-1] = 1
     for i, j in enumerate(order):
@@ -83,15 +83,15 @@ def test_ijkml_to_utzyx():
     # This should raise a warning about the last 2 axes not being in
     # order, and one about the loss of information from a non-diagonal
     # matrix, and also one about the nifti output coordinates.  
-    input_coords = CoordinateSystem('ijkml', 'input')
-    output_coords = CoordinateSystem('utzyx', 'output')
-    cmap = Affine(np.identity(6), input_coords, output_coords)
+    function_domain = CoordinateSystem('ijkml', 'input')
+    function_range = CoordinateSystem('utzyx', 'output')
+    cmap = AffineTransform(np.identity(6), function_domain, function_range)
     newcmap, order = niref.coerce_coordmap(cmap)
-    yield assert_equal, newcmap.input_coords.name, 'input-reordered'
-    yield assert_equal, newcmap.output_coords.name, 'output-reordered'
+    yield assert_equal, newcmap.function_domain.name, 'input-reordered'
+    yield assert_equal, newcmap.function_range.name, 'output-reordered'
     yield assert_equal, order, (0,1,2,4,3)
     # Generate an affine that matches the order of the input coords 'ijkml'
-    ndim = cmap.ndim[0]
+    ndim = cmap.ndims[0]
     perm = np.zeros((ndim+1,ndim+1))
     perm[-1,-1] = 1
     for i, j in enumerate(order):
@@ -117,48 +117,48 @@ def test_ijk_from_fps():
 
 def test_general_coercion():
     # General test of coormap coercion
-    cmap = Affine(
+    cmap = AffineTransform(
         np.eye(4),
         CoordinateSystem('ijk'),
         CoordinateSystem('xyz'))
     ncmap, order = niref.coerce_coordmap(cmap)
-    yield assert_equal, ncmap.output_coords, cmap.output_coords
+    yield assert_equal, ncmap.function_range, cmap.function_range
     yield assert_equal, order, (0, 1, 2)
     cmap = CoordinateMap(
         lambda x : x,
         CoordinateSystem('ijk'),
         CoordinateSystem('xyz'))
     yield assert_raises, ValueError, niref.coerce_coordmap, cmap
-    cmap = Affine(
+    cmap = AffineTransform(
         np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,1]]),
         CoordinateSystem('ij'),
         CoordinateSystem('xyz'))
     yield assert_raises, ValueError, niref.coerce_coordmap, cmap
-    cmap = Affine(
+    cmap = AffineTransform(
         np.eye(4),
         CoordinateSystem('ijq'),
         CoordinateSystem('xyz'))
     yield assert_raises, ValueError, niref.coerce_coordmap, cmap
-    cmap = Affine(
+    cmap = AffineTransform(
         np.eye(4),
         CoordinateSystem('ijk'),
         CoordinateSystem('xyq'))
     yield assert_raises, ValueError, niref.coerce_coordmap, cmap
     # Space order should not matter if no time reordering required
-    cmap = Affine(
+    cmap = AffineTransform(
         np.eye(4),
         CoordinateSystem('kji'),
         CoordinateSystem('xyz'))
     ncmap, order = niref.coerce_coordmap(cmap)
-    yield assert_equal, ncmap.output_coords, cmap.output_coords
+    yield assert_equal, ncmap.function_range, cmap.function_range
     yield assert_equal, order, (0, 1, 2)
     yield assert_array_equal, np.eye(4), ncmap.affine
     # Even if time is present but in the right place
-    cmap = Affine(
+    cmap = AffineTransform(
         np.eye(5),
         CoordinateSystem('kjil'),
         CoordinateSystem('xyzt'))
     ncmap, order = niref.coerce_coordmap(cmap)
-    yield assert_equal, ncmap.output_coords, cmap.output_coords
+    yield assert_equal, ncmap.function_range, cmap.function_range
     yield assert_equal, order, (0, 1, 2, 3)
     yield assert_array_equal, np.eye(5), ncmap.affine

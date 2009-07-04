@@ -78,12 +78,12 @@ class Image(object):
 
     @setattr_on_read
     def world(self):
-        return self.coordmap.output_coords
+        return self.coordmap.function_range
     _doc['world'] = "World coordinate system."
 
     @setattr_on_read
     def axes(self):
-        return self.coordmap.input_coords
+        return self.coordmap.function_domain
     _doc['axes'] = "Axes of image."
 
     @setattr_on_read
@@ -158,7 +158,7 @@ class Image(object):
             raise ValueError('expecting an array and CoordinateMap instance')
 
         # This ensures two things
-        # i) each axis in coordmap.input_coords has a length and
+        # i) each axis in coordmap.function_domain has a length and
         # ii) the shapes are consistent
 
         # self._data is an array-like object.  It must implement a subset of
@@ -194,8 +194,8 @@ class Image(object):
                          [ 4.,  0.,  0.,  1.],
                          [ 0.,  5.,  0.,  2.],
                          [ 0.,  0.,  0.,  1.]]),
-           input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='input', coord_dtype=float64),
-           output_coords=CoordinateSystem(coord_names=('z', 'x', 'y'), name='output', coord_dtype=float64)
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='input', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('z', 'x', 'y'), name='output', coord_dtype=float64)
         )
 
         >>> 
@@ -223,8 +223,8 @@ class Image(object):
                          [ 0.,  5.,  0.,  2.],
                          [ 0.,  0.,  6.,  3.],
                          [ 0.,  0.,  0.,  1.]]),
-           input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='input', coord_dtype=float64),
-           output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='output', coord_dtype=float64)
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='input', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='output', coord_dtype=float64)
         )
         >>> im = Image(np.empty((30,40,50)), cmap)
         >>> im_reordered = im.reordered_axes([2,0,1])
@@ -236,8 +236,8 @@ class Image(object):
                          [ 0.,  0.,  5.,  2.],
                          [ 6.,  0.,  0.,  3.],
                          [ 0.,  0.,  0.,  1.]]),
-           input_coords=CoordinateSystem(coord_names=('k', 'i', 'j'), name='input', coord_dtype=float64),
-           output_coords=CoordinateSystem(coord_names=('x', 'y', 'z'), name='output', coord_dtype=float64)
+           function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='input', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='output', coord_dtype=float64)
         )
         >>> 
 
@@ -333,7 +333,7 @@ def subsample(img, slice_object):
     data = np.array(img)[slice_object]
     g = ArrayCoordMap(img.coordmap, img.shape)[slice_object]
     coordmap = g.coordmap
-    if coordmap.input_coords.ndim > 0:
+    if coordmap.function_domain.ndim > 0:
         return Image(data, coordmap, metadata=img.metadata)
     else:
         return data
