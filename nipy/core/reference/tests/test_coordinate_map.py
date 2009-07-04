@@ -123,9 +123,10 @@ def test_comap_init():
 
 
 def test_comap_copy():
+    import copy
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(map, incs, outcs, inv)
-    cmcp = cm.copy()
+    cmcp = copy.copy(cm)
     yield assert_equal, cmcp.function, cm.function
     yield assert_equal, cmcp.function_domain, cm.function_domain
     yield assert_equal, cmcp.function_range, cm.function_range
@@ -160,6 +161,12 @@ def test_affine_init():
     yield assert_raises, ValueError, AffineTransform, badaff, incs, outcs
 
 
+def test_affine_bottom_row():
+    # homogeneous transformations have bottom rows all zero 
+    # except the last one
+    yield assert_raises, ValueError, AffineTransform.from_params, 'ij', \
+        'x', np.array([[3,4,5],[1,1,1]])
+
 def test_affine_inverse():
     incs, outcs, aff = affine_v2w()
     inv = np.linalg.inv(aff)
@@ -168,10 +175,10 @@ def test_affine_inverse():
     x = np.array([10, 20, 30])
     x_roundtrip = cm.function(invmap(x))
     yield assert_equal, x_roundtrip, x
-    badaff = np.array([[1,2,3],[4,5,6]])
-    badcm = AffineTransform(aff, incs, outcs)
-    badcm._affine = badaff
-    yield assert_raises, ValueError, getattr, badcm, 'inverse_function'
+    badaff = np.array([[1,2,3],[0,0,1]])
+    badcm = AffineTransform(badaff, CoordinateSystem('ij'),
+                            CoordinateSystem('x'))
+    yield assert_raises, AttributeError, getattr, badcm, 'inverse_function'
 
 
 def test_affine_from_params():
@@ -205,7 +212,8 @@ def test_affine_identity():
 def test_affine_copy():
     incs, outcs, aff = affine_v2w()
     cm = AffineTransform(aff, incs, outcs)
-    cmcp = cm.copy()
+    import copy
+    cmcp = copy.copy(cm)
     yield assert_equal, cmcp.affine, cm.affine
     yield assert_equal, cmcp.function_domain, cm.function_domain
     yield assert_equal, cmcp.function_range, cm.function_range
@@ -246,12 +254,15 @@ def test_str():
     affine_mapping = AffineTransform(affine, domain, range)
     yield assert_equal, result, str(affine_mapping)
 
+    cmap = CoordinateMap(np.exp, domain, range, np.log)
     result="""CoordinateMap(
-   function,
+   <ufunc 'exp'>,
    function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+   <ufunc 'log'>
   )"""
-    yield assert_equal, result, CoordinateMap.__repr__(affine_mapping)
+
+    yield assert_equal, result, repr(cmap)
 
 
 

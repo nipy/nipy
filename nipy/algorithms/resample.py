@@ -2,6 +2,8 @@
 Some simple examples and utility functions for resampling.
 """
 
+import copy
+
 from scipy.ndimage import affine_transform
 import numpy as np
 
@@ -88,6 +90,7 @@ def resample(image, target, mapping, shape, order=3):
             idata = interp.evaluate(grid.values)
             del(interp)
             
-    return Image(idata, target.copy())
+
+    return Image(idata, copy.copy(target))
 
         
