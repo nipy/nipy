@@ -12,17 +12,19 @@ from nipy.utils.onetime import setattr_on_read
 # These imports are used in the fromarray and subsample 
 # functions only, not in Image
 
-from nipy.core.reference.coordinate_map import AffineTransform
+from nipy.core.reference.coordinate_map import AffineTransform, \
+    CoordinateSystem, CoordinateMap
+
 from nipy.core.reference.array_coords import ArrayCoordMap
 
 __docformat__ = 'restructuredtext'
 __all__ = ['fromarray', 'subsample']
 
-class Image(object):
+class BaseImage(object):
     """
-    The `Image` class provides the core object type used in nipy. An `Image`
+    The `BaseImage` class provides the core object type used in nipy. An `BaseImage`
     represents a volumetric brain image and provides means for manipulating
-    the image data.  Most functions in the image module operate on `Image`
+    the image data.  Most functions in the image module operate on `BaseImage`
     objects.
 
     Notes
@@ -52,8 +54,6 @@ class Image(object):
     # them separately allows us to do this without a lot of clutter
     # in the property line.
 
-    # XXX: I have no idea if _doc will work with setattr_on_read?
-
     ###################################################################
     #
     # Attributes
@@ -63,7 +63,10 @@ class Image(object):
     metadata = {}
     _doc['metadata'] = "Dictionary containing additional information."
 
-    coordmap = AffineTransform.from_params('ijk', 'xyz', np.identity(4))
+    coordmap = CoordinateMap(CoordinateSystem('ijk'),
+                             CoordinateSystem('xyz'),
+                             np.exp,
+                             np.log)
     _doc['coordmap'] = "Mapping from axes coordinates to world coordinates."
 
     @setattr_on_read
@@ -186,12 +189,12 @@ class Image(object):
         (30, 40, 50)
         >>> im_reordered.coordmap
         AffineTransform(
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('z', 'x', 'y'), name='range', coord_dtype=float64),
            affine=array([[ 0.,  0.,  6.,  3.],
                          [ 4.,  0.,  0.,  1.],
                          [ 0.,  5.,  0.,  2.],
-                         [ 0.,  0.,  0.,  1.]]),
-           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('z', 'x', 'y'), name='range', coord_dtype=float64)
+                         [ 0.,  0.,  0.,  1.]])
         )
 
         >>> 
@@ -204,7 +207,7 @@ class Image(object):
             order = [self.world.index(s) for s in order]
 
         new_cmap = self.coordmap.reordered_range(order)
-        return Image(self._data, new_cmap, metadata=self.metadata)
+        return self.__class__(self._data, new_cmap, metadata=self.metadata)
 
     def reordered_axes(self, order=None):
         """
@@ -215,12 +218,12 @@ class Image(object):
         >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6])
         >>> cmap
         AffineTransform(
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='range', coord_dtype=float64),
            affine=array([[ 4.,  0.,  0.,  1.],
                          [ 0.,  5.,  0.,  2.],
                          [ 0.,  0.,  6.,  3.],
-                         [ 0.,  0.,  0.,  1.]]),
-           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='range', coord_dtype=float64)
+                         [ 0.,  0.,  0.,  1.]])
         )
         >>> im = Image(np.empty((30,40,50)), cmap)
         >>> im_reordered = im.reordered_axes([2,0,1])
@@ -228,12 +231,12 @@ class Image(object):
         (50, 30, 40)
         >>> im_reordered.coordmap
         AffineTransform(
+           function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='domain', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='range', coord_dtype=float64),
            affine=array([[ 0.,  4.,  0.,  1.],
                          [ 0.,  0.,  5.,  2.],
                          [ 6.,  0.,  0.,  3.],
-                         [ 0.,  0.,  0.,  1.]]),
-           function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='domain', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='range', coord_dtype=float64)
+                         [ 0.,  0.,  0.,  1.]])
         )
         >>> 
 
@@ -252,8 +255,71 @@ class Image(object):
             new_data = np.transpose(self.get_data(), order)
         else:
             new_data = self._data
-        return Image(new_data, new_cmap,
+        return self.__class__(new_data, new_cmap,
                      metadata=self.metadata)
+
+    def renamed_axes(self, **names_dict):
+        """
+        Return a new image with its axes renamed according
+        to the dictionary.
+
+        Parameters
+        ----------
+
+        img : Image
+
+        names_dict : dictionary
+
+        Returns
+        -------
+
+        newimg : Image
+            An Image with the same data, having its axes renamed.
+
+        >>> data = np.random.standard_normal((11,9,4))
+        >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4)))
+        >>> im_renamed = im.renamed_axes(i='slice')
+        >>> print im_renamed.axes
+        CoordinateSystem(coord_names=('slice', 'j', 'k'), name='domain', coord_dtype=float64)
+
+        """
+
+        newcmap = self.coordmap.renamed_domain(names_dict)
+        return self.__class__(self._data, newcmap)
+
+    def renamed_world(self, **names_dict):
+        """
+        Return a new image with its world coordinates renamed according
+        to the dictionary.
+
+        Parameters
+        ----------
+
+        img : Image
+
+        names_dict : dictionary
+
+        Returns
+        -------
+
+        newimg : Image
+            An Image with the same data, having its world coordinates renamed.
+
+        Examples
+        --------
+
+        >>> data = np.random.standard_normal((11,9,4))
+        >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4)))
+        >>> im_renamed_world = im.renamed_world(x='newx', y='newy')
+        >>> print im_renamed_world.world
+        CoordinateSystem(coord_names=('newx', 'newy', 'z'), name='range', coord_dtype=float64)
+
+
+        """
+
+        newcmap = self.coordmap.renamed_range(names_dict)
+        return self.__class__(self._data, newcmap)
+
 
     def __setitem__(self, index, value):
         """Setting values of an image, set values in the data array."""
@@ -289,11 +355,30 @@ class Image(object):
         options = np.get_printoptions()
         np.set_printoptions(precision=6, threshold=64, edgeitems=2)
         representation = \
-            'Image(\n  data=%s,\n  coordmap=%s)' % (
+            'BaseImage(\n  data=%s,\n  coordmap=%s)' % (
             '\n       '.join(repr(self._data).split('\n')),
             '\n         '.join(repr(self.coordmap).split('\n')))
         np.set_printoptions(**options)
         return representation
+
+
+
+class Image(BaseImage):
+    """
+    An Image is a BaseImage with an AffineTransform
+    for a CoordinateMap.
+    """
+
+    def __init__(self, data, affine_transform, metadata={}):
+        
+        if not isinstance(affine_transform, AffineTransform):
+            raise ValueError('affine_transform should be affine!')
+        BaseImage.__init__(self, data, affine_transform, metadata)
+
+    def __repr__(self):
+        repr_split = BaseImage.__repr__(self).split('\n')
+        repr_split[0] = "Image("
+        return '\n'.join(repr_split)
 
 class SliceMaker(object):
     """
@@ -347,7 +432,7 @@ def subsample(img, slice_object):
     g = ArrayCoordMap(img.coordmap, img.shape)[slice_object]
     coordmap = g.coordmap
     if coordmap.function_domain.ndim > 0:
-        return Image(data, coordmap, metadata=img.metadata)
+        return img.__class__(data, coordmap, metadata=img.metadata)
     else:
         return data
 
@@ -546,64 +631,3 @@ def synchronized_order(img, target_img,
         img = img.reordered_world(target_world.coord_names)
     return img
 
-def renamed_axes(img, **names_dict):
-    """
-    Return a new image with its axes renamed according
-    to the dictionary.
-
-    Parameters
-    ----------
-
-    img : Image
-
-    names_dict : dictionary
-
-    Returns
-    -------
-
-    newimg : Image
-        An Image with the same data, having its axes renamed.
-
-    >>> data = np.random.standard_normal((11,9,4))
-    >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4)))
-    >>> im_renamed = renamed_axes(im, i='slice')
-    >>> print im_renamed.axes
-    CoordinateSystem(coord_names=('slice', 'j', 'k'), name='domain', coord_dtype=float64)
-
-    """
-
-    newcmap = img.coordmap.renamed_domain(names_dict)
-    return Image(img._data, newcmap)
-
-def renamed_world(img, **names_dict):
-    """
-    Return a new image with its world coordinates renamed according
-    to the dictionary.
-
-    Parameters
-    ----------
-
-    img : Image
-
-    names_dict : dictionary
-
-    Returns
-    -------
-
-    newimg : Image
-        An Image with the same data, having its world coordinates renamed.
-
-    Examples
-    --------
-
-    >>> data = np.random.standard_normal((11,9,4))
-    >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4)))
-    >>> im_renamed_world = renamed_world(im, x='newx', y='newy')
-    >>> print im_renamed_world.world
-    CoordinateSystem(coord_names=('newx', 'newy', 'z'), name='range', coord_dtype=float64)
-
-
-    """
-
-    newcmap = img.coordmap.renamed_range(names_dict)
-    return Image(img._data, newcmap)

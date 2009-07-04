@@ -98,7 +98,8 @@ class AffineImage(Image):
         function_domain = CoordinateSystem(['axis%d' % i for i in range(3)], 
                                         name=coord_sys)
         function_range = CoordinateSystem(['x','y','z'], name='world')
-        spatial_coordmap = AffineTransform(affine, function_domain, function_range)
+        spatial_coordmap = AffineTransform(function_domain, function_range,
+                                           affine)
 
         nonspatial_names = ['axis%d' % i for i in range(3, data.ndim)]
         if nonspatial_names:
@@ -184,9 +185,10 @@ class AffineImage(Image):
 
         if world_to_world is None:
             world_to_world = np.identity(4)
-        world_to_world_transform = AffineTransform(world_to_world,
-                                                   affine_transform.function_range,
-                                                   self.spatial_coordmap.function_range)
+        world_to_world_transform = AffineTransform(affine_transform.function_range,
+                                                   self.spatial_coordmap.function_range,
+                                                   world_to_world)
+                                                   
 
         if self.ndim == 3:
             im = resample(self, affine_transform, world_to_world_transform,

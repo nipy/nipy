@@ -12,9 +12,9 @@ def generate_im():
                        [0,3.4,0,1],
                        [1.3,0,0,2],
                        [0,0,0,1]])
-    affine_mapping = AffineTransform(affine,
-                                     CoordinateSystem('ijk'),
-                                     CoordinateSystem('xyz'))
+    affine_mapping = AffineTransform(CoordinateSystem('ijk'),
+                                     CoordinateSystem('xyz'),
+                                     affine)
     affine_im = affine_image.AffineImage(data, affine, 'input')
     im = Image(data, affine_mapping)
     return im, affine_im
@@ -87,24 +87,25 @@ def test_subsample():
                                  [0,0,0,1]])
                                 
     subsampled_shape = np.array(affine_im)[::2,::3,::4].shape
-    subsample_coordmap = AffineTransform(subsample_matrix, 
+    subsample_coordmap = AffineTransform(affine_im.spatial_coordmap.function_domain,
                                          affine_im.spatial_coordmap.function_domain,
-                                         affine_im.spatial_coordmap.function_domain)
+                                         subsample_matrix)
     target_coordmap = compose(affine_im.spatial_coordmap, 
                               subsample_coordmap)
 
     # The images have the same output coordinates
 
-    world_to_world_coordmap = AffineTransform(np.identity(4), 
+    world_to_world_coordmap = AffineTransform(affine_im.spatial_coordmap.function_range,
                                               affine_im.spatial_coordmap.function_range,
-                                              affine_im.spatial_coordmap.function_range)
+                                              np.identity(4))
+                                              
 
     im_subsampled = resample(affine_im, target_coordmap,
                              world_to_world_coordmap,
                              shape=subsampled_shape)
     affine_im_subsampled = affine_image.AffineImage(np.array(im_subsampled),
-                                                 im_subsampled.affine,
-                                                 im_subsampled.coordmap.function_domain.coord_names)
+                                                    im_subsampled.affine,
+                                                    im_subsampled.coordmap.function_domain.coord_names)
 
     yield assert_almost_equal, np.array(affine_im_subsampled), np.array(affine_im)[::2,::3,::4]
 

@@ -22,9 +22,9 @@ def generate_im():
                             [0,0,0,2.5,0],
                             [0,0,0,0,1]])
 
-    affine_mapping = AffineTransform(full_affine,
-                                     CoordinateSystem('ijkl'),
-                                     CoordinateSystem('xyzl'))
+    affine_mapping = AffineTransform(CoordinateSystem('ijkl'),
+                                     CoordinateSystem('xyzl'),
+                                     full_affine)
     lpi_im = lpi_image.LPIImage(data, affine, 'ijkl',
                                 metadata={'abc':np.random.standard_normal(4)})
     im = Image(data, affine_mapping)

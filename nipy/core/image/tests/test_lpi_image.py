@@ -14,9 +14,9 @@ def generate_im():
                        [0,3.4,0,1],
                        [1.3,0,0,2],
                        [0,0,0,1]])
-    affine_mapping = AffineTransform(affine,
-                                     CoordinateSystem('ijk'),
-                                     CoordinateSystem('xyz'))
+    affine_mapping = AffineTransform(CoordinateSystem('ijk'),
+                                     CoordinateSystem('xyz'),
+                                     affine)
     lpi_im = lpi_image.LPIImage(data, affine, 'ijk',
                                 metadata={'abc':np.random.standard_normal(4)})
     im = Image(data, affine_mapping)
@@ -145,17 +145,17 @@ def test_subsample():
                                  [0,0,0,1]])
                                 
     subsampled_shape = np.array(lpi_im)[::2,::3,::4].shape
-    subsample_coordmap = AffineTransform(subsample_matrix, 
+    subsample_coordmap = AffineTransform(lpi_im.lpi_transform.function_domain,
                                          lpi_im.lpi_transform.function_domain,
-                                         lpi_im.lpi_transform.function_domain)
+                                         subsample_matrix)
     target_coordmap = compose(lpi_im.lpi_transform, 
                               subsample_coordmap)
 
     # The images have the same output coordinates
 
-    world_to_world_coordmap = AffineTransform(np.identity(4), 
+    world_to_world_coordmap = AffineTransform(lpi_im.lpi_transform.function_range,
                                               lpi_im.lpi_transform.function_range,
-                                              lpi_im.lpi_transform.function_range)
+                                              np.identity(4))
 
     im_subsampled = resample(lpi_im, target_coordmap,
                              world_to_world_coordmap,

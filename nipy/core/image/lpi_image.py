@@ -28,12 +28,12 @@ class LPITransform(AffineTransform):
       >>> lpi = LPITransform(np.diag([3,4,5,1]), 'ijk')
       >>> lpi
       LPITransform(
+         function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
+         function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64),
          affine=array([[ 3.,  0.,  0.,  0.],
                        [ 0.,  4.,  0.,  0.],
                        [ 0.,  0.,  5.,  0.],
-                       [ 0.,  0.,  0.,  1.]]),
-         function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
-         function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64)
+                       [ 0.,  0.,  0.,  1.]])
       )
       >>> 
       """
@@ -42,7 +42,7 @@ class LPITransform(AffineTransform):
           raise ValueError('affine must be a 4x4 matrix representing an affine transformation in homogeneous coordinates')
       domain = CoordinateSystem(lpi_axis_names, name='voxel')
       range = CoordinateSystem('xyz', name='world')
-      AffineTransform.__init__(self, affine, domain, self.range)
+      AffineTransform.__init__(self, domain, self.range, affine)
 
    def reordered_range(self, order, name=''):
        raise NotImplementedError("the LPI world coordinates are always ['x','y','z'] and can't be reordered")
@@ -124,12 +124,12 @@ class LPIImage(Image):
    CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64)
    >>> im.lpi_transform
    LPITransform(
+      function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
+      function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64),
       affine=array([[ 3.,  0.,  0.,  0.],
                     [ 0.,  4.,  0.,  0.],
                     [ 0.,  0.,  5.,  0.],
-                    [ 0.,  0.,  0.,  1.]]),
-      function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
-      function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64)
+                    [ 0.,  0.,  0.,  1.]])
    )
    >>> 
 
@@ -264,7 +264,7 @@ class LPIImage(Image):
       # Reordering the input
       # will transpose the data, so we will have accessed the data.
 
-      im = Image.reordered_axes(self, order)
+      im = self.to_image().reordered_axes(order)
       
       A = np.identity(4)
       A[:3,:3] = im.affine[:3,:3]
@@ -272,6 +272,42 @@ class LPIImage(Image):
 
       return LPIImage(np.array(im), A, im.axes.coord_names,
                       metadata=self.metadata)
+
+   def renamed_world(self, newnames, name=''):
+       raise NotImplementedError("the LPI world coordinates are always ['x','y','z'] and can't be renamed")
+
+   def renamed_axes(self, **names_dict):
+      """
+      Return a new image with its axes renamed according
+      to the dictionary.
+
+      Parameters
+      ----------
+
+      img : Image
+      
+      names_dict : dictionary
+
+      Returns
+      -------
+
+      newimg : Image
+         An Image with the same data, having its axes renamed.
+      
+      Examples
+      --------
+
+      >>> data = np.random.standard_normal((11,9,4))
+      >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4)))
+      >>> im_renamed = im.renamed_axes(i='slice')
+      >>> print im_renamed.axes
+      CoordinateSystem(coord_names=('slice', 'j', 'k'), name='domain', coord_dtype=float64)
+
+      """
+
+      newim = self.to_image().renamed_axes(**names_dict)
+      return LPIImage.from_image(newim)
+
 
    #---------------------------------------------------------------------------
    # LPIImage interface
@@ -294,6 +330,25 @@ class LPIImage(Image):
    #---------------------------------------------------------------------------
    # Methods
    #---------------------------------------------------------------------------
+
+   def to_image(self):
+      """
+      Return an Image with the same data as self.
+      """
+      import copy
+      return Image(self._data, copy.copy(self.coordmap))
+
+   @staticmethod
+   def from_image(img):
+      """
+      Return an LPIImage from an Image with the same data.
+      The affine matrix is read off from the upper left corner
+      of img.affine.
+      """
+      A = np.identity(4)
+      A[:3,:3] = img.affine[:3,:3]
+      A[:3,-1] = img.affine[:3,-1]
+      return LPIImage(img._data, A, img.axes.coord_names)
 
    def resampled_to_affine(self, affine_transform, world_to_world=None, interpolation_order=3, 
                            shape=None):
@@ -338,9 +393,8 @@ class LPIImage(Image):
 
       if world_to_world is None:
          world_to_world = np.identity(4)
-      world_to_world_transform = AffineTransform(world_to_world,
-                                                 affine_transform.function_range,
-                                                 self.world)
+      world_to_world_transform = AffineTransform(affine_transform.function_range,
+                                                 self.world, world_to_world)
 
       if self.ndim == 3:
          im = resample(self, affine_transform, world_to_world_transform,
@@ -510,7 +564,8 @@ class LPIImage(Image):
             return im
          else:
             from nipy.core.image.image import subsample
-            return subsample(im, tuple(slice_list))
+            im = subsample(im.to_image(), tuple(slice_list))
+            return LPIImage.from_image(im)
 
     #---------------------------------------------------------------------------
     # Private methods
