@@ -84,7 +84,7 @@ del _test_local_install
 # fail
 try:
     del version
-    del testing, Tester
+    del Tester
 except:
     pass
 
