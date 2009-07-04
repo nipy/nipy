@@ -12,6 +12,7 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 
+from nipy.utils.onetime import setattr_on_read
 
 class CoordinateSystem(object):
     """An ordered sequence of named coordinates of a specified dtype.
@@ -51,7 +52,26 @@ class CoordinateSystem(object):
 
     """
 
+    _doc = {}
+
+    ##############################################################
+    # Attributes, intended to be read-only
+    ##############################################################
+
+    name = 'world-LPI'
+    _doc['name'] = "A name describing the coordinate system, i.e. LPI/RAI"
+
+    coord_names = ['x','y','z']
+    _doc['coord_names'] = "A sequence of names describing each coordinate, i.e. ['x','y','z']"
+
+    coord_dtype = np.float
+    _doc['coord_dtype'] = "The dtype of each coordinate."
+
+    ndim = 3
+    _doc['ndim'] = "The number of coordinates."
+
     def __init__(self, coord_names, name='', coord_dtype=np.float):
+
         """Create a coordinate system with a given name and coordinate names.
         
         The CoordinateSystem has two dtype attributes:
@@ -86,11 +106,16 @@ class CoordinateSystem(object):
         """
 
         self.name = name
+
         # this allows coord_names to be an iterator and have a length
         coord_names = tuple(coord_names)
+
         # Make sure each coordinate is unique
         if len(set(coord_names)) != len(coord_names):
             raise ValueError('coord_names must have distinct names')
+
+        if [n for n in coord_names if type(n) != type('')]:
+            raise ValueError('coord_names entries must be strings')
 
         # verify that the dtype is coord_dtype for sanity
         sctypes = (np.sctypes['int'] + np.sctypes['float'] + 
@@ -101,27 +126,22 @@ class CoordinateSystem(object):
         self._coord_dtype = coord_dtype
         self._coord_names = coord_names
 
-    def _get_dtype(self):
+    ##############################################################
+    # Properties 
+    ##############################################################
+
+    @setattr_on_read
+    def dtype(self):
         return np.dtype([(name, self._coord_dtype) 
                          for name in self.coord_names])
-    dtype = property(_get_dtype, 
-                     doc='The dtype of the CoordinateSystem.')
+    _doc['dtype'] = "The dtype of the CoordinateSystem, i.e." + \
+                    "[('x',np.float), ('y', np.float), ('z', np.float)]."
+ 
+    ##############################################################
+    # Methods
+    ##############################################################
 
-    def _get_coord_dtype(self):
-        return self._coord_dtype
-    coord_dtype = property(_get_coord_dtype,
-                           doc='The dtype of the coordinates in the CoordinateSytem')
 
-    def _get_coord_names(self):
-        return self._coord_names
-    coord_names = property(_get_coord_names,
-                           doc='The coordinate names in the CoordinateSystem')
-
-    def _get_ndim(self):
-        return len(self.coord_names)
-    ndim = property(_get_ndim,
-                    doc='The number of coordinates in the CoordinateSystem')
-    
     def index(self, coord_name):
         """Return the index of a given named coordinate.
 
@@ -164,8 +184,6 @@ class CoordinateSystem(object):
 
         """
         
-        attrs = ('name', 'coord_names', 'coord_dtype')
-        vals = []
         return ("CoordinateSystem(coord_names=%s, name='%s', coord_dtype=%s)" %
                 (self.coord_names, self.name, self.coord_dtype))
 
@@ -256,7 +274,7 @@ class CoordinateSystem(object):
                [3]])
         '''
         arr = np.asanyarray(arr)
-        our_ndim = len(self._coord_names)
+        our_ndim = len(self.coord_names)
         if len(arr.shape) < 2:
             if arr.size != our_ndim:
                 raise ValueError('1D input should have length %d for '
@@ -266,10 +284,10 @@ class CoordinateSystem(object):
         elif arr.shape[-1] != our_ndim:
             raise ValueError('Array shape[-1] must match CoordinateSystem '
                              'shape %d.\n  %s' % (our_ndim, str(self)))
-        if not np.can_cast(arr.dtype, self._coord_dtype):
+        if not np.can_cast(arr.dtype, self.coord_dtype):
             raise ValueError('Cannot cast array dtype %s to '
                              'CoordinateSystem coord_dtype %s.\n  %s' %
-                             (arr.dtype, self._coord_dtype, str(self)))
+                             (arr.dtype, self.coord_dtype, str(self)))
         return arr
 
 
