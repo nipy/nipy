@@ -105,7 +105,8 @@ def test_ijkml_to_utzyx():
     yield assert_true, np.allclose(newcmap.affine, r)
     X = np.arange(10, 15)
     Xr = [X[i] for i in order]
-    yield assert_true, np.allclose(np.fliplr(newcmap(Xr)), cmap(X))
+    yield assert_true, np.allclose(np.fliplr(np.atleast_2d(newcmap(Xr))), 
+                                   np.atleast_2d(cmap(X)))
 
 
 def test_ijk_from_fps():
