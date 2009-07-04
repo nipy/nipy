@@ -20,28 +20,21 @@ from sphinx.setup_command import BuildDoc
 
 DOC_BUILD_DIR = os.path.join('build', 'html')
 
-
 ################################################################################
-# Code for API generation 
-class APIDocs(Command):
-    description = \
-    """ Generate API docs """
+# Distutils Command class for installing nipy to a temporary location. 
+class TempInstall(Command):
+    temp_install_dir = os.path.join('build', 'install')
 
-    user_options = [
-        ('None', None, 'this command has no options'),
-        ]
-
-    def run(self):
-        # First build and install nipy in a temporary location
-        TEMP_INSTALL = os.path.join('build', 'install')
+    def run():
+        """ build and install nipy in a temporary location. """
         install = self.distribution.get_command_obj('install')
-        install.install_scripts = os.path.join('build', 'scripts')
-        install.install_base    = TEMP_INSTALL 
-        install.install_platlib = TEMP_INSTALL
-        install.install_purelib = TEMP_INSTALL
-        install.install_data    = TEMP_INSTALL
-        install.install_lib     = TEMP_INSTALL
-        install.install_headers = TEMP_INSTALL
+        install.install_scripts = self.temp_install_dir
+        install.install_base    = self.temp_install_dir
+        install.install_platlib = self.temp_install_dir 
+        install.install_purelib = self.temp_install_dir 
+        install.install_data    = self.temp_install_dir 
+        install.install_lib     = self.temp_install_dir 
+        install.install_headers = self.temp_install_dir 
         install.run()
 
         # Horrible trick to reload nipy with our temporary instal
@@ -53,20 +46,37 @@ class APIDocs(Command):
         sys.path.pop(0)
         import nipy
 
+    def initialize_options(self):
+        pass
+    
+    def finalize_options(self):
+        pass
+
+
+################################################################################
+# Distutils Command class for API generation 
+class APIDocs(TempInstall):
+    description = \
+    """ Generate API docs """
+
+    user_options = [
+        ('None', None, 'this command has no options'),
+        ]
+
+
+    def run(self):
+        # First build the project and instal it to a temporary location.
+        TempInstall.run(self)
         os.chdir('doc')
         try:
+            # We are running the API-building script via an
+            # system call, but overriding the import path.
             os.system("""%s -c 'import sys; sys.path.append("%s"); sys.path.append("%s"); execfile("../tools/build_modref_templates.py", dict(__name__="__main__"))'"""
                                 % (sys.executable, 
                                    os.path.abspath('../tools'),
                                    os.path.abspath(TEMP_INSTALL)))
         finally:
             os.chdir('..')
-
-    def initialize_options(self):
-        pass
-    
-    def finalize_options(self):
-        pass
 
 
 ################################################################################
@@ -80,7 +90,7 @@ def relative_path(filename):
 
 
 ################################################################################
-# Code to build the docs 
+# Distutils Command class build the docs 
 class MyBuildDoc(BuildDoc):
     """ Sub-class the standard sphinx documentation building system, to
         add logics for API generation and matplotlib's plot directive.
@@ -132,7 +142,7 @@ class MyBuildDoc(BuildDoc):
 
 
 ################################################################################
-# Code to clean
+# Distutils Command class to clean
 class Clean(clean):
 
     def run(self):
