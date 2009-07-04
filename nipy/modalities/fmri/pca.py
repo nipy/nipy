@@ -16,26 +16,35 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 import numpy.linalg as L
-from nipy.fixes.scipy.stats.models.utils import recipr
 
-def pca(data, mask=None, ncomp=1, standardize=True,
-        design_keep=None, design_resid=None):
+# Local imports
+
+from nipy.core.image.image import Image, rollaxis as image_rollaxis
+from nipy.core.image.lpi_image import LPIImage
+
+def pca(lpi_image, mask=None, ncomp=1, axis='t', standardize=True,
+        design_keep=None, design_resid=None, 
+        ):
     """
-    Compute the PCA of an image (over ``axis=0``). Image coordmap should
-    have a subcoordmap method.
+    Compute the PCA of an image over a specified axis. 
 
     Parameters
     ----------
 
-    data : ndarray-like (np.float)
+    data : LPIImage
         The image on which to perform PCA over its first axis.
 
-    mask : ndarray-like (np.bool)
-        An optional mask, should have shape == image.shape[1:]
+    mask : LPIImage
+        An optional mask, should have shape == image.shape[:3]
+        and the same LPITransform.
 
     ncomp : int
         How many components to return. All the time series
         are returned but only ncomp of the images are computed.
+
+    axis : str or int
+        Axis over which to perform PCA. Cannot be a spatial axis
+        because the results have to be LPIImages.
 
     standardize : bool
         Standardize so each time series has same error-sum-of-squares?
@@ -51,12 +60,32 @@ def pca(data, mask=None, ncomp=1, standardize=True,
 
     """
 
-    data = np.asarray(data)
-    if mask is not None:
-        mask = np.asarray(mask)
+    if axis in lpi_image.world.coord_names + \
+            lpi_image.axes.coord_names[:3] + tuple(range(3)):
+        raise ValueError('cannot perform PCA over a spatial axis' +
+                         'or we will not be able to output LPIImages')
+
+    lpi_data = lpi_image.get_data()
+    image = Image(lpi_data, lpi_image.coordmap)
+    image = image_rollaxis(image, axis)
 
     if mask is not None:
-        nvoxel = mask.sum()
+        if mask.lpi_transform != lpi_image.lpi_transform:
+            raise ValueError('mask and lpi_image have different coordinate systems')
+
+        if mask.ndim != image.ndim - 1:
+            raise ValueError('mask should have one less dimension then lpi_image')
+
+        if mask.axes.coord_names != image.axes.coord_names[1:]:
+            raise ValueError('mask should have axes %s' % str(image.axes.coord_names[1:]))
+                         
+    data = image.get_data()
+
+    if mask is not None:
+        mask_data = mask.get_data()
+
+    if mask is not None:
+        nvoxel = mask_data.sum()
     else:
         nvoxel = np.product(data.shape[1:])
 
@@ -112,11 +141,11 @@ def pca(data, mask=None, ncomp=1, standardize=True,
 
         if standardize:
             S2 = (project_resid(Y)**2).sum(0)
-            Smhalf = recipr(np.sqrt(S2)); del(S2)
+            Smhalf = np.nan_to_num(1./np.sqrt(S2)); del(S2)
             YX *= Smhalf
 
         if mask is not None:
-            YX = YX * np.nan_to_num(mask[i].reshape(Y.shape[1]))
+            YX = YX * np.nan_to_num(mask_data[i].reshape(Y.shape[1]))
 
         C += np.dot(YX, YX.T)
 
@@ -135,24 +164,48 @@ def pca(data, mask=None, ncomp=1, standardize=True,
 
     subVX = time_series[:ncomp]
 
-    out = np.empty((ncomp,) + data.shape[1:], np.float)
+    output = np.empty((ncomp,) + data.shape[1:], np.float)
+
     for i in range(data.shape[1]):
         Y = data[:,i].reshape((data.shape[0], np.product(data.shape[2:])))
         U = np.dot(subVX, Y)
 
         if standardize:
             S2 = (project_resid(Y)**2).sum(0)
-            Smhalf = recipr(np.sqrt(S2)); del(S2)
+            Smhalf = np.nan_to_num(1./np.sqrt(S2)); del(S2)
             YX *= Smhalf
 
         if mask is not None:
-            YX *= np.nan_to_num(mask[i].reshape(Y.shape[1]))
+            YX *= np.nan_to_num(mask_data[i].reshape(Y.shape[1]))
 
         U.shape = (U.shape[0],) + data.shape[2:]
-        out[:,i] = U
-    return {'time_series':time_series[:ncomp,],
+        output[:,i] = U
+
+    img_first_axis = image.axes.coord_names[0]
+    # Rename the axis.
+
+    # Because we started with LPIImage, all non-spatial
+    # coordinates agree in the range and the domain
+    # so this will work and the renamed_range
+    # call is not even necessary because when we call
+    # LPIImage, we only use the axisnames
+
+    output_coordmap = image.coordmap.renamed_domain({img_first_axis:'PCA components'}).renamed_range({img_first_axis:'PCA components'})
+
+    output_img = Image(output, output_coordmap)
+
+    # We have to roll the axis back
+
+    roll_index = lpi_image.axes.index(img_first_axis)
+    output_img = image_rollaxis(output_img, roll_index, inverse=True)
+
+    output_lpi = LPIImage(output_img.get_data(), 
+                          lpi_image.affine,
+                          output_img.axes.coord_names)
+
+    return {'components over %s' % img_first_axis:time_series[:ncomp,],
             'pcnt_var': pcntvar,
-            'images':out, 
+            'images':output_lpi, 
             'rank':rank}
 
 

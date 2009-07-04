@@ -29,7 +29,13 @@ def test_write():
     test = FmriImageList.from_image(load_image(fname))
     yield nose.tools.assert_equal, test[0].affine.shape, (4,4)
     yield nose.tools.assert_equal, img[0].affine.shape, (5,4)
-    yield nose.tools.assert_true, np.allclose(test[0].affine, img[0].affine[1:])
+
+    # Check the affine...
+    A = np.identity(4)
+    A[:3,:3] = img[:,:,:,0].affine[:3,:3]
+    A[:3,-1] = img[:,:,:,0].affine[:3,-1]
+    yield nose.tools.assert_true, np.allclose(test[0].affine, A)
+
     # Under windows, if you don't close before delete, you get a
     # locking error.
     os.close(fp)
@@ -50,10 +56,9 @@ def test_iter():
 def test_subcoordmap():
     img = load_image(funcfile)
     subcoordmap = img[3].coordmap
-    xform = img.coordmap.affine[:,1:]
+    xform = img.affine[:,1:]
     nose.tools.assert_true(np.allclose(subcoordmap.affine[1:], xform[1:]))
-    ## XXX FIXME: why is it [0,0] entry instead of [0] below?
-    nose.tools.assert_true(np.allclose(subcoordmap.affine[0], [0,0,0,img.coordmap([3,0,0,0])[0,0]]))
+    nose.tools.assert_true(np.allclose(subcoordmap.affine[0], [0,0,0,img.coordmap([3,0,0,0])[0]]))
         
 
 def test_labels1():

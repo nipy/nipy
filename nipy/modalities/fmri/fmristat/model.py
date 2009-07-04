@@ -11,7 +11,7 @@ from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
 from nipy.fixes.scipy.stats.models.utils import recipr
 
 # nipy core imports
-from nipy.core.api import Image, parcels, matrix_generator, Affine
+from nipy.core.api import Image, parcels, matrix_generator, AffineTransform
 
 # nipy IO imports
 from nipy.io.api import save_image
@@ -372,7 +372,7 @@ def output_resid(outfile, fmri_image, clobber=False):
         # FIXME: NIFTI specific naming here
         innames = ["l"] + list(g.input_coords.coord_names)
         outnames = ["t"] + list(g.output_coords.coord_names)
-        cmap = Affine.from_params(innames,
+        cmap = AffineTransform.from_params(innames,
                                   outnames, T)
         shape = (n,) + fmri_image[0].shape
     elif isinstance(fmri_image, Image):

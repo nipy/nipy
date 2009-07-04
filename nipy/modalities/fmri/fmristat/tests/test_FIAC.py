@@ -19,7 +19,7 @@ from FIACdesigns import descriptions, designs, altdescr
 import csv
 from StringIO import StringIO
 import numpy as np
-import nipy.testing as niptest
+from nipy.testing import *
 import sympy
 
 from nipy.modalities.fmri import formula, utils, hrf, design
@@ -264,7 +264,7 @@ def test_altprotocol():
 	m = OLSModel(X)
 	r = m.fit(Y)
 	remaining = (r.resid**2).sum() / (Y**2).sum()
-	yield niptest.assert_almost_equal, remaining, 0
+	yield assert_almost_equal, remaining, 0
 
     for c in bF.keys():
         baf = baF[c]
@@ -282,7 +282,7 @@ def test_altprotocol():
 	m = OLSModel(X)
 	r = m.fit(Y)
 	remaining = (r.resid**2).sum() / (Y**2).sum()
-	yield niptest.assert_almost_equal, remaining, 0
+	yield assert_almost_equal, remaining, 0
 
 
 def matchcol(col, X):
@@ -311,7 +311,7 @@ def test_agreement():
         for i in range(X[design_type].shape[1]):
             _, cmax = matchcol(X[design_type][:,i], fmristat[design_type])
             if not dd.dtype.names[i].startswith('ns'):
-                yield niptest.assert_true, np.greater(cmax, 0.999)
+                yield assert_true, np.greater(cmax, 0.999)
 
 
 

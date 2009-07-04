@@ -77,7 +77,7 @@ def resample(image, target, mapping, shape, order=3):
 
         del(interp)
     else:
-        TV2IV = compose(image.coordmap.inverse, TV2IW)
+        TV2IV = compose(image.coordmap.inverse(), TV2IW)
         if isinstance(TV2IV, AffineTransform):
             A, b = affines.to_matrix_vector(TV2IV.affine)
             idata = affine_transform(np.asarray(image), A,

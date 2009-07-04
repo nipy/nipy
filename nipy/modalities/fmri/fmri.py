@@ -1,7 +1,8 @@
 from numpy import asarray, arange, empty
 
+from nipy.core.image.image import rollaxis as image_rollaxis
 from nipy.core.api import ImageList, Image, \
-    CoordinateMap, Affine, CoordinateSystem
+    CoordinateMap, AffineTransform, CoordinateSystem
 
 class FmriImageList(ImageList):
     """
@@ -80,38 +81,25 @@ class FmriImageList(ImageList):
         return v
 
     @classmethod
-    def from_image(klass, fourdimage, volume_start_times=None, slice_times=None):
-        """Create an FmriImageList from a 4D Image.
-
-        Note this assumes that the 4d Affine mapping is such that it
-        can be made into a list of 3d Affine mappings
+    def from_image(klass, fourdimage, volume_start_times=None, slice_times=None, axis='t'):
+        """Create an FmriImageList from a 4D Image by
+        extracting 3d images along the 't' axis.
 
         Parameters
         ----------
         fourdimage: a 4D Image 
         volume_start_times: start time of each frame. It can be specified
-                                either as an ndarray with len(images) elements
-                                or as a single float, the TR. Defaults to
-                                the diagonal entry of slowest moving dimension
-                                of Affine transform
+                            either as an ndarray with len(images) elements
+                            or as a single float, the TR. Defaults to
+                            the diagonal entry of slowest moving dimension
+                            of Affine transform
         slice_times: ndarray specifying offset for each slice of each frame
 
-        TODO: watch out for reordering the output coordinates to (x,y,z,t)
-
         """
-        images = []
-        if not isinstance(fourdimage.coordmap, Affine):
-            raise ValueError, 'fourdimage must have an Affine mapping'
-        for im in [fourdimage[i] for i in range(fourdimage.shape[0])]:
-            cmap = im.coordmap
-            oa = cmap.output_coords.coord_names[1:]
-            oc = CoordinateSystem(oa, "world")
-            t = im.coordmap.affine[1:]
-            a = Affine(t, im.coordmap.input_coords, oc)
-            images.append(Image(asarray(im), a))
-        if volume_start_times is None:
-            volume_start_times = fourdimage.coordmap.affine[0,0]
-        return klass(images=images, 
+        if fourdimage.ndim != 4:
+            raise ValueError('expecting a 4-dimensional Image')
+        image_list = ImageList.from_image(fourdimage, axis='t')
+        return klass(images=image_list.list, 
                      volume_start_times=volume_start_times,
                      slice_times=slice_times)
 
@@ -140,7 +128,7 @@ def fmri_generator(data, iterable=None):
     Notes
     -----
     If data is an ``FmriImageList`` instance, there is more overhead
-    involved in calling ``numpy.asarray(data)`` than if data is in Image
+    involved in calling ``numpy.asarray(data)`` than if data is an Image
     instance or an array.
     """
     data = asarray(data)

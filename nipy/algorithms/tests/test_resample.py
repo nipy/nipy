@@ -48,8 +48,8 @@ def test_rotate2d2():
 
 def test_rotate2d3():
     # Another way to rotate/transpose the image, similar to
-    # test_rotate2d2 and test_rotate2d except the output_coords of the
-    # output coordmap are the same as the output_coords of the
+    # test_rotate2d2 and test_rotate2d except the world of the
+    # output coordmap are the same as the world of the
     # original image. That is, the data is transposed on disk, but the
     # output coordinates are still 'x,'y' order, not 'y', 'x' order as
     # above
@@ -226,13 +226,13 @@ def test_slice_from_3d():
     a = np.identity(4)
     zsl = slices.zslice(26,
                         (0,44.5), (0,39.5),
-                        i.coordmap.output_coords,
+                        i.world,
                         (90,80))
     ir = resample(i, zsl.coordmap, a, zsl.shape)
     yield assert_true, np.allclose(np.asarray(ir), np.asarray(i[53]))
-    ysl = slices.yslice(22, (0,49.5), (0,39.5), i.coordmap.output_coords, (100,80))
+    ysl = slices.yslice(22, (0,49.5), (0,39.5), i.world, (100,80))
     ir = resample(i, ysl.coordmap, a, ysl.shape)
     yield assert_true, np.allclose(np.asarray(ir), np.asarray(i[:,45]))
-    xsl = slices.xslice(15.5, (0,49.5), (0,44.5), i.coordmap.output_coords, (100,90))
+    xsl = slices.xslice(15.5, (0,49.5), (0,44.5), i.world, (100,90))
     ir = resample(i, xsl.coordmap, a, xsl.shape)
     yield assert_true, np.allclose(np.asarray(ir), np.asarray(i[:,:,32]))
