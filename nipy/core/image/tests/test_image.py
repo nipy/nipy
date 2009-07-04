@@ -1,11 +1,8 @@
 import warnings
 
 import numpy as np
-import numpy.testing as nptest
 
-from nipy.testing import assert_true, assert_equal, assert_raises, \
-    assert_array_almost_equal, TestCase
-
+from nipy.testing import *
 from nipy.core.image import image
 from nipy.core.api import Image, fromarray, subsample, slice_maker
 from nipy.core.api import parcels, data_generator, write_data
@@ -208,3 +205,25 @@ def test_defaults_4D():
     yield assert_raises, AttributeError, getattr, img, 'header'
     yield assert_true, img.affine.shape == (5,5)
     yield assert_true, img.affine.diagonal().all() == 1
+
+def test_rollaxis():
+    data = np.random.standard_normal((3,4,7,5))
+    im = Image(data, Affine.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
+
+    for i, o, n in zip('ijkl', 'xyzt', range(4)):
+        im_i = image.rollaxis(im, i)
+        im_o = image.rollaxis(im, o)
+        im_n = image.rollaxis(im, n)
+
+        yield assert_almost_equal, im_i.get_data(), \
+                                  im_o.get_data()
+
+        yield assert_almost_equal, im_i.affine, \
+            im_o.affine
+
+        yield assert_almost_equal, im_n.get_data(), \
+            im_o.get_data()
+
+        yield assert_almost_equal, im_n.affine, \
+            im_o.affine
+

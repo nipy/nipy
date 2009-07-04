@@ -183,20 +183,21 @@ class Image(object):
         having reordered output coordinates. This
         does not transpose the data.
 
-        >>> cmap = Affine.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6])
+        >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6])
         >>> im = Image(np.empty((30,40,50)), cmap)
         >>> im_reordered = im.reordered_world([2,0,1])
         >>> im_reordered.shape
         (30, 40, 50)
         >>> im_reordered.coordmap
         Affine(
-           affine=array([[ 0.,  5.,  0.,  2.],
-                         [ 0.,  0.,  6.,  3.],
+           affine=array([[ 0.,  0.,  6.,  3.],
                          [ 4.,  0.,  0.,  1.],
+                         [ 0.,  5.,  0.,  2.],
                          [ 0.,  0.,  0.,  1.]]),
            input_coords=CoordinateSystem(coord_names=('i', 'j', 'k'), name='input', coord_dtype=float64),
            output_coords=CoordinateSystem(coord_names=('z', 'x', 'y'), name='output', coord_dtype=float64)
         )
+
         >>> 
 
         """
@@ -215,7 +216,7 @@ class Image(object):
         having reordered input coordinates. This
         transposes the data as well.
 
-        >>> cmap = Affine.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6])
+        >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6])
         >>> cmap
         Affine(
            affine=array([[ 4.,  0.,  0.,  1.],
@@ -294,7 +295,6 @@ class SliceMaker(object):
     XXX Could be something like this Subsample(img)[::2,::3,10:1:-1]
     """
     def __getitem__(self, index):
-        print index
         return index
 
 slice_maker = SliceMaker()
@@ -323,9 +323,9 @@ def subsample(img, slice_object):
 
     >>> from nipy.io.api import load_image
     >>> from nipy.testing import funcfile
-    >>> from nipy.core.api import subsample, make_slices
+    >>> from nipy.core.api import subsample, slice_maker
     >>> im = load_image(funcfile)
-    >>> frame3 = subsample(im, make_slices[:,:,:,3])
+    >>> frame3 = subsample(im, slice_maker[:,:,:,3])
     >>> from nipy.testing import funcfile, assert_almost_equal
     >>> assert_almost_equal(np.array(frame3), np.array(im)[:,:,:,3])
 
@@ -368,4 +368,64 @@ def fromarray(data, innames, outnames, coordmap=None):
                                                    (1.,)*ndim)
                                           
     return Image(data, coordmap)
+
+def rollaxis(img, axis):
+    """
+    Roll the specified axis backwards, until it lies in the first position.
+
+    It also reorders the world coordinates by the same ordering.
+    This is done to preserve a diagonal affine matrix.
+
+    Parameters
+    ----------
+
+    axis : str or int
+        Axis to be rolled, can be specified by name or 
+        as an integer.
+
+    Returns
+    -------
+
+    newimg : An Image with reordered axes and world coordinates.
+
+    >>> data = np.zeros((30,40,50,5))
+    >>> affine_transform = AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
+    >>> im = Image(data, affine_transform)
+    >>> im_t_first = rollaxis(im, 't')
+    >>> np.diag(im_t_first.affine)
+    array([ 4.,  1.,  2.,  3.,  1.])
+    >>> im_t_first.shape
+    (5, 30, 40, 50)
+
+    """
+    if axis not in [-1] + range(img.axes.ndim) + list(img.axes.coord_names) + list(img.world.coord_names):
+        raise ValueError('axis must be an axis number, -1, an axis name or a world name')
+
+    # Find out which index axis corresonds to
+
+    in_index = out_index = -1
+    if type(axis) == type(''):
+        try:
+            in_index = img.axes.index(axis)
+        except:
+            pass
+        try:
+            out_index = img.world.index(axis)
+        except:
+            pass
+
+        if in_index > 0 and out_index > 0 and in_index != out_index:
+            raise ValueError('ambiguous choice of axis -- it exists both in as an axis name and a world name')
+        if in_index >= 0:
+            axis = in_index
+        else:
+            axis = out_index
+
+    if axis == -1:
+        axis += img.axes.ndim
+
+    order = range(img.ndim)
+    order.remove(axis)
+    order.insert(0, axis)
+    return img.reordered_axes(order).reordered_world(order)
 

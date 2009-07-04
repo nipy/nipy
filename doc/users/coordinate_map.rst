@@ -280,9 +280,17 @@ In our normalization example, we therefore have 3 mappings:
    The domain is :math:`D=[i_a,j_a,k_a]`, the range is :math:`R=[x_a,y_a,z_a]` and the function is :math:`h:D \rightarrow R`.
 
 Note that each of the functions :math:`f,g,h` can be, when we know the necessary
-isomorphisms, thought of as functions from :math:`\mathbb{R}^3` to itself. Formally, 
-these functions look like :math:`\tilde{f}=I_R \circ f \circ I_D^{-1}`.
-In the implementation code, it is actually the functions 
+isomorphisms, thought of as functions from :math:`\mathbb{R}^3` to itself. In fact, that is what we are doing when we write
+
+   .. math::
+
+      (i_a,j_a,k_a) \overset{h}{\mapsto} (x_a,y_a, z_a)
+
+as a function that takes 3 numbers and gives 3 numbers.
+Formally, 
+these functions that take 3 numbers and return 3 numbers 
+can be written as :math:`\tilde{f}=I_R \circ f \circ I_D^{-1}`.
+When this is implemented in code, it is actually the functions 
 :math:`\tilde{f}, \tilde{g}, \tilde{h}` we specify, rather then :math:`f,g,h`. The
 functions :math:`\tilde{f}, \tilde{g}, \tilde{h}`  have domains and 
 ranges that are just :math:`\mathbb{R}^3`.
@@ -315,9 +323,8 @@ The composition that is used in the normalization example is :math:`w = f^{-1} \
    
    (i_a, j_a, k_a) \overset{w}{\mapsto} (i_s, j_s, k_s)
 
-This function, or its representation that takes 3 floats to 3 floats,
-could be passed directly to :func:`scipy.ndimage.map_coordinates`.
-
+This function, or more correctly its representation :math:`\tilde{w}` that takes 3 floats to 3 floats,
+is passed directly to :func:`scipy.ndimage.map_coordinates`.
 
 
 Manipulating mappings, coordinate systems and coordinate maps
@@ -537,7 +544,6 @@ Going from this mathematical description to code is fairly straightforward.
 The class *CoordinateMap* has an *inverse* property
 and there are module level functions called *product, compose, linearize* and
 it has methods *reordered_input, reordered_output*. 
-
 
 
 

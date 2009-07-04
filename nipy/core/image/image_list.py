@@ -2,7 +2,7 @@ from copy import copy
 
 import numpy as np
 
-from nipy.core.image.image import Image
+from nipy.core.image.image import Image, rollaxis
 from nipy.core.reference.coordinate_map import CoordinateSystem, \
     Affine, compose
 
@@ -58,18 +58,10 @@ class ImageList(object):
 
     @classmethod
     def from_image(klass, image, axis=0):
-        if axis not in [-1] + range(image.axes.ndim):
-            raise ValueError('axis must be an axis number or -1')
-
-        if axis == -1:
-            axis += image.axes.ndim
-        order = range(image.axes.ndim)
-        order.remove(axis)
-        order.insert(0, axis)
 
         # Now, reorder the axes and world
 
-        image = image.reordered_world(order).reordered_axes(order)
+        image = rollaxis(image, axis)
 
         imlist = []
         coordmap = image.coordmap

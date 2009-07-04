@@ -472,7 +472,7 @@ class LPIImage(Image):
       Parameters
       ----------
       
-      positive : bool
+      positive : bool, optional
          If True, also ensures that the diagonal entries are positive.
 
       Notes
