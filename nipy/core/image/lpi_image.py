@@ -340,7 +340,7 @@ class LPIImage(Image):
          world_to_world = np.identity(4)
       world_to_world_transform = AffineTransform(world_to_world,
                                                  affine_transform.function_range,
-                                                 self.lpi_transform.function_range)
+                                                 self.world)
 
       if self.ndim == 3:
          im = resample(self, affine_transform, world_to_world_transform,
@@ -523,7 +523,7 @@ class LPIImage(Image):
           'LPIImage(\n  data=%s,\n  affine=%s,\n  axis_names=%s)' % (
          '\n       '.join(repr(self._data).split('\n')),
          '\n         '.join(repr(self.affine).split('\n')),
-         repr(self.coordmap.function_domain.coord_names))
+         repr(self.axes.coord_names))
       np.set_printoptions(**options)
       return representation
 

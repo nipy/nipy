@@ -90,8 +90,10 @@ def test_lpi_image():
 
     yield assert_true,  lpi_cmap.function_domain.coord_names == ('i','j','k')
     yield assert_equal,  lpi_im.axes.coord_names, ('i','j','k')
+    yield assert_equal, lpi_im.axes, lpi_cmap.function_domain
 
     yield assert_true,  lpi_cmap.function_range.coord_names == ('x','y','z')
+    yield assert_equal, lpi_im.world, lpi_cmap.function_range
 
     b = lpi_im.xyz_ordered()
     b_cmap = b.lpi_transform

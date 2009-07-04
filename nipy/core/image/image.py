@@ -157,10 +157,6 @@ class Image(object):
         if data is None or coordmap is None:
             raise ValueError('expecting an array and CoordinateMap instance')
 
-        # This ensures two things
-        # i) each axis in coordmap.function_domain has a length and
-        # ii) the shapes are consistent
-
         # self._data is an array-like object.  It must implement a subset of
         # array methods  (Need to specify these, for now implied in pyniftio)
         self._data = data
