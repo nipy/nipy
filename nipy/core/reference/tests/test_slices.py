@@ -10,31 +10,30 @@ names = ['xspace','yspace','zspace']
 class test_Slice(TestCase):
 
     def test_bounding_box(self):
-        shape = (10, 10, 10)
+        shape = (10, 14, 16)
         coordmap = AffineTransform.identity(names)
         #print coordmap.affine.dtype, 'affine'
-        self.assertEqual(bounding_box(coordmap, shape), [[0., 9.], [0, 9], [0, 9]])
+        self.assertEqual(bounding_box(coordmap, shape), ([0., 9.], [0, 13], [0, 15]))
 
-    def test_box_slice(self):
-        coordmap = AffineTransform.identity(names)
-        t = zslice(5, [0, 9], [0, 9], coordmap.function_range, (10,10))
-        assert_almost_equal(t.coordmap.affine, [[ 0.,  0.,  5.],
-                                                [ 1.,  0.,  0.],
-                                                [ 0.,  1.,  0.],
-                                                [ 0.,  0.,  1.]])
-        
+def test_box_slice():
+    t = xslice(5, ([0, 9], 10), ([0, 9], 10))
+    yield assert_almost_equal,t.affine, [[ 0.,  0.,  5.],
+                                          [ 1.,  0.,  0.],
+                                          [ 0.,  1.,  0.],
+                                          [ 0.,  0.,  1.]]
 
-        t = yslice(4, [0, 9], [0, 9], coordmap.function_range, (10,10))
-        assert_almost_equal(t.coordmap.affine, [[ 1.,  0.,  0.],
-                                                [ 0.,  0.,  4.],
-                                                [ 0.,  1.,  0.],
-                                                [ 0.,  0.,  1.]])
-        
-        t = xslice(3, [0, 9], [0, 9], coordmap.function_range, (10,10))
-        assert_almost_equal(t.coordmap.affine, [[ 1.,  0.,  0.],
-                                                [ 0.,  1.,  0.],
-                                                [ 0.,  0.,  3.],
-                                                [ 0.,  0.,  1.]])
+
+    t = yslice(4, ([0, 9], 10), ([0, 9], 10))
+    yield assert_almost_equal, t.affine, [[ 1.,  0.,  0.],
+                                            [ 0.,  0.,  4.],
+                                            [ 0.,  1.,  0.],
+                                            [ 0.,  0.,  1.]]
+
+    t = zslice(3, ([0, 9], 10), ([0, 9], 10))
+    yield assert_almost_equal, t.affine, [[ 1.,  0.,  0.],
+                                            [ 0.,  1.,  0.],
+                                            [ 0.,  0.,  3.],
+                                            [ 0.,  0.,  1.]]
         
 
 
