@@ -21,7 +21,7 @@ def to_matrix_vector(transform):
     -------
     matrix, vector : ndarray
         The matrix and vector components of the transform matrix.  For
-        an NxN transform, matrix will be N-1xN-1 and vector will be
+        an NxM transform, matrix will be N-1xM-1 and vector will be
         1xN-1.
 
     See Also
@@ -46,14 +46,14 @@ def from_matrix_vector(matrix, vector):
     Parameters
     ----------
     matrix : ndarray
-        An NxN array representing the rotation matrix.
+        An NxM array representing the the linear part of the transform.
     vector : ndarray
         A 1xN array representing the translation.
 
     Returns
     -------
     xform : ndarray
-        An N+1xN+1 transform matrix.
+        An N+1xM+1 transform matrix.
 
     See Also
     --------
