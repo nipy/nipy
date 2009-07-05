@@ -13,9 +13,13 @@ def to_matrix_vector(transform):
     Parameters
     ----------
     transform : ndarray
-        Transform matrix in homogeneous coordinates.  Example, a 4x4
+        NxM transform matrix in homogeneous coordinates representing an 
+        affine transformation
+        from an (N-1)-dimensional space to an (M-1)-dimensional space
+        Example, a 4x4
         transform representing rotations and translations in 3
-        dimensions.
+        dimensions. A 4x3 matrix can represent a 2-dimensional plane 
+        embedded in 3 dimensional space.
 
     Returns
     -------
@@ -46,7 +50,9 @@ def from_matrix_vector(matrix, vector):
     Parameters
     ----------
     matrix : ndarray
-        An NxM array representing the the linear part of the transform.
+        An NxM array representing the the linear part of the transform
+        a transform from an M-dimensional space to an N-dimensional space.
+
     vector : ndarray
         A 1xN array representing the translation.
 
