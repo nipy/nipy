@@ -51,12 +51,12 @@ def resample(image, target, mapping, shape, order=3):
 
      # image world to target world mapping
 
-        TW2IW = AffineTransform(mapping, target.function_range, image.coordmap.function_range)
+        TW2IW = AffineTransform(target.function_range, image.coordmap.function_range, mapping)
     else:
         if isinstance(mapping, AffineTransform):
             TW2IW = mapping
         else:
-            TW2IW = CoordinateMap(mapping, target.function_range, image.coordmap.function_range)
+            TW2IW = CoordinateMap(target.function_range, image.coordmap.function_range, mapping)
 
     function_domain = target.function_domain
     function_range = image.coordmap.function_range

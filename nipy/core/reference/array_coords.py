@@ -219,8 +219,8 @@ class Grid(object):
 
         if isinstance(coords, CoordinateSystem):
             coordmap = AffineTransform.identity(coords.coord_names)
-        elif not isinstance(coords, CoordinateMap):
-            raise ValueError('expecting either a CoordinateMap or a CoordinateSystem for Grid')
+        elif not (isinstance(coords, CoordinateMap) or isinstance(coords, AffineTransform)):
+            raise ValueError('expecting either a CoordinateMap, CoordinateSystem or AffineTransform for Grid')
         else:
             coordmap = coords
         self.coordmap = coordmap

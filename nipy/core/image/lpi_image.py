@@ -175,14 +175,14 @@ class LPIImage(Image):
       nonspatial_names = axis_names[3:]
         
       if nonspatial_names:
-         nonspatial_coordmap = AffineTransform.from_start_step(nonspatial_names, nonspatial_names, [0]*(data.ndim-3), [1]*(data.ndim-3))
-         full_coordmap = cmap_product(lpi_transform, nonspatial_coordmap)
+         nonspatial_affine_transform = AffineTransform.from_start_step(nonspatial_names, nonspatial_names, [0]*(data.ndim-3), [1]*(data.ndim-3))
+         full_dimensional_affine_transform = cmap_product(lpi_transform, nonspatial_affine_transform)
       else:
-         full_coordmap = lpi_transform 
+         full_dimensional_affine_transform = lpi_transform 
 
       self._lpi_transform = lpi_transform
 
-      Image.__init__(self, data, full_coordmap,
+      Image.__init__(self, data, full_dimensional_affine_transform,
                      metadata=metadata)
 
    #---------------------------------------------------------------------------
@@ -195,7 +195,7 @@ class LPIImage(Image):
 
    def _get_affine(self):
       """
-      Returns the affine of the spatial coordmap which will
+      Returns the affine of the LPITransform which will
       always be a 4x4 matrix.
       """
       return self.lpi_transform.affine

@@ -20,7 +20,7 @@ from nipy.core.reference.array_coords import ArrayCoordMap
 __docformat__ = 'restructuredtext'
 __all__ = ['fromarray', 'subsample']
 
-class BaseImage(object):
+class Image(object):
     """
     The `BaseImage` class provides the core object type used in nipy. An `BaseImage`
     represents a volumetric brain image and provides means for manipulating
@@ -63,11 +63,10 @@ class BaseImage(object):
     metadata = {}
     _doc['metadata'] = "Dictionary containing additional information."
 
-    coordmap = CoordinateMap(CoordinateSystem('ijk'),
-                             CoordinateSystem('xyz'),
-                             np.exp,
-                             np.log)
-    _doc['coordmap'] = "Mapping from axes coordinates to world coordinates."
+    coordmap = AffineTransform(CoordinateSystem('ijk'),
+                               CoordinateSystem('xyz'),
+                               np.diag([3,5,7,1]))
+    _doc['coordmap'] = "Affine transform mapping from axes coordinates to world coordinates."
 
     @setattr_on_read
     def shape(self):
@@ -146,7 +145,7 @@ class BaseImage(object):
         Parameters
         ----------
         data : A numpy.ndarray
-        coordmap : A `CoordinateMap` Object
+        coordmap : An `AffineTransform` object
         metadata : dictionary
         
         See Also
@@ -159,6 +158,13 @@ class BaseImage(object):
 
         if data is None or coordmap is None:
             raise ValueError('expecting an array and CoordinateMap instance')
+
+        if not isinstance(coordmap, AffineTransform):
+            raise ValueError('coordmap must be an AffineTransform')
+
+        # they don't inherit from each other anymore
+        if isinstance(coordmap, CoordinateMap):
+            raise ValueError('coordmap must be an AffineTransform')
 
         # self._data is an array-like object.  It must implement a subset of
         # array methods  (Need to specify these, for now implied in pyniftio)
@@ -355,30 +361,12 @@ class BaseImage(object):
         options = np.get_printoptions()
         np.set_printoptions(precision=6, threshold=64, edgeitems=2)
         representation = \
-            'BaseImage(\n  data=%s,\n  coordmap=%s)' % (
+            'Image(\n  data=%s,\n  coordmap=%s)' % (
             '\n       '.join(repr(self._data).split('\n')),
             '\n         '.join(repr(self.coordmap).split('\n')))
         np.set_printoptions(**options)
         return representation
 
-
-
-class Image(BaseImage):
-    """
-    An Image is a BaseImage with an AffineTransform
-    for a CoordinateMap.
-    """
-
-    def __init__(self, data, affine_transform, metadata={}):
-        
-        if not isinstance(affine_transform, AffineTransform):
-            raise ValueError('affine_transform should be affine!')
-        BaseImage.__init__(self, data, affine_transform, metadata)
-
-    def __repr__(self):
-        repr_split = BaseImage.__repr__(self).split('\n')
-        repr_split[0] = "Image("
-        return '\n'.join(repr_split)
 
 class SliceMaker(object):
     """
