@@ -72,7 +72,7 @@ def image_reduce(lpi_image, reduce_op, axis='t'):
         raise ValueError('cannot reduce over a spatial axis' +
                          'or we will not be able to output LPIImages')
 
-    image = Image(lpi_image.get_data(), lpi_image.coordmap)
+    image = lpi_image.to_image()
     image = image_rollaxis(image, axis)
 
     axis_name = image.axes.coord_names[0]
@@ -106,7 +106,7 @@ def need_specific_axis_reduce(lpi_image, reduce_op):
 
     """
 
-    image = Image(lpi_image.get_data(), lpi_image.coordmap)
+    image = lpi_image.to_image()
     image = image_rollaxis(image, 'specific')
 
     axis_name = image.axes.coord_names[0]
@@ -153,7 +153,7 @@ def image_call(lpi_image, function, inaxis='t', outaxis='new'):
         raise ValueError('cannot reduce over a spatial axis' +
                          'or we will not be able to output LPIImages')
 
-    image = Image(lpi_image.get_data(), lpi_image.coordmap)
+    image = lpi_image.to_image()
     image = image_rollaxis(image, inaxis)
     inaxis = image.axes.coord_names[0] # now it's a string
 
