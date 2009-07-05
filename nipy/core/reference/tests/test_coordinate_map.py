@@ -2,8 +2,7 @@ import numpy as np
 from nipy.testing import *
 
 from nipy.core.reference.coordinate_map import CoordinateMap, AffineTransform, \
-    compose, CoordinateSystem, product, \
-    concat
+    compose, CoordinateSystem, product
 
 
 class empty:
