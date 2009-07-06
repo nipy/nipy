@@ -194,8 +194,9 @@ class LPIImage(Image):
    world = property(_getworld, doc="World space.")
    _doc['world'] = "The world space is LPI world space, sometimes"+\
                    "referred to as RAS world space. In this world"+\
-                   "space, x increases left to right, y increases"+\
-                   "posterior to anterior, z increases superior to inferior."
+                   "space, x increases from patient's left to right"+\
+                   "y increases posterior to anterior, z increases"+\
+                   "superior to inferior."
 
    def _get_affine(self):
       """
