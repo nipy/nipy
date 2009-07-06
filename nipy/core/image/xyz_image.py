@@ -23,23 +23,37 @@ from nipy.algorithms.resample import resample
 lps_output_coordnames = ('x+LR', 'y+PA', 'z+SI') 
 ras_output_coordnames = ('x+RL', 'y+AP', 'z+SI') 
 
+# shorthand
+
+CS = CoordinateSystem
+AT = AffineTransform 
+
+lps_to_ras = AT(CS(lps_output_coordnames), 
+                CS(ras_output_coordnames), 
+                np.diag([-1,-1,1,1]))
+ras_to_lps = lps_to_ras.inverse()
+
 ################################################################################
-# class `LPITransform`
+# class `XYZTransform`
 ################################################################################
 
-class LPITransform(AffineTransform):
+class XYZTransform(AffineTransform):
 
+   """
+   An AffineTransform with either LPS:('x+LR', 'y+PA', 'z+SI') 
+   or RAS:('x+RL', 'y+AP', 'z+SI') output coordinates.
+   """
 
-   range = CoordinateSystem('xyz', name='world-LPI')
+   function_range = CoordinateSystem(lps_output_coordnames, name='world')
 
-   def __init__(self, affine, lpi_axis_names):
+   def __init__(self, affine, axis_names, lps=True):
 
       """
-      >>> lpi = LPITransform(np.diag([3,4,5,1]), 'ijk')
-      >>> lpi
-      LPITransform(
+      >>> xyz = XYZTransform(np.diag([3,4,5,1]), 'ijk')
+      >>> xyz
+      XYZTransform(
          function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
-         function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64),
+         function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='world', coord_dtype=float64),
          affine=array([[ 3.,  0.,  0.,  0.],
                        [ 0.,  4.,  0.,  0.],
                        [ 0.,  0.,  5.,  0.],
@@ -50,29 +64,34 @@ class LPITransform(AffineTransform):
 
       if affine.shape != (4,4):
           raise ValueError('affine must be a 4x4 matrix representing an affine transformation in homogeneous coordinates')
-      domain = CoordinateSystem(lpi_axis_names, name='voxel')
-      range = CoordinateSystem('xyz', name='world')
-      AffineTransform.__init__(self, domain, self.range, affine)
+      if lps:
+         xyz = lps_output_coordnames
+      else:
+         xyz = ras_output_coordnames
+      AffineTransform.__init__(self, CS(axis_names, name='voxel'), 
+                               CS(xyz, name='world'), affine)
 
    def reordered_range(self, order, name=''):
-       raise NotImplementedError("the LPI world coordinates are always ['x','y','z'] and can't be reordered")
+       raise NotImplementedError("the XYZ world coordinates are always either %s or %s so they  can't be reordered" % (`lps_output_coordnames`,
+                                                                                                                       `ras_output_coordnames`))
 
    def renamed_range(self, newnames, name=''):
-       raise NotImplementedError("the LPI world coordinates are always ['x','y','z'] and can't be renamed")
+       raise NotImplementedError("the XYZ world coordinates are always either %s or %s so they  can't be reordered" % (`lps_output_coordnames`,
+                                                                                                                       `ras_output_coordnames`))
 
    def __repr__(self):
        s_split = AffineTransform.__repr__(self).split('\n')
-       s_split[0] = 'LPITransform('
+       s_split[0] = 'XYZTransform('
        return '\n'.join(s_split)
        
 ################################################################################
-# class `LPIImage`
+# class `XYZImage`
 ################################################################################
 
-class LPIImage(Image):
+class XYZImage(Image):
 
    """ The standard image for nipy, an Image with
-       LPI output coordinates.
+       XYZ output coordinates.
 
        This object is a subclass of Image that
        assumes the first 3 coordinates
@@ -98,10 +117,10 @@ class LPIImage(Image):
            Affine mapping from voxel axes to world coordinates
            (world coordinates are always forced to be 'x', 'y', 'z').
 
-       :lpi_transform: LPITransform
+       :xyz_transform: XYZTransform
 
            A CoordinateMap that relates all the spatial axes of the data
-           to LPI 'xyz' coordinates.
+           to XYZ 'xyz' coordinates.
 
        :coordmap: AffineTransform
 
@@ -127,15 +146,15 @@ class LPIImage(Image):
 
    >>> data = np.empty((30,40,50))
    >>> affine = np.diag([3,4,5,1])
-   >>> im = LPIImage(data, affine, 'ijk')
+   >>> im = XYZImage(data, affine, 'ijk')
    >>> im.world
-   CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64)
+   CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='world', coord_dtype=float64)
    >>> im.axes
    CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64)
-   >>> im.lpi_transform
-   LPITransform(
+   >>> im.xyz_transform
+   XYZTransform(
       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
-      function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64),
+      function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='world', coord_dtype=float64),
       affine=array([[ 3.,  0.,  0.,  0.],
                     [ 0.,  4.,  0.,  0.],
                     [ 0.,  0.,  5.,  0.],
@@ -160,7 +179,8 @@ class LPIImage(Image):
    # XXX: Need an attribute to determine in a clever way the
    # interplation order/method
 
-   def __init__(self, data, affine, axis_names, metadata={}):
+   def __init__(self, data, affine, axis_names, metadata={}, 
+                lps=True):
       """ Creates a new nipy image with an affine mapping.
 
       Parameters
@@ -177,20 +197,20 @@ class LPIImage(Image):
       """
 
       if len(axis_names) < 3:
-         raise ValueError('LPIImage must have a minimum of 3 axes')
+         raise ValueError('XYZImage must have a minimum of 3 axes')
 
       # The first three axes are assumed to be the
       # spatial ones
-      lpi_transform = LPITransform(affine, axis_names[:3])
+      xyz_transform = XYZTransform(affine, axis_names[:3], lps)
       nonspatial_names = axis_names[3:]
         
       if nonspatial_names:
          nonspatial_affine_transform = AffineTransform.from_start_step(nonspatial_names, nonspatial_names, [0]*(data.ndim-3), [1]*(data.ndim-3))
-         full_dimensional_affine_transform = cmap_product(lpi_transform, nonspatial_affine_transform)
+         full_dimensional_affine_transform = cmap_product(xyz_transform, nonspatial_affine_transform)
       else:
-         full_dimensional_affine_transform = lpi_transform 
+         full_dimensional_affine_transform = xyz_transform 
 
-      self._lpi_transform = lpi_transform
+      self._xyz_transform = xyz_transform
 
       Image.__init__(self, data, full_dimensional_affine_transform,
                      metadata=metadata)
@@ -200,24 +220,25 @@ class LPIImage(Image):
    #---------------------------------------------------------------------------
 
    def _getworld(self):
-      return self.lpi_transform.function_range # == LPITransform.range
-   world = property(_getworld, doc="World space.")
+      return self.xyz_transform.function_range 
+   world = property(_getworld, doc="World space")
 
    def _get_affine(self):
       """
-      Returns the affine of the LPITransform which will
+      Returns the affine of the XYZTransform which will
       always be a 4x4 matrix.
       """
-      return self.lpi_transform.affine
+      return self.xyz_transform.affine
    affine = property(_get_affine, doc="4x4 Affine matrix")
 
    def reordered_world(self, order):
-      raise NotImplementedError("the LPI world coordinates are always ['x','y','z'] and can't be reordered")
+      # raises an exception, can't be reordered
+      return self.xyz_transform.reordered_range(order)
 
    def reordered_axes(self, order=None):
 
       """
-      Return a new LPIImage whose axes have been reordered.
+      Return a new XYZImage whose axes have been reordered.
       The reordering must be such that the first 3
       coordinates remain the same.
 
@@ -236,12 +257,12 @@ class LPIImage(Image):
       Returns:
       --------
 
-      im_reordered: LPIImage
+      im_reordered: XYZImage
 
       Examples:
       ---------
 
-      >>> im = LPIImage(np.empty((30,40,50)), np.diag([2,3,4,1]), 'ijk')
+      >>> im = XYZImage(np.empty((30,40,50)), np.diag([2,3,4,1]), 'ijk')
       >>> im_reordered = im.reordered_axes([2,0,1])
       >>> im_reordered.shape
       (50, 30, 40)
@@ -280,11 +301,16 @@ class LPIImage(Image):
       A[:3,:3] = im.affine[:3,:3]
       A[:3,-1] = im.affine[:3,-1]
 
-      return LPIImage(np.array(im), A, im.axes.coord_names,
-                      metadata=self.metadata)
+      if im.world.coord_names == lps_output_coordnames:
+          lps = True
+      else:
+          lps = False
+      return XYZImage(np.array(im), A, im.axes.coord_names,
+                      self.metadata, lps)
 
    def renamed_world(self, newnames, name=''):
-       raise NotImplementedError("the LPI world coordinates are always ['x','y','z'] and can't be renamed")
+       # raises an exception, can't be renamed
+       return self.xyz_transform.renamed_range(newnames)
 
    def renamed_axes(self, **names_dict):
       """
@@ -308,19 +334,19 @@ class LPIImage(Image):
       --------
 
       >>> data = np.random.standard_normal((11,9,4))
-      >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4)))
+      >>> im = XYZImage(data, np.diag([3,4,5,1]), 'ijk')
       >>> im_renamed = im.renamed_axes(i='slice')
       >>> print im_renamed.axes
-      CoordinateSystem(coord_names=('slice', 'j', 'k'), name='domain', coord_dtype=float64)
+      CoordinateSystem(coord_names=('slice', 'j', 'k'), name='voxel', coord_dtype=float64)
 
       """
 
       newim = self.to_image().renamed_axes(**names_dict)
-      return LPIImage.from_image(newim)
+      return XYZImage.from_image(newim)
 
 
    #---------------------------------------------------------------------------
-   # LPIImage interface
+   # XYZImage interface
    #---------------------------------------------------------------------------
 
 
@@ -328,13 +354,13 @@ class LPIImage(Image):
    # Properties
    #---------------------------------------------------------------------------
 
-   def _get_lpi_transform(self):
+   def _get_xyz_transform(self):
       """
-      Returns 3-dimensional LPITransform, which is the same
+      Returns 3-dimensional XYZTransform, which is the same
       as self.coordmap if self.ndim == 3. 
       """
-      return self._lpi_transform
-   lpi_transform = property(_get_lpi_transform)
+      return self._xyz_transform
+   xyz_transform = property(_get_xyz_transform)
 
 
    #---------------------------------------------------------------------------
@@ -346,27 +372,38 @@ class LPIImage(Image):
       Return an Image with the same data as self.
       """
       import copy
-      return Image(self._data, copy.copy(self.coordmap))
+      return Image(self._data, copy.copy(self.coordmap), metadata=self.metadata)
 
    @staticmethod
    def from_image(img):
       """
-      Return an LPIImage from an Image with the same data.
+      Return an XYZImage from an Image with the same data.
       The affine matrix is read off from the upper left corner
       of img.affine.
       """
       A = np.identity(4)
       A[:3,:3] = img.affine[:3,:3]
       A[:3,-1] = img.affine[:3,-1]
-      return LPIImage(img._data, A, img.axes.coord_names)
+      if img.world.coord_names[:3] == lps_output_coordnames:
+         lps = True
+      elif img.world.coord_names[:3] == ras_output_coordnames:
+         lps = False
+      else:
+         raise ValueError('the world coordinates of an XYZImage must be one of %s or %s' % (lps_output_coordnames,
+                                                                                            ras_output_coordnames))
 
-   def resampled_to_affine(self, affine_transform, world_to_world=None, interpolation_order=3, 
+      print img.world
+      return XYZImage(img._data, A, img.axes.coord_names, img.metadata, lps=lps)
+
+   def resampled_to_affine(self, affine_transform, 
+                           world_to_world=None, 
+                           interpolation_order=3, 
                            shape=None):
       """ Resample the image to be an affine image.
 
       Parameters
       ----------
-      affine_transform : LPITransform
+      affine_transform : XYZTransform
          Affine of the new grid. 
 
       world_to_world: 4x4 ndarray, optional
@@ -383,7 +420,7 @@ class LPIImage(Image):
       Returns
       -------
 
-      resampled_image : LPIImage
+      resampled_image : XYZImage
          New nipy image with the data resampled in the given
          affine.
 
@@ -409,15 +446,15 @@ class LPIImage(Image):
       if self.ndim == 3:
          im = resample(self, affine_transform, world_to_world_transform,
                        shape, order=interpolation_order)
-         return LPIImage(np.array(im), affine_transform.affine,
+         return XYZImage(np.array(im), affine_transform.affine,
                          affine_transform.function_domain.coord_names,
                          metadata=self.metadata)
 
-        # XXX this below wasn't included in the original LPIImage proposal
-        # and it would fail for an LPIImage with ndim == 4.
-        # I don't know if it should be included as a special case in the LPIImage,
+        # XXX this below wasn't included in the original XYZImage proposal
+        # and it would fail for an XYZImage with ndim == 4.
+        # I don't know if it should be included as a special case in the XYZImage,
         # but then we should at least raise an exception saying that these resample_* methods
-        # only work for LPIImage's with ndim==3.
+        # only work for XYZImage's with ndim==3.
         #
         # This is part of the reason nipy.core.image.Image does not have
         # resample_* methods...
@@ -427,7 +464,7 @@ class LPIImage(Image):
          result = np.empty(shape + (self.shape[3],))
          data = self.get_data()
          for i in range(self.shape[3]):
-            tmp_affine_im = LPIImage(data[...,i], self.affine,
+            tmp_affine_im = XYZImage(data[...,i], self.affine,
                                      self.axes.coord_names[:-1],
                                      metadata=self.metadata)
             tmp_im = tmp_affine_im.resampled_to_affine(affine_transform, 
@@ -436,19 +473,19 @@ class LPIImage(Image):
                                                        shape)
 
             result[...,i] = np.array(tmp_im)
-         return LPIImage(result, affine_transform.affine,
+         return XYZImage(result, affine_transform.affine,
                          self.axes.coord_names,
                          metadata=self.metadata)
       else:
-         raise ValueError('resampling only defined for 3d and 4d LPIImage')
+         raise ValueError('resampling only defined for 3d and 4d XYZImage')
 
    def resampled_to_img(self, target_image, world_to_world=None, interpolation_order=3):
       """ Resample the image to be on the same grid than the target image.
       
       Parameters
       ----------
-      target_image : LPIImage
-         LPIImage onto the grid of which the data will be
+      target_image : XYZImage
+         XYZImage onto the grid of which the data will be
          resampled.
 
       world_to_world: 4x4 ndarray, optional
@@ -461,11 +498,11 @@ class LPIImage(Image):
 
       Returns
       -------
-      resampled_image : LPIImage
-         New LPIImage with the data resampled.
+      resampled_image : XYZImage
+         New XYZImage with the data resampled.
 
       """
-      return self.resampled_to_affine(target_image.lpi_transform,
+      return self.resampled_to_affine(target_image.xyz_transform,
                                       interpolation_order=interpolation_order,
                                       shape=target_image.shape,
                                       world_to_world=world_to_world)
@@ -509,7 +546,7 @@ class LPIImage(Image):
       y = y.ravel()
       z = z.ravel()
       xyz = np.c_[x, y, z]
-      world_to_voxel = self.lpi_transform.inverse()
+      world_to_voxel = self.xyz_transform.inverse()
       ijk = world_to_voxel(xyz)
 
       data = self.get_data()
@@ -531,7 +568,7 @@ class LPIImage(Image):
       """ 
       Returns an image with the affine diagonal, (optionally
       with positive entries),
-      in the LPI coordinate system.
+      in the XYZ coordinate system.
 
       Parameters
       ----------
@@ -575,7 +612,8 @@ class LPIImage(Image):
          else:
             from nipy.core.image.image import subsample
             im = subsample(im.to_image(), tuple(slice_list))
-            return LPIImage.from_image(im)
+            return XYZImage.from_image(im)
+            
 
     #---------------------------------------------------------------------------
     # Private methods
@@ -585,7 +623,7 @@ class LPIImage(Image):
       options = np.get_printoptions()
       np.set_printoptions(precision=6, threshold=64, edgeitems=2)
       representation = \
-          'LPIImage(\n  data=%s,\n  affine=%s,\n  axis_names=%s)' % (
+          'XYZImage(\n  data=%s,\n  affine=%s,\n  axis_names=%s)' % (
          '\n       '.join(repr(self._data).split('\n')),
          '\n         '.join(repr(self.affine).split('\n')),
          repr(self.axes.coord_names))

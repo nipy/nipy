@@ -20,9 +20,9 @@ import numpy.linalg as L
 # Local imports
 
 from nipy.core.image.image import Image, rollaxis as image_rollaxis
-from nipy.core.image.lpi_image import LPIImage
+from nipy.core.image.xyz_image import XYZImage
 
-def pca(lpi_image, mask=None, ncomp=1, axis='t', standardize=True,
+def pca(xyz_image, mask=None, ncomp=1, axis='t', standardize=True,
         design_keep=None, design_resid=None, 
         ):
     """
@@ -31,12 +31,12 @@ def pca(lpi_image, mask=None, ncomp=1, axis='t', standardize=True,
     Parameters
     ----------
 
-    data : LPIImage
+    data : XYZImage
         The image on which to perform PCA over its first axis.
 
-    mask : LPIImage
+    mask : XYZImage
         An optional mask, should have shape == image.shape[:3]
-        and the same LPITransform.
+        and the same XYZTransform.
 
     ncomp : int
         How many components to return. All the time series
@@ -44,7 +44,7 @@ def pca(lpi_image, mask=None, ncomp=1, axis='t', standardize=True,
 
     axis : str or int
         Axis over which to perform PCA. Cannot be a spatial axis
-        because the results have to be LPIImages.
+        because the results have to be XYZImages.
 
     standardize : bool
         Standardize so each time series has same error-sum-of-squares?
@@ -60,21 +60,21 @@ def pca(lpi_image, mask=None, ncomp=1, axis='t', standardize=True,
 
     """
 
-    if axis in lpi_image.world.coord_names + \
-            lpi_image.axes.coord_names[:3] + tuple(range(3)):
+    if axis in xyz_image.world.coord_names + \
+            xyz_image.axes.coord_names[:3] + tuple(range(3)):
         raise ValueError('cannot perform PCA over a spatial axis' +
-                         'or we will not be able to output LPIImages')
+                         'or we will not be able to output XYZImages')
 
-    lpi_data = lpi_image.get_data()
-    image = Image(lpi_data, lpi_image.coordmap)
+    xyz_data = xyz_image.get_data()
+    image = Image(xyz_data, xyz_image.coordmap)
     image = image_rollaxis(image, axis)
 
     if mask is not None:
-        if mask.lpi_transform != lpi_image.lpi_transform:
-            raise ValueError('mask and lpi_image have different coordinate systems')
+        if mask.xyz_transform != xyz_image.xyz_transform:
+            raise ValueError('mask and xyz_image have different coordinate systems')
 
         if mask.ndim != image.ndim - 1:
-            raise ValueError('mask should have one less dimension then lpi_image')
+            raise ValueError('mask should have one less dimension then xyz_image')
 
         if mask.axes.coord_names != image.axes.coord_names[1:]:
             raise ValueError('mask should have axes %s' % str(image.axes.coord_names[1:]))
@@ -184,11 +184,11 @@ def pca(lpi_image, mask=None, ncomp=1, axis='t', standardize=True,
     img_first_axis = image.axes.coord_names[0]
     # Rename the axis.
 
-    # Because we started with LPIImage, all non-spatial
+    # Because we started with XYZImage, all non-spatial
     # coordinates agree in the range and the domain
     # so this will work and the renamed_range
     # call is not even necessary because when we call
-    # LPIImage, we only use the axisnames
+    # XYZImage, we only use the axisnames
 
     output_coordmap = image.coordmap.renamed_domain({img_first_axis:'PCA components'}).renamed_range({img_first_axis:'PCA components'})
 
@@ -196,16 +196,16 @@ def pca(lpi_image, mask=None, ncomp=1, axis='t', standardize=True,
 
     # We have to roll the axis back
 
-    roll_index = lpi_image.axes.index(img_first_axis)
+    roll_index = xyz_image.axes.index(img_first_axis)
     output_img = image_rollaxis(output_img, roll_index, inverse=True)
 
-    output_lpi = LPIImage(output_img.get_data(), 
-                          lpi_image.affine,
+    output_xyz = XYZImage(output_img.get_data(), 
+                          xyz_image.affine,
                           output_img.axes.coord_names)
 
     return {'components over %s' % img_first_axis:time_series[:ncomp,],
             'pcnt_var': pcntvar,
-            'images':output_lpi, 
+            'images':output_xyz, 
             'rank':rank}
 
 

@@ -3,7 +3,7 @@ import numpy as np
 from nipy.modalities.fmri.api import FmriImageList
 from nipy.modalities.fmri.pca import pca
 from nipy.core.api import Image
-from nipy.core.image.lpi_image import LPIImage
+from nipy.core.image.xyz_image import XYZImage
 from nipy.core.image.image import rollaxis as image_rollaxis
 from nipy.io.api import  load_image
 from nipy.testing import *
@@ -14,27 +14,27 @@ def setup():
     tmp_img = load_image(funcfile)
     
     # For now, img is an Image
-    # instead of an LPIImage
+    # instead of an XYZImage
 
     A = np.identity(4)
     A[:3,:3] = tmp_img.affine[:3,:3]
     A[:3,-1] = tmp_img.affine[:3,-1]
     
-    lpi_data = tmp_img.get_data()
-    lpi_img = LPIImage(lpi_data, A,
+    xyz_data = tmp_img.get_data()
+    xyz_img = XYZImage(xyz_data, A,
                        tmp_img.axes.coord_names[:3] + ('t',))
     
-    # If load_image returns an LPIImage, I'd really be
-    # starting from lpi_img, so from here
+    # If load_image returns an XYZImage, I'd really be
+    # starting from xyz_img, so from here
 
     # Here, I'm just doing this so I know that
     # img.shape[0] is the number of volumes
 
-    img = image_rollaxis(Image(lpi_img._data, lpi_img.coordmap), 't')
+    img = image_rollaxis(Image(xyz_img._data, xyz_img.coordmap), 't')
     data_dict['nimages'] = img.shape[0]
 
     # It might be worth to make
-    # data a public attribute of Image/LPIImage
+    # data a public attribute of Image/XYZImage
     # and we might rename get_data-> data_as_array = np.asarray(self.data)
     # Then, the above would not access a private attribute
     
@@ -42,14 +42,14 @@ def setup():
     # because I already have img, I 
     # know I can do this
     # In principle, though, the pca function
-    # will just take another LPIImage as a mask
+    # will just take another XYZImage as a mask
 
     img_data = img.get_data()
     first_frame = img_data[0]
 
-    mask = LPIImage(np.greater(np.asarray(first_frame), 500).astype(np.float64), A, lpi_img.axes.coord_names[:3])
+    mask = XYZImage(np.greater(np.asarray(first_frame), 500).astype(np.float64), A, xyz_img.axes.coord_names[:3])
 
-    data_dict['fmridata'] = lpi_img
+    data_dict['fmridata'] = xyz_img
     data_dict['mask'] = mask
     data_dict['img'] = img
 
@@ -70,7 +70,7 @@ def test_PCAMask():
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
 
     yield assert_equal, p['images'].axes.coord_names, ['i','j','k','PCA components']
-    yield assert_equal, p['images'].lpi_transform, data_dict['mask'].lpi_transform
+    yield assert_equal, p['images'].xyz_transform, data_dict['mask'].xyz_transform
 
 def test_not_spatial():
     # we can't do PCA over spatial axes
@@ -96,7 +96,7 @@ def test_PCAMask_nostandardize():
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
 
     yield assert_equal, p['images'].axes.coord_names, ['i','j','k','PCA components']
-    yield assert_equal, p['images'].lpi_transform, data_dict['mask'].lpi_transform
+    yield assert_equal, p['images'].xyz_transform, data_dict['mask'].xyz_transform
 
 def test_PCANoMask():
     nimages = data_dict['nimages']
@@ -112,7 +112,7 @@ def test_PCANoMask():
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
 
     yield assert_equal, p['images'].axes.coord_names, ['i','j','k','PCA components']
-    yield assert_equal, p['images'].lpi_transform, data_dict['mask'].lpi_transform
+    yield assert_equal, p['images'].xyz_transform, data_dict['mask'].xyz_transform
 
 def test_PCANoMask_nostandardize():
     nimages = data_dict['nimages']
@@ -128,7 +128,7 @@ def test_PCANoMask_nostandardize():
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
 
     yield assert_equal, p['images'].axes.coord_names, ['i','j','k','PCA components']
-    yield assert_equal, p['images'].lpi_transform, data_dict['mask'].lpi_transform
+    yield assert_equal, p['images'].xyz_transform, data_dict['mask'].xyz_transform
 
 def test_keep():
     """
@@ -152,7 +152,7 @@ def test_keep():
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
 
     yield assert_equal, p['images'].axes.coord_names, ['i','j','k','PCA components']
-    yield assert_equal, p['images'].lpi_transform, data_dict['mask'].lpi_transform
+    yield assert_equal, p['images'].xyz_transform, data_dict['mask'].xyz_transform
 
 def test_resid():
     """
@@ -176,7 +176,7 @@ def test_resid():
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
 
     yield assert_equal, p['images'].axes.coord_names, ['i','j','k','PCA components']
-    yield assert_equal, p['images'].lpi_transform, data_dict['mask'].lpi_transform
+    yield assert_equal, p['images'].xyz_transform, data_dict['mask'].xyz_transform
 
 
 
@@ -199,22 +199,22 @@ def test_both():
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
 
     yield assert_equal, p['images'].axes.coord_names, ['i','j','k','PCA components']
-    yield assert_equal, p['images'].lpi_transform, data_dict['mask'].lpi_transform
+    yield assert_equal, p['images'].xyz_transform, data_dict['mask'].xyz_transform
 
 def test_5d():
     # What happend to a 5d image, 
     # we should get 4d images back
 
-    lpi_img = data_dict['fmridata']
-    lpi_data = lpi_img.get_data()
-    affine = lpi_img.affine
+    xyz_img = data_dict['fmridata']
+    xyz_data = xyz_img.get_data()
+    affine = xyz_img.affine
 
-    lpi_data_5d = lpi_data.reshape(lpi_data.shape + (1,))
-    fived = LPIImage(lpi_data_5d, affine, 'ijktv')
+    xyz_data_5d = xyz_data.reshape(xyz_data.shape + (1,))
+    fived = XYZImage(xyz_data_5d, affine, 'ijktv')
 
     mask_data = data_dict['mask'].get_data()
     mask_data = mask_data.reshape(mask_data.shape + (1,))
-    mask4d = LPIImage(mask_data, affine, 'ijkv')
+    mask4d = XYZImage(mask_data, affine, 'ijkv')
 
     nimages = data_dict['nimages']
 
@@ -225,19 +225,19 @@ def test_5d():
     yield assert_equal, p['rank'], ntotal
     yield assert_equal, p['components over t'].shape, (ncomp,
                                                          nimages)
-    yield assert_equal, p['images'].shape, lpi_data.shape[:3] + (ncomp, 1)
+    yield assert_equal, p['images'].shape, xyz_data.shape[:3] + (ncomp, 1)
     yield assert_equal, p['pcnt_var'].shape, (ntotal,)
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
 
     yield assert_equal, p['images'].axes.coord_names, ['i','j','k','PCA components','v']
-    yield assert_equal, p['images'].lpi_transform, lpi_img.lpi_transform
+    yield assert_equal, p['images'].xyz_transform, xyz_img.xyz_transform
 
-    lpi_data_5d = lpi_data.reshape(lpi_data.shape[:3] + (1,lpi_data.shape[3]))
-    fived = LPIImage(lpi_data_5d, affine, list('ijkv') + ['group'])
+    xyz_data_5d = xyz_data.reshape(xyz_data.shape[:3] + (1,xyz_data.shape[3]))
+    fived = XYZImage(xyz_data_5d, affine, list('ijkv') + ['group'])
 
     mask_data = data_dict['mask'].get_data()
     mask_data = mask_data.reshape(mask_data.shape + (1,))
-    mask4d = LPIImage(mask_data, affine, 'ijkv')
+    mask4d = XYZImage(mask_data, affine, 'ijkv')
 
     nimages = data_dict['nimages']
 
@@ -249,4 +249,4 @@ def test_5d():
     yield assert_equal, p['components over group'].shape, (ncomp,
                                                          nimages)
     yield assert_equal, p['images'].axes.coord_names, ['i','j','k','v','PCA components']
-    yield assert_equal, p['images'].shape, lpi_data.shape[:3] + (1, ncomp)
+    yield assert_equal, p['images'].shape, xyz_data.shape[:3] + (1, ncomp)

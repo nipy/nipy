@@ -104,7 +104,6 @@ class Image(object):
 
     def _getheader(self):
         # data loaded from a file should have a header
-        warnings.warn('Image.header  may be deprecated if load_image returns an LPIImage')
         try:
             return self._header
         except AttributeError:
