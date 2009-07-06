@@ -1,70 +1,41 @@
+from nipy.core.api import lps_output_coordnames, \
+   ras_output_coordnames
+
 """
 An implementation of the dimension info as desribed in 
 
 http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1.h
 
-In particular, it allows one to check if a `CoordinateMap` instance
-can be coerced into a valid NIFTI CoordinateMap instance. For a 
-valid NIFTI coordmap, we can then ask which axes correspond to time,
-slice, phase and frequency.
+In particular, it allows one to take a (possibly 4 or higher-dimensional)
+AffineTransform instance
+and return a valid NIFTI 3-dimensional NIFTI AffineTransform instance. 
 
 Axes:
 -----
 
 NIFTI files can have up to seven dimensions. We take the convention that
-the output coordinate names are ['x','y','z','t','u','v','w']
-and the input coordinate names are ['i','j','k','l','m','n','o'].
+the output coordinate names are ('x+LR','y+PA','z+SI','t','u','v','w')
+and the input coordinate names are ('i','j','k','t','u','v','w').
 
 In the NIFTI specification, the order of the output coordinates (at
-least the first 3) are fixed to be ['x','y','z'] and their order is not
-meant to change.  As for input coordinates, the first three can be
-reordered, so ['j','k','i','l'] is valid, for instance.
+least the first 3) are fixed to be LPS:%(lps)s
+and their order is not
+meant to change. If the output coordinates are RAS:%(ras)s, then
+the function ni_affine_pixdim_from_affine flips them to maintain
+NIFTI's standard of LPS:%(lps)s coordinates.
 
-NIFTI has a 'diminfo' header attribute that optionally specifies the
-order of the ['i', 'j', 'k'] axes. To use similar terms to those in the
-nifti1.h header, 'frequency' corresponds to 'i'; 'phase' to 'j' and
-'slice' to 'k'. We use ['i','j','k'] instead because there are images
-for which the terms 'phase' and 'frequency' have no proper meaning.
+NIFTI has a 'diminfo' header attribute that optionally specifies that
+some of ['i', 'j', 'k'] are renamed 'frequency', 'phase' or 'axis'. 
 
-Voxel coordinates:
-------------------
+""" % {'lps': lps_output_coordnames,
+       'ras' : ras_output_coordnames}
 
-NIFTI's voxel convention is what can best be described as 0-based
-FORTRAN indexing. For example: suppose we want the x=20-th, y=10-th
-pixel of the third slice of an image with 30 64x64 slices. This
-
->>> from nipy.testing import anatfile
->>> from nipy.io.api import load_image
->>> nifti_ijk = [19,9,2]
->>> fortran_ijk = [20,10,3]
->>> c_kji = [2,9,19]
->>> imgarr = np.asarray(load_image(anatfile))
->>> request1 = imgarr[nifti_ijk[2], nifti_ijk[1], nifti_ijk[0]]
->>> request2 = imgarr[fortran_ijk[2]-1,fortran_ijk[1]-1, fortran_ijk[0]-1]
->>> request3 = imgarr[c_kji[0],c_kji[1],c_kji[2]]
->>> request1 == request2
-True
->>> request2 == request3
-True
-
-FIXME: (finish this thought.... Are we going to open NIFTI files with
-NIFTI input coordinates?)  For this reason, we have to consider whether
-we should transpose the memmap from pynifti.
-"""
 import warnings
 
 import numpy as np
 
 from nipy.core.api import CoordinateSystem as CS, AffineTransform as AT
 
-# Renamings that have to be done: 
-#
-# coordmap-> affine_transform in nipy.core.image, nipy.io
-# lpi-> lps
-# affine_transform.affine->affine_transform.matrix ?
-
-from nipy.core.image.lpi_image import lps_output_coordnames, \
-   ras_output_coordnames
 from nipy.core.reference.coordinate_map import product as mapping_product, \
     compose
 
@@ -89,11 +60,11 @@ def ni_affine_pixdim_from_affine(affine_transform, strict=False):
     greater than 3. 
 
     If strict is True, then the names of the range coordinates
-    must be LPS:%(lps)s or RAS:%(ras)s. If strict is False, and the names
-    are not either of these, LPS:%(lps)s are used.
+    must be LPS:('x+LR','y+PA','z+SI') or RAS:('x+RL','y+AP','z+SI'). If strict is False, and the names
+    are not either of these, LPS:('x+LR','y+PA','z+SI') are used.
 
-    If the names are RAS:%(ras)s, then the affine is flipped
-    so the result is in LPS:%(lps)s
+    If the names are RAS:('x+RL','y+AA','z+SI'), then the affine is flipped
+    so the result is in LPS:('x+LR','y+PA','z+SI').
 
     NIFTI images have the first 3 dimensions as spatial, and the
     remaining as non-spatial, with the 4th typically being time.
@@ -110,8 +81,34 @@ def ni_affine_pixdim_from_affine(affine_transform, strict=False):
     pixdim : ndarray(np.float)
        The pixel dimensions greater than 3.
 
-    """ %{'lps':lps_output_coordnames,
-          'ras':ras_output_coordnames}
+    >>> outnames = CS(('x+LR','y+PA','z+SI') + ('t',))
+    >>> innames = CS(['phase', 'j', 'frequency', 't'])
+    >>> af_tr = AT(outnames, innames, np.diag([2,-2,3,3.5,1]))
+    >>> print af_tr
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI', 't'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('phase', 'j', 'frequency', 't'), name='', coord_dtype=float64),
+       affine=array([[ 2. ,  0. ,  0. ,  0. ,  0. ],
+                     [ 0. , -2. ,  0. ,  0. ,  0. ],
+                     [ 0. ,  0. ,  3. ,  0. ,  0. ],
+                     [ 0. ,  0. ,  0. ,  3.5,  0. ],
+                     [ 0. ,  0. ,  0. ,  0. ,  1. ]])
+    )
+
+    >>> af_tr3dorless, p = ni_affine_pixdim_from_affine(af_tr)
+    >>> print af_tr3dorless
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='', coord_dtype=float64),
+       affine=array([[ 2.,  0.,  0.,  0.],
+                     [ 0., -2.,  0.,  0.],
+                     [ 0.,  0.,  3.,  0.],
+                     [ 0.,  0.,  0.,  1.]])
+    )
+    >>> print p
+    [ 3.5]
+
+    """ 
 
     if ((not isinstance(affine_transform, AT)) or
         (affine_transform.ndims[0] != affine_transform.ndims[1])):
@@ -154,7 +151,7 @@ def ni_affine_pixdim_from_affine(affine_transform, strict=False):
         if strict:
             raise ValueError('strict is true and %s' % msg)
         warnings.warn(msg)
-    pixdim = np.fabs(np.diag(A)[3:])
+    pixdim = np.fabs(np.diag(A)[:-1])
 
     # find the 4x4 (or smaller)
 
@@ -216,22 +213,50 @@ def affine_transform_from_array(affine, ijk, pixdim):
        
     Examples
     --------
-    >>> cmap = affine_transform_from_array(np.eye(4), 'ijk')
-    >>> cmap.function_domain.coord_names
+    >>> af_tr3d, af_tr = affine_transform_from_array(np.diag([2,3,4,1]), 'ijk', [])
+    >>> af_tr.function_domain.coord_names
     ('i', 'j', 'k')
-    >>> cmap.function_range.coord_names
-    ('x', 'y', 'z')
-    >>> cmap = affine_transform_from_array(np.eye(5), 'kij')
-    >>> cmap.function_domain.coord_names
-    ('k', 'i', 'j', 't')
-    >>> cmap.function_range.coord_names
-    ('x', 'y', 'z', 't')
+    >>> af_tr3d.function_domain.coord_names
+    ('i', 'j', 'k')
     
+    >>> af_tr.function_range.coord_names
+    ('x+LR', 'y+PA', 'z+SI')
+    >>> af_tr3d.function_range.coord_names
+    ('x+LR', 'y+PA', 'z+SI')
+    >>> af_tr3d, af_tr = affine_transform_from_array(np.diag([2,3,4,1]), 'kij', [3.5])
+    >>> af_tr.function_domain.coord_names
+    ('k', 'i', 'j', 't')
+    >>> af_tr.function_range.coord_names
+    ('x+LR', 'y+PA', 'z+SI', 't')
+    >>> af_tr3d.function_domain.coord_names
+    ('k', 'i', 'j')
+    >>> af_tr3d.function_range.coord_names
+    ('x+LR', 'y+PA', 'z+SI')
+    >>> print af_tr3d
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='', coord_dtype=float64),
+       affine=array([[ 2.,  0.,  0.,  0.],
+                     [ 0.,  3.,  0.,  0.],
+                     [ 0.,  0.,  4.,  0.],
+                     [ 0.,  0.,  0.,  1.]])
+    )
+
+    >>> print af_tr
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('k', 'i', 'j', 't'), name='product', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI', 't'), name='product', coord_dtype=float64),
+       affine=array([[ 2. ,  0. ,  0. ,  0. ,  0. ],
+                     [ 0. ,  3. ,  0. ,  0. ,  0. ],
+                     [ 0. ,  0. ,  4. ,  0. ,  0. ],
+                     [ 0. ,  0. ,  0. ,  3.5,  0. ],
+                     [ 0. ,  0. ,  0. ,  0. ,  1. ]])
+    )
+
+
     FIXME: This is an internal function and should be revisited when
     the AffineTransform is refactored.
 
-    JT: This encapsulates a lot of the logic in LPI/RASTransform,
-    and returns both transforms.
     """
     if affine.shape != (4, 4) or len(ijk) != 3:
         raise ValueError('affine must be square, 4x4, ijk of length 3')

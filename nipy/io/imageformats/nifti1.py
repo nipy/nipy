@@ -509,6 +509,50 @@ class Nifti1Header(SpmAnalyzeHeader):
                 phase-1 if phase else None,
                 slice-1 if slice else None)
 
+    def set_dim_info_from_names(self, axisnames):
+        """ Sets nifti dim_info from the 
+        names of the first three axes.
+        
+        Parameters
+        ----------
+
+        axisnames = [str]
+            Names of up to the first three axes
+
+        Returns
+        -------
+
+        None
+
+        Examples
+        --------
+
+        >>> from nipy.testing import funcfile
+        >>> import nipy.io.imageformats as formats
+        >>> img = formats.load(funcfile)
+        >>> hdr = img.get_header()
+        >>> hdr.get_dim_info()
+        (None, None, None)
+        >>> hdr.set_dim_info_from_names(('frequency', 'i', 'slice'))
+        >>> hdr.get_dim_info()
+        (0, None, 2)
+        >>> 
+
+
+        """
+
+        fps = []
+        for n in ['frequency',
+                  'phase',
+                  'slice']:
+            try:
+                i = axisnames.index(n)
+                fps.append(i)
+            except ValueError: # axisnames is a tuple, not a list
+                fps.append(None)
+                pass
+        self.set_dim_info(*fps)
+
     def set_dim_info(self, freq=None, phase=None, slice=None):
         ''' Sets nifti MRI slice etc dimension information
 
@@ -555,6 +599,34 @@ class Nifti1Header(SpmAnalyzeHeader):
         if not slice is None:
             info = info | (((slice+1) & 3) << 4)
         self._header_data['dim_info'] = info
+
+    def get_axis_renames(self):
+        """
+        Return axis names based on dim_info specification.
+
+        The keys of the axis are in ['frequency', 'phase' 'slice']
+        and its values are integers.
+
+
+        >>> from nipy.testing import funcfile
+        >>> import nipy.io.imageformats as formats
+        >>> img = formats.load(funcfile)
+        >>> hdr = img.get_header()
+        >>> hdr.get_axis_renames()
+        {}
+        >>> hdr.set_dim_info_from_names(('frequency', 'i', 'slice'))
+        >>> hdr.get_axis_renames()
+        {'frequency': 0, 'slice': 2}
+        >>> 
+        """
+
+        fps = self.get_dim_info()
+        fps_dict = dict(zip(fps, ['frequency', 'phase', 'slice']))
+        if None in fps_dict:
+            del(fps_dict[None])
+        if fps_dict:
+            return dict([(value, key) for key, value in fps_dict.items()])
+        return {}
 
     def get_intent_code(self, code_repr='label'):
         ''' Return representation of intent code

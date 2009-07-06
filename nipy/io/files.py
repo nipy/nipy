@@ -20,9 +20,9 @@ import numpy as np
 
 import nipy.io.imageformats as formats
 
-from nipy.core.api import Image
-from nifti_ref import (coordmap_from_affine, coerce_coordmap, 
-                       ijk_from_fps, fps_from_ijk)
+from nipy.core.api import Image, compose, AffineTransform
+from nifti_ref import (ni_affine_pixdim_from_affine, affine_transform_from_array)
+                       
                        
 
 def load(filename):
@@ -56,67 +56,81 @@ def load(filename):
     aff = img.get_affine()
     shape = img.get_shape()
     hdr = img.get_header()
+
     # Get info from NIFTI header, if present, to tell which axes are
     # which.  This is a NIFTI-specific kludge, that might be abstracted
     # out into the image backend in a general way.  Similarly for
     # getting zooms
+
+    # axis_renames is a dictionary: dict([(int, str)])
+    # that has keys in range(3)
+    # the axes of the Image are renamed from 'ijk'
+    # using these names
+
     try:
-        fps = hdr.get_dim_info()
+        axis_renames = hdr.get_axis_renames()
     except (TypeError, AttributeError):
-        fps = (None, None, None)
-    ijk = ijk_from_fps(fps)
+        axis_renames = {}
+
     try:
         zooms = hdr.get_zooms()
     except AttributeError:
         zooms = np.ones(len(shape))
-    aff = _match_affine(aff, len(shape), zooms)
-    coordmap = coordmap_from_affine(aff, ijk)
-    img = Image(img.get_data(), coordmap)
+
+    # affine_transform is a 3-d transform
+
+    affine_transform3d, affine_transform = \
+        affine_transform_from_array(aff, 'ijk', pixdim=zooms[3:])
+    img = Image(img.get_data(), affine_transform.renamed_domain(axis_renames))
     img.header = hdr
     return img
 
 
-def _match_affine(aff, ndim, zooms=None):
-    ''' Fill or prune affine to given number of dimensions
+# No longer needed
 
-    >>> aff = np.arange(16).reshape(4,4)
-    >>> _match_affine(aff, 3)
-    array([[ 0,  1,  2,  3],
-           [ 4,  5,  6,  7],
-           [ 8,  9, 10, 11],
-           [12, 13, 14, 15]])
-    >>> _match_affine(aff, 2)
-    array([[ 0.,  1.,  3.],
-           [ 4.,  5.,  7.],
-           [ 0.,  0.,  1.]])
-    >>> _match_affine(aff, 4)
-    array([[  0.,   1.,   2.,   0.,   3.],
-           [  4.,   5.,   6.,   0.,   7.],
-           [  8.,   9.,  10.,   0.,  11.],
-           [  0.,   0.,   0.,   1.,   0.],
-           [  0.,   0.,   0.,   0.,   1.]])
-    >>> aff = np.arange(9).reshape(3,3)
-    >>> _match_affine(aff, 2)
-    array([[0, 1, 2],
-           [3, 4, 5],
-           [6, 7, 8]])
-    '''
-    if aff.shape[0] != aff.shape[1]:
-        raise ValueError('Need square affine')
-    aff_dim = aff.shape[0] - 1
-    if ndim == aff_dim:
-        return aff
-    aff_diag = np.ones(ndim+1)
-    if not zooms is None:
-        n = min(len(zooms), ndim)
-        aff_diag[:n] = zooms[:n]
-    mod_aff = np.diag(aff_diag)
-    n = min(ndim, aff_dim)
-    # rotations zooms shears
-    mod_aff[:n,:n] = aff[:n,:n]
-    # translations
-    mod_aff[:n,-1] = aff[:n,-1]
-    return mod_aff
+# def _match_affine(aff, ndim, zooms=None):
+#     ''' Fill or prune affine to given number of dimensions
+
+#     XXX Zooms do what here?
+
+#     >>> aff = np.arange(16).reshape(4,4)
+#     >>> _match_affine(aff, 3)
+#     array([[ 0,  1,  2,  3],
+#            [ 4,  5,  6,  7],
+#            [ 8,  9, 10, 11],
+#            [12, 13, 14, 15]])
+#     >>> _match_affine(aff, 2)
+#     array([[ 0.,  1.,  3.],
+#            [ 4.,  5.,  7.],
+#            [ 0.,  0.,  1.]])
+#     >>> _match_affine(aff, 4)
+#     array([[  0.,   1.,   2.,   0.,   3.],
+#            [  4.,   5.,   6.,   0.,   7.],
+#            [  8.,   9.,  10.,   0.,  11.],
+#            [  0.,   0.,   0.,   1.,   0.],
+#            [  0.,   0.,   0.,   0.,   1.]])
+#     >>> aff = np.arange(9).reshape(3,3)
+#     >>> _match_affine(aff, 2)
+#     array([[0, 1, 2],
+#            [3, 4, 5],
+#            [6, 7, 8]])
+#     '''
+#     if aff.shape[0] != aff.shape[1]:
+#         raise ValueError('Need square affine')
+#     aff_dim = aff.shape[0] - 1
+#     if ndim == aff_dim:
+#         return aff
+#     aff_diag = np.ones(ndim+1)
+#     if not zooms is None:
+#         n = min(len(zooms), ndim)
+#         aff_diag[:n] = zooms[:n]
+#     mod_aff = np.diag(aff_diag)
+#     n = min(ndim, aff_dim)
+#     # rotations zooms shears
+#     mod_aff[:n,:n] = aff[:n,:n]
+#     # translations
+#     mod_aff[:n,-1] = aff[:n,-1]
+#     return mod_aff
 
 
 def save(img, filename, dtype=None):
@@ -177,13 +191,18 @@ def save(img, filename, dtype=None):
         original_hdr = img.header
     except AttributeError:
         original_hdr = None
-    # Make NIFTI compatible version of image
-    newcmap, order = coerce_coordmap(img.coordmap)
-    Fimg = Image(np.transpose(np.asarray(img), order), newcmap)
-    # Expand or contract affine to 4x4 (3 dimensions)
-    rzs = Fimg.affine[:-1,:-1]
+    # Make NIFTI compatible affine_transform
+    affine_3dorless_transform, pixdim = ni_affine_pixdim_from_affine(img.coordmap)
+
+#   what are we going to do with pixdim?
+#   LPIImage will all have pixdim[3:] == 1...
+
+    aff = affine_3dorless_transform.affine 
+
+    # rzs = Fimg.affine[:3,:], JT for Matthew, I changed this below is this correct?
+    rzs = img.coordmap.affine[:-1,:-1] 
     zooms = np.sqrt(np.sum(rzs * rzs, axis=0))
-    aff = _match_affine(Fimg.affine, 3, zooms)
+
     ftype = _type_from_filename(filename)
     if ftype.startswith('nifti1'):
         klass = formats.Nifti1Image
@@ -192,24 +211,23 @@ def save(img, filename, dtype=None):
     else:
         raise ValueError('Cannot save file type "%s"' % ftype)
     # make new image
-    out_img = klass(data=np.asarray(Fimg),
+    out_img = klass(data=img.get_data(),
                     affine=aff,
                     header=original_hdr)
     hdr = out_img.get_header()
     # work out phase, freqency, slice from coordmap names
-    ijk = newcmap.function_domain.coord_names
-    fps = fps_from_ijk(ijk)
-    # put fps into header if possible
+    axisnames = affine_3dorless_transform.function_domain.coord_names
+
+    # let the hdr do what it wants from the axisnames
     try:
-        hdr.set_dim_info(*fps)
+        hdr.set_dim_info_from_names(axisnames)
     except AttributeError:
         pass
     # Set zooms
     hdr.set_zooms(zooms)
     # save to disk
     out_img.to_filespec(filename)
-    return Fimg
-
+    return img
 
 def _type_from_filename(filename):
     ''' Return image type determined from filename
