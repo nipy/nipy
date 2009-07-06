@@ -1,6 +1,3 @@
-from nipy.core.api import lps_output_coordnames, \
-   ras_output_coordnames
-
 """
 An implementation of the dimension info as desribed in 
 
@@ -18,17 +15,16 @@ the output coordinate names are ('x+LR','y+PA','z+SI','t','u','v','w')
 and the input coordinate names are ('i','j','k','t','u','v','w').
 
 In the NIFTI specification, the order of the output coordinates (at
-least the first 3) are fixed to be LPS:%(lps)s
+least the first 3) are fixed to be LPS:('x+LR','y+PA','z+SI')
 and their order is not
-meant to change. If the output coordinates are RAS:%(ras)s, then
+allowed to change. If the output coordinates are RAS:('x+RL','y+AP','z+SI'), then
 the function ni_affine_pixdim_from_affine flips them to maintain
-NIFTI's standard of LPS:%(lps)s coordinates.
+NIFTI's standard of LPS:('x+LR','y+PA','z+SI') coordinates.
 
 NIFTI has a 'diminfo' header attribute that optionally specifies that
-some of ['i', 'j', 'k'] are renamed 'frequency', 'phase' or 'axis'. 
+some of 'i', 'j', 'k' are renamed 'frequency', 'phase' or 'axis'. 
 
-""" % {'lps': lps_output_coordnames,
-       'ras' : ras_output_coordnames}
+"""
 
 import warnings
 
@@ -38,6 +34,9 @@ from nipy.core.api import CoordinateSystem as CS, AffineTransform as AT
 
 from nipy.core.reference.coordinate_map import product as mapping_product, \
     compose
+from nipy.core.api import lps_output_coordnames, \
+   ras_output_coordnames
+
 
 
 valid_input_axisnames = tuple('ijktuvw')

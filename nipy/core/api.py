@@ -14,3 +14,5 @@ from nipy.core.image.image import Image, fromarray, subsample, slice_maker
 from nipy.core.image.image_list import ImageList
 
 from nipy.core.image.generators import parcels, data_generator, write_data, slice_generator, f_generator, matrix_generator
+
+from nipy.core.image.lpi_image import lps_output_coordnames, ras_output_coordnames
