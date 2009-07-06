@@ -289,7 +289,7 @@ class CoordinateMap(object):
         -------
         newnames: dictionary
 
-             A dictionary whose keys are in
+             A dictionary whose keys are integers or are in
              mapping.function_domain.coord_names
              and whose values are the new names.
 
@@ -329,18 +329,18 @@ class CoordinateMap(object):
         -------
         newnames: dictionary
 
-             A dictionary whose keys are in
-             mapping.function_domain.coord_names
+             A dictionary whose keys are integers or are in
+             mapping.function_range.coord_names
              and whose values are the new names.
 
         name: string, optional
-             Name of new function_domain, defaults to mapping.function_domain.name.
+             Name of new function_range, defaults to mapping.function_range.name.
 
         Returns:
         --------
 
         newmapping : CoordinateMap
-             A new CoordinateMap with renamed function_domain. 
+             A new CoordinateMap with renamed function_range. 
 
         >>> domain = CoordinateSystem('ijk')
         >>> range = CoordinateSystem('xyz')
@@ -799,7 +799,7 @@ class AffineTransform(object):
         -------
         newnames: dictionary
 
-             A dictionary whose keys are in
+             A dictionary whose keys are integers or are in
              mapping.function_domain.coord_names
              and whose values are the new names.
 
@@ -840,18 +840,18 @@ class AffineTransform(object):
         -------
         newnames: dictionary
 
-             A dictionary whose keys are in
-             mapping.function_domain.coord_names
+             A dictionary whose keys are integers or are in
+             mapping.function_range.coord_names
              and whose values are the new names.
 
         name: string, optional
-             Name of new function_domain, defaults to mapping.function_domain.name.
+             Name of new function_range, defaults to mapping.function_range.name.
 
         Returns:
         --------
 
         newmapping : AffineTransform
-             A new AffineTransform with renamed function_domain. 
+             A new AffineTransform with renamed function_range.
 
         >>> affine_domain = CoordinateSystem('ijk')
         >>> affine_range = CoordinateSystem('xyz')
@@ -1174,8 +1174,8 @@ def renamed_domain(mapping, newnames, name=''):
     -------
     newnames: dictionary
 
-         A dictionary whose keys are in
-         mapping.function_domain.coord_names
+         A dictionary whose keys are integers or are in
+         mapping.function_range.coord_names
          and whose values are the new names.
 
     name: string, optional
@@ -1209,9 +1209,16 @@ def renamed_domain(mapping, newnames, name=''):
 
     name = name or mapping.function_domain.name
 
-    for n in newnames:
-        if n not in mapping.function_domain.coord_names:
-            raise ValueError('no domain coordinate named %s' % str(n))
+    for key in newnames.keys():
+        if type(key) == type(0):
+            newnames[mapping.function_domain.coord_names[key]] = \
+                newnames[key]
+            del(newnames[key])
+
+    for key in newnames.keys():
+        if key not in mapping.function_domain.coord_names:
+            raise ValueError('no domain coordinate named %s' % str(key))
+
 
     new_coord_names = []
     for n in mapping.function_domain.coord_names:
@@ -1244,7 +1251,7 @@ def renamed_range(mapping, newnames, name=''):
     ----------
     newnames: dictionary
 
-         A dictionary whose keys are in
+         A dictionary whose keys are integers or in
          mapping.function_range.coord_names
          and whose values are the new names.
 
@@ -1279,9 +1286,15 @@ def renamed_range(mapping, newnames, name=''):
 
     name = name or mapping.function_range.name
 
-    for n in newnames:
-        if n not in mapping.function_range.coord_names:
-            raise ValueError('no range coordinate named %s' % str(n))
+    for key in newnames.keys():
+        if type(key) == type(0):
+            newnames[mapping.function_range.coord_names[key]] = \
+                newnames[key]
+            del(newnames[key])
+
+    for key in newnames.keys():
+        if key not in mapping.function_range.coord_names:
+            raise ValueError('no range coordinate named %s' % str(key))
 
     new_coord_names = []
     for n in mapping.function_range.coord_names:

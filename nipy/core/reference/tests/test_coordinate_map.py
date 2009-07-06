@@ -52,6 +52,12 @@ def test_renamed():
         B_re = B.renamed_range({'y':'foo'})
         yield assert_equal, B_re.function_range.coord_names, ('x', 'foo', 'z')
 
+        B_re = B.renamed_range({0:'foo',1:'bar'})
+        yield assert_equal, B_re.function_range.coord_names, ('foo', 'bar', 'z')
+
+        B_re = B.renamed_domain({0:'foo',1:'bar'})
+        yield assert_equal, B_re.function_domain.coord_names, ('foo', 'bar', 'k')
+
         B_re = B.renamed_range({'y':'foo','x':'bar'})
         yield assert_equal, B_re.function_range.coord_names, ('bar', 'foo', 'z')
 

@@ -13,6 +13,16 @@ from nipy.core.api import AffineTransform, Image, CoordinateSystem
 from nipy.core.reference.coordinate_map import compose, product as cmap_product
 from nipy.algorithms.resample import resample
 
+
+#  Name of dimensions are based on 
+# 'x+LR' = x increasing from patient's L to R
+# 'y+PA' = x increasing from patient's P to A
+# 'z+SI' = x increasing from patient's S to I
+
+
+lps_output_coordnames = ('x+LR', 'y+PA', 'z+SI') 
+ras_output_coordnames = ('x+RL', 'y+AP', 'z+SI') 
+
 ################################################################################
 # class `LPITransform`
 ################################################################################
@@ -192,11 +202,6 @@ class LPIImage(Image):
    def _getworld(self):
       return self.lpi_transform.function_range # == LPITransform.range
    world = property(_getworld, doc="World space.")
-   _doc['world'] = "The world space is LPI world space, sometimes"+\
-                   "referred to as RAS world space. In this world"+\
-                   "space, x increases from patient's left to right"+\
-                   "y increases from patient's posterior to anterior,"+\
-                   "z increases from patient's superior to inferior."
 
    def _get_affine(self):
       """
