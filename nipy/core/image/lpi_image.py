@@ -192,6 +192,10 @@ class LPIImage(Image):
    def _getworld(self):
       return self.lpi_transform.function_range # == LPITransform.range
    world = property(_getworld, doc="World space.")
+   _doc['world'] = "The world space is LPI world space, sometimes"+\
+                   "referred to as RAS world space. In this world"+\
+                   "space, x increases left to right, y increases"+\
+                   "posterior to anterior, z increases superior to inferior."
 
    def _get_affine(self):
       """
