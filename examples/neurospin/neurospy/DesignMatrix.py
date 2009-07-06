@@ -40,14 +40,15 @@ cosine_drift = protocol.ExperimentalQuantitative('drift', cosine_matrix)
 
 def _loadProtocol(x, session, names = None):
     """
-    Read a paradigm file consisting of a list of pairs (occurence time, (duration), event ID)
+    Read a paradigm file consisting of a list of pairs
+    (occurence time, (duration), event ID)
     and instantiate a NiPy ExperimentalFactor object. 
 
     INPUT:
-    x
+    x: a path to a .csv file
     
     """
-    paradigm = pylab.load(x)
+    paradigm = pylab.loadtxt(x)
     if paradigm[paradigm[:,0] == session].tolist() == []:
         return None
     paradigm = paradigm[paradigm[:,0] == session]

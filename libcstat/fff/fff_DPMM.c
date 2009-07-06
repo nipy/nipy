@@ -555,8 +555,8 @@ extern int fff_FDP_sampling(fff_vector *density, fff_FDP* FDP, fff_array *Z, con
   fff_vector_set_all(density,0);
 
   for (i=0 ; i<niter;i++){
-    for(j=0;j<10;j++)
-      _recompute_and_redraw(FDP,Z,data,pvals,labels,i*10+j);
+    for(j=0;j<3;j++)
+      _recompute_and_redraw(FDP,Z,data,pvals,labels,i*3+j);
 	_compute_P_under_H1(W, FDP, grid);
     /* _FDP_show(FDP, i); */
     fff_vector_add(density,W);
@@ -601,7 +601,7 @@ extern int fff_FDP_inference(fff_FDP* FDP, fff_array *Z, fff_vector* posterior, 
 
   for (i=0 ; i<niter;i++){
     for (j=0 ; j<3;j++)
-	  _recompute_and_redraw(FDP,Z,data,pvals,labels,i+j); 
+	  _recompute_and_redraw(FDP,Z,data,pvals,labels,i*3+j); 
 	for (n=0 ; n<data->size1 ; n++){
 	  aux = (fff_array_get1d(Z,n)>0) + fff_vector_get(posterior,n);
 	  fff_vector_set(posterior,n,aux);
