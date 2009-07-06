@@ -2,7 +2,7 @@ import numpy as np
 from nipy.testing import *
 
 from nipy.core.reference.coordinate_map import CoordinateMap, AffineTransform, \
-    compose, CoordinateSystem, product
+    compose, CoordinateSystem, product, equivalent
 
 
 class empty:
@@ -323,25 +323,22 @@ def test_product():
     yield assert_equal, cm.function_range.coord_names, ('x', 'y')
     yield assert_equal, cm.affine, np.diag([2, 3, 1])
 
+def test_equivalent():
+    ijk = CoordinateSystem('ijk')
+    xyz = CoordinateSystem('xyz')
+    T = np.random.standard_normal((4,4))
+    T[-1] = [0,0,0,1]
+    A = AffineTransform(ijk, xyz, T)
 
-# concat deprecated
-# def test_concat():
-#     cm1 = AffineTransform.from_params('i', 'x', np.diag([2, 1]))
-#     cm2 = concat(cm1, 'j')
-#     cm3 = concat(cm1, 'j', append=True)
+    # now, cycle through
+    # all possible permutations of 
+    # 'ijk' and 'xyz' and confirm that 
+    # the mapping is equivalent
 
-#     yield assert_equal, cm2.function_domain.coord_names, ('j','i')
-#     yield assert_equal, cm2.function_range.coord_names, ('j','x')
-
-#     yield assert_equal, cm3.function_range.coord_names, ('x', 'j')
-#     yield assert_equal, cm3.function_domain.coord_names, ('i', 'j')
-
-#     yield assert_almost_equal, cm2.affine, np.array([[1,0,0],
-#                                                      [0,2,0],
-#                                                      [0,0,1]])
-
-#     yield assert_almost_equal, cm3.affine, np.array([[2,0,0],
-#                                                      [0,1,0],
-#                                                      [0,0,1]])
+    import itertools
+    for pijk in itertools.permutations('ijk'):
+        for pxyz in itertools.permutations('xyz'):
+            B = A.reordered_domain(pijk).reordered_range(pxyz)
+            yield assert_true, equivalent(A, B)
 
 

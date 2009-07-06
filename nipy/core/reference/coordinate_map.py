@@ -60,7 +60,6 @@ Operations on mappings (module level functions)
 """
 
 import warnings
-
 import numpy as np
 
 from nipy.utils.onetime import setattr_on_read
@@ -922,11 +921,11 @@ class AffineTransform(object):
 
     def __copy__(self):
         """
-        Create a copy of the coordmap.
+        Create a copy of the AffineTransform.
 
         Returns
         -------
-        cm : `CoordinateMap`
+        affine_transform : AffineTransform
 
         Examples
         --------
@@ -1098,6 +1097,7 @@ def compose(*cmaps):
 def reordered_domain(mapping, order=None, name=''):
     """
     Create a new coordmap with the coordinates of function_domain reordered.
+
     Default behaviour is to reverse the order of the coordinates.
 
     Parameters
@@ -1124,6 +1124,12 @@ def reordered_domain(mapping, order=None, name=''):
     >>> cm = AffineTransform(input_cs, output_cs, np.identity(4))
     >>> print cm.reordered_domain('ikj', name='neworder').function_domain
     CoordinateSystem(coord_names=('i', 'k', 'j'), name='neworder', coord_dtype=float64)
+
+    Notes
+    -----
+
+    If no reordering is to be performed, it returns a copy of mapping.
+
     """
 
     name = name or mapping.function_domain.name
@@ -1145,6 +1151,12 @@ def reordered_domain(mapping, order=None, name=''):
         perm[j,i] = 1.
 
     perm = perm.astype(mapping.function_domain.coord_dtype)
+
+    # If there is no reordering, return mapping
+    if np.allclose(perm, np.identity(perm.shape[0])):
+        import copy
+        return copy.copy(mapping)
+    
     A = AffineTransform(newincoords, mapping.function_domain, perm)
 
     if isinstance(mapping, AffineTransform):
@@ -1329,6 +1341,11 @@ def reordered_range(mapping, order=None, name=''):
     >>> newcm.function_range.coord_names
     ('y', 'z', 'x')
 
+    Notes
+    -----
+
+    If no reordering is to be performed, it returns a copy of mapping.
+
     """
 
     name = name or mapping.function_range.name
@@ -1350,6 +1367,10 @@ def reordered_range(mapping, order=None, name=''):
         perm[j,i] = 1.
 
     perm = perm.astype(mapping.function_range.coord_dtype)
+    if np.allclose(perm, np.identity(perm.shape[0])):
+        import copy
+        return copy.copy(mapping)
+
     A = AffineTransform(mapping.function_range, newoutcoords, perm.T)
 
     if isinstance(mapping, AffineTransform):
@@ -1357,6 +1378,81 @@ def reordered_range(mapping, order=None, name=''):
     else:
         return _compose_cmaps(_as_coordinate_map(A), mapping)
 
+
+def equivalent(mapping1, mapping2):
+    """
+    A test to see if mapping1 is equal 
+    to mapping2 after possibly reordering the 
+    domain and range of mapping.
+
+    Parameters
+    ----------
+
+    mapping1 : CoordinateMap or AffineTransform
+
+    mapping2 : CoordinateMap or AffineTransform
+
+    Returns
+    -------
+
+    are_they_equal : bool
+
+    Examples
+    --------
+
+    >>> ijk = CoordinateSystem('ijk')
+    >>> xyz = CoordinateSystem('xyz')
+    >>> T = np.random.standard_normal((4,4))
+    >>> T[-1] = [0,0,0,1] # otherwise AffineTransform raises
+    ...                   # an exception because
+    ...                   # it's supposed to represent an
+    ...                   # affine transform in homogeneous
+    ...                   # coordinates
+    >>> A = AffineTransform(ijk, xyz, T)
+    >>> B = A.reordered_domain('ikj').reordered_range('xzy')
+    >>> C = B.renamed_domain({'i':'slice'})
+    >>> equivalent(A, B)
+    True
+    >>> equivalent(A, C)
+    False
+    >>> equivalent(B, C)
+    False
+    >>>
+    >>> D = CoordinateMap(ijk, xyz, np.exp)
+    >>> equivalent(D, D)
+    True
+    >>> E = D.reordered_domain('kij').reordered_range('xzy')
+    >>> # no non-AffineTransform will ever be 
+    >>> # equivalent to a reordered version of itself, 
+    >>> # because their functions don't evaluate as equal
+    >>> equivalent(D, E)
+    False
+    >>> equivalent(E, E)
+    True
+    >>> 
+    >>> # This has not changed the order
+    >>> # of the axes, so the function is still the same
+    >>> 
+    >>> F = D.reordered_range('xyz').reordered_domain('ijk')
+    >>> equivalent(F, D)
+    True
+    >>> id(F) == id(D)
+    False
+    >>> 
+
+    """
+
+    target_dnames = mapping2.function_domain.coord_names
+    target_rnames = mapping2.function_range.coord_names
+
+    try:
+        mapping1 = mapping1.reordered_domain(target_dnames)\
+            .reordered_range(target_rnames)
+    except:
+        # impossible to rename the domain and ranges of mapping1 to match mapping2
+        return False
+
+    return mapping1 == mapping2
 
 ###################################################################
 #

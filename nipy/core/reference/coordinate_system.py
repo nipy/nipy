@@ -116,6 +116,8 @@ class CoordinateSystem(object):
         sctypes = (np.sctypes['int'] + np.sctypes['float'] + 
                    np.sctypes['complex'] + np.sctypes['uint'])
         coord_dtype = np.dtype(coord_dtype)
+
+
         if coord_dtype not in sctypes:
             raise ValueError('Coordinate dtype should be one of %s' % `sctypes`)
 
