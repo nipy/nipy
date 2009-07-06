@@ -2,7 +2,7 @@ import numpy as np
 from nipy.testing import *
 
 from nipy.core.reference.coordinate_map import CoordinateMap, AffineTransform, \
-    compose, CoordinateSystem, product, equivalent
+    compose, CoordinateSystem, product, equivalent, _as_coordinate_map
 
 
 class empty:
@@ -38,17 +38,25 @@ def test_renamed():
 
     A = AffineTransform.from_params('ijk', 'xyz', np.identity(4))
 
-    A_re = A.renamed_domain({'i':'foo'})
-    yield assert_equal, A_re.function_domain.coord_names, ('foo', 'j', 'k')
+    ijk = CoordinateSystem('ijk')
+    xyz = CoordinateSystem('xyz')
+    C = CoordinateMap(ijk, xyz, np.log)
 
-    A_re = A.renamed_domain({'i':'foo','j':'bar'})
-    yield assert_equal, A_re.function_domain.coord_names, ('foo', 'bar', 'k')
+    for B in [A,C]:
+        B_re = B.renamed_domain({'i':'foo'})
+        yield assert_equal, B_re.function_domain.coord_names, ('foo', 'j', 'k')
 
-    A_re = A.renamed_range({'y':'foo'})
-    yield assert_equal, A_re.function_range.coord_names, ('x', 'foo', 'z')
+        B_re = B.renamed_domain({'i':'foo','j':'bar'})
+        yield assert_equal, B_re.function_domain.coord_names, ('foo', 'bar', 'k')
 
-    A_re = A.renamed_range({'y':'foo','x':'bar'})
-    yield assert_equal, A_re.function_range.coord_names, ('bar', 'foo', 'z')
+        B_re = B.renamed_range({'y':'foo'})
+        yield assert_equal, B_re.function_range.coord_names, ('x', 'foo', 'z')
+
+        B_re = B.renamed_range({'y':'foo','x':'bar'})
+        yield assert_equal, B_re.function_range.coord_names, ('bar', 'foo', 'z')
+
+        yield assert_raises, ValueError, B.renamed_range, {'foo':'y'}
+        yield assert_raises, ValueError, B.renamed_domain, {'foo':'y'}
 
 
 
@@ -56,6 +64,9 @@ def test_call():
     value = 10
     yield assert_true, np.allclose(E.a(value), 2*value)
     yield assert_true, np.allclose(E.b(value), 2*value)
+    # FIXME: this shape just below is not 
+    # really expected for a CoordinateMap
+    yield assert_true, np.allclose(E.b([value]), 2*value)
     yield assert_true, np.allclose(E.c(value), value/2)
     yield assert_true, np.allclose(E.d(value), value/2)
     value = np.array([1., 2., 3.])
@@ -75,17 +86,25 @@ def test_compose():
     bb = compose(E.b,E.b)
 #    yield assert_true, bb.inverse() is not None
     aff1 = np.diag([1,2,3,1])
-    cm1 = AffineTransform.from_params('ijk', 'xyz', aff1)
+    affine1 = AffineTransform.from_params('ijk', 'xyz', aff1)
     aff2 = np.diag([4,5,6,1])
-    cm2 = AffineTransform.from_params('xyz', 'abc', aff2)
+    affine2 = AffineTransform.from_params('xyz', 'abc', aff2)
     # compose mapping from 'ijk' to 'abc'
-    compcm = compose(cm2, cm1)
+    compcm = compose(affine2, affine1)
     yield assert_equal, compcm.function_domain.coord_names, ('i', 'j', 'k')
     yield assert_equal, compcm.function_range.coord_names, ('a', 'b', 'c')
     yield assert_equal, compcm.affine, np.dot(aff2, aff1)
     # check invalid coordinate mappings
-    yield assert_raises, ValueError, compose, cm1, cm2
+    yield assert_raises, ValueError, compose, affine1, affine2
+
+    yield assert_raises, ValueError, compose, affine1, 'foo'
   
+    cm1 = CoordinateMap(CoordinateSystem('ijk'),
+                        CoordinateSystem('xyz'), np.log)
+    cm2 = CoordinateMap(CoordinateSystem('xyz'),
+                        CoordinateSystem('abc'), np.exp)
+    yield assert_raises, ValueError, compose, cm1, cm2
+
 def test__eq__():
     yield assert_true, E.a == E.a
     yield assert_false, E.a != E.a
@@ -295,6 +314,13 @@ def test_str():
    inverse_function=<ufunc 'log'>
   )"""
 
+    cmap = CoordinateMap(domain, range, np.exp)
+    result="""CoordinateMap(
+   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+   function=<ufunc 'exp'>
+  )"""
+
     yield assert_equal, result, repr(cmap)
 
 
@@ -316,12 +342,27 @@ def test_reordered_range():
 
 
 def test_product():
-    cm1 = AffineTransform.from_params('i', 'x', np.diag([2, 1]))
-    cm2 = AffineTransform.from_params('j', 'y', np.diag([3, 1]))
-    cm = product(cm1, cm2)
-    yield assert_equal, cm.function_domain.coord_names, ('i', 'j')
-    yield assert_equal, cm.function_range.coord_names, ('x', 'y')
-    yield assert_equal, cm.affine, np.diag([2, 3, 1])
+    affine1 = AffineTransform.from_params('i', 'x', np.diag([2, 1]))
+    affine2 = AffineTransform.from_params('j', 'y', np.diag([3, 1]))
+    affine = product(affine1, affine2)
+
+    cm1 = CoordinateMap(CoordinateSystem('i'),
+                        CoordinateSystem('x'),
+                        np.log)
+
+    cm2 = CoordinateMap(CoordinateSystem('j'),
+                        CoordinateSystem('y'),
+                        np.log)
+    cm = product(cm1, cm2) 
+
+    yield assert_equal, affine.function_domain.coord_names, ('i', 'j')
+    yield assert_equal, affine.function_range.coord_names, ('x', 'y')
+    yield assert_almost_equal, cm([3,4]), np.log([3,4])
+    yield assert_almost_equal, cm.function([[3,4],[5,6]]), np.log([[3,4],[5,6]])
+
+    yield assert_equal, affine.function_domain.coord_names, ('i', 'j')
+    yield assert_equal, affine.function_range.coord_names, ('x', 'y')
+    yield assert_equal, affine.affine, np.diag([2, 3, 1])
 
 def test_equivalent():
     ijk = CoordinateSystem('ijk')
@@ -335,10 +376,58 @@ def test_equivalent():
     # 'ijk' and 'xyz' and confirm that 
     # the mapping is equivalent
 
-    import itertools
-    for pijk in itertools.permutations('ijk'):
-        for pxyz in itertools.permutations('xyz'):
-            B = A.reordered_domain(pijk).reordered_range(pxyz)
-            yield assert_true, equivalent(A, B)
+    yield assert_false, equivalent(A, A.renamed_domain({'i':'foo'}))
 
+    try:
+        import itertools
+        for pijk in itertools.permutations('ijk'):
+            for pxyz in itertools.permutations('xyz'):
+                B = A.reordered_domain(pijk).reordered_range(pxyz)
+                yield assert_true, equivalent(A, B)
+    except ImportError:
+        # just do some if we can't find itertools
+        for pijk in ['ikj', 'kij']:
+            for pxyz in ['xzy', 'yxz']:
+                B = A.reordered_domain(pijk).reordered_range(pxyz)
+                yield assert_true, equivalent(A, B)
+
+def test_as_coordinate_map():
+
+    ijk = CoordinateSystem('ijk')
+    xyz = CoordinateSystem('xyz')
+    
+    A = np.random.standard_normal((4,4))
+    
+    # bottom row of A is not [0,0,0,1]
+    yield assert_raises, ValueError, AffineTransform, ijk, xyz, A
+
+    A[-1] = [0,0,0,1]
+
+    aff = AffineTransform(ijk, xyz, A)
+    _cmapA = _as_coordinate_map(aff)
+    yield assert_true, isinstance(_cmapA, CoordinateMap)
+    yield assert_true, _cmapA.inverse_function != None
+
+    # a non-invertible one
+
+    B = A[1:]
+    xy = CoordinateSystem('xy')
+    affB = AffineTransform(ijk, xy, B)
+    _cmapB = _as_coordinate_map(affB)
+
+    yield assert_true, isinstance(_cmapB, CoordinateMap)
+    yield assert_true, _cmapB.inverse_function == None
+
+
+def test_cm__setattr__raise_error():
+    # CoordinateMap has all read-only attributes
+
+    # AffineTransform has some properties and it seems
+    # the same __setattr__ doesn't work for it.
+    ijk = CoordinateSystem('ijk')
+    xyz = CoordinateSystem('xyz')
+
+    cm = CoordinateMap(ijk, xyz, np.exp)
+
+    yield assert_raises, AttributeError, cm.__setattr__, "function_range", xyz
 

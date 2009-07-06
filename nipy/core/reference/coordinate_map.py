@@ -440,7 +440,7 @@ class CoordinateMap(object):
     ###################################################################
 
     def __repr__(self):
-        if not hasattr(self, "inverse_function"):
+        if self.inverse_function is None:
             return "CoordinateMap(\n   function_domain=%s,\n   function_range=%s,\n   function=%s\n  )" % (self.function_domain, self.function_range, repr(self.function))
         else:
             return "CoordinateMap(\n   function_domain=%s,\n   function_range=%s,\n   function=%s,\n   inverse_function=%s\n  )" % (self.function_domain, self.function_range, repr(self.function), repr(self.inverse_function))
@@ -1156,7 +1156,8 @@ def reordered_domain(mapping, order=None, name=''):
     if np.allclose(perm, np.identity(perm.shape[0])):
         import copy
         return copy.copy(mapping)
-    
+
+
     A = AffineTransform(newincoords, mapping.function_domain, perm)
 
     if isinstance(mapping, AffineTransform):
@@ -1371,6 +1372,7 @@ def reordered_range(mapping, order=None, name=''):
         import copy
         return copy.copy(mapping)
 
+
     A = AffineTransform(mapping.function_range, newoutcoords, perm.T)
 
     if isinstance(mapping, AffineTransform):
@@ -1448,7 +1450,7 @@ def equivalent(mapping1, mapping2):
     try:
         mapping1 = mapping1.reordered_domain(target_dnames)\
             .reordered_range(target_rnames)
-    except:
+    except ValueError:
         # impossible to rename the domain and ranges of mapping1 to match mapping2
         return False
 
@@ -1554,14 +1556,11 @@ def _product_cmaps(*cmaps):
     ndimin = tuple(np.cumsum(ndimin))
 
     def function(x):
-        x = np.asarray(x)
+        x = np.atleast_2d(x)
         y = []
         for i in range(len(ndimin)-1):
             cmap = cmaps[i]
-            if x.ndim == 2:
-                yy = cmaps[i](x[:,ndimin[i]:ndimin[i+1]])
-            else:
-                yy = cmaps[i](x[ndimin[i]:ndimin[i+1]])
+            yy = cmaps[i](x[:,ndimin[i]:ndimin[i+1]])
             y.append(yy)
         yy = np.hstack(y)
         return yy
