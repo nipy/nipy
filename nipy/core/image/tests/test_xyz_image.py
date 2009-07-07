@@ -23,12 +23,19 @@ def generate_im():
     xyz_im = xyz_image.XYZImage(data, affine, 'ijk',
                                 metadata={'abc':np.random.standard_normal(4)})
     im = Image(data, affine_mapping)
-    ras_im = xyz_image.XYZImage(data, affine, 'ijk',
-                       metadata={'abc':np.random.standard_normal(4)},
-                       lps=False)
+    ras_im = xyz_image.XYZImage(data, np.dot(np.diag([-1,-1,1,1]),affine), 'ijk',
+                                metadata={'abc':np.random.standard_normal(4)},
+                                lps=False)
 
 
     return im, xyz_im, ras_im 
+
+def test_xyz_names():
+
+    im, _, _ = generate_im()
+
+    im = im.renamed_reference({'x+LR':'x'})
+    yield assert_raises, ValueError, xyz_image.XYZImage.from_image, im
 
 def test__eq__():
     _, xyz_im, ras_im = generate_im()
@@ -49,12 +56,21 @@ def test_affine_shape():
     affine = np.random.standard_normal((5,4))
     yield assert_raises, ValueError, xyz_image.XYZImage, data, affine, 'ijk'
 
-def test_reordered_etc():
+def test_reordered_renamed_etc():
 
     _, xyz_im, ras_im = generate_im()
     yield assert_raises, NotImplementedError, xyz_im.xyz_transform.reordered_range, ()
     yield assert_raises, NotImplementedError, xyz_im.xyz_transform.renamed_range, ()
+    yield assert_raises, NotImplementedError, xyz_im.renamed_reference, ()
     yield assert_raises, NotImplementedError, xyz_im.reordered_reference, ()
+
+    data = np.random.standard_normal((11,9,4))
+    im = xyz_image.XYZImage(data, np.diag([3,4,5,1]), 'ijk')
+    im_renamed = im.renamed_axes(i='slice')
+    yield assert_equal, im_renamed.axes, \
+        CoordinateSystem(coord_names=('slice', 'j', 'k'), 
+                         name='voxel')
+
 
     data = np.random.standard_normal((3,4,5))
     affine = np.random.standard_normal((4,4))
@@ -126,9 +142,11 @@ def test_xyz_image():
         b = xyz_im.xyz_ordered()
         b_cmap = b.xyz_transform
 
+        #
 
         yield assert_equal,  b_cmap.function_domain.coord_names, ('k','j','i')
         yield assert_equal, b.axes.coord_names, ('k', 'j', 'i')
+
 
         yield assert_equal,  b_cmap.function_range.coord_names, coords
 
@@ -150,6 +168,8 @@ def test_resample():
     # first call xyz_ordered
 
     xyz_im_xyz = xyz_im.xyz_ordered()
+    xyz_im_xyz.xyz_ordered(positive=True)
+
     xyz_im_resampled = xyz_im_xyz.resampled_to_affine(xyz_im_xyz.xyz_transform)
     yield assert_almost_equal, np.array(xyz_im_resampled), np.array(xyz_im_xyz)
 
@@ -265,10 +285,21 @@ def test_xyz_ordered():
     b = [start_x+(n_x-1)*(-step_x), start_y, start_z+(n_z-1)*(-step_z)]
     yield assert_almost_equal, b, im_re_xyz_positive.affine[:3,-1]
 
+def test_flip():
+
+    _, lps_im, ras_im = generate_im()
+
+    print xyz_image.flip(lps_im).xyz_transform
+    yield assert_almost_equal, xyz_image.flip(lps_im).get_data(), ras_im.get_data()
+    yield assert_almost_equal, xyz_image.flip(ras_im).get_data(), lps_im.get_data()
+    yield assert_equal, xyz_image.flip(ras_im).xyz_transform, lps_im.xyz_transform
+    yield assert_equal, xyz_image.flip(ras_im), lps_im
+    yield assert_equal, xyz_image.flip(lps_im), ras_im
+
 def test_xyz_transform():
 
     T = xyz_image.XYZTransform(np.diag([3,4,5,1]), ['slice', 'frequency', 'phase'])
-    
+   
     yield assert_equal, T.function_domain.coord_names, ('slice', 'frequency', 'phase')
     yield assert_equal, T.function_range.coord_names, lps
 
