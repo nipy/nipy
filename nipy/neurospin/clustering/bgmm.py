@@ -353,7 +353,7 @@ class BGMM(GMM):
         self.prior_shrinkage = prior_shrinkage       
         self.check()
 
-    def guess_priors(self,x):
+    def guess_priors(self,x,nocheck=0):
         """
         Set the priors in order of having them weakly uninformative
         this is from  Fraley and raftery;
@@ -361,8 +361,9 @@ class BGMM(GMM):
 
         INPUT:
         ------
-        - x:array of shape (nbitems,self.dim)
+        - x: array of shape (nbitems,self.dim)
         the data used in the estimation process
+        - nocheck=0: if nocheck==Ture, check is skipped
         """
         # a few parameters
         small = 0.01
@@ -381,7 +382,8 @@ class BGMM(GMM):
         self.weights = np.ones(self.k)*1.0/self.k
 
         # check that everything is OK
-        self.check()
+        if nocheck==True:
+            self.check()
 
     def initialize(self,x):
         """
@@ -1101,19 +1103,21 @@ class BGMM_old(GMM):
     """
     This class implements Bayesian diagonal GMMs (prec_type = 1)
     Besides the standard fiels of GMMs,
-    this class contains the follwing fields
+
+    BGMM_old contains the follwing fields (besides those of GMM)
+
     - prior_means : array of shape (k,dim):
-    the prior on the components means
+        the prior on the components means
     - prior_precisions : array of shape (k,dim):
-    the prior on the components precisions
+        the prior on the components precisions
     - prior_dof : array of shape (k):
-    the prior on the dof (should be at least equal to dim)
+        the prior on the dof (should be at least equal to dim)
     - prior_shrinkage : array of shape (k):
-    scaling factor of the prior precisions on the mean
+        scaling factor of the prior precisions on the mean
     - prior_weights  : array of shape (k)
-    the prior on the components weights
+        the prior on the components weights
     - shrinkage : array of shape (k):
-    scaling factor of the posterior precisions on the mean
+        scaling factor of the posterior precisions on the mean
     - dof : array of shape (k): the posterior dofs
     
     fixme : needs renaming
@@ -1165,6 +1169,7 @@ class BGMM_old(GMM):
     def VB_estimate(self,x,niter = 100,delta = 0.0001):
         """
         Estimation of the BGMM using a Variational Bayes approach
+
         INPUT:
         - x array of shape (nbitems,dim) the input data
         - niter = 100, the maximal number of iterations of the VB algo
@@ -1192,10 +1197,12 @@ class BGMM_old(GMM):
         """
         Sampling of the BGMM model on test points (the 'grid')in order to have
         an estimate of the posterior on these points
+
         INPUT:
         - gd = a grid descriptor, i.e. 
         the grid on chich the BGMM is sampled
         - x = None: used for plotting (empirical data)
+
         OUTPUT:
         - Li : array of shape (nbnodes,self.k): the posterior for each node and component
         """
@@ -1217,6 +1224,7 @@ class BGMM_old(GMM):
         Estimation of the BGMM using a Variational Bayes approach,
         and sampling of the model on test points in order to have
         an estimate of the posterior on these points
+
         INPUT:
         - x array of shape (nbitems,dim) the input data
         - niter = 100, the maximal number of iterations of the VB algo
@@ -1225,6 +1233,7 @@ class BGMM_old(GMM):
         the grid on chich the model is sampled
         if gd==None, x is used as Grid
         - verbose = 0: the verbosity mode
+
         OUTPUT:
         - Li : array of shape (nbnodes): the average log-posterior
         - label: array of shape nbitems: resulting MAP labelling
@@ -1256,8 +1265,10 @@ class BGMM_old(GMM):
         """
         Sampling of the BGMM model on test points (the 'grid')in order to have
         an estimate of the posterior on these points
+
         INPUT:
         - grid: a set of points from which the posterior should be smapled 
+
         OUTPUT:
         - Li : array of shape (nbnodes,self.k): the posterior for each node and component
         """
@@ -1271,11 +1282,13 @@ class BGMM_old(GMM):
     def Gibbs_estimate(self,x,niter = 1000,method = 1):
         """
         Estimation of the BGMM using Gibbs sampling
+
         INPUT:
         - x array of shape (nbitems,dim) the input data
         - niter = 1000, the maximal number of iterations of the Gibbs sampling
         - method = 1: boolean to state whether covariance
         are fixed (0 ; normal model) or variable (1 ; normal-wishart model)
+
         OUTPUT:
         - label: array of shape nbitems: resulting MAP labelling
         """
@@ -1294,6 +1307,7 @@ class BGMM_old(GMM):
         """
         Estimation of the BGMM using Gibbs sampling
         and sampling of the posterior on test points
+
         INPUT:
         - x array of shape (nbitems,dim) the input data
         - niter = 1000, the maximal number of iterations of the Gibbs sampling
@@ -1304,6 +1318,7 @@ class BGMM_old(GMM):
         if gd==None, x is used as Grid
         - nsamp = 1000 number of draws of the posterior
         -verbose = 0: the verboseity level
+
         OUTPUT:
         - Li : array of shape (nbnodes): the average log-posterior
         - label: array of shape (nbitems): resulting MAP labelling
