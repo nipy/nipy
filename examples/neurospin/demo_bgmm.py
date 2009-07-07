@@ -8,7 +8,7 @@ Author : Bertrand Thirion, 2008-2009
 import numpy as np
 import numpy.random as nr
 import nipy.neurospin.clustering.bgmm as bgmm
-from demo_gmm import plot2D
+from nipy.neurospin.clustering.gmm import plot2D
 
 
 dim = 2
@@ -24,17 +24,37 @@ be = -np.infty
 for  k in krange:
     b = bgmm.VBGMM(k,dim)
     b.guess_priors(x)
-    b.init(x)
+    b.initialize(x)
     b.estimate(x)
     ek = b.evidence(x)
     if ek>be:
         be = ek
         bestb = b
         
-    print k,b.evidence(x)
+    print k,'classes, free energy:',b.evidence(x)
 
 # 3, plot the result
 z = bestb.map_label(x)
 plot2D(x,bestb,z,show=1,verbose=0)
-    
+
+# the same, with the Gibbs GMM algo
+niter = 1000
+krange = range(2,5)
+bbf = -np.infty
+for k in range(1,4):
+    b = bgmm.BGMM(k,dim)
+    b.guess_priors(x)
+    b.initialize(x)
+    b.sample(x,100)
+    w,cent,prec,pz = b.sample(x,niter=niter,mem=1)
+    bplugin =  bgmm.BGMM(k,dim,cent,prec,w)
+    bplugin.guess_priors(x)
+    bfk = bplugin.Bfactor(x,pz.astype(np.int),1)
+    print k, 'classes, evidence:',bfk
+    if bfk>bbf:
+        bestk = k
+        bbf = bfk
+
+z = bplugin.map_label(x)
+plot2D(x,bplugin,z,show=1,verbose=0)
 

@@ -1,4 +1,10 @@
-import numpy as N
+"""
+Little hacks copied from datamind
+"""
+
+
+import numpy as np
+
 # ------------------------------------------------------------------------------
 # PYTHON
 def list_indexof(l1,l2,invert=False):
@@ -8,12 +14,12 @@ def list_indexof(l1,l2,invert=False):
     list_indexof(l1=["taille","poids"],
             l2=["poids", "age", "taille", "force","taille"])
     list_indexof(l1=["taille","poids"],
-            l2=N.array(["poids", "age", "taille", "force"]))
-    list_indexof(l1=N.array(["taille","poids"]),
-            l2=N.array(["poids", "age","taille", "force"]),invert=True)
+            l2=np.array(["poids", "age", "taille", "force"]))
+    list_indexof(l1=np.array(["taille","poids"]),
+            l2=np.array(["poids", "age","taille", "force"]),invert=True)
     """
-    #if isinstance(l1, N.ndarray):l1=l1.tolist()
-    if isinstance(l2, N.ndarray) and not isinstance(l2,N.chararray):
+    #if isinstance(l1, np.ndarray):l1=l1.tolist()
+    if isinstance(l2, np.ndarray) and not isinstance(l2,np.chararray):
         if invert:
             return [i for i in xrange(len(l2)) if l2[i].item() not in l1]
         else:
@@ -75,6 +81,6 @@ def isin(x,values):
     """
     x==v for each v in values
     """
-    idx=N.zeros(x.size).reshape(x.shape)
+    idx=np.zeros(x.size).reshape(x.shape)
     for v in values: idx+=(x==v).astype(int)
-    return idx.astype(N.bool)
+    return idx.astype(np.bool)

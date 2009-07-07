@@ -18,6 +18,7 @@ from nipy.neurospin.spatial_models import hroi
 import nipy.neurospin.clustering.clustering as fc
 from nipy.neurospin.graph import BPmatch
 from nipy.neurospin.clustering.hierarchical_clustering import Average_Link_Graph_segment
+import nipy.neurospin.utils.emp_null as en
 
 #------------------------------------------------------------------
 #---------------- Auxiliary functions -----------------------------
@@ -26,13 +27,19 @@ from nipy.neurospin.clustering.hierarchical_clustering import Average_Link_Graph
 
 def hierarchical_asso(bfl,dmax):
     """
-    Compting an association graph of the ROIs defined across different subjects
+    Compting an association graph of the ROIs defined
+    across different subjects
+
     INPUT:
+    ------
     - bfl a list of ROI hierarchies, one for each subject
     - dmax : spatial scale used when building associtations
-    OUPUT:
+
+    OUTPUT:
+    ------
     - G a graph that represent probabilistic associations between all
-    cross-subject pairs of regions. Note that the probabilities are normalized
+    cross-subject pairs of regions.
+    Note that the probabilities are normalized
     on a within-subject basis.
     """
     nbsubj = np.size(bfl)
@@ -40,7 +47,7 @@ def hierarchical_asso(bfl,dmax):
     for i in range(nbsubj):
         if bfl[i]!=None:
             nlm[i] = bfl[i].k
-    #nlm = np.array([bfl[i].k for i in range(nbsubj) if bfl[i]!=None])#
+
     cnlm = np.hstack(([0],np.cumsum(nlm)))
     if cnlm.max()==0:
         gcorr = []
@@ -87,10 +94,14 @@ def _clean_size_(bf,smin=0):
     This function cleans the nested ROI structure
     by merging small regions into their parent
     bf = _clean_size_(bf,smin)
+
     INPUT:
+    ------
     - bf the hroi.NROI to be cleaned
     - smin=0 the minimal size for ROIs
+
     OUTPUT:
+    -------
     - bf the cleaned  hroi.NROI
     """
     k = 2* bf.get_k()
@@ -111,11 +122,15 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
     by merging small regions into their parent
     bf = _clean_size_and_connectivity_(bf,Fbeta,smin)
     and by checking the simple connectivity of the areas in the hierarchy
+
     INPUT:
+    ------
     - bf the hroi.NROI to be cleaned
     - Fbeta: fff.field class, the underlying field of data
     - smin=0 the minimal size for ROIs
+
     OUTPUT:
+    -------
     - bf the cleaned  hroi.NROI
     NOTE : it may be slow
     """
@@ -144,114 +159,20 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
     bf = _clean_size_(bf,smin)
     return bf
 
-                    
-def _GMM_priors_(beta,bfm,theta = 0,alpha=0.01,prior_strength = 100,verbose=0,bias=0):
-    """
-    bfp = _GMM_priors_(beta,bfm,alpha=0.01,prior_strength = 100,verbose=0)
-    Computing somr prior probabilities that the voxels of a certain map
-    are in class disactivated, null or active
-
-    INPUT:
-    ------
-    - beta array os shape (nvox): the map to be analysed
-    - bfm array of shape(nbitems):
-    the test values for which the p-value needs to be computed
-    - theta = 0 the threshold above which the decision has to be made
-    (normally, bfm>theta);
-    if theta = -np.infty, then the method has a standard behaviour
-    - alpha = 0.01 the prior weights of the positive and negative classes
-    - prior_strength = 100 the confidence on the prior
-    (should be compared to size(beta))
-    - verbose=0 : verbosity mode
-    - bias = 0: allows a recaling of the posterior probability
-    that takes into account the thershold theta. Not rigorous.
-
-    OUTPUT:
-    -------
-    bfp : array of shape (nbitems,3):
-    the probability of each component in the MM for each test value
-    """
-    if np.size(bfm)==0:
-        return None
-    from nipy.neurospin.clustering.bgmm import BGMM,VBGMM
-    from nipy.neurospin.clustering.gmm import grid_descriptor
-    
-    lnvox = np.size(beta)
-    sbeta = np.sort(beta)
-    beta = np.reshape(beta,(lnvox,1))   
-    nclasses=3
-    
-    # set the priors from a reasonable model of the data (!)
-    mb0 = np.mean(sbeta[:alpha*lnvox])
-    mb2 = np.mean(sbeta[(1-alpha)*lnvox:])
-    prior_centers = np.reshape(np.array([mb0,0,mb2]),(nclasses,1))
-    prior_scale = np.ones((nclasses,1,1))*1./prior_strength
-    prior_dof = np.ones(nclasses)*prior_strength
-    prior_weights = np.array([alpha,1-2*alpha,alpha])*prior_strength
-    prior_shrinkage = np.ones(nclasses)*prior_strength
-    BayesianGMM = VBGMM(nclasses,1,prior_centers,prior_scale,prior_weights, prior_shrinkage,prior_dof)
-    BayesianGMM.set_priors(prior_centers, prior_weights, prior_scale, prior_dof, prior_shrinkage)
-
-    # estimate the model
-    BayesianGMM.estimate(beta)
-
-    # create a sampling grid
-    gd = grid_descriptor(1) 
-    gd.getinfo([beta.min(),beta.max()],100)
-    gdm = gd.make_grid().squeeze()
-
-    # estimate the prior weights
-    bfp = BayesianGMM.likelihood(bfm)
-    if bias:
-        lj = BayesianGMM.likelihood(gd.make_grid())
-        lw = np.sum(lj[gdm>theta],0)
-        weights = BayesianGMM.weights/(BayesianGMM.weights.sum())
-        bfp = (lw/weights)*BayesianGMM.slikelihood(bfm)
-    
-    if verbose>1:
-        BayesianGMM.show_components(beta,gd,lj)
-    
-    return bfp
-
-def _GGM_priors_(beta,bfm,verbose=0):
-    """
-    bfp = _GGM_priors_(beta,bfm,verbose=0)
-    Computing some prior probabilities that the voxels of a certain map
-    are in class disactivated, null or active
-    INPUT:
-    - beta array os shape (nvox): the map to be analysed
-    - bfm array of shape(nbitems):
-    the test values for which the p-value needs to be computed
-    - verbose=0 : verbosity mode
-    OUPUT:
-    bfp : array of shape (nbitems,3):
-    the probability of each component in the MM for each test value
-    """
-    from nipy.neurospin.clustering import GGMixture
-    Ggg = GGMixture.GGGM()
-    Ggg.init_fdr(beta)
-    Ggg.estimate(beta,100,1.e-8,1.0,0)
-    if verbose>1:
-        # hyper-verbose mode
-        Ggg.show(beta)
-        Ggg.parameters()
-
-    bfm = np.reshape(bfm,np.size(bfm))
-    #?
-    #bfp =  np.transpose(np.array(Ggg.posterior(bfm)))
-    bfp = np.transpose(np.array(Ggg.component_likelihood(bfm)))
-    return bfp
-
 def make_crmap(AF,tal,verbose=0):
     """
     crmap = make_crmap(AF,tal)
     Compute the spatial map associated with the AF
     i.e. the confidence interfval for the position of
     the different landmarks
+    
     INPUT:
+    ------
     - AF the list of group-level landmarks regions
     - tal: array of shape(nvox,3): the position of the reference points
-    OUPUT
+
+    OUTPUT:
+    -----
     - crmap: array of shape(nvox)
     """
     nvox = tal.shape[0]
@@ -272,7 +193,9 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
+    
     INPUT:
+    ------
     - bf is the list of NROIs (Nested ROIs).
     it is assumd that each list corresponds to one subject
     each NROI is assumed to have the roi_features
@@ -281,7 +204,9 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     (c) A label should be present in ths subjects
     with a probability>thq
     in order to be valid
+    
     OUTPUT:
+    -------
     - LR : a LR instance, describing a cross-subject set of ROIs
     if inference yields a null results, LR is set to None
     - newlabel :  a relabelling of the individual ROIs, similar to u,
@@ -372,24 +297,34 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
 def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
                      smin=5, ths=0, theta=3.0, g0=1.0, bdensity=0, verbose=0):
     """
-    Compute the  Bayesian Structural Activation paterns with approach described in IPMI'07 paper
+    Compute the  Bayesian Structural Activation patterns
+    with approach described in IPMI'07 paper
+
     INPUT:
-    - Fbeta : an fff field class describing the spatial relationships in the dataset (nbnodes nodes)
+    ------
+    - Fbeta : an fff field class describing the spatial relationships
+    in the dataset (nbnodes nodes)
     - lbeta: an array of size (nbnodes, subjects) with functional data
     - tal: spatial coordinates of the nodes
     - thq = 0.5: posterior significance threshold
     - smin = 5: minimal size of the regions to validate them
     - theta = 3.0: first level threshold
-    - g0 = 1.0 : constant values of the uniform density over the volume of interest
-    - bdensity=0 if bdensity=1, the variable p in ouput contains the likelihood of the data under H1 on the set of input nodes
+    - g0 = 1.0 : constant values of the uniform density
+    over the volume of interest
+    - bdensity=0 if bdensity=1, the variable p in ouput contains
+    the likelihood of the data under H1 on the set of input nodes
+
     OUTPUT:
+    -------
     - crmap: resulting group map
     - AF: list of inter-subject related ROIs
     - bf: List of individual ROIs
     - u: labelling of the individual ROIs
     - p: likelihood of the data under H1 over some sampling grid
+
     NOTE:
-    This is historically the first verion, but probably not the  most opimal
+    -----
+    This is historically the first version, but probably not the  most optimal
     It should not be changed for historical reason
     """
     bf = []
@@ -421,8 +356,9 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
             beta = beta[beta!=0]
 
             # use a Gamma-Gaussian Mixture Model
-            bfp = _GGM_priors_(beta,bfm,verbose=0)
-            bf0 = bfp[:,1]/np.sum(bfp,1)
+            bfp  = en.Gamma_Gaussian_fit(beta,bfm,verbose)
+            bf0 = bfp[:,1]
+
             gf0.append(bf0)
                       
     crmap = -np.ones(nvox, np.int)
@@ -504,22 +440,31 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
                      bdensity=0, verbose=0):
     """
     Compute the  Bayesian Structural Activation paterns
+
     INPUT:
-    - Fbeta : an fff field class describing the spatial relationships in the dataset (nbnodes nodes)
+    ------
+    - Fbeta : an fff field class describing the spatial
+    relationships in the dataset (nbnodes nodes)
     - lbeta: an array of size (nbnodes, subjects) with functional data
     - tal: spatial coordinates of the nodes
     - thq = 0.9: posterior significance threshold
     - smin = 5: minimal size of the regions to validate them
     - theta = 3.0: first level threshold
-    - g0 = 1.0 : constant values of the uniform density over the volume of interest
-    - bdensity=0 if bdensity=1, the variable p in ouput contains the likelihood of the data under H1 on the set of input nodes
+    - g0 = 1.0 : constant values of the uniform density
+    over the volume of interest
+    - bdensity=0 if bdensity=1, the variable p in ouput
+    contains the likelihood of the data under H1 on the set of input nodes
+
     OUTPUT:
+    -------
     - crmap: resulting group map
     - AF: list of inter-subject related ROIs
     - bf: List of individual ROIs
     - u: labelling of the individual ROIs
     - p: likelihood of the data under H1 over some sampling grid
+
     NOTE:
+    -----
     This version is probably the best one to date
     the intra subject Gamma-Gaussian MM has been replaces by a Gaussian MM
     which is probably mroe robust
@@ -556,8 +501,9 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
             beta = beta[beta!=0]
             alpha = 0.01
             prior_strength = 100
-            bfp = _GMM_priors_(beta,bfm,theta,alpha,prior_strength,verbose)
-            bf0 = bfp[:,1]/np.sum(bfp,1)
+            bfp = en.three_classes_GMM_fit(beta, bfm, alpha,
+                                        prior_strength,verbose)
+            bf0 = bfp[:,1]
             gf0.append(bf0)
             
     crmap = -np.ones(nvox, np.int)
@@ -636,8 +582,11 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
                        verbose=0):
     """
     Compute the  Bayesian Structural Activation paterns - simplified version  
+
     INPUT:
-    - Fbeta : an fff field class describing the spatial relationships in the dataset (nbnodes nodes)
+    ------
+    - Fbeta : an fff field class describing the spatial relationships
+    in the dataset (nbnodes nodes)
     - lbeta: an array of size (nbnodes, subjects) with functional data
     - tal: spatial coordinates of the nodes
     - xyz: the grid coordinates of the field
@@ -645,17 +594,23 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     - thq = 0.5: posterior significance threshold
     - smin = 5: minimal size of the regions to validate them
     - theta = 3.0: first level threshold
-    - g0 = 1.0 : constant values of the uniform density over the volume of interest
-    - bdensity=0 if bdensity=1, the variable p in ouput contains the likelihood of the data under H1 on the set of input nodes
+    - g0 = 1.0 : constant values of the uniform density
+    over the volume of interest
+    - bdensity=0 if bdensity=1, the variable p in ouput
+    contains the likelihood of the data under H1 on the set of input nodes
     - verbose=0: verbosity mode
+
     OUTPUT:
+    -------
     - crmap: resulting group map
     - LR: a instance of sbf.Landmrak_regions that describes the ROIs found
     in inter-subject inference
     If no such thing can be defined LR is set to None
     - bf: List of individual ROIs
     - p: likelihood of the data under H1 over some sampling grid
+
     NOTE:
+    -----
     In that case, the DPMM is used to derive a spatial density of
     significant local maxima in the volume. Each terminal (leaf)
     region which is a posteriori significant enough is assigned to the
@@ -694,11 +649,11 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
             # use a GMM model...
             alpha = 0.01
             prior_strength = 100
-            bfp = _GMM_priors_(beta,bfm,theta,alpha,prior_strength,verbose)
-            bf0 = bfp[:,1]/np.sum(bfp,1)
-
+            bfp = en.three_classes_GMM_fit(beta, bfm, alpha,
+                                        prior_strength,verbose)
+            bf0 = bfp[:,1]
+            
             ## ... or the emp_null heuristic
-            #import neuroimaging.neurospin.utils.emp_null as en
             #enn = en.ENN(beta)
             #enn.learn()
             #bf0 = np.reshape(enn.fdr(bfm),np.size(bf0))
@@ -721,7 +676,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
     dof = 100
     spatial_coords = tal
-    burnin=100
+    burnin = 100
     nis = 1000
     nii = 100
     
@@ -781,10 +736,3 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
  
             
     return crmap,LR,bf,p
-
-
-
-# --------------------------------------------------------------------
-# ------- Deprecated Stuff -------------------------------------------
-# --------------------------------------------------------------------
-

@@ -65,8 +65,8 @@ def best_fitting_GMM(x,krange,prec_type='full',niter=100,delta = 1.e-4,ninit=1,v
     Given a certain dataset x, find the best-fitting GMM
     within a certain range indexed by krange
 
-    INPUT:
-    -----
+    Parameters
+    ----------
     - x array of shape (nbitem,dim)
         the data from which the model is estimated
     - krange (list of floats) the range of values to test for k
@@ -80,8 +80,8 @@ def best_fitting_GMM(x,krange,prec_type='full',niter=100,delta = 1.e-4,ninit=1,v
         to reach a good solution
     - verbose=0: verbosity mode
     
-    OUPUT:
-    -----
+    OUTPUT:
+    -------
     - mg : the best-fitting GMM
     """
     if np.size(x) == x.shape[0]:
@@ -99,6 +99,64 @@ def best_fitting_GMM(x,krange,prec_type='full',niter=100,delta = 1.e-4,ninit=1,v
         if verbose:
             print 'k', k,'bic',bic 
     return bgmm
+
+# this should be put elsewhere
+def plot2D(x,my_gmm,z = None,show = 0,verbose=0):
+    """
+    Given a set of points in a plane and a GMM, plot them
+    Parameters
+    ----------
+    - x: array of shape (npoints,dim=2)
+    - my_gmm: a gmm whose density has to be ploted
+    - z=None: array of shape (npoints)
+    that gives a labelling of the points in x
+    by default, it is not taken into account
+    - show = 0: do we show the image
+    - verbose = 0 : verbosity mode
+
+    NOTE:
+    -----
+    my_gmm should have a method 'nixture_likelihood' that
+    takes an array of points of shape (np,dim)
+    and returns an array of shape (np,my_gmm.k)
+    that represents  the likelihood component-wise 
+    """
+    if x.shape[1]!= my_gmm.dim:
+        raise ValueError, 'Incompatible dimension between data and model'
+    if x.shape[1]!=2:
+        raise ValueError, 'this works only for 2D cases'
+    
+    gd1 = grid_descriptor(2)
+    xmin = x.min(0); xmax = x.max(0)
+    xm = 1.1*xmin[0]-0.1*xmax[0]
+    xs = 1.1*xmax[0]-0.1*xmin[0]
+    ym = 1.1*xmin[1]-0.1*xmax[1]
+    ys = 1.1*xmax[1]-0.1*xmin[1]
+    
+    gd1.getinfo([xm,xs,ym,ys],[51,51])
+    grid = gd1.make_grid()
+    L = my_gmm.mixture_likelihood(grid)   
+    if verbose: print L.sum()*(xs-xm)*(ys-ym)/2500
+
+    import matplotlib.pylab as mp
+    mp.figure()
+    gdx = gd1.nbs[0]
+    Pdens= np.reshape(L,(gdx,np.size(L)/gdx))
+    mp.imshow(Pdens.T,alpha = 2.0,
+              origin ='lower',extent=[xm,xs,ym,ys])
+ 
+    if z==None:
+        mp.plot(x[:,0],x[:,1],'o')
+    else:
+        import matplotlib as ml
+        hsv = ml.cm.hsv(range(256)) 
+        col = hsv[range(0,256,256/int(z.max()+1)),:]
+        for k in range(z.max()+1):
+            mp.plot(x[z==k,0],x[z==k,1],'o',color=col[k])   
+           
+    mp.axis([xm,xs,ym,ys])
+    mp.colorbar()
+    if show: mp.show()
 
 
 class GMM():
@@ -127,8 +185,23 @@ class GMM():
                  precisions=None, weights=None):
         """
         Initialize the structure, at least with the dimensions of the problem
-        At most, with what is necessary to compute the likelihood of a point
-        under the model
+
+        Parameters
+        -----------
+        - k (int) the number of classes of the model
+        - dim (int) the dimension of the problem
+        - prec_type='full' : coavriance:precision parameterization
+        (diagonal 'diag' or full 'full').
+        - means=None: array of shape (self.k,self.dim)
+        - precisions=None:  array of shape (self.k,self.dim,self.dim)
+        or (self.k, self.dim)
+        - weights=None: array of shape (self.k)
+
+        By default, means, precision and weights are set as
+        zeros()
+        eye()
+        1/k ones()
+        with the correct dimensions
         """
         self.k = k
         self.dim = dim
@@ -150,9 +223,17 @@ class GMM():
         if self.weights==None:
             self.weights = np.ones(self.k)*1.0/self.k
 
-    def plugin(self,means=None,precisions=None,weights = None):
+    def plugin(self,means, precisions, weights):
         """
-        sets manually the main fields of the bgmm
+        Set manually the weights, means and precision of the model
+
+        Parameters
+        ----------
+        - means: array of shape (self.k,self.dim)
+        - precisions:  array of shape (self.k,self.dim,self.dim)
+        or (self.k, self.dim)
+        - weights: array of shape (self.k)
+        
         """
         self.means = means
         self.precisions = precisions
@@ -161,7 +242,7 @@ class GMM():
     
     def check(self):
         """
-        Checking the shape of sifferent matrices involved in the model
+        Checking the shape of different matrices involved in the model
         """
         if self.means.shape[0] != self.k:
             raise ValueError," self.means does not have correct dimensions"
@@ -173,18 +254,22 @@ class GMM():
             raise ValueError," self.weights does not have correct dimensions"
         
         if self.dim !=  self.precisions.shape[1]:
-            raise ValueError, "self.precisions does not have correct dimensions"
+            raise ValueError, "\
+            self.precisions does not have correct dimensions"
 
         if self.prec_type=='full':
             if self.dim !=  self.precisions.shape[2]:
-                raise ValueError, "self.precisions does not have correct dimensions"
+                raise ValueError, "\
+                self.precisions does not have correct dimensions"
 
         if self.prec_type=='diag':
             if np.shape(self.precisions) !=  np.shape(self.means):
-                raise ValueError, "self.precisions does not have correct dimensions"
+                raise ValueError, "\
+                self.precisions does not have correct dimensions"
 
         if self.precisions.shape[0] != self.k:
-            raise ValueError,"self.precisions does not have correct dimensions"
+            raise ValueError,"\
+            self.precisions does not have correct dimensions"
 
         if self.prec_type not in ['full','diag']:
             raise ValueError, 'unknown precisions type'
@@ -192,6 +277,8 @@ class GMM():
     def check_x(self,x):
         """
         essentially check that x.shape[1]==self.dim
+
+        x is returned with possibly reshaping
         """
         if np.size(x)==x.shape[0]:
             x = np.reshape(x,(np.size(x),1))
@@ -199,13 +286,15 @@ class GMM():
             raise ValueError, 'incorrect size for x'
         return x
 
-    def init(self,x):
+    def initialize(self,x):
         """
         this function initializes self according to a certain dataset x:
-        1. sets the hyper-parameters
+        1. sets the regularizing hyper-parameters
         2. initializes z using a k-means algorithm, then
         3. upate the parameters
-        INPUT:
+        
+        Parameters
+        ----------
         - x: array of shape (nbitems,self.dim)
         the data used in the estimation process
         """
@@ -224,13 +313,15 @@ class GMM():
         l = np.zeros((n,self.k))
         l[np.arange(n),z]=1
 
-        #3.update the parameters
+        # 3.update the parameters
         self.update(x,l)
     
     def pop(self,l,tiny = 1.e-15):
         """
         compute the population, i.e. the statistics of allocation
-        INPUT:
+
+        Parameters
+        ----------
         - l array of shape (nbitem,self.k):
         the likelihood of each item being in each class
         """
@@ -248,11 +339,15 @@ class GMM():
     def likelihood(self,x):
         """
         return the likelihood of the model for the data x
-        the valeus are weighted by the components weights
-        INPUT:
+        the values are weighted by the components weights
+
+        Parameters
+        ----------
         - x:array of shape (nbitems,self.dim)
         the data used in the estimation process
-         OUPUT:
+
+        OUTPUT:
+        ----------
         - l array of shape(nbitem,self.k)
         component-wise likelihood
         """
@@ -263,14 +358,17 @@ class GMM():
     def unweighted_likelihood(self,x):
         """
         return the likelihood of each data for each component
-        Using Normal model
         the values are not weighted by the component weights
-         INPUT:
+
+        Parameters
+        ----------
         - x: array of shape (nbitems,self.dim)
         the data used in the estimation process
-         OUPUT:
+
+        OUTPUT:
+        -------
         - l array of shape(nbitem,self.k)
-        unwieghted component-wise likelihood
+        unweighted component-wise likelihood
         """
         n = x.shape[0]
         l = np.zeros((n,self.k))
@@ -295,7 +393,9 @@ class GMM():
     def mixture_likelihood(self,x):
         """
         returns the likelihood of the mixture for x
-         INPUT:
+        
+        Parameters
+        ----------
         - x: array of shape (nbitems,self.dim)
         the data used in the estimation process
         """
@@ -306,9 +406,14 @@ class GMM():
 
     def average_log_like(self,x,tiny = 1.e-15):
         """
-        returns the likelihodd of the mixture for x
-        INPUT:
-        tiny=1.e-15: a small constant to avoid numerical singularities
+        returns the averaged log-likelihood of the model
+        for the dataset x
+
+        Parameters
+        -----------
+        - x:  array of shape (nbitems,self.dim)
+        the data used in the estimation process
+        - tiny=1.e-15: a small constant to avoid numerical singularities
         """
         x = self.check_x(x)
         l = self.likelihood(x)
@@ -319,10 +424,14 @@ class GMM():
     def evidence(self,x):
         """
         computation of bic approximation of evidence
-        INPUT:
+        
+        Parameters
+        ----------
         - x array of shape (nbitems,dim)
         the data from which bic is computed
-        OUPUT:
+
+        OUTPUT:
+        ----------
         - the bic value
         """
         x = self.check_x(x)
@@ -333,12 +442,14 @@ class GMM():
     def bic(self,l = None,tiny = 1.e-15):
         """
         computation of bic approximation of evidence
-        INPUT:
+        
+        Parameters
         - l: array of shape (nbitem,self.k)
         component-wise likelihood
         if l==None,  it is re-computed in E-step
         - tiny=1.e-15: a small constant to avoid numerical singularities
-        OUPUT:
+
+        OUTPUT:
         the bic value
         """
         sl = np.sum(l,1)
@@ -356,12 +467,16 @@ class GMM():
 
     def _Estep(self,x):
         """
-        E step
+        E step of the EM algo
         returns the likelihood per class of each data item
-        INPUT:
+
+        Parameters
+        ----------
         - x array of shape (nbitems,dim)
         the data used in the estimation process
-        OUPUT:
+
+        OUTPUT:
+        -------
         - l array of shape(nbitem,self.k)
         component-wise likelihood
         """
@@ -372,6 +487,11 @@ class GMM():
         Set the regularizing priors as weakly informative
         according to Fraley and raftery;
         Journal of Classification 24:155-181 (2007)
+        
+        Parameters
+        ----------
+        - x array of shape (nbitems,dim)
+        the data used in the estimation process
         """
         small = 0.01
         # the mean of the data
@@ -397,6 +517,9 @@ class GMM():
         """
         M step regularized according to the procedure of
         Fraley et al. 2007
+
+        Parameters
+        ----------
         - x: array of shape(nbitem,self.dim)
         the data from which the model is estimated
         - l: array of shape(nbitem,self.k)
@@ -469,7 +592,7 @@ class GMM():
     def map_label(self,x,l=None):
         """
         return the MAP labelling of x 
-        INPUT:
+        Parameters
         - x array of shape (nbitem,dim)
         the data under study
         - l=None array of shape(nbitem,self.k)
@@ -480,38 +603,36 @@ class GMM():
         of the rows of x
         """
         if l== None:
-            l = self._Estep(x)
+            l = self.likelihood(x)
         z = np.argmax(l,1)
         return z
 
-    def estimate(self,x,z=None,niter=100,delta = 1.e-4,verbose=0):
+    def estimate(self,x,niter=100,delta = 1.e-4,verbose=0):
         """
-        estimation of self given x
-        INPUT:
+        estimation of self given a dataset x
+
+        Parameters
+        ----------
          - x array of shape (nbitem,dim)
         the data from which the model is estimated
-        - z = None: array of shape (nbitem)
-        a prior labelling of the data to initialize the computation
         - niter=100: maximal number of iterations in the estimation process
         - delta = 1.e-4: increment of data likelihood at which
         convergence is declared
         - verbose=0:
         verbosity mode
+
         OUTPUT:
+        -------
         - bic : an asymptotic approximation of model evidence
         """
         # check that the data is OK
         x = self.check_x(x)
         
-        # initialization -> Cmeans
         # alternation of E/M step until convergence
         tiny = 1.e-15
         cc = np.zeros(np.shape(self.means))
-        nc = np.var(self.means)
         allOld = -np.infty
         for i in range(niter):
-            #if np.var(cc-self.means)<delta*nc:
-            #    break
             cc = self.means.copy()
             l = self._Estep(x)
             all = np.mean(np.log(np.maximum( np.sum(l,1),tiny)))
@@ -532,8 +653,8 @@ class GMM():
                                 ninit=1,verbose=0):
         """
         estimation of self given x
-        INPUT:
-        ------
+        Parameters
+        ----------
         - x array of shape (nbitem,dim)
             the data from which the model is estimated
         - z = None: array of shape (nbitem)
@@ -551,11 +672,11 @@ class GMM():
         """
         bestbic = -np.infty
         bestgmm = GMM(self.k,self.dim,self.prec_type)
-        bestgmm.init(x)
+        bestgmm.initialize(x)
         
         for i in range(ninit):
             # initialization -> Cmeans
-            self.init(x)
+            self.initialize(x)
 
             # alternation of E/M step until convergence
             bic = self.estimate(x,niter=niter,delta=delta,verbose=0)
@@ -574,8 +695,8 @@ class GMM():
     def test(self,x, tiny = 1.e-15):
         """
         returns the log-likelihood of the mixture for x
-        INPUT:
-        ------
+        Parameters
+        ----------
         - x: array of shape (nbitems,self.dim)
         the data used in the estimation process
 
@@ -626,8 +747,6 @@ class GMM():
             mp.xticks(a,fontsize=16)
             a,b = mp.yticks()
             mp.yticks(a,fontsize=16)
-
-            
             mp.show()
 
         if gd.dim>1:
@@ -699,8 +818,8 @@ class GMM_old(GMM):
         Find the optimal GMM using bic criterion.
         The method is run with all the values in kmax for k
 
-        INPUT:
-        ------
+        Parameters
+        ----------
         data : (n,p) feature array, n = nb items, p=feature dimension
         kvals=None : range of values for k.
             if kvals==None, self.k is used
@@ -759,8 +878,8 @@ class GMM_old(GMM):
         """
         Estimation of the GMM based on data and an EM algorithm
 
-        INPUT:
-        ------
+        Parameters
+        ----------
         data : (n*p) feature array, n = nb items, p=feature dimension
         Labels=None : prior labelling of the data
             (this may improve convergence)
@@ -819,8 +938,8 @@ class GMM_old(GMM):
         """
         Partitioning the data according to the gmm model
 
-        INPUT:
-        -----
+        Parameters
+        ----------
         data : (n*p) feature array, n = nb items, p=feature dimension
 
         OUTPUT:
@@ -844,12 +963,12 @@ class GMM_old(GMM):
         """
         Evaluating the GMM on some new data
 
-        INPUT
-        -----
+        Parameters
+        ----------
         data : (n*p) feature array, n = nb items, p=feature dimension
 
-        OUTPUT
-        ------
+        OUTPUT:
+        -------
         LL : array of shape (n): the log-likelihood of the data
         """
         data = self.check_x(data)
@@ -866,9 +985,13 @@ class GMM_old(GMM):
     def sample(self,gd,x,verbose=0):
         """
         Evaluating the GMM on some new data
-        INPUT
+
+        Parameters
+        ----------
         data : (n*p) feature array, n = nb items, p=feature dimension
-        OUTPUT
+
+        OUTPUT:
+        -------
         LL : array of shape (n) log-likelihood of the data
         """
         data = gd.make_grid()
@@ -887,9 +1010,13 @@ class GMM_old(GMM):
     def bic_from_ll(self,sll):
         """
         computation of bic approximation of evidence
-        INPUT:
+
+        Parameters
+        -----------
         - log-likelihood of the data under the model
-        OUPUT:
+
+        OUTPUT:
+        -------
         - the bic value
         """
         
@@ -906,11 +1033,14 @@ class GMM_old(GMM):
     def bic_from_all(self,all,n,tiny = 1.e-15):
         """
         computation of bic approximation of evidence
-        INPUT:
+
+        Parameters
+        ----------
         - all : average log-likelihood of the data under the model
         - n number of data points
 
-        OUPUT:
+        OUTPUT:
+        -------
         - the bic value
         """
         if self.prec_type=='full':

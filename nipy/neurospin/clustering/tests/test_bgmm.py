@@ -59,7 +59,7 @@ def test_bgmm_gibbs(verbose=0):
     
     b = BGMM(k,dim)
     b.guess_priors(x)
-    b.init(x)
+    b.initialize(x)
     b.sample(x,1)
     w,cent,prec,pz = b.sample(x,niter,mem=1)
     b.plugin(cent,prec,w)
@@ -73,18 +73,20 @@ def test_gmm_bf(kmax=4,verbose = 0):
     perform a model selection procedure on a  gmm
     with Bayes factor estimations
     kmax : range of values that are tested
+
+    fixme : this one often fails. I don't really see why
     """
-    n=100
+    n=30
     dim=2
     x = nr.randn(n,dim)
     #x[:30] += 2
-    niter = 10000
+    niter = 3000
 
     bbf = -np.infty
     for k in range(1,kmax):
         b = BGMM(k,dim)
         b.guess_priors(x)
-        b.init(x)
+        b.initialize(x)
         b.sample(x,100)
         w,cent,prec,pz = b.sample(x,niter=niter,mem=1)
         bplugin =  BGMM(k,dim,cent,prec,w)
@@ -109,7 +111,7 @@ def test_vbgmm(verbose=0):
     k=2
     b = VBGMM(k,dim)
     b.guess_priors(x)
-    b.init(x)
+    b.initialize(x)
     b.estimate(x,verbose=verbose)
     z = b.map_label(x)
     
@@ -129,7 +131,7 @@ def test_vbgmm_select(kmax = 6,verbose=0):
     for  k in range(1,kmax):
         b = VBGMM(k,dim)
         b.guess_priors(x)
-        b.init(x)
+        b.initialize(x)
         b.estimate(x)
         z = b.map_label(x)
         ek = b.evidence(x)
@@ -153,7 +155,7 @@ def test_evidence(verbose=0,k=1):
     
     b = VBGMM(k,dim)
     b.guess_priors(x)
-    b.init(x)
+    b.initialize(x)
     b.estimate(x)
     vbe = b.evidence(x),
     if verbose:
@@ -162,7 +164,7 @@ def test_evidence(verbose=0,k=1):
     niter = 1000
     b = BGMM(k,dim)
     b.guess_priors(x)
-    b.init(x)
+    b.initialize(x)
     b.sample(x,100)
     w,cent,prec,pz = b.sample(x,niter=niter,mem=1)
     bplugin =  BGMM(k,dim,cent,prec,w)

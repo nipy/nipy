@@ -50,9 +50,9 @@ def compute_mask_intra(input_filename, output_filename=None, return_mean=False,
     """
     return compute_mask_files(input_filename=input_filename, 
                               output_filename=output_filename, 
-                            return_mean=return_mean,
-                            copy_filename=copy_filename, m=m, 
-                            M=M, cc=cc)
+                              return_mean=return_mean,
+                              copy_filename=copy_filename, m=m, 
+                              M=M, cc=cc)
 
 
 def compute_mask_files(input_filename, output_filename=None, return_mean=False, 
@@ -132,7 +132,7 @@ def compute_mask_intra_array(volume_mean, reference_volume=None, m=0.2, M=0.9,
     Depreciated, see compute_mask.
     """
     return compute_mask(volume_mean, 
-            reference_volume=reference_volume, m=m, M=M, cc=cc)
+                        reference_volume=reference_volume, m=m, M=M, cc=cc)
 
 
 def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9, 
