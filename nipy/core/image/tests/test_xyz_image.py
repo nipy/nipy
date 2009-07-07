@@ -54,7 +54,7 @@ def test_reordered_etc():
     _, xyz_im, ras_im = generate_im()
     yield assert_raises, NotImplementedError, xyz_im.xyz_transform.reordered_range, ()
     yield assert_raises, NotImplementedError, xyz_im.xyz_transform.renamed_range, ()
-    yield assert_raises, NotImplementedError, xyz_im.reordered_world, ()
+    yield assert_raises, NotImplementedError, xyz_im.reordered_reference, ()
 
     data = np.random.standard_normal((3,4,5))
     affine = np.random.standard_normal((4,4))
@@ -83,14 +83,14 @@ def test_reordered_axes():
 
     yield assert_equal, xyz_im.metadata, xyz_reordered.metadata
 
-def test_xyz_world_axes():
+def test_xyz_reference_axes():
 
     im, xyz_im, ras_im = generate_im()
 
-    yield assert_equal, CoordinateSystem(lps, name='world'), xyz_im.world
+    yield assert_equal, CoordinateSystem(lps, name='world'), xyz_im.reference
     yield assert_equal, CoordinateSystem('ijk', name='voxel'), xyz_im.axes
 
-    yield assert_equal, CoordinateSystem(ras, name='world'), ras_im.world
+    yield assert_equal, CoordinateSystem(ras, name='world'), ras_im.reference
     yield assert_equal, CoordinateSystem('ijk', name='voxel'), ras_im.axes
 
 def test_xyz_image():
@@ -106,7 +106,7 @@ def test_xyz_image():
         yield assert_equal, xyz_im.axes, xyz_cmap.function_domain
 
         yield assert_true,  xyz_cmap.function_range.coord_names == coords
-        yield assert_equal, xyz_im.world, xyz_cmap.function_range
+        yield assert_equal, xyz_im.reference, xyz_cmap.function_range
 
         # test to_image from_image
 

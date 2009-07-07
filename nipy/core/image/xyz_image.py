@@ -131,9 +131,9 @@ class XYZImage(Image):
   
            CoordinateSystem for the axes of the data.
 
-       :world: CoordinateSystem
+       :reference: CoordinateSystem
  
-           CoordinateSystem for the world space of the data.
+           CoordinateSystem for the reference space of the data.
 
 
    Notes
@@ -147,7 +147,7 @@ class XYZImage(Image):
    >>> data = np.empty((30,40,50))
    >>> affine = np.diag([3,4,5,1])
    >>> im = XYZImage(data, affine, 'ijk')
-   >>> im.world
+   >>> im.reference
    CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='world', coord_dtype=float64)
    >>> im.axes
    CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64)
@@ -219,9 +219,9 @@ class XYZImage(Image):
    # Overwriting some parts of the Image interface
    #---------------------------------------------------------------------------
 
-   def _getworld(self):
+   def _getreference(self):
       return self.xyz_transform.function_range 
-   world = property(_getworld, doc="World space")
+   reference = property(_getreference, doc="Reference space is always 'world' for XYZImage")
 
    def _get_affine(self):
       """
@@ -231,7 +231,7 @@ class XYZImage(Image):
       return self.xyz_transform.affine
    affine = property(_get_affine, doc="4x4 Affine matrix")
 
-   def reordered_world(self, order):
+   def reordered_reference(self, order):
       # raises an exception, can't be reordered
       return self.xyz_transform.reordered_range(order)
 
@@ -301,14 +301,14 @@ class XYZImage(Image):
       A[:3,:3] = im.affine[:3,:3]
       A[:3,-1] = im.affine[:3,-1]
 
-      if im.world.coord_names == lps_output_coordnames:
+      if im.reference.coord_names[:3] == lps_output_coordnames:
           lps = True
       else:
           lps = False
       return XYZImage(np.array(im), A, im.axes.coord_names,
                       self.metadata, lps)
 
-   def renamed_world(self, newnames, name=''):
+   def renamed_reference(self, newnames, name=''):
        # raises an exception, can't be renamed
        return self.xyz_transform.renamed_range(newnames)
 
@@ -384,15 +384,14 @@ class XYZImage(Image):
       A = np.identity(4)
       A[:3,:3] = img.affine[:3,:3]
       A[:3,-1] = img.affine[:3,-1]
-      if img.world.coord_names[:3] == lps_output_coordnames:
+      if img.reference.coord_names[:3] == lps_output_coordnames:
          lps = True
-      elif img.world.coord_names[:3] == ras_output_coordnames:
+      elif img.reference.coord_names[:3] == ras_output_coordnames:
          lps = False
       else:
-         raise ValueError('the world coordinates of an XYZImage must be one of %s or %s' % (lps_output_coordnames,
+         raise ValueError('the reference coordinates of an XYZImage must be one of %s or %s' % (lps_output_coordnames,
                                                                                             ras_output_coordnames))
 
-      print img.world
       return XYZImage(img._data, A, img.axes.coord_names, img.metadata, lps=lps)
 
    def resampled_to_affine(self, affine_transform, 
@@ -441,7 +440,7 @@ class XYZImage(Image):
       if world_to_world is None:
          world_to_world = np.identity(4)
       world_to_world_transform = AffineTransform(affine_transform.function_range,
-                                                 self.world, world_to_world)
+                                                 self.reference, world_to_world)
 
       if self.ndim == 3:
          im = resample(self, affine_transform, world_to_world_transform,
@@ -650,4 +649,54 @@ class XYZImage(Image):
                             metadata=copy.deepcopy(self.metadata))
 
 
+def flip(xyz_img):
+    """
+    Take an xyz_img and flip its world from LPS / RAS to
+    RAS / LPS.
 
+    >>> data = np.random.standard_normal((30,40,50,5))
+    >>> metadata = {'name':'John Doe'}
+    >>> lps_im = XYZImage(data, np.diag([3,4,5,1]), 'ijkt', metadata)
+    >>> lps_im.xyz_transform
+    XYZTransform(
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='world', coord_dtype=float64),
+       affine=array([[ 3.,  0.,  0.,  0.],
+                     [ 0.,  4.,  0.,  0.],
+                     [ 0.,  0.,  5.,  0.],
+                     [ 0.,  0.,  0.,  1.]])
+    )
+    >>> ras_im = flip(lps_im)
+    >>> ras_im.xyz_transform
+    XYZTransform(
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x+RL', 'y+AP', 'z+SI'), name='world', coord_dtype=float64),
+       affine=array([[-3.,  0.,  0.,  0.],
+                     [ 0., -4.,  0.,  0.],
+                     [ 0.,  0.,  5.,  0.],
+                     [ 0.,  0.,  0.,  1.]])
+    )
+    >>> print np.allclose(ras_im.get_data(), lps_im.get_data())
+    True
+    >>> print ras_im.metadata == lps_im.metadata
+    True
+    >>> 
+    >>> print flip(ras_im) == lps_im
+    True
+    >>> 
+    """
+    
+    if xyz_img.reference.coord_names == lps_output_coordnames:
+        flipped_lps = False
+    else:
+        flipped_lps = True
+    xyz_transform = xyz_img.xyz_transform
+    new_xyz_transform_matrix = np.dot(np.diag([-1,-1,1,1]),
+                                      xyz_transform.affine)
+
+    return XYZImage(xyz_img._data, new_xyz_transform_matrix, 
+                    xyz_img.axes.coord_names,
+                    metadata=xyz_img.metadata,
+                    lps=flipped_lps)
+                                            
+    

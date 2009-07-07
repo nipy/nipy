@@ -59,7 +59,7 @@ class ImageList(object):
     @classmethod
     def from_image(klass, image, axis=0):
 
-        # Now, reorder the axes and world
+        # Now, reorder the axes and reference
 
         image = rollaxis(image, axis)
 
@@ -69,10 +69,10 @@ class ImageList(object):
         # We drop the first output coordinate of image's coordmap
 
         drop1st = np.identity(coordmap.ndims[1]+1)[1:]
-        drop1st_domain = image.world
-        drop1st_range = CoordinateSystem(image.world.coord_names[1:],
-                                 name=image.world.name,
-                                 coord_dtype=image.world.coord_dtype)
+        drop1st_domain = image.reference
+        drop1st_range = CoordinateSystem(image.reference.coord_names[1:],
+                                 name=image.reference.name,
+                                 coord_dtype=image.reference.coord_dtype)
         drop1st_coordmap = AffineTransform(drop1st_domain, drop1st_range,
                                            drop1st)
 

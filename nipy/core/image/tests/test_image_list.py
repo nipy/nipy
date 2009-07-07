@@ -28,7 +28,7 @@ def test_image_list():
         order = range(4)
         order.remove(i)
         order.insert(0,i)
-        img_re_i = img.reordered_world(order).reordered_axes(order)
+        img_re_i = img.reordered_reference(order).reordered_axes(order)
         imglst_i = ImageList.from_image(img, axis=i)
 
         yield assert_equal, imglst_i.list[0].shape, img_re_i.shape[1:]

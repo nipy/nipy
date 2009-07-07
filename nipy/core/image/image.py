@@ -66,7 +66,7 @@ class Image(object):
     coordmap = AffineTransform(CoordinateSystem('ijk'),
                                CoordinateSystem('xyz'),
                                np.diag([3,5,7,1]))
-    _doc['coordmap'] = "Affine transform mapping from axes coordinates to world coordinates."
+    _doc['coordmap'] = "Affine transform mapping from axes coordinates to reference coordinates."
 
     @setattr_on_read
     def shape(self):
@@ -79,9 +79,9 @@ class Image(object):
     _doc['ndim'] = "Number of data dimensions."
 
     @setattr_on_read
-    def world(self):
+    def reference(self):
         return self.coordmap.function_range
-    _doc['world'] = "World coordinate system."
+    _doc['reference'] = "Reference coordinate system."
 
     @setattr_on_read
     def axes(self):
@@ -181,15 +181,15 @@ class Image(object):
     ###################################################################
 
 
-    def reordered_world(self, order=None):
+    def reordered_reference(self, order=None):
         """
         Return a new Image with its coordmap
         having reordered output coordinates. This
         does not transpose the data.
 
-        >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6])
+        >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6], 'domain', 'range')
         >>> im = Image(np.empty((30,40,50)), cmap)
-        >>> im_reordered = im.reordered_world([2,0,1])
+        >>> im_reordered = im.reordered_reference([2,0,1])
         >>> im_reordered.shape
         (30, 40, 50)
         >>> im_reordered.coordmap
@@ -209,7 +209,7 @@ class Image(object):
         if order is None:
             order = range(self.ndim)[::-1]
         elif type(order[0]) == type(''):
-            order = [self.world.index(s) for s in order]
+            order = [self.reference.index(s) for s in order]
 
         new_cmap = self.coordmap.reordered_range(order)
         return self.__class__(self._data, new_cmap, metadata=self.metadata)
@@ -220,7 +220,7 @@ class Image(object):
         having reordered input coordinates. This
         transposes the data as well.
 
-        >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6])
+        >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6], 'domain', 'range')
         >>> cmap
         AffineTransform(
            function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=float64),
@@ -282,7 +282,7 @@ class Image(object):
             An Image with the same data, having its axes renamed.
 
         >>> data = np.random.standard_normal((11,9,4))
-        >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4)))
+        >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4), 'domain', 'range'))
         >>> im_renamed = im.renamed_axes(i='slice')
         >>> print im_renamed.axes
         CoordinateSystem(coord_names=('slice', 'j', 'k'), name='domain', coord_dtype=float64)
@@ -292,9 +292,9 @@ class Image(object):
         newcmap = self.coordmap.renamed_domain(names_dict)
         return self.__class__(self._data, newcmap)
 
-    def renamed_world(self, **names_dict):
+    def renamed_reference(self, **names_dict):
         """
-        Return a new image with its world coordinates renamed according
+        Return a new image with its reference coordinates renamed according
         to the dictionary.
 
         Parameters
@@ -308,15 +308,15 @@ class Image(object):
         -------
 
         newimg : Image
-            An Image with the same data, having its world coordinates renamed.
+            An Image with the same data, having its reference coordinates renamed.
 
         Examples
         --------
 
         >>> data = np.random.standard_normal((11,9,4))
-        >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4)))
-        >>> im_renamed_world = im.renamed_world(x='newx', y='newy')
-        >>> print im_renamed_world.world
+        >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4), 'domain', 'range'))
+        >>> im_renamed_reference = im.renamed_reference(x='newx', y='newy')
+        >>> print im_renamed_reference.reference
         CoordinateSystem(coord_names=('newx', 'newy', 'z'), name='range', coord_dtype=float64)
 
 
@@ -458,17 +458,17 @@ def rollaxis(img, axis, inverse=False):
     """
     Roll the specified axis backwards, until it lies in the first position.
 
-    It also reorders the world coordinates by the same ordering.
+    It also reorders the reference coordinates by the same ordering.
     This is done to preserve a diagonal affine matrix if image.affine
     is diagonal. It also makes it possible to unambiguously specify
-    an axis to roll along in terms of either a world name (i.e. 'z')
+    an axis to roll along in terms of either a reference name (i.e. 'z')
     or an axis name (i.e. 'slice').
 
     Parameters
     ----------
 
     img : Image
-        Image whose axes and world coordinates are to be reordered
+        Image whose axes and reference coordinates are to be reordered
         by rolling.
 
     axis : str or int
@@ -482,7 +482,7 @@ def rollaxis(img, axis, inverse=False):
     Returns
     -------
 
-    newimg : An Image with reordered axes and world coordinates.
+    newimg : An Image with reordered axes and reference coordinates.
 
     >>> data = np.zeros((30,40,50,5))
     >>> affine_transform = AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
@@ -494,8 +494,8 @@ def rollaxis(img, axis, inverse=False):
     (5, 30, 40, 50)
 
     """
-    if axis not in [-1] + range(img.axes.ndim) + list(img.axes.coord_names) + list(img.world.coord_names):
-        raise ValueError('axis must be an axis number, -1, an axis name or a world name')
+    if axis not in [-1] + range(img.axes.ndim) + list(img.axes.coord_names) + list(img.reference.coord_names):
+        raise ValueError('axis must be an axis number, -1, an axis name or a reference name')
 
     # Find out which index axis corresonds to
 
@@ -509,12 +509,12 @@ def rollaxis(img, axis, inverse=False):
         except:
             pass
         try:
-            out_index = img.world.index(axis)
+            out_index = img.reference.index(axis)
         except:
             pass
 
         if in_index > 0 and out_index > 0 and in_index != out_index:
-            raise ValueError('ambiguous choice of axis -- it exists both in as an axis name and a world name')
+            raise ValueError('ambiguous choice of axis -- it exists both in as an axis name and a reference name')
         if in_index >= 0:
             axis = in_index
         else:
@@ -532,13 +532,13 @@ def rollaxis(img, axis, inverse=False):
         order.remove(0)
         order.insert(axis, 0)
 
-    return img.reordered_axes(order).reordered_world(order)
+    return img.reordered_axes(order).reordered_reference(order)
 
 def synchronized_order(img, target_img,
                        axes=True,
-                       world=True):
+                       reference=True):
     """
-    Take an Image, and reorder its world and
+    Take an Image, and reorder its reference and
     axes to match target_img.
 
     Parameters
@@ -551,22 +551,22 @@ def synchronized_order(img, target_img,
     axes : bool, optional
         If True, synchronize the order of the axes.
 
-    world : bool, optional
-        If True, synchronize the order of the world coordinates.
+    reference : bool, optional
+        If True, synchronize the order of the reference coordinates.
 
     Returns
     -------
 
     newimg : Image
         An Image satisfying newimg.axes == target.axes (if axes == True), 
-        newimg.world == target.world (if world == True).
+        newimg.reference == target.reference (if reference == True).
     
     Examples
     --------
 
     >>> data = np.random.standard_normal((3,4,7,5))
     >>> im = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
-    >>> im_scrambled = im.reordered_axes('iljk').reordered_world('txyz')
+    >>> im_scrambled = im.reordered_axes('iljk').reordered_reference('txyz')
     >>> im == im_scrambled
     False
     >>> im_unscrambled = synchronized_order(im_scrambled, im)
@@ -579,7 +579,7 @@ def synchronized_order(img, target_img,
     >>> data2 = np.random.standard_normal((3,11,9,4))
     >>> im2 = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
     >>> 
-    >>> im_scrambled2 = im2.reordered_axes('iljk').reordered_world('xtyz')
+    >>> im_scrambled2 = im2.reordered_axes('iljk').reordered_reference('xtyz')
     >>> im_unscrambled2 = synchronized_order(im_scrambled2, im)
     >>> 
     >>> print im_unscrambled2.coordmap == im.coordmap
@@ -590,31 +590,31 @@ def synchronized_order(img, target_img,
     >>> data3 = np.random.standard_normal((3,11,9,4))
     >>> im3 = Image(data3, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,9,3,-2,1])))
     >>> 
-    >>> im_scrambled3 = im3.reordered_axes('iljk').reordered_world('xtyz')
+    >>> im_scrambled3 = im3.reordered_axes('iljk').reordered_reference('xtyz')
     >>> im_unscrambled3 = synchronized_order(im_scrambled3, im)
     >>> 
     >>> print im_unscrambled3.axes == im.axes
     True
-    >>> print im_unscrambled3.world == im.world
+    >>> print im_unscrambled3.reference == im.reference
     True
     >>> im_unscrambled4 = synchronized_order(im_scrambled3, im, axes=False)
     >>> print im_unscrambled4.axes == im.axes
     False
     >>> print im_unscrambled4.axes == im_scrambled3.axes
     True
-    >>> print im_unscrambled4.world == im.world
+    >>> print im_unscrambled4.reference == im.reference
     True
 
     """
     # Caution, we can't just use
-    # target_img.world because it's always 3-dimensional
+    # target_img.reference because it's always 3-dimensional
     # if isinstance(target_img, LPIImage)
 
     target_axes = target_img.axes # = target_img.coordmap.function_domain
-    target_world = target_img.coordmap.function_range # not always = target_image.world
+    target_reference = target_img.coordmap.function_range # not always = target_image.reference
     if axes:
         img = img.reordered_axes(target_axes.coord_names)
-    if world:
-        img = img.reordered_world(target_world.coord_names)
+    if reference:
+        img = img.reordered_reference(target_reference.coord_names)
     return img
 

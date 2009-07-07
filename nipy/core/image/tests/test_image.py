@@ -211,7 +211,7 @@ def test_synchronized_order():
     data = np.random.standard_normal((3,4,7,5))
     im = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
 
-    im_scrambled = im.reordered_axes('iljk').reordered_world('xtyz')
+    im_scrambled = im.reordered_axes('iljk').reordered_reference('xtyz')
     im_unscrambled = image.synchronized_order(im_scrambled, im)
     
     yield assert_equal, im_unscrambled.coordmap, im.coordmap
@@ -225,7 +225,7 @@ def test_synchronized_order():
     data2 = np.random.standard_normal((3,11,9,4))
     im2 = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
 
-    im_scrambled2 = im2.reordered_axes('iljk').reordered_world('xtyz')
+    im_scrambled2 = im2.reordered_axes('iljk').reordered_reference('xtyz')
     im_unscrambled2 = image.synchronized_order(im_scrambled2, im)
 
     yield assert_equal, im_unscrambled2.coordmap, im.coordmap
@@ -235,11 +235,11 @@ def test_synchronized_order():
     data3 = np.random.standard_normal((3,11,9,4))
     im3 = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,9,3,-2,1])))
 
-    im_scrambled3 = im3.reordered_axes('iljk').reordered_world('xtyz')
+    im_scrambled3 = im3.reordered_axes('iljk').reordered_reference('xtyz')
     im_unscrambled3 = image.synchronized_order(im_scrambled3, im)
 
     yield assert_equal, im_unscrambled3.axes, im.axes
-    yield assert_equal, im_unscrambled3.world, im.world
+    yield assert_equal, im_unscrambled3.reference, im.reference
 
 def test_rollaxis():
     data = np.random.standard_normal((3,4,7,5))
@@ -255,14 +255,14 @@ def test_rollaxis():
     yield assert_almost_equal, image.rollaxis(im, 3).affine, np.diag([4,1,2,3,1])
 
     # Check that ambiguous axes raise an exception
-    # 'l' appears both as an axis and a world coord name
+    # 'l' appears both as an axis and a reference coord name
     # and in different places
 
     im_amb = Image(data, AffineTransform.from_params('ijkl', 'xylt', np.diag([1,2,3,4,1])))
     yield assert_raises, ValueError, image.rollaxis, im_amb, 'l'
 
     # But if it's unambiguous, then
-    # 'l' can appear both as an axis and a world coord name
+    # 'l' can appear both as an axis and a reference coord name
 
     im_unamb = Image(data, AffineTransform.from_params('ijkl', 'xyzl', np.diag([1,2,3,4,1])))
     im_rolled = image.rollaxis(im_unamb, 'l')
