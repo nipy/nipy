@@ -38,12 +38,15 @@ class CoordinateSystem(object):
     >>> cs.dtype == dtype_should_be
     True
 
-    Two CoordinateSystems are equal if they have the same dtype.  The
+    Two CoordinateSystems are equal if they have the same dtype
+    and the same name.  The
     CoordinateSystem names may be different.
 
-    >>> another_cs = CoordinateSystem(names, 'irrelevant', np.float)
+    XXX This is changed now: the "name" indicates the origin
+
+    >>> another_cs = CoordinateSystem(names, 'not irrelevant', np.float)
     >>> cs == another_cs
-    True
+    False
     >>> cs.dtype == another_cs.dtype
     True
     >>> cs.name == another_cs.name
@@ -157,6 +160,8 @@ class CoordinateSystem(object):
     def __eq__(self, other):
         """Equality is defined by self.dtype.
 
+        XXX If we want to make things
+        XXX trully Affine, we would check "name" as well
         Parameters
         ----------
         other : :class:`CoordinateSystem`
@@ -168,7 +173,7 @@ class CoordinateSystem(object):
 
         """
 
-        return (self.dtype == other.dtype)
+        return (self.dtype == other.dtype) and (self.name == other.name)
 
     def __repr__(self):
         """Create a string representation of the coordinate system

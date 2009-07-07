@@ -15,6 +15,7 @@ notation to create an ArrayCoordMap.
 import numpy as np
 from coordinate_map import CoordinateMap, AffineTransform, compose
 from coordinate_map import product as cmap_product
+from coordinate_map import shifted_range_origin
 from coordinate_system import CoordinateSystem
 
 class ArrayCoordMap(object):
@@ -167,6 +168,12 @@ def _slice(coordmap, shape, *slices):
             newshape.append(l)
     slice_cmap = cmap_product(*cmaps)
 
+    # Identify the origin in the range of cmap
+    # with the origin in the domain of coordmap
+
+    slice_cmap = shifted_range_origin(slice_cmap, np.zeros(slice_cmap.ndims[1]),
+                                      coordmap.function_domain.name)
+
     # Reduce the size of the matrix
     innames = slice_cmap.function_domain.coord_names
     inmat = []
@@ -200,7 +207,7 @@ class Grid(object):
     >>> print points.coordmap.function_domain
     CoordinateSystem(coord_names=('i0', 'i1'), name='product', coord_dtype=float64)
     >>> print points.coordmap.function_range
-    CoordinateSystem(coord_names=('x', 'y'), name='range', coord_dtype=float64)
+    CoordinateSystem(coord_names=('x', 'y'), name='input', coord_dtype=float64)
 
     >>> points.shape
     (21, 31)
@@ -224,7 +231,8 @@ class Grid(object):
         """
 
         if isinstance(coords, CoordinateSystem):
-            coordmap = AffineTransform.identity(coords.coord_names)
+            coordmap = AffineTransform.identity(coords.coord_names,
+                                                coords.name)
         elif not (isinstance(coords, CoordinateMap) or isinstance(coords, AffineTransform)):
             raise ValueError('expecting either a CoordinateMap, CoordinateSystem or AffineTransform for Grid')
         else:
@@ -256,4 +264,12 @@ class Grid(object):
 
         shape = [result.shape[0] for result in results]
         cmap = cmap_product(*cmaps)
+
+        # Identify the origin in the range of cmap
+        # with the origin in the domain of self.coordmap
+
+        cmap = shifted_range_origin(cmap, 
+                                    np.zeros(cmap.ndims[1]),
+                                    self.coordmap.function_domain.name)
+
         return ArrayCoordMap(compose(self.coordmap, cmap), tuple(shape))

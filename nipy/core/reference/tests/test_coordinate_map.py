@@ -2,8 +2,10 @@ import numpy as np
 from nipy.testing import *
 
 from nipy.core.reference.coordinate_map import CoordinateMap, AffineTransform, \
-    compose, CoordinateSystem, product, equivalent, _as_coordinate_map
+    compose, CoordinateSystem, product, equivalent, _as_coordinate_map, \
+    shifted_domain_origin, shifted_range_origin, _as_coordinate_map 
 
+# this import line is a little ridiculous...
 
 class empty:
     pass
@@ -32,6 +34,52 @@ def setup():
                                               [ 8,  9, 10, 11],
                                               [ 8,  9, 10, 11],
                                               [ 0,  0,  0,  1]]))
+
+def test_shift_origin():
+
+    CS = CoordinateSystem
+
+    A = np.random.standard_normal((5,6))
+    A[-1] = [0,0,0,0,0,1]
+
+    aff1 = AffineTransform(CS('ijklm', 'oldorigin'), CS('xyzt'), A)
+    difference = np.random.standard_normal(5)
+    point_in_old_basis = np.random.standard_normal(5)
+
+    for aff in [aff1, _as_coordinate_map(aff1)]:
+        # The same affine transforation with a different origin for its domain
+
+        shifted_aff = shifted_domain_origin(aff, difference, 'neworigin')
+
+        # This is the relation ship between coordinates in old and new origins
+
+        yield assert_true, np.allclose(shifted_aff(point_in_old_basis), aff(point_in_old_basis+difference))
+
+        yield assert_true, np.allclose(shifted_aff(point_in_old_basis-difference), aff(point_in_old_basis))
+
+    # OK, now for the range
+
+    A = np.random.standard_normal((5,6))
+    A[-1] = [0,0,0,0,0,1]
+    aff2 = AffineTransform(CS('ijklm', 'oldorigin'), CS('xyzt'), A)
+
+    difference = np.random.standard_normal(4)
+
+    for aff in [aff2, _as_coordinate_map(aff2)]:
+    # The same affine transforation with a different origin for its domain
+
+        shifted_aff = shifted_range_origin(aff, difference, 'neworigin')
+
+        # Let's check that things work
+
+        point_in_old_basis = np.random.standard_normal(5)
+
+        # This is the relation ship between coordinates in old and new origins
+
+        yield assert_true, np.allclose(shifted_aff(point_in_old_basis), aff(point_in_old_basis)-difference)
+
+        yield assert_true, np.allclose(shifted_aff(point_in_old_basis)+difference, aff(point_in_old_basis))
+
 
 
 def test_renamed():
@@ -149,7 +197,7 @@ def test_inverse1():
     yield assert_true, np.allclose(ident_d(value), value)
         
       
-def test_mul():
+def test_compose_cmap():
     value = np.array([1., 2., 3.])
     b = compose(E.e, E.e)
     assert_true(np.allclose(b(value), value))

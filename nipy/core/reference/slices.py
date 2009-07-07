@@ -9,11 +9,13 @@ import numpy as np
 
 from nipy.core.transforms.affines import from_matrix_vector
 
+lps_output_coordnames = ('x+LR', 'y+PA', 'z+SI')
+
 __docformat__ = 'restructuredtext'
 
 def xslice(x, y_spec, z_spec, output_space=''):
     """
-    Return a slice through a 3d box with x fixed.
+    Return an LPS slice through a 3d box with x fixed.
 
     Parameters
     ----------
@@ -29,14 +31,14 @@ def xslice(x, y_spec, z_spec, output_space=''):
        box and the number of points.
 
     output_space : str, optional
-       Name of the output CoordinateSystem.
+       Origin of the range CoordinateSystem.
 
     Returns
     -------
 
     affine_transform : AffineTransform
        An affine transform that describes an plane in 
-       'xyz' coordinates with x fixed.
+       LPS coordinates with x fixed.
 
     >>> y_spec = ([-114,114], 115) # voxels of size 2 in y, starting at -114, ending at 114
     >>> z_spec = ([-70,100], 86) # voxels of size 2 in z, starting at -70, ending at 100
@@ -48,7 +50,7 @@ def xslice(x, y_spec, z_spec, output_space=''):
     >>> x30
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i_y', 'i_z'), name='slice', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='', coord_dtype=float64),
        affine=array([[   0.,    0.,   30.],
                      [   2.,    0., -114.],
                      [   0.,    2.,  -70.],
@@ -69,7 +71,7 @@ def xslice(x, y_spec, z_spec, output_space=''):
 
     T = from_matrix_vector(np.vstack(colvectors).T, origin)
     affine_domain = CoordinateSystem(['i_y', 'i_z'], 'slice')
-    affine_range = CoordinateSystem('xyz', output_space)
+    affine_range = CoordinateSystem(lps_output_coordnames, output_space)
     return AffineTransform(affine_domain,
                            affine_range,
                            T)
@@ -92,14 +94,14 @@ def yslice(y, x_spec, z_spec, output_space=''):
        box and the number of points.
 
     output_space : str, optional
-       Name of the output CoordinateSystem.
+       Origin of the range CoordinateSystem.
 
     Returns
     -------
 
     affine_transform : AffineTransform
        An affine transform that describes an plane in 
-       'xyz' coordinates with y fixed.
+       LPS coordinates with y fixed.
 
     Examples
     --------
@@ -112,7 +114,7 @@ def yslice(y, x_spec, z_spec, output_space=''):
     >>> y70
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i_x', 'i_z'), name='slice', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='', coord_dtype=float64),
        affine=array([[  2.,   0., -92.],
                      [  0.,   0.,  70.],
                      [  0.,   2., -70.],
@@ -138,12 +140,12 @@ def yslice(y, x_spec, z_spec, output_space=''):
 
     T = from_matrix_vector(np.vstack(colvectors).T, origin)
     affine_domain = CoordinateSystem(['i_x', 'i_z'], 'slice')
-    affine_range = CoordinateSystem('xyz', output_space)
+    affine_range = CoordinateSystem(lps_output_coordnames, output_space)
     return AffineTransform(affine_domain,
                            affine_range,
                            T)
 
-def zslice(z, x_spec, y_spec, output_space=''):    
+def zslice(z, x_spec, y_spec, output_space=''):
     """
     Return a slice through a 3d box with z fixed.
 
@@ -161,14 +163,14 @@ def zslice(z, x_spec, y_spec, output_space=''):
        box and the number of points.
 
     output_space : str, optional
-       Name of the output CoordinateSystem.
+       Origin of the range CoordinateSystem.
 
     Returns
     -------
 
     affine_transform : AffineTransform
        An affine transform that describes an plane in 
-       'xyz' coordinates with z fixed.
+       LPS coordinates with z fixed.
 
     Examples
     --------
@@ -179,7 +181,7 @@ def zslice(z, x_spec, y_spec, output_space=''):
     >>> z40
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i_x', 'i_y'), name='slice', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='', coord_dtype=float64),
        affine=array([[   2.,    0.,  -92.],
                      [   0.,    2., -114.],
                      [   0.,    0.,   40.],
@@ -204,7 +206,7 @@ def zslice(z, x_spec, y_spec, output_space=''):
 
     T = from_matrix_vector(np.vstack(colvectors).T, origin)
     affine_domain = CoordinateSystem(['i_x', 'i_y'], 'slice')
-    affine_range = CoordinateSystem('xyz', output_space)
+    affine_range = CoordinateSystem(lps_output_coordnames, output_space)
     return AffineTransform(affine_domain,
                            affine_range,
                            T)
@@ -232,7 +234,7 @@ def bounding_box(coordmap, shape):
     Examples
     --------
 
-    >>> A = AffineTransform.from_start_step('ijk', 'xyz', [2,4,6], [1,3,5])
+    >>> A = AffineTransform.from_start_step('ijk', lps_output_coordnames, [2,4,6], [1,3,5])
     >>> bounding_box(A, (30,40,20))
     ([2.0, 31.0], [4.0, 121.0], [6.0, 101.0])
     >>> 
