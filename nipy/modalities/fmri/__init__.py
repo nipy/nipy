@@ -4,7 +4,7 @@ TODO
 
 __docformat__ = 'restructuredtext'
 
-import filters, fmri, hrf, pca, protocol, utils
+import fmri, hrf, utils, formula
 import fmristat
 
 from nipy.testing import Tester

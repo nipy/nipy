@@ -37,23 +37,14 @@ def setup():
 
 
 def test_call():
+    value = 10
+    yield assert_true, np.allclose(E.a(value), 2*value)
+    yield assert_true, np.allclose(E.b(value), 2*value)
+    yield assert_true, np.allclose(E.c(value), value/2)
+    yield assert_true, np.allclose(E.d(value), value/2)
     value = np.array([1., 2., 3.])
-    result_a = E.a(value)
-    result_b = E.b(value)
-    result_c = E.c(value)
-    result_d = E.d(value)        
-    yield assert_true, np.allclose(result_a, 2*value)
-    yield assert_true, np.allclose(result_b, 2*value)
-    yield assert_true, np.allclose(result_c, value/2)
-    yield assert_true, np.allclose(result_d, value/2)
+    yield assert_true, np.allclose(E.e(value), value)
         
-def test_str():
-    s_a = str(E.a)
-    s_b = str(E.b)
-    s_c = str(E.c)
-    s_d = str(E.d)                
-
-
 def test_compose():
     value = np.array([[1., 2., 3.]]).T
     aa = compose(E.a, E.a)
@@ -67,14 +58,28 @@ def test_compose():
     yield assert_true, np.allclose(ac(value), value)
     bb = compose(E.b,E.b)
     yield assert_true, bb.inverse is not None
+    aff1 = np.diag([1,2,3,1])
+    cm1 = Affine.from_params('ijk', 'xyz', aff1)
+    aff2 = np.diag([4,5,6,1])
+    cm2 = Affine.from_params('xyz', 'abc', aff2)
+    # compose mapping from 'ijk' to 'abc'
+    compcm = compose(cm2, cm1)
+    yield assert_equal, compcm.input_coords.coord_names, ('i', 'j', 'k')
+    yield assert_equal, compcm.output_coords.coord_names, ('a', 'b', 'c')
+    yield assert_equal, compcm.affine, np.dot(aff2, aff1)
+    # check invalid coordinate mappings
+    yield assert_raises, ValueError, compose, cm1, cm2
   
 
 def test_isinvertible():
-    assert_false(E.a.inverse)
-    assert_true(E.b.inverse)
-    assert_false(E.c.inverse)
-    assert_true(E.d.inverse)
-        
+    yield assert_false, E.a.inverse
+    yield assert_true, E.b.inverse
+    yield assert_false, E.c.inverse
+    yield assert_true, E.d.inverse
+    yield assert_true, E.e.inverse
+    yield assert_true, E.mapping.inverse
+    yield assert_false, E.singular.inverse
+
 def test_inverse1():
     inv = lambda a: a.inverse
     yield assert_true, inv(E.a) is None
@@ -88,30 +93,14 @@ def test_inverse1():
     yield assert_true, np.allclose(ident_d(value), value)
         
       
-
-def test_call():
-    value = np.array([1., 2., 3.])
-    assert_true(np.allclose(E.e(value), value))
-    
 def test_mul():
     value = np.array([1., 2., 3.])
     b = compose(E.e, E.e)
     assert_true(np.allclose(b(value), value))
 
-def test_str():
-    s = str(E.e)
-    
-def test_invertible():
-    assert_true(E.e.inverse)
     
 def test_inverse2():
     assert_true(np.allclose(E.e.affine, E.e.inverse.inverse.affine))
-
-
-def test_isinvertible():
-    yield assert_true, E.mapping.inverse
-    yield assert_false, E.singular.inverse
-
 
 def voxel_to_world():
     # utility function for generating trivial CoordinateMap
@@ -265,20 +254,6 @@ def test_product():
     yield assert_equal, cm.input_coords.coord_names, ('i', 'j')
     yield assert_equal, cm.output_coords.coord_names, ('x', 'y')
     yield assert_equal, cm.affine, np.diag([2, 3, 1])
-
-
-def test_compose():
-    aff1 = np.diag([1,2,3,1])
-    cm1 = Affine.from_params('ijk', 'xyz', aff1)
-    aff2 = np.diag([4,5,6,1])
-    cm2 = Affine.from_params('xyz', 'abc', aff2)
-    # compose mapping from 'ijk' to 'abc'
-    compcm = compose(cm2, cm1)
-    yield assert_equal, compcm.input_coords.coord_names, ('i', 'j', 'k')
-    yield assert_equal, compcm.output_coords.coord_names, ('a', 'b', 'c')
-    yield assert_equal, compcm.affine, np.dot(aff2, aff1)
-    # check invalid coordinate mappings
-    yield assert_raises, ValueError, compose, cm1, cm2
 
 
 def test_replicate():
