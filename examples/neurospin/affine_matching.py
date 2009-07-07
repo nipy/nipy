@@ -34,7 +34,7 @@ optimizer = 'powell'
 if len(sys.argv)>6: 
 	optimizer = sys.argv[6]
 
-# Print messages 
+# Print messages
 print ('Source brain: %s' % source)
 print ('Target brain: %s' % target)
 print ('Similarity measure: %s' % similarity)
