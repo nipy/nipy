@@ -353,7 +353,7 @@ class BGMM(GMM):
         self.prior_shrinkage = prior_shrinkage       
         self.check()
 
-    def guess_priors(self,x):
+    def guess_priors(self,x,nocheck=0):
         """
         Set the priors in order of having them weakly uninformative
         this is from  Fraley and raftery;
@@ -361,8 +361,9 @@ class BGMM(GMM):
 
         INPUT:
         ------
-        - x:array of shape (nbitems,self.dim)
+        - x: array of shape (nbitems,self.dim)
         the data used in the estimation process
+        - nocheck=0: if nocheck==Ture, check is skipped
         """
         # a few parameters
         small = 0.01
@@ -381,7 +382,8 @@ class BGMM(GMM):
         self.weights = np.ones(self.k)*1.0/self.k
 
         # check that everything is OK
-        self.check()
+        if nocheck==True:
+            self.check()
 
     def initialize(self,x):
         """

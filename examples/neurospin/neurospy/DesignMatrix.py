@@ -109,7 +109,7 @@ class DesignMatrix():
         if not self.misc.has_key(self.model):
             misc[self.model] = {}
         misc.write()
-        #self.session_name = self.misc["sessions"][self.session]
+
         self.protocol = _loadProtocol(self.protocol_filename, self.session, self.misc["tasks"])
     
     def timing(self, tr, t0=0.0, trSlices=None, slice_idx=None):
@@ -138,9 +138,7 @@ class DesignMatrix():
         t0 = float(t0)
         self.frametimes *= tr
         self.frametimes += t0
-                ## TODO: account for slice timing in case data is not already corrected...
         
-
     def compute_design(self, hrf=hrf.canonical, drift=canonical_drift, name = ""):
         """
         Use e.g. hrf=hrf.glover_deriv to use HRF derivatives as additional regressors. 

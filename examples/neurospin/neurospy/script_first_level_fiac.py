@@ -1,14 +1,17 @@
 """
-Script updated by Bertrand.
+Script that perform the first-level analysis of a dataset of the FIAC
+Last updated by B.Thirion
+
+Author : Lise Favre, Bertrand Thirion, 2008-2009
 """
 
 import os
-import ScriptBVFunc
-import Contrast
 from configobj import ConfigObj
+import glob
+from os.path import join
 
-import dataEngine
-data = dataEngine.DataEngine()
+import GLMTools
+import Contrast
 
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------
@@ -50,8 +53,8 @@ paths["contrast definition"] = "con"
 # ---------------------------------------------------------
 
 #---------- Masking parameters 
-infThreshold = 0.4
-supThreshold = 0.9
+infTh = 0.4
+supTh = 0.9
 
 #---------- Design Matrix
 
@@ -75,6 +78,15 @@ FIR_length = 1
 # If the following in not none it will be considered to be the drift
 drift_matrix = None
 
+DmtxParam= {}
+DmtxParam["hrfType"] = hrfType
+DmtxParam["drift"] = drift
+DmtxParam["poly_order"] = poly_order
+DmtxParam["cos_FreqCut"] = cos_FreqCut
+DmtxParam["FIR_order"] = FIR_order
+DmtxParam["FIR_length"] = FIR_length
+DmtxParam["drift_matrix"] = drift_matrix
+
 #--------- GLM options
 # Possible choices : "Kalman_AR1", "Kalman", "Ordinary Least Squares"
 fit_algo = "Kalman_AR1"
@@ -92,23 +104,22 @@ for s in Subjects:
     print "Subject : %s" % s
     sPath = os.sep.join((DBPath, s))
 
-    # Get the fMRI data
     for a in Acquisitions:
 
         #step 0. Get the fMRI data
         fmriFiles = {}
         for sess in Sessions:
             fmriPath = os.sep.join((sPath, fmri, a, sess))
-            # fixme: this should be a glob instead of this findfiles
-            fmriFile = data.findFiles(fmriPath, 's*%s*.nii.gz' % sess, 1, 0)[0]
-            fmriFiles[sess] = unicode(fmriFile)
-            
+            fmriFiles[sess] = glob.glob(join(fmriPath,'swra*%s*.nii.gz' %sess))
+             
         # step 1. get the paradigm definition and create misc info file
-        paradigmFile = data.findFiles(os.sep.join((sPath, fmri, a, minfDir)),
-                                      "paradigm.csv", 1, 0)[0]
-        
-        miscFile = os.sep.join((sPath, fmri, a, minfDir, "misc_info.con"))
-        misc=ConfigObj(miscFile)
+        miscPath = os.sep.join((sPath, fmri, a, minfDir))
+        paradigmFile = os.sep.join((miscPath, "paradigm.csv"))
+        if not os.path.isfile(paradigmFile):
+            raise ValueError,"paradigm file %s not found" %paradigmFile
+
+        miscFile = os.sep.join((miscPath, "misc_info.con"))
+        misc = ConfigObj(miscFile)
         misc["sessions"] = Sessions
         misc["tasks"] = Conditions
         misc.write()
@@ -120,19 +131,14 @@ for s in Subjects:
             if not os.path.exists(designPath):
                 os.makedirs(designPath)
             designFile = os.sep.join((designPath, "design_mat.csv"))
-            
-            # fixme : rewrite this in a more readbale way
-            ScriptBVFunc.DesignMatrix(
-                nbFrames, paradigmFile, miscFile, TR, designFile, sess,
-                hrfType, drift, drift_matrix, poly_order, cos_FreqCut,
-                FIR_order, FIR_length)
-        
+            GLMTools.DesignMatrix(nbFrames, paradigmFile, miscFile,
+                                  TR, designFile, sess, DmtxParam)
+         
         # step 3. Compute the mask
         print "Computing the mask"
         maskFile = os.sep.join((sPath, fmri, a, minfDir, "mask.img"))
-        # fixme : simplify the path definition
-        ScriptBVFunc.ComputeMask(str(fmriFiles.values()[0]), maskFile,
-                                 infThreshold, supThreshold)
+        GLMTools.ComputeMask(fmriFiles.values()[0][0], maskFile,
+                             infTh, supTh)
 
         # step 4. Create Contrast Files
         print "Creating Contrasts"
@@ -160,26 +166,24 @@ for s in Subjects:
         for sess in Sessions:
             print "Fitting GLM for session : %s" % sess
             glmPath = os.sep.join((sPath, fmri, a, glmDir, sess))
-            glmDumpFile = os.sep.join((glmPath, "vba.npz"))
+            GlmDumpFile = os.sep.join((glmPath, "vba.npz"))
             configFile = os.sep.join((glmPath, "vba_config.con"))
             designPath = os.sep.join((sPath, fmri, a, glmDir, sess))
             designFile = os.sep.join((designPath, "design_mat.csv"))
             if os.path.exists(designFile):
-                ScriptBVFunc.GLMFit(fmriFiles[sess], designFile, maskFile,
-                                    glmDumpFile, configFile, fit_algo)
+                GLMTools.GLMFit(fmriFiles[sess], designFile, maskFile,
+                                    GlmDumpFile, configFile, fit_algo)
                 glms[sess] = {}
-                #  change the HDF5FilePath name
-                glms[sess]["HDF5FilePath"] = glmDumpFile
+                glms[sess]["GlmDumpFile"] = GlmDumpFile
                 glms[sess]["ConfigFilePath"] = configFile
 
         #6. Compute the Contrasts
+        print "Computing contrasts"
         paths["Contrasts_path"] = os.sep.join((sPath, fmri, a,
                                                glmDir, contrastDir))
         if not os.path.exists(paths["Contrasts_path"]):
             os.makedirs(paths["Contrasts_path"])
-        print "Computing contrasts"
-        # fixme: why ScriptBVFunc.saveall ?
-        ScriptBVFunc.ComputeContrasts(contrastFile, miscFile, glms,\
-                                      ScriptBVFunc.saveall, save_mode,\
-                                      paths = paths)
+        
+        GLMTools.ComputeContrasts(contrastFile, miscFile, glms,\
+                                      save_mode, paths = paths)
             

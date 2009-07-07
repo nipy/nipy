@@ -1,29 +1,32 @@
+"""
+General tools to analyse fMRI datasets (FSL pre-rocessing and GLM fit)
+using nipy.neurospin tools
+
+Author : Lise Favre, Bertrand Thirion, 2008-2009
+"""
+
 from numpy import *
 import commands
 import nifti
 import os
 
-## For Smoothing
+from configobj import ConfigObj
 import scipy.ndimage as sn
 
-## For GLM
 from vba import VBA
-
-## For Contrast Computation
-from configobj import ConfigObj
 import Results
-
-## For Mask Computation
 from nipy.neurospin.utils.mask import compute_mask_intra 
 
-
-
-
-#########
-# Tools #
-#########
+# ----------------------------------------------
+# -------- Ancillary functions -----------------
+# ----------------------------------------------
 
 def save_volume(volume, file, header, mask=None, data=None):
+    """
+    niftilib-based save volume utility
+
+    fixme :  very low-level and naive 
+    """
     if mask != None and data != None:
         if size(data.shape) == 1:
             volume[mask > 0] = data
@@ -35,6 +38,7 @@ def save_volume(volume, file, header, mask=None, data=None):
 def saveall(contrast, design, ContrastId, dim, kargs):
     """
     Save all the outputs of a GLM analysis + contrast definition
+    fixme : restructure it
     """
     # preparae the paths (?)
     if kargs.has_key("paths"):
@@ -47,7 +51,8 @@ def saveall(contrast, design, ContrastId, dim, kargs):
     header = mask.header
     contrasts_path = paths["Contrasts_path"]
     if size(mask_arr.shape) == 3:
-        mask_arr= mask_arr.reshape(1, mask_arr.shape[0], mask_arr.shape[1], mask_arr.shape[2])
+        mask_arr= mask_arr.reshape(1, mask_arr.shape[0],
+                                   mask_arr.shape[1], mask_arr.shape[2])
     shape = mask_arr.shape
     t = contrast.stat()
     z = contrast.zscore()
@@ -62,7 +67,8 @@ def saveall(contrast, design, ContrastId, dim, kargs):
         results = "Student-t tests"
     elif contrast.type == "F":
         results = "Fisher tests"
-    t_file = os.sep.join((contrasts_path, "%s_%s.nii" % (str(ContrastId), paths[results])))
+    t_file = os.sep.join((contrasts_path, "%s_%s.nii" %
+                          (str(ContrastId), paths[results])))
     save_volume(zeros(shape), t_file, header, mask_arr, t)
     if int(dim) != 1:
         shape = (int(dim) * int(dim), shape[1], shape[2], shape[3])
@@ -70,14 +76,16 @@ def saveall(contrast, design, ContrastId, dim, kargs):
 
     # saving the associated variance map
     results = "Residual variance"
-    res_file = os.sep.join((contrasts_path, "%s_%s.nii" % (str(ContrastId), paths[results])))
+    res_file = os.sep.join((contrasts_path, "%s_%s.nii" %
+                            (str(ContrastId), paths[results])))
     save_volume(zeros(shape), res_file, header, mask_arr, contrast.variance)
     if int(dim) != 1:
         shape = (int(dim), shape[1], shape[2], shape[3])
 
     # writing the associated contrast structure
     results = "contrast definition"
-    con_file = os.sep.join((contrasts_path, "%s_%s.nii" % (str(ContrastId), paths[results])))
+    con_file = os.sep.join((contrasts_path, "%s_%s.nii" %
+                            (str(ContrastId), paths[results])))
     save_volume(zeros(shape), con_file, header, mask_arr, contrast.effect)
 
     # writing the results as an html page
@@ -100,19 +108,21 @@ def saveall(contrast, design, ContrastId, dim, kargs):
 
     results = "HTML Results"
     html_file = os.sep.join((contrasts_path, "%s_%s.html" % (str(ContrastId), paths[results])))
-    Results.ComputeResultsContents(z_file, design.mask_url, html_file, threshold = threshold, method = method, cluster = cluster)
+    Results.ComputeResultsContents(z_file, design.mask_url, html_file,
+                                   threshold=threshold, method=method,
+                                   cluster=cluster)
 
 
-def ComputeMask(fmriFiles, outputFile, infT = 0.2, supT = 0.9):
+def ComputeMask(fmriFiles, outputFile, infT=0.4, supT=0.9):
     """
     Perform the mask computation
     """
     compute_mask_intra(fmriFiles, outputFile, False,None, infT, supT)
 
 
-###################
-# Pre processings #
-###################
+# ---------------------------------------------
+# various FSL-based Pre processings functions -
+# ---------------------------------------------
 
 def SliceTiming(file, tr, outputFile, interleaved = False, ascending = True):
     """
@@ -149,7 +159,7 @@ def NormalizeAnat(anat, templatet1, normAnat, norm_matrix, searcht1 = "NASO"):
 
 def NormalizeFMRI(file, anat, outputFile, normAnat, norm_matrix, searchfmri = "AVA"):
     """
-    Perfomr the normalization of fMRI data using FSL
+    Perform the normalization of fMRI data using FSL
     """
     if searchfmri == "AVA":
         s2 = "-searchrx -0 0 -searchry -0 0 -searchrz -0 0"
@@ -179,16 +189,59 @@ def Smooth(file, outputFile, fwhm):
     fmri.save(outputFile)
 
 
-########################
-# First Level analysis #
-########################
+#-----------------------------------------------------
+#------- First Level analysis ------------------------
+#-----------------------------------------------------
 
-def DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile, session, hrf = "Canonical", drift = "Blank", driftMatrix = None, poly_order = 2, cos_FreqCut = 128, FIR_order = 1, FIR_length = 1, model = "default"):
+def CheckDmtxParam(DmtxParam):
+    """
+    check that Dmtx parameters are OK
+    """
+    pass
+
+def DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
+                 session, DmtxParam):
+    """
+    Higher level function to define design matrices
+    This function simply unfolds  the Dmtxparam dictionary
+    and calls the _DesignMatrix function
+    
+    Parameters:
+    -----------
+    - nbFrames
+    - paradigm
+    - miscFile
+    - tr
+    - outputFile:
+    - session
+    - DmtxParam
+    
+    """
+    hrfType = DmtxParam["hrfType"]
+    drift = DmtxParam["drift"]
+    poly_order = DmtxParam["poly_order"]
+    cos_FreqCut = DmtxParam["cos_FreqCut"] 
+    FIR_order = DmtxParam["FIR_order"]
+    FIR_length  = DmtxParam["FIR_length"]
+    driftMatrix = DmtxParam["drift_matrix"]
+    model = 'default' # fixme: I don't understand this
+    _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
+                  session, hrfType, drift, driftMatrix, poly_order,
+                  cos_FreqCut, FIR_order, FIR_length, model)
+
+def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
+                  session, hrf="Canonical", drift="Blank",
+                  driftMatrix=None, poly_order=2, cos_FreqCut=128,
+                  FIR_order=1, FIR_length=1, model="default", verbose=0):
+    """
+    Base function to define design matrices
+
+    """
     ## For DesignMatrix
-    import DesignMatrix as DM
+    import DesignMatrix as dm
     from dataFrame import DF
 
-    design = DM.DesignMatrix(nbFrames, paradigm, session, miscFile, model)
+    design = dm.DesignMatrix(nbFrames, paradigm, session, miscFile, model)
     design.load()
     design.timing(tr)
     if driftMatrix != None:
@@ -197,17 +250,18 @@ def DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile, session, hrf = "C
         drift = 0
     elif drift == "Cosine":
         DesignMatrix.HF = cos_FreqCut
-        drift = DM.cosine_drift
+        drift = dm.cosine_drift
     elif drift == "Polynomial":
         DesignMatrix.order = poly_order
-        drift = DM.canonical_drift
+        drift = dm.canonical_drift
 
     if hrf == "Canonical":
-        hrf = DM.hrf.glover
+        hrf = dm.hrf.glover
     elif hrf == "Canonical With Derivative":
-        hrf = DM.hrf.glover_deriv
+        hrf = dm.hrf.glover_deriv
     elif hrf == "FIR Model":
-        design.compute_fir_design(drift = drift, name = session, o = FIR_order, l = FIR_length)
+        design.compute_fir_design(drift = drift, name = session,
+                                  o = FIR_order, l = FIR_length)
         output = DF(colnames=design.names, data=design._design)
         output.write(outputFile)
         return 0
@@ -218,12 +272,26 @@ def DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile, session, hrf = "C
     design.compute_design(hrf = hrf, drift = drift, name = session)
     if hasattr(design, "names"):
         output = DF(colnames=design.names, data=design._design)
-        print design.names
+        if verbose : print design.names
         output.write(outputFile)
 
-def GLMFit(file, designMatrix, mask, outputVBA, outputCon, fit = "Kalman_AR1"):
+def GLMFit(file, designMatrix, mask, outputVBA, outputCon, fit="Kalman_AR1"):
     """
-    Call the GLM Fit function witha propriate arguments
+    Call the GLM Fit function with apropriate arguments
+
+    Parameters:
+    -----------
+    - file
+    - designmatrix
+    - mask
+    - outputVBA
+    - outputCon
+    - fit='Kalman_AR1'
+    
+    Output:
+    -------
+    - glm
+    
     """
     from dataFrame import DF
     tab = DF.read(designMatrix)
@@ -240,16 +308,18 @@ def GLMFit(file, designMatrix, mask, outputVBA, outputCon, fit = "Kalman_AR1"):
     glm = VBA(tab, mask_url=mask, create_design_mat = False, mri_names = file, model = model, method = method)
     glm.fit()
     s=dict()
-    s["HDF5FilePath"] = outputVBA
+    s["GlmDumpFile"] = outputVBA
     s["ConfigFilePath"] = outputCon
     s["DesignFilePath"] = designMatrix
     glm.save(s)
     return glm
 
 
-def ComputeContrasts(contrastFile, miscFile, glms, savefunc, save_mode="Contrast Name", model = "default", **kargs):
+def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
+                     model = "default", **kargs):
     """
     """
+    verbose = 0 # fixme: put ine the kwargs
     misc = ConfigObj(miscFile)
     if not misc.has_key(model):
         misc[model] = {}
@@ -272,21 +342,22 @@ def ComputeContrasts(contrastFile, miscFile, glms, savefunc, save_mode="Contrast
             ContrastId = "%04i" % k
             
         for key, value in contrasts[contrast].items():
+            if verbose: print key,value
             if key != "Type" and key != "Dimension":
                 session = "_".join(key.split("_")[:-1])
                 if not designs.has_key(session):
                     print "Loading session : %s" % session
                 designs[session] = VBA(glms[session])
 
-            if contrast_type == "t" and sum([int(j) != 0 for j in value]) != 0:
-                designs[session].contrast([int(i) for i in value])
-                final_contrast.append(designs[session]._con)
+                if contrast_type == "t" and sum([int(j) != 0 for j in value]) != 0:
+                    designs[session].contrast([int(i) for i in value])
+                    final_contrast.append(designs[session]._con)
 
-            if contrast_type == "F":
-                if not multicon.has_key(session):
-                    multicon[session] = array([int(i) for i in value])
-                else:
-                    multicon[session] = vstack((multicon[session], [int(i) for i in value]))
+                if contrast_type == "F":
+                    if not multicon.has_key(session):
+                        multicon[session] = array([int(i) for i in value])
+                    else:
+                        multicon[session] = vstack((multicon[session], [int(i) for i in value]))
         if contrast_type == "F":
             for key, value in multicon.items():
                 if sum([j != 0 for j in value.reshape(-1)]) != 0:
@@ -298,11 +369,7 @@ def ComputeContrasts(contrastFile, miscFile, glms, savefunc, save_mode="Contrast
         for c in final_contrast[1:]:
             res_contrast = res_contrast + c
             res_contrast.type = contrast_type
-        savefunc(res_contrast, design, ContrastId, contrast_dimension, kargs)
+        saveall(res_contrast, design, ContrastId, contrast_dimension, kargs)
         misc[model]["con_dofs"][contrast] = res_contrast.dof
     misc["Contrast Save Mode"] = save_mode
     misc.write()
-
-##################
-# Group Analysis #
-##################
