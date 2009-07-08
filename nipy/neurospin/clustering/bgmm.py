@@ -379,7 +379,7 @@ class BGMM(GMM):
         self.prior_scale = np.repeat(px,self.k,0)
         self.prior_dof = np.ones(self.k)*(self.dim+2)
         self.prior_shrinkage = np.ones(self.k)*small
-        self.weights = np.ones(self.k)*1.0/self.k
+        #self.weights = np.ones(self.k)*1.0/self.k
 
         # check that everything is OK
         if nocheck==True:
