@@ -25,7 +25,7 @@ def asbrifti(obj, iolib):
         affine = np.diag(np.concatenate((voxsize,[1])))
         if header.has_key('transformations'):
             world_transform = np.asarray(header['transformations'][0]).reshape(4,4)
-            affine = np.dot(world_transform, affine))) 
+            affine = np.dot(world_transform, affine) 
         
     # pynifti image
     elif 'nifti' in iolib:
