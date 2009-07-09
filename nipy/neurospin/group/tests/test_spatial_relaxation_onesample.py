@@ -128,7 +128,7 @@ class TestMultivariateStatSaem(unittest.TestCase):
         P.estimate_displacements_SA(nsimu=10, c=0.99, proposal_std=0.5, 
                     verbose=verbose)
         L0 = P.compute_log_region_likelihood()[0]
-        self.assertTrue(L0 > L00)
+        self.assertTrue(np.all(L0 > L00))
         Prior0 = P.compute_log_prior()[0]
         Post0 = P.compute_log_posterior(nsimu=1e2, burnin=1e2, 
                     verbose=verbose)[0]
@@ -151,7 +151,7 @@ class TestMultivariateStatSaem(unittest.TestCase):
         M1 = L1 + Prior1 - Post1
         self.assertAlmostEqual(0.1*M1, 
                     0.1*P.compute_marginal_likelihood(verbose=verbose)[0], 0)
-        self.assertTrue(M1 > M0)
+        self.assertTrue(np.all(M1 > M0))
 
 
 
