@@ -4,8 +4,6 @@ WORK IN PROGRESS: please run (don't import) this file. Example of use in the end
 
 """
 
-#from fff2 import glm
-
 import os, urllib, time, string
 import numpy as np
 import pylab
@@ -14,54 +12,61 @@ from configobj import ConfigObj
 from nipy.modalities.fmri.protocol import ExperimentalFactor
 from nipy.modalities.fmri import protocol, hrf
 
-
-def _loadProtocol(x, session, names = None):
-    """
-    Read a paradigm file consisting of a list of pairs (occurence time, (duration), event ID)
-    and instantiate a NiPy ExperimentalFactor object. 
-    """
-    #paradigm = [i.split()[::-1] for i in open(x) if i != "\n"]
-    paradigm = pylab.load(x)
-    if paradigm[paradigm[:,0] == session].tolist() == []:
-        return None
-    paradigm = paradigm[paradigm[:,0] == session]
-    if paradigm.shape[1] == 4:
-        paradigm = paradigm[:,1:] ### ? !!!
-    else:
-        paradigm[:,0] = 0.5
-        paradigm = paradigm[:,[1,2,0]]
-    paradigm[:,2] = paradigm[:,1] + paradigm[:,2]
-#   if paradigm[-1,1] > 1000:
-#       paradigm[:,1] /= 1000.0
-#       paradigm[:,2] /= 1000.0
-    if names != None:
-        name_col = [names[int(i)] for i in paradigm[:,0]]
-        p = protocol.ExperimentalFactor("protocol", zip(name_col, paradigm[:,1].tolist(), paradigm[:,2].tolist()),
-                        delta = False)
-    else:
-        p = protocol.ExperimentalFactor("protocol", paradigm[:,:3], delta = False)
-    p.design_type = "block"
-    return p
- 
 order = 2
+HF = 128
 
 def _drift(time):
+    """
+    Create a drift matrix
+    """
     v = np.ones([order+1, time.shape[0]], dtype="f")
     tmax = np.abs(time.max()) * 1.0
     time = time * 1.0
     for i in range(order):
-            v[i+1] = (time/tmax)**(i+1)
+        v[i+1] = (time/tmax)**(i+1)
     return v
 
 canonical_drift = protocol.ExperimentalQuantitative('drift', _drift)
 
-HF = 128
 def cosine_matrix(time):
+    """
+    create a cosine drift matrix
+    """
     M = time.max()
     numreg = int(np.floor(2 * float(M) / float(HF)) + 1)
     return np.array([np.sqrt(2.0/M) * np.cos(np.pi*(time.astype(float)/M + 0.5/len(time))*k ) for k in range(numreg)]) * 100.0
 
 cosine_drift = protocol.ExperimentalQuantitative('drift', cosine_matrix)
+
+def _loadProtocol(x, session, names = None):
+    """
+    Read a paradigm file consisting of a list of pairs (occurence time, (duration), event ID)
+    and instantiate a NiPy ExperimentalFactor object. 
+
+    INPUT:
+    x
+    
+    """
+    paradigm = pylab.load(x)
+    if paradigm[paradigm[:,0] == session].tolist() == []:
+        return None
+    paradigm = paradigm[paradigm[:,0] == session]
+    if paradigm.shape[1] == 4:
+        paradigm = paradigm[:,1:]
+    else:
+        paradigm[:,0] = 0.5
+        paradigm = paradigm[:,[1,2,0]]
+    paradigm[:,2] = paradigm[:,1] + paradigm[:,2]
+
+    if names != None:
+        name_col = [names[int(i)] for i in paradigm[:,0]]
+        p = protocol.ExperimentalFactor("protocol", zip(name_col, paradigm[:,1].tolist(), paradigm[:,2].tolist()),delta = False)
+    else:
+        p = protocol.ExperimentalFactor("protocol", paradigm[:,:3], delta = False)
+    p.design_type = "block"
+    return p
+
+
 
 def _fullRank(X, cmax=1e15):
     """ X is assumed to be a 2d numpy array. This function possibly adds a scalar matrix to X
@@ -71,7 +76,7 @@ def _fullRank(X, cmax=1e15):
     sm = s.min()
     c = sM/sm
     if c < cmax:
-            return X, c
+        return X, c
     print 'Warning: matrix is singular at working precision, regularizing...'
     lda = (sM-cmax*sm)/(cmax-1)
     s = s + lda
@@ -97,7 +102,7 @@ class DesignMatrix():
         else:
             misc = ConfigObj(self.misc_file)
             self.session = misc["sessions"].index(self.session)
-        #self.grid = self.fmri.grid
+       
         self.frametimes = np.arange(self.nbframes)
         self.misc = ConfigObj(self.misc_file)
         if not self.misc.has_key(self.model):
@@ -109,7 +114,6 @@ class DesignMatrix():
     def timing(self, tr, t0=0.0, trSlices=None, slice_idx=None):
         """
         tr : inter-scan repetition time, i.e. the time elapsed between two consecutive scans
-        
         
         t0 : time elapsed from the paradigm time origin to the first scan acquisition (different 
         from zero if the paradigm was not synchronized with the acquisition, or dummy scans have 
