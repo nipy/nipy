@@ -5,6 +5,7 @@ def configuration(parent_package='',top_path=None):
 
     # List all packages to be loaded here
     config.add_subpackage('algorithms')
+    config.add_subpackage('interfaces')
     config.add_subpackage('core')
     config.add_subpackage('fixes')
     config.add_subpackage('io')

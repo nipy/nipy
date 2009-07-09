@@ -1,5 +1,6 @@
-import numpy as N
-import numpy.linalg as L
+import numpy as np
+import numpy.linalg as npl
+
 
 def orth(X, tol=1.0e-07):
     """
@@ -17,12 +18,12 @@ def orth(X, tol=1.0e-07):
               the column rank of X
     """
 
-    B, u, _ = L.svd(X, full_matrices=False)
-    nkeep = N.greater(u, tol*u.max()).astype(N.int).sum()
+    B, u, _ = npl.svd(X, full_matrices=False)
+    nkeep = np.greater(u, tol*u.max()).astype(np.int).sum()
     return B[:,:nkeep]
     
 def reml(sigma, components, design=None, n=1, niter=128,
-         penalty_cov=N.exp(-32), penalty_mean=0):
+         penalty_cov=np.exp(-32), penalty_mean=0):
     """
 
     Adapted from spm_reml.m
@@ -42,7 +43,7 @@ def reml(sigma, components, design=None, n=1, niter=128,
                         the diagonal of the penalty. 
         penalty_mean -- mean of quadratic penalty to be applied in Fisher
                         algorithm. If the value is a float, f, the location
-                        is f * N.ones(m).
+                        is f * np.ones(m).
 
 
     OUTPUTS:
@@ -55,37 +56,37 @@ def reml(sigma, components, design=None, n=1, niter=128,
     # initialise coefficient, gradient, Hessian
 
     Q = components
-    PQ = N.zeros(Q.shape)
+    PQ = np.zeros(Q.shape)
     
     q = Q.shape[0]
     m = Q.shape[1]
 
     # coefficient
-    h = N.array([N.diag(Q[i]).mean() for i in range(q)])
+    h = np.array([np.diag(Q[i]).mean() for i in range(q)])
 
     ## SPM initialization
-    ## h = N.array([N.any(N.diag(Q[i])) for i in range(q)]).astype(N.float)
+    ## h = np.array([np.any(np.diag(Q[i])) for i in range(q)]).astype(np.float)
 
-    C = N.sum([h[i] * Q[i] for i in range(Q.shape[0])], axis=0)
+    C = np.sum([h[i] * Q[i] for i in range(Q.shape[0])], axis=0)
 
     # gradient in Fisher algorithm
     
-    dFdh = N.zeros(q)
+    dFdh = np.zeros(q)
 
     # Hessian in Fisher algorithm
-    dFdhh = N.zeros((q,q))
+    dFdhh = np.zeros((q,q))
 
     # penalty terms
 
-    penalty_cov = N.asarray(penalty_cov)
+    penalty_cov = np.asarray(penalty_cov)
     if penalty_cov.shape == ():
-        penalty_cov = penalty_cov * N.identity(q)
+        penalty_cov = penalty_cov * np.identity(q)
     elif penalty_cov.shape == (q,):
-        penalty_cov = N.diag(penalty_cov)
+        penalty_cov = np.diag(penalty_cov)
         
-    penalty_mean = N.asarray(penalty_mean)
+    penalty_mean = np.asarray(penalty_mean)
     if penalty_mean.shape == ():
-        penalty_mean = N.ones(q) * penalty_mean
+        penalty_mean = np.ones(q) * penalty_mean
         
     # compute orthonormal basis of design space
 
@@ -95,20 +96,20 @@ def reml(sigma, components, design=None, n=1, niter=128,
         X = None
 
     _iter = 0
-    _F = N.inf
+    _F = np.inf
     
     while True:
 
         # Current estimate of mean parameter
 
-        iC = L.inv(C + N.identity(m) / N.exp(32))
+        iC = npl.inv(C + np.identity(m) / np.exp(32))
 
         # E-step: conditional covariance 
 
         if X is not None:
-            iCX = N.dot(iC, X)
-            Cq = L.inv(X.T, iCX)
-            P = iC - N.dot(iCX, N.dot(Cq, iCX))
+            iCX = np.dot(iC, X)
+            Cq = npl.inv(X.T, iCX)
+            P = iC - np.dot(iCX, np.dot(Cq, iCX))
         else:
             P = iC
 
@@ -117,10 +118,10 @@ def reml(sigma, components, design=None, n=1, niter=128,
         # Gradient dF/dh (first derivatives)
         # Expected curvature (second derivatives)
 
-        U = N.identity(m) - N.dot(P, sigma) / n
+        U = np.identity(m) - np.dot(P, sigma) / n
 
         for i in range(q):
-            PQ[i] = N.dot(P, Q[i])
+            PQ[i] = np.dot(P, Q[i])
             dFdh[i] = -(PQ[i] * U).sum() * n / 2
 
             for j in range(i+1):
@@ -129,15 +130,15 @@ def reml(sigma, components, design=None, n=1, niter=128,
                 
         # Enforce penalties:
 
-        dFdh  = dFdh  - N.dot(penalty_cov, h - penalty_mean)
+        dFdh  = dFdh  - np.dot(penalty_cov, h - penalty_mean)
         dFdhh = dFdhh - penalty_cov
 
-        dh = L.solve(dFdhh, dFdh)
+        dh = npl.solve(dFdhh, dFdh)
         h -= dh
-        C = N.sum([h[i] * Q[i] for i in range(Q.shape[0])], axis=0)
+        C = np.sum([h[i] * Q[i] for i in range(Q.shape[0])], axis=0)
         
         df = (dFdh * dh).sum()
-        if N.fabs(df) < 1.0e-01:
+        if np.fabs(df) < 1.0e-01:
             break
 
         _iter += 1
@@ -152,7 +153,7 @@ if __name__ == "__main__":
     import numpy.random as R
 
     X = R.standard_normal((500,3))
-    Q = N.array([N.identity(3), N.array([[0,1,0],[1,0,0],[0,0,1]]),
-                 N.array([[1,0,0],[0,1,1],[0,1,1]])], N.float)
+    Q = np.array([np.identity(3), np.array([[0,1,0],[1,0,0],[0,0,1]]),
+                 np.array([[1,0,0],[0,1,1],[0,1,1]])], np.float)
     
-    print reml(N.dot(X.T,X), Q), 
+    print reml(np.dot(X.T,X), Q), 

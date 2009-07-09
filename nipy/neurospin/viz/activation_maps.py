@@ -206,6 +206,7 @@ class _AnatCache(object):
 
     @classmethod
     def get_anat(cls):
+        import nipy.neurospin.data
         if cls.anat is not None:
             return cls.anat, cls.anat_sform, cls.anat_max
         anat_im = NiftiImage(
@@ -906,7 +907,7 @@ def plot_niftifile(filename, outputname=None, do3d=False, vmin=None,
     return output_files
 
 
-if __name__ == '__main__':
+if __name__ == '__main__' and False:
     test_coord_transform_trivial()
     test_find_cut_coords()
 

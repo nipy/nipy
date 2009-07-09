@@ -6,7 +6,7 @@ database acquired at SHFJ, Orsay, France.
 """
 
 from nipy.neurospin.image_registration import affine_register, affine_resample
-import nifti as nf
+from nipy.io.imageformats import load as load_image, save as save_image
 
 from os.path import join
 import sys
@@ -34,7 +34,7 @@ optimizer = 'powell'
 if len(sys.argv)>6: 
 	optimizer = sys.argv[6]
 
-# Print messages 
+# Print messages
 print ('Source brain: %s' % source)
 print ('Target brain: %s' % target)
 print ('Similarity measure: %s' % similarity)
@@ -42,8 +42,8 @@ print ('Optimizer: %s' % optimizer)
 
 # Get data
 print('Fetching image data...')
-I = nf.load(join(rootpath,'nobias_'+source+'.nii'))
-J = nf.load(join(rootpath,'nobias_'+target+'.nii'))
+I = load_image(join(rootpath,'nobias_'+source+'.nii'))
+J = load_image(join(rootpath,'nobias_'+target+'.nii'))
 
 # Perform affine normalization 
 print('Setting up registration...')
@@ -59,18 +59,13 @@ print('  Registration time: %f sec' % (toc-tic))
 print('Resampling source image...')
 tic = time.time()
 It = affine_resample(I, J, T) 
-# To resample the target (and avoid inverting the transformation), do: 
-# >>> Jt = resample(I, J, T, toresample='target')
-# For now, It is an instance of a local image class defined in nipy.neurospin 
-# The following line will be useless when a standard nipy image class is adopted
-It =  nf.Nifti1Image(affine=It.get_affine(), data=It.get_data())
 toc = time.time()
 print('  Resampling time: %f sec' % (toc-tic))
 
 # Save resampled source
 outfile =  source+'_TO_'+target+'.nii'
 print ('Saving resampled source in: %s' % outfile)
-nf.save(It, outfile)
+save_image(It, outfile)
 
 # Save transformation matrix
 import numpy as np
