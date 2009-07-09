@@ -25,7 +25,8 @@ brifti.save(corr_img, 'corr_run1.nii')
 # Multi-session case
 # Create Image4d instances -- this is a local class representing a
 # series of 3d images
-runs = [image4d(im, tr=2.4, slice_order='ascending', interleaved=False) for im in images]
+runs = [image4d(im, tr=2.4, slice_order='ascending', interleaved=False) 
+            for im in images]
 ##runs = runs[0:2]
 
 # Correct motion within- and between-sessions
