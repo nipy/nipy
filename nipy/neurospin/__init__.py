@@ -22,7 +22,6 @@ Distributed under the terms of the BSD License.
 
 from numpy.testing import Tester
 
-from image import Image 
 import image_registration
 import statistical_mapping
 
