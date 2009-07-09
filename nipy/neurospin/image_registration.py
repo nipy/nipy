@@ -4,9 +4,8 @@ from nipy.neurospin.register.iconic_matcher import IconicMatcher
 from nipy.neurospin.register.routines import cspline_resample
 from nipy.neurospin.register.realign4d import Image4d, realign4d, _resample4d
 
-
-### FIXME LATER
-from nipy.neurospin import Image
+# Use the brifti image object
+from nipy.io.imageformats import Nifti1Image as Image 
 
 def affine_register(source, 
                     target, 
@@ -67,7 +66,8 @@ def affine_resample(source,
                     target, 
                     T, 
                     toresample='source', 
-                    dtype=None, order=3, 
+                    dtype=None, 
+                    order=3, 
                     use_scipy=False): 
     """
     Image resampling using spline interpolation. 
@@ -92,9 +92,9 @@ def affine_resample(source,
                                     dtype=dtype)
         else: 
             data = affine_transform(target.get_data(), 
-                                  Tv[0:3,0:3], offset=Tv[0:3,3], 
-                                  output_shape=source.get_shape(), 
-                                  order=order)
+                                    Tv[0:3,0:3], offset=Tv[0:3,3], 
+                                    output_shape=source.get_shape(), 
+                                    order=order)
         return Image(data, target.get_affine())
     else:
         if not use_scipy:

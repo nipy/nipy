@@ -7,8 +7,9 @@ from nipy.neurospin.utils import emp_null
 from nipy.neurospin.glm import glm
 from nipy.neurospin.group.permutation_test import permutation_test_onesample, permutation_test_twosample
 # FIXME: rename permutation_test_onesample class so that name starts with upper case
-### FIXME LATER
-from nipy.neurospin import Image
+
+# Use the brifti image object
+from nipy.io.imageformats import Nifti1Image as Image 
 
 
 ################################################################################
