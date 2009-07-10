@@ -125,7 +125,7 @@ def apply_affine(T, xyz):
     return XYZ 
 
 
-class Affine(): 
+class Affine(object): 
 
     def __init__(self, subtype='affine', vec12=None, radius=1, flag3d=True):
         self.precond = preconditioner(radius)
