@@ -1,11 +1,11 @@
 import time
 
-from neuroimaging.testing import TestCase, assert_equal, assert_almost_equal
+from nipy.testing import TestCase, assert_equal, assert_almost_equal
 import numpy as np
 from scipy.ndimage import affine_transform
 
-from neuroimaging.neurospin.register.transform import rotation_vec2mat
-from neuroimaging.neurospin.register.routines import cspline_resample
+from nipy.neurospin.register.transform import rotation_vec2mat
+from nipy.neurospin.register.routines import cspline_resample
 
 
 class Image(object):
