@@ -119,7 +119,6 @@ def ComputeMask(fmriFiles, outputFile, infT=0.4, supT=0.9):
     """
     compute_mask_intra(fmriFiles, outputFile, False,None, infT, supT)
 
-
 # ---------------------------------------------
 # various FSL-based Pre processings functions -
 # ---------------------------------------------
