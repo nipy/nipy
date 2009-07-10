@@ -150,18 +150,18 @@ def generate_perm(k,nperm=100):
     p: array of shape(nperm,k): each row is permutation of k
     """
     if k==1:
-        return np.reshape(np.array([0]),(1,1)).astype('i')
+        return np.reshape(np.array([0]),(1,1)).astype(np.int)
     if k<6:
         aux = generate_perm(k-1)
         n = aux.shape[0]
-        perm = np.zeros((n*k,k)).astype('i')
+        perm = np.zeros((n*k,k)).astype(np.int)
         for i in range(k):
             perm[i*n:(i+1)*n,:i] = aux[:,:i]
             perm[i*n:(i+1)*n,i] = k-1
             perm[i*n:(i+1)*n,i+1:] = aux[:,i:]
     else:
         from numpy.random import rand
-        perm = np.zeros((nperm,k)).astype('i')
+        perm = np.zeros((nperm,k)).astype(np.int)
         for i in range(nperm):
             p = np.argsort(rand(k))
             perm[i,:] = p
@@ -397,7 +397,7 @@ class BGMM(GMM):
         if self.k>1:
             cent,z,J = fc.cmeans(x,self.k)
         else:
-            z = np.zeros(x.shape[0]).astype('i')
+            z = np.zeros(x.shape[0]).astype(np.int)
         self.update(x,z)
     
     def pop(self,z):
@@ -787,7 +787,7 @@ class BGMM(GMM):
         from numpy.linalg import det,inv
         from scipy.special import gammaln
         if z==None:
-            z = np.zeros(x.shape[0],'i')
+            z = np.zeros(x.shape[0],np.int)
         w=0
         for k in range(self.k):
             x = x[z==k,:]
@@ -984,10 +984,9 @@ class VBGMM(BGMM):
 
         self.scale = np.array([pinv(covariance[k]) for k in range(self.k)])
 
-        #compute the map of the precisions
+        # fixme : compute the MAP of the precisions
         #(not used, but for completness and interpretation)
         
-
         
     def initialize(self,x):
         """
@@ -1003,9 +1002,9 @@ class VBGMM(BGMM):
             cent,z,J = fc.cmeans(x,self.k)
         else:
             z = np.zeros(x.shape[0]).astype(np.int)
-        L = np.zeros((n,self.k))
-        L[np.arange(n),z]=1
-        self._Mstep(x,L)
+        l = np.zeros((n,self.k))
+        l[np.arange(n),z]=1
+        self._Mstep(x,l)
 
     def map_label(self,x,l=None):
         """
@@ -1184,7 +1183,7 @@ class BGMM_old(GMM):
         nit = 10
         mean,label,J = fc.cmeans(x,self.k,label,nit)
 
-        label, mean, meansc, prec, we,dof,Li = fc.bayesian_gmm (x,self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,label,niter,delta)
+        label, mean, meansc, prec, we, dof, Li = fc.bayesian_gmm (x,self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,label,niter,delta)
         self.estimated = 1
         self.means = mean
         self.shrinkage = meansc

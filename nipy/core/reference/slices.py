@@ -5,9 +5,7 @@ A set of methods to get coordinate maps which represent slices in space.
 from nipy.core.reference.coordinate_system import CoordinateSystem
 from nipy.core.reference.coordinate_map import Affine
 from nipy.core.reference.array_coords import ArrayCoordMap
-import numpy.linalg as L
 import numpy as np
-import numpy.random as R
 
 __docformat__ = 'restructuredtext'
 

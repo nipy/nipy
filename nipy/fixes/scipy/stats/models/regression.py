@@ -18,6 +18,7 @@ General reference for regression models:
 
 __docformat__ = 'restructuredtext en'
 
+import warnings
 from string import join as sjoin
 from csv import reader
 
@@ -28,9 +29,97 @@ from nipy.fixes.scipy.stats.models.model import LikelihoodModel, \
      LikelihoodModelResults
 from nipy.fixes.scipy.stats.models import utils
 
+from scipy import stats
+from scipy.stats.stats import ss
+
+from descriptors import setattr_on_read
+
+import numpy.lib.recfunctions as nprf
+
+def categorical(data):
+    '''
+    Returns an array changing categorical variables to dummy variables.
+
+    Take a structured or record array and returns an array with categorical variables.
+
+    Notes
+    -----
+    This returns a dummy variable for EVERY distinct string.  If noconsant
+    then this is okay.  Otherwise, a "intercept" needs to be designated in regression.
+
+    Returns the same array as it's given right now, consider returning a structured 
+    and plain ndarray (with names stripped, etc.)
+    '''
+    if not data.dtype.names and not data.mask.any():
+        print data.dtype
+        print "There is not a categorical variable?"
+        return data
+    #if data.mask.any():
+    #    print "Masked arrays are not handled yet."
+    #    return data
+
+    elif data.dtype.names:  # this will catch both structured and record
+                            # arrays, no other array could have string data!
+                            # not sure about masked arrays yet
+        for i in range(len(data.dtype)):
+            if data.dtype[i].type is np.string_:
+                tmp_arr = np.unique(data.field(i))
+                tmp_dummy = (tmp_arr[:,np.newaxis]==data.field(i)).astype(float)
+# .field only works for record arrays
+# tmp_dummy is a number of dummies x number of observations array
+                data=nprf.drop_fields(data,data.dtype.names[i],usemask=False, 
+                                asrecarray=True)
+                data=nprf.append_fields(data,tmp_arr.strip("\""), data=tmp_dummy,
+                                    usemask=False, asrecarray=True)
+        return data
+
+
+#How to document a class?
+#Docs are a little vague and there are no good examples
+#Some of these attributes are most likely intended to be private I imagine
 class OLSModel(LikelihoodModel):
-    """
+    """    
     A simple ordinary least squares model.
+
+    Parameters
+    ----------
+        `design`: array-like
+            This is your design matrix.  Data are assumed to be column ordered
+            with observations in rows.
+
+    Methods
+    -------
+    model.logL(b=self.beta, Y)
+        Returns the log-likelihood of the parameter estimates
+
+        Parameters
+        ----------
+        b : array-like
+            `b` is an array of parameter estimates the log-likelihood of which 
+            is to be tested.
+        Y : array-like
+            `Y` is the vector of dependent variables.            
+    model.__init___(design, hascons=True)
+        Creates a `OLSModel` from a design.
+
+    Attributes
+    ----------
+    design : ndarray
+        This is the design, or X, matrix.
+    wdesign : ndarray
+        This is the whitened design matrix.
+        design = wdesign by default for the OLSModel, though models that
+        inherit from the OLSModel will whiten the design.
+    calc_beta : ndarray
+        This is the Moore-Penrose pseudoinverse of the whitened design matrix.
+    normalized_cov_beta : ndarray                      
+        np.dot(calc_beta, calc_beta.T)  
+    df_resid : integer
+        Degrees of freedom of the residuals.
+        Number of observations less the rank of the design.
+    df_model : integer
+        Degres of freedome of the model.
+        The rank of the design.
 
     Examples
     --------
@@ -52,147 +141,252 @@ class OLSModel(LikelihoodModel):
     >>> results.t()
     array([ 0.98019606,  1.87867287])
     >>> print results.Tcontrast([0,1])
-    <T contrast: effect=2.14285714286, sd=1.14062281591, t=1.87867287326, df_denom=5>
+    <T contrast: effect=2.14285714286, sd=1.14062281591, t=1.87867287326, df_den=5>
     >>> print results.Fcontrast(np.identity(2))
-    <F contrast: F=19.4607843137, df_denom=5, df_num=2>
+    <F contrast: F=19.4607843137, df_den=5, df_num=2>
     """
 
-    def logL(self, b, Y):
-        return -norm(self.whiten(Y) - np.dot(self.wdesign, b))**2 / 2.
-
-    def __init__(self, design):
-        """
-        Create a `OLSModel` from a design.
-
-        :Parameters:
-            design : TODO
-                TODO
-        """
+    def __init__(self, design, hascons=True):
         super(OLSModel, self).__init__()
-        self.initialize(design)
+        self.initialize(design, hascons)
 
-    def initialize(self, design):
-        """
-        Set design for model, prewhitening design matrix and precomputing
-        covariance of coefficients (up to scale factor in front).
-
-        :Parameters:
-            design : TODO
-                TODO
-        """
-
+    def initialize(self, design, hascons=True):
+# Jonathan: PLEASE don't assume we have a constant...
+# TODO: handle case for noconstant regression
         self.design = design
-        self.wdesign = self.whiten(design)
+        self.wdesign = self.whiten(self.design)
         self.calc_beta = np.linalg.pinv(self.wdesign)
         self.normalized_cov_beta = np.dot(self.calc_beta,
                                          np.transpose(self.calc_beta))
-        self.df_resid = self.wdesign.shape[0] - utils.rank(self.design)
+        self.df_total = self.wdesign.shape[0]
+        self.df_model = utils.rank(self.design)
+        self.df_resid = self.df_total - self.df_model
 
-    def whiten(self, Y):
-        """
-        OLS model whitener does nothing: returns Y.
-        """
-        return Y
+    def logL(self, beta, Y, nuisance=None):
+        # Jonathan: this is overwriting an abstract method of LikelihoodModel
+        '''
+        Returns the value of the loglikelihood function at beta.
+        
+        Given the whitened design matrix, the loglikelihood is evaluated
+        at the parameter vector, beta, for the dependent variable, Y
+        and the nuisance parameter, sigma.
 
-    def est_coef(self, Y):
-        """
-        Estimate coefficients using lstsq, returning fitted values, Y
-        and coefficients, but initialize is not called so no
-        psuedo-inverse is calculated.
-        """
-        Z = self.whiten(Y)
+        Parameters
+        ----------
 
-        lfit = RegressionResults(np.linalg.lstsq(self.wdesign, Z)[0], Y)
-        lfit.predict = np.dot(self.design, lfit.beta)
+        beta : ndarray
+            The parameter estimates.  Must be of length df_model.
 
+        Y : ndarray
+            The dependent variable.
+
+        nuisance : dict, optional
+            A dict with key 'sigma', which is an optional 
+            estimate of sigma. If None, defaults to its
+            maximum likelihood estimate (with beta fixed)
+            as
+            
+            sum((Y - X*beta)**2) / n
+
+            where n=Y.shape[0], X=self.design.
+
+        Returns
+        -------
+        The value of the loglikelihood function.
+        
+
+        Notes
+        -----
+        The log-Likelihood Function is defined as
+        .. math:: \ell(\beta,\sigma,Y)=
+        -\frac{n}{2}\log(2\pi\sigma^2) - \|Y-X\beta\|^2/(2\sigma^2)
+        ..
+
+        The parameter :math:`\sigma` above is what is sometimes
+        referred to as a nuisance parameter. That is, the likelihood
+        is considered as a function of :math:`\beta`, but to evaluate it,
+        a value of :math:`\sigma` is needed.
+
+        If :math:`\sigma` is not provided, then its maximum likelihood
+        estimate
+        .. math::\hat{\sigma}(\beta) = \frac{\text{SSE}(\beta)}{n}
+
+        is plugged in. This likelihood is now a function
+        of only :math:`\beta` and is technically referred to as 
+        a profile-likelihood.
+
+        References
+        ----------
+        .. [1] W. Green.  "Econometric Analysis," 5th ed., Pearson, 2003.
+        '''
+        X = self.wdesign
+        wY = self.whiten(Y)
+        r = wY - np.dot(X, beta)
+        n = self.df_total
+        SSE = (r**2).sum(0)
+        if nuisance is None:
+            sigmasq = SSE / n
+        else:
+            sigmasq = nuisance['sigma']
+        loglf = -n/2.*np.log(2*np.pi*sigmasq) - SSE / (2*sigmasq)
+        return loglf
+    
+    def score(self, beta, Y, nuisance=None):
+        # Jonathan: this is overwriting an abstract method of LikelihoodModel
+        '''
+        Returns the score function, the gradient of the loglikelihood function at (beta, Y, nuisance).
+
+        See logL for details.
+        
+        Parameters
+        ----------
+
+        beta : ndarray
+            The parameter estimates.  Must be of length df_model.
+
+        Y : ndarray
+            The dependent variable.
+
+        nuisance : dict, optional
+            A dict with key 'sigma', which is an optional 
+            estimate of sigma. If None, defaults to its
+            maximum likelihood estimate (with beta fixed)
+            as
+            
+            sum((Y - X*beta)**2) / n
+
+            where n=Y.shape[0], X=self.design.
+
+        Returns
+        -------
+        The gradient of the loglikelihood function.
+        '''
+        X = self.wdesign
+        wY = self.whiten(Y)
+        r = wY - np.dot(X, beta)
+        n = self.df_total
+        if nuisance is None:
+            SSE = (r**2).sum(0)
+            sigmasq = SSE / n
+        else:
+            sigmasq = nuisance['sigma']
+        return np.dot(X, r) / sigmasq
+
+    def information(self, beta, nuisance=None):
+        # Jonathan: this is overwriting an abstract method of LikelihoodModel
+        '''
+        Returns the information matrix at (beta, Y, nuisance).
+        
+        See logL for details.
+
+        Parameters
+        ----------
+
+        beta : ndarray
+            The parameter estimates.  Must be of length df_model.
+
+        nuisance : dict
+            A dict with key 'sigma', which is an 
+            estimate of sigma. If None, defaults to its
+            maximum likelihood estimate (with beta fixed)
+            as
+            
+            sum((Y - X*beta)**2) / n
+
+            where n=Y.shape[0], X=self.design.
+
+        Returns
+        -------
+        The information matrix, the negative of the inverse of the
+        Hessian of the
+        of the log-likelihood function evaluated at (theta, Y, nuisance).
+        
+
+        '''
+        X = self.design
+        sigmasq = nuisance['sigma']
+        C = sigmasq * np.dot(X.T, X)
+        return C
+
+                      
+#   Note: why have a function that doesn't do anything? does it have to be here to be
+#   overwritten?
+#   Could this be replaced with the sandwich estimators 
+#   without writing a subclass?
+#
+#   Jonathan: the subclasses WLSModel, ARModel and GLSModel all 
+#   overwrite this method. The point of these subclasses
+#   is such that not much of OLSModel has to be changed
+
+    def whiten(self, X):
+        """
+        This matrix is the matrix whose pseudoinverse is ultimately
+        used in estimating the coefficients. For OLSModel, it is
+        does nothing. For WLSmodel, ARmodel, it pre-applies
+        a square root of the covariance matrix to X.
+        """
+        return X
+
+    @setattr_on_read
+    def has_intercept(self):
+        """
+        Check if column of 1s is in column space of design
+        """
+        o = np.ones(self.design.shape[0])
+        obeta = np.dot(self.calc_beta, o)
+        ohat = np.dot(self.wdesign, obeta)
+        if np.allclose(ohat, o):
+            return True
+        return False
+
+    @setattr_on_read
+    def rank(self):
+        """
+        Compute rank of design matrix
+        """
+        return utils.rank(self.wdesign)
 
     def fit(self, Y):
+#    def fit(self, Y, robust=None):
+# Jonathan: it seems the robust method are different estimates
+# of the covariance matrix for a heteroscedastic regression model.
+# This functionality is in WLSmodel. (Weighted least squares models assume
+# covariance is diagonal, i.e. heteroscedastic).
+
+# Some of the quantities, like AIC and BIC are defined for 
+# any model with a likelihood and they should be properties
+# of the LikelihoodModel
         """
         Full fit of the model including estimate of covariance matrix,
         (whitened) residuals and scale.
 
+        Parameters
+        ----------
+        Y : array-like
+            The dependent variable for the Least Squares problem.
+            
+
+        Returns 
+        --------
+        fit : RegressionResults
         """
-        Z = self.whiten(Y)
-
-        lfit = RegressionResults(np.dot(self.calc_beta, Z), Y,
-                       normalized_cov_beta=self.normalized_cov_beta)
-
-        lfit.df_resid = self.df_resid
-        lfit.predict = np.dot(self.design, lfit.beta)
-        lfit.resid = Z - np.dot(self.wdesign, lfit.beta)
-        lfit.scale = np.add.reduce(lfit.resid**2) / lfit.df_resid
-
-        lfit.Z = Z
-
+        wY = self.whiten(Y)
+        beta = np.dot(self.calc_beta, wY)
+        wresid = wY - np.dot(self.wdesign, beta)
+        dispersion = np.sum(wresid**2, 0) / (self.wdesign.shape[0] - self.wdesign.shape[1])
+        lfit = RegressionResults(beta, Y, self,
+                                 wY, wresid, dispersion=dispersion,
+                                 cov=self.normalized_cov_beta)
         return lfit
-
-def read_design(desfile, delimiter=',', try_integer=True):
-    """
-    Return a record array with the design.
-    The columns are first cast as numpy.float, if this fails, its
-    dtype is unchanged. 
-
-    If try_integer is True and a given column can be cast as float,
-    it is then tested to see if it can be cast as numpy.int.
-
-    >>> design = [["id","age","gender"],[1,23.5,"male"],[2,24.1,"female"],[3,24.5,"male"]]
-    >>> read_design(design)
-    recarray([(1, 23.5, 'male'), (2, 24.100000000000001, 'female'),
-    (3, 24.5, 'male')],
-    dtype=[('id', '<i4'), ('age', '<f8'), ('gender', '|S6')])
-    >>> design = [["id","age","gender"],[1,23.5,"male"],[2,24.1,"female"],[3.,24.5,"male"]]
-    >>> read_design(design)
-    recarray([(1, 23.5, 'male'), (2, 24.100000000000001, 'female'),
-    (3, 24.5, 'male')],
-    dtype=[('id', '<i4'), ('age', '<f8'), ('gender', '|S6')])
-    >>> read_design(design, try_integer=False)
-    recarray([(1.0, 23.5, 'male'), (2.0, 24.100000000000001, 'female'),
-    (3.0, 24.5, 'male')],
-    dtype=[('id', '<f8'), ('age', '<f8'), ('gender', '|S6')])
-    >>>
-
-    """
-    
-    if type(desfile) == type("string"):
-        desfile = file(desfile)
-	_reader = reader(desfile, delimiter=delimiter)
-    else:
-        _reader = iter(desfile)
-    colnames = _reader.next()
-
-    predesign = np.rec.fromrecords([row for row in _reader], names=colnames)
-    
-    # Try to typecast each column to float, then int
-    
-    dtypes = predesign.dtype.descr
-    newdescr = []
-    newdata = []
-    for name, descr in dtypes:
-        x = predesign[name]
-        try:
-            y = np.asarray(x.copy(), np.float) # cast as float
-            if np.alltrue(np.equal(x, y)):
-                if try_integer:
-                    z = y.astype(np.int) # cast as int
-                    if np.alltrue(np.equal(y, z)):
-                        newdata.append(z)
-                        newdescr.append(z.dtype.descr[0][1])
-                    else:
-                        newdata.append(y)
-                        newdescr.append(y.dtype.descr[0][1])
-                else:
-                    newdata.append(y)
-                    newdescr.append(y.dtype.descr[0][1])
-        except:
-            newdata.append(x)
-            newdescr.append(descr)
-
-    return np.rec.fromarrays(newdata, formats=sjoin(newdescr, ','), names=colnames)
-
 
 class ARModel(OLSModel):
     """
     A regression model with an AR(p) covariance structure.
+
+    In terms of a LikelihoodModel, the parameters
+    are beta, the usual regression parameters,
+    and sigma, a scalar nuisance parameter that
+    shows up as multiplier in front of the AR(p) covariance.
 
     The linear autoregressive process of order p--AR(p)--is defined as:
         TODO
@@ -228,9 +422,9 @@ class ARModel(OLSModel):
     >>> results.t()
     array([ 30.796394  ,  -2.66543144])
     >>> print results.Tcontrast([0,1])
-    <T contrast: effect=-0.561454972239, sd=0.210643186553, t=-2.66543144085, df_denom=5>
+    <T contrast: effect=-0.561454972239, sd=0.210643186553, t=-2.66543144085, df_den=5>
     >>> print results.Fcontrast(np.identity(2))
-    <F contrast: F=2762.42812716, df_denom=5, df_num=2>
+    <F contrast: F=2762.42812716, df_den=5, df_num=2>
     >>>
     >>> model.rho = np.array([0,0])
     >>> model.iterative_fit(data['Y'], niter=3)
@@ -282,8 +476,7 @@ class ARModel(OLSModel):
             _X[(i+1):] = _X[(i+1):] - self.rho[i] * X[0:-(i+1)]
         return _X
     
-
-def yule_walker(self, X, order=1, method="unbiased", df=None, inv=False):
+def yule_walker(X, order=1, method="unbiased", df=None, inv=False):    
     """
     Estimate AR(p) parameters from a sequence X using Yule-Walker equation.
 
@@ -311,20 +504,20 @@ def yule_walker(self, X, order=1, method="unbiased", df=None, inv=False):
         raise ValueError, "ACF estimation method must be 'unbiased' \
         or 'MLE'"
     X = np.asarray(X, np.float64)
-    X -= X.mean()
+    X -= X.mean(0)
     n = df or X.shape[0]
 
     if method == "unbiased":
-        denom = lambda k: n - k
+        den = lambda k: n - k
     else:
-        denom = lambda k: n
+        den = lambda k: n
 
     if len(X.shape) != 1:
         raise ValueError, "expecting a vector to estimate AR parameters"
     r = np.zeros(order+1, np.float64)
-    r[0] = (X**2).sum() / denom(0)
+    r[0] = (X**2).sum() / den(0)
     for k in range(1,order+1):
-        r[k] = (X[0:-k]*X[k:]).sum() / denom(k)
+        r[k] = (X[0:-k]*X[k:]).sum() / den(k)
     R = toeplitz(r[:-1])
 
     rho = np.linalg.solve(R, r[1:])
@@ -359,9 +552,9 @@ class WLSModel(OLSModel):
     >>> results.t()
     array([ 0.35684428,  2.0652652 ])
     >>> print results.Tcontrast([0,1])
-    <T contrast: effect=2.91666666667, sd=1.41224801095, t=2.06526519708, df_denom=5>
+    <T contrast: effect=2.91666666667, sd=1.41224801095, t=2.06526519708, df_den=5>
     >>> print results.Fcontrast(np.identity(2))
-    <F contrast: F=26.9986072423, df_denom=5, df_num=2>
+    <F contrast: F=26.9986072423, df_den=5, df_num=2>
     """
     def __init__(self, design, weights=1):
         weights = np.array(weights)
@@ -397,40 +590,147 @@ class RegressionResults(LikelihoodModelResults):
 
     It handles the output of contrasts, estimates of covariance, etc.
     """
+    def __init__(self, theta, Y, model, wY, wresid, cov=None, dispersion=1., nuisance=None):
+        """
+        See LikelihoodModelResults constructor.
 
-    def __init__(self, beta, Y, normalized_cov_beta=None, scale=1.):
-        super(RegressionResults, self).__init__(beta,
-                                                 normalized_cov_beta,
-                                                 scale)
-        self.Y = Y
+        The only difference is that the whitened Y and residual values are stored for
+        a regression model.
+        """
+        LikelihoodModelResults.__init__(self, theta, Y, model, cov, dispersion, nuisance)
+        self.wY = wY
+        self.wresid = wresid
 
+    @setattr_on_read
+    def resid(self):
+        """
+        Residuals from the fit.
+        """
+        beta = self.theta # the LikelihoodModelResults has parameters named 'theta'
+        X = self.model.design
+        return self.Y - self.predicted
+
+    @setattr_on_read
     def norm_resid(self):
         """
         Residuals, normalized to have unit length.
 
-        Note: residuals are whitened residuals.
+        Notes
+        -----
+        Is this supposed to return "stanardized residuals," residuals standardized
+        to have mean zero and approximately unit variance?
+
+        d_i = e_i/sqrt(MS_E)
+
+        Where MS_E = SSE/(n - k)
+
+        See: Montgomery and Peck 3.2.1 p. 68
+             Davidson and MacKinnon 15.2 p 662
+
         """
-        if not hasattr(self, 'resid'):
-            raise ValueError, 'need normalized residuals to estimate standard deviation'
 
-        sdd = utils.recipr(self.sd) / np.sqrt(self.df)
-        return  self.resid * np.multiply.outer(np.ones(self.Y.shape[0]), sdd)
+        return self.resid * utils.recipr(np.sqrt(self.dispersion))
 
+# predict is a verb
+# do the predicted values need to be done automatically, then?
+# or should you give a predict method similar to STATA
 
-    def predictors(self, design):
+    @setattr_on_read
+    def predicted(self):
         """
         Return linear predictor values from a design matrix.
         """
-        return np.dot(design, self.beta)
+        beta = self.theta # the LikelihoodModelResults has parameters named 'theta'
+        X = self.model.design
+        return np.dot(X, beta)
 
-    def Rsq(self, adjusted=False):
+    @setattr_on_read 
+    def R2_adj(self):
         """
         Return the R^2 value for each row of the response Y.
+        
+        Notes
+        -----
+        Changed to the textbook definition of R^2.
+        
+        See: Davidson and MacKinnon p 74
         """
-        self.Ssq = np.std(self.Z,axis=0)**2
-        ratio = self.scale / self.Ssq
-        if not adjusted: ratio *= ((self.Y.shape[0] - 1) / self.df_resid)
-        return 1 - ratio
+        if not self.model.has_intercept:
+            warnings.warn("model does not have intercept term, SST inappropriate")
+        d = 1. - self.R2
+        d *= ((self.df_total - 1.) / self.df_resid)
+        return 1 - d
+
+    @setattr_on_read 
+    def R2(self):
+        """
+        Return the adjusted R^2 value for each row of the response Y.
+        
+        Notes
+        -----
+        Changed to the textbook definition of R^2.
+        
+        See: Davidson and MacKinnon p 74
+        """
+        d = self.SSE / self.SST
+        return 1 - d
+
+    @setattr_on_read
+    def SST(self):
+        """
+        Total sum of squares. If not from an OLS model
+        this is "pseudo"-SST.
+        """
+        if not self.model.has_intercept:
+            warnings.warn("model does not have intercept term, SST inappropriate")
+        return ((self.wY - self.wY.mean(0))**2).sum(0)
+
+    @setattr_on_read
+    def SSE(self):
+        """
+        Error sum of squares. If not from an OLS model
+        this is "pseudo"-SSE.
+        """
+        return (self.wresid**2).sum(0)
+
+    @setattr_on_read
+    def SSR(self):
+        """
+        Regression sum of squares
+        """
+        return self.SST - self.SSE
+
+    @setattr_on_read
+    def MSR(self):
+        """
+        Mean square (regression)
+        """        
+        return self.SSR / (self.df_model - 1)
+
+    @setattr_on_read
+    def MSE(self):
+        """
+        Mean square (error)
+        """        
+        return self.SSE / self.df_resid
+
+    @setattr_on_read
+    def MST(self):
+        """
+        Mean square (total)
+        """
+        return self.SST / (self.df_total - 1)
+
+    @setattr_on_read
+    def F_overall(self):
+        """
+        Overall goodness of fit F test, comparing model
+        to a model with just an intercept. If not an OLS
+        model this is a pseudo-F.
+        """
+        F = self.MSR / self.MSE
+        Fp = stats.f.sf(F, self.df_model - 1, self.df_resid)
+        return {'F':F, 'p_value':Fp, 'df_num': self.df_model-1, 'df_den': self.df_resid}
 
 
 class GLSModel(OLSModel):
@@ -455,6 +755,7 @@ def isestimable(C, D):
     From an q x p contrast matrix C and an n x p design matrix D, checks
     if the contrast C is estimable by looking at the rank of vstack([C,D]) and
     verifying it is the same as the rank of D.
+    
     """
     if C.ndim == 1:
         C.shape = (C.shape[0], 1)

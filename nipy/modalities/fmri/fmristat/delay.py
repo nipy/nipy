@@ -15,12 +15,15 @@ import os, fpformat
 import numpy as np
 import numpy.linalg as L
 from nipy.fixes.scipy.stats.models.utils import recipr, recipr0
-from nipy.fixes.scipy.stats.models.contrast import Contrast, ContrastResults
+# FIXME: This is broken. Don't know how to fix it
+#from nipy.fixes.scipy.stats.models.contrast import Contrast, ContrastResults
 
-from nipy.modalities.fmri import hrf
-from nipy.modalities.fmri.protocol import ExperimentalQuantitative
 from nipy.algorithms.statistics.regression import TOutput 
-from nipy.modalities.fmri.fmristat.invert import invertR
+
+class Contrast(object):
+    """ Empty boggus class to get the docs building.
+    """
+    # FIXME: This empty class needs to go.
 
 class DelayContrast(Contrast):
     """
@@ -428,115 +431,3 @@ class DelayContrastOutput(TOutput):
             if self.sd:
                 self.sdimg_iters[i].next().set(data.sd[i])
 
-class DelayHRF(hrf.SpectralHRF):
-
-    '''
-    Delay filter with spectral or Taylor series decomposition
-    for estimating delays.
-
-    Liao et al. (2002).
-    '''
-
-    def __init__(self, input_hrf=hrf.canonical, spectral=True, **keywords):
-        """
-        :Parameters:
-            `input_hrf` : TODO
-                TODO
-            `spectral` : bool
-                TODO
-            `keywords` : dict
-                Passed through as keywords to the `hrf.SpectralHRF` constructor.
-        """
-        hrf.SpectralHRF.__init__(self, input_hrf, spectral=spectral,
-                                 names=['hrf'], **keywords)
-
-    def deltaPCA(self, tmax=50., lower=-15.0, delta=None):
-        """
-        Perform an expansion of fn, shifted over the values in delta.
-        Effectively, a Taylor series approximation to fn(t+delta), in delta,
-        with basis given by the filter elements. If fn is None, it assumes
-        fn=IRF[0], that is the first filter.
-
-        :Parameters:
-            `tmax` : float
-                TODO
-            `lower` : float
-                TODO
-            `delta` : [float]
-                TODO
-
-        :Returns: ``None``
-
-        Example
-        -------
-
-        >>> from numpy.random import *
-        >>> from pylab import *
-        >>> from numpy import *
-        >>>
-        >>> import nipy.modalities.fmri.hrf as HRF
-        >>> import numpy as np
-        >>>
-        >>> ddelta = 0.25
-        >>> delta = np.arange(-4.5,4.5+ddelta, ddelta)
-        >>> time = np.arange(0,20,0.2)
-        >>> hrf = HRF.SpectralHRF(deriv=True)
-        >>>
-        >>> canonical = HRF.canonical
-        >>> taylor = hrf.deltaPCA(delta=delta)
-        >>> curplot = plot(time, taylor.components[1](time))
-        >>> curplot = plot(time, taylor.components[0](time))
-        >>> curtitle=title('Shift using Taylor series -- components')
-        >>> show()
-        >>>
-        >>> curplot = plot(delta, taylor.coef[1](delta))
-        >>> curplot = plot(delta, taylor.coef[0](delta))
-        >>> curtitle = title('Shift using Taylor series -- coefficients')
-        >>> show()
-        >>>
-        >>> curplot = plot(delta, taylor.inverse(delta))
-        >>> curplot = plot(taylor.coef[1](delta) / taylor.coef[0](delta), delta)
-        >>> curtitle = title('Shift using Taylor series -- inverting w1/w0')
-        >>> show()
-        >>>
-        """
-
-        if delta is None: delta = np.arange(-4.5,4.6,0.1)
-        
-        time = np.arange(lower, tmax, self.dt)
-        irf = self.IRF
-
-        if not self.spectral: # use Taylor series approximation
-            dirf = interpolant(time, -np.gradient(irf(time), self.dt))
-
-            H = np.array([irf(time - d) for d in delta])
-
-            W = np.array([irf(time), dirf(time)])
-            W = W.T
-
-            WH = np.dot(L.pinv(W), H.T)
-
-            coef = [interpolant(delta, w) for w in WH]
-            
-            def approx(time, delta):
-                value = (coef[0](delta) * irf(time)
-                         + coef[1](delta) * dirf(time))
-                return value
-
-            approx.coef = coef
-            approx.components = [irf, dirf]
-            self.n = len(approx.components)
-            self.names = [self.names[0], 'd%s' % self.names[0]]
-
-        else:
-            hrf.SpectralHRF.deltaPCA(self)
-
-        (self.approx.theta,
-         self.approx.inverse,
-         self.approx.dinverse,
-         self.approx.forward,
-         self.approx.dforward) = invertR(delta, self.approx.coef)
-        
-        self.delay = self.approx
-
-canonical = DelayHRF()
