@@ -1,7 +1,7 @@
 import numpy as np
 
 import nipy.neurospin.statistical_mapping as sm
-import nipy.io.imageformats as brifti
+from nipy.io.imageformats import Nifti1Image as Image
 
 def remake_images(): 
     # Get group data
