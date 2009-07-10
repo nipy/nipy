@@ -21,6 +21,9 @@ class ROI:
     def __init__(self, id="roi", header=None):
         """
         roi = ROI(id='roi', header=None)
+
+        INPUT:
+        -------
         - id (string): roi identifier
         - header (nipy header) : referential-defining information
         """
@@ -31,7 +34,9 @@ class ROI:
     def check_header(self, image):
         """
         checks that the image is in the header of self
+
         INPUT:
+        ------
         - image: (string) the path of an image
         """
         #print "check not implemented yet"
@@ -49,7 +54,9 @@ class ROI:
     def from_binary_image(self, image):
         """
         Take all the <>0 sites of the image as the ROI
+
         INPUT:
+        -------
         - image: (string) the path of an image
         """
         self.check_header(image)
@@ -84,8 +91,11 @@ class ROI:
 
     def from_labelled_image(self,image,label):
         """
-        All the voxels of the image that have the pre-defined label
+        Define the ROI as the set of  voxels of the image
+        that have the pre-defined label
+
         INPUT:
+        ------
         image: a nifti label (discrete valued) image
         label (int): the desired label
         """
@@ -97,11 +107,16 @@ class ROI:
         
     def from_position_and_image(self,image,position):
         """
-        the label on the image that is closest to the provided position
+         Define the ROI as the set of  voxels of the image
+         that is closest to the provided position
+
         INPUT:
-        - image:  a nifti label (discrete valued) image
-        - position: a position in the common space
+        -------
+        - image: string, the path of a nifti label (discrete valued) image
+        - position: array of shape (3,), a position in the common space
+
         NOTE:
+        -------
         everything could be performed in the image space
         """
         # check that the header is OK indeed
@@ -124,8 +139,10 @@ class ROI:
     def make_image(self,name):
         """
         write a binary nifty image where the nonzero values are the ROI mask
+
         INPUT:
-        the desired image name
+        ---------
+        name: (string) the desired image name
         """
         #if name==None: name = "%s.nii" % self.id
         data = np.zeros(tuple(self.header['dim'][1:4]))
@@ -137,12 +154,19 @@ class ROI:
 
     def set_feature(self,fid,data):
         """
+        Given an array of data that is assumed to comprise
+        the ROI, get the subset of values that correponds to
+        voxel-based data in the ROI
+        
         INPUT:
+        -------
         - fid (string): feature identifier, e.g.
         - data (array of shape (self.VolumeExtent))
         this function creates a reduced feature
         array corresponding to the ROI item
+
         OUTPUT:
+        --------
         - ldata: array of shape (roi.nbvox,dim)
         the ROI-based feature
         """
@@ -158,9 +182,11 @@ class ROI:
     def set_feature_from_image(self,fid,image):
         """
         extract some roi-related information from an image
+
         INPUT:
-        - fid: feature id
-        - image(string): image name
+        -------
+        - fid (string): feature id
+        - image(string): image path
         """
         nim = nifti.NiftiImage(image)  
         header = nim.header

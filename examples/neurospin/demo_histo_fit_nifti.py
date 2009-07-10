@@ -9,30 +9,51 @@ Author : Bertrand Thirion, 2008-2009
 """
 
 import numpy as np
-import scipy.stats as st
-import os.path as op
+import os
 import nifti
+import scipy.stats as st
 
 import nipy.neurospin.utils.emp_null as en
 
-nbru = range(1,13)
-
-nbeta = [29]
-theta = float(st.t.isf(0.01,100))
+swd = "/tmp/"
 verbose = 1
 
-swd = "/tmp/"
+data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
+MaskImage = os.path.join(data_dir,'mask.nii.gz')
+InputImage = os.path.join(data_dir,'spmT_0029.nii.gz')
 
-# a mask of the brain in each subject
-Mask_Images =["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysis_RNorm_S/mask.img" % bru for bru in nbru]
+if os.path.exists(InputImage)==False:
+    import urllib2
+    url = 'ftp://ftp.cea.fr/pub/dsv/madic/download/nipy'
+    filename = 'mask.nii.gz'
+    datafile = os.path.join(url,filename)
+    fp = urllib2.urlopen(datafile)
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+        assert os.path.exists(data_dir)
+    local_file = open(MaskImage, 'w')
+    local_file.write(fp.read())
+    local_file.flush()
+    local_file.close()
+    filename = 'spmT_0029.nii.gz'
+    datafile = os.path.join(url,filename)
+    fp = urllib2.urlopen(datafile)
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+        assert os.path.exists(data_dir)
+    local_file = open(InputImage, 'w')
+    local_file.write(fp.read())
+    local_file.flush()
+    local_file.close()   
 
-# activation image in each subject
-betas = [["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysis_RNorm_S/spmT_%04d.img" % (bru, n) for n in nbeta] for bru in nbru]
+        
 
-s=6
+
+
+theta = float(st.t.isf(0.01,100))
 
 # Read the referential
-nim = nifti.NiftiImage(Mask_Images[s])
+nim = nifti.NiftiImage(MaskImage)
 ref_dim = nim.getVolumeExtent()
 grid_size = np.prod(ref_dim)
 sform = nim.header['sform']
@@ -44,7 +65,7 @@ xyz = np.array(np.where(mask))
 nbvox = np.size(xyz,1)
 
 # read the functional image
-rbeta = nifti.NiftiImage(betas[s][0])
+rbeta = nifti.NiftiImage(InputImage)
 beta = rbeta.asarray().T
 beta = beta[mask>0]
 
