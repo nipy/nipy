@@ -1,7 +1,7 @@
 import numpy as np
 
 import nipy.neurospin.statistical_mapping as sm
-import nipy.io.imageformats as brifti
+from nipy.io.imageformats import Nifti1Image as Image
 
 def remake_images(): 
     # Get group data
@@ -19,11 +19,11 @@ def remake_images():
     mask_images = []
     for i in range(data.shape[0]):
         aux[list(xyz)] = data[i,:]
-        data_images.append(brifti.nifti1.Nifti1Image(aux.copy(), np.eye(4)))
+        data_images.append(Image(aux.copy(), np.eye(4)))
         aux[list(xyz)] = vardata[i,:]
-        vardata_images.append(brifti.nifti1.Nifti1Image(aux.copy(), np.eye(4)))
+        vardata_images.append(Image(aux.copy(), np.eye(4)))
         aux[list(xyz)] = 1
-        mask_images.append(brifti.nifti1.Nifti1Image(aux.copy(), np.eye(4)))
+        mask_images.append(Image(aux.copy(), np.eye(4)))
 
     return data_images, vardata_images, mask_images
 

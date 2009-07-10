@@ -1,6 +1,6 @@
 import numpy as np
 
-from nipy.neurospin import Image
+from nipy.io.imageformats import Nifti1Image as Image
 from nipy.neurospin.statistical_mapping import LinearModel
 
 from datamind.core import DF
