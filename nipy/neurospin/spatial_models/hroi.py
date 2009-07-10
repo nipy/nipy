@@ -10,7 +10,6 @@ Author : Bertrand Thirion, 2009
 
 import numpy as np
 import nipy.neurospin.graph.graph as fg
-import nipy.neurospin.graph.field as ff
 
 from nipy.neurospin.graph.forest import Forest
 from nipy.neurospin.utils.roi import MultipleROI

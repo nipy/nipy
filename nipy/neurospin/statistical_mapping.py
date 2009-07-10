@@ -16,15 +16,6 @@ from nipy.io.imageformats import Nifti1Image as Image
 # Cluster statistics 
 ################################################################################
 
-def z_threshold(height_th, height_control):
-    if height_control == 'fpr':
-        return sp_stats.norm.isf(height_th)
-    elif height_control == 'fdr':
-        return emp_null.FDR(zmap).threshold(height_th)
-    elif height_control == 'bonferroni':
-        return sp_stats.norm.isf(height_th/nvoxels)
-    else: ## Brute-force thresholding 
-        return height_th
 
 def bonferroni(p, n):
     return np.minimum(1., p*n)
@@ -60,7 +51,14 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
     nvoxels = np.size(xyz, 0)
 
     # Thresholding 
-    zth = z_threshold(height_th, height_control)
+    if height_control == 'fpr':
+        zth = sp_stats.norm.isf(height_th)
+    elif height_control == 'fdr':
+        zth = emp_null.FDR(zmap).threshold(height_th)
+    elif height_control == 'bonferroni':
+        zth = sp_stats.norm.isf(height_th/nvoxels)
+    else: ## Brute-force thresholding 
+        zth = height_th
     pth = sp_stats.norm.sf(zth)
     above_th = zmap>zth
     if len(np.where(above_th)[0]) == 0:

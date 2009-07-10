@@ -5,7 +5,6 @@ TODO : add an option for non-contour mode and for grid+markers mode"""
 from numpy import *
 import nifti, sys
 from pylab import *
-import os
 
 def resampleNiftiImage(src, target, order = 2, mode = 'constant'):
 	from scipy.ndimage import affine_transform
@@ -124,7 +123,6 @@ def display_norm_contour_manyfilenames(niTemplate, filenameStruct, filenameBold,
 	matplotlib.interactive(True)
 
 
-import glob
 if __name__ == '__main__':
 	idx = [i for i, x in enumerate(sys.argv) if x.startswith('-')] + [len(sys.argv)]
 	args = dict([(sys.argv[idx[i]], sys.argv[idx[i]+1:idx[i+1]]) for i in range(len(idx)-1)])

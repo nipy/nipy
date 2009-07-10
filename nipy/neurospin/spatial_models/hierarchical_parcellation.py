@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.random import rand, randn
+from numpy.random import rand
 
 import nipy.neurospin.graph.graph as fg
 import nipy.neurospin.graph.field as ff
@@ -113,7 +113,6 @@ def _Field_Gradient_Jac_Map_(i,ref,target, targeti):
 	
 	"""
 	import numpy.linalg as L
-	from numpy.random import randn
 	n = ref.V
 	xyz = ref.field
 	fd = target.shape[1]
