@@ -36,7 +36,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
                          noise_level=1.0, pos=pos, ampli=ampli,
                          spatial_jitter=1.0, signal_jitter=1.0,
                          width=5.0, out_text_file=None, out_niftifile=None, 
-                         verbose=False,nonrandom=0):
+                         verbose=False, seed=False):
     """
     Create surrogate (simulated) 2D activation data with spatial noise.
 
@@ -75,16 +75,16 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     verbose: boolean, optionnal
         If verbose is true, the data for the last subject is plotted as
         a 2D image.
-    nonrandom:  float, optionnal
-        If nonrandom is not 0, the random number generator is initialized
+    seed=False:  int, optionnal
+        If seed is not False, the random number generator is initialized
         at a certain value
     Returns
     -------
     dataset: 3D ndarray
         The surrogate activation map, with dimensions (nbsubj, dimx, dimy)
     """
-    if nonrandom!=0:
-        nr = np.random.RandomState([nonrandom])
+    if seed!=0:
+        nr = np.random.RandomState([seed])
     else:
         import numpy.random as nr
     
