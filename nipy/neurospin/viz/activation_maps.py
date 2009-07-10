@@ -25,7 +25,6 @@ from nifti import NiftiImage
 # Local imports
 from nipy.neurospin.utils.mask import compute_mask, _largest_cc
 from nipy.neurospin.utils.emp_null import ENN
-import nipy.neurospin.data
 
 # The sform for MNI templates
 mni_sform = np.array([[-1, 0, 0,   90],
