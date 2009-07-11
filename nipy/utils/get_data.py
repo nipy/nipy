@@ -1,4 +1,9 @@
 """
+Utilities to download data from the web.
+
+Default test data
+------------------
+
 Download the nipy test/example data from the cirl.berkeley.edu server.
 
 This utility asks the user if they would like to download the file and
@@ -10,7 +15,6 @@ if so it:
 """
 
 import os
-import subprocess
 import sys
 import tarfile
 import urllib2
@@ -40,8 +44,35 @@ def read_chunk(fp):
         yield chunk
 
 
+def download(url, filename):
+    """ Download a file from a URL to a local filename
+
+    Parameters
+    ----------
+    url: string
+        URL to download from, eg
+        'https://cirl.berkeley.edu/nipy/nipy_data.tar.gz'
+    filename: string
+        path to the local file to download to.
+    """
+    fp = urllib2.urlopen(url)
+    finfo = fp.info()
+    fsize = finfo.getheader('Content-Length')
+    print 'Downloading %(filename)s from %(url)s (size: %(fsize)s byte)' \
+                    % locals()
+    if os.sep in filename and not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
+    # read file a chunk at a time so we can provide some feedback
+    local_file = open(filename, 'w')
+    for chunk in read_chunk(fp):
+        local_file.write(chunk)
+        sys.stdout.write('.')
+        sys.stdout.flush()
+    local_file.close()
+    
+
+
 def get_data():
-    # If urlopen fails it should give the user a useful traceback
     fp = urllib2.urlopen(datafile)
     finfo = fp.info()
     fsize = finfo.getheader('Content-Length')
@@ -49,21 +80,10 @@ def get_data():
     msg += 'Would you like to download the %s byte file now ([Y]/N)? ' % fsize
     answer = raw_input(msg).lower()
     if not answer or answer == 'y':
-        download = True
+        if_download = True
     else:
-        download = False
-    if download:
-        # Create destination directory if it doesn't exist
-        if not os.path.exists(dest_dir):
-            os.makedirs(dest_dir)
-            assert os.path.exists(dest_dir)
-        local_file = open(dest_file, 'w')
-        # read file a chunk at a time so we can provide some feedback
-        for chunk in read_chunk(fp):
-            local_file.write(chunk)
-            sys.stdout.write('.')
-            sys.stdout.flush()
-        local_file.flush()
-        local_file.close()
+        if_download = False
+    if if_download:
+        download(datafile, dest_file)
         # extract the tarball
         extract_tarfile(dest_file, dest_dir)
