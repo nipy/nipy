@@ -1,7 +1,10 @@
 import numpy as np
 import nifti
 
-class ROI:
+################################################################################
+# class `ROI`
+################################################################################
+class ROI(object):
     """
     Temporary ROI class for fff
     Ultimately, it should be merged with the nipy class
@@ -241,8 +244,9 @@ class ROI:
         pass
         
 
-        
-
+################################################################################
+# class `WeightedROI`
+################################################################################
 class WeightedROI(ROI):
     """
     ROI where a weighting is defined on the voxels
@@ -254,7 +258,11 @@ class WeightedROI(ROI):
         
         pass
 
-class MultipleROI:
+
+################################################################################
+# class `MultipleROI`
+################################################################################
+class MultipleROI(object):
     """
     This is  a class to deal with multiple ROIs defined in a given space
     mroi.header is assumed to provide all the referential information
@@ -695,6 +703,7 @@ class MultipleROI:
         return pos
         
 
+# XXX: We need to use test data shipped with nipy to do that.
 def test1(verbose = 0):
     nim = nifti.NiftiImage("/tmp/spmT_0024.nii")
     header = nim.header
