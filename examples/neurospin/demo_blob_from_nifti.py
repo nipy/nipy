@@ -6,12 +6,17 @@ Author : Bertrand Thirion, 2009
 """
 #autoindent
 
+import os
 import numpy as np
 import nifti
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.spatial_models.hroi as hroi
 
-inputImage = "/volatile/thirion/python/spmT_0024.img"
+data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
+inputImage = os.path.join(data_dir,'zstat1.nii.gz')
+# if it doe not exist, please use nipy/utils/get_data
+
+
 nim = nifti.NiftiImage(inputImage)
 header = nim.header
 data = nim.asarray().T
@@ -20,10 +25,9 @@ F = ff.Field(xyz.shape[0])
 F.from_3d_grid(xyz)
 F.set_field(data[data!=0])
 
-#idx,height,parents,label = F.threshold_bifurcations(0,3.0)
 
 label = -np.ones(F.V)
-nroi = hroi.NROI_from_field(F,header,xyz,0,3.0,smin=5)
+nroi = hroi.NROI_from_field(F,header,xyz,0,3.0,smin=10)
 if nroi!=None:
     idx = nroi.discrete_features['masked_index']
     for k in range(nroi.k):

@@ -7,7 +7,6 @@ import numpy as np
 import numpy.random as nr
 from nipy.neurospin.clustering.gmm import GMM
 import nipy.neurospin.clustering.gmm as gmm
-import nipy.neurospin.clustering.clustering as fc
 
 
 
@@ -210,7 +209,7 @@ def test_select_gmm_old_full(verbose=0):
     """
     # generate some data
     dim = 2
-    x = np.concatenate((nr.randn(100,2),3+2*nr.randn(100,2)))
+    x = np.concatenate((nr.randn(100, 2), 3+2*nr.randn(100, 2)))
     
     # estimate different GMMs of that data
     k = 2
@@ -226,13 +225,13 @@ def test_select_gmm_old_full(verbose=0):
 
     if verbose:
         # plot the result
-        xmin = 1.1*X[:,0].min() - 0.1*X[:,0].max()
-        xmax = 1.1*X[:,0].max() - 0.1*X[:,0].min()
-        ymin = 1.1*X[:,1].min() - 0.1*X[:,1].max()
-        ymax = 1.1*X[:,1].max() - 0.1*X[:,1].min()
+        xmin = 1.1*x[:, 0].min() - 0.1*x[:, 0].max()
+        xmax = 1.1*x[:, 0].max() - 0.1*x[:, 0].min()
+        ymin = 1.1*x[:, 1].min() - 0.1*x[:, 1].max()
+        ymax = 1.1*x[:, 1].max() - 0.1*x[:, 1].min()
         gd = gmm.grid_descriptor(2)
-        gd.getinfo([xmin,xmax,ymin,ymax],[50,50])
-        gmm.sample(gd,X,verbose=0)
+        gd.getinfo([xmin, xmax, ymin, ymax], [50, 50])
+        gmm.sample(gd, x, verbose=0)
         
     assert(lgmm.k<5)
     
@@ -258,13 +257,13 @@ def test_select_gmm_old_diag(verbose=0):
 
     if verbose:
         # plot the result
-        xmin = 1.1*X[:,0].min() - 0.1*X[:,0].max()
-        xmax = 1.1*X[:,0].max() - 0.1*X[:,0].min()
-        ymin = 1.1*X[:,1].min() - 0.1*X[:,1].max()
-        ymax = 1.1*X[:,1].max() - 0.1*X[:,1].min()
+        xmin = 1.1*x[:, 0].min() - 0.1*x[:, 0].max()
+        xmax = 1.1*x[:, 0].max() - 0.1*x[:, 0].min()
+        ymin = 1.1*x[:, 1].min() - 0.1*x[:, 1].max()
+        ymax = 1.1*x[:, 1].max() - 0.1*x[:, 1].min()
         gd = gmm.grid_descriptor(2)
-        gd.getinfo([xmin,xmax,ymin,ymax],[50,50])
-        gmm.sample(gd,X,verbose=0)
+        gd.getinfo([xmin, xmax, ymin, ymax], [50, 50])
+        gmm.sample(gd, x, verbose=0)
         
     assert(lgmm.k<5)
 

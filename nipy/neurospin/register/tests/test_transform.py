@@ -24,12 +24,6 @@ def test_rigid_compose():
     assert_almost_equal(T.__array__(), np.dot(T1.__array__(), T2.__array__()))
 
 def test_similarity_compose(): 
-    T1 = Affine(vec12=random_vec12('rigid'))
-    T2 = Affine(vec12=random_vec12('similarity'))
-    T = T1*T2
-    assert_almost_equal(T.__array__(), np.dot(T1.__array__(), T2.__array__()))
-
-def test_similarity_compose(): 
     T1 = Affine(vec12=random_vec12('affine'))
     T2 = Affine(vec12=random_vec12('rigid'))
     T = T1*T2

@@ -13,9 +13,7 @@ for a future 'reproducibility analysis' modumes
 Bertrand Thirion, 2009.
 """
 
-import nifti
 import numpy as np
-import os.path as op
 import nipy.neurospin.graph as fg
 
 

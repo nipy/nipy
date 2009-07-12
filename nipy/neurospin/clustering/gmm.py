@@ -897,7 +897,7 @@ class GMM_old(GMM):
         """
         data = self.check_x(data)
         if Labels==None:
-            Labels = np.zeros(data.shape[0],'i')
+            Labels = np.zeros(data.shape[0],np.int)
             nit = 10
             C,Labels,J = fc.cmeans(data,self.k,Labels,nit)
         if (self.k>data.shape[0]-1):
