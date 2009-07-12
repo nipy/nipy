@@ -2,6 +2,10 @@
 This scipt generates a noisy activation image image
 and extracts the blob from it.
 
+todo: add the blob-based avergafed signal + leaves image
+
+fixme: write dir
+
 Author : Bertrand Thirion, 2009
 """
 #autoindent
@@ -12,9 +16,13 @@ import nifti
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.spatial_models.hroi as hroi
 
+import get_data_light
+get_data_light.getIt()
 data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
-inputImage = os.path.join(data_dir,'zstat1.nii.gz')
-# if it doe not exist, please use nipy/utils/get_data
+inputImage = os.path.join(data_dir,'spmT_0029.nii.gz')
+
+#data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
+#inputImage = os.path.join(data_dir,'zstat1.nii.gz')
 
 
 nim = nifti.NiftiImage(inputImage)
