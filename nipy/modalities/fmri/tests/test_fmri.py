@@ -38,7 +38,6 @@ def test_write():
 
 def test_iter():
     img = load_image(funcfile)
-
     j = 0
     for i, d in fmri_generator(img):
         j += 1

@@ -80,15 +80,6 @@ here until they can be input.
 * base class for all new-style classes should be *object*; preliminary
   search with ``grin "class +[a-zA-Z0-9]+ *:"``
 
-Data
-====
-
-* Replace fmri test file :file:`funcfile` with a reasonable fmri file.  It's
-  shape is odd, (20,20,2,20).  Many tests have been updated to this
-  file and will need to me modified.  :file:`funcfile` is located in
-  neuroimaging/testing/functional.nii.gz
-
-
 Refactorings
 ============
 

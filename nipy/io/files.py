@@ -50,7 +50,7 @@ def load(filename):
     >>> from nipy.testing import anatfile
     >>> img = load_image(anatfile)
     >>> img.shape
-    (25, 35, 25)
+    (33, 41, 25)
     """
     img = formats.load(filename)
     aff = img.get_affine()
