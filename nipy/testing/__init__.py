@@ -11,11 +11,6 @@ Examples
 >>> img.shape
 (20, 2, 20, 20)
 
-Notes
------
-BUG: anatomical.nii.gz is a copy of functional.nii.gz.  This is a place-holder
-    until we build a proper anatomical test image.
-
 """
 
 import os
