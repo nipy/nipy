@@ -1,7 +1,10 @@
 import numpy as np
 import nifti
 
-class ROI:
+################################################################################
+# class `ROI`
+################################################################################
+class ROI(object):
     """
     Temporary ROI class for fff
     Ultimately, it should be merged with the nipy class
@@ -22,10 +25,12 @@ class ROI:
         """
         roi = ROI(id='roi', header=None)
 
-        INPUT:
-        -------
-        - id (string): roi identifier
-        - header (nipy header) : referential-defining information
+        Parameters
+        -----------
+        id: string
+            roi identifier
+        header: pynifty header 
+            referential-defining information
         """
         self.id = id
         self.header = header
@@ -33,11 +38,12 @@ class ROI:
 
     def check_header(self, image):
         """
-        checks that the image is in the header of self
+        Checks that the image is in the header of self
 
-        INPUT:
-        ------
-        - image: (string) the path of an image
+        Parameters
+        -----------
+        image: string
+            the path of an image
         """
         #print "check not implemented yet"
         eps = 1.e-15
@@ -55,9 +61,10 @@ class ROI:
         """
         Take all the <>0 sites of the image as the ROI
 
-        INPUT:
-        -------
-        - image: (string) the path of an image
+        Parameters
+        -----------
+        image: string
+            the path of an image
         """
         self.check_header(image)
         nim = nifti.NiftiImage(image)
@@ -66,7 +73,7 @@ class ROI:
         
     def from_position(self, position, radius):
         """
-        a ball in the grid
+        A ball in the grid
         requires that the grid and header are defined
         """
         # check that the ref is defined
@@ -94,10 +101,12 @@ class ROI:
         Define the ROI as the set of  voxels of the image
         that have the pre-defined label
 
-        INPUT:
-        ------
-        image: a nifti label (discrete valued) image
-        label (int): the desired label
+        Parameters
+        -----------
+        image: ndarray
+            a nifti label (discrete valued) image
+        label: int
+            the desired label
         """
         self.check_header(image)
         nim = nifti.NiftiImage(image)
@@ -110,12 +119,14 @@ class ROI:
          Define the ROI as the set of  voxels of the image
          that is closest to the provided position
 
-        INPUT:
-        -------
-        - image: string, the path of a nifti label (discrete valued) image
-        - position: array of shape (3,), a position in the common space
+        Parameters
+        -----------
+        image: string, 
+            the path of a nifti label (discrete valued) image
+        position: array of shape (3,)
+            x, y, z position in the world space
 
-        NOTE:
+        Notes
         -------
         everything could be performed in the image space
         """
@@ -140,9 +151,10 @@ class ROI:
         """
         write a binary nifty image where the nonzero values are the ROI mask
 
-        INPUT:
-        ---------
-        name: (string) the desired image name
+        Parameters
+        -----------
+        name: string 
+            the desired image name
         """
         #if name==None: name = "%s.nii" % self.id
         data = np.zeros(tuple(self.header['dim'][1:4]))
@@ -158,17 +170,20 @@ class ROI:
         the ROI, get the subset of values that correponds to
         voxel-based data in the ROI
         
-        INPUT:
-        -------
-        - fid (string): feature identifier, e.g.
-        - data (array of shape (self.VolumeExtent))
-        this function creates a reduced feature
-        array corresponding to the ROI item
-
-        OUTPUT:
+        Parameters
+        -----------
+        fid: string 
+            feature identifier, e.g. data (array of shape (self.VolumeExtent))
+        
+        Returns
         --------
-        - ldata: array of shape (roi.nbvox,dim)
-        the ROI-based feature
+        ldata: ndarray of shape (roi.nbvox, dim)
+            the ROI-based feature
+
+        Notes
+        ------
+        this function creates a reduced feature array corresponding to the 
+        ROI item.
         """
         IVE = np.shape(data)
         VE = tuple(self.header['dim'][1:4])
@@ -183,10 +198,12 @@ class ROI:
         """
         extract some roi-related information from an image
 
-        INPUT:
-        -------
-        - fid (string): feature id
-        - image(string): image path
+        Parameters
+        -----------
+        fid: string
+            feature id
+        image: string
+            image path
         """
         nim = nifti.NiftiImage(image)  
         header = nim.header
@@ -241,8 +258,9 @@ class ROI:
         pass
         
 
-        
-
+################################################################################
+# class `WeightedROI`
+################################################################################
 class WeightedROI(ROI):
     """
     ROI where a weighting is defined on the voxels
@@ -254,7 +272,11 @@ class WeightedROI(ROI):
         
         pass
 
-class MultipleROI:
+
+################################################################################
+# class `MultipleROI`
+################################################################################
+class MultipleROI(object):
     """
     This is  a class to deal with multiple ROIs defined in a given space
     mroi.header is assumed to provide all the referential information
@@ -695,6 +717,7 @@ class MultipleROI:
         return pos
         
 
+# XXX: We need to use test data shipped with nipy to do that.
 def test1(verbose = 0):
     nim = nifti.NiftiImage("/tmp/spmT_0024.nii")
     header = nim.header
