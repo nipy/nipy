@@ -5,7 +5,9 @@ from tempfile import mkstemp
 import numpy as np
 
 from nipy.testing import assert_true, assert_equal, assert_raises, \
-    assert_array_almost_equal, datapjoin
+    assert_array_almost_equal
+
+from nipy.data import template_pjoin
 
 from nipy.io.api import load_image, save_image
 from nipy.core.api import fromarray
@@ -17,7 +19,7 @@ gtmpfile = None
 def setup_module():
     warnings.simplefilter("ignore")
     global gimg, gfilename, gtmpfile
-    gimg = load_image(datapjoin('avg152T1.nii.gz'))
+    gimg = load_image(template_pjoin('avg152T1.nii.gz'))
     fd, gfilename = mkstemp(suffix='.nii.gz')
     gtmpfile = open(gfilename)
 
@@ -38,8 +40,8 @@ def test_maxminmean_values():
     # loaded array values from SPM
     y = np.asarray(gimg)
     yield assert_equal, y.shape, tuple(gimg.shape)
-    yield assert_array_almost_equal, y.max(), 437336.36169434
-    yield assert_array_almost_equal, y.mean(), 119816.18206409
+    yield assert_array_almost_equal, y.max(), 1.000000059
+    yield assert_array_almost_equal, y.mean(), 0.273968048
     yield assert_equal, y.min(), 0.0
 
 
@@ -112,7 +114,7 @@ def test_scaling_float32():
 
 
 def test_header_roundtrip():
-    img = load_image(datapjoin('avg152T1.nii.gz'))
+    img = load_image(template_pjoin('avg152T1.nii.gz'))
     fd, name = mkstemp(suffix='.nii.gz')
     tmpfile = open(name)
     hdr = img.header
@@ -136,7 +138,7 @@ def test_header_roundtrip():
 
 
 def test_file_roundtrip():
-    img = load_image(datapjoin('avg152T1.nii.gz'))
+    img = load_image(template_pjoin('avg152T1.nii.gz'))
     fd, name = mkstemp(suffix='.nii.gz')
     tmpfile = open(name)
     save_image(img, tmpfile.name)

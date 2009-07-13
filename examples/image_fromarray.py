@@ -6,10 +6,10 @@ import numpy as np
 
 from nipy.core.api import fromarray, Affine
 from nipy.io.api import save_image, load_image
-from nipy.testing import datapjoin
+from nipy.data import template_pjoin
 
 # Load an image to get the array and affine
-filename = datapjoin('avg152T1.nii.gz')
+filename = template_pjoin('avg152T1.nii.gz')
 assert os.path.exists(filename)
 
 # Use one of our test files to get an array and affine (as numpy array) from.
