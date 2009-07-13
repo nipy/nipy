@@ -19,13 +19,15 @@ import sys
 import tarfile
 import urllib2
 
+from nipy.__config__ import nipy_info
+
 block_size = int(512e3)
 
 url = 'https://cirl.berkeley.edu/nipy/'
 filename = 'nipy_data.tar.gz'
 datafile = os.path.join(url, filename)
 
-data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
+data_dir = nipy_info['data_dir']
 dest_file = os.path.join(data_dir, filename)
 
 def extract_tarfile(filename, dstdir):
