@@ -5,6 +5,7 @@ author: Bertrand Thirion, 2005-2009
 
 from nipy.neurospin.spatial_models.parcellation import Parcellation
 import cPickle
+import tempfile
 from nipy.neurospin.spatial_models.parcel_io_nii import *
 from nipy.neurospin.spatial_models.hierarchical_parcellation import hparcel
 
@@ -19,7 +20,7 @@ nbeta = len(numbeta)
 # parameter for the intersection of the mask
 ths = Sess/2
 
-# possibly, dimension reduction can perfiomedon the input data
+# possibly, dimension reduction can performed on the input data
 # (not recommended)
 fdim = 3
 
@@ -30,7 +31,7 @@ verbose = 1
 nbparcel = 500
 
 # write dir
-swd = "/tmp/"
+swd = tempfile.mkdtemp()
 
 # load some mask images to define the brain mask of the different subjects
 Mask_Images =["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysis_RNorm_S/mask.img" % bru for bru in nbru]
@@ -48,7 +49,8 @@ fpa = hparcel(fpa,ldata,Talairach)
 #fpa,prfx0 = hparcel(fpa,ldata,Talairach,nbperm=200,niter=5,verbose)
 
 #produce some output images
-Parcellation_output(fpa,Mask_Images,learn_images,Talairach,nbru,verbose=1,swd = "/tmp")
+Parcellation_output(fpa,Mask_Images,learn_images,Talairach,nbru,
+                    verbose=1,swd=swd)
 
 # do some parcellation-based analysis:
 # load some test images whose parcel-based signal needs to be assessed 
@@ -62,3 +64,4 @@ DMtx = None
 Parcellation_based_analysis(fpa,test_images,numbeta,swd,DMtx,verbose)
 
 
+printf "Wrote everything in %s" %swd

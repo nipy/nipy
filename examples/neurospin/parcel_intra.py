@@ -8,12 +8,14 @@ author: Bertrand Thirion, 2005-2009
 import numpy as np
 import os.path as op
 import time
+import tempfile
 
 import nipy.neurospin.graph as fg
 import nipy.neurospin.graph.field as ff
 from nipy.neurospin.clustering.hierarchical_clustering import \
      Ward_segment, Ward_quick_segment
 import nipy.neurospin.spatial_models.parcellation as Pa
+
 
 import get_data_light
 get_data_light.getIt()
@@ -27,8 +29,7 @@ nbeta = [29]
 data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data'))
 MaskImage = op.join(data_dir,'mask.nii.gz')
 betas = [op.join(data_dir,'spmT_%04d.nii.gz'%n) for n in nbeta]
-
-#betas = ["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysis_RNorm_S/spmT_%04d.img" % (nbru[0], n) for n in nbeta]
+swd = tempfile.mkdtemp()
 
 nbparcel = 500
 
@@ -136,9 +137,19 @@ print  nbparcel, "functional variance", vf, "anatomical variance",va
 # ------------------------------------
 #5. write the resulting label image
 
-LabelImage = op.join("/tmp","toto.nii")
+LabelImage = op.join(swd,"parcel_wards.nii")
 Label = -np.ones(ref_dim,'int16')
 Label[mask>0] = w
 nim = nifti.NiftiImage(Label.T,rbeta.header)
 nim.description='Intra-subject parcellation'
 nim.save(LabelImage)
+
+LabelImage = op.join(swd,"parcel_gkmeans.nii")
+Label = -np.ones(ref_dim,'int16')
+Label[mask>0] = u
+nim = nifti.NiftiImage(Label.T,rbeta.header)
+nim.description='Intra-subject parcellation'
+nim.save(LabelImage)
+
+print "Wrote two parcel images as %s and %s" %\
+      (op.join(swd,"parcel_wards.nii"),op.join(swd,"parcel_gkmeans.nii"))

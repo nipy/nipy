@@ -159,9 +159,9 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
     bf = _clean_size_(bf,smin)
     return bf
 
-def make_crmap(AF,tal,verbose=0):
+def make_crmap(AF,coord,verbose=0):
     """
-    crmap = make_crmap(AF,tal)
+    crmap = make_crmap(AF,coord)
     Compute the spatial map associated with the AF
     i.e. the confidence interfval for the position of
     the different landmarks
@@ -169,20 +169,20 @@ def make_crmap(AF,tal,verbose=0):
     INPUT:
     ------
     - AF the list of group-level landmarks regions
-    - tal: array of shape(nvox,3): the position of the reference points
+    - coord: array of shape(nvox,3): the position of the reference points
 
     OUTPUT:
     -----
     - crmap: array of shape(nvox)
     """
-    nvox = tal.shape[0]
+    nvox = coord.shape[0]
     crmap = -np.ones(nvox)
     gscore =  np.inf*np.ones(nvox)    
     print np.size(AF)
     for i in range(np.size(AF)):
         if verbose:
             print i, AF[i].k, AF[i].homogeneity(), AF[i].center()
-        j,score = AF[i].confidence_region(tal)
+        j,score = AF[i].confidence_region(coord)
         lscore = np.inf*np.ones(nvox)
         lscore[j] = score 
         crmap[gscore>lscore]=i
@@ -294,7 +294,7 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
 
 
 
-def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
+def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
                      smin=5, ths=0, theta=3.0, g0=1.0, bdensity=0, verbose=0):
     """
     Compute the  Bayesian Structural Activation patterns
@@ -305,7 +305,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
     - Fbeta : an fff field class describing the spatial relationships
     in the dataset (nbnodes nodes)
     - lbeta: an array of size (nbnodes, subjects) with functional data
-    - tal: spatial coordinates of the nodes
+    - coord: spatial coordinates of the nodes
     - thq = 0.5: posterior significance threshold
     - smin = 5: minimal size of the regions to validate them
     - theta = 3.0: first level threshold
@@ -379,7 +379,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
     prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
 
     if bdensity:
-        spatial_coords = tal
+        spatial_coords = coord
     else:
         spatial_coords = gfc
 
@@ -425,7 +425,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
     
     LR,mlabel = sbf.build_LR(bf,ths)
     if LR!=None:
-        crmap = LR.map_label(tal,pval=0.95,dmax=dmax)
+        crmap = LR.map_label(coord,pval=0.95,dmax=dmax)
     
     return crmap,LR,bf,p
 
@@ -435,7 +435,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, xyz, header, thq=0.5,
 
 
 
-def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
+def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
                      thq=0.9,smin=5, ths=0,theta=3.0, g0=1.0,
                      bdensity=0, verbose=0):
     """
@@ -446,7 +446,7 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
     - Fbeta : an fff field class describing the spatial
     relationships in the dataset (nbnodes nodes)
     - lbeta: an array of size (nbnodes, subjects) with functional data
-    - tal: spatial coordinates of the nodes
+    - coord: spatial coordinates of the nodes
     - thq = 0.9: posterior significance threshold
     - smin = 5: minimal size of the regions to validate them
     - theta = 3.0: first level threshold
@@ -524,7 +524,7 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
     prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.int)
 
     if bdensity:
-        spatial_coords = tal
+        spatial_coords = coord
     else:
         spatial_coords = gfc
             
@@ -550,7 +550,7 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
             bfc = bfs.discrete_to_roi_features('position','cumulated_average')
             # Alan's choice
             #beta = np.reshape(lbeta[:,s],(nvox,1))
-            #bfsc = tal[bfs.feature_argmax(beta)]
+            #bfsc = coord[bfs.feature_argmax(beta)]
             #bfs.set_roi_feature(bfsc,'position')
 
     # compute a model of between-regions associations
@@ -572,12 +572,12 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax,  xyz, header,
     
     LR,mlabel = sbf.build_LR(bf,ths)
     if LR!=None:
-        crmap = LR.map_label(tal,pval = 0.95,dmax=dmax)
+        crmap = LR.map_label(coord,pval = 0.95,dmax=dmax)
 
     return crmap,LR,bf,p
 
 
-def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
+def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
                        thq=0.5, smin=5, ths=0, theta=3.0, g0=1.0,
                        verbose=0):
     """
@@ -588,7 +588,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     - Fbeta : an fff field class describing the spatial relationships
     in the dataset (nbnodes nodes)
     - lbeta: an array of size (nbnodes, subjects) with functional data
-    - tal: spatial coordinates of the nodes
+    - coord: spatial coordinates of the nodes
     - xyz: the grid coordinates of the field
     - header=None: the referential defining header
     - thq = 0.5: posterior significance threshold
@@ -635,11 +635,12 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
         
         if nroi!=None:
             bfm = nroi.discrete_to_roi_features('activation','average')
-            bfm = bfm[nroi.isleaf()]#---
+            bfm = bfm[nroi.isleaf()]
 
+            # get the regions position
             nroi.compute_discrete_position()
             bfc = nroi.discrete_to_roi_features('position','average')
-            bfc = bfc[nroi.isleaf()]#---
+            bfc = bfc[nroi.isleaf()]
             gfc.append(bfc)
 
             # compute the prior proba of being null
@@ -675,7 +676,7 @@ def compute_BSA_simple(Fbeta, lbeta, tal, dmax, xyz, header=None,
     g1 = g0
     prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
     dof = 100
-    spatial_coords = tal
+    spatial_coords = coord
     burnin = 100
     nis = 1000
     nii = 100
