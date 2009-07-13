@@ -244,7 +244,7 @@ class ROI(object):
         import matplotlib.pylab as mp
         mp.figure()
         mp.boxplot(f)
-        mp.title('Distribution of %s within %s',%(fid,self.id))
+        mp.title('Distribution of %s within %s'%(fid,self.id))
         
 
 
@@ -259,7 +259,7 @@ class WeightedROI(ROI):
     def __init__(self,id="roi",header=None,grid = None):
         """
         """
-        
+        print "Not implemented yet"
         pass
 
 
@@ -333,7 +333,9 @@ class MultipleROI(object):
     def check_header(self, image):
         """
         checks that the image is in the header of self
-        INPUT:
+
+        Parameters
+        -----------
         - image: (string) the path of an image
         """
         #print "check not implemented yet"

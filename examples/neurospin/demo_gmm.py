@@ -1,6 +1,7 @@
 """
 Example of a demo that fits a GMM to  a dataset
-
+the possible number of clusters is in the [1,10] range
+The proposed algorithm correctly selects a solution with 2 or 3 classes
 
 Author : Bertrand Thirion, 2008-2009
 """
