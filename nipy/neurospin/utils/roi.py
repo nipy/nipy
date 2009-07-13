@@ -244,7 +244,7 @@ class ROI(object):
         import matplotlib.pylab as mp
         mp.figure()
         mp.boxplot(f)
-        mp.title('Distribution of %s within %s',%(fid,self.id))
+        mp.title('Distribution of %s within %s'%(fid,self.id))
         
 
 
@@ -259,7 +259,7 @@ class WeightedROI(ROI):
     def __init__(self,id="roi",header=None,grid = None):
         """
         """
-        
+        print "Not implemented yet"
         pass
 
 
@@ -289,6 +289,9 @@ class MultipleROI(object):
     def __init__(self, id="roi", k=0,header=None,discrete=None):
         """
         roi = MultipleROI(id='roi', header=None)
+
+        Parameters:
+        -----------
         - id (string): roi identifier
         - k: number of rois that are included in the structure 
         - header (nipy header) : referential-defining information
@@ -333,7 +336,9 @@ class MultipleROI(object):
     def check_header(self, image):
         """
         checks that the image is in the header of self
-        INPUT:
+
+        Parameters
+        -----------
         - image: (string) the path of an image
         """
         #print "check not implemented yet"
@@ -474,11 +479,11 @@ class MultipleROI(object):
         self.set_roi_feature(fid,f)
         
         
-    def make_image(self,name):
+    def make_image(self,path):
         """
         write a int nifti image where the nonzero values are the ROIs
         INPUT:
-        - the desired image name
+        - the desired image path
         NOTE:
         - the background values are set to -1
         - the ROIs values are set as [0..self.k-1]
@@ -489,8 +494,8 @@ class MultipleROI(object):
             data[dk[0],dk[1],dk[2]]=k
         data = np.reshape(data,tuple(self.header['dim'][1:4])).T
         nim = nifti.NiftiImage(data,self.header)
-        nim.description = "ROI image"
-        nim.save(name)
+        nim.description = "Multiple ROI image"
+        nim.save(path)
   
     def set_roi_feature(self,fid,data):
         """

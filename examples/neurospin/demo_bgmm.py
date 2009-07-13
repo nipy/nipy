@@ -1,6 +1,9 @@
 """
 Example of a demo that fits a Bayesian GMM to  a dataset
+Variational bayes and Gibbs estimation are sucessively run
+on the same dataset
 
+todo: add a title+ to the figure
 
 Author : Bertrand Thirion, 2008-2009
 """
@@ -26,16 +29,16 @@ for  k in krange:
     b.guess_priors(x)
     b.initialize(x)
     b.estimate(x)
-    ek = b.evidence(x)
+    ek = float(b.evidence(x))
     if ek>be:
         be = ek
         bestb = b
         
-    print k,'classes, free energy:',b.evidence(x)
+    print k,'classes, free energy:',ek
 
 # 3, plot the result
 z = bestb.map_label(x)
-plot2D(x,bestb,z,show=1,verbose=0)
+plot2D(x,bestb,z,verbose=0)
 
 # the same, with the Gibbs GMM algo
 niter = 1000

@@ -71,7 +71,6 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     
     group_map = AF.map_label(coord,0.95,dmax)
     group_map.shape = ref_dim
-    mp.figure()
     mp.subplot(1,3,2)
     mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
     mp.title('group-level position 95%confidence regions')
@@ -79,7 +78,6 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 
     mp.subplot(1,3,3)
     likelihood.shape = ref_dim
-    mp.figure()    
     mp.imshow(likelihood, interpolation='nearest')
     mp.title('Spatial density under h1')
     mp.colorbar()
@@ -134,7 +132,7 @@ ths = 1#nbsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'ipmi'
+method = 'simple'
 
 # run the algo
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method,verbose=verbose)

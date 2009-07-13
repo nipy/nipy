@@ -1,5 +1,8 @@
 """
-Example of a script that uses the BSA function
+Example of a script that uses the BSA (Bayesian Structural Analysis)
+-- nipy.neurospin.spatial_models.bayesian_structural_analysis --
+function
+
 Please adapt the image paths to make it work on your own data
 
 fixme: use for that some data on the www.
@@ -15,7 +18,7 @@ import os.path as op
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.graph.field as ff
 import nifti
-
+import tempfile
 
 def make_bsa_nifti(nbsubj, mask_images, betas, nbru='1', theta=3., dmax =  5., ths = 0, thq = 0.5, smin = 0, swd = "/tmp/",nbeta = [0]):
     """
@@ -116,7 +119,7 @@ thq = 0.9
 verbose = 1
 smin = 5
 
-swd = "/tmp/"
+swd = tempfile.mkdtemp()
 
 # a mask of the brain in each subject
 mask_images =["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysis_RNorm_S/mask.img" % bru for bru in nbru]
@@ -124,7 +127,8 @@ mask_images =["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysi
 # activation image in each subject
 betas = [["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysis_RNorm_S/spmT_%04d.img" % (bru, n) for n in nbeta] for bru in nbru]
 
-AF,BF = make_bsa_nifti(nbsubj, mask_images, betas, nbru, theta, dmax, ths,thq,smin,swd,nbeta)
+AF,BF = make_bsa_nifti(nbsubj, mask_images, betas, nbru, theta,
+                       dmax, ths,thq,smin,swd,nbeta)
 
 # Write the result. OK, this is only a temporary solution
 import pickle
@@ -133,3 +137,4 @@ pickle.dump(AF, open(picname, 'w'), 2)
 picname = op.join(swd,"BF_%04d.pic" %nbeta[0])
 pickle.dump(BF, open(picname, 'w'), 2)
 
+printf "Wrote all the stuff in %s"%swd

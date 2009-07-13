@@ -7,8 +7,6 @@ nifti image
 
 todo:  the 3 figures are ugly: use subfigure instead
 
-fixme : write dir
-
 Author : Bertrand Thirion, 2008-2009
 """
 
@@ -16,7 +14,6 @@ import numpy as np
 import os
 import nifti
 import scipy.stats as st
-
 import nipy.neurospin.utils.emp_null as en
 import get_data_light
 get_data_light.getIt()
@@ -26,7 +23,6 @@ verbose = 1
 theta = float(st.t.isf(0.01,100))
 
 # paths
-swd = "/tmp/"
 data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
 MaskImage = os.path.join(data_dir,'mask.nii.gz')
 InputImage = os.path.join(data_dir,'spmT_0029.nii.gz')
