@@ -5,6 +5,10 @@ This is based on a real fMRI image
 Simply modify the input image path to make it work on your preferred
 nifti image
 
+todo:  the 3 figures are ugly: use subfigure instead
+
+fixme : write dir
+
 Author : Bertrand Thirion, 2008-2009
 """
 
@@ -14,43 +18,19 @@ import nifti
 import scipy.stats as st
 
 import nipy.neurospin.utils.emp_null as en
+import get_data_light
+get_data_light.getIt()
 
-swd = "/tmp/"
+# parameters
 verbose = 1
+theta = float(st.t.isf(0.01,100))
 
+# paths
+swd = "/tmp/"
 data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
 MaskImage = os.path.join(data_dir,'mask.nii.gz')
 InputImage = os.path.join(data_dir,'spmT_0029.nii.gz')
 
-if os.path.exists(InputImage)==False:
-    import urllib2
-    url = 'ftp://ftp.cea.fr/pub/dsv/madic/download/nipy'
-    filename = 'mask.nii.gz'
-    datafile = os.path.join(url,filename)
-    fp = urllib2.urlopen(datafile)
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-        assert os.path.exists(data_dir)
-    local_file = open(MaskImage, 'w')
-    local_file.write(fp.read())
-    local_file.flush()
-    local_file.close()
-    filename = 'spmT_0029.nii.gz'
-    datafile = os.path.join(url,filename)
-    fp = urllib2.urlopen(datafile)
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-        assert os.path.exists(data_dir)
-    local_file = open(InputImage, 'w')
-    local_file.write(fp.read())
-    local_file.flush()
-    local_file.close()   
-
-        
-
-
-
-theta = float(st.t.isf(0.01,100))
 
 # Read the referential
 nim = nifti.NiftiImage(MaskImage)
@@ -61,8 +41,6 @@ voxsize = nim.getVoxDims()
 
 # Read the masks and compute the "intersection"
 mask = nim.asarray().T
-xyz = np.array(np.where(mask))
-nbvox = np.size(xyz,1)
 
 # read the functional image
 rbeta = nifti.NiftiImage(InputImage)
@@ -82,3 +60,6 @@ bfq = en.three_classes_GMM_fit(beta, bfm, alpha, prior_strength,verbose=2)
 efdr = en.ENN(beta)
 efdr.learn()
 efdr.plot(bar=0)
+
+import matplotlib.pylab as mp
+mp.show()

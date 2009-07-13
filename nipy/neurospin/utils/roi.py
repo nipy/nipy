@@ -244,19 +244,9 @@ class ROI(object):
         import matplotlib.pylab as mp
         mp.figure()
         mp.boxplot(f)
-        mp.show()
+        mp.title('Distribution of %s within %s',%(fid,self.id))
         
 
-    def __add__(self,other):
-        """
-        """
-        pass
-
-    def __multiply__(self,other):
-        """
-        """
-        pass
-        
 
 ################################################################################
 # class `WeightedROI`
@@ -691,6 +681,9 @@ class MultipleROI(object):
         from self.discrete to the space of self
         it is assumed that self.header has a sform
         if not, the sform is assumed to be th identity
+
+        fixme : if a position is already available it does not
+        need to be computed
 
         the computed position is returned
         """

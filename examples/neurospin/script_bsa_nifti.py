@@ -1,6 +1,10 @@
 """
 Example of a script that uses the BSA function
 Please adapt the image paths to make it work on your own data
+
+fixme: use for that some data on the www.
+
+Author : Bertrand Thirion, 2008-2009
 """
 
 #autoindent
