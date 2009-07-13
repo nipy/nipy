@@ -2,8 +2,10 @@ import ConfigParser
 import os
 
 
-nipy_defaults = dict(data_dir=os.path.expanduser(
-                        os.path.join('~', '.nipy', 'tests', 'data'))
+nipy_defaults = dict(example_data_dir=os.path.expanduser(
+                        os.path.join('~', '.nipy', 'example_data')),
+                     data_dir=os.path.expanduser(
+                        os.path.join('~', '.nipy', 'data'))
                     )
 
 ################################################################################
@@ -35,7 +37,6 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('algorithms')
     config.add_subpackage('interfaces')
     config.add_subpackage('core')
-    config.add_subpackage('data')
     config.add_subpackage('fixes')
     config.add_subpackage('io')
     config.add_subpackage('modalities')
