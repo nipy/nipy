@@ -25,8 +25,8 @@ url = 'https://cirl.berkeley.edu/nipy/'
 filename = 'nipy_data.tar.gz'
 datafile = os.path.join(url, filename)
 
-dest_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
-dest_file = os.path.join(dest_dir, filename)
+data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
+dest_file = os.path.join(data_dir, filename)
 
 def extract_tarfile(filename, dstdir):
     """Extract tarfile to the destination directory."""
@@ -84,6 +84,6 @@ def get_data():
     else:
         if_download = False
     if if_download:
-        download(datafile, dest_file)
+        download(datafile, data_dir)
         # extract the tarball
-        extract_tarfile(dest_file, dest_dir)
+        extract_tarfile(dest_file, data_dir)

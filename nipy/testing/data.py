@@ -15,13 +15,13 @@ this is much slower::
 """
 import os
 
-from nipy.utils.get_data import get_data, dest_dir
+from nipy.utils.get_data import get_data, data_dir
 
 
 def datapjoin(filename):
     ''' Return result of os.path.join of `filename` to NIPY data path '''
     # If the data directory does not exist, download it.
-    if not os.path.exists(dest_dir):
+    if not os.path.exists(data_dir):
         get_data()
-    return os.path.join(dest_dir, filename)
+    return os.path.join(data_dir, filename)
 
