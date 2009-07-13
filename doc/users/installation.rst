@@ -65,7 +65,7 @@ tarball and follow these instructions for building.  The installation
 process is similar to other Python packages so it will be familiar if
 you have Python experience.
 
-Unpack the tarball and change into the source directory.  Once in the
+Unpack the source tarball and change into the source directory.  Once in the
 source directory, you can build the neuroimaging package using::
 
     python setup.py build
@@ -74,16 +74,24 @@ To install, simply do::
    
     sudo python setup.py install
 
-Note: As with any Python_ installation, this will install the modules
-in your system Python_ *site-packages* directory (which is why you
-need *sudo*).  Many of us prefer to install development packages in a
-local directory so as to leave the system python alone.  This is
-mearly a preference, nothing will go wrong if you install using the
-*sudo* method.  To install in a local directory, use the **--prefix**
-option.  For example, if you created a ``local`` directory in your
-home directory, you would install nipy like this::
+.. note::
 
-    python setup.py install --prefix=$HOME/local
+    As with any Python_ installation, this will install the modules
+    in your system Python_ *site-packages* directory (which is why you
+    need *sudo*).  Many of us prefer to install development packages in a
+    local directory so as to leave the system python alone.  This is
+    mearly a preference, nothing will go wrong if you install using the
+    *sudo* method.  To install in a local directory, use the **--prefix**
+    option.  For example, if you created a ``local`` directory in your
+    home directory, you would install nipy like this::
+
+	python setup.py install --prefix=$HOME/local
+
+.. note::
+
+    If you have downloaded the source from the development tree, you also 
+    should get the data tarball (not required, but strongly suggested)
+    from https://cirl.berkeley.edu/nipy/nipy_data.tar.gz .
 
 .. include:: ../links_names.txt
 
