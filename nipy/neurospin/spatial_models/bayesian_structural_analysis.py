@@ -340,7 +340,8 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
     for s in range(nbsubj):
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,th=theta,smin=smin)
+        nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,
+                                    th=theta,smin=smin)
         bf.append(nroi)
         
         if nroi!=None:
@@ -348,7 +349,8 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
             # find some way to avoid coordinate averaging
             bfm = nroi.discrete_to_roi_features('activation','average')
             nroi.compute_discrete_position()
-            bfc = nroi.discrete_to_roi_features('position','cumulated_average')            
+            bfc = nroi.discrete_to_roi_features('position',
+                                                'cumulated_average')            
             gfc.append(bfc)
 
             # get some prior on the significance of the regions
@@ -383,7 +385,8 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
     else:
         spatial_coords = gfc
 
-    p,q =  fc.fdp(gfc, 0.5, g0, g1,dof, prior_precision, 1-gf0, sub, 100, spatial_coords,10,1000)
+    p,q =  fc.fdp(gfc, 0.5, g0, g1,dof, prior_precision,
+                  1-gf0, sub, 100, spatial_coords,10,1000)
     # inference
     valid = q>thq
 

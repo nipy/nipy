@@ -289,6 +289,9 @@ class MultipleROI(object):
     def __init__(self, id="roi", k=0,header=None,discrete=None):
         """
         roi = MultipleROI(id='roi', header=None)
+
+        Parameters:
+        -----------
         - id (string): roi identifier
         - k: number of rois that are included in the structure 
         - header (nipy header) : referential-defining information
@@ -476,11 +479,11 @@ class MultipleROI(object):
         self.set_roi_feature(fid,f)
         
         
-    def make_image(self,name):
+    def make_image(self,path):
         """
         write a int nifti image where the nonzero values are the ROIs
         INPUT:
-        - the desired image name
+        - the desired image path
         NOTE:
         - the background values are set to -1
         - the ROIs values are set as [0..self.k-1]
@@ -491,8 +494,8 @@ class MultipleROI(object):
             data[dk[0],dk[1],dk[2]]=k
         data = np.reshape(data,tuple(self.header['dim'][1:4])).T
         nim = nifti.NiftiImage(data,self.header)
-        nim.description = "ROI image"
-        nim.save(name)
+        nim.description = "Multiple ROI image"
+        nim.save(path)
   
     def set_roi_feature(self,fid,data):
         """
@@ -698,7 +701,6 @@ class MultipleROI(object):
         if bproblem:
             print "warning: no sform found for position definition, ",
             print "assuming it is the identity"
-            stop
             sform = np.eye(4)
 
         pos = []

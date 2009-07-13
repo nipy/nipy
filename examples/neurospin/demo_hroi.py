@@ -8,6 +8,7 @@ Used mainly for debugging at the moment (before unittests are created)
 This example is based on a (simplistic) simulated image.
 # Author : Bertrand Thirion, 2008-2009
 """
+
 import numpy as np
 import scipy.stats as st
 import os.path as op
