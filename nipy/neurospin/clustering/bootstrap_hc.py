@@ -12,7 +12,7 @@ Author : Bertrand Thirion, 2008
 # --------------------------------------------------------------------------
 
 import numpy as np
-from nipy.neurospin.clustering.hierarchical_clustering import Ward_simple
+from nipy.neurospin.clustering.hierarchical_clustering import ward_simple
 from numpy.random import random_integers
 
 # -------------------------------------------------------------------
@@ -80,7 +80,7 @@ def ward_msb(X, niter=1000):
 
     n = X.shape[0]
     d = X.shape[1]
-    t = Ward_simple(X)
+    t = ward_simple(X)
     l = t.list_of_subtrees()
 
     db = (d*np.exp((np.arange(7)-3)*np.log(1.1))).astype(np.int)
@@ -92,7 +92,7 @@ def ward_msb(X, niter=1000):
             # nb : spends 95% of the time in ward algo
             # when n=100,d=30
             x = _bootstrap_cols(X,db[j])
-            t = Ward_simple(x)
+            t = ward_simple(x)
             laux = t.list_of_subtrees()
             pval[:,j] += _compare_list_of_arrays(l, laux)
 

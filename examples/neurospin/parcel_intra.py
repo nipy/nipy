@@ -13,7 +13,7 @@ import tempfile
 import nipy.neurospin.graph as fg
 import nipy.neurospin.graph.field as ff
 from nipy.neurospin.clustering.hierarchical_clustering import \
-     Ward_segment, Ward_quick_segment
+     ward_segment, ward_quick_segment
 import nipy.neurospin.spatial_models.parcellation as Pa
 
 
@@ -94,7 +94,6 @@ g = ff.Field(nvox,g.edges,g.weights,feature)
 
 
 t1 = time.time()
-#w,cost = Ward_quick_segment(g, feature, stop=-1, qmax=nbparcel)
 w,J0 = g.ward(nbparcel)
 t2 = time.time()
 lpa = Pa.Parcellation(nbparcel,xyz.T,np.reshape(w,(nvox,1)))
