@@ -102,14 +102,15 @@ class Field(fg.WeightedGraph):
         """
         self.dilation(nbiter=1)
         Morphological openeing of the field
-        IMPUT
+
+        INPUT
         nbiter=1 : the number of iterations required
         """
         nbiter = int(nbiter)
         if self.E>0:
             if nbiter>0:
                 for i in range (self.field.shape[1]):
-                    self.field[:,i] = dilation(self.edges[:,0],self.edges[:,1],self.field[:,i],nbiter)
+                    self.field[:,i] = dilation(self.edges[:,0], self.edges[:,1],self.field[:,i],nbiter)
 
     def erosion(self,nbiter=1):
         """
@@ -122,7 +123,8 @@ class Field(fg.WeightedGraph):
         if self.E>0:
             if nbiter>0:
                 for i in range (self.field.shape[1]):
-                    self.field[:,i] = erosion(self.edges[:,0],self.edges[:,1],self.field[:,i],nbiter)
+                    self.field[:,i] = erosion(self.edges[:,0],self.edges[:,1],
+                                              self.field[:,i],nbiter)
 
     def get_local_maxima(self,refdim=0,th=-np.infty):
         """
@@ -146,7 +148,8 @@ class Field(fg.WeightedGraph):
         depth = self.V*np.ones(np.sum(self.field>th),'i')
         if self.E>0:
             try:
-                idx,depth = get_local_maxima(self.edges[:,0],self.edges[:,1],self.field[:,refdim],th)
+                idx,depth = get_local_maxima(self.edges[:,0],self.edges[:,1],
+                                             self.field[:,refdim],th)
             except:
                 idx = []
                 depth = []
@@ -173,7 +176,8 @@ class Field(fg.WeightedGraph):
             raise ValueError, 'refdim>field.shape[1]'
         depth = self.V*np.ones(self.V,'i')
         if self.E>0:
-            depth = local_maxima(self.edges[:,0],self.edges[:,1],self.field[:,refdim])
+            depth = local_maxima(self.edges[:,0],self.edges[:,1],
+                                 self.field[:,refdim])
         return depth
 
     def diffusion(self,nbiter=1):
@@ -187,7 +191,8 @@ class Field(fg.WeightedGraph):
        """
        nbiter = int(nbiter)
        if (self.E>0)&(nbiter>0)&(np.size(self.field)>0):
-            self.field = diffusion(self.edges[:,0],self.edges[:,1],self.weights,self.field,nbiter)
+            self.field = diffusion(self.edges[:,0],self.edges[:,1],
+                                   self.weights,self.field,nbiter)
 
 
     def custom_watershed(self,refdim=0,th=-np.infty):
@@ -196,10 +201,14 @@ class Field(fg.WeightedGraph):
         perfoms a watershed analysis of the field.
         Note that bassins are found aound each maximum
         (and not minimum as conventionally)
-        INPUT :
+        
+        Parameters :
+        -------------
         - th is a threshold so that only values above th are considered
         by default, th = -infty (numpy)
+
         OUTPUT:
+        ---------
         - idx: the indices of the vertices that are local maxima
         - depth: the depth of the local maxima
         depth[idx[i]] = q means that idx[i] is a q-order maximum
@@ -319,7 +328,8 @@ class Field(fg.WeightedGraph):
             k = np.size(seeds)
             
         for i in range(maxiter):
-            label = field_voronoi(self.edges[:,0],self.edges[:,1],self.field,seeds)
+            label = field_voronoi(self.edges[:,0], self.edges[:,1],
+                                  self.field,seeds)
             #update the seeds
             inertia = 0
             pinteria = 0
@@ -349,8 +359,9 @@ class Field(fg.WeightedGraph):
         - label : array of shape (self.V) the resulting field label
         - j (float): the resulting inertia
         """
-        from nipy.neurospin.clustering.hierarchical_clustering import Ward_field_segment
-        label,J = Ward_field_segment(self,qmax=nbcluster)
+        from nipy.neurospin.clustering.hierarchical_clustering\
+             import ward_field_segment
+        label,J = ward_field_segment(self,qmax=nbcluster)
 
         # compute the resulting inertia
         inertia = 0

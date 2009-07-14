@@ -17,7 +17,8 @@ from nipy.neurospin.spatial_models import hroi
 
 import nipy.neurospin.clustering.clustering as fc
 from nipy.neurospin.graph import BPmatch
-from nipy.neurospin.clustering.hierarchical_clustering import Average_Link_Graph_segment
+from nipy.neurospin.clustering.hierarchical_clustering import\
+     average_link_graph_segment
 import nipy.neurospin.utils.emp_null as en
 
 #------------------------------------------------------------------
@@ -418,7 +419,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
     # make hard clusters
     # choose one solution...
     #u = sbf.segment_graph_rd(gc,1)
-    u,cost = Average_Link_Graph_segment(gc,0.2,gc.V*1.0/nbsubj)
+    u,cost = average_link_graph_segment(gc,0.2,gc.V*1.0/nbsubj)
 
     q = 0
     for s in range(nbsubj):
@@ -565,7 +566,7 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
 
     # either replicator dynamics or agglomerative clustering
     #u = sbf.segment_graph_rd(gc,1)
-    u,cost = Average_Link_Graph_segment(gc,0.1,gc.V*1.0/nbsubj)
+    u,cost = average_link_graph_segment(gc,0.1,gc.V*1.0/nbsubj)
 
     q = 0
     for s in range(nbsubj):
