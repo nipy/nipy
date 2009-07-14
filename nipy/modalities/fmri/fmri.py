@@ -43,7 +43,6 @@ class FmriImageList(ImageList):
         (2, 20, 20)
 
         """
-
         ImageList.__init__(self, images=images)
         if volume_start_times is None:
             volume_start_times = 1.
