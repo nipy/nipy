@@ -1,3 +1,10 @@
+"""
+Simple demo that partitions a smooth field into 10 clusters
+In that case, Ward's clustering behaves best, by far.
+
+Author: Bertrand Thirion, 2009
+"""
+
 import numpy as np
 import numpy.random as nr
 import nipy.neurospin.graph.field as ff
@@ -29,8 +36,11 @@ import matplotlib.pylab as mp
 mp.figure()
 mp.subplot(1,3,1)
 mp.imshow(np.reshape(data,(dx,dy)),interpolation='nearest' )
+mp.title('Input data')
 mp.subplot(1,3,2)
 mp.imshow(np.reshape(wlabel,(dx,dy)),interpolation='nearest' )
+mp.title('Ward clustering \n into 10 components')
 mp.subplot(1,3,3)
 mp.imshow(np.reshape(label,(dx,dy)),interpolation='nearest' )
+mp.title('geodesic kmeans clust. \n into 10 components')
 mp.show()

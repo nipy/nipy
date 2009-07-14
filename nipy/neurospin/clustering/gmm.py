@@ -747,8 +747,7 @@ class GMM():
             mp.xticks(a,fontsize=16)
             a,b = mp.yticks()
             mp.yticks(a,fontsize=16)
-            mp.show()
-
+            
         if gd.dim>1:
             print "not implemented yet"
 

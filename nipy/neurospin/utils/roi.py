@@ -244,19 +244,9 @@ class ROI(object):
         import matplotlib.pylab as mp
         mp.figure()
         mp.boxplot(f)
-        mp.show()
+        mp.title('Distribution of %s within %s'%(fid,self.id))
         
 
-    def __add__(self,other):
-        """
-        """
-        pass
-
-    def __multiply__(self,other):
-        """
-        """
-        pass
-        
 
 ################################################################################
 # class `WeightedROI`
@@ -269,7 +259,7 @@ class WeightedROI(ROI):
     def __init__(self,id="roi",header=None,grid = None):
         """
         """
-        
+        print "Not implemented yet"
         pass
 
 
@@ -299,6 +289,9 @@ class MultipleROI(object):
     def __init__(self, id="roi", k=0,header=None,discrete=None):
         """
         roi = MultipleROI(id='roi', header=None)
+
+        Parameters:
+        -----------
         - id (string): roi identifier
         - k: number of rois that are included in the structure 
         - header (nipy header) : referential-defining information
@@ -308,7 +301,10 @@ class MultipleROI(object):
         self.id = id
         self.k = k
         self.header = header
-        self.discrete = discrete
+        if discrete==None:
+            self.discrete = []
+        else:
+            self.discrete = discrete
         self.roi_features = dict()
         self.discrete_features = dict()
 
@@ -343,7 +339,9 @@ class MultipleROI(object):
     def check_header(self, image):
         """
         checks that the image is in the header of self
-        INPUT:
+
+        Parameters
+        -----------
         - image: (string) the path of an image
         """
         #print "check not implemented yet"
@@ -484,11 +482,11 @@ class MultipleROI(object):
         self.set_roi_feature(fid,f)
         
         
-    def make_image(self,name):
+    def make_image(self,path):
         """
         write a int nifti image where the nonzero values are the ROIs
         INPUT:
-        - the desired image name
+        - the desired image path
         NOTE:
         - the background values are set to -1
         - the ROIs values are set as [0..self.k-1]
@@ -499,8 +497,8 @@ class MultipleROI(object):
             data[dk[0],dk[1],dk[2]]=k
         data = np.reshape(data,tuple(self.header['dim'][1:4])).T
         nim = nifti.NiftiImage(data,self.header)
-        nim.description = "ROI image"
-        nim.save(name)
+        nim.description = "Multiple ROI image"
+        nim.save(path)
   
     def set_roi_feature(self,fid,data):
         """
@@ -638,7 +636,6 @@ class MultipleROI(object):
         import matplotlib.pylab as mp
         mp.figure()
         mp.bar(np.arange(self.k),f)
-        mp.show()
 
     def clean(self,valid):
         """
@@ -692,6 +689,9 @@ class MultipleROI(object):
         it is assumed that self.header has a sform
         if not, the sform is assumed to be th identity
 
+        fixme : if a position is already available it does not
+        need to be computed
+
         the computed position is returned
         """
         bproblem = 1
@@ -716,68 +716,3 @@ class MultipleROI(object):
         self.set_discrete_feature('position',pos)   
         return pos
         
-
-# XXX: We need to use test data shipped with nipy to do that.
-def test1(verbose = 0):
-    nim = nifti.NiftiImage("/tmp/spmT_0024.nii")
-    header = nim.header
-    dat = nim.asarray().T
-    roi = ROI("myroi",header)
-    roi.from_position(np.array([0,0,0]),5.0)
-    roi.make_image("/tmp/myroi.nii")
-    roi.set_feature_from_image('activ',"/tmp/spmT_0024.img")
-    if verbose: roi.plot_feature('activ')
-    return roi
-
-def test2(verbose=0):
-    nim = nifti.NiftiImage("/tmp/spmT_0024.nii")
-    header = nim.header
-    roi = ROI(header=header)
-    roi.from_labelled_image("/tmp/blob.nii",1)
-    roi.make_image("/tmp/roi2.nii")
-    
-    roi.from_position_and_image("/tmp/blob.nii",np.array([0,0,0]))
-    roi.make_image("/tmp/roi3.nii")
-
-    roi.set_feature_from_image('activ',"/tmp/spmT_0024.nii")
-    mactiv = roi.representative_feature('activ')
-    if verbose: roi.plot_feature('activ')
-    return roi
-
-
-def test_mroi1(verbose=0):
-    nim =  nifti.NiftiImage("/tmp/blob.nii")
-    header = nim.header
-    mroi = MultipleROI(header=header)
-    mroi.from_labelled_image("/tmp/blob.nii")
-    mroi.make_image("/tmp/mroi.nii")
-    mroi.set_roi_feature_from_image('activ',"/tmp/spmT_0024.nii")
-    if verbose: mroi.plot_feature('activ')
-    return mroi
-
-def test_mroi2(verbose=0):
-    nim =  nifti.NiftiImage("/tmp/blob.nii")
-    header = nim.header
-    mroi = MultipleROI(header=header)
-    pos = 1.0*np.array([[10,10,10],[0,0,0],[20,0,20],[0,0,35]])
-    rad = np.array([5.,6.,7.,8.0])
-    mroi.as_multiple_balls(pos,rad)
-    mroi.append_balls(np.array([[-10.,0.,10.]]),np.array([7.0]))
-    mroi.make_image("/tmp/mroi.nii")
-    mroi.set_roi_feature_from_image('activ',"/tmp/spmT_0024.nii")
-    if verbose: mroi.plot_feature('activ')
-    return mroi
-
-def test_mroi3(verbose=0):
-    nim =  nifti.NiftiImage("/tmp/blob.nii")
-    header = nim.header
-    mroi = MultipleROI(header=header)
-    mroi.as_multiple_balls(np.array([[-10.,0.,10.]]),np.array([7.0]))
-    mroi.from_labelled_image("/tmp/blob.nii",np.arange(1,20))
-    mroi.from_labelled_image("/tmp/blob.nii",np.arange(31,50))
-    mroi.make_image("/tmp/mroi.nii")
-    mroi.set_roi_feature_from_image('activ',"/tmp/spmT_0024.nii")
-    if verbose: mroi.plot_feature('activ')
-    valid = np.random.randn(mroi.k)>0.1
-    mroi.clean(valid)
-    return mroi

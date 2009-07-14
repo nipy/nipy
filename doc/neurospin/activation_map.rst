@@ -2,9 +2,9 @@
 Automatic plotting of activation maps
 =====================================
 
-.. currentmodule:: fff2.viz.activation_maps
+.. currentmodule:: nipy.neurospin.viz.activation_maps
 
-The module :mod:`fff2.viz.activation_maps` provides functions to plot
+The module :mod:`nipy.neurospin.viz.activation_maps` provides functions to plot
 visualization of activation maps in a non-interactive way.
 
 2D cuts of an activation map can be plotted and superimposed on an
@@ -23,7 +23,7 @@ An example
 
 ::
 
-    from fff2.viz.activation_maps import plot_map, mni_sform, \
+    from nipy.neurospin.viz.activation_maps import plot_map, mni_sform, \
             coord_transform
 
     # First, create a fake activation map: a 3D image in MNI space with
@@ -46,15 +46,15 @@ The same plot can be obtained fully automaticaly, by using
 :func:`auto_plot_map` to find the activation threshold `vmin` and the cut
 coordinnates::
 
-    from fff2.viz.activation_maps import auto_plot_map
+    from nipy.neurospin.viz.activation_maps import auto_plot_map
     auto_plot_map(map, mni_sform)
 
 In this simple example, the code will easily detect the bar as activation
 and position the cut at the center of the bar.
 
 
-fff2.viz.activation_maps functions
------------------------------------
+`nipy.neurospin.viz.activation_maps` functions
+-------------------------------------------------
 
 .. autosummary::
     :toctree: generated

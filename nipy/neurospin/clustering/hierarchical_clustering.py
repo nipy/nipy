@@ -393,15 +393,20 @@ class WeightedForest(fo.Forest):
 # -------------------------------------------------------------------------
 
 
-def Average_Link_Euclidian(X,verbose=0):
+def average_link_euclidian(X,verbose=0):
     """
     Average link clustering based on data matrix.
-    INPUT:
-    - X: a (nbitem,dim) array from which an Euclidian distance
-    matrix is computed
+
+    Parameters:
+    -----------
+    - X array of shape (nbitem,dim): data matrix
+    from which an Euclidian distance matrix is computed
     - verbose=0, verbosity level
+
     OUTPUT:
+    -------
     -t a weightForest structure that represents the dendrogram of the data
+
     NOTE:
     this method has not been optimized
     """
@@ -412,19 +417,23 @@ def Average_Link_Euclidian(X,verbose=0):
     else:
         raise ValueError, "The distance matrix is too large"
     
-    t = Average_Link_Distance(D,verbose)
+    t = average_link_distance(D,verbose)
     return t 
 
 
-def Average_Link_Distance(D,verbose=0):
+def average_link_distance(D,verbose=0):
     """
     Average link clustering based on a pairwise distance matrix.
 
-    Average_Link_Distance(D,verbose=0):
+    average_link_distance(D,verbose=0):
     INPUT:
-    - D: a (n,n) distance matrix between some items
+    -------
+    - D (nbitem,nbitem) nonnegative array:
+    distance matrix between some items
     - verbose=0, verbosity level
+
     OUTPUT:
+    --------
     -t a weightForest structure that represents the dendrogram of the data
     NOTE:
     this method has not been optimized
@@ -463,12 +472,12 @@ def Average_Link_Distance(D,verbose=0):
     return t
 
 
-def Average_Link_Distance_segment(D,stop=-1,qmax=1,verbose=0):
+def average_link_distance_segment(D,stop=-1,qmax=1,verbose=0):
     """
     Average link clustering based on a pairwise distance matrix.
 
-    Average_Link_Distance(D,stop=-1,qmax=-1,verbose=0):
-    INPUT:
+    Parameters:
+    -------
     - D: a (n,n) distance matrix between some items
     - stop=-1: stopping criterion, i.e. distance threshold at which
     further merges are forbidden
@@ -476,7 +485,9 @@ def Average_Link_Distance_segment(D,stop=-1,qmax=1,verbose=0):
     - qmax = 1; the number of desired clusters
     (in the limit of stop)
     - verbose=0, verbosity level
+
     OUTPUT:
+    --------
     -u: a labelling of the graph vertices according to the criterion
     -cost the cost of each merge step during the clustering procedure
     NOTE:
@@ -489,7 +500,7 @@ def Average_Link_Distance_segment(D,stop=-1,qmax=1,verbose=0):
     if stop==-1: stop = np.infty
     
 
-    t = Average_Link_Distance(D,verbose)
+    t = average_link_distance(D,verbose)
     if verbose: t.plot()
 
     u1 = np.zeros(n, np.int)
@@ -575,14 +586,20 @@ def fusion(K,pop,i,j,k):
             K.weights[i2] = -np.infty
             K.edges[i2,:] = -1
 
-def Average_Link_Graph(G):
+def average_link_graph(G):
     """
     Agglomerative function based on a (hopefully sparse) similarity graph
-    INPUT:
+
+    Parameters:
+    ------------
     - G the input graph
+
     OUPUT:
+    --------
     - t a weightForest structure that represents the dendrogram of the data
+
     CAVEAT:
+    --------
     In that case, the homogeneity is associated with high similarity
     (as opposed to low cost as in most clustering procedures,
     e.g. distance-based procedures).  Thus the tree is created with
@@ -635,15 +652,19 @@ def Average_Link_Graph(G):
 
     return t
 
-def Average_Link_Graph_segment(G,stop=0,qmax=1,verbose=0):
+def average_link_graph_segment(G,stop=0,qmax=1,verbose=0):
     """
     Agglomerative function based on a (hopefully sparse) similarity graph
-    INPUT:
+
+    Parameters:
+    -------------
     - G the input graph
-    - stop = 0: the stopping crterion
+    - stop=0: the stopping criterion
     - qmax=1: the number of desired clusters
     (in the limit of the stopping criterion)
-    OUPUT:
+
+    OUTPUT:
+    ----------
     -u: a labelling of the graph vertices according to the criterion
     -cost the cost of each merge step during the clustering procedure
     """
@@ -653,7 +674,7 @@ def Average_Link_Graph_segment(G,stop=0,qmax=1,verbose=0):
     if qmax==-1: qmax = n
     qmax = int(np.minimum(qmax,n))
 
-    t = Average_Link_Graph(G)
+    t = average_link_graph(G)
 
     if verbose: t.plot()
 
@@ -841,18 +862,23 @@ def _remap(K,i,j,k,Features,linc,rinc):
                 rinc[k].remove(i2)
     return linc,rinc
 
-
-
-def Ward_quick(G,feature,verbose = 0):
+def ward_quick(G,feature,verbose = 0):
     """
     Agglomerative function based on a topology-defining graph
     and a feature matrix. 
-    INPUT:
+
+    Parameters:
+    -----------
     - G the input graph (a topological graph essentially)
-    - feature (G.V,dim_feature) array that yields some vectorial information related to the graph vertices
-    OUPUT:
+    - feature array of shape (G.V,dim_feature):
+    some vectorial information related to the graph vertices
+
+    OUTPUT:
+    --------
     - t a weightForest structure that represents the dendrogram of the data
+
     NOTE:
+    --------
     - Hopefully a quicker version
     - A euclidean distance is used in the feature space
     CAVEAT : only approximate
@@ -862,7 +888,8 @@ def Ward_quick(G,feature,verbose = 0):
         feature = np.reshape(feature, (np.size(feature),1))
 
     if feature.shape[0]!=G.V:
-        raise ValueError, "Incompatible dimension for the feature matrix and the graph"
+        raise ValueError, "Incompatible dimension for the\
+        feature matrix and the graph"
     
     Features = []
     for i in range(G.V):
@@ -938,39 +965,53 @@ def Ward_quick(G,feature,verbose = 0):
     
     return t
 
-def Ward_field_segment(F,stop=-1, qmax=-1,verbose=0):
+def ward_field_segment(F,stop=-1, qmax=-1,verbose=0):
     """
     Agglomerative function based on a field structure
-    INPUT:
+
+    Parameters:
+    ------------
     - F the input field (graph+feature)
      - stop = -1: the stopping crterion
     if stop==-1, then no stopping criterion is used
     - qmax=1: the maximum number of desired clusters
     (in the limit of the stopping criterion)
-    OUPUT:
+
+    OUTPUT:
+    ---------
     -u: a labelling of the graph vertices according to the criterion
     -cost the cost of each merge step during the clustering procedure
+
     CAVEAT : only approximate
-    NOTE:
-    look Ward_quick_segment for more information 
+    --------
+
+    NOTE: look ward_quick_segment for more information 
+    ------
     """
-    u,cost = Ward_quick_segment(F,F.field,stop,qmax,verbose)
+    u,cost = ward_quick_segment(F,F.field,stop,qmax,verbose)
     return u,cost
 
-def Ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
+def ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     """
     Agglomerative function based on a topology-defining graph
     and a feature matrix. 
-    INPUT:
+
+    Parameters:
+    ------------
     - G the input graph (a topological graph essentially)
-    - feature (G.V,dim_feature) array that yields some vectorial information related to the graph vertices
+    - feature arrau of shape (G.V,dim_feature)
+    vectorial information related to the graph vertices
     - stop = -1: the stopping crterion
     if stop==-1, then no stopping criterion is used
     - qmax=1: the maximum number of desired clusters
     (in the limit of the stopping criterion)
-    OUPUT:
-    -u: a labelling of the graph vertices according to the criterion
+
+    OUTPUT:
+    --------
+    -u: array of shape (G.V)
+    labelling of the graph vertices according to the criterion
     -cost the cost of each merge step during the clustering procedure
+
     NOTE:
     - Hopefully a quicker version
     - A euclidean distance is used in the feature space
@@ -981,13 +1022,14 @@ def Ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
         feature = np.reshape(feature, (np.size(feature),1))
 
     if feature.shape[0]!=G.V:
-        raise ValueError, "Incompatible dimension for the feature matrix and the graph"
+        raise ValueError, "Incompatible dimension for the feature matrix\
+        and the graph"
     
     n = G.V
     if stop==-1: stop = np.infty    
     qmax = int(np.minimum(qmax,n-1))
     nbcc = G.cc().max()+1
-    t = Ward_quick(G,feature,verbose)
+    t = ward_quick(G,feature,verbose)
     if verbose: t.plot()
 
     u1 = np.zeros(n, np.int)
@@ -1008,21 +1050,29 @@ def Ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     return u,cost
 
 
-def Ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
+def ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     """
     Agglomerative function based on a topology-defining graph
     and a feature matrix. 
-    INPUT:
+
+    Parameters:
+    ------------
     - G the input graph (a topological graph essentially)
-    - feature (G.V,dim_feature) array that yields some vectorial information related to the graph vertices
+    - feature array of shape (G.V,dim_feature)
+    some vectorial information related to the graph vertices
     - stop = -1: the stopping crterion
     if stop==-1, then no stopping criterion is used
     - qmax=1: the maximum number of desired clusters
     (in the limit of the stopping criterion)
-    OUPUT:
-    -u: a labelling of the graph vertices according to the criterion
+
+    OUTPUT:
+    ---------
+    -u: array of shape (G.V):
+    a labelling of the graph vertices according to the criterion
     -cost the cost of each merge step during the clustering procedure
+
     NOTE:
+    -------
     - A euclidean distance is used in the feature space
     - caveat : when the number of cc in G (nbcc)
     is greter than qmax, u contains nbcc values, not qmax !
@@ -1032,7 +1082,8 @@ def Ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
         feature = np.reshape(feature, np.size(feature),1)
 
     if feature.shape[0]!=G.V:
-        raise ValueError, "Incompatible dimension for the feature matrix and the graph"
+        raise ValueError, "Incompatible dimension for the \
+        feature matrix and the graph"
     
     # prepare a graph with twice the number of vertices
     n = G.V
@@ -1040,7 +1091,7 @@ def Ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     if stop==-1: stop = np.infty
     qmax = int(np.minimum(qmax,n-1))
 
-    t = Ward(G,feature,verbose)
+    t = ward(G,feature,verbose)
     if verbose: t.plot()
 
     u1 = np.zeros(n, np.int)
@@ -1060,35 +1111,26 @@ def Ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     return u,cost
 
 
-def Ward_simple(feature, verbose=0, quick=1):
-    """
-    Ward clustering based on a Feature matrix
+def ward_simple(feature, verbose=0):
+    """ Ward clustering based on a Feature matrix
 
-    t = Ward(feature,verbose=0):
-    INPUT:
-    - feature: a (n,p) feature matrix between some items
-    representing n p-dimenional items to be clustered
+    Parameters:
+    -------------
+    - feature: array of shape (n,p)
+    feature matrix  representing n p-dimenional items to be clustered
     - verbose=0, verbosity level
+
     OUTPUT:
+    -------
     -t a weightForest structure that represents the dendrogram of the data
-    NOTE:
-    this method uses the optimized C routine if "quick" is true.
     """
     n = feature.shape[0]
     q = 2*n-1 
     if feature.ndim==1:
         feature = np.reshape(feature, (-1, 1))
 
-    if quick:
-        parent,height = ward(feature)
-        t = WeightedForest(q,parent,height)
-        return t
-    
     # build Features as a list
     Features = [np.reshape(f, (1, -1)) for f in feature]
-    #Features = []
-    #for i in range(n):
-    #   Features.append(np.reshape(feature[i],(1,feature.shape[1])))
 
     # create a distance matrix
     D = np.infty*np.ones((q,q))
@@ -1133,16 +1175,23 @@ def Ward_simple(feature, verbose=0, quick=1):
     return t
 
 
-def Ward(G, feature, verbose=0):
+def ward(G, feature, verbose=0):
     """
     Agglomerative function based on a topology-defining graph
     and a feature matrix. 
-    INPUT:
+
+    Parameters:
+    ------------
     - G the input graph (a topological graph essentially)
-    - feature (G.V,dim_feature) array that yields some vectorial information related to the graph vertices
-    OUPUT:
+    - feature array of shape (G.V,dim_feature)
+    vectorial information related to the graph vertices
+
+    OUTPUT:
+    --------
     -t: a WeightedForest structure that represents the dendrogram
+
     NOTE:
+    -------
     When G has more than 1 connected component, t is no longer a tree.
     This case is handled cleanly now
     """
@@ -1151,7 +1200,8 @@ def Ward(G, feature, verbose=0):
         feature = np.reshape(feature, np.size(feature),1)
 
     if feature.shape[0]!=G.V:
-        raise ValueError, "Incompatible dimension for the feature matrix and the graph"
+        raise ValueError, "Incompatible dimension for\
+        the feature matrix and the graph"
     
     Features = []
     for i in range(G.V):
@@ -1216,16 +1266,22 @@ def Ward(G, feature, verbose=0):
 #------------- Maximum link clustering ------------------------------------
 # -------------------------------------------------------------------------
 
-def Maximum_Link_Euclidian(X,verbose=0):
+def maximum_link_euclidian(X,verbose=0):
     """
     Maximum link clustering based on data matrix.
-    INPUT:
-    - X: a (nbitem,dim) array from which an Euclidian distance
-    matrix is computed
+
+    Parameters:
+    -----------
+    - X: array of shape (nbitem,dim)
+    each row corresponds to a point to cluster
     - verbose=0, verbosity level
+    
     OUTPUT:
-    -t a weightForest structure that represents the dendrogram of the data
+    --------
+    - t a weightForest structure that represents the dendrogram of the data
+
     NOTE:
+    -----
     this method has not been optimized
     """
     if X.shape[0]==np.size(X):
@@ -1235,18 +1291,21 @@ def Maximum_Link_Euclidian(X,verbose=0):
     else:
         raise ValueError, "The distance matrix is too large"
     
-    t = Maximum_Link_Distance(D,verbose)
+    t = maximum_link_distance(D,verbose)
     return t 
 
 
-def Maximum_Link_Distance(D,stop=-1,qmax=-1,verbose=0):
+def maximum_link_distance(D,stop=-1,qmax=-1,verbose=0):
     """
     maximum link clustering based on a pairwise distance matrix.
-    Maximum_Link_Distance(D,stop=0,qmax=-1,verbose=0):
-    INPUT:
+
+    Parameters:
+    ------------
     - D: a (n,n) distance matrix between some items
     - verbose=0, verbosity level
+
     OUTPUT:
+    -------
     -t a weightForest structure that represents the dendrogram of the data
     NOTE:
     this method has not been optimized
@@ -1284,22 +1343,27 @@ def Maximum_Link_Distance(D,stop=-1,qmax=-1,verbose=0):
 
     return t
 
-def Maximum_Link_Distance_segment(D,stop=-1,qmax=1,verbose=0):
+def maximum_link_distance_segment(D,stop=-1,qmax=1,verbose=0):
     """
     maximum link clustering based on a pairwise distance matrix.
-    Maximum_Link_Distance(D,stop=0,qmax=-1,verbose=0):
-    INPUT:
-    - D: a (n,n) distance matrix between some items
+
+    Parameters:
+    ------------
+    - D: array of shape (nbitems, nbitems) distance matrix between some items
     - qmax = 1: the number of desired clusters
     (in the limit of stop)
     - stop=-1: stopping criterion, i.e. distance threshold at which
     further merges are forbidden
     By default (stop=-1), all merges are performed
     - verbose=0, verbosity level
+
     OUTPUT:
+    ---------
     -u: a labelling of the graph vertices according to the criterion
     -cost the cost of each merge step during the clustering procedure
+
     NOTE:
+    ------
     this method has not been optimized
     """
     n = D.shape[0]
@@ -1308,7 +1372,7 @@ def Maximum_Link_Distance_segment(D,stop=-1,qmax=1,verbose=0):
     if stop==-1:
         stop = np.infty
 
-    t = Maximum_Link_Distance(D,verbose)
+    t = maximum_link_distance(D,verbose)
     if verbose: t.plot()
 
     u1 = np.zeros(n, np.int)

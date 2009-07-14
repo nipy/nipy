@@ -20,7 +20,7 @@ import nipy.neurospin.graph.field as ff
 import nipy.neurospin.graph.graph as fg
 from nipy.neurospin.spatial_models import hroi 
 from nipy.neurospin.clustering.hierarchical_clustering import \
-    Average_Link_Graph_segment
+    average_link_graph_segment
 
 class landmark_regions(hroi.NROI):
     """
@@ -856,7 +856,7 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pv
     
     # building cliques
     #u = segment_graph_rd(Gc,1)
-    u,cost = Average_Link_Graph_segment(Gc,0.1,Gc.V*1.0/nbsubj)
+    u,cost = average_link_graph_segment(Gc,0.1,Gc.V*1.0/nbsubj)
 
     # relabel the BFLs
     q = 0
