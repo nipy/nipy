@@ -9,7 +9,7 @@ Examples
 >>> from nipy.io.api import load_image
 >>> img = load_image(funcfile)
 >>> img.shape
-(20, 2, 20, 20)
+(17, 21, 3, 20)
 
 """
 
