@@ -25,7 +25,8 @@ class Image(object):
 
     Notes
     -----
-    Images should be created through the module functions load and fromarray.
+    Images can be created through the module functions.  See nipy.io for
+    image IO such as ``load`` and ``save``
 
     Examples
     --------
