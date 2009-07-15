@@ -62,7 +62,7 @@ label = -np.ones(F.V)
 nroi = hroi.NROI_from_field(F,header,xyz,0,threshold,smin)
 bmap = -np.zeros(F.V)
 if nroi!=None:
-    idx = nroi.discrete_features['masked_index']
+    idx = nroi.discrete_features['index']
     for k in range(nroi.k):
         label[idx[k]] = k
 
@@ -91,7 +91,8 @@ mroi = MultipleROI(header=header)
 mroi.from_labelled_image(blobPath)
 roiPath4 = os.path.join(swd,"roi_all_blobs.nii")
 mroi.make_image(roiPath4)
-mroi.set_roi_feature_from_image('activ',InputImage)
+mroi.set_discrete_feature_from_image('activ',InputImage)
+mroi.discrete_to_roi_features('activ')
 mroi.plot_roi_feature('activ')
 
 # ---- 2.e the same, a bit more complex
@@ -100,7 +101,8 @@ mroi.as_multiple_balls(np.array([[-10.,0.,10.]]),np.array([7.0]))
 mroi.from_labelled_image(blobPath,np.arange(1,20))
 mroi.from_labelled_image(blobPath,np.arange(31,50))
 roiPath5 = os.path.join(swd,"roi_some_blobs.nii")
-mroi.set_roi_feature_from_image('activ',InputImage)
+mroi.set_discrete_feature_from_image('activ',InputImage)
+mroi.discrete_to_roi_features('activ')
 valid = mroi.get_roi_feature('activ')>4.0
 mroi.clean(valid)
 mroi.make_image(roiPath5)

@@ -10,9 +10,8 @@ import nifti
 import os
 import tempfile
 from nipy.neurospin.utils.roi import ROI, MultipleROI
-
-data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
-RefImage = os.path.join(data_dir,"MNI152_T1_2mm.nii.gz")
+from nipy.testing import anatfile
+RefImage = anatfile
 WriteDir = tempfile.mkdtemp()
 
 def test_roi1(verbose=0):
@@ -45,7 +44,6 @@ def test_mroi2(verbose=0):
     mroi.as_multiple_balls(pos,rad)
     mroi.append_balls(np.array([[-10.,0.,10.]]),np.array([7.0]))
     mroi.set_roi_feature_from_image('T1_signal',RefImage)
-    #mroi.discrete_to_roi_features('T1_signal')
     avt1 = mroi.get_roi_feature('T1_signal')
     assert(np.size(avt1)==5)
     

@@ -56,7 +56,8 @@ def cluster_threshold(map,ijk,th,csize):
     return binary
 
 
-def get_cluster_position_from_thresholded_map(smap, ijk, coord, thr=3.0, csize=10):
+def get_cluster_position_from_thresholded_map(smap, ijk, coord, thr=3.0,
+                                              csize=10):
     """
     the clusters above thr of size greater than csize in
     18-connectivity are computed
@@ -110,7 +111,9 @@ def get_cluster_position_from_thresholded_map(smap, ijk, coord, thr=3.0, csize=1
 def splitgroup(nbsubj,groupsize):
     """
     Split the proposed group into disjoint subgroups
-    INPUT:
+
+    Parameters:
+    ------------
     - nbsubj (int) the number of subjects to be split
     - groupsize(int) the size of each subbgroup
     OUPUT:
@@ -134,7 +137,7 @@ def ttest(x):
 
 def fttest(x,vx):
     """
-    returns a combined ('fixed') t-test of the data
+    returns a cumulated ('fixed effects') t-test of the data
     """
     n = x.shape[1]
     t = x/np.sqrt(vx)
@@ -162,7 +165,8 @@ def statistics_from_position(target,data,sigma=1.0):
     return a couple statistics charcterizing how close data is from
     target
 
-    INPUT
+    Parameters:
+    ------------
     - target: rray of shape(nt,anat_dim) the target positions
     or None
     - data: array of shape(nd,anat_dim) the data position
@@ -170,6 +174,7 @@ def statistics_from_position(target,data,sigma=1.0):
     - sigma=1.0 (float): a distance that say how good good is 
 
     OUTPUT:
+    ---------
     - sensitivity (float): how well the targets are fitted
     by the data  in [0,1] interval
     1 is good
@@ -190,12 +195,14 @@ def statistics_from_position(target,data,sigma=1.0):
     sensitivity = np.mean(sensitivity)
     return sensitivity
 
-def voxel_reproducibility(data,vardata,groupsize,xyz,method='rfx',niter=0,verbose=0,**kwargs):
+def voxel_reproducibility(data,vardata,groupsize,xyz,method='rfx',
+                          niter=0,verbose=0,**kwargs):
     """
     return a measure of voxel-level reproducibility
     of activation patterns
 
-    INPUT:
+    Parameters:
+    -------------
     - data: array of shape (nvox,nsubj)
     the input data from which everything is computed
     - vardata: the corresponding variance information
@@ -208,7 +215,9 @@ def voxel_reproducibility(data,vardata,groupsize,xyz,method='rfx',niter=0,verbos
     - niter=0: number of iterations. potentially used to store
     intermediate data
     - verbose=0 : verbosity mode
-    OUPUT:
+
+    OUTPUT:
+    ---------
     - kappa (float): the desired  reproducibility index
     """
     nbsubj = data.shape[1]
@@ -225,11 +234,13 @@ def voxel_reproducibility(data,vardata,groupsize,xyz,method='rfx',niter=0,verbos
         MB.show(h)
     return MB.kappa()
 
-def map_reproducibility(data,vardata,groupsize,xyz,method='rfx',niter=0,verbose=0,**kwargs):
+def map_reproducibility(data,vardata,groupsize,xyz,method='rfx',
+                        niter=0,verbose=0,**kwargs):
     """
     return a reproducibility map for the given method
 
-    INPUT:
+    Parameters:
+    -----------
     - data: array of shape (nvox,nsubj)
     the input data from which everything is computed
     - vardata: the corresponding variance information
@@ -242,7 +253,9 @@ def map_reproducibility(data,vardata,groupsize,xyz,method='rfx',niter=0,verbose=
     - niter=0: number of iterations. potentially used to store
     intermediate data
     - verbose=0 : verbosity mode
-    OUPUT:
+
+    OUTPUT:
+    --------
     - rmap: array of shape(nvox) : the reproducibility map
     """
     nbsubj = data.shape[1]
@@ -277,13 +290,15 @@ def map_reproducibility(data,vardata,groupsize,xyz,method='rfx',niter=0,verbose=
     return rmap
 
 
-def cluster_reproducibility(data,vardata,groupsize,xyz,coord,sigma, method='crfx', niter=0,verbose=0,**kwargs):
+def cluster_reproducibility(data,vardata,groupsize,xyz,coord,sigma,
+                            method='crfx', niter=0,verbose=0,**kwargs):
     """
     return a measure of cluster-level reproducibility
     of activation patterns
     (i.e. how far clusters are from each other)
 
-    INPUT:
+    Parameters:
+    ------------
     - data: array of shape (nvox,nsubj)
     the input data from which everything is computed
     - vardata: array of shape (nvox,nsubj)
@@ -381,7 +396,9 @@ def coord_bsa(xyz, coord, betas, header, theta=3., dmax =  5., ths = 0, thq = 0.
     # or np.absolute(np.diag(header['sform'])[:3]) ?
     g0 = 1.0/(np.prod(voxsize)*nbvox)
 
-    crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta,betas,coord,dmax,xyz,header,thq, smin,ths, theta,g0,verbose=0)
+    crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta,betas,coord,dmax,xyz,
+                                            header,thq, smin,ths, theta,
+                                            g0, verbose=0)
     if AF==None:
         return None
     pickle.dump(AF, open(afname, 'w'), 2)

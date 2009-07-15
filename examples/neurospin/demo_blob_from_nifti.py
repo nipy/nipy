@@ -32,18 +32,20 @@ smin = 5 # size threshold on bblobs
 nim = nifti.NiftiImage(inputImage)
 header = nim.header
 data = nim.asarray().T
+values = data[data!=0]
 xyz = np.array(np.where(data)).T
 F = ff.Field(xyz.shape[0])
 F.from_3d_grid(xyz)
-F.set_field(data[data!=0])
+F.set_field(values)
 
 # compute the  nested roi object
 label = -np.ones(F.V)
 nroi = hroi.NROI_from_field(F,header,xyz,0,threshold,smin)
+nroi.set_discrete_feature_from_index('activation',values)
 bfm = nroi.discrete_to_roi_features('activation')
 bmap = -np.zeros(F.V)
 if nroi!=None:
-    idx = nroi.discrete_features['masked_index']
+    idx = nroi.discrete_features['index']
     for k in range(nroi.k):
         label[idx[k]] = k
         bmap[idx[k]] = bfm[k]
@@ -66,7 +68,7 @@ wim.save(op.join(swd,"bmap.nii"))
 lroi = nroi.reduce_to_leaves()
 label = -np.ones(F.V)
 if lroi!=None:
-    idx = lroi.discrete_features['masked_index']
+    idx = lroi.discrete_features['index']
     for k in range(lroi.k):
         label[idx[k]] = k
 wlabel = -2*np.ones(nim.getVolumeExtent())
