@@ -53,7 +53,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, pval=0.2):
             nls = BF[s].get_roi_feature('label')
             nls[nls==-1] = np.size(AF)+2
             for k in range(BF[s].k):
-                xyzk = BF[s].discrete[k].T 
+                xyzk = BF[s].xyz[k].T 
                 lw[xyzk[1],xyzk[2]] =  nls[k]
 
             mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)

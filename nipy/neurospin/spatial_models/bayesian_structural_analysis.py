@@ -69,15 +69,15 @@ def hierarchical_asso(bfl,dmax):
                     Gt = bfl[t].make_forest()
                     Gt.anti_symmeterize()
 
-                    #ea,eb,ed = BPmatch.BPmatch_slow_asym(cs,ct, Gs,Gt,dmax)
-                    ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(cs,ct, Gs,Gt,dmax)
+                    ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(
+                        cs,ct, Gs,Gt,dmax)
                     if np.size(ea)>0:
                         gea = np.hstack((gea,ea+cnlm[s]))
                         geb = np.hstack((geb,eb+cnlm[t]))
                         ged = np.hstack((ged,ed))
 
-                    #ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(ct,cs, Gt,Gs,dmax)
-                    ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(ct,cs, Gt,Gs,dmax)
+                    ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(
+                        ct,cs, Gt,Gs,dmax)
                     if np.size(ea)>0:
                         gea = np.hstack((gea,ea+cnlm[t]))
                         geb = np.hstack((geb,eb+cnlm[s]))
@@ -254,7 +254,8 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
         # if above threshold, get some information to create the LR
         if st.norm.sf(ths,mp,np.sqrt(vp)) >thq:         
             if verbose:
-                print valid.sum(),ths,mp,thq, st.norm.sf(ths,mp,np.sqrt(vp))
+                print valid.sum(),ths,mp,thq,\
+                      st.norm.sf(ths,mp,np.sqrt(vp))
             valid[i]=1
             sj = np.size(j)
             idx = np.zeros(sj)
@@ -325,7 +326,8 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
 
     NOTE:
     -----
-    This is historically the first version, but probably not the  most optimal
+    This is historically the first version,
+    but probably not the  most optimal
     It should not be changed for historical reason
     """
     bf = []
@@ -348,10 +350,12 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
         if nroi!=None:
             sub.append(s*np.ones(nroi.k))
             # find some way to avoid coordinate averaging
+            nroi.set_discrete_feature_from_index('activation',beta)
             bfm = nroi.discrete_to_roi_features('activation','average')
-            nroi.compute_discrete_position()
+            
+            nroi.set_discrete_feature_from_index('position',coord)
             bfc = nroi.discrete_to_roi_features('position',
-                                                'cumulated_average')            
+                                                'cumulated_average')         
             gfc.append(bfc)
 
             # get some prior on the significance of the regions
@@ -407,7 +411,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
             
         if bfs!=None:
             bfs.merge_descending()
-            bfs.compute_discrete_position()
+            bfs.set_discrete_feature_from_index('position',coord)
             bfs.discrete_to_roi_features('position','cumulated_average')
 
     # compute probabilitsic correspondences across subjects
@@ -487,17 +491,19 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,th=theta,smin=smin)
+        nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,
+                                    th=theta,smin=smin)
         bf.append(nroi)
         
         if nroi!=None:
             sub.append(s*np.ones(nroi.k))
-            # find some way to avoid coordinate averaging
+            nroi.set_discrete_feature_from_index('activation',beta)
             bfm = nroi.discrete_to_roi_features('activation','average')
 
             # compute the region position
-            nroi.compute_discrete_position()
-            bfc = nroi.discrete_to_roi_features('position','cumulated_average')            
+            nroi.set_discrete_feature_from_index('position',coord)
+            bfc = nroi.discrete_to_roi_features('position',
+                                                'cumulated_average')           
             gfc.append(bfc)
 
             # compute the prior proba of being null
@@ -532,7 +538,8 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
     else:
         spatial_coords = gfc
             
-    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0, sub, 100, spatial_coords,10,1000)
+    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
+                  sub, 100, spatial_coords,10,1000)
     valid = q>thq
     if verbose:
         import matplotlib.pylab as mp
@@ -550,8 +557,9 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
             bfs.merge_descending()
             
             # re-compute the region position
-            bfs.compute_discrete_position()
-            bfc = bfs.discrete_to_roi_features('position','cumulated_average')
+            bfs.set_discrete_feature_from_index('position',coord)
+            bfc = bfs.discrete_to_roi_features('position',
+                                               'cumulated_average')
             # Alan's choice
             #beta = np.reshape(lbeta[:,s],(nvox,1))
             #bfsc = coord[bfs.feature_argmax(beta)]
@@ -638,11 +646,12 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
         bf.append(nroi)
         
         if nroi!=None:
+            nroi.set_discrete_feature_from_index('activation',beta)
             bfm = nroi.discrete_to_roi_features('activation','average')
             bfm = bfm[nroi.isleaf()]
 
             # get the regions position
-            nroi.compute_discrete_position()
+            nroi.set_discrete_feature_from_index('position',coord)
             bfc = nroi.discrete_to_roi_features('position','average')
             bfc = bfc[nroi.isleaf()]
             gfc.append(bfc)
@@ -718,7 +727,8 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
             bfs.set_roi_feature('prior_proba',lq)
                    
             idx = bfs.feature_argmax('activation')
-            midx = [bfs.discrete_features['masked_index'][k][idx[k]] for k in range(bfs.k)]
+            midx = [bfs.discrete_features['index'][k][idx[k]]
+                    for k in range(bfs.k)]
             j = label[np.array(midx)]
             us[leaves] = j[leaves]
 

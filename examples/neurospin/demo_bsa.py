@@ -73,7 +73,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     group_map.shape = ref_dim
     mp.subplot(1,3,2)
     mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
-    mp.title('group-level position 95%confidence regions')
+    mp.title('group-level position 95% \n confidence regions')
     mp.colorbar()
 
     mp.subplot(1,3,3)
@@ -91,7 +91,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
             nls = BF[s].get_roi_feature('label')
             nls[nls==-1] = np.size(AF)+2
             for k in range(BF[s].k):
-                xyzk = BF[s].discrete[k].T 
+                xyzk = BF[s].xyz[k].T 
                 lw[xyzk[1],xyzk[2]] =  nls[k]
 
             mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
@@ -101,7 +101,8 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     if nbsubj==10:
         for s in range(nbsubj):
             mp.subplot(2,5,s+1)
-            mp.imshow(betas[s],interpolation='nearest',vmin=betas.min(),vmax=betas.max())
+            mp.imshow(betas[s],interpolation='nearest',vmin=betas.min(),
+                      vmax=betas.max())
             mp.axis('off')
 
     return AF, BF
