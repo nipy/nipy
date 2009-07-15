@@ -9,12 +9,7 @@ Examples
 >>> from nipy.io.api import load_image
 >>> img = load_image(funcfile)
 >>> img.shape
-(20, 2, 20, 20)
-
-Notes
------
-BUG: anatomical.nii.gz is a copy of functional.nii.gz.  This is a place-holder
-    until we build a proper anatomical test image.
+(17, 21, 3, 20)
 
 """
 

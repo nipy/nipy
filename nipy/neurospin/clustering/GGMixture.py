@@ -669,7 +669,6 @@ class GGGM:
         a,b = mp.yticks()
         mp.yticks(a,fontsize=16)
 
-        mp.show()
         if figname !=None:
             mp.savefig(figname)
 

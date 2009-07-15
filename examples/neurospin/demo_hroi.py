@@ -2,12 +2,12 @@
 Example of a script that crates a 'hierarchical roi' structure
 from the blob model of an image
 
-Used mainly for debugging at the moment (befiore unittests are created)
+fixme : redo it
+Used mainly for debugging at the moment (before unittests are created)
 
 This example is based on a (simplistic) simulated image.
-
-"""
 # Author : Bertrand Thirion, 2008-2009
+"""
 
 import numpy as np
 import scipy.stats as st
@@ -45,6 +45,8 @@ a = np.argmax(td)
 lv = n1.rooted_subtree(a)
 u = nroi.cc()
 u = np.nonzero(u == u[0])[0]
-err = np.sum((u-lv)**2)
 nroi.feature_argmax('activation')
 nroi.discrete_to_roi_features('activation')
+
+import matplotlib.pylab as mp
+mp.show()

@@ -288,12 +288,13 @@ class NROI(MultipleROI,Forest):
         # now copy the roi_features
         fids = self.roi_features.keys()
         for fid in fids:
-            nroi.set_roi_feature(fid,self.roi_features(fid)[isleaf])
+            nroi.set_roi_feature(fid,self.roi_features[fid][isleaf])
             
         # now copy the discrete_features
         fids = self.discrete_features.keys()
         for fid in fids:
-            df = [self.discrete_features[fid][k] for k in range(self.k) if isleaf[k]]
+            df = [self.discrete_features[fid][k] for k in range(self.k)
+                  if isleaf[k]]
             nroi.set_discrete_feature(fid,df)
         return nroi
 

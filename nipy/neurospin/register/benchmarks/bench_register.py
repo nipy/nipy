@@ -1,6 +1,6 @@
 import time
 
-from nipy.testing import TestCase, assert_equal, assert_almost_equal
+from nipy.testing import assert_almost_equal
 import numpy as np
 from scipy.ndimage import affine_transform
 

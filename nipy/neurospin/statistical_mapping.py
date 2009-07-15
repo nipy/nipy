@@ -5,8 +5,11 @@ from nipy.neurospin.graph.field import Field
 from nipy.neurospin.register.transform import apply_affine
 from nipy.neurospin.utils import emp_null
 from nipy.neurospin.glm import glm
-from nipy.neurospin.group.permutation_test import permutation_test_onesample, permutation_test_twosample
-# FIXME: rename permutation_test_onesample class so that name starts with upper case
+from nipy.neurospin.group.permutation_test import \
+     permutation_test_onesample, permutation_test_twosample
+
+# FIXME: rename permutation_test_onesample class
+#so that name starts with upper case
 
 # Use the brifti image object
 from nipy.io.imageformats import Nifti1Image as Image 
@@ -24,25 +27,23 @@ def simulated_pvalue(t, simu_t):
     return 1 - np.searchsorted(simu_t, t)/float(np.size(simu_t))
 
 
-def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nulls={}):
+def cluster_stats(zimg, mask, height_th, height_control='fpr', 
+                  cluster_th=0, nulls={}):
     """
-    clusters =  cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0,
-                              null_zmax='bonferroni', null_smax=None, null_s=None)
-
     Return a list of clusters, each cluster being represented by a
     dictionary. Clusters are sorted by descending size order. Within
     each cluster, local maxima are sorted by descending depth order.
 
     Parameters
     ----------
-      zimg : z-score image
-      mask : mask image 
-      height_th : cluster forming threshold
-      height_control : false positive control meaning of cluster forming threshold: 'fpr'|'fdr'|'fwer'
-      cluster_th : cluster size threshold
-      null_zmax : voxel-level familywise error correction method: 'bonferroni'|'rft'|array
-      null_smax : cluster-level familywise error correction method: None|'rft'|array
-      null_s : cluster-level calibration method: None|'rft'|array
+    zimg: z-score image
+    mask: mask image 
+    height_th: cluster forming threshold
+    height_control: string 
+            false positive control meaning of cluster forming 
+            threshold: 'fpr'|'fdr'|'fwer'
+    cluster_th: cluster size threshold
+    null_s : cluster-level calibration method: None|'rft'|array
     """
     # Masking 
     xyz = np.where(mask.get_data().squeeze()>0)
@@ -145,8 +146,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr', cluster_th=0, nul
 
 
 def mask_intersection(masks):
-    """
-    Compute mask intersection
+    """ Compute mask intersection
     """
     mask = masks[0]
     for m in masks[1:]:
@@ -156,31 +156,35 @@ def mask_intersection(masks):
 
 
 def prepare_arrays(data_images, vardata_images, mask_images):
-
     # Compute mask intersection
     mask = mask_intersection([mask.get_data() for mask in mask_images])
     # Compute xyz coordinates from mask 
     xyz = np.array(np.where(mask>0))
     # Prepare data & vardata arrays 
-    data = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in data_images]).squeeze()
+    data = np.array([d.get_data()[xyz[0], xyz[1], xyz[2]]
+                    for d in data_images]).squeeze()
     if vardata_images == None: 
         vardata = None
     else: 
-        vardata = np.array([d.get_data()[xyz[0],xyz[1],xyz[2]] for d in vardata_images]).squeeze()
+        vardata = np.array([d.get_data()[xyz[0], xyz[1], xyz[2]] 
+                           for d in vardata_images]).squeeze()
     return data, vardata, xyz, mask 
 
 
 def onesample_test(data_images, vardata_images, mask_images, stat_id, 
                    permutations=0, cluster_forming_th=0.01):
     """
-    Helper function for permutation-based mass univariate onesample group analysis. 
+    Helper function for permutation-based mass univariate onesample 
+    group analysis. 
     """
 
     # Prepare arrays
-    data, vardata, xyz, mask = prepare_arrays(data_images, vardata_images, mask_images)
+    data, vardata, xyz, mask = prepare_arrays(data_images, vardata_images, 
+                                              mask_images)
 
     # Create one-sample permutation test instance
-    ptest = permutation_test_onesample(data, xyz, vardata=vardata, stat_id=stat_id)
+    ptest = permutation_test_onesample(data, xyz, vardata=vardata, 
+                                       stat_id=stat_id)
 
     # Compute z-map image 
     zmap = np.zeros(data_images[0].get_shape()).squeeze()
@@ -205,22 +209,22 @@ def onesample_test(data_images, vardata_images, mask_images, stat_id,
         nulls['s'] = cluster_res[0]['perm_size_values']
         nulls['smax'] = cluster_res[0]['perm_maxsize_values']
         
-        # Return z-map image, mask image and dictionary of null distribution for cluster sizes (s),
-        # max cluster size (smax) and max z-score (zmax)
+        # Return z-map image, mask image and dictionary of null distribution 
+        # for cluster sizes (s), max cluster size (smax) and max z-score (zmax)
         return zimg, maskimg, nulls
-
 
 
 def twosample_test(data_images, vardata_images, mask_images, labels, stat_id, 
                    permutations=0, cluster_forming_th=0.01):
     """
-    Helper function for permutation-based mass univariate twosample group analysis. 
-    Labels is a binary vector (1-2). Regions more active for group 1 than group 2 are
-    inferred.
+    Helper function for permutation-based mass univariate twosample group 
+    analysis. Labels is a binary vector (1-2). Regions more active for group 
+    1 than group 2 are inferred.
     """
 
     # Prepare arrays
-    data, vardata, xyz, mask = prepare_arrays(data_images, vardata_images, mask_images)
+    data, vardata, xyz, mask = prepare_arrays(data_images, vardata_images, 
+                                              mask_images)
 
     # Create two-sample permutation test instance
     if vardata_images == None:
@@ -228,7 +232,9 @@ def twosample_test(data_images, vardata_images, mask_images, labels, stat_id,
         xyz, stat_id=stat_id)
     else:
         ptest = permutation_test_twosample(data[labels==1], data[labels==2], 
-        xyz, vardata1=vardata[labels==1], vardata2=vardata[labels==2], stat_id=stat_id)
+                                           xyz, vardata1=vardata[labels==1], 
+                                           vardata2=vardata[labels==2], 
+                                           stat_id=stat_id)
     
     # Compute z-map image 
     zmap = np.zeros(data_images[0].get_shape()).squeeze()
@@ -253,8 +259,9 @@ def twosample_test(data_images, vardata_images, mask_images, labels, stat_id,
         nulls['s'] = cluster_res[0]['perm_size_values']
         nulls['smax'] = cluster_res[0]['perm_maxsize_values']
         
-        # Return z-map image, mask image and dictionary of null distribution for cluster sizes (s),
-        # max cluster size (smax) and max z-score (zmax)
+        # Return z-map image, mask image and dictionary of null 
+        # distribution for cluster sizes (s), max cluster size (smax) 
+        # and max z-score (zmax)
         return zimg, maskimg, nulls
 
 ################################################################################
@@ -292,7 +299,7 @@ def linear_model_fit(data_images, mask_images, design_matrix, vector):
 
 
 
-class LinearModel: 
+class LinearModel(object): 
 
     def __init__(self, data=None, design_matrix=None, mask=None, formula=None, 
                  model='spherical', method=None, niter=2):
@@ -347,23 +354,8 @@ class LinearModel:
         return con_img, vcon_img, z_img, dof
 
 
-
-
-
-
-
-
-
-
-
-
-
 ################################################################################
 # Hack to have nose skip onesample_test, which is not a unit test
 onesample_test.__test__ = False
+twosample_test.__test__ = False
 
-#import sys
-#if 'nose' in sys.modules:
-#    def onesample_test():
-#        import nose
-#        raise nose.SkipTest('Not a test')

@@ -157,7 +157,7 @@ def test_bsa_simple():
     sjitter = 1.0
     dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
                                          pos=pos, ampli=ampli, width=5.0,
-                                         nonrandom=1)
+                                         seed=1)
     betas = np.reshape(dataset, (nbsubj, dimx, dimy))
     
     # set various parameters
@@ -187,7 +187,7 @@ def test_bsa_dev():
     sjitter = 1.0
     dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
                                          pos=pos, ampli=ampli, width=5.0,
-                                         nonrandom=1)
+                                         seed=1)
     betas = np.reshape(dataset, (nbsubj, dimx, dimy))
     
     # set various parameters
@@ -217,7 +217,7 @@ def test_bsa_ipmi():
     sjitter = 1.0
     dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
                                          pos=pos, ampli=ampli, width=5.0,
-                                         nonrandom=1)
+                                         seed=1)
     betas = np.reshape(dataset, (nbsubj, dimx, dimy))
     
     # set various parameters

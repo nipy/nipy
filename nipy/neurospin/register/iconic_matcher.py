@@ -8,7 +8,6 @@ from transform import Affine, BRAIN_RADIUS_MM
 
 import numpy as np  
 import scipy as sp 
-import scipy.optimize 
 from sys import maxint
 
 """
