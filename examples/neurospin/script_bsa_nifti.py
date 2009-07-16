@@ -27,7 +27,7 @@ def make_bsa_nifti(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     main function for  performing bsa on a set of images.
     It creates the some output images in the given directory
 
-    Parameters:
+    Parameters
     ------------
     - mask_images: A list of image paths that yield binary images,
     one for each subject
@@ -50,7 +50,7 @@ def make_bsa_nifti(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     by default it is range(nbsubj)
     - nbeta=0 (int): numerical identifier of the contrast
 
-    OUTPUT:
+    Results
     --------
     - AF: an nipy.neurospin.spatial_models.structural_bfls.landmark_regions
     instance that describes the structures found at the group level

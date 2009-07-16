@@ -26,17 +26,17 @@ import nipy.neurospin.utils.emp_null as en
 #------------------------------------------------------------------
 
 
-def hierarchical_asso(bfl,dmax):
+def _hierarchical_asso(bfl,dmax):
     """
     Compting an association graph of the ROIs defined
     across different subjects
 
-    INPUT:
+    Parameters
     ------
     - bfl a list of ROI hierarchies, one for each subject
     - dmax : spatial scale used when building associtations
 
-    OUTPUT:
+    Results
     ------
     - G a graph that represent probabilistic associations between all
     cross-subject pairs of regions.
@@ -96,12 +96,12 @@ def _clean_size_(bf,smin=0):
     by merging small regions into their parent
     bf = _clean_size_(bf,smin)
 
-    INPUT:
+    Parameters
     ------
     - bf the hroi.NROI to be cleaned
     - smin=0 the minimal size for ROIs
 
-    OUTPUT:
+    Results
     -------
     - bf the cleaned  hroi.NROI
     """
@@ -124,13 +124,13 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
     bf = _clean_size_and_connectivity_(bf,Fbeta,smin)
     and by checking the simple connectivity of the areas in the hierarchy
 
-    INPUT:
+    Parameters
     ------
     - bf the hroi.NROI to be cleaned
     - Fbeta: fff.field class, the underlying field of data
     - smin=0 the minimal size for ROIs
 
-    OUTPUT:
+    Results
     -------
     - bf the cleaned  hroi.NROI
     NOTE : it may be slow
@@ -167,12 +167,12 @@ def make_crmap(AF,coord,verbose=0):
     i.e. the confidence interfval for the position of
     the different landmarks
     
-    INPUT:
+    Parameters
     ------
     - AF the list of group-level landmarks regions
     - coord: array of shape(nvox,3): the position of the reference points
 
-    OUTPUT:
+    Results
     -----
     - crmap: array of shape(nvox)
     """
@@ -195,7 +195,7 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
     
-    INPUT:
+    Parameters
     ------
     - bf is the list of NROIs (Nested ROIs).
     it is assumd that each list corresponds to one subject
@@ -206,7 +206,7 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     with a probability>thq
     in order to be valid
     
-    OUTPUT:
+    Results
     -------
     - LR : a LR instance, describing a cross-subject set of ROIs
     if inference yields a null results, LR is set to None
@@ -302,28 +302,39 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
     Compute the  Bayesian Structural Activation patterns
     with approach described in IPMI'07 paper
 
-    INPUT:
+    Parameters
     ------
-    - Fbeta : an fff field class describing the spatial relationships
-    in the dataset (nbnodes nodes)
-    - lbeta: an array of size (nbnodes, subjects) with functional data
-    - coord: spatial coordinates of the nodes
-    - thq = 0.5: posterior significance threshold
-    - smin = 5: minimal size of the regions to validate them
-    - theta = 3.0: first level threshold
-    - g0 = 1.0 : constant values of the uniform density
-    over the volume of interest
-    - bdensity=0 if bdensity=1, the variable p in ouput contains
-    the likelihood of the data under H1 on the set of input nodes
-
-    OUTPUT:
+     - Fbeta :   nipy.neurospin.graph.field.Field instance
+    an  describing the spatial relationships
+    in the dataset. nbnodes = Fbeta.V
+    - lbeta: an array of shape (nbnodes, subjects):
+    the multi-subject statistical maps
+    - coord array of shape (nnodes,3):
+    spatial coordinates of the nodes
+    - xyz array of shape (nnodes,3):
+    the grid coordinates of the field
+    - header=None: nifti image header the referential defining header
+    - thq = 0.5 (float): posterior significance threshold should be in [0,1]
+    - smin = 5 (int): minimal size of the regions to validate them
+    - theta = 3.0 (float): first level threshold
+    - g0 = 1.0 (float): constant values of the uniform density
+    over the (compact) volume of interest
+    - bdensity=0 if bdensity=1, the variable p in ouput
+    contains the likelihood of the data under H1 on the set of input nodes
+    - verbose=0 : verbosity mode
+    
+    Results
     -------
-    - crmap: resulting group map
-    - AF: list of inter-subject related ROIs
-    - bf: List of individual ROIs
-    - u: labelling of the individual ROIs
-    - p: likelihood of the data under H1 over some sampling grid
-
+    - crmap: array of shape (nnodes):
+    the resulting group-level labelling of the space
+    - LR: a instance of sbf.Landmrak_regions that describes the ROIs found
+    in inter-subject inference
+    If no such thing can be defined LR is set to None
+    - bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+    representing individual ROIs
+    - p: array of shape (nnodes):
+    likelihood of the data under H1 over some sampling grid
+    
     NOTE:
     -----
     This is historically the first version,
@@ -415,7 +426,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
             bfs.discrete_to_roi_features('position','cumulated_average')
 
     # compute probabilitsic correspondences across subjects
-    gc = hierarchical_asso(bf,np.sqrt(2)*dmax)
+    gc = _hierarchical_asso(bf,np.sqrt(2)*dmax)
 
     if gc == []:
         return crmap,AF,bf,p
@@ -449,27 +460,38 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
     """
     Compute the  Bayesian Structural Activation paterns
 
-    INPUT:
+    Parameters
     ------
-    - Fbeta : an fff field class describing the spatial
-    relationships in the dataset (nbnodes nodes)
-    - lbeta: an array of size (nbnodes, subjects) with functional data
-    - coord: spatial coordinates of the nodes
-    - thq = 0.9: posterior significance threshold
-    - smin = 5: minimal size of the regions to validate them
-    - theta = 3.0: first level threshold
-    - g0 = 1.0 : constant values of the uniform density
-    over the volume of interest
+    - Fbeta :   nipy.neurospin.graph.field.Field instance
+    an  describing the spatial relationships
+    in the dataset. nbnodes = Fbeta.V
+    - lbeta: an array of shape (nbnodes, subjects):
+    the multi-subject statistical maps
+    - coord array of shape (nnodes,3):
+    spatial coordinates of the nodes
+    - xyz array of shape (nnodes,3):
+    the grid coordinates of the field
+    - header=None: nifti image header the referential defining header
+    - thq = 0.5 (float): posterior significance threshold should be in [0,1]
+    - smin = 5 (int): minimal size of the regions to validate them
+    - theta = 3.0 (float): first level threshold
+    - g0 = 1.0 (float): constant values of the uniform density
+    over the (compact) volume of interest
     - bdensity=0 if bdensity=1, the variable p in ouput
     contains the likelihood of the data under H1 on the set of input nodes
+    - verbose=0 : verbosity mode
 
-    OUTPUT:
+    Results
     -------
-    - crmap: resulting group map
-    - AF: list of inter-subject related ROIs
-    - bf: List of individual ROIs
-    - u: labelling of the individual ROIs
-    - p: likelihood of the data under H1 over some sampling grid
+    - crmap: array of shape (nnodes):
+    the resulting group-level labelling of the space
+    - LR: a instance of sbf.Landmrak_regions that describes the ROIs found
+    in inter-subject inference
+    If no such thing can be defined LR is set to None
+    - bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+    representing individual ROIs
+    - p: array of shape (nnodes):
+    likelihood of the data under H1 over some sampling grid
 
     NOTE:
     -----
@@ -566,7 +588,7 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
             #bfs.set_roi_feature(bfsc,'position')
 
     # compute a model of between-regions associations
-    gc = hierarchical_asso(bf,np.sqrt(2)*dmax)
+    gc = _hierarchical_asso(bf,np.sqrt(2)*dmax)
 
     # Infer the group-level clusters
     if gc == []:
@@ -595,38 +617,43 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
     """
     Compute the  Bayesian Structural Activation paterns - simplified version  
 
-    INPUT:
+    Parameters
     ------
-    - Fbeta : an fff field class describing the spatial relationships
-    in the dataset (nbnodes nodes)
-    - lbeta: an array of size (nbnodes, subjects) with functional data
-    - coord: spatial coordinates of the nodes
-    - xyz: the grid coordinates of the field
-    - header=None: the referential defining header
-    - thq = 0.5: posterior significance threshold
-    - smin = 5: minimal size of the regions to validate them
-    - theta = 3.0: first level threshold
-    - g0 = 1.0 : constant values of the uniform density
-    over the volume of interest
-    - bdensity=0 if bdensity=1, the variable p in ouput
-    contains the likelihood of the data under H1 on the set of input nodes
+    - Fbeta :  nipy.neurospin.graph.field.Field instance
+    an  describing the spatial relationships
+    in the dataset. nbnodes = Fbeta.V
+    - lbeta: an array of shape (nbnodes, subjects):
+    the multi-subject statistical maps
+    - coord array of shape (nnodes,3):
+    spatial coordinates of the nodes
+    - xyz array of shape (nnodes,3):
+    the grid coordinates of the field
+    - header=None: nifti image header the referential defining header
+    - thq = 0.5 (float): posterior significance threshold should be in [0,1]
+    - smin = 5 (int): minimal size of the regions to validate them
+    - theta = 3.0 (float): first level threshold
+    - g0 = 1.0 (float): constant values of the uniform density
+    over the (compact) volume of interest
     - verbose=0: verbosity mode
 
-    OUTPUT:
+    Results
     -------
-    - crmap: resulting group map
+    - crmap: array of shape (nnodes):
+    the resulting group-level labelling of the space
     - LR: a instance of sbf.Landmrak_regions that describes the ROIs found
     in inter-subject inference
     If no such thing can be defined LR is set to None
-    - bf: List of individual ROIs
-    - p: likelihood of the data under H1 over some sampling grid
+    - bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+    representing individual ROIs
+    - p: array of shape (nnodes):
+    likelihood of the data under H1 over some sampling grid
 
     NOTE:
     -----
     In that case, the DPMM is used to derive a spatial density of
     significant local maxima in the volume. Each terminal (leaf)
     region which is a posteriori significant enough is assigned to the
-    nearest mode of theis distribution
+    nearest mode of this distribution
     """
     bf = []
     gfc = []

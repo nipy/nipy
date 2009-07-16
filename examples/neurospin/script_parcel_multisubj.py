@@ -14,6 +14,7 @@ import get_data_light
 # Get the data
 get_data_light.getIt()
 nbsubj = 12
+subj_id = range(nbsubj)
 numbeta = [29]
 data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
                                  'group_t_images'))
@@ -57,8 +58,8 @@ Parcellation_output(fpa,mask_images,learn_images,Talairach,subj_id,
                     verbose=1,swd=swd)
 
 # do some parcellation-based analysis:
-# load some test images whose parcel-based signal needs to be assessed 
-numbeta = [31]
+# take some test images whose parcel-based signal needs to be assessed 
+test_images=learn_images
 
 # a design matrix for possibly subject-specific effects
 DMtx = None
