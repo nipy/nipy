@@ -873,7 +873,7 @@ class VBGMM(BGMM):
         if L.min()<0: stop
         return L
 
-    def evidence(self,x,L = None):
+    def evidence(self,x,L = None,verbose=0):
         """
         computation of evidence or integrated likelihood
 
@@ -884,6 +884,7 @@ class VBGMM(BGMM):
         - l=None: array of shape (nbitem,self.k)
         component-wise likelihood
         If None, it is recomputed
+        - vernose=0: verbosity model
         
         OUTPUT:
         -------
@@ -925,14 +926,17 @@ class VBGMM(BGMM):
         prior_covariance = np.array([pinv(self.prior_scale[k])
                                for k in range(self.k)])
         covariance = np.array([pinv(self.scale[k]) for k in range(self.k)])
-        Dkl = dkl_dirichlet(self.weights,self.prior_weights)
+        Dklw = 0
+        Dklg = 0
+        Dkld = dkl_dirichlet(self.weights,self.prior_weights)
         for k in range(self.k):
-            Dkl += dkl_wishart(self.dof[k],covariance[k],
+            Dklw += dkl_wishart(self.dof[k],covariance[k],
                                self.prior_dof[k],prior_covariance[k])
             nc = self.scale[k]*(self.dof[k]*self.shrinkage[k])
             nc0 = self.scale[k]*(self.dof[k]*self.prior_shrinkage[k])
-            Dkl += dkl_gaussian(self.means[k],nc,self.prior_means[k],nc0)
-            
+            Dklg += dkl_gaussian(self.means[k],nc,self.prior_means[k],nc0)
+        Dkl = Dkld + Dklg + Dklw
+        if verbose: print 'Lav', F, 'Dkl',Dkld,Dklg,Dklw
         return F-Dkl
 
     def _Mstep(self,x,L):

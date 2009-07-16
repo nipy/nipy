@@ -304,6 +304,7 @@ class ENN:
             the verbosity level, if True a plot is generated.
         
         Results
+        --------
         theta: float
             the critical value associated with the provided p-value
         """
@@ -323,11 +324,12 @@ class ENN:
         import scipy.stats as st
         if self.learned==0:
             self.learn()
-        efp = self.p0*st.norm.sf(theta,self.mu,self.sigma)*float(self.n)/np.sum(self.x>theta)
+        efp = self.p0*st.norm.sf(theta,self.mu,self.sigma)\
+              *float(self.n)/np.sum(self.x>theta)
         efp = np.minimum(efp,1)
         return efp
 
-    def plot(self, efp=None, alpha=0.05, bar=1):
+    def plot(self, efp=None, alpha=0.05, bar=1, mpaxes=None):
         """
         plot the  histogram of x
         
@@ -339,6 +341,9 @@ class ENN:
             drawn.
         alpha : float, optional 
             The chosen fdr threshold
+        bar=1 : bool, optional
+        mpaxes=None: if not None, hadle to an axes where the fig.
+        will be drawn. Avoids creating unnecessarily new figures.
         """ 
         if not self.learned:
             self.learn()
@@ -353,36 +358,39 @@ class ENN:
         hist /= step
         
         import matplotlib.pylab as mp
-        mp.figure()
+        if mpaxes==None:
+            mp.figure()
+            ax = mp.subplot(1,1,1)
+        else:
+            ax = mpaxes 
         if bar:
             # We need to cut ledge to len(hist) to accomodate for pre and
             # post numpy 1.3 hist semantic change.
-            mp.bar(ledge[:len(hist)], hist, step)
+            ax.bar(ledge[:len(hist)], hist, step)
         else:
-            mp.plot(medge[:len(hist)], hist, linewidth=2)
-        mp.plot(medge, g, 'r', linewidth=2)
-        mp.title('Robust fit of the histogram', fontsize=16)
-        l = mp.legend(('empiricall null', 'data'), loc=0)
+            ax.plot(medge[:len(hist)], hist, linewidth=2)
+        ax.plot(medge, g, 'r', linewidth=2)
+        ax.set_title('Robust fit of the histogram', fontsize=16)
+        l = ax.legend(('empiricall null', 'data'), loc=0)
         for t in l.get_texts():
             t.set_fontsize(16)
-        a, b = mp.xticks()
-        mp.xticks(a, fontsize=16)
-        a, b = mp.yticks()
-        mp.yticks(a, fontsize=16)
+        ax.set_xticklabels(ax.get_xticks(), fontsize=16)
+        ax.set_yticklabels(ax.get_yticks(), fontsize=16)
 
         if efp != None:
-            mp.plot(self.x, np.minimum(alpha, efp), 'k')
+            ax.plot(self.x, np.minimum(alpha, efp), 'k')
     
 
  
-def three_classes_GMM_fit(x,test=None,alpha=0.01,prior_strength = 100,verbose=0,bias=0, theta = 0):
+def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
+                          verbose=0, mpaxes=None, bias=0, theta=0):
     """
      Fit the data with a 3-classes Gaussian Mixture Model,
     i.e. computing some probability that the voxels of a certain map
     are in class disactivated, null or active
 
-    INPUT:
-    ------
+    Parameters:
+    ------------
     - x array of shape (nvox,1): the map to be analysed
     - test=None array of shape(nbitems,1):
     the test values for which the p-value needs to be computed
@@ -391,21 +399,23 @@ def three_classes_GMM_fit(x,test=None,alpha=0.01,prior_strength = 100,verbose=0,
     - prior_strength = 100 the confidence on the prior
     (should be compared to size(x))
     - verbose=0 : verbosity mode
+    - mpaxes=None: axes handle used to plot the figure in verbose mode
+    if None, new axes are created
     - bias = 0: allows a recaling of the posterior probability
     that takes into account the thershold theta. Not rigorous.
     - theta = 0 the threshold used to correct the posterior p-values
     when bias=1; normally, it is such that test>theta
     note that if theta = -np.infty, then the method has a standard behaviour
     
-    OUTPUT:
-    -------
-    bfp : array of shape (nbitems,3):
-    the posteriri probability of each test item belonging to each component
+    Results:
+    ------------
+    - bfp : array of shape (nbitems,3):
+    the posterior probability of each test item belonging to each component
     in the GMM (sum to 1 across the 3 classes)
-    if np.size(test)==0,i.e. nbitem==0, None is returned
+    if np.size(test)==0, i.e. nbitem==0, None is returned
 
-    NOTE:
-    -----
+    Note:
+    --------
     Our convention is that
     - class 1 represents the negative class
     - class 2 represenst the null class
@@ -460,36 +470,38 @@ def three_classes_GMM_fit(x,test=None,alpha=0.01,prior_strength = 100,verbose=0,
         bfp = (lw/weights)*BayesianGMM.slikelihood(test)
     
     if verbose>1:
-        BayesianGMM.show_components(x,gd,lj)
+        BayesianGMM.show_components(x,gd,lj,mpaxes)
 
     bfp = (bfp.T/bfp.sum(1)).T
     return bfp
 
-def Gamma_Gaussian_fit(x,test=None,verbose=0):
+def Gamma_Gaussian_fit(x,test=None,verbose=0,mpaxes=None):
     """
     Computing some prior probabilities that the voxels of a certain map
     are in class disactivated, null or active uning a gamma-Gaussian mixture
     
-    INPUT:
-    ------
+    Parameters:
+    ------------
     - x array os shape (nvox): the map to be analysed
     - test=None array of shape(nbitems):
     the test values for which the p-value needs to be computed
     by default, test = x
     - verbose=0 : verbosity mode
+    - mpaxes=None: axes handle used to plot the figure in verbose mode
+    if None, new axes are created
     
-    OUTPUT:
-    -----
+    Results:
+    ----------
     bfp : array of shape (nbitems,3):
     the probability of each component in the MM for each test value
     """
-    from nipy.neurospin.clustering import GGMixture
-    Ggg = GGMixture.GGGM()
+    from nipy.neurospin.clustering import ggmixture
+    Ggg = ggmixture.GGGM()
     Ggg.init_fdr(x)
     Ggg.estimate(x,100,1.e-8,1.0,0)
     if verbose>1:
         # hyper-verbose mode
-        Ggg.show(x)
+        Ggg.show(x,mpaxes=mpaxes)
         Ggg.parameters()
 
     test = np.reshape(test,np.size(test))
