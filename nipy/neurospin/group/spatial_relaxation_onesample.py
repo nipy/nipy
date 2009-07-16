@@ -23,18 +23,7 @@ def log_gammainv_pdf(x, a, b):
     log density of the inverse gamma distribution with shape a and scale b,
     at point x, using Stirling's approximation for a > 100
     """
-    L = a * np.log(b) - sp.gammaln(a) - (a + 1) * np.log(x) - b / x
-    #if np.isscalar(a):
-        #if a <= 100:
-            #L -= np.log(sp.gamma(a))
-        #else:
-            #n = a - 1
-            #L -= 0.5 * np.log(2 * np.pi * n) + n * (np.log(n) - 1)
-    #else:
-        #L[a <= 100] -= np.log(sp.gamma(a[a <= 100]))
-        #n = a[a > 100] - 1
-        #L[a > 100] -= 0.5 * np.log(2 * np.pi * n) + n * (np.log(n) - 1)
-    return L
+    return a * np.log(b) - sp.gammaln(a) - (a + 1) * np.log(x) - b / x
 
 def log_gaussian_pdf(x, m, v):
     """
@@ -47,9 +36,9 @@ def log_gaussian_pdf(x, m, v):
 
 class multivariate_stat:
     def __init__(self, data, vardata=None, XYZ=None, std=None, sigma=None, 
-                    labels=None, network=None, v_shape=1e-3, v_scale=1e-3, 
-                    std_shape=1e-3, std_scale=1e-3, m_mean_rate=1e-3, 
-                    m_var_shape=1e-3, m_var_scale=1e-3, disp_mask=None, 
+                    labels=None, network=None, v_shape=3, v_scale=20, 
+                    std_shape=3, std_scale=20, m_mean_rate=1e-3, 
+                    m_var_shape=3, m_var_scale=20, disp_mask=None, 
                     labels_prior=None, label_values=None, labels_prior_mask=None):
         """
         Multivariate modeling of fMRI group data accounting for spatial uncertainty
@@ -472,7 +461,7 @@ class multivariate_stat:
                 if update_spatial and self.std != None:
                     self.update_displacements()
                     if j == 0 and self.proposal == 'rand_walk':
-                        self.proposal_std = np.clip(self.proposal_std * (1 + 0.7) / (1 + self.R.mean()), 0.2, 1.0)
+                        self.proposal_std = np.clip(self.proposal_std * (1 + 0.75) / (1 + self.R.mean()), 0.2, 1.0)
                 if self.vardata != None:
                     self.update_effects()
                 self.update_mean_effect()
@@ -526,7 +515,9 @@ class multivariate_stat:
         """
         MAP estimate of elementary displacements conditional on model parameters
         """
-        self.log_likelihood = self.compute_log_region_likelihood().sum()
+        LL, self.Z, self.tot_var, self.SS1, self.SS2, self.SS3, self.SS4 =\
+                             self.compute_log_voxel_likelihood(return_SS=True)
+        self.log_likelihood = LL.sum()
         for i in xrange(nsimu):
             if verbose:
                 print "SA iteration", i+1, "out of", nsimu
@@ -537,7 +528,7 @@ class multivariate_stat:
         B = len(self.D.block)
         for i in xrange(n):
             for b in np.random.permutation(range(B)):
-                block = self.D.block[b]
+                #block = self.D.block[b]
                 self.update_block_SA(i, b, T, proposal_std, verbose)
         if self.verbose:
             print "mean rejected displacements :", self.R.mean(axis=0)
@@ -548,7 +539,7 @@ class multivariate_stat:
         with random-walk kernel
         """
         if proposal_std==None:
-            proposal_std=self/std
+            proposal_std=self.std
         block = self.D.block[b]
         if verbose:
             print 'sampling field', i, 'block', b
@@ -557,21 +548,43 @@ class multivariate_stat:
         Uc = self.D.U[:, i, b].copy()
         Vc = self.D.V[:, i, block].copy()
         p = self.data.shape[1]
-        if len(L) > 0:
+        pL = len(L)
+        if pL > 0:
             Wc = self.D.W[:, i, L].copy()
             Ic = self.D.I[i, L].copy()
+            Nc = self.N.copy()
+            Zc = self.Z.copy()
+            tot_varc = self.tot_var[i,L].copy()
+            SS1c = self.SS1.copy()
+            SS2c = self.SS2.copy()
+            SS3c = self.SS3.copy()
+            SS4c = self.SS4.copy()
         # log acceptance rate
         fc = self.log_likelihood
         self.D.U[:, i, b] = U
         self.D.V[:, i, block] = V
-        if len(L)> 0:
+        if pL > 0:
             self.D.W[:, i, L] = W
             self.D.I[i, L] = I
             ones = np.ones((len(L), 1), float)
             add_lines(-ones, self.N.reshape(p, 1), Ic)
             add_lines(ones, self.N.reshape(p, 1), I)
-        self.update_summary_statistics(w=1.0, update_spatial=True)
-        f = self.compute_log_voxel_likelihood().sum()
+            self.Z[i,L] = self.data[i,L] - self.m_mean[self.labels[I]]
+            if self.vardata == None:
+                self.tot_var[i,L] = self.v[self.labels[I]] + np.zeros(L, float)
+            else:
+                self.tot_var[i,L] = self.v[self.labels[I]] + self.vardata[i,L]
+            add_lines(-(1.0 / tot_varc).reshape(pL, 1), self.SS1.reshape(p, 1), Ic)
+            add_lines((1.0 / self.tot_var[i,L]).reshape(pL, 1), self.SS1.reshape(p, 1), I)
+            add_lines(-np.log(tot_varc).reshape(pL, 1), self.SS2.reshape(p, 1), Ic)
+            add_lines(np.log(self.tot_var[i,L]).reshape(pL, 1), self.SS2.reshape(p, 1), I)
+            add_lines(-(Zc[i,L]**2 / tot_varc).reshape(pL, 1), self.SS3.reshape(p, 1), Ic)
+            add_lines((self.Z[i,L]**2 / self.tot_var[i,L]).reshape(pL, 1), self.SS3.reshape(p, 1), I)
+            add_lines(-(Zc[i,L] / tot_varc).reshape(pL, 1), self.SS4.reshape(p, 1), Ic)
+            add_lines((self.Z[i,L] / self.tot_var[i,L]).reshape(pL, 1), self.SS4.reshape(p, 1), I)
+        #self.update_summary_statistics(w=1.0, update_spatial=True)
+        f = - 0.5 * (self.N * np.log(2 * np.pi) + np.log(1 + self.m_var[self.labels] * self.SS1) \
+                + self.SS2 + self.SS3 - self.SS4**2 / (1 / self.m_var[self.labels] + self.SS1)).sum()
         A = f - fc + (Uc**2 - U**2).sum() / self.std**2
         self.R[i, b] = np.random.uniform() > np.exp(A / T)
         if self.R[i, b] == 1:
@@ -580,11 +593,17 @@ class multivariate_stat:
             if len(L) > 0:
                 self.D.W[:, i, L] = Wc
                 self.D.I[i, L] = Ic
-                add_lines(-ones, self.N.reshape(p, 1), I)
-                add_lines(ones, self.N.reshape(p, 1), Ic)
-            self.update_summary_statistics(w=1.0, update_spatial=True)
+                self.N = Nc
+                self.Z[i,L] = self.data[i,L] - self.m_mean[self.labels[Ic]]
+                self.tot_var[i,L] = tot_varc
+                self.SS1 = SS1c
+                self.SS2 = SS2c
+                self.SS3 = SS3c
+                self.SS4 = SS4c
+            #self.update_summary_statistics(w=1.0, update_spatial=True)
         else:
             self.log_likelihood = f
+        self.update_summary_statistics(w=1.0, update_spatial=True)
     
     #####################################################################################
     # Marginal likelihood computation for model selection
@@ -653,7 +672,7 @@ class multivariate_stat:
             log_region_likelihood[j] = log_voxel_likelihood[self.labels==j].sum()
         return log_region_likelihood
     
-    def compute_log_voxel_likelihood(self, v=None, m_mean=None, m_var=None):
+    def compute_log_voxel_likelihood(self, v=None, m_mean=None, m_var=None, return_SS=False):
         if v == None:
             v = self.v
         if m_mean == None:
@@ -690,8 +709,12 @@ class multivariate_stat:
                 add_lines(np.log(tot_var[i]).reshape(p, 1), SS2.reshape(p, 1), Ii)
                 add_lines((Z[i]**2 / tot_var[i]).reshape(p, 1), SS3.reshape(p, 1), Ii)
                 add_lines((Z[i] / tot_var[i]).reshape(p, 1), SS4.reshape(p, 1), Ii)
-        return - 0.5 * (N * np.log(2 * np.pi) + np.log(1 + m_var[self.labels] * SS1) \
+        LL = - 0.5 * (N * np.log(2 * np.pi) + np.log(1 + m_var[self.labels] * SS1) \
                 + SS2 + SS3 - SS4**2 / (1 / m_var[self.labels] + SS1))
+        if return_SS:
+            return LL, Z, tot_var, SS1, SS2, SS3, SS4
+        else:
+            return LL
     
     def compute_log_prior(self, v=None, m_mean=None, m_var=None, std=None):
         """
@@ -751,12 +774,13 @@ class multivariate_stat:
         return log_conditional_posterior
     
     def sample_log_conditional_posterior(self, v=None, m_mean=None, m_var=None, 
-                                        nsimu=1e2, burnin=1e2, verbose=False, c=1.0):
+                                        nsimu=1e2, burnin=1e2, stabilize=False, verbose=False):
         """
         sample log conditional posterior density of region parameters
         using a Gibbs sampler (assuming all hidden variables have been initialized).
-        A cooling schedule can also be implemented, choosing c < 1.
-        Computes posterior mean
+        Computes posterior mean.
+        if stabilize is True, sampling is conditioned on the parameters, reducing 
+        the variance of the estimate, but introducing a positive bias.
         """
         if v == None:
             v = self.v.copy()
@@ -781,45 +805,44 @@ class multivariate_stat:
                 else:
                     print "Sampling posterior distribution"
             for i in xrange(niter[k]):
-                if k == 0:
-                    T = 1.0
-                else:
-                    T = c**i
                 if self.verbose:
                     print "Iteration", i+1, "out of", niter[k]
                 # Gibbs iteration
                 #i += 1
                 if self.vardata != None:
-                    self.update_effects(T)
-                self.update_mean_effect(T)
+                    self.update_effects()
+                self.update_mean_effect()
                 posterior_mean += self.m
+                if not stabilize:
+                    self.update_summary_statistics(update_spatial=False, mode='mcmc')
+                    self.update_parameters_mcmc(update_spatial=False)
                 if self.verbose:
                     print "population effect min variance value :", self.m_var.min()
                 if k == 1:
-                    self.update_summary_statistics(update_spatial=False, mode='mcmc')
+                    if stabilize:
+                        self.update_summary_statistics(update_spatial=False, mode='mcmc')
                     log_conditional_posterior_values[i] = \
                     self.compute_log_conditional_posterior(v, m_mean, m_var)[:-1]
         posterior_mean /= nsimu
         return log_conditional_posterior_values, posterior_mean
     
-    def compute_log_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False, c=1.0):
+    def compute_log_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, stabilize=True, verbose=False):
         """
-        compute upper bound on log posterior density of region parameters
-        by Rao-Blackwell method, or simulated annealing (assuming all hidden variables have been initialized).
+        compute log posterior density of region parameters by Rao-Blackwell method, 
+        or a stabilized upper bound if stabilize is True.
         """
         log_conditional_posterior_values \
-            = self.sample_log_conditional_posterior(v, m_mean, m_var, nsimu, burnin, verbose, c)[0]
+            = self.sample_log_conditional_posterior(v, m_mean, m_var, nsimu, burnin, stabilize, verbose)[0]
         max_log_conditional = log_conditional_posterior_values.max(axis=0)
         ll_ratio = log_conditional_posterior_values - max_log_conditional
-        if c < 1:
-            return log_conditional_posterior_values[-1]
-        else:
-            #return max_log_conditional + np.log(np.exp(ll_ratio).sum(axis=0)) - np.log(nsimu)
+        if stabilize:
             return max_log_conditional + ll_ratio.mean(axis=0)
+        else:
+            return max_log_conditional + np.log(np.exp(ll_ratio).sum(axis=0)) - np.log(nsimu)
     
-    def compute_marginal_likelihood(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, verbose=False, c=1.0):
+    def compute_marginal_likelihood(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, stabilize=True, verbose=False):
         log_likelihood = self.compute_log_region_likelihood(v, m_mean, m_var)
         log_prior = self.compute_log_prior(v, m_mean, m_var)
-        log_posterior = self.compute_log_posterior(v, m_mean, m_var, nsimu, burnin, verbose, c)
+        log_posterior = self.compute_log_posterior(v, m_mean, m_var, nsimu, burnin, stabilize, verbose)
         return log_likelihood + log_prior[:-1] - log_posterior
 
