@@ -12,10 +12,14 @@ import matplotlib.pylab as mp
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
+import profile
+
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
                         nbeta=[0],method='simple',verbose = 0):
-    """ Function for performing bayesian structural analysis on a set of images.
+    """
+    Function for performing bayesian structural analysis
+    on a set of images.
     """
     ref_dim = np.shape(betas[0])
     nbsubj = betas.shape[0]
@@ -38,10 +42,10 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     g0 = 1.0/(1.0*nbvox)*1./np.sqrt(2*np.pi*dmax**2)
     
     bdensity = 1
-
     if method=='ipmi':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax,xyz, None, thq,
+                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax,xyz,
+                                        None, thq,
                                         smin, ths, theta, g0, bdensity)
     if method=='simple':
         group_map, AF, BF, likelihood = \
@@ -49,7 +53,8 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                                           None, thq, smin, ths, theta, g0)
     if method=='dev':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_dev(Fbeta, lbeta, coord, dmax,xyz, None, thq,
+                   bsa.compute_BSA_dev(Fbeta, lbeta, coord, dmax,xyz,
+                                       None, thq,
                                       smin, ths, theta, g0, bdensity)
         
     if method not in['dev','simple','ipmi']:
@@ -136,6 +141,10 @@ smin = 5
 method = 'simple'
 
 # run the algo
-AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method,verbose=verbose)
-mp.show()
 
+import time
+t1 = time.time()
+AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method,verbose=verbose)
+t2 = time.time()
+print t2-t1
+mp.show()

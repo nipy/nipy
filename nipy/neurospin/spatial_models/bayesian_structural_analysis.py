@@ -691,7 +691,7 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
     dof = 100
     spatial_coords = coord
     burnin = 100
-    nis = 1000
+    nis = 300
     nii = 100
     
     p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
