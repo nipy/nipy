@@ -9,7 +9,7 @@ from nipy.neurospin.image_registration import image4d, realign4d, resample4d
 
 # Create Nifti1Image instances from both input files
 rootpath = 'D:\\home\\AR203069\\data\\karla'
-runnames = glob(join(rootpath, '*.nii'))
+runnames = glob(join(rootpath, 'fms*.nii'))
 print runnames
 images = [load_image(rname) for rname in runnames]
 
@@ -29,7 +29,8 @@ runs = [image4d(im, tr=2.4, slice_order='ascending', interleaved=False)
 runs = runs[0:2]
 
 # Correct motion within- and between-sessions
-transforms = realign4d(runs)
+##transforms = realign4d(runs)
+transforms = realign4d(runs, within_loops=0, between_loops=0)
 
 # Resample data on a regular space+time lattice using 4d interpolation
 corr_runs = [resample4d(runs[i], transforms=transforms[i]) for i in range(len(runs))]
