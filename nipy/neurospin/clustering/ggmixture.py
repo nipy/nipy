@@ -107,7 +107,10 @@ class Gamma:
             self.shape = _psi_solve(y) 
         
         self.scale = np.sum(x)/(n*self.shape)
-            
+
+# ------------------------------------------------------------
+# ------ Gamma-Gaussian Mixture class-------------------------
+# ------------------------------------------------------------           
 
 class GGM:
     """
@@ -302,6 +305,9 @@ class GGM:
             pg[i] = np.exp(lz)*p
         return y,pg
 
+# ------------------------------------------------------------
+# ------ double-Gamma-Gaussian Mixture class------------------
+# ------------------------------------------------------------           
 
 
 class GGGM:
@@ -880,49 +886,5 @@ class GGGM:
         mp.legend(('False positive rate','True positive rate'))
         return P
 
-# test code
-def test_GGM():
-    # instantiate the class
-    shape = 1 
-    scale = 1
-    mean = 0
-    var = 1
-    G = GGM(shape,scale,mean,var)
-    
-    # generate some random data
-    sx = 10000
-    shape = 2
-    scale = 3
-    x = -2.5+nr.randn((sx))
-    
-    #for i in range(3000):
-    #   x[i] =  st.gamma.rvs(shape,0,scale)
 
-    G.estimate(x)
-    G.parameters()
-    
-def test_GGGM():
-    # instantiate the class
-    G = GGGM()
-    
-    # generate some random data
-    sx = 10000
-    x = np.array([float(st.t.rvs(5)) for i in range(sx)])
-
-    #G.init(x)
-    G.init_fdr(x)
-
-    G.parameters()
-    G.estimate(x,0.00001,1)
-    G.parameters()
-    G.show(x)
-
-
-def test_Gamma_parameters():
-    import numpy.random as R
-    n = 10000
-    X = R.gamma(11., 3., n)
-    G = Gamma()
-    G.estimate(X)
-    G.parameters()
 
