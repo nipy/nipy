@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 
-import fff2.registration as registration
-import fff2.utils.io as io
+from nipy.neurospin.register.iconic_matcher import IconicMatcher
+from nipy.io.imageformats import load as load_image
 from os.path import join
 import numpy as np
 
@@ -17,13 +17,12 @@ print('Scanning data directory...')
 
 # Get data
 print('Fetching image data...')
-I = io.image()
-J = io.image()
-I.load(join(rootpath,'nobias_anubis'+'.nii'))
-J.load(join(rootpath,'ammon_TO_anubis'+'.nii'))
+I = load_image(join(rootpath,'nobias_anubis'+'.nii'))
+J = load_image(join(rootpath,'ammon_TO_anubis'+'.nii'))
 
 # Setup registration algorithm
-matcher = registration.iconic(I, J) ## I: source, J: target
+matcher = IconicMatcher(I.get_data(), J.get_data(), 
+                        I.get_affine(), J.get_affine()) ## I: source, J: target
 
 # Params
 size = 5
