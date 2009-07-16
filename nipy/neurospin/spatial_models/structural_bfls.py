@@ -44,16 +44,16 @@ class landmark_regions(hroi.NROI):
         - subj=None: k-length list of subjects
         (these correspond to ROI feature)
         - coord=None; k-length list of  coordinate arrays
-        CAVEAT:
-        discrete is used here for subject identification
+
+        FIXME: xyz=subj makes no sense
         """
         k = int(k)
         if k<1: raise ValueError, "cannot create an empty LR"
         if parents==None:
             parents = np.arange(k)
-        hroi.NROI.__init__(self,parents,header,discrete=subj,id=id)
+        hroi.NROI.__init__(self,parents,header,xyz=subj,id=id)
         self.set_discrete_feature('position',coord)
-        self.subj = self.discrete
+        self.subj = subj
 
     def centers(self):
         """
@@ -750,11 +750,15 @@ def merge(Gc,labels):
     """
     Given a first labelling of the graph Gc, this function
     builds a reduced graph by merging the vertices according to the labelling
-    INPUT:
-    - Gc the input graph
+
+    Parameters:
+    ------------
+    - Gc nipy.neurospin.graph.graph.WeightedGraph instance
     - labels : array of size V, the number of vertices of Gc
     the labelling of the vertices that represent the segmentation
-    OUTPUT:
+
+    Results:
+    ---------
     - labels : the new labelling after further merging
     - Gr the reduced graph after merging
     """
@@ -769,8 +773,8 @@ def merge(Gc,labels):
     Fc.diffusion()
     Q = Fc.field
 
-    b = np.dot(np.transpose(Q),P) 
-    b = np.transpose(np.transpose(b)/sum(b,1))
+    b = np.dot(Q.T,P) 
+    b = (b.T/sum(b,1)).T
     b = b-np.diag(np.diag(b))
     ib,jb = np.where(b)
     
@@ -786,17 +790,22 @@ def merge(Gc,labels):
     return labels, Gr
     
 
-def segment_graph_rd(Gc,nit = 1,verbose=0):
+def segment_graph_rd(Gc, nit=1,verbose=0):
     """
-    This function prefoms a hard segmentation of the graph Gc
+    Hard segmentation of the graph Gc
     using a replicator dynamics approach.
     The clusters obtained in the first pass are further merged
     during a second pass, based on a reduced graph
-    INPUT:
-    - Gc : the graph to be segmented
-    OUTPUT:
-    - u : array of size V, the number of vertices of Gc
-    the labelling of the vertices that represent the segmentation
+
+    Parameters:
+    -------------
+    - Gc : nipy.neurospin.graph.graph.WeightedGraph instance
+    the graph to be segmented
+
+    Results:
+    ----------
+    - u : array of shape Gc.V
+    labelling of the vertices that represents the segmentation
     """
     u = []
     if (Gc.E>0):
@@ -812,19 +821,24 @@ def segment_graph_rd(Gc,nit = 1,verbose=0):
     return u
 
 
-def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pval=0.2,verbose=0):
+def Compute_Amers (Fbeta, Beta, xyz ,header, coord,  dmax=10.,
+                   thr=3.0, ths=0, pval=0.2,verbose=0):
     """
-     This is the main function for contrsucting the BFLs
-     INPUT
+     This is the main function for building the BFLs
+
+     Parameters
+     -----------
      - Fbeta : field structure that contains the spatial nodes of the dataset
      - Beta: functional data matrix of size (nbnodes,nbsubj)
      - xyz: 
-     - tal: spatial coordinates of the nodes (e.g. MNI coords)
+     - coord: spatial coordinates of the nodes (e.g. MNI coords)
      - dmax=10.: spatial relaxation allowed in the preocedure
      - thr = 3.0: thrshold at the first-level
      - ths = 0, number of subjects to validate a BFL
      - pval = 0.2 : significance p-value for the spatial inference
-     OUPUT
+
+     Results
+     --------
      - crmap: the map of CR of the activated clusters in the common space
      - AF : group level BFLs
      - BFLs: list of first-level nested ROIs
@@ -840,14 +854,15 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pv
         bfls = hroi.NROI_from_watershed(Fbeta,header,xyz,refdim=0,th=thr)
  
         if bfls!=None:
-            bfls.compute_discrete_position()
+            bfls.set_discrete_feature_from_index('position',coord)
             bfls.discrete_to_roi_features('position','average')
             
-        #bfls.make_feature(tal,'position','mean')
+        #bfls.make_feature(coord,'position','mean')
         BFLs.append(bfls)
 
-    # clean_density(BFLs,dmax,tal,pval,verbose=1,dev=0,nrec=5)
-    clean_density_redraw(BFLs,dmax,tal,pval,verbose=0,dev=0,nrec=1,nsamples=10)
+    # clean_density(BFLs,dmax,coord,pval,verbose=1,dev=0,nrec=5)
+    clean_density_redraw(BFLs,dmax,coord,pval,verbose=0,dev=0,
+                         nrec=1,nsamples=10)
     
     Gc = hierarchical_asso(BFLs,dmax)
     Gc.weights = np.log(Gc.weights)-np.log(Gc.weights.min())
@@ -866,7 +881,7 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pv
     
     LR,mlabel = build_LR(BFLs,ths)
     if LR!=None:
-        crmap = LR.map_label(tal,pval = 0.95,dmax=dmax)
+        crmap = LR.map_label(coord,pval = 0.95,dmax=dmax)
         
     return crmap, LR, BFLs 
 

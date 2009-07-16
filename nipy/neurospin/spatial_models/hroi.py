@@ -22,7 +22,10 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
     
     INPUT:
     ------
-    - Field : the Field structure on which the nested structure is extracted
+    - Field : nipy.neurospin.graph.field.Field instance
+    in which the nested structure is extracted
+    It is meant to be a the topological representation
+    of a masked image or a mesh
     - header : a referential-describing information
     (in the  future this should become a standard nipy transformation)
     - xyz: array of shape (Field.V,3) that represents grid coordinates
@@ -40,8 +43,8 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
     ----
     - when no region is produced (no Nroi can be defined),
     the return value is None
-    - additionally a discrete_field is created, with the key 'activation',
-    which refers to the input data used to create the NROI
+    - additionally a discrete_field is created, with the key 'index'.
+    It contains the index in the field from which each point of each ROI
     """
     if Field.field[:,refdim].max()>th:
         idx,height,parents,label = Field.threshold_bifurcations(refdim,th)
@@ -54,12 +57,13 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
     if k==0: return None
     discrete = [xyz[label==i] for i in range(k)]
     nroi = NROI(parents,header,discrete)
-    feature = [Field.get_field()[label==i] for i in range(k)]
-    nroi.set_discrete_feature('activation', feature)
+
+    #feature = [Field.get_field()[label==i] for i in range(k)]
+    #nroi.set_discrete_feature('activation', feature)
     
-    # this should disappear in the future 
+    # Create the index of each point within the Field
     midx = [np.expand_dims(np.nonzero(label==i)[0],1) for i in range(k)]
-    nroi.set_discrete_feature('masked_index', midx)
+    nroi.set_discrete_feature('index', midx)
     
     #define the voxels
     # as an mroi, it should have a method to be instantiated
@@ -99,8 +103,8 @@ def NROI_from_watershed(Field,header,xyz,refdim=0,th=-np.infty):
     NOTE
     - when no region is produced (no Nroi can be defined),
     the return value is None
-    - additionally a discrete_field is created, with the key 'activation',
-    which refers to the input data used to create the NROI
+     - additionally a discrete_field is created, with the key 'index'.
+    It contains the index in the field from which each point of each ROI
     """
     if Field.field[:,refdim].max()>th:
         idx,height,parents,label = Field.custom_watershed(refdim,th)
@@ -113,12 +117,12 @@ def NROI_from_watershed(Field,header,xyz,refdim=0,th=-np.infty):
     if k==0: return None
     discrete = [xyz[label==i] for i in range(k)]
     nroi = NROI(parents,header,discrete)
-    feature = [Field.get_field()[label==i] for i in range(k)]
-    nroi.set_discrete_feature('activation', feature)
+    #feature = [Field.get_field()[label==i] for i in range(k)]
+    #nroi.set_discrete_feature('activation', feature)
     
-    # this should disappear in the future 
+    #Create the index of each point within the Field
     midx = [np.expand_dims(np.nonzero(label==i)[0],1) for i in range(k)]
-    nroi.set_discrete_feature('masked_index', midx)
+    nroi.set_discrete_feature('index', midx)
 
     # this is  a custom thing, sorry
     nroi.set_roi_feature('seed', idx)
@@ -136,7 +140,7 @@ class NROI(MultipleROI,Forest):
     to embed the structure in an image space
     """
 
-    def __init__(self,parents=None,header=None,discrete=None,id=None):
+    def __init__(self,parents=None,header=None,xyz=None,id=None):
         """
         Building the NROI
         - parents=None: array of shape(k) providing
@@ -144,7 +148,7 @@ class NROI(MultipleROI,Forest):
         if parent==None, None is returned
         - header=None: space defining information
         (to be replaced by a more adequate structure)
-        - discrete=None list of position arrays
+        - xyz=None list of position arrays
         that yield the grid position of each grid guy.
         -id=None: region identifier
         """
@@ -152,7 +156,7 @@ class NROI(MultipleROI,Forest):
             return None
         k = np.size(parents)
         Forest.__init__(self,k,parents)
-        MultipleROI.__init__(self,id, k,header,discrete)
+        MultipleROI.__init__(self,id, k,header,xyz)
 
     def clean(self, valid):
         """
@@ -212,9 +216,9 @@ class NROI(MultipleROI,Forest):
                 fj =  self.parents[j]
                 if fj!=j:
                     self.parents[self.parents==j]=fj
-                    dfj = self.discrete[fj]
-                    dj =  self.discrete[j]
-                    self.discrete[fj] = np.vstack((dfj,dj))
+                    dfj = self.xyz[fj]
+                    dj =  self.xyz[j]
+                    self.xyz[fj] = np.vstack((dfj,dj))
                     fids = self.discrete_features.keys()
                     for fid in fids:
                         dfj = self.discrete_features[fid][fj]
@@ -249,9 +253,9 @@ class NROI(MultipleROI,Forest):
             i = i[0]
             if np.sum(i!=j)==1:
                 i = int(i[i!=j])
-                di = self.discrete[i]
-                dj =  self.discrete[j]
-                self.discrete[i] = np.vstack((di,dj))
+                di = self.xyz[i]
+                dj =  self.xyz[j]
+                self.xyz[i] = np.vstack((di,dj))
                 self.parents[i] = self.parents[j]
                 valid[j] = 0
                 fids = self.discrete_features.keys()
@@ -282,8 +286,8 @@ class NROI(MultipleROI,Forest):
         k = np.sum(isleaf.astype(np.int))
         if self.k==0: return None
         parents = np.arange(k)
-        discrete = [self.discrete[k].copy() for k in np.nonzero(isleaf)[0]]
-        nroi = NROI(parents,self.header,discrete)
+        xyz = [self.xyz[k].copy() for k in np.nonzero(isleaf)[0]]
+        nroi = NROI(parents,self.header,xyz)
 
         # now copy the roi_features
         fids = self.roi_features.keys()
@@ -302,8 +306,8 @@ class NROI(MultipleROI,Forest):
         """
         returns a copy of self
         """
-        discrete = [self.discrete[k].copy() for k in range(self.k)]
-        nroi = NROI(self.parents.copy(),self.header,discrete)
+        xyz = [self.xyz[k].copy() for k in range(self.k)]
+        nroi = NROI(self.parents.copy(),self.header,xyz)
 
         # now copy the roi_features
         fids = self.roi_features.keys()

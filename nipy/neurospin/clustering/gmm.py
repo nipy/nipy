@@ -48,14 +48,16 @@ class grid_descriptor():
         if self.dim==2:
             for i in range(self.nbs[0]):
                 for j in range(self.nbs[1]):
-                    grid[i*self.nbs[1]+j,:]= np.array([grange[0][i],grange[1][j]])
+                    grid[i*self.nbs[1]+j,:]= np.array([grange[0][i],
+                                                       grange[1][j]])
 
         if self.dim==3:
             for i in range(self.nbs[0]):
                 for j in range(self.nbs[1]):
                     for k in range(self.nbs[2]):
                         q = (i*self.nbs[1]+j)*self.nbs[2]+k
-                        grid[q,:]= np.array([grange[0][i],grange[1][j],grange[2][k]])
+                        grid[q,:]= np.array([grange[0][i],
+                                             grange[1][j],grange[2][k]])
         if self.dim>3:
             print "Not implemented yet"
         return grid
@@ -80,7 +82,7 @@ def best_fitting_GMM(x,krange,prec_type='full',niter=100,delta = 1.e-4,ninit=1,v
         to reach a good solution
     - verbose=0: verbosity mode
     
-    OUTPUT:
+    Results:
     -------
     - mg : the best-fitting GMM
     """
@@ -104,6 +106,7 @@ def best_fitting_GMM(x,krange,prec_type='full',niter=100,delta = 1.e-4,ninit=1,v
 def plot2D(x,my_gmm,z = None,show = 0,verbose=0):
     """
     Given a set of points in a plane and a GMM, plot them
+
     Parameters
     ----------
     - x: array of shape (npoints,dim=2)
@@ -346,7 +349,7 @@ class GMM():
         - x:array of shape (nbitems,self.dim)
         the data used in the estimation process
 
-        OUTPUT:
+        Results:
         ----------
         - l array of shape(nbitem,self.k)
         component-wise likelihood
@@ -365,7 +368,7 @@ class GMM():
         - x: array of shape (nbitems,self.dim)
         the data used in the estimation process
 
-        OUTPUT:
+        Results:
         -------
         - l array of shape(nbitem,self.k)
         unweighted component-wise likelihood
@@ -430,7 +433,7 @@ class GMM():
         - x array of shape (nbitems,dim)
         the data from which bic is computed
 
-        OUTPUT:
+        Results:
         ----------
         - the bic value
         """
@@ -449,7 +452,7 @@ class GMM():
         if l==None,  it is re-computed in E-step
         - tiny=1.e-15: a small constant to avoid numerical singularities
 
-        OUTPUT:
+        Results:
         the bic value
         """
         sl = np.sum(l,1)
@@ -475,7 +478,7 @@ class GMM():
         - x array of shape (nbitems,dim)
         the data used in the estimation process
 
-        OUTPUT:
+        Results:
         -------
         - l array of shape(nbitem,self.k)
         component-wise likelihood
@@ -598,7 +601,7 @@ class GMM():
         - l=None array of shape(nbitem,self.k)
         component-wise likelihood
         if l==None, it is recomputed
-        OUTPUT:
+        Results:
         - z: array of shape(nbitem): the resulting MAP labelling
         of the rows of x
         """
@@ -621,7 +624,7 @@ class GMM():
         - verbose=0:
         verbosity mode
 
-        OUTPUT:
+        Results:
         -------
         - bic : an asymptotic approximation of model evidence
         """
@@ -666,7 +669,7 @@ class GMM():
             to reach a good solution
         - verbose=0: verbosity mode
 
-        OUTPUT:
+        Results:
         -------
         - the best model is returned
         """
@@ -708,48 +711,62 @@ class GMM():
         return np.log(np.maximum(self.mixture_likelihood(x),tiny)) 
 
     
-    def show_components(self,x,gd,density=None,nbf = -1):
+    def show_components(self, x, gd, density=None, mpaxes=None):
         """
-        Function to plot a GMM -WIP
-        Currently, works only in 1D and 2D
+        Function to plot a GMM -- Currently, works only in 1D
+
+        Parameters:
+        ------------
+        - x: array of shape(nbitems,dim)
+        the data under study used to draw an histogram
+        - gd: grid descriptor structure
+        - density=None:
+        density of the model one the discrete grid implied by gd
+        - mpaxes=None: axes handle to make the figure
+        if None, a new figure is created
+
+        fixme:
+        -------
+        - density should disappear from the API
         """
         if density==None:
             density = self.mixture_likelihood(gd.make_grid())
-                
-        if gd.dim==1:
-            import matplotlib.pylab as mp
-            step = 3.5*np.std(x)/np.exp(np.log(np.size(x))/3)
-            bins = max(10,int((x.max()-x.min())/step))
 
-            xmin = 1.1*x.min() - 0.1*x.max()
-            xmax = 1.1*x.max() - 0.1*x.min()
-            h,c = np.histogram(x, bins, [xmin,xmax], normed=True,new=False)
-            offset = (xmax-xmin)/(2*bins)
-            c+= offset/2
-            grid = gd.make_grid()
-            if nbf>-1:
-                mp.figure(nbf)
-            else:
-                mp.figure()
-            mp.plot(c+offset,h,linewidth=2)
+        if gd.dim>1:
+            raise NotImplementedError, "only implemented in 1D"
+        
+        
+        step = 3.5*np.std(x)/np.exp(np.log(np.size(x))/3)
+        bins = max(10,int((x.max()-x.min())/step))
+        
+        xmin = 1.1*x.min() - 0.1*x.max()
+        xmax = 1.1*x.max() - 0.1*x.min()
+        h,c = np.histogram(x, bins, [xmin,xmax], normed=True,new=False)
+        offset = (xmax-xmin)/(2*bins)
+        c+= offset/2
+        grid = gd.make_grid()
+            
+        import matplotlib.pylab as mp
+        if mpaxes==None:
+            mp.figure()
+            ax = mp.axes()
+        else:
+            ax = mpaxes
+        ax.plot(c+offset,h,linewidth=2)
           
-            for k in range (self.k):
-                mp.plot(grid,density[:,k],linewidth=2)
-            mp.title('Fit of the density with a mixture of Gaussians',
+        for k in range (self.k):
+            ax.plot(grid,density[:,k],linewidth=2)
+        ax.set_title('Fit of the density with a mixture of Gaussians',
                      fontsize=16)
 
-            legend = ['data']
-            for k in range(self.k):
-                legend.append('component %d' %(k+1))
-            l = mp.legend (tuple(legend))
-            for t in l.get_texts(): t.set_fontsize(16)
-            a,b = mp.xticks()
-            mp.xticks(a,fontsize=16)
-            a,b = mp.yticks()
-            mp.yticks(a,fontsize=16)
+        legend = ['data']
+        for k in range(self.k):
+            legend.append('component %d' %(k+1))
+        l = ax.legend (tuple(legend))
+        for t in l.get_texts(): t.set_fontsize(16)
+        ax.set_xticklabels(ax.get_xticks(), fontsize=16)
+        ax.set_yticklabels(ax.get_yticks(), fontsize=16)
             
-        if gd.dim>1:
-            print "not implemented yet"
 
     def show(self,x,gd,density=None,nbf = -1):
         """
@@ -828,7 +845,7 @@ class GMM_old(GMM):
         ninit=1 : number of possible iterations of the GMM estimation
         verbsose=0: verbosity mode
 
-        OUTPUT:
+        Results:
         -------
         Labels : array of shape(n), type np.int,
             discrete labelling of the data items into clusters
@@ -887,7 +904,7 @@ class GMM_old(GMM):
             increments to declare converegence
         ninit=1 : number of possible iterations of the GMM estimation
 
-        OUTPUT:
+        Results:
         -------
         Labels : array of shape(n), type np.int:
             discrete labelling of the data items into clusters
@@ -941,7 +958,7 @@ class GMM_old(GMM):
         ----------
         data : (n*p) feature array, n = nb items, p=feature dimension
 
-        OUTPUT:
+        Results:
         -------
         - Labels :  array of shape (n): discrete labelling of the data 
         - LL : array of shape (n): log-likelihood of the data
@@ -966,7 +983,7 @@ class GMM_old(GMM):
         ----------
         data : (n*p) feature array, n = nb items, p=feature dimension
 
-        OUTPUT:
+        Results:
         -------
         LL : array of shape (n): the log-likelihood of the data
         """
@@ -989,7 +1006,7 @@ class GMM_old(GMM):
         ----------
         data : (n*p) feature array, n = nb items, p=feature dimension
 
-        OUTPUT:
+        Results:
         -------
         LL : array of shape (n) log-likelihood of the data
         """
@@ -1014,7 +1031,7 @@ class GMM_old(GMM):
         -----------
         - log-likelihood of the data under the model
 
-        OUTPUT:
+        Results:
         -------
         - the bic value
         """
@@ -1038,7 +1055,7 @@ class GMM_old(GMM):
         - all : average log-likelihood of the data under the model
         - n number of data points
 
-        OUTPUT:
+        Results:
         -------
         - the bic value
         """

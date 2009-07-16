@@ -54,7 +54,7 @@ class test_displacement_field(unittest.TestCase):
     
     def test_sample_rand_walk(self, verbose=False):
         data, XYZ, mask, XYZvol, vardata, signal = make_data(n=20, dim=20, r=3, mdim=15, maskdim=15, amplitude=5, noise=1, jitter=1, activation=True)
-        D = df.displacement_field(XYZ, sigma=2.5, n=data.shape[0], mask=mask)
+        D = df.displacement_field(XYZ, sigma=2.5*np.ones(3), n=data.shape[0], mask=mask)
         B = len(D.block)
         for b in np.random.permutation(range(B)):
             for i in xrange(data.shape[0]):

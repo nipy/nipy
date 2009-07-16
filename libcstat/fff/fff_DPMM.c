@@ -847,13 +847,6 @@ static int _compute_P_under_H1(fff_vector *density, const fff_FDP* FDP, const ff
     fff_vector_add(tmp,w);
   }
 
-  /*
-    printf("density: ");
-    for (i=0 ; i<FDP->k;i++)
-    printf("%f ",fff_vector_get(tmp,i));
-    printf("\n");
-  */
-
   fff_vector_delete(x);
   fff_vector_delete(w);
   return 0;
@@ -937,8 +930,16 @@ static int _redraw(fff_array *Z, fff_matrix* W,const fff_array * valid, int nit)
 {
   int n,j; 
   rk_state state; 
-  /*rk_seed(nit, &state);*/
+  /*
+    nit = 0;
+    rk_seed(nit, &state);
+  */
   rk_randomseed(&state);
+  /* I do not fully understand the reason, but using
+     rk_seed(nit, &state) instead of rk_randomseed(&state)
+     is 4 fold faster on some problems.
+     using nit=0 seems to work better than varying nit (?).
+  */
   double sp,h;
   
   int q = W->size2-1;
