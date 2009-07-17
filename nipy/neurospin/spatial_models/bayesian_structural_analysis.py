@@ -33,13 +33,14 @@ def _hierarchical_asso(bfl,dmax):
 
     Parameters
     ----------
-    - bfl a list of ROI hierarchies, one for each subject
-    - dmax : spatial scale used when building associtations
+    bfl a list of ROI hierarchies, one for each subject
+    dmax : spatial scale used when building associtations
 
     Results
     -------
-    - G a graph that represent probabilistic associations between all
-    cross-subject pairs of regions.
+    G a graph that represent probabilistic associations between all
+      cross-subject pairs of regions.
+    
     Note that the probabilities are normalized
     on a within-subject basis.
     """
@@ -98,12 +99,12 @@ def _clean_size_(bf,smin=0):
 
     Parameters
     ----------
-    - bf the hroi.NROI to be cleaned
-    - smin=0 the minimal size for ROIs
+    bf the hroi.NROI to be cleaned
+    smin=0 the minimal size for ROIs
 
     Results
     -------
-    - bf the cleaned  hroi.NROI
+    bf the cleaned  hroi.NROI
     """
     k = 2* bf.get_k()
     if k>0:
@@ -126,14 +127,15 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
 
     Parameters
     ----------
-    - bf the hroi.NROI to be cleaned
-    - Fbeta: fff.field class, the underlying field of data
-    - smin=0 the minimal size for ROIs
+    bf list of  nipy.neurospin.spatial_models.hroi.Nroi 
+       instances to be cleaned
+    Fbeta: fff.field instance, the underlying topological model of the data
+    smin=0 the minimal size for ROIs
 
     Results
     -------
-    - bf the cleaned  hroi.NROI
-    NOTE : it may be slow
+    bf the cleaned  hroi.NROI
+    Note : it may be slow
     """
     bf = _clean_size_(bf,smin)
     if bf.k<1: return bf
@@ -197,22 +199,22 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     
     Parameters
     ----------
-    - bf is the list of NROIs (Nested ROIs).
-    it is assumd that each list corresponds to one subject
-    each NROI is assumed to have the roi_features
-    'position', 'label' and 'posterior_proba' defines
-    - thq=0.95,ths=0 defines the condition (c):
-    (c) A label should be present in ths subjects
-    with a probability>thq
-    in order to be valid
+    bf : list of nipy.neurospin.spatial_models.hroi.Nroi instances
+       it is assumd that each list corresponds to one subject
+       each NROI is assumed to have the roi_features
+       'position', 'label' and 'posterior_proba' defined
+    thq=0.95,ths=0 defines the condition (c):
+                   (c) A label should be present in ths subjects
+                   with a probability>thq
+                   in order to be valid
     
     Results
     -------
-    - LR : a LR instance, describing a cross-subject set of ROIs
-    if inference yields a null results, LR is set to None
-    - newlabel :  a relabelling of the individual ROIs, similar to u,
-    which discards
-    labels that do not fulfill the condition (c)
+    LR : a LR instance, describing a cross-subject set of ROIs
+       if inference yields a null results, LR is set to None
+    newlabel :  a relabelling of the individual ROIs, similar to u,
+             which discards
+             labels that do not fulfill the condition (c)
     """
     # prepare various variables to ease information manipulation
     nbsubj = np.size(bf)
@@ -304,39 +306,40 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
 
     Parameters
     ----------
-     - Fbeta :   nipy.neurospin.graph.field.Field instance
-    an  describing the spatial relationships
-    in the dataset. nbnodes = Fbeta.V
-    - lbeta: an array of shape (nbnodes, subjects):
-    the multi-subject statistical maps
-    - coord array of shape (nnodes,3):
-    spatial coordinates of the nodes
-    - xyz array of shape (nnodes,3):
-    the grid coordinates of the field
-    - header=None: nifti image header the referential defining header
-    - thq = 0.5 (float): posterior significance threshold should be in [0,1]
-    - smin = 5 (int): minimal size of the regions to validate them
-    - theta = 3.0 (float): first level threshold
-    - g0 = 1.0 (float): constant values of the uniform density
-    over the (compact) volume of interest
-    - bdensity=0 if bdensity=1, the variable p in ouput
-    contains the likelihood of the data under H1 on the set of input nodes
-    - verbose=0 : verbosity mode
+    Fbeta :   nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    lbeta: an array of shape (nbnodes, subjects):
+           the multi-subject statistical maps
+    coord array of shape (nnodes,3):
+          spatial coordinates of the nodes
+    xyz array of shape (nnodes,3):
+        the grid coordinates of the field
+    header=None: nifti image header the referential defining header
+    thq = 0.5 (float): posterior significance threshold should be in [0,1]
+    smin = 5 (int): minimal size of the regions to validate them
+    theta = 3.0 (float): first level threshold
+    g0 = 1.0 (float): constant values of the uniform density
+       over the (compact) volume of interest
+    bdensity=0 if bdensity=1, the variable p in ouput
+               contains the likelihood of the data under H1 
+               on the set of input nodes
+    verbose=0 : verbosity mode
     
     Results
     -------
-    - crmap: array of shape (nnodes):
-    the resulting group-level labelling of the space
-    - LR: a instance of sbf.Landmrak_regions that describes the ROIs found
-    in inter-subject inference
-    If no such thing can be defined LR is set to None
-    - bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
-    representing individual ROIs
-    - p: array of shape (nnodes):
-    likelihood of the data under H1 over some sampling grid
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    LR: a instance of sbf.Landmrak_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    p: array of shape (nnodes):
+       likelihood of the data under H1 over some sampling grid
     
-    NOTE
-    -----
+    Note
+    ----
     This is historically the first version,
     but probably not the  most optimal
     It should not be changed for historical reason
@@ -462,39 +465,40 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
 
     Parameters
     ----------
-    - Fbeta :   nipy.neurospin.graph.field.Field instance
-    an  describing the spatial relationships
-    in the dataset. nbnodes = Fbeta.V
-    - lbeta: an array of shape (nbnodes, subjects):
-    the multi-subject statistical maps
-    - coord array of shape (nnodes,3):
-    spatial coordinates of the nodes
-    - xyz array of shape (nnodes,3):
-    the grid coordinates of the field
-    - header=None: nifti image header the referential defining header
-    - thq = 0.5 (float): posterior significance threshold should be in [0,1]
-    - smin = 5 (int): minimal size of the regions to validate them
-    - theta = 3.0 (float): first level threshold
-    - g0 = 1.0 (float): constant values of the uniform density
-    over the (compact) volume of interest
-    - bdensity=0 if bdensity=1, the variable p in ouput
-    contains the likelihood of the data under H1 on the set of input nodes
-    - verbose=0 : verbosity mode
+    Fbeta :   nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    lbeta: an array of shape (nbnodes, subjects):
+           the multi-subject statistical maps
+    coord array of shape (nnodes,3):
+          spatial coordinates of the nodes
+    xyz array of shape (nnodes,3):
+        the grid coordinates of the field
+    header=None: nifti image header the referential defining header
+    thq = 0.5 (float): posterior significance threshold should be in [0,1]
+    smin = 5 (int): minimal size of the regions to validate them
+    theta = 3.0 (float): first level threshold
+    g0 = 1.0 (float): constant values of the uniform density
+       over the (compact) volume of interest
+    bdensity=0 if bdensity=1, the variable p in ouput
+               contains the likelihood of the data under H1 
+               on the set of input nodes
+    verbose=0 : verbosity mode
 
     Results
     -------
-    - crmap: array of shape (nnodes):
-    the resulting group-level labelling of the space
-    - LR: a instance of sbf.Landmrak_regions that describes the ROIs found
-    in inter-subject inference
-    If no such thing can be defined LR is set to None
-    - bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
-    representing individual ROIs
-    - p: array of shape (nnodes):
-    likelihood of the data under H1 over some sampling grid
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    LR: a instance of sbf.Landmrak_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    p: array of shape (nnodes):
+       likelihood of the data under H1 over some sampling grid
 
-    NOTE
-    -----
+    Note
+    ----
     This version is probably the best one to date
     the intra subject Gamma-Gaussian MM has been replaces by a Gaussian MM
     which is probably mroe robust
@@ -619,37 +623,37 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
 
     Parameters
     ----------
-    - Fbeta :  nipy.neurospin.graph.field.Field instance
-    an  describing the spatial relationships
-    in the dataset. nbnodes = Fbeta.V
-    - lbeta: an array of shape (nbnodes, subjects):
-    the multi-subject statistical maps
-    - coord array of shape (nnodes,3):
-    spatial coordinates of the nodes
-    - xyz array of shape (nnodes,3):
-    the grid coordinates of the field
-    - header=None: nifti image header the referential defining header
-    - thq = 0.5 (float): posterior significance threshold should be in [0,1]
-    - smin = 5 (int): minimal size of the regions to validate them
-    - theta = 3.0 (float): first level threshold
-    - g0 = 1.0 (float): constant values of the uniform density
-    over the (compact) volume of interest
-    - verbose=0: verbosity mode
+    Fbeta :  nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    lbeta: an array of shape (nbnodes, subjects):
+           the multi-subject statistical maps
+    coord array of shape (nnodes,3):
+          spatial coordinates of the nodes
+    xyz array of shape (nnodes,3):
+        the grid coordinates of the field
+    header=None: nifti image header the referential defining header
+    thq = 0.5 (float): posterior significance threshold should be in [0,1]
+    smin = 5 (int): minimal size of the regions to validate them
+    theta = 3.0 (float): first level threshold
+    g0 = 1.0 (float): constant values of the uniform density
+       over the (compact) volume of interest
+    verbose=0: verbosity mode
 
     Results
     -------
-    - crmap: array of shape (nnodes):
-    the resulting group-level labelling of the space
-    - LR: a instance of sbf.Landmrak_regions that describes the ROIs found
-    in inter-subject inference
-    If no such thing can be defined LR is set to None
-    - bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
-    representing individual ROIs
-    - p: array of shape (nnodes):
-    likelihood of the data under H1 over some sampling grid
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    LR: a instance of sbf.Landmark_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    p: array of shape (nnodes):
+       likelihood of the data under H1 over some sampling grid
 
-    NOTE
-    -----
+    Note
+    ----
     In that case, the DPMM is used to derive a spatial density of
     significant local maxima in the volume. Each terminal (leaf)
     region which is a posteriori significant enough is assigned to the
