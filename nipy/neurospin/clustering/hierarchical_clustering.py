@@ -397,13 +397,13 @@ def average_link_euclidian(X,verbose=0):
     """
     Average link clustering based on data matrix.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     - X array of shape (nbitem,dim): data matrix
     from which an Euclidian distance matrix is computed
     - verbose=0, verbosity level
 
-    OUTPUT:
+    Returns
     -------
     -t a weightForest structure that represents the dendrogram of the data
 
@@ -426,14 +426,15 @@ def average_link_distance(D,verbose=0):
     Average link clustering based on a pairwise distance matrix.
 
     average_link_distance(D,verbose=0):
-    INPUT:
-    -------
+
+    Parameters
+    ----------
     - D (nbitem,nbitem) nonnegative array:
     distance matrix between some items
     - verbose=0, verbosity level
 
-    OUTPUT:
-    --------
+    Returns
+    -------
     -t a weightForest structure that represents the dendrogram of the data
     NOTE:
     this method has not been optimized
@@ -476,8 +477,8 @@ def average_link_distance_segment(D,stop=-1,qmax=1,verbose=0):
     """
     Average link clustering based on a pairwise distance matrix.
 
-    Parameters:
-    -------
+    Parameters
+    ----------
     - D: a (n,n) distance matrix between some items
     - stop=-1: stopping criterion, i.e. distance threshold at which
     further merges are forbidden
@@ -486,8 +487,8 @@ def average_link_distance_segment(D,stop=-1,qmax=1,verbose=0):
     (in the limit of stop)
     - verbose=0, verbosity level
 
-    OUTPUT:
-    --------
+    Returns
+    -------
     -u: a labelling of the graph vertices according to the criterion
     -cost the cost of each merge step during the clustering procedure
     NOTE:
@@ -590,16 +591,16 @@ def average_link_graph(G):
     """
     Agglomerative function based on a (hopefully sparse) similarity graph
 
-    Parameters:
-    ------------
+    Parameters
+    ----------
     - G the input graph
 
-    OUPUT:
-    --------
+    Returns
+    -------
     - t a weightForest structure that represents the dendrogram of the data
 
-    CAVEAT:
-    --------
+    CAVEAT
+    ------
     In that case, the homogeneity is associated with high similarity
     (as opposed to low cost as in most clustering procedures,
     e.g. distance-based procedures).  Thus the tree is created with
@@ -656,15 +657,15 @@ def average_link_graph_segment(G,stop=0,qmax=1,verbose=0):
     """
     Agglomerative function based on a (hopefully sparse) similarity graph
 
-    Parameters:
-    -------------
+    Parameters
+    ----------
     - G the input graph
     - stop=0: the stopping criterion
     - qmax=1: the number of desired clusters
     (in the limit of the stopping criterion)
 
-    OUTPUT:
-    ----------
+    Returns
+    -------
     -u: a labelling of the graph vertices according to the criterion
     -cost the cost of each merge step during the clustering procedure
     """
@@ -867,18 +868,18 @@ def ward_quick(G,feature,verbose = 0):
     Agglomerative function based on a topology-defining graph
     and a feature matrix. 
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     - G the input graph (a topological graph essentially)
     - feature array of shape (G.V,dim_feature):
     some vectorial information related to the graph vertices
 
-    OUTPUT:
-    --------
+    Returns
+    -------
     - t a weightForest structure that represents the dendrogram of the data
 
-    NOTE:
-    --------
+    NOTE
+    ----
     - Hopefully a quicker version
     - A euclidean distance is used in the feature space
     CAVEAT : only approximate
@@ -969,24 +970,26 @@ def ward_field_segment(F,stop=-1, qmax=-1,verbose=0):
     """
     Agglomerative function based on a field structure
 
-    Parameters:
-    ------------
+    Parameters
+    ----------
     - F the input field (graph+feature)
      - stop = -1: the stopping crterion
     if stop==-1, then no stopping criterion is used
     - qmax=1: the maximum number of desired clusters
     (in the limit of the stopping criterion)
 
-    OUTPUT:
-    ---------
+    Returns
+    -------
     -u: a labelling of the graph vertices according to the criterion
     -cost the cost of each merge step during the clustering procedure
 
-    CAVEAT : only approximate
-    --------
-
-    NOTE: look ward_quick_segment for more information 
+    CAVEAT 
     ------
+    only approximate
+
+    NOTE 
+    ----
+    look ward_quick_segment for more information 
     """
     u,cost = ward_quick_segment(F,F.field,stop,qmax,verbose)
     return u,cost
@@ -996,8 +999,8 @@ def ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     Agglomerative function based on a topology-defining graph
     and a feature matrix. 
 
-    Parameters:
-    ------------
+    Parameters
+    ----------
     - G the input graph (a topological graph essentially)
     - feature arrau of shape (G.V,dim_feature)
     vectorial information related to the graph vertices
@@ -1006,16 +1009,20 @@ def ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     - qmax=1: the maximum number of desired clusters
     (in the limit of the stopping criterion)
 
-    OUTPUT:
-    --------
+    Returns
+    -------
     -u: array of shape (G.V)
     labelling of the graph vertices according to the criterion
     -cost the cost of each merge step during the clustering procedure
 
-    NOTE:
+    NOTE
+    ----
     - Hopefully a quicker version
     - A euclidean distance is used in the feature space
-    CAVEAT : only approximate
+    
+    CAVEAT
+    ------ 
+    only approximate
     """
     # basic check
     if np.size(feature)==feature.shape[0]:
@@ -1055,8 +1062,8 @@ def ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     Agglomerative function based on a topology-defining graph
     and a feature matrix. 
 
-    Parameters:
-    ------------
+    Parameters
+    ----------
     - G the input graph (a topological graph essentially)
     - feature array of shape (G.V,dim_feature)
     some vectorial information related to the graph vertices
@@ -1072,7 +1079,6 @@ def ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     -cost the cost of each merge step during the clustering procedure
 
     NOTE:
-    -------
     - A euclidean distance is used in the feature space
     - caveat : when the number of cc in G (nbcc)
     is greter than qmax, u contains nbcc values, not qmax !
@@ -1120,7 +1126,7 @@ def ward_simple(feature, verbose=0):
     feature matrix  representing n p-dimenional items to be clustered
     - verbose=0, verbosity level
 
-    OUTPUT:
+    Returns
     -------
     -t a weightForest structure that represents the dendrogram of the data
     """
@@ -1186,12 +1192,11 @@ def ward(G, feature, verbose=0):
     - feature array of shape (G.V,dim_feature)
     vectorial information related to the graph vertices
 
-    OUTPUT:
+    Returns
     --------
     -t: a WeightedForest structure that represents the dendrogram
 
     NOTE:
-    -------
     When G has more than 1 connected component, t is no longer a tree.
     This case is handled cleanly now
     """
@@ -1276,12 +1281,11 @@ def maximum_link_euclidian(X,verbose=0):
     each row corresponds to a point to cluster
     - verbose=0, verbosity level
     
-    OUTPUT:
+    Returns
     --------
     - t a weightForest structure that represents the dendrogram of the data
 
     NOTE:
-    -----
     this method has not been optimized
     """
     if X.shape[0]==np.size(X):
@@ -1304,7 +1308,7 @@ def maximum_link_distance(D,stop=-1,qmax=-1,verbose=0):
     - D: a (n,n) distance matrix between some items
     - verbose=0, verbosity level
 
-    OUTPUT:
+    Returns
     -------
     -t a weightForest structure that represents the dendrogram of the data
     NOTE:
@@ -1357,12 +1361,12 @@ def maximum_link_distance_segment(D,stop=-1,qmax=1,verbose=0):
     By default (stop=-1), all merges are performed
     - verbose=0, verbosity level
 
-    OUTPUT:
-    ---------
+    Returns
+    -------
     -u: a labelling of the graph vertices according to the criterion
     -cost the cost of each merge step during the clustering procedure
 
-    NOTE:
+    NOTE
     ------
     this method has not been optimized
     """

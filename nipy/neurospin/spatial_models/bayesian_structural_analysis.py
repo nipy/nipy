@@ -32,12 +32,12 @@ def _hierarchical_asso(bfl,dmax):
     across different subjects
 
     Parameters
-    ------
+    ----------
     - bfl a list of ROI hierarchies, one for each subject
     - dmax : spatial scale used when building associtations
 
     Results
-    ------
+    -------
     - G a graph that represent probabilistic associations between all
     cross-subject pairs of regions.
     Note that the probabilities are normalized
@@ -97,7 +97,7 @@ def _clean_size_(bf,smin=0):
     bf = _clean_size_(bf,smin)
 
     Parameters
-    ------
+    ----------
     - bf the hroi.NROI to be cleaned
     - smin=0 the minimal size for ROIs
 
@@ -125,7 +125,7 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
     and by checking the simple connectivity of the areas in the hierarchy
 
     Parameters
-    ------
+    ----------
     - bf the hroi.NROI to be cleaned
     - Fbeta: fff.field class, the underlying field of data
     - smin=0 the minimal size for ROIs
@@ -168,12 +168,12 @@ def make_crmap(AF,coord,verbose=0):
     the different landmarks
     
     Parameters
-    ------
+    ----------
     - AF the list of group-level landmarks regions
     - coord: array of shape(nvox,3): the position of the reference points
 
     Results
-    -----
+    -------
     - crmap: array of shape(nvox)
     """
     nvox = coord.shape[0]
@@ -196,7 +196,7 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     creates an Amer structure wuch groups ROIs with the same label.
     
     Parameters
-    ------
+    ----------
     - bf is the list of NROIs (Nested ROIs).
     it is assumd that each list corresponds to one subject
     each NROI is assumed to have the roi_features
@@ -303,7 +303,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
     with approach described in IPMI'07 paper
 
     Parameters
-    ------
+    ----------
      - Fbeta :   nipy.neurospin.graph.field.Field instance
     an  describing the spatial relationships
     in the dataset. nbnodes = Fbeta.V
@@ -335,7 +335,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
     - p: array of shape (nnodes):
     likelihood of the data under H1 over some sampling grid
     
-    NOTE:
+    NOTE
     -----
     This is historically the first version,
     but probably not the  most optimal
@@ -461,7 +461,7 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
     Compute the  Bayesian Structural Activation paterns
 
     Parameters
-    ------
+    ----------
     - Fbeta :   nipy.neurospin.graph.field.Field instance
     an  describing the spatial relationships
     in the dataset. nbnodes = Fbeta.V
@@ -493,7 +493,7 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
     - p: array of shape (nnodes):
     likelihood of the data under H1 over some sampling grid
 
-    NOTE:
+    NOTE
     -----
     This version is probably the best one to date
     the intra subject Gamma-Gaussian MM has been replaces by a Gaussian MM
@@ -618,7 +618,7 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
     Compute the  Bayesian Structural Activation paterns - simplified version  
 
     Parameters
-    ------
+    ----------
     - Fbeta :  nipy.neurospin.graph.field.Field instance
     an  describing the spatial relationships
     in the dataset. nbnodes = Fbeta.V
@@ -648,7 +648,7 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
     - p: array of shape (nnodes):
     likelihood of the data under H1 over some sampling grid
 
-    NOTE:
+    NOTE
     -----
     In that case, the DPMM is used to derive a spatial density of
     significant local maxima in the volume. Each terminal (leaf)
