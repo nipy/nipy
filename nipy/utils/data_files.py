@@ -20,6 +20,7 @@ Example files can be dowloaded on the fly from an url and stored locally.
 """
 
 import os
+from os.path import join as pjoin
 import sys
 import tarfile
 import urllib2
@@ -27,13 +28,13 @@ import urllib2
 from nipy.__config__ import nipy_info
 
 # Constants
-block_size = int(512e3)
+BLOCK_SIZE = int(512e3)
 
-core_data_url = 'https://cirl.berkeley.edu/nipy/'
-core_data_filename = 'nipy_data.tar.gz'
-
-data_dir = nipy_info['data_dir']
-example_data_dir = nipy_info['example_data_dir']
+NIPY_URL= 'https://cirl.berkeley.edu/nipy/'
+TEMPLATE_TAR = 'nipy_templates.tar.gz'
+TEMPLATE_DIR = nipy_info['template_dir']
+EXAMPLE_DATA_TAR = 'nipy_example_data.tar.gz'
+EXAMPLE_DATA_DIR = nipy_info['example_data_dir']
 
 ################################################################################
 # Utilities
@@ -48,7 +49,7 @@ def extract_tarfile(filename, dstdir):
 
 def read_chunk(fp):
     while True:
-        chunk = fp.read(block_size)
+        chunk = fp.read(BLOCK_SIZE)
         if not chunk:
             break
         yield chunk
@@ -84,23 +85,25 @@ def download(url, filename):
 ################################################################################
 # Core data 
 
-def fetch_core_data():
-    """ Fetch the core data from the nipy website.
+def check_fetch_data(data_dir, data_url, tar_filename, descrip):
+    """ Check for, if necessary fetch given data from the nipy website
 
-        This utility asks the user if they would like to download the file and
-        if so it:
-        - makes the data directory according to the site.cfg 
-        - downloads the tarball
-        - extracts the tarball
-        - remove the tarball
+    This utility asks the user if they would like to download the file and
+    if so it:
+    - makes the data directory according to the site.cfg 
+    - downloads the tarball
+    - extracts the tarball
+    - removes the tarball
 
     """
-    core_datafile = os.path.join(core_data_url, core_data_filename)
-    dest_file = os.path.join(data_dir, core_data_filename)
-    fp = urllib2.urlopen(core_data_filename)
+    if os.path.isdir(data_dir):
+        return
+    tar_url = os.path.join(data_url, tar_filename)
+    dest_file = os.path.join(data_dir, tar_filename)
+    fp = urllib2.urlopen(tar_url)
     finfo = fp.info()
     fsize = finfo.getheader('Content-Length')
-    msg = 'Nipy example data was not found.\n'
+    msg = 'Nipy %s was not found.\n' % descrip
     msg += 'Would you like to download the %s byte file now ([Y]/N)? ' % fsize
     answer = raw_input(msg).lower()
     if not answer or answer == 'y':
@@ -108,13 +111,13 @@ def fetch_core_data():
     else:
         if_download = False
     if if_download:
-        download(core_data_filename, data_dir)
+        download(tar_url, data_dir)
         # extract the tarball
         extract_tarfile(dest_file, data_dir)
         os.remove(dest_file)
 
 
-def get_data_file(filename):
+def get_template_file(filename):
     """ Return the path to the NIPY data `filename` if available, and
     offer downloading it if not.
 
@@ -125,9 +128,9 @@ def get_data_file(filename):
     If the data is not installed the user should be prompted with the
     option to download and install it when they run the examples.
     """
-    # If the data directory does not exist, download it.
-    if not os.path.exists(data_dir):
-        fetch_core_data()
+    # If the data directories do not exist, download it.
+    check_fetch_data(TEMPLATE_DIR, NIPY_URL,
+                     TEMPLATE_TAR, 'templates')
     return os.path.join(data_dir, filename)
 
 
@@ -158,7 +161,9 @@ def get_example_file(filename, url=False):
         The file is stored to a path defined at build time in the
         site.cfg.
     """
-    full_path = os.path.join(example_data_dir, filename)
+    check_fetch_data(EXAMPLE_DATA_DIR, NIPY_URL,
+                     EXAMPLE_DATA_TAR, 'example data')
+    full_path = os.path.join(EXAMPLE_DATA_DIR, filename)
     if not os.path.exists(full_path):
         if url is False:
             raise OSError

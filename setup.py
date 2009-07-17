@@ -2,7 +2,9 @@
 import sys
 import os
 import tarfile
+import tempfile
 from distutils import log
+from distutils.cmd import Command
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
@@ -55,32 +57,49 @@ except ImportError:
 from distutils.command.install import install
 from numpy.distutils.command.build_ext import build_ext
 
-def install_data_tgz():
-    """ Check if the data tarball is there and install it.
-    """
-    # Grab from nipy.setup without importing (as the package is not yet
-    # installed
+
+def get_nipy_info():
+    ''' Fetch NIPY info from NIPY setup file
+    
+    Get from nipy.setup without importing (as the package is not yet
+    installed
+    '''
     ns = dict(__name__='')
     execfile(os.path.join('nipy', 'setup.py'), ns)
-    get_nipy_info = ns['get_nipy_info']
-    data_dir = get_nipy_info()['data_dir']
-    if not os.path.exists(os.path.expanduser(data_dir)):
-        filename = 'nipy_data.tar.gz'
-        if os.path.exists(filename):
-            log.info('extracting data tarball to %s' % data_dir)
-            tar = tarfile.open(filename)
-            tar.extractall(data_dir)
-            tar.close()
-        else:
-            log.warn(80*"_" + "\n"
-                    "The nipy data file was not found. This install of "
-                    "nipy does not contain import data files such as "
-                    "templates. You can download "
-                    "https://cirl.berkeley.edu/nipy/nipy_data.tar.gz "
-                    "in this directory, and rerun the install to "
-                    "set up the data\n" 
-                    + 80*"_"
-                    )
+    return ns['get_nipy_info']()
+
+
+def install_data_tgz():
+    """ Check if the data is there, install from tarball if not
+    """
+    for dkey, tarname, descrip in (('template_dir',
+                                    'nipy_templates.tar.gz',
+                                    'templates'),
+                                   ('example_data_dir',
+                                    'nipy_example_data.tar.gz',
+                                    'example data')):
+        data_dir = get_nipy_info()[dkey]
+        if not os.path.exists(os.path.expanduser(data_dir)):
+            if os.path.exists(tarname):
+                log.info('extracting data tarball to %s' % data_dir)
+                tar = tarfile.open(tarname)
+                tar.extractall(data_dir)
+                tar.close()
+                continue
+            msg = """
+We did not find the nipy data directory '%(data_dir)s'.
+Neither could we find the archive '%(tarname)s' in the current directory.
+If you want the NIPY %(descrip)s please download
+
+https://cirl.berkeley.edu/nipy/%(tarname)s
+
+and run
+
+python setup.py data_install
+
+in this directory
+""" % locals()
+            log.warn(80*"_" + msg + 80*"_")
 
 
 class MyInstall(install):
@@ -100,6 +119,22 @@ class MyBuildExt(build_ext):
             install_data_tgz()
 
 
+class DataInstall(Command):
+    description = 'unpack templates and example data'
+    user_options = [('None', None, 'this command has no options')]
+    
+    def run(self):
+        install_data_tgz()
+        
+    def initialize_options(self):
+        pass
+    
+    def finalize_options(self):
+        pass
+    
+
+
+cmdclass['data_install'] = DataInstall
 cmdclass['install'] = MyInstall
 cmdclass['build_ext'] = MyBuildExt
 
