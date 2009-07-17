@@ -117,8 +117,8 @@ def plot2D(x,my_gmm,z = None,show = 0,verbose=0):
     - show = 0: do we show the image
     - verbose = 0 : verbosity mode
 
-    NOTE:
-    -----
+    Note
+    ----
     my_gmm should have a method 'nixture_likelihood' that
     takes an array of points of shape (np,dim)
     and returns an array of shape (np,my_gmm.k)

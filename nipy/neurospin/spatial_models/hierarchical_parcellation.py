@@ -11,12 +11,16 @@ def _Field_Gradient_Jac(ref,target):
 	"""
 	Given a reference field ref and a target field target
 	compute the jacobian of the target with respect to ref
-	INPUT
-	- ref in ff.Field instance
-	- target is an array with similar shape as ref.field
-	OUTPUT
-	- fgj: array of shape (ref.V) that gives the jacobian
-	implied by the ref.field->target transformation.
+    
+    Parameters
+    ----------
+	ref: ff.Field instance that yields the topology of the space
+	target array of shape(ref.V,dim)
+	
+    Results
+    -------
+	fgj: array of shape (ref.V) that gives the jacobian
+         implied by the ref.field->target transformation.
 	"""
 	import numpy.linalg as L
 	n = ref.V
@@ -43,16 +47,20 @@ def _exclusion_map_dep(i,ref,target, targeti):
 	"""
 	ancillary function to determin admissible values of some position
 	within some predefined values
-	INPUT:
-	- i (int): index of the structure under consideration
-	- ref: field that represent the topological structure of parcels
-	and their standard position
-	- target= array of shape (ref.V,3): current posistion of the parcels
-	- targeti array of shape (n,3): possible new positions for the ith item
-	OUPUT:
-	- emap: aray of shape (n): a potential that yields the fitness
-	of the proposed positions given the current configuration
-	- rmin (double): ancillary parameter
+	
+    Parameters
+    ----------
+	i (int): index of the structure under consideration
+	ref: ff.Field that represent the topological structure of parcels
+         and their standard position
+	target: array of shape (ref.V,3): current posistion of the parcels
+	targeti array of shape (n,3): possible new positions for the ith item
+
+    Results
+    -------
+	emap: aray of shape (n): a potential that yields the fitness
+          of the proposed positions given the current configuration
+	rmin (double): ancillary parameter
 	"""
 	n = ref.V
 	xyz = ref.field
@@ -74,16 +82,20 @@ def _exclusion_map(i,ref,target, targeti):
 	"""
 	ancillary function to determin admissible values of some position
 	within some predefined values
-	INPUT:
-	- i (int): index of the structure under consideration
-	- ref: field that represent the topological structure of parcels
-	and their standard position
-	- target= array of shape (ref.V,3): current posistion of the parcels
-	- targeti array of shape (n,3): possible new positions for the ith item
-	OUPUT:
-	- emap: aray of shape (n): a potential that yields the fitness
-	of the proposed positions given the current configuration
-	- rmin (double): ancillary parameter
+	
+    Parameters
+    ----------
+	i (int): index of the structure under consideration
+	ref: ff.Field that represent the topological structure of parcels
+         and their standard position
+	target= array of shape (ref.V,3): current posistion of the parcels
+	targeti array of shape (n,3): possible new positions for the ith item
+	
+    Results
+    -------
+	emap: aray of shape (n): a potential that yields the fitness
+          of the proposed positions given the current configuration
+	rmin (double): ancillary parameter
 	"""
 	n = ref.V
 	xyz = ref.field
@@ -110,7 +122,6 @@ def _Field_Gradient_Jac_Map_(i,ref,target, targeti):
 	"""
 	Given a reference field ref and a target field target
 	compute the jacobian of the target with respect to ref
-	
 	"""
 	import numpy.linalg as L
 	n = ref.V
@@ -139,8 +150,7 @@ def _Field_Gradient_Jac_Map(i,ref,target, targeti):
 	"""
 	Given a reference field ref and a target field target
 	compute the jacobian of the target with respect to ref
-	
-	"""
+    """
 	import numpy.linalg as L
 	n = ref.V
 	xyz = ref.field
@@ -185,26 +195,28 @@ def _Field_Gradient_Jac_Map(i,ref,target, targeti):
 def optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb=1.,dmax=10.,chunksize=1.e5,  niter=5,verbose=0):
 	"""
 	Core function of the heirrachical parcellation procedure.
-	INPUT
-	- Ranat: array of shape (n,3): set of positions sampled form the data
-	- RFeature: array of shape (n,f): assocaited feature
-	- Feature: list of subject-related feature arrays
-	- Pa : parcellsation structure
-	- Gs: graph that represents the topology of the parcellation
-	- anat_coord: arrao of shape (nvox,3) space defining set of coordinates
-	- lamb=1.0: parameter to weight position
-	and feature impact on the algorithm
-	- dmax = 10: locality parameter (in the space of anat_coord)
-	to limit surch volume (CPU save)
-	- chunksize=1.e5: note used here (to be removed)
-	- niter = 5: number of iterations in teh algorithm
-	- verbose=0: verbosity level
-	OUTPUT
-	- U: lsit of arrays that represent subject-depebndent parcellations
-	- Proto_anat: array of shape (nvox) labelling of the common space
-	(template parcellation)
-	NOTE:
-	to be worked out
+	
+    Parameters
+    ----------
+	Ranat: array of shape (n,3): set of positions sampled form the data
+	RFeature: array of shape (n,f): assocaited feature
+	Feature: list of subject-related feature arrays
+	Pa : parcellation instance that is updated
+	Gs: graph that represents the topology of the parcellation
+	anat_coord: arrao of shape (nvox,3) space defining set of coordinates
+	lamb=1.0: parameter to weight position
+              and feature impact on the algorithm
+	dmax = 10: locality parameter (in the space of anat_coord)
+         to limit surch volume (CPU save)
+	chunksize=1.e5: note used here (to be removed)
+	niter = 5: number of iterations in teh algorithm
+	verbose=0: verbosity level
+	
+    Results
+    -------
+	U: lsit of arrays that represent subject-depebndent parcellations
+	Proto_anat: array of shape (nvox) labelling of the common space
+                (template parcellation)
 	"""
 	Sess = Pa.nb_subj
 	# Ranat,RFeature,Pa,chunksize,dmax,lamb,Gs
@@ -340,17 +352,21 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
 	Function that performs the parcellation by optimizing the
 	sinter-subject similarity while retaining the connectedness
 	within subject and some consistency across subjects.
-	INPUT:
-	- Pa a Parcel structure that essentially contains the grid position information
-	and the individual masks
-	- anat_coord: array of shape(nbvox,3) which defines the position
-	 of the grid points in some space
-	- nbperm=0: the number of times the parcellation and prfx
-	computation is performed on sign-swaped data
-	- niter=10: number of iterations to obtain the convergence of the method
-	information in the clustering algorithm
-	OUTPUT:
-	- Pa: the resulting parcellation structure appended with the labelling
+	
+    Parameters
+    ----------
+	Pa: a Parcel structure that essentially contains 
+        the grid position information and the individual masks
+	anat_coord: array of shape(nbvox,3) which defines the position
+                 of the grid points in some space
+	nbperm=0: the number of times the parcellation and prfx
+              computation is performed on sign-swaped data
+	niter=10: number of iterations to obtain the convergence of the method
+              information in the clustering algorithm
+	
+    Results
+    -------
+	Pa: the resulting parcellation structure appended with the labelling
 	"""
 	
 	# a various parameters
