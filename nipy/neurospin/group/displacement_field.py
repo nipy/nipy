@@ -117,7 +117,7 @@ class displacement_field:
         # displacement kernel
         sigma = self.sigma.max()
         r = int(round(2 * sigma))
-        d = int(round(4 * sigma))
+        d = int(round(6 * sigma))
         block_dim = (self.XYZ.max(axis=1)+1).clip(1,d)
         #kernel = np.zeros(d * np.ones(3), float)
         kernel = np.zeros(block_dim, float)
@@ -138,7 +138,7 @@ class displacement_field:
                     block_vol = mask_vol[i:i + d, j:j + d, k:k + d]
                     XYZ_block = np.array( np.where( block_vol > -1 ) )
                     if XYZ_block.size > 0 \
-                    and (kernel[list(XYZ_block)] > 0.5).sum() == (kernel > 0.5).sum():
+                    and (kernel[list(XYZ_block)] > 0.05).sum() == (kernel > 0.05).sum():
                         #print i,j,k
                         self.block.append(block_vol[XYZ_block[0], XYZ_block[1], XYZ_block[2]])
                         self.weights.append(kernel[XYZ_block[0], XYZ_block[1], XYZ_block[2]])

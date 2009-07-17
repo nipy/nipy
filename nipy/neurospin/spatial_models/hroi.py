@@ -20,31 +20,32 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
     """
     Instantiate an NROI object from a given Field and a header
     
-    INPUT:
-    ------
-    - Field : nipy.neurospin.graph.field.Field instance
-    in which the nested structure is extracted
-    It is meant to be a the topological representation
-    of a masked image or a mesh
-    - header : a referential-describing information
-    (in the  future this should become a standard nipy transformation)
-    - xyz: array of shape (Field.V,3) that represents grid coordinates
-    of the object
-    - th is a threshold so that only values above th are considered
-    by default, th = -infty (numpy)
-    - smin is the minimum size (in number of nodes) of the blobs to 
-    keep.
+    Parameters
+    ----------
+    Field : nipy.neurospin.graph.field.Field instance
+          in which the nested structure is extracted
+          It is meant to be a the topological representation
+          of a masked image or a mesh
+    header : a referential-describing information
+           (in the  future this should become a standard nipy transformation)
+    xyz: array of shape (Field.V,3) that represents grid coordinates
+         of the object
+    th is a threshold so that only values above th are considered
+       by default, th = -infty (numpy)
+    smin is the minimum size (in number of nodes) of the blobs to 
+         keep.
 
-    OUPUT:
-    ------
+    Results
+    -------
     the nroi instance
     
-    NOTE
+    Note
     ----
-    - when no region is produced (no Nroi can be defined),
-    the return value is None
-    - additionally a discrete_field is created, with the key 'index'.
-    It contains the index in the field from which each point of each ROI
+    when no region is produced (no Nroi can be defined),
+         the return value is None
+    Additionally, a discrete_field is created, with the key 'index'.
+                 It contains the index in the field from which 
+                 each point of each ROI
     """
     if Field.field[:,refdim].max()>th:
         idx,height,parents,label = Field.threshold_bifurcations(refdim,th)
@@ -87,24 +88,31 @@ def NROI_from_watershed(Field,header,xyz,refdim=0,th=-np.infty):
     """
     Instantiate an NROI object from a given Field and a header
     
-    INPUT:
-    ------
-    - Field is the field to be watershed
-    - header is a referential-defining argument
-    - xyz is a set of coordinate arrays that corresponds to array positions
-    - refdim=0: dimension fo the Field to consider (when multi-dimensional)
-    - th is a threshold so that only values above th are considered
-    by default, th = -infty (numpy)
+    Parameters  
+    ----------
+    Field nipy.neurospin.graph.field.Field instance
+          in which the nested structure is extracted
+          It is meant to be a the topological representation
+          of a masked image or a mesh
+     header : a referential-describing information
+           (in the  future this should become a standard nipy transformation)
+    xyz: array of shape (Field.V,3) that represents grid coordinates
+         of the object
+    refdim=0: dimension fo the Field to consider (when multi-dimensional)
+    th is a threshold so that only values above th are considered
+       by default, th = -infty (numpy)
 
-    OUTPUT:
-    -------
-    - the nroi instance
-    
-    NOTE
-    - when no region is produced (no Nroi can be defined),
-    the return value is None
-     - additionally a discrete_field is created, with the key 'index'.
-    It contains the index in the field from which each point of each ROI
+   Results
+   -------
+   the nroi instance
+      
+    Note
+    ----
+    when no region is produced (no Nroi can be defined),
+         the return value is None
+    Additionally a discrete_field is created, with the key 'index'.
+                 It contains the index in the field from which 
+                 each point of each ROI
     """
     if Field.field[:,refdim].max()>th:
         idx,height,parents,label = Field.custom_watershed(refdim,th)
@@ -133,24 +141,27 @@ class NROI(MultipleROI,Forest):
     """
     Class for ntested ROIs.
     This inherits from both the Forest and MultipleROI
-    - self.k (int): number of nodes/structures included into it
-    - parents = None: array of shape(self.k) describing the
-    hierarchical relationship
-    - header (temporary): space-defining image header
-    to embed the structure in an image space
+    self.k (int): number of nodes/structures included into it
+    parents = None: array of shape(self.k) describing the
+            hierarchical relationship
+    header (temporary): space-defining image header
+           to embed the structure in an image space
     """
 
     def __init__(self,parents=None,header=None,xyz=None,id=None):
         """
         Building the NROI
-        - parents=None: array of shape(k) providing
-        the hierachical structure
-        if parent==None, None is returned
-        - header=None: space defining information
-        (to be replaced by a more adequate structure)
-        - xyz=None list of position arrays
-        that yield the grid position of each grid guy.
-        -id=None: region identifier
+        
+        Parameters
+        ----------
+        parents=None: array of shape(k) providing
+                      the hierachical structure
+                      if parent==None, None is returned
+        header=None: space defining information
+                     (to be replaced by a more adequate structure)
+        xyz=None list of position arrays
+                 that yield the grid position of each grid guy.
+        id=None: region identifier
         """
         if parents==None:
             return None
@@ -201,12 +212,12 @@ class NROI(MultipleROI,Forest):
         methods indicates the way possible features are dealt with.
         (not implemented yet)
 
-        INPUT:
-        -------
-        - valid array of shape(self.k)
+        Parameters
+        ----------
+        valid array of shape(self.k)
 
-        CAVEAT:
-        -------
+        Caveat
+        ------
         if roi_features have been defined, they will be removed
         """
         if np.size(valid)!= self.k:
@@ -237,14 +248,14 @@ class NROI(MultipleROI,Forest):
         self.merge_descending()
         Remove the items with only one son
         by including them in their son
-
-        INPUT:
-        -------
+        
+        Parameters
+        ----------
         methods indicates the way possible features are dealt with
         (not implemented yet)
 
-        CAVEAT:
-        -------
+        Caveat
+        ------
         if roi_features have been defined, they will be removed
         """
         valid = np.ones(self.k).astype('bool')
@@ -325,13 +336,13 @@ class NROI(MultipleROI,Forest):
         """
         Compute an ROI-level feature given the discrete features
         
-        INPUT:
+        Parameters
+        ----------
+        fid(string) the discrete feature under consideration
+        method='average' the assessment method
+        
+        Results
         ------
-        - fid(string) the discrete feature under consideration
-        - method='average' the assessment method
-
-        OUTPUT:
-        -------
         the computed roi-feature is returned
         """
         if method not in['min','max','average','cumulated_average']:
