@@ -190,7 +190,7 @@ class GMM():
         Initialize the structure, at least with the dimensions of the problem
 
         Parameters
-        -----------
+        ----------
         - k (int) the number of classes of the model
         - dim (int) the dimension of the problem
         - prec_type='full' : coavriance:precision parameterization
@@ -349,8 +349,8 @@ class GMM():
         - x:array of shape (nbitems,self.dim)
         the data used in the estimation process
 
-        Results:
-        ----------
+        Results
+        -------
         - l array of shape(nbitem,self.k)
         component-wise likelihood
         """
@@ -368,7 +368,7 @@ class GMM():
         - x: array of shape (nbitems,self.dim)
         the data used in the estimation process
 
-        Results:
+        Results
         -------
         - l array of shape(nbitem,self.k)
         unweighted component-wise likelihood
@@ -413,7 +413,7 @@ class GMM():
         for the dataset x
 
         Parameters
-        -----------
+        ----------
         - x:  array of shape (nbitems,self.dim)
         the data used in the estimation process
         - tiny=1.e-15: a small constant to avoid numerical singularities
@@ -433,8 +433,8 @@ class GMM():
         - x array of shape (nbitems,dim)
         the data from which bic is computed
 
-        Results:
-        ----------
+        Results
+        -------
         - the bic value
         """
         x = self.check_x(x)
@@ -445,14 +445,16 @@ class GMM():
     def bic(self,l = None,tiny = 1.e-15):
         """
         computation of bic approximation of evidence
-        
+                
         Parameters
-        - l: array of shape (nbitem,self.k)
-        component-wise likelihood
-        if l==None,  it is re-computed in E-step
-        - tiny=1.e-15: a small constant to avoid numerical singularities
-
-        Results:
+        ----------
+        l: array of shape (nbitem,self.k)
+           component-wise likelihood
+           if l==None,  it is re-computed in E-step
+        tiny=1.e-15: a small constant to avoid numerical singularities
+        
+        Results
+        -------
         the bic value
         """
         sl = np.sum(l,1)
@@ -475,13 +477,13 @@ class GMM():
 
         Parameters
         ----------
-        - x array of shape (nbitems,dim)
-        the data used in the estimation process
+        x array of shape (nbitems,dim)
+          the data used in the estimation process
 
-        Results:
+        Results
         -------
-        - l array of shape(nbitem,self.k)
-        component-wise likelihood
+        l array of shape(nbitem,self.k)
+          component-wise likelihood
         """
         return self.likelihood(x)
 
@@ -493,8 +495,8 @@ class GMM():
         
         Parameters
         ----------
-        - x array of shape (nbitems,dim)
-        the data used in the estimation process
+        x array of shape (nbitems,dim)
+          the data used in the estimation process
         """
         small = 0.01
         # the mean of the data
@@ -523,10 +525,10 @@ class GMM():
 
         Parameters
         ----------
-        - x: array of shape(nbitem,self.dim)
-        the data from which the model is estimated
-        - l: array of shape(nbitem,self.k)
-        the likelihood of the data under each class
+        x: array of shape(nbitem,self.dim)
+           the data from which the model is estimated
+        l: array of shape(nbitem,self.k)
+           the likelihood of the data under each class
         """
         from numpy.linalg import pinv
         tiny  =1.e-15
@@ -595,15 +597,19 @@ class GMM():
     def map_label(self,x,l=None):
         """
         return the MAP labelling of x 
+        
         Parameters
-        - x array of shape (nbitem,dim)
-        the data under study
-        - l=None array of shape(nbitem,self.k)
-        component-wise likelihood
-        if l==None, it is recomputed
-        Results:
-        - z: array of shape(nbitem): the resulting MAP labelling
-        of the rows of x
+        ----------
+        x array of shape (nbitem,dim)
+          the data under study
+        l=None array of shape(nbitem,self.k)
+               component-wise likelihood
+               if l==None, it is recomputed
+        
+        Results
+        -------
+        z: array of shape(nbitem): the resulting MAP labelling
+           of the rows of x
         """
         if l== None:
             l = self.likelihood(x)
@@ -616,17 +622,16 @@ class GMM():
 
         Parameters
         ----------
-         - x array of shape (nbitem,dim)
-        the data from which the model is estimated
-        - niter=100: maximal number of iterations in the estimation process
-        - delta = 1.e-4: increment of data likelihood at which
-        convergence is declared
-        - verbose=0:
-        verbosity mode
+        x array of shape (nbitem,dim)
+          the data from which the model is estimated
+        niter=100: maximal number of iterations in the estimation process
+        delta = 1.e-4: increment of data likelihood at which
+              convergence is declared
+        verbose=0: verbosity mode
 
-        Results:
+        Results
         -------
-        - bic : an asymptotic approximation of model evidence
+        bic : an asymptotic approximation of model evidence
         """
         # check that the data is OK
         x = self.check_x(x)
@@ -656,22 +661,23 @@ class GMM():
                                 ninit=1,verbose=0):
         """
         estimation of self given x
+        
         Parameters
         ----------
-        - x array of shape (nbitem,dim)
-            the data from which the model is estimated
-        - z = None: array of shape (nbitem)
+        x array of shape (nbitem,dim)
+          the data from which the model is estimated
+        z = None: array of shape (nbitem)
             a prior labelling of the data to initialize the computation
-        - niter=100: maximal number of iterations in the estimation process
-        - delta = 1.e-4: increment of data likelihood at which
-             convergence is declared
-        - ninit=1: number of initialization performed
-            to reach a good solution
-        - verbose=0: verbosity mode
+        niter=100: maximal number of iterations in the estimation process
+        delta = 1.e-4: increment of data likelihood at which
+              convergence is declared
+        ninit=1: number of initialization performed
+                 to reach a good solution
+        verbose=0: verbosity mode
 
-        Results:
+        Results
         -------
-        - the best model is returned
+        the best model is returned
         """
         bestbic = -np.infty
         bestgmm = GMM(self.k,self.dim,self.prec_type)
@@ -698,15 +704,16 @@ class GMM():
     def test(self,x, tiny = 1.e-15):
         """
         returns the log-likelihood of the mixture for x
+        
         Parameters
         ----------
-        - x: array of shape (nbitems,self.dim)
-        the data used in the estimation process
+        x: array of shape (nbitems,self.dim)
+           the data used in the estimation process
 
-        OUPTPUT:
-        --------
-        - ll: array of shape(nbitems)
-        the log-likelihood of the rows of x
+        Results
+        -------
+        ll: array of shape(nbitems)
+            the log-likelihood of the rows of x
         """
         return np.log(np.maximum(self.mixture_likelihood(x),tiny)) 
 
@@ -715,19 +722,19 @@ class GMM():
         """
         Function to plot a GMM -- Currently, works only in 1D
 
-        Parameters:
-        ------------
-        - x: array of shape(nbitems,dim)
-        the data under study used to draw an histogram
-        - gd: grid descriptor structure
-        - density=None:
-        density of the model one the discrete grid implied by gd
-        - mpaxes=None: axes handle to make the figure
-        if None, a new figure is created
+        Parameters
+        ----------
+        x: array of shape(nbitems,dim)
+           the data under study used to draw an histogram
+        gd: grid descriptor structure
+        density = None:
+                density of the model one the discrete grid implied by gd
+        mpaxes = None: axes handle to make the figure
+               if None, a new figure is created
 
-        fixme:
-        -------
-        - density should disappear from the API
+        fixme
+        -----
+        density should disappear from the API
         """
         if density==None:
             density = self.mixture_likelihood(gd.make_grid())
@@ -845,7 +852,7 @@ class GMM_old(GMM):
         ninit=1 : number of possible iterations of the GMM estimation
         verbsose=0: verbosity mode
 
-        Results:
+        Results
         -------
         Labels : array of shape(n), type np.int,
             discrete labelling of the data items into clusters
@@ -904,7 +911,7 @@ class GMM_old(GMM):
             increments to declare converegence
         ninit=1 : number of possible iterations of the GMM estimation
 
-        Results:
+        Results
         -------
         Labels : array of shape(n), type np.int:
             discrete labelling of the data items into clusters
@@ -1055,7 +1062,7 @@ class GMM_old(GMM):
         - all : average log-likelihood of the data under the model
         - n number of data points
 
-        Results:
+        Results
         -------
         - the bic value
         """
