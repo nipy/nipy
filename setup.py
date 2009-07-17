@@ -64,7 +64,7 @@ def install_data_tgz():
     execfile(os.path.join('nipy', 'setup.py'), ns)
     get_nipy_info = ns['get_nipy_info']
     data_dir = get_nipy_info()['data_dir']
-    if not os.path.exists(data_dir):
+    if not os.path.exists(os.path.expanduser(data_dir)):
         filename = 'nipy_data.tar.gz'
         if os.path.exists(filename):
             log.info('extracting data tarball to %s' % data_dir)
