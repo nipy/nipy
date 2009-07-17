@@ -307,6 +307,4 @@ def realign4d(runs,
         transforms = [run_to_world*to_run for to_run in transfo_runs[i]]
         transfo_runs[i] = transforms
 
-    # DEBUG
-    ##return transfo_runs
-    return transfo_runs, transfo_mean
+    return transfo_runs

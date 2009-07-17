@@ -82,7 +82,7 @@ def best_fitting_GMM(x,krange,prec_type='full',niter=100,delta = 1.e-4,ninit=1,v
         to reach a good solution
     - verbose=0: verbosity mode
     
-    Results:
+    Returns
     -------
     - mg : the best-fitting GMM
     """
@@ -349,7 +349,7 @@ class GMM():
         - x:array of shape (nbitems,self.dim)
         the data used in the estimation process
 
-        Results
+        Returns
         -------
         - l array of shape(nbitem,self.k)
         component-wise likelihood
@@ -368,7 +368,7 @@ class GMM():
         - x: array of shape (nbitems,self.dim)
         the data used in the estimation process
 
-        Results
+        Returns
         -------
         - l array of shape(nbitem,self.k)
         unweighted component-wise likelihood
@@ -433,7 +433,7 @@ class GMM():
         - x array of shape (nbitems,dim)
         the data from which bic is computed
 
-        Results
+        Returns
         -------
         - the bic value
         """
@@ -453,7 +453,7 @@ class GMM():
            if l==None,  it is re-computed in E-step
         tiny=1.e-15: a small constant to avoid numerical singularities
         
-        Results
+        Returns
         -------
         the bic value
         """
@@ -480,7 +480,7 @@ class GMM():
         x array of shape (nbitems,dim)
           the data used in the estimation process
 
-        Results
+        Returns
         -------
         l array of shape(nbitem,self.k)
           component-wise likelihood
@@ -606,7 +606,7 @@ class GMM():
                component-wise likelihood
                if l==None, it is recomputed
         
-        Results
+        Returns
         -------
         z: array of shape(nbitem): the resulting MAP labelling
            of the rows of x
@@ -629,7 +629,7 @@ class GMM():
               convergence is declared
         verbose=0: verbosity mode
 
-        Results
+        Returns
         -------
         bic : an asymptotic approximation of model evidence
         """
@@ -661,7 +661,7 @@ class GMM():
                                 ninit=1,verbose=0):
         """
         estimation of self given x
-        
+
         Parameters
         ----------
         x array of shape (nbitem,dim)
@@ -675,7 +675,7 @@ class GMM():
                  to reach a good solution
         verbose=0: verbosity mode
 
-        Results
+        Returns
         -------
         the best model is returned
         """
@@ -704,13 +704,13 @@ class GMM():
     def test(self,x, tiny = 1.e-15):
         """
         returns the log-likelihood of the mixture for x
-        
+
         Parameters
         ----------
-        x: array of shape (nbitems,self.dim)
-           the data used in the estimation process
+        x array of shape (nbitems,self.dim)
+          the data used in the estimation process
 
-        Results
+        Returns
         -------
         ll: array of shape(nbitems)
             the log-likelihood of the rows of x
@@ -852,7 +852,7 @@ class GMM_old(GMM):
         ninit=1 : number of possible iterations of the GMM estimation
         verbsose=0: verbosity mode
 
-        Results
+        Returns
         -------
         Labels : array of shape(n), type np.int,
             discrete labelling of the data items into clusters
@@ -911,7 +911,8 @@ class GMM_old(GMM):
             increments to declare converegence
         ninit=1 : number of possible iterations of the GMM estimation
 
-        Results
+
+        Returns
         -------
         Labels : array of shape(n), type np.int:
             discrete labelling of the data items into clusters
@@ -965,7 +966,7 @@ class GMM_old(GMM):
         ----------
         data : (n*p) feature array, n = nb items, p=feature dimension
 
-        Results:
+        Returns
         -------
         - Labels :  array of shape (n): discrete labelling of the data 
         - LL : array of shape (n): log-likelihood of the data
@@ -990,7 +991,7 @@ class GMM_old(GMM):
         ----------
         data : (n*p) feature array, n = nb items, p=feature dimension
 
-        Results:
+        Returns
         -------
         LL : array of shape (n): the log-likelihood of the data
         """
@@ -1013,7 +1014,7 @@ class GMM_old(GMM):
         ----------
         data : (n*p) feature array, n = nb items, p=feature dimension
 
-        Results:
+        Returns
         -------
         LL : array of shape (n) log-likelihood of the data
         """
@@ -1038,7 +1039,7 @@ class GMM_old(GMM):
         -----------
         - log-likelihood of the data under the model
 
-        Results:
+        Returns
         -------
         - the bic value
         """
@@ -1059,12 +1060,12 @@ class GMM_old(GMM):
 
         Parameters
         ----------
-        - all : average log-likelihood of the data under the model
-        - n number of data points
+        all : average log-likelihood of the data under the model
+        n number of data points
 
-        Results
+        Returns
         -------
-        - the bic value
+        the bic value
         """
         if self.prec_type=='full':
             eta = self.k*(1 + self.dim + (self.dim*self.dim+1)/2)-1
