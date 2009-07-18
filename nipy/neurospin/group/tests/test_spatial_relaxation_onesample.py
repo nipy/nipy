@@ -59,13 +59,14 @@ class TestMultivariateStatSaem(unittest.TestCase):
         self.assertAlmostEqual(Q.log_likelihood_values.sum(), P.log_likelihood_values.sum(), 1)
     
     def test_model_selection_exact(self):
-        data, XYZ, XYZvol, vardata, signal = make_data(n=30, dim=10, r=3, amplitude=1, noise=0, jitter=0)
+        data, XYZ, XYZvol, vardata, signal = make_data(n=30, dim=20, r=3, amplitude=1, noise=0, jitter=0)
         labels = (signal > 0).astype(int)
         P1 = os.multivariate_stat(data, labels=labels)
         P1.init_hidden_variables()
         P1.evaluate(nsimu=100, burnin=10, verbose=verbose)
         L1 = P1.compute_log_region_likelihood()
         Prior1 = P1.compute_log_prior()
+        #v, m_mean, m_var = P1.v.copy(), P1.m_mean.copy(), P1.m_var.copy()
         Post1 = P1.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
         M1 = L1 + Prior1[:-1] - Post1
         self.assertAlmostEqual(M1.mean(), 
@@ -87,6 +88,8 @@ class TestMultivariateStatSaem(unittest.TestCase):
     def test_model_selection_mfx_spatial_rand_walk(self):
         data, XYZ, XYZvol, vardata, signal = make_data(n=20, dim=np.array([1,20,20]), 
                                                 r=3, amplitude=3, noise=1, jitter=0.5)
+        #data, XYZ, XYZvol, vardata, signal = make_data(n=20, dim=20, 
+                                                #r=3, amplitude=3, noise=1, jitter=0.5)
         labels = (signal > 0).astype(int)
         P = os.multivariate_stat(data, vardata, XYZ, std=0.5, sigma=5, labels=labels)
         P.network[:] = 0
@@ -102,7 +105,7 @@ class TestMultivariateStatSaem(unittest.TestCase):
         Prior0 = P.compute_log_prior()
         Post0 = P.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
         M0 = L0 + Prior0[:-1] - Post0
-        #self.assertAlmostEqual(0.1*M0.sum(), 0.1*P.compute_marginal_likelihood(verbose=verbose).sum(), 0)
+        self.assertAlmostEqual(M0.sum(), P.compute_marginal_likelihood(verbose=verbose).sum(), 0)
         P.network[:] = 1
         P.init_hidden_variables(init_spatial=False)
         P.evaluate(nsimu=100, burnin=100, verbose=verbose, 
