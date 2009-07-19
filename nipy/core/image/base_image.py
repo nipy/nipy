@@ -8,13 +8,7 @@ import numpy as np
 from scipy import ndimage
 
 # Local imports
-from neuroimaging.core.transforms.affines import to_matrix_vector, \
-                            from_matrix_vector
-
-################################################################################
-# Misc, probably temporary: will be moved out.
-class CoordSystemError(Exception):
-    pass
+from ..transforms.transform import CompositionError
 
 ################################################################################
 # class `BaseImage`
@@ -30,20 +24,16 @@ class BaseImage(object):
 
         **Attributes**
 
-        :coord_sys: string or coord_sys object
-
-            Coordinate system the data is embedded in. For
-            instance `neuroimaging.refs.mni152`.
+        :world_space: string 
+            World space the data is embedded in. For instance `mni152`.
 
         :metadata: dictionnary
-
             Optional, user-defined, dictionnary used to carry around
             extra information about the data as it goes through
             transformations. The Image class does not garanty consistency
             of this information as the data is modified.
 
         :_data: 
-
             Private pointer to the data.
 
         **Notes**
@@ -59,7 +49,7 @@ class BaseImage(object):
     #---------------------------------------------------------------------------
 
     # The name of the reference coordinate system
-    coord_sys = ''
+    world_space = ''
 
     # User defined meta data
     metadata = dict()
@@ -93,7 +83,7 @@ class BaseImage(object):
             
             Returns
             -------
-            transform : neuroimaging.core.Transform object
+            transform : nipy.core.Transform object
         """
         raise NotImplementedError
 
@@ -119,7 +109,7 @@ class BaseImage(object):
             Notes
             -----
             Both the target image and the original image should be
-            embedded in the same coordinate system.
+            embedded in the same world space.
         """
         my_v2w_transform = self.get_transform()
         # XXX: Transform do not have a 'get_inverse' method yet
@@ -196,35 +186,51 @@ class BaseImage(object):
                 This is a number or an ndarray, depending on the shape of
                 the input coordinate.
         """
+        x = np.atleast_1d(x)
+        y = np.atleast_1d(y)
+        z = np.atleast_1d(z)
+        shape = x.shape
+        if not ((x.shape == y.shape) and (x.shape == z.shape)):
+            raise ValueError('x, y and z shapes should be equal')
+        x = x.ravel()
+        y = y.ravel()
+        z = z.ravel()
+        transform = self.get_transform()
+        if hasattr(transform, 'get_inverse'):
+            i, j, k = transform.get_inverse().mapping(x, y, z)
+        values = ndimage.map_coordinates(self.get_data(), np.c_[i, j, k].T,
+                                    order=interpolation_order)
+        values = np.reshape(values, shape)
+        return values
+
         raise NotImplementedError
 
 
-    def warped_with(self, w2w_transform):
-        """ Change the coordinate system the image is embedded into,
+    def transformed_with(self, w2w_transform):
+        """ Change the word space the image is embedded into,
             using the given world to world transform.
 
             Parameters
             ----------
             w2w_transform : transform object
                 The transform object giving the mapping between
-                the current coordinate system of the image, and the new
-                coordinate system.
+                the current world space of the image, and the new
+                word space.
 
             Returns
             --------
             remapped_image : nipy image
                 An image containing the same data, expressed
-                in the new coordinate system.
+                in the new world space.
 
             Notes
             -----
             No resampling is done by this function.
         """
-        if not w2w_transform.input_coord_sys == self.coord_sys:
-            raise CoordSystemError(
+        if not w2w_transform.input_world_space == self.world_space:
+            raise CompositionError(
                 "The transform given does not apply to"
-                "the image's coordinate system")
-        # XXX: composed_with does not exist
+                "the image's world space")
         # XXX: We can see an ugly 'if-then' statement maybe we should be
         # encoding some of that logic in the transform.
         new_v2w_transform = \
@@ -234,7 +240,7 @@ class BaseImage(object):
             # imports
             from affine_image import AffineImage
             return AffineImage(self._data, new_v2w_transform.affine, 
-                                w2w_transform.output_coord_sys,
+                                w2w_transform.output_world_space,
                                 metadata=self.metadata)
         else:
             from image import Image as WarpImage
@@ -244,7 +250,7 @@ class BaseImage(object):
  
 
     #---------------------------------------------------------------------------
-    # Private methods -- BaseImage interface
+    # Private methods
     #---------------------------------------------------------------------------
 
     # TODO: We need to implement (or check if implemented) hashing,
@@ -254,9 +260,10 @@ class BaseImage(object):
         options = np.get_printoptions()
         np.set_printoptions(precision=6, threshold=64, edgeitems=2)
         representation = \
-                'Image(\n  data=%s,\n  coord_sys=%s)' % (
+                '%s(\n  data=%s,\n  world_space=%s)' % (
+                self.__class__.__name__,
                 '\n       '.join(repr(self._data).split('\n')),
-                repr(self.coord_sys))
+                self.world_space)
         np.set_printoptions(*options)
         return representation
 

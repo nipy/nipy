@@ -2,11 +2,12 @@
 The base image interface.
 """
 
-import numpy as np
 import nose
+import numpy as np
 
-from neuroimaging.core.transforms.affines import from_matrix_vector
-from neuroimaging.core.image.affine_image import AffineImage
+# XXX: should be converted to relative imports
+from nipy.core.transforms.affine_utils import from_matrix_vector
+from nipy.core.image.affine_image import AffineImage
 
 def rotation(theta, phi):
     """ Returns a rotation 3x3 matrix.
@@ -65,7 +66,7 @@ def test_reordering():
         rot[rot<-0.9] = 1
         b = 0.5*np.array(shape)
         new_affine = from_matrix_vector(rot, b)
-        rot_im = ref_im.resampled_to_affine(affine=new_affine)
+        rot_im = ref_im.resampled_to_affine(new_affine=new_affine)
         reordered_im = rot_im.xyz_ordered()
         yield np.testing.assert_array_equal, reordered_im.affine[:3, :3], \
                                     np.eye(3)
@@ -91,7 +92,7 @@ def test_eq():
     copy_im.affine[0, 0] *= -1
     yield nose.tools.assert_not_equal, ref_im, copy_im
     copy_im = copy.copy(ref_im)
-    copy_im.coord_sys = 'other'
+    copy_im.world_space = 'other'
     yield nose.tools.assert_not_equal, ref_im, copy_im
 
 
@@ -119,8 +120,5 @@ def test_resampled_to_img():
                         ref_im.resampled_to_affine(ref_im.affine).get_data()
     yield np.testing.assert_almost_equal, data, \
                         ref_im.resampled_to_img(ref_im).get_data()
-
-if __name__ == "__main__":
-    nose.run(argv=['', __file__])
 
 

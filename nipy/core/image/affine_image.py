@@ -6,11 +6,11 @@ import numpy as np
 from scipy import ndimage
 
 # Local imports
-from neuroimaging.core.transforms.affines import from_matrix_vector, \
-                     to_matrix_vector
-from neuroimaging.core.api import Affine as AffineTransform
+from ..transforms.affine_utils import from_matrix_vector, to_matrix_vector
+from ..transforms.transform import CompositionError
+from ..transforms.affine_transform import AffineTransform
 
-from base_image import CoordSystemError, BaseImage
+from .base_image import BaseImage
 
 ################################################################################
 # class `AffineImage`
@@ -21,7 +21,7 @@ class AffineImage(BaseImage):
 
         This object is nothing more than an ndarray representing a
         volume, with the first 3 dimensions being spatial, and mapped to 
-        a named coordinate system using an affine (4x4 matrix).
+        a named world space using an affine (4x4 matrix).
 
         **Attributes**
 
@@ -29,10 +29,10 @@ class AffineImage(BaseImage):
 
             Affine mapping from indices to world coordinates.
 
-        :coord_sys: string or coord_sys object
+        :world_space: string
 
-            Coordinate system the data is embedded in. For
-            instance `neuroimaging.refs.mni152`.
+            Name of the world space the data is embedded in. For
+            instance `mni152`.
 
         :metadata: dictionnary
 
@@ -57,8 +57,8 @@ class AffineImage(BaseImage):
     # Attributes, BaseImage interface
     #---------------------------------------------------------------------------
 
-    # The name of the reference coordinate system
-    coord_sys = ''
+    # The name of the world space the image is embedded in
+    world_space = ''
 
     # User defined meta data
     metadata = dict()
@@ -80,7 +80,7 @@ class AffineImage(BaseImage):
     # BaseImage interface
     #---------------------------------------------------------------------------
 
-    def __init__(self, data, affine, coord_sys, metadata=None):
+    def __init__(self, data, affine, world_space, metadata=None):
         """ Creates a new neuroimaging image with an affine mapping.
 
             Parameters
@@ -89,25 +89,20 @@ class AffineImage(BaseImage):
             data : ndarray
                 ndarray representing the data.
             affine : 4x4 ndarray
-                affine transformation to the reference coordinate system
-            coord_system : string
-                name of the reference coordinate system.
+                affine transformation to the reference world space
+            world_space : string
+                name of the reference world space.
         """
         self._data = data
         if not affine.shape == (4, 4):
             raise ValueError('The affine should be a 4x4 array')
         self.affine = affine
-        self.coord_sys = coord_sys
-        if metadata is not None:
-            self.metadata = metadata
+        self.world_space = world_space
+        if metadata is None:
+            metadata = dict()
+        self.metadata = metadata
 
     
-    def get_data(self):
-        """ Return data as a numpy array.
-        """
-        return np.asarray(self._data)
-
-
     def get_transform(self):
         """ Returns the transform object associated with the image which is a 
             general description of the mapping from the voxel grid to the 
@@ -115,18 +110,17 @@ class AffineImage(BaseImage):
 
             Returns
             -------
-            transform : neuroimaging.core.Transform object
+            transform : nipy.core.Transform object
         """
-        # XXX: Affine.from_params does not have this signature.
-        return AffineTransform.from_params(self.affine, self.coord_sys)
+        return AffineTransform(self.affine, 'voxel_space', self.world_space)
 
 
-    def resampled_to_affine(self, affine=None, interpolation_order=3):
+    def resampled_to_affine(self, new_affine, interpolation_order=3):
         """ Resample the image to be an affine image.
 
             Parameters
             ----------
-            affine : 4x4 ndarray or 3x3 ndarray
+            new_affine : 4x4 ndarray or 3x3 ndarray
                 Affine of the new grid or transform object pointing
                 to the new grid. If a 3x3 ndarray is given, it is
                 considered to be the rotation part of the affine, and the 
@@ -143,18 +137,16 @@ class AffineImage(BaseImage):
 
             Notes
             -----
-            The coordinate system of the image is not changed: the
+            The world space of the image is not changed: the
             returned image points to the same world space.
         """
-        if affine is None:
-            return self
-        if affine.shape == (4, 4) and np.all(affine == self.affine):
+        if new_affine.shape == (4, 4) and np.all(new_affine == self.affine):
             # Small trick to be more numericaly stable
             # XXX: The trick should be implemented to work for
             # affine.shape = (3, 3)
             transform_affine = np.eye(4)
         else:
-            transform_affine = np.dot(np.linalg.inv(self.affine), affine)
+            transform_affine = np.dot(np.linalg.inv(self.affine), new_affine)
         if transform_affine.shape == (3, 3):
             A = transform_affine
             # XXX: implement the algorithm to find out optimal b, 
@@ -173,8 +165,8 @@ class AffineImage(BaseImage):
                                         offset=b, 
                                         output_shape=data.shape,
                                         order=interpolation_order)
-        return AffineImage(resampled_data, affine, 
-                           self.coord_sys, metadata=self.metadata)
+        return AffineImage(resampled_data, new_affine, 
+                           self.world_space, metadata=self.metadata)
 
 
     def resampled_to_img(self, target_image, interpolation_order=3):
@@ -197,11 +189,11 @@ class AffineImage(BaseImage):
             Notes
             -----
             Both the target image and the original image should be
-            embedded in the same coordinate system.
+            embedded in the same world space.
         """
-        if not target_image.coord_sys == self.coord_sys:
-            raise CoordSystemError(
-                'The two images do not point to the same coordinate system')
+        if not target_image.world_space == self.world_space:
+            raise CompositionError(
+                'The two images are not embedded in the same world space')
         target_shape = target_image.get_data().shape[:3]
         if hasattr(target_image, 'affine'):
             new_im = self.resampled_to_affine(target_image.affine,
@@ -223,47 +215,6 @@ class AffineImage(BaseImage):
             return super(AffineImage, self).resampled_to_img(target_image,
                                     interpolation_order=interpolation_order)
 
-
-    def values_in_world(self, x, y, z, interpolation_order=3):
-        """ Return the values of the data at the world-space positions given by 
-            x, y, z
-
-            Parameters
-            ----------
-            x : number or ndarray
-                x positions in world space, in other words milimeters
-            y : number or ndarray
-                y positions in world space, in other words milimeters.
-                The shape of y should match the shape of x
-            z : number or ndarray
-                z positions in world space, in other words milimeters.
-                The shape of z should match the shape of x
-            interpolation_order : int, optional
-                Order of the spline interplation. If 0, nearest neighboor 
-                interpolation is performed.
-
-            Returns
-            -------
-            values : number or ndarray
-                Data values interpolated at the given world position.
-                This is a number or an ndarray, depending on the shape of
-                the input coordinate.
-        """
-        x = np.atleast_1d(x)
-        y = np.atleast_1d(y)
-        z = np.atleast_1d(z)
-        shape = x.shape
-        if not ((x.shape == y.shape) and (x.shape == z.shape)):
-            raise ValueError('x, y and z shapes should be equal')
-        x = x.ravel()
-        y = y.ravel()
-        z = z.ravel()
-        xyz = np.c_[x, y, z, np.ones_like(x)]
-        ijk = np.dot(np.linalg.inv(self.affine), xyz.T)[:3]
-        values = ndimage.map_coordinates(self.get_data(), ijk,
-                                    order=interpolation_order)
-        values = np.reshape(values, shape)
-        return values
     
     #---------------------------------------------------------------------------
     # AffineImage interface
@@ -271,11 +222,11 @@ class AffineImage(BaseImage):
 
     def xyz_ordered(self):
         """ Returns an image with the affine diagonal and positive
-            in its coordinate system.
+            in the world space it is embedded in. 
         """
         A, b = to_matrix_vector(self.affine)
         if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
-            raise CoordSystemError(
+            raise CompositionError(
                 'Cannot reorder the axis: the image affine contains rotations'
                 )
         img = self
@@ -308,7 +259,7 @@ class AffineImage(BaseImage):
             order[axis1] = axis2
             order[axis2] = axis1
             new_affine = new_affine.T[order].T
-        return AffineImage(reordered_data, new_affine, self.coord_sys, 
+        return AffineImage(reordered_data, new_affine, self.world_space, 
                                            metadata=self.metadata)
 
     #---------------------------------------------------------------------------
@@ -319,10 +270,11 @@ class AffineImage(BaseImage):
         options = np.get_printoptions()
         np.set_printoptions(precision=6, threshold=64, edgeitems=2)
         representation = \
-                'AffineImage(\n  data=%s,\n  affine=%s,\n  coord_sys=%s)' % (
+                '%s(\n  data=%s,\n  affine=%s,\n  world_space=%s)' % (
+                self.__class__.__name__,
                 '\n       '.join(repr(self._data).split('\n')),
                 '\n         '.join(repr(self.affine).split('\n')),
-                repr(self.coord_sys))
+                self.world_space)
         np.set_printoptions(**options)
         return representation
 
@@ -332,7 +284,7 @@ class AffineImage(BaseImage):
         """
         return self.__class__(data=self.get_data().copy(), 
                               affine=self.affine.copy(),
-                              coord_sys=self.coord_sys,
+                              world_space=self.world_space,
                               metadata=self.metadata.copy())
 
 
@@ -342,7 +294,7 @@ class AffineImage(BaseImage):
         import copy
         return self.__class__(data=self.get_data().copy(), 
                               affine=self.affine.copy(),
-                              coord_sys=self.coord_sys,
+                              world_space=self.world_space,
                               metadata=copy.deepcopy(self.metadata))
 
 
@@ -350,6 +302,6 @@ class AffineImage(BaseImage):
         return (    isinstance(other, self.__class__)
                 and np.all(self.get_data() == other.get_data())
                 and np.all(self.affine == other.affine)
-                and (self.coord_sys == other.coord_sys))
+                and (self.world_space == other.world_space))
 
 
