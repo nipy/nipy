@@ -1,7 +1,40 @@
-"""Functions working on affine transformation matrices.
+"""Functions working with affine transformation matrices.
 """
 
 import numpy as np
+
+def apply_affine(x, y, z, affine):
+    """ Apply the affine matrix to the given coordinate.
+
+        Parameters
+        ----------
+        x: number or ndarray
+            The x coordinates
+        y: number or ndarray
+            The y coordinates
+        z: number or ndarray
+            The z coordinates
+        affine: 4x4 ndarray
+            The affine matrix of the transformation
+    """
+    shape = x.shape
+    assert y.shape == shape, 'Coordinate shapes are not equal'
+    assert z.shape == shape, 'Coordinate shapes are not equal'
+    # Ravel, but avoiding a copy if possible
+    x = np.reshape(x, (-1,))
+    y = np.reshape(y, (-1,))
+    z = np.reshape(z, (-1,))
+    
+    in_coords = np.c_[x,
+                        y,
+                        z,
+                        np.ones(x.shape)].T
+    x, y, z, _ = np.dot(affine, in_coords)
+    x = np.reshape(x, shape)
+    y = np.reshape(y, shape)
+    z = np.reshape(z, shape)
+    return x, y, z
+
 
 def to_matrix_vector(transform):
     """Split a transform into it's matrix and vector components.
