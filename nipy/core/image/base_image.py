@@ -245,16 +245,32 @@ class BaseImage(object):
         x = np.atleast_1d(x)
         y = np.atleast_1d(y)
         z = np.atleast_1d(z)
-        shape = x.shape
+        shape = list(x.shape)
         if not ((x.shape == y.shape) and (x.shape == z.shape)):
             raise ValueError('x, y and z shapes should be equal')
         x = x.ravel()
         y = y.ravel()
         z = z.ravel()
         i, j, k = transform.inverse_mapping(x, y, z)
-        values = ndimage.map_coordinates(self.get_data(), np.c_[i, j, k].T,
-                                    order=interpolation_order)
-        values = np.reshape(values, shape)
+        data = self.get_data()
+        data_shape = list(data.shape)
+        n_dims = len(data_shape)
+        if n_dims > 3:
+            # Iter in a set of 3D images, as the interpolation problem is 
+            # separable in the extra dimensions. This reduces the
+            # computational cost
+            data = np.reshape(data, data_shape[:3] + [-1])
+            data = np.rollaxis(data, 3)
+            values = [ ndimage.map_coordinates(slice, np.c_[i, j, k].T,
+                                                  order=interpolation_order)
+                       for slice in data]
+            values = np.array(values)
+            values = np.swapaxes(values, 0, -1)
+            values = np.reshape(values, shape + data_shape[3:])
+        else:
+            values = ndimage.map_coordinates(data, np.c_[i, j, k].T,
+                                        order=interpolation_order)
+            values = np.reshape(values, shape)
         return values
 
 
@@ -282,15 +298,13 @@ class BaseImage(object):
                 "the image's world space")
         new_v2w_transform = \
                         self.get_transform().composed_with(w2w_transform)
-        ## We don't have a mechanism for non-affine transforms becoming
-        ## affine right now.
-        #if hasattr(new_v2w_transform, 'affine'):
-        #    # We need to delay the import until now, to avoid circular
-        #    # imports
-        #    from .xyz_image import XYZImage
-        #    return XYZImage(self._data, new_v2w_transform.affine, 
-        #                        w2w_transform.output_world_space,
-        #                        metadata=self.metadata)
+        if hasattr(new_v2w_transform, 'affine'):
+            # We need to delay the import until now, to avoid circular
+            # imports
+            from .xyz_image import XYZImage
+            return XYZImage(self._data, new_v2w_transform.affine, 
+                                w2w_transform.output_world_space,
+                                metadata=self.metadata)
         return BaseImage(self._data, 
                                 new_v2w_transform,
                                 metadata=self.metadata)
@@ -301,7 +315,7 @@ class BaseImage(object):
     #---------------------------------------------------------------------------
 
     # TODO: We need to implement (or check if implemented) hashing,
-    # weakref, copy, pickling, and __eq__? 
+    # weakref, pickling? 
         
 
     def __repr__(self):

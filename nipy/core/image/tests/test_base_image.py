@@ -86,5 +86,7 @@ def test_transformation():
     img  = img1.resampled_to_img(img1)
     yield np.testing.assert_almost_equal, data, img.get_data()
 
-
+    # XXX: Check that if I 'resampled_to_img' on an XYZImage, I
+    # get an XYZImage
+    
 
