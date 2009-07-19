@@ -9,6 +9,7 @@ import numpy as np
 
 # Local imports
 from ..base_image import BaseImage, CompositionError
+from ..xyz_image import XYZImage
 from ...transforms.transform import Transform
 
 def mapping(x, y, z):
@@ -37,8 +38,6 @@ def test_base_image():
                         img.values_in_world, 0, 0, 0
     yield np.testing.assert_raises, NotImplementedError, \
                         img.resampled_to_grid
-    yield np.testing.assert_raises, NotImplementedError, \
-                        img.get_grid
 
     yield nose.tools.assert_equal, img, copy.copy(img)
 
@@ -79,6 +78,13 @@ def test_transformation():
 
     yield nose.tools.assert_raises, CompositionError, img1.transformed_with, \
             identity.get_inverse()
+
+    yield nose.tools.assert_raises, CompositionError, img1.resampled_to_img, \
+            img2
+    
+    # Resample an image on itself: it shouldn't change much:
+    img  = img1.resampled_to_img(img1)
+    yield np.testing.assert_almost_equal, data, img.get_data()
 
 
 

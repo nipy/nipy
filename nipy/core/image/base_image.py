@@ -108,8 +108,18 @@ class BaseImage(object):
     def get_grid(self):
         """ Return the grid of data points coordinates in the world
             space.
+
+            Returns
+            --------
+            x: ndarray
+                x coordinates of the data points in world space
+            y: ndarray
+                y coordinates of the data points in world space
+            z: ndarray
+                z coordinates of the data points in world space
         """
-        raise NotImplementedError
+        x, y, z = np.indices(self._data.shape[:3])
+        return self.get_transform().mapping(x, y, z)
 
 
     def get_lookalike(self, data):
@@ -137,6 +147,7 @@ class BaseImage(object):
         """
         return self._transform
 
+
     def resampled_to_img(self, target_image, interpolation_order=3):
         """ Resample the image to be on the same voxel grid than the target 
             image.
@@ -160,22 +171,15 @@ class BaseImage(object):
             Both the target image and the original image should be
             embedded in the same world space.
         """
+        if not target_image.world_space == self.world_space:
+            raise CompositionError(
+                "The two images are not embedded in the same world space")
         my_v2w_transform = self.get_transform()
-        # XXX: This method doesn't really work 
-        new_transform = target_image.get_transform()
-        transform = new_transform.get_inverse().composed_with(
-                                                    my_v2w_transform)
-        target_shape = target_image.get_data().shape[:3]
-        target_grid = np.indices(target_shape)
-        target_grid = target_grid.reshape((3, -1))
-        input_space_grid = transform.mapping(*target_grid)
-        interpolated_data = \
-                    ndimage.map_coordinates(self.get_data(), 
-                                            input_space_grid)
-        # XXX: we need a dispatcher pattern 
-        return BaseImage(interpolated_data, 
-                         new_transform,
-                         metadata=self.metadata)
+        world_data_points = target_image.get_grid()
+        new_data = self.values_in_world(*world_data_points)
+        new_img = target_image.get_lookalike(new_data) 
+        new_img.metadata = copy.copy(self.metadata)
+        return new_img
 
 
     def resampled_to_grid(self, affine=None, interpolation_order=3):
@@ -276,21 +280,20 @@ class BaseImage(object):
             raise CompositionError(
                 "The transform given does not apply to"
                 "the image's world space")
-        # XXX: We can see an ugly 'if-then' statement maybe we should 
-        # use a dispatcher pattern. 
         new_v2w_transform = \
                         self.get_transform().composed_with(w2w_transform)
-        if hasattr(new_v2w_transform, 'affine'):
-            # We need to delay the import until now, to avoid circular
-            # imports
-            from .xyz_image import XYZImage
-            return XYZImage(self._data, new_v2w_transform.affine, 
-                                w2w_transform.output_world_space,
+        ## We don't have a mechanism for non-affine transforms becoming
+        ## affine right now.
+        #if hasattr(new_v2w_transform, 'affine'):
+        #    # We need to delay the import until now, to avoid circular
+        #    # imports
+        #    from .xyz_image import XYZImage
+        #    return XYZImage(self._data, new_v2w_transform.affine, 
+        #                        w2w_transform.output_world_space,
+        #                        metadata=self.metadata)
+        return BaseImage(self._data, 
+                                new_v2w_transform,
                                 metadata=self.metadata)
-        else:
-            return BaseImage(self._data, 
-                                 new_v2w_transform,
-                                 metadata=self.metadata)
  
 
     #---------------------------------------------------------------------------
