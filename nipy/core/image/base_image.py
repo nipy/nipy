@@ -43,6 +43,8 @@ class BaseImage(object):
         demand. The best practice to access the data is not to access the
         _data attribute, but to use the `get_data` method.
     """
+    # XXX: We need to make sure the transform attached has an inverse,
+    # elsewhere, we cannot implement a values_in_world.
 
     #---------------------------------------------------------------------------
     # Public attributes -- BaseImage interface
@@ -214,8 +216,6 @@ class BaseImage(object):
                                     order=interpolation_order)
         values = np.reshape(values, shape)
         return values
-
-        raise NotImplementedError
 
 
     def transformed_with(self, w2w_transform):
