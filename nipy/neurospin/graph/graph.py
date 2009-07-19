@@ -10,7 +10,8 @@ BipartiteGraph (WeightedGraph): Idem but the graph is Bipartite
 
 
 Author: Bertrand Thirion, 2006--2009
-Fixme : add graph creation routines that are more practical than current procedures
+Fixme : add graph creation routines that are more practical 
+      than current procedures
 """
 
 class Graph:
@@ -81,11 +82,14 @@ class Graph:
         """
         Returns an array of labels corresponding to the different
         connex components of the graph.
-        output:
-        -label: array of shape(self.V) that labels the vertices
+        
+        Returns
+        -------
+        label: array of shape(self.V), labelling of the vertices
         """
         if self.E>0:
-            label = graph_cc(self.edges[:,0],self.edges[:,1],np.zeros(self.E),self.V)
+            label = graph_cc(self.edges[:,0],self.edges[:,1], 
+                             np.zeros(self.E),self.V)
         else:
             label = np.arange(self.V)        
         return label
@@ -93,9 +97,11 @@ class Graph:
     def degrees(self):
         """
         returns the degree of the graph vertices
-        ouput:
-        - rdegree: array of shape self.V (the right degree)
-        - ldegree: array of shape self.V (the left degree)
+        
+        Returns
+        -------
+        rdegree: array of shape self.V, the right degree
+        ldegree: array of shape self.V, the left degree
         """
         if self.E>0:
             right,left = graph_degrees(self.edges[:,0],self.edges[:,1],self.V)
@@ -105,8 +111,16 @@ class Graph:
         return right,left
 
     def main_cc(self):
+        """
+        Returns the indexes of the vertices within the main cc
+        
+        Returns
+        -------
+        idx: array of shape (sizeof main cc)
+        """
         if self.E>0:
-            idx = graph_main_cc(self.edges[:,0],self.edges[:,1],np.zeros(self.E),self.V)
+            idx = graph_main_cc(self.edges[:,0], self.edges[:,1], 
+                                                 np.zeros(self.E),self.V)
         else:
             idx = 0     
         return idx
@@ -114,11 +128,15 @@ class Graph:
     def show(self,figid=-1):
         """
         show the graph as a planar graph
-        INPUT:
-        -figid = -1 the figure id in pylab
+        
+        Parameters
+        ----------
+        figid = -1 the figure id in pylab
         by default a new figure is created
-        OUTPUT:
-        - figid
+        
+        Returns
+        -------
+        figid
         """
         import matplotlib.pylab as mp
         if figid>-1:
@@ -141,18 +159,22 @@ class WeightedGraph(Graph):
     """
     This is the basic weighted, directed graph class implemented in fff 
     fields :
-    - V(int) = the number of vertices
-    - E(int) = the number of edges
-    - edges = array of int with shape (E,2) : the edges of the graph
-    - weihghts = array of int with shape (E) : the weights/length of the graph edges 
+    V(int) = the number of vertices
+    E(int) = the number of edges
+    edges = array of int with shape (E,2): 
+          the edges of the graph
+    weihghts = array of int with shape (E): 
+             the weights/length of the graph edges 
     """
     def __init__(self, V, edges=None, weights=None):
         """
-        INPUT:
-        V: the number of edges of the graph
-        edges=None: the edge array of the graph
-        weights=None: the asociated weights array
-        This is the build function
+        Parameters
+        ----------
+        V (int >0): the number of edges of the graph
+        edges=None: array of shape(E,2) 
+                    the edge array of the graph
+        weights=None: array of shape (E)
+                      the asociated weights array
         """
         V = int(V)
         if V<1:
@@ -169,15 +191,21 @@ class WeightedGraph(Graph):
                 Graph.set_edges(self,edges)
                 self.weights = weights
             else:
-                raise ValueError, 'Incompatible size of the edges and weights matrices'
+                raise ValueError, 'Incompatible size of the edges\
+                                  and weights matrices'
         
     def adjacency(self):
         """
-        INPUT: None
-        OUTPUT:
-        -A : an ((self.V*self.V),np.double) array
-        that represents the adjacency matrix of the graph
-        NOTE:
+        Create the adjacency matrix of self
+
+        Returns
+        -------
+        A : an ((self.V*self.V),np.double) array
+            adjacency matrix of the graph
+        
+        Caveat
+        ------
+        may break if self.V is large
         Future version should allow sparse matrix coding
         """
         A = np.zeros((self.V,self.V),np.double)
@@ -190,8 +218,10 @@ class WeightedGraph(Graph):
     def from_adjacency(self,A):
         """
         sets the edges of self according to the adjacency matrix M
-        INPUT
-        M: array of size(n,n) so that n = self.V
+        
+        Parameters
+        ----------
+        M: array of shape(sef.V,self.V) 
         """
         if A.shape[0] != self.V:
             raise ValueError,"bad size for A"
@@ -205,8 +235,10 @@ class WeightedGraph(Graph):
 
     def set_weights(self,weights):
         """
-        INPUT:
-        -weights : an array of size self.V which yields edges weights
+        
+        Parameters
+        ----------
+        weights : an array of shape(self.V),  edges weights
         """
         if np.size(weights)!=self.E:
             raise ValueError, 'The weight size is not the edges size'
@@ -218,13 +250,18 @@ class WeightedGraph(Graph):
 
     def from_3d_grid(self,xyz,k=18):
         """
-        E = self.from_3d_grid(xyz,k=18)
-        set the graph to be the topological neighbours graph of the dataset xyz, in the k-connectivity scheme 
-        INPUT:
-        - xyz: an array of int with shape (n,3), where n=self.V
-        - k = 18: the number of neighbours considered. (6,18 or 26)
-        OUTPUT:
-        - E: the number of edges of the graph
+        set the graph to be the topological neighbours graph 
+        of the thre-dimensional coordinate set xyz, 
+        in the k-connectivity scheme 
+        
+        Parameters
+        ----------
+        xyz: array of shape (self.V,3) and type np.int,
+        k = 18: the number of neighbours considered. (6,18 or 26)
+        
+        Returns
+        -------
+        E(int): the number of edges of self
         """
         if xyz.shape[0]!=self.V:
             raise ValueError, 'xyz should have shape n*3, with n =self.V'
@@ -260,20 +297,26 @@ class WeightedGraph(Graph):
         
     def eps(self,X,eps=1.):
         """
-        E = self.eps(X,eps=1.)
         set the graph to be the eps-nearest-neighbours graph of the data
-        INPUT:
-        - The array X is assumed to be of size (n) or (n,p) 
-        where n = number of vertices of the graph 
-        and p = dimension of the features 
-        - eps=1. :  the neighborhood width
-        OUTPUT:
-        - the number of edges of the resulting graph, self.E
-        NB:
-        - It is assumed that the features are embedded in a
-        (locally) Euclidian space 
-        - trivial edges (aa) are included
-        - for the sake of speed it is advisable to give a PCA-preprocessed matrix X.
+        
+        Parameters
+        ----------
+        X array of shape (self.V) or (self.V,p)
+          where p = dimension of the features
+          data used for eps-neighbours computation
+        eps=1. (float),  the neighborhood width
+
+        Returns
+        -------
+        self.E the number of edges of the resulting graph
+        
+        Note
+        ----
+        It is assumed that the features are embedded in a
+           (locally) Euclidian space 
+        trivial edges (aa) are included
+        for the sake of speed it is advisable to give 
+            a PCA-preprocessed matrix X
         """
         if np.size(X)==X.shape[0]:
             X = np.reshape(X,(np.size(X),1))
@@ -299,20 +342,27 @@ class WeightedGraph(Graph):
         """
         E = knn(X,k)
         set the graph to be the k-nearest-neighbours graph of the data
-        INPUT:
-        - The array X is assumed to be of size (n) or (n,p) 
-        where n = number of vertices of the graph 
-        and p = dimension of the features 
-        - k=1 :  is the number of neighbours considered
-        OUTPUT:
-        - the number of edges of the resulting graph, self.E
-        NB:
-        - It is assumed that the features are embedded in a
-        (locally) Euclidian space 
-        - the knn system is symmeterized: if (ab) is one of the edges
-        then (ba) is also included
-        - trivial edges (aa) are not included
-        - for the sake of speed it is advisable to give a PCA-preprocessed matrix X.
+
+        Parameters
+        ----------
+        X array of shape (self.V) or (self.V,p)
+          where p = dimension of the features
+          data used for eps-neighbours computation
+        k=1 :  is the number of neighbours considered
+        
+        Returns
+        -------
+        - self.E (int): the number of edges of the resulting graph
+        
+        Note
+        ----
+        It is assumed that the features are embedded in a
+           (locally) Euclidian space 
+        the knn system is symmeterized: if (ab) is one of the edges
+            then (ba) is also included
+        trivial edges (aa) are not included
+        for the sake of speed it is advisable to give 
+            a PCA-preprocessed matrix X.
         """
         if np.size(X)==X.shape[0]:
             X = np.reshape(X,(np.size(X),1))
@@ -336,20 +386,25 @@ class WeightedGraph(Graph):
 
     def mst(self,X):
         """
-        l = self.mst(X)
-        maskes self the MST of the array X
-        INPUT:
-        - X: an array of shape (n,p) 
-        where n=self.V
-        and  p is the feature dimension
-        OUTPUT:
-        - the length of the mst
-        NB:
-        - It is assumed that the features are embedded in a (locally) Euclidian space
-        - The edge system is symmeterized: if (ab) is one of the edges
-        then (ba) is another edge
-        - As a consequence, the graph comprises (2*self.V-2) edges
-        - the algorithm uses Boruvska's method
+        makes self the MST of the array X
+
+        Parameters
+        ----------
+        X: an array of shape (self.V,dim) 
+           p is the feature dimension of X
+        
+        Returns
+        -------
+        tl (float) the total length of the mst
+        
+        Note
+        ----
+        It is assumed that the features are embedded in a 
+           (locally) Euclidian space
+        The edge system is symmeterized: if (ab) is one of the edges
+            then (ba) is another edge
+        As a consequence, the graph comprises (2*self.V-2) edges
+        the algorithm uses Boruvska's method
         """
         if np.size(X)==X.shape[0]:
             X = np.reshape(X,(np.size(X),1))
@@ -370,11 +425,14 @@ class WeightedGraph(Graph):
         Remove possibly redundant edges: if an edge (ab) is present twice
         in the edge matrix, only the first instance in kept.
         The weights are processed accordingly
-        OUPUT:
-        the number of edges, self.E
+        
+        Returns
+        -------
+        - E(int): the number of edges, self.E
         """
         if self.E>0:
-            i,j,d = graph_cut_redundancies(self.edges[:,0],self.edges[:,1],self.weights,self.V)
+            i,j,d = graph_cut_redundancies( self.edges[:,0], self.edges[:,1], 
+                                            self.weights, self.V)
             self.E = np.size(i)
             self.edges = np.zeros((self.E,2),np.int)
             self.edges[:,0] = i
@@ -384,13 +442,22 @@ class WeightedGraph(Graph):
         
     def dijkstra(self,seed=0):
         """
-        dg = self.dijkstra(seed=0)
         returns all the [graph] geodesic distances starting from seed
         it is mandatory that the graph weights are non-negative
-        INPUT:
-        - seed is the edge from which the distances are computed
-        OUTPUT:
-        - the graph distance dg from the seed to any edge
+        
+        Parameters
+        ----------
+        seed (int, >-1,<self.V) or array of shape(p) 
+             edge(s) from which the distances are computed
+                
+        Returns
+        -------
+        dg: array of shape (self.V) ,
+            the graph distance dg from ant vertex to the nearest seed 
+                
+        Note
+        ----
+        it is mandatory that the graph weights are non-negative
         """
         try:
             if self.weights.min()<0:
@@ -399,30 +466,39 @@ class WeightedGraph(Graph):
              raise ValueError,'undefined weights'
         if self.E>0:
             if np.size(seed)>1:
-                dg = graph_dijkstra_multiseed(self.edges[:,0],self.edges[:,1],self.weights,seed,self.V)
+                dg = graph_dijkstra_multiseed( self.edges[:,0], 
+                   self.edges[:,1],self.weights,seed,self.V)
             else:
-                dg = graph_dijkstra(self.edges[:,0],self.edges[:,1],self.weights,seed,self.V)
+                dg = graph_dijkstra(self.edges[:,0],
+                self.edges[:,1],self.weights,seed,self.V)
         else:
             dg = np.infty*np.ones(self.V,np.size(seed))
             for i in range(np.size(seed)):
                 dg[seed[i],i] = 0 
         return dg
 
-    def floyd(self,seed=None):
+    def floyd(self, seed=None):
         """
-        dg = self.floyd(seed=None):
-        returns all the geodesic distances starting from seeds
+        Compute all the geodesic distances starting from seeds
         it is mandatory that the graph weights are non-negative
-        INPUT:
-        - seed is an arry of  edges from which the distances are computed
-        if seed==None, then every edge is a seed point
-        OUTPUT:
-        - the graph distance dg from each seed to any edge
-        Note that it has size (nbseed,nbedges)
-        NB:
-        - In fact the algo proceeds byr epeating dijkstra's algo for each
-        seed. floyd's algo is not used (O(self.V)^3 complexity...)
-        - by convention, infinte distances are coded with sum(self.wedges)+1
+        
+        Parameters
+        ----------
+        seed= None: array of shape (nbseed), type np.int 
+             vertex indexes from which the distances are computed
+             if seed==None, then every edge is a seed point
+        
+        Returns
+        -------
+        dg array of shape (nbseed,self.V) 
+                the graph distance dg from each seed to any vertex
+        
+        Note
+        ----
+        It is mandatory that the graph weights are non-negative
+        The algorithm  proceeds byr epeating dijkstra's algo for each
+            seed. floyd's algo is not used (O(self.V)^3 complexity...)
+        By convention, infinte distances are coded with sum(self.wedges)+1
         """
         if seed == None:
             seed = np.arange(self.V)
@@ -438,23 +514,26 @@ class WeightedGraph(Graph):
         except:
             raise ValueError,'undefined weights'
        
-        dg = graph_floyd(self.edges[:,0],self.edges[:,1],self.weights,seed,self.V)
+        dg = graph_floyd(self.edges[:,0], self.edges[:,1], self.weights, 
+                                          seed, self.V)
         return dg
 
     def normalize(self,c=0):
         """
-        self.normalize(c=0)
         Normalize the graph according to the index c
         Normalization means that the sum of the edges values
         that go into or out each vertex must sum to 1
-        INPUT:
-        - c=0 is an index that designates the array
-        according to which D is normalized
-        It is an optional argument, by default c = 0
-        c == 0 => for each vertex a, sum{edge[e,0]=a} D[e]=1
-        c == 1 => for each vertex b, sum{edge[e,1]=b} D[e]=1
-        c == 2 => symmetric ('l2') normalization
-        NB:
+        
+        Parameters
+        ----------
+        c=0 in {0,1,2}, optional: index that designates the way
+            according to which D is normalized
+            c == 0 => for each vertex a, sum{edge[e,0]=a} D[e]=1
+            c == 1 => for each vertex b, sum{edge[e,1]=b} D[e]=1
+            c == 2 => symmetric ('l2') normalization
+        
+        Note
+        ----
         Note that when sum(edge[e,.]=a) D[e]=0, nothing is performed
         """
         c = int(c)
@@ -470,9 +549,11 @@ class WeightedGraph(Graph):
                 return np.zeros(self.V),np.zeros(self.V)
         
         if c<2:
-            i,j,d,s = graph_normalize(self.edges[:,0],self.edges[:,1],self.weights,c,self.V)
+            i,j,d,s = graph_normalize(self.edges[:,0], self.edges[:,1],
+                    self.weights,c,self.V)
         else:
-            i,j,d,s,t = graph_normalize(self.edges[:,0],self.edges[:,1],self.weights,c,self.V)
+            i,j,d,s,t = graph_normalize(self.edges[:,0], self.edges[:,1], 
+                      self.weights,c,self.V)
             
         self.E = np.size(i)
         self.edges = np.zeros((self.E,2),np.int)
@@ -487,14 +568,17 @@ class WeightedGraph(Graph):
 
     def reorder(self,c=0):
         """
-        self.reorder(c=0)
         Reorder the graph according to the index c
-        INPUT:
-        - c=0 is an index that designates the array
-        according to which the vectors are jointly reordered
-        c == 0 => reordering makes edges[:,0] increasing, and edges[:,1] increasing for  edges[:,0] fixed
-        c == 1 => reordering makes edges[:,1] increasing, and edges[:,0] increasing for  edges[:,1] fixed
-        c == 2 => reordering makes weights increasing
+        
+        Parameters
+        ----------
+        c=0 in {0,1,2}, index that designates the array
+            according to which the vectors are jointly reordered
+            c == 0 => reordering makes edges[:,0] increasing, 
+                 and edges[:,1] increasing for  edges[:,0] fixed
+            c == 1 => reordering makes edges[:,1] increasing, 
+                 and edges[:,0] increasing for  edges[:,1] fixed
+            c == 2 => reordering makes weights increasing
         """
         c = int(c)
         if c>2:
@@ -502,20 +586,23 @@ class WeightedGraph(Graph):
         if c<0:
             raise ValueError, 'c<0'
         if self.E>0:
-            i,j,d = graph_reorder(self.edges[:,0],self.edges[:,1],self.weights,c,self.V)
+            i,j,d = graph_reorder(self.edges[:,0],self.edges[:,1],
+                  self.weights,c,self.V)
             self.E = np.size(i)
             self.edges = np.zeros((self.E,2),np.int)
             self.edges[:,0] = i
             self.edges[:,1] = j
             self.weights = d
 
-    def set_euclidian(self,X):
+    def set_euclidian(self, X):
         """
-        self.set_euclidian(X)
-        Compute the weights of the graph in an Euclidian space
-        INPUT:
-        X is the coordinate matrix of the vertices
-        it is assumed to be of size (self.V,p)
+        Compute the weights of the graph as the distances between the 
+        corresponding rows of X, which represents an embdedding of self
+        
+        Parameters
+        ----------
+        X array of shape (self.V, edim),
+          the coordinate matrix of the embedding
         """
         if np.size(X)==X.shape[0]:
             X = np.reshape(X,(np.size(X),1))
@@ -525,16 +612,21 @@ class WeightedGraph(Graph):
             d = graph_set_euclidian(self.edges[:,0],self.edges[:,1],X)
         self.weights = d
 
-    def set_gaussian(self,X,sigma = 0):
+    def set_gaussian(self, X, sigma=0):
         """
-        self.set_gaussian(X,sigma = 0)
-        Compute the weights  of the graph as a gaussian function of their length
-        INPUT:
-        - X is the coordinate matrix of the vertices
-        it is assumed to be of size (self.V,p)
-        - sigma = 0 : the parameter of the gaussian function
-        NB = 
-        when sigma = 0, an empirical value is used :
+        Compute the weights  of the graph as a gaussian function 
+        of the dinstance  between the 
+        corresponding rows of X, which represents an embdedding of self
+        
+        Parameters
+        ----------
+        X array of shape (self.V,dim) 
+          the coordinate matrix of the embedding
+        sigma=0, float : the parameter of the gaussian function
+        
+        Note
+        ----
+        when sigma = 0, the following value is used :
         sigma = sqrt(mean(||X[self.edges[:,0],:]-X[self.edges[:,1],:]||^2))
         """
         sigma = float(sigma)
@@ -550,7 +642,6 @@ class WeightedGraph(Graph):
 
     def symmeterize(self):
         """
-        self.symmeterize()
         symmeterize the graphself , ie produces the graph
         whose adjacency matrix would be the symmetric part of
         its current adjacency matrix 
@@ -571,11 +662,9 @@ class WeightedGraph(Graph):
         whose adjacency matrix would be the antisymmetric part of
         its current adjacency matrix
         """
-        #A = self.adjacency()
-        #A = A-np.transpose(A)
-        #self.from_adjacency(A)
         if self.E>0:
-            i,j,d = graph_antisymmeterize(self.edges[:,0],self.edges[:,1],self.weights,self.V)
+            i,j,d = graph_antisymmeterize(self.edges[:,0],self.edges[:,1],
+                    self.weights,self.V)
             self.E = np.size(i)
             self.edges = np.zeros((self.E,2),np.int)
             self.edges[:,0] = i
@@ -585,17 +674,21 @@ class WeightedGraph(Graph):
 
     def to_neighb(self):
         """
-        ci, ne, we = self.graph_to_neighb()
         converts the graph to a neighboring system
-        The neighboring system is nothing but a (sparser) representation of the edge matrix
-        OUTPUT:
-        The arrays ci, ne ,we such that self.edges, self.weights 
-        is coded such that:
-        for j in [ci[a] ci[a+1][, there exists en edge e so that
-        (edge[e,0]=a,edge[e,1]=ne[j],self.weights[e] = we[j]) 
+        The neighboring system is nothing but a (sparser) 
+        representation of the edge matrix
+        
+        Returns
+        -------
+        ci, ne, we: arrays of shape (self.V+1), (self.E), (self.E)  
+            such that self.edges, self.weights 
+            is coded such that:
+            for j in [ci[a] ci[a+1][, there exists en edge e so that
+            (edge[e,0]=a,edge[e,1]=ne[j],self.weights[e] = we[j]) 
         """
         if self.E>0:
-            ci,ne,we = graph_to_neighb(self.edges[:,0],self.edges[:,1],self.weights,self.V)
+            ci,ne,we = graph_to_neighb(self.edges[:,0],self.edges[:,1],
+                     self.weights,self.V)
         else:
             ci = []
             ne = []
@@ -606,10 +699,17 @@ class WeightedGraph(Graph):
         """
         label = self.Voronoi_Labelling(seed)
         performs a voronoi labelling of the graph
-        INPUT:
-        - seed is an array of vertices from which the cells are built
-        OUTPUT:
-        - the labelling of the vertices
+        
+        Parameters
+        ----------
+        seed array of shape (nseeds), type (np.int), 
+             vertices from which the cells are built
+        
+        Returns
+        -------
+        - labels : array of shape (self.V) the labelling of the vertices
+        
+        fixme: how is dealt the case of diconnected graph ?
         """
         if np.size(seed)==0:
             raise ValueError, 'empty seed'
@@ -618,29 +718,35 @@ class WeightedGraph(Graph):
         labels = -np.ones(self.V,np.int)
         labels[seed] = np.arange(np.size(seed))
         if self.E>0:
-            labels = graph_voronoi(self.edges[:,0],self.edges[:,1],self.weights,seed,self.V)
+            labels = graph_voronoi(self.edges[:,0], self.edges[:,1],
+                   self.weights, seed,self.V)
         
         return labels
  
     def cliques(self):
         """
-        cliques = self.cliques()
-        OUTPUT:
-        a labelling of the vertices according to the clique they belong to
-        the cliques are defined using replicator dynamics equations
+        Extraction of the graphe cliques
+        these are defined using replicator dynamics equations
+        
+        Returns
+        -------
+        - cliques: array of shape (self.V), type (np.int)
+          labelling of the vertices according to the clique they belong to
         """
         cliques = np.arange(self.V)
         if self.E>0:
-            cliques = graph_rd(self.edges[:,0],self.edges[:,1],self.weights,self.V)
+            cliques = graph_rd(self.edges[:,0], self.edges[:,1],
+                    self.weights, self.V)
         return cliques
 
     def remove_trivial_edges(self):
         """
-        self.remove_trivial_edges()
         Removes trivial edges, i.e. edges that are (vv)-like
         self.weights and self.E are corrected accordingly
-        OUTPUT:
-        The number of edges
+         
+        Returns
+        -------
+        - self.E (int): The number of edges
         """
         i = np.nonzero(self.edges[:,0]!=self.edges[:,1])[0]
         self.edges = self.edges[i,:]
@@ -650,16 +756,21 @@ class WeightedGraph(Graph):
 
     def subgraph(self,valid):
         """
-        creates a subgraph with the vertices for which valid>0
+        Creates a subgraph with the vertices for which valid>0
         and with the correponding set of edges
-        INPUT:
-        - valid of shape (self.V): nonzero for vertices to be retained
-        OUTPUT:
-        - a graph G that is a subgraph
+
+        Parameters   
+        ----------
+        valid array of shape (self.V): nonzero for vertices to be retained
         
-        CAVEAT:
-        - the vertices are renumbered as [1..p] where p = sum(valid>0)
-        - when sum(valid==0) then None is returned 
+        Returns
+        -------
+        G WeightedGraph instance, the desired subgraph of self
+                
+        Note
+        ----
+        The vertices are renumbered as [1..p] where p = sum(valid>0)
+        when sum(valid==0) then None is returned 
         """
         if np.size(valid)!= self.V:
             raise ValueError, "incompatible size for self anf valid"
@@ -681,10 +792,16 @@ class WeightedGraph(Graph):
 
     def Kruskal(self):
         """
-        K = self.Kruskal()
-        creates the MST of self using Kruskal's algo.
+        Creates the Minimum Spanning Tree  self using Kruskal's algo.
         efficient is self is sparse
-        NOTE:
+        
+        Returns
+        -------
+        K: WeightedGraph instance
+           the resulting MST 
+        
+        Note
+        ----
         if self contains several connected components,
         self.Kruskal() will also retain a graph with k connected components
         """
@@ -723,10 +840,16 @@ class WeightedGraph(Graph):
 
     def Kruskal_dev(self):
         """
-        K = self.Kruskal()
-        creates the MST of self using Kriskal's algo.
+        Creates the Minimum Spanning Tree  self using Kruskal's algo.
         efficient is self is sparse
-        NOTE:
+        
+        Returns
+        -------
+        K: WeightedGraph instance
+           the resulting MST 
+        
+        Note
+        ----
         if self contains several connected components,
         self.Kruskal() will also retain a graph with k connected components
         """
@@ -773,16 +896,19 @@ class WeightedGraph(Graph):
 
     def Voronoi_diagram(self,seeds,samples):
         """
-        self.Voronoi_diagram(seeds,samples)
         Defines the graph as the Voronoi diagram (VD)
         that links the seeds.
         The VD is defined using the sample points.
-        INPUT:
-        - seeds: array of shape (self.V,dim)
-        - samples: array of shape (nsamples,dim)
-        NOTE:
-        - by default, the weights are a Gaussian function of the distance
-        - The implementation is somewhat awkward
+
+        Parameters
+        ----------
+        seeds: array of shape (self.V,dim)
+        samples: array of shape (nsamples,dim)
+        
+        Note
+        ----
+        by default, the weights are a Gaussian function of the distance
+        The implementation is not optimal
         """
         # checks
         if seeds.shape[0]!=self.V:
@@ -792,7 +918,8 @@ class WeightedGraph(Graph):
         if np.size(samples) == samples.shape[0]:
             samples = np.reshape(samples,(np.size(samples),1))
         if seeds.shape[1]!=samples.shape[1]:
-            raise ValueError,"The seeds and samples do not belong to the same space"
+            raise ValueError,"The seeds and samples do not belong \
+                                  to the same space"
 
         #1. define the graph knn(samples,seeds,2)
         i,j,d = graph_cross_knn(samples,seeds,2)
@@ -800,7 +927,7 @@ class WeightedGraph(Graph):
         #2. put all the pairs i the target graph
         Ns = np.shape(samples)[0]
         self.E = Ns
-        self.edges = np.transpose(np.array([j[2*np.arange(Ns)],j[2*np.arange(Ns)+1]]))
+        self.edges = np.array([j[2*np.arange(Ns)],j[2*np.arange(Ns)+1]]).T
         self.weights = np.ones(self.E)
                 
         #3. eliminate the redundancies and set the weights
@@ -808,24 +935,27 @@ class WeightedGraph(Graph):
         self.symmeterize()
         self.set_gaussian(seeds)
         
-                
-
     def show(self,X=None,figid=-1):
         """
         a = self.show(X=None)
         plots the current graph in 2D
-        INPUT:
-        - X=None, a set of coordinates that can be used
-        to embed the vertices in 2D.
-        to be useful X, should have shape((self.V,p))
-        if p>2, a svd reduces X for display
-        if p=3 the figure si 3d
-        By default, the graph is presented on a circle
-        - figid=-1: a figure id for pylab plotting
-        by default, a new figure is created
-        OUTPUT:
+        
+        Parameters
+        ----------
+        X=None, array of shape (self.V,2) 
+                a set of coordinates that can be used
+                to embed the vertices in 2D.
+                if X.shape[1]>2, a svd reduces X for display
+                By default, the graph is presented on a circle
+        figid=-1: a figure id for pylab plotting
+                  by default, a new figure is created
+        
+        Returns
+        -------
         a = figure handle
-        NB:
+        
+        Note
+        ----
         This should be used only for small graphs...
         """
         if np.size(self.weights)==0:
@@ -844,7 +974,8 @@ class WeightedGraph(Graph):
                 A = (self.edges[e,0]*2*np.pi)/self.V
                 B = (self.edges[e,1]*2*np.pi)/self.V
                 C = max(1,int(self.weights[e]*ml/WM))
-                mp.plot([np.cos(A),np.cos(B)],[np.sin(A),np.sin(B)],'k',linewidth=C)
+                mp.plot([np.cos(A),np.cos(B)],[np.sin(A),np.sin(B)],'k',
+                        linewidth=C)
             t = (2*np.pi*np.arange(self.V))/self.V
             mp.plot(np.cos(t),np.sin(t),'o',linewidth=ml)
                     
@@ -863,18 +994,19 @@ class WeightedGraph(Graph):
                 A = x[self.edges[e,0]]
                 B = x[self.edges[e,1]]
                 C = max(1,int(self.weights[e]*ml/WM))
-                mp.plot([np.cos(A),np.cos(B)],[np.sin(A),np.sin(B)],'k',linewidth=C)
+                mp.plot([np.cos(A),np.cos(B)],[np.sin(A),np.sin(B)], 
+                         'k',linewidth=C)
                         
             mp.plot(np.cos(x),np.sin(x),'o',linewidth=ml)
             mp.axis([-1.1,1.1,-0.1,1.1])
 
-        if X.shape[1]>3:
+        if X.shape[1]>2:
             Y = X.copy()
             import numpy.linalg as L
             M1,M2,M3 = L.svd(Y,0)
             Y = np.dot(M1,np.diag(M2))
-            Y = Y[:,:2]
-        if X.shape[1]<4:
+            Y = Y[:,:1]
+        if X.shape[1]<3:
             Y = X
                     
         if Y.shape[1]==2:
@@ -895,28 +1027,13 @@ class WeightedGraph(Graph):
             ymax = 1.1*ymax-0.1*ymin
             mp.axis([xmin,xmax,ymin,ymax])
 
-        if Y.shape[1]==3:
-            import matplotlib.axes3d as p3
-            ax = p3.Axes3D(fig)
-            #ax.scatter3D(Y[:,0],Y[:,1],Y[:,2],'o',linewidth=ml)
-            #ax.plot3D([Y[A,0],Y[B,0]],[Y[A,1],Y[B,1]],[Y[A,2],Y[B,2]],'k',linewidth=C)
-            ax.scatter3D(Y[:,0],Y[:,1],Y[:,2])
-                    
-            for e in range(self.E):
-                A = self.edges[e,0]
-                B = self.edges[e,1]
-                C = max(1,int(self.weights[e]*ml/WM))
-                ax.plot3D([Y[A,0],Y[B,0]],[Y[A,1],Y[B,1]],[Y[A,2],Y[B,2]],'k',linewidth=C)
-                    
-        # mp.axis('off')
         mp.show()
         return fig
     
     def converse_edge(self):
         """
         Returns the index of the edge (j,i) for each edge (i,j)
-        NOTE/TODO :slow and memory-consuming version
-        a C implementation is necessary
+        Note: a C implementation might be necessary
         """
         ci,ne,we = self.to_neighb()
         li = self.left_incidence()
@@ -930,23 +1047,15 @@ class WeightedGraph(Graph):
                 liw = np.array(li[w])
                 c = liw[self.edges[li[w],1]==v]
                 tag[e]=c
-            
-        #for e in range(self.E):
-        #    i = self.edges[e,0]
-        #    j = self.edges[e,1]
-        #    np.nonzero(ne[ci[i]:ci[i+1]]
-        #
-        #Mdx = self.adjacency().copy()
-        #Mdx[self.edges[:,0],self.edges[:,1]] = np.arange(self.E)
-        #tag = Mdx[self.edges[:,1],self.edges[:,0]]
         return tag
 
     def remove_edges(self,valid):
         """
-        self.remove_edges(valid)
         Removes all the edges for which valid==0
-        INPUT:
-        - valid, an array of shape (self.E)
+
+        Parameters
+        ----------
+        valid, an array of shape (self.E)
         """
         if np.size(valid)!=self.E:
             raise ValueError, "the input vector does not have the correct size"
@@ -957,8 +1066,7 @@ class WeightedGraph(Graph):
 
     def list_of_neighbors(self):
         """
-        ln = self.list_of_neighbors()
-        returns the set of neighbors as a python list
+        returns the set of neighbors of self as a list of arrays
         """
         ci,ne,we = self.to_neighb()
         ln = [[ne[ci[i]:ci[i+1]]] for i in range(self.V)]
@@ -966,7 +1074,6 @@ class WeightedGraph(Graph):
         
     def copy(self):
         """
-        G = self.copy()
         returns a copy of self
         """
         G = WeightedGraph(self.V,self.edges.copy(),self.weights.copy())
@@ -974,15 +1081,16 @@ class WeightedGraph(Graph):
 
     def skeleton(self):
         """
-        G = self.skeleton()
         returns a MST that based on self.weights
-        Caveat: self must be connected
+        Note: self must be connected
         """
         # check that self is connected
         u = self.cc()
         if u.max()>0:
-            raise ValueError, "cannot create the skeleton for unconnected graphs"
-        i,j,d = graph_skeleton(self.edges[:,0],self.edges[:,1],self.weights,self.V)
+            raise ValueError, "cannot create the skeleton for \
+                              unconnected graphs"
+        i,j,d = graph_skeleton(self.edges[:,0],self.edges[:,1],
+                                self.weights,self.V)
         E = np.size(i)
         edges = np.zeros((E,2),np.int)
         edges[:,0] = i
@@ -993,11 +1101,13 @@ class WeightedGraph(Graph):
 
     def left_incidence(self):
         """
-        return the left incidence matrix of self
-        as a list of lists:
-        i.e. the list[[e.0.0,..,e.0.i(0)],..,[e.V.0,E.V.i(V)]]
-        where e.i.j is the set of edge indexes so that
-        e.i.j[0] = i
+        Returns
+        -------
+        the left incidence matrix of self
+            as a list of lists:
+            i.e. the list[[e.0.0,..,e.0.i(0)],..,[e.V.0,E.V.i(V)]]
+            where e.i.j is the set of edge indexes so that
+            e.i.j[0] = i
         """
         linc = []
         for i in range(self.V):
@@ -1010,11 +1120,13 @@ class WeightedGraph(Graph):
 
     def right_incidence(self):
         """
-        return the right incidence matrix of self
-        as a list of lists:
-        i.e. the list[[e.0.0,..,e.0.i(0)],..,[e.V.0,E.V.i(V)]]
-        where e.i.j is the set of edge indexes so that
-        e.i.j[1] = i
+        Returns
+        -------
+        the right incidence matrix of self
+            as a list of lists:
+            i.e. the list[[e.0.0,..,e.0.i(0)],..,[e.V.0,E.V.i(V)]]
+            where e.i.j is the set of edge indexes so that
+            e.i.j[1] = i
         """
         rinc = []
         for i in range(self.V):
@@ -1035,7 +1147,8 @@ class WeightedGraph(Graph):
             return True
         if self.E==0:
             return False
-        b = graph_is_connected(self.edges[:,0],self.edges[:,1],self.weights,self.V)
+        b = graph_is_connected(self.edges[:,0],self.edges[:,1],
+                        self.weights,self.V)
         if b==-1:
             raise ValueError, "problem in the c function"
         
@@ -1044,13 +1157,19 @@ class WeightedGraph(Graph):
     def WeightedDegree(self,c):
         """
         returns the sum of weighted degree of graph self
-        INPUT:
-        - c (int)
-        if c==0 considering left side
-        if c==1 considering right side of the edges
-        OUTPUT:
-        - wd : array of shape (self.V): the resulting weighted degree
-        NOTE:inefficient code
+        
+        Parameters
+        ----------
+        c (int): side selection
+          if c==0 considering left side
+          if c==1 considering right side of the edges
+       
+       Returns
+       -------
+        wd : array of shape (self.V),
+           the resulting weighted degree
+        
+        Note: slow implementation
         """
         if c==0:
             mlist = self.left_incidence()
@@ -1061,8 +1180,6 @@ class WeightedGraph(Graph):
         wd = np.array(wd)
         return wd
 
-
-
     
 class BipartiteGraph(WeightedGraph):
     """
@@ -1070,21 +1187,25 @@ class BipartiteGraph(WeightedGraph):
     a graph there are two types of nodes, such that
     edges can exist only between nodes of type 1 and type 2
     (not within)
-    fields:
-    - V (int,>0) the number of type 1 vertices
-    - W (int,>0) the number of type 2 vertices
-    - E : (int) the number of edges
-    - edges: array of shape (self.E,2) reprensenting pairwise neighbors
-    - weights, array of shape (self.E), +1/-1 for scending/descending links 
+    fields of this class:
+    V (int,>0) the number of type 1 vertices
+    W (int,>0) the number of type 2 vertices
+    E : (int) the number of edges
+    edges: array of shape (self.E,2) reprensenting pairwise neighbors
+    weights, array of shape (self.E), +1/-1 for scending/descending links 
     """
 
     def __init__(self, V,W, edges=None, weights=None):
         """
-        INPUT:
-        V: the number of edges of the graph
-        edges=None: the edge array of the graph
-        weights=None: the asociated weights array
-        This is the build function
+        
+        Parameters
+        ----------
+        V (int), the number of vertices of subset 1
+        W (int), the number of vertices of subset 2
+        edges=None: array of shape (self.E,2) 
+                    the edge array of the graph
+        weights=None: array of shape (self.E) 
+                      the asociated weights array
         """
         V = int(V)
         W = int(W)
@@ -1106,13 +1227,18 @@ class BipartiteGraph(WeightedGraph):
                 #print np.shape(weights),self.E
                 WeightedGraph.set_weights(self,weights)
             else:
-                raise ValueError, 'Incompatible size of the edges and weights matrices'
+                raise ValueError, 'Incompatible size of the edges and \
+                                  weights matrices'
 
     def set_edges(self,edges):
         """
         sets self.edges=edges if
-        1. edges has a correct size
-        2. edges take values in [0..V-1]*[0..W-1]
+             1. edges has a correct size
+             2. edges take values in [0..V-1]*[0..W-1]
+        
+        Parameters
+        ----------
+        edges: array of shape(self.E,2): set of candidate edges
         """
         if np.shape(edges)!=np.shape(self.edges):
             raise ValueError, 'Incompatible size of the edge matrix'
@@ -1126,13 +1252,14 @@ class BipartiteGraph(WeightedGraph):
 
     def check_feature_matrices(self,X,Y):
         """
-        self.check_feature_matrices(self,X,Y)
         checks wether the dismension of X and Y is coherent with self
         and possibly reshape it
-        INPUT:
-        - The arrays X,Y is assumed to be of size (self.V) or (self.V,p)
-        and (self.W) or (self.W,p) respectively
-        where p = dimension of the features
+
+        Parameters
+        ----------
+        X,Y arrays of shape (self.V) or (self.V,p)
+          and (self.W) or (self.W,p) respectively
+          where p = common  dimension of the features
         """
         if np.size(X)==X.shape[0]:
             X = np.reshape(X,(np.size(X),1))
@@ -1147,28 +1274,34 @@ class BipartiteGraph(WeightedGraph):
 
     def copy(self):
         """
-        G = self.copy()
         returns a copy of self
         """
-        G = BipartiteGraph(self.V,self.W,self.edges.copy(),self.weights.copy())
+        G = BipartiteGraph(self.V,self.W,self.edges.copy(),
+                        self.weights.copy())
         return G
     
 
     def cross_eps(self,X,Y,eps=1.):
         """
-        E = self.cross_eps(X,Y,eps=1.)
         set the graph to be the eps-neighbours graph of from X to Y
-        INPUT:
-        - The arrays X,Y is assumed to be of size (self.V) or (self.V,p)
-        and (self.W) or (self.W,p) respectively
-        where p = dimension of the features
-        - eps=1 : the neighbourhood size considered
-        OUTPUT:
-        - the number of edges of the resulting graph, self.E
-        NOTE:
-        - It is assumed that the features are embedded in a
-        (locally) Euclidian space 
-        - for the sake of speed it is advisable to give a PCA-preprocessed matrices X and Y.
+
+        Parameters
+        ----------
+        X,Y arrays of shape (self.V) or (self.V,p)
+            and (self.W) or (self.W,p) respectively
+            where p = common dimension of the features
+        eps=1, float : the neighbourhood size considered
+        
+        Returns
+        -------
+        self.E (int) the number of edges of the resulting graph
+        
+        Note
+        ----
+        It is assumed that the features are embedded 
+           in a (locally) Euclidian space 
+        for the sake of speed it is advisable to give PCA-preprocessed 
+            matrices X and Y.
         """
         self.check_feature_matrices(X,Y)
         try:
@@ -1189,22 +1322,28 @@ class BipartiteGraph(WeightedGraph):
 
     def cross_eps_robust(self,X,Y,eps=1.):
         """
-        E = self.cross_eps(X,Y,eps=1.)
-        set the graph to be the eps-neighbours graph of from X to Y
+        Set the graph to be the eps-neighbours graph of from X to Y
         this procedure is robust in the sense that for each row of X
         at least one matching row Y is found, even though the distance
         is greater than eps.
-        INPUT:
-        - The arrays X,Y is assumed to be of size (self.V) or (self.V,p)
-        and (self.W) or (self.W,p) respectively
-        where p = dimension of the features
-        - eps=1 : the neighbourhood size considered
-        OUTPUT:
-        - the number of edges of the resulting graph, self.E
-        NB:
-        - It is assumed that the features are embedded in a
-        (locally) Euclidian space 
-        - for the sake of speed it is advisable to give a PCA-preprocessed matrices X and Y.
+        
+        Parameters
+        ----------
+        X,Y: arrays of shape (self.V) or (self.V,p)
+             and (self.W) or (self.W,p) respectively
+             where p = dimension of the features
+        eps=1, float, the neighbourhood size considered
+        
+        Returns
+        -------
+        self.E (int) the number of edges of the resulting graph
+
+        Note
+        ----
+        It is assumed that the features are embedded in a
+           (locally) Euclidian space 
+        for the sake of speed it is advisable to give
+            PCA-preprocessed matrices X and Y.
         """
         self.check_feature_matrices(X,Y)
         try:
@@ -1225,19 +1364,25 @@ class BipartiteGraph(WeightedGraph):
     
     def cross_knn(self,X,Y,k=1):
         """
-        E = self.cross_knn(X,Y,k)
         set the graph to be the k-nearest-neighbours graph of from X to Y
-        INPUT:
-            - The arrays X,Y is assumed to be of size (self.V) or (self.V,p)
-        and (self.W) or (self.W,p) respectively
-        where p = dimension of the features
-        - k=1 :  is the number of neighbours considered
-        OUTPUT:
-        - the number of edges of the resulting graph, self.E
-        NB:
-        - It is assumed that the features are embedded in a
-        (locally) Euclidian space 
-        - for the sake of speed it is advisable to give a PCA-preprocessed matrices X and Y.
+
+        Parameters
+        ----------
+        X,Y arrays of shape (self.V) or (self.V,p)
+            and (self.W) or (self.W,p) respectively
+            where p = dimension of the features
+        k=1, int  is the number of neighbours considered
+        
+        Returns
+        -------
+        self.E, int the number of edges of the resulting graph
+        
+        Note
+        ----
+        It is assumed that the features are embedded in a
+           (locally) Euclidian space 
+        for the sake of speed it is advisable to give 
+            PCA-preprocessed matrices X and Y.
         """
         self.check_feature_matrices(X,Y)
         try:
@@ -1259,14 +1404,20 @@ class BipartiteGraph(WeightedGraph):
 
 def concatenate_graphs(G1,G2):
     """
-    G = concatenate(G1,G2)
     Sets G as  the concatenation of the graphs G1 and G2
-    It is thus assumed that the vertices of G1 and G2 are isjoint sets
-    INPUT:
-    - G1,K2: the two graphs to be concatenated
-    OUPUT
-    - G
-    NOTE: this implies that the vertices of G corresponding to G2
+    It is thus assumed that the vertices of G1 and G2 are disjoint sets
+    
+    Parameters
+    ----------
+    G1,G2: the two WeightedGraph instances  to be concatenated
+    
+    Returns
+    -------
+    G, WeightedGraph, the concatenated graph
+    
+    Note
+    ----
+    this implies that the vertices of G corresponding to G2
     are labeled [G1.V .. G1.V+G2.V]
     """
     V = G1.V+G2.V

@@ -630,6 +630,8 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
            the multi-subject statistical maps
     coord array of shape (nnodes,3):
           spatial coordinates of the nodes
+    dmax float>0:
+         expected cluster std in the common space in units of coord
     xyz array of shape (nnodes,3):
         the grid coordinates of the field
     header=None: nifti image header the referential defining header

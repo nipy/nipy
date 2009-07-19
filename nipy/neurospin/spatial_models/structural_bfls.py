@@ -1,7 +1,8 @@
-"""
-The main routine of this package that aims at performing the
+""" 
+The main routine of this module aims at performing the
 extraction of ROIs from multisubject dataset using the localization.
-This has been puclished in Thirion et al. Structural Analysis of fMRI
+
+This has been published in Thirion et al. Structural Analysis of fMRI
 Data Revisited: Improving the Sensitivity and Reliability of fMRI
 Group Studies.  IEEE TMI 2007
 
@@ -320,7 +321,7 @@ def build_LR(BF,ths=0):
 
 
 
-def clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0, 
+def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0, 
                                dev=0, nrec=5, nsamples=10):
     """
     Computation of the positions where there is a significant
@@ -373,9 +374,9 @@ def clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
         nlm0 = nlm.copy()
         
         if dev==0:
-            weight = compute_density(BFLc,xyz,dmax)
+            weight = _compute_density(BFLc,xyz,dmax)
         else:
-            weight = compute_density_dev(BFLc,xyz,dmax)
+            weight = _compute_density_dev(BFLc,xyz,dmax)
 
         sweight = np.sum(weight,1)
         ssw = np.sort(sweight)
@@ -383,9 +384,9 @@ def clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
 
         # make surrogate data
         if dev==0:
-            surweight = compute_surrogate_density(BFLc,xyz,dmax,nsamples)
+            surweight = _compute_surrogate_density(BFLc,xyz,dmax,nsamples)
         else:
-            surweight = compute_surrogate_density_dev(BFLc,xyz,dmax,nsamples)
+            surweight = _compute_surrogate_density_dev(BFLc,xyz,dmax,nsamples)
         
         srweight = np.sum(surweight,1)
         srw = np.sort(srweight)
@@ -398,7 +399,7 @@ def clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
         
         if q<1:
             if verbose>1:
-                fig_density(sweight,surweight,pval,nlm)
+                _fig_density(sweight,surweight,pval,nlm)
                     
         for s in range(nbsubj):
             if nlm[s]>0:
@@ -432,7 +433,7 @@ def clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
             BFLs[s]=BFLc[s].copy()
     return a,b
 
-def clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0, 
+def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0, 
                         dev=0, nrec=5, nsamples=10):
     """
     Computation of the positions where there is a significant
@@ -476,9 +477,9 @@ def clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0,
     while Nlm0>Nlm:
         Nlm0 = Nlm
         if dev==0:
-            weight = compute_density(BFLs,xyz,dmax)
+            weight = _compute_density(BFLs,xyz,dmax)
         else:
-            weight = compute_density_dev(BFLs,xyz,dmax)
+            weight = _compute_density_dev(BFLs,xyz,dmax)
 
         sweight = np.sum(weight,1)
         ssw = np.sort(sweight)
@@ -486,9 +487,9 @@ def clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0,
 
         # make surrogate data
         if dev==0:
-            surweight = compute_surrogate_density(BFLs,xyz,dmax,nsamples)
+            surweight = _compute_surrogate_density(BFLs,xyz,dmax,nsamples)
         else:
-            surweight = compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples)
+            surweight = _compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples)
         
         srweight = np.sum(surweight,1)
         srw = np.sort(srweight)
@@ -502,7 +503,7 @@ def clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0,
         
         if q<1:
             if verbose>1:
-                fig_density(sweight,surweight,pval,nlm)
+                _fig_density(sweight,surweight,pval,nlm)
                     
         for s in range(nbsubj):
             if nlm[s]>0:
@@ -529,12 +530,12 @@ def clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0,
             break
     return a,b
 
-def fig_density(sweight, surweight, pval, nlm):
+def _fig_density(sweight, surweight, pval, nlm):
     """
     Plot the histogram of sweight across the image
     and the thresholds implied by the surrogate model (surweight)
     """
-    import matplotlib.pylab as MP
+    import matplotlib.pylab as mp
     # compute some thresholds
     nlm = nlm.astype('d')
     srweight = np.sum(surweight,1)
@@ -551,19 +552,19 @@ def fig_density(sweight, surweight, pval, nlm):
     h0,c0 = np.histogram(srweight,100)
     I0 = h0.sum()*(c0[1]-c0[0])
     h0 = h0/I0
-    MP.figure(1)
-    MP.plot(c,h)
-    MP.plot(c0,h0)
-    MP.legend(('true histogram','surrogate histogram'))
-    MP.plot([thf,thf],[0,0.8*h0.max()])
-    MP.text(thf,0.8*h0.max(),'p<0.2, uncorrected')
-    MP.plot([thcf,thcf],[0,0.5*h0.max()])
-    MP.text(thcf,0.5*h0.max(),'p<0.05, corrected')
-    MP.savefig('/tmp/histo_density.eps')
-    MP.show()
+    mp.figure(1)
+    mp.plot(c,h)
+    mp.plot(c0,h0)
+    mp.legend(('true histogram','surrogate histogram'))
+    mp.plot([thf,thf],[0,0.8*h0.max()])
+    mp.text(thf,0.8*h0.max(),'p<0.2, uncorrected')
+    mp.plot([thcf,thcf],[0,0.5*h0.max()])
+    mp.text(thcf,0.5*h0.max(),'p<0.05, corrected')
+    mp.savefig('/tmp/histo_density.eps')
+    mp.show()
 
 
-def compute_density(BFLs,xyz,dmax):
+def _compute_density(BFLs,xyz,dmax):
     """
     Computation of the density of the BFLs points in the xyz volume
     dmax is a scale parameter
@@ -587,7 +588,7 @@ def compute_density(BFLs,xyz,dmax):
     return weight
 
                     
-def compute_density_dev(BFLs,xyz,dmax):
+def _compute_density_dev(BFLs,xyz,dmax):
     """
     Computation of the density of the BFLs points in the xyz volume
     dmax is a scale parameter
@@ -604,7 +605,7 @@ def compute_density_dev(BFLs,xyz,dmax):
     weight = weight*(2*np.pi*dmax*dmax)**1.5
     return weight
 
-def compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
+def _compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
     """
     Cross-validated estimation of random samples of the uniform distributions
     
@@ -636,7 +637,7 @@ def compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
                     surweight[nvox*it:nvox*(it+1),s] = surweight[nvox*it:nvox*(it+1),s] + dw
     return surweight
 
-def compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples=1):
+def _compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples=1):
     """
     caveat: does not work for nsamples>1
     This function computes a surrogate density 
@@ -663,7 +664,7 @@ def compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples=1):
     surweight = surweight*(2*np.pi*dmax*dmax)**1.5
     return surweight    
 
-def hierarchical_asso(BF,dmax):
+def _hierarchical_asso(BF,dmax):
     """
     Compting an association graph of the ROIs defined across different subjects
     
@@ -675,8 +676,9 @@ def hierarchical_asso(BF,dmax):
     
     Results
     -------
-    - G a graph that represent probabilistic associations between all
-    cross-subject pairs of regions.
+    G a graph that represent probabilistic associations between all
+      cross-subject pairs of regions.
+    
     Note that the probabilities are normalized
     on a within-subject basis.
     """
@@ -847,13 +849,11 @@ def segment_graph_rd(Gc, nit=1,verbose=0):
     using a replicator dynamics approach.
     The clusters obtained in the first pass are further merged
     during a second pass, based on a reduced graph
-
     
     Parameters
     ----------
     Gc : nipy.neurospin.graph.graph.WeightedGraph instance
-    the graph to be segmented
-
+       the graph to be segmented
     
     Results
     -------
@@ -923,11 +923,11 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, coord,  dmax=10.,
         #bfls.make_feature(coord,'position','mean')
         BFLs.append(bfls)
 
-    # clean_density(BFLs,dmax,coord,pval,verbose=1,dev=0,nrec=5)
-    clean_density_redraw(BFLs,dmax,coord,pval,verbose=0,dev=0,
+    # _clean_density(BFLs,dmax,coord,pval,verbose=1,dev=0,nrec=5)
+    _clean_density_redraw(BFLs,dmax,coord,pval,verbose=0,dev=0,
                          nrec=1,nsamples=10)
     
-    Gc = hierarchical_asso(BFLs,dmax)
+    Gc = _hierarchical_asso(BFLs,dmax)
     Gc.weights = np.log(Gc.weights)-np.log(Gc.weights.min())
     if verbose:
         print Gc.V,Gc.E,Gc.weights.min(),Gc.weights.max()
