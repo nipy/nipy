@@ -4,6 +4,8 @@ The base image interface.
 This defines the nipy image interface.
 """
 
+import copy as copy
+
 import numpy as np
 from scipy import ndimage
 
@@ -68,9 +70,34 @@ class BaseImage(object):
     # The data (ndarray)
     _data = None
 
+    # The metadata dictionnary
+    metadata = None
+
     #---------------------------------------------------------------------------
     # Public methods -- BaseImage interface
     #---------------------------------------------------------------------------
+
+    def __init__(self, data, transform, metadata=None):
+        """ The base image.
+
+            Parameters
+            ----------
+
+            data: ndarray
+                n dimensional array giving the embedded data.
+            transform: nipy transform object
+                The transformation from voxel to world.
+            metadata : dictionnary, optional
+                Dictionnary of user-specified information to store with
+                the image.
+        """
+        self._data       = data
+        self._transform  = transform
+        self.world_space = transform.input_space
+        if metadata is None:
+            metadata = dict()
+        self.metadata = metadata
+
 
     def get_data(self):
         """ Return data as a numpy array.
@@ -78,7 +105,14 @@ class BaseImage(object):
         return np.asarray(self._data)
 
 
-    def get_lookalike(data):
+    def get_grid(self):
+        """ Return the grid of data points coordinates in the world
+            space.
+        """
+        raise NotImplementedError
+
+
+    def get_lookalike(self, data):
         """ Returns an image with the same transformation and metadata,
             but different data.
 
@@ -87,7 +121,10 @@ class BaseImage(object):
             data: ndarray
         """
         # XXX: Horrible name
-        raise NotImplementedError
+        return self.__class__(data          = data,
+                              transform     = copy.copy(self._transform),
+                              world_space   = self.world_space,
+                              metadata      = copy.copy(self.metadata))
 
 
     def get_transform(self):
@@ -99,8 +136,7 @@ class BaseImage(object):
             -------
             transform : nipy.core.Transform object
         """
-        raise NotImplementedError
-
+        return self._transform
 
     def resampled_to_img(self, target_image, interpolation_order=3):
         """ Resample the image to be on the same voxel grid than the target 
@@ -126,27 +162,24 @@ class BaseImage(object):
             embedded in the same world space.
         """
         my_v2w_transform = self.get_transform()
-        # XXX: Transform do not have a 'get_inverse' method yet
-        transform_map = \
-                target_image.get_transform().get_inverse().composed_with(
+        # XXX: This method doesn't really work 
+        new_transform = target_image.get_transform()
+        transform = new_transform.get_inverse().composed_with(
                                                     my_v2w_transform)
         target_shape = target_image.get_data().shape[:3]
         target_grid = np.indices(target_shape)
         target_grid = target_grid.reshape((3, -1))
-        input_space_grid = transform_map(target_grid)
+        input_space_grid = transform.mapping(*target_grid)
         interpolated_data = \
                     ndimage.map_coordinates(self.get_data(), 
                                             input_space_grid)
-        # XXX: we need a dispatcher pattern or to encode the
-        # information in the transform: how do we know that we need to 
-        # instantiate a `WarpImage`
-        from image import Image as WarpImage
-        return WarpImage(interpolated_data, 
-                                target_image.coord_map,
-                                metadata=self.metadata)
+        # XXX: we need a dispatcher pattern 
+        return BaseImage(interpolated_data, 
+                         new_transform,
+                         metadata=self.metadata)
 
 
-    def resampled_to_grid(self, new_affine=None, interpolation_order=3):
+    def resampled_to_grid(self, affine=None, interpolation_order=3):
         """ Resample the image to be an affine image.
 
             Parameters
@@ -200,6 +233,12 @@ class BaseImage(object):
                 This is a number or an ndarray, depending on the shape of
                 the input coordinate.
         """
+        transform = self.get_transform()
+        if transform.inverse_mapping is None:
+            raise ValueError(
+                "Cannot calculate the world values for image: mapping to "
+                "word is not invertible."
+                )
         x = np.atleast_1d(x)
         y = np.atleast_1d(y)
         z = np.atleast_1d(z)
@@ -209,9 +248,7 @@ class BaseImage(object):
         x = x.ravel()
         y = y.ravel()
         z = z.ravel()
-        transform = self.get_transform()
-        if hasattr(transform, 'get_inverse'):
-            i, j, k = transform.get_inverse().mapping(x, y, z)
+        i, j, k = transform.inverse_mapping(x, y, z)
         values = ndimage.map_coordinates(self.get_data(), np.c_[i, j, k].T,
                                     order=interpolation_order)
         values = np.reshape(values, shape)
@@ -219,8 +256,8 @@ class BaseImage(object):
 
 
     def transformed_with(self, w2w_transform):
-        """ Change the word space the image is embedded into,
-            using the given world to world transform.
+        """ Return a new image embedding the same data in a different 
+            word space using the given world to world transform.
 
             Parameters
             ----------
@@ -235,28 +272,24 @@ class BaseImage(object):
                 An image containing the same data, expressed
                 in the new world space.
 
-            Notes
-            -----
-            No resampling is done by this function.
         """
         if not w2w_transform.input_world_space == self.world_space:
             raise CompositionError(
                 "The transform given does not apply to"
                 "the image's world space")
-        # XXX: We can see an ugly 'if-then' statement maybe we should be
-        # encoding some of that logic in the transform.
+        # XXX: We can see an ugly 'if-then' statement maybe we should 
+        # use a dispatcher pattern. 
         new_v2w_transform = \
                         self.get_transform().composed_with(w2w_transform)
         if hasattr(new_v2w_transform, 'affine'):
             # We need to delay the import until now, to avoid circular
             # imports
-            from affine_image import AffineImage
-            return AffineImage(self._data, new_v2w_transform.affine, 
+            from .xyz_image import XYZImage
+            return XYZImage(self._data, new_v2w_transform.affine, 
                                 w2w_transform.output_world_space,
                                 metadata=self.metadata)
         else:
-            from image import Image as WarpImage
-            return WarpImage(self._data, 
+            return BaseImage(self._data, 
                                  new_v2w_transform,
                                  metadata=self.metadata)
  
@@ -267,6 +300,7 @@ class BaseImage(object):
 
     # TODO: We need to implement (or check if implemented) hashing,
     # weakref, copy, pickling, and __eq__? 
+        
 
     def __repr__(self):
         options = np.get_printoptions()
@@ -278,5 +312,17 @@ class BaseImage(object):
                 self.world_space)
         np.set_printoptions(**options)
         return representation
+
+    def __copy__(self):
+        return self.get_lookalike(self.get_data().copy())
+
+
+    def __deepcopy__(self, option):
+        """ Copy the Image and the arrays and metadata it contains.
+        """
+        out = self.__copy__()
+        out.metadata = copy.deepcopy(self.metadata)
+        return out
+
 
 
