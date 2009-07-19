@@ -222,7 +222,29 @@ class test_Field(TestCase):
         OK = True
         self.assert_(OK)
 
+    def test_subfield(self):
+        import numpy.random as nr
+        F = basic_field_random()
+        valid = nr.rand(F.V)>0.1
+        sf = F.subfield(valid)
+        self.assert_(sf.V==np.sum(valid))
 
+    def test_subfield2(self):
+        F = basic_field_random()
+        valid = np.zeros(F.V)
+        sf = F.subfield(valid)
+        self.assert_(sf==None)
+
+    def test_ward1(self):
+        F = basic_field_random()
+        Lab, J = F.ward(10)
+        self.assert_(Lab.max()==9)
+
+    def test_ward2(self):
+        F = basic_field_random()
+        Lab, J1 = F.ward(5)
+        Lab, J2 = F.ward(10)
+        self.assert_(J1>J2)
 
 if __name__ == '__main__':
     import nose

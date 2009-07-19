@@ -20,24 +20,32 @@ import nipy.neurospin.graph as fg
 # ---------------------------------------------------------
 # ----- cluster handling functions ------------------------
 # ---------------------------------------------------------
-#from roc import cluster_threshold, get_cluster_position_from_thresholded_map
 
-def cluster_threshold(map,ijk,th,csize):
+
+def cluster_threshold(map, ijk, th, csize):
     """
-    perform a thresholding of a map
+    perform a thresholding of a map at the cluster-level
 
-    INPUT:
-    - map: array of shape(nbvox)
-    - ijk: array of shape(nbvox,3):
-    the set of associated coordinates
-    - th (float): cluster-forming threshold
-    - cisze (int): cluster size threshold
+    Parameters
+    ----------
+    map: array of shape(nbvox)
+    ijk: array of shape(nbvox,3):
+        the set of associated grid coordinates
+    th (float): cluster-forming threshold
+    cisze (int>0): cluster size threshold
+        
+    Returns
+    -------
+    binary array of shape (nvox): the binarized thresholded map
 
-    OUTPUT:
-    -binary=array of shape (nvox): the thresholded map
+    Note
+    ----
+    Should be replaced by a more standard function in teh future in the future
     """
+    if map.shape[0]!=ijk.shape[0]:
+        raise ValueError, 'incompatible dimensions'
     ithr = np.nonzero(map>th)[0]
-    binary = np.zeros(np.size(map)).astype('i')
+    binary = np.zeros(np.size(map)).astype(np.int)
     
     if np.size(ithr)>0:
         G = fg.WeightedGraph(np.size(ithr))
@@ -62,21 +70,22 @@ def get_cluster_position_from_thresholded_map(smap, ijk, coord, thr=3.0,
     the clusters above thr of size greater than csize in
     18-connectivity are computed
 
-    INPUT:
-    - smap : array of shape (nbvox)
-    - ijk array of shape(nbvox,anat_dim) grid coordinates
-    - coord: array of shape (nbvox,anatdim) physical ccordinates
-    - thr=3.0 cluster-forming threshold
-    - cisze=10: cluster size threshold
+    Parameters
+    ----------
+    smap : array of shape (nbvox): map to threshold
+    ijk array of shape(nbvox,anat_dim) grid coordinates
+    coord: array of shape (nbvox,anatdim) physical ccordinates
+    thr=3.0 (float) cluster-forming threshold
+    cisze=10 (int>0): cluster size threshold
 
-    output:
-    - positions arrau of shape(k,anat_dim)
-    the cluster positions in physical coordinates
-    where k= number of clusters
-    
-    NOTE: if no such cluster exists, None is returned
+    Returns
+    -------
+    positions array of shape(k,anat_dim):
+              the cluster positions in physical coordinates
+              where k= number of clusters
+              if no such cluster exists, None is returned
     """
-
+    
     # if no supra-threshold voxel, return
     ithr = np.nonzero(smap>thr)[0]
     if np.size(ithr)==0:
@@ -108,17 +117,19 @@ def get_cluster_position_from_thresholded_map(smap, ijk, coord, thr=3.0,
 
 
 
-def splitgroup(nbsubj,groupsize):
+def split_group(nbsubj, groupsize):
     """
-    Split the proposed group into disjoint subgroups
+    Split the proposed group into random disjoint subgroups
 
-    Parameters:
-    ------------
-    - nbsubj (int) the number of subjects to be split
-    - groupsize(int) the size of each subbgroup
-    OUPUT:
-    - samples: a list of nb_subgroups arrey containing
-    the indexes of the subjects in each sungroup
+    Parameters
+    ----------
+    nbsubj (int) the number of subjects to be split
+    groupsize(int) the size of each subbgroup
+
+    Returns
+    -------
+    samples: a list of nb_subgroups arrey containing
+             the indexes of the subjects in each sungroup
     """
     subgroups = int(np.floor(nbsubj/groupsize))
     rperm = np.argsort(np.random.rand(nbsubj))
@@ -137,8 +148,20 @@ def ttest(x):
 
 def fttest(x,vx):
     """
-    returns a cumulated ('fixed effects') t-test of the data
+    Assuming that x and vx represent a effect and variance estimates,    
+    returns a cumulated ('fixed effects') t-test of the data over each row
+
+    Parameters
+    ----------
+    x: array of shape(nrows, ncols): effect matrix
+    vx: array of shape(nrows, ncols): variance matrix
+
+    Returns
+    -------
+    t array of shape(nrows): fixed effect statistics array
     """
+    if np.shape(x)!=np.shape(vx):
+       raise ValueError, "incompatible dimensions for x and vx"
     n = x.shape[1]
     t = x/np.sqrt(vx)
     t = t.mean(1)*np.sqrt(n)
@@ -146,39 +169,46 @@ def fttest(x,vx):
     
 def mfx_ttest(x,vx):
     """
-    returns the mixed effects t-test for each row of the data x
-    and the associated variance vx
+    Idem fttest, but returns a mixed-effects statistic 
+    
+    Parameters
+    ----------
+    x: array of shape(nrows, ncols): effect matrix
+    vx: array of shape(nrows, ncols): variance matrix
+
+    Returns
+    -------
+    t array of shape(nrows): mixed effect statistics array
     """
     import fff2.group.onesample as fos
     t = fos.stat_mfx(x.T,vx.T,id='student_mfx',axis=0)
     return np.squeeze(t)
 
 def voxel_thresholded_ttest(x,threshold):
-    """
-    returns a binary map of the ttest>threshold
+    """returns a binary map of the ttest>threshold
     """
     t = ttest(x)
     return t>threshold
 
 def statistics_from_position(target,data,sigma=1.0):
     """
-    return a couple statistics charcterizing how close data is from
+    return a couple statistics characterizing how close data is from
     target
+    
+    Parameters
+    ----------
+    target: array of shape(nt,anat_dim) or None
+            the target positions
+    data: array of shape(nd,anat_dim) or None
+          the data position
+    sigma=1.0 (float): a distance that say how good good is 
 
-    Parameters:
-    ------------
-    - target: rray of shape(nt,anat_dim) the target positions
-    or None
-    - data: array of shape(nd,anat_dim) the data position
-    or None
-    - sigma=1.0 (float): a distance that say how good good is 
-
-    OUTPUT:
-    ---------
-    - sensitivity (float): how well the targets are fitted
-    by the data  in [0,1] interval
-    1 is good
-    0 is bad
+    Returns
+    -------
+    sensitivity (float): how well the targets are fitted
+                by the data  in [0,1] interval
+                1 is good
+                0 is bad
     """
     from fff2.eda.dimension_reduction import Euclidian_distance as ed
     if data==None:
@@ -195,36 +225,36 @@ def statistics_from_position(target,data,sigma=1.0):
     sensitivity = np.mean(sensitivity)
     return sensitivity
 
-def voxel_reproducibility(data,vardata,groupsize,xyz,method='rfx',
-                          niter=0,verbose=0,**kwargs):
+def voxel_reproducibility(data, vardata, groupsize, xyz,method='rfx',
+                          verbose=0, **kwargs):
     """
     return a measure of voxel-level reproducibility
     of activation patterns
 
-    Parameters:
-    -------------
-    - data: array of shape (nvox,nsubj)
-    the input data from which everything is computed
-    - vardata: the corresponding variance information
-    (same size) 
-    - groupsize (int): the size of each subrgoup to be studied
-    - threshold (float): binarization threshold
-    (makes sense only if method==rfx)
-    - method='rfx' inference method under study
-    or 'crfx'
-    - niter=0: number of iterations. potentially used to store
-    intermediate data
-    - verbose=0 : verbosity mode
+    Parameters
+    ----------
+    data: array of shape (nvox,nsubj)
+          the input data from which everything is computed
+    vardata: array of shape (nvox,nsubj)
+             the corresponding variance information
+    groupsize (int): 
+              the size of each subrgoup to be studied
+    threshold (float): 
+              binarization threshold (makes sense only if method==rfx)
+    method = 'rfx' or 'crfx'
+           inference method under study
+    verbose=0 : verbosity mode
 
-    OUTPUT:
-    ---------
-    - kappa (float): the desired  reproducibility index
+    Returns
+    -------
+    kappa (float): the desired  reproducibility index
     """
     nbsubj = data.shape[1]
     nvox = data.shape[0]
-    samples = splitgroup(nbsubj,groupsize)
+    samples = split_group(nbsubj,groupsize)
     subgroups = len(samples)
-    rmap = map_reproducibility(data,vardata,groupsize,xyz,method,niter,verbose,kwargs)
+    rmap = map_reproducibility(data, vardata, groupsize, xyz, method, 
+                                     verbose,kwargs)
 
     import two_binomial_mixture as mtb
     MB = mtb.TwoBinomialMixture()
@@ -234,33 +264,32 @@ def voxel_reproducibility(data,vardata,groupsize,xyz,method='rfx',
         MB.show(h)
     return MB.kappa()
 
-def map_reproducibility(data,vardata,groupsize,xyz,method='rfx',
-                        niter=0,verbose=0,**kwargs):
+def map_reproducibility(data, vardata, groupsize, xyz, method='rfx',
+                        verbose=0, **kwargs):
     """
     return a reproducibility map for the given method
 
-    Parameters:
-    -----------
-    - data: array of shape (nvox,nsubj)
-    the input data from which everything is computed
-    - vardata: the corresponding variance information
-    (same size) 
-    - groupsize (int): the size of each subrgoup to be studied
-    - threshold (float): binarization threshold
-    (makes sense only if method==rfx)
-    - method='rfx' inference method under study
-    or 'crfx'
-    - niter=0: number of iterations. potentially used to store
-    intermediate data
-    - verbose=0 : verbosity mode
+    Parameters
+    ----------
+    data: array of shape (nvox,nsubj)
+          the input data from which everything is computed
+    vardata: array of the same size
+             the corresponding variance information
+    groupsize (int): the size of each subrgoup to be studied
+    threshold (float): binarization threshold
+              (makes sense only if method==rfx)
+    method = 'rfx' or 'crfx' 
+           inference method under study
+    verbose=0 : verbosity mode
 
-    OUTPUT:
-    --------
-    - rmap: array of shape(nvox) : the reproducibility map
+    Returns
+    -------
+    rmap: array of shape(nvox)
+          the reproducibility map
     """
     nbsubj = data.shape[1]
     nvox = data.shape[0]
-    samples = splitgroup(nbsubj,groupsize)
+    samples = split_group(nbsubj,groupsize)
     subgroups = len(samples)
     rmap = np.zeros(nvox)
     for i in range(subgroups):
@@ -297,29 +326,33 @@ def cluster_reproducibility(data,vardata,groupsize,xyz,coord,sigma,
     of activation patterns
     (i.e. how far clusters are from each other)
 
-    Parameters:
-    ------------
-    - data: array of shape (nvox,nsubj)
-    the input data from which everything is computed
-    - vardata: array of shape (nvox,nsubj)
-    the variance of the data that is also available
-    - groupsize (int): the size of each subrgoup to be studied
-    - xyz array of shape (nvox,3) providing the grid ccordinates
-    of the voxels
-    - coord: array of shape (nvox,3) that provides the
-    corresponding physical coordinates
-    - sigma (float): parameter that encodes how far far is
-    - threshold (float): binarization threshold
-    (makes sense only if method==rfx)
-    - method='rfx' inference method under study
-    'rfx' or 'crfx'
-    - niter = 0: (int) iteration number
-    this is used to save intermediate results
-    - verbose=0 : verbosity mode
+    Parameters
+    ----------
+    data: array of shape (nvox,nsubj)
+          the input data from which everything is computed
+    vardata: array of shape (nvox,nsubj)
+             the variance of the data that is also available
+    groupsize (int): the size of each subrgoup to be studied
+    xyz array of shape (nvox,3) 
+        the grid ccordinates of the imput voxels
+    coord: array of shape (nvox,3) 
+           the corresponding physical coordinates
+    sigma (float): parameter that encodes how far far is
+    threshold (float): 
+              binarization threshold (makes sense only if method==rfx)
+    method = 'rfx'or 'crfx' 
+           inference method under study
+    niter = 0: (int) number of iterations
+          this is used to save intermediate results
+    verbose=0 : verbosity mode
+    
+    Returns
+    -------
+    score (float): the desired  cluster-level reproducibility index
     """
     tiny = 1.e-15
     nbsubj = data.shape[1]
-    samples = splitgroup(nbsubj,groupsize)
+    samples = split_group(nbsubj,groupsize)
     subgroups = len(samples)
     if subgroups==1:
         return 1.
@@ -374,12 +407,38 @@ def cluster_reproducibility(data,vardata,groupsize,xyz,coord,sigma,
 
 
 # -------------------------------------------------------
-# ---------- BSA stuff -----------------------------
+# ---------- BSA stuff ----------------------------------
 # -------------------------------------------------------
 
-def coord_bsa(xyz, coord, betas, header, theta=3., dmax =  5., ths = 0, thq = 0.5, smin = 0,afname='/tmp/af.pic'):
+def coord_bsa(xyz, coord, betas, header, theta=3., dmax=5., \
+               ths=0, thq=0.5, smin=0, afname='/tmp/af.pic'):
     """
-    main function for  performing bsa on a set of images
+    main function for  performing bsa on a dataset
+    where bsa =  fff2.spatial_models.bayesian_structural_analysis
+
+    Parameters
+    ----------
+    xyz array of shape (nnodes,3):
+        the grid coordinates of the field
+    coord array of shape (nnodes,3):
+          spatial coordinates of the nodes
+    betas: an array of shape (nbnodes, subjects):
+           the multi-subject statistical maps       
+    header: nifti image header the referential defining header
+    theta = 3.0 (float): first level threshold
+    dmax = 5. float>0:
+         expected cluster std in the common space in units of coord
+    ths = 0 (int, >=0) : representatitivity threshold
+    thq = 0.5 (float): posterior significance threshold should be in [0,1]
+    smin = 0 (int): minimal size of the regions to validate them
+    afname = '/tmp/af.pic': place where intermediate resullts wam be written
+    
+    Returns
+    -------
+    afcoord array of shape(number_of_regions,3):
+            coordinate of the found landmark regions
+    
+    Fixme : somewhat unclean
     """
     import fff2.spatial_models.bayesian_structural_analysis as bsa
     import fff2.graph.field as ff

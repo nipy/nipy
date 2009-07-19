@@ -6,24 +6,28 @@ from numpy.random import rand
 
 
 def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001,verbose=0):
-    """ Centers, Labels, J = Cmeans(X,nbclusters,Labels,maxiter,delta)\n\
-  cmeans clustering algorithm \n\
- INPUT :\n\
- - A data array X, supposed to be written as (n*p)\n\
-   where n = number of features, p =number of dimensions\n\
- - nbclusters (int), the number of desired clusters\n\
- - Labels=None n array of predefined Labels. \n\
-   if None or inadequate a random initilization is performed.\n\
- - maxiter(int, =300 by default), the maximum number \n\
-   of iterations  before convergence\n\
- - delta(double, =0.0001 by default), \n\
-  the relative increment in the results before declaring convergence\n\
-  - verbose=0: verboseity mode\n\
- OUPUT :\n\
- - Centers: array of size nbclusters*p, the centroids of \n\
-  the resulting clusters\n\
- - Labels : arroy of size n, the discrete labels of the input items;\n\
- - J the final value of the criterion
+    """
+    kmeans clustering algorithm 
+
+    Parameters
+    ----------
+    X: array of shape (n,p): n = number of items, p = dimension
+       data array
+    nbclusters (int), the number of desired clusters
+    Labels = None array of shape (n) prior Labels.   
+           if None or inadequate a random initilization is performed.
+    maxiter=300 (int), the maximum number of iterations  before convergence
+    delta=0.0001 (float), 
+                 the relative increment in the results 
+                 before declaring convergence.
+    verbose=0: verboseity mode
+ 
+    Returns
+    -------
+    Centers: array of size nbclusters*p, 
+             the centroids of  the resulting clusters
+    Labels : array of size n, the discrete labels of the input items
+    J (float):  the final value of the inertia criterion
     """
     nbitems = X.shape[0]
     if nbitems<1:
@@ -32,7 +36,8 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001,verbose=0):
         
     if np.size(X.shape)>2:
         if verbose:
-            raise ValueError, " please enter a two-diemnsional array for clustering"
+            raise ValueError, " please enter a two-diemnsional array \
+                              for clustering"
             
     if np.size(X.shape)==1:
         X = np.reshape(X,(nbitems,1))
