@@ -21,6 +21,13 @@ def inverse_mapping(x, y, z):
 def id(x, y, z):
     return x, y, z
 
+################################################################################
+# Tests
+def test_constructor():
+    yield np.testing.assert_raises, ValueError, BaseImage, None, \
+        None, {}, 'e'
+
+
 def test_base_image():
     """ Sanity testing of the base image class.
     """
@@ -54,6 +61,12 @@ def test_trivial_image():
                     )
     x, y, z = np.random.random_integers(N, size=(3, 10)) - 1
     data_ = img. values_in_world(x, y, z)
+    # Check that passing in arrays with different shapes raises an error
+    yield np.testing.assert_raises, ValueError, \
+        img.values_in_world, x, y, z[:-1]
+    # Check that passing in wrong interpolation keyword raises an error
+    yield np.testing.assert_raises, ValueError, \
+                        img.values_in_world, 0, 0, 0, 'e'
     yield np.testing.assert_almost_equal, data[x, y, z], data_
 
 
