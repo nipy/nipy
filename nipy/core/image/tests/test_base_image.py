@@ -2,14 +2,18 @@
 Testing base image interface.
 """
 
+import nose
 import numpy as np
 
 # Local imports
-from ..base_image import BaseImage
+from ..base_image import BaseImage, CompositionError
 from ...transforms.transform import Transform
 
 def mapping(x, y, z):
     return 2*x, y, 0.5*z
+
+def inverse_mapping(x, y, z):
+    return 0.5*x, y, 2*z
 
 def id(x, y, z):
     return x, y, z
@@ -51,8 +55,27 @@ def test_trivial_image():
     yield np.testing.assert_almost_equal, data[x, y, z], data_
 
 
+def test_transformation():
+    """ Test transforming images.
+    """
+    N = 10
+    v2w_mapping = Transform('voxels', 'world1', mapping, 
+                            inverse_mapping)
+    identity  = Transform('world1', 'world2', id, id) 
+    data = np.random.random((N, N, N))
+    img1 = BaseImage(data=data,
+                     transform=v2w_mapping,
+                     )
+    img2 = img1.transformed_with(identity)
+    
+    yield nose.tools.assert_equal, img2.world_space, 'world2'
 
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])
+    x, y, z = N*np.random.random(size=(3, 10))
+    yield np.testing.assert_almost_equal, img1.values_in_world(x, y, z), \
+        img2.values_in_world(x, y, z)
+
+    yield nose.tools.assert_raises, CompositionError, img1.transformed_with, \
+            identity.get_inverse()
+
+
 

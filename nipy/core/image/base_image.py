@@ -93,7 +93,7 @@ class BaseImage(object):
         """
         self._data       = data
         self._transform  = transform
-        self.world_space = transform.input_space
+        self.world_space = transform.output_space
         if metadata is None:
             metadata = dict()
         self.metadata = metadata
@@ -273,7 +273,7 @@ class BaseImage(object):
                 in the new world space.
 
         """
-        if not w2w_transform.input_world_space == self.world_space:
+        if not w2w_transform.input_space == self.world_space:
             raise CompositionError(
                 "The transform given does not apply to"
                 "the image's world space")
