@@ -2,6 +2,7 @@ import numpy as np
 
 from nipy.modalities.fmri.api import FmriImageList
 from nipy.modalities.fmri.pca import pca
+from nipy.core.api import Image
 from nipy.io.api import  load_image
 import nipy.testing as niptest
 
@@ -11,21 +12,21 @@ def setup():
     img = load_image(niptest.funcfile)
     data['fmridata'] = FmriImageList.from_image(img)
     frame = data['fmridata'][0]
-    data['mask'] = img.get_lookalike(
-                    np.greater(frame.get_data(), 500).astype(np.float64))
-    print data['mask'].get_data().shape, np.sum(data['mask'].get_data())
+    data['mask'] = Image(np.greater(np.asarray(frame), 500).astype(np.float64),
+                         frame.coordmap)
+    print data['mask'].shape, np.sum(np.array(data['mask']))
 
 def test_PCAMask():
     nimages = len(data['fmridata'].list) 
     ntotal = nimages - 1
     ncomp = 5
-    p = pca(data['fmridata'].get_data(), data['mask'].get_data(), ncomp=ncomp)
+    p = pca(data['fmridata'], data['mask'], ncomp=ncomp)
 
     yield niptest.assert_equal, p['rank'], ntotal
     yield niptest.assert_equal, p['time_series'].shape, (ncomp,
                                                          nimages)
-    yield niptest.assert_equal, p['images'].get_data().shape, (ncomp,) + data['mask'].shape
-    yield niptest.assert_equal, p['pcnt_var'].get_data().shape, (ntotal,)
+    yield niptest.assert_equal, p['images'].shape, (ncomp,) + data['mask'].shape
+    yield niptest.assert_equal, p['pcnt_var'].shape, (ntotal,)
     yield niptest.assert_almost_equal, p['pcnt_var'].sum(), 100.
 
 def test_PCAMask_nostandardize():
@@ -35,7 +36,7 @@ def test_PCAMask_nostandardize():
     p = pca(data['fmridata'], data['mask'], ncomp=ncomp, standardize=False)
 
     yield niptest.assert_equal, p['rank'], ntotal
-    yield niptest.assert_equal, p['time_series'].get_data().shape, (ncomp,
+    yield niptest.assert_equal, p['time_series'].shape, (ncomp,
                                                          nimages)
     yield niptest.assert_equal, p['images'].shape, (ncomp,) + data['mask'].shape
     yield niptest.assert_equal, p['pcnt_var'].shape, (ntotal,)
