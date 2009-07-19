@@ -146,7 +146,7 @@ class BaseImage(object):
                                 metadata=self.metadata)
 
 
-    def resampled_to_affine(self, target_affine=None, interpolation_order=3):
+    def resampled_to_grid(self, new_affine=None, interpolation_order=3):
         """ Resample the image to be an affine image.
 
             Parameters

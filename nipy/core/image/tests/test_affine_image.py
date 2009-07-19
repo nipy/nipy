@@ -6,7 +6,7 @@ import nose
 import numpy as np
 
 from ...transforms.affine_utils import from_matrix_vector
-from ..affine_image import AffineImage, CompositionError
+from ..xyz_image import XYZImage, CompositionError
 
 ################################################################################
 # Helper function
@@ -28,27 +28,27 @@ def rotation(theta, phi):
 # Tests
 
 def test_identity_resample():
-    """ Test resampling of the AffineImage with an identity affine.
+    """ Test resampling of the XYZImage with an identity affine.
     """
     shape = (5., 5., 5.)
     data = np.random.randint(0, 10, shape)
     affine = np.eye(4)
     affine[:3, -1] = 0.5*np.array(shape)
-    ref_im = AffineImage(data, affine, 'mine')
-    rot_im = ref_im.resampled_to_affine(affine, interpolation_order=0)
+    ref_im = XYZImage(data, affine, 'mine')
+    rot_im = ref_im.resampled_to_grid(affine, interpolation_order=0)
     yield np.testing.assert_almost_equal, data, rot_im.get_data()
     reordered_im = rot_im.xyz_ordered()
     yield np.testing.assert_almost_equal, data, reordered_im.get_data()
 
 
 def test_downsample():
-    """ Test resampling of the AffineImage with a 1/2 down-sampling affine.
+    """ Test resampling of the XYZImage with a 1/2 down-sampling affine.
     """
     shape = (6., 6., 6.)
     data = np.random.randint(0, 10, shape)
     affine = np.eye(4)
-    ref_im = AffineImage(data, affine, 'mine')
-    rot_im = ref_im.resampled_to_affine(2*affine, interpolation_order=0)
+    ref_im = XYZImage(data, affine, 'mine')
+    rot_im = ref_im.resampled_to_grid(2*affine, interpolation_order=0)
     downsampled = data[::2, ::2, ::2]
     x, y, z = downsampled.shape
     np.testing.assert_almost_equal(downsampled, 
@@ -56,13 +56,13 @@ def test_downsample():
 
 
 def test_reordering():
-    """ Test the xyz_ordered method of the AffineImage.
+    """ Test the xyz_ordered method of the XYZImage.
     """
     shape = (5., 5., 5.)
     data = np.random.random(shape)
     affine = np.eye(4)
     affine[:3, -1] = 0.5*np.array(shape)
-    ref_im = AffineImage(data, affine, 'mine')
+    ref_im = XYZImage(data, affine, 'mine')
     for theta, phi in np.random.randint(4, size=(10, 2)):
         rot = rotation(theta*np.pi/2, phi*np.pi/2)
         rot[np.abs(rot)<0.001] = 0
@@ -70,7 +70,7 @@ def test_reordering():
         rot[rot<-0.9] = 1
         b = 0.5*np.array(shape)
         new_affine = from_matrix_vector(rot, b)
-        rot_im = ref_im.resampled_to_affine(new_affine=new_affine)
+        rot_im = ref_im.resampled_to_grid(new_affine=new_affine)
         reordered_im = rot_im.xyz_ordered()
         yield np.testing.assert_array_equal, reordered_im.affine[:3, :3], \
                                     np.eye(3)
@@ -80,18 +80,18 @@ def test_reordering():
     # Create a non-diagonal affine, and check that we raise a sensible
     # exception
     affine[1, 0] = 0.1
-    ref_im = AffineImage(data, affine, 'mine')
+    ref_im = XYZImage(data, affine, 'mine')
     yield nose.tools.assert_raises, CompositionError, ref_im.xyz_ordered
 
 
 def test_eq():
-    """ Test copy and equality for AffineImages.
+    """ Test copy and equality for XYZImages.
     """
     import copy
     shape = (5., 5., 5.)
     data = np.random.random(shape)
     affine = np.random.random((4, 4))
-    ref_im = AffineImage(data, affine, 'mine')
+    ref_im = XYZImage(data, affine, 'mine')
     yield nose.tools.assert_equal, ref_im, ref_im
     yield nose.tools.assert_equal, ref_im, copy.copy(ref_im)
     yield nose.tools.assert_equal, ref_im, copy.deepcopy(ref_im)
@@ -106,8 +106,8 @@ def test_eq():
     yield nose.tools.assert_not_equal, ref_im, copy_im
     # Test repr
     yield np.testing.assert_, isinstance(repr(ref_im), str)
-    # Test init
-    yield nose.tools.assert_raises, Exception, AffineImage, data, \
+    # Test init: should raise exception is not passing in right affine
+    yield nose.tools.assert_raises, Exception, XYZImage, data, \
                 np.eye(3, 3), 'mine'
 
 def test_values_in_world():
@@ -116,7 +116,7 @@ def test_values_in_world():
     shape = (5., 5., 5.)
     data = np.random.random(shape)
     affine = np.eye(4)
-    ref_im = AffineImage(data, affine, 'mine')
+    ref_im = XYZImage(data, affine, 'mine')
     x, y, z = np.indices(ref_im.get_data().shape)
     values = ref_im.values_in_world(x, y, z)
     np.testing.assert_almost_equal(values, data)
@@ -129,12 +129,12 @@ def test_resampled_to_img():
     shape = (5., 5., 5.)
     data = np.random.random(shape)
     affine = np.random.random((4, 4))
-    ref_im = AffineImage(data, affine, 'mine')
+    ref_im = XYZImage(data, affine, 'mine')
     yield np.testing.assert_almost_equal, data, \
-                        ref_im.resampled_to_affine(ref_im.affine).get_data()
+                        ref_im.resampled_to_grid(ref_im.affine).get_data()
     yield np.testing.assert_almost_equal, data, \
                         ref_im.resampled_to_img(ref_im).get_data()
-    other_im = AffineImage(data, affine, 'other')
+    other_im = XYZImage(data, affine, 'other')
     yield nose.tools.assert_raises, CompositionError, \
             other_im.resampled_to_img, ref_im
 

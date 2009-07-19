@@ -18,7 +18,7 @@ def test_base_image():
     yield np.testing.assert_raises, NotImplementedError, \
                         img.values_in_world, 0, 0, 0
     yield np.testing.assert_raises, NotImplementedError, \
-                        img.resampled_to_affine
+                        img.resampled_to_grid
     yield np.testing.assert_raises, NotImplementedError, \
                         img.resampled_to_img, img
 

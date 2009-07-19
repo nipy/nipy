@@ -1,5 +1,6 @@
 """
-The base image interface.
+An image that stores the data as an (x, y, z, ...) array, with an
+affine mapping to the world space
 """
 import copy
 
@@ -14,11 +15,12 @@ from ..transforms.affine_transform import AffineTransform
 from .base_image import BaseImage
 
 ################################################################################
-# class `AffineImage`
+# class `XYZImage`
 ################################################################################
 
-class AffineImage(BaseImage):
-    """ The affine image for neuroimaging.
+class XYZImage(BaseImage):
+    """ The regularly-spaced affine image for embedding data in an x, y, z 
+        3D world, for neuroimaging.
 
         This object is nothing more than an ndarray representing a
         volume, with the first 3 dimensions being spatial, and mapped to 
@@ -71,7 +73,7 @@ class AffineImage(BaseImage):
     # interplation order/method
 
     #---------------------------------------------------------------------------
-    # Attributes, AffineImage interface
+    # Attributes, XYZImage interface
     #---------------------------------------------------------------------------
 
     # The affine (4x4 ndarray)
@@ -131,7 +133,7 @@ class AffineImage(BaseImage):
         return AffineTransform(self.affine, 'voxel_space', self.world_space)
 
 
-    def resampled_to_affine(self, new_affine, interpolation_order=3):
+    def resampled_to_grid(self, new_affine, interpolation_order=3):
         """ Resample the image to be an affine image.
 
             Parameters
@@ -145,7 +147,7 @@ class AffineImage(BaseImage):
 
             Returns
             -------
-            resampled_image : nipy AffineImage
+            resampled_image : nipy XYZImage
                 New nipy image with the data resampled in the given
                 affine.
 
@@ -171,7 +173,7 @@ class AffineImage(BaseImage):
                                         offset=b, 
                                         output_shape=data.shape,
                                         order=interpolation_order)
-        return AffineImage(resampled_data, new_affine, 
+        return XYZImage(resampled_data, new_affine, 
                            self.world_space, metadata=self.metadata)
 
 
@@ -202,7 +204,7 @@ class AffineImage(BaseImage):
                 'The two images are not embedded in the same world space')
         target_shape = target_image.get_data().shape[:3]
         if hasattr(target_image, 'affine'):
-            new_im = self.resampled_to_affine(target_image.affine,
+            new_im = self.resampled_to_grid(target_image.affine,
                                     interpolation_order=interpolation_order)
             # Some massaging to get the shape right
             new_data = np.zeros(target_image.get_data().shape)
@@ -218,12 +220,12 @@ class AffineImage(BaseImage):
         else:
             # XXX: we need a dispatcher pattern or to encode the
             # information in the transform
-            return super(AffineImage, self).resampled_to_img(target_image,
+            return super(XYZImage, self).resampled_to_img(target_image,
                                     interpolation_order=interpolation_order)
 
     
     #---------------------------------------------------------------------------
-    # AffineImage interface
+    # XYZImage interface
     #---------------------------------------------------------------------------
 
     def xyz_ordered(self):
@@ -265,7 +267,7 @@ class AffineImage(BaseImage):
             order[axis1] = axis2
             order[axis2] = axis1
             new_affine = new_affine.T[order].T
-        return AffineImage(reordered_data, new_affine, self.world_space, 
+        return XYZImage(reordered_data, new_affine, self.world_space, 
                                            metadata=self.metadata)
 
     #---------------------------------------------------------------------------
