@@ -123,7 +123,6 @@ class BaseImage(object):
         raise NotImplementedError
 
 
-
     def values_in_world(self, x, y, z, interpolation=None):
         """ Return the values of the data at the world-space positions given by 
             x, y, z
@@ -169,7 +168,6 @@ class BaseImage(object):
             remapped_image : nipy image
                 An image containing the same data, expressed
                 in the new world space.
-
         """
         if not w2w_transform.input_space == self.world_space:
             raise CompositionError(
