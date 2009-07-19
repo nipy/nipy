@@ -9,7 +9,7 @@ import copy as copy
 import numpy as np
 
 # Local imports
-from .base_image import BaseImage
+from .volume_field import VolumeField
 from ..transforms.transform import CompositionError
 
 
@@ -17,7 +17,7 @@ from ..transforms.transform import CompositionError
 # class `DataImage`
 ################################################################################
 
-class DataImage(BaseImage):
+class DataImage(VolumeField):
     """ A class representing data embedded in a 3D space 
 
         This object has data stored in an array like, that knows how it is 

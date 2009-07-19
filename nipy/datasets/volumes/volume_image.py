@@ -62,7 +62,7 @@ class VolumeImage(WarpedImage):
         _data attribute, but to use the `get_data` method.
     """
 
-    # most attributes are given by the BaseImage interface 
+    # most attributes are given by the VolumeField interface 
 
     #---------------------------------------------------------------------------
     # Attributes, VolumeImage interface
@@ -72,7 +72,7 @@ class VolumeImage(WarpedImage):
     affine = np.eye(4)
 
     #---------------------------------------------------------------------------
-    # BaseImage interface
+    # VolumeField interface
     #---------------------------------------------------------------------------
 
     def __init__(self, data, affine, world_space, metadata=None, 
