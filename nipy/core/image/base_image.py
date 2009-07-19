@@ -58,10 +58,8 @@ class BaseImage(object):
     # User defined meta data
     metadata = dict()
 
-    # XXX: interpolation_order is not a good not: we want
-    # 'interpolation_ordertion=None',it could take 'nearest'. The class has 
-    # an attribute, that can be used to specify the default behavior, in 
-    # case 'None' is passed. This is used for eg label images, or mask.
+    # The interpolation logic used
+    interpolation = 'continuous'
 
     #---------------------------------------------------------------------------
     # Private attributes -- BaseImage interface
@@ -77,7 +75,8 @@ class BaseImage(object):
     # Public methods -- BaseImage interface
     #---------------------------------------------------------------------------
 
-    def __init__(self, data, transform, metadata=None):
+    def __init__(self, data, transform, metadata=None,
+                 interpolation='continuous'):
         """ The base image.
 
             Parameters
@@ -90,14 +89,20 @@ class BaseImage(object):
             metadata : dictionnary, optional
                 Dictionnary of user-specified information to store with
                 the image.
+            interpolation : 'continuous' or 'nearest', optional
+                Interpolation type used when calculating values in
+                different word spaces.
         """
+        if not interpolation in ('continuous', 'nearest'):
+            raise ValueError('interpolation must be either continuous '
+                             'or nearest')
         self._data       = data
         self._transform  = transform
         self.world_space = transform.output_space
         if metadata is None:
             metadata = dict()
         self.metadata = metadata
-
+        self.interpolation = interpolation
 
     def get_data(self):
         """ Return data as a numpy array.
@@ -133,7 +138,9 @@ class BaseImage(object):
         # XXX: Horrible name
         return self.__class__(data          = data,
                               transform     = copy.copy(self._transform),
-                              metadata      = copy.copy(self.metadata))
+                              metadata      = copy.copy(self.metadata),
+                              interpolation = self.interpolation,
+                              )
 
 
     def get_transform(self):
@@ -148,7 +155,7 @@ class BaseImage(object):
         return self._transform
 
 
-    def resampled_to_img(self, target_image, interpolation_order=3):
+    def resampled_to_img(self, target_image, interpolation=None):
         """ Resample the image to be on the same voxel grid than the target 
             image.
 
@@ -157,9 +164,10 @@ class BaseImage(object):
             target_image : nipy image
                 Nipy image onto the voxel grid of which the data will be
                 resampled.
-            interpolation_order : int, optional
-                Order of the spline interplation. If 0, nearest neighboor 
-                interpolation is performed.
+            interpolation : None, 'continuous' or 'nearest', optional
+                Interpolation type used when calculating values in
+                different word spaces. If None, the image's interpolation
+                logic is used.
 
             Returns
             -------
@@ -175,14 +183,15 @@ class BaseImage(object):
             raise CompositionError(
                 "The two images are not embedded in the same world space")
         my_v2w_transform = self.get_transform()
-        world_data_points = target_image.get_grid()
-        new_data = self.values_in_world(*world_data_points)
+        x, y, z = target_image.get_grid()
+        new_data = self.values_in_world(x, y, z, 
+                                        interpolation=interpolation)
         new_img = target_image.get_lookalike(new_data) 
         new_img.metadata = copy.copy(self.metadata)
         return new_img
 
 
-    def resampled_to_grid(self, affine=None, interpolation_order=3):
+    def resampled_to_grid(self, affine=None, interpolation=None):
         """ Resample the image to be an affine image.
 
             Parameters
@@ -192,9 +201,10 @@ class BaseImage(object):
                 to the new voxel coordinate grid. If a 3x3 ndarray is given, 
                 it is considered to be the rotation part of the affine, 
                 and the best possible bounding box is calculated.
-            interpolation_order : int, optional
-                Order of the spline interplation. If 0, nearest-neighboor 
-                interpolation is performed.
+            interpolation : None, 'continuous' or 'nearest', optional
+                Interpolation type used when calculating values in
+                different word spaces. If None, the image's interpolation
+                logic is used.
 
             Returns
             -------
@@ -211,7 +221,7 @@ class BaseImage(object):
         raise NotImplementedError
 
 
-    def values_in_world(self, x, y, z, interpolation_order=3):
+    def values_in_world(self, x, y, z, interpolation=None):
         """ Return the values of the data at the world-space positions given by 
             x, y, z
 
@@ -225,9 +235,10 @@ class BaseImage(object):
             z : number or ndarray
                 z positions in world space, in other words milimeters.
                 The shape of z should match the shape of x
-            interpolation_order : int, optional
-                Order of the spline interplation. If 0, nearest neighboor 
-                interpolation is performed.
+            interpolation : None, 'continuous' or 'nearest', optional
+                Interpolation type used when calculating values in
+                different word spaces. If None, the image's interpolation
+                logic is used.
 
             Returns
             -------
@@ -236,6 +247,15 @@ class BaseImage(object):
                 This is a number or an ndarray, depending on the shape of
                 the input coordinate.
         """
+        if interpolation is None:
+            interpolation = self.interpolation
+        if interpolation == 'continuous':
+            interpolation_order = 3
+        elif interpolation == 'nearest':
+            interpolation_order = 0
+        else:
+            raise ValueError("interpolation must be either 'continuous' "
+                             "or 'nearest'")
         transform = self.get_transform()
         if transform.inverse_mapping is None:
             raise ValueError(
@@ -322,10 +342,12 @@ class BaseImage(object):
         options = np.get_printoptions()
         np.set_printoptions(precision=6, threshold=64, edgeitems=2)
         representation = \
-                '%s(\n  data=%s,\n  world_space=%s)' % (
+                '%s(\n  data=%s,\n  world_space=%s,\n  interpolation=%s)' % (
                 self.__class__.__name__,
                 '\n       '.join(repr(self._data).split('\n')),
-                self.world_space)
+                self.world_space,
+                self.interpolation,
+                )
         np.set_printoptions(**options)
         return representation
 
@@ -345,5 +367,6 @@ class BaseImage(object):
         return (    self.world_space       == other.world_space 
                 and self.get_transform()   == other.get_transform()
                 and np.all(self.get_data() == other.get_data())
+                and self.interpolation     == other.interpolation
                )
 
