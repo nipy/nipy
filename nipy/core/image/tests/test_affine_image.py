@@ -5,10 +5,11 @@ The base image interface.
 import nose
 import numpy as np
 
-# XXX: should be converted to relative imports
-from nipy.core.transforms.affine_utils import from_matrix_vector
-from nipy.core.image.affine_image import AffineImage
+from ...transforms.affine_utils import from_matrix_vector
+from ..affine_image import AffineImage, CompositionError
 
+################################################################################
+# Helper function
 def rotation(theta, phi):
     """ Returns a rotation 3x3 matrix.
     """
@@ -22,6 +23,9 @@ def rotation(theta, phi):
                 [ 0, sin(phi),  cos(phi)]])
     return np.dot(a1, a2)
 
+
+################################################################################
+# Tests
 
 def test_identity_resample():
     """ Test resampling of the AffineImage with an identity affine.
@@ -73,6 +77,12 @@ def test_reordering():
         yield np.testing.assert_almost_equal, reordered_im.get_data(), \
                                     data
 
+    # Create a non-diagonal affine, and check that we raise a sensible
+    # exception
+    affine[1, 0] = 0.1
+    ref_im = AffineImage(data, affine, 'mine')
+    yield nose.tools.assert_raises, CompositionError, ref_im.xyz_ordered
+
 
 def test_eq():
     """ Test copy and equality for AffineImages.
@@ -94,7 +104,11 @@ def test_eq():
     copy_im = copy.copy(ref_im)
     copy_im.world_space = 'other'
     yield nose.tools.assert_not_equal, ref_im, copy_im
-
+    # Test repr
+    yield np.testing.assert_, isinstance(repr(ref_im), str)
+    # Test init
+    yield nose.tools.assert_raises, Exception, AffineImage, data, \
+                np.eye(3, 3), 'mine'
 
 def test_values_in_world():
     """ Test the evaluation of the data in world coordinate.
@@ -120,5 +134,8 @@ def test_resampled_to_img():
                         ref_im.resampled_to_affine(ref_im.affine).get_data()
     yield np.testing.assert_almost_equal, data, \
                         ref_im.resampled_to_img(ref_im).get_data()
+    other_im = AffineImage(data, affine, 'other')
+    yield nose.tools.assert_raises, CompositionError, \
+            other_im.resampled_to_img, ref_im
 
 

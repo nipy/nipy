@@ -7,7 +7,7 @@ import numpy as np
 from scipy import ndimage
 
 # Local imports
-from ..transforms.affine_utils import from_matrix_vector, to_matrix_vector
+from ..transforms.affine_utils import to_matrix_vector
 from ..transforms.transform import CompositionError
 from ..transforms.affine_transform import AffineTransform
 
@@ -136,11 +136,9 @@ class AffineImage(BaseImage):
 
             Parameters
             ----------
-            new_affine : 4x4 ndarray or 3x3 ndarray
+            new_affine : 4x4 ndarray
                 Affine of the new grid or transform object pointing
-                to the new grid. If a 3x3 ndarray is given, it is
-                considered to be the rotation part of the affine, and the 
-                best possible bounding box is calculated.
+                to the new grid. 
             interpolation_order : int, optional
                 Order of the spline interplation. If 0, nearest-neighboor 
                 interpolation is performed.
@@ -156,22 +154,14 @@ class AffineImage(BaseImage):
             The world space of the image is not changed: the
             returned image points to the same world space.
         """
-        if new_affine.shape == (4, 4) and np.all(new_affine == self.affine):
+        if np.all(new_affine == self.affine):
             # Small trick to be more numericaly stable
             # XXX: The trick should be implemented to work for
             # affine.shape = (3, 3)
             transform_affine = np.eye(4)
         else:
             transform_affine = np.dot(np.linalg.inv(self.affine), new_affine)
-        if transform_affine.shape == (3, 3):
-            A = transform_affine
-            # XXX: implement the algorithm to find out optimal b, 
-            # And we need to modify affine, as it is a 3x3 array, not 4x4
-            raise NotImplementedError
-            b = None
-            transform_affine = from_matrix_vector(A, b)
-        else:
-            A, b = to_matrix_vector(transform_affine)
+        A, b = to_matrix_vector(transform_affine)
         # If A is diagonal, ndimage.affine_transform is clever-enough 
         # to use a better algorithm
         if np.all(np.diag(np.diag(A)) == A):
