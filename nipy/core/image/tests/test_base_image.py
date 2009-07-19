@@ -99,7 +99,17 @@ def test_transformation():
     img  = img1.resampled_to_img(img1)
     yield np.testing.assert_almost_equal, data, img.get_data()
 
-    # XXX: Check that if I 'resampled_to_img' on an XYZImage, I
-    # get an XYZImage
-    
+    # Check that if I 'resampled_to_img' on an XYZImage, I get an
+    # XYZImage, and vice versa 
+    xyz_image = XYZImage(data, np.eye(4), 'world')
+    identity  = Transform('voxels', 'world', id, id) 
+    image = BaseImage(data, identity)
+    image2 = image.resampled_to_img(xyz_image)
+    yield nose.tools.assert_true, isinstance(image2, XYZImage)
+    xyz_image2 = xyz_image.resampled_to_img(image)
+    yield nose.tools.assert_true, isinstance(image2, BaseImage)
+    # Check that the data are all the same: we have been playing only
+    # with identity mappings
+    yield np.testing.assert_array_equal, xyz_image2.get_data(), \
+            image2.get_data()
 
