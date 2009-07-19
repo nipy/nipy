@@ -20,7 +20,7 @@ import numpy as np
 
 import nipy.io.imageformats as formats
 
-from nipy.core.api import AffineImage
+from nipy.core import AffineImage
                        
 
 def load(filename):
