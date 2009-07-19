@@ -96,12 +96,16 @@ def test_reordering():
                                     np.eye(3)
         yield np.testing.assert_almost_equal, reordered_im.get_data(), \
                                     data
+
+    # Check that we cannot swap axes for non spatial axis:
+    yield nose.tools.assert_raises, ValueError, ref_im._swapaxes, 4, 5
     
     # Create a non-diagonal affine, and check that we raise a sensible
     # exception
     affine[1, 0] = 0.1
     ref_im = VolumeImage(data, affine, 'mine')
     yield nose.tools.assert_raises, CompositionError, ref_im.xyz_ordered
+
 
     # Test flipping an axis
     data = np.random.random(shape)
@@ -178,9 +182,17 @@ def test_resampled_to_img():
                 ref_im.as_volume_img(affine=ref_im.affine).get_data()
     yield np.testing.assert_almost_equal, data, \
                         ref_im.resampled_to_img(ref_im).get_data()
+    
+    # Check that we cannot resample to another image in a different
+    # world.
     other_im = VolumeImage(data, affine, 'other')
     yield nose.tools.assert_raises, CompositionError, \
             other_im.resampled_to_img, ref_im
+
+    # Also check that trying to resample on a non 3D grid will raise an
+    # error
+    yield nose.tools.assert_raises, ValueError, \
+        ref_im.as_volume_img, None, (2, 2)
 
 
 def test_transformation():

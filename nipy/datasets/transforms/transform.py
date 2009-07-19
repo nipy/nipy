@@ -133,14 +133,15 @@ class Transform(object):
                          inverse_mapping=new_inverse_mapping,
                          )
 
+
     def get_inverse(self):
         """ Return the inverse transform.
         """
         return self.__class__(
                                 input_space     = self.output_space,
                                 output_space    = self.input_space,
-                                mapping         = self.mapping,
-                                inverse_mapping = self.inverse_mapping,
+                                mapping         = self.inverse_mapping,
+                                inverse_mapping = self.mapping,
                              )
 
     #-------------------------------------------------------------------------

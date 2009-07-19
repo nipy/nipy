@@ -127,6 +127,6 @@ def test_as_volume_image():
     img2 = img1.as_volume_img()
 
     # Check that passing in the wrong shape raises an error
-    yield nose.assert_raises, ValueError, img1.as_volume_img, None, \
+    yield nose.tools.assert_raises, ValueError, img1.as_volume_img, None, \
             (10, 10)
 
