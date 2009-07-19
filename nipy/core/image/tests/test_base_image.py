@@ -5,7 +5,7 @@ Testing base image interface.
 import numpy as np
 
 # Local imports
-from neuroimaging.core.image.base_image import BaseImage
+from ..base_image import BaseImage
 
 def test_base_image():
     """ Sanity testing of the base image class.

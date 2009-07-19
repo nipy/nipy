@@ -1,9 +1,4 @@
-from copy import copy
-
 import numpy as np
-
-from nipy.core.image.image import Image
-
 
 class ImageList(object):
     ''' Class to contain ND image as list of (N-1)D images '''
@@ -21,7 +16,7 @@ class ImageList(object):
 
         >>> import numpy as np
         >>> from nipy.testing import funcfile
-        >>> from nipy.core.api import Image, ImageList
+        >>> from nipy.core.api import BaseImage, ImageList
         >>> from nipy.io.api import load_image
         >>> funcim = load_image(funcfile)
         >>> ilist = ImageList(funcim)
@@ -35,7 +30,7 @@ class ImageList(object):
         Indexing an ImageList returns a new Image
 
         >>> newimg = ilist[2]
-        >>> isinstance(newimg, Image)
+        >>> isinstance(newimg, BaseImage)
         True
         >>> isinstance(newimg, ImageList)
         False
@@ -49,23 +44,40 @@ class ImageList(object):
         if images is None:
             self.list = []
             return
+        if not hasattr(images, '__iter__'):
+            raise ValueError('The images argument should be iterable')
         for im in images:
-            if not hasattr(im, "coordmap"):
+            if not hasattr(im, "get_transform"):
                 raise ValueError("expecting each element of images "
-                                 " to have a 'coordmap' attribute")
+                                 " to have a 'get_transform' method")
         self.list = images
 
     @classmethod
     def from_image(klass, image, axis=-1):
         if axis is None:
             raise ValueError('axis must be array axis no or -1')
-        imlist = []
-        coordmap = image.coordmap
-        data = np.asarray(image)
+        data = image.get_data()
         data = np.rollaxis(data, axis)
-        imlist = [Image(dataslice, copy(coordmap))
-                  for dataslice in data]
+        imlist = [image.get_lookalike(dataslice) for dataslice in data]
         return klass(imlist)
+
+    def get_data(self):
+        """Return data in ndarray.  Called through numpy.array.
+        
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from nipy.testing import funcfile
+        >>> from nipy.core.api import ImageList
+        >>> from nipy.io.api import load_image
+        >>> funcim = load_image(funcfile)
+        >>> ilist = ImageList(funcim)
+        >>> np.asarray(ilist).shape
+        (20, 2, 20, 20)
+
+        """
+
+        return np.asarray([np.asarray(im) for im in self.list])
 
     def __setitem__(self, index, value):
         """
@@ -91,24 +103,6 @@ class ImageList(object):
         """
         
         return ImageList(images=self.list[i:j])
-
-    def __array__(self):
-        """Return data in ndarray.  Called through numpy.array.
-        
-        Examples
-        --------
-        >>> import numpy as np
-        >>> from nipy.testing import funcfile
-        >>> from nipy.core.api import ImageList
-        >>> from nipy.io.api import load_image
-        >>> funcim = load_image(funcfile)
-        >>> ilist = ImageList(funcim)
-        >>> np.asarray(ilist).shape
-        (20, 2, 20, 20)
-
-        """
-
-        return np.asarray([np.asarray(im) for im in self.list])
 
     def __iter__(self):
         self._iter = iter(self.list)

@@ -1,64 +1,69 @@
 import numpy as np
-from nipy.testing import *
+import copy
 
-from nipy.core.api import write_data, slice_generator
-from nipy.core.api import Image, Affine
-import nipy.core.image.generators as gen
+from nipy.testing import TestCase, assert_almost_equal, assert_equal
+
+
+from nipy.core import AffineImage
+from .. import generators as gen
 
 class TestGenerator(TestCase):
 
     def setUp(self):
-        names = ['zspace', 'yspace', 'xspace']
         shape = (10,20,30)
-        self.img = Image(np.zeros(shape), 
-                         Affine.from_start_step(names, names, (0,)*3, (1,)*3))
-        self.img2 = Image(np.ones(shape), 
-                          Affine.from_start_step(names, names, (0,)*3, (1,)*3))
+        self.img  = AffineImage(data=np.zeros(shape), 
+                                affine=np.eye(4),
+                                world_space='test')
+        self.img2 = AffineImage(np.ones(shape), 
+                                affine=np.eye(4),
+                                world_space='test')
                        
         shape = (3,5,4)
-        self.img3 = Image(np.zeros(shape), 
-                          Affine.from_start_step(names, names, (0,)*3, (1,)*3))
-        self.img4 = Image(np.zeros(shape), 
-                          Affine.from_start_step(names, names, (0,)*3, (1,)*3))
+        self.img3 = AffineImage(np.zeros(shape), 
+                                affine=np.eye(4),
+                                world_space='test')
+        self.img4 = AffineImage(np.zeros(shape), 
+                                affine=np.eye(4),
+                                world_space='test')
 
 
     def test_read_slices(self):
-        for _, d in slice_generator(self.img):
+        for _, d in gen.slice_generator(self.img):
             self.assertEquals(d.shape, (20, 30))
 
-        for _, d in slice_generator(self.img, axis=1):
+        for _, d in gen.slice_generator(self.img, axis=1):
             self.assertEquals(d.shape, (10, 30))
 
-        for _, d in slice_generator(self.img, axis=2):
+        for _, d in gen.slice_generator(self.img, axis=2):
             self.assertEquals(d.shape, (10, 20))
 
     def test_write_slices(self):
-        tmp = np.zeros(self.img.shape)
-        write_data(tmp, slice_generator(self.img))
-        assert_almost_equal(tmp, np.asarray(self.img))
+        tmp = np.zeros(self.img.get_data().shape)
+        gen.write_data(tmp, gen.slice_generator(self.img.get_data()))
+        assert_almost_equal(tmp, self.img.get_data())
 
-        tmp = np.zeros(self.img.shape)
-        write_data(tmp, slice_generator(self.img, axis=1))
-        assert_almost_equal(tmp, np.asarray(self.img))
+        tmp = np.zeros(self.img.get_data().shape)
+        gen.write_data(tmp, gen.slice_generator(self.img.get_data(), axis=1))
+        assert_almost_equal(tmp, self.img.get_data())
 
-        tmp = np.zeros(self.img.shape)
-        write_data(tmp, slice_generator(self.img, axis=2))
-        assert_almost_equal(tmp, np.asarray(self.img))
+        tmp = np.zeros(self.img.get_data().shape)
+        gen.write_data(tmp, gen.slice_generator(self.img.get_data(), axis=2))
+        assert_almost_equal(tmp, self.img.get_data())
 
     def test_multi_slice(self):
-        for _, d in slice_generator(self.img, axis=[0, 1]):
+        for _, d in gen.slice_generator(self.img, axis=[0, 1]):
             self.assertEquals(d.shape, (30,))
 
-        for _, d in slice_generator(self.img, axis=[2, 1]):
+        for _, d in gen.slice_generator(self.img, axis=[2, 1]):
             self.assertEquals(d.shape, (10,))
 
     def test_multi_slice_write(self):
-        a = np.zeros(self.img.shape)
-        write_data(a, slice_generator(self.img, axis=[0, 1]))
+        a = np.zeros(self.img.get_data().shape)
+        gen.write_data(a, gen.slice_generator(self.img.get_data(), axis=[0, 1]))
         assert_almost_equal(a, np.asarray(self.img))
 
     def test_parcel(self):
-        parcelmap = np.zeros(self.img3.shape)
+        parcelmap = np.zeros(self.img3.get_data().shape)
         parcelmap[0,0,0] = 1
         parcelmap[1,1,1] = 1
         parcelmap[2,2,2] = 1
@@ -67,20 +72,21 @@ class TestGenerator(TestCase):
         parcelmap[0,1,0] = 2
         parcelseq = (0, 1, 2, 3)
         expected = [np.product(self.img3.shape) - 6, 3, 3, 0]
-        iterator = gen.data_generator(self.img3, 
+        iterator = gen.data_generator(self.img3.get_data(), 
                                       gen.parcels(parcelmap, labels=parcelseq))
 
         for i, pair in enumerate(iterator):
             s, d = pair
             self.assertEqual((expected[i],), d.shape)
 
-        iterator = gen.data_generator(self.img3, gen.parcels(parcelmap))
+        iterator = gen.data_generator(self.img3.get_data(), 
+                                    gen.parcels(parcelmap))
         for i, pair in enumerate(iterator):
             s, d = pair
             self.assertEqual((expected[i],), d.shape)
 
     def test_parcel_write(self):
-        parcelmap = np.zeros(self.img3.shape)
+        parcelmap = np.zeros(self.img3.get_data().shape)
         parcelmap[0,0,0] = 1
         parcelmap[1,1,1] = 1
         parcelmap[2,2,2] = 1
@@ -88,7 +94,7 @@ class TestGenerator(TestCase):
         parcelmap[2,3,2] = 2
         parcelmap[0,1,0] = 2
         parcelseq = (0, 1, 2, 3)
-        expected = [np.product(self.img3.shape) - 6, 3, 3, 0]
+        expected = [np.product(self.img3.get_data().shape) - 6, 3, 3, 0]
         iterator = gen.parcels(parcelmap, labels=parcelseq)
 
         for i, s in enumerate(iterator):
@@ -96,7 +102,8 @@ class TestGenerator(TestCase):
             self.img3[s] = value
 
         iterator = gen.parcels(parcelmap, labels=parcelseq)
-        for i, pair in enumerate(gen.data_generator(self.img3, iterator)):
+        for i, pair in enumerate(gen.data_generator(self.img3.get_data(), 
+                                                    iterator)):
             s, d = pair
             self.assertEqual((expected[i],), d.shape)
             assert_equal(d, np.arange(expected[i]))
@@ -107,13 +114,14 @@ class TestGenerator(TestCase):
             self.img3[s] = value
 
         iterator = gen.parcels(parcelmap)
-        for i, pair in enumerate(gen.data_generator(self.img3, iterator)):
+        for i, pair in enumerate(gen.data_generator(self.img3.get_data(), 
+                                                    iterator)):
             s, d = pair
             self.assertEqual((expected[i],), d.shape)
             assert_equal(d, np.arange(expected[i]))
 
     def test_parcel_copy(self):
-        parcelmap = np.zeros(self.img3.shape)
+        parcelmap = np.zeros(self.img3.get_data().shape)
         parcelmap[0,0,0] = 1
         parcelmap[1,1,1] = 1
         parcelmap[2,2,2] = 1
@@ -121,9 +129,9 @@ class TestGenerator(TestCase):
         parcelmap[2,3,2] = 2
         parcelmap[0,1,0] = 2
         parcelseq = (0, 1, 2, 3)
-        expected = [np.product(self.img3.shape) - 6, 3, 3, 0]
+        expected = [np.product(self.img3.get_data().shape) - 6, 3, 3, 0]
         iterator = gen.parcels(parcelmap, labels=parcelseq)
-        tmp = Image(np.asarray(self.img3), self.img3.coordmap)
+        tmp = copy.copy(self.img3)
 
         gen_parcels = gen.parcels(parcelmap, labels=parcelseq)
         new_iterator = gen.data_generator(tmp, gen_parcels)
@@ -146,9 +154,6 @@ class TestGenerator(TestCase):
                      np.array([[1,1,1,0,2],
                                [4,4,3,3,5],
                                [7,7,7,7,8]]))
-
-
-
 
 
 

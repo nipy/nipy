@@ -53,7 +53,7 @@ def load(filename):
     io_img = formats.load(filename)
     # XXX: Need to worry about axis name 
     img = AffineImage(data=io_img.get_data(), 
-                      affine=io_img.get_header(),
+                      affine=io_img.get_affine(),
                       world_space=filename,
                       metadata=dict(header=io_img.get_header()))
     return img

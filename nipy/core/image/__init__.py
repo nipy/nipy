@@ -6,7 +6,6 @@ and the data itself.
 """
 __docformat__ = 'restructuredtext'
 
-import roi, generators
 
 from nipy.testing import Tester
 test = Tester().test

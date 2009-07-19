@@ -76,6 +76,18 @@ class BaseImage(object):
         return np.asarray(self._data)
 
 
+    def get_lookalike(data):
+        """ Returns an image with the same transformation and metadata,
+            but different data.
+
+            Parameters
+            -----------
+            data: ndarray
+        """
+        # XXX: Horrible name
+        raise NotImplementedError
+
+
     def get_transform(self):
         """ Returns the transform object associated with the image which is a 
             general description of the mapping from the voxel space to the 
@@ -264,7 +276,7 @@ class BaseImage(object):
                 self.__class__.__name__,
                 '\n       '.join(repr(self._data).split('\n')),
                 self.world_space)
-        np.set_printoptions(*options)
+        np.set_printoptions(**options)
         return representation
 
 

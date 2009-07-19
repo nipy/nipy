@@ -2,10 +2,11 @@ import warnings
 import numpy as np
 from numpy.random import standard_normal as noise
 
-from nipy.testing import *
+from nipy.testing import assert_array_almost_equal, TestCase
 from nipy.io.api import load_image
-from nipy.modalities.fmri.api import FmriImageList, fmri_generator
-from nipy.core.image.generators import *
+from nipy.modalities.fmri.api import FmriImageList, fmri_generator, \
+    f_generator
+from nipy.core.image.generators import write_data , parcels
 from nipy.fixes.scipy.stats.models.regression import OLSModel as ols_model
 
 def setup():
@@ -19,7 +20,7 @@ def teardown():
 
 # two prototypical functions in a GLM analysis
 def fit(input):
-    return model.fit(input).resid
+    return ols_model.fit(input).resid
 
 def contrast(results):
     return results.Fcontrast(cmatrix)
@@ -28,7 +29,7 @@ def contrast(results):
 # generators
 def result_generator(datag):
     for i, fdata in datag:
-        yield i, model.fit(fdata)
+        yield i, ols_model.fit(fdata)
 
 def flatten_generator(ing):
     for i, r in ing:
@@ -63,7 +64,9 @@ class TestIters(TestCase):
         # Fit a model, iterating over the slices of an array
         # associated to an FmriImage.
         c = np.zeros(self.fd.shape[1:]) + 0.5
-        res_gen = result_generator(flatten_generator(fmri_generator(fd)))
+        fd = self.fd
+        res_gen = result_generator(
+                flatten_generator(fmri_generator(fd)))
         write_data(c, unflatten_generator(contrast_generator(res_gen)))
 
         # Fit a model, iterating over the array associated to an

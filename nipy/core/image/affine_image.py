@@ -1,6 +1,7 @@
 """
 The base image interface.
 """
+import copy
 
 import numpy as np
 from scipy import ndimage
@@ -103,6 +104,21 @@ class AffineImage(BaseImage):
         self.metadata = metadata
 
     
+    def get_lookalike(self, data):
+        """ Returns an image with the same transformation and metadata,
+            but different data.
+
+            Parameters
+            -----------
+            data: ndarray
+        """
+        # Use self.__class__ for subclassing.
+        return self.__class__(data=data, 
+                              affine=copy.copy(self.affine),
+                              world_space=self.world_space,
+                              )
+
+
     def get_transform(self):
         """ Returns the transform object associated with the image which is a 
             general description of the mapping from the voxel grid to the 

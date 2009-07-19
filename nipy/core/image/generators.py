@@ -16,6 +16,9 @@ parcels: return binary array of the unique components of data
 
 """
 
+import operator
+
+
 from numpy import unique, asarray, equal, product, cumprod, bool
 
 def parcels(data, labels=None, exclude=[]):
@@ -139,8 +142,7 @@ def slice_generator(data, axis=0):
     >>>    
 
     """
-    data = asarray(data)
-    if type(axis) is type(1):
+    if operator.isNumberType(axis):
         for j in range(data.shape[axis]):
             ij = (slice(None,None,None),)*axis + (j,)
             yield ij, data[(slice(None,None,None),)*axis + (j,)]
