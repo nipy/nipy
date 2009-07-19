@@ -1,5 +1,5 @@
 """
-Testing base image interface.
+Testing data image interface.
 """
 
 import nose
@@ -8,7 +8,7 @@ import copy
 import numpy as np
 
 # Local imports
-from ..base_image import BaseImage, CompositionError
+from ..data_image import DataImage, CompositionError
 from ..xyz_image import XYZImage
 from ...transforms.transform import Transform
 
@@ -24,15 +24,15 @@ def id(x, y, z):
 ################################################################################
 # Tests
 def test_constructor():
-    yield np.testing.assert_raises, ValueError, BaseImage, None, \
+    yield np.testing.assert_raises, ValueError, DataImage, None, \
         None, {}, 'e'
 
 
-def test_base_image():
-    """ Sanity testing of the base image class.
+def test_data_image():
+    """ Sanity testing of the data image class.
     """
     transform = Transform('voxels', 'world', mapping)
-    img = BaseImage(data=np.random.random((10, 10, 10)),
+    img = DataImage(data=np.random.random((10, 10, 10)),
                     transform=transform,
                     )
     # Test that the repr doesn't raise an error
@@ -56,7 +56,7 @@ def test_trivial_image():
     N = 10
     identity = Transform('voxels', 'world', id, id)
     data = np.random.random((N, N, N))
-    img = BaseImage(data=data,
+    img = DataImage(data=data,
                     transform=identity,
                     )
     x, y, z = np.random.random_integers(N, size=(3, 10)) - 1
@@ -78,7 +78,7 @@ def test_transformation():
                             inverse_mapping)
     identity  = Transform('world1', 'world2', id, id) 
     data = np.random.random((N, N, N))
-    img1 = BaseImage(data=data,
+    img1 = DataImage(data=data,
                      transform=v2w_mapping,
                      )
     img2 = img1.transformed_with(identity)
@@ -103,11 +103,11 @@ def test_transformation():
     # XYZImage, and vice versa 
     xyz_image = XYZImage(data, np.eye(4), 'world')
     identity  = Transform('voxels', 'world', id, id) 
-    image = BaseImage(data, identity)
+    image = DataImage(data, identity)
     image2 = image.resampled_to_img(xyz_image)
     yield nose.tools.assert_true, isinstance(image2, XYZImage)
     xyz_image2 = xyz_image.resampled_to_img(image)
-    yield nose.tools.assert_true, isinstance(image2, BaseImage)
+    yield nose.tools.assert_true, isinstance(image2, DataImage)
     # Check that the data are all the same: we have been playing only
     # with identity mappings
     yield np.testing.assert_array_equal, xyz_image2.get_data(), \

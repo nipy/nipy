@@ -3,7 +3,7 @@ import numpy as np
 from nipy.testing import datapjoin, assert_true, assert_equal, assert_raises
 
 from ..image_list import ImageList
-from ..base_image import BaseImage
+from ..data_image import DataImage
 from nipy.io.api import load_image
 
 
@@ -31,7 +31,7 @@ def test_image_list():
     sublist = imglst[2:5]
     yield assert_true, isinstance(sublist, ImageList)
     # Except when we're indexing one element
-    yield assert_true, isinstance(imglst[0], BaseImage)
+    yield assert_true, isinstance(imglst[0], DataImage)
 
     # Verify get_data 
     yield assert_true, isinstance(sublist.get_data(), np.ndarray)
@@ -44,5 +44,5 @@ def test_image_list():
 
     # Test iterator
     for x in sublist:
-        yield assert_true, isinstance(x, BaseImage)
+        yield assert_true, isinstance(x, DataImage)
         yield assert_equal, x.get_data().shape, (128, 128, 13)

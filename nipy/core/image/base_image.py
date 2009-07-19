@@ -4,14 +4,6 @@ The base image interface.
 This defines the nipy image interface.
 """
 
-import copy as copy
-
-import numpy as np
-from scipy import ndimage
-
-# Local imports
-from ..transforms.transform import CompositionError
-
 ################################################################################
 # class `BaseImage`
 ################################################################################
@@ -19,10 +11,12 @@ from ..transforms.transform import CompositionError
 class BaseImage(object):
     """ The base image for neuroimaging.
 
-        This object is an ndarray representing a volume, with the first 3 
-        dimensions being spatial, that knows how it is mapped to a
-        "real-world space", and how it can change real-world coordinate
-        system.
+        This object represents numerical values embedded in a
+        3-dimensional world space (called a field in physics and
+        engineering)
+        
+        This is an abstract base class: it defines the interface, but not
+        the logics.
 
         **Attributes**
 
@@ -35,19 +29,7 @@ class BaseImage(object):
             transformations. The Image class does not garanty consistency
             of this information as the data is modified.
 
-        :_data: 
-            Private pointer to the data.
-
-        **Notes**
-
-        The data is stored in an undefined way: prescalings might need to
-        be applied to it before using it, or the data might be loaded on
-        demand. The best practice to access the data is not to access the
-        _data attribute, but to use the `get_data` method.
     """
-    # XXX: We need to make sure the transform attached has an inverse,
-    # elsewhere, we cannot implement a values_in_world.
-
     #---------------------------------------------------------------------------
     # Public attributes -- BaseImage interface
     #---------------------------------------------------------------------------
@@ -58,90 +40,12 @@ class BaseImage(object):
     # User defined meta data
     metadata = dict()
 
-    # The interpolation logic used
-    interpolation = 'continuous'
-
-    #---------------------------------------------------------------------------
-    # Private attributes -- BaseImage interface
-    #---------------------------------------------------------------------------
-
-    # The data (ndarray)
-    _data = None
-
-    # The metadata dictionnary
-    metadata = None
-
     #---------------------------------------------------------------------------
     # Public methods -- BaseImage interface
     #---------------------------------------------------------------------------
 
-    def __init__(self, data, transform, metadata=None,
-                 interpolation='continuous'):
-        """ The base image.
-
-            Parameters
-            ----------
-
-            data: ndarray
-                n dimensional array giving the embedded data.
-            transform: nipy transform object
-                The transformation from voxel to world.
-            metadata : dictionnary, optional
-                Dictionnary of user-specified information to store with
-                the image.
-            interpolation : 'continuous' or 'nearest', optional
-                Interpolation type used when calculating values in
-                different word spaces.
-        """
-        if not interpolation in ('continuous', 'nearest'):
-            raise ValueError('interpolation must be either continuous '
-                             'or nearest')
-        self._data       = data
-        self._transform  = transform
-        self.world_space = transform.output_space
-        if metadata is None:
-            metadata = dict()
-        self.metadata = metadata
-        self.interpolation = interpolation
-
-    def get_data(self):
-        """ Return data as a numpy array.
-        """
-        return np.asarray(self._data)
-
-
-    def get_grid(self):
-        """ Return the grid of data points coordinates in the world
-            space.
-
-            Returns
-            --------
-            x: ndarray
-                x coordinates of the data points in world space
-            y: ndarray
-                y coordinates of the data points in world space
-            z: ndarray
-                z coordinates of the data points in world space
-        """
-        x, y, z = np.indices(self._data.shape[:3])
-        return self.get_transform().mapping(x, y, z)
-
-
-    def get_lookalike(self, data):
-        """ Returns an image with the same transformation and metadata,
-            but different data.
-
-            Parameters
-            -----------
-            data: ndarray
-        """
-        # XXX: Horrible name
-        return self.__class__(data          = data,
-                              transform     = copy.copy(self._transform),
-                              metadata      = copy.copy(self.metadata),
-                              interpolation = self.interpolation,
-                              )
-
+    def __init__(self, *args):
+        raise NotImplementedError
 
     def get_transform(self):
         """ Returns the transform object associated with the image which is a 
@@ -152,7 +56,7 @@ class BaseImage(object):
             -------
             transform : nipy.core.Transform object
         """
-        return self._transform
+        raise NotImplementedError 
 
 
     def resampled_to_img(self, target_image, interpolation=None):
@@ -179,24 +83,16 @@ class BaseImage(object):
             Both the target image and the original image should be
             embedded in the same world space.
         """
-        if not target_image.world_space == self.world_space:
-            raise CompositionError(
-                "The two images are not embedded in the same world space")
-        my_v2w_transform = self.get_transform()
-        x, y, z = target_image.get_grid()
-        new_data = self.values_in_world(x, y, z, 
-                                        interpolation=interpolation)
-        new_img = target_image.get_lookalike(new_data) 
-        new_img.metadata = copy.copy(self.metadata)
-        return new_img
+        raise NotImplementedError
 
 
-    def resampled_to_grid(self, affine=None, interpolation=None):
-        """ Resample the image to be an affine image.
+    def resampled_to_grid(self, affine=None, shape=None, interpolation=None):
+        """ Resample the image to be an image with the data points lying
+            on a regular grid with an affine mapping to the word space.
 
             Parameters
             ----------
-            affine : 4x4 ndarray or 3x3 ndarray
+            affine : 4x4 ndarray
                 Affine of the new voxel grid or transform object pointing
                 to the new voxel coordinate grid. If a 3x3 ndarray is given, 
                 it is considered to be the rotation part of the affine, 
@@ -208,7 +104,7 @@ class BaseImage(object):
 
             Returns
             -------
-            resampled_image : nipy AffineImage
+            resampled_image : nipy XYZImage
                 New nipy image with the data resampled in the given
                 affine.
 
@@ -217,7 +113,6 @@ class BaseImage(object):
             The coordinate system of the image is not changed: the
             returned image points to the same world space.
         """
-        # XXX: Docstring to be reworked.
         raise NotImplementedError
 
 
@@ -247,53 +142,10 @@ class BaseImage(object):
                 This is a number or an ndarray, depending on the shape of
                 the input coordinate.
         """
-        if interpolation is None:
-            interpolation = self.interpolation
-        if interpolation == 'continuous':
-            interpolation_order = 3
-        elif interpolation == 'nearest':
-            interpolation_order = 0
-        else:
-            raise ValueError("interpolation must be either 'continuous' "
-                             "or 'nearest'")
-        transform = self.get_transform()
-        if transform.inverse_mapping is None:
-            raise ValueError(
-                "Cannot calculate the world values for image: mapping to "
-                "word is not invertible."
-                )
-        x = np.atleast_1d(x)
-        y = np.atleast_1d(y)
-        z = np.atleast_1d(z)
-        shape = list(x.shape)
-        if not ((x.shape == y.shape) and (x.shape == z.shape)):
-            raise ValueError('x, y and z shapes should be equal')
-        x = x.ravel()
-        y = y.ravel()
-        z = z.ravel()
-        i, j, k = transform.inverse_mapping(x, y, z)
-        data = self.get_data()
-        data_shape = list(data.shape)
-        n_dims = len(data_shape)
-        if n_dims > 3:
-            # Iter in a set of 3D images, as the interpolation problem is 
-            # separable in the extra dimensions. This reduces the
-            # computational cost
-            data = np.reshape(data, data_shape[:3] + [-1])
-            data = np.rollaxis(data, 3)
-            values = [ ndimage.map_coordinates(slice, np.c_[i, j, k].T,
-                                                  order=interpolation_order)
-                       for slice in data]
-            values = np.array(values)
-            values = np.swapaxes(values, 0, -1)
-            values = np.reshape(values, shape + data_shape[3:])
-        else:
-            values = ndimage.map_coordinates(data, np.c_[i, j, k].T,
-                                        order=interpolation_order)
-            values = np.reshape(values, shape)
-        return values
+        raise NotImplementedError
 
 
+    # XXX: rename to composed_with_transform
     def transformed_with(self, w2w_transform):
         """ Return a new image embedding the same data in a different 
             word space using the given world to world transform.
@@ -312,61 +164,14 @@ class BaseImage(object):
                 in the new world space.
 
         """
-        if not w2w_transform.input_space == self.world_space:
-            raise CompositionError(
-                "The transform given does not apply to"
-                "the image's world space")
-        new_v2w_transform = \
-                        self.get_transform().composed_with(w2w_transform)
-        if hasattr(new_v2w_transform, 'affine'):
-            # We need to delay the import until now, to avoid circular
-            # imports
-            from .xyz_image import XYZImage
-            return XYZImage(self._data, new_v2w_transform.affine, 
-                                w2w_transform.output_world_space,
-                                metadata=self.metadata)
-        return BaseImage(self._data, 
-                                new_v2w_transform,
-                                metadata=self.metadata)
- 
 
     #---------------------------------------------------------------------------
     # Private methods
     #---------------------------------------------------------------------------
 
+    # The subclasses should implement __repr__, __copy__, __deepcopy__,
+    # __eq__ 
     # TODO: We need to implement (or check if implemented) hashing,
     # weakref, pickling? 
         
-
-    def __repr__(self):
-        options = np.get_printoptions()
-        np.set_printoptions(precision=6, threshold=64, edgeitems=2)
-        representation = \
-                '%s(\n  data=%s,\n  world_space=%s,\n  interpolation=%s)' % (
-                self.__class__.__name__,
-                '\n       '.join(repr(self._data).split('\n')),
-                self.world_space,
-                self.interpolation,
-                )
-        np.set_printoptions(**options)
-        return representation
-
-    def __copy__(self):
-        return self.get_lookalike(self.get_data().copy())
-
-
-    def __deepcopy__(self, option):
-        """ Copy the Image and the arrays and metadata it contains.
-        """
-        out = self.__copy__()
-        out.metadata = copy.deepcopy(self.metadata)
-        return out
-
-
-    def __eq__(self, other):
-        return (    self.world_space       == other.world_space 
-                and self.get_transform()   == other.get_transform()
-                and np.all(self.get_data() == other.get_data())
-                and self.interpolation     == other.interpolation
-               )
 
