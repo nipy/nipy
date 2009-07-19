@@ -1,7 +1,7 @@
 """
-The data image class
+The volume data class
 
-This class represents data embedded in a 3D space 
+This class represents indexable data embedded in a 3D space 
 """
 
 import copy as copy
@@ -14,10 +14,10 @@ from ..transforms.transform import CompositionError
 
 
 ################################################################################
-# class `DataImage`
+# class `VolumeData`
 ################################################################################
 
-class DataImage(VolumeField):
+class VolumeData(VolumeField):
     """ A class representing data embedded in a 3D space 
 
         This object has data stored in an array like, that knows how it is 
@@ -32,7 +32,7 @@ class DataImage(VolumeField):
         :metadata: dictionnary
             Optional, user-defined, dictionnary used to carry around
             extra information about the data as it goes through
-            transformations. The Image class does not garanty consistency
+            transformations. The class does not garanty consistency
             of this information as the data is modified.
 
         :_data: 
@@ -45,27 +45,27 @@ class DataImage(VolumeField):
         demand. The best practice to access the data is not to access the
         _data attribute, but to use the `get_data` method.
 
-        If the transform associated with the image has no inverse
+        If the transform associated with the volume has no inverse
         mapping, data correspoding to a given world space position cannot
         be calulated. If it has no forward mapping, it is impossible to
         resample another dataset on the same support.
     """
     #---------------------------------------------------------------------------
-    # Public attributes -- DataImage interface
+    # Public attributes -- VolumeData interface
     #---------------------------------------------------------------------------
 
     # The interpolation logic used
     interpolation = 'continuous'
 
     #---------------------------------------------------------------------------
-    # Private attributes -- DataImage interface
+    # Private attributes -- VolumeData interface
     #---------------------------------------------------------------------------
 
     # The data (ndarray-like)
     _data = None
 
     #---------------------------------------------------------------------------
-    # Public methods -- DataImage interface
+    # Public methods -- VolumeData interface
     #---------------------------------------------------------------------------
 
 
@@ -76,7 +76,8 @@ class DataImage(VolumeField):
 
 
     def like_from_data(self, data):
-        """ Returns an image with the same transformation and metadata,
+        """ Returns an volumetric data structure with the same
+            relationship between data and world space, and same metadata, 
             but different data.
 
             Parameters
@@ -87,8 +88,8 @@ class DataImage(VolumeField):
 
 
     def resampled_to_img(self, target_image, interpolation=None):
-        """ Resample the image to be on the same voxel grid than the target 
-            image.
+        """ Resample the data to be on the same voxel grid than the target 
+            volume structure.
 
             Parameters
             ----------
@@ -175,7 +176,7 @@ class DataImage(VolumeField):
 
 
     def __deepcopy__(self, option):
-        """ Copy the Image and the arrays and metadata it contains.
+        """ Copy the Volume and the arrays and metadata it contains.
         """
         out = self.__copy__()
         out.metadata = copy.deepcopy(self.metadata)

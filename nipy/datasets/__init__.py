@@ -5,7 +5,7 @@ __docformat__ = 'restructuredtext'
 
 from .volumes.volume_field import VolumeField
 from .volumes.volume_image import VolumeImage
-from .transforms.transform import Transform
+from .transforms.transform import Transform, CompositionError
 from .transforms.affine_transform import AffineTransform
 
 from nipy.testing import Tester

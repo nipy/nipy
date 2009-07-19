@@ -1,28 +1,28 @@
 """
-Testing data image interface.
+Testing volume data interface.
 """
 
 import nose
 import copy
 
 # Local imports
-from ..data_image import DataImage
+from ..volume_data import VolumeData
 
 ################################################################################
 # Tests
-def test_data_image():
-    """ Sanity testing of the data image class.
+def test_volume_data():
+    """ Sanity testing of the VolumeData class.
     """
-    img = DataImage()
+    vol = VolumeData()
     # Test that the repr doesn't raise an error
-    yield repr, img
+    yield repr, vol
 
     # Check the non-implemented interface
     yield nose.tools.assert_raises, NotImplementedError, \
-                        img.values_in_world, 0, 0, 0
+                        vol.values_in_world, 0, 0, 0
 
     yield nose.tools.assert_raises, NotImplementedError, \
-                        img.as_volume_img
+                        vol.as_volume_img
 
-    yield nose.tools.assert_raises, NotImplementedError, copy.copy, img
+    yield nose.tools.assert_raises, NotImplementedError, copy.copy, vol
 

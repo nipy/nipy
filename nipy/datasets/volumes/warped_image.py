@@ -1,8 +1,8 @@
 """
-The data image class
+The warped image class. 
 
-This class represents data represented and a 3+D array embedded in a 3D
-world.
+This class represents data lying on a grid embedded in a 3D world represented 
+as a 3+D array.
 """
 
 import copy as copy
@@ -11,14 +11,14 @@ import numpy as np
 from scipy import ndimage
 
 # Local imports
-from .data_image import DataImage
+from .volume_data import VolumeData
 from ..transforms.affine_utils import apply_affine
 
 ################################################################################
-# class `DataImage`
+# class `WarpedImage`
 ################################################################################
 
-class WarpedImage(DataImage):
+class WarpedImage(VolumeData):
     """ A class representing data stored in a 3+D array embedded in a 3D
         world.
 
@@ -114,7 +114,7 @@ class WarpedImage(DataImage):
 
 
     # Inherit docstring
-    as_volume_img.__doc__ = DataImage.as_volume_img.__doc__
+    as_volume_img.__doc__ = VolumeData.as_volume_img.__doc__
 
 
     def get_world_coords(self):
@@ -146,7 +146,7 @@ class WarpedImage(DataImage):
                               )
 
     # Inherit docstring
-    like_from_data.__doc__ = DataImage.like_from_data.__doc__
+    like_from_data.__doc__ = VolumeData.like_from_data.__doc__
 
 
     def get_transform(self):
@@ -162,7 +162,7 @@ class WarpedImage(DataImage):
 
 
     # Inherit docstring
-    get_transform.__doc__ = DataImage.get_transform.__doc__
+    get_transform.__doc__ = VolumeData.get_transform.__doc__
 
 
     def values_in_world(self, x, y, z, interpolation=None):
@@ -230,5 +230,5 @@ class WarpedImage(DataImage):
         return values
 
     # Inherit docstring
-    values_in_world.__doc__ = DataImage.values_in_world.__doc__
+    values_in_world.__doc__ = VolumeData.values_in_world.__doc__
 

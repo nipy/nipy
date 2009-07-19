@@ -9,9 +9,8 @@ import numpy as np
 
 # Local imports
 from ..warped_image import WarpedImage
-from ..data_image import CompositionError
 from ..volume_image import VolumeImage
-from ...transforms.transform import Transform
+from ...transforms.transform import Transform, CompositionError
 
 def mapping(x, y, z):
     return 2*x, y, 0.5*z

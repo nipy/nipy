@@ -10,8 +10,8 @@ from scipy import ndimage
 # Local imports
 from ..transforms.affine_utils import to_matrix_vector, \
                 from_matrix_vector
-from ..transforms.transform import CompositionError
 from ..transforms.affine_transform import AffineTransform
+from ..transforms.transform import CompositionError
 
 from .warped_image import WarpedImage
 
