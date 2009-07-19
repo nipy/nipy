@@ -20,7 +20,7 @@ import numpy as np
 
 import nipy.io.imageformats as formats
 
-from nipy.core import XYZImage
+from nipy.core import VolumeImage
                        
 
 def load(filename):
@@ -52,7 +52,7 @@ def load(filename):
     """
     io_img = formats.load(filename)
     # XXX: Need to worry about axis name 
-    img = XYZImage(data=io_img.get_data(), 
+    img = VolumeImage(data=io_img.get_data(), 
                       affine=io_img.get_affine(),
                       world_space=filename,
                       metadata=dict(header=io_img.get_header()))

@@ -58,7 +58,7 @@ class ImageList(object):
             raise ValueError('axis must be array axis no or -1')
         data = image.get_data()
         data = np.rollaxis(data, axis)
-        imlist = [image.get_lookalike(dataslice) for dataslice in data]
+        imlist = [image.like_from_data(dataslice) for dataslice in data]
         return klass(imlist)
 
     def get_data(self):

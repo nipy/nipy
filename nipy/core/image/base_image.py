@@ -3,6 +3,7 @@ The base image interface.
 
 This defines the nipy image interface.
 """
+from ..transforms.transform import CompositionError
 
 ################################################################################
 # class `BaseImage`
@@ -80,21 +81,29 @@ class BaseImage(object):
             Both the target image and the original image should be
             embedded in the same world space.
         """
+        # IMPORTANT: Polymorphism can be implemented by walking the 
+        # MRO and finding a method that does not raise
+        # NotImplementedError. 
         raise NotImplementedError
 
 
-    # XXX: rename to as_volume_image
-    def resampled_to_grid(self, affine=None, shape=None, interpolation=None):
+    def as_volume_img(self, affine=None, shape=None,
+                        interpolation=None):
         """ Resample the image to be an image with the data points lying
-            on a regular grid with an affine mapping to the word space.
+            on a regular grid with an affine mapping to the word space (a
+            nipy VolumeImage).
 
             Parameters
             ----------
-            affine : 4x4 ndarray
+            affine: 4x4 ndarray, optional
                 Affine of the new voxel grid or transform object pointing
                 to the new voxel coordinate grid. If a 3x3 ndarray is given, 
                 it is considered to be the rotation part of the affine, 
-                and the best possible bounding box is calculated.
+                and the best possible bounding box is calculated, if None
+                is given, a default affine is provided by the image.
+            shape: (n_x, n_y, n_z), tuple of integers, optional
+                The shape of the grid used for sampling, if None
+                is given, a default affine is provided by the image.
             interpolation : None, 'continuous' or 'nearest', optional
                 Interpolation type used when calculating values in
                 different word spaces. If None, the image's interpolation
@@ -102,9 +111,9 @@ class BaseImage(object):
 
             Returns
             -------
-            resampled_image : nipy XYZImage
-                New nipy image with the data resampled in the given
-                affine.
+            resampled_image : nipy VolumeImage
+                New nipy VolumeImage with the data sampled on the grid
+                defined by the affine and shape.
 
             Notes
             -----
@@ -112,6 +121,7 @@ class BaseImage(object):
             returned image points to the same world space.
         """
         raise NotImplementedError
+
 
 
     def values_in_world(self, x, y, z, interpolation=None):
@@ -143,8 +153,7 @@ class BaseImage(object):
         raise NotImplementedError
 
 
-    # XXX: rename to composed_with_transform
-    def transformed_with(self, w2w_transform):
+    def composed_with_transform(self, w2w_transform):
         """ Return a new image embedding the same data in a different 
             word space using the given world to world transform.
 
@@ -162,7 +171,16 @@ class BaseImage(object):
                 in the new world space.
 
         """
-        raise NotImplementedError
+        if not w2w_transform.input_space == self.world_space:
+            raise CompositionError(
+                "The transform given does not apply to "
+                "the image's world space:\n%s\n\n%s" % 
+                (w2w_transform, self)
+                )
+        new_img = self._apply_transform(w2w_transform)
+        new_img.world_space = w2w_transform.output_space
+        return new_img 
+
 
     #---------------------------------------------------------------------------
     # Private methods
@@ -173,4 +191,8 @@ class BaseImage(object):
     # TODO: We need to implement (or check if implemented) hashing,
     # weakref, pickling? 
         
-
+    def _apply_transform(self, w2w_transform):
+        """ Implement this method to put in the logic of applying a
+            transformation on the image class.
+        """
+        raise NotImplementedError
