@@ -3,6 +3,8 @@ Testing base image interface.
 """
 
 import nose
+import copy
+
 import numpy as np
 
 # Local imports
@@ -38,6 +40,7 @@ def test_base_image():
     yield np.testing.assert_raises, NotImplementedError, \
                         img.get_grid
 
+    yield nose.tools.assert_equal, img, copy.copy(img)
 
 
 def test_trivial_image():

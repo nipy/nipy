@@ -123,7 +123,6 @@ class BaseImage(object):
         # XXX: Horrible name
         return self.__class__(data          = data,
                               transform     = copy.copy(self._transform),
-                              world_space   = self.world_space,
                               metadata      = copy.copy(self.metadata))
 
 
@@ -325,4 +324,9 @@ class BaseImage(object):
         return out
 
 
+    def __eq__(self, other):
+        return (    self.world_space       == other.world_space 
+                and self.get_transform()   == other.get_transform()
+                and np.all(self.get_data() == other.get_data())
+               )
 
