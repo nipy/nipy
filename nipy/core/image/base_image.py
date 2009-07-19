@@ -44,9 +44,6 @@ class BaseImage(object):
     # Public methods -- BaseImage interface
     #---------------------------------------------------------------------------
 
-    def __init__(self, *args):
-        raise NotImplementedError
-
     def get_transform(self):
         """ Returns the transform object associated with the image which is a 
             general description of the mapping from the voxel space to the 
@@ -86,6 +83,7 @@ class BaseImage(object):
         raise NotImplementedError
 
 
+    # XXX: rename to as_volume_image
     def resampled_to_grid(self, affine=None, shape=None, interpolation=None):
         """ Resample the image to be an image with the data points lying
             on a regular grid with an affine mapping to the word space.
@@ -164,6 +162,7 @@ class BaseImage(object):
                 in the new world space.
 
         """
+        raise NotImplementedError
 
     #---------------------------------------------------------------------------
     # Private methods
