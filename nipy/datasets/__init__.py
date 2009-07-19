@@ -5,6 +5,7 @@ __docformat__ = 'restructuredtext'
 
 from .volumes.volume_field import VolumeField
 from .volumes.volume_image import VolumeImage
+from .volumes.volume_grid  import VolumeGrid
 from .transforms.transform import Transform, CompositionError
 from .transforms.affine_transform import AffineTransform
 

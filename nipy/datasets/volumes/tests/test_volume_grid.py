@@ -1,5 +1,5 @@
 """
-Testing warped image interface.
+Testing VolumeGrid interface.
 """
 
 import nose
@@ -8,7 +8,7 @@ import copy
 import numpy as np
 
 # Local imports
-from ..warped_image import WarpedImage
+from ..volume_grid import VolumeGrid
 from ..volume_image import VolumeImage
 from ...transforms.transform import Transform, CompositionError
 
@@ -24,15 +24,15 @@ def id(x, y, z):
 ################################################################################
 # Tests
 def test_constructor():
-    yield np.testing.assert_raises, ValueError, WarpedImage, None, \
+    yield np.testing.assert_raises, ValueError, VolumeGrid, None, \
         None, {}, 'e'
 
 
-def test_warped_image():
-    """ Sanity testing of the warped image class.
+def test_volume_grid():
+    """ Sanity testing of the VolumeGrid class.
     """
     transform = Transform('voxels', 'world', mapping)
-    img = WarpedImage(data=np.random.random((10, 10, 10)),
+    img = VolumeGrid(data=np.random.random((10, 10, 10)),
                     transform=transform,
                     )
     # Test that the repr doesn't raise an error
@@ -56,7 +56,7 @@ def test_trivial_image():
     N = 10
     identity = Transform('voxels', 'world', id, id)
     data = np.random.random((N, N, N))
-    img = WarpedImage(data=data,
+    img = VolumeGrid(data=data,
                     transform=identity,
                     )
     x, y, z = np.random.random_integers(N, size=(3, 10)) - 1
@@ -78,7 +78,7 @@ def test_transformation():
                             inverse_mapping)
     identity  = Transform('world1', 'world2', id, id) 
     data = np.random.random((N, N, N))
-    img1 = WarpedImage(data=data,
+    img1 = VolumeGrid(data=data,
                      transform=v2w_mapping,
                      )
     img2 = img1.composed_with_transform(identity)
@@ -103,11 +103,11 @@ def test_transformation():
     # VolumeImage, and vice versa 
     volume_image = VolumeImage(data, np.eye(4), 'world')
     identity  = Transform('voxels', 'world', id, id) 
-    image = WarpedImage(data, identity)
+    image = VolumeGrid(data, identity)
     image2 = image.resampled_to_img(volume_image)
     yield nose.tools.assert_true, isinstance(image2, VolumeImage)
     volume_image2 = volume_image.resampled_to_img(image)
-    yield nose.tools.assert_true, isinstance(image2, WarpedImage)
+    yield nose.tools.assert_true, isinstance(image2, VolumeGrid)
     # Check that the data are all the same: we have been playing only
     # with identity mappings
     yield np.testing.assert_array_equal, volume_image2.get_data(), \
@@ -115,12 +115,12 @@ def test_transformation():
 
 
 def test_as_volume_image():
-    """ Test casting warped images to volume_image
+    """ Test casting VolumeGrid to VolumeImg
     """
     N = 10
     v2w_mapping  = Transform('voxels', 'world2', id, id) 
     data = np.random.random((N, N, N))
-    img1 = WarpedImage(data=data,
+    img1 = VolumeGrid(data=data,
                      transform=v2w_mapping,
                      )
     img2 = img1.as_volume_img()

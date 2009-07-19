@@ -1,5 +1,5 @@
 """
-The warped image class. 
+The volume grid class. 
 
 This class represents data lying on a grid embedded in a 3D world represented 
 as a 3+D array.
@@ -15,19 +15,22 @@ from .volume_data import VolumeData
 from ..transforms.affine_utils import apply_affine
 
 ################################################################################
-# class `WarpedImage`
+# class `VolumeGrid`
 ################################################################################
 
-class WarpedImage(VolumeData):
+class VolumeGrid(VolumeData):
     """ A class representing data stored in a 3+D array embedded in a 3D
         world.
 
         This object has data stored in an array-like multidimensional 
         indexable objects, with the 3 first dimensions corresponding to
-        spatial axis.
+        spatial axis and defining a 3D grid.
 
         The object knows how the data is mapped to a 3D "real-world
-        space", and how it can change real-world coordinate system.
+        space", and how it can change real-world coordinate system. The
+        transform mapping it to world is arbitrary, and thus the grid
+        can be warped: in the world space, the grid may not be regular or
+        orthogonal.
 
         **Attributes**
 
@@ -56,7 +59,7 @@ class WarpedImage(VolumeData):
         resample another dataset on the same support.
     """
     #---------------------------------------------------------------------------
-    # Public methods -- WarpedImage interface
+    # Public methods -- VolumeGrid interface
     #---------------------------------------------------------------------------
 
     def __init__(self, data, transform, metadata=None,
@@ -181,7 +184,7 @@ class WarpedImage(VolumeData):
                 The shape of z should match the shape of x
             interpolation : None, 'continuous' or 'nearest', optional
                 Interpolation type used when calculating values in
-                different word spaces. If None, the image's interpolation
+                different word spaces. If None, the object's interpolation
                 logic is used.
 
             Returns
@@ -195,7 +198,7 @@ class WarpedImage(VolumeData):
         transform = self.get_transform()
         if transform.inverse_mapping is None:
             raise ValueError(
-                "Cannot calculate the world values for image: mapping to "
+                "Cannot calculate the world values for volume data: mapping to "
                 "word is not invertible."
                 )
         x = np.atleast_1d(x)
@@ -212,7 +215,7 @@ class WarpedImage(VolumeData):
         data_shape = list(data.shape)
         n_dims = len(data_shape)
         if n_dims > 3:
-            # Iter in a set of 3D images, as the interpolation problem is 
+            # Iter in a set of 3D volumes, as the interpolation problem is 
             # separable in the extra dimensions. This reduces the
             # computational cost
             data = np.reshape(data, data_shape[:3] + [-1])

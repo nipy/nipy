@@ -13,13 +13,13 @@ from ..transforms.affine_utils import to_matrix_vector, \
 from ..transforms.affine_transform import AffineTransform
 from ..transforms.transform import CompositionError
 
-from .warped_image import WarpedImage
+from .volume_grid import VolumeGrid
 
 ################################################################################
 # class `VolumeImage`
 ################################################################################
 
-class VolumeImage(WarpedImage):
+class VolumeImage(VolumeGrid):
     """ The regularly-spaced affine image for embedding data in an x, y, z 
         3D world, for neuroimaging.
 
@@ -117,7 +117,7 @@ class VolumeImage(WarpedImage):
 
 
     # Inherit docstring
-    like_from_data.__doc__ = WarpedImage.like_from_data.__doc__
+    like_from_data.__doc__ = VolumeGrid.like_from_data.__doc__
 
 
     def get_transform(self):
@@ -125,7 +125,7 @@ class VolumeImage(WarpedImage):
 
 
     # Inherit docstring
-    get_transform.__doc__ = WarpedImage.get_transform.__doc__
+    get_transform.__doc__ = VolumeGrid.get_transform.__doc__
 
 
     def resampled_to_img(self, target_image, interpolation=None):
@@ -145,7 +145,7 @@ class VolumeImage(WarpedImage):
 
 
     # Inherit docstring
-    resampled_to_img.__doc__ = WarpedImage.resampled_to_img.__doc__
+    resampled_to_img.__doc__ = VolumeGrid.resampled_to_img.__doc__
 
 
     def as_volume_img(self, affine=None, shape=None, 
@@ -191,7 +191,7 @@ class VolumeImage(WarpedImage):
 
 
     # Inherit docstring
-    as_volume_img.__doc__ = WarpedImage.as_volume_img.__doc__
+    as_volume_img.__doc__ = VolumeGrid.as_volume_img.__doc__
 
 
     #---------------------------------------------------------------------------
@@ -273,7 +273,7 @@ class VolumeImage(WarpedImage):
                                      metadata=self.metadata,
                                      interpolation=self.interpolation)
         else:
-            new_img = WarpedImage(self.get_data(),
+            new_img = VolumeGrid(self.get_data(),
                                 transform=new_v2w_transform,
                                 metadata=self.metadata,
                                 interpolation=self.interpolation)
