@@ -1,5 +1,5 @@
 """
-The base image interface.
+Test the VolumeImg object.
 """
 
 import copy
@@ -10,7 +10,7 @@ import numpy as np
 from ...transforms.affine_utils import from_matrix_vector
 from ...transforms.affine_transform import AffineTransform
 from ...transforms.transform import Transform
-from ..volume_image import VolumeImage, CompositionError
+from ..volume_img import VolumeImg, CompositionError
 
 ################################################################################
 # Helper function
@@ -34,20 +34,20 @@ def id(x, y, z):
 ################################################################################
 # Tests
 def test_constructor():
-    yield np.testing.assert_raises, AttributeError, VolumeImage, None, \
+    yield np.testing.assert_raises, AttributeError, VolumeImg, None, \
         None, 'foo'
-    yield np.testing.assert_raises, ValueError, VolumeImage, None, \
+    yield np.testing.assert_raises, ValueError, VolumeImg, None, \
         np.eye(4), 'foo', {}, 'e'
 
 
 def test_identity_resample():
-    """ Test resampling of the VolumeImage with an identity affine.
+    """ Test resampling of the VolumeImg with an identity affine.
     """
     shape = (3., 2., 5., 2.)
     data = np.random.randint(0, 10, shape)
     affine = np.eye(4)
     affine[:3, -1] = 0.5*np.array(shape[:3])
-    ref_im = VolumeImage(data, affine, 'mine')
+    ref_im = VolumeImg(data, affine, 'mine')
     rot_im = ref_im.as_volume_img(affine, interpolation='nearest')
     yield np.testing.assert_almost_equal, data, rot_im.get_data()
     reordered_im = rot_im.xyz_ordered()
@@ -55,12 +55,12 @@ def test_identity_resample():
 
 
 def test_downsample():
-    """ Test resampling of the VolumeImage with a 1/2 down-sampling affine.
+    """ Test resampling of the VolumeImg with a 1/2 down-sampling affine.
     """
     shape = (6., 3., 6, 2.)
     data = np.random.randint(0, 10, shape)
     affine = np.eye(4)
-    ref_im = VolumeImage(data, affine, 'mine')
+    ref_im = VolumeImg(data, affine, 'mine')
     rot_im = ref_im.as_volume_img(2*affine, interpolation='nearest')
     downsampled = data[::2, ::2, ::2, ...]
     x, y, z = downsampled.shape[:3]
@@ -69,7 +69,7 @@ def test_downsample():
 
 
 def test_reordering():
-    """ Test the xyz_ordered method of the VolumeImage.
+    """ Test the xyz_ordered method of the VolumeImg.
     """
     # We need to test on a square array, as rotation does not change
     # shape, whereas reordering does.
@@ -77,7 +77,7 @@ def test_reordering():
     data = np.random.random(shape)
     affine = np.eye(4)
     affine[:3, -1] = 0.5*np.array(shape[:3])
-    ref_im = VolumeImage(data, affine, 'mine')
+    ref_im = VolumeImg(data, affine, 'mine')
     # Test with purely positive matrices and compare to a rotation
     for theta, phi in np.random.randint(4, size=(5, 2)):
         rot = rotation(theta*np.pi/2, phi*np.pi/2)
@@ -103,7 +103,7 @@ def test_reordering():
     # Create a non-diagonal affine, and check that we raise a sensible
     # exception
     affine[1, 0] = 0.1
-    ref_im = VolumeImage(data, affine, 'mine')
+    ref_im = VolumeImg(data, affine, 'mine')
     yield nose.tools.assert_raises, CompositionError, ref_im.xyz_ordered
 
 
@@ -115,7 +115,7 @@ def test_reordering():
         shape = (i+1, i+2, 3-i)
         affine = np.eye(4)
         affine[i, i] *= -1
-        img = VolumeImage(data, affine, 'mine')
+        img = VolumeImg(data, affine, 'mine')
         orig_img = copy.copy(img)
         x, y, z = img.get_world_coords() 
         sample = img.values_in_world(x, y, z)
@@ -131,13 +131,13 @@ def test_reordering():
 
 
 def test_eq():
-    """ Test copy and equality for VolumeImages.
+    """ Test copy and equality for VolumeImgs.
     """
     import copy
     shape = (4., 3., 5., 2.)
     data = np.random.random(shape)
     affine = np.random.random((4, 4))
-    ref_im = VolumeImage(data, affine, 'mine')
+    ref_im = VolumeImg(data, affine, 'mine')
     yield nose.tools.assert_equal, ref_im, ref_im
     yield nose.tools.assert_equal, ref_im, copy.copy(ref_im)
     yield nose.tools.assert_equal, ref_im, copy.deepcopy(ref_im)
@@ -155,7 +155,7 @@ def test_eq():
     # Test repr
     yield np.testing.assert_, isinstance(repr(ref_im), str)
     # Test init: should raise exception is not passing in right affine
-    yield nose.tools.assert_raises, Exception, VolumeImage, data, \
+    yield nose.tools.assert_raises, Exception, VolumeImg, data, \
                 np.eye(3, 3), 'mine'
 
 
@@ -165,7 +165,7 @@ def test_values_in_world():
     shape = (3., 5., 4., 2.)
     data = np.random.random(shape)
     affine = np.eye(4)
-    ref_im = VolumeImage(data, affine, 'mine')
+    ref_im = VolumeImg(data, affine, 'mine')
     x, y, z = np.indices(ref_im.get_data().shape[:3])
     values = ref_im.values_in_world(x, y, z)
     np.testing.assert_almost_equal(values, data)
@@ -177,7 +177,7 @@ def test_resampled_to_img():
     shape = (5., 4., 3., 2.)
     data = np.random.random(shape)
     affine = np.random.random((4, 4))
-    ref_im = VolumeImage(data, affine, 'mine')
+    ref_im = VolumeImg(data, affine, 'mine')
     yield np.testing.assert_almost_equal, data, \
                 ref_im.as_volume_img(affine=ref_im.affine).get_data()
     yield np.testing.assert_almost_equal, data, \
@@ -185,7 +185,7 @@ def test_resampled_to_img():
     
     # Check that we cannot resample to another image in a different
     # world.
-    other_im = VolumeImage(data, affine, 'other')
+    other_im = VolumeImg(data, affine, 'other')
     yield nose.tools.assert_raises, CompositionError, \
             other_im.resampled_to_img, ref_im
 
@@ -203,7 +203,7 @@ def test_transformation():
     identity2  = AffineTransform('world1', 'world2', np.eye(4)) 
     for identity in (identity1, identity2):
         data = np.random.random((N, N, N))
-        img1 = VolumeImage(data=data,
+        img1 = VolumeImg(data=data,
                            affine=np.eye(4),
                            world_space='world1',
                            )

@@ -91,7 +91,7 @@ class VolumeField(object):
                         interpolation=None):
         """ Resample the image to be an image with the data points lying
             on a regular grid with an affine mapping to the word space (a
-            nipy VolumeImage).
+            nipy VolumeImg).
 
             Parameters
             ----------
@@ -111,8 +111,8 @@ class VolumeField(object):
 
             Returns
             -------
-            resampled_image : nipy VolumeImage
-                New nipy VolumeImage with the data sampled on the grid
+            resampled_image : nipy VolumeImg
+                New nipy VolumeImg with the data sampled on the grid
                 defined by the affine and shape.
 
             Notes

@@ -16,10 +16,10 @@ from ..transforms.transform import CompositionError
 from .volume_grid import VolumeGrid
 
 ################################################################################
-# class `VolumeImage`
+# class `VolumeImg`
 ################################################################################
 
-class VolumeImage(VolumeGrid):
+class VolumeImg(VolumeGrid):
     """ The regularly-spaced affine image for embedding data in an x, y, z 
         3D world, for neuroimaging.
 
@@ -65,7 +65,7 @@ class VolumeImage(VolumeGrid):
     # most attributes are given by the VolumeField interface 
 
     #---------------------------------------------------------------------------
-    # Attributes, VolumeImage interface
+    # Attributes, VolumeImg interface
     #---------------------------------------------------------------------------
 
     # The affine (4x4 ndarray)
@@ -132,7 +132,7 @@ class VolumeImage(VolumeGrid):
         if not target_image.world_space == self.world_space:
             raise CompositionError(
                 'The two images are not embedded in the same world space')
-        if isinstance(target_image, VolumeImage):
+        if isinstance(target_image, VolumeImg):
             return self.as_volume_img(affine=target_image.affine,
                                     shape=self.get_data().shape[:3],
                                     interpolation=interpolation)
@@ -140,7 +140,7 @@ class VolumeImage(VolumeGrid):
             # IMPORTANT: Polymorphism can be implemented by walking the 
             # MRO and finding a method that does not raise
             # NotImplementedError. 
-            return super(VolumeImage, self).resampled_to_img(target_image,
+            return super(VolumeImg, self).resampled_to_img(target_image,
                                     interpolation=interpolation)
 
 
@@ -195,7 +195,7 @@ class VolumeImage(VolumeGrid):
 
 
     #---------------------------------------------------------------------------
-    # VolumeImage interface
+    # VolumeImg interface
     #---------------------------------------------------------------------------
 
     def xyz_ordered(self):
@@ -254,7 +254,7 @@ class VolumeImage(VolumeGrid):
         order[axis1] = axis2
         order[axis2] = axis1
         new_affine = new_affine.T[order].T
-        return VolumeImage(reordered_data, new_affine, self.world_space, 
+        return VolumeImg(reordered_data, new_affine, self.world_space, 
                                            metadata=self.metadata)
 
     #---------------------------------------------------------------------------

@@ -110,8 +110,8 @@ class VolumeGrid(VolumeData):
         x, y, z = apply_affine(x, y, z, affine)
         values = self.values_in_world(x, y, z)
         # We import late to avoid circular import
-        from .volume_image import VolumeImage
-        return VolumeImage(values, affine, 
+        from .volume_img import VolumeImg
+        return VolumeImg(values, affine, 
                            self.world_space, metadata=self.metadata,
                            interpolation=self.interpolation)
 

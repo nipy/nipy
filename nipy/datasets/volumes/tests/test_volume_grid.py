@@ -9,7 +9,7 @@ import numpy as np
 
 # Local imports
 from ..volume_grid import VolumeGrid
-from ..volume_image import VolumeImage
+from ..volume_img import VolumeImg
 from ...transforms.transform import Transform, CompositionError
 
 def mapping(x, y, z):
@@ -49,8 +49,8 @@ def test_volume_grid():
     yield nose.tools.assert_equal, img, copy.copy(img)
 
 
-def test_trivial_image():
-    """ Test resampling for an image embedded in world space with an
+def test_trivial_grid():
+    """ Test resampling for an grid embedded in world space with an
         identity transform. 
     """
     N = 10
@@ -99,13 +99,13 @@ def test_transformation():
     img  = img1.resampled_to_img(img1)
     yield np.testing.assert_almost_equal, data, img.get_data()
 
-    # Check that if I 'resampled_to_img' on an VolumeImage, I get an
-    # VolumeImage, and vice versa 
-    volume_image = VolumeImage(data, np.eye(4), 'world')
+    # Check that if I 'resampled_to_img' on an VolumeImg, I get an
+    # VolumeImg, and vice versa 
+    volume_image = VolumeImg(data, np.eye(4), 'world')
     identity  = Transform('voxels', 'world', id, id) 
     image = VolumeGrid(data, identity)
     image2 = image.resampled_to_img(volume_image)
-    yield nose.tools.assert_true, isinstance(image2, VolumeImage)
+    yield nose.tools.assert_true, isinstance(image2, VolumeImg)
     volume_image2 = volume_image.resampled_to_img(image)
     yield nose.tools.assert_true, isinstance(image2, VolumeGrid)
     # Check that the data are all the same: we have been playing only
