@@ -1,6 +1,6 @@
 import numpy as np
 
-from nipy.io.imageformats import Nifti1Image as Image
+from nipy.io.imageformats import load as load_image, save as save_image
 from nipy.neurospin.statistical_mapping import LinearModel
 
 from datamind.core import DF
@@ -15,11 +15,11 @@ X = np.asarray(DF.read(design_matrix_path))
 
 # Get fMRI data as numpy array
 print('loading fmri data...')
-Y = Image(fmri_dataset_path)
+Y = load_image(fmri_dataset_path)
 
 # Get the mask
 print('loading mask...')
-##Mask = Image(mask_image_path)
+##Mask = load_image(mask_image_path)
 Mask = None
 
 # GLM options
@@ -35,5 +35,5 @@ print('computing test contrast image...')
 c = np.ones(X.shape[1])
 c[0] = 1.
 con, vcon, dof = glm.contrast(c)
-##con.save(whatever_filename_you_like)
+##save_image(con, whatever_filename_you_like)
                

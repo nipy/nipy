@@ -5,8 +5,11 @@ from nipy.neurospin.graph.field import Field
 from nipy.neurospin.register.transform import apply_affine
 from nipy.neurospin.utils import emp_null
 from nipy.neurospin.glm import glm
-from nipy.neurospin.group.permutation_test import permutation_test_onesample, permutation_test_twosample
-# FIXME: rename permutation_test_onesample class so that name starts with upper case
+from nipy.neurospin.group.permutation_test import \
+     permutation_test_onesample, permutation_test_twosample
+
+# FIXME: rename permutation_test_onesample class
+#so that name starts with upper case
 
 # Use the brifti image object
 from nipy.io.imageformats import Nifti1Image as Image 

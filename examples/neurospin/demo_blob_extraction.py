@@ -43,10 +43,11 @@ label = -np.ones(nbvox)
 
 if nroi!=None:
     # compute the average signal within each blob
+    nroi.set_discrete_feature_from_index('activation',beta)
     bfm = nroi.discrete_to_roi_features('activation')
 
     # plot the input image 
-    idx = nroi.discrete_features['masked_index']
+    idx = nroi.discrete_features['index']
     for k in range(nroi.k):
         bmap[idx[k]] = bfm[k]
         label[idx[k]] = k

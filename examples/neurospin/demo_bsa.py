@@ -12,10 +12,14 @@ import matplotlib.pylab as mp
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
+import profile
+
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
                         nbeta=[0],method='simple',verbose = 0):
-    """ Function for performing bayesian structural analysis on a set of images.
+    """
+    Function for performing bayesian structural analysis
+    on a set of images.
     """
     ref_dim = np.shape(betas[0])
     nbsubj = betas.shape[0]
@@ -28,26 +32,29 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 
     # Get  coordinates in mm
     xyz = np.transpose(xyz)
-    tal = xyz.astype(np.float)
+    coord = xyz.astype(np.float)
 
     # get the functional information
     lbeta = np.array([np.ravel(betas[k]) for k in range(nbsubj)]).T
 
     # the voxel volume is 1.0
-    g0 = 1.0/(1.0*nbvox)
+    #g0 = 1.0/(1.0*nbvox)
+    g0 = 1.0/(1.0*nbvox)*1./np.sqrt(2*np.pi*dmax**2)
+    
     bdensity = 1
-
     if method=='ipmi':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_ipmi(Fbeta, lbeta, tal, dmax,xyz, None, thq,
+                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax,xyz,
+                                        None, thq,
                                         smin, ths, theta, g0, bdensity)
     if method=='simple':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_simple(Fbeta, lbeta, tal, dmax,xyz,
+                   bsa.compute_BSA_simple(Fbeta, lbeta, coord, dmax,xyz,
                                           None, thq, smin, ths, theta, g0)
     if method=='dev':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_dev(Fbeta, lbeta, tal, dmax,xyz, None, thq,
+                   bsa.compute_BSA_dev(Fbeta, lbeta, coord, dmax,xyz,
+                                       None, thq,
                                       smin, ths, theta, g0, bdensity)
         
     if method not in['dev','simple','ipmi']:
@@ -62,16 +69,25 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 
     group_map.shape = ref_dim
     mp.figure()
+    mp.subplot(1,3,1)
     mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
-    mp.title('Group-level label map')
+    mp.title('Blob separation map')
     mp.colorbar()
-        
-    likelihood.shape = ref_dim
-    mp.figure()
-    mp.imshow(likelihood, interpolation='nearest')
-    mp.title('Data likelihood')
+    
+    group_map = AF.map_label(coord,0.95,dmax)
+    group_map.shape = ref_dim
+    mp.subplot(1,3,2)
+    mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
+    mp.title('group-level position 95% \n confidence regions')
     mp.colorbar()
 
+    mp.subplot(1,3,3)
+    likelihood.shape = ref_dim
+    mp.imshow(likelihood, interpolation='nearest')
+    mp.title('Spatial density under h1')
+    mp.colorbar()
+
+    
     mp.figure()
     if nbsubj==10:
         for s in range(nbsubj):
@@ -80,7 +96,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
             nls = BF[s].get_roi_feature('label')
             nls[nls==-1] = np.size(AF)+2
             for k in range(BF[s].k):
-                xyzk = BF[s].discrete[k].T 
+                xyzk = BF[s].xyz[k].T 
                 lw[xyzk[1],xyzk[2]] =  nls[k]
 
             mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
@@ -90,7 +106,8 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     if nbsubj==10:
         for s in range(nbsubj):
             mp.subplot(2,5,s+1)
-            mp.imshow(betas[s],interpolation='nearest',vmin=betas.min(),vmax=betas.max())
+            mp.imshow(betas[s],interpolation='nearest',vmin=betas.min(),
+                      vmax=betas.max())
             mp.axis('off')
 
     return AF, BF
@@ -121,9 +138,13 @@ ths = 1#nbsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'ipmi'
+method = 'simple'
 
 # run the algo
-AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method,verbose=verbose)
-mp.show()
 
+import time
+t1 = time.time()
+AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method,verbose=verbose)
+t2 = time.time()
+print t2-t1
+mp.show()

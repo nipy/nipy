@@ -20,7 +20,7 @@ import nipy.neurospin.graph.field as ff
 import nipy.neurospin.graph.graph as fg
 from nipy.neurospin.spatial_models import hroi 
 from nipy.neurospin.clustering.hierarchical_clustering import \
-    Average_Link_Graph_segment
+    average_link_graph_segment
 
 class landmark_regions(hroi.NROI):
     """
@@ -33,27 +33,29 @@ class landmark_regions(hroi.NROI):
         """
         Building the landmark_region
 
-        INPUT
-        - k (int): number of nodes/landmarks included into it
-        nb :
-        - parents = None: array of shape(self.k) describing the
-        hierarchical relationship
-        if None parents = np.arange(k) is sued instead
-        - header (temporary): space-defining image header
-        to embed the structure in an image space
-        - subj=None: k-length list of subjects
-        (these correspond to ROI feature)
-        - coord=None; k-length list of  coordinate arrays
-        CAVEAT:
-        discrete is used here for subject identification
+        Parameters
+        ----------
+        k (int): number of nodes/landmarks included into it
+        parents = None: array of shape(self.k) describing the
+                hierarchical relationship
+                if None, parents = np.arange(k) is used instead
+        header (temporary): space-defining image header
+               to embed the structure in an image space
+        subj=None: k-length list of subjects
+                   (these correspond to ROI feature)
+        coord=None; k-length list of coordinate arrays
+
+        Fixme
+        -----
+        xyz = subj makes no sense
         """
         k = int(k)
         if k<1: raise ValueError, "cannot create an empty LR"
         if parents==None:
             parents = np.arange(k)
-        hroi.NROI.__init__(self,parents,header,discrete=subj,id=id)
+        hroi.NROI.__init__(self,parents,header,xyz=subj,id=id)
         self.set_discrete_feature('position',coord)
-        self.subj = self.discrete
+        self.subj = subj
 
     def centers(self):
         """
@@ -80,13 +82,17 @@ class landmark_regions(hroi.NROI):
         hpd = self.HPD(k,cs,dmax = 10,pval = 0.95)
         Sample the postreior density of being in k
         on a grid defined by cs, assuming that the roi is an ellipsoid
-        INPUT:
-        - cs: an array of shape(n,dim) a set of input coordinates
-         - pval=0.95 cutoff for the CR
-         - dmax=1.0 : an upper bound for the spatial variance
-        to avoid degenerate variance
-        OUPUT:
-        - hpd array of shape(n) that yields the value
+        
+        Parameters
+        ----------
+        cs array of shape(n,dim): a set of input coordinates
+        pval=0.95: cutoff for the CR
+        dmax=1.0: an upper bound for the spatial variance
+                  to avoid degenerate variance
+        
+        Results
+        -------
+        hpd array of shape(n) that yields the value
         """
         if k>self.k:
             raise ValueError, 'wrong region index'
@@ -157,14 +163,17 @@ class landmark_regions(hroi.NROI):
         i = self.map_label(cs,pval = 0.95,dmax=1.0)
         Sample the set of landmark regions
         on the proposed coordiante set cs, assuming a Gaussian shape
-        INPUT:
-        - cs: an array of size(n,dim) a set of input coordinates
-        - pval=0.95 (it should be in [0,1]) cutoff for the CR
-        (highest posterior density threshold)
-        - dmax=1. : an upper bound for the spatial variance
-        to avoid degenerate variance
+        
+        Parameters
+        ----------
+        cs: array of shape(n,dim) a set of input coordinates
+        pval=0.95 (float in [0,1]): cutoff for the CR
+                  (highest posterior density threshold)
+        dmax=1. : an upper bound for the spatial variance
+                to avoid degenerate variance
     
-        OUPUT:
+        Results
+        -------
         label: array of shape (n): the posterior labelling
         """
         label = -np.ones(cs.shape[0])
@@ -188,16 +197,22 @@ class landmark_regions(hroi.NROI):
 
     def roi_confidence(self,ths=0,fid='confidence'):
         """
-        assuming that fid='confidence' field has been set as a discrete feature,
-        this creates an approximate p-value that states how confident one might 
+        assuming that fid='confidence' field has been set 
+        as a discrete feature,
+        this creates an approximate p-value that states 
+        how confident one might 
         that the LR is defined in at least ths individuals
         if conficence is not defined as a discrete_feature,
         it is assumed to be 1.
-        INPUT:
-        - ths: an integer
-        OUTPUT:
-        - pvals: an array of shape self.k
-        the p-values corresponding to the ROIs
+        
+        Parameters
+        ----------
+        ths: integer that yields the representativity threshold 
+        
+        Results
+        -------
+        pvals: array of shape self.k
+               the p-values corresponding to the ROIs
         """
         import scipy.stats as st
         pvals = np.zeros(self.k)
@@ -228,19 +243,24 @@ def build_LR(BF,ths=0):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
-    INPUT:
-    - BF is the list of hierarchical ROIs.
-    it is assumd that each list corresponds to one subject
-    the ROIs are supposed to be labelled
-    - ths=0 defines the condition (c):
-    A label should be present in ths subjects in order to be valid
-    OUTPUT:
-    - LR : a list of Amers, each of which describing
-    a cross-subject set of ROIs
-    - newlabel :  a relabelling of the individual ROIs,
-    similar to u, which converts old indexes to new ones
+    
+    Parameters
+    ----------
+    BF list of nipy.neurospin.spatial_models.hroi.Nroi instances
+       it is assumed that each list member corresponds to one subject
+       the ROIs are supposed to be labelled
+    ths=0 defines the condition (c):
+          A label should be present in ths subjects in order to be valid
+    
+    Results
+    -------
+    LR : a Landmark_regions instance that describes the ROIs found
+       in inter-subject inference
+    newlabel :  a relabelling of the individual ROIs,
+             similar to u, which converts old indexes to new ones
 
-    NOTE:
+    Note
+    ----    
     if no LR can be created then LR=None as an output argument
     """
     nbsubj = np.size(BF)
@@ -251,7 +271,8 @@ def build_LR(BF,ths=0):
 
     if np.size(u)==0: return None,None
     nrois = np.size(subj)
-    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj) if BF[s]!=None])
+    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj)\
+                                                   if BF[s]!=None])
    
     coords = []
     subjs = []
@@ -270,7 +291,7 @@ def build_LR(BF,ths=0):
         if  (q>ths):
             valid[i]=1
             sj = np.size(j)
-            coord = np.zeros((sj,3),'d')
+            coord = np.zeros((sj,3),np.float)
             for a in range(sj):
                 sja = subj[j[a]]
                 isja = intrasubj[j[a]]
@@ -299,31 +320,37 @@ def build_LR(BF,ths=0):
 
 
 
-
-def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsamples=10):
+def clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0, 
+                               dev=0, nrec=5, nsamples=10):
     """
     Computation of the positions where there is a significant
     spatial accumulation of pointwise ROIs. The significance is taken with
     respect to a uniform distribution of the ROIs.
-    INPUT:
-    - BFLs : a list of ROIs hierarchies, putatively describing ROIs
-    from different subjects
-    CAVEAT 1: The nested ROI (NROI) must have a 'position' feature defined
-    beforehand
-    CAVEAT 2: the structure is edited and modified by this function
-    - dmax : the kernel width (std) for the spatial density estimator
-    - xyz : a set of coordinates on which the test is perfomed
-    it should be written as (nbitems,dimension) array
-    - pval=0.05: corrected p-value for the significance of the test
-    Importantly, the p-value is corrected only for the number of ROIs
-    per subject
-    - verbose=0: verbosity mode
-    - dev=0. If dev=1, a different technique is used for density estimation
-    (WIP)
-    - nrec=5: number of recursions in the test: When some regions fail to be
-    significant at one step, the density is recomputed, and the test is
-    performed again and so on
+    
+    Parameters
+    ----------
+    BFLs : List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+          describing ROIs from different subjects
+    dmax (float): the kernel width (std) for the spatial density estimator
+    xyz (nbitems,dimension) array
+        set of coordinates on which the test is perfomed
+    pval=0.05 (float, in [0,1]): corrected p-value for the 
+              significance of the test
+              NB: the p-value is corrected only for the number of ROIs
+              per subject
+    verbose=0: verbosity mode
+    dev=0: If dev=1, a different technique is used for density estimation
+           (WIP)
+    nrec=5: number of recursions in the test: When some regions fail to be
+            significant at one step, the density is recomputed, 
+            and the test is performed again and so on
+                
+    Note
+    ----
     19/02/07: new version without the monotonic exclusion heuristic 
+    Caveat 1: The NROI instances in BFLs must have a 'position' feature 
+           defined beforehand
+    Caveat 2: BFLs is edited and modified by this function
     """
     nbsubj = np.size(BFLs)
     sqdmax = 2*dmax*dmax
@@ -405,29 +432,37 @@ def clean_density_redraw(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsampl
             BFLs[s]=BFLc[s].copy()
     return a,b
 
-def clean_density(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsamples=10):
+def clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0, 
+                        dev=0, nrec=5, nsamples=10):
     """
     Computation of the positions where there is a significant
     spatial accumulation of pointwise ROIs. The significance is taken with
     respect to a uniform distribution of the ROIs.
-    INPUT:
-    - BFLs : a list of ROIs hierarchies, putatively describing ROIs
-    from different subjects
-    CAVEAT 1: The nested ROI (NROI) must have a 'position' feature defined
-    beforehand
-    CAVEAT 2: the structure is edited and modified by this function
-    - dmax : the kernel width (std) for the spatial density estimator
-    - xyz : a set of coordinates on which the test is perfomed
-    it should be written as (nbitems,dimension) array
-    - pval=0.05: corrected p-value for the significance of the test
-    Importantly, the p-value is corrected only for the number of ROIs
-    per subject
-    - verbose=0: verbosity mode
-    - dev=0. If dev=1, a different technique is used for density estimation
-    (WIP)
-    - nrec=5: number of recursions in the test: When some regions fail to be
-    significant at one step, the density is recomputed, and the test is
-    performed again and so on
+
+    Parameters
+    ----------
+    BFLs : List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+          describing ROIs from different subjects
+    dmax (float): the kernel width (std) for the spatial density estimator
+    xyz (nbitems,dimension) array
+        set of coordinates on which the test is perfomed
+    pval=0.05 (float, in [0,1]): corrected p-value for the 
+              significance of the test
+              NB: the p-value is corrected only for the number of ROIs
+              per subject
+    verbose=0: verbosity mode
+    dev=0: If dev=1, a different technique is used for density estimation
+           (WIP)
+    nrec=5: number of recursions in the test: When some regions fail to be
+            significant at one step, the density is recomputed, 
+            and the test is performed again and so on
+                
+    Note
+    ----
+    19/02/07: new version without the monotonic exclusion heuristic 
+    Caveat 1: The NROI instances in BFLs must have a 'position' feature 
+           defined beforehand
+    Caveat 2: BFLs is edited and modified by this function
     """
     nbsubj = np.size(BFLs)
     sqdmax = 2*dmax*dmax
@@ -494,7 +529,7 @@ def clean_density(BFLs,dmax,xyz,pval = 0.05,verbose=0,dev=0,nrec=5,nsamples=10):
             break
     return a,b
 
-def fig_density(sweight,surweight,pval,nlm):
+def fig_density(sweight, surweight, pval, nlm):
     """
     Plot the histogram of sweight across the image
     and the thresholds implied by the surrogate model (surweight)
@@ -572,15 +607,19 @@ def compute_density_dev(BFLs,xyz,dmax):
 def compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
     """
     Cross-validated estimation of random samples of the uniform distributions
-    INPUT:
-    - BFLs : a list of sets of ROIs the list length, nsubj, is taken
-    as the number of subjects
-    - xyz (gs,3) array: a sampling grid to estimate
-    spatial distribution
-    - dmax kernel width of the density estimator
-    - nsamples=1: number of surrogate smaples returned
-    OUTPUT:
-    - surweight: a (gs*nsamples,nsubj) array of samples
+    
+    Parameters
+    ----------
+    BFLs : a list of sets of ROIs the list length, nsubj, is taken
+         as the number of subjects
+    xyz (gs,3) array: a sampling grid to estimate
+        spatial distribution
+    dmax kernel width of the density estimator
+    nsamples=1: number of surrogate smaples returned
+    
+    Results
+    -------
+    surweight: a (gs*nsamples,nsubj) array of samples
     """
     nvox = xyz.shape[0]
     nbsubj = np.size(BFLs)
@@ -600,24 +639,26 @@ def compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
 def compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples=1):
     """
     caveat: does not work for nsamples>1
-    This function computes a surrogate density using graph diffusion techniques
+    This function computes a surrogate density 
+    using graph diffusion techniques
     """
     import nipy.neurospin.utils.smoothing.smoothing as smoothing
     nvox = xyz.shape[0]
     nbsubj = np.size(BFLs)
     nlm = np.array([BFLs[s].k for s in range(nbsubj)])
-    aux = np.zeros((nvox,nsamples*nbsubj),'d')
+    aux = np.zeros((nvox, nsamples*nbsubj))
     for s in range(nbsubj):
         if nlm[s]>0:
             for it in range(nsamples):
                 js = (nvox*nr.rand(nlm[s])).astype(np.int)
-                aux[js,s*nsamples+it] = 1
+                aux[js,s*nsamples+it] = 1.
 
-    aux = smoothing.cartesian_smoothing(np.transpose(xyz),aux,dmax)
+    aux = smoothing.cartesian_smoothing(xyz.T,aux,dmax)
     
     surweight = np.zeros((nvox*nsamples,nbsubj),'d')
     for s in range(nbsubj):
-        surweight[:,s] = np.reshape(aux[:,s*nsamples:(s+1)*nsamples],(nvox*nsamples))
+        surweight[:,s] = np.reshape(aux[:,s*nsamples:(s+1)*nsamples],
+                                        (nvox*nsamples))
 
     surweight = surweight*(2*np.pi*dmax*dmax)**1.5
     return surweight    
@@ -625,12 +666,18 @@ def compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples=1):
 def hierarchical_asso(BF,dmax):
     """
     Compting an association graph of the ROIs defined across different subjects
-    INPUT:
-    - BF a list of ROI hierarchies, one for each subject
-    - dmax : spatial scale used xhen building associtations
-    OUPUT:
+    
+    Parameters
+    ----------
+    BF : List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+          describing ROIs from different subjects
+    dmax (float): spatial scale used xhen building associtations
+    
+    Results
+    -------
     - G a graph that represent probabilistic associations between all
-    cross-subject pairs of regions. Note that the probabilities are normalized
+    cross-subject pairs of regions.
+    Note that the probabilities are normalized
     on a within-subject basis.
     """
     nbsubj = np.size(BF)
@@ -679,11 +726,15 @@ def hierarchical_asso(BF,dmax):
 def RD_cliques(Gc,bstochastic=1):
     """
     Replicator dynamics graph segmentation: python implementation
-    INPUT :
-    - Gc graph to be segmented
-    - bstochastic=1 stochastic initialization of the graph
-    OUPUT:
-    - labels : array of size V, the number of vertices of Gc
+    
+    Parameters
+    ----------
+    Gc: graph to be segmented
+    bstochastic=1 stochastic initialization of the graph
+    
+    Results
+    -------
+    labels : array of shape V, the number of vertices of Gc
     the labelling of the vertices that represent the segmentation
     """
     V = Gc.V
@@ -750,13 +801,17 @@ def merge(Gc,labels):
     """
     Given a first labelling of the graph Gc, this function
     builds a reduced graph by merging the vertices according to the labelling
-    INPUT:
-    - Gc the input graph
-    - labels : array of size V, the number of vertices of Gc
-    the labelling of the vertices that represent the segmentation
-    OUTPUT:
-    - labels : the new labelling after further merging
-    - Gr the reduced graph after merging
+
+    Parameters
+    ----------
+    Gc nipy.neurospin.graph.graph.WeightedGraph instance
+    labels array of shape V, the number of vertices of Gc
+           the labelling of the vertices that represent the segmentation
+
+    Results
+    -------
+    labels array of shape V, the new labelling after further merging
+    Gr the reduced graph after merging
     """
     V = Gc.V
     q = labels.max()+1
@@ -769,8 +824,8 @@ def merge(Gc,labels):
     Fc.diffusion()
     Q = Fc.field
 
-    b = np.dot(np.transpose(Q),P) 
-    b = np.transpose(np.transpose(b)/sum(b,1))
+    b = np.dot(Q.T,P) 
+    b = (b.T/sum(b,1)).T
     b = b-np.diag(np.diag(b))
     ib,jb = np.where(b)
     
@@ -786,17 +841,24 @@ def merge(Gc,labels):
     return labels, Gr
     
 
-def segment_graph_rd(Gc,nit = 1,verbose=0):
+def segment_graph_rd(Gc, nit=1,verbose=0):
     """
-    This function prefoms a hard segmentation of the graph Gc
+    Hard segmentation of the graph Gc
     using a replicator dynamics approach.
     The clusters obtained in the first pass are further merged
     during a second pass, based on a reduced graph
-    INPUT:
-    - Gc : the graph to be segmented
-    OUTPUT:
-    - u : array of size V, the number of vertices of Gc
-    the labelling of the vertices that represent the segmentation
+
+    
+    Parameters
+    ----------
+    Gc : nipy.neurospin.graph.graph.WeightedGraph instance
+    the graph to be segmented
+
+    
+    Results
+    -------
+    u : array of shape Gc.V labelling of the vertices 
+      that represents the segmentation
     """
     u = []
     if (Gc.E>0):
@@ -812,23 +874,38 @@ def segment_graph_rd(Gc,nit = 1,verbose=0):
     return u
 
 
-def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pval=0.2,verbose=0):
+def Compute_Amers (Fbeta, Beta, xyz ,header, coord,  dmax=10.,
+                   thr=3.0, ths=0, pval=0.2,verbose=0):
     """
-     This is the main function for contrsucting the BFLs
-     INPUT
-     - Fbeta : field structure that contains the spatial nodes of the dataset
-     - Beta: functional data matrix of size (nbnodes,nbsubj)
-     - xyz: 
-     - tal: spatial coordinates of the nodes (e.g. MNI coords)
-     - dmax=10.: spatial relaxation allowed in the preocedure
-     - thr = 3.0: thrshold at the first-level
-     - ths = 0, number of subjects to validate a BFL
-     - pval = 0.2 : significance p-value for the spatial inference
-     OUPUT
-     - crmap: the map of CR of the activated clusters in the common space
-     - AF : group level BFLs
-     - BFLs: list of first-level nested ROIs
-     - Newlabel: labelling of the individual ROIs
+    This is the main function for building the BFLs
+
+    Parameters
+    ----------
+    Fbeta :  nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    Beta: an array of shape (nbnodes, subjects):
+           the multi-subject statistical maps
+    xyz array of shape (nnodes,3):
+        the grid coordinates of the field
+    coord array of shape (nnodes,3):
+          spatial coordinates of the nodes
+    dmax=10.: spatial relaxation allowed in the preocedure
+    thr = 3.0: thrshold at the first-level
+    ths = 0, number of subjects to validate a BFL
+    pval = 0.2 : significance p-value for the spatial inference
+
+    
+    Results
+    -------
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    AF : a instance of Landmark_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    BFLs:  List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    Newlabel: labelling of the individual ROIs
     """
     BFLs = []
     LW = [] 
@@ -840,14 +917,15 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pv
         bfls = hroi.NROI_from_watershed(Fbeta,header,xyz,refdim=0,th=thr)
  
         if bfls!=None:
-            bfls.compute_discrete_position()
+            bfls.set_discrete_feature_from_index('position',coord)
             bfls.discrete_to_roi_features('position','average')
             
-        #bfls.make_feature(tal,'position','mean')
+        #bfls.make_feature(coord,'position','mean')
         BFLs.append(bfls)
 
-    # clean_density(BFLs,dmax,tal,pval,verbose=1,dev=0,nrec=5)
-    clean_density_redraw(BFLs,dmax,tal,pval,verbose=0,dev=0,nrec=1,nsamples=10)
+    # clean_density(BFLs,dmax,coord,pval,verbose=1,dev=0,nrec=5)
+    clean_density_redraw(BFLs,dmax,coord,pval,verbose=0,dev=0,
+                         nrec=1,nsamples=10)
     
     Gc = hierarchical_asso(BFLs,dmax)
     Gc.weights = np.log(Gc.weights)-np.log(Gc.weights.min())
@@ -856,7 +934,7 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pv
     
     # building cliques
     #u = segment_graph_rd(Gc,1)
-    u,cost = Average_Link_Graph_segment(Gc,0.1,Gc.V*1.0/nbsubj)
+    u,cost = average_link_graph_segment(Gc,0.1,Gc.V*1.0/nbsubj)
 
     # relabel the BFLs
     q = 0
@@ -866,7 +944,7 @@ def Compute_Amers (Fbeta, Beta, xyz ,header, tal,dmax = 10., thr=3.0, ths = 0,pv
     
     LR,mlabel = build_LR(BFLs,ths)
     if LR!=None:
-        crmap = LR.map_label(tal,pval = 0.95,dmax=dmax)
+        crmap = LR.map_label(coord,pval = 0.95,dmax=dmax)
         
     return crmap, LR, BFLs 
 

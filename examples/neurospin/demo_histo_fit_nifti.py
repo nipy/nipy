@@ -8,49 +8,24 @@ nifti image
 Author : Bertrand Thirion, 2008-2009
 """
 
-import numpy as np
 import os
+import numpy as np
 import nifti
+import matplotlib.pylab as mp
 import scipy.stats as st
-
 import nipy.neurospin.utils.emp_null as en
+import get_data_light
+get_data_light.getIt()
 
-swd = "/tmp/"
+# parameters
 verbose = 1
+theta = float(st.t.isf(0.01,100))
 
+# paths
 data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
 MaskImage = os.path.join(data_dir,'mask.nii.gz')
 InputImage = os.path.join(data_dir,'spmT_0029.nii.gz')
 
-if os.path.exists(InputImage)==False:
-    import urllib2
-    url = 'ftp://ftp.cea.fr/pub/dsv/madic/download/nipy'
-    filename = 'mask.nii.gz'
-    datafile = os.path.join(url,filename)
-    fp = urllib2.urlopen(datafile)
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-        assert os.path.exists(data_dir)
-    local_file = open(MaskImage, 'w')
-    local_file.write(fp.read())
-    local_file.flush()
-    local_file.close()
-    filename = 'spmT_0029.nii.gz'
-    datafile = os.path.join(url,filename)
-    fp = urllib2.urlopen(datafile)
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-        assert os.path.exists(data_dir)
-    local_file = open(InputImage, 'w')
-    local_file.write(fp.read())
-    local_file.flush()
-    local_file.close()   
-
-        
-
-
-
-theta = float(st.t.isf(0.01,100))
 
 # Read the referential
 nim = nifti.NiftiImage(MaskImage)
@@ -61,24 +36,32 @@ voxsize = nim.getVoxDims()
 
 # Read the masks and compute the "intersection"
 mask = nim.asarray().T
-xyz = np.array(np.where(mask))
-nbvox = np.size(xyz,1)
 
 # read the functional image
 rbeta = nifti.NiftiImage(InputImage)
 beta = rbeta.asarray().T
 beta = beta[mask>0]
 
+
+mp.figure()
+a1 = mp.subplot(1,3,1)
+a2 = mp.subplot(1,3,2)
+a3 = mp.subplot(1,3,3)
+
 # fit beta's histogram with a Gamma-Gaussian mixture
 bfm = np.array([2.5,3.0,3.5,4.0,4.5])
-bfp = en.Gamma_Gaussian_fit(np.squeeze(beta),bfm,verbose=2)
+bfp = en.Gamma_Gaussian_fit(beta, bfm, verbose=2, mpaxes=a1)
 
 # fit beta's histogram with a mixture of Gaussians
 alpha = 0.01
-prior_strength = 100
-bfq = en.three_classes_GMM_fit(beta, bfm, alpha, prior_strength,verbose=2)
+pstrength = 100
+bfq = en.three_classes_GMM_fit(beta, bfm, alpha, pstrength,
+                               verbose=2, mpaxes=a2)
 
 # fit the null mode of beta with the robust method
 efdr = en.ENN(beta)
 efdr.learn()
-efdr.plot(bar=0)
+efdr.plot(bar=0,mpaxes=a3)
+
+
+mp.show()
