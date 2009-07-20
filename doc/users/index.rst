@@ -18,6 +18,7 @@
    introduction
    installation
    tutorial.rst
+   datasets.rst
    ../glossary
 
 .. htmlonly::
