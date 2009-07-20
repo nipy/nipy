@@ -5,7 +5,7 @@ class TwoBinomialMixture:
     """
     This is the basic Fitting of a mixture of 2 binomial distributions
     it contains the follwing fields:
-    - r0=0.2:the parameter of teh first binomial
+    - r0=0.2:the parameter of the first binomial
     - r1=0.8: the parameter of the second binomial
     - lambda=0.9 = the mixture parameter (proportion of the first compoenent)
     Note that all these parameters are within the [0,1] interval
@@ -94,12 +94,15 @@ class TwoBinomialMixture:
         """
         Estimate the parameters of the mixture from the input data
         using an EM algorithm
-        INPUT:
-        - X the data, i.e. a vector of interegers in [0,xmax] range
-        - xmax: the maximal value of the input variable
-        - eps=1.e-7 = parameter to decide convergence: when lambda
-        changes by less than this amount, convergence is declared
-        - maxiter=100 : maximal number of iterations
+        
+        Parameters
+        ----------
+        X array of shape (nbitems) 
+          a vector of interegers in [0,xmax] range
+        xmax: the maximal value of the input variable
+        eps = 1.e-7 = parameter to decide convergence: when lambda
+            changes by less than this amount, convergence is declared
+        maxiter=100 : maximal number of iterations
         """
         if xmax<X.max():
             print "xmax is less than the max of X. I cannot proceed"
@@ -111,13 +114,16 @@ class TwoBinomialMixture:
         """
         Estimate the parameters given an histogram of some data, using
         an EM algorithm
-        INPUT:
-        - H the histogram, i.e. the empirical count of values, whose
-        range is given by the length of H (to be padded with zeros
-        when necesary)
-        - eps=1.e-7 = parameter to decide convergence: when lambda
-        changes by less than this amount, convergence is declared
-        - maxiter=100
+        
+        Parameters
+        ----------
+        H the histogram, i.e. the empirical count of values, whose
+          range is given by the length of H (to be padded with zeros
+          when necesary)
+        eps = 1.e-7 
+            parameter to decide convergence: when lambda
+            changes by less than this amount, convergence is declared
+        maxiter=100
         """
         for i in range(maxiter):
             l0 = self.Lambda
@@ -165,16 +171,22 @@ class TwoBinomialMixture:
     def update_parameters_fh(self, H, eps=1.e-8):
         """
         update the binomial parameters given a certain histogram
-        - H the histogram, i.e. the empirical count of values, whose
-        range is given by the length of H (to be padded with zeros
-        when necesary)
-        - eps=1.e-8 = quantum parameter to avoid zeros and numerical
-        degeneracy of the model
-         """
+        Parameters
+        ----------
+        H array of shape (nbins)
+          histogram, i.e. the empirical count of values, whose
+          range is given by the length of H (to be padded with zeros
+          when necesary)
+        eps = 1.e-8 
+            quantum parameter to avoid zeros and numerical
+            degeneracy of the model
+        """
         sH = np.size(H)
         mH = sH-1
-        K0 = np.exp(np.arange(sH)*np.log(self.r0)+ (mH-np.arange(sH))*np.log(1-self.r0))
-        K1 = np.exp(np.arange(sH)*np.log(self.r1)+ (mH-np.arange(sH))*np.log(1-self.r1))
+        K0 = np.exp(np.arange(sH)*np.log(self.r0)+ \
+           (mH-np.arange(sH))*np.log(1-self.r0))
+        K1 = np.exp(np.arange(sH)*np.log(self.r1)+ \
+           (mH-np.arange(sH))*np.log(1-self.r1))
         ll = self.Lambda * K0 + (1-self.Lambda)*K1;
 
         # first component of the mixture
@@ -200,17 +212,23 @@ class TwoBinomialMixture:
     def update_lambda_fh(self, H, eps=1.e-8, maxiter=100):
         """
         update lambda given the histogram H
-        INPUT:
-        - H the histogram, i.e. the empirical count of values, whose
-        range is given by the length of H (to be padded with zeros
-        when necesary)
-        - eps=1.e-8 = quantum parameter to avoid zeros and numerical
-        degeneracy of the model
-        - maxiter = 100: maximum number of iterations
+        
+        Parameters
+        ----------
+        H array of shape (nbins)
+          histogram, i.e. the empirical count of values, whose
+          range is given by the length of H (to be padded with zeros
+          when necesary)
+        eps = 1.e-8 
+            quantum parameter to avoid zeros and numerical
+            degeneracy of the model
+        maxiter = 100: maximum number of iterations
         """
         sH = np.size(H)
-        K0 = np.exp(np.arange(sH)*np.log(self.r0)+ (sH-np.arange(sH))*np.log(1-self.r0))
-        K1 = np.exp(np.arange(sH)*np.log(self.r1)+ (sH-np.arange(sH))*np.log(1-self.r1))
+        K0 = np.exp(np.arange(sH)*np.log(self.r0)+ \
+             (sH-np.arange(sH))*np.log(1-self.r0))
+        K1 = np.exp(np.arange(sH)*np.log(self.r1)+ \
+             (sH-np.arange(sH))*np.log(1-self.r1))
         dK  = K0-K1
         for i in range(maxiter):
             f = np.sum(H*dK/(self.Lambda*dK+K1))
@@ -257,8 +275,10 @@ class TwoBinomialMixture:
         L = np.zeros(xmax)
         ndraw = xmax-1
         for i in range(xmax):
-            L0 = np.exp(self._bcoef(ndraw,i)+i*np.log(self.r0)+ (ndraw-i)*np.log(1-self.r0))
-            L1 = np.exp(self._bcoef(ndraw,i)+i*np.log(self.r1)+ (ndraw-i)*np.log(1-self.r1))
+            L0 = np.exp(self._bcoef(ndraw,i)+i*np.log(self.r0)+ \
+                 (ndraw-i)*np.log(1-self.r0))
+            L1 = np.exp(self._bcoef(ndraw,i)+i*np.log(self.r1)+ \
+                 (ndraw-i)*np.log(1-self.r1))
             L[i] = self.Lambda*L0 + (1-self.Lambda)*L1
 
         L = L/L.sum()
@@ -268,100 +288,8 @@ class TwoBinomialMixture:
         mp.plot(np.arange(xmax)+0.5,L,'k',linewidth=2)
         
 
-# -----------------------------------------------------------
-# fixme : change these into unit tests
-# -----------------------------------------------------------
 
-def test_mb1():
-    from numpy.random import rand
-    MB = TwoBinomialMixture()
-    xmax = 10
-    n = 1000
-    x = np.concatenate(((xmax+1)*rand(n),rand(9*n))).astype('i')
-    H = np.array([np.sum(x==i) for i in range(xmax+1)])
-    #MB.estimate_parameters_from_histo(H)
-    #MB.estimate_parameters(x,xmax)
-    MB.EMalgo(x,xmax)
-    MB.parameters()
-    print MB.kappa()
-    MB.show(H)
 
-def test_mb2():
-    import numpy.random as nr
-    xmax = 10
-    n = 100
-    x = nr.binomial(xmax,0.3,n)
-    MB = TwoBinomialMixture()
-    #MB.estimate_parameters(x,xmax)
-    MB.EMalgo(x,xmax)
-    MB.parameters()
-    print MB.kappa()
-    H = np.array([np.sum(x==i) for i in range(xmax+1)])
-    MB.show(H)
 
-def test_mb3():
-    import numpy.random as nr
-    xmax = 10
-    n = 100
-    x = np.concatenate((nr.binomial(xmax,0.1,n),nr.binomial(xmax,0.9,n)))
-    MB = TwoBinomialMixture()
-    #MB.estimate_parameters(x,xmax)
-    MB.EMalgo(x,xmax)
-    MB.parameters()
-    print MB.kappa()
-    H = np.array([np.sum(x==i) for i in range(xmax+1)])
-    MB.show(H)
 
-def test_mb4():
-    import numpy.random as nr
-    xmax = 5
-    n = 100
-    x = np.concatenate((nr.binomial(xmax,0.1,n),nr.binomial(xmax,0.9,n)))
-    MB = TwoBinomialMixture()
-    #MB.estimate_parameters(x,xmax)
-    MB.EMalgo(x,xmax)
-    MB.parameters()
-    print MB.kappa()
-    H = np.array([np.sum(x==i) for i in range(xmax+1)])
-    MB.show(H)
-    
-def test_mb5():
-    import numpy.random as nr
-    xmax = 3
-    n = 1000
-    x = np.concatenate((nr.binomial(xmax,0.1,9*n),nr.binomial(xmax,0.9,n)))
-    MB = TwoBinomialMixture()
-    #MB.estimate_parameters(x,xmax)
-    MB.EMalgo(x,xmax)
-    MB.parameters()
-    print MB.kappa()
-    H = np.array([np.sum(x==i) for i in range(xmax+1)])
-    MB.show(H)
 
-def test_mb6():
-    import numpy.random as nr
-    xmax = 5
-    n = 1000
-    x = np.concatenate((nr.binomial(xmax,0.05,9*n),nr.binomial(xmax,0.5,n)))
-    MB = TwoBinomialMixture()
-    #MB.verbose = 1
-    #MB.estimate_parameters(x,xmax)
-    MB.EMalgo(x,xmax)
-    MB.parameters()
-    print MB.kappa()
-    H = np.array([np.sum(x==i) for i in range(xmax+1)])
-    MB.show(H)
-
-def test_mb7():
-    import numpy.random as nr
-    xmax = 5
-    n = 100
-    x = np.concatenate((nr.binomial(xmax,0.1,99*n),nr.binomial(xmax,0.8,n)))
-    MB = TwoBinomialMixture()
-    #MB.estimate_parameters(x,xmax)
-    MB.EMalgo(x,xmax)
-    MB.parameters()
-    print MB.kappa()
-    H = np.array([np.sum(x==i) for i in range(xmax+1)])
-    MB.show(H)
-    

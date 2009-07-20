@@ -28,11 +28,13 @@ class Forest(WeightedGraph):
     """
     def __init__(self, V, parents=None):
         """
-        INPUT:
-        V: the number of edges of the graph
-        parents = None: array of shape (V) the parents of the graph
-        by default, the parents are set to range(V), i.e. each  
-        node is its own parent, and each node is a tree
+        Parameters
+        ----------
+        V (int), the number of edges of the graph
+        parents = None: array of shape (V) 
+                the parents of zach vertex
+                if Parents==None , the parents are set to range(V), i.e. each  
+                node is its own parent, and each node is a tree
         """
         V = int(V)
         if V<1:
@@ -76,9 +78,11 @@ class Forest(WeightedGraph):
         """
         self.compute_children()
         define the children list
-        OUPUT:
-        - children: a list of self.V lists
-        that yields the children of each node 
+        
+        Returns
+        -------
+        children: a list of self.V lists,
+                  that yields the children of each node 
         """
         self.children = [ np.array([]) for v in range(self.V)]
         if self.E>0:
@@ -131,9 +135,14 @@ class Forest(WeightedGraph):
     def check(self):
         """
         Check that the proposed  is indeed a graph, i.e. contains no loop
-        NOTE : slow implementation... to be rewritten in C
-        OUTPUT :
-        a boolean b==0 iff there are loops, 1  otherwise
+        
+        Returns
+        -------
+        a boolean b=0 iff there are loops, 1  otherwise
+  
+        Note
+        ----
+        slow implementation, might be rewritten in C or cython
         """
         b = 1
         if self.V==1:
@@ -181,7 +190,14 @@ class Forest(WeightedGraph):
         and with the correponding set of edges
         the children of deleted vertices become
         their own parent
-        a new forest is returned
+
+        Parameters
+        ----------
+        valid: array of shape (self.V)
+        
+        Returns
+        -------
+        a new forest instance
         """
         if np.size(valid)!= self.V:
             raise ValueError, "incompatible size for self anf valid"
@@ -210,10 +226,21 @@ class Forest(WeightedGraph):
         return self.subforest(valid)
         
 
-    def all_distances(self,seed = None):
+    def all_distances(self, seed=None):
         """
-        returns all the distanceof the graph  as a tree
-        dg = self.all_distances(seed=None)
+        returns all the distances of the graph  as a tree
+        
+        Parameters
+        ----------
+        seed=None array of shape(nbseed)  with valuesin [0..self.V-1]
+                  set of vertices from which tehe distances are computed
+        
+        Returns
+        -------
+        dg: array of shape(nseed, self.V): the resulting distance          
+        
+        Note
+        ----
         by convention infinte distances are given the distance np.infty
         """
         if self.E>0:
@@ -231,13 +258,18 @@ class Forest(WeightedGraph):
         compute a labelling of the nodes
         which is 0 for the leaves, 1 for their parents etc
         and maximal for the roots
+
+        Returns
+        -------
+        depth: array of shape (self.V): the depth values of the vertices
         """
         depth = self.isleaf().astype(np.int)-1
         for j in range(self.V):
             dc = depth.copy()
             for i in range(self.V):
                 if self.parents[i]!=i:
-                    depth[self.parents[i]] = np.maximum(depth[i]+1,depth[self.parents[i]])
+                    depth[self.parents[i]] = np.maximum(depth[i]+1,\
+                                           depth[self.parents[i]])
             if dc.max()==depth.max():
                 break
         return depth   
@@ -247,12 +279,18 @@ class Forest(WeightedGraph):
         """
         reorder the tree so that the leaves come first
         then their parents and so on, and the roots are last
-        the permutation necessary to apply to all vertex-based information  
+        the permutation necessary to apply to all vertex-based information
+
+        Returns
+        -------
+        order: array of shape(self.V) 
+               the order of the old vertices in the reordered graph 
         """
         depth = self.depth_from_leaves()
         order = np.argsort(depth)
         iorder = np.arange(self.V)
-        for i in range(self.V): iorder[order[i]] = i 
+        for i in range(self.V): 
+            iorder[order[i]] = i 
         parents = iorder[self.parents[order]]
         self.parents = parents
         self.define_graph_attributes()
@@ -263,11 +301,16 @@ class Forest(WeightedGraph):
         """
         tests whether the given nodes within ids represent
         all the leaves of a certain subtree of self
-        if custom==true the behavior of the function is somewhat mroe bizare:
-        - the different connected components are considered
-        as being in a same greater tree
-        - when a node has more than two subbranches,
-        any subset of these children is considered as a subtree
+
+        Parameters
+        ----------
+        idds: array of shape (n) that takes values in [0..self.V-1]
+        custom == False, boolean  
+               if custom==true the behavior of the function is more specific
+               - the different connected components are considered
+               as being in a same greater tree
+               - when a node has more than two subbranches,
+               any subset of these children is considered as a subtree
         """
         leaves = self.isleaf().astype('bool')
         for i in ids :
@@ -305,7 +348,8 @@ class Forest(WeightedGraph):
                     st = st[leaves[st]]
                     if np.size(st)>1:
                         valid = [i in ids for i in st]
-                        bresult *= ((np.sum(valid)==np.size(valid))+np.sum(valid==0))
+                        bresult *= ((np.sum(valid)==np.size(valid))
+                                +np.sum(valid==0))
             return bresult
         
         # now, common ancestor is -1
@@ -328,7 +372,6 @@ class Forest(WeightedGraph):
 
     def tree_depth(self):
         """
-        td = self.tree_depth()
         return the maximal depth of any node in the tree
         """
         depth = self.depth_from_leaves()
@@ -336,15 +379,17 @@ class Forest(WeightedGraph):
 
     def propagate_upward_and(self,prop):
         """
-        prop = self.propagate_upward_and(prop)
         propagates some binary property in the forest
         that is defined in the leaves
         so that prop[parents] = logical_and(prop[children])
 
-        INPUT:
-        prop: array of shape(self.V)
-        OUTPUT:
-        prop: array of shape(self.V)
+        Parameters
+        ----------
+        prop, array of shape(self.V), the input property
+       
+        Returns
+        -------
+        prop, array of shape(self.V), the output property field
         """
         if np.size(prop)!=self.V:
             raise ValueError,"incoherent size for prop"
@@ -369,9 +414,12 @@ class Forest(WeightedGraph):
         the children nodes have coherent properties
         otherwise the parent value is unchanged
 
-        INPUT
+        Parameters
+        ----------
         label: array of shape(self.V)
-        OUTPUT
+
+        Returns
+        -------
         label: array of shape(self.V)
         """
         if np.size(label)!=self.k:
@@ -393,12 +441,16 @@ class Forest(WeightedGraph):
         l = self.subtree(k)
         returns an array of the nodes included in the subtree rooted in k
 
-        INPUT:
-        - k (int): the vertex from which the subtree is searched
-        OUPUT:
-        - idx : array of shape>=1 theindex of the nodes beneath k
+        Parameters
+        ----------
+        k (int): the vertex from which the subtree is searched
+        
+        Returns
+        -------
+        idx : array of shape>=1 the index of the nodes beneath k
 
-        TO DO:
+        Fixme
+        -----
         should return a Forest and/or a vector of booleans 
         """
         if k>self.V:
