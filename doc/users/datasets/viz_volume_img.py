@@ -3,7 +3,6 @@ Use Mayavi to visualize the structure of a VolumeImg
 """
 
 from enthought.mayavi import mlab
-from nipy.datasets import VolumeImg
 import numpy as np
 
 rand = np.random.RandomState(1)
