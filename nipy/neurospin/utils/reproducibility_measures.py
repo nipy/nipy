@@ -308,9 +308,8 @@ def map_reproducibility(data, vardata, xyz, nbgroups, method='rfx',
          samples = split_group(nbsubj, nbgroups)
     else:
         samples = bootstrap_group(nbsubj, nbgroups)
-    subgroups = len(samples)
     rmap = np.zeros(nvox)
-    for i in range(subgroups):
+    for i in range(nbgroups):
         x = data[:,samples[i]]
         vx = vardata[:,samples[i]]
         if method=='rfx':

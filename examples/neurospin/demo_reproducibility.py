@@ -12,7 +12,10 @@ import get_data_light
 from nipy.neurospin.utils.reproducibility_measures import \
      voxel_reproducibility, cluster_reproducibility, map_reproducibility
 
-# Get the data
+# -------------------------------------------------------
+# -------- Set the paths, data, etc. --------------------
+# -------------------------------------------------------
+
 get_data_light.getIt()
 nbsubj = 12
 subj_id = range(nbsubj)
@@ -26,7 +29,7 @@ stat_images =[ op.join(data_dir,'spmT_%04d_subj_%02d.nii'%(nbeta,n))
                  for n in range(nbsubj)]
 contrast_images =[ op.join(data_dir,'con_%04d_subj_%02d.nii'%(nbeta,n))
                  for n in range(nbsubj)]
-
+swd = tempfile.mkdtemp('nifti')
 
 # -------------------------------------------------------
 # ---------- Make a group mask --------------------------
@@ -89,8 +92,12 @@ sform = rmask.header['sform']
 coord = np.hstack((xyz, np.ones((nvox, 1))))
 coord = np.dot(coord, sform.T)[:,:3]
 
+# -------------------------------------------------------
+# ---------- script ----------------------------
+# -------------------------------------------------------
+
 groupsize = 12
-thresholds = [2.0,2.5,3.0,3.5,4.0]
+thresholds = [2.0,2.5,3.0,3.5,4.0,5.0,6.0]
 sigma = 6.0
 csize = 10
 niter = 10
@@ -126,7 +133,7 @@ for threshold in thresholds:
         
     for i in range(niter):
         k = voxel_reproducibility(Functional, VarFunctional, xyz, groupsize,
-                                  method,verbose,**kwargs)
+                                  method, verbose, **kwargs)
         kappa.append(k)
         cld = cluster_reproducibility(Functional, VarFunctional, xyz,
                                       groupsize, coord, sigma,method,
@@ -150,16 +157,19 @@ mp.xticks(range(1,1+len(thresholds)),thresholds)
 mp.xlabel('threshold')
 mp.show()
 
-import pickle
-picname = '/tmp/'+'cluster_repro_%s.pic'%method
-pickle.dump(clt, open(picname, 'w'), 2)
-#toto = pickle.load(open(picname, 'r'))
+# -------------------------------------------------------
+# ---------- create an image ----------------------------
+# -------------------------------------------------------
 
+th = 3.0
+kwargs = {'threshold':th,'csize':csize}
 rmap = map_reproducibility(Functional, VarFunctional, xyz, groupsize,
-                                  method, verbose, **kwargs)
-
+                           method, verbose, **kwargs)
 wmap  = np.zeros(ref_dim).astype(np.int)
-wmap[mask]=rmap
+wmap[mask] = rmap
 wim = nifti.NiftiImage(wmap.T,rbeta.header)
-wim.description('reproducibility map')
-wim.save('/tmp/repro.nii')
+wim.description= 'reproducibility map at threshold %f, \
+                 cluster size %d'%(th,csize)
+wname = op.join(swd,'repro.nii')
+wim.save(wname)
+print('Wrote a reproducibility image in %s'%wname)
