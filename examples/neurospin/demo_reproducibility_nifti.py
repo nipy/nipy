@@ -17,18 +17,18 @@ from nipy.neurospin.utils.reproducibility_measures import \
 # -------------------------------------------------------
 
 get_data_light.getIt()
-nbsubj = 12
-subj_id = range(nbsubj)
+nsubj = 12
+subj_id = range(nsubj)
 nbeta = 29
 data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
                                  'group_t_images'))
 mask_images = [op.join(data_dir,'mask_subj%02d.nii'%n)
-               for n in range(nbsubj)]
+               for n in range(nsubj)]
 
 stat_images =[ op.join(data_dir,'spmT_%04d_subj_%02d.nii'%(nbeta,n))
-                 for n in range(nbsubj)]
+                 for n in range(nsubj)]
 contrast_images =[ op.join(data_dir,'con_%04d_subj_%02d.nii'%(nbeta,n))
-                 for n in range(nbsubj)]
+                 for n in range(nsubj)]
 swd = tempfile.mkdtemp('nifti')
 
 # -------------------------------------------------------
@@ -40,7 +40,7 @@ rmask = nifti.NiftiImage(mask_images[0])
 ref_dim = rmask.getVolumeExtent()
 
 mask = np.zeros(ref_dim)
-for s in range(nbsubj):
+for s in range(nsubj):
     rmask = nifti.NiftiImage(mask_images[s])
     m1 = rmask.asarray().T
     if (rmask.getVolumeExtent() != ref_dim):
@@ -48,7 +48,7 @@ for s in range(nbsubj):
     mask += m1>0
         
 # "intersect" the masks
-mask = mask>nbsubj/2
+mask = mask>nsubj/2
 xyz = np.where(mask)
 xyz = np.array(xyz).T
 nvox = xyz.shape[0]
@@ -61,7 +61,7 @@ nvox = xyz.shape[0]
 Functional = []
 VarFunctional = []
 tiny = 1.e-15
-for s in range(nbsubj): 
+for s in range(nsubj): 
     beta = []
     varbeta = []
     rbeta = nifti.NiftiImage(contrast_images[s])
@@ -96,12 +96,12 @@ coord = np.dot(coord, sform.T)[:,:3]
 # ---------- script ----------------------------
 # -------------------------------------------------------
 
-groupsize = 12
-thresholds = [2.0,2.5,3.0,3.5,4.0,5.0,6.0]
+ngroups = 10
+thresholds = [1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0]
 sigma = 6.0
 csize = 10
 niter = 10
-method = 'crfx'
+method = 'cmfx'
 verbose = 0
 
 # BSA stuff
@@ -109,7 +109,7 @@ header = rmask.header
 smin = 5
 theta= 3.
 dmax =  5.
-tht = groupsize/4
+tht = nsubj/4
 thq = 0.9
 afname = '/tmp/af'
 
@@ -132,14 +132,14 @@ for threshold in thresholds:
                 'dmax':dmax,'ths':ths,'thq':thq,'afname':afname}
         
     for i in range(niter):
-        k = voxel_reproducibility(Functional, VarFunctional, xyz, groupsize,
+        k = voxel_reproducibility(Functional, VarFunctional, xyz, ngroups,
                                   method, verbose, **kwargs)
         kappa.append(k)
         cld = cluster_reproducibility(Functional, VarFunctional, xyz,
-                                      groupsize, coord, sigma,method,
+                                      ngroups, coord, sigma,method,
                                       verbose, **kwargs)
         cls.append(cld)
-        print threshold,cld
+        
     kap.append(np.array(kappa))
     clt.append(np.array(cls))
     
@@ -155,7 +155,7 @@ mp.boxplot(clt)
 mp.title('cluster-level reproducibility')
 mp.xticks(range(1,1+len(thresholds)),thresholds)
 mp.xlabel('threshold')
-mp.show()
+
 
 # -------------------------------------------------------
 # ---------- create an image ----------------------------
@@ -163,7 +163,7 @@ mp.show()
 
 th = 3.0
 kwargs = {'threshold':th,'csize':csize}
-rmap = map_reproducibility(Functional, VarFunctional, xyz, groupsize,
+rmap = map_reproducibility(Functional, VarFunctional, xyz, ngroups,
                            method, verbose, **kwargs)
 wmap  = np.zeros(ref_dim).astype(np.int)
 wmap[mask] = rmap
@@ -172,4 +172,6 @@ wim.description= 'reproducibility map at threshold %f, \
                  cluster size %d'%(th,csize)
 wname = op.join(swd,'repro.nii')
 wim.save(wname)
+
 print('Wrote a reproducibility image in %s'%wname)
+mp.show()
