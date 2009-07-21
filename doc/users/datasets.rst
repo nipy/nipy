@@ -42,6 +42,12 @@ other objects.
 Here, we give a list of the nipy volumetric data structures, from most
 specific, to most general.
 
+Implemented classes
+--------------------
+
+Implemented classes (or `concrete` classes) are structures that you can
+readily use directly from nipy.
+
 .. currentmodule:: nipy.datasets.volumes.volume_grid
 
 :class:`VolumeGrid`
@@ -55,6 +61,14 @@ specific, to most general.
   .. image:: datasets/volume_grid.jpg
 
   .. currentmodule:: nipy.datasets.volumes.volume_data
+
+Abstract classes
+------------------
+
+Abstract classes cannot be used because they are incompletely
+implemented. They serve as to define the interface: the type of objects
+that you can use, or how you can extend nipy by exposing the same
+set of methods and attributes (the `interface`).
 
 :class:`VolumeData`
   In this volumetric structure, the data is sampled for some points in
@@ -84,8 +98,4 @@ specific, to most general.
   volumetric data structure interface: you can rely on all the methods
   documented for this class in any nipy data structure.
 
-
-
-Creating your own structures
-==================================
 
