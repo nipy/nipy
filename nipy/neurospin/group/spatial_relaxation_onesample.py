@@ -824,9 +824,11 @@ class multivariate_stat:
                     log_conditional_posterior_values[i] = \
                     self.compute_log_conditional_posterior(v, m_mean, m_var)[:-1]
         posterior_mean /= nsimu
+        if not stabilize:
+            self.v[:], self.m_mean[:], self.m_var[:] = v, m_mean, m_var
         return log_conditional_posterior_values, posterior_mean
     
-    def compute_log_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, stabilize=True, verbose=False):
+    def compute_log_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, stabilize=False, verbose=False):
         """
         compute log posterior density of region parameters by Rao-Blackwell method, 
         or a stabilized upper bound if stabilize is True.
@@ -840,7 +842,7 @@ class multivariate_stat:
         else:
             return max_log_conditional + np.log(np.exp(ll_ratio).sum(axis=0)) - np.log(nsimu)
     
-    def compute_marginal_likelihood(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, stabilize=True, verbose=False):
+    def compute_marginal_likelihood(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, stabilize=False, verbose=False):
         log_likelihood = self.compute_log_region_likelihood(v, m_mean, m_var)
         log_prior = self.compute_log_prior(v, m_mean, m_var)
         log_posterior = self.compute_log_posterior(v, m_mean, m_var, nsimu, burnin, stabilize, verbose)
