@@ -101,7 +101,7 @@ thresholds = [1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0]
 sigma = 6.0
 csize = 10
 niter = 10
-method = 'cmfx'
+method = 'crfx'
 verbose = 0
 
 # BSA stuff
@@ -161,7 +161,7 @@ mp.xlabel('threshold')
 # ---------- create an image ----------------------------
 # -------------------------------------------------------
 
-th = 3.0
+th = 2.0
 kwargs = {'threshold':th,'csize':csize}
 rmap = map_reproducibility(Functional, VarFunctional, xyz, ngroups,
                            method, verbose, **kwargs)
@@ -174,4 +174,13 @@ wname = op.join(swd,'repro.nii')
 wim.save(wname)
 
 print('Wrote a reproducibility image in %s'%wname)
+
+
+import two_binomial_mixture as mtb
+MB = mtb.TwoBinomialMixture()
+MB.estimate_parameters(rmap, ngroups+1)
+h = np.array([np.sum(rmap==i) for i in range(ngroups+1)])
+MB.show(h)
+print MB.kappa()
+
 mp.show()

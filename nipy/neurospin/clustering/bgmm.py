@@ -31,9 +31,11 @@ def dirichlet_eval(w,alpha):
     """
     Evaluate the probability of a certain discrete draw w
     from the Dirichlet density with parameters alpha
-    INPUT:
-    - w: array of shape (n)
-    - alpha: array of shape (n)
+    
+    Parameters
+    ----------
+    w: array of shape (n)
+    alpha: array of shape (n)
 
     FIXME : check that the dimensions of x and alpha are compatible
     """
@@ -49,11 +51,15 @@ def generate_normals(m,P):
     """
     Generate a Gaussian sample
     with mean m and precision P
-    INPUT:
-    - m array of shape n: the mean vector
-    - P array of shape (n,n): the precision matrix
-    OUTPUT:
-    - ng : array of shape(n): a draw from the gaussian density
+    
+    Parameters
+    ----------
+    m array of shape n: the mean vector
+    P array of shape (n,n): the precision matrix
+    
+    Returns
+    -------
+    ng : array of shape(n): a draw from the gaussian density
     """
     from numpy.linalg import cholesky,inv
     L = inv(cholesky(P))
@@ -66,14 +72,14 @@ def generate_Wishart(n,V):
     """
     Generate a sample from Wishart
 
-    INPUT: 
-    ------
-    - n (scalar) = the number of degrees of freedom (dofs)
-    - V = array of shape (n,n) the scale matrix
+    Parameters
+    ----------
+    n (scalar) = the number of degrees of freedom (dofs)
+    V = array of shape (n,n) the scale matrix
 
-    OUTPUT:
+    Returns
     -------
-    - W: array of shape (n,n): the Wishart draw
+    W: array of shape (n,n): the Wishart draw
     """
     from numpy.linalg import cholesky
     L = cholesky(V)
@@ -91,15 +97,15 @@ def Wishart_eval(n,V,W):
     """
     Evaluation of the  probability of W under Wishart(n,V)
 
-    INPUT: 
-    ------
-    - n (scalar) = the number of degrees of freedom (dofs)
-    - V = array of shape (n,n) the scale matrix
-    - W: array of shape (n,n): the Wishart draw
+    Parameters
+    ----------
+    n (scalar) = the number of degrees of freedom (dofs)
+    V = array of shape (n,n) the scale matrix
+    W: array of shape (n,n): the Wishart draw
 
-    OUTPUT:
+    Returns
     -------
-    - the density
+    (float) the density
     """
     # check that shape(V)==shape(W)
     from numpy.linalg import det,pinv
@@ -118,15 +124,15 @@ def normal_eval(mu,P,x):
     """
     Probability of x under normal(mu,inv(P))
 
-    INPUT:
-    ------
-    - mu: array of shape (n): the mean parameter
-    - P: array of shape (n,n): the precision matrix 
-    - x: array of shape (n): the data to be evaluated
+    Parameters
+    ----------
+    mu: array of shape (n): the mean parameter
+    P: array of shape (n,n): the precision matrix 
+    x: array of shape (n): the data to be evaluated
 
-    OUTPUT:
+    Returns
     -------
-    - the scalar
+    (float) the density
     """
     from numpy.linalg import det
     p = np.size(mu)
@@ -145,8 +151,9 @@ def generate_perm(k,nperm=100):
     the permutations of k elements
     - nperm=100
     if k>5: only nperm random draws are generated
-
-    OUPUT:
+   
+   Returns
+   -------
     p: array of shape(nperm,k): each row is permutation of k
     """
     if k==1:
@@ -177,15 +184,18 @@ def apply_perm(perm,z):
 def multinomial(Likelihood):
     """
     Generate samples form a miltivariate distribution
-    INPUT:
-    - Likelihood: array of shape (nelements, nclasses):
-    likelihood of each element belongin to each class
-    each row is assumedt to sum to 1
-    One sample is draw from each row, resulting in an array
 
-    OUPUT:
-    - z array of shape (nelements): the draws,
-    that take values in [0..nclasses-1]
+    Parameters
+    ----------
+    Likelihood: array of shape (nelements, nclasses):
+                likelihood of each element belongin to each class
+                each row is assumedt to sum to 1
+                One sample is draw from each row, resulting in
+    
+    Returns
+    -------
+    z array of shape (nelements): the draws,
+      that take values in [0..nclasses-1]
     """
     nvox = Likelihood.shape[0]
     nclasses =  Likelihood.shape[1]
@@ -197,7 +207,7 @@ def multinomial(Likelihood):
 
 def dkl_gaussian(m1,P1,m2,P2):
     """
-    Rteun the KL divergence between gausians with densities
+    Returns the KL divergence between gausians with densities
     (m1,P1) and (m2,P2)
     where m = mean and P = precision
     """
@@ -338,13 +348,13 @@ class BGMM(GMM):
         """
         Set the prior of the BGMM
 
-        INPUT:
-        ------
-        - prior_means: array of shape (self.k,self.dim)
-        - prior_weights: array of shape (self.k)
-        - prior_scale: array of shape (self.k,self.dim,self.dim)
-        - prior_dof: array of shape (self.k)
-        - prior_shrinkage: array of shape (self.k)
+        Parameters
+        ----------
+        prior_means: array of shape (self.k,self.dim)
+        prior_weights: array of shape (self.k)
+        prior_scale: array of shape (self.k,self.dim,self.dim)
+        prior_dof: array of shape (self.k)
+        prior_shrinkage: array of shape (self.k)
         """
         self.prior_means = prior_means
         self.prior_weights = prior_weights
@@ -358,12 +368,12 @@ class BGMM(GMM):
         Set the priors in order of having them weakly uninformative
         this is from  Fraley and raftery;
         Journal of Classification 24:155-181 (2007)
-
-        INPUT:
-        ------
-        - x: array of shape (nbitems,self.dim)
-        the data used in the estimation process
-        - nocheck=0: if nocheck==Ture, check is skipped
+        
+        Parameters
+        ----------
+        x: array of shape (nbitems,self.dim)
+           the data used in the estimation process
+        nocheck=0: if nocheck==Ture, check is skipped
         """
         # a few parameters
         small = 0.01
@@ -389,10 +399,10 @@ class BGMM(GMM):
         """
         initialize z using a k-means algorithm, then upate the parameters
 
-        INPUT:
-        ------
-        - x:array of shape (nbitems,self.dim)
-        the data used in the estimation process
+        Parameters
+        ----------
+        x: array of shape (nbitems,self.dim)
+           the data used in the estimation process
         """
         if self.k>1:
             cent,z,J = fc.cmeans(x,self.k)
@@ -404,14 +414,14 @@ class BGMM(GMM):
         """
         compute the population, i.e. the statistics of allocation
 
-        INPUT:
-        ------
-        - z array of shape (nbitems), type = np.int
-        the allocation variable
+        Parameters
+        ----------
+        z array of shape (nbitems), type = np.int
+          the allocation variable
 
-        OUPUT:
-        ------
-        - hist : count variable, array shape (self.k)
+        Returns
+        -------
+        hist : array shape (self.k)n count variable
         """
         hist = np.array([np.sum(z==k) for k in range(self.k)])
         return hist
@@ -420,10 +430,10 @@ class BGMM(GMM):
         """
         Given the allocation vector z, resmaple the weights parameter
         
-        INPUT:
-        ------
-        - z array of shape (nbitems), type = np.int
-        the allocation variable
+        Parameters
+        ----------
+        z array of shape (nbitems), type = np.int
+          the allocation variable
         """
         pop = self.pop(z)
         weights = pop+self.prior_weights
@@ -435,12 +445,12 @@ class BGMM(GMM):
         and the corresponding data x,
         resample the mean
 
-        INPUT:
-        ------
-        - x array of shape (nbitems,self.dim)
-        the data used in the estimation process
-        - z array of shape (nbitems), type = np.int
-        the corresponding classification
+        Parameters
+        ----------
+        x array of shape (nbitems,self.dim)
+          the data used in the estimation process
+        z array of shape (nbitems), type = np.int
+          the corresponding classification
         """
         pop = self.pop(z)
         self.shrinkage = self.prior_shrinkage + pop
@@ -463,12 +473,12 @@ class BGMM(GMM):
         and the corresponding data x,
         resample the precisions
 
-        INPUT:
-        ------
-        - x array of shape (nbitems,self.dim)
-        the data used in the estimation process
-        - z array of shape (nbitems), type = np.int
-        the corresponding classification
+        Parameters
+        ----------
+        x array of shape (nbitems,self.dim)
+          the data used in the estimation process
+        z array of shape (nbitems), type = np.int
+          the corresponding classification
         """
         from numpy.linalg import pinv
 
@@ -508,12 +518,12 @@ class BGMM(GMM):
         """
         update function (draw a sample of the GMM parameters)
 
-        INPUT:
-        ------
-        - x array of shape (nbitems,self.dim)
-        the data used in the estimation process
-        - z array of shape (nbitems), type = np.int
-        the corresponding classification
+        Parameters
+        ----------
+        x array of shape (nbitems,self.dim)
+          the data used in the estimation process
+        z array of shape (nbitems), type = np.int
+          the corresponding classification
         """
         self.update_weights(z)
         self.update_precisions(x,z)
@@ -523,15 +533,14 @@ class BGMM(GMM):
         """
         sample the indicator from the likelihood
 
-        INPUT:
-        ------
-        - l: array of shape (nbitem,self.k)
-        component-wise likelihood
+        Parameters
+        ----------
+        L: array of shape (nbitem,self.k)
+           component-wise likelihood
 
-        OUTPUT:
-        ------
-        - z: array of shape(nbitem): a draw of the memmbership variable
-        
+        Returns
+        -------
+        z: array of shape(nbitem): a draw of the membership variable
         """
         tiny = 1+1.e-15
         L = np.transpose(np.transpose(L)/L.sum(1))
@@ -543,22 +552,22 @@ class BGMM(GMM):
         """
         sample the indicator and parameters
 
-        INPUT:
-        ------
-        - x array of shape (nbitems,self.dim)
-        the data used in the estimation process
-        - niter=1 : the number of iterations to perform
-        - mem=0:
-            if mem, the best values of the parameters are computed
-        - verbose=0: verbosity mode
+        Parameters
+        ----------
+        x array of shape (nbitems,self.dim)
+          the data used in the estimation process
+        niter=1 : the number of iterations to perform
+        mem=0: if mem, the best values of the parameters are computed
+        verbose=0: verbosity mode
 
-        OUTPUT:
+        Returns
         -------
-        - best_weights: array of shape (self.k)
-        - best_means: array of shape (self.k,self.dim)
-        - best_precisions: array of shape (self.k,self.dim,self.dim) 
-        - possibleZ: array of shape (nbitems,niter)
-        the z that give the highest posterior to the data is returned first
+        best_weights: array of shape (self.k)
+        best_means: array of shape (self.k,self.dim)
+        best_precisions: array of shape (self.k,self.dim,self.dim) 
+        possibleZ: array of shape (nbitems,niter)
+                   the z that give the highest posterior 
+                   to the data is returned first
         """
         self.check_x(x)
         if mem:
@@ -598,25 +607,25 @@ class BGMM(GMM):
         sample the indicator and parameters
         the average values for weights,means, precisions are returned
 
-        INPUT:
-        ------
-        - x = array of shape (nbitems,dim)
-        the data from which bic is computed
-        - niter=1: number of iterations
+        Parameters
+        ----------
+        x = array of shape (nbitems,dim)
+          the data from which bic is computed
+        niter=1: number of iterations
 
-        OUTPUT:
+        Returns
         -------
-        - weights: array of shape (self.k)
-        - means: array of shape (self.k,self.dim)
-        - precisions:  array of shape (self.k,self.dim,self.dim)
-        or (self.k, self.dim)
-       these are the average parameters across samplings
+        weights: array of shape (self.k)
+        means: array of shape (self.k,self.dim)
+        precisions:  array of shape (self.k,self.dim,self.dim)
+                     or (self.k, self.dim)
+                     these are the average parameters across samplings
 
-       NOTE:
-       -----
-       - All this makes sense only if no label switching as occurred
-       so this is wrong in general (asymptotically)
-       - fix: implement a permutation procedure for components identification
+       Note
+       ----
+       All this makes sense only if no label switching as occurred
+           so this is wrong in general (asymptotically)
+       fix: implement a permutation procedure for components identification
         """
         aprec  = np.zeros(np.shape(self.precisions))
         aweights  = np.zeros(np.shape(self.weights))
@@ -653,12 +662,12 @@ class BGMM(GMM):
         Compute the probability of the current parameters of self
         given x and z
 
-         INPUT:
-        ------
-        - x= array of shape (nbitems,dim)
-        the data from which bic is computed
-        - z= array of shape (nbitems), type = np.int
-        the corresponding classification
+        Parameters
+        ----------
+        x= array of shape (nbitems,dim)
+           the data from which bic is computed
+        z= array of shape (nbitems), type = np.int
+           the corresponding classification
         """
         pop = self.pop(z)
 
@@ -726,25 +735,26 @@ class BGMM(GMM):
         """
         Evaluate the Bayes Factor of the current model using Chib's method
 
-        INPUT:
-        ------
-        - x= array of shape (nbitems,dim)
-        the data from which bic is computed
-        - z= array of shape (nbitems), type = np.int
-        the corresponding classification
-        - nperm=0 : the number of permutations to sample
-        to model the label switching issue in the computation of the BF
-        By default, exhaustive permutations are used
-        if nperm>0, this number is used.
-        Note that this is simply to save time
-        - verbose=0: verbosity mode
+        Parameters
+        ----------
+        x= array of shape (nbitems,dim)
+           the data from which bic is computed
+        z= array of shape (nbitems), type = np.int
+           the corresponding classification
+        nperm=0 : the number of permutations to sample
+                to model the label switching issue 
+                in the computation of the BF
+                By default, exhaustive permutations are used
+                if nperm>0, this number is used.
+                Note that this is simply to save time
+        verbose=0: verbosity mode
         
-        OUTPUT:
+        Returns
         -------
-        - the computed evidence (Bayes factor)
+        bf (float) the computed evidence (Bayes factor)
 
-        NOTE:
-        -----
+        Note
+        ----
         See: Marginal Likelihood from the Gibbs Output
         Journal article by Siddhartha Chib;
         Journal of the American Statistical Association, Vol. 90, 1995
@@ -838,15 +848,15 @@ class VBGMM(BGMM):
         VB-E step
         returns the likelihood of the data for each class
 
-        INPUT:
-        ------
-        - x array of shape (nbitems,dim)
-        the data used in the estimation process
+        Parameters
+        ----------
+        x array of shape (nbitems,dim)
+          the data used in the estimation process
         
-        OUTPUT:
+        Returns
         -------
-        - l array of shape(nbitem,self.k)
-        component-wise likelihood
+        L array of shape(nbitem,self.k)
+          component-wise likelihood
         
         """
         n = x.shape[0]
@@ -877,18 +887,18 @@ class VBGMM(BGMM):
         """
         computation of evidence or integrated likelihood
 
-        INPUT:
-        ------
-        - x array of shape (nbitems,dim)
-        the data from which bic is computed
-        - l=None: array of shape (nbitem,self.k)
-        component-wise likelihood
-        If None, it is recomputed
-        - vernose=0: verbosity model
+        Parameters
+        ----------
+        x array of shape (nbitems,dim)
+          the data from which bic is computed
+        l=None: array of shape (nbitem,self.k)
+                component-wise likelihood
+                If None, it is recomputed
+        verbose=0: verbosity model
         
-        OUTPUT:
+        Returns
         -------
-        - the computed evidence
+        ev (float) the computed evidence
         """
         from scipy.special import psi
         from numpy.linalg import det,pinv
@@ -943,12 +953,12 @@ class VBGMM(BGMM):
         """
         VB-M step
 
-         INPUT:
-        ------
-        - x: array of shape(nbitem,self.dim)
-        the data from which the model is estimated
-        - L: array of shape(nbitem,self.k)
-        the likelihood of the data under each class
+        Parameters
+        ----------
+        x: array of shape(nbitem,self.dim)
+           the data from which the model is estimated
+        L: array of shape(nbitem,self.k)
+           the likelihood of the data under each class
         """
         from numpy.linalg import pinv
         tiny  =1.e-15
@@ -987,19 +997,19 @@ class VBGMM(BGMM):
         covariance += addcov*apms
 
         self.scale = np.array([pinv(covariance[k]) for k in range(self.k)])
-
+        
         # fixme : compute the MAP of the precisions
         #(not used, but for completness and interpretation)
         
         
-    def initialize(self,x):
+    def initialize(self, x):
         """
         initialize z using a k-means algorithm, then upate the parameters
 
-        INPUT:
-        ------
-        - x:array of shape (nbitems,self.dim)
-        the data used in the estimation process
+        Parameters
+        ----------
+        x: array of shape (nbitems,self.dim)
+           the data used in the estimation process
         """
         n = x.shape[0]
         if self.k>1:
@@ -1010,39 +1020,43 @@ class VBGMM(BGMM):
         l[np.arange(n),z]=1
         self._Mstep(x,l)
 
-    def map_label(self,x,l=None):
+    def map_label(self, x, L=None):
         """
         return the MAP labelling of x 
-        INPUT:
-        - x array of shape (nbitem,dim)
-        the data under study
-        - l=None array of shape(nbitem,self.k)
-        component-wise likelihood
-        if l==None, it is recomputed
-        OUTPUT:
-        - z: array of shape(nbitem): the resulting MAP labelling
-        of the rows of x
+        
+        Parameters
+        ----------
+        x array of shape (nbitem,dim)
+          the data under study
+        L=None array of shape(nbitem,self.k)
+               component-wise likelihood
+               if L==None, it is recomputed
+        
+        Returns
+        -------
+        z: array of shape(nbitem): the resulting MAP labelling
+           of the rows of x
         """
-        if l== None:
-            l = self.likelihood(x)
-        z = np.argmax(l,1)
+        if L== None:
+            L = self.likelihood(x)
+        z = np.argmax(L,1)
         return z   
 
-    def estimate(self,x,niter=100,delta = 1.e-4,verbose=0):
+    def estimate(self,x, niter=100, delta = 1.e-4, verbose=0):
         """
-         estimation of self given x
+        estimation of self given x
 
-        INPUT:
-        ------
-         - x array of shape (nbitem,dim)
-        the data from which the model is estimated
-        - z = None: array of shape (nbitem)
-        a prior labelling of the data to initialize the computation
-        - niter=100: maximal number of iterations in the estimation process
-        - delta = 1.e-4: increment of data likelihood at which
-        convergence is declared
-        - verbose=0:
-        verbosity mode
+        Parameters
+        ----------
+        x array of shape (nbitem,dim)
+          the data from which the model is estimated
+        z = None: array of shape (nbitem)
+          a prior labelling of the data to initialize the computation
+        niter=100: maximal number of iterations in the estimation process
+        delta = 1.e-4: increment of data likelihood at which
+              convergence is declared
+        verbose=0:
+                verbosity mode
         """
         # alternation of E/M step until convergence
         tiny = 1.e-15
@@ -1050,8 +1064,8 @@ class VBGMM(BGMM):
         allOld = -np.infty
         for i in range(niter):
             cc = self.means.copy()
-            l = self._Estep(x)
-            all = np.mean(np.log(np.maximum( np.sum(l,1),tiny)))
+            L = self._Estep(x)
+            all = np.mean(np.log(np.maximum( np.sum(L,1),tiny)))
             if all<allOld+delta:
                 if verbose:
                     print 'iteration:',i, 'log-likelihood:',all,\
@@ -1060,41 +1074,41 @@ class VBGMM(BGMM):
             else:
                 allOld = all
             if verbose:
-                print i, all, self.bic(l)
-            l = (l.T/np.maximum(l.sum(1),tiny)).T
-            self._Mstep(x,l)
+                print i, all, self.bic(L)
+            L = (L.T/np.maximum(L.sum(1),tiny)).T
+            self._Mstep(x,L)
             
     def likelihood(self,x):
         """
         return the likelihood of the model for the data x
         the values are weighted by the components weights
 
-        INPUT:
-        ------
-        - x:array of shape (nbitems,self.dim)
-        the data used in the estimation process
+        Parameters
+        ----------
+        x: array of shape (nbitems,self.dim)
+           the data used in the estimation process
 
-        OUTPUT:
-        ------
-        - l array of shape(nbitem,self.k)
-        component-wise likelihood
+        Returns
+        -------
+        L array of shape(nbitem,self.k)
+          component-wise likelihood
         """
         x = self.check_x(x)
         return self._Estep(x) 
             
 
-def pop(self,l,tiny = 1.e-15):
+def pop(self, L, tiny = 1.e-15):
         """
         compute the population, i.e. the statistics of allocation
 
-        INPUT:
-        ------
-        - l array of shape (nbitem,self.k):
-        the likelihood of each item being in each class
+        Parameters
+        ----------
+        L array of shape (nbitem,self.k):
+          the likelihood of each item being in each class
         """
-        sl = np.maximum(tiny,np.sum(l,1))
-        nl = (l.T/sl).T
-        return np.sum(nl,0)
+        sL = np.maximum(tiny,np.sum(L,1))
+        nL = (L.T/sL).T
+        return np.sum(nL,0)
 
 
 # ------------------------------------------
