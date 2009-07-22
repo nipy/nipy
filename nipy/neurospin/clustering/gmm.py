@@ -400,8 +400,8 @@ class GMM():
            the data used in the estimation process
         """
         x = self.check_x(x)
-        l = self.likelihood(x)
-        sl = np.sum(l,1)
+        like = self.likelihood(x)
+        sl = np.sum(like,1)
         return sl
 
     def average_log_like(self,x,tiny = 1.e-15):
@@ -416,8 +416,8 @@ class GMM():
         tiny = 1.e-15: a small constant to avoid numerical singularities
         """
         x = self.check_x(x)
-        l = self.likelihood(x)
-        sl = np.sum(l,1)
+        like = self.likelihood(x)
+        sl = np.sum(like,1)
         sl = np.maximum(sl,tiny)
         return np.mean(np.log(sl))
 

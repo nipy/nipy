@@ -271,7 +271,7 @@ def voxel_reproducibility(data, vardata, xyz, ngroups, method='rfx',
 
     import two_binomial_mixture as mtb
     MB = mtb.TwoBinomialMixture()
-    MB.estimate_parameters(rmap, ngroups)
+    MB.estimate_parameters(rmap, ngroups+1)
     if verbose:
         h = np.array([np.sum(rmap==i) for i in range(ngroups+1)])
         MB.show(h)

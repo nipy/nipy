@@ -15,7 +15,7 @@ from nipy.neurospin.utils.reproducibility_measures import \
 # -------------------------------------------------------
 #----- generate the data --------------------------------
 # -------------------------------------------------------
-nsubj = 12
+nsubj = 105
 dimx = 60
 dimy = 60
 pos = 2*np.array([[ 6,  7],
@@ -42,7 +42,7 @@ thresholds = [0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.0]
 sigma = 2.0
 csize = 10
 niter = 10
-method = 'cmfx'
+method = 'crfx'
 verbose = 0
 
 kap = []
@@ -100,3 +100,4 @@ for threshold in thresholds:
     q +=1
 mp.colorbar()
 mp.show()
+

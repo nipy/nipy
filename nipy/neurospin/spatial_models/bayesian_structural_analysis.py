@@ -537,8 +537,9 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
             beta = beta[beta!=0]
             alpha = 0.01
             prior_strength = 100
+            fixed_scale = True
             bfp = en.three_classes_GMM_fit(beta, bfm, alpha,
-                                        prior_strength,verbose)
+                                        prior_strength,verbose,fixed_scale)
             bf0 = bfp[:,1]
             gf0.append(bf0)
             
@@ -696,8 +697,9 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
             # use a GMM model...
             alpha = 0.01
             prior_strength = 100
+            fixed_scale = True
             bfp = en.three_classes_GMM_fit(beta, bfm, alpha,
-                                        prior_strength,verbose)
+                                        prior_strength,verbose, fixed_scale)
             bf0 = bfp[:,1]
             
             ## ... or the emp_null heuristic
