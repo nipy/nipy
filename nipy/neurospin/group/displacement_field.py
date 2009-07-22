@@ -229,7 +229,7 @@ class gaussian_random_field:
         self.XYZ_vol[list(XYZ)] = np.arange(p)
         mask_vol = np.zeros(XYZ.max(axis=1) + 1, int)
         mask_vol[list(XYZ)] += 1
-        mask_vol = binary_erosion(mask_vol.squeeze(), iterations=int(round(3*self.sigma.max())))
+        mask_vol = binary_erosion(mask_vol.squeeze(), iterations=int(round(2*self.sigma.max())))
         mask_vol = mask_vol.reshape(XYZ.max(axis=1) + 1).astype(int)
         XYZ_mask = np.array(np.where(mask_vol > 0))
         self.mask = self.XYZ_vol[XYZ_mask[0], XYZ_mask[1], XYZ_mask[2]]
