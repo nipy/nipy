@@ -383,44 +383,48 @@ class ENN:
 
  
 def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
-                          verbose=0, mpaxes=None, bias=0, theta=0):
+                          verbose=0, fixed_scale=False, mpaxes=None, bias=0, 
+                          theta=0):
     """
      Fit the data with a 3-classes Gaussian Mixture Model,
     i.e. computing some probability that the voxels of a certain map
     are in class disactivated, null or active
 
-    Parameters:
-    ------------
-    - x array of shape (nvox,1): the map to be analysed
-    - test=None array of shape(nbitems,1):
-    the test values for which the p-value needs to be computed
-    by default, test=x
-    - alpha = 0.01 the prior weights of the positive and negative classes
-    - prior_strength = 100 the confidence on the prior
-    (should be compared to size(x))
-    - verbose=0 : verbosity mode
-    - mpaxes=None: axes handle used to plot the figure in verbose mode
-    if None, new axes are created
-    - bias = 0: allows a recaling of the posterior probability
-    that takes into account the thershold theta. Not rigorous.
-    - theta = 0 the threshold used to correct the posterior p-values
-    when bias=1; normally, it is such that test>theta
-    note that if theta = -np.infty, then the method has a standard behaviour
     
-    Results:
-    ------------
-    - bfp : array of shape (nbitems,3):
-    the posterior probability of each test item belonging to each component
-    in the GMM (sum to 1 across the 3 classes)
-    if np.size(test)==0, i.e. nbitem==0, None is returned
+    Parameters
+    ----------
+    x array of shape (nvox,1): the map to be analysed
+    test=None array of shape(nbitems,1):
+      the test values for which the p-value needs to be computed
+      by default, test=x
+    alpha = 0.01 the prior weights of the positive and negative classes
+    prior_strength = 100 the confidence on the prior
+                   (should be compared to size(x))
+    verbose=0 : verbosity mode
+    fixed_scale = False, boolean, variance parameterization
+                if True, the variance is locked to 1
+                otherwise, it is estimated from the data
+    mpaxes=None: axes handle used to plot the figure in verbose mode
+                 if None, new axes are created
+    bias = 0: allows a recaling of the posterior probability
+         that takes into account the thershold theta. Not rigorous.
+    theta = 0 the threshold used to correct the posterior p-values
+          when bias=1; normally, it is such that test>theta
+          note that if theta = -np.infty, the method has a standard behaviour
+    
+    Results
+    -------
+    bfp : array of shape (nbitems,3):
+        the posterior probability of each test item belonging to each component
+        in the GMM (sum to 1 across the 3 classes)
+        if np.size(test)==0, i.e. nbitem==0, None is returned
 
-    Note:
-    --------
+    Note
+    ----
     Our convention is that
     - class 1 represents the negative class
     - class 2 represenst the null class
     - class 3 represents the positsive class
-
     """
     nvox = np.size(x)
     x = np.reshape(x,(nvox,1))
@@ -441,10 +445,13 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
     mb0 = np.mean(sx[:alpha*nvox])
     mb2 = np.mean(sx[(1-alpha)*nvox:])
     prior_means = np.reshape(np.array([mb0,0,mb2]),(nclasses,1))
-    prior_scale = np.ones((nclasses,1,1))*1./prior_strength
-    prior_dof = np.ones(nclasses)*prior_strength
-    prior_weights = np.array([alpha,1-2*alpha,alpha])*prior_strength
-    prior_shrinkage = np.ones(nclasses)*prior_strength
+    if fixed_scale:
+        prior_scale = np.ones((nclasses,1,1)) * 1./(prior_strength)
+    else:
+        prior_scale = np.ones((nclasses,1,1)) * 1./(prior_strength*np.var(x))
+    prior_dof = np.ones(nclasses) * prior_strength
+    prior_weights = np.array([alpha,1-2*alpha,alpha]) * prior_strength
+    prior_shrinkage = np.ones(nclasses) * prior_strength
 
     # instantiate the class and set the priors
     BayesianGMM = VBGMM(nclasses,1,prior_means,prior_scale,

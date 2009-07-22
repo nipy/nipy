@@ -8,7 +8,104 @@ import numpy.random as nr
 from nipy.neurospin.clustering.gmm import GMM
 import nipy.neurospin.clustering.gmm as gmm
 
+def test_em_loglike0():
+    """
+    """
+    dim = 1
+    k = 1
+    n = 1000
+    x = nr.randn(n,dim)
+    lgmm = GMM(k,dim)
+    lgmm.initialize(x)
+    lgmm.estimate(x)
+    ll = lgmm.average_log_like(x)
+    ent = 0.5*(1+np.log(2*np.pi))
+    print ll, ent
+    assert np.absolute(ll+ent)<3./np.sqrt(n)
 
+def test_em_loglike1():
+    """
+    """
+    dim = 1
+    k = 3
+    n = 1000
+    x = nr.randn(n,dim)
+    lgmm = GMM(k,dim)
+    lgmm.initialize(x)
+    lgmm.estimate(x)
+    ll = lgmm.average_log_like(x)
+    ent = 0.5*(1+np.log(2*np.pi))
+    print ll, ent
+    assert np.absolute(ll+ent)<3./np.sqrt(n)
+
+def test_em_loglike2():
+    """
+    """
+    dim = 1
+    k = 1
+    n = 1000
+    scale = 3.
+    offset = 4.
+    x = offset + scale * nr.randn(n,dim)
+    lgmm = GMM(k,dim)
+    lgmm.initialize(x)
+    lgmm.estimate(x)
+    ll = lgmm.average_log_like(x)
+    ent = 0.5*(1+np.log(2*np.pi*scale**2))
+    print ll, ent
+    assert np.absolute(ll+ent)<3./np.sqrt(n)
+
+def test_em_loglike3():
+    """
+    """
+    dim = 2
+    k = 1
+    n = 1000
+    scale = 3.
+    offset = 4.
+    x = offset + scale * nr.randn(n,dim)
+    lgmm = GMM(k,dim)
+    lgmm.initialize(x)
+    lgmm.estimate(x)
+    ll = lgmm.average_log_like(x)
+    ent = dim*0.5*(1+np.log(2*np.pi*scale**2))
+    print ll, ent
+    assert np.absolute(ll+ent)<dim*3./np.sqrt(n)
+
+def test_em_loglike4():
+    """
+    """
+    dim = 5
+    k = 1
+    n = 1000
+    scale = 3.
+    offset = 4.
+    x = offset + scale * nr.randn(n,dim)
+    lgmm = GMM(k,dim)
+    lgmm.initialize(x)
+    lgmm.estimate(x)
+    ll = lgmm.average_log_like(x)
+    ent = dim*0.5*(1+np.log(2*np.pi*scale**2))
+    print ll, ent
+    assert np.absolute(ll+ent)<dim*3./np.sqrt(n)    
+
+def test_em_loglike5():
+    """
+    """
+    dim = 2
+    k = 1
+    n = 1000
+    scale = 3.
+    offset = 4.
+    x = offset + scale * nr.randn(n,dim)
+    y = offset + scale * nr.randn(n,dim)
+    lgmm = GMM(k,dim)
+    lgmm.initialize(x)
+    lgmm.estimate(x)
+    ll = lgmm.average_log_like(y)
+    ent = dim*0.5*(1+np.log(2*np.pi*scale**2))
+    print ll, ent
+    assert np.absolute(ll+ent)<dim*3./np.sqrt(n)
 
 def test_em_selection():
     """
