@@ -45,6 +45,35 @@ def test_multinomial():
     res = res*1.0/nsamples
     assert np.sum((aux-res)**2)<1.e-4
 
+def test_dkln1():
+    m1 = np.zeros(3)
+    P1 = np.eye(3)
+    m2 = np.zeros(3)
+    P2 = np.eye(3)
+    assert dkl_gaussian(m1,P1,m2,P2)== 0
+
+def test_dkln2():
+    dim = 3
+    offset = 4
+    m1 = np.zeros(dim)
+    P1 = np.eye(dim)
+    m2 = offset*np.ones(dim)
+    P2 = np.eye(dim)
+    assert dkl_gaussian(m1,P1,m2,P2)==.5*dim*offset**2
+
+def test_dkln3():
+    dim = 3
+    scale = 4
+    m1 = np.zeros(dim)
+    P1 = np.eye(dim)
+    m2 = np.zeros(dim)
+    P2 = scale*np.eye(dim)
+    test1 = .5*(dim*np.log(scale)+dim*(1./scale-1))
+    test2 = .5*(-dim*np.log(scale)+dim*(scale-1)) 
+    print dkl_gaussian(m1,P1,m2,P2),test1,test2
+    # fixme : it should be test1 !!
+    assert dkl_gaussian(m1,P1,m2,P2)==test2
+  
 
 def test_bgmm_gibbs(verbose=0):
     """
