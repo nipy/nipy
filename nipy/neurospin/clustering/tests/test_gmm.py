@@ -107,6 +107,25 @@ def test_em_loglike5():
     print ll, ent
     assert np.absolute(ll+ent)<dim*3./np.sqrt(n)
 
+def test_em_loglike6():
+    """
+    """
+    dim = 1
+    k = 1
+    n = 100
+    offset = 3.
+    x = nr.randn(n,dim)
+    y = offset+nr.randn(dim)
+    lgmm = GMM(k,dim)
+    lgmm.initialize(x)
+    lgmm.estimate(x)
+    ll1 =  lgmm.average_log_like(x)
+    ll2 = lgmm.average_log_like(y)
+    ent = 0.5*(1+np.log(2*np.pi))
+    dkl = 0.5*offset**2
+    print ll2, ll1,dkl
+    assert ll2>ll1
+
 def test_em_selection():
     """
     test that the basic GMM-based model selection tool

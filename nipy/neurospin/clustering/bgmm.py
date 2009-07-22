@@ -1172,9 +1172,12 @@ class BGMM_old(GMM):
         
     def set_empirical_priors(self,x):
         """
-        Set the prior in a natural (almost uninformative) fashion given a dataset x
-        INPUT:
-        - the BGMM priors
+        Set the prior in a natural (almost uninformative) 
+        fashion given a dataset x
+
+        Parameters
+        ----------
+        x array of shape(nbitems,dim) : the reference data
         """
         x = self.check_data(x)
         self.prior_dof = self.dim*np.ones(self.k)
@@ -1186,13 +1189,17 @@ class BGMM_old(GMM):
     def VB_estimate(self,x,niter = 100,delta = 0.0001):
         """
         Estimation of the BGMM using a Variational Bayes approach
-
-        INPUT:
-        - x array of shape (nbitems,dim) the input data
-        - niter = 100, the maximal number of iterations of the VB algo
-        - delta = 0.0001, the increment in log-likelihood to declare convergence 
-        OUTPUT:
-        - label: array of shape nbitems: resulting MAP labelling
+        
+        Parameters
+        ----------
+        x array of shape (nbitems,dim) the input data
+        niter = 100, the maximal number of iterations of the VB algo
+        delta = 0.0001, the increment in log-likelihood 
+              to declare convergence 
+        
+        Returns
+        -------
+        label: array of shape nbitems: resulting MAP labelling
         """
         x = self.check_data(x)
 
@@ -1214,18 +1221,24 @@ class BGMM_old(GMM):
         """
         Sampling of the BGMM model on test points (the 'grid')in order to have
         an estimate of the posterior on these points
+        
+        Parameters
+        ----------
+        gd = a grid descriptor, i.e. 
+           the grid on chich the BGMM is sampled
+        x = None: used for plotting (empirical data)
 
-        INPUT:
-        - gd = a grid descriptor, i.e. 
-        the grid on chich the BGMM is sampled
-        - x = None: used for plotting (empirical data)
-
-        OUTPUT:
-        - Li : array of shape (nbnodes,self.k): the posterior for each node and component
+        Returns
+        -------
+        Li : array of shape (nbnodes,self.k),
+            the posterior for each node and component
         """
         if self.estimated:
             grid = gd.make_grid()
-            Li = fc.bayesian_gmm_sampling(self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,self.means,self.precisions,self.shrinkage,self.weights, self.dof,grid)
+            Li = fc.bayesian_gmm_sampling(self.prior_means, \
+                 self.prior_precisions, self.prior_shrinkage, 
+                 self.prior_weights, self.prior_dof, self.means, 
+                 self.precisions, self.shrinkage, self.weights, self.dof, grid)
         else:
             raise ValueError, "the model has not been estimated"
 
@@ -1233,27 +1246,27 @@ class BGMM_old(GMM):
             self.show(x,gd,np.exp(Li))
         return Li.sum(1)
 
-
-
-
     def VB_estimate_and_sample(self,x,niter = 1000,delta = 0.0001,gd = None,verbose = 0):
         """
         Estimation of the BGMM using a Variational Bayes approach,
         and sampling of the model on test points in order to have
         an estimate of the posterior on these points
 
-        INPUT:
-        - x array of shape (nbitems,dim) the input data
-        - niter = 100, the maximal number of iterations of the VB algo
-        - delta = 0.0001, the increment in log-likelihood to declare convergence 
-        - gd = None  a grid descriptor, i.e. 
-        the grid on chich the model is sampled
-        if gd==None, x is used as Grid
-        - verbose = 0: the verbosity mode
-
-        OUTPUT:
-        - Li : array of shape (nbnodes): the average log-posterior
-        - label: array of shape nbitems: resulting MAP labelling
+        Parameters
+        ----------
+        x array of shape (nbitems,dim) the input data
+        niter = 100, the maximal number of iterations of the VB algo
+        delta = 0.0001, the increment in log-likelihood 
+              to declare convergence 
+        gd = None  a grid descriptor, i.e. 
+           the grid on chich the model is sampled
+           if gd==None, x is used as Grid
+        verbose = 0: the verbosity mode
+        
+        Returns
+        -------
+        Li : array of shape (nbnodes): the average log-posterior
+        label: array of shape nbitems: resulting MAP labelling
         """
         x = self.check_data(x)
         
@@ -1267,7 +1280,9 @@ class BGMM_old(GMM):
         else:
             grid = gd.make_grid()
         
-        label, mean, meansc, prec, we,dof,Li = fc.bayesian_gmm (x,self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,label,niter,delta,grid)
+        label, mean, meansc, prec, we,dof,Li = fc.bayesian_gmm (x, 
+               self.prior_means, self.prior_precisions, self.prior_shrinkage,
+               self.prior_weights, self.prior_dof, label, niter, delta, grid)
         self.estimated = 1
         self.means = mean
         self.shrinkage = meansc
@@ -1282,15 +1297,21 @@ class BGMM_old(GMM):
         """
         Sampling of the BGMM model on test points (the 'grid')in order to have
         an estimate of the posterior on these points
-
-        INPUT:
-        - grid: a set of points from which the posterior should be smapled 
-
-        OUTPUT:
-        - Li : array of shape (nbnodes,self.k): the posterior for each node and component
+        
+        Parameters
+        ----------
+        grid: a set of points from which the posterior should be sampled 
+        
+        Returns
+        -------
+        Li : array of shape (nbnodes,self.k),
+            the posterior for each node and component
         """
         if self.estimated:
-            Li = fc.bayesian_gmm_sampling(self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,self.means,self.precisions,self.shrinkage,self.weights, self.dof,grid)
+            Li = fc.bayesian_gmm_sampling( self.prior_means,\
+                 self.prior_precisions, self.prior_shrinkage, 
+                 self.prior_weights, self.prior_dof, self.means,
+                 self.precisions, self.shrinkage, self.weights, self.dof, grid)
         else:
             raise ValueError, "the model has not been estimated"
 
@@ -1299,18 +1320,23 @@ class BGMM_old(GMM):
     def Gibbs_estimate(self,x,niter = 1000,method = 1):
         """
         Estimation of the BGMM using Gibbs sampling
+        
+        Parameters
+        ----------
+        x array of shape (nbitems,dim) the input data
+        niter = 1000, the maximal number of iterations of the Gibbs sampling
+        method = 1: boolean to state whether covariance
+               are fixed (0 ; normal model) or variable 
+               (1 ; normal-wishart model)
 
-        INPUT:
-        - x array of shape (nbitems,dim) the input data
-        - niter = 1000, the maximal number of iterations of the Gibbs sampling
-        - method = 1: boolean to state whether covariance
-        are fixed (0 ; normal model) or variable (1 ; normal-wishart model)
-
-        OUTPUT:
-        - label: array of shape nbitems: resulting MAP labelling
+        Returns
+        -------
+        label: array of shape nbitems, resulting MAP labelling
         """
         x = self.check_data(x)
-        label, mean, meansc, prec, we,dof,Li = fc.gibbs_gmm (x,self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,niter,method)
+        label, mean, meansc, prec, we,dof,Li = fc.gibbs_gmm (x,\
+               self.prior_means, self.prior_precisions, self.prior_shrinkage,
+               self.prior_weights, self.prior_dof, niter, method)
         self.estimated = 1
         self.means = mean
         self.shrinkage = meansc
@@ -1320,25 +1346,29 @@ class BGMM_old(GMM):
         label = np.argmax(label,1)
         return label
         
-    def Gibbs_estimate_and_sample(self,x,niter = 1000,method = 1,gd = None,nsamp = 1000,verbose=0):
+    def Gibbs_estimate_and_sample(self, x, niter = 1000, method = 1, 
+                                        gd = None, nsamp = 1000, verbose=0):
         """
         Estimation of the BGMM using Gibbs sampling
         and sampling of the posterior on test points
-
-        INPUT:
-        - x array of shape (nbitems,dim) the input data
-        - niter = 1000, the maximal number of iterations of the Gibbs sampling
-        - method = 1: boolean to state whether covariance
-        are fixed (0 ; normal model) or variable (1 ; normal-wishart model)
-        - gd = None,  a grid descriptor, i.e. 
-        the grid on chich the model is sampled
-        if gd==None, x is used as Grid
-        - nsamp = 1000 number of draws of the posterior
-        -verbose = 0: the verboseity level
-
-        OUTPUT:
-        - Li : array of shape (nbnodes): the average log-posterior
-        - label: array of shape (nbitems): resulting MAP labelling
+        
+        Parameters
+        ----------
+        x array of shape (nbitems,dim) the input data
+        niter = 1000, the maximal number of iterations of the Gibbs sampling
+        method = 1: boolean to state whether covariance
+               are fixed (0 ; normal model) 
+               or variable (1 ; normal-wishart model)
+        gd = None,  a grid descriptor, i.e. 
+           the grid on chich the model is sampled
+           if gd==None, x is used as Grid
+        nsamp = 1000 number of draws of the posterior
+        verbose = 0: the verboseity level
+        
+        Returns
+        -------
+        Li : array of shape (nbnodes): the average log-posterior
+        label: array of shape (nbitems): resulting MAP labelling
         """
         x = self.check_data(x)
         if gd==None:
@@ -1346,7 +1376,9 @@ class BGMM_old(GMM):
         else:
             grid = gd.make_grid()
             
-        label, mean, meansc, prec, we,dof,Li = fc.gibbs_gmm (x,self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,niter,method,grid,nsamp)
+        label, mean, meansc, prec, we,dof,Li = fc.gibbs_gmm (x, \
+               self.prior_means, self.prior_precisions, self.prior_shrinkage,
+               self.prior_weights, self.prior_dof, niter, method, grid, nsamp)
         self.estimated = 1
         self.means = mean
         self.shrinkage = meansc
