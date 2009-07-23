@@ -10,7 +10,7 @@ import numpy as np
 from numpy.linalg import pinv
 import scipy.stats as st
 
-class FDR:
+class FDR(object):
     """
     This is the basic class to handle false discovery rate computation
     parameter:
@@ -178,7 +178,7 @@ class FDR:
         return st.norm.isf(pth)
     
 
-class ENN:
+class ENN(object):
     """
     Class to compute the empirical null normal fit to the data.
 
