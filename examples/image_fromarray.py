@@ -6,7 +6,7 @@ import numpy as np
 
 from nipy.core.api import fromarray, Affine
 from nipy.io.api import save_image, load_image
-from nipy.utils.data_files import get_data_file
+from nipy.utils.data import get_data_file
 
 # Load an image to get the array and affine
 filename = get_data_file('avg152T1.nii.gz')

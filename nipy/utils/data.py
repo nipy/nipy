@@ -30,12 +30,39 @@ from nipy.__config__ import nipy_info
 # Constants
 BLOCK_SIZE = int(512e3)
 
-NIPY_URL= 'https://cirl.berkeley.edu/nipy/'
-TEMPLATE_TAR = 'nipy_templates.tar.gz'
-TEMPLATE_DIR = nipy_info['template_dir']
-EXAMPLE_DATA_TAR = 'nipy_example_data.tar.gz'
-EXAMPLE_DATA_DIR = nipy_info['example_data_dir']
+NIPY_URL= 'https://cirl.berkeley.edu/mb312/nipy-data/'
 
+def get_data_path():
+    ''' Return specified or guessed location of NIPY data files '''
+    try:
+        return os.environ['NIPY_DATA_PATH']
+    except KeyError:
+        pass
+    try:
+        return nipy_info['data_path']
+    except KeyError:
+        pass
+    # Now we have to guess
+    if sys.platform == 'win32':
+        prefixes = ['C:\\']
+    else:
+        midfixes = [
+            '/usr/share',
+            '/usr/local/share',
+            '/opt/share',
+            '/opt/local/share']
+        prefixes = midfixes[:] # system paths
+        # add user version of these paths
+        for midfix in midfixes + ['/share']:
+            prefixes.append(
+                os.path.expanduser('~' + midfix))
+    for prefix in prefixes:
+        pth = pjoin(prefix, 'nipy')
+        if os.path.isdir(pth):
+            return pth
+    
+
+    
 ################################################################################
 # Utilities
 

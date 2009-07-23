@@ -2,12 +2,7 @@ import ConfigParser
 import os
 from os.path import join as pjoin
 
-NIPY_DATA_DIR = os.path.expanduser(pjoin('~', '.nipy'))
-NIPY_DEFAULTS = dict(data_dir=NIPY_DATA_DIR,
-                     template_dir = pjoin(NIPY_DATA_DIR, 'templates'),
-                     example_data_dir = pjoin(NIPY_DATA_DIR,
-                                              'example_data'),
-                     )
+NIPY_DEFAULTS = dict()
 
 ################################################################################
 def get_nipy_info():
