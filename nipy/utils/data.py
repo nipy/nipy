@@ -87,6 +87,18 @@ class Repository(object):
         return pjoin(self.base_path, relative_path)
 
 
+class NullRepository(object):
+    ''' Replicate repository API to raise error for missing data '''
+    def __init__(self, msg):
+        self.base_path = None
+        self.msg = msg
+        
+    def full_path(self, relative_path):
+        ''' Raise informative error about missing data '''
+        raise ValueError('Null repository; no data found.\n%s'
+                         % self.msg)
+
+
 class VersionedRepository(Repository):
     ''' Simple repository with version information in config file '''
     def __init__(self, base_path):
@@ -115,25 +127,27 @@ template_repo, data_repo = make_repositories(
     ['templates', 'data'],
     VersionedRepository)
 
-
-def data_warn():
-    if template_repo is None:
-        warnings.warn(
+if template_repo is None:
+    template_repo = NullRepository(
 """
 Cannot find template data files; are they installed?
 
 We use template files for standard spatial processing and visualization
 
-Please go to %s; download and install the latest nipy-templates package
+Please go to %s;
+
+From there, download and install the latest nipy-templates package
 """ % NIPY_URL)
-    if data_repo is None:
-        warnings.warn(
+if data_repo is None:
+    date_repo = NullRepository(
 """
 Cannot find example data files; are they installed?
 
 We use the data files to run more extensive tests and for several examples.
 
-Please go to %s; download and install the latest nipy-data package
+Please go to %s;
+
+From there, download and install the latest nipy-data package
 """ % NIPY_URL)
 
     
