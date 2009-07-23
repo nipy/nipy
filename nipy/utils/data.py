@@ -24,6 +24,8 @@ from os.path import join as pjoin
 import sys
 import tarfile
 import urllib2
+import warnings
+import ConfigParser
 
 from nipy.__config__ import nipy_info
 
@@ -61,6 +63,78 @@ def get_data_path():
         if os.path.isdir(pth):
             return pth
     
+
+class Repository(object):
+    ''' Simple class to add base path to relative path '''
+    def __init__(self, base_path):
+        ''' Initialize repository
+
+        Parameters
+        ----------
+        base_path : str
+           path to prepend to all relative paths
+
+        Examples
+        --------
+        >>> repo = Repository('/some/path')
+        >>> repo.full_path('afile.txt')
+        '/some/path/afile.txt'
+        '''
+        self.base_path = base_path
+
+    def full_path(self, relative_path):
+        ''' Prepend base path to ``relative_path`` '''
+        return pjoin(self.base_path, relative_path)
+
+
+class VersionedRepository(Repository):
+    ''' Simple repository with version information in config file '''
+    def __init__(self, base_path):
+        Repository.__init__(self, base_path)
+        self.config = ConfigParser.SafeConfigParser()
+        self.config.read(self.full_path('config.ini'))
+        self.version = self.config.get('DEFAULT', 'version')
+        major, minor = self.version.split('.')
+        self.major_version = int(major)
+        self.minor_version = int(minor)
+
+
+def make_repositories(root_path, names, repo_maker=Repository):
+    repos = [None] * len(names)
+    if not root_path:
+        return repos
+    for i, name in enumerate(names):
+        pth = pjoin(root_path, name)
+        if os.path.isdir(pth):
+            repos[i] = repo_maker(pth)
+    return repos
+
+
+template_repo, data_repo = make_repositories(
+    get_data_path(),
+    ['templates', 'data'],
+    VersionedRepository)
+
+
+def data_warn():
+    if template_repo is None:
+        warnings.warn(
+"""
+Cannot find template data files; are they installed?
+
+We use template files for standard spatial processing and visualization
+
+Please go to %s; download and install the latest nipy-templates package
+""" % NIPY_URL)
+    if data_repo is None:
+        warnings.warn(
+"""
+Cannot find example data files; are they installed?
+
+We use the data files to run more extensive tests and for several examples.
+
+Please go to %s; download and install the latest nipy-data package
+""" % NIPY_URL)
 
     
 ################################################################################
