@@ -68,7 +68,7 @@ def check_deps():
     return True
 
 
-def perl_dash_pie(oldstr, newstr):
+def perl_dash_pie(oldstr, newstr, dry_run=None):
     """Use perl to replace the oldstr with the newstr.
 
     Examples
@@ -81,8 +81,12 @@ def perl_dash_pie(oldstr, newstr):
     
     """
 
-    cmd = "grind | xargs perl -pi -e 's/%s/%s/g'" % (oldstr, newstr)
+    if dry_run:
+        cmd = "grind | xargs perl -p -e 's/%s/%s/g'" % (oldstr, newstr)
+    else:
+        cmd = "grind | xargs perl -pi -e 's/%s/%s/g'" % (oldstr, newstr)
     print cmd
+
     try:
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError, err:
@@ -104,6 +108,8 @@ def main():
     parser.add_option('-e', '--extended-help', action='callback', 
                       callback=print_extended_help,
                       help='print extended help including examples')
+    parser.add_option('-n', '--dry-run', action="store_true", dest="dry_run",
+                      help='send results to stdout without modifying files')
     (options, args) = parser.parse_args()
 
     if not args:
@@ -113,4 +119,4 @@ def main():
     if check_deps():
         oldstr = args[0]
         newstr = args[1]
-        perl_dash_pie(oldstr, newstr)
+        perl_dash_pie(oldstr, newstr, options.dry_run)
