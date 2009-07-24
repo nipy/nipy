@@ -35,7 +35,7 @@ BLOCK_SIZE = int(512e3)
 NIPY_URL= 'https://cirl.berkeley.edu/mb312/nipy-data/'
 
 def get_data_path():
-    ''' Return specified or guessed location of NIPY data files '''
+    ''' Return specified or guessed locations of NIPY data files '''
     try:
         return os.environ['NIPY_DATA_PATH']
     except KeyError:
@@ -82,21 +82,9 @@ class Repository(object):
         '''
         self.base_path = base_path
 
-    def full_path(self, relative_path):
-        ''' Prepend base path to ``relative_path`` '''
-        return pjoin(self.base_path, relative_path)
-
-
-class NullRepository(object):
-    ''' Replicate repository API to raise error for missing data '''
-    def __init__(self, msg):
-        self.base_path = None
-        self.msg = msg
-        
-    def full_path(self, relative_path):
-        ''' Raise informative error about missing data '''
-        raise ValueError('Null repository; no data found.\n%s'
-                         % self.msg)
+    def get_file(self, *path_parts):
+        ''' Prepend base path to ``*path_parts`` '''
+        return pjoin(self.base_path, *path_parts)
 
 
 class VersionedRepository(Repository):
@@ -111,46 +99,22 @@ class VersionedRepository(Repository):
         self.minor_version = int(minor)
 
 
-def make_repositories(root_path, names, repo_maker=Repository):
-    repos = [None] * len(names)
-    if not root_path:
-        return repos
-    for i, name in enumerate(names):
-        pth = pjoin(root_path, name)
+def find_repo_dir(root_dirs, names):
+    repo_relative = pjoin(*names)
+    for path in root_dirs:
+        pth = pjoin(path, repo_relative)
         if os.path.isdir(pth):
-            repos[i] = repo_maker(pth)
-    return repos
+            return pth
+    raise OSError('Could not find repo %s in data path %s' %
+                  (repo_relative,
+                   os.path.pathsep.join(root_dirs)))
+
+def make_repo(*names):
+    root_dirs = get_data_path()
+    pth = find_repo_dir(root_dirs, *names)
+    return VersionedRepo(pth)
 
 
-template_repo, data_repo = make_repositories(
-    get_data_path(),
-    ['templates', 'data'],
-    VersionedRepository)
-
-if template_repo is None:
-    template_repo = NullRepository(
-"""
-Cannot find template data files; are they installed?
-
-We use template files for standard spatial processing and visualization
-
-Please go to %s;
-
-From there, download and install the latest nipy-templates package
-""" % NIPY_URL)
-if data_repo is None:
-    date_repo = NullRepository(
-"""
-Cannot find example data files; are they installed?
-
-We use the data files to run more extensive tests and for several examples.
-
-Please go to %s;
-
-From there, download and install the latest nipy-data package
-""" % NIPY_URL)
-
-    
 ################################################################################
 # Utilities
 
