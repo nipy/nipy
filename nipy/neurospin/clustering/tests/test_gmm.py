@@ -124,7 +124,7 @@ def test_em_loglike6():
     ent = 0.5*(1+np.log(2*np.pi))
     dkl = 0.5*offset**2
     print ll2, ll1,dkl
-    assert ll2>ll1
+    assert ll2<ll1
 
 def test_em_selection():
     """
