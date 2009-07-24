@@ -71,7 +71,6 @@ def test_dkln3():
     test1 = .5*(dim*np.log(scale)+dim*(1./scale-1))
     test2 = .5*(-dim*np.log(scale)+dim*(scale-1)) 
     print dkl_gaussian(m1,P1,m2,P2),test1,test2
-    # fixme : it should be test1 !!
     assert dkl_gaussian(m1,P1,m2,P2)==test2
   
 

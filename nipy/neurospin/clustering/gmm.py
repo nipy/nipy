@@ -439,28 +439,28 @@ class GMM():
         l = self.likelihood(x)
         return self.bic(l,tiny)
     
-    def bic(self,l = None,tiny = 1.e-15):
+    def bic(self,like = None,tiny = 1.e-15):
         """
         computation of bic approximation of evidence
                 
         Parameters
         ----------
         
-        l: array of shape (nbitem,self.k)
+        like: array of shape (nbitem,self.k)
            component-wise likelihood
-           if l==None,  it is re-computed in E-step
+           if like==None,  it is re-computed in E-step
         tiny=1.e-15: a small constant to avoid numerical singularities
         
         Returns
         -------
         the bic value
         """
-        sl = np.sum(l,1)
+        sl = np.sum(like,1)
         sl = np.maximum(sl,tiny)
         bicc  = np.sum(np.log(sl))
         
         # number of parameters
-        n = l.shape[0]
+        n = like.shape[0]
         if self.prec_type=='full':
             eta = self.k*(1 + self.dim + (self.dim*self.dim+1)/2)-1
         else:
@@ -516,7 +516,7 @@ class GMM():
         if bcheck:
             self.check()
     
-    def _Mstep(self,x,l):
+    def _Mstep(self,x,like):
         """
         M step regularized according to the procedure of
         Fraley et al. 2007
@@ -525,14 +525,14 @@ class GMM():
         ----------
         x: array of shape(nbitem,self.dim)
            the data from which the model is estimated
-        l: array of shape(nbitem,self.k)
+        like: array of shape(nbitem,self.k)
            the likelihood of the data under each class
         """
         from numpy.linalg import pinv
         tiny  =1.e-15
-        pop = self.pop(l)
-        sl = np.maximum(tiny,np.sum(l,1))
-        l = (l.T/sl).T
+        pop = self.pop(like)
+        sl = np.maximum(tiny,np.sum(like,1))
+        like = (like.T/sl).T
         
         # shrinkage,weights,dof
         self.weights = self.prior_weights + pop
@@ -544,17 +544,17 @@ class GMM():
         shrinkage = pop + prior_shrinkage
 
         # means
-        means = np.dot(l.T,x)+ self.prior_means*prior_shrinkage
+        means = np.dot(like.T,x)+ self.prior_means*prior_shrinkage
         self.means= means/shrinkage
         
         #precisions
-        empmeans = np.dot(l.T,x)/np.maximum(pop,tiny)
+        empmeans = np.dot(like.T,x)/np.maximum(pop,tiny)
         empcov = np.zeros(np.shape(self.precisions))
         
         if self.prec_type=='full':
             for k in range(self.k):
                 dx = x-empmeans[k]
-                empcov[k] = np.dot(dx.T,l[:,k:k+1]*dx) 
+                empcov[k] = np.dot(dx.T,like[:,k:k+1]*dx) 
                     
             covariance = np.array([pinv(self.prior_scale[k])
                                    for k in range(self.k)])
@@ -574,7 +574,7 @@ class GMM():
         else:
             for k in range(self.k):
                 dx = x-empmeans[k]
-                empcov[k] = np.sum(dx**2*l[:,k:k+1],0) 
+                empcov[k] = np.sum(dx**2*like[:,k:k+1],0) 
                     
             covariance = np.array([1.0/(self.prior_scale[k])
                                    for k in range(self.k)])
@@ -592,7 +592,7 @@ class GMM():
             self.precisions = np.array([1.0/covariance[k] \
                                        for k in range(self.k)])
 
-    def map_label(self,x,l=None):
+    def map_label(self,x,like=None):
         """
         return the MAP labelling of x 
         
@@ -600,18 +600,18 @@ class GMM():
         ----------
         x array of shape (nbitem,dim)
           the data under study
-        l=None array of shape(nbitem,self.k)
+        like=None array of shape(nbitem,self.k)
                component-wise likelihood
-               if l==None, it is recomputed
+               if like==None, it is recomputed
         
         Returns
         -------
         z: array of shape(nbitem): the resulting MAP labelling
            of the rows of x
         """
-        if l== None:
-            l = self.likelihood(x)
-        z = np.argmax(l,1)
+        if like== None:
+            like = self.likelihood(x)
+        z = np.argmax(like,1)
         return z
 
     def estimate(self,x,niter=100,delta = 1.e-4,verbose=0):
@@ -655,8 +655,8 @@ class GMM():
             
         return self.bic(l)
 
-    def initialize_and_estimate(self,x,z=None,niter=100,delta = 1.e-4,\
-                                ninit=1,verbose=0):
+    def initialize_and_estimate(self, x, z=None, niter=100, delta = 1.e-4,\
+                                ninit=1, verbose=0):
         """
         estimation of self given x
 
@@ -693,11 +693,11 @@ class GMM():
         
         return bestgmm
 
-    def train(self,x,z=None,niter=100,delta = 1.e-4,ninit=1,verbose=0):
+    def train(self, x, z=None, niter=100, delta=1.e-4, ninit=1, verbose=0):
         """
         idem initialize_and_estimate
         """
-        return self.initialize_and_estimate(x,z,niter,delta,ninit,verbose)
+        return self.initialize_and_estimate(x, z, niter, delta, ninit, verbose)
 
     def test(self,x, tiny = 1.e-15):
         """
