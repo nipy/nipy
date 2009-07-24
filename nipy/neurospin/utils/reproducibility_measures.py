@@ -18,6 +18,28 @@ import nipy.neurospin.graph as fg
 # ----- cluster handling functions ------------------------
 # ---------------------------------------------------------
 
+def histo_repro(H):
+    """
+    Given the histogram H, compute a standardized reproducibility measure    
+    
+    Parameters
+    ----------
+    H array of shape(xmax+1), the histogram values
+    
+    Returns
+    -------
+    hr, float: the measure
+    """
+    K = np.size(H)-1
+    if K==1:
+       return 0.
+    nf = np.dot(H,np.arange(K+1))/(K)
+    if nf==0:
+       return 0.
+    n1K = np.arange(1,K+1)
+    res = 1.0*np.dot(H[1:],n1K*(n1K-1))/(K*(K-1))
+    return res/nf
+
 
 def cluster_threshold(map, ijk, th, csize):
     """
@@ -227,7 +249,7 @@ def statistics_from_position(target,data,sigma=1.0):
     from fff2.eda.dimension_reduction import Euclidian_distance as ed
     if data==None:
         if target==None:
-            return 1.
+            return 0.# or 1.0, can be debated
         else:
             return 0.
     if target==None:
@@ -240,7 +262,7 @@ def statistics_from_position(target,data,sigma=1.0):
     return sensitivity
 
 def voxel_reproducibility(data, vardata, xyz, ngroups, method='rfx',
-                          verbose=0, **kwargs):
+                          swap=False, verbose=0, **kwargs):
     """
     return a measure of voxel-level reproducibility
     of activation patterns
@@ -267,7 +289,41 @@ def voxel_reproducibility(data, vardata, xyz, ngroups, method='rfx',
     """
     nsubj = data.shape[1]
     rmap = map_reproducibility(data, vardata, xyz, ngroups, method, 
-                                     verbose,**kwargs)
+                                     swap, verbose, **kwargs)
+
+    H = np.array([np.sum(rmap==i) for i in range(ngroups+1)])
+    hr = histo_repro(H)  
+    return hr
+
+def _voxel_reproducibility(data, vardata, xyz, ngroups, method='rfx',
+                          swap=False, verbose=0, **kwargs):
+    """
+    return a measure of voxel-level reproducibility
+    of activation patterns
+
+    Parameters
+    ----------
+    data: array of shape (nvox,nsubj)
+          the input data from which everything is computed
+    vardata: array of shape (nvox,nsubj)
+             the corresponding variance information
+    xyz array of shape (nvox,3) 
+        the grid ccordinates of the imput voxels
+    ngroups (int): 
+             Number of subbgroups to be drawn  
+    threshold (float): 
+              binarization threshold (makes sense only if method==rfx)
+    method = 'rfx' or 'crfx'
+           inference method under study
+    verbose=0 : verbosity mode
+
+    Returns
+    -------
+    kappa (float): the desired  reproducibility index
+    """
+    nsubj = data.shape[1]
+    rmap = map_reproducibility(data, vardata, xyz, ngroups, method, 
+                                     swap, verbose, **kwargs)
 
     import two_binomial_mixture as mtb
     MB = mtb.TwoBinomialMixture()
@@ -278,7 +334,7 @@ def voxel_reproducibility(data, vardata, xyz, ngroups, method='rfx',
     return MB.kappa()
 
 def map_reproducibility(data, vardata, xyz, ngroups, method='rfx',
-                        verbose=0, **kwargs):
+                        swap=False, verbose=0, **kwargs):
     """
     return a reproducibility map for the given method
 
@@ -311,6 +367,9 @@ def map_reproducibility(data, vardata, xyz, ngroups, method='rfx',
     rmap = np.zeros(nvox)
     for i in range(ngroups):
         x = data[:,samples[i]]
+        if swap:
+           rsign = 2*(np.random.rand(len(samples[i]))>0.5)-1
+           x *= rsign
         vx = vardata[:,samples[i]]
         if method=='rfx':
             threshold = kwargs['threshold']
@@ -337,7 +396,8 @@ def map_reproducibility(data, vardata, xyz, ngroups, method='rfx',
 
 
 def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
-                            method='crfx', niter=0,verbose=0, **kwargs):
+                            method='crfx', swap=False, verbose=0, 
+                            **kwargs):
     """
     return a measure of cluster-level reproducibility
     of activation patterns
@@ -360,8 +420,8 @@ def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
               binarization threshold (makes sense only if method==rfx)
     method = 'rfx'or 'crfx' 
            inference method under study
-    niter = 0: (int) number of iterations
-          this is used to save intermediate results
+    swap = False: if True, a random sign swap of the data is performed
+         This is used to simulate a null hypothesis on the data.
     verbose=0 : verbosity mode
     
     Returns
@@ -375,8 +435,11 @@ def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
     else:
         samples = bootstrap_group(nsubj, ngroups)
     all_pos = []
-    for i in range(ngroups):
+    for i in range(ngroups):           
         x = data[:,samples[i]]
+        if swap:
+           rsign = 2*(np.random.rand(len(samples[i]))>0.5)-1
+           x *= rsign
         vx = vardata[:,samples[i]]
         tx = x/(tiny+np.sqrt(vx))
         if method=='crfx':
@@ -408,6 +471,7 @@ def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
             ths = kwargs['ths']
             thq = kwargs['thq']
             smin = kwargs['smin']
+            niter = kwargs['niter']
             afname = afname+'_%02d_%04d.pic'%(niter,i)
             pos = coord_bsa(xyz, coord, tx, header, theta, dmax,
                             ths, thq, smin,afname)

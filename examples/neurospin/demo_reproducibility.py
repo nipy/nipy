@@ -44,6 +44,7 @@ csize = 10
 niter = 10
 method = 'crfx'
 verbose = 0
+swap = True
 
 kap = []
 clt = []
@@ -60,11 +61,10 @@ for threshold in thresholds:
         kwargs={'threshold':threshold,'csize':csize}        
     for i in range(niter):
         k = voxel_reproducibility(func, var, xyz, ngroups,
-                                  method, verbose, **kwargs)
+                                  method, swap, verbose, **kwargs)
         kappa.append(k)
-        cld = cluster_reproducibility(func, var, xyz,
-                                      ngroups, coord, sigma,method,
-                                      verbose, **kwargs)
+        cld = cluster_reproducibility(func, var, xyz, ngroups, coord, sigma,
+                                      method, swap, verbose, **kwargs)
         cls.append(cld)
         
     kap.append(np.array(kappa))

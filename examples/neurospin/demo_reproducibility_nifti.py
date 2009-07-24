@@ -113,6 +113,7 @@ tht = nsubj/4
 thq = 0.9
 afname = '/tmp/af'
 
+swap = True
 
 kap = []
 clt = []
@@ -133,10 +134,10 @@ for threshold in thresholds:
         
     for i in range(niter):
         k = voxel_reproducibility(Functional, VarFunctional, xyz, ngroups,
-                                  method, verbose, **kwargs)
+                                  method, swap, verbose, **kwargs)
         kappa.append(k)
-        cld = cluster_reproducibility(Functional, VarFunctional, xyz,
-                                      ngroups, coord, sigma,method,
+        cld = cluster_reproducibility(Functional, VarFunctional, xyz, ngroups,
+                                       coord, sigma, method, swap, 
                                       verbose, **kwargs)
         cls.append(cld)
         
@@ -161,10 +162,11 @@ mp.xlabel('threshold')
 # ---------- create an image ----------------------------
 # -------------------------------------------------------
 
-th = 2.0
+th = 4.0
+swap = True
 kwargs = {'threshold':th,'csize':csize}
 rmap = map_reproducibility(Functional, VarFunctional, xyz, ngroups,
-                           method, verbose, **kwargs)
+                           method, swap, verbose, **kwargs)
 wmap  = np.zeros(ref_dim).astype(np.int)
 wmap[mask] = rmap
 wim = nifti.NiftiImage(wmap.T,rbeta.header)
