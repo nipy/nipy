@@ -189,12 +189,13 @@ now this will be: http://cirl.berkeley.edu/mb312/nipy-data but we expect
 this to change to sourceforge soon.
 
 A package, such as ``nipy-templates-0.1.tar.gz`` will have the following
-contents:
+contents::
 
 
-  <ROOT> 
+  <ROOT>
     |-- setup.py
     |-- README.txt
+    |-- MANIFEST.in
     `-- templates
         |-- ICBM152
         |   `-- 2mm
@@ -214,8 +215,7 @@ Making a new package tarball is simply:
 #. Downloading and unpacking e.g ``nipy-templates-0.1.tar.gz`` to form
    the directory structure above.
 #. Making any changes to the directory
-#. Running ``setup.py build_sdist`` to recreate the package.  This will
-   check the MANIFEST against the directory listing.
+#. Running ``setup.py sdist`` to recreate the package.  
 
 The process of making a release should be:
 
@@ -223,4 +223,6 @@ The process of making a release should be:
 #. Make a package tarball as above
 #. Upload to distribution site
 
-  
+There is an example nipy data package ``nipy-examplepkg`` in the
+``examples`` directory of the NIPY repository.
+
