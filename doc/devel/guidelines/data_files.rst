@@ -72,6 +72,8 @@ will import nipy after installation to check whether these raise an error:
 and warn the user accordingly, with some basic instructions for how to
 install the data.
 
+.. _find-data:
+
 Finding the data
 ````````````````
 
@@ -101,6 +103,29 @@ are:
    ``.ini`` files, where the ``.ini`` files are found by
    ``glob.glob(os.path.join(etc_dir, '*.ini')`` and ``etc_dir`` is
    ``/etc/nipy`` on Unix, and some suitable equivalent on Windows.
+
+Requirements for a data package
+```````````````````````````````
+
+To be a valid NIPY project data package, you need to satisfy:
+
+#. The installer installs the data in some place that can be found using
+   the method defined in :ref:`find-data`.
+
+We recommend that:
+
+#. By default, you install data in a standard location such as
+   ``<prefix>/share/nipy`` where ``<prefix>`` is the standard Python
+   prefix obtained by ``>>> import sys; print sys.prefix``
+
+Remember that there is a distinction between the NIPY project - the
+umbrella of neuroimaging in python - and the NIPY package - the main
+code package in the NIPY project.  Thus, if you want to install data
+under the NIPY *package* umbrella, your data might go to
+``/usr/share/nipy/nipy/packagename`` (on Unix).  Note ``nipy`` twice -
+once for the project, once for the pacakge.  If you want to install data
+under - say - the ```pbrain`` package umbrella, that would go in
+``/usr/share/nipy/pbrain/packagename``.
 
 Data package format
 ```````````````````
@@ -179,8 +204,11 @@ contents::
    [DATA]
    path = /usr/share/nipy
 
-Creating the packages / releasing new files
-```````````````````````````````````````````
+Current implementation
+``````````````````````
+
+This section describes how we (the NIPY package) implement data packages
+at the moment.
 
 The data in the data packages will not be under source control.
 

@@ -1,41 +1,94 @@
 '''
-Settings from the system environment
+Settings from the system environment relevant to NIPY
 '''
 
 import os
 from os.path import join as pjoin
-import sys
+
 
 def get_home_dir():
-    """Return the closest possible equivalent to a 'home' directory."""
-    dir = os.path.expanduser('~')
-    if not os.path.isdir(dir):
-        raise OSError('Found HOME directory %s but it does not exist' % dir)
-    return dir
+    """Return the closest possible equivalent to a 'home' directory.
+
+    The path may not exist; code using this routine should not
+    expect the directory to exist.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    home_dir : string
+       best guess at location of home directory
+    """
+    return os.path.expanduser('~')
 
 
-def get_nipy_dir():
-    """Get the NIPY local directory for this platform and user.
+def get_nipy_user_dir():
+    """Get the NIPY user directory
     
     This uses the logic in `get_home_dir` to find the home directory
     and the adds either .nipy or _nipy to the end of the path.
 
-    The code is from the IPython distribution, with thanks
+    We check first in environment variable ``NIPY_USER_DIR``, otherwise
+    returning the default of ``<homedir>/.nipy`` (Unix) or
+    ``<homedir>/_nipy`` (Windows)
+
+    The path may well not exist; code using this routine should not
+    expect the directory to exist.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    nipy_dir : string
+       path to user's NIPY configuration directory
+
+    Examples
+    --------
+    >>> pth = get_nipy_user_dir()
+
     """
-    if os.name == 'posix':
-         nipy_dir_def = '.nipy'
-    else:
-         nipy_dir_def = '_nipy'
+    try:
+        return os.path.abspath(os.environ['NIPY_USER_DIR'])
+    except KeyError:
+        pass
     home_dir = get_home_dir()
-    nipy_dir = os.path.abspath(os.environ.get('NIPY_DIR',
-                                              pjoin(home_dir, nipy_dir_def)))
-    return nipy_dir.decode(sys.getfilesystemencoding())
-
-
-def get_etc_dir():
-    ''' Get systemwide configuration file directory '''
     if os.name == 'posix':
-        return '/etc'
-    raise NotImplementedError
+         sdir = '.nipy'
+    else:
+         sdir = '_nipy'
+    return pjoin(home_dir, sdir)
 
+
+def get_nipy_system_dir():
+    ''' Get systemwide NIPY configuration file directory
+
+    On posix systems this will be ``/etc/nipy``.
+    On Windows, the directory is less useful, but by default it will be
+    ``C:\etc\nipy``
+
+    The path may well not exist; code using this routine should not
+    expect the directory to exist.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    nipy_dir : string
+       path to systemwide NIPY configuration directory
+
+    Examples
+    --------
+    >>> pth = get_nipy_system_dir()
+
+    '''
+    if os.name == 'nt':
+        return r'C:\etc\nipy'
+    if os.name == 'posix':
+        return '/etc/nipy'
     
