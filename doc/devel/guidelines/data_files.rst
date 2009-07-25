@@ -29,24 +29,24 @@ The programmer will want to use the data something like this:
 
 .. testcode::
 
-   from nipy.utils import make_repo
+   from nipy.utils import make_datasource
 
-   template_repo = make_repo('nipy', 'templates')
-   fname = template_repo.get_filename('ICBM152', '2mm', 'T1.nii.gz')
+   templates = make_datasource('nipy', 'templates')
+   fname = templates.get_filename('ICBM152', '2mm', 'T1.nii.gz')
    
 where ``fname`` will be the absolute path to the template image
 ``ICBM152/2mm/T1.nii.gz``. 
 
-The programmer can insist on a particular version of a repository:
+The programmer can insist on a particular version of a ``datasource``:
 
 .. testcode::
 
-   if template_repo.version < 0.4:
-      raise ValueError('Need repository version at least 0.4')
+   if templates.version < '0.4':
+      raise ValueError('Need datasource version at least 0.4')
 
 If the repository cannot find the data, then:
 
->>> make_repo('nipy', 'implausible')
+>>> make_datasource('nipy', 'implausible')
 Traceback
  ...
 IOError
@@ -65,9 +65,9 @@ data when installing the package.  Thus::
 
 will import nipy after installation to check whether these raise an error:
 
->>> from nipy.utils import make_repo
->>> template_repo = make_repo('nipy', 'templates')
->>> data_repo = make_repo('nipy', 'data')
+>>> from nipy.utils import make_datasource
+>>> template = make_datasource('nipy', 'templates')
+>>> example_data = make_datasource('nipy', 'data')
 
 and warn the user accordingly, with some basic instructions for how to
 install the data.
@@ -75,17 +75,17 @@ install the data.
 Finding the data
 ````````````````
 
-The routine ``make_repo`` will need to be able to find the data that has
-been installed.  For the following call:
+The routine ``make_datasource`` will need to be able to find the data
+that has been installed.  For the following call:
 
->>> template_repo = make_repo('nipy', 'templates')
+>>> templates = make_datasource('nipy', 'templates')
 
 We propose to:
 
 #. Get a list of paths where data is known to be stored with
    ``nipy.data.get_data_path()``
 #. For each of these paths, search for directory ``nipy/templates``.  If
-   found, and of the correct format (see below), return a repository,
+   found, and of the correct format (see below), return a datasource,
    otherwise raise an Exception
 
 The paths collected by ``nipy.data.get_data_paths()`` will be
@@ -134,7 +134,7 @@ NIPY-related packages such as ``pbrain``).  The ``data`` subdirectory of
   [DEFAULT]
   version = 0.1
 
-giving the version of the repository.  
+giving the version of the data package.  
 
 Installing the data
 ```````````````````
