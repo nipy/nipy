@@ -10,9 +10,9 @@ the data files nipy uses into at least 3 categories
    such as templates or atlases
 #. *example data* - data files for running examples, or optional tests
 
-The files used for testing are very small data files, and they are
-shipped with nipy, and live in the code repository. They live in the
-module path ``nipy.testing.data``.
+The files used for testing are very small data files. They are shipped
+with nipy, and live in the code repository. They live in the module path
+``nipy.testing.data``.
 
 .. now a comment .. automodule:: nipy.testing
 
