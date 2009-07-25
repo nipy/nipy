@@ -182,55 +182,45 @@ contents::
 Creating the packages / releasing new files
 ```````````````````````````````````````````
 
-The data packages will be under source control.
+The data in the data packages will not be under source control.
 
-The source control will store packages in their output state::
+The data packages will be available at a central release location.  For
+now this will be: http://cirl.berkeley.edu/mb312/nipy-data but we expect
+this to change to sourceforge soon.
+
+A package, such as ``nipy-templates-0.1.tar.gz`` will have the following
+contents:
 
 
   <ROOT> 
-  `-- nipy
-      |-- data
-      |   |-- config.ini
-      |   `-- placeholder.txt
-      `-- templates
-          |-- ICBM152
-          |   `-- 2mm
-          |       `-- T1.nii.gz
-          |-- colin27
-          |   `-- 2mm
-          |       `-- T1.nii.gz
-          `-- config.ini
+    |-- setup.py
+    |-- README.txt
+    `-- templates
+        |-- ICBM152
+        |   `-- 2mm
+        |       `-- T1.nii.gz
+        |-- colin27
+        |   `-- 2mm
+        |       `-- T1.nii.gz
+        `-- config.ini
 
-
-where ``<ROOT>`` here is the directory to which the source has been
-checked out.  
 
 There should be only one ``nipy/packagename`` directory delivered by a
-particular package.  For example, the above would form the contents of
-two packages, ``nipy-templates`` (containing ``nipy/templates``) and
-``nipy-data`` (containing ``nipy/data``).
+particular package.  For example, this package installs
+``nipy/templates``, but does not contain ``nipy/data``.  
 
-The process of making a package tarball should be:
+Making a new package tarball is simply:
 
-#. Ensure all intended changes have been checked into the repository
-#. Create package directory - e.g. ``nipy-templates-<VERSION>`` - hence
-   ``<pkgdir>``
-#. Recursive copy (export in ``svn`` sense) all files / directories in
-   ``nipy/templates`` into ``<pgkdir>/templates`` directory.
-#. Create ``setup.py`` file in ``<pkgdir>``.  Setup does:
-   #. Collects list of files in ``<pkgdir>/templates``, fills into
-      setup.py data_files configuration variable.
-   #. Sets package name
-   #. Collects version from ``config.ini`` and fills in configuration
-   #. May generate MANIFEST file
-   #. May generate README.txt file
-#. Archive setup.py, and other generated files, with ``template`` files.
+#. Downloading and unpacking e.g ``nipy-templates-0.1.tar.gz`` to form
+   the directory structure above.
+#. Making any changes to the directory
+#. Running ``setup.py build_sdist`` to recreate the package.  This will
+   check the MANIFEST against the directory listing.
 
 The process of making a release should be:
 
 #. Increment the major or minor version number in the ``config.ini`` file
 #. Make a package tarball as above
-#. Make a version control tag for this version
 #. Upload to distribution site
 
   
