@@ -254,5 +254,4 @@ The process of making a release should be:
 
 There is an example nipy data package ``nipy-examplepkg`` in the
 ``examples`` directory of the NIPY repository.
->>>>>>> MERGE-SOURCE
 
