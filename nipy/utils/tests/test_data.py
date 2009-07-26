@@ -12,7 +12,8 @@ from nose.tools import assert_true, assert_false, assert_equal, \
     assert_not_equal, assert_raises
 
 from nipy.utils.data import get_data_path, find_data_dir, \
-    DataError, _cfg_value, make_datasource
+    DataError, _cfg_value, make_datasource, \
+    Datasource, VersionedDatasource
 
 import nipy.utils.data as nud
 
@@ -49,9 +50,63 @@ def teardown_environment():
 with_environment = with_setup(setup_environment, teardown_environment)
 
 
-def test_datasources():
-    # Tests for DataSource and VersionedDatasource
-    pass
+def test_datasource():
+    # Tests for DataSource
+    pth = pjoin('some', 'path')
+    ds = Datasource(pth)
+    yield assert_equal, ds.get_filename('unlikeley'), pjoin(pth, 'unlikeley')
+    yield (assert_equal, ds.get_filename('un','like','ley'),
+           pjoin(pth, 'un','like','ley'))
+
+
+def test_versioned():
+    try:
+        tmpdir = tempfile.mkdtemp()
+        yield (assert_raises,
+               DataError,
+               VersionedDatasource,
+               tmpdir)
+        tmpfile = pjoin(tmpdir, 'config.ini')
+        # ini file, but wrong section
+        with open(tmpfile, 'wt') as fobj:
+            fobj.write('[SOMESECTION]\n')
+            fobj.write('version = 0.1\n')
+        yield (assert_raises,
+               DataError,
+               VersionedDatasource,
+               tmpdir)
+        # ini file, but right section, wrong key
+        with open(tmpfile, 'wt') as fobj:
+            fobj.write('[DEFAULT]\n')
+            fobj.write('somekey = 0.1\n')
+        yield (assert_raises,
+               DataError,
+               VersionedDatasource,
+               tmpdir)
+        # ini file, right section and key
+        with open(tmpfile, 'wt') as fobj:
+            fobj.write('[DEFAULT]\n')
+            fobj.write('version = 0.1\n')
+        vds = VersionedDatasource(tmpdir)
+        yield assert_equal, vds.version, '0.1'
+        yield assert_equal, vds.version_no, 0.1
+        yield assert_equal, vds.major_version, 0
+        yield assert_equal, vds.minor_version, 1        
+        yield assert_equal, vds.get_filename('config.ini'), tmpfile
+        # ini file, right section and key, funny value
+        with open(tmpfile, 'wt') as fobj:
+            fobj.write('[DEFAULT]\n')
+            fobj.write('version = 0.1.2.dev\n')
+        vds = VersionedDatasource(tmpdir)
+        yield assert_equal, vds.version, '0.1.2.dev'
+        yield assert_equal, vds.version_no, 0.1
+        yield assert_equal, vds.major_version, 0
+        yield assert_equal, vds.minor_version, 1        
+    finally:
+        try:
+            shutil.rmtree()
+        except:
+            pass
 
 
 def test__cfg_value():

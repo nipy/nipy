@@ -186,7 +186,7 @@ def find_data_dir(root_dirs, *names):
         pth = pjoin(path, ds_relative)
         if os.path.isdir(pth):
             return pth
-    raise DataError('Could not find datasource %s in data path %s' %
+    raise DataError('Could not find datasource "%s" in data path "%s"' %
                    (ds_relative,
                     os.path.pathsep.join(root_dirs)))
 
@@ -213,7 +213,17 @@ def make_datasource(*names):
 
     '''
     root_dirs = get_data_path()
-    pth = find_data_dir(root_dirs, *names)
+    try:
+        pth = find_data_dir(root_dirs, *names)
+    except DataError, exception:
+        msg = '''%s;
+Is it possible you have not installed a needed data package?
+From the names, maybe you need data package "%s"?
+Please see %s for data downloads.''' % (
+            exception,
+            '-'.join(names),
+            NIPY_URL)
+        raise DataError(msg)
     return VersionedDatasource(pth)
 
 
