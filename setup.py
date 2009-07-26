@@ -62,13 +62,11 @@ def data_install_msgs():
     try:
         make_datasource('nipy', 'templates')
     except DataError, exception:
-        print '#' * 80
-        print exception
+        log.warn(80*"_" + "\n%s" % exception)
     try:
         make_datasource('nipy', 'data')
     except DataError, exception:
-        print '#' * 80
-        print exception
+        log.warn(80*"_" + "\n%s" % exception)
         
 
 
