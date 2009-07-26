@@ -14,18 +14,18 @@ from nipy.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 class test_Kernel(TestCase):
     @dec.gui
     import pylab as plt
-    from nipy.testing import datapjoin
+    from nipy.testing import anatfile
     from nipy.io import load_image
     from nipy.ui.visualization.viewer import BoxViewer
     def test_smooth(self):
-        rho = load_image(datapjoin("rho.hdr"))
-        smoother = LinearFilter(rho.grid)
+        anat = load_image(anatfile)
+        smoother = LinearFilter(anat.grid)
 
-        srho = smoother.smooth(rho)
-        view = BoxViewer(rho)
+        sanat = smoother.smooth(anat)
+        view = BoxViewer(anat)
         view.draw()
 
-        sview = BoxViewer(srho)
+        sview = BoxViewer(sanat)
         sview.m = view.m
         sview.M = view.M
         sview.draw()
