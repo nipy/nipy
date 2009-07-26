@@ -1,73 +1,27 @@
 """
-Utilities to download data files from the web and store them in a local
-cache.
+Utilities to find files from NIPY data packages
 
-Core set of data files
-------------------------
-
-The nipy data files are downloaded from the cirl.berkeley.edu server as a
-tarball and stored in a local cache.
-
-The data is stored in subversion, at::
-
-    $ svn co http://neuroimaging.scipy.org/svn/ni/data/trunk/fmri
-
-
-Example files
---------------
-
-Example files can be dowloaded on the fly from an url and stored locally.
 """
 
 import os
 from os.path import join as pjoin
+import glob
 import sys
-import tarfile
-import urllib2
-import warnings
 import ConfigParser
 
-from nipy.__config__ import nipy_info
-
-# Constants
-BLOCK_SIZE = int(512e3)
+from .environment import get_nipy_user_dir, get_nipy_system_dir
 
 NIPY_URL= 'https://cirl.berkeley.edu/mb312/nipy-data/'
 
-def get_data_path():
-    ''' Return specified or guessed locations of NIPY data files '''
-    try:
-        return os.environ['NIPY_DATA_PATH']
-    except KeyError:
-        pass
-    try:
-        return nipy_info['data_path']
-    except KeyError:
-        pass
-    # Now we have to guess
-    if sys.platform == 'win32':
-        prefixes = ['C:\\']
-    else:
-        midfixes = [
-            '/usr/share',
-            '/usr/local/share',
-            '/opt/share',
-            '/opt/local/share']
-        prefixes = midfixes[:] # system paths
-        # add user version of these paths
-        for midfix in midfixes + ['/share']:
-            prefixes.append(
-                os.path.expanduser('~' + midfix))
-    for prefix in prefixes:
-        pth = pjoin(prefix, 'nipy')
-        if os.path.isdir(pth):
-            return pth
-    
 
-class Repository(object):
+class DataError(OSError):
+    pass
+
+
+class Datasource(object):
     ''' Simple class to add base path to relative path '''
     def __init__(self, base_path):
-        ''' Initialize repository
+        ''' Initialize datasource
 
         Parameters
         ----------
@@ -76,176 +30,184 @@ class Repository(object):
 
         Examples
         --------
-        >>> repo = Repository('/some/path')
-        >>> repo.full_path('afile.txt')
-        '/some/path/afile.txt'
+        >>> from os.path import join as pjoin
+        >>> repo = Datasource(pjoin('a', 'path'))
+        >>> fname = repo.get_filename('somedir', 'afile.txt')
+        >>> fname == pjoin('a', 'path', 'somedir', 'afile.txt')
+        True
         '''
         self.base_path = base_path
 
-    def get_file(self, *path_parts):
-        ''' Prepend base path to ``*path_parts`` '''
-        return pjoin(self.base_path, *path_parts)
+    def get_filename(self, *path_parts):
+        ''' Prepend base path to `*path_parts`
 
-
-class VersionedRepository(Repository):
-    ''' Simple repository with version information in config file '''
-    def __init__(self, base_path):
-        Repository.__init__(self, base_path)
-        self.config = ConfigParser.SafeConfigParser()
-        self.config.read(self.full_path('config.ini'))
-        self.version = self.config.get('DEFAULT', 'version')
-        major, minor = self.version.split('.')
-        self.major_version = int(major)
-        self.minor_version = int(minor)
-
-
-def find_repo_dir(root_dirs, names):
-    repo_relative = pjoin(*names)
-    for path in root_dirs:
-        pth = pjoin(path, repo_relative)
-        if os.path.isdir(pth):
-            return pth
-    raise OSError('Could not find repo %s in data path %s' %
-                  (repo_relative,
-                   os.path.pathsep.join(root_dirs)))
-
-def make_repo(*names):
-    root_dirs = get_data_path()
-    pth = find_repo_dir(root_dirs, *names)
-    return VersionedRepo(pth)
-
-
-################################################################################
-# Utilities
-
-def extract_tarfile(filename, dstdir):
-    """Extract tarfile to the destination directory."""
-    sys.stdout.write('\nExtracting tarfile: %s\n' % filename)
-    tar = tarfile.open(filename)
-    tar.extractall(dstdir)
-    tar.close()
-
-
-def read_chunk(fp):
-    while True:
-        chunk = fp.read(BLOCK_SIZE)
-        if not chunk:
-            break
-        yield chunk
-
-
-def download(url, filename):
-    """ Download a file from a URL to a local filename
-
-    Parameters
-    ----------
-    url: string
-        URL to download from, eg
-        'https://cirl.berkeley.edu/nipy/nipy_data.tar.gz'
-    filename: string
-        path to the local file to download to.
-    """
-    fp = urllib2.urlopen(url)
-    finfo = fp.info()
-    fsize = finfo.getheader('Content-Length')
-    print 'Downloading %(filename)s from %(url)s (size: %(fsize)s byte)' \
-                    % locals()
-    if os.sep in filename and not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
-    # read file a chunk at a time so we can provide some feedback
-    local_file = open(filename, 'w')
-    for chunk in read_chunk(fp):
-        local_file.write(chunk)
-        sys.stdout.write('.')
-        sys.stdout.flush()
-    local_file.close()
-    
-
-################################################################################
-# Core data 
-
-def check_fetch_data(data_dir, data_url, tar_filename, descrip):
-    """ Check for, if necessary fetch given data from the nipy website
-
-    This utility asks the user if they would like to download the file and
-    if so it:
-    - makes the data directory according to the site.cfg 
-    - downloads the tarball
-    - extracts the tarball
-    - removes the tarball
-
-    """
-    if os.path.isdir(data_dir):
-        return
-    tar_url = os.path.join(data_url, tar_filename)
-    dest_file = os.path.join(data_dir, tar_filename)
-    fp = urllib2.urlopen(tar_url)
-    finfo = fp.info()
-    fsize = finfo.getheader('Content-Length')
-    msg = 'Nipy %s was not found.\n' % descrip
-    msg += 'Would you like to download the %s byte file now ([Y]/N)? ' % fsize
-    answer = raw_input(msg).lower()
-    if not answer or answer == 'y':
-        if_download = True
-    else:
-        if_download = False
-    if if_download:
-        download(tar_url, data_dir)
-        # extract the tarball
-        extract_tarfile(dest_file, data_dir)
-        os.remove(dest_file)
-
-
-def get_template_file(filename):
-    """ Return the path to the NIPY data `filename` if available, and
-    offer downloading it if not.
-
-    Nipy uses a set of data that is installed separately.  The test
-    data should be located in the directory specified at install time
-    in the site.cfg (default: ``~/.nipy/data``).
-
-    If the data is not installed the user should be prompted with the
-    option to download and install it when they run the examples.
-    """
-    # If the data directories do not exist, download it.
-    check_fetch_data(TEMPLATE_DIR, NIPY_URL,
-                     TEMPLATE_TAR, 'templates')
-    return os.path.join(data_dir, filename)
-
-
-################################################################################
-# Example data files downloaded on the fly
-
-
-def get_example_file(filename, url=False):
-    """ Retrieve the full filename of an example dataset. If the file does not
-        exist, and an url is given, it is automatically downloaded from the
-        web.
+        We make no check whether the returned path exists.
 
         Parameters
         ----------
-        filename: string
-            filename of the data file of interest
-        url: string or False
-            if url is not false, this is the url to automatically
-            download the data from.
+        *path_parts : sequence of strings
 
-        Return
-        ------
-        The full path to the file.
+        Returns
+        -------
+        fname : str
+           result of ``os.path.join(*path_parts), with
+           ``self.base_path`` prepended
 
-        Notes
-        ------
-        If url is False, and the file cannot be found, raises an OSError
-        The file is stored to a path defined at build time in the
-        site.cfg.
-    """
-    check_fetch_data(EXAMPLE_DATA_DIR, NIPY_URL,
-                     EXAMPLE_DATA_TAR, 'example data')
-    full_path = os.path.join(EXAMPLE_DATA_DIR, filename)
-    if not os.path.exists(full_path):
-        if url is False:
-            raise OSError
-        download(url, full_path)
-    return full_path
- 
+        '''
+        return pjoin(self.base_path, *path_parts)
+
+
+class VersionedDatasource(Datasource):
+    ''' Datasource with version information in config file
+
+    '''
+    def __init__(self, base_path, config_filename=None):
+        ''' Initialize versioned datasource
+
+        We assume that there is a configuration file with version
+        information in datasource directory tree.
+
+        The configuration file contains an entry like::
+        
+           [DEFAULT]
+           version = 0.3
+
+        The version should have at least a major and a minor version
+        number in the form above. 
+
+        Parameters
+        ----------
+        base_path : str
+           path to prepend to all relative paths
+        config_filaname : None or str
+           relative path to configuration file containing version
+
+        '''
+        Datasource.__init__(self, base_path)
+        if config_filename is None:
+            config_filename = 'config.ini'
+        self.config = ConfigParser.SafeConfigParser()
+        self.config.read(self.get_filename(config_filename))
+        self.version = self.config.get('DEFAULT', 'version')
+        version_parts = self.version.split('.')
+        self.major_version = int(version_parts[0])
+        self.minor_version = int(version_parts[1])
+        self.version_no = float('%d.%d' % version_parts[:2])
+
+
+def _cfg_value(fname, section='DATA', value='path'):
+    """ Utility function to fetch value from config file """
+    configp =  ConfigParser.ConfigParser()
+    readfiles = configp.read(fname)
+    if not readfiles:
+        return ''
+    try:
+        return configp.get(section, value)
+    except ConfigParser.Error:
+        return ''
+
+
+def get_data_path():
+    ''' Return specified or guessed locations of NIPY data files
+
+    The algorithm is to return paths, extracted from strings, where
+    strings are found in the following order:
+
+    #. The contents of environment variable ``NIPY_DATA_PATH`` 
+    #. Any section = ``DATA``, key = ``path`` value in a ``config.ini``
+       file in your nipy user directory (found with
+       ``get_nipy_user_dir()``)
+    #. Any section = ``DATA``, key = ``path`` value in any files found
+       with a a ``sorted(glob.glob(os.path.join(sys_dir, '*.ini')))``
+       search, where ``sys_dir`` is found with ``get_nipy_system_dir()``
+    #. The result of ``os.path.join(sys.prefix, 'share', 'nipy')``
+
+    Therefore, any paths found in ``NIPY_DATA_PATH`` will be searched
+    before paths found in the user directory ``config.ini``
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    paths : sequence of paths
+
+    Examples
+    --------
+    >>> pth = get_data_path()
+    '''
+    paths = []
+    try:
+        var = os.environ['NIPY_DATA_PATH']
+    except KeyError:
+        pass
+    else:
+        if var:
+            paths = var.split(os.path.pathsep)
+    np_cfg = pjoin(get_nipy_user_dir(), 'config.ini')
+    np_etc = get_nipy_system_dir()
+    config_files = sorted(glob.glob(pjoin(np_etc, '*.ini')))
+    for fname in [np_cfg] + config_files:
+        var = _cfg_value(fname)
+        if var:
+            paths += var.split(os.path.pathsep)
+    paths.append(pjoin(sys.prefix, 'share', 'nipy'))
+    return paths
+    
+
+def find_data_dir(root_dirs, *names):
+    ''' Find relative path given path prefixes to search
+
+    We raise a DataError if we can't find the relative path
+    
+    Parameters
+    ----------
+    root_dirs : sequence of strings
+       sequence of paths in which to search for data directory
+    *names : sequence of strings
+       sequence of strings naming directory to find. The name to search
+       for is given by ``os.path.join(*names)``
+
+    Returns
+    -------
+    data_dir : str
+       full path (root path added to `*names` above
+
+    '''
+    ds_relative = pjoin(*names)
+    for path in root_dirs:
+        pth = pjoin(path, ds_relative)
+        if os.path.isdir(pth):
+            return pth
+    raise DataError('Could not find datasource %s in data path %s' %
+                   (ds_relative,
+                    os.path.pathsep.join(root_dirs)))
+
+
+def make_datasource(*names):
+    ''' Return datasource `*names` as found in ``get_data_path()``
+
+    The relative path of the directory we are looking for is given by
+    ``os.path.join(*names)``.  We search for this path in the list of
+    paths given by ``get_data_path()`` in this module.
+
+    If we can't find the relative path, raise a DataError
+
+    Parameters
+    ----------
+    *names : sequence of strings
+       The relative path to search for is given by
+       ``os.path.join(*names)``
+
+    Returns
+    -------
+    datasource : ``VersionedDatasource``
+       An initialized ``VersionedDatasource`` instance
+
+    '''
+    root_dirs = get_data_path()
+    pth = find_data_dir(root_dirs, *names)
+    return VersionedDatasource(pth)
+
+

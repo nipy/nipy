@@ -10,14 +10,14 @@ the data files nipy uses into at least 3 categories
    such as templates or atlases
 #. *example data* - data files for running examples, or optional tests
 
-The files used for testing are very small data files, and they are
-shipped with nipy, and live in the code repository. They live in the
-module path ``nipy.testing.data``.
+The files used for testing are very small data files. They are shipped
+with nipy, and live in the code repository. They live in the module path
+``nipy.testing.data``.
 
 .. now a comment .. automodule:: nipy.testing
 
 *template data* and *example data* are example of *data packages*.  What
- follows is a discussion of the design and use of data packages.
+follows is a discussion of the design and use of data packages.
 
 Use cases for data packages
 +++++++++++++++++++++++++++
@@ -29,24 +29,24 @@ The programmer will want to use the data something like this:
 
 .. testcode::
 
-   from nipy.utils import make_repo
+   from nipy.utils import make_datasource
 
-   template_repo = make_repo('nipy', 'templates')
-   fname = template_repo.get_filename('ICBM152', '2mm', 'T1.nii.gz')
+   templates = make_datasource('nipy', 'templates')
+   fname = templates.get_filename('ICBM152', '2mm', 'T1.nii.gz')
    
 where ``fname`` will be the absolute path to the template image
 ``ICBM152/2mm/T1.nii.gz``. 
 
-The programmer can insist on a particular version of a repository:
+The programmer can insist on a particular version of a ``datasource``:
 
 .. testcode::
 
-   if template_repo.version < 0.4:
-      raise ValueError('Need repository version at least 0.4')
+   if templates.version < '0.4':
+      raise ValueError('Need datasource version at least 0.4')
 
 If the repository cannot find the data, then:
 
->>> make_repo('nipy', 'implausible')
+>>> make_datasource('nipy', 'implausible')
 Traceback
  ...
 IOError
@@ -65,27 +65,29 @@ data when installing the package.  Thus::
 
 will import nipy after installation to check whether these raise an error:
 
->>> from nipy.utils import make_repo
->>> template_repo = make_repo('nipy', 'templates')
->>> data_repo = make_repo('nipy', 'data')
+>>> from nipy.utils import make_datasource
+>>> template = make_datasource('nipy', 'templates')
+>>> example_data = make_datasource('nipy', 'data')
 
 and warn the user accordingly, with some basic instructions for how to
 install the data.
 
+.. _find-data:
+
 Finding the data
 ````````````````
 
-The routine ``make_repo`` will need to be able to find the data that has
-been installed.  For the following call:
+The routine ``make_datasource`` will need to be able to find the data
+that has been installed.  For the following call:
 
->>> template_repo = make_repo('nipy', 'templates')
+>>> templates = make_datasource('nipy', 'templates')
 
 We propose to:
 
 #. Get a list of paths where data is known to be stored with
    ``nipy.data.get_data_path()``
 #. For each of these paths, search for directory ``nipy/templates``.  If
-   found, and of the correct format (see below), return a repository,
+   found, and of the correct format (see below), return a datasource,
    otherwise raise an Exception
 
 The paths collected by ``nipy.data.get_data_paths()`` will be
@@ -101,6 +103,29 @@ are:
    ``.ini`` files, where the ``.ini`` files are found by
    ``glob.glob(os.path.join(etc_dir, '*.ini')`` and ``etc_dir`` is
    ``/etc/nipy`` on Unix, and some suitable equivalent on Windows.
+
+Requirements for a data package
+```````````````````````````````
+
+To be a valid NIPY project data package, you need to satisfy:
+
+#. The installer installs the data in some place that can be found using
+   the method defined in :ref:`find-data`.
+
+We recommend that:
+
+#. By default, you install data in a standard location such as
+   ``<prefix>/share/nipy`` where ``<prefix>`` is the standard Python
+   prefix obtained by ``>>> import sys; print sys.prefix``
+
+Remember that there is a distinction between the NIPY project - the
+umbrella of neuroimaging in python - and the NIPY package - the main
+code package in the NIPY project.  Thus, if you want to install data
+under the NIPY *package* umbrella, your data might go to
+``/usr/share/nipy/nipy/packagename`` (on Unix).  Note ``nipy`` twice -
+once for the project, once for the pacakge.  If you want to install data
+under - say - the ```pbrain`` package umbrella, that would go in
+``/usr/share/nipy/pbrain/packagename``.
 
 Data package format
 ```````````````````
@@ -134,7 +159,7 @@ NIPY-related packages such as ``pbrain``).  The ``data`` subdirectory of
   [DEFAULT]
   version = 0.1
 
-giving the version of the repository.  
+giving the version of the data package.  
 
 Installing the data
 ```````````````````
@@ -179,4 +204,54 @@ contents::
    [DATA]
    path = /usr/share/nipy
 
+Current implementation
+``````````````````````
+
+This section describes how we (the NIPY package) implement data packages
+at the moment.
+
+The data in the data packages will not be under source control.
+
+The data packages will be available at a central release location.  For
+now this will be: http://cirl.berkeley.edu/mb312/nipy-data but we expect
+this to change to sourceforge soon.
+
+A package, such as ``nipy-templates-0.1.tar.gz`` will have the following
+contents::
+
+
+  <ROOT>
+    |-- setup.py
+    |-- README.txt
+    |-- MANIFEST.in
+    `-- templates
+        |-- ICBM152
+        |   `-- 2mm
+        |       `-- T1.nii.gz
+        |-- colin27
+        |   `-- 2mm
+        |       `-- T1.nii.gz
+        `-- config.ini
+
+
+There should be only one ``nipy/packagename`` directory delivered by a
+particular package.  For example, this package installs
+``nipy/templates``, but does not contain ``nipy/data``.  
+
+Making a new package tarball is simply:
+
+#. Downloading and unpacking e.g ``nipy-templates-0.1.tar.gz`` to form
+   the directory structure above.
+#. Making any changes to the directory
+#. Running ``setup.py sdist`` to recreate the package.  
+
+The process of making a release should be:
+
+#. Increment the major or minor version number in the ``config.ini`` file
+#. Make a package tarball as above
+#. Upload to distribution site
+
+There is an example nipy data package ``nipy-examplepkg`` in the
+``examples`` directory of the NIPY repository.
+>>>>>>> MERGE-SOURCE
 
