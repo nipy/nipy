@@ -1,3 +1,4 @@
+.. _data-files:
 
 Shipping data files for `nipy`
 ===============================

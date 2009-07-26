@@ -89,9 +89,10 @@ To install, simply do::
 
 .. note::
 
-    If you have downloaded the source from the development tree, you also 
-    should get the data tarball (not required, but strongly suggested)
-    from https://cirl.berkeley.edu/nipy/nipy_data.tar.gz .
+    If you have downloaded the source from the development tree, you
+    also should get and install the ``nipy-data`` and ``nipy-templates``
+    packages (not required, but strongly suggested). Please see
+    http://cirl.berkeley.edu/mb312/nipy-data and :ref:`data-files`.
 
 .. include:: ../links_names.txt
 
