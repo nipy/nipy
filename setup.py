@@ -57,6 +57,30 @@ except ImportError:
 from distutils.command.install import install
 from numpy.distutils.command.build_ext import build_ext
 
+def data_install_msgs():
+    from nipy.utils import make_datasource, DataError
+    try:
+        make_datasource('nipy', 'templates')
+    except DataError, exception:
+        print '#' * 80
+        print exception
+    try:
+        make_datasource('nipy', 'data')
+    except DataError, exception:
+        print '#' * 80
+        print exception
+        
+
+
+class MyInstall(install):
+    """ Subclass the install to generate data install warnings if necessary
+    """
+    def run(self):
+        install.run(self)
+        data_install_msgs()
+
+
+cmdclass['install'] = MyInstall
 
 ################################################################################
 

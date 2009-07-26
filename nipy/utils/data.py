@@ -219,6 +219,7 @@ def make_datasource(*names):
         msg = '''%s;
 Is it possible you have not installed a needed data package?
 From the names, maybe you need data package "%s"?
+If you have the package, have you set the path to the package correctly?
 Please see %s for data downloads.''' % (
             exception,
             '-'.join(names),
