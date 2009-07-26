@@ -2,7 +2,6 @@
 Utilities to find files from NIPY data packages
 
 """
-
 import os
 from os.path import join as pjoin
 import glob
@@ -87,12 +86,19 @@ class VersionedDatasource(Datasource):
         if config_filename is None:
             config_filename = 'config.ini'
         self.config = ConfigParser.SafeConfigParser()
-        self.config.read(self.get_filename(config_filename))
-        self.version = self.config.get('DEFAULT', 'version')
+        cfg_file = self.get_filename(config_filename)
+        readfiles = self.config.read(cfg_file)
+        if not readfiles:
+            raise DataError('Could not read config file %s' % cfg_file)
+        try:
+            self.version = self.config.get('DEFAULT', 'version')
+        except ConfigParser.Error:
+            raise DataError('Could not get version from %s' % cfg_file)
         version_parts = self.version.split('.')
         self.major_version = int(version_parts[0])
         self.minor_version = int(version_parts[1])
-        self.version_no = float('%d.%d' % version_parts[:2])
+        self.version_no = float('%d.%d' % (self.major_version,
+                                           self.minor_version))
 
 
 def _cfg_value(fname, section='DATA', value='path'):

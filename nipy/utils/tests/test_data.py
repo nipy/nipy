@@ -1,5 +1,5 @@
 ''' Tests for data module '''
-
+from __future__ import with_statement
 import os
 from os.path import join as pjoin
 from os import environ as env
@@ -49,6 +49,11 @@ def teardown_environment():
 with_environment = with_setup(setup_environment, teardown_environment)
 
 
+def test_datasources():
+    # Tests for DataSource and VersionedDatasource
+    pass
+
+
 def test__cfg_value():
     # no file, return ''
     yield assert_equal, _cfg_value('/implausible_file'), ''
@@ -81,8 +86,10 @@ def test__cfg_value():
 @with_environment
 def test_data_path():
     # wipe out any sources of data paths
-    del os.environ[DATA_KEY]
-    del os.environ[USER_KEY]
+    if DATA_KEY in env:
+        del env[DATA_KEY]
+    if USER_KEY in env:
+        del os.environ[USER_KEY]
     nud.get_nipy_system_dir = lambda : ''
     # now we should only have the default
     old_pth = get_data_path()
@@ -172,16 +179,16 @@ def test_make_datasource():
            DataError,
            make_datasource,
            'pkg')
-        os.mkdir(pjoin(tmpdir, 'pkg'))
+        pkg_dir = pjoin(tmpdir, 'pkg')
+        os.mkdir(pkg_dir)
         yield (assert_raises,
            DataError,
            make_datasource,
            'pkg')
-        tmpfile = pjoin(tmpdir, 'config.ini')
+        tmpfile = pjoin(pkg_dir, 'config.ini')
         with open(tmpfile, 'wt') as fobj:
             fobj.write('[DEFAULT]\n')
             fobj.write('version = 0.1\n')
-            fobj.flush()
         ds = make_datasource('pkg')
         yield assert_equal, ds.version, '0.1'
     finally:
