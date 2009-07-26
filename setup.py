@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 import sys
-import os
-import tarfile
-import tempfile
 from distutils import log
 from distutils.cmd import Command
 
@@ -54,7 +51,7 @@ except ImportError:
 
 ################################################################################
 # commands for installing the data
-from distutils.command.install import install
+from distutils.command.install_data import install_data
 from numpy.distutils.command.build_ext import build_ext
 
 def data_install_msgs():
@@ -62,25 +59,35 @@ def data_install_msgs():
     try:
         make_datasource('nipy', 'templates')
     except DataError, exception:
-        print '#' * 80
-        print exception
+        log.warn('%s\n%s' % ('_'*80, exception))
     try:
         make_datasource('nipy', 'data')
     except DataError, exception:
-        print '#' * 80
-        print exception
+        log.warn('%s\n%s' % ('_'*80, exception))
         
 
 
-class MyInstall(install):
-    """ Subclass the install to generate data install warnings if necessary
+class MyInstallData(install_data):
+    """ Subclass the install_data to generate data install warnings if necessary
     """
     def run(self):
-        install.run(self)
+        install_data.run(self)
         data_install_msgs()
 
 
-cmdclass['install'] = MyInstall
+class MyBuildExt(build_ext):
+    """ Subclass the build_ext to generate data install warnings if
+        necessary: warn at build == warn early
+        This is also important to get a warning when run a 'develop'.
+    """
+    def run(self):
+        build_ext.run(self)
+        data_install_msgs()
+
+
+
+cmdclass['install_data'] = MyInstallData
+cmdclass['build_ext'] = MyBuildExt
 
 ################################################################################
 
