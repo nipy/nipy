@@ -7,9 +7,6 @@ import os
 from os.path import join as pjoin
 import glob
 import sys
-import tarfile
-import urllib2
-import warnings
 import ConfigParser
 
 from .environment import get_nipy_user_dir, get_nipy_system_dir
@@ -20,37 +17,6 @@ NIPY_URL= 'https://cirl.berkeley.edu/mb312/nipy-data/'
 class DataError(OSError):
     pass
 
-
-def _cfg_value(fname, section='DATA', value='path'):
-    configp =  ConfigParser.ConfigParser()
-    readfiles = configp.read(fname)
-    if not readfiles:
-        return ''
-    try:
-        return configp.get(section, value)
-    except ConfigParser.Error:
-        return ''
-
-
-def get_data_path():
-    ''' Return specified or guessed locations of NIPY data files '''
-    try:
-        var = os.environ['NIPY_DATA_PATH']
-    except KeyError:
-        paths = []
-    else:
-        paths = var.split(os.path.pathsep)
-    np_cfg = pjoin(get_nipy_user_dir(), 'config.ini')
-    nipy_etc = pjoin(get_nipy_system_dir(), 'nipy')
-    config_files = sorted(glob.glob(pjoin(nipy_etc, '*.ini')))
-    for fname in [np_cfg] + config_files:
-        var = _cfg_value(fname)
-        if var:
-            paths += var.split(os.path.pathsep)
-    if not paths:
-        paths = [pjoin(sys.prefix, 'share', 'nipy')]
-    return paths
-    
 
 class Datasource(object):
     ''' Simple class to add base path to relative path '''
@@ -128,6 +94,67 @@ class VersionedDatasource(Datasource):
         self.minor_version = int(version_parts[1])
         self.version_no = float('%d.%d' % version_parts[:2])
 
+
+def _cfg_value(fname, section='DATA', value='path'):
+    """ Utility function to fetch value from config file """
+    configp =  ConfigParser.ConfigParser()
+    readfiles = configp.read(fname)
+    if not readfiles:
+        return ''
+    try:
+        return configp.get(section, value)
+    except ConfigParser.Error:
+        return ''
+
+
+def get_data_path():
+    ''' Return specified or guessed locations of NIPY data files
+
+    The algorithm is to return paths, extracted from strings, where
+    strings are found in the following order:
+
+    #. The contents of environment variable ``NIPY_DATA_PATH`` 
+    #. Any section = ``DATA``, key = ``path`` value in a ``config.ini``
+       file in your nipy user directory (found with
+       ``get_nipy_user_dir()``)
+    #. Any section = ``DATA``, key = ``path`` value in any files found
+       with a a ``sorted(glob.glob(os.path.join(sys_dir, '*.ini')))``
+       search, where ``sys_dir`` is found with ``get_nipy_system_dir()``
+    #. The result of ``os.path.join(sys.prefix, 'share', 'nipy')``
+
+    Therefore, any paths found in ``NIPY_DATA_PATH`` will be searched
+    before paths found in the user directory ``config.ini``
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    paths : sequence of paths
+
+    Examples
+    --------
+    >>> pth = get_data_path()
+    '''
+    paths = []
+    try:
+        var = os.environ['NIPY_DATA_PATH']
+    except KeyError:
+        pass
+    else:
+        if var:
+            paths = var.split(os.path.pathsep)
+    np_cfg = pjoin(get_nipy_user_dir(), 'config.ini')
+    np_etc = get_nipy_system_dir()
+    config_files = sorted(glob.glob(pjoin(np_etc, '*.ini')))
+    for fname in [np_cfg] + config_files:
+        var = _cfg_value(fname)
+        if var:
+            paths += var.split(os.path.pathsep)
+    paths.append(pjoin(sys.prefix, 'share', 'nipy'))
+    return paths
+    
 
 def find_data_dir(root_dirs, *names):
     ''' Find relative path given path prefixes to search
