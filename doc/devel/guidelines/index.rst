@@ -20,5 +20,6 @@
    testing
    debugging
    optimization
+   data_files
    open_source_devel
    changelog

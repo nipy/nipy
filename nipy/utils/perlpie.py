@@ -1,17 +1,15 @@
-"""Utility function to perform global search and replace in a source tree.
+"""Perform a global search and replace on the current directory *recursively*.
 
-`perlpie` will perform a global search and replace on all files in a
-directory recursively.  It's a small python wrapper around the `perl
--p -i -e` functionality, but with easier syntax.  I **strongly
-recommend** running `perlpie` on files under source control.  In this
-way it's easy to track your changes and if (more likely when) you
+This a small python wrapper around the `perl -p -i -e` functionality.
+I **strongly recommend** running `perlpie` on files under source
+control.  In this way it's easy to track your changes and if you
 discover your regular expression was wrong you can easily revert.  I
 also recommend using `grin` to test your regular expressions before
 running `perlpie`.
 
 Parameters
 ----------
-oldstring : regular expression
+regex : regular expression
     Regular expression matching the string you want to replace
 newstring : string
     The string you would like to replace the oldstring with.  Note
@@ -28,9 +26,8 @@ perl : The underlying language we're using to perform the search and replace.
 by Robert Kern to wrap `grep` and `find` with python and easier
 command line options.
 
-Example
--------
-
+Examples
+--------
 Replace all occurences of foo with bar::
 
     perlpie foo bar
@@ -57,6 +54,7 @@ Remove all occurences of importing make_doctest_suite::
 from optparse import OptionParser
 import subprocess
 
+usage_doc = "usage: %prog [options] regex newstring"
 
 def check_deps():
     try:
@@ -70,7 +68,7 @@ def check_deps():
     return True
 
 
-def perl_dash_pie(oldstr, newstr):
+def perl_dash_pie(oldstr, newstr, dry_run=None):
     """Use perl to replace the oldstr with the newstr.
 
     Examples
@@ -83,8 +81,12 @@ def perl_dash_pie(oldstr, newstr):
     
     """
 
-    cmd = "grind | xargs perl -pi -e 's/%s/%s/g'" % (oldstr, newstr)
+    if dry_run:
+        cmd = "grind | xargs perl -p -e 's/%s/%s/g'" % (oldstr, newstr)
+    else:
+        cmd = "grind | xargs perl -pi -e 's/%s/%s/g'" % (oldstr, newstr)
     print cmd
+
     try:
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError, err:
@@ -96,12 +98,18 @@ def perl_dash_pie(oldstr, newstr):
         """ % (cmd, str(err))
         raise Exception(msg)
 
+def print_extended_help(option, opt_str, value, parser, *args, **kwargs):
+    print __doc__
 
 def main():
-    param_index = __doc__.index('Parameters')
-    description = __doc__[:param_index]
-    usage = "usage: %prog [options] oldstring newstring"
+    description = __doc__.splitlines()[0]
+    usage = usage_doc
     parser = OptionParser(usage=usage, description=description)
+    parser.add_option('-e', '--extended-help', action='callback', 
+                      callback=print_extended_help,
+                      help='print extended help including examples')
+    parser.add_option('-n', '--dry-run', action="store_true", dest="dry_run",
+                      help='send results to stdout without modifying files')
     (options, args) = parser.parse_args()
 
     if not args:
@@ -111,4 +119,4 @@ def main():
     if check_deps():
         oldstr = args[0]
         newstr = args[1]
-        perl_dash_pie(oldstr, newstr)
+        perl_dash_pie(oldstr, newstr, options.dry_run)
