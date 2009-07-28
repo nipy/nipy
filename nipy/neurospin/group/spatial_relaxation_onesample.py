@@ -461,7 +461,7 @@ class multivariate_stat:
                 if update_spatial and self.std != None:
                     self.update_displacements()
                     if j == 0 and self.proposal == 'rand_walk':
-                        self.proposal_std = np.clip(self.proposal_std * (1 + 0.75) / (1 + self.R.mean()), 0.2, 1.0)
+                        self.proposal_std = np.clip(self.proposal_std * (1 + 0.9) / (1 + self.R.mean()), 0.01, 10.0)
                 if self.vardata != None:
                     self.update_effects()
                 self.update_mean_effect()
@@ -511,17 +511,19 @@ class multivariate_stat:
     #####################################################################################
     # MAP estimation of displacement fields
     
-    def estimate_displacements_SA(self, nsimu=1e2, c=0.99, proposal_std=1.0, verbose=False):
+    def estimate_displacements_SA(self, nsimu=100, c=0.99, proposal_std=None, verbose=False):
         """
         MAP estimate of elementary displacements conditional on model parameters
         """
+        if proposal_std==None:
+            proposal_std = self.proposal_std
         LL, self.Z, self.tot_var, self.SS1, self.SS2, self.SS3, self.SS4 =\
                              self.compute_log_voxel_likelihood(return_SS=True)
         self.log_likelihood = LL.sum()
         for i in xrange(nsimu):
             if verbose:
                 print "SA iteration", i+1, "out of", nsimu
-            self.update_displacements_SA(c**i, proposal_std * self.std, verbose)
+            self.update_displacements_SA(c**i, proposal_std, verbose)
     
     def update_displacements_SA(self, T=1.0, proposal_std=None, verbose=False):
         n = self.data.shape[0]
@@ -847,4 +849,26 @@ class multivariate_stat:
         log_prior = self.compute_log_prior(v, m_mean, m_var)
         log_posterior = self.compute_log_posterior(v, m_mean, m_var, nsimu, burnin, stabilize, verbose)
         return log_likelihood + log_prior[:-1] - log_posterior
+    
+    def compute_conditional_posterior_mean(self, v=None, m_mean=None, m_var=None):
+        """
+        Compute posterior mean of mean effect map,
+        conditional on parameters and displacements
+        """
+        if v == None:
+            v = self.v.copy()
+        if m_mean == None:
+            m_mean = self.m_mean.copy()
+        if m_var == None:
+            m_var = self.m_var.copy()
+        LL, Z, tot_var, SS1, SS2, SS3, SS4 = \
+        self.compute_log_voxel_likelihood(v, m_mean, m_var, return_SS=True)
+        #if self.std == None:
+            #I = range(self.m.size)*np.ones(self.data.shape,int)
+        #else:
+            #I = self.D.I
+        v_labels = v[self.labels]
+        m_labels = m_mean[self.labels]
+        return (SS4 + m_labels * SS1 + m_labels / v_labels)\
+                 / (SS1 + 1.0 / v_labels)
 
