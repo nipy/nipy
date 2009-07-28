@@ -384,7 +384,7 @@ class ENN(object):
  
 def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
                           verbose=0, fixed_scale=False, mpaxes=None, bias=0, 
-                          theta=0):
+                          theta=0, return_estimator=False):
     """
      Fit the data with a 3-classes Gaussian Mixture Model,
     i.e. computing some probability that the voxels of a certain map
@@ -411,6 +411,9 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
     theta = 0 the threshold used to correct the posterior p-values
           when bias=1; normally, it is such that test>theta
           note that if theta = -np.infty, the method has a standard behaviour
+    return_estimator: boolean, optional
+            If return_estimator is true, the estimator object is
+            returned.
     
     Results
     -------
@@ -418,6 +421,8 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
         the posterior probability of each test item belonging to each component
         in the GMM (sum to 1 across the 3 classes)
         if np.size(test)==0, i.e. nbitem==0, None is returned
+    estimator : nipy.neurospin.clustering.GMM object
+        The estimator object, returned only if return_estimator is true.
 
     Note
     ----
@@ -480,7 +485,10 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
         BayesianGMM.show_components(x,gd,lj,mpaxes)
 
     bfp = (bfp.T/bfp.sum(1)).T
-    return bfp
+    if not return_estimator:
+        return bfp
+    else:
+        return bfp, BayesianGMM
 
 def Gamma_Gaussian_fit(x,test=None,verbose=0,mpaxes=None):
     """
