@@ -518,6 +518,8 @@ def Gamma_Gaussian_fit(x,test=None,verbose=0,mpaxes=None):
         # hyper-verbose mode
         Ggg.show(x,mpaxes=mpaxes)
         Ggg.parameters()
+    if test is None:
+        test = x
 
     test = np.reshape(test,np.size(test))
    
