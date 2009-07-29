@@ -50,9 +50,9 @@ If the repository cannot find the data, then:
 >>> make_datasource('nipy', 'implausible')
 Traceback
  ...
-IOError
+nipy.utils.DataError
 
-where ``IOError`` gives a helpful warning about why the data was not
+where ``DataError`` gives a helpful warning about why the data was not
 found, and how it should be installed.  
 
 Warnings during installation
@@ -97,13 +97,17 @@ strings (in the order in which they will be used in the search above)
 are:
 
 #. The value of the ``NIPY_DATA_PATH`` environment variable, if set
-#. Possibly, a section = ``DATA``, parameter = ``path`` entry in a
+#. A section = ``DATA``, parameter = ``path`` entry in a
    ``config.ini`` file in ``nipy_dir`` where ``nipy_dir`` is
    ``$HOME/.nipy`` or equivalent.
 #. Section = ``DATA``, parameter = ``path`` entries in configuration
    ``.ini`` files, where the ``.ini`` files are found by
    ``glob.glob(os.path.join(etc_dir, '*.ini')`` and ``etc_dir`` is
    ``/etc/nipy`` on Unix, and some suitable equivalent on Windows.
+#. The result of ``os.path.join(sys.prefix, 'share', 'nipy')``
+
+The last is to make sure that we always find a default install of the data.
+
 
 Requirements for a data package
 ```````````````````````````````
@@ -254,5 +258,4 @@ The process of making a release should be:
 
 There is an example nipy data package ``nipy-examplepkg`` in the
 ``examples`` directory of the NIPY repository.
->>>>>>> MERGE-SOURCE
 
