@@ -242,7 +242,7 @@ class GGM(object):
         else:
             pass
 
-    def show(self,x):
+    def show(self, x):
         """
         vizualisation of the mm based on the empirical histogram of x
 
@@ -420,7 +420,7 @@ class GGGM(object):
             
         self.mixt = self.mixt/np.sum(self.mixt)
     
-    def init_fdr(self, x, dof=-1):
+    def init_fdr(self, x, dof=-1, copy=True):
         """
         Initilization of the class based on a fdr heuristic: the
         probability to be in the positive component is proportional to
@@ -428,12 +428,20 @@ class GGGM(object):
         negative part.  The point is that the gamma parts should model
         nothing more that the tails of the distribution.
 
-        Parameters:
+        Parameters
         -----------
-        - x: array of shape(nbitem): the data under consideration
-        - dof=-1: number of degrees of freedom if x is thought
-        to be a student variate. By default, it is handeled as a normal
+        x: array of shape(nbitem)
+            the data under consideration
+        dof: integer, optional
+            number of degrees of freedom if x is thought to be a student 
+            variate. By default, it is handeled as a normal
+        copy: boolean, optional
+            If True, copy the data.
         """
+        # Safeguard ourselves against modifications of x, both by our
+        # code, and by external code.
+        if copy:
+            x = x.copy()
         # positive gamma
         i = np.nonzero(x>0)
         from nipy.neurospin.utils import emp_null as en
@@ -444,7 +452,7 @@ class GGGM(object):
             if dof<0:
                 pvals = st.norm.sf(x)
             else:
-                pvals = st.t.sf(x,dof)
+                pvals = st.t.sf(x, dof)
             q = lfdr.all_fdr_from_pvals(pvals)
             
             z = 1-q[i]
@@ -454,8 +462,8 @@ class GGGM(object):
             else:
                 if sz>0.5*np.size(i): z = 0.5*z
                 sz = np.sum(z)
-                self.shape_p = _compute_c(x[i],z,eps = 0.00001)  
-                self.scale_p = np.dot(x[i],z)/(sz*self.shape_p)
+                self.shape_p = _compute_c(x[i], z, eps=0.00001)  
+                self.scale_p = np.dot(x[i], z)/(sz*self.shape_p)
                 self.mixt[2] = sz/np.size(i)
         else:
             self.mixt[2] = 0
@@ -463,13 +471,13 @@ class GGGM(object):
         # negative gamma
         i = np.nonzero(x<0)
         if np.size(i)>0:
-            i = np.reshape(i,(np.size(i)))
+            i = np.reshape(i, (np.size(i),))
             if dof<0:
                 pvals = st.norm.cdf(x)
             else:
-                pvals = st.t.cdf(x,dof)
+                pvals = st.t.cdf(x, dof)
             q = lfdr.all_fdr_from_pvals(pvals)
-            z = 1-q[i]
+            z = 1 - q[i]
             sz = np.sum(z)
             if sz==0:
                  self.mixt[0] = 0.5/np.size(x)
@@ -478,22 +486,24 @@ class GGGM(object):
                     z = 0.5*z
                     sz = np.sum(z)
                         
-                self.shape_n = _compute_c(-x[i],z,eps = 0.00001)  
-                self.scale_n = -np.dot(x[i],z)/(sz*self.shape_n)
+                self.shape_n = _compute_c(-x[i], z, eps=0.00001)  
+                self.scale_n = -np.dot(x[i], z)/(sz*self.shape_n)
                 self.mixt[0] = sz/np.size(i)
         else:
             self.mixt[0] = 0
-        self.mixt[1] = 1-self.mixt[0]-self.mixt[2]
+        self.mixt[1] = 1 - self.mixt[0] - self.mixt[2]
         
-    def Mstep(self,x,z):
+    def Mstep(self, x, z):
         """
         Mstep of the estimation:
         Maximum likelihood update the parameters of the three components
 
         Parameters
         ------------
-        x array of shape(nbitem): input data
-        z array of shape =(nbitems,3): probabilistic membership
+        x: array of shape (nbitem,)
+            input data
+        z: array of shape (nbitems,3)
+            probabilistic membership
         """
         tiny = 1.e-15
         sz = np.maximum(np.sum(z,0),tiny)
@@ -509,20 +519,20 @@ class GGGM(object):
             self.scale_n = 1            
         
         #gaussian
-        self.mean = np.dot(x,z[:,1])/sz[1]
-        self.var = np.dot((x-self.mean)**2,z[:,1])/sz[1]
+        self.mean = np.dot(x, z[:,1])/sz[1]
+        self.var = np.dot((x- self.mean)**2, z[:,1])/sz[1]
         
         #positive gamma
         i = np.nonzero(x>0)
         if np.size(i)>0:
             i = np.reshape(i,(np.size(i)))    
-            self.shape_p = _compute_c(x[i],z[i,2],eps = 0.00001) 
-            self.scale_p = np.dot(x[i],z[i,2])/(sz[2]*self.shape_p)
+            self.shape_p = _compute_c(x[i], z[i, 2], eps=0.00001) 
+            self.scale_p = np.dot(x[i], z[i,2])/(sz[2]*self.shape_p)
         else:
             self.shape_p = 1
             self.scale_p = 1
         
-    def Estep(self,x):
+    def Estep(self, x):
         """
         E step: update probabilistic memberships of the three components
 
@@ -580,7 +590,8 @@ class GGGM(object):
         self.mixt = R
         return z,L
 
-    def estimate(self, x, niter=100, delta=1.e-4, bias=0, verbose=0):
+    def estimate(self, x, niter=100, delta=1.e-4, bias=0, verbose=0,
+                gaussian_mix=0):
         """
         Whole EM estimation procedure:
 
@@ -594,6 +605,9 @@ class GGGM(object):
             increment in LL at which convergence is declared
         bias: float, optional
             lower bound on the gaussian variance (to avoid shrinkage)
+        gaussian_mix: float, optional
+            if nonzero, lower bound on the gaussian mixing weight 
+            (to avoid shrinkage)
         verbose: 0, 1 or 2
             verbosity level
 
@@ -602,21 +616,30 @@ class GGGM(object):
         z: array of shape (nbitem, 3)
             the membership matrix
         """
-        z,L = self.Estep(x)
+        z, L = self.Estep(x)
         
         L0 = L-2*delta
         for i in range(niter):
-            self.Mstep(x,z)
+            self.Mstep(x, z)
+            # Constraint the Gaussian variance
             if bias>0:
-                self.var = np.maximum(bias,self.var)
+                self.var = np.maximum(bias, self.var)
+            # Constraint the Gaussian mixing ratio
+            if gaussian_mix>0 and self.mixt[1] < gaussian_mix:
+                upper, gaussian, lower = self.mixt
+                upper_to_lower = upper/(lower + upper)
+                gaussian = gaussian_mix
+                upper = (1 - gaussian_mix) * upper_to_lower
+                lower = 1 - gaussian_mix - upper
+                self.mixt = lower, gaussian, upper
 
-            z,L = self.Estep(x)
-            if verbose: print i, L
-            if (L<L0+delta): break
+            z, L = self.Estep(x)
+            if verbose:
+                print i, L
+            if (L<L0+delta):
+                break
             L0 = L
 
-            #if bias>0: self.var = np.maximum(bias,self.var)
-        
         return z
         
     def posterior(self, x):
@@ -673,6 +696,7 @@ class GGGM(object):
         ng+y+pg = np.ones(nbitem)
         """
         p = self.mixt
+        # XXX: This is copy-pasted with the corresponding methods
         # negative gamma 
         b = self.scale_n
         a = self.shape_n    
@@ -685,7 +709,7 @@ class GGGM(object):
         
         #gaussian part  
         m = self.mean
-        v = self.var    
+        v = self.var 
         y = 1./np.sqrt(2*np.pi*v)*np.exp(-(x-m)**2/(2*v))
 
         # positive gamma 
@@ -702,12 +726,63 @@ class GGGM(object):
         ng = ng/sl
         y = y/sl
         pg = pg/sl
-        return ng,y,pg
+        return ng, y, pg
+
+    def _negative_gamma_component(self, c):
+        """ Return the negative gamma component evaluated at the position
+        c.
+
+        Parameters
+        -----------
+        c: ndarray
+            Values to evaluate the component.
+        """
+        b = self.scale_n
+        a = self.shape_n 
+        ng = np.zeros(np.size(c),'d')
+        i = np.nonzero(c<0)
+        if np.size(i)>0:
+            i = np.reshape(i,(np.size(i)))            
+            lz = -a*np.log(b)-sp.gammaln(a)+(a-1)*np.log(-c[i])+c[i]/b; 
+            ng[i] = np.exp(lz)*self.mixt[0]
+        return ng
+
+    def _gaussian_component(self, c):
+        """ Return the Gaussian component evaluated at the position c.
+
+        Parameters
+        -----------
+        c: ndarray
+            Values to evaluate the component.
+        """
+        m = self.mean
+        v = self.var    
+        y = self.mixt[1]*1./np.sqrt(2*np.pi*v)*np.exp(-(c-m)**2/(2*v))
+        return y
+
+    def _positive_gamma_component(self, c):
+        """ Return the positive gamma component evaluated at the position
+        c.
+
+        Parameters
+        -----------
+        c: ndarray
+            Values to evaluate the component.
+        """
+        b = self.scale_p
+        a = self.shape_p    
+        pg = np.zeros(np.size(c), 'd')
+        i = np.nonzero(c>0)
+        if np.size(i)>0:
+            i = np.reshape(i, (np.size(i),))            
+            lz = -a*np.log(b) - sp.gammaln(a) + (a-1)*np.log(c[i]) - c[i]/b
+            pg[i] = np.exp(lz)*self.mixt[2]
+        return pg
 
     def show(self, x, mpaxes=None):
         """
-        vizualization of the Mixture,
-        superimposed on the empirical histogram of x
+        Vizualization of the mixture, superimposed on the empirical 
+        histogram of x
 
         Parameters
         -----------
@@ -718,59 +793,35 @@ class GGGM(object):
         """
         step = 3.5*np.std(x)/np.exp(np.log(np.size(x))/3)
         bins = max(10,int((x.max()-x.min())/step))
-        h,c = np.histogram(x, bins)
+        h, c = np.histogram(x, bins)
         h = h.astype('d')/np.size(x)
         dc = c[1]-c[0]
-        p = self.mixt
         
-        # negative gamma 
-        b = self.scale_n
-        a = self.shape_n    
-        ng = np.zeros(np.size(c),'d')
-        i = np.nonzero(c<0)
-        if np.size(i)>0:
-            i = np.reshape(i,(np.size(i)))            
-            lz = -a*np.log(b)-sp.gammaln(a)+(a-1)*np.log(-c[i])+c[i]/b; 
-            ng[i] = np.exp(lz)*p[0]
-        
-        #gaussian part  
-        m = self.mean
-        v = self.var    
-        y = p[1]*1./np.sqrt(2*np.pi*v)*np.exp(-(c-m)**2/(2*v))
-
-        # positive gamma 
-        b = self.scale_p
-        a = self.shape_p    
-        pg = np.zeros(np.size(c),'d')
-        i = np.nonzero(c>0)
-        if np.size(i)>0:
-            i = np.reshape(i,(np.size(i)))            
-            lz = -a*np.log(b)-sp.gammaln(a)+(a-1)*np.log(c[i])-c[i]/b; 
-            pg[i] = np.exp(lz)*p[2]
-        
-        z = y+pg+ng
+        ng = self._negative_gamma_component(c)
+        y = self._gaussian_component(c)
+        pg = self._positive_gamma_component(c)
+       
+        z = y + pg + ng
         
         import matplotlib.pylab as mp
         if mpaxes==None:
             mp.figure()
-            ax = mp.subplot(1,1,1)
+            ax = mp.subplot(1, 1, 1)
         else:
             ax = mpaxes
-        ax.plot(0.5 *(c[1:] + c[:-1]),h/dc,linewidth=2)
-        ax.plot(c,ng,'c',linewidth=2)
-        ax.plot(c,y,'r',linewidth=2)
-        ax.plot(c,pg,'g',linewidth=2)
-        ax.plot(c,z,'k',linewidth=2)
+        ax.plot(0.5 *(c[1:] + c[:-1]), h/dc, linewidth=2, label='data')
+        ax.plot(c, ng, 'c', linewidth=2, label='negative gamma component')
+        ax.plot(c, y, 'r', linewidth=2, label='Gaussian component')
+        ax.plot(c, pg, 'g', linewidth=2, label='positive gamma component')
+        ax.plot(c, z, 'k', linewidth=2, label='mixture distribution')
         ax.set_title('Fit of the density with a Gamma-Gaussian mixture',
                  fontsize=16)
-        l = ax.legend(('data','negative gamma component',
-                       'gaussian component','positive gamma component',
-                       'mixture distribution'))
+        l = ax.legend()
         for t in l.get_texts():
             t.set_fontsize(12)
         ax.set_xticklabels(ax.get_xticks(), fontsize=16)
         ax.set_yticklabels(ax.get_yticks(), fontsize=16)
-        
+ 
     def SAEM(self, x, burnin=100, niter=200, verbose=False):
         """
         SAEM estimation procedure:
@@ -875,7 +926,7 @@ class GGGM(object):
                 print "LL = ", str(LL[t])
         self.mixt=self.mixt.squeeze()
         return LL
-    
+
     def ROC(self, x):
         """
         ROC curve for seperating positive Gamma distribution
