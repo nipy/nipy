@@ -14,11 +14,10 @@ import numpy.random as nr
 
 import scipy.optimize.optimize as so
 
-# ------------------------------------------------------------
-# ------ auxiliary functions ---------------------------------
-# ------------------------------------------------------------
+################################################################################
+# Auxiliary functions
         
-def _dichopsi_log(u,v,y,eps = 0.00001):
+def _dichopsi_log(u, v, y, eps=0.00001):
     """
     this function implements the dichotomic part of the solution of the
     psi(c)-log(c)=y
@@ -36,7 +35,8 @@ def _dichopsi_log(u,v,y,eps = 0.00001):
         else:
             return _dichopsi_log(t,v,y,eps)
 
-def _psi_solve(y,eps = 0.00001):
+
+def _psi_solve(y, eps=0.00001):
     """
     This function solves
     solve psi(c)-log(c)=y
@@ -56,7 +56,7 @@ def _psi_solve(y,eps = 0.00001):
     return _dichopsi_log(u,2*u,y,eps)
 
 
-def _compute_c(x,z,eps = 0.00001):
+def _compute_c(x, z, eps=0.00001):
     """
     this function returns the mle of the shape parameter if a 1D gamma
     density
@@ -69,7 +69,10 @@ def _compute_c(x,z,eps = 0.00001):
         c = _psi_solve(y,eps = 0.00001) 
     return c
 
-class Gamma:
+################################################################################
+# class `Gamma`
+################################################################################
+class Gamma(object):
     """
     This is the basic one dimensional Gaussian-Gamma Mixture estimation class
     Note that it can work with positive or negative values, 
@@ -108,11 +111,11 @@ class Gamma:
         
         self.scale = np.sum(x)/(n*self.shape)
 
-# ------------------------------------------------------------
-# ------ Gamma-Gaussian Mixture class-------------------------
-# ------------------------------------------------------------           
 
-class GGM:
+################################################################################
+# Gamma-Gaussian Mixture class
+################################################################################
+class GGM(object):
     """
     This is the basic one dimensional Gaussian-Gamma Mixture estimation class
     Note that it can work with positive or negative values, 
@@ -141,7 +144,7 @@ class GGM:
         print "Gamma: shape: ", self.shape, "scale: ", self.scale
         print "Mixture gamma: ",self.mixt, "Gaussian: ",1-self.mixt
         
-    def check(self,x):
+    def check(self, x):
         """
         Check function:
         """
@@ -150,7 +153,7 @@ class GGM:
         else:
             raise ValueError, "all values are negative or null. Cannot proceed"
             
-    def Mstep(self,x,z):
+    def Mstep(self, x, z):
         """
         Mstep of the model: maximum likelihood
         estimation of the parameters of the model
@@ -172,18 +175,20 @@ class GGM:
         self.mean = np.dot(x,z[:,1])/sz[1]
         self.var = np.dot((x-self.mean)**2,z[:,1])/sz[1]
         
-        
-    def Estep(self,x):
+    def Estep(self, x):
         """
         E step of the estimation:
         Estimation of ata membsership
+
         Parameters
         ----------
-        x array of shape(nbitems), input data 
+        x: array of shape (nbitems,)
+            input data 
 
-        Results:
-        -----------
-        - z array of shape(nbitrems,2): the membership matrix
+        Returns
+        ---------
+        z: array of shape (nbitrems,2)
+            the membership matrix
         """
         z = np.zeros((np.size(x),2),'d') 
         a = self.shape
@@ -279,13 +284,15 @@ class GGM:
         Compute the posterior probability of observing the data x under
         the two components
 
-        Parameters:
+        Parameters
         -------------
-        - x: array of shape(nbitems): the data to be processed
+        x: array of shape (nbitems,)
+            the data to be processed
 
-        Results:
+        Returns
         ---------
-        - y,pg : arrays of shape (nbitem) corresponding to the posterior
+        y,pg : arrays of shape (nbitem) 
+            the posterior probability
         """
         p = self.mixt
         
@@ -305,16 +312,15 @@ class GGM:
             pg[i] = np.exp(lz)*p
         return y,pg
 
-# ------------------------------------------------------------
-# ------ double-Gamma-Gaussian Mixture class------------------
-# ------------------------------------------------------------           
 
-
-class GGGM:
+################################################################################
+# double-Gamma-Gaussian Mixture class
+################################################################################
+class GGGM(object):
     """
-    This is the basic one dimensional Gamma-Gaussian-Gamma Mixture 
-    estimation class, where the frist gamma has a negative sign, 
-    while the second one has a positive sign
+    The basic one dimensional Gamma-Gaussian-Gamma Mixture estimation
+    class, where the first gamma has a negative sign, while the second
+    one has a positive sign.
 
     7 parameters are used:
     - shape_n: negative gamma shape
@@ -330,7 +336,7 @@ class GGGM:
     def __init__(self, shape_n=1, scale_n=1,mean=0,var=1,
                  shape_p=1, scale_p=1, mixt=np.array([1.0,1.0,1.0])/3):
         """
-        initialization of the class
+        Initialization of the class
 
         Parameters
         -----------
@@ -363,14 +369,13 @@ class GGGM:
         mixt = self.mixt
         print "Mixture neg. gamma: ",mixt[0], "Gaussian: ",mixt[1],\
         "pos. gamma: ",mixt[2]
-        
-    def check(self,x):
+
+    def check(self, x):
         """Not implemented yet
         """
         pass
 
-
-    def init(self,x,mixt=None):
+    def init(self, x, mixt=None):
         """
         initialization of the differnt parameters
 
@@ -480,7 +485,6 @@ class GGGM:
             self.mixt[0] = 0
         self.mixt[1] = 1-self.mixt[0]-self.mixt[2]
         
-        
     def Mstep(self,x,z):
         """
         Mstep of the estimation:
@@ -518,20 +522,22 @@ class GGGM:
             self.shape_p = 1
             self.scale_p = 1
         
-        
     def Estep(self,x):
         """
         E step: update probabilistic memberships of the three components
 
-        Parameters:
+        Parameters
         -------------
-        x: array of shape (nbitems), the input data
+        x: array of shape (nbitems,)
+            the input data
 
-        Results:
+        Returns
         ----------
-        z: probabilistic membership, shape =(nbitems,3)
+        z: ndarray of shape (nbitems, 3)
+            probabilistic membership
 
-        NOTE:
+        Notes
+        ------
         - z[0,:] is the membership the negative gamma
         - z[1,:] is the membership of  the gaussian
         - z[2,:] is the membership of the positive gamma
@@ -574,24 +580,27 @@ class GGGM:
         self.mixt = R
         return z,L
 
-    
-    def estimate(self, x, niter=100, delta=1.e-4, bias=0,verbose=0):
+    def estimate(self, x, niter=100, delta=1.e-4, bias=0, verbose=0):
         """
         Whole EM estimation procedure:
 
-        Parameters:
+        Parameters
         ------------
-        - x: array of shape (nbitem): input data
-        - niter = 100 : max number of iterations
-        - delta = 1.e-4: increment in LL at xhich convergence is declared
-        - bias=0 : lower bound on the gaussian variance
-        (to avoid shrinkage)
-        - verbose=1: verbosity level
+        x: array of shape (nbitem)
+            input data
+        niter: integer, optional
+            max number of iterations
+        delta: float, optional
+            increment in LL at which convergence is declared
+        bias: float, optional
+            lower bound on the gaussian variance (to avoid shrinkage)
+        verbose: 0, 1 or 2
+            verbosity level
 
-        Results:
+        Returns
         ---------
-        - z array of shape(nbitem,3): the membership matrix
-        
+        z: array of shape (nbitem, 3)
+            the membership matrix
         """
         z,L = self.Estep(x)
         
@@ -610,7 +619,7 @@ class GGGM:
         
         return z
         
-    def posterior(self,x):
+    def posterior(self, x):
         """
         ng,y,pg = self.posterior(x)
         Compute the posterior probability of observing the data x under
@@ -644,21 +653,22 @@ class GGGM:
 
         return ng,y,pg
 
-    def component_likelihood(self,x):
+    def component_likelihood(self, x):
         """
         Compute the likelihood of the data x under
         the three components negative gamma, gaussina, positive gaussian
 
-        Parameters:
+        Parameters
         -----------
-        - x: array of shape(nbitem): the data under evaluation
+        x: array of shape (nbitem,)
+            the data under evaluation
 
-        Results:
+        Returns
         --------
-        - ng,y,pg: three arrays of shape(nbitem)
-        that ggive the likelihood of the data under the 3 components
+        ng,y,pg: three arrays of shape(nbitem)
+            The likelihood of the data under the 3 components
 
-        Note:
+        Notes
         ------
         ng+y+pg = np.ones(nbitem)
         """
@@ -693,17 +703,18 @@ class GGGM:
         y = y/sl
         pg = pg/sl
         return ng,y,pg
-    
+
     def show(self, x, mpaxes=None):
         """
         vizualization of the Mixture,
         superimposed on the empirical histogram of x
 
-        Parameters:
+        Parameters
         -----------
-        - x : array of data of shape(nbitem)
-        - mpaxes=None: axes handle used for the plot
-        if None, new axes are created
+        x: ndarray of shape (nditem,)
+            data
+        mpaxes: matplotlib axes, optional
+            axes handle used for the plot if None, new axes are created.
         """
         step = 3.5*np.std(x)/np.exp(np.log(np.size(x))/3)
         bins = max(10,int((x.max()-x.min())/step))
@@ -760,24 +771,29 @@ class GGGM:
         ax.set_xticklabels(ax.get_xticks(), fontsize=16)
         ax.set_yticklabels(ax.get_yticks(), fontsize=16)
         
-
-        
     def SAEM(self, x, burnin=100, niter=200, verbose=False):
         """
         SAEM estimation procedure:
 
-        Parameters:
+        Parameters
         -------------
-        - x: vector of observations
-        - burnin: number of burn-in SEM iterations (discarded values)
-        - niter: maximum number of SAEM iterations for convergence
-        to local maximum
-        - verbose (0/1): verbosity level
-        Gaussian disribution mean is fixed to zero
+        x: ndarray
+            vector of observations
+        burnin: integer, optional
+            number of burn-in SEM iterations (discarded values)
+        niter: integer, optional
+            maximum number of SAEM iterations for convergence to local maximum
+        verbose: 0 or 1
+            verbosity level
 
-        Results:
+        Returns
         ---------
-        -LL: successive log-likelihood values
+        LL: ndarray
+            successive log-likelihood values
+
+        Notes
+        ------
+        The Gaussian disribution mean is fixed to zero
         """
         
         #Initialization
