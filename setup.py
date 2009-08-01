@@ -56,15 +56,12 @@ from numpy.distutils.command.build_ext import build_ext
 
 def data_install_msgs():
     from nipy.utils import make_datasource, DataError
-    try:
-        make_datasource('nipy', 'templates')
-    except DataError, exception:
-        log.warn('%s\n%s' % ('_'*80, exception))
-        make_datasource('nipy', 'data')
-    except DataError, exception:
-        log.warn('%s\n%s' % ('_'*80, exception))
+    for name in ('templates', 'data'):
+        try:
+            make_datasource('nipy', name)
+        except DataError, exception:
+            log.warn('%s\n%s' % ('_'*80, exception))
         
-
 
 class MyInstallData(install_data):
     """ Subclass the install_data to generate data install warnings if necessary
@@ -82,7 +79,6 @@ class MyBuildExt(build_ext):
     def run(self):
         build_ext.run(self)
         data_install_msgs()
-
 
 
 cmdclass['install_data'] = MyInstallData
