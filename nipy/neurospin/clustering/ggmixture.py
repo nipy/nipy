@@ -201,7 +201,6 @@ class GGM(object):
         i = np.reshape(i,(np.size(i)))    
         y = -a*np.log(b)-np.log(sp.gamma(a))+(a-1)*np.log(x[i])-x[i]/b; 
         z[i,0] = np.exp(y);
-        print z
         
         m = self.mean
         v = self.var
@@ -722,10 +721,13 @@ class GGGM(object):
             lz = -a*np.log(b)-sp.gammaln(a)+(a-1)*np.log(x[i])-x[i]/b; 
             pg[i] = np.exp(lz)
 
-        sl = ng+y+pg
-        ng = ng/sl
-        y = y/sl
-        pg = pg/sl
+        raise Exception('This method is based on false assumptions and '
+                        'does not work')
+        #sl = ng+y+pg
+        #ng = ng/sl
+        #y = y/sl
+        #pg = pg/sl
+        y = 1 - ng - pg
         return ng, y, pg
 
     def _negative_gamma_component(self, c):
