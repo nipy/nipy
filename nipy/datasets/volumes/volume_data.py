@@ -24,31 +24,26 @@ class VolumeData(VolumeField):
         mapped to a 3D "real-world space", and how it can change real-world 
         coordinate system.
 
-        **Attributes**
+        Attributes
+        -----------
 
-        :world_space: string 
+        world_space: string 
             World space the data is embedded in. For instance `mni152`.
-
-        :metadata: dictionnary
+        metadata: dictionnary
             Optional, user-defined, dictionnary used to carry around
             extra information about the data as it goes through
-            transformations. The class does not garanty consistency
-            of this information as the data is modified.
-
-        :_data: 
+            transformations. The class consistency of this information is
+            not maintained as the data is modified.
+        _data: 
             Private pointer to the data.
 
-        **Notes**
+        Notes
+        ------
 
         The data is stored in an undefined way: prescalings might need to
         be applied to it before using it, or the data might be loaded on
         demand. The best practice to access the data is not to access the
         _data attribute, but to use the `get_data` method.
-
-        If the transform associated with the volume has no inverse
-        mapping, data correspoding to a given world space position cannot
-        be calulated. If it has no forward mapping, it is impossible to
-        resample another dataset on the same support.
     """
     #---------------------------------------------------------------------------
     # Public attributes -- VolumeData interface

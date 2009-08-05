@@ -19,16 +19,16 @@ class VolumeField(object):
         This is an abstract base class: it defines the interface, but not
         the logics.
 
-        **Attributes**
+        Attributes
+        ----------
 
-        :world_space: string 
+        world_space: string 
             World space the data is embedded in. For instance `mni152`.
-
-        :metadata: dictionnary
+        metadata: dictionnary
             Optional, user-defined, dictionnary used to carry around
             extra information about the data as it goes through
-            transformations. The Image class does not garanty consistency
-            of this information as the data is modified.
+            transformations. The consistency of this information is not
+            maintained as the data is modified.
 
     """
     #---------------------------------------------------------------------------

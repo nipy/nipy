@@ -20,41 +20,34 @@ from .volume_grid import VolumeGrid
 ################################################################################
 
 class VolumeImg(VolumeGrid):
-    """ The regularly-spaced affine image for embedding data in an x, y, z 
-        3D world, for neuroimaging.
+    """ A regularly-spaced image for embedding data in an x, y, z 3D
+        world, for neuroimaging.
 
-        This object is nothing more than an ndarray representing a
-        volume, with the first 3 dimensions being spatial, and mapped to 
-        a named world space using an affine (4x4 matrix).
+        This object is an ndarray representing a volume, with the first 3
+        dimensions being spatial, and mapped to a named world space using
+        an affine (4x4 matrix).
 
-        **Attributes**
+        Attributes
+        ----------
 
-        :affine: 4x4 ndarray
-
+        affine : 4x4 ndarray
             Affine mapping from indices to world coordinates.
-
-        :world_space: string
-
+        world_space : string
             Name of the world space the data is embedded in. For
             instance `mni152`.
-
-        :metadata: dictionnary
-
+        metadata : dictionnary
             Optional, user-defined, dictionnary used to carry around
             extra information about the data as it goes through
-            transformations. The Image class does not garanty consistency
-            of this information as the data is modified.
-
-        :interpolation: 'continuous' or 'nearest'
-
+            transformations. The consistency of this information may not
+            be maintained as the data is modified.
+        interpolation : 'continuous' or 'nearest'
             String giving the interpolation logic used when calculating
             values in different world spaces
-
-        :_data: 
-
+        _data : 
             Private pointer to the data.
 
-        **Notes**
+        Notes
+        ------
 
         The data is stored in an undefined way: prescalings might need to
         be applied to it before using it, or the data might be loaded on

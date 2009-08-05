@@ -1,8 +1,8 @@
 """
 The volume grid class. 
 
-This class represents data lying on a grid embedded in a 3D world represented 
-as a 3+D array.
+This class represents data lying on a (non rigid, non regular) grid embedded 
+in a 3D world represented as a 3+D array.
 """
 
 import copy as copy
@@ -24,7 +24,8 @@ class VolumeGrid(VolumeData):
 
         This object has data stored in an array-like multidimensional 
         indexable objects, with the 3 first dimensions corresponding to
-        spatial axis and defining a 3D grid.
+        spatial axis and defining a 3D grid that may be non-regular or
+        non-rigid.
 
         The object knows how the data is mapped to a 3D "real-world
         space", and how it can change real-world coordinate system. The
@@ -32,21 +33,23 @@ class VolumeGrid(VolumeData):
         can be warped: in the world space, the grid may not be regular or
         orthogonal.
 
-        **Attributes**
+        Attributes
+        -----------
 
-        :world_space: string 
+        world_space: string 
             World space the data is embedded in. For instance `mni152`.
 
-        :metadata: dictionnary
+        metadata: dictionnary
             Optional, user-defined, dictionnary used to carry around
             extra information about the data as it goes through
-            transformations. The Image class does not garanty consistency
-            of this information as the data is modified.
+            transformations. The consistency of this information is not
+            maintained as the data is modified.
 
-        :_data: 
+        _data: 
             Private pointer to the data.
 
-        **Notes**
+        Notes
+        ------
 
         The data is stored in an undefined way: prescalings might need to
         be applied to it before using it, or the data might be loaded on
