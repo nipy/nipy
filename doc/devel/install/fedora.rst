@@ -17,6 +17,11 @@ Requirements::
    yum install gcc-c++
    yum install python-devel
    yum install numpy scipy
+   yum install sympy
+   yum install atlas-devel
+
+You will also need PyNIFTI_ - see the the PyNIFTI_ page for Fedora
+installation details.
 
 Options::
 
