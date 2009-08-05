@@ -9,12 +9,7 @@ Examples
 >>> from nipy.io.api import load_image
 >>> img = load_image(funcfile)
 >>> img.shape
-(20, 2, 20, 20)
-
-Notes
------
-BUG: anatomical.nii.gz is a copy of functional.nii.gz.  This is a place-holder
-    until we build a proper anatomical test image.
+(17, 21, 3, 20)
 
 """
 
@@ -32,5 +27,3 @@ anatfile = os.path.join(basedir, 'anatomical.nii.gz')
 from numpy.testing import *
 import decorators as dec
 from nose.tools import assert_true, assert_false
-import data
-from data import datapjoin

@@ -21,8 +21,8 @@ from nipy.fixes.scipy.stats.models.utils import recipr
 def pca(data, mask=None, ncomp=1, standardize=True,
         design_keep=None, design_resid=None):
     """
-    Compute the PCA of an image (over ``axis=0``). Image coordmap should
-    have a subcoordmap method.
+    Compute the PCA of an array-like thing over ``axis=0``.
+    We use np.array to cast to an ndarray.
 
     Parameters
     ----------
@@ -50,7 +50,6 @@ def pca(data, mask=None, ncomp=1, standardize=True,
         Defaults to a matrix of 1s, removing the mean.
 
     """
-
     data = np.asarray(data)
     if mask is not None:
         mask = np.asarray(mask)
