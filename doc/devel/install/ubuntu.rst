@@ -11,6 +11,9 @@ Requirements::
    sudo apt-get build-essential
    sudo apt-get install python-dev
    sudo apt-get install python-numpy python-numpy-dev python-scipy
+   sudo apt-get install liblapack-dev
+   sudo apt-get install python-sympy
+   sudo apt-get install python-nifti
 
 Options::
 
