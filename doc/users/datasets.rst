@@ -16,31 +16,79 @@ The image structure: :class:`VolumeImg`
 
 The structure most often used in neuroimaging is the :class:`VolumeImg`.
 It corresponds, for instance, to the structure used in the Nifti files.
+This structure stores data as an n-dimensional array, with n being at
+least 3, alongside with the necessary information to map it to world
+space.
 
-We call a volume-image (class: :class:`VolumeImg`) a volumetric
-datastructure given by data points lying on a regular grid: this
-structure is a generalization of an image in 3D. The voxels, vertices of
-the grid, are mapped to coordinnates by an affine transformation. As a
-result, the grid is regular and evenly-spaced, but may not be
-orthogonal, and the spacing may differ in the 3 directions.
+:definition:
 
-.. image:: datasets/volume_img.jpg
+    A volume-image (class: :class:`VolumeImg`) is a volumetric datastructure
+    given by data points lying on a regular grid: this structure is a
+    generalization of an image in 3D. The voxels, vertices of the grid, are
+    mapped to coordinnates by an affine transformation. As a result, the grid
+    is regular and evenly-spaced, but may not be orthogonal, and the spacing
+    may differ in the 3 directions.
+
+    .. image:: datasets/volume_img.jpg
 
 The data is exposed in a multi dimensional array, with the 3 first axis
 corresponding to spatial directions. A complete description of this
 object can be found on the page: :class:`VolumeImg`.
 
+Useful methods on volume structures
+====================================
+
+.. currentmodule:: nipy.datasets.volumes.volume_field
+Any general volume structures will implement methods for querying the
+values and changing world space (see the :class:`VolumeField`
+documentation for more details):
+
+.. autosummary::
+    :toctree: generated
+     
+    VolumeField.values_in_world
+    VolumeField.composed_with_transform
+
+Also, as volumes structure may describe the spatial data in various way,
+you can easily to convert to a :class:`VolumeImg`, ie a regular grid, for
+instance to do implement an algorithm on the grid such as spatial
+smoothing:
+
+.. autosummary::
+    :toctree: generated
+     
+    VolumeField.as_volume_img
+
+Finally, different structures can embed the data differently in the same
+world space, for instance with different resolution. You can resample one
+structure on another using:
+
+.. autosummary::
+    :toctree: generated
+     
+    VolumeField.resampled_to_img
+
+**FIXME:** Examples would be good here, but first we need io and template
+data to be wired with datasets.
+
 
 More general data structures
 ===============================
 
-The :class:`VolumeImg` is the most commonly found data structure, and the
-simplest to understand, however, volumetric data can be described in more
-generic terms, and for performance reason it might be interesting to use
-other objects.
+.. currentmodule:: nipy.datasets.volumes.volume_img
+
+The :class:`VolumeImg` is the most commonly found volume structure, and
+the simplest to understand, however, volumetric data can be described in
+more generic terms, and for performance reason it might be interesting to
+use other objects. 
 
 Here, we give a list of the nipy volumetric data structures, from most
-specific, to most general.
+specific, to most general. When you deal with volume structures in your
+algorithms, depending on which volume structure class you are taking as
+an input, you can assume different properties of the data. You can always
+use :meth:`VolumeImg.as_volume_img` to cast the volume structure in a
+:class:`VolumeImg` that is simple to understand and easy to work with,
+but it may not be necessary.
 
 Implemented classes
 --------------------
@@ -60,10 +108,11 @@ readily use directly from nipy.
 
   .. image:: datasets/volume_grid.jpg
 
-  .. currentmodule:: nipy.datasets.volumes.volume_data
 
 Abstract classes
 ------------------
+
+.. currentmodule:: nipy.datasets.volumes.volume_data
 
 Abstract classes cannot be used because they are incompletely
 implemented. They serve as to define the interface: the type of objects
@@ -82,8 +131,7 @@ set of methods and attributes (the `interface`).
   fully functional, and can be used only via its children class (such as
   :class:`VolumeGrid` or :class:`VolumeImg`).
 
-  .. currentmodule:: nipy.datasets.volumes.volume_field
-
+.. currentmodule:: nipy.datasets.volumes.volume_field
 
 :class:`VolumeField`
   This is the most general volumetric structure (base class): all the
