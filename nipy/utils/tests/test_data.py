@@ -9,11 +9,14 @@ import tempfile
 
 from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal, \
-    assert_not_equal, assert_raises
+    assert_not_equal, assert_raises, raises
 
 from nipy.utils.data import get_data_path, find_data_dir, \
     DataError, _cfg_value, make_datasource, \
-    Datasource, VersionedDatasource
+    Datasource, VersionedDatasource, Bomber, \
+    _datasource_or_bomber
+
+from nipy.utils.tmpdirs import TemporaryDirectory
 
 import nipy.utils.data as nud
 
@@ -60,8 +63,7 @@ def test_datasource():
 
 
 def test_versioned():
-    try:
-        tmpdir = tempfile.mkdtemp()
+    with TemporaryDirectory() as tmpdir:
         yield (assert_raises,
                DataError,
                VersionedDatasource,
@@ -102,11 +104,6 @@ def test_versioned():
         yield assert_equal, vds.version_no, 0.1
         yield assert_equal, vds.major_version, 0
         yield assert_equal, vds.minor_version, 1        
-    finally:
-        try:
-            shutil.rmtree()
-        except:
-            pass
 
 
 def test__cfg_value():
@@ -161,24 +158,17 @@ def test_data_path():
     yield assert_equal, get_data_path(), tst_list + old_pth
     del os.environ[DATA_KEY]
     # Next, make a fake user directory, and put a file in there
-    try:
-        tmpdir = tempfile.mkdtemp()
+    with TemporaryDirectory() as tmpdir:
         tmpfile = pjoin(tmpdir, 'config.ini')
         with open(tmpfile, 'wt') as fobj:
             fobj.write('[DATA]\n')
             fobj.write('path = %s' % tst_pth)
         os.environ[USER_KEY] = tmpdir
         yield assert_equal, get_data_path(), tst_list + old_pth
-    finally:
-        try:
-            shutil.rmtree()
-        except:
-            pass
     del os.environ[USER_KEY]
     yield assert_equal, get_data_path(), old_pth
     # with some trepidation, the system config files
-    try:
-        tmpdir = tempfile.mkdtemp()
+    with TemporaryDirectory() as tmpdir:
         nud.get_nipy_system_dir = lambda : tmpdir
         tmpfile = pjoin(tmpdir, 'an_example.ini')
         with open(tmpfile, 'wt') as fobj:
@@ -190,11 +180,6 @@ def test_data_path():
             fobj.write('path = %s\n' % '/path/two')
         yield (assert_equal, get_data_path(),
                tst_list + ['/path/two'] + old_pth)
-    finally:
-        try:
-            shutil.rmtree()
-        except:
-            pass
     
 
 def test_find_data_dir():
@@ -227,8 +212,7 @@ def test_find_data_dir():
 
 @with_environment
 def test_make_datasource():
-    try:
-        tmpdir = tempfile.mkdtemp()
+    with TemporaryDirectory() as tmpdir:
         nud.get_data_path = lambda : [tmpdir]
         yield (assert_raises,
            DataError,
@@ -246,8 +230,30 @@ def test_make_datasource():
             fobj.write('version = 0.1\n')
         ds = make_datasource('pkg')
         yield assert_equal, ds.version, '0.1'
-    finally:
-        try:
-            shutil.rmtree()
-        except:
-            pass
+
+
+@raises(DataError)
+def test_bomber():
+    b = Bomber('bomber example', 'a message')
+    res = b.any_attribute
+
+
+@with_environment
+def test__datasource_or_bomber():
+    with TemporaryDirectory() as tmpdir:
+        nud.get_data_path = lambda : [tmpdir]
+        ds = _datasource_or_bomber('pkg')
+        yield (assert_raises,
+               DataError,
+               getattr,
+               ds,
+               'get_filename')
+        pkg_dir = pjoin(tmpdir, 'pkg')
+        os.mkdir(pkg_dir)
+        tmpfile = pjoin(pkg_dir, 'config.ini')
+        with open(tmpfile, 'wt') as fobj:
+            fobj.write('[DEFAULT]\n')
+            fobj.write('version = 0.1\n')
+        ds = _datasource_or_bomber('pkg')
+        fn = ds.get_filename('some_file.txt')
+    

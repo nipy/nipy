@@ -178,7 +178,7 @@ def find_data_dir(root_dirs, *names):
     Returns
     -------
     data_dir : str
-       full path (root path added to `*names` above
+       full path (root path added to `*names` above)
 
     '''
     ds_relative = pjoin(*names)
@@ -217,7 +217,7 @@ def make_datasource(*names):
         pth = find_data_dir(root_dirs, *names)
     except DataError, exception:
         msg = '''%s;
-Is it possible you have not installed a needed data package?
+Is it possible you have not installed a data package?
 From the names, maybe you need data package "%s"?
 If you have the package, have you set the path to the package correctly?
 Please see %s for data downloads.''' % (
@@ -227,4 +227,37 @@ Please see %s for data downloads.''' % (
         raise DataError(msg)
     return VersionedDatasource(pth)
 
+
+class Bomber(object):
+    ''' Class to raise an error when used '''
+    def __init__(self, name, msg):
+        self.name = name
+        self.msg = msg
+        
+    def __getattr__(self, attr_name):
+        raise DataError(
+            'Trying to access attribute "%s" '
+            'of non-existent data "%s"\n\n%s\n' %
+            (attr_name, self.name, self.msg))
+
+
+def _datasource_or_bomber(*names):
+    ''' Return a viable datasource or a Bomber
+
+    This is to allow module level creation of datasource objects.  We
+    create the objects, so that, if the data exists, the objects are
+    valid datasources, and if they don't, they raise an error on access,
+    warning about the lack of data.
+    '''
+    try:
+        return make_datasource(*names)
+    except DataError, exception:
+        pass
+    name = os.path.sep.join(names)
+    return Bomber(name, exception)
+
+
+# Module level datasource instances for convenience
+templates = _datasource_or_bomber('nipy', 'templates')
+example_data = _datasource_or_bomber('nipy', 'data')
 
