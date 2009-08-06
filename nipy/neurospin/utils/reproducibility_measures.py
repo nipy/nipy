@@ -7,9 +7,6 @@ The dataset is subject to jacknife subampling ('splitting'),
 each subsample being analysed independently.
 A reproducibility measure is then derived;
 
-This is a temporeary script: it should provides functions
-for a future 'reproducibility analysis' modumes
-
 Bertrand Thirion, 2009.
 """
 
@@ -115,25 +112,42 @@ def get_cluster_position_from_thresholded_map(smap, ijk, coord, thr=3.0,
 # ---------- The main functions -----------------------------
 # -------------------------------------------------------
 
+def bootstrap_group(nsubj, ngroups):
+    """
+    Split the proposed group into redundant subgroups by bootstrap
 
+    Parameters
+    ----------
+    nsubj (int) the number of subjects in the population
+    ngroups(int) Number of subbgroups to be drawn
 
-def split_group(nbsubj, groupsize):
+    Returns
+    -------
+    samples: a list of ngroups arrays containing
+             the indexes of the subjects in each subgroup
+    """
+    groupsize = nsubj
+    samples= [(groupsize*np.random.rand(groupsize)).astype(np.int)
+             for i in range(ngroups)]
+    return samples
+
+def split_group(nsubj, ngroups):
     """
     Split the proposed group into random disjoint subgroups
 
     Parameters
     ----------
-    nbsubj (int) the number of subjects to be split
-    groupsize(int) the size of each subbgroup
+    nsubj (int) the number of subjects to be split
+    ngroups(int) Number of subbgroups to be drawn
 
     Returns
     -------
-    samples: a list of nb_subgroups arrey containing
-             the indexes of the subjects in each sungroup
+    samples: a list of ngroups arrays containing
+             the indexes of the subjects in each subgroup
     """
-    subgroups = int(np.floor(nbsubj/groupsize))
-    rperm = np.argsort(np.random.rand(nbsubj))
-    samples= [rperm[i*groupsize:(i+1)*groupsize] for i in range(subgroups)]
+    groupsize = int(np.floor(nsubj/ngroups))
+    rperm = np.argsort(np.random.rand(nsubj))
+    samples= [rperm[i*groupsize:(i+1)*groupsize] for i in range(ngroups)]
     return samples
 
 def ttest(x):
@@ -225,7 +239,7 @@ def statistics_from_position(target,data,sigma=1.0):
     sensitivity = np.mean(sensitivity)
     return sensitivity
 
-def voxel_reproducibility(data, vardata, groupsize, xyz,method='rfx',
+def voxel_reproducibility(data, vardata, xyz, ngroups, method='rfx',
                           verbose=0, **kwargs):
     """
     return a measure of voxel-level reproducibility
@@ -237,8 +251,10 @@ def voxel_reproducibility(data, vardata, groupsize, xyz,method='rfx',
           the input data from which everything is computed
     vardata: array of shape (nvox,nsubj)
              the corresponding variance information
-    groupsize (int): 
-              the size of each subrgoup to be studied
+    xyz array of shape (nvox,3) 
+        the grid ccordinates of the imput voxels
+    ngroups (int): 
+             Number of subbgroups to be drawn  
     threshold (float): 
               binarization threshold (makes sense only if method==rfx)
     method = 'rfx' or 'crfx'
@@ -249,22 +265,19 @@ def voxel_reproducibility(data, vardata, groupsize, xyz,method='rfx',
     -------
     kappa (float): the desired  reproducibility index
     """
-    nbsubj = data.shape[1]
-    nvox = data.shape[0]
-    samples = split_group(nbsubj,groupsize)
-    subgroups = len(samples)
-    rmap = map_reproducibility(data, vardata, groupsize, xyz, method, 
-                                     verbose,kwargs)
+    nsubj = data.shape[1]
+    rmap = map_reproducibility(data, vardata, xyz, ngroups, method, 
+                                     verbose,**kwargs)
 
     import two_binomial_mixture as mtb
     MB = mtb.TwoBinomialMixture()
-    MB.estimate_parameters(rmap,subgroups)
+    MB.estimate_parameters(rmap, ngroups)
     if verbose:
-        h = np.array([np.sum(rmap==i) for i in range(subgroups+1)])
+        h = np.array([np.sum(rmap==i) for i in range(ngroups+1)])
         MB.show(h)
     return MB.kappa()
 
-def map_reproducibility(data, vardata, groupsize, xyz, method='rfx',
+def map_reproducibility(data, vardata, xyz, ngroups, method='rfx',
                         verbose=0, **kwargs):
     """
     return a reproducibility map for the given method
@@ -275,7 +288,9 @@ def map_reproducibility(data, vardata, groupsize, xyz, method='rfx',
           the input data from which everything is computed
     vardata: array of the same size
              the corresponding variance information
-    groupsize (int): the size of each subrgoup to be studied
+    xyz array of shape (nvox,3) 
+        the grid ccordinates of the imput voxels
+    ngroups (int): the size of each subrgoup to be studied
     threshold (float): binarization threshold
               (makes sense only if method==rfx)
     method = 'rfx' or 'crfx' 
@@ -287,12 +302,14 @@ def map_reproducibility(data, vardata, groupsize, xyz, method='rfx',
     rmap: array of shape(nvox)
           the reproducibility map
     """
-    nbsubj = data.shape[1]
+    nsubj = data.shape[1]
     nvox = data.shape[0]
-    samples = split_group(nbsubj,groupsize)
-    subgroups = len(samples)
+    if nsubj>10*ngroups:
+         samples = split_group(nsubj, ngroups)
+    else:
+        samples = bootstrap_group(nsubj, ngroups)
     rmap = np.zeros(nvox)
-    for i in range(subgroups):
+    for i in range(ngroups):
         x = data[:,samples[i]]
         vx = vardata[:,samples[i]]
         if method=='rfx':
@@ -319,8 +336,8 @@ def map_reproducibility(data, vardata, groupsize, xyz, method='rfx',
     return rmap
 
 
-def cluster_reproducibility(data,vardata,groupsize,xyz,coord,sigma,
-                            method='crfx', niter=0,verbose=0,**kwargs):
+def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
+                            method='crfx', niter=0,verbose=0, **kwargs):
     """
     return a measure of cluster-level reproducibility
     of activation patterns
@@ -332,9 +349,10 @@ def cluster_reproducibility(data,vardata,groupsize,xyz,coord,sigma,
           the input data from which everything is computed
     vardata: array of shape (nvox,nsubj)
              the variance of the data that is also available
-    groupsize (int): the size of each subrgoup to be studied
     xyz array of shape (nvox,3) 
         the grid ccordinates of the imput voxels
+    ngroups (int),
+             Number of subbgroups to be drawn
     coord: array of shape (nvox,3) 
            the corresponding physical coordinates
     sigma (float): parameter that encodes how far far is
@@ -351,13 +369,13 @@ def cluster_reproducibility(data,vardata,groupsize,xyz,coord,sigma,
     score (float): the desired  cluster-level reproducibility index
     """
     tiny = 1.e-15
-    nbsubj = data.shape[1]
-    samples = split_group(nbsubj,groupsize)
-    subgroups = len(samples)
-    if subgroups==1:
-        return 1.
+    nsubj = data.shape[1]
+    if nsubj>10*ngroups:
+         samples = split_group(nsubj, ngroups)
+    else:
+        samples = bootstrap_group(nsubj, ngroups)
     all_pos = []
-    for i in range(subgroups):
+    for i in range(ngroups):
         x = data[:,samples[i]]
         vx = vardata[:,samples[i]]
         tx = x/(tiny+np.sqrt(vx))
@@ -396,12 +414,12 @@ def cluster_reproducibility(data,vardata,groupsize,xyz,coord,sigma,
             all_pos.append(pos)
 
     score = 0
-    for i in range(subgroups):
+    for i in range(ngroups):
         for j in range(i):
             score += statistics_from_position(all_pos[i],all_pos[j],sigma)
             score += statistics_from_position(all_pos[j],all_pos[i],sigma)
             
-    score /= (subgroups*(subgroups-1))
+    score /= (ngroups*(ngroups-1))
     return score
 
 

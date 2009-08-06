@@ -522,6 +522,7 @@ class multivariate_stat:
             if verbose:
                 print "SA iteration", i+1, "out of", nsimu
             self.update_displacements_SA(c**i, proposal_std * self.std, verbose)
+        self.update_summary_statistics(w=1.0, update_spatial=True)
     
     def update_displacements_SA(self, T=1.0, proposal_std=None, verbose=False):
         n = self.data.shape[0]
@@ -603,7 +604,7 @@ class multivariate_stat:
             #self.update_summary_statistics(w=1.0, update_spatial=True)
         else:
             self.log_likelihood = f
-        self.update_summary_statistics(w=1.0, update_spatial=True)
+        #self.update_summary_statistics(w=1.0, update_spatial=True)
     
     #####################################################################################
     # Marginal likelihood computation for model selection
