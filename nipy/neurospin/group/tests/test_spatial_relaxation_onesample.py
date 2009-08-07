@@ -68,7 +68,7 @@ class TestMultivariateStatSaem(unittest.TestCase):
         Prior1 = P1.compute_log_prior()
         #v, m_mean, m_var = P1.v.copy(), P1.m_mean.copy(), P1.m_var.copy()
         Post1 = P1.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
-        M1 = L1 + Prior1[:-1] - Post1
+        M1 = L1 + Prior1[:-1] - Post1[:-1]
         self.assertAlmostEqual(M1.mean(), 
                                P1.compute_marginal_likelihood().mean(), 0)
         P0 = os.multivariate_stat(data, labels=labels)
@@ -79,7 +79,7 @@ class TestMultivariateStatSaem(unittest.TestCase):
         Prior0 = P0.compute_log_prior()
         Post0 = P0.compute_log_posterior(nsimu=1e2, burnin=1e2, 
                                          verbose=verbose)
-        M0 = L0 + Prior0[:-1] - Post0
+        M0 = L0 + Prior0[:-1] - Post0[:-1]
         self.assertAlmostEqual(M0.mean(), 
                                P0.compute_marginal_likelihood().mean(), 0)
         self.assertTrue(M1[1] > M0[1])
@@ -104,16 +104,17 @@ class TestMultivariateStatSaem(unittest.TestCase):
         self.assertTrue(L0.sum() > L00.sum())
         Prior0 = P.compute_log_prior()
         Post0 = P.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
-        M0 = L0 + Prior0[:-1] - Post0
+        M0 = L0 + Prior0[:-1] - Post0[:-1]
         self.assertAlmostEqual(M0.sum(), P.compute_marginal_likelihood(verbose=verbose).sum(), 0)
         P.network[:] = 1
-        P.init_hidden_variables(init_spatial=False)
+        #P.init_hidden_variables(init_spatial=False)
+        P.init_hidden_variables(init_spatial=True)
         P.evaluate(nsimu=100, burnin=100, verbose=verbose, 
                     update_spatial=False)
         L1 = P.compute_log_region_likelihood()
         Prior1 = P.compute_log_prior()
         Post1 = P.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
-        M1 = L1 + Prior1[:-1] - Post1
+        M1 = L1 + Prior1[:-1] - Post1[:-1]
         #self.assertAlmostEqual(0.1*M1.sum(), 0.1*P.compute_marginal_likelihood(verbose=verbose).sum(), 0)
         self.assertTrue(M1[1] > M0[1])
         self.assertTrue(M1[0] < M0[0])

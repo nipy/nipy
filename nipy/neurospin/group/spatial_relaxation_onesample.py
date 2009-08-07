@@ -196,9 +196,9 @@ class multivariate_stat:
         N1 = J.sum()
         if N1 > 0:
             post_rate = rate[J] + size[J]
-            self.m_var_post_scale[J] = scale + 0.5 * (sum_sq[J] - sum[J]**2 / post_rate)
+            self.m_var_post_scale[J] = scale[J] + 0.5 * (sum_sq[J] - sum[J]**2 / post_rate)
         if N1 < len(self.network):
-            self.m_var_post_scale[J==0] = scale + 0.5 * sum_sq[J==0]
+            self.m_var_post_scale[J==0] = scale[J==0] + 0.5 * sum_sq[J==0]
     
     def update_parameters_saem(self, update_spatial=True):
         n, p = self.data.shape
@@ -302,7 +302,10 @@ class multivariate_stat:
         if not proposal == 'prior':
             A += (Uc**2 - U**2).sum() / self.std**2
             if proposal == 'fixed':
-                A += ((U - Uc) * (U + Uc - 2 * proposal_mean) / proposal_std**2).sum()
+                if proposal_std.max() == 0:
+                    A = np.inf
+                else:
+                    A += ((U - Uc) * (U + Uc - 2 * proposal_mean) / proposal_std**2).sum()
         self.R[i, b] = np.random.uniform() > np.exp(0.5 * A)
         if self.R[i, b] == 0:
             self.D.U[:, i, b] = U
@@ -532,11 +535,59 @@ class multivariate_stat:
         for i in xrange(n):
             for b in np.random.permutation(range(B)):
                 #block = self.D.block[b]
-                self.update_block_SA(i, b, T, proposal_std, verbose)
+                A = self.update_block_SA(i, b, T, proposal_std, verbose)
         if self.verbose:
             print "mean rejected displacements :", self.R.mean(axis=0)
     
-    def update_block_SA(self, i, b, T=1.0, proposal_std=None, verbose=False):
+    def compute_log_conditional_displacements_posterior(self, U=None, nsimu=100, burnin=100, proposal_std=None, verbose=False):
+        """
+        Compute posterior log density of elementary displacements at point U, conditional on model parameters
+        """
+        n = self.data.shape[0]
+        B = len(self.D.block)
+        A_values = np.zeros(nsimu, float)
+        SS_values = np.zeros(nsimu, float)
+        if U == None:
+            U = self.D.U.copy()
+        if proposal_std == None:
+            proposal_std = self.proposal_std
+        Uc = self.D.U.copy()
+        LL, self.Z, self.tot_var, self.SS1, self.SS2, self.SS3, self.SS4 =\
+                             self.compute_log_voxel_likelihood(return_SS=True)
+        self.log_likelihood = LL.sum()
+        proposal_c = self.proposal
+        proposal_mean_c = self.proposal_mean
+        proposal_std_c = self.proposal_std
+        # Compute average acceptance rate conditional on U
+        self.proposal = 'fixed'
+        self.proposal_mean = U
+        self.proposal_std = U * 0
+        self.update_displacements()
+        for s in xrange(nsimu):
+            A_values[s] = self.update_block_SA(np.random.randint(n), np.random.randint(B), 1.0, proposal_std, verbose, reject_override=True)
+        mean_acceptance = np.exp(A_values).clip(0,1).mean()
+        # Compute average displacement kernel
+        # Burn-in
+        for s in xrange(nsimu):
+            A = self.update_block_SA(np.random.randint(n), np.random.randint(B), 1.0, proposal_std, verbose, reject_override=False)
+        # Store kernel values
+        for s in xrange(nsimu):
+            i, b = np.random.randint(n), np.random.randint(B)
+            A_values[s] = self.update_block_SA(i, b, 1.0, proposal_std, verbose, reject_override=False)
+            SS_values[s] = np.square(U[:, i, b] - self.D.U[:, i, b]).sum()
+        mean_kernel = np.mean(np.exp(A_values).clip(0,1) * np.exp( 0.5 * SS_values / proposal_std**2) / (np.sqrt(2 * np.pi) * proposal_std)**3)
+        # Restore initial displacement value
+        self.proposal = 'fixed'
+        self.proposal_mean = Uc
+        self.proposal_std = Uc * 0
+        self.update_displacements()
+        self.proposal = proposal_c
+        self.proposal_mean = proposal_mean_c
+        self.proposal_std = proposal_std_c
+        self.update_summary_statistics(update_spatial=True, mode='mcmc')
+        return np.log(mean_kernel) - np.log(mean_acceptance)
+    
+    def update_block_SA(self, i, b, T=1.0, proposal_std=None, verbose=False, reject_override=False):
         """
         Update displacement block using simulated annealing scheme 
         with random-walk kernel
@@ -590,7 +641,7 @@ class multivariate_stat:
                 + self.SS2 + self.SS3 - self.SS4**2 / (1 / self.m_var[self.labels] + self.SS1)).sum()
         A = f - fc + (Uc**2 - U**2).sum() / self.std**2
         self.R[i, b] = np.random.uniform() > np.exp(A / T)
-        if self.R[i, b] == 1:
+        if self.R[i, b] == 1 or reject_override:
             self.D.U[:, i, b] = Uc
             self.D.V[:, i, block] = Vc
             if len(L) > 0:
@@ -606,6 +657,7 @@ class multivariate_stat:
             #self.update_summary_statistics(w=1.0, update_spatial=True)
         else:
             self.log_likelihood = f
+        return A
         #self.update_summary_statistics(w=1.0, update_spatial=True)
     
     #####################################################################################
@@ -746,7 +798,7 @@ class multivariate_stat:
     def compute_log_conditional_posterior(self, v=None, m_mean=None, m_var=None, std=None):
         """
         compute log posterior density of model parameters, conditional on hidden parameters.
-        This function is used in compute_log_region_posterior. It should only be used with
+        This function is used in compute_log_region_posterior. It should only be used within
         the Gibbs sampler, and not the SAEM algorithm.
         """
         n,p = self.data.shape
@@ -777,7 +829,7 @@ class multivariate_stat:
         return log_conditional_posterior
     
     def sample_log_conditional_posterior(self, v=None, m_mean=None, m_var=None, 
-                                        nsimu=1e2, burnin=1e2, stabilize=False, verbose=False):
+                                        nsimu=1e2, burnin=1e2, stabilize=False, verbose=False, update_spatial=False):
         """
         sample log conditional posterior density of region parameters
         using a Gibbs sampler (assuming all hidden variables have been initialized).
@@ -791,8 +843,13 @@ class multivariate_stat:
             m_mean = self.m_mean.copy()
         if m_var == None:
             m_var = self.m_var.copy()
+        if update_spatial:
+            U = self.D.U.copy()
+            proposal = self.proposal
+            proposal_mean = self.proposal_mean
+            proposal_std = self.proposal_std
         N = len(self.network)
-        log_conditional_posterior_values = np.zeros((nsimu, N), float)
+        log_conditional_posterior_values = np.zeros((nsimu, N+1), float)
         #self.init_hidden_variables()
         n, p = self.data.shape
         posterior_mean = np.zeros(p, float)
@@ -812,32 +869,47 @@ class multivariate_stat:
                     print "Iteration", i+1, "out of", niter[k]
                 # Gibbs iteration
                 #i += 1
+                if update_spatial and self.std != None:
+                    self.update_displacements()
+                    if k == 0 and self.proposal == 'rand_walk':
+                        self.proposal_std = np.clip(self.proposal_std * (1 + 0.9) / (1 + self.R.mean()), 0.01, 10.0)
                 if self.vardata != None:
                     self.update_effects()
                 self.update_mean_effect()
                 posterior_mean += self.m
                 if not stabilize:
-                    self.update_summary_statistics(update_spatial=False, mode='mcmc')
-                    self.update_parameters_mcmc(update_spatial=False)
+                    self.update_summary_statistics(update_spatial, mode='mcmc')
+                    self.update_parameters_mcmc(update_spatial)
                 if self.verbose:
                     print "population effect min variance value :", self.m_var.min()
                 if k == 1:
                     if stabilize:
-                        self.update_summary_statistics(update_spatial=False, mode='mcmc')
+                        self.update_summary_statistics(update_spatial, mode='mcmc')
                     log_conditional_posterior_values[i] = \
-                    self.compute_log_conditional_posterior(v, m_mean, m_var)[:-1]
+                    self.compute_log_conditional_posterior(v, m_mean, m_var)#[:-1]
         posterior_mean /= nsimu
         if not stabilize:
+            # Restore initial parameter values
             self.v[:], self.m_mean[:], self.m_var[:] = v, m_mean, m_var
+        if update_spatial:
+            # Restore initial displacement values
+            self.proposal = 'fixed'
+            self.proposal_mean = U
+            self.proposal_std = U * 0
+            self.update_displacements()
+            self.proposal = proposal
+            self.proposal_mean = proposal_mean
+            self.proposal_std = proposal_std
+            self.update_summary_statistics(update_spatial, mode='mcmc')
         return log_conditional_posterior_values, posterior_mean
     
-    def compute_log_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, stabilize=False, verbose=False):
+    def compute_log_posterior(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, stabilize=False, verbose=False, update_spatial=False):
         """
         compute log posterior density of region parameters by Rao-Blackwell method, 
         or a stabilized upper bound if stabilize is True.
         """
         log_conditional_posterior_values \
-            = self.sample_log_conditional_posterior(v, m_mean, m_var, nsimu, burnin, stabilize, verbose)[0]
+            = self.sample_log_conditional_posterior(v, m_mean, m_var, nsimu, burnin, stabilize, verbose, update_spatial)[0]
         max_log_conditional = log_conditional_posterior_values.max(axis=0)
         ll_ratio = log_conditional_posterior_values - max_log_conditional
         if stabilize:
@@ -845,11 +917,16 @@ class multivariate_stat:
         else:
             return max_log_conditional + np.log(np.exp(ll_ratio).sum(axis=0)) - np.log(nsimu)
     
-    def compute_marginal_likelihood(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, stabilize=False, verbose=False):
+    def compute_marginal_likelihood(self, v=None, m_mean=None, m_var=None, nsimu=1e2, burnin=1e2, stabilize=False, verbose=False, update_spatial=False, U=None, proposal_std=None):
         log_likelihood = self.compute_log_region_likelihood(v, m_mean, m_var)
         log_prior = self.compute_log_prior(v, m_mean, m_var)
-        log_posterior = self.compute_log_posterior(v, m_mean, m_var, nsimu, burnin, stabilize, verbose)
-        return log_likelihood + log_prior[:-1] - log_posterior
+        log_posterior = self.compute_log_posterior(v, m_mean, m_var, nsimu, burnin, stabilize, verbose, update_spatial)
+        if update_spatial:
+            n, B = self.data.shape[0], len(self.D.block)
+            log_displacements_posterior = self.compute_log_conditional_displacements_posterior(U, nsimu*n*B, burnin*n*B, proposal_std, verbose)
+            return log_likelihood.sum() + log_prior.sum() - log_posterior.sum() - log_displacements_posterior.sum()
+        else:
+            return log_likelihood + log_prior[:-1] - log_posterior[:-1]
     
     def compute_conditional_posterior_mean(self, v=None, m_mean=None, m_var=None):
         """
