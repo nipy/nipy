@@ -124,7 +124,7 @@ def get_data_path():
        file in your nipy user directory (found with
        ``get_nipy_user_dir()``)
     #. Any section = ``DATA``, key = ``path`` value in any files found
-       with a a ``sorted(glob.glob(os.path.join(sys_dir, '*.ini')))``
+       with a ``sorted(glob.glob(os.path.join(sys_dir, '*.ini')))``
        search, where ``sys_dir`` is found with ``get_nipy_system_dir()``
     #. The result of ``os.path.join(sys.prefix, 'share', 'nipy')``
 
@@ -235,6 +235,7 @@ class Bomber(object):
         self.msg = msg
         
     def __getattr__(self, attr_name):
+        ''' Raise informative error accessing not-found attributes '''
         raise DataError(
             'Trying to access attribute "%s" '
             'of non-existent data "%s"\n\n%s\n' %
