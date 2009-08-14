@@ -23,7 +23,7 @@ Usage:
   Choices for optimizer: 
     simplex
     powell [DEFAULT]
-    conjugate gradient
+    conjugate_gradient
 
 Author: Alexis Roche, 2009. 
 """
