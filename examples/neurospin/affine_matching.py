@@ -1,38 +1,62 @@
 #!/usr/bin/env python 
-
 """
-Example of running inter-subject affine matching on the sulcal2000
-database acquired at SHFJ, Orsay, France. 
+Example of inter-subject affine registration using two MR-T1 images
+from the 'sulcal 2000' database acquired at CEA, SHFJ, Orsay, France. 
+
+Usage: 
+  python affine_matching [criterion][interpolation][optimizer]
+
+  Choices for criterion: 
+    cc   -- correlation coefficient 
+    cr   -- correlation ratio [DEFAULT]
+    crl1 -- correlation ratio (L1 norm version)
+    mi   -- mutual information
+    nmi  -- normalized mutual information
+    je   -- joint entropy 
+    ce   -- conditional entropy 
+
+  Choices for interpolation method: 
+    pv   -- partial volume [DEFAULT]
+    tri  -- trilinear
+    rand -- random 
+
+  Choices for optimizer: 
+    simplex
+    powell [DEFAULT]
+    conjugate gradient
+
+Author: Alexis Roche, 2009. 
 """
 
 from nipy.neurospin.image_registration import affine_register, affine_resample
 from nipy.io.imageformats import load as load_image, save as save_image
+from nipy.utils import example_data
 
 from os.path import join
 import sys
 import time
 
-rootpath = '/neurospin/lnao/Panabase/roche/sulcal2000'
-# Unimportant hack...
-from os import name
-if name == 'nt':
-	rootpath = 'D:\\home\\AR203069\\data\\sulcal2000'
-        
 print('Scanning data directory...')
-source = sys.argv[1]
-target = sys.argv[2]
-similarity = 'cr'
-if len(sys.argv)>3: 
-	similarity = sys.argv[3]
+
+# Input images are provided with the nipy-data package
+source = 'ammon'
+target = 'anubis'
+source_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+source+'.nii.gz')
+target_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+target+'.nii.gz')
+
+# Optional arguments
+similarity = 'cr' 
 interp = 'pv'
-if len(sys.argv)>4: 
-	interp = sys.argv[4]
-normalize = None
-if len(sys.argv)>5: 
-	normalize = sys.argv[5]
 optimizer = 'powell'
-if len(sys.argv)>6: 
-	optimizer = sys.argv[6]
+normalize = None
+if len(sys.argv)>1: 
+	similarity = sys.argv[1]
+if len(sys.argv)>2: 
+	interp = sys.argv[2]
+if len(sys.argv)>3: 
+	optimizer = sys.argv[3]
+if len(sys.argv)>4: 
+	normalize = sys.argv[4]
 
 # Print messages
 print ('Source brain: %s' % source)
@@ -42,15 +66,13 @@ print ('Optimizer: %s' % optimizer)
 
 # Get data
 print('Fetching image data...')
-I = load_image(join(rootpath,'nobias_'+source+'.nii'))
-J = load_image(join(rootpath,'nobias_'+target+'.nii'))
+I = load_image(source_file)
+J = load_image(target_file)
 
 # Perform affine normalization 
 print('Setting up registration...')
 tic = time.time()
-T = affine_register(I, J, 
-		    similarity=similarity, interp=interp, 
-		    normalize=normalize, optimizer=optimizer)
+T = affine_register(I, J, similarity=similarity, interp=interp, normalize=normalize, optimizer=optimizer)
 toc = time.time()
 print('  Registration time: %f sec' % (toc-tic))
 
