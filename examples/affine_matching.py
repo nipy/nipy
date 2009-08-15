@@ -1,7 +1,9 @@
 #!/usr/bin/env python 
 """
-Example of inter-subject affine registration using two MR-T1 images
-from the 'sulcal 2000' database acquired at CEA, SHFJ, Orsay, France. 
+This script requires the nipy-data package to run. It is an example of
+inter-subject affine registration using two MR-T1 images from the
+'sulcal 2000' database acquired at CEA, SHFJ, Orsay, France. The
+source is 'ammon' and the target is 'anubis'.
 
 Usage: 
   python affine_matching [criterion][interpolation][optimizer]
@@ -9,7 +11,7 @@ Usage:
   Choices for criterion: 
     cc   -- correlation coefficient 
     cr   -- correlation ratio [DEFAULT]
-    crl1 -- correlation ratio (L1 norm version)
+    crl1 -- correlation ratio, L1 norm version
     mi   -- mutual information
     nmi  -- normalized mutual information
     je   -- joint entropy 
@@ -24,6 +26,16 @@ Usage:
     simplex
     powell [DEFAULT]
     conjugate_gradient
+
+Running this script will result in two files being created in the
+working directory:
+
+ammon_TO_anubis.nii 
+  the source image resampled according to the target coordinate system
+
+ammon_TO_anubis.npz 
+  a numpy data file containing the 4x4 matrix that maps the source to 
+  the target coordinate system
 
 Author: Alexis Roche, 2009. 
 """
@@ -50,13 +62,13 @@ interp = 'pv'
 optimizer = 'powell'
 normalize = None
 if len(sys.argv)>1: 
-	similarity = sys.argv[1]
+    similarity = sys.argv[1]
 if len(sys.argv)>2: 
-	interp = sys.argv[2]
+    interp = sys.argv[2]
 if len(sys.argv)>3: 
-	optimizer = sys.argv[3]
+    optimizer = sys.argv[3]
 if len(sys.argv)>4: 
-	normalize = sys.argv[4]
+    normalize = sys.argv[4]
 
 # Print messages
 print ('Source brain: %s' % source)
