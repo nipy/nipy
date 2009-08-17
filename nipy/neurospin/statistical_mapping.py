@@ -268,14 +268,6 @@ def twosample_test(data_images, vardata_images, mask_images, labels, stat_id,
 # Linear model
 ################################################################################
 
-def affect_inmask(dest, src, xyz):
-    if xyz == None:
-        dest = src
-    else:
-        dest[xyz[0,:], xyz[1,:], xyz[2,:]] = src
-    return dest
-
-
 def linear_model_fit(data_images, mask_images, design_matrix, vector):
     """
     Helper function for group data analysis using arbitrary design matrix
@@ -298,60 +290,91 @@ def linear_model_fit(data_images, mask_images, design_matrix, vector):
     return zimg
 
 
-
 class LinearModel(object): 
 
-    def __init__(self, data=None, design_matrix=None, mask=None, formula=None, 
-                 model='spherical', method=None, niter=2):
+    def_model = 'spherical'
+    def_niter = 2
 
-        if data == None:
-            self.data = None
-            self.xyz = None
-            self.glm = None
+    def __init__(self, data, design_matrix, mask=None, formula=None, 
+                 model=def_model, method=None, niter=def_niter):
 
-        else:
-            if not isinstance(design_matrix, np.ndarray):
-                raise ValueError('Invalid design matrix')
+        # Convert input data and design into sequences
+        if not hasattr(data, '__iter__'): 
+            data = [data]
+        if not hasattr(design_matrix, '__iter__'): 
+            design_matrix = [design_matrix]
             
-            self.data = data
-            if mask == None:
-                self.xyz = None
-                Y = data.get_data()
-                axis = 3
-            else:
-                self.xyz = np.where(mask.get_data()>0)
-                Y = data.get_data()[self.xyz]
-                axis = 1
-                
-            self.glm = glm(Y, design_matrix, formula=formula, axis=axis, model=model, 
-                           method=method, niter=niter)
+        # configure spatial properties
+        # the 'sampling' direction is assumed to be the last
+        # TODO: check that all input images have the same shape and
+        # that it's consistent with the mask
+        nomask = mask == None
+        if nomask: 
+            self.xyz = None
+            self.axis = len(data[0].get_shape())-1
+        else: 
+            self.xyz = np.where(mask.get_data()>0)
+            self.axis = 1
+        
+        self.spatial_shape = data[0].get_shape()[0:-1]            
+        self.affine = data[0].get_affine()
 
+        self.glm = []
+        for i in range(len(data)):
+            if not isinstance(design_matrix[i], np.ndarray):
+                raise ValueError('Invalid design matrix')
+            if nomask: 
+                Y = data[i].get_data()
+            else: 
+                Y = data[i].get_data()[self.xyz]
+            X = design_matrix[i]
+                
+            self.glm.append(glm(Y, X, axis=self.axis, 
+                                formula=formula, model=model, 
+                                method=method, niter=niter))
+                
 
     def dump(self, filename):
         """
         Dump GLM fit as NPZ file.  
         """
-        self.glm.save(filename)
-
+        models = len(self.glm) 
+        if models==1: 
+            self.glm[0].save(filename)
+        else: 
+            for i in range(models):
+                self.glm[i].save(filename+str(i))
 
     def contrast(self, vector):
         """
         Compute images of contrast and contrast variance.  
         """
-        c = self.glm.contrast(vector)
-        
-        con = np.zeros(self.data.get_shape()[1:4])
-        con_img = Image(affect_inmask(con, c.effect, self.xyz), self.data.get_affine())
 
-        vcon = np.zeros(self.data.get_shape()[1:4])
-        vcon_img = Image(affect_inmask(vcon, c.variance, self.xyz), self.data.get_affine())
-        
-        z = np.zeros(self.data.get_shape()[1:4])
-        z_img = Image(affect_inmask(z, c.zscore(), self.xyz), self.data.get_affine())
+        # Compute the overall contrast across models
+        c = self.glm[0].contrast(vector)
+        for g in self.glm[1:]: 
+            c += g.contrast(vector)
+
+
+        def affect_inmask(dest, src, xyz):
+            if xyz == None:
+                dest = src
+            else:
+                dest[xyz] = src
+            return dest
+
+        con = np.zeros(self.spatial_shape)
+        con_img = Image(affect_inmask(con, c.effect, self.xyz), self.affine)
+        vcon = np.zeros(self.spatial_shape)
+        vcon_img = Image(affect_inmask(vcon, c.variance, self.xyz), self.affine)
+        z = np.zeros(self.spatial_shape)
+        z_img = Image(affect_inmask(z, c.zscore(), self.xyz), self.affine)
         
         dof = c.dof
         
         return con_img, vcon_img, z_img, dof
+
+
 
 
 ################################################################################
