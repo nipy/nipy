@@ -10,7 +10,7 @@ import ConfigParser
 
 from .environment import get_nipy_user_dir, get_nipy_system_dir
 
-NIPY_URL= 'https://cirl.berkeley.edu/mb312/nipy-data/'
+NIPY_URL= 'http://nipy.sourceforge.net/data-packages/'
 
 
 class DataError(OSError):
