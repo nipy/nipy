@@ -40,6 +40,7 @@ if not 'extra_setuptools_args' in globals():
     extra_setuptools_args = dict()
 
 
+# Dependency checks
 def package_check(pkg_name, version=None, checker=LooseVersion):
     msg = 'NIPY needs %s' % pkg_name
     try:
@@ -57,7 +58,7 @@ def package_check(pkg_name, version=None, checker=LooseVersion):
         raise RuntimeError(msg)
 
 
-# (for now) hard dependencies
+# (for now) hard dependencies and hard checks
 package_check('sympy', '0.6.4')
 package_check('nifti')
 package_check('scipy', '0.5')
@@ -110,9 +111,6 @@ cmdclass['install_data'] = MyInstallData
 cmdclass['build_ext'] = MyBuildExt
 
 ################################################################################
-
-# Dependency checks
-
 
 # We need to import nipy as late as possible, 
 from nipy import  __doc__
