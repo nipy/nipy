@@ -19,6 +19,10 @@ def get_nipy_info():
     for key, value in info.iteritems():
         if value.startswith('~'):
             info[key] = os.path.expanduser(value)
+    # Ugly fix for bug 409269
+    if 'libraries' in info and isinstance(info['libraries'], basestring):
+        info['libraries'] = [info['libraries']]
+    # End of ugly fix
     return info
 
 
