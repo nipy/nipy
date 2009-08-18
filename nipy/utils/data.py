@@ -191,12 +191,15 @@ def find_data_dir(root_dirs, *names):
                     os.path.pathsep.join(root_dirs)))
 
 
-def make_datasource(*names):
-    ''' Return datasource `*names` as found in ``get_data_path()``
+def make_datasource(*names, **kwargs):
+    ''' Return datasource `*names` as found in `data_path`
 
+    `data_path` is the only allowed keyword argument.
+    
     The relative path of the directory we are looking for is given by
     ``os.path.join(*names)``.  We search for this path in the list of
-    paths given by ``get_data_path()`` in this module.
+    paths given by `data_path`.  By default `data_path` is given by
+    ``get_data_path()`` in this module.
 
     If we can't find the relative path, raise a DataError
 
@@ -205,16 +208,23 @@ def make_datasource(*names):
     *names : sequence of strings
        The relative path to search for is given by
        ``os.path.join(*names)``
-
+    data_path : sequence of strings or None, optional
+       sequence of paths in which to search for data.  If None (the
+       default), then use ``get_data_path()``
+       
     Returns
     -------
     datasource : ``VersionedDatasource``
        An initialized ``VersionedDatasource`` instance
 
     '''
-    root_dirs = get_data_path()
+    if any(key for key in kwargs if key != 'data_path'):
+        raise ValueError('Unexpected keyword argument(s)')
+    data_path = kwargs.get('data_path')
+    if data_path is None:
+        data_path = get_data_path()
     try:
-        pth = find_data_dir(root_dirs, *names)
+        pth = find_data_dir(data_path, *names)
     except DataError, exception:
         msg = '''%s;
 Is it possible you have not installed a data package?
@@ -229,7 +239,7 @@ Please see %s for data downloads.''' % (
 
 
 class Bomber(object):
-    ''' Class to raise an error when used '''
+    ''' Class to raise an informative error when used '''
     def __init__(self, name, msg):
         self.name = name
         self.msg = msg
@@ -242,16 +252,27 @@ class Bomber(object):
             (attr_name, self.name, self.msg))
 
 
-def _datasource_or_bomber(*names):
+def _datasource_or_bomber(*names, **options):
     ''' Return a viable datasource or a Bomber
 
     This is to allow module level creation of datasource objects.  We
     create the objects, so that, if the data exists, the objects are
     valid datasources, and if they don't, they raise an error on access,
     warning about the lack of data.
+
+    The parameters are as for ``make_datasource`` in this module.
+
+    Parameters
+    ----------
+    *names : sequence of strings
+    data_path : sequence of strings or None, optional
+
+    Returns
+    -------
+    ds : datasource or ``Bomber`` instance
     '''
     try:
-        return make_datasource(*names)
+        return make_datasource(*names, **options)
     except DataError, exception:
         pass
     name = os.path.sep.join(names)
