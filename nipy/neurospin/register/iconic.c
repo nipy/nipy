@@ -14,26 +14,36 @@
 #define ROUND(a)(FLOOR(a+0.5))
 
 
-static double _marginalize(double* h, const double* H, int clampI, int clampJ, int axis); 
-static void _L1_moments (const double * h, int clamp, int stride, double* median, double* dev, double* sumh);
-
-static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz, 
-					   const double* Tvox, size_t x, size_t y, size_t z); 
-
+static double _marginalize(double* h, 
+			   const double* H, 
+			   int clampI, 
+			   int clampJ, 
+			   int axis); 
+static void _L1_moments (const double * h, 
+			 int clamp, 
+			 int stride, 
+			 double* median, 
+			 double* dev, 
+			 double* sumh);
+static inline void _apply_affine_transform(double* Tx, 
+					   double* Ty, 
+					   double* Tz, 
+					   const double* Tvox, 
+					   size_t x, 
+					   size_t y, 
+					   size_t z); 
 static inline void _pv_interpolation(int i, 
 				     double* H, int clampJ, 
 				     const signed short* J, 
 				     const double* W, 
 				     int nn, 
 				     void* params);
-
 static inline void _tri_interpolation(int i, 
 				      double* H, int clampJ, 
 				      const signed short* J, 
 				      const double* W, 
 				      int nn, 
 				      void* params);
-
 static inline void _rand_interpolation(int i, 
 				       double* H, int clampJ, 
 				       const signed short* J, 
@@ -50,20 +60,72 @@ void iconic_import_array(void) {
 }
 
 
-/* =========================================================================
-   JOINT HISTOGRAM COMPUTATION 
-   ========================================================================= */
 
-/*
+/* 
+   
+SINGLE HISTOGRAM COMPUTATION. 
+
+This is not relevant to image registration but is useful for texture
+analysis.
   
-iterI : assumed to iterate over a signed short encoded, possibly non-contiguous array.
+iterI : assumed to iterate over a signed short encoded, possibly
+non-contiguous array.
+
+H : assumed C-contiguous. 
+
+Negative intensities are ignored. 
+
+*/
+
+void histogram(double* H, 
+	       int clampI, 
+	       PyArrayIterObject* iterI)
+{
+  signed short *bufI;
+  int i;
+
+  /* Reset the source image iterator */
+  PyArray_ITER_RESET(iterI);
+
+  /* Re-initialize joint histogram */ 
+  memset((void*)H, 0, clampI*sizeof(double));
+
+  /* Looop over source voxels */
+  while(iterI->index < iterI->size) {
+  
+    /* Source voxel intensity */
+    bufI = (signed short*)PyArray_ITER_DATA(iterI); 
+    i = (int)bufI[0];
+
+    /* Update the histogram only if the current voxel is below the
+       intensity threshold */
+    if (i>=0) 
+      H[i]++; 
+    
+    /* Update source index */ 
+    PyArray_ITER_NEXT(iterI); 
+    
+  } /* End of loop over voxels */ 
+  
+  return; 
+}
+
+
+
+
+/* 
+   
+JOINT HISTOGRAM COMPUTATION. 
+  
+iterI : assumed to iterate over a signed short encoded, possibly
+non-contiguous array.
 
 imJ_padded : assumed C-contiguous (last index varies faster) & signed
 short encoded.
 
-H : assumed C-contiguous 
+H : assumed C-contiguous. 
 
-Tvox : assumed C-contiguous
+Tvox : assumed C-contiguous.
 
 Negative intensities are ignored. 
 

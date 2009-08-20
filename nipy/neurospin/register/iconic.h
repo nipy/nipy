@@ -22,6 +22,9 @@ extern "C" {
   /* Numpy import */
   extern void iconic_import_array(void);
 
+  extern void histogram(double* H, 
+			int clampI, 
+			PyArrayIterObject* iterI); 
   /* 
      Update a pre-allocated joint histogram. Important notice: in all
      computations, H will be assumed C-contiguous.

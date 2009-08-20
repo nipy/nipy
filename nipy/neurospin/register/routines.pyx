@@ -18,6 +18,7 @@ include "numpy.pxi"
 cdef extern from "iconic.h":
 
     void iconic_import_array()
+    void histogram(double* H, int clampI, flatiter iterI)
     void joint_histogram(double* H, int clampI, int clampJ,  
                          flatiter iterI, ndarray imJ_padded, 
                          double* Tvox, int interp)
@@ -78,9 +79,27 @@ similarity_measures = {'cc': CORRELATION_COEFFICIENT,
                        'smi': SUPERVISED_MUTUAL_INFORMATION}
 
 
+def _histogram(ndarray H, flatiter iterI):
+    """
+    _joint_histogram(H, iterI)
+    Comments to follow.
+    """
+    cdef double *h
+    cdef int clampI
+
+    # Views
+    clampI = <int>H.dimensions[0]
+    h = <double*>H.data
+
+    # Compute image histogram 
+    histogram(h, clampI, iterI)
+
+    return 
+
+
 def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
     """
-    _joint_histogram(H, imI, imJ, Tvox, subsampling, corner, size)
+    _joint_histogram(H, iterI, imJ, Tvox, interp)
     Comments to follow.
     """
     cdef double *h, *tvox
@@ -100,7 +119,7 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int i
 
 def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, ndarray F=None):
     """
-    _similarity(H, hI, hJ)
+    _similarity(H, hI, hJ, simitype, ndarray F=None)
     Comments to follow
     """
     cdef int isF = 0
