@@ -80,7 +80,7 @@ similarity_measures = {'cc': CORRELATION_COEFFICIENT,
 
 def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
     """
-    joint_hist(H, imI, imJ, Tvox, subsampling, corner, size)
+    _joint_histogram(H, imI, imJ, Tvox, subsampling, corner, size)
     Comments to follow.
     """
     cdef double *h, *tvox
@@ -100,7 +100,7 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int i
 
 def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, ndarray F=None):
     """
-    similarity(H, hI, hJ).
+    _similarity(H, hI, hJ)
     Comments to follow
     """
     cdef int isF = 0
