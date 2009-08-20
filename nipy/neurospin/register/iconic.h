@@ -2,8 +2,8 @@
   @author Alexis Roche
   @date 1997-2009
   
-  Intensity-based image registration for 2D or 3D images
-  [BETA VERSION].
+  Intensity-based texture analysis and image registration for 2D or 3D
+  images [BETA VERSION].
  
   All computations are fed with the voxel-to-voxel transformation
   relating two images, so you do not need the voxel sizes.

@@ -448,8 +448,8 @@ static double _crL1(const double* H, double* hI, int clampI, int clampJ, double*
 static double _entropy(const double* h, size_t size, double* n); 
 static double _mi(const double* H, double* hI, int clampI, double* hJ, int clampJ, double* n); 
 static double _supervised_mi(const double* H, const double* F, 
-			      double* fI, int clampI, double* fJ, int clampJ, 
-			      double* n); 
+			     double* fI, int clampI, double* fJ, int clampJ, 
+			     double* n); 
 
 double correlation_coefficient(const double* H, int clampI, int clampJ)
 {
