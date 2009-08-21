@@ -40,7 +40,10 @@ A cell is a local specification of the connection between points - an
 atom of topology in VTK.  A cell has a type, and a list of points.  
 
 The type gives the type of local topology, and therefore how the list of
-points are connected.  For example:
+points in the cell are connected.  For example:
+
+>>> cells = vtk.vtkCellArray()
+
 
 
 .. [VTK4]
