@@ -16,11 +16,11 @@
 
 static double _marginalize(double* h, 
 			   const double* H, 
-			   int clampI, 
-			   int clampJ, 
+			   unsigned int clampI, 
+			   unsigned int clampJ, 
 			   int axis); 
 static void _L1_moments (const double * h, 
-			 int clamp, 
+			 unsigned int clamp, 
 			 int stride, 
 			 double* median, 
 			 double* dev, 
@@ -32,20 +32,20 @@ static inline void _apply_affine_transform(double* Tx,
 					   size_t x, 
 					   size_t y, 
 					   size_t z); 
-static inline void _pv_interpolation(int i, 
-				     double* H, int clampJ, 
+static inline void _pv_interpolation(unsigned int i, 
+				     double* H, unsigned int clampJ, 
 				     const signed short* J, 
 				     const double* W, 
 				     int nn, 
 				     void* params);
-static inline void _tri_interpolation(int i, 
-				      double* H, int clampJ, 
+static inline void _tri_interpolation(unsigned int i, 
+				      double* H, unsigned int clampJ, 
 				      const signed short* J, 
 				      const double* W, 
 				      int nn, 
 				      void* params);
-static inline void _rand_interpolation(int i, 
-				       double* H, int clampJ, 
+static inline void _rand_interpolation(unsigned int i, 
+				       double* H, unsigned int clampJ, 
 				       const signed short* J, 
 				       const double* W, 
 				       int nn, 
@@ -78,11 +78,11 @@ Negative intensities are ignored.
 */
 
 void histogram(double* H, 
-	       int clampI, 
+	       unsigned int clampI, 
 	       PyArrayIterObject* iterI)
 {
   signed short *bufI;
-  int i;
+  signed short i;
 
   /* Reset the source image iterator */
   PyArray_ITER_RESET(iterI);
@@ -95,7 +95,7 @@ void histogram(double* H,
   
     /* Source voxel intensity */
     bufI = (signed short*)PyArray_ITER_DATA(iterI); 
-    i = (int)bufI[0];
+    i = bufI[0];
 
     /* Update the histogram only if the current voxel is below the
        intensity threshold */
@@ -140,8 +140,8 @@ Negative intensities are ignored.
 
 
 void joint_histogram(double* H, 
-		     int clampI, 
-		     int clampJ,  
+		     unsigned int clampI, 
+		     unsigned int clampJ,  
 		     PyArrayIterObject* iterI,
 		     const PyArrayObject* imJ_padded, 
 		     const double* Tvox, 
@@ -153,7 +153,7 @@ void joint_histogram(double* H,
   double W[8]; 
   signed short *bufI, *bufJnn; 
   double *bufW; 
-  int i, j;
+  signed short i, j;
   size_t off;
   size_t u2 = imJ_padded->dimensions[2]; 
   size_t u3 = u2+1; 
@@ -166,7 +166,7 @@ void joint_histogram(double* H,
   size_t x, y, z; 
   int nn, nx, ny, nz;
   double Tx, Ty, Tz; 
-  void (*interpolate)(int, double*, int, const signed short*, const double*, int, void*); 
+  void (*interpolate)(unsigned int, double*, unsigned int, const signed short*, const double*, int, void*); 
   void* interp_params = NULL; 
   rk_state rng; 
 
@@ -192,7 +192,7 @@ void joint_histogram(double* H,
   
     /* Source voxel intensity */
     bufI = (signed short*)PyArray_ITER_DATA(iterI); 
-    i = (int)bufI[0];
+    i = bufI[0];
 
     /* Source voxel coordinates */
     x = iterI->coordinates[0];
@@ -295,15 +295,15 @@ void joint_histogram(double* H,
 
 
 /* Partial Volume interpolation. See Maes et al, IEEE TMI, 2007. */ 
-static inline void _pv_interpolation(int i, 
-				     double* H, int clampJ, 
+static inline void _pv_interpolation(unsigned int i, 
+				     double* H, unsigned int clampJ, 
 				     const signed short* J, 
 				     const double* W, 
 				     int nn, 
 				     void* params) 
 { 
   int k;
-  int clampJ_i = clampJ*i;
+  unsigned int clampJ_i = clampJ*i;
   const signed short *bufJ = J;
   const double *bufW = W; 
 
@@ -314,15 +314,15 @@ static inline void _pv_interpolation(int i,
 }
 
 /* Trilinear interpolation. Basic version. */
-static inline void _tri_interpolation(int i, 
-				      double* H, int clampJ, 
+static inline void _tri_interpolation(unsigned int i, 
+				      double* H, unsigned int clampJ, 
 				      const signed short* J, 
 				      const double* W, 
 				      int nn, 
 				      void* params) 
 { 
   int k;
-  int clampJ_i = clampJ*i;
+  unsigned int clampJ_i = clampJ*i;
   const signed short *bufJ = J;
   const double *bufW = W; 
   double jm, sumW; 
@@ -339,8 +339,8 @@ static inline void _tri_interpolation(int i,
 }
 
 /* Random interpolation. */
-static inline void _rand_interpolation(int i, 
-				       double* H, int clampJ, 
+static inline void _rand_interpolation(unsigned int i, 
+				       double* H, unsigned int clampJ, 
 				       const signed short* J, 
 				       const double* W, 
 				       int nn, 
@@ -348,7 +348,7 @@ static inline void _rand_interpolation(int i,
 { 
   rk_state* rng = (rk_state*)params; 
   int k;
-  int clampJ_i = clampJ*i;
+  unsigned int clampJ_i = clampJ*i;
   const double *bufW;
   double sumW, draw; 
   
@@ -401,7 +401,7 @@ static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz,
   returns the sum of H 
 
 */
-static double _marginalize(double* h, const double* H, int clampI, int clampJ, int axis)
+static double _marginalize(double* h, const double* H, unsigned int clampI, unsigned int clampJ, int axis)
 {
   int i, j; 
   const double *bufH = H; 
@@ -442,22 +442,8 @@ static double _marginalize(double* h, const double* H, int clampI, int clampJ, i
 #define TINY 1e-30
 #define NICELOG(x)((x)>(TINY) ? log(x):log(TINY)) 
 
-static double _cc(const double* H, int clampI, int clampJ, double* n); 
-static double _cr(const double* H, int clampI, int clampJ, double* n); 
-static double _crL1(const double* H, double* hI, int clampI, int clampJ, double* n); 
-static double _entropy(const double* h, size_t size, double* n); 
-static double _mi(const double* H, double* hI, int clampI, double* hJ, int clampJ, double* n); 
-static double _supervised_mi(const double* H, const double* F, 
-			     double* fI, int clampI, double* fJ, int clampJ, 
-			     double* n); 
 
-double correlation_coefficient(const double* H, int clampI, int clampJ)
-{
-  double n; 
-  return(_cc(H, clampI, clampJ, &n));
-}
-
-static double _cc(const double* H, int clampI, int clampJ, double* n)
+double correlation_coefficient(const double* H, unsigned int clampI, unsigned int clampJ, double* n)
 {
   int i, j;
   double CC, mj, mi, mij, mj2, mi2, varj, vari, covij, na;
@@ -525,13 +511,7 @@ static double _cc(const double* H, int clampI, int clampJ, double* n)
 }
 
 
-double correlation_ratio(const double* H, int clampI, int clampJ)
-{
-  double n; 
-  return(_cr(H, clampI, clampJ, &n));
-}
-
-static double _cr(const double* H, int clampI, int clampJ, double* n)
+double correlation_ratio(const double* H, unsigned int clampI, unsigned int clampJ, double* n)
 {
   int i, j;
   double CR, na, mean, var, cvar, nJ, mJ, vJ, aux, aux2;
@@ -587,14 +567,7 @@ static double _cr(const double* H, int clampI, int clampJ, double* n)
 }
 
 
-double correlation_ratio_L1(const double* H, double* hI, int clampI, int clampJ)
-{
-  double n; 
-  return(_crL1(H, hI, clampI, clampJ, &n));
-}
-
-
-static double _crL1(const double* H, double* hI, int clampI, int clampJ, double* n)
+double correlation_ratio_L1(const double* H, double* hI, unsigned int clampI, unsigned int clampJ, double* n)
 {
   int j;
   double na, med, dev, cdev, nJ, mJ, dJ;
@@ -631,39 +604,33 @@ static double _crL1(const double* H, double* hI, int clampI, int clampJ, double*
 
 
 
-double joint_entropy(const double* H, int clampI, int clampJ)
+double joint_entropy(const double* H, unsigned int clampI, unsigned int clampJ)
 {
   double n; 
-  double entIJ = _entropy(H, clampI*clampJ, &n); 
+  double entIJ = entropy(H, clampI*clampJ, &n); 
   return entIJ; 
 }
 
 
-double conditional_entropy(const double* H, double* hJ, int clampI, int clampJ)
+double conditional_entropy(const double* H, double* hJ, unsigned int clampI, unsigned int clampJ)
 {
   double n; 
   double entIJ, entJ;  
   _marginalize(hJ, H, clampI, clampJ, 1); 
-  entIJ = _entropy(H, clampI*clampJ, &n); 
-  entJ = _entropy(hJ, clampJ, &n); 
+  entIJ = entropy(H, clampI*clampJ, &n); 
+  entJ = entropy(hJ, clampJ, &n); 
   return(entIJ - entJ); /* Entropy of I given J */ 
 }
 
 
-double mutual_information(const double* H, double* hI, int clampI, double* hJ, int clampJ)
-{
-  double n; 
-  return(_mi(H, hI, clampI, hJ, clampJ, &n)); 
-}
-
-static double _mi(const double* H, double* hI, int clampI, double* hJ, int clampJ, double* n)
+double mutual_information(const double* H, double* hI, unsigned int clampI, double* hJ, unsigned int clampJ, double* n)
 {
   double entIJ, entI, entJ; 
   _marginalize(hI, H, clampI, clampJ, 0); 
   _marginalize(hJ, H, clampI, clampJ, 1); 
-  entI = _entropy(hI, clampI, n); 
-  entJ = _entropy(hJ, clampJ, n); 
-  entIJ = _entropy(H, clampI*clampJ, n); 
+  entI = entropy(hI, clampI, n); 
+  entJ = entropy(hJ, clampJ, n); 
+  entIJ = entropy(H, clampI*clampJ, n); 
   return(entI + entJ - entIJ); 
 }
 
@@ -674,15 +641,14 @@ static double _mi(const double* H, double* hI, int clampI, double* hJ, int clamp
   
 */
 
-double normalized_mutual_information(const double* H, double* hI, int clampI, double* hJ, int clampJ)
+double normalized_mutual_information(const double* H, double* hI, unsigned int clampI, double* hJ, unsigned int clampJ, double *n)
 {
-  double n; 
   double entIJ, entI, entJ, aux; 
   _marginalize(hI, H, clampI, clampJ, 0); 
   _marginalize(hJ, H, clampI, clampJ, 1); 
-  entI = _entropy(hI, clampI, &n); 
-  entJ = _entropy(hJ, clampJ, &n); 
-  entIJ = _entropy(H, clampI*clampJ, &n);
+  entI = entropy(hI, clampI, n); 
+  entJ = entropy(hJ, clampJ, n); 
+  entIJ = entropy(H, clampI*clampJ, n);
   aux = entI + entJ; 
   if (aux > 0.0) 
     return(2*(1-entIJ/aux));
@@ -699,19 +665,8 @@ See Roche, PhD dissertation, University of Nice-Sophia Antipolis, 2001.
 */ 
 
 double supervised_mutual_information(const double* H, const double* F, 
-				     double* fI, int clampI, double* fJ, int clampJ)
-{
-  double x, n; 
-  x = _supervised_mi(H, F, fI, clampI, fJ, clampJ, &n); 
-  if (n>0.0) 
-    x /= n; 
-  return(x); 
-}
-
-
-static double _supervised_mi(const double* H, const double* F, 
-			      double* fI, int clampI, double* fJ, int clampJ, 
-			      double* n)
+				     double* fI, unsigned int clampI, double* fJ, unsigned int clampJ, 
+				     double* n)
 {
   const double *bufH = H, *bufF = F; 
   double *buf_fI, *buf_fJ; 
@@ -741,6 +696,10 @@ static double _supervised_mi(const double* H, const double* F,
   }
 
   *n = na;
+
+  if (*n>0.0) 
+    SMI /= *n; 
+
   return SMI; 
 }
 
@@ -750,7 +709,7 @@ static double _supervised_mi(const double* H, const double* F,
    First loop: compute the histogram sum 
    Second loop: compute actual entropy 
 */ 
-static double _entropy(const double* h, size_t size, double* n)
+double entropy(const double* h, size_t size, double* n)
 {
   double E=0.0, sumh=0.0, aux; 
   size_t i; 
@@ -777,8 +736,8 @@ static double _entropy(const double* h, size_t size, double* n)
 
 
 
-static void _L1_moments (const double * h, int clamp, int stride, 
-			  double* median, double* dev, double* sumh)
+static void _L1_moments (const double * h, unsigned int clamp, int stride, 
+			 double* median, double* dev, double* sumh)
 
 {
   int i, med;

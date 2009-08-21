@@ -18,24 +18,27 @@ include "numpy.pxi"
 cdef extern from "iconic.h":
 
     void iconic_import_array()
-    void histogram(double* H, int clampI, flatiter iterI)
-    void joint_histogram(double* H, int clampI, int clampJ,  
+    void histogram(double* H, unsigned int clampI, flatiter iterI)
+    void joint_histogram(double* H, unsigned int clampI, unsigned int clampJ,  
                          flatiter iterI, ndarray imJ_padded, 
                          double* Tvox, int interp)
-    double correlation_coefficient(double* H, int clampI, int clampJ)
-    double correlation_ratio(double* H, int clampI, int clampJ) 
-    double correlation_ratio_L1(double* H, double* hI, int clampI, int clampJ) 
-    double joint_entropy(double* H, int clampI, int clampJ)
-    double conditional_entropy(double* H, double* hJ, int clampI, int clampJ) 
+    double correlation_coefficient(double* H, unsigned int clampI, unsigned int clampJ, double* n)
+    double correlation_ratio(double* H, unsigned int clampI, unsigned int clampJ, double* n) 
+    double correlation_ratio_L1(double* H, double* hI, unsigned int clampI, unsigned int clampJ, double* n) 
+    double joint_entropy(double* H, unsigned int clampI, unsigned int clampJ, double* n)
+    double conditional_entropy(double* H, double* hJ, unsigned int clampI, unsigned int clampJ, double* n) 
     double mutual_information(double* H, 
-                              double* hI, int clampI, 
-                              double* hJ, int clampJ)
+                              double* hI, unsigned int clampI, 
+                              double* hJ, unsigned int clampJ,
+                              double* n)
     double normalized_mutual_information(double* H, 
-                                         double* hI, int clampI, 
-                                         double* hJ, int clampJ) 
+                                         double* hI, unsigned int clampI, 
+                                         double* hJ, unsigned int clampJ, 
+                                         double* n) 
     double supervised_mutual_information(double* H, double* F, 
-                                         double* fI, int clampI, 
-                                         double* fJ, int clampJ) 
+                                         double* fI, unsigned int clampI, 
+                                         double* fJ, unsigned int clampJ,
+                                         double* n) 
     void cubic_spline_resample(ndarray im_resampled, ndarray im, double* Tvox, int cast_integer)
 
 
@@ -85,7 +88,7 @@ def _histogram(ndarray H, flatiter iterI):
     Comments to follow.
     """
     cdef double *h
-    cdef int clampI
+    cdef unsigned int clampI
 
     # Views
     clampI = <int>H.dimensions[0]
@@ -103,7 +106,7 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int i
     Comments to follow.
     """
     cdef double *h, *tvox
-    cdef int clampI, clampJ
+    cdef unsigned int clampI, clampJ
 
     # Views
     clampI = <int>H.dimensions[0]
@@ -124,8 +127,8 @@ def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, ndarray F=None)
     """
     cdef int isF = 0
     cdef double *h, *hI, *hJ, *f=NULL
-    cdef double simi = 0.0
-    cdef int clampI, clampJ
+    cdef double simi=0.0, n
+    cdef unsigned int clampI, clampJ
 
     # Array views
     clampI = <int>H.dimensions[0]
@@ -139,21 +142,21 @@ def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, ndarray F=None)
 
     # Switch 
     if simitype == CORRELATION_COEFFICIENT:
-        simi = correlation_coefficient(h, clampI, clampJ)
+        simi = correlation_coefficient(h, clampI, clampJ, &n)
     elif simitype == CORRELATION_RATIO: 
-        simi = correlation_ratio(h, clampI, clampJ) 
+        simi = correlation_ratio(h, clampI, clampJ, &n) 
     elif simitype == CORRELATION_RATIO_L1:
-        simi = correlation_ratio_L1(h, hI, clampI, clampJ) 
+        simi = correlation_ratio_L1(h, hI, clampI, clampJ, &n) 
     elif simitype == MUTUAL_INFORMATION: 
-        simi = mutual_information(h, hI, clampI, hJ, clampJ) 
+        simi = mutual_information(h, hI, clampI, hJ, clampJ, &n) 
     elif simitype == JOINT_ENTROPY:
-        simi = joint_entropy(h, clampI, clampJ) 
+        simi = joint_entropy(h, clampI, clampJ, &n) 
     elif simitype == CONDITIONAL_ENTROPY:
-        simi = conditional_entropy(h, hJ, clampI, clampJ) 
+        simi = conditional_entropy(h, hJ, clampI, clampJ, &n) 
     elif simitype == NORMALIZED_MUTUAL_INFORMATION:
-        simi = normalized_mutual_information(h, hI, clampI, hJ, clampJ) 
+        simi = normalized_mutual_information(h, hI, clampI, hJ, clampJ, &n) 
     elif simitype == SUPERVISED_MUTUAL_INFORMATION:
-        simi = supervised_mutual_information(h, f, hI, clampI, hJ, clampJ)
+        simi = supervised_mutual_information(h, f, hI, clampI, hJ, clampJ, &n)
     else:
         simi = 0.0
         

@@ -23,7 +23,7 @@ extern "C" {
   extern void iconic_import_array(void);
 
   extern void histogram(double* H, 
-			int clampI, 
+			unsigned int clampI, 
 			PyArrayIterObject* iterI); 
   /* 
      Update a pre-allocated joint histogram. Important notice: in all
@@ -41,23 +41,50 @@ extern "C" {
        <0 - RANDOM interpolation with seed=-interp
   */ 
   extern void joint_histogram(double* H, 
-			      int clampI, 
-			      int clampJ,  
+			      unsigned int clampI, 
+			      unsigned int clampJ,  
 			      PyArrayIterObject* iterI,
 			      const PyArrayObject* imJ_padded, 
 			      const double* Tvox, 
 			      int interp); 
 
 
-  extern double correlation_coefficient(const double* H, int clampI, int clampJ);
-  extern double correlation_ratio(const double* H, int clampI, int clampJ); 
-  extern double correlation_ratio_L1(const double* H, double* hI, int clampI, int clampJ); 
-  extern double joint_entropy(const double* H, int clampI, int clampJ);
-  extern double conditional_entropy(const double* H, double* hJ, int clampI, int clampJ); 
-  extern double mutual_information(const double* H, double* hI, int clampI, double* hJ, int clampJ);
-  extern double normalized_mutual_information(const double* H, double* hI, int clampI, double* hJ, int clampJ); 
-  extern double supervised_mutual_information(const double* H, const double* F, 
-					      double* fI, int clampI, double* fJ, int clampJ); 
+  extern double entropy(const double* h, 
+			unsigned int size, 
+			double* n); 
+  extern double correlation_coefficient(const double* H, 
+					unsigned int clampI, 
+					unsigned int clampJ, 
+					double* n); 
+  extern double correlation_ratio(const double* H, 
+				  unsigned int clampI, 
+				  unsigned int clampJ, 
+				  double* n); 
+  extern double correlation_ratio_L1(const double* H, 
+				     double* hI, 
+				     unsigned int clampI, 
+				     unsigned int clampJ, 
+				     double* n); 
+  extern double mutual_information(const double* H, 
+				   double* hI, 
+				   unsigned int clampI, 
+				   double* hJ,
+				   unsigned int clampJ, 
+				   double* n); 
+  extern double normalized_mutual_information(const double* H, 
+					      double* hI,
+					      unsigned int clampI, 
+					      double* hJ, 
+					      unsigned int clampJ, 
+					      double* n); 
+  extern double supervised_mutual_information(const double* H, 
+					      const double* F, 
+					      double* fI, 
+					      unsigned int clampI, 
+					      double* fJ, 
+					      unsigned int clampJ, 
+					      double* n); 
+
 
   
   /*!
