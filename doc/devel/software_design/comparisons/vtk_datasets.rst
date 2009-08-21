@@ -16,22 +16,32 @@ See also:
 What is a VTK dataset?
 ======================
 
-VTK datasets consist of two components:
+VTK datasets represent discrete spatial data.
+
+Datasets consist of two components:
 
 * *organizing structure* - the topology and geometry
 * *data attributes* - data that can be attached to the topology /
    geometry above.
 
+Structure: topology / geometry
+------------------------------
 
+A dataset has one more points.  Points have coordinates in 3 dimensions,
+in the order ``x``, ``y``, ``z`` - see http://www.vtk.org/doc/release/5.4/html/a00374.html - ``GetPoint()``
 
-Topology / geometry
--------------------
+>>> import vtk
+>>> pts = vtk.vtkPoints()
+>>> pts.InsertNextPoint(0, 0, 0)
+>>> pts.GetPoint(0)
+(0.0, 0.0, 0.0)
 
-A dataset has one or more cells.
+A cell is a local specification of the connection between points - an
+atom of topology in VTK.  A cell has a type, and a list of points.  
 
+The type gives the type of local topology, and therefore how the list of
+points are connected.  For example:
 
-Geometry must first be specified with topology (the connectedness of the
-data) and thence by the location of 
 
 .. [VTK4]
    Schroeder, Will, Ken Martin, and Bill Lorensen. (2006) *The 
