@@ -19,6 +19,7 @@ cdef extern from "iconic.h":
 
     void iconic_import_array()
     void histogram(double* H, unsigned int clampI, flatiter iterI)
+    double entropy(double* h, unsigned int size, double* n)
     void joint_histogram(double* H, unsigned int clampI, unsigned int clampJ,  
                          flatiter iterI, ndarray imJ_padded, 
                          double* Tvox, int interp)
@@ -59,7 +60,6 @@ import_array()
 import numpy as np
 cimport numpy as np
 
-
 # Enumerate similarity measures
 cdef enum similarity_measure:
     CORRELATION_COEFFICIENT,
@@ -82,20 +82,53 @@ similarity_measures = {'cc': CORRELATION_COEFFICIENT,
                        'smi': SUPERVISED_MUTUAL_INFORMATION}
 
 
-def _histogram(ndarray H, flatiter iterI):
+def _texture(ndarray im, ndarray H, size): 
+
+    cdef flatiter iter = im.flat 
+    cdef double* res
+    cdef double* h
+    cdef double n
+    cdef unsigned int clamp
+
+    imtext = np.zeros(im.shape, dtype='double')
+    halfsize = np.asarray(size, dtype='uint')/2
+
+    # Views
+    clamp = <unsigned int>H.dimensions[0]
+    h = <double*>H.data
+
+    while(iter.index < iter.size):
+        coords = np.asarray(iter.coords, dtype='uint')
+        left = np.maximum(0, coords - halfsize)
+        right = coords + size - 1
+        block = im[left[0]:right[0]:1,
+                   left[1]:right[1]:1,
+                   left[2]:right[2]:1]
+        if block.size > 0: 
+            _histogram(H, block.flat)
+            res = <double*>iter.dataptr
+            res[0] = entropy(h, clamp, &n)
+        else: 
+            res[0] = 0.0
+        PyArray_ITER_NEXT(iter)
+
+    return imtext
+
+
+def _histogram(ndarray H, flatiter iter):
     """
     _joint_histogram(H, iterI)
     Comments to follow.
     """
     cdef double *h
-    cdef unsigned int clampI
+    cdef unsigned int clamp
 
     # Views
-    clampI = <int>H.dimensions[0]
+    clamp = <unsigned int>H.dimensions[0]
     h = <double*>H.data
 
     # Compute image histogram 
-    histogram(h, clampI, iterI)
+    histogram(h, clamp, iter)
 
     return 
 
@@ -109,8 +142,8 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int i
     cdef unsigned int clampI, clampJ
 
     # Views
-    clampI = <int>H.dimensions[0]
-    clampJ = <int>H.dimensions[1]    
+    clampI = <unsigned int>H.dimensions[0]
+    clampJ = <unsigned int>H.dimensions[1]    
     h = <double*>H.data
     tvox = <double*>Tvox.data
 
@@ -131,8 +164,8 @@ def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, ndarray F=None)
     cdef unsigned int clampI, clampJ
 
     # Array views
-    clampI = <int>H.dimensions[0]
-    clampJ = <int>H.dimensions[1]
+    clampI = <unsigned int>H.dimensions[0]
+    clampJ = <unsigned int>H.dimensions[1]
     h = <double*>H.data
     hI = <double*>HI.data
     hJ = <double*>HJ.data
@@ -401,8 +434,8 @@ def matrix44(ndarray t, dtype):
     7 < size < 12 ==> error
     size >= 12 ==> t is interpreted as translation + rotation + scaling + shearing 
     """
-    cdef int size
-    size = <int>PyArray_SIZE(t)
+    cdef unsigned int size
+    size = <unsigned int>PyArray_SIZE(t)
     T = np.eye(4, dtype=dtype)
     R = rotation_vec2mat(t[3:6])
     if size == 6:
@@ -416,6 +449,7 @@ def matrix44(ndarray t, dtype):
         T[0:3,0:3] = np.dot(R,np.dot(S,Q))
     T[0:3,3] = t[0:3] 
     return T 
+
 
 
 

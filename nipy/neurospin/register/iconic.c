@@ -709,10 +709,10 @@ double supervised_mutual_information(const double* H, const double* F,
    First loop: compute the histogram sum 
    Second loop: compute actual entropy 
 */ 
-double entropy(const double* h, size_t size, double* n)
+double entropy(const double* h, unsigned int size, double* n)
 {
   double E=0.0, sumh=0.0, aux; 
-  size_t i; 
+  unsigned int i; 
   double *buf;
 
   buf = (double*)h; 

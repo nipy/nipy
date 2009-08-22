@@ -5,7 +5,7 @@ Questions: alexis.roche@gmail.com
 """
 from routines import _joint_histogram, _similarity, similarity_measures
 from transform import Affine, BRAIN_RADIUS_MM
-from utils import clamp, CLAMP_DTYPE, block3d, smaller_block3d
+from utils import clamp, CLAMP_DTYPE, subsample
 
 import numpy as np  
 import scipy as sp 
@@ -79,14 +79,17 @@ class IconicMatcher:
         if size == None:
             size = self.source.shape
         self.block_size = np.array(size, dtype='uint')
+        aux = self.source_clamped[corner[0]:corner[0]+size[0]-1:subsampling[0],
+                                  corner[1]:corner[1]+size[1]-1:subsampling[1],
+                                  corner[2]:corner[2]+size[2]-1:subsampling[2]]
         if fixed_npoints==None: 
             self.block_subsampling = np.array(subsampling, dtype='uint')
-            self.source_block = block3d(self.source_clamped, corner, size, subsampling)
+            self.source_block = aux
             self.block_npoints = (self.source_block >= 0).sum()
         else: 
             fixed_npoints = int(fixed_npoints)
             self.source_block, self.block_subsampling, self.block_npoints = \
-                smaller_block3d(block3d(self.source_clamped, corner, size), npoints=fixed_npoints)
+                subsample(aux, npoints=fixed_npoints)
 
         ## Taux: block to full array transformation
         Taux = np.diag(np.concatenate((self.block_subsampling,[1]),1))

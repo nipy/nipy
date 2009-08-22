@@ -1,5 +1,7 @@
-from routines import _histogram
-from utils import clamp, block3d, smaller_block3d
+from routines import _texture, _histogram
+from utils import clamp
+
+###def _texture(ndarray im, ndarray H, size): 
 
 import numpy as np
 
@@ -13,7 +15,14 @@ class TextureAnalyzer:
         self.data_clamped, bins = clamp(data, th=th, mask=mask, bins=bins)
         self.hist = np.zeros(bins)
         # self.glcm = np.zeros([bins,bins])
+        self.set_size()
+
+    def histogram(self): 
+        _histogram(self.hist, self.data_clamped.flat)
         
     def eval(self): 
-        _histogram(self.hist, self.data_clamped.flat)
+        return _texture(self.data_clamped, self.hist, self.size)
+
+    def set_size(self, size=[3,3,3]): 
+        self.size = np.asarray(size, dtype='uint')
         

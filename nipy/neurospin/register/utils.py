@@ -74,17 +74,7 @@ def clamp(source, th=0, mask=None, bins=256):
     return y, bins 
 
 
-def block3d(source, corner, size, subsampling=None):
-    if subsampling==None: 
-        return source[corner[0]:corner[0]+size[0]-1,
-                      corner[1]:corner[1]+size[1]-1,
-                      corner[2]:corner[2]+size[2]-1]
-    else: 
-        return source[corner[0]:corner[0]+size[0]-1:subsampling[0],
-                      corner[1]:corner[1]+size[1]-1:subsampling[1],
-                      corner[2]:corner[2]+size[2]-1:subsampling[2]]
-
-def smaller_block3d(source, npoints):
+def subsample(source, npoints):
     """  
     Tune subsampling factors so that the number of voxels in the
     output block matches a given number.
