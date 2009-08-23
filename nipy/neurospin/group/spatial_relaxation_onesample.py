@@ -581,12 +581,12 @@ class multivariate_stat:
             self.update_summary_statistics(update_spatial=True, mode='mcmc')
         L = 0.0
         i,b = n-1, B-1
-        A_values = np.zeros(\
-            nsimu / (n * B - i * B - b), float)
-        A2_values = np.zeros(\
-            nsimu / (n * B - i * B - b), float)
-        SS_values = np.zeros(\
-            nsimu / (n * B - i * B - b), float)
+        n_ib = n * B - i * B - b
+        nsimu_ib = nsimu / n_ib
+        burnin_ib = burnin / n_ib
+        A_values = np.zeros(nsimu_ib, float)
+        A2_values = np.zeros(nsimu_ib, float)
+        SS_values = np.zeros(nsimu_ib, float)
         if verbose:
             print 'Compute mean acceptance rate for block', i, b
             print 'Burn-in'
@@ -602,18 +602,18 @@ class multivariate_stat:
         L -= np.log(mean_acceptance)
         for i in range(n)[::-1]:
             for b in range(B)[::-1]:
-                A_values = np.zeros(\
-                    nsimu / (n * B - i * B - b), float)
-                A2_values = np.zeros(\
-                    nsimu / (n * B - i * B - b), float)
-                SS_values = np.zeros(\
-                    nsimu / (n * B - i * B - b), float)
+                n_ib = n * B - i * B - b
+                nsimu_ib = nsimu / n_ib
+                burnin_ib = burnin / n_ib
+                A_values = np.zeros(nsimu_ib, float)
+                A2_values = np.zeros(nsimu_ib, float)
+                SS_values = np.zeros(nsimu_ib, float)
                 if verbose:
                     print 'Compute log conditional posterior for block', i, b
                     print 'Burn-in'
-                for s in xrange(burnin / (n * B - i * B - b)):
+                for s in xrange(burnin / n_ib):
                     if verbose:
-                        print "SA iteration", s, "out of", burnin / (n * B - i * B - b)
+                        print "SA iteration", s, "out of", burnin_ib
                     for bb in xrange(b, B):
                         A = self.update_block_SA(\
                             i, bb, 1.0, proposal_std, verbose=False)
@@ -623,9 +623,9 @@ class multivariate_stat:
                                 ii, bb, 1.0, proposal_std, verbose=False)
                 if verbose:
                     print 'Sample kernel and acceptance rate values'
-                for s in xrange(nsimu / (n * B - i * B - b)):
+                for s in xrange(nsimu_ib):
                     if verbose:
-                        print "SA iteration", s, "out of", nsimu / (n * B - i * B - b)
+                        print "SA iteration", s, "out of", nsimu_ib
                     for bb in xrange(b, B):
                         A = self.update_block_SA(\
                         i, bb, 1.0, proposal_std, verbose=False)
@@ -634,7 +634,8 @@ class multivariate_stat:
                             A = self.update_block_SA(\
                                 ii, bb, 1.0, proposal_std, verbose=False)
                     A_values[s] = self.update_block_SA(\
-                        i, b, 1.0, proposal_std, verbose=False, proposal='fixed', proposal_mean=U[:, i, b])
+                        i, b, 1.0, proposal_std*0, verbose=False, reject_override=True, 
+                        proposal='fixed', proposal_mean=U[:, i, b])
                     SS_values[s] = np.square(U[:, i, b] - self.D.U[:, i, b]).sum()
                     if b > 0:
                         A2_values[s] = self.update_block_SA(\
@@ -648,14 +649,8 @@ class multivariate_stat:
                 mean_kernel = \
                     (np.exp(A_values).clip(0,1) * \
                         np.exp( -0.5 * SS_values / proposal_std**2) \
-                        / (np.sqrt(2 * np.pi) * proposal_std)**3
-                    ).mean()
+                        / (np.sqrt(2 * np.pi) * proposal_std)**3).mean()
                 L += np.log(mean_kernel) - np.log(mean_acceptance)*(i>0 or b>0)
-                #if change_U:
-                    #U[:, i, b] = self.D.U[:, i, b]
-                #if not change_U:
-                    #A = self.update_block(i, b, 'fixed', proposal_std*0,
-                                #proposal_mean=U[:, i, b], verbose=False)
         if not change_U:
             # Restore initial displacement value
             self.proposal = 'fixed'
