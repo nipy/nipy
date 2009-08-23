@@ -626,7 +626,7 @@ class multivariate_stat:
                 for s in xrange(nsimu / (n * B - i * B - b)):
                     if verbose:
                         print "SA iteration", s, "out of", nsimu / (n * B - i * B - b)
-                    for bb in xrange(b+1, B):
+                    for bb in xrange(b, B):
                         A = self.update_block_SA(\
                         i, bb, 1.0, proposal_std, verbose=False)
                     for ii in xrange(i+1, n):
@@ -634,7 +634,7 @@ class multivariate_stat:
                             A = self.update_block_SA(\
                                 ii, bb, 1.0, proposal_std, verbose=False)
                     A_values[s] = self.update_block_SA(\
-                        i, b, 1.0, proposal_std, verbose=False)
+                        i, b, 1.0, proposal_std, verbose=False, proposal='fixed', proposal_mean=U[:, i, b])
                     SS_values[s] = np.square(U[:, i, b] - self.D.U[:, i, b]).sum()
                     if b > 0:
                         A2_values[s] = self.update_block_SA(\
@@ -668,125 +668,7 @@ class multivariate_stat:
         self.update_summary_statistics(update_spatial=True, mode='mcmc')
         return L
     
-    #def compute_log_conditional_displacements_posterior(self, U=None, nsimu=100, burnin=100, proposal_std=None, verbose=False, change_U=False):
-        #"""
-        #Compute posterior log density of elementary displacements at point U, conditional on model parameters
-        #"""
-        #n = self.data.shape[0]
-        #B = len(self.D.block)
-        #if U == None:
-            #U = self.D.U.copy()
-        #if not change_U:
-            #Uc = self.D.U.copy()
-        #if proposal_std == None:
-            #proposal_std = self.proposal_std
-        #LL, self.Z, self.tot_var, self.SS1, self.SS2, self.SS3, self.SS4 =\
-            #self.compute_log_voxel_likelihood(return_SS=True)
-        #self.log_voxel_likelihood = LL
-        #if not change_U:
-            #proposal_c = self.proposal
-            #proposal_mean_c = self.proposal_mean
-            #proposal_std_c = self.proposal_std.copy()
-            #self.proposal = 'fixed'
-            #self.proposal_mean = U
-            #self.proposal_std = U * 0
-            #self.update_displacements()
-            ##Restore displacement parameters
-            #self.proposal = proposal_c
-            #self.proposal_mean = proposal_mean_c
-            #self.proposal_std = proposal_std_c
-            #self.update_summary_statistics(update_spatial=True, mode='mcmc')
-        #L = 0.0
-        #A_values = np.zeros(nsimu, float)
-        #A2_values = np.zeros(nsimu, float)
-        #SS_values = np.zeros(nsimu, float)
-        #for i in xrange(n):
-            #for b in xrange(B):
-                #if verbose:
-                    #print 'Compute log conditional posterior for block', i, b
-                    #print 'Burn-in'
-                #for s in xrange(burnin):
-                    #if verbose:
-                        #print "Iteration", s, "out of", burnin
-                    #self.update_effects()
-                    #self.update_mean_effect()
-                    #for bb in xrange(b, B):
-                        #A = self.update_block(\
-                            #i, bb, 'rand_walk', proposal_std, verbose=False)
-                    #for ii in xrange(i+1, n):
-                        #for bb in xrange(B):
-                            #A = self.update_block(\
-                                #ii, bb, 'rand_walk', proposal_std, verbose=False)
-                #if verbose:
-                    #print 'Sample kernel and acceptance rate values'
-                #for s in xrange(nsimu):
-                    #if verbose:
-                        #print "Iteration", s, "out of", nsimu
-                    #self.update_effects()
-                    #self.update_mean_effect()
-                    #for bb in xrange(b+1, B):
-                        #A = self.update_block(\
-                        #i, bb, 'rand_walk', proposal_std, verbose=False)
-                    #for ii in xrange(i+1, n):
-                        #for bb in xrange(B):
-                            #A = self.update_block(\
-                                #ii, bb, 'rand_walk', proposal_std, verbose=False)
-                    #A_values[s] = self.update_block(\
-                        #i, b, 'rand_walk', proposal_std, verbose=False)
-                    #SS_values[s] = np.square(U[:, i, b] - self.D.U[:, i, b]).sum()
-                    #if b > 0:
-                        #A2_values[s] = self.update_block(\
-                        #i, b-1, 'rand_walk', proposal_std, verbose=False, 
-                        #reject_override=True)
-                    #elif i > 0:
-                        #A2_values[s] = self.update_block(\
-                        #i-1, B-1, 'rand_walk', proposal_std, verbose=False, 
-                        #reject_override=True)
-                #mean_acceptance = np.exp(A2_values).clip(0,1).mean()
-                #mean_kernel = \
-                    #(np.exp(A_values).clip(0,1) * \
-                        #np.exp( -0.5 * SS_values / proposal_std**2) \
-                        #/ (np.sqrt(2 * np.pi) * proposal_std)**3
-                    #).mean()
-                #L += np.log(mean_kernel) - np.log(mean_acceptance)*(i>0 or b>0)
-                #if change_U:
-                    #U[:, i, b] = self.D.U[:, i, b]
-                #if not change_U:
-                    #A = self.update_block(i, b, 'fixed', proposal_std*0,
-                                #proposal_mean=U[:, i, b], verbose=False)
-        #if verbose:
-            #print 'Compute mean acceptance rate for block', i, b
-        #for s in xrange(burnin):
-            #if verbose:
-                #print "Burn-in iteration", s, "out of", burnin
-            #self.update_effects()
-            #self.update_mean_effect()
-            #A = self.update_block(\
-                #i, b, 'rand_walk', proposal_std,
-                #verbose=False, reject_override=True)
-        #for s in xrange(nsimu):
-            #if verbose:
-                #print "Iteration", s, "out of", nsimu
-            #self.update_effects()
-            #self.update_mean_effect()
-            #A_values[s] = self.update_block(\
-                #i, b, 'rand_walk', proposal_std,
-                #verbose=False, reject_override=True)
-        #mean_acceptance = np.exp(A_values).clip(0,1).mean()
-        #L -= np.log(mean_acceptance)
-        #if not change_U:
-            ## Restore initial displacement value
-            #self.proposal = 'fixed'
-            #self.proposal_mean = Uc
-            #self.proposal_std = Uc * 0
-            #self.update_displacements()
-            #self.proposal = proposal_c
-            #self.proposal_mean = proposal_mean_c
-            #self.proposal_std = proposal_std_c
-        #self.update_summary_statistics(update_spatial=True, mode='mcmc')
-        #return L
-    
-    def update_block_SA(self, i, b, T=1.0, proposal_std=None, verbose=False, reject_override=False):
+    def update_block_SA(self, i, b, T=1.0, proposal_std=None, verbose=False, reject_override=False, proposal='rand_walk', proposal_mean=None):
         """
         Update displacement block using simulated annealing scheme 
         with random-walk kernel
@@ -797,7 +679,7 @@ class multivariate_stat:
         if verbose:
             print 'sampling field', i, 'block', b
         # Propose new displacement
-        U, V, L, W, I = self.D.sample(i, b, 'rand_walk', proposal_std * T)
+        U, V, L, W, I = self.D.sample(i, b, proposal, proposal_std * T, proposal_mean=proposal_mean)
         Uc = self.D.U[:, i, b].copy()
         #Vc = self.D.V[:, i, block].copy()
         p = self.data.shape[1]
