@@ -18,7 +18,9 @@ include "numpy.pxi"
 cdef extern from "iconic.h":
 
     void iconic_import_array()
-    void histogram(double* H, unsigned int clampI, flatiter iterI)
+    void histogram(double* H, unsigned int clamp, flatiter iter)
+    void local_histogram(double* H, unsigned int clamp, 
+                         flatiter iter, unsigned int* size)
     double entropy(double* h, unsigned int size, double* n)
     void joint_histogram(double* H, unsigned int clampI, unsigned int clampJ,  
                          flatiter iterI, ndarray imJ_padded, 
@@ -82,36 +84,35 @@ similarity_measures = {'cc': CORRELATION_COEFFICIENT,
                        'smi': SUPERVISED_MUTUAL_INFORMATION}
 
 
-def _texture(ndarray im, ndarray H, size): 
+def _texture(ndarray im, ndarray H, Size): 
 
-    cdef flatiter iter = im.flat 
+    cdef broadcast multi
     cdef double* res
     cdef double* h
     cdef double n
     cdef unsigned int clamp
-
-    imtext = np.zeros(im.shape, dtype='double')
-    halfsize = np.asarray(size, dtype='uint')/2
+    cdef unsigned int size[3]
 
     # Views
     clamp = <unsigned int>H.dimensions[0]
     h = <double*>H.data
+    
+    # Copy size parameters
+    size[0] = <unsigned int>Size[0]
+    size[1] = <unsigned int>Size[1]
+    size[2] = <unsigned int>Size[2]
 
-    while(iter.index < iter.size):
-        coords = np.asarray(iter.coords, dtype='uint')
-        left = np.maximum(0, coords - halfsize)
-        right = coords + size - 1
-        block = im[left[0]:right[0]:1,
-                   left[1]:right[1]:1,
-                   left[2]:right[2]:1]
-        if block.size > 0: 
-            _histogram(H, block.flat)
-            res = <double*>iter.dataptr
-            res[0] = entropy(h, clamp, &n)
-        else: 
-            res[0] = 0.0
-        PyArray_ITER_NEXT(iter)
+    # Allocate output 
+    imtext = np.zeros(im.shape, dtype='double')
 
+    # Loop over input and output images
+    multi = PyArray_MultiIterNew(2, <void*>imtext, <void*>im)
+    while(multi.index < multi.size):
+        res = <double*>PyArray_MultiIter_DATA(multi, 0)
+        local_histogram(h, clamp, <flatiter>multi.iters[1], size)
+        res[0] = entropy(h, clamp, &n)        
+        PyArray_MultiIter_NEXT(multi)
+   
     return imtext
 
 

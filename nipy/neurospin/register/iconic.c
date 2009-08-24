@@ -63,12 +63,12 @@ void iconic_import_array(void) {
 
 /* 
    
-SINGLE HISTOGRAM COMPUTATION. 
+SINGLE IMAGE HISTOGRAM COMPUTATION. 
 
 This is not relevant to image registration but is useful for texture
 analysis.
   
-iterI : assumed to iterate over a signed short encoded, possibly
+iter : assumed to iterate over a signed short encoded, possibly
 non-contiguous array.
 
 H : assumed C-contiguous. 
@@ -78,23 +78,23 @@ Negative intensities are ignored.
 */
 
 void histogram(double* H, 
-	       unsigned int clampI, 
-	       PyArrayIterObject* iterI)
+	       unsigned int clamp, 
+	       PyArrayIterObject* iter)
 {
   signed short *bufI;
   signed short i;
 
   /* Reset the source image iterator */
-  PyArray_ITER_RESET(iterI);
+  PyArray_ITER_RESET(iter);
 
   /* Re-initialize joint histogram */ 
-  memset((void*)H, 0, clampI*sizeof(double));
+  memset((void*)H, 0, clamp*sizeof(double));
 
   /* Looop over source voxels */
-  while(iterI->index < iterI->size) {
+  while(iter->index < iter->size) {
   
     /* Source voxel intensity */
-    bufI = (signed short*)PyArray_ITER_DATA(iterI); 
+    bufI = (signed short*)PyArray_ITER_DATA(iter); 
     i = bufI[0];
 
     /* Update the histogram only if the current voxel is below the
@@ -103,13 +103,68 @@ void histogram(double* H,
       H[i]++; 
     
     /* Update source index */ 
-    PyArray_ITER_NEXT(iterI); 
+    PyArray_ITER_NEXT(iter); 
     
   } /* End of loop over voxels */ 
   
   return; 
 }
 
+/*
+
+  size should be odd numbers 
+
+ */ 
+
+void local_histogram(double* H, 
+		     unsigned int clamp, 
+		     const PyArrayIterObject* iter,
+		     const unsigned int* size)
+{
+  PyArrayObject *im = iter->ao, *block; 
+  PyArrayIterObject* block_iter; 
+  unsigned int i, left, right, center, halfsize, dim, offset=0; 
+  npy_intp block_dims[3];
+
+  /* Compute block corners */ 
+  for (i=0; i<3; i++) {
+    center = iter->coordinates[i]; 
+    halfsize = size[i]/2; 
+    dim = PyArray_DIM(im, i);
+  
+    /* Left handside corner */ 
+    left = center - halfsize; 
+    if (left<0) 
+      left = 0; 
+
+    /* Right handside corner (plus one)*/ 
+    right = center+halfsize+1; 
+    if (right>dim) 
+      right = dim; 
+    
+    /* Block properties */ 
+    offset += left*PyArray_STRIDE(im, i); 
+    block_dims[i] = right-left;
+  }
+
+  /* Create the block as a vew and the block iterator */ 
+  block = (PyArrayObject*)PyArray_New(&PyArray_Type, 3, block_dims, 
+				      PyArray_TYPE(im), PyArray_STRIDES(im), 
+				      (void*)(PyArray_DATA(im)+offset), 
+				      PyArray_ITEMSIZE(im),
+				      NPY_BEHAVED, NULL);
+  block_iter = PyArray_IterNew(block); 
+
+  /* Compute block histogram */ 
+  histogram(H, clamp, block_iter); 
+
+  /* Free memory */ 
+  Py_XDECREF(block_iter); 
+  Py_XDECREF(block); 
+
+  return; 
+}		     
+		     
 
 
 
@@ -830,7 +885,7 @@ void cubic_spline_resample(PyArrayObject* im_resampled,
   unsigned dimY = PyArray_DIM(im, 1);
   unsigned dimZ = PyArray_DIM(im, 2);
   unsigned ddimX=dimX-1, ddimY=dimY-1, ddimZ=dimZ-1; 
-  npy_intp dims[3] =  {dimX, dimY, dimZ}; 
+  npy_intp dims[3] = {dimX, dimY, dimZ}; 
   double Tx, Ty, Tz;
 
   /* Compute the spline coefficient image */
