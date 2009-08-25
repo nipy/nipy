@@ -29,7 +29,8 @@ extern "C" {
 			PyArrayIterObject* iter); 
   extern void local_histogram(double* H, 
 			      unsigned int clamp, 
-			      const PyArrayIterObject* iter, 
+			      const PyArrayObject* im, 
+			      const unsigned int* coords, 
 			      const unsigned int* size); 
 
 

@@ -24,5 +24,5 @@ class TextureAnalyzer:
         return _texture(self.data_clamped, self.hist, self.size)
 
     def set_size(self, size=[3,3,3]): 
-        self.size = np.asarray(size, dtype='uint')
+        self.size = size
         

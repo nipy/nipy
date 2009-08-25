@@ -20,7 +20,7 @@ cdef extern from "iconic.h":
     void iconic_import_array()
     void histogram(double* H, unsigned int clamp, flatiter iter)
     void local_histogram(double* H, unsigned int clamp, 
-                         flatiter iter, unsigned int* size)
+                         ndarray im, unsigned int* coords, unsigned int* size)
     double entropy(double* h, unsigned int size, double* n)
     void joint_histogram(double* H, unsigned int clampI, unsigned int clampJ,  
                          flatiter iterI, ndarray imJ_padded, 
@@ -91,7 +91,9 @@ def _texture(ndarray im, ndarray H, Size):
     cdef double* h
     cdef double n
     cdef unsigned int clamp
+    cdef unsigned int coords[3]
     cdef unsigned int size[3]
+    cdef flatiter im_iter
 
     # Views
     clamp = <unsigned int>H.dimensions[0]
@@ -109,8 +111,12 @@ def _texture(ndarray im, ndarray H, Size):
     multi = PyArray_MultiIterNew(2, <void*>imtext, <void*>im)
     while(multi.index < multi.size):
         res = <double*>PyArray_MultiIter_DATA(multi, 0)
-        local_histogram(h, clamp, <flatiter>multi.iters[1], size)
-        res[0] = entropy(h, clamp, &n)        
+        im_iter = <flatiter>multi.iters[1]
+        coords[0] = <unsigned int>im_iter.coords[0]
+        coords[1] = <unsigned int>im_iter.coords[1]
+        coords[2] = <unsigned int>im_iter.coords[2]
+        local_histogram(h, clamp, im, coords, size)
+        res[0] = entropy(h, clamp, &n)
         PyArray_MultiIter_NEXT(multi)
    
     return imtext

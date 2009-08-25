@@ -81,7 +81,7 @@ void histogram(double* H,
 	       unsigned int clamp, 
 	       PyArrayIterObject* iter)
 {
-  signed short *bufI;
+  signed short *buf;
   signed short i;
 
   /* Reset the source image iterator */
@@ -90,12 +90,19 @@ void histogram(double* H,
   /* Re-initialize joint histogram */ 
   memset((void*)H, 0, clamp*sizeof(double));
 
+  /*
+    fprintf(stderr, "Block strides: %d %d %d\n", 
+    PyArray_STRIDE(iter->ao, 0), 
+    PyArray_STRIDE(iter->ao, 1), 
+    PyArray_STRIDE(iter->ao, 2)); 
+  */
+
   /* Looop over source voxels */
   while(iter->index < iter->size) {
   
     /* Source voxel intensity */
-    bufI = (signed short*)PyArray_ITER_DATA(iter); 
-    i = bufI[0];
+    buf = (signed short*)PyArray_ITER_DATA(iter); 
+    i = buf[0];
 
     /* Update the histogram only if the current voxel is below the
        intensity threshold */
@@ -107,6 +114,7 @@ void histogram(double* H,
     
   } /* End of loop over voxels */ 
   
+
   return; 
 }
 
@@ -118,33 +126,36 @@ void histogram(double* H,
 
 void local_histogram(double* H, 
 		     unsigned int clamp, 
-		     const PyArrayIterObject* iter,
+		     const PyArrayObject* im, 
+		     const unsigned int* coords, 
 		     const unsigned int* size)
 {
-  PyArrayObject *im = iter->ao, *block; 
+  PyArrayObject *block; 
   PyArrayIterObject* block_iter; 
   unsigned int i, left, right, center, halfsize, dim, offset=0; 
   npy_intp block_dims[3];
 
   /* Compute block corners */ 
   for (i=0; i<3; i++) {
-    center = iter->coordinates[i]; 
+    center = coords[i];
     halfsize = size[i]/2; 
     dim = PyArray_DIM(im, i);
   
     /* Left handside corner */ 
-    left = center - halfsize; 
-    if (left<0) 
+    if (center<halfsize)
       left = 0; 
+    else
+      left = center-halfsize; 
 
     /* Right handside corner (plus one)*/ 
     right = center+halfsize+1; 
     if (right>dim) 
       right = dim; 
-    
+
     /* Block properties */ 
     offset += left*PyArray_STRIDE(im, i); 
     block_dims[i] = right-left;
+
   }
 
   /* Create the block as a vew and the block iterator */ 
