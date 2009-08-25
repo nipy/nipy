@@ -17,8 +17,8 @@ G.knn(X,5)
 t = ward(G,X,verbose)
 
 print t.check_compatible_height()
-t.plot()
-t.plot_height()
+ax = t.plot()
+#t.plot_height()
 
 u = t.partition(1.0)
 
@@ -58,7 +58,9 @@ while nv>nv0:
             valid[t.parents[v]]=1
     nv = np.sum(valid)
     
-t.fancy_plot_(valid)
+ax = t.fancy_plot_(valid)
+ax.axis('off')
+
 mp.show()
 
 if verbose:
