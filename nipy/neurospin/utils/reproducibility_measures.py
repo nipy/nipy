@@ -176,7 +176,7 @@ def ttest(x):
     """
     returns the t-test for each row of the data x
     """
-    import fff2.group.onesample as fos
+    import nipy.neurospin.group.onesample as fos
     t = fos.stat(x.T,id='student',axis=0)
     return np.squeeze(t)
     #t = x.mean(1)/x.std(1)*np.sqrt(x.shape[1]-1)
@@ -216,7 +216,7 @@ def mfx_ttest(x,vx):
     -------
     t array of shape(nrows): mixed effect statistics array
     """
-    import fff2.group.onesample as fos
+    import nipy.neurospin.group.onesample as fos
     t = fos.stat_mfx(x.T,vx.T,id='student_mfx',axis=0)
     return np.squeeze(t)
 
@@ -246,7 +246,7 @@ def statistics_from_position(target,data,sigma=1.0):
                 1 is good
                 0 is bad
     """
-    from fff2.eda.dimension_reduction import Euclidian_distance as ed
+    from nipy.neurospin.eda.dimension_reduction import Euclidian_distance as ed
     if data==None:
         if target==None:
             return 0.# or 1.0, can be debated
@@ -496,7 +496,7 @@ def coord_bsa(xyz, coord, betas, header, theta=3., dmax=5., \
                ths=0, thq=0.5, smin=0, afname='/tmp/af.pic'):
     """
     main function for  performing bsa on a dataset
-    where bsa =  fff2.spatial_models.bayesian_structural_analysis
+    where bsa =  nipy.neurospin.spatial_models.bayesian_structural_analysis
 
     Parameters
     ----------
@@ -522,8 +522,8 @@ def coord_bsa(xyz, coord, betas, header, theta=3., dmax=5., \
     
     Fixme : somewhat unclean
     """
-    import fff2.spatial_models.bayesian_structural_analysis as bsa
-    import fff2.graph.field as ff
+    import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
+    import nipy.neurospin.graph.field as ff
     import  pickle
     
     nbvox = np.shape(xyz)[0]

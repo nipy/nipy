@@ -164,6 +164,7 @@ class WeightedForest(fo.Forest):
         cM = 1.05*self.height.max()-0.05*self.height.min()
         cm = 1.05*self.height.min()-0.05*self.height.max()
         mp.axis([-1,idx.max()+1,cm,cM])
+        mp.axis('off')
         #mp.show()
         return rank
 
@@ -311,6 +312,10 @@ class WeightedForest(fo.Forest):
     def fancy_plot_(self,valid):
         """
         Idem plot, but the valid edges are enahanced
+        
+        Returns
+        -------
+        ax, the axes handle of the plot
         """
         if self.check_compatible_height()==False:
             raise ValueError, 'cannot plot myself in my current state'
@@ -336,7 +341,7 @@ class WeightedForest(fo.Forest):
         # 3. plot
         import matplotlib.pylab as mp
         mp.figure()
-
+        ax = mp.axes()
         for i in range(self.V):
             h1 = self.height[i]
             h2 = self.height[self.parents[i]]
@@ -362,7 +367,7 @@ class WeightedForest(fo.Forest):
         cm = 1.05*self.height.min()-0.05*self.height.max()
         mp.axis([-1,idx.max()+1,cm,cM])
         #mp.show()
-        return rank
+        return ax
     
     def fancy_plot(self,validleaves):
         """
