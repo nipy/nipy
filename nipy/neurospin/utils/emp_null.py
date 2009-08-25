@@ -384,7 +384,7 @@ class ENN(object):
  
 def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
                           verbose=0, fixed_scale=False, mpaxes=None, bias=0, 
-                          theta=0):
+                          theta=0, return_estimator=False):
     """
      Fit the data with a 3-classes Gaussian Mixture Model,
     i.e. computing some probability that the voxels of a certain map
@@ -411,6 +411,9 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
     theta = 0 the threshold used to correct the posterior p-values
           when bias=1; normally, it is such that test>theta
           note that if theta = -np.infty, the method has a standard behaviour
+    return_estimator: boolean, optional
+            If return_estimator is true, the estimator object is
+            returned.
     
     Results
     -------
@@ -418,6 +421,8 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
         the posterior probability of each test item belonging to each component
         in the GMM (sum to 1 across the 3 classes)
         if np.size(test)==0, i.e. nbitem==0, None is returned
+    estimator : nipy.neurospin.clustering.GMM object
+        The estimator object, returned only if return_estimator is true.
 
     Note
     ----
@@ -480,38 +485,63 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
         BayesianGMM.show_components(x,gd,lj,mpaxes)
 
     bfp = (bfp.T/bfp.sum(1)).T
-    return bfp
+    if not return_estimator:
+        return bfp
+    else:
+        return bfp, BayesianGMM
 
-def Gamma_Gaussian_fit(x,test=None,verbose=0,mpaxes=None):
+
+def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
+                       bias=1, gaussian_mix=0, return_estimator=False):
     """
     Computing some prior probabilities that the voxels of a certain map
     are in class disactivated, null or active uning a gamma-Gaussian mixture
     
-    Parameters:
+    Parameters
     ------------
-    - x array os shape (nvox): the map to be analysed
-    - test=None array of shape(nbitems):
-    the test values for which the p-value needs to be computed
-    by default, test = x
-    - verbose=0 : verbosity mode
-    - mpaxes=None: axes handle used to plot the figure in verbose mode
-    if None, new axes are created
+    x: array of shape (nvox,)
+        the map to be analysed
+    test: array of shape (nbitems,), optional
+        the test values for which the p-value needs to be computed
+        by default, test = x
+    verbose: 0, 1 or 2, optional
+        verbosity mode, 0 is quiet, and 2 calls matplotlib to display
+        graphs.
+    mpaxes: matplotlib axes, option.
+        axes handle used to plot the figure in verbose mode
+        if None, new axes are created
+    bias: float, optional
+            lower bound on the gaussian variance (to avoid shrinkage)
+    gaussian_mix: float, optional
+            if nonzero, lower bound on the gaussian mixing weight 
+            (to avoid shrinkage)
+    return_estimator: boolean, optional
+            If return_estimator is true, the estimator object is
+            returned.
     
-    Results:
+    Results
     ----------
-    bfp : array of shape (nbitems,3):
-    the probability of each component in the MM for each test value
+    bfp: array of shape (nbitems,3)
+            The probability of each component in the mixture model for each 
+            test value
+    estimator: nipy.neurospin.clustering.ggmixture.GGGM object
+        The estimator object, returned only if return_estimator is true.
     """
     from nipy.neurospin.clustering import ggmixture
     Ggg = ggmixture.GGGM()
     Ggg.init_fdr(x)
-    Ggg.estimate(x,100,1.e-8,1.0,0)
+    Ggg.estimate(x, niter=100, delta=1.e-8, bias=bias, verbose=0,
+                    gaussian_mix=gaussian_mix)
     if verbose>1:
         # hyper-verbose mode
-        Ggg.show(x,mpaxes=mpaxes)
+        Ggg.show(x, mpaxes=mpaxes)
         Ggg.parameters()
+    if test is None:
+        test = x
 
-    test = np.reshape(test,np.size(test))
+    test = np.reshape(test, np.size(test))
    
     bfp = np.array(Ggg.component_likelihood(test)).T
+    if return_estimator:
+        return bfp, Ggg
     return bfp

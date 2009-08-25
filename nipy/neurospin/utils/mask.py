@@ -44,20 +44,8 @@ def _largest_cc(mask):
     return mask_cc
 
 
-def compute_mask_intra(input_filename, output_filename=None, return_mean=False, 
-                            copy_filename=None, m=0.2, M=0.9, cc=1):
-    """
-    See compute_mask_files.
-    """
-    return compute_mask_files(input_filename=input_filename, 
-                              output_filename=output_filename, 
-                              return_mean=return_mean,
-                              copy_filename=copy_filename, m=m, 
-                              M=M, cc=cc)
-
-
 def compute_mask_files(input_filename, output_filename=None, return_mean=False, 
-                            copy_filename=None, m=0.2, M=0.9, cc=1):
+                       m=0.2, M=0.9, cc=1):
     """
     Compute a mask file from fMRI nifti file(s)
 
@@ -77,9 +65,6 @@ def compute_mask_files(input_filename, output_filename=None, return_mean=False,
     return_mean : boolean, optional
         if True, and output_filename is None, return the mean image also, as 
         a 3D array (2nd return argument).
-    copy_filename : string, optional
-        optionally, a copy of the original data saved as a single-file 4D 
-        nifti volume.
     m : float, optional
         lower fraction of the histogram to be discarded.
     M: float, optional
@@ -97,43 +82,40 @@ def compute_mask_files(input_filename, output_filename=None, return_mean=False,
 
     """
     if hasattr(input_filename, '__iter__'):
-        imglist = [NiftiImage(x) for x in input_filename]
-        volume = np.array([x.data.squeeze() for x in imglist])
-        #volume = volume.squeeze()
-    else: # one single filename
-        imglist = [NiftiImage(input_filename)]
-        volume = imglist[0].data
+        # We have several images, we do mean on the fly, 
+        # to avoid loading all the data in the memory
+        for index, filename in enumerate(input_filename):
+            # XXX: Should we try to use memapping, for speed?
+            nim = NiftiImage(filename)
+            if index == 0:
+                first_volume = nim.data.squeeze()
+                mean_volume = first_volume.copy()
+                header = nim.header
+            else:
+                mean_volume += nim.data.squeeze()
+        mean_volume /= float(len(input_filename))
+    else: 
+        # one single filename
+        nim = NiftiImage(input_filename)
+        header = nim.header
+        first_volume = nim.data[0]
+        mean_volume = nim.data.mean(axis=0)
+    del nim
 
-    volumeMean = volume.mean(0)
-    firstVolume = volume[0]
-    if copy_filename:
-        # optionnaly write the volume as a 4D image
-        NiftiImage(volume, imglist[0].header).save(copy_filename)
-    del volume
-    
-    dat = compute_mask_intra_array(volumeMean, firstVolume, m, M, cc)
+    dat = compute_mask_intra_array(mean_volume, first_volume, m, M, cc)
     
     # header is auto-reupdated (number of dim, calmax.)
-    outputImage = NiftiImage(dat.astype(np.uint8), imglist[0].header) 
+    output_image = NiftiImage(dat.astype(np.uint8), header) 
     # cosmetic updates
-    outputImage.updateHeader({'intent_code': NIFTI_INTENT_LABEL, 
+    output_image.updateHeader({'intent_code': NIFTI_INTENT_LABEL, 
                               'intent_name': 'Intra Mask'})
-    #outputImage.setPixDims(outputImage.voxdim + (0,))
+    #output_image.setPixDims(output_image.voxdim + (0,))
     if output_filename is not None:
-        outputImage.save(output_filename)
+        output_image.save(output_filename)
     if not return_mean:
-        return outputImage
+        return output_image
     else:
-        return outputImage, volumeMean
-
-
-def compute_mask_intra_array(volume_mean, reference_volume=None, m=0.2, M=0.9, 
-                                                cc=True):
-    """
-    Depreciated, see compute_mask.
-    """
-    return compute_mask(volume_mean, 
-                        reference_volume=reference_volume, m=m, M=M, cc=cc)
+        return output_image, mean_volume
 
 
 def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9, 
@@ -223,22 +205,15 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     """
     mask = None
     for session in session_files:
-        # First compute the mean of the session
-        session_mean = NiftiImage(session[0]).asarray().T.astype(np.float32)
-        first_image = session_mean.copy()
-        for filename in session[1:]:
-            session_mean += NiftiImage(filename).asarray().T.astype(np.float32)
-        session_mean /= float(len(session))
-
-        this_mask = compute_mask_intra_array(session_mean, first_image, 
-                                                m=m, M=M,
-                                                cc=cc).astype(np.int8)
+        this_mask = compute_mask_files(session,
+                                       m=m, M=M,
+                                       cc=cc).astype(np.int8)
         if mask is None:
             mask = this_mask
         else:
             mask += this_mask
         # Free memory early
-        del this_mask, first_image
+        del this_mask
         
     # Take the "half-intersection", i.e. all the voxels that fall within
     # 50% of the individual masks.
@@ -260,15 +235,11 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
 # Legacy function calls.
 ################################################################################
 
-def computeMaskIntra(inputFilename, outputFilename, copyFilename=None, m=0.2, 
-                        M=0.9,cc=1):
+def computeMaskIntra(inputFilename, outputFilename, m=0.2, M=0.9, cc=1):
     """ Depreciated, see compute_mask_intra.
     """
-    warnings.warn('Depreciated function name, please use compute_mask_intra',
-                        stacklevel=2)
     print "here we are"
     return compute_mask_intra(inputFilename, outputFilename, 
-                                    copy_filename=copyFilename,
                                     m=m, M=M, cc=cc)
 
 
@@ -280,5 +251,30 @@ def computeMaskIntraArray(volumeMean, firstVolume, m=0.2, M=0.9,cc=1):
             stacklevel=2)
     return compute_mask_intra_array(volumeMean, firstVolume, 
                                     m=m, M=M, cc=cc)
+
+
+def compute_mask_intra(input_filename, output_filename=None, return_mean=False, 
+                            m=0.2, M=0.9, cc=1):
+    """
+    See compute_mask_files.
+    """
+    warnings.warn('compute_mask_intra is depreciated, please use' 
+                  ' compute_mask_files',
+                  stacklevel=2)
+    return compute_mask_files(input_filename=input_filename, 
+                              output_filename=output_filename, 
+                              return_mean=return_mean,
+                              m=m, M=M, cc=cc)
+
+
+def compute_mask_intra_array(volume_mean, reference_volume=None, m=0.2, M=0.9, 
+                                                cc=True):
+    """
+    Depreciated, see compute_mask.
+    """
+    warnings.warn('Depreciated function name, please use compute_mask',
+                        stacklevel=2)
+    return compute_mask(volume_mean, 
+                        reference_volume=reference_volume, m=m, M=M, cc=cc)
 
 

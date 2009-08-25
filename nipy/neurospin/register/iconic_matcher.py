@@ -285,7 +285,7 @@ class IconicMatcher:
         elif method=='powell':
             print ('Optimizing using Powell method...') 
             tc = sp.optimize.fmin_powell(loss, tc0, callback=callback)
-        elif method=='conjugate gradient':
+        elif method=='conjugate_gradient':
             print ('Optimizing using conjugate gradient descent...')
             tc = sp.optimize.fmin_cg(loss, tc0, callback=callback)
         else:

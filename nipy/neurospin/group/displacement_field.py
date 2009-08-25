@@ -118,7 +118,9 @@ class displacement_field:
         sigma = self.sigma.max()
         #r = int(round(2 * sigma))
         d = int(round(6 * sigma))
-        block_dim = (self.XYZ.max(axis=1)+1).clip(1,d)
+        block_dim = (\
+            self.XYZ.max(axis=1)+1 - \
+            self.XYZ.min(axis=1)).clip(1,d)
         #kernel = np.zeros(d * np.ones(3), float)
         kernel = np.zeros(block_dim, float)
         kernel[block_dim[0]/2-1:block_dim[0]/2+1,
@@ -132,9 +134,11 @@ class displacement_field:
         self.weights = []
         mask_vol = np.zeros(XYZ.max(axis=1) + 2, int) - 1
         mask_vol[list(XYZ[:, self.mask])] = self.mask
-        for i in xrange(0, int(XYZ[0].max().clip(1,np.inf)), self.step):
-            for j in xrange(0, int(XYZ[1].max().clip(1,np.inf)), self.step):
-                for k in xrange(0, int(XYZ[2].max().clip(1,np.inf)), self.step):
+        Xm, Ym, Zm = XYZ.min(axis=1).astype(int)
+        XM, YM, ZM = XYZ.max(axis=1).clip(1,np.inf).astype(int)
+        for i in xrange(Xm, XM, self.step):
+            for j in xrange(Ym, YM, self.step):
+                for k in xrange(Zm, ZM, self.step):
                     block_vol = mask_vol[i:i + d, j:j + d, k:k + d]
                     XYZ_block = np.array( np.where( block_vol > -1 ) )
                     if XYZ_block.size > 0 \
