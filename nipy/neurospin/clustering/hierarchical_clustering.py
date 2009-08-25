@@ -890,8 +890,8 @@ def ward_quick(G,feature,verbose = 0):
     CAVEAT : only approximate
     """
     # basic check
-    if np.size(feature)==feature.shape[0]:
-        feature = np.reshape(feature, (np.size(feature),1))
+    if feature.ndim==1:
+        feature = np.reshape(feature, (-1, 1))
 
     if feature.shape[0]!=G.V:
         raise ValueError, "Incompatible dimension for the\
@@ -1030,8 +1030,8 @@ def ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     only approximate
     """
     # basic check
-    if np.size(feature)==feature.shape[0]:
-        feature = np.reshape(feature, (np.size(feature),1))
+    if feature.ndim==1:
+        feature = np.reshape(feature, (-1, 1))
 
     if feature.shape[0]!=G.V:
         raise ValueError, "Incompatible dimension for the feature matrix\
@@ -1089,8 +1089,8 @@ def ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     is greter than qmax, u contains nbcc values, not qmax !
     """
     # basic check
-    if np.size(feature)==feature.shape[0]:
-        feature = np.reshape(feature, np.size(feature),1)
+    if feature.ndim==1:
+        feature = np.reshape(feature, (-1, 1))
 
     if feature.shape[0]!=G.V:
         raise ValueError, "Incompatible dimension for the \
@@ -1206,8 +1206,8 @@ def ward(G, feature, verbose=0):
     This case is handled cleanly now
     """
     # basic check
-    if np.size(feature)==feature.shape[0]:
-        feature = np.reshape(feature, np.size(feature),1)
+    if feature.ndim==1:
+        feature = np.reshape(feature, (-1, 1))
 
     if feature.shape[0]!=G.V:
         raise ValueError, "Incompatible dimension for\

@@ -194,7 +194,7 @@ class Realign4d:
             fmin = sp.optimize.fmin
         elif optimizer=='powell':
             fmin = sp.optimize.fmin_powell
-        elif optimizer=='conjugate gradient':
+        elif optimizer=='conjugate_gradient':
             fmin = sp.optimize.fmin_cg
         else:
             raise ValueError('Unrecognized optimizer')

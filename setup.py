@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
-
+from distutils import log
+from distutils.cmd import Command
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
@@ -47,6 +48,41 @@ except ImportError:
     print "Sphinx is not installed, docs cannot be built"
     cmdclass = {}
 
+
+################################################################################
+# commands for installing the data
+from distutils.command.install_data import install_data
+from numpy.distutils.command.build_ext import build_ext
+
+def data_install_msgs():
+    from nipy.utils import make_datasource, DataError
+    for name in ('templates', 'data'):
+        try:
+            make_datasource('nipy', name)
+        except DataError, exception:
+            log.warn('%s\n%s' % ('_'*80, exception))
+        
+
+class MyInstallData(install_data):
+    """ Subclass the install_data to generate data install warnings if necessary
+    """
+    def run(self):
+        install_data.run(self)
+        data_install_msgs()
+
+
+class MyBuildExt(build_ext):
+    """ Subclass the build_ext to generate data install warnings if
+        necessary: warn at build == warn early
+        This is also important to get a warning when run a 'develop'.
+    """
+    def run(self):
+        build_ext.run(self)
+        data_install_msgs()
+
+
+cmdclass['install_data'] = MyInstallData
+cmdclass['build_ext'] = MyBuildExt
 
 ################################################################################
 
