@@ -26,12 +26,12 @@ extern "C" {
   /* Texture analysis */ 
   extern void histogram(double* H, 
 			unsigned int clamp, 
-			PyArrayIterObject* iter); 
+			PyArrayIterObject* iter);
+
   extern void local_histogram(double* H, 
 			      unsigned int clamp, 
-			      const PyArrayObject* im, 
-			      const unsigned int* coords, 
-			      const unsigned int* size); 
+			      PyArrayIterObject* iter, 
+			      const unsigned int* size);
 
 
   /* 

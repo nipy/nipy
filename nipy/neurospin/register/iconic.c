@@ -14,6 +14,16 @@
 #define ROUND(a)(FLOOR(a+0.5))
 
 
+/* 
+   The following forces numpy to consider a PyArrayIterObject
+   non-contiguous. Otherwise, coordinates won't be updated, apparently
+   for computation time reasons.
+*/
+#define UPDATE_ITERATOR_COORDS(iter)		\
+  iter->contiguous = 0;
+
+
+
 static double _marginalize(double* h, 
 			   const double* H, 
 			   unsigned int clampI, 
@@ -90,14 +100,7 @@ void histogram(double* H,
   /* Re-initialize joint histogram */ 
   memset((void*)H, 0, clamp*sizeof(double));
 
-  /*
-    fprintf(stderr, "Block strides: %d %d %d\n", 
-    PyArray_STRIDE(iter->ao, 0), 
-    PyArray_STRIDE(iter->ao, 1), 
-    PyArray_STRIDE(iter->ao, 2)); 
-  */
-
-  /* Looop over source voxels */
+  /* Loop over source voxels */
   while(iter->index < iter->size) {
   
     /* Source voxel intensity */
@@ -126,18 +129,19 @@ void histogram(double* H,
 
 void local_histogram(double* H, 
 		     unsigned int clamp, 
-		     const PyArrayObject* im, 
-		     const unsigned int* coords, 
+		     PyArrayIterObject* iter, 
 		     const unsigned int* size)
 {
-  PyArrayObject *block; 
+  PyArrayObject *block, *im = iter->ao; 
   PyArrayIterObject* block_iter; 
   unsigned int i, left, right, center, halfsize, dim, offset=0; 
   npy_intp block_dims[3];
 
+  UPDATE_ITERATOR_COORDS(iter); 
+
   /* Compute block corners */ 
   for (i=0; i<3; i++) {
-    center = coords[i];
+    center = iter->coordinates[i];
     halfsize = size[i]/2; 
     dim = PyArray_DIM(im, i);
   
@@ -903,12 +907,8 @@ void cubic_spline_resample(PyArrayObject* im_resampled,
   im_spline_coeff = (PyArrayObject*)PyArray_SimpleNew(3, dims, NPY_DOUBLE);
   cubic_spline_transform(im_spline_coeff, im);
 
-  /* 
-     The following forces numpy to consider the iterator
-     non-contiguous. Otherwise, coordinates won't be updated,
-     apparently for computation time reasons.
-  */
-  imIter->contiguous = 0;
+  /* Force iterator coordinates to be updated */
+  UPDATE_ITERATOR_COORDS(imIter); 
 
   /* Resampling loop */
   while(imIter->index < imIter->size) {
