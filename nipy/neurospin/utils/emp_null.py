@@ -519,8 +519,8 @@ def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
             If return_estimator is true, the estimator object is
             returned.
     
-    Results
-    ----------
+    Returns
+    -------
     bfp: array of shape (nbitems,3)
             The probability of each component in the mixture model for each 
             test value
@@ -541,7 +541,7 @@ def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
 
     test = np.reshape(test, np.size(test))
    
-    bfp = np.array(Ggg.component_likelihood(test)).T
+    bfp = np.array(Ggg.posterior(test)).T
     if return_estimator:
         return bfp, Ggg
     return bfp
