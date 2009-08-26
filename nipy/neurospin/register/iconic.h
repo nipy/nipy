@@ -58,7 +58,7 @@ extern "C" {
 			      int interp); 
 
 
-  extern double drange(const double* h, unsigned int size, double* n); 
+  extern double drange(const double* h, unsigned int size); 
   extern double entropy(const double* h, unsigned int size, double* n); 
   extern double correlation_coefficient(const double* H, 
 					unsigned int clampI, 

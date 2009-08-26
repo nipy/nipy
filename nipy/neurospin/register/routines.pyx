@@ -21,7 +21,7 @@ cdef extern from "iconic.h":
     void histogram(double* H, unsigned int clamp, flatiter iter)
     void local_histogram(double* H, unsigned int clamp, 
                          flatiter iter, unsigned int* size)
-    double drange(double* h, unsigned int size, double* n)
+    double drange(double* h, unsigned int size)
     double entropy(double* h, unsigned int size, double* n)
     void joint_histogram(double* H, unsigned int clampI, unsigned int clampJ,  
                          flatiter iterI, ndarray imJ_padded, 
@@ -126,7 +126,7 @@ def _texture(ndarray im, ndarray H, Size, int texture):
         local_histogram(h, clamp, im_iter, size)
         # Switch 
         if texture == DRANGE:
-            res[0] = drange(h, clamp, &n)
+            res[0] = drange(h, clamp)
         elif texture == ENTROPY: 
             res[0] = entropy(h, clamp, &n)
         PyArray_MultiIter_NEXT(multi)
