@@ -404,15 +404,16 @@ def average_link_euclidian(X,verbose=0):
 
     Parameters
     ----------
-    - X array of shape (nbitem,dim): data matrix
-    from which an Euclidian distance matrix is computed
-    - verbose=0, verbosity level
+    X array of shape (nbitem,dim): data matrix
+      from which an Euclidian distance matrix is computed
+    verbose=0, verbosity level
 
     Returns
     -------
-    -t a weightForest structure that represents the dendrogram of the data
-
-    NOTE:
+    t a weightForest structure that represents the dendrogram of the data
+    
+    Note
+    ----
     this method has not been optimized
     """
     if X.shape[0]==np.size(X):
@@ -430,18 +431,18 @@ def average_link_distance(D,verbose=0):
     """
     Average link clustering based on a pairwise distance matrix.
 
-    average_link_distance(D,verbose=0):
-
     Parameters
     ----------
-    - D (nbitem,nbitem) nonnegative array:
-    distance matrix between some items
-    - verbose=0, verbosity level
+    D array of shape (nbitem,nbitem) with nonnegative values
+      distance matrix between some data items  
+    verbose=0, verbosity level
 
     Returns
     -------
-    -t a weightForest structure that represents the dendrogram of the data
-    NOTE:
+    t a weightForest structure that represents the dendrogram of the data
+    
+    Note
+    ----
     this method has not been optimized
     """
 
@@ -484,19 +485,21 @@ def average_link_distance_segment(D,stop=-1,qmax=1,verbose=0):
 
     Parameters
     ----------
-    - D: a (n,n) distance matrix between some items
-    - stop=-1: stopping criterion, i.e. distance threshold at which
-    further merges are forbidden
-    By default, all merges are performed
-    - qmax = 1; the number of desired clusters
-    (in the limit of stop)
-    - verbose=0, verbosity level
+    D: a (n,n) distance matrix between some items
+    stop=-1: stopping criterion, i.e. distance threshold at which
+             further merges are forbidden
+              By default, all merges are performed
+    qmax = 1; the number of desired clusters
+         (in the limit of stop)
+    verbose=0, verbosity level
 
     Returns
     -------
-    -u: a labelling of the graph vertices according to the criterion
-    -cost the cost of each merge step during the clustering procedure
-    NOTE:
+    u: a labelling of the graph vertices according to the criterion
+    cost the cost of each merge step during the clustering procedure
+    
+    Note
+    ----
     this method has not been optimized
     """
 
@@ -598,11 +601,11 @@ def average_link_graph(G):
 
     Parameters
     ----------
-    - G the input graph
+    G the input graph
 
     Returns
     -------
-    - t a weightForest structure that represents the dendrogram of the data
+    t a weightForest structure that represents the dendrogram of the data
 
     CAVEAT
     ------
@@ -664,15 +667,17 @@ def average_link_graph_segment(G,stop=0,qmax=1,verbose=0):
 
     Parameters
     ----------
-    - G the input graph
-    - stop=0: the stopping criterion
-    - qmax=1: the number of desired clusters
-    (in the limit of the stopping criterion)
+    G the input graph
+    stop=0: the stopping criterion
+    qmax=1: the number of desired clusters
+            (in the limit of the stopping criterion)
 
     Returns
     -------
-    -u: a labelling of the graph vertices according to the criterion
-    -cost the cost of each merge step during the clustering procedure
+    u: array of shape (G.V) 
+       a labelling of the graph vertices according to the criterion
+    cost: array of shape (G.V (?)) 
+          the cost of each merge step during the clustering procedure
     """
 
     # prepare a graph with twice the number of vertices
@@ -875,19 +880,19 @@ def ward_quick(G,feature,verbose = 0):
 
     Parameters
     ----------
-    - G the input graph (a topological graph essentially)
-    - feature array of shape (G.V,dim_feature):
-    some vectorial information related to the graph vertices
+    G the input graph (a topological graph essentially)
+    feature array of shape (G.V,dim_feature):
+            some vectorial information related to the graph vertices
 
     Returns
     -------
-    - t a weightForest structure that represents the dendrogram of the data
+    t a weightForest structure that represents the dendrogram of the data
 
     NOTE
     ----
-    - Hopefully a quicker version
-    - A euclidean distance is used in the feature space
-    CAVEAT : only approximate
+    Hopefully a quicker version
+    A euclidean distance is used in the feature space
+    Caveat : only approximate
     """
     # basic check
     if feature.ndim==1:
@@ -977,16 +982,18 @@ def ward_field_segment(F,stop=-1, qmax=-1,verbose=0):
 
     Parameters
     ----------
-    - F the input field (graph+feature)
-     - stop = -1: the stopping crterion
-    if stop==-1, then no stopping criterion is used
-    - qmax=1: the maximum number of desired clusters
-    (in the limit of the stopping criterion)
+    F the input field (graph+feature)
+    stop = -1: the stopping crterion
+         if stop==-1, then no stopping criterion is used
+    qmax=1: the maximum number of desired clusters
+            (in the limit of the stopping criterion)
 
     Returns
     -------
-    -u: a labelling of the graph vertices according to the criterion
-    -cost the cost of each merge step during the clustering procedure
+    u: array of shape (F.V) 
+       labelling of the graph vertices according to the criterion
+    cost array of shape (F.V-1) 
+         the cost of each merge step during the clustering procedure
 
     CAVEAT 
     ------
@@ -1006,24 +1013,25 @@ def ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
 
     Parameters
     ----------
-    - G the input graph (a topological graph essentially)
-    - feature arrau of shape (G.V,dim_feature)
-    vectorial information related to the graph vertices
-    - stop = -1: the stopping crterion
-    if stop==-1, then no stopping criterion is used
-    - qmax=1: the maximum number of desired clusters
-    (in the limit of the stopping criterion)
+    G the input graph (a topological graph essentially)
+    feature array of shape (G.V,dim_feature)
+            vectorial information related to the graph vertices
+    stop = -1: the stopping crterion
+         if stop==-1, then no stopping criterion is used
+    qmax=1: the maximum number of desired clusters
+            (in the limit of the stopping criterion)
 
     Returns
     -------
-    -u: array of shape (G.V)
-    labelling of the graph vertices according to the criterion
-    -cost the cost of each merge step during the clustering procedure
+    u: array of shape (G.V)
+       labelling of the graph vertices according to the criterion
+    cost: array of shape (G.V-1) 
+          the cost of each merge step during the clustering procedure
 
     NOTE
     ----
-    - Hopefully a quicker version
-    - A euclidean distance is used in the feature space
+    Hopefully a quicker version
+    A euclidean distance is used in the feature space
     
     CAVEAT
     ------ 
@@ -1069,24 +1077,26 @@ def ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
 
     Parameters
     ----------
-    - G the input graph (a topological graph essentially)
-    - feature array of shape (G.V,dim_feature)
-    some vectorial information related to the graph vertices
-    - stop = -1: the stopping crterion
-    if stop==-1, then no stopping criterion is used
-    - qmax=1: the maximum number of desired clusters
-    (in the limit of the stopping criterion)
+    G the input graph (a topological graph essentially)
+    feature array of shape (G.V,dim_feature)
+            some vectorial information related to the graph vertices
+    stop = -1: the stopping crterion
+         if stop==-1, then no stopping criterion is used
+    qmax=1: the maximum number of desired clusters
+            (in the limit of the stopping criterion)
 
-    OUTPUT:
-    ---------
-    -u: array of shape (G.V):
-    a labelling of the graph vertices according to the criterion
-    -cost the cost of each merge step during the clustering procedure
+    
+    Returns
+    -------
+    u: array of shape (G.V):
+       a labelling of the graph vertices according to the criterion
+    cost: array of shape (G.V-1) 
+          the cost of each merge step during the clustering procedure
 
     NOTE:
-    - A euclidean distance is used in the feature space
-    - caveat : when the number of cc in G (nbcc)
-    is greter than qmax, u contains nbcc values, not qmax !
+    A euclidean distance is used in the feature space
+    caveat : when the number of cc in G (nbcc)
+           is greter than qmax, u contains nbcc values, not qmax !
     """
     # basic check
     if feature.ndim==1:
@@ -1123,17 +1133,18 @@ def ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
 
 
 def ward_simple(feature, verbose=0):
-    """ Ward clustering based on a Feature matrix
+    """                  
+    Ward clustering based on a Feature matrix
 
     Parameters:
     -------------
-    - feature: array of shape (n,p)
-    feature matrix  representing n p-dimenional items to be clustered
-    - verbose=0, verbosity level
+    feature: array of shape (n,p)
+             feature matrix  representing n p-dimenional items to be clustered
+    verbose=0, verbosity level
 
     Returns
     -------
-    -t a weightForest structure that represents the dendrogram of the data
+    t a weightForest structure that represents the dendrogram of the data
     """
     n = feature.shape[0]
     q = 2*n-1 
@@ -1193,15 +1204,16 @@ def ward(G, feature, verbose=0):
 
     Parameters:
     ------------
-    - G the input graph (a topological graph essentially)
-    - feature array of shape (G.V,dim_feature)
-    vectorial information related to the graph vertices
+    G the input graph (a topological graph essentially)
+    feature array of shape (G.V,dim_feature)
+            vectorial information related to the graph vertices
 
     Returns
     --------
-    -t: a WeightedForest structure that represents the dendrogram
-
-    NOTE:
+    t: a WeightedForest structure that represents the dendrogram
+    
+    Note
+    ----
     When G has more than 1 connected component, t is no longer a tree.
     This case is handled cleanly now
     """
@@ -1280,17 +1292,18 @@ def maximum_link_euclidian(X,verbose=0):
     """
     Maximum link clustering based on data matrix.
 
-    Parameters:
-    -----------
-    - X: array of shape (nbitem,dim)
-    each row corresponds to a point to cluster
-    - verbose=0, verbosity level
+    Parameters
+    ----------
+    X: array of shape (nbitem,dim)
+       each row corresponds to a point to cluster
+    verbose=0, verbosity level
     
     Returns
     --------
-    - t a weightForest structure that represents the dendrogram of the data
+    t a weightForest structure that represents the dendrogram of the data
 
-    NOTE:
+    Note
+    ----
     this method has not been optimized
     """
     if X.shape[0]==np.size(X):
@@ -1308,15 +1321,19 @@ def maximum_link_distance(D,stop=-1,qmax=-1,verbose=0):
     """
     maximum link clustering based on a pairwise distance matrix.
 
-    Parameters:
-    ------------
-    - D: a (n,n) distance matrix between some items
-    - verbose=0, verbosity level
+    
+    Parameters
+    ----------
+    D: array of shape (n,n) 
+       distance matrix between data items
+    verbose=0, verbosity level
 
     Returns
     -------
-    -t a weightForest structure that represents the dendrogram of the data
-    NOTE:
+    t a weightForest structure that represents the dendrogram of the data
+    
+    Note
+    ----
     this method has not been optimized
     """
     n = D.shape[0]
@@ -1358,18 +1375,20 @@ def maximum_link_distance_segment(D,stop=-1,qmax=1,verbose=0):
 
     Parameters:
     ------------
-    - D: array of shape (nbitems, nbitems) distance matrix between some items
-    - qmax = 1: the number of desired clusters
-    (in the limit of stop)
-    - stop=-1: stopping criterion, i.e. distance threshold at which
-    further merges are forbidden
-    By default (stop=-1), all merges are performed
-    - verbose=0, verbosity level
+    D: array of shape (nbitems, nbitems) distance matrix between some items
+    qmax = 1: the number of desired clusters
+         (in the limit of stop)
+    stop=-1: stopping criterion, i.e. distance threshold at which
+             further merges are forbidden
+             By default (stop=-1), all merges are performed
+    verbose=0, verbosity level
 
     Returns
     -------
-    -u: a labelling of the graph vertices according to the criterion
-    -cost the cost of each merge step during the clustering procedure
+    u: array of shape (nbitems) 
+       a labelling of the graph vertices according to the criterion
+    cost: array of shape (nbitems-1) 
+          the cost of each merge step during the clustering procedure
 
     NOTE
     ------
