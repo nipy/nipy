@@ -31,14 +31,23 @@ def test_GGM2():
     b = np.absolute(G.mixt)<0.1
     assert(b)
 
+def test_GGGM0():
+    G = GGGM()
+    sx = 10000
+    x = np.array([float(st.t.rvs(5)) for i in range(sx)])
+    G.init(x)
+    G.estimate(x)
+    G.parameters()
+    assert(np.absolute(G.mean)<0.1)
+
 def test_GGGM1():
     G = GGGM()
     sx = 10000
     x = np.array([float(st.t.rvs(5)) for i in range(sx)])
     G.init_fdr(x)
     G.estimate(x)
+    G.parameters()
     assert(np.absolute(G.mean)<0.1)
-
     
 def test_GGGM2():
     G = GGGM()
