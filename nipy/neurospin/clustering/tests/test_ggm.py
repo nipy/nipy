@@ -33,12 +33,12 @@ def test_GGM2():
 
 def test_GGGM0():
     G = GGGM()
-    sx = 10000
+    sx = 1000
     x = np.array([float(st.t.rvs(5)) for i in range(sx)])
     G.init(x)
     G.estimate(x)
     G.parameters()
-    assert(np.absolute(G.mean)<0.1)
+    assert(np.absolute(G.mean)<0.3)
 
 def test_GGGM1():
     G = GGGM()
@@ -56,6 +56,15 @@ def test_GGGM2():
     G.init_fdr(x)
     G.estimate(x)
     assert(G.mixt[1]>0.9)
+
+def test_GGGM3():
+    G = GGGM()
+    sx = 1000
+    x = 100 + np.array([float(st.t.rvs(5)) for i in range(sx)])
+    G.init(x)
+    G.estimate(x)
+    G.parameters()
+    assert(np.absolute(G.mixt[0])<1.e-15)
 
 def test_Gamma_parameters1():
     import numpy.random as nr

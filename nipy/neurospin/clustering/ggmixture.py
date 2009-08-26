@@ -404,7 +404,6 @@ class GGGM(object):
         # negative gamma
         i = np.ravel(np.nonzero(x<0))
         if np.size(i)>0:
-            i = np.reshape(i,(np.size(i)))
             mn = -np.mean(x[i])
             vn = np.var(x[i])
             self.scale_n = vn/mn
