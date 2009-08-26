@@ -92,7 +92,7 @@ def compute_mask_files(input_filename, output_filename=None, return_mean=False,
             nim = NiftiImage(filename)
             if index == 0:
                 first_volume = nim.data.squeeze()
-                mean_volume = first_volume.copy()
+                mean_volume = first_volume.copy().astype(np.float32)
                 header = nim.header
             else:
                 mean_volume += nim.data.squeeze()
@@ -105,7 +105,7 @@ def compute_mask_files(input_filename, output_filename=None, return_mean=False,
         mean_volume = nim.data.mean(axis=0)
     del nim
 
-    dat = compute_mask_intra_array(mean_volume, first_volume, m, M, cc)
+    dat = compute_mask(mean_volume, first_volume, m, M, cc)
     
     # header is auto-reupdated (number of dim, calmax.)
     output_image = NiftiImage(dat.astype(np.uint8), header) 
@@ -210,7 +210,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     for session in session_files:
         this_mask = compute_mask_files(session,
                                        m=m, M=M,
-                                       cc=cc).astype(np.int8)
+                                       cc=cc).data.astype(np.int8)
         if mask is None:
             mask = this_mask
         else:
