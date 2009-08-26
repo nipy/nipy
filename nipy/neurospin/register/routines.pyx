@@ -21,6 +21,7 @@ cdef extern from "iconic.h":
     void histogram(double* H, unsigned int clamp, flatiter iter)
     void local_histogram(double* H, unsigned int clamp, 
                          flatiter iter, unsigned int* size)
+    double drange(double* h, unsigned int size, double* n)
     double entropy(double* h, unsigned int size, double* n)
     void joint_histogram(double* H, unsigned int clampI, unsigned int clampJ,  
                          flatiter iterI, ndarray imJ_padded, 
@@ -62,6 +63,16 @@ import_array()
 import numpy as np
 cimport numpy as np
 
+# Enumerate texture measures
+cdef enum texture_measure: 
+    DRANGE, 
+    ENTROPY
+
+# Corresponding Python dictionary 
+texture_measures = {'drange': DRANGE, 
+                    'entropy': ENTROPY}
+
+
 # Enumerate similarity measures
 cdef enum similarity_measure:
     CORRELATION_COEFFICIENT,
@@ -84,7 +95,7 @@ similarity_measures = {'cc': CORRELATION_COEFFICIENT,
                        'smi': SUPERVISED_MUTUAL_INFORMATION}
 
 
-def _texture(ndarray im, ndarray H, Size): 
+def _texture(ndarray im, ndarray H, Size, int texture): 
 
     cdef broadcast multi
     cdef double* res
@@ -113,7 +124,11 @@ def _texture(ndarray im, ndarray H, Size):
         res = <double*>PyArray_MultiIter_DATA(multi, 0)
         im_iter = <flatiter>multi.iters[1]
         local_histogram(h, clamp, im_iter, size)
-        res[0] = entropy(h, clamp, &n)
+        # Switch 
+        if texture == DRANGE:
+            res[0] = drange(h, clamp, &n)
+        elif texture == ENTROPY: 
+            res[0] = entropy(h, clamp, &n)
         PyArray_MultiIter_NEXT(multi)
    
     return imtext

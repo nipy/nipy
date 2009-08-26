@@ -1,4 +1,4 @@
-from routines import _texture, _histogram
+from routines import _texture, _histogram, texture_measures
 from utils import clamp
 
 ###def _texture(ndarray im, ndarray H, size): 
@@ -10,6 +10,6 @@ def texture(data, size=[3,3,3], method='entropy', mask=None, th=0, bins=256):
     data_clamped, bins = clamp(data, th=th, mask=mask, bins=bins)
     hist = np.zeros(bins)
     _histogram(hist, data_clamped.flat)
-    return _texture(data_clamped, hist, size)
+    return _texture(data_clamped, hist, size, texture_measures[method])
     
         

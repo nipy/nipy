@@ -775,6 +775,43 @@ double supervised_mutual_information(const double* H, const double* F,
 
 
 
+double drange(const double* h, unsigned int size, double* n)
+{
+  unsigned int i, left, right; 
+  double tmp, sumh = 0.0; 
+  double *buf;
+
+  /* Find the first value from the left with non-zero mass */
+  buf = (double*)h;
+  for (i=0; i<size; i++, buf++) {
+    if (*buf > 0.0) 
+      break; 
+  }
+  left = i; 
+  
+  /* Find the first value from the right with non-zero mass */
+  buf = (double*)h; 
+  buf += size-1; 
+  for (i=(size-1); i>=left; i--, buf--) {
+    if (*buf > 0.0) 
+      break; 
+  }
+  right = i; 
+
+  for (i=left; i<size; i++, buf++) {
+    tmp = *buf; 
+    sumh += tmp; 
+    if (tmp < left)
+      left = tmp; 
+    else if (tmp > right)
+      right = tmp; 
+  }
+  
+  *n = sumh; 
+
+  return (double)(right-left); 
+}
+
 /* 
    First loop: compute the histogram sum 
    Second loop: compute actual entropy 
