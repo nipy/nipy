@@ -82,6 +82,9 @@ def compute_mask_files(input_filename, output_filename=None, return_mean=False,
 
     """
     if hasattr(input_filename, '__iter__'):
+        if len(input_filename) == 0:
+            raise ValueError('input_filename should be a non-empty '
+                'list of file names')
         # We have several images, we do mean on the fly, 
         # to avoid loading all the data in the memory
         for index, filename in enumerate(input_filename):
