@@ -74,7 +74,8 @@ cdef enum texture_measure:
     VARIANCE, 
     MEDIAN, 
     L1DEV, 
-    ENTROPY
+    ENTROPY, 
+    CUSTOM
 
 # Corresponding Python dictionary 
 texture_measures = {
@@ -110,7 +111,7 @@ similarity_measures = {'cc': CORRELATION_COEFFICIENT,
                        'smi': SUPERVISED_MUTUAL_INFORMATION}
 
 
-def _texture(ndarray im, ndarray H, Size, int texture): 
+def _texture(ndarray im, ndarray H, Size, method): 
 
     cdef double *res, *h
     cdef double moments[5]
@@ -118,7 +119,7 @@ def _texture(ndarray im, ndarray H, Size, int texture):
     cdef unsigned int coords[3], size[3]
     cdef broadcast multi
     cdef flatiter im_iter
-
+    cdef int texture
 
     # Views
     clamp = <unsigned int>H.dimensions[0]
@@ -131,6 +132,12 @@ def _texture(ndarray im, ndarray H, Size, int texture):
 
     # Allocate output 
     imtext = np.zeros(im.shape, dtype='double')
+
+    # Texture method
+    if method in texture_measures: 
+        texture = texture_measures[method]
+    else: 
+        texture = CUSTOM
 
     # Loop over input and output images
     multi = PyArray_MultiIterNew(2, <void*>imtext, <void*>im)
@@ -163,6 +170,8 @@ def _texture(ndarray im, ndarray H, Size, int texture):
             res[0] = moments[2] 
         elif texture == ENTROPY: 
             res[0] = entropy(h, clamp, moments)
+        else: # CUSTOM
+            res[0] = method(H)
         # Next voxel please
         PyArray_MultiIter_NEXT(multi)
    
