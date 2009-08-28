@@ -22,24 +22,22 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     on a set of images.
     """
     ref_dim = np.shape(betas[0])
-    nbsubj = betas.shape[0]
-    xyz = np.array(np.where(betas[:1]))
-    nbvox = np.size(xyz, 1)
+    nsubj = betas.shape[0]
+    xyz = np.array(np.where(betas[:1])).T.astype(np.int)
+    nvox = np.size(xyz, 0)
     
     # create the field strcture that encodes image topology
-    Fbeta = ff.Field(nbvox)
-    Fbeta.from_3d_grid(xyz.astype(np.int).T, 18)
+    Fbeta = ff.Field(nvox)
+    Fbeta.from_3d_grid(xyz, 18)
 
     # Get  coordinates in mm
-    xyz = np.transpose(xyz)
     coord = xyz.astype(np.float)
 
     # get the functional information
-    lbeta = np.array([np.ravel(betas[k]) for k in range(nbsubj)]).T
+    lbeta = np.array([np.ravel(betas[k]) for k in range(nsubj)]).T
 
     # the voxel volume is 1.0
-    #g0 = 1.0/(1.0*nbvox)
-    g0 = 1.0/(1.0*nbvox)*1./np.sqrt(2*np.pi*dmax**2)
+    g0 = 1.0/(1.0*nvox)*1./np.sqrt(2*np.pi*dmax**2)
     
     bdensity = 1
     if method=='ipmi':
@@ -89,8 +87,8 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 
     
     mp.figure()
-    if nbsubj==10:
-        for s in range(nbsubj):
+    if nsubj==10:
+        for s in range(nsubj):
             mp.subplot(2, 5, s+1)
             lw = -np.ones(ref_dim)
             nls = BF[s].get_roi_feature('label')
@@ -103,8 +101,8 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
             mp.axis('off')
 
     mp.figure()
-    if nbsubj==10:
-        for s in range(nbsubj):
+    if nsubj==10:
+        for s in range(nsubj):
             mp.subplot(2,5,s+1)
             mp.imshow(betas[s],interpolation='nearest',vmin=betas.min(),
                       vmax=betas.max())
@@ -113,12 +111,12 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     return AF, BF
 
 
-################################################################################
-# Main script
-################################################################################
+# ------------------------------------------------------
+#------- Main script -----------------------------------
+#-------------------------------------------------------
 
 # generate the data
-nbsubj=10
+nsubj=10
 
 dimx=60
 dimy=60
@@ -127,14 +125,14 @@ pos = 2*np.array([[ 6,  7],
                   [15, 10]])
 ampli = np.array([5, 7, 6])
 sjitter = 1.0
-dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
+dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                      pos=pos, ampli=ampli, width=5.0)
-betas = np.reshape(dataset, (nbsubj, dimx, dimy))
+betas = np.reshape(dataset, (nsubj, dimx, dimy))
 
 # set various parameters
 theta = float(st.t.isf(0.01, 100))
 dmax = 5./1.5
-ths = 1#nbsubj/2
+ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
@@ -146,5 +144,5 @@ import time
 t1 = time.time()
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method,verbose=verbose)
 t2 = time.time()
-print t2-t1
+
 mp.show()

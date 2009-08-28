@@ -71,14 +71,14 @@ def _hierarchical_asso(bfl,dmax):
                     Gt.anti_symmeterize()
 
                     ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(
-                        cs,ct, Gs,Gt,dmax)
+                        cs, ct, Gs, Gt,dmax)
                     if np.size(ea)>0:
                         gea = np.hstack((gea,ea+cnlm[s]))
                         geb = np.hstack((geb,eb+cnlm[t]))
                         ged = np.hstack((ged,ed))
 
                     ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(
-                        ct,cs, Gt,Gs,dmax)
+                        ct, cs, Gt, Gs, dmax)
                     if np.size(ea)>0:
                         gea = np.hstack((gea,ea+cnlm[t]))
                         geb = np.hstack((geb,eb+cnlm[s]))
@@ -139,8 +139,6 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
     """
     bf = _clean_size_(bf,smin)
     if bf.k<1: return bf
-    #import time
-    #t1 = time.time()
 
     for i in range(bf.k):
         l = bf.subtree(i)
@@ -158,7 +156,7 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
                 for j in range(u.max()+1):
                     if np.sum(u==j)<mccs:
                         bf.label[iv[u==j]]=i
-    #t2 = time.time()
+
     bf = _clean_size_(bf,smin)
     return bf
 
@@ -315,7 +313,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
           spatial coordinates of the nodes
     xyz array of shape (nnodes,3):
         the grid coordinates of the field
-    header=None: nifti image header the referential defining header
+    header=None:  image header the referential defining header
     thq = 0.5 (float): posterior significance threshold should be in [0,1]
     smin = 5 (int): minimal size of the regions to validate them
     theta = 3.0 (float): first level threshold
@@ -474,7 +472,7 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
           spatial coordinates of the nodes
     xyz array of shape (nnodes,3):
         the grid coordinates of the field
-    header=None: nifti image header the referential defining header
+    header=None:  image header the referential defining header
     thq = 0.5 (float): posterior significance threshold should be in [0,1]
     smin = 5 (int): minimal size of the regions to validate them
     theta = 3.0 (float): first level threshold
@@ -635,8 +633,10 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
          expected cluster std in the common space in units of coord
     xyz array of shape (nnodes,3):
         the grid coordinates of the field
-    header=None: nifti image header the referential defining header
-    thq = 0.5 (float): posterior significance threshold should be in [0,1]
+    header=None: image header the referential-defining header
+    thq = 0.5 (float):
+        posterior significance threshold 
+        should be in the [0,1] interval
     smin = 5 (int): minimal size of the regions to validate them
     theta = 3.0 (float): first level threshold
     g0 = 1.0 (float): constant values of the uniform density

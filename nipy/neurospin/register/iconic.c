@@ -29,12 +29,6 @@ static double _marginalize(double* h,
 			   unsigned int clampI, 
 			   unsigned int clampJ, 
 			   int axis); 
-static void _L1_moments (const double * h, 
-			 unsigned int clamp, 
-			 int stride, 
-			 double* median, 
-			 double* dev, 
-			 double* sumh);
 static inline void _apply_affine_transform(double* Tx, 
 					   double* Ty, 
 					   double* Tz, 
@@ -168,7 +162,7 @@ void local_histogram(double* H,
 				      (void*)(PyArray_DATA(im)+offset), 
 				      PyArray_ITEMSIZE(im),
 				      NPY_BEHAVED, NULL);
-  block_iter = PyArray_IterNew(block); 
+  block_iter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)block); 
 
   /* Compute block histogram */ 
   histogram(H, clamp, block_iter); 
@@ -583,32 +577,21 @@ double correlation_coefficient(const double* H, unsigned int clampI, unsigned in
 
 double correlation_ratio(const double* H, unsigned int clampI, unsigned int clampJ, double* n)
 {
-  int i, j;
-  double CR, na, mean, var, cvar, nJ, mJ, vJ, aux, aux2;
-  const double *buf;
+  int j;
+  double CR, na, mean, var, cvar, nJ;
+  double moments[5]; 
 
   /* Initialization */
   na = mean = var = cvar = 0;
 
   /* Compute conditional moments */
   for (j=0; j<clampJ; j++) {
-    nJ = mJ = vJ = 0;
-    buf = H + j;
-    for (i=0; i<clampI; i++, buf+=clampJ) {
-      aux = *buf; /* aux == H(j,i) */
-      nJ += aux;
-      aux2 = i*aux;
-      mJ += aux2;
-      vJ += i*aux2;
-    }
-    if (nJ>0) {
-      na += nJ;
-      mean += mJ;
-      var += vJ;
-      mJ /= nJ;
-      vJ = vJ/nJ - mJ*mJ;
-      cvar += nJ*vJ;
-    }
+    L2_moments_with_stride (H+j, clampI, clampJ, moments);
+    nJ = moments[0]; 
+    na += nJ;
+    mean += moments[3]; 
+    var += moments[4]; 
+    cvar += nJ*moments[2];
   }
     
   /* Compute total moments */
@@ -616,8 +599,6 @@ double correlation_ratio(const double* H, unsigned int clampI, unsigned int clam
     *n = 0;
     return 0;
   }
-
-  
   mean /= na;
   var = var/na - mean*mean;
   cvar /= na;
@@ -637,17 +618,22 @@ double correlation_ratio(const double* H, unsigned int clampI, unsigned int clam
 }
 
 
+
 double correlation_ratio_L1(const double* H, double* hI, unsigned int clampI, unsigned int clampJ, double* n)
 {
   int j;
   double na, med, dev, cdev, nJ, mJ, dJ;
-   
+  double moments[3]; 
+
   /* Initialization */
   na = cdev = 0;
 
   /* Compute conditional moments */  
   for (j=0; j<clampJ; j++) {
-    _L1_moments (H+j, clampI, clampJ, &mJ, &dJ, &nJ);
+    L1_moments_with_stride (H+j, clampI, clampJ, moments); 
+    nJ = moments[0]; 
+    mJ = moments[1]; 
+    dJ = moments[2]; 
     cdev += nJ*dJ;
     na += nJ;
   }
@@ -661,9 +647,10 @@ double correlation_ratio_L1(const double* H, double* hI, unsigned int clampI, un
 
   /* Total dispersion */
   _marginalize(hI, H, clampI, clampJ, 0); 
-  _L1_moments (hI, clampI, 1, &med, &dev, &na);
+  L1_moments_with_stride (hI, clampI, 1, moments); 
+  med = moments[1]; 
+  dev = moments[2]; 
 
-  
   /* Test on total dispersion */
   *n = na; 
   if (dev==0.0)
@@ -775,10 +762,9 @@ double supervised_mutual_information(const double* H, const double* F,
 
 
 
-double drange(const double* h, unsigned int size)
+void drange(const double* h, unsigned int size, double* res)
 {
-  unsigned int i, left, right; 
-  double tmp; 
+  unsigned int i, left;
   double *buf;
 
   /* Find the first value from the left with non-zero mass */
@@ -788,6 +774,7 @@ double drange(const double* h, unsigned int size)
       break; 
   }
   left = i; 
+  res[0] = (double)i;
   
   /* Find the first value from the right with non-zero mass */
   buf = (double*)h; 
@@ -796,9 +783,9 @@ double drange(const double* h, unsigned int size)
     if (*buf > 0.0) 
       break; 
   }
-  right = i; 
-
-  return (double)(right-left); 
+  res[1] = (double)i;
+ 
+  return; 
 }
 
 /* 
@@ -831,79 +818,116 @@ double entropy(const double* h, unsigned int size, double* n)
 }
 
 
+/* res must pre-allocated with size=5 */ 
+void L2_moments_with_stride (const double * h, unsigned int size, unsigned int stride, 
+			     double* res)
+{
+  unsigned int i;
+  double mean, var, n, aux, aux2; 
+  const double *buf;
+  double *bufres; 
 
-static void _L1_moments (const double * h, unsigned int clamp, int stride, 
-			 double* median, double* dev, double* sumh)
+  n = mean = var = 0;
+  buf = h;
+  for (i=0; i<size; i++, buf+=stride) {
+    aux = *buf; 
+    n += aux;
+    aux2 = i*aux;
+    mean += aux2;
+    var += i*aux2;
+  }
 
+  bufres = res + 3; *bufres = mean; 
+  bufres ++; *bufres = var; 
+  
+  if (n>0) {
+    mean /= n;
+    var = var/n - mean*mean;
+  }
+  
+  bufres = res; *bufres = n; 
+  bufres ++; *bufres = mean; 
+  bufres ++; *bufres = var; 
+
+  return;
+}
+
+
+/* res must be preallocated with size=3 */ 
+void L1_moments_with_stride (const double * h, unsigned int size, unsigned int stride, 
+			     double* res)
 {
   int i, med;
-  double sum, cpdf, lim, auxdev;
+  double median, dev, n, cpdf, lim;
   const double *buf;
+  double* bufres; 
 
   /* Initialisation au cas ou */
-  *median=0; *dev=0; *sumh=0;
-  cpdf = sum = 0;
-  
+  n = median = dev = 0; 
+  cpdf = 0;
   buf = h;
-  for (i=0; i<clamp; i++, buf+=stride) {
-    sum += *buf;
+  for (i=0; i<size; i++, buf+=stride) {
+    n += *buf;
   }
   
-  *sumh = sum;
+  if (n > 0) {
   
-  if (sum == 0)
-    return;
-  
-  /* On cherche la valeur i telle que h(i-1) < sum/2 
-     et h(i) >= sum/2 */
-  lim = 0.5*sum;
-  
-  i = 0;
-  buf = h;
-  cpdf = *buf;
-  auxdev = 0;
-  
-  while (cpdf < lim) {
-    i ++;
-    buf += stride;
-    cpdf += *buf;
-    auxdev += - i*(*buf);
-  }
-  
-  /* 
-     On a alors i-1 < med < i. On prend i comme valeur mediane, 
-     meme s'il serait possible de choisir une valeur intermediaire
-     entre i-1 et i, en approchant la fonction de repartition 
-     par une droite. 
-     
-     La dispersion L1 est donnee par :
-     
-     sum*E(|X-med|) = - sum_{i<=med} i h(i)              [1]
-     
+    /* On cherche la valeur i telle que h(i-1) < n/2 
+       et h(i) >= n/2 */
+    lim = 0.5*n;
+    
+    i = 0;
+    buf = h;
+    cpdf = *buf;
+    dev = 0;
+    
+    while (cpdf < lim) {
+      i ++;
+      buf += stride;
+      cpdf += *buf;
+      dev += - i*(*buf);
+    }
+    
+    /* 
+       On a alors i-1 < med < i. On prend i comme valeur mediane, 
+       meme s'il serait possible de choisir une valeur intermediaire
+       entre i-1 et i, en approchant la fonction de repartition 
+       par une droite. 
+       
+       La dispersion L1 est donnee par :
+       
+       sum*E(|X-med|) = - sum_{i<=med} i h(i)              [1]
+       
                       + sum_{i>med} i h(i)               [2]
      
                       + med * [2*cpdf(med) - sum]        [3]
 
 
-     Le terme [1] est actuellement egal a la variable auxdev.
-     Le terme cpdf(med) est actuellement egal a la var. cpdf.
-  */
-  
-  *median = (double)i;
-  auxdev += (2*cpdf - sum)*(*median);
-  med = i+1;
-  
-  
-  /* Pour achever le calcul de la deviation L1, il suffit de calculer 
-     la moyenne tronquee (entre i et la dimension) (cf. [2]) */
-  
-  if (med < clamp) {
-    buf = h + med*stride;
-    for (i=med; i<clamp; i ++, buf += stride) 
-      auxdev += i*(*buf);
+       Le terme [1] est actuellement egal a la variable dev.
+       Le terme cpdf(med) est actuellement egal a la var. cpdf.
+    */
+    
+    median = (double)i;
+    dev += (2*cpdf - n)*median;
+    med = i+1;
+    
+    
+    /* Pour achever le calcul de la deviation L1, il suffit de calculer 
+       la moyenne tronquee (entre i et la dimension) (cf. [2]) */
+    
+    if (med < size) {
+      buf = h + med*stride;
+      for (i=med; i<size; i ++, buf += stride) 
+	dev += i*(*buf);
+    }
+    
+    dev /= n; 
+
   }
-  
-  *dev = auxdev/sum; 
+
+  bufres = res; *bufres = n; 
+  bufres ++; *bufres = median; 
+  bufres ++; *bufres = dev; 
 
   return;           
 }

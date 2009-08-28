@@ -26,13 +26,8 @@ data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
 MaskImage = os.path.join(data_dir,'mask.nii.gz')
 InputImage = os.path.join(data_dir,'spmT_0029.nii.gz')
 
-
 # Read the referential
 nim = nifti.NiftiImage(MaskImage)
-ref_dim = nim.getVolumeExtent()
-grid_size = np.prod(ref_dim)
-sform = nim.header['sform']
-voxsize = nim.getVoxDims()
 
 # Read the masks and compute the "intersection"
 mask = nim.asarray().T
@@ -41,7 +36,6 @@ mask = nim.asarray().T
 rbeta = nifti.NiftiImage(InputImage)
 beta = rbeta.asarray().T
 beta = beta[mask>0]
-
 
 mp.figure()
 a1 = mp.subplot(1,3,1)
@@ -62,6 +56,5 @@ bfq = en.three_classes_GMM_fit(beta, bfm, alpha, pstrength,
 efdr = en.ENN(beta)
 efdr.learn()
 efdr.plot(bar=0,mpaxes=a3)
-
 
 mp.show()
