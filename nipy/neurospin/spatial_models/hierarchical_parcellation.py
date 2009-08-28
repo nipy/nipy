@@ -363,6 +363,7 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
               computation is performed on sign-swaped data
 	niter=10: number of iterations to obtain the convergence of the method
               information in the clustering algorithm
+    mu=10., float, relative weight of anatomical information
 	
     Results
     -------
@@ -472,50 +473,4 @@ def perm_prfx(Pa,Gs,F0, ldata,anat_coord,nbperm=100,niter=5,dmax = 10., lamb = 1
 		Pa.set_labels(palc)
 	print prfx0
 	return prfx0
-
-
-def _test():
-	"""
-	low-level test function that uses a surrogate dataset
-	supposedly available in a local 'surrogate_data.out' volume
-	"""
-
-	# ------------------------------------
-	# Get the data (mask+functional image)
-	# take several experimental conditions
-	# time courses could be used instead
-	import nifti
-	import pickle
-	dataset = pickle.load(open('surrogate_data.out','r'))
-	nbparcel = 10
-	
-	# ------------------------------------
-	# 2. Read the data
-	# one mask and several contrast images (or time series images)
-	
-	Sess = dataset.shape[0]
-	ref_dim = (dataset.shape[1],dataset.shape[2])
-	xy = np.transpose(np.array(np.where(dataset[0])))
-	nbvox = np.size(xy,0)
-	xyz = np.hstack((xy,np.zeros((nbvox,1))))
-	
-	Beta= []
-	for s in range(Sess):
-		beta = np.reshape(dataset[s],(nbvox,1))
-		Beta.append(beta)
-		
-	anat_coord = xy
-	mask = np.ones((nbvox,Sess)).astype('bool')
-	ldata = Beta
-	Pa = fp.Parcellation(nbparcel,xyz,mask-1)
-	Pa =  hparcel(Pa,ldata,anat_coord)
-	
-	# write the results
-	Label =  np.array([np.reshape(Pa.label[:,s],(30,30)) for s in range(Sess)])
-	Label = Label.astype('int16')
-	nifti.NiftiImage(Label).save("/tmp/label.nii")
-	
-	prfx = Pa.PRFX('functional')
-	prfx_image = np.reshape(prfx[Pa.group_labels],(30,30))
-	nifti.NiftiImage(prfx_image).save("/tmp/prfx.nii")
 
