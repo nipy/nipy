@@ -46,15 +46,15 @@ swd = tempfile.mkdtemp()
 
 
 # prepare the parcel structure
-fpa,ldata,Talairach = parcel_input(mask_images,nbeta,learn_images,ths,fdim)
+fpa,ldata,coord = parcel_input(mask_images,nbeta,learn_images,ths,fdim)
 fpa.k = nbparcel
 
 # run the algorithm
-fpa = hparcel(fpa,ldata,Talairach)
-#fpa,prfx0 = hparcel(fpa,ldata,Talairach,nbperm=200,niter=5,verbose)
+fpa = hparcel(fpa,ldata,coord)
+#fpa,prfx0 = hparcel(fpa,ldata,coord,nbperm=200,niter=5,verbose)
 
 #produce some output images
-Parcellation_output(fpa,mask_images,learn_images,Talairach,subj_id,
+Parcellation_output(fpa,mask_images,learn_images,coord,subj_id,
                     verbose=1,swd=swd)
 
 # do some parcellation-based analysis:
