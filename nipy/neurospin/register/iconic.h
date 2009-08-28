@@ -19,6 +19,12 @@ extern "C" {
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
+#define L2_moments(h, size, res)		\
+  L2_moments_with_stride(h, size, 1, res)
+#define L1_moments(h, size, res)		\
+  L1_moments_with_stride(h, size, 1, res)
+
+
   /* Numpy import */
   extern void iconic_import_array(void);
 
@@ -58,8 +64,13 @@ extern "C" {
 			      int interp); 
 
 
-  extern double drange(const double* h, unsigned int size); 
   extern double entropy(const double* h, unsigned int size, double* n); 
+  extern void drange(const double* h, unsigned int size, double* res);
+  extern void L2_moments_with_stride(const double * h, unsigned int size, unsigned int stride, 
+				     double* res); 
+  extern void L1_moments_with_stride(const double * h, unsigned int size, unsigned int stride, 
+				     double* res);
+
   extern double correlation_coefficient(const double* H, 
 					unsigned int clampI, 
 					unsigned int clampJ, 
