@@ -1,7 +1,7 @@
 """
 Example of a script that uses the BSA (Bayesian Structural Analysis)
 -- nipy.neurospin.spatial_models.bayesian_structural_analysis --
-function
+module
 
 Please adapt the image paths to make it work on your own data
 
@@ -29,34 +29,35 @@ def make_bsa_nifti(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
 
     Parameters
     ------------
-    - mask_images: A list of image paths that yield binary images,
-    one for each subject
-    nbsubjects is taken as len(mask_images)
-    - betas: A list of image paths that yields the activation images,
-    one for each subject
-    - theta=3., threshold used to ignore all the image data that si below
-    - dmax=5., prior width of the spatial model;
-    corresponds to multi-subject uncertainty 
-    - ths=0: threshold on the representativity measure of the obtained
-    regions
-    - thq=0.5: p-value of the representativity test:
-    test = p(representativity>ths)>thq
-    - smin=0: minimal size (in voxels) of the extracted blobs
-    smaller blobs are merged into larger ones
-    - swd='/tmp': writedir
-    - method='simple': applied region detection method; to be chose among
-    'simple', 'dev','ipmi'
-    - subj_id=None: list of int identifiers (<10000) of the subjects.
-    by default it is range(nbsubj)
-    - nbeta=0 (int): numerical identifier of the contrast
-
-    Results
-    --------
-    - AF: an nipy.neurospin.spatial_models.structural_bfls.landmark_regions
-    instance that describes the structures found at the group level
-    AF=None if nothing has been found significant at the group level
-    - BF : a list of nipy.neurospin.spatial_models.hroi.Nroi instances
-    (one per subject) that describe the individual coounterpart of AF
+    mask_images: A list of image paths that yield binary images,
+                 one for each subject
+                 nbsubjects is taken as len(mask_images)
+    betas: A list of image paths that yields the activation images,
+           one for each subject
+    theta=3., threshold used to ignore all the image data that si below
+    dmax=5., prior width of the spatial model;
+             corresponds to multi-subject uncertainty 
+    ths=0: threshold on the representativity measure of the obtained
+           regions
+    thq=0.5: p-value of the representativity test:
+             test = p(representativity>ths)>thq
+    smin=0: minimal size (in voxels) of the extracted blobs
+            smaller blobs are merged into larger ones
+    swd='/tmp': writedir
+    method='simple': applied region detection method; to be chose among
+                     'simple', 'dev','ipmi'
+    subj_id=None: list of int identifiers (<10000) of the subjects.
+                  by default it is range(nbsubj)
+    nbeta=0 (int): numerical identifier of the contrast
+ 
+    Returns
+    -------
+    AF: an nipy.neurospin.spatial_models.structural_bfls.landmark_regions
+        instance that describes the structures found at the group level
+         None is returned if nothing has been found significant 
+         at the group level
+    BF : a list of nipy.neurospin.spatial_models.hroi.Nroi instances
+       (one per subject) that describe the individual coounterpart of AF
 
     """
     # Sanity check
@@ -71,7 +72,7 @@ def make_bsa_nifti(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     nim = nifti.NiftiImage(mask_images[0])
     header = nim.header
     ref_dim = nim.getVolumeExtent()
-    sform = nim.header['sform']
+    affine = nim.header['sform']
     voxsize = nim.getVoxDims()
 
     # Read the masks and compute the "intersection"
@@ -91,7 +92,7 @@ def make_bsa_nifti(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     # Get  coordinates in mm
     xyz = np.transpose(xyz)
     xyz = np.hstack((xyz,np.ones((nbvox,1))))
-    tal = np.dot(xyz,np.transpose(sform))[:,:3]
+    tal = np.dot(xyz,affine.T)[:,:3]
     xyz = xyz.astype(np.int)
     
     # read the functional images
