@@ -88,9 +88,9 @@ VarFunctional[np.isnan(VarFunctional)]=0
 # ---------- MNI coordinates ----------------------------
 # -------------------------------------------------------
 
-sform = rmask.header['sform']
+affine = rmask.header['sform']
 coord = np.hstack((xyz, np.ones((nvox, 1))))
-coord = np.dot(coord, sform.T)[:,:3]
+coord = np.dot(coord, affine.T)[:,:3]
 
 # -------------------------------------------------------
 # ---------- script ----------------------------

@@ -1,9 +1,10 @@
 import numpy as np
 import nifti
 
-################################################################################
-# class `ROI`
-################################################################################
+#--------------------------------------------------------
+#------- class ROI --------------------------------------
+#--------------------------------------------------------
+
 class ROI(object):
     """
     Temporary ROI class for fff
@@ -248,9 +249,10 @@ class ROI(object):
         
 
 
-################################################################################
-# class `WeightedROI`
-################################################################################
+#------------------------------------
+#-- class WeightedROI ---------------
+#------------------------------------
+
 class WeightedROI(ROI):
     """
     ROI where a weighting is defined on the voxels
@@ -263,9 +265,10 @@ class WeightedROI(ROI):
         pass
 
 
-################################################################################
-# class `MultipleROI`
-################################################################################
+#-------------------------------------------------
+#-------- class `MultipleROI` --------------------
+#-------------------------------------------------
+
 class MultipleROI(object):
     """
     This is  a class to deal with multiple ROIs defined in a given space
@@ -274,29 +277,30 @@ class MultipleROI(object):
     so that the mroi is basically defined as a multiple sets of 3D coordinates
     finally, there is two associated feature dictionaries:
 
-    - roi_features: roi-level features
-    it is assumed that each feature is an
-    (roi,feature_dim) array, i.e. each roi is assumed homogeneous
-    wrt the feature
-    
-    - discrete_features is a dictionary of informations sampled
-    on the discrete membre of the rois (voxels or vertices)
-    each feature os thus a list of self.k arrays of shape
-    (roi_size, feature_simension)
+    roi_features: list of roi-level features
+                  it is assumed that each feature is an
+                  (roi,feature_dim) array, 
+                  i.e. each roi is assumed homogeneous
+                  wrt the feature
 
+    discrete_features is a dictionary of informations sampled
+                      on the discrete membre of the rois 
+                      (voxels or vertices)
+                      each feature os thus a list of self.k arrays 
+                      of shape (roi_size, feature_dimension)
     """
 
     def __init__(self,id="roi",k=0,header=None,xyz=None):
         """
         roi = MultipleROI(id='roi', header=None)
 
-        Parameters:
-        -----------
-        - id (string): roi identifier
-        - k: number of rois that are included in the structure 
-        - header (nipy header) : referential-defining information
-        - xyz=None: list of index arrays
-        that represent the grid coordinates of the rois elements
+        Parameters
+        ----------
+        id (string): roi identifier
+        k: number of rois that are included in the structure 
+        header (nipy header) : referential-defining information
+        xyz=None: list of index arrays
+                  the grid coordinates of the rois elements
         """
         self.id = id
         self.k = k
@@ -336,17 +340,17 @@ class MultipleROI(object):
                     print "removing feature %s, incorrectly shaped" %fid 
                     self.discrete_features.pop(fid)
 
-    def check_header(self, image):
+    def check_header(self, image_path):
         """
         checks that the image is in the header of self
 
         Parameters
-        -----------
-        - image: (string) the path of an image
+        ----------
+        image_path: (string) the path of an image
         """
         #print "check not implemented yet"
         eps = 1.e-15
-        nim = nifti.NiftiImage(image)
+        nim = nifti.NiftiImage(image_path)
         header = nim.header
         b = True
 
@@ -357,18 +361,22 @@ class MultipleROI(object):
                 b = False
         return b
 
-    def from_labelled_image(self,image,labels=None,add=True):
+    def from_labelled_image(self, image, labels=None, add=True):
         """
         All the voxels of the image that have non-zero-value
         self.k becomes the number of values of the (discrete) image
 
-        Parameters:
-        ------------
-        - image (string): a nifti label (discrete valued) image
-        -labels=None : the set of image labels that
-        shall be used as ROI definitions
-        By default, all the image labels are used
-        note that this can be used to append roi_features,
+        Parameters
+        ----------
+        image (string): a nifti label (discrete valued) image
+        labels=None : array of shape () 
+                    the set of image labels that
+                    shall be used as ROI definitions
+                    By default, all the image labels are used
+        
+        Note
+        ----
+        this can be used to append roi_features,
         when rois are already defined
         """
         self.check_header(image)
@@ -396,8 +404,8 @@ class MultipleROI(object):
         Given a set of positions and radii, defines one roi
         at each (position/radius) couple 
 
-        Parameters:
-        ------------
+        Parameters
+        ----------
         position: array of shape (k,3): the set of positions
         radius: array of shape (k): the set of radii
         """
@@ -438,6 +446,7 @@ class MultipleROI(object):
     def append_balls(self,position, radius):
         """
         idem self.as_multiple_balls, but the ROIs are added
+        fixme : should be removed from the class
         """
         if self.header==None:
             raise ValueError, "No defined referential"
@@ -475,7 +484,7 @@ class MultipleROI(object):
 
         self.check_features()
 
-    def complete_roi_feature(self,fid,values):
+    def complete_roi_feature(self, fid, values):
         """
         completes roi_feature corresponding to fid
         by appending the values
@@ -493,14 +502,14 @@ class MultipleROI(object):
         """
         write a int nifti image where the nonzero values are the ROIs
 
-        Parameters:
-        ------------
-        - path: the desired image path
+        Parameters
+        ----------
+        path: string, the desired image path
         
-        NOTE:
-        -----
-        - the background values are set to -1
-        - the ROIs values are set as [0..self.k-1]
+        Note
+        ----
+        the background values are set to -1
+        the ROIs values are set as [0..self.k-1]
         """
         data = -np.ones(tuple(self.header['dim'][1:4]),'i')
         for k in range(self.k):
@@ -513,11 +522,12 @@ class MultipleROI(object):
   
     def set_roi_feature(self,fid,data):
         """
-        Parameters:
-        ------------
-        - fid (string): feature identifier, e.g.
-        - data: array of shape(self.k,p),with p>0
         this function simply stores data 
+
+        Parameters
+        ----------
+        fid (string): feature identifier, e.g.
+        data: array of shape(self.k,p),with p>0
         """
         if data.shape[0]!=self.k:
             print data.shape[0],self.k,fid
@@ -528,12 +538,12 @@ class MultipleROI(object):
 
     def set_discrete_feature(self,fid,data):
         """
-        Parameters:
-        -----------
-        - fid (string): feature identifier, e.g.
-        - data: list of self.k arrays with shape(nk,p),with p>0
-        nk = self.xyz[k].shape[0] (number of elements in ROI k)
-        this function simply stores data 
+        Parameters
+        ----------
+        fid (string): feature identifier
+        data: list of self.k arrays with shape(nk,p),with p>0
+              nk = self.xyz[k].shape[0] (number of elements in ROI k)
+              this function simply stores data 
         """
         if len(data)!=self.k:
             print len(data),self.k,fid
@@ -550,12 +560,12 @@ class MultipleROI(object):
         """
         extract some roi-related information from an image
         
-        Parameters:
-        -----------
-        - fid: feature id
-        - image(string): image name
-        - method='average' (string) : take the roi feature as
-        the average feature over the ROI
+        Parameters
+        ----------
+        fid: feature id
+        image(string): image name
+        method='average' (string) : take the roi feature as
+                         the average feature over the ROI
        
         """
         self.check_header(image)
@@ -572,10 +582,10 @@ class MultipleROI(object):
         """
         extract some discrete information from an image
 
-        Parameters:
-        -------------
-        - fid (string): feature id
-        - image(path): the image path
+        Parameters
+        ----------
+        fid (string): feature id
+        image(path): the image path
         """
         self.check_header(image)
         nim = nifti.NiftiImage(image)  
@@ -593,14 +603,15 @@ class MultipleROI(object):
         this extracts the values from data corresponding to the index
         and sets these are self.discrete_feature[fid]
 
-        Parameters:
-        -----------
-        - fid (string): feature id
-        - data: array of shape(nbitem,k) where nbitem is supposed
-        to be greater than any value in self.discrete_feature['index']
+        Parameters
+        ----------
+        fid (string): feature id
+        data: array of shape(nbitem,k) where nbitem is supposed
+              to be greater than any value in 
+              self.discrete_feature['index']
 
-        NOTE:
-        -----
+        NOTE
+        ----
         This function implies that the users understand what they do
         In particular that they know what  self.discrete_feature['index']
         corresponds to.
@@ -622,15 +633,15 @@ class MultipleROI(object):
         """
         Compute an ROI-level feature given the discrete features
 
-        Parameters:
-        -----------
-        - fid(string) the discrete feature under consideration
-        - method='average' the assessment method
+        Parameters
+        ----------
+        fid(string) the discrete feature under consideration
+        method='average' the assessment method
 
-        OUTPUT:
-        --------
-        - ldata: array of shape [self.k,fdim ]
-        the computed roi-level feature 
+        Returns
+        -------
+        ldata: array of shape [self.k,fdim ]
+               the computed roi-level feature 
         """
         df = self.discrete_features[fid]
         data = self.discrete_features[fid]
@@ -665,7 +676,8 @@ class MultipleROI(object):
         """
         Returns for each roi the index of the discrete element
         that is the within-ROI for the fid feature
-        this makes sense only if the corresponding feature has dimension 1
+        this makes sense only if the corresponding feature 
+        has dimension 1
         """
         df = self.discrete_features[fid]
         if np.size(df[0])>np.shape(df[0])[0]:
@@ -680,9 +692,9 @@ class MultipleROI(object):
         boxplot the feature within the ROI
         Note that this assumes a 1-d feature
 
-        Parameters:
-        -----------
-        - fid the feature identifier
+        Parameters
+        ----------
+        fid the feature identifier
         """
         f = self.roi_features[fid]
         if f.shape[1]>1:
@@ -696,9 +708,9 @@ class MultipleROI(object):
         """
         remove the regions for which valid==0
 
-        Parameters:
-        ------------
-        - valid: (boolean) array of shape self.k
+        Parameters
+        ----------
+        valid: (boolean) array of shape self.k
         """
         if np.size(valid)!=self.k:
             raise ValueError, "the valid marker does not have\
