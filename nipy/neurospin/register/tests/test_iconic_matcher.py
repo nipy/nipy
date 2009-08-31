@@ -31,7 +31,7 @@ def make_data_float64(dx=100, dy=100, dz=50):
     return (256*(np.random.rand(dx, dy, dz) - np.random.rand())).astype('float64')
 
 def _test_clamping(I, thI=0.0, clI=256):
-    IM = IconicMatcher(I.array, I.array, I.toworld, I.toworld, thI, thI, bins=clI)
+    IM = IconicMatcher(I.array, I.array, I.toworld, I.toworld, thI, thI, source_bins=clI, target_bins=clI)
     Ic = IM.source_clamped
     Ic2 = IM.target_clamped[1:I.array.shape[0]+1,1:I.array.shape[1]+1,1:I.array.shape[2]+1].squeeze()
     assert_equal(Ic, Ic2)

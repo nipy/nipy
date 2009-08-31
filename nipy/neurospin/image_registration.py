@@ -84,7 +84,7 @@ def affine_resample(source,
     if use_scipy or not order==3: 
         use_scipy = True
         from scipy.ndimage import affine_transform 
-    if toresample is 'target': 
+    if toresample == 'target': 
         if not use_scipy:
             data = cspline_resample(target.get_data(), 
                                     source.get_shape(), 
@@ -95,7 +95,7 @@ def affine_resample(source,
                                     Tv[0:3,0:3], offset=Tv[0:3,3], 
                                     output_shape=source.get_shape(), 
                                     order=order)
-        return Image(data, target.get_affine())
+        return Image(data, source.get_affine())
     else:
         if not use_scipy:
             data = cspline_resample(source.get_data(), 
@@ -108,7 +108,7 @@ def affine_resample(source,
                                     Tv[0:3,0:3], offset=Tv[0:3,3], 
                                     output_shape=target.get_shape(), 
                                     order=order)
-        return Image(data, source.get_affine())
+        return Image(data, target.get_affine())
 
 
 
