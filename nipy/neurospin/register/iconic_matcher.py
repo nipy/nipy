@@ -98,7 +98,10 @@ class IconicMatcher:
 
     def set_similarity(self, similarity='cc', normalize=None, pdf=None): 
         self.similarity = similarity
-        self._similarity = similarity_measures[similarity]
+        if similarity in similarity_measures: 
+            self._similarity = similarity_measures[similarity]
+        else: 
+            self._similarity = similarity_measures['custom']
         self.normalize = normalize
         ## Use array rather than asarray to ensure contiguity 
         self.pdf = np.array(pdf)  
