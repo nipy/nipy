@@ -8,10 +8,9 @@ import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.parcellation as fp
 
 # step 1:  generate some synthetic data
-nsubj=10
-
-dimx=60
-dimy=60
+nsubj = 10
+dimx = 60
+dimy = 60
 pos = 3*np.array([[ 6,  7],
                   [10, 10],
                   [15, 10]])
@@ -22,7 +21,7 @@ dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy,
 # dataset represents 2D activation images from nsubj subjects,
 # with shape (dimx,dimy)
 
-# step 2 : prepaae all the information for the parcellation
+# step 2 : prepare all the information for the parcellation
 nbparcel = 10
 ref_dim = (dimx,dimy)
 xy = np.array(np.where(dataset[0])).T

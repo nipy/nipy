@@ -1,6 +1,5 @@
 """
-This scipt generates a noisy activation image image
-and applies the bayesian structural analysis on it
+Tests for bayesian_structural_analysis
 
 Author : Bertrand Thirion, 2009
 """
