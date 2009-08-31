@@ -149,16 +149,22 @@ def generate_perm(k,nperm=100):
     """
     returns an array of shape(nbperm, k) representing
     the permutations of k elements
-    - nperm=100
-    if k>5: only nperm random draws are generated
+    
+    Parameters
+    ----------
+    k, int the number of elements to be permuted    
+    nperm=100 the maximal number of permutations
+    if gamma(k+1)>nperm: only nperm random draws are generated
    
    Returns
    -------
     p: array of shape(nperm,k): each row is permutation of k
     """
+    from scipy.special import gamma
     if k==1:
         return np.reshape(np.array([0]),(1,1)).astype(np.int)
-    if k<6:
+    if gamma(k+1)<nperm:
+        # exhaustive permutations
         aux = generate_perm(k-1)
         n = aux.shape[0]
         perm = np.zeros((n*k,k)).astype(np.int)
@@ -391,7 +397,6 @@ class BGMM(GMM):
         self.prior_scale = np.repeat(px,self.k,0)
         self.prior_dof = np.ones(self.k)*(self.dim+2)
         self.prior_shrinkage = np.ones(self.k)*small
-        #self.weights = np.ones(self.k)*1.0/self.k
 
         # check that everything is OK
         if nocheck==True:

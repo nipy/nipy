@@ -10,7 +10,6 @@ import os.path
 from nipy.io.imageformats import load, save, Nifti1Image 
 from parcellation import Parcellation
 
-
 def parcel_input(mask_images, nbeta, learning_images,
                 ths = .5, fdim=3, affine=None):   
     """
@@ -19,8 +18,10 @@ def parcel_input(mask_images, nbeta, learning_images,
     Parameters
     ----------
     mask_images: list of the paths of the mask images that are used
-                 to define the common space. These can be cortex segmentations
-                 (resampled at the same resolution as the remainder of the data)
+                 to define the common space. These can be cortex
+                 segmentations
+                 (resampled at the same resolution as the remainder
+                 of the data)
                  Note that nsubj = len(mask_images)
     nbeta: list of integers, 
            ids of the contrast of under study
@@ -281,3 +282,121 @@ def Parcellation_based_analysis(Pa, test_images, numbeta, swd="/tmp",
     return Pa
 
 
+def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward', 
+                          write_dir='/tmp', mu=10., verbose=0):
+    """
+    Parcellation of a one-subject dataset
+
+    
+    Parameters
+    ----------
+    MaskImage: path to the mask-defining_image of the subject
+    betas: list of paths to activation images from the subject
+    nbparcel, int : number fo desired parcels
+    nn=6: number of nearest neighbors  to define the image topology 
+          (6, 18 or 26)
+    method='ward': clustering method used, to be chosen among
+                   'ward', 'gkm', 'ward_and-gkm'
+                   'ward': Ward's clustering algorithm
+                   'gkm': Geodesic k-means algorithm, random initialization
+                   'gkm_and_ward': idem, initialized by Ward's clustering
+    write_dir='/tmp': write directory
+    mu = 10., float: the relative weight of anatomical information
+    verbose=0: verbosity mode
+
+    Note
+    ----
+    Ward's method takes time (about 6 minutes for a 60K voxels dataset)
+    Geodesic k-means is 'quick and dirty'
+    Ward's + GKM is expensive but quite good
+    To reduce CPU time, rather use nn=6 (especially with Ward)    
+    """
+    import nipy.neurospin.graph as fg
+    import nipy.neurospin.graph.field as ff
+    
+    if method not in ['ward','gkm','ward_and_gkm']:
+        raise ValueError, 'unknown method'
+    if nn not in [6,18,26]:
+        raise ValueError, 'nn should be 6,18 or 26'
+    nbeta = len(betas)
+    
+    # step 1: load the data ----------------------------
+    #1.1 the mask image
+    nim = load(MaskImage)
+    ref_dim =  nim.get_shape()
+    affine = nim.get_affine()
+    mask = nim.get_data()
+    xyz = np.array(np.where(mask>0)).T
+    nvox = xyz.shape[0]
+
+    # 1.2 get the main cc of the graph 
+    # to remove the small connected components
+    g = fg.WeightedGraph(nvox)
+    g.from_3d_grid(xyz.astype(np.int),nn)
+
+    aux = np.zeros(g.V).astype('bool')
+    imc = g.main_cc()
+    aux[imc]= True
+    if np.sum(aux)==0:
+        raise ValueError, "empty mask. Cannot proceed"
+    g = g.subgraph(aux)
+    lmask = np.zeros(ref_dim)
+    lmask[xyz[:,0],xyz[:,1],xyz[:,2]]=aux
+    xyz = xyz[aux,:]
+    nvox = xyz.shape[0]
+
+    # 1.3 from vox to mm
+    xyz2 = np.hstack((xyz,np.ones((nvox,1))))
+    coord = np.dot(xyz2, affine.T)[:,:3]
+
+    # 1.4 read the functional data
+    beta = []
+    for b in range(nbeta):
+        rbeta = load(betas[b])
+        lbeta = rbeta.get_data()
+        lbeta = lbeta[lmask>0]
+        beta.append(lbeta)
+	
+    beta = np.array(beta).T
+
+    #step 2: parcel the data ---------------------------
+    feature = np.hstack((beta,mu*coord/np.std(coord)))
+    g = ff.Field(nvox,g.edges,g.weights,feature)
+
+    if method=='ward':
+        u,J0 = g.ward(nbparcel)
+
+    if method=='gkm':
+        seeds = np.argsort(np.random.rand(g.V))[:nbparcel]
+        seeds, u, J1 = g.geodesic_kmeans(seeds)
+
+    if method=='ward_and_gkm':
+        w,J0 = g.ward(nbparcel)
+        seeds, u, J1 = g.geodesic_kmeans(label=w)
+
+    lpa = Parcellation(nbparcel, xyz, np.reshape(u,(nvox,1)))
+    if verbose:
+        pi = np.reshape(lpa.population(), nbparcel)
+        vi = np.sum(lpa.var_feature_intra([beta])[0], 1)
+        vf = np.dot(pi,vi)/nvox
+        va =  np.dot(pi,np.sum(lpa.var_feature_intra([coord])[0],1))/nvox
+        print nbparcel, "functional variance", vf, "anatomical variance",va
+
+    # step3:  write the resulting label image
+    if method=='ward':
+        LabelImage = os.path.join(write_dir,"parcel_wards.nii")
+
+    if method=='gkm':
+        LabelImage = os.path.join(write_dir,"parcel_gkmeans.nii")
+
+    if method=='ward_and_gkm':
+        LabelImage = os.path.join(write_dir,"parcel_wgkmeans.nii")
+        
+    Label = -np.ones(ref_dim,'int16')
+    Label[lmask>0] = u
+    wim = Nifti1Image (Label, affine)
+    hdr = wim.get_header()
+    hdr['descrip'] = 'Intra-subject parcellation image'
+    save(wim, LabelImage)   
+        
+    print "Wrote the parcellation images as %s" %LabelImage
