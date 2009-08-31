@@ -38,9 +38,10 @@ nn = 6
 write_dir = tempfile.mkdtemp()
 verbose = 1
 
-lpa = one_subj_parcellation(MaskImage, betas, nbparcel, nn, 'ward', 
-                            write_dir, mu, verbose)
+
 lpa = one_subj_parcellation(MaskImage, betas, nbparcel, nn, 'gkm', 
+                            write_dir, mu, verbose)
+lpa = one_subj_parcellation(MaskImage, betas, nbparcel, nn, 'ward', 
                             write_dir, mu, verbose)
 lpa = one_subj_parcellation(MaskImage, betas, nbparcel, nn, 'ward_and_gkm', 
                             write_dir, mu, verbose)

@@ -367,36 +367,36 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
         u,J0 = g.ward(nbparcel)
 
     if method=='gkm':
-        seeds = np.argsort(rand(g.V))[:nbparcel]
+        seeds = np.argsort(np.random.rand(g.V))[:nbparcel]
         seeds, u, J1 = g.geodesic_kmeans(seeds)
 
     if method=='ward_and_gkm':
         w,J0 = g.ward(nbparcel)
         seeds, u, J1 = g.geodesic_kmeans(label=w)
 
-    lpa = Pa.Parcellation(nbparcel,xyz.T,np.reshape(w,(nvox,1)))
+    lpa = Parcellation(nbparcel, xyz, np.reshape(u,(nvox,1)))
     if verbose:
-        pi = np.reshape(lpa.population(),nbparcel)
-        vi = np.sum(lpa.var_feature_intra([beta])[0],1)
+        pi = np.reshape(lpa.population(), nbparcel)
+        vi = np.sum(lpa.var_feature_intra([beta])[0], 1)
         vf = np.dot(pi,vi)/nvox
         va =  np.dot(pi,np.sum(lpa.var_feature_intra([coord])[0],1))/nvox
         print nbparcel, "functional variance", vf, "anatomical variance",va
 
     # step3:  write the resulting label image
     if method=='ward':
-        LabelImage = op.join(swd,"parcel_wards.nii")
+        LabelImage = os.path.join(write_dir,"parcel_wards.nii")
 
     if method=='gkm':
-        LabelImage = op.join(swd,"parcel_gkmeans.nii")
+        LabelImage = os.path.join(write_dir,"parcel_gkmeans.nii")
 
     if method=='ward_and_gkm':
-        LabelImage = op.join(swd,"parcel_wgkmeans.nii")
+        LabelImage = os.path.join(write_dir,"parcel_wgkmeans.nii")
         
     Label = -np.ones(ref_dim,'int16')
     Label[lmask>0] = u
-    wim = Nifti1Image (rfx_map, affine)
+    wim = Nifti1Image (Label, affine)
     hdr = wim.get_header()
     hdr['descrip'] = 'Intra-subject parcellation image'
     save(wim, LabelImage)   
         
-    print "Wrote the parcellation images as %s ", LabelImage
+    print "Wrote the parcellation images as %s" %LabelImage
