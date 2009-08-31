@@ -137,7 +137,8 @@ class IconicMatcher:
                            self.pdf)
 
     ## FIXME: check that the dimension of start is consistent with the search space. 
-    def optimize(self, search='rigid', method='powell', start=None, radius=BRAIN_RADIUS_MM):
+    def optimize(self, search='rigid', method='powell', start=None, 
+                 radius=BRAIN_RADIUS_MM, tol=.1, ftol=.01):
         """
         radius: a parameter for the 'typical size' in mm of the object
         being registered. This is used to reformat the parameter
@@ -168,13 +169,13 @@ class IconicMatcher:
 
         if method=='simplex':
             print ('Optimizing using the simplex method...')
-            tc = sp.optimize.fmin(loss, tc0, callback=callback)
+            tc = sp.optimize.fmin(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
         elif method=='powell':
             print ('Optimizing using Powell method...') 
-            tc = sp.optimize.fmin_powell(loss, tc0, callback=callback)
+            tc = sp.optimize.fmin_powell(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
         elif method=='conjugate_gradient':
             print ('Optimizing using conjugate gradient descent...')
-            tc = sp.optimize.fmin_cg(loss, tc0, callback=callback)
+            tc = sp.optimize.fmin_cg(loss, tc0, callback=callback, gtol=ftol)
         else:
             raise ValueError('Unrecognized optimizer')
         
