@@ -75,7 +75,7 @@ cdef enum texture_measure:
     MEDIAN, 
     L1DEV, 
     ENTROPY, 
-    CUSTOM
+    CUSTOM_TEXTURE
 
 # Corresponding Python dictionary 
 texture_measures = {
@@ -86,8 +86,8 @@ texture_measures = {
     'variance': VARIANCE, 
     'median': MEDIAN, 
     'l1dev': L1DEV, 
-    'entropy': ENTROPY}
-
+    'entropy': ENTROPY,
+    'custom': CUSTOM_TEXTURE}
 
 # Enumerate similarity measures
 cdef enum similarity_measure:
@@ -99,6 +99,7 @@ cdef enum similarity_measure:
     MUTUAL_INFORMATION,
     NORMALIZED_MUTUAL_INFORMATION,
     SUPERVISED_MUTUAL_INFORMATION,
+    CUSTOM_SIMILARITY
 
 # Corresponding Python dictionary 
 similarity_measures = {'cc': CORRELATION_COEFFICIENT,
@@ -108,10 +109,11 @@ similarity_measures = {'cc': CORRELATION_COEFFICIENT,
                        'je': JOINT_ENTROPY,
                        'ce': CONDITIONAL_ENTROPY,
                        'nmi': NORMALIZED_MUTUAL_INFORMATION,
-                       'smi': SUPERVISED_MUTUAL_INFORMATION}
+                       'smi': SUPERVISED_MUTUAL_INFORMATION,
+                       'custom': CUSTOM_SIMILARITY}
 
 
-def _texture(ndarray im, ndarray H, Size, method): 
+def _texture(ndarray im, ndarray H, Size, int texture, method=None): 
 
     cdef double *res, *h
     cdef double moments[5]
@@ -119,7 +121,6 @@ def _texture(ndarray im, ndarray H, Size, method):
     cdef unsigned int coords[3], size[3]
     cdef broadcast multi
     cdef flatiter im_iter
-    cdef int texture
 
     # Views
     clamp = <unsigned int>H.dimensions[0]
@@ -132,12 +133,6 @@ def _texture(ndarray im, ndarray H, Size, method):
 
     # Allocate output 
     imtext = np.zeros(im.shape, dtype='double')
-
-    # Texture method
-    if method in texture_measures: 
-        texture = texture_measures[method]
-    else: 
-        texture = CUSTOM
 
     # Loop over input and output images
     multi = PyArray_MultiIterNew(2, <void*>imtext, <void*>im)
@@ -216,7 +211,8 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int i
     return 
 
 
-def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, ndarray F=None):
+def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, 
+                ndarray F=None, method=None):
     """
     _similarity(H, hI, hJ, simitype, ndarray F=None)
     Comments to follow
@@ -253,8 +249,8 @@ def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, ndarray F=None)
         simi = normalized_mutual_information(h, hI, clampI, hJ, clampJ, &n) 
     elif simitype == SUPERVISED_MUTUAL_INFORMATION:
         simi = supervised_mutual_information(h, f, hI, clampI, hJ, clampJ, &n)
-    else:
-        simi = 0.0
+    else: # CUSTOM 
+        simi = method(H)
         
     return simi
 

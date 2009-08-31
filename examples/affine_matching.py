@@ -84,7 +84,11 @@ J = load_image(target_file)
 # Perform affine normalization 
 print('Setting up registration...')
 tic = time.time()
-T = affine_register(I, J, similarity=similarity, interp=interp, normalize=normalize, optimizer=optimizer)
+T = affine_register(I, J, 
+                    similarity=similarity, 
+                    interp=interp, 
+                    normalize=normalize, 
+                    optimizer=optimizer)
 toc = time.time()
 print('  Registration time: %f sec' % (toc-tic))
 
