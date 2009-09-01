@@ -38,21 +38,24 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 
     # the voxel volume is 1.0
     g0 = 1.0/(1.0*nvox)*1./np.sqrt(2*np.pi*dmax**2)
+    affine = np.eye(4)
+    shape = (1, ref_dim[0], ref_dim[1])
     
     bdensity = 1
     if method=='ipmi':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax,xyz,
-                                        None, thq,
+                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, xyz,
+                                        affine, shape, thq,
                                         smin, ths, theta, g0, bdensity)
     if method=='simple':
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_simple(Fbeta, lbeta, coord, dmax,xyz,
-                                          None, thq, smin, ths, theta, g0)
+                                          affine, shape, thq, smin, ths,
+                                          theta, g0)
     if method=='dev':
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_dev(Fbeta, lbeta, coord, dmax,xyz,
-                                       None, thq,
+                                       affine, shape, thq,
                                       smin, ths, theta, g0, bdensity)
         
     if method not in['dev','simple','ipmi']:
@@ -116,10 +119,9 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 #-------------------------------------------------------
 
 # generate the data
-nsubj=10
-
-dimx=60
-dimy=60
+nsubj = 10
+dimx = 60
+dimy = 60
 pos = 2*np.array([[ 6,  7],
                   [10, 10],
                   [15, 10]])
@@ -136,10 +138,9 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple'
+method = 'simple'#'dev'#'ipmi'#
 
 # run the algo
-
 import time
 t1 = time.time()
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method,verbose=verbose)

@@ -16,9 +16,10 @@ from nipy.neurospin.utils.roi import MultipleROI
 
 
 
-def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
+def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty, smin = 0):
     """
-    Instantiate an NROI object from a given Field and a header
+    Instantiate an NROI object from a given Field and a referntial
+    (affine, shape)
     
     Parameters
     ----------
@@ -26,8 +27,10 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
           in which the nested structure is extracted
           It is meant to be a the topological representation
           of a masked image or a mesh
-    header : a referential-describing information
-           (in the  future this should become a standard nipy transformation)
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition      
     xyz: array of shape (Field.V,3) that represents grid coordinates
          of the object
     th is a threshold so that only values above th are considered
@@ -48,7 +51,7 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
                  each point of each ROI
     """
     if Field.field[:,refdim].max()>th:
-        idx,height,parents,label = Field.threshold_bifurcations(refdim,th)
+        idx, height, parents, label = Field.threshold_bifurcations(refdim,th)
     else:
         idx = []
         parents = []
@@ -57,11 +60,8 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
     k = np.size(idx)
     if k==0: return None
     discrete = [xyz[label==i] for i in range(k)]
-    nroi = NROI(parents,header,discrete)
+    nroi = NROI(parents, affine, shape, discrete)
 
-    #feature = [Field.get_field()[label==i] for i in range(k)]
-    #nroi.set_discrete_feature('activation', feature)
-    
     # Create the index of each point within the Field
     midx = [np.expand_dims(np.nonzero(label==i)[0],1) for i in range(k)]
     nroi.set_discrete_feature('index', midx)
@@ -84,9 +84,9 @@ def NROI_from_field(Field,header,xyz,refdim=0,th=-np.infty,smin = 0):
 
     return nroi
 
-def NROI_from_watershed(Field,header,xyz,refdim=0,th=-np.infty):
+def NROI_from_watershed(Field, affine, shape, xyz, refdim=0, th=-np.infty):
     """
-    Instantiate an NROI object from a given Field and a header
+    Instantiate an NROI object from a given Field and a referential
     
     Parameters  
     ----------
@@ -94,8 +94,10 @@ def NROI_from_watershed(Field,header,xyz,refdim=0,th=-np.infty):
           in which the nested structure is extracted
           It is meant to be a the topological representation
           of a masked image or a mesh
-     header : a referential-describing information
-           (in the  future this should become a standard nipy transformation)
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition  
     xyz: array of shape (Field.V,3) that represents grid coordinates
          of the object
     refdim=0: dimension fo the Field to consider (when multi-dimensional)
@@ -115,7 +117,7 @@ def NROI_from_watershed(Field,header,xyz,refdim=0,th=-np.infty):
                  each point of each ROI
     """
     if Field.field[:,refdim].max()>th:
-        idx,height,parents,label = Field.custom_watershed(refdim,th)
+        idx, height, parents, label = Field.custom_watershed(refdim,th)
     else:
         idx = []
         parents = []
@@ -124,9 +126,7 @@ def NROI_from_watershed(Field,header,xyz,refdim=0,th=-np.infty):
     k = np.size(idx)
     if k==0: return None
     discrete = [xyz[label==i] for i in range(k)]
-    nroi = NROI(parents,header,discrete)
-    #feature = [Field.get_field()[label==i] for i in range(k)]
-    #nroi.set_discrete_feature('activation', feature)
+    nroi = NROI(parents, affine, shape, discrete)
     
     #Create the index of each point within the Field
     midx = [np.expand_dims(np.nonzero(label==i)[0],1) for i in range(k)]
@@ -144,11 +144,14 @@ class NROI(MultipleROI,Forest):
     self.k (int): number of nodes/structures included into it
     parents = None: array of shape(self.k) describing the
             hierarchical relationship
-    header (temporary): space-defining image header
-           to embed the structure in an image space
+    affine=np.eye(4), array of shape(4,4),
+        coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid 
+        implicit to the discrete ROI definition
     """
 
-    def __init__(self,parents=None,header=None,xyz=None,id=None):
+    def __init__(self, parents=None, affine=np.eye(4), shape=None,
+                 xyz=None, id='nroi'):
         """
         Building the NROI
         
@@ -157,17 +160,19 @@ class NROI(MultipleROI,Forest):
         parents=None: array of shape(k) providing
                       the hierachical structure
                       if parent==None, None is returned
-        header=None: space defining information
-                     (to be replaced by a more adequate structure)
-        xyz=None list of position arrays
+        affine=np.eye(4), array of shape(4,4),
+                           coordinate-defining affine transformation
+        shape=None, tuple of length 3 defining the size of the grid 
+                    implicit to the discrete ROI definition
+        xyz=None, list of arrays of shape (3, nvox)
                  that yield the grid position of each grid guy.
-        id=None: region identifier
+        id='nroi', string, region identifier
         """
         if parents==None:
             return None
         k = np.size(parents)
         Forest.__init__(self,k,parents)
-        MultipleROI.__init__(self,id, k,header,xyz)
+        MultipleROI.__init__(self,id, k, affine, shape, xyz)
 
     def clean(self, valid):
         """
@@ -177,7 +182,8 @@ class NROI(MultipleROI,Forest):
         """
         if np.sum(valid)==0:
             return None
-        # fixme :this is not coherent !
+        # fixme: is None a correct way of dealing with k=0 ?
+
         # first clean as a forest
         sf = self.subforest(valid)
         Forest.__init__(self,sf.V,sf.parents)
@@ -288,7 +294,6 @@ class NROI(MultipleROI,Forest):
 
     def reduce_to_leaves(self):
         """
-        h2 = reduce_to_leaves(self)
         create a  new set of rois which are only the leaves of self
         if there is none (this should not happen),
         None is returned
@@ -298,7 +303,7 @@ class NROI(MultipleROI,Forest):
         if self.k==0: return None
         parents = np.arange(k)
         xyz = [self.xyz[k].copy() for k in np.nonzero(isleaf)[0]]
-        nroi = NROI(parents,self.header,xyz)
+        nroi = NROI(parents, self.affine, self.shape, xyz)
 
         # now copy the roi_features
         fids = self.roi_features.keys()
@@ -318,7 +323,7 @@ class NROI(MultipleROI,Forest):
         returns a copy of self
         """
         xyz = [self.xyz[k].copy() for k in range(self.k)]
-        nroi = NROI(self.parents.copy(),self.header,xyz)
+        nroi = NROI(self.parents.copy(), self.affine, self.shape ,xyz)
 
         # now copy the roi_features
         fids = self.roi_features.keys()
@@ -332,7 +337,7 @@ class NROI(MultipleROI,Forest):
             nroi.set_discrete_feature(fid,df)
         return nroi
     
-    def discrete_to_roi_features(self,fid,method='average'):
+    def discrete_to_roi_features(self, fid, method='average'):
         """
         Compute an ROI-level feature given the discrete features
         
@@ -363,7 +368,6 @@ class NROI(MultipleROI,Forest):
                 ldata[k]/=card
             self.set_roi_feature(fid,ldata)
         else:
-            ldata = MultipleROI.discrete_to_roi_features(self,fid,method)
+            ldata = MultipleROI.discrete_to_roi_features(self, fid, method)
 
         return ldata
-
