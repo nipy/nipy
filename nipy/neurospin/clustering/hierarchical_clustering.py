@@ -42,23 +42,27 @@ class WeightedForest(fo.Forest):
     - additionally, the nodes have a value, which is called 'height',
     especially useful from dendrograms
 
-    fields:
-    - V : (int,>0) the number of vertices
-    - E : (int) the number of edges
-    - parents: array of shape (self.V) the parent array
-    - edges: array of shape (self.E,2) reprensenting pairwise neighbors
-    - weights, array of shape (self.E), +1/-1 for scending/descending links 
-    - children: list of arrays that represents the childs of any node
-    - height: array of shape(self.V)
+    fields
+    ------
+    V : (int,>0) the number of vertices
+    E : (int) the number of edges
+    parents: array of shape (self.V) the parent array
+    edges: array of shape (self.E,2) reprensenting pairwise neighbors
+    weights, array of shape (self.E), +1/-1 for scending/descending links 
+    children: list of arrays that represents the childs of any node
+    height: array of shape(self.V)
     """
     def __init__(self, V, parents=None,height=None):
         """
-        INPUT:
+        Parameters
+        ----------
         V: the number of edges of the graph
-        parents = None: array of shape (V) the parents of the graph
-        by default, the parents are set to range(V), i.e. each  
-        node is its own parent, and each node is a tree
-        height=None: array of shape(V) the height of the nodes
+        parents=None: array of shape (V) 
+                the parents of the graph
+                by default, the parents are set to range(V), i.e. each  
+                node is its own parent, and each node is a tree
+        height=None: array of shape(V) 
+                     the height of the nodes
         """
         V = int(V)
         if V<1:
@@ -298,7 +302,8 @@ class WeightedForest(fo.Forest):
         if addNodes:
             for i in range(self.V):
                 h1 = self.height[i]
-                mp.text(idx[i]+0.05, h1+0.45, str(i), fontsize = font_size, color = 'b')
+                mp.text(idx[i]+0.05, h1+0.45, str(i), fontsize = font_size, 
+                                     color = 'b')
         
         if cl_size != None:
             for i in range(self.V):
@@ -306,7 +311,6 @@ class WeightedForest(fo.Forest):
                 text = str(cl_size[i])
                 mp.text(idx[i]+0.5, h1+0.05, text, fontsize = font_size)
         
-        #mp.show()
         return rank
 
     def fancy_plot_(self,valid):
@@ -366,7 +370,7 @@ class WeightedForest(fo.Forest):
         cM = 1.05*self.height.max()-0.05*self.height.min()
         cm = 1.05*self.height.min()-0.05*self.height.max()
         mp.axis([-1,idx.max()+1,cm,cM])
-        #mp.show()
+
         return ax
     
     def fancy_plot(self,validleaves):

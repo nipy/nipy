@@ -5,13 +5,13 @@ Questions: alexis.roche@gmail.com
 """
 from routines import _joint_histogram, _similarity, similarity_measures
 from transform import Affine, BRAIN_RADIUS_MM
+from utils import clamp, CLAMP_DTYPE, subsample
 
 import numpy as np  
 import scipy as sp 
 from sys import maxint
 
 """
-
 Input is an object that has at least an 'array'
 field and either a 'transform' or a 'voxsize' field. 
 
@@ -25,8 +25,6 @@ TODO: type checking. implement proper masking.
 For the time being, any transformation is assumed to be a 4x4 matrix. 
 """
 
-CLAMP_DTYPE = 'short'
-
 # Dictionary of interpolation methods
 # pv: Partial volume 
 # tri: Trilinear 
@@ -34,128 +32,14 @@ CLAMP_DTYPE = 'short'
 interp_methods = {'pv': 0, 'tri': 1, 'rand': -1}
 
 
-
-def clamp(x, th=0, mask=None, bins=256):
-    """ 
-    Define a mask as the intersection of an initial mask and those
-    indices for which array values are above a given threshold. Then,
-    clamp in-mask array values in the range [0..bins-1] and reset
-    out-of-mask values to -1.
-    
-    Parameters
-    ----------
-    x : ndarray
-        The input array
-    th : number
-         Low threshold
-    mask : ndarray
-           Mask 
-    bins : number 
-           Desired number of bins
-    
-    Returns
-    -------
-    y : ndarray
-        Clamped array
-    bins : number 
-           Adjusted number of bins 
-
-    """
- 
-    # Mask 
-    if mask == None: 
-        mask = np.ones(x.shape, dtype='bool')
-    mask *= (x>=th)
-
-    # Create output array to allow in-place operations
-    y = np.zeros(x.shape, dtype=CLAMP_DTYPE)
-    dmaxmax = 2**(8*y.dtype.itemsize-1)-1
-
-    # Threshold
-    dmax = bins-1 ## default output maximum value
-    if dmax > dmaxmax: 
-        raise ValueError('Excess number of bins')
-    xmin = float(x[mask].min())
-    xmax = float(x[mask].max())
-    th = np.maximum(th, xmin)
-    if th > xmax:
-        th = xmin  
-        print("Warning: Inconsistent threshold %f, ignored." % th) 
-    
-    # Input array dynamic
-    d = xmax-th
-
-    """
-    If the image dynamic is small, no need for compression: just
-    downshift image values and re-estimate the dynamic range (hence
-    xmax is translated to xmax-tth casted to the appropriate
-    dtype. Otherwise, compress after downshifting image values (values
-    equal to the threshold are reset to zero).
-    """
-    y[mask==False] = -1
-    if np.issubdtype(x.dtype, int) and d<=dmax:
-        y[mask] = x[mask]-th
-        bins = int(d)+1
-    else: 
-        a = dmax/d
-        y[mask] = np.round(a*(x[mask]-th))
- 
-    return y, bins 
-
-def controlled_subsampling(source, npoints):
-    """  
-    Tune subsampling factors so that the number of voxels involved in
-    registration match a given number.
-    
-    Parameters
-    ----------
-    source : ndarray or sequence  
-             Source image to subsample
-    
-    npoints : number
-              Target number of voxels (negative values will be ignored)
-
-    Returns
-    -------
-    subsampling: ndarray 
-                 Subsampling factors
-                 
-    sub_source: ndarray 
-                Subsampled source 
-
-    actual_npoints: number 
-                 Actual size of the subsampled array 
-
-    """
-    dims = source.shape
-    actual_npoints = (source >= 0).sum()
-    subsampling = np.ones(3, dtype='uint')
-
-    while actual_npoints > npoints:
-        # Subsample the direction with the highest number of samples
-        ddims = dims/subsampling
-        if ddims[0] >= ddims[1] and ddims[0] >= ddims[2]:
-            dir = 0
-        elif ddims[1] > ddims[0] and ddims[1] >= ddims[2]:
-            dir = 1
-        else:
-            dir = 2
-        subsampling[dir] += 1
-        sub_source = source[::subsampling[0], ::subsampling[1], ::subsampling[2]]
-        actual_npoints = (sub_source >= 0).sum()
-            
-    return subsampling, sub_source, actual_npoints
-
-
-
 class IconicMatcher:
 
     def __init__(self, 
                  source, target, 
                  source_toworld, target_toworld,
-                 source_threshold=0, target_threshold=0,  
+                 source_th=0, target_th=0,  
                  source_mask=None, target_mask=None,
-                 bins=256):
+                 source_bins=256, target_bins=256):
 
         """
         IconicMatcher class for intensity-based image registration. 
@@ -164,12 +48,12 @@ class IconicMatcher:
 
         # Source image binning
         self.source = source
-        self.source_clamped, s_bins = clamp(source, th=source_threshold, mask=source_mask, bins=bins)
+        self.source_clamped, s_bins = clamp(source, th=source_th, mask=source_mask, bins=source_bins)
 
         # Target image padding + binning
         self.target = target 
         self.target_clamped = -np.ones(np.array(target.shape)+2, dtype=CLAMP_DTYPE)
-        aux, t_bins = clamp(target, th=target_threshold, mask=target_mask, bins=bins)
+        aux, t_bins = clamp(target, th=target_th, mask=target_mask, bins=target_bins)
         self.target_clamped[1:target.shape[0]+1:, 1:target.shape[1]+1:, 1:target.shape[2]+1:] = aux
         
         # Histograms
@@ -195,18 +79,18 @@ class IconicMatcher:
         if size == None:
             size = self.source.shape
         self.block_size = np.array(size, dtype='uint')
-        if isinstance(fixed_npoints, int):
-            self.block_subsampling, self.source_block, self.block_npoints = \
-                controlled_subsampling(self.source_clamped[corner[0]:corner[0]+size[0]-1,
-                                                           corner[1]:corner[1]+size[1]-1,
-                                                           corner[2]:corner[2]+size[2]-1], 
-                                          npoints=fixed_npoints)
-        else: 
+        aux = self.source_clamped[corner[0]:corner[0]+size[0]-1:subsampling[0],
+                                  corner[1]:corner[1]+size[1]-1:subsampling[1],
+                                  corner[2]:corner[2]+size[2]-1:subsampling[2]]
+        if fixed_npoints==None: 
             self.block_subsampling = np.array(subsampling, dtype='uint')
-            self.source_block = self.source_clamped[corner[0]:corner[0]+size[0]-1:subsampling[0],
-                                                    corner[1]:corner[1]+size[1]-1:subsampling[1],
-                                                    corner[2]:corner[2]+size[2]-1:subsampling[2]]
+            self.source_block = aux
             self.block_npoints = (self.source_block >= 0).sum()
+        else: 
+            fixed_npoints = int(fixed_npoints)
+            self.source_block, self.block_subsampling, self.block_npoints = \
+                subsample(aux, npoints=fixed_npoints)
+
         ## Taux: block to full array transformation
         Taux = np.diag(np.concatenate((self.block_subsampling,[1]),1))
         Taux[0:3,3] = self.block_corner
@@ -214,7 +98,10 @@ class IconicMatcher:
 
     def set_similarity(self, similarity='cc', normalize=None, pdf=None): 
         self.similarity = similarity
-        self._similarity = similarity_measures[similarity]
+        if similarity in similarity_measures: 
+            self._similarity = similarity_measures[similarity]
+        else: 
+            self._similarity = similarity_measures['custom']
         self.normalize = normalize
         ## Use array rather than asarray to ensure contiguity 
         self.pdf = np.array(pdf)  
@@ -250,7 +137,8 @@ class IconicMatcher:
                            self.pdf)
 
     ## FIXME: check that the dimension of start is consistent with the search space. 
-    def optimize(self, search='rigid', method='powell', start=None, radius=BRAIN_RADIUS_MM):
+    def optimize(self, search='rigid', method='powell', start=None, 
+                 radius=BRAIN_RADIUS_MM, tol=1e-1, ftol=1e-2):
         """
         radius: a parameter for the 'typical size' in mm of the object
         being registered. This is used to reformat the parameter
@@ -281,13 +169,13 @@ class IconicMatcher:
 
         if method=='simplex':
             print ('Optimizing using the simplex method...')
-            tc = sp.optimize.fmin(loss, tc0, callback=callback)
+            tc = sp.optimize.fmin(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
         elif method=='powell':
             print ('Optimizing using Powell method...') 
-            tc = sp.optimize.fmin_powell(loss, tc0, callback=callback)
+            tc = sp.optimize.fmin_powell(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
         elif method=='conjugate_gradient':
             print ('Optimizing using conjugate gradient descent...')
-            tc = sp.optimize.fmin_cg(loss, tc0, callback=callback)
+            tc = sp.optimize.fmin_cg(loss, tc0, callback=callback, gtol=ftol)
         else:
             raise ValueError('Unrecognized optimizer')
         
@@ -335,7 +223,4 @@ class IconicMatcher:
 
         return simis, vec12s
         
-
-
-
 

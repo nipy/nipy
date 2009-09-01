@@ -18,23 +18,33 @@ include "numpy.pxi"
 cdef extern from "iconic.h":
 
     void iconic_import_array()
-    void joint_histogram(double* H, int clampI, int clampJ,  
+    void histogram(double* H, unsigned int clamp, flatiter iter)
+    void local_histogram(double* H, unsigned int clamp, 
+                         flatiter iter, unsigned int* size)
+    void drange(double* h, unsigned int size, double* res)
+    void L2_moments(double* h, unsigned int size, double* res)
+    void L1_moments(double * h, unsigned int size, double *res)
+    double entropy(double* h, unsigned int size, double* n)
+    void joint_histogram(double* H, unsigned int clampI, unsigned int clampJ,  
                          flatiter iterI, ndarray imJ_padded, 
                          double* Tvox, int interp)
-    double correlation_coefficient(double* H, int clampI, int clampJ)
-    double correlation_ratio(double* H, int clampI, int clampJ) 
-    double correlation_ratio_L1(double* H, double* hI, int clampI, int clampJ) 
-    double joint_entropy(double* H, int clampI, int clampJ)
-    double conditional_entropy(double* H, double* hJ, int clampI, int clampJ) 
+    double correlation_coefficient(double* H, unsigned int clampI, unsigned int clampJ, double* n)
+    double correlation_ratio(double* H, unsigned int clampI, unsigned int clampJ, double* n) 
+    double correlation_ratio_L1(double* H, double* hI, unsigned int clampI, unsigned int clampJ, double* n) 
+    double joint_entropy(double* H, unsigned int clampI, unsigned int clampJ, double* n)
+    double conditional_entropy(double* H, double* hJ, unsigned int clampI, unsigned int clampJ, double* n) 
     double mutual_information(double* H, 
-                              double* hI, int clampI, 
-                              double* hJ, int clampJ)
+                              double* hI, unsigned int clampI, 
+                              double* hJ, unsigned int clampJ,
+                              double* n)
     double normalized_mutual_information(double* H, 
-                                         double* hI, int clampI, 
-                                         double* hJ, int clampJ) 
+                                         double* hI, unsigned int clampI, 
+                                         double* hJ, unsigned int clampJ, 
+                                         double* n) 
     double supervised_mutual_information(double* H, double* F, 
-                                         double* fI, int clampI, 
-                                         double* fJ, int clampJ) 
+                                         double* fI, unsigned int clampI, 
+                                         double* fJ, unsigned int clampJ,
+                                         double* n) 
     void cubic_spline_resample(ndarray im_resampled, ndarray im, double* Tvox, int cast_integer)
 
 
@@ -55,6 +65,29 @@ import_array()
 import numpy as np
 cimport numpy as np
 
+# Enumerate texture measures
+cdef enum texture_measure: 
+    MIN, 
+    MAX, 
+    DRANGE, 
+    MEAN, 
+    VARIANCE, 
+    MEDIAN, 
+    L1DEV, 
+    ENTROPY, 
+    CUSTOM_TEXTURE
+
+# Corresponding Python dictionary 
+texture_measures = {
+    'min': MIN, 
+    'max': MAX,
+    'drange': DRANGE,
+    'mean': MEAN, 
+    'variance': VARIANCE, 
+    'median': MEDIAN, 
+    'l1dev': L1DEV, 
+    'entropy': ENTROPY,
+    'custom': CUSTOM_TEXTURE}
 
 # Enumerate similarity measures
 cdef enum similarity_measure:
@@ -66,6 +99,7 @@ cdef enum similarity_measure:
     MUTUAL_INFORMATION,
     NORMALIZED_MUTUAL_INFORMATION,
     SUPERVISED_MUTUAL_INFORMATION,
+    CUSTOM_SIMILARITY
 
 # Corresponding Python dictionary 
 similarity_measures = {'cc': CORRELATION_COEFFICIENT,
@@ -75,20 +109,99 @@ similarity_measures = {'cc': CORRELATION_COEFFICIENT,
                        'je': JOINT_ENTROPY,
                        'ce': CONDITIONAL_ENTROPY,
                        'nmi': NORMALIZED_MUTUAL_INFORMATION,
-                       'smi': SUPERVISED_MUTUAL_INFORMATION}
+                       'smi': SUPERVISED_MUTUAL_INFORMATION,
+                       'custom': CUSTOM_SIMILARITY}
+
+
+def _texture(ndarray im, ndarray H, Size, int texture, method=None): 
+
+    cdef double *res, *h
+    cdef double moments[5]
+    cdef unsigned int clamp
+    cdef unsigned int coords[3], size[3]
+    cdef broadcast multi
+    cdef flatiter im_iter
+
+    # Views
+    clamp = <unsigned int>H.dimensions[0]
+    h = <double*>H.data
+    
+    # Copy size parameters
+    size[0] = <unsigned int>Size[0]
+    size[1] = <unsigned int>Size[1]
+    size[2] = <unsigned int>Size[2]
+
+    # Allocate output 
+    imtext = np.zeros(im.shape, dtype='double')
+
+    # Loop over input and output images
+    multi = PyArray_MultiIterNew(2, <void*>imtext, <void*>im)
+    while(multi.index < multi.size):
+        res = <double*>PyArray_MultiIter_DATA(multi, 0)
+        im_iter = <flatiter>multi.iters[1]
+        # Compute local image histogram
+        local_histogram(h, clamp, im_iter, size)
+        # Switch 
+        if texture == MIN:
+            drange(h, clamp, moments)
+            res[0] = moments[0]
+        elif texture == MAX:
+            drange(h, clamp, moments)
+            res[0] = moments[1]
+        elif texture == DRANGE:
+            drange(h, clamp, moments)
+            res[0] = moments[1]-moments[0]
+        elif texture == MEAN: 
+            L2_moments(h, clamp, moments)
+            res[0] = moments[1]
+        elif texture == MEAN: 
+            L2_moments(h, clamp, moments)
+            res[0] = moments[2]
+        elif texture == MEDIAN:
+            L1_moments(h, clamp, moments)
+            res[0] = moments[1] 
+        elif texture == L1DEV: 
+            L1_moments(h, clamp, moments)
+            res[0] = moments[2] 
+        elif texture == ENTROPY: 
+            res[0] = entropy(h, clamp, moments)
+        else: # CUSTOM
+            res[0] = method(H)
+        # Next voxel please
+        PyArray_MultiIter_NEXT(multi)
+   
+    return imtext
+
+
+def _histogram(ndarray H, flatiter iter):
+    """
+    _joint_histogram(H, iterI)
+    Comments to follow.
+    """
+    cdef double *h
+    cdef unsigned int clamp
+
+    # Views
+    clamp = <unsigned int>H.dimensions[0]
+    h = <double*>H.data
+
+    # Compute image histogram 
+    histogram(h, clamp, iter)
+
+    return 
 
 
 def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
     """
-    joint_hist(H, imI, imJ, Tvox, subsampling, corner, size)
+    _joint_histogram(H, iterI, imJ, Tvox, interp)
     Comments to follow.
     """
     cdef double *h, *tvox
-    cdef int clampI, clampJ
+    cdef unsigned int clampI, clampJ
 
     # Views
-    clampI = <int>H.dimensions[0]
-    clampJ = <int>H.dimensions[1]    
+    clampI = <unsigned int>H.dimensions[0]
+    clampJ = <unsigned int>H.dimensions[1]    
     h = <double*>H.data
     tvox = <double*>Tvox.data
 
@@ -98,19 +211,20 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int i
     return 
 
 
-def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, ndarray F=None):
+def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, 
+                ndarray F=None, method=None):
     """
-    similarity(H, hI, hJ).
+    _similarity(H, hI, hJ, simitype, ndarray F=None)
     Comments to follow
     """
     cdef int isF = 0
     cdef double *h, *hI, *hJ, *f=NULL
-    cdef double simi = 0.0
-    cdef int clampI, clampJ
+    cdef double simi=0.0, n
+    cdef unsigned int clampI, clampJ
 
     # Array views
-    clampI = <int>H.dimensions[0]
-    clampJ = <int>H.dimensions[1]
+    clampI = <unsigned int>H.dimensions[0]
+    clampJ = <unsigned int>H.dimensions[1]
     h = <double*>H.data
     hI = <double*>HI.data
     hJ = <double*>HJ.data
@@ -120,23 +234,23 @@ def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, ndarray F=None)
 
     # Switch 
     if simitype == CORRELATION_COEFFICIENT:
-        simi = correlation_coefficient(h, clampI, clampJ)
+        simi = correlation_coefficient(h, clampI, clampJ, &n)
     elif simitype == CORRELATION_RATIO: 
-        simi = correlation_ratio(h, clampI, clampJ) 
+        simi = correlation_ratio(h, clampI, clampJ, &n) 
     elif simitype == CORRELATION_RATIO_L1:
-        simi = correlation_ratio_L1(h, hI, clampI, clampJ) 
+        simi = correlation_ratio_L1(h, hI, clampI, clampJ, &n) 
     elif simitype == MUTUAL_INFORMATION: 
-        simi = mutual_information(h, hI, clampI, hJ, clampJ) 
+        simi = mutual_information(h, hI, clampI, hJ, clampJ, &n) 
     elif simitype == JOINT_ENTROPY:
-        simi = joint_entropy(h, clampI, clampJ) 
+        simi = joint_entropy(h, clampI, clampJ, &n) 
     elif simitype == CONDITIONAL_ENTROPY:
-        simi = conditional_entropy(h, hJ, clampI, clampJ) 
+        simi = conditional_entropy(h, hJ, clampI, clampJ, &n) 
     elif simitype == NORMALIZED_MUTUAL_INFORMATION:
-        simi = normalized_mutual_information(h, hI, clampI, hJ, clampJ) 
+        simi = normalized_mutual_information(h, hI, clampI, hJ, clampJ, &n) 
     elif simitype == SUPERVISED_MUTUAL_INFORMATION:
-        simi = supervised_mutual_information(h, f, hI, clampI, hJ, clampJ)
-    else:
-        simi = 0.0
+        simi = supervised_mutual_information(h, f, hI, clampI, hJ, clampJ, &n)
+    else: # CUSTOM 
+        simi = method(H)
         
     return simi
 
@@ -379,8 +493,8 @@ def matrix44(ndarray t, dtype):
     7 < size < 12 ==> error
     size >= 12 ==> t is interpreted as translation + rotation + scaling + shearing 
     """
-    cdef int size
-    size = <int>PyArray_SIZE(t)
+    cdef unsigned int size
+    size = <unsigned int>PyArray_SIZE(t)
     T = np.eye(4, dtype=dtype)
     R = rotation_vec2mat(t[3:6])
     if size == 6:
@@ -394,6 +508,7 @@ def matrix44(ndarray t, dtype):
         T[0:3,0:3] = np.dot(R,np.dot(S,Q))
     T[0:3,3] = t[0:3] 
     return T 
+
 
 
 

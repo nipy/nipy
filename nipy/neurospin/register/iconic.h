@@ -2,8 +2,8 @@
   @author Alexis Roche
   @date 1997-2009
   
-  Intensity-based image registration for 2D or 3D images
-  [BETA VERSION].
+  Intensity-based texture analysis and image registration for 2D or 3D
+  images [BETA VERSION].
  
   All computations are fed with the voxel-to-voxel transformation
   relating two images, so you do not need the voxel sizes.
@@ -19,8 +19,26 @@ extern "C" {
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
+#define L2_moments(h, size, res)		\
+  L2_moments_with_stride(h, size, 1, res)
+#define L1_moments(h, size, res)		\
+  L1_moments_with_stride(h, size, 1, res)
+
+
   /* Numpy import */
   extern void iconic_import_array(void);
+
+
+  /* Texture analysis */ 
+  extern void histogram(double* H, 
+			unsigned int clamp, 
+			PyArrayIterObject* iter);
+
+  extern void local_histogram(double* H, 
+			      unsigned int clamp, 
+			      PyArrayIterObject* iter, 
+			      const unsigned int* size);
+
 
   /* 
      Update a pre-allocated joint histogram. Important notice: in all
@@ -38,23 +56,54 @@ extern "C" {
        <0 - RANDOM interpolation with seed=-interp
   */ 
   extern void joint_histogram(double* H, 
-			      int clampI, 
-			      int clampJ,  
+			      unsigned int clampI, 
+			      unsigned int clampJ,  
 			      PyArrayIterObject* iterI,
 			      const PyArrayObject* imJ_padded, 
 			      const double* Tvox, 
 			      int interp); 
 
 
-  extern double correlation_coefficient(const double* H, int clampI, int clampJ);
-  extern double correlation_ratio(const double* H, int clampI, int clampJ); 
-  extern double correlation_ratio_L1(const double* H, double* hI, int clampI, int clampJ); 
-  extern double joint_entropy(const double* H, int clampI, int clampJ);
-  extern double conditional_entropy(const double* H, double* hJ, int clampI, int clampJ); 
-  extern double mutual_information(const double* H, double* hI, int clampI, double* hJ, int clampJ);
-  extern double normalized_mutual_information(const double* H, double* hI, int clampI, double* hJ, int clampJ); 
-  extern double supervised_mutual_information(const double* H, const double* F, 
-					      double* fI, int clampI, double* fJ, int clampJ); 
+  extern double entropy(const double* h, unsigned int size, double* n); 
+  extern void drange(const double* h, unsigned int size, double* res);
+  extern void L2_moments_with_stride(const double * h, unsigned int size, unsigned int stride, 
+				     double* res); 
+  extern void L1_moments_with_stride(const double * h, unsigned int size, unsigned int stride, 
+				     double* res);
+
+  extern double correlation_coefficient(const double* H, 
+					unsigned int clampI, 
+					unsigned int clampJ, 
+					double* n); 
+  extern double correlation_ratio(const double* H, 
+				  unsigned int clampI, 
+				  unsigned int clampJ, 
+				  double* n); 
+  extern double correlation_ratio_L1(const double* H, 
+				     double* hI, 
+				     unsigned int clampI, 
+				     unsigned int clampJ, 
+				     double* n); 
+  extern double mutual_information(const double* H, 
+				   double* hI, 
+				   unsigned int clampI, 
+				   double* hJ,
+				   unsigned int clampJ, 
+				   double* n); 
+  extern double normalized_mutual_information(const double* H, 
+					      double* hI,
+					      unsigned int clampI, 
+					      double* hJ, 
+					      unsigned int clampJ, 
+					      double* n); 
+  extern double supervised_mutual_information(const double* H, 
+					      const double* F, 
+					      double* fI, 
+					      unsigned int clampI, 
+					      double* fJ, 
+					      unsigned int clampJ, 
+					      double* n); 
+
 
   
   /*!

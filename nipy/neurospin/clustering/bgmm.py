@@ -149,16 +149,22 @@ def generate_perm(k,nperm=100):
     """
     returns an array of shape(nbperm, k) representing
     the permutations of k elements
-    - nperm=100
-    if k>5: only nperm random draws are generated
+    
+    Parameters
+    ----------
+    k, int the number of elements to be permuted    
+    nperm=100 the maximal number of permutations
+    if gamma(k+1)>nperm: only nperm random draws are generated
    
    Returns
    -------
     p: array of shape(nperm,k): each row is permutation of k
     """
+    from scipy.special import gamma
     if k==1:
         return np.reshape(np.array([0]),(1,1)).astype(np.int)
-    if k<6:
+    if gamma(k+1)<nperm:
+        # exhaustive permutations
         aux = generate_perm(k-1)
         n = aux.shape[0]
         perm = np.zeros((n*k,k)).astype(np.int)
@@ -178,7 +184,7 @@ def apply_perm(perm,z):
     """
     Permutation of the values of z
     """
-    z0 = perm[z.copy()]
+    z0 = perm[z]
     return z0
     
 def multinomial(Likelihood):
@@ -225,7 +231,9 @@ def dkl_gaussian(m1,P1,m2,P2):
 def dkl_wishart(a1,B1,a2,B2):
     """
     returns the KL divergence bteween two Wishart distribution of
-    parameters (a1,B1) and (a2,B2)
+    parameters (a1,B1) and (a2,B2),
+    where a1 and a2 are degrees of freedom
+    B1 and B2 are scale matrices
     """
     from scipy.special import psi,gammaln
     from numpy.linalg import det,pinv
@@ -389,7 +397,6 @@ class BGMM(GMM):
         self.prior_scale = np.repeat(px,self.k,0)
         self.prior_dof = np.ones(self.k)*(self.dim+2)
         self.prior_shrinkage = np.ones(self.k)*small
-        #self.weights = np.ones(self.k)*1.0/self.k
 
         # check that everything is OK
         if nocheck==True:
@@ -680,7 +687,7 @@ class BGMM(GMM):
         empmeans = (empmeans.T/rpop).T
             
         #1. the precisions
-        dof = self.prior_dof + pop +1
+        dof = self.prior_dof + pop + 1
         empcov = np.zeros(np.shape(self.precisions))
 
         for k in range(self.k):
@@ -699,7 +706,6 @@ class BGMM(GMM):
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
         covariance += addcov*prior_shrinkage
         scale = np.array([pinv(covariance[k]) for k in range(self.k)])
-    
 
         #2. the means
         empmeans= (empmeans.T*rpop).T
@@ -720,7 +726,6 @@ class BGMM(GMM):
             pp*= Wishart_eval(dof[k],scale[k],self.precisions[k])
 
         for k in range(self.k):
-            #mp = self.precisions[k]*shrinkage[k]
             mp = scale[k]*shrinkage[k]
             pp *= normal_eval(means[k],mp,self.means[k])
         return pp
@@ -743,7 +748,7 @@ class BGMM(GMM):
            the corresponding classification
         nperm=0 : the number of permutations to sample
                 to model the label switching issue 
-                in the computation of the BF
+                in the computation of the Bayes Factor
                 By default, exhaustive permutations are used
                 if nperm>0, this number is used.
                 Note that this is simply to save time
