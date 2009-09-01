@@ -13,7 +13,7 @@ import nipy.neurospin.graph.field as ff
 
 
 def make_bsa_nifti(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
-                   smin=0, swd="/tmp/",method='simple',subj_id=None,nbeta=0):
+                   smin=0, swd="/tmp/", method='simple', subj_id=None, nbeta=0):
     """
     main function for  performing bsa on a set of images.
     It creates the some output images in the given directory
@@ -61,7 +61,6 @@ def make_bsa_nifti(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     
     # Read the referential information
     nim = load(mask_images[0])
-    header = nim.get_header()
     ref_dim = nim.get_shape()
     affine = nim.get_affine()
     
@@ -102,16 +101,16 @@ def make_bsa_nifti(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     BF = [None for s in range(nsubj)]
     if method=='ipmi':
         crmap,AF,BF,p = bsa.compute_BSA_ipmi(Fbeta,lbeta,coord,dmax,xyz[:,:3],
-                                             header,thq, smin,ths, theta,g0,
-                                             bdensity)
+                                             affine, ref_dim,thq, smin,ths,
+                                             theta, g0, bdensity)
     if method=='dev':
         crmap,AF,BF,p = bsa.compute_BSA_dev (Fbeta,lbeta,coord,dmax,xyz[:,:3],
-                                             header,thq, smin,ths, theta,g0,
-                                             bdensity,verbose=1)
+                                             affine, ref_dim ,thq, smin,ths,
+                                             theta, g0, bdensity,verbose=1)
     if method=='simple':
         crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta,lbeta,coord,dmax,xyz[:,:3],
-                                                header,thq, smin,ths, theta,g0,
-                                                verbose=0)
+                                                affine, ref_dim, thq, smin,ths,
+                                                theta, g0, verbose=0)
 
     # Write the results
     LabelImage = op.join(swd,"CR_%04d.nii"%nbeta)

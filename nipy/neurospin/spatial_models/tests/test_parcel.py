@@ -96,3 +96,7 @@ def test_parcel_multi_subj():
     for s in range(nsubj):
         control *= (np.unique(Label)==np.arange(nbparcel)).all()
     assert(control)
+
+if __name__ == '__main__':
+    import nose
+    nose.run(argv=['', __file__])

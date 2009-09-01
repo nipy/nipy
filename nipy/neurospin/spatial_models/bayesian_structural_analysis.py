@@ -278,15 +278,17 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
             us = bf[s].get_roi_feature('label')
             us[us>-1] = maplabel[us[us>-1]]
             bf[s].set_roi_feature('label',us)
-            header = bf[s].header
+            affine = bf[s].affine
+            shape = bf[s].shape
 
     # create the landmark regions structure
     k = np.sum(valid)
     if k>0:
-        LR = sbf.landmark_regions(k,header=header,subj=subjs,coord=coords)
+        LR = sbf.landmark_regions(k, affine=affine, shape=shape, 
+                                     subj=subjs,coord=coords)
         LR.set_discrete_feature('confidence', pps)
     else:
-        LR=None
+        LR = None
     return LR,maplabel
 
 
@@ -296,7 +298,8 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
 
 
 
-def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
+def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, affine=np.eye(4), 
+                                  shape=None, thq=0.5,
                      smin=5, ths=0, theta=3.0, g0=1.0, bdensity=0, verbose=0):
     """
     Compute the  Bayesian Structural Activation patterns
@@ -313,7 +316,10 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
           spatial coordinates of the nodes
     xyz array of shape (nnodes,3):
         the grid coordinates of the field
-    header=None:  image header the referential defining header
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition 
     thq = 0.5 (float): posterior significance threshold should be in [0,1]
     smin = 5 (int): minimal size of the regions to validate them
     theta = 3.0 (float): first level threshold
@@ -355,8 +361,8 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
     for s in range(nbsubj):
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,
-                                    th=theta,smin=smin)
+        nroi = hroi.NROI_from_field(Fbeta, affine, shape, xyz, refdim=0,
+                                    th=theta, smin=smin)
         bf.append(nroi)
         
         if nroi!=None:
@@ -455,8 +461,8 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, header, thq=0.5,
 
 
 
-def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
-                     thq=0.9,smin=5, ths=0,theta=3.0, g0=1.0,
+def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, affine=np.eye(4), 
+                    shape=None, thq=0.9,smin=5, ths=0,theta=3.0, g0=1.0,
                      bdensity=0, verbose=0):
     """
     Compute the  Bayesian Structural Activation paterns
@@ -472,7 +478,10 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
           spatial coordinates of the nodes
     xyz array of shape (nnodes,3):
         the grid coordinates of the field
-    header=None:  image header the referential defining header
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition  
     thq = 0.5 (float): posterior significance threshold should be in [0,1]
     smin = 5 (int): minimal size of the regions to validate them
     theta = 3.0 (float): first level threshold
@@ -515,7 +524,7 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,
+        nroi = hroi.NROI_from_field(Fbeta, affine, shape, xyz, refdim=0,
                                     th=theta,smin=smin)
         bf.append(nroi)
         
@@ -614,7 +623,8 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, header,
     return crmap,LR,bf,p
 
 
-def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
+def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4), 
+                              shape=None,
                        thq=0.5, smin=5, ths=0, theta=3.0, g0=1.0,
                        verbose=0):
     """
@@ -633,7 +643,10 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
          expected cluster std in the common space in units of coord
     xyz array of shape (nnodes,3):
         the grid coordinates of the field
-    header=None: image header the referential-defining header
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition      
     thq = 0.5 (float):
         posterior significance threshold 
         should be in the [0,1] interval
@@ -675,8 +688,8 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, header=None,
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        nroi = hroi.NROI_from_field(Fbeta,header,xyz,refdim=0,
-                                    th=theta,smin=smin)
+        nroi = hroi.NROI_from_field(Fbeta, affine, shape, xyz, refdim=0,
+                                    th=theta, smin=smin)
         bf.append(nroi)
         
         if nroi!=None:

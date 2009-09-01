@@ -14,8 +14,9 @@ import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.hroi as hroi
 
-dimx=60
-dimy=60
+# simulatean activation image
+dimx = 60
+dimy = 60
 pos = 2*np.array([[6,7],[10,10],[15,10]])
 ampli = np.array([3,4,4])
 
@@ -25,18 +26,20 @@ dataset = simul.make_surrogate_array(nbsubj=1, dimx=dimx, dimy=dimy,
 x = np.reshape(dataset, (dimx, dimy, 1))
 beta = np.reshape(x, (nbvox, 1))
 
-xyz = np.array(np.where(x))
-nbvox = np.size(xyz, 1)
+xyz = np.array(np.where(x)).T
+nbvox = np.size(xyz, 0)
 
-# build the field
+# build the field instance
 F = ff.Field(nbvox)
-F.from_3d_grid(xyz.T, 18)
+F.from_3d_grid(xyz, 18)
 F.set_field(beta)
 
 # compute the blobs
 th = 2.36
 smin = 5
-nroi = hroi.NROI_from_field(F,None,xyz.T,refdim=0,th=th,smin = smin)
+affine = np.eye(4)
+shape = (dimx, dimy, 1)
+nroi = hroi.NROI_from_field(F, affine, shape, xyz, refdim=0, th=th, smin = smin)
 
 bmap = np.zeros(nbvox)
 label = -np.ones(nbvox)

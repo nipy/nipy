@@ -12,7 +12,7 @@ Author : Bertrand Thirion, 2009
 
 import os.path as op
 import numpy as np
-import nifti
+from nipy.io.imageformats import load, save, Nifti1Image
 import tempfile
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.spatial_models.hroi as hroi
@@ -29,9 +29,10 @@ threshold = 3.0 # blob-forming threshold
 smin = 5 # size threshold on bblobs
 
 # prepsare the data
-nim = nifti.NiftiImage(inputImage)
-header = nim.header
-data = nim.asarray().T
+nim = load(inputImage)
+affine = nim.get_affine()
+shape = nim.get_shape()
+data = nim.get_data()
 values = data[data!=0]
 xyz = np.array(np.where(data)).T
 F = ff.Field(xyz.shape[0])
@@ -40,7 +41,7 @@ F.set_field(values)
 
 # compute the  nested roi object
 label = -np.ones(F.V)
-nroi = hroi.NROI_from_field(F,header,xyz,0,threshold,smin)
+nroi = hroi.NROI_from_field(F, affine, shape, xyz, 0, threshold, smin)
 nroi.set_discrete_feature_from_index('activation',values)
 bfm = nroi.discrete_to_roi_features('activation')
 bmap = -np.zeros(F.V)
@@ -51,18 +52,18 @@ if nroi!=None:
         bmap[idx[k]] = bfm[k]
 
 # saving the blob image,i. e. a label image 
-wlabel = -2*np.ones(nim.getVolumeExtent())
+wlabel = -2*np.ones(shape)
 wlabel[data!=0] = label
-wim =  nifti.NiftiImage(wlabel.T,nim.header)
-wim.description = 'blob image extracted from %s'%inputImage 
-wim.save(op.join(swd,"blob.nii"))
+wim = Nifti1Image(wlabel, affine)
+wim.get_header()['descrip'] = 'blob image extracted from %s'%inputImage 
+save(wim,op.join(swd,"blob.nii"))
 
 # saving the image of the average-signal-per-blob
-wlabel = np.zeros(nim.getVolumeExtent())
+wlabel = np.zeros(shape)
 wlabel[data!=0] = bmap
-wim =  nifti.NiftiImage(wlabel.T,nim.header)
-wim.description = 'blob image extracted from %s'%inputImage 
-wim.save(op.join(swd,"bmap.nii"))
+wim = Nifti1Image(wlabel, affine)
+wim.get_header()['descrip'] = 'blob average signal extracted from %s'%inputImage 
+save(wim,op.join(swd,"bmap.nii"))
 
 # saving the image of the end blobs or leaves
 lroi = nroi.reduce_to_leaves()
@@ -71,11 +72,12 @@ if lroi!=None:
     idx = lroi.discrete_features['index']
     for k in range(lroi.k):
         label[idx[k]] = k
-wlabel = -2*np.ones(nim.getVolumeExtent())
+
+wlabel = -2*np.ones(shape)
 wlabel[data!=0] = label
-wim =  nifti.NiftiImage(wlabel.T,nim.header)
-wim.description = 'blob image extracted from %s'%inputImage 
-wim.save(op.join(swd,"leaves.nii"))
+wim = Nifti1Image(wlabel, affine)
+wim.get_header()['descrip'] = 'blob image extracted from %s'%inputImage  
+save(wim,op.join(swd,"leaves.nii"))
 
 print "Wrote the blob image in %s" %op.join(swd,"blob.nii")
 print "Wrote the blob-average signal image in %s" %op.join(swd,"bmap.nii")

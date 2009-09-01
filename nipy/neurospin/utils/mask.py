@@ -56,8 +56,8 @@ def _largest_cc(mask):
     return mask_cc
 
 
-def compute_mask_files(input_filename, output_filename=None, return_mean=False, 
-                       m=0.2, M=0.9, cc=1):
+def compute_mask_files( input_filename, output_filename=None, 
+                        return_mean=False, m=0.2, M=0.9, cc=1):
     """
     Compute a mask file from fMRI nifti file(s)
 
@@ -244,6 +244,38 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
 
     return mask
 
+def intersect_masks(input_masks, output_filename, threshold, cc):
+    """
+    Given a list of input mask images, generate the output image which
+    is the the threshold-level intersection of the inputs 
+
+    
+    Parameters
+    ----------
+    input_masks, list of strings, paths of the input images
+                 nsubj set as len(input_masks)
+    output_filename, string, path of the output image
+    threshold: float, level of the intersection 
+               must be within [0, 1]
+    cc, bool additionally extract the main connected component
+    """  
+    nsubj = len(input_masks)
+    
+    nim = nifti.NiftiImage(inputs_masks[0])
+    ref_dim = nim.getVolumeExtent()
+    gmask = np.zeros(ref_dim)
+
+    for s in range(nsubj):
+        nim = nifti.NiftiImage(inputs_masks[s])
+        gmask += nim.asarray()  
+    
+    gmask = gmask>(threshold*nsubj)     
+    if (np.sum(gmask>0) & cc):
+           gmask = _largest_cc(gmask)
+    
+    output_image = NiftiImage(gmask.astype(np.uint8), nim.header)
+    output_image.description = 'mask image'
+    output_image.save(output_filename)
 
 ################################################################################
 # Legacy function calls.

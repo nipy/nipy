@@ -14,9 +14,6 @@ import scipy.stats as st
 import os.path as op
 import tempfile
 
-#import nifti
-#import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
-#import nipy.neurospin.graph.field as ff
 from nipy.neurospin.spatial_models.bsa_nifti import make_bsa_nifti
 import get_data_light
 
@@ -46,7 +43,7 @@ method='simple'
 
 # call the function
 AF,BF = make_bsa_nifti(mask_images, betas, theta, dmax,
-                       ths,thq,smin,swd,method,subj_id, nbeta)
+                       ths, thq, smin, swd, method, subj_id, nbeta)
 
 # Write the result. OK, this is only a temporary solution
 import pickle
