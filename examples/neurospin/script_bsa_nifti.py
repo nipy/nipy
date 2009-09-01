@@ -14,9 +14,6 @@ import scipy.stats as st
 import os.path as op
 import tempfile
 
-#import nifti
-#import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
-#import nipy.neurospin.graph.field as ff
 from nipy.neurospin.spatial_models.bsa_nifti import make_bsa_nifti
 import get_data_light
 
