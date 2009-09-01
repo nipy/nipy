@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 
 # Neuroimaging libraries imports
-from nifti import NiftiImage
+import nifti
 # In different versions of pynifti, this symbol lived in different places
 try:
     from nifti.nifticlib import NIFTI_INTENT_LABEL
@@ -15,6 +15,18 @@ except ImportError:
 
 
 import nipy.neurospin.graph as fg
+
+def load_nifti(filename):
+    """ Load a nifti file, using memapping if possible.
+
+       
+    """
+    try:
+        nim = nifti.niftiimage.MemMappedNiftiImage(filename)
+    except RuntimeError:
+        "Memmapping is possible only for uncompressed files."
+        nim = nifti.NiftiImage(filename)
+    return nim
 
 
 def _largest_cc(mask):
@@ -88,8 +100,7 @@ def compute_mask_files(input_filename, output_filename=None, return_mean=False,
         # We have several images, we do mean on the fly, 
         # to avoid loading all the data in the memory
         for index, filename in enumerate(input_filename):
-            # XXX: Should we try to use memapping, for speed?
-            nim = NiftiImage(filename)
+            nim = load_nifti(filename)
             if index == 0:
                 first_volume = nim.data.squeeze()
                 mean_volume = first_volume.copy().astype(np.float32)
@@ -99,7 +110,7 @@ def compute_mask_files(input_filename, output_filename=None, return_mean=False,
         mean_volume /= float(len(input_filename))
     else: 
         # one single filename
-        nim = NiftiImage(input_filename)
+        nim = load_nifti(input_filename)
         header = nim.header
         first_volume = nim.data[0]
         mean_volume = nim.data.mean(axis=0)
@@ -108,7 +119,7 @@ def compute_mask_files(input_filename, output_filename=None, return_mean=False,
     dat = compute_mask(mean_volume, first_volume, m, M, cc)
     
     # header is auto-reupdated (number of dim, calmax.)
-    output_image = NiftiImage(dat.astype(np.uint8), header) 
+    output_image = nifti.NiftiImage(dat.astype(np.uint8), header) 
     # cosmetic updates
     output_image.updateHeader({'intent_code': NIFTI_INTENT_LABEL, 
                               'intent_name': 'Intra Mask'})
