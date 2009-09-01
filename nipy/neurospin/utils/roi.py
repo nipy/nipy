@@ -1,11 +1,12 @@
 import numpy as np
 import nifti
+from nipy.io.imageformats import load, save, Nifti1Image 
 
 #--------------------------------------------------------
 #------- class ROI --------------------------------------
 #--------------------------------------------------------
 
-class ROI(object):
+class DiscreteROI(object):
     """
     Temporary ROI class for fff
     Ultimately, it should be merged with the nipy class
@@ -22,7 +23,7 @@ class ROI(object):
     each feature is in fact a (voxel,feature_dimension) array
     """
 
-    def __init__(self, id="roi", header=None):
+    def __init__(self, id="roi", affine=np.eye(4),shape=None):
         """
         roi = ROI(id='roi', header=None)
 
@@ -34,28 +35,27 @@ class ROI(object):
             referential-defining information
         """
         self.id = id
-        self.header = header
+        self.affine = affine
+        self.shape = shape
         self.features = dict()
 
-    def check_header(self, image):
+    def check_header(self, image_path):
         """
-        Checks that the image is in the header of self
+        checks that the image is in the header of self
 
         Parameters
-        -----------
-        image: string
-            the path of an image
+        ----------
+        image_path: (string) the path of an image
         """
-        #print "check not implemented yet"
         eps = 1.e-15
-        nim = nifti.NiftiImage(image)
-        header  = nim.header
+        nim = load(image_path)
         b = True
-        if (np.absolute(header['sform']-self.header['sform'])).max()>eps:
+        if (np.absolute(nim.get_affine()-self.affine)).max()>eps:
             b = False
-        for d1,d2 in zip(header['dim'],self.header['dim']):
-            if d1!=d2:
-                b = False
+        if self.shape!=None:
+            for d1,d2 in zip(nim.get_shape(),self.shape):
+                if d1!=d2:
+                    b = False
         return b
 
     def from_binary_image(self, image):
@@ -68,28 +68,23 @@ class ROI(object):
             the path of an image
         """
         self.check_header(image)
-        nim = nifti.NiftiImage(image)
-        data = nim.data.T
-        self.discrete = np.where(data)
+        nim = load(image)
+        self.discrete = np.where(nim.get_data())
         
     def from_position(self, position, radius):
         """
         A ball in the grid
         requires that the grid and header are defined
         """
-        # check that the ref is defined
-        if self.header==None:
-            raise ValueError, "No defined referntial"
-
+        if self.shape==None:
+            raise ValueError, 'self.shape has to be defined'
         # define the positions associated with the grid
-        sform = self.header['sform']
-        dim = self.header['dim'][1:4]
-        grid = np.indices(dim)
+        grid = np.indices(self.shape)
 
-        nvox = np.prod(dim)
+        nvox = np.prod(self.shape)
         grid.shape = (3, nvox)
         grid = np.hstack((grid.T, np.ones((nvox, 1))))
-        coord = np.dot(grid, sform.T)[:,:3]
+        coord = np.dot(grid, self.affine.T)[:,:3]
         
         # finally derive the mask of the ROI
         dx = coord - position
@@ -110,8 +105,8 @@ class ROI(object):
             the desired label
         """
         self.check_header(image)
-        nim = nifti.NiftiImage(image)
-        data = nim.data.T
+        nim = load(image)
+        data = nim.get_data()
         self.discrete = np.where(data==label)
         
         
@@ -133,39 +128,39 @@ class ROI(object):
         """
         # check that the header is OK indeed
         self.check_header(image)
-        
-        # get the coordinates of the regions
-        sform = self.header['sform']
-        nim = nifti.NiftiImage(image)
-        data = nim.data.T.astype(np.int)
+
+        # get the image data and find the best matching ROI
+        nim = load(image)
+        data = nim.get_data().astype(np.int)
         k = data.max()+1
         cent = np.array([np.mean(np.where(data==i),1) for i in range(k)])
         cent = np.hstack((cent,np.ones((k,1))))
-        coord = np.dot(cent,np.transpose(sform))[:,:3]
+        coord = np.dot(cent, self.affine.T)[:,:3]
         
         # find the best match
         dx = coord-position
         k = np.argmin(np.sum(dx**2,1))
         self.discrete = np.where(data==k)
         
-    def make_image(self,name):
+    def make_image(self, image_path):
         """
         write a binary nifty image where the nonzero values are the ROI mask
 
         Parameters
         -----------
-        name: string 
+        image_path: string 
             the desired image name
         """
-        #if name==None: name = "%s.nii" % self.id
-        data = np.zeros(tuple(self.header['dim'][1:4]))
-        data[self.discrete]=1
-        data = np.reshape(data,tuple(self.header['dim'][1:4])).T
-        nim = nifti.NiftiImage(data,self.header)
-        nim.description = "ROI image"
-        nim.save(name)
+        if self.shape==None:
+            raise ValueError, 'self.shape has to be defined'
+        data = np.zeros(self.shape)
+        data[self.discrete] = 1
+        
+        wim = Nifti1Image(data, self.affine)
+        wim.get_header()['descrip'] = "ROI image"
+        save(wim, image_path)
 
-    def set_feature(self,fid,data):
+    def set_feature(self, fid, data):
         """
         Given an array of data that is assumed to comprise
         the ROI, get the subset of values that correponds to
@@ -186,9 +181,7 @@ class ROI(object):
         this function creates a reduced feature array corresponding to the 
         ROI item.
         """
-        IVE = np.shape(data)
-        VE = tuple(self.header['dim'][1:4])
-        if IVE!= VE:
+        if (np.shape(data)!=self.shape):
             raise ValueError, "incompatible dimension of provided data"
     
         ldata = data[self.discrete]
@@ -206,9 +199,9 @@ class ROI(object):
         image: string
             image path
         """
-        nim = nifti.NiftiImage(image)  
-        header = nim.header
-        data = nim.asarray().T
+        self.check_header(image)
+        nim = load(image)  
+        data = nim.get_data()
         self.set_feature(fid,data)
 
     def get_feature(self,fid):
@@ -253,7 +246,7 @@ class ROI(object):
 #-- class WeightedROI ---------------
 #------------------------------------
 
-class WeightedROI(ROI):
+class WeightedROI(DiscreteROI):
     """
     ROI where a weighting is defined on the voxels
     """
@@ -271,10 +264,11 @@ class WeightedROI(ROI):
 
 class MultipleROI(object):
     """
-    This is  a class to deal with multiple ROIs defined in a given space
-    mroi.header is assumed to provide all the referential information
-    (this should be changed in the future),
-    so that the mroi is basically defined as a multiple sets of 3D coordinates
+    This is  a class to deal with multiple discrete ROIs defined 
+    in a given space
+    (mroi.affine, mroi.shape) provide the necessary referential information
+    so that the mroi is basically defined as a multiple 
+    sets of 3D coordinates
     finally, there is two associated feature dictionaries:
 
     roi_features: list of roi-level features
@@ -288,29 +282,64 @@ class MultipleROI(object):
                       (voxels or vertices)
                       each feature os thus a list of self.k arrays 
                       of shape (roi_size, feature_dimension)
+    
+    fixme :
+    - can create an ROI with k =0 ? Deal with taht case properly
+    - merge append_balls and as_multiple_balls
     """
 
-    def __init__(self,id="roi",k=0,header=None,xyz=None):
+    def __init__(self, id="multiple_roi", k=0, affine=np.eye(4), 
+                       shape=None, xyz=None):
         """
         roi = MultipleROI(id='roi', header=None)
 
         Parameters
         ----------
-        id (string): roi identifier
-        k: number of rois that are included in the structure 
-        header (nipy header) : referential-defining information
-        xyz=None: list of index arrays
+        id="multiple_roi" string, roi identifier
+        k=1, int, number of rois that are included in the structure 
+        affine=np.eye(4), array of shape(4,4),
+                           coordinate-defining affine transformation
+        shape=None, tuple of length 3 defining the size of the grid 
+                    implicit to the discrete ROI definition
+        xyz=None: list of arrays of shape (nvox[i],3)
                   the grid coordinates of the rois elements
+                          
         """
         self.id = id
         self.k = k
-        self.header = header
+        self.affine = affine
+        self.shape = shape
         if xyz==None:
             self.xyz = []
         else:
             self.xyz = xyz
         self.roi_features = dict()
         self.discrete_features = dict()
+        self.check_consistency()
+
+    def check_consistency(self):
+        """
+        Check the consistency of the input values:
+        affine should be a (4,4) array
+        
+        all values of xyz should be in the range [0,d1]*[0,d2]*[0,d3]
+        where self.shape = (d1,d2,d3), if shape is defined
+     
+        """
+        # affine should be a (4,4) array
+        if np.shape(self.affine)!=(4,4):
+           raise ValueError, "affine does not have a correct shape"
+       
+        if (self.shape!=None)&(len(self.xyz)>0):
+            xyzmin = np.min(np.array([np.min(self.xyz[k],0) 
+                                     for k in range(self.k)]),0)
+            xyzmax = np.max(np.array([np.min(self.xyz[k],0) 
+                                     for k in range(self.k)]),0)
+            if (xyzmin<0).any():
+                raise ValueError, 'negative grid coordinates have been provided'
+            if (xyzmax>np.array(self.shape)).any():
+                raise ValueError, 'grid ccordinates are greater than\
+                the provided shape'    
 
     def check_features(self):
         """
@@ -318,10 +347,10 @@ class MultipleROI(object):
         i.e. f.shape[0]=self.k for f in self.roi_features
         and that self.discrete features have the correct size
         i.e.  for f in self.roi_features:
-        - f is a list of length self.k
-        - f[i] is an array with dimensions consistent with xyz
+        f is a list of length self.k
+        f[i] is an array with dimensions consistent with xyz
 
-        caveat: features that are not found consistent are removed
+        Note: features that are not found consistent are removed
         """
         fids = self.roi_features.keys()
         for fid in fids:
@@ -348,17 +377,15 @@ class MultipleROI(object):
         ----------
         image_path: (string) the path of an image
         """
-        #print "check not implemented yet"
         eps = 1.e-15
-        nim = nifti.NiftiImage(image_path)
-        header = nim.header
+        nim = load(image_path)
         b = True
-
-        if (np.absolute(header['sform']-self.header['sform'])).max()>eps:
+        if (np.absolute(nim.get_affine()-self.affine)).max()>eps:
             b = False
-        for d1,d2 in zip(header['dim'],self.header['dim']):
-            if d1!=d2:
-                b = False
+        if self.shape!=None:
+            for d1,d2 in zip(nim.get_shape(),self.shape):
+                if d1!=d2:
+                    b = False
         return b
 
     def from_labelled_image(self, image, labels=None, add=True):
@@ -369,7 +396,7 @@ class MultipleROI(object):
         Parameters
         ----------
         image (string): a nifti label (discrete valued) image
-        labels=None : array of shape () 
+        labels=None : array of shape (nlabels) 
                     the set of image labels that
                     shall be used as ROI definitions
                     By default, all the image labels are used
@@ -380,16 +407,16 @@ class MultipleROI(object):
         when rois are already defined
         """
         self.check_header(image)
-        nim = nifti.NiftiImage(image)
-        data = nim.data.T
+        nim = load(image)
+        data = nim.get_data()
         udata = np.unique(data[data>0])
         if labels==None:    
-            if add: self.k+=np.size(udata)
+            if add: self.k += np.size(udata)
             for k in range(np.size(udata)):
                 dk = np.array(np.where(data==udata[k])).T
                 self.xyz.append(dk)
         else:
-            if add: self.k+=np.size(labels)
+            if add: self.k += np.size(labels)
             for k in range(np.size(labels)):
                 if np.sum(data==labels[k])>0:
                     dk = np.array(np.where(data==udata[k])).T
@@ -409,28 +436,24 @@ class MultipleROI(object):
         position: array of shape (k,3): the set of positions
         radius: array of shape (k): the set of radii
         """
-        # check that the ref is defined
-        if self.header==None:
-            raise ValueError, "No defined referential"
-
+        if self.shape==None:
+            raise ValuError, "Need self.shape to be defined for this function"
+        
         if np.shape(position)[0]!=np.size(radius):
             raise ValueError, "inconsistent position/radius definition"
 
         if np.shape(position)[1]!=3:
-            raise ValueError, "Sorry, I take only 3D regions:\
+            raise ValueError, "This function takes only 3D coordinates:\
             provide the positions as a (k,3) array"
 
-        self.k=np.size(radius)
+        self.k = np.size(radius)
         
         # define the positions associated with the grid
-        sform = self.header['sform']
-        dim = self.header['dim'][1:4]
-        grid = np.indices(dim)
-
-        nvox = np.prod(dim)
+        grid = np.indices(self.shape)
+        nvox = np.prod(self.shape)
         grid.shape = (3, nvox)
         grid = np.hstack((grid.T, np.ones((nvox, 1))))
-        coord = np.dot(grid, sform.T)[:,:3]
+        coord = np.dot(grid, self.affine.T)[:,:3]
         
         # finally derive the mask of the ROI
         for k in range(self.k):
@@ -448,9 +471,9 @@ class MultipleROI(object):
         idem self.as_multiple_balls, but the ROIs are added
         fixme : should be removed from the class
         """
-        if self.header==None:
-            raise ValueError, "No defined referential"
-
+        if self.shape==None:
+            raise ValuError, "Need self.shape to be defined for this function"
+        
         if np.shape(position)[0]!=np.size(radius):
             raise ValueError, "inconsistent position/radius definition"
 
@@ -461,14 +484,12 @@ class MultipleROI(object):
         self.k += np.size(radius)
         
         # define the positions associated with the grid
-        sform = self.header['sform']
-        dim = self.header['dim'][1:4]
-        grid = np.indices(dim)
-
-        nvox = np.prod(dim)
+        grid = np.indices(self.shape)
+        nvox = np.prod(self.shape)
         grid.shape = (3, nvox)
         grid = np.hstack((grid.T, np.ones((nvox, 1))))
-        coord = np.dot(grid, sform.T)[:,:3]
+        coord = np.dot(grid, self.affine.T)[:,:3]
+        grid = grid[:,:3]
         
         # finally derive the mask of the ROI
         for k in range(np.size(radius)):
@@ -498,7 +519,7 @@ class MultipleROI(object):
         self.set_roi_feature(fid,f)
         
         
-    def make_image(self,path):
+    def make_image(self, path):
         """
         write a int nifti image where the nonzero values are the ROIs
 
@@ -511,14 +532,18 @@ class MultipleROI(object):
         the background values are set to -1
         the ROIs values are set as [0..self.k-1]
         """
-        data = -np.ones(tuple(self.header['dim'][1:4]),'i')
+        if self.shape==None:
+            raise ValueError, 'Need self.shape to be defined'
+
+        data = -np.ones(self.shape,np.int)
         for k in range(self.k):
             dk = self.xyz[k].T
-            data[dk[0],dk[1],dk[2]]=k
-        data = np.reshape(data,tuple(self.header['dim'][1:4])).T
-        nim = nifti.NiftiImage(data,self.header)
-        nim.description = "Multiple ROI image"
-        nim.save(path)
+            data[dk[0],dk[1],dk[2]] = k
+
+        wim =  Nifti1Image(data, self.affine)
+        header = wim.get_header()
+        header['descrip'] = "Multiple ROI image"
+        save(wim, path)
   
     def set_roi_feature(self,fid,data):
         """
@@ -530,7 +555,7 @@ class MultipleROI(object):
         data: array of shape(self.k,p),with p>0
         """
         if data.shape[0]!=self.k:
-            print data.shape[0],self.k,fid
+            print data.shape[0], self.k, fid
             raise ValueError, "Incompatible information of the provided data"
         if np.size(data)==self.k:
             data = np.reshape(data,(self.k,1))
@@ -546,7 +571,7 @@ class MultipleROI(object):
               this function simply stores data 
         """
         if len(data)!=self.k:
-            print len(data),self.k,fid
+            print len(data), self.k, fid
             raise ValueError, "Incompatible information of the provided data"
         for k in range(self.k):
             datak = data[k]
@@ -556,48 +581,46 @@ class MultipleROI(object):
                 datak = np.reshape(datak,(np.size(datak),1))
         self.discrete_features.update({fid:data})
 
-    def set_roi_feature_from_image(self,fid,image,method='average'):
+    def set_roi_feature_from_image(self, fid, image_path, method='average'):
         """
         extract some roi-related information from an image
         
         Parameters
         ----------
         fid: feature id
-        image(string): image name
+        image_path(string): path of the feature-defining image
         method='average' (string) : take the roi feature as
                          the average feature over the ROI
        
         """
-        self.check_header(image)
-        nim = nifti.NiftiImage(image)  
-        header = nim.header
-        data = nim.asarray().T
+        self.check_header(image_path)
+        nim = load(image_path)  
+        data = nim.get_data()
         ldata = np.zeros((self.k,1))
         for k in range(self.k):
             dk = self.xyz[k].T
             ldata[k] = np.mean(data[dk[0],dk[1],dk[2]])
         self.set_roi_feature(fid,ldata)
 
-    def set_discrete_feature_from_image(self,fid,image):
+    def set_discrete_feature_from_image(self, fid, image_path):
         """
         extract some discrete information from an image
 
         Parameters
         ----------
         fid (string): feature id
-        image(path): the image path
+        image_path, string the image path
         """
-        self.check_header(image)
-        nim = nifti.NiftiImage(image)  
-        header = nim.header
-        data = nim.asarray().T
+        self.check_header(image_path)
+        nim = load(image_path)  
+        data = nim.get_data()
         ldata = []
         for k in range(self.k):
             dk = self.xyz[k].T
             ldata.append(data[dk[0],dk[1],dk[2]])
         self.set_discrete_feature(fid,ldata)
 
-    def set_discrete_feature_from_index(self,fid,data):
+    def set_discrete_feature_from_index(self, fid, data):
         """
         Assuming that self.discrete_feature['index'] exists
         this extracts the values from data corresponding to the index
@@ -629,7 +652,7 @@ class MultipleROI(object):
             ldata.append(data[np.ravel(index[k])])
         self.set_discrete_feature(fid,ldata)
 
-    def discrete_to_roi_features(self,fid,method='average'):
+    def discrete_to_roi_features(self, fid, method='average'):
         """
         Compute an ROI-level feature given the discrete features
 
@@ -663,7 +686,7 @@ class MultipleROI(object):
         return ldata
 
     def get_roi_feature(self,fid):
-        """return sthe serached feature
+        """return sthe searched feature
         """
         return self.roi_features[fid]
 
@@ -770,23 +793,12 @@ class MultipleROI(object):
 
         the computed position is returned
         """
-        bproblem = 1
-        if isinstance(self.header,dict):
-            if self.header.has_key('sform'):
-                sform = self.header['sform']
-                bproblem=0
-                
-        if bproblem:
-            print "warning: no sform found for position definition, ",
-            print "assuming it is the identity"
-            sform = np.eye(4)
-
         pos = []
         for  k in range(self.k):
             grid = self.xyz[k]
             nvox = grid.shape[0]
             grid = np.hstack((grid, np.ones((nvox, 1))))
-            coord = np.dot(grid, sform.T)[:,:3]
+            coord = np.dot(grid, self.affine.T)[:,:3]
             pos.append(coord)
 
         self.set_discrete_feature('position',pos)   

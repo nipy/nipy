@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 
 # Neuroimaging libraries imports
-from nifti import NiftiImage
+import nifti
 # In different versions of pynifti, this symbol lived in different places
 try:
     from nifti.nifticlib import NIFTI_INTENT_LABEL
@@ -15,6 +15,18 @@ except ImportError:
 
 
 import nipy.neurospin.graph as fg
+
+def load_nifti(filename):
+    """ Load a nifti file, using memapping if possible.
+
+       
+    """
+    try:
+        nim = nifti.niftiimage.MemMappedNiftiImage(filename)
+    except RuntimeError:
+        "Memmapping is possible only for uncompressed files."
+        nim = nifti.NiftiImage(filename)
+    return nim
 
 
 def _largest_cc(mask):
@@ -44,8 +56,8 @@ def _largest_cc(mask):
     return mask_cc
 
 
-def compute_mask_files(input_filename, output_filename=None, return_mean=False, 
-                       m=0.2, M=0.9, cc=1):
+def compute_mask_files( input_filename, output_filename=None, 
+                        return_mean=False, m=0.2, M=0.9, cc=1):
     """
     Compute a mask file from fMRI nifti file(s)
 
@@ -88,27 +100,26 @@ def compute_mask_files(input_filename, output_filename=None, return_mean=False,
         # We have several images, we do mean on the fly, 
         # to avoid loading all the data in the memory
         for index, filename in enumerate(input_filename):
-            # XXX: Should we try to use memapping, for speed?
-            nim = NiftiImage(filename)
+            nim = load_nifti(filename)
             if index == 0:
                 first_volume = nim.data.squeeze()
-                mean_volume = first_volume.copy()
+                mean_volume = first_volume.copy().astype(np.float32)
                 header = nim.header
             else:
                 mean_volume += nim.data.squeeze()
         mean_volume /= float(len(input_filename))
     else: 
         # one single filename
-        nim = NiftiImage(input_filename)
+        nim = load_nifti(input_filename)
         header = nim.header
         first_volume = nim.data[0]
         mean_volume = nim.data.mean(axis=0)
     del nim
 
-    dat = compute_mask_intra_array(mean_volume, first_volume, m, M, cc)
+    dat = compute_mask(mean_volume, first_volume, m, M, cc)
     
     # header is auto-reupdated (number of dim, calmax.)
-    output_image = NiftiImage(dat.astype(np.uint8), header) 
+    output_image = nifti.NiftiImage(dat.astype(np.uint8), header) 
     # cosmetic updates
     output_image.updateHeader({'intent_code': NIFTI_INTENT_LABEL, 
                               'intent_name': 'Intra Mask'})
@@ -210,7 +221,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     for session in session_files:
         this_mask = compute_mask_files(session,
                                        m=m, M=M,
-                                       cc=cc).astype(np.int8)
+                                       cc=cc).data.astype(np.int8)
         if mask is None:
             mask = this_mask
         else:
@@ -245,11 +256,10 @@ def intersect_masks(input_masks, output_filename, threshold, cc):
                  nsubj set as len(input_masks)
     output_filename, string, path of the output image
     threshold: float, level of the intersection 
-               must be within [0,nsubj]
+               must be within [0, 1]
     cc, bool additionally extract the main connected component
     """  
     nsubj = len(input_masks)
-    #threshold = np.minimum(nsubj-1,threshold)
     
     nim = nifti.NiftiImage(inputs_masks[0])
     ref_dim = nim.getVolumeExtent()
@@ -259,7 +269,7 @@ def intersect_masks(input_masks, output_filename, threshold, cc):
         nim = nifti.NiftiImage(inputs_masks[s])
         gmask += nim.asarray()  
     
-    gmask = gmask>threshold     
+    gmask = gmask>(threshold*nsubj)     
     if (np.sum(gmask>0) & cc):
            gmask = _largest_cc(gmask)
     

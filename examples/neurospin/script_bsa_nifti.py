@@ -43,7 +43,7 @@ method='simple'
 
 # call the function
 AF,BF = make_bsa_nifti(mask_images, betas, theta, dmax,
-                       ths,thq,smin,swd,method,subj_id, nbeta)
+                       ths, thq, smin, swd, method, subj_id, nbeta)
 
 # Write the result. OK, this is only a temporary solution
 import pickle

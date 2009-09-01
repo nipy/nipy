@@ -2,6 +2,8 @@ import numpy as np
 import nipy.neurospin.spatial_models.hierarchical_parcellation as hp
 import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.parcellation as fp
+import nipy.neurospin.graph.graph as fg
+import nipy.neurospin.graph.field as ff
 
 def make_data_field():
     nsubj = 1
@@ -27,7 +29,8 @@ def make_data_field():
     anat_coord = xy
     mu = 10.
     nn = 18
-    feature = np.hstack((beta,mu*coord/np.std(anat_coord)))
+    feature = np.hstack((ldata/np.std(ldata),
+                         mu*anat_coord/np.std(anat_coord)))
     g = fg.WeightedGraph(nvox)
     g.from_3d_grid(xyz.astype(np.int),nn)
     g = ff.Field(nvox,g.edges,g.weights,feature)
@@ -37,7 +40,7 @@ def test_parcel_one_subj_1():
     nbparcel = 10
     g = make_data_field()
     u,J0 = g.ward(nbparcel)
-    assert(np.unique(u)==np.arange(nbparcel))
+    assert((np.unique(u)==np.arange(nbparcel)).all())
     
 
 def test_parcel_one_subj_2():
@@ -45,7 +48,7 @@ def test_parcel_one_subj_2():
     g = make_data_field()
     seeds = np.argsort(np.random.rand(g.V))[:nbparcel]
     seeds, u, J1 = g.geodesic_kmeans(seeds)
-    assert(np.unique(u)==np.arange(nbparcel))
+    assert((np.unique(u)==np.arange(nbparcel)).all())
 
 
 def test_parcel_one_subj_3():
@@ -53,7 +56,7 @@ def test_parcel_one_subj_3():
     g = make_data_field()
     w,J0 = g.ward(nbparcel)
     seeds, u, J1 = g.geodesic_kmeans(label=w)
-    assert(np.unique(u)==np.arange(nbparcel))
+    assert((np.unique(u)==np.arange(nbparcel)).all())
 
 def test_parcel_multi_subj():
     """
@@ -90,6 +93,10 @@ def test_parcel_multi_subj():
     Label =  np.array([np.reshape(Pa.label[:,s],(dimx,dimy))
                        for s in range(nsubj)])
     control = True
-    for s in range(nbsubj):
-        control *= (np.unique(Label)==np.arange(nbparcel))
+    for s in range(nsubj):
+        control *= (np.unique(Label)==np.arange(nbparcel)).all()
     assert(control)
+
+if __name__ == '__main__':
+    import nose
+    nose.run(argv=['', __file__])
