@@ -242,7 +242,9 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
             """ The grid is probably too large, will just pass. """
             warnings.warn('Mask too large, cannot extract largest cc.')
 
-    return mask
+    # We need to convert to boolean, as the graph structure casts
+    # in int8
+    return mask.astype(np.bool)
 
 
 ################################################################################
