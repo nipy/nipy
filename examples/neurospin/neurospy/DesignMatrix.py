@@ -2,191 +2,10 @@ __doc__ = """
 fMRI Design Matrix creation functions.
 """
 
-import os, urllib, time, string
 import numpy as np
-import pylab
 from configobj import ConfigObj
-from nipy.modalities.fmri import formula, utils, hrf
-
-def _trial():
-    """
-    just for debugging
-    """
-    import sympy
-    tr = 1.0
-    c1 = formula.define('condition1', utils.events([30,70,100], f=hrf.glover))
-    #c2 = formula.define('condition2', utils.events([10,30,90], f=hrf.glover))
-    c2 = formula.define('condition2', utils.events([30,30.1,70,70.1,100,100.1],
-                                                          [1,-1,1,-1,1, -1], f=hrf.iglover))
-    #c3 = formula.define('condition3', utils.events([30,40,60], f=hrf.glover))
-    c3 = formula.define('condition3', utils.events([30,45,90,105,60,75],
-                                                          [1,-1,1,-1,1, -1], f=hrf.iglover))
-    fb = np.array([1,2],np.float)/(128*tr)
-    d = utils.fourier_basis(fb)
-
-    t = formula.Term('t')
-    pt = []
-    for k in range(3):
-        pt.append(formula.define('poldrift%d'%k,t**(k+1))) 
-    
-    pol =  formula.Formula(pt)
-    
-    f = formula.Formula([c1,c2,c3]) + pol
-    t = formula.make_recarray(np.linspace(0,127*tr,128), 't')
-    
-    X = f.design(t, return_float=True)
-
-    import matplotlib.pylab as mp
-    mp.figure()
-    mp.imshow(X/np.std(X,0),interpolation='Nearest')
-    mp.show()
-    return X,f
-
-def _trial_dmtx():
-    """ test code to make a design matrix
-    """
-    tr = 1.0
-    frametimes = np.linspace(0,127*tr,128)
-    conditions = [0,0,0,1,1,1,2,2,2]
-    onsets=[30,70,100,10,30,90,30,40,60]
-    paradigm = np.vstack(([conditions],[onsets])).T
-    hrf_model='Canonical'
-    X,names= dmtx_light(frametimes, paradigm, drift_model='Polynomial', order=3)
-    import matplotlib.pylab as mp
-    mp.figure()
-    mp.imshow(X/np.sqrt(np.sum(X**2,0)),interpolation='Nearest')
-    mp.show()
-    print names
-
-
-def dmtx_light(frametimes, paradigm, hrf_model='Canonical', drift_model='Cosine', hfcut=128,
-               order=1, names=None):
-    """
-    Light-weight function to make easily a design matrix while avoiding framework
-    
-    Parameters
-    ----------
-    frametimes, array of shape(nbframes) the timing of the scans
-    paradigm array of shape (nevents,2) if the type is event-related design 
-             or (nenvets,3) for a block design
-             that constains (condition id, onset) or (condition id, onset, duration)
-    hrf_model, string that can be 'Canonical', 'Canonical With Derivative' or 'FIR'
-               that specifies the hemodynamic reponse function
-    drift_model, string that specifies the desired drift model,
-                to be chosen among 'Polynomial', 'Cosine', 'Blank'
-    hfcut=128  float , cut frequency of the low-pass filter
-    order=1, int, order of the dirft model (in case it is polynomial) 
-    names=None, list of strin of length (ncond), ids of the experimental conditions. 
-                If None this will be called 'c0',..,'cn'
-    
-    Returns
-    -------
-    dmtx array of shape(ncond, nbframes): the sampled design matrix
-    names list of trings; the names of the columns of the design matrix
-    """
-    if names==None:
-        names = ['c%d'%k for k in range(paradigm[:,0].max()+1)]
-    drift = _set_drift(drift_model, frametimes, order, hfcut)
-    conditions, cnames = _convolve_regressors(paradigm, hrf_model, names)
-    formula = conditions + drift
-    dmtx = _build_dmtx(formula, frametimes).T
-
-    ## Force the design matrix to be full rank at working precision
-    dmtx, design_cond = _fullRank(dmtx)
-        
-    # complete the names with the drift terms                               
-    for k in range(len(drift.terms)-1):
-        names.append('poly_drift_%d'%(k+1))                            
-    names.append('constant')
-    return dmtx, names
-
-
-def _polydrift(order, tmax):
-    """
-    Create a polynomial drift formula
-    
-    Parameters
-    ----------
-    order, int, number of polynomials in the drift model
-    tmax, float maximal time value used in the sequence
-          this is used to normalize porperly the columns
-    
-    Returns
-    -------
-    pol a formula that contains all teh polynomial drift plus a constant regressor
-    """
-    t = formula.Term('t')
-    pt = []
-    # fixme : ideally  this should be orthonormalized  
-    for k in range(order):
-        pt.append(formula.define('poly_drift_%d'%(k+1),t**(k+1)/tmax**(k+1))) 
-    pt.append(formula.define('constant',1.0+0*t))
-    pol =  formula.Formula(pt)
-    return pol
-
-def _cosinedrift(hfcut, tmax, tsteps):
-    """
-    Create a cosine drift formula
-
-    Parameters
-    ----------
-    hfcut, float , cut frequency of the low-pass filter
-    tmax, float  maximal time value used in the sequence
-    tsteps, int,  number of TRs in the sequence
-    
-    Returns
-    -------
-    cos  a formula that contains all the polynomial drift plus a constant regressor
-    """
-    t = formula.Term('t')
-    pt = []
-    order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
-    for k in range(1,order):
-        u = np.sqrt(2.0/tmax) * utils.sympy_cos(np.pi*(t/tmax+ 0.5/tsteps)*k )
-        pt.append(formula.define('cosine_drift_%d'%(k+1),u)) 
-    pt.append(formula.define('constant',1.0+0*t))
-    cos =  formula.Formula(pt)
-    return cos
-
-def _blankdrift():
-    """
-    Create the blank drift formula
-    
-    Returns
-    -------
-    df  a formula that contains a constant regressor
-    """
-    t = formula.Term('t')
-    pt = [formula.define('constant',1.0+0*t)]
-    df =  formula.Formula(pt)
-    return df
-
-def _set_drift(DriftModel, frametimes, order=1, hfcut=128.):
-    """
-    Create the drift formula
-    
-    Parameters
-    ----------
-    DriftModel, string that specifies the desired drift model,
-                to be chosen among "Polynomial", "Cosine", "Blank"
-    frametimes array of shape(ntimes),
-                list of values representing the desired TRs
-    order=1, int, order of the dirft model (in case it is polynomial)
-    hfcut=128., float, frequency cut in case of a cosine model
-
-    Returns
-    -------
-    df, the resulting drift formula
-    """
-    if DriftModel=='Polynomial':
-        d = _polydrift(order, frametimes.max())
-    elif DriftModel=='Cosine':
-        d = _cosinedrift(hfcut, frametimes.max(), frametimes.size)
-    elif DriftModel=='Blank':
-        d  = _blankdrift()
-    else:
-        raise NotImplementedError,"unknown drift model"
-    return d
+from pylab import loadtxt
+from nipy.neurospin.utils.design_matrix import set_drift, convolve_regressors, build_dmtx, fullRank
 
 def _loadProtocol(path, session):
     """
@@ -206,7 +25,7 @@ def _loadProtocol(path, session):
              or (nenvets,3) for a block design
              that constains (condition id, onset) or (condition id, onset, duration)
     """
-    paradigm = pylab.loadtxt(path)
+    paradigm = loadtxt(path)
     if paradigm[paradigm[:,0] == session].tolist() == []:
         return None
     paradigm = paradigm[paradigm[:,0] == session]
@@ -219,108 +38,6 @@ def _loadProtocol(path, session):
         paradigm = paradigm[:,[1,2]]
     
     return paradigm
-
-def _convolve_regressors(paradigm, hrf_model, names=None):
-    """
-    Creation of  a formula that represents 
-    the convolution of the conditions onset witha  certain hrf model
-    
-    Parameters
-    ----------
-    paradigm array of shape (nevents,2) if the type is event-related design 
-             or (nenvets,3) for a block design
-             that constains (condition id, onset) or (condition id, onset, duration)
-    hrf_model, string that can be 'Canonical', 'Canonical With Derivative' or 'FIR'
-               that specifies the hemodynamic reponse function
-    
-    fixme: 
-    fails if one of the conditions is not present
-    FIR design not tmplmented yet
-    """
-    # fixme: what should we do if names==None ?
-    # fixme : add the FIR design
-    ncond = int(paradigm[:,0].max()+1)
-    listc = []
-    hnames = []
-    if paradigm.shape[1]>2:
-        typep = 'block'  
-    else:
-        typep='event'
-
-    for nc in range(ncond):
-        onsets =  paradigm[paradigm[:,0]==nc,1]
-        if typep=='event':
-            if hrf_model=="Canonical":
-                c = formula.define(names[nc], utils.events(onsets, f=hrf.glover))
-                listc.append(c)
-                hnames.append(names[nc])
-            elif hrf_model=="Canonical With Derivative":
-                c1 = formula.define(names[nc],
-                                   utils.events(onsets, f=hrf.glover))
-                c2 = formula.define(names[nc]+"_derivative",
-                                   utils.events(onsets, f=hrf.dglover))
-                listc.append(c1)
-                listc.append(c2)
-                hnames.append(names[nc])
-                hnames.append(names[nc]+"_derivative")
-                
-            else:
-                raise NotImplementedError,'unknown hrf model'
-        elif typep=='block':
-            offsets =  paradigm[paradigm[:,0]==nc,2]
-            changes = np.hstack((onsets,offsets))
-            values = np.hstack((np.ones(np.size(onsets)), np.ones(np.size(offsets))))
-
-            if hrf_model=="Canonical":
-                c = utils.events(onsets,values, f=hrf.iglover)
-                listc.append(c)
-                hnames.append(names[nc])
-            elif hrf_model=="Canonical With Derivative":
-                c1 = utils.events(onsets,values, f=hrf.iglover)
-                c2 = utils.events(onsets,values, f=hrf.glover)
-                listc.append(c1)
-                listc.append(c2)
-                hnames.append(names[nc])
-                hnames.append(names[nc]+"_derivative")
-            else:
-                raise NotImplementedError,'unknown hrf model'  
-
-            #if names != None:
-            #    c = formula.define(names[nc], c)
-            #hnames.append("condition %d",nc)
-            #listc.append(c)
-                
-                
-        else:
-            raise NotImplementedError,'unknown type of paradigm'
-    p = formula.Formula(listc)
-            
-    # fixme : how to handle blocks
-    return p, hnames
-
-def _build_dmtx(form, frametimes):
-    """
-    This is a work arount to control the order of the regressor 
-    in the design matrix construction
-
-    Parameters
-    ----------
-    form, the formula that describes the design matrix
-    frametimes, array of shape (nb_time_samples), the time sampling grid
-
-    Returns
-    -------     
-    X array of shape (nrows,nb_time_samples) the sdesign matrix
-    """
-    # fixme : workaround to control matrix columns order
-    t = formula.make_recarray(frametimes, 't')
-    X = []
-    for ft in form.terms:
-        lf = formula.Formula([ft])
-        X.append(lf.design(t, return_float=True))
-    X = np.array(X)
-    return X 
-
 
 
 class DesignMatrix():
@@ -409,7 +126,7 @@ class DesignMatrix():
         order=1, int, order of the dirft model (in case it is polynomial)
         hfcut=128., float, frequency cut in case of a cosine model
         """
-        self.drift = _set_drift(DriftModel, self.frametimes, order, hfcut)
+        self.drift = set_drift(DriftModel, self.frametimes, order, hfcut)
 
     def set_conditions(self, hrfmodel="Canonical"):
         """ 
@@ -419,7 +136,7 @@ class DesignMatrix():
         if self.protocol == None:
            self.conditions = None
         else:
-            self.conditions, self._names = _convolve_regressors(self.protocol,
+            self.conditions, self._names = convolve_regressors(self.protocol,
                                                                 hrfmodel, self._names)
          
     def compute_design(self, name="", verbose=1):
@@ -431,10 +148,10 @@ class DesignMatrix():
             print "The selected session does not exists"
             return None   
         self.formula = self.conditions + self.drift
-        temp = _build_dmtx(self.formula, self.frametimes).T
+        temp = build_dmtx(self.formula, self.frametimes).T
 
         ## Force the design matrix to be full rank at working precision
-        self._design, self._design_cond = _fullRank(temp)
+        self._design, self._design_cond = fullRank(temp)
         
         # complete the names with the drift terms                               
         for k in range(len(self.drift.terms)-1):
@@ -482,7 +199,7 @@ class DesignMatrix():
                         for k in range(diff):
                             temp[base + (k + j * diff), j + i * o] = 1
                 i += 1
-        self._design, self._design_cond = _fullRank(temp)
+        self._design, self._design_cond = fullRank(temp)
         if drift == 0:
             drm = np.ones((self._design.shape[0],1))
         elif drift == cosine_drift:
@@ -499,19 +216,5 @@ class DesignMatrix():
         misc.write()
 
 
-def _fullRank(X, cmax=1e15):
-    """ X is assumed to be a 2d numpy array. This function possibly adds a scalar matrix to X
-    to guarantee that the condition number is smaller than a given threshold. """
-    U, s, V = np.linalg.svd(X,0)
-    sM = s.max()
-    sm = s.min()
-    c = sM/sm
-    if c < cmax:
-        return X, c
-    print 'Warning: matrix is singular at working precision, regularizing...'
-    lda = (sM-cmax*sm)/(cmax-1)
-    s = s + lda
-    X = np.dot(U, np.dot(np.diag(s), V))
-    return X, cmax
 
 

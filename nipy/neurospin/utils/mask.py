@@ -114,7 +114,7 @@ def compute_mask_files( input_filename, output_filename=None,
         header = nim.header
         first_volume = nim.data[0]
         mean_volume = nim.data.mean(axis=0)
-    del nim
+    #del nim
 
     dat = compute_mask(mean_volume, first_volume, m, M, cc)
     
