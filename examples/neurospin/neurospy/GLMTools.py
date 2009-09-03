@@ -5,6 +5,7 @@ using nipy.neurospin tools
 Author : Lise Favre, Bertrand Thirion, 2008-2009
 """
 
+import numpy as np
 from numpy import *
 import commands
 import nifti
@@ -228,21 +229,26 @@ def DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
                   session, hrfType, drift, driftMatrix, poly_order,
                   cos_FreqCut, FIR_order, FIR_length, model)
 
+
+
 def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
                   session, hrf="Canonical", drift="Blank",
                   driftMatrix=None, poly_order=2, cos_FreqCut=128,
                   FIR_order=1, FIR_length=1, model="default", verbose=0):
     """
     Base function to define design matrices
-
     """
+    from nipy.modalities.fmri import formula, utils, hrf
+    
     ## For DesignMatrix
     import DesignMatrix as dm
     from dataFrame import DF
-
+    
     design = dm.DesignMatrix(nbFrames, paradigm, session, miscFile, model)
     design.load()
     design.timing(tr)
+
+    # set the drift terms
     if driftMatrix != None:
         drift = pylab.load(driftMatrix)
     elif drift == "Blank":
@@ -252,14 +258,18 @@ def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
         drift = dm.cosine_drift
     elif drift == "Polynomial":
         DesignMatrix.order = poly_order
-        drift = dm.canonical_drift
+        #drift = dm.canonical_drift
+        drift = dm._polydrift(poly_order)
 
+    """
+    fixme : where should it be set ?
+    # set the hrf
     if hrf == "Canonical":
         hrf = dm.hrf.glover
     elif hrf == "Canonical With Derivative":
         hrf = dm.hrf.glover_deriv
     elif hrf == "FIR Model":
-        design.compute_fir_design(drift = drift, name = session,
+        design.compute_fir_design(drift = pdrift, name = session,
                                   o = FIR_order, l = FIR_length)
         output = DF(colnames=design.names, data=design._design)
         output.write(outputFile)
@@ -267,12 +277,15 @@ def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
     else:
         print "Not HRF model passed. Aborting process."
         return
-
-    design.compute_design(hrf = hrf, drift = drift, name = session)
+    """
+        
+    #design._compute_design(hrf = hrf, drift = drift, name = session)
+    design.compute_design(drift = drift, name = session)
     if hasattr(design, "names"):
         output = DF(colnames=design.names, data=design._design)
         if verbose : print design.names
         output.write(outputFile)
+    
 
 def GLMFit(file, designMatrix, mask, outputVBA, outputCon, fit="Kalman_AR1"):
     """
@@ -294,6 +307,7 @@ def GLMFit(file, designMatrix, mask, outputVBA, outputCon, fit="Kalman_AR1"):
     """
     from dataFrame import DF
     tab = DF.read(designMatrix)
+    
     if fit == "Kalman_AR1":
         model = "ar1"
         method = "kalman"

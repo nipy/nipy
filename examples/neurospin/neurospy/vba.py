@@ -3,7 +3,7 @@ import types, glob, exceptions
 from configobj import ConfigObj
 import nifti
 #
-import fff2.glm as GLM
+import nipy.neurospin.glm as GLM
 #
 from dataFrame import DF
 import url as URL

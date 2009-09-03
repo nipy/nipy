@@ -59,10 +59,10 @@ supTh = 0.9
 hrfType = "Canonical"
 
 # Possible choices for drift : "Blank", "Cosine", "Polynomial"
-drift = "Cosine"
+drift = "Polynomial"
 
 # If drift is "Polynomial"
-poly_order = 2
+poly_order = 3
 
 # If drift is "Cosine"
 cos_FreqCut = 128
@@ -138,8 +138,8 @@ for s in Subjects:
         # fixme : it should be possible to provide a pre-computed mask
         print "Computing the Mask"
         maskFile = os.sep.join((SubjectPath, fmri, a, minfDir, "mask.img"))
-        #wc = join(fmriPath,'S*.nii') 
-        #GLMTools.ComputeMask(glob.glob(wc), maskFile, infTh, supTh)
+        ##wc = join(fmriPath,'S*.nii') 
+        ##GLMTools.ComputeMask(glob.glob(wc), maskFile, infTh, supTh)
         GLMTools.ComputeMask(fmriFiles.values()[0][0], maskFile, infTh, supTh)
         
         # step 4. Creating Contrast File
