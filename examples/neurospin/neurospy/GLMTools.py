@@ -230,7 +230,7 @@ def DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
     FIR_order = DmtxParam["FIR_order"]
     FIR_length  = DmtxParam["FIR_length"]
     driftMatrix = DmtxParam["drift_matrix"]
-    model = 'default' # fixme: I don't understand this
+    model = 'default'# this is a brainvisa thing for misc info recording
     _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
                   session, hrfType, drift, driftMatrix, poly_order,
                   cos_FreqCut, FIR_order, FIR_length, model)
@@ -255,7 +255,6 @@ def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
     design.timing(tr)
 
     
-
     """
     fixme : set the FIR model
     # set the hrf

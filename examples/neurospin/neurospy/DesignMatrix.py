@@ -1,7 +1,5 @@
-__doc__ = """fMRI-specific classes.
-
-WORK IN PROGRESS: please run (don't import) this file. Example of use in the end.
-
+__doc__ = """
+fMRI Design Matrix creation functions.
 """
 
 import os, urllib, time, string
@@ -10,7 +8,7 @@ import pylab
 from configobj import ConfigObj
 from nipy.modalities.fmri import formula, utils, hrf
 
-def trial():
+def _trial():
     """
     just for debugging
     """
@@ -43,6 +41,65 @@ def trial():
     mp.imshow(X/np.std(X,0),interpolation='Nearest')
     mp.show()
     return X,f
+
+def _trial_dmtx():
+    """ test code to make a design matrix
+    """
+    tr = 1.0
+    frametimes = np.linspace(0,127*tr,128)
+    conditions = [0,0,0,1,1,1,2,2,2]
+    onsets=[30,70,100,10,30,90,30,40,60]
+    paradigm = np.vstack(([conditions],[onsets])).T
+    hrf_model='Canonical'
+    X,names= dmtx_light(frametimes, paradigm, drift_model='Polynomial', order=3)
+    import matplotlib.pylab as mp
+    mp.figure()
+    mp.imshow(X/np.sqrt(np.sum(X**2,0)),interpolation='Nearest')
+    mp.show()
+    print names
+
+
+def dmtx_light(frametimes, paradigm, hrf_model='Canonical', drift_model='Cosine', hfcut=128,
+               order=1, names=None):
+    """
+    Light-weight function to make easily a design matrix while avoiding framework
+    
+    Parameters
+    ----------
+    frametimes, array of shape(nbframes) the timing of the scans
+    paradigm array of shape (nevents,2) if the type is event-related design 
+             or (nenvets,3) for a block design
+             that constains (condition id, onset) or (condition id, onset, duration)
+    hrf_model, string that can be 'Canonical', 'Canonical With Derivative' or 'FIR'
+               that specifies the hemodynamic reponse function
+    drift_model, string that specifies the desired drift model,
+                to be chosen among 'Polynomial', 'Cosine', 'Blank'
+    hfcut=128  float , cut frequency of the low-pass filter
+    order=1, int, order of the dirft model (in case it is polynomial) 
+    names=None, list of strin of length (ncond), ids of the experimental conditions. 
+                If None this will be called 'c0',..,'cn'
+    
+    Returns
+    -------
+    dmtx array of shape(ncond, nbframes): the sampled design matrix
+    names list of trings; the names of the columns of the design matrix
+    """
+    if names==None:
+        names = ['c%d'%k for k in range(paradigm[:,0].max()+1)]
+    drift = _set_drift(drift_model, frametimes, order, hfcut)
+    conditions, cnames = _convolve_regressors(paradigm, hrf_model, names)
+    formula = conditions + drift
+    dmtx = _build_dmtx(formula, frametimes).T
+
+    ## Force the design matrix to be full rank at working precision
+    dmtx, design_cond = _fullRank(dmtx)
+        
+    # complete the names with the drift terms                               
+    for k in range(len(drift.terms)-1):
+        names.append('poly_drift_%d'%(k+1))                            
+    names.append('constant')
+    return dmtx, names
+
 
 def _polydrift(order, tmax):
     """
@@ -175,6 +232,10 @@ def _convolve_regressors(paradigm, hrf_model, names=None):
              that constains (condition id, onset) or (condition id, onset, duration)
     hrf_model, string that can be 'Canonical', 'Canonical With Derivative' or 'FIR'
                that specifies the hemodynamic reponse function
+    
+    fixme: 
+    fails if one of the conditions is not present
+    FIR design not tmplmented yet
     """
     # fixme: what should we do if names==None ?
     # fixme : add the FIR design
@@ -260,12 +321,25 @@ def _build_dmtx(form, frametimes):
     X = np.array(X)
     return X 
 
+
+
 class DesignMatrix():
     """
     Design mtrices handling class
+    class members are:
+    protocol_filename: string, path of the protocole-defining file
+    nbframes, int, the number of volumes corresponding to the session
+    session, int or string, a session id
+    misc_file, string, a path to a file that stores some information on conditions
+    model, "default": this is a brainvisa thing
+    frametimes, array of shape(nbframes): time stamps of the scans
+    names: names of the differnt entries of the design matrix
+    protocol: array of shape (nevents,2) if the type is event-related design 
+             or (nenvets,3) for a block design
+             that constains (condition id, onset) or (condition id, onset, duration)
     """
     def __init__(self, nbvols, protocol_filename, session = 0,
-                 misc_file = None, model = "default"):
+                 misc_file=None, model="default"):
         self.protocol_filename = protocol_filename
         self.nbframes = nbvols
         self.session = session
@@ -325,18 +399,28 @@ class DesignMatrix():
         self.frametimes += t0
 
     def set_drift(self, DriftModel="Polynomial", order=1, hfcut=128):
-        """Set the drift formula of the model
+        """
+        Set the drift formula of the model
+     
+        Parameters
+        ----------
+        DriftModel, string that specifies the desired drift model,
+                    to be chosen among "Polynomial", "Cosine", "Blank"
+        order=1, int, order of the dirft model (in case it is polynomial)
+        hfcut=128., float, frequency cut in case of a cosine model
         """
         self.drift = _set_drift(DriftModel, self.frametimes, order, hfcut)
 
     def set_conditions(self, hrfmodel="Canonical"):
-        """ Set the conditions of the model as a formula
+        """ 
+        Set the conditions of the model as a formula
+        
         """
         if self.protocol == None:
            self.conditions = None
         else:
-                self.conditions, self._names = _convolve_regressors(self.protocol,
-                                               hrfmodel, self._names)
+            self.conditions, self._names = _convolve_regressors(self.protocol,
+                                                                hrfmodel, self._names)
          
     def compute_design(self, name="", verbose=1):
         """Sample the formula on the grid
