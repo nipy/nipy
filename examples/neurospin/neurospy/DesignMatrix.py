@@ -44,55 +44,112 @@ def trial():
     mp.show()
     return X,f
 
-
-"""
-order = 2
-HF = 128
-
-def _drift(time):
-    #Create a drift matrix
-    v = np.ones([order+1, time.shape[0]], dtype="f")
-    tmax = np.abs(time.max()) * 1.0
-    time = time * 1.0
-    for i in range(order):
-        v[i+1] = (time/tmax)**(i+1)
-    return v
-
-canonical_drift = protocol.ExperimentalQuantitative('drift', _drift)
-
-def cosine_matrix(time):
-    #create a cosine drift matrix
-    M = time.max()
-    numreg = int(np.floor(2 * float(M) / float(HF)) + 1)
-    return np.array([np.sqrt(2.0/M) * np.cos(np.pi*(time.astype(float)/M+ 0.5/len(time))*k )
-                     for k in range(numreg)]) * 100.0
-
-cosine_drift = protocol.ExperimentalQuantitative('drift', cosine_matrix)
-
-"""
-def _polydrift(order):
-    """Create the drift formula
+def _polydrift(order, tmax):
+    """
+    Create a polynomial drift formula
+    
+    Parameters
+    ----------
+    order, int, number of polynomials in the drift model
+    tmax, float maximal time value used in the sequence
+          this is used to normalize porperly the columns
+    
+    Returns
+    -------
+    pol a formula that contains all teh polynomial drift plus a constant regressor
     """
     t = formula.Term('t')
     pt = []
-    # fixme : this should be (ortho)normalized ! 
+    # fixme : ideally  this should be orthonormalized  
     for k in range(order):
-        pt.append(formula.define('poly_drift_%d'%(k+1),t**(k+1)/300**(k+1))) 
+        pt.append(formula.define('poly_drift_%d'%(k+1),t**(k+1)/tmax**(k+1))) 
     pt.append(formula.define('constant',1.0+0*t))
     pol =  formula.Formula(pt)
     return pol
+
+def _cosinedrift(hfcut, tmax, tsteps):
+    """
+    Create a cosine drift formula
+
+    Parameters
+    ----------
+    hfcut, float , cut frequency of the low-pass filter
+    tmax, float  maximal time value used in the sequence
+    tsteps, int,  number of TRs in the sequence
     
-def _loadProtocol(x, session, names = None):
+    Returns
+    -------
+    cos  a formula that contains all the polynomial drift plus a constant regressor
+    """
+    t = formula.Term('t')
+    pt = []
+    order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
+    for k in range(1,order):
+        u = np.sqrt(2.0/tmax) * utils.sympy_cos(np.pi*(t/tmax+ 0.5/tsteps)*k )
+        pt.append(formula.define('cosine_drift_%d'%(k+1),u)) 
+    pt.append(formula.define('constant',1.0+0*t))
+    cos =  formula.Formula(pt)
+    return cos
+
+def _blankdrift():
+    """
+    Create the blank drift formula
+    
+    Returns
+    -------
+    df  a formula that contains a constant regressor
+    """
+    t = formula.Term('t')
+    pt = [formula.define('constant',1.0+0*t)]
+    df =  formula.Formula(pt)
+    return df
+
+def _set_drift(DriftModel, frametimes, order=1, hfcut=128.):
+    """
+    Create the drift formula
+    
+    Parameters
+    ----------
+    DriftModel, string that specifies the desired drift model,
+                to be chosen among "Polynomial", "Cosine", "Blank"
+    frametimes array of shape(ntimes),
+                list of values representing the desired TRs
+    order=1, int, order of the dirft model (in case it is polynomial)
+    hfcut=128., float, frequency cut in case of a cosine model
+
+    Returns
+    -------
+    df, the resulting drift formula
+    """
+    if DriftModel=='Polynomial':
+        d = _polydrift(order, frametimes.max())
+    elif DriftModel=='Cosine':
+        d = _cosinedrift(hfcut, frametimes.max(), frametimes.size)
+    elif DriftModel=='Blank':
+        d  = _blankdrift()
+    else:
+        raise NotImplementedError,"unknown drift model"
+    return d
+
+def _loadProtocol(path, session):
     """
     Read a paradigm file consisting of a list of pairs
     (occurence time, (duration), event ID)
-    and instantiate a NiPy ExperimentalFactor object. 
-
-    Parameters
-    x, string a path to a .csv file that describes the paradigm
+    and create a paradigm array
     
+    Parameters
+    ----------
+    path, string a path to a .csv file that describes the paradigm
+    session, int, the session number used to extract 
+             the relevant session information in th csv file
+    
+    Returns
+    -------
+    paradigm array of shape (nevents,2) if the type is event-related design 
+             or (nenvets,3) for a block design
+             that constains (condition id, onset) or (condition id, onset, duration)
     """
-    paradigm = pylab.loadtxt(x)
+    paradigm = pylab.loadtxt(path)
     if paradigm[paradigm[:,0] == session].tolist() == []:
         return None
     paradigm = paradigm[paradigm[:,0] == session]
@@ -104,36 +161,97 @@ def _loadProtocol(x, session, names = None):
         typep ='event'
         paradigm = paradigm[:,[1,2]]
     
+    return paradigm
 
+def _convolve_regressors(paradigm, hrf_model, names=None):
+    """
+    Creation of  a formula that represents 
+    the convolution of the conditions onset witha  certain hrf model
+    
+    Parameters
+    ----------
+    paradigm array of shape (nevents,2) if the type is event-related design 
+             or (nenvets,3) for a block design
+             that constains (condition id, onset) or (condition id, onset, duration)
+    hrf_model, string that can be 'Canonical', 'Canonical With Derivative' or 'FIR'
+               that specifies the hemodynamic reponse function
+    """
+    # fixme: what should we do if names==None ?
+    # fixme : add the FIR design
     ncond = int(paradigm[:,0].max()+1)
     listc = []
-    if names != None:
-        for nc in range(ncond):
-            onsets =  paradigm[paradigm[:,0]==nc,1]
-            if typep=='event':
-                c = formula.define(names[nc], utils.events(onsets, f=hrf.glover))
-            else:
-                offsets =  paradigm[paradigm[:,0]==nc,2]
-                changes = np.hstack(onsets,offsets)
-                values = np.hstack((np.ones(np.size(onsets)), np.ones(np.size(offsets))))
-                c = formula.define(names[nc], utils.events(onsets,values, f=hrf.iglover))
-            listc.append(c)
+    hnames = []
+    if paradigm.shape[1]>2:
+        typep = 'block'  
     else:
-        for nc in range(ncond):
-            onsets =  paradigm[paradigm[:,0]==nc,1]
-            c = utils.events(onsets, f=hrf.glover)
-            listc.append(c)
+        typep='event'
 
+    for nc in range(ncond):
+        onsets =  paradigm[paradigm[:,0]==nc,1]
+        if typep=='event':
+            if hrf_model=="Canonical":
+                c = formula.define(names[nc], utils.events(onsets, f=hrf.glover))
+                listc.append(c)
+                hnames.append(names[nc])
+            elif hrf_model=="Canonical With Derivative":
+                c1 = formula.define(names[nc],
+                                   utils.events(onsets, f=hrf.glover))
+                c2 = formula.define(names[nc]+"_derivative",
+                                   utils.events(onsets, f=hrf.dglover))
+                listc.append(c1)
+                listc.append(c2)
+                hnames.append(names[nc])
+                hnames.append(names[nc]+"_derivative")
+                
+            else:
+                raise NotImplementedError,'unknown hrf model'
+        elif typep=='block':
+            offsets =  paradigm[paradigm[:,0]==nc,2]
+            changes = np.hstack((onsets,offsets))
+            values = np.hstack((np.ones(np.size(onsets)), np.ones(np.size(offsets))))
+
+            if hrf_model=="Canonical":
+                c = utils.events(onsets,values, f=hrf.iglover)
+                listc.append(c)
+                hnames.append(names[nc])
+            elif hrf_model=="Canonical With Derivative":
+                c1 = utils.events(onsets,values, f=hrf.iglover)
+                c2 = utils.events(onsets,values, f=hrf.glover)
+                listc.append(c1)
+                listc.append(c2)
+                hnames.append(names[nc])
+                hnames.append(names[nc]+"_derivative")
+            else:
+                raise NotImplementedError,'unknown hrf model'  
+
+            #if names != None:
+            #    c = formula.define(names[nc], c)
+            #hnames.append("condition %d",nc)
+            #listc.append(c)
+                
+                
+        else:
+            raise NotImplementedError,'unknown type of paradigm'
     p = formula.Formula(listc)
             
     # fixme : how to handle blocks
-    return p
+    return p, hnames
 
 def _build_dmtx(form, frametimes):
     """
     This is a work arount to control the order of the regressor 
     in the design matrix construction
-    """  
+
+    Parameters
+    ----------
+    form, the formula that describes the design matrix
+    frametimes, array of shape (nb_time_samples), the time sampling grid
+
+    Returns
+    -------     
+    X array of shape (nrows,nb_time_samples) the sdesign matrix
+    """
+    # fixme : workaround to control matrix columns order
     t = formula.make_recarray(frametimes, 't')
     X = []
     for ft in form.terms:
@@ -143,6 +261,9 @@ def _build_dmtx(form, frametimes):
     return X 
 
 class DesignMatrix():
+    """
+    Design mtrices handling class
+    """
     def __init__(self, nbvols, protocol_filename, session = 0,
                  misc_file = None, model = "default"):
         self.protocol_filename = protocol_filename
@@ -168,9 +289,9 @@ class DesignMatrix():
             misc[self.model] = {}
         misc.write()
 
+        # fixme id self.misc["tasks"]==None
         self._names = self.misc["tasks"]
-        self.protocol = _loadProtocol(self.protocol_filename, self.session,
-                                      self.misc["tasks"])
+        self.protocol = _loadProtocol(self.protocol_filename, self.session)
     
     def timing(self, tr, t0=0.0, trSlices=None, slice_idx=None):
         """
@@ -203,37 +324,41 @@ class DesignMatrix():
         self.frametimes *= tr
         self.frametimes += t0
 
-
-   
-         
-    def compute_design(self, drift=None, name = ""):
+    def set_drift(self, DriftModel="Polynomial", order=1, hfcut=128):
+        """Set the drift formula of the model
         """
+        self.drift = _set_drift(DriftModel, self.frametimes, order, hfcut)
+
+    def set_conditions(self, hrfmodel="Canonical"):
+        """ Set the conditions of the model as a formula
+        """
+        if self.protocol == None:
+           self.conditions = None
+        else:
+                self.conditions, self._names = _convolve_regressors(self.protocol,
+                                               hrfmodel, self._names)
+         
+    def compute_design(self, name="", verbose=1):
+        """Sample the formula on the grid
         
+        Note: self.conditions and self.drift must be defined beforhand
         """
         if self.protocol == None:
             print "The selected session does not exists"
-            return None
-        
-        # fixme: rename self.protocol
-        #t = formula.make_recarray(self.frametimes, 't')
-        #f = self.protocol + drift
-        #temp = f.design(t, return_float=True).T
-        # fixme : workaround to control matrix columns order
-        total_formula = self.protocol + drift
-        temp = _build_dmtx(total_formula, self.frametimes).T
+            return None   
+        self.formula = self.conditions + self.drift
+        temp = _build_dmtx(self.formula, self.frametimes).T
 
         ## Force the design matrix to be full rank at working precision
         self._design, self._design_cond = _fullRank(temp)
         
-        # reorder the design matrix                               
-        for k in range(len(drift.terms)-1):
+        # complete the names with the drift terms                               
+        for k in range(len(self.drift.terms)-1):
            self._names.append('poly_drift_%d'%(k+1))                            
         self._names.append('constant')
 
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.imshow(temp.T/np.std(temp,1),interpolation='Nearest')
-        mp.show()
+        if verbose:
+           self.show()
         
         self.names = self._names
         misc = ConfigObj(self.misc_file)
@@ -241,7 +366,18 @@ class DesignMatrix():
         misc[self.model]["design matrix cond"] = self._design_cond
         misc.write()
 
+    def show(self):
+        """
+        """
+        X = self._design
+        import matplotlib.pylab as mp
+        mp.figure()
+        mp.imshow(X/np.sqrt(np.sum(X**2,0)),interpolation='Nearest')
+
     def compute_fir_design(self, drift=None, o=1, l=1, name=""):
+        """
+        deprecated
+        """
         if self.protocol == None:
             print "The selected session does not exists"
             return None

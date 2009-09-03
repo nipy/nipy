@@ -56,10 +56,10 @@ supTh = 0.9
 
 # Possible choices for hrfType : "Canonical", \
 # "Canonical With Derivative" or "FIR Model"
-hrfType = "Canonical"
+hrfType = "Canonical With Derivative"
 
 # Possible choices for drift : "Blank", "Cosine", "Polynomial"
-drift = "Polynomial"
+drift = "Cosine"
 
 # If drift is "Polynomial"
 poly_order = 3

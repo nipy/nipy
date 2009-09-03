@@ -16,7 +16,7 @@ import scipy.ndimage as sn
 
 from vba import VBA
 import Results
-from nipy.neurospin.utils.mask import compute_mask_intra 
+from nipy.neurospin.utils.mask import compute_mask_files
 
 # ----------------------------------------------
 # -------- Ancillary functions -----------------
@@ -75,19 +75,23 @@ def saveall(contrast, design, ContrastId, dim, kargs):
         shape = (int(dim) * int(dim), shape[1], shape[2], shape[3])
         contrast.variance = contrast.variance.reshape(int(dim) * int(dim), -1)
 
-    # saving the associated variance map
-    results = "Residual variance"
-    res_file = os.sep.join((contrasts_path, "%s_%s.nii" %
+    ## saving the associated variance map
+    # fixme : breaks with F contrasts !
+    if contrast.type == "t":
+        results = "Residual variance"
+        res_file = os.sep.join((contrasts_path, "%s_%s.nii" %
                             (str(ContrastId), paths[results])))
-    save_volume(zeros(shape), res_file, header, mask_arr, contrast.variance)
-    if int(dim) != 1:
-        shape = (int(dim), shape[1], shape[2], shape[3])
+        save_volume(zeros(shape), res_file, header, mask_arr, contrast.variance)
+        if int(dim) != 1:
+            shape = (int(dim), shape[1], shape[2], shape[3])
 
     # writing the associated contrast structure
-    results = "contrast definition"
-    con_file = os.sep.join((contrasts_path, "%s_%s.nii" %
-                            (str(ContrastId), paths[results])))
-    save_volume(zeros(shape), con_file, header, mask_arr, contrast.effect)
+     # fixme : breaks with F contrasts !
+    if contrast.type == "t":
+        results = "contrast definition"
+        con_file = os.sep.join((contrasts_path, "%s_%s.nii" %
+                                (str(ContrastId), paths[results])))
+        save_volume(zeros(shape), con_file, header, mask_arr, contrast.effect)
 
     # writing the results as an html page
     if kargs.has_key("method"):
@@ -108,7 +112,8 @@ def saveall(contrast, design, ContrastId, dim, kargs):
         cluster = 0
 
     results = "HTML Results"
-    html_file = os.sep.join((contrasts_path, "%s_%s.html" % (str(ContrastId), paths[results])))
+    html_file = os.sep.join((contrasts_path, "%s_%s.html" % (str(ContrastId),
+                                                             paths[results])))
     Results.ComputeResultsContents(z_file, design.mask_url, html_file,
                                    threshold=threshold, method=method,
                                    cluster=cluster)
@@ -118,7 +123,8 @@ def ComputeMask(fmriFiles, outputFile, infT=0.4, supT=0.9):
     """
     Perform the mask computation
     """
-    compute_mask_intra(fmriFiles, outputFile, False,None, infT, supT)
+    compute_mask_files( fmriFiles, outputFile, 
+                        False, infT, supT, cc=1)
 
 # ---------------------------------------------
 # various FSL-based Pre processings functions -
@@ -232,7 +238,7 @@ def DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
 
 
 def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
-                  session, hrf="Canonical", drift="Blank",
+                  session, hrfType="Canonical", drift="Blank",
                   driftMatrix=None, poly_order=2, cos_FreqCut=128,
                   FIR_order=1, FIR_length=1, model="default", verbose=0):
     """
@@ -248,21 +254,10 @@ def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
     design.load()
     design.timing(tr)
 
-    # set the drift terms
-    if driftMatrix != None:
-        drift = pylab.load(driftMatrix)
-    elif drift == "Blank":
-        drift = 0
-    elif drift == "Cosine":
-        DesignMatrix.HF = cos_FreqCut
-        drift = dm.cosine_drift
-    elif drift == "Polynomial":
-        DesignMatrix.order = poly_order
-        #drift = dm.canonical_drift
-        drift = dm._polydrift(poly_order)
+    
 
     """
-    fixme : where should it be set ?
+    fixme : set the FIR model
     # set the hrf
     if hrf == "Canonical":
         hrf = dm.hrf.glover
@@ -279,8 +274,16 @@ def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
         return
     """
         
-    #design._compute_design(hrf = hrf, drift = drift, name = session)
-    design.compute_design(drift = drift, name = session)
+    # fixme : append had-defined regressors (e.g. motion)
+    # set the drift terms
+    design.set_drift(drift,  poly_order, cos_FreqCut)
+
+    # set the condition-related regressors
+    # fixme : set the FIR model
+    design.set_conditions(hrfType)
+    
+    design.compute_design(session,verbose=1)
+    
     if hasattr(design, "names"):
         output = DF(colnames=design.names, data=design._design)
         if verbose : print design.names
