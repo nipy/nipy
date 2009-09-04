@@ -10,6 +10,35 @@ TODO : add a method 'global field', i.e. non-subject-specific info
 """
 
 import numpy as np
+import from nipy.neurospin.utils.roi import MultipleROI
+
+class HardParcellation( MultipleROI):
+    """
+    This is the basic Parcellation class:
+	It is defined discretely , i.e.
+	the parcellation is an explicit function on the set of voxels
+	(or equivalently a labelling)
+	we explictly handle the case of multiple subjects,
+	where the labelling varies with the subjects
+    """
+    def __init__(self, k, xyz, label, group_labels=None, 
+                       referential = None, subjects = []):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        id="parcellation" string, roi identifier
+        k=1, int, number of rois that are included in the structure 
+        affine=np.eye(4), array of shape(4,4),
+                           coordinate-defining affine transformation
+        shape=None, tuple of length 3 defining the size of the grid 
+                    implicit to the discrete ROI definition
+        xyz=None: list of arrays of shape (nvox[i],3)
+                  the grid coordinates of the rois elements
+        """
+        MultipleROI.__init__(id, k, affine, shape, xyz)
+      
 
 class Parcellation:
 	"""

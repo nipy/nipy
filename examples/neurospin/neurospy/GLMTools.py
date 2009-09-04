@@ -104,8 +104,9 @@ def saveall(contrast, design, ContrastId, dim, kargs):
     if kargs.has_key("threshold"):
         threshold = kargs["threshold"]
     else:
-        print "Cannot save HTML results. Missing argument : threshold"
-        return
+        threshold=0.001
+        #print "Cannot save HTML results. Missing argument : threshold"
+        #return
 
     if kargs.has_key("cluster"):
         cluster = kargs["cluster"]

@@ -1,21 +1,29 @@
-import nipy.neurospin.image as fff2image 
+import nipy.neurospin.statistical_mapping as sm
+import nipy.neurospin.image as image
 
-def ComputeResultsContents(zmap_file_path, mask_file_path, output_html_path,
-                           threshold=0.001, method='fpr', cluster=0,
-                           null_zmax='bonferroni', null_smax=None,
-                           null_s=None, nmaxima=4):
+def ComputeResultsContents(zmap_file_path, mask_file_path,
+                           output_html_path, threshold=0.001,
+                           method='fpr', cluster=0, null_zmax='bonferroni',
+                           null_smax=None, null_s=None, nmaxima=4):
 
-    """
-    Write the output of the GLM as ac an html page
-    """
     # Read data: z-map and mask 
-    zmap = fff2image.image(zmap_file_path)
-    mask = fff2image.image(mask_file_path)
+    
+    
+    zmap = image.Image(zmap_file_path)
+    """
+    mask = image.Image(mask_file_path)
 
-    # Compute cluster statistics 
-    clusters, info = fff2image.cluster_stats(zmap, mask, height_th=threshold, height_control=method, cluster_th=cluster,
-                        null_zmax=null_zmax, null_smax=null_smax, null_s=null_s)
-
+    # Compute cluster statistics
+    #if null_smax != None:
+    nulls={'zmax' : null_zmax, 'smax' : null_smax, 's' : null_s}
+    clusters, info = sm.cluster_stats(zmap, mask, height_th=threshold, height_control=method.lower(), cluster_th=cluster, nulls=nulls)
+    if clusters == None or info == None:
+        print "No results were writen for %s" % zmap_file_path
+        return
+    #else:
+    #   clusters, info = sm.cluster_stats(zmap, mask, height_th=threshold, height_control=method, cluster_th=cluster,
+    #                     nulls={})
+    
     # Make HTML page 
     output = open(output_html_path, mode = "w")
     output.write("<html><head><title> Result Sheet for %s </title></head><body><center>\n" % zmap_file_path)
@@ -40,8 +48,8 @@ def ComputeResultsContents(zmap_file_path, mask_file_path, output_html_path,
                 output.write('<tr><td align="center">' + '</td><td align="center">'.join(temp) + '</td><td></td></tr>\n')
 
     output.write("</table>\n")
-    output.write("Number of voxels : %i<br>\n" % len(mask.array > 0))
+    output.write("Number of voxels : %i<br>\n" % len(mask.get_data() > 0))
     output.write("Threshold Z=%f (%s control at %f)<br>\n" % (info['threshold_z'], method, threshold))
     output.write("</center></body></html>\n")
     output.close()
-
+    """
