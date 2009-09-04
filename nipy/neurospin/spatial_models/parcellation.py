@@ -20,21 +20,21 @@ class Parcellation:
 	we explictly handle the case of multiple subjects,
 	where the labelling varies with the subjects
 
-	- k is the number of parcels/classes
-	- ijk: array of shape(nbvoxels,anatomical_dimension)
-      that represents the grid of voxels to be parcelled
-      (the same for all subjects) 
-      typically anatomical_dimension=3
-	- referential rerpresents the image referential, 
-      resoltuion, position and size 
-      this is expressed as an affine (4,4) transformation matrix
-	- label (nbvox, subjects) array: nbvox is the number of voxels
-      within the binary mask
-      if the voxel is not labelled in a given subject, then the label is -1
-      thus the label has integer values in [-1,k-1]
-	- group_labels is a  labelling of the template
-	- subjects=none is a list of ids of the subjects
-      by default, is is set as range(self.nb_subj)
+	k is the number of parcels/classes
+	ijk: array of shape(nbvoxels,anatomical_dimension)
+         that represents the grid of voxels to be parcelled
+         (the same for all subjects) 
+         typically anatomical_dimension=3
+	referential rerpresents the image referential, 
+                  resoltuion, position and size 
+                  this is expressed as an affine (4,4) transformation matrix
+	label (nbvox, subjects) array: nbvox is the number of voxels
+            within the binary mask
+            if the voxel is not labelled in a given subject, then the label is -1
+            thus the label has integer values in [-1,k-1]
+	group_labels is a  labelling of the template
+	subjects=none is a list of ids of the subjects
+                    by default, is is set as range(self.nb_subj)
 	"""
 	
 	def __init__(self, k, ijk, label, group_labels=None, 

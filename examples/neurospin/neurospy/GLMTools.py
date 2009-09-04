@@ -97,8 +97,9 @@ def saveall(contrast, design, ContrastId, dim, kargs):
     if kargs.has_key("method"):
         method = kargs["method"]
     else:
-        print "Cannot save HTML results. Missing argument : method"
-        return
+        method = 'fpr'
+        #print "Cannot save HTML results. Missing argument : method"
+        #return
 
     if kargs.has_key("threshold"):
         threshold = kargs["threshold"]
@@ -112,8 +113,9 @@ def saveall(contrast, design, ContrastId, dim, kargs):
         cluster = 0
 
     results = "HTML Results"
-    html_file = os.sep.join((contrasts_path, "%s_%s.html" % (str(ContrastId),
-                                                             paths[results])))
+    html_file = os.sep.join((contrasts_path,
+                             "%s_%s.html" % (str(ContrastId),
+                                             paths[results])))
     Results.ComputeResultsContents(z_file, design.mask_url, html_file,
                                    threshold=threshold, method=method,
                                    cluster=cluster)
@@ -123,8 +125,7 @@ def ComputeMask(fmriFiles, outputFile, infT=0.4, supT=0.9):
     """
     Perform the mask computation
     """
-    compute_mask_files( fmriFiles, outputFile, 
-                        False, infT, supT, cc=1)
+    compute_mask_files( fmriFiles, outputFile, False, infT, supT, cc=1)
 
 # ---------------------------------------------
 # various FSL-based Pre processings functions -
@@ -230,7 +231,7 @@ def DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
     FIR_order = DmtxParam["FIR_order"]
     FIR_length  = DmtxParam["FIR_length"]
     driftMatrix = DmtxParam["drift_matrix"]
-    model = 'default'# this is a brainvisa thing for misc info recording
+    model = 'default'# this is a brainvisa thing for misc info 
     _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
                   session, hrfType, drift, driftMatrix, poly_order,
                   cos_FreqCut, FIR_order, FIR_length, model)
@@ -289,7 +290,8 @@ def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
         output.write(outputFile)
     
 
-def GLMFit(file, designMatrix, mask, outputVBA, outputCon, fit="Kalman_AR1"):
+def GLMFit(file, designMatrix, mask, outputVBA, outputCon,
+           fit="Kalman_AR1"):
     """
     Call the GLM Fit function with apropriate arguments
 
