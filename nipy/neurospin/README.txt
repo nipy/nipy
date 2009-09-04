@@ -15,3 +15,14 @@ typically will update an existing ``fff2`` code to use the new module:
 * import fff2 -> import nipy.neurospin as fff2
 * from fff2 -> from nipy.neurospin
 * fff2 -> nipy.neurospin
+
+
+
+====================================
+ nipy.neuropsin module organization
+====================================
+
+In the directory root are modules (*.py files) that expose high-level
+APIs and may know about nipy classes. Each of these modules calls one
+or several lower-level subpackages corresponding to the various
+subdirectories.  

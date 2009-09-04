@@ -93,19 +93,14 @@ class VBA:
         mask_url
         output_url
         """
-        #print type(obj)
-        #print isinstance(obj, DF)
         if isinstance(obj, DF):
             # Copy all optionnal argument in dict
             self.__dict__.update(kw)
-            #for k in kw.keys(): self.__dict__[k]=kw[k]
             if not hasattr(self, "mri_names"):
                 self.mri_names = obj[:,0].tolist()
                 obj = obj[:, 1:]
             if create_design_mat:
-                self.yX=buildDesignMat(obj,X_formula,X_interaction)
-                #y=DF([[v] for v in Y_url],colnames=["url"])
-                #self.yX=y.concatenate(X,axis=1)
+                self.yX = buildDesignMat(obj,X_formula,X_interaction)
             else:
                 self.yX=obj
             
@@ -114,7 +109,7 @@ class VBA:
             objIO.readObj(self,url)
         elif type(obj) is dict :
             self.load(obj)
-            #self._model = self.readModel(obj["HDF5FilePath"])
+
     # --------------------------------------------------------------------------
     # Fit
     def fit(self):
@@ -131,7 +126,7 @@ class VBA:
         self._model.fit(Y_arr, X, method=self.method)
         del(self._Y_arr)
         del(Y_arr)
-            # Save results on disk?
+
     # --------------------------------------------------------------------------
     # Contrasts & test
     def contrast(self,c,type='t'):
@@ -154,7 +149,7 @@ class VBA:
         Save the object, see datamind.io.objIO.writeObj()
         """
         if type(url) == dict:
-            self._model.save(url["HDF5FilePath"])
+            self._model.save(url["GlmDumpFile"])
             pythons = ConfigObj(url["ConfigFilePath"])
             for k in self.__dict__.keys():
                 if k[0]=="_" or type(self.__dict__[k]) is types.InstanceType or isinstance(self.__dict__[k], DF):
@@ -165,16 +160,14 @@ class VBA:
             pythons.write()
         else:
             self.output_url=url 
-            #self.saveModel(url)
             url=URL.joinUrl(url,"model","h5")
             self._model.save(self._model,url)
-            #objIO.writeObj(self,url)
 
     def load(self, dic):
         if type(dic) is dict:
             self.__dict__.update(ConfigObj(dic["ConfigFilePath"]).dict())
             self.yX = DF.read(self.DesignFilePath)
-            self._model = GLM.load(dic["HDF5FilePath"])
+            self._model = GLM.load(dic["GlmDumpFile"])
         
     def getY_arr(self):
         """
@@ -186,11 +179,7 @@ class VBA:
                 Y_urls=[self.getFullYUrl(url) for url in self.mri_names]
             else:
                 Y_urls=[self.getFullYUrl(self.mri_names)]
-            #temp = aims.read(str(Y_urls[0]))
-            #if mask_arr != None:
-            #    vols = temp.arraydata()[:, mask_arr]
-            #else:
-            #    vols = temp.arraydata()
+
             temp = nifti.NiftiImage(str(Y_urls[0]))
             if mask_arr != None:
                 vols = temp.asarray()[:, mask_arr]
@@ -204,11 +193,7 @@ class VBA:
                     vols = np.vstack(temp.asarray()[:, mask_arr])
                 else:
                     vols = np.vstack(temp.asarray())
-                #temp = aims.read(str(url))
-                #if mask_arr != None:
-                #    vols = np.vstack((vols, temp.arraydata()[:, mask_arr]))
-                #else:
-                #    vols = np.vstack((vols, temp.arraydata()))
+
                 print "Read : %s" % url
             self._Y_arr=vols
             del temp
@@ -223,11 +208,8 @@ class VBA:
         if not hasattr(self,"_mask_arr"):
             if not hasattr(self,"mask_url"): return None
             
-            #temp = aims.read(self.mask_url)
-            #self._mask_arr = temp.arraydata()
             temp = nifti.NiftiImage(self.mask_url)
             self._mask_arr = temp.asarray()
-            # Squeeze the first dimension (mask is 3D) and transform in boolean
             if np.size(self._mask_arr.shape) == 4:
                 self._mask_arr=self._mask_arr[0]
             print "Read : %s" % self.mask_url
@@ -244,10 +226,9 @@ class VBA:
         try:
             url=URL.joinUrl(self.output_url,"model","h5")
             self._model=GLM.load(url)
-            #self._model=self.readModel(url)
+
         except exceptions.Exception, e:
             print "Model could not be loaded, call fit",e
-            ## No model could be loaded call fit
             self.fit()
         return self._model
         
@@ -256,18 +237,6 @@ class VBA:
             url=URL.joinUrl(self.output_url,suffix,"img")
         if isinstance(obj, np.ndarray):
             obj=self.arr2vol(obj)
-        #import soma.aims as aims
-        #temp=aims.Volume_DOUBLE(obj)
-        #init_header=self._Y_arr.header()self.data_header
-        #header = temp.header()
-        #transfer = ["referentials", "transformations", "woxel_size"]
-        #for t in transfer:
-            #if init_header.has_key(t):
-                #header[t] = init_header[t]
-        #w=aims.Writer()
-        #w.write(temp,url)
-        #w=aims.Writer()
-        #w.write(obj,url)
         nifti.NiftiImage(obj,url)
         
     def writeModel(self,model,file):
@@ -321,8 +290,6 @@ class VBA:
         Return a blank (float) of os the same dimension than the input volumes.
         Use it to store t-map etc...
         """
-        #import datamind.image.vol
-        #import datamind.image.aimsutils
         if not hasattr(self,"_refBlankVol"):
             print type(self.mri_names) == str
             print self.mri_names
@@ -342,10 +309,8 @@ class VBA:
         array to volume convertion, taking in account a mask if exists
         """
         vol=self.getRefBlankVol()
-        #vol_arr=vol.arraydata()
         vol_arr=vol.asarray()
         mask_arr=self.getMask_arr()
-        #vol2_arr=self.getRefBlankVol().arraydata()
         if not mask_arr is None:
             for volume in vol_arr:
                 # Iterate over the first dimension
@@ -357,7 +322,6 @@ class VBA:
         """
         volume to array convertion, taking in account a mask if exists
         """
-        #vol_arr=vol.arraydata()
         vol_arr = vol.asarray()
         mask_arr=self.getMask_arr()
         if not mask_arr is None:
