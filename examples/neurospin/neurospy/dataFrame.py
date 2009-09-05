@@ -1,4 +1,4 @@
-import numpy as N
+import numpy as np
 import types,sys
 from dmarray import *
 from utilsStruct import *
@@ -38,11 +38,11 @@ class DataFrame(dmarray):
     d=dat[:,1:]; print d,d.celltypes()
     
     print 'dat[:,"sign"].tolist() ---------------------------------------------'
-    print "# Use tolist() to get true decoded values"
+    print '# Use tolist() to get true decoded values'
     print dat[:,"sign"].tolist()
     
-    print 'N.asmatrix(dat[:,["age", "weight"]]) -------------------------------'
-    print N.asmatrix(dat[:,["age", "weight"]])
+    print 'np.asmatrix(dat[:,["age", "weight"]]) -------------------------------'
+    print np.asmatrix(dat[:,["age", "weight"]])
     
     print 'dat[:,["name","sign"]] ---------------------------------------------'
     d=dat[:,["name","sign"]]; print d,d.celltypes()
@@ -77,7 +77,7 @@ class DataFrame(dmarray):
     print dat
 
     print "Quote string & and us a different separator ------------------------"
-    print dat.__str__(sep="#",quoteStr=True)
+    print dat.__str__(sep='#',quoteStr=True)
 
     print "Do not align -------------------------------------------------------"
     print dat.__str__(align=False,quoteStr=True)
@@ -108,10 +108,10 @@ class DataFrame(dmarray):
     print "********************************************************************"
     print "** Nested array                                                   **"
     dat=DF(colnames= ["name",    "age","array",             "sign"],
-               data=[['Henri',     29, N.array([1,10,100]),  "Ram"],
-                     ['Oliv',      25, N.array([2,20,200]),  "Bull"],
-                     ['Jean Paul', 60, N.array([3,30,300]),  "Capricorne"],
-                     ['Fred',      30, N.array([4.1,40,400]),"Bull"]],
+               data=[['Henri',     29, np.array([1,10,100]),  "Ram"],
+                     ['Oliv',      25, np.array([2,20,200]),  "Bull"],
+                     ['Jean Paul', 60, np.array([3,30,300]),  "Capricorne"],
+                     ['Fred',      30, np.array([4.1,40,400]),"Bull"]],
                     )
     print dat
     a=dat[2,"array"]
@@ -129,13 +129,13 @@ class DataFrame(dmarray):
           ## 1) build the ndarray
             if not celltypes:
                 # No celltypes are provided guess them
-                arr=N.zeros(len(data)*len(data[0]),dtype=dtype).reshape(len(data),len(data[0]))
+                arr=np.zeros(len(data)*len(data[0]),dtype=dtype).reshape(len(data),len(data[0]))
                 celltypes=[dmShared.double_str]*len(data[0])
                 for i in xrange(len(data)):
                     row=data[i]
                     for j in xrange(len(row)):
                         v=row[j]
-                        if N.isscalar(v):
+                        if np.isscalar(v):
                         # string or number
                             try:
                                 # number
@@ -150,12 +150,12 @@ class DataFrame(dmarray):
                             celltypes[j] =dmShared.array_str
                 data=arr
             else:
-                if N.all([t==dmShared.double_str for t in celltypes]):
+                if np.all([t==dmShared.double_str for t in celltypes]):
                     # If all types are double then directly build the array
-                    data=N.array(data)
+                    data=np.array(data)
                 else:
                     # Enconding should be performed
-                    arr=N.zeros(len(data)*len(data[0])).reshape(len(data),len(data[0]))
+                    arr=np.zeros(len(data)*len(data[0])).reshape(len(data),len(data[0]))
                     doubcols=list_indexof([dmShared.double_str],celltypes)
                     # columns that must be encoded
                     codedcols=list_indexof([dmShared.string_str,dmShared.array_str],celltypes)
@@ -167,18 +167,18 @@ class DataFrame(dmarray):
                     data=arr
             ## 2) build the dmarray then the DataFrame
             new=dmarray.__new__(subtype,data,copy=False,rownames=rownames,colnames=colnames)
-            new._celltypes=N.char.array(celltypes)
+            new._celltypes=np.char.array(celltypes)
             return new
         if celltypes is None:
             if isinstance(data, DataFrame) : celltypes=data._celltypes
-            elif isinstance(data, N.ndarray):
+            elif isinstance(data, np.ndarray):
                 try:
                     # Is data a numeric ndarray?
                     data+1
                     # It seems so
-                    celltypes=N.char.array([dmShared.double_str]*data.shape[-1])
+                    celltypes=np.char.array([dmShared.double_str]*data.shape[-1])
                 except exceptions.TypeError:
-                    celltypes=N.char.array([dmShared.string_str]*data.shape[-1])
+                    celltypes=np.char.array([dmShared.string_str]*data.shape[-1])
         new=dmarray.__new__(subtype,data,copy=copy,rownames=rownames,colnames=colnames)
         if (not copy):
             new._celltypes=celltypes
@@ -215,7 +215,7 @@ class DataFrame(dmarray):
         DF.code("toto")
         DF.code(["titi","toto"])
         """
-        if iterate and not N.isscalar(obj):
+        if iterate and not np.isscalar(obj):
             return [DataFrame.code(i) for i in obj]
         try:
             return cls._labels2codes[obj]
@@ -240,7 +240,7 @@ class DataFrame(dmarray):
         DF.decode(1)
         DF.decode([1,3])
         """
-        if not N.isscalar(code): return [DataFrame.decode(i) for i in code]
+        if not np.isscalar(code): return [DataFrame.decode(i) for i in code]
         try:
             return cls._codes2labels[int(code)]
         except exceptions.IndexError:
@@ -257,7 +257,7 @@ class DataFrame(dmarray):
         """
         celltypes=self._celltypes.tolist()
         celltypes[i]=dmShared.string_str
-        self._celltypes=N.asarray(celltypes)
+        self._celltypes=np.asarray(celltypes)
 
     def __getslice__(self,start,stop):
         if stop == sys.maxint: stop = None
@@ -268,7 +268,7 @@ class DataFrame(dmarray):
         index=self.formatIndex(index)
         out=dmarray.__getitem__(self,index)
         # If out is a scalar should it be decoded ?
-        if N.isscalar(out):
+        if np.isscalar(out):
             if not self._celltypes is None and self._celltypes[index[-1]]!=dmShared.double_str:
                 return self.decode(out)
             else:
@@ -282,8 +282,8 @@ class DataFrame(dmarray):
             out._celltypes=self._celltypes[index[-1]]
         elif sum([not isinstance(i,slice) for i in index])>1:
             out._celltypes=None
-        elif N.isscalar(index[-1]):
-            out._celltypes=N.char.array([self._celltypes[index[-1]]]*out.shape[-1])
+        elif np.isscalar(index[-1]):
+            out._celltypes=np.char.array([self._celltypes[index[-1]]]*out.shape[-1])
         else:
             out._celltypes=self._celltypes[index[-1]]
         return out
@@ -301,7 +301,7 @@ class DataFrame(dmarray):
             celltypes=self._celltypes.copy()
             if axis==out.ndim-1:
                 # If concatenation is done along the las axis concatenate the celltypes
-                celltypes=N.hstack((celltypes,other._celltypes))
+                celltypes=np.hstack((celltypes,other._celltypes))
         except:
             celltypes=None
         return DataFrame(out,celltypes=celltypes)
@@ -381,8 +381,8 @@ if __name__ == "__main__":
     print "# Use tolist() to get true decoded values"
     print dat[:,"sign"].tolist()
     
-    print 'N.asmatrix(dat[:,["age", "weight"]]) -------------------------------'
-    print N.asmatrix(dat[:,["age", "weight"]])
+    print 'np.asmatrix(dat[:,["age", "weight"]]) -------------------------------'
+    print np.asmatrix(dat[:,["age", "weight"]])
     
     print 'dat[:,["name","sign"]] ---------------------------------------------'
     d=dat[:,["name","sign"]]; print d,d.celltypes()
@@ -448,10 +448,10 @@ if __name__ == "__main__":
     print "********************************************************************"
     print "** Nested array                                                   **"
     dat=DF(colnames= ["name",    "age","array",             "sign"],
-               data=[['Henri',     29, N.array([1,10,100]),  "Ram"],
-                     ['Oliv',      25, N.array([2,20,200]),  "Bull"],
-                     ['Jean Paul', 60, N.array([3,30,300]),  "Capricorne"],
-                     ['Fred',      30, N.array([4.1,40,400]),"Bull"]],
+               data=[['Henri',     29, np.array([1,10,100]),  "Ram"],
+                     ['Oliv',      25, np.array([2,20,200]),  "Bull"],
+                     ['Jean Paul', 60, np.array([3,30,300]),  "Capricorne"],
+                     ['Fred',      30, np.array([4.1,40,400]),"Bull"]],
                     )
     print dat
     print 'dat[2,"array"] ---'

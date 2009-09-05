@@ -5,14 +5,14 @@ import numpy as np
 import scipy.misc as sm
 
 # Our own imports
-import nipy.neurospin.graph as fg
-import nipy.neurospin.graph.field as ff
+from nipy.neurospin.graph import graph_3d_grid, graph_cc
+from nipy.neurospin.graph.field import Field
+from _onesample import stat as os_stat, stat_mfx as os_stat_mfx
+from _twosample import stat as ts_stat, stat_mfx as ts_stat_mfx
 
-import onesample as os
-import twosample as ts
 
 # Default parameters
-DEF_NDRAWS = int(1e6)
+DEF_NDRAWS = int(1e5)
 DEF_NPERMS = int(1e4)
 DEF_NITER = 5
 DEF_STAT_ONESAMPLE = 'student'
@@ -41,11 +41,11 @@ def extract_clusters_from_thresh(T,XYZ,th,k=18):
     if len(I)>0:
         SupraThreshXYZ = XYZ[:, I]
         # Compute graph associated to suprathresh_coords
-        A, B, D = fg.graph_3d_grid(SupraThreshXYZ.transpose(),k)
+        A, B, D = graph_3d_grid(SupraThreshXYZ.transpose(),k)
         # Number of vertices
         V = max(A) + 1
         # Labels of connected components
-        CC_label = fg.graph_cc(A,B,D,V)
+        CC_label = graph_cc(A,B,D,V)
         labels[I] = CC_label
     return labels
 
@@ -100,7 +100,7 @@ def extract_clusters_from_diam(T,XYZ,th,diam,k=18):
         else:
             # build the field
             p = len(T[I])
-            F = ff.Field(p)
+            F = Field(p)
             F.from_3d_grid(np.transpose(XYZ[:,I]),k)
             F.set_field(np.reshape(T[I],(p,1)))
             # compute the blobs
@@ -148,7 +148,7 @@ def extract_clusters_from_diam(T,XYZ,th,diam,k=18):
 
 def extract_clusters_from_graph(T, G, th):
     """
-    This returns a label vectorof same size as T,
+    This returns a label vector of same size as T,
     defining connected components for subgraph of
     weighted graph G containing vertices s.t. T >= th
     """
@@ -184,21 +184,21 @@ def sorted_values(a):
 
 def onesample_stat(Y, V, stat_id, base=0.0, axis=0, Magics=None, niter=DEF_NITER):
     """
-    Wrapper for os.stat and os.stat_mfx
+    Wrapper for os_stat and os_stat_mfx
     """
     if stat_id.find('_mfx')<0: 
-        return os.stat(Y, stat_id, base, axis, Magics)
+        return os_stat(Y, stat_id, base, axis, Magics)
     else:
-        return os.stat_mfx(Y, V, stat_id, base, axis, Magics, niter)
+        return os_stat_mfx(Y, V, stat_id, base, axis, Magics, niter)
 
 def twosample_stat(Y1, V1, Y2, V2, stat_id, axis=0, Magics=None, niter=DEF_NITER):
     """
-    Wrapper for ts.stat and ts.stat_mfx
+    Wrapper for ts_stat and ts_stat_mfx
     """
     if stat_id.find('_mfx')<0: 
-        return ts.stat(Y1, Y2, stat_id, axis, Magics)
+        return ts_stat(Y1, Y2, stat_id, axis, Magics)
     else:
-        return ts.stat_mfx(Y1, V1, Y2, V2, stat_id, axis, Magics, niter)
+        return ts_stat_mfx(Y1, V1, Y2, V2, stat_id, axis, Magics, niter)
 
 #=================================================
 #=================================================
@@ -281,7 +281,7 @@ class permutation_test:
     """
     This generic permutation test class contains the calibration method
     which is common to the derived classes permutation_test_onesample and 
-    permutation_test_twosample
+    permutation_test_twosample (as well as other common methods)
     """
     #=======================================================
     # Permutation test calibration of summary statistics
@@ -724,7 +724,7 @@ class permutation_test_twosample(permutation_test):
         # Create data fields
         n1,p = data1.shape[axis], data1.shape[1-axis]
         n2 = data2.shape[axis]
-        self.data1 = data2
+        self.data1 = data1
         self.data2 = data2
         self.stat_id = stat_id
         self.XYZ = XYZ

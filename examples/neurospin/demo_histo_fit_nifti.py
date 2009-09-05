@@ -8,61 +8,53 @@ nifti image
 Author : Bertrand Thirion, 2008-2009
 """
 
+import os
 import numpy as np
-import scipy.stats as st
-import os.path as op
-import fff2.spatial_models.bayesian_structural_analysis as bsa
 import nifti
+import matplotlib.pylab as mp
+import scipy.stats as st
+import nipy.neurospin.utils.emp_null as en
+import get_data_light
+get_data_light.getIt()
 
-nbru = range(1,13)
-
-nbeta = [29]
-theta = float(st.t.isf(0.01,100))
+# parameters
 verbose = 1
+theta = float(st.t.isf(0.01,100))
 
-swd = "/tmp/"
-
-# a mask of the brain in each subject
-Mask_Images =["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysis_RNorm_S/mask.img" % bru for bru in nbru]
-
-# activation image in each subject
-betas = [["/volatile/thirion/Localizer/sujet%02d/functional/fMRI/spm_analysis_RNorm_S/spmT_%04d.img" % (bru, n) for n in nbeta] for bru in nbru]
-
-s=6
+# paths
+data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
+MaskImage = os.path.join(data_dir,'mask.nii.gz')
+InputImage = os.path.join(data_dir,'spmT_0029.nii.gz')
 
 # Read the referential
-nim = nifti.NiftiImage(Mask_Images[s])
-ref_dim = nim.getVolumeExtent()
-grid_size = np.prod(ref_dim)
-sform = nim.header['sform']
-voxsize = nim.getVoxDims()
+nim = nifti.NiftiImage(MaskImage)
 
 # Read the masks and compute the "intersection"
-mask = np.transpose(nim.asarray())
-xyz = np.array(np.where(mask))
-nbvox = np.size(xyz,1)
+mask = nim.asarray().T
 
-# read the functional images
-Beta = []
-rbeta = nifti.NiftiImage(betas[s][0])
-beta = np.transpose(rbeta.asarray())
+# read the functional image
+rbeta = nifti.NiftiImage(InputImage)
+beta = rbeta.asarray().T
 beta = beta[mask>0]
-Beta.append(beta)
-Beta = np.transpose(np.array(Beta))
 
-# fit Beta's histogram with a Gamma-Gaussian mixture
-Bfm = np.array([2.5,3.0,3.5,4.0,4.5])
-Bfp = bsa._GGM_priors_(np.squeeze(Beta),Bfm,verbose=2)
+mp.figure()
+a1 = mp.subplot(1,3,1)
+a2 = mp.subplot(1,3,2)
+a3 = mp.subplot(1,3,3)
 
-# fit Beta's histogram with a mixture of Gaussians
+# fit beta's histogram with a Gamma-Gaussian mixture
+bfm = np.array([2.5,3.0,3.5,4.0,4.5])
+bfp = en.Gamma_Gaussian_fit(beta, bfm, verbose=2, mpaxes=a1)
+
+# fit beta's histogram with a mixture of Gaussians
 alpha = 0.01
-prior_strength = 100
-Bfm = np.reshape(Bfm,(np.size(Bfm),1))
-Bfq = bsa._GMM_priors_(np.squeeze(Beta),Bfm,theta,alpha,prior_strength,verbose=2)
+pstrength = 100
+bfq = en.three_classes_GMM_fit(beta, bfm, alpha, pstrength,
+                               verbose=2, mpaxes=a2)
 
-# fit the null mode of Beta with the robust method
-import fff2.utils.emp_null as en
-efdr = en.ENN(Beta)
+# fit the null mode of beta with the robust method
+efdr = en.ENN(beta)
 efdr.learn()
-#Bfr = efdr.fdr(Bfm)
-efdr.plot(bar=0)
+efdr.plot(bar=0,mpaxes=a3)
+
+mp.show()

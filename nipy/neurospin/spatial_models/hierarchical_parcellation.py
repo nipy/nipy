@@ -1,20 +1,26 @@
 import numpy as np
+from numpy.random import rand
 
-import fff2.graph.graph as fg
-import fff2.graph.field as ff
-import fff2.clustering.clustering as fc
-import fff2.spatial_models.parcellation as fp
+import nipy.neurospin.graph.graph as fg
+import nipy.neurospin.graph.field as ff
+import nipy.neurospin.clustering.clustering as fc
+import nipy.neurospin.spatial_models.parcellation as fp
+
 
 def _Field_Gradient_Jac(ref,target):
 	"""
 	Given a reference field ref and a target field target
 	compute the jacobian of the target with respect to ref
-	INPUT
-	- ref in ff.Field instance
-	- target is an array with similar shape as ref.field
-	OUTPUT
-	- fgj: array of shape (ref.V) that gives the jacobian
-	implied by the ref.field->target transformation.
+    
+    Parameters
+    ----------
+	ref: ff.Field instance that yields the topology of the space
+	target array of shape(ref.V,dim)
+	
+    Results
+    -------
+	fgj: array of shape (ref.V) that gives the jacobian
+         implied by the ref.field->target transformation.
 	"""
 	import numpy.linalg as L
 	n = ref.V
@@ -41,16 +47,20 @@ def _exclusion_map_dep(i,ref,target, targeti):
 	"""
 	ancillary function to determin admissible values of some position
 	within some predefined values
-	INPUT:
-	- i (int): index of the structure under consideration
-	- ref: field that represent the topological structure of parcels
-	and their standard position
-	- target= array of shape (ref.V,3): current posistion of the parcels
-	- targeti array of shape (n,3): possible new positions for the ith item
-	OUPUT:
-	- emap: aray of shape (n): a potential that yields the fitness
-	of the proposed positions given the current configuration
-	- rmin (double): ancillary parameter
+	
+    Parameters
+    ----------
+	i (int): index of the structure under consideration
+	ref: ff.Field that represent the topological structure of parcels
+         and their standard position
+	target: array of shape (ref.V,3): current posistion of the parcels
+	targeti array of shape (n,3): possible new positions for the ith item
+
+    Results
+    -------
+	emap: aray of shape (n): a potential that yields the fitness
+          of the proposed positions given the current configuration
+	rmin (double): ancillary parameter
 	"""
 	n = ref.V
 	xyz = ref.field
@@ -72,16 +82,20 @@ def _exclusion_map(i,ref,target, targeti):
 	"""
 	ancillary function to determin admissible values of some position
 	within some predefined values
-	INPUT:
-	- i (int): index of the structure under consideration
-	- ref: field that represent the topological structure of parcels
-	and their standard position
-	- target= array of shape (ref.V,3): current posistion of the parcels
-	- targeti array of shape (n,3): possible new positions for the ith item
-	OUPUT:
-	- emap: aray of shape (n): a potential that yields the fitness
-	of the proposed positions given the current configuration
-	- rmin (double): ancillary parameter
+	
+    Parameters
+    ----------
+	i (int): index of the structure under consideration
+	ref: ff.Field that represent the topological structure of parcels
+         and their standard position
+	target= array of shape (ref.V,3): current posistion of the parcels
+	targeti array of shape (n,3): possible new positions for the ith item
+	
+    Results
+    -------
+	emap: aray of shape (n): a potential that yields the fitness
+          of the proposed positions given the current configuration
+	rmin (double): ancillary parameter
 	"""
 	n = ref.V
 	xyz = ref.field
@@ -108,10 +122,8 @@ def _Field_Gradient_Jac_Map_(i,ref,target, targeti):
 	"""
 	Given a reference field ref and a target field target
 	compute the jacobian of the target with respect to ref
-	
 	"""
 	import numpy.linalg as L
-	from numpy.random import randn
 	n = ref.V
 	xyz = ref.field
 	fd = target.shape[1]
@@ -138,8 +150,7 @@ def _Field_Gradient_Jac_Map(i,ref,target, targeti):
 	"""
 	Given a reference field ref and a target field target
 	compute the jacobian of the target with respect to ref
-	
-	"""
+    """
 	import numpy.linalg as L
 	n = ref.V
 	xyz = ref.field
@@ -184,26 +195,28 @@ def _Field_Gradient_Jac_Map(i,ref,target, targeti):
 def optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb=1.,dmax=10.,chunksize=1.e5,  niter=5,verbose=0):
 	"""
 	Core function of the heirrachical parcellation procedure.
-	INPUT
-	- Ranat: array of shape (n,3): set of positions sampled form the data
-	- RFeature: array of shape (n,f): assocaited feature
-	- Feature: list of subject-related feature arrays
-	- Pa : parcellsation structure
-	- Gs: graph that represents the topology of the parcellation
-	- anat_coord: arrao of shape (nvox,3) space defining set of coordinates
-	- lamb=1.0: parameter to weight position
-	and feature impact on the algorithm
-	- dmax = 10: locality parameter (in the space of anat_coord)
-	to limit surch volume (CPU save)
-	- chunksize=1.e5: note used here (to be removed)
-	- niter = 5: number of iterations in teh algorithm
-	- verbose=0: verbosity level
-	OUTPUT
-	- U: lsit of arrays that represent subject-depebndent parcellations
-	- Proto_anat: array of shape (nvox) labelling of the common space
-	(template parcellation)
-	NOTE:
-	to be worked out
+	
+    Parameters
+    ----------
+	Ranat: array of shape (n,3): set of positions sampled form the data
+	RFeature: array of shape (n,f): assocaited feature
+	Feature: list of subject-related feature arrays
+	Pa : parcellation instance that is updated
+	Gs: graph that represents the topology of the parcellation
+	anat_coord: arrao of shape (nvox,3) space defining set of coordinates
+	lamb=1.0: parameter to weight position
+              and feature impact on the algorithm
+	dmax = 10: locality parameter (in the space of anat_coord)
+         to limit surch volume (CPU save)
+	chunksize=1.e5: note used here (to be removed)
+	niter = 5: number of iterations in teh algorithm
+	verbose=0: verbosity level
+	
+    Results
+    -------
+	U: lsit of arrays that represent subject-depebndent parcellations
+	Proto_anat: array of shape (nvox) labelling of the common space
+                (template parcellation)
 	"""
 	Sess = Pa.nb_subj
 	# Ranat,RFeature,Pa,chunksize,dmax,lamb,Gs
@@ -339,17 +352,22 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
 	Function that performs the parcellation by optimizing the
 	sinter-subject similarity while retaining the connectedness
 	within subject and some consistency across subjects.
-	INPUT:
-	- Pa a Parcel structure that essentially contains the grid position information
-	and the individual masks
-	- anat_coord: array of shape(nbvox,3) which defines the position
-	 of the grid points in some space
-	- nbperm=0: the number of times the parcellation and prfx
-	computation is performed on sign-swaped data
-	- niter=10: number of iterations to obtain the convergence of the method
-	information in the clustering algorithm
-	OUTPUT:
-	- Pa: the resulting parcellation structure appended with the labelling
+	
+    Parameters
+    ----------
+	Pa: a Parcel structure that essentially contains 
+        the grid position information and the individual masks
+	anat_coord: array of shape(nbvox,3) which defines the position
+                 of the grid points in some space
+	nbperm=0: the number of times the parcellation and prfx
+              computation is performed on sign-swaped data
+	niter=10: number of iterations to obtain the convergence of the method
+              information in the clustering algorithm
+    mu=10., float, relative weight of anatomical information
+	
+    Results
+    -------
+	Pa: the resulting parcellation structure appended with the labelling
 	"""
 	
 	# a various parameters
@@ -369,7 +387,7 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
 	Ranat = []
 	# browse the data
 	for s in range(Sess):
-		lxyz = xyz[Pa.label[:,s]>-1].astype('i')
+		lxyz = xyz[Pa.label[:,s]>-1].astype(np.int)
 		lnvox = np.sum(Pa.label[:,s]>-1)
 		lac = anat_coord[Pa.label[:,s]>-1]
 		g = fg.WeightedGraph(lnvox)
@@ -390,7 +408,7 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
 	U,proto_anat = optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb, dmax,niter=niter,verbose=verbose)
 
 	# write the individual labelling
-	Labels = -1*np.ones((nbvox,Sess)).astype('i')
+	Labels = -1*np.ones((nbvox,Sess)).astype(np.int)
 	for s in range(Sess):
 		Labels[Pa.label[:,s]>-1,s] = U[s]
 		
@@ -442,7 +460,7 @@ def perm_prfx(Pa,Gs,F0, ldata,anat_coord,nbperm=100,niter=5,dmax = 10., lamb = 1
 		# optimization part
 		U,proto_anat = optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb, dmax,niter=niter)
 		
-		Labels = -1*np.ones((Pa.nbvox,Sess)).astype('i')
+		Labels = -1*np.ones((Pa.nbvox,Sess)).astype(np.int)
 		for s in range(Sess):
 			Labels[Pa.label[:,s]>-1,s] = U[s]
 		
@@ -455,50 +473,4 @@ def perm_prfx(Pa,Gs,F0, ldata,anat_coord,nbperm=100,niter=5,dmax = 10., lamb = 1
 		Pa.set_labels(palc)
 	print prfx0
 	return prfx0
-
-
-def _test():
-	"""
-	low-level test function that uses a surrogate dataset
-	supposedly available in a local 'surrogate_data.out' volume
-	"""
-
-	# ------------------------------------
-	# Get the data (mask+functional image)
-	# take several experimental conditions
-	# time courses could be used instead
-	import nifti
-	import pickle
-	dataset = pickle.load(open('surrogate_data.out','r'))
-	nbparcel = 10
-	
-	# ------------------------------------
-	# 2. Read the data
-	# one mask and several contrast images (or time series images)
-	
-	Sess = dataset.shape[0]
-	ref_dim = (dataset.shape[1],dataset.shape[2])
-	xy = np.transpose(np.array(np.where(dataset[0])))
-	nbvox = np.size(xy,0)
-	xyz = np.hstack((xy,np.zeros((nbvox,1))))
-	
-	Beta= []
-	for s in range(Sess):
-		beta = np.reshape(dataset[s],(nbvox,1))
-		Beta.append(beta)
-		
-	anat_coord = xy
-	mask = np.ones((nbvox,Sess)).astype('bool')
-	ldata = Beta
-	Pa = fp.Parcellation(nbparcel,xyz,mask-1)
-	Pa =  hparcel(Pa,ldata,anat_coord)
-	
-	# write the results
-	Label =  np.array([np.reshape(Pa.label[:,s],(30,30)) for s in range(Sess)])
-	Label = Label.astype('int16')
-	nifti.NiftiImage(Label).save("/tmp/label.nii")
-	
-	prfx = Pa.PRFX('functional')
-	prfx_image = np.reshape(prfx[Pa.group_labels],(30,30))
-	nifti.NiftiImage(prfx_image).save("/tmp/prfx.nii")
 
