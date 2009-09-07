@@ -751,7 +751,7 @@ class MultipleROI(object):
         for fid in self.discrete_features.keys():
             f = self.discrete_features.pop(fid)
             nf = [f[k] for k in range(kold) if valid[k]]
-            self.set_discrete_feature(fid,nf)
+            self.set_discrete_feature(fid, nf)
 
         self.check_features()
 

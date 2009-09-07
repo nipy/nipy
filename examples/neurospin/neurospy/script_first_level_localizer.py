@@ -185,6 +185,7 @@ for s in Subjects:
         print "Computing contrasts"
         paths["Contrasts_path"] = os.sep.join((SubjectPath, fmri, a,
                                                glmDir, contrastDir))
+        paths["HTML Results"] = paths["Contrasts_path"]
         if not os.path.exists(paths["Contrasts_path"]):
             os.makedirs(paths["Contrasts_path"])
     

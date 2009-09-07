@@ -10,6 +10,35 @@ TODO : add a method 'global field', i.e. non-subject-specific info
 """
 
 import numpy as np
+import from nipy.neurospin.utils.roi import MultipleROI
+
+class HardParcellation( MultipleROI):
+    """
+    This is the basic Parcellation class:
+	It is defined discretely , i.e.
+	the parcellation is an explicit function on the set of voxels
+	(or equivalently a labelling)
+	we explictly handle the case of multiple subjects,
+	where the labelling varies with the subjects
+    """
+    def __init__(self, k, xyz, label, group_labels=None, 
+                       referential = None, subjects = []):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        id="parcellation" string, roi identifier
+        k=1, int, number of rois that are included in the structure 
+        affine=np.eye(4), array of shape(4,4),
+                           coordinate-defining affine transformation
+        shape=None, tuple of length 3 defining the size of the grid 
+                    implicit to the discrete ROI definition
+        xyz=None: list of arrays of shape (nvox[i],3)
+                  the grid coordinates of the rois elements
+        """
+        MultipleROI.__init__(id, k, affine, shape, xyz)
+      
 
 class Parcellation:
 	"""
@@ -20,21 +49,21 @@ class Parcellation:
 	we explictly handle the case of multiple subjects,
 	where the labelling varies with the subjects
 
-	- k is the number of parcels/classes
-	- ijk: array of shape(nbvoxels,anatomical_dimension)
-      that represents the grid of voxels to be parcelled
-      (the same for all subjects) 
-      typically anatomical_dimension=3
-	- referential rerpresents the image referential, 
-      resoltuion, position and size 
-      this is expressed as an affine (4,4) transformation matrix
-	- label (nbvox, subjects) array: nbvox is the number of voxels
-      within the binary mask
-      if the voxel is not labelled in a given subject, then the label is -1
-      thus the label has integer values in [-1,k-1]
-	- group_labels is a  labelling of the template
-	- subjects=none is a list of ids of the subjects
-      by default, is is set as range(self.nb_subj)
+	k is the number of parcels/classes
+	ijk: array of shape(nbvoxels,anatomical_dimension)
+         that represents the grid of voxels to be parcelled
+         (the same for all subjects) 
+         typically anatomical_dimension=3
+	referential rerpresents the image referential, 
+                  resoltuion, position and size 
+                  this is expressed as an affine (4,4) transformation matrix
+	label (nbvox, subjects) array: nbvox is the number of voxels
+            within the binary mask
+            if the voxel is not labelled in a given subject, then the label is -1
+            thus the label has integer values in [-1,k-1]
+	group_labels is a  labelling of the template
+	subjects=none is a list of ids of the subjects
+                    by default, is is set as range(self.nb_subj)
 	"""
 	
 	def __init__(self, k, ijk, label, group_labels=None, 

@@ -1,3 +1,4 @@
+
 __doc__ = """
 fMRI Design Matrix creation functions.
 """
@@ -11,7 +12,7 @@ def _trial_dmtx():
     """
     tr = 1.0
     frametimes = np.linspace(0,127*tr,128)
-    conditions = [0,0,0,1,1,1,2,2,2]
+    conditions = [0,0,0,1,1,1,3,3,3]
     onsets=[30,70,100,10,30,90,30,40,60]
     paradigm = np.vstack(([conditions, onsets])).T
     hrf_model = 'Canonical'
@@ -22,7 +23,23 @@ def _trial_dmtx():
     mp.show()
     print names
 
-
+def _trial_dmtx_block():
+    """ test code to make a design matrix
+    """
+    tr = 1.0
+    frametimes = np.linspace(0,127*tr,128)
+    conditions = [0,0,0,1,1,1,3,3,3]
+    onsets=[30,70,100,10,30,90,30,40,60]
+    duration = 6*np.ones(9)
+    paradigm = np.vstack(([conditions, onsets, duration])).T
+    hrf_model = 'Canonical'
+    X,names = dmtx_light(frametimes, paradigm, drift_model='Polynomial', order=3)
+    import matplotlib.pylab as mp
+    mp.figure()
+    mp.imshow(X/np.sqrt(np.sum(X**2,0)),interpolation='Nearest')
+    mp.show()
+    print names
+    
 def dmtx_light(frametimes, paradigm, hrf_model='Canonical',
                drift_model='Cosine', hfcut=128, order=1, names=None):
     """
@@ -49,7 +66,7 @@ def dmtx_light(frametimes, paradigm, hrf_model='Canonical',
     names list of trings; the names of the columns of the design matrix
     """
     if names==None:
-        names = ['c%d'%k for k in range(paradigm[:,0].max()+1)]
+        names = ['c%d'%k for k in range(int(paradigm[:,0].max()+1))]
     drift = set_drift(drift_model, frametimes, order, hfcut)
     conditions, names = convolve_regressors(paradigm, hrf_model, names)
     formula = conditions + drift
@@ -172,70 +189,85 @@ def convolve_regressors(paradigm, hrf_model, names=None):
     hrf_model, string that can be 'Canonical', 
                'Canonical With Derivative' or 'FIR'
                that specifies the hemodynamic reponse function
+    names=None, list of strings corresponding to the condition names
+                if names==None, these are create as 'c1',..,'cn'
+                meaning 'condition 1'.. 'condition n'
     
+    Returns
+    -------
+    f a formula object that contains the convolved regressors 
+      as functions of time    
+    names list of strings corresponding to the condition names
+          the output names depend on teh hrf model used
+          if 'Canonical' then this is identical to the input names
+          if 'Canonical With Derivative', then two names are produced for
+             input name 'name': 'name' and 'name_derivative'
+
     fixme: 
-    fails if one of the conditions is not present
-    FIR design not tmplmented yet
+    not sure how to deal with absent regressors
+    FIR design not implemented yet
+    normalization of the hrf
     """
-    # fixme: what should we do if names==None ?
-    # fixme : add the FIR design
     ncond = int(paradigm[:,0].max()+1)
+    if names==None:
+        names=["c%d"%k for  k in ncond]
+    else:
+        if len(names)<ncond:
+            raise ValueError, 'the number of names is less than the \
+                  number of conditions'   
+        else:
+            ncond = len(names)        
     listc = []
     hnames = []
     if paradigm.shape[1]>2:
         typep = 'block'  
     else:
         typep='event'
-
+ 
     for nc in range(ncond):
         onsets =  paradigm[paradigm[:,0]==nc,1]
-        if typep=='event':
-            if hrf_model=="Canonical":
-                c = formula.define(names[nc], utils.events(onsets, f=hrf.glover))
-                listc.append(c)
-                hnames.append(names[nc])
-            elif hrf_model=="Canonical With Derivative":
-                c1 = formula.define(names[nc],
-                                   utils.events(onsets, f=hrf.glover))
-                c2 = formula.define(names[nc]+"_derivative",
-                                   utils.events(onsets, f=hrf.dglover))
-                listc.append(c1)
-                listc.append(c2)
-                hnames.append(names[nc])
-                hnames.append(names[nc]+"_derivative")
-                
-            else:
-                raise NotImplementedError,'unknown hrf model'
-        elif typep=='block':
-            offsets =  paradigm[paradigm[:,0]==nc,2]
-            changes = np.hstack((onsets,offsets))
-            values = np.hstack((np.ones(np.size(onsets)), np.ones(np.size(offsets))))
+        nos = np.size(onsets) 
+        if nos>0:
+            if typep=='event':
+                if hrf_model=="Canonical":
+                    c = formula.define(names[nc], utils.events(onsets, f=hrf.glover))
+                    listc.append(c)
+                    hnames.append(names[nc])
+                elif hrf_model=="Canonical With Derivative":
+                    c1 = formula.define(names[nc],
+                                        utils.events(onsets, f=hrf.glover))
+                    c2 = formula.define(names[nc]+"_derivative",
+                                        utils.events(onsets, f=hrf.dglover))
+                    listc.append(c1)
+                    listc.append(c2)
+                    hnames.append(names[nc])
+                    hnames.append(names[nc]+"_derivative")
+                else:
+                    raise NotImplementedError,'unknown hrf model'
+            elif typep=='block':
+                offsets =  onsets+paradigm[paradigm[:,0]==nc,2]
+                changes = np.hstack((onsets,offsets))
+                values = np.hstack((np.ones(nos), -np.ones(nos)))
 
-            if hrf_model=="Canonical":
-                c = utils.events(onsets,values, f=hrf.iglover)
-                listc.append(c)
-                hnames.append(names[nc])
-            elif hrf_model=="Canonical With Derivative":
-                c1 = utils.events(onsets,values, f=hrf.iglover)
-                c2 = utils.events(onsets,values, f=hrf.glover)
-                listc.append(c1)
-                listc.append(c2)
-                hnames.append(names[nc])
-                hnames.append(names[nc]+"_derivative")
+                if hrf_model=="Canonical":
+                    c = utils.events(changes,values, f=hrf.iglover)
+                    listc.append(c)
+                    hnames.append(names[nc])
+                elif hrf_model=="Canonical With Derivative":
+                    c1 = utils.events(changes,values, f=hrf.iglover)
+                    c2 = utils.events(changes,values, f=hrf.glover)
+                    listc.append(c1)
+                    listc.append(c2)
+                    hnames.append(names[nc])
+                    hnames.append(names[nc]+"_derivative")
+                else:
+                    raise NotImplementedError,'unknown hrf model'  
             else:
-                raise NotImplementedError,'unknown hrf model'  
-
-            #if names != None:
-            #    c = formula.define(names[nc], c)
-            #hnames.append("condition %d",nc)
-            #listc.append(c)
-                
-                
-        else:
-            raise NotImplementedError,'unknown type of paradigm'
+                raise NotImplementedError,'unknown type of paradigm'
+    
+    # create the formula
     p = formula.Formula(listc)
-            
-    # fixme : how to handle blocks
+     
     return p, hnames
 
 def build_dmtx(form, frametimes):
