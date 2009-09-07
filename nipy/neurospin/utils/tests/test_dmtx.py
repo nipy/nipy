@@ -56,7 +56,19 @@ def test_dmtx1c():
     X,names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                         drift_model='Polynomial', order=3)
     assert((X[:,-1]==1).all())
-    
+
+
+def test_dmtx1d():
+    """ idem test_dmtx1, but different test
+    """
+    tr = 1.0
+    frametimes = np.linspace(0,127*tr,128)
+    paradigm = basic_paradigm()
+    hrf_model='Canonical'
+    X,names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
+                        drift_model='Polynomial', order=3)
+    assert((np.isnan(X)==0).all())
+       
 def test_dmtx2():
     """ idem test_dmtx1 with a different drift term
     """

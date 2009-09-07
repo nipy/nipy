@@ -222,7 +222,7 @@ def convolve_regressors(paradigm, hrf_model, names=None):
         typep = 'block'  
     else:
         typep='event'
-
+ 
     for nc in range(ncond):
         onsets =  paradigm[paradigm[:,0]==nc,1]
         nos = np.size(onsets) 
