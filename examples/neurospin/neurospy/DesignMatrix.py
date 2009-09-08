@@ -23,7 +23,8 @@ def _loadProtocol(path, session):
     -------
     paradigm array of shape (nevents,2) if the type is event-related design 
              or (nenvets,3) for a block design
-             that constains (condition id, onset) or (condition id, onset, duration)
+             that constains (condition id, onset) 
+             or (condition id, onset, duration)
     """
     paradigm = loadtxt(path)
     if paradigm[paradigm[:,0] == session].tolist() == []:
@@ -39,6 +40,23 @@ def _loadProtocol(path, session):
     
     return paradigm
 
+def load_dmtx_from_csv(path):
+    """load the design_matrix as a csv file
+    fixme: untested, fragile ; dialect ?
+    """
+    import csv
+    reader = csv.reader(open(path, "rb"))
+    boolfirst = True
+    design = []
+    for row in reader:
+        if boolfirst:
+            names = [row[j] for j in range(len(row))]
+            boolfirst=False
+        else:
+            design.append([row[j] for j in range(len(row))])
+                
+    design = np.array(design)
+    return names, design     
 
 class DesignMatrix():
     """
@@ -137,11 +155,16 @@ class DesignMatrix():
            self.conditions = None
         else:
             self.conditions, self._names = convolve_regressors(self.protocol,
-                                                                hrfmodel, self._names)
+                                           hrfmodel, self._names)
          
     def compute_design(self, name="", verbose=1):
         """Sample the formula on the grid
         
+        Parameters
+        ----------
+        name="", string, that characterized the model name
+        verbose=1, int, verbosity mode 
+       
         Note: self.conditions and self.drift must be defined beforhand
         """
         if self.protocol == None:
@@ -167,14 +190,24 @@ class DesignMatrix():
         misc[self.model]["design matrix cond"] = self._design_cond
         misc.write()
 
+        return self._design
+
     def show(self):
-        """
+        """Vizualization of self
         """
         X = self._design
         import matplotlib.pylab as mp
         mp.figure()
         mp.imshow(X/np.sqrt(np.sum(X**2,0)),interpolation='Nearest')
 
+    def save_csv(self, path):
+        """ Save the sampled design matrix as a csv file
+        """
+        import csv
+        writer = csv.writer(open(path, "wb"))
+        writer.writerow(self._names)
+        writer.writerows(self._design)
+       
     def compute_fir_design(self, drift=None, o=1, l=1, name=""):
         """
         deprecated
