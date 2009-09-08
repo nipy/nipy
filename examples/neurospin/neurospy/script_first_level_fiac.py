@@ -105,7 +105,7 @@ for s in Subjects:
     sPath = os.sep.join((DBPath, s))
 
     for a in Acquisitions:
-
+        
         #step 0. Get the fMRI data
         fmriFiles = {}
         for sess in Sessions:
@@ -124,6 +124,7 @@ for s in Subjects:
         misc["tasks"] = Conditions
         misc.write()
 
+        
         # step 2. Create one design matrix for each session
         for sess in Sessions:
             # Creating Design Matrix
@@ -133,13 +134,14 @@ for s in Subjects:
             designFile = os.sep.join((designPath, "design_mat.csv"))
             GLMTools.DesignMatrix(nbFrames, paradigmFile, miscFile,
                                   TR, designFile, sess, DmtxParam)
-         
+        """ 
         # step 3. Compute the mask
         print "Computing the mask"
         maskFile = os.sep.join((sPath, fmri, a, minfDir, "mask.img"))
         GLMTools.ComputeMask(fmriFiles.values()[0][0], maskFile,
                              infTh, supTh)
-
+        """
+        
         # step 4. Create Contrast Files
         print "Creating Contrasts"
         contrast = Contrast.ContrastList(miscFile)
@@ -160,6 +162,7 @@ for s in Subjects:
                                 - d["DSt-DSp"] - d["DSt-DSp"] - d["SSt-SSp"]
         contrastFile = os.sep.join((sPath, fmri, a, minfDir, "contrast.con"))
         contrast.save_dic(contrastFile)
+
         
         # step 5. Fit the  glm for each session 
         glms = {}
@@ -171,12 +174,13 @@ for s in Subjects:
             designPath = os.sep.join((sPath, fmri, a, glmDir, sess))
             designFile = os.sep.join((designPath, "design_mat.csv"))
             if os.path.exists(designFile):
-                GLMTools.GLMFit(fmriFiles[sess], designFile, maskFile,
-                                    GlmDumpFile, configFile, fit_algo)
+                #GLMTools.GLMFit(fmriFiles[sess], designFile, maskFile,
+                #                    GlmDumpFile, configFile, fit_algo)
                 glms[sess] = {}
                 glms[sess]["GlmDumpFile"] = GlmDumpFile
                 glms[sess]["ConfigFilePath"] = configFile
 
+        
         #6. Compute the Contrasts
         print "Computing contrasts"
         paths["Contrasts_path"] = os.sep.join((sPath, fmri, a,

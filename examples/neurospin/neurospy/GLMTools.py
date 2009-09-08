@@ -57,7 +57,8 @@ def load_image(image_path, mask_path=None ):
     else:
          image_data = load(image_path).get_data()
          if mask != None:
-              image_data = image_data[mask>0,:]  
+              image_data = image_data[mask>0,:]
+                
     return image_data
 
 
@@ -323,10 +324,12 @@ def GLMFit(file, designMatrix, mask_url, output_glm, outputCon,
         method = "kalman"
         model = "spherical"
     
-    Y = load_image(file, mask_url)
+    
     import DesignMatrix as dm
     names, X = dm.load_dmtx_from_csv(designMatrix)
       
+    Y = load_image(file, mask_url)
+
     import nipy.neurospin.glm as GLM
     glm = GLM.glm()
     glm.fit(Y.T, X, method=method, model=model)

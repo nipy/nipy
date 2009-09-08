@@ -178,7 +178,7 @@ class DesignMatrix():
         
         # complete the names with the drift terms                               
         for k in range(len(self.drift.terms)-1):
-           self._names.append('poly_drift_%d'%(k+1))                            
+           self._names.append('drift_%d'%(k+1))                            
         self._names.append('constant')
 
         if verbose:
