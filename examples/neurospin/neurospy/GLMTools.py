@@ -46,6 +46,7 @@ def load_image(image_path, mask_path=None ):
     if hasattr(image_path, '__iter__'):
        if len(image_path)==1:
           image_path = image_path[0]
+
     if hasattr(image_path, '__iter__'):
        for im in image_path:
            temp = load(im).get_data()     
@@ -107,6 +108,10 @@ def save_all(contrast, ContrastId, dim, mask_url, kargs):
     mask_url path of the mask image related to the data
     kargs, should have the key 'paths', 
            that yield the paths where everything should be written 
+           optionally it can also have the keys 'method', 'threshold' and 'cluster'
+           that are used to define the parameters for vizualization of the html page. 
+        
+    fixme : handle the case mask=None
     """
     # prepare the paths (?)
     if kargs.has_key("paths"):
@@ -114,6 +119,7 @@ def save_all(contrast, ContrastId, dim, mask_url, kargs):
     else:
         print "Cannot save contrast files. Missing argument : paths"
         return
+    
     mask = load(mask_url)
     mask_arr = mask.get_data()
     affine = mask.get_affine()
@@ -167,28 +173,20 @@ def save_all(contrast, ContrastId, dim, mask_url, kargs):
         method = kargs["method"]
     else:
         method = 'fpr'
-        #print "Cannot save HTML results. Missing argument : method"
-        #return
 
     if kargs.has_key("threshold"):
         threshold = kargs["threshold"]
     else:
-        threshold=0.001
-        #print "Cannot save HTML results. Missing argument : threshold"
-        #return
+        threshold = 0.001
 
     if kargs.has_key("cluster"):
         cluster = kargs["cluster"]
     else:
         cluster = 0
-
-    if paths.has_key('HTML Results'):
-        html_file = os.sep.join((paths['HTML Results'],\
-                               '%s.html'% str(ContrastId)))
-    else:
-        html_file = os.sep.join((contrasts_path,\
-                              '%s.html'% str(ContrastId)))
-
+ 
+    html_file = os.sep.join((contrasts_path, "%s_%s.nii" % (str(ContrastId), 
+              paths[results])))
+  
     Results.ComputeResultsContents(z_file, mask_url, html_file,
                                    threshold=threshold, method=method,
                                    cluster=cluster)
@@ -196,7 +194,7 @@ def save_all(contrast, ContrastId, dim, mask_url, kargs):
 
 def ComputeMask(fmriFiles, outputFile, infT=0.4, supT=0.9):
     """
-    Perform the mask computation
+    Perform the mask computation, see the api of  compute_mask_files
     """ 
     compute_mask_files( fmriFiles, outputFile, False, infT, supT, cc=1)
 
@@ -219,15 +217,15 @@ def DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
     This function simply unfolds  the Dmtxparam dictionary
     and calls the _DesignMatrix function
     
-    Parameters:
-    -----------
-    - nbFrames
-    - paradigm
-    - miscFile
-    - tr
-    - outputFile:
-    - session
-    - DmtxParam
+    Parameters
+    ----------
+    nbFrames
+    paradigm
+    miscFile
+    tr
+    outputFile:
+    session
+    DmtxParam
     
     """
     hrfType = DmtxParam["hrfType"]
@@ -284,6 +282,10 @@ def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
     design.set_conditions(hrfType)
     
     _design = design.compute_design(session,verbose=1)
+    
+    import matplotlib.pylab as mp
+    mp.show()
+    stop
 
     if _design != None:
         design.save_csv(outputFile)
@@ -295,24 +297,31 @@ def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
         output.write(outputFile)
     """
 
-def GLMFit(file, designMatrix, mask_url, output_glm, outputCon,
-           fit="Kalman_AR1"):
+def GLMFit(file, designMatrix,  output_glm, outputCon,
+           fit="Kalman_AR1", mask_url=None):
     """
     Call the GLM Fit function with apropriate arguments
 
     Parameters
     ----------
-    file
-    designmatrix
-    mask
-    outputVBA
-    outputCon
-    fit='Kalman_AR1'
-    
+    file, string or list of strings,
+          path of the fMRI data file(s)
+    designmatrix, string, path of the design matrix .csv file 
+    mask_url=None string, path of the mask file
+          if None, no mask is applied
+    output_glm, string, 
+                path of the output glm .npz dump
+    outputCon, string,
+               path of the output configobj contrast object
+    fit= 'Kalman_AR1', string to be chosen among
+         "Kalman_AR1", "Ordinary Least Squares", "Kalman"
+         that represents both the model and the fit method
+                
     Returns
     -------
     glm, a nipy.neurospin.glm.glm instance representing the GLM
-    
+
+    fixme: mask should be optional
     """
     if fit == "Kalman_AR1":
         model = "ar1"
@@ -341,24 +350,23 @@ def GLMFit(file, designMatrix, mask_url, output_glm, outputCon,
    
     return glm
 
-
-
-
 def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name", 
-                                   model = "default", **kargs):
+                                   model = "default", verbose=0, **kargs):
     """
     Contrast computation utility    
     
     Parameters
     ----------
-    contrastFile
-    miscFile
-    glms
-    save_mode="Contrast Name"
-    model="default"
+    contrastFile, string, path of the configobj contrast file
+    miscFile, string, path of the configobj miscinfo file
+    glms, list of nipy.neurospin.glm.glm instances 
+          representing the glms of the individual sessions 
+    save_mode="Contrast Name", string to be chosen
+                        among "Contrast Name" or "Contrast Number"
+    model="default", string,
+                     name of the contrast model used in miscfile
     """
     import nipy.neurospin.glm as GLM
-    verbose = 1 # fixme: put ine the kwargs
     misc = ConfigObj(miscFile)
     if not misc.has_key(model):
         misc[model] = {}
@@ -379,6 +387,8 @@ def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
             ContrastId = contrast
         elif save_mode == "Contrast Number":
             ContrastId = "%04i" % k
+        else:
+            raise ValueError, "unknown save mode"
 
         for key, value in contrasts[contrast].items():
             if verbose: print key,value
@@ -409,10 +419,11 @@ def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
         for c in final_contrast[1:]:
             res_contrast = res_contrast + c
             res_contrast.type = contrast_type
-
-        mask_url = ConfigObj(glms[glms.keys()[0]]['ConfigFilePath'])['mask_url']
-        save_all(res_contrast, ContrastId, contrast_dimension,
-                 mask_url, kargs)
+            
+        mask_url = None
+        if misc.has_key("mask"):
+           mask_url = misc["mask"]
+        save_all(res_contrast, ContrastId, contrast_dimension, mask_url, kargs)
         misc[model]["con_dofs"][contrast] = res_contrast.dof
     misc["Contrast Save Mode"] = save_mode
     misc.write()
@@ -501,6 +512,7 @@ def ComputeContrasts_(contrastFile, miscFile, glms, save_mode="Contrast Name",
             ContrastId = contrast
         elif save_mode == "Contrast Number":
             ContrastId = "%04i" % k
+       
 
         for key, value in contrasts[contrast].items():
             if verbose: print key,value
