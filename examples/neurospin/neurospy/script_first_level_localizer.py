@@ -181,7 +181,8 @@ for s in Subjects:
                 glms[sess] = {}
                 glms[sess]["GlmDumpFile"] = GlmDumpFile
                 glms[sess]["ConfigFilePath"] = configFile
-        #6. Compute Contrasts
+
+        #step 6. Compute Contrasts
         print "Computing contrasts"
         paths["Contrasts_path"] = os.sep.join((SubjectPath, fmri, a,
                                                glmDir, contrastDir))

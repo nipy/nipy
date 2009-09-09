@@ -1,26 +1,66 @@
 """
-General tools to analyse fMRI datasets (FSL pre-rocessing and GLM fit)
+General tools to analyse fMRI datasets (GLM fit)
 using nipy.neurospin tools
 
 Author : Lise Favre, Bertrand Thirion, 2008-2009
 """
 
 import numpy as np
-from numpy import *
 import commands
 import os
 
 from configobj import ConfigObj
-import scipy.ndimage as sn
+
 from nipy.io.imageformats import load, save, Nifti1Image 
 
-from vba import VBA
+
 import Results
 from nipy.neurospin.utils.mask import compute_mask_files
 
 # ----------------------------------------------
-# -------- Ancillary functions -----------------
+# -------- IO functions ------------------------
 # ----------------------------------------------
+
+def load_image(image_path, mask_path=None ):
+    """ Return an array of image data masked by mask data 
+
+    Parameters
+    ----------
+    image_path string or list of strings that represent the data of interest
+    mask_path=None: string that yields the mask path
+
+    Returns
+    -------
+    image_data a data array that can be 1, 2, 3  or 4D 
+               depending on chether mask==None or not
+               and on the length of the times series
+    """
+    if mask_path !=None:
+       rmask = load(mask_path)
+       mask = rmask.get_data()
+    else:
+        mask = None
+
+    image_data = []
+    
+    if hasattr(image_path, '__iter__'):
+       if len(image_path)==1:
+          image_path = image_path[0]
+    if hasattr(image_path, '__iter__'):
+       for im in image_path:
+           temp = load(im).get_data()     
+           if mask != None:
+               temp = load(im).get_data()[mask,:] 
+           else:
+                temp = load(im).get_data()  
+           image_data.append(temp)
+    else:
+         image_data = load(image_path).get_data()
+         if mask != None:
+              image_data = image_data[mask>0,:]
+                
+    return image_data
+
 
 def save_volume(shape, path, affine, mask=None, data=None, descrip=None):
     """
@@ -44,7 +84,7 @@ def save_volume(shape, path, affine, mask=None, data=None, descrip=None):
        print "Could not write the image:no mask"
        return
 
-    if size(data.shape) == 1:
+    if np.size(data.shape) == 1:
         volume[mask > 0] = data
     else:
         for i in range(data.shape[0]):
@@ -55,10 +95,18 @@ def save_volume(shape, path, affine, mask=None, data=None, descrip=None):
         wim.get_header()['descrip']=descrip
     save(wim, path)
 
-def saveall(contrast, design, ContrastId, dim, kargs):
+def save_all(contrast, ContrastId, dim, mask_url, kargs):
     """
     Save all the outputs of a GLM analysis + contrast definition
-    fixme : restructure it
+    
+    Parameters
+    ----------
+    contrast a structure describing the values related to the computed contrast 
+    ContrastId, string, the contrast identifier
+    dim the dimension of the contrast
+    mask_url path of the mask image related to the data
+    kargs, should have the key 'paths', 
+           that yield the paths where everything should be written 
     """
     # prepare the paths (?)
     if kargs.has_key("paths"):
@@ -66,17 +114,12 @@ def saveall(contrast, design, ContrastId, dim, kargs):
     else:
         print "Cannot save contrast files. Missing argument : paths"
         return
-    mask = load(design.mask_url)
+    mask = load(mask_url)
     mask_arr = mask.get_data()
     affine = mask.get_affine()
     shape = mask.get_shape()    
     contrasts_path = paths["Contrasts_path"]
     
-    ## fixme : is it useful ?
-    #if size(mask_arr.shape) == 3:
-    #    mask_arr= mask_arr.reshape(1, mask_arr.shape[0],
-    #                               mask_arr.shape[1], mask_arr.shape[2])
-    #shape = mask_arr.shape
     t = contrast.stat()
     z = contrast.zscore()
 
@@ -138,7 +181,7 @@ def saveall(contrast, design, ContrastId, dim, kargs):
     if kargs.has_key("cluster"):
         cluster = kargs["cluster"]
     else:
-        cluster = 10
+        cluster = 0
 
     if paths.has_key('HTML Results'):
         html_file = os.sep.join((paths['HTML Results'],\
@@ -146,11 +189,8 @@ def saveall(contrast, design, ContrastId, dim, kargs):
     else:
         html_file = os.sep.join((contrasts_path,\
                               '%s.html'% str(ContrastId)))
-    #html_file = os.sep.join((contrasts_path,
-    #                         "%s_%s.html" % (str(ContrastId),
-    #                                         paths['HTML Results'])))
 
-    Results.ComputeResultsContents(z_file, design.mask_url, html_file,
+    Results.ComputeResultsContents(z_file, mask_url, html_file,
                                    threshold=threshold, method=method,
                                    cluster=cluster)
 
@@ -158,82 +198,9 @@ def saveall(contrast, design, ContrastId, dim, kargs):
 def ComputeMask(fmriFiles, outputFile, infT=0.4, supT=0.9):
     """
     Perform the mask computation
-    """
+    """ 
     compute_mask_files( fmriFiles, outputFile, False, infT, supT, cc=1)
 
-# ---------------------------------------------
-# various FSL-based Pre processings functions -
-# ---------------------------------------------
-
-def SliceTiming(file, tr, outputFile, interleaved = False,
-                ascending = True):
-    """
-    Perform slice timing using FSL
-    """
-    so = " "
-    inter = " "
-    if interleaved:
-        inter = "--odd"
-    if not ascending:
-        so = "--down"
-    print "slicetimer -i '%s' -o '%s' %s %s -r %s" % \
-          (file, outputFile, so, inter, str(tr))
-    print commands.getoutput("slicetimer -i '%s' -o '%s' %s %s -r %s" %\
-                             (file, outputFile, so, inter, str(tr)))
-
-def Realign(file, refFile, outputFile):
-    """
-    Perform realignment using FSL
-    """
-    print commands.getoutput("mcflirt -in '%s' -out '%s' -reffile '%s'\
-    -mats" % (file, outputFile, refFile))
-
-def NormalizeAnat(anat, templatet1, normAnat, norm_matrix, searcht1 = "NASO"):
-    """
-    Form the normalization of anatomical images using FSL
-    """
-    if searcht1 == "AVA":
-        s1 = "-searchrx -0 0 -searchry -0 0 -searchrz -0 0"
-    elif (searcht1 == "NASO"):
-        s1 = "-searchrx -90 90 -searchry -90 90 -searchrz -90 90"
-    elif (searcht1 == "IO"):
-        s1 = "-searchrx -180 180 -searchry -180 180 -searchrz -180 180"
-    print "T1 MRI on Template\n"
-    print commands.getoutput("flirt -in '%s' -ref '%s' -omat '%s' \
-    -out '%s' -bins 1024 -cost corratio %s -dof 12" \
-                             % (anat, templatet1, norm_matrix, normAnat, s1) )
-    print "Finished"
-
-def NormalizeFMRI(file, anat, outputFile, normAnat, norm_matrix, searchfmri = "AVA"):
-    """
-    Perform the normalization of fMRI data using FSL
-    """
-    if searchfmri == "AVA":
-        s2 = "-searchrx -0 0 -searchry -0 0 -searchrz -0 0"
-    elif (searchfmri == "NASO"):
-        s2 = "-searchrx -90 90 -searchry -90 90 -searchrz -90 90"
-    elif (searchfmri == "IO"):
-        s2 = "-searchrx -180 180 -searchry -180 180 -searchrz -180 180"
-    print "fMRI on T1 MRI\n"
-    print commands.getoutput("flirt -in '%s' -ref '%s' -omat /tmp/fmri1.mat -bins 1024 -cost corratio %s -dof 6" % (file, anat, s2))
-    print "fMRI on Template\n"
-    print commands.getoutput("convert_xfm -omat /tmp/fmri.mat -concat '%s' /tmp/fmri1.mat" % norm_matrix)
-    print commands.getoutput("flirt -in '%s' -ref '%s' -out '%s' -applyxfm -init /tmp/fmri.mat -interp trilinear" % (file, normAnat, outputFile))
-    print "Finished\n"
-
-def Smooth(file, outputFile, fwhm):
-    """
-    fixme : this might smooth each slice indepently ?
-    """
-    #  voxel_width = 3
-    fmri = nifti.NiftiImage(file)
-    #voxel_width = fmri.header['voxel_size'][2]
-    voxel_width = fmri.header['pixdim'][2]
-    sigma = fwhm/(voxel_width*2*sqrt(2*log(2)))
-    for i in fmri.data:
-        sn.gaussian_filter(i, sigma, order=0, output=None,
-                           mode='reflect', cval=0.0)
-    fmri.save(outputFile)
 
 
 #-----------------------------------------------------
@@ -286,17 +253,12 @@ def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
     """
     Base function to define design matrices
     """
-    from nipy.modalities.fmri import formula, utils, hrf
-    
-    ## For DesignMatrix
     import DesignMatrix as dm
-    from dataFrame import DF
-    
+   
     design = dm.DesignMatrix(nbFrames, paradigm, session, miscFile, model)
     design.load()
     design.timing(tr)
-
-    
+ 
     """
     fixme : set the FIR model
     # set the hrf
@@ -323,36 +285,37 @@ def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
     # fixme : set the FIR model
     design.set_conditions(hrfType)
     
-    design.compute_design(session,verbose=1)
-    
+    _design = design.compute_design(session,verbose=1)
+
+    if _design != None:
+        design.save_csv(outputFile)
+    """
+    from dataFrame import DF
     if hasattr(design, "names"):
         output = DF(colnames=design.names, data=design._design)
         if verbose : print design.names
         output.write(outputFile)
-    
+    """
 
-def GLMFit(file, designMatrix, mask, outputVBA, outputCon,
+def GLMFit(file, designMatrix, mask_url, output_glm, outputCon,
            fit="Kalman_AR1"):
     """
     Call the GLM Fit function with apropriate arguments
 
-    Parameters:
-    -----------
-    - file
-    - designmatrix
-    - mask
-    - outputVBA
-    - outputCon
-    - fit='Kalman_AR1'
+    Parameters
+    ----------
+    file
+    designmatrix
+    mask
+    outputVBA
+    outputCon
+    fit='Kalman_AR1'
     
-    Output:
+    Returns
     -------
-    - glm
+    glm, a nipy.neurospin.glm.glm instance representing the GLM
     
     """
-    from dataFrame import DF
-    tab = DF.read(designMatrix)
-    
     if fit == "Kalman_AR1":
         model = "ar1"
         method = "kalman"
@@ -362,21 +325,41 @@ def GLMFit(file, designMatrix, mask, outputVBA, outputCon,
     elif fit == "Kalman":
         method = "kalman"
         model = "spherical"
+    
+    
+    import DesignMatrix as dm
+    names, X = dm.load_dmtx_from_csv(designMatrix)
+      
+    Y = load_image(file, mask_url)
 
-    glm = VBA(tab, mask_url=mask, create_design_mat = False, mri_names = file, model = model, method = method)
-    glm.fit()
-    s=dict()
-    s["GlmDumpFile"] = outputVBA
-    s["ConfigFilePath"] = outputCon
-    s["DesignFilePath"] = designMatrix
-    glm.save(s)
+    import nipy.neurospin.glm as GLM
+    glm = GLM.glm()
+    glm.fit(Y.T, X, method=method, model=model)
+    glm.save(output_glm)      
+    cobj = ConfigObj(outputCon)
+    cobj["DesignFilePath"] = designMatrix
+    cobj["mask_url"] = mask_url
+    cobj.write()   
+   
     return glm
 
 
-def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
-                     model = "default", **kargs):
+
+
+def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name", 
+                                   model = "default", **kargs):
     """
+    Contrast computation utility    
+    
+    Parameters
+    ----------
+    contrastFile
+    miscFile
+    glms
+    save_mode="Contrast Name"
+    model="default"
     """
+    import nipy.neurospin.glm as GLM
     verbose = 0 # fixme: put ine the kwargs
     misc = ConfigObj(miscFile)
     if not misc.has_key(model):
@@ -398,7 +381,129 @@ def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
             ContrastId = contrast
         elif save_mode == "Contrast Number":
             ContrastId = "%04i" % k
-            
+
+        for key, value in contrasts[contrast].items():
+            if verbose: print key,value
+            if key != "Type" and key != "Dimension":
+                session = "_".join(key.split("_")[:-1])
+                if not designs.has_key(session):
+                    print "Loading session : %s" % session
+                designs[session] = GLM.load(glms[session]["GlmDumpFile"])
+
+                bv=[int(j) != 0 for j in value]
+                if contrast_type == "t" and sum(bv)>0:
+                    _con = designs[session].contrast([int(i) for i in value])
+                    final_contrast.append(_con)
+
+                if contrast_type == "F":
+                    if not multicon.has_key(session):
+                        multicon[session] = np.array(bv)
+                    else:
+                        multicon[session] = np.vstack((multicon[session], bv))
+        if contrast_type == "F":
+            for key, value in multicon.items():
+                if sum([j != 0 for j in value.reshape(-1)]) != 0:
+                    _con = designs[key].contrast(value)
+                    final_contrast.append(_con)
+
+        design = designs[session]
+        res_contrast = final_contrast[0]
+        for c in final_contrast[1:]:
+            res_contrast = res_contrast + c
+            res_contrast.type = contrast_type
+
+        mask_url = ConfigObj(glms[glms.keys()[0]]['ConfigFilePath'])['mask_url']
+        save_all(res_contrast, ContrastId, contrast_dimension,
+                 mask_url, kargs)
+        misc[model]["con_dofs"][contrast] = res_contrast.dof
+    misc["Contrast Save Mode"] = save_mode
+    misc.write()
+
+
+# -----------------------------------------------------------
+# --- functions that depend on VBA --------------------------
+# -----------------------------------------------------------
+
+def GLMFit_(file, designMatrix, mask, outputVBA, outputCon,
+           fit="Kalman_AR1"):
+    """
+    Call the GLM Fit function with apropriate arguments
+
+    Parameters
+    ----------
+    file
+    designmatrix
+    mask
+    outputVBA
+    outputCon
+    fit='Kalman_AR1'
+    
+    Returns
+    -------
+    glm, a vba.VBA instance representing the GLM
+    
+    """
+    from vba import VBA
+    if fit == "Kalman_AR1":
+        model = "ar1"
+        method = "kalman"
+    elif fit == "Ordinary Least Squares":
+        method = "ols"
+        model="spherical"
+    elif fit == "Kalman":
+        method = "kalman"
+        model = "spherical"
+    
+    s = dict()
+    s["GlmDumpFile"] = outputVBA
+    s["ConfigFilePath"] = outputCon
+    s["DesignFilePath"] = designMatrix
+       
+    from dataFrame import DF
+    tab = DF.read(designMatrix)
+        
+    glm = VBA(tab, mask_url=mask, create_design_mat = False, mri_names = file, 
+                   model = model, method = method)
+    glm.fit()
+    glm.save(s)
+    return glm
+
+def ComputeContrasts_(contrastFile, miscFile, glms, save_mode="Contrast Name", 
+                                   model = "default", **kargs):
+    """
+    Contrast computation utility    
+    
+    Parameters
+    ----------
+    contrastFile
+    miscFile
+    glms
+    save_mode="Contrast Name"
+    model="default"
+    """
+    from vba import VBA
+    verbose = 0 # fixme: put ine the kwargs
+    misc = ConfigObj(miscFile)
+    if not misc.has_key(model):
+        misc[model] = {}
+
+    if not misc[model].has_key("con_dofs"):
+        misc[model]["con_dofs"] = {}
+
+    contrasts = ConfigObj(contrastFile)
+    contrasts_names = contrasts["contrast"]
+    designs = {}
+    for i, contrast in enumerate(contrasts_names):
+        contrast_type = contrasts[contrast]["Type"]
+        contrast_dimension = contrasts[contrast]["Dimension"]
+        final_contrast = []
+        k = i + 1
+        multicon = dict()
+        if save_mode == "Contrast Name":
+            ContrastId = contrast
+        elif save_mode == "Contrast Number":
+            ContrastId = "%04i" % k
+
         for key, value in contrasts[contrast].items():
             if verbose: print key,value
             if key != "Type" and key != "Dimension":
@@ -414,9 +519,9 @@ def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
 
                 if contrast_type == "F":
                     if not multicon.has_key(session):
-                        multicon[session] = array(bv)
+                        multicon[session] = np.array(bv)
                     else:
-                        multicon[session] = vstack((multicon[session], bv))
+                        multicon[session] = np.vstack((multicon[session], bv))
         if contrast_type == "F":
             for key, value in multicon.items():
                 if sum([j != 0 for j in value.reshape(-1)]) != 0:
@@ -428,8 +533,10 @@ def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
         for c in final_contrast[1:]:
             res_contrast = res_contrast + c
             res_contrast.type = contrast_type
-        saveall(res_contrast, design, ContrastId, contrast_dimension,
-                kargs)
+
+        
+        save_all(res_contrast, ContrastId, contrast_dimension,
+                 design.mask_url, kargs)
         misc[model]["con_dofs"][contrast] = res_contrast.dof
     misc["Contrast Save Mode"] = save_mode
     misc.write()
