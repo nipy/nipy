@@ -358,7 +358,7 @@ def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
     model="default"
     """
     import nipy.neurospin.glm as GLM
-    verbose = 0 # fixme: put ine the kwargs
+    verbose = 1 # fixme: put ine the kwargs
     misc = ConfigObj(miscFile)
     if not misc.has_key(model):
         misc[model] = {}

@@ -134,13 +134,12 @@ for s in Subjects:
             designFile = os.sep.join((designPath, "design_mat.csv"))
             GLMTools.DesignMatrix(nbFrames, paradigmFile, miscFile,
                                   TR, designFile, sess, DmtxParam)
-        """ 
+            
         # step 3. Compute the mask
         print "Computing the mask"
         maskFile = os.sep.join((sPath, fmri, a, minfDir, "mask.img"))
         GLMTools.ComputeMask(fmriFiles.values()[0][0], maskFile,
                              infTh, supTh)
-        """
         
         # step 4. Create Contrast Files
         print "Creating Contrasts"
