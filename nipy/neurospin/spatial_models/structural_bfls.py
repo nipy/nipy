@@ -49,15 +49,15 @@ class landmark_regions(hroi.NROI):
                    (these correspond to ROI feature)
         coord=None; k-length list of coordinate arrays
 
-        Fixme
+        fixme
         -----
-        xyz = subj makes no sense
+        xyz=coord 
         """
         k = int(k)
         if k<1: raise ValueError, "cannot create an empty LR"
         if parents==None:
             parents = np.arange(k)
-        hroi.NROI.__init__(self, parents, affine, shape, xyz=subj, id=id)
+        hroi.NROI.__init__(self, parents, affine, shape, xyz=coord, id=id)
         self.set_discrete_feature('position',coord)
         self.subj = subj
 
