@@ -283,19 +283,8 @@ def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
     
     _design = design.compute_design(session,verbose=1)
     
-    import matplotlib.pylab as mp
-    mp.show()
-    stop
-
     if _design != None:
         design.save_csv(outputFile)
-    """
-    from dataFrame import DF
-    if hasattr(design, "names"):
-        output = DF(colnames=design.names, data=design._design)
-        if verbose : print design.names
-        output.write(outputFile)
-    """
 
 def GLMFit(file, designMatrix,  output_glm, outputCon,
            fit="Kalman_AR1", mask_url=None):
@@ -453,6 +442,7 @@ def GLMFit_(file, designMatrix, mask, outputVBA, outputCon,
     
     """
     from vba import VBA
+    from dataFrame import DF
     if fit == "Kalman_AR1":
         model = "ar1"
         method = "kalman"
@@ -468,7 +458,7 @@ def GLMFit_(file, designMatrix, mask, outputVBA, outputCon,
     s["ConfigFilePath"] = outputCon
     s["DesignFilePath"] = designMatrix
        
-    from dataFrame import DF
+    
     tab = DF.read(designMatrix)
         
     glm = VBA(tab, mask_url=mask, create_design_mat = False, mri_names = file, 
