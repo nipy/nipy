@@ -23,7 +23,7 @@ from optparse import OptionParser
 
 usage_doc = "usage: sneeze test_module.py"
 
-def find_pkg(pkg, debug=False):
+def find_pkg(pkg):
     test_file = pkg
     module = os.path.splitext(test_file)[0] # remove '.py' extension
     module = module.split('test_')[1] # remove 'test_' prefix
@@ -49,33 +49,39 @@ def find_pkg(pkg, debug=False):
             except ValueError:
                 pass
     fp.close()
-    return cover_pkg
+    return cover_pkg, module
 
-def run_nose(cover_pkg, test_file):
+def run_nose(cover_pkg, test_file, dry_run=False):
     cover_arg = '--cover-package=%s' % cover_pkg
     sys.argv += ['-sv', '--with-coverage', cover_arg]
     # Print out command for user feedback and debugging
     cmd = 'nosetests -sv --with-coverage %s %s' % (cover_arg, test_file)
     print cmd
-    print
-    nose.run()
+    if dry_run:
+        return cmd
+    else:
+        print
+        nose.run()
 
 
 def main():
     description = __doc__.splitlines()[0]
     parser = OptionParser(usage=usage_doc, description=description)
-    # XXX add debug option
+    parser.add_option('-n', '--dry-run', action="store_true", dest="dry_run",
+                      help='Return generated nose command without executing.')
     options, args = parser.parse_args()
+    if options.dry_run:
+        # If we don't remove the -n option, it breaks the execution of nose.
+        sys.argv.remove('-n')
 
     try:
         test_file = args[0]
-        cover_pkg = find_pkg(test_file, True)
+        cover_pkg, module = find_pkg(test_file)
         if cover_pkg:
-            run_nose(cover_pkg, test_file)
+            run_nose(cover_pkg, test_file, dry_run=options.dry_run)
         else:
-            print 'sneeze failed to find matching module.'
-            #raise ValueError('Unable to find module %s imported in test file %s'
-            #                % (module, test_file))
+            raise ValueError('Unable to find module %s imported in test file %s'
+                             % (module, test_file))
     except IndexError:
         parser.print_help()
 
