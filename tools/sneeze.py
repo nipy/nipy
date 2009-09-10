@@ -16,28 +16,42 @@ nosetests -sv --with-coverage --cover-package=nipy.core.reference.coordinate_sys
 
 """
 
-import re
 import os
 import sys
 import nose
+from optparse import OptionParser
 
-test_file = sys.argv[1]
-module = os.path.splitext(test_file)[0] # remove '.py' extension
-module = module.split('test_')[1] # remove 'test_' prefix
-regexp = "[\w\.]+%s"%module
-compexp = re.compile(regexp)
+usage_doc = "usage: sneeze test_module.py"
 
-cover_pkg = None
-fp = open(test_file, 'r')
-for line in fp:
-    if line.startswith('from') or line.startswith('import'):
-        pkg = re.search(regexp, line)
-        if pkg:
-            cover_pkg = pkg.group()
-            break
-fp.close()
+def find_pkg(pkg, debug=False):
+    test_file = pkg
+    module = os.path.splitext(test_file)[0] # remove '.py' extension
+    module = module.split('test_')[1] # remove 'test_' prefix
+    
+    cover_pkg = None
+    fp = open(test_file, 'r')
+    for line in fp:
+        if line.startswith('from') or line.startswith('import'):
+            # remove keywords from import line
+            imptline = line.replace('import', '')
+            imptline = imptline.replace('from', '')
+            imptline = imptline.replace('as', '')
+            # split and rejoin with periods.  This will remove
+            # whitespace and join together a complete namespace.
+            imptline = imptline.split()
+            imptline = '.'.join(imptline)
+            try:
+                # Find index that immediately follows the module we care about
+                index = imptline.index(module) 
+                index += len(module)
+                cover_pkg = imptline[:index] 
+                break
+            except ValueError:
+                pass
+    fp.close()
+    return cover_pkg
 
-if cover_pkg:
+def run_nose(cover_pkg, test_file):
     cover_arg = '--cover-package=%s' % cover_pkg
     sys.argv += ['-sv', '--with-coverage', cover_arg]
     # Print out command for user feedback and debugging
@@ -45,6 +59,28 @@ if cover_pkg:
     print cmd
     print
     nose.run()
-else:
-    raise ValueError('Unable to find module %s imported in test file %s'
-                     % (module, test_file))
+
+
+def main():
+    description = __doc__.splitlines()[0]
+    parser = OptionParser(usage=usage_doc, description=description)
+    # XXX add debug option
+    options, args = parser.parse_args()
+
+    try:
+        test_file = args[0]
+        cover_pkg = find_pkg(test_file, True)
+        if cover_pkg:
+            run_nose(cover_pkg, test_file)
+        else:
+            print 'sneeze failed to find matching module.'
+            #raise ValueError('Unable to find module %s imported in test file %s'
+            #                % (module, test_file))
+    except IndexError:
+        parser.print_help()
+
+
+if __name__ == '__main__':
+    main()
+
+
