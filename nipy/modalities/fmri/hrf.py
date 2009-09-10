@@ -52,6 +52,7 @@ def gamma_params(peak_location, peak_fwhm):
     coef = peak_location**(-alpha) * np.exp(peak_location / beta)
     return coef * ((t >= 0) * (t+1.0e-14))**(alpha) * exp(-(t+1.0e-14)/beta)
 
+
 # Glover canonical HRF models
 # they are both Sympy objects
 
@@ -87,4 +88,38 @@ _aexpr = _aexpr / _getint(_aexpr)
 _afni = vectorize(_aexpr)
 afni = aliased_function('afni', _afni)
 afnit = vectorize(afni(deft))
+
+# Primitive of the HRF -- temoprary fix to handle blocks
+def igamma_params(peak_location, peak_fwhm):
+    """
+    From a peak location and peak fwhm,
+    determine the paramteres of a Gamma density
+    and return an approximate (accurate) approximation of its integral
+    f(x) = int_0^x  coef * t**(alpha-1) * exp(-t*beta) dt
+    so that lim_{x->infty} f(x)=1
+    
+    :Parameters:
+        peak_location : float
+            Location of the peak of the Gamma density
+        peak_fwhm : float
+            FWHM at the peak
+
+    :Returns:
+         the function of t
+
+    NOTE: this is only a temporary fix,
+    and will have to be removed in the long term
+    """
+    import scipy.special as sp
+    alpha = np.power(peak_location / peak_fwhm, 2) * 8 * np.log(2.0)
+    beta = np.power(peak_fwhm, 2) / peak_location / 8 / np.log(2.0)
+    ak = int(np.round(alpha+1))
+    P = np.sum([1./sp.gamma(k+1)*((t/beta)**k) for k in range(ak)],0)
+    return (t > 0) * (1-exp(-t/beta)*P)
+
+_igexpr = igamma_params(5.4, 5.2) - 0.35 * igamma_params(10.8,7.35)
+_igexpr = _igexpr / _getint(_igexpr)
+_iglover = vectorize(_igexpr)
+iglover = aliased_function('iglover', _iglover)
+iglovert = vectorize(iglover(deft))
 

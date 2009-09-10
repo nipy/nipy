@@ -17,7 +17,7 @@ import Contrast
 #-----------------------------------------------------------
 
 DBPath = "/volatile/thirion/Localizer"
-Subjects = ["s12069"]#""s12277", "s12069","s12300","s12401","s12431","s12508","s12532","s12635","s12636","s12826","s12898","s12913","s12919","s12920"]
+Subjects = ["s12277", "s12069","s12300","s12401","s12431","s12508","s12532","s12635","s12636","s12826","s12898","s12913","s12919","s12920"]#["s12069"]#
 Acquisitions = ["acquisition"]
 Sessions = ["loc1"]
 fmri = "fMRI/"
@@ -43,6 +43,7 @@ paths["Student-t tests"] = "T_map"
 paths["Fisher tests"] = "F_map"
 paths["Residual variance"] = "ResMS"
 paths["contrast definition"] = "con"
+paths["HTML results"] = "html"
 
 # ---------------------------------------------------------
 # ------ First level analysis parameters ---------------------
@@ -56,13 +57,13 @@ supTh = 0.9
 
 # Possible choices for hrfType : "Canonical", \
 # "Canonical With Derivative" or "FIR Model"
-hrfType = "Canonical"
+hrfType = "Canonical With Derivative"
 
 # Possible choices for drift : "Blank", "Cosine", "Polynomial"
 drift = "Cosine"
 
 # If drift is "Polynomial"
-poly_order = 2
+poly_order = 3
 
 # If drift is "Cosine"
 cos_FreqCut = 128
@@ -106,25 +107,32 @@ for s in Subjects:
     
     for a in Acquisitions:
 
-        #step 0. Get the fMRI data
+        # step 0. set all the paths
+        # all the paths that arenot session dependent
+        miscPath = os.sep.join((SubjectPath, fmri, a, minfDir))
+        paradigmFile = os.sep.join((miscPath, "paradigm.csv"))
+        miscFile = os.sep.join((miscPath, "misc_info.con"))
+        maskFile = os.sep.join((SubjectPath, fmri, a, minfDir, "mask.nii"))
+        paths["Contrasts_path"] = os.sep.join((SubjectPath, fmri, a,
+                                               glmDir, contrastDir))
+
+        #step 1. Get the fMRI data
         fmriFiles = {}
         for sess in Sessions:
             fmriPath = os.sep.join((SubjectPath, fmri, a, sess))
             fmriFiles[sess] = glob.glob(join(fmriPath,'S*.nii'))
   
-        # step 1. get the paradigm definition and create misc info file
-        miscPath = os.sep.join((SubjectPath, fmri, a, minfDir))
-        paradigmFile = os.sep.join((miscPath, "paradigm.csv"))
+        # step 2. get the paradigm definition and create misc info file
         if not os.path.isfile(paradigmFile):
             raise ValueError,"paradigm file %s not found" %paradigmFile
         
-        miscFile = os.sep.join((miscPath, "misc_info.con"))
         misc = ConfigObj(miscFile)
         misc["sessions"] = Sessions
         misc["tasks"] = Conditions
+        misc["mask"] = maskFile
         misc.write()
 
-        # step 2. Create one design matrix for each session
+        # step 3. Create one design matrix for each session
         for sess in Sessions:
             # Creating Design Matrix
             designPath = os.sep.join((SubjectPath, fmri, a, glmDir, sess))
@@ -134,15 +142,12 @@ for s in Subjects:
             GLMTools.DesignMatrix(nbFrames, paradigmFile, miscFile,
                                       TR, designFile, sess, DmtxParam)
         
-        # step3. Compute the Mask
+        # step 4. Compute the Mask
         # fixme : it should be possible to provide a pre-computed mask
         print "Computing the Mask"
-        maskFile = os.sep.join((SubjectPath, fmri, a, minfDir, "mask.img"))
-        #wc = join(fmriPath,'S*.nii') 
-        #GLMTools.ComputeMask(glob.glob(wc), maskFile, infTh, supTh)
         GLMTools.ComputeMask(fmriFiles.values()[0][0], maskFile, infTh, supTh)
-        
-        # step 4. Creating Contrast File
+
+        # step 5. Creating Contrast File
         print "Creating Contrasts"
         contrast = Contrast.ContrastList(miscFile)
         d = contrast.dic
@@ -166,7 +171,7 @@ for s in Subjects:
                                     "contrast.con"))
         contrast.save_dic(contrastFile)
 
-        # step 5. Fit the  glm for each session
+        # step 6. Fit the  glm for each session
         glms = {}
         for sess in Sessions:
             print "Fitting GLM for session : %s" % sess
@@ -176,15 +181,14 @@ for s in Subjects:
             designPath = os.sep.join((SubjectPath, fmri, a, glmDir, sess))
             designFile = os.sep.join((designPath, "design_mat.csv"))
             if os.path.exists(designFile):
-                GLMTools.GLMFit(fmriFiles[sess], designFile, maskFile,
-                                GlmDumpFile, configFile, fit_algo)
+                GLMTools.GLMFit(fmriFiles[sess], designFile, GlmDumpFile,
+                                configFile, fit_algo, maskFile)
                 glms[sess] = {}
                 glms[sess]["GlmDumpFile"] = GlmDumpFile
                 glms[sess]["ConfigFilePath"] = configFile
-        #6. Compute Contrasts
+
+        #step 7. Compute Contrasts
         print "Computing contrasts"
-        paths["Contrasts_path"] = os.sep.join((SubjectPath, fmri, a,
-                                               glmDir, contrastDir))
         if not os.path.exists(paths["Contrasts_path"]):
             os.makedirs(paths["Contrasts_path"])
     

@@ -1,18 +1,19 @@
+"""
+I had to fork datamind .vba to have the same IO as the remainder of the code
+
+"""
 import numpy as np
 import types, glob, exceptions
 from configobj import ConfigObj
-import nifti
+from nipy.io.imageformats import load, save, Nifti1Image 
+
 #
-import fff2.glm as GLM
+import nipy.neurospin.glm as GLM
 #
 from dataFrame import DF
 import url as URL
 import objIO
 
-#from datamind.stats.design import *
-#import soma.aims as aims
-
-bnifti=True
 
 # ------------------------------------------------------------------------------
 # Voxel Based Analysis
@@ -96,6 +97,7 @@ class VBA:
         if isinstance(obj, DF):
             # Copy all optionnal argument in dict
             self.__dict__.update(kw)
+            
             if not hasattr(self, "mri_names"):
                 self.mri_names = obj[:,0].tolist()
                 obj = obj[:, 1:]
@@ -117,12 +119,12 @@ class VBA:
         See fff.glm.fit
         """
         ## Load Images => self.Y_arr & mask => self.mask_arr
-        Y_arr=self.getY_arr()
-        X=np.asarray(self.yX)
+        Y_arr = self.getY_arr()
+        X = np.asarray(self.yX)
         if not hasattr(self,"method"):
             self.method="ols"
             self.model='spherical'
-        self._model=GLM.glm()
+        self._model = GLM.glm()
         self._model.fit(Y_arr, X, method=self.method)
         del(self._Y_arr)
         del(Y_arr)
@@ -133,8 +135,9 @@ class VBA:
         """
         See fff.glm.glm.contrast
         """
-        model=self.getModel()
+        model = self.getModel()
         self._con = model.contrast(c,type=type)
+        
     def test(self, zscore=False):
         """
         See fff.glm.contrast.test
@@ -152,7 +155,8 @@ class VBA:
             self._model.save(url["GlmDumpFile"])
             pythons = ConfigObj(url["ConfigFilePath"])
             for k in self.__dict__.keys():
-                if k[0]=="_" or type(self.__dict__[k]) is types.InstanceType or isinstance(self.__dict__[k], DF):
+                if k[0]=="_" or type(self.__dict__[k]) is types.InstanceType \
+                or isinstance(self.__dict__[k], DF):
                     continue
                 else:
                     pythons[k]=self.__dict__[k]
@@ -172,6 +176,10 @@ class VBA:
     def getY_arr(self):
         """
         Return the Y array, read the volumes if required
+        
+        Returns
+        -------
+        self._Y_arr, array of shape (dim, nbitem)
         """
         if not hasattr(self,"_Y_arr"):
             mask_arr = self.getMask_arr()
@@ -180,22 +188,22 @@ class VBA:
             else:
                 Y_urls=[self.getFullYUrl(self.mri_names)]
 
-            temp = nifti.NiftiImage(str(Y_urls[0]))
+            temp = load(str(Y_urls[0]))
             if mask_arr != None:
-                vols = temp.asarray()[:, mask_arr]
+                vols = (temp.get_data())[mask_arr,:]
             else:
-                vols = temp.asarray()
+                vols = temp.get_data()
             print "Read : %s" % Y_urls[0]
             self.data_size = vols.shape
             for url in Y_urls[1:]:
-                temp = nifti.NiftiImage(str(url))
+                temp = load(str(url))
                 if mask_arr != None:
-                    vols = np.vstack(temp.asarray()[:, mask_arr])
+                    vols = np.vstack(temp.get_data()[mask_arr,:])
                 else:
-                    vols = np.vstack(temp.asarray())
+                    vols = np.vstack(temp.get_data())
 
                 print "Read : %s" % url
-            self._Y_arr=vols
+            self._Y_arr = vols.T
             del temp
             del vols
         return self._Y_arr
@@ -208,10 +216,10 @@ class VBA:
         if not hasattr(self,"_mask_arr"):
             if not hasattr(self,"mask_url"): return None
             
-            temp = nifti.NiftiImage(self.mask_url)
-            self._mask_arr = temp.asarray()
-            if np.size(self._mask_arr.shape) == 4:
-                self._mask_arr=self._mask_arr[0]
+            temp = load(self.mask_url)
+            self._mask_arr = temp.get_data()
+            if np.size(self._mask_arr) == 4:
+                self._mask_arr  = self._mask_arr[0]
             print "Read : %s" % self.mask_url
             self._mask_arr = self._mask_arr - self._mask_arr.min()
             self._mask_arr = self._mask_arr.astype('bool')
@@ -224,20 +232,22 @@ class VBA:
         """
         if hasattr(self,"_model"): return self._model
         try:
-            url=URL.joinUrl(self.output_url,"model","h5")
-            self._model=GLM.load(url)
+            url = URL.joinUrl(self.output_url,"model","h5")
+            self._model = GLM.load(url)
 
         except exceptions.Exception, e:
             print "Model could not be loaded, call fit",e
             self.fit()
         return self._model
         
-    def saveVol(self,obj,suffix=None,url=None):
+    def saveVol(self, obj, suffix=None, url=None):
         if url is None:
-            url=URL.joinUrl(self.output_url,suffix,"img")
-        if isinstance(obj, np.ndarray):
-            obj=self.arr2vol(obj)
-        nifti.NiftiImage(obj,url)
+            url = URL.joinUrl(self.output_url, suffix, "img")
+        #if isinstance(obj, np.ndarray):
+        #    obj = self.arr2vol(obj)
+        temp = load(self.mask_url)
+        wim = Nifti1Image(obj, temp.get_affine())
+        save(wim, url)
         
     def writeModel(self,model,file):
         """
@@ -270,16 +280,16 @@ class VBA:
         root = fileh.root
         import fff.glm as GLM
         model=GLM.glm(None,None)
-        model.beta                  =root.beta.read()
-        model.s2                    =root.s2.read()
-        model.norm_var_beta         =root.norm_var_beta.read()
+        model.beta                  = root.beta.read()
+        model.s2                    = root.s2.read()
+        model.norm_var_beta         = root.norm_var_beta.read()
         try:
-            model.a                     =root._v_attrs.a
+            model.a                     = root._v_attrs.a
         except:
-            model.a                     =root.a.read()
-        model.axis                  =root._v_attrs.axis
-        model.norm_var_beta_constant=root._v_attrs.norm_var_beta_constant
-        model.dof                   =root._v_attrs.dof
+            model.a                     = root.a.read()
+        model.axis                  = root._v_attrs.axis
+        model.norm_var_beta_constant= root._v_attrs.norm_var_beta_constant
+        model.dof                   = root._v_attrs.dof
         fileh.close()
         return model
 
@@ -298,19 +308,21 @@ class VBA:
                 print url
                 print type(url)
             else:
-                url=[self.getFullYUrl(self.mri_names[0])]
-            vol=datamind.image.vol.readVolumes(url)[0]
-            self._refBlankVol=datamind.image.aimsutils.vol_convert(vol,desttype=voltype)
-        return(datamind.image.aimsutils.vol_clone_init(vol=self._refBlankVol,val=0))
+                url = [self.getFullYUrl(self.mri_names[0])]
+            vol = datamind.image.vol.readVolumes(url)[0]
+            self._refBlankVol = datamind.image.aimsutils.vol_convert(vol,
+                                                      desttype=voltype)
+        return(datamind.image.aimsutils.vol_clone_init(vol=self._refBlankVol,
+                                                       val=0))
 
 
     def arr2vol(self,arr):
         """
         array to volume convertion, taking in account a mask if exists
         """
-        vol=self.getRefBlankVol()
-        vol_arr=vol.asarray()
-        mask_arr=self.getMask_arr()
+        vol = self.getRefBlankVol()
+        vol_arr = vol.get_data()
+        mask_arr = self.getMask_arr()
         if not mask_arr is None:
             for volume in vol_arr:
                 # Iterate over the first dimension
@@ -318,17 +330,19 @@ class VBA:
         else:
             vol_arr=arr
         return vol
+    
     def vol2arr(self,vol):
         """
         volume to array convertion, taking in account a mask if exists
         """
-        vol_arr = vol.asarray()
-        mask_arr=self.getMask_arr()
+        vol_arr = vol.get_data()
+        mask_arr = self.getMask_arr()
         if not mask_arr is None:
-            arr=vol_arr[mask_arr]
+            arr = vol_arr[mask_arr]
         else:
-            arr=vol_arr
+            arr = vol_arr
         return arr
+    
     # --------------------------------------------------------------------------
     # Utils urls
     def getFullYUrl(self,url):

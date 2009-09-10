@@ -114,7 +114,7 @@ def compute_mask_files( input_filename, output_filename=None,
         header = nim.header
         first_volume = nim.data[0]
         mean_volume = nim.data.mean(axis=0)
-    del nim
+    #del nim
 
     dat = compute_mask(mean_volume, first_volume, m, M, cc)
     
@@ -242,7 +242,9 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
             """ The grid is probably too large, will just pass. """
             warnings.warn('Mask too large, cannot extract largest cc.')
 
-    return mask
+    # We need to convert to boolean, as the graph structure casts
+    # in int8
+    return mask.astype(np.bool)
 
 def intersect_masks(input_masks, output_filename, threshold, cc):
     """

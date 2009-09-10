@@ -186,7 +186,7 @@ class NROI(MultipleROI,Forest):
 
         # first clean as a forest
         sf = self.subforest(valid)
-        Forest.__init__(self,sf.V,sf.parents)
+        Forest.__init__(self, sf.V, sf.parents)
 
         # then clean as a multiple ROI
         MultipleROI.clean(self, valid)

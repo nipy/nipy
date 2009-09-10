@@ -501,7 +501,7 @@ class multivariate_stat:
                     sum_m += self.m
                     sum_m_sq += self.m**2
                     if mode == 'mcmc':
-                        self.P += self.m_mean > 0
+                        self.P += (self.m_mean > 0)
                         self.mean_m_mean += self.m_mean
                         self.mean_m_var += self.m_var
                         self.mean_v += self.v
@@ -949,7 +949,10 @@ class multivariate_stat:
         if m_var == None:
             m_var = self.m_var.copy()
         if std == None and self.std != None:
-            std = self.std.copy()
+            if np.isscalar(self.std):
+                std = self.std
+            else:
+                std = self.std.copy()
         if update_spatial:
             U = self.D.U.copy()
             proposal = self.proposal
