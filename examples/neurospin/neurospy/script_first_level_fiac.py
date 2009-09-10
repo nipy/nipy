@@ -18,10 +18,10 @@ import Contrast
 #-----------------------------------------------------------
 
 DBPath ="/neurospin/lnao/Panabase/data_fiac/fiac_fsl/"
-Subjects = [ "fiac1"]
-#Subjects = ["fiac2", "fiac3", "fiac4", "fiac6", "fiac8",\
-#            "fiac9", "fiac10", "fiac11", "fiac12", "fiac13",\
-#            "fiac14", "fiac15"]
+#Subjects = [ "fiac1"]
+Subjects = ["fiac2", "fiac3", "fiac4", "fiac6", "fiac8",\
+            "fiac9", "fiac10", "fiac11", "fiac12", "fiac13",\
+            "fiac14", "fiac15"]
 
 Acquisitions = ["acquisition"]
 Sessions = ["fonc1", "fonc2", "fonc3", "fonc4"]

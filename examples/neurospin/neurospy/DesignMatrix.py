@@ -201,14 +201,13 @@ class DesignMatrix():
         mp.imshow(x/np.sqrt(np.sum(x**2,0)),interpolation='Nearest', aspect='auto')
         mp.xlabel('conditions')
         mp.ylabel('scan number')
-        print mp.axis()
-        mp.axis([-1,30,0,130])
+        #mp.axis([-1,30,0,130])
         if self._names!=None:
             names = self._names
             print names
             mp.xticks(np.arange(len(names)),names,rotation=60,ha='right')
         
-        mp.subplots_adjust(top=0.99)
+        mp.subplots_adjust(top=0.99,bottom=0.25)
 
 
 
