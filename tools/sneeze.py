@@ -24,12 +24,12 @@ from optparse import OptionParser
 usage_doc = "usage: sneeze test_module.py"
 
 def find_pkg(pkg):
-    test_file = pkg
+    test_file = os.path.basename(pkg)
     module = os.path.splitext(test_file)[0] # remove '.py' extension
     module = module.split('test_')[1] # remove 'test_' prefix
     
     cover_pkg = None
-    fp = open(test_file, 'r')
+    fp = open(pkg, 'r')
     for line in fp:
         if line.startswith('from') or line.startswith('import'):
             # remove keywords from import line
