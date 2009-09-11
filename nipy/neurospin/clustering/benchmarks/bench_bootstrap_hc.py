@@ -1,11 +1,6 @@
-import os
-import hotshot
 import timeit
 import sys
-from tempfile import mktemp
 from textwrap import dedent
-
-from nipy.neurospin.clustering.bootstrap_hc import ward_msb
 
 def bench_bootstrap_cols_perf(nb_repeat=200):
     """ Timing procedure for _bootstrap_cols.

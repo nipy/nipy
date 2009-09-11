@@ -11,7 +11,6 @@ Author : Bertrand Thirion, 2008-2009
 """
 
 import numpy as np
-from numpy.random import randn
 import scipy.ndimage as nd
 
 
@@ -37,7 +36,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
                          noise_level=1.0, pos=pos, ampli=ampli,
                          spatial_jitter=1.0, signal_jitter=1.0,
                          width=5.0, out_text_file=None, out_niftifile=None, 
-                         verbose=False):
+                         verbose=False, seed=False):
     """
     Create surrogate (simulated) 2D activation data with spatial noise.
 
@@ -76,12 +75,19 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     verbose: boolean, optionnal
         If verbose is true, the data for the last subject is plotted as
         a 2D image.
-
+    seed=False:  int, optionnal
+        If seed is not False, the random number generator is initialized
+        at a certain value
     Returns
     -------
     dataset: 3D ndarray
         The surrogate activation map, with dimensions (nbsubj, dimx, dimy)
     """
+    if seed!=0:
+        nr = np.random.RandomState([seed])
+    else:
+        import numpy.random as nr
+    
     shape = (dimx, dimy)
     ij = np.transpose(np.where(np.ones(shape)))
     dataset = []
@@ -89,14 +95,14 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     for s in range(nbsubj):
         # make the signal
         data = np.zeros(shape)
-        lpos = pos + spatial_jitter*randn(1, 2)
-        lampli = ampli + signal_jitter*randn(np.size(ampli))
+        lpos = pos + spatial_jitter*nr.randn(1, 2)
+        lampli = ampli + signal_jitter*nr.randn(np.size(ampli))
         for k in range(np.size(lampli)):
             data = np.maximum(data,
                                 cone(shape, ij, lpos[k], lampli[k], width))
     
         # make some noise
-        noise = randn(dimx,dimy)
+        noise = nr.randn(dimx,dimy)
 
         # smooth the noise
         noise = nd.gaussian_filter(noise, sk)

@@ -19,42 +19,44 @@ class Parcellation:
 	(or equivalently a labelling)
 	we explictly handle the case of multiple subjects,
 	where the labelling varies with the subjects
-	
+
 	- k is the number of parcels/classes
 	- ijk: array of shape(nbvoxels,anatomical_dimension)
-	that represents the grid of voxels to be parcelled
-	(the same for all subjects) 
-	typically anatomical_dimension=3
-	- referential
-	rerpresents the image referential, resoltuion, position and size 
-	this is expressed as an affine (4,4) transformation matrix
-	- label is an (nbvox*subjects) array: nbvox is the number of voxels within the binary mask
-	if the voxel is not labelled in a given subject, then the label is -1
-	thus the label has integer values in [-1,k-1]
+      that represents the grid of voxels to be parcelled
+      (the same for all subjects) 
+      typically anatomical_dimension=3
+	- referential rerpresents the image referential, 
+      resoltuion, position and size 
+      this is expressed as an affine (4,4) transformation matrix
+	- label (nbvox, subjects) array: nbvox is the number of voxels
+      within the binary mask
+      if the voxel is not labelled in a given subject, then the label is -1
+      thus the label has integer values in [-1,k-1]
 	- group_labels is a  labelling of the template
 	- subjects=none is a list of ids of the subjects
-	by default, is is set as range(self.nb_subj)
+      by default, is is set as range(self.nb_subj)
 	"""
 	
-	def __init__(self, k, ijk, label, group_labels=None, referential = None, subjects = []):
+	def __init__(self, k, ijk, label, group_labels=None, 
+                       referential = None, subjects = []):
 		"""
 		Constructor
 		"""
 		self.k = k
-		self.ijk = ijk.astype('i')
+		self.ijk = ijk.astype(np.int)
 		self.nbvox = ijk.shape[0]
 		if np.size(ijk)==self.nbvox:
 			ijk = np.reshape(ijk, (self.nbvox, 1))
 
 		self.anatdim = ijk.shape[1]
-		self.label = label.astype('i')
+		self.label = label.astype(np.int)
 		if np.size(label)==self.nbvox:
 			label = np.reshape(label,(self.nbvox,1))
 			
 		self.nb_subj = label.shape[1]
 		
 		if group_labels==None:
-			self.group_labels = np.zeros(self.nbvox).astype('i')
+			self.group_labels = np.zeros(self.nbvox).astype(np.int)
 		else:
 			self.group_labels = group_labels
 			
@@ -100,7 +102,8 @@ class Parcellation:
 		copy method
 		"""
 		Pa = Parcellation(self.k, self.ijk, self.label.copy(),\
-						  self.group_labels.copy(), self.referential, self.subjects)
+						  self.group_labels.copy(), self.referential, 
+                          self.subjects)
 
 		for fid,f in zip(self.fids,self.features):
 			Pa.set_feature(f, fid)
@@ -120,8 +123,10 @@ class Parcellation:
 	def population(self):
 		"""
 		pop = self.population()
-		the population of parcellation is the number of voxels included in each parcel
-		this function simply returns an array of shape (number of parcels, number of subjects)
+		the population of parcellation is the number of voxels 
+        included in each parcel
+		this function simply returns an array of shape 
+        (number of parcels, number of subjects)
 		that contains the parcel population
 		"""
 		pop = np.zeros((self.k,self.nb_subj))
@@ -145,9 +150,10 @@ class Parcellation:
 
 	def set_labels(self,label):
 		"""	
-		self.reset_labels(label)
 		resets the label array of the class
-		INPUT:
+		
+        Parameters
+        ----------
 		label = array of shape(self.k,self.nb_subj)
 		"""
 		if (np.shape(label)==(self.nbvox,self.nb_subj)):
@@ -160,8 +166,10 @@ class Parcellation:
 		"""
 		self.reset_subjects(subjects)
 		reset the list of subjects name
-		INPUT:
-		- subjects = a list of subjects id with length self.nb_subj
+		
+        Parameters
+        ----------
+		subjects = a list of subjects id with length self.nb_subj
 		"""
 		if len(subjects)!=self.nb_subj:
 			print len(subjects), self.nb_subj
@@ -190,10 +198,12 @@ class Parcellation:
 		self.set_info(data,fid):
 		Add some non-subject specific feature information
 		defined on a voxel-by voxel basis
-		INPUT:
-		- feature: an array of shape(self.nbvox,dim),
-		where dim is the info dimension
-		- fid : an identifier of the information
+		
+        Parameters
+        ----------
+		feature: an array of shape(self.nbvox,dim),
+                 where dim is the info dimension
+		fid : an identifier of the information
 		"""
 		pass
 
@@ -202,20 +212,17 @@ class Parcellation:
 		self.make_feature_from_info(fid)
 		"""
 		pass
-
-	
-	
-		
-		
 	
 	def set_feature(self,feature,fid):
 		"""
 		self.set_feature(feature,fid):
 		Add a feature to the feature list of the structure
-		INPUT:
-		- feature: an array of shape(self.nb_subj,self.k,fdim),
-		where fdim is the feature dimension
-		- fid: a string that is the feature id
+		
+        Parameters
+        ----------
+		feature: array of shape(self.nb_subj,self.k,fdim),
+                 where fdim is the feature dimension
+		fid, string, the feature id
 		"""
 		# 1. test that the feature does not exist yet
 		i = np.array([fid==f for f in self.fids])
@@ -237,13 +244,16 @@ class Parcellation:
 		
 	def get_feature(self,fid):
 		"""
-		self.get_feature(fid):
 		Get feature to the feature list of the structure
-		INPUT:
-		- fid: a string that is the feature id
-		OUTPUT
-		- feature: an array of shape(self.nb_subj,self.k,fdim),
-		where fdim is the feature dimension
+		
+        Parameters
+        ----------
+        fid, string, the feature id
+		
+        Returns
+        -------
+		feature: array of shape(self.nb_subj,self.k,fdim),
+                 where fdim is the feature dimension
 		"""
 		i = np.array([fid==f for f in self.fids])
 		i = np.nonzero(i)
@@ -256,7 +266,6 @@ class Parcellation:
 
 	def isfield(self,fid):
 		"""
-		self.isfield(fid)
 		tests whether fid is known as a field 
 		"""
 		i = np.array([fid==f for f in self.fids])
@@ -266,10 +275,11 @@ class Parcellation:
 	
 	def remove_feature(self,fid):
 		"""
-		self.remove_feature(fid):
-		Remove feature from the feature list of the structure
-		INPUT:
-		- fid: a string that is the feature id
+        Remove feature from the feature list of the structure
+        
+        Parameters
+        ----------
+		fid, string, the feature id
 		"""
 		i = np.array([fid!=f for f in self.fids])
 		i = np.nonzero(i)
@@ -279,21 +289,23 @@ class Parcellation:
 		self.features = Rf
 		self.fids= Rfid
 
-	def make_feature(self,data, fid,subj=-1,method="average"):
+	def make_feature(self, data, fid, subj=-1, method="average"):
 		"""
-		self.make_feature(data,fid,subj=-1,method='average'):
 		Compute and Add a feature to the feature list of the structure
-		INPUT:
-		- data: a list of arrays of shape(nbvoxels,fdim),
-		where fdim is the feature dimension
-		NOTE: if subj>-1, then data is simply an array of shape (nbvoxels,fdim)
-		- fid: a string that is the feature id
-		- subj = -1: subject in which this is performed
-		if subject==-1, this is in all subjects,
-		and it is checked that the fid is not defined yet
-		otherwise, this is in one particular subject,
-		and the feature may be overriden
-		- method = 'average', the way to compute the feature 
+		
+        Parameters
+        ----------
+		data: a list of arrays of shape(nbvoxels,fdim),
+              where fdim is the feature dimension
+              Note: if subj>-1, then data is simply an array 
+              of shape (nbvoxels,fdim)
+		fid, string, the feature id
+		subj = -1: subject in which this is performed
+             if subject==-1, this is in all subjects,
+             and it is checked that the fid is not defined yet
+             otherwise, this is in one particular subject,
+             and the feature may be overriden
+		method = 'average', the way to compute the feature 
 		"""
 		# 1. test that the feature does not exist yet
 		i = np.array([fid==f for f in self.fids])
@@ -315,7 +327,8 @@ class Parcellation:
 				# create the feature
 				i = len(self.fids)
 				self.fids.append(fid)
-				self.features.append(np.zeros((self.nb_subj,self.k,data.shape[1])))			
+				self.features.append(np.zeros((self.nb_subj, 
+                               self.k, data.shape[1])))			
 
 			# check that the dimension is OK
 			if data.shape[1]!=self.features[i].shape[2]:
@@ -329,19 +342,23 @@ class Parcellation:
 
 	def PRFX(self,fid,zstat=1,DMtx = None):
 		"""
-		RFX = self.PRFX(fid,zstat=1)
-		Compute the Random effects of the feature on the parcels across subjects
-		INPUT:
-		- fid is the feature identifier;
-		it is assumed that the feature is 1-dimensional
-		-zstat indicator variable for the output variate
-		if ztsat==0, the basic student statistic is returned
-		if zstat==1, the student stat is converted to a normal(z) variate
-		- DMtx = None : design matrix for the model.
-		So far, it is assumed that DMtx = np.ones(self.nb_subj)
-		OUPUT:
-		- RFX: array with shape (self.k,fdim)
-		containing the parcel-based RFX.
+		Compute the Random effects of the feature on the 
+        parcels across subjects
+		
+        Parameters
+        ----------
+		fid, string, feature identifier;
+            it is assumed that the feature is 1-dimensional
+		zstat indicator variable for the output variate
+              if ztsat==0, the basic student statistic is returned
+              if zstat==1, the student stat is converted to a normal(z) variate
+		DMtx = None : design matrix for the model.
+             So far, it is assumed that DMtx = np.ones(self.nb_subj)
+		
+        returns
+        -------
+        RFX: array with shape (self.k,fdim)
+             the parcel-based RFX.
 		"""
 		if self.nb_subj<2:
 			print "Sorry, there is only one subject"
@@ -371,23 +388,25 @@ class Parcellation:
 
 	def average_feature(self,Feature,subj=-1):
 		"""
-		PF = self.average_feature(Feature)
 		compute parcel-based fetaure bu averaging voxel-based quantities
-		INPUT:
-		- Feature is a list of length self.nb_subj,
-		so that for each s in 0..self.nb_subj-1, 
-		that Feature[s] is an (nvox,fdim)-shaped array
-		where nvox is the number of voxels in subject s with label >-1
-		- subj = -1: subject in which this is performed
-		if subj==-1, this is in all subjects,
-		and it is checked that the fid is not defined yet
-		if subj>-1, this is in one particular subject,
-		and Feature merely is an array, not a list  
-		OUPUT:
-		- PF: array of shape (self.nb_subj,self.k,fdim) if subj==-1
-		or (self.k,fdim)
-		containing the parcel-based features.
+
+        Parameters
+        ----------
+		Feature is a list of length self.nb_subj,
+                so that for each s in 0..self.nb_subj-1, 
+                that Feature[s] is an (nvox,fdim)-shaped array
+                where nvox is the number of voxels in subject s with label >-1
+		subj = -1: subject in which this is performed
+             if subj==-1, this is in all subjects,
+             and it is checked that the fid is not defined yet
+             if subj>-1, this is in one particular subject,
+             and Feature merely is an array, not a list  
 		
+        Returns
+        -------
+		PF: array of shape (self.nb_subj,self.k,fdim) if subj==-1
+            or (self.k,fdim)
+            containing the parcel-based features.
 		"""
 		if subj==-1:
 			# Do the computation in available subjects
@@ -432,12 +451,16 @@ class Parcellation:
 
 	def variance_inter(self,fid):
 		"""
-		HI = self.variance_inter(fid)
 		Compute the variance of the feature at each parcel across subjects
-		INPUT:
-		- fid is the feature identifier
-		OUPUT:
-		- HI
+		
+        Parameters
+        ----------
+		fid, string, the feature identifier
+		
+        Returns
+        -------
+		HI, array of shape (self.k) (?) 
+            the inter-subject variance
 		"""
 		#.0 check that there is more than 1 subject
 		if self.nb_subj<2:
@@ -460,7 +483,7 @@ class Parcellation:
 		for d in range(AF.shape[2]):
 			dAF[:,:,d] = (pop>0)*dAF[:,:,d]**2
 
-		HI = np.sum(dAF)/np.transpose(np.repeat(np.sum(pop>0)-1,dAF.shape[2],1))
+		HI = np.sum(dAF)/ np.repeat(np.sum(pop>0)-1,dAF.shape[2],1).T
 		return HI
 
 
@@ -500,14 +523,19 @@ class Parcellation:
 		"""
 		Vintra = self.variance_intra(fid)
 		Compute the variance of the feature at each parcel within each subject
-		INPUT:
-		- data is the data on which the  variance is estimated:
-		this is a list of arrays
-		- bweight=0: flag for the relative weighting of the parcels
-		if bweight = 1, the variance of each parcels is weighted by its size
-		else, all parcels are equally weighted
-		OUPUT:
-		- VA : array of shape (self.k) of the variance 
+		
+        Parameters
+        ----------
+		data is the data on which the  variance is estimated:
+             this is a list of arrays
+		bweight=0: flag for the relative weighting of the parcels
+                   if bweight = 1, the variance of each parcels 
+                   is weighted by its size
+                   else, all parcels are equally weighted
+		
+        Returns
+        -------
+		VA : array of shape (self.k) of the variance 
 		"""
 		
 		VF = self.var_feature_intra(data)
@@ -528,9 +556,11 @@ class Parcellation:
 		self.show_feature(pid,fids)
 		This function makes a boxplot of the feature distribution
 		in a given parcel across subjects
-		INPUT:
-		- pid = parcel identifier an integer within the [0..self.K] range
-		- fids = list of features of inetegers
+		
+        Parameters
+        ----------
+		pid = parcel identifier an integer within the [0..self.K] range
+		fids = list of features of inetegers
 		"""
 		#1. test that pid is coorect
 		if pid<0:

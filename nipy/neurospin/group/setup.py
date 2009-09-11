@@ -3,8 +3,8 @@ def configuration(parent_package='',top_path=None):
     
     from numpy.distutils.misc_util import Configuration
 
-    # We need this because lapack fffpy.a is linked to lapack, which can be a 
-    # fortran library, and the linker needs this information.
+    # We need this because libcstat.a is linked to lapack, which can
+    # be a fortran library, and the linker needs this information.
     from numpy.distutils.system_info import get_info
 
     # First, try 'lapack_info', as that seems to provide more details on Linux
@@ -19,29 +19,29 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('group', parent_package, top_path)
     config.add_data_dir('tests')
     config.add_extension(
-                '_onesample',
-                sources=['_onesample.c'],
-                libraries=['fffpy'],
-                extra_info=lapack_info,
-                )
+        '_onesample',
+        sources=['_onesample.c'],
+        libraries=['cstat'],
+        extra_info=lapack_info,
+        )
     config.add_extension(
-                '_twosample',
-                sources=['_twosample.c'],
-                libraries=['fffpy'],
-                extra_info=lapack_info,
-                )
+        '_twosample',
+        sources=['_twosample.c'],
+        libraries=['cstat'],
+        extra_info=lapack_info,
+        )
     config.add_extension(
-                'routines',
-                sources=['routines.c'],
-                libraries=['fffpy'],
-                extra_info=lapack_info,
-                )
+        'routines',
+        sources=['routines.c'],
+        libraries=['cstat'],
+        extra_info=lapack_info,
+        )
     config.add_extension(
         'glm_twolevel',
-                sources=['glm_twolevel.c'],
-                libraries=['fffpy'],
-                extra_info=lapack_info,
-                )
+        sources=['glm_twolevel.c'],
+        libraries=['cstat'],
+        extra_info=lapack_info,
+        )
 
     return config
 

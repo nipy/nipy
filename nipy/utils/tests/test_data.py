@@ -228,7 +228,7 @@ def test_make_datasource():
         with open(tmpfile, 'wt') as fobj:
             fobj.write('[DEFAULT]\n')
             fobj.write('version = 0.1\n')
-        ds = make_datasource('pkg')
+        ds = make_datasource('pkg', data_path=[tmpdir])
         yield assert_equal, ds.version, '0.1'
 
 
