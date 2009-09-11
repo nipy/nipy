@@ -6,7 +6,7 @@ author: Bertrand Thirion, 2005-2009
 import numpy as np
 import os.path as op
 import cPickle
-import nifti
+from nipy.io.imageformats import load, save, Nifti1Image 
 import tempfile
 import get_data_light
 from nipy.neurospin.utils.reproducibility_measures import \
@@ -36,14 +36,14 @@ swd = tempfile.mkdtemp('nifti')
 # -------------------------------------------------------
 
 # Read the masks
-rmask = nifti.NiftiImage(mask_images[0])
-ref_dim = rmask.getVolumeExtent()
+rmask = load(mask_images[0])
+ref_dim = rmask.get_shape()
 
 mask = np.zeros(ref_dim)
 for s in range(nsubj):
-    rmask = nifti.NiftiImage(mask_images[s])
-    m1 = rmask.asarray().T
-    if (rmask.getVolumeExtent() != ref_dim):
+    rmask = load(mask_images[s])
+    m1 = rmask.get_data()
+    if (rmask.get_shape() != ref_dim):
         raise ValueError, "icompatible image size"
     mask += m1>0
         
@@ -64,11 +64,11 @@ tiny = 1.e-15
 for s in range(nsubj): 
     beta = []
     varbeta = []
-    rbeta = nifti.NiftiImage(contrast_images[s])
-    temp = (rbeta.asarray().T)[mask]
+    rbeta = load(contrast_images[s])
+    temp = (rbeta.get_data())[mask]
     beta.append(temp)
-    rbeta = nifti.NiftiImage(stat_images[s])
-    tempstat = (rbeta.asarray().T)[mask]
+    rbeta = load(stat_images[s])
+    tempstat = (rbeta.get_data())[mask]
     # ugly trick to get the variance
     varbeta = temp**2/(tempstat**2+tiny)
 
@@ -88,7 +88,7 @@ VarFunctional[np.isnan(VarFunctional)]=0
 # ---------- MNI coordinates ----------------------------
 # -------------------------------------------------------
 
-affine = rmask.header['sform']
+affine = rmask.get_affine()
 coord = np.hstack((xyz, np.ones((nvox, 1))))
 coord = np.dot(coord, affine.T)[:,:3]
 
@@ -105,7 +105,6 @@ method = 'crfx'
 verbose = 0
 
 # BSA stuff
-header = rmask.header
 smin = 5
 theta= 3.
 dmax =  5.
@@ -113,6 +112,7 @@ tht = nsubj/4
 thq = 0.9
 afname = '/tmp/af'
 
+# apply random sign swaps to the data to test the reproducibility under the H0 hypothesis
 swap = True
 
 kap = []
@@ -169,20 +169,20 @@ rmap = map_reproducibility(Functional, VarFunctional, xyz, ngroups,
                            method, swap, verbose, **kwargs)
 wmap  = np.zeros(ref_dim).astype(np.int)
 wmap[mask] = rmap
-wim = nifti.NiftiImage(wmap.T,rbeta.header)
-wim.description= 'reproducibility map at threshold %f, \
-                 cluster size %d'%(th,csize)
+wim = Nifti1Image(wmap,affine)
+wim.get_header()['descrip']= 'reproducibility map at threshold %f, \
+                             cluster size %d'%(th,csize)
 wname = op.join(swd,'repro.nii')
-wim.save(wname)
+save(wim, wname)
 
 print('Wrote a reproducibility image in %s'%wname)
 
 
-import two_binomial_mixture as mtb
-MB = mtb.TwoBinomialMixture()
-MB.estimate_parameters(rmap, ngroups+1)
-h = np.array([np.sum(rmap==i) for i in range(ngroups+1)])
-MB.show(h)
-print MB.kappa()
-
-mp.show()
+#import two_binomial_mixture as mtb
+#MB = mtb.TwoBinomialMixture()
+#MB.estimate_parameters(rmap, ngroups+1)
+#h = np.array([np.sum(rmap==i) for i in range(ngroups+1)])
+#MB.show(h)
+#print MB.kappa()
+#
+#mp.show()
