@@ -2,9 +2,9 @@
 Empirical null
 ==============
 
-.. currentmodule:: fff2.utils.emp_null
+.. currentmodule:: nipy.neurospin.utils.emp_null
 
-The :mod:`fff2.utils.emp_null` module contains a class that fits a
+The :mod:`nipy.neurospin.utils.emp_null` module contains a class that fits a
 gaussian model to the central part of an histogram, following Schwartzman
 et al, 2009. This is typically necessary to estimate a fdr when one is
 not certain that the data behaves as a standard normal under H_0.

@@ -8,15 +8,20 @@ image, to estimate activation Z-score with various heuristics:
 
 This example is based on a (simplistic) simulated image.
 
+Note : We do not want a 'zscore', which does mean anything
+(except with the fdr) but probability
+that each voxel is in the active class
+
+
 """
-# Author : Bertrand Thirion, 2008-2009
+# Author : Bertrand Thirion, Gael Varoquaux 2008-2009
 
 import numpy as np
 import scipy.stats as st
 import os.path as op
-import fff2.spatial_models.bayesian_structural_analysis as bsa
-import fff2.utils.simul_2d_multisubject_fmri_dataset as simul
-from fff2.utils.zscore import zscore
+import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+from nipy.neurospin.utils.zscore import zscore
+import nipy.neurospin.utils.emp_null as en
 
 ################################################################################
 # simulate the data
@@ -39,60 +44,58 @@ Beta = dataset.ravel().squeeze()
 
 ################################################################################
 # fit Beta's histogram with a Gamma-Gaussian mixture
-gam_gaus_zscore = zscore(bsa._GGM_priors_(Beta, Beta))
-gam_gaus_zscore = np.reshape(gam_gaus_zscore, (dimx, dimy, 3))
+gam_gaus_pp = en.Gamma_Gaussian_fit(Beta, Beta)
+gam_gaus_pp = np.reshape(gam_gaus_pp, (dimx, dimy, 3))
 
 pl.figure(fig.number)
 pl.subplot(3, 3, 4)
-pl.imshow(gam_gaus_zscore[..., 0], cmap=pl.cm.hot)
-pl.title('Gamme-Gaussian mixture,\n first component Z-score')
+pl.imshow(gam_gaus_pp[..., 0], cmap=pl.cm.hot)
+pl.title('Gamma-Gaussian mixture,\n first component posterior proba.')
 pl.colorbar()
 pl.subplot(3, 3, 5)
-pl.imshow(gam_gaus_zscore[..., 1], cmap=pl.cm.hot)
-pl.title('Gamme-Gaussian mixture,\n second component Z-score')
+pl.imshow(gam_gaus_pp[..., 1], cmap=pl.cm.hot)
+pl.title('Gamma-Gaussian mixture,\n second component posterior proba.')
 pl.colorbar()
 pl.subplot(3, 3, 6)
-pl.imshow(gam_gaus_zscore[..., 2], cmap=pl.cm.hot)
-pl.title('Gamme-Gaussian mixture,\n third component Z-score')
+pl.imshow(gam_gaus_pp[..., 2], cmap=pl.cm.hot)
+pl.title('Gamma-Gaussian mixture,\n third component posterior proba.')
 pl.colorbar()
 
 ################################################################################
 # fit Beta's histogram with a mixture of Gaussians
 alpha = 0.01
-theta = float(st.t.isf(0.01, 100))
-# FIXME: Ugly crasher if the second Beta is not reshaped
-gaus_mix_zscore = zscore(bsa._GMM_priors_(Beta, Beta.reshape(-1, 1), theta, 
-                            alpha, 
-                            prior_strength=100))
-gaus_mix_zscore = np.reshape(gaus_mix_zscore, (dimx, dimy, 3))
+gaus_mix_pp = en.three_classes_GMM_fit(Beta, None, 
+                                       alpha, prior_strength=100)
+gaus_mix_pp = np.reshape(gaus_mix_pp, (dimx, dimy, 3))
+
 
 pl.figure(fig.number)
 pl.subplot(3, 3, 7)
-pl.imshow(gaus_mix_zscore[..., 0], cmap=pl.cm.hot)
-pl.title('Gaussian mixture,\n first component Z-score')
+pl.imshow(gaus_mix_pp[..., 0], cmap=pl.cm.hot)
+pl.title('Gaussian mixture,\n first component posterior proba.')
 pl.colorbar()
 pl.subplot(3, 3, 8)
-pl.imshow(gaus_mix_zscore[..., 1], cmap=pl.cm.hot)
-pl.title('Gaussian mixture,\n second component Z-score')
+pl.imshow(gaus_mix_pp[..., 1], cmap=pl.cm.hot)
+pl.title('Gaussian mixture,\n second component posterior proba.')
 pl.colorbar()
 pl.subplot(3, 3, 9)
-pl.imshow(gaus_mix_zscore[..., 2], cmap=pl.cm.hot)
-pl.title('Gamme-Gaussian mixture,\n third component Z-score')
+pl.imshow(gaus_mix_pp[..., 2], cmap=pl.cm.hot)
+pl.title('Gamma-Gaussian mixture,\n third component posterior proba.')
 pl.colorbar()
 
 ################################################################################
 # Fit the null mode of Beta with an empirical normal null
-import fff2.utils.emp_null as en
+
 efdr = en.ENN(Beta)
-emp_null_zcore = zscore(efdr.fdr(Beta))
-emp_null_zcore = emp_null_zcore.reshape((dimx, dimy))
+emp_null_fdr = efdr.fdr(Beta)
+emp_null_fdr = emp_null_fdr.reshape((dimx, dimy))
 
 pl.subplot(3, 3, 3)
-pl.imshow(emp_null_zcore, cmap=pl.cm.hot)
+pl.imshow(1-emp_null_fdr, cmap=pl.cm.hot)
 pl.colorbar()
-pl.title('Empirical normal null\n Z-score')
+pl.title('Empirical FDR\n ')
 
-efdr.plot()
-pl.title('Empirical normal null fit')
+#efdr.plot()
+#pl.title('Empirical FDR fit')
 
 pl.show()

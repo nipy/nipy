@@ -1,5 +1,5 @@
 import numpy as np
-from fff2 import glm
+from nipy.neurospin import glm
 
 # This example routine simulates a number of pure Gaussian white noise 
 # signals, then fits each one in terms of two regressors: a constant baseline, 

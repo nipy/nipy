@@ -1,5 +1,5 @@
 import numpy as np
-from fff2.group import permutation_test as PT
+from nipy.neurospin.group import permutation_test as PT
 
 def make_data(n=10,mask_shape=(10,10,10),axis=0):
     """

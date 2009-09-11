@@ -1,6 +1,15 @@
-"""The testing directory contains a small set of imaging files to be used
-for doctests only.  More thorough tests and example data will be stored in
-a nipy-data-suite to be created later and downloaded separately.
+"""The testing directory contains a small set of imaging files to be
+used for doctests only.  More thorough tests and example data will be
+stored in a nipy data packages that you can download separately - see
+:mod:`nipy.utils.data`
+
+.. note:
+
+   We use the ``nose`` testing framework for tests.  
+
+   Nose is a dependency for the tests, but should not be a dependency
+   for running the algorithms in the NIPY library.  This file should
+   import without nose being present on the python path.
 
 Examples
 --------
@@ -26,4 +35,9 @@ anatfile = os.path.join(basedir, 'anatomical.nii.gz')
 
 from numpy.testing import *
 import decorators as dec
-from nose.tools import assert_true, assert_false
+
+# Allow failed import of nose if not now running tests
+try:
+    from nose.tools import assert_true, assert_false
+except ImportError:
+    pass

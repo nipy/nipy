@@ -5,7 +5,16 @@ It downloads a copy from the repository, patches the paths, tests, makes
 an archive, deletes temporary copies, and exits.
 
 Unix specific.  It could be generalized, but it's only for occasional
-use in updating the code tree, and probably won't be used for long either.
+use in updating the code tree, and probably won't be used for long
+either.
+
+Typical use would be:
+
+copy_brifti.py /tmp/brifti-0.2.tar.gz
+cd ~/nipy-repo/trunk-lp/nipy/io
+tar zcvf /tmp/brifti-0.2.tar.gz
+
+then bzr stat, commit as necessary
 '''
 
 import os
@@ -28,10 +37,11 @@ subs = (
 caller = functools.partial(call, shell=True)
 git_path = 'git://git.debian.org/git/pkg-exppsy/pynifti.git'
 # because I am working locally for the moment
-git_path = '/home/mb312/dev_trees/pynifti/.git'
+#git_path = '/home/mb312/dev_trees/pynifti/.git'
 
 
 def create_archive(out_path, git_path, git_id):
+    out_path = os.path.abspath(out_path)
     pwd = os.path.abspath(os.curdir)
     # pull out git archive
     tmp_path = tempfile.mkdtemp()
@@ -84,7 +94,7 @@ if __name__ == '__main__':
     try:
         git_id = sys.argv[2]
     except IndexError:
-        git_id = 'brifti-0.1'
+        git_id = 'brifti-0.2'
     try:
         git_path = sys.argv[3]
     except IndexError:

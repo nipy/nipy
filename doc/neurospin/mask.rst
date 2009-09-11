@@ -2,10 +2,10 @@
 Mask-extraction utilities
 ==========================
 
-.. currentmodule:: fff2.utils.mask
+.. currentmodule:: nipy.neurospin.utils.mask
 
-The module :mod:`fff2.utils.mask` contains utilities to extract brain
-masks from fMRI data:
+The module :mod:`nipy.neurospin.utils.mask` contains utilities to extract
+brain masks from fMRI data:
 
 .. autosummary::
     :toctree: generated
