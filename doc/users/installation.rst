@@ -92,7 +92,7 @@ To install, simply do::
     If you have downloaded the source from the development tree, you
     also should get and install the ``nipy-data`` and ``nipy-templates``
     packages (not required, but strongly suggested). Please see
-    http://cirl.berkeley.edu/mb312/nipy-data and :ref:`data-files`.
+    http://nipy.sourceforge.net/data-packages and :ref:`data-files`.
 
 .. include:: ../links_names.txt
 
