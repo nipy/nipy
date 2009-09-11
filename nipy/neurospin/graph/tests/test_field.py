@@ -10,9 +10,22 @@ def basic_field():
     dz = 10
     F = ff.Field(dx*dy*dz)
     
-    XYZ = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
-    F.from_3d_grid(XYZ,26)
-    data = np.sum(XYZ,1).astype('d')
+    xyz = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
+    F.from_3d_grid(xyz,26)
+    data = np.sum(xyz,1).astype('d')
+    F.set_field(data)
+    return F
+
+def basic_field_random():
+    import numpy.random as nr
+    dx = 10
+    dy = 10
+    dz = 1
+    F = ff.Field(dx*dy*dz)
+    
+    xyz = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
+    F.from_3d_grid(xyz,26)
+    data = 0.5*nr.randn(dx*dy*dz,1)+np.sum(xyz,1).astype('d')
     F.set_field(data)
     return F
 
@@ -21,11 +34,11 @@ def basic_field_2():
     dy = 10
     dz = 10
     F = ff.Field(dx*dy*dz)
-    XYZ = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
+    xyz = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
     toto = np.array([[x-5,y-5,z-5] for z in range(dz) for y in range(dy) for x in range(dx)] )
 
     data = np.sum(toto*toto,1) 
-    F.from_3d_grid(XYZ,26)
+    F.from_3d_grid(xyz,26)
     F.set_field(data)
     return F
 
@@ -33,10 +46,12 @@ def basic_graph():
     dx = 10
     dy = 10
     dz = 10
-    XYZ = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
+    xyz = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
     G = ff.Field(dx*dy*dz)
-    G.from_3d_grid(XYZ,26);
+    G.from_3d_grid(xyz,26);
     return G 
+
+
 
 
 
@@ -198,7 +213,39 @@ class test_Field(TestCase):
         idx,height, parent,label = F.threshold_bifurcations()
         OK = np.size(idx==15)
         self.assert_(OK)
-    
+
+    def test_geodesic_kmeans(self,nbseeds=10,verbose=0):
+        import numpy.random as nr
+        F = basic_field_random()
+        seeds = np.argsort(nr.rand(F.V))[:nbseeds]
+        F.geodesic_kmeans(seeds)
+        OK = True
+        self.assert_(OK)
+
+    def test_subfield(self):
+        import numpy.random as nr
+        F = basic_field_random()
+        valid = nr.rand(F.V)>0.1
+        sf = F.subfield(valid)
+        self.assert_(sf.V==np.sum(valid))
+
+    def test_subfield2(self):
+        F = basic_field_random()
+        valid = np.zeros(F.V)
+        sf = F.subfield(valid)
+        self.assert_(sf==None)
+
+    def test_ward1(self):
+        F = basic_field_random()
+        Lab, J = F.ward(10)
+        self.assert_(Lab.max()==9)
+
+    def test_ward2(self):
+        F = basic_field_random()
+        Lab, J1 = F.ward(5)
+        Lab, J2 = F.ward(10)
+        self.assert_(J1>J2)
+
 if __name__ == '__main__':
     import nose
     nose.run(argv=['', __file__])

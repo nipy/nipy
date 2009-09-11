@@ -77,7 +77,7 @@ except ImportError:
 
 ################################################################################
 # commands for installing the data
-from distutils.command.install_data import install_data
+from numpy.distutils.command.install_data import install_data
 from numpy.distutils.command.build_ext import build_ext
 
 def data_install_msgs():

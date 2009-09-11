@@ -86,6 +86,8 @@ class displacement_field:
         """
         self.XYZ = XYZ
         self.sigma = sigma
+        if np.isscalar(sigma):
+            self.sigma = sigma * np.ones(3)
         self.n = n
         self.XYZ_min = self.XYZ.min(axis=1).reshape(3, 1) - 1
         self.XYZ_max = self.XYZ.max(axis=1).reshape(3, 1) + 1
@@ -95,7 +97,7 @@ class displacement_field:
         else:
             self.mask = mask
         if step == None:
-            self.step = int(round(2 * sigma))
+            self.step = int(round(2 * self.sigma.max()))
         else:
             self.step = step
         self.V = np.zeros((3, n, p), float)
@@ -112,26 +114,35 @@ class displacement_field:
         Called by class constructor
         """
         XYZ = self.XYZ
-        sigma = self.sigma
         # displacement kernel
-        r = int(round(2 * sigma))
-        d = int(round(4 * sigma))
-        kernel = np.zeros(d * np.ones(3), float)
-        kernel[r-1:r+1, r-1:r+1, r-1:r+1] += 1
-        kernel = gaussian_filter(kernel, sigma, mode='constant')
+        sigma = self.sigma.max()
+        #r = int(round(2 * sigma))
+        d = int(round(6 * sigma))
+        block_dim = (\
+            self.XYZ.max(axis=1)+1 - \
+            self.XYZ.min(axis=1)).clip(1,d)
+        #kernel = np.zeros(d * np.ones(3), float)
+        kernel = np.zeros(block_dim, float)
+        kernel[block_dim[0]/2-1:block_dim[0]/2+1,
+        block_dim[1]/2-1:block_dim[1]/2+1,
+        block_dim[2]/2-1:block_dim[2]/2+1] += 1
+        kernel = gaussian_filter(kernel.squeeze(), sigma, mode='constant')
+        kernel = kernel.reshape(block_dim)
         kernel /= kernel.max()
         # displacement 'blocks'
         self.block = []
         self.weights = []
         mask_vol = np.zeros(XYZ.max(axis=1) + 2, int) - 1
-        mask_vol[XYZ[0, self.mask], XYZ[1, self.mask], XYZ[2, self.mask]] = self.mask
-        for i in xrange(0, XYZ[0].max(), self.step):
-            for j in xrange(0, XYZ[1].max(), self.step):
-                for k in xrange(0, XYZ[2].max(), self.step):
+        mask_vol[list(XYZ[:, self.mask])] = self.mask
+        Xm, Ym, Zm = XYZ.min(axis=1).astype(int)
+        XM, YM, ZM = XYZ.max(axis=1).clip(1,np.inf).astype(int)
+        for i in xrange(Xm, XM, self.step):
+            for j in xrange(Ym, YM, self.step):
+                for k in xrange(Zm, ZM, self.step):
                     block_vol = mask_vol[i:i + d, j:j + d, k:k + d]
                     XYZ_block = np.array( np.where( block_vol > -1 ) )
                     if XYZ_block.size > 0 \
-                    and (kernel[XYZ_block[0], XYZ_block[1], XYZ_block[2]] > 0.5).sum() == (kernel > 0.5).sum():
+                    and (kernel[list(XYZ_block)] > 0.05).sum() == (kernel > 0.05).sum():
                         #print i,j,k
                         self.block.append(block_vol[XYZ_block[0], XYZ_block[1], XYZ_block[2]])
                         self.weights.append(kernel[XYZ_block[0], XYZ_block[1], XYZ_block[2]])
@@ -141,9 +152,11 @@ class displacement_field:
         Generate self.inner_blocks, index of blocks which are "far from" the borders of the lattice.
         """
         XYZ = self.XYZ
+        sigma = self.sigma.max()
         mask_vol = np.zeros(XYZ.max(axis=1) + 1, int)
         mask_vol[XYZ[0], XYZ[1], XYZ[2]] += 1
-        mask_vol = binary_erosion(mask_vol, iterations=int(round(2 * self.sigma))).astype(int)
+        mask_vol = binary_erosion(mask_vol.squeeze(), iterations=int(round(sigma))).astype(int)
+        mask_vol = mask_vol.reshape(XYZ.max(axis=1) + 1).astype(int)
         inner_mask = mask_vol[XYZ[0], XYZ[1], XYZ[2]]
         inner_blocks = []
         for i in xrange(len(self.block)):
@@ -212,20 +225,23 @@ class gaussian_random_field:
     def __init__(self, XYZ, sigma, n=1):
         self.XYZ = XYZ
         self.sigma = sigma
+        if np.isscalar(sigma):
+            self.sigma = sigma * (XYZ.max(axis=1) > 1)
         self.n = n
         self.XYZ_vol = np.zeros(XYZ.max(axis=1) + 2, int) - 1
         p = XYZ.shape[1]
-        self.XYZ_vol[XYZ[0], XYZ[1], XYZ[2]] = np.arange(p)
+        self.XYZ_vol[list(XYZ)] = np.arange(p)
         mask_vol = np.zeros(XYZ.max(axis=1) + 1, int)
-        mask_vol[XYZ[0], XYZ[1], XYZ[2]] += 1
-        mask_vol = binary_erosion(mask_vol, iterations=int(round(1.5 * sigma)))
+        mask_vol[list(XYZ)] += 1
+        mask_vol = binary_erosion(mask_vol.squeeze(), iterations=int(round(1.5*self.sigma.max())))
+        mask_vol = mask_vol.reshape(XYZ.max(axis=1) + 1).astype(int)
         XYZ_mask = np.array(np.where(mask_vol > 0))
         self.mask = self.XYZ_vol[XYZ_mask[0], XYZ_mask[1], XYZ_mask[2]]
         q = len(self.mask)
         dX, dY, dZ = XYZ.max(axis=1) + 1
         self.U_vol = np.zeros((3, dX, dY, dZ), float)
         self.U_vol[:, XYZ_mask[0], XYZ_mask[1], XYZ_mask[2]] += 1
-        self.U_vol = square_gaussian_filter(self.U_vol, [0, sigma, sigma, sigma], mode='constant')
+        self.U_vol = square_gaussian_filter(self.U_vol, [0, self.sigma[0], self.sigma[1], self.sigma[2]], mode='constant')
         self.norm_coeff = 1 / np.sqrt(self.U_vol.max())
         self.U = np.zeros((3, n, q), float)
         self.V = np.zeros((3, n, p), float)
@@ -241,11 +257,13 @@ class gaussian_random_field:
         sigma = self.sigma
         Wc = self.W[:, i]
         valid = False
+        if np.isscalar(std):
+            std = std * np.ones((3,1))
         while not valid:
             U = np.random.randn(3, q) * std
             self.U_vol *= 0
             self.U_vol[:, XYZ[0, mask], XYZ[1, mask], XYZ[2, mask]] = U
-            self.U_vol = gaussian_filter(self.U_vol, [0, sigma, sigma, sigma], mode='constant')
+            self.U_vol = gaussian_filter(self.U_vol, [0, sigma[0], sigma[1], sigma[2]], mode='constant')
             V = self.U_vol[:, XYZ[0], XYZ[1], XYZ[2]] * self.norm_coeff
             W = np.round(V).astype(int)
             L = np.where((W == Wc).prod(axis=0) == 0)[0]

@@ -1,5 +1,5 @@
 import numpy as np
-import fff2.group.permutation_test as permutt
+from nipy.neurospin.group.permutation_test import permutation_test_onesample
 
 
 # Get group data
@@ -7,7 +7,7 @@ f = np.load('data/offset_002.npz')
 data, vardata, xyz = f['mat'], f['var'], f['xyz']
 
 # Create one-sample permutation test instance 
-ptest = permutt.permutation_test_onesample(data, xyz, stat_id='wilcoxon')
+ptest = permutation_test_onesample(data, xyz, stat_id='wilcoxon')
 
 # Cluster definition: (threshold, diameter)
 # Note that a list of definitions can be passed to ptest.calibrate

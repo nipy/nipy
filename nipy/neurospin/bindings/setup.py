@@ -26,8 +26,8 @@ def configuration(parent_package='',top_path=None):
     config.add_data_dir('tests')
     config.add_data_dir('benchmarks')
 
-    # We need this because lapack fffpy.a is linked to lapack, which can be a 
-    # fortran library, and the linker needs this information.
+    # We need this because libcstat.a is linked to lapack, which can
+    # be a fortran library, and the linker needs this information.
     from numpy.distutils.system_info import get_info
     lapack_info = get_info('lapack_opt',0)
     if 'libraries' not in lapack_info:
@@ -36,13 +36,13 @@ def configuration(parent_package='',top_path=None):
         lapack_info = get_info('lapack',0)
 
     config.add_extension('linalg', sources=['linalg.c'],
-                            libraries=['fffpy'],
+                            libraries=['cstat'],
                             extra_info=lapack_info)
     config.add_extension('array', sources=['array.c'],
-                            libraries=['fffpy'],
+                            libraries=['cstat'],
                             extra_info=lapack_info)
     config.add_extension('wrapper', sources=['wrapper.c'],
-                            libraries=['fffpy'],
+                            libraries=['cstat'],
                             extra_info=lapack_info)
 
     return config

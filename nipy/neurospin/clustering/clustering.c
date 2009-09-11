@@ -1186,17 +1186,16 @@ static PyObject* fdp(PyObject* self, PyObject* args)
   fff_array_delete(Labels);
   fff_array_delete(Z);
  
-  // get the results as python arrrays
+  /* get the results as python arrrays */
   density = fff_vector_toPyArray( Density );
   posterior = fff_vector_toPyArray( Post );
   
   fff_FDP_delete( FDP );
   fff_matrix_delete(X);
 	
-  // Output tuple 
+  /* Output tuple */
   PyObject *ret = Py_BuildValue("NN",density,posterior);
   return ret;
-  //Py_RETURN_NONE;
 }
 
 
