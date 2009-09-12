@@ -26,11 +26,9 @@ data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
 MaskImage = os.path.join(data_dir,'mask.nii.gz')
 InputImage = os.path.join(data_dir,'spmT_0029.nii.gz')
 
-# Read the referential
+# Read the mask
 nim = load(MaskImage)
-
-# Read the masks and compute the "intersection"
-mask = get_data()
+mask = nim.get_data()
 
 # read the functional image
 rbeta = load(InputImage)

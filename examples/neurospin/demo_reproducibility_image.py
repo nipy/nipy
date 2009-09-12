@@ -29,7 +29,7 @@ stat_images =[ op.join(data_dir,'spmT_%04d_subj_%02d.nii'%(nbeta,n))
                  for n in range(nsubj)]
 contrast_images =[ op.join(data_dir,'con_%04d_subj_%02d.nii'%(nbeta,n))
                  for n in range(nsubj)]
-swd = tempfile.mkdtemp('nifti')
+swd = tempfile.mkdtemp('image')
 
 # -------------------------------------------------------
 # ---------- Make a group mask --------------------------
