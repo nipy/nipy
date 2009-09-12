@@ -14,7 +14,7 @@ import scipy.stats as st
 import os.path as op
 import tempfile
 
-from nipy.neurospin.spatial_models.bsa_nifti import make_bsa_nifti
+from nipy.neurospin.spatial_models.bsa_io import make_bsa_image
 import get_data_light
 
 
@@ -42,7 +42,7 @@ swd = tempfile.mkdtemp()
 method='simple'
 
 # call the function
-AF,BF = make_bsa_nifti(mask_images, betas, theta, dmax,
+AF,BF = make_bsa_image(mask_images, betas, theta, dmax,
                        ths, thq, smin, swd, method, subj_id, nbeta)
 
 # Write the result. OK, this is only a temporary solution

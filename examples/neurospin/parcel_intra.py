@@ -16,7 +16,7 @@ import tempfile
 #from nipy.neurospin.clustering.hierarchical_clustering import \
 #     ward_segment, ward_quick_segment
 #import nipy.neurospin.spatial_models.parcellation as Pa
-from nipy.neurospin.spatial_models.parcel_io_nii import one_subj_parcellation
+from nipy.neurospin.spatial_models.parcel_io import one_subj_parcellation
 
 import get_data_light
 get_data_light.getIt()

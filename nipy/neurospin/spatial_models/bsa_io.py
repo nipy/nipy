@@ -12,7 +12,7 @@ import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.graph.field as ff
 
 
-def make_bsa_nifti(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
+def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
                    smin=0, swd="/tmp/", method='simple', subj_id=None, nbeta=0):
     """
     main function for  performing bsa on a set of images.
@@ -39,7 +39,7 @@ def make_bsa_nifti(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
                      'simple', 'dev','ipmi'
     subj_id=None: list of int identifiers (<10000) of the subjects.
                   by default it is range(nsubj)
-    nbeta=0 (int): numerical identifier of the contrast
+    nbeta=0, int, numerical identifier of the contrast
  
     Returns
     -------
