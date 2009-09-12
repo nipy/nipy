@@ -9,39 +9,49 @@ Author : Bertrand Thirion, 2009
 import numpy as np
 import scipy.stats as st
 import nipy.neurospin.graph.field as ff
-import nifti
+from nipy.io.imageformats import load, save, Nifti1Image 
+
 
 # FIXME: 1) these functions should operate on ndarrays.
 #        2) the test at the end of the code should be converted in a unit 
 #           test (requires 1).
 
 
-def threshold_scalar_image(iimage, oimage, th=0., smin=0, mask_image=None):
+def threshold_scalar_image(iimage, oimage=None, th=0., smin=0, mask_image=None):
     """
     this function takes a 'grey level' threshold and a size threshold
     and gives as output an image where only the suprathreshold component
     of size > smin have not been thresholded out
-    INPUT:
-    - iimage : the path of a scalar nifti image
-    - oimage: the path of the dcalar output nifti image
-    - th = 0. the chose trheshold
-    -smin=0 the  cluster size threshold
-    -mask_image=None: a mask image to determine where in image this applies
-    if mask_image==None, the function is implied on where(image)
-    OUTPUT:
-    - oimage: the output image
+
+    Parameters
+    ----------
+    iimage, string, path of a scalar input image
+    oimage=None, string, path of the scalar output image
+                 if None teh output image is not written
+    th=0., float,  the chosen trheshold
+    smin=0, int, cluster size threshold
+    mask_image=None: a mask image to determine where in image this applies
+                     if mask_image==None, the function is implied on 
+                     where(image)
+    
+    returns
+    -------
+    output, image: the output image object
+
+    Note, the 0 values of iimage are not considered so far
     """
+    # fixme : add a header check here
     # 1. read the input image
-    inim = nifti.NiftiImage(iimage)
-    ref_dim = inim.getVolumeExtent()
-    x = inim.asarray().T
+    inim = load(iimage)
+    ref_dim = inim.get_shape()
+    x = inim.get_data()
     if mask_image==None:
         nvox = np.size(np.nonzero(x))
         xyz = np.array(np.where(x)).T.astype(np.int)
         m = (x!=0)
     else:
-        mask = nifti.NiftiImage(mask_image)
-        m = mask.asarray().T
+        mask = load(mask_image)
+        m = mask.get_data()
 
     nvox = np.sum(m>0)
     x = x[np.where(m)]
@@ -64,17 +74,18 @@ def threshold_scalar_image(iimage, oimage, th=0., smin=0, mask_image=None):
         # 2.c reorder u and write the final label map
         thx[x>th] = x[x>th]*(u>-1) 
 
-    # ref_dim
     result = np.zeros(ref_dim)
     result[m>0] = thx
-    onim = nifti.NiftiImage(result.T,inim.header)	
-    onim.description="thresholded image, threshold= %f, cluster size=%d"%(th,smin)
-    onim.save(oimage)	
-    return oimage
+    onim = Nifti1Image(result.T,inim.get_affine())	
+    onim.get_header()['descrip']= "thresholded image, threshold= %f,\ 
+                                  cluster size=%d"%(th,smin)
+    if oimage !=None:
+       save(onim, oimage)	
+    return onim
 
 
-def threshold_z_image(iimage, oimage, corr=None, pval=None, smin=0, 
-            mask_image=None,method=None):
+def threshold_z_image(iimage, oimage=None, corr=None, pval=None, smin=0, 
+            mask_image=None, method=None):
     """
     this function takes a presumably gaussian image threshold and a
     size threshold and gives as output an image where only the
@@ -82,33 +93,38 @@ def threshold_z_image(iimage, oimage, corr=None, pval=None, smin=0,
     out This corresponds to a one-sided classical test the null
     hypothesis can be take to be the standard normal or the empiricall
     null.
-    INPUT:
-    - iimage : the path of a presumably z-variate input nifti image
-    - oimage: the path of the output image
-    - corr=None:  the correction for multiple comparison method
-    corr can be either None or 'bon' (Bonferroni) or 'fdr'
-    - pval=none: the disired classical p-value.
-    the default behaviour of pval depends on corr
-    if corr==None then pval = 0.001
-    else pval = 0.05
-    - smin=0 the  cluster size threshold
-    - mask_image=None: a mask image to determine where in image this applies
-    if mask_image==None, the function is implied on where(image)
-    - method=None: model of the null distribution:
-    if method==None: standard null
-    if method=='emp': empirical null
-    OUTPUT:
-    - oimage: the output image
+    
+    Parameters
+    ----------
+    iimage, string, the path of a presumably z-variate input image
+    oimage=None, string, the path of the output image
+    corr=None, string  the correction for multiple comparison method
+               corr can be either None or 'bon' (Bonferroni) or 'fdr'
+    pval=none, float, the desired classical p-value.
+               the default behaviour of pval depends on corr
+               if corr==None, pval = 0.001, else pval = 0.05
+    smin=0, int, the  cluster size threshold
+    mask_image=None, string path of a mask image to determine 
+                     where thresholding is  applies
+                     if mask_image==None, the function is implied 
+                     on where(image)
+    method=None: model of the null distribution:
+                 if method==None: standard null
+                 if method=='emp': empirical null
+    
+    Returns
+    -------
+    oimage: the output image
     """
     #?# 1.  read the image(s)
-    nim = nifti.NiftiImage(iimage)
-    x = nim.asarray().T
+    nim = load(iimage)
+    x = nim.get_data()
     if mask_image==None:
         nvox = np.size(np.nonzero(x)) 
         x = x[np.where(x)]
     else:
-        mask = nifti.NiftiImage(mask_image)
-        m = mask.asarray().T
+        mask = load(mask_image)
+        m = mask.get_data()
         nvox = np.sum(m>0)
         x = x[np.where(m)]
         
@@ -129,8 +145,7 @@ def threshold_z_image(iimage, oimage, corr=None, pval=None, smin=0,
         if method=='emp':
             from emp_null import ENN
             efdr = ENN(x)
-            th=efdr.threshold(pval,verbose=1)
-            print th
+            th = efdr.threshold(pval,verbose=1)
         else:
             from emp_null import FDR
             lf = FDR(x)
@@ -138,9 +153,9 @@ def threshold_z_image(iimage, oimage, corr=None, pval=None, smin=0,
             print th
 
     # 3. threshold the image 
-    oimage = threshold_scalar_image(iimage,oimage, th=th, smin=smin,
+    output_image = threshold_scalar_image(iimage, oimage, th=th, smin=smin,
                         mask_image=mask_image)
-    return oimage
+    return output_image
 
 
 

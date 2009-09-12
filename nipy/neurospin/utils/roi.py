@@ -1,5 +1,4 @@
 import numpy as np
-import nifti
 from nipy.io.imageformats import load, save, Nifti1Image 
 
 #--------------------------------------------------------
@@ -12,11 +11,11 @@ class DiscreteROI(object):
     Ultimately, it should be merged with the nipy class
     
     ROI definition requires
-    - an identifier
-    - an header (exactly a nifti header at the moment,
-    though not everything is necessary)
-    The ROI can be derived from a image or defined
-    in the coordinate system implied by header.sform()
+    an identifier
+    an affine transform and a shape that can be used to
+       translate grid coordinates to position and to 
+       generate images from the DiscreteROI structure
+    The ROI can be derived from a image 
 
     roi.features is a dictionary of informations on the ROI elements.
     It is assumed that the ROI is sampled on a discrete grid, so that
@@ -100,7 +99,7 @@ class DiscreteROI(object):
         Parameters
         -----------
         image: ndarray
-            a nifti label (discrete valued) image
+            a label (discrete valued) image
         label: int
             the desired label
         """
@@ -118,7 +117,7 @@ class DiscreteROI(object):
         Parameters
         -----------
         image: string, 
-            the path of a nifti label (discrete valued) image
+            the path of a label (discrete valued) image
         position: array of shape (3,)
             x, y, z position in the world space
 
@@ -395,7 +394,7 @@ class MultipleROI(object):
 
         Parameters
         ----------
-        image (string): a nifti label (discrete valued) image
+        image (string): a label (discrete valued) image
         labels=None : array of shape (nlabels) 
                     the set of image labels that
                     shall be used as ROI definitions
@@ -521,7 +520,7 @@ class MultipleROI(object):
         
     def make_image(self, path):
         """
-        write a int nifti image where the nonzero values are the ROIs
+        write a int image where the nonzero values are the ROIs
 
         Parameters
         ----------

@@ -492,8 +492,8 @@ def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
 # ---------- BSA stuff ----------------------------------
 # -------------------------------------------------------
 
-def coord_bsa(xyz, coord, betas, header, theta=3., dmax=5., \
-               ths=0, thq=0.5, smin=0, afname='/tmp/af.pic'):
+def coord_bsa(xyz, coord, betas, affine=np.eye(4), shape=None, theta=3.,
+              dmax=5., ths=0, thq=0.5, smin=0, afname='/tmp/af.pic'):
     """
     main function for  performing bsa on a dataset
     where bsa =  nipy.neurospin.spatial_models.bayesian_structural_analysis
@@ -506,7 +506,9 @@ def coord_bsa(xyz, coord, betas, header, theta=3., dmax=5., \
           spatial coordinates of the nodes
     betas: an array of shape (nbnodes, subjects):
            the multi-subject statistical maps       
-    header: nifti image header the referential defining header
+    affine: array of shape (4,4) affine transformation
+            to map grid coordinates to positions
+    shape=None : shape of the implicit grid on which everything is defined
     theta = 3.0 (float): first level threshold
     dmax = 5. float>0:
          expected cluster std in the common space in units of coord
@@ -533,12 +535,12 @@ def coord_bsa(xyz, coord, betas, header, theta=3., dmax=5., \
     Fbeta.from_3d_grid(xyz.astype(np.int),18)
 
     # volume density
-    voxsize =  header['pixdim'][1:4] # fragile !
+    voxvol = np.absolute(np.linalg.det(affine))
     # or np.absolute(np.diag(header['sform'])[:3]) ?
-    g0 = 1.0/(np.prod(voxsize)*nbvox)
+    g0 = 1.0/(voxvol*nbvox)
 
     crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta,betas,coord,dmax,xyz,
-                                            header,thq, smin,ths, theta,
+                                            affine, shape,thq, smin,ths, theta,
                                             g0, verbose=0)
     if AF==None:
         return None
