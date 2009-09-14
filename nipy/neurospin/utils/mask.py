@@ -6,27 +6,9 @@ import warnings
 import numpy as np
 
 # Neuroimaging libraries imports
-import nifti
-# In different versions of pynifti, this symbol lived in different places
-try:
-    from nifti.nifticlib import NIFTI_INTENT_LABEL
-except ImportError:
-    from nifti.clib import NIFTI_INTENT_LABEL
-
+from nipy.io.imageformats import load, nifti1
 
 import nipy.neurospin.graph as fg
-
-def load_nifti(filename):
-    """ Load a nifti file, using memapping if possible.
-
-       
-    """
-    try:
-        nim = nifti.niftiimage.MemMappedNiftiImage(filename)
-    except RuntimeError:
-        "Memmapping is possible only for uncompressed files."
-        nim = nifti.NiftiImage(filename)
-    return nim
 
 
 def _largest_cc(mask):
@@ -56,7 +38,7 @@ def _largest_cc(mask):
     return mask_cc
 
 
-def compute_mask_files( input_filename, output_filename=None, 
+def compute_mask_files(input_filename, output_filename=None, 
                         return_mean=False, m=0.2, M=0.9, cc=1):
     """
     Compute a mask file from fMRI nifti file(s)
@@ -93,6 +75,7 @@ def compute_mask_files( input_filename, output_filename=None,
         provided if `return_mean` is True.
 
     """
+    
     if hasattr(input_filename, '__iter__'):
         if len(input_filename) == 0:
             raise ValueError('input_filename should be a non-empty '
@@ -100,36 +83,40 @@ def compute_mask_files( input_filename, output_filename=None,
         # We have several images, we do mean on the fly, 
         # to avoid loading all the data in the memory
         for index, filename in enumerate(input_filename):
-            nim = load_nifti(filename)
+            nim = load(filename)
             if index == 0:
-                first_volume = nim.data.squeeze()
+                first_volume = nim.get_raw_data().squeeze()
                 mean_volume = first_volume.copy().astype(np.float32)
-                header = nim.header
+                header = nim.get_header()
+                affine = nim.get_affine()
             else:
-                mean_volume += nim.data.squeeze()
+                mean_volume += nim.get_raw_data().squeeze()
         mean_volume /= float(len(input_filename))
     else: 
         # one single filename
-        nim = load_nifti(input_filename)
-        header = nim.header
-        first_volume = nim.data[0]
-        mean_volume = nim.data.mean(axis=0)
+        nim = load(input_filename)
+        header = nim.get_header()
+        affine = nim.get_affine()
+        data = nim.get_raw_data()
+        # Make a copy, to avoid holding a reference on the full array,
+        # and thus polluting the memory.
+        first_volume = data[0].copy()
+        mean_volume = data.mean(axis=0)
+        del data
     del nim
 
-    dat = compute_mask(mean_volume, first_volume, m, M, cc)
+    mask = compute_mask(mean_volume, first_volume, m, M, cc)
     
-    # header is auto-reupdated (number of dim, calmax.)
-    output_image = nifti.NiftiImage(dat.astype(np.uint8), header) 
-    # cosmetic updates
-    output_image.updateHeader({'intent_code': NIFTI_INTENT_LABEL, 
-                              'intent_name': 'Intra Mask'})
-    #output_image.setPixDims(output_image.voxdim + (0,))
     if output_filename is not None:
+        header['description'] = 'mask'
+        output_image = nifti1.Nifti1Image(mask.astype(np.uint8), 
+                                            affine=affine, 
+                                            header=header)
         output_image.save(output_filename)
     if not return_mean:
-        return output_image
+        return mask
     else:
-        return output_image, mean_volume
+        return mask, mean_volume
 
 
 def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9, 
@@ -221,7 +208,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     for session in session_files:
         this_mask = compute_mask_files(session,
                                        m=m, M=M,
-                                       cc=cc).data.astype(np.int8)
+                                       cc=cc).astype(np.int8)
         if mask is None:
             mask = this_mask
         else:
@@ -246,7 +233,8 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     # in int8
     return mask.astype(np.bool)
 
-def intersect_masks(input_masks, output_filename, threshold, cc):
+def intersect_masks(input_mask_files, output_filename=None, 
+                                        threshold=0.5, cc=True):
     """
     Given a list of input mask images, generate the output image which
     is the the threshold-level intersection of the inputs 
@@ -254,30 +242,38 @@ def intersect_masks(input_masks, output_filename, threshold, cc):
     
     Parameters
     ----------
-    input_masks, list of strings, paths of the input images
-                 nsubj set as len(input_masks)
-    output_filename, string, path of the output image
-    threshold: float, level of the intersection 
-               must be within [0, 1]
-    cc, bool additionally extract the main connected component
+    input_mask_files: list of strings or ndarrays
+        paths of the input images nsubj set as len(input_mask_files), or
+        individual masks.
+    output_filename, string:
+        Path of the output image, if None no file is saved.
+    threshold: float within [0, 1], optional
+        gives the level of the intersection.
+    cc: bool, optional
+        If true, extract the main connected component
     """  
-    nsubj = len(input_masks)
-    
-    nim = nifti.NiftiImage(inputs_masks[0])
-    ref_dim = nim.getVolumeExtent()
-    gmask = np.zeros(ref_dim)
+    gmask = None 
 
-    for s in range(nsubj):
-        nim = nifti.NiftiImage(inputs_masks[s])
-        gmask += nim.asarray()  
+    for filename in input_mask_files:
+        nim = load(filename)
+        if gmask is None:
+            gmask = nim.get_data()
+        else:
+            gmask += nim.get_data()  
     
-    gmask = gmask>(threshold*nsubj)     
-    if (np.sum(gmask>0) & cc):
-           gmask = _largest_cc(gmask)
+    gmask = gmask>(threshold*len(input_mask_files))
+    if np.any(gmask>0) and cc:
+        gmask = _largest_cc(gmask)
     
-    output_image = NiftiImage(gmask.astype(np.uint8), nim.header)
-    output_image.description = 'mask image'
-    output_image.save(output_filename)
+    if output_filename is not None:
+        header = nim.get_header()
+        header['description'] = 'mask image'
+        output_image = nifti1.Nifti1Image(gmask.astype(np.uint8),
+                                            affine=nim.get_affine(),
+                                            header=header,
+                                         )
+        output_image.save(output_filename)
+    return gmask
 
 ################################################################################
 # Legacy function calls.
