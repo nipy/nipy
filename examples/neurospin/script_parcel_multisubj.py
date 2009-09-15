@@ -7,7 +7,7 @@ import cPickle
 import tempfile
 
 from nipy.neurospin.spatial_models.parcellation import Parcellation
-from nipy.neurospin.spatial_models.parcel_io_nii import *
+from nipy.neurospin.spatial_models.parcel_io import *
 from nipy.neurospin.spatial_models.hierarchical_parcellation import hparcel
 import get_data_light
 

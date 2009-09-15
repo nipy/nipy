@@ -10,7 +10,7 @@ TODO : add a method 'global field', i.e. non-subject-specific info
 """
 
 import numpy as np
-import from nipy.neurospin.utils.roi import MultipleROI
+from nipy.neurospin.utils.roi import MultipleROI
 
 class HardParcellation( MultipleROI):
     """
