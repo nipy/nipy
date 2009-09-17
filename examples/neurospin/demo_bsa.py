@@ -52,13 +52,18 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                    bsa.compute_BSA_simple(Fbeta, lbeta, coord, dmax,xyz,
                                           affine, shape, thq, smin, ths,
                                           theta, g0)
+    if method=='loo':
+         group_map, AF, BF, likelihood = \
+                   bsa.compute_BSA_loo(Fbeta, lbeta, coord, dmax,xyz,
+                                          affine, shape, thq, smin, ths,
+                                          theta, g0)
     if method=='dev':
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_dev(Fbeta, lbeta, coord, dmax,xyz,
                                        affine, shape, thq,
                                       smin, ths, theta, g0, bdensity)
         
-    if method not in['dev','simple','ipmi']:
+    if method not in['loo', 'dev','simple','ipmi']:
         raise ValueError,'method is not ocrreactly defined'
     
     if verbose==0:
@@ -138,12 +143,12 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple'#'dev'#'ipmi'#
+method = 'loo'#'simple'#'dev'#'ipmi'#
 
 # run the algo
 import time
 t1 = time.time()
-AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method,verbose=verbose)
+AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method=method,verbose=verbose)
 t2 = time.time()
 
 mp.show()
