@@ -674,13 +674,21 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     significant local maxima in the volume. Each terminal (leaf)
     region which is a posteriori significant enough is assigned to the
     nearest mode of this distribution
+
+    fixme
+    -----
+    The number of itertions should become a parameter
     """
+    import time
     nsubj = lbeta.shape[1]
     nvox = lbeta.shape[0]
+    t0 = time.time()
     bf, gf0, sub, gfc = compute_individual_regions(Fbeta, lbeta, coord, dmax,
                                                    xyz, affine,  shape,  smin,
-                                                   verbose)
-    
+                                                   theta, verbose)
+    t0b = time.time()
+    #print t0b-t0
+    #stop
     crmap = -np.ones(nvox, np.int)
     u = []
     LR = None
@@ -699,11 +707,15 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     spatial_coords = coord
     burnin = 100
     nis = 300
+    # nis = number of iterations to estimate p
     nii = 100
-    
-    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
-                  sub,burnin,spatial_coords,nis, nii)
+    # nii = number of iterations to estimate q
 
+    t1 = time.time()
+    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
+                  sub,burnin,spatial_coords, nis, nii)
+    t2 = time.time()
+    
     if verbose:
         import matplotlib.pylab as mp
         mp.figure()
@@ -753,11 +765,12 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     crmap = -np.ones(np.shape(label))
     if nl!=None:
         aux = np.arange(label.max()+1)
-        aux[0:np.size(nl)]=nl
-        crmap[label>-1]=aux[label[label>-1]]
+        aux[0:np.size(nl)] = nl
+        crmap[label>-1] = aux[label[label>-1]]
  
-            
-    return crmap,LR,bf,p
+    t3 = time.time()
+    print t3-t2, t2-t1, t1-t0
+    return crmap, LR, bf, p
 
 def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
                                affine=np.eye(4),  shape=None,  smin=5, theta=3.0, verbose=0):
@@ -800,7 +813,9 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
     sub = []
     nsubj = lbeta.shape[1]
     nvox = lbeta.shape[0]
+    import time
 
+    t0 = time.time()
     for s in range(nsubj):
         
         # description in terms of blobs
@@ -809,6 +824,7 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
         nroi = hroi.NROI_from_field(Fbeta, affine, shape, xyz, refdim=0,
                                     th=theta, smin=smin)
         bf.append(nroi)
+        t1 = time.time()
         
         if nroi!=None:
             nroi.set_discrete_feature_from_index('activation',beta)
@@ -820,7 +836,8 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
             bfc = nroi.discrete_to_roi_features('position','average')
             bfc = bfc[nroi.isleaf()]
             gfc.append(bfc)
-
+            t2 = time.time()
+            
             # compute the prior proba of being null
             beta = np.squeeze(beta)
             beta = beta[beta!=0]
@@ -840,7 +857,11 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
             
             gf0.append(bf0)
             sub.append(s*np.ones(np.size(bfm)))
-    
+            t3 = time.time()
+            
+            #print t3-t2,t2-t1,t1-t0
+            #stop
+            
     return bf, gf0, sub, gfc
 
 
@@ -921,29 +942,28 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     burnin = 100
     nis = 300
     nii = 100
-
+    ll1 = []
+    ll0 = []
+    
     for s in range(nsubj):
+        # 
         if np.sum(sub==s)>0:
             spatial_coords = gfc[sub==s]
             p, q =  fc.fdp(gfc[sub!=s], 0.5, g0, g1, dof, prior_precision,
                           1-gf0[sub!=s], sub[sub!=s], burnin, spatial_coords,
                           nis, nii)
-            print s, np.mean(np.log(p)), np.log(g0)
-    
-    """
-    if verbose:
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.plot(1-gf0,q,'.')
-        h1,c1 = mp.histogram((1-gf0),bins=100)
-        h2,c2 = mp.histogram(q,bins=100)
-        mp.figure()
-        # We use c1[:len(h1)] to be independant of the change in np.hist
-        mp.bar(c1[:len(h1)],h1,width=0.005)
-        mp.bar(c2[:len(h2)]+0.003,h2,width=0.005,color='r')
-        print 'Number of candidate regions %i, regions found %i' % (
-                    np.size(q), q.sum())
-    
+            ll1.append(np.mean(np.log(p)))
+            ll0.append(np.mean(np.log(g0)))
+    print ll1
+    ml0 = np.mean(np.array(ll0))
+    ml1 = np.mean(np.array(ll1))
+    print ml1,ml0
+
+    if ml1>ml0:
+        # relaunch the analysis without cv
+         p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
+                  sub, burnin, coord,nis, nii)
+      
     Fbeta.set_field(p)
     idx,depth, major,label = Fbeta.custom_watershed(0,g0)
 
@@ -982,6 +1002,5 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
         aux = np.arange(label.max()+1)
         aux[0:np.size(nl)]=nl
         crmap[label>-1]=aux[label[label>-1]]
-    """
-            
+              
     return crmap, LR, bf, p

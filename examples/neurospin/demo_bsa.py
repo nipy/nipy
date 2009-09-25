@@ -40,7 +40,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     g0 = 1.0/(1.0*nvox)*1./np.sqrt(2*np.pi*dmax**2)
     affine = np.eye(4)
     shape = (1, ref_dim[0], ref_dim[1])
-    
+    lmax=0
     bdensity = 1
     if method=='ipmi':
         group_map, AF, BF, likelihood = \
@@ -79,9 +79,11 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
     mp.title('Blob separation map')
     mp.colorbar()
-    
-    group_map = AF.map_label(coord,0.95,dmax)
-    group_map.shape = ref_dim
+
+    if AF != None:
+        group_map = AF.map_label(coord,0.95,dmax)
+        group_map.shape = ref_dim
+    group_map = np.zeros(ref_dim)
     mp.subplot(1,3,2)
     mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
     mp.title('group-level position 95% \n confidence regions')
@@ -143,7 +145,7 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'loo'#'simple'#'dev'#'ipmi'#
+method = 'simple'#'loo'#'simple'#'dev'#'ipmi'#
 
 # run the algo
 import time

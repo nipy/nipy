@@ -57,7 +57,8 @@ class landmark_regions(hroi.NROI):
         if k<1: raise ValueError, "cannot create an empty LR"
         if parents==None:
             parents = np.arange(k)
-        hroi.NROI.__init__(self, parents, affine, shape, xyz=subj, id=id)
+        xyz = [0*coord[c] for c in range(k)]
+        hroi.NROI.__init__(self, parents, affine, shape, xyz=xyz, id=id)
         self.set_discrete_feature('position',coord)
         self.subj = subj
 

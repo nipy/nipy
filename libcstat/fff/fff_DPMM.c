@@ -651,16 +651,6 @@ static int _recompute_and_redraw(fff_FDP* FDP,fff_array *Z, const fff_matrix *da
 	}	
   }
 
-  /* update once again without withdrawal*/
-  /*
-    fff_array_set_all(valid,0);
-    _withdraw (FDP, Z, data, valid);
-    fff_array_set_all(valid,1);
-    W = fff_matrix_new(n,FDP->k);
-    _compute_W(W, FDP, data, pvals, valid);
-    _redraw(Z,W,valid,nit);
-  */
-
   fff_array_delete(popl);
   fff_array_delete(valid);
   return 0;
