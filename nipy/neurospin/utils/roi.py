@@ -479,7 +479,7 @@ class MultipleROI(object):
         if (self.shape!=None)&(len(self.xyz)>0):
             xyzmin = np.min(np.array([np.min(self.xyz[k],0) 
                                      for k in range(self.k)]),0)
-            xyzmax = np.max(np.array([np.min(self.xyz[k],0) 
+            xyzmax = np.max(np.array([np.max(self.xyz[k],0) 
                                      for k in range(self.k)]),0)
             if (xyzmin<0).any():
                 raise ValueError, 'negative grid coordinates have been provided'

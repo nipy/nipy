@@ -51,13 +51,14 @@ class landmark_regions(hroi.NROI):
 
         fixme
         -----
-        xyz=coord 
+        xyz=subj
         """
         k = int(k)
         if k<1: raise ValueError, "cannot create an empty LR"
         if parents==None:
             parents = np.arange(k)
-        hroi.NROI.__init__(self, parents, affine, shape, xyz=coord, id=id)
+        xyz = [0*coord[c] for c in range(k)]
+        hroi.NROI.__init__(self, parents, affine, shape, xyz=xyz, id=id)
         self.set_discrete_feature('position',coord)
         self.subj = subj
 
@@ -162,9 +163,8 @@ class landmark_regions(hroi.NROI):
         hpd[delta>gamma]=0
         return hpd
 
-    def map_label(self,cs,pval = 0.95,dmax=1.):
+    def map_label(self, cs, pval=0.95, dmax=1.):
         """
-        i = self.map_label(cs,pval = 0.95,dmax=1.0)
         Sample the set of landmark regions
         on the proposed coordiante set cs, assuming a Gaussian shape
         
@@ -322,7 +322,7 @@ def build_LR(BF,ths=0):
                               subj=subjs, coord=coords)  
     else:
         LR=None
-    return LR,maplabel
+    return LR, maplabel
 
 
 

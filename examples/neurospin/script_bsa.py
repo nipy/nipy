@@ -19,7 +19,7 @@ import get_data_light
 
 
 # Get the data
-get_data_light.getIt()
+#get_data_light.getIt()
 nbsubj = 12
 nbeta = 29
 data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
@@ -31,7 +31,7 @@ betas =[ op.join(data_dir,'spmT_%04d_subj_%02d.nii'%(nbeta,n))
                  for n in range(nbsubj)]
 
 # set various parameters
-subj_id = range(12)
+subj_id = ['%04d' %i for i in range(12)]
 theta = float(st.t.isf(0.01,100))
 dmax = 5.
 ths = 2 # or nbsubj/4
@@ -42,8 +42,8 @@ swd = tempfile.mkdtemp()
 method='simple'
 
 # call the function
-AF,BF = make_bsa_image(mask_images, betas, theta, dmax,
-                       ths, thq, smin, swd, method, subj_id, nbeta)
+AF, BF, maxc = make_bsa_image(mask_images, betas, theta, dmax,
+                       ths, thq, smin, swd, method, subj_id, '%04d'%nbeta, 100)
 
 # Write the result. OK, this is only a temporary solution
 import pickle
@@ -51,5 +51,7 @@ picname = op.join(swd,"AF_%04d.pic" %nbeta)
 pickle.dump(AF, open(picname, 'w'), 2)
 picname = op.join(swd,"BF_%04d.pic" %nbeta)
 pickle.dump(BF, open(picname, 'w'), 2)
+if np.size(maxc>0):
+    np.savez( op.join(swd,"maxc_%04d.npz" %nbeta), maxc)
 
 print "Wrote all the results in directory %s"%swd
