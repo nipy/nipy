@@ -258,7 +258,3 @@ class DesignMatrix():
         self._design = np.column_stack((self._design, drm))
         misc[self.model]["regressors_%s" % name] = self.names
         misc.write()
-
-
-
-

@@ -101,11 +101,12 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
         for s in range(nsubj):
             mp.subplot(2, 5, s+1)
             lw = -np.ones(ref_dim)
-            nls = BF[s].get_roi_feature('label')
-            nls[nls==-1] = np.size(AF)+2
-            for k in range(BF[s].k):
-                xyzk = BF[s].xyz[k].T 
-                lw[xyzk[1],xyzk[2]] =  nls[k]
+            if BF[s]!=None:
+                nls = BF[s].get_roi_feature('label')
+                nls[nls==-1] = np.size(AF)+2
+                for k in range(BF[s].k):
+                    xyzk = BF[s].xyz[k].T 
+                    lw[xyzk[1],xyzk[2]] =  nls[k]
 
             mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
             mp.axis('off')
@@ -132,7 +133,7 @@ dimy = 60
 pos = 2*np.array([[ 6,  7],
                   [10, 10],
                   [15, 10]])
-ampli = np.array([5, 7, 6])
+ampli = 0*np.array([5, 7, 6])
 sjitter = 1.0
 dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                      pos=pos, ampli=ampli, width=5.0)
@@ -145,7 +146,7 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple'#'loo'#'simple'#'dev'#'ipmi'#
+method = 'loo'#'simple'#'dev'#'ipmi'#'simple'#
 
 # run the algo
 import time

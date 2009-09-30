@@ -712,8 +712,8 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     # nii = number of iterations to estimate q
 
     t1 = time.time()
-    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
-                  sub,burnin,spatial_coords, nis, nii)
+    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+                  sub, burnin, spatial_coords, nis, nii)
     t2 = time.time()
     
     if verbose:
@@ -813,9 +813,7 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
     sub = []
     nsubj = lbeta.shape[1]
     nvox = lbeta.shape[0]
-    import time
 
-    t0 = time.time()
     for s in range(nsubj):
         
         # description in terms of blobs
@@ -824,7 +822,6 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
         nroi = hroi.NROI_from_field(Fbeta, affine, shape, xyz, refdim=0,
                                     th=theta, smin=smin)
         bf.append(nroi)
-        t1 = time.time()
         
         if nroi!=None:
             nroi.set_discrete_feature_from_index('activation',beta)
@@ -836,7 +833,6 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
             bfc = nroi.discrete_to_roi_features('position','average')
             bfc = bfc[nroi.isleaf()]
             gfc.append(bfc)
-            t2 = time.time()
             
             # compute the prior proba of being null
             beta = np.squeeze(beta)
@@ -857,10 +853,8 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
             
             gf0.append(bf0)
             sub.append(s*np.ones(np.size(bfm)))
-            t3 = time.time()
-            
-            #print t3-t2,t2-t1,t1-t0
-            #stop
+
+            nroi.set_roi_feature('label',np.arange(nroi.k))
             
     return bf, gf0, sub, gfc
 
@@ -944,6 +938,7 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     nii = 100
     ll1 = []
     ll0 = []
+    ll2 = []
     
     for s in range(nsubj):
         # 
@@ -952,17 +947,22 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
             p, q =  fc.fdp(gfc[sub!=s], 0.5, g0, g1, dof, prior_precision,
                           1-gf0[sub!=s], sub[sub!=s], burnin, spatial_coords,
                           nis, nii)
+            pp = gf0[sub==s]*g0 + p*(1-gf0[sub==s])
+            ll2.append(np.mean(np.log(pp)))
             ll1.append(np.mean(np.log(p)))
             ll0.append(np.mean(np.log(g0)))
-    print ll1
+    #print ll1,ll2
     ml0 = np.mean(np.array(ll0))
     ml1 = np.mean(np.array(ll1))
-    print ml1,ml0
+    ml2 = np.mean(np.array(ll2))
+    print ml1,ml0,ml2
 
-    if ml1>ml0:
+    if ml2>ml0:
         # relaunch the analysis without cv
-         p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
+        p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
                   sub, burnin, coord,nis, nii)
+    else:
+        return crmap, LR, bf, np.zeros(nvox)
       
     Fbeta.set_field(p)
     idx,depth, major,label = Fbeta.custom_watershed(0,g0)

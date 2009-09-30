@@ -164,27 +164,29 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     for i in range(rdraws):
         # random sign swap 
         rss = (np.random.rand(nsubj)>0.5)*2-1
-        
+        #rss = np.ones(nsubj);rss[np.argsort(np.random.rand(nsubj))[:nsubj/2]]=-1
+
         # get the functional information
         pbeta = lbeta*rss
          
         if method=='ipmi':
-            crmap,AF,BF,p = bsa.compute_BSA_ipmi(Fbeta, pbeta, coord, dmax, 
+            crmap,laf,lbf,p = bsa.compute_BSA_ipmi(Fbeta, pbeta, coord, dmax, 
                             xyz[:,:3], affine, ref_dim, thq, smin, ths,
                             theta, g0, bdensity)
-    if method=='dev':
-        crmap,AF,BF,p = bsa.compute_BSA_dev (Fbeta, pbeta, coord, dmax, 
-                        xyz[:,:3], affine, ref_dim, thq, smin,ths, theta, 
-                        g0, bdensity,verbose=1)
-    if method=='simple':
-        crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta, pbeta, coord, dmax, 
+        if method=='dev':
+            crmap,laf,lbf,p = bsa.compute_BSA_dev (Fbeta, pbeta, coord, dmax, 
+                            xyz[:,:3], affine, ref_dim, thq, smin,ths, theta, 
+                           g0, bdensity,verbose=1)
+        if method=='simple':
+            crmap,laf,lbf,p = bsa.compute_BSA_simple(Fbeta, pbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, 
                         thq, smin, ths, theta, g0, verbose=0)
                                                
-        if AF!=None:
-            confidence  = np.array([np.sum(AF.discrete_features['confidence'][k]) for k in range(AF.k)])
+        if laf!=None:
+            confidence  = laf.roi_prevalence()
                                               
         else: confidence = np.array(0)
+        print confidence.max()
         maxc.append(confidence.max())
 
     maxc = np.array(maxc)
