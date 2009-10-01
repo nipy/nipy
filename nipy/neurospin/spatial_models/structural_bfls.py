@@ -195,8 +195,9 @@ class landmark_regions(hroi.NROI):
         """
         centers = self.discrete_to_roi_features('position')
         homogeneity = self.homogeneity()
+        prevalence = self.roi_prevalence()
         for i in range(self.k):
-            print i, np.unique(self.subj[i]), homogeneity[i], centers[i]
+            print i, prevalence[i], centers[i], np.unique(self.subj[i])
 
 
     def roi_confidence(self, ths=0, fid='confidence'):

@@ -105,6 +105,7 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     p = np.zeros(nvox)
     AF = None
     BF = [None for s in range(nsubj)]
+
     if method=='ipmi':
         crmap,AF,BF,p = bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, thq, smin, ths,
@@ -117,6 +118,14 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, 
                         thq, smin, ths, theta, g0, verbose=0)
+        
+    if method=='simple2':
+        crmap,AF,BF,co_clust = bsa.compute_BSA_simple2 (Fbeta, lbeta, coord, dmax, 
+                        xyz[:,:3], affine, ref_dim, 
+                        thq, smin, ths, theta, g0, verbose=0)
+        density = np.zeros(nvox)
+        crmap = AF.map_label(coord,0.95,dmax)
+
     if method=='loo':
         crmap,AF,BF,p = bsa.compute_BSA_loo (Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, 
@@ -158,14 +167,16 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         wim = Nifti1Image (Label, affine)
         wim.get_header()['descrip'] = 'Individual label image from bsa procedure'
         save(wim, LabelImage)
-
+    
     # now perform permutations to assess the RFX-significance 
     maxc = []
     for i in range(rdraws):
+
+        # solution 1  : swap effect sign
+        """
         # random sign swap 
         rss = (np.random.rand(nsubj)>0.5)*2-1
-        #rss = np.ones(nsubj);rss[np.argsort(np.random.rand(nsubj))[:nsubj/2]]=-1
-
+        
         # get the functional information
         pbeta = lbeta*rss
          
@@ -181,7 +192,18 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
             crmap,laf,lbf,p = bsa.compute_BSA_simple(Fbeta, pbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, 
                         thq, smin, ths, theta, g0, verbose=0)
-                                               
+        """
+        # solution 2 : reshuffle position. for 'simple' only
+        bf, gf0, sub, gfc = bsa.compute_individual_regions(Fbeta, lbeta, coord, dmax,
+                                xyz[:,:3], affine, ref_dim, smin,
+                                theta, verbose=0, reshuffle=1)
+
+        if method=='simple':
+            crmap, laf, lbf, p = bsa.bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax,
+                                              thq, ths, g0,verbose=0)
+        elif method=='simple2':
+            crmap, laf, lbf, coclust = bsa.bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord,
+                                                     dmax, thq, ths, g0,verbose=0)
         if laf!=None:
             confidence  = laf.roi_prevalence()
                                               

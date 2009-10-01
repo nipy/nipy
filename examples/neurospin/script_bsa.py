@@ -34,16 +34,16 @@ betas =[ op.join(data_dir,'spmT_%04d_subj_%02d.nii'%(nbeta,n))
 subj_id = ['%04d' %i for i in range(12)]
 theta = float(st.t.isf(0.01,100))
 dmax = 5.
-ths = 2 # or nbsubj/4
-thq = 0.9
+ths = 0 #2# or nbsubj/4
+thq = 0.95
 verbose = 1
 smin = 5
 swd = tempfile.mkdtemp()
-method='simple'
+method='simple2'
 
 # call the function
 AF, BF, maxc = make_bsa_image(mask_images, betas, theta, dmax,
-                       ths, thq, smin, swd, method, subj_id, '%04d'%nbeta, 100)
+                       ths, thq, smin, swd, method, subj_id, '%04d'%nbeta, 400)
 
 # Write the result. OK, this is only a temporary solution
 import pickle

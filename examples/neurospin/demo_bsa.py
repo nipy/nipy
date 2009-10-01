@@ -62,8 +62,14 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                    bsa.compute_BSA_dev(Fbeta, lbeta, coord, dmax,xyz,
                                        affine, shape, thq,
                                       smin, ths, theta, g0, bdensity)
+    if method=='simple2':
+        likelihood = np.zeros(ref_dim)
+        group_map, AF, BF, coclustering = \
+                   bsa.compute_BSA_simple2(Fbeta, lbeta, coord, dmax,xyz,
+                                          affine, shape, thq, smin, ths,
+                                          theta, g0)
         
-    if method not in['loo', 'dev','simple','ipmi']:
+    if method not in['loo', 'dev','simple','ipmi','simple2']:
         raise ValueError,'method is not ocrreactly defined'
     
     if verbose==0:
@@ -83,7 +89,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     if AF != None:
         group_map = AF.map_label(coord,0.95,dmax)
         group_map.shape = ref_dim
-    group_map = np.zeros(ref_dim)
+    
     mp.subplot(1,3,2)
     mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
     mp.title('group-level position 95% \n confidence regions')
@@ -133,7 +139,7 @@ dimy = 60
 pos = 2*np.array([[ 6,  7],
                   [10, 10],
                   [15, 10]])
-ampli = 0*np.array([5, 7, 6])
+ampli = np.array([5, 7, 6])
 sjitter = 1.0
 dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                      pos=pos, ampli=ampli, width=5.0)
@@ -146,12 +152,11 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'loo'#'simple'#'dev'#'ipmi'#'simple'#
+method = 'simple2'#'loo'#'dev'#'ipmi'#
 
 # run the algo
-import time
-t1 = time.time()
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method=method,verbose=verbose)
-t2 = time.time()
+AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method='simple',verbose=verbose)
+
 
 mp.show()
