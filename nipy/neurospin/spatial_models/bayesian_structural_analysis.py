@@ -622,6 +622,164 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, affine=np.eye(4),
 
     return crmap,LR,bf,p
 
+def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
+    """
+    """
+    nvox = coord.shape[0]
+    nsubj = len(bf)
+    
+    crmap = -np.ones(nvox, np.int)
+    u = []
+    LR = None
+    p = np.zeros(nvox)
+    if len(sub)<1:
+        return crmap,LR,bf,p
+
+    sub = np.concatenate(sub).astype(np.int) 
+    gfc = np.concatenate(gfc)
+    gf0 = np.concatenate(gf0)
+    
+    # prepare the DPMM
+    g1 = g0
+    prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
+    dof = 100
+    spatial_coords = coord
+    burnin = 100
+    nis = 300
+    # nis = number of iterations to estimate p
+    nii = 100
+    # nii = number of iterations to estimate q
+
+    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+                  sub, burnin, spatial_coords, nis, nii)
+    
+    if verbose:
+        import matplotlib.pylab as mp
+        mp.figure()
+        mp.plot(1-gf0,q,'.')
+        h1,c1 = mp.histogram((1-gf0),bins=100)
+        h2,c2 = mp.histogram(q,bins=100)
+        mp.figure()
+        # We use c1[:len(h1)] to be independant of the change in np.hist
+        mp.bar(c1[:len(h1)],h1,width=0.005)
+        mp.bar(c2[:len(h2)]+0.003,h2,width=0.005,color='r')
+        print 'Number of candidate regions %i, regions found %i' % (
+                    np.size(q), q.sum())
+    
+    Fbeta.set_field(p)
+    idx,depth, major,label = Fbeta.custom_watershed(0,g0)
+
+    # append some information to the hroi in each subject
+    for s in range(nsubj):
+        bfs = bf[s]
+        if bfs!=None:
+            leaves = bfs.isleaf()
+            us = -np.ones(bfs.k).astype(np.int)
+            lq = np.zeros(bfs.k)
+            lq[leaves] = q[sub==s]
+            bfs.set_roi_feature('posterior_proba',lq)
+            lq = np.zeros(bfs.k)
+            lq[leaves] = 1-gf0[sub==s]
+            bfs.set_roi_feature('prior_proba',lq)
+                   
+            idx = bfs.feature_argmax('activation')
+            midx = [bfs.discrete_features['index'][k][idx[k]]
+                    for k in range(bfs.k)]
+            j = label[np.array(midx)]
+            us[leaves] = j[leaves]
+
+            # when parent regions has similarly labelled children,
+            # include it also
+            us = bfs.propagate_upward(us)
+            bfs.set_roi_feature('label',us)
+                        
+    # derive the group-level landmarks
+    # with a threshold on the number of subjects
+    # that are represented in each one 
+    LR,nl = infer_LR(bf,thq,ths,verbose=verbose)
+
+    # make a group-level map of the landmark position
+    crmap = -np.ones(np.shape(label))
+    if nl!=None:
+        aux = np.arange(label.max()+1)
+        aux[0:np.size(nl)] = nl
+        crmap[label>-1] = aux[label[label>-1]]
+ 
+    return crmap, LR, bf, p
+    
+def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
+    """
+    """
+    nvox = coord.shape[0]
+    nsubj = len(bf)
+    
+    crmap = -np.ones(nvox, np.int)
+    LR = None
+    p = np.zeros(nvox)
+    if len(sub)<1:
+        return crmap,LR,bf,p
+
+    sub = np.concatenate(sub).astype(np.int) 
+    gfc = np.concatenate(gfc)
+    gf0 = np.concatenate(gf0)
+    
+    # prepare the DPMM
+    g1 = g0
+    prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
+    dof = 100
+    spatial_coords = coord
+    burnin = 100
+    nis = 300
+    # nis = number of iterations to estimate q and co_clust
+ 
+    CoClust, q =  fc.fdp2(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+                   sub, burnin, nis)
+
+    if verbose:
+        import matplotlib.pylab as mp
+        mp.figure()
+        mp.imshow(CoClust,interpolation='nearest')
+        mp.colorbar()
+
+    
+    qq = CoClust>0.5
+    cg = fg.WeightedGraph(np.size(q))
+    cg.from_adjacency(qq)
+    u = cg.cc()
+    
+    # append some information to the hroi in each subject
+    for s in range(nsubj):
+        bfs = bf[s]
+        if bfs!=None:
+            leaves = bfs.isleaf()
+            us = -np.ones(bfs.k).astype(np.int)
+            lq = np.zeros(bfs.k)
+            lq[leaves] = q[sub==s]
+            bfs.set_roi_feature('posterior_proba',lq)
+            lq = np.zeros(bfs.k)
+            lq[leaves] = 1-gf0[sub==s]
+            bfs.set_roi_feature('prior_proba',lq)
+                   
+            us[leaves] = u[sub==s]
+
+            # when parent regions has similarly labelled children,
+            # include it also
+            us = bfs.propagate_upward(us)
+            bfs.set_roi_feature('label',us)
+                        
+    # derive the group-level landmarks
+    # with a threshold on the number of subjects
+    # that are represented in each one 
+    LR,nl = infer_LR(bf,thq,ths,verbose=verbose)
+
+    # make a group-level map of the landmark position
+    crmap = -np.ones(nvox)
+    # not implemented at the moment
+ 
+    return crmap, LR, bf, CoClust
+    
+        
+
 
 def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4), 
                               shape=None,
@@ -679,101 +837,31 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     -----
     The number of itertions should become a parameter
     """
-    import time
-    nsubj = lbeta.shape[1]
-    nvox = lbeta.shape[0]
-    t0 = time.time()
+   
     bf, gf0, sub, gfc = compute_individual_regions(Fbeta, lbeta, coord, dmax,
                                                    xyz, affine,  shape,  smin,
                                                    theta, verbose)
-    t0b = time.time()
-    #print t0b-t0
-    #stop
-    crmap = -np.ones(nvox, np.int)
-    u = []
-    LR = None
-    p = np.zeros(nvox)
-    if len(sub)<1:
-        return crmap,LR,bf,p
-
-    sub = np.concatenate(sub).astype(np.int) 
-    gfc = np.concatenate(gfc)
-    gf0 = np.concatenate(gf0)
+    crmap, LR, bf, p = bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose)
     
-    # prepare the DPMM
-    g1 = g0
-    prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
-    dof = 100
-    spatial_coords = coord
-    burnin = 100
-    nis = 300
-    # nis = number of iterations to estimate p
-    nii = 100
-    # nii = number of iterations to estimate q
-
-    t1 = time.time()
-    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
-                  sub,burnin,spatial_coords, nis, nii)
-    t2 = time.time()
-    
-    if verbose:
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.plot(1-gf0,q,'.')
-        h1,c1 = mp.histogram((1-gf0),bins=100)
-        h2,c2 = mp.histogram(q,bins=100)
-        mp.figure()
-        # We use c1[:len(h1)] to be independant of the change in np.hist
-        mp.bar(c1[:len(h1)],h1,width=0.005)
-        mp.bar(c2[:len(h2)]+0.003,h2,width=0.005,color='r')
-        print 'Number of candidate regions %i, regions found %i' % (
-                    np.size(q), q.sum())
-    
-    Fbeta.set_field(p)
-    idx,depth, major,label = Fbeta.custom_watershed(0,g0)
-
-    # append some information to the hroi in each subject
-    for s in range(nsubj):
-        bfs = bf[s]
-        if bfs!=None:
-            leaves = bfs.isleaf()
-            us = -np.ones(bfs.k).astype(np.int)
-            lq = np.zeros(bfs.k)
-            lq[leaves] = q[sub==s]
-            bfs.set_roi_feature('posterior_proba',lq)
-            lq = np.zeros(bfs.k)
-            lq[leaves] = 1-gf0[sub==s]
-            bfs.set_roi_feature('prior_proba',lq)
-                   
-            idx = bfs.feature_argmax('activation')
-            midx = [bfs.discrete_features['index'][k][idx[k]]
-                    for k in range(bfs.k)]
-            j = label[np.array(midx)]
-            us[leaves] = j[leaves]
-
-            # when parent regions has similarly labelled children,
-            # include it also
-            us = bfs.propagate_upward(us)
-            bfs.set_roi_feature('label',us)
-                        
-    # derive the group-level landmarks
-    # with a threshold on the number of subjects
-    # that are represented in each one 
-    LR,nl = infer_LR(bf,thq,ths,verbose=verbose)
-
-    # make a group-level map of the landmark position
-    crmap = -np.ones(np.shape(label))
-    if nl!=None:
-        aux = np.arange(label.max()+1)
-        aux[0:np.size(nl)] = nl
-        crmap[label>-1] = aux[label[label>-1]]
- 
-    t3 = time.time()
-    print t3-t2, t2-t1, t1-t0
     return crmap, LR, bf, p
 
+def compute_BSA_simple2(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4), 
+                        shape=None, thq=0.5, smin=5, ths=0, theta=3.0, g0=1.0,
+                       verbose=0):
+    """
+    Compute the  Bayesian Structural Activation paterns - simplified version in progress 
+    """
+   
+    bf, gf0, sub, gfc = compute_individual_regions(Fbeta, lbeta, coord, dmax,
+                                                   xyz, affine,  shape,  smin,
+                                                   theta, verbose)
+    crmap, LR, bf, coclust = bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0, verbose)
+    
+    return crmap, LR, bf, coclust
+
 def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
-                               affine=np.eye(4),  shape=None,  smin=5, theta=3.0, verbose=0):
+                               affine=np.eye(4),  shape=None,  smin=5,
+                               theta=3.0, verbose=0, reshuffle=0):
     """
     Compute the  Bayesian Structural Activation paterns -
     with statistical validation
@@ -798,6 +886,8 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
     smin = 5 (int): minimal size of the regions to validate them
     theta = 3.0 (float): first level threshold
     verbose=0: verbosity mode
+    reshuffle=0: if nonzero, reshuffle the positions; this affects bf and gfc
+    
 
     Results
     -------
@@ -813,9 +903,7 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
     sub = []
     nsubj = lbeta.shape[1]
     nvox = lbeta.shape[0]
-    import time
 
-    t0 = time.time()
     for s in range(nsubj):
         
         # description in terms of blobs
@@ -823,20 +911,25 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
         Fbeta.set_field(beta)
         nroi = hroi.NROI_from_field(Fbeta, affine, shape, xyz, refdim=0,
                                     th=theta, smin=smin)
-        bf.append(nroi)
-        t1 = time.time()
-        
+              
         if nroi!=None:
             nroi.set_discrete_feature_from_index('activation',beta)
             bfm = nroi.discrete_to_roi_features('activation','average')
             bfm = bfm[nroi.isleaf()]
 
             # get the regions position
-            nroi.set_discrete_feature_from_index('position',coord)
-            bfc = nroi.discrete_to_roi_features('position','average')
-            bfc = bfc[nroi.isleaf()]
+            if reshuffle:
+                # randomize the positions by taking any local maximum of the image
+                idx, topidx = Fbeta.get_local_maxima()
+                temp = np.argsort(np.random.rand(len(idx)))[:nroi.k]
+                bfc = coord[idx[temp]]
+                nroi.parents = np.arange(nroi.k)
+                nroi.set_roi_feature('position',bfc)
+            else:
+                nroi.set_discrete_feature_from_index('position',coord)
+                bfc = nroi.discrete_to_roi_features('position','average')
+                bfc = bfc[nroi.isleaf()]
             gfc.append(bfc)
-            t2 = time.time()
             
             # compute the prior proba of being null
             beta = np.squeeze(beta)
@@ -857,11 +950,9 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
             
             gf0.append(bf0)
             sub.append(s*np.ones(np.size(bfm)))
-            t3 = time.time()
-            
-            #print t3-t2,t2-t1,t1-t0
-            #stop
-            
+
+            nroi.set_roi_feature('label',np.arange(nroi.k))
+        bf.append(nroi)    
     return bf, gf0, sub, gfc
 
 
@@ -925,7 +1016,6 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
                                                    theta, verbose)
     
     crmap = -np.ones(nvox, np.int)
-    u = []
     LR = None
     p = np.zeros(nvox)
     if len(sub)<1:
@@ -944,6 +1034,7 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     nii = 100
     ll1 = []
     ll0 = []
+    ll2 = []
     
     for s in range(nsubj):
         # 
@@ -952,17 +1043,22 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
             p, q =  fc.fdp(gfc[sub!=s], 0.5, g0, g1, dof, prior_precision,
                           1-gf0[sub!=s], sub[sub!=s], burnin, spatial_coords,
                           nis, nii)
+            pp = gf0[sub==s]*g0 + p*(1-gf0[sub==s])
+            ll2.append(np.mean(np.log(pp)))
             ll1.append(np.mean(np.log(p)))
             ll0.append(np.mean(np.log(g0)))
-    print ll1
+    #print ll1,ll2
     ml0 = np.mean(np.array(ll0))
     ml1 = np.mean(np.array(ll1))
-    print ml1,ml0
+    ml2 = np.mean(np.array(ll2))
+    print ml1,ml0,ml2
 
-    if ml1>ml0:
+    if ml2>ml0:
         # relaunch the analysis without cv
-         p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
+        p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
                   sub, burnin, coord,nis, nii)
+    else:
+        return crmap, LR, bf, np.zeros(nvox)
       
     Fbeta.set_field(p)
     idx,depth, major,label = Fbeta.custom_watershed(0,g0)

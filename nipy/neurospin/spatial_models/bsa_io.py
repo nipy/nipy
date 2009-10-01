@@ -105,6 +105,7 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     p = np.zeros(nvox)
     AF = None
     BF = [None for s in range(nsubj)]
+
     if method=='ipmi':
         crmap,AF,BF,p = bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, thq, smin, ths,
@@ -117,6 +118,14 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, 
                         thq, smin, ths, theta, g0, verbose=0)
+        
+    if method=='simple2':
+        crmap,AF,BF,co_clust = bsa.compute_BSA_simple2 (Fbeta, lbeta, coord, dmax, 
+                        xyz[:,:3], affine, ref_dim, 
+                        thq, smin, ths, theta, g0, verbose=0)
+        density = np.zeros(nvox)
+        crmap = AF.map_label(coord,0.95,dmax)
+
     if method=='loo':
         crmap,AF,BF,p = bsa.compute_BSA_loo (Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, 
@@ -124,7 +133,7 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     
                     
     # Write the results
-    LabelImage = op.join(swd,"CR_s.nii"%nbeta)
+    LabelImage = op.join(swd,"CR_%s.nii"%nbeta)
     Label = -2*np.ones(ref_dim,'int16')
     Label[mask>nsubj/2] = crmap.astype('i')
     wim = Nifti1Image (Label, affine)
@@ -158,10 +167,13 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         wim = Nifti1Image (Label, affine)
         wim.get_header()['descrip'] = 'Individual label image from bsa procedure'
         save(wim, LabelImage)
-
+    
     # now perform permutations to assess the RFX-significance 
     maxc = []
     for i in range(rdraws):
+
+        # solution 1  : swap effect sign
+        """
         # random sign swap 
         rss = (np.random.rand(nsubj)>0.5)*2-1
         
@@ -169,22 +181,34 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         pbeta = lbeta*rss
          
         if method=='ipmi':
-            crmap,AF,BF,p = bsa.compute_BSA_ipmi(Fbeta, pbeta, coord, dmax, 
+            crmap,laf,lbf,p = bsa.compute_BSA_ipmi(Fbeta, pbeta, coord, dmax, 
                             xyz[:,:3], affine, ref_dim, thq, smin, ths,
                             theta, g0, bdensity)
-    if method=='dev':
-        crmap,AF,BF,p = bsa.compute_BSA_dev (Fbeta, pbeta, coord, dmax, 
-                        xyz[:,:3], affine, ref_dim, thq, smin,ths, theta, 
-                        g0, bdensity,verbose=1)
-    if method=='simple':
-        crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta, pbeta, coord, dmax, 
+        if method=='dev':
+            crmap,laf,lbf,p = bsa.compute_BSA_dev (Fbeta, pbeta, coord, dmax, 
+                            xyz[:,:3], affine, ref_dim, thq, smin,ths, theta, 
+                           g0, bdensity,verbose=1)
+        if method=='simple':
+            crmap,laf,lbf,p = bsa.compute_BSA_simple(Fbeta, pbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, 
                         thq, smin, ths, theta, g0, verbose=0)
-                                               
-        if AF!=None:
-            confidence  = np.array([np.sum(AF.discrete_features['confidence'][k]) for k in range(AF.k)])
+        """
+        # solution 2 : reshuffle position. for 'simple' only
+        bf, gf0, sub, gfc = bsa.compute_individual_regions(Fbeta, lbeta, coord, dmax,
+                                xyz[:,:3], affine, ref_dim, smin,
+                                theta, verbose=0, reshuffle=1)
+
+        if method=='simple':
+            crmap, laf, lbf, p = bsa.bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax,
+                                              thq, ths, g0,verbose=0)
+        elif method=='simple2':
+            crmap, laf, lbf, coclust = bsa.bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord,
+                                                     dmax, thq, ths, g0,verbose=0)
+        if laf!=None:
+            confidence  = laf.roi_prevalence()
                                               
         else: confidence = np.array(0)
+        print confidence.max()
         maxc.append(confidence.max())
 
     maxc = np.array(maxc)

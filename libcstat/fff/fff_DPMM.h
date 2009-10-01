@@ -271,7 +271,22 @@ extern "C" {
 
 	idem fff_FDP estimation, but the posterior proba of H1 given the data is returned. In that case, Z should be corrected instantiated so that the MC is in its steady state.
   */ 
-  extern int fff_FDP_inference(fff_FDP* FDP, fff_array *Z, fff_vector* posterior, const fff_matrix *data, const fff_vector * pvals, const fff_array * labels, const long niter);
+  extern int fff_FDP_inference(fff_FDP* FDP, fff_array *Z, fff_vector* posterior, const fff_matrix *data, const fff_vector * pvals, const fff_array * labels, const long niter); 
+
+/*! 
+    \brief Inference based on the FDP structure
+	\param FDP the FDP to be estimated
+    \param Z the membership vector 
+    \param Coclust, co-clustering matrox of the data
+	\param posterior the posterior probability of H1 given the data
+	\param data the data on which the estimation is based
+	\param pvals the prior probability of H1 given the data
+	\param labels chunking model (see below)
+	\param niter number of iterations in the estimation
+
+	idem fff_FDP estimation, but the posterior proba of H1 given the data is returned. In that case, Z should be corrected instantiated so that the MC is in its steady state.
+  */ 
+  extern int fff_FDP_inference2(fff_FDP* FDP, fff_array *Z, fff_vector* posterior, fff_matrix* CoClust, const fff_matrix *data, const fff_vector * pvals, const fff_array * labels, const long niter);
   
 /*! 
     \brief Sampling from the FDP structure

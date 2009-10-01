@@ -612,6 +612,34 @@ extern int fff_FDP_inference(fff_FDP* FDP, fff_array *Z, fff_vector* posterior, 
   return FDP->k;
 }
 
+extern int fff_FDP_inference2(fff_FDP* FDP, fff_array *Z, fff_vector* posterior, fff_matrix* CoClust, const fff_matrix *data, const fff_vector * pvals, const fff_array * labels, const long niter)
+{
+  int i,j,n,p;
+  double aux;
+  fff_vector_set_all(posterior,0);
+  fff_matrix_set_all(CoClust,0);
+
+  for (i=0 ; i<niter;i++){
+    for (j=0 ; j<3;j++)
+	  _recompute_and_redraw(FDP,Z,data,pvals,labels,i*3+j); 
+	for (n=0 ; n<data->size1 ; n++){
+	  aux = (fff_array_get1d(Z,n)>0) + fff_vector_get(posterior,n);
+	  fff_vector_set(posterior,n,aux);
+
+      if (fff_array_get1d(Z,n)>0)
+        for (p=0 ; p<n ; p++)
+          if (fff_array_get1d(Z,p)==fff_array_get1d(Z,n)){
+            aux = (fff_matrix_get(CoClust,n,p)) + 1 ;
+            fff_matrix_set(CoClust,n,p,aux);
+            fff_matrix_set(CoClust,p,n,aux);
+           }
+	}
+  }
+  fff_vector_scale(posterior,1./niter);
+  fff_matrix_scale(CoClust,1./niter);
+  return FDP->k;
+}
+
 extern int fff_FDP_estimation(fff_FDP* FDP, fff_array *Z, const fff_matrix *data, const fff_vector * pvals, const fff_array * labels, const long niter)
 {
   int i;
