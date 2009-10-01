@@ -731,9 +731,11 @@ def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
     burnin = 100
     nis = 300
     # nis = number of iterations to estimate q and co_clust
+    nii = 100
+    # number of iterations to estimate p
  
-    CoClust, q =  fc.fdp2(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
-                   sub, burnin, nis)
+    CoClust, q, p =  fc.fdp2(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+                   sub, burnin, gfc, nis, nii)
 
     if verbose:
         import matplotlib.pylab as mp
@@ -746,6 +748,7 @@ def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
     cg = fg.WeightedGraph(np.size(q))
     cg.from_adjacency(qq)
     u = cg.cc()
+    u[p<g0] = u.max()+1+np.arange(np.sum(p<g0))
     
     # append some information to the hroi in each subject
     for s in range(nsubj):
