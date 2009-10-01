@@ -62,8 +62,14 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                    bsa.compute_BSA_dev(Fbeta, lbeta, coord, dmax,xyz,
                                        affine, shape, thq,
                                       smin, ths, theta, g0, bdensity)
+    if method=='simple2':
+        likelihood = np.zeros(ref_dim)
+        group_map, AF, BF, coclustering = \
+                   bsa.compute_BSA_simple2(Fbeta, lbeta, coord, dmax,xyz,
+                                          affine, shape, thq, smin, ths,
+                                          theta, g0)
         
-    if method not in['loo', 'dev','simple','ipmi']:
+    if method not in['loo', 'dev','simple','ipmi','simple2']:
         raise ValueError,'method is not ocrreactly defined'
     
     if verbose==0:
@@ -83,7 +89,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     if AF != None:
         group_map = AF.map_label(coord,0.95,dmax)
         group_map.shape = ref_dim
-    group_map = np.zeros(ref_dim)
+    
     mp.subplot(1,3,2)
     mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
     mp.title('group-level position 95% \n confidence regions')
@@ -101,11 +107,12 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
         for s in range(nsubj):
             mp.subplot(2, 5, s+1)
             lw = -np.ones(ref_dim)
-            nls = BF[s].get_roi_feature('label')
-            nls[nls==-1] = np.size(AF)+2
-            for k in range(BF[s].k):
-                xyzk = BF[s].xyz[k].T 
-                lw[xyzk[1],xyzk[2]] =  nls[k]
+            if BF[s]!=None:
+                nls = BF[s].get_roi_feature('label')
+                nls[nls==-1] = np.size(AF)+2
+                for k in range(BF[s].k):
+                    xyzk = BF[s].xyz[k].T 
+                    lw[xyzk[1],xyzk[2]] =  nls[k]
 
             mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
             mp.axis('off')
@@ -145,12 +152,11 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple'#'loo'#'simple'#'dev'#'ipmi'#
+method = 'simple2'#'loo'#'dev'#'ipmi'#
 
 # run the algo
-import time
-t1 = time.time()
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method=method,verbose=verbose)
-t2 = time.time()
+AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method='simple',verbose=verbose)
+
 
 mp.show()

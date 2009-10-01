@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 
 # Neuroimaging libraries imports
-from nipy.io.imageformats import load, nifti1
+from nipy.io.imageformats import load, nifti1, save
 
 import nipy.neurospin.graph as fg
 
@@ -75,7 +75,6 @@ def compute_mask_files(input_filename, output_filename=None,
         provided if `return_mean` is True.
 
     """
-    
     if hasattr(input_filename, '__iter__'):
         if len(input_filename) == 0:
             raise ValueError('input_filename should be a non-empty '
@@ -100,19 +99,19 @@ def compute_mask_files(input_filename, output_filename=None,
         data = nim.get_raw_data()
         # Make a copy, to avoid holding a reference on the full array,
         # and thus polluting the memory.
-        first_volume = data[0].copy()
-        mean_volume = data.mean(axis=0)
+        first_volume = data[:,:,:,0].copy()
+        mean_volume = data.mean(axis=3)
         del data
     del nim
 
     mask = compute_mask(mean_volume, first_volume, m, M, cc)
-    
+      
     if output_filename is not None:
-        header['description'] = 'mask'
+        header['descrip'] = 'mask'
         output_image = nifti1.Nifti1Image(mask.astype(np.uint8), 
                                             affine=affine, 
                                             header=header)
-        output_image.save(output_filename)
+        save(output_image, output_filename)
     if not return_mean:
         return mask
     else:
