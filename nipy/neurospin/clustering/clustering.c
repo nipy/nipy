@@ -1200,14 +1200,15 @@ static PyObject* fdp(PyObject* self, PyObject* args)
 
 static PyObject* fdp2(PyObject* self, PyObject* args)
 {
-  PyArrayObject *x, *precisions, *pvals, *labels, *co_clust, *posterior;
+  PyArrayObject *x, *precisions, *pvals, *labels, *co_clust, *posterior, *density;
   double alpha, g0,g1,dof;
 
   int k,dim,niter = 1000;
   int nii = 1000;
+  int nis = 1000;
   PyArrayObject *grid = NULL;
   
-  int OK = PyArg_ParseTuple( args, "O!ddddO!O!O!|ii:fdp2", 
+  int OK = PyArg_ParseTuple( args, "O!ddddO!O!O!|iO!ii:fdp2", 
 							 &PyArray_Type, &x,
 							 &alpha,
 							 &g0,
@@ -1217,6 +1218,8 @@ static PyObject* fdp2(PyObject* self, PyObject* args)
 							 &PyArray_Type, &pvals,
 							 &PyArray_Type, &labels,
 							 &niter,
+                             &PyArray_Type, &grid,
+							 &nis,							 
 							 &nii
 							 ); 
   if (!OK) {
@@ -1245,10 +1248,13 @@ static PyObject* fdp2(PyObject* self, PyObject* args)
 	Grid = fff_matrix_fromPyArray( grid );
 
   fff_matrix *CoCluster = fff_matrix_new(X->size1,X->size1);
-
   fff_vector* Post = fff_vector_new(X->size1);
   fff_FDP_inference2(FDP, Z, Post, CoCluster, X, Pvals, Labels, nii);
-
+  
+  fff_vector* Density = fff_vector_new(Grid->size1);
+  fff_FDP_sampling(Density, FDP, Z, X, Pvals, Labels, Grid, nis);
+  fff_matrix_delete(Grid);
+  
   fff_vector_delete(Pvals);
   fff_array_delete(Labels);
   fff_array_delete(Z);
@@ -1256,12 +1262,13 @@ static PyObject* fdp2(PyObject* self, PyObject* args)
   /* get the results as python arrrays */
   co_clust = fff_matrix_toPyArray( CoCluster );
   posterior = fff_vector_toPyArray( Post );
-  
+  density = fff_vector_toPyArray( Density );
+
   fff_FDP_delete( FDP );
   fff_matrix_delete(X);
 	
   /* Output tuple */
-  PyObject *ret = Py_BuildValue("NN",co_clust,posterior);
+  PyObject *ret = Py_BuildValue("NNN", co_clust, posterior, density);
   return ret;
 }
 
