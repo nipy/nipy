@@ -193,7 +193,7 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
                         xyz[:,:3], affine, ref_dim, 
                         thq, smin, ths, theta, g0, verbose=0)
         """
-        # solution 2 : reshuffle position. for 'simple' only
+        # solution 2 : reshuffle position. for 'simple'/'simple2' only
         bf, gf0, sub, gfc = bsa.compute_individual_regions(Fbeta, lbeta, coord, dmax,
                                 xyz[:,:3], affine, ref_dim, smin,
                                 theta, verbose=0, reshuffle=1)

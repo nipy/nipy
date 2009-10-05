@@ -39,7 +39,7 @@ thq = 0.95
 verbose = 1
 smin = 5
 swd = tempfile.mkdtemp()
-method='simple2'
+method='simple'
 
 # call the function
 AF, BF, maxc = make_bsa_image(mask_images, betas, theta, dmax,
