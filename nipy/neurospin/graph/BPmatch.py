@@ -14,6 +14,23 @@ from nipy.neurospin.eda.dimension_reduction import Euclidian_distance
 
 
 def BPmatch(c1,c2,graph,dmax):
+    """
+    Matching the rows of c1 to those of c2 based on their relative positions
+    
+    Parameters
+    ----------
+    c1, array of shape (nbitems1, dim),
+        dataset 1
+    c2, array of shape (nbitems2, dim),
+        dataset 2
+    scale, float, scale parameter
+    eps = 1.e-12, float, 
+
+    Returns
+    -------
+    i,j,k: arrays of shape(E) 
+           sparse adjacency matrix of the bipartite association graph
+    """ 
     belief = fg.graph_bpmatch(c1,c2,graph,dmax)
     i,j = np.where(belief);
     k = belief[i,j]
@@ -34,7 +51,7 @@ def match_trivial(c1, c2, scale, eps = 1.e-12 ):
 
     Returns
     -------
-    i,j,k: arrays of shape(n) 
+    i,j,k: arrays of shape(E) 
            sparse adjacency matrix of the bipartite association graph
     """
     s1 = np.size(c1,1)
