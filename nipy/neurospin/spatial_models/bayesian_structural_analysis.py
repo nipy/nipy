@@ -925,6 +925,7 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
 
             # get the regions position
             if reshuffle:
+                nroi = nroi.reduce_to_leaves()
                 # randomize the positions by taking any local maximum of the image
                 idx, topidx = Fbeta.get_local_maxima()
                 temp = np.argsort(np.random.rand(len(idx)))[:nroi.k]
