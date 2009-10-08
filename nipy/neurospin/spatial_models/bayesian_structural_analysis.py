@@ -844,7 +844,8 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     bf, gf0, sub, gfc = compute_individual_regions(Fbeta, lbeta, coord, dmax,
                                                    xyz, affine,  shape,  smin,
                                                    theta, verbose)
-    crmap, LR, bf, p = bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose)
+    crmap, LR, bf, p = bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths,
+                                g0,verbose)
     
     return crmap, LR, bf, p
 
@@ -852,14 +853,16 @@ def compute_BSA_simple2(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
                         shape=None, thq=0.5, smin=5, ths=0, theta=3.0, g0=1.0,
                        verbose=0):
     """
-    Compute the  Bayesian Structural Activation paterns - simplified version in progress 
+    Compute the  Bayesian Structural Activation paterns
+    - simplified version in progress 
     """
    
     bf, gf0, sub, gfc = compute_individual_regions(Fbeta, lbeta, coord, dmax,
                                                    xyz, affine,  shape,  smin,
                                                    theta, verbose)
-    crmap, LR, bf, coclust = bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0, verbose)
-    
+    crmap, LR, bf, coclust = bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq,
+                                       ths, g0, verbose)
+
     return crmap, LR, bf, coclust
 
 def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
@@ -922,10 +925,13 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
 
             # get the regions position
             if reshuffle:
+                nroi = nroi.reduce_to_leaves()
                 # randomize the positions by taking any local maximum of the image
                 idx, topidx = Fbeta.get_local_maxima()
                 temp = np.argsort(np.random.rand(len(idx)))[:nroi.k]
                 bfc = coord[idx[temp]]
+                #temp = np.argsort(np.random.rand(nvox))[:nroi.k]
+                #bfc = coord[temp]
                 nroi.parents = np.arange(nroi.k)
                 nroi.set_roi_feature('position',bfc)
             else:
