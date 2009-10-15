@@ -94,5 +94,45 @@ To install, simply do::
     packages (not required, but strongly suggested). Please see
     http://nipy.sourceforge.net/data-packages and :ref:`data-files`.
 
+Building for 64-bit Snow Leopard
+--------------------------------
+
+How you install nipy for Snow Leopard depends on which version of
+Python you have installed.  There are two versions we know work, using
+the Python that shipped with Snow Leopard, and using a 64-bit
+MacPorts_ version.
+
+If you are using the Python that shipped with Snow Leopard, there are
+detailed instructions on `this blog
+<http://blog.hyperjeff.net/?p=160>`_ for installing numpy_ and scipy_.
+The critical step is to set the appropriate flags for the C and
+Fortran compilers so they match the architecture of your version of
+Python.  You can discover the architecture of your Python by doing the
+following::
+
+    file `which python`
+
+For example, on my 32-bit Leopard (10.5) it's a Universal binary,
+built for both ppc and i386 architectures::
+
+    /usr/local/bin/python: Mach-O universal binary with 2 architectures
+    /usr/local/bin/python (for architecture i386):	Mach-O executable i386
+    /usr/local/bin/python (for architecture ppc):	Mach-O executable ppc
+
+On a 64-bit MacPorts_ install on Snow Leopard (10.6), it's built for
+64-bit only::
+
+    /opt/local/bin/python: Mach-P 64-bit executable x86_64
+
+For the 64-bit MacPorts_ install, set the flags and build using this::
+
+    export MACOSX_DEPLOYMENT_TARGET=10.6
+    export LDFLAGS="-arch x86_64 -Wall -undefined dynamic_lookup -bundle -fPIC"
+    export FFLAGS="-arch x86_64 -O2 -Wall -fPIC"
+    python setup.py build
+
+
+.. _MacPorts: http://www.macports.org/
+
 .. include:: ../links_names.txt
 
