@@ -131,6 +131,11 @@ For the 64-bit MacPorts_ install, set the flags and build using this::
     export FFLAGS="-arch x86_64 -O2 -Wall -fPIC"
     python setup.py build
 
+These sites may also be useful:
+
+* `readline fix for ipython <http://blog.zacharyvoase.com/post/174280299>`_
+* `to graphically select the full 64-bit environment
+  <http://www.ahatfullofsky.comuv.com/English/Programs/SMS/SMS.html>`_
 
 .. _MacPorts: http://www.macports.org/
 
