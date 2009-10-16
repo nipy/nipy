@@ -284,8 +284,8 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     # create the landmark regions structure
     k = np.sum(valid)
     if k>0:
-        LR = sbf.landmark_regions(k, affine=affine, shape=shape, 
-                                     subj=subjs,coord=coords)
+        LR = sbf.landmark_regions(k, affine=affine, shape=shape, subj=subjs,
+                                  coord=coords)
         LR.set_discrete_feature('confidence', pps)
     else:
         LR = None
@@ -682,9 +682,11 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
             lq[leaves] = 1-gf0[sub==s]
             bfs.set_roi_feature('prior_proba',lq)
                    
-            idx = bfs.feature_argmax('activation')
-            midx = [bfs.discrete_features['index'][k][idx[k]]
-                    for k in range(bfs.k)]
+            #idx = bfs.feature_argmax('activation')
+            #midx = [bfs.discrete_features['index'][k][idx[k]]
+            #        for k in range(bfs.k)]
+            pos = bfs.roi_features['position']
+            midx = [np.argmin(np.sum((coord-pos[k])**2,1))  for k in range(bfs.k)]
             j = label[np.array(midx)]
             us[leaves] = j[leaves]
 
@@ -696,7 +698,7 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one 
-    LR,nl = infer_LR(bf,thq,ths,verbose=verbose)
+    LR,nl = infer_LR(bf, thq, ths,verbose=verbose)
 
     # make a group-level map of the landmark position
     crmap = -np.ones(np.shape(label))
@@ -926,12 +928,12 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
             # get the regions position
             if reshuffle:
                 nroi = nroi.reduce_to_leaves()
-                # randomize the positions by taking any local maximum of the image
-                idx, topidx = Fbeta.get_local_maxima()
-                temp = np.argsort(np.random.rand(len(idx)))[:nroi.k]
-                bfc = coord[idx[temp]]
-                #temp = np.argsort(np.random.rand(nvox))[:nroi.k]
-                #bfc = coord[temp]
+                ## randomize the positions by taking any local maximum of the image
+                #idx, topidx = Fbeta.get_local_maxima()
+                #temp = idx[np.argsort(np.random.rand(len(idx)))[:nroi.k]]
+                temp = np.argsort(np.random.rand(nvox))[:nroi.k]
+
+                bfc = coord[temp]
                 nroi.parents = np.arange(nroi.k)
                 nroi.set_roi_feature('position',bfc)
             else:

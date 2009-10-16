@@ -41,7 +41,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
     height_th: cluster forming threshold
     height_control: string 
             false positive control meaning of cluster forming 
-            threshold: 'fpr'|'fdr'|'fwer'
+            threshold: 'fpr'|'fdr'|'bonferroni'
     cluster_th: cluster size threshold
     null_s : cluster-level calibration method: None|'rft'|array
     """
