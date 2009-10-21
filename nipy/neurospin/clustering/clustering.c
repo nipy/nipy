@@ -1198,6 +1198,79 @@ static PyObject* fdp(PyObject* self, PyObject* args)
   return ret;
 }
 
+static PyObject* fdp2(PyObject* self, PyObject* args)
+{
+  PyArrayObject *x, *precisions, *pvals, *labels, *co_clust, *posterior, *density;
+  double alpha, g0,g1,dof;
+
+  int k,dim,niter = 1000;
+  int nii = 1000;
+  int nis = 1000;
+  PyArrayObject *grid = NULL;
+  
+  int OK = PyArg_ParseTuple( args, "O!ddddO!O!O!|iO!ii:fdp2", 
+							 &PyArray_Type, &x,
+							 &alpha,
+							 &g0,
+							 &g1,
+							 &dof,
+							 &PyArray_Type, &precisions,
+							 &PyArray_Type, &pvals,
+							 &PyArray_Type, &labels,
+							 &niter,
+                             &PyArray_Type, &grid,
+							 &nis,							 
+							 &nii
+							 ); 
+  if (!OK) {
+    printf("argument error in fdp2\n");
+    Py_RETURN_NONE; 
+  }
+ 
+  fff_matrix *X = fff_matrix_fromPyArray( x );
+  fff_matrix *Precisions = fff_matrix_fromPyArray( precisions ); 
+  fff_vector *Pvals = fff_vector_fromPyArray( pvals );
+  fff_array *Labels = fff_array_fromPyArray( labels );
+  dim = X->size2;
+  
+  fff_FDP *FDP =  fff_FDP_new( alpha, g0, g1,dim,dof );
+  fff_FDP_instantiate(FDP, Precisions);
+  fff_matrix_delete(Precisions);
+
+  fff_array *Z = fff_array_new1d(FFF_LONG,Labels->dimX);
+  k = fff_FDP_estimation(FDP, Z, X, Pvals, Labels, niter);
+  fff_matrix* Grid;
+  if (grid == NULL){
+	Grid = fff_matrix_new(X->size1,X->size2);
+	fff_matrix_memcpy(Grid,X);
+  }
+  else
+	Grid = fff_matrix_fromPyArray( grid );
+
+  fff_matrix *CoCluster = fff_matrix_new(X->size1,X->size1);
+  fff_vector* Post = fff_vector_new(X->size1);
+  fff_FDP_inference2(FDP, Z, Post, CoCluster, X, Pvals, Labels, nii);
+  
+  fff_vector* Density = fff_vector_new(Grid->size1);
+  fff_FDP_sampling(Density, FDP, Z, X, Pvals, Labels, Grid, nis);
+  fff_matrix_delete(Grid);
+  
+  fff_vector_delete(Pvals);
+  fff_array_delete(Labels);
+  fff_array_delete(Z);
+ 
+  /* get the results as python arrrays */
+  co_clust = fff_matrix_toPyArray( CoCluster );
+  posterior = fff_vector_toPyArray( Post );
+  density = fff_vector_toPyArray( Density );
+
+  fff_FDP_delete( FDP );
+  fff_matrix_delete(X);
+	
+  /* Output tuple */
+  PyObject *ret = Py_BuildValue("NNN", co_clust, posterior, density);
+  return ret;
+}
 
 static PyMethodDef module_methods[] = {
   {"ward",    /* name of func when called from Python */
@@ -1262,16 +1335,14 @@ static PyMethodDef module_methods[] = {
    (PyCFunction)fdp,
    METH_KEYWORDS,
    fdp_doc},
+  {"fdp2",
+   (PyCFunction)fdp2,
+   METH_KEYWORDS,
+   fdp_doc},
   {"dpmm",
    (PyCFunction)dpmm,
    METH_KEYWORDS,
    dpmm_doc}, 
-  /*
-	{"hgmm",  
-	(PyCFunction)hgmm,
-	METH_KEYWORDS,  
-	hgmm_doc},
-  */
   {NULL, NULL,0,NULL}
 };
 

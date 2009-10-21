@@ -19,7 +19,7 @@ import nipy.neurospin.spatial_models.hroi as hroi
 
 # data paths
 import get_data_light
-get_data_light.getIt()
+#get_data_light.getIt()
 data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data'))
 inputImage = op.join(data_dir,'spmT_0029.nii.gz')
 swd = tempfile.mkdtemp()

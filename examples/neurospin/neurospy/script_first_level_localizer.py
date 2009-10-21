@@ -17,7 +17,7 @@ import Contrast
 #-----------------------------------------------------------
 
 DBPath = "/volatile/thirion/Localizer"
-Subjects = ["s12277", "s12069","s12300","s12401","s12431","s12508","s12532","s12635","s12636","s12826","s12898","s12913","s12919","s12920"]#["s12069"]#
+Subjects = ["s12069"]#["s12277", "s12069","s12300","s12401","s12431","s12508","s12532","s12635","s12636","s12826","s12898","s12913","s12919","s12920"]#
 Acquisitions = ["acquisition"]
 Sessions = ["loc1"]
 fmri = "fMRI/"
@@ -127,9 +127,9 @@ for s in Subjects:
             raise ValueError,"paradigm file %s not found" %paradigmFile
         
         misc = ConfigObj(miscFile)
-        misc["sessions"] = Sessions
-        misc["tasks"] = Conditions
-        misc["mask"] = maskFile
+        misc['sessions'] = Sessions
+        misc['tasks'] = Conditions
+        misc['mask_url'] = maskFile
         misc.write()
 
         # step 3. Create one design matrix for each session

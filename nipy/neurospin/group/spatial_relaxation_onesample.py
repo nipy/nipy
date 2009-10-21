@@ -84,11 +84,11 @@ class multivariate_stat:
             self.m_mean_rate = np.zeros(M, float) + m_mean_rate
         else:
             self.m_mean_rate = m_mean_rate
-        if np.isscalar(m_mean_rate):
+        if np.isscalar(m_var_shape):
             self.m_var_shape = np.zeros(M, float) + m_var_shape
         else:
             self.m_var_shape = m_var_shape
-        if np.isscalar(m_mean_rate):
+        if np.isscalar(m_var_scale):
             self.m_var_scale = np.zeros(M, float) + m_var_scale
         else:
             self.m_var_scale = m_var_scale
@@ -146,13 +146,13 @@ class multivariate_stat:
         else:
             m = self.m[self.D.I]
             if update_spatial:
-                self.s4 = (self.D.U**2).sum()
+                self.s4 = np.square(self.D.U).sum()
                 if mode == 'saem':
                     self.S4 += w * (self.s4 - self.S4)
         if self.vardata == None:
-            SS = (self.data - m)**2 #/ self.v + np.log(2 * np.pi * self.v)
+            SS = np.square(self.data - m) #/ self.v + np.log(2 * np.pi * self.v)
         else:
-            SS = (self.X - m)**2 #/ self.vardata + np.log(2 * np.pi * self.vardata)
+            SS = np.square(self.X - m) #/ self.vardata + np.log(2 * np.pi * self.vardata)
         if self.std == None:
             SS_sum = SS.sum(axis=0)
         else:
@@ -166,7 +166,7 @@ class multivariate_stat:
             self.s1[j] = SS_sum[L].sum()
             if self.labels_prior != None:
                 self.s6[j] = len(L)
-            self.s2[j] = (self.m[L]**2).sum()
+            self.s2[j] = np.square(self.m[L]).sum()
             if self.network[j] == 1:
                 self.s3[j] = self.m[L].sum()
             if update_spatial and self.std != None:
@@ -196,7 +196,7 @@ class multivariate_stat:
         N1 = J.sum()
         if N1 > 0:
             post_rate = rate[J] + size[J]
-            self.m_var_post_scale[J] = scale[J] + 0.5 * (sum_sq[J] - sum[J]**2 / post_rate)
+            self.m_var_post_scale[J] = scale[J] + 0.5 * (sum_sq[J] - np.square(sum[J]) / post_rate)
         if N1 < len(self.network):
             self.m_var_post_scale[J==0] = scale[J==0] + 0.5 * sum_sq[J==0]
     
@@ -212,10 +212,10 @@ class multivariate_stat:
         else:
             N = self.S5
             if update_spatial:
-                B = len(self.D.block)
+                #B = len(self.D.block)
                 self.std = np.sqrt(
-                (self.S4 + 2 * self.std_scale) / (3 * n * B + 2 * self.std_shape + 1))
-        self.v = (self.S1 + 2 * self.v_scale) / (N + 2 * (1 + self.v_shape))
+                (self.S4 + 2 * self.std_scale) / (self.D.U.size + 2 * self.std_shape + 2))
+        self.v = (self.S1 + 2 * self.v_scale) / (N + 2 * self.v_shape + 2)
         J = self.network == 1
         N1 = J.sum()
         if N1 > 0:
@@ -236,9 +236,9 @@ class multivariate_stat:
         else:
             N = self.s5
             if update_spatial:
-                B = len(self.D.block)
+                #B = len(self.D.block)
                 self.std = np.sqrt(
-                    (self.s4 + 2*self.std_scale) / np.random.chisquare(df=3*n*B + 2*self.std_shape))
+                    (self.s4 + 2*self.std_scale) / np.random.chisquare(df=self.D.U.size + 2*self.std_shape))
         J = self.network == 1
         if J.sum() > 0:
             post_rate = rate[J] + size[J]
@@ -929,9 +929,9 @@ class multivariate_stat:
             post_rate = self.m_mean_rate[J] + size[J]
             log_conditional_posterior[J] += log_gaussian_pdf(m_mean[J], self.s3[J] / post_rate, m_var[J] / post_rate)
         if std != None:
-            B = len(self.D.block)
+            #B = len(self.D.block)
             log_conditional_posterior[-1] = \
-              log_gammainv_pdf(std**2, self.std_shape + 0.5 * 3 * n * B, self.std_scale + 0.5 * self.s4)
+              log_gammainv_pdf(std**2, self.std_shape + 0.5 * self.D.U.size, self.std_scale + 0.5 * self.s4)
         return log_conditional_posterior
     
     def sample_log_conditional_posterior(self, v=None, m_mean=None, m_var=None, std=None, nsimu=100, burnin=100, stabilize=False, verbose=False, update_spatial=False):
@@ -1043,7 +1043,7 @@ class multivariate_stat:
                 U = self.D.U
             log_displacements_prior = \
                 - 0.5 * np.square(U).sum() / std**2 \
-                - 3 * n * B * np.log(std)
+                - self.D.U.size * np.log(std)
             log_displacements_posterior = \
                 self.compute_log_conditional_displacements_posterior(\
                     U, 

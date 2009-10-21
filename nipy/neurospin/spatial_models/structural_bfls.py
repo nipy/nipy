@@ -51,13 +51,14 @@ class landmark_regions(hroi.NROI):
 
         fixme
         -----
-        xyz=coord 
+        xyz=subj
         """
         k = int(k)
         if k<1: raise ValueError, "cannot create an empty LR"
         if parents==None:
             parents = np.arange(k)
-        hroi.NROI.__init__(self, parents, affine, shape, xyz=coord, id=id)
+        xyz = [0*coord[c] for c in range(k)]
+        hroi.NROI.__init__(self, parents, affine, shape, xyz=xyz, id=id)
         self.set_discrete_feature('position',coord)
         self.subj = subj
 
@@ -162,9 +163,8 @@ class landmark_regions(hroi.NROI):
         hpd[delta>gamma]=0
         return hpd
 
-    def map_label(self,cs,pval = 0.95,dmax=1.):
+    def map_label(self, cs, pval=0.95, dmax=1.):
         """
-        i = self.map_label(cs,pval = 0.95,dmax=1.0)
         Sample the set of landmark regions
         on the proposed coordiante set cs, assuming a Gaussian shape
         
@@ -195,11 +195,12 @@ class landmark_regions(hroi.NROI):
         """
         centers = self.discrete_to_roi_features('position')
         homogeneity = self.homogeneity()
+        prevalence = self.roi_prevalence()
         for i in range(self.k):
-            print i, np.unique(self.subj[i]), homogeneity[i], centers[i]
+            print i, prevalence[i], centers[i], np.unique(self.subj[i])
 
 
-    def roi_confidence(self,ths=0,fid='confidence'):
+    def roi_confidence(self, ths=0, fid='confidence'):
         """
         assuming that fid='confidence' field has been set 
         as a discrete feature,
@@ -242,6 +243,35 @@ class landmark_regions(hroi.NROI):
                 pvals[j] = st.norm.sf(ths,mp,np.sqrt(vp))
                 #print ths-mp, mp, np.sqrt(vp),pvals[j],len(np.unique(subjj))
         return pvals
+
+    def roi_prevalence(self, fid='confidence'):
+        """
+        assuming that fid='confidence' field has been set 
+        as a discrete feature,
+        this creates the expectancy of the confidence measure
+        i.e. expected numberof  detection of the roi in the observed group
+             
+        Results
+        -------
+        confid: array of shape self.k
+               the population_prevalence
+        """
+        import scipy.stats as st
+        confid = np.zeros(self.k)
+        if self.discrete_features.has_key(fid)==False:
+            for j in range(self.k):
+                subjj = self.subj[j]
+                confid[j] = np.size(np.unique(subjj))
+        else:
+            for j in range(self.k):
+                subjj = self.subj[j]
+                conf = self.discrete_features[fid][j]
+                mp = 0.
+                vp = 0.
+                for ls in np.unique(subjj):
+                    lmj = 1-np.prod(1-conf[subjj==ls])
+                    confid[j] += lmj
+        return confid
 
 def build_LR(BF,ths=0):
     """
@@ -322,7 +352,7 @@ def build_LR(BF,ths=0):
                               subj=subjs, coord=coords)  
     else:
         LR=None
-    return LR,maplabel
+    return LR, maplabel
 
 
 
