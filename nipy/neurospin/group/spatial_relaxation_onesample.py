@@ -152,7 +152,7 @@ class multivariate_stat:
         if self.vardata == None:
             SS = (self.data - m)**2 #/ self.v + np.log(2 * np.pi * self.v)
         else:
-            SS = (self.X - self.m)**2 #/ self.vardata + np.log(2 * np.pi * self.vardata)
+            SS = (self.X - m)**2 #/ self.vardata + np.log(2 * np.pi * self.vardata)
         if self.std == None:
             SS_sum = SS.sum(axis=0)
         else:
