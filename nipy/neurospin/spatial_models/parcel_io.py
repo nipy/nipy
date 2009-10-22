@@ -283,7 +283,7 @@ def Parcellation_based_analysis(Pa, test_images, numbeta, swd="/tmp",
 
 
 def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward', 
-                          write_dir='/tmp', mu=10., verbose=0):
+                          write_dir='/tmp', mu=10., verbose=0, fullpath=None):
     """
     Parcellation of a one-subject dataset
 
@@ -303,7 +303,9 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     write_dir='/tmp': write directory
     mu = 10., float: the relative weight of anatomical information
     verbose=0: verbosity mode
-
+    fullpath=None, string,
+                   path of the output image
+                   By default, it is the write dir + a name depending on the method
     Note
     ----
     Ward's method takes time (about 6 minutes for a 60K voxels dataset)
@@ -383,13 +385,13 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
         print nbparcel, "functional variance", vf, "anatomical variance",va
 
     # step3:  write the resulting label image
-    if method=='ward':
+    if fullpath!=None:
+        LabelImage = fullpath
+    elif method=='ward':
         LabelImage = os.path.join(write_dir,"parcel_wards.nii")
-
-    if method=='gkm':
+    elif method=='gkm':
         LabelImage = os.path.join(write_dir,"parcel_gkmeans.nii")
-
-    if method=='ward_and_gkm':
+    elif method=='ward_and_gkm':
         LabelImage = os.path.join(write_dir,"parcel_wgkmeans.nii")
         
     Label = -np.ones(ref_dim,'int16')

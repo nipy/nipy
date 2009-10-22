@@ -256,7 +256,7 @@ def intersect_masks(input_mask_files, output_filename=None,
     for filename in input_mask_files:
         nim = load(filename)
         if gmask is None:
-            gmask = nim.get_data()
+            gmask = nim.get_data().copy() # !!!
         else:
             gmask += nim.get_data()  
     
