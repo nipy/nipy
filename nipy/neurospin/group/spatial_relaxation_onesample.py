@@ -5,13 +5,6 @@
 import numpy as np
 import scipy.special as sp
 
-# Do inter-package imports the right way (this will become mandatory in py2.6)
-# Alexis: I'm disabling this because this is incompatible with python
-# 2.4 (needed for brainvisa)
-"""
-from ..group.routines import add_lines
-from .displacement_field import displacement_field
-"""
 from routines import add_lines
 from displacement_field import displacement_field
 
