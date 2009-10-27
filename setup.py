@@ -86,7 +86,10 @@ def data_install_msgs():
         try:
             make_datasource('nipy', name)
         except DataError, exception:
-            log.warn('%s\n%s' % ('_'*80, exception))
+            log.warn('%s\nWARNING: %s\n' 
+                     'The main nipy algorithms will work, but you will '
+                     'not have have access to the\nnipy %s.' % 
+                     ('_'*80, exception, name))
         
 
 class MyInstallData(install_data):
