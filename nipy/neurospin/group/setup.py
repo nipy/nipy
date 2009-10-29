@@ -19,14 +19,14 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('group', parent_package, top_path)
     config.add_data_dir('tests')
     config.add_extension(
-        '_onesample',
-        sources=['_onesample.c'],
+        'onesample',
+        sources=['onesample.c'],
         libraries=['cstat'],
         extra_info=lapack_info,
         )
     config.add_extension(
-        '_twosample',
-        sources=['_twosample.c'],
+        'twosample',
+        sources=['twosample.c'],
         libraries=['cstat'],
         extra_info=lapack_info,
         )

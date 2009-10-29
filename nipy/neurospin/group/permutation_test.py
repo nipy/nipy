@@ -7,8 +7,8 @@ import scipy.misc as sm
 # Our own imports
 from nipy.neurospin.graph import graph_3d_grid, graph_cc
 from nipy.neurospin.graph.field import Field
-from _onesample import stat as os_stat, stat_mfx as os_stat_mfx
-from _twosample import stat as ts_stat, stat_mfx as ts_stat_mfx
+from onesample import stat as os_stat, stat_mfx as os_stat_mfx
+from twosample import stat as ts_stat, stat_mfx as ts_stat_mfx
 
 
 # Default parameters
