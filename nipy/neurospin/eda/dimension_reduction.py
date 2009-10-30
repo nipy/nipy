@@ -30,21 +30,28 @@ def _linear_dim_criterion_(l,k,dimf,n):
     likelihood = _linear_dim_criterion_(k,l,dimf,n)
     this function returns the likelihood of a dataset
     with rank k embedded in gaussian noise of shape(n,dimf)
-    INPUT:
-    - l = spectrum
-    - k = test rank
-    - dimf = maximal rank
-    - n number of inputs
-    OUPUT:
-    The log-likelihood
-    NOTE: This is imlpempented from Minka et al., 2001
+    
+    Parameters
+    ----------
+    l array of shape (n) spectrum
+    k, int,  test rank (?)
+    dimf, int, maximal rank (?)
+    n, int, number of inputs (?)
+    
+    Returns
+    -------
+    ll, float, The log-likelihood
+    
+    Note
+    ---- 
+    This is imlpempented from Minka et al., 2001
     """
     if k>dimf:
         raise ValueError, "the dimension cannot exceed dimf"
-    import scipy.special as SP
+    from scipy.special import gammaln
     Pu = -k*np.log(2)
     for i in range(k):
-        Pu += SP.gammaln((dimf-i)/2)-np.log(np.pi)*(dimf-i)/2
+        Pu += gammaln((dimf-i)/2)-np.log(np.pi)*(dimf-i)/2
         
     pl = np.sum(np.log(l[:k]))
     Pl = -pl*n/2
@@ -71,22 +78,26 @@ def _linear_dim_criterion_(l,k,dimf,n):
 
     return lE
 
-def infer_latent_dim(X,verbose = 0, maxr = -1):
+def infer_latent_dim(X, verbose=0, maxr=-1):
     """
-    r = infer_latent_dim(X,verbose = 0)
+    r = infer_latent_dim(X, verbose=0)
     Infer the latent dimension of an aray assuming data+gaussian noise mixture
-    INPUT:
-    - an array X
-    - verbose=0 : verbositry level
-    - maxr=-1 maximum dimension that can be achieved
-    if maxr = -1, this is equal to rank(X)
-    OUPTUT
-    - r the inferred dimension
+    
+    Parameters
+    ----------
+    array X, data whose deimsnionhas to be inferred
+    verbose=0, int, verbosity level
+    maxr=-1, int, maximum dimension that can be achieved
+             if maxr = -1, this is equal to rank(X)
+    
+    Returns
+    -------
+    r, int, the inferred dimension
     """
     if maxr ==-1:
         maxr = np.minimum(X.shape[0],X.shape[1])
         
-    import numpy.linalg as L
+    import numpy.linalg as nl
     U,S,V = nl.svd(X,0)
     if verbose>1:
         print "Singular Values", S
@@ -100,15 +111,24 @@ def infer_latent_dim(X,verbose = 0, maxr = -1):
         import matplotlib.pylab as mp
         mp.figure()
         mp.bar(np.arange(maxr),L-L.mean())
-        mp.show()
 
     return rank
 
 
-def Euclidian_distance(X,Y=None):
+def Euclidian_distance(X, Y=None):
     """
     Considering the rows of X (and Y=X) as vectors, compute the
-    distance matrix between each pair of vector 
+    distance matrix between each pair of vector
+    
+    Parameters
+    ----------
+    X, array of shape (n1,p)
+    Y=None, array of shape (n2,p)
+            if Y==None, then Y=X is used instead
+
+    Returns
+    -------
+    ED, array fo shape(n1, n2)
     """
     if Y == None:
         Y = X
@@ -126,18 +146,24 @@ def Euclidian_distance(X,Y=None):
     ED = np.sqrt(ED)
     return ED
 
-def CCA(X,Y,eps = 1.e-12):
+def CCA(X, Y, eps=1.e-15):
     """
     Canonical corelation analysis of two matrices
-    INPUT:
-    - X and Y are (nbitem,p) and (nbitem,q) arrays that are analysed
-    - eps=1.e-12 is a small biasing constant
-    to grant invertibility of the matrices
-    OUTPUT
-    - ccs: the canconical correlations
-    NOTE
-    - It is expected that nbitem>>max(p,q)
-    - In general it makes more sense if p=q
+    
+    Parameters
+    ----------
+    X array of shape (nbitem,p) 
+    Y array of shape (nbitem,q) 
+    eps=1.e-15, float is a small biasing constant
+                to grant invertibility of the matrices
+    
+    Returns
+    -------
+    ccs, array of shape(min(n,p,q) the canonical correlations
+        
+    Note
+    ----
+    It is expected that nbitem>>max(p,q)
     """
     from numpy.linalg import cholesky,inv,svd
     if Y.shape[0]!=X.shape[0]:
@@ -145,20 +171,20 @@ def CCA(X,Y,eps = 1.e-12):
     nb = X.shape[0]
     p = X.shape[1]
     q = Y.shape[1]
-    sqX = np.dot(np.transpose(X),X)
-    sqY = np.dot(np.transpose(Y),Y)
+    sqX = np.dot(X.T,X)
+    sqY = np.dot(Y.T,Y)
     sqX += np.trace(sqX)*eps*np.eye(p)
     sqY += np.trace(sqY)*eps*np.eye(q)
-    rsqX = cholesky(sqX)# sqX = rsqX*rsQx^T 
+    rsqX = cholesky(sqX)
     rsqY = cholesky(sqY)
-    iX = np.transpose(inv(rsqX))
-    iY = np.transpose(inv(rsqY))
-    Cxy = np.dot(np.transpose(np.dot(X,iX)),np.dot(Y,iY))
+    iX = inv(rsqX).T
+    iY = inv(rsqY).T
+    Cxy = np.dot(np.dot(X,iX).T,np.dot(Y,iY))
     uv,ccs,vv = svd(Cxy)
     return ccs
 
 
-def Euclidian_mds(X,dim,verbose=0):
+def Euclidian_mds(X, dim, verbose=0):
     """
     returns a dim-dimensional MDS representation of the rows of X 
     using an Euclidian metric 
@@ -167,27 +193,35 @@ def Euclidian_mds(X,dim,verbose=0):
     return(mds(d,dim,verbose))
     
 
-def mds(dg,dim=1,verbose=0):
+def mds(dg, dim=1, verbose=0):
     """
     Multi-dimensional scaling, i.e. derivation of low dimensional
     representations from distance matrices.
-    INPUT:
-    - dg: a (nbitem,nbitem) distance matrix
-    - dim=1: the dimension of the desired representation
-    - verbose=0: verbosity level
+    
+    Parameters
+    ----------
+    dg, array of shape(nbitem, nbitem), the input distance matrix
+    dim=1: the dimension of the desired representation
+    verbose=0: verbosity level
+
+    Returns
+    -------
+    chart, array of shape(nbitem, dim), the resulting reprsentation
+    V, array of shape (?,?) the projector toward the low-dimensional embedding
+    rm0, float, additive contant of the embedding
     """
     
     # take the square distances and center the matrix
-    dg = dg*dg
-    rm0 = dg.mean(0)
-    rm1 = dg.mean(1)
-    mm = dg.mean()
-    dg = dg-rm0
-    dg = np.transpose(np.transpose(dg)-rm1)
-    dg = dg+mm  
+    sqdg = dg*dg
+    rm0 = sqdg.mean(0)
+    rm1 = sqdg.mean(1)
+    mm = sqdg.mean()
+    sqdg = sqdg-rm0
+    sqdg = (sqdg.T-rm1).T
+    sqdg = sqdg+mm  
     
-    import numpy.linalg as L
-    U,S,V = nl.svd(dg,0)
+    import numpy.linalg as nl
+    U,S,V = nl.svd(sqdg,0)
     S = np.sqrt(S)
     
     chart = np.dot(U,np.diag(S))
@@ -199,22 +233,26 @@ def mds(dg,dim=1,verbose=0):
         mp.bar(np.arange(np.size(S)),S)
         mp.show()
         
-    return chart,np.transpose(V),rm0
+    return chart, V.T, rm0
 
-def isomap_dev(G,dim=1,p=300,verbose = 0):
+def isomap_dev(G, dim=1, p=300, verbose = 0):
     """
-    chart,proj,offset =isomap(G,dim=1,p=300,verbose = 0)
-    Isomapping of the data
     return the dim-dimensional ISOMAP chart that best represents the graph G
-    INPUT:
-    - G : Weighted graph that represents the data
-    - dim=1 : number of dimensions
-    - p=300 : nystrom reduction of the problem
-    - verbose = 0: verbosity level
-    OUTPUT
-    - chart, array of shape(G.V,dim)
-    NOTE:
-    - this 'dev' version is expected to yield more accurate results
+    
+    Parameters
+    ----------
+    G : nipy.neurospin.graph.WeightedGraph instance that represents the data
+    dim=1, int,  number of requierd dimensions
+    p=300, int, nystrom reduction of the problem
+    verbose=0, verbosity level
+    
+    Returns
+    -------
+    chart, array of shape(G.V,dim), the resulting embedding
+    
+    Note
+    ----
+    this 'dev' version is expected to yield more accurate results
     than the other approximation,
     because of a better out of samples generalization procedure.
     """
@@ -231,7 +269,7 @@ def isomap_dev(G,dim=1,p=300,verbose = 0):
         seed = np.arange(n)
         dg = G.floyd()
         
-    dg = np.transpose(dg)
+    dg = dg.T
     dg1 = dg[seed]
     
     dg1 = dg1*dg1/2
@@ -239,31 +277,36 @@ def isomap_dev(G,dim=1,p=300,verbose = 0):
     rm1 = dg1.mean(1)
     mm = dg1.mean()
     dg1 = dg1-rm0
-    dg1 = np.transpose(np.transpose(dg1)-rm1)
+    dg1 = (dg1.T-rm1).T
     dg1 = dg1+mm    
-    import numpy.linalg as L
+    
+    import numpy.linalg as nl
     U,S,V = nl.svd(dg1,0)
     S = np.sqrt(S)
     chart = np.dot(U,np.diag(S))
-    proj = np.transpose(V)
+    proj = V.T
 
     dg = dg*dg/2
-    dg = np.transpose(np.transpose(dg)-np.mean(dg,1))
+    dg = (dg.T-np.mean(dg,1)).T
     Chart = np.dot(np.dot(dg,proj),np.diag(1.0/S))
     return Chart[:,:dim]
 
-def isomap(G,dim=1,p=300,verbose = 0):
+def isomap(G, dim=1, p=300,verbose = 0):
     """
     chart,proj,offset =isomap(G,dim=1,p=300,verbose = 0)
     Isomapping of the data
     return the dim-dimensional ISOMAP chart that best represents the graph G
-    INPUT:
-    - G : Weighted graph that represents the data
-    - dim=1 : number of dimensions
-    - p=300 : nystrom reduction of the problem
-    - verbose = 0: verbosity level
-    OUTPUT
-    - chart, array of shape(G.V,dim)
+    
+    Parameters
+    ----------
+    G : nipy.neurospin.graph.WeightedGraph instance that represents the data
+    dim=1, int number of dimensions
+    p=300, int nystrom reduction of the problem
+    verbose = 0: verbosity level
+    
+    Returns
+    -------
+    chart, array of shape(G.V,dim)
     """
     n = G.V
     dim = np.minimum(dim,n)
@@ -277,9 +320,9 @@ def isomap(G,dim=1,p=300,verbose = 0):
     else:
         dg = G.floyd()
 
-    chart,proj,offset = mds(np.transpose(dg),dim,verbose)
+    chart, proj, offset = mds(dg.T,dim,verbose)
     
-    return chart,proj,offset
+    return chart, proj, offset
 
 
 
@@ -287,13 +330,17 @@ def LE_dev(G,dim,verbose=0,maxiter=1000):
     """
     Laplacian Embedding of the data
     returns the dim-dimensional LE of the graph G
-    INPUT:
-    - G : Weighted graph that represents the data
-    - dim=1 : number of dimensions
-    - verbose = 0: verbosity level
-    - maxiter=1000: maximum number of iterations of the algorithm 
-    OUTPUT
-    - chart, array of shape(G.V,dim)
+    
+    Parameters
+    ----------
+    G, nipy.neurospin.graph.WeightedGraph instance that represents the data
+    dim=1, int number of dimensions
+    verbose=0, verbosity level
+    maxiter=1000, maximum number of iterations of the algorithm 
+    
+    Returns
+    -------
+    chart, array of shape(G.V,dim), the resulting embedding
     """
     n = G.V
     dim = np.minimum(dim,n)
@@ -303,7 +350,7 @@ def LE_dev(G,dim,verbose=0,maxiter=1000):
     eps = 1.e-7
 
     f1 = np.zeros((G.V,dim+2))
-    import numpy.linalg as L
+    import numpy.linalg as nl
     for i in range(maxiter):
         f.diffusion(10)
         f0 = Orthonormalize(f.field)
@@ -328,7 +375,6 @@ def LE_dev(G,dim,verbose=0,maxiter=1000):
         import matplotlib.pylab as mp
         mp.figure()
         mp.bar(np.arange(np.size(LE)-1),np.sqrt(1-LE[1:]))
-        mp.show()
         print 1-LE
         
     return chart
@@ -340,8 +386,8 @@ def Orthonormalize(M):
     orthonormalize the columns of M
     (Gram-Schmidt procedure)
     """
-    C = nl.cholesky(np.dot(np.transpose(M),M))
-    M = np.dot(M,np.transpose(nl.inv(C)))
+    C = nl.cholesky(np.dot(M.T,M))
+    M = np.dot(M,(nl.inv(C)).T)
     return M
 
 def local_sym_normalize(G):
@@ -370,19 +416,24 @@ def local_sym_normalize(G):
     return LNorm,RNorm
 
 
-def LE(G,dim,verbose=0,maxiter=1000):
+def LE(G, dim, verbose=0, maxiter=1000):
     """
     Laplacian Embedding of the data
     returns the dim-dimensional LE of the graph G
-    chart = LE(G,dim,verbose=0,maxiter=1000)
-    INPUT:
-    - G : Weighted graph that represents the data
-    - dim=1 : number of dimensions
-    - verbose = 0: verbosity level
-    - maxiter=1000: maximum number of iterations of the algorithm 
-    OUTPUT
-    - chart, array of shape(G.V,dim)
-    NOTE :
+    
+    Parameters
+    ----------
+    G, nipy.neurospin.graph.WeightedGraph instance that represents the data
+    dim=1, int, number of dimensions
+    verbose=0, verbosity level
+    maxiter=1000, int, maximum number of iterations of the algorithm 
+    
+    Returns
+    -------
+    chart, array of shape(G.V,dim)
+    
+    Note
+    ----
     In fact the current implementation retruns
     what is now referred to a diffusion map at time t=1
     """
@@ -391,7 +442,7 @@ def LE(G,dim,verbose=0,maxiter=1000):
     chart = nr.randn(G.V,dim+2)
     f = ff.Field(G.V,G.edges,G.weights,chart)
     LNorm,RNorm = local_sym_normalize(G)
-    # nb : normally Rnorm = Lnorm
+    # note : normally Rnorm = Lnorm
     if verbose:
         print np.sqrt(np.sum((LNorm-RNorm)**2))/np.sum(LNorm)
     eps = 1.e-7
@@ -420,44 +471,47 @@ def LE(G,dim,verbose=0,maxiter=1000):
         import matplotlib.pylab as mp
         mp.figure()
         mp.bar(np.arange(np.size(S)-1),np.sqrt(1-S[1:]))
-        mp.show()
         print "laplacian eigenvalues: ",1-S
         
     return chart
 
-def LPP(G,X,dim,verbose=0,maxiter=1000):
+def LPP(G, X, dim, verbose=0, maxiter=1000):
     """
     Compute the Locality preserving projector of the data
     proj = LPP(G,X,dim,verbose=0,maxiter=1000)
-    INPUT:
-    - G : Weighted graph that represents the data
-    - X : related input dataset
-    - dim=1 : number of dimensions
-    - verbose = 0: verbosity level
-    - maxiter=1000: maximum number of iterations of the algorithm 
-    OUTPUT
-    -proj, array of shape(X.shape[1],dim)
+    
+    Parameters
+    ----------
+    G, nipy.neurospin.graph.WeightedGraph instance that represents the data
+    X, array of shape (G.V, dim) related input dataset
+    dim=1 : number of dimensions
+    verbose = 0: verbosity level
+    maxiter=1000: maximum number of iterations of the algorithm 
+    
+    Returns
+    -------
+    proj, array of shape(X.shape[1],dim)
     """
     n = G.V
     dim = np.minimum(dim,n) 
     G = fg.WeightedGraph(G.V,G.edges,G.weights)
     W = G.adjacency()
     D = np.diag(np.sum(W,1))
-    M1 = np.dot(np.dot(np.transpose(X),D-W),X)
-    M2 = np.dot(np.dot(np.transpose(X),D),X)
+    M1 = np.dot(np.dot(X.T,D-W),X)
+    M2 = np.dot(np.dot(X.T,D),X)
     C = nl.cholesky(M2)
     iC = nl.pinv(C)
-    M1 = np.dot(iC,np.dot(M1,np.transpose(iC)))
-    M2 = np.dot(iC,np.dot(M2,np.transpose(iC)))
+    M1 = np.dot(iC,np.dot(M1,iC.T))
+    M2 = np.dot(iC,np.dot(M2,iC.T))
     
     
     U,S,V = nl.svd(M1,0)
     if verbose:
         print S
     
-    proj = np.dot(np.transpose(iC),U)
+    proj = np.dot(iC.T,U)
     proj = np.vstack([proj[:,-1-i] for i in range(dim)])
-    proj = np.transpose(proj)
+    proj = proj.T
     proj = proj/np.sqrt(np.sum(proj**2,0))
 
     return proj
