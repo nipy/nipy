@@ -1,11 +1,26 @@
 import numpy as np
 
-from nipy.testing import assert_true, assert_array_almost_equal
 
 from nipy.core.api import (Affine, Image,  
                            ArrayCoordMap, compose)
 from nipy.core.reference import slices
-from nipy.algorithms.resample import resample
+from nipy.algorithms.resample import resample, resample_img2img
+from nipy.io.api import load_image
+
+from nose.tools import assert_true, assert_false, assert_equal, assert_raises
+
+from numpy.testing import assert_array_almost_equal
+from nipy.testing import funcfile, anatfile
+
+
+def test_resample_img2img():
+    fimg = load_image(funcfile)
+    aimg = load_image(anatfile)
+    resimg = resample_img2img(fimg, fimg)
+    yield assert_true, np.allclose(np.asarray(resimg), np.asarray(fimg))
+    yield assert_raises, ValueError, resample_img2img, fimg, aimg
+
+
 
 # Hackish flag for enabling of pylab plots of resamplingstest_2d_from_3d
 gui_review = False

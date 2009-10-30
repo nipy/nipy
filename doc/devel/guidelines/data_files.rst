@@ -218,8 +218,7 @@ at the moment.
 The data in the data packages will not be under source control.
 
 The data packages will be available at a central release location.  For
-now this will be: http://cirl.berkeley.edu/mb312/nipy-data but we expect
-this to change to sourceforge soon.
+now this will be: http://nipy.sourceforge.net/data-packages/ .
 
 A package, such as ``nipy-templates-0.1.tar.gz`` will have the following
 contents::
@@ -259,3 +258,8 @@ The process of making a release should be:
 There is an example nipy data package ``nipy-examplepkg`` in the
 ``examples`` directory of the NIPY repository.
 
+The machinery for creating and maintaining data packages is available with::
+   
+   svn co https://nipy.svn.sourceforge.net/svnroot/nipy/data-packaging/trunk
+
+See the ``README.txt`` file there for more information.
