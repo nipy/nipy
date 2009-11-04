@@ -6,7 +6,7 @@ from nipy.utils import example_data
 
 def remake_images(): 
     # Get group data
-    group_data = example_data.get_filename('language_babies','offset_002.npz')
+    group_data = example_data.get_filename('neurospin','language_babies','offset_002.npz')
     f = np.load(group_data)
     data, vardata, xyz = f['mat'], f['var'], f['xyz']
     dX = xyz[0,:].max() + 1
