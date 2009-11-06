@@ -216,7 +216,6 @@ def parcellation_output_with_paths(Pa, mask_images, group_path, indiv_path):
     """
     nsubj = Pa.nb_subj
     mxyz = Pa.ijk
-    Pa.set_subjects(nbru)
     
     # write the template image
     tlabs = Pa.group_labels
