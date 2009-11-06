@@ -205,12 +205,13 @@ class _AnatCache(object):
 
     @classmethod
     def get_anat(cls):
-        import nipy.neurospin.data
+        # XXX: still relying on fff2
+        import fff2.data
         if cls.anat is not None:
             return cls.anat, cls.anat_sform, cls.anat_max
         anat_im = NiftiImage(
                     os.path.join(os.path.dirname(
-                        os.path.realpath(nipy.neurospin.data.__file__)),
+                        os.path.realpath(fff2.data.__file__)),
                         'MNI152_T1_1mm_brain.nii.gz'
                     ))
         anat = anat_im.data.T
@@ -244,7 +245,7 @@ class _AnatCache(object):
 
 def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
                     vmin=None, figure_num=None, axes=None, title='',
-                    mask=None):
+                    mask=None, **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
 
         Parameters
@@ -277,7 +278,9 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
         title : string, optional
             The title dispayed on the figure.
         mask : 3D ndarray, boolean, optional
-            The brain mask. If None, the mask is computed from the map.
+            The brain mask. If None, the mask is computed from the map.*
+        kwargs: extra keyword arguments, optional
+            Extra keyword arguments passed to pylab.imshow
 
         Notes
         -----
@@ -300,7 +303,7 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
     vmax_map  = map.max()
     if vmin is not None and np.isfinite(vmin):
         map = np.ma.masked_less(map, vmin)
-    elif mask is not None:
+    elif mask is not None and not isinstance(map, np.ma.masked_array):
         map = np.ma.masked_array(map, np.logical_not(mask))
         vmin_map  = map.min()
         vmax_map  = map.max()
@@ -370,7 +373,8 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
                                 extent=(map_bounds[0, 3],
                                         map_bounds[0, 0],
                                         map_bounds[2, 0],
-                                        map_bounds[2, 5]))
+                                        map_bounds[2, 5]),
+                                **kwargs)
     pl.text(ax_xmin +shapes[0] + shapes[1] - 0.01, ax_ymin + 0.07, '%i' % x,
              horizontalalignment='right',
              verticalalignment='bottom',
@@ -400,7 +404,8 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
                                 extent=(map_bounds[1, 0],
                                         map_bounds[1, 4],
                                         map_bounds[2, 0],
-                                        map_bounds[2, 5]))
+                                        map_bounds[2, 5]),
+                                **kwargs)
     pl.text(ax_xmin + shapes[-1] - 0.01, ax_ymin + 0.07, '%i' % y, 
              horizontalalignment='right',
              verticalalignment='bottom',
@@ -432,7 +437,8 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
                                 extent=(map_bounds[0, 0],
                                         map_bounds[0, 3],
                                         map_bounds[1, 0],
-                                        map_bounds[1, 4]))
+                                        map_bounds[1, 4]),
+                                **kwargs)
     pl.text(ax_xmax - 0.01, ax_ymin + 0.07, '%i' % z, 
              horizontalalignment='right',
              verticalalignment='bottom',
@@ -459,8 +465,58 @@ def demo_plot_map_2d():
                                 figure_num=512)
 
 
+def plot_anat_3d(anat=None, anat_sform=None, scale=1):
+    from enthought.mayavi import mlab
+    from enthought.mayavi.sources.api import ArraySource
+    if anat is None:
+        anat, anat_sform, anat_max = _AnatCache.get_anat()
+    ###########################################################################
+    # Display the cortical surface (flattenned)
+    center = np.r_[0, 0, 0, 1]
+    spacing = np.diag(anat_sform)[:3]
+    # XXX: VTK orients X (negative spacing) in the wrong direction
+    origin = np.dot(anat_sform, center)[:3]
+    spacing[0] *= -1
+    origin[0] *= -1
+    anat_src = ArraySource(scalar_data=np.asarray(anat), 
+                           name='Anat',
+                           # XXX: we inflate a bit the anatomy
+                           spacing=scale*spacing,
+                           origin=origin)
+    #anat_src.update_image_data = True
+    
+    anat_src.image_data.point_data.add_array(_AnatCache.get_blurred())
+    anat_src.image_data.point_data.get_array(1).name = 'blurred'
+            
+    cortex_surf = mlab.pipeline.set_active_attribute(
+                    mlab.pipeline.contour(
+                        mlab.pipeline.set_active_attribute(
+                                anat_src, point_scalars='blurred'), 
+                    ), point_scalars='scalar')
+        
+    # XXX: the choice in vmin and vmax should be tuned to show the
+    # sulci better
+    cortex = mlab.pipeline.surface(cortex_surf,
+                opacity=0.5, colormap='copper', vmin=4800, vmax=5000)
+    cortex.enable_contours = True
+    cortex.contour.filled_contours = True
+    cortex.contour.auto_contours = False
+    cortex.contour.contours = [0, 5000, 7227.8]
+    cortex.actor.property.backface_culling = True
+    #cortex.actor.property.frontface_culling = True
+
+    cortex.actor.mapper.interpolate_scalars_before_mapping = True
+    cortex.actor.property.interpolation = 'flat'
+
+    # Add opacity variation to the colormap
+    cmap = cortex.module_manager.scalar_lut_manager.lut.table.to_array()
+    cmap[128:, -1] = 0.7*255
+    cortex.module_manager.scalar_lut_manager.lut.table = cmap
+    return cortex
+ 
+
 def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
-    vmin=None, figure_num=None, mask=None):
+    vmin=None, figure_num=None, mask=None, **kwargs):
     """ Plot a 3D volume rendering view of the activation, with an
         outline of the brain.
 
@@ -475,7 +531,8 @@ def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
             or a cut, in MNI coordinates and order.
         anat : 3D ndarray, optional
             The anatomical image to be used as a background. If None, the 
-            MNI152 T1 1mm template is used.
+            MNI152 T1 1mm template is used. If False, no anatomical
+            image is used.
         anat_sform : 4x4 ndarray, optional
             The affine matrix going from the anatomical image voxel space to 
             MNI space. This parameter is not used when the default 
@@ -489,6 +546,9 @@ def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
             new figure is created.
         mask : 3D ndarray, boolean, optional
             The brain mask. If None, the mask is computed from the map.
+        kwargs: extra keyword arguments, optional
+            The extra keyword arguments are passed to Mayavi's
+            mlab.pipeline.volume
 
         Notes
         -----
@@ -535,64 +595,11 @@ def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
                           spacing=spacing,
                           origin=origin)
     #map_src.update_image_data = True
-    vol = mlab.pipeline.volume(map_src)
-
-    # Change the opacity function
-    from enthought.tvtk.util.ctf import PiecewiseFunction
-    vmin_map = map.min()
-    vmax_map = map.max()
-    if vmin is None:
-        vmin = find_activation(map, upper_only=True, mask=mask)
-    otf = PiecewiseFunction()
-    otf.add_point(vmin_map, 0)
-    otf.add_point(max(0, vmin), 0)
-    otf.add_point(vmax_map, 1)
-    vol._volume_property.set_scalar_opacity(otf)
-    vol.update_ctf = True
-    
-    ###########################################################################
-    # Display the cortical surface (flattenned)
-    spacing = np.diag(anat_sform)[:3]
-    # XXX: VTK orients X (negative spacing) in the wrong direction
-    origin = np.dot(anat_sform, center)[:3]
-    spacing[0] *= -1
-    origin[0] *= -1
-    anat_src = ArraySource(scalar_data=np.asarray(anat), 
-                           name='Anat',
-                           # XXX: we inflate a bit the anatomy
-                           spacing=1.05*spacing,
-                           origin=origin)
-    #anat_src.update_image_data = True
-    
-    anat_src.image_data.point_data.add_array(_AnatCache.get_blurred())
-    anat_src.image_data.point_data.get_array(1).name = 'blurred'
-            
-    cortex_surf = mlab.pipeline.set_active_attribute(
-                    mlab.pipeline.contour(
-                        mlab.pipeline.set_active_attribute(
-                                anat_src, point_scalars='blurred'), 
-                    ), point_scalars='scalar')
-        
-    # XXX: the choice in vmin and vmax should be tuned to show the
-    # sulci better
-    cortex = mlab.pipeline.surface(cortex_surf,
-                opacity=0.5, colormap='copper', vmin=4800, vmax=5000)
-    cortex.enable_contours = True
-    cortex.contour.filled_contours = True
-    cortex.contour.auto_contours = False
-    cortex.contour.contours = [0, 5000, 7227.8]
-    # XXX: Why do I need to cull the front face?
-    cortex.actor.property.backface_culling = True
-    #cortex.actor.property.frontface_culling = True
-
-    cortex.actor.mapper.interpolate_scalars_before_mapping = True
-    cortex.actor.property.interpolation = 'flat'
-
-    # Add opacity variation to the colormap
-    cmap = cortex.module_manager.scalar_lut_manager.lut.table.to_array()
-    cmap[128:, -1] = 0.7*255
-    cortex.module_manager.scalar_lut_manager.lut.table = cmap
-    
+    vol = mlab.pipeline.volume(map_src, vmin=vmin, **kwargs)
+   
+    if not anat is False:
+        plot_anat_3d(anat=anat, anat_sform=anat_sform, scale=1.05)
+   
     ###########################################################################
     # Draw the cursor
     if cut_coords is not None:
@@ -868,6 +875,8 @@ def plot_niftifile(filename, outputname=None, do3d=False, vmin=None,
             raise SformError, 'Mask does not have same sform as image'
         if not np.allclose(mask.shape, nim.data.shape[-3:]):
             raise NiftiIndexError, 'Mask does not have same shape as image'
+    else:
+        mask = None
 
     output_files = list()
 
