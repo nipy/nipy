@@ -29,6 +29,10 @@ def parcel_input(mask_images, nbeta, learning_images,
       parcellation procedure. normally these are statistics(student/normal) images.
     ths=.5: threshold to select the regions that are common across subjects.
             if ths = .5, thethreshold is half the number of subjects
+    fdim=3, int
+            dimension of the data used in subsequent analyses 
+            if smaller than len(nbeta), 
+            a PCA is perfomed to reduce the information in the data
     affine=None provides the transformation to Talairach space.
                 if affine==None, this is taken from the image header
 
@@ -56,9 +60,9 @@ def parcel_input(mask_images, nbeta, learning_images,
     mask = []
     for s in range(nsubj):
         nim = load(mask_images[s])
-        temp = nim.get_data()
+        temp = np.squeeze(nim.get_data())
         rbeta = load(learning_images[s][0])
-        maskb = rbeta.get_data()
+        maskb = np.squeeze(rbeta.get_data())
         temp = np.minimum(temp,1-(maskb==0))        
         mask.append(temp)
         # fixme : check that all images are co-registered
@@ -189,6 +193,60 @@ def Parcellation_output(Pa, mask_images, learning_images, coord, nbru,
             save(wim, LabelImage)       
 
     return Pa
+
+def parcellation_output_with_paths(Pa, mask_images, group_path, indiv_path):
+    """
+    Function that produces images that describe the spatial structure
+    of the parcellation.  It mainly produces label images at the group
+    and subject level
+    
+    Parameters
+    ----------
+    Pa : Parcellation instance that describes the parcellation
+    mask_images: list of images paths that define the mask
+    coord: array of shape (nvox,3) that contains(approximated)
+           MNI-coordinates of the brain mask voxels considered in the
+           parcellation process
+    group_path, string, path of the group-level parcellation image
+    indiv_path, list of strings, paths of the individual parcellation images    
+    
+    fixme
+    -----
+    the referential-defining information should be part of the Pa instance
+    """
+    nsubj = Pa.nb_subj
+    mxyz = Pa.ijk
+    Pa.set_subjects(nbru)
+    
+    # write the template image
+    tlabs = Pa.group_labels
+    rmask = load(mask_images[0])
+    ref_dim = rmask.get_shape()
+    grid_size = np.prod(ref_dim)
+    affine = rmask.get_affine()
+    
+    Label = np.zeros(ref_dim)
+    Label[Pa.ijk[:,0],Pa.ijk[:,1],Pa.ijk[:,2]]=tlabs+1
+    
+    wim = Nifti1Image (Label, affine)
+    hdr = wim.get_header()
+    hdr['descrip'] = 'group_level Label image obtained from a \
+                     parcellation procedure'
+    save(wim, group_path)
+    
+    # write subject-related stuff
+    for s in range(nsubj):
+        # write the images
+        labs = Pa.label[:,s]
+        Label = np.zeros(ref_dim).astype(np.int)
+        Label[Pa.ijk[:,0],Pa.ijk[:,1],Pa.ijk[:,2]]=labs+1
+        wim = Nifti1Image (Label, affine)
+        hdr = wim.get_header()
+        hdr['descrip'] = 'individual Label image obtained \
+                         from a parcellation procedure'
+        save(wim, indiv_path[s])
+    
+
 
 def Parcellation_based_analysis(Pa, test_images, numbeta, swd="/tmp", 
                                     DMtx=None, verbose=1, method_id=0):
