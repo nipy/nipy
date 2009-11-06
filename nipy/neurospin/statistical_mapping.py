@@ -86,7 +86,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
 
     ## Sort clusters by descending size order
     def smaller(c1, c2):
-        return np.sign(c2['size']-c1['size'])
+        return int(np.sign(c2['size']-c1['size']))
     clusters.sort(cmp=smaller)
 
     # FDR-corrected p-values
