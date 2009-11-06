@@ -19,7 +19,7 @@ x3 = np.repeat(np.array([-2,2],ndmin=2),30,0)+0.5*nr.randn(30,dim)
 x = np.concatenate((x1,x2,x3))
 
 # 2. fit the mixture with a bunch of possible models
-krange = range(1,10)
+krange = range(1,5)
 lgmm = gmm.best_fitting_GMM(x,krange,prec_type='diag',niter=100,delta = 1.e-4,ninit=1,verbose=0)
 
 # 3, plot the result

@@ -44,7 +44,7 @@ plot2D(x,bestb,z,verbose=0)
 niter = 1000
 krange = range(2,5)
 bbf = -np.infty
-for k in range(1,4):
+for k in krange:
     b = bgmm.BGMM(k,dim)
     b.guess_priors(x)
     b.initialize(x)
