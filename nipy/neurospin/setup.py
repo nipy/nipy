@@ -3,6 +3,7 @@ from warnings import warn
 
 # Global variables
 LIBS = os.path.realpath('libcstat')
+FORCE_LAPACK_LITE = True
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
@@ -45,18 +46,19 @@ def configuration(parent_package='',top_path=None):
     # along to the different .so in the neurospin build system.
     # First, try 'lapack_info', as that seems to provide more details on Linux
     # (both 32 and 64 bits):
-    lapack_info = get_info('lapack_opt', 0)
-    if 'libraries' not in lapack_info:
-        # But on OSX that may not give us what we need, so try with 'lapack'
-        # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
-        lapack_info = get_info('lapack', 0)
+    if FORCE_LAPACK_LITE: 
+        lapack_info = {}
 
-    ## Uncomment the next line to force building and linking with lapack lite
-    lapack_info = {}
+    else:
+        lapack_info = get_info('lapack_opt', 0)
+        if 'libraries' not in lapack_info:
+            # But on OSX that may not give us what we need, so try with 'lapack'
+            # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
+            lapack_info = get_info('lapack', 0)
 
     # Case 1: lapack not found 
     if not lapack_info:
-        warn('no lapack installation found on this system, using lite lapack sources')
+        warn('no lapack installation found on this system, using lapack lite sources')
         sources.append(os.path.join(LIBS,'lapack_lite','*.c'))
         library_dirs = []
         libraries = []
@@ -67,6 +69,12 @@ def configuration(parent_package='',top_path=None):
         libraries = lapack_info['libraries']
         if 'include_dirs' in lapack_info:
             config.add_include_dirs(lapack_info['include_dirs'])    
+
+    print library_dirs
+    print libraries
+    print lapack_info
+
+
 
     config.add_library('cstat',
                        sources=sources,
@@ -87,32 +95,6 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('utils')
     config.add_subpackage('viz')
 
-    # ----------------------------------------------------------------------
-    # Packages likely not to be moved over into nipy
-    ## Data will be handled separately (nipy already has tools for this)
-    ## config.add_subpackage('data')
-    # ----------------------------------------------------------------------
-
-    ## # Unitary tests 
-    ## config.add_data_dir('tests')
-    ## config.add_data_dir(os.path.join('tests', 'data'))
-    
-    ## config.add_data_dir('data')
-
-    ## """
-    ## Add an extension for each C file found in the source directory. 
-    ## """
-    ## root = os.path.split(__file__)[0]
-    ## Cfiles = glob(os.path.join(root, '*.c'))
-    ## for Cfile in Cfiles:
-    ##     name, ext = os.path.splitext(os.path.basename(Cfile))
-    ##     print('Adding extension: %s' % name)
-    ##     config.add_extension(
-    ##         '_'+name,
-    ##         sources=[Cfile],
-    ##         libraries=['cstat']
-    ##         )
-    
     config.make_config_py() # installs __config__.py
 
     return config
