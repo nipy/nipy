@@ -3,7 +3,7 @@ import sys
 from distutils import log
 from distutils.cmd import Command
 from distutils.version import LooseVersion
-
+from warnings import warn 
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
@@ -46,7 +46,8 @@ def package_check(pkg_name, version=None, checker=LooseVersion):
     try:
         mod = __import__(pkg_name)
     except ImportError:
-        raise ImportError(msg)
+        warn(msg)
+        return 
     if not version:
         return
     msg += ' >= %s' % version
