@@ -83,7 +83,14 @@ extern "C" {
 				     double* hI, 
 				     unsigned int clampI, 
 				     unsigned int clampJ, 
-				     double* n); 
+				     double* n);
+  extern double joint_entropy(const double* H,
+                              unsigned int clampI,
+                              unsigned int clampJ);
+  extern double conditional_entropy(const double* H,
+                                    double* hJ,
+                                    unsigned int clampI,
+                                    unsigned int clampJ);
   extern double mutual_information(const double* H, 
 				   double* hI, 
 				   unsigned int clampI, 
@@ -102,9 +109,10 @@ extern "C" {
 					      unsigned int clampI, 
 					      double* fJ, 
 					      unsigned int clampJ, 
-					      double* n); 
+					      double* n);
+        
 
-
+        
   
   /*!
     \brief Apply a transformation to an image
