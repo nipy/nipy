@@ -32,7 +32,7 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
                     in case of FIR design, yields the array of delays 
                     used in the FIR model
     fir_duration=1., float, duration of the FIR block; 
-                     in general it should eb equal to the tr    
+                     in general it should be equal to the tr    
     cond_ids=None, list of strin of length (ncond), 
                      ids of the experimental conditions. 
                 If None this will be called 'c0',..,'cn'
