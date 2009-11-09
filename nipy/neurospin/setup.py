@@ -70,12 +70,6 @@ def configuration(parent_package='',top_path=None):
         if 'include_dirs' in lapack_info:
             config.add_include_dirs(lapack_info['include_dirs'])    
 
-    print library_dirs
-    print libraries
-    print lapack_info
-
-
-
     config.add_library('cstat',
                        sources=sources,
                        library_dirs=library_dirs,
