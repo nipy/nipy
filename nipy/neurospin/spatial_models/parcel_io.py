@@ -340,10 +340,10 @@ def Parcellation_based_analysis(Pa, test_images, numbeta, swd="/tmp",
 
 
 def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward', 
-                          write_dir='/tmp', mu=10., verbose=0, fullpath=None):
+                          write_dir=None, mu=10., verbose=0, fullpath=None):
     """
     Parcellation of a one-subject dataset
-
+    Return: a tuple (Parcellation instance, parcellation labels)
     
     Parameters
     ----------
@@ -357,12 +357,14 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
                    'ward': Ward's clustering algorithm
                    'gkm': Geodesic k-means algorithm, random initialization
                    'gkm_and_ward': idem, initialized by Ward's clustering
-    write_dir='/tmp': write directory
+    write_dir=None: write directory. If fullpath is None too, then no file output.
     mu = 10., float: the relative weight of anatomical information
     verbose=0: verbosity mode
     fullpath=None, string,
                    path of the output image
-                   By default, it is the write dir + a name depending on the method
+                   If write_dir and fullpath are None then no file output.
+                   If only fullpath is None then it is the write dir + a name 
+                   depending on the method.
     Note
     ----
     Ward's method takes time (about 6 minutes for a 60K voxels dataset)
@@ -441,21 +443,28 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
         va =  np.dot(pi,np.sum(lpa.var_feature_intra([coord])[0],1))/nvox
         print nbparcel, "functional variance", vf, "anatomical variance",va
 
+
     # step3:  write the resulting label image
-    if fullpath!=None:
-        LabelImage = fullpath
-    elif method=='ward':
-        LabelImage = os.path.join(write_dir,"parcel_wards.nii")
-    elif method=='gkm':
-        LabelImage = os.path.join(write_dir,"parcel_gkmeans.nii")
-    elif method=='ward_and_gkm':
-        LabelImage = os.path.join(write_dir,"parcel_wgkmeans.nii")
-        
     Label = -np.ones(ref_dim,'int16')
     Label[lmask>0] = u
-    wim = Nifti1Image (Label, affine)
-    hdr = wim.get_header()
-    hdr['descrip'] = 'Intra-subject parcellation image'
-    save(wim, LabelImage)   
-        
-    print "Wrote the parcellation images as %s" %LabelImage
+
+    if fullpath is not None:
+        LabelImage = fullpath
+    elif write_dir is not None:
+        if method=='ward':
+            LabelImage = os.path.join(write_dir,"parcel_wards.nii")
+        elif method=='gkm':
+            LabelImage = os.path.join(write_dir,"parcel_gkmeans.nii")
+        elif method=='ward_and_gkm':
+            LabelImage = os.path.join(write_dir,"parcel_wgkmeans.nii")
+    else:
+        LabelImage = None
+    
+    if LabelImage is not None:
+        wim = Nifti1Image(Label, affine)
+        hdr = wim.get_header()
+        hdr['descrip'] = 'Intra-subject parcellation image'
+        save(wim, LabelImage)
+        print "Wrote the parcellation images as %s" %LabelImage
+
+    return lpa, Label
