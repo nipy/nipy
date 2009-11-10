@@ -1,5 +1,5 @@
 import os
-from warnings import warn 
+from distutils import log 
 
 # Global variables
 LIBS = os.path.realpath('libcstat')
@@ -55,7 +55,7 @@ def configuration(parent_package='',top_path=None):
     # distribution included in the package (sources have been
     # translated to C using f2c)
     if not lapack_info:
-        warn('no lapack installation found on this system, using rescue lapack lite distribution')
+        log.warn('No lapack installation found, using lapack lite distribution')
         sources.append(os.path.join(LIBS,'lapack_lite','*.c'))
         library_dirs = []
         libraries = []

@@ -41,7 +41,7 @@ if not 'extra_setuptools_args' in globals():
 
 # Dependency checks
 def package_check(pkg_name, version=None, checker=LooseVersion):
-    msg = 'WARNING. Missing package: %s, you might get run-time errors' % pkg_name 
+    msg = 'Missing package: %s, you might get run-time errors' % pkg_name 
     try:
         mod = __import__(pkg_name)
     except ImportError:
