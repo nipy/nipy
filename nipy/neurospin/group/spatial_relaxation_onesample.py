@@ -1069,8 +1069,8 @@ class multivariate_stat:
             #I = range(self.m.size)*np.ones(self.data.shape,int)
         #else:
             #I = self.D.I
-        v_labels = v[self.labels]
         m_labels = m_mean[self.labels]
+        v_labels = m_var[self.labels]
         return (SS4 + m_labels * SS1 + m_labels / v_labels)\
                  / (SS1 + 1.0 / v_labels)
 
