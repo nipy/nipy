@@ -13,6 +13,8 @@ This is done for
 
 Future developpements will include some supervised cases, e.g. LDA,LDE
 and the estimation of the latent dimension, at least in simple cases.
+
+Bertrand Thirion, 2006-2009
 """
 
 import numpy as np
@@ -523,11 +525,13 @@ def LPP(G, X, dim, verbose=0, maxiter=1000):
 
 class NLDR:
     """
-    This is a generic class for dimension reduction techniques
-    the main fields are
-    - train_data : the input dataset from which the DR is perfomed
-    - fdim=1
-    - rdim=1
+    This is a generic class for non-linear dimension reduction techniques
+         (NLDR) the main members are:
+    train_data, array the input dataset from which the DR is perfomed
+    fdim=1, int, the input deature dimension
+    rdim=1, int, the reduced feature dimension
+    trained: trained==1 means that the system has been trained 
+             and can generalize
     """
     def __init__(self, X=None, rdim = 1, fdim=1):
         self.train_data = X
@@ -540,18 +544,31 @@ class NLDR:
         if self.fdim<self.rdim:
             raise ValueError, "reduced dim cannot be lower than fdim"
     
-    def check_data(self,X):     
+    def check_data(self,X):
+        """
+        Check that X has the specified fdim
+        """     
         if X.shape[1]!= self.fdim:
-            raise ValueError, "Shape(X,1)=%d is not equal to fdim=%d"%(X.shape[1],self.fdim)
+            raise ValueError, "Shape(X,1)=%d is not equal to fdim=%d" \
+                  %(X.shape[1],self.fdim)
     
     def set_train_data(self,X):
+        """
+        Set the input array X as  the training data of the class
+        """
         self.check_data(X)
         self.train_data = X
     
     def train(self):
+        """
+        set self.trained as 1
+        """
         self.trained = 1
         
     def test(self,X):
+        """
+        check that X is suitable as test data
+        """
         if self.trained ==0:
             raise ValueError, "Untrained function -- cannot generalize"
         self.check_data(X)
@@ -559,40 +576,52 @@ class NLDR:
 class MDS(NLDR):
     """
     This is a particular class that perfoms linear dimension reduction
-    using multi-dimensional scaling
+         using multi-dimensional scaling
+         (PCA of the distance matrix)
     besides the fields of NDLR, it contains the following ones:
-    - trained: trained==1 means that the system has been trained 
-    and can generalize
-    - embedding: array of shape (nbitems,rdim)
-    this is representation of the training data
-    - offset: array of shape(nbitems)
-    affine part of the embedding
-    - projector: array of shape(fdim,rdim)
-    linear part of the embedding
+    
+    embedding: array of shape (nbitems,rdim)
+               this is representation of the training data
+    offset: array of shape(nbitems)
+            affine part of the embedding
+    projector: array of shape(fdim,rdim)
+               linear part of the embedding
     """
     
-    def train(self,verbose=0):
+    def train(self, verbose=0):
         """
-        chart = MDS.train(verbose=0)
+        training procedure
+        
+        Parameters
+        ----------
         verbose=0 : verbosity mode
-        chart: resulting rdim-dimensional represntation
+        
+        Returns
+        -------
+        chart: resulting rdim-dimensional representation
         """
         self.check_data(self.train_data)
         d = Euclidian_distance(self.train_data)
-        u,v,rm = mds(d,self.rdim,verbose)
+        u, v, rm = mds(d,self.rdim, verbose)
         self.trained = 1
         self.embedding = u
         self.offset = rm
         self.projector = v
         return(u)
     
-    def test(self,X):
+    def test(self, X):
         """
-        chart = MDS.test(X,verbose=0)
-        X = array of shape(nbitems,fdim) 
-        new data points to be embedded
-        verbose=0 : verbosity mode
-        chart: resulting rdim-dimensional represntation
+        Apply the learnt embedding to the new data X
+        
+        Parameters
+        ----------
+        X: array of shape(nbitems, fdim) 
+           data points to be embedded
+        
+        Returns
+        -------
+        chart: array of shape (nbitems, rdim) 
+        resulting rdim-dimensional represntation
         """
         if self.trained ==0:
             raise ValueError, "Untrained function -- cannot generalize"
@@ -602,46 +631,50 @@ class MDS(NLDR):
         d = Euclidian_distance(self.train_data,X)
         d = d*d
         d = d-np.reshape(self.offset,(self.train_data.shape[0],1))
+        # fixme : is this correct ?
         d = d-np.mean(d,0)
-        u = np.dot(np.transpose(d),self.projector)
+        u = np.dot(d.T,self.projector)
         return u[:,:self.rdim]
                     
 
 class knn_Isomap(NLDR):
     """
     This is a particular class that perfoms linear dimension reduction
-    using k nearest neighbor modelling and isomapping.
-    besides the fields of NDLR, it contains the following ones:
-    - k : number of neighbors in the knn graph building
-    - G : resulting graph based on the training data
-    - trained: trained==1 means that the system has been trained 
-    and can generalize
-    - embedding: array of shape (nbitems,rdim)
-    this is representation of the training data
-    - offset: array of shape(nbitems)
-    affine part of the embedding
-    - projector: array of shape(fdim,rdim)
-    linear part of the embedding
+         using k-nearest-neighbor (knn) modelling and isomapping.
+    Besides the fields of NDLR, it contains the following ones:
+    
+    k : number of neighbors in the knn graph building
+    G : knn graph based on the training data
+    embedding: array of shape (nbitems,rdim)
+               this is representation of the training data
+    offset: array of shape(nbitems)
+            affine part of the embedding
+    projector: array of shape(fdim,rdim)
+               linear part of the embedding
     """
     
-    def train(self,k=1,p=300,verbose=0):
+    def train(self, k=1, p=300, verbose=0):
         """
-        chart = knn_Isomap.train(verbose=0)
-        INPUT:
-        - k=1 : k in the knn system
-        - p=300 : number points used in the low dimensional approximation
-        - verbose=0 : verbosity mode
-        OUTPUT:
-        - chart = knn_Isomap.embedding
+        Training function
+        
+        Parameters
+        ----------
+        k=1, int, k in the knn system
+        p=300, int, number points used in the low dimensional approximation
+        verbose=0, bool, verbosity mode
+        
+        Returns
+        -------
+        chart, array of shape (nbLearningSamples,rdim) 
+               knn_Isomap embedding
         """
         self.k = k 
         self.check_data(self.train_data)
         
-        #d = Euclidian_distance(self.train_data)
         n = self.train_data.shape[0]
         G = fg.WeightedGraph(n)
-        G.knn(self.train_data,k)
-        u,v,rm = isomap(G,self.rdim,p,verbose)
+        G.knn(self.train_data, k)
+        u, v, rm = isomap(G, self.rdim, p, verbose)
 
         self.G = G  
         self.trained = 1
@@ -652,20 +685,28 @@ class knn_Isomap(NLDR):
     
     def test(self,X):
         """
-        chart = knn_Isomap.test(X,verbose=0)
-        INPUT
-        X = array of shape(nbitems,fdim) 
-        new data points to be embedded
-        verbose=0 : verbosity mode
-        OUTPUT
-        chart: resulting rdim-dimensional represntation
+        embed new data into the learnt representation
+        
+        Parameters
+        ----------
+        X array of shape(nbitems,fdim) 
+          new data points to be embedded
+        verbose=0, bool, verbosity mode
+        
+        Returns
+        -------
+        chart, array of shape (nbitems, rdim) 
+               resulting rdim-dimensional represntation
         """     
+        # preliminary checks
         if self.trained ==0:
             raise ValueError, "Untrained function -- cannot generalize"
         if np.size(X)==self.fdim:
             X = np.reshape(X,(1,self.fdim))
         self.check_data(X)
-        #
+        
+        # launch the algorithm:
+        # step 1: create a compound graph with the learning and test vertices
         n = self.G.V
         p = X.shape[0]
         G1 = self.G
@@ -676,49 +717,57 @@ class knn_Isomap(NLDR):
         G1.edges = np.vstack((G1.edges,np.transpose(np.vstack((b+n,a)))))
         G1.weights = np.hstack((G1.weights,d))
         G1.weights = np.hstack((G1.weights,d))
-        #
+        
+        # perform dijkstra's distance computation
         d = np.zeros((p+n,p))
         for q in range(p):
             d[:,q] = G1.dijkstra(q+n)
         
+        # perfom the embedding based on this distances
         d = d[:n,:]
         d = d*d
         d = d-np.reshape(self.offset,(self.train_data.shape[0],1))
+        # fixme : not sure of that
         d = d-np.mean(d,0)
-        u = np.dot(np.transpose(d),self.projector)
+        u = np.dot(d.T,self.projector)
         return u[:,:self.rdim]
 
 class eps_Isomap(NLDR):
     """
     This is a particular class that perfoms linear dimension reduction
-    using eps-ball neighbor modelling and isomapping.
+         using eps-ball neighbor modelling and isomapping.
     besides the fields of NDLR, it contains the following ones:
-    - eps : eps-ball model used in the knn graph building
-    - G : resulting graph based on the training data
-    - trained: trained==1 means that the system has been trained 
-    and can generalize
-    - embedding: array of shape (nbitems,rdim)
-    this is representation of the training data
-    - offset: array of shape(nbitems)
-    affine part of the embedding
-    - projector: array of shape(fdim,rdim)
-    linear part of the embedding
+    
+    eps, float eps-ball model used in the knn graph building
+    G : data-representing graph learnt from the training data
+    embedding: array of shape (nbitems,rdim)
+               this is representation of the training data
+    offset: array of shape(nbitems)
+            affine part of the embedding
+    projector: array of shape(fdim,rdim)
+               linear part of the embedding
     """
     
-    def train(self,eps=1.0,p=300,verbose=0):
+    def train(self, eps=1.0, p=300, verbose=0):
         """
-        chart = eps_Isomap.train(X,verbose=0)
-        INPUT
-        eps= 1.0: self.eps
-        p = 300  number points used in the low dimensional approximation
-        - verbose=0 : verbosity mode
-        OUTPUT:
-        - chart = eps_Isomap.embedding
+        Traing/learning function
+        
+        Parameters
+        ----------
+        eps=1.0, float value of self.eps
+        p=300, int  
+               number points used to compute the low dimensional approximation
+        verbose=0 : verbosity mode
+        
+        returns
+        -------
+        chart, array of shape (nbLearningSamples, rdim),
+               the resulting embedding
         """     
         self.eps = eps
         self.check_data(self.train_data)
         
-        #d = Euclidian_distance(self.train_data)
+        
         n = self.train_data.shape[0]
         G = fg.WeightedGraph(n)
         G.eps(self.train_data,self.eps)
@@ -733,20 +782,27 @@ class eps_Isomap(NLDR):
     
     def test(self,X):
         """
-        chart = eps_Isomap.test(X,verbose=0)
-        INPUT
-        X = array of shape(nbitems,fdim) 
-        new data points to be embedded
-        verbose=0 : verbosity mode
-        OUTPUT
-        chart: resulting rdim-dimensional represntation
+        Embedding the data conatined in X
+        
+        Parameters
+        ----------
+        X:array of shape(nbitems,fdim) 
+                new data points to be embedded
+        verbose=0, bool, verbosity mode
+        
+        Returns
+        -------
+        chart: array of shape (nbitems, rdim) 
+               resulting rdim-dimensional represntation
         """
+        # preliminary checks
         if self.trained ==0:
             raise ValueError, "Untrained function -- cannot generalize"
         if np.size(X)==self.fdim:
             X = np.reshape(X,(1,self.fdim))
         self.check_data(X)
-        #
+        
+        # construction of a graph with the training and test data
         n = self.G.V
         p = X.shape[0]
         G1 = self.G
@@ -757,40 +813,48 @@ class eps_Isomap(NLDR):
         G1.edges = np.vstack((G1.edges,np.transpose(np.vstack((b+n,a)))))
         G1.weights = np.hstack((G1.weights,d))
         G1.weights = np.hstack((G1.weights,d))
-        #
+        
+        # computation of graph-based distances
         d = np.zeros((p+n,p))
         for q in range(p):
             d[:,q] = G1.dijkstra(q+n)
         
+        # derication of the  embedding
         d = d[:n,:]
         d = d*d
         d = d-np.reshape(self.offset,(self.train_data.shape[0],1))
+        # fixme : is this correct ?
         d = d-np.mean(d,0)
-        u = np.dot(np.transpose(d),self.projector)
+        u = np.dot(d.T,self.projector)
         return u[:,:self.rdim]
 
 
 class knn_LE(NLDR):
     """
     This is a particular class that perfoms linear dimension reduction
-    using k nearest neighbor modelling and laplacian embedding.
+         using k nearest neighbor modelling and laplacian embedding.
     besides the fields of NDLR, it contains the following ones:
-    - k : number of neighbors in the knn graph building
-    - G : resulting graph based on the training data
-    - trained: trained==1 means that the system has been trained 
-    and can generalize
-    - embedding: array of shape (nbitems,rdim)
-    this is representation of the training data
-    NB: to date, only the training part (embedding computation) is considered
+    
+    k, int number of neighbors in the knn graph building
+    G, graph lerant on the training data
+    embedding: array of shape (nbitems,rdim)
+               this is representation of the training data
+    fixme: to date, only the training part (embedding computation) 
+           is considered
     """
-    def train(self,k=1,verbose=0):
+    def train(self, k=1, verbose=0):
         """
-        chart = knn_LE.train(k=1,verbose=0)
-        INPUT:
-        - k=1 : k in the knn system
-        - verbose=0 : verbosity mode
-        OUTPUT:
-        - chart = knn_LE.embedding
+        learning function
+        
+        Parameters
+        ----------
+        k=1, int k in the knn system
+        verbose=0, bool, verbosity mode
+        
+        Returns
+        -------
+        chart: array of shape (nblearningSamples, rdim) 
+               embedding of the training data
         """
         self.k = k 
         self.check_data(self.train_data)
@@ -809,25 +873,30 @@ class knn_LE(NLDR):
 class knn_LPP(NLDR):
     """
     This is a particular class that perfoms linear dimension reduction
-    using k nearest neighbor modelling and locality preserving projection (LPP).
+        using k nearest neighbor modelling and locality preserving projection 
+        (LPP).
     besides the fields of NDLR, it contains the following ones:
-    - k : number of neighbors in the knn graph building
-    - G : resulting graph based on the training data
-    - trained: trained==1 means that the system has been trained 
-    and can generalize
-    - embedding: array of shape (nbitems,rdim)
-    this is representation of the training data
-    - projector: array of shape(fdim,rdim)
-    linear part of the embedding
+    
+    k, int, number of neighbors in the knn graph building
+    G, graph learnt based on the training data
+    embedding: array of shape (nbitems,rdim)
+               this is representation of the training data
+    projector: array of shape(fdim,rdim)
+               linear part of the embedding
     """
     def train(self,k=1,verbose=0):
         """
-        chart = knn_LPP.train(verbose=0)
-        INPUT:
-        - k=1 : k in the knn system
-        - verbose=0 : verbosity mode
-        OUTPUT:
-        - chart = knn_LPP.embedding
+        Learning function
+        
+        Parameters
+        ----------
+        k=1, int, k in the knn system
+        verbose=0, bool, verbosity mode
+        
+        Returns
+        -------
+        chart, array of shape (nblearningSamples, rdim) 
+               the resulting data embedding
         """
         self.k = k 
         self.check_data(self.train_data)
@@ -842,15 +911,20 @@ class knn_LPP(NLDR):
         self.trained = 1
         return(self.embedding)
 
-    def test(self,X):
+    def test(self, X):
         """
-        chart = knn_LPP.test(X,verbose=0)
-        INPUT
-        X = array of shape(nbitems,fdim) 
-        new data points to be embedded
-        verbose=0 : verbosity mode
-        OUTPUT
-        chart: resulting rdim-dimensional represntation
+        Function to generalize the embedding to new data
+        
+        Parameters
+        ----------
+        X: array of shape(nbitems,fdim) 
+           new data points to be embedded
+        verbose=0, bool, verbosity mode
+        
+        Returns
+        -------
+        chart,array of shape (nbitems,rdim) 
+                    resulting rdim-dimensional represntation
         """     
         if self.trained ==0:
             raise ValueError, "Untrained function -- cannot generalize"
