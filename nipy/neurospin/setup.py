@@ -3,7 +3,6 @@ from warnings import warn
 
 # Global variables
 LIBS = os.path.realpath('libcstat')
-FORCE_LAPACK_LITE = True
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
@@ -46,29 +45,34 @@ def configuration(parent_package='',top_path=None):
     # along to the different .so in the neurospin build system.
     # First, try 'lapack_info', as that seems to provide more details on Linux
     # (both 32 and 64 bits):
-    if FORCE_LAPACK_LITE: 
-        lapack_info = {}
+    lapack_info = get_info('lapack_opt', 0)
+    if 'libraries' not in lapack_info:
+        # But on OSX that may not give us what we need, so try with 'lapack'
+        # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
+        lapack_info = get_info('lapack', 0)
 
-    else:
-        lapack_info = get_info('lapack_opt', 0)
-        if 'libraries' not in lapack_info:
-            # But on OSX that may not give us what we need, so try with 'lapack'
-            # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
-            lapack_info = get_info('lapack', 0)
-
-    # Case 1: lapack not found 
+    # If no lapack install is found, we use the rescue lapack lite
+    # distribution included in the package (sources have been
+    # translated to C using f2c)
     if not lapack_info:
-        warn('no lapack installation found on this system, using lapack lite sources')
+        warn('no lapack installation found on this system, using rescue lapack lite distribution')
         sources.append(os.path.join(LIBS,'lapack_lite','*.c'))
         library_dirs = []
         libraries = []
 
-    # Case 2: lapack found 
+    # Best-case scenario: lapack found 
     else: 
         library_dirs = lapack_info['library_dirs']
         libraries = lapack_info['libraries']
         if 'include_dirs' in lapack_info:
             config.add_include_dirs(lapack_info['include_dirs'])    
+
+    # Information message
+    print('LAPACK build options:')
+    print('library_dirs: %s ' % library_dirs)
+    print('libraries: %s ' % libraries)
+    print('lapack_info: %s ' % lapack_info)
+
 
     config.add_library('cstat',
                        sources=sources,

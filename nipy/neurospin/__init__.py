@@ -22,9 +22,10 @@ Distributed under the terms of the BSD License.
 
 from numpy.testing import Tester
 
+"""
 import image_registration
 import statistical_mapping
-
+"""
 """
 import bindings
 import glm
