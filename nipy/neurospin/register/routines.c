@@ -1709,7 +1709,7 @@ static PyObject *__pyx_pf_4nipy_9neurospin_8register_8routines__similarity(PyObj
  *     elif simitype == MUTUAL_INFORMATION:
  *         simi = mutual_information(h, hI, clampI, hJ, clampJ, &n)             # <<<<<<<<<<<<<<
  *     elif simitype == JOINT_ENTROPY:
- *         simi = joint_entropy(h, clampI, clampJ, &n)
+ *         simi = joint_entropy(h, clampI, clampJ)
  */
     __pyx_v_simi = mutual_information(__pyx_v_h, __pyx_v_hI, __pyx_v_clampI, __pyx_v_hJ, __pyx_v_clampJ, (&__pyx_v_n));
     goto __pyx_L7;
@@ -1719,7 +1719,7 @@ static PyObject *__pyx_pf_4nipy_9neurospin_8register_8routines__similarity(PyObj
  *     elif simitype == MUTUAL_INFORMATION:
  *         simi = mutual_information(h, hI, clampI, hJ, clampJ, &n)
  *     elif simitype == JOINT_ENTROPY:             # <<<<<<<<<<<<<<
- *         simi = joint_entropy(h, clampI, clampJ, &n)
+ *         simi = joint_entropy(h, clampI, clampJ)
  *     elif simitype == CONDITIONAL_ENTROPY:
  */
   __pyx_2 = (__pyx_v_simitype == __pyx_e_4nipy_9neurospin_8register_8routines_JOINT_ENTROPY);
@@ -1728,38 +1728,38 @@ static PyObject *__pyx_pf_4nipy_9neurospin_8register_8routines__similarity(PyObj
     /* "d:\home\ar203069\bzr\nipy\dev-trunk-neurospin\nipy\neurospin\register\routines.pyx":245
  *         simi = mutual_information(h, hI, clampI, hJ, clampJ, &n)
  *     elif simitype == JOINT_ENTROPY:
- *         simi = joint_entropy(h, clampI, clampJ, &n)             # <<<<<<<<<<<<<<
+ *         simi = joint_entropy(h, clampI, clampJ)             # <<<<<<<<<<<<<<
  *     elif simitype == CONDITIONAL_ENTROPY:
- *         simi = conditional_entropy(h, hJ, clampI, clampJ, &n)
+ *         simi = conditional_entropy(h, hJ, clampI, clampJ)
  */
-    __pyx_v_simi = joint_entropy(__pyx_v_h, __pyx_v_clampI, __pyx_v_clampJ, (&__pyx_v_n));
+    __pyx_v_simi = joint_entropy(__pyx_v_h, __pyx_v_clampI, __pyx_v_clampJ);
     goto __pyx_L7;
   }
 
   /* "d:\home\ar203069\bzr\nipy\dev-trunk-neurospin\nipy\neurospin\register\routines.pyx":246
  *     elif simitype == JOINT_ENTROPY:
- *         simi = joint_entropy(h, clampI, clampJ, &n)
+ *         simi = joint_entropy(h, clampI, clampJ)
  *     elif simitype == CONDITIONAL_ENTROPY:             # <<<<<<<<<<<<<<
- *         simi = conditional_entropy(h, hJ, clampI, clampJ, &n)
+ *         simi = conditional_entropy(h, hJ, clampI, clampJ)
  *     elif simitype == NORMALIZED_MUTUAL_INFORMATION:
  */
   __pyx_2 = (__pyx_v_simitype == __pyx_e_4nipy_9neurospin_8register_8routines_CONDITIONAL_ENTROPY);
   if (__pyx_2) {
 
     /* "d:\home\ar203069\bzr\nipy\dev-trunk-neurospin\nipy\neurospin\register\routines.pyx":247
- *         simi = joint_entropy(h, clampI, clampJ, &n)
+ *         simi = joint_entropy(h, clampI, clampJ)
  *     elif simitype == CONDITIONAL_ENTROPY:
- *         simi = conditional_entropy(h, hJ, clampI, clampJ, &n)             # <<<<<<<<<<<<<<
+ *         simi = conditional_entropy(h, hJ, clampI, clampJ)             # <<<<<<<<<<<<<<
  *     elif simitype == NORMALIZED_MUTUAL_INFORMATION:
  *         simi = normalized_mutual_information(h, hI, clampI, hJ, clampJ, &n)
  */
-    __pyx_v_simi = conditional_entropy(__pyx_v_h, __pyx_v_hJ, __pyx_v_clampI, __pyx_v_clampJ, (&__pyx_v_n));
+    __pyx_v_simi = conditional_entropy(__pyx_v_h, __pyx_v_hJ, __pyx_v_clampI, __pyx_v_clampJ);
     goto __pyx_L7;
   }
 
   /* "d:\home\ar203069\bzr\nipy\dev-trunk-neurospin\nipy\neurospin\register\routines.pyx":248
  *     elif simitype == CONDITIONAL_ENTROPY:
- *         simi = conditional_entropy(h, hJ, clampI, clampJ, &n)
+ *         simi = conditional_entropy(h, hJ, clampI, clampJ)
  *     elif simitype == NORMALIZED_MUTUAL_INFORMATION:             # <<<<<<<<<<<<<<
  *         simi = normalized_mutual_information(h, hI, clampI, hJ, clampJ, &n)
  *     elif simitype == SUPERVISED_MUTUAL_INFORMATION:
@@ -1768,7 +1768,7 @@ static PyObject *__pyx_pf_4nipy_9neurospin_8register_8routines__similarity(PyObj
   if (__pyx_2) {
 
     /* "d:\home\ar203069\bzr\nipy\dev-trunk-neurospin\nipy\neurospin\register\routines.pyx":249
- *         simi = conditional_entropy(h, hJ, clampI, clampJ, &n)
+ *         simi = conditional_entropy(h, hJ, clampI, clampJ)
  *     elif simitype == NORMALIZED_MUTUAL_INFORMATION:
  *         simi = normalized_mutual_information(h, hI, clampI, hJ, clampJ, &n)             # <<<<<<<<<<<<<<
  *     elif simitype == SUPERVISED_MUTUAL_INFORMATION:

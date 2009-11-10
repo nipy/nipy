@@ -11,8 +11,9 @@ from nipy.io.imageformats import load, save, Nifti1Image
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.graph.field as ff
 
-def make_bsa_image_with_output_paths(mask_images, betas, denspath, crpath, theta=3.,
-                   dmax= 5., ths=0, thq=0.5, smin=0, method='simple', rdraws=0):
+def make_bsa_image_with_output_paths(mask_images, betas, denspath, crpath,
+                                     theta=3., dmax= 5., ths=0, thq=0.5, smin=0,
+                                     method='simple', rdraws=0):
     """
     idem make_bsa_image but paths of the output are set explictly.
     Moreover the segmented regions are written in one single image 
