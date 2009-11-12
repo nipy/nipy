@@ -697,7 +697,7 @@ class multivariate_stat:
             add_lines(ones, N.reshape(q, 1), IJ)
             Z = self.data[i,L] - self.m_mean[self.labels[I]]
             if self.vardata == None:
-                tot_var = self.v[self.labels[I]] + np.zeros(L, float)
+                tot_var = self.v[self.labels[I]] + np.zeros(len(L), float)
             else:
                 tot_var = self.v[self.labels[I]] + self.vardata[i,L]
             add_lines(\
@@ -1069,8 +1069,8 @@ class multivariate_stat:
             #I = range(self.m.size)*np.ones(self.data.shape,int)
         #else:
             #I = self.D.I
-        v_labels = v[self.labels]
         m_labels = m_mean[self.labels]
+        v_labels = m_var[self.labels]
         return (SS4 + m_labels * SS1 + m_labels / v_labels)\
                  / (SS1 + 1.0 / v_labels)
 

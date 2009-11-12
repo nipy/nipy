@@ -25,3 +25,5 @@ build
 ./.shelf
 # Mac droppings
 .DS_Store
+nipy/__config__.py
+nipy/neurospin/__config__.py
