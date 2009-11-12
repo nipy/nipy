@@ -57,7 +57,10 @@ def affine_img_src(data, affine, scale=1, name='AffineImage'):
 # Anatomy outline
 ################################################################################
 
-def plot_anat_3d(anat=None, anat_sform=None, scale=1):
+def plot_anat_3d(anat=None, anat_sform=None, scale=1,
+                 sulci_opacity=0.5, gyri_opacity=0.3,
+                 opacity=1,
+                 outline_color=None):
     if anat is None:
         anat, anat_sform, anat_max = _AnatCache.get_anat()
     ###########################################################################
@@ -67,17 +70,19 @@ def plot_anat_3d(anat=None, anat_sform=None, scale=1):
     
     anat_src.image_data.point_data.add_array(_AnatCache.get_blurred())
     anat_src.image_data.point_data.get_array(1).name = 'blurred'
+    anat_blurred = mlab.pipeline.set_active_attribute(
+                                anat_src, point_scalars='blurred')
             
     cortex_surf = mlab.pipeline.set_active_attribute(
-                    mlab.pipeline.contour(
-                        mlab.pipeline.set_active_attribute(
-                                anat_src, point_scalars='blurred'), 
-                    ), point_scalars='scalar')
+                            mlab.pipeline.contour(anat_blurred), 
+                    point_scalars='scalar')
         
     # XXX: the choice in vmin and vmax should be tuned to show the
     # sulci better
     cortex = mlab.pipeline.surface(cortex_surf,
-                opacity=0.5, colormap='copper', vmin=4800, vmax=5000)
+                colormap='copper', 
+                opacity=opacity,
+                vmin=4800, vmax=5000)
     cortex.enable_contours = True
     cortex.contour.filled_contours = True
     cortex.contour.auto_contours = False
@@ -90,8 +95,18 @@ def plot_anat_3d(anat=None, anat_sform=None, scale=1):
 
     # Add opacity variation to the colormap
     cmap = cortex.module_manager.scalar_lut_manager.lut.table.to_array()
-    cmap[128:, -1] = 0.7*255
+    cmap[128:, -1] = gyri_opacity*255
+    cmap[:128, -1] = sulci_opacity*255
     cortex.module_manager.scalar_lut_manager.lut.table = cmap
+
+    if outline_color is not None:
+        outline = mlab.pipeline.iso_surface(
+                            anat_blurred,
+                            contours=[0.4],
+                            color=outline_color)
+        outline.actor.property.frontface_culling = True
+
+
     return cortex
  
 
@@ -157,6 +172,7 @@ def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
                                                      size=(400, 350))
     if figure_num is None:
         mlab.clf()
+    disable_render = fig.scene.disable_render
     fig.scene.disable_render = True
     
     center = np.r_[0, 0, 0, 1]
@@ -181,7 +197,7 @@ def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
                             color=(.5, .5, .5), tube_radius=0.25)
     
     mlab.view(38.5, 70.5, 300, (-2.7, -12, 9.1))
-    fig.scene.disable_render = False
+    fig.scene.disable_render = disable_render
 
 
 def demo_plot_map_3d():

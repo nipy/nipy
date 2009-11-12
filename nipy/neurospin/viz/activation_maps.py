@@ -18,6 +18,7 @@ import sys
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
+import matplotlib as mp
 import pylab as pl
 
 from nifti import NiftiImage
@@ -35,8 +36,31 @@ class SformError(Exception):
 class NiftiIndexError(IndexError):
     pass
 
+
 ################################################################################
-# 2D plotting 
+# Colormaps
+
+# A blue-red map based on hot
+hot_cdict = pl.cm.hot._segmentdata.copy()
+
+cdict = dict()
+cdict['green'] = [(0.5*(1-p), c1, c2)
+                        for (p, c1, c2) in reversed(hot_cdict['green'])]
+cdict['blue'] = [(0.5*(1-p), c1, c2)
+                        for (p, c1, c2) in reversed(hot_cdict['red'])]
+cdict['red'] = [(0.5*(1-p), c1, c2)
+                        for (p, c1, c2) in reversed(hot_cdict['blue'])]
+
+for color in ('red', 'green', 'blue'):
+    cdict[color].extend([(0.5*(1+p), c1, c2) 
+                                for (p, c1, c2) in hot_cdict[color]])
+
+ColdHot = mp.colors.LinearSegmentedColormap('my_colormap', cdict, 512)
+
+
+
+################################################################################
+# 2D plotting of activation maps 
 ################################################################################
 
 
