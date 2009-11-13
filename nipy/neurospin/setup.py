@@ -66,6 +66,7 @@ def configuration(parent_package='',top_path=None):
                        extra_info=lapack_info)
 
     # Subpackages
+    config.add_subpackage('image')
     config.add_subpackage('bindings')
     config.add_subpackage('clustering')
     config.add_subpackage('eda')
@@ -78,32 +79,6 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('utils')
     config.add_subpackage('viz')
     config.add_subpackage('datasets')
-
-    # ----------------------------------------------------------------------
-    # Packages likely not to be moved over into nipy
-    ## Data will be handled separately (nipy already has tools for this)
-    ## config.add_subpackage('data')
-    # ----------------------------------------------------------------------
-
-    ## # Unitary tests 
-    ## config.add_data_dir('tests')
-    ## config.add_data_dir(os.path.join('tests', 'data'))
-    
-    ## config.add_data_dir('data')
-
-    ## """
-    ## Add an extension for each C file found in the source directory. 
-    ## """
-    ## root = os.path.split(__file__)[0]
-    ## Cfiles = glob(os.path.join(root, '*.c'))
-    ## for Cfile in Cfiles:
-    ##     name, ext = os.path.splitext(os.path.basename(Cfile))
-    ##     print('Adding extension: %s' % name)
-    ##     config.add_extension(
-    ##         '_'+name,
-    ##         sources=[Cfile],
-    ##         libraries=['cstat']
-    ##         )
     
     config.make_config_py() # installs __config__.py
 
