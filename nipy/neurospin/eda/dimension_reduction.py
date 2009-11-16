@@ -1075,9 +1075,11 @@ def partial_floyd_graph(G,k):
 def _swiss_roll(nbitem=1000):
     """
     Sample nbitem=1000 point from a swiss roll
-    Ouput
-    - X (nbsamp,3) array giving the 3D embedding
-    - x (nbsamp,2) array giving the intrinsic coordinates
+
+    Returns
+    -------
+    X array of shape (nbitem,3) the 3D embedding
+    x array of shape (nbitem,2) the intrinsic coordinates
     """
     x = nr.rand(nbitem,2)
     X1 = np.reshape((1+x[:,0])*(np.cos(2*np.pi*x[:,0])),(nbitem,1))
@@ -1086,19 +1088,28 @@ def _swiss_roll(nbitem=1000):
     X = np.hstack((X1,X2,X3))
     return X,x
 
-def _orange(nbsamp=1000):
+def _orange(nbsamp=1000, k=10):
     """
-    Sample nbsamp=1000 points from an 'orange' (a sphere with two partial cuts)
-    output : the corresponding graph
+    Sample points from an 'orange' (a sphere with two partial cuts)
+    
+    Parameters
+    ----------
+    nbsamp=1000, int number of points to draw
+    k=10, int, number of neighboring points in the graph
+    
+    Returns
+    -------
+    G Weighted_Graph instance that represents the meshing of points
+    X array of shape(nbsamp,3) the positions of these points 
     """
     # make the sphere
     x = nr.randn(nbsamp,3)
-    X = np.transpose(x)/np.sqrt(np.sum(x**2,1))
-    X = np.transpose(X)
+    X = x.T/np.sqrt(np.sum(x**2,1))
+    X = X.T
     G = fg.WeightedGraph(nbsamp)
-    G.knn(X,16)
+    G.knn(X,k)
 
-    #make the cuts
+    # make the cuts
     OK = np.ones(G.E)
     for e in range(G.E):
         X1 = X[G.edges[e,0]]
@@ -1135,20 +1146,6 @@ def _test_isomap_orange(verbose=0):
         mp.show()
 
     
-def _test_cca():
-    """
-    Basic (valid) test of the CCA
-    """
-    X = nr.randn(100,3)
-    Y = nr.randn(100,3)
-    cc1 = CCA(X,Y)
-    A = nr.randn(3,3)
-    Z = np.dot(X,A)
-    cc2 = CCA(X,Z)
-    cc3 = CCA(Y,Z)
-    test = (np.sum((cc1-cc3)**2)<1.e-7)&(np.min(cc2>1.e-7))
-    return test
-
 
 
 def _test_isomap_dev():
@@ -1166,42 +1163,7 @@ def _test_isomap_dev():
     check_isometry(G,u[:,:2],nseeds  =100)
     return (sv.sum()>1.9)
 
-def _test_mds():
-    X = nr.randn(10,3)
-    M = MDS(X,rdim=2)
-    u = M.train()
-    x = X[:2,:]
-    a = M.test(x)
-    eps = 1.e-12
-    test = np.sum(a-u[:2,:])**2<eps
-    return test
 
-def _test_knn_isomap():
-    X = nr.randn(10,3)
-    M = knn_Isomap(X,rdim=1)
-    u = M.train(k=2)
-    x = X[:2,:]
-    a = M.test(x)
-    eps = 1.e-12
-    test = np.sum(a-u[:2,:])**2<eps
-    return test
-    
-def _test_eps_isomap():
-    """
-    Test of the esp_isompa procedure
-    To be checked: returns FALSE
-    """
-    X = nr.randn(10,3)
-    M = eps_Isomap(X,rdim=1)
-    u = M.train(eps = 2.)
-    x = X[:2,:]
-    a = M.test(x)
-    eps = 1.e-12
-    test = np.sum(a-u[:2,:])**2<eps
-    if test==False:
-        print np.sum(a-u[:2,:])**2
-    return test
-    
 def _test_knn_LE_():
     """
     Test of  eth Laplacian embedding 
