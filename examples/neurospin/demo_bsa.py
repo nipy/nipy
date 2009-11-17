@@ -155,7 +155,7 @@ smin = 5
 method = 'simple2'#'loo'#'dev'#'ipmi'#
 
 # run the algo
-AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method=method,verbose=verbose)
+#AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method=method,verbose=#verbose)
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method='simple',verbose=verbose)
 
 
