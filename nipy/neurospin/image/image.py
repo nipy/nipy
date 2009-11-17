@@ -10,12 +10,15 @@ from scipy import ndimage
 
 import nipy.io.imageformats as brifti
 
-#from interp_module import apply_affine
+
+# Globals
+_def_cval = 0 
+_def_order = 1 
+_def_optimize = False
 
 # class `Grid`
 class Grid(object): 
-    """ An object to represent a regular 3d grid, or sub-grid,
-    possibly transformed.
+    """ An object to represent a regular 3d grid, or sub-grid.
 
     Attributes
     ----------
@@ -29,7 +32,8 @@ class Grid(object):
         Subsampling factors 
 
     affine: ndarray 
-        4x4 affine matrix that maps grid coordinates to desired coordinates. 
+        4x4 affine matrix that maps the grid coordinates to some
+        coordinate system.
     
     """
     def __init__(self, shape, corner=(0,0,0), spacing=(1,1,1), affine=None):
@@ -88,14 +92,14 @@ class Block(object):
     """ A basic class to represent an image defined on a regular
     lattice.
     """
-    def __init__(self, data, affine, world=None, cval=0): 
+    def __init__(self, data, affine, world=None, cval=_def_cval): 
         self._data = data
         self._affine = affine
         self._world = world 
         self._cval = cval 
 
     def _get_shape(self):
-        return self._data._shape
+        return self._data.shape
 
     def _get_dtype(self): 
         return self._data.dtype
@@ -109,11 +113,15 @@ class Block(object):
         """
         return self._data
 
-    def values(self, coords, world_coords=False, order=1, optimize=True):
+    def values(self, coords, grid_coords=False, dtype=None, order=_def_order, optimize=_def_optimize):
+
+        # Convert coords into a tuple of ndarrays
+        tmp = [np.asarray(coords[i]) for i in range(3)]
+        coords = tuple(tmp)
 
         # If coords are intended to describe world coordinates,
         # immediately convert them into grid coordinates
-        if world_coords:
+        if not grid_coords:
             to_grid = np.linalg.inv(self._affine)
             if isinstance(coords, Grid): 
                 # compose transforms
@@ -129,25 +137,28 @@ class Block(object):
         # compute the coordinates
         if isinstance(coords, Grid): 
             if coords._affine:
-                return ndimage.affine_transform(self._data, 
-                                                coords._affine[0:3,0:3],
-                                                offset=coords._affine[0:3,3],
-                                                order=order, 
-                                                cval=self._cval)
+                return resample(self._data, 
+                                coords._affine, 
+                                order=order,
+                                dtype=dtype, 
+                                cval=self._cval, 
+                                optimize=optimize)
             else:
                 return coords.slice(self._data)
         
-        # At this point, we know that coords is an explicit tuple of
-        # coordinates 
-
-        # Avoid interpolation if coordinates are integers
-        if [c.dtype==int for c in coords].count(True):
+        # At this point, coords is an explicit tuple of coordinates.
+        # Avoid interpolation if coordinates are integers.
+        ##if [c.dtype.kind in ['i','u'] for c in coords].count(True):
+        if [issubclass(c.dtype.type, np.integer) for c in coords].count(True):
             return self._data[coords]
         else: # interpolation needed
-            return ndimage.map_coordinates(self._data, 
-                                           np.c_[coords].T, 
-                                           order=order, 
-                                           cval=self._cval)
+            return sample(self._data, 
+                          coords, 
+                          order=order, 
+                          dtype=dtype, 
+                          cval=self._cval,
+                          optimize=optimize)
+
 
     shape = property(_get_shape)
     dtype = property(_get_dtype)
@@ -172,7 +183,7 @@ class Image(object):
 
         Bla. 
     """
-    def __init__(self, data, affine, mask=None, world=None, cval=0):
+    def __init__(self, data, affine, mask=None, world=None, cval=_def_cval):
         """ The base image class.
 
             Parameters
@@ -194,7 +205,6 @@ class Image(object):
             
             cval: number, optional 
                 Background value (outside image boundaries).  
-
         """
 
         # TODO: Check that the mask array, if provided, is consistent
@@ -259,7 +269,7 @@ class Image(object):
 
     def crop(self): 
         """
-        Define a bounding box. 
+        Adjust the minimal bounding box. 
         """
         if self._block:
             data = self._block._data
@@ -270,7 +280,7 @@ class Image(object):
                          cval=self._cval)
         
 
-        # define a bounding box
+        # Underlying mask is not a grid: define a bounding box
         corner = np.asarray([self._mask[i].min() for i in range(3)])
         shape = [1+self._mask[i].max()-corner[i] for i in range(3)]
         data = np.zeros(shape, dtype=self._dtype)
@@ -285,44 +295,18 @@ class Image(object):
                      world=self._world, 
                      cval=self._cval)
 
-        """
-        we need to have: 
-          corner <= mask < corner + shape 
-        """
-        
-        """
-        if self._masked:
-            array = np.zeros(shape, dtype=self._data.dtype)
-            if not self._cval == 0:  
-                array += self._cval
-
-            tmp = (np.c_[self._mask]-corner).T
-            submask = np.where(np.all(tmp>0, axis=0))
-
-            if isinstance(self._mask, Grid):
-                c = mask._corner - corner
-                s = mask._shape
-                sp = mask._spacing
-                array[c[0]:c[0]+s[0]:sp[0],
-                      c[1]:c[1]+s[1]:sp[1],
-                      c[2]:c[2]+s[2]:sp[2]] = self._data
-            else:
-                array[mask - corner] = self._data[submask]
-            return array
-        else:
-            return self._data[corner[0]:corner[0]+shape[0]:spacing[0], 
-                              corner[1]:corner[1]+shape[1]:spacing[1], 
-                              corner[2]:corner[2]+shape[2]:spacing[2]]
-
-        """
     
-    def values(self, coords, world_coords=False, order=1, optimize=True):
+    def values(self, coords, grid_coords=False, dtype=None, order=_def_order, optimize=_def_optimize):
         """ Return interpolated values at the points specified by coords. 
 
             Parameters
             ----------
-            coords: ndarray or Grid
+            coords: {ndarray, Grid}
                 List of coordinates. 
+
+            grid_coords: boolean, optional
+                Determine whether the input coordinates are in the
+                world or grid coordinate system. 
         
             Returns
             --------
@@ -330,80 +314,17 @@ class Image(object):
                 One-dimensional array. 
 
         """
-
-        """
-        Try to avoid interpolation whenever possible. 
-        If coords is included in the image mask, no interpolation needed. 
-        Otherwise, interpolation. Then, we have two cases: 
-          - coords is a grid: we can call an interpolation routine that does 
-            not require an explicit list of points
-          - coords is not a grid: we have to call another function. 
-
-        Testing mask inclusion:
-          If mask is a grid: 
-            - If coords is a grid, then easy
-            - If coords is not, then it's not supposed to fit in a
-              grid (otherwise, the user should have defined it as a grid)
-          
-          If mask is not a Grid:
-            then we have to go for a element-wise comparison whether 
-            or not coords is a grid
-        """
-
         if self._block: 
             block = self._block
         else: 
             block = Block(self.get_data(), self._affine)
-        return block.values(coords, world_coords, order, optimize)
-    
-    
-    
-        # If coords are intended to describe world coordinates,
-        # immediately convert them into grid coordinates
-        """if world_coords:
-            to_grid = np.linalg.inv(self._affine)
-            if isinstance(coords, Grid): 
-                # compose transforms
-                if coords._affine: 
-                    coords._affine = np.dot(to_grid, self._affine)
-                else:
-                    coords._affine = to_grid
-            else: 
-                coords = apply_affine(to_grid, coords)
 
-        # Get the relevant 3d array data
-        if self._masked: 
-            array, corner = bounding_box(self._data, self._mask, 
-                                         background=self._cval)
-        else: 
-            array = self._data
-            corner = np.zeros(3, dtype='uint')
-            
-        # If coords is a Grid instance, we do not need to explicitely
-        # compute the coordinates
-        if isinstance(coords, Grid): 
-            if coords._affine:
-                return ndimage.affine_transform(array, 
-                                                coords._affine[0:3,0:3],
-                                                offset=coords._affine[0:3,3]-corner,
-                                                order=order)
-            else:
-                return array[coords.coords()-corner]
-        
-        # At this point, we know that coords is an explicit tuple of
-        # coordinates 
+        # TODO: the following will interpret 'grid coordinates'
+        # relative to the 'block' grid, which may not be aligned with
+        # the instance image grid. Should apply an affine here. 
 
-        # Avoid interpolation if coordinates are integers
-        if [c.dtype==int for c in coords].count(True):
-            array, corner = bounding_box(self._data, self._mask, 
-                                         background=self._cval)
+        return block.values(coords, grid_coords, dtype, order, optimize)
 
-            return None
-        else: # interpolation needed
-            return ndimage.map_coordinates(self.get_data(), 
-                                           np.c_[coords].T, 
-                                           order=order)
-        """
 
     masked = property(_get_masked)
     shape = property(_get_shape)
@@ -555,34 +476,78 @@ def apply_affine(affine, XYZ):
     coords: tuple of ndarrays 
         tuple of 3d coordinates stored row-wise: (X,Y,Z)  
     """
-    trans_XYZ = np.array(XYZ)
-    trans_XYZ[:] = np.dot(affine[0:3,0:3], trans_XYZ[:])
-    trans_XYZ[0,:] += affine[0,3]
-    trans_XYZ[1,:] += affine[1,3]
-    trans_XYZ[2,:] += affine[2,3]
-    return tuple(trans_XYZ)
+    tXYZ = np.array(XYZ)
+    if tXYZ.ndim == 1: 
+        tXYZ = np.reshape(tXYZ, (3,1))
+    tXYZ[:] = np.dot(affine[0:3,0:3], tXYZ[:])
+    tXYZ[0,:] += affine[0,3]
+    tXYZ[1,:] += affine[1,3]
+    tXYZ[2,:] += affine[2,3]
+    return tuple(tXYZ)
 
 
-def bounding_box(data, mask, shape=None, background=0): 
-    """ 
-    Return a 3d array. The mask coordinates need to be in the range
-    [corner, shape+corner[. 
-    """
-    if shape == None: 
-        corner = np.asarray([self._mask[i].min() for i in (0,1,2)])
-        shape = [1+self._mask[i].max()-corner[i] for i in (0,1,2)]
+
+def load_image(fname): 
+    im = brifti.load(fname)
+    return Image(im.get_data(), im.get_affine())
+
+
+def save_image(Im, fname):
+    im = brifti.Nifti1Image(Im.data, Im.affine)
+    brifti.save(im, fname)
+
+
+
+def sample(data, coords, order=_def_order, dtype=None, 
+           cval=_def_cval, optimize=_def_optimize): 
+    
+    if dtype == None: 
+        dtype = data.dtype
+
+    coords = tuple(coords)
+    npts = coords[0].size
+
+    if optimize and order==3:
+        from interp_module import cspline_transform, cspline_sample3d
+        cbspline = cspline_transform(data)
+        X, Y, Z = coords
+        output = np.zeros(npts, dtype='double')
+        output = cspline_sample3d(output, cbspline, X, Y, Z)
+        output.astype(dtype)
     else: 
-        corner = np.zeros(3, dtype='uint')
-    array = np.zeros(shape, dtype=data.dtype)
-    if not background == 0:  
-        array += background
-    if isinstance(mask, Grid):
-        c = mask._corner - corner
-        s = mask._shape
-        sp = mask._spacing
-        array[c[0]:c[0]+s[0]:sp[0],
-              c[1]:c[1]+s[1]:sp[1],
-              c[2]:c[2]+s[2]:sp[2]] = data
-    else:
-        array[mask - corner] = data
-    return array, corner
+        output = np.zeros(npts, dtype=dtype)
+        ndimage.map_coordinates(data, 
+                                np.c_[coords].T, 
+                                order=order, 
+                                cval=cval,
+                                output=output)
+        
+    return output
+
+
+
+def resample(data, affine, order=_def_order, dtype=None, 
+             cval=_def_cval, optimize=_def_optimize): 
+
+    if dtype == None: 
+        dtype = data.dtype
+
+    if optimize and order==3:
+        from interp_module import cspline_resample3d
+        output = cspline_resample3d(data, 
+                                    data.shape, 
+                                    affine, 
+                                    dtype=dtype)
+    else: 
+        output = np.zeros(data.shape, dtype=dtype)
+        ndimage.affine_transform(data, 
+                                 affine[0:3,0:3],
+                                 offset=affine[0:3,3],
+                                 order=order, 
+                                 cval=cval, 
+                                 output=output)
+
+    return output 
+
+
+

@@ -86,7 +86,7 @@ def cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0):
     """
     cubic_spline_sample4d(R, C, X=0, Y=0, Z=0, T=0):
 
-    In-place cubic spline sampling. 
+    In-place cubic spline sampling. R.dtype must be 'double'. 
     """
     cdef double *r, *x, *y, *z, *t
     cdef broadcast multi
@@ -127,7 +127,7 @@ def cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None):
     tvox = <double*>Tvox.data
 
     # Actual resampling 
-    cast_integer = np.issubdtype(dtype, int)
+    cast_integer = np.issubclass(dtype.type, np.integer)
     cubic_spline_resample3d(im_resampled, im, tvox, cast_integer)
 
     return im_resampled
