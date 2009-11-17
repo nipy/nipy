@@ -515,7 +515,7 @@ def sample(data, coords, order=_def_order, dtype=None,
     npts = coords[0].size
 
     if optimize and order==3:
-        from interp_module import cspline_transform, cspline_sample3d
+        from image_module import cspline_transform, cspline_sample3d
         cbspline = cspline_transform(data)
         X, Y, Z = coords
         output = np.zeros(npts, dtype='double')
@@ -540,7 +540,7 @@ def resample(data, affine, order=_def_order, dtype=None,
         dtype = data.dtype
 
     if optimize and order==3:
-        from interp_module import cspline_resample3d
+        from image_module import cspline_resample3d
         output = cspline_resample3d(data, 
                                     data.shape, 
                                     affine, 

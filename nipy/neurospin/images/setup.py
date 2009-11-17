@@ -4,10 +4,10 @@ def configuration(parent_package='',top_path=None):
     
     from numpy.distutils.misc_util import Configuration
 
-    config = Configuration('objects', parent_package, top_path)
+    config = Configuration('images', parent_package, top_path)
     config.add_data_dir('tests')
     config.add_data_dir('benchmarks')
-    config.add_extension('interp_module', sources=['interp_module.c', 'cubic_spline.c'])
+    config.add_extension('image_module', sources=['image_module.c', 'cubic_spline.c'])
 
     return config
 
