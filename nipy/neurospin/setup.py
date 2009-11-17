@@ -66,7 +66,6 @@ def configuration(parent_package='',top_path=None):
                        extra_info=lapack_info)
 
     # Subpackages
-    config.add_subpackage('image')
     config.add_subpackage('bindings')
     config.add_subpackage('clustering')
     config.add_subpackage('eda')
@@ -79,6 +78,7 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('utils')
     config.add_subpackage('viz')
     config.add_subpackage('datasets')
+    config.add_subpackage('objects')
     
     config.make_config_py() # installs __config__.py
 
