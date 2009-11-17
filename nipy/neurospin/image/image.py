@@ -314,17 +314,24 @@ class Image(object):
                 One-dimensional array. 
 
         """
+        # Case of an already exsiting block
         if self._block: 
             block = self._block
+            # If coords are meant to represent grid coordinates,
+            # convert them relatively to the underlying 'block'
+            # subgrid
+            if grid_coords:
+                for i in range(3): 
+                    coords[i] -= self._mask._corner[i]
+                    tmp = self._mask._spacing[i]
+                    if tmp > 1: 
+                        coords[i] = coords[i]/float(tmp)
+
+        # Otherwise, create block on the fly 
         else: 
             block = Block(self.get_data(), self._affine)
 
-        # TODO: the following will interpret 'grid coordinates'
-        # relative to the 'block' grid, which may not be aligned with
-        # the instance image grid. Should apply an affine here. 
-
         return block.values(coords, grid_coords, dtype, order, optimize)
-
 
     masked = property(_get_masked)
     shape = property(_get_shape)
