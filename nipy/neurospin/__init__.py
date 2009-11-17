@@ -14,8 +14,16 @@ This module contains several objects and functions for fMRI processing.
 
 from numpy.testing import Tester
 
+
 import image_registration
 import statistical_mapping
+
+"""
+import bindings
+import glm
+import register
+import utils 
+"""
 
 test = Tester().test
 bench = Tester().bench 
