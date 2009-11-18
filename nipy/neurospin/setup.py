@@ -78,7 +78,9 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('utils')
     config.add_subpackage('viz')
     config.add_subpackage('datasets')
-    config.add_subpackage('images')
+
+    config.add_subpackage('image')
+    config.add_subpackage('segment')
     
     config.make_config_py() # installs __config__.py
 
