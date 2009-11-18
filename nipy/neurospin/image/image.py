@@ -183,7 +183,7 @@ class Image(object):
 
         Bla. 
     """
-    def __init__(self, data, affine, mask=None, world=None, cval=_def_cval):
+    def __init__(self, data, affine, world=None, cval=_def_cval):
         """ The base image class.
 
             Parameters
@@ -196,9 +196,6 @@ class Image(object):
             affine: ndarray 
                 a 4x4 transformation matrix from voxel to world.
 
-            mask: ndarray, optional 
-                A 3xN list of coordinates
-
             world: string, optional 
                 An identifier for the real-world coordinate system, e.g. 
                 'scanner' or 'mni'. 
@@ -210,29 +207,15 @@ class Image(object):
         # TODO: Check that the mask array, if provided, is consistent
         # with the data array
         # Check array datatype and cval 
-        if mask == None: 
-            self._masked = False
-            mask = Grid(data.shape)
-            self._data = None
-            self._block = Block(data, affine, world=world, cval=cval)
-        elif isinstance(mask, Grid):
-            self._masked = True
-            self._data = None
-            # block to world affine transformation
-            block2im_affine = np.diag(np.concatenate((mask._spacing,[1]),1))
-            block2im_affine[0:3,3] = mask._corner
-            block_affine = np.dot(affine, block2im_affine)
-            self._block = Block(mask.slice(data), block_affine, world=world, cval=cval)
-        else:
-            self._masked = True
-            self._data = data[mask]
-            self._block = None 
         self._shape = data.shape
         self._dtype = data.dtype
-        self._mask = mask 
+        self._masked = False
+        self._block = Block(data, affine, world=world, cval=cval)
+        self._mask = Grid(data.shape)
         self._affine = affine
         self._world = world
-        self._cval = cval
+        self._cval = cval        
+        self._data = None
 
     def _get_masked(self):
         return self._masked
@@ -266,6 +249,30 @@ class Image(object):
             return data 
         else:
             return self._block._data
+
+
+    def mask(self, mask): 
+        """
+        
+        Parameters
+        ----------
+
+            mask: ndarray, optional 
+                A 3xN list of coordinates
+        """
+        if isinstance(mask, Grid):
+            # block to world affine transformation
+            t_subgrid2grid = np.diag(np.concatenate((mask._spacing,[1]),1))
+            t_subgrid2grid[0:3,3] = mask._corner
+            affine = np.dot(self._affine, t_subgrid2grid)
+            return Image(mask.slice(self._get_data()), affine, world=self._world, cval=self._cval)
+        else:
+            im = Image(self._get_data(), self._affine, world=self._world, cval=self._cval)
+            im._data = im._block._data[mask]
+            im._block = None 
+            im._mask = mask 
+            im._masked = True
+            return im 
 
     def crop(self): 
         """

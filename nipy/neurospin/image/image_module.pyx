@@ -1,11 +1,9 @@
 # -*- Mode: Python -*-  
 
 """
-Fast registration routines module: joint histogram computation,
-similarity measures, cubic spline resampling, affine transformation
-parameterization.
-
-Author: Alexis Roche, 2008.
+Image processing routines: 
+  * cubic spline sampling 
+  * slice timing 
 """
 
 __version__ = '0.2'
