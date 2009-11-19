@@ -55,6 +55,29 @@ class Datasource(object):
         '''
         return pjoin(self.base_path, *path_parts)
 
+    def list_files(self, relative=True):
+        ''' Recursively list the files in the data source directory.
+
+            Parameters
+            ----------
+            relative: bool, optional
+                If True, path returned are relative to the base paht of
+                the data source.
+
+            Returns
+            -------
+            file_list: list of strings
+                List of the paths of all the files in the data source.
+
+        '''
+        out_list = list()
+        for base, dirs, files in os.walk(self.base_path):
+            if relative:
+                base = base[len(self.base_path)+1:]
+            for filename in files:
+                out_list.append(pjoin(base, filename))
+        return out_list
+
 
 class VersionedDatasource(Datasource):
     ''' Datasource with version information in config file
