@@ -127,6 +127,7 @@ def get_data_path():
        with a ``sorted(glob.glob(os.path.join(sys_dir, '*.ini')))``
        search, where ``sys_dir`` is found with ``get_nipy_system_dir()``
     #. The result of ``os.path.join(sys.prefix, 'share', 'nipy')``
+    #. The result of ``get_nipy_user_dir()``
 
     Therefore, any paths found in ``NIPY_DATA_PATH`` will be searched
     before paths found in the user directory ``config.ini``
@@ -159,6 +160,7 @@ def get_data_path():
         if var:
             paths += var.split(os.path.pathsep)
     paths.append(pjoin(sys.prefix, 'share', 'nipy'))
+    paths.append(pjoin(get_nipy_user_dir()))
     return paths
     
 
@@ -226,14 +228,21 @@ def make_datasource(*names, **kwargs):
     try:
         pth = find_data_dir(data_path, *names)
     except DataError, exception:
+        pth = [pjoin(this_data_path, *names) 
+                for this_data_path in data_path]
         msg = '''%s;
 Is it possible you have not installed a data package?
 From the names, maybe you need data package "%s"?
 If you have the package, have you set the path to the package correctly?
-Please see %s for data downloads.''' % (
+If you don't have the data, you can download it from 
+    %s 
+and extract it in one of the following path:
+    %s''' % (
             exception,
             '-'.join(names),
-            NIPY_URL)
+            NIPY_URL,
+            '\n    '.join(pth),
+            )
         raise DataError(msg)
     return VersionedDatasource(pth)
 
