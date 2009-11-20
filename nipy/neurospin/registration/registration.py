@@ -52,12 +52,13 @@ class IconicMatcher:
         self.source = Image(data, affine=source.affine).putmask(source.mask)
             
         # Target image padding + binning
-        self.target = target 
-        self.target_clamped = -np.ones(np.array(target.shape)+2, dtype=CLAMP_TO_DTYPE)
-        aux, t_bins = \
-            clamp(target, th=target_th, mask=target_mask, bins=bins[1])
-        self.target_clamped[1:target.shape[0]+1:, 1:target.shape[1]+1:, 1:target.shape[2]+1:] = aux
-        
+        data = -np.ones(np.array(target.shape)+2, dtype=CLAMP_TO_DTYPE)
+        data[1:target.shape[0]+1:, 
+             1:target.shape[1]+1:, 
+             1:target.shape[2]+1:], t_bins = clamp(target.data, mask=target.mask, bins=bins[1]) 
+        self.data = Image(data, affine=target.affine).putmask(target.mask)
+
+
         # Histograms
         self.joint_hist = np.zeros([s_bins, t_bins])
         self.source_hist = np.zeros(s_bins)

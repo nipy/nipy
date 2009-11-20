@@ -262,13 +262,23 @@ class Image(object):
             t_subgrid2grid = np.diag(np.concatenate((mask._spacing,[1]),1))
             t_subgrid2grid[0:3,3] = mask._corner
             affine = np.dot(self._affine, t_subgrid2grid)
-            return Image(mask.slice(self._get_data()), affine, world=self._world, cval=self._cval)
+
+            data = self._get_data()
+            block = Block(mask.slice(data), affine, world=self._world, cval=self._cval)
+            im = Image(data, self._affine, world=self._world, cval=self._cval)
+            if im.shape == block.shape: 
+                im._masked = False
+            else:
+                im._masked = True
+            im._mask = mask 
+            im._block = block
+            return im 
         else:
             im = Image(self._get_data(), self._affine, world=self._world, cval=self._cval)
             im._data = im._block._data[mask]
+            im._masked = True
             im._block = None 
             im._mask = mask 
-            im._masked = True
             return im 
 
 
