@@ -1,7 +1,9 @@
 """
-Example of a demo that fits a Bayesian GMM to  a dataset
-Variational bayes and Gibbs estimation are sucessively run
-on the same dataset
+Example of a demo that fits a Bayesian Gaussian Mixture Model (GMM) 
+to  a dataset.
+
+Variational bayes and Gibbs estimation are sucessively run on the same
+dataset
 
 todo: add a title+ to the figure
 

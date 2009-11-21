@@ -1,4 +1,5 @@
 import os
+from distutils import log 
 
 # Global variables
 LIBS = os.path.realpath('libcstat')
@@ -48,16 +49,30 @@ def configuration(parent_package='',top_path=None):
     if 'libraries' not in lapack_info:
         # But on OSX that may not give us what we need, so try with 'lapack'
         # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
-        lapack_info = get_info('lapack',0)
+        lapack_info = get_info('lapack', 0)
 
+    # If no lapack install is found, we use the rescue lapack lite
+    # distribution included in the package (sources have been
+    # translated to C using f2c)
     if not lapack_info:
-        raise  NotFoundError('no lapack installation found on this system')
+        log.warn('No lapack installation found, using lapack lite distribution')
+        sources.append(os.path.join(LIBS,'lapack_lite','*.c'))
+        library_dirs = []
+        libraries = []
 
-    # OK, we found lapack, continue
-    library_dirs = lapack_info['library_dirs']
-    libraries = lapack_info['libraries']
-    if 'include_dirs' in lapack_info:
-        config.add_include_dirs(lapack_info['include_dirs'])    
+    # Best-case scenario: lapack found 
+    else: 
+        library_dirs = lapack_info['library_dirs']
+        libraries = lapack_info['libraries']
+        if 'include_dirs' in lapack_info:
+            config.add_include_dirs(lapack_info['include_dirs'])    
+
+    # Information message
+    print('LAPACK build options:')
+    print('library_dirs: %s ' % library_dirs)
+    print('libraries: %s ' % libraries)
+    print('lapack_info: %s ' % lapack_info)
+
 
     config.add_library('cstat',
                        sources=sources,

@@ -26,7 +26,7 @@ def ffx( maskImages, effectImages, varianceImages, resultImage=None):
     -------
     the computed values
     """
-    # fixme : check that the images have same referntail
+    # fixme : check that the images have same referntial
     # fixme : check that mask_Images is a list
     if len(effectImages)!=len(varianceImages):
         raise ValueError, 'Not the correct number of images'
@@ -57,6 +57,50 @@ def ffx( maskImages, effectImages, varianceImages, resultImage=None):
     #t = np.sum(effects/variance,0)/np.sum(1.0/np.sqrt(variance),0)
 
     nim = load(effectImages[0])
+    affine = nim.get_affine()
+    tmap = np.zeros(nim.get_shape())
+    tmap[mask>0] = t
+    tImage = Nifti1Image(tmap, affine)
+    if resultImage!=None:
+       save(tImage, resultImage)
+
+    return tmap
+
+def ffx_from_stat( maskImages, statImages, resultImage=None):
+    """
+    Computation of the fixed effects statistics from statistic
+    
+
+    Parameters
+    ----------
+    maskImages, string or list of strings
+                the paths of one or several masks
+                when several masks, the half thresholding heuristic is used
+    statImages, list of strings
+                the paths ofthe statitsic images   
+    resultImage=None, string,
+                 path of the result images
+
+    Returns
+    -------
+    the computed values
+    """
+    # fixme : check that the images have same referntial
+    # fixme : check that mask_Images is a list
+    nsubj = len(statImages)
+    mask = intersect_masks(maskImages, None, threshold=0.5, cc=True)
+    
+    t = []
+    for s in range(nsubj):
+        rbeta = load(statImages[s])
+        beta = rbeta.get_data()[mask>0]            
+        t.append(beta)
+    
+    t = np.array(t)
+    t[np.isnan(t)] = 0
+    t = t.mean(0)*np.sqrt(nsubj)     
+
+    nim = load(statImages[0])
     affine = nim.get_affine()
     tmap = np.zeros(nim.get_shape())
     tmap[mask>0] = t
