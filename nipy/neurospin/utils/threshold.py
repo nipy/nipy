@@ -16,6 +16,9 @@ from nipy.io.imageformats import load, save, Nifti1Image
 #        2) the test at the end of the code should be converted in a unit 
 #           test (requires 1).
 
+# rmk: These functions could use scipy.ndimage.label and thus not rely
+# on any nipy C code.
+
 def threshold_array(data_array, mask_array=None, th=0., smin=0, nn=18):
     """
     Array thresholding facility    
@@ -61,7 +64,8 @@ def threshold_array(data_array, mask_array=None, th=0., smin=0, nn=18):
         thx[data_array>th] = data_array[data_array>th]*(u>-1) 
     return thx
 
-def threshold_scalar_image(iimage, oimage=None, th=0., smin=0, nn=18, mask_image=None):
+def threshold_scalar_image(iimage, oimage=None, th=0., smin=0, nn=18, 
+        mask_image=None):
     """
     this function takes a 'grey level' threshold and a size threshold
     and gives as output an image where only the suprathreshold component
@@ -79,13 +83,13 @@ def threshold_scalar_image(iimage, oimage=None, th=0., smin=0, nn=18, mask_image
                      if mask_image==None, the function is implied on 
                      where(image)
     
-    returns
+    Returns
     -------
     output, image: the output image object
 
     Note, the 0 values of iimage are not considered so far
     """
-    # fixme : add a header check here
+    # FIXME: add a header check here
     # 1. read the input image
     
     if mask_image==None:
@@ -108,6 +112,7 @@ def threshold_scalar_image(iimage, oimage=None, th=0., smin=0, nn=18, mask_image
     if oimage !=None:
        save(onim, oimage)	
     return onim
+
 
 def threshold_z_array(data_array, mask_array=None, correction=None, 
                                   pval=None, smin=0, nn=18, method=None):
@@ -167,6 +172,7 @@ def threshold_z_array(data_array, mask_array=None, correction=None,
     # 3. threshold the image 
     return threshold_array(data_array, mask_array, th, smin, nn)
 
+
 def threshold_z_image(iimage, oimage=None, correction=None, pval=None, smin=0, 
             nn=18, mask_image=None, method=None):
     """
@@ -220,7 +226,4 @@ def threshold_z_image(iimage, oimage=None, correction=None, pval=None, smin=0,
        save(onim, oimage)	
     return onim
 
-    output_image = threshold_scalar_image(iimage, oimage, th=th, smin=smin,
-                        mask_image=mask_image)
-    return output_image
 
