@@ -216,12 +216,12 @@ def threshold_z_image(iimage, oimage=None, correction=None, pval=None, smin=0,
         
     thx = threshold_z_array(x, m, correction, pval, smin, nn, method)
     
-    ref_dim = inim.get_shape()
+    ref_dim = nim.get_shape()
     result = np.zeros(ref_dim)
     result[m>0] = thx
-    onim = Nifti1Image(result.T,inim.get_affine())	
+    onim = Nifti1Image(result.T, nim.get_affine())	
     onim.get_header()['descrip']= "thresholded image, threshold= %f,\
-                                   cluster size=%d"%(th,smin)
+                                   cluster size=%d"%(thx, smin)
     if oimage !=None:
        save(onim, oimage)	
     return onim
