@@ -3,6 +3,7 @@ Intensity-based matching.
 
 Questions: alexis.roche@gmail.com
 """
+from nipy.neurospin.image import Image, Grid
 from registration_module import _joint_histogram, _similarity, similarity_measures
 from affine import Affine, BRAIN_RADIUS_MM
 
@@ -10,8 +11,9 @@ import numpy as np
 import scipy as sp 
 from sys import maxint
 
+# Globals
+_clamp_dtype = 'short'
 
-CLAMP_TO_DTYPE = 'short'
 
 """
 Input is an object that has at least an 'array'
@@ -52,7 +54,7 @@ class IconicMatcher:
         self.source = Image(data, affine=source.affine).putmask(source.mask)
             
         # Target image padding + binning
-        data = -np.ones(np.array(target.shape)+2, dtype=CLAMP_TO_DTYPE)
+        data = -np.ones(np.array(target.shape)+2, dtype=_clamp_dtype)
         data[1:target.shape[0]+1:, 
              1:target.shape[1]+1:, 
              1:target.shape[2]+1:], t_bins = clamp(target.data, mask=target.mask, bins=bins[1]) 
@@ -77,28 +79,23 @@ class IconicMatcher:
         self.interp = method
         self._interp = interp_methods[method]
 
-    def set_field_of_view(self, subsampling=[1,1,1], corner=[0,0,0], size=None, fixed_npoints=None):
-        self.block_corner = np.array(corner, dtype='uint')
-        if size == None:
-            size = self.source.shape
-        self.block_size = np.array(size, dtype='uint')
-        aux = self.source[corner[0]:corner[0]+size[0]-1:subsampling[0],
-                          corner[1]:corner[1]+size[1]-1:subsampling[1],
-                          corner[2]:corner[2]+size[2]-1:subsampling[2]]
-        if fixed_npoints==None: 
-            self.block_subsampling = np.array(subsampling, dtype='uint')
-            self.source_block = aux
-            self.block_npoints = (self.source_block >= 0).sum()
-        else: 
-            fixed_npoints = int(fixed_npoints)
-            self.source_block, self.block_subsampling, self.block_npoints = \
-                subsample(aux, npoints=fixed_npoints)
+    def set_field_of_view(self, spacing=[1,1,1], corner=[0,0,0], shape=None, 
+                          fixed_npoints=None):
+        
+        if shape == None:
+            shape = self.source.shape
+            
+        fov = self.source.putmask(Grid(shape, corner, spacing)).crop()
 
-        ## Taux: block to full array transformation
-        Taux = np.diag(np.concatenate((self.block_subsampling,[1]),1))
-        Taux[0:3,3] = self.block_corner
-        self.block_transform = np.dot(self.source_toworld, Taux)
+        # Adjust spacing to match desired number of points
+        if not fixed_npoints: 
+            spacing = subsample(fov.data, npoints=fixed_npoints)
+        fov = self.source.putmask(Grid(shape, corner, spacing)).crop()
 
+        self.source_fov = fov
+        self.source_fov_npoints = (fov.data >= 0).sum()
+
+        
     def set_similarity(self, similarity='cc', normalize=None, pdf=None): 
         self.similarity = similarity
         if similarity in similarity_measures: 
@@ -115,20 +112,20 @@ class IconicMatcher:
         The corresponding voxel transformation is: Tv = Tt^-1 * T * Ts
         """
         ## C-contiguity required
-        return np.dot(self.target_fromworld, np.dot(T, self.source_toworld)) 
+        return np.dot(self.target.inverse_affine, np.dot(T, self.source.affine)) 
 
-    def block_voxel_transform(self, T): 
+    def fov_voxel_transform(self, T): 
         ## C-contiguity ensured 
-        return np.dot(self.target_fromworld, np.dot(T, self.block_transform)) 
+        return np.dot(self.target.inverse_affine, np.dot(T, self.source_fov.affine)) 
 
     def eval(self, T):
-        Tv = self.block_voxel_transform(T)
+        Tv = self.fov_voxel_transform(T)
         seed = self._interp
         if self._interp < 0:
             seed = - np.random.randint(maxint)
         _joint_histogram(self.joint_hist, 
-                         self.source_block.flat, ## array iterator
-                         self.target_clamped, 
+                         self.source_fov.data.flat, ## array iterator
+                         self.target, 
                          Tv, 
                          seed)
         #self.source_hist = np.sum(self.joint_histo, 1)
@@ -192,10 +189,6 @@ class IconicMatcher:
                 rx=[0], ry=[0], rz=[0], 
                 sx=[1], sy=[1], sz=[1],
                 qx=[0], qy=[0], qz=[0]):
-
-        # The code here is ugly, we can dot it with np.indices
-        ##params = np.indices([len(p) for p in [ux,uy,uz,rx,ry,rz,sx,sy,sz,qx,qy,qz]])
-        
 
         grids = np.mgrid[0:len(ux), 0:len(uy), 0:len(uz), 
                          0:len(rx), 0:len(ry), 0:len(rz), 
@@ -263,7 +256,7 @@ def clamp(source, mask=None, bins=256):
         mask = np.ones(source.shape, dtype='bool')
 
     # Create output array to allow in-place operations
-    y = np.zeros(source.shape, dtype=CLAMP_TO_DTYPE)
+    y = np.zeros(source.shape, dtype=_clamp_dtype)
     dmaxmax = 2**(8*y.dtype.itemsize-1)-1
 
     # Threshold
@@ -300,8 +293,8 @@ def clamp(source, mask=None, bins=256):
 
 def subsample(source, npoints):
     """  
-    Tune subsampling factors so that the number of voxels in the
-    output block matches a given number.
+    Tune spacing factors so that the number of voxels in the output
+    block matches a given number.
     
     Parameters
     ----------
@@ -313,31 +306,23 @@ def subsample(source, npoints):
 
     Returns
     -------
-    sub_source: ndarray 
-      Subsampled source 
-
-    subsampling: ndarray 
-      Subsampling factors
+    spacing: ndarray 
+      Spacing factors
                  
-    actual_npoints: number 
-      Actual size of the subsampled array 
-
     """
     dims = source.shape
     actual_npoints = (source >= 0).sum()
-    subsampling = np.ones(3, dtype='uint')
+    spacing = np.ones(3, dtype='uint')
 
     while actual_npoints > npoints:
         # Subsample the direction with the highest number of samples
-        ddims = dims/subsampling
+        ddims = dims/spacing
         if ddims[0] >= ddims[1] and ddims[0] >= ddims[2]:
             dir = 0
         elif ddims[1] > ddims[0] and ddims[1] >= ddims[2]:
             dir = 1
         else:
             dir = 2
-        subsampling[dir] += 1
-        sub_source = source[::subsampling[0], ::subsampling[1], ::subsampling[2]]
-        actual_npoints = (sub_source >= 0).sum()
+        spacing[dir] += 1
             
-    return sub_source, subsampling, actual_npoints
+    return spacing

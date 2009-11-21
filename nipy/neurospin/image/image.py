@@ -95,6 +95,7 @@ class Block(object):
     def __init__(self, data, affine, world=None, cval=_def_cval): 
         self._data = data
         self._affine = affine
+        self._inverse_affine = inverse_affine(affine)
         self._world = world 
         self._cval = cval 
 
@@ -106,6 +107,9 @@ class Block(object):
 
     def _get_affine(self):
         return self._affine
+
+    def _get_inverse_affine(self):
+        return self._inverse_affine
 
     def _get_data(self):
         """
@@ -123,7 +127,7 @@ class Block(object):
         # If coords are intended to describe world coordinates,
         # convert them into grid coordinates
         if not grid_coords:
-            to_grid = np.linalg.inv(self._affine)
+            to_grid = self._inverse_affine
             if isinstance(coords, Grid): 
                 # compose transforms
                 if coords._affine: 
@@ -158,6 +162,7 @@ class Block(object):
     shape = property(_get_shape)
     dtype = property(_get_dtype)
     affine = property(_get_affine)
+    inverse_affine = property(_get_inverse_affine)
     data = property(_get_data)
 
 # class `Image`
@@ -208,6 +213,7 @@ class Image(object):
         self._block = Block(data, affine, world=world, cval=cval)
         self._mask = Grid(data.shape)
         self._affine = affine
+        self._inverse_affine = inverse_affine(affine)
         self._world = world
         self._cval = cval        
         self._data = None
@@ -223,6 +229,9 @@ class Image(object):
 
     def _get_affine(self):
         return self._affine
+
+    def _get_inverse_affine(self):
+        return self._inverse_affine
 
     def _get_data(self):
         """
@@ -356,6 +365,7 @@ class Image(object):
 
     data = property(_get_data)
     affine = property(_get_affine)
+    inverse_affine = property(_get_inverse_affine)
     mask = property(_get_mask)
     masked = property(_get_masked)
     shape = property(_get_shape)
@@ -447,4 +457,6 @@ def resample(data, affine, order=_def_order, dtype=None,
     return output 
 
 
+def inverse_affine(affine):
+    return np.linalg.inv(self._affine)
 
