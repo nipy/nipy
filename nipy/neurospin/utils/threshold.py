@@ -64,6 +64,7 @@ def threshold_array(data_array, mask_array=None, th=0., smin=0, nn=18):
         thx[data_array>th] = data_array[data_array>th]*(u>-1) 
     return thx
 
+
 def threshold_scalar_image(iimage, oimage=None, th=0., smin=0, nn=18, 
         mask_image=None):
     """
@@ -75,7 +76,7 @@ def threshold_scalar_image(iimage, oimage=None, th=0., smin=0, nn=18,
     ----------
     iimage, string, path of a scalar input image
     oimage=None, string, path of the scalar output image
-                 if None teh output image is not written
+        if None the output image is not written
     th=0., float,  the chosen trheshold
     smin=0, int, cluster size threshold
     nn=18, int spatial neighboring system: 6,18 or 26
@@ -124,19 +125,22 @@ def threshold_z_array(data_array, mask_array=None, correction=None,
     ----------
     data_array, array 
                 the data to threshold in its positions
-    mask_array=None, array
-                     the position to consider within data_array
-                     if None, all teh original image is considered
-    correction=None, string  the correction for multiple comparison method
-               correction can be either None or 'bon' (Bonferroni) or 'fdr'
-    pval=none, float, the desired classical p-value.
-               the default behaviour of pval depends on correction
-               if correction==None, pval = 0.001, else pval = 0.05
-    smin=0, int, the  cluster size threshold
-    method=None: model of the null distribution:
-                 if method==None: standard null
-                 if method=='emp': empirical null
-    
+    mask_array: array or None, optional
+        the position to consider within data_array if None, all the 
+        original image is considered
+    correction: {None, 'bon', 'fdr'}
+        the correction for multiple comparison method correction can be 
+        either None or 'bon' (Bonferroni) or 'fdr'
+    pval: float or None, optional
+        The desired classical p-value. The default behaviour of pval 
+        depends on correction if correction==None, pval = 0.001, 
+        else pval = 0.05
+    smin: int, optional
+        The cluster size threshold
+    method: 'emp' or None 
+        model of the null distribution:
+        if method==None: standard null
+        if method=='emp': empirical null
     """
     if mask_array==None:
         mask_array = np.ones(np.shape(data_array))
