@@ -4,6 +4,8 @@ the nipy framework
 
 Author: Bertrand Thirion, 2009
 """
+print __doc__
+
 import numpy as np
 import os
 import matplotlib.pylab as mp
