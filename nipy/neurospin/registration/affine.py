@@ -1,4 +1,4 @@
-from routines import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
+from registration_module import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
 
 
 import numpy as np

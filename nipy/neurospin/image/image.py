@@ -144,7 +144,7 @@ class Block(object):
             if coords._affine:
                 return resample(self._data, coords._affine,
                                 order=order, dtype=dtype, 
-                                cval=self._cval, optimize=optimize)
+                                cval=self._cval, optimize=optimize).squeeze()
             else:
                 return coords.slice(self._data)
         
@@ -164,6 +164,7 @@ class Block(object):
     affine = property(_get_affine)
     inverse_affine = property(_get_inverse_affine)
     data = property(_get_data)
+
 
 # class `Image`
 
@@ -363,6 +364,22 @@ class Image(object):
 
         return block.values(coords, grid_coords, dtype, order, optimize)
 
+
+    def transform(self, transform, shape, affine):
+        """
+        transform: world transformation
+
+        affine: destination grid to-world transformation. 
+        """
+        
+        t_ = np.dot(self._inverse_affine, np.dot(inverse_affine(transform), affine))
+
+        return resample(self._get_data(), affine=t_, shape=shape,
+                        order=order, dtype=dtype, 
+                        cval=self._cval, optimize=optimize)
+
+
+
     data = property(_get_data)
     affine = property(_get_affine)
     inverse_affine = property(_get_inverse_affine)
@@ -371,6 +388,8 @@ class Image(object):
     shape = property(_get_shape)
     dtype = property(_get_dtype)
 
+
+        
 
 
 def apply_affine(affine, XYZ):
@@ -433,8 +452,11 @@ def sample(data, coords, order=_def_order, dtype=None,
 
 
 
-def resample(data, affine, order=_def_order, dtype=None, 
+def resample(data, affine, shape=None, order=_def_order, dtype=None, 
              cval=_def_cval, optimize=_def_optimize): 
+
+    if shape == None:
+        shape = data.shape
 
     if dtype == None: 
         dtype = data.dtype
@@ -442,7 +464,7 @@ def resample(data, affine, order=_def_order, dtype=None,
     if optimize and order==3:
         from image_module import cspline_resample3d
         output = cspline_resample3d(data, 
-                                    data.shape, 
+                                    shape, 
                                     affine, 
                                     dtype=dtype)
     else: 
@@ -450,6 +472,7 @@ def resample(data, affine, order=_def_order, dtype=None,
         ndimage.affine_transform(data, 
                                  affine[0:3,0:3],
                                  offset=affine[0:3,3],
+                                 output_shape=shape,
                                  order=order, 
                                  cval=cval, 
                                  output=output)
@@ -458,5 +481,5 @@ def resample(data, affine, order=_def_order, dtype=None,
 
 
 def inverse_affine(affine):
-    return np.linalg.inv(self._affine)
+    return np.linalg.inv(affine)
 
