@@ -1,3 +1,4 @@
+__doc__ = \
 """
 Example of a script that perfoms histogram analysis of an activation
 image, to estimate activation Z-score with various heuristics:
@@ -15,12 +16,11 @@ that each voxel is in the active class
 
 """
 # Author : Bertrand Thirion, Gael Varoquaux 2008-2009
+print __doc__
 
 import numpy as np
-import scipy.stats as st
-import os.path as op
+
 import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
-from nipy.neurospin.utils.zscore import zscore
 import nipy.neurospin.utils.emp_null as en
 
 ################################################################################

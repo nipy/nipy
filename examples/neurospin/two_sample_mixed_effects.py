@@ -1,3 +1,8 @@
+"""
+Demo two sample mixed effect models;
+"""
+print __doc__
+
 import numpy as np
 from nipy.neurospin.group import twosample
 
@@ -17,5 +22,5 @@ magics = np.asarray(range(nperms))
 t = twosample.stat_mfx(y1,v1,y2,v2,id='student_mfx',Magics=magics)
 
 import pylab as pl
-pl.hist(t,101)
+pl.hist(t, 101)
 pl.show()

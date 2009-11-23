@@ -82,9 +82,8 @@ class landmark_regions(hroi.NROI):
              h[k] = edk.sum()/(size[k]*(size[k]-1))
         return h
              
-    def HPD(self,k,cs,pval = 0.95,dmax=1.0):
+    def HPD(self, k, cs, pval=0.95, dmax=1.0):
         """
-        hpd = self.HPD(k,cs,dmax = 10,pval = 0.95)
         Sample the postreior density of being in k
         on a grid defined by cs, assuming that the roi is an ellipsoid
         
@@ -184,11 +183,13 @@ class landmark_regions(hroi.NROI):
         if self.k>0:
             aux = -np.ones((cs.shape[0],self.k))
             for k in range(self.k):
-                aux[:,k] = self.HPD(k,cs,pval,dmax)
+                aux[:,k] = self.HPD(k, cs, pval, dmax)
 
             maux = np.max(aux,1)
             label[maux>0] = np.argmax(aux,1)[maux>0]
         return label
+
+    
 
     def show(self):
         """function to print basic information on self
@@ -272,6 +273,67 @@ class landmark_regions(hroi.NROI):
                     lmj = 1-np.prod(1-conf[subjj==ls])
                     confid[j] += lmj
         return confid
+       
+    def generate_coordinates(self):
+        """
+        Generate the set of coordinates that is canonically  associated 
+        with the referential of self     
+        
+        Returns
+        -------
+        cs, array of shape (nvox, 3) the coordinates set
+        """
+        gs = np.prod(self.shape)
+        cs = np.reshape(np.indices(self.shape),(3,gs)).T
+        cs = np.dot(np.hstack((cs,np.ones((gs,1)))),self.affine.T)[:,:3]
+        return cs
+        
+    def feature_map(self, feature, imPath=None, pw=0.95):
+        """
+        Given a set of feature values, produce a feature map,
+        assuming that one feature corresponds to one region
+        
+        Parameters
+        ----------
+        feature, array of shape (self.k) : the information to map
+        imPath=None, string yielding the output image path
+                     if not None
+        pw=0.95: volume of the Gaussian ellipsoid associated with the ROIs
+        
+        Returns
+        -------
+        The image object
+        """
+        if np.size(feature)!=self.k:
+            raise ValueError, 'Incompatible feature dimension'
+        from nipy.io.imageformats import save, Nifti1Image          
+                
+        label = self.map_label(self.generate_coordinates(), pval=pw)
+        label = np.reshape(label, self.shape)
+        values = np.zeros(self.shape)
+        values[label>-1] = feature[label[label>-1].astype(np.int)]
+        wim = Nifti1Image(values, self.affine)
+        wim.get_header()['descrip']='feature image'
+        if imPath!=None:
+           save(wim,imPath)
+        
+        return wim
+    
+    def prevalence_map(self, imPath=None, pw=0.95):
+        """
+        Particular feature map where feature self.roi_prevalence()
+        
+        Parameters
+        ----------
+        imPath=None, string yielding the output image path
+                     if not None
+        pw=0.95: volume of the Gaussian ellipsoid associated with the ROIs
+        
+        Returns
+        -------
+        The image object
+        """
+        return self.feature_map(self.roi_prevalence(), imPath, pw)
 
 def build_LR(BF,ths=0):
     """
