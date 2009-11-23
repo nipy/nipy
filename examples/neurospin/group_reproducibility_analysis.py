@@ -42,7 +42,7 @@ csize = 10
 niter = 10
 method = 'crfx'
 verbose = 0
-swap = True
+swap = False
 
 kap = []
 clt = []
