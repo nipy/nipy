@@ -99,7 +99,6 @@ def infer_latent_dim(X, verbose=0, maxr=-1):
     if maxr ==-1:
         maxr = np.minimum(X.shape[0],X.shape[1])
         
-    import numpy.linalg as nl
     U,S,V = nl.svd(X,0)
     if verbose>1:
         print "Singular Values", S
@@ -222,7 +221,6 @@ def mds(dg, dim=1, verbose=0):
     sqdg = (sqdg.T-rm1).T
     sqdg = sqdg+mm  
     
-    import numpy.linalg as nl
     U,S,V = nl.svd(sqdg,0)
     S = np.sqrt(S)
     
@@ -237,7 +235,7 @@ def mds(dg, dim=1, verbose=0):
         
     return chart, V.T, rm0
 
-def isomap_dev(G, dim=1, p=300, verbose = 0):
+def isomap_dev(G, dim=1, p=300, verbose=0):
     """
     return the dim-dimensional ISOMAP chart that best represents the graph G
     
@@ -281,9 +279,8 @@ def isomap_dev(G, dim=1, p=300, verbose = 0):
     dg1 = dg1-rm0
     dg1 = (dg1.T-rm1).T
     dg1 = dg1+mm    
+    U, S, V = nl.svd(dg1, 0)
     
-    import numpy.linalg as nl
-    U,S,V = nl.svd(dg1,0)
     S = np.sqrt(S)
     chart = np.dot(U,np.diag(S))
     proj = V.T
@@ -293,7 +290,7 @@ def isomap_dev(G, dim=1, p=300, verbose = 0):
     Chart = np.dot(np.dot(dg,proj),np.diag(1.0/S))
     return Chart[:,:dim]
 
-def isomap(G, dim=1, p=300,verbose = 0):
+def isomap(G, dim=1, p=300, verbose=0):
     """
     chart,proj,offset =isomap(G,dim=1,p=300,verbose = 0)
     Isomapping of the data
@@ -328,7 +325,7 @@ def isomap(G, dim=1, p=300,verbose = 0):
 
 
 
-def LE_dev(G,dim,verbose=0,maxiter=1000):
+def LE_dev(G, dim, verbose=0, maxiter=1000):
     """
     Laplacian Embedding of the data
     returns the dim-dimensional LE of the graph G
@@ -352,7 +349,6 @@ def LE_dev(G,dim,verbose=0,maxiter=1000):
     eps = 1.e-7
 
     f1 = np.zeros((G.V,dim+2))
-    import numpy.linalg as nl
     for i in range(maxiter):
         f.diffusion(10)
         f0 = Orthonormalize(f.field)

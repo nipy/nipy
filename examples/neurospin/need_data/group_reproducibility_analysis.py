@@ -1,6 +1,7 @@
 """
 Example of script to analyse the reproducibility in group studies
 using a bootstrap procedure
+
 author: Bertrand Thirion, 2005-2009
 """
 import numpy as np
@@ -9,12 +10,14 @@ import cPickle
 from nipy.io.imageformats import load, save, Nifti1Image 
 import tempfile
 import get_data_light
+
 from nipy.neurospin.utils.reproducibility_measures import \
      voxel_reproducibility, cluster_reproducibility, map_reproducibility
 
-# -------------------------------------------------------
-# -------- Set the paths, data, etc. --------------------
-# -------------------------------------------------------
+print 'This analysis takes a long while, please be patient'
+
+################################################################################
+# Set the paths, data, etc.
 
 get_data_light.getIt()
 nsubj = 12
@@ -31,9 +34,8 @@ contrast_images =[ op.join(data_dir,'con_%04d_subj_%02d.nii'%(nbeta,n))
                  for n in range(nsubj)]
 swd = tempfile.mkdtemp('image')
 
-# -------------------------------------------------------
-# ---------- Make a group mask --------------------------
-# -------------------------------------------------------
+################################################################################
+# Make a group mask
 
 # Read the masks
 rmask = load(mask_images[0])
@@ -53,9 +55,8 @@ xyz = np.where(mask)
 xyz = np.array(xyz).T
 nvox = xyz.shape[0]
 
-# -------------------------------------------------------
-# ---------- load the functional images -----------------
-# -------------------------------------------------------
+################################################################################
+# Load the functional images
 
 # Load the betas
 Functional = []
@@ -84,17 +85,15 @@ VarFunctional = np.squeeze(VarFunctional).T
 Functional[np.isnan(Functional)]=0
 VarFunctional[np.isnan(VarFunctional)]=0
 
-# -------------------------------------------------------
-# ---------- MNI coordinates ----------------------------
-# -------------------------------------------------------
+################################################################################
+# MNI coordinates
 
 affine = rmask.get_affine()
 coord = np.hstack((xyz, np.ones((nvox, 1))))
 coord = np.dot(coord, affine.T)[:,:3]
 
-# -------------------------------------------------------
-# ---------- script ----------------------------
-# -------------------------------------------------------
+################################################################################
+# script
 
 ngroups = 10
 thresholds = [1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0]
@@ -158,9 +157,8 @@ mp.xticks(range(1,1+len(thresholds)),thresholds)
 mp.xlabel('threshold')
 
 
-# -------------------------------------------------------
-# ---------- create an image ----------------------------
-# -------------------------------------------------------
+################################################################################
+# create an image
 
 th = 4.0
 swap = True
@@ -177,12 +175,3 @@ save(wim, wname)
 
 print('Wrote a reproducibility image in %s'%wname)
 
-
-#import two_binomial_mixture as mtb
-#MB = mtb.TwoBinomialMixture()
-#MB.estimate_parameters(rmap, ngroups+1)
-#h = np.array([np.sum(rmap==i) for i in range(ngroups+1)])
-#MB.show(h)
-#print MB.kappa()
-#
-#mp.show()

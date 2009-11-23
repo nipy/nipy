@@ -21,13 +21,12 @@ import numpy as np
 import matplotlib as mp
 import pylab as pl
 
-from nifti import NiftiImage
-
 # Local imports
 from nipy.neurospin.utils.mask import compute_mask
+from nipy.io.imageformats import load
 
-from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
-from .coord_tools import coord_transform, find_activation, \
+from anat_cache import mni_sform, mni_sform_inv, _AnatCache
+from coord_tools import coord_transform, find_activation, \
         find_cut_coords
 
 class SformError(Exception):
@@ -40,24 +39,82 @@ class NiftiIndexError(IndexError):
 ################################################################################
 # Colormaps
 
-# A blue-red map based on hot
-hot_cdict = pl.cm.hot._segmentdata.copy()
+def _rotate_cmap(cmap, name=None, swap_order=('green', 'red', 'blue')):
+    """ Utility function to swap the colors of a colormap.
+    """
+    orig_cdict = cmap._segmentdata.copy()
 
-cdict = dict()
-cdict['green'] = [(0.5*(1-p), c1, c2)
-                        for (p, c1, c2) in reversed(hot_cdict['green'])]
-cdict['blue'] = [(0.5*(1-p), c1, c2)
-                        for (p, c1, c2) in reversed(hot_cdict['red'])]
-cdict['red'] = [(0.5*(1-p), c1, c2)
-                        for (p, c1, c2) in reversed(hot_cdict['blue'])]
+    cdict = dict()
+    cdict['green'] = [(p, c1, c2)
+                        for (p, c1, c2) in orig_cdict[swap_order[0]]]
+    cdict['blue'] = [(p, c1, c2)
+                        for (p, c1, c2) in orig_cdict[swap_order[1]]]
+    cdict['red'] = [(p, c1, c2)
+                        for (p, c1, c2) in orig_cdict[swap_order[2]]]
 
-for color in ('red', 'green', 'blue'):
-    cdict[color].extend([(0.5*(1+p), c1, c2) 
-                                for (p, c1, c2) in hot_cdict[color]])
-
-ColdHot = mp.colors.LinearSegmentedColormap('my_colormap', cdict, 512)
+    if name is None:
+        name = '%s_rotated' % cmap.name
+    return mp.colors.LinearSegmentedColormap(name, cdict, 512)
 
 
+def _pigtailed_cmap(cmap, name=None, 
+                    swap_order=('green', 'red', 'blue')):
+    """ Utility function to make a new colormap by concatenating a
+        colormap with its reverse.
+    """
+    orig_cdict = cmap._segmentdata.copy()
+
+    cdict = dict()
+    cdict['green'] = [(0.5*(1-p), c1, c2)
+                        for (p, c1, c2) in reversed(orig_cdict[swap_order[0]])]
+    cdict['blue'] = [(0.5*(1-p), c1, c2)
+                        for (p, c1, c2) in reversed(orig_cdict[swap_order[1]])]
+    cdict['red'] = [(0.5*(1-p), c1, c2)
+                        for (p, c1, c2) in reversed(orig_cdict[swap_order[2]])]
+
+    for color in ('red', 'green', 'blue'):
+        cdict[color].extend([(0.5*(1+p), c1, c2) 
+                                    for (p, c1, c2) in orig_cdict[color]])
+
+    if name is None:
+        name = '%s_reversed' % cmap.name
+    return mp.colors.LinearSegmentedColormap(name, cdict, 512)
+
+
+# Using a dict as a namespace, to micmic matplotlib's cm
+
+_cm = dict(
+    cold_hot     = _pigtailed_cmap(pl.cm.hot,      name='cold_hot'),
+    brown_blue   = _pigtailed_cmap(pl.cm.bone,     name='brown_blue'),
+    cyan_copper  = _pigtailed_cmap(pl.cm.copper,   name='cyan_copper'),
+    cyan_orange  = _pigtailed_cmap(pl.cm.YlOrBr_r, name='cyan_orange'),
+    blue_red     = _pigtailed_cmap(pl.cm.Reds_r,   name='blue_red'),
+    brown_cyan   = _pigtailed_cmap(pl.cm.Blues_r,  name='brown_cyan'),
+    purple_green = _pigtailed_cmap(pl.cm.Greens_r, name='purple_green',
+                    swap_order=('red', 'blue', 'green')),
+    purple_blue  = _pigtailed_cmap(pl.cm.Blues_r, name='purple_blue',
+                    swap_order=('red', 'blue', 'green')),
+    blue_orange  = _pigtailed_cmap(pl.cm.Oranges_r, name='blue_orange',
+                    swap_order=('green', 'red', 'blue')),
+    black_blue   = _rotate_cmap(pl.cm.hot, name='black_blue'),
+    black_purple = _rotate_cmap(pl.cm.hot, name='black_purple',
+                                    swap_order=('blue', 'red', 'green')),
+    black_pink   = _rotate_cmap(pl.cm.hot, name='black_pink',
+                            swap_order=('blue', 'green', 'red')),
+    black_green  = _rotate_cmap(pl.cm.hot, name='black_green',
+                            swap_order=('red', 'blue', 'green')),
+    black_red    = pl.cm.hot,
+    )
+
+_cm.update(pl.cm.datad)
+
+class _CM(dict):
+    def __init__(self, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
+        self.__dict__.update(self)
+
+
+cm = _CM(**_cm)
 
 ################################################################################
 # 2D plotting of activation maps 
@@ -517,24 +574,24 @@ def plot_niftifile(filename, outputname=None, do3d=False, vmin=None,
     if not os.path.exists(filename):
         raise OSError, 'File %s does not exist' % filename
         
-    nim = NiftiImage(filename)
-    sform = nim.sform
+    nim = load(filename)
+    sform = nim.get_affine()
     if any(np.linalg.eigvals(sform)==0):
         raise SformError, "sform affine is not inversible"
     if anat_filename is not None:
-        anat_im = NiftiImage(anat_filename)
-        anat = anat_im.data.T
-        anat_sform = anat_im.sform
+        anat_im = load(anat_filename)
+        anat = anat_im.data
+        anat_sform = anat_im.get_affine()
     else:
         anat = None
         anat_sform = None
 
     if mask_filename is not None:
-        mask_im = NiftiImage(mask_filename)
-        mask = mask_im.data.T.astype(np.bool)
-        if not np.allclose(mask_im.sform, sform):
+        mask_im = load(mask_filename)
+        mask = mask_im.data.astype(np.bool)
+        if not np.allclose(mask_im.get_affine(), sform):
             raise SformError, 'Mask does not have same sform as image'
-        if not np.allclose(mask.shape, nim.data.shape[-3:]):
+        if not np.allclose(mask.shape, nim.data.shape[:3]):
             raise NiftiIndexError, 'Mask does not have same shape as image'
     else:
         mask = None

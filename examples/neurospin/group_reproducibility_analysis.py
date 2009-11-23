@@ -1,20 +1,20 @@
 """
 Example of script to analyse the reproducibility in group studies
 using a bootstrap procedure
+
 author: Bertrand Thirion, 2005-2009
 """
+print __doc__
+
 import numpy as np
-import os.path as op
-import cPickle
 
 import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 from nipy.neurospin.utils.reproducibility_measures import \
      voxel_reproducibility, cluster_reproducibility, map_reproducibility
 
 
-# -------------------------------------------------------
-#----- generate the data --------------------------------
-# -------------------------------------------------------
+################################################################################
+# Generate the data 
 nsubj = 105
 dimx = 60
 dimy = 60
@@ -22,20 +22,18 @@ pos = 2*np.array([[ 6,  7],
                   [10, 10],
                   [15, 10]])
 ampli = np.array([5, 7, 6])
-sjitter = 1.0
 dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                      pos=pos, ampli=ampli, width=5.0)
 betas = np.reshape(dataset, (nsubj, dimx, dimy))
 
-#set the variance at 1 everywhere
+# set the variance at 1 everywhere
 func = np.reshape(betas,(nsubj, dimx*dimy)).T
 var = np.ones((dimx*dimy, nsubj))
 xyz = np.array(np.where(betas[:1])).T
 coord = xyz.astype(np.float)
 
-# -------------------------------------------------------
-# ---------- script ----------------------------
-# -------------------------------------------------------
+################################################################################
+# Run reproducibility analysis 
 
 ngroups = 10
 thresholds = [0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.0]
@@ -70,6 +68,9 @@ for threshold in thresholds:
     kap.append(np.array(kappa))
     clt.append(np.array(cls))
     
+################################################################################
+# Visualize the results
+
 import matplotlib.pylab as mp
 mp.figure()
 mp.subplot(1,2,1)
@@ -83,21 +84,19 @@ mp.title('cluster-level reproducibility')
 mp.xticks(range(1,1+len(thresholds)),thresholds)
 mp.xlabel('threshold')
 
-# -------------------------------------------------------
-# ---------- create an image ----------------------------
-# -------------------------------------------------------
 
 mp.figure()
 q = 1 
 for threshold in thresholds:
-    mp.subplot(1,len(thresholds),q)
-    kwargs = {'threshold':threshold,'csize':csize}
+    mp.subplot(3, len(thresholds)/3, q)
     rmap = map_reproducibility(func, var, xyz, ngroups,
-                           method, verbose, **kwargs)
-    rmap = np.reshape(rmap,(dimx,dimy))
-    mp.imshow(rmap,interpolation=None,vmin=0,vmax=ngroups)
-    mp.title('threshold: %f'%threshold)
+                           method, verbose, threshold=threshold,
+                           csize=csize)
+    rmap = np.reshape(rmap, (dimx, dimy))
+    mp.imshow(rmap, interpolation=None, vmin=0, vmax=ngroups)
+    mp.title('threshold: %f' % threshold)
     q +=1
+mp.suptitle('Map reproducibility for different thresholds') 
 mp.colorbar()
 mp.show()
 
