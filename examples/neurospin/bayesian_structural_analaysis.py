@@ -153,10 +153,8 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple2'#'loo'#'dev'#'ipmi'#
+method = 'simple'#'loo'#'dev'#'ipmi'#
 
 # run the algo
-
-#AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method=method,verbose=#verbose)
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method='simple',verbose=verbose)
 mp.show()
