@@ -1137,12 +1137,6 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     p: array of shape (nnodes):
        likelihood of the data under H1 over some sampling grid
 
-    Note
-    ----
-    In that case, the DPMM is used to derive a spatial density of
-    significant local maxima in the volume. Each terminal (leaf)
-    region which is a posteriori significant enough is assigned to the
-    nearest mode of this distribution
     """
     nsubj = lbeta.shape[1]
     nvox = lbeta.shape[0]
@@ -1182,11 +1176,13 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
             ll2.append(np.mean(np.log(pp)))
             ll1.append(np.mean(np.log(p)))
             ll0.append(np.mean(np.log(g0)))
-    #print ll1,ll2
+
     ml0 = np.mean(np.array(ll0))
     ml1 = np.mean(np.array(ll1))
     ml2 = np.mean(np.array(ll2))
-    print ml1,ml0,ml2
+    if verbose: 
+       print 'average cross-validated log likelihood'
+       print 'null model: ', ml0,' alternative model: ', ml2
 
     if ml2>ml0:
         # relaunch the analysis without cv

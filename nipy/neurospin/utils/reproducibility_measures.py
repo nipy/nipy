@@ -538,7 +538,7 @@ def coord_bsa(xyz, coord, betas, affine=np.eye(4), shape=None, theta=3.,
     voxvol = np.absolute(np.linalg.det(affine))
     g0 = 1.0/(voxvol*nbvox)
 
-    crmap,AF,BF,p = bsa.compute_BSA_simple_2(Fbeta,betas,coord,dmax,xyz,
+    crmap,AF,BF,p = bsa.compute_BSA_simple2(Fbeta, betas, coord, dmax, xyz,
                                             affine, shape,thq, smin,ths, theta,
                                             g0, verbose=0)
     if AF==None:
