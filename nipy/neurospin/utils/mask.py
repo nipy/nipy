@@ -256,7 +256,7 @@ def intersect_masks(input_mask_files, output_filename=None,
     for filename in input_mask_files:
         nim = load(filename)
         if gmask is None:
-            gmask = nim.get_data()
+            gmask = nim.get_data().copy() # !!!
         else:
             gmask += nim.get_data()  
     
@@ -266,7 +266,7 @@ def intersect_masks(input_mask_files, output_filename=None,
     
     if output_filename is not None:
         header = nim.get_header()
-        header['description'] = 'mask image'
+        header['descrip'] = 'mask image'
         output_image = nifti1.Nifti1Image(gmask.astype(np.uint8),
                                             affine=nim.get_affine(),
                                             header=header,

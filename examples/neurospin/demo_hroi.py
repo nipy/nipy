@@ -38,7 +38,7 @@ Fbeta = ff.Field(nbvox)
 Fbeta.from_3d_grid(xyz.astype(np.int), 18)
 beta = np.reshape(dataset,(nbvox,1))
 Fbeta.set_field(beta)
-nroi = hroi.NROI_from_field(Fbeta, affine, shape, xyz, th=2.0, smin = 5)
+nroi = hroi.NROI_from_field(Fbeta, affine, shape, xyz, th=2.0, smin = 10)
 if nroi != None:
     n1 = nroi.copy()
     n2 = nroi.reduce_to_leaves()

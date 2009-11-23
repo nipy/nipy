@@ -29,6 +29,10 @@ def parcel_input(mask_images, nbeta, learning_images,
       parcellation procedure. normally these are statistics(student/normal) images.
     ths=.5: threshold to select the regions that are common across subjects.
             if ths = .5, thethreshold is half the number of subjects
+    fdim=3, int
+            dimension of the data used in subsequent analyses 
+            if smaller than len(nbeta), 
+            a PCA is perfomed to reduce the information in the data
     affine=None provides the transformation to Talairach space.
                 if affine==None, this is taken from the image header
 
@@ -56,9 +60,9 @@ def parcel_input(mask_images, nbeta, learning_images,
     mask = []
     for s in range(nsubj):
         nim = load(mask_images[s])
-        temp = nim.get_data()
+        temp = np.squeeze(nim.get_data())
         rbeta = load(learning_images[s][0])
-        maskb = rbeta.get_data()
+        maskb = np.squeeze(rbeta.get_data())
         temp = np.minimum(temp,1-(maskb==0))        
         mask.append(temp)
         # fixme : check that all images are co-registered
@@ -190,6 +194,59 @@ def Parcellation_output(Pa, mask_images, learning_images, coord, nbru,
 
     return Pa
 
+def parcellation_output_with_paths(Pa, mask_images, group_path, indiv_path):
+    """
+    Function that produces images that describe the spatial structure
+    of the parcellation.  It mainly produces label images at the group
+    and subject level
+    
+    Parameters
+    ----------
+    Pa : Parcellation instance that describes the parcellation
+    mask_images: list of images paths that define the mask
+    coord: array of shape (nvox,3) that contains(approximated)
+           MNI-coordinates of the brain mask voxels considered in the
+           parcellation process
+    group_path, string, path of the group-level parcellation image
+    indiv_path, list of strings, paths of the individual parcellation images    
+    
+    fixme
+    -----
+    the referential-defining information should be part of the Pa instance
+    """
+    nsubj = Pa.nb_subj
+    mxyz = Pa.ijk
+    
+    # write the template image
+    tlabs = Pa.group_labels
+    rmask = load(mask_images[0])
+    ref_dim = rmask.get_shape()
+    grid_size = np.prod(ref_dim)
+    affine = rmask.get_affine()
+    
+    Label = np.zeros(ref_dim)
+    Label[Pa.ijk[:,0],Pa.ijk[:,1],Pa.ijk[:,2]]=tlabs+1
+    
+    wim = Nifti1Image (Label, affine)
+    hdr = wim.get_header()
+    hdr['descrip'] = 'group_level Label image obtained from a \
+                     parcellation procedure'
+    save(wim, group_path)
+    
+    # write subject-related stuff
+    for s in range(nsubj):
+        # write the images
+        labs = Pa.label[:,s]
+        Label = np.zeros(ref_dim).astype(np.int)
+        Label[Pa.ijk[:,0],Pa.ijk[:,1],Pa.ijk[:,2]]=labs+1
+        wim = Nifti1Image (Label, affine)
+        hdr = wim.get_header()
+        hdr['descrip'] = 'individual Label image obtained \
+                         from a parcellation procedure'
+        save(wim, indiv_path[s])
+    
+
+
 def Parcellation_based_analysis(Pa, test_images, numbeta, swd="/tmp", 
                                     DMtx=None, verbose=1, method_id=0):
     """
@@ -283,7 +340,7 @@ def Parcellation_based_analysis(Pa, test_images, numbeta, swd="/tmp",
 
 
 def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward', 
-                          write_dir='/tmp', mu=10., verbose=0):
+                          write_dir='/tmp', mu=10., verbose=0, fullpath=None):
     """
     Parcellation of a one-subject dataset
 
@@ -303,7 +360,9 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     write_dir='/tmp': write directory
     mu = 10., float: the relative weight of anatomical information
     verbose=0: verbosity mode
-
+    fullpath=None, string,
+                   path of the output image
+                   By default, it is the write dir + a name depending on the method
     Note
     ----
     Ward's method takes time (about 6 minutes for a 60K voxels dataset)
@@ -383,13 +442,13 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
         print nbparcel, "functional variance", vf, "anatomical variance",va
 
     # step3:  write the resulting label image
-    if method=='ward':
+    if fullpath!=None:
+        LabelImage = fullpath
+    elif method=='ward':
         LabelImage = os.path.join(write_dir,"parcel_wards.nii")
-
-    if method=='gkm':
+    elif method=='gkm':
         LabelImage = os.path.join(write_dir,"parcel_gkmeans.nii")
-
-    if method=='ward_and_gkm':
+    elif method=='ward_and_gkm':
         LabelImage = os.path.join(write_dir,"parcel_wgkmeans.nii")
         
     Label = -np.ones(ref_dim,'int16')

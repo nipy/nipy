@@ -2,6 +2,8 @@
 import sys
 from distutils import log
 from distutils.cmd import Command
+from distutils.version import LooseVersion
+
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
@@ -38,6 +40,30 @@ if not 'extra_setuptools_args' in globals():
     extra_setuptools_args = dict()
 
 
+# Dependency checks
+def package_check(pkg_name, version=None, checker=LooseVersion):
+    msg = 'NIPY needs %s' % pkg_name
+    try:
+        mod = __import__(pkg_name)
+    except ImportError:
+        raise ImportError(msg)
+    if not version:
+        return
+    msg += ' >= %s' % version
+    try:
+        have_version = mod.__version__
+    except AttributeError:
+        raise RuntimeError('Cannot find version for %s' % pkg_name)
+    if checker(have_version) < checker(version):
+        raise RuntimeError(msg)
+
+
+# (for now) hard dependencies and hard checks
+#package_check('sympy', '0.6.4')
+##package_check('nifti')
+package_check('scipy', '0.5')
+
+    
 ################################################################################
 # Import the documentation building classes. 
 
@@ -60,7 +86,10 @@ def data_install_msgs():
         try:
             make_datasource('nipy', name)
         except DataError, exception:
-            log.warn('%s\n%s' % ('_'*80, exception))
+            log.warn('%s\nWARNING: %s\n' 
+                     'The main nipy algorithms will work, but you will '
+                     'not have have access to the\nnipy %s.' % 
+                     ('_'*80, exception, name))
         
 
 class MyInstallData(install_data):

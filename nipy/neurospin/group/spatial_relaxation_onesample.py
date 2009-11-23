@@ -5,13 +5,6 @@
 import numpy as np
 import scipy.special as sp
 
-# Do inter-package imports the right way (this will become mandatory in py2.6)
-# Alexis: I'm disabling this because this is incompatible with python
-# 2.4 (needed for brainvisa)
-"""
-from ..group.routines import add_lines
-from .displacement_field import displacement_field
-"""
 from routines import add_lines
 from displacement_field import displacement_field
 
@@ -1076,8 +1069,8 @@ class multivariate_stat:
             #I = range(self.m.size)*np.ones(self.data.shape,int)
         #else:
             #I = self.D.I
-        v_labels = v[self.labels]
         m_labels = m_mean[self.labels]
+        v_labels = m_var[self.labels]
         return (SS4 + m_labels * SS1 + m_labels / v_labels)\
                  / (SS1 + 1.0 / v_labels)
 
