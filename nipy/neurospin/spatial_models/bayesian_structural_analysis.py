@@ -462,7 +462,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, affine=np.eye(4),
 
 
 def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, affine=np.eye(4), 
-                    shape=None, thq=0.9,smin=5, ths=0,theta=3.0, g0=1.0,
+                    shape=None, thq=0.9,smin=5, ths=0, theta=3.0, g0=1.0,
                      bdensity=0, verbose=0):
     """
     Compute the  Bayesian Structural Activation paterns
@@ -622,8 +622,47 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, affine=np.eye(4),
 
     return crmap,LR,bf,p
 
-def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
+def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
     """
+    Estimation of the population level model of activation density using 
+    dpmm and inference
+    
+    Parameters
+    ----------
+    Fbeta nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    bf list of nipy.neurospin.spatial_models.hroi.Nroi instances
+       representing individual ROIs
+       let nr be the number of terminal regions across subjects
+    gf0, array of shape (nr)
+         the mixture-based prior probability 
+         that the terminal regions are true positives
+    sub, array of shape (nr)
+         the subject index associated with the terminal regions
+    gfc, array of shape (nr, coord.shape[1])
+         the coordinates of the of the terminal regions
+    dmax float>0:
+         expected cluster std in the common space in units of coord
+    thq = 0.5 (float in the [0,1] interval)
+        p-value of the prevalence test
+    ths=0, float in the rannge [0,nsubj]
+        null hypothesis on region prevalence that is rejected during inference
+    g0 = 1.0 (float): constant value of the uniform density
+       over the (compact) volume of interest
+    verbose=0, verbosity mode
+
+    Returns
+    -------
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    LR: a instance of sbf.Landmark_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    p: array of shape (nnodes):
+       likelihood of the data under H1 over some sampling grid
     """
     nvox = coord.shape[0]
     nsubj = len(bf)
@@ -711,6 +750,47 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
     
 def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
     """
+    Estimation of the population level model of activation density using 
+    dpmm and inference
+    
+    Parameters
+    ----------
+    Fbeta nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    bf list of nipy.neurospin.spatial_models.hroi.Nroi instances
+       representing individual ROIs
+       let nr be the number of terminal regions across subjects
+    gf0, array of shape (nr)
+         the mixture-based prior probability 
+         that the terminal regions are true positives
+    sub, array of shape (nr)
+         the subject index associated with the terminal regions
+    gfc, array of shape (nr, coord.shape[1])
+         the coordinates of the of the terminal regions
+    dmax float>0:
+         expected cluster std in the common space in units of coord
+    thq = 0.5 (float in the [0,1] interval)
+        p-value of the prevalence test
+    ths=0, float in the rannge [0,nsubj]
+        null hypothesis on region prevalence that is rejected during inference
+    g0 = 1.0 (float): constant value of the uniform density
+       over the (compact) volume of interest
+    verbose=0, verbosity mode
+
+    Returns
+    -------
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    LR: a instance of sbf.Landmark_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    Coclust: array of shape (nr,nr):
+             co-labelling matrix that gives for each pair of cross_subject regions 
+             how likely they are in the same class according to the model
+             
     """
     nvox = coord.shape[0]
     nsubj = len(bf)
@@ -855,9 +935,49 @@ def compute_BSA_simple2(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
                         shape=None, thq=0.5, smin=5, ths=0, theta=3.0, g0=1.0,
                        verbose=0):
     """
-    Compute the  Bayesian Structural Activation paterns
-    - simplified version in progress 
-    """
+    Idem compute_BSA_simple, but this one does not estimate the full density
+    (on small datasets, it can be much faster)  
+
+    Parameters
+    ----------
+    Fbeta :  nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    lbeta: an array of shape (nbnodes, subjects):
+           the multi-subject statistical maps
+    coord array of shape (nnodes,3):
+          spatial coordinates of the nodes
+    dmax float>0:
+         expected cluster std in the common space in units of coord
+    xyz array of shape (nnodes,3):
+        the grid coordinates of the field
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition      
+    thq = 0.5 (float):
+        posterior significance threshold 
+        should be in the [0,1] interval
+    smin = 5 (int): minimal size of the regions to validate them
+    theta = 3.0 (float): first level threshold
+    g0 = 1.0 (float): constant values of the uniform density
+       over the (compact) volume of interest
+    verbose=0: verbosity mode
+
+    Results
+    -------
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    LR: a instance of sbf.Landmark_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    coclust: array of shape (nr,nr):
+        co-labelling matrix that gives for each pair of cross_subject regions 
+        how likely they are in the same class according to the model
+
+   """
    
     bf, gf0, sub, gfc = compute_individual_regions(Fbeta, lbeta, coord, dmax,
                                                    xyz, affine,  shape,  smin,
@@ -896,14 +1016,18 @@ def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
     verbose=0: verbosity mode
     reshuffle=0: if nonzero, reshuffle the positions; this affects bf and gfc
     
-
-    Results
+    Returns
     -------
-    bf 
-    gf0
-    sub
-    gfc
-    
+    bf list of nipy.neurospin.spatial_models.hroi.Nroi instances
+       representing individual ROIs
+       let nr be the number of terminal regions across subjects
+    gf0, array of shape (nr)
+         the mixture-based prior probability 
+         that the terminal regions are true positives
+    sub, array of shape (nr)
+         the subject index associated with the terminal regions
+    gfc, array of shape (nr, coord.shape[1])
+         the coordinates of the of the terminal regions
     """
     bf = []
     gfc = []

@@ -17,10 +17,34 @@ import profile
 
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
-                        nbeta=[0],method='simple',verbose = 0):
+                       method='simple',verbose = 0):
     """
     Function for performing bayesian structural analysis
     on a set of images.
+
+    Parameters
+    ----------
+    betas, array of shape (nsubj, dimx, dimy) the data used
+           Note that it is assumed to be a t- or z-variate
+    theta=3., float,
+              first level threshold of betas
+    dmax=5., float, expected between subject variability
+    ths=0, float,
+           null hypothesis for the prevalence statistic
+    thq=0.5, float,
+             p-value of the null rejection
+    smin=0, int,
+            threshold on the nu_mber of contiguous voxels 
+            to make regions meaningful structures
+    method= 'simple', string,
+            estimation method used ; to be chosen among 
+            'simple', 'dev', 'loo', 'ipmi'
+    verbose=0, verbosity mode     
+
+    Returns
+    -------
+    AF the landmark_regions instance describing the result
+    BF: list of hroi instances describing the individual data
     """
     ref_dim = np.shape(betas[0])
     nsubj = betas.shape[0]
