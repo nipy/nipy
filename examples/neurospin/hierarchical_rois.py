@@ -10,8 +10,8 @@ This example is based on a (simplistic) simulated image.
 """
 
 import numpy as np
-import scipy.stats as st
-import os.path as op
+
+
 import nipy.neurospin.spatial_models.hroi as hroi
 import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 import nipy.neurospin.graph.field as ff

@@ -5,13 +5,14 @@ and performs a watershed segmentation in it.
 Author : Bertrand Thirion, 2009
 """
 #autoindent
+print __doc__
 
 import numpy as np
-import nipy.neurospin.graph.field as ff
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 import matplotlib
 import matplotlib.pylab as mp
 
+import nipy.neurospin.graph.field as ff
+import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 ################################################################################
 # data simulation
 dimx=60

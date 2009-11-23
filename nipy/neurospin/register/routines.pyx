@@ -31,8 +31,8 @@ cdef extern from "iconic.h":
     double correlation_coefficient(double* H, unsigned int clampI, unsigned int clampJ, double* n)
     double correlation_ratio(double* H, unsigned int clampI, unsigned int clampJ, double* n) 
     double correlation_ratio_L1(double* H, double* hI, unsigned int clampI, unsigned int clampJ, double* n) 
-    double joint_entropy(double* H, unsigned int clampI, unsigned int clampJ, double* n)
-    double conditional_entropy(double* H, double* hJ, unsigned int clampI, unsigned int clampJ, double* n) 
+    double joint_entropy(double* H, unsigned int clampI, unsigned int clampJ)
+    double conditional_entropy(double* H, double* hJ, unsigned int clampI, unsigned int clampJ) 
     double mutual_information(double* H, 
                               double* hI, unsigned int clampI, 
                               double* hJ, unsigned int clampJ,
@@ -242,9 +242,9 @@ def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype,
     elif simitype == MUTUAL_INFORMATION: 
         simi = mutual_information(h, hI, clampI, hJ, clampJ, &n) 
     elif simitype == JOINT_ENTROPY:
-        simi = joint_entropy(h, clampI, clampJ, &n) 
+        simi = joint_entropy(h, clampI, clampJ) 
     elif simitype == CONDITIONAL_ENTROPY:
-        simi = conditional_entropy(h, hJ, clampI, clampJ, &n) 
+        simi = conditional_entropy(h, hJ, clampI, clampJ) 
     elif simitype == NORMALIZED_MUTUAL_INFORMATION:
         simi = normalized_mutual_information(h, hI, clampI, hJ, clampJ, &n) 
     elif simitype == SUPERVISED_MUTUAL_INFORMATION:

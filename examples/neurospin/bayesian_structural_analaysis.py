@@ -5,6 +5,7 @@ and applies the bayesian structural analysis on it
 Author : Bertrand Thirion, 2009
 """
 #autoindent
+print __doc__
 
 import numpy as np
 import scipy.stats as st
@@ -128,9 +129,9 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     return AF, BF
 
 
-# ------------------------------------------------------
-#------- Main script -----------------------------------
-#-------------------------------------------------------
+################################################################################
+# Main script 
+################################################################################
 
 # generate the data
 nsubj = 10
@@ -155,8 +156,7 @@ smin = 5
 method = 'simple2'#'loo'#'dev'#'ipmi'#
 
 # run the algo
-AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method=method,verbose=verbose)
+
+#AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method=method,verbose=#verbose)
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method='simple',verbose=verbose)
-
-
 mp.show()

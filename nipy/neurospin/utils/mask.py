@@ -68,7 +68,7 @@ def compute_mask_files(input_filename, output_filename=None,
 
     Returns
     -------
-    mask : nifti.NiftiImage object
+    mask : 3D boolean array 
         The brain mask
     mean_image : 3d ndarray, optional
         The main of all the images used to estimate the mask. Only

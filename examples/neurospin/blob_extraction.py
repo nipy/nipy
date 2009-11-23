@@ -1,10 +1,11 @@
 """
 This scipt generates a noisy activation image image
-and extracts the blob from it.
+and extracts the blobs from it.
 
 Author : Bertrand Thirion, 2009
 """
 #autoindent
+print __doc__
 
 import numpy as np
 import pylab as pl
