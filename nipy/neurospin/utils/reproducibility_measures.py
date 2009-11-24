@@ -465,7 +465,8 @@ def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
             all_pos.append(pos)
         if method=='bsa':
             afname = kwargs['afname']
-            header = kwargs['header']
+            shape = kwargs['shape']
+            affine = kwargs['affine']
             theta = kwargs['theta']
             dmax = kwargs['dmax']
             ths = kwargs['ths']
@@ -473,8 +474,8 @@ def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
             smin = kwargs['smin']
             niter = kwargs['niter']
             afname = afname+'_%02d_%04d.pic'%(niter,i)
-            pos = coord_bsa(xyz, coord, tx, header, theta, dmax,
-                            ths, thq, smin,afname)
+            pos = coord_bsa(xyz, coord, tx, affine, shape, theta, dmax,
+                            ths, thq, smin, afname)
             all_pos.append(pos)
 
     score = 0
@@ -522,7 +523,6 @@ def coord_bsa(xyz, coord, betas, affine=np.eye(4), shape=None, theta=3.,
     afcoord array of shape(number_of_regions,3):
             coordinate of the found landmark regions
     
-    Fixme : somewhat unclean
     """
     import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
     import nipy.neurospin.graph.field as ff
@@ -536,11 +536,10 @@ def coord_bsa(xyz, coord, betas, affine=np.eye(4), shape=None, theta=3.,
 
     # volume density
     voxvol = np.absolute(np.linalg.det(affine))
-    # or np.absolute(np.diag(header['sform'])[:3]) ?
     g0 = 1.0/(voxvol*nbvox)
 
-    crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta,betas,coord,dmax,xyz,
-                                            affine, shape,thq, smin,ths, theta,
+    crmap,AF,BF,p = bsa.compute_BSA_simple2(Fbeta, betas, coord, dmax, xyz,
+                                            affine, shape, thq, smin,ths, theta,
                                             g0, verbose=0)
     if AF==None:
         return None

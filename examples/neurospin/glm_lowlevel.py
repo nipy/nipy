@@ -1,10 +1,13 @@
+"""
+This example routine simulates a number of pure Gaussian white noise 
+signals, then fits each one in terms of two regressors: a constant baseline, 
+and a linear function of time. The voxelwise t statistics associated 
+with the baseline coefficient are then computed. 
+"""
+print __doc__
+
 import numpy as np
 from nipy.neurospin import glm
-
-# This example routine simulates a number of pure Gaussian white noise 
-# signals, then fits each one in terms of two regressors: a constant baseline, 
-# and a linear function of time. The voxelwise t statistics associated 
-# with the baseline coefficient are then computed. 
 
 dimt = 100
 dimx = 10
