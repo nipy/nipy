@@ -976,9 +976,8 @@ def compute_BSA_simple2(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     coclust: array of shape (nr,nr):
         co-labelling matrix that gives for each pair of cross_subject regions 
         how likely they are in the same class according to the model
-
-   """
-   
+    """
+    
     bf, gf0, sub, gfc = compute_individual_regions(Fbeta, lbeta, coord, dmax,
                                                    xyz, affine,  shape,  smin,
                                                    theta, verbose)
