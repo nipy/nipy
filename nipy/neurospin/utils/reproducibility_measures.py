@@ -539,13 +539,12 @@ def coord_bsa(xyz, coord, betas, affine=np.eye(4), shape=None, theta=3.,
     g0 = 1.0/(voxvol*nbvox)
 
     crmap,AF,BF,p = bsa.compute_BSA_simple2(Fbeta, betas, coord, dmax, xyz,
-                                            affine, shape,thq, smin,ths, theta,
+                                            affine, shape, thq, smin,ths, theta,
                                             g0, verbose=0)
     if AF==None:
         return None
     pickle.dump(AF, open(afname, 'w'), 2)
     afcoord = AF.discrete_to_roi_features('position')
-    print afcoord
     return afcoord
 
 
