@@ -123,7 +123,7 @@ def _Field_Gradient_Jac_Map_(i,ref,target, targeti):
 	Given a reference field ref and a target field target
 	compute the jacobian of the target with respect to ref
 	"""
-	import numpy.linalg as L
+	import numpy.linalg as nl
 	n = ref.V
 	xyz = ref.field
 	fd = target.shape[1]
@@ -134,12 +134,12 @@ def _Field_Gradient_Jac_Map_(i,ref,target, targeti):
 		print xyz[j,:]
 		dx = xyz[j,:]-xyz[i,:]
 		dx = np.squeeze(dx)
-		idx = L.pinv(dx)
+		idx = nl.pinv(dx)
 		for k in range(targeti.shape[0]):
 			df = target[j,:]-targeti[k,:]
 			df = np.squeeze(df)
 			FG = np.dot(idx,df)
-			fgj.append(L.det(FG))
+			fgj.append(nl.det(FG))
 	else:
 		fgj = np.zeros(targeti.shape[0])
 
@@ -151,7 +151,7 @@ def _Field_Gradient_Jac_Map(i,ref,target, targeti):
 	Given a reference field ref and a target field target
 	compute the jacobian of the target with respect to ref
     """
-	import numpy.linalg as L
+	import numpy.linalg as nl
 	n = ref.V
 	xyz = ref.field
 	fd = target.shape[1]
@@ -161,29 +161,27 @@ def _Field_Gradient_Jac_Map(i,ref,target, targeti):
 	if np.size(j)>0:
 		dx = xyz[j,:]-xyz[i,:]
 		dx = np.squeeze(dx)
-		idx = L.pinv(dx)
+		idx = nl.pinv(dx)
 		for k in range(targeti.shape[0]):
 			df = target[j,:]-targeti[k,:]
 			df = np.squeeze(df)
 			FG = np.dot(idx,df)
-			fgj.append(L.det(FG))
+			fgj.append(nl.det(FG))
 		fgj = np.array(fgj)
 
 		for ij in np.squeeze(j):
 			aux = []
-			#print ij
 			jj = np.squeeze(ln[ij])
 			dx = xyz[jj,:]-xyz[ij,:]
 			dx = np.squeeze(dx)
-			idx = L.pinv(dx)
+			idx = nl.pinv(dx)
 			ji = np.nonzero(jj==i)
-			#print i, jj, ji
 			for k in range(targeti.shape[0]):	
 				df = target[jj,:]-target[ij,:]
 				df[ji,:] = targeti[k,:]-target[ij,:]
 				df = np.squeeze(df)
 				FG = np.dot(idx,df)
-				aux.append(L.det(FG))
+				aux.append(nl.det(FG))
 			aux = np.array(aux)
 			fgj = np.minimum(fgj,aux)
 	else:
@@ -192,7 +190,8 @@ def _Field_Gradient_Jac_Map(i,ref,target, targeti):
 	
 	return fgj
 
-def optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb=1.,dmax=10.,chunksize=1.e5,  niter=5,verbose=0):
+def optim_hparcel(Ranat, RFeature, Feature, Pa, Gs, anat_coord, lamb=1., 
+                         dmax=10., chunksize=1.e5, niter=5, verbose=0):
 	"""
 	Core function of the heirrachical parcellation procedure.
 	
@@ -208,21 +207,22 @@ def optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb=1.,dmax=10.,chu
               and feature impact on the algorithm
 	dmax = 10: locality parameter (in the space of anat_coord)
          to limit surch volume (CPU save)
-	chunksize=1.e5: note used here (to be removed)
+	chunksize=1.e5 not used here (to be removed)
 	niter = 5: number of iterations in teh algorithm
 	verbose=0: verbosity level
 	
-    Results
+    Returns
     -------
-	U: lsit of arrays that represent subject-depebndent parcellations
+	U: list of arrays of length nsubj
+       subject-dependent parcellations
 	Proto_anat: array of shape (nvox) labelling of the common space
                 (template parcellation)
 	"""
 	Sess = Pa.nb_subj
 	# Ranat,RFeature,Pa,chunksize,dmax,lamb,Gs
 	# a1. perform a rough clustering of the data to make prototype
-	Labs = np.zeros(RFeature.shape[0])
-	proto, Labs, J = fc.cmeans(RFeature,Pa.k,Labs,10)
+	#Labs = np.zeros(RFeature.shape[0])
+	proto, Labs, J = fc.kmeans(RFeature, Pa.k, Labels=None, maxiter=10)
 	proto_anat = [np.mean(Ranat[Labs==k],0) for k in range(Pa.k)]
 	proto_anat = np.array(proto_anat)
 	proto = [np.mean(RFeature[Labs==k],0) for k in range(Pa.k)]
@@ -247,7 +247,6 @@ def optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb=1.,dmax=10.,chu
 			Fs = Feature[s]
 			lac = anat_coord[Pa.label[:,s]>-1]
 			target = proto_anat.copy()
-			#print s
 	
 			for nit in range(1):
 				lseeds = np.zeros(Pa.k,'i')
@@ -266,11 +265,6 @@ def optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb=1.,dmax=10.,chu
 					# b.2: anatomical constraints
 					lanat = np.reshape(lac[iz,:],(np.size(iz),anat_coord.shape[1]))
 					pot = np.zeros(np.size(iz))
-					#JM = _Field_Gradient_Jac_Map(i,spatial_proto,target,lanat)
-					#pot[JM<=0] = np.infty
-					#pot[JM>0] = -np.log(JM[JM>0])
-					#rmin = 0
-					#print np.shape(spatial_proto),np.shape(target),np.shape(lanat)
 					JM,rmin = _exclusion_map(i,spatial_proto,target,lanat)
 					pot[JM<0] = np.infty
 					pot[JM>=0] = -JM[JM>=0]
@@ -287,7 +281,6 @@ def optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb=1.,dmax=10.,chu
 						tata +=1
 						pb = 1
 
-					#print np.size(iz),np.shape(iz),iz,np.argmin(pot)
 					sol = iz[np.argmin(pot)]
 					target[i] = lac[sol]
 					
@@ -376,11 +369,6 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
 	xyz = Pa.ijk
 	Sess = Pa.nb_subj
 	
-	#mu = 10.0 # weight of anatomical information in the feature vector
-	#chunksize = 1.e5
-	#dmax = 10
-	#lamb = 100.0
-	
 	Gs = []
 	Feature = []
 	RFeature = []
@@ -405,7 +393,9 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
 	Ranat = np.concatenate(Ranat)
 
 	# main function
-	U,proto_anat = optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb, dmax,niter=niter,verbose=verbose)
+	U,proto_anat = optim_hparcel(Ranat, RFeature, Feature, Pa, Gs, anat_coord,
+                                         lamb, dmax, niter=niter,  
+                                         verbose=verbose)
 
 	# write the individual labelling
 	Labels = -1*np.ones((nbvox,Sess)).astype(np.int)
@@ -429,7 +419,8 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
 		return Pa
 
 
-def perm_prfx(Pa,Gs,F0, ldata,anat_coord,nbperm=100,niter=5,dmax = 10., lamb = 100.0, chunksize = 1.e5):
+def perm_prfx(Pa, Gs, F0, ldata, anat_coord, nbperm=100, niter=5, dmax = 10., 
+                  lamb = 100.0, chunksize = 1.e5):
 	"""
 	caveat: assumes that the functional dimension is 1
 	"""
@@ -458,7 +449,8 @@ def perm_prfx(Pa,Gs,F0, ldata,anat_coord,nbperm=100,niter=5,dmax = 10., lamb = 1
 		RFeature = np.concatenate(RFeature)
 		Ranat = np.concatenate(Ranat)	
 		# optimization part
-		U,proto_anat = optim_hparcel(Ranat,RFeature, Feature,Pa, Gs,anat_coord,lamb, dmax,niter=niter)
+		U,proto_anat = optim_hparcel( Ranat, RFeature, Feature, Pa, 
+                                      Gs, anat_coord, lamb, dmax, niter=niter)
 		
 		Labels = -1*np.ones((Pa.nbvox,Sess)).astype(np.int)
 		for s in range(Sess):
