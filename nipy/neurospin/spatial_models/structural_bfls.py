@@ -220,7 +220,6 @@ class landmark_regions(hroi.NROI):
         pvals: array of shape self.k
                the p-values corresponding to the ROIs
         """
-        import scipy.stats as st
         pvals = np.zeros(self.k)
         if self.discrete_features.has_key(fid)==False:
             for j in range(self.k):
