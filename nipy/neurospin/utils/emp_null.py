@@ -341,9 +341,12 @@ class ENN(object):
             drawn.
         alpha : float, optional 
             The chosen fdr threshold
-        bar=1 : bool, optional
-        mpaxes=None: if not None, hadle to an axes where the fig.
-        will be drawn. Avoids creating unnecessarily new figures.
+        bar: bool, optional
+            Whether or not to plot bars.
+        mpaxes: matplotlib axes or None, optional
+            if not None, this gives a handle to an axes where the figure 
+            will be drawn. Useful to avoid creating unnecessarily new 
+            figures.
         """ 
         if not self.learned:
             self.learn()
