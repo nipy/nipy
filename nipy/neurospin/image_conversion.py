@@ -13,7 +13,7 @@ im = asbrifti(aims_im, 'aims')
 
 import numpy as np
 
-from nipy.io.imageformats import Nifti1Image as Image 
+from nipy.io.imageformats import Nifti1Image
 
 def asbrifti(obj, iolib):
 
@@ -36,5 +36,5 @@ def asbrifti(obj, iolib):
         print 'Unknown input/output library.'
         return None
 
-    return Image(data, affine)
+    return Nifti1Image(data, affine)
 

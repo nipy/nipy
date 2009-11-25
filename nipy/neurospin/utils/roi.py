@@ -583,7 +583,7 @@ class MultipleROI(object):
         radius: array of shape (k): the set of radii
         """
         if self.shape==None:
-            raise ValuError, "Need self.shape to be defined for this function"
+            raise ValueError, "Need self.shape to be defined for this function"
         
         if np.shape(position)[0]!=np.size(radius):
             raise ValueError, "inconsistent position/radius definition"
@@ -619,7 +619,7 @@ class MultipleROI(object):
         as soon as __add__ is implemented
         """
         if self.shape==None:
-            raise ValuError, "Need self.shape to be defined for this function"
+            raise ValueError, "Need self.shape to be defined for this function"
         
         if np.shape(position)[0]!=np.size(radius):
             raise ValueError, "inconsistent position/radius definition"

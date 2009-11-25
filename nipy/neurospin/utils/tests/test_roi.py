@@ -10,7 +10,7 @@ import os
 import tempfile
 from nipy.neurospin.utils.roi import DiscreteROI, MultipleROI
 from nipy.testing import anatfile
-from nipy.io.imageformats import load, save, Nifti1Image
+from nipy.io.imageformats import load
 RefImage = anatfile
 WriteDir = tempfile.mkdtemp()
 

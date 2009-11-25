@@ -7,9 +7,9 @@ Author : Bertrand Thirion, 2008-2009
 """
 
 import numpy as np
-from numpy.random import rand, randn
-from nipy.neurospin.eda.dimension_reduction import *
-import nipy.neurospin.graph as fg
+from numpy.random import randn
+from nipy.neurospin.eda.dimension_reduction import CCA, MDS, knn_Isomap, \
+        eps_Isomap
 
 def test_cca():
     """

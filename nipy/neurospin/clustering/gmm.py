@@ -9,7 +9,6 @@ Author : Bertrand Thirion, 2006-2009
 
 import numpy as np
 import nipy.neurospin.clustering.clustering as fc
-from numpy.random import rand
 
 class grid_descriptor():
     """

@@ -7,11 +7,10 @@ Author : Bertrand Thirion, 2008-2009
 """
 
 import numpy as np
-from numpy.random import rand, randn
+from numpy.random import randn
 from nipy.neurospin.clustering.hierarchical_clustering import *
 import nipy.neurospin.graph as fg
 import nipy.neurospin.graph.field as ff
-from numpy.random import rand,randn
 
 def alc_test_basic():
     np.random.seed(0)

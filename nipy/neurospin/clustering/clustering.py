@@ -2,7 +2,6 @@ from _clustering import *
 from _clustering import __doc__
 
 import numpy as np
-from numpy.random import rand
 
 
 def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001, verbose=0,
