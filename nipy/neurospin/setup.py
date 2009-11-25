@@ -6,8 +6,7 @@ LIBS = os.path.realpath('libcstat')
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
-    from numpy.distutils.system_info import get_info, NotFoundError
-    from glob import glob
+    from numpy.distutils.system_info import get_info
 
     config = Configuration('neurospin', parent_package, top_path)
 
@@ -20,14 +19,12 @@ def configuration(parent_package='',top_path=None):
     sources = [os.path.join(LIBS,'fff','*.c')]
     sources.append(os.path.join(LIBS,'wrapper','*.c'))
 
-    """
-    FIXME: the following external library 'mtrand' (C) is copied from 
-     numpy, and included in the fff library for installation simplicity. 
-     If numpy happens to expose its API one day, it would be neat to link 
-     with them rather than copying the source code.
-
-     numpy-trunk/numpy/random/mtrand/
-    """
+    # FIXME: the following external library 'mtrand' (C) is copied from 
+    # numpy, and included in the fff library for installation simplicity. 
+    # If numpy happens to expose its API one day, it would be neat to link 
+    # with them rather than copying the source code.
+    #
+    # numpy-trunk/numpy/random/mtrand/
     sources.append(os.path.join(LIBS,'randomkit','*.c'))
 
     # Link with lapack if found on the system

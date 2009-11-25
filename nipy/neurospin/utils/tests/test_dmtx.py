@@ -6,7 +6,7 @@ not whether it is exact
 """
 
 import numpy as np
-from nipy.neurospin.utils.design_matrix import *
+from nipy.neurospin.utils.design_matrix import dmtx_light
 from numpy.testing import assert_almost_equal
 
 def basic_paradigm():

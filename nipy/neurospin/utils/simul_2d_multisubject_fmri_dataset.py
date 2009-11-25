@@ -128,7 +128,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
 
     if out_image_file is not None:
         from nipy.io.imageformats import save, Nifti1Image 
-        save(NiftiImage( dataset, np.eye(4)), out_image_file)
+        save(Nifti1Image( dataset, np.eye(4)), out_image_file)
 
     return dataset
 

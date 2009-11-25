@@ -1,7 +1,7 @@
 import numpy as np
-from scipy.ndimage import correlate1d, _ni_support, gaussian_filter, binary_erosion
+from scipy.ndimage import correlate1d, _ni_support, gaussian_filter, \
+                binary_erosion
 from scipy import math
-from scipy import stats as st
 
 def square_gaussian_filter1d(input, sigma, axis = -1, output = None, mode = "reflect", cval = 0.0):
     """One-dimensional Squared Gaussian filter.

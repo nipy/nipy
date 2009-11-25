@@ -3,13 +3,12 @@ import warnings
 from shutil import rmtree
 from tempfile import mkstemp, mkdtemp
 
-from nipy.testing import TestCase, funcfile
+from nipy.testing import TestCase, funcfile, dec
 
 from nipy.io.api import load_image
 
 import nipy.modalities.fmri.fmristat.model as model
 from nipy.modalities.fmri.api import FmriImageList
-from nipy.testing import funcfile, TestCase, dec
 
 # FIXME: these things are obsolete
 # from nipy.modalities.fmri.formula import \

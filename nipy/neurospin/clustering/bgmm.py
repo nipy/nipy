@@ -412,7 +412,7 @@ class BGMM(GMM):
            the data used in the estimation process
         """
         if self.k>1:
-            cent,z,J = fc.cmeans(x,self.k)
+            cent,z,J = fc.kmeans(x,self.k)
         else:
             z = np.zeros(x.shape[0]).astype(np.int)
         self.update(x,z)
@@ -1018,7 +1018,7 @@ class VBGMM(BGMM):
         """
         n = x.shape[0]
         if self.k>1:
-            cent,z,J = fc.cmeans(x,self.k)
+            cent, z, J = fc.kmeans(x, self.k)
         else:
             z = np.zeros(x.shape[0]).astype(np.int)
         l = np.zeros((n,self.k))
@@ -1211,7 +1211,7 @@ class BGMM_old(GMM):
         # pre_cluster the data (this improves convergence...)
         label = np.zeros(x.shape[0])
         nit = 10
-        mean,label,J = fc.cmeans(x,self.k,label,nit)
+        mean,label,J = fc.kmeans(x,self.k,label,nit)
 
         label, mean, meansc, prec, we, dof, Li = fc.bayesian_gmm (x,self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,label,niter,delta)
         self.estimated = 1
@@ -1278,7 +1278,7 @@ class BGMM_old(GMM):
         # pre_cluster the data (this improves convergence...)
         label = np.zeros(x.shape[0])
         nit = 10
-        mean,label,J = fc.cmeans(x,self.k,label,nit)
+        mean,label,J = fc.kmeans(x,self.k,label,nit)
 
         if gd==None:
             grid = x

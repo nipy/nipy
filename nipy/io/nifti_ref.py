@@ -250,7 +250,7 @@ def coordmap_from_affine(affine, ijk):
     the CoordinateMap is refactored.
     """
     if len(ijk) != 3:
-        raise valueError('ijk input should be length 3')
+        raise ValueError('ijk input should be length 3')
     ndim_out = affine.shape[0] - 1
     ndim_in = affine.shape[1] - 1
     if ndim_in < 3:

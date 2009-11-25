@@ -5,6 +5,7 @@ functions that can be evaluated when 'lambdified'.
 """
 import new
 import sympy
+import warnings
 
 class lambdify(object):
     """

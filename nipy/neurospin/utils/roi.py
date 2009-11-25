@@ -1,19 +1,19 @@
 import numpy as np
 from nipy.io.imageformats import load, save, Nifti1Image 
 
-#--------------------------------------------------------
-#------- class ROI --------------------------------------
-#--------------------------------------------------------
+################################################################################
+# class ROI 
+################################################################################
 
 class ROI(object):
     """ Generic ROI class
 
-    Merely a container
+    Merely a container: an abstract ROI
     """
 
     def __init__(self, id="roi"):
         """
-        roi = ROI(id='roi', header=None)
+        roi = ROI(id='roi')
 
         Parameters
         -----------
@@ -32,6 +32,9 @@ class ROI(object):
         self.features.update({'radius':radius})
         
 
+################################################################################
+# class DiscreteROI 
+################################################################################
 
 class DiscreteROI(object):
     """
@@ -50,7 +53,7 @@ class DiscreteROI(object):
     each feature is in fact a (voxel,feature_dimension) array
     """
 
-    def __init__(self, id="roi", affine=np.eye(4),shape=None):
+    def __init__(self, id="roi", affine=np.eye(4), shape=None):
         """
         roi = ROI(id='roi', header=None)
 
@@ -72,18 +75,20 @@ class DiscreteROI(object):
 
         Parameters
         ----------
-        image_path: (string) the path of an image
+        image_path: (string) the path of an image (nifti)
+
+        Returns
+        -------
+        True if the affine and shape of the given nifti file correpond
+        to the ROI's.
         """
         eps = 1.e-15
         nim = load(image_path)
-        b = True
         if (np.absolute(nim.get_affine()-self.affine)).max()>eps:
-            b = False
-        if self.shape!=None:
-            for d1,d2 in zip(nim.get_shape(),self.shape):
-                if d1!=d2:
-                    b = False
-        return b
+            return False
+        if self.shape is not None:
+            return np.all(np.equal(nim.get_shape(), self.shape))
+        return True
 
     def from_binary_image(self, image):
         """
@@ -118,8 +123,7 @@ class DiscreteROI(object):
         sqra = radius**2
         self.discrete = tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype(np.int))
         
-
-    def from_labelled_image(self,image,label):
+    def from_labelled_image(self, image, label):
         """
         Define the ROI as the set of  voxels of the image
         that have the pre-defined label
@@ -136,8 +140,7 @@ class DiscreteROI(object):
         data = nim.get_data()
         self.discrete = np.where(data==label)
         
-        
-    def from_position_and_image(self,image,position):
+    def from_position_and_image(self, image, position):
         """
          Define the ROI as the set of  voxels of the image
          that is closest to the provided position
@@ -215,7 +218,7 @@ class DiscreteROI(object):
         self.features.update({fid:ldata})
         return ldata
         
-    def set_feature_from_image(self,fid,image):
+    def set_feature_from_image(self, fid, image):
         """
         extract some roi-related information from an image
 
@@ -231,19 +234,19 @@ class DiscreteROI(object):
         data = nim.get_data()
         self.set_feature(fid,data)
 
-    def get_feature(self,fid):
+    def get_feature(self, fid):
         """
         return the feature corrsponding to fid, if it exists
         """
         return self.features[fid]
 
-    def set_feature_from_masked_data(self,fid,data,mask):
+    def set_feature_from_masked_data(self, fid, data, mask):
         """
         idem set_feature but the input data is thought to be masked
         """
-        pass
+        raise NotImplementedError
         
-    def representative_feature(self,fid,method="mean"):
+    def representative_feature(self, fid, method="mean"):
         """
         Compute a statistical representative of the within-ROI feature
         """
@@ -257,7 +260,7 @@ class DiscreteROI(object):
         if method=="median":
             return np.median(f,0)
         
-    def plot_feature(self,fid):
+    def plot_feature(self, fid):
         """
         boxplot the feature within the ROI
         """
@@ -268,9 +271,9 @@ class DiscreteROI(object):
         mp.title('Distribution of %s within %s'%(fid,self.id))
         
 
-#-------------------------------------------------
-#-------- class `MultipleROI` --------------------
-#-------------------------------------------------
+################################################################################
+# class MultiROI 
+################################################################################
 
 class MultiROI(object):
     """
@@ -407,6 +410,10 @@ class MultiROI(object):
             self.set_roi_feature(fid,f)
         self.check_features()
 
+
+################################################################################
+# class MultipleROI 
+################################################################################
 
 class MultipleROI(object):
     """
@@ -583,7 +590,7 @@ class MultipleROI(object):
         radius: array of shape (k): the set of radii
         """
         if self.shape==None:
-            raise ValuError, "Need self.shape to be defined for this function"
+            raise ValueError, "Need self.shape to be defined for this function"
         
         if np.shape(position)[0]!=np.size(radius):
             raise ValueError, "inconsistent position/radius definition"
@@ -619,7 +626,7 @@ class MultipleROI(object):
         as soon as __add__ is implemented
         """
         if self.shape==None:
-            raise ValuError, "Need self.shape to be defined for this function"
+            raise ValueError, "Need self.shape to be defined for this function"
         
         if np.shape(position)[0]!=np.size(radius):
             raise ValueError, "inconsistent position/radius definition"

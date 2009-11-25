@@ -1,5 +1,6 @@
 import numpy as np
-from nipy.testing import *
+from nipy.testing import assert_true, assert_equal, assert_raises, \
+            assert_false
 
 from nipy.core.reference.coordinate_map import CoordinateMap, Affine, \
     compose, CoordinateSystem, reorder_input, reorder_output, product, \

@@ -1,6 +1,5 @@
 import ConfigParser
 import os
-from os.path import join as pjoin
 
 NIPY_DEFAULTS = dict()
 

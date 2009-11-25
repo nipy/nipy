@@ -14,6 +14,7 @@ Author : Bertrand Thirion, 2006-2008
 import numpy as np
 import numpy.random as nr
 
+from scipy import stats
 
 # import nipy.neurospin.clustering.clustering as fc
 import nipy.neurospin.graph.BPmatch as BPmatch
@@ -220,7 +221,6 @@ class landmark_regions(hroi.NROI):
         pvals: array of shape self.k
                the p-values corresponding to the ROIs
         """
-        import scipy.stats as st
         pvals = np.zeros(self.k)
         if self.discrete_features.has_key(fid)==False:
             for j in range(self.k):
@@ -241,7 +241,7 @@ class landmark_regions(hroi.NROI):
                     # If noise is too low the variance is 0: ill-defined:
                     vp = max(vp, 1e-14)
                     
-                pvals[j] = st.norm.sf(ths,mp,np.sqrt(vp))
+                pvals[j] = stats.norm.sf(ths,mp,np.sqrt(vp))
                 #print ths-mp, mp, np.sqrt(vp),pvals[j],len(np.unique(subjj))
         return pvals
 
@@ -257,7 +257,6 @@ class landmark_regions(hroi.NROI):
         confid: array of shape self.k
                the population_prevalence
         """
-        import scipy.stats as st
         confid = np.zeros(self.k)
         if self.discrete_features.has_key(fid)==False:
             for j in range(self.k):

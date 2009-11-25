@@ -185,114 +185,124 @@ def CCA(X, Y, eps=1.e-15):
     return ccs
 
 
+# ------------------------------------------------------------------------
+# --- Multi_simensional scaling ------------------------------------------
+# ------------------------------------------------------------------------
+
 def Euclidian_mds(X, dim, verbose=0):
     """
     returns a dim-dimensional MDS representation of the rows of X 
     using an Euclidian metric 
     """
     d = Euclidian_distance(X)
-    return(mds(d,dim,verbose))
+    return(mds(d, dim, verbose))
     
+def mds_parameters(dm, dim=1, verbose=0):
+    """
+    Compute the embedding parameters to perform the embedding of some data
+    given a distance matrix
 
-def mds(dg, dim=1, verbose=0):
+    Parameters
+    ----------
+    dm, array of shape(nbitem, nbitem), the input distance matrix
+    dim=1: the dimension of the desired representation
+    verbose=0: verbosity level
+
+    Returns
+    -------
+    embedding_direction, array of shape (nbitem, dim) 
+                         the set of directions used to embed the data
+                         in the reduced space        
+    scaling, array of shape (dim)
+             scaling to apply to perform the embedding of the data
+    offset,  array of shape (nbitem)
+             additive factor necessary to center the embedding
+             (analogous to mean subtraction)
+
+    """
+    # take the squared distance and center the matrix
+    sqdm = 0.5*dm*dm
+    msd = sqdm.mean(0)
+    sqdm -= msd
+    rm1 = sqdm.mean(1)
+    sqdm = (sqdm.T-rm1).T
+
+    U,S,V = nl.svd(sqdm,0)
+    sqs = np.sqrt(S)
+    embedding_direction = V.T [:,:dim]
+    scaling = sqs[:dim]
+    offset  = msd
+    if verbose:
+        import matplotlib.pylab as mp
+        mp.figure()
+        mp.bar(np.arange(np.size(sqs)),sqs)
+
+    return embedding_direction, scaling, offset
+
+def mds_embedding(dm, embedding_direction, scaling, offset):
+    """
+    Embedding new data  based on a previous mds computation
+
+    Parameters
+    ----------
+    dm, array of shape(nb_test_item, nb_train_item), 
+        the input distance matrix: 
+    embedding_direction, array of shape (nb_train_item, dim) 
+                         the set of directions used to embed the data
+                         in the reduced space        
+    scaling, array of shape (dim)
+             scaling to apply to perform the embedding of the data
+    offset,  array of shape (nbitem)
+             additive factor necessary to center the embedding
+             (analogous to mean subtraction)
+    
+    Returns
+    -------
+    chart, array of shape(nb_test_item, dim),
+           the resulting reprsentation of the traing data
+    
+    """
+    sqdm = 0.5*dm*dm - offset
+    rm1 = sqdm.mean(1)
+    sqdm = (sqdm.T-rm1).T    
+    chart = np.dot(sqdm, embedding_direction)/scaling
+    return chart
+
+def mds(dm, dim=1, verbose=0):
     """
     Multi-dimensional scaling, i.e. derivation of low dimensional
     representations from distance matrices.
     
     Parameters
     ----------
-    dg, array of shape(nbitem, nbitem), the input distance matrix
+    dm, array of shape(nbitem, nbitem), the input distance matrix
     dim=1: the dimension of the desired representation
     verbose=0: verbosity level
 
     Returns
     -------
-    chart, array of shape(nbitem, dim), the resulting reprsentation
-    V, array of shape (?,?) the projector toward the low-dimensional embedding
-    rm0, float, additive contant of the embedding
+    chart, array of shape(nbitem, dim),
+           the resulting reprsentation of the traing data
+    embedding_direction, array of shape (nbitem, dim) 
+                         the set of directions used to embed the data
+                         in the reduced space        
+    scaling, array of shape (dim)
+             scaling to apply to perform the embedding of the data
+    offset,  array of shape (nbitem)
+             additive factor necessary to center the embedding
+             (analogous to mean subtraction)
     """
     
-    # take the square distances and center the matrix
-    sqdg = dg*dg
-    rm0 = sqdg.mean(0)
-    rm1 = sqdg.mean(1)
-    mm = sqdg.mean()
-    sqdg = sqdg-rm0
-    sqdg = (sqdg.T-rm1).T
-    sqdg = sqdg+mm  
-    
-    U,S,V = nl.svd(sqdg,0)
-    S = np.sqrt(S)
-    
-    chart = np.dot(U,np.diag(S))
-    chart = chart[:,:dim]
+    # get the parameters
+    embedding_direction, scaling, offset = mds_parameters(dm, dim, verbose)
 
-    if verbose:
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.bar(np.arange(np.size(S)),S)
-        mp.show()
-        
-    return chart, V.T, rm0
+    # perform the embedding of new data
+    chart = mds_embedding(dm, embedding_direction, scaling, offset)
 
-def isomap_dev(G, dim=1, p=300, verbose=0):
-    """
-    return the dim-dimensional ISOMAP chart that best represents the graph G
-    
-    Parameters
-    ----------
-    G : nipy.neurospin.graph.WeightedGraph instance that represents the data
-    dim=1, int,  number of requierd dimensions
-    p=300, int, nystrom reduction of the problem
-    verbose=0, verbosity level
-    
-    Returns
-    -------
-    chart, array of shape(G.V,dim), the resulting embedding
-    
-    Note
-    ----
-    this 'dev' version is expected to yield more accurate results
-    than the other approximation,
-    because of a better out of samples generalization procedure.
-    """
-    n = G.V
-    dim = np.minimum(dim,n)
-    p = np.minimum(p,n)
-
-    # get the geodesic distances in the graph
-    if p<n:
-        toto = nr.rand(n)
-        seed = toto.argsort()[:p]
-        dg = G.floyd(seed)
-    else:
-        seed = np.arange(n)
-        dg = G.floyd()
-        
-    dg = dg.T
-    dg1 = dg[seed]
-    
-    dg1 = dg1*dg1/2
-    rm0 = dg1.mean(0)
-    rm1 = dg1.mean(1)
-    mm = dg1.mean()
-    dg1 = dg1-rm0
-    dg1 = (dg1.T-rm1).T
-    dg1 = dg1+mm    
-    U, S, V = nl.svd(dg1, 0)
-    
-    S = np.sqrt(S)
-    chart = np.dot(U,np.diag(S))
-    proj = V.T
-
-    dg = dg*dg/2
-    dg = (dg.T-np.mean(dg,1)).T
-    Chart = np.dot(np.dot(dg,proj),np.diag(1.0/S))
-    return Chart[:,:dim]
+    return chart, embedding_direction, scaling, offset
 
 def isomap(G, dim=1, p=300, verbose=0):
     """
-    chart,proj,offset =isomap(G,dim=1,p=300,verbose = 0)
     Isomapping of the data
     return the dim-dimensional ISOMAP chart that best represents the graph G
     
@@ -305,23 +315,37 @@ def isomap(G, dim=1, p=300, verbose=0):
     
     Returns
     -------
+    chart, array of shape(nbitem, dim),     
+           the resulting reprsentation of the traing data
+    proj, array of shape (nbitem, dim) 
+          the set of directions used to embed the data
+          in the reduced space        
+    scaling, array of shape (dim)
+             scaling to apply to perform the embedding of the data
+    offset,  array of shape (nbitem)
+             additive factor necessary to center the embedding
+             (analogous to mean subtraction)
     chart, array of shape(G.V,dim)
+    seed, array of shape (p): 
+          the seed nodes that were used to compute fast embedding
     """
     n = G.V
     dim = np.minimum(dim,n)
     p = np.minimum(p,n)
 
-    # get the geodesic distances in the graph
+    # get the geodesic distances in the graph    
     if p<n:
         toto = nr.rand(n)
         seed = toto.argsort()[:p]
         dg = G.floyd(seed)
     else:
         dg = G.floyd()
-
-    chart, proj, offset = mds(dg.T,dim,verbose)
+        seed = np.arange(n)
     
-    return chart, proj, offset
+    #print G.edges, G.weights, G.E
+    chart, proj, scaling, offset = mds(dg.T,dim,verbose)
+    
+    return chart, proj, scaling, offset, seed
 
 
 
@@ -597,12 +621,14 @@ class MDS(NLDR):
         chart: resulting rdim-dimensional representation
         """
         self.check_data(self.train_data)
-        d = Euclidian_distance(self.train_data)
-        u, v, rm = mds(d,self.rdim, verbose)
+        dm = Euclidian_distance(self.train_data)
+        u, v, sc, msd = mds(dm, self.rdim, verbose)
         self.trained = 1
+        self.mean = np.reshape(self.train_data.mean(0),(1,self.fdim))
         self.embedding = u
-        self.offset = rm
+        self.scaling = sc
         self.projector = v
+        self.offset = msd
         return(u)
     
     def test(self, X):
@@ -624,14 +650,15 @@ class MDS(NLDR):
         if np.size(X)==self.fdim:
             X = np.reshape(X,(1,self.fdim))
         self.check_data(X)
-        d = Euclidian_distance(self.train_data,X)
-        d = d*d
-        d = d-np.reshape(self.offset,(self.train_data.shape[0],1))
-        # fixme : is this correct ?
-        d = d-np.mean(d,0)
-        u = np.dot(d.T,self.projector)
-        return u[:,:self.rdim]
-                    
+        
+        # trivial solution -- valid only in the Euclidian case
+        #dp = -np.dot(X-self.mean,(self.train_data-self.mean).T)
+        #u = np.dot(dp,self.projector)/self.scaling
+        
+        dm = Euclidian_distance(X,self.train_data)
+        u = mds_embedding(dm, self.projector, self.scaling, self.offset)
+
+        return u            
 
 class knn_Isomap(NLDR):
     """
@@ -661,7 +688,7 @@ class knn_Isomap(NLDR):
         
         Returns
         -------
-        chart, array of shape (nbLearningSamples,rdim) 
+        chart, array of shape (nbLearningSamples, rdim) 
                knn_Isomap embedding
         """
         self.k = k 
@@ -670,13 +697,16 @@ class knn_Isomap(NLDR):
         n = self.train_data.shape[0]
         G = fg.WeightedGraph(n)
         G.knn(self.train_data, k)
-        u, v, rm = isomap(G, self.rdim, p, verbose)
 
+        u, proj, scaling, offset, seed = isomap(G, self.rdim, p, verbose)
+
+        self.seed = seed
         self.G = G  
         self.trained = 1
         self.embedding = u
-        self.offset = rm
-        self.projector = v
+        self.offset = offset
+        self.projector = proj
+        self.scaling = scaling
         return(u)
     
     def test(self,X):
@@ -704,29 +734,26 @@ class knn_Isomap(NLDR):
         # launch the algorithm:
         # step 1: create a compound graph with the learning and test vertices
         n = self.G.V
-        p = X.shape[0]
+        m = X.shape[0]
         G1 = self.G
-        b,a,d = fg.graph_cross_knn(X,self.train_data,self.k)
-        G1.V = n + p
-        G1.E = G1.E + np.size(d)
+        b, a, d = fg.graph_cross_knn(X,self.train_data,self.k)
+        G1.V = n + m
+        G1.E = G1.E + 2*np.size(d)
         G1.edges = np.vstack((G1.edges,np.transpose(np.vstack((a,b+n)))))
         G1.edges = np.vstack((G1.edges,np.transpose(np.vstack((b+n,a)))))
         G1.weights = np.hstack((G1.weights,d))
         G1.weights = np.hstack((G1.weights,d))
         
         # perform dijkstra's distance computation
-        d = np.zeros((p+n,p))
-        for q in range(p):
-            d[:,q] = G1.dijkstra(q+n)
+        dg = np.zeros((m,n+m))
+        for q in range(m):
+            dg[q] = G1.dijkstra(q+n)
+        dg = dg[:,self.seed]
+
+        # perform the embedding based on these distances
+        u = mds_embedding(dg, self.projector, self.scaling, self.offset)
         
-        # perfom the embedding based on this distances
-        d = d[:n,:]
-        d = d*d
-        d = d-np.reshape(self.offset,(self.train_data.shape[0],1))
-        # fixme : not sure of that
-        d = d-np.mean(d,0)
-        u = np.dot(d.T,self.projector)
-        return u[:,:self.rdim]
+        return u
 
 class eps_Isomap(NLDR):
     """
@@ -767,13 +794,16 @@ class eps_Isomap(NLDR):
         n = self.train_data.shape[0]
         G = fg.WeightedGraph(n)
         G.eps(self.train_data,self.eps)
-        u,v,rm = isomap(G,self.rdim,p,verbose)
+        
+        u, proj, scaling, offset, seed = isomap(G, self.rdim, p, verbose)
 
+        self.seed = seed
         self.G = G  
         self.trained = 1
         self.embedding = u
-        self.offset = rm
-        self.projector = v
+        self.offset = offset
+        self.projector = proj
+        self.scaling = scaling
         return(u)
     
     def test(self,X):
@@ -800,30 +830,27 @@ class eps_Isomap(NLDR):
         
         # construction of a graph with the training and test data
         n = self.G.V
-        p = X.shape[0]
+        m = X.shape[0]
         G1 = self.G
-        b,a,d = fg.graph_cross_eps(X,self.train_data,self.eps)
-        G1.V = n + p
-        G1.E = G1.E + np.size(d)
+        b, a, d = fg.graph_cross_eps(X, self.train_data, self.eps)
+        G1.V = n + m
+        G1.E += 2*np.size(d)
         G1.edges = np.vstack((G1.edges,np.transpose(np.vstack((a,b+n)))))
         G1.edges = np.vstack((G1.edges,np.transpose(np.vstack((b+n,a)))))
         G1.weights = np.hstack((G1.weights,d))
         G1.weights = np.hstack((G1.weights,d))
         
-        # computation of graph-based distances
-        d = np.zeros((p+n,p))
-        for q in range(p):
-            d[:,q] = G1.dijkstra(q+n)
-        
-        # derication of the  embedding
-        d = d[:n,:]
-        d = d*d
-        d = d-np.reshape(self.offset,(self.train_data.shape[0],1))
-        # fixme : is this correct ?
-        d = d-np.mean(d,0)
-        u = np.dot(d.T,self.projector)
-        return u[:,:self.rdim]
+        # perform dijkstra's distance computation
+        dg = np.zeros((m, n+m))
+        for q in range(m):
+            dg[q] = G1.dijkstra(q+n)
+        dg = dg[:,self.seed]
+        #print G1.edges, G1.weights, G1.E
 
+        # perform the embedding based on these distances
+        u = mds_embedding(dg, self.projector, self.scaling, self.offset)
+        
+        return u        
 
 class knn_LE(NLDR):
     """
@@ -935,13 +962,15 @@ class knn_LPP(NLDR):
 #------- Ancillary methods ----------------------------------------
 #------------------------------------------------------------------
 
-def check_isometry(G,chart,nseeds=100,verbose = 0):
+def check_isometry(G, chart, nseeds=100, verbose = 0):
     """
     A simple check of the Isometry:
     look whether the output distance match the intput distances
     for nseeds points
-    OUTPUT:
-    - a proportion factor to optimize the metric
+    
+    Returns
+    -------
+    a scaling factor between the proposed and the true metrics
     """
     nseeds = np.minimum(nseeds, G.V)
     aux = np.argsort(nr.rand(nseeds))
@@ -962,50 +991,27 @@ def check_isometry(G,chart,nseeds=100,verbose = 0):
     return scale
     
 
-def local_correction_for_embedding(G,chart,sigma = 1.0):
+
+def _sparse_local_correction_for_embedding(G,chart,sigma = 1.0,niter=100):
     """
     WIP : an unfinished fuction that aims at improving isomap's prbs
     the idea is to optimize the representation of local distances
-    INPUT:
-    G: the graph to be isomapped
-    chart: the input chart
-    sigma: a scale parameter
-    OUTPUT:
+    
+    Parameters
+    ----------
+    G: WeightedGraph instance, 
+       the graph to be isomapped
+    chart: array of shape (G.V,dim)
+           the input chart
+    sigma, float a scale parameter
+    
+    Returns
+    -------
     chart : the corrected chart
-    """
-    sqsigma = 2*sigma**2
-    seeds = np.arange(G.V)
-    dX = G.floyd(seeds)
-    weight = np.exp(-dX**2/sqsigma)
-    dY = Euclidian_distance(chart[seeds],chart)
-    criterion = np.sum(weight*(dX-dY)**2)/G.V
-    print criterion
-    tiny = 1.e-10
-
-    for i in range(30):
-        aux = weight*(dX-dY)/np.maximum(dY,tiny)
-        grad = np.zeros(np.shape(chart))
-        for j in range(G.V):
-            grad[j,:] = np.dot(aux[j,:],chart-chart[j,:])
-
-        chart = chart - grad/G.V
-        dY = Euclidian_distance(chart[seeds],chart)
-        criterion = np.sum(weight*(dX-dY)**2)/G.V             
-        print np.sum(grad**2)/G.V,criterion
-    return chart
-
-def sparse_local_correction_for_embedding(G,chart,sigma = 1.0,niter=100):
-    """
-    WIP : an unfinished fuction that aims at improving isomap's prbs
-    the idea is to optimize the representation of local distances
-    INPUT:
-    G: the graph to be isomapped
-    chart: the input chart
-    sigma: a scale parameter
-    OUTPUT:
-    chart : the corrected chart
-    NOTE:
-    the graph G is reordeered
+    
+    Note
+    ----
+    the graph G is reordered
     """
     G.reorder(0)
     sqsigma = 2*sigma**2
@@ -1038,7 +1044,7 @@ def sparse_local_correction_for_embedding(G,chart,sigma = 1.0,niter=100):
     
 def partial_floyd_graph(G,k):
     """
-    Create a graph of the knn in teh geodesic sense, given an input graph G
+    Create a graph of the knn in the geodesic sense, given an input graph G
     """
     ls = []
     ln = []
@@ -1128,19 +1134,8 @@ def _test_isomap_orange(verbose=0):
     G,X = _orange(nbsamp)
     nbseed = 1000#nbsamp
     rdim = 3
-    u = isomap_dev(G,rdim,nbseed,1)
+    u = isomap(G,rdim,nbseed,1)
     check_isometry(G,u[:,:2],nseeds  =100)
-    #v = local_correction_for_embdedding(G,u[:,:2],sigma = 1.0)
-    K = partial_floyd_graph(G,300)
-    v = sparse_local_correction_for_embedding(K,u[:,:2],sigma = 1.0) 
-    check_isometry(G,v,nseeds  =100)
-    if verbose:
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.plot(u[:,0],u[:,1],'.')
-        mp.plot(v[:,0],v[:,1],'.r')
-        mp.show()
-
     
 
 
@@ -1154,7 +1149,7 @@ def _test_isomap_dev():
     G.knn(X,8)
     nbseed = 300
     rdim = 3
-    u = isomap_dev(G,rdim,nbseed,1)
+    u = isomap(G,rdim,nbseed,1)
     sv = CCA(x,u[:,:3])
     check_isometry(G,u[:,:2],nseeds  =100)
     return (sv.sum()>1.9)
