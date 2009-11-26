@@ -14,7 +14,7 @@ if __name__ == '__main__':
     docwriter = ApiDocWriter(package)
     docwriter.package_skip_patterns += [r'\.fixes$',
                                         r'\.externals$',
-                                        r'\.neurospin\.viz',
+                                        #r'\.neurospin\.viz',
                                         ]
     # XXX: Avoid nipy.modalities.fmri.aliased due to a bug in python2.6
     docwriter.module_skip_patterns += [r'\.modalities\.fmri.aliased',

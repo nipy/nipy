@@ -9,7 +9,7 @@ in scanner space, or the BOLD signal in MNI152 template space. The values
 can be multi-dimensional, in the case of a BOLD signal, the fMRI signal
 would correspond to a time series at each position in world space.
 
-.. currentmodule:: nipy.datasets.volumes.volume_img
+.. currentmodule:: nipy.neurospin.datasets.volumes.volume_img
 
 The image structure: :class:`VolumeImg`
 =======================================
@@ -38,7 +38,7 @@ object can be found on the page: :class:`VolumeImg`.
 Useful methods on volume structures
 ====================================
 
-.. currentmodule:: nipy.datasets.volumes.volume_field
+.. currentmodule:: nipy.neurospin.datasets.volumes.volume_field
 Any general volume structures will implement methods for querying the
 values and changing world space (see the :class:`VolumeField`
 documentation for more details):
@@ -75,7 +75,7 @@ data to be wired with datasets.
 More general data structures
 ===============================
 
-.. currentmodule:: nipy.datasets.volumes.volume_img
+.. currentmodule:: nipy.neurospin.datasets.volumes.volume_img
 
 The :class:`VolumeImg` is the most commonly found volume structure, and
 the simplest to understand, however, volumetric data can be described in
@@ -96,7 +96,7 @@ Implemented classes
 Implemented classes (or `concrete` classes) are structures that you can
 readily use directly from nipy.
 
-.. currentmodule:: nipy.datasets.volumes.volume_grid
+.. currentmodule:: nipy.neurospin.datasets.volumes.volume_grid
 
 :class:`VolumeGrid`
   In a :class:`VolumeGrid`, the data points are sampled on a 3D grid, but
@@ -112,7 +112,7 @@ readily use directly from nipy.
 Abstract classes
 ------------------
 
-.. currentmodule:: nipy.datasets.volumes.volume_data
+.. currentmodule:: nipy.neurospin.datasets.volumes.volume_data
 
 Abstract classes cannot be used because they are incompletely
 implemented. They serve as to define the interface: the type of objects
@@ -131,7 +131,7 @@ set of methods and attributes (the `interface`).
   fully functional, and can be used only via its children class (such as
   :class:`VolumeGrid` or :class:`VolumeImg`).
 
-.. currentmodule:: nipy.datasets.volumes.volume_field
+.. currentmodule:: nipy.neurospin.datasets.volumes.volume_field
 
 :class:`VolumeField`
   This is the most general volumetric structure (base class): all the
