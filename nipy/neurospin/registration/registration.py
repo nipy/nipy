@@ -3,7 +3,7 @@ Intensity-based matching.
 
 Questions: alexis.roche@gmail.com
 """
-from nipy.neurospin.image import Image, Grid
+from nipy.neurospin.image import Image
 from registration_module import _joint_histogram, _similarity, similarity_measures
 from affine import Affine, BRAIN_RADIUS_MM
 
@@ -36,7 +36,7 @@ For the time being, any transformation is assumed to be a 4x4 matrix.
 interp_methods = {'pv': 0, 'tri': 1, 'rand': -1}
 
 
-class IconicMatcher:
+class IconicMatcher(object):
 
     def __init__(self, source, target, bins = 256):
 
@@ -46,30 +46,28 @@ class IconicMatcher:
         ## FIXME: test that input images are 3d
 
         # Binning size  
-        if isinstance (bins, (int,long,float)): 
+        if isinstance (bins, (int, long, float)): 
             bins = [int(bins), int(bins)]
 
         # Source image binning
-        data, s_bins = clamp(source.data, mask=source.mask, bins=bins[0])
-        self.source = Image(data, affine=source.affine).putmask(source.mask)
-            
+        values, s_bins = clamp(source(), bins=bins[0])
+        self.source = source.fill(values)
+        self.source_data = self.source.data
+ 
         # Target image padding + binning
-        data = -np.ones(np.array(target.shape)+2, dtype=_clamp_dtype)
-        data[1:target.shape[0]+1:, 
-             1:target.shape[1]+1:, 
-             1:target.shape[2]+1:], t_bins = clamp(target.data, mask=target.mask, bins=bins[1]) 
-        self.data = Image(data, affine=target.affine).putmask(target.mask)
-
-
+        data, t_bins = clamp(target(), bins=bins[1])
+        tmp = target.fill(data)
+        self.target_data = -np.ones(np.array(target.shape)+2, dtype=_clamp_dtype)
+        self.target_data[1:target.shape[0]+1:, 1:target.shape[1]+1:, 1:target.shape[2]+1:] = tmp.data
         # Histograms
         self.joint_hist = np.zeros([s_bins, t_bins])
         self.source_hist = np.zeros(s_bins)
         self.target_hist = np.zeros(t_bins)
-        
-        # Image-to-world transforms 
-        self.source_toworld = source_toworld
-        self.target_fromworld = np.linalg.inv(target_toworld)
 
+        # Image-to-world transforms 
+        self.source_toworld = source.affine
+        self.target_fromworld = target.inv_affine
+        
         # Set default registration parameters
         self.set_interpolation()
         self.set_field_of_view()
@@ -85,12 +83,13 @@ class IconicMatcher:
         if shape == None:
             shape = self.source.shape
             
-        fov = self.source.putmask(Grid(shape, corner, spacing)).crop()
+        slicer = lambda : [slice(corner[i],shape[i]+corner[i],spacing[i]) for i in range(3)]
+        fov = self.source[slicer()]
 
         # Adjust spacing to match desired number of points
         if not fixed_npoints: 
             spacing = subsample(fov.data, npoints=fixed_npoints)
-        fov = self.source.putmask(Grid(shape, corner, spacing)).crop()
+        fov = self.source[slicer()]
 
         self.source_fov = fov
         self.source_fov_npoints = (fov.data >= 0).sum()
@@ -224,19 +223,15 @@ class IconicMatcher:
         return simis, vec12s
         
 
-
-def clamp(source, mask=None, bins=256):
+def clamp(y, im, bins=256):
     """ 
     Clamp array values that fall within a given mask in the range
     [0..bins-1] and reset masked values to -1.
     
     Parameters
     ----------
-    source : ndarray
+    x : ndarray
       The input array
-
-    mask : ndarray
-      Mask 
 
     bins : number 
       Desired number of bins
@@ -251,27 +246,17 @@ def clamp(source, mask=None, bins=256):
 
     """
  
-    # Mask 
-    if mask == None: 
-        mask = np.ones(source.shape, dtype='bool')
-
     # Create output array to allow in-place operations
-    y = np.zeros(source.shape, dtype=_clamp_dtype)
-    dmaxmax = 2**(8*y.dtype.itemsize-1)-1
+    y = np.zeros(x.shape, dtype=_clamp_dtype)
 
     # Threshold
+    dmaxmax = 2**(8*y.dtype.itemsize-1)-1
     dmax = bins-1 ## default output maximum value
     if dmax > dmaxmax: 
         raise ValueError('Excess number of bins')
-    xmin = float(source[mask].min())
-    xmax = float(source[mask].max())
-    th = np.maximum(th, xmin)
-    if th > xmax:
-        th = xmin  
-        print("Warning: Inconsistent threshold %f, ignored." % th) 
-    
-    # Input array dynamic
-    d = xmax-th
+    xmin = float(x.min())
+    xmax = float(x.max())
+    d = xmax-xmin
 
     """
     If the image dynamic is small, no need for compression: just
@@ -280,26 +265,25 @@ def clamp(source, mask=None, bins=256):
     dtype. Otherwise, compress after downshifting image values (values
     equal to the threshold are reset to zero).
     """
-    y[mask==False] = -1
-    if np.issubdtype(source.dtype, int) and d<=dmax:
-        y[mask] = source[mask]-th
+    if issubclass(x.dtype.type, np.integer) and d<=dmax:
+        y[:] = x-xmin
         bins = int(d)+1
     else: 
         a = dmax/d
-        y[mask] = np.round(a*(source[mask]-th))
+        y[:] = np.round(a*(values-th))
  
     return y, bins 
 
 
-def subsample(source, npoints):
+def subsample(im, npoints):
     """  
     Tune spacing factors so that the number of voxels in the output
     block matches a given number.
     
     Parameters
     ----------
-    source : ndarray or sequence  
-      Source image to subsample
+    im : ndarray or sequence  
+      Image to subsample
     
     npoints : number
       Target number of voxels (negative values will be ignored)
@@ -310,8 +294,8 @@ def subsample(source, npoints):
       Spacing factors
                  
     """
-    dims = source.shape
-    actual_npoints = (source >= 0).sum()
+    dims = im.shape
+    actual_npoints = (im >= 0).sum()
     spacing = np.ones(3, dtype='uint')
 
     while actual_npoints > npoints:

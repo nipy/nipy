@@ -40,8 +40,8 @@ ammon_TO_anubis.npz
 Author: Alexis Roche, 2009. 
 """
 
-from nipy.neurospin.image_registration import affine_register, affine_resample
-from nipy.io.imageformats import load as load_image, save as save_image
+from nipy.neurospin.registration import IconicMatcher
+from nipy.neurospin.image import load_image, save_image
 from nipy.utils import example_data
 
 from os.path import join
@@ -81,14 +81,16 @@ print('Fetching image data...')
 I = load_image(source_file)
 J = load_image(target_file)
 
+# Intensity-based registration instance
+matcher = IconicMatcher(I, J)
+matcher.set_field_of_view(fixed_npoints=64**3)
+matcher.set_similarity(similarity, normalize)
+matcher.set_interpolation(interp)
+
 # Perform affine normalization 
 print('Setting up registration...')
 tic = time.time()
-T = affine_register(I, J, 
-                    similarity=similarity, 
-                    interp=interp, 
-                    normalize=normalize, 
-                    optimizer=optimizer)
+T = matcher.optimize(method=optimizer, search='affine')
 toc = time.time()
 print('  Registration time: %f sec' % (toc-tic))
 
@@ -96,7 +98,7 @@ print('  Registration time: %f sec' % (toc-tic))
 # Resample source image
 print('Resampling source image...')
 tic = time.time()
-It = affine_resample(I, J, T) 
+It = I.transform(T, J) 
 toc = time.time()
 print('  Resampling time: %f sec' % (toc-tic))
 

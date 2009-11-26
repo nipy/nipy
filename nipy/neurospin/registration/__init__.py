@@ -1,4 +1,4 @@
-# import 
+from registration import * 
 
 from numpy.testing import Tester
 

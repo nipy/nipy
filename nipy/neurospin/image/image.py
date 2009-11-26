@@ -1,396 +1,251 @@
-"""
-Image class. 
-
-Here, image means a real-valued mapping from a regular 3D lattice. It
-can be masked or not.
-"""
-
-import numpy as np
-from scipy import ndimage
-
 import nipy.io.imageformats as brifti
+import numpy as np 
+from scipy import ndimage 
+
+_interp_order = 1 
+_background = 0 
 
 
-# Globals
-_def_cval = 0 
-_def_order = 1 
-_def_optimize = False
-
-# class `Grid`
-class Grid(object): 
-    """ An object to represent a regular 3d grid, or sub-grid.
-
-    Attributes
-    ----------
-    shape: tuple of ints
-        Shape of the grid, e.g., ``(256,256,124)``
-
-    corner: tuple of ints, optional
-        Grid coordinates of the sub-grid corner
-
-    spacing: tuple of ints, optional
-        Subsampling factors 
-
-    affine: ndarray 
-        4x4 affine matrix that maps the grid coordinates to some
-        coordinate system.
-    
+class Image(object): 
     """
-    def __init__(self, shape, corner=(0,0,0), spacing=(1,1,1), affine=None):
-
-        if not len(shape) == 3:
-            raise ValueError('The specified shape should be of length 3.')
-        if not len(corner) == 3:
-            raise ValueError('The specified corner should be of length 3.')
-        if not len(spacing) == 3:
-            raise ValueError('The specified subsampling factors should be of length 3.')
-        self._shape = np.array(shape[0:3], dtype='uint')
-        self._corner = np.array(corner[0:3], dtype='uint')
-        self._spacing = np.array(spacing[0:3], dtype='uint')
-        self._affine = affine
-
-    def _get_shape(self):
-        return self._shape
-
-    def _get_corner(self):
-        return self._corner
-
-    def _get_spacing(self):
-        return self._spacing
+    Image class. 
     
-    def coords(self):
-        c = self._corner
-        s = self._shape
-        sp = self._spacing
-        x,y,z = np.mgrid[c[0]:c[0]+s[0]:sp[0],
-                         c[1]:c[1]+s[1]:sp[1],
-                         c[2]:c[2]+s[2]:sp[2]]
-        x,y,z = x.ravel(),y.ravel(),z.ravel()
-        if self._affine == None: 
-            return x, y, z
-        return apply_affine(self._affine, (x, y, z))
-                   
-    def slice(self, array): 
-        c = self._corner
-        s = self._shape
-        sp = self._spacing
-        return array[c[0]:c[0]+s[0]:sp[0],
-                     c[1]:c[1]+s[1]:sp[1],
-                     c[2]:c[2]+s[2]:sp[2]]
-
-    def __str__(self):
-        return 'Grid: shape %s, corner %s, spacing %s' % (self._shape, self._corner, self._spacing) 
-
-    shape = property(_get_shape)
-    corner = property(_get_corner)
-    spacing = property(_get_spacing)
-    
-
-# class `Block`
-
-class Block(object): 
-    """ A basic class to represent an image defined on a regular
-    lattice.
+    An image is a real-valued mapping from a regular 3D lattice that
+    can be masked, in which case only in-mask image values are kept in
+    memory.
     """
-    def __init__(self, data, affine, world=None, cval=_def_cval): 
-        self._data = data
-        self._affine = affine
-        self._inverse_affine = inverse_affine(affine)
-        self._world = world 
-        self._cval = cval 
 
-    def _get_shape(self):
-        return self._data.shape
+    def __init__(self, data, affine, world=None, mask=None, shape=None, background=_background): 
+        """ 
+        The base image class.
 
-    def _get_dtype(self): 
-        return self._data.dtype
+        Parameters
+        ----------
 
-    def _get_affine(self):
-        return self._affine
+        data: ndarray
+            n dimensional array giving the embedded data, with the first
+            three dimensions being spatial.
 
-    def _get_inverse_affine(self):
-        return self._inverse_affine
+        affine: ndarray 
+            a 4x4 transformation matrix from voxel to world.
 
-    def _get_data(self):
-        """
-        Get a 3d array.
-        """
-        return self._data
-
-    def values(self, coords=None, grid_coords=False, dtype=None, 
-               order=_def_order, optimize=_def_optimize):
-
-        # Convert coords into a tuple of ndarrays
-        tmp = [np.asarray(coords[i]) for i in range(3)]
-        coords = tuple(tmp)
-
-        # If coords are intended to describe world coordinates,
-        # convert them into grid coordinates
-        if not grid_coords:
-            to_grid = self._inverse_affine
-            if isinstance(coords, Grid): 
-                # compose transforms
-                if coords._affine: 
-                    coords._affine = np.dot(to_grid, self._affine)
-                else:
-                    coords._affine = to_grid
-            else: 
-                coords = apply_affine(to_grid, coords)
-
-              
-        # If coords is a Grid instance, we do not need to explicitely
-        # compute the coordinates
-        if isinstance(coords, Grid): 
-            if coords._affine:
-                return resample(self._data, coords._affine,
-                                order=order, dtype=dtype, 
-                                cval=self._cval, optimize=optimize).squeeze()
-            else:
-                return coords.slice(self._data)
-        
-        # At this point, coords is an explicit tuple of coordinates.
-        
-        # Avoid interpolation if coordinates are integers.
-        if [issubclass(c.dtype.type, np.integer) for c in coords].count(True):
-            return self._data[coords]
-        else: # interpolation needed
-            return sample(self._data, coords, 
-                          order=order, dtype=dtype, 
-                          cval=self._cval, optimize=optimize)
-
-
-    shape = property(_get_shape)
-    dtype = property(_get_dtype)
-    affine = property(_get_affine)
-    inverse_affine = property(_get_inverse_affine)
-    data = property(_get_data)
-
-
-# class `Image`
-
-class Image(object):
-    """ A class representing a (real-valued???) mapping from a regular
-        3D lattice.  
-
-        Bla. 
-
-        Attributes
-        -----------
-        
-        Bla. 
-
-        Notes
-        ------
-
-        Bla. 
-    """
-    def __init__(self, data, affine, world=None, cval=_def_cval):
-        """ The base image class.
-
-            Parameters
-            ----------
-
-            data: ndarray
-                n dimensional array giving the embedded data, with the first
-                three dimensions being spatial.
-
-            affine: ndarray 
-                a 4x4 transformation matrix from voxel to world.
-
-            world: string, optional 
-                An identifier for the real-world coordinate system, e.g. 
-                'scanner' or 'mni'. 
+        world: string, optional 
+            An identifier for the real-world coordinate system, e.g. 
+            'scanner' or 'mni'. 
             
-            cval: number, optional 
-                Background value (outside image boundaries).  
+        background: number, optional 
+            Background value (outside image boundaries).  
         """
 
-        # TODO: Check that the mask array, if provided, is consistent
-        # with the data array
-        # Check array datatype and cval 
-        self._shape = data.shape
-        self._dtype = data.dtype
-        self._masked = False
-        self._block = Block(data, affine, world=world, cval=cval)
-        self._mask = Grid(data.shape)
-        self._affine = affine
-        self._inverse_affine = inverse_affine(affine)
-        self._world = world
-        self._cval = cval        
-        self._data = None
+        if mask == None: 
+            self._shape = data.shape
+        else: 
+            self._shape = shape
+        self._order=['C','F'][data.flags['F_CONTIGUOUS']]
+        self._values = np.ravel(data, order=self._order)
+        self._set_affine(affine)
+        self._inv_affine = inverse_affine(affine)
+        if mask == None: 
+            self._mask = None
+        else: 
+            self._mask = validate_coords(mask)
+        self._background = background
+        self._set_world(world)
 
-    def _get_masked(self):
-        return self._masked
+
+    def __getitem__(self, slices):
+        """
+        Extract an image patch corresponding to the specified bounding
+        box. Compute the affine transfotrmation accordingly. 
+        """
+        steps = map(lambda x: max(x,1), [s.step for s in slices])
+        starts = map(lambda x: max(x,0), [s.start for s in slices])
+        t = np.diag(np.concatenate((steps,[1]),1))
+        t[0:3,3] = starts
+        affine = np.dot(self._affine, t)
+        return Image(self._get_data()[slices], affine, world=self._world)
 
     def _get_shape(self):
         return self._shape
 
     def _get_dtype(self):
-        return self._dtype
+        return self._values.dtype
+
+    def _get_values(self):
+        return self._values
+
+    def _get_data(self): 
+        
+        if not self._mask: 
+            return np.reshape(self._values, self._shape, order=self._order)
+        
+        output = np.zeros(self._shape, dtype=self._get_dtype())
+        if not self._background == 0:  
+            output += self._background
+
+        output[self._mask] = self._values
+        return output
 
     def _get_affine(self):
         return self._affine
 
-    def _get_inverse_affine(self):
-        return self._inverse_affine
+    def _set_affine(self, affine):
+        affine = np.asarray(affine).squeeze()
+        if not affine.shape==(4,4):
+            raise ValueError('Not a 4x4 transformation matrix')
+        self._affine = affine
 
-    def _get_data(self):
-        """
-        Get a 3d array.
-        """
-        if self._masked:
-            data = np.zeros(self._shape, dtype=self._dtype)
-            if not self._cval == 0:  
-                data += self._cval
-            if self._block: # mask is a Grid instance
-                c = self._mask._corner 
-                s = self._mask._shape
-                sp = self._mask._spacing
-                data[c[0]:c[0]+s[0]:sp[0],
-                     c[1]:c[1]+s[1]:sp[1],
-                     c[2]:c[2]+s[2]:sp[2]] = self._block._data
-            else:
-                data[self._mask] = self._data
-            return data 
-        else:
-            return self._block._data
+    def _get_inv_affine(self):
+        return self._inv_affine
 
-    def _get_mask(self):
-        return self._mask 
+    def _get_world(self):
+        return self._world
 
-    def putmask(self, mask): 
-        """
-        
+    def _set_world(self, world):
+        if not world == None: 
+            world = str(world)
+        self._world = world
+
+    def _get_mask(self): 
+        return self._mask
+
+    def __call__(self, coords=None, grid_coords=False, 
+                 dtype=None, interp_order=_interp_order):
+        """ 
+        Return interpolated values at the points specified by coords. 
+
         Parameters
         ----------
-
-            mask: ndarray, optional 
-                A 3xN list of coordinates
-        """
-        if isinstance(mask, Grid):
-            # block to world affine transformation
-            t_subgrid2grid = np.diag(np.concatenate((mask._spacing,[1]),1))
-            t_subgrid2grid[0:3,3] = mask._corner
-            affine = np.dot(self._affine, t_subgrid2grid)
-
-            data = self._get_data()
-            block = Block(mask.slice(data), affine, world=self._world, cval=self._cval)
-            im = Image(data, self._affine, world=self._world, cval=self._cval)
-            if im.shape == block.shape: 
-                im._masked = False
-            else:
-                im._masked = True
-            im._mask = mask 
-            im._block = block
-            return im 
-        else:
-            im = Image(self._get_data(), self._affine, world=self._world, cval=self._cval)
-            im._data = im._block._data[mask]
-            im._masked = True
-            im._block = None 
-            im._mask = mask 
-            return im 
-
-
-    def crop(self): 
-        """
-        Adjust the minimal bounding box. 
-        """
-        if self._block:
-            data = self._block._data
-            affine = self._block._affine
-            return Image(data, 
-                         affine, 
-                         world=self._world, 
-                         cval=self._cval)
+        coords: sequence of 3 ndarrays, optional
+            List of coordinates. If missing, the image mask 
+            is assumed. 
+                
+        grid_coords: boolean, optional
+            Determine whether the input coordinates are in the
+            world or grid coordinate system. 
         
+        Returns
+        -------
+        output: ndarray
+            One-dimensional array. 
 
-        # Underlying mask is not a grid: define a bounding box
-        corner = np.asarray([self._mask[i].min() for i in range(3)])
-        shape = [1+self._mask[i].max()-corner[i] for i in range(3)]
-        data = np.zeros(shape, dtype=self._dtype)
-        if not self._cval == 0:  
-            data += self._cval
-        data[[self._mask[i]-corner[i] for i in range(3)]] = self._data
-        box2im_affine = np.eye(4)
-        box2im_affine[0:3,3] = corner
-        affine = np.dot(self._affine, box2im_affine)
-        return Image(data, affine, world=self._world, cval=self._cval)
+        """
+        if coords == None: 
+            return self._values
+
+        if dtype == None: 
+            dtype = self._get_dtype()
+
+        # Convert coords into grid coordinates
+        X,Y,Z = validate_coords(coords)
+        if not grid_coords:
+            X,Y,Z = apply_affine(self._inv_affine, (X,Y,Z))
+        XYZ = np.c_[(X,Y,Z)]
+
+        # Avoid interpolation if coords are integers
+        if issubclass(XYZ.dtype.type, np.integer):
+            I = np.where(((XYZ>0)*(XYZ<self._shape)).min(1))
+            output = np.zeros(XYZ.shape[0], dtype=dtype)
+            if not self._background == 0:  
+                output += self._background
+            if I[0].size: 
+                output[I] = self._get_data()[X[I], Y[I], Z[I]]
+
+        # Otherwise, interpolate the data
+        else: 
+            output = ndimage.map_coordinates(self._get_data(), 
+                                             XYZ.T, 
+                                             order=interp_order, 
+                                             cval=self._background,
+                                             output=dtype)
+            
+        return output 
+
+
+    def fill(self, values): 
+
+        if not len(values) == len(self._values): 
+            raise ValueError('Input array shape inconsistent with image values')
+
+        if self._mask:
+            return Image(values, affine=self._affine, world=self._world, 
+                         mask=self._mask, shape=self._shape, background=self._background)
+        else: 
+            values = np.reshape(values, self._shape, 
+                                order=['C','F'][values.flags['F_CONTIGUOUS']])
+            return Image(values, affine=self._affine, world=self._world)
 
     
-    def values(self, coords=None, grid_coords=False, dtype=None, 
-               order=_def_order, optimize=_def_optimize):
-        """ Return interpolated values at the points specified by coords. 
-
-            Parameters
-            ----------
-            coords: {ndarray, Grid}
-                List of coordinates. 
-
-            grid_coords: boolean, optional
-                Determine whether the input coordinates are in the
-                world or grid coordinate system. 
-        
-            Returns
-            --------
-            x: ndarray
-                One-dimensional array. 
-
+    def move(self, transform, target=None, 
+             dtype=None, interp_order=_interp_order):
         """
+        Apply a spatial transformation to bring the image into the
+        same grid as the specified target image. 
         
-        # If no coordinates specified, assume the image mask 
-        if coords == None: 
-            grid_coords = True
-            if isinstance(self._mask, Grid): 
-                coords = self._mask.coords()
-            else: 
-                coords = self._mask 
-
-        # Case of an already exsiting block
-        if self._block: 
-            block = self._block
-            # If coords are meant to represent grid coordinates,
-            # convert them relatively to the underlying 'block'
-            # subgrid
-            if self._masked and grid_coords:
-                coords = [coords[i]-self._mask._corner[i] for i in range(3)]
-                if not self._mask._spacing.max() == 1:
-                    coords = [coords[i]/float(self._mask._spacing[i]) for i in range(3)]
-                coords = tuple(coords)
-
-        # Otherwise, create block on the fly 
-        else: 
-            block = Block(self._get_data(), self._affine)
-
-        return block.values(coords, grid_coords, dtype, order, optimize)
-
-
-    def transform(self, transform, shape, affine):
-        """
         transform: world transformation
 
-        affine: destination grid to-world transformation. 
+        target: target image, defaults to self. 
         """
-        
-        t_ = np.dot(self._inverse_affine, np.dot(inverse_affine(transform), affine))
+        if target == None: 
+            target = self
 
-        return resample(self._get_data(), affine=t_, shape=shape,
-                        order=order, dtype=dtype, 
-                        cval=self._cval, optimize=optimize)
+        if dtype == None: 
+            dtype = self._get_dtype()
+
+        # Grid-to-grid transformation from target to source
+        t = np.dot(self._inv_affine, np.dot(inverse_affine(transform), target._affine))
+
+        # Perform image resampling 
+        data = self._get_data()
+        output = np.zeros(data.shape, dtype=dtype)
+        ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
+                                 output_shape=target._shape,
+                                 order=interp_order, cval=self._background, 
+                                 output=output)
+        return Image(output, affine=target._affine, world=self._world, 
+                     background=self._background)
 
 
+    def hold(self, mask): 
+        """
+        Return a masked image. 
+        """
+        mask = validate_coords(mask)
+        return Image(self._get_data()[mask], self._affine, world=self._world,
+                     mask=mask, shape=self._shape, background=self._background)
 
-    data = property(_get_data)
-    affine = property(_get_affine)
-    inverse_affine = property(_get_inverse_affine)
-    mask = property(_get_mask)
-    masked = property(_get_masked)
+
     shape = property(_get_shape)
     dtype = property(_get_dtype)
+    values = property(_get_values)
+    affine = property(_get_affine, _set_affine)
+    inv_affine = property(_get_inv_affine)
+    world = property(_get_world, _set_world)
+    data = property(_get_data)
+    mask = property(_get_mask)
 
 
-        
 
+"""
+Util functions
+"""
+def load_image(fname): 
+    im = brifti.load(fname)
+    return Image(im.get_data(), im.get_affine())
+
+def save_image(Im, fname):
+    im = brifti.Nifti1Image(Im.data, Im.affine)
+    brifti.save(im, fname)
+
+def validate_coords(coords): 
+    """
+    Convert coords into a tuple of ndarrays
+    """
+    X,Y,Z = [np.asarray(coords[i]) for i in range(3)]
+    return X,Y,Z
+
+def inverse_affine(affine):
+    return np.linalg.inv(affine)
 
 def apply_affine(affine, XYZ):
     """
@@ -413,73 +268,40 @@ def apply_affine(affine, XYZ):
 
 
 
-def load_image(fname): 
-    im = brifti.load(fname)
-    return Image(im.get_data(), im.get_affine())
 
+# TODO: integrate the following sampling routines to the image class
+# in some way
 
-def save_image(Im, fname):
-    im = brifti.Nifti1Image(Im.data, Im.affine)
-    brifti.save(im, fname)
+def sample(data, coords, order=_interp_order, dtype=None, 
+           background=_background): 
 
-
-
-def sample(data, coords, order=_def_order, dtype=None, 
-           cval=_def_cval, optimize=_def_optimize): 
+    from image_module import cspline_transform, cspline_sample3d
     
     if dtype == None: 
         dtype = data.dtype
 
-    coords = tuple(coords)
-    npts = coords[0].size
+    X, Y, Z = tuple(coords)
+    npts = X.size
 
-    if optimize and order==3:
-        from image_module import cspline_transform, cspline_sample3d
-        cbspline = cspline_transform(data)
-        X, Y, Z = coords
-        output = np.zeros(npts, dtype='double')
-        output = cspline_sample3d(output, cbspline, X, Y, Z)
-        output.astype(dtype)
-    else: 
-        output = np.zeros(npts, dtype=dtype)
-        ndimage.map_coordinates(data, 
-                                np.c_[coords].T, 
-                                order=order, 
-                                cval=cval,
-                                output=output)
-        
+    cbspline = cspline_transform(data)
+    output = np.zeros(npts, dtype='double')
+    output = cspline_sample3d(output, cbspline, X, Y, Z)
+    output.astype(dtype)
+    
     return output
 
 
 
-def resample(data, affine, shape=None, order=_def_order, dtype=None, 
-             cval=_def_cval, optimize=_def_optimize): 
+def resample(data, affine, shape=None, order=_interp_order, dtype=None, 
+             background=_background): 
 
+    from image_module import cspline_resample3d
+    
     if shape == None:
         shape = data.shape
-
     if dtype == None: 
         dtype = data.dtype
 
-    if optimize and order==3:
-        from image_module import cspline_resample3d
-        output = cspline_resample3d(data, 
-                                    shape, 
-                                    affine, 
-                                    dtype=dtype)
-    else: 
-        output = np.zeros(data.shape, dtype=dtype)
-        ndimage.affine_transform(data, 
-                                 affine[0:3,0:3],
-                                 offset=affine[0:3,3],
-                                 output_shape=shape,
-                                 order=order, 
-                                 cval=cval, 
-                                 output=output)
+    return cspline_resample3d(data, shape, affine, dtype=dtype)
 
-    return output 
-
-
-def inverse_affine(affine):
-    return np.linalg.inv(affine)
 
