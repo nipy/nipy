@@ -12,7 +12,6 @@ For 3D visualization, Mayavi, version 3.0 or greater, is required.
 
 # Standard library imports
 import os
-import tempfile
 import sys
 
 # Standard scientific libraries imports (more specific imports are
@@ -397,21 +396,15 @@ def plot_map(map, sform, cut_coords, anat=None, anat_sform=None,
                                 title=title,
                                 figure_num=figure_num, mask=mask)
 
-    from enthought.mayavi import mlab
-    from .maps_3d import plot_map_3d
+    from .maps_3d import plot_map_3d, m2screenshot
     plot_map_3d(map, sform, cut_coords=cut_coords, anat=anat,
                 anat_sform=anat_sform, vmin=vmin,
                 figure_num=figure_num, mask=mask)
-    filename = tempfile.mktemp('.png')
-    mlab.savefig(filename)
-    image3d = pl.imread(filename)
-    os.unlink(filename)
-    
+
     fig = pl.figure(figure_num, figsize=(10.6, 2.6))
-    pl.axes((-0.01, 0, 0.3, 1))
-    pl.imshow(image3d)
-    pl.axis('off')
-    
+    ax = pl.axes((-0.01, 0, 0.3, 1))
+    m2screenshot(mpl_axes=ax)
+
     plot_map_2d(map, sform, cut_coords=cut_coords, anat=anat,
                 anat_sform=anat_sform, vmin=vmin, mask=mask,
                 figure_num=fig.number, axes=(0.28, 1, 0, 1.), title=title)
