@@ -1,7 +1,7 @@
 from numpy.testing import assert_equal, assert_almost_equal
 import numpy as np
 
-from nipy.neurospin.group import routines, _onesample, _twosample
+from nipy.neurospin.group import routines, onesample, twosample
 
 def slow_add_lines(A, B, I):
     for i in xrange(len(I)):
@@ -46,14 +46,14 @@ def test_onesample_stat():
     y_target = np.inf * np.ones(nvox)
     y_target[0] = 0.0
     # Test: input C-contiguous, data owner, axis=3
-    y = _onesample.stat(x, axis=3).reshape(nvox)
+    y = onesample.stat(x, axis=3).reshape(nvox)
     assert_equal(y, y_target)
     # Test: input F-contiguous, not owner, axis=0 
-    y = _onesample.stat(x.T, axis=0).reshape(nvox)
+    y = onesample.stat(x.T, axis=0).reshape(nvox)
     assert_equal(y, y_target)
     # Test: input C-contiguous, data owner, axis=0
     xT = x.T.copy()
-    y = _onesample.stat(xT, axis=0).reshape(nvox)
+    y = onesample.stat(xT, axis=0).reshape(nvox)
     assert_equal(y, y_target)
     
 
