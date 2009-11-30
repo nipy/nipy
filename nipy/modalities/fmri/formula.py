@@ -273,7 +273,8 @@ class Formula(object):
     def _getdiff(self):
         p = list(set(getparams(self.mean)))
         p.sort()
-        return sympy.diff(self.mean, p)
+        # Use doit to force the sympy evaluation of the differential
+        return [s.doit() for s in sympy.diff(self.mean, p)]
     design_expr = property(_getdiff)
 
     def _getdtype(self):
