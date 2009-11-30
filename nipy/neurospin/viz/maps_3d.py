@@ -169,7 +169,7 @@ def plot_anat_3d(anat=None, anat_sform=None, scale=1,
                             anat_blurred,
                             contours=[0.4],
                             color=outline_color)
-        outline.actor.property.frontface_culling = True
+        outline.actor.property.backface_culling = True
 
 
     fig.scene.disable_render = disable_render
