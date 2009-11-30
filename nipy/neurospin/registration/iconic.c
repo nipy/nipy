@@ -211,7 +211,9 @@ void joint_histogram(double* H,
 		     int interp)
 {
   const signed short* J=(signed short*)imJ_padded->data; 
-  size_t dimJX=imJ_padded->dimensions[0]-2, dimJY=imJ_padded->dimensions[1]-2, dimJZ=imJ_padded->dimensions[2]-2;  
+  size_t dimJX=imJ_padded->dimensions[0]-2;
+  size_t dimJY=imJ_padded->dimensions[1]-2; 
+  size_t dimJZ=imJ_padded->dimensions[2]-2;  
   signed short Jnn[8]; 
   double W[8]; 
   signed short *bufI, *bufJnn; 
@@ -235,6 +237,9 @@ void joint_histogram(double* H,
 
   /* Reset the source image iterator */
   PyArray_ITER_RESET(iterI);
+
+  /* Make sure the iterator the iterator will update coordinate values */ 
+  UPDATE_ITERATOR_COORDS(iterI); 
 
   /* Set interpolation method */ 
   if (interp==0) 

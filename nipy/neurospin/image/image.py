@@ -161,58 +161,7 @@ class Image(object):
             
         return output 
 
-
-    def fill(self, values): 
-
-        if not len(values) == len(self._values): 
-            raise ValueError('Input array shape inconsistent with image values')
-
-        if self._mask:
-            return Image(values, affine=self._affine, world=self._world, 
-                         mask=self._mask, shape=self._shape, background=self._background)
-        else: 
-            values = np.reshape(values, self._shape, 
-                                order=['C','F'][values.flags['F_CONTIGUOUS']])
-            return Image(values, affine=self._affine, world=self._world)
-
     
-    def move(self, transform, target=None, 
-             dtype=None, interp_order=_interp_order):
-        """
-        Apply a spatial transformation to bring the image into the
-        same grid as the specified target image. 
-        
-        transform: world transformation
-
-        target: target image, defaults to self. 
-        """
-        if target == None: 
-            target = self
-
-        if dtype == None: 
-            dtype = self._get_dtype()
-
-        # Grid-to-grid transformation from target to source
-        t = np.dot(self._inv_affine, np.dot(inverse_affine(transform), target._affine))
-
-        # Perform image resampling 
-        data = self._get_data()
-        output = np.zeros(data.shape, dtype=dtype)
-        ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
-                                 output_shape=target._shape,
-                                 order=interp_order, cval=self._background, 
-                                 output=output)
-        return Image(output, affine=target._affine, world=self._world, 
-                     background=self._background)
-
-
-    def hold(self, mask): 
-        """
-        Return a masked image. 
-        """
-        mask = validate_coords(mask)
-        return Image(self._get_data()[mask], self._affine, world=self._world,
-                     mask=mask, shape=self._shape, background=self._background)
 
 
     shape = property(_get_shape)
@@ -236,6 +185,60 @@ def load_image(fname):
 def save_image(Im, fname):
     im = brifti.Nifti1Image(Im.data, Im.affine)
     brifti.save(im, fname)
+
+def mask_image(im, mask, background=None): 
+    """
+    Return a masked image. 
+    """
+    mask = validate_coords(mask)
+    if not background: 
+        background = im._background
+    return Image(im._get_data()[mask], im._affine, world=im._world,
+                 mask=mask, shape=im._shape, background=background)
+
+def set_image(im, values): 
+    
+    if not len(values) == len(im._values): 
+        raise ValueError('Input array shape inconsistent with image values')
+
+    if im._mask:
+        return Image(values, affine=im._affine, world=im._world, 
+                     mask=im._mask, shape=im._shape, background=im._background)
+    else: 
+        values = np.reshape(values, im._shape, 
+                            order=['C','F'][values.flags['F_CONTIGUOUS']])
+        return Image(values, affine=im._affine, world=im._world)
+
+
+def move_image(im, transform, target=None, 
+               dtype=None, interp_order=_interp_order):
+    """
+    Apply a spatial transformation to bring the image into the
+    same grid as the specified target image. 
+    
+    transform: world transformation
+    
+    target: target image, defaults to input. 
+    """
+    if target == None: 
+        target = im
+        
+    if dtype == None: 
+        dtype = im._get_dtype()
+
+    # Grid-to-grid transformation from target to source
+    t = np.dot(im._inv_affine, np.dot(inverse_affine(transform), target._affine))
+    
+    # Perform image resampling 
+    data = im._get_data()
+    output = np.zeros(data.shape, dtype=dtype)
+    ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
+                             output_shape=target._shape,
+                             order=interp_order, cval=im._background, 
+                             output=output)
+    return Image(output, affine=target._affine, world=im._world, 
+                 background=im._background)
+
 
 def validate_coords(coords): 
     """
@@ -267,10 +270,9 @@ def apply_affine(affine, XYZ):
     return tuple(tXYZ)
 
 
-
-
 # TODO: integrate the following sampling routines to the image class
 # in some way
+
 
 def sample(data, coords, order=_interp_order, dtype=None, 
            background=_background): 
@@ -303,5 +305,7 @@ def resample(data, affine, shape=None, order=_interp_order, dtype=None,
         dtype = data.dtype
 
     return cspline_resample3d(data, shape, affine, dtype=dtype)
+
+
 
 

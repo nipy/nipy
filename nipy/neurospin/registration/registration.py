@@ -3,7 +3,7 @@ Intensity-based matching.
 
 Questions: alexis.roche@gmail.com
 """
-from nipy.neurospin.image import Image
+from nipy.neurospin.image import Image, set_image
 from registration_module import _joint_histogram, _similarity, similarity_measures
 from affine import Affine, BRAIN_RADIUS_MM
 
@@ -51,50 +51,48 @@ class IconicMatcher(object):
 
         # Source image binning
         values, s_bins = clamp(source(), bins=bins[0])
-        self.source = source.fill(values)
-        self.source_data = self.source.data
+        self._source = set_image(source, values)
+        self.set_source_fov()
  
         # Target image padding + binning
-        data, t_bins = clamp(target(), bins=bins[1])
-        tmp = target.fill(data)
-        self.target_data = -np.ones(np.array(target.shape)+2, dtype=_clamp_dtype)
-        self.target_data[1:target.shape[0]+1:, 1:target.shape[1]+1:, 1:target.shape[2]+1:] = tmp.data
+        values, t_bins = clamp(target(), bins=bins[1])
+        _target = set_image(target, values)
+        self.target = -np.ones(np.array(target.shape)+2, dtype=_clamp_dtype)
+        _view = self.target[1:target.shape[0]+1:, 1:target.shape[1]+1:, 1:target.shape[2]+1:]
+        _view[:] = _target.data[:]
+        self.target_fromworld = target.inv_affine
+        
         # Histograms
         self.joint_hist = np.zeros([s_bins, t_bins])
         self.source_hist = np.zeros(s_bins)
         self.target_hist = np.zeros(t_bins)
 
-        # Image-to-world transforms 
-        self.source_toworld = source.affine
-        self.target_fromworld = target.inv_affine
-        
         # Set default registration parameters
         self.set_interpolation()
-        self.set_field_of_view()
         self.set_similarity()
 
     def set_interpolation(self, method='pv'):
         self.interp = method
         self._interp = interp_methods[method]
 
-    def set_field_of_view(self, spacing=[1,1,1], corner=[0,0,0], shape=None, 
+    def set_source_fov(self, spacing=[1,1,1], corner=[0,0,0], shape=None, 
                           fixed_npoints=None):
         
         if shape == None:
-            shape = self.source.shape
+            shape = self._source.shape
             
         slicer = lambda : [slice(corner[i],shape[i]+corner[i],spacing[i]) for i in range(3)]
-        fov = self.source[slicer()]
+        fov = self._source[slicer()]
 
         # Adjust spacing to match desired number of points
-        if not fixed_npoints: 
+        if fixed_npoints: 
             spacing = subsample(fov.data, npoints=fixed_npoints)
-        fov = self.source[slicer()]
+            fov = self._source[slicer()]
 
-        self.source_fov = fov
-        self.source_fov_npoints = (fov.data >= 0).sum()
+        self.source = fov.data
+        self.source_npoints = (fov.data >= 0).sum()
+        self.source_toworld = fov.affine
 
-        
     def set_similarity(self, similarity='cc', normalize=None, pdf=None): 
         self.similarity = similarity
         if similarity in similarity_measures: 
@@ -111,19 +109,16 @@ class IconicMatcher(object):
         The corresponding voxel transformation is: Tv = Tt^-1 * T * Ts
         """
         ## C-contiguity required
-        return np.dot(self.target.inverse_affine, np.dot(T, self.source.affine)) 
+        return np.dot(self.target_fromworld, np.dot(T, self.source_toworld)) 
 
-    def fov_voxel_transform(self, T): 
-        ## C-contiguity ensured 
-        return np.dot(self.target.inverse_affine, np.dot(T, self.source_fov.affine)) 
 
     def eval(self, T):
-        Tv = self.fov_voxel_transform(T)
+        Tv = self.voxel_transform(T)
         seed = self._interp
         if self._interp < 0:
             seed = - np.random.randint(maxint)
         _joint_histogram(self.joint_hist, 
-                         self.source_fov.data.flat, ## array iterator
+                         self.source.flat, ## array iterator
                          self.target, 
                          Tv, 
                          seed)
@@ -223,7 +218,7 @@ class IconicMatcher(object):
         return simis, vec12s
         
 
-def clamp(y, im, bins=256):
+def clamp(x, bins=256):
     """ 
     Clamp array values that fall within a given mask in the range
     [0..bins-1] and reset masked values to -1.
@@ -246,6 +241,7 @@ def clamp(y, im, bins=256):
 
     """
  
+
     # Create output array to allow in-place operations
     y = np.zeros(x.shape, dtype=_clamp_dtype)
 
@@ -270,20 +266,21 @@ def clamp(y, im, bins=256):
         bins = int(d)+1
     else: 
         a = dmax/d
-        y[:] = np.round(a*(values-th))
+        y[:] = np.round(a*(x-xmin))
  
     return y, bins 
 
 
-def subsample(im, npoints):
+
+def subsample(data, npoints):
     """  
-    Tune spacing factors so that the number of voxels in the output
-    block matches a given number.
+    Tune spacing factors so that the number of voxels in the
+    output block matches a given number.
     
     Parameters
     ----------
-    im : ndarray or sequence  
-      Image to subsample
+    data : ndarray or sequence  
+      Data image to subsample
     
     npoints : number
       Target number of voxels (negative values will be ignored)
@@ -294,11 +291,12 @@ def subsample(im, npoints):
       Spacing factors
                  
     """
-    dims = im.shape
-    actual_npoints = (im >= 0).sum()
+    dims = data.shape
+    actual_npoints = (data >= 0).sum()
     spacing = np.ones(3, dtype='uint')
 
     while actual_npoints > npoints:
+
         # Subsample the direction with the highest number of samples
         ddims = dims/spacing
         if ddims[0] >= ddims[1] and ddims[0] >= ddims[2]:
@@ -308,5 +306,7 @@ def subsample(im, npoints):
         else:
             dir = 2
         spacing[dir] += 1
+        subdata = data[::spacing[0], ::spacing[1], ::spacing[2]]
+        actual_npoints = (subdata >= 0).sum()
             
     return spacing
