@@ -15,7 +15,8 @@ class Image(object):
     memory.
     """
 
-    def __init__(self, data, affine, world=None, mask=None, shape=None, background=_background): 
+    def __init__(self, data, affine, world=None, 
+                 mask=None, shape=None, background=_background): 
         """ 
         The base image class.
 
@@ -38,17 +39,16 @@ class Image(object):
         """
 
         if mask == None: 
+            self._mask = None
             self._shape = data.shape
         else: 
+            self._mask = validate_coords(mask)
             self._shape = shape
-        self._order=['C','F'][data.flags['F_CONTIGUOUS']]
-        self._values = np.ravel(data, order=self._order)
+            
+        self._data = data
+        self._size = data.size
         self._set_affine(affine)
         self._inv_affine = inverse_affine(affine)
-        if mask == None: 
-            self._mask = None
-        else: 
-            self._mask = validate_coords(mask)
         self._background = background
         self._set_world(world)
 
@@ -68,22 +68,22 @@ class Image(object):
     def _get_shape(self):
         return self._shape
 
-    def _get_dtype(self):
-        return self._values.dtype
+    def _get_size(self):
+        return self._size
 
-    def _get_values(self):
-        return self._values
+    def _get_dtype(self):
+        return self._data.dtype
 
     def _get_data(self): 
         
         if not self._mask: 
-            return np.reshape(self._values, self._shape, order=self._order)
+            return self._data
         
         output = np.zeros(self._shape, dtype=self._get_dtype())
         if not self._background == 0:  
             output += self._background
 
-        output[self._mask] = self._values
+        output[self._mask] = self._data
         return output
 
     def _get_affine(self):
@@ -109,6 +109,12 @@ class Image(object):
     def _get_mask(self): 
         return self._mask
 
+    def _get_masked(self):
+        if self._mask: 
+            return True
+        else: 
+            return False
+
     def __call__(self, coords=None, grid_coords=False, 
                  dtype=None, interp_order=_interp_order):
         """ 
@@ -131,7 +137,10 @@ class Image(object):
 
         """
         if coords == None: 
-            return self._values
+            if self._mask:
+                return self._data
+            else:
+                return np.ravel(self._data) 
 
         if dtype == None: 
             dtype = self._get_dtype()
@@ -165,13 +174,14 @@ class Image(object):
 
 
     shape = property(_get_shape)
+    size = property(_get_size)
     dtype = property(_get_dtype)
-    values = property(_get_values)
     affine = property(_get_affine, _set_affine)
     inv_affine = property(_get_inv_affine)
     world = property(_get_world, _set_world)
     data = property(_get_data)
     mask = property(_get_mask)
+    masked = property(_get_masked)
 
 
 
@@ -198,15 +208,16 @@ def mask_image(im, mask, background=None):
 
 def set_image(im, values): 
     
-    if not len(values) == len(im._values): 
-        raise ValueError('Input array shape inconsistent with image values')
-
     if im._mask:
+        if not len(values) == len(im._data): 
+            raise ValueError('Input array shape inconsistent with image values')
         return Image(values, affine=im._affine, world=im._world, 
                      mask=im._mask, shape=im._shape, background=im._background)
     else: 
-        values = np.reshape(values, im._shape, 
-                            order=['C','F'][values.flags['F_CONTIGUOUS']])
+        if not len(values) == im._data.size: 
+            raise ValueError('Input array shape inconsistent with image values')
+        values = np.reshape(values, im._shape) 
+        ## order=['C','F'][values.flags['F_CONTIGUOUS']])
         return Image(values, affine=im._affine, world=im._world)
 
 
