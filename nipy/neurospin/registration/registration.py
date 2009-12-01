@@ -170,7 +170,7 @@ class IconicRegistration(object):
         def callback(tc):
             T.from_param(tc)
             print(T)
-            print(self._similarity + ' = %s' % self.eval(T))
+            print(str(self.similarity) + ' = %s' % self.eval(T))
             print('')
                   
 
