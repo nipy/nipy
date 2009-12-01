@@ -4,7 +4,7 @@ Intensity-based matching.
 Questions: alexis.roche@gmail.com
 """
 from nipy.neurospin.image import Image, set_image
-from registration_module import _joint_histogram, _similarity, similarity_measures
+from registration_module import _joint_histogram, _similarity, builtin_similarities
 from affine import Affine, BRAIN_RADIUS_MM
 
 import numpy as np  
@@ -36,14 +36,14 @@ For the time being, any transformation is assumed to be a 4x4 matrix.
 interp_methods = {'pv': 0, 'tri': 1, 'rand': -1}
 
 
-class IconicMatcher(object):
+class IconicRegistration(object):
 
     def __init__(self, source, target, bins = 256):
 
         """
-        IconicMatcher class for intensity-based image registration. 
+        A class to reprensent a generic intensity-based image
+        registration algorithm.
         """
-        ## FIXME: test that input images are 3d
 
         # Binning size  
         if isinstance (bins, (int, long, float)): 
@@ -51,57 +51,73 @@ class IconicMatcher(object):
 
         # Source image binning
         values, s_bins = clamp(source(), bins=bins[0])
-        self._source = set_image(source, values)
+        self._source_image = set_image(source, values)
         self.set_source_fov()
  
         # Target image padding + binning
         values, t_bins = clamp(target(), bins=bins[1])
-        _target = set_image(target, values)
-        self.target = -np.ones(np.array(target.shape)+2, dtype=_clamp_dtype)
-        _view = self.target[1:target.shape[0]+1:, 1:target.shape[1]+1:, 1:target.shape[2]+1:]
-        _view[:] = _target.data[:]
-        self.target_fromworld = target.inv_affine
+        _target_image = set_image(target, values)
+        self._target = -np.ones(np.array(target.shape)+2, dtype=_clamp_dtype)
+        _view = self._target[1:target.shape[0]+1:, 1:target.shape[1]+1:, 1:target.shape[2]+1:]
+        _view[:] = _target_image.data[:]
+        self._target_fromworld = target.inv_affine
         
         # Histograms
-        self.joint_hist = np.zeros([s_bins, t_bins])
-        self.source_hist = np.zeros(s_bins)
-        self.target_hist = np.zeros(t_bins)
+        self._joint_hist = np.zeros([s_bins, t_bins])
+        self._source_hist = np.zeros(s_bins)
+        self._target_hist = np.zeros(t_bins)
 
         # Set default registration parameters
-        self.set_interpolation()
-        self.set_similarity()
+        self._set_interp()
+        self._set_similarity()
 
-    def set_interpolation(self, method='pv'):
-        self.interp = method
+    def _get_interp(self): 
+        return interp_methods.keys()[interp_methods.values().index(self._interp)]
+    
+    def _set_interp(self, method='pv'): 
         self._interp = interp_methods[method]
 
+    interp = property(_get_interp, _set_interp)
+        
     def set_source_fov(self, spacing=[1,1,1], corner=[0,0,0], shape=None, 
                           fixed_npoints=None):
         
         if shape == None:
-            shape = self._source.shape
+            shape = self._source_image.shape
             
         slicer = lambda : [slice(corner[i],shape[i]+corner[i],spacing[i]) for i in range(3)]
-        fov = self._source[slicer()]
+        fov = self._source_image[slicer()]
 
         # Adjust spacing to match desired number of points
         if fixed_npoints: 
             spacing = subsample(fov.data, npoints=fixed_npoints)
-            fov = self._source[slicer()]
+            fov = self._source_image[slicer()]
 
-        self.source = fov.data
-        self.source_npoints = (fov.data >= 0).sum()
-        self.source_toworld = fov.affine
+        self._source = fov.data
+        self._source_npoints = (fov.data >= 0).sum()
+        self._source_toworld = fov.affine
 
-    def set_similarity(self, similarity='cc', normalize=None, pdf=None): 
-        self.similarity = similarity
-        if similarity in similarity_measures: 
-            self._similarity = similarity_measures[similarity]
+    def _set_similarity(self, similarity='cc', pdf=None): 
+        if isinstance(similarity, str): 
+            self._similarity = builtin_similarities[similarity]
+            self._similarity_func = None
         else: 
-            self._similarity = similarity_measures['custom']
-        self.normalize = normalize
+            # TODO: check that similarity is a function with the right
+            # API: similarity(H) where H is the joint histogram 
+            self._similarity = builtin_similarities['custom']
+            self._similarity_func = similarity 
+
         ## Use array rather than asarray to ensure contiguity 
-        self.pdf = np.array(pdf)  
+        self._pdf = np.array(pdf)  
+
+    def _get_similarity(self):
+        builtins = builtin_similarities.values()
+        if self._similarity in builtins: 
+            return builtin_similarities.keys()[builtins.index(self._similarity)]
+        else: 
+            return self._similarity_func
+
+    similarity = property(_get_similarity, _set_similarity)
 
     def voxel_transform(self, T):
         """ 
@@ -109,7 +125,7 @@ class IconicMatcher(object):
         The corresponding voxel transformation is: Tv = Tt^-1 * T * Ts
         """
         ## C-contiguity required
-        return np.dot(self.target_fromworld, np.dot(T, self.source_toworld)) 
+        return np.dot(self._target_fromworld, np.dot(T, self._source_toworld)) 
 
 
     def eval(self, T):
@@ -117,18 +133,19 @@ class IconicMatcher(object):
         seed = self._interp
         if self._interp < 0:
             seed = - np.random.randint(maxint)
-        _joint_histogram(self.joint_hist, 
-                         self.source.flat, ## array iterator
-                         self.target, 
+        _joint_histogram(self._joint_hist, 
+                         self._source.flat, ## array iterator
+                         self._target, 
                          Tv, 
                          seed)
-        #self.source_hist = np.sum(self.joint_histo, 1)
-        #self.target_hist = np.sum(self.joint_histo, 0)
-        return _similarity(self.joint_hist, 
-                           self.source_hist, 
-                           self.target_hist, 
+        #self.source_hist = np.sum(self._joint_hist, 1)
+        #self.target_hist = np.sum(self._joint_hist, 0)
+        return _similarity(self._joint_hist, 
+                           self._source_hist, 
+                           self._target_hist, 
                            self._similarity, 
-                           self.pdf)
+                           self._pdf, 
+                           self._similarity_func)
 
     ## FIXME: check that the dimension of start is consistent with the search space. 
     def optimize(self, search='rigid', method='powell', start=None, 
@@ -153,7 +170,7 @@ class IconicMatcher(object):
         def callback(tc):
             T.from_param(tc)
             print(T)
-            print(self.similarity + ' = %s' % self.eval(T))
+            print(self._similarity + ' = %s' % self.eval(T))
             print('')
                   
 

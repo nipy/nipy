@@ -209,20 +209,27 @@ def mask_image(im, mask, background=None):
 
 def set_image(im, values): 
     """
-    If the image is masked, then values must be a 1d array with size
-    equal to im.size. 
-
-    Otherwise, values must be a 3d array with shape equal to im.shape. 
+    values can be either a 1d array with size equal to im.size or a 3d
+    array with shape equal to im.shape. In the 1d case, the output
+    image will be masked or not depending on whether the input is
+    masked. In the former case, a non-masked image is returned. 
     """
-    if im._mask:
+
+    if values.ndim == 1: 
         if not values.size == im._size:
             raise ValueError('Input array inconsistent with image size')
-        return Image(values.reshape(-1), affine=im._affine, world=im._world, 
-                     mask=im._mask, shape=im._shape, background=im._background)
+        if im._mask:
+            return Image(values, affine=im._affine, world=im._world, 
+                         mask=im._mask, shape=im._shape, background=im._background)
+        else: 
+            values = values.reshape(im._shape)
+
     else: 
         if not values.shape == im._shape: 
             raise ValueError('Input array inconsistent with image shape')
-        return Image(values, affine=im._affine, world=im._world)
+    
+    return Image(values, affine=im._affine, world=im._world)
+        
 
 
 def move_image(im, transform, target=None, 

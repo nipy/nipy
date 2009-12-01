@@ -15,6 +15,11 @@ __version__ = '0.2'
 include "numpy.pxi"
 
 # Externals
+cdef extern from "math.h":
+ 
+   double log(double)
+
+
 cdef extern from "iconic.h":
 
     void iconic_import_array()
@@ -68,7 +73,7 @@ cdef enum texture_measure:
     CUSTOM_TEXTURE
 
 # Corresponding Python dictionary 
-texture_measures = {
+builtin_textures = {
     'min': MIN, 
     'max': MAX,
     'drange': DRANGE,
@@ -76,7 +81,7 @@ texture_measures = {
     'variance': VARIANCE, 
     'median': MEDIAN, 
     'l1dev': L1DEV, 
-    'entropy': ENTROPY,
+    'entropy': ENTROPY, 
     'custom': CUSTOM_TEXTURE}
 
 # Enumerate similarity measures
@@ -88,19 +93,30 @@ cdef enum similarity_measure:
     CONDITIONAL_ENTROPY,
     MUTUAL_INFORMATION,
     NORMALIZED_MUTUAL_INFORMATION,
-    SUPERVISED_MUTUAL_INFORMATION,
+    SUPERVISED_MUTUAL_INFORMATION, 
+    LLR_CORRELATION_COEFFICIENT,
+    LLR_CORRELATION_RATIO,
+    LLR_CORRELATION_RATIO_L1,
+    LLR_MUTUAL_INFORMATION,
+    LLR_SUPERVISED_MUTUAL_INFORMATION, 
     CUSTOM_SIMILARITY
 
 # Corresponding Python dictionary 
-similarity_measures = {'cc': CORRELATION_COEFFICIENT,
-                       'cr': CORRELATION_RATIO,
-                       'crl1': CORRELATION_RATIO_L1, 
-                       'mi': MUTUAL_INFORMATION, 
-                       'je': JOINT_ENTROPY,
-                       'ce': CONDITIONAL_ENTROPY,
-                       'nmi': NORMALIZED_MUTUAL_INFORMATION,
-                       'smi': SUPERVISED_MUTUAL_INFORMATION,
-                       'custom': CUSTOM_SIMILARITY}
+builtin_similarities = {
+    'cc': CORRELATION_COEFFICIENT,
+    'cr': CORRELATION_RATIO,
+    'crl1': CORRELATION_RATIO_L1, 
+    'mi': MUTUAL_INFORMATION, 
+    'je': JOINT_ENTROPY,
+    'ce': CONDITIONAL_ENTROPY,
+    'nmi': NORMALIZED_MUTUAL_INFORMATION,
+    'smi': SUPERVISED_MUTUAL_INFORMATION,
+    'llr_cc': LLR_CORRELATION_COEFFICIENT,
+    'llr_cr': LLR_CORRELATION_RATIO,
+    'llr_crl1': LLR_CORRELATION_RATIO_L1,
+    'llr_mi': LLR_MUTUAL_INFORMATION,
+    'llr_smi': LLR_SUPERVISED_MUTUAL_INFORMATION,  
+    'custom': CUSTOM_SIMILARITY}
 
 
 def _texture(ndarray im, ndarray H, Size, int texture, method=None): 
@@ -201,6 +217,13 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int i
     return 
 
 
+cdef cc2llr(double x, double n):
+    cdef double y = 1-x
+    if y < 0.0:
+        y = 0.0 
+    return -.5 * n * log(y)
+
+
 def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype, 
                 ndarray F=None, method=None):
     """
@@ -239,6 +262,21 @@ def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype,
         simi = normalized_mutual_information(h, hI, clampI, hJ, clampJ, &n) 
     elif simitype == SUPERVISED_MUTUAL_INFORMATION:
         simi = supervised_mutual_information(h, f, hI, clampI, hJ, clampJ, &n)
+    elif simitype == LLR_CORRELATION_COEFFICIENT:
+        simi = correlation_coefficient(h, clampI, clampJ, &n)
+        simi = cc2llr(simi, n)
+    elif simitype == LLR_CORRELATION_RATIO: 
+        simi = correlation_ratio(h, clampI, clampJ, &n) 
+        simi = cc2llr(simi, n)
+    elif simitype == LLR_CORRELATION_RATIO_L1:
+        simi = correlation_ratio_L1(h, hI, clampI, clampJ, &n) 
+        simi = cc2llr(simi, n)
+    elif simitype == LLR_MUTUAL_INFORMATION: 
+        simi = mutual_information(h, hI, clampI, hJ, clampJ, &n) 
+        simi = n*simi
+    elif simitype == LLR_SUPERVISED_MUTUAL_INFORMATION:
+        simi = supervised_mutual_information(h, f, hI, clampI, hJ, clampJ, &n)
+        simi = n*simi
     else: # CUSTOM 
         simi = method(H)
         
