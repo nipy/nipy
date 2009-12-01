@@ -206,18 +206,22 @@ def mask_image(im, mask, background=None):
     return Image(im._get_data()[mask], im._affine, world=im._world,
                  mask=mask, shape=im._shape, background=background)
 
+
 def set_image(im, values): 
-    
+    """
+    If the image is masked, then values must be a 1d array with size
+    equal to im.size. 
+
+    Otherwise, values must be a 3d array with shape equal to im.shape. 
+    """
     if im._mask:
-        if not len(values) == len(im._data): 
-            raise ValueError('Input array shape inconsistent with image values')
-        return Image(values, affine=im._affine, world=im._world, 
+        if not values.size == im._size:
+            raise ValueError('Input array inconsistent with image size')
+        return Image(values.reshape(-1), affine=im._affine, world=im._world, 
                      mask=im._mask, shape=im._shape, background=im._background)
     else: 
-        if not len(values) == im._data.size: 
-            raise ValueError('Input array shape inconsistent with image values')
-        values = np.reshape(values, im._shape) 
-        ## order=['C','F'][values.flags['F_CONTIGUOUS']])
+        if not values.shape == im._shape: 
+            raise ValueError('Input array inconsistent with image shape')
         return Image(values, affine=im._affine, world=im._world)
 
 
