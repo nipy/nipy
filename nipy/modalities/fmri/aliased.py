@@ -19,7 +19,7 @@ class lambdify(object):
         if isinstance(expr, sympy.FunctionClass):
             expr = expr(t)
         n = {} 
-        _add_aliases_to_namespace(expr, n)
+        _add_aliases_to_namespace(n, expr)
         self.n = n.copy()
 
         from sympy.utilities.lambdify import _get_namespace
@@ -83,30 +83,30 @@ class AliasedFunctionClass(sympy.FunctionClass):
         return r
 
 
-def _add_aliases_to_namespace(expr, namespace):
+def _add_aliases_to_namespace(namespace, *exprs):
     """
-    Given a sympy expression,
-    find all aliases in it and add them to the namespace.
+    Given a sequence of sympy expressions,
+    find all aliases in each expression and add them to the namespace.
     """
 
-    if hasattr(expr, 'alias') and isinstance(expr, sympy.FunctionClass):
-        if namespace.has_key(str(expr)):
-            if namespace[str(expr)] != expr.alias:
-                warnings.warn('two aliases with the same name were found')
-        namespace[str(expr)] = expr.alias
-
-    if hasattr(expr, 'func'):
-        if isinstance(expr.func, sympy.FunctionClass) and hasattr(expr.func, 'alias'):
-            if namespace.has_key(expr.func.__name__):
-                if namespace[expr.func.__name__] != expr.func.alias:
+    for expr in exprs:
+        if hasattr(expr, 'alias') and isinstance(expr, sympy.FunctionClass):
+            if namespace.has_key(str(expr)):
+                if namespace[str(expr)] != expr.alias:
                     warnings.warn('two aliases with the same name were found')
-            namespace[expr.func.__name__] = expr.func.alias
-    if hasattr(expr, 'args'):
-        try:
-            for arg in expr.args:
-                _add_aliases_to_namespace(arg, namespace)
-        except TypeError:
-            pass
+            namespace[str(expr)] = expr.alias
+
+        if hasattr(expr, 'func'):
+            if isinstance(expr.func, sympy.FunctionClass) and hasattr(expr.func, 'alias'):
+                if namespace.has_key(expr.func.__name__):
+                    if namespace[expr.func.__name__] != expr.func.alias:
+                        warnings.warn('two aliases with the same name were found')
+                namespace[expr.func.__name__] = expr.func.alias
+        if hasattr(expr, 'args'):
+            try:
+                _add_aliases_to_namespace(namespace, *expr.args)
+            except TypeError:
+                pass
     return namespace
 
 def aliased_function(symbol, alias):
