@@ -27,6 +27,12 @@ cdef extern from "fff_specfun.h":
     extern double fff_psi(double x)
 
     
+# Exports from fff_lapack.h
+cdef extern from "fff_lapack.h":
+
+    extern int fff_lapack_dgesdd(fff_matrix* A, fff_vector* s, fff_matrix* U, fff_matrix* Vt, 
+                                 fff_vector* work, fff_array* iwork, fff_matrix* Aux)
+
 
 # Initialize numpy
 fffpy_import_array()
@@ -65,6 +71,8 @@ def quantile(X, double ratio, int interp=False, int axis=0):
     return Y
 
 # FIXME: Why this and not the numpy median? Check that this is faster.
+# AR: it is faster due to the underlying algorithm that relies on
+# partial sorting as opposed to full sorting.
 def median(x, axis=0):
     """
     median(x, axis=0).
@@ -76,7 +84,12 @@ def median(x, axis=0):
 def mahalanobis(X, VX):
     """
     d2 = mahalanobis(X, VX).
-    axis == 0 assumed. If X is shaped (d,K), VX must be shaped (d,d,K). 
+
+    ufunc-like function to compute Mahalanobis squared distances
+    x'*inv(Vx)*x.  
+
+    axis == 0 assumed. If X is shaped (d,K), VX must be shaped
+    (d,d,K).
     """
     cdef fff_vector *x, *vx, *x_tmp, *vx_tmp, *d2
     cdef fff_matrix Sx 
@@ -125,6 +138,87 @@ def mahalanobis(X, VX):
     D2 = D2.reshape(VX.shape[2:])
     return D2 
     
+
+def svd(X):
+    """
+    Y = svd(X)
+
+    ufunc-like svd. Given an array X (m, n, K), perform an SVD
+    decomposition.
+    
+    Returns: 
+    S (min(m,n), K)
+    U (m, m, K)
+    Vt (n, n, K) 
+    """
+    cdef int axis=0
+    cdef int m, n, dmin, dmax, lwork, liwork, info
+    cdef fff_vector *work, *x_flat, *x_flat_tmp, *s, *s_tmp
+    cdef fff_matrix x
+    cdef fff_array *iwork
+    cdef fff_matrix *Aux, *U, *Vt 
+    cdef fffpy_multi_iterator* multi
+
+    # Shape of matrices
+    m = <int> X.shape[0]
+    n = <int> X.shape[1]
+    if m > n:
+        dmin = n
+        dmax = m
+    else: 
+        dmin = m
+        dmax = n 
+
+    # Create auxiliary arrays 
+    lwork = 4*dmin*(dmin+1)
+    if dmax > lwork:
+        lwork = dmax
+    lwork = 2*(3*dmin*dmin + lwork)
+    liwork = 8*dmin
+    work = fff_vector_new(lwork)
+    iwork = fff_array_new1d(FFF_INT, liwork)
+    Aux = fff_matrix_new(dmax, dmax)
+    U = fff_matrix_new(m, m)
+    Vt = fff_matrix_new(n, n)
+    x_flat_tmp = fff_vector_new(m*n)
+    s_tmp = fff_vector_new(dmin)
+
+    # Allocate output array 
+    endims = list(X.shape[2:])
+    S = np.zeros([dmin]+endims)
+
+    # Flatten input array
+    X_flat = X.reshape([m*n]+endims)
+
+    # Create a new array iterator 
+    multi = fffpy_multi_iterator_new(2, axis, <void*>X_flat, <void*>S)
+
+    # Create vector views 
+    x_flat = multi.vector[0]
+    s = multi.vector[1] 
+
+    # Loop 
+    while(multi.index < multi.size):
+        fff_vector_memcpy(x_flat_tmp, x_flat) 
+        fff_vector_memcpy(s_tmp, s) 
+        x = fff_matrix_view(x_flat_tmp.data, m, n, n) # OK because x_flat_tmp is contiguous  
+        info = fff_lapack_dgesdd(&x, s_tmp, U, Vt, work, iwork, Aux )
+        fff_vector_memcpy(s, s_tmp) 
+        fffpy_multi_iterator_update(multi)
+
+    # Delete local structures
+    fff_vector_delete(work)
+    fff_vector_delete(x_flat_tmp)
+    fff_vector_delete(s_tmp)
+    fff_array_delete(iwork)
+    fff_matrix_delete(Aux)
+    fff_matrix_delete(U)
+    fff_matrix_delete(Vt)
+    fffpy_multi_iterator_delete(multi)
+    
+    # Return
+    return S
+
 
 def permutations(unsigned int n, unsigned int m=1, unsigned long magic=0):
     """

@@ -1,6 +1,6 @@
 """
 This module conatins a function to produce a dataset which simulates
-a collection of 2D images This dataset is saved as a 3D nifti image
+a collection of 2D images This dataset is saved as a 3D image
 (each slice being a subject) and a 3D array
 
 example of use: make_surrogate_array(nbsubj=1,fid="/tmp/toto.dat",verbose=1)
@@ -20,7 +20,7 @@ pos = np.array([[6 ,  7],
                 [15, 10]])
 ampli = np.array([3, 4, 4])
 
-def cone(shape, ij, pos, ampli, width):
+def _cone(shape, ij, pos, ampli, width):
     """
     Define a cone of the proposed grid
     """
@@ -35,7 +35,7 @@ def cone(shape, ij, pos, ampli, width):
 def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0, 
                          noise_level=1.0, pos=pos, ampli=ampli,
                          spatial_jitter=1.0, signal_jitter=1.0,
-                         width=5.0, out_text_file=None, out_niftifile=None, 
+                         width=5.0, out_text_file=None, out_image_file=None, 
                          verbose=False, seed=False):
     """
     Create surrogate (simulated) 2D activation data with spatial noise.
@@ -69,7 +69,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     out_text_file: string or None, optionnal
         If not None, the resulting array is saved as a text file with the
         given file name
-    out_niftifile: string or None, optionnal
+    out_image_file: string or None, optionnal
         If not None, the resulting is saved as a nifti file with the
         given file name.
     verbose: boolean, optionnal
@@ -78,12 +78,13 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     seed=False:  int, optionnal
         If seed is not False, the random number generator is initialized
         at a certain value
+
     Returns
     -------
     dataset: 3D ndarray
         The surrogate activation map, with dimensions (nbsubj, dimx, dimy)
     """
-    if seed!=0:
+    if seed:
         nr = np.random.RandomState([seed])
     else:
         import numpy.random as nr
@@ -99,7 +100,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
         lampli = ampli + signal_jitter*nr.randn(np.size(ampli))
         for k in range(np.size(lampli)):
             data = np.maximum(data,
-                                cone(shape, ij, lpos[k], lampli[k], width))
+                              _cone(shape, ij, lpos[k], lampli[k], width))
     
         # make some noise
         noise = nr.randn(dimx,dimy)
@@ -126,9 +127,9 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     if out_text_file is not None: 
         dataset.tofile(out_text_file)
 
-    if out_niftifile is not None:
-        import nifti
-        nifti.NiftiImage(dataset).save(out_niftifile)
+    if out_image_file is not None:
+        from nipy.io.imageformats import save, Nifti1Image 
+        save(Nifti1Image( dataset, np.eye(4)), out_image_file)
 
     return dataset
 

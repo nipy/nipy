@@ -4,7 +4,6 @@ from distutils import log
 from distutils.cmd import Command
 from distutils.version import LooseVersion
 
-
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
 
@@ -42,11 +41,12 @@ if not 'extra_setuptools_args' in globals():
 
 # Dependency checks
 def package_check(pkg_name, version=None, checker=LooseVersion):
-    msg = 'NIPY needs %s' % pkg_name
+    msg = 'Missing package: %s, you might get run-time errors' % pkg_name 
     try:
         mod = __import__(pkg_name)
     except ImportError:
-        raise ImportError(msg)
+        log.warn(msg)
+        return 
     if not version:
         return
     msg += ' >= %s' % version
@@ -58,7 +58,7 @@ def package_check(pkg_name, version=None, checker=LooseVersion):
         raise RuntimeError(msg)
 
 
-# (for now) hard dependencies and hard checks
+# Soft dependency checking
 package_check('sympy', '0.6.4')
 package_check('nifti')
 package_check('scipy', '0.5')

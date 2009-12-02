@@ -1,6 +1,6 @@
 from routines import * 
 from zscore import zscore
-from emp_null import * 
+from emp_null import ENN, FDR, three_classes_GMM_fit, Gamma_Gaussian_fit 
 
 from numpy.testing import Tester
 

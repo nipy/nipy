@@ -14,6 +14,7 @@ Author : Bertrand Thirion, 2006-2008
 import numpy as np
 import numpy.random as nr
 
+from scipy import stats
 
 # import nipy.neurospin.clustering.clustering as fc
 import nipy.neurospin.graph.BPmatch as BPmatch
@@ -49,15 +50,16 @@ class landmark_regions(hroi.NROI):
                    (these correspond to ROI feature)
         coord=None; k-length list of coordinate arrays
 
-        Fixme
+        fixme
         -----
-        xyz = subj makes no sense
+        xyz=subj
         """
         k = int(k)
         if k<1: raise ValueError, "cannot create an empty LR"
         if parents==None:
             parents = np.arange(k)
-        hroi.NROI.__init__(self, parents, affine, shape, xyz=subj, id=id)
+        xyz = [0*coord[c] for c in range(k)]
+        hroi.NROI.__init__(self, parents, affine, shape, xyz=xyz, id=id)
         self.set_discrete_feature('position',coord)
         self.subj = subj
 
@@ -81,9 +83,8 @@ class landmark_regions(hroi.NROI):
              h[k] = edk.sum()/(size[k]*(size[k]-1))
         return h
              
-    def HPD(self,k,cs,pval = 0.95,dmax=1.0):
+    def HPD(self, k, cs, pval=0.95, dmax=1.0):
         """
-        hpd = self.HPD(k,cs,dmax = 10,pval = 0.95)
         Sample the postreior density of being in k
         on a grid defined by cs, assuming that the roi is an ellipsoid
         
@@ -162,9 +163,8 @@ class landmark_regions(hroi.NROI):
         hpd[delta>gamma]=0
         return hpd
 
-    def map_label(self,cs,pval = 0.95,dmax=1.):
+    def map_label(self, cs, pval=0.95, dmax=1.):
         """
-        i = self.map_label(cs,pval = 0.95,dmax=1.0)
         Sample the set of landmark regions
         on the proposed coordiante set cs, assuming a Gaussian shape
         
@@ -184,22 +184,25 @@ class landmark_regions(hroi.NROI):
         if self.k>0:
             aux = -np.ones((cs.shape[0],self.k))
             for k in range(self.k):
-                aux[:,k] = self.HPD(k,cs,pval,dmax)
+                aux[:,k] = self.HPD(k, cs, pval, dmax)
 
             maux = np.max(aux,1)
             label[maux>0] = np.argmax(aux,1)[maux>0]
         return label
+
+    
 
     def show(self):
         """function to print basic information on self
         """
         centers = self.discrete_to_roi_features('position')
         homogeneity = self.homogeneity()
+        prevalence = self.roi_prevalence()
         for i in range(self.k):
-            print i, np.unique(self.subj[i]), homogeneity[i], centers[i]
+            print i, prevalence[i], centers[i], np.unique(self.subj[i])
 
 
-    def roi_confidence(self,ths=0,fid='confidence'):
+    def roi_confidence(self, ths=0, fid='confidence'):
         """
         assuming that fid='confidence' field has been set 
         as a discrete feature,
@@ -218,7 +221,6 @@ class landmark_regions(hroi.NROI):
         pvals: array of shape self.k
                the p-values corresponding to the ROIs
         """
-        import scipy.stats as st
         pvals = np.zeros(self.k)
         if self.discrete_features.has_key(fid)==False:
             for j in range(self.k):
@@ -239,9 +241,98 @@ class landmark_regions(hroi.NROI):
                     # If noise is too low the variance is 0: ill-defined:
                     vp = max(vp, 1e-14)
                     
-                pvals[j] = st.norm.sf(ths,mp,np.sqrt(vp))
+                pvals[j] = stats.norm.sf(ths,mp,np.sqrt(vp))
                 #print ths-mp, mp, np.sqrt(vp),pvals[j],len(np.unique(subjj))
         return pvals
+
+    def roi_prevalence(self, fid='confidence'):
+        """
+        assuming that fid='confidence' field has been set 
+        as a discrete feature,
+        this creates the expectancy of the confidence measure
+        i.e. expected numberof  detection of the roi in the observed group
+             
+        Results
+        -------
+        confid: array of shape self.k
+               the population_prevalence
+        """
+        confid = np.zeros(self.k)
+        if self.discrete_features.has_key(fid)==False:
+            for j in range(self.k):
+                subjj = self.subj[j]
+                confid[j] = np.size(np.unique(subjj))
+        else:
+            for j in range(self.k):
+                subjj = self.subj[j]
+                conf = self.discrete_features[fid][j]
+                mp = 0.
+                vp = 0.
+                for ls in np.unique(subjj):
+                    lmj = 1-np.prod(1-conf[subjj==ls])
+                    confid[j] += lmj
+        return confid
+       
+    def generate_coordinates(self):
+        """
+        Generate the set of coordinates that is canonically  associated 
+        with the referential of self     
+        
+        Returns
+        -------
+        cs, array of shape (nvox, 3) the coordinates set
+        """
+        gs = np.prod(self.shape)
+        cs = np.reshape(np.indices(self.shape),(3,gs)).T
+        cs = np.dot(np.hstack((cs,np.ones((gs,1)))),self.affine.T)[:,:3]
+        return cs
+        
+    def feature_map(self, feature, imPath=None, pw=0.95):
+        """
+        Given a set of feature values, produce a feature map,
+        assuming that one feature corresponds to one region
+        
+        Parameters
+        ----------
+        feature, array of shape (self.k) : the information to map
+        imPath=None, string yielding the output image path
+                     if not None
+        pw=0.95: volume of the Gaussian ellipsoid associated with the ROIs
+        
+        Returns
+        -------
+        The image object
+        """
+        if np.size(feature)!=self.k:
+            raise ValueError, 'Incompatible feature dimension'
+        from nipy.io.imageformats import save, Nifti1Image          
+                
+        label = self.map_label(self.generate_coordinates(), pval=pw)
+        label = np.reshape(label, self.shape)
+        values = np.zeros(self.shape)
+        values[label>-1] = feature[label[label>-1].astype(np.int)]
+        wim = Nifti1Image(values, self.affine)
+        wim.get_header()['descrip']='feature image'
+        if imPath!=None:
+           save(wim,imPath)
+        
+        return wim
+    
+    def prevalence_map(self, imPath=None, pw=0.95):
+        """
+        Particular feature map where feature self.roi_prevalence()
+        
+        Parameters
+        ----------
+        imPath=None, string yielding the output image path
+                     if not None
+        pw=0.95: volume of the Gaussian ellipsoid associated with the ROIs
+        
+        Returns
+        -------
+        The image object
+        """
+        return self.feature_map(self.roi_prevalence(), imPath, pw)
 
 def build_LR(BF,ths=0):
     """
@@ -322,7 +413,7 @@ def build_LR(BF,ths=0):
                               subj=subjs, coord=coords)  
     else:
         LR=None
-    return LR,maplabel
+    return LR, maplabel
 
 
 

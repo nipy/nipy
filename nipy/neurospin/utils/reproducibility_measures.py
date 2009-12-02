@@ -465,7 +465,8 @@ def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
             all_pos.append(pos)
         if method=='bsa':
             afname = kwargs['afname']
-            header = kwargs['header']
+            shape = kwargs['shape']
+            affine = kwargs['affine']
             theta = kwargs['theta']
             dmax = kwargs['dmax']
             ths = kwargs['ths']
@@ -473,8 +474,8 @@ def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
             smin = kwargs['smin']
             niter = kwargs['niter']
             afname = afname+'_%02d_%04d.pic'%(niter,i)
-            pos = coord_bsa(xyz, coord, tx, header, theta, dmax,
-                            ths, thq, smin,afname)
+            pos = coord_bsa(xyz, coord, tx, affine, shape, theta, dmax,
+                            ths, thq, smin, afname)
             all_pos.append(pos)
 
     score = 0
@@ -492,8 +493,8 @@ def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
 # ---------- BSA stuff ----------------------------------
 # -------------------------------------------------------
 
-def coord_bsa(xyz, coord, betas, header, theta=3., dmax=5., \
-               ths=0, thq=0.5, smin=0, afname='/tmp/af.pic'):
+def coord_bsa(xyz, coord, betas, affine=np.eye(4), shape=None, theta=3.,
+              dmax=5., ths=0, thq=0.5, smin=0, afname='/tmp/af.pic'):
     """
     main function for  performing bsa on a dataset
     where bsa =  nipy.neurospin.spatial_models.bayesian_structural_analysis
@@ -506,7 +507,9 @@ def coord_bsa(xyz, coord, betas, header, theta=3., dmax=5., \
           spatial coordinates of the nodes
     betas: an array of shape (nbnodes, subjects):
            the multi-subject statistical maps       
-    header: nifti image header the referential defining header
+    affine: array of shape (4,4) affine transformation
+            to map grid coordinates to positions
+    shape=None : shape of the implicit grid on which everything is defined
     theta = 3.0 (float): first level threshold
     dmax = 5. float>0:
          expected cluster std in the common space in units of coord
@@ -520,7 +523,6 @@ def coord_bsa(xyz, coord, betas, header, theta=3., dmax=5., \
     afcoord array of shape(number_of_regions,3):
             coordinate of the found landmark regions
     
-    Fixme : somewhat unclean
     """
     import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
     import nipy.neurospin.graph.field as ff
@@ -533,16 +535,16 @@ def coord_bsa(xyz, coord, betas, header, theta=3., dmax=5., \
     Fbeta.from_3d_grid(xyz.astype(np.int),18)
 
     # volume density
-    voxsize =  header['pixdim'][1:4] # fragile !
-    # or np.absolute(np.diag(header['sform'])[:3]) ?
-    g0 = 1.0/(np.prod(voxsize)*nbvox)
+    voxvol = np.absolute(np.linalg.det(affine))
+    g0 = 1.0/(voxvol*nbvox)
 
-    crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta,betas,coord,dmax,xyz,
-                                            header,thq, smin,ths, theta,
+    crmap,AF,BF,p = bsa.compute_BSA_simple2(Fbeta, betas, coord, dmax, xyz,
+                                            affine, shape, thq, smin,ths, theta,
                                             g0, verbose=0)
     if AF==None:
         return None
     pickle.dump(AF, open(afname, 'w'), 2)
     afcoord = AF.discrete_to_roi_features('position')
     return afcoord
+
 

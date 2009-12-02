@@ -18,10 +18,10 @@ import Contrast
 #-----------------------------------------------------------
 
 DBPath ="/neurospin/lnao/Panabase/data_fiac/fiac_fsl/"
-Subjects = [ "fiac1"]
-#Subjects = ["fiac2", "fiac3", "fiac4", "fiac6", "fiac8",\
-#            "fiac9", "fiac10", "fiac11", "fiac12", "fiac13",\
-#            "fiac14", "fiac15"]
+#Subjects = [ "fiac1"]
+Subjects = ["fiac2", "fiac3", "fiac4", "fiac6", "fiac8",\
+            "fiac9", "fiac10", "fiac11", "fiac12", "fiac13",\
+            "fiac14", "fiac15"]
 
 Acquisitions = ["acquisition"]
 Sessions = ["fonc1", "fonc2", "fonc3", "fonc4"]
@@ -106,6 +106,13 @@ for s in Subjects:
 
     for a in Acquisitions:
 
+        #set various paths
+        miscPath = os.sep.join((sPath, fmri, a, minfDir))
+        paradigmFile = os.sep.join((miscPath, "paradigm.csv"))
+        miscFile = os.sep.join((miscPath, "misc_info.con"))
+        maskFile = os.sep.join((sPath, fmri, a, minfDir, "mask.img"))
+        paths["Contrasts_path"] = os.sep.join((sPath, fmri, a,
+                                               glmDir, contrastDir))
         #step 0. Get the fMRI data
         fmriFiles = {}
         for sess in Sessions:
@@ -113,15 +120,14 @@ for s in Subjects:
             fmriFiles[sess] = glob.glob(join(fmriPath,'swra*%s*.nii.gz' %sess))
              
         # step 1. get the paradigm definition and create misc info file
-        miscPath = os.sep.join((sPath, fmri, a, minfDir))
-        paradigmFile = os.sep.join((miscPath, "paradigm.csv"))
         if not os.path.isfile(paradigmFile):
             raise ValueError,"paradigm file %s not found" %paradigmFile
 
-        miscFile = os.sep.join((miscPath, "misc_info.con"))
+
         misc = ConfigObj(miscFile)
         misc["sessions"] = Sessions
         misc["tasks"] = Conditions
+        misc["mask"] = maskFile
         misc.write()
 
         # step 2. Create one design matrix for each session
@@ -133,13 +139,12 @@ for s in Subjects:
             designFile = os.sep.join((designPath, "design_mat.csv"))
             GLMTools.DesignMatrix(nbFrames, paradigmFile, miscFile,
                                   TR, designFile, sess, DmtxParam)
-         
+            
         # step 3. Compute the mask
         print "Computing the mask"
-        maskFile = os.sep.join((sPath, fmri, a, minfDir, "mask.img"))
         GLMTools.ComputeMask(fmriFiles.values()[0][0], maskFile,
                              infTh, supTh)
-
+        
         # step 4. Create Contrast Files
         print "Creating Contrasts"
         contrast = Contrast.ContrastList(miscFile)
@@ -160,6 +165,7 @@ for s in Subjects:
                                 - d["DSt-DSp"] - d["DSt-DSp"] - d["SSt-SSp"]
         contrastFile = os.sep.join((sPath, fmri, a, minfDir, "contrast.con"))
         contrast.save_dic(contrastFile)
+
         
         # step 5. Fit the  glm for each session 
         glms = {}
@@ -171,16 +177,15 @@ for s in Subjects:
             designPath = os.sep.join((sPath, fmri, a, glmDir, sess))
             designFile = os.sep.join((designPath, "design_mat.csv"))
             if os.path.exists(designFile):
-                GLMTools.GLMFit(fmriFiles[sess], designFile, maskFile,
-                                    GlmDumpFile, configFile, fit_algo)
+                GLMTools.GLMFit(fmriFiles[sess], designFile, GlmDumpFile,
+                                configFile, fit_algo, maskFile)
                 glms[sess] = {}
                 glms[sess]["GlmDumpFile"] = GlmDumpFile
                 glms[sess]["ConfigFilePath"] = configFile
 
+        
         #6. Compute the Contrasts
         print "Computing contrasts"
-        paths["Contrasts_path"] = os.sep.join((sPath, fmri, a,
-                                               glmDir, contrastDir))
         if not os.path.exists(paths["Contrasts_path"]):
             os.makedirs(paths["Contrasts_path"])
         

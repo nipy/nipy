@@ -93,6 +93,7 @@ The same for logging::
    nifti.logger = logger
 
 '''
+import warnings
 
 import numpy as np
 
@@ -100,7 +101,8 @@ from nipy.io.imageformats.volumeutils import pretty_mapping, endian_codes, \
      native_code, swapped_code, hdr_getterfunc, \
      make_dt_codes, HeaderDataError, HeaderTypeError, allopen
 
-from nipy.io.imageformats.header_ufuncs import read_data, write_data, adapt_header
+from nipy.io.imageformats.header_ufuncs import read_data, write_data, \
+    adapt_header, read_unscaled_data
 
 from nipy.io.imageformats import imageglobals as imageglobals
 from nipy.io.imageformats.spatialimages import SpatialImage
@@ -1070,6 +1072,18 @@ class AnalyzeImage(SpatialImage):
             return None
         self._data = read_data(self._header, allopen(fname))
         return self._data
+
+    def get_raw_data(self):
+        ''' Return the unscaled data '''
+        if not hasattr(self, '_files') or not 'image' in self._files:
+            warnings.warn('Unscaled data can only be read directly'
+            'from the disk and this object appears not to '
+            'be related to a file. Returning scaled data.',
+            stacklevel=2)
+            return self.get_data()
+        # XXX: This does not cache the data
+        fname = self._files['image']
+        return read_unscaled_data(self._header, allopen(fname))
 
     def get_header(self):
         ''' Return header

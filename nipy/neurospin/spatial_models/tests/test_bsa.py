@@ -73,7 +73,7 @@ def test_bsa_null_simple():
     ampli = np.array([0, 0, 0])
     sjitter = 1.0
     dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
-                                         pos=pos, ampli=ampli, width=5.0)
+                                         pos=pos, ampli=ampli, width=5.0, seed=1)
     betas = np.reshape(dataset, (nbsubj, dimx, dimy))
     
     # set various parameters
@@ -102,7 +102,7 @@ def test_bsa_null_dev():
     ampli = np.array([0, 0, 0])
     sjitter = 1.0
     dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
-                                         pos=pos, ampli=ampli, width=5.0)
+                                         pos=pos, ampli=ampli, width=5.0, seed=1)
     betas = np.reshape(dataset, (nbsubj, dimx, dimy))
     
     # set various parameters
@@ -114,7 +114,7 @@ def test_bsa_null_dev():
     smin = 5
 
     # run the algo
-    AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method='dev')
+    AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method='dev')
 
     #make sure that nothing is detected
     assert(AF==None)
@@ -131,7 +131,7 @@ def test_bsa_null_ipmi():
     ampli = np.array([0, 0, 0])
     sjitter = 1.0
     dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
-                                         pos=pos, ampli=ampli, width=5.0)
+                                         pos=pos, ampli=ampli, width=5.0, seed=1)
     betas = np.reshape(dataset, (nbsubj, dimx, dimy))
     
     # set various parameters

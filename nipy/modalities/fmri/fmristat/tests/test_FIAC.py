@@ -10,22 +10,23 @@ Taylor, J.E. & Worsley, K.J. (2005). \'Inference for
 
 """
 
+# Standard library imports
+from StringIO import StringIO
+
+# Scientific libraries import
 import numpy as np
 from scipy.interpolate import interp1d
 from matplotlib.mlab import csv2rec
 
-from FIACdesigns import descriptions, designs, altdescr
-
-import csv
-from StringIO import StringIO
-import numpy as np
+# Nipy imports
 import nipy.testing as niptest
-import sympy
-
 from nipy.modalities.fmri import formula, utils, hrf, design
 from nipy.modalities.fmri.fmristat import hrf as delay
-
 from nipy.fixes.scipy.stats.models.regression import OLSModel
+
+# Local imports
+from FIACdesigns import descriptions, designs, altdescr
+
 
 def protocol(fh, design_type, *hrfs):
         """

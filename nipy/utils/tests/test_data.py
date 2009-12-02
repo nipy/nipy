@@ -147,7 +147,8 @@ def test_data_path():
     old_pth = get_data_path()
     # We should have only sys.prefix in there
     def_dir = pjoin(sys.prefix, 'share', 'nipy')
-    yield assert_equal, old_pth, [def_dir]
+    home_nipy = pjoin(os.path.expanduser('~'), '.nipy')
+    yield assert_equal, old_pth, [def_dir, home_nipy]
     # then we'll try adding some of our own
     tst_pth = '/a/path' + os.path.pathsep + '/b/ path'
     tst_list = ['/a/path', '/b/ path']
@@ -164,7 +165,7 @@ def test_data_path():
             fobj.write('[DATA]\n')
             fobj.write('path = %s' % tst_pth)
         os.environ[USER_KEY] = tmpdir
-        yield assert_equal, get_data_path(), tst_list + old_pth
+        yield assert_equal, get_data_path(), tst_list + [def_dir, tmpdir]
     del os.environ[USER_KEY]
     yield assert_equal, get_data_path(), old_pth
     # with some trepidation, the system config files

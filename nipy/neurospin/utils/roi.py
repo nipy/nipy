@@ -1,29 +1,59 @@
 import numpy as np
-import nifti
 from nipy.io.imageformats import load, save, Nifti1Image 
 
-#--------------------------------------------------------
-#------- class ROI --------------------------------------
-#--------------------------------------------------------
+################################################################################
+# class ROI 
+################################################################################
+
+class ROI(object):
+    """ Generic ROI class
+
+    Merely a container: an abstract ROI
+    """
+
+    def __init__(self, id="roi"):
+        """
+        roi = ROI(id='roi')
+
+        Parameters
+        -----------
+        id: string
+            roi identifier
+        """
+        self.id = id
+        self.features={}
+
+    def as_ball(self, position, radius):
+        """
+        A ball in the grid
+        requires that the grid and header are defined
+        """
+        self.features.update({'position':position})
+        self.features.update({'radius':radius})
+        
+
+################################################################################
+# class DiscreteROI 
+################################################################################
 
 class DiscreteROI(object):
     """
-    Temporary ROI class for fff
+    Temporary ROI class for nipy
     Ultimately, it should be merged with the nipy class
     
     ROI definition requires
-    - an identifier
-    - an header (exactly a nifti header at the moment,
-    though not everything is necessary)
-    The ROI can be derived from a image or defined
-    in the coordinate system implied by header.sform()
+    an identifier
+    an affine transform and a shape that can be used to
+       translate grid coordinates to position and to 
+       generate images from the DiscreteROI structure
+    The ROI can be derived from a image 
 
     roi.features is a dictionary of informations on the ROI elements.
     It is assumed that the ROI is sampled on a discrete grid, so that
     each feature is in fact a (voxel,feature_dimension) array
     """
 
-    def __init__(self, id="roi", affine=np.eye(4),shape=None):
+    def __init__(self, id="roi", affine=np.eye(4), shape=None):
         """
         roi = ROI(id='roi', header=None)
 
@@ -45,18 +75,20 @@ class DiscreteROI(object):
 
         Parameters
         ----------
-        image_path: (string) the path of an image
+        image_path: (string) the path of an image (nifti)
+
+        Returns
+        -------
+        True if the affine and shape of the given nifti file correpond
+        to the ROI's.
         """
         eps = 1.e-15
         nim = load(image_path)
-        b = True
         if (np.absolute(nim.get_affine()-self.affine)).max()>eps:
-            b = False
-        if self.shape!=None:
-            for d1,d2 in zip(nim.get_shape(),self.shape):
-                if d1!=d2:
-                    b = False
-        return b
+            return False
+        if self.shape is not None:
+            return np.all(np.equal(nim.get_shape(), self.shape))
+        return True
 
     def from_binary_image(self, image):
         """
@@ -91,8 +123,7 @@ class DiscreteROI(object):
         sqra = radius**2
         self.discrete = tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype(np.int))
         
-
-    def from_labelled_image(self,image,label):
+    def from_labelled_image(self, image, label):
         """
         Define the ROI as the set of  voxels of the image
         that have the pre-defined label
@@ -100,7 +131,7 @@ class DiscreteROI(object):
         Parameters
         -----------
         image: ndarray
-            a nifti label (discrete valued) image
+            a label (discrete valued) image
         label: int
             the desired label
         """
@@ -109,8 +140,7 @@ class DiscreteROI(object):
         data = nim.get_data()
         self.discrete = np.where(data==label)
         
-        
-    def from_position_and_image(self,image,position):
+    def from_position_and_image(self, image, position):
         """
          Define the ROI as the set of  voxels of the image
          that is closest to the provided position
@@ -118,7 +148,7 @@ class DiscreteROI(object):
         Parameters
         -----------
         image: string, 
-            the path of a nifti label (discrete valued) image
+            the path of a label (discrete valued) image
         position: array of shape (3,)
             x, y, z position in the world space
 
@@ -188,7 +218,7 @@ class DiscreteROI(object):
         self.features.update({fid:ldata})
         return ldata
         
-    def set_feature_from_image(self,fid,image):
+    def set_feature_from_image(self, fid, image):
         """
         extract some roi-related information from an image
 
@@ -204,19 +234,19 @@ class DiscreteROI(object):
         data = nim.get_data()
         self.set_feature(fid,data)
 
-    def get_feature(self,fid):
+    def get_feature(self, fid):
         """
         return the feature corrsponding to fid, if it exists
         """
         return self.features[fid]
 
-    def set_feature_from_masked_data(self,fid,data,mask):
+    def set_feature_from_masked_data(self, fid, data, mask):
         """
         idem set_feature but the input data is thought to be masked
         """
-        pass
+        raise NotImplementedError
         
-    def representative_feature(self,fid,method="mean"):
+    def representative_feature(self, fid, method="mean"):
         """
         Compute a statistical representative of the within-ROI feature
         """
@@ -230,7 +260,7 @@ class DiscreteROI(object):
         if method=="median":
             return np.median(f,0)
         
-    def plot_feature(self,fid):
+    def plot_feature(self, fid):
         """
         boxplot the feature within the ROI
         """
@@ -241,26 +271,149 @@ class DiscreteROI(object):
         mp.title('Distribution of %s within %s'%(fid,self.id))
         
 
+################################################################################
+# class MultiROI 
+################################################################################
 
-#------------------------------------
-#-- class WeightedROI ---------------
-#------------------------------------
-
-class WeightedROI(DiscreteROI):
+class MultiROI(object):
     """
-    ROI where a weighting is defined on the voxels
+    This class describes multiple ROIs that are not 'discretized',
+    i.e. sampled on a discrete grid
+    there are only 3 main members:
+    self.id: an identifier
+    self.k the number of ROIs under consideration
+    self.roi_features : a dictionary of roi properties
+
+    fixme : currently lacks an __add__ method, and a method
+    to be transformed to a multiple_discrete_roi 
     """
     
-    def __init__(self,id="roi",header=None,grid = None):
+    def __init__(self, id="multiple_roi", k=0):
         """
+        roi = MultipleROI(id='roi', header=None)
+
+        Parameters
+        ----------
+        id="multiple_roi" string, roi identifier
+        k=1, int, number of rois that are included in the structure 
         """
-        print "Not implemented yet"
+        self.id = id
+        self.k = k
+        self.roi_features = dict()
+
+    def check_features(self):
+        """
+        check that self.roi_features have the coorect size
+        i.e. f.shape[0]=self.k for f in self.roi_features
+
+        Note
+        ----
+        features that are not found consistent are removed
+        """
+        fids = self.roi_features.keys()
+        for fid in fids:
+            if self.roi_features[fid].shape[0]!=self.k:
+                print "removing feature %s, which has incorrect size" %fid 
+                self.roi_features.pop(fid)
+                
+    def as_multiple_balls(self, position, radius):
+        """
+        self.as_multiple_balls(position, radius)
+        Given a set of positions and radii, defines one roi
+        at each (position/radius) couple 
+
+        Parameters
+        ----------
+        position: array of shape (k,3): the set of positions
+        radius: array of shape (k): the set of radii
+        """
+        if np.shape(position)[0]!=np.size(radius):
+            raise ValueError, "inconsistent position/radius definition"
+
+        if np.shape(position)[1]!=3:
+            raise ValueError, "This function takes only 3D coordinates:\
+            provide the positions as a (k,3) array"
+
+        self.k = np.size(radius)
+        self.set_roi_feature('position',position)
+        self.set_roi_feature('radius',radius)
+        self.check_features()
+
+    def complete_roi_feature(self, fid, values):
+        """
+        completes roi_feature corresponding to fid
+        by appending the values
+        """
+        f = self.roi_features.pop(fid)
+        if values.shape[0]==np.size(values):
+            values = np.reshape(values,(np.size(values),1))
+        if f.shape[1]!=values.shape[1]:
+            raise ValueError, "incompatible dimensions for the roi_features"
+        f = np.vstack((f,values))
+        self.set_roi_feature(fid,f)
+
+    def to_multiple_roi(self, shape, affine):
+        """
+        Note can work only if radius/position features have been defined
+        """
+        print 'Not implemented yet'
         pass
 
+    def __add__(self, other):
+        """
+        summation of ROIs : the sum gets properties
+        that have been defined in both
+        """
+        print 'Not implemented yet'
+        pass
 
-#-------------------------------------------------
-#-------- class `MultipleROI` --------------------
-#-------------------------------------------------
+    def append_roi(self,roi):
+        """
+        """
+        print 'Not implemented yet'
+        pass
+        
+    def plot_roi_feature(self,fid):
+        """
+        boxplot the feature within the ROI
+        Note that this assumes a 1-d feature
+
+        Parameters
+        ----------
+        fid the feature identifier
+        """
+        f = self.roi_features[fid]
+        if f.shape[1]>1:
+            raise ValueError, "cannot plot multi-dimensional\
+            features for the moment"
+        import matplotlib.pylab as mp
+        mp.figure()
+        mp.bar(np.arange(self.k),f)
+
+    def clean(self,valid):
+        """
+        remove the regions for which valid==0
+
+        Parameters
+        ----------
+        valid: (boolean) array of shape self.k
+        """
+        if np.size(valid)!=self.k:
+            raise ValueError, "the valid marker does not have\
+            the correct size"
+
+        kold = self.k
+        self.k = np.sum(valid.astype(np.int))        
+        for fid in self.roi_features.keys():
+            f = self.roi_features.pop(fid)
+            f = f[valid]
+            self.set_roi_feature(fid,f)
+        self.check_features()
+
+
+################################################################################
+# class MultipleROI 
+################################################################################
 
 class MultipleROI(object):
     """
@@ -333,7 +486,7 @@ class MultipleROI(object):
         if (self.shape!=None)&(len(self.xyz)>0):
             xyzmin = np.min(np.array([np.min(self.xyz[k],0) 
                                      for k in range(self.k)]),0)
-            xyzmax = np.max(np.array([np.min(self.xyz[k],0) 
+            xyzmax = np.max(np.array([np.max(self.xyz[k],0) 
                                      for k in range(self.k)]),0)
             if (xyzmin<0).any():
                 raise ValueError, 'negative grid coordinates have been provided'
@@ -395,7 +548,7 @@ class MultipleROI(object):
 
         Parameters
         ----------
-        image (string): a nifti label (discrete valued) image
+        image (string): a label (discrete valued) image
         labels=None : array of shape (nlabels) 
                     the set of image labels that
                     shall be used as ROI definitions
@@ -437,7 +590,7 @@ class MultipleROI(object):
         radius: array of shape (k): the set of radii
         """
         if self.shape==None:
-            raise ValuError, "Need self.shape to be defined for this function"
+            raise ValueError, "Need self.shape to be defined for this function"
         
         if np.shape(position)[0]!=np.size(radius):
             raise ValueError, "inconsistent position/radius definition"
@@ -470,9 +623,10 @@ class MultipleROI(object):
         """
         idem self.as_multiple_balls, but the ROIs are added
         fixme : should be removed from the class
+        as soon as __add__ is implemented
         """
         if self.shape==None:
-            raise ValuError, "Need self.shape to be defined for this function"
+            raise ValueError, "Need self.shape to be defined for this function"
         
         if np.shape(position)[0]!=np.size(radius):
             raise ValueError, "inconsistent position/radius definition"
@@ -521,7 +675,7 @@ class MultipleROI(object):
         
     def make_image(self, path):
         """
-        write a int nifti image where the nonzero values are the ROIs
+        write a int image where the nonzero values are the ROIs
 
         Parameters
         ----------
@@ -633,7 +787,7 @@ class MultipleROI(object):
               to be greater than any value in 
               self.discrete_feature['index']
 
-        NOTE
+        Note
         ----
         This function implies that the users understand what they do
         In particular that they know what  self.discrete_feature['index']
@@ -751,7 +905,7 @@ class MultipleROI(object):
         for fid in self.discrete_features.keys():
             f = self.discrete_features.pop(fid)
             nf = [f[k] for k in range(kold) if valid[k]]
-            self.set_discrete_feature(fid,nf)
+            self.set_discrete_feature(fid, nf)
 
         self.check_features()
 
@@ -782,17 +936,16 @@ class MultipleROI(object):
 
     def compute_discrete_position(self):
         """
-        Create a 'position' feature based on self.header
+        Create a 'position' feature based on self.affine
         and self.indexes, which is simply an affine transform
         from self.xyz to the space of self
-        it is assumed that self.header has a sform
-        if not, the sform is assumed to be th identity
 
         fixme : if a position is already available it does not
         need to be computed
 
         the computed position is returned
         """
+        
         pos = []
         for  k in range(self.k):
             grid = self.xyz[k]
@@ -803,4 +956,12 @@ class MultipleROI(object):
 
         self.set_discrete_feature('position',pos)   
         return pos
-        
+
+    def append_discrete_ROI(self, droi):
+        """
+        complete self with a discrete roi
+        only the features that have a common ideas between self and droi
+        are kept
+        """
+        print 'Not implemented yet'
+        pass

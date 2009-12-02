@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
-from nipy.testing import TestCase, assert_equal, assert_almost_equal, \
-    assert_raises
+from nipy.testing import assert_equal, assert_almost_equal, assert_raises
 import numpy as np
 
 from nipy.neurospin.register.iconic_matcher import IconicMatcher
-from nipy.neurospin.register.transform import rotation_vec2mat
 
 
 class Image(object):

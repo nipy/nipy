@@ -30,6 +30,24 @@ class TestClustering(TestCase):
         l = L[:7000].astype(np.float)
         self.assert_(np.mean(l)>0.9)
 
+    def testkmeans1(self):
+        X = nr.randn(10,2)
+        A = np.concatenate([np.ones((7,2)),np.zeros((3,2))])
+        X = X+3*A;
+        C,L,J = fc.cmeans(X,2)
+        L = np.array([0,0,0,0,0,1,1,1,1,1])
+        C,L,J = fc.kmeans(X,2,L)
+        self.assert_(np.mean(L[:7])<0.5)
+
+    def testkmeans2(self):
+        X = nr.randn(10000,2)
+        A = np.concatenate([np.ones((7000,2)),np.zeros((3000,2))])
+        X = X+3*A
+        L = np.concatenate([np.ones(5000), np.zeros(5000)]).astype(np.int)
+        C,L,J = fc.kmeans(X,2,L)
+        l = L[:7000].astype(np.float)
+        self.assert_(np.mean(l)>0.9)
+
 
     def testvoronoi(self):
         X = nr.randn(10000,2)

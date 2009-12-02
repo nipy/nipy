@@ -1,10 +1,9 @@
 import numpy as np
-import numpy.random as R
 from scipy.special import gammaln, hermitenorm
 import scipy.stats
 from scipy.misc import factorial
 
-from nipy.testing import *
+from nipy.testing import assert_almost_equal, dec
 
 from nipy.algorithms.statistics import rft
 

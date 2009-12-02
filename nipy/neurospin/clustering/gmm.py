@@ -9,7 +9,6 @@ Author : Bertrand Thirion, 2006-2009
 
 import numpy as np
 import nipy.neurospin.clustering.clustering as fc
-from numpy.random import rand
 
 class grid_descriptor():
     """
@@ -102,8 +101,9 @@ def best_fitting_GMM(x,krange,prec_type='full',niter=100,delta = 1.e-4,ninit=1,v
             print 'k', k,'bic',bic 
     return bgmm
 
-# this should be put elsewhere
-def plot2D(x,my_gmm,z = None,show = 0,verbose=0):
+
+def plot2D(x, my_gmm, z=None, show=0, verbose=0, withDots=True, logScale=False, 
+              mpaxes=None):
     """
     Given a set of points in a plane and a GMM, plot them
 
@@ -115,7 +115,19 @@ def plot2D(x,my_gmm,z = None,show = 0,verbose=0):
       that gives a labelling of the points in x
       by default, it is not taken into account
     show = 0: do we show the image
-    verbose = 0 : verbosity mode
+    verbose=0 : verbosity mode
+    withDots=True, bool
+                   Plot the dots or not
+    logScale=False, bool
+                    plot the likelihood in log scale or not
+    mpaxes=None, int
+                 if not None, axes haandle for plotting    
+
+    Returns
+    -------
+    gd, grid_descriptor instance, 
+        that represents the grid used in the function
+    ax, handle to the figure axes
 
     Note
     ----
@@ -139,27 +151,39 @@ def plot2D(x,my_gmm,z = None,show = 0,verbose=0):
     gd1.getinfo([xm,xs,ym,ys],[51,51])
     grid = gd1.make_grid()
     L = my_gmm.mixture_likelihood(grid)   
-    if verbose: print L.sum()*(xs-xm)*(ys-ym)/2500
+    if verbose:
+        print L.sum()*(xs-xm)*(ys-ym)/2500
 
     import matplotlib.pylab as mp
-    mp.figure()
+    if mpaxes==None:
+        mp.figure()
+        ax = mp.subplot(1,1,1)
+    else:
+        ax = mpaxes 
+
     gdx = gd1.nbs[0]
     Pdens= np.reshape(L,(gdx,np.size(L)/gdx))
-    mp.imshow(Pdens.T,alpha = 2.0,
-              origin ='lower',extent=[xm,xs,ym,ys])
- 
-    if z==None:
-        mp.plot(x[:,0],x[:,1],'o')
+    if logScale:
+        mp.imshow(np.log(Pdens.T), alpha=2.0, origin ='lower', extent=[xm,xs,ym,ys])
     else:
-        import matplotlib as ml
-        hsv = ml.cm.hsv(range(256)) 
-        col = hsv[range(0,256,256/int(z.max()+1)),:]
-        for k in range(z.max()+1):
-            mp.plot(x[z==k,0],x[z==k,1],'o',color=col[k])   
+        mp.imshow(Pdens.T, alpha=2.0, origin ='lower', extent=[xm,xs,ym,ys])
+
+    if withDots:
+        if z==None:
+            mp.plot(x[:,0],x[:,1],'o')
+        else:
+            import matplotlib as ml
+            hsv = ml.cm.hsv(range(256)) 
+            col = hsv[range(0,256,256/int(z.max()+1)),:]
+            for k in range(z.max()+1):
+                mp.plot(x[z==k,0],x[z==k,1],'o',color=col[k])   
            
     mp.axis([xm,xs,ym,ys])
     mp.colorbar()
-    if show: mp.show()
+    if show:
+        mp.show()
+    
+    return gd1, ax
 
 
 class GMM():
@@ -286,7 +310,7 @@ class GMM():
             raise ValueError, 'incorrect size for x'
         return x
 
-    def initialize(self,x):
+    def initialize(self, x):
         """
         this function initializes self according to a certain dataset x:
         1. sets the regularizing hyper-parameters
@@ -302,15 +326,15 @@ class GMM():
         n = x.shape[0]
         
         #1. set the priors
-        self.guess_regularizing(x,bcheck=1)
+        self.guess_regularizing(x, bcheck=1)
 
         # 2. initialize the memberships
         if self.k>1:
-            cent,z,J = fc.cmeans(x,self.k)
+            cent,z,J = fc.kmeans(x, self.k)
         else:
             z = np.zeros(n).astype(np.int)
         
-        l = np.zeros((n,self.k))
+        l = np.zeros((n, self.k))
         l[np.arange(n),z]=1
 
         # 3.update the parameters
@@ -682,7 +706,7 @@ class GMM():
         bestgmm.initialize(x)
         
         for i in range(ninit):
-            # initialization -> Cmeans
+            # initialization -> Kmeans
             self.initialize(x)
 
             # alternation of E/M step until convergence
@@ -867,9 +891,8 @@ class GMM_old(GMM):
         for k in kvals:
             self.k = k
             nit = 10
-            label = np.zeros(data.shape[0])
-            mean,label,J = fc.cmeans(data,k,label,nit)            
-            Lab,LL, bic = self.estimate(data,label, maxiter, delta, ninit)
+            mean, label,J = fc.kmeans(data, k, Labels=None)            
+            Lab,LL, bic = self.estimate(data, label, maxiter, delta, ninit)
             
             if bic>bic_ref:
                 kopt = k
@@ -921,7 +944,7 @@ class GMM_old(GMM):
         if Labels==None:
             Labels = np.zeros(data.shape[0],np.int)
             nit = 10
-            C,Labels,J = fc.cmeans(data,self.k,Labels,nit)
+            C,Labels,J = fc.kmeans(data,self.k,Labels,nit)
         if (self.k>data.shape[0]-1):
             print "too many clusters"
             self.k = data.shape[0]-1

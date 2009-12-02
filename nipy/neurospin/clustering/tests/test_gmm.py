@@ -115,7 +115,7 @@ def test_em_loglike6():
     n = 100
     offset = 3.
     x = nr.randn(n,dim)
-    y = offset+nr.randn(dim)
+    y = offset+nr.randn(n,dim)
     lgmm = GMM(k,dim)
     lgmm.initialize(x)
     lgmm.estimate(x)

@@ -2,8 +2,7 @@ from routines import cspline_transform, cspline_sample4d, slice_time
 from transform import Affine, apply_affine, BRAIN_RADIUS_MM
 
 import numpy as np
-import scipy as sp
-import scipy.optimize
+from scipy import optimize
         
 DEFAULT_SPEEDUP = 4
 DEFAULT_OPTIMIZER = 'powell'
@@ -191,11 +190,11 @@ class Realign4d:
             print(self.transforms[t])
 
         if optimizer=='simplex':
-            fmin = sp.optimize.fmin
+            fmin = optimize.fmin
         elif optimizer=='powell':
-            fmin = sp.optimize.fmin_powell
+            fmin = optimize.fmin_powell
         elif optimizer=='conjugate_gradient':
-            fmin = sp.optimize.fmin_cg
+            fmin = optimize.fmin_cg
         else:
             raise ValueError('Unrecognized optimizer')
 

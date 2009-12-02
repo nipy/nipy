@@ -4,7 +4,6 @@ Bayesian networks (Belief propagation) algorithms
 
 Author: Bertrand Thirion , 2006-2008.
 
-Comment (2009/03/24)
 """
 
 import numpy as np
@@ -14,43 +13,59 @@ import forest as fo
 from nipy.neurospin.eda.dimension_reduction import Euclidian_distance
 
 
-
-def _HDistance(X,Y):
-    """
-    Computation of the hausdorff distances between the elements of the lists X
-    and Y
-    """
-    D = []
-    for x in X:
-        for y in Y:
-            ED = Euclidian_distance(x,y)
-            D.append (np.maximum(ED.min(0).max(),ED.min(1).max()))
-    D = np.array(D)
-    D = np.reshape(D,(len(X),len(Y)))
-    return D
-
 def BPmatch(c1,c2,graph,dmax):
+    """
+    Matching the rows of c1 to those of c2 based on their relative positions
+    
+    Parameters
+    ----------
+    c1, array of shape (nbitems1, dim),
+        dataset 1
+    c2, array of shape (nbitems2, dim),
+        dataset 2
+    scale, float, scale parameter
+    eps = 1.e-12, float, 
+
+    Returns
+    -------
+    i,j,k: arrays of shape(E) 
+           sparse adjacency matrix of the bipartite association graph
+    """ 
     belief = fg.graph_bpmatch(c1,c2,graph,dmax)
     i,j = np.where(belief);
     k = belief[i,j]
     return i,j,k
 
-def match_trivial(c1, c2, dmax, eps = 1.e-12 ):
+def match_trivial(c1, c2, scale, eps = 1.e-12 ):
     """
     Matching the rows of c1 to those of c2 based on their relative positions
+    
+    Parameters
+    ----------
+    c1, array of shape (nbitems1, dim),
+        dataset 1
+    c2, array of shape (nbitems2, dim),
+        dataset 2
+    scale, float, scale parameter
+    eps = 1.e-12, float, 
+
+    Returns
+    -------
+    i,j,k: arrays of shape(E) 
+           sparse adjacency matrix of the bipartite association graph
     """
     s1 = np.size(c1,1)
     s2 = np.size(c2,1)
-    sqs = 2*dmax*dmax
+    sqs = 2*scale**2
     
     # make a prior
     D = Euclidian_distance(c1,c2)
     W = np.exp(-D*D/sqs);
-    W = W*(D<3*dmax);
+    W = W*(D<3*scale);
     sW = np.sum(W,1)
     if np.sum(sW)<eps:
         return np.array([]),np.array([]),np.array([])
-    W = np.transpose(np.transpose(W)/np.maximum(eps,np.sum(W,1)))
+    W = (W.T/np.maximum(eps,np.sum(W,1))).T
     
     i,j = np.where(W);
     k = W[i,j]
@@ -150,22 +165,29 @@ def BPmatch_slow(c1, c2, graph, dmax, imax= 20, eps = 1.e-12 ):
 
     
     B = np.transpose(np.transpose(B)/np.maximum(eps,np.sum(B,1)))
-    i,j = np.where(B);
+    i,j = np.where(B)
     k = B[i,j]
     return i,j,k
 
 
-
-def BPmatch_slow_asym(c1, c2, G1, G2, dmax):
+def BPmatch_slow_asym_dev(c1, c2, G1, G2, scale):
     """
     New version which makes the differences between ascending
     and descending links
-    - c1 and c2 are arrays of shape (n1,d) and (n2,d) that represent
-    features or coordinates,
-    where n1 and n2 are the number of things to be put in correpondence
-    and d is the common dim
-    - G1 and G2 are corresponding graphs (forests in fff sense)
-    - dmax is  a typical distance to compare positions
+    
+    Parameters
+    ----------
+    c1, c2 are arrays of shape (n1,d) and (n2,d) that represent
+       features or coordinates ,
+       where n1 and n2 are the number of things to be put in correpondence
+       and d is the common dimension
+    G1 and G2 are corresponding graphs (forests in fff sense)
+    scale is  a typical distance to compare positions
+    
+    Returns
+    -------
+    (i,j,k): sparse model of the probabilistic relationships,
+             where k is the probability that i is associated with j
     """
     if G1.V != c1.shape[0]:
         raise ValueError, "incompatible dimension for G1 and c1"
@@ -174,87 +196,7 @@ def BPmatch_slow_asym(c1, c2, G1, G2, dmax):
         raise ValueError, "incompatible dimension for G2 and c2"
 
     eps = 1.e-7
-    sqs = 2*dmax*dmax
-    ofweight = np.exp(-0.5)
-
-    # get the distances
-    D = Euclidian_distance(c1,c2)
-    W = np.exp(-D*D/sqs);
-    
-    # find the leaves of the graphs 
-    sl1 = G1.isleaf().astype('bool')
-    sl2 = G2.isleaf().astype('bool')
-
-    # cancel the weigts of non-leaves
-    for i in np.where(sl1==0)[0]:
-        W[i,:]=1 #!!!!  
-    for i in np.where(sl1)[0]:
-        W[i,sl2==0]=0
-
-    # normalize the weights
-    sW = np.sum(W,1)+ofweight
-    W = np.transpose(np.transpose(W)/sW)
-    W0 = W.copy()
-    
-    # get the different trees in each graph
-    u1 = G1.cc()
-    u2 = G2.cc()
-    nt1 = u1.max()+1
-    nt2 = u2.max()+1
-
-    # get the tree-summed weights
-    tW = np.zeros((G1.V,nt2))
-    for i2 in range(nt2):
-        tW[:,i2] = np.sum(W[:,u2==i2],1)
-    
-    # run the algo for each pair of tree
-    for i1 in range(nt1):
-        if np.sum(u1==i1)>1:
-            g1 = G1.subforest(u1==i1)
-            for i2 in range(nt2):
-                if np.sum(u2==i2)>1:        
-                    g2 = G2.subforest(u2==i2)
-                    rW = W[u1==i1,:][:,u2==i2]
-                    rW = np.transpose(np.transpose(rW)/tW[u1==i1,i2])
-                    rW = _MP_algo_(g1,g2,rW,c1[u1==i1,:],c2[u2==i2],sqs)
-                    q = 0
-                    for j in np.where(u1==i1)[0]:
-                        W[j,u2==i2] = rW[q,:]*tW[j,i2]
-                        q = q+1
-                    
-    # cancel the weigts of non-leaves
-    W[sl1==0,:]=0
-    W[:,sl2==0]=0
-
-    W[W<1.e-4]=0
-    i,j = np.where(W)
-    k = W[i,j]
-    return i,j,k
-
-
-def BPmatch_slow_asym_dev(c1, c2, G1, G2, dmax):
-    """
-    New version which makes the differences between ascending
-    and descending links
-    INPUT:
-    - c1 and c2 are arrays of shape (n1,d) and (n2,d) that represent
-    features or coordinates,
-    where n1 and n2 are the number of things to be put in correpondence
-    and d is the common dim
-    - G1 and G2 are corresponding graphs (forests in fff sense)
-    - dmax is  a typical distance to compare positions
-    OUTPUT:
-    - (i,j,k): sparse model of the probabilistic relationships,
-    where k is the probability that i is associated with j
-    """
-    if G1.V != c1.shape[0]:
-        raise ValueError, "incompatible dimension for G1 and c1"
-
-    if G2.V != c2.shape[0]:
-        raise ValueError, "incompatible dimension for G2 and c2"
-
-    eps = 1.e-7
-    sqs = 2*dmax*dmax
+    sqs = 2*scale*scale
     ofweight = np.exp(-0.5)
 
     # get the distances
@@ -430,9 +372,6 @@ def _MP_algo_dev_(G1,G2,W,c1,c2,sqs,imax= 100, eta = 1.e-6 ):
     v1 = _son_translation_(G1,c1)
     v2 = _son_translation_(G2,c2)   
 
-    
-    
-
     # the variable tag is used to reduce the computation load...
     tag = G1.converse_edge().astype(np.int)
     
@@ -569,8 +508,7 @@ def _ya_testmatch_():
     i,j,k = BPmatch_slow_asym_dev(c1, c2, g1,g2, dmax)
     GM = np.zeros((5,5))
     GM[i,j]=k
-    print GM*(GM>0.001)
-
+    print GM*(GM>0)
     i,j,k = BPmatch_slow_asym_dev(c2, c1, g2,g1, dmax)
     GM = np.zeros((5,5))
     GM[i,j]=k
@@ -586,38 +524,20 @@ def _ya_testmatch_():
     GM[i,j]=k
     print GM
 
-###--------------------------------------------------------------------
-###-------------- Deprected stuff -------------------------------------
-###--------------------------------------------------------------------
+# -----------------------------------------------
+# ------ deprected stuff ------------------------
+# -----------------------------------------------
 
-def EDistance(X,Y):
-    """
-    Computation of the euclidian distances between all the columns of X
-    and those of Y
-    """
-    if X.shape[0]!=Y.shape[0]:
-        raise ValueError, "incompatible dimension for X and Y matrices"
-    
-    s1 = X.shape[1]
-    s2 = Y.shape[1]
-    NX = np.reshape(np.sum(X*X,0),(s1,1))
-    NY = np.reshape(np.sum(Y*Y,0),(1,s2))
-    ED = np.repeat(NX,s2,1)
-    ED = ED + np.repeat(NY,s1,0)
-    ED = ED-2*np.dot(np.transpose(X),Y)
-    ED = np.maximum(ED,0)
-    ED = np.sqrt(ED)
-    return ED
-
-def leaves(G):
-    leaves = np.ones(G.V)
-    leaves[G.edges[G.weights>0,1]]=0
-    return leaves
-
-def BPmatch_slow_asym_dep(c1, c2, G1, G2, dmax):
+def BPmatch_slow_asym(c1, c2, G1, G2, dmax):
     """
     New version which makes the differences between ascending
     and descending links
+    - c1 and c2 are arrays of shape (n1,d) and (n2,d) that represent
+    features or coordinates,
+    where n1 and n2 are the number of things to be put in correpondence
+    and d is the common dim
+    - G1 and G2 are corresponding graphs (forests in fff sense)
+    - dmax is  a typical distance to compare positions
     """
     if G1.V != c1.shape[0]:
         raise ValueError, "incompatible dimension for G1 and c1"
@@ -629,23 +549,24 @@ def BPmatch_slow_asym_dep(c1, c2, G1, G2, dmax):
     sqs = 2*dmax*dmax
     ofweight = np.exp(-0.5)
 
-    # find the leaves of the graphs
-    sl1 = (leaves(G1)).astype('bool')
-    sl2 = (leaves(G2)).astype('bool')
-
     # get the distances
     D = Euclidian_distance(c1,c2)
     W = np.exp(-D*D/sqs);
     
+    # find the leaves of the graphs 
+    sl1 = G1.isleaf().astype('bool')
+    sl2 = G2.isleaf().astype('bool')
+
     # cancel the weigts of non-leaves
-    for i in np.where(sl1==0)[0]: W[i,:]=1  
-    for i in np.where(sl1)[0]: W[i,sl2==0]=0
+    for i in np.where(sl1==0)[0]:
+        W[i,:]=1 #!!!!  
+    for i in np.where(sl1)[0]:
+        W[i,sl2==0]=0
 
     # normalize the weights
     sW = np.sum(W,1)+ofweight
     W = np.transpose(np.transpose(W)/sW)
     W0 = W.copy()
-    
     
     # get the different trees in each graph
     u1 = G1.cc()
@@ -661,10 +582,10 @@ def BPmatch_slow_asym_dep(c1, c2, G1, G2, dmax):
     # run the algo for each pair of tree
     for i1 in range(nt1):
         if np.sum(u1==i1)>1:
-            g1 = G1.subgraph(u1==i1)
+            g1 = G1.subforest(u1==i1)
             for i2 in range(nt2):
                 if np.sum(u2==i2)>1:        
-                    g2 = G2.subgraph(u2==i2)
+                    g2 = G2.subforest(u2==i2)
                     rW = W[u1==i1,:][:,u2==i2]
                     rW = np.transpose(np.transpose(rW)/tW[u1==i1,i2])
                     rW = _MP_algo_(g1,g2,rW,c1[u1==i1,:],c2[u2==i2],sqs)
@@ -681,43 +602,3 @@ def BPmatch_slow_asym_dep(c1, c2, G1, G2, dmax):
     i,j = np.where(W)
     k = W[i,j]
     return i,j,k
-
-def _son_translation_dep(G,c):
-    b = np.zeros((G.V,c.shape[1]))
-    bb = np.zeros(G.V)
-    for e in range(G.E):
-        if G.weights[e]<0:
-            ip = G.edges[e,0]
-            target = G.edges[e,1]
-            b[ip,:] = b[ip,:]+c[target,:]
-            bb[ip] = bb[ip]+1
-            
-    for v in range(G.V):
-        if bb[v]>0:
-            b[v,:] = b[v,:]/bb[v]
-
-    v = np.zeros((G.E,c.shape[1]))
-    for e in range(G.E):
-        if G.weights[e]<0:
-            ip = G.edges[e,0]
-            target = G.edges[e,1]
-            v[e,:] = 2*(c[target,:]-b[ip,:])        
-
-    return v
-
-def _make_roots_(G,u):
-    if G.E==0:
-        return u 
-    nbcc = u.max()+1
-    edges = G.get_edges()
-    edges = edges[G.weights>0,:]
-    root = -1*np.ones(nbcc)
-    for i in range(nbcc):
-        candidates = (u==i)
-        candidates[edges[:,0]] = 0
-        r = np.nonzero(candidates)
-        if np.size(r)>1:
-            print np.nonzero(u==i),r,edges[:,1]
-            raise ValueError, "Too many candidates"
-        root[i] = np.reshape(r,np.size(r))
-    return root

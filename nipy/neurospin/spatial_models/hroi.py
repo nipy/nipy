@@ -50,13 +50,17 @@ def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty, smin = 0)
                  It contains the index in the field from which 
                  each point of each ROI
     """
+    import time
+    t0 = time.time()
     if Field.field[:,refdim].max()>th:
         idx, height, parents, label = Field.threshold_bifurcations(refdim,th)
     else:
         idx = []
         parents = []
         label = -np.ones(Field.V)
-        
+
+    t1 = time.time()
+    
     k = np.size(idx)
     if k==0: return None
     discrete = [xyz[label==i] for i in range(k)]
@@ -65,7 +69,8 @@ def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty, smin = 0)
     # Create the index of each point within the Field
     midx = [np.expand_dims(np.nonzero(label==i)[0],1) for i in range(k)]
     nroi.set_discrete_feature('index', midx)
-    
+    t3 = time.time()
+
     #define the voxels
     # as an mroi, it should have a method to be instantiated
     #from a field/masked array ?
@@ -81,7 +86,12 @@ def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty, smin = 0)
             
             nroi.clean(size>smin)
             nroi.check()
-
+    t2 = time.time()
+    
+    #print th, k
+    #print t2-t3,t3-t1, t1-t0
+    
+    
     return nroi
 
 def NROI_from_watershed(Field, affine, shape, xyz, refdim=0, th=-np.infty):
@@ -186,7 +196,7 @@ class NROI(MultipleROI,Forest):
 
         # first clean as a forest
         sf = self.subforest(valid)
-        Forest.__init__(self,sf.V,sf.parents)
+        Forest.__init__(self, sf.V, sf.parents)
 
         # then clean as a multiple ROI
         MultipleROI.clean(self, valid)
