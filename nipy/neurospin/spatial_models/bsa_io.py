@@ -182,7 +182,7 @@ def make_bsa_image_with_output_paths(mask_images, betas, denspath, crpath,
 
 def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
                    smin=0, swd="/tmp/", method='simple', subj_id=None,
-                   nbeta='default', rdraws=0):
+                   nbeta='default', rdraws=0, verbose=0):
     """
     main function for  performing bsa on a set of images.
     It creates the some output images in the given directory
@@ -279,27 +279,27 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     if method=='ipmi':
         crmap,AF,BF,p = bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, thq, smin, ths,
-                        theta, g0, bdensity)
+                        theta, g0, bdensity, verbose=verbose)
     if method=='dev':
         crmap,AF,BF,p = bsa.compute_BSA_dev  (Fbeta, lbeta, coord, 
                         dmax, xyz[:,:3], affine, ref_dim, 
-                        thq, smin,ths, theta, g0, bdensity,verbose=1)
+                        thq, smin,ths, theta, g0, bdensity, verbose=verbose)
     if method=='simple':
         crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, 
-                        thq, smin, ths, theta, g0, verbose=0)
+                        thq, smin, ths, theta, g0, verbose=verbose)
         
     if method=='simple2':
         crmap,AF,BF,co_clust = bsa.compute_BSA_simple2 (Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, 
-                        thq, smin, ths, theta, g0, verbose=0)
+                        thq, smin, ths, theta, g0, verbose=verbose)
         density = np.zeros(nvox)
         crmap = AF.map_label(coord,0.95,dmax)
 
     if method=='loo':
         crmap,AF,BF,p = bsa.compute_BSA_loo (Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, 
-                        thq, smin,ths, theta, g0, verbose=0)
+                        thq, smin,ths, theta, g0, verbose=verbose)
     
                     
     # Write the results
