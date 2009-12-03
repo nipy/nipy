@@ -26,7 +26,7 @@ def test_1d():
     Bs = formula.aliased_function("B", B)
     t = sympy.DeferredVector('t')
 
-    n={}; aliased._add_aliases_to_namespace(Bs, n)
+    n={}; aliased._add_aliases_to_namespace(n, Bs)
 
     expr = 3*sympy.exp(Bs(t)) + 4
     ee = sympy.lambdify(t, expr, (n, 'numpy'))
@@ -43,7 +43,7 @@ def test_2d():
     s = sympy.DeferredVector('s')
 
     e = B1s(s)+B2s(t)
-    n={}; aliased._add_aliases_to_namespace(e, n)
+    n={}; aliased._add_aliases_to_namespace(n, e)
 
     ee = sympy.lambdify((s,t), e, (n, 'numpy'))
     np.testing.assert_almost_equal(ee(B1.x, B2.x), B1.y + B2.y)
