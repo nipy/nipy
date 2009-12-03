@@ -166,7 +166,7 @@ def threshold_z_array(data_array, mask_array=None, correction=None,
         if method=='emp':
             from emp_null import ENN
             efdr = ENN(data_array[mask_array>0])
-            th = efdr.threshold(pval,verbose=1)
+            th = efdr.threshold(pval,verbose=0)
         else:
             from emp_null import FDR
             lf = FDR(data_array[mask_array>0])
