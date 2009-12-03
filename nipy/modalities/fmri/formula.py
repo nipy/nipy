@@ -134,8 +134,8 @@ def getterms(expression):
         expression = expression.reshape((1,))
     if expression.ndim > 1:
         expression = expression.reshape((np.product(expression.shape),))
-    for term in expression:
-        atoms = atoms.union(term.atoms())
+    for e in expression:
+        atoms = atoms.union(e.atoms())
 
     terms = []
     for atom in atoms:
