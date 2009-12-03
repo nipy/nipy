@@ -44,19 +44,13 @@ method = 'crfx'
 verbose = 0
 swap = False
 
+ 
 kap = []
 clt = []
 for threshold in thresholds:
+    kwargs={'threshold':threshold,'csize':csize}
     kappa = []
     cls = []
-    if method=='rfx':
-        kwargs = {'threshold':threshold}
-    if method=='cffx':
-        kwargs={'threshold':threshold,'csize':csize}
-    if method=='crfx':
-        kwargs={'threshold':threshold,'csize':csize}
-    if method=='cmfx':
-        kwargs={'threshold':threshold,'csize':csize}        
     for i in range(niter):
         k = voxel_reproducibility(func, var, xyz, ngroups,
                                   method, swap, verbose, **kwargs)

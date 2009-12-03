@@ -72,25 +72,27 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                    bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, xyz,
                                         affine, shape, thq,
                                         smin, ths, theta, g0, bdensity)
+    
+    
     if method=='simple':
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz,
                                           affine, shape, thq, smin, ths,
                                           theta, g0)
     if method=='loo':
-         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz,
-                                          affine, shape, thq, smin, ths,
-                                          theta, g0)
+         mll, ll0 = bsa.compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz,
+                                        affine, shape, thq, smin, ths,
+                                        theta, g0)
+         return mll, ll0
     if method=='dev':
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_dev(Fbeta, lbeta, coord, dmax, xyz,
                                        affine, shape, thq,
                                       smin, ths, theta, g0, bdensity)
-    if method=='simple2':
+    if method=='simple_quick':
         likelihood = np.zeros(ref_dim)
         group_map, AF, BF, coclustering = \
-                   bsa.compute_BSA_simple2(Fbeta, lbeta, coord, dmax, xyz,
+                   bsa.compute_BSA_simple_quick(Fbeta, lbeta, coord, dmax, xyz,
                                           affine, shape, thq, smin, ths,
                                           theta, g0)
     if method=='sbf':
@@ -100,7 +102,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                                               ths=ths , pval=thq)
 
         
-    if method not in['loo', 'dev','simple','ipmi','simple2','sbf']:
+    if method not in['loo', 'dev','simple','ipmi','simple_quick','sbf']:
         raise ValueError,'method is not ocrreactly defined'
     
     if verbose==0:
@@ -183,7 +185,7 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple'#'loo'#'dev'#'ipmi'#'sbf'
+method = 'simple'#'dev'#'ipmi'#'sbf'
 
 # run the algo
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method, verbose=verbose)
