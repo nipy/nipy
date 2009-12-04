@@ -1,10 +1,6 @@
 from registration_module import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
 
-
 import numpy as np
-
-# Some constants 
-BRAIN_RADIUS_MM = 10 ## used for pre-conditioning in optimization context
 
 
 def rotation_mat2vec(R):
@@ -127,7 +123,7 @@ def apply_affine(T, xyz):
 
 class Affine(object): 
 
-    def __init__(self, subtype='affine', vec12=None, radius=1, flag2d=False):
+    def __init__(self, subtype='affine', vec12=None, radius=10, flag2d=False):
         self._precond = preconditioner(radius)
         self._subtype = affines.index(subtype)+len(affines)*(not flag2d)
         if vec12 == None: 

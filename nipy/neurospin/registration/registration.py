@@ -5,7 +5,7 @@ Questions: alexis.roche@gmail.com
 """
 from nipy.neurospin.image import Image, set_image
 from registration_module import _joint_histogram, _similarity, builtin_similarities
-from affine import Affine, BRAIN_RADIUS_MM
+from affine import Affine
 
 import numpy as np  
 import scipy as sp 
@@ -70,6 +70,7 @@ class IconicRegistration(object):
         # Set default registration parameters
         self._set_interp()
         self._set_similarity()
+
 
     def _get_interp(self): 
         return interp_methods.keys()[interp_methods.values().index(self._interp)]
@@ -148,8 +149,9 @@ class IconicRegistration(object):
                            self._similarity_func)
 
     ## FIXME: check that the dimension of start is consistent with the search space. 
-    def optimize(self, search='rigid', method='powell', start=None, 
-                 radius=BRAIN_RADIUS_MM, tol=1e-1, ftol=1e-2):
+    def optimize(self, search='affine', method='powell', start=None, 
+                 radius=10, tol=1e-1, ftol=1e-2):
+
         """
         radius: a parameter for the 'typical size' in mm of the object
         being registered. This is used to reformat the parameter
