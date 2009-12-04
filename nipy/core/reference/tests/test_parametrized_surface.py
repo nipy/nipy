@@ -3,9 +3,9 @@ Parametrized surfaces using a CoordinateMap
 """
 import numpy as np
 
-from nose.tools import assert_true, assert_false, assert_equal
+from nose.tools import assert_equal
 
-from nipy.core.api import CoordinateMap, CoordinateSystem, Affine
+from nipy.core.api import CoordinateMap, CoordinateSystem
 from nipy.core.api import Grid
 
 uv = CoordinateSystem('uv', 'input')

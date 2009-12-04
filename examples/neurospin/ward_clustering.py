@@ -10,27 +10,25 @@ import matplotlib.pylab as mp
 from nipy.neurospin import graph
 from nipy.neurospin.clustering.hierarchical_clustering import ward
 
-# n =number of points, k = number of nearest neighbours
-n =100
-k  = 5
-verbose=0
+# n = number of points, k = number of nearest neighbours
+n = 100
+k = 5
+verbose = 0
 
 X = randn(n,2)
 X[:np.ceil(n/3)] += 3		
 G = graph.WeightedGraph(n)
 #G.mst(X)
-G.knn(X,5)
-tree = ward(G,X,verbose)
+G.knn(X, 5)
+tree = ward(G, X, verbose)
 
-ax = tree.plot()
-#t.plot_height()
 
 u = tree.partition(1.0)
 
 mp.figure()
 mp.subplot(1,2,1)
 for i in range(u.max()+1):
-    mp.plot(X[u==i,0],X[u==i,1],'o',color=(rand(),rand(),rand()))
+    mp.plot(X[u==i,0], X[u==i,1],'o', color=(rand(), rand(), rand()))
 
 mp.axis('tight')
 mp.axis('off')
@@ -39,10 +37,10 @@ mp.title('clustering into clusters of inertia<1')
 u = tree.split(k)
 mp.subplot(1,2,2)
 for e in range(G.E):
-    mp.plot([X[G.edges[e,0],0],X[G.edges[e,1],0]],
-            [X[G.edges[e,0],1],X[G.edges[e,1],1]],'k')
+    mp.plot([X[G.edges[e,0],0], X[G.edges[e,1],0]],
+            [X[G.edges[e,0],1], X[G.edges[e,1],1]], 'k')
 for i in range(u.max()+1):
-    mp.plot(X[u==i,0],X[u==i,1],'o',color=(rand(),rand(),rand()))
+    mp.plot(X[u==i,0], X[u==i,1], 'o', color=(rand(), rand(), rand()))
 mp.axis('tight')
 mp.axis('off')
 mp.title('clustering into 5 clusters')
@@ -53,7 +51,7 @@ nl = np.sum(tree.isleaf())
 validleaves = np.zeros(n)
 validleaves[:np.ceil(n/4)]=1
 valid = np.zeros(tree.V, 'bool')
-valid[tree.isleaf()]=validleaves.astype('bool')
+valid[tree.isleaf()] = validleaves.astype('bool')
 nv =  np.sum(validleaves)
 nv0 = 0
 while nv>nv0:

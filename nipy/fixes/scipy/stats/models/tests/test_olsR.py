@@ -2,7 +2,6 @@
 import numpy as np
 from nipy.fixes.scipy.stats.models.regression import OLSModel
 import nipy.testing as niptest
-import csv
 import scipy.stats
 
 from exampledata import x, y

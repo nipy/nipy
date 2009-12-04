@@ -20,7 +20,7 @@ pos = np.array([[6 ,  7],
                 [15, 10]])
 ampli = np.array([3, 4, 4])
 
-def cone(shape, ij, pos, ampli, width):
+def _cone(shape, ij, pos, ampli, width):
     """
     Define a cone of the proposed grid
     """
@@ -78,12 +78,13 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     seed=False:  int, optionnal
         If seed is not False, the random number generator is initialized
         at a certain value
+
     Returns
     -------
     dataset: 3D ndarray
         The surrogate activation map, with dimensions (nbsubj, dimx, dimy)
     """
-    if seed!=0:
+    if seed:
         nr = np.random.RandomState([seed])
     else:
         import numpy.random as nr
@@ -99,7 +100,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
         lampli = ampli + signal_jitter*nr.randn(np.size(ampli))
         for k in range(np.size(lampli)):
             data = np.maximum(data,
-                                cone(shape, ij, lpos[k], lampli[k], width))
+                              _cone(shape, ij, lpos[k], lampli[k], width))
     
         # make some noise
         noise = nr.randn(dimx,dimy)
@@ -128,7 +129,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
 
     if out_image_file is not None:
         from nipy.io.imageformats import save, Nifti1Image 
-        save(NiftiImage( dataset, np.eye(4)), out_image_file)
+        save(Nifti1Image( dataset, np.eye(4)), out_image_file)
 
     return dataset
 

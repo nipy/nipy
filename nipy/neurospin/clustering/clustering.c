@@ -1289,32 +1289,14 @@ static PyMethodDef module_methods[] = {
    (PyCFunction)fcm,      /* corresponding C function */
    METH_KEYWORDS,   /* ordinary (not keyword) arguments */
    fcm_doc}, /* doc string */
-  /*
-  {"constrained_cmeans", 
-   (PyCFunction)constrained_cmeans,
-   METH_KEYWORDS,   
-   constrained_cmeans_doc},
-   {"constrained_match",   
-   (PyCFunction)constrained_match,
-   METH_KEYWORDS,  
-   constrained_match_doc},
-  */
   {"gmm", 
    (PyCFunction)gmm,
    METH_KEYWORDS,
    gmm_doc},
-  {"gmm_relax",
-   (PyCFunction)gmm_relax,
-   METH_KEYWORDS,
-   gmm_relax_doc},
   {"gmm_partition",
    (PyCFunction)gmm_partition,
    METH_KEYWORDS,
    gmm_partition_doc},
-  {"gmm_membership",
-   (PyCFunction)gmm_membership,
-   METH_KEYWORDS,
-   gmm_membership_doc},
   {"bayesian_gmm",
    (PyCFunction)bayesian_gmm,
    METH_KEYWORDS,
@@ -1327,10 +1309,6 @@ static PyMethodDef module_methods[] = {
    (PyCFunction)gibbs_gmm,
    METH_KEYWORDS,
    gibbs_gmm_doc},
-  {"gmm_shift",
-   (PyCFunction)gmm_shift,
-   METH_KEYWORDS,
-   gmm_shift_doc},
   {"fdp",
    (PyCFunction)fdp,
    METH_KEYWORDS,
@@ -1343,6 +1321,19 @@ static PyMethodDef module_methods[] = {
    (PyCFunction)dpmm,
    METH_KEYWORDS,
    dpmm_doc}, 
+  /*
+    {"gmm_membership",
+    (PyCFunction)gmm_membership,
+    METH_KEYWORDS,
+    gmm_membership_doc},
+    {"gmm_relax",
+    (PyCFunction)gmm_relax,
+    METH_KEYWORDS,
+    gmm_relax_doc},
+    {"gmm_shift",
+    (PyCFunction)gmm_shift,
+    METH_KEYWORDS,
+    gmm_shift_doc},*/
   {NULL, NULL,0,NULL}
 };
 

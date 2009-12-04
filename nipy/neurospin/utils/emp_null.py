@@ -342,7 +342,7 @@ class ENN(object):
         alpha : float, optional 
             The chosen fdr threshold
         bar=1 : bool, optional
-        mpaxes=None: if not None, hadle to an axes where the fig.
+        mpaxes=None: if not None, handle to an axes where the fig.
         will be drawn. Avoids creating unnecessarily new figures.
         """ 
         if not self.learned:

@@ -6,7 +6,7 @@ in ~/.nipy/tests/data
 """
 
 import numpy as np
-from numpy.random import rand,binomial
+from numpy.random import binomial
 import nipy.neurospin.utils.two_binomial_mixture as tbm
 
 def test_mtb1():
@@ -62,7 +62,6 @@ def test_mb5():
     assert(np.absolute(MB.Lambda-0.9)<0.1)
 
 def test_mb6():
-    import numpy.random as nr
     xmax = 5
     n = 1000
     x = np.concatenate((binomial(xmax,0.05,9*n),binomial(xmax,0.5,n)))

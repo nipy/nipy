@@ -1,12 +1,10 @@
-
-__doc__ = """
+"""
 fMRI Design Matrix creation functions.
 """
 
 import numpy as np
+
 from nipy.modalities.fmri import formula, utils, hrf
-
-
 
     
 def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
@@ -49,17 +47,17 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
     """
     drift = set_drift(drift_model, frametimes, drift_order, hfcut)
     if paradigm==None:
-       formula=drift
+       formula = drift
        names = []
     else:
         if cond_ids==None:
            cond_ids = ['c%d'%k for k in range(int(paradigm[:,0].max()+1))]
-           conditions, names = convolve_regressors(paradigm, hrf_model, cond_ids, 
-                        fir_delays, fir_duration)
+           conditions, names = convolve_regressors(paradigm, hrf_model, 
+                                        cond_ids, fir_delays, fir_duration)
            formula = conditions + drift
     dmtx = build_dmtx(formula, frametimes).T
     
-    # fixme : ugly  workaround the fact that NaN can occur when trials
+    # FIXME: ugly  workaround the fact that NaN can occur when trials
     # are earlier than scans (!)
     dmtx[np.isnan(dmtx)] = 0
     
@@ -67,13 +65,13 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
     if add_regs!=None:
         # check that regressor specification is correct
         if add_regs.shape[0] == np.size(add_regs):
-            add_regs = np.reshape(addreg,(np.size(1,add_regs)))
+            add_regs = np.reshape(add_regs, (np.size(1, add_regs)))
         if add_regs.shape[0] != np.size(frametimes):
            raise ValueError, 'incorrect specification of additional regressors'
         
         # put them at the right place in the dmtx
         ncr = len(names)
-        dmtx = np.hstack((dmtx[:,:ncr],add_regs,dmtx[:,ncr:]))
+        dmtx = np.hstack((dmtx[:,:ncr], add_regs, dmtx[:,ncr:]))
         
         # add the corresponding names
         if  add_reg_names == None:
@@ -84,8 +82,8 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
         for r in range(add_regs.shape[1]):
             names.append(add_reg_names[r])
 
-    ## Force the design matrix to be full rank at working precision
-    dmtx, design_cond = fullRank(dmtx)
+    # Force the design matrix to be full rank at working precision
+    dmtx, design_cond = full_rank(dmtx)
         
     # complete the names with the drift terms                               
     for k in range(len(drift.terms)-1):
@@ -118,6 +116,7 @@ def _polydrift(order, tmax):
     pol =  formula.Formula(pt)
     return pol
 
+
 def _cosinedrift(hfcut, tmax, tsteps):
     """
     Create a cosine drift formula
@@ -143,6 +142,7 @@ def _cosinedrift(hfcut, tmax, tsteps):
     cos =  formula.Formula(pt)
     return cos
 
+
 def _blankdrift():
     """
     Create the blank drift formula
@@ -155,6 +155,7 @@ def _blankdrift():
     pt = [formula.define('constant',1.0+0*t)]
     df =  formula.Formula(pt)
     return df
+
 
 def set_drift(DriftModel, frametimes, order=1, hfcut=128.):
     """
@@ -298,6 +299,7 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
      
     return p, hnames
 
+
 def build_dmtx(form, frametimes):
     """
     This is a work arount to control the order of the regressor 
@@ -322,7 +324,7 @@ def build_dmtx(form, frametimes):
     return X 
 
 
-def fullRank(X, cmax=1e15):
+def full_rank(X, cmax=1e15):
     """
     This function possibly adds a scalar matrix to X
     to guarantee that the condition number is smaller than a given threshold.

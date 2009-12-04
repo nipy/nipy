@@ -250,6 +250,10 @@ def intersect_masks(input_mask_files, output_filename=None,
         gives the level of the intersection.
     cc: bool, optional
         If true, extract the main connected component
+        
+    Returns
+    -------
+    gmask, boolean array of shape the image shape
     """  
     gmask = None 
 
@@ -272,7 +276,7 @@ def intersect_masks(input_mask_files, output_filename=None,
                                             header=header,
                                          )
         output_image.save(output_filename)
-    return gmask
+    return gmask>0
 
 ################################################################################
 # Legacy function calls.

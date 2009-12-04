@@ -7,6 +7,11 @@ The dataset is subject to jacknife subampling ('splitting'),
 each subsample being analysed independently.
 A reproducibility measure is then derived;
 
+All is used to produce the work described in
+Analysis of a large fMRI cohort: Statistical and methodological issues for group analyses.
+Thirion B, Pinel P, Meriaux S, Roche A, Dehaene S, Poline JB.
+Neuroimage. 2007 Mar;35(1):105-20. 
+
 Bertrand Thirion, 2009.
 """
 
@@ -18,26 +23,27 @@ import nipy.neurospin.graph as fg
 # ----- cluster handling functions ------------------------
 # ---------------------------------------------------------
 
-def histo_repro(H):
+
+def histo_repro(h):
     """
-    Given the histogram H, compute a standardized reproducibility measure    
+    Given the histogram h, compute a standardized reproducibility measure    
     
     Parameters
     ----------
-    H array of shape(xmax+1), the histogram values
+    h array of shape(xmax+1), the histogram values
     
     Returns
     -------
     hr, float: the measure
     """
-    K = np.size(H)-1
-    if K==1:
+    k = np.size(h)-1
+    if k==1:
        return 0.
-    nf = np.dot(H,np.arange(K+1))/(K)
+    nf = np.dot(h,np.arange(k+1))/(k)
     if nf==0:
        return 0.
-    n1K = np.arange(1,K+1)
-    res = 1.0*np.dot(H[1:],n1K*(n1K-1))/(K*(K-1))
+    n1k = np.arange(1,k+1)
+    res = 1.0*np.dot(h[1:],n1k*(n1k-1))/(k*(k-1))
     return res/nf
 
 
@@ -130,9 +136,10 @@ def get_cluster_position_from_thresholded_map(smap, ijk, coord, thr=3.0,
     return baryc
 
 
-# -------------------------------------------------------
-# ---------- The main functions -----------------------------
-# -------------------------------------------------------
+
+# ---------------------------------------------------------
+# ----- data splitting functions ------------------------
+# ---------------------------------------------------------
 
 def bootstrap_group(nsubj, ngroups):
     """
@@ -172,6 +179,11 @@ def split_group(nsubj, ngroups):
     samples= [rperm[i*groupsize:(i+1)*groupsize] for i in range(ngroups)]
     return samples
 
+
+# ---------------------------------------------------------
+# ----- statistic computation -----------------------------
+# ---------------------------------------------------------
+
 def ttest(x):
     """
     returns the t-test for each row of the data x
@@ -203,7 +215,7 @@ def fttest(x,vx):
     t = t.mean(1)*np.sqrt(n)
     return t
     
-def mfx_ttest(x,vx):
+def mfx_ttest(x, vx):
     """
     Idem fttest, but returns a mixed-effects statistic 
     
@@ -226,10 +238,10 @@ def voxel_thresholded_ttest(x,threshold):
     t = ttest(x)
     return t>threshold
 
-def statistics_from_position(target,data,sigma=1.0):
+def statistics_from_position(target, data, sigma=1.0):
     """
-    return a couple statistics characterizing how close data is from
-    target
+    return a number characterizing how close data is from
+    target using a kernel-based statistic
     
     Parameters
     ----------
@@ -237,7 +249,8 @@ def statistics_from_position(target,data,sigma=1.0):
             the target positions
     data: array of shape(nd,anat_dim) or None
           the data position
-    sigma=1.0 (float): a distance that say how good good is 
+    sigma=1.0 (float), kernel parameter
+              or  a distance that say how good good is 
 
     Returns
     -------
@@ -261,7 +274,13 @@ def statistics_from_position(target,data,sigma=1.0):
     sensitivity = np.mean(sensitivity)
     return sensitivity
 
-def voxel_reproducibility(data, vardata, xyz, ngroups, method='rfx',
+
+# -------------------------------------------------------
+# ---------- The main functions -----------------------------
+# -------------------------------------------------------
+
+
+def voxel_reproducibility(data, vardata, xyz, ngroups, method='crfx',
                           swap=False, verbose=0, **kwargs):
     """
     return a measure of voxel-level reproducibility
@@ -279,7 +298,7 @@ def voxel_reproducibility(data, vardata, xyz, ngroups, method='rfx',
              Number of subbgroups to be drawn  
     threshold (float): 
               binarization threshold (makes sense only if method==rfx)
-    method = 'rfx' or 'crfx'
+    method='crfx', string, to be chosen among 'crfx', 'cmfx', 'cffx'
            inference method under study
     verbose=0 : verbosity mode
 
@@ -291,35 +310,18 @@ def voxel_reproducibility(data, vardata, xyz, ngroups, method='rfx',
     rmap = map_reproducibility(data, vardata, xyz, ngroups, method, 
                                      swap, verbose, **kwargs)
 
-    H = np.array([np.sum(rmap==i) for i in range(ngroups+1)])
-    hr = histo_repro(H)  
+    h = np.array([np.sum(rmap==i) for i in range(ngroups+1)])
+    hr = histo_repro(h)  
     return hr
 
-def _voxel_reproducibility(data, vardata, xyz, ngroups, method='rfx',
+def voxel_reproducibility_old(data, vardata, xyz, ngroups, method='crfx',
                           swap=False, verbose=0, **kwargs):
     """
-    return a measure of voxel-level reproducibility
-    of activation patterns
-
-    Parameters
-    ----------
-    data: array of shape (nvox,nsubj)
-          the input data from which everything is computed
-    vardata: array of shape (nvox,nsubj)
-             the corresponding variance information
-    xyz array of shape (nvox,3) 
-        the grid ccordinates of the imput voxels
-    ngroups (int): 
-             Number of subbgroups to be drawn  
-    threshold (float): 
-              binarization threshold (makes sense only if method==rfx)
-    method = 'rfx' or 'crfx'
-           inference method under study
-    verbose=0 : verbosity mode
-
-    Returns
-    -------
-    kappa (float): the desired  reproducibility index
+    see voxel_reproducibility API    
+    
+    Note
+    ----
+    This uses  the mixture of binomial heuristic, which has been abandoned now  
     """
     nsubj = data.shape[1]
     rmap = map_reproducibility(data, vardata, xyz, ngroups, method, 
@@ -333,7 +335,43 @@ def _voxel_reproducibility(data, vardata, xyz, ngroups, method='rfx',
         MB.show(h)
     return MB.kappa()
 
-def map_reproducibility(data, vardata, xyz, ngroups, method='rfx',
+
+def draw_samples(nsubj, ngroups, split_method='default'):
+    """
+    Draw randomly ngroups sets of samples from [0..nsubj-1]
+    
+    Parameters
+    ----------
+    nsubj, int, the total number of items
+    ngroups, int, the number of desired groups
+    split_method= 'default', string to be chosen among 'default', 'bootstrap', 'jacknife'
+                  if 'bootstrap', then each group will be nsubj 
+                     drawn with repetitions among nsubj
+                  if 'jacknife' the population is divided into ngroups disjoint equally-sized 
+                     subgroups
+                  if 'default', 'bootstrap' is used when nsubj<10*ngroups
+                     otherwise jacknife is used
+                  
+    Returns
+    -------
+    samples, a list of ngroups array that represent the subsets.
+
+    fixme : this should allow variable bootstrap, i.e. draw ngroups of groupsize among nsubj
+    """
+    if split_method=='default':
+        if nsubj>10*ngroups:
+            samples = split_group(nsubj, ngroups)
+        else:
+            samples = bootstrap_group(nsubj, ngroups)
+    elif split_method=='bootstrap':
+        samples = bootstrap_group(nsubj, ngroups)      
+    elif split_method=='':
+        samples = plit_group(nsubj, ngroups)
+    else: raise ValueError, 'unknown splitting method'
+ 
+    return samples
+
+def map_reproducibility(data, vardata, xyz, ngroups, method='crfx',
                         swap=False, verbose=0, **kwargs):
     """
     return a reproducibility map for the given method
@@ -349,7 +387,7 @@ def map_reproducibility(data, vardata, xyz, ngroups, method='rfx',
     ngroups (int): the size of each subrgoup to be studied
     threshold (float): binarization threshold
               (makes sense only if method==rfx)
-    method = 'rfx' or 'crfx' 
+    method='crfx', string to be chosen among 'crfx', 'cmfx', 'cffx' 
            inference method under study
     verbose=0 : verbosity mode
 
@@ -360,37 +398,31 @@ def map_reproducibility(data, vardata, xyz, ngroups, method='rfx',
     """
     nsubj = data.shape[1]
     nvox = data.shape[0]
-    if nsubj>10*ngroups:
-         samples = split_group(nsubj, ngroups)
-    else:
-        samples = bootstrap_group(nsubj, ngroups)
+    samples = draw_samples(nsubj, ngroups)
     rmap = np.zeros(nvox)
+    
     for i in range(ngroups):
         x = data[:,samples[i]]
+
         if swap:
-           rsign = 2*(np.random.rand(len(samples[i]))>0.5)-1
-           x *= rsign
+           # randomly swap the sign of x
+           x *= (2*(np.random.rand(len(samples[i]))>0.5)-1)
+        
         vx = vardata[:,samples[i]]
-        if method=='rfx':
-            threshold = kwargs['threshold']
-            rmap += voxel_thresholded_ttest(x,threshold)        
+        csize = kwargs['csize']
+        threshold = kwargs['threshold']
+
+        # compute the statistical maps according to the method you like
         if method=='crfx':
-            csize = kwargs['csize']
-            threshold = kwargs['threshold']
-            rfx = ttest(x)
-            rmap += cluster_threshold(rfx,xyz,threshold,csize)>0
-        if method=='cffx':
-            csize = kwargs['csize']
-            threshold = kwargs['threshold']
-            ffx = fttest(x,vx)
-            rmap += cluster_threshold(ffx,xyz,threshold,csize)>0
-        if method=='cmfx':
-            csize = kwargs['csize']
-            threshold = kwargs['threshold']
-            rfx = mfx_ttest(x,vx)
-            rmap += cluster_threshold(rfx,xyz,threshold,csize)>0
-        if method not in['rfx','crfx','cmfx','cffx']:
-            raise ValueError, 'unknown method'
+            smap = ttest(x)
+        elif method=='cffx':
+            smap = fttest(x,vx)
+        elif method=='cmfx':
+            smap = mfx_ttest(x,vx)
+        else: raise ValueError, 'unknown method'
+
+        # add the binarized map to a reproducibility map
+        rmap += cluster_threshold(smap, xyz, threshold, csize)>0
 
     return rmap
 
@@ -417,8 +449,8 @@ def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
            the corresponding physical coordinates
     sigma (float): parameter that encodes how far far is
     threshold (float): 
-              binarization threshold (makes sense only if method==rfx)
-    method = 'rfx'or 'crfx' 
+              binarization threshold
+    method='crfx', string to be chosen among 'crfx', 'cmfx' or 'cffx' 
            inference method under study
     swap = False: if True, a random sign swap of the data is performed
          This is used to simulate a null hypothesis on the data.
@@ -430,42 +462,37 @@ def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
     """
     tiny = 1.e-15
     nsubj = data.shape[1]
-    if nsubj>10*ngroups:
-         samples = split_group(nsubj, ngroups)
-    else:
-        samples = bootstrap_group(nsubj, ngroups)
+    samples = draw_samples(nsubj, ngroups)
     all_pos = []
+
+    # compute the positions in the different subgroups
     for i in range(ngroups):           
         x = data[:,samples[i]]
+
         if swap:
-           rsign = 2*(np.random.rand(len(samples[i]))>0.5)-1
-           x *= rsign
+           # apply a random sign swap to x
+           x *= (2*(np.random.rand(len(samples[i]))>0.5)-1)
+
         vx = vardata[:,samples[i]]
-        tx = x/(tiny+np.sqrt(vx))
-        if method=='crfx':
-            rfx = ttest(x)
+        if method!='bsa':
             csize = kwargs['csize']
             threshold = kwargs['threshold']
-            pos = get_cluster_position_from_thresholded_map\
-                  (rfx, xyz, coord, threshold, csize)
+           
+            if method =='crfx':
+                smap = ttest(x)
+            elif method == 'cmfx':
+                smap = mfx_ttest(x,vx)
+            elif method == 'cffx':
+                smap = fttest(x,vx)
+            pos = get_cluster_position_from_thresholded_map(smap, xyz, coord,
+                                                            threshold, csize)
             all_pos.append(pos)
-        if method=='cmfx':
-            mfx = mfx_ttest(x,vx)
-            csize = kwargs['csize']
-            threshold = kwargs['threshold']
-            pos = get_cluster_position_from_thresholded_map\
-                  (mfx, xyz, coord, threshold, csize)
-            all_pos.append(pos)
-        if method=='cffx':
-            ffx = fttest(x,vx)
-            csize = kwargs['csize']
-            threshold = kwargs['threshold']
-            pos = get_cluster_position_from_thresholded_map\
-                  (ffx, xyz, coord, threshold, csize)
-            all_pos.append(pos)
-        if method=='bsa':
+        else: 
+            # method='bsa' is a special case
+            tx = x/(tiny+np.sqrt(vx))
             afname = kwargs['afname']
-            header = kwargs['header']
+            shape = kwargs['shape']
+            affine = kwargs['affine']
             theta = kwargs['theta']
             dmax = kwargs['dmax']
             ths = kwargs['ths']
@@ -473,15 +500,17 @@ def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
             smin = kwargs['smin']
             niter = kwargs['niter']
             afname = afname+'_%02d_%04d.pic'%(niter,i)
-            pos = coord_bsa(xyz, coord, tx, header, theta, dmax,
-                            ths, thq, smin,afname)
-            all_pos.append(pos)
+            pos = coord_bsa(xyz, coord, tx, affine, shape, theta, dmax,
+                            ths, thq, smin, afname)
+        all_pos.append(pos)
 
+    # derive a kernel-based goodness measure from the pairwise comparison
+    # of sets of positions
     score = 0
     for i in range(ngroups):
         for j in range(i):
-            score += statistics_from_position(all_pos[i],all_pos[j],sigma)
-            score += statistics_from_position(all_pos[j],all_pos[i],sigma)
+            score += statistics_from_position(all_pos[i], all_pos[j], sigma)
+            score += statistics_from_position(all_pos[j], all_pos[i], sigma)
             
     score /= (ngroups*(ngroups-1))
     return score
@@ -522,7 +551,6 @@ def coord_bsa(xyz, coord, betas, affine=np.eye(4), shape=None, theta=3.,
     afcoord array of shape(number_of_regions,3):
             coordinate of the found landmark regions
     
-    Fixme : somewhat unclean
     """
     import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
     import nipy.neurospin.graph.field as ff
@@ -536,11 +564,10 @@ def coord_bsa(xyz, coord, betas, affine=np.eye(4), shape=None, theta=3.,
 
     # volume density
     voxvol = np.absolute(np.linalg.det(affine))
-    # or np.absolute(np.diag(header['sform'])[:3]) ?
     g0 = 1.0/(voxvol*nbvox)
 
-    crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta,betas,coord,dmax,xyz,
-                                            affine, shape,thq, smin,ths, theta,
+    crmap,AF,BF,p = bsa.compute_BSA_simple_quick(Fbeta, betas, coord, dmax, xyz,
+                                            affine, shape, thq, smin,ths, theta,
                                             g0, verbose=0)
     if AF==None:
         return None

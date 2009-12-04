@@ -13,14 +13,38 @@ import matplotlib.pylab as mp
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
-import profile
+import nipy.neurospin.spatial_models.structural_bfls as sbf
 
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
-                        nbeta=[0],method='simple',verbose = 0):
+                       method='simple',verbose = 0):
     """
     Function for performing bayesian structural analysis
     on a set of images.
+
+    Parameters
+    ----------
+    betas, array of shape (nsubj, dimx, dimy) the data used
+           Note that it is assumed to be a t- or z-variate
+    theta=3., float,
+              first level threshold of betas
+    dmax=5., float, expected between subject variability
+    ths=0, float,
+           null hypothesis for the prevalence statistic
+    thq=0.5, float,
+             p-value of the null rejection
+    smin=0, int,
+            threshold on the nu_mber of contiguous voxels 
+            to make regions meaningful structures
+    method= 'simple', string,
+            estimation method used ; to be chosen among 
+            'simple', 'dev', 'loo', 'ipmi'
+    verbose=0, verbosity mode     
+
+    Returns
+    -------
+    AF the landmark_regions instance describing the result
+    BF: list of hroi instances describing the individual data
     """
     ref_dim = np.shape(betas[0])
     nsubj = betas.shape[0]
@@ -48,29 +72,37 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                    bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, xyz,
                                         affine, shape, thq,
                                         smin, ths, theta, g0, bdensity)
+    
+    
     if method=='simple':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_simple(Fbeta, lbeta, coord, dmax,xyz,
+                   bsa.compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz,
                                           affine, shape, thq, smin, ths,
                                           theta, g0)
     if method=='loo':
-         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_loo(Fbeta, lbeta, coord, dmax,xyz,
-                                          affine, shape, thq, smin, ths,
-                                          theta, g0)
+         mll, ll0 = bsa.compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz,
+                                        affine, shape, thq, smin, ths,
+                                        theta, g0)
+         return mll, ll0
     if method=='dev':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_dev(Fbeta, lbeta, coord, dmax,xyz,
+                   bsa.compute_BSA_dev(Fbeta, lbeta, coord, dmax, xyz,
                                        affine, shape, thq,
                                       smin, ths, theta, g0, bdensity)
-    if method=='simple2':
+    if method=='simple_quick':
         likelihood = np.zeros(ref_dim)
         group_map, AF, BF, coclustering = \
-                   bsa.compute_BSA_simple2(Fbeta, lbeta, coord, dmax,xyz,
+                   bsa.compute_BSA_simple_quick(Fbeta, lbeta, coord, dmax, xyz,
                                           affine, shape, thq, smin, ths,
                                           theta, g0)
+    if method=='sbf':
+        likelihood = np.zeros(ref_dim)
+        group_map, AF, BF = sbf.Compute_Amers (Fbeta, lbeta, xyz, affine, shape,
+                                              coord, dmax=dmax, thr=theta,
+                                              ths=ths , pval=thq)
+
         
-    if method not in['loo', 'dev','simple','ipmi','simple2']:
+    if method not in['loo', 'dev','simple','ipmi','simple_quick','sbf']:
         raise ValueError,'method is not ocrreactly defined'
     
     if verbose==0:
@@ -153,13 +185,8 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple2'#'loo'#'dev'#'ipmi'#
+method = 'simple'#'dev'#'ipmi'#'sbf'
 
 # run the algo
-AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,
-                     method=method,verbose=verbose)
-AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,
-                     method='simple', verbose=verbose)
-
-
+AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method, verbose=verbose)
 mp.show()

@@ -6,6 +6,8 @@
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD
 
+import os
+import tempfile
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
@@ -21,7 +23,8 @@ from .coord_tools import coord_transform
 
 ################################################################################
 # Helper functions
-def affine_img_src(data, affine, scale=1, name='AffineImage'):
+def affine_img_src(data, affine, scale=1, name='AffineImage',
+                reverse_x=False):
     """ Make a Mayavi source defined by a 3D array and an affine, for
         wich the voxel of the 3D array are mapped by the affine.
         
@@ -36,6 +39,9 @@ def affine_img_src(data, affine, scale=1, name='AffineImage'):
             An optional addition scaling factor.
         name: string, optional
             The name of the Mayavi source created.
+        reverse_x: boolean, optional
+            Reverse the x (lateral) axis. Useful to compared with
+            images in radiologic convention.
 
         Notes
         ------
@@ -43,15 +49,71 @@ def affine_img_src(data, affine, scale=1, name='AffineImage'):
     """
     center = np.r_[0, 0, 0, 1]
     spacing = np.diag(affine)[:3]
-    # XXX: VTK orients X (negative spacing) in the wrong direction
     origin = np.dot(affine, center)[:3]
-    spacing[0] *= -1
-    origin[0] *= -1
+    if reverse_x:
+        # Radiologic convention
+        spacing[0] *= -1
+        origin[0] *= -1
     src = ArraySource(scalar_data=np.asarray(data), 
                            name=name,
                            spacing=scale*spacing,
                            origin=origin)
     return src 
+
+
+################################################################################
+# Mayavi helpers
+def autocrop_img(img, bg_color):
+    red, green, blue = bg_color
+
+    outline =  ( (img[..., 0] != red)
+                +(img[..., 1] != green)
+                +(img[..., 2] != blue)
+                )
+    outline_x = outline.sum(axis=0)
+    outline_y = outline.sum(axis=1)
+
+    outline_x = np.where(outline_x)[0]
+    outline_y = np.where(outline_y)[0]
+
+    if len(outline_x) == 0:
+        return img
+    else:
+        x_min = outline_x.min()
+        x_max = outline_x.max()
+    if len(outline_y) == 0:
+        return img
+    else:
+        y_min = outline_y.min()
+        y_max = outline_y.max()
+    return img[y_min:y_max, x_min:x_max]
+
+
+
+def m2screenshot(mayavi_fig=None, mpl_axes=None, autocrop=True):
+    """ Capture a screeshot of the Mayavi figure and display it in the
+        matplotlib axes.
+    """
+    import pylab as pl
+    if mayavi_fig is None:
+        mayavi_fig = mlab.gcf()
+    else:
+        mlab.figure(mayavi_fig)
+    if mpl_axes is not None:
+        pl.axes(mpl_axes)
+
+    filename = tempfile.mktemp('.png')
+    mlab.savefig(filename, figure=mayavi_fig)
+    image3d = pl.imread(filename)
+    if autocrop:
+        bg_color = mayavi_fig.scene.background
+        image3d = autocrop_img(image3d, bg_color)
+    pl.imshow(image3d)
+    pl.axis('off')
+    os.unlink(filename)
+    # XXX: Should switch back to previous MPL axes: we have a side effect
+    # here.
+
 
 ################################################################################
 # Anatomy outline
@@ -61,12 +123,14 @@ def plot_anat_3d(anat=None, anat_sform=None, scale=1,
                  sulci_opacity=0.5, gyri_opacity=0.3,
                  opacity=1,
                  outline_color=None):
+    fig = mlab.gcf()
+    disable_render = fig.scene.disable_render
+    fig.scene.disable_render = True
     if anat is None:
         anat, anat_sform, anat_max = _AnatCache.get_anat()
     ###########################################################################
     # Display the cortical surface (flattenned)
-    anat_src = affine_img_src(anat, anat_sform, scale=scale,
-                                name='Anat')
+    anat_src = affine_img_src(anat, anat_sform, scale=scale, name='Anat')
     
     anat_src.image_data.point_data.add_array(_AnatCache.get_blurred())
     anat_src.image_data.point_data.get_array(1).name = 'blurred'
@@ -87,8 +151,9 @@ def plot_anat_3d(anat=None, anat_sform=None, scale=1,
     cortex.contour.filled_contours = True
     cortex.contour.auto_contours = False
     cortex.contour.contours = [0, 5000, 7227.8]
-    cortex.actor.property.backface_culling = True
-    #cortex.actor.property.frontface_culling = True
+    #cortex.actor.property.backface_culling = True
+    # XXX: Why do we do 'frontface_culling' to see the front.
+    cortex.actor.property.frontface_culling = True
 
     cortex.actor.mapper.interpolate_scalars_before_mapping = True
     cortex.actor.property.interpolation = 'flat'
@@ -104,9 +169,10 @@ def plot_anat_3d(anat=None, anat_sform=None, scale=1,
                             anat_blurred,
                             contours=[0.4],
                             color=outline_color)
-        outline.actor.property.frontface_culling = True
+        outline.actor.property.backface_culling = True
 
 
+    fig.scene.disable_render = disable_render
     return cortex
  
 
