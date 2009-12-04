@@ -160,15 +160,15 @@ class IconicRegistration(object):
             T = Affine(subtype=search, radius=radius)
         else:
             T = Affine(subtype=search, vec12=start.vec12, radius=radius)
-        tc0 = T.to_param()
+        tc0 = T.param
 
         # Loss function to minimize
         def loss(tc):
-            T.from_param(tc)
+            T.param = tc
             return -self.eval(T) 
     
         def callback(tc):
-            T.from_param(tc)
+            T.param = tc
             print(T)
             print(str(self.similarity) + ' = %s' % self.eval(T))
             print('')
@@ -191,7 +191,7 @@ class IconicRegistration(object):
             raise ValueError('Unrecognized optimizer')
         
         # Output
-        T.from_param(tc)
+        T.param = tc
         return T 
 
     # Return a set of similarity
@@ -228,7 +228,7 @@ class IconicRegistration(object):
                           RX[i], RY[i], RZ[i],
                           SX[i], SY[i], SZ[i],
                           QX[i], QY[i], QZ[i]])
-            T.set_vec12(t)
+            T.vec12 = t
             simis[i] = self.eval(T)
             vec12s[:, i] = t 
 

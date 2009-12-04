@@ -127,45 +127,61 @@ def apply_affine(T, xyz):
 
 class Affine(object): 
 
-    def __init__(self, subtype='affine', vec12=None, radius=1, flag3d=True):
-        self.precond = preconditioner(radius)
-        self._subtype = affines.index(subtype)+len(affines)*flag3d
+    def __init__(self, subtype='affine', vec12=None, radius=1, flag2d=False):
+        self._precond = preconditioner(radius)
+        self._subtype = affines.index(subtype)+len(affines)*(not flag2d)
         if vec12 == None: 
             vec12 = np.array([0, 0, 0, 0, 0, 0, 1., 1., 1., 0, 0, 0])
-        self.set_vec12(vec12)
+        self._set_vec12(vec12)
 
     def __call__(self, xyz): 
         return apply_affine(self.__array__(), xyz)
 
-    def subtype(self): 
-        subtype = affines[self._subtype%len(affines)]
-        if self._subtype/len(affines)==0: 
-            dim = '2d'
-        else: 
-            dim = '3d'
-        return subtype, dim
+    def _get_subtype(self): 
+        return affines[self._subtype%len(affines)]
 
-    def from_param(self, p): 
-        self.vec12 = param_to_vector12(np.asarray(p), self.vec12, self.precond, self._subtype)
-        
-    def to_param(self): 
-        param = self.vec12/self.precond
+    subtype = property(_get_subtype)
+
+    def _get_flag2d(self): 
+        flag2d = False
+        if self._subtype/len(affines) == 0: 
+            flag2d = True
+        return flag2d
+
+    flag2d = property(_get_flag2d)
+            
+    def _get_param(self): 
+        param = self._vec12/self._precond
         return param[_affines[self._subtype]]
+
+    def _set_param(self, p): 
+        self._vec12 = param_to_vector12(np.asarray(p), self._vec12, self._precond, self._subtype)
         
-    def set_vec12(self, vec12): 
+    param = property(_get_param, _set_param)
+
+    def _get_vec12(self):
+        return self._vec12
+
+    def _set_vec12(self, vec12): 
         # Specify dtype to allow in-place operations
-        self.vec12 = np.asarray(vec12, dtype='double') 
+        self._vec12 = np.asarray(vec12, dtype='double') 
         
+    vec12 = property(_get_vec12, _set_vec12)
+
+    def _get_precond(self): 
+        return self._precond 
+
+    precond = property(_get_precond)
+
     def __array__(self, dtype='double'): 
-        return matrix44(self.vec12, dtype=dtype)
+        return matrix44(self._vec12, dtype=dtype)
 
     def __str__(self): 
-        str  = 'translation : %s\n' % self.vec12[0:3].__str__()
-        str += 'rotation    : %s\n' % self.vec12[3:6].__str__()
-        str += 'scaling     : %s\n' % self.vec12[6:9].__str__()
-        str += 'shearing    : %s' % self.vec12[9:12].__str__()
+        str  = 'translation : %s\n' % self._vec12[0:3].__str__()
+        str += 'rotation    : %s\n' % self._vec12[3:6].__str__()
+        str += 'scaling     : %s\n' % self._vec12[6:9].__str__()
+        str += 'shearing    : %s' % self._vec12[9:12].__str__()
         return str
-        #return self.vec12[_affines[self._subtype]].__str__()
 
     def __mul__(self, other): 
         """
@@ -173,8 +189,8 @@ class Affine(object):
         """
         a = Affine()
         a._subtype = max(self._subtype, other._subtype)
-        a.precond = self.precond
-        a.set_vec12(vector12(np.dot(self.__array__(), other.__array__()), a.subtype()[0]))
+        a._precond = self._precond
+        a._set_vec12(vector12(np.dot(self.__array__(), other.__array__()), a.subtype))
         return a
 
 

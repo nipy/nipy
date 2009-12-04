@@ -1,4 +1,5 @@
 from registration import * 
+from affine import * 
 
 from numpy.testing import Tester
 
