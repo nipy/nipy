@@ -45,12 +45,14 @@ int ngb26 [] = {1,0,0,
 
 /*
 
-  ppm assumed contiguous double [x,y,z,k] with K = 26 
+  ppm assumed contiguous double (X, Y, Z, K) 
+
+  res assumed preallocated with size >= K 
 
 */
 
 static void _ngb26_average(double* res, 
-			   int dim_res,
+			   int K,
 			   const PyArrayObject* ppm,  
 			   int x,
 			   int y, 
@@ -66,7 +68,7 @@ static void _ngb26_average(double* res,
   size_t u1 = ppm->dimensions[1]*u2;
 
   /*  Re-initialize output array */
-  for (k=0, buf=res; k<dim_res; k++, buf++)
+  for (k=0, buf=res; k<K; k++, buf++)
     *buf = 0.0; 
 
   /* Loop over neighbors */ 
@@ -75,7 +77,7 @@ static void _ngb26_average(double* res,
     xn = x + *buf_ngb; buf_ngb++; 
     yn = y + *buf_ngb; buf_ngb++;
     zn = z + *buf_ngb; buf_ngb++;
-    for (k=0, buf=res; k<dim_res; k++, buf++)
+    for (k=0, buf=res; k<K; k++, buf++)
       *buf += ppm_data[xn*u1 + yn*u2 + zn*u3 + k];
     j ++; 
   }
