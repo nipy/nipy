@@ -2,8 +2,9 @@
 
 import sys
 
+import numpy as np
 
-from nose.tools import assert_true
+from nose.tools import assert_raises, assert_true
 
 from nipy.io.imageformats.volumeutils import endian_codes, \
      native_code, swapped_code
