@@ -931,7 +931,7 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     
     return crmap, LR, bf, p
 
-def compute_BSA_simple2(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4), 
+def compute_BSA_simple_quick(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4), 
                         shape=None, thq=0.5, smin=5, ths=0, theta=3.0, g0=1.0,
                        verbose=0):
     """
@@ -1126,15 +1126,8 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
 
     Results
     -------
-    crmap: array of shape (nnodes):
-           the resulting group-level labelling of the space
-    LR: a instance of sbf.Landmark_regions that describes the ROIs found
-        in inter-subject inference
-        If no such thing can be defined LR is set to None
-    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
-        representing individual ROIs
-    p: array of shape (nnodes):
-       likelihood of the data under H1 over some sampling grid
+    mll, float, the average cross-validated log-likelihood across subjects
+    ml0, float the log-likelihood of the model under a global null hypothesis
 
     """
     nsubj = lbeta.shape[1]
@@ -1178,55 +1171,9 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
 
     ml0 = np.mean(np.array(ll0))
     ml1 = np.mean(np.array(ll1))
-    ml2 = np.mean(np.array(ll2))
+    mll = np.mean(np.array(ll2))
     if verbose: 
        print 'average cross-validated log likelihood'
-       print 'null model: ', ml0,' alternative model: ', ml2
+       print 'null model: ', ml0,' alternative model: ', mll
 
-    if ml2>ml0:
-        # relaunch the analysis without cv
-        p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
-                  sub, burnin, coord,nis, nii)
-    else:
-        return crmap, LR, bf, np.zeros(nvox)
-      
-    Fbeta.set_field(p)
-    idx,depth, major,label = Fbeta.custom_watershed(0,g0)
-
-    # append some information to the hroi in each subject
-    for s in range(nsubj):
-        bfs = bf[s]
-        if bfs!=None:
-            leaves = bfs.isleaf()
-            us = -np.ones(bfs.k).astype(np.int)
-            lq = np.zeros(bfs.k)
-            lq[leaves] = q[sub==s]
-            bfs.set_roi_feature('posterior_proba',lq)
-            lq = np.zeros(bfs.k)
-            lq[leaves] = 1-gf0[sub==s]
-            bfs.set_roi_feature('prior_proba',lq)
-                   
-            idx = bfs.feature_argmax('activation')
-            midx = [bfs.discrete_features['index'][k][idx[k]]
-                    for k in range(bfs.k)]
-            j = label[np.array(midx)]
-            us[leaves] = j[leaves]
-
-            # when parent regions has similarly labelled children,
-            # include it also
-            us = bfs.propagate_upward(us)
-            bfs.set_roi_feature('label',us)
-                        
-    # derive the group-level landmarks
-    # with a threshold on the number of subjects
-    # that are represented in each one 
-    LR,nl = infer_LR(bf,thq,ths,verbose=verbose)
-
-    # make a group-level map of the landmark position
-    crmap = -np.ones(np.shape(label))
-    if nl!=None:
-        aux = np.arange(label.max()+1)
-        aux[0:np.size(nl)]=nl
-        crmap[label>-1]=aux[label[label>-1]]
-              
-    return crmap, LR, bf, p
+    return mll, ml0

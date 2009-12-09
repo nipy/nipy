@@ -5,7 +5,7 @@ fMRI Design Matrix creation functions.
 import numpy as np
 from configobj import ConfigObj
 from pylab import loadtxt
-from nipy.neurospin.utils.design_matrix import set_drift, convolve_regressors, build_dmtx, fullRank
+from nipy.neurospin.utils.design_matrix import set_drift, convolve_regressors, build_dmtx, full_rank
 
 def _loadProtocol(path, session):
     """
@@ -174,7 +174,7 @@ class DesignMatrix():
         temp = build_dmtx(self.formula, self.frametimes).T
 
         ## Force the design matrix to be full rank at working precision
-        self._design, self._design_cond = fullRank(temp)
+        self._design, self._design_cond = full_rank(temp)
         
         # complete the names with the drift terms                               
         for k in range(len(self.drift.terms)-1):
@@ -243,7 +243,7 @@ class DesignMatrix():
                         for k in range(diff):
                             temp[base + (k + j * diff), j + i * o] = 1
                 i += 1
-        self._design, self._design_cond = fullRank(temp)
+        self._design, self._design_cond = full_rank(temp)
         if drift == 0:
             drm = np.ones((self._design.shape[0],1))
         elif drift == cosine_drift:

@@ -42,8 +42,8 @@ swd = tempfile.mkdtemp()
 method='simple'
 
 # call the function
-AF, BF, maxc = make_bsa_image(mask_images, betas, theta, dmax,
-                       ths, thq, smin, swd, method, subj_id, '%04d'%nbeta, 100)
+AF, BF = make_bsa_image(mask_images, betas, theta, dmax,
+                        ths, thq, smin, swd, method, subj_id, '%04d'%nbeta)
 
 # Write the result. OK, this is only a temporary solution
 import pickle
@@ -51,7 +51,5 @@ picname = op.join(swd,"AF_%04d.pic" %nbeta)
 pickle.dump(AF, open(picname, 'w'), 2)
 picname = op.join(swd,"BF_%04d.pic" %nbeta)
 pickle.dump(BF, open(picname, 'w'), 2)
-if np.size(maxc>0):
-    np.savez( op.join(swd,"maxc_%04d.npz" %nbeta), maxc)
 
 print "Wrote all the results in directory %s"%swd
