@@ -8,7 +8,7 @@ from registration_module import _joint_histogram, _similarity, builtin_similarit
 from affine import Affine
 
 import numpy as np  
-import scipy as sp 
+from scipy import optimize 
 from sys import maxint
 
 # Globals
@@ -58,7 +58,7 @@ class IconicRegistration(object):
         values, t_bins = clamp(target(), bins=bins[1])
         _target_image = set_image(target, values)
         self._target = -np.ones(np.array(target.shape)+2, dtype=_clamp_dtype)
-        _view = self._target[1:target.shape[0]+1:, 1:target.shape[1]+1:, 1:target.shape[2]+1:]
+        _view = self._target[1:-1, 1:-1, 1:-1]
         _view[:] = _target_image.data[:]
         self._target_fromworld = target.inv_affine
         
@@ -182,13 +182,13 @@ class IconicRegistration(object):
 
         if method=='simplex':
             print ('Optimizing using the simplex method...')
-            tc = sp.optimize.fmin(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
+            tc = optimize.fmin(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
         elif method=='powell':
             print ('Optimizing using Powell method...') 
-            tc = sp.optimize.fmin_powell(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
+            tc = optimize.fmin_powell(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
         elif method=='conjugate_gradient':
             print ('Optimizing using conjugate gradient descent...')
-            tc = sp.optimize.fmin_cg(loss, tc0, callback=callback, gtol=ftol)
+            tc = optimize.fmin_cg(loss, tc0, callback=callback, gtol=ftol)
         else:
             raise ValueError('Unrecognized optimizer')
         
@@ -259,8 +259,7 @@ def clamp(x, bins=256):
       Adjusted number of bins 
 
     """
- 
-
+    
     # Create output array to allow in-place operations
     y = np.zeros(x.shape, dtype=_clamp_dtype)
 
