@@ -195,7 +195,7 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
             map = np.ma.masked_array(map, np.logical_not(mask))
 
     # Calculate the bounds
-    if anat:
+    if anat is not False:
         anat_bounds = np.zeros((4, 6))
         anat_bounds[:3, -3:] = np.identity(3)*anat.shape
         anat_bounds[-1, :] = 1
@@ -211,7 +211,7 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
     x_map, y_map, z_map = [int(round(c)) for c in 
                             coord_transform(x, y, z,
                                     np.linalg.inv(sform))]
-    if anat:
+    if anat is not False:
         x_anat, y_anat, z_anat = [int(round(c)) for c in 
                             coord_transform(x, y, z,
                                     np.linalg.inv(anat_sform))]
@@ -226,7 +226,7 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
     ax_height = ax_ymax - ax_ymin
     
     # Calculate the axes ratio size in a 'clever' way
-    if anat:
+    if anat is not False:
         shapes = np.array(anat.shape, 'f')
     else:
         shapes = np.array(map.shape, 'f')
@@ -235,7 +235,7 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
     ###########################################################################
     # Frontal
     pl.axes([ax_xmin, ax_ymin, shapes[0], ax_height])
-    if anat:
+    if anat is not False:
         if y_anat < anat.shape[1]:
             pl.imshow(np.rot90(anat[:, y_anat, :]), 
                                     cmap=pl.cm.gray,
@@ -268,7 +268,7 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
     ###########################################################################
     # Lateral
     pl.axes([ax_xmin + shapes[0], ax_ymin, shapes[1], ax_height])
-    if anat:
+    if anat is not False:
         if x_anat < anat.shape[0]:
             pl.imshow(np.rot90(anat[x_anat, ...]), cmap=pl.cm.gray,
                                     vmin=-.5*vmax_anat,
@@ -301,7 +301,7 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
     # Axial
     pl.axes([ax_xmin + shapes[0] + shapes[1], ax_ymin, shapes[-1],
                 ax_height])
-    if anat:
+    if anat is not False:
         if z_anat < anat.shape[2]:
             pl.imshow(np.rot90(anat[..., z_anat]), 
                                     cmap=pl.cm.gray,
