@@ -73,7 +73,7 @@ def test_Gamma_parameters1():
     G = Gamma()
     G.estimate(X)
     G.parameters()
-    assert(np.absolute(G.shape-11)<1)
+    assert(np.absolute(G.shape-11)<2.)
 
 def test_Gamma_parameters2():
     import numpy.random as nr

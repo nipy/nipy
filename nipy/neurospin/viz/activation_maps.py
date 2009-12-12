@@ -134,9 +134,9 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
         cut_coords: 3-tuple of floats
             The MNI coordinates of the point where the cut is performed, in 
             MNI coordinates and order.
-        anat : 3D ndarray, optional
+        anat : 3D ndarray, optional or False
             The anatomical image to be used as a background. If None, the 
-            MNI152 T1 1mm template is used.
+            MNI152 T1 1mm template is used. If False, no anat is displayed.
         anat_sform : 4x4 ndarray, optional
             The affine matrix going from the anatomical image voxel space to 
             MNI space. This parameter is not used when the default 
@@ -169,7 +169,7 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
     """
     if anat is None:
         anat, anat_sform, vmax_anat = _AnatCache.get_anat()
-    else:
+    elif anat is not False:
         vmax_anat = anat.max()
 
     if mask is not None and (
@@ -195,10 +195,11 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
             map = np.ma.masked_array(map, np.logical_not(mask))
 
     # Calculate the bounds
-    anat_bounds = np.zeros((4, 6))
-    anat_bounds[:3, -3:] = np.identity(3)*anat.shape
-    anat_bounds[-1, :] = 1
-    anat_bounds = np.dot(anat_sform, anat_bounds)
+    if anat is not False:
+        anat_bounds = np.zeros((4, 6))
+        anat_bounds[:3, -3:] = np.identity(3)*anat.shape
+        anat_bounds[-1, :] = 1
+        anat_bounds = np.dot(anat_sform, anat_bounds)
 
     map_bounds = np.zeros((4, 6))
     map_bounds[:3, -3:] = np.identity(3)*map.shape
@@ -210,7 +211,8 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
     x_map, y_map, z_map = [int(round(c)) for c in 
                             coord_transform(x, y, z,
                                     np.linalg.inv(sform))]
-    x_anat, y_anat, z_anat = [int(round(c)) for c in 
+    if anat is not False:
+        x_anat, y_anat, z_anat = [int(round(c)) for c in 
                             coord_transform(x, y, z,
                                     np.linalg.inv(anat_sform))]
 
@@ -224,25 +226,25 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
     ax_height = ax_ymax - ax_ymin
     
     # Calculate the axes ratio size in a 'clever' way
-    shapes = np.array(anat.shape, 'f')
+    if anat is not False:
+        shapes = np.array(anat.shape, 'f')
+    else:
+        shapes = np.array(map.shape, 'f')
     shapes *= ax_width/shapes.sum()
     
     ###########################################################################
     # Frontal
     pl.axes([ax_xmin, ax_ymin, shapes[0], ax_height])
-    if y_anat < anat.shape[1]:
-        pl.imshow(np.rot90(anat[:, y_anat, :]), 
-                                cmap=pl.cm.gray,
-                                vmin=-.5*vmax_anat,
-                                vmax=vmax_anat, 
-                                extent=(anat_bounds[0, 3],
-                                        anat_bounds[0, 0],
-                                        anat_bounds[2, 0],
-                                        anat_bounds[2, 5]))
-    xmin, xmax = pl.xlim()
-    ymin, ymax = pl.ylim()
-    pl.hlines(z, xmin, xmax, color=(.5, .5, .5))
-    pl.vlines(-x, ymin, ymax, color=(.5, .5, .5))
+    if anat is not False:
+        if y_anat < anat.shape[1]:
+            pl.imshow(np.rot90(anat[:, y_anat, :]), 
+                                    cmap=pl.cm.gray,
+                                    vmin=-.5*vmax_anat,
+                                    vmax=vmax_anat, 
+                                    extent=(anat_bounds[0, 3],
+                                            anat_bounds[0, 0],
+                                            anat_bounds[2, 0],
+                                            anat_bounds[2, 5]))
     if y_map < map.shape[1]:
         pl.imshow(np.rot90(map[:, y_map, :]),
                                 vmin=vmin_map,
@@ -257,23 +259,24 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
              verticalalignment='bottom',
              transform=fig.transFigure)
     
+    xmin, xmax = pl.xlim()
+    ymin, ymax = pl.ylim()
+    pl.hlines(z, xmin, xmax, color=(.5, .5, .5))
+    pl.vlines(-x, ymin, ymax, color=(.5, .5, .5))
     pl.axis('off')
     
     ###########################################################################
     # Lateral
     pl.axes([ax_xmin + shapes[0], ax_ymin, shapes[1], ax_height])
-    if x_anat < anat.shape[0]:
-        pl.imshow(np.rot90(anat[x_anat, ...]), cmap=pl.cm.gray,
-                                vmin=-.5*vmax_anat,
-                                vmax=vmax_anat, 
-                                extent=(anat_bounds[1, 0],
-                                        anat_bounds[1, 4],
-                                        anat_bounds[2, 0],
-                                        anat_bounds[2, 5]))
-    xmin, xmax = pl.xlim()
-    ymin, ymax = pl.ylim()
-    pl.hlines(z, xmin, xmax, color=(.5, .5, .5))
-    pl.vlines(y, ymin, ymax, color=(.5, .5, .5))
+    if anat is not False:
+        if x_anat < anat.shape[0]:
+            pl.imshow(np.rot90(anat[x_anat, ...]), cmap=pl.cm.gray,
+                                    vmin=-.5*vmax_anat,
+                                    vmax=vmax_anat, 
+                                    extent=(anat_bounds[1, 0],
+                                            anat_bounds[1, 4],
+                                            anat_bounds[2, 0],
+                                            anat_bounds[2, 5]))
     if x_map < map.shape[0]:
         pl.imshow(np.rot90(map[x_map, ...]),
                                 vmin=vmin_map,
@@ -288,25 +291,26 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
              verticalalignment='bottom',
              transform=fig.transFigure)
     
+    xmin, xmax = pl.xlim()
+    ymin, ymax = pl.ylim()
+    pl.hlines(z, xmin, xmax, color=(.5, .5, .5))
+    pl.vlines(y, ymin, ymax, color=(.5, .5, .5))
     pl.axis('off')
 
     ###########################################################################
     # Axial
     pl.axes([ax_xmin + shapes[0] + shapes[1], ax_ymin, shapes[-1],
                 ax_height])
-    if z_anat < anat.shape[2]:
-        pl.imshow(np.rot90(anat[..., z_anat]), 
-                                cmap=pl.cm.gray,
-                                vmin=-.5*vmax_anat,
-                                vmax=vmax_anat, 
-                                extent=(anat_bounds[0, 0],
-                                        anat_bounds[0, 3],
-                                        anat_bounds[1, 0],
-                                        anat_bounds[1, 4]))
-    xmin, xmax = pl.xlim()
-    ymin, ymax = pl.ylim()
-    pl.hlines(y,  xmin, xmax, color=(.5, .5, .5))
-    pl.vlines(x, ymin, ymax, color=(.5, .5, .5))
+    if anat is not False:
+        if z_anat < anat.shape[2]:
+            pl.imshow(np.rot90(anat[..., z_anat]), 
+                                    cmap=pl.cm.gray,
+                                    vmin=-.5*vmax_anat,
+                                    vmax=vmax_anat, 
+                                    extent=(anat_bounds[0, 0],
+                                            anat_bounds[0, 3],
+                                            anat_bounds[1, 0],
+                                            anat_bounds[1, 4]))
     if z_map < map.shape[2]:
         pl.imshow(np.rot90(map[..., z_map]),
                                 vmin=vmin_map,
@@ -321,6 +325,10 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
              verticalalignment='bottom',
              transform=fig.transFigure)
     
+    xmin, xmax = pl.xlim()
+    ymin, ymax = pl.ylim()
+    pl.hlines(y,  xmin, xmax, color=(.5, .5, .5))
+    pl.vlines(x, ymin, ymax, color=(.5, .5, .5))
     pl.axis('off')
     
     pl.text(ax_xmin + 0.01, ax_ymax - 0.01, title, 
