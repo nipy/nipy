@@ -1,13 +1,16 @@
 #vim:fileencoding=utf-8
 ''' Tests for pynifti compat package '''
 import os
+import numpy as np
 import md5
 import tempfile
 import shutil
 import unittest
 
+from numpy.testing import assert_array_equal
 from nose.tools import ok_
 
+from nipy.io.imageformats.volumeutils import HeaderDataError
 from nipy.io.imageformats.compat import NiftiImage
 
 data_path, _ = os.path.split(__file__)

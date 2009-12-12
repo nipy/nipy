@@ -93,7 +93,6 @@ The same for logging::
    nifti.logger = logger
 
 '''
-import warnings
 
 import numpy as np
 
@@ -101,8 +100,7 @@ from nipy.io.imageformats.volumeutils import pretty_mapping, endian_codes, \
      native_code, swapped_code, hdr_getterfunc, \
      make_dt_codes, HeaderDataError, HeaderTypeError, allopen
 
-from nipy.io.imageformats.header_ufuncs import read_data, write_data, \
-    adapt_header, read_unscaled_data
+from nipy.io.imageformats.header_ufuncs import read_data, write_data, adapt_header
 
 from nipy.io.imageformats import imageglobals as imageglobals
 from nipy.io.imageformats.spatialimages import SpatialImage
@@ -999,7 +997,7 @@ class AnalyzeHeader(object):
             hdr['sizeof_hdr'] = 348
             ret.fix_msg = 'set sizeof_hdr to 348'
         else:
-            ret.level = 30
+            ret.problem_level = 30
         return ret
 
     @classmethod
@@ -1009,11 +1007,11 @@ class AnalyzeHeader(object):
         try:
             dtype = klass._data_type_codes.dtype[code]
         except KeyError:
-            ret.level = 40
+            ret.problem_level = 40
             ret.problem_msg = 'data code %d not recognized' % code
         else:
             if dtype.type is np.void:
-                ret.level = 40
+                ret.problem_level = 40
                 ret.problem_msg = 'data code %d not supported' % code
         if fix:
             ret.fix_problem_msg = 'not attempting fix'
@@ -1026,7 +1024,7 @@ class AnalyzeHeader(object):
         try:
             dt = klass._data_type_codes.dtype[code]
         except KeyError:
-            ret.level = 10
+            ret.problem_level = 10
             ret.problem_msg = 'no valid datatype to fix bitpix'
             if fix:
                 ret.fix_msg = 'no way to fix bitpix'
@@ -1040,7 +1038,7 @@ class AnalyzeHeader(object):
             hdr['bitpix'] = bitpix # inplace modification
             ret.fix_msg = 'setting bitpix to match datatype'
         else:
-            ret.level = 10
+            ret.problem_level = 10
         return ret
 
     @staticmethod
@@ -1053,7 +1051,7 @@ class AnalyzeHeader(object):
             hdr['pixdim'][1:4] = np.abs(hdr['pixdim'][1:4])
             ret.fix_msg = 'setting to abs of pixdim values'
         else:
-            ret.level = 40
+            ret.problem_level = 40
         return ret
 
 
@@ -1072,18 +1070,6 @@ class AnalyzeImage(SpatialImage):
             return None
         self._data = read_data(self._header, allopen(fname))
         return self._data
-
-    def get_raw_data(self):
-        ''' Return the unscaled data '''
-        if not hasattr(self, '_files') or not 'image' in self._files:
-            warnings.warn('Unscaled data can only be read directly'
-            'from the disk and this object appears not to '
-            'be related to a file. Returning scaled data.',
-            stacklevel=2)
-            return self.get_data()
-        # XXX: This does not cache the data
-        fname = self._files['image']
-        return read_unscaled_data(self._header, allopen(fname))
 
     def get_header(self):
         ''' Return header

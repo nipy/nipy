@@ -1,5 +1,7 @@
 ''' Test for image funcs '''
 
+from StringIO import StringIO
+
 import numpy as np
 
 import nipy.io.imageformats as nf
@@ -7,7 +9,7 @@ import nipy.io.imageformats as nf
 from nipy.io.imageformats.funcs import concat_images
 
 from numpy.testing import assert_array_equal
-from nose.tools import assert_raises
+from nose.tools import assert_true, assert_equal, assert_raises
 
 def test_concat():
     shape = (1,2,5)

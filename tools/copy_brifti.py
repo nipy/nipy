@@ -8,13 +8,20 @@ Unix specific.  It could be generalized, but it's only for occasional
 use in updating the code tree, and probably won't be used for long
 either.
 
-Typical use would be:
+Typical use would be (to port over changes for revision tagged in git as
+'brifti-0.4':
 
-copy_brifti.py /tmp/brifti-0.2.tar.gz
+copy_brifti.py /tmp/brifti-0.4.tar.gz brifti-0.4
 cd ~/nipy-repo/trunk-lp/nipy/io
-tar zcvf /tmp/brifti-0.2.tar.gz
+tar zcvf /tmp/brifti-0.4.tar.gz
 
-then bzr stat, commit as necessary
+then bzr stat, commit as necessary.
+
+Or, when working locally, something like:
+
+copy_brifti.py /tmp/brifti-0.4.tar.gz brifti-0.4 ~/dev_trees/pynifti/.git
+
+to replace the first line above.
 '''
 
 import os
@@ -36,8 +43,6 @@ subs = (
 
 caller = functools.partial(call, shell=True)
 git_path = 'git://git.debian.org/git/pkg-exppsy/pynifti.git'
-# because I am working locally for the moment
-#git_path = '/home/mb312/dev_trees/pynifti/.git'
 
 
 def create_archive(out_path, git_path, git_id):

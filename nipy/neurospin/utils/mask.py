@@ -84,19 +84,19 @@ def compute_mask_files(input_filename, output_filename=None,
         for index, filename in enumerate(input_filename):
             nim = load(filename)
             if index == 0:
-                first_volume = nim.get_raw_data().squeeze()
+                first_volume = nim.get_data().squeeze()
                 mean_volume = first_volume.copy().astype(np.float32)
                 header = nim.get_header()
                 affine = nim.get_affine()
             else:
-                mean_volume += nim.get_raw_data().squeeze()
+                mean_volume += nim.get_data().squeeze()
         mean_volume /= float(len(input_filename))
     else: 
         # one single filename
         nim = load(input_filename)
         header = nim.get_header()
         affine = nim.get_affine()
-        data = nim.get_raw_data()
+        data = nim.get_data()
         # Make a copy, to avoid holding a reference on the full array,
         # and thus polluting the memory.
         first_volume = data[:,:,:,0].copy()
