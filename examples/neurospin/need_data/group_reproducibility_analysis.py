@@ -2,6 +2,11 @@
 Example of script to analyse the reproducibility in group studies
 using a bootstrap procedure
 
+This reproduces approximately the work described in
+Analysis of a large fMRI cohort: Statistical and methodological issues for group analyses.
+Thirion B, Pinel P, Meriaux S, Roche A, Dehaene S, Poline JB.
+Neuroimage. 2007 Mar;35(1):105-20. 
+
 author: Bertrand Thirion, 2005-2009
 """
 import numpy as np
@@ -11,6 +16,7 @@ from nipy.io.imageformats import load, save, Nifti1Image
 import tempfile
 import get_data_light
 
+from nipy.neurospin.utils.mask import intersect_masks
 from nipy.neurospin.utils.reproducibility_measures import \
      voxel_reproducibility, cluster_reproducibility, map_reproducibility
 
@@ -37,20 +43,7 @@ swd = tempfile.mkdtemp('image')
 ################################################################################
 # Make a group mask
 
-# Read the masks
-rmask = load(mask_images[0])
-ref_dim = rmask.get_shape()
-
-mask = np.zeros(ref_dim)
-for s in range(nsubj):
-    rmask = load(mask_images[s])
-    m1 = rmask.get_data()
-    if (rmask.get_shape() != ref_dim):
-        raise ValueError, "icompatible image size"
-    mask += m1>0
-        
-# "intersect" the masks
-mask = mask>nsubj/2
+mask = intersect_masks(mask_images)>0
 xyz = np.where(mask)
 xyz = np.array(xyz).T
 nvox = xyz.shape[0]
@@ -88,7 +81,7 @@ VarFunctional[np.isnan(VarFunctional)]=0
 ################################################################################
 # MNI coordinates
 
-affine = rmask.get_affine()
+affine = rbeta.get_affine()
 coord = np.hstack((xyz, np.ones((nvox, 1))))
 coord = np.dot(coord, affine.T)[:,:3]
 
@@ -103,33 +96,16 @@ niter = 10
 method = 'crfx'
 verbose = 0
 
-# BSA stuff
-smin = 5
-theta= 3.
-dmax =  5.
-tht = nsubj/4
-thq = 0.9
-afname = '/tmp/af'
-
-# apply random sign swaps to the data to test the reproducibility under the H0 hypothesis
-swap = True
+# apply random sign swaps to the data to test the reproducibility
+# under the H0 hypothesis
+swap = False
 
 kap = []
 clt = []
 for threshold in thresholds:
     kappa = []
     cls = []
-    if method=='rfx':
-        kwargs = {'threshold':threshold}
-    if method=='cffx':
-        kwargs={'threshold':threshold,'csize':csize}
-    if method=='crfx':
-        kwargs={'threshold':threshold,'csize':csize}
-    if method=='cmfx':
-        kwargs={'threshold':threshold,'csize':csize}
-    if method=='bsa':
-        kwargs={'header':header,'smin':smin,'theta':theta,
-                'dmax':dmax,'ths':ths,'thq':thq,'afname':afname}
+    kwargs={'threshold':threshold,'csize':csize}
         
     for i in range(niter):
         k = voxel_reproducibility(Functional, VarFunctional, xyz, ngroups,
@@ -165,7 +141,7 @@ swap = True
 kwargs = {'threshold':th,'csize':csize}
 rmap = map_reproducibility(Functional, VarFunctional, xyz, ngroups,
                            method, swap, verbose, **kwargs)
-wmap  = np.zeros(ref_dim).astype(np.int)
+wmap  = mask.astype(np.int)
 wmap[mask] = rmap
 wim = Nifti1Image(wmap,affine)
 wim.get_header()['descrip']= 'reproducibility map at threshold %f, \
