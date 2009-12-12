@@ -16,7 +16,7 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 import numpy.linalg as L
-from nipy.fixes.scipy.stats.models.utils import recipr
+from nipy.fixes.scipy.stats.models.utils import pos_recipr
 
 def pca(data, mask=None, ncomp=1, standardize=True,
         design_keep=None, design_resid=None):
@@ -111,7 +111,7 @@ def pca(data, mask=None, ncomp=1, standardize=True,
 
         if standardize:
             S2 = (project_resid(Y)**2).sum(0)
-            Smhalf = recipr(np.sqrt(S2)); del(S2)
+            Smhalf = pos_recipr(np.sqrt(S2)); del(S2)
             YX *= Smhalf
 
         if mask is not None:
@@ -141,7 +141,7 @@ def pca(data, mask=None, ncomp=1, standardize=True,
 
         if standardize:
             S2 = (project_resid(Y)**2).sum(0)
-            Smhalf = recipr(np.sqrt(S2)); del(S2)
+            Smhalf = pos_recipr(np.sqrt(S2)); del(S2)
             YX *= Smhalf
 
         if mask is not None:

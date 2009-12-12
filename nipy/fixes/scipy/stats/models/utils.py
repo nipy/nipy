@@ -1,18 +1,54 @@
+''' General matrix and other utilities for statistics '''
+
 import numpy as np
-import numpy.linalg as L
+import numpy.linalg as npl
 import scipy.interpolate
-import scipy.linalg
 
 __docformat__ = 'restructuredtext'
 
-def recipr(X):
-    """
+
+def pos_recipr(X):
+    """ Return element-wise reciprocal of array, setting `X`>=0 to 0
+    
     Return the reciprocal of an array, setting all entries less than or
     equal to 0 to 0. Therefore, it presumes that X should be positive in
     general.
+
+    Parameters
+    ----------
+    X : array-like
+
+    Returns
+    -------
+    rX : array
+       array of same shape as `X`, dtype np.float, with values set to
+       1/X where X > 0, 0 otherwise
     """
-    x = np.maximum(np.asarray(X).astype(np.float64), 0)
-    return np.greater(x, 0.) / (x + np.less_equal(x, 0.))
+    X = np.asarray(X)
+    rX = np.zeros(X.shape)
+    gt0 = X > 0
+    rX[gt0] = 1. / X[gt0]
+    return rX
+
+
+def recipr0(X):
+    """ Return element-wise reciprocal of array, `X`==0 -> 0
+    
+    Return the reciprocal of an array, setting all entries equal to 0
+    as 0. It does not assume that X should be positive in
+    general.
+
+    Parameters
+    ----------
+    X : array-like
+
+    Returns
+    -------
+    rX : array
+    """
+    test = np.equal(np.asarray(X), 0)
+    return np.where(test, 0, 1. / X)
+
 
 def mad(a, c=0.6745, axis=0):
     """
@@ -28,14 +64,68 @@ def mad(a, c=0.6745, axis=0):
     a.shape = _shape
     return m
 
-def recipr0(X):
-    """
-    Return the reciprocal of an array, setting all entries equal to 0
-    as 0. It does not assume that X should be positive in
-    general.
-    """
-    test = np.equal(np.asarray(X), 0)
-    return np.where(test, 0, 1. / X)
+
+def matrix_rank(M, tol=None):
+    ''' Return rank of matrix using SVD method
+
+    Rank of the array is the number of SVD singular values of the
+    array that are greater than `tol`.
+    
+    Parameters
+    ----------
+    M : array-like
+        array of <=2 dimensions
+    tol : {None, float}
+         threshold below which SVD values are considered zero. If `tol`
+         is None, and `S` is an array with singular values for `M`, and
+         `eps` is the epsilon value for datatype of `S`, then `tol` set
+         to ``S.max() * eps``.
+
+    Examples
+    --------
+    >>> matrix_rank(np.eye(4)) # Full rank matrix
+    4
+    >>> matrix_rank(np.c_[np.eye(4),np.eye(4)]) # Rank deficient matrix
+    4
+    >>> matrix_rank(np.zeros((4,4))) # All zeros - zero rank
+    0
+    >>> matrix_rank(np.ones((4,))) # 1 dimension - rank 1 unless all 0
+    1
+    >>> matrix_rank(np.zeros((4,)))
+    0
+    >>> matrix_rank([1]) # accepts array-like
+    1
+
+    Notes
+    -----
+    Golub and van Loan define "numerical rank deficiency" as using
+    tol=eps*S[0] (note that S[0] is the maximum singular value and thus
+    the 2-norm of the matrix). There really is not one definition, much
+    like there isn't a single definition of the norm of a matrix. For
+    example, if your data come from uncertain measurements with
+    uncertainties greater than floating point epsilon, choosing a
+    tolerance of about the uncertainty is probably a better idea (the
+    tolerance may be absolute if the uncertainties are absolute rather
+    than relative, even). When floating point roundoff is your concern,
+    then "numerical rank deficiency" is a better concept, but exactly
+    what the relevant measure of the tolerance is depends on the
+    operations you intend to do with your matrix. [RK, numpy mailing
+    list]
+
+    References
+    ----------
+    Matrix Computations by Golub and van Loan
+    '''
+    M = np.asarray(M)
+    if M.ndim > 2:
+        raise TypeError('array should have 2 or fewer dimensions')
+    if M.ndim < 2:
+        return int(not np.all(M==0))
+    S = npl.svd(M, compute_uv=False)
+    if tol is None:
+        tol = S.max() * np.finfo(S.dtype).eps
+    return np.sum(S > tol)
+
 
 def rank(X, cond=1.0e-12):
     """
@@ -44,10 +134,11 @@ def rank(X, cond=1.0e-12):
     """
     X = np.asarray(X)
     if len(X.shape) == 2:
-        D = L.svd(X, compute_uv=False)
+        D = npl.svd(X, compute_uv=False)
         return int(np.add.reduce(np.greater(D / D.max(), cond).astype(np.int32)))
     else:
         return int(not np.alltrue(np.equal(X, 0.)))
+
 
 def fullrank(X, r=None):
     """
@@ -61,13 +152,14 @@ def fullrank(X, r=None):
     if r is None:
         r = rank(X)
 
-    V, D, U = L.svd(X, full_matrices=0)
+    V, D, U = npl.svd(X, full_matrices=0)
     order = np.argsort(D)
     order = order[::-1]
     value = []
     for i in range(r):
         value.append(V[:,order[i]])
     return np.asarray(np.transpose(value)).astype(np.float64)
+
 
 class StepFunction:
     """
@@ -116,6 +208,7 @@ class StepFunction:
         _shape = tind.shape
         return self.y[tind]
 
+
 def ECDF(values):
     """
     Return the ECDF of an array as a step function.
@@ -126,6 +219,7 @@ def ECDF(values):
     n = x.shape[0]
     y = (np.arange(n) + 1.) / n
     return StepFunction(x, y)
+
 
 def monotone_fn_inverter(fn, x, vectorized=True, **keywords):
     """
