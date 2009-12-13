@@ -102,6 +102,7 @@ def test_keep():
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
 
 
+@parametric
 def test_resid():
     # Data is projected onto k=10 dimensional subspace then has its mean
     # removed.  Should still have rank 10.
@@ -115,6 +116,9 @@ def test_resid():
     yield assert_equal, p['images'].shape, data['mask'].shape + (ncomp,)
     yield assert_equal, p['pcnt_var'].shape, (ntotal,)
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
+    # if design_resid is None, we do not remove the mean
+    p = pca(data['fmridata'], ncomp=ncomp, design_resid=None)
+    yield assert_equal, p['rank'], data['nimages']
 
 
 def test_both():

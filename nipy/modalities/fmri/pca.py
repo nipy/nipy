@@ -18,7 +18,7 @@ from nipy.fixes.scipy.stats.models.utils import pos_recipr
 
 
 def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
-        design_keep=None, design_resid=None):
+        design_keep=None, design_resid='mean'):
     """
     Compute the PCA of an array-like thing over `axis`.
 
@@ -38,13 +38,14 @@ def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
        the data, after applying `design_keep` and `design_resid` below
     standardize : bool
        Standardize so each time series has same error-sum-of-squares?
-    design_keep : ndarray
+    design_keep : None or ndarray
        Data is projected onto the column span of design_keep.
-       Defaults to ``np.identity(data.shape[axis])``
-    design_resid : ndarray
+       None (default) gives ``np.identity(data.shape[axis])``
+    design_resid : str or None or ndarray
        After projecting onto the column span of design_keep, data is
-       projected perpendicular to the column span of this matrix.
-       Defaults to a matrix of 1s, removing the mean.
+       projected perpendicular to the column span of this matrix.  If
+       None, we do no such second projection.  If a string 'mean',
+       matrix set to a column vector matrix of 1s, removing the mean.
 
     Returns
     -------
@@ -68,31 +69,28 @@ def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
     if mask is not None:
         mask = np.asarray(mask)
     nimages = data.shape[0]
-    if design_resid is None:
+    if design_resid == 'mean':
         design_resid = np.ones((data.shape[0], 1))
-    pinv_design_resid = npl.pinv(design_resid)
-
-    def project_resid(Y):
-        return Y - np.dot(np.dot(design_resid, pinv_design_resid), Y)
-
+    if design_resid is None:
+        def project_resid(Y): return Y
+    else:
+        pinv_design_resid = npl.pinv(design_resid)
+        def project_resid(Y):
+            return Y - np.dot(np.dot(design_resid, pinv_design_resid), Y)
     """
-    Perform the computations needed for the PCA.
-    This stores the covariance/correlation matrix of the data in
-    the attribute 'C'.
-    The components are stored as the attributes 'components', 
-    for an fMRI image these are the time series explaining the most
-    variance.
+    Perform the computations needed for the PCA.  This stores the
+    covariance/correlation matrix of the data in the attribute 'C'.  The
+    components are stored as the attributes 'components', for an fMRI
+    image these are the time series explaining the most variance.
 
-    Now, we compute projection matrices. First, data is projected
-    onto the columnspace of design_keep, then
-    it is projected perpendicular to column space of 
-    design_resid.
-
+    Now, we compute projection matrices. First, data is projected onto
+    the columnspace of design_keep, then it is projected perpendicular
+    to column space of design_resid.
     """
     if design_keep is None:
         design_keep = np.identity(nimages)
     X = np.dot(design_keep, npl.pinv(design_keep))
-    XZ = X - np.dot(design_resid, np.dot(npl.pinv(design_resid), X))
+    XZ = project_resid(X)
     UX, SX, VX = npl.svd(XZ, full_matrices=0)
     # The matrix UX has orthonormal columns and represents the
     # final "column space" that the data will be projected onto.
