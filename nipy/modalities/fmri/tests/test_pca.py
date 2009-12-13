@@ -20,15 +20,34 @@ def setup():
     data['mask'] = (frame > 500).astype(np.float64)
 
 
+def reconstruct(time_series, images, axis=-1):
+    # Reconstruct data from remaining components
+    n_tps = time_series.shape[1]
+    images = np.rollaxis(images, axis)
+    ncomps = images.shape[0]
+    img_size = np.prod(images.shape[1:])
+    rarr = images.reshape((ncomps, img_size))
+    recond = np.dot(time_series.T, rarr)
+    recond = recond.reshape((n_tps,) + images.shape[1:])
+    if axis < 0:
+        axis = axis + images.ndim
+    recond = np.rollaxis(recond, 0, axis+1)
+    return recond
+
+
 @parametric
 def test_input_effects():
     ntotal = data['nimages'] - 1
-    # return full rank PCA over last axis by default
+    # return full rank - mean PCA over last axis by default
     p = pca(data['fmridata'])
     yield assert_equal, p['rank'], ntotal
     yield assert_equal, p['time_series'].shape, (ntotal, data['nimages'])
     yield assert_equal, p['images'].shape, data['mask'].shape + (ntotal,)
     yield assert_equal, p['pcnt_var'].shape, (ntotal,)
+    # Reconstructed data lacks only mean
+    rarr = reconstruct(p['time_series'], p['images'])
+    rarr = rarr + rarr.mean(-1)[...,None]
+    yield assert_array_almost_equal, rarr, data['fmridata']
     # same effect if over axis 0
     arr = data['fmridata']
     arr = np.rollaxis(arr, -1)
@@ -116,9 +135,12 @@ def test_resid():
     yield assert_equal, p['images'].shape, data['mask'].shape + (ncomp,)
     yield assert_equal, p['pcnt_var'].shape, (ntotal,)
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
-    # if design_resid is None, we do not remove the mean
-    p = pca(data['fmridata'], ncomp=ncomp, design_resid=None)
+    # if design_resid is None, we do not remove the mean, and we get
+    # full rank from our data
+    p = pca(data['fmridata'], design_resid=None)
     yield assert_equal, p['rank'], data['nimages']
+    rarr = reconstruct(p['time_series'], p['images'])
+    yield assert_array_almost_equal, rarr, data['fmridata']
 
 
 def test_both():

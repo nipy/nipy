@@ -60,6 +60,7 @@ def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
           ncomp``
        * ``rank``: number of non-trivial components found after applying
           `design_keep` and `design_resid`
+       * ``axis``: axis over which PCA has been performed.
     """
     data = np.asarray(data)
     # We roll the PCA axis to be first, for convenience
@@ -137,7 +138,8 @@ def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
     return {'time_series': time_series[:ncomp,],
             'pcnt_var': pcntvar,
             'images': out, 
-            'rank': rank}
+            'rank': rank,
+            'axis': axis}
 
 
 
