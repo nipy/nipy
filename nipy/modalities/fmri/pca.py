@@ -45,6 +45,20 @@ def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
        After projecting onto the column span of design_keep, data is
        projected perpendicular to the column span of this matrix.
        Defaults to a matrix of 1s, removing the mean.
+
+    Returns
+    -------
+    results : dict
+       With keys:
+
+       * ``time_series``: time series, shape (ncomp, data.shape[axis])
+       * ``pcnt_var``: percent variance explained by component, shape
+          (ncomp,)
+       * ``images``: PCA components, with components varying over axis
+          `axis`; thus shape given by: ``s = list(data.shape); s[axis] =
+          ncomp``
+       * ``rank``: number of non-trivial components found after applying
+          `design_keep` and `design_resid`
     """
     data = np.asarray(data)
     # We roll the PCA axis to be first, for convenience
