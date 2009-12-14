@@ -17,10 +17,9 @@ import numpy.linalg as npl
 from nipy.fixes.scipy.stats.models.utils import pos_recipr
 
 
-def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
-        design_keep=None, design_resid='mean'):
-    """
-    Compute the PCA of an array-like thing over `axis`.
+def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
+        design_keep=None, design_resid='mean', tol_ratio=0.01):
+    """Compute the SVD PCA of an array-like thing over `axis`.
 
     Parameters
     ----------
@@ -28,14 +27,17 @@ def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
        The array on which to perform PCA over axis `axis` (below)
     axis : int
        The axis over which to perform PCA (axis identifying
-       observations).  Default is -1 (last)
+       observations).  Default is 0 (first)
     mask : ndarray-like (np.bool)
        An optional mask, should have shape given by data axes, with
        `axis` removed, i.e.: ``s = data.shape; s.pop(axis); msk_shape=s``
     ncomp : {None, int}
-       How many components to return. If ncomp is None (the default)
-       then the number of components is given by the calculated rank of
-       the data, after applying `design_keep` and `design_resid` below
+       How many component basis projections to return. If ncomp is None
+       (the default) then the number of components is given by the
+       calculated rank of the data, after applying `design_keep`,
+       `design_resid` and `tol_ratio` below.  We always return all the
+       basis vectors and percent variance for each component; `ncomp`
+       refers only to the number of basis_projections returned.
     standardize : bool
        Standardize so each time series has same error-sum-of-squares?
     design_keep : None or ndarray
@@ -46,20 +48,28 @@ def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
        projected perpendicular to the column span of this matrix.  If
        None, we do no such second projection.  If a string 'mean',
        matrix set to a column vector matrix of 1s, removing the mean.
+    tol_ratio : float
+       If ``XZ`` is the vector of singular values of the projection
+       matrix from `design_keep` and `design_resid`, and S are the
+       singular values of ``XZ``, then `tol_ratio` is the value used to
+       calculate the effective rank of the projection, as in ``rank = ((S
+       / S.max) > tol_ratio).sum()``
 
     Returns
     -------
     results : dict
-       With keys:
+        $L$ is the number of non-trivial components found after applying
+       `tol_ratio` to the projections of `design_keep` and
+       `design_resid`.
+    
+       `results` has keys:
 
-       * ``time_series``: time series, shape (ncomp, data.shape[axis])
+       * ``basis_vectors``: time series, shape (data.shape[axis], L)
        * ``pcnt_var``: percent variance explained by component, shape
-          (ncomp,)
-       * ``images``: PCA components, with components varying over axis
+          (L,)
+       * ``basis_projections``: PCA components, with components varying over axis
           `axis`; thus shape given by: ``s = list(data.shape); s[axis] =
           ncomp``
-       * ``rank``: number of non-trivial components found after applying
-          `design_keep` and `design_resid`
        * ``axis``: axis over which PCA has been performed.
     """
     data = np.asarray(data)
@@ -69,7 +79,7 @@ def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
     data = np.rollaxis(data, axis)
     if mask is not None:
         mask = np.asarray(mask)
-    nimages = data.shape[0]
+    nbasis_projections = data.shape[0]
     if design_resid == 'mean':
         design_resid = np.ones((data.shape[0], 1))
     if design_resid is None:
@@ -89,13 +99,13 @@ def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
     to column space of design_resid.
     """
     if design_keep is None:
-        design_keep = np.identity(nimages)
+        design_keep = np.identity(nbasis_projections)
     X = np.dot(design_keep, npl.pinv(design_keep))
     XZ = project_resid(X)
     UX, SX, VX = npl.svd(XZ, full_matrices=0)
     # The matrix UX has orthonormal columns and represents the
     # final "column space" that the data will be projected onto.
-    rank = np.greater(SX/SX.max(), 0.01).astype(np.int32).sum()
+    rank = np.greater(SX/SX.max(), tol_ratio).astype(np.int32).sum()
     UX = UX[:,range(rank)].T
     C = np.zeros((rank, rank))
     for i in range(data.shape[1]):
@@ -112,13 +122,13 @@ def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
     order = np.argsort(-D)
     D = D[order]
     pcntvar = D * 100 / D.sum()
-    time_series = np.dot(UX.T, Vs).T[order]
+    basis_vectors = np.dot(UX.T, Vs).T[order]
     """
-    Output the component images
+    Output the component basis_projections
     """
     if ncomp is None:
         ncomp = rank
-    subVX = time_series[:ncomp]
+    subVX = basis_vectors[:ncomp]
     out = np.empty((ncomp,) + data.shape[1:], np.float)
     for i in range(data.shape[1]):
         Y = data[:,i].reshape((data.shape[0], np.product(data.shape[2:])))
@@ -135,10 +145,9 @@ def pca(data, axis=-1, mask=None, ncomp=None, standardize=True,
     if axis < 0:
         axis += data.ndim
     out = np.rollaxis(out, 0, axis+1)
-    return {'time_series': time_series[:ncomp,],
+    return {'basis_vectors': basis_vectors.T,
             'pcnt_var': pcntvar,
-            'images': out, 
-            'rank': rank,
+            'basis_projections': out, 
             'axis': axis}
 
 
