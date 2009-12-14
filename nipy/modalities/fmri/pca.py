@@ -42,12 +42,13 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
        Standardize so each time series has same error-sum-of-squares?
     design_keep : None or ndarray
        Data is projected onto the column span of design_keep.
-       None (default) gives ``np.identity(data.shape[axis])``
+       None (default) equivalent to ``np.identity(data.shape[axis])``
     design_resid : str or None or ndarray
        After projecting onto the column span of design_keep, data is
        projected perpendicular to the column span of this matrix.  If
-       None, we do no such second projection.  If a string 'mean',
-       matrix set to a column vector matrix of 1s, removing the mean.
+       None, we do no such second projection.  If a string 'mean', then
+       the mean of the data is removed, equivalent to passing a column
+       vector matrix of 1s.
     tol_ratio : float
        If ``XZ`` is the vector of singular values of the projection
        matrix from `design_keep` and `design_resid`, and S are the
@@ -81,10 +82,12 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
         mask = np.asarray(mask)
     nbasis_projections = data.shape[0]
     if design_resid == 'mean':
-        design_resid = np.ones((data.shape[0], 1))
-    if design_resid is None:
+        # equivalent to: design_resid = np.ones((data.shape[0], 1))
+        def project_resid(Y):
+            return Y - Y.mean(0)[None,...]
+    elif design_resid is None:
         def project_resid(Y): return Y
-    else:
+    else: # matrix passed, we hope
         pinv_design_resid = npl.pinv(design_resid)
         def project_resid(Y):
             return Y - np.dot(np.dot(design_resid, pinv_design_resid), Y)
@@ -99,26 +102,21 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     to column space of design_resid.
     """
     if design_keep is None:
-        design_keep = np.identity(nbasis_projections)
-    X = np.dot(design_keep, npl.pinv(design_keep))
+        X = np.eye(nbasis_projections)
+    else:
+        X = np.dot(design_keep, npl.pinv(design_keep))
     XZ = project_resid(X)
     UX, SX, VX = npl.svd(XZ, full_matrices=0)
     # The matrix UX has orthonormal columns and represents the
     # final "column space" that the data will be projected onto.
-    rank = np.greater(SX/SX.max(), tol_ratio).astype(np.int32).sum()
+    rank = (SX/SX.max() > tol_ratio).sum()
     UX = UX[:,range(rank)].T
-    C = np.zeros((rank, rank))
-    for i in range(data.shape[1]):
-        Y = data[:,i].reshape((data.shape[0], np.product(data.shape[2:])))
-        YX = np.dot(UX, Y)
-        if standardize:
-            S2 = (project_resid(Y)**2).sum(0)
-            Smhalf = pos_recipr(np.sqrt(S2)); del(S2)
-            YX *= Smhalf
-        if mask is not None:
-            YX = YX * np.nan_to_num(mask[i].reshape(Y.shape[1]))
-        C += np.dot(YX, YX.T)
+    # calculate covariance matrix
+    C  = _get_covariance(data, UX, standardize, project_resid, mask)
+    # find the eigenvalues D and eigenvectors Vs of the covariance
+    # matrix
     D, Vs = npl.eigh(C)
+    # sort both in descending order of eigenvalues
     order = np.argsort(-D)
     D = D[order]
     pcntvar = D * 100 / D.sum()
@@ -129,18 +127,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     if ncomp is None:
         ncomp = rank
     subVX = basis_vectors[:ncomp]
-    out = np.empty((ncomp,) + data.shape[1:], np.float)
-    for i in range(data.shape[1]):
-        Y = data[:,i].reshape((data.shape[0], np.product(data.shape[2:])))
-        U = np.dot(subVX, Y)
-        if standardize:
-            S2 = (project_resid(Y)**2).sum(0)
-            Smhalf = pos_recipr(np.sqrt(S2)); del(S2)
-            YX *= Smhalf
-        if mask is not None:
-            YX *= np.nan_to_num(mask[i].reshape(Y.shape[1]))
-        U.shape = (U.shape[0],) + data.shape[2:]
-        out[:,i] = U
+    out = _get_basis_projections(data, subVX)
     # Roll PCA image axis back to original position in data array
     if axis < 0:
         axis += data.ndim
@@ -151,7 +138,29 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
             'axis': axis}
 
 
+def _get_covariance(data, UX, standardize, project_resid, mask):
+    rank = UX.shape[0]
+    C = np.zeros((rank, rank))
+    for i in range(data.shape[1]):
+        Y = data[:,i].reshape((data.shape[0], -1))
+        # project data into required space
+        YX = np.dot(UX, Y)
+        if standardize:
+            S2 = (project_resid(Y)**2).sum(0)
+            Smhalf = pos_recipr(np.sqrt(S2)); del(S2)
+            YX *= Smhalf
+        if mask is not None:
+            YX = YX * np.nan_to_num(mask[i].reshape(Y.shape[1]))
+        C += np.dot(YX, YX.T)
+    return C
 
 
-
-
+def _get_basis_projections(data, subVX):
+    ncomp = subVX.shape[0]
+    out = np.empty((ncomp,) + data.shape[1:], np.float)
+    for i in range(data.shape[1]):
+        Y = data[:,i].reshape((data.shape[0], -1))
+        U = np.dot(subVX, Y)
+        U.shape = (U.shape[0],) + data.shape[2:]
+        out[:,i] = U
+    return out

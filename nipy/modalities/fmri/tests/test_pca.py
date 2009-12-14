@@ -3,8 +3,8 @@ import numpy as np
 from nipy.modalities.fmri.pca import pca
 from nipy.io.api import  load_image
 from nipy.testing import assert_equal, assert_almost_equal, \
-    assert_array_almost_equal, funcfile, \
-    assert_array_equal, assert_raises
+    assert_array_almost_equal, funcfile, assert_true, \
+    assert_array_equal, assert_raises, assert_false
 
 
 data = {}
@@ -58,20 +58,31 @@ def test_input_effects():
     yield assert_raises, ValueError, pca, data['fmridata'], None
 
 
+def diagonal_covariance(arr):
+    aTa = np.dot(arr, arr.T)
+    return np.allclose(aTa, np.diag(np.diag(aTa)))
+
+
 def test_2D():
     # check that a standard 2D PCA works too
     M = 100
     N = 20
     L = M-1 # rank after mean removal
-    data = np.random.normal(size=(M, N))
+    data = np.random.uniform(size=(M, N))
     p = pca(data)
     ts = p['basis_vectors']
     imgs = p['basis_projections']
     yield assert_equal, ts.shape, (M, L)
     yield assert_equal, imgs.shape, (L, N)
     rimgs = reconstruct(ts, imgs) + data.mean(0)[None,...]
-    yield assert_array_almost_equal, rimgs, data, 5
-
+    yield assert_array_almost_equal, rimgs, data
+    # if standardize is set, projections will not be covariance diagonal
+    yield assert_false, diagonal_covariance(imgs)
+    # but will if not
+    p = pca(data, standardize=False)
+    imgs = p['basis_projections']
+    yield assert_true, diagonal_covariance(imgs)
+    
 
 def test_PCAMask():
     ntotal = data['nimages'] - 1
@@ -81,7 +92,6 @@ def test_PCAMask():
     yield assert_equal, p['basis_projections'].shape, data['mask'].shape + (ncomp,)
     yield assert_equal, p['pcnt_var'].shape, (ntotal,)
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
-    
 
 def test_PCAMask_nostandardize():
     ntotal = data['nimages'] - 1
