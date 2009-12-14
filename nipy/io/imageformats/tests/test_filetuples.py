@@ -2,7 +2,8 @@
 
 from StringIO import StringIO
 
-from nose.tools import assert_equals, assert_true, assert_raises
+from nose.tools import assert_equals, assert_true, assert_false, \
+     assert_raises
 
 from nipy.io.imageformats.filetuples import FileTuples, FileTuplesError
 

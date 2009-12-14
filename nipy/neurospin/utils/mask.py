@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 
 # Neuroimaging libraries imports
-from nipy.io.imageformats import load, nifti1, save
+from nipy.io.imageformats import load, nifti1, save, AnalyzeImage
 
 import nipy.neurospin.graph as fg
 
@@ -36,6 +36,43 @@ def _largest_cc(mask):
     mask_cc = np.zeros(mask.shape, np.int8)
     mask_cc[tuple(xyz)] = 1
     return mask_cc
+
+def get_unscaled_img(fname):
+    ''' Function to get image, data without scalefactor applied
+
+    If the image is of Analyze type, and is integer format, and has
+    single scalefactor that is usually applied, then read the raw
+    integer data from disk, rather than using the higher-level get_data
+    method, that would apply the scalefactor.  We do this because there
+    seemed to be images for which the integer binning in the raw file
+    data was needed for the histogram-like mask calculation in
+    ``compute_mask_files``.
+
+    By loading the image in this function we can guarantee that the
+    image as loaded from disk is the source of the current image data.
+
+    Parameters
+    ----------
+    fname : str
+       filename of image
+
+    Returns
+    -------
+    img : imageformats Image object
+    arr : ndarray
+    '''
+    img = load(fname)
+    if isinstance(img, AnalyzeImage):
+        dt = img.get_data_dtype()
+        if dt.kind in ('i', 'u'):
+            from nipy.io.imageformats.header_ufuncs import read_unscaled_data
+            from nipy.io.imageformats.volumeutils import allopen
+            # get where the image data is, given input filename
+            ft = img.filespec_to_files(fname)
+            hdr = img.get_header()
+            # read unscaled data from disk
+            return img, read_unscaled_data(hdr, allopen(ft['image']))
+    return img, img.get_data()
 
 
 def compute_mask_files(input_filename, output_filename=None, 
@@ -73,35 +110,42 @@ def compute_mask_files(input_filename, output_filename=None,
     mean_image : 3d ndarray, optional
         The main of all the images used to estimate the mask. Only
         provided if `return_mean` is True.
-
     """
-    if hasattr(input_filename, '__iter__'):
+    if isinstance(input_filename, basestring):
+        # One single filename
+        nim, vol_arr = get_unscaled_img(input_filename)
+        header = nim.get_header()
+        affine = nim.get_affine()
+        # Make a copy, to avoid holding a reference on the full array,
+        # and thus polluting the memory.
+        if vol_arr.ndim == 4:
+            mean_volume = vol_arr.mean(axis=-1)
+            first_volume = vol_arr[:,:,:,0].copy()
+        elif vol_arr.ndim == 3:
+            mean_volume = first_volume = vol_arr
+        else:
+            raise ValueError('Need 4D file for mask')
+        del vol_arr
+    else:
+        # List of filenames
         if len(input_filename) == 0:
             raise ValueError('input_filename should be a non-empty '
                 'list of file names')
         # We have several images, we do mean on the fly, 
         # to avoid loading all the data in the memory
+        # We do not use the unscaled data here?:
+        # if the scalefactor is being used to record real
+        # differences in intensity over the run this would break
         for index, filename in enumerate(input_filename):
             nim = load(filename)
             if index == 0:
-                first_volume = nim.get_raw_data().squeeze()
+                first_volume = nim.get_data().squeeze()
                 mean_volume = first_volume.copy().astype(np.float32)
                 header = nim.get_header()
                 affine = nim.get_affine()
             else:
-                mean_volume += nim.get_raw_data().squeeze()
+                mean_volume += nim.get_data().squeeze()
         mean_volume /= float(len(input_filename))
-    else: 
-        # one single filename
-        nim = load(input_filename)
-        header = nim.get_header()
-        affine = nim.get_affine()
-        data = nim.get_raw_data()
-        # Make a copy, to avoid holding a reference on the full array,
-        # and thus polluting the memory.
-        first_volume = data[:,:,:,0].copy()
-        mean_volume = data.mean(axis=3)
-        del data
     del nim
 
     mask = compute_mask(mean_volume, first_volume, m, M, cc)
@@ -250,6 +294,10 @@ def intersect_masks(input_mask_files, output_filename=None,
         gives the level of the intersection.
     cc: bool, optional
         If true, extract the main connected component
+        
+    Returns
+    -------
+    gmask, boolean array of shape the image shape
     """  
     gmask = None 
 
@@ -272,7 +320,7 @@ def intersect_masks(input_mask_files, output_filename=None,
                                             header=header,
                                          )
         output_image.save(output_filename)
-    return gmask
+    return gmask>0
 
 ################################################################################
 # Legacy function calls.

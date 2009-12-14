@@ -4,11 +4,13 @@ import numpy as np
 
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
-from nipy.io.imageformats.header_ufuncs import read_data, write_scaled_data
+from nipy.io.imageformats.header_ufuncs import read_unscaled_data, read_data, \
+    write_data, write_scaled_data
 
 from nipy.io.imageformats.spm99analyze import Spm99AnalyzeHeader
 
-from nipy.io.imageformats.testing import assert_equal
+from nipy.io.imageformats.testing import assert_equal, assert_true, assert_false, \
+     assert_raises
 
 from test_analyze import TestAnalyzeHeader as _TAH
 
