@@ -4,7 +4,8 @@ from nipy.modalities.fmri.pca import pca
 from nipy.io.api import  load_image
 from nipy.testing import assert_equal, assert_almost_equal, \
     assert_array_almost_equal, funcfile, assert_true, \
-    assert_array_equal, assert_raises, assert_false
+    assert_array_equal, assert_raises, assert_false, \
+    parametric
 
 
 data = {}
@@ -45,7 +46,6 @@ def test_input_effects():
     # Reconstructed data lacks only mean
     rarr = reconstruct(p['basis_vectors'], p['basis_projections'], -1)
     rarr = rarr + data['fmridata'].mean(-1)[...,None]
-    yield assert_array_almost_equal, rarr, data['fmridata']
     # same effect if over axis 0, which is the default
     arr = data['fmridata']
     arr = np.rollaxis(arr, -1)
@@ -58,9 +58,20 @@ def test_input_effects():
     yield assert_raises, ValueError, pca, data['fmridata'], None
 
 
-def diagonal_covariance(arr):
+@parametric
+def test_diagonality():
+    # basis_projections are not diagonal, unless not standarized
+    p = pca(data['fmridata'], -1)
+    yield assert_false(diagonal_covariance(p['basis_projections'], -1))
+    pns = pca(data['fmridata'], -1, standardize=False)
+    yield assert_true(diagonal_covariance(pns['basis_projections'], -1))
+
+
+def diagonal_covariance(arr, axis=0):
+    arr = np.rollaxis(arr, axis)
+    arr = arr.reshape(arr.shape[0], -1)
     aTa = np.dot(arr, arr.T)
-    return np.allclose(aTa, np.diag(np.diag(aTa)))
+    return np.allclose(aTa, np.diag(np.diag(aTa)), atol=1e-6)
 
 
 def test_2D():
@@ -92,6 +103,7 @@ def test_PCAMask():
     yield assert_equal, p['basis_projections'].shape, data['mask'].shape + (ncomp,)
     yield assert_equal, p['pcnt_var'].shape, (ntotal,)
     yield assert_almost_equal, p['pcnt_var'].sum(), 100.
+
 
 def test_PCAMask_nostandardize():
     ntotal = data['nimages'] - 1
