@@ -6,7 +6,8 @@ import nipy.neurospin.group.spatial_relaxation_onesample as os
 
 verbose = False
 
-def make_data(n=10, dim=np.array([20,20,20]), r=5, amplitude=10, noise=1, jitter=None):
+def make_data(n=10, dim=np.array([20,20,20]), r=5, amplitude=10, noise=1, 
+            jitter=None, prng=np.random):
     if np.isscalar(dim):
         dim = np.array([dim,dim,dim])
     XYZvol = np.zeros((dim),int)
@@ -24,14 +25,14 @@ def make_data(n=10, dim=np.array([20,20,20]), r=5, amplitude=10, noise=1, jitter
     data = np.zeros((n, p), float) + np.nan
     vardata = np.zeros((n, p), float) + np.nan
     for i in xrange(n):
-        X[i] = np.random.randn(p)
+        X[i] = prng.randn(p)
         o = np.array(dim/2)
         if jitter!=None:
-            o += np.round(np.random.randn(3)*jitter).clip(r-dim/2,dim/2-r)
+            o += np.round(prng.randn(3)*jitter).clip(r-dim/2,dim/2-r)
         Ii = XYZvol[o[0]-r:o[0]+r, o[1]-r:o[1]+r, o[2]-r:o[2]+r].ravel()
         X[i,Ii] += amplitude
-        vardata[i] = np.square(np.random.randn(p))*noise**2
-        data[i] = X[i] + np.random.randn(p)*np.sqrt(vardata[i])
+        vardata[i] = np.square(prng.randn(p))*noise**2
+        data[i] = X[i] + prng.randn(p)*np.sqrt(vardata[i])
     return data, XYZ, XYZvol, vardata, signal
 
 
@@ -39,7 +40,10 @@ class TestMultivariateStatSaem(unittest.TestCase):
     
     def test_evaluate_exact(self):
         # without mfx nor spatial relaxation
-        data, XYZ, XYZvol, vardata, signal = make_data(n=20, dim=np.array([20,20,20]), r=3, amplitude=5, noise=0, jitter=0)
+        prng = np.random.RandomState(10)
+        data, XYZ, XYZvol, vardata, signal = make_data(n=20, 
+                dim=np.array([20,20,20]), r=3, amplitude=5, noise=0, 
+                jitter=0, prng=prng)
         p = len(signal)
         XYZvol *= 0
         XYZvol[list(XYZ)] = np.arange(p)
@@ -56,10 +60,13 @@ class TestMultivariateStatSaem(unittest.TestCase):
                    verbose=verbose)
         Q.log_likelihood_values = Q.compute_log_region_likelihood()
         self.assertAlmostEqual(P.mean_m.mean(), Q.mean_m.mean(), int(np.log10(P.nsimu))-1)
-        self.assertAlmostEqual(Q.log_likelihood_values.sum(), P.log_likelihood_values.sum(), 1)
+        np.testing.assert_almost_equal(Q.log_likelihood_values.sum(),
+                                       P.log_likelihood_values.sum(), 0)
     
     def test_model_selection_exact(self):
-        data, XYZ, XYZvol, vardata, signal = make_data(n=30, dim=20, r=3, amplitude=1, noise=0, jitter=0)
+        prng = np.random.RandomState(10)
+        data, XYZ, XYZvol, vardata, signal = make_data(n=30, dim=20, r=3, 
+                    amplitude=1, noise=0, jitter=0, prng=prng)
         labels = (signal > 0).astype(int)
         P1 = os.multivariate_stat(data, labels=labels)
         P1.init_hidden_variables()
@@ -86,10 +93,11 @@ class TestMultivariateStatSaem(unittest.TestCase):
         self.assertTrue(M1[0] < M0[0])
     
     def test_model_selection_mfx_spatial_rand_walk(self):
-        data, XYZ, XYZvol, vardata, signal = make_data(n=20, dim=np.array([1,20,20]), 
-                                                r=3, amplitude=3, noise=1, jitter=0.5)
-        #data, XYZ, XYZvol, vardata, signal = make_data(n=20, dim=20, 
-                                                #r=3, amplitude=3, noise=1, jitter=0.5)
+        prng = np.random.RandomState(10)
+        data, XYZ, XYZvol, vardata, signal = make_data(n=20, 
+                                    dim=np.array([1,20,20]), 
+                                    r=3, amplitude=3, noise=1,
+                                    jitter=0.5, prng=prng)
         labels = (signal > 0).astype(int)
         P = os.multivariate_stat(data, vardata, XYZ, std=0.5, sigma=5, labels=labels)
         P.network[:] = 0
@@ -124,8 +132,10 @@ class TestMultivariateStatSaem(unittest.TestCase):
 class TestMultivariateStatMcmc(unittest.TestCase):
     
     def test_evaluate_mfx_spatial(self):
+        prng = np.random.RandomState(10)
         data, XYZ, XYZvol, vardata, signal = make_data(n=20, 
-                    dim=10, r=3, amplitude=5, noise=1, jitter=1)
+                    dim=10, r=3, amplitude=5, noise=1, jitter=1,
+                    prng=prng)
         P = os.multivariate_stat(data, vardata, XYZ, std=1, sigma=3)
         P.init_hidden_variables()
         P.evaluate(nsimu=5, burnin=5, 
@@ -146,8 +156,9 @@ class TestMultivariateStatMcmc(unittest.TestCase):
 class TestLabelsPrior(unittest.TestCase):
      
     def test_update_labels(self):
-        data, XYZ, XYZvol, vardata, signal = make_data(n=20, dim=20, r=3, amplitude=5, 
-                        noise=1, jitter=1)
+        prng = np.random.RandomState(10)
+        data, XYZ, XYZvol, vardata, signal = make_data(n=20, dim=20, r=3, 
+                        amplitude=5, noise=1, jitter=1, prng=prng)
         P = os.multivariate_stat(data, vardata, XYZ)
         P.init_hidden_variables()
         p = P.data.shape[1]
