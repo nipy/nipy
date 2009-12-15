@@ -835,7 +835,7 @@ def drop_io_dim(cm, name):
     return Affine.from_params(in_dims, out_dims, aff)
 
 
-def append_dim(cm, in_name, out_name, start=0, step=1):
+def append_io_dim(cm, in_name, out_name, start=0, step=1):
     ''' Append input and output dimension to coordmap
 
     Parameters
@@ -861,7 +861,7 @@ def append_dim(cm, in_name, out_name, start=0, step=1):
     Typical use is creating a 4D coordinate map from a 3D
 
     >>> cm3d = Affine.from_params('ijk', 'xyz', np.diag([1,2,3,1]))
-    >>> cm4d = append_dim(cm3d, 'l', 't', 9, 5)
+    >>> cm4d = append_io_dim(cm3d, 'l', 't', 9, 5)
     >>> cm4d.affine
     array([[ 1.,  0.,  0.,  0.,  0.],
            [ 0.,  2.,  0.,  0.,  0.],

@@ -4,7 +4,7 @@ from nipy.testing import assert_true, assert_equal, assert_raises, \
 
 from nipy.core.reference.coordinate_map import CoordinateMap, Affine, \
     compose, CoordinateSystem, reorder_input, reorder_output, product, \
-    replicate, linearize, drop_io_dim, append_dim
+    replicate, linearize, drop_io_dim, append_io_dim
 
 
 class empty:
@@ -335,18 +335,18 @@ def test_drop_io_dim():
     
 
 @parametric
-def test_append_dim():
+def test_append_io_dim():
     aff = np.diag([1,2,3,1])
     in_dims = list('ijk')
     out_dims = list('xyz')
     cm = Affine.from_params(in_dims, out_dims, aff)
-    cm2 = append_dim(cm, 'l', 't')
+    cm2 = append_io_dim(cm, 'l', 't')
     yield assert_array_equal(cm2.affine, np.diag([1,2,3,1,1]))
     yield assert_equal(cm2.output_coords.coord_names,
                        out_dims + ['t'])
     yield assert_equal(cm2.input_coords.coord_names,
                        in_dims + ['l'])
-    cm2 = append_dim(cm, 'l', 't', 9, 5)
+    cm2 = append_io_dim(cm, 'l', 't', 9, 5)
     a2 = np.diag([1,2,3,5,1])
     a2[3,4] = 9
     yield assert_array_equal(cm2.affine, a2)
@@ -360,7 +360,7 @@ def test_append_dim():
                     [0,0,1],
                     [0,0,1]])
     cm = Affine.from_params('ij', 'xyz', aff)
-    cm2 = append_dim(cm, 'q', 't', 9, 5)
+    cm2 = append_io_dim(cm, 'q', 't', 9, 5)
     a2 = np.array([[2,0,0,0],
                    [0,3,0,0],
                    [0,0,0,1],
