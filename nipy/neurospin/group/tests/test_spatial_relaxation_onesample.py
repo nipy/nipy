@@ -110,22 +110,23 @@ class TestMultivariateStatSaem(unittest.TestCase):
             proposal_std=P.proposal_std, verbose=verbose)
         L0 = P.compute_log_region_likelihood()
         self.assertTrue(L0.sum() > L00.sum())
-        Prior0 = P.compute_log_prior()
-        Post0 = P.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
-        M0 = L0 + Prior0[:-1] - Post0[:-1]
-        self.assertAlmostEqual(M0.sum(), P.compute_marginal_likelihood(verbose=verbose).sum(), 0)
-        P.network[:] = 1
+        #Prior0 = P.compute_log_prior()
+        #Post0 = P.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
+        #M0 = L0 + Prior0[:-1] - Post0[:-1]
+        M0 = P.compute_marginal_likelihood(update_spatial=True)
+        #self.assertAlmostEqual(M0.sum(), P.compute_marginal_likelihood(verbose=verbose).sum(), 0)
+        P.network[1] = 1
         #P.init_hidden_variables(init_spatial=False)
-        P.init_hidden_variables(init_spatial=True)
+        P.init_hidden_variables(init_spatial=False)
         P.evaluate(nsimu=100, burnin=100, verbose=verbose, 
-                    update_spatial=False)
-        L1 = P.compute_log_region_likelihood()
-        Prior1 = P.compute_log_prior()
-        Post1 = P.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
-        M1 = L1 + Prior1[:-1] - Post1[:-1]
+                    update_spatial=False, proposal_std=P.proposal_std)
+        #L1 = P.compute_log_region_likelihood()
+        #Prior1 = P.compute_log_prior()
+        #Post1 = P.compute_log_posterior(nsimu=1e2, burnin=1e2, verbose=verbose)
+        #M1 = L1 + Prior1[:-1] - Post1[:-1]
+        M1 = P.compute_marginal_likelihood(update_spatial=True)
         #self.assertAlmostEqual(0.1*M1.sum(), 0.1*P.compute_marginal_likelihood(verbose=verbose).sum(), 0)
-        self.assertTrue(M1[1] > M0[1])
-        self.assertTrue(M1[0] < M0[0])
+        self.assertTrue(M1 > M0)
 
 
 
