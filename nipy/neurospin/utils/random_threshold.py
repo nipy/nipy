@@ -11,7 +11,7 @@ tol = 1e-10
 #####################################################################################################
 # Wrappers
 
-def randthresh_main(Y,K,XYZ=None,p=np.inf,varwind=True,knownull=True,stop=False,verbose=False):
+def randthresh_main(Y,K,XYZ=None,p=np.inf,varwind=False,knownull=True,stop=False,verbose=False):
     """
     Wrapper for random threshold functions
     In:  Y         (n,)    Observations
@@ -36,7 +36,7 @@ def randthresh_main(Y,K,XYZ=None,p=np.inf,varwind=True,knownull=True,stop=False,
     else:
         return randthresh_connex(Y,K,XYZ,p,stop,verbose,varwind,knownull)
 
-def randthresh(Y,K,p=np.inf,stop=False,verbose=False,varwind=True,knownull=True):
+def randthresh(Y,K,p=np.inf,stop=False,verbose=False,varwind=False,knownull=True):
     """
     Wrapper for random threshold functions (without connexity constraints)
     In:  Y         (n,)    Observations
@@ -74,12 +74,12 @@ def randthresh(Y,K,p=np.inf,stop=False,verbose=False,varwind=True,knownull=True)
             if knownull:
                 C = randthresh_varwind_knownull(Y,K,p,stop,verbose)
             else:
-                C = randthresh_varwind_gaussnull(Y,K,p,stop,one_sided=False,verbose=verbose)
+                C, V = randthresh_varwind_gaussnull(Y,K,p,stop,one_sided=False,verbose=verbose)
         else:
             if knownull:
                 C = randthresh_fixwind_knownull(Y,K,p,stop,verbose)
             else:
-                C = randthresh_fixwind_gaussnull(Y,K,p,stop,one_sided=False,verbose=verbose)
+                C, V = randthresh_fixwind_gaussnull(Y,K,p,stop,one_sided=False,verbose=verbose)
         n = len(X)
         if stop:
             I = np.where(C > 0)[0]
@@ -96,14 +96,14 @@ def randthresh(Y,K,p=np.inf,stop=False,verbose=False,varwind=True,knownull=True)
         thresh = np.sort(np.abs(Y))[-ncoeffs]
         # Detected activations
         detect = np.where(np.abs(Y) > thresh)[0]
-        D["C"] = C
+        D["C"] = C[2:]
         D["thresh"] = thresh
         D["detect"] = detect
-        if knownull == False:
-            D["v"] = np.square(Y[np.abs(Y) <= thresh]).mean()
+        if not knownull:
+            D["v"] = V[2:]
     return D
 
-def randthresh_connex(Y,K,XYZ,p=np.inf,stop=False,verbose=False,varwind=True,knownull=True):
+def randthresh_connex(Y,K,XYZ,p=np.inf,stop=False,verbose=False,varwind=False,knownull=True):
     """
     Wrapper for random threshold functions under connexity constraints
     In:  Y         (n,)    Observations
@@ -141,12 +141,12 @@ def randthresh_connex(Y,K,XYZ,p=np.inf,stop=False,verbose=False,varwind=True,kno
             if knownull:
                 C = randthresh_varwind_knownull_connex(Y,K,XYZ,p,stop,verbose)
             else:
-                C = randthresh_varwind_gaussnull_connex(Y,K,XYZ,p,stop,verbose=verbose)
+                C, V = randthresh_varwind_gaussnull_connex(Y,K,XYZ,p,stop,verbose=verbose)
         else:
             if knownull:
                 C = randthresh_fixwind_knownull_connex(Y,K,XYZ,p,stop,verbose)
             else:
-                C = randthresh_fixwind_gaussnull_connex(Y,K,XYZ,p,stop,verbose=verbose)
+                C, V = randthresh_fixwind_gaussnull_connex(Y,K,XYZ,p,stop,verbose=verbose)
         n = len(X)
         if stop:
             I = np.where(C > 0)[0]
@@ -166,20 +166,20 @@ def randthresh_connex(Y,K,XYZ,p=np.inf,stop=False,verbose=False,varwind=True,kno
         iso = isolated(XYZ[:, detect])
         detect[iso] = -1
         detect = detect[detect != -1]
-        D["C"] = C
+        D["C"] = C[2:]
         D["thresh"] = thresh
         D["detect"] = detect
         if knownull == False:
             Ynull = np.square(Y).copy()
             Ynull[detect] = np.nan
             Ynull = Ynull[np.isnan(Ynull) ==  False]
-            D["v"] = Ynull.mean()
+            D["v"] = V[2:]
     return D
 
 #####################################################################################################
 # random threshold functions without connexity constraints
 
-def randthresh_fixwind_knownull(X,K,p=np.inf,stop=True,verbose=False):
+def randthresh_fixwind_knownull(X,K,p=np.inf,stop=False,verbose=False):
     """
     Random threshold with fixed-window and known null distribution
     In:  X (n,): Observations (must be Exp(1) under H0)
@@ -193,25 +193,26 @@ def randthresh_fixwind_knownull(X,K,p=np.inf,stop=True,verbose=False):
     #Sort data
     sortX = np.sort(X)[::-1]
     C = np.zeros(n-K,float)
+    T = np.cumsum(sortX)
     for k in xrange(2,n - K):
         #Ratio of expectations
         B = np.arange(1,K+1)*( 1 + I[:n-1-k].sum() - I[:K].cumsum() )
         B /= float(K)*( 1 + I[K:n-1-k].sum() )
         #Partial sums
-        T = sortX[k+1:k+K+1].cumsum()
+        Tk = T[k+1:k+K+1] - T[k]
         #Conditional expectations
-        Q = B*T[-1]
+        Q = B*Tk[-1]
         if p == np.inf:
-            C[k] = np.abs(T - Q).max()/np.sqrt(n)
+            C[k] = np.abs(Tk - Q).max()/np.sqrt(n)
         else:
-            C[k] = ( np.abs(T - Q)**p ).sum()/n**(p/2.0+1)
+            C[k] = ( np.abs(Tk - Q)**p ).sum()/n**(p/2.0+1)
         if verbose:
             print "k :", k,  "C[k]:", C[k]
         if C[k] > C[k-1] and C[k-1] < C[k-2] and stop:
             break
     return C
 
-def randthresh_varwind_knownull(X,K,p=np.inf,stop=True,verbose=False):
+def randthresh_varwind_knownull(X,K,p=np.inf,stop=False,verbose=False):
     """
     Random threshold with varying window and known null distribution
     In:  X (n,): Observations (Exp(1) under H0)
@@ -224,26 +225,28 @@ def randthresh_varwind_knownull(X,K,p=np.inf,stop=True,verbose=False):
     I = 1.0/np.arange(1,n+1)
     #Sort data
     sortX = np.sort(X)[::-1]
+    T = np.cumsum(sortX)
     C = np.zeros(n-K,float)
     for k in xrange(2,n - K):
         #Ratio of expectations
         B = np.arange(1,n-k)*( 1 + I[:n-1-k].sum() - I[:n-k-1].cumsum() )
         B /= float(n-k-1)
         #Partial sums
-        T = sortX[k+1:].cumsum()
+        #T = sortX[k+1:].cumsum()
+        Tk = T[k+1:] - T[k]
         #Conditional expectations
-        Q = B*T[-1]
+        Q = B*Tk[-1]
         if p == np.inf:
-            C[k] = np.abs(T - Q).max()/np.sqrt(n-k-1)
+            C[k] = np.abs(Tk - Q).max()/np.sqrt(n-k-1)
         else:
-            C[k] = ( np.abs(T - Q)**p ).sum()/(n-k-1)**(p/2.0+1)
+            C[k] = ( np.abs(Tk - Q)**p ).sum()/(n-k-1)**(p/2.0+1)
         if verbose:
             print "k:", k, "C[k]:", C[k]
         if C[k] > C[k-1] and C[k-1] < C[k-2] and stop:
             break
     return C
 
-def randthresh_fixwind_gaussnull(Y,K,p=np.inf,stop=True,one_sided=True,verbose=False):
+def randthresh_fixwind_gaussnull(Y,K,p=np.inf,stop=False,one_sided=False,verbose=False):
     """
     Random threshold with fixed window and null gaussian distribution
     In:  Y         (n,)    Observations (assumed Gaussian under H0, with unknown variance)
@@ -285,9 +288,9 @@ def randthresh_fixwind_gaussnull(Y,K,p=np.inf,stop=True,one_sided=True,verbose=F
             print "k:", k, "C[k]:", C[k]
         if C[k] > C[k-1] and C[k-1] < C[k-2] and stop:
             break
-    return C
+    return C, V
 
-def randthresh_varwind_gaussnull(Y,K,p=np.inf,stop=True,one_sided=True,verbose=False):
+def randthresh_varwind_gaussnull(Y,K,p=np.inf,stop=False,one_sided=False,verbose=False):
     """
     Random threshold with fixed window and gaussian null distribution
     In:  Y         (n,)    Observations (assumed Gaussian under H0, with unknown variance)
@@ -329,12 +332,12 @@ def randthresh_varwind_gaussnull(Y,K,p=np.inf,stop=True,one_sided=True,verbose=F
             print "k:", k, "C[k]:", C[k]
         if C[k] > C[k-1] and C[k-1] < C[k-2] and stop:
             break
-    return C
+    return C, V
 
 #####################################################################################################
 # random threshold functions with connexity constraints
 
-def randthresh_fixwind_knownull_connex(X,K,XYZ,p=np.inf,stop=True,verbose=False):
+def randthresh_fixwind_knownull_connex(X,K,XYZ,p=np.inf,stop=False,verbose=False):
     """
     Random threshold with fixed-window and known null distribution,
     using connexity constraint on non-null set.
@@ -389,7 +392,7 @@ def randthresh_fixwind_knownull_connex(X,K,XYZ,p=np.inf,stop=True,verbose=False)
             break
     return C
 
-def randthresh_varwind_knownull_connex(X,K,XYZ,p=np.inf,stop=True,verbose=False):
+def randthresh_varwind_knownull_connex(X,K,XYZ,p=np.inf,stop=False,verbose=False):
     """
     Random threshold with varying window and known null distribution
     In:  X (n,): Observations (Exp(1) under H0)
@@ -442,7 +445,7 @@ def randthresh_varwind_knownull_connex(X,K,XYZ,p=np.inf,stop=True,verbose=False)
             print "k:", k, "nk:", nk, "C[k]:", C[k]
     return C
 
-def randthresh_fixwind_gaussnull_connex(X,K,XYZ,p=np.inf,stop=True,verbose=False):
+def randthresh_fixwind_gaussnull_connex(X,K,XYZ,p=np.inf,stop=False,verbose=False):
     """
     Random threshold with fixed-window and gaussian null distribution,
     using connexity constraint on non-null set.
@@ -459,6 +462,7 @@ def randthresh_fixwind_gaussnull_connex(X,K,XYZ,p=np.inf,stop=True,verbose=False
     J = np.argsort(X**2)[::-1]
     sortX = np.square(X)[J]
     C = np.zeros(n-K,float)
+    V = np.zeros(n-K,float)
     T = np.zeros(K, float)
     L = np.zeros(n, int)
     L[J[0]] = 1
@@ -478,15 +482,15 @@ def randthresh_fixwind_gaussnull_connex(X,K,XYZ,p=np.inf,stop=True,verbose=False
         #Ik = isolated(XYZ[:, Jk])
         nk = len(Ik)
         #Null variance
-        Vk = (sortX[Ik].sum() + sortX[k+1:].sum()) / float(nk + n - k - 1)
+        V[k] = (sortX[Ik].sum() + sortX[k+1:].sum()) / float(nk + n - k - 1)
         #Partial sums
         if nk >= K:
-            T = np.clip(-np.log(1 - ST.chi2.cdf(sortX[Ik[:K]], 1, 0, scale=Vk)), 0, 1 / tol).cumsum()
+            T = np.clip(-np.log(1 - ST.chi2.cdf(sortX[Ik[:K]], 1, 0, scale=V[k])), 0, 1 / tol).cumsum()
         elif nk == 0:
-            T = np.clip(-np.log(1 - ST.chi2.cdf(sortX[k+1:k+K+1], 1, 0, scale=Vk)), 0, 1 / tol).cumsum()
+            T = np.clip(-np.log(1 - ST.chi2.cdf(sortX[k+1:k+K+1], 1, 0, scale=V[k])), 0, 1 / tol).cumsum()
         else:
-            T[:nk] = np.clip(-np.log(1 - ST.chi2.cdf(sortX[Ik], 1, 0, scale=Vk)), 0, 1 / tol).cumsum()
-            T[nk:] = T[nk-1] + np.clip(-np.log(1 - ST.chi2.cdf(sortX[k+1:k+K-nk+1], 1, 0, scale=Vk)), 0, 1 / tol).cumsum()
+            T[:nk] = np.clip(-np.log(1 - ST.chi2.cdf(sortX[Ik], 1, 0, scale=V[k])), 0, 1 / tol).cumsum()
+            T[nk:] = T[nk-1] + np.clip(-np.log(1 - ST.chi2.cdf(sortX[k+1:k+K-nk+1], 1, 0, scale=V[k])), 0, 1 / tol).cumsum()
         #Conditional expectations
         Q = B*T[-1]
         if p == np.inf:
@@ -497,9 +501,9 @@ def randthresh_fixwind_gaussnull_connex(X,K,XYZ,p=np.inf,stop=True,verbose=False
             print "k:", k, "nk:", nk, "C[k]:", C[k]
         if C[k] > C[k-1] and C[k-1] < C[k-2] and stop:
             break
-    return C
+    return C, V
 
-def randthresh_varwind_gaussnull_connex(X,K,XYZ,p=np.inf,stop=True,verbose=False):
+def randthresh_varwind_gaussnull_connex(X,K,XYZ,p=np.inf,stop=False,verbose=False):
     """
     Random threshold with fixed-window and gaussian null distribution,
     using connexity constraint on non-null set.
@@ -516,6 +520,7 @@ def randthresh_varwind_gaussnull_connex(X,K,XYZ,p=np.inf,stop=True,verbose=False
     J = np.argsort(X**2)[::-1]
     sortX = np.square(X)[J]
     C = np.zeros(n-K,float)
+    V = np.zeros(n-K,float)
     T = np.zeros(K, float)
     L = np.zeros(n, int)
     L[J[0]] = 1
@@ -535,14 +540,14 @@ def randthresh_varwind_gaussnull_connex(X,K,XYZ,p=np.inf,stop=True,verbose=False
         B = np.arange(1,n-k+nk)*( 1 + I[:n-1-k+nk].sum() - I[:n-k-1+nk].cumsum() )
         B /= float(n-k-1+nk)
         #Null variance
-        Vk = (sortX[Ik].sum() + sortX[k+1:].sum()) / float(nk + n - k - 1)
+        V[k] = (sortX[Ik].sum() + sortX[k+1:].sum()) / float(nk + n - k - 1)
         #Partial sums
         if nk == 0:
-            T = np.clip(-np.log(1 - ST.chi2.cdf(sortX[k+1:], 1, 0, scale=Vk)), 0, 1 / tol).cumsum()
+            T = np.clip(-np.log(1 - ST.chi2.cdf(sortX[k+1:], 1, 0, scale=V[k])), 0, 1 / tol).cumsum()
         else:
             T = np.zeros(n - k + nk - 1, float)
-            T[:nk] = np.clip(-np.log(1 - ST.chi2.cdf(sortX[Ik], 1, 0, scale=Vk)), 0, 1 / tol).cumsum()
-            T[nk:] = T[nk-1] + np.clip(-np.log(1 - ST.chi2.cdf(sortX[k+1:], 1, 0, scale=Vk)), 0, 1 / tol).cumsum()
+            T[:nk] = np.clip(-np.log(1 - ST.chi2.cdf(sortX[Ik], 1, 0, scale=V[k])), 0, 1 / tol).cumsum()
+            T[nk:] = T[nk-1] + np.clip(-np.log(1 - ST.chi2.cdf(sortX[k+1:], 1, 0, scale=V[k])), 0, 1 / tol).cumsum()
         #Conditional expectations
         Q = B*T[-1]
         if p == np.inf:
@@ -553,7 +558,7 @@ def randthresh_varwind_gaussnull_connex(X,K,XYZ,p=np.inf,stop=True,verbose=False
             print "k:", k, "nk:", nk, "C[k]:", C[k]
         if C[k] > C[k-1] and C[k-1] < C[k-2] and stop:
             break
-    return C
+    return C, V
 
 #####################################################################################################
 # Miscellanous functions
