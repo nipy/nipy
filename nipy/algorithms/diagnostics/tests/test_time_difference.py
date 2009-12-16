@@ -2,7 +2,11 @@
 
 """
 
+from os.path import dirname, join as pjoin
+
 import numpy as np
+
+import scipy.io as sio
 
 import nipy.algorithms.diagnostics.tsdiffana as tsd
 
@@ -13,6 +17,8 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 from nipy import load_image
 from nipy.testing import parametric, funcfile
+
+TEST_DATA_PATH = pjoin(dirname(__file__), 'data')
 
 
 @parametric
@@ -60,7 +66,30 @@ def test_time_slice_diffs():
     
 
 @parametric
-def test_timeslice_fmri():
+def test_against_matlab_results():
     fimg = load_image(funcfile)
     results = tsd.time_slice_diffs(fimg)
+    # struct as record only to avoid deprecation warning
+    tsd_results = sio.loadmat(pjoin(TEST_DATA_PATH, 'tsdiff_results.mat'),
+                              struct_as_record=True, squeeze_me=True)
+    yield assert_array_almost_equal(
+        results['volume_means'],
+        tsd_results['g'])
+    yield assert_array_almost_equal(
+        results['volume_mean_diff2'],
+        tsd_results['imgdiff'])
+    yield assert_array_almost_equal(
+        results['slice_mean_diff2'],
+        tsd_results['slicediff'])
+    # next tests are from saved, reloaded volumes at 16 bit integer
+    # precision, so are not exact, but very close, given that the mean
+    # of this array is around 3200
+    yield assert_array_almost_equal(
+        results['diff2_mean_vol'],
+        tsd_results['diff2_mean_vol'],
+        decimal=1)
+    yield assert_array_almost_equal(
+        results['slice_diff2_max_vol'],
+        tsd_results['slice_diff2_max_vol'],
+        decimal=1)
     
