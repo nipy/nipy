@@ -85,8 +85,9 @@ def matrix_rank(M, tol=None):
     --------
     >>> matrix_rank(np.eye(4)) # Full rank matrix
     4
-    >>> matrix_rank(np.c_[np.eye(4),np.eye(4)]) # Rank deficient matrix
-    4
+    >>> I=np.eye(4); I[-1,-1] = 0. # rank deficient matrix
+    >>> matrix_rank(I)
+    3
     >>> matrix_rank(np.zeros((4,4))) # All zeros - zero rank
     0
     >>> matrix_rank(np.ones((4,))) # 1 dimension - rank 1 unless all 0
@@ -98,23 +99,23 @@ def matrix_rank(M, tol=None):
 
     Notes
     -----
-    Golub and van Loan define "numerical rank deficiency" as using
-    tol=eps*S[0] (note that S[0] is the maximum singular value and thus
-    the 2-norm of the matrix). There really is not one definition, much
-    like there isn't a single definition of the norm of a matrix. For
-    example, if your data come from uncertain measurements with
-    uncertainties greater than floating point epsilon, choosing a
-    tolerance of about the uncertainty is probably a better idea (the
-    tolerance may be absolute if the uncertainties are absolute rather
-    than relative, even). When floating point roundoff is your concern,
-    then "numerical rank deficiency" is a better concept, but exactly
-    what the relevant measure of the tolerance is depends on the
-    operations you intend to do with your matrix. [RK, numpy mailing
-    list]
+    Golub and van Loan [1]_ define "numerical rank deficiency" as using
+    tol=eps*S[0] (where S[0] is the maximum singular value and thus the
+    2-norm of the matrix). This is one definition of rank deficiency,
+    and the one we use here.  When floating point roundoff is the main
+    concern, then "numerical rank deficiency" is a reasonable choice. In
+    some cases you may prefer other definitions. The most useful measure
+    of the tolerance depends on the operations you intend to use on your
+    matrix. For example, if your data come from uncertain measurements
+    with uncertainties greater than floating point epsilon, choosing a
+    tolerance near that uncertainty may be preferable.  The tolerance
+    may be absolute if the uncertainties are absolute rather than
+    relative.
 
     References
     ----------
-    Matrix Computations by Golub and van Loan
+    .. [1] G. H. Golub and C. F. Van Loan, _Matrix Computations_.
+    Baltimore: Johns Hopkins University Press, 1996.
     '''
     M = np.asarray(M)
     if M.ndim > 2:
@@ -161,7 +162,7 @@ def fullrank(X, r=None):
     return np.asarray(np.transpose(value)).astype(np.float64)
 
 
-class StepFunction:
+class StepFunction(object):
     """
     A basic step function: values at the ends are handled in the simplest
     way possible: everything to the left of x[0] is set to ival; everything

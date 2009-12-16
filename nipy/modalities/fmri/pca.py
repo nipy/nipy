@@ -72,7 +72,16 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
           `axis`; thus shape given by: ``s = list(data.shape); s[axis] =
           ncomp``
        * ``axis``: axis over which PCA has been performed.
-    """
+
+     Notes
+     -----
+     See ``pca_image.m`` from fmristat for Keith Worsley's code on which
+     some of this is based.
+
+     See: http://en.wikipedia.org/wiki/Principal_component_analysis for
+     some inspiration for naming - particularly 'basis_vectors' and
+     'basis_projections'
+     """
     data = np.asarray(data)
     # We roll the PCA axis to be first, for convenience
     if axis is None:

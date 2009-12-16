@@ -143,6 +143,7 @@ class Image(object):
         """Return data as a numpy array."""
         return np.asarray(self._data)
 
+
 def fromarray(data, innames, outnames, coordmap=None):
     """Create an image from a numpy array.
 
