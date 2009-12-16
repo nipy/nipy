@@ -28,31 +28,32 @@ def test_time_slice_diffs():
     expected['volume_means'] = ts.reshape((vol_size, -1)).mean(0)
     # difference over time ^2
     diffs2 = np.diff(ts, axis=-1)**2
-    expected['volds'] = np.mean(diffs2.reshape((vol_size, -1)), 0)
-    expected['sliceds'] = np.zeros((n_tps-1, n_slices))
+    expected['volume_mean_diff2'] = np.mean(
+        diffs2.reshape((vol_size, -1)), 0)
+    expected['slice_mean_diff2'] = np.zeros((n_tps-1, n_slices))
     for s in range(n_slices):
         v = diffs2[:,:,s,:].reshape((slice_size, -1))
-        expected['sliceds'][:,s] = np.mean(v, 0)
-    expected['diff_mean_vol'] = np.mean(diffs2, -1)
-    max_diff_is = np.argmax(expected['sliceds'], 0)
+        expected['slice_mean_diff2'][:,s] = np.mean(v, 0)
+    expected['diff2_mean_vol'] = np.mean(diffs2, -1)
+    max_diff_is = np.argmax(expected['slice_mean_diff2'], 0)
     sdmv = np.empty(vol_shape)
     for si, dti in enumerate(max_diff_is):
         sdmv[:,:,si] = diffs2[:,:,si,dti]
-    expected['slice_diff_max_vol'] = sdmv
+    expected['slice_diff2_max_vol'] = sdmv
     results = tsd.time_slice_diffs(ts)
     for key in expected:
         yield assert_array_almost_equal(results[key], expected[key])
     # tranposes, reset axes, get the same result
     results = tsd.time_slice_diffs(ts.T, 0, 1)
-    results['diff_mean_vol'] = results['diff_mean_vol'].T
-    results['slice_diff_max_vol'] = results['slice_diff_max_vol'].T
+    results['diff2_mean_vol'] = results['diff2_mean_vol'].T
+    results['slice_diff2_max_vol'] = results['slice_diff2_max_vol'].T
     for key in expected:
         yield assert_array_almost_equal(results[key], expected[key])
     ts_t = ts.transpose((1, 3, 0, 2))
     results = tsd.time_slice_diffs(ts_t, 1, -1)
-    results['diff_mean_vol'] = results['diff_mean_vol'].transpose(
+    results['diff2_mean_vol'] = results['diff2_mean_vol'].transpose(
         ((1,0,2)))
-    results['slice_diff_max_vol'] = results['slice_diff_max_vol'].transpose(
+    results['slice_diff2_max_vol'] = results['slice_diff2_max_vol'].transpose(
         ((1,0,2)))
     for key in expected:
         yield assert_array_almost_equal(results[key], expected[key])

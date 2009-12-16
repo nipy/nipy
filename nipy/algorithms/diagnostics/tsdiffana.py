@@ -13,15 +13,17 @@ import numpy as np
 def time_slice_diffs(arr, time_axis=-1, slice_axis=-2):
     ''' Time-point to time-point differences over volumes and slices
 
-    We think of the passed array as an image.  The image has at least a
-    "time" dimension given by `time_axis` and a "slice" dimension, given
-    by `slice_axis`.  A single slice in the time dimension we call a
-    "volume".  A single entry in `arr` is a "voxel".  For example, if
-    `time_axis` == 0, then ``v = arr[0]`` would be the first volume in
-    the series.  The volume ``v`` above has ``v.size`` voxels.  If, in
-    addition, `slice_axis` == 1, then for the volume ``v`` (above) ``s =
-    v[0]`` would be a "slice", with ``s.size`` voxels. These are
-    obviously terms from neuroimaging.
+    We think of the passed array as an image.  The image has a "time"
+    dimension given by `time_axis` and a "slice" dimension, given by
+    `slice_axis`, and one or other dimensions.  In the case of imaging
+    there will usually be two more dimensions (the dimensions defining
+    the size of an image slice). A single slice in the time dimension we
+    call a "volume".  A single entry in `arr` is a "voxel".  For
+    example, if `time_axis` == 0, then ``v = arr[0]`` would be the first
+    volume in the series.  The volume ``v`` above has ``v.size`` voxels.
+    If, in addition, `slice_axis` == 1, then for the volume ``v``
+    (above) ``s = v[0]`` would be a "slice", with ``s.size``
+    voxels. These are obviously terms from neuroimaging.
     
     Parameters
     ----------
@@ -45,21 +47,21 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=-2):
 
         `results` has keys:
         
-        * 'volds' : (T-1,) array
+        * 'volume_mean_diff2' : (T-1,) array
            array containing the mean (over voxels in volume) of the
-           difference from one time point to the next
-        * 'sliceds' : (T-1, S) array
+           squared difference from one time point to the next
+        * 'slice_mean_diff2' : (T-1, S) array
            giving the mean (over voxels in slice) of the difference from
            one time point to the next, one value per slice, per
            timepoint
         * 'volume_means' : (T,) array
            mean over voxels for each volume ``vol[t] for t in 0:T
-        * 'slice_diff_max_vol' : v[:] array
+        * 'slice_diff2_max_vol' : v[:] array
            volume, of same shape as input volumes, where each slice is
            is the slice from ``d2[t]`` for t in 0:T-1, that has the
            largest variance across ``t``.  Thus each slice in the volume
            may well result from a different difference time point.
-        * 'diff_mean_vol`` : v[:] array
+        * 'diff2_mean_vol`` : v[:] array
            volume with the mean of ``d2[t]`` across t for t in 0:T-1.
     '''
     arr = np.asarray(arr)
@@ -105,9 +107,9 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=-2):
     # roll vol shapes back to match input
     diff_mean_vol = np.rollaxis(diff_mean_vol, 0, slice_axis)
     slice_diff_max_vol = np.rollaxis(slice_diff_max_vol, 0, slice_axis)
-    return {'volds': volds,
-            'sliceds': sliceds,
+    return {'volume_mean_diff2': volds,
+            'slice_mean_diff2': sliceds,
             'volume_means': means,
-            'diff_mean_vol': diff_mean_vol,
-            'slice_diff_max_vol': slice_diff_max_vol}
+            'diff2_mean_vol': diff_mean_vol,
+            'slice_diff2_max_vol': slice_diff_max_vol}
 
