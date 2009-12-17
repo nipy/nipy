@@ -8,7 +8,7 @@ import numpy as np
 
 import scipy.io as sio
 
-import nipy.algorithms.diagnostics.tsdiffana as tsd
+import nipy.algorithms.diagnostics.timediff as tsd
 
 from nose.tools import assert_true, assert_false, \
      assert_equal, assert_raises

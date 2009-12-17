@@ -75,8 +75,8 @@ _test_local_install()
 
 
 # Add to top-level namespace
-from nipy.io.api import load_image
-from nipy.io.api import save_image
+from nipy.io.api import load_image, save_image, as_image
+from nipy.core.api import is_image
 
 # Cleanup namespace
 del _test_local_install
