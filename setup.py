@@ -61,7 +61,6 @@ def package_check(pkg_name, version=None, checker=LooseVersion):
 
 # Soft dependency checking
 package_check('sympy', '0.6.4')
-package_check('nifti')
 package_check('scipy', '0.5')
 
     
