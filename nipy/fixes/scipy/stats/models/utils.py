@@ -25,6 +25,10 @@ def pos_recipr(X):
        1/X where X > 0, 0 otherwise
     """
     X = np.asarray(X)
+    if X.shape == (): # scalar case
+        if X > 0:
+            return 1. / X
+        return 0
     rX = np.zeros(X.shape)
     gt0 = X > 0
     rX[gt0] = 1. / X[gt0]

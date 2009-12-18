@@ -24,7 +24,10 @@ def test_pos_recipr():
     # check that lists have arrived
     XL = [0, 1, -1]
     yield assert_array_almost_equal, pos_recipr(XL), [0, 1, 0]
-    
+    yield assert_equal, pos_recipr(-1), 0
+    yield assert_equal, pos_recipr(0), 0
+    yield assert_equal, pos_recipr(2), 0.5
+
     
 def test_recipr0():
     X = np.array([[2,1],[-4,0]])

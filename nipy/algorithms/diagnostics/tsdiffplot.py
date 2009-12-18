@@ -3,7 +3,7 @@
 import numpy as np
 
 import nipy
-from .tsdiffana import time_slice_diffs
+from .timediff import time_slice_diffs
 
 
 def plot_tsdiffs(results, axes=None):
