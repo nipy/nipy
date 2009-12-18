@@ -24,6 +24,7 @@ def test_pos_recipr():
     # check that lists have arrived
     XL = [0, 1, -1]
     yield assert_array_almost_equal, pos_recipr(XL), [0, 1, 0]
+    # scalars
     yield assert_equal, pos_recipr(-1), 0
     yield assert_equal, pos_recipr(0), 0
     yield assert_equal, pos_recipr(2), 0.5
@@ -33,7 +34,14 @@ def test_recipr0():
     X = np.array([[2,1],[-4,0]])
     Y = recipr0(X)
     yield assert_array_almost_equal, Y, np.array([[0.5,1],[-0.25,0]])
-
+    # check that lists have arrived
+    XL = [0, 1, -1]
+    yield assert_array_almost_equal, recipr0(XL), [0, 1, -1]
+    # scalars
+    yield assert_equal, recipr0(-1), -1
+    yield assert_equal, recipr0(0), 0
+    yield assert_equal, recipr0(2), 0.5
+    
 
 class TestUtils(TestCase):
 

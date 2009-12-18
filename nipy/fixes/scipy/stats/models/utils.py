@@ -25,14 +25,7 @@ def pos_recipr(X):
        1/X where X > 0, 0 otherwise
     """
     X = np.asarray(X)
-    if X.shape == (): # scalar case
-        if X > 0:
-            return 1. / X
-        return 0
-    rX = np.zeros(X.shape)
-    gt0 = X > 0
-    rX[gt0] = 1. / X[gt0]
-    return rX
+    return np.where(X<=0, 0, 1. / X)
 
 
 def recipr0(X):
@@ -50,8 +43,8 @@ def recipr0(X):
     -------
     rX : array
     """
-    test = np.equal(np.asarray(X), 0)
-    return np.where(test, 0, 1. / X)
+    X = np.asarray(X)
+    return np.where(X==0, 0, 1. / X)
 
 
 def mad(a, c=0.6745, axis=0):
