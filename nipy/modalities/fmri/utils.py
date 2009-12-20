@@ -65,6 +65,7 @@ def fourier_basis(freq):
               sympy_sin((2*sympy_pi*f*t))]
     return formula.Formula(r)
 
+
 def linear_interp(times, values, fill=0, name=None, **kw):
     """
     Linear interpolation function such that
@@ -117,6 +118,7 @@ def linear_interp(times, values, fill=0, name=None, **kw):
     s = aliased_function(name, i)
     return s(t)
 linear_interp.counter = 0
+
 
 def step_function(times, values, name=None, fill=0):
     """
@@ -178,29 +180,34 @@ step_function.counter = 0
 
 def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
     """
-    Return a sum of functions
-    based on a sequence of times.
+    Return a sum of functions based on a sequence of times.
 
     Parameters
     ----------
-
-    times : [float]
-
-    amplitudes : [float]
-        Optional sequence of amplitudes. Default to 1.
-
-    f : sympy.Function
+    times : sequence
+       vector of onsets length $N$
+    amplitudes : None or sequence length $N$, optional
+        Optional sequence of amplitudes. None (default) results in
+        sequence length $N$ of 1s
+    f : sympy.Function, optional
         Optional function. Defaults to DiracDelta, can be replaced with
         another function, f, in which case the result is the convolution
         with f.
+    g : sympy.Basic, optional
+        Optional sympy expression function of amplitudes.  The
+        amplitudes, should be represented by the symbol 'a', which
+        will be substituted, by the corresponding value in
+        `amplitudes`. .
 
-    g : sympy.Basic
-        Optional sympy expression function involving 'a', which
-        will be substituted by the values of in the generator.
+    Returns
+    -------
+    sum_expression : Sympy.Add
+        Sympy expression of time $t$, where onsets, as a function of
+        $t$, have been symbolically convolved with function `f`, and any
+        function `g` of corresponding amplitudes.
 
     Examples
     --------
-
     >>> events([3,6,9])
     DiracDelta(-9 + t) + DiracDelta(-6 + t) + DiracDelta(-3 + t)
     >>> h = Symbol('hrf')
@@ -219,20 +226,18 @@ def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
     >>> h = Symbol('hrf')
     >>> events([3,6,9], amplitudes=[2,1,-1], g=p, f=h)
     (2*_b1 + 4*_b2 + _b0)*hrf(-3 + t) + (-_b1 + _b0 + _b2)*hrf(-9 + t) + (_b0 + _b1 + _b2)*hrf(-6 + t)
-
     """
     e = 0
     asymb = Symbol('a')
-
     if amplitudes is None:
         def _amplitudes():
             while True:
                 yield 1
         amplitudes = _amplitudes()
-
     for _t, a in zip(times, amplitudes):
         e = e + g.subs(asymb, a) * f(t-_t)
     return e
+
 
 def blocks(intervals, amplitudes=None, g=Symbol('a')):
     """

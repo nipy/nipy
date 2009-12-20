@@ -11,7 +11,7 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
                drift_model='Cosine', hfcut=128, drift_order=1, fir_delays=[0],
                fir_duration=1., cond_ids=None, add_regs=None, add_reg_names=None):
     """
-    Light-weight function to make easily a design matrix while avoiding framework
+    Make a design matrix while avoiding framework
     
     Parameters
     ----------
