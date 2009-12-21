@@ -6,9 +6,9 @@ not whether it is exact
 """
 
 import numpy as np
-from nipy.neurospin.utils.design_matrix import dmtx_light
+from nipy.neurospin.utils.design_matrix import dmtx_light, convolve_regressors
 
-from nose.tools import assert_true
+from nose.tools import assert_true, assert_equal
 from numpy.testing import assert_almost_equal
 from nipy.testing import parametric
 
@@ -81,6 +81,15 @@ def test_dmtx1():
     assert_true(len(names)==7)
 
 
+@parametric
+def test_convolve_regressors():
+    # tests for convolve_regressors helper function
+    paradigm = [[0, 20],[1, 40]]
+    # names not passed -> default names
+    f, names = convolve_regressors(paradigm, 'Canonical')
+    yield assert_equal(names, ['c0', 'c1'])
+
+
 def test_dmtx1b():
     # idem test_dmtx1, but different test
     #
@@ -92,6 +101,7 @@ def test_dmtx1b():
                         drift_model='Polynomial', drift_order=3)
     print np.shape(X)
     assert_true(X.shape==(128,7))
+
 
 def test_dmtx1c():
     # idem test_dmtx1, but different test
