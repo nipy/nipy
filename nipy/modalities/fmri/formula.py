@@ -1168,11 +1168,13 @@ def define(name, expr):
     v = vectorize(expr)
     return aliased_function(name, v)(Term('t'))
 
+
 def is_term(obj):
     """
     Is obj a Term?
     """
     return hasattr(obj, "_term_flag")
+
 
 def is_factor_term(obj):
     """
