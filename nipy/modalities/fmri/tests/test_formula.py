@@ -4,20 +4,46 @@ Test functions for models.formula
 
 import numpy as np
 import sympy
+import matplotlib.mlab as ML
+
 
 from nipy.modalities.fmri import formula as F
 from nipy.modalities.fmri import aliased
 
 from nipy.testing import assert_almost_equal, assert_true, \
-    assert_equal
+    assert_equal, assert_false, assert_raises
 
+def test_getparams_terms():
+
+    t = F.Term('t')
+    x, y, z = [sympy.Symbol(l) for l in 'xyz']
+    yield assert_equal, set(F.getparams(x*y*t)), set([x,y])
+    yield assert_equal, set(F.getterms(x*y*t)), set([t])
+
+    matrix_expr = np.array([[x,y*t],[y,z]])
+    yield assert_equal, set(F.getparams(matrix_expr)), set([x,y,z])
+    yield assert_equal, set(F.getterms(matrix_expr)), set([t])
+    
+
+def test_formula_params():
+
+    t = F.Term('t')
+    x, y = [sympy.Symbol(l) for l in 'xy']
+
+    f = F.Formula([t*x,y])
+
+    yield assert_equal, set(f.params), set([x,y] + list(f.coefs.values()))
 
 def test_contrast1():
     x = F.Term('x')
+
+    yield assert_equal, x, x+x
+
     y = F.Term('y')
     z = F.Term('z')
 
     f = F.Formula([x,y])
+
     arr = F.make_recarray([[3,5,4],[8,21,-1],[4,6,-2]], 'xyz')
 
     D, C = f.design(arr, contrasts={'x':x.formula,
@@ -41,6 +67,59 @@ def test_contrast1():
     yield assert_almost_equal, C['sum'], np.array([1,1,0])
     yield assert_almost_equal, C['both'], np.array([[1,-1,0],[1,1,0]])
 
+def test_define():
+    t = F.Term('t')
+    expr = sympy.exp(3*t)
+    yield assert_equal, str(expr), 'exp(3*t)'
+
+    newf = F.define('f', expr)
+    yield assert_equal, str(newf), 'f(t)'
+
+    f = aliased.lambdify(t, newf)
+
+    tval = np.random.standard_normal((3,))
+    yield assert_almost_equal, np.exp(3*tval), f(tval)
+    
+def test_formula_from_recarray():
+    from StringIO import StringIO
+
+    s = StringIO(); s.write("""Y 	X1 	X2 	X3 	X4 	X5 	X6 
+    43 	51 	30 	39 	61 	92 	blue
+    63 	64 	51 	54 	63 	73 	blue
+    71 	70 	68 	69 	76 	86 	red
+    61 	63 	45 	47 	54 	84 	red
+    81 	78 	56 	66 	71 	83 	blue
+    43 	55 	49 	44 	54 	49 	blue
+    58 	67 	42 	56 	66 	68 	green
+    71 	75 	50 	55 	70 	66 	green
+    72 	82 	72 	67 	71 	83 	blue
+    67 	61 	45 	47 	62 	80 	red
+    64 	53 	53 	58 	58 	67 	blue
+    67 	60 	47 	39 	59 	74 	green
+    69 	62 	57 	42 	55 	63 	blue
+    68 	83 	83 	45 	59 	77 	red
+    77 	77 	54 	72 	79 	77 	red
+    81 	90 	50 	72 	60 	54 	blue
+    74 	85 	64 	69 	79 	79 	green
+    65 	60 	65 	75 	55 	80 	green
+    65 	70 	46 	57 	75 	85 	red
+    50 	58 	68 	54 	64 	78 	red
+    50 	40 	33 	34 	43 	64 	blue
+    64 	61 	52 	62 	66 	80 	blue
+    53 	66 	52 	50 	63 	80 	red
+    40 	37 	42 	58 	50 	57 	red
+    63 	54 	42 	48 	66 	75 	blue
+    66 	77 	66 	63 	88 	76 	blue
+    78 	75 	58 	74 	80 	78 	red
+    48 	57 	44 	45 	51 	83 	blue
+    85 	85 	71 	71 	77 	74 	red
+    82 	82 	39 	59 	64 	78 	blue"""); s.seek(0)
+
+    D = ML.csv2rec(s, delimiter='\t')
+
+    f = F.Formula.fromrec(D, drop='y')
+    yield assert_equal, set([str(t) for t in f.terms]),  set(['x1', 'x2', 'x3', 'x4', 'x5', 'x6_green', 'x6_blue', 'x6_red'])
+    yield assert_equal, set([str(t) for t in f.design_expr]),  set(['x1', 'x2', 'x3', 'x4', 'x5', 'x6_green', 'x6_blue', 'x6_red'])
 
 def test_random_effects():
     subj = F.make_recarray([2,2,2,3,3], 's')
@@ -87,6 +166,35 @@ def test_formula_property():
     assert_equal(f.design_expr, [t1])
 
 
+def test_mul():
+
+    f = F.Factor('t', [2,3])
+    f2 = F.Factor('t', [2,3,4])
+    t2 = f['t_2']
+    x = F.Term('x')
+    
+    yield assert_equal, t2, t2*t2
+    yield assert_equal, f, f*f
+    yield assert_false, f == f2
+    yield assert_equal, set((t2*x).atoms()), set([t2,x])
+
+def test_make_recarray():
+    m = F.make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int])
+
+    yield assert_equal, m.dtype.names, ['w', 'v']
+
+    m2 = F.make_recarray(m, 'xy')
+    yield assert_equal, m2.dtype.names, ['x', 'y']
+
+def test_str_formula():
+
+    t1 = F.Term('x')
+    t2 = F.Term('y')
+
+    f = F.Formula([t1, t2])
+
+    yield assert_equal, str(f), "Formula([x, y])"
+
 def test_design():
     # Check that you get the design matrix we expect
     t1 = F.Term("x")
@@ -107,6 +215,8 @@ def test_design():
     yield assert_almost_equal, f.design(n)['1'], 1
     yield assert_almost_equal, f.design(n)['x*y'], n['x']*n['y']
 
+    ny = ML.rec_drop_fields(n, 'y')
+    yield assert_raises, ValueError, f.design, ny
     n = np.array([(2,3,'a'),(4,5,'b'),(5,6,'a')], np.dtype([('x', np.float),
                                                             ('y', np.float),
                                                             ('f', 'S1')]))
@@ -141,12 +251,52 @@ def test_alias():
     yield assert_almost_equal, ff.design(n)['g(x)**2'], n['x']
 
 
+def test_factor_getterm():
+    
+    fac = F.Factor('f', 'ab')
+
+    yield assert_equal, fac['f_a'], fac.get_term('a')
+
+    fac = F.Factor('f', [1,2])
+    yield assert_equal, fac['f_1'], fac.get_term(1)
+
+    fac = F.Factor('f', [1,2])
+    yield assert_raises, ValueError, fac.get_term, '1'
+
+    m = fac.main_effect
+    yield assert_equal, set(m.terms), set([fac['f_1']-fac['f_2']])
+    
+def test_stratify():
+
+    fac = F.Factor('x', [2,3])
+
+    y = sympy.Symbol('y')
+    f = sympy.Function('f')
+    yield assert_raises, ValueError, fac.stratify, f(y)
+
+def test_fullrank():
+    X = np.random.standard_normal((40,5))
+    X[:,0] = X[:,1] + X[:,2]
+
+    Y1 = F.fullrank(X)
+    yield assert_equal, Y1.shape, (40,4)
+
+    Y2 = F.fullrank(X, r=3)
+    yield assert_equal, Y2.shape, (40,3)
+
+    Y3 = F.fullrank(X, r=4)
+    yield assert_equal, Y3.shape, (40,4)
+
+    yield assert_almost_equal, Y1, Y3
+
 def test_nonlin1():
     # Fit an exponential curve, with the exponent stratified by a factor
     # with a common intercept and multiplicative factor in front of the
     # exponential
     x = F.Term('x')
     fac = F.Factor('f', 'ab')
+
+    
     f = F.Formula([sympy.exp(fac.stratify(x).mean)]) + F.I
 
     params = F.getparams(f.mean)
@@ -167,6 +317,20 @@ def test_nonlin1():
     A = f.design(n, p)
     print A, A.dtype
 
+def test_intercept():
+
+    dz = F.make_recarray([2,3,4],'z')
+    v = F.I.design(dz, return_float=False)
+    yield assert_equal, v.dtype.names, ['intercept']
+    
+def test_nonlin2():
+    dz = F.make_recarray([2,3,4],'z')
+    z = F.Term('z')
+    t = sympy.Symbol('th')
+
+    p = F.make_recarray([3], ['tt'])
+    f = F.Formula([sympy.exp(t*z)])
+    yield assert_raises, ValueError, f.design, dz, p
 
 def test_Rintercept():
 
@@ -190,6 +354,31 @@ def test_return_float():
     yield assert_equal, dtype, np.float
 
 
+def test_subtract():
+
+    x, y, z = [F.Term(l) for l in 'xyz']
+
+    f1 = F.Formula([x,y])
+    f2 = F.Formula([x,y,z])
+
+    f3 = f2 - f1
+
+    yield assert_equal, set(f3.terms), set([z])
+    
+    f4 = F.Formula([y,z])
+    f5 = f1 - f4
+    yield assert_equal, set(f5.terms), set([x])
+    
+def test_subs():
+
+    t1 = F.Term("x")
+    t2 = F.Term('y')
+    z = F.Term('z')
+    f = F.Formula([t1, t2])
+    g = f.subs(t1, z)
+
+    yield assert_equal, list(g.terms), [z, t2]
+    
 def test_natural_spline():
 
     xt=F.Term('x')
@@ -216,307 +405,3 @@ def test_natural_spline():
     yield assert_almost_equal, dd[:,4], (xx-2)**3*np.greater_equal(xx,2)
     yield assert_almost_equal, dd[:,5], (xx-9)**3*np.greater_equal(xx,9)
     yield assert_almost_equal, dd[:,6], (xx-6)**3*np.greater_equal(xx,6)
-
-
-
-
-# class TestTerm:
-
-
-
-
-
-
-#     def test_add(self):
-#         t1 = F.Term("t1")
-#         t2 = F.Term("t2")
-#         f = t1 + t2
-#         self.assert_(isinstance(f, F.Formula))
-#         self.assert_(f.hasterm(t1))
-#         self.assert_(f.hasterm(t2))
-
-#     def test_mul(self):
-#         t1 = F.Term("t1")
-#         t2 = F.Term("t2")
-#         f = t1 * t2
-#         self.assert_(isinstance(f, F.Formula))
-
-#         intercept = F.Term("intercept")
-#         f = t1 * intercept
-#         self.assertEqual(str(f), str(F.Formula(t1)))
-
-#         f = intercept * t1
-#         self.assertEqual(str(f), str(F.Formula(t1)))
-
-# class TestFormula:
-
-#     def setUp(self):
-#         self.X = R.standard_normal((40,10))
-#         self.namespace = {}
-#         self.terms = []
-#         for i in range(10):
-#             name = '%s' % string.uppercase[i]
-#             self.namespace[name] = self.X[:,i]
-#             self.terms.append(F.Term(name))
-
-#         self.formula = self.terms[0]
-#         for i in range(1, 10):
-#             self.formula += self.terms[i]
-#         self.F.namespace = self.namespace
-
-#     @dec.knownfailureif(True)
-#     def test_namespace(self):
-#         space1 = {'X':np.arange(50), 'Y':np.arange(50)*2}
-#         space2 = {'X':np.arange(20), 'Y':np.arange(20)*2}
-#         space3 = {'X':np.arange(30), 'Y':np.arange(30)*2}
-#         X = F.Term('X')
-#         Y = F.Term('Y')
-
-#         X.namespace = space1
-#         assert_almost_equal(X(), np.arange(50))
-
-#         Y.namespace = space2
-#         assert_almost_equal(Y(), np.arange(20)*2)
-
-#         f = X + Y
-
-#         f.namespace = space1
-#         self.assertEqual(f().shape, (2,50))
-#         assert_almost_equal(Y(), np.arange(20)*2)
-#         assert_almost_equal(X(), np.arange(50))
-
-#         f.namespace = space2
-#         self.assertEqual(f().shape, (2,20))
-#         assert_almost_equal(Y(), np.arange(20)*2)
-#         assert_almost_equal(X(), np.arange(50))
-
-#         f.namespace = space3
-#         self.assertEqual(f().shape, (2,30))
-#         assert_almost_equal(Y(), np.arange(20)*2)
-#         assert_almost_equal(X(), np.arange(50))
-
-#         xx = X**2
-#         self.assertEqual(xx().shape, (50,))
-
-#         xx.namespace = space3
-#         self.assertEqual(xx().shape, (30,))
-
-#         xx = X * F.I
-#         self.assertEqual(xx().shape, (50,))
-#         xx.namespace = space3
-#         self.assertEqual(xx().shape, (30,))
-
-#         xx = X * X
-#         self.assertEqual(xx.namespace, X.namespace)
-
-#         xx = X + Y
-#         self.assertEqual(xx.namespace, {})
-
-#         Y.namespace = {'X':np.arange(50), 'Y':np.arange(50)*2}
-#         xx = X + Y
-#         self.assertEqual(xx.namespace, {})
-
-#         Y.namespace = X.namespace
-#         xx = X+Y
-#         self.assertEqual(xx.namespace, Y.namespace)
-
-#     def test_termcolumns(self):
-#         t1 = F.Term("A")
-#         t2 = F.Term("B")
-#         f = t1 + t2 + t1 * t2
-#         def other(val):
-#             return np.array([3.2*val,4.342*val**2, 5.234*val**3])
-#         q = F.Quantitative(['other%d' % i for i in range(1,4)], termname='other', func=t1, transform=other)
-#         f += q
-#         q.namespace = f.namespace = self.F.namespace
-#         assert_almost_equal(q(), f()[f.termcolumns(q)])
-
-
-#     def test_str(self):
-#         s = str(self.formula)
-
-#     def test_call(self):
-#         x = self.formula()
-#         self.assertEquals(np.array(x).shape, (10, 40))
-
-#     def test_design(self):
-#         x = self.F.design()
-#         self.assertEquals(x.shape, (40, 10))
-
-#     def test_product(self):
-#         prod = self.formula['A'] * self.formula['C']
-#         f = self.formula + prod
-#         f.namespace = self.namespace
-#         x = f.design()
-#         p = f['A*C']
-#         p.namespace = self.namespace
-#         col = f.termcolumns(prod, dict=False)
-#         assert_almost_equal(np.squeeze(x[:,col]), self.X[:,0] * self.X[:,2])
-#         assert_almost_equal(np.squeeze(p()), self.X[:,0] * self.X[:,2])
-
-#     def test_intercept1(self):
-#         prod = self.terms[0] * self.terms[2]
-#         f = self.formula + F.I
-#         icol = f.names().index('intercept')
-#         f.namespace = self.namespace
-#         assert_almost_equal(f()[icol], np.ones((40,)))
-
-#     def test_intercept3(self):
-#         t = self.formula['A']
-#         t.namespace = self.namespace
-#         prod = t * F.I
-#         prod.namespace = self.F.namespace
-#         assert_almost_equal(np.squeeze(prod()), t())
-
-#     # FIXME: AttributeError: 'Contrast' object has no attribute 'getmatrix'
-#     @dec.knownfailureif(True)
-#     def test_contrast1(self):
-#         term = self.terms[0] + self.terms[2]
-#         c = contrast.Contrast(term, self.formula)
-#         c.getmatrix()
-#         col1 = self.F.termcolumns(self.terms[0], dict=False)
-#         col2 = self.F.termcolumns(self.terms[1], dict=False)
-#         test = [[1] + [0]*9, [0]*2 + [1] + [0]*7]
-#         assert_almost_equal(c.matrix, test)
-
-#     # FIXME: AttributeError: 'Contrast' object has no attribute 'getmatrix'
-#     @dec.knownfailureif(True)
-#     def test_contrast2(self):
-#         dummy = F.Term('zero')
-#         self.namespace['zero'] = np.zeros((40,), np.float64)
-#         term = dummy + self.terms[2]
-#         c = contrast.Contrast(term, self.formula)
-#         c.getmatrix()
-#         test = [0]*2 + [1] + [0]*7
-#         assert_almost_equal(c.matrix, test)
-
-#     # FIXME: AttributeError: 'Contrast' object has no attribute 'getmatrix'
-#     @dec.knownfailureif(True)
-#     def test_contrast3(self):
-#         X = self.F.design()
-#         P = np.dot(X, L.pinv(X))
-
-#         dummy = F.Term('noise')
-#         resid = np.identity(40) - P
-#         self.namespace['noise'] = np.transpose(np.dot(resid, R.standard_normal((40,5))))
-#         terms = dummy + self.terms[2]
-#         terms.namespace = self.F.namespace
-#         c = contrast.Contrast(terms, self.formula)
-#         c.getmatrix()
-#         self.assertEquals(c.matrix.shape, (10,))
-
-#     def test_power(self):
-
-#         t = self.terms[2]
-#         t2 = t**2
-#         t.namespace = t2.namespace = self.F.namespace
-#         assert_almost_equal(t()**2, t2())
-
-#     def test_quantitative(self):
-#         t = self.terms[2]
-#         sint = F.Quantitative('t', func=t, transform=np.sin)
-#         t.namespace = sint.namespace = self.F.namespace
-#         assert_almost_equal(np.sin(t()), sint())
-
-#     def test_factor1(self):
-#         f = ['a','b','c']*10
-#         fac = F.Factor('ff', f)
-#         fac.namespace = {'ff':f}
-#         self.assertEquals(list(fac.values()), f)
-
-#     def test_factor2(self):
-#         f = ['a','b','c']*10
-#         fac = F.Factor('ff', f)
-#         fac.namespace = {'ff':f}
-#         self.assertEquals(fac().shape, (3,30))
-
-#     def test_factor3(self):
-#         f = ['a','b','c']*10
-#         fac = F.Factor('ff', f)
-#         fac.namespace = {'ff':f}
-#         m = fac.main_effect(reference=1)
-#         m.namespace = fac.namespace
-#         self.assertEquals(m().shape, (2,30))
-
-#     def test_factor4(self):
-#         f = ['a','b','c']*10
-#         fac = F.Factor('ff', f)
-#         fac.namespace = {'ff':f}
-#         m = fac.main_effect(reference=2)
-#         m.namespace = fac.namespace
-#         r = np.array([np.identity(3)]*10)
-#         r.shape = (30,3)
-#         r = r.T
-#         _m = np.array([r[0]-r[2],r[1]-r[2]])
-#         assert_almost_equal(_m, m())
-
-#     def test_factor5(self):
-#         f = ['a','b','c']*3
-#         fac = F.Factor('ff', f)
-#         fac.namespace = {'ff':f}
-
-#         assert_equal(fac(), [[1,0,0]*3,
-#                              [0,1,0]*3,
-#                              [0,0,1]*3])
-#         assert_equal(fac['a'], [1,0,0]*3)
-#         assert_equal(fac['b'], [0,1,0]*3)
-#         assert_equal(fac['c'], [0,0,1]*3)
-
-
-#     def test_ordinal_factor(self):
-#         f = ['a','b','c']*3
-#         fac = F.Factor('ff', ['a','b','c'], ordinal=True)
-#         fac.namespace = {'ff':f}
-
-#         assert_equal(fac(), [0,1,2]*3)
-#         assert_equal(fac['a'], [1,0,0]*3)
-#         assert_equal(fac['b'], [0,1,0]*3)
-#         assert_equal(fac['c'], [0,0,1]*3)
-
-#     def test_ordinal_factor2(self):
-#         f = ['b','c', 'a']*3
-#         fac = F.Factor('ff', ['a','b','c'], ordinal=True)
-#         fac.namespace = {'ff':f}
-
-#         assert_equal(fac(), [1,2,0]*3)
-#         assert_equal(fac['a'], [0,0,1]*3)
-#         assert_equal(fac['b'], [1,0,0]*3)
-#         assert_equal(fac['c'], [0,1,0]*3)
-
-#     # FIXME: AttributeError: 'Contrast' object has no attribute 'getmatrix'
-#     @dec.knownfailureif(True)
-#     def test_contrast4(self):
-
-#         f = self.formula + self.terms[5] + self.terms[5]
-#         f.namespace = self.namespace
-#         estimable = False
-
-#         c = contrast.Contrast(self.terms[5], f)
-#         c.getmatrix()
-
-#         self.assertEquals(estimable, False)
-
-#     def test_interactions(self):
-
-#         f = F.interactions([F.Term(l) for l in ['a', 'b', 'c']])
-#         assert_equal(set(f.termnames()), set(['a', 'b', 'c', 'a*b', 'a*c', 'b*c']))
-
-#         f = F.interactions([F.Term(l) for l in ['a', 'b', 'c', 'd']], order=3)
-#         assert_equal(set(f.termnames()), set(['a', 'b', 'c', 'd', 'a*b', 'a*c', 'a*d', 'b*c', 'b*d', 'c*d', 'a*b*c', 'a*c*d', 'a*b*d', 'b*c*d']))
-
-#         f = F.interactions([F.Term(l) for l in ['a', 'b', 'c', 'd']], order=[1,2,3])
-#         assert_equal(set(f.termnames()), set(['a', 'b', 'c', 'd', 'a*b', 'a*c', 'a*d', 'b*c', 'b*d', 'c*d', 'a*b*c', 'a*c*d', 'a*b*d', 'b*c*d']))
-
-#         f = F.interactions([F.Term(l) for l in ['a', 'b', 'c', 'd']], order=[3])
-#         assert_equal(set(f.termnames()), set(['a*b*c', 'a*c*d', 'a*b*d', 'b*c*d']))
-
-#     def test_subtract(self):
-#         f = F.interactions([F.Term(l) for l in ['a', 'b', 'c']])
-#         ff = f - f['a*b']
-#         assert_equal(set(ff.termnames()), set(['a', 'b', 'c', 'a*c', 'b*c']))
-
-#         ff = f - f['a*b'] - f['a*c']
-#         assert_equal(set(ff.termnames()), set(['a', 'b', 'c', 'b*c']))
-
-#         ff = f - (f['a*b'] + f['a*c'])
-#         assert_equal(set(ff.termnames()), set(['a', 'b', 'c', 'b*c']))
