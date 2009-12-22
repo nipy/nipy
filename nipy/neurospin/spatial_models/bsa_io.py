@@ -15,7 +15,7 @@ import nipy.neurospin.graph.field as ff
 
 def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
                    smin=0, swd="/tmp/", method='simple', subj_id=None,
-                   nbeta='default', densPath=None, crpath=None, verbose=0):
+                   nbeta='default', densPath=None, crPath=None, verbose=0):
     """
     main function for  performing bsa on a set of images.
     It creates the some output images in the given directory
