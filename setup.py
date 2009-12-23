@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+from glob import glob
 from distutils import log
 from distutils.cmd import Command
 from distutils.version import LooseVersion
@@ -60,7 +61,6 @@ def package_check(pkg_name, version=None, checker=LooseVersion):
 
 # Soft dependency checking
 package_check('sympy', '0.6.4')
-package_check('nifti')
 package_check('scipy', '0.5')
 
     
@@ -126,6 +126,7 @@ def main(**extra_args):
            long_description = __doc__,
            configuration = configuration,
            cmdclass = cmdclass,
+           scripts = glob('scripts/*.py'),
            **extra_args)
 
 

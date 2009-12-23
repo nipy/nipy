@@ -40,6 +40,7 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('modalities')
     config.add_subpackage('utils')
     config.add_subpackage('testing')
+    config.add_subpackage('externals')
 
     # Note: this is a special subpackage, where all the code from Neurospin
     # that up until now had been living in the 'fff2' branch will go.

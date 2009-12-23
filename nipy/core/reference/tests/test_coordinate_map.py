@@ -1,10 +1,10 @@
 import numpy as np
 from nipy.testing import assert_true, assert_equal, assert_raises, \
-            assert_false
+    assert_false, assert_array_equal, parametric
 
 from nipy.core.reference.coordinate_map import CoordinateMap, Affine, \
     compose, CoordinateSystem, reorder_input, reorder_output, product, \
-    replicate, linearize
+    replicate, linearize, drop_io_dim, append_io_dim
 
 
 class empty:
@@ -278,3 +278,97 @@ def test_linearize():
     #origin = np.array([10, 20, 30], dtype=np.int16)
     #yield assert_raises, UserWarning, linearize, cm.mapping, cm.ndim[0], \
     #    1, origin
+
+
+@parametric
+def test_drop_io_dim():
+    aff = np.diag([1,2,3,1])
+    in_dims = list('ijk')
+    out_dims = list('xyz')
+    cm = Affine.from_params(in_dims, out_dims, aff)
+    yield assert_raises(ValueError, drop_io_dim, cm, 'q')
+    for i, d in enumerate(in_dims):
+        cm2 = drop_io_dim(cm, d)
+        yield assert_equal(cm2.ndim, (2,2))
+        ods = out_dims[:]
+        ids = in_dims[:]
+        ods.pop(i)
+        ids.pop(i)
+        yield assert_equal(ods, cm2.output_coords.coord_names)
+        yield assert_equal(ids, cm2.input_coords.coord_names)
+        a2 = cm2.affine
+        yield assert_equal(a2.shape, (3,3))
+        ind_a = np.ones((4,4), dtype=np.bool)
+        ind_a[:,i] = False
+        ind_a[i,:] = False
+        aff2 = cm.affine[ind_a].reshape((3,3))
+        yield assert_array_equal(aff2, a2)
+        # Check non-orth case
+        waff = np.diag([1,2,3,1])
+        wrong_i = (i+1) % 3
+        waff[wrong_i,i] = 2 # not OK if in same column as that being removed
+        wcm = Affine.from_params(in_dims, out_dims, waff)
+        yield assert_raises(ValueError, drop_io_dim, wcm, d)
+        raff = np.diag([1,2,3,1])
+        raff[i,wrong_i] = 2 # is OK if in same row
+        rcm = Affine.from_params(in_dims, out_dims, raff)
+        cm2 = drop_io_dim(rcm, d)
+    # dims out of range give error
+    yield assert_raises(ValueError, drop_io_dim, cm, 'p')
+    # only works for affine case
+    cm = CoordinateMap(lambda x:x, cm.input_coords, cm.output_coords)
+    yield assert_raises(AttributeError, drop_io_dim, cm, 'i')
+    # Check non-square case
+    aff = np.array([[1.,0,0,0],
+                    [0,2,0,0],
+                    [0,0,3,0],
+                    [0,0,0,1],
+                    [0,0,0,1]])
+    cm = Affine.from_params(in_dims, out_dims + ['t'], aff)
+    cm2 = drop_io_dim(cm, 'i')
+    yield assert_array_equal(cm2.affine,
+                             [[2,0,0],
+                              [0,3,0],
+                              [0,0,1],
+                              [0,0,1]])
+    yield assert_raises(ValueError, drop_io_dim, cm, 't')
+    
+
+@parametric
+def test_append_io_dim():
+    aff = np.diag([1,2,3,1])
+    in_dims = list('ijk')
+    out_dims = list('xyz')
+    cm = Affine.from_params(in_dims, out_dims, aff)
+    cm2 = append_io_dim(cm, 'l', 't')
+    yield assert_array_equal(cm2.affine, np.diag([1,2,3,1,1]))
+    yield assert_equal(cm2.output_coords.coord_names,
+                       out_dims + ['t'])
+    yield assert_equal(cm2.input_coords.coord_names,
+                       in_dims + ['l'])
+    cm2 = append_io_dim(cm, 'l', 't', 9, 5)
+    a2 = np.diag([1,2,3,5,1])
+    a2[3,4] = 9
+    yield assert_array_equal(cm2.affine, a2)
+    yield assert_equal(cm2.output_coords.coord_names,
+                       out_dims + ['t'])
+    yield assert_equal(cm2.input_coords.coord_names,
+                       in_dims + ['l'])
+    # non square case
+    aff = np.array([[2,0,0],
+                    [0,3,0],
+                    [0,0,1],
+                    [0,0,1]])
+    cm = Affine.from_params('ij', 'xyz', aff)
+    cm2 = append_io_dim(cm, 'q', 't', 9, 5)
+    a2 = np.array([[2,0,0,0],
+                   [0,3,0,0],
+                   [0,0,0,1],
+                   [0,0,5,9],
+                   [0,0,0,1]])
+    yield assert_array_equal(cm2.affine, a2)
+    yield assert_equal(cm2.output_coords.coord_names,
+                       list('xyzt'))
+    yield assert_equal(cm2.input_coords.coord_names,
+                       list('ijq'))
+    

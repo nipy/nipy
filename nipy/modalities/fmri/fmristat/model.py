@@ -8,7 +8,7 @@ import numpy as np
 from scipy.linalg import toeplitz
 
 from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
-from nipy.fixes.scipy.stats.models.utils import recipr
+from nipy.fixes.scipy.stats.models.utils import pos_recipr
 
 # nipy core imports
 from nipy.core.api import Image, parcels, matrix_generator, Affine
@@ -173,7 +173,7 @@ def estimateAR(resid, design, order=1):
     for i in range(1, p+1):
         cov[i] = np.add.reduce(rresid[i:] * rresid[0:-i], 0)
     cov = np.dot(invM, cov)
-    output = cov[1:] * recipr(cov[0])
+    output = cov[1:] * pos_recipr(cov[0])
     output = np.squeeze(output)
     output.shape = resid.shape[1:]
     return output

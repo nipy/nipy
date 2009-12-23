@@ -20,7 +20,7 @@ import numpy as np
 
 import nipy.io.imageformats as formats
 
-from nipy.core.api import Image
+from nipy.core.api import Image, is_image
 from nifti_ref import (coordmap_from_affine, coerce_coordmap, 
                        ijk_from_fps, fps_from_ijk)
                        
@@ -248,3 +248,39 @@ def _type_from_filename(filename):
     if ext == '.mnc':
         return 'minc'
     raise ValueError('Strange file extension "%s"' % ext)
+
+
+def as_image(image_input):
+    ''' Load image from filename or pass through image instance
+
+    Parameters
+    ----------
+    image_input : str or Image instance
+       image or string filename of image.  If a string, load image and
+       return.  If an image, pass through without modification
+
+    Returns
+    -------
+    img : Image or Image-like instance
+       Input object if `image_input` seemed to be an image, loaded Image
+       object if `image_input` was a string.
+
+    Raises
+    ------
+    TypeError : if neither string nor image-like passed
+
+    Examples
+    --------
+    >>> from nipy.testing import anatfile
+    >>> from nipy.io.api import load_image
+    >>> img = as_image(anatfile)
+    >>> img2 = as_image(img)
+    >>> img2 is img
+    True
+    '''
+    if is_image(image_input):
+        return image_input
+    if isinstance(image_input, basestring):
+        return load(image_input)
+    raise TypeError('Expecting an image-like object or filename string')
+    
