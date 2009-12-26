@@ -199,8 +199,8 @@ def get_bounds(shape, affine):
     bounds[:3, -3:] = np.identity(3)*shape
     bounds[-1, :] = 1
     bounds = np.dot(affine, bounds)
-    xmin = float(bounds[0, 3])
-    xmax = float(bounds[0, 0])
+    xmin = float(bounds[0, 0])
+    xmax = float(bounds[0, 3])
     zmin = float(bounds[2, 0])
     zmax = float(bounds[2, 5])
     ymin = float(bounds[1, 0])

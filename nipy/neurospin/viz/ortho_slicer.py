@@ -12,7 +12,15 @@ from coord_tools import coord_transform, get_bounds, get_mask_bounds
 
 class OrthoSlicer(object):
 
-    def __init__(self, axes=None):
+    def __init__(self, cut_coords, axes=None):
+        """
+
+            Parameters
+            ----------
+            cut_coords: 3 tuple of ints
+                The cut position, in world space.
+        """
+        self._cut_coords = cut_coords
         if axes is None:
             axes = pl.axes((0., 0., 1., 1.))
             axes.axis('off')
@@ -61,10 +69,101 @@ class OrthoSlicer(object):
         left_dict[y_ax] = width_dict[x_ax]
         left_dict[z_ax] = width_dict[x_ax] + width_dict[y_ax]
         return Bbox([[left_dict[axes], 0], 
-                     [left_dict[axes] + width_dict[axes], 1]])
+                    [left_dict[axes] + width_dict[axes], 1]])
+
+    def draw_cross(self, cut_coords=None, **kwargs):
+        """ Draw a crossbar on the plot to show where the cut is
+            performed.
+        """
+        if cut_coords is None:
+            cut_coords = self._cut_coords
+        x, y, z = cut_coords
+
+        ax = self.axes['x']
+        ax.axvline(x, ymin=.05, ymax=.95, **kwargs)
+        ax.axhline(z, **kwargs)
+
+        ax = self.axes['y']
+        xmin, xmax, ymin, ymax = self.get_object_bounds(ax)
+        ax.axvline(y, ymin=.05, ymax=.95, **kwargs)
+        ax.axhline(z, xmax=.95, **kwargs)
+
+        ax = self.axes['z']
+        ax.axvline(x, ymin=.05, ymax=.95, **kwargs)
+        ax.axhline(y, **kwargs)
 
 
-    def plot_map(self, map, affine, cut_coords, **kwargs):
+    def annotate(self, left_right=True, positions=True, size=12, **kwargs):
+        """ Add annotations to the plot.
+        """
+        if left_right:
+            ax_z = self.axes['z']
+            ax_z.text(.1, .95, 'L', 
+                    transform=ax_z.transAxes,
+                    horizontalalignment='left',
+                    verticalalignment='top',
+                    size=size,
+                    bbox=dict(boxstyle="square,pad=0", 
+                              ec="1", fc="1", alpha=.9),
+                    **kwargs)
+
+            ax_z.text(.9, .95, 'R', 
+                    transform=ax_z.transAxes,
+                    horizontalalignment='right',
+                    verticalalignment='top',
+                    size=size,
+                    bbox=dict(boxstyle="square,pad=0", 
+                              ec="1", fc="1", alpha=.9),
+                    **kwargs)
+
+            ax_x = self.axes['x']
+            ax_x.text(.1, .95, 'L', 
+                    transform=ax_x.transAxes,
+                    horizontalalignment='left',
+                    verticalalignment='top',
+                    size=size,
+                    bbox=dict(boxstyle="square,pad=0", 
+                              ec="1", fc="1", alpha=.9),
+                    **kwargs)
+            ax_x.text(.9, .95, 'R', 
+                    transform=ax_x.transAxes,
+                    horizontalalignment='right',
+                    verticalalignment='top',
+                    size=size,
+                    bbox=dict(boxstyle="square,pad=0", 
+                              ec="1", fc="1", alpha=.9),
+                    **kwargs)
+
+        if positions:
+            x, y, z  = self._cut_coords
+            ax_x.text(0, 0, 'y=%i' % y,
+                    transform=ax_x.transAxes,
+                    horizontalalignment='left',
+                    verticalalignment='bottom',
+                    size=size,
+                    bbox=dict(boxstyle="square,pad=0", 
+                              ec="1", fc="1", alpha=.9),
+                    **kwargs)
+            ax_y = self.axes['y']
+            ax_y.text(0, 0, 'x=%i' % x,
+                    transform=ax_y.transAxes,
+                    horizontalalignment='left',
+                    verticalalignment='bottom',
+                    size=size,
+                    bbox=dict(boxstyle="square,pad=0", 
+                              ec="1", fc="1", alpha=.9),
+                    **kwargs)
+            ax_z.text(0, 0, 'z=%i' % z,
+                    transform=ax_z.transAxes,
+                    horizontalalignment='left',
+                    verticalalignment='bottom',
+                    size=size,
+                    bbox=dict(boxstyle="square,pad=0", 
+                              ec="1", fc="1", alpha=.9),
+                    **kwargs)
+
+
+    def plot_map(self, map, affine, **kwargs):
         """ Plot a 3D map in all the views.
 
             Parameters
@@ -75,49 +174,44 @@ class OrthoSlicer(object):
             affine: 4x4 ndarray
                 The affine matrix giving the transformation from voxel
                 indices to world space.
-            cut_coords: 3 tuple of ints
-                The cut positions in world space.
+            kwargs:
+                Extra keyword arguments are passed to imshow.
         """
-        y, x, z = cut_coords
+        x, y, z = self._cut_coords
         x_map, y_map, z_map = [int(round(c)) for c in 
                                coord_transform(x, y, z, np.linalg.inv(affine))]
         xmin, xmax, ymin, ymax, zmin, zmax = get_bounds(map.shape, affine)
 
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                            xmin, xmax, ymin, ymax, zmin, zmax
+                                        xmin, xmax, ymin, ymax, zmin, zmax
         if hasattr(map, 'mask'):
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                        get_mask_bounds(np.logical_not(map.mask), affine)
+                            get_mask_bounds(np.logical_not(map.mask), affine)
+        if not 'vmin' in kwargs:
+            kwargs['vmin'] = map.min()
+        if not 'vmax' in kwargs:
+            kwargs['vmax'] = map.max()
 
         ax = self.axes['x']
         ax.imshow(np.rot90(map[:, y_map, :]),
                   extent=(xmin, xmax, zmin, zmax),
                   **kwargs)
         self._object_bounds[ax].append((xmin_, xmax_, zmin_, zmax_))
-        this_xmin, this_xmax, this_ymin, this_ymax = \
-                                        self.get_object_bounds(ax)
-        ax.set_xlim(this_xmin, this_xmax)
-        ax.set_ylim(this_ymin, this_ymax)
+        ax.axis(self.get_object_bounds(ax))
 
         ax = self.axes['y']
         ax.imshow(np.rot90(map[x_map, :, :]),
                   extent=(ymin, ymax, zmin, zmax),
                   **kwargs)
         self._object_bounds[ax].append((ymin_, ymax_, zmin_, zmax_))
-        this_xmin, this_xmax, this_ymin, this_ymax = \
-                                        self.get_object_bounds(ax)
-        ax.set_xlim(this_xmin, this_xmax)
-        ax.set_ylim(this_ymin, this_ymax)
+        ax.axis(self.get_object_bounds(ax))
 
         ax = self.axes['z']
         ax.imshow(np.rot90(map[:, :, z_map]),
                   extent=(xmin, xmax, ymin, ymax),
                   **kwargs)
         self._object_bounds[ax].append((xmin_, xmax_, ymin_, ymax_))
-        this_xmin, this_xmax, this_ymin, this_ymax = \
-                                        self.get_object_bounds(ax)
-        ax.set_xlim(this_xmin, this_xmax)
-        ax.set_ylim(this_ymin, this_ymax)
+        ax.axis(self.get_object_bounds(ax))
 
 
 if __name__ == '__main__':

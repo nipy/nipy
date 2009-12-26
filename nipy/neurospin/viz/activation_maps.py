@@ -26,7 +26,9 @@ from nipy.io.imageformats import load
 
 from anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from coord_tools import coord_transform, find_activation, \
-        find_cut_coords, get_bounds
+        find_cut_coords
+
+from ortho_slicer import OrthoSlicer
 
 class SformError(Exception):
     pass
@@ -120,31 +122,28 @@ cm = _CM(**_cm)
 ################################################################################
 
 
-def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
-                    vmin=None, figure_num=None, axes=None, title='',
-                    mask=None, **kwargs):
+def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
+                    figure_num=None, axes=None, title='',
+                    annotate=True, draw_cross=True, **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
 
         Parameters
         ----------
         map : 3D ndarray
             The activation map, as a 3D image.
-        sform : 4x4 ndarray
+        affine : 4x4 ndarray
             The affine matrix going from image voxel space to MNI space.
         cut_coords: 3-tuple of floats
             The MNI coordinates of the point where the cut is performed, in 
             MNI coordinates and order.
-        anat : 3D ndarray, optional or False
+        anat : 3D ndarray or False, optional
             The anatomical image to be used as a background. If None, the 
             MNI152 T1 1mm template is used. If False, no anat is displayed.
-        anat_sform : 4x4 ndarray, optional
+        anat_affine : 4x4 ndarray, optional
             The affine matrix going from the anatomical image voxel space to 
             MNI space. This parameter is not used when the default 
             anatomical is used, but it is compulsory when using an
             explicite anatomical image.
-        vmin : float, optional
-            The lower threshold of the positive activation. This
-            parameter is used to threshold the activation map.
         figure_num : integer, optional
             The number of the matplotlib figure used. If None is given, a
             new figure is created.
@@ -154,196 +153,72 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
             used.
         title : string, optional
             The title dispayed on the figure.
-        mask : 3D ndarray, boolean, optional
-            The brain mask. If None, the mask is computed from the map.*
+        annotate: boolean, optional
+            If annotate is True, positions and left/right annotation
+            are added to the plot.
+        draw_cross: boolean, optional
+            If draw_cross is True, a cross is drawn on the plot to
+            indicate the cut plosition.
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
 
         Notes
         -----
-        All the 3D arrays are in numpy convention: (x, y, z)
-
-        Cut coordinates are in Talairach coordinates. Warning: Talairach
-        coordinates are (y, x, z), if (x, y, z) are in voxel-ordering
-        convention.
+        Use masked arrays to create transparency.
     """
     if anat is None:
-        anat, anat_sform, vmax_anat = _AnatCache.get_anat()
-    elif anat is not False:
+        anat, anat_affine, vmax_anat = _AnatCache.get_anat()
+    if anat is not False:
         # Make anat only positive
         anat = anat - anat.min()
-        vmax_anat = anat.max()
+        # XXX: Do we want to keep this feature?
 
-    if mask is not None and (
-                    np.all(mask) or np.all(np.logical_not(mask))):
-        mask = None
-
-    vmin_map  = map.min()
-    vmax_map  = map.max()
-    if vmin is not None and np.isfinite(vmin):
-        map = np.ma.masked_less(map, vmin)
-    elif mask is not None and not isinstance(map, np.ma.masked_array):
-        map = np.ma.masked_array(map, np.logical_not(mask))
-        vmin_map  = map.min()
-        vmax_map  = map.max()
-
-    if isinstance(map, np.ma.core.MaskedArray):
-        use_mask = False
-        if map._mask is False or np.all(np.logical_not(map._mask)):
-            map = np.asarray(map)
-        elif map._mask is True or np.all(map._mask):
-            map = np.asarray(map)
-        if use_mask and mask is not None:
-            map = np.ma.masked_array(map, np.logical_not(mask))
-
-    # Calculate the bounds
-    if anat is not False:
-        anat_bounds = get_bounds(anat.shape, anat_sform)
-
-    map_bounds = get_bounds(map.shape, sform)
-
-    # The coordinates of the center of the cut in different spaces.
-    y, x, z = cut_coords
-    x_map, y_map, z_map = [int(round(c)) for c in 
-                            coord_transform(x, y, z,
-                                    np.linalg.inv(sform))]
-    if anat is not False:
-        x_anat, y_anat, z_anat = [int(round(c)) for c in 
-                            coord_transform(x, y, z,
-                                    np.linalg.inv(anat_sform))]
-
-
-    fig = pl.figure(figure_num, figsize=(6.6, 2.6))
+    # XXX: Should not always create a figure.
+    # Lets take either a number or a figure instance.
+    fig = pl.figure(figure_num, figsize=(6.6, 2.6), facecolor='w')
     if axes is None:
+        # XXX: This should be named 'rect' and not 'axes'
         axes = (0., 1., 0., 1.)
         pl.clf()
-    ax_xmin, ax_xmax, ax_ymin, ax_ymax = axes
-    ax_width = ax_xmax - ax_xmin
-    ax_height = ax_ymax - ax_ymin
-    
-    # Calculate the axes ratio size in a 'clever' way
-    if anat is not False:
-        shapes = np.array(anat.shape, 'f')
-    else:
-        shapes = np.array(map.shape, 'f')
-    shapes *= ax_width/shapes.sum()
-    
-    ###########################################################################
-    # Frontal
-    pl.axes([ax_xmin, ax_ymin, shapes[0], ax_height])
-    if anat is not False:
-        if y_anat < anat.shape[1]:
-            pl.imshow(np.rot90(anat[:, y_anat, :]), 
-                                    cmap=pl.cm.gray,
-                                    vmin=-.5*vmax_anat,
-                                    vmax=vmax_anat, 
-                                    extent=(anat_bounds[0, 3],
-                                            anat_bounds[0, 0],
-                                            anat_bounds[2, 0],
-                                            anat_bounds[2, 5]))
-    if y_map < map.shape[1]:
-        pl.imshow(np.rot90(map[:, y_map, :]),
-                                vmin=vmin_map,
-                                vmax=vmax_map,
-                                extent=(map_bounds[0, 3],
-                                        map_bounds[0, 0],
-                                        map_bounds[2, 0],
-                                        map_bounds[2, 5]),
-                                **kwargs)
-    pl.text(ax_xmin +shapes[0] + shapes[1] - 0.01, ax_ymin + 0.07, '%i' % x,
-             horizontalalignment='right',
-             verticalalignment='bottom',
-             transform=fig.transFigure)
-    
-    xmin, xmax = pl.xlim()
-    ymin, ymax = pl.ylim()
-    pl.hlines(z, xmin, xmax, color=(.5, .5, .5))
-    pl.vlines(-x, ymin, ymax, color=(.5, .5, .5))
-    pl.axis('off')
-    
-    ###########################################################################
-    # Lateral
-    pl.axes([ax_xmin + shapes[0], ax_ymin, shapes[1], ax_height])
-    if anat is not False:
-        if x_anat < anat.shape[0]:
-            pl.imshow(np.rot90(anat[x_anat, ...]), cmap=pl.cm.gray,
-                                    vmin=-.5*vmax_anat,
-                                    vmax=vmax_anat, 
-                                    extent=(anat_bounds[1, 0],
-                                            anat_bounds[1, 4],
-                                            anat_bounds[2, 0],
-                                            anat_bounds[2, 5]))
-    if x_map < map.shape[0]:
-        pl.imshow(np.rot90(map[x_map, ...]),
-                                vmin=vmin_map,
-                                vmax=vmax_map,
-                                extent=(map_bounds[1, 0],
-                                        map_bounds[1, 4],
-                                        map_bounds[2, 0],
-                                        map_bounds[2, 5]),
-                                **kwargs)
-    pl.text(ax_xmin + shapes[-1] - 0.01, ax_ymin + 0.07, '%i' % y, 
-             horizontalalignment='right',
-             verticalalignment='bottom',
-             transform=fig.transFigure)
-    
-    xmin, xmax = pl.xlim()
-    ymin, ymax = pl.ylim()
-    pl.hlines(z, xmin, xmax, color=(.5, .5, .5))
-    pl.vlines(y, ymin, ymax, color=(.5, .5, .5))
-    pl.axis('off')
+        # XXX: clf? Bad bad bad.
 
-    ###########################################################################
-    # Axial
-    pl.axes([ax_xmin + shapes[0] + shapes[1], ax_ymin, shapes[-1],
-                ax_height])
-    if anat is not False:
-        if z_anat < anat.shape[2]:
-            pl.imshow(np.rot90(anat[..., z_anat]), 
-                                    cmap=pl.cm.gray,
-                                    vmin=-.5*vmax_anat,
-                                    vmax=vmax_anat, 
-                                    extent=(anat_bounds[0, 0],
-                                            anat_bounds[0, 3],
-                                            anat_bounds[1, 0],
-                                            anat_bounds[1, 4]))
-    if z_map < map.shape[2]:
-        pl.imshow(np.rot90(map[..., z_map]),
-                                vmin=vmin_map,
-                                vmax=vmax_map,
-                                extent=(map_bounds[0, 0],
-                                        map_bounds[0, 3],
-                                        map_bounds[1, 0],
-                                        map_bounds[1, 4]),
-                                **kwargs)
-    pl.text(ax_xmax - 0.01, ax_ymin + 0.07, '%i' % z, 
-             horizontalalignment='right',
-             verticalalignment='bottom',
-             transform=fig.transFigure)
-    
-    xmin, xmax = pl.xlim()
-    ymin, ymax = pl.ylim()
-    pl.hlines(y,  xmin, xmax, color=(.5, .5, .5))
-    pl.vlines(x, ymin, ymax, color=(.5, .5, .5))
-    pl.axis('off')
-    
-    pl.text(ax_xmin + 0.01, ax_ymax - 0.01, title, 
-             horizontalalignment='left',
-             verticalalignment='top',
-             transform=fig.transFigure)
+    ortho_slicer = OrthoSlicer(cut_coords)
+    anat_kwargs = kwargs.copy()
+    anat_kwargs['cmap'] = pl.cm.gray
+    ortho_slicer.plot_map(anat, anat_affine, **anat_kwargs)
+    ortho_slicer.plot_map(map, affine, **kwargs)
+    if annotate:
+        ortho_slicer.annotate()
+    if draw_cross:
+        ortho_slicer.draw_cross(color='k')
 
-    pl.axis('off')
+    # XXX: What about title?
+    if title:
+        ortho_slicer.ax.text(0.01, 0.99, title, 
+                    transform=ortho_slicer.ax.transAxes,
+                    horizontalalignment='left',
+                    verticalalignment='top',
+                    size=15, color='w',
+                    bbox=dict(boxstyle="square,pad=.3", 
+                              ec="0", fc="0", alpha=.9),
+                    )
 
+    return ortho_slicer
 
 def demo_plot_map_2d():
     map = np.zeros((182, 218, 182))
-    # Color a asymetric rectangle around Broadman area 26:
-    x, y, z = -6, -53, 9
+    # Color a asymetric rectangle around Broca area:
+    x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
-    map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
+    # Compare to values obtained using fslview. We need to add one as
+    # voxels do not start at 0 in fslview.
+    assert x_map == 142
+    assert y_map +1 == 137
+    assert z_map +1 == 95
+    map[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     map = np.ma.masked_less(map, 0.5)
     plot_map_2d(map, mni_sform, cut_coords=(x, y, z),
-                                figure_num=512)
+                title="Broca's area", figure_num=512)
 
 
 def plot_map(map, sform, cut_coords, anat=None, anat_sform=None,
@@ -629,4 +504,7 @@ def plot_niftifile(filename, outputname=None, do3d=False, vmin=None,
         raise NiftiIndexError, 'File %s: incorrect number of dimensions'
     return output_files
 
+if __name__ == '__main__':
+    demo_plot_map_2d()
+    pl.show()
 
