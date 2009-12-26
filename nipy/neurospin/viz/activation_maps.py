@@ -11,22 +11,25 @@ For 3D visualization, Mayavi, version 3.0 or greater, is required.
 # License: BSD
 
 # Standard library imports
-import sys
+import warnings
+import operator
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
 import matplotlib as mp
 import pylab as pl
+from matplotlib.figure import Figure
+from matplotlib.axes import Axes
 
 # Local imports
 from nipy.neurospin.utils.mask import compute_mask
 
-from anat_cache import mni_sform, mni_sform_inv, _AnatCache
-from coord_tools import coord_transform, find_activation, \
+from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
+from .coord_tools import coord_transform, find_activation, \
         find_cut_coords
 
-from ortho_slicer import OrthoSlicer
+from .ortho_slicer import OrthoSlicer
 
 
 ################################################################################
@@ -115,7 +118,7 @@ cm = _CM(**_cm)
 
 
 def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
-                    figure_num=None, axes=None, title='',
+                    figure=None, axes=None, title=None,
                     annotate=True, draw_cross=True, **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
 
@@ -136,13 +139,13 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
             MNI space. This parameter is not used when the default 
             anatomical is used, but it is compulsory when using an
             explicite anatomical image.
-        figure_num : integer, optional
-            The number of the matplotlib figure used. If None is given, a
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : 4 tuple of float: (xmin, xmax, ymin, ymin), optional
-            The coordinates, in matplotlib figure space, of the axes
-            used to display the plot. If None, the complete figure is 
-            used.
+        axes : matplotlib axes or 4 tuple of float: (xmin, xmax, ymin, ymin), optional
+            The axes, or the coordinates, in matplotlib figure space, 
+            of the axes used to display the plot. If None, the complete 
+            figure is used.
         title : string, optional
             The title dispayed on the figure.
         annotate: boolean, optional
@@ -159,34 +162,40 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
         Use masked arrays to create transparency.
     """
     if anat is None:
-        anat, anat_affine, vmax_anat = _AnatCache.get_anat()
-    if anat is not False:
-        # Make anat only positive
-        anat = anat - anat.min()
-        # XXX: Do we want to keep this feature?
-
-    # XXX: Should not always create a figure.
-    # Lets take either a number or a figure instance.
-    fig = pl.figure(figure_num, figsize=(6.6, 2.6), facecolor='w')
+        try:
+            anat, anat_affine, vmax_anat = _AnatCache.get_anat()
+        except OSError, e:
+            anat = False
+            warnings.warn(repr(e))
+    if not isinstance(figure, Figure):
+        fig = pl.figure(figure, figsize=(6.6, 2.6), facecolor='w')
+    else:
+        fig = figure
+        if isinstance(axes, Axes):
+            assert axes.figure is figure, ("The axes passed are not "
+            "in the figure")
     if axes is None:
-        # XXX: This should be named 'rect' and not 'axes'
-        axes = (0., 1., 0., 1.)
-        pl.clf()
-        # XXX: clf? Bad bad bad.
+        axes = [0., 0., 1., 1.]
+    if operator.isSequenceType(axes):
+        axes = fig.add_axes(axes)
+        axes.axis('off')
 
-    ortho_slicer = OrthoSlicer(cut_coords)
-    anat_kwargs = kwargs.copy()
-    anat_kwargs['cmap'] = pl.cm.gray
-    ortho_slicer.plot_map(anat, anat_affine, **anat_kwargs)
+    ortho_slicer = OrthoSlicer(cut_coords, axes=axes)
+    if anat is not False:
+        anat_kwargs = kwargs.copy()
+        anat_kwargs['cmap'] = pl.cm.gray
+        anat_kwargs.pop('vmin', None)
+        anat_kwargs.pop('vmax', None)
+        ortho_slicer.plot_map(anat, anat_affine, **anat_kwargs)
     ortho_slicer.plot_map(map, affine, **kwargs)
     if annotate:
         ortho_slicer.annotate()
     if draw_cross:
         ortho_slicer.draw_cross(color='k')
 
-    if title:
-        ortho_slicer.ax.text(0.01, 0.99, title, 
-                    transform=ortho_slicer.ax.transAxes,
+    if title is not None and not title == '':
+        ortho_slicer.frame_axes.text(0.01, 0.99, title, 
+                    transform=ortho_slicer.frame_axes.transAxes,
                     horizontalalignment='left',
                     verticalalignment='top',
                     size=15, color='w',
@@ -209,12 +218,12 @@ def demo_plot_map_2d():
     assert z_map +1 == 95
     map[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     map = np.ma.masked_less(map, 0.5)
-    plot_map_2d(map, mni_sform, cut_coords=(x, y, z),
-                title="Broca's area", figure_num=512)
+    return plot_map_2d(map, mni_sform, cut_coords=(x, y, z),
+                        title="Broca's area", figure=512)
 
 
 def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
-    figure_num=None, title='', **kwargs):
+    figure=None, title=None, **kwargs):
     """ Plot a together a 3D volume rendering view of the activation, with an
         outline of the brain, and 2D cuts. If Mayavi is not installed,
         falls back to 2D views only.
@@ -237,9 +246,9 @@ def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
             MNI space. This parameter is not used when the default 
             anatomical is used, but it is compulsory when using an
             explicite anatomical image.
-        figure_num : integer, optional
-            The number of the matplotlib and Mayavi figures used. If None is 
-            given, a new figure is created.
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
+            new figure is created.
         title : string, optional
             The title dispayed on the figure.
 
@@ -251,27 +260,30 @@ def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
         if not int(version.version[0]) > 2:
             raise ImportError
     except ImportError:
-        print >> sys.stderr, 'Mayavi > 3.x not installed, plotting only 2D'
+        warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
         return plot_map_2d(map, affine, cut_coords=cut_coords, anat=anat,
                            anat_affine=anat_affine, 
-                           figure_num=figure_num, 
+                           figure=figure, 
                            title=title, **kwargs)
 
 
     from .maps_3d import plot_map_3d, m2screenshot
-    plot_map_3d(map, affine, cut_coords=cut_coords, anat=anat,
+    if not isinstance(figure, Figure):
+        figure = pl.figure(figure, figsize=(10.6, 2.6), facecolor='w')
+
+    plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, anat=anat,
                 anat_affine=anat_affine, 
                 vmin=kwargs.get('vmin', None),
-                figure_num=figure_num)
+                figure=figure.number)
 
-    fig = pl.figure(figure_num, figsize=(10.6, 2.6), facecolor='w')
-    ax = pl.axes((-0.01, 0, 0.3, 1))
+    ax = figure.add_axes((-0.01, 0, 0.3, 1))
+    ax.axis('off')
     m2screenshot(mpl_axes=ax)
 
-    plot_map_2d(map, affine, cut_coords=cut_coords, anat=anat,
-                anat_affine=anat_affine, 
-                figure_num=fig.number, axes=(0.28, 1, 0, 1.),
-                title=title, **kwargs)
+    return plot_map_2d(map, affine, cut_coords=cut_coords, anat=anat,
+                        anat_affine=anat_affine, 
+                        figure=figure, axes=(0.29, 0, .72, 1.),
+                        title=title, **kwargs)
 
 
 def demo_plot_map():
@@ -280,12 +292,13 @@ def demo_plot_map():
     x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
     map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
-    plot_map(map, mni_sform, cut_coords=(x, y, z), vmin=0.5,
-                                figure_num=512)
+    map = np.ma.masked_less(map, 0.5)
+    return plot_map(map, mni_sform, cut_coords=(x, y, z), vmin=0.5,
+                                        title="Broca's area", figure=512)
 
 
 def auto_plot_map(map, affine, vmin=None, cut_coords=None, do3d=False, 
-                    anat=None, anat_affine=None, title='', mask=None,
+                    anat=None, anat_affine=None, title=None, mask=None,
                     figure_num=None, auto_sign=True):
     """ Automatic plotting of an activation map.
 
@@ -383,6 +396,6 @@ def auto_plot_map(map, affine, vmin=None, cut_coords=None, do3d=False,
 
 
 if __name__ == '__main__':
-    demo_plot_map_2d()
+    ortho_slicer = demo_plot_map_2d()
     pl.show()
 

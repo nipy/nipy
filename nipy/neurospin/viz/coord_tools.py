@@ -55,6 +55,7 @@ def threshold_connect_components(map, threshold, copy=True):
             map[labels == index] = 0
     return map
 
+
 def coord_transform(x, y, z, affine):
     """ Convert the x, y, z coordinates from one image space to another
         space. 
@@ -206,6 +207,7 @@ def get_bounds(shape, affine):
     ymin = float(bounds[1, 0])
     ymax = float(bounds[1, 4])
     return xmin, xmax, ymin, ymax, zmin, zmax
+
 
 def get_mask_bounds(mask, affine):
     """ Return the world-space bounds occupied by a mask given an affine.

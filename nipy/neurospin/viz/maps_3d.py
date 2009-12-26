@@ -119,7 +119,7 @@ def m2screenshot(mayavi_fig=None, mpl_axes=None, autocrop=True):
 # Anatomy outline
 ################################################################################
 
-def plot_anat_3d(anat=None, anat_sform=None, scale=1,
+def plot_anat_3d(anat=None, anat_affine=None, scale=1,
                  sulci_opacity=0.5, gyri_opacity=0.3,
                  opacity=1,
                  outline_color=None):
@@ -127,10 +127,10 @@ def plot_anat_3d(anat=None, anat_sform=None, scale=1,
     disable_render = fig.scene.disable_render
     fig.scene.disable_render = True
     if anat is None:
-        anat, anat_sform, anat_max = _AnatCache.get_anat()
+        anat, anat_affine, anat_max = _AnatCache.get_anat()
     ###########################################################################
     # Display the cortical surface (flattenned)
-    anat_src = affine_img_src(anat, anat_sform, scale=scale, name='Anat')
+    anat_src = affine_img_src(anat, anat_affine, scale=scale, name='Anat')
     
     anat_src.image_data.point_data.add_array(_AnatCache.get_blurred())
     anat_src.image_data.point_data.get_array(1).name = 'blurred'
@@ -180,8 +180,8 @@ def plot_anat_3d(anat=None, anat_sform=None, scale=1,
 # Maps
 ################################################################################
 
-def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
-    vmin=None, figure_num=None, mask=None, **kwargs):
+def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
+    vmin=None, figure=None, mask=None, **kwargs):
     """ Plot a 3D volume rendering view of the activation, with an
         outline of the brain.
 
@@ -189,7 +189,7 @@ def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
         ----------
         map : 3D ndarray
             The activation map, as a 3D image.
-        sform : 4x4 ndarray
+        affine : 4x4 ndarray
             The affine matrix going from image voxel space to MNI space.
         cut_coords: 3-tuple of floats, optional
             The MNI coordinates of a 3D cursor to indicate a feature
@@ -198,7 +198,7 @@ def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
             The anatomical image to be used as a background. If None, the 
             MNI152 T1 1mm template is used. If False, no anatomical
             image is used.
-        anat_sform : 4x4 ndarray, optional
+        anat_affine : 4x4 ndarray, optional
             The affine matrix going from the anatomical image voxel space to 
             MNI space. This parameter is not used when the default 
             anatomical is used, but it is compulsory when using an
@@ -206,7 +206,7 @@ def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
         vmin : float, optional
             The lower threshold of the positive activation. This
             parameter is used to threshold the activation map.
-        figure_num : integer, optional
+        figure : integer, optional
             The number of the Mayavi figure used. If None is given, a
             new figure is created.
         mask : 3D ndarray, boolean, optional
@@ -217,11 +217,6 @@ def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
 
         Notes
         -----
-        All the 3D arrays are in numpy convention: (x, y, z)
-
-        Cut coordinates are in Talairach coordinates. Warning: Talairach
-        coordinates are (y, x, z), if (x, y, z) are in voxel-ordering
-        convention.
 
         If you are using a VTK version below 5.2, there is no way to
         avoid opening a window during the rendering under Linux. This is 
@@ -234,9 +229,9 @@ def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
             from enthought.mayavi import mlab
             mlab.options.offscreen = True
     """
-    fig = mlab.figure(figure_num, bgcolor=(1, 1, 1), fgcolor=(0, 0, 0),
+    fig = mlab.figure(figure, bgcolor=(1, 1, 1), fgcolor=(0, 0, 0),
                                                      size=(400, 350))
-    if figure_num is None:
+    if figure is None:
         mlab.clf()
     disable_render = fig.scene.disable_render
     fig.scene.disable_render = True
@@ -245,16 +240,16 @@ def plot_map_3d(map, sform, cut_coords=None, anat=None, anat_sform=None,
 
     ###########################################################################
     # Display the map using volume rendering
-    map_src = affine_img_src(map, sform)
+    map_src = affine_img_src(map, affine)
     vol = mlab.pipeline.volume(map_src, vmin=vmin, **kwargs)
    
     if not anat is False:
-        plot_anat_3d(anat=anat, anat_sform=anat_sform, scale=1.05)
+        plot_anat_3d(anat=anat, anat_affine=anat_affine, scale=1.05)
    
     ###########################################################################
     # Draw the cursor
     if cut_coords is not None:
-        y0, x0, z0 = cut_coords
+        x0, y0, z0 = cut_coords
         line1 = mlab.plot3d((-90, 90), (y0, y0), (z0, z0), 
                             color=(.5, .5, .5), tube_radius=0.25)
         line2 = mlab.plot3d((-x0, -x0), (-126, 91), (z0, z0), 

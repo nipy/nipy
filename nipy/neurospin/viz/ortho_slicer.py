@@ -1,30 +1,54 @@
+"""
+The OrthoSlicer class.
+"""
+
 import numpy as np
 
 import pylab as pl
 from matplotlib.transforms import Bbox
 
 # Local imports
-from coord_tools import coord_transform, get_bounds, get_mask_bounds
+from .coord_tools import coord_transform, get_bounds, get_mask_bounds
 
 ################################################################################
 # class OrthoSlicer
 ################################################################################
 
 class OrthoSlicer(object):
+    """ A class to create 3 linked axes for plotting orthogonal
+        cuts of 3D maps.
+
+        Attributes
+        ----------
+
+        axes: dictionnary of axes
+            The 3 axes used to plot each view.
+        frame_axes: axes
+            The axes framing the whole set of views.
+
+        Notes
+        -----
+
+        The extent of the different axes are adjusted to fit the data
+        best in the viewing area.
+    """
 
     def __init__(self, cut_coords, axes=None):
-        """
+        """ Create 3 linked axes for plotting orthogonal cuts.
 
             Parameters
             ----------
             cut_coords: 3 tuple of ints
                 The cut position, in world space.
+            axes: matplotlib axes object, optional
+                The axes that will be subdivided in 3.
         """
         self._cut_coords = cut_coords
         if axes is None:
             axes = pl.axes((0., 0., 1., 1.))
             axes.axis('off')
-        self.ax = axes
+        self.frame_axes = axes
+        axes.set_zorder(1)
         bb = axes.get_position()
         self.rect = (bb.x0, bb.y0, bb.x1, bb.y1)
         self._object_bounds = dict()
@@ -39,7 +63,7 @@ class OrthoSlicer(object):
             self._object_bounds[ax] = list()
 
 
-    def get_object_bounds(self, ax):
+    def _get_object_bounds(self, ax):
         """ Return the bounds of the objects on one axes.
         """
         xmins, xmaxs, ymins, ymaxs = np.array(self._object_bounds[ax]).T
@@ -52,28 +76,39 @@ class OrthoSlicer(object):
 
     def _locator(self, axes, renderer):
         """ The locator function used by matplotlib to position axes.
+            Here we put the logic used to adjust the size of the axes.
         """
+        x0, y0, x1, y1 = self.rect
         width_dict = dict()
         ax_dict = self.axes
         x_ax = ax_dict['x']
         y_ax = ax_dict['y']
         z_ax = ax_dict['z']
         for ax in ax_dict.itervalues():
-            xmin, xmax, ymin, ymax = self.get_object_bounds(ax)
-            width_dict[ax] = xmax - xmin
+            xmin, xmax, ymin, ymax = self._get_object_bounds(ax)
+            width_dict[ax] = (xmax - xmin)
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.iteritems():
-            width_dict[ax] = width/total_width
+            width_dict[ax] = width/total_width*(x1 -x0)
         left_dict = dict()
-        left_dict[x_ax] = 0
-        left_dict[y_ax] = width_dict[x_ax]
-        left_dict[z_ax] = width_dict[x_ax] + width_dict[y_ax]
+        left_dict[x_ax] = x0
+        left_dict[y_ax] = x0 + width_dict[x_ax]
+        left_dict[z_ax] = x0 + width_dict[x_ax] + width_dict[y_ax]
         return Bbox([[left_dict[axes], 0], 
-                    [left_dict[axes] + width_dict[axes], 1]])
+                     [left_dict[axes] + width_dict[axes], 1]])
+
 
     def draw_cross(self, cut_coords=None, **kwargs):
         """ Draw a crossbar on the plot to show where the cut is
             performed.
+
+            Parameters
+            ----------
+            cut_coords: 3-tuple of floats, optional
+                The position of the cross to draw. If none is passed, the 
+                ortho_slicer's cut coordinnates are used.
+            kwargs:
+                Extra keyword arguments are passed to axhline
         """
         if cut_coords is None:
             cut_coords = self._cut_coords
@@ -84,7 +119,7 @@ class OrthoSlicer(object):
         ax.axhline(z, **kwargs)
 
         ax = self.axes['y']
-        xmin, xmax, ymin, ymax = self.get_object_bounds(ax)
+        xmin, xmax, ymin, ymax = self._get_object_bounds(ax)
         ax.axvline(y, ymin=.05, ymax=.95, **kwargs)
         ax.axhline(z, xmax=.95, **kwargs)
 
@@ -95,6 +130,20 @@ class OrthoSlicer(object):
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
         """ Add annotations to the plot.
+
+            Parameters
+            ----------
+            left_right: boolean, optional
+                If left_right is True, annotations indicating which side
+                is left and which side is right are drawn.
+            positions: boolean, optional
+                If positions is True, annotations indicating the
+                positions of the cuts are drawn.
+            size: integer, optional
+                The size of the text used.
+            kwargs:
+                Extra keyword arguments are passed to matplotlib's text
+                function.
         """
         if left_right:
             ax_z = self.axes['z']
@@ -197,24 +246,25 @@ class OrthoSlicer(object):
                   extent=(xmin, xmax, zmin, zmax),
                   **kwargs)
         self._object_bounds[ax].append((xmin_, xmax_, zmin_, zmax_))
-        ax.axis(self.get_object_bounds(ax))
+        ax.axis(self._get_object_bounds(ax))
 
         ax = self.axes['y']
         ax.imshow(np.rot90(map[x_map, :, :]),
                   extent=(ymin, ymax, zmin, zmax),
                   **kwargs)
         self._object_bounds[ax].append((ymin_, ymax_, zmin_, zmax_))
-        ax.axis(self.get_object_bounds(ax))
+        ax.axis(self._get_object_bounds(ax))
 
         ax = self.axes['z']
         ax.imshow(np.rot90(map[:, :, z_map]),
                   extent=(xmin, xmax, ymin, ymax),
                   **kwargs)
         self._object_bounds[ax].append((xmin_, xmax_, ymin_, ymax_))
-        ax.axis(self.get_object_bounds(ax))
+        ax.axis(self._get_object_bounds(ax))
 
 
 if __name__ == '__main__':
+    # A small demo
     pl.clf()
     oslicer = OrthoSlicer()
     from anat_cache import _AnatCache
