@@ -11,7 +11,6 @@ For 3D visualization, Mayavi, version 3.0 or greater, is required.
 # License: BSD
 
 # Standard library imports
-import os
 import sys
 
 # Standard scientific libraries imports (more specific imports are
@@ -22,19 +21,12 @@ import pylab as pl
 
 # Local imports
 from nipy.neurospin.utils.mask import compute_mask
-from nipy.io.imageformats import load
 
 from anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from coord_tools import coord_transform, find_activation, \
         find_cut_coords
 
 from ortho_slicer import OrthoSlicer
-
-class SformError(Exception):
-    pass
-
-class NiftiIndexError(IndexError):
-    pass
 
 
 ################################################################################
@@ -192,7 +184,6 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
     if draw_cross:
         ortho_slicer.draw_cross(color='k')
 
-    # XXX: What about title?
     if title:
         ortho_slicer.ax.text(0.01, 0.99, title, 
                     transform=ortho_slicer.ax.transAxes,
@@ -204,6 +195,7 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
                     )
 
     return ortho_slicer
+
 
 def demo_plot_map_2d():
     map = np.zeros((182, 218, 182))
@@ -221,8 +213,8 @@ def demo_plot_map_2d():
                 title="Broca's area", figure_num=512)
 
 
-def plot_map(map, sform, cut_coords, anat=None, anat_sform=None,
-    vmin=None, figure_num=None, title='', mask=None):
+def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
+    figure_num=None, title='', **kwargs):
     """ Plot a together a 3D volume rendering view of the activation, with an
         outline of the brain, and 2D cuts. If Mayavi is not installed,
         falls back to 2D views only.
@@ -231,7 +223,7 @@ def plot_map(map, sform, cut_coords, anat=None, anat_sform=None,
         ----------
         map : 3D ndarray
             The activation map, as a 3D image.
-        sform : 4x4 ndarray
+        affine : 4x4 ndarray
             The affine matrix going from image voxel space to MNI space.
         cut_coords: 3-tuple of floats, optional
             The MNI coordinates of the cut to perform, in MNI coordinates 
@@ -240,29 +232,19 @@ def plot_map(map, sform, cut_coords, anat=None, anat_sform=None,
         anat : 3D ndarray, optional
             The anatomical image to be used as a background. If None, the 
             MNI152 T1 1mm template is used.
-        anat_sform : 4x4 ndarray, optional
+        anat_affine : 4x4 ndarray, optional
             The affine matrix going from the anatomical image voxel space to 
             MNI space. This parameter is not used when the default 
             anatomical is used, but it is compulsory when using an
             explicite anatomical image.
-        vmin : float, optional
-            The lower threshold of the positive activation. This
-            parameter is used to threshold the activation map.
         figure_num : integer, optional
             The number of the matplotlib and Mayavi figures used. If None is 
             given, a new figure is created.
         title : string, optional
             The title dispayed on the figure.
-        mask : 3D ndarray, boolean, optional
-            The brain mask. If None, the mask is computed from the map.
 
         Notes
         -----
-        All the 3D arrays are in numpy convention: (x, y, z)
-
-        Cut coordinates are in Talairach coordinates. Warning: Talairach
-        coordinates are (y, x, z), if (x, y, z) are in voxel-ordering
-        convention.
     """
     try:
         from enthought.mayavi import version
@@ -270,38 +252,41 @@ def plot_map(map, sform, cut_coords, anat=None, anat_sform=None,
             raise ImportError
     except ImportError:
         print >> sys.stderr, 'Mayavi > 3.x not installed, plotting only 2D'
-        return plot_map_2d(map, sform, cut_coords=cut_coords, anat=anat,
-                                anat_sform=anat_sform, vmin=vmin,
-                                title=title,
-                                figure_num=figure_num, mask=mask)
+        return plot_map_2d(map, affine, cut_coords=cut_coords, anat=anat,
+                           anat_affine=anat_affine, 
+                           figure_num=figure_num, 
+                           title=title, **kwargs)
+
 
     from .maps_3d import plot_map_3d, m2screenshot
-    plot_map_3d(map, sform, cut_coords=cut_coords, anat=anat,
-                anat_sform=anat_sform, vmin=vmin,
-                figure_num=figure_num, mask=mask)
+    plot_map_3d(map, affine, cut_coords=cut_coords, anat=anat,
+                anat_affine=anat_affine, 
+                vmin=kwargs.get('vmin', None),
+                figure_num=figure_num)
 
-    fig = pl.figure(figure_num, figsize=(10.6, 2.6))
+    fig = pl.figure(figure_num, figsize=(10.6, 2.6), facecolor='w')
     ax = pl.axes((-0.01, 0, 0.3, 1))
     m2screenshot(mpl_axes=ax)
 
-    plot_map_2d(map, sform, cut_coords=cut_coords, anat=anat,
-                anat_sform=anat_sform, vmin=vmin, mask=mask,
-                figure_num=fig.number, axes=(0.28, 1, 0, 1.), title=title)
+    plot_map_2d(map, affine, cut_coords=cut_coords, anat=anat,
+                anat_affine=anat_affine, 
+                figure_num=fig.number, axes=(0.28, 1, 0, 1.),
+                title=title, **kwargs)
 
 
 def demo_plot_map():
     map = np.zeros((182, 218, 182))
-    # Color a asymetric rectangle around Broadman area 26:
-    x, y, z = -6, -53, 9
+    # Color a asymetric rectangle around Broca area:
+    x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
     map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     plot_map(map, mni_sform, cut_coords=(x, y, z), vmin=0.5,
                                 figure_num=512)
 
 
-def auto_plot_map(map, sform, vmin=None, cut_coords=None, do3d=False, 
-                    anat=None, anat_sform=None, title='',
-                    figure_num=None, mask=None, auto_sign=True):
+def auto_plot_map(map, affine, vmin=None, cut_coords=None, do3d=False, 
+                    anat=None, anat_affine=None, title='', mask=None,
+                    figure_num=None, auto_sign=True):
     """ Automatic plotting of an activation map.
 
         Plot a together a 3D volume rendering view of the activation, with an
@@ -312,7 +297,7 @@ def auto_plot_map(map, sform, vmin=None, cut_coords=None, do3d=False,
         ----------
         map : 3D ndarray
             The activation map, as a 3D image.
-        sform : 4x4 ndarray
+        affine : 4x4 ndarray
             The affine matrix going from image voxel space to MNI space.
         vmin : float, optional
             The lower threshold of the positive activation. This
@@ -326,18 +311,18 @@ def auto_plot_map(map, sform, vmin=None, cut_coords=None, do3d=False,
         anat : 3D ndarray, optional
             The anatomical image to be used as a background. If None, the 
             MNI152 T1 1mm template is used.
-        anat_sform : 4x4 ndarray, optional
+        anat_affine : 4x4 ndarray, optional
             The affine matrix going from the anatomical image voxel space to 
             MNI space. This parameter is not used when the default 
             anatomical is used, but it is compulsory when using an
             explicite anatomical image.
         title : string, optional
             The title dispayed on the figure.
+        mask : 3D ndarray, optional
+            Boolean array of the voxels used.
         figure_num : integer, optional
             The number of the matplotlib and Mayavi figures used. If None is 
             given, a new figure is created.
-        mask : 3D ndarray, boolean, optional
-            The brain mask. If None, the mask is computed from the map.
         auto_sign : boolean, optional
             If auto_sign is True, the sign of the activation is
             automaticaly computed: negative activation can thus be
@@ -371,6 +356,8 @@ def auto_plot_map(map, sform, vmin=None, cut_coords=None, do3d=False,
         plotter = plot_map_2d
     if mask is None:
         mask = compute_mask(map)
+    else:
+        mask = mask.astype(np.bool)
     if vmin is None:
         vmin = np.inf
         pvalue = 0.04
@@ -385,124 +372,15 @@ def auto_plot_map(map, sform, vmin=None, cut_coords=None, do3d=False,
                     else:
                         map *= -1
     if cut_coords is None:
-        x, y, z = find_cut_coords(map, activation_threshold=vmin)
-        # XXX: Careful with Voxel/MNI ordering
-        y, x, z = coord_transform(x, y, z, sform)
-        cut_coords = (x, y, z)
-    plotter(map, sform, vmin=vmin, cut_coords=cut_coords,
-                anat=anat, anat_sform=anat_sform, title=title,
-                figure_num=figure_num, mask=mask)
+        x_map, y_map, z_map = find_cut_coords(map, activation_threshold=vmin)
+        cut_coords = coord_transform(x_map, y_map, z_map, affine)
+    map = np.ma.masked_less(map, vmin)
+    plotter(map, affine, cut_coords=cut_coords,
+                anat=anat, anat_affine=anat_affine, title=title,
+                figure_num=figure_num)
     return vmin, cut_coords
 
 
-def plot_niftifile(filename, outputname=None, do3d=False, vmin=None,
-            cut_coords=None, anat_filename=None, figure_num=None,
-            mask_filename=None, auto_sign=True):
-    """ Given a nifti filename, plot a view of it to a file (png by
-        default).
-
-        Parameters
-        ----------
-        filename : string 
-            The name of the Nifti file of the map to be plotted 
-        outputname : string, optional 
-            The file name of the output file created. By default
-            the name of the input file with a png extension is used. 
-        do3d : boolean, optional
-            If do3d is True, a 3D plot is created if Mayavi is installed.
-        vmin : float, optional
-            The lower threshold of the positive activation. This
-            parameter is used to threshold the activation map.
-        cut_coords: 3-tuple of floats, optional
-            The MNI coordinates of the point where the cut is performed, in 
-            MNI coordinates and order. If None is given, the cut_coords are 
-            automaticaly estimated.
-        anat : string, optional
-            Name of the Nifti image file to be used as a background. If None, 
-            the MNI152 T1 1mm template is used.
-        title : string, optional
-            The title dispayed on the figure.
-        figure_num : integer, optional
-            The number of the matplotlib and Mayavi figures used. If None is 
-            given, a new figure is created.
-        mask_filename : string, optional
-            Name of the Nifti file to be used as brain mask. If None, the 
-            mask is computed from the map.
-        auto_sign : boolean, optional
-            If auto_sign is True, the sign of the activation is
-            automaticaly computed: negative activation can thus be
-            plotted.
-
-        Notes
-        -----
-
-        Cut coordinates are in Talairach coordinates. Warning: Talairach
-        coordinates are (y, x, z), if (x, y, z) are in voxel-ordering
-        convention.
-    """
-
-    if outputname is None:
-        outputname = os.path.splitext(filename)[0] + '.png'
-    if not os.path.exists(filename):
-        raise OSError, 'File %s does not exist' % filename
-        
-    nim = load(filename)
-    sform = nim.get_affine()
-    if any(np.linalg.eigvals(sform)==0):
-        raise SformError, "sform affine is not inversible"
-    if anat_filename is not None:
-        anat_im = load(anat_filename)
-        anat = anat_im.data
-        anat_sform = anat_im.get_affine()
-    else:
-        anat = None
-        anat_sform = None
-
-    if mask_filename is not None:
-        mask_im = load(mask_filename)
-        mask = mask_im.data.astype(np.bool)
-        if not np.allclose(mask_im.get_affine(), sform):
-            raise SformError, 'Mask does not have same sform as image'
-        if not np.allclose(mask.shape, nim.data.shape[:3]):
-            raise NiftiIndexError, 'Mask does not have same shape as image'
-    else:
-        mask = None
-
-    output_files = list()
-
-    if nim.data.ndim == 3:
-        map = nim.data.T
-        auto_plot_map(map, sform, vmin=vmin, cut_coords=cut_coords,
-                do3d=do3d, anat=anat, anat_sform=anat_sform, mask=mask,
-                title=os.path.basename(filename), figure_num=figure_num,
-                auto_sign=auto_sign)
-        pl.savefig(outputname)
-        output_files.append(outputname)
-    elif nim.data.ndim == 4:
-        outputname, outputext = os.path.splitext(outputname)
-        if len(nim.data) < 10:
-            fmt = '%s_%i%s'
-        elif len(nim.data) < 100:
-            fmt = '%s_%02i%s'
-        elif len(nim.data) < 1000:
-            fmt = '%s_%03i%s'
-        else:
-            fmt = '%s_%04i%s'
-        if mask is None:
-            mask = compute_mask(nim.data.mean(axis=0)).T
-        for index, data in enumerate(nim.data):
-            map = data.T
-            auto_plot_map(map, sform, vmin=vmin, cut_coords=cut_coords,
-                    do3d=do3d, anat=anat, anat_sform=anat_sform,
-                    title='%s, %i' % (os.path.basename(filename), index),
-                    figure_num=figure_num, mask=mask, auto_sign=auto_sign)
-            this_outputname = fmt % (outputname, index, outputext)
-            pl.savefig(this_outputname)
-            pl.clf()
-            output_files.append(this_outputname)
-    else:
-        raise NiftiIndexError, 'File %s: incorrect number of dimensions'
-    return output_files
 
 if __name__ == '__main__':
     demo_plot_map_2d()
