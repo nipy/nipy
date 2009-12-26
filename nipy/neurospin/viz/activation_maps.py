@@ -26,7 +26,7 @@ from nipy.io.imageformats import load
 
 from anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from coord_tools import coord_transform, find_activation, \
-        find_cut_coords
+        find_cut_coords, get_bounds
 
 class SformError(Exception):
     pass
@@ -116,18 +116,7 @@ class _CM(dict):
 cm = _CM(**_cm)
 
 ################################################################################
-def get_bounds(shape, affine):
-    """ Return the world-space bounds occupied by an array given an affine.
-    """
-    bounds = np.zeros((4, 6))
-    bounds[:3, -3:] = np.identity(3)*shape
-    bounds[-1, :] = 1
-    bounds = np.dot(affine, bounds)
-    return bounds
-
-
-################################################################################
-# 2D plotting of activation maps 
+# Helper functions for 2D plotting of activation maps 
 ################################################################################
 
 

@@ -191,3 +191,40 @@ def test_find_cut_coords():
                                 (x_map, y_map, z_map))
 
 
+################################################################################
+def get_bounds(shape, affine):
+    """ Return the world-space bounds occupied by an array given an affine.
+    """
+    bounds = np.zeros((4, 6))
+    bounds[:3, -3:] = np.identity(3)*shape
+    bounds[-1, :] = 1
+    bounds = np.dot(affine, bounds)
+    xmin = float(bounds[0, 3])
+    xmax = float(bounds[0, 0])
+    zmin = float(bounds[2, 0])
+    zmax = float(bounds[2, 5])
+    ymin = float(bounds[1, 0])
+    ymax = float(bounds[1, 4])
+    return xmin, xmax, ymin, ymax, zmin, zmax
+
+def get_mask_bounds(mask, affine):
+    """ Return the world-space bounds occupied by a mask given an affine.
+
+        Notes
+        -----
+
+        The mask should have only one connect component.
+    """
+    xmin, xmax, ymin, ymax, zmin, zmax = get_bounds(mask.shape, affine)
+    x_slice, y_slice, z_slice = ndimage.find_objects(mask)[0]
+    x_width, y_width, z_width = mask.shape
+    xmin, xmax = (xmin + x_slice.start*(xmax - xmin)/x_width,
+                  xmin + x_slice.stop *(xmax - xmin)/x_width)
+    ymin, ymax = (ymin + y_slice.start*(ymax - ymin)/y_width,
+                  ymin + y_slice.stop *(ymax - ymin)/y_width)
+    zmin, zmax = (zmin + z_slice.start*(zmax - zmin)/z_width,
+                  zmin + z_slice.stop *(zmax - zmin)/z_width)
+
+    return xmin, xmax, ymin, ymax, zmin, zmax
+ 
+
