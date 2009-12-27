@@ -24,6 +24,7 @@ from matplotlib.axes import Axes
 
 # Local imports
 from nipy.neurospin.utils.mask import compute_mask
+from nipy.neurospin.datasets import VolumeImg
 
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import coord_transform, find_activation, \
@@ -115,6 +116,12 @@ cm = _CM(**_cm)
 ################################################################################
 # Helper functions for 2D plotting of activation maps 
 ################################################################################
+def xyz_order(map, affine):
+    img = VolumeImg(map, affine=affine, world_space='mine')
+    img = img.xyz_ordered()
+    map = img.get_data()
+    affine = img.affine
+    return map, affine
 
 
 def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
@@ -168,6 +175,7 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
             map = np.ma.masked_less(map, 0.5)
             plot_map(map, affine)
     """
+    map, affine = xyz_order(map, affine)
     if anat is None:
         try:
             anat, anat_affine, vmax_anat = _AnatCache.get_anat()
@@ -193,6 +201,7 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
         anat_kwargs['cmap'] = pl.cm.gray
         anat_kwargs.pop('vmin', None)
         anat_kwargs.pop('vmax', None)
+        anat, anat_affine = xyz_order(anat, anat_affine)
         ortho_slicer.plot_map(anat, anat_affine, **anat_kwargs)
     ortho_slicer.plot_map(map, affine, **kwargs)
     if annotate:

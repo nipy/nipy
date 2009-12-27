@@ -213,7 +213,7 @@ class VolumeImg(VolumeGrid):
         pixdim = np.diag(A)
         data = img.get_data()
         if pixdim[0] < 0:
-            b[0] = pixdim[0]*(b[0] + data.shape[0] - 1)
+            b[0] = b[0] + pixdim[0]*(data.shape[0] - 1)
             pixdim[0] = -pixdim[0]
             data = data[::-1, ...]
         if pixdim[1] < 0:
