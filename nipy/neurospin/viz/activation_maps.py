@@ -159,7 +159,14 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
 
         Notes
         -----
-        Use masked arrays to create transparency.
+        Arrays should be passed in numpy convention: (x, y, z)
+        ordered.
+
+        Use masked arrays to create transparency:
+
+            import numpy as np
+            map = np.ma.masked_less(map, 0.5)
+            plot_map(map, affine)
     """
     if anat is None:
         try:
@@ -194,15 +201,7 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
         ortho_slicer.draw_cross(color='k')
 
     if title is not None and not title == '':
-        ortho_slicer.frame_axes.text(0.01, 0.99, title, 
-                    transform=ortho_slicer.frame_axes.transAxes,
-                    horizontalalignment='left',
-                    verticalalignment='top',
-                    size=15, color='w',
-                    bbox=dict(boxstyle="square,pad=.3", 
-                              ec="0", fc="0", alpha=.9),
-                    )
-
+        ortho_slicer.title(title)
     return ortho_slicer
 
 
@@ -254,6 +253,14 @@ def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
 
         Notes
         -----
+        Arrays should be passed in numpy convention: (x, y, z)
+        ordered.
+
+        Use masked arrays to create transparency::
+
+            import numpy as np
+            map = np.ma.masked_less(map, 0.5)
+            plot_map(map, affine)
     """
     try:
         from enthought.mayavi import version
@@ -293,11 +300,11 @@ def demo_plot_map():
     x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
     map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     map = np.ma.masked_less(map, 0.5)
-    return plot_map(map, mni_sform, cut_coords=(x, y, z), vmin=0.5,
+    return plot_map(map, mni_sform, cut_coords=(x, y, z), threshold=0.5,
                                         title="Broca's area", figure=512)
 
 
-def auto_plot_map(map, affine, vmin=None, cut_coords=None, do3d=False, 
+def auto_plot_map(map, affine, threshold=None, cut_coords=None, do3d=False, 
                     anat=None, anat_affine=None, title=None, mask=None,
                     figure_num=None, auto_sign=True):
     """ Automatic plotting of an activation map.
@@ -312,7 +319,7 @@ def auto_plot_map(map, affine, vmin=None, cut_coords=None, do3d=False,
             The activation map, as a 3D image.
         affine : 4x4 ndarray
             The affine matrix going from image voxel space to MNI space.
-        vmin : float, optional
+        threshold : float, optional
             The lower threshold of the positive activation. This
             parameter is used to threshold the activation map.
         cut_coords: 3-tuple of floats, optional
@@ -343,7 +350,7 @@ def auto_plot_map(map, affine, vmin=None, cut_coords=None, do3d=False,
 
         Returns
         -------
-        vmin : float
+        threshold : float
             The lower threshold of the activation used.
         cut_coords : 3-tuple of floats
             The Talairach coordinates of the cut performed for the 2D
@@ -351,11 +358,15 @@ def auto_plot_map(map, affine, vmin=None, cut_coords=None, do3d=False,
 
         Notes
         -----
-        All the 3D arrays are in numpy convention: (x, y, z)
+        Arrays should be passed in numpy convention: (x, y, z)
+        ordered.
 
-        Cut coordinates are in Talairach coordinates. Warning: Talairach
-        coordinates are (y, x, z), if (x, y, z) are in voxel-ordering
-        convention.
+        Use masked arrays to create transparency:
+
+            import numpy as np
+            map = np.ma.masked_less(map, 0.5)
+            plot_map(map, affine)
+
     """
     if do3d:
         if do3d == 'offscreen':
@@ -371,27 +382,28 @@ def auto_plot_map(map, affine, vmin=None, cut_coords=None, do3d=False,
         mask = compute_mask(map)
     else:
         mask = mask.astype(np.bool)
-    if vmin is None:
-        vmin = np.inf
+    if threshold is None:
+        threshold = np.inf
         pvalue = 0.04
-        while not np.isfinite(vmin):
+        while not np.isfinite(threshold):
             pvalue *= 1.25
-            vmax, vmin = find_activation(map, mask=mask, pvalue=pvalue)
-            if not np.isfinite(vmin) and auto_sign:
+            vmax, threshold = find_activation(map, mask=mask, pvalue=pvalue)
+            if not np.isfinite(threshold) and auto_sign:
                 if np.isfinite(vmax):
-                    vmin = -vmax
+                    threshold = -vmax
                     if mask is not None:
                         map[mask] *= -1
                     else:
                         map *= -1
     if cut_coords is None:
-        x_map, y_map, z_map = find_cut_coords(map, activation_threshold=vmin)
+        x_map, y_map, z_map = find_cut_coords(map,
+                                activation_threshold=threshold)
         cut_coords = coord_transform(x_map, y_map, z_map, affine)
-    map = np.ma.masked_less(map, vmin)
+    map = np.ma.masked_less(map, threshold)
     plotter(map, affine, cut_coords=cut_coords,
                 anat=anat, anat_affine=anat_affine, title=title,
                 figure_num=figure_num)
-    return vmin, cut_coords
+    return threshold, cut_coords
 
 
 

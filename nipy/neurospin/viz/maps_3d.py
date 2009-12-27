@@ -181,7 +181,7 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
 ################################################################################
 
 def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
-    vmin=None, figure=None, mask=None, **kwargs):
+    threshold=None, figure=None, mask=None, **kwargs):
     """ Plot a 3D volume rendering view of the activation, with an
         outline of the brain.
 
@@ -203,7 +203,7 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
             MNI space. This parameter is not used when the default 
             anatomical is used, but it is compulsory when using an
             explicite anatomical image.
-        vmin : float, optional
+        threshold : float, optional
             The lower threshold of the positive activation. This
             parameter is used to threshold the activation map.
         figure : integer, optional
@@ -268,7 +268,7 @@ def demo_plot_map_3d():
     x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
     map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     map = map.T
-    plot_map_3d(map, mni_sform, cut_coords=(x, y, z), vmin=0.5,
+    plot_map_3d(map, mni_sform, cut_coords=(x, y, z), threshold=0.5,
                                 figure_num=512)
 
 

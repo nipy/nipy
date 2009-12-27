@@ -1,5 +1,8 @@
 """
 The OrthoSlicer class.
+
+The main purpose of this class is to have auto adjust of axes size to
+the data.
 """
 
 import numpy as np
@@ -210,6 +213,43 @@ class OrthoSlicer(object):
                     bbox=dict(boxstyle="square,pad=0", 
                               ec="1", fc="1", alpha=.9),
                     **kwargs)
+
+
+    def title(self, text, x=0.01, y=0.99, size=15, color='w', 
+                bgcolor='k', alpha=.9, **kwargs):
+        """ Write a title to the view.
+
+            Parameters
+            ----------
+            text: string
+                The text of the title
+            x: float, optional
+                The horizontal position of the title on the frame in 
+                fraction of the frame width.
+            y: float, optional
+                The vertical position of the title on the frame in 
+                fraction of the frame height.
+            size: integer, optional
+                The size of the title text.
+            color: matplotlib color specifier, optional
+                The color of the font of the title.
+            bgcolor: matplotlib color specifier, optional
+                The color of the background of the title.
+            alpha: float, optional
+                The alpha value for the background.
+            kwargs:
+                Extra keyword arguments are passed to matplotlib's text
+                function.
+        """
+        self.frame_axes.text(x, y, text, 
+                    transform=self.frame_axes.transAxes,
+                    horizontalalignment='left',
+                    verticalalignment='top',
+                    size=size, color=color,
+                    bbox=dict(boxstyle="square,pad=.3", 
+                              ec=bgcolor, fc=bgcolor, alpha=alpha),
+                    **kwargs)
+
 
 
     def plot_map(self, map, affine, **kwargs):
