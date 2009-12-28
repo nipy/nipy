@@ -69,7 +69,7 @@ if __name__ == '__main__':
 		sys.exit("""
 Apply a SPM deformation field (y_*nii) or a SPM _sn parameter file (_sn*.mat)
 
-Usage: %s srcfile.nii targetfile.nii [parameter_sn.mat | y_deform.nii] outputfile.nii [order, y_output.nii ]
+Usage: %s srcfile.nii targetfile.nii [parameter_sn.mat | y_deform.nii | identity] outputfile.nii [order, y_output.nii ]
    Will output "outputfile.nii" which is the image of srcfile.nii through the
    deformation file (either parameter_sn.mat or y_deform.nii), with output
    dimensions of targetfile.nii. Optionally, the applied transformation is
@@ -81,6 +81,9 @@ E.g: ROI_MNI_V4.nii t1_image.nii t1_image_seg_inv_sn.mat ROI_t1_space.nii.gz 0
    avoid interpolating labels.
 """ % __file__)
 	src_nii, target_nii = nifti.NiftiImage(srcfile), nifti.NiftiImage(targetfile)
+	order = int(sys.argv[5]) if (len(sys.argv) >= 6) else 3
+	if deformfile == 'identity':
+		sys.exit(resample_NiftiImage(src_nii, target_nii, order = order).save(outputfile))
 	if deformfile.endswith('.mat'):
 		vox2mmw, Tr = snmatfile_to_snparams(deformfile, target_nii)
 		nii_deforms = make_SPMdeform_from_SPMsnparams(target_nii, (vox2mmw, Tr))
@@ -88,5 +91,4 @@ E.g: ROI_MNI_V4.nii t1_image.nii t1_image_seg_inv_sn.mat ROI_t1_space.nii.gz 0
 		nii_deforms = nifti.NiftiImage(deformfile)
 	if len(sys.argv) == 7:
 		nii_deforms.save(sys.argv[6])
-	order = int(sys.argv[5]) if (len(sys.argv) >= 6) else 3
 	apply_forward_SPM_deform(nii_deforms, src_nii, target_nii, order = order).save(outputfile)
