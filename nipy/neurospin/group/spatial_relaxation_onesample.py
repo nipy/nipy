@@ -1046,8 +1046,8 @@ class multivariate_stat:
                     verbose)
             return log_likelihood.sum() + \
                 log_prior.sum() + \
-                log_displacements_prior() - \
-                log_posterior.sum() - \
+                log_displacements_prior - \
+                log_posterior - \
                 log_displacements_posterior
         else:
             return log_likelihood + log_prior[:-1] - log_posterior[:-1]
