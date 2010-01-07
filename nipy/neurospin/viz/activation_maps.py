@@ -116,6 +116,17 @@ class _CM(dict):
 cm = _CM(**_cm)
 
 ################################################################################
+def get_bounds(shape, affine):
+    """ Return the world-space bounds occupied by an array given an affine.
+    """
+    bounds = np.zeros((4, 6))
+    bounds[:3, -3:] = np.identity(3)*shape
+    bounds[-1, :] = 1
+    bounds = np.dot(affine, bounds)
+    return bounds
+
+
+################################################################################
 # 2D plotting of activation maps 
 ################################################################################
 
@@ -170,6 +181,8 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
     if anat is None:
         anat, anat_sform, vmax_anat = _AnatCache.get_anat()
     elif anat is not False:
+        # Make anat only positive
+        anat = anat - anat.min()
         vmax_anat = anat.max()
 
     if mask is not None and (
@@ -196,15 +209,9 @@ def plot_map_2d(map, sform, cut_coords, anat=None, anat_sform=None,
 
     # Calculate the bounds
     if anat is not False:
-        anat_bounds = np.zeros((4, 6))
-        anat_bounds[:3, -3:] = np.identity(3)*anat.shape
-        anat_bounds[-1, :] = 1
-        anat_bounds = np.dot(anat_sform, anat_bounds)
+        anat_bounds = get_bounds(anat.shape, anat_sform)
 
-    map_bounds = np.zeros((4, 6))
-    map_bounds[:3, -3:] = np.identity(3)*map.shape
-    map_bounds[-1, :] = 1
-    map_bounds = np.dot(sform, map_bounds)
+    map_bounds = get_bounds(map.shape, sform)
 
     # The coordinates of the center of the cut in different spaces.
     y, x, z = cut_coords
