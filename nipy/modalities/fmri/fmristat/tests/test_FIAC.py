@@ -306,10 +306,9 @@ def interpolate(name, col, t):
     i = interp1d(t, formula.vectorize(col)(t))
     return formula.aliased_function(name, i)(formula.t)
 
+
 def test_agreement():
-    """
-    The test: does Protocol manage to recreate the design of fMRIstat?
-    """
+    # The test: does Protocol manage to recreate the design of fMRIstat?
     for design_type in ['event', 'block']:
         dd = D[design_type]
 
@@ -319,20 +318,18 @@ def test_agreement():
                 yield niptest.assert_true, np.greater(cmax, 0.999)
 
 
-
 def test_event_design():
-
-	block = csv2rec(StringIO(altdescr['block']))
-	event = csv2rec(StringIO(altdescr['event']))
-	t = np.arange(191)*2.5+1.25
-			
-	bkeep = np.not_equal((np.arange(block.time.shape[0])) % 6, 0)
-	ekeep = np.greater(np.arange(event.time.shape[0]), 0)
-
-	# Even though there is a FIAC block experiment
-	# the design is represented as an event design
-	# with the same event repeated several times in a row...
-
-	Xblock, cblock = design.event_design(block[bkeep], t, hrfs=delay.spectral)
-	Xevent, cevent = design.event_design(event[ekeep], t, hrfs=delay.spectral)
-
+    block = csv2rec(StringIO(altdescr['block']))
+    event = csv2rec(StringIO(altdescr['event']))
+    t = np.arange(191)*2.5+1.25
+    
+    bkeep = np.not_equal((np.arange(block.time.shape[0])) % 6, 0)
+    ekeep = np.greater(np.arange(event.time.shape[0]), 0)
+    
+    # Even though there is a FIAC block experiment
+    # the design is represented as an event design
+    # with the same event repeated several times in a row...
+    
+    Xblock, cblock = design.event_design(block[bkeep], t, hrfs=delay.spectral)
+    Xevent, cevent = design.event_design(event[ekeep], t, hrfs=delay.spectral)
+    
