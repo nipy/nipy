@@ -91,12 +91,12 @@ def test_2D():
     imgs = p['basis_projections']
     yield assert_equal(ts.shape, (M, L))
     yield assert_equal(imgs.shape, (L, N))
-    data_mean = data.mean(0)[None,...]
     rimgs = reconstruct(ts, imgs)
     # add back the error sum of squares, because we standardized
-    # add back the mean
+    data_mean = data.mean(0)[None,...]
     demeaned = data - data_mean
     sse = np.sqrt((demeaned**2).sum(0))[None,...]
+    # also add back the mean
     yield assert_array_almost_equal((rimgs * sse) + data_mean, data)
     # if standardize is set, or not, covariance is diagonal
     yield assert_true(diagonal_covariance(imgs))
@@ -105,14 +105,19 @@ def test_2D():
     yield assert_true(diagonal_covariance(imgs))
     
 
+@parametric
 def test_PCAMask():
     ntotal = data['nimages'] - 1
     ncomp = 5
     p = pca(data['fmridata'], -1, data['mask'], ncomp=ncomp)
-    yield assert_equal, p['basis_vectors'].shape, (data['nimages'], ntotal)
-    yield assert_equal, p['basis_projections'].shape, data['mask'].shape + (ncomp,)
-    yield assert_equal, p['pcnt_var'].shape, (ntotal,)
-    yield assert_almost_equal, p['pcnt_var'].sum(), 100.
+    yield assert_equal(
+        p['basis_vectors'].shape,
+        (data['nimages'], ntotal))
+    yield assert_equal(
+        p['basis_projections'].shape,
+        data['mask'].shape + (ncomp,))
+    yield assert_equal(p['pcnt_var'].shape, (ntotal,))
+    yield assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
 
 def test_PCAMask_nostandardize():
