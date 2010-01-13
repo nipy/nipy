@@ -85,20 +85,27 @@ class ArrayCoordMap(object):
 
         Parameters
         ----------
-        index : ``int`` or ``slice``
-            sequence of integers or slices
-        
+        index : int or tuple
+           int, or sequence of any combination of integers, slices.  The
+           sequence can also cantian one Ellipsis. 
         """
-
+        # index can be single int or tuple
         if type(index) != type(()):
             index = (index,)
-        if Ellipsis in index:
+        # allow slicing of form [...,1]
+        if Ellipsis in index:  
             if sum([i == Ellipsis for i in index]) > 1:
-                raise ValueError("only one Ellipsis(...) allowed in slice")
-            first_index = list(index).index(Ellipsis)
-            last_index = len(self.shape) - (len(index) - first_index - 1)
-            index = (index[:first_index] + (last_index-first_index)*
-                     (slice(None),) + index[(first_index+1):])
+                raise ValueError("only one Ellipsis (...) allowed in slice")
+            # convert ellipsis to series of slice(None) objects.  For
+            # example, if the coordmap is length 3, we convert (...,1)
+            # to (slice(None), slice(None), 1) - equivalent to [:,:,1]
+            ellipsis_start = list(index).index(Ellipsis)
+            inds_after_ellipsis = index[(ellipsis_start+1):]
+            # the ellipsis continues until any remaining slice specification
+            n_ellipses = len(self.shape) - ellipsis_start - len(inds_after_ellipsis)
+            index = (index[:ellipsis_start]
+                     + n_ellipses * (slice(None),)
+                     + inds_after_ellipsis)
         return _slice(self.coordmap, self.shape, *index)
 
     @staticmethod
