@@ -60,6 +60,14 @@ def test_array_coord_map():
                 [0, yz, yt],
                 [0, 0, 2*zz+zt],
                 [0, 0, 1]]))
+    yield assert_raises(ValueError, acm.__getitem__, (
+            (Ellipsis,Ellipsis,2)))
+    yield assert_array_almost_equal(sacm.coordmap.affine,
+                             np.array([
+                [xz, 0, xt],
+                [0, yz, yt],
+                [0, 0, 2*zz+zt],
+                [0, 0, 1]]))
     sacm = acm[1,0,2]
     yield assert_array_almost_equal(sacm.coordmap.affine,
                              np.array([
@@ -67,3 +75,4 @@ def test_array_coord_map():
                 [yt],
                 [2*zz+zt],
                 [1]]))
+    
