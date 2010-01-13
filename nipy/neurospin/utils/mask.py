@@ -1,6 +1,7 @@
-
-# Standard libraries imports
-import warnings
+"""
+Utilities for extracting masks from EPI images and applying them to time
+series.
+"""
 
 # Major scientific libraries imports
 import numpy as np
@@ -30,11 +31,14 @@ def largest_cc(mask):
 
     # We use asarray to be able to work with masked arrays.
     mask = np.asarray(mask)
-    labels, label_nb = ndimage.labels(mask)
+    labels, label_nb = ndimage.label(mask)
     if not label_nb:
         raise ValueError('No non-zero values: no connect components')
     return labels ==  np.bincount(labels.flat)[1:].argmax() + 1
 
+
+# FIXME: Should this function be replaced by the native functionality
+# added to brifti
 def get_unscaled_img(fname):
     ''' Function to get image, data without scalefactor applied
 
@@ -265,7 +269,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     return mask.astype(np.bool)
 
 
-def intersect_masks(input_mask_files, output_filename=None, 
+def intersect_masks(input_masks, output_filename=None, 
                                         threshold=0.5, cc=True):
     """
     Given a list of input mask images, generate the output image which
@@ -274,42 +278,115 @@ def intersect_masks(input_mask_files, output_filename=None,
     
     Parameters
     ----------
-    input_mask_files: list of strings or ndarrays
+    input_masks: list of strings or ndarrays
         paths of the input images nsubj set as len(input_mask_files), or
         individual masks.
     output_filename, string:
         Path of the output image, if None no file is saved.
     threshold: float within [0, 1], optional
         gives the level of the intersection.
+        threshold=1 corresponds to keeping the intersection of all
+        masks, whereas threshold=0 is the union of all masks.
     cc: bool, optional
         If true, extract the main connected component
         
     Returns
     -------
-    gmask, boolean array of shape the image shape
+    grp_mask, boolean array of shape the image shape
     """  
-    gmask = None 
+    grp_mask = None 
 
-    for filename in input_mask_files:
-        nim = load(filename)
-        if gmask is None:
-            gmask = nim.get_data().copy() # !!!
+    for this_mask in input_masks:
+        if isinstance(this_mask, basestring):
+            # We have a filename
+            this_mask = load(this_mask).get_data()
+        if grp_mask is None:
+            grp_mask = this_mask.copy().astype(np.int)
         else:
-            gmask += nim.get_data()  
+            grp_mask += this_mask
     
-    gmask = gmask>(threshold*len(input_mask_files))
-    if np.any(gmask>0) and cc:
-        gmask = largest_cc(gmask)
+    grp_mask = grp_mask>(threshold*len(input_masks))
+    if np.any(grp_mask>0) and cc:
+        grp_mask = largest_cc(grp_mask)
     
     if output_filename is not None:
-        header = nim.get_header()
+        if isinstance(input_masks[0], basestring):
+            nim = load(input_masks[0]) 
+            header = nim.get_header()
+            affine = nim.get_affine()
+        else:
+            header = dict()
+            affine = np.eye(4)
         header['descrip'] = 'mask image'
-        output_image = nifti1.Nifti1Image(gmask.astype(np.uint8),
-                                            affine=nim.get_affine(),
+        output_image = nifti1.Nifti1Image(grp_mask.astype(np.uint8),
+                                            affine=affine,
                                             header=header,
                                          )
         output_image.save(output_filename)
-    return gmask>0
 
+    return grp_mask>0
+
+
+################################################################################
+# Time series extraction
+################################################################################
+
+# FIXME: This function should probably get a 'single_session' flag to work 
+# without any surprises on single session situations.
+def series_from_mask(session_files, mask, dtype=np.float32,
+                squeeze=False):
+    """ Read the time series from the given sessions filenames, using the mask.
+
+        Parameters
+        -----------
+        session_files: list of list of nifti file names. 
+            Files are grouped by session.
+        mask: 3d ndarray
+            3D mask array: true where a voxel should be used.
+        squeeze: boolean, optional
+            If squeeze is True, the data array is squeezed before return.
+        
+        Returns
+        --------
+        session_series: ndarray
+            3D array of time course: (session, voxel, time)
+        header: header object
+            The header of the first file.
+    """
+    # XXX: What if the file lengths do not match!
+    mask = mask.astype(np.bool)
+    nb_time_points = len(session_files[0])
+    if len(session_files[0]) == 1:
+        # We have a 4D nifti file
+        nb_time_points = load(session_files[0][0]).get_data().shape[-1]
+    session_series = np.zeros((len(session_files), mask.sum(),
+                                            nb_time_points),
+                                    dtype=dtype)
+
+    for session_index, filenames in enumerate(session_files):
+        if len(filenames) == 1:
+            # We have a 4D nifti file
+            data_file = load(filenames[0])
+            data = data_file.get_data()
+            session_series[session_index, :, :] = data[mask].astype(dtype)
+            if not 'header' in locals():
+                header = data_file.get_header()
+            # Free memory early
+            del data, data_file
+        else:
+            for file_index, filename in enumerate(filenames):
+                data_file = load(filename)
+                data = data_file.get_data()
+                    
+                session_series[session_index, :, file_index] = \
+                                data[mask].astype(np.float32)
+                # Free memory early
+                if not 'header' in locals():
+                    header = data_file.get_header()
+                del data
+
+    if squeeze:
+        session_series = session_series.squeeze()
+    return session_series, header
 
 

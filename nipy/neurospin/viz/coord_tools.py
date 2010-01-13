@@ -18,7 +18,6 @@ from nipy.neurospin.utils.emp_null import ENN
 # Functions for automatic choice of cuts coordinates
 ################################################################################
 
-
 def threshold_connect_components(map, threshold, copy=True):
     """ Given a map with some coefficients set to zero, segment the
         connect components with number of voxels smaller than the
