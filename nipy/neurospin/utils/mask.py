@@ -4,12 +4,13 @@ import warnings
 
 # Major scientific libraries imports
 import numpy as np
-
 # Neuroimaging libraries imports
 from nipy.io.imageformats import load, nifti1, save, AnalyzeImage
 
-import nipy.neurospin.graph as fg
 
+################################################################################
+# Utilities to calculate masks
+################################################################################
 
 def _largest_cc(mask):
     """ Return the largest connected component of a 3D mask array.
@@ -24,18 +25,15 @@ def _largest_cc(mask):
         mask: 3D boolean array 
             3D array indicating a mask, with only one connected component.    
     """
+    # Late import of scipy
+    from scipy import ndimage
+
     # We use asarray to be able to work with masked arrays.
     mask = np.asarray(mask)
-    xyz = np.array(np.where(mask))
-    nbvox = mask.sum()
-    g = fg.WeightedGraph(nbvox)
-    g.from_3d_grid(xyz.T)
-    u = g.main_cc()
-    xyz = xyz[:,u]
-    
-    mask_cc = np.zeros(mask.shape, np.int8)
-    mask_cc[tuple(xyz)] = 1
-    return mask_cc
+    labels, label_nb = ndimage.labels(mask)
+    if not label_nb:
+        raise ValueError('No non-zero values: no connect components')
+    return labels ==  np.bincount(labels.flat)[1:].argmax() + 1
 
 def get_unscaled_img(fname):
     ''' Function to get image, data without scalefactor applied
@@ -276,6 +274,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     # in int8
     return mask.astype(np.bool)
 
+
 def intersect_masks(input_mask_files, output_filename=None, 
                                         threshold=0.5, cc=True):
     """
@@ -321,4 +320,6 @@ def intersect_masks(input_mask_files, output_filename=None,
                                          )
         output_image.save(output_filename)
     return gmask>0
+
+
 
