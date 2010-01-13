@@ -12,7 +12,7 @@ from nipy.io.imageformats import load, nifti1, save, AnalyzeImage
 # Utilities to calculate masks
 ################################################################################
 
-def _largest_cc(mask):
+def largest_cc(mask):
     """ Return the largest connected component of a 3D mask array.
 
         Parameters
@@ -206,11 +206,7 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     mask = (reference_volume >= threshold)
 
     if cc:
-        try:
-            mask = _largest_cc(mask)
-        except TypeError:
-            """ The grid is probably too large, will just pass. """
-            warnings.warn('Mask too large, cannot extract largest cc.')
+        mask = largest_cc(mask)
     return mask.astype(bool)
 
 
@@ -264,14 +260,8 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     if cc:
         # Select the largest connected component (each mask is
         # connect, but the half-interesection may not be):
-        try:
-            mask = _largest_cc(mask)
-        except TypeError:
-            """ The grid is probably too large, will just pass. """
-            warnings.warn('Mask too large, cannot extract largest cc.')
+        mask = largest_cc(mask)
 
-    # We need to convert to boolean, as the graph structure casts
-    # in int8
     return mask.astype(np.bool)
 
 
@@ -309,7 +299,7 @@ def intersect_masks(input_mask_files, output_filename=None,
     
     gmask = gmask>(threshold*len(input_mask_files))
     if np.any(gmask>0) and cc:
-        gmask = _largest_cc(gmask)
+        gmask = largest_cc(gmask)
     
     if output_filename is not None:
         header = nim.get_header()
