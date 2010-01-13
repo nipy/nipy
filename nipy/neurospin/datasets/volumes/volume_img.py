@@ -281,8 +281,8 @@ class VolumeImg(VolumeGrid):
                 self.__class__.__name__,
                 '\n       '.join(repr(self._data).split('\n')),
                 '\n         '.join(repr(self.affine).split('\n')),
-                self.world_space,
-                self.interpolation)
+                repr(self.world_space),
+                repr(self.interpolation))
         np.set_printoptions(**options)
         return representation
 
