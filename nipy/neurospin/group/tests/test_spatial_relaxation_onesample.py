@@ -1,5 +1,5 @@
 import unittest
-
+from nipy.testing import decorators
 import numpy as np
 
 import nipy.neurospin.group.spatial_relaxation_onesample as os
@@ -92,6 +92,7 @@ class TestMultivariateStatSaem(unittest.TestCase):
         self.assertTrue(M1[1] > M0[1])
         self.assertTrue(M1[0] < M0[0])
     
+    @decorators.slow
     def test_model_selection_mfx_spatial_rand_walk(self):
         prng = np.random.RandomState(10)
         data, XYZ, XYZvol, vardata, signal = make_data(n=20, 

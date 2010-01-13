@@ -90,7 +90,8 @@ def test_repro3():
     using cluster-level rfx, bootstrap
     """
     dataset = make_dataset(ampli_factor=0)
-    kap,clt = apply_repro_analysis_analysis(dataset, thresholds=[5.0])
+    kap,clt = apply_repro_analysis_analysis(dataset, thresholds=[4.0])
+    print kap.mean(1)
     assert (kap.mean(1)<0.3)
 
 def test_repro4():
@@ -99,7 +100,7 @@ def test_repro4():
     using cluster-level rfx, bootstrap
     """
     dataset = make_dataset(ampli_factor=0)
-    kap,clt = apply_repro_analysis_analysis(dataset, thresholds=[3.0])
+    kap, clt = apply_repro_analysis_analysis(dataset, thresholds=[4.0])
     assert (clt.mean(1)<0.3)
 
 def test_repro5():

@@ -500,19 +500,22 @@ def LE(G, dim, verbose=0, maxiter=1000):
 def LPP(G, X, dim, verbose=0, maxiter=1000):
     """
     Compute the Locality preserving projector of the data
-    proj = LPP(G,X,dim,verbose=0,maxiter=1000)
     
     Parameters
     ----------
     G, nipy.neurospin.graph.WeightedGraph instance that represents the data
-    X, array of shape (G.V, dim) related input dataset
-    dim=1 : number of dimensions
-    verbose = 0: verbosity level
-    maxiter=1000: maximum number of iterations of the algorithm 
+    X, array of shape (G.V, input_dim) related input dataset
+    dim=1, int, representation dimensions
+    verbose=0, bool verbosity level
+    maxiter=1000, int, maximum number of iterations of the algorithm 
     
     Returns
     -------
-    proj, array of shape(X.shape[1],dim)
+    proj, array of shape(X.shape[0],dim)
+
+    Note
+    ----
+    non-sparse version ; breaks for large number of input items
     """
     n = G.V
     dim = np.minimum(dim,n) 
@@ -592,7 +595,70 @@ class NLDR:
         if self.trained ==0:
             raise ValueError, "Untrained function -- cannot generalize"
         self.check_data(X)
+
+class PCA(NLDR):
+    """
+    This class performs PCA-based linear dimension reduction
+    besides the fields of NDLR, it contains the following ones:
+    
+    embedding: array of shape (nbitems,rdim)
+               this is representation of the training data
+    offset: array of shape(nbitems)
+            affine part of the embedding
+    projector: array of shape(fdim,rdim)
+               linear part of the embedding
+    
+    """
+
+    def train(self, verbose=0):
+        """
+        training procedure
         
+        Parameters
+        ----------
+        verbose=0 : verbosity mode
+        
+        Returns
+        -------
+        chart: resulting rdim-dimensional representation
+        """
+        from numpy.linalg import svd
+        self.check_data(self.train_data)
+        self.offset = self.train_data.mean(0)
+        x = self.train_data-self.offset
+        u,s,v  = svd(x,0)
+        self.embedding = (u*s)[:,:self.rdim]
+        self.scaling = s[:self.rdim]
+        self.projector = v[:self.rdim,:].T
+        self.trained = 1
+        return(self.embedding)
+
+    def test(self, x):
+        """
+        Apply the learnt embedding to the new data x
+        
+        Parameters
+        ----------
+        x: array of shape(nbitems, fdim) 
+           data points to be embedded
+        
+        Returns
+        -------
+        chart: array of shape (nbitems, rdim) 
+        resulting rdim-dimensional represntation
+        """
+        if self.trained ==0:
+            raise ValueError, "Untrained function -- cannot generalize"
+        if np.size(x)==self.fdim:
+            x = np.reshape(x,(1,self.fdim))
+        self.check_data(x)
+
+        u = np.dot(x-self.offset,self.projector)
+        
+        return u            
+
+
+
 class MDS(NLDR):
     """
     This is a particular class that perfoms linear dimension reduction
@@ -631,13 +697,13 @@ class MDS(NLDR):
         self.offset = msd
         return(u)
     
-    def test(self, X):
+    def test(self, x):
         """
-        Apply the learnt embedding to the new data X
+        Apply the learnt embedding to the new data x
         
         Parameters
         ----------
-        X: array of shape(nbitems, fdim) 
+        x: array of shape(nbitems, fdim) 
            data points to be embedded
         
         Returns
@@ -647,15 +713,15 @@ class MDS(NLDR):
         """
         if self.trained ==0:
             raise ValueError, "Untrained function -- cannot generalize"
-        if np.size(X)==self.fdim:
-            X = np.reshape(X,(1,self.fdim))
-        self.check_data(X)
+        if np.size(x)==self.fdim:
+            x = np.reshape(x,(1,self.fdim))
+        self.check_data(x)
         
         # trivial solution -- valid only in the Euclidian case
-        #dp = -np.dot(X-self.mean,(self.train_data-self.mean).T)
+        #dp = -np.dot(x-self.mean,(self.train_data-self.mean).T)
         #u = np.dot(dp,self.projector)/self.scaling
         
-        dm = Euclidian_distance(X,self.train_data)
+        dm = Euclidian_distance(x,self.train_data)
         u = mds_embedding(dm, self.projector, self.scaling, self.offset)
 
         return u            
@@ -709,13 +775,13 @@ class knn_Isomap(NLDR):
         self.scaling = scaling
         return(u)
     
-    def test(self,X):
+    def test(self,x):
         """
         embed new data into the learnt representation
         
         Parameters
         ----------
-        X array of shape(nbitems,fdim) 
+        x array of shape(nbitems,fdim) 
           new data points to be embedded
         verbose=0, bool, verbosity mode
         
@@ -727,16 +793,16 @@ class knn_Isomap(NLDR):
         # preliminary checks
         if self.trained ==0:
             raise ValueError, "Untrained function -- cannot generalize"
-        if np.size(X)==self.fdim:
-            X = np.reshape(X,(1,self.fdim))
-        self.check_data(X)
+        if np.size(x)==self.fdim:
+            x = np.reshape(x,(1,self.fdim))
+        self.check_data(x)
         
         # launch the algorithm:
         # step 1: create a compound graph with the learning and test vertices
         n = self.G.V
-        m = X.shape[0]
+        m = x.shape[0]
         G1 = self.G
-        b, a, d = fg.graph_cross_knn(X,self.train_data,self.k)
+        b, a, d = fg.graph_cross_knn(x,self.train_data,self.k)
         G1.V = n + m
         G1.E = G1.E + 2*np.size(d)
         G1.edges = np.vstack((G1.edges,np.transpose(np.vstack((a,b+n)))))
@@ -806,13 +872,13 @@ class eps_Isomap(NLDR):
         self.scaling = scaling
         return(u)
     
-    def test(self,X):
+    def test(self,x):
         """
-        Embedding the data conatined in X
+        Embedding the data conatined in x
         
         Parameters
         ----------
-        X:array of shape(nbitems,fdim) 
+        x:array of shape(nbitems,fdim) 
                 new data points to be embedded
         verbose=0, bool, verbosity mode
         
@@ -824,15 +890,15 @@ class eps_Isomap(NLDR):
         # preliminary checks
         if self.trained ==0:
             raise ValueError, "Untrained function -- cannot generalize"
-        if np.size(X)==self.fdim:
-            X = np.reshape(X,(1,self.fdim))
-        self.check_data(X)
+        if np.size(x)==self.fdim:
+            x = np.reshape(x,(1,self.fdim))
+        self.check_data(x)
         
         # construction of a graph with the training and test data
         n = self.G.V
-        m = X.shape[0]
+        m = x.shape[0]
         G1 = self.G
-        b, a, d = fg.graph_cross_eps(X, self.train_data, self.eps)
+        b, a, d = fg.graph_cross_eps(x, self.train_data, self.eps)
         G1.V = n + m
         G1.E += 2*np.size(d)
         G1.edges = np.vstack((G1.edges,np.transpose(np.vstack((a,b+n)))))
@@ -934,13 +1000,13 @@ class knn_LPP(NLDR):
         self.trained = 1
         return(self.embedding)
 
-    def test(self, X):
+    def test(self, x):
         """
         Function to generalize the embedding to new data
         
         Parameters
         ----------
-        X: array of shape(nbitems,fdim) 
+        x: array of shape(nbitems,fdim) 
            new data points to be embedded
         verbose=0, bool, verbosity mode
         
@@ -951,11 +1017,11 @@ class knn_LPP(NLDR):
         """     
         if self.trained ==0:
             raise ValueError, "Untrained function -- cannot generalize"
-        if np.size(X)==self.fdim:
-            X = np.reshape(X,(1,self.fdim))
-        self.check_data(X)
+        if np.size(x)==self.fdim:
+            x = np.reshape(x,(1,self.fdim))
+        self.check_data(x)
         #
-        u = np.dot(X,self.projector)
+        u = np.dot(x,self.projector)
         return u
 
 #------------------------------------------------------------------
@@ -976,18 +1042,18 @@ def check_isometry(G, chart, nseeds=100, verbose = 0):
     aux = np.argsort(nr.rand(nseeds))
     seeds =  aux[:nseeds]
     dY = Euclidian_distance(chart[seeds],chart)
-    dX = G.floyd(seeds)
+    dx = G.floyd(seeds)
 
     dY = np.reshape(dY,np.size(dY))
-    dX = np.reshape(dX,np.size(dX))
+    dx = np.reshape(dx,np.size(dx))
 
     if verbose:
         import matplotlib.pylab as mp
         mp.figure()
-        mp.plot(dX,dY,'.')
+        mp.plot(dx,dY,'.')
         mp.show()
 
-    scale = np.dot(dX,dY)/np.dot(dX,dX)
+    scale = np.dot(dx,dY)/np.dot(dx,dx)
     return scale
     
 
@@ -1015,21 +1081,21 @@ def _sparse_local_correction_for_embedding(G,chart,sigma = 1.0,niter=100):
     """
     G.reorder(0)
     sqsigma = 2*sigma**2
-    dX = G.weights
-    weight = np.exp(-dX**2/sqsigma)
+    dx = G.weights
+    weight = np.exp(-dx**2/sqsigma)
 
     K = G.copy()
     K.set_euclidian(chart)
-    dY = K.weights
-    dXY= dX-dY
-    criterion = np.sum(weight*(dX-dY)**2)/G.V
+    dY = K.weights 
+    dXY= dx-dY
+    criterion = np.sum(weight*(dx-dY)**2)/G.V
 
     tiny = 1.e-10
     ln = G.list_of_neighbors()
     ci, ne, we = G.to_neighb()
     
     for i in range(niter):
-        aux = weight*(dX-dY)/np.maximum(dY,tiny)        
+        aux = weight*(dx-dY)/np.maximum(dY,tiny)        
         grad = np.zeros(np.shape(chart))
         for j in range(G.V):
             k = ln[j]
@@ -1039,7 +1105,7 @@ def _sparse_local_correction_for_embedding(G,chart,sigma = 1.0,niter=100):
         chart = chart - grad
         K.set_euclidian(chart)
         dY = K.weights
-        criterion = np.sum(weight*(dX-dY)**2)/G.V
+        criterion = np.sum(weight*(dx-dY)**2)/G.V
     return chart
     
 def partial_floyd_graph(G,k):
@@ -1211,18 +1277,18 @@ def _test_lE0(verbose=0):
     k= 5
     X = nr.randn(n,dim)
     G = fg.WeightedGraph(n)
-    G.knn(X,5)
-    G.set_gaussian(X)
+    G.knn(x,5)
+    G.set_gaussian(x)
     LE(G,5,verbose)
 
 def _test_lE1(verbose=0):
     n = 100
     t = 2*np.pi*nr.randn(n)
-    X = np.transpose(np.vstack((np.cos(t),np.sin(t),t)))
-    X = X+0.1*nr.randn(X.shape[0],X.shape[1])
+    x = np.transpose(np.vstack((np.cos(t),np.sin(t),t)))
+    x = x+0.1*nr.randn(x.shape[0],x.shape[1])
     G = fg.WeightedGraph(n)
-    G.knn(X,10)
-    G.set_gaussian(X)
+    G.knn(x,10)
+    G.set_gaussian(x)
     u = LE(G,dim=5)
     if verbose:
         import matplotlib.pylab as mp
@@ -1231,20 +1297,20 @@ def _test_lE1(verbose=0):
         mp.figure()
         mp.plot(u[:,0],u[:,1],'.')
         mp.figure()
-        mp.plot(X[:,0],X[:,1],'.')
+        mp.plot(x[:,0],x[:,1],'.')
     x = G.cc();
     print x.max()
 
 def _test_LPP(verbose=0):
     n = 100
     t = 2*np.pi*nr.randn(n)
-    X = np.transpose(np.vstack((np.cos(t),np.sin(t),t)))
-    X = X+0.1*nr.randn(X.shape[0],X.shape[1])
+    x = np.transpose(np.vstack((np.cos(t),np.sin(t),t)))
+    x = x+0.1*nr.randn(x.shape[0],x.shape[1])
     G = fg.WeightedGraph(n)
-    G.knn(X,3)
-    G.set_gaussian(X)
-    u = LPP(G,X,dim=2)
-    em = np.dot(X,u)
+    G.knn(x,3)
+    G.set_gaussian(x)
+    u = LPP(G,x,dim=2)
+    em = np.dot(x,u)
     if verbose:
         import matplotlib.pylab as mp
         mp.figure()
@@ -1258,9 +1324,9 @@ def _test_LDC(verbose=0):
     n = 200
     dim = 10
     r = 3
-    X = nr.randn(n,dim)#
+    x = nr.randn(n,dim)#
     for k in range(r):
-        X[:,k] += 2*nr.randn(n)
+        x[:,k] += 2*nr.randn(n)
 
-    infer_latent_dim(X,verbose) 
+    infer_latent_dim(x,verbose) 
 
