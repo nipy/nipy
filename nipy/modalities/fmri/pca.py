@@ -136,7 +136,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     if ncomp is None:
         ncomp = rank
     subVX = basis_vectors[:ncomp]
-    out = _get_basis_projections(data, subVX)
+    out = _get_basis_projections(data, subVX, standardize, project_resid)
     # Roll PCA image axis back to original position in data array
     if axis < 0:
         axis += data.ndim
@@ -148,10 +148,13 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
 
 
 def _get_covariance(data, UX, standardize, project_resid, mask):
+    # number of points in PCA dimension
     rank = UX.shape[0]
+    n_pts = data.shape[0]
     C = np.zeros((rank, rank))
+    # loop over next dimension to save memory
     for i in range(data.shape[1]):
-        Y = data[:,i].reshape((data.shape[0], -1))
+        Y = data[:,i].reshape((n_pts, -1))
         # project data into required space
         YX = np.dot(UX, Y)
         if standardize:
@@ -159,17 +162,22 @@ def _get_covariance(data, UX, standardize, project_resid, mask):
             Smhalf = pos_recipr(np.sqrt(S2)); del(S2)
             YX *= Smhalf
         if mask is not None:
+            # weight data with mask.  Usually the weights will be 0,1
             YX = YX * np.nan_to_num(mask[i].reshape(Y.shape[1]))
         C += np.dot(YX, YX.T)
     return C
 
 
-def _get_basis_projections(data, subVX):
+def _get_basis_projections(data, subVX, standardize, project_resid):
     ncomp = subVX.shape[0]
     out = np.empty((ncomp,) + data.shape[1:], np.float)
     for i in range(data.shape[1]):
         Y = data[:,i].reshape((data.shape[0], -1))
         U = np.dot(subVX, Y)
+        if standardize:
+            S2 = (project_resid(Y)**2).sum(0)
+            Smhalf = pos_recipr(np.sqrt(S2)); del(S2)
+            U *= Smhalf
         U.shape = (U.shape[0],) + data.shape[2:]
         out[:,i] = U
     return out
