@@ -6,7 +6,8 @@ system.  Use this module for importing core names into your namespace. For examp
 
 # Note: The order of imports is important here.
 from nipy.core.reference.coordinate_system import CoordinateSystem
-from nipy.core.reference.coordinate_map import CoordinateMap, Affine, compose
+from nipy.core.reference.coordinate_map import CoordinateMap, Affine, compose, \
+    drop_io_dim, append_io_dim
 from nipy.core.reference.array_coords import Grid, ArrayCoordMap
 
 from nipy.core.image.image import Image, merge_images, fromarray, is_image
