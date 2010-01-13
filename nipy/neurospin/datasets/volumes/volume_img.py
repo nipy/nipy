@@ -127,7 +127,7 @@ class VolumeImg(VolumeGrid):
                 'The two images are not embedded in the same world space')
         if isinstance(target_image, VolumeImg):
             return self.as_volume_img(affine=target_image.affine,
-                                    shape=self.get_data().shape[:3],
+                                    shape=target_image.get_data().shape[:3],
                                     interpolation=interpolation)
         else:
             # IMPORTANT: Polymorphism can be implemented by walking the 

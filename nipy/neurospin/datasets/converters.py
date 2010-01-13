@@ -11,7 +11,7 @@ from nipy.io.imageformats.spatialimages import SpatialImage
 
 from .volumes.volume_img import VolumeImg
 
-def as_volume_img(obj, copy=True, squeeze=True):
+def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
     """ Convert the input to a VolumeImg.
 
         Parameters
@@ -26,6 +26,9 @@ def as_volume_img(obj, copy=True, squeeze=True):
         squeeze: boolean, optional
             If squeeze is True, the data array is squeeze on for
             dimensions above 3.
+        world_space: string or None, optional
+            An optional specification of the world space, to override
+            that given by the image.
 
         Returns
         -------
@@ -36,11 +39,9 @@ def as_volume_img(obj, copy=True, squeeze=True):
         Notes
         ------
         The world space might not be correctly defined by the input
-        object (in particular, when loadingn data from disk). In this
-        case, you can correct it manually:
-
-            foo = as_volume_img('foo.nii')
-            foo.world_space = 'mni152'
+        object (in particular, when loading data from disk). In this
+        case, you can correct it manually using the world_space keyword
+        argument.
 
         For pynifti objects, the data is transposed.
     """
@@ -71,7 +72,9 @@ def as_volume_img(obj, copy=True, squeeze=True):
         if filename != '':
             header['filename'] = filename
 
-    if header.get('sform_code', 0) == 4:
+    if world_space is not None:
+        " Ugly if statement to use elif after "
+    elif header.get('sform_code', 0) == 4:
         world_space = 'mni152'
     elif 'filename' in header:
         world_space = header['filename']
