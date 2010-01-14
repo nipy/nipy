@@ -17,6 +17,9 @@ def apply_affine(x, y, z, affine):
         affine: 4x4 ndarray
             The affine matrix of the transformation
     """
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+    z = np.atleast_1d(z)
     shape = x.shape
     assert y.shape == shape, 'Coordinate shapes are not equal'
     assert z.shape == shape, 'Coordinate shapes are not equal'
