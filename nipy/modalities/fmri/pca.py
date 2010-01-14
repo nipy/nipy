@@ -89,7 +89,6 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     data = np.rollaxis(data, axis)
     if mask is not None:
         mask = np.asarray(mask)
-    nbasis_projections = data.shape[0]
     if design_resid == 'mean':
         # equivalent to: design_resid = np.ones((data.shape[0], 1))
         def project_resid(Y):
@@ -111,7 +110,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     to column space of design_resid.
     """
     if design_keep is None:
-        X = np.eye(nbasis_projections)
+        X = np.eye(data.shape[0])
     else:
         X = np.dot(design_keep, npl.pinv(design_keep))
     XZ = project_resid(X)
