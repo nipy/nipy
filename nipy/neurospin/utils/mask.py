@@ -334,7 +334,7 @@ def intersect_masks(input_masks, output_filename=None,
 # FIXME: This function should probably get a 'single_session' flag to work 
 # without any surprises on single session situations.
 def series_from_mask(session_files, mask, dtype=np.float32,
-                squeeze=False):
+                squeeze=False, smooth=False):
     """ Read the time series from the given sessions filenames, using the mask.
 
         Parameters
@@ -345,6 +345,9 @@ def series_from_mask(session_files, mask, dtype=np.float32,
             3D mask array: true where a voxel should be used.
         squeeze: boolean, optional
             If squeeze is True, the data array is squeezed before return.
+        smooth: False or float, optional
+            If smooth is not False, it gives the size, in voxel of the
+            spatial smoothing to apply to the signal.
         
         Returns
         --------
@@ -368,15 +371,28 @@ def series_from_mask(session_files, mask, dtype=np.float32,
             # We have a 4D nifti file
             data_file = load(filenames[0])
             data = data_file.get_data()
-            session_series[session_index, :, :] = data[mask].astype(dtype)
             if not 'header' in locals():
                 header = data_file.get_header()
+            if smooth:
+                affine = data_file.get_affine()[:3, :3]
+                smooth_sigma = np.dot(affine, np.ones(3))*smooth
+                from scipy import ndimage
+                data = np.asarray(data) # Get rid of memmapping
+                for this_data in np.rollaxis(data, -1):
+                    this_data[:] = ndimage.gaussian_filter(this_data,
+                                                           smooth_sigma)
+            session_series[session_index, :, :] = data[mask].astype(dtype)
             # Free memory early
             del data, data_file
         else:
             for file_index, filename in enumerate(filenames):
                 data_file = load(filename)
                 data = data_file.get_data()
+                if smooth:
+                    affine = data_file.get_affine()[:3, :3]
+                    smooth_sigma = np.dot(affine, np.ones(3))*smooth
+                    from scipy import ndimage
+                    data = ndimage.gaussian_filter(data, smooth_sigma)
                     
                 session_series[session_index, :, file_index] = \
                                 data[mask].astype(np.float32)
