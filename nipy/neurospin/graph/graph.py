@@ -1437,6 +1437,43 @@ class BipartiteGraph(WeightedGraph):
     
         return G
 
+    def subgraph_right(self, valid, renumb=True):
+        """
+        Extraction of a subgraph 
+        
+        Parameters
+        ----------
+        valid, boolean array of shape self.V
+        renumb, boolean: renumbering of the (right) edges
+
+        Return
+        ------
+        A new BipartiteGraph instance with only the right vertices
+        that are True
+        if sum(valid)==0, None is returned
+        """
+        if np.size(valid)!=self.V:
+            raise ValueError, 'valid does not have the correct size'
+
+        if np.sum(valid>0)==0:
+            return None
+        
+        if self.E>0:
+            win_edges = valid[self.edges[:,1]]
+            edges = self.edges[win_edges,:]
+            weights = self.weights[win_edges]
+            if renumb:
+                rindex = np.hstack((0,np.cumsum(valid>0)))
+                edges[:,1] = rindex[edges[:,1]]
+                G = BipartiteGraph(np.sum(valid),self.W, edges, weights)
+            else:
+                G = BipartiteGraph(self.V,self.W, edges, weights)
+            
+        else:
+            G = self.copy()
+    
+        return G
+
     
 
 def concatenate_graphs(G1,G2):
