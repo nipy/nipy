@@ -111,7 +111,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
             arr *= rstd_half
             return arr
     else:
-        def standardize_from(arr, std_source): return arr
+        standardize_from = None
     """
     Perform the computations needed for the PCA.  This stores the
     covariance/correlation matrix of the data in the attribute 'C'.  The
@@ -168,7 +168,9 @@ def _get_covariance(data, UX, standardize_from, mask):
     for i in range(data.shape[1]):
         Y = data[:,i].reshape((n_pts, -1))
         # project data into required space
-        YX = standardize_from(np.dot(UX, Y), Y)
+        YX = np.dot(UX, Y)
+        if standardize_from is not None:
+            YX = standardize_from(YX, Y)
         if mask is not None:
             # weight data with mask.  Usually the weights will be 0,1
             YX = YX * np.nan_to_num(mask[i].reshape(Y.shape[1]))
@@ -181,7 +183,9 @@ def _get_basis_projections(data, subVX, standardize_from):
     out = np.empty((ncomp,) + data.shape[1:], np.float)
     for i in range(data.shape[1]):
         Y = data[:,i].reshape((data.shape[0], -1))
-        U = standardize_from(np.dot(subVX, Y), Y)
+        U = np.dot(subVX, Y)
+        if standardize_from is not None:
+           U = standardize_from(U, Y)
         U.shape = (U.shape[0],) + data.shape[2:]
         out[:,i] = U
     return out
