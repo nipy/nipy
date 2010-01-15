@@ -92,12 +92,12 @@ def test_2D():
     yield assert_equal(ts.shape, (M, L))
     yield assert_equal(imgs.shape, (L, N))
     rimgs = reconstruct(ts, imgs)
-    # add back the error sum of squares, because we standardized
+    # add back the standard deviation, because we standardized
     data_mean = data.mean(0)[None,...]
     demeaned = data - data_mean
-    sse = np.sqrt((demeaned**2).sum(0))[None,...]
+    std = np.std(demeaned, axis=0)[None,...]
     # also add back the mean
-    yield assert_array_almost_equal((rimgs * sse) + data_mean, data)
+    yield assert_array_almost_equal((rimgs * std) + data_mean, data)
     # if standardize is set, or not, covariance is diagonal
     yield assert_true(diagonal_covariance(imgs))
     p = pca(data, standardize=False)
@@ -189,9 +189,9 @@ def test_resid():
     rank = p['basis_vectors'].shape[1]
     yield assert_equal(rank, data['nimages'])
     rarr = reconstruct(p['basis_vectors'], p['basis_projections'], -1)
-    # add back the error sum of squares, because we standardized
-    sse = np.sqrt((data['fmridata']**2).sum(-1))[...,None]
-    yield assert_array_almost_equal(rarr * sse, data['fmridata'])
+    # add back the standard deviation, because we standardized
+    std = np.std(data['fmridata'], axis=-1)[...,None]
+    yield assert_array_almost_equal(rarr * std, data['fmridata'])
 
 
 def test_both():

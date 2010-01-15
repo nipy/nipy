@@ -28,28 +28,31 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     axis : int
        The axis over which to perform PCA (axis identifying
        observations).  Default is 0 (first)
-    mask : ndarray-like (np.bool)
+    mask : ndarray-like (np.bool), optional
        An optional mask, should have shape given by data axes, with
-       `axis` removed, i.e.: ``s = data.shape; s.pop(axis); msk_shape=s``
-    ncomp : {None, int}
+       `axis` removed, i.e.: ``s = data.shape; s.pop(axis);
+       msk_shape=s``
+    ncomp : {None, int}, optional
        How many component basis projections to return. If ncomp is None
        (the default) then the number of components is given by the
        calculated rank of the data, after applying `design_keep`,
        `design_resid` and `tol_ratio` below.  We always return all the
        basis vectors and percent variance for each component; `ncomp`
        refers only to the number of basis_projections returned.
-    standardize : bool
-       Standardize so each time series has same error-sum-of-squares?
-    design_keep : None or ndarray
+    standardize : bool, optional
+       If True, standardize so each time series (after application of
+       `design_keep` and `design_resid`) has the same standard
+       deviation, as calculated by the ``np.std`` function.
+    design_keep : None or ndarray, optional
        Data is projected onto the column span of design_keep.
        None (default) equivalent to ``np.identity(data.shape[axis])``
-    design_resid : str or None or ndarray
+    design_resid : str or None or ndarray, optional
        After projecting onto the column span of design_keep, data is
        projected perpendicular to the column span of this matrix.  If
        None, we do no such second projection.  If a string 'mean', then
        the mean of the data is removed, equivalent to passing a column
        vector matrix of 1s.
-    tol_ratio : float
+    tol_ratio : float, optional
        If ``XZ`` is the vector of singular values of the projection
        matrix from `design_keep` and `design_resid`, and S are the
        singular values of ``XZ``, then `tol_ratio` is the value used to
@@ -68,20 +71,20 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
        * ``basis_vectors``: time series, shape (data.shape[axis], L)
        * ``pcnt_var``: percent variance explained by component, shape
           (L,)
-       * ``basis_projections``: PCA components, with components varying over axis
-          `axis`; thus shape given by: ``s = list(data.shape); s[axis] =
-          ncomp``
+       * ``basis_projections``: PCA components, with components varying
+          over axis `axis`; thus shape given by: ``s = list(data.shape);
+          s[axis] = ncomp``
        * ``axis``: axis over which PCA has been performed.
 
-     Notes
-     -----
-     See ``pca_image.m`` from fmristat for Keith Worsley's code on which
-     some of this is based.
+    Notes
+    -----
+    See ``pca_image.m`` from ``fmristat`` for Keith Worsley's code on
+    which some of this is based.
 
-     See: http://en.wikipedia.org/wiki/Principal_component_analysis for
-     some inspiration for naming - particularly 'basis_vectors' and
-     'basis_projections'
-     """
+    See: http://en.wikipedia.org/wiki/Principal_component_analysis for
+    some inspiration for naming - particularly 'basis_vectors' and
+    'basis_projections'
+    """
     data = np.asarray(data)
     # We roll the PCA axis to be first, for convenience
     if axis is None:
@@ -96,9 +99,19 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     elif design_resid is None:
         def project_resid(Y): return Y
     else: # matrix passed, we hope
-        pinv_design_resid = npl.pinv(design_resid)
+        projector = np.dot(design_resid, npl.pinv(design_resid))
         def project_resid(Y):
-            return Y - np.dot(np.dot(design_resid, pinv_design_resid), Y)
+            return Y - np.dot(projector, Y)
+    if standardize:
+        def standardize_from(arr, std_source):
+            # modifies array in place
+            rstd = np.std(project_resid(std_source), axis=0)
+            # positive 1/rstd
+            rstd_half = np.where(rstd<=0, 0, 1. / rstd)
+            arr *= rstd_half
+            return arr
+    else:
+        def standardize_from(arr, std_source): return arr
     """
     Perform the computations needed for the PCA.  This stores the
     covariance/correlation matrix of the data in the attribute 'C'.  The
@@ -120,7 +133,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     rank = (SX/SX.max() > tol_ratio).sum()
     UX = UX[:,range(rank)].T
     # calculate covariance matrix
-    C  = _get_covariance(data, UX, standardize, project_resid, mask)
+    C  = _get_covariance(data, UX, standardize_from, mask)
     # find the eigenvalues D and eigenvectors Vs of the covariance
     # matrix
     D, Vs = npl.eigh(C)
@@ -135,7 +148,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     if ncomp is None:
         ncomp = rank
     subVX = basis_vectors[:ncomp]
-    out = _get_basis_projections(data, subVX, standardize, project_resid)
+    out = _get_basis_projections(data, subVX, standardize_from)
     # Roll PCA image axis back to original position in data array
     if axis < 0:
         axis += data.ndim
@@ -146,7 +159,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
             'axis': axis}
 
 
-def _get_covariance(data, UX, standardize, project_resid, mask):
+def _get_covariance(data, UX, standardize_from, mask):
     # number of points in PCA dimension
     rank = UX.shape[0]
     n_pts = data.shape[0]
@@ -155,11 +168,7 @@ def _get_covariance(data, UX, standardize, project_resid, mask):
     for i in range(data.shape[1]):
         Y = data[:,i].reshape((n_pts, -1))
         # project data into required space
-        YX = np.dot(UX, Y)
-        if standardize:
-            S2 = (project_resid(Y)**2).sum(0)
-            Smhalf = pos_recipr(np.sqrt(S2)); del(S2)
-            YX *= Smhalf
+        YX = standardize_from(np.dot(UX, Y), Y)
         if mask is not None:
             # weight data with mask.  Usually the weights will be 0,1
             YX = YX * np.nan_to_num(mask[i].reshape(Y.shape[1]))
@@ -167,16 +176,12 @@ def _get_covariance(data, UX, standardize, project_resid, mask):
     return C
 
 
-def _get_basis_projections(data, subVX, standardize, project_resid):
+def _get_basis_projections(data, subVX, standardize_from):
     ncomp = subVX.shape[0]
     out = np.empty((ncomp,) + data.shape[1:], np.float)
     for i in range(data.shape[1]):
         Y = data[:,i].reshape((data.shape[0], -1))
-        U = np.dot(subVX, Y)
-        if standardize:
-            S2 = (project_resid(Y)**2).sum(0)
-            Smhalf = pos_recipr(np.sqrt(S2)); del(S2)
-            U *= Smhalf
+        U = standardize_from(np.dot(subVX, Y), Y)
         U.shape = (U.shape[0],) + data.shape[2:]
         out[:,i] = U
     return out
