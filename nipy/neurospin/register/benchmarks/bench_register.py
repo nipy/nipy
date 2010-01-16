@@ -39,7 +39,7 @@ def resampling(Tv):
     dt2 = time.clock()-t0
     assert_almost_equal(I1, I2)
     print('3d array resampling')
-    print('  using neuroimaging.neurospin: %f sec' % dt1)
+    print('  using nipy.neurospin: %f sec' % dt1)
     print('  using scipy.ndimage: %f sec' % dt2)
 
 

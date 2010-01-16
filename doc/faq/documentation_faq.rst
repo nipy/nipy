@@ -25,8 +25,8 @@ the documentation build you may have a problem with your graphviz_
 install.  The error may look something like::
 
   **writing output...** about api/generated/gen
-    api/generated/neuroimaging
-    api/generated/neuroimaging.algorithms.fwhm Format: "png" not
+    api/generated/nipy
+    api/generated/nipy.algorithms.fwhm Format: "png" not
     recognized. Use one of: canon cmap cmapx cmapx_np dia dot eps fig
     hpgl imap imap_np ismap mif mp pcl pic plain plain-ext ps ps2 svg
     svgz tk vml vmlz vtx xdot
