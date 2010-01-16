@@ -25,7 +25,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     ----------
     data : ndarray-like (np.float)
        The array on which to perform PCA over axis `axis` (below)
-    axis : int
+    axis : int, optional
        The axis over which to perform PCA (axis identifying
        observations).  Default is 0 (first)
     mask : ndarray-like (np.bool), optional
@@ -56,8 +56,8 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
        If ``XZ`` is the vector of singular values of the projection
        matrix from `design_keep` and `design_resid`, and S are the
        singular values of ``XZ``, then `tol_ratio` is the value used to
-       calculate the effective rank of the projection, as in ``rank = ((S
-       / S.max) > tol_ratio).sum()``
+       calculate the effective rank of the projection of the design, as
+       in ``rank = ((S / S.max) > tol_ratio).sum()``
 
     Returns
     -------
