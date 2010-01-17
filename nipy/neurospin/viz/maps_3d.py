@@ -245,10 +245,12 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
     map_src = affine_img_src(map, affine)
     # XXX: Need to change the Docs to give option between volume and
     # iso_surface
-    # XXX: Make sure the view is not cropped in plot_map
     # XXX: We need to capture any arguments that are invalid for
     # iso_surface
-    module = mlab.pipeline.iso_surface(map_src, contours=[vmin], **kwargs)
+    if vmin in kwargs:
+        kwargs = kwargs.copy()
+        kwargs['contours'] = [kwargs.pop('vmin')]
+    module = mlab.pipeline.iso_surface(map_src, **kwargs)
    
     if not anat is False:
         plot_anat_3d(anat=anat, anat_affine=anat_affine, scale=1.05)

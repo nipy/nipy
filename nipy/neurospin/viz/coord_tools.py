@@ -157,17 +157,21 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
 def get_bounds(shape, affine):
     """ Return the world-space bounds occupied by an array given an affine.
     """
-    bounds = np.zeros((4, 6))
-    bounds[:3, -3:] = np.identity(3)*shape
-    bounds[-1, :] = 1
-    bounds = np.dot(affine, bounds)
-    xmin = float(bounds[0, 0])
-    xmax = float(bounds[0, 3])
-    zmin = float(bounds[2, 0])
-    zmax = float(bounds[2, 5])
-    ymin = float(bounds[1, 0])
-    ymax = float(bounds[1, 4])
-    return xmin, xmax, ymin, ymax, zmin, zmax
+    T = affine
+    box = np.zeros((8, 3), 'd')
+    adim, bdim, cdim = shape
+    # form a collection of vectors for each 8 corners of the box
+    box = np.array([ [0.,   0,    0,    1],
+                     [adim, 0,    0,    1],
+                     [0,    bdim, 0,    1],
+                     [0,    0,    cdim, 1],
+                     [adim, bdim, 0,    1],
+                     [adim, 0,    cdim, 1],
+                     [0,    bdim, cdim, 1],
+                     [adim, bdim, cdim, 1] ]).T
+    box = np.dot(affine, box)[:3]
+    box_extents = zip(box.min(axis=-1), box.max(axis=-1))
+    return box_extents
 
 
 def get_mask_bounds(mask, affine):
@@ -177,8 +181,10 @@ def get_mask_bounds(mask, affine):
         -----
 
         The mask should have only one connect component.
+
+        The affine should be diagonal or diagonal-permuted.
     """
-    xmin, xmax, ymin, ymax, zmin, zmax = get_bounds(mask.shape, affine)
+    (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     x_slice, y_slice, z_slice = ndimage.find_objects(mask)[0]
     x_width, y_width, z_width = mask.shape
     xmin, xmax = (xmin + x_slice.start*(xmax - xmin)/x_width,

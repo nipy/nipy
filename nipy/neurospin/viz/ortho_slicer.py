@@ -269,7 +269,7 @@ class OrthoSlicer(object):
         x, y, z = self._cut_coords
         x_map, y_map, z_map = [int(round(c)) for c in 
                                coord_transform(x, y, z, np.linalg.inv(affine))]
-        xmin, xmax, ymin, ymax, zmin, zmax = get_bounds(map.shape, affine)
+        (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(map.shape, affine)
 
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
                                         xmin, xmax, ymin, ymax, zmin, zmax
