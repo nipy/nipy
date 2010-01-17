@@ -856,7 +856,6 @@ class eps_Isomap(NLDR):
         self.eps = eps
         self.check_data(self.train_data)
         
-        
         n = self.train_data.shape[0]
         G = fg.WeightedGraph(n)
         G.eps(self.train_data,self.eps)
@@ -911,8 +910,7 @@ class eps_Isomap(NLDR):
         for q in range(m):
             dg[q] = G1.dijkstra(q+n)
         dg = dg[:,self.seed]
-        #print G1.edges, G1.weights, G1.E
-
+       
         # perform the embedding based on these distances
         u = mds_embedding(dg, self.projector, self.scaling, self.offset)
         

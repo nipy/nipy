@@ -11,23 +11,12 @@ import numpy as np
 from scipy import stats, ndimage
 
 # Local imports
-from nipy.neurospin.utils.mask import compute_mask, _largest_cc
+from nipy.neurospin.utils.mask import compute_mask, largest_cc
 from nipy.neurospin.utils.emp_null import ENN
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
 ################################################################################
-
-def largest_cc(mask):
-    """ Largest connect components extraction code that fails gracefully 
-        when mask is too big for C extension code.
-    """
-    try:
-        mask = _largest_cc(mask)
-    except TypeError:
-        pass
-    return mask.astype(np.bool)
-
 
 def threshold_connect_components(map, threshold, copy=True):
     """ Given a map with some coefficients set to zero, segment the

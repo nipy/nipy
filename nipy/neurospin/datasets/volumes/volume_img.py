@@ -127,7 +127,7 @@ class VolumeImg(VolumeGrid):
                 'The two images are not embedded in the same world space')
         if isinstance(target_image, VolumeImg):
             return self.as_volume_img(affine=target_image.affine,
-                                    shape=self.get_data().shape[:3],
+                                    shape=target_image.get_data().shape[:3],
                                     interpolation=interpolation)
         else:
             # IMPORTANT: Polymorphism can be implemented by walking the 
@@ -165,17 +165,20 @@ class VolumeImg(VolumeGrid):
         # For images with dimensions larger than 3D, pad A and b:
         n_dims = len(data.shape)
         if n_dims > 3:
+            # XXX: We should break the interpolation dimension, this is
+            # too slow.
             b = np.r_[b, np.zeros((n_dims - 3,))]
             A_ = np.eye(n_dims)
             A_[:3, :3] = A
             A = A_
             shape = shape + list(data.shape[3:])
+        A_inv = np.linalg.inv(A)
         # If A is diagonal, ndimage.affine_transform is clever-enough 
         # to use a better algorithm
         if np.all(np.diag(np.diag(A)) == A):
            A = np.diag(A)
         resampled_data = ndimage.affine_transform(data, A,
-                                            offset=b, 
+                                            offset=np.dot(A_inv, b),
                                             output_shape=shape,
                                             order=interpolation_order)
         return self.__class__(resampled_data, affine, 
@@ -281,8 +284,8 @@ class VolumeImg(VolumeGrid):
                 self.__class__.__name__,
                 '\n       '.join(repr(self._data).split('\n')),
                 '\n         '.join(repr(self.affine).split('\n')),
-                self.world_space,
-                self.interpolation)
+                repr(self.world_space),
+                repr(self.interpolation))
         np.set_printoptions(**options)
         return representation
 

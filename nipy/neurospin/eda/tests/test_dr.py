@@ -70,30 +70,33 @@ def test_pca_and_mds():
 def test_knn_isomap():
     """
     Test of the isomap algorithm on knn graphs
+    this one fails if the graph as more than one connected component
+    to avoid this we use a non-random example
     """
-    X = randn(10,3)
+    prng = np.random.RandomState(seed=2)
+    X = prng.randn(10,3)
     M = knn_Isomap(X, rdim=1)
     u = M.train(k=2)
     x = X[:2,:]
     a = M.test(x)
-    eps = 1.e12
+    eps = 1.e-12
     test = np.sum(a-u[:2,:])**2<eps
-    print np.sum(a-u[:2,:])**2
     assert test
     
 def test_eps_isomap():
     """
     Test of the esp_isomap procedure
-    this one sometimes fails...not sure why
+    this one fails if the graph as more than one connected component
+    to avoid this we use a non-random example
     """
-    X = randn(10,3)
-    M = eps_Isomap(X, rdim=1)
+    prng = np.random.RandomState(seed=2)
+    X = prng.randn(10,3)
+    M = eps_Isomap(X, rdim=2)
     u = M.train(eps = 2.)
     x = X[:2,:]
     a = M.test(x)
-    eps = 1.e12
+    eps = 1.e-12
     test = np.sum((a-u[:2])**2)<eps
-    print np.sum((a-u[:2])**2), a-u[:2]
     assert test
 
 def test_dimension_estimation():
