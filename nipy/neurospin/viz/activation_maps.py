@@ -5,6 +5,9 @@ Functions to do automatic visualization of activation-like maps.
 
 For 2D-only visualization, only matplotlib is required.
 For 3D visualization, Mayavi, version 3.0 or greater, is required.
+
+For a demo, see the 'demo_plot_map_2d' function.
+
 """
 
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
@@ -414,9 +417,4 @@ def auto_plot_map(map, affine, threshold=None, cut_coords=None, do3d=False,
                 figure_num=figure_num)
     return threshold, cut_coords
 
-
-
-if __name__ == '__main__':
-    ortho_slicer = demo_plot_map_2d()
-    pl.show()
 
