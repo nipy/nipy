@@ -303,13 +303,14 @@ class OrthoSlicer(object):
         ax.axis(self._get_object_bounds(ax))
 
 
-if __name__ == '__main__':
-    # A small demo
+def demo_ortho_slicer():
+    """ A small demo of the OrthoSlicer functionality.
+    """
     pl.clf()
-    oslicer = OrthoSlicer()
+    oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     from anat_cache import _AnatCache
     map, affine, _ = _AnatCache.get_anat()
-    oslicer.plot_map(map, affine, (0, 0, 0), cmap=pl.cm.gray)
+    oslicer.plot_map(map, affine, cmap=pl.cm.gray)
     pl.show()
     pl.draw()
 
