@@ -20,7 +20,6 @@ import operator
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
-import matplotlib as mp
 import pylab as pl
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
@@ -35,86 +34,7 @@ from .coord_tools import coord_transform, find_activation, \
 
 from .ortho_slicer import OrthoSlicer
 
-
-################################################################################
-# Colormaps
-
-def _rotate_cmap(cmap, name=None, swap_order=('green', 'red', 'blue')):
-    """ Utility function to swap the colors of a colormap.
-    """
-    orig_cdict = cmap._segmentdata.copy()
-
-    cdict = dict()
-    cdict['green'] = [(p, c1, c2)
-                        for (p, c1, c2) in orig_cdict[swap_order[0]]]
-    cdict['blue'] = [(p, c1, c2)
-                        for (p, c1, c2) in orig_cdict[swap_order[1]]]
-    cdict['red'] = [(p, c1, c2)
-                        for (p, c1, c2) in orig_cdict[swap_order[2]]]
-
-    if name is None:
-        name = '%s_rotated' % cmap.name
-    return mp.colors.LinearSegmentedColormap(name, cdict, 512)
-
-
-def _pigtailed_cmap(cmap, name=None, 
-                    swap_order=('green', 'red', 'blue')):
-    """ Utility function to make a new colormap by concatenating a
-        colormap with its reverse.
-    """
-    orig_cdict = cmap._segmentdata.copy()
-
-    cdict = dict()
-    cdict['green'] = [(0.5*(1-p), c1, c2)
-                        for (p, c1, c2) in reversed(orig_cdict[swap_order[0]])]
-    cdict['blue'] = [(0.5*(1-p), c1, c2)
-                        for (p, c1, c2) in reversed(orig_cdict[swap_order[1]])]
-    cdict['red'] = [(0.5*(1-p), c1, c2)
-                        for (p, c1, c2) in reversed(orig_cdict[swap_order[2]])]
-
-    for color in ('red', 'green', 'blue'):
-        cdict[color].extend([(0.5*(1+p), c1, c2) 
-                                    for (p, c1, c2) in orig_cdict[color]])
-
-    if name is None:
-        name = '%s_reversed' % cmap.name
-    return mp.colors.LinearSegmentedColormap(name, cdict, 512)
-
-
-# Using a dict as a namespace, to micmic matplotlib's cm
-
-_cm = dict(
-    cold_hot     = _pigtailed_cmap(pl.cm.hot,      name='cold_hot'),
-    brown_blue   = _pigtailed_cmap(pl.cm.bone,     name='brown_blue'),
-    cyan_copper  = _pigtailed_cmap(pl.cm.copper,   name='cyan_copper'),
-    cyan_orange  = _pigtailed_cmap(pl.cm.YlOrBr_r, name='cyan_orange'),
-    blue_red     = _pigtailed_cmap(pl.cm.Reds_r,   name='blue_red'),
-    brown_cyan   = _pigtailed_cmap(pl.cm.Blues_r,  name='brown_cyan'),
-    purple_green = _pigtailed_cmap(pl.cm.Greens_r, name='purple_green',
-                    swap_order=('red', 'blue', 'green')),
-    purple_blue  = _pigtailed_cmap(pl.cm.Blues_r, name='purple_blue',
-                    swap_order=('red', 'blue', 'green')),
-    blue_orange  = _pigtailed_cmap(pl.cm.Oranges_r, name='blue_orange',
-                    swap_order=('green', 'red', 'blue')),
-    black_blue   = _rotate_cmap(pl.cm.hot, name='black_blue'),
-    black_purple = _rotate_cmap(pl.cm.hot, name='black_purple',
-                                    swap_order=('blue', 'red', 'green')),
-    black_pink   = _rotate_cmap(pl.cm.hot, name='black_pink',
-                            swap_order=('blue', 'green', 'red')),
-    black_green  = _rotate_cmap(pl.cm.hot, name='black_green',
-                            swap_order=('red', 'blue', 'green')),
-    black_red    = pl.cm.hot,
-    )
-
-_cm.update(pl.cm.datad)
-
-class _CM(dict):
-    def __init__(self, *args, **kwargs):
-        dict.__init__(self, *args, **kwargs)
-        self.__dict__.update(self)
-
-
-cm = _CM(**_cm)
+from . import cm
 
 ################################################################################
 # Helper functions for 2D plotting of activation maps 
