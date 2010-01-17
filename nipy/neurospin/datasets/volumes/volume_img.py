@@ -9,7 +9,7 @@ from scipy import ndimage
 
 # Local imports
 from ..transforms.affine_utils import to_matrix_vector, \
-                from_matrix_vector
+                from_matrix_vector, get_bounds
 from ..transforms.affine_transform import AffineTransform
 from ..transforms.transform import CompositionError
 
@@ -147,6 +147,18 @@ class VolumeImg(VolumeGrid):
             return copy.copy(self)
         if affine is None:
             affine = self.affine
+        if isinstance(affine, np.ndarray) and len(affine.shape) == 3:
+            transform_affine = np.dot(np.linalg.inv(self.affine[:3, :3]), 
+                                      affine)
+            (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
+                                            self.shape, transform_affine
+                                                        )
+            affine = from_matrix_vector(affine, 
+                                        np.ndarray((xmin, ymin, zmin))
+                                       )
+            shape = (np.ceil(xmax - xmin),
+                     np.ceil(ymax - ymin),
+                     np.ceil(zmax - zmin), )
         data = self.get_data()
         if shape is None:
             shape = data.shape[:3]

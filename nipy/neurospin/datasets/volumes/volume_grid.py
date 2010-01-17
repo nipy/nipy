@@ -12,7 +12,7 @@ from scipy import ndimage
 
 # Local imports
 from .volume_data import VolumeData
-from ..transforms.affine_utils import apply_affine
+from ..transforms.affine_utils import apply_affine, from_matrix_vector
 
 ################################################################################
 # class `VolumeGrid`
@@ -98,6 +98,18 @@ class VolumeGrid(VolumeData):
 
     def as_volume_img(self, affine=None, shape=None, 
                                         interpolation=None):
+        if affine is None:
+            affine = np.eye(4)
+        elif len(affine.shape) == 3:
+            # We need to find the best bounding box
+            x, y, z = self.get_world_coords()
+            x, y, z = apply_affine(x, y, z, np.linalg.inv(affine))
+            affine = from_matrix_vector(affine, 
+                                        np.ndarray((x.min(), y.min(), z.min()))
+                                       )
+            shape = (np.ceil(x.max() - x.min()),
+                     np.ceil(y.max() - y.min()),
+                     np.ceil(z.max() - z.min()), )
         data = self.get_data()
         if shape is None:
             shape = data.shape[:3]
@@ -108,7 +120,6 @@ class VolumeGrid(VolumeData):
                 % shape )
         interpolation_order = self._get_interpolation_order(interpolation)
         # XXX: Need to use code to linearise the transform.
-        affine = np.eye(4)
         x, y, z = np.indices(shape)
         x, y, z = apply_affine(x, y, z, affine)
         values = self.values_in_world(x, y, z)

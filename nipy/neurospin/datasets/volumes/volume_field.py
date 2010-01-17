@@ -95,11 +95,12 @@ class VolumeField(object):
 
             Parameters
             ----------
-            affine: 4x4 ndarray, optional
+            affine: 4x4 or 3x3 ndarray, optional
                 Affine of the new voxel grid or transform object pointing
                 to the new voxel coordinate grid. If a 3x3 ndarray is given, 
                 it is considered to be the rotation part of the affine, 
-                and the best possible bounding box is calculated, if None
+                and the best possible bounding box is calculated,
+                in this case, the shape argument is not used. If None
                 is given, a default affine is provided by the image.
             shape: (n_x, n_y, n_z), tuple of integers, optional
                 The shape of the grid used for sampling, if None

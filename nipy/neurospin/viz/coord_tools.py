@@ -13,6 +13,7 @@ from scipy import stats, ndimage
 # Local imports
 from nipy.neurospin.utils.mask import compute_mask, largest_cc
 from nipy.neurospin.utils.emp_null import ENN
+from nipy.neurospin.datasets.transforms.affine_utils import get_bounds
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -154,25 +155,6 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
 
 
 ################################################################################
-def get_bounds(shape, affine):
-    """ Return the world-space bounds occupied by an array given an affine.
-    """
-    T = affine
-    box = np.zeros((8, 3), 'd')
-    adim, bdim, cdim = shape
-    # form a collection of vectors for each 8 corners of the box
-    box = np.array([ [0.,   0,    0,    1],
-                     [adim, 0,    0,    1],
-                     [0,    bdim, 0,    1],
-                     [0,    0,    cdim, 1],
-                     [adim, bdim, 0,    1],
-                     [adim, 0,    cdim, 1],
-                     [0,    bdim, cdim, 1],
-                     [adim, bdim, cdim, 1] ]).T
-    box = np.dot(affine, box)[:3]
-    box_extents = zip(box.min(axis=-1), box.max(axis=-1))
-    return box_extents
-
 
 def get_mask_bounds(mask, affine):
     """ Return the world-space bounds occupied by a mask given an affine.
