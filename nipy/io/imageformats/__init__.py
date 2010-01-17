@@ -60,3 +60,4 @@ from nipy.io.imageformats.spm2analyze import Spm2AnalyzeHeader, Spm2AnalyzeImage
 from nipy.io.imageformats.nifti1 import Nifti1Header, Nifti1Image
 from nipy.io.imageformats.minc import MincHeader, MincImage
 from nipy.io.imageformats.funcs import squeeze_image, concat_images, four_to_three
+from nipy.io.imageformats.affines import io_orientation

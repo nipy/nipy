@@ -76,7 +76,7 @@ class Image(object):
         # ii) the shapes are consistent
 
         # self._data is an array-like object.  It must implement a subset of
-        # array methods  (Need to specify these, for now implied in pyniftio)
+        # array methods  (Need to specify these)
         self._data = data
         self._coordmap = coordmap
 
