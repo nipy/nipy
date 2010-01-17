@@ -147,19 +147,22 @@ class VolumeImg(VolumeGrid):
             return copy.copy(self)
         if affine is None:
             affine = self.affine
-        if isinstance(affine, np.ndarray) and len(affine.shape) == 3:
-            transform_affine = np.dot(np.linalg.inv(self.affine[:3, :3]), 
-                                      affine)
+        data = self.get_data()
+        if affine.shape[0] == 3:
+            affine4d = np.eye(4)
+            affine4d[:3, :3] = affine
+            transform_affine = np.dot(np.linalg.inv(self.affine),
+                                      affine4d)
             (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
-                                            self.shape, transform_affine
+                                                            data.shape[:3], 
+                                                            transform_affine
                                                         )
             affine = from_matrix_vector(affine, 
-                                        np.ndarray((xmin, ymin, zmin))
+                                        -np.array((xmin, ymin, zmin))
                                        )
             shape = (np.ceil(xmax - xmin),
                      np.ceil(ymax - ymin),
                      np.ceil(zmax - zmin), )
-        data = self.get_data()
         if shape is None:
             shape = data.shape[:3]
         shape = list(shape)

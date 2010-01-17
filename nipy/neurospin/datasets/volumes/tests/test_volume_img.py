@@ -50,6 +50,9 @@ def test_identity_resample():
     ref_im = VolumeImg(data, affine, 'mine')
     rot_im = ref_im.as_volume_img(affine, interpolation='nearest')
     yield np.testing.assert_almost_equal, data, rot_im.get_data()
+    # Now test when specifying only a 3x3 affine
+    rot_im = ref_im.as_volume_img(affine[:3, :3], interpolation='nearest')
+    yield np.testing.assert_almost_equal, data, rot_im.get_data()
     reordered_im = rot_im.xyz_ordered()
     yield np.testing.assert_almost_equal, data, reordered_im.get_data()
 
