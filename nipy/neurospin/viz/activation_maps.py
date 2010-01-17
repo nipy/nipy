@@ -39,7 +39,7 @@ from . import cm
 ################################################################################
 # Helper functions for 2D plotting of activation maps 
 ################################################################################
-def xyz_order(map, affine):
+def _xyz_order(map, affine):
     img = VolumeImg(map, affine=affine, world_space='mine')
     img = img.xyz_ordered()
     map = img.get_data()
@@ -98,7 +98,7 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
             map = np.ma.masked_less(map, 0.5)
             plot_map(map, affine)
     """
-    map, affine = xyz_order(map, affine)
+    map, affine = _xyz_order(map, affine)
     if anat is None:
         try:
             anat, anat_affine, vmax_anat = _AnatCache.get_anat()
@@ -124,7 +124,7 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
         anat_kwargs['cmap'] = pl.cm.gray
         anat_kwargs.pop('vmin', None)
         anat_kwargs.pop('vmax', None)
-        anat, anat_affine = xyz_order(anat, anat_affine)
+        anat, anat_affine = _xyz_order(anat, anat_affine)
         ortho_slicer.plot_map(anat, anat_affine, **anat_kwargs)
     ortho_slicer.plot_map(map, affine, **kwargs)
     if annotate:
@@ -211,17 +211,15 @@ def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
         figure = pl.figure(figure, figsize=(10.6, 2.6), facecolor='w')
 
     plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, anat=anat,
-                anat_affine=anat_affine, 
-                vmin=kwargs.get('vmin', None),
-                figure=figure.number)
+                anat_affine=anat_affine, offscreen=True, **kwargs)
 
-    ax = figure.add_axes((-0.01, 0, 0.3, 1))
+    ax = figure.add_axes((0.001, 0, 0.29, 1))
     ax.axis('off')
     m2screenshot(mpl_axes=ax)
 
     return plot_map_2d(map, affine, cut_coords=cut_coords, anat=anat,
                         anat_affine=anat_affine, 
-                        figure=figure, axes=(0.29, 0, .72, 1.),
+                        figure=figure, axes=(0.3, 0, .7, 1.),
                         title=title, **kwargs)
 
 
@@ -232,8 +230,8 @@ def demo_plot_map():
     x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
     map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     map = np.ma.masked_less(map, 0.5)
-    return plot_map(map, mni_sform, cut_coords=(x, y, z), threshold=0.5,
-                                        title="Broca's area", figure=512)
+    return plot_map(map, mni_sform, cut_coords=(x, y, z),
+                            title="Broca's area")
 
 
 def auto_plot_map(map, affine, threshold=None, cut_coords=None, do3d=False, 
