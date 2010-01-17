@@ -102,10 +102,12 @@ class VolumeGrid(VolumeData):
             affine = np.eye(4)
         elif affine.shape[0] == 3:
             # We need to find the best bounding box
+            affine4d = np.eye(4)
+            affine4d[:3, :3] = affine
             x, y, z = self.get_world_coords()
-            x, y, z = apply_affine(x, y, z, np.linalg.inv(affine))
+            x, y, z = apply_affine(x, y, z, np.linalg.inv(affine4d))
             affine = from_matrix_vector(affine, 
-                                        np.array((x.min(), y.min(), z.min()))
+                                        -np.array((x.min(), y.min(), z.min()))
                                        )
             shape = (np.ceil(x.max() - x.min()),
                      np.ceil(y.max() - y.min()),
