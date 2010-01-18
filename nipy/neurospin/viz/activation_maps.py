@@ -41,7 +41,7 @@ from . import cm
 ################################################################################
 def _xyz_order(map, affine):
     img = VolumeImg(map, affine=affine, world_space='mine')
-    img = img.xyz_ordered()
+    img = img.xyz_ordered(resample=True)
     map = img.get_data()
     affine = img.affine
     return map, affine

@@ -151,15 +151,16 @@ class VolumeImg(VolumeGrid):
         if affine.shape[0] == 3:
             affine4d = np.eye(4)
             affine4d[:3, :3] = affine
-            transform_affine = np.dot(np.linalg.inv(self.affine),
-                                      affine4d)
+            transform_affine = np.dot(np.linalg.inv(affine4d), 
+                                      self.affine,
+                                     )
             (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
                                                             data.shape[:3], 
                                                             transform_affine
                                                         )
-            affine = from_matrix_vector(affine, 
-                                        -np.array((xmin, ymin, zmin))
-                                       )
+            offset = np.array((xmin, ymin, zmin, 1))
+            #offset = np.dot(affine4d, offset)
+            affine = from_matrix_vector(affine, offset[:3])
             shape = (np.ceil(xmax - xmin),
                      np.ceil(ymax - ymin),
                      np.ceil(zmax - zmin), )
@@ -177,25 +178,36 @@ class VolumeImg(VolumeGrid):
         else:
             transform_affine = np.dot(np.linalg.inv(self.affine), affine)
         A, b = to_matrix_vector(transform_affine)
-        # For images with dimensions larger than 3D, pad A and b:
-        n_dims = len(data.shape)
-        if n_dims > 3:
-            # XXX: We should break the interpolation dimension, this is
-            # too slow.
-            b = np.r_[b, np.zeros((n_dims - 3,))]
-            A_ = np.eye(n_dims)
-            A_[:3, :3] = A
-            A = A_
-            shape = shape + list(data.shape[3:])
         A_inv = np.linalg.inv(A)
         # If A is diagonal, ndimage.affine_transform is clever-enough 
         # to use a better algorithm
         if np.all(np.diag(np.diag(A)) == A):
-           A = np.diag(A)
-        resampled_data = ndimage.affine_transform(data, A,
-                                            offset=np.dot(A_inv, b),
-                                            output_shape=shape,
-                                            order=interpolation_order)
+            A = np.diag(A)
+        # For images with dimensions larger than 3D:
+        data_shape = list(data.shape)
+        if len(data_shape) > 3:
+            # Iter in a set of 3D volumes, as the interpolation problem is 
+            # separable in the extra dimensions. This reduces the
+            # computational cost
+            data = np.reshape(data, data_shape[:3] + [-1])
+            data = np.rollaxis(data, 3)
+            resampled_data = [ ndimage.affine_transform(slice, A,
+                                                offset=np.dot(A_inv, b),
+                                                output_shape=shape,
+                                                order=interpolation_order)
+                                for slice in data]
+            #resampled_data = np.array(resampled_data)
+            #resampled_data = np.swapaxes(resampled_data, 0, -1)
+            resampled_data = np.concatenate([d[..., np.newaxis]
+                                             for d in resampled_data], 
+                                            axis=3)
+            resampled_data = np.reshape(resampled_data, shape +
+                                                    data_shape[3:])
+        else:
+            resampled_data = ndimage.affine_transform(data, A,
+                                                offset=np.dot(A_inv, b),
+                                                output_shape=shape,
+                                                order=interpolation_order)
         return self.__class__(resampled_data, affine, 
                            self.world_space, metadata=self.metadata,
                            interpolation=self.interpolation)
@@ -209,15 +221,31 @@ class VolumeImg(VolumeGrid):
     # VolumeImg interface
     #---------------------------------------------------------------------------
 
-    def xyz_ordered(self):
+    def xyz_ordered(self, resample=False):
         """ Returns an image with the affine diagonal and positive
             in the world space it is embedded in. 
+
+            Parameters
+            -----------
+            resample: boolean, optional
+                If resample is False, no resampling is performed, the
+                axis are only permuted. If it is impossible
+                to get xyz ordering by permuting the axis, a
+                'CompositionError' is raised.
         """
         A, b = to_matrix_vector(self.affine.copy())
         if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
-            raise CompositionError(
+            if not resample:
+                raise CompositionError(
                 'Cannot reorder the axis: the image affine contains rotations'
-                )
+                    )
+            else:
+                # Identify the voxel size using a QR decomposition of the
+                # affine
+                R, Q = np.linalg.qr(self.affine[:3, :3])
+                target_affine = np.diag(np.abs(np.diag(Q))[
+                                                    np.abs(R).argmax(axis=1)])
+                return self.as_volume_img(affine=target_affine)
         # Copy the image, we don't want to modify in place.
         img = self.__copy__()
         axis_numbers = np.argmax(np.abs(A), axis=0)
@@ -293,7 +321,7 @@ class VolumeImg(VolumeGrid):
 
     def __repr__(self):
         options = np.get_printoptions()
-        np.set_printoptions(precision=6, threshold=64, edgeitems=2)
+        np.set_printoptions(precision=5, threshold=64, edgeitems=2)
         representation = \
                 '%s(\n  data=%s,\n  affine=%s,\n  world_space=%s,\n  interpolation=%s)' % (
                 self.__class__.__name__,
