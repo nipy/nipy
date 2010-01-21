@@ -61,7 +61,7 @@ class grid_descriptor():
             print "Not implemented yet"
         return grid
 
-def best_fitting_GMM(x,krange,prec_type='full',niter=100,delta = 1.e-4,ninit=1,verbose=0):
+def best_fitting_GMM(x, krange, prec_type='full',niter=100,delta = 1.e-4,ninit=1,verbose=0):
     """
     Given a certain dataset x, find the best-fitting GMM
     within a certain range indexed by krange
@@ -71,13 +71,12 @@ def best_fitting_GMM(x,krange,prec_type='full',niter=100,delta = 1.e-4,ninit=1,v
     x array of shape (nbitem,dim)
       the data from which the model is estimated
     krange (list of floats) the range of values to test for k
-    prec_type ='full' the vocariance parameterization
-              (to be chosen within 'full','diag') for full
-              and diagonal covariance respectively
-    niter=100: maximal number of iterations in the estimation process
-    delta = 1.e-4: increment of data likelihood at which
+    prec_type ='full', string (to be chosen within 'full','diag')
+              the covariance parameterization
+    niter=100, int, maximal number of iterations in the estimation process
+    delta = 1.e-4n float increment of data likelihood at which
           convergence is declared
-    ninit = 1: number of initialization performed
+    ninit = 1, int number of initialization performed
           to reach a good solution
     verbose=0: verbosity mode
     
@@ -319,7 +318,7 @@ class GMM():
         
         Parameters
         ----------
-        x: array of shape (nbitems,self.dim)
+        x, array of shape (nbitems,self.dim)
            the data used in the estimation process
         """
         import nipy.neurospin.clustering.clustering as fc
@@ -372,14 +371,14 @@ class GMM():
 
         Returns
         -------
-        l array of shape(nbitem,self.k)
+        like, array of shape(nbitem,self.k)
           component-wise likelihood
         """
-        l = self.unweighted_likelihood(x)
-        l *= self.weights
-        return l
+        like = self.unweighted_likelihood(x)
+        like *= self.weights
+        return like
 
-    def unweighted_likelihood(self,x):
+    def unweighted_likelihood(self, x):
         """
         return the likelihood of each data for each component
         the values are not weighted by the component weights
@@ -391,11 +390,11 @@ class GMM():
 
         Returns
         -------
-        l array of shape(nbitem,self.k)
+        like, array of shape(nbitem,self.k)
           unweighted component-wise likelihood
         """
         n = x.shape[0]
-        l = np.zeros((n,self.k))
+        like = np.zeros((n,self.k))
         from numpy.linalg import det
 
         for k in range(self.k):
@@ -411,10 +410,10 @@ class GMM():
                 q = np.dot((m-x)**2,b)
             w -= q
             w /= 2
-            l[:,k] = np.exp(w)   
-        return l
+            like[:,k] = np.exp(w)   
+        return like
     
-    def mixture_likelihood(self,x):
+    def mixture_likelihood(self, x):
         """
         returns the likelihood of the mixture for x
         
@@ -445,7 +444,7 @@ class GMM():
         sl = np.maximum(sl,tiny)
         return np.mean(np.log(sl))
 
-    def evidence(self,x):
+    def evidence(self, x):
         """
         computation of bic approximation of evidence
         
@@ -460,20 +459,18 @@ class GMM():
         """
         x = self.check_x(x)
         tiny = 1.e-15
-        l = self.likelihood(x)
-        return self.bic(l,tiny)
+        like = self.likelihood(x)
+        return self.bic(like,tiny)
     
-    def bic(self,like = None,tiny = 1.e-15):
+    def bic(self, like, tiny = 1.e-15):
         """
         computation of bic approximation of evidence
                 
         Parameters
-        ----------
-        
-        like: array of shape (nbitem,self.k)
+        ----------        
+        like, array of shape (nbitem,self.k)
            component-wise likelihood
-           if like==None,  it is re-computed in E-step
-        tiny=1.e-15: a small constant to avoid numerical singularities
+        tiny=1.e-15, a small constant to avoid numerical singularities
         
         Returns
         -------
@@ -509,7 +506,7 @@ class GMM():
         """
         return self.likelihood(x)
 
-    def guess_regularizing(self,x,bcheck=1):
+    def guess_regularizing(self, x, bcheck=1):
         """
         Set the regularizing priors as weakly informative
         according to Fraley and raftery;
@@ -616,7 +613,7 @@ class GMM():
             self.precisions = np.array([1.0/covariance[k] \
                                        for k in range(self.k)])
 
-    def map_label(self,x,like=None):
+    def map_label(self, x, like=None):
         """
         return the MAP labelling of x 
         
@@ -638,7 +635,7 @@ class GMM():
         z = np.argmax(like,1)
         return z
 
-    def estimate(self,x,niter=100,delta = 1.e-4,verbose=0):
+    def estimate(self, x, niter=100, delta=1.e-4, verbose=0):
         """
         estimation of self given a dataset x
 
@@ -710,7 +707,7 @@ class GMM():
             self.initialize(x)
 
             # alternation of E/M step until convergence
-            bic = self.estimate(x,niter=niter,delta=delta,verbose=0)
+            bic = self.estimate(x, niter=niter, delta=delta, verbose=0)
             if bic>bestbic:
                 bestbic= bic
                 bestgmm.plugin(self.means,self.precisions,self.weights)
@@ -723,7 +720,7 @@ class GMM():
         """
         return self.initialize_and_estimate(x, z, niter, delta, ninit, verbose)
 
-    def test(self,x, tiny = 1.e-15):
+    def test(self, x, tiny = 1.e-15):
         """
         returns the log-likelihood of the mixture for x
 
