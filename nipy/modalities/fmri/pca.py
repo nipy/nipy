@@ -68,7 +68,8 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     
        `results` has keys:
 
-       * ``basis_vectors``: time series, shape (data.shape[axis], L)
+       * ``basis_vectors``: series over `axis`, shape (data.shape[axis], L) -
+          the eigenvectors of the PCA
        * ``pcnt_var``: percent variance explained by component, shape
           (L,)
        * ``basis_projections``: PCA components, with components varying

@@ -2,6 +2,9 @@
 
 The module has routines for doing things like displaying 8 slices from
 an image in a montage with 4 columns and 2 rows.
+
+Inspired by ``plot_activations_simplepanel.py`` script by Benjamin
+Thyreau
 '''
 
 import numpy as np
@@ -44,18 +47,24 @@ def array_montage(arr, slicedef=None, n_columns=None, axis=-1):
        neuroimaging convention (first dimension shown left to right) we
        rotate each slice in the montage by 90 degrees counter clockwise
     '''
-    # roll slicing axis to first for convenience
     arr = np.asarray(arr)
     if arr.ndim != 3:
         raise MontageError('Array should have 3 dimensions')
-    arr = np.rollaxis(arr, axis)
+    if axis is None:
+        raise MontageError('Axis cannot be none')
+    # roll slicing axis to last to do rotation
+    arr = np.rollaxis(arr, axis, arr.ndim)
+    # rotate first two dimensions for neuroimaging display convention
+    arr = np.rot90(arr)
+    # roll slicing axis to first for convenience
+    arr = np.rollaxis(arr, -1)
     # select our slices
     if slicedef is None:
         slices = list(arr)
     else:
         try: # iterable 
             slicedef = list(slicedef)
-        except TypeError: # we hope it's a slice
+        except TypeError: # we hope it does slicing
             slices = list(arr[slicedef])
         else: # iterable
             slices = [arr[sno] for sno in slicedef]
@@ -63,14 +72,14 @@ def array_montage(arr, slicedef=None, n_columns=None, axis=-1):
     if n_columns is None:
         n_columns = int(np.floor(np.sqrt(n_slices)))
     n_rows = int(np.ceil(n_slices / float(n_columns)))
-    slice_shape = arr.shape[1:][::-1] # reflecting rot90
+    slice_shape = arr.shape[1:]
     blank_slice = np.zeros(slice_shape)
     rows = []
     for rn in range(n_rows):
         row = []
         for cn in range(n_columns):
             if slices:
-                row.append(np.rot90(slices.pop(0)))
+                row.append(slices.pop(0))
             else:
                 row.append(blank_slice)
         rows.append(np.hstack(row))
@@ -78,7 +87,7 @@ def array_montage(arr, slicedef=None, n_columns=None, axis=-1):
 
 
 def show_array_samples(arr, samples=16, n_columns=None, axis=-1):
-    ''' Utility routine to plot a range of slices from an array
+    ''' Utility routine to plot a range of slices from an array-like
 
     Uses pylab.imshow to display montage.
 
@@ -97,11 +106,11 @@ def show_array_samples(arr, samples=16, n_columns=None, axis=-1):
     '''
     import pylab as pl
     arr = np.asarray(arr)
-    arr = np.rollaxis(arr, axis)
+    slice_ax_len = arr.shape[axis]
     # select some slices through the image
     slicedef = list(np.round(
-            np.linspace(0.2, 0.8, samples) * arr.shape[0]).astype('i'))
-    montage = array_montage(arr, slicedef, n_columns=n_columns, axis=0)
+            np.linspace(0.2, 0.8, samples) * slice_ax_len).astype('i'))
+    montage = array_montage(arr, slicedef, n_columns=n_columns, axis=axis)
     # show in matplotlib
     pl.imshow(montage, cmap='gray', origin='upper', aspect='auto')
     
