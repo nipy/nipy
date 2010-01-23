@@ -80,9 +80,6 @@ class SpatialImage(object):
     def get_data(self):
         return self._data
 
-    def get_raw_data(self):
-        return self._data
-
     def get_shape(self):
         if self._data:
             return self._data.shape

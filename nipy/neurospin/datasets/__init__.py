@@ -9,6 +9,8 @@ from .volumes.volume_grid  import VolumeGrid
 from .transforms.transform import Transform, CompositionError
 from .transforms.affine_transform import AffineTransform
 
+from .converters import as_volume_img
+
 from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench

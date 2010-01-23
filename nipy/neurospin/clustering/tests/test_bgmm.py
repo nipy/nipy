@@ -96,16 +96,27 @@ def test_bgmm_gibbs(verbose=0):
     # fixme : find a less trivial test
     assert(z.max()+1==b.k)
 
-def test_gmm_bf(kmax=4,verbose = 0):
+def test_gmm_bf(kmax=4, seed=1, verbose=1):
     """
     perform a model selection procedure on a  gmm
     with Bayes factor estimations
-    kmax : range of values that are tested
 
+    Parameters
+    ----------
+    kmax : range of values that are tested
+    seed=False:  int, optionnal
+        If seed is not False, the random number generator is initialized
+        at a certain value
+        
     fixme : this one often fails. I don't really see why
     """
     n=30
     dim=2
+    if seed:
+        nr = np.random.RandomState([seed])
+    else:
+        import numpy.random as nr
+
     x = nr.randn(n,dim)
     #x[:30] += 2
     niter = 3000
